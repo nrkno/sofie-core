@@ -2,8 +2,6 @@ import { ProtectedString, getCurrentTime, getCollectionKey } from '../../lib/lib
 import { CollectionCleanupResult } from '../../lib/api/system'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Snapshots } from '../../lib/collections/Snapshots'
 import { Studios } from '../../lib/collections/Studios'
 import { Timeline } from '../../lib/collections/Timeline'
@@ -53,6 +51,8 @@ import {
 	RundownPlaylists,
 	Rundowns,
 	Segments,
+	ShowStyleBases,
+	ShowStyleVariants,
 } from '../serverCollections'
 
 export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Promise<CollectionCleanupResult | string> {

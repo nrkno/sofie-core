@@ -28,7 +28,7 @@ import {
 	ShowStyleVariantId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ShowStyleVariant, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { ShelfDashboardLayout } from '../Shelf/ShelfDashboardLayout'
 import { parse as queryStringParse } from 'query-string'
@@ -37,7 +37,13 @@ import { getPlaylistTimingDiff } from '../../lib/rundownTiming'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIShowStyleBases, UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
-import { PieceInstances, RundownLayouts, RundownPlaylists, Rundowns } from '../../../lib/clientCollections'
+import {
+	PieceInstances,
+	RundownLayouts,
+	RundownPlaylists,
+	Rundowns,
+	ShowStyleVariants,
+} from '../../../lib/clientCollections'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>

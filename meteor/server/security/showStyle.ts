@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { logNotAllowed } from './lib/lib'
-import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { MongoQuery, MongoQueryKey } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
@@ -11,7 +11,7 @@ import { Settings } from '../../lib/Settings'
 import { isProtectedString } from '../../lib/lib'
 import { TriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
 import { SystemWriteAccess } from './system'
-import { fetchShowStyleBaseLight, ShowStyleBaseLight } from '../../lib/collections/optimizations'
+import { fetchShowStyleBaseLight, ShowStyleBaseLight } from '../optimizations'
 import {
 	OrganizationId,
 	RundownLayoutId,
@@ -20,7 +20,7 @@ import {
 	TriggeredActionId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownLayouts } from '../serverCollections'
+import { RundownLayouts, ShowStyleVariants } from '../serverCollections'
 
 export interface ShowStyleContentAccess {
 	userId: UserId | null

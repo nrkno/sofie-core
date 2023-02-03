@@ -22,9 +22,9 @@ import {
 	RundownBaselineObjs,
 	Rundowns,
 	Segments,
+	ShowStyleBases,
+	ShowStyleVariants,
 } from '../serverCollections'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Snapshots } from '../../lib/collections/Snapshots'
 import { Studios, DBStudio } from '../../lib/collections/Studios'
 import { Timeline } from '../../lib/collections/Timeline'

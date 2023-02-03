@@ -9,7 +9,7 @@ import { PickerPOST } from '../http'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { IngestRundown } from '@sofie-automation/blueprints-integration'
 import { getExternalNRCSName } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { checkStudioExists } from '../../../lib/collections/optimizations'
+import { checkStudioExists } from '../../optimizations'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 PickerPOST.route('/ingest/:studioId', async (params, req: IncomingMessage, response: ServerResponse) => {

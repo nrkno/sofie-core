@@ -27,7 +27,7 @@ import {
 	unprotectStringArray,
 	unprotectString,
 } from '../../lib/lib'
-import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
 import { Timeline, TimelineComplete } from '../../lib/collections/Timeline'
@@ -38,7 +38,7 @@ import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
 import { ICoreSystem, CoreSystem, parseVersion, getCoreSystemAsync } from '../../lib/collections/CoreSystem'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
-import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { Blueprint } from '../../lib/collections/Blueprints'
 import { IngestRundown, VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../../lib/typings/meteor'
@@ -58,7 +58,7 @@ import * as fs from 'fs'
 import { ExpectedPackageWorkStatus } from '../../lib/collections/ExpectedPackageWorkStatuses'
 import { PackageContainerPackageStatusDB } from '../../lib/collections/PackageContainerPackageStatus'
 import { PackageInfoDB } from '../../lib/collections/PackageInfos'
-import { checkStudioExists } from '../../lib/collections/optimizations'
+import { checkStudioExists } from '../optimizations'
 import { CoreRundownPlaylistSnapshot } from '@sofie-automation/corelib/dist/snapshots'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
@@ -85,6 +85,8 @@ import {
 	PeripheralDevices,
 	RundownLayouts,
 	RundownPlaylists,
+	ShowStyleBases,
+	ShowStyleVariants,
 } from '../serverCollections'
 
 interface RundownPlaylistSnapshot extends CoreRundownPlaylistSnapshot {

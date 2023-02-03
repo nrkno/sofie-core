@@ -20,7 +20,7 @@ import {
 import { UserActionsLogItem, UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { triggerFastTrackObserver, FastTrackObservers } from '../publications/fastTrack'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { fetchStudioLight } from '../../lib/collections/optimizations'
+import { fetchStudioLight } from '../optimizations'
 import * as path from 'path'
 import { LogEntry } from 'winston'
 import { initializeWorkerStatus, setWorkerStatus } from './workerStatus'

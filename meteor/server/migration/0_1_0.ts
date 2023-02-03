@@ -2,10 +2,9 @@ import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
 import { Studios } from '../../lib/collections/Studios'
 import { getRandomId, protectString } from '../../lib/lib'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ShowStyleBases, ShowStyleVariants } from '../serverCollections'
 
 /**
  * This file contains system specific migration steps.

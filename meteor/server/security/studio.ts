@@ -8,7 +8,7 @@ import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Settings } from '../../lib/Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
-import { fetchStudioLight, StudioLight } from '../../lib/collections/optimizations'
+import { fetchStudioLight, StudioLight } from '../optimizations'
 import {
 	ExternalMessageQueueObjId,
 	OrganizationId,

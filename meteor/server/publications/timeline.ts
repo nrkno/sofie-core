@@ -21,7 +21,7 @@ import {
 import { Studios, getActiveRoutes, ResultingMappingRoutes } from '../../lib/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { StudioReadAccess } from '../security/studio'
-import { fetchStudioLight, StudioLight } from '../../lib/collections/optimizations'
+import { fetchStudioLight, StudioLight } from '../optimizations'
 import { FastTrackObservers, setupFastTrackObserver } from './fastTrack'
 import { logger } from '../logging'
 import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'

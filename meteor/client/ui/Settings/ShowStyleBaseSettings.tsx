@@ -2,8 +2,8 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { OutputLayers, ShowStyleBase, ShowStyleBases, SourceLayers } from '../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { OutputLayers, ShowStyleBase, SourceLayers } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import RundownLayoutEditor from './RundownLayoutEditor'
 import { Studio, Studios, MappingsExt } from '../../../lib/collections/Studios'
 import {
@@ -27,7 +27,7 @@ import {
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints } from '../../../lib/clientCollections'
+import { Blueprints, ShowStyleBases, ShowStyleVariants } from '../../../lib/clientCollections'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 

@@ -14,13 +14,13 @@ import { MongoCursor } from '../../../lib/collections/lib'
 import { DBPartInstance } from '../../../lib/collections/PartInstances'
 import { DBRundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { DBRundown } from '../../../lib/collections/Rundowns'
-import { DBShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { logger } from '../../logging'
 import { observerChain } from '../../publications/lib/observerChain'
 import { ContentCache } from './reactiveContentCache'
 import { RundownContentObserver } from './RundownContentObserver'
 import { RundownsObserver } from './RundownsObserver'
-import { PartInstances, RundownPlaylists, Rundowns } from '../../serverCollections'
+import { PartInstances, RundownPlaylists, Rundowns, ShowStyleBases } from '../../serverCollections'
 
 type ChangedHandler = (showStyleBaseId: ShowStyleBaseId, cache: ContentCache) => () => void
 

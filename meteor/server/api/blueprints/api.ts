@@ -24,11 +24,11 @@ import { Credentials, isResolvedCredentials } from '../../security/lib/credentia
 import { Settings } from '../../../lib/Settings'
 import { generateTranslationBundleOriginId, upsertBundles } from '../translationsBundles'
 import { BlueprintId, OrganizationId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints } from '../../serverCollections'
+import { Blueprints, ShowStyleBases, ShowStyleVariants } from '../../serverCollections'
 import { fetchBlueprintLight, BlueprintLight } from '../../serverOptimisations'
 import { getSystemStorePath } from '../../coreSystem'
-import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 
 export async function insertBlueprint(

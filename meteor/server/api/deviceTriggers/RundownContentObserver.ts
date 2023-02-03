@@ -14,8 +14,8 @@ import {
 	AdLibActions,
 	AdLibPieces,
 	Segments,
+	ShowStyleBases,
 } from '../../serverCollections'
-import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { TriggeredActions } from '../../../lib/collections/TriggeredActions'
 import { logger } from '../../logging'
 import {

@@ -29,6 +29,8 @@ import { RundownBaselineAdLibAction } from './collections/RundownBaselineAdLibAc
 import { RundownBaselineAdLibItem } from './collections/RundownBaselineAdLibPieces'
 import { RundownLayoutBase } from './collections/RundownLayouts'
 import { Segment } from './collections/Segments'
+import { ShowStyleBase } from './collections/ShowStyleBases'
+import { ShowStyleVariant } from './collections/ShowStyleVariants'
 
 export const AdLibActions = createSyncReadOnlyMongoCollection<AdLibAction>(CollectionName.AdLibActions)
 
@@ -105,3 +107,7 @@ export const Rundowns = createSyncReadOnlyMongoCollection<DBRundown>(CollectionN
 export const RundownPlaylists = createSyncReadOnlyMongoCollection<DBRundownPlaylist>(CollectionName.RundownPlaylists)
 
 export const Segments = createSyncReadOnlyMongoCollection<Segment>(CollectionName.Segments)
+
+export const ShowStyleBases = createSyncMongoCollection<ShowStyleBase>(CollectionName.ShowStyleBases)
+
+export const ShowStyleVariants = createSyncMongoCollection<ShowStyleVariant>(CollectionName.ShowStyleVariants)

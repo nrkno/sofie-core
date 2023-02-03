@@ -7,7 +7,7 @@ import { check } from 'meteor/check'
 import { profiler } from '../profiler'
 import { QueueForceClearAllCaches, QueueStudioJob } from '../../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { fetchStudioIds } from '../../../lib/collections/optimizations'
+import { fetchStudioIds } from '../../optimizations'
 import { PeripheralDeviceId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { insertInputDeviceTriggerIntoPreview } from '../../publications/deviceTriggersPreview'
 

@@ -18,11 +18,9 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
-import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
 import { MeteorCall } from '../../../lib/api/methods'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { Blueprints } from '../../serverCollections'
+import { Blueprints, ShowStyleBases, ShowStyleVariants } from '../../serverCollections'
 
 require('../../api/peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../api') // include in order to create the Meteor methods needed

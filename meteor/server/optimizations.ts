@@ -1,9 +1,10 @@
 import { ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MongoQuery } from '../typings/meteor'
-import { DBShowStyleBase, ShowStyleBases } from './ShowStyleBases'
-import { DBStudio, Studios, StudioLight } from './Studios'
+import { MongoQuery } from '../lib/typings/meteor'
+import { DBShowStyleBase } from '../lib/collections/ShowStyleBases'
+import { DBStudio, Studios, StudioLight } from '../lib/collections/Studios'
+import { ShowStyleBases } from './serverCollections'
 
-export { StudioLight } from './Studios' // TODO: Legacy
+export { StudioLight } from '../lib/collections/Studios' // TODO: Legacy
 
 /**
  * Returns a "light" version of the Studio, where the most heavy/large properties are omitted.

@@ -33,8 +33,8 @@ import {
 	IBlueprintPieceType,
 	IBlueprintActionManifest,
 } from '@sofie-automation/blueprints-integration'
-import { ShowStyleBase, ShowStyleBases, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant, DBShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleBase, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant, DBShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { Blueprint } from '../../lib/collections/Blueprints'
 import { ICoreSystem, CoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
@@ -92,6 +92,8 @@ import {
 	RundownPlaylists,
 	Rundowns,
 	Segments,
+	ShowStyleBases,
+	ShowStyleVariants,
 	Workers,
 	WorkerThreadStatuses,
 } from '../../server/serverCollections'

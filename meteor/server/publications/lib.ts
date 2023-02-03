@@ -13,8 +13,8 @@ import {
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectStringObject, waitForPromise } from '../../lib/lib'
-import { DBShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { PeripheralDevices } from '../serverCollections'
+import { DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { PeripheralDevices, ShowStyleBases } from '../serverCollections'
 
 export const MeteorPublicationSignatures: { [key: string]: string[] } = {}
 export const MeteorPublications: { [key: string]: Function } = {}

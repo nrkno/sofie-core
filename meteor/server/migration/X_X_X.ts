@@ -1,7 +1,7 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { Blueprints } from '../serverCollections'
+import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { Blueprints, ShowStyleVariants } from '../serverCollections'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'
 
 /*

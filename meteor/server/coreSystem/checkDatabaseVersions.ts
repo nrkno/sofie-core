@@ -2,7 +2,7 @@ import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { BlueprintId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { Blueprint } from '../../lib/collections/Blueprints'
-import { Blueprints } from '../serverCollections'
+import { Blueprints, ShowStyleBases } from '../serverCollections'
 import {
 	getCoreSystemAsync,
 	parseVersion,
@@ -11,7 +11,7 @@ import {
 	isPrerelease,
 	parseCoreIntegrationCompatabilityRange,
 } from '../../lib/collections/CoreSystem'
-import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { Studios, Studio } from '../../lib/collections/Studios'
 import { lazyIgnore } from '../../lib/lib'
 import { logger } from '../logging'

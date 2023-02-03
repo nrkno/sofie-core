@@ -28,13 +28,19 @@ import { Evaluation } from '../lib/collections/Evaluations'
 import { ExpectedPackageDB } from '../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatus } from '../lib/collections/ExpectedPackageWorkStatuses'
 import { ExpectedPlayoutItem } from '../lib/collections/ExpectedPlayoutItems'
-import { createAsyncOnlyMongoCollection, createAsyncMongoCollection } from '../lib/collections/lib'
+import {
+	createAsyncOnlyMongoCollection,
+	createAsyncMongoCollection,
+	ObserveChangesForHash,
+} from '../lib/collections/lib'
 import { DBOrganization } from '../lib/collections/Organization'
 import { PartInstance } from '../lib/collections/PartInstances'
 import { Part } from '../lib/collections/Parts'
 import { PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { RundownLayoutBase } from '../lib/collections/RundownLayouts'
 import { Segment } from '../lib/collections/Segments'
+import { ShowStyleBase } from '../lib/collections/ShowStyleBases'
+import { ShowStyleVariant } from '../lib/collections/ShowStyleVariants'
 import { WorkerStatus } from '../lib/collections/Workers'
 import { registerIndex } from '../lib/database'
 import { getCurrentTime } from '../lib/lib'
@@ -347,6 +353,17 @@ registerIndex(Segments, {
 	_rank: 1,
 })
 
+export const ShowStyleBases = createAsyncMongoCollection<ShowStyleBase>(CollectionName.ShowStyleBases)
+registerIndex(ShowStyleBases, {
+	organizationId: 1,
+})
+
+export const ShowStyleVariants = createAsyncMongoCollection<ShowStyleVariant>(CollectionName.ShowStyleVariants)
+registerIndex(ShowStyleVariants, {
+	showStyleBaseId: 1,
+	_rank: 1,
+})
+
 export const Workers = createAsyncMongoCollection<WorkerStatus>(CollectionName.Workers)
 
 export const WorkerThreadStatuses = createAsyncOnlyMongoCollection<WorkerThreadStatus>(CollectionName.WorkerThreads)
@@ -361,9 +378,11 @@ const removeOldCommands = () => {
 	})
 }
 Meteor.startup(() => {
-	if (Meteor.isServer) {
-		Meteor.setInterval(() => {
-			removeOldCommands()
-		}, 5 * 60 * 1000)
-	}
+	Meteor.setInterval(() => {
+		removeOldCommands()
+	}, 5 * 60 * 1000)
+
+	ObserveChangesForHash(ShowStyleBases, '_rundownVersionHash', ['blueprintConfigWithOverrides', 'blueprintId'])
+
+	ObserveChangesForHash(ShowStyleVariants, '_rundownVersionHash', ['blueprintConfigWithOverrides', 'showStyleBaseId'])
 })

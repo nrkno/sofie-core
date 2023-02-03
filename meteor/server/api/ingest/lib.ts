@@ -9,7 +9,7 @@ import { Credentials } from '../../security/lib/credentials'
 import { profiler } from '../profiler'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { QueueIngestJob } from '../../worker/worker'
-import { checkStudioExists } from '../../../lib/collections/optimizations'
+import { checkStudioExists } from '../../optimizations'
 import {
 	PartId,
 	PeripheralDeviceId,

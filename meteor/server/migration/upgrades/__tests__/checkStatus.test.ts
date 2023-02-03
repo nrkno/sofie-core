@@ -12,8 +12,8 @@ import {
 } from '../../../../__mocks__/helpers/database'
 import { generateTranslation } from '../../../../lib/lib'
 import { Studios } from '../../../../lib/collections/Studios'
-import { ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ShowStyleBases } from '../../../serverCollections'
 
 describe('getUpgradeStatus', () => {
 	afterEach(() => {

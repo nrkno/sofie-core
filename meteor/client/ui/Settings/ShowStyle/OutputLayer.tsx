@@ -6,7 +6,7 @@ import { IOutputLayer } from '@sofie-automation/blueprints-integration'
 import { getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import Tooltip from 'rc-tooltip'
 import { useTranslation } from 'react-i18next'
-import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { getHelpMode } from '../../../lib/localStorage'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { findHighestRank } from '../StudioSettings'
@@ -26,6 +26,7 @@ import {
 	LabelAndOverridesForCheckbox,
 	LabelAndOverridesForInt,
 } from '../../../lib/Components/LabelAndOverrides'
+import { ShowStyleBases } from '../../../../lib/clientCollections'
 
 interface IOutputSettingsProps {
 	showStyleBase: ShowStyleBase

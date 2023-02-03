@@ -14,7 +14,7 @@ import {
 	TriggeredActionsAPIMethods,
 } from '../../lib/api/triggeredActions'
 import { SystemWriteAccess } from '../security/system'
-import { fetchShowStyleBaseLight } from '../../lib/collections/optimizations'
+import { fetchShowStyleBaseLight } from '../optimizations'
 import {
 	convertObjectIntoOverrides,
 	wrapDefaultObject,

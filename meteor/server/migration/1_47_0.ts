@@ -1,11 +1,12 @@
 import { addMigrationSteps } from './databaseMigration'
 import { DBStudio, MappingsExt, Studios } from '../../lib/collections/Studios'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { DBShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { DBShowStyleBase, OutputLayers, ShowStyleBases, SourceLayers } from '../../lib/collections/ShowStyleBases'
+import { DBShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { DBShowStyleBase, OutputLayers, SourceLayers } from '../../lib/collections/ShowStyleBases'
 import { DBBlueprintTrigger, TriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
 import { getRandomString, normalizeArray } from '@sofie-automation/corelib/dist/lib'
 import { IBlueprintConfig, IOutputLayer, ISourceLayer, SomeAction } from '@sofie-automation/blueprints-integration'
+import { ShowStyleBases, ShowStyleVariants } from '../serverCollections'
 
 interface StudioOld {
 	mappings: MappingsExt

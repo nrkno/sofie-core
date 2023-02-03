@@ -18,8 +18,9 @@ import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/coreli
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 import * as blueprintCache from '../../../api/blueprints/cache'
-import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { TriggeredActions } from '../../../../lib/collections/TriggeredActions'
+import { ShowStyleBases } from '../../../serverCollections'
 
 describe('ShowStyleBase upgrades', () => {
 	afterEach(() => {

@@ -9,12 +9,7 @@ import { Settings } from '../../lib/Settings'
 import { MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
-import {
-	fetchShowStyleBaseLight,
-	fetchStudioLight,
-	ShowStyleBaseLight,
-	StudioLight,
-} from '../../lib/collections/optimizations'
+import { fetchShowStyleBaseLight, fetchStudioLight, ShowStyleBaseLight, StudioLight } from '../optimizations'
 import {
 	BlueprintId,
 	OrganizationId,

@@ -9,7 +9,7 @@ import { logger } from '../logging'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { PickerPOST, PickerGET } from './http'
-import { fetchShowStyleBaseLight } from '../../lib/collections/optimizations'
+import { fetchShowStyleBaseLight } from '../optimizations'
 import { BlueprintId, RundownLayoutId, ShowStyleBaseId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownLayouts } from '../serverCollections'
 

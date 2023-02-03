@@ -12,8 +12,8 @@ import {
 	showStyleBaseFieldSpecifier,
 	SourceLayersDoc,
 } from './reactiveContentCache'
-import { Parts, Pieces, Rundowns, Segments } from '../../serverCollections'
-import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { Parts, Pieces, Rundowns, Segments, ShowStyleBases } from '../../serverCollections'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { equivalentArrays, waitForPromise } from '../../../lib/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReactiveMongoObserverGroup, ReactiveMongoObserverGroupHandle } from '../lib/observerGroup'

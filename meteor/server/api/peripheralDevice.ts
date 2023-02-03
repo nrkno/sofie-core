@@ -49,7 +49,7 @@ import {
 	PeripheralDeviceStatusObject,
 	TimelineTriggerTimeResult,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { checkStudioExists } from '../../lib/collections/optimizations'
+import { checkStudioExists } from '../optimizations'
 import {
 	ExpectedPackageId,
 	ExpectedPackageWorkStatusId,

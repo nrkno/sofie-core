@@ -103,7 +103,7 @@ import { RundownName } from './RundownView/RundownTiming/RundownName'
 import { TimeOfDay } from './RundownView/RundownTiming/TimeOfDay'
 import { PlaylistEndTiming } from './RundownView/RundownTiming/PlaylistEndTiming'
 import { NextBreakTiming } from './RundownView/RundownTiming/NextBreakTiming'
-import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { BucketAdLibItem } from './Shelf/RundownViewBuckets'
 import { IAdLibListItem } from './Shelf/AdLibListItem'
 import { ShelfDashboardLayout } from './Shelf/ShelfDashboardLayout'
@@ -137,6 +137,7 @@ import {
 	RundownLayouts,
 	RundownPlaylists,
 	Rundowns,
+	ShowStyleVariants,
 } from '../../lib/clientCollections'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 

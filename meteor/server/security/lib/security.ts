@@ -8,15 +8,16 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { isProtectedString } from '../../../lib/lib'
 import { DBOrganization } from '../../../lib/collections/Organization'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
-import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { profiler } from '../../api/profiler'
+import { fetchShowStyleBasesLight, fetchStudioLight, ShowStyleBaseLight, StudioLight } from '../../optimizations'
 import {
-	fetchShowStyleBasesLight,
-	fetchStudioLight,
-	ShowStyleBaseLight,
-	StudioLight,
-} from '../../../lib/collections/optimizations'
-import { Organizations, PeripheralDevices, RundownPlaylists, Rundowns } from '../../serverCollections'
+	Organizations,
+	PeripheralDevices,
+	RundownPlaylists,
+	Rundowns,
+	ShowStyleVariants,
+} from '../../serverCollections'
 import {
 	OrganizationId,
 	PeripheralDeviceId,

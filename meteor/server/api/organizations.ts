@@ -8,12 +8,11 @@ import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/secur
 import { insertStudioInner } from './studio/api'
 import { insertShowStyleBaseInner } from './showStyles'
 import { Studios } from '../../lib/collections/Studios'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { CoreSystem, getCoreSystemAsync } from '../../lib/collections/CoreSystem'
 import { Users } from '../../lib/collections/Users'
 import { resetCredentials } from '../security/lib/credentials'
 import { BlueprintId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, Organizations } from '../serverCollections'
+import { Blueprints, Organizations, ShowStyleBases } from '../serverCollections'
 
 async function createDefaultEnvironmentForOrg(orgId: OrganizationId) {
 	let systemBlueprintId: BlueprintId | undefined

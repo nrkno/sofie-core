@@ -3,7 +3,7 @@ import { deferAsync, getCurrentTime, getRandomId, getSofieHostUrl } from '../../
 import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { fetchStudioLight } from '../../lib/collections/optimizations'
+import { fetchStudioLight } from '../optimizations'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'

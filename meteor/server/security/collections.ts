@@ -10,8 +10,6 @@ import { Users } from '../../lib/collections/Users'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { Snapshots } from '../../lib/collections/Snapshots'
 import { Studios, Studio } from '../../lib/collections/Studios'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
 import { MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
@@ -40,6 +38,8 @@ import {
 	RundownPlaylists,
 	Rundowns,
 	Segments,
+	ShowStyleBases,
+	ShowStyleVariants,
 } from '../serverCollections'
 import { Timeline } from '../../lib/collections/Timeline'
 import { SystemWriteAccess } from './system'

@@ -21,7 +21,7 @@ import { DEFAULT_TSR_ACTION_TIMEOUT_TIME } from '@sofie-automation/shared-lib/di
 import { getCoreSystem } from '../lib/collections/CoreSystem'
 import { QueueStudioJob } from './worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { fetchStudioIds } from '../lib/collections/optimizations'
+import { fetchStudioIds } from './optimizations'
 import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
 import { deferAsync } from '@sofie-automation/corelib/dist/lib'
 import { getRemovedPackageInfos } from './api/studio/lib'
