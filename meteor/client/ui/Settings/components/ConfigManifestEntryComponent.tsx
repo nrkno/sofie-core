@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
-import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { ConfigManifestEntry, ConfigManifestEntryType } from '@sofie-automation/corelib/dist/deviceConfig'
 import { ConfigManifestEntry as BlueprintConfigManifestEntry } from '@sofie-automation/blueprints-integration'
@@ -22,6 +21,7 @@ import {
 	LabelAndOverridesProps,
 } from '../../../lib/Components/LabelAndOverrides'
 import { assertNever } from '@sofie-automation/corelib/dist/lib'
+import { PeripheralDevices } from '../../../../lib/clientCollections'
 
 interface ConfigManifestEntryWithOverridesProps {
 	configField: ConfigManifestEntry

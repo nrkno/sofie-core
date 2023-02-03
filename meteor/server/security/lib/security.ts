@@ -7,7 +7,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { isProtectedString } from '../../../lib/lib'
 import { DBOrganization } from '../../../lib/collections/Organization'
-import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { profiler } from '../../api/profiler'
 import {
@@ -16,7 +16,7 @@ import {
 	ShowStyleBaseLight,
 	StudioLight,
 } from '../../../lib/collections/optimizations'
-import { Organizations, RundownPlaylists, Rundowns } from '../../serverCollections'
+import { Organizations, PeripheralDevices, RundownPlaylists, Rundowns } from '../../serverCollections'
 import {
 	OrganizationId,
 	PeripheralDeviceId,

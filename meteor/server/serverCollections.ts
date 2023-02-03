@@ -28,6 +28,7 @@ import { createAsyncOnlyMongoCollection, createAsyncMongoCollection } from '../l
 import { DBOrganization } from '../lib/collections/Organization'
 import { PartInstance } from '../lib/collections/PartInstances'
 import { Part } from '../lib/collections/Parts'
+import { PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { WorkerStatus } from '../lib/collections/Workers'
 import { registerIndex } from '../lib/database'
 import { getCurrentTime } from '../lib/lib'
@@ -252,6 +253,18 @@ export const PeripheralDeviceCommands = createAsyncMongoCollection<PeripheralDev
 )
 registerIndex(PeripheralDeviceCommands, {
 	deviceId: 1,
+})
+
+export const PeripheralDevices = createAsyncMongoCollection<PeripheralDevice>(CollectionName.PeripheralDevices)
+registerIndex(PeripheralDevices, {
+	organizationId: 1,
+	studioId: 1,
+})
+registerIndex(PeripheralDevices, {
+	studioId: 1,
+})
+registerIndex(PeripheralDevices, {
+	token: 1,
 })
 
 export const RundownBaselineObjs = createAsyncMongoCollection<RundownBaselineObj>(CollectionName.RundownBaselineObjects)

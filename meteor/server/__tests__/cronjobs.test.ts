@@ -12,11 +12,7 @@ import {
 	StatusCode,
 	TSR,
 } from '@sofie-automation/blueprints-integration'
-import {
-	PeripheralDevices,
-	PeripheralDeviceType,
-	PeripheralDeviceCategory,
-} from '../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceType, PeripheralDeviceCategory } from '../../lib/collections/PeripheralDevices'
 import { CoreSystem, ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import * as lib from '../../lib/lib'
 import { DBPart } from '../../lib/collections/Parts'
@@ -44,7 +40,14 @@ jest.mock('../api/deviceTriggers/observer')
 import '../cronjobs'
 
 import '../api/peripheralDevice'
-import { IngestDataCache, PartInstances, Parts, PeripheralDeviceCommands, Rundowns } from '../serverCollections'
+import {
+	IngestDataCache,
+	PartInstances,
+	Parts,
+	PeripheralDeviceCommands,
+	PeripheralDevices,
+	Rundowns,
+} from '../serverCollections'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 
 describe('cronjobs', () => {

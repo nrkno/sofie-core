@@ -22,6 +22,7 @@ import { DBOrganization } from './collections/Organization'
 import { PartInstance } from './collections/PartInstances'
 import { Part } from './collections/Parts'
 import { PeripheralDeviceCommand } from './collections/PeripheralDeviceCommands'
+import { PeripheralDevice } from './collections/PeripheralDevices'
 
 export const AdLibActions = createSyncReadOnlyMongoCollection<AdLibAction>(CollectionName.AdLibActions)
 
@@ -76,6 +77,9 @@ export const Parts = createSyncReadOnlyMongoCollection<Part>(CollectionName.Part
 export const PeripheralDeviceCommands = createSyncMongoCollection<PeripheralDeviceCommand>(
 	CollectionName.PeripheralDeviceCommands
 )
+
+export const PeripheralDevices = createSyncMongoCollection<PeripheralDevice>(CollectionName.PeripheralDevices)
+
 export const Rundowns = createSyncReadOnlyMongoCollection<DBRundown>(CollectionName.Rundowns)
 
 export const RundownPlaylists = createSyncReadOnlyMongoCollection<DBRundownPlaylist>(CollectionName.RundownPlaylists)

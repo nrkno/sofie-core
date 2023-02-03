@@ -6,7 +6,6 @@ import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/Reac
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
-	PeripheralDevices,
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
 import { Rundown } from '../../../lib/collections/Rundowns'
@@ -18,6 +17,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { UIStudio } from '../../../lib/api/studios'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDevices } from '../../../lib/clientCollections'
 
 interface IMOSStatusProps {
 	lastUpdate: Time

@@ -28,11 +28,7 @@ import {
 	unprotectString,
 } from '../../lib/lib'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import {
-	PeripheralDevices,
-	PeripheralDevice,
-	PERIPHERAL_SUBTYPE_PROCESS,
-} from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
 import { Timeline, TimelineComplete } from '../../lib/collections/Timeline'
 import { PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
@@ -86,6 +82,7 @@ import {
 	PackageContainerPackageStatuses,
 	PackageInfos,
 	PeripheralDeviceCommands,
+	PeripheralDevices,
 	RundownPlaylists,
 } from '../serverCollections'
 

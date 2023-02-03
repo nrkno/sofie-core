@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import {
 	PeripheralDevice,
-	PeripheralDevices,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '../../../lib/collections/PeripheralDevices'
@@ -34,6 +33,7 @@ import { StatusCodePill } from './StatusCodePill'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 import { SchemaForm } from '../../lib/forms/schemaForm'
+import { PeripheralDevices } from '../../../lib/clientCollections'
 
 interface IDeviceItemProps {
 	// key: string,

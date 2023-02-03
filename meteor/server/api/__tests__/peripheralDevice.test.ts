@@ -3,7 +3,6 @@ import { Meteor } from 'meteor/meteor'
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
-	PeripheralDevices,
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
 import { Segments } from '../../../lib/collections/Segments'
@@ -56,6 +55,7 @@ import {
 	MediaWorkFlowSteps,
 	Parts,
 	PeripheralDeviceCommands,
+	PeripheralDevices,
 	RundownPlaylists,
 	Rundowns,
 } from '../../serverCollections'

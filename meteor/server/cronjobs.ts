@@ -1,6 +1,14 @@
-import { IngestDataCache, PackageInfos, PartInstances, Parts, RundownPlaylists, Rundowns } from './serverCollections'
+import {
+	IngestDataCache,
+	PackageInfos,
+	PartInstances,
+	Parts,
+	PeripheralDevices,
+	RundownPlaylists,
+	Rundowns,
+} from './serverCollections'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
+import { PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
 import { getCurrentTime, stringifyError, waitForPromiseAll } from '../lib/lib'
 import { logger } from './logging'

@@ -3,7 +3,6 @@ import { check } from '../../lib/check'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { Studios, DBStudio, getActiveRoutes, getRoutedMappings, RoutedMappings } from '../../lib/collections/Studios'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
 import { MediaObject } from '../../lib/collections/MediaObjects'
@@ -34,6 +33,7 @@ import {
 	PackageContainerPackageStatuses,
 	PackageContainerStatuses,
 	PackageInfos,
+	PeripheralDevices,
 } from '../serverCollections'
 
 meteorPublish(PubSub.studios, async function (selector0, token) {

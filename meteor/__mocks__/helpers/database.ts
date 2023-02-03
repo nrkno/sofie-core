@@ -1,6 +1,5 @@
 import * as _ from 'underscore'
 import {
-	PeripheralDevices,
 	PeripheralDevice,
 	PeripheralDeviceType,
 	PeripheralDeviceCategory,
@@ -87,6 +86,7 @@ import {
 import {
 	AdLibPieces,
 	Parts,
+	PeripheralDevices,
 	RundownPlaylists,
 	Rundowns,
 	Workers,

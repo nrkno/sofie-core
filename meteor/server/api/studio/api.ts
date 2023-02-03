@@ -11,10 +11,10 @@ import {
 	MediaObjects,
 	PackageContainerPackageStatuses,
 	PackageInfos,
+	PeripheralDevices,
 	RundownPlaylists,
 	Rundowns,
 } from '../../serverCollections'
-import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { MethodContextAPI, MethodContext } from '../../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../../security/organization'
 import { Timeline } from '../../../lib/collections/Timeline'

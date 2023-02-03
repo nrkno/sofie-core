@@ -1,7 +1,6 @@
 import { ProtectedString, getCurrentTime, getCollectionKey } from '../../lib/lib'
 import { CollectionCleanupResult } from '../../lib/api/system'
 import { MongoQuery } from '../../lib/typings/meteor'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { Pieces } from '../../lib/collections/Pieces'
 import { RundownBaselineAdLibActions } from '../../lib/collections/RundownBaselineAdLibActions'
 import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
@@ -50,6 +49,7 @@ import {
 	PartInstances,
 	Parts,
 	PeripheralDeviceCommands,
+	PeripheralDevices,
 	RundownBaselineObjs,
 	RundownPlaylists,
 	Rundowns,

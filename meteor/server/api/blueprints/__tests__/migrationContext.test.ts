@@ -4,7 +4,6 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
-	PeripheralDevices,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '../../../../lib/collections/PeripheralDevices'
@@ -34,6 +33,7 @@ import {
 	applyAndValidateOverrides,
 	wrapDefaultObject,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { PeripheralDevices } from '../../../serverCollections'
 
 describe('Test blueprint migrationContext', () => {
 	beforeAll(async () => {

@@ -8,15 +8,12 @@ import { logNotAllowed } from './lib/lib'
 import { allowAccessToRundown } from './lib/security'
 import { Segments, DBSegment } from '../../lib/collections/Segments'
 import { ExpectedMediaItem } from '../../lib/collections/ExpectedMediaItems'
-import {
-	PeripheralDevices,
-	getStudioIdFromDevice,
-	PeripheralDeviceType,
-	PeripheralDevice,
-} from '../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { ExpectedPlayoutItem } from '../../lib/collections/ExpectedPlayoutItems'
 import { Settings } from '../../lib/Settings'
 import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDevices } from '../serverCollections'
+import { getStudioIdFromDevice } from '../api/studio/lib'
 
 export namespace RundownReadAccess {
 	/** Check for read access to the rundown collection */

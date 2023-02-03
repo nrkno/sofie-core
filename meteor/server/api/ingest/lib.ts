@@ -1,11 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { getHash, getCurrentTime, protectString, stringifyError } from '../../../lib/lib'
-import {
-	PeripheralDevice,
-	PeripheralDevices,
-	getStudioIdFromDevice,
-	PeripheralDeviceCategory,
-} from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceCategory } from '../../../lib/collections/PeripheralDevices'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
@@ -22,6 +17,8 @@ import {
 	SegmentId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDevices } from '../../serverCollections'
+import { getStudioIdFromDevice } from '../studio/lib'
 
 /**
  * Run an ingest operation via the worker.

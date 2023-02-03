@@ -5,11 +5,7 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { NavLink, useLocation } from 'react-router-dom'
 
 import { DBStudio, Studio, Studios } from '../../../lib/collections/Studios'
-import {
-	PeripheralDevice,
-	PeripheralDevices,
-	PERIPHERAL_SUBTYPE_PROCESS,
-} from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '../../../lib/collections/PeripheralDevices'
 
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 
@@ -24,7 +20,7 @@ import { Settings as MeteorSettings } from '../../../lib/Settings'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { TFunction, useTranslation } from 'react-i18next'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { Blueprints } from '../../../lib/clientCollections'
+import { Blueprints, PeripheralDevices } from '../../../lib/clientCollections'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 interface ISettingsMenuProps {
