@@ -3,7 +3,6 @@ import * as _ from 'underscore'
 import { ISourceLayer, NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Segments } from '../../../lib/collections/Segments'
 import {
 	IOutputLayerExtended,
 	ISourceLayerExtended,
@@ -16,7 +15,6 @@ import { equalSets } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { Part } from '../../../lib/collections/Parts'
 import { slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
@@ -37,6 +35,7 @@ import {
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { PieceInstances, Segments } from '../../../lib/clientCollections'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */

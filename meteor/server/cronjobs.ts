@@ -4,6 +4,7 @@ import {
 	PartInstances,
 	Parts,
 	PeripheralDevices,
+	PieceInstances,
 	RundownPlaylists,
 	Rundowns,
 } from './serverCollections'
@@ -22,7 +23,6 @@ import { QueueStudioJob } from './worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { fetchStudioIds } from '../lib/collections/optimizations'
 import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
-import { PieceInstances } from '../lib/collections/PieceInstances'
 import { deferAsync } from '@sofie-automation/corelib/dist/lib'
 import { getRemovedPackageInfos } from './api/studio/lib'
 

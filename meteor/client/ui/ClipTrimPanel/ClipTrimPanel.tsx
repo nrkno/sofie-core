@@ -2,7 +2,7 @@ import * as React from 'react'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Pieces, Piece } from '../../../lib/collections/Pieces'
+import { Piece } from '../../../lib/collections/Pieces'
 import { PubSub } from '../../../lib/api/pubsub'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { VideoEditMonitor } from './VideoEditMonitor'
@@ -14,7 +14,7 @@ import Tooltip from 'rc-tooltip'
 import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 import { PartId, PieceId, RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MediaObjects } from '../../../lib/clientCollections'
+import { MediaObjects, Pieces } from '../../../lib/clientCollections'
 
 export interface IProps {
 	pieceId: PieceId

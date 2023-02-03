@@ -44,7 +44,7 @@ import { IngestRundown, VTContent } from '@sofie-automation/blueprints-integrati
 import { MongoQuery } from '../../lib/typings/meteor'
 import { importIngestRundown } from './ingest/http'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { Settings } from '../../lib/Settings'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
@@ -83,6 +83,7 @@ import {
 	PackageInfos,
 	PeripheralDeviceCommands,
 	PeripheralDevices,
+	RundownLayouts,
 	RundownPlaylists,
 } from '../serverCollections'
 

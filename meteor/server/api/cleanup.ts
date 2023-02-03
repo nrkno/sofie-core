@@ -1,19 +1,13 @@
 import { ProtectedString, getCurrentTime, getCollectionKey } from '../../lib/lib'
 import { CollectionCleanupResult } from '../../lib/api/system'
 import { MongoQuery } from '../../lib/typings/meteor'
-import { Pieces } from '../../lib/collections/Pieces'
-import { RundownBaselineAdLibActions } from '../../lib/collections/RundownBaselineAdLibActions'
-import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
-import { RundownLayouts } from '../../lib/collections/RundownLayouts'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Snapshots } from '../../lib/collections/Snapshots'
 import { Studios } from '../../lib/collections/Studios'
 import { Timeline } from '../../lib/collections/Timeline'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
-import { PieceInstances } from '../../lib/collections/PieceInstances'
 import { getActiveRundownPlaylistsInStudioFromDb, getRemovedPackageInfos } from './studio/lib'
 import { Settings } from '../../lib/Settings'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
@@ -50,9 +44,15 @@ import {
 	Parts,
 	PeripheralDeviceCommands,
 	PeripheralDevices,
+	PieceInstances,
+	Pieces,
+	RundownBaselineAdLibActions,
+	RundownBaselineAdLibPieces,
 	RundownBaselineObjs,
+	RundownLayouts,
 	RundownPlaylists,
 	Rundowns,
+	Segments,
 } from '../serverCollections'
 
 export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Promise<CollectionCleanupResult | string> {

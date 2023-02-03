@@ -11,7 +11,11 @@ import { PackageContainerPackageStatusDB } from '@sofie-automation/corelib/dist/
 import { PackageContainerStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerStatus'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
+import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
@@ -29,6 +33,8 @@ import { DBOrganization } from '../lib/collections/Organization'
 import { PartInstance } from '../lib/collections/PartInstances'
 import { Part } from '../lib/collections/Parts'
 import { PeripheralDevice } from '../lib/collections/PeripheralDevices'
+import { RundownLayoutBase } from '../lib/collections/RundownLayouts'
+import { Segment } from '../lib/collections/Segments'
 import { WorkerStatus } from '../lib/collections/Workers'
 import { registerIndex } from '../lib/database'
 import { getCurrentTime } from '../lib/lib'
@@ -267,9 +273,58 @@ registerIndex(PeripheralDevices, {
 	token: 1,
 })
 
+export const PieceInstances = createAsyncMongoCollection<PieceInstance>(CollectionName.PieceInstances)
+registerIndex(PieceInstances, {
+	rundownId: 1,
+	partInstanceId: 1,
+	reset: -1,
+})
+registerIndex(PieceInstances, {
+	rundownId: 1,
+	playlistActivationId: 1,
+	partInstanceId: 1,
+	reset: -1,
+})
+
+export const Pieces = createAsyncMongoCollection<Piece>(CollectionName.Pieces)
+registerIndex(Pieces, {
+	startRundownId: 1,
+	startSegmentId: 1,
+	startPartId: 1,
+})
+registerIndex(Pieces, {
+	startRundownId: 1,
+	startPartId: 1,
+})
+
+export const RundownBaselineAdLibActions = createAsyncMongoCollection<RundownBaselineAdLibAction>(
+	CollectionName.RundownBaselineAdLibActions
+)
+registerIndex(RundownBaselineAdLibActions, {
+	rundownId: 1,
+})
+
+export const RundownBaselineAdLibPieces = createAsyncMongoCollection<RundownBaselineAdLibItem>(
+	CollectionName.RundownBaselineAdLibPieces
+)
+registerIndex(RundownBaselineAdLibPieces, {
+	rundownId: 1,
+})
+
 export const RundownBaselineObjs = createAsyncMongoCollection<RundownBaselineObj>(CollectionName.RundownBaselineObjects)
 registerIndex(RundownBaselineObjs, {
 	rundownId: 1,
+})
+
+export const RundownLayouts = createAsyncMongoCollection<RundownLayoutBase>(CollectionName.RundownLayouts)
+// addIndex(RundownLayouts, {
+// 	studioId: 1,
+// 	collectionId: 1,
+// 	objId: 1,
+// 	mediaId: 1
+// })
+registerIndex(RundownLayouts, {
+	showStyleBaseId: 1,
 })
 
 export const Rundowns = createAsyncMongoCollection<DBRundown>(CollectionName.Rundowns)
@@ -284,6 +339,12 @@ export const RundownPlaylists = createAsyncMongoCollection<DBRundownPlaylist>(Co
 registerIndex(RundownPlaylists, {
 	studioId: 1,
 	activationId: 1,
+})
+
+export const Segments = createAsyncMongoCollection<Segment>(CollectionName.Segments)
+registerIndex(Segments, {
+	rundownId: 1,
+	_rank: 1,
 })
 
 export const Workers = createAsyncMongoCollection<WorkerStatus>(CollectionName.Workers)

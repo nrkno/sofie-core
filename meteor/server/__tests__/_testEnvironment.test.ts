@@ -4,8 +4,6 @@ import { MongoMock } from '../../__mocks__/mongo'
 import { waitForPromise, protectString, waitTime, getRandomString } from '../../lib/lib'
 import { testInFiber } from '../../__mocks__/helpers/jest'
 import { CoreSystem } from '../../lib/collections/CoreSystem'
-import { Pieces } from '../../lib/collections/Pieces'
-import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import {
 	AdLibPieces,
 	Blueprints,
@@ -19,10 +17,12 @@ import {
 	Parts,
 	PeripheralDeviceCommands,
 	PeripheralDevices,
+	Pieces,
+	RundownBaselineAdLibPieces,
 	RundownBaselineObjs,
 	Rundowns,
+	Segments,
 } from '../serverCollections'
-import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Snapshots } from '../../lib/collections/Snapshots'

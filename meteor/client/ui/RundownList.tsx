@@ -12,7 +12,7 @@ import { MeteorCall } from '../../lib/api/methods'
 import { PubSub } from '../../lib/api/pubsub'
 import { StatusResponse } from '../../lib/api/systemStatus'
 import { GENESIS_SYSTEM_VERSION, getCoreSystem, ICoreSystem } from '../../lib/collections/CoreSystem'
-import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
+import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../lib/collections/Rundowns'
 import { getAllowConfigure, getHelpMode } from '../lib/localStorage'
@@ -34,7 +34,7 @@ import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { UIShowStyleBases, UIStudios } from './Collections'
 import { RundownId, RundownPlaylistId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylists, Rundowns } from '../../lib/clientCollections'
+import { RundownLayouts, RundownPlaylists, Rundowns } from '../../lib/clientCollections'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',

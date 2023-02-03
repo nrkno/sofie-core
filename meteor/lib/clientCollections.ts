@@ -9,6 +9,8 @@ import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataMode
 import { PackageContainerPackageStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 import { PackageContainerStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerStatus'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
@@ -23,6 +25,10 @@ import { PartInstance } from './collections/PartInstances'
 import { Part } from './collections/Parts'
 import { PeripheralDeviceCommand } from './collections/PeripheralDeviceCommands'
 import { PeripheralDevice } from './collections/PeripheralDevices'
+import { RundownBaselineAdLibAction } from './collections/RundownBaselineAdLibActions'
+import { RundownBaselineAdLibItem } from './collections/RundownBaselineAdLibPieces'
+import { RundownLayoutBase } from './collections/RundownLayouts'
+import { Segment } from './collections/Segments'
 
 export const AdLibActions = createSyncReadOnlyMongoCollection<AdLibAction>(CollectionName.AdLibActions)
 
@@ -80,6 +86,22 @@ export const PeripheralDeviceCommands = createSyncMongoCollection<PeripheralDevi
 
 export const PeripheralDevices = createSyncMongoCollection<PeripheralDevice>(CollectionName.PeripheralDevices)
 
+export const PieceInstances = createSyncReadOnlyMongoCollection<PieceInstance>(CollectionName.PieceInstances)
+
+export const Pieces = createSyncReadOnlyMongoCollection<Piece>(CollectionName.Pieces)
+
+export const RundownBaselineAdLibActions = createSyncReadOnlyMongoCollection<RundownBaselineAdLibAction>(
+	CollectionName.RundownBaselineAdLibActions
+)
+
+export const RundownBaselineAdLibPieces = createSyncReadOnlyMongoCollection<RundownBaselineAdLibItem>(
+	CollectionName.RundownBaselineAdLibPieces
+)
+
+export const RundownLayouts = createSyncMongoCollection<RundownLayoutBase>(CollectionName.RundownLayouts)
+
 export const Rundowns = createSyncReadOnlyMongoCollection<DBRundown>(CollectionName.Rundowns)
 
 export const RundownPlaylists = createSyncReadOnlyMongoCollection<DBRundownPlaylist>(CollectionName.RundownPlaylists)
+
+export const Segments = createSyncReadOnlyMongoCollection<Segment>(CollectionName.Segments)

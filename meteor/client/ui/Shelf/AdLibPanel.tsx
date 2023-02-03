@@ -25,10 +25,7 @@ import {
 	RundownLayoutFilterBase,
 	DashboardLayoutFilter,
 } from '../../../lib/collections/RundownLayouts'
-import {
-	RundownBaselineAdLibItem,
-	RundownBaselineAdLibPieces,
-} from '../../../lib/collections/RundownBaselineAdLibPieces'
+import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { literal, unprotectString, protectString } from '../../../lib/lib'
 import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
 import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../../lib/collections/PartInstances'
@@ -37,10 +34,7 @@ import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibAction } from '../../../lib/collections/AdLibActions'
 import { RundownUtils } from '../../lib/rundown'
 import { ShelfTabs } from './Shelf'
-import {
-	RundownBaselineAdLibActions,
-	RundownBaselineAdLibAction,
-} from '../../../lib/collections/RundownBaselineAdLibActions'
+import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, {
 	RundownViewEvents,
@@ -58,7 +52,13 @@ import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIStudio } from '../../../lib/api/studios'
 import { UIStudios } from '../Collections'
 import { PartId, PartInstanceId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { AdLibActions, AdLibPieces, PartInstances } from '../../../lib/clientCollections'
+import {
+	AdLibActions,
+	AdLibPieces,
+	PartInstances,
+	RundownBaselineAdLibActions,
+	RundownBaselineAdLibPieces,
+} from '../../../lib/clientCollections'
 
 export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined

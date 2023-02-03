@@ -63,7 +63,6 @@ import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
 import {
-	RundownLayouts,
 	RundownLayoutType,
 	RundownLayoutBase,
 	RundownViewLayout,
@@ -131,7 +130,14 @@ import {
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { Buckets, Parts, PeripheralDevices, RundownPlaylists, Rundowns } from '../../lib/clientCollections'
+import {
+	Buckets,
+	Parts,
+	PeripheralDevices,
+	RundownLayouts,
+	RundownPlaylists,
+	Rundowns,
+} from '../../lib/clientCollections'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03

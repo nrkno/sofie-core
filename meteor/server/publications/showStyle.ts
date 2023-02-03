@@ -2,12 +2,13 @@ import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
-import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { ShowStyleReadAccess } from '../security/showStyle'
 import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/collections/lib'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
+import { RundownLayouts } from '../serverCollections'
 
 meteorPublish(PubSub.showStyleBases, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<ShowStyleBase>(this.userId, selector0, token)

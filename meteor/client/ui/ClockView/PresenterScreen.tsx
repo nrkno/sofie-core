@@ -15,17 +15,11 @@ import { PieceIconContainer } from '../PieceIcons/PieceIcon'
 import { PieceNameContainer } from '../PieceIcons/PieceName'
 import { Timediff } from './Timediff'
 import { RundownUtils } from '../../lib/rundown'
-import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { Part } from '../../../lib/collections/Parts'
 import { PieceCountdownContainer } from '../PieceIcons/PieceCountdown'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
-import {
-	DashboardLayout,
-	RundownLayoutBase,
-	RundownLayoutPresenterView,
-	RundownLayouts,
-} from '../../../lib/collections/RundownLayouts'
+import { DashboardLayout, RundownLayoutBase, RundownLayoutPresenterView } from '../../../lib/collections/RundownLayouts'
 import {
 	RundownId,
 	RundownLayoutId,
@@ -43,7 +37,7 @@ import { getPlaylistTimingDiff } from '../../lib/rundownTiming'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIShowStyleBases, UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
-import { RundownPlaylists, Rundowns } from '../../../lib/clientCollections'
+import { PieceInstances, RundownLayouts, RundownPlaylists, Rundowns } from '../../../lib/clientCollections'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>

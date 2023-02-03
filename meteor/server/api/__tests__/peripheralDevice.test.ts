@@ -5,8 +5,7 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
-import { Segments } from '../../../lib/collections/Segments'
-import { EmptyPieceTimelineObjectsBlob, Pieces, PieceStatusCode } from '../../../lib/collections/Pieces'
+import { EmptyPieceTimelineObjectsBlob, PieceStatusCode } from '../../../lib/collections/Pieces'
 import {
 	getCurrentTime,
 	literal,
@@ -56,8 +55,10 @@ import {
 	Parts,
 	PeripheralDeviceCommands,
 	PeripheralDevices,
+	Pieces,
 	RundownPlaylists,
 	Rundowns,
+	Segments,
 } from '../../serverCollections'
 
 const DEBUG = false

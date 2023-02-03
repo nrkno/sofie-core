@@ -17,7 +17,7 @@ import { CoreSystem, ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSy
 import * as lib from '../../lib/lib'
 import { DBPart } from '../../lib/collections/Parts'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
+import { PieceInstance } from '../../lib/collections/PieceInstances'
 import { Meteor } from 'meteor/meteor'
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import {
@@ -46,6 +46,7 @@ import {
 	Parts,
 	PeripheralDeviceCommands,
 	PeripheralDevices,
+	PieceInstances,
 	Rundowns,
 } from '../serverCollections'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'

@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { logNotAllowed } from './lib/lib'
 import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
-import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { MongoQuery, MongoQueryKey } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { allowAccessToShowStyleBase, allowAccessToShowStyleVariant } from './lib/security'
@@ -20,6 +20,7 @@ import {
 	TriggeredActionId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownLayouts } from '../serverCollections'
 
 export interface ShowStyleContentAccess {
 	userId: UserId | null

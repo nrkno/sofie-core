@@ -11,11 +11,11 @@ import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/col
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { findPieceInstanceToShowFromInstances, IFoundPieceInstance } from '../PieceIcons/utils'
 import { pieceIconSupportedLayers } from '../PieceIcons/PieceIcon'
 import { RundownUtils } from '../../lib/rundown'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { PieceInstances } from '../../../lib/clientCollections'
 
 interface IPartNamePanelProps {
 	visible?: boolean

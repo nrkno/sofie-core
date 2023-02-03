@@ -2,12 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from '../../lib/api/rundownLayouts'
-import {
-	RundownLayouts,
-	RundownLayoutType,
-	RundownLayoutBase,
-	CustomizableRegions,
-} from '../../lib/collections/RundownLayouts'
+import { RundownLayoutType, RundownLayoutBase, CustomizableRegions } from '../../lib/collections/RundownLayouts'
 import { literal, getRandomId, protectString } from '../../lib/lib'
 import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
@@ -16,6 +11,7 @@ import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { PickerPOST, PickerGET } from './http'
 import { fetchShowStyleBaseLight } from '../../lib/collections/optimizations'
 import { BlueprintId, RundownLayoutId, ShowStyleBaseId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownLayouts } from '../serverCollections'
 
 export async function createRundownLayout(
 	name: string,

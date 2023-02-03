@@ -11,9 +11,10 @@ import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { Segment, Segments } from '../../../lib/collections/Segments'
+import { Segment } from '../../../lib/collections/Segments'
 import { dashboardElementStyle } from './DashboardPanel'
-import { PartInstances } from '../../../lib/clientCollections'
+import { PartInstances, Segments } from '../../../lib/clientCollections'
+
 interface INextInfoPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase

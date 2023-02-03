@@ -1,10 +1,10 @@
 import * as _ from 'underscore'
-import { Pieces, Piece } from './collections/Pieces'
+import { Piece } from './collections/Pieces'
 import { IOutputLayer, ISourceLayer, ITranslatableMessage } from '@sofie-automation/blueprints-integration'
 import { DBSegment, Segment } from './collections/Segments'
 import { DBPart } from './collections/Parts'
 import { PartInstance, wrapPartToTemporaryInstance } from './collections/PartInstances'
-import { PieceInstance, PieceInstances } from './collections/PieceInstances'
+import { PieceInstance } from './collections/PieceInstances'
 import {
 	getPieceInstancesForPart,
 	buildPiecesStartingInThisPartQuery,
@@ -26,6 +26,7 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PieceInstances, Pieces } from './clientCollections'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */

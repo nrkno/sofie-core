@@ -8,14 +8,14 @@ import {
 	sortSegmentsInRundowns,
 } from '@sofie-automation/corelib/dist/playout/playlist'
 import { Rundown, DBRundown } from './Rundowns'
-import { Segments, Segment, DBSegment } from './Segments'
+import { Segment, DBSegment } from './Segments'
 import { Part, DBPart } from './Parts'
 import { PartInstance } from './PartInstances'
 import { FindOptions } from './lib'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { PartInstances, Parts, Rundowns } from '../clientCollections'
+import { PartInstances, Parts, Rundowns, Segments } from '../clientCollections'
 export { DBRundownPlaylist }
 
 /** Note: Use RundownPlaylist instead */

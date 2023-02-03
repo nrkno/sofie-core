@@ -5,7 +5,6 @@ import { Meteor } from 'meteor/meteor'
 import { ShowStyleBases, ShowStyleBase, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { protectString, getRandomId, omit } from '../../lib/lib'
-import { RundownLayouts } from '../../lib/collections/RundownLayouts'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
@@ -18,6 +17,7 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 import { OrganizationId, ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownLayouts } from '../serverCollections'
 
 export interface ShowStyleCompound extends Omit<DBShowStyleBase, 'blueprintConfigWithOverrides'> {
 	showStyleVariantId: ShowStyleVariantId

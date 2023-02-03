@@ -3,10 +3,10 @@ import * as _ from 'underscore'
 import { ScriptContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylistCollectionUtil } from '../collections/RundownPlaylists'
 import { normalizeArrayToMap, protectString } from '../lib'
-import { Piece, Pieces } from '../collections/Pieces'
+import { Piece } from '../collections/Pieces'
 import { getPieceInstancesForPartInstance, getSegmentsWithPartInstances } from '../Rundown'
 import { FindOptions } from '../collections/lib'
-import { PieceInstance, PieceInstances } from '../collections/PieceInstances'
+import { PieceInstance } from '../collections/PieceInstances'
 import { Rundown } from '../collections/Rundowns'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 import { UIShowStyleBases } from '../../client/ui/Collections'
@@ -19,7 +19,7 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylists } from '../clientCollections'
+import { RundownPlaylists, PieceInstances, Pieces } from '../clientCollections'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 
 // export interface NewPrompterAPI {
