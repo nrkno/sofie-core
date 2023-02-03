@@ -1,4 +1,4 @@
 // Re-export to reduce dependency duplication
 export { Timecode } from 'timecode'
 
-export * as MOS from 'mos-connection'
+export { MOS } from '@sofie-automation/shared-lib/dist/mos'

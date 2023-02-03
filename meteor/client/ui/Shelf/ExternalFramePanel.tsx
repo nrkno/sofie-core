@@ -12,7 +12,7 @@ import { dashboardElementStyle } from './DashboardPanel'
 import { assertNever, getRandomString, literal, protectString } from '../../../lib/lib'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
-import { parseMosPluginMessageXml, MosPluginMessage, fixMosData } from '../../lib/parsers/mos/mosXml2Js'
+import { parseMosPluginMessageXml, MosPluginMessage } from '../../lib/parsers/mos/mosXml2Js'
 import {
 	createMosAppInfoXmlString,
 	UIMetric as MOSUIMetric,
@@ -29,6 +29,8 @@ import { check } from '../../../lib/check'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Buckets, Rundowns } from '../../../lib/clientCollections'
 import { BucketId, PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MOS_DATA_IS_STRICT } from '../../../lib/mos'
+import { getMosTypes, stringifyMosObject } from '@mos-connection/helper'
 
 const PackageInfo = require('../../../package.json')
 
@@ -219,6 +221,8 @@ export const ExternalFramePanel = withTranslation()(
 			}
 			const showStyleBaseId = targetRundown.showStyleBaseId
 
+			const mosTypes = getMosTypes(MOS_DATA_IS_STRICT)
+
 			doUserAction(t, e, UserAction.INGEST_BUCKET_ADLIB, (e, ts) =>
 				MeteorCall.userAction.bucketAdlibImport(
 					e,
@@ -226,10 +230,10 @@ export const ExternalFramePanel = withTranslation()(
 					targetBucket ? targetBucket._id : protectString(''),
 					showStyleBaseId,
 					literal<IngestAdlib>({
-						externalId: mosItem.ObjectID ? mosItem.ObjectID.toString() : '',
-						name: mosItem.ObjectSlug ? mosItem.ObjectSlug.toString() : '',
+						externalId: mosItem.ObjectID ? mosTypes.mosString128.stringify(mosItem.ObjectID) : '',
+						name: mosItem.ObjectSlug ? mosTypes.mosString128.stringify(mosItem.ObjectSlug) : '',
 						payloadType: 'MOS',
-						payload: fixMosData(mosItem),
+						payload: stringifyMosObject(mosItem, MOS_DATA_IS_STRICT),
 					})
 				)
 			)

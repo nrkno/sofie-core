@@ -1,6 +1,8 @@
-import { parseMosPluginMessageXml, fixMosData, generateMosPluginItemXml } from '../mosXml2Js'
+import { parseMosPluginMessageXml, generateMosPluginItemXml } from '../mosXml2Js'
 import { readFileSync } from 'fs'
 import { join } from 'path'
+import { MOS_DATA_IS_STRICT } from '../../../../../lib/mos'
+import { stringifyMosObject } from '@mos-connection/helper'
 
 describe('MOS XML to JavaScript object parser', () => {
 	describe('mosXml2Js', () => {
@@ -12,7 +14,7 @@ describe('MOS XML to JavaScript object parser', () => {
 
 			it('should match the json representation', () => {
 				const actual = parseMosPluginMessageXml(sample1XmlStr)
-				const actualJson = actual && fixMosData(actual.item) // Strip out any MosString etc
+				const actualJson = actual && actual.item && stringifyMosObject(actual.item, MOS_DATA_IS_STRICT) // Strip out any MosString etc
 
 				expect(actualJson).toEqual(jsonDoc)
 			})
@@ -20,7 +22,8 @@ describe('MOS XML to JavaScript object parser', () => {
 			it('converting via xml should be lossless', () => {
 				const generatedXml = generateMosPluginItemXml(jsonDoc)
 				const actual = parseMosPluginMessageXml(generatedXml)
-				const actualJson = actual && fixMosData(actual.item) // Strip out any MosString etc
+				const actualJson =
+					actual && actual.item && actual.item && stringifyMosObject(actual.item, MOS_DATA_IS_STRICT) // Strip out any MosString etc
 
 				expect(actualJson).toEqual(jsonDoc)
 			})
@@ -34,7 +37,7 @@ describe('MOS XML to JavaScript object parser', () => {
 
 			it('should match the json representation', () => {
 				const actual = parseMosPluginMessageXml(sampleXmlStr)
-				const actualJson = actual && fixMosData(actual.item) // Strip out any MosString etc
+				const actualJson = actual && actual.item && stringifyMosObject(actual.item, MOS_DATA_IS_STRICT) // Strip out any MosString etc
 
 				expect(actualJson).toEqual(jsonDoc)
 			})
@@ -42,7 +45,7 @@ describe('MOS XML to JavaScript object parser', () => {
 			it('converting via xml should be lossless', () => {
 				const generatedXml = generateMosPluginItemXml(jsonDoc)
 				const actual = parseMosPluginMessageXml(generatedXml)
-				const actualJson = actual && fixMosData(actual.item) // Strip out any MosString etc
+				const actualJson = actual && actual.item && stringifyMosObject(actual.item, MOS_DATA_IS_STRICT) // Strip out any MosString etc
 
 				expect(actualJson).toEqual(jsonDoc)
 			})
