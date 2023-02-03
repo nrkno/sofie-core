@@ -1,7 +1,7 @@
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { Meteor } from 'meteor/meteor'
-import { Blueprints } from '../../lib/collections/Blueprints'
+import { Blueprints } from '../serverCollections'
 import { ObserveChangesHelper } from '../../lib/collections/lib'
 import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'

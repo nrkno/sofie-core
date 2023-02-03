@@ -12,14 +12,15 @@ import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
 import { MongoCursor } from '../../../lib/collections/lib'
 import { DBPartInstance, PartInstances } from '../../../lib/collections/PartInstances'
-import { DBRundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { DBRundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { DBRundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundown } from '../../../lib/collections/Rundowns'
 import { DBShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { logger } from '../../logging'
 import { observerChain } from '../../publications/lib/observerChain'
 import { ContentCache } from './reactiveContentCache'
 import { RundownContentObserver } from './RundownContentObserver'
 import { RundownsObserver } from './RundownsObserver'
+import { RundownPlaylists, Rundowns } from '../../serverCollections'
 
 type ChangedHandler = (showStyleBaseId: ShowStyleBaseId, cache: ContentCache) => () => void
 

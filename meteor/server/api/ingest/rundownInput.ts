@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
-import { Rundowns } from '../../serverCollections'
+import { IngestDataCache, Rundowns } from '../../serverCollections'
 import { lazyIgnore, literal } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
@@ -12,7 +12,6 @@ import { MethodContext } from '../../../lib/api/methods'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
 import { Parts } from '../../../lib/collections/Parts'
-import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
 import { PeripheralDeviceId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export namespace RundownInput {

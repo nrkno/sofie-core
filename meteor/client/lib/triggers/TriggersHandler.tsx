@@ -34,7 +34,11 @@ import {
 	ShowStyleBaseId,
 	TriggeredActionId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MountedAdLibTrigger, MountedGenericTrigger } from '../../../lib/api/triggers/MountedTriggers'
+import {
+	MountedAdLibTrigger,
+	MountedGenericTrigger,
+	MountedHotkeyMixin,
+} from '../../../lib/api/triggers/MountedTriggers'
 import { isHotkeyTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
@@ -136,8 +140,12 @@ function getCurrentContext(): ReactivePlaylistActionContext | null {
 	return rundownPlaylistContext.get()
 }
 
-export const MountedAdLibTriggers = createInMemorySyncMongoCollection<MountedAdLibTrigger>('MountedAdLibTrigger')
-export const MountedGenericTriggers = createInMemorySyncMongoCollection<MountedGenericTrigger>('MountedGenericTrigger')
+export const MountedAdLibTriggers = createInMemorySyncMongoCollection<MountedAdLibTrigger & MountedHotkeyMixin>(
+	'MountedAdLibTrigger'
+)
+export const MountedGenericTriggers = createInMemorySyncMongoCollection<MountedGenericTrigger & MountedHotkeyMixin>(
+	'MountedGenericTrigger'
+)
 
 export function isMountedAdLibTrigger(
 	mountedTrigger: MountedAdLibTrigger | MountedGenericTrigger

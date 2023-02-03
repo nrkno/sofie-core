@@ -22,7 +22,7 @@ import { VariantListItem } from './VariantListItem'
 import { downloadBlob } from '../../../lib/downloadBlob'
 import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
-import { Blueprints } from '../../../../lib/collections/Blueprints'
+import { Blueprints } from '../../../../lib/clientCollections'
 
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase

@@ -15,7 +15,7 @@ import {
 	SourceLayersDoc,
 } from './reactiveContentCache'
 import { Pieces } from '../../../lib/collections/Pieces'
-import { Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundowns } from '../../serverCollections'
 import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { equivalentArrays, waitForPromise } from '../../../lib/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'

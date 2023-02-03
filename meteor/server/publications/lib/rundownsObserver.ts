@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import _ from 'underscore'
-import { Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundowns } from '../../serverCollections'
 
 const REACTIVITY_DEBOUNCE = 20
 
