@@ -1,6 +1,6 @@
 import { registerClassToMeteorMethods } from '../methods'
 import { StatusResponse, NewSystemStatusAPI, SystemStatusAPIMethods } from '../../lib/api/systemStatus'
-import { getSystemStatus } from './systemStatus'
+import { getDebugStates, getSystemStatus } from './systemStatus'
 import { ServerResponse, IncomingMessage } from 'http'
 import { PickerGET } from '../api/http'
 import { protectString } from '../../lib/lib'
@@ -8,6 +8,7 @@ import { protectString } from '../../lib/lib'
 import { Settings } from '../../lib/Settings'
 import { MethodContextAPI } from '../../lib/api/methods'
 import { profiler } from '../api/profiler'
+import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const apmNamespace = 'http'
 
@@ -48,6 +49,10 @@ function health(status: StatusResponse, res: ServerResponse) {
 class ServerSystemStatusAPI extends MethodContextAPI implements NewSystemStatusAPI {
 	async getSystemStatus() {
 		return getSystemStatus(this)
+	}
+
+	async getDebugStates(peripheralDeviceId: PeripheralDeviceId) {
+		return getDebugStates(this, peripheralDeviceId)
 	}
 }
 registerClassToMeteorMethods(SystemStatusAPIMethods, ServerSystemStatusAPI, false)

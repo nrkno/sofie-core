@@ -22,6 +22,12 @@ export const MOS_DEVICE_CONFIG_MANIFEST: DeviceConfigManifest = {
 			type: ConfigManifestEntryType.BOOLEAN,
 		},
 		{
+			id: 'strict',
+			name: '(Optional) Strict MOS data handling',
+			type: ConfigManifestEntryType.BOOLEAN,
+			hint: `When set, the MOS-connection will follow the MOS-specification literally (one example is that it wont accept certain strings that are longer than 128 characters)`,
+		},
+		{
 			id: 'devices',
 			name: 'Attached SubDevices',
 			type: ConfigManifestEntryType.TABLE,

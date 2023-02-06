@@ -12,7 +12,6 @@ import { IngestPlaylist, IngestRundown, IngestPart, IngestSegment } from './inge
 import { MediaObjectRevision, MediaWorkFlowRevision, MediaWorkFlowStepRevision } from './mediaManager'
 import {
 	IMOSRunningOrder,
-	MosString128,
 	IMOSRunningOrderBase,
 	IMOSRunningOrderStatus,
 	IMOSStoryStatus,
@@ -24,7 +23,8 @@ import {
 	IMOSROAction,
 	IMOSROReadyToAir,
 	IMOSROFullStory,
-} from './mos'
+} from '@mos-connection/model'
+import { IMOSString128 } from '@mos-connection/model'
 import { ExpectedPackageStatusAPI } from '../package-manager/package'
 import {
 	PeripheralDeviceInitOptions,
@@ -153,7 +153,7 @@ export interface NewPeripheralDeviceAPI {
 
 	mosRoCreate(deviceId: PeripheralDeviceId, deviceToken: string, mosRunningOrder: IMOSRunningOrder): Promise<void>
 	mosRoReplace(deviceId: PeripheralDeviceId, deviceToken: string, mosRunningOrder: IMOSRunningOrder): Promise<void>
-	mosRoDelete(deviceId: PeripheralDeviceId, deviceToken: string, mosRunningOrderId: MosString128): Promise<void>
+	mosRoDelete(deviceId: PeripheralDeviceId, deviceToken: string, mosRunningOrderId: IMOSString128): Promise<void>
 	mosRoMetadata(deviceId: PeripheralDeviceId, deviceToken: string, metadata: IMOSRunningOrderBase): Promise<void>
 	mosRoStatus(deviceId: PeripheralDeviceId, deviceToken: string, status: IMOSRunningOrderStatus): Promise<void>
 	mosRoStoryStatus(deviceId: PeripheralDeviceId, deviceToken: string, status: IMOSStoryStatus): Promise<void>
@@ -186,39 +186,39 @@ export interface NewPeripheralDeviceAPI {
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		Action: IMOSStoryAction,
-		Stories: Array<MosString128>
+		Stories: Array<IMOSString128>
 	): Promise<void>
 	mosRoItemMove(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		Action: IMOSItemAction,
-		Items: Array<MosString128>
+		Items: Array<IMOSString128>
 	): Promise<void>
 	mosRoStoryDelete(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		Action: IMOSROAction,
-		Stories: Array<MosString128>
+		Stories: Array<IMOSString128>
 	): Promise<void>
 	mosRoItemDelete(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		Action: IMOSStoryAction,
-		Items: Array<MosString128>
+		Items: Array<IMOSString128>
 	): Promise<void>
 	mosRoStorySwap(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		Action: IMOSROAction,
-		StoryID0: MosString128,
-		StoryID1: MosString128
+		StoryID0: IMOSString128,
+		StoryID1: IMOSString128
 	): Promise<void>
 	mosRoItemSwap(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		Action: IMOSStoryAction,
-		ItemID0: MosString128,
-		ItemID1: MosString128
+		ItemID0: IMOSString128,
+		ItemID1: IMOSString128
 	): Promise<void>
 	mosRoReadyToAir(deviceId: PeripheralDeviceId, deviceToken: string, Action: IMOSROReadyToAir): Promise<void>
 	mosRoFullStory(deviceId: PeripheralDeviceId, deviceToken: string, story: IMOSROFullStory): Promise<void>
@@ -368,6 +368,8 @@ export enum PeripheralDeviceAPIMethods {
 	'timelineTriggerTime' = 'peripheralDevice.timeline.setTimelineTriggerTime',
 
 	'playoutPlaybackChanged' = 'peripheralDevice.playout.playbackChanged',
+
+	'getDebugStates' = 'peripheralDevice.playout.getDebugStates',
 
 	// 'reportCommandError' = 'peripheralDevice.playout.reportCommandError',
 
