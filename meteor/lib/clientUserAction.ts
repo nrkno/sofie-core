@@ -108,6 +108,8 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Reording Rundowns in Playlist')
 		case UserAction.RUNDOWN_ORDER_RESET:
 			return t('Resetting Playlist to default order')
+		case UserAction.PERIPHERAL_DEVICE_REFRESH_DEBUG_STATES:
+			return t('Refreshing debug states')
 		default:
 			assertNever(userAction)
 	}
