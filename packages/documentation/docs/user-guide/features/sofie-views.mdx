@@ -54,19 +54,33 @@ Elements in the [Next point](#next-point) \(or beyond\) might be pre-loaded or "
 
 ### Storyboard Mode
 
-To the left side of the Zoom buttons, there's a button controlling the display style of a given Segment. The default display style of
-a Segment can be indicated by the [Blueprints](../concepts-and-architecture#blueprints), but the User can switch to
-a different mode at any time.
+In the top-right corner of the Segment, there's a button controlling the display style of a given Segment. The default display style of a Segment can be indicated by the [Blueprints](../concepts-and-architecture#blueprints), but the User can switch to a different mode at any time. You can also change the display mode of all Segments at once, using a button in the bottom-right corner of the Rundown View.
 
 ![Storyboard Mode](/img/docs/main/storyboard.png)
 
-The **_Storyboard_** mode is an alternative to the default **_Timeline_** mode. In Storyboard mode, the accurate placement in time of each Piece is not visualized, so that more Parts can be visualized at once. This can be particularly useful in Shows without very strict timing planning or where timing is not driven by the User, but rather some external factor; or in Shows where very long Parts are joined with very short ones: sports, events and debates. This mode also does not visualize the history of the playback: rather, it only shows what is currently On Air or is planned to go On Air.
+The **_Storyboard_** mode is an alternative to the default **_Timeline_** mode. In Storyboard mode, the accurate placement in time of each Piece is not visualized, so that more Parts can be visualized at once in a single row. This can be particularly useful in Shows without very strict timing planning or where timing is not driven by the User, but rather some external factor; or in Shows where very long Parts are joined with very short ones: sports, events and debates. This mode also does not visualize the history of the playback: rather, it only shows what is currently On Air or is planned to go On Air.
 
-Storyboard mode selects a "main" Piece of the Part, using the same logic as the [Presenter View](#presenter-view), and presents it with a big, hover-scrub-enabled thumbnail for easy preview. The countdown to freeze-frame is displayed in the top-right hand corner of the Thumbnail, once less than 10 seconds remain to freeze-frame. The Transition Piece is displayed on top of the thumbnail. Other Pieces are placed below the thumbnail, stacked in order of playback. After a Piece goes off-air, it will dissapear from the view.
+Storyboard mode selects a "main" Piece of the Part, using the same logic as the [Presenter View](#presenter-view), and presents it with a larger, hover-scrub-enabled Piece for easy preview. The countdown to freeze-frame is displayed in the top-right hand corner of the Thumbnail, once less than 10 seconds remain to freeze-frame. The Transition Piece is displayed on top of the thumbnail. Other Pieces are placed below the thumbnail, stacked in order of playback. After a Piece goes off-air, it will dissapear from the view.
 
 If no more Parts can be displayed in a given Segment, they are stacked in order on the right side of the Segment. The User can scroll through thse Parts by click-and-dragging the Storyboard area, or using the mouse wheel - `Alt`+Wheel, if only a vertical wheel is present in the mouse.
 
-All user interactions work in the Storyboard mode the same as in Timeline mode: Takes, AdLibs, Holds and moving the [Next Point](#next-point) around the Rundown.
+### List View Mode
+
+Another mode available to display a Segment is the List View. In this mode, each _Part_ and it's contents are being displayed as a mini-timeline and it's width is normalized to fit the screen, unless it's shorter than 30 seconds, in which case it will be scaled down accordingly.
+
+![List View Mode](/img/docs/main/list_view.png)
+
+In this mode, the focus is on the "main" Piece of the Part. Additional _Lower-Third_ content that is not spanning the entire Part (is not infinite) will be displayed on top of the main Piece. All other content can be displayed to the right of the mini-timeline as a set of indicators, one per every Layer. Clicking on those indicators will show a pop-up with the Pieces so that they can be investigated using _hover-scrub_. Indicators can be also shown for Ad-Libs assigned to a Part, for easier discovery by the User. Which Layers should be shown in the columns can be decided in the [Settings ● Layers](../configuration/settings-view#show-style) area. A special, larger indicator is reserved for the Script piece, which can be useful to display so-called _out-words_.
+
+If a Part has an _in-transition_ Piece, it will be displayed to the left of the Part's Take Point.
+
+This view is designed to be used in productions that are mixing pre-planned and timed segments with more free-flowing production or mixing short live in-camera links with longer pre-produced clips, while trying to keep as much of the show in the viewport as possible, at the expense of hiding some of the content from the User and the _duration_ of the Part on screen having no bearing on it's _width_. This mode also allows Sofie to visualize content _beyond_ the planned duration of a Part.
+
+:::info
+The Segment header area also shows the expected (planned) durations for all the Parts and will also show which Parts are sharing timing in a timing group using a *⌊* symbol in the place of a counter.
+:::
+
+All user interactions work in the Storyboard and List View mode the same as in Timeline mode: Takes, AdLibs, Holds and moving the [Next Point](#next-point) around the Rundown.
 
 ### Segment Header Countdowns
 
