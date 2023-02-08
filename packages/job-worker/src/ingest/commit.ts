@@ -243,7 +243,7 @@ export async function CommitIngestOperation(
 			}).map((segment) => segment._id)
 
 			// Do the segment removals
-			if (data.removedSegmentIds.length > 0 || segmentsChangedToHidden.length) {
+			{
 				const purgeSegmentIds = new Set<SegmentId>()
 				const orphanDeletedSegmentIds = new Set<SegmentId>()
 				const orphanHiddenSegmentIds = new Set<SegmentId>()

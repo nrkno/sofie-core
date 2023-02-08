@@ -2,6 +2,44 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.44.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.2-1...v1.44.2) (2023-01-27)
+
+
+### Bug Fixes
+
+* limit number of Package-related items to include in Rundown-snapshot ([6a1861f](https://github.com/nrkno/tv-automation-server-core/commit/6a1861fb64256874593ee714b52cc663b9bbdf80))
+
+### [1.44.2-1](https://github.com/nrkno/sofie-core/compare/v1.44.2-0...v1.44.2-1) (2023-01-23)
+
+
+### Features
+
+* push images to ghcr ([32f98f4](https://github.com/nrkno/sofie-core/commit/32f98f4c4e915242114bac9866ef52b176ddfc92))
+
+
+### Bug Fixes
+
+* check if a push to GHCR is even possible ([f463528](https://github.com/nrkno/sofie-core/commit/f463528245c41689820867881947c48eca231a02))
+* in the event of multiple tags they should all have the correct name ([056de09](https://github.com/nrkno/sofie-core/commit/056de09e22337b0d7be39abb093653e8c6811ac1))
+
+### [1.44.2-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.1...v1.44.2-0) (2023-01-11)
+
+
+### Bug Fixes
+
+* don't retry calls to storeRundownSnapshot upon a loss-of-connection ([bec6432](https://github.com/nrkno/tv-automation-server-core/commit/bec6432d91f7c39dea0c02aa408084df4f228a2b))
+
+### [1.44.1](///compare/v1.44.0...v1.44.1) (2022-11-28)
+
+
+### Bug Fixes
+
+* allow codecov upload to fail ([#776](undefined/undefined/undefined/issues/776)) e05e181
+* empty segment not being hidden 78607c9
+* hide 'set segment as next' when right clicking on a part f99b004
+* **setNextSegment:** next segment isn't selected when setNextSegment is called 521ce15
+* update supertimeline fad98b3
+
 ## [1.44.0](https://github.com/nrkno/sofie-core/compare/v1.44.0-in-testing.3...v1.44.0) (2022-10-24)
 
 ### [1.41.7](https://github.com/nrkno/sofie-core/compare/v1.41.6...v1.41.7) (2022-09-14)
