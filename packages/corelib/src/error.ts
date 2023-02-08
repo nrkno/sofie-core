@@ -45,6 +45,7 @@ export enum UserErrorMessage {
 	DisableNoPieceFound = 30,
 	TakeBlockedDuration = 31,
 	TakeFromIncorrectPart = 32,
+	RundownPlaylistNotFound = 33,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -89,42 +90,54 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.DisableNoPieceFound]: t(`Found no future pieces`),
 	[UserErrorMessage.TakeBlockedDuration]: t(`Cannot perform take for {{duration}}ms`),
 	[UserErrorMessage.TakeFromIncorrectPart]: t(`Ignoring take as playing part has changed since TAKE was requested.`),
+	[UserErrorMessage.RundownPlaylistNotFound]: t(`Rundown Playlist not found!`),
 }
 
 export class UserError {
+	public readonly errorCode: number
+
 	private constructor(
 		/** The raw Error that was thrown */
 		public readonly rawError: Error,
 		/** The UserErrorMessage key (for matching certain error) */
 		public readonly key: UserErrorMessage,
 		/** The translatable string for the key */
-		public readonly message: ITranslatableMessage
-	) {}
+		public readonly message: ITranslatableMessage,
+		/** Appropriate HTTP status code. Defaults to 500 for generic internal error. */
+		errorCode: number | undefined
+	) {
+		this.errorCode = errorCode ?? 500
+	}
 
 	public toString(): string {
 		return UserError.toJSON(this)
 	}
 
 	/** Create a UserError with a custom error for the log */
-	static from(err: Error, key: UserErrorMessage, args?: { [k: string]: any }): UserError {
-		return new UserError(err, key, { key: UserErrorMessagesTranslations[key], args })
+	static from(err: Error, key: UserErrorMessage, args?: { [k: string]: any }, errCode?: number): UserError {
+		return new UserError(err, key, { key: UserErrorMessagesTranslations[key], args }, errCode)
 	}
 	/** Create a UserError with a custom error for the log */
-	static fromUnknown(err: unknown, key: UserErrorMessage, args?: { [k: string]: any }): UserError {
+	static fromUnknown(
+		err: unknown,
+		key: UserErrorMessage,
+		args?: { [k: string]: any },
+		errorCode?: number
+	): UserError {
 		const err2 = err instanceof Error ? err : new Error(stringifyError(err))
-		return new UserError(err2, key, { key: UserErrorMessagesTranslations[key], args })
+		return new UserError(err2, key, { key: UserErrorMessagesTranslations[key], args }, errorCode)
 	}
 
 	/** Create a UserError duplicating the same error for the log */
-	static create(key: UserErrorMessage, args?: { [k: string]: any }): UserError {
-		return UserError.from(new Error(UserErrorMessagesTranslations[key]), key, args)
+	static create(key: UserErrorMessage, args?: { [k: string]: any }, errorCode?: number): UserError {
+		return UserError.from(new Error(UserErrorMessagesTranslations[key]), key, args, errorCode)
 	}
 
 	static tryFromJSON(str: string): UserError | undefined {
 		try {
 			const p = JSON.parse(str)
 			if (UserError.isUserError(p)) {
-				return new UserError(new Error(p.rawError.toString()), p.key, p.message)
+				return new UserError(new Error(p.rawError.toString()), p.key, p.message, p.errorCode)
 			} else {
 				return undefined
 			}
@@ -138,6 +151,7 @@ export class UserError {
 			rawError: stringifyError(e.rawError),
 			message: e.message,
 			key: e.key,
+			errorCode: e.errorCode,
 		})
 	}
 

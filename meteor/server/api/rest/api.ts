@@ -161,9 +161,19 @@ class ServerRestAPI implements RestAPI {
 			const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId, {
 				projection: { currentPartInstanceId: 1 },
 			})
-			if (!rundownPlaylist) throw new Error(`Rundown playlist ${rundownPlaylistId} does not exist`)
+			if (!rundownPlaylist)
+				return ClientAPI.responseError(
+					UserError.from(
+						new Error(`Rundown playlist does not exist`),
+						UserErrorMessage.RundownPlaylistNotFound
+					),
+					404
+				)
 			if (rundownPlaylist.currentPartInstanceId === null)
-				throw new Error(`No active Part in ${rundownPlaylistId}`)
+				return ClientAPI.responseError(
+					UserError.from(Error(`No active Part in ${rundownPlaylistId}`), UserErrorMessage.PartNotFound),
+					412
+				)
 
 			const result = await ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 				ServerRestAPI.getMethodContext(connection),
@@ -206,7 +216,8 @@ class ServerRestAPI implements RestAPI {
 			)
 		} else {
 			return ClientAPI.responseError(
-				UserError.from(new Error(`No adLib with Id ${adLibId}`), UserErrorMessage.AdlibNotFound)
+				UserError.from(new Error(`No adLib with Id ${adLibId}`), UserErrorMessage.AdlibNotFound),
+				412
 			)
 		}
 	}
@@ -411,9 +422,22 @@ class ServerRestAPI implements RestAPI {
 		sourceLayerId: string
 	): Promise<ClientAPI.ClientResponse<void>> {
 		const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
-		if (!rundownPlaylist) throw new Error(`Rundown playlist ${rundownPlaylistId} does not exist`)
+		if (!rundownPlaylist)
+			return ClientAPI.responseError(
+				UserError.from(
+					Error(`Rundown playlist ${rundownPlaylistId} does not exist`),
+					UserErrorMessage.RundownPlaylistNotFound
+				),
+				412
+			)
 		if (!rundownPlaylist.currentPartInstanceId || !rundownPlaylist.activationId)
-			throw new Error(`Rundown playlist ${rundownPlaylistId} is not currently active`)
+			return ClientAPI.responseError(
+				UserError.from(
+					new Error(`Rundown playlist ${rundownPlaylistId} is not currently active`),
+					UserErrorMessage.InactiveRundown
+				),
+				412
+			)
 
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			ServerRestAPI.getMethodContext(connection),
@@ -459,6 +483,30 @@ class ServerRestAPI implements RestAPI {
 
 const koaRouter = new KoaRouter()
 
+function extractErrorCode(e: unknown): number {
+	if (ClientAPI.isClientResponseError(e)) {
+		return e.errorCode
+	} else if (UserError.isUserError(e)) {
+		return e.errorCode
+	} else if ((e as Meteor.Error).error && typeof (e as Meteor.Error).error === 'number') {
+		return (e as Meteor.Error).error as number
+	} else {
+		return 500
+	}
+}
+
+function extractErrorMessage(e: unknown): string {
+	if (ClientAPI.isClientResponseError(e)) {
+		return translateMessage(e.error.message, interpollateTranslation)
+	} else if (UserError.isUserError(e)) {
+		return translateMessage(e.message, interpollateTranslation)
+	} else if ((e as Meteor.Error).reason && typeof (e as Meteor.Error).reason === 'string') {
+		return (e as Meteor.Error).reason as string
+	} else {
+		return (e as Error).message ?? 'Internal Server Error' // Fallback in case e is not an error type
+	}
+}
+
 async function sofieAPIRequest<Params, Body, Response>(
 	method: 'get' | 'post' | 'delete',
 	route: string,
@@ -480,17 +528,17 @@ async function sofieAPIRequest<Params, Body, Response>(
 				ctx.params as Params,
 				ctx.req.body as Body
 			)
-			if (ClientAPI.isClientResponseError(response)) throw response.error
+			if (ClientAPI.isClientResponseError(response)) throw response
 			ctx.body = response
 			ctx.status = 200
 		} catch (e) {
-			const errMsg = UserError.isUserError(e)
-				? translateMessage(e.message, interpollateTranslation)
-				: (e as Error).message
+			const errCode = extractErrorCode(e)
+			const errMsg = errCode === 500 ? 'Internal Server Error' : extractErrorMessage(e)
+
 			logger.error('POST activate failed - ' + errMsg)
 			ctx.type = 'application/json'
 			ctx.body = JSON.stringify({ message: errMsg })
-			ctx.status = 412
+			ctx.status = errCode
 		}
 		await next()
 	})

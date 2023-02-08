@@ -382,13 +382,13 @@ export async function startStickyPieceOnSourceLayer(
 			const playlist = cache.Playlist.doc
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
-				throw UserError.create(UserErrorMessage.DuringHold)
+				throw UserError.create(UserErrorMessage.DuringHold, undefined, 412)
 			}
-			if (!playlist.currentPartInstanceId) throw UserError.create(UserErrorMessage.NoCurrentPart)
+			if (!playlist.currentPartInstanceId) throw UserError.create(UserErrorMessage.NoCurrentPart, undefined, 412)
 		},
 		async (cache) => {
 			const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
-			if (!currentPartInstance) throw UserError.create(UserErrorMessage.NoCurrentPart)
+			if (!currentPartInstance) throw UserError.create(UserErrorMessage.NoCurrentPart, undefined, 412)
 
 			const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
 			if (!rundown) throw new Error(`Rundown "${currentPartInstance.rundownId}" not found!`)
@@ -410,7 +410,7 @@ export async function startStickyPieceOnSourceLayer(
 				sourceLayer.stickyOriginalOnly || false
 			)
 			if (!lastPieceInstance) {
-				throw UserError.create(UserErrorMessage.SourceLayerStickyNothingFound)
+				throw UserError.create(UserErrorMessage.SourceLayerStickyNothingFound, undefined, 412)
 			}
 
 			const lastPiece = convertPieceToAdLibPiece(context, lastPieceInstance.piece)

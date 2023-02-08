@@ -33,8 +33,8 @@ resources:
       responses:
         200:
           $ref: '#/components/responses/postSuccess'
-        412:
-          description: There is already an active Playlist for the studio that the Playlist belongs to.
+        404:
+          description: The specified Studio or route set does not exist.
           content:
             application/json:
               schema:
@@ -42,6 +42,8 @@ resources:
                 properties:
                   message:
                     type: string
+        500:
+          $ref: '#/components/responses/internalServerError'
 components:
   responses:
     postSuccess:
@@ -54,3 +56,21 @@ components:
               success:
                 type: number
                 example: 200
+    studioNotFound:
+      description: The specified Studio does not exist.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    internalServerError:
+      description: An error unlikely to be the fault of the caller has occurred.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
