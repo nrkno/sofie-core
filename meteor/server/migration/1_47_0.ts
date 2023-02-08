@@ -281,7 +281,7 @@ export const addSteps = addMigrationSteps('1.47.0', [
 		canBeRunAutomatically: true,
 		validate: () => {
 			const objects = TriggeredActions.find({
-				$or: [{ triggers: { $exists: false } }, { actions: { $exists: false } }],
+				$or: [{ triggers: { $exists: true } }, { actions: { $exists: true } }],
 			}).count()
 			if (objects > 0) {
 				return `object needs to be converted`
