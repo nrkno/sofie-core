@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { MeteorPromiseCall } from '../lib'
+import { MeteorPromiseApply } from '../lib'
 import { NewBlueprintAPI, BlueprintAPIMethods } from './blueprint'
 import { NewClientAPI, ClientAPIMethods } from './client'
 import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from './ExternalMessageQueue'
@@ -60,17 +60,28 @@ export const MeteorCall: IMeteorCall = {
 	studio: makeMethods(StudiosAPIMethods),
 	systemStatus: makeMethods(SystemStatusAPIMethods),
 	user: makeMethods(UserAPIMethods),
-	userAction: makeMethods(UserActionAPIMethods),
+	userAction: makeMethods(UserActionAPIMethods, ['storeRundownSnapshot']),
 	organization: makeMethods(OrganizationAPIMethods),
 	rundownNotifications: makeMethods(RundownNotificationsAPIMethods),
 	system: makeMethods(SystemAPIMethods),
 }
-function makeMethods(methods: object): any {
-	const o = {}
-	_.each(methods, (value: any, methodName: string) => {
-		o[methodName] = async (...args) => MeteorPromiseCall(value, ...args)
+function makeMethods<Enum extends { [key: string]: string }>(
+	methods: Enum,
+	/** (Optional) An array of methodnames. Calls to these methods won't be retried in the case of a loss-of-connection for the client. */
+	listOfMethodsThatShouldNotRetry?: (keyof Enum)[]
+): any {
+	const resultingMethods = {}
+	_.each(methods, (serverMethodName: any, methodName: string) => {
+		if (listOfMethodsThatShouldNotRetry?.includes(methodName)) {
+			resultingMethods[methodName] = async (...args) =>
+				MeteorPromiseApply(serverMethodName, args, {
+					noRetry: true,
+				})
+		} else {
+			resultingMethods[methodName] = async (...args) => MeteorPromiseApply(serverMethodName, args)
+		}
 	})
-	return o
+	return resultingMethods
 }
 export interface MethodContext extends Omit<Meteor.MethodThisType, 'userId'> {
 	userId: UserId | null

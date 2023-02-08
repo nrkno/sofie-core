@@ -27,6 +27,34 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * remove data-store dependency from server-core-integration ([#738](https://github.com/nrkno/tv-automation-server-core/issues/738)) ([d715108](https://github.com/nrkno/tv-automation-server-core/commit/d7151084e1d96fdcf575864a439fe7a74087d740))
 
 
+## [1.44.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.2-1...v1.44.2) (2023-01-27)
+
+**Note:** Version bump only for package @sofie-automation/server-core-integration
+
+
+
+
+
+## [1.44.2-1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.2-0...v1.44.2-1) (2023-01-23)
+
+**Note:** Version bump only for package @sofie-automation/server-core-integration
+
+
+
+
+
+## [1.44.2-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.1...v1.44.2-0) (2023-01-11)
+
+**Note:** Version bump only for package @sofie-automation/server-core-integration
+
+
+
+
+
+## [1.44.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.44.1) (2022-11-28)
+
+**Note:** Version bump only for package @sofie-automation/server-core-integration
+
 
 
 

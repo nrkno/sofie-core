@@ -1,4 +1,14 @@
+---
+sidebar_position: 100
+---
+
 # Media Manager
+
+:::caution
+
+Media Manager is deprecated and is not recommended for new deployments. There are known issues that won't be fixed and the API's it is using to interface with Sofie will be removed.
+
+:::
 
 The Media Manager handles the media, or files, that make up the rundown content. To install it, begin by downloading the latest release of [Media Manager from GitHub](https://github.com/nrkno/sofie-media-management/releases). You can now run the `media-manager.exe` file inside the extracted folder. A warning window may popup about the app being unrecognized. You can get around this by selecting _More Info_ and clicking _Run Anyways_. A terminal window will open and begin running the application. 
 
