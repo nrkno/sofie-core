@@ -114,7 +114,7 @@ From Release 30, the parameters for the pedal have a prefix: **pedal\_** \(i.e. 
 * `rangeNeutralMax` has to be greater than `rangeNeutralMin`
 * `rangeFwdMax` has to be greater than `rangeNeutralMax`
 
-![Yamaha FC7 mapped for both a forward \(80-127\) and backwards \(0-35\) range.](/img/docs/main/features/yamaha-fc7.png)
+![Yamaha FC7 mapped for both a forward \(80-127\) and backwards \(0-35\) range.](/img/docs/main/features/yamaha-fc7.jpg)
 
 The default values allow for both going forwards and backwards. This matches the _Yamaha FC7_ expression pedal. The default values create a forward-range from 80-127, a neutral zone from 35-80 and a reverse-range from 0-35.
 
@@ -162,7 +162,7 @@ From Release 30, the parameters for the JoyCon have a prefix: **joycon\_** \(i.e
 * `rangeNeutralMax` has to be greater than `rangeNeutralMin`
 * `rangeFwdMax` has to be greater than `rangeNeutralMax`
 
-![Nintendo Swith Joycons](/img/docs/main/features/nintendo-switch-joycons.png)
+![Nintendo Swith Joycons](/img/docs/main/features/nintendo-switch-joycons.jpg)
 
 You can turn on `?debug=1` to see how your input maps to an output.
 
