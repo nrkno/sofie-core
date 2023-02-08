@@ -15,6 +15,13 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 # [1.47.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.47.0-in-testing.6) (2023-01-16)
+# [1.46.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.1...v1.46.0-in-testing.2) (2023-01-06)
+
+
+**Note:** Version bump only for package playout-gateway
+
+
+# [1.46.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.0...v1.46.0-in-testing.1) (2022-11-30)
 
 **Note:** Version bump only for package playout-gateway
 
@@ -69,6 +76,34 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * adlib actions can set timeline datastore ([0cd2f62](https://github.com/nrkno/tv-automation-server-core/commit/0cd2f62ba1a079ea0cc5b17c13846ead26ae7a21))
 * tl datastore collection and testtool ([c4a7a17](https://github.com/nrkno/tv-automation-server-core/commit/c4a7a17bc0b4b7b2e5ff2af0f039d9674151d57f))
 
+
+## [1.44.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.2-1...v1.44.2) (2023-01-27)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+## [1.44.2-1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.2-0...v1.44.2-1) (2023-01-23)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+## [1.44.2-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.1...v1.44.2-0) (2023-01-11)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+## [1.44.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.44.1) (2022-11-28)
+
+**Note:** Version bump only for package playout-gateway
 
 
 
