@@ -41,10 +41,11 @@ export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<a
 	collection: Mongo.Collection<DBInterface>,
 	name: CollectionName
 ): MongoCollection<DBInterface> {
-	if (collectionsCache.has(name)) throw new Meteor.Error(500, `Collection "${name}" has already been created`)
-	collectionsCache.set(name, collection)
+	const wrapped = new WrappedMongoCollection<DBInterface>(collection, name)
 
-	return new WrappedMongoCollection<DBInterface>(collection, name)
+	registerClientCollection(name, wrapped)
+
+	return wrapped
 }
 
 /**

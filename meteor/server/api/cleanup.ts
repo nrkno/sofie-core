@@ -31,6 +31,7 @@ import {
 	MediaWorkFlowSteps,
 	Organizations,
 	PackageContainerPackageStatuses,
+	PackageContainerStatuses,
 	PackageInfos,
 	PartInstances,
 	Parts,
@@ -50,8 +51,12 @@ import {
 	Snapshots,
 	Studios,
 	Timeline,
+	TimelineDatastore,
+	TranslationsBundles,
 	TriggeredActions,
 	UserActionsLog,
+	Workers,
+	WorkerThreadStatuses,
 } from '../collections'
 import { AsyncMongoCollection } from '../collections/collection'
 import { getCollectionKey } from '../collections/lib'
@@ -293,6 +298,11 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 		ownedByStudioId(PackageContainerPackageStatuses)
 		ownedByDeviceId(PackageContainerPackageStatuses)
 	}
+	// PackageContainerStatuses
+	{
+		ownedByStudioId(PackageContainerStatuses)
+		ownedByDeviceId(PackageContainerStatuses)
+	}
 	// PackageInfos
 	{
 		ownedByStudioId(PackageInfos)
@@ -390,6 +400,17 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 			_id: { $nin: studioIds },
 		})
 	}
+	// TimelineDatastore
+	{
+		removeByQuery(TimelineDatastore, {
+			studioId: { $nin: studioIds },
+		})
+	}
+	// TranslationsBundles
+	{
+		// Not supported
+		addToResult(getCollectionKey(TranslationsBundles), 0)
+	}
 	// TriggeredActions
 	{
 		removeByQuery(TriggeredActions, {
@@ -405,6 +426,16 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 	// Users
 	{
 		addToResult(CollectionName.Users, 0) // Do nothing
+	}
+	// Workers
+	{
+		// Not supported
+		addToResult(getCollectionKey(Workers), 0)
+	}
+	// WorkerThreadStatuses
+	{
+		// Not supported
+		addToResult(getCollectionKey(WorkerThreadStatuses), 0)
 	}
 
 	return result
