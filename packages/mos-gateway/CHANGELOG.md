@@ -9,8 +9,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
-
-
 # [1.48.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.3...v1.48.0-in-testing.0) (2022-12-13)
 
 
@@ -21,14 +19,47 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
-
+# [1.47.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.6...v1.47.0-in-testing.7) (2023-01-24)
 
 
 # [1.47.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.47.0-in-testing.6) (2023-01-16)
 
 **Note:** Version bump only for package mos-gateway
 
+# [1.46.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.1...v1.46.0-in-testing.2) (2023-01-06)
 
+# [1.46.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.0...v1.46.0-in-testing.1) (2022-11-30)
+
+**Note:** Version bump only for package mos-gateway
+
+
+## [1.44.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.2-1...v1.44.2) (2023-01-27)
+
+**Note:** Version bump only for package mos-gateway
+
+
+
+
+
+## [1.44.2-1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.2-0...v1.44.2-1) (2023-01-23)
+
+**Note:** Version bump only for package mos-gateway
+
+
+
+
+
+## [1.44.2-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.1...v1.44.2-0) (2023-01-11)
+
+**Note:** Version bump only for package mos-gateway
+
+
+
+
+
+## [1.44.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.44.1) (2022-11-28)
+
+**Note:** Version bump only for package mos-gateway
 
 
 

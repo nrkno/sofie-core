@@ -38,6 +38,46 @@ import { MediaObject } from '../core/model/MediaObjects'
 import { MediaWorkFlow } from '../core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '../core/model/MediaWorkFlowSteps'
 
+export type UpdateExpectedPackageWorkStatusesChanges =
+	| {
+			id: ExpectedPackageWorkStatusId
+			type: 'delete'
+	  }
+	| {
+			id: ExpectedPackageWorkStatusId
+			type: 'insert'
+			status: ExpectedPackageStatusAPI.WorkStatus
+	  }
+	| {
+			id: ExpectedPackageWorkStatusId
+			type: 'update'
+			status: Partial<ExpectedPackageStatusAPI.WorkStatus>
+	  }
+
+export type UpdatePackageContainerPackageStatusesChanges =
+	| {
+			containerId: string
+			packageId: string
+			type: 'delete'
+	  }
+	| {
+			containerId: string
+			packageId: string
+			type: 'update'
+			status: ExpectedPackageStatusAPI.PackageContainerPackageStatus
+	  }
+
+export type UpdatePackageContainerStatusesChanges =
+	| {
+			containerId: string
+			type: 'delete'
+	  }
+	| {
+			containerId: string
+			type: 'update'
+			status: ExpectedPackageStatusAPI.PackageContainerStatus
+	  }
+
 export interface NewPeripheralDeviceAPI {
 	functionReply(
 		deviceId: PeripheralDeviceId,
@@ -258,43 +298,23 @@ export interface NewPeripheralDeviceAPI {
 	updateExpectedPackageWorkStatuses(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		changes: (
-			| {
-					id: ExpectedPackageWorkStatusId
-					type: 'delete'
-			  }
-			| {
-					id: ExpectedPackageWorkStatusId
-					type: 'insert'
-					status: ExpectedPackageStatusAPI.WorkStatus
-			  }
-			| {
-					id: ExpectedPackageWorkStatusId
-					type: 'update'
-					status: Partial<ExpectedPackageStatusAPI.WorkStatus>
-			  }
-		)[]
+		changes: UpdateExpectedPackageWorkStatusesChanges[]
 	): Promise<void>
 	removeAllExpectedPackageWorkStatusOfDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
 
 	updatePackageContainerPackageStatuses(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		changes: (
-			| {
-					containerId: string
-					packageId: string
-					type: 'delete'
-			  }
-			| {
-					containerId: string
-					packageId: string
-					type: 'update'
-					status: ExpectedPackageStatusAPI.PackageContainerPackageStatus
-			  }
-		)[]
+		changes: UpdatePackageContainerPackageStatusesChanges[]
 	): Promise<void>
 	removeAllPackageContainerPackageStatusesOfDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
+
+	updatePackageContainerStatuses(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		changes: UpdatePackageContainerStatusesChanges[]
+	): Promise<void>
+	removeAllPackageContainerStatusesOfDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
 
 	fetchPackageInfoMetadata(
 		deviceId: PeripheralDeviceId,
