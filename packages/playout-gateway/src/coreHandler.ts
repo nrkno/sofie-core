@@ -473,14 +473,6 @@ export class CoreHandler {
 
 		await device.formatDisks()
 	}
-	async vizPurgeRundown(deviceId: string): Promise<any> {
-		if (!this._tsrHandler) throw new Error('TSRHandler is not initialized')
-
-		const device = this._tsrHandler.tsr.getDevice(deviceId)?.device as ThreadedClass<VizMSEDevice>
-		if (!device) throw new Error(`TSR Device "${deviceId}" not found!`)
-
-		return device.purgeRundown(true)
-	}
 	async updateCoreStatus(): Promise<any> {
 		let statusCode = StatusCode.GOOD
 		const messages: Array<string> = []
@@ -698,5 +690,12 @@ export class CoreTSRDeviceHandler {
 		} else {
 			return Promise.reject('device.formatHyperdeck not set')
 		}
+	}
+	async vizPurgeRundown(): Promise<any> {
+		if (!this._tsrHandler) throw new Error('TSRHandler is not initialized')
+
+		const device = this._device.device as ThreadedClass<VizMSEDevice>
+
+		return device.purgeRundown(true)
 	}
 }
