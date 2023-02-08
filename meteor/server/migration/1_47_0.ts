@@ -290,7 +290,7 @@ export const addSteps = addMigrationSteps('1.47.0', [
 		},
 		migrate: () => {
 			const objects = TriggeredActions.find({
-				$or: [{ triggersWithOverrides: { $exists: false } }, { actionsWithOverrides: { $exists: false } }],
+				$or: [{ triggers: { $exists: true } }, { actions: { $exists: true } }],
 			}).fetch()
 			for (const obj0 of objects) {
 				const obj = obj0 as unknown as TriggeredActionsObj & TriggeredActionsOld
