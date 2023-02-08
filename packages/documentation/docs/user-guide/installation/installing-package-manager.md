@@ -4,7 +4,7 @@ sidebar_position: 7
 
 # Installing Package Manager
 
-#### Prerequisites
+### Prerequisites
 
 - [Installed and running Sofie&nbsp;Core](installing-sofie-server-core)
 - [Initial Sofie&nbsp;Core Setup](initial-sofie-core-setup)
@@ -22,7 +22,7 @@ At this time, the Package Manager worker process is Windows-only. Therefore, the
 
 :::
 
-### Installation (Quick Start)
+## Installation For Development (Quick Start)
 
 Package Manager is a suite of standalone applications, separate from _Sofie&nbsp;Core_. This guide assumes that Package Manager will be running on the same computer as _CasparCG&nbsp;Server_ and _Sofie&nbsp;Core_, as that is the fastest way to set up a demo. To get all parts of _Package Manager_ up and running quickly, execute these commands:
 
@@ -49,7 +49,20 @@ To setup, go into Core and add this device to a Studio
 
 This first run is necessary to get the Package Manager device registered with _Sofie&nbsp;Core_. We'll restart Package Manager later on in the [Configuration](#configuration) instructions.
 
-### Configuration
+
+## Installation In Production
+
+We provide pre-built executables for Windows (x64) systems that can be used in production environments. These can be found on the [Releases](https://github.com/nrkno/sofie-package-manager/releases) GitHub repository page for Package Manager. For a minimal installation, you'll need the `package-manager-single-app.exe` and `worker.exe`. Put them in a folder of your choice. You can also place `ffmpeg.exe` and `ffprobe.exe` alongside them, if you don't want to make them available in `PATH`.
+
+```bash
+package-manager-single-app.exe --coreHost=<Core Host Name> --corePort=<Core HTTP(S) port> --deviceId=<Peripheral Device Id> --deviceToken=<Peripheral Device Token/Password>
+```
+
+Package Manager can be launched from [CasparCG Launcher](./installing-connections-and-additional-hardware/casparcg-server-installation#installing-the-casparcg-launcher) alongside Caspar-CG. This will make management and log collection easier on a production Video Server.
+
+You can see a list of available options by running `package-manager-single-app.exe --help`.
+
+## Configuration
 
 1. Open the _Sofie&nbsp;Core_ Settings page ([http://localhost:3000/settings?admin=1](http://localhost:3000/settings?admin=1)), click on your Studio, and scroll down to the Attached Devices section.
 1. Click the plus button (`+`) and select Package Manager to add the Package Manager device to your Studio.
@@ -65,7 +78,7 @@ This first run is necessary to get the Package Manager device registered with _S
    ![Package Manager demo settings](/img/docs/Package_Manager_demo_settings.png)
 1. If Package Manager `start:single-app` is running, restart it. If not, start it (see the above [Installation instructions](#installation-quick-start) for the relevant command line).
 
-### Usage
+## Usage
 
 In this basic configuration, Package Manager won't be copying any packages into your CasparCG&nbsp;Server media folder. Instead, it will simply check that the files in the rundown are present in your CasparCG&nbsp;Server media folder, and you'll have to manually place those files in the correct directory. However, thumbnail and preview generation will still function, as will status reporting.
 

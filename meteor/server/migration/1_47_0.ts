@@ -76,10 +76,7 @@ export const addSteps = addMigrationSteps('1.47.0', [
 						mappingsWithOverrides:
 							obj.mappingsWithOverrides ?? wrapDefaultObject<MappingsExt>(obj.mappings),
 					},
-					$unset: {
-						// TODO
-						// objects: 1,
-					},
+					// Old properties removed by later migration
 				})
 			}
 		},
@@ -108,10 +105,7 @@ export const addSteps = addMigrationSteps('1.47.0', [
 							obj.blueprintConfigWithOverrides ??
 							wrapDefaultObject<IBlueprintConfig>(obj.blueprintConfig),
 					},
-					$unset: {
-						// TODO
-						// objects: 1,
-					},
+					// Old properties removed by later migration
 				})
 			}
 		},
@@ -154,10 +148,7 @@ export const addSteps = addMigrationSteps('1.47.0', [
 							obj.outputLayersWithOverrides ??
 							wrapDefaultObject<OutputLayers>(normalizeArray(obj.outputLayers, '_id')),
 					},
-					$unset: {
-						// TODO
-						// objects: 1,
-					},
+					// Old properties removed by later migration
 				})
 			}
 		},
@@ -190,9 +181,124 @@ export const addSteps = addMigrationSteps('1.47.0', [
 							obj.actionsWithOverrides ??
 							wrapDefaultObject<Record<string, SomeAction>>(normalizeArrayRandomId(obj.actions)),
 					},
+					// Old properties removed by later migration
+				})
+			}
+		},
+	},
+
+	{
+		id: `Studios remove pre *WithOverrides properties`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const objects = Studios.find({
+				$or: [{ blueprintConfig: { $exists: true } }, { mappings: { $exists: true } }],
+			}).count()
+			if (objects > 0) {
+				return `object needs to be converted`
+			}
+			return false
+		},
+		migrate: () => {
+			const objects = Studios.find({
+				$or: [{ blueprintConfig: { $exists: true } }, { mappings: { $exists: true } }],
+			}).fetch()
+			for (const obj0 of objects) {
+				const obj = obj0 as unknown as DBStudio & StudioOld
+				Studios.update(obj._id, {
 					$unset: {
-						// TODO
-						// objects: 1,
+						blueprintConfig: 1,
+						mappings: 1,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `ShowStyleVariants remove pre *withOverrides properties`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const objects = ShowStyleVariants.find({
+				blueprintConfig: { $exists: true },
+			}).count()
+			if (objects > 0) {
+				return `object needs to be converted`
+			}
+			return false
+		},
+		migrate: () => {
+			const objects = ShowStyleVariants.find({
+				blueprintConfig: { $exists: true },
+			}).fetch()
+			for (const obj0 of objects) {
+				const obj = obj0 as unknown as DBShowStyleVariant & ShowStyleVariantOld
+				ShowStyleVariants.update(obj._id, {
+					$unset: {
+						blueprintConfig: 1,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `ShowStyleBases remove pre *withOverrides properties`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const objects = ShowStyleBases.find({
+				$or: [
+					{ blueprintConfig: { $exists: true } },
+					{ sourceLayers: { $exists: true } },
+					{ outputLayers: { $exists: true } },
+				],
+			}).count()
+			if (objects > 0) {
+				return `object needs to be converted`
+			}
+			return false
+		},
+		migrate: () => {
+			const objects = ShowStyleBases.find({
+				$or: [
+					{ blueprintConfig: { $exists: true } },
+					{ sourceLayers: { $exists: true } },
+					{ outputLayers: { $exists: true } },
+				],
+			}).fetch()
+			for (const obj0 of objects) {
+				const obj = obj0 as unknown as DBShowStyleBase & ShowStyleBaseOld
+				ShowStyleBases.update(obj._id, {
+					$unset: {
+						blueprintConfig: 1,
+						sourceLayers: 1,
+						outputLayers: 1,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `TriggeredActions remove pre *withOverrides properties`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const objects = TriggeredActions.find({
+				$or: [{ triggers: { $exists: false } }, { actions: { $exists: false } }],
+			}).count()
+			if (objects > 0) {
+				return `object needs to be converted`
+			}
+			return false
+		},
+		migrate: () => {
+			const objects = TriggeredActions.find({
+				$or: [{ triggersWithOverrides: { $exists: false } }, { actionsWithOverrides: { $exists: false } }],
+			}).fetch()
+			for (const obj0 of objects) {
+				const obj = obj0 as unknown as TriggeredActionsObj & TriggeredActionsOld
+
+				TriggeredActions.update(obj._id, {
+					$unset: {
+						triggers: 1,
+						actions: 1,
 					},
 				})
 			}

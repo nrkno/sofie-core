@@ -49,6 +49,17 @@ All notable changes to this project will be documented in this file. See [standa
 * update ErrorBoundrary message to be more user-friendly ([458ae5f](https://github.com/nrkno/tv-automation-server-core/commit/458ae5ff193508d6ff76b76aac5b38db54c44039))
 * use more optimal mongo observe method in custom publications ([be38e66](https://github.com/nrkno/tv-automation-server-core/commit/be38e66f2d5050580b3364989c599a7f8ccd3e2c))
 
+## [1.47.0-in-testing.7](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.6...v1.47.0-in-testing.7) (2023-01-24)
+
+## [1.47.0-in-testing.6](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.5...v1.47.0-in-testing.6) (2023-01-16)
+
+
+### Bug Fixes
+
+* **Dashboard Panel, AdLib Tab:** blur search text box on Enter, Escape ([dabc61e](https://github.com/nrkno/sofie-core/commit/dabc61ebd876df40699957b09e319d2687404ba9))
+* logging of commandErrors ([75e6c64](https://github.com/nrkno/sofie-core/commit/75e6c64b9771e1b2c21d4feddc49278ce5ddd0c2))
+* part duration not set after instance stopped ([7887ecb](https://github.com/nrkno/sofie-core/commit/7887ecb81d219b94367e432c9c2507320dc04158))
+
 ## [1.47.0-in-testing.6](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.5...v1.47.0-in-testing.6) (2023-01-16)
 
 
@@ -57,16 +68,6 @@ All notable changes to this project will be documented in this file. See [standa
 * check if a push to GHCR is even possible ([f463528](https://github.com/nrkno/sofie-core/commit/f463528245c41689820867881947c48eca231a02))
 
 ## [1.47.0-in-testing.5](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.4...v1.47.0-in-testing.5) (2023-01-11)
-
-
-### Features
-
-* push images to ghcr ([32f98f4](https://github.com/nrkno/sofie-core/commit/32f98f4c4e915242114bac9866ef52b176ddfc92))
-
-
-### Bug Fixes
-
-* in the event of multiple tags they should all have the correct name ([056de09](https://github.com/nrkno/sofie-core/commit/056de09e22337b0d7be39abb093653e8c6811ac1))
 
 ## [1.47.0-in-testing.4](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.3...v1.47.0-in-testing.4) (2023-01-05)
 
@@ -133,6 +134,20 @@ All notable changes to this project will be documented in this file. See [standa
 ## [1.47.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.1...v1.47.0-in-testing.2) (2022-11-07)
 
 ## [1.47.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.46.0-in-testing.0...v1.47.0-in-testing.1) (2022-11-07)
+
+## [1.46.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.46.0-in-testing.1...v1.46.0-in-testing.2) (2023-01-06)
+
+
+### Features
+
+* push images to ghcr ([32f98f4](https://github.com/nrkno/sofie-core/commit/32f98f4c4e915242114bac9866ef52b176ddfc92))
+
+
+### Bug Fixes
+
+* in the event of multiple tags they should all have the correct name ([056de09](https://github.com/nrkno/sofie-core/commit/056de09e22337b0d7be39abb093653e8c6811ac1))
+
+
 ## [1.46.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.46.0-in-testing.0...v1.46.0-in-testing.1) (2022-11-30)
 
 
@@ -396,6 +411,7 @@ All notable changes to this project will be documented in this file. See [standa
 * some touchups ([a766660](https://github.com/nrkno/sofie-core/commit/a7666605d75bc61ddc5f25f16b361600c14910cf))
 * **Storyboard:** remove thumbnails ([a1efc4c](https://github.com/nrkno/sofie-core/commit/a1efc4c87021597f1ff512d245d1c46e1d590c2c))
 * **Storyboard:** remove thumbnails, shorten main Pieces ([ab40b8f](https://github.com/nrkno/sofie-core/commit/ab40b8f415da4e1bd73bb4647c7e6aa820377af8))
+### [1.44.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.2-1...v1.44.2) (2023-01-27)
 
 
 ### Bug Fixes
@@ -408,6 +424,9 @@ All notable changes to this project will be documented in this file. See [standa
 * storyboard thumbnail for graphics ([5d10279](https://github.com/nrkno/sofie-core/commit/5d1027972ecfb42d2abb117fa2d3b1881dcbe97f))
 
 ### [42.0.1-dev](https://github.com/nrkno/sofie-core/compare/v1.43.0-in-testing.0...v42.0.1-dev) (2022-06-03)
+* limit number of Package-related items to include in Rundown-snapshot ([6a1861f](https://github.com/nrkno/tv-automation-server-core/commit/6a1861fb64256874593ee714b52cc663b9bbdf80))
+
+### [1.44.2-1](https://github.com/nrkno/sofie-core/compare/v1.44.2-0...v1.44.2-1) (2023-01-23)
 
 
 ### Features
@@ -487,6 +506,7 @@ All notable changes to this project will be documented in this file. See [standa
 * removed part of the commit that requires other code not merged to our branch yet ([d816de6](https://github.com/nrkno/sofie-core/commit/d816de621e316ed393783566102ae9bdbbe243ac))
 
 ### [37.1.2](https://github.com/nrkno/sofie-core/compare/v37.1.1...v37.1.2) (2022-03-16)
+* push images to ghcr ([32f98f4](https://github.com/nrkno/sofie-core/commit/32f98f4c4e915242114bac9866ef52b176ddfc92))
 
 
 ### Bug Fixes
@@ -498,6 +518,10 @@ All notable changes to this project will be documented in this file. See [standa
 * use time of when segment started playing when calculating remaining time of segment ([bde43f1](https://github.com/nrkno/sofie-core/commit/bde43f1dcbecd4e5211fc61031da628ed816f7cc))
 
 ## [1.37.0-in-testing.32](https://github.com/nrkno/sofie-core/compare/v1.37.0-in-testing.31...v1.37.0-in-testing.32) (2022-01-10)
+* check if a push to GHCR is even possible ([f463528](https://github.com/nrkno/sofie-core/commit/f463528245c41689820867881947c48eca231a02))
+* in the event of multiple tags they should all have the correct name ([056de09](https://github.com/nrkno/sofie-core/commit/056de09e22337b0d7be39abb093653e8c6811ac1))
+
+### [1.44.2-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.1...v1.44.2-0) (2023-01-11)
 
 
 ### Bug Fixes
@@ -505,6 +529,9 @@ All notable changes to this project will be documented in this file. See [standa
 * hidden segments disappearing forever ([0d7b945](https://github.com/nrkno/sofie-core/commit/0d7b9458aef78a68bcd038af6676f035af920527))
 
 ## [1.37.0-in-testing.31](https://github.com/nrkno/sofie-core/compare/v1.37.1-in-testing.1...v1.37.0-in-testing.31) (2022-01-06)
+* don't retry calls to storeRundownSnapshot upon a loss-of-connection ([bec6432](https://github.com/nrkno/tv-automation-server-core/commit/bec6432d91f7c39dea0c02aa408084df4f228a2b))
+
+### [1.44.1](///compare/v1.44.0...v1.44.1) (2022-11-28)
 
 
 ### Bug Fixes
