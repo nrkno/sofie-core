@@ -16,7 +16,7 @@ function convertExternalToServiceMessage(message: ExternalServiceMessage): Servi
 	}
 }
 
-jest.mock('../../../../lib/collections/CoreSystem')
+jest.mock('../../../collections')
 
 const message1: ExternalServiceMessage = {
 	id: '294a7079efdce49fb553e52d9e352e24',
