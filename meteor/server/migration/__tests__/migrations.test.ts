@@ -94,7 +94,7 @@ describe('Migrations', () => {
 		expect(migrationResult0).toMatchObject({
 			migrationCompleted: true,
 			partialMigration: false,
-			warnings: expect.any(Array),
+			warnings: [],
 			snapshot: expect.any(String),
 		})
 

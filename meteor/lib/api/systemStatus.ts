@@ -1,6 +1,6 @@
 import { ProtectedString } from '../lib'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
-import { SystemInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDeviceId, SystemInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export { SystemInstanceId }
 
 export type ExternalStatus = 'OK' | 'FAIL' | 'WARNING' | 'UNDEFINED'
@@ -53,7 +53,9 @@ export interface Component extends StatusResponseBase {
 
 export interface NewSystemStatusAPI {
 	getSystemStatus(): Promise<StatusResponse>
+	getDebugStates(peripheralDeviceId: PeripheralDeviceId): Promise<object>
 }
 export enum SystemStatusAPIMethods {
 	'getSystemStatus' = 'systemStatus.getSystemStatus',
+	'getDebugStates' = 'systemStatus.getDebugStates',
 }

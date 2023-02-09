@@ -325,6 +325,9 @@ async function createRundownPlaylistSnapshot(
 	playlist: ReadonlyDeep<RundownPlaylist>,
 	full: boolean = false
 ): Promise<RundownPlaylistSnapshot> {
+	/** Max count of one type of items to include in the snapshot */
+	const LIMIT_COUNT = 500
+
 	const snapshotId: SnapshotId = getRandomId()
 	logger.info(
 		`Generating ${full ? 'full ' : ''}RundownPlaylist snapshot "${snapshotId}" for RundownPlaylist "${
@@ -362,15 +365,30 @@ async function createRundownPlaylistSnapshot(
 		},
 	})
 
-	const pExpectedPackageWorkStatuses = ExpectedPackageWorkStatuses.findFetchAsync({
-		studioId: playlist.studioId,
-	})
-	const pPackageContainerPackageStatuses = PackageContainerPackageStatuses.findFetchAsync({
-		studioId: playlist.studioId,
-	})
-	const pPackageInfos = PackageInfos.findFetchAsync({
-		studioId: playlist.studioId,
-	})
+	const pExpectedPackageWorkStatuses = ExpectedPackageWorkStatuses.findFetchAsync(
+		{
+			studioId: playlist.studioId,
+		},
+		{
+			limit: LIMIT_COUNT,
+		}
+	)
+	const pPackageContainerPackageStatuses = PackageContainerPackageStatuses.findFetchAsync(
+		{
+			studioId: playlist.studioId,
+		},
+		{
+			limit: LIMIT_COUNT,
+		}
+	)
+	const pPackageInfos = PackageInfos.findFetchAsync(
+		{
+			studioId: playlist.studioId,
+		},
+		{
+			limit: LIMIT_COUNT,
+		}
+	)
 
 	const [mediaObjects, userActions, expectedPackageWorkStatuses, packageContainerPackageStatuses, packageInfos] =
 		await Promise.all([

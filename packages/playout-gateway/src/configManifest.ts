@@ -28,6 +28,11 @@ const PLAYOUT_SUBDEVICE_COMMON: ConfigManifestEntry[] = [
 		type: ConfigManifestEntryType.BOOLEAN,
 	},
 	{
+		id: 'debugState',
+		name: 'Activate State Debugging',
+		type: ConfigManifestEntryType.BOOLEAN,
+	},
+	{
 		id: 'disable',
 		name: 'Disable',
 		type: ConfigManifestEntryType.BOOLEAN,
@@ -686,6 +691,11 @@ export const PLAYOUT_DEVICE_CONFIG: DeviceConfigManifest = {
 		{
 			id: 'debugLogging',
 			name: 'Activate Debug Logging',
+			type: ConfigManifestEntryType.BOOLEAN,
+		},
+		{
+			id: 'debugState',
+			name: 'Activate State Debugging',
 			type: ConfigManifestEntryType.BOOLEAN,
 		},
 		{

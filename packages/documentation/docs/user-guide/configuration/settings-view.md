@@ -115,8 +115,7 @@ Hotkeys are valid in the scope of a browser window and can be either a single ke
 
 To edit a given trigger, click on the trigger pill on the left of the Trigger-Action set. When hovering, a **+** sign will appear, allowing you to add a new trigger to the set.
 
-Device Triggers are valid in the scope of a Studio and will be evaluated on the currently active Rundown in a given studio. To use Device Triggers, you need to have at least a single [Input Gateway](../installation/installing-input-gateway) attached to a Studio and a Device configured in the Input Gateway. Once that's done, when selecting a **Device** trigger type in the pop-up, you can invoke triggers on your Input Device and you will see a preview of the input
-events shown at the bottom of the pop-up. You can select which of these events should be the trigger by clicking on one of the previews.
+Device Triggers are valid in the scope of a Studio and will be evaluated on the currently active Rundown in a given Studio. To use Device Triggers, you need to have at least a single [Input Gateway](../installation/installing-input-gateway) attached to a Studio and a Device configured in the Input Gateway. Once that's done, when selecting a **Device** trigger type in the pop-up, you can invoke triggers on your Input Device and you will see a preview of the input events shown at the bottom of the pop-up. You can select which of these events should be the trigger by clicking on one of the previews. Note, that some devices differentiate between _Up_ and _Down_ triggers, while others don't. Some may also have other activites that can be done _to_ a trigger. What they are and how they are identified is device-specific and is best discovered through interaction with the device.
 
 #### Actions
 

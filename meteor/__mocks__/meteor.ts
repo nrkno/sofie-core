@@ -202,10 +202,12 @@ export namespace MeteorMock {
 			returnStubValue?: boolean
 			throwStubExceptions?: boolean
 		},
-		_asyncCallback?: Function
+		asyncCallback?: Function
 	): any {
 		// ?
-		mockMethods[methodName].call(getMethodContext(), ...args)
+		// This is a bad mock, since it doesn't support any of the options..
+		// but it'll do for now:
+		call(methodName, ...args, asyncCallback)
 	}
 	export function absoluteUrl(path?: string): string {
 		return path + '' // todo
