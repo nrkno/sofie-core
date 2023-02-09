@@ -16,10 +16,9 @@ import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartInstances, PieceInstances, Pieces, RundownPlaylists } from '../../../lib/clientCollections'
-import { createSyncMongoCollection } from '../../../lib/collections/lib'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { MongoMock } from '../../../__mocks__/mongo'
 
+const mockRundownPlaylistsCollection = MongoMock.getInnerMockCollection(RundownPlaylists)
 const mockPartInstancesCollection = MongoMock.getInnerMockCollection(PartInstances)
 const mockPieceInstancesCollection = MongoMock.getInnerMockCollection(PieceInstances)
 const mockPiecesCollection = MongoMock.getInnerMockCollection(Pieces)
@@ -238,15 +237,12 @@ describe('client/lib/rundown', () => {
 		testInFiber(
 			"User-Stopped Infinite Piece starting in first Part maintains it's length when followed by another Piece",
 			() => {
-				// Create mutable versions of the collections
-				const RundownPlaylists2 = createSyncMongoCollection(CollectionName.RundownPlaylists)
-
 				const showStyleBase = convertToUIShowStyleBase(env.showStyleBase)
 				const sourceLayerIds = Object.keys(showStyleBase.sourceLayers)
 				const outputLayerIds = Object.keys(showStyleBase.outputLayers)
 
 				const playlistActivationId = protectString('mock_activation_0')
-				RundownPlaylists2.update(playlistId, {
+				mockRundownPlaylistsCollection.update(playlistId, {
 					$set: {
 						activationId: playlistActivationId,
 					},
@@ -340,7 +336,7 @@ describe('client/lib/rundown', () => {
 
 				mockPieceInstancesCollection.insert(followingPieceInstance)
 
-				RundownPlaylists2.update(playlistId, {
+				mockRundownPlaylistsCollection.update(playlistId, {
 					$set: {
 						currentPartInstanceId: mockCurrentPartInstance._id,
 					},

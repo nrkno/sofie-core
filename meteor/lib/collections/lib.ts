@@ -95,10 +95,10 @@ export function createSyncReadOnlyMongoCollection<DBInterface extends { _id: Pro
  */
 export function createSyncCustomPublicationMongoCollection<K extends keyof CustomCollectionType>(
 	name: K
-): MongoCollection<CustomCollectionType[K]> {
+): MongoReadOnlyCollection<CustomCollectionType[K]> {
 	const collection = new Mongo.Collection<CustomCollectionType[K]>(name)
 
-	return new WrappedMongoCollection<CustomCollectionType[K]>(collection, name)
+	return new WrappedMongoReadOnlyCollection<CustomCollectionType[K]>(collection, name)
 }
 
 class WrappedMongoReadOnlyCollection<DBInterface extends { _id: ProtectedString<any> }>
