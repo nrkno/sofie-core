@@ -27,8 +27,14 @@
  * SOFTWARE.
  */
 
-const fs = require('fs')
-const args = require('yargs')
+import { promisify } from 'util'
+import fs from 'fs'
+import yargs from 'yargs'
+import { Parser } from 'i18next-scanner'
+import converter from 'i18next-conv'
+import glob from 'glob'
+
+const args = yargs(process.argv)
 	.option('files', {
 		description: 'files to process, specified as a glob pattern',
 		alias: 'f',
@@ -60,9 +66,7 @@ const args = require('yargs')
 	.help()
 	.alias('help', 'h').argv
 
-const Parser = require('i18next-scanner').Parser
-const converter = require('i18next-conv')
-const glob = require('glob')
+const pGlob = promisify(glob)
 
 const parserOptions = {
 	// Include react helpers into parsing
@@ -97,29 +101,23 @@ console.log('Extracting translatable strings...')
 console.log('This process may print out some error messages, but the translation template should work fine.')
 console.log('──────\n')
 
-// console.debug('Reading in files for glob: ' + fileGlob)
-glob(fileGlob, function (err, files) {
-	if (err) {
-		console.log(err)
-		process.exit(1)
-	}
+const files = await pGlob(fileGlob)
 
-	// console.debug('Loading content of ' + files.length + ' files')
-	let content = ''
-	files.map(function (file) {
-		content += fs.readFileSync(file, 'utf-8')
-	})
+// console.debug('Loading content of ' + files.length + ' files')
 
-	// console.debug('Parsing translation keys out of content')
-	parser.parseFuncFromString(content, parserOptions)
-	parser.parseAttrFromString(content, parserOptions)
-	const json = parser.get().en.translation
-
-	// console.debug('Converting ' + Object.keys(json).length + ' translation keys into gettext')
-	converter.i18nextToPot('en', JSON.stringify(json), { quiet: true }).then(function (data) {
-		// console.debug('Writing into output file')
-		fs.writeFileSync(outputFile, data, 'utf-8')
-		console.log('\n──────')
-		console.log(`Successfully written ${Object.keys(json).length} strings to template "${outputFile}".`)
-	})
+let content = ''
+files.map(function (file) {
+	content += fs.readFileSync(file, 'utf-8')
 })
+
+// console.debug('Parsing translation keys out of content')
+parser.parseFuncFromString(content, parserOptions)
+parser.parseAttrFromString(content, parserOptions)
+const json = parser.get().en.translation
+
+// console.debug('Converting ' + Object.keys(json).length + ' translation keys into gettext')
+const data = await converter.i18nextToPot('en', JSON.stringify(json), { quiet: true })
+// console.debug('Writing into output file')
+fs.writeFileSync(outputFile, data, 'utf-8')
+console.log('\n──────')
+console.log(`✅ Successfully written ${Object.keys(json).length} strings to template "${outputFile}".`)
