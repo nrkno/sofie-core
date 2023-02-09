@@ -12,6 +12,8 @@ and compiles the json-files (used in production).
 **************************************************/
 
 ;(async () => {
+	const errors = []
+	const failedLanguages = []
 	// List all po-files:
 	const poFiles = await pGlob('./i18n/*.po')
 
@@ -21,13 +23,30 @@ and compiles the json-files (used in production).
 		if (mLanguage) languages.push(mLanguage[1])
 	}
 
-	console.log(`Found languages: ${languages.join(', ')}`)
+	console.log(`🔍 Found languages: ${languages.join(', ')}`)
 
 	for (const lng of languages) {
-		await runCmd(
-			`i18next-conv -l ${lng} -s i18n/${lng}.po -t public/locales/${lng}/translations.json --skipUntranslated`
-		)
+		try {
+			console.log('\n')
+			await runCmd(
+				`i18next-conv -l ${lng} -s i18n/${lng}.po -t public/locales/${lng}/translations.json --skipUntranslated`
+			)
+		} catch (e) {
+			console.error(`💣 Failed: ${lng}`)
+			errors.push(`${lng}: ${e}`)
+			failedLanguages.push(lng)
+		}
 	}
+
+	if (errors.length) {
+		for (const error of errors) {
+			console.error(error)
+		}
+		console.log(`\n\n😓 Failed to compile: ${failedLanguages.join(', ')}`)
+		process.exit(1)
+	}
+
+	console.log(`\n\n🥳 Succesfully compiled all translations: ${languages.join(', ')}`)
 })().catch((e) => console.error(`ERROR: ${e}`))
 
 function runCmd(cmd) {
