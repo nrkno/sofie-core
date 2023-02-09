@@ -14,7 +14,7 @@ import {
 import { MongoQuery } from './typings/meteor'
 import { invalidateAfter } from '../lib/invalidatingTime'
 import { convertCorelibToMeteorMongoQuery, getCurrentTime, groupByToMap, ProtectedString, protectString } from './lib'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from './collections/RundownPlaylists'
+import { RundownPlaylist } from './collections/RundownPlaylists'
 import { Rundown } from './collections/Rundowns'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { mongoWhereFilter } from '@sofie-automation/corelib/dist/mongo'
@@ -26,7 +26,8 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PieceInstances, Pieces } from './clientCollections'
+import { PieceInstances, Pieces } from './collections/libCollections'
+import { RundownPlaylistCollectionUtil } from './collections/rundownPlaylistUtil'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */

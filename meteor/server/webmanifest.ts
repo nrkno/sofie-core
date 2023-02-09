@@ -9,7 +9,7 @@ import type {
 import { logger } from '../lib/logging'
 import { MongoQuery } from '../lib/typings/meteor'
 import { DBStudio } from '../lib/collections/Studios'
-import { RundownPlaylists, Rundowns } from '../lib/clientCollections'
+import { RundownPlaylists, Rundowns } from './collections'
 import { getLocale, Translations } from './lib'
 import { generateTranslation } from '../lib/lib'
 import { ITranslatableMessage } from '@sofie-automation/blueprints-integration'

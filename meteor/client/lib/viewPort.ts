@@ -3,7 +3,7 @@ import { isProtectedString } from '../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents } from '../../lib/api/triggers/RundownViewEventBus'
 import { Settings } from '../../lib/Settings'
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PartInstances, Parts } from '../../lib/clientCollections'
+import { PartInstances, Parts } from '../collections'
 
 const HEADER_MARGIN = 24 // TODOSYNC: TV2 uses 15. If it's needed to be different, it needs to be made generic somehow..
 const FALLBACK_HEADER_HEIGHT = 65

@@ -11,7 +11,7 @@ import { Spinner } from '../../lib/Spinner'
 import { Link } from 'react-router-dom'
 import { unprotectString } from '../../../lib/lib'
 import { EditAttribute } from '../../lib/EditAttribute'
-import { Organizations } from '../../../lib/clientCollections'
+import { Organizations } from '../../collections'
 
 interface IAccountPageProps extends RouteComponentProps {
 	user: User | null

@@ -5,7 +5,7 @@ import { Mongo } from 'meteor/mongo'
 import { withTranslation } from 'react-i18next'
 import { MeteorCall } from '../../lib/api/methods'
 import { assertNever } from '../../lib/lib'
-import { Studios } from '../../lib/clientCollections'
+import { Studios } from '../collections'
 
 interface ISettingsNavigation extends ISettingsNavigationBaseProps {
 	type: SettingsNavigationType

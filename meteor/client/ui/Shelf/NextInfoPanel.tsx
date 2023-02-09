@@ -13,7 +13,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { Segment } from '../../../lib/collections/Segments'
 import { dashboardElementStyle } from './DashboardPanel'
-import { PartInstances, Segments } from '../../../lib/clientCollections'
+import { PartInstances, Segments } from '../../collections'
 
 interface INextInfoPanelProps {
 	visible?: boolean

@@ -26,7 +26,7 @@ import {
 	LabelAndOverridesForCheckbox,
 	LabelAndOverridesForInt,
 } from '../../../lib/Components/LabelAndOverrides'
-import { ShowStyleBases } from '../../../../lib/clientCollections'
+import { ShowStyleBases } from '../../../collections'
 
 interface IOutputSettingsProps {
 	showStyleBase: ShowStyleBase

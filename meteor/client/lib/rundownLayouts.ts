@@ -8,7 +8,7 @@ import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { getCurrentTime } from '../../lib/lib'
 import { invalidateAt } from './../../lib/invalidatingTime'
 import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
-import { PartInstances, PieceInstances } from '../../lib/clientCollections'
+import { PartInstances, PieceInstances } from '../collections'
 
 /**
  * If the conditions of the filter are met, activePieceInstance will include the first piece instance found that matches the filter, otherwise it will be undefined.

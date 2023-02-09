@@ -10,7 +10,7 @@ import * as VelocityReact from 'velocity-react'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
 import { Settings } from '../../lib/Settings'
-import { CoreSystem } from '../../lib/clientCollections'
+import { CoreSystem } from '../collections'
 
 interface IPropsHeader {
 	user: boolean

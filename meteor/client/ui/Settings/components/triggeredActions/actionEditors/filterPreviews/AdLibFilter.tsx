@@ -13,7 +13,7 @@ import {
 	AdLibPieces,
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibPieces,
-} from '../../../../../../../lib/clientCollections'
+} from '../../../../../../collections'
 
 interface IProps {
 	index: number

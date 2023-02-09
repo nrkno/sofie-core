@@ -33,7 +33,7 @@ import {
 import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { isHotkeyTrigger } from '../../../../../lib/api/triggers/triggerTypeSelectors'
 import { getAllCurrentAndDeletedItemsFromOverrides, useOverrideOpHelper } from '../../util/OverrideOpHelper'
-import { TriggeredActions } from '../../../../../lib/clientCollections'
+import { TriggeredActions } from '../../../../collections'
 
 interface IProps {
 	sourceLayers: SourceLayers | undefined

@@ -28,7 +28,7 @@ import {
 	LabelAndOverridesForDropdown,
 	LabelAndOverridesForInt,
 } from '../../../lib/Components/LabelAndOverrides'
-import { ShowStyleBases } from '../../../../lib/clientCollections'
+import { ShowStyleBases } from '../../../collections'
 
 function sourceLayerString(t: TFunction<'translation', undefined>, type: SourceLayerType) {
 	switch (type) {

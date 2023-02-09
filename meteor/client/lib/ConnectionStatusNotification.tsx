@@ -20,7 +20,7 @@ import { PubSub } from '../../lib/api/pubsub'
 import { ICoreSystem, ServiceMessage, Criticality } from '../../lib/collections/CoreSystem'
 import * as i18next from 'i18next'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'
-import { CoreSystem } from '../../lib/clientCollections'
+import { CoreSystem } from '../collections'
 
 export class ConnectionStatusNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList

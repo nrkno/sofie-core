@@ -12,7 +12,7 @@ import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { PresenterScreen } from './PresenterScreen'
 import { OverlayScreen } from './OverlayScreen'
 import { OverlayScreenSaver } from './OverlayScreenSaver'
-import { RundownPlaylists } from '../../../lib/clientCollections'
+import { RundownPlaylists } from '../../collections'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 

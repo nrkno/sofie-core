@@ -5,7 +5,7 @@ import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { SupportIcon } from '../lib/ui/icons/supportIcon'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { getHelpMode } from '../lib/localStorage'
-import { CoreSystem } from '../../lib/clientCollections'
+import { CoreSystem } from '../collections'
 
 interface IProps {}
 

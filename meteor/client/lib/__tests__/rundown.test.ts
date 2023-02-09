@@ -7,7 +7,6 @@ import {
 	convertToUIShowStyleBase,
 } from '../../../__mocks__/helpers/database'
 import { RundownUtils } from '../rundown'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { Piece } from '../../../lib/collections/Pieces'
 import { defaultPartInstance, defaultPiece, defaultPieceInstance } from '../../../__mocks__/defaultCollectionObjects'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
@@ -15,8 +14,9 @@ import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PartInstances, PieceInstances, Pieces, RundownPlaylists } from '../../../lib/clientCollections'
+import { PartInstances, PieceInstances, Pieces, RundownPlaylists } from '../../collections'
 import { MongoMock } from '../../../__mocks__/mongo'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 const mockRundownPlaylistsCollection = MongoMock.getInnerMockCollection(RundownPlaylists)
 const mockPartInstancesCollection = MongoMock.getInnerMockCollection(PartInstances)

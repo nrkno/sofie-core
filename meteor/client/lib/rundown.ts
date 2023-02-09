@@ -38,7 +38,7 @@ import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automat
 import { AdLibPieceUi } from './shelf'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { PartId, PieceId, RundownId, SegmentId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PieceInstances, Segments } from '../../lib/clientCollections'
+import { PieceInstances, Segments } from '../collections'
 
 interface PieceTimelineMetadataExt extends PieceTimelineMetadata {
 	id: PieceId

@@ -10,7 +10,7 @@ import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { Link } from 'react-router-dom'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { Studio } from '../../../../lib/collections/Studios'
-import { Blueprints, ShowStyleBases } from '../../../../lib/clientCollections'
+import { Blueprints, ShowStyleBases } from '../../../collections'
 
 interface IShowStyleGenericPropertiesProps {
 	showStyleBase: ShowStyleBase

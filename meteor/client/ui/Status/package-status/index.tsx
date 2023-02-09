@@ -12,11 +12,7 @@ import { PackageContainerStatus } from './PackageContainerStatus'
 import { Spinner } from '../../../lib/Spinner'
 import { useTranslation } from 'react-i18next'
 import { UIStudios } from '../../Collections'
-import {
-	ExpectedPackages,
-	ExpectedPackageWorkStatuses,
-	PackageContainerStatuses,
-} from '../../../../lib/clientCollections'
+import { ExpectedPackages, ExpectedPackageWorkStatuses, PackageContainerStatuses } from '../../../collections'
 
 export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesStatus(_props: {}) {
 	const { t } = useTranslation()

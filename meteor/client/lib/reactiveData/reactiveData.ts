@@ -5,7 +5,7 @@ import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { getCurrentTime } from '../../../lib/lib'
 import { FindOptions } from '../../../lib/collections/lib'
 import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ExternalMessageQueue, PeripheralDevices, Pieces, Rundowns } from '../../../lib/clientCollections'
+import { ExternalMessageQueue, PeripheralDevices, Pieces, Rundowns } from '../../collections'
 import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 export namespace reactiveData {

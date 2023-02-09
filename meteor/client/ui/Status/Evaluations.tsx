@@ -10,7 +10,7 @@ import { DatePickerFromTo } from '../../lib/datePicker'
 import moment from 'moment'
 import { getQuestionOptions } from '../AfterBroadcastForm'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
-import { Evaluations } from '../../../lib/clientCollections'
+import { Evaluations } from '../../collections'
 
 interface IEvaluationProps {}
 interface IEvaluationState {

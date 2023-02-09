@@ -39,7 +39,7 @@ import { UIShowStyleBases, UIStudios } from '../Collections'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIStudio } from '../../../lib/api/studios'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ShowStyleVariants } from '../../../lib/clientCollections'
+import { ShowStyleVariants } from '../../collections'
 
 export const HTML_ID_PREFIX = 'rundown-'
 

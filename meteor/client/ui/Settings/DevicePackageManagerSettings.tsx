@@ -9,7 +9,7 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { Meteor } from 'meteor/meteor'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PeripheralDevices } from '../../../lib/clientCollections'
+import { PeripheralDevices } from '../../collections'
 
 interface IDevicePackageManagerSettingsProps {
 	deviceId: PeripheralDeviceId

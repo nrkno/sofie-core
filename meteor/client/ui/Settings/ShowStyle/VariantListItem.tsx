@@ -26,7 +26,7 @@ import { ConfigManifestEntry, IBlueprintConfig } from '@sofie-automation/bluepri
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { iconDragHandle } from '../../RundownList/icons'
-import { ShowStyleVariants } from '../../../../lib/clientCollections'
+import { ShowStyleVariants } from '../../../collections'
 
 interface DraggableVariant {
 	id: ShowStyleVariantId

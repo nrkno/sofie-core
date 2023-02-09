@@ -12,7 +12,7 @@ import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredA
 import { TFunction } from 'i18next'
 import { Meteor } from 'meteor/meteor'
 import { LogLevel } from '../../../lib/lib'
-import { CoreSystem } from '../../../lib/clientCollections'
+import { CoreSystem } from '../../collections'
 
 interface IProps {}
 

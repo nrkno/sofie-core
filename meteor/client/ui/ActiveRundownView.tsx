@@ -12,7 +12,7 @@ import { PubSub } from '../../lib/api/pubsub'
 import { UIStudios } from './Collections'
 import { UIStudio } from '../../lib/api/studios'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylists } from '../../lib/clientCollections'
+import { RundownPlaylists } from '../collections'
 
 interface IProps {
 	match: {

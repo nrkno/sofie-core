@@ -5,7 +5,7 @@ import { ICoreSystem } from '../../lib/collections/CoreSystem'
 
 import { ReactiveVar } from 'meteor/reactive-var'
 import { isRunningInPWA } from './lib'
-import { CoreSystem } from '../../lib/clientCollections'
+import { CoreSystem } from '../collections'
 
 /**
  * A reactive variable that allows setting the title of the current view.

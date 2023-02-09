@@ -36,7 +36,7 @@ import RundownHeaderLayoutSettings from './components/rundownLayouts/RundownHead
 import RundownViewLayoutSettings from './components/rundownLayouts/RundownViewLayoutSettings'
 import { RundownLayoutId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { RundownLayouts } from '../../../lib/clientCollections'
+import { RundownLayouts } from '../../collections'
 
 export interface IProps {
 	showStyleBaseId: ShowStyleBaseId

@@ -19,7 +19,7 @@ import { faUpload, faExclamationTriangle } from '@fortawesome/free-solid-svg-ico
 import { unprotectString } from '../../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../../../lib/clientCollections'
+import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../../collections'
 
 interface IProps {
 	match: {

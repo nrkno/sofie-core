@@ -18,7 +18,7 @@ import {
 } from '@sofie-automation/corelib/dist/deviceConfig'
 import { ConfigManifestEntryComponent } from './ConfigManifestEntryComponent'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
-import { PeripheralDevices } from '../../../../lib/clientCollections'
+import { PeripheralDevices } from '../../../collections'
 import { protectString, unprotectString } from '../../../../lib/lib'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { MeteorCall } from '../../../../lib/api/methods'

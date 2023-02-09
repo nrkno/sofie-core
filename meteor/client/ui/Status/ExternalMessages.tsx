@@ -18,7 +18,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ExternalMessageQueue } from '../../../lib/clientCollections'
+import { ExternalMessageQueue } from '../../collections'
 
 interface IExternalMessagesProps {}
 interface IExternalMessagesState {

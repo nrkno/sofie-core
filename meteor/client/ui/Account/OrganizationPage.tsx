@@ -9,7 +9,7 @@ import { DBOrganization, UserRoles } from '../../../lib/collections/Organization
 import { unprotectString } from '../../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { EditAttribute } from '../../lib/EditAttribute'
-import { Organizations, Users } from '../../../lib/clientCollections'
+import { Organizations, Users } from '../../collections'
 
 interface OrganizationProps extends RouteComponentProps {
 	user: User | null

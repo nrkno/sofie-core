@@ -14,7 +14,7 @@ import Escape from 'react-escape'
 import * as i18next from 'i18next'
 import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../lib/collections/Rundowns'
 import { DBSegment, Segment } from '../../lib/collections/Segments'
 import { StudioRouteSet } from '../../lib/collections/Studios'
@@ -138,8 +138,9 @@ import {
 	RundownPlaylists,
 	Rundowns,
 	ShowStyleVariants,
-} from '../../lib/clientCollections'
+} from '../collections'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
+import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 

@@ -11,7 +11,7 @@ import { MomentFromNow } from '../../../lib/Moment'
 import { withTranslation } from 'react-i18next'
 import { getHelpMode } from '../../../lib/localStorage'
 import { unprotectString } from '../../../../lib/lib'
-import { PeripheralDevices } from '../../../../lib/clientCollections'
+import { PeripheralDevices } from '../../../collections'
 
 interface IStudioDevicesProps {
 	studio: Studio

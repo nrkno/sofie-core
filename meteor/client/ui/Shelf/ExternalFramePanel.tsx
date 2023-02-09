@@ -10,7 +10,7 @@ import {
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
 import { assertNever, getRandomString, literal, protectString } from '../../../lib/lib'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { parseMosPluginMessageXml, MosPluginMessage } from '../../lib/parsers/mos/mosXml2Js'
 import {
@@ -27,10 +27,11 @@ import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
 import { check } from '../../../lib/check'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { Buckets, PartInstances, Rundowns } from '../../../lib/clientCollections'
+import { Buckets, PartInstances, Rundowns } from '../../collections'
 import { BucketId, PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MOS_DATA_IS_STRICT } from '../../../lib/mos'
 import { getMosTypes, stringifyMosObject } from '@mos-connection/helper'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 const PackageInfo = require('../../../package.json')
 

@@ -27,7 +27,7 @@ import {
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../../lib/clientCollections'
+import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 

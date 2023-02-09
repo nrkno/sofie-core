@@ -18,7 +18,7 @@ import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { UploadButton } from '../../../lib/uploadButton'
 import _ from 'underscore'
 import { Settings } from '../../../../lib/Settings'
-import { ShowStyleBases } from '../../../../lib/clientCollections'
+import { ShowStyleBases } from '../../../collections'
 
 interface IHotkeyLegendSettingsProps {
 	showStyleBase: ShowStyleBase

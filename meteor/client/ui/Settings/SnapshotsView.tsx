@@ -16,7 +16,7 @@ import { UploadButton } from '../../lib/uploadButton'
 import { PubSub } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
 import { SnapshotId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Snapshots, Studios } from '../../../lib/clientCollections'
+import { Snapshots, Studios } from '../../collections'
 
 interface IProps {
 	match: {

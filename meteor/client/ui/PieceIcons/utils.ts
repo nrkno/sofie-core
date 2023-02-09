@@ -4,7 +4,7 @@ import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { IPropsHeader } from './PieceIcon'
 import { PieceExtended } from '../../../lib/Rundown'
 import { UIShowStyleBases } from '../Collections'
-import { PieceInstances } from '../../../lib/clientCollections'
+import { PieceInstances } from '../../collections'
 
 export interface IFoundPieceInstance {
 	sourceLayer: ISourceLayer | undefined

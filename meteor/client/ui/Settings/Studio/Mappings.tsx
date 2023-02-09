@@ -39,7 +39,7 @@ import {
 	LabelAndOverridesForDropdown,
 	LabelAndOverridesForInt,
 } from '../../../lib/Components/LabelAndOverrides'
-import { Studios } from '../../../../lib/clientCollections'
+import { Studios } from '../../../collections'
 
 interface IStudioMappingsProps {
 	studio: Studio

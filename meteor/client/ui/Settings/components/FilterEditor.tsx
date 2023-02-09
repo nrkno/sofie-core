@@ -21,7 +21,7 @@ import { IOutputLayer, ISourceLayer, SourceLayerType } from '@sofie-automation/b
 import { withTranslation } from 'react-i18next'
 import { defaultColorPickerPalette } from '../../../lib/colorPicker'
 import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { RundownLayouts } from '../../../../lib/clientCollections'
+import { RundownLayouts } from '../../../collections'
 
 interface IProps {
 	item: RundownLayoutBase

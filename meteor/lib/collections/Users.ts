@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { unprotectString } from '../lib'
 import { UserRoles, DBOrganization } from './Organization'
 import { UserId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Organizations } from '../clientCollections'
+import { Organizations } from '../collections/libCollections'
 
 export interface UserProfile {
 	name: string

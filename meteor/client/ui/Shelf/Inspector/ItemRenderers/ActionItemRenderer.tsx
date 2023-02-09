@@ -28,7 +28,7 @@ import { AdLibPieceUi } from '../../../../lib/shelf'
 import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
 import { UIStudio } from '../../../../../lib/api/studios'
 import { BucketId, PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Buckets } from '../../../../../lib/clientCollections'
+import { Buckets } from '../../../../collections'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 
 export { isActionItem }

@@ -2,7 +2,7 @@ import * as React from 'react'
 import ClassNames from 'classnames'
 import { DBSegment, Segment } from '../../../lib/collections/Segments'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
@@ -37,13 +37,8 @@ import { getPlaylistTimingDiff } from '../../lib/rundownTiming'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIShowStyleBases, UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
-import {
-	PieceInstances,
-	RundownLayouts,
-	RundownPlaylists,
-	Rundowns,
-	ShowStyleVariants,
-} from '../../../lib/clientCollections'
+import { PieceInstances, RundownLayouts, RundownPlaylists, Rundowns, ShowStyleVariants } from '../../collections'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>

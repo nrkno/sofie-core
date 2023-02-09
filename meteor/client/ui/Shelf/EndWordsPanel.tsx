@@ -16,7 +16,7 @@ import { ScriptContent } from '@sofie-automation/blueprints-integration'
 import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
 import { getScriptPreview } from '../../lib/ui/scriptPreview'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { PieceInstances } from '../../../lib/clientCollections'
+import { PieceInstances } from '../../collections'
 
 interface IEndsWordsPanelProps {
 	visible?: boolean

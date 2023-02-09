@@ -22,7 +22,7 @@ import Tooltip from 'rc-tooltip'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
 import { getAllowConfigure, getAllowStudio } from '../../lib/localStorage'
 import { MediaWorkFlowId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MediaWorkFlows, MediaWorkFlowSteps } from '../../../lib/clientCollections'
+import { MediaWorkFlows, MediaWorkFlowSteps } from '../../collections'
 
 interface IMediaManagerStatusProps {}
 

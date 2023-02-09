@@ -24,7 +24,7 @@ import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
 import { MappingsManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { DeviceMappingSettings } from './Mappings'
 import { ReadonlyDeep } from 'type-fest'
-import { Studios } from '../../../../lib/clientCollections'
+import { Studios } from '../../../collections'
 
 interface IStudioRoutingsProps {
 	studio: Studio

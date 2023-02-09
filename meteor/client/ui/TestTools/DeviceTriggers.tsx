@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router-dom'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DeviceTriggerMountedAction, PreviewWrappedAdLib } from '../../../lib/api/triggers/MountedTriggers'
-import { PeripheralDevices } from '../../../lib/clientCollections'
+import { PeripheralDevices } from '../../collections'
 
 const MountedTriggers = new Mongo.Collection<DeviceTriggerMountedAction>(CustomCollectionName.MountedTriggers)
 const MountedTriggersPreviews = new Mongo.Collection<PreviewWrappedAdLib>(CustomCollectionName.MountedTriggersPreviews)

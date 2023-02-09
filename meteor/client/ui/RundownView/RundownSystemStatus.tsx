@@ -17,7 +17,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { UIStudio } from '../../../lib/api/studios'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PeripheralDevices } from '../../../lib/clientCollections'
+import { PeripheralDevices } from '../../collections'
 
 interface IMOSStatusProps {
 	lastUpdate: Time

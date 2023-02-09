@@ -25,7 +25,6 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
 import { RundownUtils } from '../../lib/rundown'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import {
 	AdLibPieceUi,
 	getNextPieceInstancesGrouped,
@@ -39,6 +38,7 @@ import { UIStudio } from '../../../lib/api/studios'
 import { UIStudios } from '../Collections'
 import { Meteor } from 'meteor/meteor'
 import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 interface IState {
 	outputLayers: OutputLayers

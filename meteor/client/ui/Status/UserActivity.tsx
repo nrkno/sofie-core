@@ -10,7 +10,7 @@ import { parse as queryStringParse } from 'query-string'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import classNames from 'classnames'
 import Tooltip from 'rc-tooltip'
-import { UserActionsLog } from '../../../lib/clientCollections'
+import { UserActionsLog } from '../../collections'
 
 const PARAM_DATE_FORMAT = 'YYYY-MM-DD'
 const PARAM_NAME_FROM_DATE = 'fromDate'

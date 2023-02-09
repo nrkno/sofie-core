@@ -37,7 +37,7 @@ import { IDashboardPanelTrackedProps } from './DashboardPanel'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { Bucket } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { PieceStatusCode } from '../../../lib/collections/Pieces'
@@ -65,7 +65,7 @@ import {
 	isAdLibOnAir,
 } from '../../lib/shelf'
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
-import { BucketAdLibActions, BucketAdLibs, PartInstances, Rundowns } from '../../../lib/clientCollections'
+import { BucketAdLibActions, BucketAdLibs, PartInstances, Rundowns } from '../../collections'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIStudio } from '../../../lib/api/studios'
@@ -77,6 +77,7 @@ import {
 	ShowStyleBaseId,
 	ShowStyleVariantId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, _monitor: DragSourceMonitor, component: any) {

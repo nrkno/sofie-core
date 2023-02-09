@@ -11,7 +11,7 @@ import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { StudioBaselineStatus } from './Baseline'
 import { BlueprintId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
-import { Blueprints, Studios } from '../../../../lib/clientCollections'
+import { Blueprints, Studios } from '../../../collections'
 
 interface IStudioGenericPropertiesProps {
 	studio: Studio

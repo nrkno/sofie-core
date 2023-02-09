@@ -4,7 +4,7 @@ import { Meteor } from 'meteor/meteor'
 import { useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { useTranslation } from 'react-i18next'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { DBSegment, Segment } from '../../../lib/collections/Segments'
 import { DBPart } from '../../../lib/collections/Parts'
 import { IAdLibListItem } from './AdLibListItem'
@@ -58,7 +58,8 @@ import {
 	PartInstances,
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibPieces,
-} from '../../../lib/clientCollections'
+} from '../../collections'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined

@@ -20,7 +20,7 @@ import { Settings as MeteorSettings } from '../../../lib/Settings'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { TFunction, useTranslation } from 'react-i18next'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { Blueprints, PeripheralDevices, ShowStyleBases, Studios } from '../../../lib/clientCollections'
+import { Blueprints, PeripheralDevices, ShowStyleBases, Studios } from '../../collections'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 interface ISettingsMenuProps {

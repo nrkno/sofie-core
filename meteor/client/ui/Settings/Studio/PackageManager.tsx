@@ -12,7 +12,7 @@ import { PeripheralDeviceCategory, PeripheralDeviceType } from '../../../../lib/
 import { withTranslation } from 'react-i18next'
 import { Accessor } from '@sofie-automation/blueprints-integration'
 import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
-import { PeripheralDevices, Studios } from '../../../../lib/clientCollections'
+import { PeripheralDevices, Studios } from '../../../collections'
 
 interface IStudioPackageManagerSettingsProps {
 	studio: Studio

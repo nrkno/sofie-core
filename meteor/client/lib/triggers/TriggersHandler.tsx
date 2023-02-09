@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import Sorensen from '@sofie-automation/sorensen'
 import { PubSub } from '../../../lib/api/pubsub'
 import { useSubscription, useTracker } from '../ReactMeteorData/ReactMeteorData'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PlayoutActions, SomeAction, TriggerType } from '@sofie-automation/blueprints-integration'
 import {
 	isPreviewableAction,
@@ -24,7 +24,7 @@ import RundownViewEventBus, {
 import { Tracker } from 'meteor/tracker'
 import { Settings } from '../../../lib/Settings'
 import { createInMemorySyncMongoCollection } from '../../../lib/collections/lib'
-import { RundownPlaylists } from '../../../lib/clientCollections'
+import { RundownPlaylists } from '../../collections'
 import { UIShowStyleBases, UITriggeredActions } from '../../ui/Collections'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import {
@@ -40,6 +40,7 @@ import {
 	MountedHotkeyMixin,
 } from '../../../lib/api/triggers/MountedTriggers'
 import { isHotkeyTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 

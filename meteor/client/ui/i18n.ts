@@ -11,7 +11,7 @@ import { MeteorCall } from '../../lib/api/methods'
 import { ClientAPI } from '../../lib/api/client'
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { TranslationsBundleId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { TranslationsBundles } from '../../lib/clientCollections'
+import { TranslationsBundles } from '../collections'
 
 const i18nOptions = {
 	fallbackLng: {

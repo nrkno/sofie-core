@@ -34,7 +34,7 @@ import {
 	RundownPlaylists,
 	Rundowns,
 	Segments,
-} from '../../clientCollections'
+} from '../../collections/libCollections'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 

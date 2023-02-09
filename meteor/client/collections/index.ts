@@ -1,5 +1,3 @@
-import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
-import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
@@ -9,40 +7,32 @@ import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataMode
 import { PackageContainerPackageStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 import { PackageContainerStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerStatus'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
-import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { Meteor } from 'meteor/meteor'
-import { Bucket } from './collections/Buckets'
-import { ICoreSystem, SYSTEM_ID } from './collections/CoreSystem'
-import { Evaluation } from './collections/Evaluations'
-import { ExpectedPackageDB } from './collections/ExpectedPackages'
-import { createSyncMongoCollection, createSyncReadOnlyMongoCollection, wrapMongoCollection } from './collections/lib'
-import { DBOrganization } from './collections/Organization'
-import { PartInstance } from './collections/PartInstances'
-import { Part } from './collections/Parts'
-import { PeripheralDeviceCommand } from './collections/PeripheralDeviceCommands'
-import { PeripheralDevice } from './collections/PeripheralDevices'
-import { RundownBaselineAdLibAction } from './collections/RundownBaselineAdLibActions'
-import { RundownBaselineAdLibItem } from './collections/RundownBaselineAdLibPieces'
-import { RundownLayoutBase } from './collections/RundownLayouts'
-import { Segment } from './collections/Segments'
-import { ShowStyleBase } from './collections/ShowStyleBases'
-import { ShowStyleVariant } from './collections/ShowStyleVariants'
-import { SnapshotItem } from './collections/Snapshots'
-import { Studio } from './collections/Studios'
-import { TranslationsBundle } from './collections/TranslationsBundles'
-import { DBTriggeredActions } from './collections/TriggeredActions'
-import { UserActionsLogItem } from './collections/UserActionsLog'
-import { DBUser } from './collections/Users'
+import { Bucket } from '../../lib/collections/Buckets'
+import { ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
+import { Evaluation } from '../../lib/collections/Evaluations'
+import { ExpectedPackageDB } from '../../lib/collections/ExpectedPackages'
+import {
+	createSyncMongoCollection,
+	createSyncReadOnlyMongoCollection,
+	wrapMongoCollection,
+} from '../../lib/collections/lib'
+import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { SnapshotItem } from '../../lib/collections/Snapshots'
+import { Studio } from '../../lib/collections/Studios'
+import { TranslationsBundle } from '../../lib/collections/TranslationsBundles'
+import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
+import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
+import { DBUser } from '../../lib/collections/Users'
 
-export const AdLibActions = createSyncReadOnlyMongoCollection<AdLibAction>(CollectionName.AdLibActions)
-
-export const AdLibPieces = createSyncReadOnlyMongoCollection<AdLibPiece>(CollectionName.AdLibPieces)
+// Future: remove the need for this
+export * from '../../lib/collections/libCollections'
 
 export const Blueprints = createSyncMongoCollection<Blueprint>(CollectionName.Blueprints)
 
@@ -76,8 +66,6 @@ export const MediaWorkFlowSteps = createSyncReadOnlyMongoCollection<MediaWorkFlo
 	CollectionName.MediaWorkFlowSteps
 )
 
-export const Organizations = createSyncMongoCollection<DBOrganization>(CollectionName.Organizations)
-
 export const PackageContainerPackageStatuses = createSyncReadOnlyMongoCollection<PackageContainerPackageStatusDB>(
 	CollectionName.PackageContainerPackageStatuses
 )
@@ -88,35 +76,9 @@ export const PackageContainerStatuses = createSyncReadOnlyMongoCollection<Packag
 
 export const PackageInfos = createSyncReadOnlyMongoCollection<PackageInfoDB>(CollectionName.PackageInfos)
 
-export const PartInstances = createSyncReadOnlyMongoCollection<PartInstance>(CollectionName.PartInstances)
-
-export const Parts = createSyncReadOnlyMongoCollection<Part>(CollectionName.Parts)
-
-export const PeripheralDeviceCommands = createSyncMongoCollection<PeripheralDeviceCommand>(
-	CollectionName.PeripheralDeviceCommands
-)
-
 export const PeripheralDevices = createSyncMongoCollection<PeripheralDevice>(CollectionName.PeripheralDevices)
 
-export const PieceInstances = createSyncReadOnlyMongoCollection<PieceInstance>(CollectionName.PieceInstances)
-
-export const Pieces = createSyncReadOnlyMongoCollection<Piece>(CollectionName.Pieces)
-
-export const RundownBaselineAdLibActions = createSyncReadOnlyMongoCollection<RundownBaselineAdLibAction>(
-	CollectionName.RundownBaselineAdLibActions
-)
-
-export const RundownBaselineAdLibPieces = createSyncReadOnlyMongoCollection<RundownBaselineAdLibItem>(
-	CollectionName.RundownBaselineAdLibPieces
-)
-
 export const RundownLayouts = createSyncMongoCollection<RundownLayoutBase>(CollectionName.RundownLayouts)
-
-export const Rundowns = createSyncReadOnlyMongoCollection<DBRundown>(CollectionName.Rundowns)
-
-export const RundownPlaylists = createSyncReadOnlyMongoCollection<DBRundownPlaylist>(CollectionName.RundownPlaylists)
-
-export const Segments = createSyncReadOnlyMongoCollection<Segment>(CollectionName.Segments)
 
 export const ShowStyleBases = createSyncMongoCollection<ShowStyleBase>(CollectionName.ShowStyleBases)
 

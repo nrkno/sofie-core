@@ -14,7 +14,7 @@ import Tooltip from 'rc-tooltip'
 import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 import { PartId, PieceId, RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MediaObjects, Pieces } from '../../../lib/clientCollections'
+import { MediaObjects, Pieces } from '../../collections'
 
 export interface IProps {
 	pieceId: PieceId

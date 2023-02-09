@@ -21,7 +21,7 @@ import {
 	LabelAndOverridesProps,
 } from '../../../lib/Components/LabelAndOverrides'
 import { assertNever } from '@sofie-automation/corelib/dist/lib'
-import { PeripheralDevices } from '../../../../lib/clientCollections'
+import { PeripheralDevices } from '../../../collections'
 
 interface ConfigManifestEntryWithOverridesProps {
 	configField: ConfigManifestEntry
