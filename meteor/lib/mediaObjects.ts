@@ -506,7 +506,7 @@ function getPackageWarningMessage(
 
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation(`Clip doesn't exist on the playout system`),
+			message: generateTranslation(`Clip can't be found on the playout system`),
 		}
 	} else if (
 		packageOnPackageContainer.status.status ===
@@ -519,10 +519,13 @@ function getPackageWarningMessage(
 
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation('Clip not yet ready on the playout system. Status: {{reason}}', {
-				sourceLayer: sourceLayer.name,
-				reason: packageOnPackageContainer?.status.statusReason.user || 'N/A',
-			}),
+			message: generateTranslation(
+				'Clip exists, but is not yet ready on the playout system. Status: {{reason}}',
+				{
+					sourceLayer: sourceLayer.name,
+					reason: packageOnPackageContainer?.status.statusReason.user || 'N/A',
+				}
+			),
 		}
 	} else if (
 		packageOnPackageContainer.status.status ===
