@@ -59,9 +59,7 @@ export async function updatePartInstanceRanks(
 		(p) => unprotectString(p.segmentId)
 	)
 	const groupedNewParts = _.groupBy(
-		cache.Parts.findFetch({
-			segmentId: { $in: changedSegmentIds as SegmentId[] },
-		}),
+		cache.Parts.findAll((p) => changedSegmentIds.includes(p.segmentId)),
 		(p) => unprotectString(p.segmentId)
 	)
 
@@ -130,35 +128,30 @@ export async function updatePartInstanceRanks(
  * Syncs the ranks from matching Parts to PartInstances.
  */
 export function updatePartInstanceRanksAfterAdlib(cache: CacheForPlayout, segmentId: SegmentId): void {
-	const newParts = cache.Parts.findFetch((p) => p.segmentId === segmentId)
+	const newParts = cache.Parts.findAll((p) => p.segmentId === segmentId)
 	const segmentPartInstances = _.sortBy(
-		cache.PartInstances.findFetch((p) => p.segmentId === segmentId),
+		cache.PartInstances.findAll((p) => p.segmentId === segmentId),
 		(p) => p.part._rank
 	)
 
 	const newRanks = calculateNewRanksForParts(segmentId, null, newParts, segmentPartInstances)
 	for (const [instanceId, info] of newRanks.entries()) {
 		if (info.deleted) {
-			cache.PartInstances.update(instanceId, {
-				$set: {
-					orphaned: 'deleted',
-					'part._rank': info.rank,
-				},
+			cache.PartInstances.updateOne(instanceId, (p) => {
+				p.part._rank = info.rank
+				p.orphaned = 'deleted'
+				return p
 			})
 		} else if (info.deleted === undefined) {
-			cache.PartInstances.update(instanceId, {
-				$set: {
-					'part._rank': info.rank,
-				},
+			cache.PartInstances.updateOne(instanceId, (p) => {
+				p.part._rank = info.rank
+				return p
 			})
 		} else {
-			cache.PartInstances.update(instanceId, {
-				$set: {
-					'part._rank': info.rank,
-				},
-				$unset: {
-					orphaned: 1,
-				},
+			cache.PartInstances.updateOne(instanceId, (p) => {
+				p.part._rank = info.rank
+				delete p.orphaned
+				return p
 			})
 		}
 	}

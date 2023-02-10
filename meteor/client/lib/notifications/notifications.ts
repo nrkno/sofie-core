@@ -12,17 +12,16 @@ import {
 	assertNever,
 	getRandomString,
 } from '../../../lib/lib'
-import { SegmentId } from '../../../lib/collections/Segments'
 import {
 	isTranslatableMessage,
 	ITranslatableMessage,
 	translateMessage,
 } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { RundownId } from '../../../lib/collections/Rundowns'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { MeteorCall } from '../../../lib/api/methods'
 import { i18nTranslator } from '../../ui/i18n'
 import { getReportNotifications } from '../localStorage'
+import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 /**
  * Priority level for Notifications.

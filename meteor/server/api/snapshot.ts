@@ -3,7 +3,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { ServerResponse, IncomingMessage } from 'http'
 import { check, Match } from '../../lib/check'
-import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
+import { Studio, Studios } from '../../lib/collections/Studios'
 import {
 	Snapshots,
 	SnapshotType,
@@ -11,7 +11,6 @@ import {
 	SnapshotDebug,
 	SnapshotBase,
 	SnapshotRundownPlaylist,
-	SnapshotId,
 } from '../../lib/collections/Snapshots'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PieceGeneric } from '../../lib/collections/Pieces'
@@ -28,8 +27,12 @@ import {
 	unprotectStringArray,
 	unprotectString,
 } from '../../lib/lib'
-import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
+import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import {
+	PeripheralDevices,
+	PeripheralDevice,
+	PERIPHERAL_SUBTYPE_PROCESS,
+} from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
 import { Timeline, TimelineComplete } from '../../lib/collections/Timeline'
 import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
@@ -40,14 +43,13 @@ import { ICoreSystem, CoreSystem, parseVersion, getCoreSystemAsync } from '../..
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
+import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import { IngestRundown, VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { importIngestRundown } from './ingest/http'
-import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
-import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { Credentials, isResolvedCredentials } from '../security/lib/credentials'
@@ -73,6 +75,16 @@ import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { ReadonlyDeep } from 'type-fest'
 import { checkAccessToPlaylist, VerifiedRundownPlaylistContentAccess } from './lib'
 import { PackageInfo } from '../coreSystem'
+import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import {
+	BlueprintId,
+	OrganizationId,
+	PeripheralDeviceId,
+	RundownPlaylistId,
+	ShowStyleBaseId,
+	SnapshotId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface RundownPlaylistSnapshot extends CoreRundownPlaylistSnapshot {
 	versionExtended: string | undefined
@@ -256,7 +268,7 @@ async function createDebugSnapshot(studioId: StudioId, organizationId: Organizat
 	const deviceSnaphots: Array<DeviceSnapshot> = _.compact(
 		await Promise.all(
 			systemSnapshot.devices.map(async (device) => {
-				if (device.connected && device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS) {
+				if (device.connected && device.subType === PERIPHERAL_SUBTYPE_PROCESS) {
 					const startTime = getCurrentTime()
 
 					// defer to another fiber
@@ -304,6 +316,9 @@ async function createRundownPlaylistSnapshot(
 	playlist: ReadonlyDeep<RundownPlaylist>,
 	full: boolean = false
 ): Promise<RundownPlaylistSnapshot> {
+	/** Max count of one type of items to include in the snapshot */
+	const LIMIT_COUNT = 500
+
 	const snapshotId: SnapshotId = getRandomId()
 	logger.info(
 		`Generating ${full ? 'full ' : ''}RundownPlaylist snapshot "${snapshotId}" for RundownPlaylist "${
@@ -316,7 +331,7 @@ async function createRundownPlaylistSnapshot(
 		full,
 	})
 	const coreResult = await queuedJob.complete
-	const coreSnapshot: CoreRundownPlaylistSnapshot = JSON.parse(coreResult.snapshotJson)
+	const coreSnapshot: CoreRundownPlaylistSnapshot = JSONBlobParse(coreResult.snapshotJson)
 
 	const mediaObjectIds: Array<string> = [
 		...getPiecesMediaObjects(coreSnapshot.pieces),
@@ -341,15 +356,30 @@ async function createRundownPlaylistSnapshot(
 		},
 	})
 
-	const pExpectedPackageWorkStatuses = ExpectedPackageWorkStatuses.findFetchAsync({
-		studioId: playlist.studioId,
-	})
-	const pPackageContainerPackageStatuses = PackageContainerPackageStatuses.findFetchAsync({
-		studioId: playlist.studioId,
-	})
-	const pPackageInfos = PackageInfos.findFetchAsync({
-		studioId: playlist.studioId,
-	})
+	const pExpectedPackageWorkStatuses = ExpectedPackageWorkStatuses.findFetchAsync(
+		{
+			studioId: playlist.studioId,
+		},
+		{
+			limit: LIMIT_COUNT,
+		}
+	)
+	const pPackageContainerPackageStatuses = PackageContainerPackageStatuses.findFetchAsync(
+		{
+			studioId: playlist.studioId,
+		},
+		{
+			limit: LIMIT_COUNT,
+		}
+	)
+	const pPackageInfos = PackageInfos.findFetchAsync(
+		{
+			studioId: playlist.studioId,
+		},
+		{
+			limit: LIMIT_COUNT,
+		}
+	)
 
 	const [mediaObjects, userActions, expectedPackageWorkStatuses, packageContainerPackageStatuses, packageInfos] =
 		await Promise.all([
@@ -529,7 +559,7 @@ async function restoreFromRundownPlaylistSnapshot(
 	}
 
 	const queuedJob = await QueueStudioJob(StudioJobs.RestorePlaylistSnapshot, studioId, {
-		snapshotJson: JSON.stringify(omit(snapshot, 'mediaObjects', 'userActions')),
+		snapshotJson: JSONBlobStringify(omit(snapshot, 'mediaObjects', 'userActions')),
 	})
 	await queuedJob.complete
 

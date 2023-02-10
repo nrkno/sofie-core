@@ -26,7 +26,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { DBStudio, MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	protectString,
 	protectStringArray,
@@ -57,15 +57,15 @@ import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Run
 import { ABSessionInfo, DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime } from '../../lib'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { getShowStyleConfigRef, getStudioConfigRef, ProcessedStudioConfig, ProcessedShowStyleConfig } from '../config'
 import _ = require('underscore')
 import { WatchedPackagesHelper } from './watchedPackages'
 import { INoteBase } from '@sofie-automation/corelib/dist/dataModel/Notes'
-import { JobContext } from '../../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { MongoQuery } from '../../db'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { convertPartInstanceToBlueprints, convertPieceInstanceToBlueprints, convertSegmentToBlueprints } from './lib'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 export interface ContextInfo {
 	/** Short name for the context (eg the blueprint function being called) */
@@ -134,6 +134,8 @@ export class CommonContext implements ICommonContext {
 /** Studio */
 
 export class StudioContext extends CommonContext implements IStudioContext {
+	#processedMappings: ReadonlyDeep<MappingsExt> | undefined
+
 	constructor(
 		contextInfo: ContextInfo,
 		public readonly studio: ReadonlyDeep<DBStudio>,
@@ -157,8 +159,11 @@ export class StudioContext extends CommonContext implements IStudioContext {
 		return getStudioConfigRef(this.studio._id, configKey)
 	}
 	getStudioMappings(): Readonly<BlueprintMappings> {
+		if (!this.#processedMappings) {
+			this.#processedMappings = applyAndValidateOverrides(this.studio.mappingsWithOverrides).obj
+		}
 		// @ts-expect-error ProtectedString deviceId not compatible with string
-		return this.studio.mappings
+		return this.#processedMappings
 	}
 }
 
@@ -168,10 +173,9 @@ export class StudioBaselineContext extends StudioContext implements IStudioBasel
 	constructor(
 		contextInfo: UserContextInfo,
 		context: JobContext,
-		studio: ReadonlyDeep<DBStudio>,
 		private readonly watchedPackages: WatchedPackagesHelper
 	) {
-		super(contextInfo, studio, context.getStudioBlueprintConfig())
+		super(contextInfo, context.studio, context.getStudioBlueprintConfig())
 		this.jobContext = context
 	}
 
@@ -249,7 +253,7 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 		contextInfo: ContextInfo,
 		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
-		public readonly showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		public readonly showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		public readonly showStyleBlueprintConfig: ProcessedShowStyleConfig
 	) {
 		super(contextInfo, studio, studioBlueprintConfig)
@@ -272,7 +276,7 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 	constructor(
 		contextInfo: UserContextInfo,
 		context: JobContext,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		private readonly watchedPackages: WatchedPackagesHelper
 	) {
 		super(
@@ -341,7 +345,7 @@ export class GetRundownContext extends ShowStyleUserContext implements IGetRundo
 	constructor(
 		contextInfo: UserContextInfo,
 		context: JobContext,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		watchedPackages: WatchedPackagesHelper,
 		private getPlaylistsInStudio: () => Promise<DBRundownPlaylist[]>,
 		private getRundownsInStudio: () => Promise<Pick<Rundown, '_id' | 'playlistId'>[]>,
@@ -416,7 +420,7 @@ export class RundownContext extends ShowStyleContext implements IRundownContext 
 		contextInfo: ContextInfo,
 		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: ReadonlyDeep<DBRundown>
 	) {
@@ -456,7 +460,7 @@ export class RundownEventContext extends RundownContext implements IEventContext
 	constructor(
 		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: ReadonlyDeep<DBRundown>
 	) {
@@ -490,7 +494,7 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 	constructor(
 		contextInfo: ContextInfo,
 		context: JobContext,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>,
 		private readonly watchedPackages: WatchedPackagesHelper
 	) {
@@ -563,7 +567,7 @@ export class PartEventContext extends RundownContext implements IPartEventContex
 		eventName: string,
 		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: ReadonlyDeep<DBRundown>,
 		partInstance: DBPartInstance
@@ -616,7 +620,7 @@ export class OnTimelineGenerateContext extends RundownContext implements ITimeli
 	constructor(
 		studio: ReadonlyDeep<DBStudio>,
 		studioBlueprintConfig: ProcessedStudioConfig,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		playlist: ReadonlyDeep<DBRundownPlaylist>,
 		rundown: ReadonlyDeep<DBRundown>,
@@ -791,7 +795,7 @@ export class RundownDataChangedEventContext extends RundownContext implements IR
 	constructor(
 		protected readonly context: JobContext,
 		contextInfo: ContextInfo,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>
 	) {
 		super(
@@ -849,7 +853,7 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 	constructor(
 		context: JobContext,
 		contextInfo: ContextInfo,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>,
 		previousPartInstance: DBPartInstance | undefined,
 		partInstance: DBPartInstance,

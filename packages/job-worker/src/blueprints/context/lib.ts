@@ -10,8 +10,6 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { clone, Complete, literal } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
@@ -35,6 +33,7 @@ import {
 	ISourceLayer,
 	RundownPlaylistTiming,
 } from '@sofie-automation/blueprints-integration'
+import { ProcessedShowStyleBase, ProcessedShowStyleVariant } from '../../jobs'
 
 /**
  * Convert an object to have all the values of all keys (including optionals) be 'true'
@@ -105,8 +104,8 @@ function convertPieceInstanceToBlueprintsInner(pieceInstance: PieceInstance): Co
 		partInstanceId: unprotectString(pieceInstance.partInstanceId),
 		adLibSourceId: unprotectString(pieceInstance.adLibSourceId),
 		dynamicallyInserted: pieceInstance.dynamicallyInserted,
-		startedPlayback: pieceInstance.startedPlayback,
-		stoppedPlayback: pieceInstance.stoppedPlayback,
+		reportedStartedPlayback: pieceInstance.reportedStartedPlayback,
+		reportedStoppedPlayback: pieceInstance.reportedStoppedPlayback,
 		infinite: pieceInstance.infinite
 			? literal<Complete<IBlueprintPieceInstance['infinite']>>({
 					infinitePieceId: unprotectString(pieceInstance.infinite.infinitePieceId),
@@ -342,13 +341,13 @@ export function convertRundownToBlueprints(rundown: ReadonlyDeep<DBRundown>): IB
  * @returns a cloned complete and clean IBlueprintShowStyleBase
  */
 export function convertShowStyleBaseToBlueprints(
-	showStyleBase: ReadonlyDeep<DBShowStyleBase>
+	showStyleBase: ReadonlyDeep<ProcessedShowStyleBase>
 ): IBlueprintShowStyleBase {
 	const obj: Complete<IBlueprintShowStyleBase> = {
 		_id: unprotectString(showStyleBase._id),
 		blueprintId: unprotectString(showStyleBase.blueprintId),
-		outputLayers: clone<IOutputLayer[]>(showStyleBase.outputLayers),
-		sourceLayers: clone<ISourceLayer[]>(showStyleBase.sourceLayers),
+		outputLayers: clone(Object.values(showStyleBase.outputLayers).filter((l): l is IOutputLayer => !!l)),
+		sourceLayers: clone(Object.values(showStyleBase.sourceLayers).filter((l): l is ISourceLayer => !!l)),
 		blueprintConfig: clone<IBlueprintConfig>(showStyleBase.blueprintConfig),
 	}
 
@@ -361,7 +360,7 @@ export function convertShowStyleBaseToBlueprints(
  * @returns a cloned complete and clean IBlueprintShowStyleVariant
  */
 export function convertShowStyleVariantToBlueprints(
-	showStyleVariant: ReadonlyDeep<DBShowStyleVariant>
+	showStyleVariant: ReadonlyDeep<ProcessedShowStyleVariant>
 ): IBlueprintShowStyleVariant {
 	const obj: Complete<IBlueprintShowStyleVariant> = {
 		_id: unprotectString(showStyleVariant._id),

@@ -1,8 +1,8 @@
 import * as _ from 'underscore'
 import { Pieces, Piece } from './collections/Pieces'
 import { IOutputLayer, ISourceLayer, ITranslatableMessage } from '@sofie-automation/blueprints-integration'
-import { DBSegment, Segment, SegmentId } from './collections/Segments'
-import { PartId, DBPart } from './collections/Parts'
+import { DBSegment, Segment } from './collections/Segments'
+import { DBPart } from './collections/Parts'
 import { PartInstance, wrapPartToTemporaryInstance } from './collections/PartInstances'
 import { PieceInstance, PieceInstances } from './collections/PieceInstances'
 import {
@@ -11,7 +11,7 @@ import {
 	buildPastInfinitePiecesForThisPartQuery,
 	PieceInstanceWithTimings,
 } from '@sofie-automation/corelib/dist/playout/infinites'
-import { FindOptions, MongoQuery } from './typings/meteor'
+import { MongoQuery } from './typings/meteor'
 import { invalidateAfter } from '../client/lib/invalidatingTime'
 import {
 	convertCorelibToMeteorMongoQuery,
@@ -20,15 +20,18 @@ import {
 	protectString,
 	unprotectString,
 } from './lib'
-import {
-	RundownPlaylist,
-	RundownPlaylistActivationId,
-	RundownPlaylistCollectionUtil,
-} from './collections/RundownPlaylists'
-import { Rundown, RundownId } from './collections/Rundowns'
-import { ShowStyleBaseId } from './collections/ShowStyleBases'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from './collections/RundownPlaylists'
+import { Rundown } from './collections/Rundowns'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { mongoWhereFilter } from '@sofie-automation/corelib/dist/mongo'
+import { FindOptions } from './collections/lib'
+import {
+	PartId,
+	RundownId,
+	RundownPlaylistActivationId,
+	SegmentId,
+	ShowStyleBaseId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
@@ -204,7 +207,7 @@ export function getPieceInstancesForPartInstance(
 			pieceInstanceSimulation &&
 			results.length === 0 &&
 			(!partInstance.timings ||
-				(partInstance.timings.next || 0) > now - SIMULATION_INVALIDATION ||
+				(partInstance.timings.setAsNext || 0) > now - SIMULATION_INVALIDATION ||
 				(partInstance.timings.take || 0) > now - SIMULATION_INVALIDATION)
 		) {
 			// make sure to invalidate the current computation after SIMULATION_INVALIDATION has passed

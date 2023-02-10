@@ -1,9 +1,13 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { PeripheralDevice, PeripheralDevices, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
+import {
+	PeripheralDevice,
+	PeripheralDevices,
+	PeripheralDeviceType,
+	PERIPHERAL_SUBTYPE_PROCESS,
+} from '../../../lib/collections/PeripheralDevices'
 import * as reacti18next from 'react-i18next'
 import * as i18next from 'i18next'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import Moment from 'react-moment'
 import { assertNever, getCurrentTime, getHash, unprotectString } from '../../../lib/lib'
 import { Link } from 'react-router-dom'
@@ -195,6 +199,40 @@ export const DeviceItem = reacti18next.withTranslation()(
 				},
 			})
 		}
+		onVizPurgeRundown(device: PeripheralDevice) {
+			const { t } = this.props
+
+			doModalDialog({
+				title: t('Purge Viz Rundown'),
+				message: t('Do you want to purge all elements from the viz-rundown?'),
+				onAccept: (event: any) => {
+					callPeripheralDeviceFunction(event, device._id, undefined, 'vizPurgeRundown')
+						.then(() => {
+							NotificationCenter.push(
+								new Notification(
+									undefined,
+									NoticeLevel.NOTIFICATION,
+									t('Purged all elements from rundown on Viz-device "{{deviceName}}"!', { deviceName: device.name }),
+									'SystemStatus'
+								)
+							)
+						})
+						.catch((err) => {
+							NotificationCenter.push(
+								new Notification(
+									undefined,
+									NoticeLevel.WARNING,
+									t('Purging failed: {{errorMessage}}', {
+										deviceName: device.name,
+										errorMessage: err + '',
+									}),
+									'SystemStatus'
+								)
+							)
+						})
+				},
+			})
+		}
 
 		render() {
 			const { t } = this.props
@@ -298,6 +336,22 @@ export const DeviceItem = reacti18next.withTranslation()(
 									</button>
 								</React.Fragment>
 							) : null}
+							{getAllowStudio() &&
+							this.props.device.type === PeripheralDeviceType.PLAYOUT &&
+							this.props.device.subType === TSR.DeviceType.VIZMSE ? (
+								<React.Fragment>
+									<button
+										className="btn btn-secondary"
+										onClick={(e) => {
+											e.preventDefault()
+											e.stopPropagation()
+											this.onVizPurgeRundown(this.props.device)
+										}}
+									>
+										{t('Purge Viz Rundown')}
+									</button>
+								</React.Fragment>
+							) : null}
 							{getAllowDeveloper() ? (
 								<button
 									key="button-ignore"
@@ -339,7 +393,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
 							) : null}
-							{getAllowStudio() && this.props.device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS ? (
+							{getAllowStudio() && this.props.device.subType === PERIPHERAL_SUBTYPE_PROCESS ? (
 								<React.Fragment>
 									<button
 										className="btn btn-secondary"

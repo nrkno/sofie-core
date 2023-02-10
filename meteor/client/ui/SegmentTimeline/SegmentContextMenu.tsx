@@ -8,7 +8,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { IContextMenuContext } from '../RundownView'
 import { PartUi, SegmentUi } from './SegmentTimelineContainer'
-import { SegmentId } from '../../../lib/collections/Segments'
+import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
 	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void

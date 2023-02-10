@@ -1,3 +1,4 @@
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import React from 'react'
 import {
 	ConnectDropTarget,
@@ -8,7 +9,6 @@ import {
 	DropTargetSpec,
 } from 'react-dnd'
 import { withTranslation } from 'react-i18next'
-import { RundownId } from '../../../lib/collections/Rundowns'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import {
 	IRundownPlaylistUiAction,

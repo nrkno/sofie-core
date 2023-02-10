@@ -14,14 +14,16 @@ import RemoteInputIcon from './Renderers/RemoteInputIcon'
 import LiveSpeakInputIcon from './Renderers/LiveSpeakInputIcon'
 import GraphicsInputIcon from './Renderers/GraphicsInputIcon'
 import UnknownInputIcon from './Renderers/UnknownInputIcon'
-import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { PubSub } from '../../../lib/api/pubsub'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
-import { RundownId } from '../../../lib/collections/Rundowns'
 import { findPieceInstanceToShow, findPieceInstanceToShowFromInstances } from './utils'
-import { RundownPlaylistActivationId } from '../../../lib/collections/RundownPlaylists'
 import LocalInputIcon from './Renderers/LocalInputIcon'
+import {
+	PartInstanceId,
+	RundownId,
+	RundownPlaylistActivationId,
+	ShowStyleBaseId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface IPropsHeader {
 	partInstanceId: PartInstanceId
@@ -131,9 +133,7 @@ export function PieceIconContainer(props: IPropsHeader): JSX.Element | null {
 		playlistActivationId: props.playlistActivationId,
 	})
 
-	useSubscription(PubSub.showStyleBases, {
-		_id: props.showStyleBaseId,
-	})
+	useSubscription(PubSub.uiShowStyleBase, props.showStyleBaseId)
 
 	return <PieceIcon pieceInstance={pieceInstance} sourceLayer={sourceLayer} />
 }

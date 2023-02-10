@@ -13,6 +13,7 @@ import {
 	QuantelDevice,
 	MediaObject,
 	DeviceOptionsAny,
+	VizMSEDevice,
 } from 'timeline-state-resolver'
 
 import * as _ from 'underscore'
@@ -27,7 +28,7 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
-	StatusObject,
+	PeripheralDeviceStatusObject,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
@@ -91,7 +92,6 @@ export class CoreHandler {
 	}
 
 	async init(config: CoreConfig, process: Process): Promise<void> {
-		// this.logger.info('========')
 		this._statusInitialized = false
 		this._coreConfig = config
 		this._process = process
@@ -146,6 +146,7 @@ export class CoreHandler {
 			this.core.autoSubscribe('studioOfDevice', this.core.deviceId),
 			this.core.autoSubscribe('mappingsForDevice', this.core.deviceId),
 			this.core.autoSubscribe('timelineForDevice', this.core.deviceId),
+			this.core.autoSubscribe('timelineDatastoreForDevice', this.core.deviceId),
 			this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId),
 			this.core.autoSubscribe('rundownsForDevice', this.core.deviceId),
 		])
@@ -315,9 +316,7 @@ export class CoreHandler {
 					.then(() => {
 						// console.log('cb done')
 					})
-					.catch((e) => {
-						this.logger.error(e)
-					})
+					.catch((error) => this.logger.error(error))
 			}
 			// @ts-expect-error Untyped bunch of functions
 			// eslint-disable-next-line @typescript-eslint/ban-types
@@ -326,12 +325,8 @@ export class CoreHandler {
 				if (!fcn) throw Error(`Function "${cmd.functionName}" not found on device "${cmd.deviceId}"!`)
 
 				Promise.resolve(fcn.apply(fcnObject, cmd.args))
-					.then((result) => {
-						cb(null, result)
-					})
-					.catch((e) => {
-						cb(e.toString(), null)
-					})
+					.then((result) => cb(null, result))
+					.catch((error) => cb(error.toString(), null))
 			} catch (e: any) {
 				cb(e.toString(), null)
 			}
@@ -478,6 +473,14 @@ export class CoreHandler {
 
 		await device.formatDisks()
 	}
+	async vizPurgeRundown(deviceId: string): Promise<any> {
+		if (!this._tsrHandler) throw new Error('TSRHandler is not initialized')
+
+		const device = this._tsrHandler.tsr.getDevice(deviceId)?.device as ThreadedClass<VizMSEDevice>
+		if (!device) throw new Error(`TSR Device "${deviceId}" not found!`)
+
+		return device.purgeRundown(true)
+	}
 	async updateCoreStatus(): Promise<any> {
 		let statusCode = StatusCode.GOOD
 		const messages: Array<string> = []
@@ -539,7 +542,7 @@ export class CoreTSRDeviceHandler {
 	private _tsrHandler: TSRHandler
 	private _subscriptions: Array<string> = []
 	private _hasGottenStatusChange = false
-	private _deviceStatus: StatusObject = {
+	private _deviceStatus: PeripheralDeviceStatusObject = {
 		statusCode: StatusCode.BAD,
 		messages: ['Starting up...'],
 	}
@@ -614,7 +617,7 @@ export class CoreTSRDeviceHandler {
 		// setup observers
 		this._coreParentHandler.setupObserverForPeripheralDeviceCommands(this)
 	}
-	statusChanged(deviceStatus: Partial<StatusObject>): void {
+	statusChanged(deviceStatus: Partial<PeripheralDeviceStatusObject>): void {
 		this._hasGottenStatusChange = true
 
 		this._deviceStatus = {

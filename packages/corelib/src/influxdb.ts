@@ -1,4 +1,5 @@
 import * as Influx from 'influx'
+import * as os from 'os'
 
 export interface InfluxConfig {
 	host: string | undefined
@@ -109,6 +110,9 @@ export function initInfluxdb(config: InfluxConfig, tags: Record<string, string>)
 			protocol,
 		})
 
-		additionalTags = tags
+		additionalTags = {
+			...tags,
+			host: os.hostname(),
+		}
 	}
 }

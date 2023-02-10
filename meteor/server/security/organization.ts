@@ -1,23 +1,28 @@
 import { Meteor } from 'meteor/meteor'
-import { OrganizationId } from '../../lib/collections/Organization'
-import { Snapshots, SnapshotItem, SnapshotId } from '../../lib/collections/Snapshots'
-import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
+import { Snapshots, SnapshotItem } from '../../lib/collections/Snapshots'
+import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import { logNotAllowed } from './lib/lib'
-import { MongoQueryKey, UserId } from '../../lib/typings/meteor'
+import { MongoQueryKey } from '../../lib/typings/meteor'
 import { allowAccessToOrganization } from './lib/security'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { Settings } from '../../lib/Settings'
 import { MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
-import { StudioId } from '../../lib/collections/Studios'
-import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
 import {
 	fetchShowStyleBaseLight,
 	fetchStudioLight,
 	ShowStyleBaseLight,
 	StudioLight,
 } from '../../lib/collections/optimizations'
+import {
+	BlueprintId,
+	OrganizationId,
+	ShowStyleBaseId,
+	SnapshotId,
+	StudioId,
+	UserId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export type BasicAccessContext = { organizationId: OrganizationId | null; userId: UserId | null }
 

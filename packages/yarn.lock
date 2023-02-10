@@ -3092,10 +3092,10 @@
     webpack-sources "^3.2.2"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "1.46.0-in-testing.0"
+  version "1.47.0-in-testing.7"
   dependencies:
     "@sofie-automation/shared-lib" "link:shared-lib"
-    timeline-state-resolver-types "7.4.0-release46.2"
+    timeline-state-resolver-types "7.5.0-release47.6"
     tslib "^2.4.0"
     type-fest "^2.19.0"
 
@@ -3120,7 +3120,7 @@
     shelljs "^0.8.5"
 
 "@sofie-automation/corelib@link:corelib":
-  version "1.46.0-in-testing.0"
+  version "1.47.0-in-testing.7"
   dependencies:
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     "@sofie-automation/shared-lib" "link:shared-lib"
@@ -3136,7 +3136,7 @@
     underscore "^1.13.4"
 
 "@sofie-automation/shared-lib@link:shared-lib":
-  version "1.46.0-in-testing.0"
+  version "1.47.0-in-testing.7"
   dependencies:
     tslib "^2.4.0"
     type-fest "^2.19.0"
@@ -3382,10 +3382,10 @@
   resolved "https://registry.yarnpkg.com/@trysound/sax/-/sax-0.2.0.tgz#cccaab758af56761eb7bf37af6f03f326dd798ad"
   integrity sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==
 
-"@tv2media/v-connection@^6.0.2":
-  version "6.0.2"
-  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-6.0.2.tgz#319eb7e31e4f9d8b80e4ecd21068dda33c720640"
-  integrity sha512-1bbI2xz943i4k5dyMFs0miMR/Xr4xm5Ua2bPeoKuScrWokLmIbtmQGazIf7JQLxa010hGZTF7J8uUIe0f4JoYg==
+"@tv2media/v-connection@^6.0.3":
+  version "6.1.0"
+  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-6.1.0.tgz#c1b97967a49703b5b0d464c81c144cffb544b891"
+  integrity sha512-Tubfcb9PWyQ2P2tjwEWTDxM+oYM66rlle7d0R8xmeeQOdG3MU/EoSqbs1VFQnX25DD75zDYxzZQBE0g1jWj1BQ==
   dependencies:
     request "^2.88.2"
     request-promise-native "^1.0.9"
@@ -5107,10 +5107,10 @@ casparcg-connection@^5.1.0:
     xml2js "^0.4.19"
     xmlbuilder "^9.0.7"
 
-casparcg-state@2.1.2-nightly-latest-20220819-074840-588e6e7.0:
-  version "2.1.2-nightly-latest-20220819-074840-588e6e7.0"
-  resolved "https://registry.yarnpkg.com/casparcg-state/-/casparcg-state-2.1.2-nightly-latest-20220819-074840-588e6e7.0.tgz#9245f5d906189cb78e377dc3da31eefb883a7557"
-  integrity sha512-B34c/Ts3pw0U7w0bHaR5SyFrPHaJt9IVNk4KU0yGphEd8NCmoX/6rQhpfecHStjY0uTFQwXpkiVaGaWcj+rkcw==
+casparcg-state@2.1.3:
+  version "2.1.3"
+  resolved "https://registry.yarnpkg.com/casparcg-state/-/casparcg-state-2.1.3.tgz#a21d84da19815b9ca31fe4cc31c11907712f22be"
+  integrity sha512-bhoUwsqMOBQ+zfyrw6TNjp6uTE25N9cU8DqBkEZp7WsixwXlHzxyFWO3i+u1itBKfhNsIw/vM9Y09mmXGY5oZw==
   dependencies:
     casparcg-connection "^5.1.0"
     fast-clone "^1.5.13"
@@ -13711,7 +13711,7 @@ stylehacks@^5.1.0:
     browserslist "^4.16.6"
     postcss-selector-parser "^6.0.4"
 
-superfly-timeline@^8.2.8, superfly-timeline@^8.3.1:
+superfly-timeline@^8.3.1:
   version "8.3.1"
   resolved "https://registry.yarnpkg.com/superfly-timeline/-/superfly-timeline-8.3.1.tgz#c0be6b627718845255968ba5e936d901a0924a80"
   integrity sha512-7WCwGocqahsJQcrW1SX4HRKP4ecmzxhdhB70EuqA+Sjbj06SP02IyniT/G5Y4UOLQPliJKEJezW8Uq8aBpxBFA==
@@ -13917,10 +13917,20 @@ threadedclass@^0.8.0:
     is-running "^2.1.0"
     tslib "^1.13.0"
 
-threadedclass@^1.1.0, threadedclass@^1.1.1:
+threadedclass@^1.1.1:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.1.1.tgz#6813b3c401b3d55264f6225c9d2c15516d7efa97"
   integrity sha512-HffBjerRZGOlhUBt9Ue8nYCuV6khK9er86w4svTvf1Xn6ibAyJok290o2MJ/qJ1vy0A4UphEo3DSsxFN5g+TBQ==
+  dependencies:
+    callsites "^3.1.0"
+    eventemitter3 "^4.0.4"
+    is-running "^2.1.0"
+    tslib "^1.13.0"
+
+threadedclass@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.1.2.tgz#212992b06b87828b95921d8752a490af73287452"
+  integrity sha512-RAk1UvarFneT7j6xwB9QxAG6+Qm4ceFEkZH5YSyLXECmGa084DrUu7TqcQlX+o7VOXxr7V3WKGi70eWHMRG+hw==
   dependencies:
     callsites "^3.1.0"
     eventemitter3 "^4.0.4"
@@ -13962,23 +13972,23 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.4.0-release46.2:
-  version "7.4.0-release46.2"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.4.0-release46.2.tgz#cb0fd08c7537504eca3531206bc20501612e33f0"
-  integrity sha512-1WYIyBiKS+JR1sBXB5gYGvcMB7JZhY4N++36i8YD44pP5B8a1j0g5LHcuv6Exo4DizlS6JuvvheSj218gKy6PQ==
+timeline-state-resolver-types@7.5.0-release47.6:
+  version "7.5.0-release47.6"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.5.0-release47.6.tgz#a031e7545a9b2f7c47a323dcabff61f24d8a0bd8"
+  integrity sha512-LghzsjQaSvaj63hFwVOLAGuTqHjeP/XoBhW+TZBKm99HZPqYg0I3dL9n5kRAeDiCi4r7gS0P+/TY/6dW7YakzA==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@7.4.0-release46.2:
-  version "7.4.0-release46.2"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.4.0-release46.2.tgz#926de42c12f1409be040a58020523f03a12c88f3"
-  integrity sha512-sRcEIjCNwc30FbNurFvYM9wQfBRSLeo26nYCwo9OZ25XO2MCpBbLkfEYY3czKEDLGhdrgkDBYb/NM6TuvhkHPg==
+timeline-state-resolver@7.5.0-release47.6:
+  version "7.5.0-release47.6"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.5.0-release47.6.tgz#05c24a2dd2d9114dfed40e811d9fb648f5a6277a"
+  integrity sha512-8Sa6AIBYM3P8Q/djcvplj4GIWSOEU8SkFtdHPenjsb5hsDW9F4CYjuYQEJmEhZ5eofZ7MqcKWybBmuXOS/nOfg==
   dependencies:
-    "@tv2media/v-connection" "^6.0.2"
+    "@tv2media/v-connection" "^6.0.3"
     atem-connection "2.4.0"
     atem-state "^0.12.2"
     casparcg-connection "^5.1.0"
-    casparcg-state "2.1.2-nightly-latest-20220819-074840-588e6e7.0"
+    casparcg-state "2.1.3"
     debug "^4.3.1"
     deepmerge "^4.2.2"
     emberplus-connection "^0.1.2"
@@ -13992,9 +14002,9 @@ timeline-state-resolver@7.4.0-release46.2:
     p-timeout "^3.2.0"
     request "^2.88.0"
     sprintf-js "^1.1.2"
-    superfly-timeline "^8.2.8"
+    superfly-timeline "^8.3.1"
     threadedclass "^1.1.1"
-    timeline-state-resolver-types "7.4.0-release46.2"
+    timeline-state-resolver-types "7.5.0-release47.6"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.5"
     underscore "^1.13.4"

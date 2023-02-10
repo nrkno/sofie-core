@@ -9,38 +9,17 @@ import {
 	DashboardPanelUnit,
 	PieceDisplayStyle,
 	RundownLayout,
-	RundownLayoutAdLibRegion,
 	RundownLayoutAdLibRegionRole,
 	RundownLayoutBase,
-	RundownLayoutColoredBox,
 	RundownLayoutElementBase,
 	RundownLayoutElementType,
-	RundownLayoutEndWords,
-	RundownLayoutExternalFrame,
 	RundownLayoutFilterBase,
-	RundownLayoutKeyboardPreview,
-	RundownLayoutMiniRundown,
-	RundownLayoutNextBreakTiming,
-	RundownLayoutNextInfo,
-	RundownLayoutPartName,
-	RundownLayoutPartTiming,
-	RundownLayoutPieceCountdown,
-	RundownLayoutPlaylistEndTimer,
-	RundownLayoutPlaylistName,
-	RundownLayoutPlaylistStartTimer,
 	RundownLayouts,
-	RundownLayoutSegmentName,
-	RundownLayoutSegmentTiming,
-	RundownLayoutShowStyleDisplay,
-	RundownLayoutStudioName,
-	RundownLayoutSytemStatus,
-	RundownLayoutTextLabel,
-	RundownLayoutTimeOfDay,
 } from '../../../../lib/collections/RundownLayouts'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
-import { SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { IOutputLayer, ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { withTranslation } from 'react-i18next'
 import { defaultColorPickerPalette } from '../../../lib/colorPicker'
 
@@ -233,9 +212,10 @@ export default withTranslation()(
 							modifiedClassName="bghl"
 							attribute={`filters.${index}.sourceLayerIds`}
 							obj={item}
-							options={this.props.showStyleBase.sourceLayers.map((l) => {
-								return { name: l.name, value: l._id }
-							})}
+							options={Object.values(this.props.showStyleBase.sourceLayersWithOverrides.defaults)
+								.filter((s): s is ISourceLayer => !!s)
+								.sort((a, b) => a._rank - b._rank)
+								.map((l) => ({ name: l.name, value: l._id }))}
 							type="multiselect"
 							label={t('Filter Disabled')}
 							collection={RundownLayouts}
@@ -286,9 +266,10 @@ export default withTranslation()(
 							modifiedClassName="bghl"
 							attribute={`filters.${index}.outputLayerIds`}
 							obj={item}
-							options={this.props.showStyleBase.outputLayers.map((l) => {
-								return { name: l.name, value: l._id }
-							})}
+							options={Object.values(this.props.showStyleBase.outputLayersWithOverrides.defaults)
+								.filter((s): s is IOutputLayer => !!s)
+								.sort((a, b) => a._rank - b._rank)
+								.map((l) => ({ name: l.name, value: l._id }))}
 							type="multiselect"
 							label={t('Filter Disabled')}
 							collection={RundownLayouts}
@@ -531,13 +512,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderFrame(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutExternalFrame,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderFrame(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -585,13 +560,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderAdLibRegion(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutAdLibRegion,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderAdLibRegion(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -681,13 +650,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderPieceCountdown(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutPieceCountdown,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderPieceCountdown(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -707,9 +670,10 @@ export default withTranslation()(
 							modifiedClassName="bghl"
 							attribute={`filters.${index}.sourceLayerIds`}
 							obj={item}
-							options={this.props.showStyleBase.sourceLayers.map((l) => {
-								return { name: l.name, value: l._id }
-							})}
+							options={Object.values(this.props.showStyleBase.sourceLayersWithOverrides.defaults)
+								.filter((s): s is ISourceLayer => !!s)
+								.sort((a, b) => a._rank - b._rank)
+								.map((l) => ({ name: l.name, value: l._id }))}
 							type="multiselect"
 							label={t('Disabled')}
 							collection={RundownLayouts}
@@ -722,13 +686,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderNextInfo(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutNextInfo,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderNextInfo(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -789,13 +747,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderPlaylistStartTimer(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutPlaylistStartTimer,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderPlaylistStartTimer(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -857,13 +809,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderPlaylistEndTimer(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutPlaylistEndTimer,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderPlaylistEndTimer(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -964,13 +910,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderEndWords(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutEndWords,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderEndWords(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -1011,13 +951,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderSegmentTiming(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutSegmentTiming,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderSegmentTiming(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 
 			return (
@@ -1054,57 +988,7 @@ export default withTranslation()(
 				</React.Fragment>
 			)
 		}
-		renderSegmentCountDown(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutSegmentTiming,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
-			const { t } = this.props
-
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Type')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${this.props.index}.timingType`}
-								obj={this.props.item}
-								options={['count_down', 'count_up']}
-								type="dropdown"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Hide Label')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.hideLabel`}
-								obj={item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"
-							/>
-						</label>
-					</div>
-					{this.renderRequiresActiveLayerSettings(item, index, t('Require Piece on Source Layer'), '')}
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
-				</React.Fragment>
-			)
-		}
-
-		renderPartTiming(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutPartTiming,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderSegmentCountDown(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 
 			return (
@@ -1142,13 +1026,45 @@ export default withTranslation()(
 			)
 		}
 
-		renderTextLabel(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutTextLabel,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderPartTiming(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
+			const { t } = this.props
+
+			return (
+				<React.Fragment>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Type')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${this.props.index}.timingType`}
+								obj={this.props.item}
+								options={['count_down', 'count_up']}
+								type="dropdown"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+							></EditAttribute>
+						</label>
+					</div>
+					<div className="mod mvs mhs">
+						<label className="field">
+							{t('Hide Label')}
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.hideLabel`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+							/>
+						</label>
+					</div>
+					{this.renderRequiresActiveLayerSettings(item, index, t('Require Piece on Source Layer'), '')}
+					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
+				</React.Fragment>
+			)
+		}
+
+		renderTextLabel(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -1183,13 +1099,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderPlaylistName(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutPlaylistName,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderPlaylistName(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -1224,13 +1134,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderStudioName(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutStudioName,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderStudioName(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -1252,13 +1156,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderSegmentName(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutSegmentName,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderSegmentName(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -1294,13 +1192,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderPartName(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutPartName,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderPartName(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -1350,13 +1242,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderColoredBox(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutColoredBox,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderColoredBox(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -1392,13 +1278,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderShowStyleDisplay(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutShowStyleDisplay,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderShowStyleDisplay(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -1420,13 +1300,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderSystemStatus(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutSytemStatus,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderSystemStatus(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -1448,13 +1322,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderTimeOfDay(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutTimeOfDay,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderTimeOfDay(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -1514,9 +1382,10 @@ export default withTranslation()(
 							modifiedClassName="bghl"
 							attribute={`filters.${index}.requiredLayerIds`}
 							obj={item}
-							options={this.props.showStyleBase.sourceLayers.map((l) => {
-								return { name: l.name, value: l._id }
-							})}
+							options={Object.values(this.props.showStyleBase.sourceLayersWithOverrides.defaults)
+								.filter((s): s is ISourceLayer => !!s)
+								.sort((a, b) => a._rank - b._rank)
+								.map((l) => ({ name: l.name, value: l._id }))}
 							type="multiselect"
 							label={t('Disabled')}
 							collection={RundownLayouts}
@@ -1541,9 +1410,10 @@ export default withTranslation()(
 							modifiedClassName="bghl"
 							attribute={`filters.${index}.additionalLayers`}
 							obj={item}
-							options={this.props.showStyleBase.sourceLayers.map((l) => {
-								return { name: l.name, value: l._id }
-							})}
+							options={Object.values(this.props.showStyleBase.sourceLayersWithOverrides.defaults)
+								.filter((s): s is ISourceLayer => !!s)
+								.sort((a, b) => a._rank - b._rank)
+								.map((l) => ({ name: l.name, value: l._id }))}
 							type="multiselect"
 							label={t('Disabled')}
 							collection={RundownLayouts}
@@ -1735,13 +1605,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderKeyboardLayout(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutKeyboardPreview,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderKeyboardLayout(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -1763,13 +1627,7 @@ export default withTranslation()(
 			)
 		}
 
-		renderNextBreakTiming(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutNextBreakTiming,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderNextBreakTiming(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -1790,13 +1648,7 @@ export default withTranslation()(
 				</React.Fragment>
 			)
 		}
-		renderMiniRundown(
-			item: RundownLayoutBase,
-			_tab: RundownLayoutMiniRundown,
-			index: number,
-			_isRundownLayout: boolean,
-			isDashboardLayout: boolean
-		) {
+		renderMiniRundown(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (
 				<React.Fragment>
@@ -1828,45 +1680,45 @@ export default withTranslation()(
 			if (RundownLayoutsAPI.isFilter(filter)) {
 				return this.renderRundownLayoutFilter(item, filter, index, isRundownLayout, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isExternalFrame(filter)) {
-				return this.renderFrame(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderFrame(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isAdLibRegion(filter)) {
-				return this.renderAdLibRegion(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderAdLibRegion(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isPieceCountdown(filter)) {
-				return this.renderPieceCountdown(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderPieceCountdown(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isKeyboardMap(filter)) {
-				return this.renderKeyboardLayout(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderKeyboardLayout(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isNextInfo(filter)) {
-				return this.renderNextInfo(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderNextInfo(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isPlaylistStartTimer(filter)) {
-				return this.renderPlaylistStartTimer(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderPlaylistStartTimer(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isPlaylistEndTimer(filter)) {
-				return this.renderPlaylistEndTimer(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderPlaylistEndTimer(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isEndWords(filter)) {
-				return this.renderEndWords(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderEndWords(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isSegmentTiming(filter)) {
-				return this.renderSegmentCountDown(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderSegmentCountDown(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isPartTiming(filter)) {
-				return this.renderPartTiming(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderPartTiming(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isTextLabel(filter)) {
-				return this.renderTextLabel(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderTextLabel(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isPlaylistName(filter)) {
-				return this.renderPlaylistName(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderPlaylistName(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isStudioName(filter)) {
-				return this.renderStudioName(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderStudioName(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isSegmentName(filter)) {
-				return this.renderSegmentName(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderSegmentName(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isPartName(filter)) {
-				return this.renderPartName(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderPartName(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isColoredBox(filter)) {
-				return this.renderColoredBox(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderColoredBox(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isTimeOfDay(filter)) {
-				return this.renderTimeOfDay(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderTimeOfDay(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isShowStyleDisplay(filter)) {
-				return this.renderShowStyleDisplay(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderShowStyleDisplay(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isSystemStatus(filter)) {
-				return this.renderSystemStatus(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderSystemStatus(item, index, isDashboardLayout)
 			} else if (RundownLayoutsAPI.isMiniRundown(filter)) {
-				return this.renderMiniRundown(item, filter, index, isRundownLayout, isDashboardLayout)
+				return this.renderMiniRundown(item, index, isDashboardLayout)
 			}
 		}
 

@@ -4,7 +4,7 @@ import * as _ from 'underscore'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { withTranslation } from 'react-i18next'
-import { PeripheralDevices, PeripheralDeviceId, PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevices, PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { ModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -19,6 +19,7 @@ import {
 import { ConfigManifestEntryComponent } from './ConfigManifestEntryComponent'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
 import { unprotectString } from '../../../../lib/lib'
+import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 type EditId = PeripheralDeviceId | string
 interface IGenericDeviceSettingsComponentState {

@@ -1,10 +1,10 @@
-import { DBTriggeredActions, TriggeredActionId } from '../collections/TriggeredActions'
-import { ShowStyleBaseId } from '../collections/ShowStyleBases'
+import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { DBTriggeredActions } from '../collections/TriggeredActions'
 
 export interface NewTriggeredActionsAPI {
 	createTriggeredActions(
 		showStyleBaseId: ShowStyleBaseId | null,
-		base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggers' | 'actions' | 'name'>>
+		base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggersWithOverrides' | 'actionsWithOverrides' | 'name'>>
 	): Promise<TriggeredActionId>
 	removeTriggeredActions(id: TriggeredActionId): Promise<void>
 }

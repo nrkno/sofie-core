@@ -1,6 +1,6 @@
 import classNames from 'classnames'
 import React, { useCallback, useEffect, useState } from 'react'
-import { Studio } from '../../../../lib/collections/Studios'
+import { UIStudio } from '../../../../lib/api/studios'
 import { ISourceLayerExtended } from '../../../../lib/Rundown'
 import { RundownUtils } from '../../../lib/rundown'
 import { AdLibPieceUi } from '../../../lib/shelf'
@@ -15,7 +15,7 @@ interface IProps {
 	thisSourceLayer?: ISourceLayerExtended
 	label?: string
 	piece?: AdLibPieceUi | PieceUi
-	studio: Studio
+	studio: UIStudio
 	onClick?: React.EventHandler<React.MouseEvent<HTMLDivElement>>
 	onDoubleClick?: React.EventHandler<React.MouseEvent<HTMLDivElement>>
 }

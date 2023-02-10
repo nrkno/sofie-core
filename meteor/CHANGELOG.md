@@ -2,6 +2,90 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.47.0-in-testing.7](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.6...v1.47.0-in-testing.7) (2023-01-24)
+
+
+### Bug Fixes
+
+* **Dashboard Panel, AdLib Tab:** blur search text box on Enter, Escape ([dabc61e](https://github.com/nrkno/sofie-core/commit/dabc61ebd876df40699957b09e319d2687404ba9))
+* logging of commandErrors ([75e6c64](https://github.com/nrkno/sofie-core/commit/75e6c64b9771e1b2c21d4feddc49278ce5ddd0c2))
+* part duration not set after instance stopped ([7887ecb](https://github.com/nrkno/sofie-core/commit/7887ecb81d219b94367e432c9c2507320dc04158))
+
+## [1.47.0-in-testing.6](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.5...v1.47.0-in-testing.6) (2023-01-16)
+
+
+### Bug Fixes
+
+* check if a push to GHCR is even possible ([f463528](https://github.com/nrkno/sofie-core/commit/f463528245c41689820867881947c48eca231a02))
+
+## [1.47.0-in-testing.5](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.4...v1.47.0-in-testing.5) (2023-01-11)
+
+## [1.47.0-in-testing.4](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.3...v1.47.0-in-testing.4) (2023-01-05)
+
+
+### Bug Fixes
+
+* bug fix: change how to wait for other Fibers in collections.*Async methods. ([e1506a3](https://github.com/nrkno/sofie-core/commit/e1506a36b759481b0d401ba9caadd9e91da30238))
+
+## [1.47.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.46.0-in-testing.1...v1.47.0-in-testing.3) (2022-11-30)
+
+## [1.47.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.1...v1.47.0-in-testing.2) (2022-11-07)
+
+## [1.47.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.46.0-in-testing.0...v1.47.0-in-testing.1) (2022-11-07)
+
+
+### Bug Fixes
+
+* add an option to purge all Viz elements from the viz-rundown, in system-status view ([d22f0d6](https://github.com/nrkno/sofie-core/commit/d22f0d673e080fc7d9ca11ba7b9df1cb3e43c1d2))
+* better of restarting/crash handling of worker threads ([8d6ce2d](https://github.com/nrkno/sofie-core/commit/8d6ce2d5b050dabe7cf378e155e5b34a2c89da81))
+* changing source/output layers ids ([ff81854](https://github.com/nrkno/sofie-core/commit/ff8185440a728d39a4855948db13dac83725a9f3))
+* reduce risk of init failing, causing infinite init()-loop ([73776f5](https://github.com/nrkno/sofie-core/commit/73776f5df63b6f6e920648ea9e3800b10aab10b7))
+* update threadedClass dependency, to fix an error when calling ThreadedClassManager.restart() multiple times ([8db966b](https://github.com/nrkno/sofie-core/commit/8db966bf404f1c9e750c1c0fefc8fee1049a04cd))
+
+## [1.47.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.44.0...v1.47.0-in-testing.0) (2022-10-28)
+
+
+### Features
+
+* adlib actions can set timeline datastore ([0cd2f62](https://github.com/nrkno/sofie-core/commit/0cd2f62ba1a079ea0cc5b17c13846ead26ae7a21))
+* custom publication performance/improvements ([#775](https://github.com/nrkno/sofie-core/issues/775)) ([9e40d45](https://github.com/nrkno/sofie-core/commit/9e40d4575e434acc57c93f1aa86adb344e01d343))
+* datastore table view ([83467af](https://github.com/nrkno/sofie-core/commit/83467afec8f52521b8af5ebe91287cafcb000953))
+* differentiate user/default settings datastructure changes ([#772](https://github.com/nrkno/sofie-core/issues/772)) ([b39067d](https://github.com/nrkno/sofie-core/commit/b39067d9e4e7b87e7e00a80bdca19aade8b3bc04))
+* multi gateway mode ([#760](https://github.com/nrkno/sofie-core/issues/760)) ([9f23148](https://github.com/nrkno/sofie-core/commit/9f231486c47f414008f0f0f80ed4b665a2115b4a))
+* SOF-978 add config manifest entry showing a (multi)select with values from a table's column ([34e96e0](https://github.com/nrkno/sofie-core/commit/34e96e0ba2e62c9b149daf2c42bc7198cd757cf9))
+* SOF-978 add indication of mising options in dropdowns and optimize tables ([333a74d](https://github.com/nrkno/sofie-core/commit/333a74daefe80221f1451f6f7b1a9bbba6c4f520))
+* tl datastore collection and testtool ([c4a7a17](https://github.com/nrkno/sofie-core/commit/c4a7a17bc0b4b7b2e5ff2af0f039d9674151d57f))
+
+
+### Bug Fixes
+
+* add JSONBlob, used instead of JSON.parse() and JSON.stringify() to get stricter types ([ea1ef5d](https://github.com/nrkno/sofie-core/commit/ea1ef5d596a5f75fa72df226e4829f04b03889ea))
+* add/remove source&output layers in ui ([a60df77](https://github.com/nrkno/sofie-core/commit/a60df771695273827a8746c8febb0f8d6f45a8ae))
+* added ellipsis to Show style and Show style variant. ([2c9ed47](https://github.com/nrkno/sofie-core/commit/2c9ed47f86d117256e25474ab9c56d5d4c86e1b7))
+* allow codecov upload to fail ([#776](https://github.com/nrkno/sofie-core/issues/776)) ([d377a58](https://github.com/nrkno/sofie-core/commit/d377a58f8d081e94ee20018ae3d3259fb80f9eef))
+* Changed break to continue. ([d471796](https://github.com/nrkno/sofie-core/commit/d471796aabc18148abde82b36747d050a794167c))
+* fixed the indentation using tabs instead of spaces. ([bae7e01](https://github.com/nrkno/sofie-core/commit/bae7e0195f8c4fe1ff503d1990de003cca1d5bcd))
+* ingest failed on duplicate keyframe ids ([f133a49](https://github.com/nrkno/sofie-core/commit/f133a49bc51a1aa301196b88b202ce37727b56b5))
+* lookahead not making keyframe ids unique ([b95cc67](https://github.com/nrkno/sofie-core/commit/b95cc679193e320f5584f5f5dbdfdee314ae7c5d))
+* Make PR instead of silently failing. ([2e99b8e](https://github.com/nrkno/sofie-core/commit/2e99b8ed1c103fb2ce9ca0d556c1333846c82b71))
+* optimisedObserver crashing meteor with unhandledRejection ([bd03727](https://github.com/nrkno/sofie-core/commit/bd03727105e60d46f91639d49e764959875c7e2a))
+* **Playout Gateway:** remove uninitialized devices from the list to retry them later and keep the overall device status correct ([0bf9fef](https://github.com/nrkno/sofie-core/commit/0bf9fef6f8ea0e639ee0abf9c996882dd8b215fa))
+* SOF-978 columns and headers order based on `rank` ([087137e](https://github.com/nrkno/sofie-core/commit/087137ee87f9dd2a2f94657e6951402dd18176ac))
+* SOF-978 use the pre-filtered options for table columns ([e71e478](https://github.com/nrkno/sofie-core/commit/e71e478e3f04210887520322f92732e0a5639dae))
+* stuck Parts.expectedDurationWithPreroll migration ([f72a0b9](https://github.com/nrkno/sofie-core/commit/f72a0b955e2bc78623be7ad991132cf1573b93b9))
+* **TriggeredActionEntry:** modify the correct db object key ([8118911](https://github.com/nrkno/sofie-core/commit/8118911092724f6fc53b2340603e911ca5f5c8b0))
+* **TriggeredActionEntry:** restore reactivity ([0db6d0c](https://github.com/nrkno/sofie-core/commit/0db6d0ce2e9672004c5fe44b68e94485acbc993f))
+* **TriggeredActionEntry:** set new object on correct key ([a3422f2](https://github.com/nrkno/sofie-core/commit/a3422f22fa319ecafcb5d548b23cf46cc36a88e9))
+* unable to remove rundown if its showStyleVariantId was unknown ([1d51a63](https://github.com/nrkno/sofie-core/commit/1d51a63cc1b4dffef37bab0ed7abeb041d41757f))
+* Update status if .initWorker is rejected. ([f69871f](https://github.com/nrkno/sofie-core/commit/f69871f1d5bc960f6d223efa1bea850641a19796))
+* Upgrade TSR to 2.1.8. ([d3f0e54](https://github.com/nrkno/sofie-core/commit/d3f0e5473b898449f1630f70b7ca90f9814a6078))
+* validate the generated Timeline in Core ([1e77e97](https://github.com/nrkno/sofie-core/commit/1e77e97ce3de3a2c55e1e290c3bb55e25efd998c))
+* validate the timeline from blueprints, to ensure that it doesn't contain any nastiness that can crash the Timeline Resolver later ([46081be](https://github.com/nrkno/sofie-core/commit/46081be8289171f481e57e967c9bef733ef82251))
+
+## [1.47.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.1...v1.47.0-in-testing.2) (2022-11-07)
+
+## [1.47.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.46.0-in-testing.0...v1.47.0-in-testing.1) (2022-11-07)
+
 ## [1.46.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.46.0-in-testing.1...v1.46.0-in-testing.2) (2023-01-06)
 
 
@@ -14,32 +98,79 @@ All notable changes to this project will be documented in this file. See [standa
 
 * in the event of multiple tags they should all have the correct name ([056de09](https://github.com/nrkno/sofie-core/commit/056de09e22337b0d7be39abb093653e8c6811ac1))
 
+
 ## [1.46.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.46.0-in-testing.0...v1.46.0-in-testing.1) (2022-11-30)
 
 
 ### Bug Fixes
 
-* bug fix: unable to executeFunction on sub-peripheralDevices ([7422f1c](https://github.com/nrkno/sofie-core/commit/7422f1ca6f2715991c1d72bc11dfe92cb40dc118))
-* hide 'set segment as next' when right clicking on a part ([f99b004](https://github.com/nrkno/sofie-core/commit/f99b004d452b30708ee02dc77f0e87c35dd8daac))
-* Larger thumbnail CSS for Media Previews ([749a05d](https://github.com/nrkno/sofie-core/commit/749a05d87a2e45210e07c1bf6da7efcdc0f861f5))
+* add an option to purge all Viz elements from the viz-rundown, in system-status view ([d22f0d6](https://github.com/nrkno/sofie-core/commit/d22f0d673e080fc7d9ca11ba7b9df1cb3e43c1d2))
+* better of restarting/crash handling of worker threads ([8d6ce2d](https://github.com/nrkno/sofie-core/commit/8d6ce2d5b050dabe7cf378e155e5b34a2c89da81))
 * prevent blueprint migrations which inserted playout-gateway subdevices on a fresh install from failing ([#792](https://github.com/nrkno/sofie-core/issues/792)) ([98f16ef](https://github.com/nrkno/sofie-core/commit/98f16ef48ddadc3b7e6bc40a956c121fef7585d2))
-* publications in rest api ([44fe8ee](https://github.com/nrkno/sofie-core/commit/44fe8eee78e0de3427747e934fce5cca77b4a83d))
+* reduce risk of init failing, causing infinite init()-loop ([73776f5](https://github.com/nrkno/sofie-core/commit/73776f5df63b6f6e920648ea9e3800b10aab10b7))
 * update supertimeline ([fad98b3](https://github.com/nrkno/sofie-core/commit/fad98b3906dd26656e4ca193ae5a96b7f70d75f8))
+* update threadedClass dependency, to fix an error when calling ThreadedClassManager.restart() multiple times ([8db966b](https://github.com/nrkno/sofie-core/commit/8db966bf404f1c9e750c1c0fefc8fee1049a04cd))
 
-## [1.46.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.44.0...v1.46.0-in-testing.0) (2022-10-31)
+## [1.47.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.44.0...v1.47.0-in-testing.0) (2022-10-28)
 
 
 ### Features
 
+* adlib actions can set timeline datastore ([0cd2f62](https://github.com/nrkno/sofie-core/commit/0cd2f62ba1a079ea0cc5b17c13846ead26ae7a21))
+* custom publication performance/improvements ([#775](https://github.com/nrkno/sofie-core/issues/775)) ([9e40d45](https://github.com/nrkno/sofie-core/commit/9e40d4575e434acc57c93f1aa86adb344e01d343))
+* datastore table view ([83467af](https://github.com/nrkno/sofie-core/commit/83467afec8f52521b8af5ebe91287cafcb000953))
+* differentiate user/default settings datastructure changes ([#772](https://github.com/nrkno/sofie-core/issues/772)) ([b39067d](https://github.com/nrkno/sofie-core/commit/b39067d9e4e7b87e7e00a80bdca19aade8b3bc04))
+* multi gateway mode ([#760](https://github.com/nrkno/sofie-core/issues/760)) ([9f23148](https://github.com/nrkno/sofie-core/commit/9f231486c47f414008f0f0f80ed4b665a2115b4a))
+* SOF-978 add config manifest entry showing a (multi)select with values from a table's column ([34e96e0](https://github.com/nrkno/sofie-core/commit/34e96e0ba2e62c9b149daf2c42bc7198cd757cf9))
+* SOF-978 add indication of mising options in dropdowns and optimize tables ([333a74d](https://github.com/nrkno/sofie-core/commit/333a74daefe80221f1451f6f7b1a9bbba6c4f520))
+* tl datastore collection and testtool ([c4a7a17](https://github.com/nrkno/sofie-core/commit/c4a7a17bc0b4b7b2e5ff2af0f039d9674151d57f))
+
+
+### Bug Fixes
+
+* add JSONBlob, used instead of JSON.parse() and JSON.stringify() to get stricter types ([ea1ef5d](https://github.com/nrkno/sofie-core/commit/ea1ef5d596a5f75fa72df226e4829f04b03889ea))
+* add/remove source&output layers in ui ([a60df77](https://github.com/nrkno/sofie-core/commit/a60df771695273827a8746c8febb0f8d6f45a8ae))
+* added ellipsis to Show style and Show style variant. ([2c9ed47](https://github.com/nrkno/sofie-core/commit/2c9ed47f86d117256e25474ab9c56d5d4c86e1b7))
+* allow codecov upload to fail ([#776](https://github.com/nrkno/sofie-core/issues/776)) ([d377a58](https://github.com/nrkno/sofie-core/commit/d377a58f8d081e94ee20018ae3d3259fb80f9eef))
+* Changed break to continue. ([d471796](https://github.com/nrkno/sofie-core/commit/d471796aabc18148abde82b36747d050a794167c))
+* fixed the indentation using tabs instead of spaces. ([bae7e01](https://github.com/nrkno/sofie-core/commit/bae7e0195f8c4fe1ff503d1990de003cca1d5bcd))
+* ingest failed on duplicate keyframe ids ([f133a49](https://github.com/nrkno/sofie-core/commit/f133a49bc51a1aa301196b88b202ce37727b56b5))
+* lookahead not making keyframe ids unique ([b95cc67](https://github.com/nrkno/sofie-core/commit/b95cc679193e320f5584f5f5dbdfdee314ae7c5d))
+* Make PR instead of silently failing. ([2e99b8e](https://github.com/nrkno/sofie-core/commit/2e99b8ed1c103fb2ce9ca0d556c1333846c82b71))
+* optimisedObserver crashing meteor with unhandledRejection ([bd03727](https://github.com/nrkno/sofie-core/commit/bd03727105e60d46f91639d49e764959875c7e2a))
+* **Playout Gateway:** remove uninitialized devices from the list to retry them later and keep the overall device status correct ([0bf9fef](https://github.com/nrkno/sofie-core/commit/0bf9fef6f8ea0e639ee0abf9c996882dd8b215fa))
+* SOF-978 columns and headers order based on `rank` ([087137e](https://github.com/nrkno/sofie-core/commit/087137ee87f9dd2a2f94657e6951402dd18176ac))
+* SOF-978 use the pre-filtered options for table columns ([e71e478](https://github.com/nrkno/sofie-core/commit/e71e478e3f04210887520322f92732e0a5639dae))
+* stuck Parts.expectedDurationWithPreroll migration ([f72a0b9](https://github.com/nrkno/sofie-core/commit/f72a0b955e2bc78623be7ad991132cf1573b93b9))
+* **TriggeredActionEntry:** modify the correct db object key ([8118911](https://github.com/nrkno/sofie-core/commit/8118911092724f6fc53b2340603e911ca5f5c8b0))
+* **TriggeredActionEntry:** restore reactivity ([0db6d0c](https://github.com/nrkno/sofie-core/commit/0db6d0ce2e9672004c5fe44b68e94485acbc993f))
+* **TriggeredActionEntry:** set new object on correct key ([a3422f2](https://github.com/nrkno/sofie-core/commit/a3422f22fa319ecafcb5d548b23cf46cc36a88e9))
+* unable to remove rundown if its showStyleVariantId was unknown ([1d51a63](https://github.com/nrkno/sofie-core/commit/1d51a63cc1b4dffef37bab0ed7abeb041d41757f))
+* Update status if .initWorker is rejected. ([f69871f](https://github.com/nrkno/sofie-core/commit/f69871f1d5bc960f6d223efa1bea850641a19796))
+* Upgrade TSR to 2.1.8. ([d3f0e54](https://github.com/nrkno/sofie-core/commit/d3f0e5473b898449f1630f70b7ca90f9814a6078))
+* validate the generated Timeline in Core ([1e77e97](https://github.com/nrkno/sofie-core/commit/1e77e97ce3de3a2c55e1e290c3bb55e25efd998c))
+* validate the timeline from blueprints, to ensure that it doesn't contain any nastiness that can crash the Timeline Resolver later ([46081be](https://github.com/nrkno/sofie-core/commit/46081be8289171f481e57e967c9bef733ef82251))
+
+## [1.47.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.44.0...v1.47.0-in-testing.0) (2022-10-28)
+* bug fix: unable to executeFunction on sub-peripheralDevices ([7422f1c](https://github.com/nrkno/sofie-core/commit/7422f1ca6f2715991c1d72bc11dfe92cb40dc118))
+* hide 'set segment as next' when right clicking on a part ([f99b004](https://github.com/nrkno/sofie-core/commit/f99b004d452b30708ee02dc77f0e87c35dd8daac))
+* prevent blueprint migrations which inserted playout-gateway subdevices on a fresh install from failing ([#792](https://github.com/nrkno/sofie-core/issues/792)) ([98f16ef](https://github.com/nrkno/sofie-core/commit/98f16ef48ddadc3b7e6bc40a956c121fef7585d2))
+* update supertimeline ([fad98b3](https://github.com/nrkno/sofie-core/commit/fad98b3906dd26656e4ca193ae5a96b7f70d75f8))
+## [1.46.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.44.0...v1.46.0-in-testing.0) (2022-10-31)
+
+
+
 * add CacheCollection.updateAll method ([89e3045](https://github.com/nrkno/sofie-core/commit/89e3045ce07f66461cc023af9dca56a078cb8763))
-* add state for rundownSegmentViewMode ([4c01c40](https://github.com/nrkno/sofie-core/commit/4c01c40e30bae1e119d18cb709fe7a4a7ab241d6))
+* adlib actions can set timeline datastore ([0cd2f62](https://github.com/nrkno/sofie-core/commit/0cd2f62ba1a079ea0cc5b17c13846ead26ae7a21))
+* change interaction model for PieceIndicatorMenu to be click + somewhat of a context menu ([c4b1348](https://github.com/nrkno/sofie-core/commit/c4b1348128972cce4c30c9c78b0e4442303c2059))
+* datastore table view ([83467af](https://github.com/nrkno/sofie-core/commit/83467afec8f52521b8af5ebe91287cafcb000953))
+* differentiate user/default settings datastructure changes ([#772](https://github.com/nrkno/sofie-core/issues/772)) ([b39067d](https://github.com/nrkno/sofie-core/commit/b39067d9e4e7b87e7e00a80bdca19aade8b3bc04))
+* **List View:** open shelf and reveal AdLib when double clicking on column indicator ([de23d05](https://github.com/nrkno/sofie-core/commit/de23d05ed37b442ac93d0c99fb255c7741b5b35a))
+* multi gateway mode ([#760](https://github.com/nrkno/sofie-core/issues/760)) ([9f23148](https://github.com/nrkno/sofie-core/commit/9f231486c47f414008f0f0f80ed4b665a2115b4a))
+
 * change interaction model for PieceIndicatorMenu to be click + somewhat of a context menu ([c4b1348](https://github.com/nrkno/sofie-core/commit/c4b1348128972cce4c30c9c78b0e4442303c2059))
 * custom PieceIndicatorMenu ([9af8204](https://github.com/nrkno/sofie-core/commit/9af8204e7d8863cbcf1b30ffcaabc674222bf2de))
 * **List View:** open shelf and reveal AdLib when double clicking on column indicator ([de23d05](https://github.com/nrkno/sofie-core/commit/de23d05ed37b442ac93d0c99fb255c7741b5b35a))
-* PieceIndicatorMenu ([2e19ef8](https://github.com/nrkno/sofie-core/commit/2e19ef86d66744c5830cfe6d61aed819a35c312b))
-* refactor statusbar to be responsive ([309c164](https://github.com/nrkno/sofie-core/commit/309c16495f65f086ede0df5a54b12c7af47cfc8d))
-* remove data-store dependency from server-core-integration ([#738](https://github.com/nrkno/sofie-core/issues/738)) ([d715108](https://github.com/nrkno/sofie-core/commit/d7151084e1d96fdcf575864a439fe7a74087d740))
-* **RundownView:** add a button to switch view modes for entire Rundown ([28657b0](https://github.com/nrkno/sofie-core/commit/28657b0d572a571bb64f7c6d50883877d72b7cc6))
 * **SegmentList:** add Segment note icons to the segment header ([398bcd7](https://github.com/nrkno/sofie-core/commit/398bcd711ff587fc650eab257b3945be1191982d))
 * **SegmentList:** part identifiers ([ca2b6cc](https://github.com/nrkno/sofie-core/commit/ca2b6cc2583fe5d50c6feab0d7fbbbb9253f041b))
 * **SegmentList:** Piece status icons on indicators (WIP) ([56d0eb1](https://github.com/nrkno/sofie-core/commit/56d0eb12e54ef8604d1111fc555fdd25485fb14d))
@@ -47,17 +178,26 @@ All notable changes to this project will be documented in this file. See [standa
 * **SegmentList:** show state icons on Main pieces ([e259669](https://github.com/nrkno/sofie-core/commit/e259669146875aa3a4162b8e2c6d727f42f246df))
 * **SegmentList:** stick header to last Part ([791e823](https://github.com/nrkno/sofie-core/commit/791e823000b4e0e6c4c996d9da70512c02033559))
 * SOF-767 add option to hide default Start/Execute context menu options for adlibs ([8b8db6d](https://github.com/nrkno/sofie-core/commit/8b8db6d161c0b82e196e38fc23964aa324025cd9))
+* SOF-978 add config manifest entry showing a (multi)select with values from a table's column ([34e96e0](https://github.com/nrkno/sofie-core/commit/34e96e0ba2e62c9b149daf2c42bc7198cd757cf9))
+* SOF-978 add indication of mising options in dropdowns and optimize tables ([333a74d](https://github.com/nrkno/sofie-core/commit/333a74daefe80221f1451f6f7b1a9bbba6c4f520))
 * split ShowStyleBaseSettings into multiple tabs ([e1148d1](https://github.com/nrkno/sofie-core/commit/e1148d176ca8ac65b530855c7b86299fc39b5df7))
 * split studio settings into tabs ([23c969e](https://github.com/nrkno/sofie-core/commit/23c969e42f33cd59c1af30dc4a3c70c122779821))
 * support doubleclick in Indicator menu ([d11fd29](https://github.com/nrkno/sofie-core/commit/d11fd29f963e8eca8c2e01640580b634ef622e09))
 * syncIngestUpdateToPartInstance is called when a Part is orphaned, and allows for removing the PartInstance ([#750](https://github.com/nrkno/sofie-core/issues/750)) ([fae7d3f](https://github.com/nrkno/sofie-core/commit/fae7d3f61c497b8d8e3048a966912aaa2b21cacf))
 * this completely doesn't work ([8e3fe01](https://github.com/nrkno/sofie-core/commit/8e3fe01f89d86cc33c52f47190a2b351403b1315))
+* tl datastore collection and testtool ([c4a7a17](https://github.com/nrkno/sofie-core/commit/c4a7a17bc0b4b7b2e5ff2af0f039d9674151d57f))
 
 
 ### Bug Fixes
 
 * **ActionTriggers:** show a notification when creating a rundown snapshot ([b1b8cf3](https://github.com/nrkno/sofie-core/commit/b1b8cf34a0a557aada21e0fe705304e5525edd6f))
 * add feature flag confirmKeyCode, to allow for NOT using NumpadEnter in Modals ([549387a](https://github.com/nrkno/sofie-core/commit/549387a4cecd8efefe65c853d74040d38f43ea54))
+* add JSONBlob, used instead of JSON.parse() and JSON.stringify() to get stricter types ([ea1ef5d](https://github.com/nrkno/sofie-core/commit/ea1ef5d596a5f75fa72df226e4829f04b03889ea))
+* add/remove source&output layers in ui ([a60df77](https://github.com/nrkno/sofie-core/commit/a60df771695273827a8746c8febb0f8d6f45a8ae))
+* added ellipsis to Show style and Show style variant. ([2c9ed47](https://github.com/nrkno/sofie-core/commit/2c9ed47f86d117256e25474ab9c56d5d4c86e1b7))
+* adlibbed partinstance rank is wrong if there is an invalid part after the current ([4cad186](https://github.com/nrkno/sofie-core/commit/4cad186a94932e6416b26eb02e98d9a221fe449c))
+* allow codecov upload to fail ([#776](https://github.com/nrkno/sofie-core/issues/776)) ([e05e181](https://github.com/nrkno/sofie-core/commit/e05e181f20ed3312be314c1c62fb7944a6b6c29e))
+* allow codecov upload to fail ([#776](https://github.com/nrkno/sofie-core/issues/776)) ([d377a58](https://github.com/nrkno/sofie-core/commit/d377a58f8d081e94ee20018ae3d3259fb80f9eef))
 * adlibbed partinstance rank is wrong if there is an invalid part after the current ([4cad186](https://github.com/nrkno/sofie-core/commit/4cad186a94932e6416b26eb02e98d9a221fe449c))
 * allow codecov upload to fail ([#776](https://github.com/nrkno/sofie-core/issues/776)) ([e05e181](https://github.com/nrkno/sofie-core/commit/e05e181f20ed3312be314c1c62fb7944a6b6c29e))
 * clear all custom Segment View Modes, when changing rundownDefaultSegmentViewMode ([92517df](https://github.com/nrkno/sofie-core/commit/92517df0109c7ebbd3d6027791fc1fe81f22ce23))
@@ -65,6 +205,9 @@ All notable changes to this project will be documented in this file. See [standa
 * **Dashboard/Buckets:** LiveSpeak two-tone colouring is not visible with thumbnail present ([5c0ae6a](https://github.com/nrkno/sofie-core/commit/5c0ae6ad26d016e4ce3b163f6be65160bbdd7d32))
 * don't detach when only a single part ([8fa24b7](https://github.com/nrkno/sofie-core/commit/8fa24b760ad5e818ce00b73472e45c3de1b62a8f))
 * empty segment not being hidden ([78607c9](https://github.com/nrkno/sofie-core/commit/78607c92a9235fa06741d1123e47a72629fbee4c))
+* fixed the indentation using tabs instead of spaces. ([bae7e01](https://github.com/nrkno/sofie-core/commit/bae7e0195f8c4fe1ff503d1990de003cca1d5bcd))
+* improve ideal-take-time layout ([977dc67](https://github.com/nrkno/sofie-core/commit/977dc67b88602fe33a2a3634ce726e9d80c84919))
+* ingest failed on duplicate keyframe ids ([f133a49](https://github.com/nrkno/sofie-core/commit/f133a49bc51a1aa301196b88b202ce37727b56b5))
 * improve ideal-take-time layout ([977dc67](https://github.com/nrkno/sofie-core/commit/977dc67b88602fe33a2a3634ce726e9d80c84919))
 * limit nanoid to similar id output format as meteor ([18fe5f9](https://github.com/nrkno/sofie-core/commit/18fe5f91a1eb65e75f5e11051b107b87c5f5d9fe))
 * **LinePartTitle:** detecting if pixels are needed ([b5df3cb](https://github.com/nrkno/sofie-core/commit/b5df3cb48b729fd8637009b94bdb5d4ebbbb7ab6))
@@ -74,6 +217,10 @@ All notable changes to this project will be documented in this file. See [standa
 * **List View:** show invalid reason on invalid Parts ([8b01b57](https://github.com/nrkno/sofie-core/commit/8b01b57dbdd0370dca6cc3d2b8cceb67369572a7))
 * **ListView:** show later Pieces in correct places ([8614f1a](https://github.com/nrkno/sofie-core/commit/8614f1ac2b334edfd5a9772876b185f08a5eec38))
 * **Local Source:** the channel color dot may be rendered incorrectly ([d9d7718](https://github.com/nrkno/sofie-core/commit/d9d77182d6af2ed7a54756efd715310adebe2e1c))
+* lookahead not making keyframe ids unique ([b95cc67](https://github.com/nrkno/sofie-core/commit/b95cc679193e320f5584f5f5dbdfdee314ae7c5d))
+* make header sticky on all pages ([eac9620](https://github.com/nrkno/sofie-core/commit/eac9620acb3d0ad45b332af6b06453c2e6e39ab2))
+* make overlay prop optional ([d18a8b1](https://github.com/nrkno/sofie-core/commit/d18a8b136080b0e57a59b5e04af12cbb988c95c1))
+* optimisedObserver crashing meteor with unhandledRejection ([bd03727](https://github.com/nrkno/sofie-core/commit/bd03727105e60d46f91639d49e764959875c7e2a))
 * make header sticky on all pages ([eac9620](https://github.com/nrkno/sofie-core/commit/eac9620acb3d0ad45b332af6b06453c2e6e39ab2))
 * make overlay prop optional ([d18a8b1](https://github.com/nrkno/sofie-core/commit/d18a8b136080b0e57a59b5e04af12cbb988c95c1))
 * **PieceIndicatorMenu:** resolve an issue with "memory leak" warnings ([4c23022](https://github.com/nrkno/sofie-core/commit/4c23022339eb42a24aa3bd76f87466841c6360e9))
@@ -87,6 +234,17 @@ All notable changes to this project will be documented in this file. See [standa
 * SOF-1002 Now check for undefined before calling a potential undefined variable ([b0db998](https://github.com/nrkno/sofie-core/commit/b0db998889a4e6c31676d8de583d113493bed72b))
 * SOF-1031 Downgrade superfly-timeline to 8.2.1 ([018f898](https://github.com/nrkno/sofie-core/commit/018f898700d91678a6b0e5b7320b7886059a9040))
 * SOF-1106 degraded UI performance due to staggered updates not working ([e4df568](https://github.com/nrkno/sofie-core/commit/e4df56894c977b6d9bd6be8437aa14ee93b2922b))
+* SOF-978 use the pre-filtered options for table columns ([e71e478](https://github.com/nrkno/sofie-core/commit/e71e478e3f04210887520322f92732e0a5639dae))
+* **Storyboard:** VT/LiveSpeak Thumbnails can crash segment ([212378f](https://github.com/nrkno/sofie-core/commit/212378f92aa29b0c75f72182582362f8dba722b3))
+* stuck Parts.expectedDurationWithPreroll migration ([f72a0b9](https://github.com/nrkno/sofie-core/commit/f72a0b955e2bc78623be7ad991132cf1573b93b9))
+* **Timeline+Storyboard:** OnAirIn/Duration is no longer a toggle ([1ef35df](https://github.com/nrkno/sofie-core/commit/1ef35dfde0cfc769159e04207b0c4000a5ce2447))
+* **TriggeredActionEntry:** modify the correct db object key ([8118911](https://github.com/nrkno/sofie-core/commit/8118911092724f6fc53b2340603e911ca5f5c8b0))
+* **TriggeredActionEntry:** restore reactivity ([0db6d0c](https://github.com/nrkno/sofie-core/commit/0db6d0ce2e9672004c5fe44b68e94485acbc993f))
+* **TriggeredActionEntry:** set new object on correct key ([a3422f2](https://github.com/nrkno/sofie-core/commit/a3422f22fa319ecafcb5d548b23cf46cc36a88e9))
+* unable to remove rundown if its showStyleVariantId was unknown ([1d51a63](https://github.com/nrkno/sofie-core/commit/1d51a63cc1b4dffef37bab0ed7abeb041d41757f))
+* update TSR dep ([145bb57](https://github.com/nrkno/sofie-core/commit/145bb572c76e404d6effd4b3d1424ecf9b11e417))
+* validate the generated Timeline in Core ([1e77e97](https://github.com/nrkno/sofie-core/commit/1e77e97ce3de3a2c55e1e290c3bb55e25efd998c))
+* validate the timeline from blueprints, to ensure that it doesn't contain any nastiness that can crash the Timeline Resolver later ([46081be](https://github.com/nrkno/sofie-core/commit/46081be8289171f481e57e967c9bef733ef82251))
 * **Storyboard:** VT/LiveSpeak Thumbnails can crash segment ([212378f](https://github.com/nrkno/sofie-core/commit/212378f92aa29b0c75f72182582362f8dba722b3))
 * **Timeline+Storyboard:** OnAirIn/Duration is no longer a toggle ([1ef35df](https://github.com/nrkno/sofie-core/commit/1ef35dfde0cfc769159e04207b0c4000a5ce2447))
 * update TSR dep ([145bb57](https://github.com/nrkno/sofie-core/commit/145bb572c76e404d6effd4b3d1424ecf9b11e417))
@@ -204,6 +362,7 @@ All notable changes to this project will be documented in this file. See [standa
 * some touchups ([a766660](https://github.com/nrkno/sofie-core/commit/a7666605d75bc61ddc5f25f16b361600c14910cf))
 * **Storyboard:** remove thumbnails ([a1efc4c](https://github.com/nrkno/sofie-core/commit/a1efc4c87021597f1ff512d245d1c46e1d590c2c))
 * **Storyboard:** remove thumbnails, shorten main Pieces ([ab40b8f](https://github.com/nrkno/sofie-core/commit/ab40b8f415da4e1bd73bb4647c7e6aa820377af8))
+### [1.44.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.2-1...v1.44.2) (2023-01-27)
 
 
 ### Bug Fixes
@@ -216,6 +375,9 @@ All notable changes to this project will be documented in this file. See [standa
 * storyboard thumbnail for graphics ([5d10279](https://github.com/nrkno/sofie-core/commit/5d1027972ecfb42d2abb117fa2d3b1881dcbe97f))
 
 ### [42.0.1-dev](https://github.com/nrkno/sofie-core/compare/v1.43.0-in-testing.0...v42.0.1-dev) (2022-06-03)
+* limit number of Package-related items to include in Rundown-snapshot ([6a1861f](https://github.com/nrkno/tv-automation-server-core/commit/6a1861fb64256874593ee714b52cc663b9bbdf80))
+
+### [1.44.2-1](https://github.com/nrkno/sofie-core/compare/v1.44.2-0...v1.44.2-1) (2023-01-23)
 
 
 ### Features
@@ -295,6 +457,7 @@ All notable changes to this project will be documented in this file. See [standa
 * removed part of the commit that requires other code not merged to our branch yet ([d816de6](https://github.com/nrkno/sofie-core/commit/d816de621e316ed393783566102ae9bdbbe243ac))
 
 ### [37.1.2](https://github.com/nrkno/sofie-core/compare/v37.1.1...v37.1.2) (2022-03-16)
+* push images to ghcr ([32f98f4](https://github.com/nrkno/sofie-core/commit/32f98f4c4e915242114bac9866ef52b176ddfc92))
 
 
 ### Bug Fixes
@@ -306,6 +469,10 @@ All notable changes to this project will be documented in this file. See [standa
 * use time of when segment started playing when calculating remaining time of segment ([bde43f1](https://github.com/nrkno/sofie-core/commit/bde43f1dcbecd4e5211fc61031da628ed816f7cc))
 
 ## [1.37.0-in-testing.32](https://github.com/nrkno/sofie-core/compare/v1.37.0-in-testing.31...v1.37.0-in-testing.32) (2022-01-10)
+* check if a push to GHCR is even possible ([f463528](https://github.com/nrkno/sofie-core/commit/f463528245c41689820867881947c48eca231a02))
+* in the event of multiple tags they should all have the correct name ([056de09](https://github.com/nrkno/sofie-core/commit/056de09e22337b0d7be39abb093653e8c6811ac1))
+
+### [1.44.2-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.1...v1.44.2-0) (2023-01-11)
 
 
 ### Bug Fixes
@@ -313,6 +480,9 @@ All notable changes to this project will be documented in this file. See [standa
 * hidden segments disappearing forever ([0d7b945](https://github.com/nrkno/sofie-core/commit/0d7b9458aef78a68bcd038af6676f035af920527))
 
 ## [1.37.0-in-testing.31](https://github.com/nrkno/sofie-core/compare/v1.37.1-in-testing.1...v1.37.0-in-testing.31) (2022-01-06)
+* don't retry calls to storeRundownSnapshot upon a loss-of-connection ([bec6432](https://github.com/nrkno/tv-automation-server-core/commit/bec6432d91f7c39dea0c02aa408084df4f228a2b))
+
+### [1.44.1](///compare/v1.44.0...v1.44.1) (2022-11-28)
 
 
 ### Bug Fixes

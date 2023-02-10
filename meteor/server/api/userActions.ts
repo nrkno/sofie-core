@@ -2,13 +2,12 @@ import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
 import { getCurrentTime, getHash, Time } from '../../lib/lib'
-import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
-import { Parts, PartId } from '../../lib/collections/Parts'
+import { Rundowns } from '../../lib/collections/Rundowns'
+import { Parts } from '../../lib/collections/Parts'
 import { ServerPlayoutAPI } from './playout/playout'
 import { NewUserActionAPI, RESTART_SALT, UserActionAPIMethods } from '../../lib/api/userActions'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
-import { StudioId } from '../../lib/collections/Studios'
-import { Pieces, PieceId } from '../../lib/collections/Pieces'
+import { Pieces } from '../../lib/collections/Pieces'
 import { IngestPart, IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
 import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../methods'
@@ -17,31 +16,39 @@ import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
 import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
-import { RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
-import { PartInstanceId } from '../../lib/collections/PartInstances'
-import { PieceInstanceId } from '../../lib/collections/PieceInstances'
-import { MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
 import { MethodContextAPI } from '../../lib/api/methods'
 import { ServerClientAPI } from './client'
-import { SegmentId } from '../../lib/collections/Segments'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { SystemWriteAccess } from '../security/system'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
-import { BucketId, Bucket } from '../../lib/collections/Buckets'
+import { Bucket } from '../../lib/collections/Buckets'
 import { BucketsAPI } from './buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
-import { AdLibActionId, AdLibActionCommon } from '../../lib/collections/AdLibActions'
+import { AdLibActionCommon } from '../../lib/collections/AdLibActions'
 import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { VerifiedRundownPlaylistContentAccess } from './lib'
 import { PackageManagerAPI } from './packageManager'
 import { ServerPeripheralDeviceAPI } from './peripheralDevice'
-import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
-import { RundownBaselineAdLibActionId } from '../../lib/collections/RundownBaselineAdLibActions'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { StudioContentWriteAccess } from '../security/studio'
 import { BucketSecurity } from '../security/buckets'
-import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
+import {
+	AdLibActionId,
+	BucketId,
+	MediaWorkFlowId,
+	PartId,
+	PartInstanceId,
+	PeripheralDeviceId,
+	PieceId,
+	PieceInstanceId,
+	RundownBaselineAdLibActionId,
+	RundownId,
+	RundownPlaylistId,
+	SegmentId,
+	ShowStyleBaseId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 async function pieceSetInOutPoints(
 	access: VerifiedRundownPlaylistContentAccess,

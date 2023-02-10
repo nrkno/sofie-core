@@ -9784,10 +9784,10 @@ text-table@^0.2.0:
   resolved "https://registry.yarnpkg.com/text-table/-/text-table-0.2.0.tgz#7f5ee823ae805207c00af2df4a84ec3fcfa570b4"
   integrity sha512-N+8UisAXDGk8PFXP4HAzVR9nbfmVJ3zYLAWiTIoqC5v5isinhr+r5uaO8+7r3BMfuNIufIsA7RdpVgacC2cSpw==
 
-threadedclass@^1.1.0:
-  version "1.1.1"
-  resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.1.1.tgz#6813b3c401b3d55264f6225c9d2c15516d7efa97"
-  integrity sha512-HffBjerRZGOlhUBt9Ue8nYCuV6khK9er86w4svTvf1Xn6ibAyJok290o2MJ/qJ1vy0A4UphEo3DSsxFN5g+TBQ==
+threadedclass@^1.1.2:
+  version "1.1.2"
+  resolved "https://registry.yarnpkg.com/threadedclass/-/threadedclass-1.1.2.tgz#212992b06b87828b95921d8752a490af73287452"
+  integrity sha512-RAk1UvarFneT7j6xwB9QxAG6+Qm4ceFEkZH5YSyLXECmGa084DrUu7TqcQlX+o7VOXxr7V3WKGi70eWHMRG+hw==
   dependencies:
     callsites "^3.1.0"
     eventemitter3 "^4.0.4"
@@ -9832,10 +9832,10 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.4.0-release46.2:
-  version "7.4.0-release46.2"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.4.0-release46.2.tgz#cb0fd08c7537504eca3531206bc20501612e33f0"
-  integrity sha512-1WYIyBiKS+JR1sBXB5gYGvcMB7JZhY4N++36i8YD44pP5B8a1j0g5LHcuv6Exo4DizlS6JuvvheSj218gKy6PQ==
+timeline-state-resolver-types@7.5.0-release47.6:
+  version "7.5.0-release47.6"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.5.0-release47.6.tgz#a031e7545a9b2f7c47a323dcabff61f24d8a0bd8"
+  integrity sha512-LghzsjQaSvaj63hFwVOLAGuTqHjeP/XoBhW+TZBKm99HZPqYg0I3dL9n5kRAeDiCi4r7gS0P+/TY/6dW7YakzA==
   dependencies:
     tslib "^2.3.1"
 

@@ -4,8 +4,8 @@ import { withTiming, WithTiming } from './withTiming'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { PartUi } from '../../SegmentTimeline/SegmentTimelineContainer'
-import { SegmentId } from '../../../../lib/collections/Segments'
 import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface ISegmentDurationProps {
 	segmentId: SegmentId

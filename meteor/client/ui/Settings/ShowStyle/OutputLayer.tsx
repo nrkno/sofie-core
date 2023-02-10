@@ -8,12 +8,12 @@ import { Random } from 'meteor/random'
 import Tooltip from 'rc-tooltip'
 import { withTranslation } from 'react-i18next'
 import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
-import { EditAttribute } from '../../../lib/EditAttribute'
+import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { getHelpMode } from '../../../lib/localStorage'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { findHighestRank } from '../StudioSettings'
-import _ from 'underscore'
+import { Meteor } from 'meteor/meteor'
 
 interface IOutputSettingsProps {
 	showStyleBase: ShowStyleBase
@@ -33,15 +33,16 @@ export const OutputLayerSettings = withTranslation()(
 		}
 
 		isPGMChannelSet() {
-			if (!this.props.showStyleBase.outputLayers) return false
-			return this.props.showStyleBase.outputLayers.filter((layer) => layer.isPGM).length > 0
+			return !!Object.values(this.props.showStyleBase.outputLayersWithOverrides.defaults).find(
+				(layer) => layer && layer.isPGM
+			)
 		}
 
 		isItemEdited = (item: IOutputLayer) => {
 			return this.state.editedOutputs.indexOf(item._id) >= 0
 		}
 
-		finishEditItem = (item: IOutputLayer) => {
+		finishEditItem = (item: Pick<IOutputLayer, '_id'>) => {
 			const index = this.state.editedOutputs.indexOf(item._id)
 			if (index >= 0) {
 				this.state.editedOutputs.splice(index, 1)
@@ -51,7 +52,7 @@ export const OutputLayerSettings = withTranslation()(
 			}
 		}
 
-		editItem = (item: IOutputLayer) => {
+		editItem = (item: Pick<IOutputLayer, '_id'>) => {
 			if (this.state.editedOutputs.indexOf(item._id) < 0) {
 				this.state.editedOutputs.push(item._id)
 				this.setState({
@@ -82,7 +83,7 @@ export const OutputLayerSettings = withTranslation()(
 			})
 		}
 		onAddOutput = () => {
-			const maxRank = findHighestRank(this.props.showStyleBase.outputLayers)
+			const maxRank = findHighestRank(Object.values(this.props.showStyleBase.outputLayersWithOverrides.defaults))
 			const { t } = this.props
 
 			const newOutput = literal<IOutputLayer>({
@@ -93,30 +94,53 @@ export const OutputLayerSettings = withTranslation()(
 			})
 
 			ShowStyleBases.update(this.props.showStyleBase._id, {
-				$push: {
-					outputLayers: newOutput,
+				$set: {
+					[`outputLayersWithOverrides.defaults.${newOutput._id}`]: newOutput,
 				},
 			})
 		}
 		onDeleteOutput = (item: IOutputLayer) => {
 			if (this.props.showStyleBase) {
 				ShowStyleBases.update(this.props.showStyleBase._id, {
-					$pull: {
-						outputLayers: {
-							_id: item._id,
-						},
+					$unset: {
+						[`outputLayersWithOverrides.defaults.${item._id}`]: 1,
 					},
 				})
 			}
 		}
+		updateLayerId = (edit: EditAttributeBase, newValue: string) => {
+			const oldLayerId = edit.props.overrideDisplayValue
+			const newLayerId = newValue + ''
+			const layer = this.props.showStyleBase.outputLayersWithOverrides.defaults[oldLayerId]
+
+			if (!layer || !edit.props.collection) {
+				return
+			}
+
+			if (this.props.showStyleBase.outputLayersWithOverrides.defaults[newLayerId]) {
+				throw new Meteor.Error(400, 'Layer "' + newLayerId + '" already exists')
+			}
+
+			edit.props.collection.update(this.props.showStyleBase._id, {
+				$set: {
+					[`outputLayersWithOverrides.defaults.${newLayerId}`]: {
+						...layer,
+						_id: newLayerId,
+					},
+				},
+				$unset: {
+					[`outputLayersWithOverrides.defaults.${oldLayerId}`]: 1,
+				},
+			})
+
+			this.finishEditItem({ _id: oldLayerId })
+			this.editItem({ _id: newLayerId })
+		}
 
 		renderOutputs() {
 			const { t } = this.props
-			return _.map(this.props.showStyleBase.outputLayers, (item, index) => {
-				const newItem = _.clone(item) as IOutputLayer & { index: number }
-				newItem.index = index
-				return newItem
-			})
+			return Object.values(this.props.showStyleBase.outputLayersWithOverrides.defaults)
+				.filter((l): l is IOutputLayer => !!l)
 				.sort((a, b) => {
 					return a._rank - b._rank
 				})
@@ -157,7 +181,7 @@ export const OutputLayerSettings = withTranslation()(
 												{t('Channel Name')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'outputLayers.' + item.index + '.name'}
+													attribute={'outputLayersWithOverrides.defaults.' + item._id + '.name'}
 													obj={this.props.showStyleBase}
 													type="text"
 													collection={ShowStyleBases}
@@ -170,11 +194,13 @@ export const OutputLayerSettings = withTranslation()(
 												{t('Internal ID')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'outputLayers.' + item.index + '._id'}
+													attribute={'outputLayersWithOverrides.defaults.' + item._id + '._id'}
 													obj={this.props.showStyleBase}
 													type="text"
 													collection={ShowStyleBases}
 													className="input text-input input-l"
+													overrideDisplayValue={item._id}
+													updateFunction={this.updateLayerId}
 												></EditAttribute>
 											</label>
 										</div>
@@ -182,7 +208,7 @@ export const OutputLayerSettings = withTranslation()(
 											<label className="field">
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'outputLayers.' + item.index + '.isPGM'}
+													attribute={'outputLayersWithOverrides.defaults.' + item._id + '.isPGM'}
 													obj={this.props.showStyleBase}
 													type="checkbox"
 													collection={ShowStyleBases}
@@ -196,7 +222,7 @@ export const OutputLayerSettings = withTranslation()(
 												{t('Display Rank')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'outputLayers.' + item.index + '._rank'}
+													attribute={'outputLayersWithOverrides.defaults.' + item._id + '._rank'}
 													obj={this.props.showStyleBase}
 													type="int"
 													collection={ShowStyleBases}
@@ -208,7 +234,7 @@ export const OutputLayerSettings = withTranslation()(
 											<label className="field">
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'outputLayers.' + item.index + '.isDefaultCollapsed'}
+													attribute={'outputLayersWithOverrides.defaults.' + item._id + '.isDefaultCollapsed'}
 													obj={this.props.showStyleBase}
 													type="checkbox"
 													collection={ShowStyleBases}
@@ -221,7 +247,7 @@ export const OutputLayerSettings = withTranslation()(
 											<label className="field">
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={'outputLayers.' + item.index + '.isFlattened'}
+													attribute={'outputLayersWithOverrides.defaults.' + item._id + '.isFlattened'}
 													obj={this.props.showStyleBase}
 													type="checkbox"
 													collection={ShowStyleBases}
@@ -245,20 +271,21 @@ export const OutputLayerSettings = withTranslation()(
 
 		render() {
 			const { t } = this.props
+
+			const outputLayerCount = Object.keys(this.props.showStyleBase.outputLayersWithOverrides.defaults).length
+
 			return (
 				<div>
 					<h2 className="mhn">
 						<Tooltip
 							overlay={t('Output channels are required for your studio to work')}
-							visible={getHelpMode() && !this.props.showStyleBase.outputLayers.length}
+							visible={getHelpMode() && !outputLayerCount}
 							placement="top"
 						>
 							<span>{t('Output channels')}</span>
 						</Tooltip>
 					</h2>
-					{!this.props.showStyleBase ||
-					!this.props.showStyleBase.outputLayers ||
-					!this.props.showStyleBase.outputLayers.length ? (
+					{!outputLayerCount ? (
 						<div className="error-notice">
 							<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No output channels set')}
 						</div>

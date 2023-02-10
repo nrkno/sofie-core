@@ -1,7 +1,6 @@
 import _ from 'underscore'
 import { EvsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import React, { useMemo, useState, useRef } from 'react'
-import { DBStudio } from '../../../../lib/collections/Studios'
 import { PieceExtended } from '../../../../lib/Rundown'
 import { MediaObject } from '../../../../lib/collections/MediaObjects'
 import { PackageInfo, VTContent } from '@sofie-automation/blueprints-integration'
@@ -10,19 +9,19 @@ import { getSplitItems } from '../../SegmentStoryboard/utils/getSplitItems'
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
 import { PieceElement } from '../../SegmentStoryboard/utils/PieceElement'
-import { PartId } from '../../../../lib/collections/Parts'
 import { getElementWidth } from '../../../utils/dimensions'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { PieceHoverInspector } from '../PieceHoverInspector'
-import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
+import { UIStudio } from '../../../../lib/api/studios'
 
 interface IProps {
 	partId: PartId
 	partInstanceId: PartInstanceId
 	piece: PieceExtended
-	studio: DBStudio | undefined
+	studio: UIStudio | undefined
 	timelineBase: number
 	partDuration: number
 	capToPartDuration: boolean

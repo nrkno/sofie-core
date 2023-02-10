@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../lib/check'
-import { Rundowns, Rundown, RundownId } from '../../lib/collections/Rundowns'
+import { Rundowns, Rundown } from '../../lib/collections/Rundowns'
 import { unprotectString, normalizeArray } from '../../lib/lib'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
@@ -10,7 +10,7 @@ import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowS
 import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
-import { RundownPlaylistId, RundownPlaylistCollectionUtil } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylistCollectionUtil } from '../../lib/collections/RundownPlaylists'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
@@ -18,7 +18,6 @@ import { findMissingConfigs } from './blueprints/config'
 import { runIngestOperation } from './ingest/lib'
 import { createShowStyleCompound } from './showStyles'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
-import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import {
 	checkAccessToPlaylist,
 	checkAccessToRundown,
@@ -27,6 +26,8 @@ import {
 } from './lib'
 import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
 import { Studio, Studios } from '../../lib/collections/Studios'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export namespace ServerRundownAPI {
 	/** Remove an individual rundown */
@@ -139,7 +140,9 @@ export namespace ClientRundownAPI {
 		const access = await StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		const rundownPlaylist = access.playlist
 
-		const studio = RundownPlaylistCollectionUtil.getStudio(rundownPlaylist)
+		const studio = Studios.findOne(rundownPlaylist.studioId)
+		if (!studio) throw new Meteor.Error(404, 'Studio "' + rundownPlaylist.studioId + '" not found!')
+
 		const studioBlueprint = studio.blueprintId
 			? ((await Blueprints.findOneAsync(studio.blueprintId, {
 					fields: {
@@ -223,24 +226,20 @@ export namespace ClientRundownAPI {
 						id: id,
 						name: compound.name,
 						checkFailed: false,
-						fields: findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig),
+						fields: findMissingConfigs(blueprint.showStyleConfigManifest, compound.combinedBlueprintConfig),
 					}
 				}
 			})
 
+		const studioBlueprintConfig = applyAndValidateOverrides(studio.blueprintConfigWithOverrides).obj
 		return {
-			studio: findMissingConfigs(studioBlueprint.studioConfigManifest, studio.blueprintConfig),
+			studio: findMissingConfigs(studioBlueprint.studioConfigManifest, studioBlueprintConfig),
 			showStyles: showStyleWarnings,
 		}
 	}
 }
 
 class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
-	async removeRundownPlaylist(_playlistId: RundownPlaylistId) {
-		triggerWriteAccessBecauseNoCheckNecessary()
-
-		throw new Error('Removed')
-	}
 	async resyncRundownPlaylist(playlistId: RundownPlaylistId) {
 		check(playlistId, String)
 		const access = await checkAccessToPlaylist(this, playlistId)
@@ -264,20 +263,6 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 	async unsyncRundown(rundownId: RundownId) {
 		const access = await checkAccessToRundown(this, rundownId)
 		return ServerRundownAPI.unsyncRundown(access)
-	}
-	async moveRundown(
-		_rundownId: RundownId,
-		_intoPlaylistId: RundownPlaylistId | null,
-		_rundownsIdsInPlaylistInOrder: RundownId[]
-	) {
-		triggerWriteAccessBecauseNoCheckNecessary()
-
-		throw new Error('Removed')
-	}
-	async restoreRundownsInPlaylistToDefaultOrder(_playlistId: RundownPlaylistId) {
-		triggerWriteAccessBecauseNoCheckNecessary()
-
-		throw new Error('Removed')
 	}
 }
 registerClassToMeteorMethods(RundownAPIMethods, ServerRundownAPIClass, false)

@@ -8,10 +8,11 @@ import { registerClassToMeteorMethods } from '../methods'
 import { SystemWriteAccess } from '../security/system'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { logNotAllowed } from '../../server/security/lib/lib'
-import { User, UserId, Users } from '../../lib/collections/Users'
+import { User, Users } from '../../lib/collections/Users'
 import { createOrganization } from './organizations'
-import { DBOrganizationBase, Organizations, OrganizationId } from '../../lib/collections/Organization'
+import { DBOrganizationBase, Organizations } from '../../lib/collections/Organization'
 import { resetCredentials } from '../security/lib/credentials'
+import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 async function enrollUser(email: string, name: string): Promise<UserId> {
 	triggerWriteAccessBecauseNoCheckNecessary()

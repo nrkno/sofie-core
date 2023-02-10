@@ -1,13 +1,14 @@
 import * as _ from 'underscore'
 import { literal, ProtectedString, unprotectString, protectString, sleep } from '../lib/lib'
 import { RandomMock } from './random'
-import { FindOptions, FindOneOptions } from '../lib/typings/meteor'
 import { MeteorMock } from './meteor'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import {
 	AsyncMongoCollection,
+	FindOneOptions,
+	FindOptions,
 	ObserveCallbacks,
 	ObserveChangesCallbacks,
 	UpdateOptions,

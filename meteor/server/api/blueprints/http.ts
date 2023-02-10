@@ -7,9 +7,9 @@ import { check, Match } from '../../../lib/check'
 import { URL } from 'url'
 import { retrieveBlueprintAsset, uploadBlueprint, uploadBlueprintAsset } from './api'
 import { protectString } from '../../../lib/lib'
-import { BlueprintId } from '../../../lib/collections/Blueprints'
 import { PickerGET, PickerPOST } from '../http'
 import path from 'path'
+import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const BLUEPRINT_ASSET_MAX_AGE = 15 * 24 * 3600 // 15 days, in seconds
 

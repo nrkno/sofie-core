@@ -6,8 +6,7 @@ import { MongoQueryKey } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials } from './lib/credentials'
 import { logNotAllowed } from './lib/lib'
 import { allowAccessToRundown } from './lib/security'
-import { RundownId } from '../../lib/collections/Rundowns'
-import { Segments, DBSegment, SegmentId } from '../../lib/collections/Segments'
+import { Segments, DBSegment } from '../../lib/collections/Segments'
 import { ExpectedMediaItem } from '../../lib/collections/ExpectedMediaItems'
 import {
 	PeripheralDevices,
@@ -17,6 +16,7 @@ import {
 } from '../../lib/collections/PeripheralDevices'
 import { ExpectedPlayoutItem } from '../../lib/collections/ExpectedPlayoutItems'
 import { Settings } from '../../lib/Settings'
+import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export namespace RundownReadAccess {
 	/** Check for read access to the rundown collection */

@@ -14,14 +14,11 @@ import { createInMemoryMongoCollection } from '../../../../../lib/collections/li
 import { ConfigManifestEntryComponent } from '../../../Settings/components/ConfigManifestEntryComponent'
 import { ConfigManifestEntry, ConfigManifestEntryType } from '@sofie-automation/corelib/dist/deviceConfig'
 import { Spinner } from '../../../../lib/Spinner'
-import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import InspectorTitle from './InspectorTitle'
 import { ProtectedString } from '../../../../../lib/lib'
-import { PartId } from '../../../../../lib/collections/Parts'
-import { Studio } from '../../../../../lib/collections/Studios'
 import { doUserAction, UserAction } from '../../../../lib/userAction'
 import { MeteorCall } from '../../../../../lib/api/methods'
-import { BucketId, Buckets } from '../../../../../lib/collections/Buckets'
+import { Buckets } from '../../../../../lib/collections/Buckets'
 import { BucketAdLibItem, BucketAdLibActionUi } from '../../RundownViewBuckets'
 import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
 import { actionToAdLibPieceUi } from '../../BucketPanel'
@@ -29,13 +26,16 @@ import RundownViewEventBus, { RundownViewEvents } from '../../../RundownView/Run
 import { IAdLibListItem } from '../../AdLibListItem'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { AdLibPieceUi } from '../../../../lib/shelf'
+import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
+import { UIStudio } from '../../../../../lib/api/studios'
+import { BucketId, PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export { isActionItem }
 
 export interface IProps {
 	piece: PieceUi | IAdLibListItem | BucketAdLibActionUi
-	showStyleBase: ShowStyleBase
-	studio: Studio
+	showStyleBase: UIShowStyleBase
+	studio: UIStudio
 	rundownPlaylist: RundownPlaylist
 	onSelectPiece: (piece: BucketAdLibItem | AdLibPieceUi | PieceUi | undefined) => void
 }
@@ -232,11 +232,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 
 						if (res) {
 							onSelectPiece(
-								actionToAdLibPieceUi(
-									res,
-									_.indexBy(this.props.showStyleBase.sourceLayers, '_id'),
-									_.indexBy(this.props.showStyleBase.outputLayers, '_id')
-								)
+								actionToAdLibPieceUi(res, this.props.showStyleBase.sourceLayers, this.props.showStyleBase.outputLayers)
 							)
 						}
 					}

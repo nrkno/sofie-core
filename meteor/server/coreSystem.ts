@@ -18,7 +18,7 @@ import { setSystemStatus, removeSystemStatus } from './systemStatus/systemStatus
 import { Blueprints, Blueprint } from '../lib/collections/Blueprints'
 import * as _ from 'underscore'
 import { ShowStyleBases } from '../lib/collections/ShowStyleBases'
-import { Studios, StudioId, Studio } from '../lib/collections/Studios'
+import { Studios, Studio } from '../lib/collections/Studios'
 import { getEnvLogLevel, logger, LogLevel, setLogLevel } from './logging'
 import { findMissingConfigs } from './api/blueprints/config'
 import { ShowStyleVariants } from '../lib/collections/ShowStyleVariants'
@@ -28,6 +28,8 @@ const PackageInfo = require('../package.json')
 import { TMP_TSR_VERSION, StatusCode } from '@sofie-automation/blueprints-integration'
 import { createShowStyleCompound } from './api/showStyles'
 import { fetchShowStyleBasesLight } from '../lib/collections/optimizations'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export { PackageInfo }
 
@@ -277,7 +279,8 @@ function checkBlueprintsConfig() {
 			const blueprint = Blueprints.findOne(studio.blueprintId)
 			if (!blueprint) return
 
-			const diff = findMissingConfigs(blueprint.studioConfigManifest, studio.blueprintConfig)
+			const blueprintConfig = applyAndValidateOverrides(studio.blueprintConfigWithOverrides).obj
+			const diff = findMissingConfigs(blueprint.studioConfigManifest, blueprintConfig)
 			const systemStatusId = `blueprintConfig_${blueprint._id}_studio_${studio._id}`
 			setBlueprintConfigStatus(systemStatusId, diff, studio._id)
 			blueprintIds[systemStatusId] = true
@@ -298,7 +301,7 @@ function checkBlueprintsConfig() {
 				const compound = createShowStyleCompound(showBase, variant)
 				if (!compound) return
 
-				const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.blueprintConfig)
+				const diff = findMissingConfigs(blueprint.showStyleConfigManifest, compound.combinedBlueprintConfig)
 				if (diff && diff.length) {
 					allDiffs.push(`Variant ${variant._id}: ${diff.join(', ')}`)
 				}

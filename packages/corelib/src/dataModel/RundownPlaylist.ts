@@ -88,6 +88,8 @@ export interface DBRundownPlaylist {
 	lastIncorrectPartPlaybackReported?: Time
 	/** Actual time of each rundown starting playback */
 	rundownsStartedPlayback?: Record<string, Time>
+	/** Time of the last take */
+	lastTakeTime?: Time
 
 	/** If the order of rundowns in this playlist has ben set manually by a user in Sofie */
 	rundownRanksAreSetInSofie?: boolean

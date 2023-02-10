@@ -6,19 +6,16 @@ import {
 	RundownLayouts,
 	RundownLayoutType,
 	RundownLayoutBase,
-	RundownLayoutId,
 	CustomizableRegions,
 } from '../../lib/collections/RundownLayouts'
 import { literal, getRandomId, protectString } from '../../lib/lib'
 import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
-import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import { BlueprintId } from '../../lib/collections/Blueprints'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
-import { UserId } from '../../lib/collections/Users'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { PickerPOST, PickerGET } from './http'
 import { fetchShowStyleBaseLight } from '../../lib/collections/optimizations'
+import { BlueprintId, RundownLayoutId, ShowStyleBaseId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export async function createRundownLayout(
 	name: string,
@@ -40,6 +37,7 @@ export async function createRundownLayout(
 			icon: '',
 			iconColor: '#ffffff',
 			regionId,
+			isDefaultLayout: false,
 		})
 	)
 	return id
