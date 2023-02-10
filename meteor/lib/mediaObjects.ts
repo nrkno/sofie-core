@@ -521,7 +521,7 @@ function getPackageWarningMessage(
 			status: PieceStatusCode.SOURCE_MISSING,
 			message: generateTranslation('{{reason}} Clip exists, but is not yet ready on the playout system.', {
 				sourceLayer: sourceLayer.name,
-				reason: (packageOnPackageContainer?.status.statusReason.user || 'N/A').replace(/\.\.$/, '.'), // remove any double "."
+				reason: ((packageOnPackageContainer?.status.statusReason.user || 'N/A') + '.').replace(/\.\.$/, '.'), // remove any trailing double "."
 			}),
 		}
 	} else if (
