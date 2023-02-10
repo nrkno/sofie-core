@@ -513,19 +513,16 @@ function getPackageWarningMessage(
 		ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_READY
 	) {
 		// Examples of contents in packageOnPackageContainer?.status.statusReason.user:
-		// * Waiting for source file to stop growing
-		// * The clip has no frames
-		// * Clip not yet published
+		// * Source file is still growing
+		// * Reserved clip (0 frames)
+		// * Reserved clip (1-9 frames)
 
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation(
-				'Clip exists, but is not yet ready on the playout system. Status: {{reason}}',
-				{
-					sourceLayer: sourceLayer.name,
-					reason: packageOnPackageContainer?.status.statusReason.user || 'N/A',
-				}
-			),
+			message: generateTranslation('{{reason}} Clip exists, but is not yet ready on the playout system.', {
+				sourceLayer: sourceLayer.name,
+				reason: (packageOnPackageContainer?.status.statusReason.user || 'N/A').replace(/\.\.$/, '.'), // remove any double "."
+			}),
 		}
 	} else if (
 		packageOnPackageContainer.status.status ===
@@ -543,7 +540,7 @@ function getPackageWarningMessage(
 	) {
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation('Clip is transferring to the the playout system and cannot be played yet', {
+			message: generateTranslation('Clip is transferring to the the playout system but cannot be played yet', {
 				sourceLayer: sourceLayer.name,
 			}),
 		}
