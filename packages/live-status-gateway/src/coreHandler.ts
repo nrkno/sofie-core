@@ -200,6 +200,10 @@ export class CoreHandler {
 		}
 
 		const studioId = device.studioId
+		if (studioId === undefined) {
+			throw new Error(`Live status gateway must be attached to a studio`)
+		}
+
 		if (studioId !== this._studioId) {
 			this._studioId = studioId
 		}
