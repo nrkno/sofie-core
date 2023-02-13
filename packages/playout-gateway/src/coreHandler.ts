@@ -102,15 +102,15 @@ export class CoreHandler {
 
 		this.core.onConnected(() => {
 			this.logger.info('Core Connected!')
-			this.setupObserversAndSubscriptions().catch((e) => {
-				this.logger.error('Core Error during setupObserversAndSubscriptions:', e)
+			this.setupObserversAndSubscriptions().catch((e: any) => {
+				this.logger.error(`Core Error during setupObserversAndSubscriptions: ${e}`, { error: e })
 			})
 			if (this._onConnected) this._onConnected()
 		})
 		this.core.onDisconnected(() => {
 			this.logger.warn('Core Disconnected!')
 		})
-		this.core.onError((err) => {
+		this.core.onError((err: any) => {
 			this.logger.error('Core Error: ' + (typeof err === 'string' ? err : err.message || err.toString() || err))
 		})
 
@@ -261,10 +261,10 @@ export class CoreHandler {
 					.autoSubscribe('timeline', {
 						studioId: studioId,
 					})
-					.then((subscriptionId) => {
+					.then((subscriptionId: string | null) => {
 						this._timelineSubscription = subscriptionId
 					})
-					.catch((err) => {
+					.catch((err: any) => {
 						this.logger.error(err)
 					})
 
@@ -277,10 +277,10 @@ export class CoreHandler {
 					.autoSubscribe('expectedPlayoutItems', {
 						studioId: studioId,
 					})
-					.then((subscriptionId) => {
+					.then((subscriptionId: string | null) => {
 						this._expectedItemsSubscription = subscriptionId
 					})
-					.catch((err) => {
+					.catch((err: any) => {
 						this.logger.error(err)
 					})
 				this.logger.debug('VIZDEBUG: Subscription to expectedPlayoutItems done')
@@ -309,14 +309,17 @@ export class CoreHandler {
 			const cb = (err: any, res?: any) => {
 				// console.log('cb', err, res)
 				if (err) {
-					this.logger.error('executeFunction error', err, err.stack)
+					this.logger.error('executeFunction error', {
+						error: err,
+						stacktrace: err.stack,
+					})
 				}
 				fcnObject.core
 					.callMethod(PeripheralDeviceAPIMethods.functionReply, [cmd._id, err, res])
 					.then(() => {
 						// console.log('cb done')
 					})
-					.catch((error) => this.logger.error(error))
+					.catch((error: any) => this.logger.error(error))
 			}
 			// @ts-expect-error Untyped bunch of functions
 			// eslint-disable-next-line @typescript-eslint/ban-types
@@ -562,7 +565,7 @@ export class CoreTSRDeviceHandler {
 				this._device.deviceOptions.type
 			)
 		)
-		this.core.onError((err) => {
+		this.core.onError((err: any) => {
 			this._coreParentHandler.logger.error(
 				'Core Error: ' + ((_.isObject(err) && err.message) || err.toString() || err)
 			)
@@ -622,9 +625,12 @@ export class CoreTSRDeviceHandler {
 	sendStatus(): void {
 		if (!this.core) return // not initialized yet
 
-		this.core
-			.setStatus(this._deviceStatus)
-			.catch((e) => this._coreParentHandler.logger.error('Error when setting status: ', e, e.stack))
+		this.core.setStatus(this._deviceStatus).catch((e: any) =>
+			this._coreParentHandler.logger.error(`Error when setting status: ${e}`, {
+				error: e,
+				stacktrace: e.stack,
+			})
+		)
 	}
 	onCommandError(
 		errorMessage: string,
@@ -638,18 +644,31 @@ export class CoreTSRDeviceHandler {
 	): void {
 		this.core
 			.callMethodLowPrio(PeripheralDeviceAPIMethods.reportCommandError, [errorMessage, ref])
-			.catch((e) => this._coreParentHandler.logger.error('Error when callMethodLowPrio: ', e, e.stack))
+			.catch((e: any) =>
+				this._coreParentHandler.logger.error(`Error when callMethodLowPrio: ${e}`, {
+					error: e,
+					stacktrace: e.stack,
+				})
+			)
 	}
 	onUpdateMediaObject(collectionId: string, docId: string, doc: MediaObject | null): void {
 		this.core
 			.callMethodLowPrio(PeripheralDeviceAPIMethods.updateMediaObject, [collectionId, docId, doc])
-			.catch((e) => this._coreParentHandler.logger.error('Error when updating Media Object: ' + e, e.stack))
+			.catch((e: any) =>
+				this._coreParentHandler.logger.error(`Error when updating Media Object: ${e}`, {
+					error: e,
+					stacktrace: e.stack,
+				})
+			)
 	}
 	onClearMediaObjectCollection(collectionId: string): void {
 		this.core
 			.callMethodLowPrio(PeripheralDeviceAPIMethods.clearMediaObjectCollection, [collectionId])
-			.catch((e) =>
-				this._coreParentHandler.logger.error('Error when clearing Media Objects collection: ' + e, e.stack)
+			.catch((e: any) =>
+				this._coreParentHandler.logger.error(`Error when clearing Media Objects collection: ${e}`, {
+					error: e,
+					stacktrace: e.stack,
+				})
 			)
 	}
 
