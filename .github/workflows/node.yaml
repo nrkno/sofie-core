@@ -40,6 +40,7 @@ jobs:
           meteor npm run ci:lint
         env:
           CI: true
+
   test-core:
     name: Test Core
     runs-on: ubuntu-latest
@@ -79,89 +80,122 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v3
-      - name: Get the Docker tag
-        id: docker-tag
-        uses: yuya-takeyama/docker-tag-from-github-ref-action@750c706417ebb9a701022906a9725d21332508f7
-        with:
-          remove-version-tag-prefix: false
-      - name: Determine images to publish
-        id: image-tags
+      - name: Determine if images should be published to DockerHub
+        id: dockerhub
         run: |
-          IMAGES=
-          DOCKER_TAG=${{ steps.docker-tag.outputs.tag }}
           # check if a release branch, or master, or a tag
-          if [[ $DOCKER_TAG =~ ^release([0-9]+)$ || $DOCKER_TAG == "latest" || "${{ github.ref }}" == refs/tags/* ]]
+          if [[ "${{ github.ref }}" =~ ^refs/heads/release([0-9]+)$ || "${{ github.ref }}" == "refs/heads/master" || "${{ github.ref }}" == "refs/tags/*" ]]
           then
-            # If we have a dockerhub image name, then setup to publish there
-            if [ -z "${{ secrets.DOCKERHUB_IMAGE_PREFIX }}" ]
-            then
-              DOCKERHUB_PUBLISH="0"
-            else
-              DOCKERHUB_PUBLISH="1"
-              IMAGES="${{ secrets.DOCKERHUB_IMAGE_PREFIX }}server-core:$DOCKER_TAG"$'\n'$IMAGES
-            fi
-            # debug output
-            echo dockerhub-publish $DOCKERHUB_PUBLISH
-            echo images $IMAGES
-            echo ::set-output name=images::"$IMAGES"
-            echo ::set-output name=dockerhub-publish::"$DOCKERHUB_PUBLISH"
+            DOCKERHUB_PUBLISH="1"
           else
-            echo "Skipping docker build"
+            DOCKERHUB_PUBLISH="0"
           fi
+          # debug output
+          echo "dockerhub-publish $DOCKERHUB_PUBLISH"
+          echo "dockerhub-publish=$DOCKERHUB_PUBLISH" >> $GITHUB_OUTPUT
+      - name: Check if push to GHCR is enabled
+        id: check-ghcr
+        env:
+          GHCR_ENABLED: ${{ secrets.GHCR_ENABLED }}
+        run: |
+          echo "Enable push to GHCR: ${{ env.GHCR_ENABLED != '' }}"
+          echo "enable=${{ env.GHCR_ENABLED != '' }}" >> $GITHUB_OUTPUT
+      - name: Check if there is access to repo secrets (needed for build and push)
+        if: steps.dockerhub.outputs.dockerhub-publish == '1' || steps.check-ghcr.outputs.enable == 'true'
+        id: check-build-and-push
+        env:
+          SECRET_ACCESS: ${{ secrets.DOCKERHUB_IMAGE_PREFIX }}
+        run: |
+          echo "Enable build and push: ${{ env.SECRET_ACCESS != '' }}"
+          echo "enable=${{ env.SECRET_ACCESS != '' }}" >> $GITHUB_OUTPUT
+      - name: Get the Docker tag for GHCR
+        id: ghcr-tag
+        if: steps.check-build-and-push.outputs.enable == 'true'
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}-server-core
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
+      - name: Get the Docker tag for DockerHub
+        id: dockerhub-tag
+        if: steps.check-build-and-push.outputs.enable == 'true'
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ secrets.DOCKERHUB_IMAGE_PREFIX }}server-core
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
       - name: Use Node.js
+        if: steps.check-build-and-push.outputs.enable == 'true'
         uses: actions/setup-node@v3
-        if: ${{ steps.image-tags.outputs.images }}
         with:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
-        if: ${{ steps.image-tags.outputs.images }}
+        if: steps.check-build-and-push.outputs.enable == 'true'
       - name: Prepare Environment
-        if: ${{ steps.image-tags.outputs.images }}
+        if: steps.check-build-and-push.outputs.enable == 'true'
         run: |
           yarn install
       - name: Build libs
-        if: ${{ steps.image-tags.outputs.images }}
+        if: steps.check-build-and-push.outputs.enable == 'true'
         run: |
           yarn build:packages
       - name: Persist Built Version information
-        if: ${{ steps.image-tags.outputs.images }}
+        if: steps.check-build-and-push.outputs.enable == 'true'
         run: |
           cd meteor
           yarn inject-git-hash
       - name: Meteor Build
-        if: ${{ steps.image-tags.outputs.images }}
+        if: steps.check-build-and-push.outputs.enable == 'true'
         run: |
           cd meteor
           NODE_OPTIONS="--max-old-space-size=4096" METEOR_DEBUG_BUILD=1 meteor build --allow-superuser --directory .
       - name: Meteor Bundle NPM Build
-        if: ${{ steps.image-tags.outputs.images }}
+        if: steps.check-build-and-push.outputs.enable == 'true'
         run: |
           cd meteor/bundle/programs/server
           meteor npm install
       - name: Set up Docker Buildx
-        if: ${{ steps.image-tags.outputs.images }}
+        if: steps.check-build-and-push.outputs.enable == 'true'
         uses: docker/setup-buildx-action@v2
       - name: Login to DockerHub
-        if: steps.image-tags.outputs.images && steps.image-tags.outputs.dockerhub-publish == '1'
+        if: steps.check-build-and-push.outputs.enable == 'true' && steps.dockerhub.outputs.dockerhub-publish == '1'
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      # TODO - do we want this?
-      # - name: Login to GitHub Container Registry
-      #   uses: docker/login-action@v2
-      #   with:
-      #     registry: ghcr.io
-      #     username: ${{ github.repository_owner }}
-      #     password: ${{ secrets.CR_PAT }}
-      - name: Build and push
+      - name: Login to GitHub Container Registry
+        if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true'
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push to GHCR
+        if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
         uses: docker/build-push-action@v3
-        if: ${{ steps.image-tags.outputs.images }}
         with:
           context: .
           file: ./meteor/Dockerfile.circle
           push: true
-          tags: ${{ steps.image-tags.outputs.images }}
+          labels: ${{ steps.ghcr-tag.outputs.labels }}
+          tags: "${{ steps.ghcr-tag.outputs.tags }}"
+      - name: Build and push to DockerHub
+        if: steps.check-build-and-push.outputs.enable == 'true' && steps.dockerhub.outputs.dockerhub-publish == '1'
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./meteor/Dockerfile.circle
+          push: true
+          labels: ${{ steps.dockerhub-tag.outputs.labels }}
+          tags: "${{ steps.dockerhub-tag.outputs.tags }}"
 
   build-gateways:
     # TODO - should this be dependant on tests or something passing if we are on a tag?
@@ -176,72 +210,104 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - name: Get the Docker tag
-        id: docker-tag
-        uses: yuya-takeyama/docker-tag-from-github-ref-action@750c706417ebb9a701022906a9725d21332508f7
-        with:
-          remove-version-tag-prefix: false
-      - name: Determine images to publish
-        id: image-tags
-        # TODO - image needs changing...
+      - name: Determine if images should be published to DockerHub
+        id: dockerhub
         run: |
-          IMAGES=
-          DOCKER_TAG=${{ steps.docker-tag.outputs.tag }}
           # check if a release branch, or master, or a tag
-          if [[ $DOCKER_TAG =~ ^release([0-9]+)$ || $DOCKER_TAG == "latest" || "${{ github.ref }}" == refs/tags/* ]]
+          if [[ "${{ github.ref }}" =~ ^refs/heads/release([0-9]+)$ || "${{ github.ref }}" == "refs/heads/master" || "${{ github.ref }}" == "refs/tags/*" ]]
           then
-            # If we have a dockerhub image name, then setup to publish there
-            if [ -z "${{ secrets.DOCKERHUB_IMAGE_PREFIX }}" ]
-            then
-              DOCKERHUB_PUBLISH="0"
-            else
-              DOCKERHUB_PUBLISH="1"
-              IMAGES="${{ secrets.DOCKERHUB_IMAGE_PREFIX }}${{ matrix.gateway-name }}:$DOCKER_TAG"$'\n'$IMAGES
-            fi
-            # debug output
-            echo dockerhub-publish $DOCKERHUB_PUBLISH
-            echo images $IMAGES
-            echo ::set-output name=images::"$IMAGES"
-            echo ::set-output name=dockerhub-publish::"$DOCKERHUB_PUBLISH"
+            DOCKERHUB_PUBLISH="1"
           else
-            echo "Skipping docker build"
+            DOCKERHUB_PUBLISH="0"
           fi
+          # debug output
+          echo "dockerhub-publish $DOCKERHUB_PUBLISH"
+          echo "dockerhub-publish=$DOCKERHUB_PUBLISH" >> $GITHUB_OUTPUT
+      - name: Check if push to GHCR is enabled
+        id: check-ghcr
+        env:
+          GHCR_ENABLED: ${{ secrets.GHCR_ENABLED }}
+        run: |
+          echo "Enable push to GHCR: ${{ env.GHCR_ENABLED != '' }}"
+          echo "enable=${{ env.GHCR_ENABLED != '' }}" >> $GITHUB_OUTPUT
+      - name: Check if there is access to repo secrets (needed for build and push)
+        if: steps.dockerhub.outputs.dockerhub-publish == '1' || steps.check-ghcr.outputs.enable == 'true'
+        id: check-build-and-push
+        env:
+          SECRET_ACCESS: ${{ secrets.DOCKERHUB_IMAGE_PREFIX }}
+        run: |
+          echo "Enable build and push: ${{ env.SECRET_ACCESS != '' }}"
+          echo "enable=${{ env.SECRET_ACCESS != '' }}" >> $GITHUB_OUTPUT
+      - name: Get the Docker tag for GHCR
+        id: ghcr-tag
+        if: steps.check-build-and-push.outputs.enable == 'true'
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ghcr.io/${{ github.repository }}-${{ matrix.gateway-name }}
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
+      - name: Get the Docker tag for DockerHub
+        id: dockerhub-tag
+        if: steps.check-build-and-push.outputs.enable == 'true'
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ secrets.DOCKERHUB_IMAGE_PREFIX }}${{ matrix.gateway-name }}
+          tags: |
+            type=schedule
+            type=ref,event=branch
+            type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
       - name: Use Node.js
         uses: actions/setup-node@v3
-        if: ${{ steps.image-tags.outputs.images }}
+        if: steps.check-build-and-push.outputs.enable == 'true'
         with:
           node-version-file: ".node-version"
       - name: Build
-        if: ${{ steps.image-tags.outputs.images }}
+        if: steps.check-build-and-push.outputs.enable == 'true'
         run: |
           cd packages
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.gateway-name }} --include-dependencies --stream build
           yarn install --prod --ignore-scripts
       - name: Set up Docker Buildx
-        if: ${{ steps.image-tags.outputs.images }}
+        if: steps.check-build-and-push.outputs.enable == 'true'
         uses: docker/setup-buildx-action@v2
       - name: Login to DockerHub
-        if: steps.image-tags.outputs.images && steps.image-tags.outputs.dockerhub-publish == '1'
+        if: steps.check-build-and-push.outputs.enable == 'true' && steps.dockerhub.outputs.dockerhub-publish == '1'
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      # TODO - do we want this?
-      # - name: Login to GitHub Container Registry
-      #   uses: docker/login-action@v2
-      #   with:
-      #     registry: ghcr.io
-      #     username: ${{ github.repository_owner }}
-      #     password: ${{ secrets.CR_PAT }}
-      - name: Build and push
+      - name: Login to GitHub Container Registry
+        if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true'
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push to GHCR
+        if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
         uses: docker/build-push-action@v3
-        if: ${{ steps.image-tags.outputs.images }}
         with:
           context: ./packages
           file: ./packages/${{ matrix.gateway-name }}/Dockerfile.circle
           push: true
-          tags: ${{ steps.image-tags.outputs.images }}
+          labels: ${{ steps.ghcr-tag.outputs.labels }}
+          tags: "${{ steps.ghcr-tag.outputs.tags }}"
+      - name: Build and push to DockerHub
+        if: steps.check-build-and-push.outputs.enable == 'true' && steps.dockerhub.outputs.dockerhub-publish == '1'
+        uses: docker/build-push-action@v3
+        with:
+          context: ./packages
+          file: ./packages/${{ matrix.gateway-name }}/Dockerfile.circle
+          push: true
+          labels: ${{ steps.dockerhub-tag.outputs.labels }}
+          tags: "${{ steps.dockerhub-tag.outputs.tags }}"
 
   lint-packages:
     name: Lint Package
@@ -293,7 +359,7 @@ jobs:
           - blueprints-integration
           - server-core-integration
           - shared-lib
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [14.x, 16.x]
         include:
           # include additional configs, to run certain packages only for a certain version of node
           - node-version: 14.x
@@ -419,7 +485,7 @@ jobs:
             NPM_TAG=$(node ../../scripts/determine-npm-tag.js $PUBLISHED_VERSION $THIS_VERSION)
 
             echo "Publishing $NPM_TAG"
-            echo ::set-output name=tag::"$NPM_TAG"
+            echo "tag=$NPM_TAG" >> $GITHUB_OUTPUT
 
           fi
       - name: Build
@@ -440,6 +506,7 @@ jobs:
           yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag ${{ steps.do-publish.outputs.tag }}
         env:
           CI: true
+
   check-for-multiple-library-versions:
     name: Check for multiple library versions
     runs-on: ubuntu-latest
