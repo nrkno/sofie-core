@@ -851,7 +851,7 @@ export class TSRHandler {
 			}
 			const onCommandError = (error: any, context: any) => {
 				// todo: handle this better
-				this.logger.error(fixError(error), context)
+				this.logger.error(fixError(error), { context })
 			}
 			const onUpdateMediaObject = (collectionId: string, docId: string, doc: MediaObject | null) => {
 				coreTsrHandler.onUpdateMediaObject(collectionId, docId, doc)
@@ -869,6 +869,11 @@ export class TSRHandler {
 				if (_.isString(e)) e = name + ': ' + e
 
 				return e
+			}
+			const fixContext = (...context: any[]): any => {
+				return {
+					context,
+				}
 			}
 			await coreTsrHandler.init()
 
@@ -905,13 +910,13 @@ export class TSRHandler {
 			await device.device.on('clearMediaObjects', onClearMediaObjectCollection as () => void)
 
 			await device.device.on('info', ((e: any, ...args: any[]) => {
-				this.logger.info(fixError(e), ...args)
+				this.logger.info(fixError(e), fixContext(args))
 			}) as () => void)
 			await device.device.on('warning', ((e: any, ...args: any[]) => {
-				this.logger.warn(fixError(e), ...args)
+				this.logger.warn(fixError(e), fixContext(args))
 			}) as () => void)
 			await device.device.on('error', ((e: any, ...args: any[]) => {
-				this.logger.error(fixError(e), ...args)
+				this.logger.error(fixError(e), fixContext(args))
 			}) as () => void)
 
 			await device.device.on('debug', (...args: any[]) => {
