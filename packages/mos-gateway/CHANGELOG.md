@@ -3,6 +3,67 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.48.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.2...v1.48.0-in-testing.2) (2023-02-14)
+
+
+
+# [1.47.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.2-1...v1.47.0-in-testing.7) (2023-01-24)
+
+
+
+# [1.47.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.2-0...v1.47.0-in-testing.6) (2023-01-16)
+
+
+
+# [1.48.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.48.0-in-testing.1) (2023-01-11)
+
+
+
+# [1.47.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.2...v1.47.0-in-testing.5) (2023-01-11)
+
+
+
+# [1.46.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.4...v1.46.0-in-testing.2) (2023-01-06)
+
+
+
+# [1.47.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.48.0-in-testing.0...v1.47.0-in-testing.4) (2023-01-05)
+
+
+
+# [1.47.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.1...v1.47.0-in-testing.3) (2022-11-30)
+
+
+### Features
+
+* tsr action manifests ([4987eaf](https://github.com/nrkno/tv-automation-server-core/commit/4987eaf3277a58311c1c2d2613af3bc72a5c4487))
+
+
+
+# [1.47.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.1...v1.47.0-in-testing.2) (2022-11-07)
+
+
+
+# [1.47.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.46.0-in-testing.0...v1.47.0-in-testing.1) (2022-11-07)
+
+
+
+# [1.46.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.0...v1.46.0-in-testing.0) (2022-10-31)
+
+
+
+# [1.47.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.0...v1.47.0-in-testing.0) (2022-10-28)
+
+
+### Features
+
+* remove data-store dependency from server-core-integration ([#738](https://github.com/nrkno/tv-automation-server-core/issues/738)) ([d715108](https://github.com/nrkno/tv-automation-server-core/commit/d7151084e1d96fdcf575864a439fe7a74087d740))
+* stronger ddp call typings in gateways ([#788](https://github.com/nrkno/tv-automation-server-core/issues/788)) ([2a1f8af](https://github.com/nrkno/tv-automation-server-core/commit/2a1f8affad1b0278a2350c6e4f6ed7d3070121a1))
+
+
+
+
+
 # [1.48.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.48.0-in-testing.0...v1.48.0-in-testing.1) (2023-01-11)
 
 **Note:** Version bump only for package mos-gateway
