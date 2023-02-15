@@ -204,6 +204,26 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 			),
 		})
 	}, [t, item.id, item.computed.name, overrideHelper])
+	const confirmReset = useCallback(() => {
+		doModalDialog({
+			title: t('Reset this item?'),
+			yes: t('Reset'),
+			no: t('Cancel'),
+			onAccept: () => {
+				overrideHelper.resetItem(item.id)
+			},
+			message: (
+				<React.Fragment>
+					<p>
+						{t('Are you sure you want to reset all overrides for the output layer "{{outputLayerId}}"?', {
+							outputLayerId: item.computed.name,
+						})}
+					</p>
+					<p>{t('Please note: This action is irreversible!')}</p>
+				</React.Fragment>
+			),
+		})
+	}, [t, item.id, overrideHelper])
 
 	return (
 		<>
@@ -224,10 +244,20 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 					</div>
 				</td>
 				<td className="settings-studio-output-table__actions table-item-actions c3">
-					<button className="action-btn" onClick={toggleEditItem}>
+					{!item.defaults && (
+						<button className="action-btn" disabled>
+							<FontAwesomeIcon icon={faSync} title={t('Source layer cannot be reset as it has no default values')} />
+						</button>
+					)}
+					{item.defaults && item.overrideOps.length > 0 && (
+						<button className="action-btn" onClick={confirmReset} title={t('Reset source layer to default values')}>
+							<FontAwesomeIcon icon={faSync} />
+						</button>
+					)}
+					<button className="action-btn" onClick={toggleEditItem} title={t('Edit output layer')}>
 						<FontAwesomeIcon icon={faPencilAlt} />
 					</button>
-					<button className="action-btn" onClick={confirmDelete}>
+					<button className="action-btn" onClick={confirmDelete} title={t('Delete output layer')}>
 						<FontAwesomeIcon icon={faTrash} />
 					</button>
 				</td>
