@@ -235,7 +235,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 
 					<div className="actions-container">
 						<div className="device-item__actions">
-							{this.props.device.configManifest.subdeviceManifest?.[this.props.device.subType] &&
+							{this.props.device.configManifest?.subdeviceManifest?.[this.props.device.subType] &&
 								this.props.device.configManifest.subdeviceManifest[this.props.device.subType].actions?.map((action) => (
 									<React.Fragment key={action.id}>
 										<button
