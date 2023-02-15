@@ -36,7 +36,7 @@ const InspectorTitle = withMediaObjectStatus<IProps, {}>()(function InspectorTit
 					}
 				)}
 			>
-				{layer && (layer.abbreviation || layer.name)}
+				<div className="shelf-inspector__title__layer">{layer && (layer.abbreviation || layer.name)}</div>
 			</div>
 			<span className="shelf-inspector__title__label">{piece.name}</span>
 		</h2>

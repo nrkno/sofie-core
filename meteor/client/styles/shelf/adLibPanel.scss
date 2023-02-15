@@ -216,6 +216,11 @@ $adlib-item-selected-color: var(--adlib-item-selected-color);
 						var(--$segment-layer-background-remote) 50.0001%
 					);
 				}
+
+				.adlib-panel__list-view__list__table__cell--layer {
+					position: relative;
+					z-index: 2;
+				}
 			}
 			.adlib-panel__list-view__list__table__cell--shortcut {
 				width: 5em;
