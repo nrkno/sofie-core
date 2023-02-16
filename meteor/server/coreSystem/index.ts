@@ -222,6 +222,7 @@ function startInstrumenting() {
 	// }
 }
 function updateLoggerLevel(startup: boolean) {
+	if (Meteor.isTest) return // ignore this when running in tests
 	const coreSystem = getCoreSystem()
 
 	if (coreSystem) {

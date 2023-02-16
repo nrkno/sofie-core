@@ -9,6 +9,7 @@ import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 
 import '../ExternalMessageQueue'
+import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
 
 describe('Test external message queue static methods', () => {
 	let studioEnv: DefaultEnvironment
@@ -87,6 +88,7 @@ describe('Test external message queue static methods', () => {
 	})
 
 	testInFiber('toggleHold unknown id', async () => {
+		SupressLogMessages.suppressLogMessage(/ExternalMessage/i)
 		await expect(MeteorCall.externalMessages.toggleHold(protectString('cake'))).rejects.toThrowMeteor(
 			404,
 			'ExternalMessage "cake" not found!'
@@ -109,6 +111,7 @@ describe('Test external message queue static methods', () => {
 	})
 
 	testInFiber('retry unknown id', async () => {
+		SupressLogMessages.suppressLogMessage(/ExternalMessage/i)
 		await expect(MeteorCall.externalMessages.retry(protectString('is_a_lie'))).rejects.toThrowMeteor(
 			404,
 			'ExternalMessage "is_a_lie" not found!'

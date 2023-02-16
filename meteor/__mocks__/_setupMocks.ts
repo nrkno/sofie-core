@@ -3,6 +3,7 @@ import { Fiber } from './Fibers'
 import { resetRandomId } from './random'
 import { makeCompatible } from 'meteor-promise'
 import { LogLevel } from '../lib/lib'
+import { SupressLogMessages } from './suppressLogging'
 
 // This file is run before all tests start.
 
@@ -35,9 +36,15 @@ jest.mock('../server/worker/worker', (...args) => require('./worker').setup(args
 
 require('../server/api/logger.ts')
 
+SupressLogMessages.init()
+
 beforeEach(() => {
 	setLogLevel(LogLevel.WARN)
 	// put setLogLevel('info') in the beginning of your test to see logs
 
 	resetRandomId()
+})
+afterEach(() => {
+	// Expect all log messages that have been explicitly supressed, to have been handled:
+	SupressLogMessages.expectAllMessagesToHaveBeenHandled()
 })

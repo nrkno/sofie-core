@@ -15,6 +15,7 @@ import { getRandomId, getRandomString, literal } from '@sofie-automation/corelib
 import { PeripheralDeviceCommandId, RundownId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CreateFakeResult, QueueIngestJobSpy } from '../../../../../__mocks__/worker'
 import { IngestJobs, MosRundownProps } from '@sofie-automation/corelib/dist/worker/ingest'
+import { SupressLogMessages } from '../../../../../__mocks__/suppressLogging'
 
 function fakeMinimalRo() {
 	return literal<MOS.IMOSRunningOrder>({
@@ -57,6 +58,7 @@ describe('Test sending mos actions', () => {
 				expect(cmd.functionName).toEqual('triggerGetRunningOrder')
 				expect(cmd.args).toEqual([fakeRundown.externalId])
 
+				SupressLogMessages.suppressLogMessage(/unknown annoying error/i)
 				PeripheralDeviceCommands.update(cmd._id, {
 					$set: {
 						replyError: 'unknown annoying error',
@@ -142,6 +144,7 @@ describe('Test sending mos actions', () => {
 			},
 		})
 
+		SupressLogMessages.suppressLogMessage(/Error in MOSDeviceActions\.reloadRundown/i)
 		await expect(MOSDeviceActions.reloadRundown(device, fakeRundown)).rejects.toThrowMeteor(
 			401,
 			`Expected triggerGetRunningOrder reply for SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa but got newId`
