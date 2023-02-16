@@ -45,7 +45,6 @@ describe('Service messages internal API', () => {
 			const spy = jest.spyOn(CoreSystem, 'getCoreSystemAsync').mockImplementation(async () => undefined)
 			SupressLogMessages.suppressLogMessage(/coreSystem\.serviceMessages doesnt exist/i)
 
-
 			await expect(readAllMessages()).rejects.toThrow()
 
 			spy.mockRestore()

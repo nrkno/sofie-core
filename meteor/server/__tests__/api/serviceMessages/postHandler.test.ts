@@ -395,7 +395,7 @@ describe('ServiceMessages API POST endpoint', () => {
 
 			SupressLogMessages.suppressLogMessage(/Unable to store message/i)
 			await postHandler({}, mockRequest, mockResponse)
-			
+
 			expect(mockResponse.statusCode).toBe(500)
 			spy.mockRestore()
 		})
