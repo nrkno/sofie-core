@@ -1,6 +1,7 @@
 import { readAllMessages, writeMessage } from '../../../api/serviceMessages/serviceMessagesApi'
 import * as CoreSystem from '../../../../lib/collections/CoreSystem'
 import { protectString } from '../../../../lib/lib'
+import { SupressLogMessages } from '../../../../__mocks__/suppressLogging'
 
 function convertExternalToServiceMessage(message: CoreSystem.ExternalServiceMessage): CoreSystem.ServiceMessage {
 	return {
@@ -42,6 +43,7 @@ describe('Service messages internal API', () => {
 	describe('readAllMessages', () => {
 		it('should throw when core system object cant be accessed', async () => {
 			const spy = jest.spyOn(CoreSystem, 'getCoreSystemAsync').mockImplementation(async () => undefined)
+			SupressLogMessages.suppressLogMessage(/coreSystem\.serviceMessages doesnt exist/i)
 
 			await expect(readAllMessages()).rejects.toThrow()
 
@@ -56,6 +58,7 @@ describe('Service messages internal API', () => {
 				return brokenCore
 			})
 
+			SupressLogMessages.suppressLogMessage(/coreSystem\.serviceMessages doesnt exist/i)
 			await expect(readAllMessages()).rejects.toThrow()
 
 			spy.mockRestore()
@@ -172,6 +175,7 @@ describe('Service messages internal API', () => {
 		})
 
 		it('should throw when message cant be written', async () => {
+			SupressLogMessages.suppressLogMessage(/lol/i)
 			const spyUpdate = jest.spyOn(CoreSystem.CoreSystem, 'updateAsync').mockImplementation(() => {
 				throw new Error('lol')
 			})
