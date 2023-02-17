@@ -204,7 +204,10 @@ export const DeviceItem = reacti18next.withTranslation()(
 
 			doModalDialog({
 				title: t('Purge Viz Rundown'),
-				message: t('Do you want to purge all elements from the viz-rundown?'),
+				message: t(
+					'Do you want to purge all elements from the viz-rundown? Please note that you will have to deactivate + activate the Rundown in Sofie before you will be able to playout Viz again.'
+				),
+
 				onAccept: (event: any) => {
 					callPeripheralDeviceFunction(event, device._id, undefined, 'vizPurgeRundown')
 						.then(() => {
