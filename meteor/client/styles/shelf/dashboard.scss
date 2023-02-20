@@ -616,4 +616,93 @@ $dashboard-button-height: 5.625em;
 			}
 		}
 	}
+	
+	&.dashboard-panel__panel--bucket {
+		$dashboard-button-width: 10.625em;
+		$dashboard-button-height: 8.90625em;
+		$dashboard-button-label-height: 2.7em;
+		$dashboard-button-thumbnail-height: $dashboard-button-height - $dashboard-button-label-height;
+
+		.dashboard-panel__panel__group {
+	
+			.dashboard-panel__panel__group__liveline {
+				transform: translate(calc(-1 * #{$dashboard-button-width}), 0);
+				&::after {
+					transform: translate(calc(#{$dashboard-button-width} + -1px), 0);
+				}
+	
+				&::before {
+					transform: translate(calc(#{$dashboard-button-width} + -1px), 0);
+				}
+			}
+		}
+
+		.dashboard-panel__panel__button {
+			border-radius: 0px;
+			width: $dashboard-button-width;
+			height: $dashboard-button-height;
+
+			&.source-missing, &.source-missing, &.unknown-state {
+				&::before {
+					z-index: 2;
+				}
+			}
+
+			> .dashboard-panel__panel__button__content {
+				background: linear-gradient(90deg, rgb(84,84,84) 0%, rgb(61,61,61) 100%);
+			
+
+				> .dashboard-panel__panel__button__label-container {
+					background-color: #000;
+					height: $dashboard-button-label-height;
+					display: flex;
+					position: absolute;
+					top: auto;
+					bottom: 0;
+					padding: unset;
+
+					.dashboard-panel__panel__button__tag-container {
+						flex: 0 0 0.46875em;
+						z-index: 2;
+						background: var(--segment-layer-background-unknown);
+
+						@include item-type-colors();
+					}
+
+					.dashboard-panel__panel__button__label {
+						text-align: unset;
+						padding: 0.1em 0.5px 0em 3px;
+						vertical-align: unset;
+						font-size: 1.125em;
+						font-weight: unset;
+						text-shadow: unset;
+						z-index: 2;
+						text-overflow: ellipsis;
+						display: -webkit-box;
+						-webkit-box-orient: vertical;
+						-webkit-line-clamp: 2;
+						top: unset;
+					}
+				}
+
+				> .dashboard-panel__panel__button__thumbnail {
+					height: $dashboard-button-thumbnail-height;
+					top: unset;
+					right: unset;
+					bottom: unset;
+					left: unset;
+					z-index: unset;
+				}
+	
+				> .dashboard-panel__panel__button__sub-label {
+					padding: 2px;
+					font-size: 0.9375em;
+					margin: unset;
+					background: rgba(0, 0, 0, 0.5);
+					font-family: 'Roboto Condensed', sans-serif;
+					text-shadow: unset;
+				}
+			}
+		}
+	}
 }

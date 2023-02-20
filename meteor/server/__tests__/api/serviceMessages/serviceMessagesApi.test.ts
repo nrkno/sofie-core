@@ -8,6 +8,7 @@ import {
 	ServiceMessage,
 } from '../../../../lib/collections/CoreSystem'
 import { CoreSystem } from '../../../collections'
+import { SupressLogMessages } from '../../../../__mocks__/suppressLogging'
 
 function convertExternalToServiceMessage(message: ExternalServiceMessage): ServiceMessage {
 	return {
@@ -49,6 +50,7 @@ describe('Service messages internal API', () => {
 	describe('readAllMessages', () => {
 		it('should throw when core system object cant be accessed', async () => {
 			const spy = jest.spyOn(CoreSystemUtil, 'getCoreSystemAsync').mockImplementation(async () => undefined)
+			SupressLogMessages.suppressLogMessage(/coreSystem\.serviceMessages doesnt exist/i)
 
 			await expect(readAllMessages()).rejects.toThrow()
 
@@ -63,6 +65,7 @@ describe('Service messages internal API', () => {
 				return brokenCore
 			})
 
+			SupressLogMessages.suppressLogMessage(/coreSystem\.serviceMessages doesnt exist/i)
 			await expect(readAllMessages()).rejects.toThrow()
 
 			spy.mockRestore()
@@ -179,6 +182,7 @@ describe('Service messages internal API', () => {
 		})
 
 		it('should throw when message cant be written', async () => {
+			SupressLogMessages.suppressLogMessage(/lol/i)
 			const spyUpdate = jest.spyOn(CoreSystem, 'updateAsync').mockImplementation(() => {
 				throw new Error('lol')
 			})

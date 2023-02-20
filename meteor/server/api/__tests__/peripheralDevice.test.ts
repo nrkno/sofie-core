@@ -60,6 +60,7 @@ import {
 	Rundowns,
 	Segments,
 } from '../../collections'
+import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
 
 const DEBUG = false
 
@@ -437,6 +438,7 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('killProcess with a rundown present', async () => {
 		// test this does not shutdown because Rundown stored
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
+		SupressLogMessages.suppressLogMessage(/Unable to run killProcess/i)
 		await expect(MeteorCall.peripheralDevice.killProcess(device._id, device.token, true)).rejects.toThrowMeteor(
 			400,
 			`Unable to run killProcess: Rundowns not empty!`
@@ -447,6 +449,7 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const result = await MeteorCall.peripheralDevice.testMethod(device._id, device.token, 'european')
 		expect(result).toBe('european')
+		SupressLogMessages.suppressLogMessage(/Error thrown/i)
 		await expect(
 			MeteorCall.peripheralDevice.testMethod(device._id, device.token, 'european', true)
 		).rejects.toThrowMeteor(418, `Error thrown, as requested`)
@@ -464,6 +467,7 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('requestUserAuthToken', async () => {
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 
+		SupressLogMessages.suppressLogMessage(/can only request user auth token/i)
 		await expect(
 			MeteorCall.peripheralDevice.requestUserAuthToken(device._id, device.token, 'https://auth.url/')
 		).rejects.toThrowMeteor(400, 'can only request user auth token for peripheral device of spreadsheet type')
@@ -488,6 +492,7 @@ describe('test peripheralDevice general API methods', () => {
 	// Should only really work for SpreadsheetDevice
 	testInFiber('storeAccessToken', async () => {
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
+		SupressLogMessages.suppressLogMessage(/can only store access token/i)
 		await expect(
 			MeteorCall.peripheralDevice.storeAccessToken(device._id, device.token, 'https://auth.url/')
 		).rejects.toThrowMeteor(400, 'can only store access token for peripheral device of spreadsheet type')

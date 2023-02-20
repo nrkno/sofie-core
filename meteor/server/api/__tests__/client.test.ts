@@ -15,6 +15,7 @@ import { setupMockPeripheralDevice, setupMockStudio } from '../../../__mocks__/h
 import { MeteorCall } from '../../../lib/api/methods'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDeviceCommands, UserActionsLog } from '../../collections'
+import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
 
 require('../client') // include in order to create the Meteor methods needed
 
@@ -39,6 +40,7 @@ describe('ClientAPI', () => {
 			expect(MeteorMock.mockMethods[ClientAPIMethods.clientErrorReport]).toBeTruthy()
 		})
 		testInFiber('Returns a success response to the client', async () => {
+			SupressLogMessages.suppressLogMessage(/Uncaught error happened in GUI/i)
 			// should not throw:
 			await MeteorCall.client.clientErrorReport(1000, { error: 'Some Error' }, 'MockString', 'MockLocation')
 		})
@@ -155,6 +157,8 @@ describe('ClientAPI', () => {
 			testInFiber(
 				'Resolves the returned promise once a response from the peripheralDevice is received',
 				async () => {
+					SupressLogMessages.suppressLogMessage(/Failed/i)
+					SupressLogMessages.suppressLogMessage(/Failed/i)
 					PeripheralDeviceCommands.update(
 						{
 							deviceId: mockDeviceId,

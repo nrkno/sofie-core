@@ -9,7 +9,7 @@ export function setupApmAgent(): void {
 
 	const { APM_HOST, APM_SECRET, APM_ENABLE, KIBANA_INDEX, APP_HOST } = process.env
 
-	if (APM_ENABLE && APM_HOST && APM_SECRET) {
+	if (APM_ENABLE && APM_HOST) {
 		logger.info(`APM agent starting up`)
 		Agent.start({
 			serviceName: KIBANA_INDEX || 'tv-automation-server-core',
