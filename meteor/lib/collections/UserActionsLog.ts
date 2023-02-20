@@ -1,8 +1,5 @@
 import { Time, TimeDuration } from '../lib'
-import { createMongoCollection } from './lib'
-import { registerIndex } from '../database'
 import { UserActionsLogItemId, OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { TimelineHash } from './Timeline'
 
 export interface UserActionsLogItem {
@@ -42,13 +39,3 @@ export interface UserActionsLogItem {
 	/** The time playout-gateway(s) reported it took to resolve the timeline. */
 	timelineResolveDuration?: TimeDuration[]
 }
-
-export const UserActionsLog = createMongoCollection<UserActionsLogItem>(CollectionName.UserActionsLog)
-
-registerIndex(UserActionsLog, {
-	organizationId: 1,
-	timestamp: 1,
-})
-registerIndex(UserActionsLog, {
-	timelineHash: 1,
-})

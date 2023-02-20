@@ -5,11 +5,7 @@ import { useTranslation } from 'react-i18next'
 import Sorensen from '@sofie-automation/sorensen'
 import { PubSub } from '../../../lib/api/pubsub'
 import { useSubscription, useTracker } from '../ReactMeteorData/ReactMeteorData'
-import {
-	RundownPlaylist,
-	RundownPlaylistCollectionUtil,
-	RundownPlaylists,
-} from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PlayoutActions, SomeAction, TriggerType } from '@sofie-automation/blueprints-integration'
 import {
 	isPreviewableAction,
@@ -27,7 +23,8 @@ import RundownViewEventBus, {
 } from '../../../lib/api/triggers/RundownViewEventBus'
 import { Tracker } from 'meteor/tracker'
 import { Settings } from '../../../lib/Settings'
-import { createInMemoryMongoCollection } from '../../../lib/collections/lib'
+import { createInMemorySyncMongoCollection } from '../../../lib/collections/lib'
+import { RundownPlaylists } from '../../collections'
 import { UIShowStyleBases, UITriggeredActions } from '../../ui/Collections'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import {
@@ -43,6 +40,7 @@ import {
 	MountedHotkeyMixin,
 } from '../../../lib/api/triggers/MountedTriggers'
 import { isHotkeyTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -143,11 +141,10 @@ function getCurrentContext(): ReactivePlaylistActionContext | null {
 	return rundownPlaylistContext.get()
 }
 
-export const MountedAdLibTriggers = createInMemoryMongoCollection<MountedAdLibTrigger & MountedHotkeyMixin>(
+export const MountedAdLibTriggers = createInMemorySyncMongoCollection<MountedAdLibTrigger & MountedHotkeyMixin>(
 	'MountedAdLibTrigger'
 )
-
-export const MountedGenericTriggers = createInMemoryMongoCollection<MountedGenericTrigger & MountedHotkeyMixin>(
+export const MountedGenericTriggers = createInMemorySyncMongoCollection<MountedGenericTrigger & MountedHotkeyMixin>(
 	'MountedGenericTrigger'
 )
 

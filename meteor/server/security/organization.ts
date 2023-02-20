@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import { Snapshots, SnapshotItem } from '../../lib/collections/Snapshots'
-import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
+import { SnapshotItem } from '../../lib/collections/Snapshots'
+import { Blueprint } from '../../lib/collections/Blueprints'
 import { logNotAllowed } from './lib/lib'
 import { MongoQueryKey } from '../../lib/typings/meteor'
 import { allowAccessToOrganization } from './lib/security'
@@ -9,12 +9,7 @@ import { Settings } from '../../lib/Settings'
 import { MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
-import {
-	fetchShowStyleBaseLight,
-	fetchStudioLight,
-	ShowStyleBaseLight,
-	StudioLight,
-} from '../../lib/collections/optimizations'
+import { fetchShowStyleBaseLight, fetchStudioLight, ShowStyleBaseLight, StudioLight } from '../optimizations'
 import {
 	BlueprintId,
 	OrganizationId,
@@ -23,6 +18,7 @@ import {
 	StudioId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Blueprints, Snapshots } from '../collections'
 
 export type BasicAccessContext = { organizationId: OrganizationId | null; userId: UserId | null }
 

@@ -2,7 +2,6 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import {
 	PeripheralDevice,
-	PeripheralDevices,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '../../../lib/collections/PeripheralDevices'
@@ -23,7 +22,7 @@ import { getAllowConfigure, getAllowDeveloper, getAllowStudio, getHelpMode } fro
 import { PubSub } from '../../../lib/api/pubsub'
 import ClassNames from 'classnames'
 import { StatusCode, TSR } from '@sofie-automation/blueprints-integration'
-import { CoreSystem, ICoreSystem } from '../../../lib/collections/CoreSystem'
+import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { StatusResponse } from '../../../lib/api/systemStatus'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -34,6 +33,7 @@ import { StatusCodePill } from './StatusCodePill'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 import { SchemaForm } from '../../lib/forms/schemaForm'
+import { CoreSystem, PeripheralDevices } from '../../collections'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { DebugStateTable } from './DebugState'
 

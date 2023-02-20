@@ -5,7 +5,7 @@ import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { UIStudio } from '../../lib/api/studios'
-import { DBStudio, Studios } from '../../lib/collections/Studios'
+import { DBStudio } from '../../lib/collections/Studios'
 import { Complete, literal } from '../../lib/lib'
 import {
 	CustomPublishCollection,
@@ -17,6 +17,7 @@ import { logger } from '../logging'
 import { resolveCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { StudioReadAccess } from '../security/studio'
+import { Studios } from '../collections'
 
 interface UIStudioArgs {
 	readonly studioId: StudioId | null

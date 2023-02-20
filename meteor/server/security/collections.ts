@@ -1,4 +1,3 @@
-import { CoreSystem } from '../../lib/collections/CoreSystem'
 import {
 	allowAccessToCoreSystem,
 	allowAccessToStudio,
@@ -6,41 +5,50 @@ import {
 	allowAccessToOrganization,
 } from './lib/security'
 import { logNotAllowed, allowOnlyFields, rejectFields } from './lib/lib'
-import { Users } from '../../lib/collections/Users'
-import { Organizations } from '../../lib/collections/Organization'
-import { UserActionsLog } from '../../lib/collections/UserActionsLog'
-import { Evaluations } from '../../lib/collections/Evaluations'
-import { Snapshots } from '../../lib/collections/Snapshots'
-import { Blueprints } from '../../lib/collections/Blueprints'
-import { RundownPlaylists, DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { Studios, Studio } from '../../lib/collections/Studios'
-import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
-import { MediaObjects } from '../../lib/collections/MediaObjects'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { RundownLayouts } from '../../lib/collections/RundownLayouts'
-import { PeripheralDevices, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
-import { MediaWorkFlowSteps, MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
-import { MediaWorkFlows, MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
-import { Rundowns } from '../../lib/collections/Rundowns'
-import { Segments } from '../../lib/collections/Segments'
-import { Parts } from '../../lib/collections/Parts'
-import { PartInstances } from '../../lib/collections/PartInstances'
-import { Pieces } from '../../lib/collections/Pieces'
-import { PieceInstances } from '../../lib/collections/PieceInstances'
-import { AdLibPieces } from '../../lib/collections/AdLibPieces'
-import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
-import { IngestDataCache } from '../../lib/collections/IngestDataCache'
-import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
-import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
-import { Timeline } from '../../lib/collections/Timeline'
+import { Studio } from '../../lib/collections/Studios'
+import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
+import { MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
+import { MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
+import {
+	AdLibPieces,
+	Blueprints,
+	Buckets,
+	CoreSystem,
+	Evaluations,
+	ExpectedMediaItems,
+	ExpectedPlayoutItems,
+	ExternalMessageQueue,
+	IngestDataCache,
+	MediaObjects,
+	MediaWorkFlows,
+	MediaWorkFlowSteps,
+	Organizations,
+	PartInstances,
+	Parts,
+	PeripheralDeviceCommands,
+	PeripheralDevices,
+	PieceInstances,
+	Pieces,
+	RundownBaselineAdLibPieces,
+	RundownLayouts,
+	RundownPlaylists,
+	Rundowns,
+	Segments,
+	ShowStyleBases,
+	ShowStyleVariants,
+	Snapshots,
+	Studios,
+	Timeline,
+	TimelineDatastore,
+	TriggeredActions,
+	UserActionsLog,
+	Users,
+} from '../collections'
 import { SystemWriteAccess } from './system'
-import { Buckets } from '../../lib/collections/Buckets'
 import { StudioContentWriteAccess } from './studio'
-import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { resolveCredentials } from './lib/credentials'
-import { TimelineDatastore } from '../../lib/collections/TimelineDatastore'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 // Set up direct collection write access
 

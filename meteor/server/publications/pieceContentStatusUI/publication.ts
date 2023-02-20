@@ -16,11 +16,15 @@ import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
 import { UIPieceContentStatus } from '../../../lib/api/rundownNotifications'
 import { UIStudio } from '../../../lib/api/studios'
-import { MediaObjects } from '../../../lib/collections/MediaObjects'
-import { PackageContainerPackageStatuses } from '../../../lib/collections/PackageContainerPackageStatus'
-import { PackageInfos } from '../../../lib/collections/PackageInfos'
-import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { Studio, Studios } from '../../../lib/collections/Studios'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import {
+	MediaObjects,
+	PackageContainerPackageStatuses,
+	PackageInfos,
+	RundownPlaylists,
+	Studios,
+} from '../../collections'
+import { Studio } from '../../../lib/collections/Studios'
 import { literal, protectString } from '../../../lib/lib'
 import { checkPieceContentStatus, PieceContentStatusObj } from '../../../lib/mediaObjects'
 import {

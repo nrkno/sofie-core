@@ -6,7 +6,6 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { faUpload, faPlus, faCheck, faPencilAlt, faDownload, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-	RundownLayouts,
 	RundownLayoutType,
 	RundownLayoutBase,
 	RundownLayoutFilter,
@@ -37,6 +36,7 @@ import RundownHeaderLayoutSettings from './components/rundownLayouts/RundownHead
 import RundownViewLayoutSettings from './components/rundownLayouts/RundownViewLayoutSettings'
 import { RundownLayoutId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { RundownLayouts } from '../../collections'
 
 export interface IProps {
 	showStyleBaseId: ShowStyleBaseId

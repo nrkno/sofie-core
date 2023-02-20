@@ -1,14 +1,12 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { Studios, StudioRouteBehavior } from '../../../lib/collections/Studios'
-import { Blueprints } from '../../../lib/collections/Blueprints'
-import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { StudioRouteBehavior } from '../../../lib/collections/Studios'
 import { PackageInfo } from '../../coreSystem'
 import { StudioContentAccess } from '../../security/studio'
 import { shouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
-import { Timeline } from '../../../lib/collections/Timeline'
 import { logger } from '../../logging'
+import { Blueprints, RundownPlaylists, Studios, Timeline } from '../../collections'
 
 export namespace ServerPlayoutAPI {
 	export async function shouldUpdateStudioBaseline(access: StudioContentAccess): Promise<string | false> {

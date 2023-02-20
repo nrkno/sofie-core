@@ -2,13 +2,13 @@ import { PartInstanceId, RundownPlaylistActivationId } from '@sofie-automation/c
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 import _ from 'underscore'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
-import { PartInstances } from '../../lib/collections/PartInstances'
-import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
+import { PieceInstance } from '../../lib/collections/PieceInstances'
 import { RequiresActiveLayers } from '../../lib/collections/RundownLayouts'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { getCurrentTime } from '../../lib/lib'
 import { invalidateAt } from './../../lib/invalidatingTime'
 import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
+import { PartInstances, PieceInstances } from '../collections'
 
 /**
  * If the conditions of the filter are met, activePieceInstance will include the first piece instance found that matches the filter, otherwise it will be undefined.

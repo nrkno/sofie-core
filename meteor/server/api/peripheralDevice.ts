@@ -2,10 +2,9 @@ import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { Rundowns } from '../../lib/collections/Rundowns'
+import { PeripheralDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceCommands, PeripheralDevices, Rundowns, UserActionsLog } from '../collections'
 import { getCurrentTime, protectString, stringifyObjects, literal, unprotectString } from '../../lib/lib'
-import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { TimelineHash } from '../../lib/collections/Timeline'
 import { registerClassToMeteorMethods } from '../methods'
@@ -34,7 +33,7 @@ import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
 import { PickerGET, PickerPOST } from './http'
-import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
+import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PackageManagerIntegration } from './integration/expectedPackages'
 import { profiler } from './profiler'
 import { QueueStudioJob } from '../worker/worker'
@@ -50,7 +49,7 @@ import {
 	PeripheralDeviceStatusObject,
 	TimelineTriggerTimeResult,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { checkStudioExists } from '../../lib/collections/optimizations'
+import { checkStudioExists } from '../optimizations'
 import {
 	ExpectedPackageId,
 	ExpectedPackageWorkStatusId,

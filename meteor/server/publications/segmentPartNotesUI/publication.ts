@@ -22,8 +22,9 @@ import { LiveQueryHandle } from '../../lib/lib'
 import { ContentCache, PartFields, PartInstanceFields, RundownFields, SegmentFields } from './reactiveContentCache'
 import { RundownsObserver } from '../lib/rundownsObserver'
 import { RundownContentObserver } from './rundownContentObserver'
-import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { generateNotesForSegment } from './generateNotesForSegment'
+import { RundownPlaylists } from '../../collections'
 
 interface UISegmentPartNotesArgs {
 	readonly playlistId: RundownPlaylistId

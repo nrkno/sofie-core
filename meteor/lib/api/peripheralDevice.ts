@@ -1,8 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import { getCurrentTime, getRandomId } from '../lib'
-import { PeripheralDeviceCommands } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
 import { PeripheralDeviceCommandId, PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { PeripheralDeviceCommands } from '../collections/libCollections'
 
 export * from '@sofie-automation/shared-lib/dist/peripheralDevice/mediaManager'
 

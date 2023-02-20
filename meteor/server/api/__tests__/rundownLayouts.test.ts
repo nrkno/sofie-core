@@ -4,14 +4,10 @@ import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mo
 import { protectString, literal, unprotectString, getRandomString } from '../../../lib/lib'
 import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../__mocks__/meteorhacks-picker'
 import { Response as MockResponse, Request as MockRequest } from 'mock-http'
-import {
-	RundownLayoutType,
-	RundownLayouts,
-	RundownLayout,
-	CustomizableRegions,
-} from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutType, RundownLayout, CustomizableRegions } from '../../../lib/collections/RundownLayouts'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownLayoutId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownLayouts } from '../../collections'
 import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
 
 require('../client') // include in order to create the Meteor methods needed

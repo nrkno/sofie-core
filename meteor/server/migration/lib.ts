@@ -1,11 +1,12 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { MigrationStepBase, MigrationStepCore } from '@sofie-automation/blueprints-integration'
-import { Collections, objectPathGet, ProtectedString } from '../../lib/lib'
+import { objectPathGet, ProtectedString } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import { AsyncMongoCollection } from '../../lib/collections/lib'
+import { AsyncMongoCollection } from '../collections/collection'
+import { Collections } from '../collections/lib'
 
 /**
  * Returns a migration step that ensures the provided property is set in the collection

@@ -7,15 +7,21 @@ import {
 	convertToUIShowStyleBase,
 } from '../../../__mocks__/helpers/database'
 import { RundownUtils } from '../rundown'
-import { RundownPlaylists, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
-import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { Piece } from '../../../lib/collections/Pieces'
 import { defaultPartInstance, defaultPiece, defaultPieceInstance } from '../../../__mocks__/defaultCollectionObjects'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
+import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstances, PieceInstances, Pieces, RundownPlaylists } from '../../collections'
+import { MongoMock } from '../../../__mocks__/mongo'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+
+const mockRundownPlaylistsCollection = MongoMock.getInnerMockCollection(RundownPlaylists)
+const mockPartInstancesCollection = MongoMock.getInnerMockCollection(PartInstances)
+const mockPieceInstancesCollection = MongoMock.getInnerMockCollection(PieceInstances)
+const mockPiecesCollection = MongoMock.getInnerMockCollection(Pieces)
 
 describe('client/lib/rundown', () => {
 	let env: DefaultEnvironment
@@ -97,7 +103,7 @@ describe('client/lib/rundown', () => {
 				lifespan: PieceLifespan.OutOnSegmentEnd,
 			}
 
-			Pieces.insert(infinitePiece)
+			mockPiecesCollection.insert(infinitePiece)
 
 			const resolvedSegment = RundownUtils.getResolvedSegment(
 				showStyleBase,
@@ -168,7 +174,7 @@ describe('client/lib/rundown', () => {
 				},
 				lifespan: PieceLifespan.OutOnSegmentChange,
 			}
-			Pieces.insert(infinitePiece)
+			mockPiecesCollection.insert(infinitePiece)
 
 			const croppingPiece: Piece = {
 				...defaultPiece(protectString(rundownId + '_cropping_piece'), rundownId, segment._id, firstPart._id),
@@ -182,7 +188,7 @@ describe('client/lib/rundown', () => {
 				},
 				lifespan: PieceLifespan.WithinPart,
 			}
-			Pieces.insert(croppingPiece)
+			mockPiecesCollection.insert(croppingPiece)
 
 			const resolvedSegment = RundownUtils.getResolvedSegment(
 				showStyleBase,
@@ -236,7 +242,7 @@ describe('client/lib/rundown', () => {
 				const outputLayerIds = Object.keys(showStyleBase.outputLayers)
 
 				const playlistActivationId = protectString('mock_activation_0')
-				RundownPlaylists.update(playlistId, {
+				mockRundownPlaylistsCollection.update(playlistId, {
 					$set: {
 						activationId: playlistActivationId,
 					},
@@ -270,7 +276,7 @@ describe('client/lib/rundown', () => {
 					},
 					lifespan: PieceLifespan.OutOnSegmentChange,
 				}
-				Pieces.insert(infinitePiece)
+				mockPiecesCollection.insert(infinitePiece)
 
 				const followingPiece: Piece = {
 					...defaultPiece(
@@ -289,7 +295,7 @@ describe('client/lib/rundown', () => {
 					},
 					lifespan: PieceLifespan.WithinPart,
 				}
-				Pieces.insert(followingPiece)
+				mockPiecesCollection.insert(followingPiece)
 
 				const segmentPlayoutId = protectString('mock_segment_playout_0')
 				const mockCurrentPartInstance: PartInstance = {
@@ -301,7 +307,7 @@ describe('client/lib/rundown', () => {
 					),
 				}
 
-				PartInstances.insert(mockCurrentPartInstance)
+				mockPartInstancesCollection.insert(mockCurrentPartInstance)
 
 				const infinitePieceInstance: PieceInstance = {
 					...defaultPieceInstance(
@@ -316,7 +322,7 @@ describe('client/lib/rundown', () => {
 					},
 				}
 
-				PieceInstances.insert(infinitePieceInstance)
+				mockPieceInstancesCollection.insert(infinitePieceInstance)
 
 				const followingPieceInstance: PieceInstance = {
 					...defaultPieceInstance(
@@ -328,9 +334,9 @@ describe('client/lib/rundown', () => {
 					),
 				}
 
-				PieceInstances.insert(followingPieceInstance)
+				mockPieceInstancesCollection.insert(followingPieceInstance)
 
-				RundownPlaylists.update(playlistId, {
+				mockRundownPlaylistsCollection.update(playlistId, {
 					$set: {
 						currentPartInstanceId: mockCurrentPartInstance._id,
 					},

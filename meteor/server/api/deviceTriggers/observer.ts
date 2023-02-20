@@ -9,7 +9,6 @@ import {
 	DeviceTriggerMountedAction,
 	PreviewWrappedAdLib,
 } from '../../../lib/api/triggers/MountedTriggers'
-import { Studios } from '../../../lib/collections/Studios'
 import { logger } from '../../logging'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { StudioActionManagers } from './StudioActionManagers'
@@ -17,6 +16,7 @@ import { JobQueueWithClasses } from '@sofie-automation/shared-lib/dist/lib/JobQu
 import { ReactiveCacheCollection } from './ReactiveCacheCollection'
 import { StudioDeviceTriggerManager } from './StudioDeviceTriggerManager'
 import { StudioObserver } from './StudioObserver'
+import { Studios } from '../../collections'
 
 type ObserverAndManager = {
 	observer: StudioObserver

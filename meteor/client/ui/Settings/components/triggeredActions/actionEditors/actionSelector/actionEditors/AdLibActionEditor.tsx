@@ -4,8 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { PlayoutActions, SomeAction } from '@sofie-automation/blueprints-integration'
 import { EditAttribute } from '../../../../../../../lib/EditAttribute'
 import { useTracker } from '../../../../../../../lib/ReactMeteorData/ReactMeteorData'
-import { RundownBaselineAdLibActions } from '../../../../../../../../lib/collections/RundownBaselineAdLibActions'
-import { AdLibActions } from '../../../../../../../../lib/collections/AdLibActions'
+import { AdLibActions, RundownBaselineAdLibActions } from '../../../../../../../collections'
 
 export function AdLibActionEditor({
 	action,

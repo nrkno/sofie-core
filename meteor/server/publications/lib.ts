@@ -4,7 +4,7 @@ import { extractFunctionSignature } from '../lib'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { ResolvedCredentials, resolveCredentials } from '../security/lib/credentials'
 import { Settings } from '../../lib/Settings'
-import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { MongoCursor } from '../../lib/collections/lib'
 import {
 	OrganizationId,
@@ -13,7 +13,8 @@ import {
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectStringObject, waitForPromise } from '../../lib/lib'
-import { DBShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { PeripheralDevices, ShowStyleBases } from '../collections'
 
 export const MeteorPublicationSignatures: { [key: string]: string[] } = {}
 export const MeteorPublications: { [key: string]: Function } = {}

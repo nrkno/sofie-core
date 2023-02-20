@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { ICoreSystem, CoreSystem } from '../../../lib/collections/CoreSystem'
+import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
 import { EditAttribute } from '../../lib/EditAttribute'
@@ -12,6 +12,7 @@ import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredA
 import { TFunction } from 'i18next'
 import { Meteor } from 'meteor/meteor'
 import { LogLevel } from '../../../lib/lib'
+import { CoreSystem } from '../../collections'
 
 interface IProps {}
 

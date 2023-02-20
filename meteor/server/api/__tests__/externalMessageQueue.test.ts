@@ -1,11 +1,10 @@
 import '../../../__mocks__/_extendJest'
-import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
-import { Rundowns } from '../../../lib/collections/Rundowns'
+import { ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
+import { ExternalMessageQueue, RundownPlaylists, Rundowns } from '../../collections'
 import { IBlueprintExternalMessageQueueType, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
 import { getCurrentTime, getRandomId, protectString } from '../../../lib/lib'
-import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 
 import '../ExternalMessageQueue'

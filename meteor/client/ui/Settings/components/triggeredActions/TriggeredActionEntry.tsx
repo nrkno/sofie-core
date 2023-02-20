@@ -9,7 +9,7 @@ import {
 	TriggerType,
 } from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
-import { DBBlueprintTrigger, TriggeredActions } from '../../../../../lib/collections/TriggeredActions'
+import { DBBlueprintTrigger } from '../../../../../lib/collections/TriggeredActions'
 import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { ActionEditor } from './actionEditors/ActionEditor'
 import { OutputLayers, SourceLayers } from '../../../../../lib/collections/ShowStyleBases'
@@ -33,6 +33,7 @@ import {
 import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { isHotkeyTrigger } from '../../../../../lib/api/triggers/triggerTypeSelectors'
 import { getAllCurrentAndDeletedItemsFromOverrides, useOverrideOpHelper } from '../../util/OverrideOpHelper'
+import { TriggeredActions } from '../../../../collections'
 
 interface IProps {
 	sourceLayers: SourceLayers | undefined

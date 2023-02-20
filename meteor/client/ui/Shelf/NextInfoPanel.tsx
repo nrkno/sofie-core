@@ -10,9 +10,11 @@ import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
-import { Segment, Segments } from '../../../lib/collections/Segments'
+import { PartInstance } from '../../../lib/collections/PartInstances'
+import { Segment } from '../../../lib/collections/Segments'
 import { dashboardElementStyle } from './DashboardPanel'
+import { PartInstances, Segments } from '../../collections'
+
 interface INextInfoPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase

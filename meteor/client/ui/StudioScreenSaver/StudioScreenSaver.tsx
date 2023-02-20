@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { getCurrentTime } from '../../../lib/lib'
 import { invalidateAfter } from '../../../lib/invalidatingTime'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -12,6 +12,7 @@ import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTi
 import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylists } from '../../collections'
 
 interface IProps {
 	// the studio to be displayed in the screen saver

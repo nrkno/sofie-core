@@ -1,8 +1,9 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { BlueprintValidateConfigForStudioResult, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { Meteor } from 'meteor/meteor'
-import { Studios, Studio } from '../../../lib/collections/Studios'
+import { Studio } from '../../../lib/collections/Studios'
 import { profiler } from '../../api/profiler'
+import { Studios } from '../../collections'
 import { QueueStudioJob } from '../../worker/worker'
 
 export async function validateConfigForStudio(studioId: StudioId): Promise<BlueprintValidateConfigForStudioResult> {

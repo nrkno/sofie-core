@@ -8,23 +8,33 @@ import {
 	ITranslatableMessage,
 	PieceLifespan,
 } from '@sofie-automation/blueprints-integration'
-import { AdLibAction, AdLibActions } from '../../collections/AdLibActions'
-import { AdLibPiece, AdLibPieces } from '../../collections/AdLibPieces'
-import { DBPart, Parts } from '../../collections/Parts'
-import { RundownBaselineAdLibAction, RundownBaselineAdLibActions } from '../../collections/RundownBaselineAdLibActions'
-import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../collections/RundownBaselineAdLibPieces'
-import { DBRundownPlaylist, RundownPlaylist, RundownPlaylists } from '../../collections/RundownPlaylists'
+import { AdLibAction } from '../../collections/AdLibActions'
+import { AdLibPiece } from '../../collections/AdLibPieces'
+import { DBPart } from '../../collections/Parts'
+import { RundownBaselineAdLibAction } from '../../collections/RundownBaselineAdLibActions'
+import { RundownBaselineAdLibItem } from '../../collections/RundownBaselineAdLibPieces'
+import { DBRundownPlaylist, RundownPlaylist } from '../../collections/RundownPlaylists'
 import { SourceLayers } from '../../collections/ShowStyleBases'
 import { assertNever, generateTranslation } from '../../lib'
 import { MongoQuery } from '../../typings/meteor'
-import { DBRundown, Rundowns } from '../../collections/Rundowns'
-import { DBSegment, Segments } from '../../collections/Segments'
+import { DBRundown } from '../../collections/Rundowns'
+import { DBSegment } from '../../collections/Segments'
 import { sortAdlibs } from '../../Rundown'
 import { ReactivePlaylistActionContext } from './actionFactory'
 import { FindOptions } from '../../collections/lib'
 import { PartId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IWrappedAdLibBase } from '@sofie-automation/shared-lib/dist/input-gateway/deviceTriggerPreviews'
 import { memoizedIsolatedAutorun } from '../../memoizedIsolatedAutorun'
+import {
+	AdLibActions,
+	AdLibPieces,
+	Parts,
+	RundownBaselineAdLibActions,
+	RundownBaselineAdLibPieces,
+	RundownPlaylists,
+	Rundowns,
+	Segments,
+} from '../../collections/libCollections'
 
 export type AdLibFilterChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilterLink
 

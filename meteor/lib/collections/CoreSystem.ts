@@ -1,12 +1,8 @@
-import { FindOptions } from '../collections/lib'
 import { LogLevel, protectString } from '../lib'
 import { Meteor } from 'meteor/meteor'
-import { logger } from '../logging'
 import * as semver from 'semver'
-import { createMongoCollection, MongoCursor } from './lib'
 import _ from 'underscore'
 import { CoreSystemId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 
 export const SYSTEM_ID: CoreSystemId = protectString('core')
@@ -105,53 +101,6 @@ export interface ICoreSystem {
  * And Sofie said: The version of the database is to be GENESIS_SYSTEM_VERSION so that the migration scripts will run.
  */
 export const GENESIS_SYSTEM_VERSION = '0.0.0'
-
-// The CoreSystem collection will contain one (exactly 1) object.
-// This represents the "system"
-
-export const CoreSystem = createMongoCollection<ICoreSystem>(CollectionName.CoreSystem)
-
-export function getCoreSystem(): ICoreSystem | undefined {
-	return CoreSystem.findOne(SYSTEM_ID)
-}
-export async function getCoreSystemAsync(): Promise<ICoreSystem | undefined> {
-	return CoreSystem.findOneAsync(SYSTEM_ID)
-}
-export function getCoreSystemCursor(options?: FindOptions<ICoreSystem>): MongoCursor<ICoreSystem> {
-	return CoreSystem.find(SYSTEM_ID, options)
-}
-export function setCoreSystemVersion(versionStr: string): string {
-	const system = getCoreSystem()
-	if (!system) throw new Meteor.Error(500, 'CoreSystem not found')
-
-	if (!Meteor.isServer) throw new Meteor.Error(500, 'This function can only be run server-side')
-
-	const version = parseVersion(versionStr)
-
-	if (version === versionStr) {
-		logger.info(`Updating database version, from "${system.version}" to "${version}".`)
-
-		let previousVersion: string | null = null
-
-		if (system.version && semver.gt(version, system.version)) {
-			// the new version is higher than previous version
-			previousVersion = system.version
-		}
-
-		CoreSystem.update(system._id, {
-			$set: {
-				version: versionStr,
-				previousVersion: previousVersion,
-			},
-		})
-		return versionStr
-	} else {
-		throw new Meteor.Error(
-			500,
-			`Unable to set version. Parsed version differ from expected: "${versionStr}", "${version}"`
-		)
-	}
-}
 
 export type Version = string
 export type VersionRange = string

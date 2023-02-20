@@ -6,16 +6,17 @@ import type {
 	ManifestImageResource,
 	ShortcutItem,
 } from '../lib/typings/webmanifest'
-import { getCoreSystemAsync } from '../lib/collections/CoreSystem'
 import { logger } from '../lib/logging'
 import { MongoQuery } from '../lib/typings/meteor'
-import { DBStudio, Studios } from '../lib/collections/Studios'
-import { Rundowns } from '../lib/collections/Rundowns'
-import { DBRundownPlaylist, RundownPlaylists } from '../lib/collections/RundownPlaylists'
+import { DBStudio } from '../lib/collections/Studios'
+import { RundownPlaylists, Rundowns } from './collections'
 import { getLocale, Translations } from './lib'
 import { generateTranslation } from '../lib/lib'
 import { ITranslatableMessage } from '@sofie-automation/blueprints-integration'
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { DBRundownPlaylist } from '../lib/collections/RundownPlaylists'
+import { Studios } from './collections'
+import { getCoreSystemAsync } from './coreSystem/collection'
 
 const appShortName = 'Sofie'
 const SOFIE_DEFAULT_ICONS: ManifestImageResource[] = [

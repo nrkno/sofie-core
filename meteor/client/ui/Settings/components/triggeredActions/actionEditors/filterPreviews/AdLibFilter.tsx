@@ -8,10 +8,12 @@ import { FilterEditor } from './FilterEditor'
 import { OutputLayers, SourceLayers } from '../../../../../../../lib/collections/ShowStyleBases'
 import { EditAttributeType } from '../../../../../../lib/EditAttribute'
 import { useTracker } from '../../../../../../lib/ReactMeteorData/ReactMeteorData'
-import { RundownBaselineAdLibActions } from '../../../../../../../lib/collections/RundownBaselineAdLibActions'
-import { AdLibActions } from '../../../../../../../lib/collections/AdLibActions'
-import { RundownBaselineAdLibPieces } from '../../../../../../../lib/collections/RundownBaselineAdLibPieces'
-import { AdLibPieces } from '../../../../../../../lib/collections/AdLibPieces'
+import {
+	AdLibActions,
+	AdLibPieces,
+	RundownBaselineAdLibActions,
+	RundownBaselineAdLibPieces,
+} from '../../../../../../collections'
 
 interface IProps {
 	index: number

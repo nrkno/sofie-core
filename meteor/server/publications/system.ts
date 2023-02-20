@@ -1,10 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
-import { getCoreSystemCursor } from '../../lib/collections/CoreSystem'
-import { Users } from '../../lib/collections/Users'
 import { SystemReadAccess } from '../security/system'
 import { OrganizationReadAccess } from '../security/organization'
+import { Users } from '../collections'
+import { getCoreSystemCursor } from '../coreSystem/collection'
 
 meteorPublish(PubSub.coreSystem, async function (token) {
 	if (await SystemReadAccess.coreSystem({ userId: this.userId, token })) {

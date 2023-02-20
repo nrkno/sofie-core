@@ -1,25 +1,10 @@
-import { BlueprintId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MongoQuery } from '../typings/meteor'
-import { Blueprints, Blueprint } from './Blueprints'
-import { DBShowStyleBase, ShowStyleBases } from './ShowStyleBases'
-import { DBStudio, Studios, StudioLight } from './Studios'
+import { ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MongoQuery } from '../lib/typings/meteor'
+import { DBShowStyleBase } from '../lib/collections/ShowStyleBases'
+import { DBStudio, StudioLight } from '../lib/collections/Studios'
+import { ShowStyleBases, Studios } from './collections'
 
-export { StudioLight } from './Studios' // TODO: Legacy
-
-/*
-	This file contains various short-hand functions intended to be used for "light" fetches from collections.
-	Like instead of fetching a full Blueprint or Studio it's enough to just fetch a small part of it.
-	(Because this reduces the load and amount of data transferred)
-*/
-
-export async function fetchBlueprintLight(blueprintId: BlueprintId): Promise<BlueprintLight | undefined> {
-	return Blueprints.findOneAsync(blueprintId, {
-		fields: {
-			code: 0,
-		},
-	})
-}
-export type BlueprintLight = Omit<Blueprint, 'code'>
+export { StudioLight } from '../lib/collections/Studios' // TODO: Legacy
 
 /**
  * Returns a "light" version of the Studio, where the most heavy/large properties are omitted.

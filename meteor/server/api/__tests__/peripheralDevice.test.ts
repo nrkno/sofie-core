@@ -3,14 +3,9 @@ import { Meteor } from 'meteor/meteor'
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
-	PeripheralDevices,
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
-import { Rundowns } from '../../../lib/collections/Rundowns'
-import { Segments } from '../../../lib/collections/Segments'
-import { Parts } from '../../../lib/collections/Parts'
-import { EmptyPieceTimelineObjectsBlob, Pieces, PieceStatusCode } from '../../../lib/collections/Pieces'
+import { EmptyPieceTimelineObjectsBlob, PieceStatusCode } from '../../../lib/collections/Pieces'
 import {
 	getCurrentTime,
 	literal,
@@ -21,19 +16,17 @@ import {
 	getRandomString,
 	sleep,
 } from '../../../lib/lib'
-
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { setLogLevel } from '../../logging'
-import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import {
 	IngestDeviceSettings,
 	IngestDeviceSecretSettings,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
-import { MediaWorkFlow, MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowStep, MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
+import { MediaWorkFlow } from '../../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlowStep } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
-import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
+import { MediaObject } from '../../../lib/collections/MediaObjects'
 import {
 	IBlueprintPieceType,
 	PieceLifespan,
@@ -55,6 +48,18 @@ import {
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
+import {
+	MediaObjects,
+	MediaWorkFlows,
+	MediaWorkFlowSteps,
+	Parts,
+	PeripheralDeviceCommands,
+	PeripheralDevices,
+	Pieces,
+	RundownPlaylists,
+	Rundowns,
+	Segments,
+} from '../../collections'
 import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
 
 const DEBUG = false

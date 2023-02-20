@@ -3,7 +3,7 @@ import _ from 'underscore'
 import { AdLibAction } from '../../lib/collections/AdLibActions'
 import { AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
+import { PieceInstance } from '../../lib/collections/PieceInstances'
 import { RundownBaselineAdLibAction } from '../../lib/collections/RundownBaselineAdLibActions'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { DBSegment } from '../../lib/collections/Segments'
@@ -13,6 +13,7 @@ import { getUnfinishedPieceInstancesReactive } from './rundownLayouts'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { PieceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { PieceInstances } from '../collections'
 
 export interface ShelfDisplayOptions {
 	enableBuckets: boolean

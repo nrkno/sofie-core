@@ -6,15 +6,17 @@ import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import {
-	AsyncMongoCollection,
 	FindOneOptions,
 	FindOptions,
+	MongoReadOnlyCollection,
 	ObserveCallbacks,
 	ObserveChangesCallbacks,
 	UpdateOptions,
 	UpsertOptions,
 } from '../lib/collections/lib'
 import { mongoWhere, mongoFindOptions, mongoModify } from '@sofie-automation/corelib/dist/mongo'
+import { Mongo } from 'meteor/mongo'
+import { AsyncMongoCollection } from '../server/collections/collection'
 const clone = require('fast-clone')
 
 export namespace MongoMock {
@@ -327,6 +329,12 @@ export namespace MongoMock {
 		const oldDelay = collection2.asyncWriteDelay
 		collection2.asyncWriteDelay = delay
 		return oldDelay
+	}
+
+	export function getInnerMockCollection<T extends { _id: ProtectedString<any> }>(
+		collection: MongoReadOnlyCollection<T>
+	): Mongo.Collection<T> {
+		return (collection as any).mockCollection
 	}
 }
 export function setup() {

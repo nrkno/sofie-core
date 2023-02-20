@@ -1,6 +1,7 @@
 import React from 'react'
 import { withTranslation } from 'react-i18next'
-import { RundownLayoutBase, RundownLayouts, RundownLayoutType } from '../../../../../lib/collections/RundownLayouts'
+import { RundownLayouts } from '../../../../collections'
+import { RundownLayoutBase, RundownLayoutType } from '../../../../../lib/collections/RundownLayouts'
 import { EditAttribute } from '../../../../lib/EditAttribute'
 import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
 import { Translated } from '../../../../lib/ReactMeteorData/ReactMeteorData'

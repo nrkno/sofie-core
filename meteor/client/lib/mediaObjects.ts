@@ -1,8 +1,7 @@
 import { ISourceLayer, PackageInfo } from '@sofie-automation/blueprints-integration'
 import { ExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MediaObjects } from '../../lib/collections/MediaObjects'
-import { PackageInfos } from '../../lib/collections/PackageInfos'
-import { getPackageContainerPackageStatus } from '../../lib/globalStores'
+import { MediaObjects, PackageInfos } from '../collections'
+import { getPackageContainerPackageStatus } from '../utils/globalStores'
 import {
 	PieceContentStatusPiece,
 	PieceContentStatusStudio,

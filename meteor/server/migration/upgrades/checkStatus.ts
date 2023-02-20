@@ -15,9 +15,9 @@ import {
 	GetUpgradeStatusResultStudio,
 	GetUpgradeStatusResultShowStyleBase,
 } from '../../../lib/api/migration'
-import { Blueprints } from '../../../lib/collections/Blueprints'
-import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { Studios, Studio } from '../../../lib/collections/Studios'
+import { Blueprints, ShowStyleBases, Studios } from '../../collections'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { Studio } from '../../../lib/collections/Studios'
 import { generateTranslation } from '../../../lib/lib'
 
 export async function getUpgradeStatus(): Promise<GetUpgradeStatusResult> {

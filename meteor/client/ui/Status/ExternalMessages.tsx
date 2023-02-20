@@ -6,7 +6,7 @@ import { MomentFromNow } from '../../lib/Moment'
 import { getAllowConfigure } from '../../lib/localStorage'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
-import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
+import { ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import ClassNames from 'classnames'
@@ -18,6 +18,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExternalMessageQueue } from '../../collections'
 
 interface IExternalMessagesProps {}
 interface IExternalMessagesState {

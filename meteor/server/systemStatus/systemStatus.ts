@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import {
-	PeripheralDevices,
 	PeripheralDevice,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
@@ -28,8 +27,7 @@ import { OrganizationReadAccess } from '../security/organization'
 import { resolveCredentials, Credentials } from '../security/lib/credentials'
 import { SystemReadAccess } from '../security/system'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
-import { Workers } from '../../lib/collections/Workers'
-import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
+import { PeripheralDevices, Workers, WorkerThreadStatuses } from '../collections'
 import { getUpgradeSystemStatusMessages } from '../migration/upgrades'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ServerPeripheralDeviceAPI } from '../api/peripheralDevice'

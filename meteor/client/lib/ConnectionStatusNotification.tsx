@@ -17,9 +17,10 @@ import { WithManagedTracker } from './reactiveData/reactiveDataHelper'
 import { withTranslation } from 'react-i18next'
 import { NotificationCenterPopUps } from './notifications/NotificationCenterPanel'
 import { PubSub } from '../../lib/api/pubsub'
-import { CoreSystem, ICoreSystem, ServiceMessage, Criticality } from '../../lib/collections/CoreSystem'
+import { ICoreSystem, ServiceMessage, Criticality } from '../../lib/collections/CoreSystem'
 import * as i18next from 'i18next'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { CoreSystem } from '../collections'
 
 export class ConnectionStatusNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
