@@ -1,11 +1,13 @@
-name: "Prune docker images"
+name: "Prune container images"
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '12 14 * * *'
 
 jobs:
-  prune-docker-images:
-    uses: nrkno/sofie-github-workflows/.github/workflows/prune-docker-images.yml@main
+  prune-container-images:
+    uses: nrkno/sofie-github-workflows/.github/workflows/prune-container-images.yml@main
     strategy:
       max-parallel: 1
       matrix:
