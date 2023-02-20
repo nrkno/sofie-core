@@ -6,8 +6,8 @@ import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { Blueprints, CoreSystem, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
 import { getEnvLogLevel, logger, LogLevel, setLogLevel } from '../logging'
 const PackageInfo = require('../../package.json')
-// import Agent from 'meteor/kschingiz:meteor-elastic-apm'
-// import { profiler } from './api/profiler'
+import Agent from 'meteor/julusian:meteor-elastic-apm'
+import { profiler } from '../api/profiler'
 import { TMP_TSR_VERSION } from '@sofie-automation/blueprints-integration'
 import { getAbsolutePath } from '../lib'
 import * as fs from 'fs/promises'
@@ -184,33 +184,29 @@ function startInstrumenting() {
 	}
 
 	// attempt init elastic APM
+	const system = getCoreSystem()
+	const { APM_HOST, APM_SECRET, KIBANA_INDEX, APP_HOST } = process.env
 
-	// Note: meteor-elastic-apm has been temporarily disabled due to being incompatible Meteor 2.3
-	// See https://github.com/Meteor-Community-Packages/meteor-elastic-apm/pull/61
-	//
-	// const system = getCoreSystem()
-	// const { APM_HOST, APM_SECRET, KIBANA_INDEX, APP_HOST } = process.env
-
-	// if (APM_HOST && system && system.apm) {
-	// 	logger.info(`APM agent starting up`)
-	// 	Agent.start({
-	// 		serviceName: KIBANA_INDEX || 'tv-automation-server-core',
-	// 		hostname: APP_HOST,
-	// 		serverUrl: APM_HOST,
-	// 		secretToken: APM_SECRET,
-	// 		active: system.apm.enabled,
-	// 		transactionSampleRate: system.apm.transactionSampleRate,
-	// 		disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
-	// 	})
-	// 	profiler.setActive(system.apm.enabled || false)
-	// } else {
-	// 	logger.info(`APM agent inactive`)
-	// 	Agent.start({
-	// 		serviceName: 'tv-automation-server-core',
-	// 		active: false,
-	// 		disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
-	// 	})
-	// }
+	if (APM_HOST && system && system.apm) {
+		logger.info(`APM agent starting up`)
+		Agent.start({
+			serviceName: KIBANA_INDEX || 'tv-automation-server-core',
+			hostname: APP_HOST,
+			serverUrl: APM_HOST,
+			secretToken: APM_SECRET,
+			active: system.apm.enabled,
+			transactionSampleRate: system.apm.transactionSampleRate,
+			disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
+		})
+		profiler.setActive(system.apm.enabled || false)
+	} else {
+		logger.info(`APM agent inactive`)
+		Agent.start({
+			serviceName: 'tv-automation-server-core',
+			active: false,
+			disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
+		})
+	}
 }
 function updateLoggerLevel(startup: boolean) {
 	if (Meteor.isTest) return // ignore this when running in tests
