@@ -1,3 +1,12 @@
+/**
+ * This file contains or exports all of the 'client-side' mongo collections.
+ * Note: This includes a re-export of some collections defined in `lib` which are used by `lib` code.
+ * These are sync only and often read-only collections, for convenient use in client (minimongo) logic
+ * where async is a burden and not a benefit.
+ * The definitions must match the publications and server-collections (if applicable) that back them,
+ * and will be stronger typed in the future.
+ */
+
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
