@@ -26,7 +26,7 @@ export default class Logging implements Middleware {
 		try {
 			message = JSON.stringify(await response.json(), null, 2)
 		} catch (e) {
-			message = `response body not json`
+			//eslint-disable-next-line no-empty
 		}
 		console.log(`Response ${response.url} ${response.status} ${response.statusText} - ${message}`)
 	}

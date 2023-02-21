@@ -22,6 +22,7 @@ resources:
                     type: array
                     items:
                       type: string
+                    example: [system, studio, showstyle]
         500:
           $ref: '#/components/responses/internalServerError'
   blueprint:
@@ -69,22 +70,12 @@ resources:
                       - name
                       - blueprintType
                       - blueprintVersion
-        400:
+        404:
           $ref: '#/components/responses/blueprintNotFound'
         500:
           $ref: '#/components/responses/internalServerError'
 components:
   responses:
-    postSuccess:
-      description: Action successfully sent
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              success:
-                type: number
-                example: 200
     blueprintNotFound:
       description: The specified Blueprint does not exist.
       content:
