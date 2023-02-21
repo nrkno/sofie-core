@@ -1,8 +1,173 @@
 title: studios
 description: Definitions for studios API
 resources:
-  switchRouteSet:
+  studios:
+    get:
+      operationId: getStudios
+      tags:
+        - studios
+      summary: Gets all Studios.
+      responses:
+        200:
+          description: Contains all Studio Ids.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  result:
+                    type: array
+                    items:
+                      type: string
+        500:
+          $ref: '#/components/responses/internalServerError'
     post:
+      operationId: addStudio
+      tags:
+        - studios
+      summary: Adds a new Studio.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                studio:
+                  $ref: '#/components/schemas/studio'
+              required:
+                - studio
+              additionalProperties: false
+      responses:
+        200:
+          description: Create successful, Id of new Studio is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: Id of the newly created Studio.
+                    required:
+                      - id
+                    additionalProperties: false
+        400:
+          description: Invalid Studio, blueprint Id is not a Studio blueprint.
+        500:
+          $ref: '#/components/responses/internalServerError'
+  studio:
+    get:
+      operationId: getStudio
+      tags:
+        - studios
+      summary: Gets a Studio.
+      parameters:
+        - name: studioId
+          in: path
+          description: Id of Studio to retrieve.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Studio found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  id:
+                    type: string
+                    description: Studio Id.
+                    example: 'Studio0'
+                  studio:
+                    $ref: '#/components/schemas/studio'
+        404:
+          $ref: '#/components/responses/studioNotFound'
+        500:
+          $ref: '#/components/responses/internalServerError'
+    put:
+      operationId: addOrUpdateStudio
+      tags:
+        - studios
+      summary: Updates an existing Studio or creates a new one.
+      parameters:
+        - name: studioId
+          in: path
+          description: Id of Studio to update/create.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                studio:
+                  $ref: '#/components/schemas/studio'
+              required:
+                - studio
+              additionalProperties: false
+      responses:
+        200:
+          description: Studio found.
+          content:
+            application/json:
+              schema:
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  id:
+                    type: string
+                    description: Studio Id.
+                    example: 'Studio0'
+                  studio:
+                    $ref: '#/components/schemas/studio'
+        500:
+          $ref: '#/components/responses/internalServerError'
+    delete:
+      operationId: deleteStudio
+      tags:
+        - studios
+      summary: Deletes a specified Studio, cleaning up any resources in use (e.g. Playlists).
+      parameters:
+        - name: studioId
+          in: path
+          description: Id of the Studio to remvoe.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Operation successful.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+        412:
+          description: The specified Studio is in use in an on-air Rundown.
+        500:
+          $ref: '#/components/responses/internalServerError'
+  switchRouteSet:
+    put:
       operationId: switchRouteSet
       tags:
         - studios
@@ -32,7 +197,7 @@ resources:
                 - active
       responses:
         200:
-          $ref: '#/components/responses/postSuccess'
+          $ref: '#/components/responses/putSuccess'
         404:
           description: The specified Studio or route set does not exist.
           content:
@@ -44,9 +209,201 @@ resources:
                     type: string
         500:
           $ref: '#/components/responses/internalServerError'
+  devices:
+    get:
+      operationId: devices
+      tags:
+        - studios
+      summary: Returns a list of all devices for a given studio.
+      parameters:
+        - name: studioId
+          in: path
+          description: Studio the route set belongs to.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Command successfully handled - returns an array of peripheral device Ids
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  result:
+                    type: array
+                    items:
+                      type: string
+        404:
+          $ref: '#/components/responses/studioNotFound'
+        500:
+          $ref: '#/components/responses/internalServerError'
+    put:
+      operationId: attachDevice
+      tags:
+        - studios
+      summary: Attaches a device to a studio.
+      parameters:
+        - name: studioId
+          in: path
+          description: Studio to attach the device to.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Contains the device Id to attach.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deviceId:
+                  type: string
+              required:
+                - deviceId
+      responses:
+        200:
+          description: Device successfully attached to the studio.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+        404:
+          description: Specified Studio or device does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        412:
+          description: The specified device is already attached to a different studio.
+        500:
+          $ref: '#/components/responses/internalServerError'
+  device:
+    delete:
+      operationId: detachDevice
+      tags:
+        - studios
+      summary: Detaches a device from a studio.
+      parameters:
+        - name: studioId
+          in: path
+          description: Studio the device belongs to.
+          required: true
+          schema:
+            type: string
+        - name: deviceId
+          in: path
+          description: Device to remove.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Device detached from studio.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+        404:
+          $ref: '#/components/responses/studioNotFound'
+        500:
+          $ref: '#/components/responses/internalServerError'
 components:
+  schemas:
+    studio:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Studio display name.
+        blueprintId:
+          type: string
+          description: Id of the Blueprint to use for the Studio.
+        supportedShowStyleBase:
+          type: array
+          items:
+            type: string
+            description: ShowStyleBases that this Studio wants to support.
+        config:
+          type: object
+          additionalProperties: true
+          description: Blueprint configuration.
+        settings:
+          $ref: '#/components/schemas/studioSettings'
+      required:
+        - name
+        - config
+        - settings
+      additionalProperties: false
+    studioSettings:
+      type: object
+      properties:
+        frameRate:
+          type: number
+          exclusiveMinimum: 0
+          example: 25
+          description: The framerate (frames per second) used to convert internal timing information (in milliseconds) into timecodes and timecode-like strings and interpret timecode user input.
+        mediaPreviewsUrl:
+          type: string
+          example: 'http://127.0.0.1:8080'
+          description: URL to endpoint where media preview are exposed
+        slackEvaluationUrls:
+          type: array
+          items:
+            type: string
+            example: 'http://127.0.0.1:8080'
+          description: URLs for slack webhook to send evaluations.
+        supportedMediaFormats:
+          type: array
+          items:
+            type: string
+            example: '1080i5000'
+          description: Media Resolutions supported by the studio for media playback.
+        supportedAudioStreams:
+          type: array
+          items:
+            type: string
+            example: 'stereo'
+          description: Audio Stream Formats supported by the studio for media playback.
+        enablePlayFromAnywhere:
+          type: boolean
+          description: Should the play from anywhere feature be enabled in this studio.
+        forceMultiGatewayMode:
+          type: boolean
+          description: If set, forces the multi-playout-gateway mode (aka set "now"-time right away) for single playout-gateways setups.
+        multiGatewayNowSafeLatency:
+          type: number
+          exclusiveMinimum: 0
+          description: How much extra delay to add to the Now-time (used for the "multi-playout-gateway" feature). A higher value adds delays in playout, but reduces the risk of missed frames.
+        preserveUnsyncedPlayingSegmentContents:
+          type: boolean
+          description: Preserve unsynced segment contents when the playing segment is removed, rather than removing all but the playing part
+        allowRundownResetOnAir:
+          type: boolean
+          description: Allow resets while a rundown is on-air
+        preserveOrphanedSegmentPositionInRundown:
+          type: boolean
+          description: Preserve unsynced segments psoition in the rundown, relative to the other segments
+      required:
+        - frameRate
+        - mediaPreviewsUrl
   responses:
-    postSuccess:
+    putSuccess:
       description: Action successfully sent
       content:
         application/json:

@@ -9,8 +9,8 @@
 		"directory": "packages/openapi"
 	},
 	"scripts": {
-		"prepare": "yarn genclient:ts && yarn build",
-		"build": "rimraf dist && yarn build:main",
+		"prepare": "yarn build",
+		"build": "rimraf dist",
 		"build:main": "tsc -p tsconfig.build.json",
 		"cov": "yarn unit && open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
@@ -23,7 +23,7 @@
 		"gendocs": "rimraf docs && node install_swagger.js && java -jar ./jars/swagger-codegen-cli.jar generate -i ./api/actions.yaml -l html2 -o ./docs",
 		"genserver": "rimraf server && node install_swagger.js && java -jar ./jars/swagger-codegen-cli.jar generate -i ./api/actions.yaml -l nodejs-server -o server && cd server && npm install && cd ../",
 		"runserver": "yarn genserver && cd server && node index.js",
-		"test": "yarn lint",
+		"test": "yarn lint && yarn genclient:ts && yarn ci",
 		"unit": "node --experimental-fetch ../node_modules/jest/bin/jest.js --detectOpenHandles --forceExit"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
@@ -41,6 +41,7 @@
 	"devDependencies": {
 		"@openapitools/openapi-generator-cli": "^2.5.2",
 		"eslint-plugin-yml": "^1.2.0",
+		"js-yaml": "^4.1.0",
 		"wget-improved": "^3.3.1"
   },
   "lint-staged": {

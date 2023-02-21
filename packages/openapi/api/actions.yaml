@@ -15,6 +15,20 @@ tags:
 paths:
   /:
     $ref: 'definitions/sofie.yaml#/resources/index'
+  /system/blueprint:
+    $ref: 'definitions/sofie.yaml#/resources/systemBlueprint'
+  # peripheral devices
+  /devices:
+    $ref: 'definitions/devices.yaml#/resources/devices'
+  /devices/{deviceId}:
+    $ref: 'definitions/devices.yaml#/resources/device'
+  /devices/{deviceId}/action:
+    $ref: 'definitions/devices.yaml#/resources/action'
+  # blueprint operations
+  /blueprints:
+    $ref: 'definitions/blueprints.yaml#/resources/blueprints'
+  /blueprints/{blueprintId}:
+    $ref: 'definitions/blueprints.yaml#/resources/blueprint'
   # playlist operations
   /playlists/{playlistId}/activate:
     $ref: 'definitions/playlists.yaml#/resources/activate'
@@ -36,10 +50,25 @@ paths:
     $ref: 'definitions/playlists.yaml#/resources/setNextSegment'
   /playlists/{playlistId}/take:
     $ref: 'definitions/playlists.yaml#/resources/take'
-  /playlists/{playlistId}/sourceLayer/{sourceLayerId}':
+  /playlists/{playlistId}/sourceLayer/{sourceLayerId}:
     $ref: 'definitions/playlists.yaml#/resources/sourceLayer'
-  /playlists/{playlistId}/sourceLayer/{sourceLayerId}/recallSticky:
-    $ref: 'definitions/playlists.yaml#/resources/recallSticky'
   # studio operations
+  /studios:
+    $ref: 'definitions/studios.yaml#/resources/studios'
+  /studios/{studioId}:
+    $ref: 'definitions/studios.yaml#/resources/studio'
   /studios/{studioId}/switchRouteSet:
     $ref: 'definitions/studios.yaml#/resources/switchRouteSet'
+  /studios/{studioId}/devices:
+    $ref: 'definitions/studios.yaml#/resources/devices'
+  /studios/{studioId}/devices/{deviceId}:
+    $ref: 'definitions/studios.yaml#/resources/device'
+  # showstyle operations
+  /showstyles:
+    $ref: 'definitions/showstyles.yaml#/resources/showStyleBases'
+  /showstyles/{showStyleBaseId}:
+    $ref: 'definitions/showstyles.yaml#/resources/showStyleBase'
+  /showstyles/{showStyleBaseId}/variants:
+    $ref: 'definitions/showstyles.yaml#/resources/showStyleVariants'
+  /showstyles/{showStyleBaseId}/variants/{showStyleVariantId}:
+    $ref: 'definitions/showstyles.yaml#/resources/showStyleVariant'

@@ -1,0 +1,136 @@
+title: devices
+description: Peripheral device methods
+resources:
+  devices:
+    get:
+      operationId: devices
+      tags:
+        - devices
+      summary: Gets all peripheral devices attached to Sofie.
+      responses:
+        200:
+          description: Command successfully handled - returns an array of peripheral device Ids
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  result:
+                    type: array
+                    items:
+                      type: string
+                    example: ['47', '27']
+  device:
+    get:
+      operationId: device
+      tags:
+        - devices
+      summary: Gets a specified peripheral device.
+      parameters:
+        - name: deviceId
+          in: path
+          description: Requested device.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Command successfully handled - returns the peripheral device
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: Device Id.
+                        example: 47
+                      name:
+                        type: string
+                        description: Device Name.
+                        example: 'PlayoutGateway0'
+                      status:
+                        type: string
+                        enum: [unknown, good, warning_major, warning_minor, bad, fatal]
+                        description: Device status.
+                        example: warning_major
+                      messages:
+                        type: array
+                        items:
+                          type: string
+                          example: Device failed to start
+                        description: Service messages from the device.
+                      deviceType:
+                        type: string
+                        enum: [unknown, mos, spreadsheet, inews, playout, media_manager, package_manager, live_status]
+                        description: Device type.
+                        example: playout
+                      connected:
+                        type: boolean
+                        description: Whether device is currently connected.
+                        example: true
+                    required:
+                      - id
+                      - name
+                      - status
+                      - messages
+                      - deviceType
+                      - connected
+        404:
+          description: The requested device does not exist.
+  action:
+    put:
+      operationId: action
+      tags:
+        - devices
+      summary: Sends a command to a specified peripheral device
+      parameters:
+        - name: deviceId
+          in: path
+          description: Target device.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Contains the action to perform.
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/restartDevice'
+              example:
+                action: restart
+      responses:
+        202:
+          description: The action is valid for the requested device. It may not have been dispatched yet.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 202
+        404:
+          description: The requested device does not exist.
+
+components:
+  schemas:
+    restartDevice:
+      type: object
+      properties:
+        action:
+          type: string
+          const: restart
+      required: [action]
+      additionalProperties: false

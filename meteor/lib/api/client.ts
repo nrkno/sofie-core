@@ -47,16 +47,16 @@ export namespace ClientAPI {
 	}
 	export interface ClientResponseSuccess<Result> {
 		/** On success, return success code (by default, use 200) */
-		success: 200
+		success: number
 		/** Optionally, provide method result */
 		result?: Result
 	}
-	export function responseSuccess<Result>(result: Result): ClientResponseSuccess<Result> {
+	export function responseSuccess<Result>(result: Result, code?: number): ClientResponseSuccess<Result> {
 		if (isClientResponseSuccess(result)) result = result.result
 		else if (isClientResponseError(result)) throw result.error
 
 		return {
-			success: 200,
+			success: code ?? 200,
 			result,
 		}
 	}

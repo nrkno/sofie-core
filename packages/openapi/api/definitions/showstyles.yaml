@@ -1,0 +1,514 @@
+title: showstyles
+description: Definitions for ShowStyles API
+resources:
+  showStyleBases:
+    get:
+      operationId: getShowStyleBases
+      tags:
+        - showstyles
+      summary: Returns the Ids of all ShowStyleBases.
+      responses:
+        200:
+          description: Get successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  result:
+                    type: array
+                    items:
+                      type: string
+        500:
+          $ref: '#/components/responses/internalServerError'
+    post:
+      operationId: addShowStyleBase
+      tags:
+        - showstyles
+      summary: Adds a ShowStyleBase.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                showStyleBase:
+                  $ref: '#/components/schemas/showStyleBase'
+              required:
+                - showStyleBase
+              additionalProperties: false
+      responses:
+        200:
+          description: Create successful, Id of new ShowStyle is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: Id of the newly created ShowStyle.
+                    required:
+                      - id
+                    additionalProperties: false
+                required:
+                  - success
+                  - result
+                additionalProperties: false
+        400:
+          description: Invalid ShowStyleBase, blueprint Id is not a ShowStyle blueprint.
+        500:
+          $ref: '#/components/responses/internalServerError'
+  showStyleBase:
+    get:
+      operationId: showStyleBase
+      tags:
+        - showstyles
+      summary: Returns the requested ShowStyleBase
+      parameters:
+        - name: showStyleBaseId
+          in: path
+          description: Id of ShowStyleBase to retrieve
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: ShowStyleBase found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  id:
+                    type: string
+                    description: ShowStyleBase Id.
+                    example: 'SSB0'
+                  showStyleBase:
+                    $ref: '#/components/schemas/showStyleBase'
+        404:
+          $ref: '#/components/responses/showStyleBaseNotFound'
+        500:
+          $ref: '#/components/responses/internalServerError'
+    put:
+      operationId: addOrUpdateShowStyleBase
+      tags:
+        - showstyles
+      summary: Updates an existing ShowStyleBase or creates a new one.
+      parameters:
+        - name: showStyleBaseId
+          in: path
+          description: Id of resource to update/create.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                showStyleBase:
+                  $ref: '#/components/schemas/showStyleBase'
+              required:
+                - showStyleBase
+              additionalProperties: false
+      responses:
+        200:
+          description: Operation successful.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+        400:
+          description: Invalid ShowStyleBase, blueprint Id is not a ShowStyle blueprint.
+        412:
+          description: The specified ShowStyleBase is in use in an on-air Rundown.
+        500:
+          $ref: '#/components/responses/internalServerError'
+    delete:
+      operationId: deleteShowStyleBase
+      tags:
+        - showstyles
+      summary: Deletes a specified ShowStyleBase.
+      parameters:
+        - name: showStyleBaseId
+          in: path
+          description: Id of the ShowStyleBase to remvoe.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Operation successful.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+        412:
+          description: The specified ShowStyleBase is in use in an on-air Rundown.
+        500:
+          $ref: '#/components/responses/internalServerError'
+  showStyleVariants:
+    get:
+      operationId: getShowStyleVariants
+      tags:
+        - showstyles
+      summary: Returns the Ids of all ShowStyleVariants.
+      parameters:
+        - name: showStyleBaseId
+          in: path
+          description: Id of the ShowStyleBase to fetch variants for.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Get successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  result:
+                    type: array
+                    items:
+                      type: string
+        400:
+          description: Invalid ShowStyleVariant
+        500:
+          $ref: '#/components/responses/internalServerError'
+    post:
+      operationId: addShowStyleVariant
+      tags:
+        - showstyles
+      summary: Adds a ShowStyleVariant.
+      parameters:
+        - name: showStyleBaseId
+          in: path
+          description: Id of the ShowStyleBase to add a variant to.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                showStyleVariant:
+                  $ref: '#/components/schemas/showStyleVariant'
+              required:
+                - showStyleVariant
+              additionalProperties: false
+      responses:
+        200:
+          description: Create successful, Id of new ShowStyle is returned.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: Id of the newly created ShowStyle.
+                    required:
+                      - id
+                    additionalProperties: false
+        500:
+          $ref: '#/components/responses/internalServerError'
+  showStyleVariant:
+    get:
+      operationId: showStyleVariant
+      tags:
+        - showstyles
+      summary: Returns the requested ShowStyleVariant
+      parameters:
+        - name: showStyleBaseId
+          in: path
+          description: Id of ShowStyleBase to the requested variant belongs to.
+          required: true
+          schema:
+            type: string
+        - name: showStyleVariantId
+          in: path
+          description: Id of the ShowStyleVariant to retrieve.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: ShowStyle Variant found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  id:
+                    type: string
+                    description: ShowStyleBase Id.
+                    example: 'SSB0'
+                  showStyleVariant:
+                    $ref: '#/components/schemas/showStyleVariant'
+        404:
+          description: The specified ShowStyleBase or ShowStyleVariant does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        500:
+          $ref: '#/components/responses/internalServerError'
+    put:
+      operationId: addOrUpdateShowStyleVariant
+      tags:
+        - showstyles
+      summary: Updates an existing ShowStyleVariant or creates a new one.
+      parameters:
+        - name: showStyleBaseId
+          in: path
+          description: Id of ShowStyleBase the ShowStyleVariant belongs to.
+          required: true
+          schema:
+            type: string
+        - name: showStyleVariantId
+          in: path
+          description: Id of ShowStyleVariant to insert/update.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                showStyleVariant:
+                  $ref: '#/components/schemas/showStyleVariant'
+              required:
+                - showStyleVariant
+              additionalProperties: false
+      responses:
+        200:
+          description: Operation successful.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+        400:
+          description: Invalid ShowStyleVariant
+        404:
+          $ref: '#/components/responses/showStyleBaseNotFound'
+        412:
+          description: The specified ShowStyleVariant is in use in an on-air Rundown.
+        500:
+          $ref: '#/components/responses/internalServerError'
+    delete:
+      operationId: deleteShowStyleVariant
+      tags:
+        - showstyles
+      summary: Deletes a specified ShowStyleVariant.
+      parameters:
+        - name: showStyleBaseId
+          in: path
+          description: Id of the ShowStyleBase the variant belongs to.
+          required: true
+          schema:
+            type: string
+        - name: showStyleVariantId
+          in: path
+          description: Id of ShowStyleVariant to remove.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Operation successful.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                required:
+                  - success
+                additionalProperties: false
+        412:
+          description: The specified ShowStyleVariant is in use in an on-air Rundown.
+        500:
+          $ref: '#/components/responses/internalServerError'
+components:
+  responses:
+    internalServerError:
+      description: An error unlikely to be the fault of the caller has occurred.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+              - message
+            additionalProperties: false
+    showStyleBaseNotFound:
+      description: The specified ShowStyleBase does not exist.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+            required:
+              - message
+            additionalProperties: false
+  schemas:
+    showStyleBase:
+      type: object
+      properties:
+        name:
+          type: string
+          description: ShowStyle Name.
+        blueprintId:
+          type: string
+          description: Id of the blueprint used by this ShowStyleBase.
+        outputLayers:
+          type: array
+          items:
+            $ref: '#/components/schemas/outputLayer'
+        sourceLayers:
+          type: array
+          items:
+            $ref: '#/components/schemas/sourceLayer'
+        config:
+          type: object
+          description: Blueprint config.
+      required:
+        - name
+        - blueprintId
+        - outputLayers
+        - sourceLayers
+        - config
+      additionalProperties: false
+    showStyleVariant:
+      type: object
+      properties:
+        name:
+          type: string
+          description: ShowStyle variant Name.
+        showStyleBaseId:
+          type: string
+          description: Id of the ShowStyleBase this ShowStyleVariant is based on.
+        config:
+          type: object
+          description: Blueprint config.
+        required:
+          - name
+          - showStyleBaseId
+          - blueprintId
+          - config
+        additionalProperties: false
+    outputLayer:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Output layer Id.
+        name:
+          type: string
+          description: Output layer name.
+        rank:
+          type: number
+          description: Display rank.
+        isPgm:
+          type: boolean
+          description: PGM treatment of this output should be in effect.
+      required:
+        - id
+        - name
+        - rank
+        - isPgm
+      additionalProperties: false
+    sourceLayer:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Source layer Id.
+        name:
+          type: string
+          description: Source layer name.
+        abbreviation:
+          type: string
+          description: Abbreviated display name.
+        rank:
+          type: number
+          description: Display rank.
+        layerType:
+          type: string
+          enum:
+            [
+              'unknown',
+              'camera',
+              'vt',
+              'remote',
+              'script',
+              'graphics',
+              'splits',
+              'audio',
+              'lower-third',
+              'live-speak',
+              'transition',
+              'local',
+            ]
+          description: Source layer content type.
+        exclusiveGroup:
+          type: string
+          description: Exclusivity group the layer belongs to.
+      required:
+        - id
+        - name
+        - rank
+        - layerType
+      additionalProperties: false

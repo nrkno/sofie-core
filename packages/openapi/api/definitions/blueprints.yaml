@@ -1,0 +1,105 @@
+title: studios
+description: Definitions for studios API
+resources:
+  blueprints:
+    get:
+      operationId: blueprints
+      tags:
+        - blueprints
+      summary: Returns all blueprints available in Sofie.
+      responses:
+        200:
+          description: Command successfully handled - returns an array of blueprint Ids.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  result:
+                    type: array
+                    items:
+                      type: string
+        500:
+          $ref: '#/components/responses/internalServerError'
+  blueprint:
+    get:
+      operationId: blueprint
+      tags:
+        - blueprints
+      summary: Returns some information about the specified blueprint
+      parameters:
+        - name: blueprintId
+          in: path
+          description: Requested blueprint.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Command successfully handled - returns an array of blueprint Ids.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  result:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        description: Blueprint Id.
+                      name:
+                        type: string
+                        description: Blueprint Name.
+                      blueprintType:
+                        type: string
+                        enum: ['system', 'studio', 'showstyle']
+                        description: Blueprint type.
+                      blueprintVersion:
+                        type: string
+                        description: Version reported by blueprint bundle.
+                    required:
+                      - id
+                      - name
+                      - blueprintType
+                      - blueprintVersion
+        400:
+          $ref: '#/components/responses/blueprintNotFound'
+        500:
+          $ref: '#/components/responses/internalServerError'
+components:
+  responses:
+    postSuccess:
+      description: Action successfully sent
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: number
+                example: 200
+    blueprintNotFound:
+      description: The specified Blueprint does not exist.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+    internalServerError:
+      description: An error unlikely to be the fault of the caller has occurred.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string

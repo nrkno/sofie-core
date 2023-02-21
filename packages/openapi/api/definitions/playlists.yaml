@@ -2,7 +2,7 @@ title: playlists
 description: Definitions for playlists API
 resources:
   activate:
-    post:
+    put:
       operationId: activate
       tags:
         - playlists
@@ -26,7 +26,7 @@ resources:
                   type: boolean
       responses:
         200:
-          $ref: '#/components/responses/postSuccess'
+          $ref: '#/components/responses/putSuccess'
         404:
           $ref: '#/components/responses/playlistNotFound'
         412:
@@ -41,7 +41,7 @@ resources:
         500:
           $ref: '#/components/responses/internalServerError'
   deactivate:
-    post:
+    put:
       operationId: deactivate
       tags:
         - playlists
@@ -55,13 +55,13 @@ resources:
             type: string
       responses:
         200:
-          $ref: '#/components/responses/postSuccess'
+          $ref: '#/components/responses/putSuccess'
         404:
           $ref: '#/components/responses/playlistNotFound'
         500:
           $ref: '#/components/responses/internalServerError'
   executeAdLib:
-    post:
+    put:
       operationId: executeAdLib
       tags:
         - playlists
@@ -107,7 +107,7 @@ resources:
         500:
           $ref: '#/components/responses/internalServerError'
   moveNextPart:
-    post:
+    put:
       operationId: moveNextPart
       tags:
         - playlists
@@ -159,7 +159,7 @@ resources:
         500:
           $ref: '#/components/responses/internalServerError'
   moveNextSegment:
-    post:
+    put:
       operationId: moveNextSegment
       tags:
         - playlists
@@ -211,7 +211,7 @@ resources:
         500:
           $ref: '#/components/responses/internalServerError'
   reloadPlaylist:
-    post:
+    put:
       operationId: reloadPlaylist
       tags:
         - playlists
@@ -225,13 +225,13 @@ resources:
             type: string
       responses:
         200:
-          $ref: '#/components/responses/postSuccess'
+          $ref: '#/components/responses/putSuccess'
         404:
           $ref: '#/components/responses/playlistNotFound'
         500:
           $ref: '#/components/responses/internalServerError'
   resetPlaylist:
-    post:
+    put:
       operationId: resetPlaylist
       tags:
         - playlists
@@ -245,7 +245,7 @@ resources:
             type: string
       responses:
         200:
-          $ref: '#/components/responses/postSuccess'
+          $ref: '#/components/responses/putSuccess'
         404:
           $ref: '#/components/responses/playlistNotFound'
         412:
@@ -260,7 +260,7 @@ resources:
         500:
           $ref: '#/components/responses/internalServerError'
   setNextPart:
-    post:
+    put:
       operationId: setNextPart
       tags:
         - playlists
@@ -286,7 +286,7 @@ resources:
                 - partId
       responses:
         200:
-          $ref: '#/components/responses/postSuccess'
+          $ref: '#/components/responses/putSuccess'
         404:
           $ref: '#/components/responses/playlistNotFound'
         412:
@@ -301,7 +301,7 @@ resources:
         500:
           $ref: '#/components/responses/internalServerError'
   setNextSegment:
-    post:
+    put:
       operationId: setNextSegment
       tags:
         - playlists
@@ -327,7 +327,7 @@ resources:
                 - segmentId
       responses:
         200:
-          $ref: '#/components/responses/postSuccess'
+          $ref: '#/components/responses/putSuccess'
         404:
           $ref: '#/components/responses/playlistNotFound'
         412:
@@ -342,7 +342,7 @@ resources:
         500:
           $ref: '#/components/responses/internalServerError'
   take:
-    post:
+    put:
       operationId: take
       tags:
         - playlists
@@ -366,7 +366,7 @@ resources:
                   description: May be specified to ensure that multiple take requests from the same Part do not result in multiple takes.
       responses:
         200:
-          $ref: '#/components/responses/postSuccess'
+          $ref: '#/components/responses/putSuccess'
         404:
           $ref: '#/components/responses/playlistNotFound'
         412:
@@ -401,7 +401,7 @@ resources:
             type: string
       responses:
         200:
-          $ref: '#/components/responses/postSuccess'
+          $ref: '#/components/responses/putSuccess'
         404:
           description: The specified Playlist or SourceLayer does not exist.
           content:
@@ -422,8 +422,7 @@ resources:
                     type: string
         500:
           $ref: '#/components/responses/internalServerError'
-  recallSticky:
-    post:
+    put:
       operationId: recallSticky
       tags:
         - sourceLayers
@@ -443,7 +442,7 @@ resources:
             type: string
       responses:
         200:
-          $ref: '#/components/responses/postSuccess'
+          $ref: '#/components/responses/putSuccess'
         404:
           description: The specified Playlist or SourceLayer does not exist.
           content:
@@ -467,7 +466,7 @@ resources:
 
 components:
   responses:
-    postSuccess:
+    putSuccess:
       description: Action successfully sent
       content:
         application/json:
