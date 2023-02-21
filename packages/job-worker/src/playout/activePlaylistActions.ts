@@ -236,14 +236,10 @@ export async function prepareStudioForBroadcast(
 
 	for (const device of playoutDevices) {
 		// Fire the command and don't wait for the result
-		executePeripheralDeviceFunction(
-			context,
-			device._id,
-			null,
-			'devicesMakeReady',
+		executePeripheralDeviceFunction(context, device._id, null, 'devicesMakeReady', [
 			okToDestoryStuff,
-			rundownPlaylistToBeActivated._id
-		)
+			rundownPlaylistToBeActivated._id,
+		])
 			.then(() => {
 				logger.info(`devicesMakeReady: "${device._id}" OK`)
 			})
@@ -268,7 +264,7 @@ export async function standDownStudio(
 
 	for (const device of playoutDevices) {
 		// Fire the command and don't wait for the result
-		executePeripheralDeviceFunction(context, device._id, null, 'devicesStandDown', okToDestoryStuff)
+		executePeripheralDeviceFunction(context, device._id, null, 'devicesStandDown', [okToDestoryStuff])
 			.then(() => {
 				logger.info(`devicesStandDown: "${device._id}" OK`)
 			})

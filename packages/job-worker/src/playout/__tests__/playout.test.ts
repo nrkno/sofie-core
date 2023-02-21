@@ -269,8 +269,7 @@ describe('Playout API', () => {
 			playoutDevice._id,
 			null,
 			'devicesMakeReady',
-			true,
-			playlistId0
+			[true, playlistId0]
 		)
 
 		await expect(
@@ -340,8 +339,7 @@ describe('Playout API', () => {
 			playoutDevice._id,
 			null,
 			'devicesMakeReady',
-			true,
-			playlistId0
+			[true, playlistId0]
 		)
 		mockExecutePeripheralDeviceFunction.mockClear()
 
@@ -377,8 +375,7 @@ describe('Playout API', () => {
 			playoutDevice._id,
 			null,
 			'devicesMakeReady',
-			true,
-			playlistId1
+			[true, playlistId1]
 		)
 		mockExecutePeripheralDeviceFunction.mockClear()
 
