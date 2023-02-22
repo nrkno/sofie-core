@@ -92,11 +92,7 @@ resources:
                   success:
                     type: number
                     example: 200
-                  id:
-                    type: string
-                    description: ShowStyleBase Id.
-                    example: 'SSB0'
-                  showStyleBase:
+                  result:
                     $ref: '#/components/schemas/showStyleBase'
         404:
           $ref: '#/components/responses/showStyleBaseNotFound'
@@ -276,11 +272,7 @@ resources:
                   success:
                     type: number
                     example: 200
-                  id:
-                    type: string
-                    description: ShowStyleBase Id.
-                    example: 'SSB0'
-                  showStyleVariant:
+                  result:
                     $ref: '#/components/schemas/showStyleVariant'
         404:
           description: The specified ShowStyleBase or ShowStyleVariant does not exist.
