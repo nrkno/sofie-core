@@ -309,7 +309,7 @@ PeripheralDeviceCommands.allow({
 		return false
 	},
 	remove(_userId, _doc) {
-		return false
+		return true
 	},
 })
 
