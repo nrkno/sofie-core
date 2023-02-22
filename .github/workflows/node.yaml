@@ -185,6 +185,7 @@ jobs:
           context: .
           file: ./meteor/Dockerfile.circle
           push: true
+          provenance: false
           labels: ${{ steps.ghcr-tag.outputs.labels }}
           tags: "${{ steps.ghcr-tag.outputs.tags }}"
       - name: Build and push to DockerHub
@@ -194,6 +195,7 @@ jobs:
           context: .
           file: ./meteor/Dockerfile.circle
           push: true
+          provenance: false
           labels: ${{ steps.dockerhub-tag.outputs.labels }}
           tags: "${{ steps.dockerhub-tag.outputs.tags }}"
 
@@ -297,6 +299,7 @@ jobs:
           context: ./packages
           file: ./packages/${{ matrix.gateway-name }}/Dockerfile.circle
           push: true
+          provenance: false
           labels: ${{ steps.ghcr-tag.outputs.labels }}
           tags: "${{ steps.ghcr-tag.outputs.tags }}"
       - name: Build and push to DockerHub
@@ -306,6 +309,7 @@ jobs:
           context: ./packages
           file: ./packages/${{ matrix.gateway-name }}/Dockerfile.circle
           push: true
+          provenance: false
           labels: ${{ steps.dockerhub-tag.outputs.labels }}
           tags: "${{ steps.dockerhub-tag.outputs.tags }}"
 

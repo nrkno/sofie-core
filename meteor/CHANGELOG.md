@@ -17,6 +17,18 @@ All notable changes to this project will be documented in this file. See [standa
 * **PoGw:** resolve issues with reporting context from TSR ([687193f](https://github.com/nrkno/sofie-core/commit/687193ffeb599d5193f2f06d49b987a71a766206))
 * put vizPurgeRundown method on the sub-device instead ([e3e4d06](https://github.com/nrkno/sofie-core/commit/e3e4d060cd87eb96f2b7219d6ffe3ca66726b23e))
 
+## [1.47.0-in-testing.8](https://github.com/nrkno/sofie-core/compare/v1.44.2...v1.47.0-in-testing.8) (2023-02-14)
+
+
+### Bug Fixes
+
+* add os hostname to influx traces ([ee35f8a](https://github.com/nrkno/sofie-core/commit/ee35f8a42b4980b12020e31eb93f06c0f77f4657))
+* bad migration ([abc3ddb](https://github.com/nrkno/sofie-core/commit/abc3ddb49db6b70c35b4fe46a899c22d7788df3a))
+* bad migration ([d3b2c6b](https://github.com/nrkno/sofie-core/commit/d3b2c6bc26b9433e1c552f3c7366ebb1d89d8e90))
+* cleanup old properties when generating *WithOverrides versions ([49e0bd5](https://github.com/nrkno/sofie-core/commit/49e0bd50b8be4f4374b3505682deeb221105d521))
+* **PoGw:** resolve issues with reporting context from TSR ([687193f](https://github.com/nrkno/sofie-core/commit/687193ffeb599d5193f2f06d49b987a71a766206))
+* put vizPurgeRundown method on the sub-device instead ([e3e4d06](https://github.com/nrkno/sofie-core/commit/e3e4d060cd87eb96f2b7219d6ffe3ca66726b23e))
+
 ## [1.47.0-in-testing.7](https://github.com/nrkno/sofie-core/compare/v1.44.2-1...v1.47.0-in-testing.7) (2023-01-24)
 
 
@@ -24,78 +36,34 @@ All notable changes to this project will be documented in this file. See [standa
 
 * **Dashboard Panel, AdLib Tab:** blur search text box on Enter, Escape ([dabc61e](https://github.com/nrkno/sofie-core/commit/dabc61ebd876df40699957b09e319d2687404ba9))
 * logging of commandErrors ([75e6c64](https://github.com/nrkno/sofie-core/commit/75e6c64b9771e1b2c21d4feddc49278ce5ddd0c2))
-* **MediaObjects:** fallback to 0 for time_base parsing ([48ea9c5](https://github.com/nrkno/sofie-core/commit/48ea9c5d411fc61a6516b0b8c45820375d26edfc))
-* **MediaObjects:** fallback to 0 for time_base parsing on both paths ([0a37f2f](https://github.com/nrkno/sofie-core/commit/0a37f2f452656f62f20af58d543ea073f32ffb2f))
 * part duration not set after instance stopped ([7887ecb](https://github.com/nrkno/sofie-core/commit/7887ecb81d219b94367e432c9c2507320dc04158))
 
 ## [1.47.0-in-testing.6](https://github.com/nrkno/sofie-core/compare/v1.44.2-0...v1.47.0-in-testing.6) (2023-01-16)
-
-## [1.48.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.5...v1.48.0-in-testing.1) (2023-01-11)
 
 ## [1.47.0-in-testing.5](https://github.com/nrkno/sofie-core/compare/v1.46.0-in-testing.2...v1.47.0-in-testing.5) (2023-01-11)
 
 ## [1.46.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.4...v1.46.0-in-testing.2) (2023-01-06)
 
-## [1.47.0-in-testing.4](https://github.com/nrkno/sofie-core/compare/v1.48.0-in-testing.0...v1.47.0-in-testing.4) (2023-01-05)
+## [1.47.0-in-testing.4](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.3...v1.47.0-in-testing.4) (2023-01-05)
 
 
 ### Bug Fixes
 
 * bug fix: change how to wait for other Fibers in collections.*Async methods. ([e1506a3](https://github.com/nrkno/sofie-core/commit/e1506a36b759481b0d401ba9caadd9e91da30238))
-* **EditAttribute:** Number(0) values are shown as String("") instead. ([b50c053](https://github.com/nrkno/sofie-core/commit/b50c05309290d1d7a4ada822cc792affcacf95af))
-* improve NB/NN translation ([71974c8](https://github.com/nrkno/sofie-core/commit/71974c87082286283e5e0e966a38fe5587941cf9))
-
-## [1.48.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.3...v1.48.0-in-testing.0) (2022-12-13)
-
-
-### Features
-
-* Adds information on SSL for WebMidi + update prefixed url params ([6dd983f](https://github.com/nrkno/sofie-core/commit/6dd983f6ef20612c004bb0fe74331202c7e4a053))
-
-
-### Bug Fixes
-
-* adding TriggeredAction action fails ([0e9672e](https://github.com/nrkno/sofie-core/commit/0e9672eebca29c7b541b13afa995f0f89ea2c0da))
-* Removed clip filename and path from notification and hover pop-up, since it was superfluous. Updated translations for nb and nn. ([78c8adb](https://github.com/nrkno/sofie-core/commit/78c8adba7466b5826478c7df3c645aba02678c65))
-* Removed incorrect formatting. ([5d0a117](https://github.com/nrkno/sofie-core/commit/5d0a1178ccf820b27a4c693ac0d9dc07f170b6f5))
 
 ## [1.47.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.46.0-in-testing.1...v1.47.0-in-testing.3) (2022-11-30)
 
 ## [1.46.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.44.1...v1.46.0-in-testing.1) (2022-11-30)
 
 
-### Features
-
-* initial translations for tsr actions ([889fa04](https://github.com/nrkno/sofie-core/commit/889fa04b368d5bf34bd0acd5ad8c377b4f3af264))
-* refactor timeline types to work better with typescript 4.7 ([#793](https://github.com/nrkno/sofie-core/issues/793)) ([1ec87ef](https://github.com/nrkno/sofie-core/commit/1ec87ef5578e4341225957e43132ef6a8f452503))
-* render from from json schema ([ce85248](https://github.com/nrkno/sofie-core/commit/ce85248eb21c3d507983de9931d9b99a27709d5d))
-* tsr action manifests ([4987eaf](https://github.com/nrkno/sofie-core/commit/4987eaf3277a58311c1c2d2613af3bc72a5c4487))
-
-
 ### Bug Fixes
 
-* add namespace to action response server side ([df97c68](https://github.com/nrkno/sofie-core/commit/df97c68d08b1f2efdd45c7ad4ebf9e6bfb2c8cc1))
-* add removeTime property to PackageInfos ([562e8c9](https://github.com/nrkno/sofie-core/commit/562e8c946694f61925aa3068c0cdcebe58cbc682))
-* add translations to schemaForm component ([f63f79e](https://github.com/nrkno/sofie-core/commit/f63f79eb7ae8c6c59ac683400be40b868669637d))
-* bug fix: change how to wait for other Fibers in collections.*Async methods. ([1b71153](https://github.com/nrkno/sofie-core/commit/1b71153a3bea6e25a907a4254787e04b6d7e39c8))
-* checkPieceContentStatus not translating ([7d693dc](https://github.com/nrkno/sofie-core/commit/7d693dca4675d708c344003ca5d1c494c674ffbb))
-* handle incomplete peripheralDeviceCommands ([40f691e](https://github.com/nrkno/sofie-core/commit/40f691e0e9fca1def233b67d2cd3f1cded7152ca))
 * Larger thumbnail CSS for Media Previews ([749a05d](https://github.com/nrkno/sofie-core/commit/749a05d87a2e45210e07c1bf6da7efcdc0f861f5))
-* modify zebra hightlights ([c9a33ca](https://github.com/nrkno/sofie-core/commit/c9a33cad851e70223ac053e9852c0ef28488fae8))
-* prefix blueprint translation namespace ([a1bad7e](https://github.com/nrkno/sofie-core/commit/a1bad7e3bd1dbea8a4da3173d8a50131fdd6bf15))
 * publications in rest api ([44fe8ee](https://github.com/nrkno/sofie-core/commit/44fe8eee78e0de3427747e934fce5cca77b4a83d))
-* publications in rest api ([9f77988](https://github.com/nrkno/sofie-core/commit/9f7798883e213c062bdb687acf3e1b25bbd1f630))
-* use more optimal mongo observe method in custom publications ([be38e66](https://github.com/nrkno/sofie-core/commit/be38e66f2d5050580b3364989c599a7f8ccd3e2c))
 
 ## [1.47.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.1...v1.47.0-in-testing.2) (2022-11-07)
 
 ## [1.47.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.46.0-in-testing.0...v1.47.0-in-testing.1) (2022-11-07)
-
-
-### Features
-
-* move system storePath to an environment variable ([#778](https://github.com/nrkno/sofie-core/issues/778)) ([d75489f](https://github.com/nrkno/sofie-core/commit/d75489f4b9368e34a3c397554b7c2aa725eec55e))
-* remove initial system migrations with manual steps ([#779](https://github.com/nrkno/sofie-core/issues/779)) ([3f51952](https://github.com/nrkno/sofie-core/commit/3f519520fb0efdc36822982766bf780eed83bac7))
 
 
 ### Bug Fixes
@@ -127,7 +95,6 @@ All notable changes to this project will be documented in this file. See [standa
 * custom publication performance/improvements ([#775](https://github.com/nrkno/sofie-core/issues/775)) ([9e40d45](https://github.com/nrkno/sofie-core/commit/9e40d4575e434acc57c93f1aa86adb344e01d343))
 * datastore table view ([83467af](https://github.com/nrkno/sofie-core/commit/83467afec8f52521b8af5ebe91287cafcb000953))
 * differentiate user/default settings datastructure changes ([#772](https://github.com/nrkno/sofie-core/issues/772)) ([b39067d](https://github.com/nrkno/sofie-core/commit/b39067d9e4e7b87e7e00a80bdca19aade8b3bc04))
-* Highlight source-missing-zebra-stripes and status-icon on Pieces whose Part is currently Nexted or Live ([3fdd325](https://github.com/nrkno/sofie-core/commit/3fdd325f23fccdc06422a0ab16f6c8a5e81d15e9))
 * improve viewMode switch ([33328d2](https://github.com/nrkno/sofie-core/commit/33328d2837e71a5f90eee338f9f56db934260592))
 * **List View:** open shelf and reveal AdLib when double clicking on column indicator ([de23d05](https://github.com/nrkno/sofie-core/commit/de23d05ed37b442ac93d0c99fb255c7741b5b35a))
 * **List View:** show glow around live/next segment headers ([d1122af](https://github.com/nrkno/sofie-core/commit/d1122afdd8889eadde66246fe9ae6f8c56e5eea0))
@@ -175,7 +142,6 @@ All notable changes to this project will be documented in this file. See [standa
 * split studio settings into tabs ([23c969e](https://github.com/nrkno/sofie-core/commit/23c969e42f33cd59c1af30dc4a3c70c122779821))
 * **Storyboard:** remove thumbnails ([a1efc4c](https://github.com/nrkno/sofie-core/commit/a1efc4c87021597f1ff512d245d1c46e1d590c2c))
 * **Storyboard:** remove thumbnails, shorten main Pieces ([ab40b8f](https://github.com/nrkno/sofie-core/commit/ab40b8f415da4e1bd73bb4647c7e6aa820377af8))
-* stronger ddp call typings in gateways ([#788](https://github.com/nrkno/sofie-core/issues/788)) ([2a1f8af](https://github.com/nrkno/sofie-core/commit/2a1f8affad1b0278a2350c6e4f6ed7d3070121a1))
 * strongly type meteorPublish ([608cae5](https://github.com/nrkno/sofie-core/commit/608cae567bf3ed1ee530fe00968fa30690f8dfc8))
 * strongly type meteorSubscribe ([6f281fa](https://github.com/nrkno/sofie-core/commit/6f281fa92014b5543fa7f865c5d02cd60d8a86ff))
 * styling improvements ([cfc81ee](https://github.com/nrkno/sofie-core/commit/cfc81eef585877474cada8651fede896c4224e6a))
@@ -307,7 +273,6 @@ All notable changes to this project will be documented in this file. See [standa
 * **TriggeredActionEntry:** set new object on correct key ([a3422f2](https://github.com/nrkno/sofie-core/commit/a3422f22fa319ecafcb5d548b23cf46cc36a88e9))
 * **TV 2:** SOF-767 show inspector if enabled ([63cf83f](https://github.com/nrkno/sofie-core/commit/63cf83f12f37c3024874b0b31e8ab1d5e01176ef))
 * unable to remove rundown if its showStyleVariantId was unknown ([1d51a63](https://github.com/nrkno/sofie-core/commit/1d51a63cc1b4dffef37bab0ed7abeb041d41757f))
-* update ErrorBoundrary message to be more user-friendly ([458ae5f](https://github.com/nrkno/sofie-core/commit/458ae5ff193508d6ff76b76aac5b38db54c44039))
 * update imports ([522fe2c](https://github.com/nrkno/sofie-core/commit/522fe2c569035050b971eb9c6f2ce53ed9d10692))
 * Update status if .initWorker is rejected. ([f69871f](https://github.com/nrkno/sofie-core/commit/f69871f1d5bc960f6d223efa1bea850641a19796))
 * update TSR dep ([145bb57](https://github.com/nrkno/sofie-core/commit/145bb572c76e404d6effd4b3d1424ecf9b11e417))
@@ -350,53 +315,6 @@ All notable changes to this project will be documented in this file. See [standa
 ### Bug Fixes
 
 * fixed duplicated shoutcuts ([da344a6](https://github.com/nrkno/sofie-core/commit/da344a68d878ebe143523ace20536cf5aacd1ed1))
-
-## [1.48.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.48.0-in-testing.0...v1.48.0-in-testing.1) (2023-01-11)
-
-
-### Features
-
-* Adds information on SSL for WebMidi + update prefixed url params ([6dd983f](https://github.com/nrkno/sofie-core/commit/6dd983f6ef20612c004bb0fe74331202c7e4a053))
-* push images to ghcr ([32f98f4](https://github.com/nrkno/sofie-core/commit/32f98f4c4e915242114bac9866ef52b176ddfc92))
-
-
-### Bug Fixes
-
-* **EditAttribute:** Number(0) values are shown as String("") instead. ([b50c053](https://github.com/nrkno/sofie-core/commit/b50c05309290d1d7a4ada822cc792affcacf95af))
-* improve NB/NN translation ([71974c8](https://github.com/nrkno/sofie-core/commit/71974c87082286283e5e0e966a38fe5587941cf9))
-* in the event of multiple tags they should all have the correct name ([056de09](https://github.com/nrkno/sofie-core/commit/056de09e22337b0d7be39abb093653e8c6811ac1))
-* Removed clip filename and path from notification and hover pop-up, since it was superfluous. Updated translations for nb and nn. ([78c8adb](https://github.com/nrkno/sofie-core/commit/78c8adba7466b5826478c7df3c645aba02678c65))
-* Removed incorrect formatting. ([5d0a117](https://github.com/nrkno/sofie-core/commit/5d0a1178ccf820b27a4c693ac0d9dc07f170b6f5))
-
-## [1.48.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.3...v1.48.0-in-testing.0) (2022-12-13)
-
-
-### Features
-
-* Highlight source-missing-zebra-stripes and status-icon on Pieces whose Part is currently Nexted or Live ([3fdd325](https://github.com/nrkno/tv-automation-server-core/commit/3fdd325f23fccdc06422a0ab16f6c8a5e81d15e9))
-* initial translations for tsr actions ([889fa04](https://github.com/nrkno/tv-automation-server-core/commit/889fa04b368d5bf34bd0acd5ad8c377b4f3af264))
-* move system storePath to an environment variable ([#778](https://github.com/nrkno/tv-automation-server-core/issues/778)) ([d75489f](https://github.com/nrkno/tv-automation-server-core/commit/d75489f4b9368e34a3c397554b7c2aa725eec55e))
-* refactor timeline types to work better with typescript 4.7 ([#793](https://github.com/nrkno/tv-automation-server-core/issues/793)) ([1ec87ef](https://github.com/nrkno/tv-automation-server-core/commit/1ec87ef5578e4341225957e43132ef6a8f452503))
-* remove initial system migrations with manual steps ([#779](https://github.com/nrkno/tv-automation-server-core/issues/779)) ([3f51952](https://github.com/nrkno/tv-automation-server-core/commit/3f519520fb0efdc36822982766bf780eed83bac7))
-* render from from json schema ([ce85248](https://github.com/nrkno/tv-automation-server-core/commit/ce85248eb21c3d507983de9931d9b99a27709d5d))
-* stronger ddp call typings in gateways ([#788](https://github.com/nrkno/tv-automation-server-core/issues/788)) ([2a1f8af](https://github.com/nrkno/tv-automation-server-core/commit/2a1f8affad1b0278a2350c6e4f6ed7d3070121a1))
-* tsr action manifests ([4987eaf](https://github.com/nrkno/tv-automation-server-core/commit/4987eaf3277a58311c1c2d2613af3bc72a5c4487))
-
-
-### Bug Fixes
-
-* add namespace to action response server side ([df97c68](https://github.com/nrkno/tv-automation-server-core/commit/df97c68d08b1f2efdd45c7ad4ebf9e6bfb2c8cc1))
-* add removeTime property to PackageInfos ([562e8c9](https://github.com/nrkno/tv-automation-server-core/commit/562e8c946694f61925aa3068c0cdcebe58cbc682))
-* add translations to schemaForm component ([f63f79e](https://github.com/nrkno/tv-automation-server-core/commit/f63f79eb7ae8c6c59ac683400be40b868669637d))
-* adding TriggeredAction action fails ([0e9672e](https://github.com/nrkno/tv-automation-server-core/commit/0e9672eebca29c7b541b13afa995f0f89ea2c0da))
-* bug fix: change how to wait for other Fibers in collections.*Async methods. ([1b71153](https://github.com/nrkno/tv-automation-server-core/commit/1b71153a3bea6e25a907a4254787e04b6d7e39c8))
-* checkPieceContentStatus not translating ([7d693dc](https://github.com/nrkno/tv-automation-server-core/commit/7d693dca4675d708c344003ca5d1c494c674ffbb))
-* handle incomplete peripheralDeviceCommands ([40f691e](https://github.com/nrkno/tv-automation-server-core/commit/40f691e0e9fca1def233b67d2cd3f1cded7152ca))
-* modify zebra hightlights ([c9a33ca](https://github.com/nrkno/tv-automation-server-core/commit/c9a33cad851e70223ac053e9852c0ef28488fae8))
-* prefix blueprint translation namespace ([a1bad7e](https://github.com/nrkno/tv-automation-server-core/commit/a1bad7e3bd1dbea8a4da3173d8a50131fdd6bf15))
-* publications in rest api ([9f77988](https://github.com/nrkno/tv-automation-server-core/commit/9f7798883e213c062bdb687acf3e1b25bbd1f630))
-* update ErrorBoundrary message to be more user-friendly ([458ae5f](https://github.com/nrkno/tv-automation-server-core/commit/458ae5ff193508d6ff76b76aac5b38db54c44039))
-* use more optimal mongo observe method in custom publications ([be38e66](https://github.com/nrkno/tv-automation-server-core/commit/be38e66f2d5050580b3364989c599a7f8ccd3e2c))
 
 ## [1.47.0-in-testing.7](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.6...v1.47.0-in-testing.7) (2023-01-24)
 

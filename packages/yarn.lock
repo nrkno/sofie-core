@@ -4199,10 +4199,9 @@
   resolved "https://registry.yarnpkg.com/@trysound/sax/-/sax-0.2.0.tgz#cccaab758af56761eb7bf37af6f03f326dd798ad"
   integrity sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==
 
-"@tv2media/v-connection@^6.0.3":
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-6.1.0.tgz#c1b97967a49703b5b0d464c81c144cffb544b891"
-  integrity sha512-Tubfcb9PWyQ2P2tjwEWTDxM+oYM66rlle7d0R8xmeeQOdG3MU/EoSqbs1VFQnX25DD75zDYxzZQBE0g1jWj1BQ==
+"@tv2media/v-connection@git+https://github.com/nrkno/v-connection.git#1465f25db772d69c5ba7fc655c25d902f6f8e03a":
+  version "7.2.1"
+  resolved "git+https://github.com/nrkno/v-connection.git#1465f25db772d69c5ba7fc655c25d902f6f8e03a"
   dependencies:
     request "^2.88.2"
     request-promise-native "^1.0.9"
@@ -14776,7 +14775,7 @@ timeline-state-resolver@8.0.0-nightly-release49-20230110-165023-914016e7b.0:
   resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-8.0.0-nightly-release49-20230110-165023-914016e7b.0.tgz#71b4e45560dff69100c2ed255defafe63af43044"
   integrity sha512-XNGbdaPTHY5D2AJz9QMKdMAQT0CKLeOV8gNbWaFXSr5JSw9B+YpzABhqxBpa8rzKPn/Y2Huj5eaVOrmLsXbqjg==
   dependencies:
-    "@tv2media/v-connection" "^6.0.3"
+    "@tv2media/v-connection" "git+https://github.com/nrkno/v-connection.git#1465f25db772d69c5ba7fc655c25d902f6f8e03a"
     atem-connection "2.4.0"
     atem-state "^0.12.2"
     casparcg-connection "^6.0.0"
