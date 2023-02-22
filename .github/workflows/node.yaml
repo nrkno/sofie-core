@@ -363,7 +363,7 @@ jobs:
           - blueprints-integration
           - server-core-integration
           - shared-lib
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [14.x, 16.x]
         include:
           # include additional configs, to run certain packages only for a certain version of node
           - node-version: 14.x
