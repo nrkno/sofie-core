@@ -1,0 +1,20 @@
+name: "Prune container images"
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '12 14 * * *'
+
+jobs:
+  prune-container-images:
+    uses: nrkno/sofie-github-workflows/.github/workflows/prune-container-images.yml@main
+    strategy:
+      max-parallel: 1
+      matrix:
+        repo: [ server-core, playout-gateway, mos-gateway ]
+    with:
+      dry-run: false
+      prune-untagged: true
+      package-name: sofie-core-${{ matrix.repo }}
+    secrets:
+      prune-token: ${{ secrets.GHCR_PRUNE_TOKEN }}
