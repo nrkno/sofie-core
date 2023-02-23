@@ -52,7 +52,6 @@ export function subscribeIntoMongoCollection<TDoc extends { _id: ProtectedString
 	if (!rawCollection) throw new Error('Missing collection')
 
 	let isReady = false
-	const pendingInitialDocs = new Map<TDoc['_id'], TDoc>()
 
 	// TODO - there are a LOT of issues here, with the morphing into minimongo, but it kinda works
 
@@ -72,49 +71,43 @@ export function subscribeIntoMongoCollection<TDoc extends { _id: ProtectedString
 			if (isReady) {
 				// TODO - some buffering/debounce to avoid excessive reactivity when multiple docs change
 				switch (data.type) {
-					case 'ready':
+					case 'init':
 						// Not valid
 						break
-					case 'delete':
-						rawCollection._collection.remove(data.id)
-						break
-					case 'replace':
-						rawCollection._collection.insert(data.doc)
+					case 'update': {
+						rawCollection._collection.pauseObservers()
+						for (const doc of data.added) {
+							rawCollection._collection.insert(doc)
+						}
+
+						for (const doc of data.changed) {
+							rawCollection._collection.update(doc._id, { $set: doc })
+						}
+
+						for (const id of data.removed) {
+							rawCollection._collection.remove(id)
+						}
+						rawCollection._collection.resumeObservers()
 
 						break
-					case 'update': {
-						rawCollection._collection.update(data.id, { $set: data.fields })
-						break
 					}
+
 					default:
 						assertNever(data)
 				}
 			} else {
 				switch (data.type) {
-					case 'ready':
+					case 'init':
 						isReady = true
-						// rawCollection._collection.pauseObservers()
-						for (const doc of pendingInitialDocs.values()) {
+						rawCollection._collection.pauseObservers()
+						for (const doc of data.docs) {
 							rawCollection._collection.insert(doc)
 						}
-						console.log('bulk inserted', pendingInitialDocs.size)
-						// rawCollection._collection.resumeObservers()
-						pendingInitialDocs.clear()
-						break
-					case 'delete':
-						pendingInitialDocs.delete(data.id)
-						break
-					case 'replace':
-						pendingInitialDocs.set(data.doc._id, data.doc)
+						console.log('bulk inserted', data.docs.length)
+						rawCollection._collection.resumeObservers()
 						break
 					case 'update': {
-						const doc = pendingInitialDocs.get(data.id)
-						if (doc) {
-							pendingInitialDocs.set(data.id, {
-								...doc,
-								...data.fields,
-							})
-						}
+						// Not valid
 						break
 					}
 					default:

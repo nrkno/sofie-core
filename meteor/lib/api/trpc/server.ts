@@ -68,19 +68,15 @@ function getMethodContext(connection: Meteor.Connection): MethodContextAPI {
 
 export type TrpcDocChange<T extends { _id: ProtectedString<any> }> =
 	| {
-			type: 'replace'
-			doc: T
+			type: 'init'
+			docs: Array<T>
 	  }
 	| {
 			type: 'update'
-			id: T['_id']
-			fields: any
+			added: Array<T>
+			changed: Array<Pick<T, '_id'> & Partial<T>>
+			removed: T['_id'][]
 	  }
-	| {
-			type: 'delete'
-			id: T['_id']
-	  }
-	| { type: 'ready' }
 
 class TrpcCustomPublish<TDoc extends { _id: ProtectedString<any> }> implements CustomPublish<TDoc> {
 	#onStop: (() => void) | undefined
@@ -107,15 +103,9 @@ class TrpcCustomPublish<TDoc extends { _id: ProtectedString<any> }> implements C
 	init(docs: TDoc[]) {
 		if (this.#isReady) throw new Meteor.Error(500, 'TrpcCustomPublish has already been initialised')
 
-		for (const doc of docs) {
-			this.emit.next({
-				type: 'replace',
-				doc: doc,
-			})
-		}
-
 		this.emit.next({
-			type: 'ready',
+			type: 'init',
+			docs,
 		})
 
 		this.#isReady = true
@@ -124,29 +114,10 @@ class TrpcCustomPublish<TDoc extends { _id: ProtectedString<any> }> implements C
 	changed(changes: CustomPublishChanges<TDoc>): void {
 		if (!this.#isReady) throw new Meteor.Error(500, 'TrpcCustomPublish has not been initialised')
 
-		// TODO - inform client of a batch?
-
-		for (const doc of changes.added.values()) {
-			this.emit.next({
-				type: 'replace',
-				doc: doc,
-			})
-		}
-
-		for (const doc of changes.changed.values()) {
-			this.emit.next({
-				type: 'update',
-				id: doc._id,
-				fields: doc,
-			})
-		}
-
-		for (const id of changes.removed.values()) {
-			this.emit.next({
-				type: 'delete',
-				id: id,
-			})
-		}
+		this.emit.next({
+			type: 'update',
+			...changes,
+		})
 	}
 }
 
