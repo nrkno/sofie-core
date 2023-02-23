@@ -17,6 +17,7 @@ import '../lib/main'
 import './lib/currentTimeReactive'
 import './lib/uncaughtErrorHandler'
 import './lib/dev'
+import './lib/trpcClient'
 
 import App from './ui/App'
 
