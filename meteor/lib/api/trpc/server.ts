@@ -1,9 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import { WebApp } from 'meteor/webapp'
 import { inferAsyncReturnType, initTRPC } from '@trpc/server'
 // import { createHTTPServer } from '@trpc/server/adapters/standalone'
-import * as trpcExpress from '@trpc/server/adapters/express'
-import express from 'express'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { check } from 'meteor/check'
 import { ServerClientAPI } from '../../../server/api/client'
@@ -22,8 +19,7 @@ import { UISegmentPartNote } from '../rundownNotifications'
 import { applyWSSHandler, CreateWSSContextFnOptions } from '@trpc/server/adapters/ws'
 
 // created for each request
-const createContext = (_a: trpcExpress.CreateExpressContextOptions) => ({}) // no context
-const createWsContext = (_a: CreateWSSContextFnOptions) => ({}) // no context
+const createContext = (_a: CreateWSSContextFnOptions) => ({}) // no context
 type Context = inferAsyncReturnType<typeof createContext>
 
 const t = initTRPC.context<Context>().create({
@@ -212,7 +208,7 @@ Meteor.startup(() => {
 	const wss = new ws.Server({
 		port: 3005,
 	})
-	const handler = applyWSSHandler({ wss, router: appRouter, createContext: createWsContext })
+	const handler = applyWSSHandler({ wss, router: appRouter, createContext })
 
 	wss.on('connection', (ws) => {
 		console.log(`➕➕ Connection (${wss.clients.size})`)
@@ -226,15 +222,4 @@ Meteor.startup(() => {
 		handler.broadcastReconnectNotification()
 		wss.close()
 	})
-
-	const app = express()
-	app.use(
-		'/trpc',
-		trpcExpress.createExpressMiddleware({
-			router: appRouter,
-			createContext,
-		})
-	)
-
-	WebApp.connectHandlers.use(app)
 })
