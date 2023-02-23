@@ -12,12 +12,12 @@ import { RundownPlaylists } from '../../collections/libCollections'
 import { getCurrentTime, getRandomString, ProtectedString, protectString } from '../../lib'
 import { z } from 'zod'
 import ws from 'ws'
-import { RundownPlaylistId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylistId, PartInstanceId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MethodContextAPI } from '../methods'
 import { ResolveOptions } from '@trpc/server/dist/core/internals/utils'
 import { observable, Observer } from '@trpc/server/observable'
 import { setupNotesPublication } from '../../../server/publications/segmentPartNotesUI/publication'
-import { CustomPublish } from '../../../server/lib/customPublication'
+import { CustomPublish, CustomPublishChanges, MeteorCustomPublish } from '../../../server/lib/customPublication'
 import { UISegmentPartNote } from '../rundownNotifications'
 import { CustomCollectionName } from '../pubsub'
 import { applyWSSHandler, CreateWSSContextFnOptions } from '@trpc/server/adapters/ws'
@@ -69,7 +69,11 @@ function getMethodContext(connection: Meteor.Connection): MethodContextAPI {
 
 export type TrpcDocChange<T extends { _id: ProtectedString<any> }> =
 	| {
-			type: 'upsert'
+			type: 'replace'
+			doc: T
+	  }
+	| {
+			type: 'update'
 			id: T['_id']
 			fields: any
 	  }
@@ -78,6 +82,74 @@ export type TrpcDocChange<T extends { _id: ProtectedString<any> }> =
 			id: T['_id']
 	  }
 	| { type: 'ready' }
+
+class TrpcCustomPublish<TDoc extends { _id: ProtectedString<any> }> implements CustomPublish<TDoc> {
+	#onStop: (() => void) | undefined
+	#isReady = false
+
+	constructor(private readonly emit: Observer<TrpcDocChange<TDoc>, any>) {}
+
+	callStop(): void {
+		if (this.#onStop) this.#onStop()
+	}
+
+	get isReady(): boolean {
+		return this.#isReady
+	}
+
+	get userId(): UserId | null {
+		throw new Error('Method not implemented.')
+	}
+
+	onStop(callback: () => void) {
+		this.#onStop = Meteor.bindEnvironment(callback)
+	}
+
+	init(docs: TDoc[]) {
+		if (this.#isReady) throw new Meteor.Error(500, 'TrpcCustomPublish has already been initialised')
+
+		for (const doc of docs) {
+			this.emit.next({
+				type: 'replace',
+				doc: doc,
+			})
+		}
+
+		this.emit.next({
+			type: 'ready',
+		})
+
+		this.#isReady = true
+	}
+
+	changed(changes: CustomPublishChanges<TDoc>): void {
+		if (!this.#isReady) throw new Meteor.Error(500, 'TrpcCustomPublish has not been initialised')
+
+		// TODO - inform client of a batch?
+
+		for (const doc of changes.added.values()) {
+			this.emit.next({
+				type: 'replace',
+				doc: doc,
+			})
+		}
+
+		for (const doc of changes.changed.values()) {
+			this.emit.next({
+				type: 'update',
+				id: doc._id,
+				fields: doc,
+			})
+		}
+
+		for (const id of changes.removed.values()) {
+			this.emit.next({
+				type: 'delete',
+				id: id,
+			})
+		}
+	}
+}
 
 // Hack to expose a non-fiber safe version of setupNotesPublication
 const setupNotesPublication2 = Meteor.bindEnvironment(
@@ -94,58 +166,13 @@ const appRouter = router({
 		// `resolve()` is triggered for each client when they start subscribing `onAdd`
 		// return an `observable` with a callback which is triggered immediately
 		return observable<TrpcDocChange<UISegmentPartNote>>((emit) => {
-			let fakeStop: Function = () => null
-			const fakeInner: Subscription = {
-				added: function (_collection: string, id: string, fields: Object): void {
-					emit.next({
-						type: 'upsert',
-						id: protectString(id),
-						fields,
-					})
-				},
-				changed: function (_collection: string, id: string, fields: Object): void {
-					emit.next({
-						type: 'upsert',
-						id: protectString(id),
-						fields,
-					})
-				},
-				connection: makeConnection(req),
-				error: function (error: Error): void {
-					console.trace(error)
-					emit.error(`Errored: `)
-				},
-				onStop: function (func: Function): void {
-					fakeStop = Meteor.bindEnvironment(func)
-				},
-				ready: function (): void {
-					emit.next({
-						type: 'ready',
-					})
-				},
-				removed: function (_collection: string, id: string): void {
-					emit.next({
-						type: 'delete',
-						id: protectString(id),
-					})
-				},
-				stop: function (): void {
-					// TODO - verify this
-					emit.complete()
-				},
-				unblock: function (): void {
-					// Unused
-				},
-				userId: null,
-			}
+			const pub = new TrpcCustomPublish(emit)
 
-			const fakePub = new CustomPublish<UISegmentPartNote>(fakeInner, 'collectionName' as CustomCollectionName)
-
-			setupNotesPublication2(protectString(req.input), fakePub, emit)
+			setupNotesPublication2(protectString(req.input), pub, emit)
 
 			// unsubscribe function when client disconnects or stops subscribing
 			return () => {
-				fakeStop()
+				pub.callStop()
 			}
 		})
 	}),

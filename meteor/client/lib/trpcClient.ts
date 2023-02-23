@@ -78,10 +78,12 @@ export function subscribeIntoMongoCollection<TDoc extends { _id: ProtectedString
 					case 'delete':
 						rawCollection._collection.remove(data.id)
 						break
-					case 'upsert': {
-						rawCollection._collection.update(data.id, data.fields, {
-							upsert: true,
-						})
+					case 'replace':
+						rawCollection._collection.insert(data.doc)
+
+						break
+					case 'update': {
+						rawCollection._collection.update(data.id, data.fields)
 						break
 					}
 					default:
@@ -102,12 +104,17 @@ export function subscribeIntoMongoCollection<TDoc extends { _id: ProtectedString
 					case 'delete':
 						pendingInitialDocs.delete(data.id)
 						break
-					case 'upsert': {
+					case 'replace':
+						pendingInitialDocs.set(data.doc._id, data.doc)
+						break
+					case 'update': {
 						const doc = pendingInitialDocs.get(data.id)
-						pendingInitialDocs.set(data.id, {
-							...(doc || {}),
-							...data.fields,
-						})
+						if (doc) {
+							pendingInitialDocs.set(data.id, {
+								...doc,
+								...data.fields,
+							})
+						}
 						break
 					}
 					default:

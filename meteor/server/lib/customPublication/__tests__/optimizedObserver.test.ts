@@ -9,7 +9,7 @@ interface CustomPublishMockExt {
 }
 
 class CustomPublishMock<DBObj extends { _id: ProtectedString<any> }>
-	implements Omit<CustomPublish<DBObj>, '#onStop' | '#isReady'>, CustomPublishMockExt
+	implements CustomPublish<DBObj>, CustomPublishMockExt
 {
 	static create<DBObj extends { _id: ProtectedString<any> }>(): CustomPublish<DBObj> & CustomPublishMockExt {
 		const mock = new CustomPublishMock<DBObj>()

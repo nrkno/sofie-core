@@ -10,10 +10,15 @@ export interface CustomPublishChanges<T extends { _id: ProtectedString<any> }> {
 	removed: T['_id'][]
 }
 
-export class CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
+export class MeteorCustomPublish<DBObj extends { _id: ProtectedString<any> }> implements CustomPublish<DBObj> {
+	#onStop: (() => void) | undefined
 	#isReady = false
 
-	constructor(private _meteorSubscription: Subscription, private _collectionName: CustomCollectionName) {}
+	constructor(private _meteorSubscription: Subscription, private _collectionName: CustomCollectionName) {
+		this._meteorSubscription.onStop(() => {
+			if (this.#onStop) this.#onStop()
+		})
+	}
 
 	get isReady(): boolean {
 		return this.#isReady
@@ -27,9 +32,7 @@ export class CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
 	 * Register a function to be called when the subscriber unsubscribes
 	 */
 	onStop(callback: () => void) {
-		this._meteorSubscription.onStop(() => {
-			callback()
-		})
+		this.#onStop = callback
 	}
 
 	/**
@@ -66,6 +69,27 @@ export class CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
 	}
 }
 
+export interface CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
+	get isReady(): boolean
+
+	get userId(): UserId | null
+
+	/**
+	 * Register a function to be called when the subscriber unsubscribes
+	 */
+	onStop(callback: () => void)
+
+	/**
+	 * Send the intial documents to the subscriber
+	 */
+	init(docs: DBObj[])
+
+	/**
+	 * Send a batch of changes to the subscriber
+	 */
+	changed(changes: CustomPublishChanges<DBObj>): void
+}
+
 function genericMeteorCustomPublish<K extends keyof PubSubTypes>(
 	publicationName: K,
 	customCollectionName: CustomCollectionName,
@@ -79,7 +103,7 @@ function genericMeteorCustomPublish<K extends keyof PubSubTypes>(
 		waitForPromise(
 			cb.call(
 				protectStringObject<Subscription, 'userId'>(this),
-				new CustomPublish(this, customCollectionName),
+				new MeteorCustomPublish(this, customCollectionName),
 				...(args as any)
 			)
 		)
