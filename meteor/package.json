@@ -110,6 +110,7 @@
 		"vm2": "^3.9.11",
 		"webmidi": "^2.5.3",
 		"winston": "^3.8.2",
+		"ws": "^8.12.1",
 		"xmlbuilder": "^15.1.1",
 		"zod": "^3.20.6"
 	},
@@ -137,6 +138,7 @@
 		"@types/semver": "^7.3.12",
 		"@types/sinon": "^10.0.13",
 		"@types/underscore": "1.11.4",
+		"@types/ws": "^8.5.4",
 		"@types/xml2js": "^0.4.11",
 		"@welldone-software/why-did-you-render": "^4.3.1",
 		"@xmldom/xmldom": "^0.8.0",

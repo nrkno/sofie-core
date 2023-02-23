@@ -9,6 +9,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { DBSegment } from '../../../lib/collections/Segments'
 import { groupByToMap, literal, normalizeArrayToMap, protectString } from '../../../lib/lib'
 import {
+	CustomPublish,
 	CustomPublishCollection,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
@@ -199,6 +200,22 @@ function updateNotesForSegment(
 	}
 }
 
+export async function setupNotesPublication(playlistId: RundownPlaylistId, pub: CustomPublish<UISegmentPartNote>) {
+	await setUpCollectionOptimizedObserver<
+		UISegmentPartNote,
+		UISegmentPartNotesArgs,
+		UISegmentPartNotesState,
+		UISegmentPartNotesUpdateProps
+	>(
+		`pub_${PubSub.uiSegmentPartNotes}_${playlistId}`,
+		{ playlistId },
+		setupUISegmentPartNotesPublicationObservers,
+		manipulateUISegmentPartNotesPublicationData,
+		pub,
+		100
+	)
+}
+
 meteorCustomPublish(
 	PubSub.uiSegmentPartNotes,
 	CustomCollectionName.UISegmentPartNotes,
@@ -211,19 +228,7 @@ meteorCustomPublish(
 				NoSecurityReadAccess.any() ||
 				(await RundownPlaylistReadAccess.rundownPlaylistContent(playlistId, cred)))
 		) {
-			await setUpCollectionOptimizedObserver<
-				UISegmentPartNote,
-				UISegmentPartNotesArgs,
-				UISegmentPartNotesState,
-				UISegmentPartNotesUpdateProps
-			>(
-				`pub_${PubSub.uiSegmentPartNotes}_${playlistId}`,
-				{ playlistId },
-				setupUISegmentPartNotesPublicationObservers,
-				manipulateUISegmentPartNotesPublicationData,
-				pub,
-				100
-			)
+			await setupNotesPublication(playlistId, pub)
 		} else {
 			logger.warn(`Pub.${CustomCollectionName.UISegmentPartNotes}: Not allowed: "${playlistId}"`)
 		}

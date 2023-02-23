@@ -11,14 +11,9 @@ export interface CustomPublishChanges<T extends { _id: ProtectedString<any> }> {
 }
 
 export class CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
-	#onStop: (() => void) | undefined
 	#isReady = false
 
-	constructor(private _meteorSubscription: Subscription, private _collectionName: CustomCollectionName) {
-		this._meteorSubscription.onStop(() => {
-			if (this.#onStop) this.#onStop()
-		})
-	}
+	constructor(private _meteorSubscription: Subscription, private _collectionName: CustomCollectionName) {}
 
 	get isReady(): boolean {
 		return this.#isReady
@@ -32,7 +27,9 @@ export class CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
 	 * Register a function to be called when the subscriber unsubscribes
 	 */
 	onStop(callback: () => void) {
-		this.#onStop = callback
+		this._meteorSubscription.onStop(() => {
+			callback()
+		})
 	}
 
 	/**

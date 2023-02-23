@@ -61,7 +61,7 @@ import { PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/Pe
 import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
-import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
+import { CustomCollectionName, meteorSubscribe, PubSub } from '../../lib/api/pubsub'
 import {
 	RundownLayoutType,
 	RundownLayoutBase,
@@ -118,7 +118,7 @@ import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studi
 import { SegmentListContainer } from './SegmentList/SegmentListContainer'
 import { getNextMode as getNextSegmentViewMode } from './SegmentContainer/SwitchViewModeButton'
 import { IProps as IResolvedSegmentProps } from './SegmentContainer/withResolvedSegment'
-import { UIShowStyleBases, UIStudios } from './Collections'
+import { UISegmentPartNotes, UIShowStyleBases, UIStudios } from './Collections'
 import { UIStudio } from '../../lib/api/studios'
 import {
 	PartId,
@@ -141,6 +141,7 @@ import {
 } from '../collections'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
+import { subscribeIntoMongoCollection, trpcClient } from '../lib/trpcClient'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -1544,10 +1545,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		componentDidMount() {
 			const playlistId = this.props.rundownPlaylistId
 
+			// TODO - handle unsubscribe when appropriate
+			trpcClient.partNotes.subscribe(unprotectString(playlistId), subscribeIntoMongoCollection(UISegmentPartNotes))
+
 			this.subscribe(PubSub.rundownPlaylists, {
 				_id: playlistId,
 			})
-			this.subscribe(PubSub.uiSegmentPartNotes, playlistId)
+			// this.subscribe(PubSub.uiSegmentPartNotes, playlistId)
 			this.subscribe(PubSub.uiPieceContentStatuses, playlistId)
 			this.subscribe(PubSub.rundowns, [playlistId], null)
 			this.autorun(() => {
