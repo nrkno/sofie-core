@@ -177,16 +177,6 @@ const appRouter = router({
 		})
 	}),
 
-	hello: publicProcedure
-		.input((val: unknown) => {
-			if (typeof val === 'string') return val
-			throw new Error(`Invalid input: ${typeof val}`)
-		})
-		.query((req) => {
-			const input = req.input
-
-			return { echo: input }
-		}),
 	take: publicProcedure
 		.input(
 			z.object({
@@ -199,6 +189,7 @@ const appRouter = router({
 		.mutation(
 			// TODO - should this use Meteor.bindEnvironment? that breaks the return type..
 			async (req) => {
+				console.log('TRPC TAKE')
 				const args = req.input
 				const rundownPlaylistId = protectString<RundownPlaylistId>(args.rundownPlaylistId)
 				const fromPartInstanceId = protectString<PartInstanceId>(args.fromPartInstanceId)

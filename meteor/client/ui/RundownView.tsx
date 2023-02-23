@@ -503,8 +503,19 @@ const RundownHeader = withTranslation()(
 						},
 					})
 				} else {
-					doUserAction(t, e, UserAction.TAKE, (e, ts) =>
-						MeteorCall.userAction.take(e, ts, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+					doUserAction(
+						t,
+						e,
+						UserAction.TAKE,
+						(e, ts) =>
+							// TODO - error handling
+							trpcClient.take.mutate({
+								userEvent: e as any,
+								eventTime: ts,
+								rundownPlaylistId: unprotectString(this.props.playlist._id),
+								fromPartInstanceId: unprotectString(this.props.playlist.currentPartInstanceId),
+							})
+						// MeteorCall.userAction.take(e, ts, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
 					)
 				}
 			}
@@ -2049,8 +2060,19 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						if (!err && take && this.props.playlist) {
 							const playlistId = this.props.playlist._id
 							const currentPartInstanceId = this.props.playlist.currentPartInstanceId
-							doUserAction(t, e, UserAction.TAKE, (e, ts) =>
-								MeteorCall.userAction.take(e, ts, playlistId, currentPartInstanceId)
+							doUserAction(
+								t,
+								e,
+								UserAction.TAKE,
+								(e, ts) =>
+									// TODO - error handling
+									trpcClient.take.mutate({
+										userEvent: e as any,
+										eventTime: ts,
+										rundownPlaylistId: unprotectString(playlistId),
+										fromPartInstanceId: unprotectString(currentPartInstanceId),
+									})
+								// MeteorCall.userAction.take(e, ts, playlistId, currentPartInstanceId)
 							)
 						}
 					}
