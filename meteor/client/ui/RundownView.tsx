@@ -61,7 +61,7 @@ import { PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/Pe
 import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
-import { CustomCollectionName, meteorSubscribe, PubSub } from '../../lib/api/pubsub'
+import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
 import {
 	RundownLayoutType,
 	RundownLayoutBase,
@@ -510,10 +510,10 @@ const RundownHeader = withTranslation()(
 						(e, ts) =>
 							// TODO - error handling
 							trpcClient.take.mutate({
-								userEvent: e as any,
+								userEvent: e,
 								eventTime: ts,
-								rundownPlaylistId: unprotectString(this.props.playlist._id),
-								fromPartInstanceId: unprotectString(this.props.playlist.currentPartInstanceId),
+								rundownPlaylistId: this.props.playlist._id,
+								fromPartInstanceId: this.props.playlist.currentPartInstanceId,
 							})
 						// MeteorCall.userAction.take(e, ts, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
 					)
@@ -2067,10 +2067,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								(e, ts) =>
 									// TODO - error handling
 									trpcClient.take.mutate({
-										userEvent: e as any,
+										userEvent: e,
 										eventTime: ts,
-										rundownPlaylistId: unprotectString(playlistId),
-										fromPartInstanceId: unprotectString(currentPartInstanceId),
+										rundownPlaylistId: playlistId,
+										fromPartInstanceId: currentPartInstanceId,
 									})
 								// MeteorCall.userAction.take(e, ts, playlistId, currentPartInstanceId)
 							)

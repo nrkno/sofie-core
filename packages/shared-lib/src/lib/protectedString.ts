@@ -39,7 +39,7 @@ export function unDeepString<T extends ProtectedString<any>>(str: ReadonlyDeep<T
 	return str as T
 }
 /** Used on protectedStrings instead of _.isString or typeof x === 'string' */
-export function isProtectedString(str: unknown): str is ProtectedString<any> {
+export function isProtectedString<T extends ProtectedString<any> = ProtectedString<any>>(str: unknown): str is T {
 	return typeof str === 'string'
 }
 export type ProtectId<T extends { _id: string }> = Omit<T, '_id'> & { _id: ProtectedString<any> }

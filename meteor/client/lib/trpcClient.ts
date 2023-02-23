@@ -83,7 +83,7 @@ export function subscribeIntoMongoCollection<TDoc extends { _id: ProtectedString
 
 						break
 					case 'update': {
-						rawCollection._collection.update(data.id, data.fields)
+						rawCollection._collection.update(data.id, { $set: data.fields })
 						break
 					}
 					default:

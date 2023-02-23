@@ -1,4 +1,4 @@
-import { Meteor, Subscription } from 'meteor/meteor'
+import { Meteor } from 'meteor/meteor'
 import { WebApp } from 'meteor/webapp'
 import { inferAsyncReturnType, initTRPC } from '@trpc/server'
 // import { createHTTPServer } from '@trpc/server/adapters/standalone'
@@ -9,7 +9,7 @@ import { check } from 'meteor/check'
 import { ServerClientAPI } from '../../../server/api/client'
 import { triggerWriteAccess } from '../../../server/security/lib/securityVerify'
 import { RundownPlaylists } from '../../collections/libCollections'
-import { getCurrentTime, getRandomString, ProtectedString, protectString } from '../../lib'
+import { getCurrentTime, getRandomString, isProtectedString, ProtectedString, protectString } from '../../lib'
 import { z } from 'zod'
 import ws from 'ws'
 import { RundownPlaylistId, PartInstanceId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -17,9 +17,8 @@ import { MethodContextAPI } from '../methods'
 import { ResolveOptions } from '@trpc/server/dist/core/internals/utils'
 import { observable, Observer } from '@trpc/server/observable'
 import { setupNotesPublication } from '../../../server/publications/segmentPartNotesUI/publication'
-import { CustomPublish, CustomPublishChanges, MeteorCustomPublish } from '../../../server/lib/customPublication'
+import { CustomPublish, CustomPublishChanges } from '../../../server/lib/customPublication'
 import { UISegmentPartNote } from '../rundownNotifications'
-import { CustomCollectionName } from '../pubsub'
 import { applyWSSHandler, CreateWSSContextFnOptions } from '@trpc/server/adapters/ws'
 
 // created for each request
@@ -179,37 +178,57 @@ const appRouter = router({
 
 	take: publicProcedure
 		.input(
-			z.object({
-				userEvent: z.string(),
-				eventTime: z.number(),
-				rundownPlaylistId: z.string(),
-				fromPartInstanceId: z.string().nullable(),
-			})
+			(val: unknown) => {
+				if (typeof val !== 'object' || !val) throw new Error('Invalid input, expected object')
+
+				const userEvent = val['userEvent']
+				if (typeof userEvent !== 'string') throw new Error(`Invalid userEvent: ${typeof userEvent}`)
+				const eventTime = val['eventTime']
+				if (typeof eventTime !== 'number') throw new Error(`Invalid eventTime: ${typeof eventTime}`)
+				const rundownPlaylistId = val['rundownPlaylistId']
+				if (!isProtectedString<RundownPlaylistId>(rundownPlaylistId))
+					throw new Error(`Invalid userEvent: ${typeof userEvent}`)
+				const fromPartInstanceId: PartInstanceId | null = val['fromPartInstanceId']
+				if (fromPartInstanceId !== null && !isProtectedString<PartInstanceId>(fromPartInstanceId))
+					throw new Error(`Invalid userEvent: ${typeof userEvent}`)
+
+				return {
+					userEvent,
+					eventTime,
+					rundownPlaylistId,
+					fromPartInstanceId,
+				}
+			}
+			// TODO: this would be nice, but needs ProtectedStrings
+			// z.object({
+			// 	userEvent: z.string(),
+			// 	eventTime: z.number(),
+			// 	rundownPlaylistId: z.string(),
+			// 	fromPartInstanceId: z.string().nullable(),
+			// })
 		)
 		.mutation(
 			// TODO - should this use Meteor.bindEnvironment? that breaks the return type..
 			async (req) => {
 				console.log('TRPC TAKE')
 				const args = req.input
-				const rundownPlaylistId = protectString<RundownPlaylistId>(args.rundownPlaylistId)
-				const fromPartInstanceId = protectString<PartInstanceId>(args.fromPartInstanceId)
 
 				triggerWriteAccess()
-				const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
-				if (!rundownPlaylist) throw new Error(`Rundown playlist ${rundownPlaylistId} does not exist`)
+				const rundownPlaylist = RundownPlaylists.findOne(args.rundownPlaylistId)
+				if (!rundownPlaylist) throw new Error(`Rundown playlist ${args.rundownPlaylistId} does not exist`)
 
 				return await ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 					getMethodContext(makeConnection(req)),
 					args.userEvent,
 					getCurrentTime(),
-					rundownPlaylistId,
+					args.rundownPlaylistId,
 					() => {
-						check(rundownPlaylistId, String)
+						check(args.rundownPlaylistId, String)
 					},
 					StudioJobs.TakeNextPart,
 					{
-						playlistId: rundownPlaylistId,
-						fromPartInstanceId: fromPartInstanceId ?? rundownPlaylist.currentPartInstanceId,
+						playlistId: args.rundownPlaylistId,
+						fromPartInstanceId: args.fromPartInstanceId ?? rundownPlaylist.currentPartInstanceId,
 					}
 				)
 			}
