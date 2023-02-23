@@ -14,12 +14,19 @@ export interface NewClientAPI {
 		functionName: string,
 		...args: any[]
 	): Promise<any>
+	callBackgroundPeripheralDeviceFunction(
+		deviceId: PeripheralDeviceId,
+		timeoutTime: number | undefined,
+		functionName: string,
+		...args: any[]
+	): Promise<any>
 }
 
 export enum ClientAPIMethods {
 	'clientErrorReport' = 'client.clientErrorReport',
 	'clientLogNotification' = 'client.clientLogNotification',
 	'callPeripheralDeviceFunction' = 'client.callPeripheralDeviceFunction',
+	'callBackgroundPeripheralDeviceFunction' = 'client.callBackgroundPeripheralDeviceFunction',
 }
 
 export namespace ClientAPI {

@@ -366,6 +366,48 @@ export namespace ServerClientAPI {
 				return Promise.reject(err)
 			})
 	}
+
+	export async function callBackgroundPeripheralDeviceFunction(
+		methodContext: MethodContext,
+		deviceId: PeripheralDeviceId,
+		timeoutTime: number | undefined,
+		functionName: string,
+		...args: any[]
+	): Promise<any> {
+		check(deviceId, String)
+		check(functionName, String)
+
+		logger.debug(`Calling "${deviceId}" with "${functionName}", ${JSON.stringify(args)}`)
+
+		if (!methodContext.connection) {
+			// In this case, it was called internally from server-side.
+			// Just run and return right away:
+			triggerWriteAccessBecauseNoCheckNecessary()
+			return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+				deviceId,
+				timeoutTime,
+				functionName,
+				...args
+			).catch(async (e) => {
+				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
+				logger.error(errMsg)
+				// allow the exception to be handled by the Client code
+				return Promise.reject(e)
+			})
+		}
+
+		void PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
+
+		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, functionName, ...args).catch(
+			async (err) => {
+				const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
+				logger.error(errMsg)
+				// allow the exception to be handled by the Client code
+				return Promise.reject(err)
+			}
+		)
+	}
+
 	function getLoggedInCredentials(methodContext: MethodContext): BasicAccessContext {
 		let userId: UserId | null = null
 		let organizationId: OrganizationId | null = null
@@ -421,6 +463,30 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 		return ServerClientAPI.callPeripheralDeviceFunction(
 			methodContext,
 			context,
+			deviceId,
+			timeoutTime,
+			functionName,
+			...args
+		)
+	}
+	async callBackgroundPeripheralDeviceFunction(
+		deviceId: PeripheralDeviceId,
+		timeoutTime: number | undefined,
+		functionName: string,
+		...args: any[]
+	): Promise<any> {
+		const methodContext: MethodContext = this // eslint-disable-line @typescript-eslint/no-this-alias
+		if (!Settings.enableUserAccounts) {
+			// Note: This is a temporary hack to keep backwards compatibility.
+			// in the case of not enableUserAccounts, a token is needed, but not provided when called from client
+			const device = PeripheralDevices.findOne(deviceId)
+			if (device) {
+				// @ts-ignore hack
+				methodContext.token = device.token
+			}
+		}
+		return ServerClientAPI.callBackgroundPeripheralDeviceFunction(
+			methodContext,
 			deviceId,
 			timeoutTime,
 			functionName,

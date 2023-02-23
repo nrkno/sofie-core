@@ -29,7 +29,7 @@ export const DevicePackageManagerSettings: React.FC<IDevicePackageManagerSetting
 
 				// TODO: this now logs as a user-action, which Johan doesn't like
 				MeteorCall.client
-					.callPeripheralDeviceFunction(e, this.props.deviceId, 1000, 'getExpetationManagerStatus')
+					.callBackgroundPeripheralDeviceFunction(this.props.deviceId, 1000, 'getExpetationManagerStatus')
 					.then((result: Status) => {
 						reloadingNow.current = false
 
