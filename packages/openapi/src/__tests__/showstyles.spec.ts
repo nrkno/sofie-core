@@ -1,5 +1,5 @@
 // eslint-disable-next-line node/no-missing-import
-import { Configuration, ShowstylesApi } from '../../client/ts'
+import { Configuration, ShowStyleBase, ShowstylesApi } from '../../client/ts'
 import { checkServer } from '../checkServer'
 import Logging from '../httpLogging'
 
@@ -9,7 +9,7 @@ const testServer = process.env.SERVER_TYPE === 'TEST'
 describe('Network client', () => {
 	const config = new Configuration({
 		basePath: process.env.ACTIONS_URL,
-		middleware: httpLogging ? [new Logging()] : [],
+		middleware: [new Logging(httpLogging)],
 	})
 
 	beforeAll(async () => await checkServer(config))
@@ -24,25 +24,7 @@ describe('Network client', () => {
 		showStyles.result.forEach((id) => showStyleBaseIds.push(id))
 	})
 
-	if (testServer) {
-		test('can add a ShowStyleBase', async () => {
-			const showStyle = await showStylesApi.addShowStyleBase({
-				addShowStyleBaseRequest: {
-					showStyleBase: {
-						name: 'SSB',
-						blueprintId: '',
-						outputLayers: [],
-						sourceLayers: [],
-						config: {},
-					},
-				},
-			})
-			expect(showStyle.success).toBe(200)
-		})
-	} else {
-		test.todo('todo - can add a ShowStyleBase')
-	}
-
+	let showStyleBase: ShowStyleBase | undefined
 	test('can request a ShowStyleBase by id', async () => {
 		const showStyle = await showStylesApi.showStyleBase({
 			showStyleBaseId: showStyleBaseIds[0],
@@ -54,9 +36,21 @@ describe('Network client', () => {
 		expect(showStyle.result).toHaveProperty('outputLayers')
 		expect(showStyle.result).toHaveProperty('sourceLayers')
 		expect(showStyle.result).toHaveProperty('config')
+		showStyleBase = showStyle.result
 	})
 
 	if (testServer) {
+		test('can add a ShowStyleBase', async () => {
+			const newShowStyleBase = { ...showStyleBase }
+			newShowStyleBase.name = showStyleBase.name + 'added'
+			const showStyle = await showStylesApi.addShowStyleBase({
+				addShowStyleBaseRequest: {
+					showStyleBase: newShowStyleBase,
+				},
+			})
+			expect(showStyle.success).toBe(200)
+		})
+
 		test('can update a ShowStyleBase', async () => {
 			const showStyle = await showStylesApi.addOrUpdateShowStyleBase({
 				showStyleBaseId: 'SSB0',

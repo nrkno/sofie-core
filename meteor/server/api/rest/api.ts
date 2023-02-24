@@ -102,6 +102,14 @@ class ServerRestAPI implements RestAPI {
 
 		return ClientAPI.responseSuccess({ version: CURRENT_SYSTEM_VERSION })
 	}
+
+	async getAllRundownPlaylists(
+		_connection: Meteor.Connection,
+		_event: string
+	): Promise<ClientAPI.ClientResponse<string[]>> {
+		return ClientAPI.responseSuccess(RundownPlaylists.find().map((rundownPlaylist) => unprotectString(rundownPlaylist._id)))
+	}
+
 	async activate(
 		connection: Meteor.Connection,
 		event: string,
@@ -983,13 +991,18 @@ koaRouter.get('/', async (ctx, next) => {
 	await next()
 })
 
+sofieAPIRequest<never, never, string[]>('get', '/playlists', async (serverAPI, connection, event, _params, _body) => {
+	logger.info(`koa GET: playlists`)
+	return await serverAPI.getAllRundownPlaylists(connection, event)
+})
+
 sofieAPIRequest<{ playlistId: string }, { rehearsal: boolean }, void>(
-	'post',
+	'put',
 	'/playlists/:playlistId/activate',
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const rehearsal = body.rehearsal
-		logger.info(`koa POST: activate ${rundownPlaylistId} - ${rehearsal ? 'rehearsal' : 'live'}`)
+		logger.info(`koa PUT: activate ${rundownPlaylistId} - ${rehearsal ? 'rehearsal' : 'live'}`)
 
 		check(rundownPlaylistId, String)
 		return await serverAPI.activate(connection, event, rundownPlaylistId, rehearsal)
@@ -997,11 +1010,11 @@ sofieAPIRequest<{ playlistId: string }, { rehearsal: boolean }, void>(
 )
 
 sofieAPIRequest<{ playlistId: string }, never, void>(
-	'post',
+	'put',
 	'/playlists/:playlistId/deactivate',
 	async (serverAPI, connection, event, params, _) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
-		logger.info(`koa POST: deactivate ${rundownPlaylistId}`)
+		logger.info(`koa PUT: deactivate ${rundownPlaylistId}`)
 
 		check(rundownPlaylistId, String)
 		return await serverAPI.deactivate(connection, event, rundownPlaylistId)
@@ -1009,7 +1022,7 @@ sofieAPIRequest<{ playlistId: string }, never, void>(
 )
 
 sofieAPIRequest<{ playlistId: string }, { adLibId: string; actionType?: string }, object>(
-	'post',
+	'put',
 	'/playlists/:playlistId/executeAdLib',
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
@@ -1018,7 +1031,7 @@ sofieAPIRequest<{ playlistId: string }, { adLibId: string; actionType?: string }
 		)
 		const actionTypeObj = body
 		const triggerMode = actionTypeObj ? (actionTypeObj as { actionType: string }).actionType : undefined
-		logger.info(`koa POST: executeAdLib ${rundownPlaylistId} ${adLibId} - triggerMode: ${triggerMode}`)
+		logger.info(`koa PUT: executeAdLib ${rundownPlaylistId} ${adLibId} - triggerMode: ${triggerMode}`)
 
 		check(adLibId, String)
 		check(rundownPlaylistId, String)
@@ -1028,12 +1041,12 @@ sofieAPIRequest<{ playlistId: string }, { adLibId: string; actionType?: string }
 )
 
 sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
-	'post',
+	'put',
 	'/playlists/:playlistId/moveNextPart',
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const delta = body.delta
-		logger.info(`koa POST: moveNextPart ${rundownPlaylistId} ${delta}`)
+		logger.info(`koa PUT: moveNextPart ${rundownPlaylistId} ${delta}`)
 
 		check(rundownPlaylistId, String)
 		check(delta, Number)
@@ -1042,12 +1055,12 @@ sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
 )
 
 sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
-	'post',
+	'put',
 	'/playlists/:playlistId/moveNextSegment',
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const delta = body.delta
-		logger.info(`koa POST: moveNextSegment ${rundownPlaylistId} ${delta}`)
+		logger.info(`koa PUT: moveNextSegment ${rundownPlaylistId} ${delta}`)
 
 		check(rundownPlaylistId, String)
 		check(delta, Number)
@@ -1056,11 +1069,11 @@ sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
 )
 
 sofieAPIRequest<{ playlistId: string }, never, object>(
-	'post',
+	'put',
 	'/playlists/:playlistId/reloadPlaylist',
 	async (serverAPI, connection, event, params, _) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
-		logger.info(`koa POST: reloadPlaylist ${rundownPlaylistId}`)
+		logger.info(`koa PUT: reloadPlaylist ${rundownPlaylistId}`)
 
 		check(rundownPlaylistId, String)
 		return await serverAPI.reloadPlaylist(connection, event, rundownPlaylistId)
@@ -1068,11 +1081,11 @@ sofieAPIRequest<{ playlistId: string }, never, object>(
 )
 
 sofieAPIRequest<{ playlistId: string }, never, void>(
-	'post',
+	'put',
 	'/playlists/:playlistId/resetPlaylist',
 	async (serverAPI, connection, event, params, _) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
-		logger.info(`koa POST: resetPlaylist ${rundownPlaylistId}`)
+		logger.info(`koa PUT: resetPlaylist ${rundownPlaylistId}`)
 
 		check(rundownPlaylistId, String)
 		return await serverAPI.resetPlaylist(connection, event, rundownPlaylistId)
@@ -1080,12 +1093,12 @@ sofieAPIRequest<{ playlistId: string }, never, void>(
 )
 
 sofieAPIRequest<{ playlistId: string }, { partId: string }, void>(
-	'post',
+	'put',
 	'/playlists/:playlistId/setNextPart',
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const partId = protectString<PartId>(body.partId)
-		logger.info(`koa POST: setNextPart ${rundownPlaylistId} ${partId}`)
+		logger.info(`koa PUT: setNextPart ${rundownPlaylistId} ${partId}`)
 
 		check(rundownPlaylistId, String)
 		check(partId, String)
@@ -1094,12 +1107,12 @@ sofieAPIRequest<{ playlistId: string }, { partId: string }, void>(
 )
 
 sofieAPIRequest<{ playlistId: string }, { segmentId: string }, void>(
-	'post',
+	'put',
 	'/playlists/:playlistId/setNextSegment',
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const segmentId = protectString<SegmentId>(body.segmentId)
-		logger.info(`koa POST: setNextSegment ${rundownPlaylistId} ${segmentId}`)
+		logger.info(`koa PUT: setNextSegment ${rundownPlaylistId} ${segmentId}`)
 
 		check(rundownPlaylistId, String)
 		check(segmentId, String)
@@ -1108,12 +1121,12 @@ sofieAPIRequest<{ playlistId: string }, { segmentId: string }, void>(
 )
 
 sofieAPIRequest<{ playlistId: string }, { fromPartInstanceId?: string }, void>(
-	'post',
+	'put',
 	'/playlists/:playlistId/take',
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const fromPartInstanceId = body.fromPartInstanceId
-		logger.info(`koa POST: take ${rundownPlaylistId}`)
+		logger.info(`koa PUT: take ${rundownPlaylistId}`)
 
 		check(rundownPlaylistId, String)
 		check(fromPartInstanceId, Match.Optional(String))
@@ -1122,13 +1135,13 @@ sofieAPIRequest<{ playlistId: string }, { fromPartInstanceId?: string }, void>(
 )
 
 sofieAPIRequest<{ studioId: string }, { routeSetId: string; active: boolean }, void>(
-	'post',
+	'put',
 	'/studios/:studioId/switchRouteSet',
 	async (serverAPI, connection, event, params, body) => {
 		const studioId = protectString<StudioId>(params.studioId)
 		const routeSetId = body.routeSetId
 		const active = body.active
-		logger.info(`koa POST: switchRouteSet ${studioId} ${routeSetId} ${active}`)
+		logger.info(`koa PUT: switchRouteSet ${studioId} ${routeSetId} ${active}`)
 
 		check(studioId, String)
 		check(routeSetId, String)

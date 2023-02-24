@@ -30,6 +30,8 @@ paths:
   /blueprints/{blueprintId}:
     $ref: 'definitions/blueprints.yaml#/resources/blueprint'
   # playlist operations
+  /playlists:
+    $ref: 'definitions/playlists.yaml#/resources/playlists'
   /playlists/{playlistId}/activate:
     $ref: 'definitions/playlists.yaml#/resources/activate'
   /playlists/{playlistId}/deactivate:

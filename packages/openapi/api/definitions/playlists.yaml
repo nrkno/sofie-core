@@ -1,6 +1,30 @@
 title: playlists
 description: Definitions for playlists API
 resources:
+  playlists:
+    get:
+      operationId: playlists
+      tags:
+        - playlists
+      summary: Returns all playlists available in Sofie.
+      responses:
+        200:
+          description: Command successfully handled - returns an array of playlist Ids.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: number
+                    example: 200
+                  result:
+                    type: array
+                    items:
+                      type: string
+                    example: ['OKAgZmZ0Buc99lE_2uPPSKVbMrQ_']
+        500:
+          $ref: '#/components/responses/internalServerError'
   activate:
     put:
       operationId: activate

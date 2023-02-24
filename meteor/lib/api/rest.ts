@@ -40,6 +40,12 @@ export interface RestAPI {
 	 */
 	index(): Promise<ClientAPI.ClientResponse<{ version: string }>>
 	/**
+	 * Gets all available RundownPlaylists.
+	 * @param connection Connection data including client and header details
+	 * @param event User event string
+	 */
+	getAllRundownPlaylists(connection: Meteor.Connection, event: string): Promise<ClientAPI.ClientResponse<string[]>>
+	/**
 	 * Activates a Playlist.
 	 *
 	 * Throws if there is already an active Playlist for the studio that the Playlist belongs to.

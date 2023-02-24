@@ -10,7 +10,7 @@ describe('Network client', () => {
 	if (testServer) {
 		const config = new Configuration({
 			basePath: process.env.ACTIONS_URL,
-			middleware: httpLogging ? [new Logging()] : [],
+			middleware: [new Logging(httpLogging)],
 		})
 
 		beforeAll(async () => await checkServer(config))

@@ -9,7 +9,7 @@ const testServer = process.env.SERVER_TYPE === 'TEST'
 describe('Network client', () => {
 	const config = new Configuration({
 		basePath: process.env.ACTIONS_URL,
-		middleware: httpLogging ? [new Logging()] : [],
+		middleware: [new Logging(httpLogging)],
 	})
 
 	beforeAll(async () => await checkServer(config))
