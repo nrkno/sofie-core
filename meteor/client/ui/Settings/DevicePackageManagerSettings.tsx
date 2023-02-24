@@ -22,14 +22,14 @@ export const DevicePackageManagerSettings: React.FC<IDevicePackageManagerSetting
 		const [status, setStatus] = useState<Status | undefined>(undefined)
 
 		const reloadStatus = useCallback(
-			(e: string, silent: boolean = false) => {
+			(silent: boolean = false) => {
 				if (reloadingNow.current) return // if there is a method currently being executed, skip
 
 				reloadingNow.current = true
 
 				// TODO: this now logs as a user-action, which Johan doesn't like
 				MeteorCall.client
-					.callBackgroundPeripheralDeviceFunction(this.props.deviceId, 1000, 'getExpetationManagerStatus')
+					.callBackgroundPeripheralDeviceFunction(deviceId, 1000, 'getExpetationManagerStatus')
 					.then((result: Status) => {
 						reloadingNow.current = false
 
@@ -47,6 +47,8 @@ export const DevicePackageManagerSettings: React.FC<IDevicePackageManagerSetting
 									// Do nothing
 								},
 							})
+						} else {
+							console.log(error)
 						}
 					})
 			},
@@ -55,8 +57,8 @@ export const DevicePackageManagerSettings: React.FC<IDevicePackageManagerSetting
 
 		useEffect(() => {
 			const reloadInterval = Meteor.setInterval(() => {
-				if (this.props.device) {
-					reloadStatus('Status Auto-Refresh', true)
+				if (deviceId) {
+					reloadStatus(true)
 				}
 			}, 1000)
 
@@ -66,12 +68,10 @@ export const DevicePackageManagerSettings: React.FC<IDevicePackageManagerSetting
 		}, [reloadStatus])
 
 		function killApp(e: string, appId: string) {
-			const { t } = this.props
-
 			MeteorCall.client
-				.callPeripheralDeviceFunction(e, this.props.deviceId, 1000, 'debugKillApp', appId)
+				.callPeripheralDeviceFunction(e, deviceId, 1000, 'debugKillApp', appId)
 				.then(() => {
-					this.reloadStatus(true)
+					reloadStatus()
 				})
 				.catch((error) => {
 					doModalDialog({
@@ -96,7 +96,7 @@ export const DevicePackageManagerSettings: React.FC<IDevicePackageManagerSetting
 				</div>
 				<div className="row">
 					<div className="col c12 rl-c6">
-						<button className="btn btn-secondary btn-tight" onClick={(e) => reloadStatus(eventContextForLog(e)[0])}>
+						<button className="btn btn-secondary btn-tight" onClick={() => reloadStatus()}>
 							{t('Reload statuses')}
 						</button>
 					</div>
