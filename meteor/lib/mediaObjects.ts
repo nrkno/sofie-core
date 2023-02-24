@@ -520,7 +520,6 @@ function getPackageWarningMessage(
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
 			message: generateTranslation('{{reason}} Clip exists, but is not yet ready on the playout system.', {
-				sourceLayer: sourceLayer.name,
 				reason: ((packageOnPackageContainer?.status.statusReason.user || 'N/A') + '.').replace(/\.\.$/, '.'), // remove any trailing double "."
 			}),
 		}
@@ -530,9 +529,7 @@ function getPackageWarningMessage(
 	) {
 		return {
 			status: PieceStatusCode.OK,
-			message: generateTranslation('Clip is transferring to the the playout system', {
-				sourceLayer: sourceLayer.name,
-			}),
+			message: generateTranslation('Clip is transferring to the the playout system'),
 		}
 	} else if (
 		packageOnPackageContainer.status.status ===
@@ -540,9 +537,7 @@ function getPackageWarningMessage(
 	) {
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation('Clip is transferring to the the playout system but cannot be played yet', {
-				sourceLayer: sourceLayer.name,
-			}),
+			message: generateTranslation('Clip is transferring to the the playout system but cannot be played yet'),
 		}
 	} else if (
 		packageOnPackageContainer.status.status === ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.READY
