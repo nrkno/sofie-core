@@ -22,6 +22,7 @@ jest.mock('../util')
 type TgetOrderedPartsAfterPlayhead = jest.MockedFunction<typeof getOrderedPartsAfterPlayhead>
 import { getOrderedPartsAfterPlayhead, PartAndPieces, PartInstanceAndPieceInstances } from '../util'
 import { LookaheadTimelineObject } from '../findObjects'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 const getOrderedPartsAfterPlayheadMock = getOrderedPartsAfterPlayhead as TgetOrderedPartsAfterPlayhead
 
 describe('Lookahead', () => {
@@ -50,7 +51,7 @@ describe('Lookahead', () => {
 		}
 		context.setStudio({
 			...context.studio,
-			mappings: mappings,
+			mappingsWithOverrides: wrapDefaultObject(mappings),
 		})
 
 		// Create a playlist with some parts
@@ -220,8 +221,8 @@ describe('Lookahead', () => {
 		// Set really low
 		{
 			const studio = clone<DBStudio>(context.studio)
-			studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = 0
-			studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = 0
+			studio.mappingsWithOverrides.defaults['WHEN_CLEAR'].lookaheadMaxSearchDistance = 0
+			studio.mappingsWithOverrides.defaults['PRELOAD'].lookaheadMaxSearchDistance = 0
 			context.setStudio(studio)
 		}
 		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
@@ -234,8 +235,8 @@ describe('Lookahead', () => {
 		getOrderedPartsAfterPlayheadMock.mockClear()
 		{
 			const studio = clone<DBStudio>(context.studio)
-			studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = -1
-			studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = 2000
+			studio.mappingsWithOverrides.defaults['WHEN_CLEAR'].lookaheadMaxSearchDistance = -1
+			studio.mappingsWithOverrides.defaults['PRELOAD'].lookaheadMaxSearchDistance = 2000
 			context.setStudio(studio)
 		}
 		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
@@ -248,8 +249,8 @@ describe('Lookahead', () => {
 		getOrderedPartsAfterPlayheadMock.mockClear()
 		{
 			const studio = clone<DBStudio>(context.studio)
-			studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = undefined
-			studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = -1
+			studio.mappingsWithOverrides.defaults['WHEN_CLEAR'].lookaheadMaxSearchDistance = undefined
+			studio.mappingsWithOverrides.defaults['PRELOAD'].lookaheadMaxSearchDistance = -1
 			context.setStudio(studio)
 		}
 		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>

@@ -1,9 +1,6 @@
-import { RundownId } from '../collections/Rundowns'
 import { PartNote, SegmentNote, RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
-import { PieceId, PieceStatusCode } from '../collections/Pieces'
-import { PartId } from '../collections/Parts'
-import { SegmentId } from '../collections/Segments'
-import { RundownPlaylistId } from '../collections/RundownPlaylists'
+import { PieceStatusCode } from '../collections/Pieces'
+import { PartId, PieceId, RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface IMediaObjectIssue {
 	segmentRank: number

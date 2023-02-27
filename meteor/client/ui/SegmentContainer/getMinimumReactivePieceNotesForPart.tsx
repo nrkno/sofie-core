@@ -1,16 +1,15 @@
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
 import { Part } from '../../../lib/collections/Parts'
 import { Piece, Pieces, PieceStatusCode } from '../../../lib/collections/Pieces'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { Studio } from '../../../lib/collections/Studios'
-import { normalizeArray } from '../../../lib/lib'
 import { checkPieceContentStatus, getNoteSeverityForPieceStatus } from '../../../lib/mediaObjects'
 import { getIgnorePieceContentStatus } from '../../lib/localStorage'
 
 export function getMinimumReactivePieceNotesForPart(
-	studio: Studio,
-	showStyleBase: ShowStyleBase,
+	studio: UIStudio,
+	showStyleBase: UIShowStyleBase,
 	part: Part
 ): PartNote[] {
 	const notes: Array<PartNote> = []
@@ -31,7 +30,7 @@ export function getMinimumReactivePieceNotesForPart(
 		}
 	).fetch() as Array<Pick<Piece, '_id' | 'name' | 'sourceLayerId' | 'content' | 'expectedPackages'>>
 
-	const sourceLayerMap = showStyleBase && normalizeArray(showStyleBase.sourceLayers, '_id')
+	const sourceLayerMap = showStyleBase && showStyleBase.sourceLayers
 	for (const piece of pieces) {
 		// TODO: check statuses (like media availability) here
 

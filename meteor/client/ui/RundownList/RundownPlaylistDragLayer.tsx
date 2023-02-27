@@ -3,9 +3,9 @@ import { DragLayer, DragLayerMonitor } from 'react-dnd'
 import { IRundownDragObject, RundownListDragDropTypes } from './DragAndDropTypes'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import RundownListItemView from './RundownListItemView'
-import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
 import { getElementWidth } from '../../utils/dimensions'
 import { HTML_ID_PREFIX } from './RundownListItem'
+import { UIShowStyleBases } from '../Collections'
 
 const layerStyles: React.CSSProperties = {
 	position: 'fixed',
@@ -43,7 +43,7 @@ function RundownPlaylistDragLayer(props) {
 		switch (type) {
 			case RundownListDragDropTypes.RUNDOWN: {
 				const rundown = Rundowns.findOne(item.id)
-				const showStyle = ShowStyleBases.findOne(rundown?.showStyleBaseId)
+				const showStyle = rundown ? UIShowStyleBases.findOne(rundown.showStyleBaseId) : undefined
 				const classNames = ['drag-preview'].concat(props.draggedClassNames || [])
 				return (
 					<RundownListItemView

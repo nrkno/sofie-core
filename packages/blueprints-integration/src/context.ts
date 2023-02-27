@@ -1,17 +1,17 @@
-import { Time } from './common'
+import { DatastorePersistenceMode, Time } from './common'
 import { IBlueprintExternalMessageQueueObj } from './message'
 import { PackageInfo } from './packageInfo'
 import {
+	IBlueprintMutatablePart,
 	IBlueprintPart,
 	IBlueprintPartInstance,
 	IBlueprintPiece,
+	IBlueprintPieceDB,
 	IBlueprintPieceInstance,
 	IBlueprintResolvedPieceInstance,
-	IBlueprintMutatablePart,
-	IBlueprintSegmentDB,
-	IBlueprintPieceDB,
-	IBlueprintSegmentRundown,
 	IBlueprintRundownPlaylist,
+	IBlueprintSegmentDB,
+	IBlueprintSegmentRundown,
 } from './rundown'
 import { BlueprintMappings } from './studio'
 import { OnGenerateTimelineObj } from './timeline'
@@ -102,7 +102,7 @@ export interface IPackageInfoContext {
 	 * eg, baseline packages can be accessed when generating the baseline objects, piece/adlib packages can be access when regenerating the segment they are from
 	 */
 	getPackageInfo: (packageId: string) => Readonly<PackageInfo.Any[]>
-	// hackGetMediaObjectDuration: (mediaId: string) => number | undefined // TODOSYNC: rework this, or remove it
+	hackGetMediaObjectDuration: (mediaId: string) => Promise<number | undefined>
 }
 
 export interface IStudioBaselineContext extends IStudioContext, IPackageInfoContext {}
@@ -148,7 +148,22 @@ export interface ISegmentUserContext extends IUserNotesContext, IRundownContext,
 }
 
 /** Actions */
-export interface IActionExecutionContext extends IShowStyleUserContext, IEventContext {
+export interface IDataStoreActionExecutionContext extends IShowStyleUserContext, IEventContext {
+	/**
+	 * Setting a value in the datastore allows us to overwrite parts of a timeline content object with that value
+	 * @param key Key to use when referencing from the timeline object
+	 * @param value Value to overwrite the timeline object's content with
+	 * @param mode In temporary mode the value may be removed when the key is no longer on the timeline
+	 */
+	setTimelineDatastoreValue(key: string, value: any, mode: DatastorePersistenceMode): Promise<void>
+	/** Deletes a previously set value from the datastore */
+	removeTimelineDatastoreValue(key: string): Promise<void>
+}
+
+export interface IActionExecutionContext
+	extends IShowStyleUserContext,
+		IEventContext,
+		IDataStoreActionExecutionContext {
 	/** Data fetching */
 	// getIngestRundown(): IngestRundown // TODO - for which part?
 	/** Get a PartInstance which can be modified */
@@ -217,7 +232,7 @@ export interface IActionExecutionContext extends IShowStyleUserContext, IEventCo
 
 /** Actions */
 export interface ISyncIngestUpdateToPartInstanceContext extends IRundownUserContext {
-	/** Sync a pieceInstance. Inserts the pieceInstance if new, updates if existing. Optionally pass in a mutated Piece, to change the content of the instance */
+	/** Sync a pieceInstance. Inserts the pieceInstance if new, updates if existing. Optionally pass in a mutated Piece, to override the content of the instance */
 	syncPieceInstance(
 		pieceInstanceId: string,
 		mutatedPiece?: Omit<IBlueprintPiece, 'lifespan'>
@@ -225,7 +240,7 @@ export interface ISyncIngestUpdateToPartInstanceContext extends IRundownUserCont
 
 	/** Insert a pieceInstance. Returns id of new PieceInstance. Any timelineObjects will have their ids changed, so are not safe to reference from another piece */
 	insertPieceInstance(piece: IBlueprintPiece): IBlueprintPieceInstance
-	/** Update a piecesInstance */
+	/** Update a pieceInstance */
 	updatePieceInstance(pieceInstanceId: string, piece: Partial<IBlueprintPiece>): IBlueprintPieceInstance
 	/** Remove a pieceInstance */
 	removePieceInstances(...pieceInstanceIds: string[]): string[]
@@ -248,6 +263,9 @@ export interface ISyncIngestUpdateToPartInstanceContext extends IRundownUserCont
 
 	/** Update a partInstance */
 	updatePartInstance(props: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance
+
+	/** Remove the partInstance. This is only valid when `playstatus: 'next'` */
+	removePartInstance(): void
 }
 
 /** Events */
@@ -259,6 +277,7 @@ export interface IEventContext {
 export interface ITimelineEventContext extends IEventContext, IRundownContext {
 	readonly currentPartInstance: Readonly<IBlueprintPartInstance> | undefined
 	readonly nextPartInstance: Readonly<IBlueprintPartInstance> | undefined
+	readonly previousPartInstance: Readonly<IBlueprintPartInstance> | undefined
 
 	/**
 	 * Get the full session id for an ab playback session.

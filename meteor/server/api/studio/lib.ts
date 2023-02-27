@@ -1,5 +1,5 @@
-import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { StudioId } from '../../../lib/collections/Studios'
+import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { protectString } from '../../../lib/lib'
 
 export async function getActiveRundownPlaylistsInStudioFromDb(

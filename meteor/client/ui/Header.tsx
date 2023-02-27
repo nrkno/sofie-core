@@ -54,7 +54,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 		})
 	}
 
-	onToggleNotifications = (e: React.MouseEvent<HTMLButtonElement>, filter: NoticeLevel | undefined) => {
+	onToggleNotifications = (_e: React.MouseEvent<HTMLButtonElement>, filter: NoticeLevel | undefined) => {
 		if (this.state.isNotificationCenterOpen === filter) {
 			filter = undefined
 		}

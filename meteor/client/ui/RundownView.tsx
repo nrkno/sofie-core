@@ -17,13 +17,12 @@ import { NavLink, Route, Prompt } from 'react-router-dom'
 import {
 	RundownPlaylist,
 	RundownPlaylists,
-	RundownPlaylistId,
 	RundownPlaylistCollectionUtil,
 } from '../../lib/collections/RundownPlaylists'
-import { Rundown, Rundowns, RundownHoldState, RundownId } from '../../lib/collections/Rundowns'
-import { DBSegment, Segment, SegmentId } from '../../lib/collections/Segments'
-import { Studio, Studios, StudioRouteSet, DBStudio } from '../../lib/collections/Studios'
-import { Part, PartId, Parts } from '../../lib/collections/Parts'
+import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
+import { DBSegment, Segment } from '../../lib/collections/Segments'
+import { StudioRouteSet } from '../../lib/collections/Studios'
+import { Part, Parts } from '../../lib/collections/Parts'
 
 import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 
@@ -54,7 +53,7 @@ import {
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownRightHandControls } from './RundownView/RundownRightHandControls'
-import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { SourceLayers } from '../../lib/collections/ShowStyleBases'
 import { PeripheralDevicesAPI, callPeripheralDeviceFunction } from '../lib/clientAPI'
 import {
 	RONotificationEvent,
@@ -70,12 +69,11 @@ import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../..
 import { doUserAction, UserAction } from '../lib/userAction'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
-import { PubSub } from '../../lib/api/pubsub'
+import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
 import {
 	RundownLayouts,
 	RundownLayoutType,
 	RundownLayoutBase,
-	RundownLayoutId,
 	RundownViewLayout,
 	RundownLayoutShelfBase,
 	RundownLayoutRundownHeader,
@@ -97,6 +95,7 @@ import { PlaylistLoopingHeader } from './RundownView/PlaylistLoopingHeader'
 import { memoizedIsolatedAutorun } from '../lib/reactiveData/reactiveDataHelper'
 import RundownViewEventBus, {
 	ActivateRundownPlaylistEvent,
+	DeactivateRundownPlaylistEvent,
 	IEventContext,
 	MiniShelfQueueAdLibEvent,
 	RundownViewEvents,
@@ -121,9 +120,26 @@ import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/erro
 import { SegmentStoryboardContainer } from './SegmentStoryboard/SegmentStoryboardContainer'
 import { SegmentViewMode } from './SegmentContainer/SegmentViewModes'
 import { UIStateStorage } from '../lib/UIStateStorage'
-import { AdLibPieceUi, AdlibSegmentUi } from '../lib/shelf'
-import { SourceLayerLookup, fetchAndFilter } from './Shelf/AdLibPanel'
+import { AdLibPieceUi, AdlibSegmentUi, ShelfDisplayOptions } from '../lib/shelf'
+import { fetchAndFilter } from './Shelf/AdLibPanel'
 import { matchFilter } from './Shelf/AdLibListView'
+import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studio'
+import { SegmentListContainer } from './SegmentList/SegmentListContainer'
+import { getNextMode as getNextSegmentViewMode } from './SegmentContainer/SwitchViewModeButton'
+import { IProps as IResolvedSegmentProps } from './SegmentContainer/withResolvedSegment'
+import { UIShowStyleBase } from '../../lib/api/showStyles'
+import { UIShowStyleBases, UIStudios } from './Collections'
+import { UIStudio } from '../../lib/api/studios'
+import {
+	PartId,
+	PartInstanceId,
+	RundownId,
+	RundownLayoutId,
+	RundownPlaylistId,
+	SegmentId,
+	ShowStyleBaseId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -306,10 +322,10 @@ const TimingDisplay = withTranslation()(
 
 interface IRundownHeaderProps {
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	showStyleVariant: ShowStyleVariant
 	currentRundown: Rundown | undefined
-	studio: Studio
+	studio: UIStudio
 	rundownIds: RundownId[]
 	firstRundown: Rundown | undefined
 	onActivate?: (isRehearsal: boolean) => void
@@ -346,18 +362,22 @@ const RundownHeader = withTranslation()(
 		}
 		componentDidMount() {
 			RundownViewEventBus.on(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
+			RundownViewEventBus.on(RundownViewEvents.DEACTIVATE_RUNDOWN_PLAYLIST, this.eventDeactivate)
 			RundownViewEventBus.on(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
 			RundownViewEventBus.on(RundownViewEvents.TAKE, this.eventTake)
 			RundownViewEventBus.on(RundownViewEvents.RESET_RUNDOWN_PLAYLIST, this.eventResetRundownPlaylist)
+			RundownViewEventBus.on(RundownViewEvents.CREATE_SNAPSHOT_FOR_DEBUG, this.eventCreateSnapshot)
 
 			reloadRundownPlaylistClick.set(this.reloadRundownPlaylist)
 		}
 
 		componentWillUnmount() {
 			RundownViewEventBus.off(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
+			RundownViewEventBus.off(RundownViewEvents.DEACTIVATE_RUNDOWN_PLAYLIST, this.eventDeactivate)
 			RundownViewEventBus.off(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
 			RundownViewEventBus.off(RundownViewEvents.TAKE, this.eventTake)
 			RundownViewEventBus.off(RundownViewEvents.RESET_RUNDOWN_PLAYLIST, this.eventResetRundownPlaylist)
+			RundownViewEventBus.off(RundownViewEvents.CREATE_SNAPSHOT_FOR_DEBUG, this.eventCreateSnapshot)
 		}
 		eventActivate = (e: ActivateRundownPlaylistEvent) => {
 			if (e.rehearsal) {
@@ -365,6 +385,9 @@ const RundownHeader = withTranslation()(
 			} else {
 				this.activate(e.context)
 			}
+		}
+		eventDeactivate = (e: DeactivateRundownPlaylistEvent) => {
+			this.deactivate(e.context)
 		}
 		eventResync = (e: IEventContext) => {
 			this.reloadRundownPlaylist(e.context)
@@ -374,6 +397,9 @@ const RundownHeader = withTranslation()(
 		}
 		eventResetRundownPlaylist = (e: IEventContext) => {
 			this.resetRundown(e.context)
+		}
+		eventCreateSnapshot = (e: IEventContext) => {
+			this.takeRundownSnapshot(e.context)
 		}
 
 		handleDisableNextPiece = (err: ClientAPI.ClientResponse<undefined>) => {
@@ -1098,12 +1124,13 @@ interface IState {
 	currentRundown: Rundown | undefined
 	/** Tracks whether the user has resized the shelf to prevent using default shelf settings */
 	wasShelfResizedByUser: boolean
+	rundownDefaultSegmentViewMode: SegmentViewMode | undefined
 	segmentViewModes: Record<string, SegmentViewMode>
-	/** Minishelf data */
-	keyboardQueuedPiece: AdLibPieceUi | undefined
+	/** MiniShelf data */
 	uiSegmentMap: Map<SegmentId, AdlibSegmentUi>
 	uiSegments: AdlibSegmentUi[]
-	sourceLayerLookup: SourceLayerLookup
+	sourceLayerLookup: SourceLayers
+	miniShelfFilter: RundownLayoutFilterBase | undefined
 }
 
 export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'>
@@ -1121,8 +1148,8 @@ interface ITrackedProps {
 	currentRundown?: Rundown
 	matchedSegments: MatchedSegment[]
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
-	studio?: Studio
-	showStyleBase?: ShowStyleBase
+	studio?: UIStudio
+	showStyleBase?: UIShowStyleBase
 	showStyleVariant?: ShowStyleVariant
 	rundownLayouts?: Array<RundownLayoutBase>
 	buckets: Bucket[]
@@ -1131,11 +1158,7 @@ interface ITrackedProps {
 	rundownViewLayoutId?: RundownLayoutId
 	rundownHeaderLayoutId?: RundownLayoutId
 	miniShelfLayoutId?: RundownLayoutId
-	shelfDisplayOptions: {
-		buckets: boolean
-		layout: boolean
-		inspector: boolean
-	}
+	shelfDisplayOptions: ShelfDisplayOptions
 	bucketDisplayFilter: number[] | undefined
 	currentPartInstance: PartInstance | undefined
 	nextPartInstance: PartInstance | undefined
@@ -1152,12 +1175,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	const playlist = RundownPlaylists.findOne(playlistId)
 	let rundowns: Rundown[] = []
-	let studio: Studio | undefined
+	let studio: UIStudio | undefined
 	let currentPartInstance: PartInstance | undefined
 	let nextPartInstance: PartInstance | undefined
 	let currentRundown: Rundown | undefined = undefined
 	if (playlist) {
-		studio = Studios.findOne({ _id: playlist.studioId })
+		studio = UIStudios.findOne({ _id: playlist.studioId })
 		rundowns = memoizedIsolatedAutorun(
 			(_playlistId) => RundownPlaylistCollectionUtil.getRundownsOrdered(playlist),
 			'playlist.getRundowns',
@@ -1172,23 +1195,22 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 	const params = queryStringParse(location.search)
 
-	const DEFAULT_DISPLAY_OPTIONS = props.onlyShelf ? 'layout,shelfLayout' : 'buckets,layout,shelfLayout,inspector' // TODOSYNC: TV2 had removed buckets,inspector. check why
-
-	const displayOptions = ((params['display'] as string) || DEFAULT_DISPLAY_OPTIONS).split(',')
+	const displayOptions = ((params['display'] as string) || Settings.defaultShelfDisplayOptions).split(',')
 	const bucketDisplayFilter = !(params['buckets'] as string)
 		? undefined
 		: (params['buckets'] as string).split(',').map((v) => parseInt(v))
 
-	const showStyleBase = rundowns.length > 0 ? ShowStyleBases.findOne(rundowns[0].showStyleBaseId) : undefined
-	const showStyleVariant = rundowns.length > 0 ? ShowStyleVariants.findOne(rundowns[0].showStyleVariantId) : undefined
+	const showStyleBaseId = currentRundown?.showStyleBaseId ?? rundowns[0]?.showStyleBaseId
+	const showStyleBase = showStyleBaseId ? UIShowStyleBases.findOne(showStyleBaseId) : undefined
+	const showStyleVariantId = currentRundown?.showStyleVariantId ?? rundowns[0]?.showStyleVariantId
+	const showStyleVariant = showStyleVariantId ? ShowStyleVariants.findOne(showStyleVariantId) : undefined
 
-	const rundownsToShowstyles: Map<RundownId, ShowStyleBaseId> = new Map()
+	const rundownsToShowStyles: Map<RundownId, ShowStyleBaseId> = new Map()
 	for (const rundown of rundowns) {
-		rundownsToShowstyles.set(rundown._id, rundown.showStyleBaseId)
+		rundownsToShowStyles.set(rundown._id, rundown.showStyleBaseId)
 	}
 
-	const rundownLayouts =
-		rundowns.length > 0 ? RundownLayouts.find({ showStyleBaseId: rundowns[0].showStyleBaseId }).fetch() : undefined
+	const rundownLayouts = RundownLayouts.find({ showStyleBaseId }).fetch()
 
 	// let rundownDurations = calculateDurations(rundown, parts)
 	return {
@@ -1196,14 +1218,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundowns,
 		currentRundown,
 		matchedSegments: playlist
-			? RundownPlaylistCollectionUtil.getRundownsAndSegments(playlist, {
-					isHidden: {
-						$ne: true,
-					},
-			  }).map((input, rundownIndex, rundownArray) => ({
+			? RundownPlaylistCollectionUtil.getRundownsAndSegments(playlist, {}).map((input, rundownIndex, rundownArray) => ({
 					...input,
 					segmentIdsBeforeEachSegment: input.segments.map(
-						(segment, segmentIndex, segmentArray) =>
+						(_segment, segmentIndex, segmentArray) =>
 							new Set([
 								...(_.flatten(
 									rundownArray.slice(0, rundownIndex).map((match) => match.segments.map((segment) => segment._id))
@@ -1213,7 +1231,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					),
 			  }))
 			: [],
-		rundownsToShowstyles,
+		rundownsToShowstyles: rundownsToShowStyles,
 		playlist,
 		studio: studio,
 		showStyleBase,
@@ -1251,9 +1269,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		rundownHeaderLayoutId: protectString((params['rundownHeaderLayout'] as string) || ''),
 		miniShelfLayoutId: protectString((params['miniShelfLayout'] as string) || ''),
 		shelfDisplayOptions: {
-			buckets: displayOptions.includes('buckets'),
-			layout: displayOptions.includes('layout') || displayOptions.includes('shelfLayout'),
-			inspector: displayOptions.includes('inspector'),
+			enableBuckets: displayOptions.includes('buckets'),
+			enableLayout: displayOptions.includes('layout') || displayOptions.includes('shelfLayout'),
+			enableInspector: displayOptions.includes('inspector'),
 		},
 		bucketDisplayFilter,
 		currentPartInstance,
@@ -1286,6 +1304,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 })(
 	class RundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
 		private _hideNotificationsAfterMount: number | undefined
+		/** MiniShelf data */
+		private keyboardQueuedPiece: AdLibPieceUi | undefined = undefined
+		private keyboardQueuedPartInstanceId: PartInstanceId | undefined = undefined
+		private shouldKeyboardRequeue: boolean = false
+		private isKeyboardQueuePending: boolean = false
 
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
@@ -1319,10 +1342,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				segmentViewModes: this.props.playlist?._id
 					? UIStateStorage.getItemRecord(`rundownView.${this.props.playlist._id}`, `segmentViewModes`, {})
 					: {},
-				keyboardQueuedPiece: undefined,
+				rundownDefaultSegmentViewMode: this.props.playlist?._id
+					? (UIStateStorage.getItemString(
+							`rundownView.${this.props.playlist._id}`,
+							`rundownDefaultSegmentViewMode`,
+							''
+					  ) as SegmentViewMode) || undefined
+					: undefined,
 				uiSegmentMap: new Map(),
 				uiSegments: [],
 				sourceLayerLookup: {},
+				miniShelfFilter: undefined,
 			}
 		}
 
@@ -1406,21 +1436,23 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					selectedShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForShelf(i))
 				}
 
-				// TODOSYNC: This was added by TV2, but this is a backwards-incompatible change
-				//						-- Jan Starzak, 2022/04/08
-				// if (!selectedViewLayout) {
-				// 	selectedViewLayout = props.rundownLayouts.find((i) =>
-				// 		RundownLayoutsAPI.isLayoutForRundownView(i)
-				// 	) as RundownViewLayout
-				// }
+				if (!selectedViewLayout) {
+					selectedViewLayout = props.rundownLayouts.find(
+						(layout) => RundownLayoutsAPI.isLayoutForRundownView(layout) && RundownLayoutsAPI.isDefaultLayout(layout)
+					) as RundownViewLayout
+				}
 
-				// if (!selectedHeaderLayout) {
-				// 	selectedHeaderLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForRundownHeader(i))
-				// }
+				if (!selectedHeaderLayout) {
+					selectedHeaderLayout = props.rundownLayouts.find(
+						(layout) => RundownLayoutsAPI.isLayoutForRundownHeader(layout) && RundownLayoutsAPI.isDefaultLayout(layout)
+					)
+				}
 
-				// if (!selectedMiniShelfLayout) {
-				// 	selectedMiniShelfLayout = props.rundownLayouts.find((i) => RundownLayoutsAPI.isLayoutForMiniShelf(i))
-				// }
+				if (!selectedMiniShelfLayout) {
+					selectedMiniShelfLayout = props.rundownLayouts.find(
+						(layout) => RundownLayoutsAPI.isLayoutForMiniShelf(layout) && RundownLayoutsAPI.isDefaultLayout(layout)
+					)
+				}
 			}
 
 			let currentRundown: Rundown | undefined = undefined
@@ -1433,22 +1465,23 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 			const filteredUiSegmentMap: Map<SegmentId, AdlibSegmentUi> = new Map()
 			const filteredUiSegments: AdlibSegmentUi[] = []
-			let resultSourceLayerLookup: SourceLayerLookup = {}
+			let resultSourceLayerLookup: SourceLayers = {}
+			let miniShelfFilter: RundownLayoutFilterBase | undefined
 			if (props.playlist && props.showStyleBase && props.studio) {
-				let filter =
+				const possibleMiniShelfFilter =
 					selectedMiniShelfLayout && RundownLayoutsAPI.isLayoutForMiniShelf(selectedMiniShelfLayout)
 						? selectedMiniShelfLayout.filters[0]
 						: undefined // Only allow 1 filter for now
 
 				// Check type of filter
-				if (filter && !RundownLayoutsAPI.isFilter(filter)) {
-					filter = undefined
+				if (possibleMiniShelfFilter && RundownLayoutsAPI.isFilter(possibleMiniShelfFilter)) {
+					miniShelfFilter = possibleMiniShelfFilter
 				}
 				const { uiSegmentMap, uiSegments, sourceLayerLookup } = fetchAndFilter({
 					playlist: props.playlist,
 					showStyleBase: props.showStyleBase,
 					includeGlobalAdLibs: false,
-					filter,
+					filter: miniShelfFilter,
 				})
 				resultSourceLayerLookup = sourceLayerLookup
 				const liveSegment = uiSegments.find((i) => i.isLive === true)
@@ -1460,11 +1493,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							piece,
 							props.showStyleBase!,
 							liveSegment,
-							filter
+							miniShelfFilter
 								? {
-										...(filter as RundownLayoutFilterBase),
+										...(miniShelfFilter as RundownLayoutFilterBase),
 										currentSegment:
-											!(segment.isHidden && segment.showShelf) && (filter as RundownLayoutFilterBase).currentSegment,
+											!(segment.isHidden && segment.showShelf) &&
+											(miniShelfFilter as RundownLayoutFilterBase).currentSegment,
 								  }
 								: undefined,
 							undefined,
@@ -1502,6 +1536,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				uiSegmentMap: filteredUiSegmentMap,
 				uiSegments: filteredUiSegments,
 				sourceLayerLookup: resultSourceLayerLookup,
+				miniShelfFilter,
 			}
 		}
 
@@ -1511,9 +1546,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			this.subscribe(PubSub.rundownPlaylists, {
 				_id: playlistId,
 			})
-			this.subscribe(PubSub.rundowns, {
-				playlistId,
-			})
+			this.subscribe(PubSub.rundowns, [playlistId], null)
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
@@ -1523,9 +1556,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}) as Pick<RundownPlaylist, '_id' | 'studioId'> | undefined
 				if (!playlist) return
 
-				this.subscribe(PubSub.studios, {
-					_id: playlist.studioId,
-				})
+				this.subscribe(PubSub.uiStudio, playlist.studioId)
 				this.subscribe(PubSub.buckets, {
 					studioId: playlist.studioId,
 				})
@@ -1550,11 +1581,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					},
 				}) as Pick<Rundown, '_id' | 'showStyleBaseId' | 'showStyleVariantId'>[]
 
-				this.subscribe(PubSub.showStyleBases, {
-					_id: {
-						$in: rundowns.map((i) => i.showStyleBaseId),
-					},
-				})
+				for (const rundown of rundowns) {
+					this.subscribe(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
+				}
+
 				this.subscribe(PubSub.showStyleVariants, {
 					_id: {
 						$in: rundowns.map((i) => i.showStyleVariantId),
@@ -1591,20 +1621,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						$in: rundownIDs,
 					},
 				})
-				this.subscribe(PubSub.parts, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-				})
-				this.subscribe(PubSub.partInstances, {
-					rundownId: {
-						$in: rundownIDs,
-					},
-					playlistActivationId: playlist.activationId,
-					reset: {
-						$ne: true,
-					},
-				})
+				this.subscribe(PubSub.parts, rundownIDs)
+				this.subscribe(PubSub.partInstances, rundownIDs, playlist.activationId)
 			})
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
@@ -1621,7 +1639,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					// Use Meteor.subscribe so that this subscription doesn't mess with this.subscriptionsReady()
 					// it's run in this.autorun, so the subscription will be stopped along with the autorun,
 					// so we don't have to manually clean up after ourselves.
-					Meteor.subscribe(PubSub.pieceInstances, {
+					meteorSubscribe(PubSub.pieceInstances, {
 						rundownId: {
 							$in: rundownIds,
 						},
@@ -1630,7 +1648,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								playlist.currentPartInstanceId,
 								playlist.nextPartInstanceId,
 								playlist.previousPartInstanceId,
-							].filter((p) => p !== null),
+							].filter((p): p is PartInstanceId => p !== null),
 						},
 						reset: {
 							$ne: true,
@@ -1640,13 +1658,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
 
 					if (previousPartInstance) {
-						Meteor.subscribe(PubSub.partInstancesForSegmentPlayout, {
+						meteorSubscribe(PubSub.partInstancesForSegmentPlayout, {
 							rundownId: previousPartInstance.rundownId,
 							segmentPlayoutId: previousPartInstance.segmentPlayoutId,
 						})
 					}
 					if (currentPartInstance) {
-						Meteor.subscribe(PubSub.partInstancesForSegmentPlayout, {
+						meteorSubscribe(PubSub.partInstancesForSegmentPlayout, {
 							rundownId: currentPartInstance.rundownId,
 							segmentPlayoutId: currentPartInstance.segmentPlayoutId,
 						})
@@ -1782,9 +1800,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				(prevProps.playlist === undefined || this.props.playlist._id !== prevProps.playlist._id)
 			) {
 				this.setState({
-					segmentViewModes: this.props.playlist?._id
-						? UIStateStorage.getItemRecord(`rundownView.${this.props.playlist._id}`, `segmentViewModes`, {})
-						: {},
+					segmentViewModes: UIStateStorage.getItemRecord(
+						`rundownView.${this.props.playlist._id}`,
+						`segmentViewModes`,
+						{}
+					),
+					rundownDefaultSegmentViewMode:
+						(UIStateStorage.getItemString(
+							`rundownView.${this.props.playlist._id}`,
+							`rundownDefaultSegmentViewMode`,
+							''
+						) as SegmentViewMode) || undefined,
 				})
 			}
 
@@ -1798,9 +1824,42 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			if (Settings.enableUserAccounts && getAllowStudio() !== this.state.studioMode) {
 				this.setState({ studioMode: getAllowStudio() })
 			}
+
+			this.handleMiniShelfRequeue(prevProps)
+		}
+
+		private handleMiniShelfRequeue(prevProps: IProps & ITrackedProps) {
 			if (this.props.currentPartInstance?.segmentId !== prevProps.currentPartInstance?.segmentId) {
-				this.setState({ keyboardQueuedPiece: undefined })
+				this.keyboardQueuedPiece = undefined
+			} else if (this.props.playlist && prevProps.playlist && this.keyboardQueuedPartInstanceId) {
+				if (this.hasCurrentPartChanged(prevProps) && this.isCurrentPartKeyboardQueuedPart()) {
+					this.keyboardQueuedPartInstanceId = undefined
+				} else if (
+					!this.isKeyboardQueuePending &&
+					!this.hasCurrentPartChanged(prevProps) &&
+					this.hasNextPartChanged(prevProps) &&
+					this.isNextPartDifferentFromKeyboardQueuedPart()
+				) {
+					this.shouldKeyboardRequeue = true
+					this.keyboardQueuedPartInstanceId = undefined
+				}
 			}
+		}
+
+		private hasCurrentPartChanged(prevProps: IProps & ITrackedProps) {
+			return prevProps.playlist!.currentPartInstanceId !== this.props.playlist!.currentPartInstanceId
+		}
+
+		private isCurrentPartKeyboardQueuedPart() {
+			return this.props.playlist!.currentPartInstanceId === this.keyboardQueuedPartInstanceId
+		}
+
+		private hasNextPartChanged(prevProps: IProps & ITrackedProps) {
+			return prevProps.playlist!.nextPartInstanceId !== this.props.playlist!.nextPartInstanceId
+		}
+
+		private isNextPartDifferentFromKeyboardQueuedPart() {
+			return this.props.playlist!.nextPartInstanceId !== this.keyboardQueuedPartInstanceId
 		}
 
 		onSelectPiece = (piece: PieceUi) => {
@@ -1954,7 +2013,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		eventQueueMiniShelfAdLib = (e: MiniShelfQueueAdLibEvent) => {
-			this.queueMinishelfAdLib(e.context, e.forward)
+			this.queueMiniShelfAdLib(e.context, e.forward)
 		}
 
 		onActivate = () => {
@@ -2074,10 +2133,25 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			})
 		}
 
+		onSegmentViewModeChange = () => {
+			const nextMode = getNextSegmentViewMode(this.state.rundownDefaultSegmentViewMode)
+			this.setState(
+				{
+					segmentViewModes: {},
+					rundownDefaultSegmentViewMode: nextMode,
+				},
+				() => {
+					if (!this.props.playlist?._id) return
+					UIStateStorage.setItem(`rundownView.${this.props.playlist._id}`, `segmentViewModes`, {})
+					UIStateStorage.setItem(`rundownView.${this.props.playlist._id}`, 'rundownDefaultSegmentViewMode', nextMode)
+				}
+			)
+		}
+
 		onStudioRouteSetSwitch = (
 			e: React.MouseEvent<HTMLElement, MouseEvent>,
 			routeSetId: string,
-			routeSet: StudioRouteSet,
+			_routeSet: StudioRouteSet,
 			state: boolean
 		) => {
 			const { t } = this.props
@@ -2106,6 +2180,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					)
 				}
 			)
+		}
+
+		onPieceQueued = (err: any, res: ExecuteActionResult | void) => {
+			if (!err && res) {
+				if (res.taken) {
+					this.keyboardQueuedPartInstanceId = undefined
+				} else {
+					this.keyboardQueuedPartInstanceId = res.queuedPartInstanceId
+				}
+			}
+			this.isKeyboardQueuePending = false
 		}
 
 		queueAdLibPiece = (adlibPiece: AdLibPieceUi, e: any) => {
@@ -2155,39 +2240,57 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				if (!(sourceLayer && sourceLayer.isClearable)) {
 					if (adlibPiece.isAction && adlibPiece.adlibAction) {
 						const action = adlibPiece.adlibAction
-						doUserAction(t, e, adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB, (e, ts) =>
-							MeteorCall.userAction.executeAction(
-								e,
-								ts,
-								this.props.playlist!._id,
-								action._id,
-								action.actionId,
-								action.userData
-							)
+						doUserAction(
+							t,
+							e,
+							adlibPiece.isGlobal ? UserAction.START_GLOBAL_ADLIB : UserAction.START_ADLIB,
+							(e, ts) =>
+								MeteorCall.userAction.executeAction(
+									e,
+									ts,
+									this.props.playlist!._id,
+									action._id,
+									action.actionId,
+									action.userData
+								),
+							this.onPieceQueued
 						)
 					} else if (!adlibPiece.isGlobal && !adlibPiece.isAction) {
-						doUserAction(t, e, UserAction.START_ADLIB, (e, ts) =>
-							MeteorCall.userAction.segmentAdLibPieceStart(
-								e,
-								ts,
-								this.props.playlist!._id,
-								currentPartInstanceId,
-								adlibPiece._id,
-								true
-							)
+						doUserAction(
+							t,
+							e,
+							UserAction.START_ADLIB,
+							(e, ts) =>
+								MeteorCall.userAction.segmentAdLibPieceStart(
+									e,
+									ts,
+									this.props.playlist!._id,
+									currentPartInstanceId,
+									adlibPiece._id,
+									true
+								),
+							this.onPieceQueued
 						)
 					} else if (adlibPiece.isGlobal && !adlibPiece.isSticky) {
-						doUserAction(t, e, UserAction.START_GLOBAL_ADLIB, (e, ts) =>
-							MeteorCall.userAction.baselineAdLibPieceStart(
-								e,
-								ts,
-								this.props.playlist!._id,
-								currentPartInstanceId,
-								adlibPiece._id,
-								true
-							)
+						doUserAction(
+							t,
+							e,
+							UserAction.START_GLOBAL_ADLIB,
+							(e, ts) =>
+								MeteorCall.userAction.baselineAdLibPieceStart(
+									e,
+									ts,
+									this.props.playlist!._id,
+									currentPartInstanceId,
+									adlibPiece._id,
+									true
+								),
+							this.onPieceQueued
 						)
+					} else {
+						return
 					}
+					this.isKeyboardQueuePending = true
 				}
 			}
 		}
@@ -2200,53 +2303,76 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			const { uiSegments } = this.state
 			for (let i = begin; begin > end ? i > end : i < end; begin > end ? i-- : i++) {
 				const queueablePieces = uiSegments[i].pieces.filter(this.isAdLibQueueable)
-				if (uiSegments[i].isHidden && uiSegments[i].showShelf && uiSegments[i].pieces.length) {
+				if (uiSegments[i].isHidden && uiSegments[i].showShelf && queueablePieces.length) {
 					return { segment: uiSegments[i], queueablePieces }
 				}
 			}
 			return undefined
 		}
 
-		queueMinishelfAdLib = (e: any, forward: boolean) => {
+		queueMiniShelfAdLib = (e: any, forward: boolean) => {
 			const { uiSegments, uiSegmentMap } = this.state
-			const { keyboardQueuedPiece } = this.state
 			let pieceToQueue: AdLibPieceUi | undefined
 			let currentSegmentId: SegmentId | undefined
-			if (keyboardQueuedPiece) {
-				const uiSegment = keyboardQueuedPiece.segmentId ? uiSegmentMap.get(keyboardQueuedPiece.segmentId) : undefined
-				if (uiSegment) {
-					const pieces = uiSegment.pieces.filter(this.isAdLibQueueable)
-					const nextPieceInd = pieces.findIndex((piece) => piece._id === keyboardQueuedPiece._id) + (forward ? 1 : -1)
+			if (this.keyboardQueuedPiece) {
+				currentSegmentId = this.keyboardQueuedPiece.segmentId
+				pieceToQueue = this.findPieceToQueueInCurrentSegment(uiSegmentMap, pieceToQueue, forward)
+			}
+			if (!currentSegmentId) {
+				currentSegmentId = this.props.currentPartInstance?.segmentId
+			}
+			if (!pieceToQueue && currentSegmentId) {
+				pieceToQueue = this.findPieceToQueueInOtherSegments(uiSegments, currentSegmentId, forward, pieceToQueue)
+			}
+			if (pieceToQueue) {
+				this.queueAdLibPiece(pieceToQueue, e)
+				this.keyboardQueuedPiece = pieceToQueue
+				this.shouldKeyboardRequeue = false
+			}
+		}
+
+		private findPieceToQueueInCurrentSegment(
+			uiSegmentMap: Map<SegmentId, AdlibSegmentUi>,
+			pieceToQueue: AdLibPieceUi | undefined,
+			forward: boolean
+		) {
+			const uiSegment = this.keyboardQueuedPiece!.segmentId
+				? uiSegmentMap.get(this.keyboardQueuedPiece!.segmentId)
+				: undefined
+			if (uiSegment) {
+				const pieces = uiSegment.pieces.filter(this.isAdLibQueueable)
+				if (this.shouldKeyboardRequeue) {
+					pieceToQueue = pieces.find((piece) => piece._id === this.keyboardQueuedPiece!._id)
+				} else {
+					const nextPieceInd =
+						pieces.findIndex((piece) => piece._id === this.keyboardQueuedPiece!._id) + (forward ? 1 : -1)
 					if (nextPieceInd >= 0 && nextPieceInd < pieces.length) {
 						pieceToQueue = pieces[nextPieceInd]
 					}
 				}
-				currentSegmentId = keyboardQueuedPiece.segmentId
-			} else {
-				currentSegmentId = this.props.currentPartInstance?.segmentId
 			}
+			return pieceToQueue
+		}
 
-			if (!pieceToQueue) {
-				if (currentSegmentId) {
-					const currentSegmentInd = uiSegments.findIndex((segment) => segment._id === currentSegmentId)
-					if (currentSegmentInd >= 0) {
-						const nextShelfOnlySegment = forward
-							? this.findShelfOnlySegment(currentSegmentInd + 1, uiSegments.length) ||
-							  this.findShelfOnlySegment(0, currentSegmentInd)
-							: this.findShelfOnlySegment(currentSegmentInd - 1, -1) ||
-							  this.findShelfOnlySegment(uiSegments.length - 1, currentSegmentInd)
-						if (nextShelfOnlySegment && nextShelfOnlySegment.queueablePieces.length) {
-							pieceToQueue =
-								nextShelfOnlySegment.queueablePieces[forward ? 0 : nextShelfOnlySegment.queueablePieces.length - 1]
-						}
-					}
+		private findPieceToQueueInOtherSegments(
+			uiSegments: AdlibSegmentUi[],
+			currentSegmentId: SegmentId | undefined,
+			forward: boolean,
+			pieceToQueue: AdLibPieceUi | undefined
+		) {
+			const currentSegmentInd = uiSegments.findIndex((segment) => segment._id === currentSegmentId)
+			if (currentSegmentInd >= 0) {
+				const nextShelfOnlySegment = forward
+					? this.findShelfOnlySegment(currentSegmentInd + 1, uiSegments.length) ||
+					  this.findShelfOnlySegment(0, currentSegmentInd)
+					: this.findShelfOnlySegment(currentSegmentInd - 1, -1) ||
+					  this.findShelfOnlySegment(uiSegments.length - 1, currentSegmentInd)
+				if (nextShelfOnlySegment && nextShelfOnlySegment.queueablePieces.length) {
+					pieceToQueue =
+						nextShelfOnlySegment.queueablePieces[forward ? 0 : nextShelfOnlySegment.queueablePieces.length - 1]
 				}
 			}
-
-			if (pieceToQueue) {
-				this.queueAdLibPiece(pieceToQueue, e)
-				this.setState({ keyboardQueuedPiece: pieceToQueue })
-			}
+			return pieceToQueue
 		}
 
 		renderSegments() {
@@ -2312,6 +2438,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 										>
 											{this.renderSegmentComponent(
 												segment,
+												segmentIndex,
 												rundownAndSegments,
 												this.props.playlist,
 												this.props.studio,
@@ -2339,10 +2466,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 		renderSegmentComponent(
 			segment: DBSegment,
+			_index: number,
 			rundownAndSegments: MatchedSegment,
 			rundownPlaylist: RundownPlaylist,
-			studio: DBStudio,
-			showStyleBase: DBShowStyleBase,
+			studio: UIStudio,
+			showStyleBase: UIShowStyleBase,
 			isLastSegment: boolean,
 			isFollowingOnAirSegment: boolean,
 			ownCurrentPartInstance: PartInstance | undefined,
@@ -2350,76 +2478,58 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			segmentIdsBeforeSegment: Set<SegmentId>,
 			rundownIdsBefore: RundownId[]
 		) {
-			const userSegmentDisplaymode = this.state.segmentViewModes[unprotectString(segment._id)] as
+			const userSegmentViewMode = this.state.segmentViewModes[unprotectString(segment._id)] as
 				| SegmentViewMode
 				| undefined
-			const displayMode = userSegmentDisplaymode ?? segment.displayAs ?? DEFAULT_SEGMENT_VIEW_MODE
+			const userRundownSegmentViewMode = this.state.rundownDefaultSegmentViewMode
+			const displayMode =
+				userSegmentViewMode ?? userRundownSegmentViewMode ?? segment.displayAs ?? DEFAULT_SEGMENT_VIEW_MODE
 
 			const showDurationSourceLayers = this.state.rundownViewLayout?.showDurationSourceLayers
 				? new Set<ISourceLayer['_id']>(this.state.rundownViewLayout?.showDurationSourceLayers)
 				: undefined
 
-			return displayMode === SegmentViewMode.Storyboard ? (
-				<SegmentStoryboardContainer
-					id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
-					studio={studio}
-					showStyleBase={showStyleBase}
-					followLiveSegments={this.state.followLiveSegments}
-					rundownViewLayout={this.state.rundownViewLayout}
-					rundownId={rundownAndSegments.rundown._id}
-					segmentId={segment._id}
-					playlist={rundownPlaylist}
-					rundown={rundownAndSegments.rundown}
-					timeScale={this.state.timeScale}
-					onContextMenu={this.onContextMenu}
-					onSegmentScroll={this.onSegmentScroll}
-					segmentsIdsBefore={segmentIdsBeforeSegment}
-					rundownIdsBefore={rundownIdsBefore}
-					rundownsToShowstyles={this.props.rundownsToShowstyles}
-					isLastSegment={isLastSegment}
-					onPieceClick={this.onSelectPiece}
-					onPieceDoubleClick={this.onPieceDoubleClick}
-					onHeaderNoteClick={this.onHeaderNoteClick}
-					onSwitchViewMode={(viewMode) => this.onSwitchViewMode(segment._id, viewMode)}
-					ownCurrentPartInstance={ownCurrentPartInstance}
-					ownNextPartInstance={ownNextPartInstance}
-					isFollowingOnAirSegment={isFollowingOnAirSegment}
-					countdownToSegmentRequireLayers={this.state.rundownViewLayout?.countdownToSegmentRequireLayers}
-					fixedSegmentDuration={this.state.rundownViewLayout?.fixedSegmentDuration}
-					studioMode={this.state.studioMode}
-				/>
-			) : (
-				<SegmentTimelineContainer
-					id={SEGMENT_TIMELINE_ELEMENT_ID + segment._id}
-					studio={studio}
-					showStyleBase={showStyleBase}
-					followLiveSegments={this.state.followLiveSegments}
-					rundownViewLayout={this.state.rundownViewLayout}
-					rundownId={rundownAndSegments.rundown._id}
-					segmentId={segment._id}
-					playlist={rundownPlaylist}
-					rundown={rundownAndSegments.rundown}
-					timeScale={this.state.timeScale}
-					onContextMenu={this.onContextMenu}
-					onSegmentScroll={this.onSegmentScroll}
-					segmentsIdsBefore={segmentIdsBeforeSegment}
-					rundownIdsBefore={rundownIdsBefore}
-					rundownsToShowstyles={this.props.rundownsToShowstyles}
-					isLastSegment={isLastSegment}
-					onPieceClick={this.onSelectPiece}
-					onPieceDoubleClick={this.onPieceDoubleClick}
-					onHeaderNoteClick={this.onHeaderNoteClick}
-					onSwitchViewMode={(viewMode) => this.onSwitchViewMode(segment._id, viewMode)}
-					ownCurrentPartInstance={ownCurrentPartInstance}
-					ownNextPartInstance={ownNextPartInstance}
-					isFollowingOnAirSegment={isFollowingOnAirSegment}
-					countdownToSegmentRequireLayers={this.state.rundownViewLayout?.countdownToSegmentRequireLayers}
-					fixedSegmentDuration={this.state.rundownViewLayout?.fixedSegmentDuration}
-					adLibSegmentUi={this.state.uiSegmentMap.get(segment._id)}
-					studioMode={this.state.studioMode}
-					showDurationSourceLayers={showDurationSourceLayers}
-				/>
-			)
+			const resolvedSegmentProps: IResolvedSegmentProps & { id: string } = {
+				id: SEGMENT_TIMELINE_ELEMENT_ID + segment._id,
+				studio: studio,
+				showStyleBase: showStyleBase,
+				followLiveSegments: this.state.followLiveSegments,
+				rundownViewLayout: this.state.rundownViewLayout,
+				rundownId: rundownAndSegments.rundown._id,
+				segmentId: segment._id,
+				playlist: rundownPlaylist,
+				rundown: rundownAndSegments.rundown,
+				timeScale: this.state.timeScale,
+				onContextMenu: this.onContextMenu,
+				onSegmentScroll: this.onSegmentScroll,
+				segmentsIdsBefore: segmentIdsBeforeSegment,
+				rundownIdsBefore: rundownIdsBefore,
+				rundownsToShowstyles: this.props.rundownsToShowstyles,
+				isLastSegment: isLastSegment,
+				onPieceClick: this.onSelectPiece,
+				onPieceDoubleClick: this.onPieceDoubleClick,
+				onHeaderNoteClick: this.onHeaderNoteClick,
+				onSwitchViewMode: (viewMode) => this.onSwitchViewMode(segment._id, viewMode),
+				ownCurrentPartInstance: ownCurrentPartInstance,
+				ownNextPartInstance: ownNextPartInstance,
+				isFollowingOnAirSegment: isFollowingOnAirSegment,
+				miniShelfFilter: this.state.miniShelfFilter,
+				countdownToSegmentRequireLayers: this.state.rundownViewLayout?.countdownToSegmentRequireLayers,
+				fixedSegmentDuration: this.state.rundownViewLayout?.fixedSegmentDuration,
+				studioMode: this.state.studioMode,
+				adLibSegmentUi: this.state.uiSegmentMap.get(segment._id),
+				showDurationSourceLayers: showDurationSourceLayers,
+			}
+
+			switch (displayMode) {
+				case SegmentViewMode.Storyboard:
+					return <SegmentStoryboardContainer {...resolvedSegmentProps} />
+				case SegmentViewMode.List:
+					return <SegmentListContainer {...resolvedSegmentProps} />
+				case SegmentViewMode.Timeline:
+				default:
+					return <SegmentTimelineContainer {...resolvedSegmentProps} />
+			}
 		}
 
 		renderSegmentsList() {
@@ -2464,7 +2574,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			return false
 		}
 
-		onToggleNotifications = (e: React.MouseEvent<HTMLElement>, filter: NoticeLevel) => {
+		onToggleNotifications = (_e: React.MouseEvent<HTMLElement>, filter: NoticeLevel) => {
 			if (!this.state.isNotificationsCenterOpen === true) {
 				NotificationCenter.highlightSource(undefined, NoticeLevel.CRITICAL)
 			}
@@ -2664,12 +2774,17 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		defaultHotkeys(t: i18next.TFunction) {
+			const poisonKey = Settings.poisonKey
 			return [
 				// Register additional hotkeys or legend entries
-				{
-					key: 'Escape',
-					label: t('Cancel currently pressed hotkey'),
-				},
+				...(poisonKey
+					? [
+							{
+								key: poisonKey,
+								label: t('Cancel currently pressed hotkey'),
+							},
+					  ]
+					: []),
 				{
 					key: 'F11',
 					label: t('Change to fullscreen mode'),
@@ -2678,9 +2793,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		renderRundownView(
-			studio: DBStudio,
+			studio: UIStudio,
 			playlist: RundownPlaylist,
-			showStyleBase: ShowStyleBase,
+			showStyleBase: UIShowStyleBase,
 			showStyleVariant: ShowStyleVariant
 		) {
 			const { t } = this.props
@@ -2750,6 +2865,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									studioRouteSets={studio.routeSets}
 									studioRouteSetExclusivityGroups={studio.routeSetExclusivityGroups}
 									onStudioRouteSetSwitch={this.onStudioRouteSetSwitch}
+									onSegmentViewMode={this.onSegmentViewModeChange}
 								/>
 							</ErrorBoundary>
 							<ErrorBoundary>{this.renderSorensenContext()}</ErrorBoundary>
@@ -2953,10 +3069,12 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				<SorensenContext.Consumer>
 					{(sorensen) =>
 						sorensen &&
-						this.state.studioMode && (
+						this.state.studioMode &&
+						this.props.studio &&
+						this.props.showStyleBase && (
 							<TriggersHandler
 								rundownPlaylistId={this.props.rundownPlaylistId}
-								showStyleBaseId={this.props.showStyleBase!._id}
+								showStyleBaseId={this.props.showStyleBase._id}
 								currentRundownId={this.props.currentRundown?._id || null}
 								currentPartId={this.props.currentPartInstance?.part._id || null}
 								nextPartId={this.props.nextPartInstance?.part._id || null}

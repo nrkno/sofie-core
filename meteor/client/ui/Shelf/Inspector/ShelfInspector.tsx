@@ -2,20 +2,20 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import renderItem from './ItemRenderers/ItemRendererFactory'
 import { PieceUi } from '../../SegmentTimeline/SegmentTimelineContainer'
-import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime } from '../../../lib/lib'
-import { Studio } from '../../../../lib/collections/Studios'
 import { BucketAdLibItem } from '../RundownViewBuckets'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { IAdLibListItem } from '../AdLibListItem'
+import { UIShowStyleBase } from '../../../../lib/api/showStyles'
+import { UIStudio } from '../../../../lib/api/studios'
 
 export { ShelfInspector }
 
 interface IShelfInspectorProps {
 	selected: BucketAdLibItem | IAdLibListItem | PieceUi | undefined
-	showStyleBase: ShowStyleBase
-	studio: Studio
+	showStyleBase: UIShowStyleBase
+	studio: UIStudio
 	rundownPlaylist: RundownPlaylist
 	onSelectPiece: (piece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined) => void
 }

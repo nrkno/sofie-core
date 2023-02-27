@@ -26,7 +26,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 })(
 	class SystemManagement extends MeteorReactComponent<Translated<IProps & ITrackedProps>> {
 		componentDidMount() {
-			meteorSubscribe(PubSub.coreSystem, null)
+			meteorSubscribe(PubSub.coreSystem)
 		}
 		cleanUpOldDatabaseIndexes(): void {
 			const { t } = this.props
@@ -93,7 +93,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 									attribute="logLevel"
 									obj={this.props.coreSystem}
 									type="dropdown"
-									options={LogLevel}
+									options={{ ...LogLevel, 'Use fallback': undefined }}
 									collection={CoreSystem}
 									className="mdinput"
 								/>

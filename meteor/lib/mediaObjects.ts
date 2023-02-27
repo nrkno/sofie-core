@@ -11,12 +11,13 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { MediaObjects, MediaInfo, MediaObject, MediaStream } from './collections/MediaObjects'
 import * as i18next from 'i18next'
-import { IStudioSettings, routeExpectedPackages, Studio } from './collections/Studios'
+import { IStudioSettings, routeExpectedPackages } from './collections/Studios'
 import { PackageInfos } from './collections/PackageInfos'
 import { assertNever, unprotectString } from './lib'
 import { getPackageContainerPackageStatus } from './globalStores'
 import { getExpectedPackageId } from './collections/ExpectedPackages'
 import { PieceGeneric, PieceStatusCode } from './collections/Pieces'
+import { UIStudio } from './api/studios'
 
 /**
  * Take properties from the mediainfo / medistream and transform into a
@@ -100,7 +101,7 @@ export function acceptFormat(format: string, formats: Array<Array<string>>): boo
 	const match = /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(format)
 	if (!match) return false // ingested format string is invalid
 
-	const mediaFormat = match.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i))
+	const mediaFormat = match.filter((_o, i) => new Set([2, 3, 5, 6, 7]).has(i))
 	for (const candidateFormat of formats) {
 		let failed = false
 		for (let i = 0; i < candidateFormat.length; i++) {
@@ -131,7 +132,7 @@ export function getAcceptedFormats(settings: IStudioSettings | undefined): Array
 		formatsString.split(',').map((res) => {
 			const match = /((\d+)x(\d+))?((i|p|\?)(\d+))?((tff)|(bff))?/.exec(res.trim())
 			if (match) {
-				return match.filter((o, i) => new Set([2, 3, 5, 6, 7]).has(i))
+				return match.filter((_o, i) => new Set([2, 3, 5, 6, 7]).has(i))
 			} else {
 				// specified format string was invalid
 				return false
@@ -140,7 +141,10 @@ export function getAcceptedFormats(settings: IStudioSettings | undefined): Array
 	)
 }
 
-export function getMediaObjectMediaId(piece: Pick<PieceGeneric, 'content'>, sourceLayer: ISourceLayer) {
+export function getMediaObjectMediaId(
+	piece: Pick<PieceGeneric, 'content'>,
+	sourceLayer: ISourceLayer
+): string | undefined {
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 			return (piece.content as VTContent)?.fileName?.toUpperCase()
@@ -168,9 +172,15 @@ export interface ScanInfoForPackage {
 export function checkPieceContentStatus(
 	piece: Pick<PieceGeneric, '_id' | 'name' | 'content' | 'expectedPackages'>,
 	sourceLayer: ISourceLayer | undefined,
-	studio: Studio | undefined,
+	studio: Pick<UIStudio, '_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'> | undefined,
 	t?: i18next.TFunction
-) {
+): {
+	status: PieceStatusCode.OK | PieceStatusCode.UNKNOWN
+	metadata: MediaObject | null
+	packageInfos: ScanInfoForPackages | undefined
+	message: string | null
+	contentDuration: undefined
+} {
 	t =
 		t ||
 		((s: string, options?: _.Dictionary<any> | string) => _.template(s, { interpolate: /\{\{(.+?)\}\}/g })(options)) // kz: TODO not sure if this is ok - the second param can be a defaultValue
@@ -197,7 +207,11 @@ export function checkPieceContentStatus(
 
 			if (piece.expectedPackages.length) {
 				// Route the mappings
-				const routedMappingsWithPackages = routeExpectedPackages(studio, piece.expectedPackages)
+				const routedMappingsWithPackages = routeExpectedPackages(
+					studio,
+					studio.mappings,
+					piece.expectedPackages
+				)
 
 				const checkedPackageContainers: { [containerId: string]: true } = {}
 

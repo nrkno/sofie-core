@@ -6,10 +6,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 export async function removeEmptyPlaylists(context: JobContext, _data: void): Promise<void> {
 	await runJobWithStudioCache(context, async (cache) => {
 		// Skip any playlists which are active
-		const tmpPlaylists = cache.RundownPlaylists.findFetch(
-			{ activationId: { $exists: false } },
-			{ fields: { _id: 1 } }
-		)
+		const tmpPlaylists = cache.RundownPlaylists.findAll((p) => !p.activationId, { fields: { _id: 1 } })
 
 		// We want to run them all in parallel
 		await Promise.allSettled(

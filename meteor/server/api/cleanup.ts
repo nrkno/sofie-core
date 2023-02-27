@@ -1,4 +1,4 @@
-import { ProtectedString, getCurrentTime, waitForPromise, getCollectionKey } from '../../lib/lib'
+import { ProtectedString, getCurrentTime, getCollectionKey } from '../../lib/lib'
 import { CollectionCleanupResult } from '../../lib/api/system'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { AdLibActions } from '../../lib/collections/AdLibActions'
@@ -15,23 +15,23 @@ import { IngestDataCache } from '../../lib/collections/IngestDataCache'
 import { MediaObjects } from '../../lib/collections/MediaObjects'
 import { MediaWorkFlows } from '../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowSteps } from '../../lib/collections/MediaWorkFlowSteps'
-import { Organizations, OrganizationId } from '../../lib/collections/Organization'
+import { Organizations } from '../../lib/collections/Organization'
 import { PartInstances } from '../../lib/collections/PartInstances'
 import { Parts } from '../../lib/collections/Parts'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
-import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { Pieces } from '../../lib/collections/Pieces'
 import { RundownBaselineAdLibActions } from '../../lib/collections/RundownBaselineAdLibActions'
 import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
 import { RundownLayouts } from '../../lib/collections/RundownLayouts'
-import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
+import { RundownPlaylists, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { Rundowns } from '../../lib/collections/Rundowns'
 import { Segments } from '../../lib/collections/Segments'
 import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { Snapshots } from '../../lib/collections/Snapshots'
-import { Studios, StudioId } from '../../lib/collections/Studios'
+import { Studios } from '../../lib/collections/Studios'
 import { Timeline } from '../../lib/collections/Timeline'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
@@ -44,10 +44,17 @@ import { Settings } from '../../lib/Settings'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { AsyncMongoCollection } from '../../lib/collections/lib'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import {
+	OrganizationId,
+	PeripheralDeviceId,
+	RundownId,
+	RundownPlaylistId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-export function cleanupOldDataInner(actuallyCleanup: boolean = false): CollectionCleanupResult | string {
+export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Promise<CollectionCleanupResult | string> {
 	if (actuallyCleanup) {
-		const notAllowedReason = isAllowedToRunCleanup()
+		const notAllowedReason = await isAllowedToRunCleanup()
 		if (notAllowedReason) return `Could not run the cleanup function due to: ${notAllowedReason}`
 	}
 
@@ -390,15 +397,13 @@ export function cleanupOldDataInner(actuallyCleanup: boolean = false): Collectio
 
 	return result
 }
-function isAllowedToRunCleanup(): string | void {
+async function isAllowedToRunCleanup(): Promise<string | void> {
 	// HACK: TODO - should we check this?
 	// if (isAnyQueuedWorkRunning()) return `Another sync-function is running, try again later`
 
-	const studios = Studios.find({}, { fields: { _id: 1 } }).fetch()
+	const studios = await Studios.findFetchAsync({}, { fields: { _id: 1 } })
 	for (const studio of studios) {
-		const activePlaylist: RundownPlaylist | undefined = waitForPromise(
-			getActiveRundownPlaylistsInStudioFromDb(studio._id)
-		)[0]
+		const activePlaylist: RundownPlaylist | undefined = await getActiveRundownPlaylistsInStudioFromDb(studio._id)[0]
 		if (activePlaylist) {
 			return `There is an active RundownPlaylist: "${activePlaylist.name}" in studio "${studio.name}" (${activePlaylist._id}, ${studio._id})`
 		}

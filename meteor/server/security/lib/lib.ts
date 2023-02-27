@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
+import { FieldNames } from '../../../lib/collections/lib'
 import { logger } from '../../logging'
-import { FieldNames } from '../../../lib/typings/meteor'
 /**
  * Allow only edits to the fields specified. Edits to any other fields will be rejected
  * @param doc
@@ -15,6 +15,7 @@ export function allowOnlyFields<T>(_doc: T, fieldNames: FieldNames<T>, allowFiel
 			allow = false
 			return true
 		}
+		return false
 	})
 	return allow
 }
@@ -32,6 +33,7 @@ export function rejectFields<T>(_doc: T, fieldNames: FieldNames<T>, rejectFields
 			allow = false
 			return true
 		}
+		return false
 	})
 	return allow
 }

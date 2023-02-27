@@ -1,21 +1,21 @@
 import { Evaluations, EvaluationBase } from '../../lib/collections/Evaluations'
-import { getCurrentTime, getRandomId, waitForPromiseAll } from '../../lib/lib'
+import { deferAsync, getCurrentTime, getRandomId } from '../../lib/lib'
 import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'
-import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import * as _ from 'underscore'
 import { fetchStudioLight } from '../../lib/collections/optimizations'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-export function saveEvaluation(
+export async function saveEvaluation(
 	credentials: {
 		userId: UserId | null
 		organizationId: OrganizationId | null
 	},
 	evaluation: EvaluationBase
-): void {
-	Evaluations.insert({
+): Promise<void> {
+	await Evaluations.insertAsync({
 		...evaluation,
 		_id: getRandomId(),
 		organizationId: credentials.organizationId,
@@ -27,8 +27,8 @@ export function saveEvaluation(
 		evaluation: evaluation,
 	})
 
-	Meteor.defer(() => {
-		const studio = fetchStudioLight(evaluation.studioId)
+	deferAsync(async () => {
+		const studio = await fetchStudioLight(evaluation.studioId)
 		if (!studio) throw new Meteor.Error(500, `Studio ${evaluation.studioId} not found!`)
 
 		const webhookUrls = _.compact((studio.settings.slackEvaluationUrls || '').split(','))
@@ -60,7 +60,13 @@ export function saveEvaluation(
 
 			// only send message for evaluations with content
 			if (evaluationMessage) {
-				const playlist = RundownPlaylists.findOne(evaluation.playlistId)
+				const playlist = (await RundownPlaylists.findOneAsync(evaluation.playlistId, {
+					fields: {
+						_id: 1,
+						name: 1,
+					},
+				})) as Pick<RundownPlaylist, '_id' | 'name'>
+
 				const hostUrl = studio.settings.sofieUrl
 
 				slackMessage +=
@@ -76,10 +82,8 @@ export function saveEvaluation(
 					evaluationProducer +
 					'_'
 
-				waitForPromiseAll(
-					webhookUrls.map(async (webhookUrl) => {
-						await sendSlackMessageToWebhook(slackMessage, webhookUrl)
-					})
+				await Promise.all(
+					webhookUrls.map(async (webhookUrl) => sendSlackMessageToWebhook(slackMessage, webhookUrl))
 				)
 			}
 		}

@@ -18,11 +18,9 @@ import {
 	RundownPlaylistCollectionUtil,
 	RundownPlaylists,
 } from '../../lib/collections/RundownPlaylists'
-import { Rundown, RundownId, Rundowns } from '../../lib/collections/Rundowns'
+import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
 import { getAllowConfigure, getHelpMode } from '../lib/localStorage'
 import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
-import { Studios } from '../../lib/collections/Studios'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { extendMandadory, unprotectString } from '../../lib/lib'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
@@ -38,6 +36,8 @@ import { RundownPlaylistUi } from './RundownList/RundownPlaylistUi'
 import { doUserAction, UserAction } from '../lib/userAction'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
+import { UIShowStyleBases, UIStudios } from './Collections'
+import { RundownId, RundownPlaylistId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -98,8 +98,8 @@ const dropTargetCollector: DropTargetCollector<IRundownsListDropTargetProps, IRu
 }
 
 export const RundownList = translateWithTracker((): IRundownsListProps => {
-	const studios = Studios.find().fetch()
-	const showStyleBases = ShowStyleBases.find().fetch()
+	const studios = UIStudios.find().fetch()
+	const showStyleBases = UIShowStyleBases.find().fetch()
 	const showStyleVariants = ShowStyleVariants.find().fetch()
 	const rundownLayouts = RundownLayouts.find({
 		$or: [{ exposeAsSelectableLayout: true }, { exposeAsStandalone: true }],
@@ -189,32 +189,27 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 
 				// Subscribe to data:
 				this.subscribe(PubSub.rundownPlaylists, {})
-				this.subscribe(PubSub.studios, {})
+				this.subscribe(PubSub.uiStudio, null)
 				this.subscribe(PubSub.rundownLayouts, {})
 
 				this.autorun(() => {
-					const showStyleBaseIds: Set<string> = new Set()
-					const showStyleVariantIds: Set<string> = new Set()
-					const playlistIds: Set<string> = new Set(
+					const showStyleVariantIds: Set<ShowStyleVariantId> = new Set()
+					const playlistIds: Set<RundownPlaylistId> = new Set(
 						RundownPlaylists.find()
 							.fetch()
-							.map((i) => unprotectString(i._id))
+							.map((i) => i._id)
 					)
 
 					for (const rundown of Rundowns.find().fetch()) {
-						showStyleBaseIds.add(unprotectString(rundown.showStyleBaseId))
-						showStyleVariantIds.add(unprotectString(rundown.showStyleVariantId))
+						showStyleVariantIds.add(rundown.showStyleVariantId)
+
+						this.subscribe(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
 					}
 
-					this.subscribe(PubSub.showStyleBases, {
-						_id: { $in: Array.from(showStyleBaseIds) },
-					})
 					this.subscribe(PubSub.showStyleVariants, {
 						_id: { $in: Array.from(showStyleVariantIds) },
 					})
-					this.subscribe(PubSub.rundowns, {
-						playlistId: { $in: Array.from(playlistIds) },
-					})
+					this.subscribe(PubSub.rundowns, Array.from(playlistIds), null)
 				})
 
 				this.autorun(() => {

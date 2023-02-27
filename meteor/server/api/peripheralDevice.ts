@@ -1,16 +1,11 @@
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import * as _ from 'underscore'
-import { PeripheralDeviceAPI, NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../lib/api/peripheralDevice'
-import {
-	PeripheralDevices,
-	PeripheralDeviceId,
-	PeripheralDeviceType,
-	PeripheralDevice,
-} from '../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDevices, PeripheralDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { Rundowns } from '../../lib/collections/Rundowns'
-import { getCurrentTime, protectString, makePromise, stringifyObjects, literal } from '../../lib/lib'
-import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../../lib/collections/PeripheralDeviceCommands'
+import { getCurrentTime, protectString, stringifyObjects, literal } from '../../lib/lib'
+import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import { logger } from '../logging'
 import { TimelineHash } from '../../lib/collections/Timeline'
 import { registerClassToMeteorMethods } from '../methods'
@@ -29,8 +24,8 @@ import { MosIntegration } from './ingest/mosDevice/mosIntegration'
 import { MediaScannerIntegration } from './integration/media-scanner'
 import { MediaObject } from '../../lib/collections/MediaObjects'
 import { MediaManagerIntegration } from './integration/mediaWorkFlows'
-import { MediaWorkFlowId, MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowStepId, MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
+import { MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
 import { MOS } from '@sofie-automation/corelib'
 import { determineDiffTime } from './systemTime/systemTime'
 import { getTimeDiff } from './systemTime/api'
@@ -41,28 +36,47 @@ import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
 import { PickerGET, PickerPOST } from './http'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PackageManagerIntegration } from './integration/expectedPackages'
-import { ExpectedPackageId } from '../../lib/collections/ExpectedPackages'
-import { ExpectedPackageWorkStatusId } from '../../lib/collections/ExpectedPackageWorkStatuses'
 import { profiler } from './profiler'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { ConfigManifestEntryType, DeviceConfigManifest, TableConfigManifestEntry } from '../../lib/api/deviceConfig'
-import { Studios } from '../../lib/collections/Studios'
-import { PlayoutChangedResults } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import {
+	ConfigManifestEntryType,
+	DeviceConfigManifest,
+	TableConfigManifestEntry,
+} from '@sofie-automation/corelib/dist/deviceConfig'
+import {
+	PlayoutChangedResults,
+	PeripheralDeviceInitOptions,
+	PeripheralDeviceStatusObject,
+	TimelineTriggerTimeResult,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import { checkStudioExists } from '../../lib/collections/optimizations'
+import {
+	ExpectedPackageId,
+	ExpectedPackageWorkStatusId,
+	MediaWorkFlowId,
+	MediaWorkFlowStepId,
+	PeripheralDeviceCommandId,
+	PeripheralDeviceId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	NewPeripheralDeviceAPI,
+	PeripheralDeviceAPIMethods,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
-	export function initialize(
+	export async function initialize(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
-		options: PeripheralDeviceAPI.InitOptions
-	): PeripheralDeviceId {
+		options: PeripheralDeviceInitOptions
+	): Promise<PeripheralDeviceId> {
 		triggerWriteAccess() // This is somewhat of a hack, since we want to check if it exists at all, before checking access
 		check(deviceId, String)
 		const existingDevice = PeripheralDevices.findOne(deviceId)
 		if (existingDevice) {
-			PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
+			await PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
 		}
 
 		check(token, String)
@@ -81,7 +95,7 @@ export namespace ServerPeripheralDeviceAPI {
 			const newVersionsStr = stringifyObjects(options.versions)
 			const oldVersionsStr = stringifyObjects(existingDevice.versions)
 
-			PeripheralDevices.update(deviceId, {
+			await PeripheralDevices.updateAsync(deviceId, {
 				$set: {
 					lastSeen: getCurrentTime(),
 					lastConnected: getCurrentTime(),
@@ -111,7 +125,7 @@ export namespace ServerPeripheralDeviceAPI {
 						: undefined,
 			})
 		} else {
-			PeripheralDevices.insert({
+			await PeripheralDevices.insertAsync({
 				_id: deviceId,
 				organizationId: null,
 				created: getCurrentTime(),
@@ -145,25 +159,25 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 		return deviceId
 	}
-	export function unInitialize(
+	export async function unInitialize(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string
-	): PeripheralDeviceId {
-		checkAccessAndGetPeripheralDevice(deviceId, token, context)
+	): Promise<PeripheralDeviceId> {
+		await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		// TODO: Add an authorization for this?
 
-		PeripheralDevices.remove(deviceId)
+		await PeripheralDevices.removeAsync(deviceId)
 		return deviceId
 	}
-	export function setStatus(
+	export async function setStatus(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
-		status: PeripheralDeviceAPI.StatusObject
-	): PeripheralDeviceAPI.StatusObject {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		status: PeripheralDeviceStatusObject
+	): Promise<PeripheralDeviceStatusObject> {
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(deviceId, String)
 		check(token, String)
@@ -178,39 +192,36 @@ export namespace ServerPeripheralDeviceAPI {
 			logger.info(
 				`Changed status of device ${peripheralDevice._id} "${peripheralDevice.name}" to ${status.statusCode}`
 			)
+
 			// perform the update:
-			PeripheralDevices.update(deviceId, {
+			await PeripheralDevices.updateAsync(deviceId, {
 				$set: {
 					status: status,
 					connected: true,
 				},
 			})
 		} else if (!peripheralDevice.connected) {
-			PeripheralDevices.update(deviceId, {
+			await PeripheralDevices.updateAsync(deviceId, {
 				$set: {
 					connected: true,
 				},
 			})
 		}
+
 		return status
 	}
-	export function ping(context: MethodContext, deviceId: PeripheralDeviceId, token: string): void {
-		checkAccessAndGetPeripheralDevice(deviceId, token, context)
+	export async function ping(context: MethodContext, deviceId: PeripheralDeviceId, token: string): Promise<void> {
+		await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(deviceId, String)
 		check(token, String)
 
 		// Update lastSeen
-		PeripheralDevices.update(deviceId, {
+		await PeripheralDevices.updateAsync(deviceId, {
 			$set: {
 				lastSeen: getCurrentTime(),
 			},
 		})
-	}
-	export function getPeripheralDevice(context: MethodContext, deviceId: PeripheralDeviceId, token: string) {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
-
-		return peripheralDevice
 	}
 
 	/**
@@ -221,11 +232,11 @@ export namespace ServerPeripheralDeviceAPI {
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
-		results: PeripheralDeviceAPI.TimelineTriggerTimeResult
+		results: TimelineTriggerTimeResult
 	): Promise<void> {
 		const transaction = profiler.startTransaction('timelineTriggerTime', apmNamespace)
 
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		if (!peripheralDevice.studioId)
 			throw new Meteor.Error(401, `peripheralDevice "${deviceId}" not attached to a studio`)
@@ -256,7 +267,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// This is called from the playout-gateway when a part starts playing.
 		// Note that this function can / might be called several times from playout-gateway for the same part
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		if (!peripheralDevice.studioId)
 			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent piecePlaybackStarted, but has no studioId`)
@@ -273,14 +284,14 @@ export namespace ServerPeripheralDeviceAPI {
 
 		transaction?.end()
 	}
-	export function pingWithCommand(
+	export async function pingWithCommand(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
 		message: string,
 		cb?: (err: any | null, msg: any) => void
-	) {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+	): Promise<void> {
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		PeripheralDeviceAPI.executeFunction(peripheralDevice._id, 'pingResponse', message)
 			.then((res) => {
@@ -292,17 +303,22 @@ export namespace ServerPeripheralDeviceAPI {
 				if (cb) cb(err, null)
 			})
 
-		ping(context, deviceId, token)
+		await ping(context, deviceId, token)
 	}
-	export function killProcess(context: MethodContext, deviceId: PeripheralDeviceId, token: string, really: boolean) {
+	export async function killProcess(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		token: string,
+		really: boolean
+	): Promise<boolean> {
 		// This is used in integration tests only
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		// Make sure this never runs if this server isn't empty:
 		if (Rundowns.find().count()) throw new Meteor.Error(400, 'Unable to run killProcess: Rundowns not empty!')
 
 		if (really) {
-			this.logger.info('KillProcess command received from ' + peripheralDevice._id + ', shutting down in 1000ms!')
+			logger.info('KillProcess command received from ' + peripheralDevice._id + ', shutting down in 1000ms!')
 			setTimeout(() => {
 				// eslint-disable-next-line no-process-exit
 				process.exit(0)
@@ -315,7 +331,7 @@ export namespace ServerPeripheralDeviceAPI {
 		access: PeripheralDeviceContentWriteAccess.ContentAccess,
 		subDeviceId: string,
 		disable: boolean
-	) {
+	): void {
 		const peripheralDevice = access.device
 		const deviceId = access.deviceId
 
@@ -363,15 +379,15 @@ export namespace ServerPeripheralDeviceAPI {
 			},
 		})
 	}
-	export function testMethod(
+	export async function testMethod(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
 		returnValue: string,
 		throwError?: boolean
-	): string {
+	): Promise<string> {
 		// used for integration tests with core-connection
-		checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		check(deviceId, String)
 		check(token, String)
@@ -384,38 +400,38 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 	}
 
-	export function requestUserAuthToken(
+	export async function requestUserAuthToken(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
 		authUrl: string
-	) {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+	): Promise<void> {
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		if (peripheralDevice.type !== PeripheralDeviceType.SPREADSHEET) {
 			throw new Meteor.Error(400, 'can only request user auth token for peripheral device of spreadsheet type')
 		}
 		check(authUrl, String)
 
-		PeripheralDevices.update(peripheralDevice._id, {
+		await PeripheralDevices.updateAsync(peripheralDevice._id, {
 			$set: {
 				accessTokenUrl: authUrl,
 			},
 		})
 	}
-	export function storeAccessToken(
+	export async function storeAccessToken(
 		context: MethodContext,
 		deviceId: PeripheralDeviceId,
 		token: string,
-		accessToken: any
-	) {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+		accessToken: unknown
+	): Promise<void> {
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		if (peripheralDevice.type !== PeripheralDeviceType.SPREADSHEET) {
 			throw new Meteor.Error(400, 'can only store access token for peripheral device of spreadsheet type')
 		}
 
-		PeripheralDevices.update(peripheralDevice._id, {
+		await PeripheralDevices.updateAsync(peripheralDevice._id, {
 			$set: {
 				accessTokenUrl: '',
 				'secretSettings.accessToken': accessToken,
@@ -423,19 +439,25 @@ export namespace ServerPeripheralDeviceAPI {
 			},
 		})
 	}
-	export function removePeripheralDevice(context: MethodContext, deviceId: PeripheralDeviceId, token?: string) {
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, token, context)
+	export async function removePeripheralDevice(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		token?: string
+	): Promise<void> {
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		logger.info(`Removing PeripheralDevice ${peripheralDevice._id}`)
 
-		PeripheralDevices.remove(peripheralDevice._id)
-		PeripheralDevices.remove({
-			parentDeviceId: peripheralDevice._id,
-		})
-		PeripheralDeviceCommands.remove({
-			deviceId: peripheralDevice._id,
-		})
-		// TODO: add others here (MediaWorkflows, etc?)
+		await Promise.allSettled([
+			PeripheralDevices.removeAsync(peripheralDevice._id),
+			PeripheralDevices.removeAsync({
+				parentDeviceId: peripheralDevice._id,
+			}),
+			PeripheralDeviceCommands.removeAsync({
+				deviceId: peripheralDevice._id,
+			}),
+			// TODO: add others here (MediaWorkflows, etc?)
+		])
 	}
 	export async function reportResolveDone(
 		context: MethodContext,
@@ -446,7 +468,7 @@ export namespace ServerPeripheralDeviceAPI {
 		resolveDuration: number
 	): Promise<void> {
 		// Device (playout gateway) reports that it has finished resolving a timeline
-		const peripheralDevice = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
 		check(timelineHash, String)
 		check(resolveDuration, Number)
@@ -487,7 +509,7 @@ export namespace ServerPeripheralDeviceAPI {
 	}
 }
 
-PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingMessage, res: ServerResponse) => {
+PickerPOST.route('/devices/:deviceId/uploadCredentials', async (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	let content = ''
@@ -497,7 +519,7 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingM
 
 		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
 
-		const peripheralDevice = PeripheralDevices.findOne(deviceId)
+		const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
 		const url = new URL(req.url || '', 'http://localhost')
@@ -534,7 +556,7 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', (params, req: IncomingM
 	res.end(content)
 })
 
-PickerGET.route('/devices/:deviceId/oauthResponse', (params, req: IncomingMessage, res: ServerResponse) => {
+PickerGET.route('/devices/:deviceId/oauthResponse', async (params, req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	let content = ''
@@ -544,14 +566,14 @@ PickerGET.route('/devices/:deviceId/oauthResponse', (params, req: IncomingMessag
 
 		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
 
-		const peripheralDevice = PeripheralDevices.findOne(deviceId)
+		const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
 		if (!peripheralDevice.studioId)
 			throw new Meteor.Error(400, `Peripheral device "${deviceId}" is not attached to a studio`)
 
-		const studio = Studios.findOne(peripheralDevice.studioId)
-		if (!studio) throw new Meteor.Error(404, `Studio "${studio}" not found`)
+		if (!(await checkStudioExists(peripheralDevice.studioId)))
+			throw new Meteor.Error(404, `Studio "${peripheralDevice.studioId}" not found`)
 
 		const url = new URL(req.url || '', 'http://localhost')
 
@@ -585,7 +607,7 @@ PickerGET.route('/devices/:deviceId/oauthResponse', (params, req: IncomingMessag
 	res.end(content)
 })
 
-PickerPOST.route('/devices/:deviceId/resetAuth', (params, req: IncomingMessage, res: ServerResponse) => {
+PickerPOST.route('/devices/:deviceId/resetAuth', async (params, _req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'text/plain')
 
 	let content = ''
@@ -595,7 +617,7 @@ PickerPOST.route('/devices/:deviceId/resetAuth', (params, req: IncomingMessage, 
 
 		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
 
-		const peripheralDevice = PeripheralDevices.findOne(deviceId)
+		const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
 		PeripheralDevices.update(peripheralDevice._id, {
@@ -644,18 +666,18 @@ async function updatePeripheralDeviceLatency(totalLatency: number, peripheralDev
 }
 
 /** WHen a device has executed a PeripheralDeviceCommand, it will reply to this endpoint with the result */
-function functionReply(
+async function functionReply(
 	context: MethodContext,
 	deviceId: PeripheralDeviceId,
 	deviceToken: string,
 	commandId: PeripheralDeviceCommandId,
 	err: any,
 	result: any
-): void {
-	const device = checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
+): Promise<void> {
+	const device = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 
 	// logger.debug('functionReply', err, result)
-	PeripheralDeviceCommands.update(
+	await PeripheralDeviceCommands.updateAsync(
 		{
 			_id: commandId,
 			deviceId: { $in: _.compact([device._id, device.parentDeviceId]) },
@@ -680,11 +702,11 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	}
 	async getTimeDiff() {
 		triggerWriteAccessBecauseNoCheckNecessary()
-		return makePromise(() => getTimeDiff())
+		return getTimeDiff()
 	}
 	async getTime() {
 		triggerWriteAccessBecauseNoCheckNecessary()
-		return makePromise(() => getCurrentTime())
+		return getCurrentTime()
 	}
 
 	// ----- PeripheralDevice --------------
@@ -695,22 +717,24 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		err: any,
 		result: any
 	) {
-		return makePromise(() => functionReply(this, deviceId, deviceToken, commandId, err, result))
+		return functionReply(this, deviceId, deviceToken, commandId, err, result)
 	}
-	async initialize(deviceId: PeripheralDeviceId, deviceToken: string, options: PeripheralDeviceAPI.InitOptions) {
-		return makePromise(() => ServerPeripheralDeviceAPI.initialize(this, deviceId, deviceToken, options))
+	async initialize(deviceId: PeripheralDeviceId, deviceToken: string, options: PeripheralDeviceInitOptions) {
+		return ServerPeripheralDeviceAPI.initialize(this, deviceId, deviceToken, options)
 	}
 	async unInitialize(deviceId: PeripheralDeviceId, deviceToken: string) {
-		return makePromise(() => ServerPeripheralDeviceAPI.unInitialize(this, deviceId, deviceToken))
+		return ServerPeripheralDeviceAPI.unInitialize(this, deviceId, deviceToken)
 	}
-	async setStatus(deviceId: PeripheralDeviceId, deviceToken: string, status: PeripheralDeviceAPI.StatusObject) {
-		return makePromise(() => ServerPeripheralDeviceAPI.setStatus(this, deviceId, deviceToken, status))
+	async setStatus(deviceId: PeripheralDeviceId, deviceToken: string, status: PeripheralDeviceStatusObject) {
+		return ServerPeripheralDeviceAPI.setStatus(this, deviceId, deviceToken, status)
 	}
 	async ping(deviceId: PeripheralDeviceId, deviceToken: string) {
-		return makePromise(() => ServerPeripheralDeviceAPI.ping(this, deviceId, deviceToken))
+		return ServerPeripheralDeviceAPI.ping(this, deviceId, deviceToken)
 	}
 	async getPeripheralDevice(deviceId: PeripheralDeviceId, deviceToken: string) {
-		return makePromise(() => ServerPeripheralDeviceAPI.getPeripheralDevice(this, deviceId, deviceToken))
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, this)
+
+		return peripheralDevice
 	}
 	async pingWithCommand(
 		deviceId: PeripheralDeviceId,
@@ -718,26 +742,20 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		message: string,
 		cb?: (err: any | null, msg: any) => void
 	) {
-		return makePromise(() => ServerPeripheralDeviceAPI.pingWithCommand(this, deviceId, deviceToken, message, cb))
+		return ServerPeripheralDeviceAPI.pingWithCommand(this, deviceId, deviceToken, message, cb)
 	}
 	async killProcess(deviceId: PeripheralDeviceId, deviceToken: string, really: boolean) {
-		return makePromise(() => ServerPeripheralDeviceAPI.killProcess(this, deviceId, deviceToken, really))
+		return ServerPeripheralDeviceAPI.killProcess(this, deviceId, deviceToken, really)
 	}
 	async testMethod(deviceId: PeripheralDeviceId, deviceToken: string, returnValue: string, throwError?: boolean) {
-		return makePromise(() =>
-			ServerPeripheralDeviceAPI.testMethod(this, deviceId, deviceToken, returnValue, throwError)
-		)
+		return ServerPeripheralDeviceAPI.testMethod(this, deviceId, deviceToken, returnValue, throwError)
 	}
 	async removePeripheralDevice(deviceId: PeripheralDeviceId, token?: string) {
-		return makePromise(() => ServerPeripheralDeviceAPI.removePeripheralDevice(this, deviceId, token))
+		return ServerPeripheralDeviceAPI.removePeripheralDevice(this, deviceId, token)
 	}
 
 	// ------ Playout Gateway --------
-	async timelineTriggerTime(
-		deviceId: PeripheralDeviceId,
-		deviceToken: string,
-		r: PeripheralDeviceAPI.TimelineTriggerTimeResult
-	) {
+	async timelineTriggerTime(deviceId: PeripheralDeviceId, deviceToken: string, r: TimelineTriggerTimeResult) {
 		return ServerPeripheralDeviceAPI.timelineTriggerTime(this, deviceId, deviceToken, r)
 	}
 	async playoutPlaybackChanged(
@@ -758,10 +776,10 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 
 	// ------ Spreadsheet Gateway --------
 	async requestUserAuthToken(deviceId: PeripheralDeviceId, deviceToken: string, authUrl: string) {
-		return makePromise(() => ServerPeripheralDeviceAPI.requestUserAuthToken(this, deviceId, deviceToken, authUrl))
+		return ServerPeripheralDeviceAPI.requestUserAuthToken(this, deviceId, deviceToken, authUrl)
 	}
-	async storeAccessToken(deviceId: PeripheralDeviceId, deviceToken: string, authToken: any) {
-		return makePromise(() => ServerPeripheralDeviceAPI.storeAccessToken(this, deviceId, deviceToken, authToken))
+	async storeAccessToken(deviceId: PeripheralDeviceId, deviceToken: string, authToken: unknown) {
+		return ServerPeripheralDeviceAPI.storeAccessToken(this, deviceId, deviceToken, authToken)
 	}
 
 	// ------ Ingest methods: ------------
@@ -991,9 +1009,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	}
 	// ------- Media Manager (Media Scanner)
 	async getMediaObjectRevisions(deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string) {
-		return makePromise(() =>
-			MediaScannerIntegration.getMediaObjectRevisions(this, deviceId, deviceToken, collectionId)
-		)
+		return MediaScannerIntegration.getMediaObjectRevisions(this, deviceId, deviceToken, collectionId)
 	}
 	async updateMediaObject(
 		deviceId: PeripheralDeviceId,
@@ -1002,21 +1018,17 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		id: string,
 		doc: MediaObject | null
 	) {
-		return makePromise(() =>
-			MediaScannerIntegration.updateMediaObject(this, deviceId, deviceToken, collectionId, id, doc)
-		)
+		return MediaScannerIntegration.updateMediaObject(this, deviceId, deviceToken, collectionId, id, doc)
 	}
 	async clearMediaObjectCollection(deviceId: PeripheralDeviceId, deviceToken: string, collectionId: string) {
-		return makePromise(() =>
-			MediaScannerIntegration.clearMediaObjectCollection(deviceId, deviceToken, collectionId)
-		)
+		return MediaScannerIntegration.clearMediaObjectCollection(this, deviceId, deviceToken, collectionId)
 	}
 	// ------- Media Manager --------------
 	async getMediaWorkFlowRevisions(deviceId: PeripheralDeviceId, deviceToken: string) {
-		return makePromise(() => MediaManagerIntegration.getMediaWorkFlowRevisions(this, deviceId, deviceToken))
+		return MediaManagerIntegration.getMediaWorkFlowRevisions(this, deviceId, deviceToken)
 	}
 	async getMediaWorkFlowStepRevisions(deviceId: PeripheralDeviceId, deviceToken: string) {
-		return makePromise(() => MediaManagerIntegration.getMediaWorkFlowStepRevisions(this, deviceId, deviceToken))
+		return MediaManagerIntegration.getMediaWorkFlowStepRevisions(this, deviceId, deviceToken)
 	}
 	async updateMediaWorkFlow(
 		deviceId: PeripheralDeviceId,
@@ -1024,9 +1036,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		workFlowId: MediaWorkFlowId,
 		obj: MediaWorkFlow | null
 	) {
-		return makePromise(() =>
-			MediaManagerIntegration.updateMediaWorkFlow(this, deviceId, deviceToken, workFlowId, obj)
-		)
+		return MediaManagerIntegration.updateMediaWorkFlow(this, deviceId, deviceToken, workFlowId, obj)
 	}
 	async updateMediaWorkFlowStep(
 		deviceId: PeripheralDeviceId,
@@ -1034,9 +1044,7 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		docId: MediaWorkFlowStepId,
 		obj: MediaWorkFlowStep | null
 	) {
-		return makePromise(() =>
-			MediaManagerIntegration.updateMediaWorkFlowStep(this, deviceId, deviceToken, docId, obj)
-		)
+		return MediaManagerIntegration.updateMediaWorkFlowStep(this, deviceId, deviceToken, docId, obj)
 	}
 	async updateExpectedPackageWorkStatuses(
 		deviceId: PeripheralDeviceId,

@@ -1,7 +1,8 @@
-import { MongoSelector } from '../typings/meteor'
-import { BlueprintId, Blueprints, Blueprint } from './Blueprints'
-import { DBShowStyleBase, ShowStyleBaseId, ShowStyleBases } from './ShowStyleBases'
-import { DBStudio, StudioId, Studios, StudioLight } from './Studios'
+import { BlueprintId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MongoQuery } from '../typings/meteor'
+import { Blueprints, Blueprint } from './Blueprints'
+import { DBShowStyleBase, ShowStyleBases } from './ShowStyleBases'
+import { DBStudio, Studios, StudioLight } from './Studios'
 
 export { StudioLight } from './Studios' // TODO: Legacy
 
@@ -11,19 +12,8 @@ export { StudioLight } from './Studios' // TODO: Legacy
 	(Because this reduces the load and amount of data transferred)
 */
 
-export async function fetchBlueprintVersion(blueprintId: BlueprintId) {
-	const blueprint = await fetchBlueprintLight(blueprintId)
-	return blueprint?.blueprintVersion
-}
 export async function fetchBlueprintLight(blueprintId: BlueprintId): Promise<BlueprintLight | undefined> {
 	return Blueprints.findOneAsync(blueprintId, {
-		fields: {
-			code: 0,
-		},
-	})
-}
-export async function fetchBlueprintsLight(selector: MongoSelector<Blueprint>): Promise<BlueprintLight[]> {
-	return Blueprints.findFetchAsync(selector, {
 		fields: {
 			code: 0,
 		},
@@ -34,61 +24,58 @@ export type BlueprintLight = Omit<Blueprint, 'code'>
 /**
  * Returns a "light" version of the Studio, where the most heavy/large properties are omitted.
  */
-export function fetchStudioLight(studioId: StudioId): StudioLight | undefined {
-	return Studios.findOne(studioId, {
+export async function fetchStudioLight(studioId: StudioId): Promise<StudioLight | undefined> {
+	return Studios.findOneAsync(studioId, {
 		fields: {
-			mappings: 0,
-			blueprintConfig: 0,
+			mappingsWithOverrides: 0,
+			blueprintConfigWithOverrides: 0,
 		},
 	})
 }
-export function fetchStudiosLight(selector: MongoSelector<DBStudio>): StudioLight[] {
-	return Studios.find(selector, {
-		fields: {
-			mappings: 0,
-			blueprintConfig: 0,
-		},
-	}).fetch()
-}
 
-export function fetchStudioIds(selector: MongoSelector<DBStudio>): StudioId[] {
-	return Studios.find(selector, {
+export async function fetchStudioIds(selector: MongoQuery<DBStudio>): Promise<StudioId[]> {
+	const studios = await Studios.findFetchAsync(selector, {
 		fields: {
 			_id: 1,
 		},
 	})
-		.fetch()
-		.map((s) => s._id)
+
+	return studios.map((s) => s._id)
 }
 
 /** Checks if a studio exists */
-export function checkStudioExists(studioId: StudioId): boolean {
-	return !!Studios.findOne(studioId, {
+export async function checkStudioExists(studioId: StudioId): Promise<boolean> {
+	const studio = await Studios.findOneAsync(studioId, {
 		fields: {
 			_id: 1,
 		},
 	})
+
+	return !!studio
 }
 
 /**
  * Returns a "light" version of the Studio, where the most heavy/large properties are omitted.
  */
-export function fetchShowStyleBaseLight(showStyleId: ShowStyleBaseId): ShowStyleBaseLight | undefined {
-	return ShowStyleBases.findOne(showStyleId, {
+export async function fetchShowStyleBaseLight(showStyleId: ShowStyleBaseId): Promise<ShowStyleBaseLight | undefined> {
+	return ShowStyleBases.findOneAsync(showStyleId, {
 		fields: {
-			blueprintConfig: 0,
-			outputLayers: 0,
-			sourceLayers: 0,
+			blueprintConfigWithOverrides: 0,
+			outputLayersWithOverrides: 0,
+			sourceLayersWithOverrides: 0,
 		},
 	})
 }
-export function fetchShowStyleBasesLight(selector: MongoSelector<DBShowStyleBase>): ShowStyleBaseLight[] {
-	return ShowStyleBases.find(selector, {
+export async function fetchShowStyleBasesLight(selector: MongoQuery<DBShowStyleBase>): Promise<ShowStyleBaseLight[]> {
+	return ShowStyleBases.findFetchAsync(selector, {
 		fields: {
-			blueprintConfig: 0,
-			outputLayers: 0,
-			sourceLayers: 0,
+			blueprintConfigWithOverrides: 0,
+			outputLayersWithOverrides: 0,
+			sourceLayersWithOverrides: 0,
 		},
-	}).fetch()
+	})
 }
-export type ShowStyleBaseLight = Omit<DBShowStyleBase, 'blueprintConfig' | 'outputLayers' | 'sourceLayers'>
+export type ShowStyleBaseLight = Omit<
+	DBShowStyleBase,
+	'blueprintConfigWithOverrides' | 'outputLayersWithOverrides' | 'sourceLayersWithOverrides'
+>

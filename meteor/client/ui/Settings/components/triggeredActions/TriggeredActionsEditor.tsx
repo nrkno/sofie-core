@@ -2,8 +2,8 @@ import React, { useState, useEffect, useContext, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSubscription, useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { PubSub } from '../../../../../lib/api/pubsub'
-import { ShowStyleBaseId, ShowStyleBases } from '../../../../../lib/collections/ShowStyleBases'
-import { TriggeredActionId, TriggeredActions } from '../../../../../lib/collections/TriggeredActions'
+import { ShowStyleBases } from '../../../../../lib/collections/ShowStyleBases'
+import { TriggeredActions, TriggeredActionsObj } from '../../../../../lib/collections/TriggeredActions'
 import { faCaretDown, faCaretRight, faDownload, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { TriggeredActionEntry, TRIGGERED_ACTION_ENTRY_DRAG_TYPE } from './TriggeredActionEntry'
@@ -14,9 +14,9 @@ import {
 	RundownPlaylistCollectionUtil,
 	RundownPlaylists,
 } from '../../../../../lib/collections/RundownPlaylists'
-import { Rundown, RundownId, Rundowns } from '../../../../../lib/collections/Rundowns'
+import { Rundown, Rundowns } from '../../../../../lib/collections/Rundowns'
 import { PartInstances } from '../../../../../lib/collections/PartInstances'
-import { Part, PartId, Parts } from '../../../../../lib/collections/Parts'
+import { Part, Parts } from '../../../../../lib/collections/Parts'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { UploadButton } from '../../../../lib/uploadButton'
 import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
@@ -30,6 +30,9 @@ import { fetchFrom } from '../../../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../../lib/notifications/notifications'
 import { Meteor } from 'meteor/meteor'
 import { doModalDialog } from '../../../../lib/ModalDialog'
+import { MongoQuery } from '../../../../../lib/typings/meteor'
+import _ from 'underscore'
+import { PartId, RundownId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface PreviewContext {
 	rundownPlaylist: RundownPlaylist | null
@@ -77,8 +80,8 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	)
 
 	const { showStyleBaseId } = props
-	const showStyleBaseSelector = {
-		$or: [
+	const showStyleBaseSelector: MongoQuery<TriggeredActionsObj> = {
+		$or: _.compact([
 			{
 				showStyleBaseId: null,
 			},
@@ -87,13 +90,11 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 						showStyleBaseId: showStyleBaseId,
 				  }
 				: undefined,
-		].filter(Boolean),
+		]),
 	}
 
 	useSubscription(PubSub.triggeredActions, showStyleBaseSelector)
-	useSubscription(PubSub.rundowns, {
-		showStyleBaseId,
-	})
+	useSubscription(PubSub.rundowns, null, showStyleBaseId ? [showStyleBaseId] : [])
 
 	useEffect(() => {
 		const debounce = setTimeout(() => {
@@ -207,13 +208,8 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		null
 	)
 
-	useSubscription(PubSub.partInstances, {
-		rundownId: rundown?._id ?? false,
-		playlistActivationId: rundownPlaylist?.activationId,
-	})
-	useSubscription(PubSub.parts, {
-		rundownId: rundown?._id ?? false,
-	})
+	useSubscription(PubSub.partInstances, rundown ? [rundown._id] : [], rundownPlaylist?.activationId)
+	useSubscription(PubSub.parts, rundown ? [rundown._id] : [])
 
 	const previewContext = useTracker(
 		() => {

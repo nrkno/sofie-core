@@ -10,7 +10,7 @@ import { MediaObject } from '../../../../lib/collections/MediaObjects'
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
 
 import { Lottie } from '@crello/react-lottie'
-// @ts-ignore Not recognized by Typescript
+// @ts-expect-error Not recognized by Typescript
 import * as loopAnimation from './icon-loop.json'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { VTContent } from '@sofie-automation/blueprints-integration'
@@ -22,10 +22,11 @@ import { clone } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { FreezeFrameIcon } from '../../../lib/ui/icons/freezeFrame'
 import StudioContext from '../../RundownView/StudioContext'
-import { Studio } from '../../../../lib/collections/Studios'
+import { Settings } from '../../../../lib/Settings'
+import { UIStudio } from '../../../../lib/api/studios'
 
 interface IProps extends ICustomLayerItemProps {
-	studio: Studio | undefined
+	studio: UIStudio | undefined
 }
 interface IState {
 	scenes?: Array<number>
@@ -498,8 +499,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		) {
 			let endOfContentAt: number = vtContent.sourceDuration + (vtContent.postrollDuration || 0)
 
-			const TBD_COUNTDOWN_TO_FREEZE = false // TODOSYNC: To be implemented by tv2, a setting that enables this
-			if (TBD_COUNTDOWN_TO_FREEZE) {
+			if (Settings.useCountdownToFreezeFrame) {
 				const lastFreeze = this.state.freezes && this.state.freezes[this.state.freezes.length - 1]
 				const endingFreezeStart =
 					lastFreeze &&

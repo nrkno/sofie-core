@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { Meteor } from 'meteor/meteor'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { PubSub } from '../../../lib/api/pubsub'
+import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { Parts } from '../../../lib/collections/Parts'
 import { Segments } from '../../../lib/collections/Segments'
@@ -45,16 +44,12 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 		[segmentId]
 	)
 
-	const piecesReady = useSubscription(
-		PubSub.pieces,
-		{
-			startRundownId: rundownId,
-			startPartId: {
-				$in: partIds,
-			},
+	const piecesReady = useSubscription(PubSub.pieces, {
+		startRundownId: rundownId,
+		startPartId: {
+			$in: partIds,
 		},
-		[partIds]
-	)
+	})
 
 	const partInstanceIds = useTracker(
 		() =>
@@ -75,19 +70,15 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 		[segmentId]
 	)
 
-	const pieceInstancesReady = useSubscription(
-		PubSub.pieceInstances,
-		{
-			rundownId: rundownId,
-			partInstanceId: {
-				$in: partInstanceIds,
-			},
-			reset: {
-				$ne: true,
-			},
+	const pieceInstancesReady = useSubscription(PubSub.pieceInstances, {
+		rundownId: rundownId,
+		partInstanceId: {
+			$in: partInstanceIds,
 		},
-		[rundownId, partInstanceIds]
-	)
+		reset: {
+			$ne: true,
+		},
+	})
 
 	useTracker(() => {
 		const segment = Segments.findOne(segmentId, {
@@ -97,7 +88,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 			},
 		})
 		segment &&
-			Meteor.subscribe(PubSub.pieces, {
+			meteorSubscribe(PubSub.pieces, {
 				invalid: {
 					$ne: true,
 				},
@@ -146,7 +137,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 
 			const partInstance = PartInstances.findOne(props.playlist.nextPartInstanceId, {
 				fields: {
-					//@ts-ignore
+					//@ts-expect-error typescript doesnt like it
 					segmentId: 1,
 					'part._id': 1,
 				},
@@ -169,7 +160,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 
 			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInstanceId, {
 				fields: {
-					//@ts-ignore
+					//@ts-expect-error deep property
 					'part.autoNext': 1,
 					'part.expectedDuration': 1,
 				},
@@ -259,8 +250,8 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 			liveLineHistorySize={LIVELINE_HISTORY_SIZE}
 			displayLiveLineCounter={props.displayLiveLineCounter}
 			onContextMenu={props.onContextMenu}
-			onFollowLiveLine={this.onFollowLiveLine}
-			onShowEntireSegment={this.onShowEntireSegment}
+			// onFollowLiveLine={this.onFollowLiveLine}
+			// onShowEntireSegment={this.onShowEntireSegment}
 			onScroll={onScroll}
 			isLastSegment={props.isLastSegment}
 			lastValidPartIndex={props.lastValidPartIndex}

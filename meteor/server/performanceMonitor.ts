@@ -40,7 +40,7 @@ function traceDebuggingData() {
 		subscriptions: {},
 		connections: [],
 	}
-	// @ts-ignore
+	// @ts-expect-error Meteor typings are incomplete
 	const connections = Meteor.server.stream_server.open_sockets
 	_.each(connections, (connection: any) => {
 		debugData.connectionCount++
@@ -64,7 +64,6 @@ function traceDebuggingData() {
 
 			_.each(session._namedSubs, (sub: any) => {
 				debugData.namedSubscriptionCount++
-				// @ts-ignore
 				if (!debugData.subscriptions[sub._name]) {
 					debugData.subscriptions[sub._name] = {
 						count: 0,

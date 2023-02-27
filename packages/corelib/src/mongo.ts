@@ -19,6 +19,12 @@ export type MongoFieldSpecifierZeroes<T> = {
 }
 export type MongoFieldSpecifier<T> = MongoFieldSpecifierOnes<T> | MongoFieldSpecifierZeroes<T>
 
+/**
+ * Type helper to construct a field specifier to include all the keys mentioned in a type union.
+ * This ensures with Typescript that the fields specified in the query, match what we cast to afterwards
+ */
+export type IncludeAllMongoFieldSpecifier<T extends string> = { [key in T]: 1 }
+
 export interface FindOneOptions<TDoc> {
 	sort?: SortSpecifier<TDoc>
 	skip?: number

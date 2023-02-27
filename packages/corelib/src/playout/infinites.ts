@@ -16,7 +16,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { assertNever, flatten, getRandomId, literal, max, normalizeArrayToMapFunc } from '../lib'
 import { protectString } from '../protectedString'
 import { getPieceControlObjectId } from './ids'
-import { DBShowStyleBase } from '../dataModel/ShowStyleBase'
+import { SourceLayers } from '../dataModel/ShowStyleBase'
 import _ = require('underscore')
 import { MongoQuery } from '../mongo'
 
@@ -140,7 +140,7 @@ export function getPlayheadTrackingInfinitesForPart(
 			}
 		}
 
-		if (lastPieceInstance && !lastPieceInstance.stoppedPlayback && !lastPieceInstance.userDuration) {
+		if (lastPieceInstance && !lastPieceInstance.plannedStoppedPlayback && !lastPieceInstance.userDuration) {
 			// If it is an onChange, then it may want to continue
 			let isUsed = false
 			switch (lastPieceInstance.piece.lifespan) {
@@ -187,7 +187,7 @@ export function getPlayheadTrackingInfinitesForPart(
 				// This is the piece we may copy across
 				const candidatePiece =
 					pieces.find((p) => p.piece.enable.start === 'now') ?? max(pieces, (p) => p.piece.enable.start)
-				if (candidatePiece && !candidatePiece.stoppedPlayback && !candidatePiece.userDuration) {
+				if (candidatePiece && !candidatePiece.plannedStoppedPlayback && !candidatePiece.userDuration) {
 					// Check this infinite is allowed to continue to this part
 					let isValid = false
 					switch (mode) {
@@ -259,7 +259,7 @@ function markPieceInstanceAsContinuation(previousInstance: PieceInstance, instan
 	instance._id = protectString(`${instance._id}_continue`)
 	instance.dynamicallyInserted = previousInstance.dynamicallyInserted
 	instance.adLibSourceId = previousInstance.adLibSourceId
-	instance.startedPlayback = previousInstance.startedPlayback
+	instance.reportedStartedPlayback = previousInstance.reportedStartedPlayback
 }
 
 export function isPiecePotentiallyActiveInPart(
@@ -534,7 +534,7 @@ function isCappedByAVirtual(
  * The stacking order of infinites is considered, to define the stop times
  */
 export function processAndPrunePieceInstanceTimings(
-	showStyle: ReadonlyDeep<Pick<DBShowStyleBase, 'sourceLayers'>>,
+	sourceLayers: SourceLayers,
 	pieces: PieceInstance[],
 	nowInPart: number,
 	keepDisabledPieces?: boolean,
@@ -544,14 +544,13 @@ export function processAndPrunePieceInstanceTimings(
 
 	// We want to group by exclusive groups, to let them be resolved
 	const exclusiveGroupMap = new Map<string, string>()
-	for (const layer of showStyle.sourceLayers) {
-		if (layer.exclusiveGroup) {
+	for (const layer of Object.values(sourceLayers)) {
+		if (layer?.exclusiveGroup) {
 			exclusiveGroupMap.set(layer._id, layer.exclusiveGroup)
 		}
 	}
 
 	const groupedPieces = _.groupBy(
-		// TODOSYNC tv2 to write some tests and restore: keepDisabledPieces ? pieces.filter((p) => !(p.disabled && p.hidden)) : pieces.filter((p) => !p.disabled),
 		keepDisabledPieces ? pieces : pieces.filter((p) => !p.disabled),
 		// At this stage, if a Piece is disabled, the `keepDisabledPieces` must be turned on. If that's the case
 		// we split out the disabled Pieces onto the sourceLayerId they actually exist on, instead of putting them

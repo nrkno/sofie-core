@@ -119,7 +119,7 @@ export class ReactiveStore<Key extends ProtectedString<any> | string, Value> {
 			dep.changed()
 		}
 	}
-	clear() {
+	clear(): void {
 		for (const key of Object.keys(this._store)) {
 			this.removeValue(key as unknown as Key)
 		}

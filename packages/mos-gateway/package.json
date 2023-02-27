@@ -1,6 +1,6 @@
 {
 	"name": "mos-gateway",
-	"version": "1.44.2",
+	"version": "1.47.0-in-testing.8",
 	"private": true,
 	"description": "MOS-Gateway for the Sofie project",
 	"license": "MIT",
@@ -27,7 +27,7 @@
 	],
 	"scripts": {
 		"build": "rimraf dist && yarn build:main",
-		"buildstart": "yarn build && yarn start",
+		"buildstart": "yarn build && yarn dev",
 		"buildinspect": "yarn build && yarn inspect",
 		"build:main": "tsc -p tsconfig.build.json",
 		"lint:raw": "eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
@@ -44,7 +44,8 @@
 		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn audit --groups devDependencies",
 		"license-validate": "yarn sofie-licensecheck",
-		"start": "node dist/index.js"
+		"start": "node dist/index.js",
+		"dev": "yarn start -id localDevMos"
 	},
 	"engines": {
 		"node": "^14.19 || ^16.14"
@@ -64,20 +65,20 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/server-core-integration": "1.44.2",
-		"@sofie-automation/shared-lib": "1.44.2",
+		"@sofie-automation/server-core-integration": "1.47.0-in-testing.8",
+		"@sofie-automation/shared-lib": "1.47.0-in-testing.8",
 		"mos-connection": "^2.0.1",
 		"tslib": "^2.4.0",
-		"underscore": "^1.13.3",
-		"winston": "^3.7.2"
+		"underscore": "^1.13.4",
+		"winston": "^3.8.2"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [
-			"prettier --write"
+			"prettier"
 		],
 		"*.{ts,tsx}": [
-			"yarn lint:raw --fix"
+			"yarn lint:raw"
 		]
 	}
 }

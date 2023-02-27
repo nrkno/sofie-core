@@ -11,6 +11,8 @@ import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { PartInstance } from '../../../lib/collections/PartInstances'
+import { logger } from '../../../lib/logging'
 
 interface IPlaylistNamePanelProps {
 	visible?: boolean
@@ -59,9 +61,15 @@ class PlaylistNamePanelInner extends MeteorReactComponent<
 export const PlaylistNamePanel = withTracker<IPlaylistNamePanelProps, IState, IPlaylistNamePanelTrackedProps>(
 	(props: IPlaylistNamePanelProps) => {
 		if (props.playlist.currentPartInstanceId) {
-			const livePart = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist, {
+			const livePart: PartInstance = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist, {
 				_id: props.playlist.currentPartInstanceId,
 			})[0]
+			if (!livePart) {
+				logger.warn(
+					`No PartInstance found for PartInstanceId: ${props.playlist.currentPartInstanceId} in Playlist: ${props.playlist._id}`
+				)
+				return {}
+			}
 			const currentRundown = Rundowns.findOne({ _id: livePart.rundownId, playlistId: props.playlist._id })
 
 			return {

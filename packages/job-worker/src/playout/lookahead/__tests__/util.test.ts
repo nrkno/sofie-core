@@ -10,6 +10,7 @@ import { runJobWithPlayoutCache } from '../../../playout/lock'
 import { defaultRundownPlaylist } from '../../../__mocks__/defaultCollectionObjects'
 import _ = require('underscore')
 import { wrapPartToTemporaryInstance } from '../../../__mocks__/partinstance'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 describe('getOrderedPartsAfterPlayhead', () => {
 	let context!: MockJobContext
@@ -35,7 +36,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		}
 		context.setStudio({
 			...context.studio,
-			mappings: mappings,
+			mappingsWithOverrides: wrapDefaultObject(mappings),
 		})
 
 		// Create a playlist with some parts

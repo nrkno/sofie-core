@@ -26,7 +26,7 @@ export class MidiPedalController extends ControllerAbstract {
 	private currentPosition = 0
 
 	constructor(view: PrompterViewInner) {
-		super(view)
+		super()
 		this.prompterView = view
 
 		// assigns params from URL or falls back to the default
@@ -54,7 +54,7 @@ export class MidiPedalController extends ControllerAbstract {
 		// create splines, using the input speedMaps, for both the forward range, and the reverse range
 		this.speedSpline = new Spline(
 			this.speedMap.map(
-				(y, index, array) =>
+				(_y, index, array) =>
 					((this.rangeFwdMax - this.rangeNeutralMax) / (array.length - 1)) * index + this.rangeNeutralMax
 			),
 			this.speedMap
@@ -63,7 +63,7 @@ export class MidiPedalController extends ControllerAbstract {
 			this.reverseSpeedMap
 				.reverse()
 				.map(
-					(y, index, array) =>
+					(_y, index, array) =>
 						((this.rangeNeutralMin - this.rangeRevMin) / (array.length - 1)) * index + this.rangeRevMin
 				),
 			this.reverseSpeedMap

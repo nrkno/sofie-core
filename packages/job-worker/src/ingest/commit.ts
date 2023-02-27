@@ -5,7 +5,6 @@ import {
 	RundownId,
 	PartInstanceId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DbCacheReadCollection } from '../cache/CacheCollection'
@@ -27,7 +26,7 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { runJobWithPlaylistLock, runWithPlaylistCache } from '../playout/lock'
 import { removeSegmentContents } from './cleanup'
 import { CommitIngestData } from './lock'
-import { clone, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
+import { normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { PlaylistLock } from '../jobs/lock'
 import { syncChangesToPartInstances } from './syncChangesToPartInstance'
 import { ensureNextPartIsValid } from './updateNext'
@@ -42,7 +41,6 @@ import {
 	orphanedHiddenSegmentPropertiesToPreserve,
 	SegmentOrphanedReason,
 } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { shouldRemoveOrphanedPartInstance } from './shouldRemoveOrphanedPartInstance'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 
 export type BeforePartMapItem = { id: PartId; rank: number }
@@ -77,11 +75,6 @@ export async function CommitIngestOperation(
 		return
 	}
 
-	const showStyle =
-		data.showStyle ?? (await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId))
-	const blueprint =
-		(data.showStyle ? data.blueprint : undefined) ?? (await context.getShowStyleBlueprint(showStyle._id))
-
 	const targetPlaylistId: PlaylistIdPair = (beforeRundown?.playlistIdIsSetInSofie
 		? {
 				id: beforeRundown.playlistId,
@@ -111,36 +104,33 @@ export async function CommitIngestOperation(
 
 					// Discard proposed playlistId changes
 					trappedInPlaylistId = { id: oldPlaylist._id, externalId: oldPlaylist.externalId }
-					ingestCache.Rundown.update({
-						$set: {
-							playlistId: oldPlaylist._id,
-						},
+					ingestCache.Rundown.update((rd) => {
+						rd.playlistId = oldPlaylist._id
+						return rd
 					})
 
 					if (data.removeRundown) {
 						// Orphan the deleted rundown
-						ingestCache.Rundown.update({
-							$set: {
-								orphaned: 'deleted',
-							},
+						ingestCache.Rundown.update((rd) => {
+							rd.orphaned = 'deleted'
+							return rd
 						})
 					} else {
 						// The rundown is still synced, but is in the wrong playlist. Notify the user
-						ingestCache.Rundown.update({
-							$set: {
-								notes: [
-									...clone<RundownNote[]>(rundown.notes ?? []),
-									{
-										type: NoteSeverity.WARNING,
-										message: getTranslatedMessage(
-											ServerTranslatedMesssages.PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN
-										),
-										origin: {
-											name: 'Data update',
-										},
+						ingestCache.Rundown.update((rd) => {
+							rd.notes = [
+								...(rd.notes ?? []),
+								{
+									type: NoteSeverity.WARNING,
+									message: getTranslatedMessage(
+										ServerTranslatedMesssages.PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN
+									),
+									origin: {
+										name: 'Data update',
 									},
-								],
-							},
+								},
+							]
+							return rd
 						})
 					}
 				} else {
@@ -185,6 +175,9 @@ export async function CommitIngestOperation(
 		return
 	}
 
+	const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
+	const blueprint = await context.getShowStyleBlueprint(showStyle._id)
+
 	// Adopt the rundown into its new/retained playlist.
 	// We have to do the locking 'manually' because the playlist may not exist yet, but that is ok
 	const newPlaylistId: PlaylistIdPair = trappedInPlaylistId ?? targetPlaylistId
@@ -208,7 +201,10 @@ export async function CommitIngestOperation(
 		{ playlistId: newPlaylistId.id },
 		async (oldPlaylist, playlistLock) => {
 			// Ensure the rundown has the correct playlistId
-			ingestCache.Rundown.update({ $set: { playlistId: newPlaylistId.id } })
+			ingestCache.Rundown.update((rd) => {
+				rd.playlistId = newPlaylistId.id
+				return rd
+			})
 
 			const finalRundown = getRundown(ingestCache)
 
@@ -237,10 +233,10 @@ export async function CommitIngestOperation(
 				rundownsInPlaylist.map((r) => r._id)
 			)
 
-			const segmentsChangedToHidden = ingestCache.Segments.findFetch({
-				_id: { $in: data.changedSegmentIds as SegmentId[] },
-				isHidden: true,
-			}).map((segment) => segment._id)
+			const changedSegmentIdsSet = new Set(data.changedSegmentIds)
+			const segmentsChangedToHidden = ingestCache.Segments.findAll(
+				(s) => !!s.isHidden && changedSegmentIdsSet.has(s._id)
+			).map((segment) => segment._id)
 
 			// Do the segment removals
 			{
@@ -265,7 +261,7 @@ export async function CommitIngestOperation(
 						.filter((segmentId) => !canRemoveSegment(currentPartInstance, nextPartInstance, segmentId))
 
 					for (const segmentId of [...data.removedSegmentIds, ...hiddenSegmentsToRestore]) {
-						const newParts = ingestCache.Parts.findFetch({ segmentId: segmentId })
+						const newParts = ingestCache.Parts.findAll((p) => p.segmentId === segmentId)
 
 						// Blueprints have updated the hidden segment, so we won't try to preserve the contents
 						if (newParts.length) {
@@ -324,11 +320,18 @@ export async function CommitIngestOperation(
 							}
 						} else {
 							// This ensures that it doesn't accidently get played while hidden
-							ingestCache.Parts.update({ segmentId }, { $set: { invalid: true } })
+							ingestCache.Parts.updateAll((p) => {
+								if (p.segmentId === segmentId) {
+									p.invalid = true
+									return p
+								} else {
+									return false
+								}
+							})
 						}
 					} else if (
 						!orphanDeletedSegmentIds.has(segmentId) &&
-						ingestCache.Parts.findFetch({ segmentId }).length === 0
+						!ingestCache.Parts.findOne((p) => p.segmentId === segmentId)
 					) {
 						// No parts in segment
 
@@ -338,9 +341,10 @@ export async function CommitIngestOperation(
 							orphanHiddenSegmentIds.add(segmentId)
 						} else {
 							// We can hide it
-							ingestCache.Segments.update(segmentId, {
-								$set: { isHidden: true },
-								$unset: { orphaned: 1 },
+							ingestCache.Segments.updateOne(segmentId, (s) => {
+								s.isHidden = true
+								delete s.orphaned
+								return s
 							})
 						}
 					}
@@ -352,10 +356,9 @@ export async function CommitIngestOperation(
 				removeSegmentContents(ingestCache, emptySegmentIds)
 				if (orphanDeletedSegmentIds.size) {
 					orphanDeletedSegmentIds.forEach((segmentId) => {
-						ingestCache.Segments.update(segmentId, {
-							$set: {
-								orphaned: SegmentOrphanedReason.DELETED,
-							},
+						ingestCache.Segments.updateOne(segmentId, (s) => {
+							s.orphaned = SegmentOrphanedReason.DELETED
+							return s
 						})
 					})
 				}
@@ -373,12 +376,13 @@ export async function CommitIngestOperation(
 						  )
 						: undefined
 					orphanHiddenSegmentIds.forEach((segmentId) => {
-						ingestCache.Segments.update(segmentId, {
-							$set: {
+						ingestCache.Segments.updateOne(segmentId, (s) => {
+							return {
+								...s,
 								...oldSegments?.get(segmentId),
 								isHidden: false,
 								orphaned: SegmentOrphanedReason.HIDDEN,
-							},
+							}
 						})
 					})
 				}
@@ -418,14 +422,6 @@ export async function CommitIngestOperation(
 
 				// sync changes to the 'selected' partInstances
 				await syncChangesToPartInstances(context, playoutCache, ingestCache, showStyle, blueprint, newRundown)
-
-				await shouldRemoveOrphanedPartInstance(
-					context,
-					playoutCache,
-					showStyle,
-					blueprint.blueprint,
-					newRundown
-				)
 
 				playoutCache.deferAfterSave(() => {
 					// Run in the background, we don't want to hold onto the lock to do this
@@ -550,7 +546,7 @@ async function updatePartInstancesBasicProperties(
 	playlist: ReadonlyDeep<DBRundownPlaylist>
 ) {
 	// Get a list of all the Parts that are known to exist
-	const knownPartIds = partCache.findFetch({}, { fields: { _id: 1 } }).map((p) => p._id)
+	const knownPartIds = partCache.findAll(null).map((p) => p._id)
 
 	// Find all the partInstances which are not reset, and are not orphaned, but their Part no longer exist (ie they should be orphaned)
 	const partInstancesToOrphan: Array<Pick<DBPartInstance, '_id'>> =

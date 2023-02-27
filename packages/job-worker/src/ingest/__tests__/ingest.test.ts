@@ -31,6 +31,7 @@ import {
 	handleUpdatedRundownMetaData,
 	handleUpdatedSegment,
 	handleUpdatedSegmentRanks,
+	handleUserRemoveRundown,
 } from '../rundownInput'
 import { activateRundownPlaylist, setMinimumTakeSpan, takeNextPart } from '../../playout/playout'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -1993,7 +1994,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 					},
 					null,
 					async (cache) => {
-						const rundown0 = cache.Rundowns.findOne({}) as DBRundown
+						const rundown0 = cache.Rundowns.findOne(() => true) as DBRundown
 						expect(rundown0).toBeTruthy()
 
 						const currentPartInstance = getSelectedPartInstancesFromCache(cache)
@@ -2700,5 +2701,107 @@ describe('Test ingest actions for rundowns and segments', () => {
 			// forcefully 'deactivate' the playlist to allow for cleanup to happen
 			await context.directCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
 		}
+	})
+	test('ensure rundown can be deleted if it has bad showstyle ids', async () => {
+		// Cleanup any rundowns / playlists
+		{
+			// Cleanup any rundowns / playlists
+			const playlists = await context.directCollections.RundownPlaylists.findFetch({})
+			await removeRundownPlaylistFromDb(
+				context,
+				playlists.map((p) => p._id)
+			)
+		}
+
+		const rundownData: IngestRundown = {
+			externalId: externalId,
+			name: 'MyMockRundown',
+			type: 'mock',
+			segments: [
+				{
+					externalId: 'segment0',
+					name: 'Segment 0',
+					rank: 0,
+					payload: {},
+					parts: [
+						{
+							externalId: 'part0',
+							name: 'Part 0',
+							rank: 0,
+							payload: {
+								pieces: [
+									literal<IBlueprintPiece>({
+										externalId: 'piece0',
+										name: '',
+										enable: { start: 0 },
+										sourceLayerId: '',
+										outputLayerId: '',
+										lifespan: PieceLifespan.WithinPart,
+										content: { timelineObjects: [] },
+									}),
+								],
+							},
+						},
+						{
+							externalId: 'part1',
+							name: 'Part 1',
+							rank: 1,
+							payload: {
+								pieces: [
+									literal<IBlueprintPiece>({
+										externalId: 'piece1',
+										name: '',
+										enable: { start: 0 },
+										sourceLayerId: '',
+										outputLayerId: '',
+										lifespan: PieceLifespan.WithinPart,
+										content: { timelineObjects: [] },
+									}),
+								],
+							},
+						},
+					],
+				},
+				{
+					externalId: 'segment1',
+					name: 'Segment 1',
+					rank: 1,
+					payload: {},
+					parts: [
+						{
+							externalId: 'part2',
+							name: 'Part 2',
+							rank: 0,
+						},
+					],
+				},
+			],
+		}
+
+		// Preparation: set up rundown
+		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
+		await handleUpdatedRundown(context, {
+			peripheralDeviceId: device2._id,
+			rundownExternalId: rundownData.externalId,
+			ingestRundown: rundownData,
+			isCreateAction: true,
+		})
+		const rundown = (await context.directCollections.Rundowns.findOne()) as Rundown
+		expect(rundown).toMatchObject({
+			externalId: rundownData.externalId,
+		})
+
+		await context.directCollections.Rundowns.update(rundown._id, {
+			$set: {
+				showStyleVariantId: protectString('this-is-not-a-real-id'),
+			},
+		})
+
+		await handleUserRemoveRundown(context, {
+			rundownId: rundown._id,
+		})
+
+		const rundownAfter = await context.directCollections.Rundowns.findOne(rundown._id)
+		expect(rundownAfter).toBeUndefined()
 	})
 })

@@ -3,7 +3,7 @@ import { registerIndex } from '../database'
 
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-export * from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
+export { AdLibPiece }
 
 export const AdLibPieces = createMongoCollection<AdLibPiece>(CollectionName.AdLibPieces)
 

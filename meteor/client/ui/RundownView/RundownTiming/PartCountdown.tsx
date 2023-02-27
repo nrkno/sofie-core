@@ -1,11 +1,11 @@
 import React, { ReactNode } from 'react'
 import Moment from 'react-moment'
-import { PartId } from '../../../../lib/collections/Parts'
 import { withTiming, WithTiming } from './withTiming'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IPartCountdownProps {
 	partId?: PartId

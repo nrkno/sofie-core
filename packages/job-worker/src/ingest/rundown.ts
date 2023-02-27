@@ -1,22 +1,19 @@
 import { ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
 import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
-import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from '../logging'
 import { createShowStyleCompound } from '../showStyles'
 import _ = require('underscore')
 import { StudioUserContext } from '../blueprints/context'
-import { JobContext } from '../jobs'
+import { ProcessedShowStyleBase, ProcessedShowStyleVariant, JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
 import { convertShowStyleBaseToBlueprints, convertShowStyleVariantToBlueprints } from '../blueprints/context/lib'
 
 export interface SelectedShowStyleVariant {
-	variant: ReadonlyDeep<DBShowStyleVariant>
-	base: ReadonlyDeep<DBShowStyleBase>
-	compound: ReadonlyDeep<ShowStyleCompound>
+	variant: ReadonlyDeep<ProcessedShowStyleVariant>
+	base: ReadonlyDeep<ProcessedShowStyleBase>
+	compound: ReadonlyDeep<ProcessedShowStyleCompound>
 }
 
 export async function selectShowStyleVariant(

@@ -1,14 +1,13 @@
 import React, { useRef, useState } from 'react'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { Studio } from '../../../../lib/collections/Studios'
 import { PieceExtended } from '../../../../lib/Rundown'
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
-import { PartId } from '../../../../lib/collections/Parts'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
 import renderThumbnail from './Renderers/ThumbnailRendererFactory'
 import { PieceElement } from '../utils/PieceElement'
-import { PartInstanceId } from '../../../../lib/collections/PartInstances'
+import { UIStudio } from '../../../../lib/api/studios'
+import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
 	partId: PartId
@@ -16,7 +15,7 @@ interface IProps {
 	partAutoNext: boolean
 	layer: ISourceLayer | undefined
 	piece: PieceExtended
-	studio: Studio | undefined
+	studio: UIStudio | undefined
 	isLive: boolean
 	isNext: boolean
 	isFinished: boolean

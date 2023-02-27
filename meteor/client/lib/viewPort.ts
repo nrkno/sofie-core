@@ -1,12 +1,12 @@
 import { SEGMENT_TIMELINE_ELEMENT_ID } from '../ui/SegmentTimeline/SegmentTimeline'
-import { Parts, PartId } from '../../lib/collections/Parts'
-import { PartInstances, PartInstanceId } from '../../lib/collections/PartInstances'
-import { SegmentId } from '../../lib/collections/Segments'
+import { Parts } from '../../lib/collections/Parts'
+import { PartInstances } from '../../lib/collections/PartInstances'
 import { isProtectedString } from '../../lib/lib'
 import RundownViewEventBus, { RundownViewEvents } from '../ui/RundownView/RundownViewEventBus'
 import { Settings } from '../../lib/Settings'
+import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-const HEADER_MARGIN = 24 // TODOSYNC: TV2 uses 15. Could this use a css variable and getComputedStyle(document.documentElement).getPropertyValue('--my-variable-name'); ?
+const HEADER_MARGIN = 24 // TODOSYNC: TV2 uses 15. If it's needed to be different, it needs to be made generic somehow..
 const FALLBACK_HEADER_HEIGHT = 65
 
 let focusInterval: NodeJS.Timer | undefined
@@ -60,7 +60,7 @@ export async function scrollToPartInstance(
 			segmentId: partInstance.segmentId,
 			partInstanceId: partInstanceId,
 		})
-		return scrollToSegment(partInstance.segmentId, forceScroll, noAnimation)
+		return scrollToSegment(partInstance.segmentId, forceScroll, noAnimation, partInstanceId)
 	}
 	return Promise.reject('Could not find PartInstance')
 }
@@ -107,7 +107,8 @@ let currentScrollingElement: HTMLElement | undefined
 export async function scrollToSegment(
 	elementToScrollToOrSegmentId: HTMLElement | SegmentId,
 	forceScroll?: boolean,
-	noAnimation?: boolean
+	noAnimation?: boolean,
+	partInstanceId?: PartInstanceId | undefined
 ): Promise<boolean> {
 	const getElementToScrollTo = (showHistory: boolean): HTMLElement | null => {
 		if (isProtectedString(elementToScrollToOrSegmentId)) {
@@ -148,7 +149,9 @@ export async function scrollToSegment(
 	return innerScrollToSegment(
 		historyTarget,
 		forceScroll || !regionInViewport(historyTarget, elementToScrollTo),
-		noAnimation
+		noAnimation,
+		false,
+		partInstanceId
 	)
 }
 
@@ -156,7 +159,8 @@ async function innerScrollToSegment(
 	elementToScrollTo: HTMLElement,
 	forceScroll?: boolean,
 	noAnimation?: boolean,
-	secondStage?: boolean
+	secondStage?: boolean,
+	partInstanceId?: PartInstanceId | undefined
 ): Promise<boolean> {
 	if (!secondStage) {
 		currentScrollingElement = elementToScrollTo
@@ -189,10 +193,13 @@ async function innerScrollToSegment(
 								bottom = Math.floor(bottom)
 
 								if (bottom > Math.floor(window.innerHeight) || top < headerHeight) {
-									return innerScrollToSegment(elementToScrollTo, forceScroll, true, true).then(
-										resolve,
-										reject
-									)
+									return innerScrollToSegment(
+										elementToScrollTo,
+										forceScroll,
+										true,
+										true,
+										partInstanceId
+									).then(resolve, reject)
 								} else {
 									resolve(true)
 								}

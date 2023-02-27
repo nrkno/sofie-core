@@ -1,9 +1,7 @@
 import { createMongoCollection } from './lib'
-import { StudioId } from './Studios'
 import { registerIndex } from '../database'
-import { BucketId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BucketId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-export { BucketId }
 
 /**
  * A Bucket is an container for AdLib pieces that do not come from a MOS gateway and are

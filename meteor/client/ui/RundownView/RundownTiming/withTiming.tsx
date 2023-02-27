@@ -70,6 +70,10 @@ export function withTiming<IProps, IState>(
 			constructor(props, context) {
 				super(props, context)
 
+				this.configureOptions()
+			}
+
+			private configureOptions() {
 				if (typeof options === 'function') {
 					expandedOptions = {
 						...expandedOptions,
@@ -146,7 +150,7 @@ function componentIsDirty(
 	highResDurations: RundownTimingContext,
 	dataResolution: TimingDataResolution
 ) {
-	return this.filterGetter && highResDurations.isLowResolution && dataResolution !== TimingDataResolution.Synced
+	return !!filterGetter && highResDurations.isLowResolution && dataResolution !== TimingDataResolution.Synced
 }
 
 /**

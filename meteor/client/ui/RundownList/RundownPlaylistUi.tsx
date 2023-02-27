@@ -8,8 +8,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ActiveProgressBar } from './ActiveProgressBar'
 import { RundownListItem } from './RundownListItem'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
-import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -41,6 +40,7 @@ import { RundownViewLayoutSelection } from './RundownViewLayoutSelection'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
+import { RundownId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
 	rundowns: Rundown[]

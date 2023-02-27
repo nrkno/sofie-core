@@ -1,3 +1,5 @@
+@import 'colorScheme';
+
 .expco {
 	user-select: none;
 
@@ -24,6 +26,10 @@
 		}
 	}
 
+	.expco-title span:not(:last-child):after {
+		content: ', ';
+	}
+
 	&:not(.expco-expanded) {
 		.action-btn.expco-expand {
 			transform: rotate(180deg);
@@ -47,6 +53,10 @@
 
 	&.expco-popper.expco-popper-rounded {
 		border-radius: 4px;
+	}
+
+	&.option-missing {
+		border-color: $color-status-fatal;
 	}
 }
 

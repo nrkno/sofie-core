@@ -2,8 +2,8 @@ import * as React from 'react'
 import ClassNames from 'classnames'
 import { TimingDataResolution, TimingTickResolution, withTiming, WithTiming } from './withTiming'
 import { RundownUtils } from '../../../lib/rundown'
-import { PartInstanceId } from '../../../../lib/collections/PartInstances'
 import { SpeechSynthesiser } from '../../../lib/speechSynthesis'
+import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const SPEAK_ADVANCE = 500
 
@@ -24,9 +24,8 @@ let prevDisplayTime: number | undefined = undefined
  * @extends React.Component<WithTiming<{}>>
  */
 export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
-	// TODOSYNC: TV2 uses TimingTickResolution.Synced for these
-	tickResolution: TimingTickResolution.High,
-	dataResolution: TimingDataResolution.High,
+	tickResolution: TimingTickResolution.Synced,
+	dataResolution: TimingDataResolution.Synced,
 })(
 	class CurrentPartRemaining extends React.Component<WithTiming<IPartRemainingProps>> {
 		render() {

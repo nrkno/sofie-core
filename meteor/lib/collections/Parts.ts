@@ -1,7 +1,5 @@
 import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
-import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-export { PartId }
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'

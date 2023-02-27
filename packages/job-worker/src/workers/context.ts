@@ -1,5 +1,11 @@
 import { IDirectCollections } from '../db'
-import { JobContext, StudioCacheContext } from '../jobs'
+import {
+	ProcessedShowStyleBase,
+	ProcessedShowStyleVariant,
+	JobContext,
+	ProcessedShowStyleCompound,
+	StudioCacheContext,
+} from '../jobs'
 import { ReadonlyDeep } from 'type-fest'
 import { WorkerDataCache } from './caches'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -15,8 +21,6 @@ import { loadBlueprintById, WrappedShowStyleBlueprint, WrappedStudioBlueprint } 
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { ApmSpan, ApmTransaction } from '../profiler'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
-import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { clone, deepFreeze, getRandomString, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { createShowStyleCompound } from '../showStyles'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
@@ -36,6 +40,7 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { EventsJobFunc, getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
 import { FastTrackTimelineFunc } from '../main'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { processShowStyleBase, processShowStyleVariant } from '../jobs/showStyle'
 
 export type QueueJobFunc = (queueName: string, jobName: string, jobData: unknown) => Promise<void>
 
@@ -69,9 +74,9 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		return this.cacheData.studioBlueprintConfig
 	}
 
-	async getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBase>>> {
+	async getShowStyleBases(): Promise<ReadonlyDeep<Array<ProcessedShowStyleBase>>> {
 		const docsToLoad: ShowStyleBaseId[] = []
-		const loadedDocs: Array<ReadonlyDeep<DBShowStyleBase>> = []
+		const loadedDocs: Array<ReadonlyDeep<ProcessedShowStyleBase>> = []
 
 		// Figure out what is already cached, and what needs loading
 		for (const id of this.cacheData.studio.supportedShowStyleBase) {
@@ -97,7 +102,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 			// Now fill it in with the loaded docs
 			for (const doc0 of newDocs) {
 				// Freeze and cache it
-				const doc = deepFreeze(doc0)
+				const doc = processShowStyleBase(doc0)
 				this.cacheData.showStyleBases.set(doc._id, doc ?? null)
 
 				// Add it to the result
@@ -108,7 +113,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		return loadedDocs
 	}
 
-	async getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<DBShowStyleBase>> {
+	async getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<ProcessedShowStyleBase>> {
 		// Check if allowed
 		if (!this.cacheData.studio.supportedShowStyleBase.includes(id)) {
 			throw new Error(`ShowStyleBase "${id}" is not allowed in studio`)
@@ -117,11 +122,15 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		let doc = this.cacheData.showStyleBases.get(id)
 		if (doc === undefined) {
 			// Load the document
-			doc = await this.directCollections.ShowStyleBases.findOne(id)
+			const doc0 = await this.directCollections.ShowStyleBases.findOne(id)
 
 			// Freeze and cache it
-			doc = deepFreeze(doc)
-			this.cacheData.showStyleBases.set(id, doc ?? null)
+			if (doc0) {
+				doc = processShowStyleBase(doc0)
+				this.cacheData.showStyleBases.set(id, doc)
+			} else {
+				this.cacheData.showStyleBases.set(id, null)
+			}
 		}
 
 		if (doc) {
@@ -132,7 +141,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		throw new Error(`ShowStyleBase "${id}" does not exist`)
 	}
 
-	async getShowStyleVariants(id: ShowStyleBaseId): Promise<ReadonlyDeep<Array<DBShowStyleVariant>>> {
+	async getShowStyleVariants(id: ShowStyleBaseId): Promise<ReadonlyDeep<Array<ProcessedShowStyleVariant>>> {
 		// Check if allowed
 		if (!this.cacheData.studio.supportedShowStyleBase.includes(id)) {
 			throw new Error(`ShowStyleBase "${id}" is not allowed in studio`)
@@ -140,7 +149,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 
 		// This is a weirder one, as we can't efficiently know if we have them all loaded, due to needing to lookup docs that contain the id, with no master list of ids to check
 
-		const loadedDocs: Array<ReadonlyDeep<DBShowStyleVariant>> = []
+		const loadedDocs: Array<ReadonlyDeep<ProcessedShowStyleVariant>> = []
 
 		// Find all the ones already cached
 		for (const doc of this.cacheData.showStyleVariants.values()) {
@@ -158,7 +167,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		// Cache the freshly loaded docs,
 		for (const doc0 of uncachedDocs) {
 			// Freeze and cache it
-			const doc = deepFreeze(doc0)
+			const doc = processShowStyleVariant(doc0)
 			this.cacheData.showStyleVariants.set(doc._id, doc)
 
 			loadedDocs.push(doc)
@@ -174,20 +183,24 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 
 		return loadedDocs
 	}
-	async getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<DBShowStyleVariant>> {
+	async getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<ProcessedShowStyleVariant>> {
 		let doc = this.cacheData.showStyleVariants.get(id)
 		if (doc === undefined) {
 			// Load the document
-			doc = await this.directCollections.ShowStyleVariants.findOne(id)
+			const doc0 = await this.directCollections.ShowStyleVariants.findOne(id)
 
 			// Check allowed
-			if (doc && !this.cacheData.studio.supportedShowStyleBase.includes(doc.showStyleBaseId)) {
+			if (doc0 && !this.cacheData.studio.supportedShowStyleBase.includes(doc0.showStyleBaseId)) {
 				throw new Error(`ShowStyleVariant "${id}" is not allowed in studio`)
 			}
 
 			// Freeze and cache it
-			doc = deepFreeze(doc)
-			this.cacheData.showStyleVariants.set(id, doc ?? null)
+			if (doc0) {
+				doc = processShowStyleVariant(doc0)
+				this.cacheData.showStyleVariants.set(id, doc)
+			} else {
+				this.cacheData.showStyleVariants.set(id, null)
+			}
 		}
 
 		if (doc) {
@@ -200,12 +213,12 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 			return doc
 		}
 
-		throw new Error(`ShowStyleBase "${id}" does not exist`)
+		throw new Error(`ShowStyleVariant "${id}" does not exist`)
 	}
 	async getShowStyleCompound(
 		variantId: ShowStyleVariantId,
 		baseId?: ShowStyleBaseId
-	): Promise<ReadonlyDeep<ShowStyleCompound>> {
+	): Promise<ReadonlyDeep<ProcessedShowStyleCompound>> {
 		const [variant, base0] = await Promise.all([
 			this.getShowStyleVariant(variantId),
 			baseId ? this.getShowStyleBase(baseId) : null,
@@ -241,7 +254,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 
 		throw new Error(`Blueprint for ShowStyleBase "${id}" does not exist`)
 	}
-	getShowStyleBlueprintConfig(showStyle: ShowStyleCompound): ProcessedShowStyleConfig {
+	getShowStyleBlueprintConfig(showStyle: ProcessedShowStyleCompound): ProcessedShowStyleConfig {
 		const existing = this.cacheData.showStyleBlueprintConfig.get(showStyle.showStyleVariantId)
 		if (existing) {
 			return existing
@@ -382,7 +395,7 @@ export class JobContextImpl extends StudioCacheContextImpl implements JobContext
 
 async function loadShowStyleBlueprint(
 	context: IDirectCollections,
-	showStyleBase: ReadonlyDeep<DBShowStyleBase>
+	showStyleBase: Pick<ReadonlyDeep<DBShowStyleBase>, '_id' | 'blueprintId'>
 ): Promise<ReadonlyDeep<WrappedShowStyleBlueprint>> {
 	if (!showStyleBase.blueprintId) {
 		throw new Error(`ShowStyleBase "${showStyleBase._id}" has no defined blueprint!`)

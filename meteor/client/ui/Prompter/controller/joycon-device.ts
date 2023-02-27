@@ -30,7 +30,7 @@ export class JoyConController extends ControllerAbstract {
 	private lastButtonInputs: { [index: number]: { mode: JoyconMode; buttons: number[] } } = {}
 
 	constructor(view: PrompterViewInner) {
-		super(view)
+		super()
 		this.prompterView = view
 
 		// assigns params from URL or falls back to the default
@@ -60,7 +60,7 @@ export class JoyConController extends ControllerAbstract {
 		// create splines, using the input speedMaps, for both the forward range, and the reverse range
 		this.speedSpline = new Spline(
 			this.speedMap.map(
-				(y, index, array) =>
+				(_y, index, array) =>
 					((this.rangeFwdMax - this.rangeNeutralMax) / (array.length - 1)) * index + this.rangeNeutralMax
 			),
 			this.speedMap
@@ -69,7 +69,7 @@ export class JoyConController extends ControllerAbstract {
 			this.reverseSpeedMap
 				.reverse()
 				.map(
-					(y, index, array) =>
+					(_y, index, array) =>
 						((this.rangeNeutralMin - this.rangeRevMin) / (array.length - 1)) * index + this.rangeRevMin
 				),
 			this.reverseSpeedMap
@@ -79,7 +79,9 @@ export class JoyConController extends ControllerAbstract {
 		window.addEventListener('gamepaddisconnected', this.updateScrollPosition.bind(this))
 	}
 
-	public destroy() {}
+	public destroy() {
+		// Nothing
+	}
 	public onKeyDown(_e: KeyboardEvent) {
 		// Nothing
 	}

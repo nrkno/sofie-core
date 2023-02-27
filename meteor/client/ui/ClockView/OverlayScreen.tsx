@@ -1,6 +1,5 @@
 import React from 'react'
 import Moment from 'react-moment'
-import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { withTiming } from '../RundownView/RundownTiming/withTiming'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -8,7 +7,7 @@ import { PieceIconContainer } from '../PieceIcons/PieceIcon'
 import { PieceNameContainer } from '../PieceIcons/PieceName'
 import { Timediff } from './Timediff'
 import { getPresenterScreenReactive, PresenterScreenBase, RundownOverviewTrackedProps } from './PresenterScreen'
-import { StudioId } from '../../../lib/collections/Studios'
+import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface TimeMap {
 	[key: string]: number

@@ -21,15 +21,15 @@ import { useTranslation } from 'react-i18next'
 
 interface IProps {
 	action: SomeAction
-	index: number
+	id: string
 	showStyleBase: ShowStyleBase | undefined
 	triggeredAction: TriggeredActionsObj
 	readonly?: boolean
 	opened?: boolean
-	onRemove: (index: number) => void
-	onFocus?: (index: number) => void
-	onActionFocus?: (index: number) => void
-	onClose?: (index: number) => void
+	onRemove: (id: string) => void
+	onFocus?: (id: string) => void
+	onActionFocus?: (id: string) => void
+	onClose?: (id: string) => void
 }
 
 function isFinal(
@@ -48,7 +48,7 @@ type ChainLink = IRundownPlaylistFilterLink | IGUIContextFilterLink | IAdLibFilt
 export const ActionEditor: React.FC<IProps> = function ActionEditor({
 	action,
 	readonly,
-	index,
+	id,
 	triggeredAction,
 	showStyleBase,
 	onFocus,
@@ -70,7 +70,7 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 
 			TriggeredActions.update(triggeredAction._id, {
 				$set: {
-					[`actions.${index}`]: action,
+					[`actionsWithOverrides.defaults.${id}`]: action,
 				},
 			})
 		},
@@ -94,13 +94,13 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 
 			TriggeredActions.update(triggeredAction._id, {
 				$set: {
-					[`actions.${index}`]: action,
+					[`actionsWithOverrides.defaults.${id}`]: action,
 				},
 			})
 		}
 
 		setOpenFilterIndex(filterIndex + 1)
-		if (typeof onFocus === 'function') onFocus(index)
+		if (typeof onFocus === 'function') onFocus(id)
 	}
 
 	function onFilterRemove(filterIndex) {
@@ -108,7 +108,7 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 
 		TriggeredActions.update(triggeredAction._id, {
 			$set: {
-				[`actions.${index}`]: action,
+				[`actionsWithOverrides.defaults.${id}`]: action,
 			},
 		})
 	}
@@ -116,7 +116,7 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 	function onChange(newVal: SomeAction) {
 		TriggeredActions.update(triggeredAction._id, {
 			$set: {
-				[`actions.${index}`]: newVal,
+				[`actionsWithOverrides.defaults.${id}`]: newVal,
 			},
 		})
 	}
@@ -133,19 +133,19 @@ export const ActionEditor: React.FC<IProps> = function ActionEditor({
 		)
 	}
 
-	const onRemove = useCallback(() => onRemoveAction(index), [index])
-	const onOuterClose = useCallback(() => onOuterCloseAction && onOuterCloseAction(index), [index])
+	const onRemove = useCallback(() => onRemoveAction(id), [id])
+	const onOuterClose = useCallback(() => onOuterCloseAction && onOuterCloseAction(id), [id])
 	const onActionFocus = useCallback(() => {
-		onOuterActionFocus && onOuterActionFocus(index)
-		onFocus && onFocus(index)
-	}, [onOuterActionFocus, onFocus, index])
+		onOuterActionFocus && onOuterActionFocus(id)
+		onFocus && onFocus(id)
+	}, [onOuterActionFocus, onFocus, id])
 	const onSetFilter = useCallback(() => onFilterInsertNext(-1), [onFilterInsertNext])
 	const onFilterFocus = useCallback(
 		(chainIndex: number) => {
 			setOpenFilterIndex(chainIndex)
-			onFocus && onFocus(index)
+			onFocus && onFocus(id)
 		},
-		[onFocus]
+		[onFocus, id]
 	)
 
 	return (

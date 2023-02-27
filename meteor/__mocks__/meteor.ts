@@ -175,7 +175,7 @@ export namespace MeteorMock {
 		if (lastArg && typeof lastArg === 'function') {
 			const callback = args.pop()
 
-			this.defer(() => {
+			defer(() => {
 				try {
 					Promise.resolve(fcn.call(getMethodContext(), ...args))
 						.then((result) => {
@@ -206,7 +206,7 @@ export namespace MeteorMock {
 		// ?
 		// This is a bad mock, since it doesn't support any of the options..
 		// but it'll do for now:
-		this.call(methodName, ...args, asyncCallback)
+		call(methodName, ...args, asyncCallback)
 	}
 	export function absoluteUrl(path?: string): string {
 		return path + '' // todo

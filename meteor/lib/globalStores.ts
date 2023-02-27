@@ -1,11 +1,9 @@
-import { ExpectedPackageId } from './collections/ExpectedPackages'
+import { ExpectedPackageId, PackageContainerPackageId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
-	PackageContainerPackageId,
 	PackageContainerPackageStatusDB,
 	getPackageContainerPackageId,
 	PackageContainerPackageStatuses,
 } from './collections/PackageContainerPackageStatus'
-import { StudioId } from './collections/Studios'
 import { ReactiveStore } from './ReactiveStore'
 
 const storePackageContainerPackageStatuses = new ReactiveStore<
@@ -18,7 +16,7 @@ export const getPackageContainerPackageStatus = (
 	studioId: StudioId,
 	packageContainerId: string,
 	expectedPackageId: ExpectedPackageId
-) => {
+): PackageContainerPackageStatusDB | undefined => {
 	const id = getPackageContainerPackageId(studioId, packageContainerId, expectedPackageId)
 
 	return storePackageContainerPackageStatuses.getValue(id, () => {

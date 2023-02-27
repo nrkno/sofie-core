@@ -1,7 +1,6 @@
 import { TimelineObjGeneric } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { applyToArray, assertNever, clone, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
-import { Time, TSR } from '@sofie-automation/blueprints-integration'
-import _ = require('underscore')
+import { applyToArray, assertNever, clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { TSR } from '@sofie-automation/blueprints-integration'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { JobContext } from '../jobs'
@@ -29,6 +28,8 @@ import { getCurrentTime } from '../lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { MongoQuery } from '../db'
+import { mongoWhere } from '@sofie-automation/corelib/dist/mongo'
+import _ = require('underscore')
 
 /**
  * Reset the rundownPlaylist (all of the rundowns within the playlist):
@@ -42,27 +43,25 @@ export async function resetRundownPlaylist(context: JobContext, cache: CacheForP
 	removePartInstancesWithPieceInstances(context, cache, { rehearsal: true })
 	resetPartInstancesWithPieceInstances(context, cache)
 
-	cache.Playlist.update({
-		$set: {
-			previousPartInstanceId: null,
-			currentPartInstanceId: null,
-			holdState: RundownHoldState.NONE,
-			resetTime: getCurrentTime(),
-		},
-		$unset: {
-			startedPlayback: 1,
-			rundownsStartedPlayback: 1,
-			previousPersistentState: 1,
-			trackedAbSessions: 1,
-		},
+	cache.Playlist.update((p) => {
+		p.previousPartInstanceId = null
+		p.currentPartInstanceId = null
+		p.holdState = RundownHoldState.NONE
+		p.resetTime = getCurrentTime()
+
+		delete p.startedPlayback
+		delete p.rundownsStartedPlayback
+		delete p.previousPersistentState
+		delete p.trackedAbSessions
+
+		return p
 	})
 
 	if (cache.Playlist.doc.activationId) {
 		// generate a new activationId
-		cache.Playlist.update({
-			$set: {
-				activationId: getRandomId(),
-			},
+		cache.Playlist.update((p) => {
+			p.activationId = getRandomId()
+			return p
 		})
 
 		// put the first on queue:
@@ -277,19 +276,18 @@ export async function setNextPart(
 		let newInstanceId: PartInstanceId
 		if (nextPartInfo.type === 'partinstance') {
 			newInstanceId = nextPartInfo.instance._id
-			cache.PartInstances.update(newInstanceId, {
-				$unset: {
-					consumesNextSegmentId: 1,
-				},
+			cache.PartInstances.updateOne(newInstanceId, (p) => {
+				delete p.consumesNextSegmentId
+				return p
 			})
 			await syncPlayheadInfinitesForNextPartInstance(context, cache)
 		} else if (nextPartInstance && nextPartInstance.part._id === nextPart._id) {
 			// Re-use existing
 			newInstanceId = nextPartInstance._id
-			cache.PartInstances.update(newInstanceId, {
-				$set: {
-					consumesNextSegmentId: nextPartInfo.consumesNextSegmentId ?? false,
-				},
+			const consumesNextSegmentId = nextPartInfo.consumesNextSegmentId ?? false
+			cache.PartInstances.updateOne(newInstanceId, (p) => {
+				p.consumesNextSegmentId = consumesNextSegmentId
+				return p
 			})
 			await syncPlayheadInfinitesForNextPartInstance(context, cache)
 		} else {
@@ -311,6 +309,9 @@ export async function setNextPart(
 				part: nextPart,
 				rehearsal: !!cache.Playlist.doc.rehearsal,
 				consumesNextSegmentId: nextPartInfo.consumesNextSegmentId,
+				timings: {
+					setAsNext: getCurrentTime(),
+				},
 			})
 
 			const rundown = cache.Rundowns.findOne(nextPart.rundownId)
@@ -349,22 +350,20 @@ export async function setNextPart(
 		})
 
 		const nextPartInstanceTmp = nextPartInfo.type === 'partinstance' ? nextPartInfo.instance : null
-		cache.Playlist.update({
-			$set: literal<Partial<DBRundownPlaylist>>({
-				nextPartInstanceId: newInstanceId,
-				nextPartManual: !!(setManually || nextPartInstanceTmp?.orphaned),
-				nextTimeOffset: nextTimeOffset || null,
-			}),
+		cache.Playlist.update((p) => {
+			p.nextPartInstanceId = newInstanceId
+			p.nextPartManual = !!(setManually || nextPartInstanceTmp?.orphaned)
+			p.nextTimeOffset = nextTimeOffset || null
+			return p
 		})
 	} else {
 		// Set to null
 
-		cache.Playlist.update({
-			$set: literal<Partial<DBRundownPlaylist>>({
-				nextPartInstanceId: null,
-				nextPartManual: !!setManually,
-				nextTimeOffset: null,
-			}),
+		cache.Playlist.update((p) => {
+			p.nextPartInstanceId = null
+			p.nextPartManual = !!setManually
+			p.nextTimeOffset = null
+			return p
 		})
 	}
 
@@ -385,7 +384,7 @@ export async function setNextPart(
 			const resetPartInstanceIds = new Set<PartInstanceId>()
 			if (currentPartInstance) {
 				// Always clean the current segment, anything after the current part (except the next part)
-				const trailingInOldSegment = cache.PartInstances.findFetch(
+				const trailingInOldSegment = cache.PartInstances.findAll(
 					(p) =>
 						!p.reset &&
 						p._id !== currentPartInstance._id &&
@@ -406,7 +405,7 @@ export async function setNextPart(
 					nextPartInstance.part._rank < currentPartInstance.part._rank)
 			) {
 				// clean the whole segment if new, or jumping backwards
-				const newSegmentParts = cache.PartInstances.findFetch(
+				const newSegmentParts = cache.PartInstances.findAll(
 					(p) =>
 						!p.reset &&
 						p._id !== nextPartInstance._id &&
@@ -435,21 +434,19 @@ export function setNextSegment(context: JobContext, cache: CacheForPlayout, next
 	const span = context.startSpan('setNextSegment')
 	if (nextSegment) {
 		// Just run so that errors will be thrown if something wrong:
-		const partsInSegment = cache.Parts.findFetch({ segmentId: nextSegment._id })
+		const partsInSegment = cache.Parts.findAll((p) => p.segmentId === nextSegment._id)
 		if (!partsInSegment.find((p) => isPartPlayable(p))) {
 			throw new Error('Segment contains no valid parts')
 		}
 
-		cache.Playlist.update({
-			$set: {
-				nextSegmentId: nextSegment._id,
-			},
+		cache.Playlist.update((p) => {
+			p.nextSegmentId = nextSegment._id
+			return p
 		})
 	} else {
-		cache.Playlist.update({
-			$unset: {
-				nextSegmentId: 1,
-			},
+		cache.Playlist.update((p) => {
+			delete p.nextSegmentId
+			return p
 		})
 	}
 	if (span) span.end()
@@ -470,7 +467,7 @@ async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout)
 		selectedPartInstancesSegmentIds.add(selectedPartInstances.nextPartInstance.segmentId)
 
 	// Cleanup any orphaned segments once they are no longer being played. This also cleans up any adlib-parts, that have been marked as deleted as a deferred cleanup operation
-	const segments = cache.Segments.findFetch((s) => !!s.orphaned)
+	const segments = cache.Segments.findAll((s) => !!s.orphaned)
 	const orphanedSegmentIds = new Set(segments.map((s) => s._id))
 
 	const alterSegmentsFromRundowns = new Map<RundownId, { deleted: SegmentId[]; hidden: SegmentId[] }>()
@@ -489,6 +486,7 @@ async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout)
 					break
 				}
 				case SegmentOrphanedReason.HIDDEN: {
+					// The segment is finished with. Queue it for attempted resync
 					rundownSegments.hidden.push(segment._id)
 					break
 				}
@@ -514,7 +512,7 @@ async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout)
 
 	const removePartInstanceIds: PartInstanceId[] = []
 	// Cleanup any orphaned partinstances once they are no longer being played (and the segment isnt orphaned)
-	const orphanedInstances = cache.PartInstances.findFetch((p) => p.orphaned === 'deleted' && !p.reset)
+	const orphanedInstances = cache.PartInstances.findAll((p) => p.orphaned === 'deleted' && !p.reset)
 	for (const partInstance of orphanedInstances) {
 		if (PRESERVE_UNSYNCED_PLAYING_SEGMENT_CONTENTS && orphanedSegmentIds.has(partInstance.segmentId)) {
 			// If the segment is also orphaned, then don't delete it until it is clear
@@ -540,19 +538,17 @@ function removePartInstancesWithPieceInstances(
 	cache: CacheForPlayout,
 	selector: MongoQuery<DBPartInstance>
 ): void {
-	const partInstancesToRemove = cache.PartInstances.remove(selector)
+	const partInstancesToRemove = cache.PartInstances.remove((p) => mongoWhere(p, selector))
 
 	// Reset any in the cache now
 	if (partInstancesToRemove.length) {
-		cache.PieceInstances.remove({
-			partInstanceId: { $in: partInstancesToRemove },
-		})
+		cache.PieceInstances.remove((p) => partInstancesToRemove.includes(p.partInstanceId))
 	}
 
 	// Defer ones which arent loaded
 	cache.deferAfterSave(async (cache) => {
 		// We need to keep any for PartInstances which are still existent in the cache (as they werent removed)
-		const partInstanceIdsInCache = cache.PartInstances.findFetch({}).map((p) => p._id)
+		const partInstanceIdsInCache = cache.PartInstances.findAll(null).map((p) => p._id)
 
 		// Find all the partInstances which are not loaded, but should be removed
 		const removeFromDb = await context.directCollections.PartInstances.findFetch(
@@ -595,38 +591,30 @@ function resetPartInstancesWithPieceInstances(
 	cache: CacheForPlayout,
 	selector?: MongoQuery<DBPartInstance>
 ) {
-	const partInstancesToReset = cache.PartInstances.update(
-		selector
-			? {
-					...selector,
-					reset: { $ne: true },
-			  }
-			: (p) => !p.reset,
-		{
-			$set: {
-				reset: true,
-			},
+	const partInstancesToReset = cache.PartInstances.updateAll((p) => {
+		if (!p.reset && (!selector || mongoWhere(p, selector))) {
+			p.reset = true
+			return p
+		} else {
+			return false
 		}
-	)
+	})
 
 	// Reset any in the cache now
 	if (partInstancesToReset.length) {
-		cache.PieceInstances.update(
-			{
-				partInstanceId: { $in: partInstancesToReset },
-				reset: { $ne: true },
-			},
-			{
-				$set: {
-					reset: true,
-				},
+		cache.PieceInstances.updateAll((p) => {
+			if (!p.reset && partInstancesToReset.includes(p.partInstanceId)) {
+				p.reset = true
+				return p
+			} else {
+				return false
 			}
-		)
+		})
 	}
 
 	// Defer ones which arent loaded
 	cache.deferAfterSave(async (cache) => {
-		const partInstanceIdsInCache = cache.PartInstances.findFetch({}).map((p) => p._id)
+		const partInstanceIdsInCache = cache.PartInstances.findAll(null).map((p) => p._id)
 
 		// Find all the partInstances which are not loaded, but should be reset
 		const resetInDb = await context.directCollections.PartInstances.findFetch(
@@ -674,22 +662,6 @@ function resetPartInstancesWithPieceInstances(
 				: undefined,
 		])
 	})
-}
-
-export function onPartHasStoppedPlaying(
-	cache: CacheForPlayout,
-	partInstance: DBPartInstance,
-	stoppedPlayingTime: Time
-): void {
-	if (partInstance.timings?.startedPlayback && partInstance.timings.startedPlayback > 0) {
-		cache.PartInstances.update(partInstance._id, {
-			$set: {
-				'timings.duration': stoppedPlayingTime - partInstance.timings.startedPlayback,
-			},
-		})
-	} else {
-		// logger.warn(`Part "${part._id}" has never started playback on rundown "${rundownId}".`)
-	}
 }
 
 export function substituteObjectIds(
@@ -768,11 +740,10 @@ export function isTooCloseToAutonext(
 
 	const debounce = isTake ? AUTOTAKE_TAKE_DEBOUNCE : AUTOTAKE_UPDATE_DEBOUNCE
 
-	const start = currentPartInstance.timings?.startedPlayback
-	const offset = currentPartInstance.timings?.playOffset
-	if (start !== undefined && offset !== undefined && currentPartInstance.part.expectedDuration) {
+	const start = currentPartInstance.timings?.plannedStartedPlayback
+	if (start !== undefined && currentPartInstance.part.expectedDuration) {
 		// date.now - start = playback duration, duration + offset gives position in part
-		const playbackDuration = getCurrentTime() - start + offset
+		const playbackDuration = getCurrentTime() - start
 
 		// If there is an auto next planned
 		if (Math.abs(currentPartInstance.part.expectedDuration - playbackDuration) < debounce) {
@@ -789,28 +760,22 @@ export function getRundownsSegmentsAndPartsFromCache(
 	playlist: Pick<ReadonlyDeep<DBRundownPlaylist>, 'rundownIdsInOrder'>
 ): { segments: DBSegment[]; parts: DBPart[] } {
 	const segments = sortSegmentsInRundowns(
-		segmentsCache.findFetch(
-			{},
-			{
-				sort: {
-					rundownId: 1,
-					_rank: 1,
-				},
-			}
-		),
+		segmentsCache.findAll(null, {
+			sort: {
+				rundownId: 1,
+				_rank: 1,
+			},
+		}),
 		playlist
 	)
 
 	const parts = sortPartsInSortedSegments(
-		partsCache.findFetch(
-			{},
-			{
-				sort: {
-					rundownId: 1,
-					_rank: 1,
-				},
-			}
-		),
+		partsCache.findAll(null, {
+			sort: {
+				rundownId: 1,
+				_rank: 1,
+			},
+		}),
 		segments
 	)
 
@@ -830,7 +795,7 @@ export function updateExpectedDurationWithPrerollForPartInstance(
 ): void {
 	const nextPartInstance = cache.PartInstances.findOne(partInstanceId)
 	if (nextPartInstance) {
-		const pieceInstances = cache.PieceInstances.findFetch({ partInstanceId: nextPartInstance._id })
+		const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === nextPartInstance._id)
 
 		// Update expectedDurationWithPreroll of the next part instance, as it may have changed and is used by the ui until it is taken
 		const expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(
@@ -838,7 +803,7 @@ export function updateExpectedDurationWithPrerollForPartInstance(
 			pieceInstances.map((p) => p.piece)
 		)
 
-		cache.PartInstances.update(nextPartInstance._id, (doc) => {
+		cache.PartInstances.updateOne(nextPartInstance._id, (doc) => {
 			doc.part.expectedDurationWithPreroll = expectedDurationWithPreroll
 			return doc
 		})

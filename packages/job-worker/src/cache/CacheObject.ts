@@ -1,12 +1,11 @@
 import { clone, deleteAllUndefinedProperties, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
-import { ICollection, MongoModifier } from '../db'
+import { ICollection } from '../db'
 import { logger } from '../logging'
 import { Changes } from '../db/changes'
 import { IS_PRODUCTION } from '../environment'
 import _ = require('underscore')
-import { mongoModify } from '@sofie-automation/corelib/dist/mongo'
 import { JobContext } from '../jobs'
 
 /**
@@ -150,16 +149,13 @@ export class DbCacheWriteObject<
 		}
 	}
 
-	update(modifier: ((doc: TDoc) => TDoc) | MongoModifier<TDoc>): boolean {
+	update(modifier: (doc: TDoc) => TDoc): boolean {
 		this.assertNotToBeRemoved('update')
 
 		const localDoc: ReadonlyDeep<TDoc> | undefined = this.doc
 		if (!localDoc) throw new Error(`Error: The document does not yet exist`)
 
-		const newDoc: TDoc = _.isFunction(modifier)
-			? modifier(clone(localDoc))
-			: mongoModify({}, clone(localDoc), modifier)
-
+		const newDoc: TDoc = modifier(clone(localDoc))
 		if (unprotectString(newDoc._id) !== unprotectString(localDoc._id)) {
 			throw new Error(`Error: The (immutable) field '_id' was found to have been altered to _id: "${newDoc._id}"`)
 		}

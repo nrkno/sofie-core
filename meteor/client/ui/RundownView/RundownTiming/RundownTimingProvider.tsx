@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import { withTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
-import { Part, PartId } from '../../../../lib/collections/Parts'
+import { Part } from '../../../../lib/collections/Parts'
 import { getCurrentTime } from '../../../../lib/lib'
 import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../../lib/collections/RundownPlaylists'
@@ -11,6 +11,7 @@ import { RundownTiming, TimeEventArgs } from './RundownTiming'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { RundownTimingCalculator, RundownTimingContext } from '../../../lib/rundownTiming'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15
@@ -279,7 +280,8 @@ export const RundownTimingProvider = withTracker<
 		}
 
 		updateDurations(now: number, isSynced: boolean) {
-			const { playlist, rundowns, currentRundown, parts, partInstancesMap } = this.props
+			const { playlist, rundowns, currentRundown, parts, partInstancesMap, segments, segmentEntryPartInstances } =
+				this.props
 			const updatedDurations = this.timingCalculator.updateDurations(
 				now,
 				isSynced,
@@ -288,9 +290,9 @@ export const RundownTimingProvider = withTracker<
 				currentRundown,
 				parts,
 				partInstancesMap,
-				//  segments, // TODOSYNC
-				this.props.defaultDuration
-				// segmentEntryPartInstances // TODOSYNC
+				segments,
+				this.props.defaultDuration,
+				segmentEntryPartInstances
 			)
 			if (!isSynced) {
 				this.durations = Object.assign(this.durations, updatedDurations)

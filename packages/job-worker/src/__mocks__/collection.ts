@@ -21,20 +21,21 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { clone, literal } from '@sofie-automation/corelib/dist/lib'
 import {
+	FindOptions as CacheFindOptions,
 	mongoFindOptions,
 	mongoModify,
 	mongoWhere,
-	FindOptions as CacheFindOptions,
 } from '@sofie-automation/corelib/dist/mongo'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import EventEmitter = require('eventemitter3')
-import { Collection, FindOptions, AnyBulkWriteOperation } from 'mongodb'
+import { AnyBulkWriteOperation, Collection, FindOptions } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
-import _ = require('underscore')
 import { IChangeStream, IChangeStreamEvents, ICollection, IDirectCollections, MongoModifier, MongoQuery } from '../db'
+import _ = require('underscore')
 
 export interface CollectionOperation {
 	type: string
@@ -294,11 +295,14 @@ export function getMockCollections(): Readonly<IDirectCollections> {
 			ShowStyleVariants: new MockMongoCollection<DBShowStyleVariant>(CollectionName.ShowStyleVariants),
 			Studios: new MockMongoCollection<DBStudio>(CollectionName.Studios),
 			Timelines: new MockMongoCollection<TimelineComplete>(CollectionName.Timelines),
+			TimelineDatastores: new MockMongoCollection<DBTimelineDatastoreEntry>(CollectionName.TimelineDatastore),
 
 			ExpectedPackages: new MockMongoCollection<ExpectedPackageDB>(CollectionName.ExpectedPackages),
 			PackageInfos: new MockMongoCollection(CollectionName.PackageInfos),
 
 			ExternalMessageQueue: new MockMongoCollection(CollectionName.ExternalMessageQueue),
+
+			MediaObjects: new MockMongoCollection(CollectionName.MediaObjects),
 		})
 	)
 }
