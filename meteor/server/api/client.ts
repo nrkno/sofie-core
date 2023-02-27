@@ -464,18 +464,8 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 		functionName: string,
 		...args: any[]
 	): Promise<any> {
-		const methodContext: MethodContext = this // eslint-disable-line @typescript-eslint/no-this-alias
-		if (!Settings.enableUserAccounts) {
-			// Note: This is a temporary hack to keep backwards compatibility.
-			// in the case of not enableUserAccounts, a token is needed, but not provided when called from client
-			const device = PeripheralDevices.findOne(deviceId)
-			if (device) {
-				// @ts-ignore hack
-				methodContext.token = device.token
-			}
-		}
 		return ServerClientAPI.callBackgroundPeripheralDeviceFunction(
-			methodContext,
+			this,
 			deviceId,
 			timeoutTime,
 			functionName,
