@@ -195,7 +195,9 @@ export class OnTimelineGenerateContext extends RundownContext implements ITimeli
 			const partInstance = this.partInstances.find((p) => p._id === partInstanceId)
 			if (partInstance) partId = partInstance.part._id
 
-			const lookaheadSession = this._knownSessions.find((s) => s.lookaheadForPartId === partId)
+			const lookaheadSession = this._knownSessions.find(
+				(s) => s.lookaheadForPartId === partId && s.name === sessionName
+			)
 			if (lookaheadSession) {
 				lookaheadSession.keep = true
 				if (partInstance) {
