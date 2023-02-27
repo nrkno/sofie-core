@@ -21,39 +21,33 @@ export const DevicePackageManagerSettings: React.FC<IDevicePackageManagerSetting
 		const reloadingNow = useRef(false)
 		const [status, setStatus] = useState<Status | undefined>(undefined)
 
-		const reloadStatus = useCallback(
-			(silent: boolean = false) => {
-				if (reloadingNow.current) return // if there is a method currently being executed, skip
+		const reloadStatus = useCallback((silent: boolean = false) => {
+			if (reloadingNow.current) return // if there is a method currently being executed, skip
 
-				reloadingNow.current = true
+			reloadingNow.current = true
 
-				// TODO: this now logs as a user-action, which Johan doesn't like
-				MeteorCall.client
-					.callBackgroundPeripheralDeviceFunction(deviceId, 1000, 'getExpetationManagerStatus')
-					.then((result: Status) => {
-						reloadingNow.current = false
+			MeteorCall.client
+				.callBackgroundPeripheralDeviceFunction(deviceId, 1000, 'getExpetationManagerStatus')
+				.then((result: Status) => setStatus(result))
+				.catch((error) => {
+					if (silent) {
+						console.error(error)
+						return
+					}
 
-						setStatus(result)
+					doModalDialog({
+						message: t('There was an error: {{error}}', { error: error.toString() }),
+						title: t('Error'),
+						warning: true,
+						onAccept: () => {
+							// Do nothing
+						},
 					})
-					.catch((error) => {
-						reloadingNow.current = false
-
-						if (!silent) {
-							doModalDialog({
-								message: t('There was an error: {{error}}', { error: error.toString() }),
-								title: t('Error'),
-								warning: true,
-								onAccept: () => {
-									// Do nothing
-								},
-							})
-						} else {
-							console.log(error)
-						}
-					})
-			},
-			[setStatus]
-		)
+				})
+				.finally(() => {
+					reloadingNow.current = false
+				})
+		}, [])
 
 		useEffect(() => {
 			const reloadInterval = Meteor.setInterval(() => {
@@ -65,7 +59,7 @@ export const DevicePackageManagerSettings: React.FC<IDevicePackageManagerSetting
 			return () => {
 				Meteor.clearInterval(reloadInterval)
 			}
-		}, [reloadStatus])
+		}, [])
 
 		function killApp(e: string, appId: string) {
 			MeteorCall.client
