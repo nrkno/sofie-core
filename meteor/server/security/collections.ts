@@ -303,13 +303,13 @@ PeripheralDevices.allow({
 
 PeripheralDeviceCommands.allow({
 	insert(_userId, _doc: PeripheralDeviceCommand): boolean {
-		return true
+		return false
 	},
 	update(_userId, _doc, _fields, _modifier) {
 		return false
 	},
 	remove(_userId, _doc) {
-		return true
+		return false
 	},
 })
 
