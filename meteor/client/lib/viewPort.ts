@@ -16,7 +16,7 @@ export function maintainFocusOnPartInstance(
 	timeWindow: number,
 	forceScroll?: boolean,
 	noAnimation?: boolean
-) {
+): void {
 	const startTime = Date.now()
 	const focus = () => {
 		if (Date.now() - startTime < timeWindow) {

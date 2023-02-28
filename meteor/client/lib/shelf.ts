@@ -126,7 +126,7 @@ export function getNextPieceInstancesGrouped(
 	return { nextAdLibIds, nextTags, nextPieceInstances }
 }
 
-export function isAdLibOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi) {
+export function isAdLibOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi): boolean {
 	if (
 		unfinishedAdLibIds.includes(adLib._id) ||
 		(adLib.currentPieceTags &&
@@ -138,7 +138,7 @@ export function isAdLibOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: stri
 	return false
 }
 
-export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: string[], adLib: AdLibPieceUi) {
+export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: string[], adLib: AdLibPieceUi): boolean {
 	if (
 		nextAdLibIds.includes(adLib._id) ||
 		(adLib.nextPieceTags &&
@@ -150,7 +150,11 @@ export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: string[], adLib: 
 	return false
 }
 
-export function isAdLibDisplayedAsOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi) {
+export function isAdLibDisplayedAsOnAir(
+	unfinishedAdLibIds: PieceId[],
+	unfinishedTags: string[],
+	adLib: AdLibPieceUi
+): boolean {
 	const isOnAir = isAdLibOnAir(unfinishedAdLibIds, unfinishedTags, adLib)
 	return adLib.invertOnAirState ? !isOnAir : isOnAir
 }

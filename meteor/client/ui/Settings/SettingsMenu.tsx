@@ -80,7 +80,7 @@ export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMe
 			})
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div className="tight-xs htight-xs text-s">

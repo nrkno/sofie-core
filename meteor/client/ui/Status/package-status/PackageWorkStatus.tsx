@@ -44,7 +44,7 @@ export const PackageWorkStatus = withTranslation()(
 				MeteorCall.userAction.packageManagerAbortExpectation(e, ts, status.deviceId, unprotectString(status._id))
 			)
 		}
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			const status = this.props.status
 			return (

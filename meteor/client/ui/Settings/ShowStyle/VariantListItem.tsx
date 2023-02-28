@@ -77,7 +77,7 @@ export const VariantListItem = ({
 	onDelete: (showStyleVariant: ShowStyleVariant) => void
 	onSaveOverrides: (showStyleVariantId: ShowStyleVariantId, newOps: SomeObjectOverrideOp[]) => void
 	onPushOverride: (showStyleVariantId: ShowStyleVariantId, newOp: SomeObjectOverrideOp) => void
-}) => {
+}): JSX.Element => {
 	const ref = useRef<HTMLTableRowElement>(null)
 	const [{ handlerId }, drop] = useDrop<DraggableVariant, DraggableDropResult, { handlerId: Identifier | null }>({
 		accept: ShowStyleDragDropTypes.VARIANT,

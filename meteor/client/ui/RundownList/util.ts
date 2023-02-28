@@ -53,7 +53,7 @@ export function getRundownWithShelfLayoutLink(
 	return `/rundown/${encodedRundownId}?rundownViewLayout=${encodedLayoutId}`
 }
 
-export function confirmDeleteRundown(rundown: Rundown, t: TFunction) {
+export function confirmDeleteRundown(rundown: Rundown, t: TFunction): void {
 	doModalDialog({
 		title: t('Delete rundown?'),
 		yes: t('Delete'),

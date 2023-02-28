@@ -78,7 +78,7 @@ export const ResetPasswordPage = translateWithTracker((props: IResetPageProps) =
 			this.setState({ error: msg })
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<NotLoggedInContainer>

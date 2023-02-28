@@ -40,7 +40,7 @@ class EndWordsPanelInner extends MeteorReactComponent<
 		super(props)
 	}
 
-	render() {
+	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 
 		const { t, livePieceInstance, panel } = this.props

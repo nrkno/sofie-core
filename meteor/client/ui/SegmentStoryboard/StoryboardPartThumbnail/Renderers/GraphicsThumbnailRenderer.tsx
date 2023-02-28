@@ -4,7 +4,7 @@ import { RundownUtils } from '../../../../lib/rundown'
 import { L3rdFloatingInspector } from '../../../FloatingInspectors/L3rdFloatingInspector'
 import { IProps } from './ThumbnailRendererFactory'
 
-export function GraphicsThumbnailRenderer({ pieceInstance, hovering, layer, originPosition }: IProps) {
+export function GraphicsThumbnailRenderer({ pieceInstance, hovering, layer, originPosition }: IProps): JSX.Element {
 	const content = pieceInstance.instance.piece.content as NoraContent | GraphicsContent | undefined
 
 	return (

@@ -35,7 +35,7 @@ export type EditAttributeType =
 	| 'iconpicker'
 	| 'array'
 export class EditAttribute extends React.Component<IEditAttribute> {
-	render() {
+	render(): JSX.Element {
 		if (this.props.type === 'text') {
 			return <EditAttributeText {...this.props} />
 		} else if (this.props.type === 'multiline') {
@@ -99,7 +99,7 @@ interface IEditAttributeBaseState {
 	editing: boolean
 }
 export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, IEditAttributeBaseState> {
-	constructor(props) {
+	constructor(props: IEditAttributeBaseProps) {
 		super(props)
 
 		this.state = {
@@ -113,7 +113,8 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		this.handleDiscard = this.handleDiscard.bind(this)
 	}
 	/** Update the temporary value of this field, optionally saving a value */
-	handleEdit(inputValue: any, storeValue?: any) {
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+	protected handleEdit(inputValue: any, storeValue?: any): void {
 		this.setState({
 			value: inputValue,
 			editing: true,
@@ -123,30 +124,33 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		}
 	}
 	/** Update and save the value of this field */
-	handleUpdate(inputValue: any, storeValue?: any) {
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+	protected handleUpdate(inputValue: any, storeValue?: any): void {
 		this.handleUpdateButDontSave(inputValue)
 		this.updateValue(storeValue ?? inputValue)
 	}
 	/** Update the temporary value of this field, and save it */
-	handleUpdateEditing(newValue) {
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+	protected handleUpdateEditing(newValue: any): void {
 		this.handleUpdateButDontSave(newValue, true)
 		this.updateValue(newValue)
 	}
 	/** Update the temporary value of this field, marking whether is being edited */
-	handleUpdateButDontSave(newValue, editing = false) {
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+	protected handleUpdateButDontSave(newValue: any, editing = false): void {
 		this.setState({
 			value: newValue,
 			editing,
 		})
 	}
 	/** Discard the temporary value of this field */
-	handleDiscard() {
+	protected handleDiscard(): void {
 		this.setState({
 			value: this.getAttribute(),
 			editing: false,
 		})
 	}
-	deepAttribute(obj0: any, attr0: string | undefined): any {
+	private deepAttribute(obj0: any, attr0: string | undefined): any {
 		// Returns a value deep inside an object
 		// Example: deepAttribute(company,"ceo.address.street");
 
@@ -168,7 +172,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		}
 		return f(obj0, attr0 || '')
 	}
-	getAttribute() {
+	protected getAttribute(): any {
 		let v = null
 		if (this.props.overrideDisplayValue !== undefined) {
 			v = this.props.overrideDisplayValue
@@ -177,13 +181,11 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		}
 		return this.props.mutateDisplayValue ? this.props.mutateDisplayValue(v) : v
 	}
-	getAttributeText() {
-		return this.getAttribute() + ''
-	}
-	getEditAttribute() {
+
+	protected getEditAttribute(): any {
 		return this.state.editing ? this.state.value : this.getAttribute()
 	}
-	updateValue(newValue) {
+	private updateValue(newValue) {
 		if (this.props.mutateUpdateValue) {
 			try {
 				newValue = this.props.mutateUpdateValue(newValue)
@@ -236,7 +238,7 @@ const EditAttributeText = wrapEditAttribute(
 		private handleChange(value: string) {
 			this.handleUpdate(value)
 		}
-		render() {
+		render(): JSX.Element {
 			return (
 				<TextInputControl
 					classNames={`${this.props.className || ''} ${this.state.valueError ? 'error ' : ''}`}
@@ -261,7 +263,7 @@ const EditAttributeMultilineText = wrapEditAttribute(
 		private handleChange(value: string[]) {
 			this.handleEdit(joinLines(value)) // as single string
 		}
-		render() {
+		render(): JSX.Element {
 			return (
 				<MultiLineTextInputControl
 					classNames={`${this.props.className || ''} ${this.state.valueError ? 'error ' : ''}`}
@@ -286,7 +288,7 @@ const EditAttributeInt = wrapEditAttribute(
 		private handleChange(value: number) {
 			this.handleUpdate(value)
 		}
-		render() {
+		render(): JSX.Element {
 			return (
 				<IntInputControl
 					classNames={this.props.className || ''}
@@ -311,7 +313,7 @@ const EditAttributeFloat = wrapEditAttribute(
 		private handleChange(value: number) {
 			this.handleUpdate(value)
 		}
-		render() {
+		render(): JSX.Element {
 			return (
 				<FloatInputControl
 					classNames={this.props.className || ''}
@@ -336,7 +338,7 @@ const EditAttributeCheckbox = wrapEditAttribute(
 		private handleChange(value: boolean) {
 			this.handleUpdate(value)
 		}
-		render() {
+		render(): JSX.Element {
 			const classNames = _.compact([
 				this.props.className,
 				this.state.editing ? this.props.modifiedClassName : undefined,
@@ -371,7 +373,7 @@ const EditAttributeToggle = wrapEditAttribute(
 		handleClick = () => {
 			this.handleChange()
 		}
-		render() {
+		render(): JSX.Element {
 			return (
 				<div className="mvs">
 					<a
@@ -417,7 +419,7 @@ const EditAttributeSwitch = wrapEditAttribute(
 		handleClick = () => {
 			this.handleChange()
 		}
-		render() {
+		render(): JSX.Element {
 			return (
 				<div
 					className={
@@ -450,7 +452,7 @@ const EditAttributeDropdown = wrapEditAttribute(
 		handleChange(value: string) {
 			this.handleUpdate(this.props.optionsAreNumbers ? parseInt(value, 10) : value)
 		}
-		render() {
+		render(): JSX.Element {
 			const options = getDropdownInputOptions<string>(this.props.options)
 
 			return (
@@ -504,7 +506,7 @@ const EditAttributeDropdownText = wrapEditAttribute(
 		getOptions() {
 			return getDropdownInputOptions(this.props.options)
 		}
-		render() {
+		render(): JSX.Element {
 			return (
 				<div className="input-dropdowntext">
 					<input
@@ -612,7 +614,7 @@ const EditAttributeMultiSelect = wrapEditAttribute(
 
 			return { options, currentOptionMissing: !!missingOptions.length }
 		}
-		render() {
+		render(): JSX.Element {
 			const options = this.getOptions(true)
 			return (
 				<MultiSelect
@@ -638,7 +640,7 @@ const EditAttributeJson = wrapEditAttribute(
 			const storeValue = this.props.storeJsonAsObject ? value : JSON.stringify(value, undefined, 2)
 			this.handleUpdate(storeValue)
 		}
-		render() {
+		render(): JSX.Element {
 			const value = this.props.storeJsonAsObject ? this.getAttribute() : tryParseJson(this.getAttribute())?.parsed
 
 			return (
@@ -741,7 +743,7 @@ const EditAttributeArray = wrapEditAttribute(
 				return ''
 			}
 		}
-		render() {
+		render(): JSX.Element {
 			return (
 				<input
 					type="text"
@@ -776,7 +778,7 @@ const EditAttributeColorPicker = wrapEditAttribute(
 		handleChange(event: ColorPickerEvent) {
 			this.handleUpdate(event.selectedValue)
 		}
-		render() {
+		render(): JSX.Element {
 			return (
 				<ColorPicker
 					className={this.props.className}
@@ -799,7 +801,7 @@ const EditAttributeIconPicker = wrapEditAttribute(
 		handleChange(event: IconPickerEvent) {
 			this.handleUpdate(event.selectedValue)
 		}
-		render() {
+		render(): JSX.Element {
 			return (
 				<IconPicker
 					className={this.props.className}

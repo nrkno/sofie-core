@@ -363,7 +363,11 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				_nameTextBox: HTMLInputElement | null = null
 				_panel: HTMLDivElement | null = null
 
-				constructor(props: Translated<IBucketPanelProps & IBucketPanelTrackedProps>) {
+				constructor(
+					props: Translated<IBucketPanelProps & IBucketPanelTrackedProps> &
+						BucketSourceCollectedProps &
+						BucketTargetCollectedProps
+				) {
 					super(props)
 
 					this.state = {
@@ -374,7 +378,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					}
 				}
 
-				componentDidMount() {
+				componentDidMount(): void {
 					this.subscribe(PubSub.buckets, {
 						_id: this.props.bucket._id,
 					})
@@ -422,7 +426,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					RundownViewEventBus.off(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
 				}
 
-				componentWillUnmount() {
+				componentWillUnmount(): void {
 					this._cleanUp()
 
 					window.removeEventListener(MOSEvents.dragenter, this.onDragEnter)
@@ -782,7 +786,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					)
 				}
 
-				render() {
+				render(): JSX.Element | null {
 					const { connectDragSource, connectDragPreview, connectDropTarget } = this.props
 
 					if (this.props.showStyleBase) {

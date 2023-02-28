@@ -59,7 +59,7 @@ export const ShowStyleGenericProperties = withTranslation()(
 			return options
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t, showStyleBase } = this.props
 
 			return (

@@ -33,7 +33,7 @@ export function ManifestEntryWithOverrides({
 	configField,
 	item,
 	overrideHelper,
-}: ConfigManifestEntryWithOverridesProps) {
+}: ConfigManifestEntryWithOverridesProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const wrapperProps: Omit<LabelAndOverridesProps<any, any>, 'children'> = {
@@ -150,7 +150,7 @@ export const renderEditAttribute = (
 	configField: ConfigManifestEntry | BlueprintConfigManifestEntry,
 	obj: object,
 	prefix?: string
-) => {
+): JSX.Element | undefined => {
 	const attribute = prefix + configField.id
 	const opts = {
 		modifiedClassName: 'bghl',
@@ -234,7 +234,7 @@ export function ConfigManifestEntryComponent({
 	prefix,
 	collection,
 	className,
-}: IConfigManifestEntryComponentProps) {
+}: IConfigManifestEntryComponentProps): JSX.Element {
 	const { t } = useTranslation() // TODO - should this use a namespace?
 
 	return (

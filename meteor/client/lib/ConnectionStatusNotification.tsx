@@ -81,7 +81,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		})
 	}
 
-	stop() {
+	stop(): void {
 		super.stop()
 
 		this._notifier.stop()
@@ -246,15 +246,15 @@ export const ConnectionStatusNotification = withTranslation()(
 			super(props)
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.notifier = new ConnectionStatusNotifier(this.props.t)
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			this.notifier.stop()
 		}
 
-		render() {
+		render(): JSX.Element {
 			// this.props.connected
 			return <NotificationCenterPopUps />
 		}

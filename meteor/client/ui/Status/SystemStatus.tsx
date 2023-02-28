@@ -48,7 +48,7 @@ interface IDeviceItemProps {
 }
 interface IDeviceItemState {}
 
-export function statusCodeToString(t: i18next.TFunction, statusCode: StatusCode) {
+export function statusCodeToString(t: i18next.TFunction, statusCode: StatusCode): string {
 	switch (statusCode) {
 		case StatusCode.UNKNOWN:
 			return t('Unknown')
@@ -186,7 +186,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (
@@ -370,7 +370,7 @@ export const CoreItem = reacti18next.withTranslation()(
 			this.state = {}
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (
@@ -543,7 +543,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.refreshSystemStatus()
 			this.refreshInterval = setInterval(this.refreshSystemStatus, 5000)
 			this.refreshDebugStatesInterval = setInterval(this.refreshDebugStates, 1000)
@@ -552,7 +552,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 			this.subscribe(PubSub.peripheralDevices, {})
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			if (this.refreshInterval) clearInterval(this.refreshInterval)
 			if (this.refreshDebugStatesInterval) clearInterval(this.refreshDebugStatesInterval)
 			this.destroyed = true
@@ -673,7 +673,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 			)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (

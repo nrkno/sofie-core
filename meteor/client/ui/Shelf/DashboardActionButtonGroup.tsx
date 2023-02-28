@@ -139,7 +139,7 @@ export const DashboardActionButtonGroup = withTranslation()(
 			}
 		}
 
-		render() {
+		render(): JSX.Element[] {
 			return this.props.buttons.map((button: DashboardLayoutActionButton) => (
 				<DashboardActionButton
 					key={button._id}

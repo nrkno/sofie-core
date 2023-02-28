@@ -1723,7 +1723,7 @@ export default withTranslation()(
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			const isRundownLayout = RundownLayoutsAPI.isRundownLayout(this.props.item)

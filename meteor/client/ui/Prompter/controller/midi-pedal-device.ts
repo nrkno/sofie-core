@@ -72,22 +72,22 @@ export class MidiPedalController extends ControllerAbstract {
 		webmidi.enable(this.setupMidiListeners.bind(this))
 	}
 
-	public destroy() {
+	public destroy(): void {
 		webmidi.disable()
 	}
-	public onKeyDown(_e: KeyboardEvent) {
+	public onKeyDown(_e: KeyboardEvent): void {
 		// Nothing
 	}
-	public onKeyUp(_e: KeyboardEvent) {
+	public onKeyUp(_e: KeyboardEvent): void {
 		// Nothing
 	}
-	public onMouseKeyDown(_e: MouseEvent) {
+	public onMouseKeyDown(_e: MouseEvent): void {
 		// Nothing
 	}
-	public onMouseKeyUp(_e: MouseEvent) {
+	public onMouseKeyUp(_e: MouseEvent): void {
 		// Nothing
 	}
-	public onWheel(_e: WheelEvent) {
+	public onWheel(_e: WheelEvent): void {
 		// Nothing
 	}
 

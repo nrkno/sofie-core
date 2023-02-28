@@ -223,7 +223,7 @@ export const RundownTimingProvider = withTracker<
 			this.refreshDecimator++
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 			this.onRefreshTimer()
 
@@ -248,7 +248,7 @@ export const RundownTimingProvider = withTracker<
 			}
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			this._cleanUp()
 			delete window['rundownTimingContext']
 			Meteor.clearInterval(this.refreshTimer)
@@ -306,7 +306,7 @@ export const RundownTimingProvider = withTracker<
 			}
 		}
 
-		render() {
+		render(): React.ReactNode {
 			return this.props.children
 		}
 	}

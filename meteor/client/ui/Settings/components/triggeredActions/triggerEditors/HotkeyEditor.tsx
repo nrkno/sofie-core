@@ -38,7 +38,7 @@ export function convertToLenientModifiers(keys: string[]): string[] {
 	})
 }
 
-export const HotkeyEditor = function HotkeyEditor({ trigger, modified, readonly, onChange }: IProps) {
+export const HotkeyEditor = function HotkeyEditor({ trigger, modified, readonly, onChange }: IProps): JSX.Element {
 	const sorensen = useContext(SorensenContext)
 	const [input, setInput] = useState<HTMLInputElement | null>(null)
 	const [displayValue, setDisplayValue] = useState(trigger.keys)

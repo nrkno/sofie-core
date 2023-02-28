@@ -25,7 +25,7 @@ interface IProps {
  */
 export const SwitchboardPopUp = withTranslation()(
 	class SwitchboardPopUp extends React.Component<Translated<IProps>> {
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			const exclusivityGroups: {
 				[id: string]: Array<[string, StudioRouteSet]>

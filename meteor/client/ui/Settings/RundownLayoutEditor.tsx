@@ -79,7 +79,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			super.componentDidMount && super.componentDidMount()
 
 			this.subscribe(PubSub.rundownLayouts, {})
@@ -581,7 +581,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			reader.readAsText(file)
 		}
 
-		render() {
+		render(): JSX.Element {
 			return (
 				<div className="studio-edit rundown-layout-editor">
 					<h2 className="mhn">{this.props.customRegion.title}</h2>

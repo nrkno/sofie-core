@@ -40,7 +40,7 @@ export const ShowStyleVariantsSettings = ({
 	blueprintConfigManifest,
 	layerMappings,
 	sourceLayers,
-}: IShowStyleVariantsProps) => {
+}: IShowStyleVariantsProps): JSX.Element => {
 	const [localVariants, setLocalVariants] = useState<ShowStyleVariant[]>([])
 	const [editedVariants, setEditedVariants] = useState<ShowStyleVariantId[]>([])
 	const [timestampedFileKey, setTimestampedFileKey] = useState(0)

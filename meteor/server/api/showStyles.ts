@@ -39,7 +39,7 @@ export async function getShowStyleCompound(
 export function createBlueprintConfigCompound(
 	baseConfig: ObjectWithOverrides<IBlueprintConfig>,
 	variantConfig: ObjectWithOverrides<IBlueprintConfig>
-) {
+): IBlueprintConfig {
 	const baseConfig2 = applyAndValidateOverrides(baseConfig).obj
 	const variantConfig2 = applyAndValidateOverrides(variantConfig).obj
 

@@ -31,7 +31,7 @@ export function observerChain(): Pick<Link<{}>, 'next'> {
 		let chainedKey: string | undefined = undefined
 		let previousObserver: Meteor.LiveQueryHandle | null = null
 
-		let nextChanged: (obj) => void = () => {
+		let nextChanged: (obj: Record<string, any>) => void = () => {
 			if (mode === 'end') return
 			throw new Error('nextChanged: Unfinished observer chain. This is a memory leak.')
 		}
@@ -40,7 +40,7 @@ export function observerChain(): Pick<Link<{}>, 'next'> {
 			throw new Error('nextChanged: Unfinished observer chain. This is a memory leak.')
 		}
 
-		function changedLink(collectorObject) {
+		function changedLink(collectorObject: Record<string, any>) {
 			if (previousObserver) {
 				previousObserver.stop()
 				previousObserver = null
@@ -54,7 +54,7 @@ export function observerChain(): Pick<Link<{}>, 'next'> {
 			previousObserver = cursorResult.observe({
 				added: (doc) => {
 					if (!chainedKey) throw new Error('Chained key needs to be defined')
-					const newCollectorObject = {
+					const newCollectorObject: Record<string, any> = {
 						...collectorObject,
 						[chainedKey]: doc,
 					}
@@ -77,7 +77,7 @@ export function observerChain(): Pick<Link<{}>, 'next'> {
 			})
 		}
 
-		function changedEnd(obj) {
+		function changedEnd(obj: Record<string, any>) {
 			completeFunction(obj)
 		}
 
@@ -95,7 +95,7 @@ export function observerChain(): Pick<Link<{}>, 'next'> {
 		}
 
 		return {
-			changed: (obj) => {
+			changed: (obj: Record<string, any>) => {
 				switch (mode) {
 					case 'next':
 						changedLink(obj)
@@ -124,7 +124,7 @@ export function observerChain(): Pick<Link<{}>, 'next'> {
 				}
 			},
 			link: {
-				next: (key: string, thisCursor) => {
+				next: (key: string, thisCursor: typeof chainedCursor) => {
 					if (mode !== undefined) throw new Error('Cannot redefine chain after setup')
 					if (!key) throw new Error('Key needs to be a defined, non-empty string')
 					chainedKey = key
@@ -135,7 +135,7 @@ export function observerChain(): Pick<Link<{}>, 'next'> {
 					nextStop = stop
 					return link
 				},
-				end: (complete) => {
+				end: (complete: typeof completeFunction) => {
 					if (mode !== undefined) throw new Error('Cannot redefine chain after setup')
 					mode = 'end'
 					completeFunction = complete
@@ -162,7 +162,7 @@ export function observerChain(): Pick<Link<{}>, 'next'> {
 					changed({})
 				})
 			)
-			return nextLink
+			return nextLink as any
 		},
 	}
 }

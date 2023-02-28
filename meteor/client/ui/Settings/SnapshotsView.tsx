@@ -56,7 +56,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 				removeSnapshots: false,
 			}
 		}
-		componentDidMount() {
+		componentDidMount(): void {
 			this.subscribe(PubSub.snapshots, {
 				created: {
 					$gt: getCurrentTime() - 30 * 24 * 3600 * 1000, // last 30 days
@@ -224,7 +224,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 				})
 			}
 		}
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (

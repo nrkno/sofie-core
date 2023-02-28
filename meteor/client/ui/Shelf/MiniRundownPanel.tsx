@@ -42,8 +42,7 @@ interface MiniRundownSegment {
 }
 
 export class MiniRundownPanelInner extends MeteorReactComponent<
-	IMiniRundownPanelProps & IMiniRundownPanelTrackedProps,
-	IState
+	IMiniRundownPanelProps & IMiniRundownPanelTrackedProps
 > {
 	static currentSegmentCssClass: string = 'current-segment'
 	static nextSegmentCssClass: string = 'next-segment'
@@ -51,20 +50,15 @@ export class MiniRundownPanelInner extends MeteorReactComponent<
 	static nextSegmentId: string = 'mini-rundown__next-segment'
 	static currentSegmentId: string = 'mini-rundown__current-segment'
 
-	constructor(props) {
-		super(props)
-		this.state = {}
-	}
-
-	componentDidMount() {
+	componentDidMount(): void {
 		this.scrollIntoView()
 	}
 
-	componentDidUpdate() {
+	componentDidUpdate(): void {
 		this.scrollIntoView()
 	}
 
-	scrollIntoView() {
+	private scrollIntoView() {
 		Meteor.setTimeout(() => {
 			const container = document.getElementById(MiniRundownPanelInner.panelContainerId)
 			if (!container) return
@@ -78,7 +72,7 @@ export class MiniRundownPanelInner extends MeteorReactComponent<
 		}, 500)
 	}
 
-	render() {
+	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const style = getElementStyle(this.props, isDashboardLayout)
 

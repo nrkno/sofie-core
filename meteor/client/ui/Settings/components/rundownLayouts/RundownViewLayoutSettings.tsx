@@ -21,7 +21,7 @@ interface IProps {
 	layouts: RundownLayoutBase[]
 }
 
-export default function RundownViewLayoutSettings({ sourceLayers, item, layouts }: IProps) {
+export default function RundownViewLayoutSettings({ sourceLayers, item, layouts }: IProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const sourceLayerOptions = useMemo(

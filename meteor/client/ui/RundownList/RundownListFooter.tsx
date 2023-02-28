@@ -11,7 +11,7 @@ interface IProps {
 	systemStatus: StatusResponse
 }
 
-export function RundownListFooter({ systemStatus }: IProps) {
+export function RundownListFooter({ systemStatus }: IProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const version = PackageInfo.version || 'UNSTABLE'

@@ -126,7 +126,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			return !_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState)
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.autorun(() => {
 				const partIds = Parts.find(
 					{
@@ -362,7 +362,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			})
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			this._cleanUp()
 			if (this.intersectionObserver && this.state.isLiveSegment && this.props.followLiveSegments) {
 				if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
@@ -690,7 +690,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			this.onTimeScaleChange(newScale)
 		}
 
-		render() {
+		render(): JSX.Element | null {
 			return this.props.segmentui ? (
 				<React.Fragment key={unprotectString(this.props.segmentui._id)}>
 					{!this.props.segmentui.isHidden && (

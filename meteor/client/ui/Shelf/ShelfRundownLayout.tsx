@@ -35,7 +35,7 @@ export interface IShelfRundownLayoutProps {
 	}>
 }
 
-export function ShelfRundownLayout(props: IShelfRundownLayoutProps) {
+export function ShelfRundownLayout(props: IShelfRundownLayoutProps): JSX.Element {
 	const { t } = useTranslation()
 	const { rundownLayout, onSwitchTab } = props
 	return (

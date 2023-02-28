@@ -23,7 +23,7 @@ export function IntInputControl({
 	handleUpdate,
 	updateOnKey,
 	zeroBased,
-}: IIntInputControlProps) {
+}: IIntInputControlProps): JSX.Element {
 	const [editingValue, setEditingValue] = useState<number | null>(null)
 
 	const handleChange = useCallback(

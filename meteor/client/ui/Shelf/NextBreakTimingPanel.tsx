@@ -20,14 +20,8 @@ interface INextBreakTimingPanelProps {
 	playlist: RundownPlaylist
 }
 
-interface IState {}
-
-export class NextBreakTimingPanelInner extends MeteorReactComponent<Translated<INextBreakTimingPanelProps>, IState> {
-	constructor(props) {
-		super(props)
-	}
-
-	render() {
+export class NextBreakTimingPanelInner extends MeteorReactComponent<Translated<INextBreakTimingPanelProps>> {
+	render(): JSX.Element {
 		const { playlist, panel, layout } = this.props
 
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(layout)

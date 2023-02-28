@@ -57,10 +57,10 @@ export class MouseIshController extends ControllerAbstract {
 			this._setMode((recalledMode as Mode) || Mode.NORMAL)
 		}
 	}
-	public destroy() {
+	public destroy(): void {
 		this._destroyed = true
 	}
-	public onKeyDown(e: KeyboardEvent) {
+	public onKeyDown(e: KeyboardEvent): void {
 		// Nothing
 		if (e.code === 'KeyP' && e.ctrlKey) {
 			e.preventDefault() // Prevent print-dialogue
@@ -68,10 +68,10 @@ export class MouseIshController extends ControllerAbstract {
 			e.preventDefault() // Prevent reload of page
 		}
 	}
-	public onKeyUp(_e: KeyboardEvent) {
+	public onKeyUp(_e: KeyboardEvent): void {
 		// Nothing
 	}
-	public onMouseKeyDown(e: MouseEvent) {
+	public onMouseKeyDown(e: MouseEvent): void {
 		if (this._mode === Mode.SPEED) {
 			if (
 				e.button === 0 || // left mouse button
@@ -93,7 +93,7 @@ export class MouseIshController extends ControllerAbstract {
 
 		this._mouseKeyDown[e.button + ''] = Date.now()
 	}
-	public onMouseKeyUp(e: MouseEvent) {
+	public onMouseKeyUp(e: MouseEvent): void {
 		const timeSincePress = Date.now() - this._mouseKeyDown[e.button + '']
 
 		if (this._mode === Mode.SPEED) {
@@ -120,7 +120,7 @@ export class MouseIshController extends ControllerAbstract {
 		}
 		this._mouseKeyDown[e.button + ''] = 0
 	}
-	public onWheel(e: WheelEvent) {
+	public onWheel(e: WheelEvent): void {
 		const timeSinceLastWheel = Date.now() - this._lastWheelTime
 
 		this._lastWheelTime = Date.now()

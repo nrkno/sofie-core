@@ -26,7 +26,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 	}
 })(
 	class SystemManagement extends MeteorReactComponent<Translated<IProps & ITrackedProps>> {
-		componentDidMount() {
+		componentDidMount(): void {
 			meteorSubscribe(PubSub.coreSystem)
 		}
 		cleanUpOldDatabaseIndexes(): void {
@@ -63,7 +63,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 				})
 				.catch(console.error)
 		}
-		render() {
+		render(): JSX.Element | null {
 			const { t } = this.props
 
 			return this.props.coreSystem ? (

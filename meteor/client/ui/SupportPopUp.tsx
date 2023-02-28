@@ -27,13 +27,7 @@ export const SupportPopUp = translateWithTracker<IProps, {}, ITrackedProps>((_pr
 	}
 })(
 	class SupportPopUp extends MeteorReactComponent<IProps & ITrackedProps & WithTranslation> {
-		constructor(props: IProps) {
-			super(props)
-		}
-
-		// componentDidMount () {}
-
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div className="support-pop-up-panel" role="dialog">
@@ -55,7 +49,7 @@ interface IToggleProps {
 	title?: string
 }
 
-export function SupportPopUpToggle(props: IToggleProps) {
+export function SupportPopUpToggle(props: IToggleProps): JSX.Element {
 	return (
 		<button
 			className={ClassNames('status-bar__controls__button', 'support__toggle-button', {
@@ -76,7 +70,7 @@ export function SupportPopUpToggle(props: IToggleProps) {
 
 export const DocumentationLink = withTranslation()(
 	class DocumentationLink extends React.Component<WithTranslation> {
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<p className="mod mhn mbn">

@@ -20,11 +20,11 @@ import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/I
 
 let reportNotificationsId: string | null = null
 
-export function getReportNotifications() {
+export function getReportNotifications(): string | null {
 	return reportNotificationsId
 }
 
-export function setReportNotifications(id: string | null) {
+export function setReportNotifications(id: string | null): void {
 	reportNotificationsId = id
 }
 
@@ -508,7 +508,7 @@ export class Notification extends EventEmitter {
 	 *
 	 * @memberof Notification
 	 */
-	snooze() {
+	snooze(): void {
 		this.snoozed = true
 		notificationsDep.changed()
 		this.emit('snoozed', this)
@@ -519,7 +519,7 @@ export class Notification extends EventEmitter {
 	 *
 	 * @memberof Notification
 	 */
-	drop() {
+	drop(): void {
 		if (this.id) {
 			NotificationCenter.drop(this.id)
 		}
@@ -532,7 +532,7 @@ export class Notification extends EventEmitter {
 	 * @param {*} event
 	 * @memberof Notification
 	 */
-	action(type: string, event: any) {
+	action(type: string, event: React.SyntheticEvent): void {
 		this.emit('action', this, type, event)
 	}
 }

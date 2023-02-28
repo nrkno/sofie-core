@@ -121,12 +121,12 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		this.checkTimingChange()
 		window.addEventListener(RundownTiming.Events.timeupdateHighResolution, this.onTimeupdate)
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		window.removeEventListener(RundownTiming.Events.timeupdateHighResolution, this.onTimeupdate)
 	}
 
@@ -168,7 +168,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 		return this.props.isLiveSegment ? this.calculateSegmentDuration() : this.state.totalSegmentDuration
 	}
 
-	render() {
+	render(): JSX.Element {
 		return (
 			<div
 				className={ClassNames('segment-timeline__zoom-area-container', {
@@ -251,7 +251,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		super.componentDidMount && super.componentDidMount()
 
 		RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
@@ -266,7 +266,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}, 10)
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		super.componentWillUnmount && super.componentWillUnmount()
 		clearTimeout(this.highlightTimeout)
 
@@ -291,7 +291,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	setSegmentRef = (el: HTMLDivElement) => {
+	private setSegmentRef = (el: HTMLDivElement) => {
 		this.segmentBlock = el
 		if (typeof this.props.segmentRef === 'function') this.props.segmentRef(this as any, this.props.segment._id)
 
@@ -300,27 +300,27 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	setTimelineRef = (el: HTMLDivElement) => {
+	private setTimelineRef = (el: HTMLDivElement) => {
 		this.timeline = el
 	}
 
-	convertTimeToPixels = (time: number) => {
+	private convertTimeToPixels = (time: number) => {
 		return Math.round(this.props.timeScale * time)
 	}
 
-	onTimelineResize = (size: number[]) => {
+	private onTimelineResize = (size: number[]) => {
 		this.setState({
 			timelineWidth: size[0],
 		})
 	}
 
-	onZoomNormalize = (e) => {
+	private onZoomNormalize = (e) => {
 		if (this.props.onShowEntireSegment) {
 			this.props.onShowEntireSegment(e)
 		}
 	}
 
-	onTimelineTouchEnd = (e: TouchEvent) => {
+	private onTimelineTouchEnd = (e: TouchEvent) => {
 		if (e.touches.length === 0) {
 			document.removeEventListener('touchmove', this.onTimelineTouchMove)
 			document.removeEventListener('touchend', this.onTimelineTouchEnd)
@@ -328,7 +328,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimelineTouchMove = (e: TouchEvent) => {
+	private onTimelineTouchMove = (e: TouchEvent) => {
 		if (e.touches.length === 2) {
 			const newSize = e.touches[1].clientX - e.touches[0].clientX
 			const prop = newSize / this._touchSize
@@ -344,7 +344,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimelineTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+	private onTimelineTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
 		if (e.touches.length === 2) {
 			// expect two touch points
 			if (!this._touchAttached) {
@@ -370,7 +370,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimelineMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
+	private onTimelineMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (!this._touchAttached && !this._mouseAttached) {
 			// if mouse down is on a piece - abort
 			if ((e.target as HTMLDivElement).classList.contains('segment-timeline__piece')) return
@@ -396,7 +396,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimelineMouseMove = (e: React.MouseEvent<HTMLDivElement> | MouseEvent) => {
+	private onTimelineMouseMove = (e: React.MouseEvent<HTMLDivElement> | MouseEvent) => {
 		const scrollAmount = e.movementX * -1 || (this._lastPointer ? this._lastPointer.clientX - e.clientX : 0)
 		this.props.onScroll(Math.max(0, this.props.scrollLeft + scrollAmount / this.props.timeScale), e)
 		if (e.movementX === 0) {
@@ -410,7 +410,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimelineMouseUp = (e: React.MouseEvent<HTMLDivElement> | MouseEvent) => {
+	private onTimelineMouseUp = (e: React.MouseEvent<HTMLDivElement> | MouseEvent) => {
 		document.removeEventListener('mousemove', this.onTimelineMouseMove)
 		document.removeEventListener('mouseup', this.onTimelineMouseUp)
 		this._mouseAttached = false
@@ -428,7 +428,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		this._lastClick = this._mouseMoved ? 0 : now
 	}
 
-	onTimelinePointerLockChange = () => {
+	private onTimelinePointerLockChange = () => {
 		if (!document.pointerLockElement) {
 			hidePointerLockCursor()
 			document.removeEventListener('pointerlockchange', this.onTimelinePointerLockChange)
@@ -436,25 +436,25 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimelinePointerError = () => {
+	private onTimelinePointerError = () => {
 		hidePointerLockCursor()
 		document.removeEventListener('pointerlockchange', this.onTimelinePointerLockChange)
 		document.removeEventListener('pointerlockerror', this.onTimelinePointerError)
 	}
 
-	onRundownEventSegmentZoomOn = () => {
+	private onRundownEventSegmentZoomOn = () => {
 		if (this.props.isLiveSegment || (this.props.isNextSegment && this.props.playlist.currentPartInstanceId === null)) {
 			this.onTimelineZoomOn()
 		}
 	}
 
-	onRundownEventSegmentZoomOff = () => {
+	private onRundownEventSegmentZoomOff = () => {
 		if (this.props.isLiveSegment || (this.props.isNextSegment && this.props.playlist.currentPartInstanceId === null)) {
 			this.onTimelineZoomOff()
 		}
 	}
 
-	onTimelineZoomOn = () => {
+	private onTimelineZoomOn = () => {
 		if (SegmentTimelineClass._zoomOutLatch === undefined) {
 			SegmentTimelineClass._zoomOutLatch = this.props.timeScale
 		}
@@ -462,7 +462,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		if (this.props.onShowEntireSegment) this.props.onShowEntireSegment(undefined)
 	}
 
-	onTimelineZoomOff = () => {
+	private onTimelineZoomOff = () => {
 		if (SegmentTimelineClass._zoomOutLatch !== undefined) {
 			this.props.onZoomChange(SegmentTimelineClass._zoomOutLatch, undefined)
 		}
@@ -471,7 +471,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	// doubleclick is simulated by onTimelineMouseUp, because we use pointer lock and that prevents dblclick events
-	onTimelineDoubleClick = (_e: React.MouseEvent<HTMLDivElement> | MouseEvent) => {
+	private onTimelineDoubleClick = (_e: React.MouseEvent<HTMLDivElement> | MouseEvent) => {
 		if (SegmentTimelineClass._zoomOutLatch === undefined || SegmentTimelineClass._zoomOutLatchId !== this.props.id) {
 			this.onTimelineZoomOn()
 		} else {
@@ -479,7 +479,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onTimeUntilClick = (_e: React.MouseEvent<HTMLDivElement>) => {
+	private onTimeUntilClick = (_e: React.MouseEvent<HTMLDivElement>) => {
 		this.setState(
 			(state) => ({
 				useTimeOfDayCountdowns: !state.useTimeOfDayCountdowns,
@@ -494,7 +494,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		)
 	}
 
-	onTimelineWheel = (e: WheelEvent) => {
+	private onTimelineWheel = (e: WheelEvent) => {
 		if (e.ctrlKey && !e.altKey && !e.metaKey && !e.shiftKey) {
 			// ctrl + Scroll
 			const nextTimeScale = Math.max(
@@ -539,13 +539,13 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	onClickPartIdent = (partId: PartId) => {
+	private onClickPartIdent = (partId: PartId) => {
 		scrollToPart(partId, false, true, true).catch((error) => {
 			if (!error.toString().match(/another scroll/)) console.error(error)
 		})
 	}
 
-	onPartTooSmallChanged = (part: PartUi, isTooSmall: number | false) => {
+	private onPartTooSmallChanged = (part: PartUi, isTooSmall: number | false) => {
 		if (isTooSmall === false) {
 			if (this.state.smallParts.has(part.instance._id)) {
 				this.setState((state) => {
@@ -569,7 +569,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	getSegmentContext = (_props) => {
+	private getSegmentContext = (_props) => {
 		const ctx = literal<IContextMenuContext>({
 			segment: this.props.segment,
 			part: this.props.parts.find((p) => isPartPlayable(p.instance.part)) || null,
@@ -582,7 +582,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		return ctx
 	}
 
-	getSegmentDuration() {
+	private getSegmentDuration() {
 		return (this.props.parts && RundownUtils.getSegmentDuration(this.props.parts)) || 0
 	}
 
@@ -592,7 +592,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			: outputGroup.isDefaultCollapsed
 	}
 
-	timelineStyle(outputGroups: IOutputLayerUi[]) {
+	private timelineStyle(outputGroups: IOutputLayerUi[]) {
 		const showHiddenSourceLayers = getShowHiddenSourceLayers()
 
 		return {
@@ -614,7 +614,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		}
 	}
 
-	renderLiveLine() {
+	private renderLiveLine() {
 		if (!this.props.isLiveSegment) return null
 
 		const { t } = this.props
@@ -674,7 +674,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		)
 	}
 
-	renderTimeline() {
+	private renderTimeline() {
 		const { smallParts } = this.state
 		const { t } = this.props
 		let partIsLive = false
@@ -780,7 +780,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		})
 	}
 
-	renderBudgetGapPart() {
+	private renderBudgetGapPart() {
 		if (this.props.budgetDuration === undefined) return null
 
 		return (
@@ -815,7 +815,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		)
 	}
 
-	getActiveOutputGroups(): IOutputLayerUi[] {
+	private getActiveOutputGroups(): IOutputLayerUi[] {
 		if (this.props.segment.outputLayers === undefined) return []
 
 		return Object.values(this.props.segment.outputLayers)
@@ -825,7 +825,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			.filter((group) => group.used)
 	}
 
-	renderOutputLayerControls(outputGroups: IOutputLayerUi[]) {
+	private renderOutputLayerControls(outputGroups: IOutputLayerUi[]) {
 		const showHiddenSourceLayers = getShowHiddenSourceLayers()
 
 		return outputGroups.map((outputLayer) => {
@@ -888,7 +888,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		})
 	}
 
-	renderEditorialLine() {
+	private renderEditorialLine() {
 		if (this.props.budgetDuration === undefined) {
 			return null
 		}
@@ -899,7 +899,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		return <div className="segment-timeline__editorialline" style={lineStyle}></div>
 	}
 
-	render() {
+	render(): JSX.Element {
 		const { t } = this.props
 
 		const criticalNotes = this.props.segmentNoteCounts.criticial

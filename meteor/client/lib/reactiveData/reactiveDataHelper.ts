@@ -59,7 +59,7 @@ export abstract class WithManagedTracker {
 	private _autoruns: Tracker.Computation[] = []
 	private _subs: Meteor.SubscriptionHandle[] = []
 
-	stop() {
+	stop(): void {
 		this._autoruns.forEach((comp) => comp.stop())
 		setTimeout(() => {
 			this._subs.forEach((comp) => comp.stop())
@@ -70,7 +70,7 @@ export abstract class WithManagedTracker {
 		return this._subs.every((e) => e.ready())
 	}
 
-	protected subscribe<K extends keyof PubSubTypes>(sub: K, ...args: Parameters<PubSubTypes[K]>) {
+	protected subscribe<K extends keyof PubSubTypes>(sub: K, ...args: Parameters<PubSubTypes[K]>): void {
 		this._subs.push(meteorSubscribe(sub, ...args))
 	}
 

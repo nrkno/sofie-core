@@ -74,7 +74,7 @@ export const PackageContainerStatus: React.FC<IPackageContainerStatusProps> = fu
 // 			this.state = {}
 // 		}
 
-// 		render() {
+// 		render(): JSX.Element {
 // 			const { t } = this.props
 // 			const packageContainerStatus = this.props.packageContainerStatus
 

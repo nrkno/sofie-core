@@ -4,7 +4,7 @@ import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids
 import { eventContextForLog } from '../../lib/clientUserAction'
 
 export async function callPeripheralDeviceFunction(
-	e: any,
+	e: Event | React.SyntheticEvent<object>,
 	deviceId: PeripheralDeviceId,
 	timeoutTime: number | undefined,
 	functionName: string,
@@ -20,7 +20,7 @@ export async function callPeripheralDeviceFunction(
 	)
 }
 export async function callPeripheralDeviceAction(
-	e: any,
+	e: Event | React.SyntheticEvent<object>,
 	deviceId: PeripheralDeviceId,
 	timeoutTime: number | undefined,
 	actionId: string,

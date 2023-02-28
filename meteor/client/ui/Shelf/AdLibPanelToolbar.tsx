@@ -10,7 +10,7 @@ interface IToolbarPropsHeader {
 	searchFilter: string | undefined
 }
 
-export function AdLibPanelToolbar(props: IToolbarPropsHeader) {
+export function AdLibPanelToolbar(props: IToolbarPropsHeader): JSX.Element {
 	const { t } = useTranslation()
 
 	function searchInputChanged(e?: React.ChangeEvent<HTMLInputElement>) {

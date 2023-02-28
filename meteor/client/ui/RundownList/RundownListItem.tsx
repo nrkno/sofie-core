@@ -224,7 +224,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 					}
 				}
 
-				render() {
+				render(): JSX.Element {
 					const {
 						isActive,
 						t,

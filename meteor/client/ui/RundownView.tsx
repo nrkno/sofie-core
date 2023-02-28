@@ -214,7 +214,7 @@ const WarningDisplay = withTranslation()(
 				this.props.oneMinuteBeforeAction(e)
 			}
 
-			render() {
+			render(): JSX.Element | null {
 				const { t } = this.props
 
 				if (!this.props.playlist) return null
@@ -255,7 +255,7 @@ interface ITimingDisplayProps {
 const TimingDisplay = withTranslation()(
 	withTiming<ITimingDisplayProps & WithTranslation, {}>()(
 		class TimingDisplay extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
-			render() {
+			render(): JSX.Element | null {
 				const { t, rundownPlaylist, currentRundown } = this.props
 
 				if (!rundownPlaylist) return null
@@ -361,7 +361,7 @@ const RundownHeader = withTranslation()(
 				selectedPiece: undefined,
 			}
 		}
-		componentDidMount() {
+		componentDidMount(): void {
 			RundownViewEventBus.on(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
 			RundownViewEventBus.on(RundownViewEvents.DEACTIVATE_RUNDOWN_PLAYLIST, this.eventDeactivate)
 			RundownViewEventBus.on(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
@@ -372,7 +372,7 @@ const RundownHeader = withTranslation()(
 			reloadRundownPlaylistClick.set(this.reloadRundownPlaylist)
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			RundownViewEventBus.off(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
 			RundownViewEventBus.off(RundownViewEvents.DEACTIVATE_RUNDOWN_PLAYLIST, this.eventDeactivate)
 			RundownViewEventBus.off(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
@@ -942,7 +942,7 @@ const RundownHeader = withTranslation()(
 			})
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<>
@@ -1541,7 +1541,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			const playlistId = this.props.rundownPlaylistId
 
 			this.subscribe(PubSub.rundownPlaylists, {
@@ -1885,7 +1885,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			this._cleanUp()
 			document.body.classList.remove('dark', 'vertical-overflow-only')
 			window.removeEventListener('beforeunload', this.onBeforeUnload)
@@ -3124,7 +3124,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			)
 		}
 
-		render() {
+		render(): JSX.Element {
 			if (!this.state.subsReady) {
 				return (
 					<div className="rundown-view rundown-view--loading">

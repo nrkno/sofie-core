@@ -212,7 +212,7 @@ export class OverrideOpHelper {
 	 * Set the value of a property of an item.
 	 * Note: the id cannot be changed in this way
 	 */
-	setItemValue = (itemId: string, subPath: string, value: any): void => {
+	setItemValue = (itemId: string, subPath: string, value: unknown): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
 		if (subPath === '_id') {
@@ -259,7 +259,7 @@ export class OverrideOpHelper {
 	/**
 	 * TODO
 	 */
-	replaceItem = (itemId: string, value: any): void => {
+	replaceItem = (itemId: string, value: unknown): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
 		// Set a property

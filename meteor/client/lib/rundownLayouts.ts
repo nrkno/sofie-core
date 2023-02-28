@@ -51,7 +51,10 @@ export function getIsFilterActive(
 	}
 }
 
-export function getUnfinishedPieceInstancesReactive(playlist: RundownPlaylist, showStyleBase: UIShowStyleBase) {
+export function getUnfinishedPieceInstancesReactive(
+	playlist: RundownPlaylist,
+	showStyleBase: UIShowStyleBase
+): PieceInstance[] {
 	if (playlist.activationId && playlist.currentPartInstanceId) {
 		return memoizedIsolatedAutorun(
 			(

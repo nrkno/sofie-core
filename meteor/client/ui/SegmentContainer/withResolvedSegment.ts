@@ -124,7 +124,7 @@ type IWrappedComponent<IProps, IState, TrackedProps> =
 
 export function withResolvedSegment<T extends IProps, IState = {}>(
 	WrappedComponent: IWrappedComponent<T, IState, ITrackedProps>
-) {
+): new (props: T) => React.Component<T, IState> {
 	return withTracker<T, IState, ITrackedProps>(
 		(props: T) => {
 			const segment = Segments.findOne(props.segmentId) as SegmentUi | undefined

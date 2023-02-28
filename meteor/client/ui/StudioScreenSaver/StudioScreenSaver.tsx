@@ -40,7 +40,11 @@ interface IState {
 	subsReady: boolean
 }
 
-export const findNextPlaylist = (props: IProps) => {
+interface FindNextPlaylistResult {
+	studio: Pick<UIStudio, 'name'> | undefined
+	rundownPlaylist: Pick<RundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'> | undefined
+}
+export const findNextPlaylist = (props: IProps): FindNextPlaylistResult => {
 	invalidateAfter(5000)
 	const now = getCurrentTime()
 
@@ -119,7 +123,7 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.subscribe(PubSub.uiStudio, this.props.studioId)
 			this.subscribe(PubSub.rundownPlaylists, {
 				studioId: this.props.studioId,
@@ -151,7 +155,7 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 			}
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			super.componentWillUnmount()
 
 			if (this.props.ownBackground) {
@@ -320,7 +324,7 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 			)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t, rundownPlaylist } = this.props
 			const expectedStart = rundownPlaylist && PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
 			const hasRundown = !!expectedStart

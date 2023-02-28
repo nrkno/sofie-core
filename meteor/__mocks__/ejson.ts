@@ -1,6 +1,6 @@
 import EJSON from 'ejson'
 
-export function setup() {
+export function setup(): any {
 	return {
 		EJSON,
 	}

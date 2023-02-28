@@ -670,7 +670,7 @@ export const StudioRoutings = withTranslation()(
 			})
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div>

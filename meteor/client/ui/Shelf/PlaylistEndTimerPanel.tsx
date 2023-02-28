@@ -24,11 +24,7 @@ interface IPlaylistEndTimerPanelProps {
 interface IState {}
 
 export class PlaylistEndTimerPanelInner extends MeteorReactComponent<Translated<IPlaylistEndTimerPanelProps>, IState> {
-	constructor(props) {
-		super(props)
-	}
-
-	render() {
+	render(): JSX.Element {
 		const { playlist, panel, layout } = this.props
 
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(layout)

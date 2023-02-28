@@ -233,7 +233,7 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			if (this.props.device) {
 				return this.renderEditForm(this.props.device)
 			} else {

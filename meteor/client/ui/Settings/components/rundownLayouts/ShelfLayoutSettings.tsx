@@ -14,7 +14,7 @@ interface IState {}
 
 export default withTranslation()(
 	class ShelfLayoutSettings extends MeteorReactComponent<Translated<IProps>, IState> {
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (

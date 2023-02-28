@@ -282,19 +282,19 @@ export class PresenterScreenBase extends MeteorReactComponent<
 > {
 	protected bodyClassList: string[] = ['dark', 'xdark']
 
-	constructor(props) {
+	constructor(props: WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation>) {
 		super(props)
 		this.state = {
 			presenterLayout: undefined,
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		document.body.classList.add(...this.bodyClassList)
 		this.subscribeToData()
 	}
 
-	protected subscribeToData() {
+	protected subscribeToData(): void {
 		this.autorun(() => {
 			this.subscribe(PubSub.uiStudio, this.props.studioId)
 
@@ -405,19 +405,19 @@ export class PresenterScreenBase extends MeteorReactComponent<
 		}
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		super.componentWillUnmount()
 		document.body.classList.remove(...this.bodyClassList)
 	}
 
-	render() {
+	render(): JSX.Element | null {
 		if (this.state.presenterLayout && RundownLayoutsAPI.isDashboardLayout(this.state.presenterLayout)) {
 			return this.renderDashboardLayout(this.state.presenterLayout)
 		}
 		return this.renderDefaultLayout()
 	}
 
-	renderDefaultLayout() {
+	private renderDefaultLayout() {
 		const { playlist, segments, currentShowStyleBaseId, nextShowStyleBaseId, playlistId } = this.props
 
 		if (playlist && playlistId && segments) {
@@ -544,7 +544,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 		return null
 	}
 
-	renderDashboardLayout(layout: DashboardLayout) {
+	private renderDashboardLayout(layout: DashboardLayout) {
 		const { studio, playlist, currentShowStyleBase, currentShowStyleVariant } = this.props
 
 		if (studio && playlist && currentShowStyleBase && currentShowStyleVariant) {

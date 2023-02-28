@@ -50,7 +50,7 @@ export namespace RundownUtils {
 		return input.toString(10).padStart(places, '0')
 	}
 
-	export function getSegmentDuration(parts: Array<PartUi>, display?: boolean) {
+	export function getSegmentDuration(parts: Array<PartUi>, display?: boolean): number {
 		return parts.reduce((memo, part) => {
 			return (
 				memo +
@@ -194,7 +194,7 @@ export namespace RundownUtils {
 		partStartsAt: number | undefined,
 		partDuration: number | undefined,
 		piece?: PieceUi
-	) {
+	): boolean {
 		if (
 			scrollLeft + scrollWidth <
 			(partStartsAt || part.startsAt || 0) + (piece !== undefined ? piece.renderedInPoint || 0 : 0)

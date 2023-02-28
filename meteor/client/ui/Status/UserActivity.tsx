@@ -141,7 +141,7 @@ function UserActionsList(props: IUserActionsListProps) {
 	)
 }
 
-function UserActivity() {
+function UserActivity(): JSX.Element {
 	const { t } = useTranslation()
 
 	const [dateFrom, setDateFrom] = useState<Time>(moment().startOf('day').valueOf())

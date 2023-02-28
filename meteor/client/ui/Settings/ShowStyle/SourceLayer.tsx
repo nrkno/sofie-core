@@ -70,7 +70,7 @@ interface IStudioSourcesSettingsProps {
 	showStyleBase: ShowStyleBase
 }
 
-export function SourceLayerSettings({ showStyleBase }: IStudioSourcesSettingsProps) {
+export function SourceLayerSettings({ showStyleBase }: IStudioSourcesSettingsProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()

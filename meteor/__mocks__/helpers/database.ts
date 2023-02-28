@@ -127,7 +127,7 @@ export function setupMockPeripheralDevice(
 	subType: PeripheralDeviceSubType,
 	studio?: Pick<Studio, '_id'>,
 	doc?: Partial<PeripheralDevice>
-) {
+): PeripheralDevice {
 	doc = doc || {}
 
 	const defaultDevice: PeripheralDevice = {
@@ -595,7 +595,7 @@ export function setupDefaultRundownPlaylist(
 		playlistId,
 	}
 }
-export function setupEmptyEnvironment() {
+export function setupEmptyEnvironment(): { core: ICoreSystem } {
 	const core = setupMockCore({})
 
 	return {

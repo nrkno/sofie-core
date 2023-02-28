@@ -828,16 +828,16 @@ export const RundownNotifier = class RundownNotifier extends React.Component<IPr
 		return true
 	}
 
-	componentDidUpdate() {
+	componentDidUpdate(): void {
 		this.notifier.stop()
 		this.notifier = new RundownViewNotifier(this.props.playlistId, this.props.studio)
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		this.notifier.stop()
 	}
 
-	render() {
+	render(): React.ReactNode {
 		// this.props.connected
 		return null
 	}

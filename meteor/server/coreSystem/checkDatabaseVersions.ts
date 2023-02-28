@@ -29,7 +29,7 @@ function getBlueprintCompatabilityMessageId(id: BlueprintId) {
 const MESSAGE_KEY_DATABASE_VERSION = 'databaseVersion'
 
 let lastDatabaseVersionBlueprintIds = new Set<BlueprintId>()
-export function checkDatabaseVersions() {
+export function checkDatabaseVersions(): void {
 	lazyIgnore(
 		'coreSystem.checkDatabaseVersions',
 		async () => {

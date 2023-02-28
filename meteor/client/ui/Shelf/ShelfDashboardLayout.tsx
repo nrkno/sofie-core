@@ -47,7 +47,7 @@ export interface IShelfDashboardLayoutProps {
 	onSelectPiece?: (piece: AdLibPieceUi | PieceUi) => void
 }
 
-export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps) {
+export function ShelfDashboardLayout(props: IShelfDashboardLayoutProps): JSX.Element {
 	const { rundownLayout } = props
 	return (
 		<div className="dashboard">

@@ -10,7 +10,7 @@ export interface SchemaFormProps {
 	attr: string
 	translationNamespaces?: string[]
 }
-export const SchemaForm = (props: SchemaFormProps) => {
+export const SchemaForm = (props: SchemaFormProps): JSX.Element => {
 	switch (props.schema.type) {
 		case TypeName.Object:
 			return <ObjectForm {...props} />
@@ -27,7 +27,7 @@ export const SchemaForm = (props: SchemaFormProps) => {
 	}
 }
 
-export const ObjectForm = (props: SchemaFormProps) => {
+export const ObjectForm = (props: SchemaFormProps): JSX.Element => {
 	return (
 		<>
 			{' '}
@@ -43,7 +43,7 @@ export const WrappedAttribute = ({
 	component,
 	translationNamespaces,
 	attr,
-}: SchemaFormProps & { component: any }) => {
+}: SchemaFormProps & { component: any }): JSX.Element => {
 	return (
 		<div className={'mod mvs mhs'}>
 			{translationNamespaces
@@ -61,7 +61,7 @@ export const WrappedAttribute = ({
 	)
 }
 
-export const IntegerForm = ({ object, attr }: SchemaFormProps) => {
+export const IntegerForm = ({ object, attr }: SchemaFormProps): JSX.Element => {
 	return (
 		<EditAttribute
 			type="int"
@@ -73,7 +73,7 @@ export const IntegerForm = ({ object, attr }: SchemaFormProps) => {
 	)
 }
 
-export const NumberForm = ({ object, attr }: SchemaFormProps) => {
+export const NumberForm = ({ object, attr }: SchemaFormProps): JSX.Element => {
 	return (
 		<EditAttribute
 			type="float"
@@ -85,7 +85,7 @@ export const NumberForm = ({ object, attr }: SchemaFormProps) => {
 	)
 }
 
-export const BooleanForm = ({ object, attr }: SchemaFormProps) => {
+export const BooleanForm = ({ object, attr }: SchemaFormProps): JSX.Element => {
 	return (
 		<EditAttribute
 			type="checkbox"
@@ -97,7 +97,7 @@ export const BooleanForm = ({ object, attr }: SchemaFormProps) => {
 	)
 }
 
-export const StringForm = ({ object, attr }: SchemaFormProps) => {
+export const StringForm = ({ object, attr }: SchemaFormProps): JSX.Element => {
 	return (
 		<EditAttribute
 			type="text"

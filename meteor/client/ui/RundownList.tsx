@@ -181,7 +181,7 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 				}
 			}
 
-			componentDidMount() {
+			componentDidMount(): void {
 				const { t } = this.props
 
 				// Subscribe to data:
@@ -267,7 +267,7 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 				)
 			}
 
-			render() {
+			render(): JSX.Element {
 				const { t, rundownPlaylists, activateDropZone, connectDropTarget } = this.props
 
 				const step = this.tooltipStep()

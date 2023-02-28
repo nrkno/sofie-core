@@ -205,7 +205,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 		}
 	}
 
-	render() {
+	render(): JSX.Element | null {
 		const { pieces } = this.props.adLibSegmentUi
 		if (!pieces.length) return null
 		return (

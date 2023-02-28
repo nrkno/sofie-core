@@ -50,7 +50,7 @@ export function BlueprintConfigManifestTable({
 	sourceLayers,
 	subPanel,
 	overrideHelper,
-}: IConfigManifestTableProps) {
+}: IConfigManifestTableProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const resolvedColumns = useMemo(() => {

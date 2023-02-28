@@ -92,7 +92,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 	}
 })(
 	class ActionItemRenderer extends MeteorReactComponent<Translated<IProps & ITrackedProps>> {
-		componentDidMount() {
+		componentDidMount(): void {
 			const action = this.getActionItem()
 
 			if (action) {
@@ -138,7 +138,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 			}
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			super.componentWillUnmount()
 
 			if (this.props.targetAction) {
@@ -235,7 +235,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t, targetAction } = this.props
 			const action = this.getActionItem()
 

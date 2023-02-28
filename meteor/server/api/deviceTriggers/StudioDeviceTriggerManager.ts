@@ -197,7 +197,7 @@ export class StudioDeviceTriggerManager {
 		this.#lastShowStyleBaseId = null
 	}
 
-	stop() {
+	stop(): void {
 		this.clearTriggers()
 		StudioActionManagers.delete(this.studioId)
 	}

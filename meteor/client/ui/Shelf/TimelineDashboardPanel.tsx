@@ -86,7 +86,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 			super.componentDidUpdate(prevProps, prevState)
 			this.ensureLiveLineVisible()
 		}
-		componentDidMount() {
+		componentDidMount(): void {
 			super.componentDidMount()
 			this.ensureLiveLineVisible()
 		}
@@ -99,7 +99,8 @@ export const TimelineDashboardPanel = translateWithTracker<
 				})
 			}
 		}, 250)
-		render() {
+
+		render(): JSX.Element | null {
 			if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 				const filter = this.props.filter as DashboardLayoutFilter
 				const uniquenessIds = new Set<string>()

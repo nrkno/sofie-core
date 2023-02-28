@@ -12,7 +12,7 @@ export function AdLibActionEditor({
 }: {
 	action: SomeAction
 	onChange: (newVal: Partial<typeof action>) => void
-}) {
+}): JSX.Element | null {
 	const { t } = useTranslation()
 	const allTriggerModes = useTracker(
 		() => {

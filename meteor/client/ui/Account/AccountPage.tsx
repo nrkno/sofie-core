@@ -106,7 +106,7 @@ export const AccountPage = translateWithTracker(() => {
 			} else return null
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			const user = this.props.user

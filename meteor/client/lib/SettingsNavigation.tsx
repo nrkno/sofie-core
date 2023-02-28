@@ -12,7 +12,7 @@ interface ISettingsNavigation extends ISettingsNavigationBaseProps {
 }
 export type SettingsNavigationType = 'blueprint' | 'showstyle' | 'newshowstyle'
 export class SettingsNavigation extends React.Component<ISettingsNavigation> {
-	render() {
+	render(): JSX.Element {
 		if (this.props.type === 'blueprint') {
 			return <Blueprint {...this.props} />
 		} else if (this.props.type === 'showstyle') {
@@ -52,18 +52,18 @@ export class SettingsNavigationBase<TProps extends ISettingsNavigationBaseProps>
 		this.redirectUser = this.redirectUser.bind(this)
 	}
 
-	redirectUser(url: string) {
+	protected redirectUser(url: string): void {
 		this.setState({
 			redirect: true,
 			redirectRoute: url,
 		})
 	}
 
-	renderButton() {
+	protected renderButton(): JSX.Element {
 		return <button></button>
 	}
 
-	render() {
+	render(): JSX.Element {
 		if (this.state.redirect === true) {
 			return <Redirect to={this.state.redirectRoute} />
 		}

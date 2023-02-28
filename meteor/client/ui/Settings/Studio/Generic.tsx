@@ -99,7 +99,7 @@ export const StudioGenericProperties = withTranslation()(
 			return buttons
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div>

@@ -38,7 +38,7 @@ export function JsonTextInputControl({
 	placeholder,
 	handleUpdate,
 	updateOnKey,
-}: IJsonTextInputControlProps) {
+}: IJsonTextInputControlProps): JSX.Element {
 	const [editingValue, setEditingValue] = useState<string | null>(null)
 	const [valueInvalid, setValueInvalid] = useState(false)
 

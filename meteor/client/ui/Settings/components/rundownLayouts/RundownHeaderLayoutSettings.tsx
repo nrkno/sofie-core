@@ -14,7 +14,7 @@ interface IState {}
 
 export default withTranslation()(
 	class RundownHeaderLayoutSettings extends MeteorReactComponent<Translated<IProps>, IState> {
-		render() {
+		render(): JSX.Element | null {
 			const { t } = this.props
 
 			return this.props.item.type === RundownLayoutType.RUNDOWN_HEADER_LAYOUT ? (

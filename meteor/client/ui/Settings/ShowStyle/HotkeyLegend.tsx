@@ -326,7 +326,7 @@ export const HotkeyLegendSettings = withTranslation()(
 			})
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div>

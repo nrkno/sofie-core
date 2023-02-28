@@ -44,7 +44,7 @@ export const IconPicker = withTranslation()(
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.refreshChecked()
 		}
 
@@ -97,7 +97,7 @@ export const IconPicker = withTranslation()(
 				: this.state.iconPack
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div

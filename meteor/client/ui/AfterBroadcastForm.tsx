@@ -1,11 +1,12 @@
 import React, { useState } from 'react'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { useTranslation } from 'react-i18next'
+import { TFunction, useTranslation } from 'react-i18next'
 import { EditAttribute } from '../lib/EditAttribute'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
 import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { MeteorCall } from '../../lib/api/methods'
 import { SnapshotId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { DropdownInputOption } from '../lib/Components/DropdownInput'
 
 interface IProps {
 	playlist: RundownPlaylist
@@ -17,7 +18,7 @@ const DEFAULT_STATE = {
 	q2: '',
 }
 
-export function AfterBroadcastForm(props: IProps) {
+export function AfterBroadcastForm(props: IProps): JSX.Element {
 	const { t } = useTranslation()
 	const shouldDeactivateRundown = !props.playlist.loop
 	const [obj, setObj] = useState(DEFAULT_STATE)
@@ -127,7 +128,7 @@ export function AfterBroadcastForm(props: IProps) {
 	)
 }
 
-export function getQuestionOptions(t) {
+export function getQuestionOptions(t: TFunction): Omit<DropdownInputOption<string>, 'i'>[] {
 	return [
 		{ value: 'nothing', name: t('No problems') },
 		{ value: 'minor', name: t("Something went wrong, but it didn't affect the output") },

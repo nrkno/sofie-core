@@ -38,7 +38,6 @@ meteorCustomPublish(
 		if (await StudioReadAccess.studioContent(studioId, { userId: this.userId, token })) {
 			await createObserverForDeviceTriggersPreviewsPublication(pub, PubSub.mountedTriggersForDevice, studioId)
 		}
-		return
 	}
 )
 
@@ -47,7 +46,7 @@ export async function insertInputDeviceTriggerIntoPreview(
 	triggerDeviceId: string,
 	triggerId: string,
 	values?: DeviceTriggerArguments
-) {
+): Promise<void> {
 	if (typeof deviceId !== 'string') return
 	const pDevice = await PeripheralDevices.findOneAsync(deviceId)
 

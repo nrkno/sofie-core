@@ -3,7 +3,7 @@ import { overrideLogger } from '../server/logging'
 export class SupressLogMessages {
 	private static suppressMessages: RegExp[] = []
 
-	static init() {
+	static init(): void {
 		const suppressMessages = SupressLogMessages.suppressMessages
 
 		overrideLogger((orgLogger) => {

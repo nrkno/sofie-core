@@ -49,11 +49,11 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 				dateTo: moment().add(1, 'days').startOf('day').valueOf(),
 			}
 		}
-		componentDidMount() {
+		componentDidMount(): void {
 			// Subscribe to data:
 			this.updateSubscription()
 		}
-		componentDidUpdate() {
+		componentDidUpdate(): void {
 			this.updateSubscription()
 		}
 		updateSubscription() {
@@ -71,7 +71,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 				})
 			}
 		}
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			if (this._sub) {
 				this._sub.stop()
 			}
@@ -154,7 +154,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 			)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div className="mhl gutter external-message-status">

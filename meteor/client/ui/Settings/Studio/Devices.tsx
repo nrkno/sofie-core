@@ -96,7 +96,7 @@ export const StudioDevices = withTranslation()(
 			return !!this.props.studioDevices.find((device) => device.type === PeripheralDeviceType.PLAYOUT)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div>

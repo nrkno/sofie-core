@@ -51,7 +51,7 @@ export const OrganizationPage = translateWithTracker((_props: RouteComponentProp
 			this.setState({ newUserEmail: '', newUserName: '' })
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.autorun(() => {
 				if (this.props.organization) {
 					this.subscribe(PubSub.usersInOrganization, { organizationId: this.props.organization._id })
@@ -77,7 +77,7 @@ export const OrganizationPage = translateWithTracker((_props: RouteComponentProp
 			} else return null
 		}
 
-		render() {
+		render(): React.ReactNode {
 			const { t } = this.props
 			const org = this.props.organization
 			if (!getUserRoles().admin) {

@@ -629,7 +629,7 @@ export class RundownTimingCalculator {
 		})
 	}
 
-	clearTempPartInstances() {
+	clearTempPartInstances(): void {
 		this.temporaryPartInstances.clear()
 	}
 

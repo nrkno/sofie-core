@@ -11,7 +11,7 @@ class ReactiveVar<T> {
 	}
 }
 
-export function setup() {
+export function setup(): any {
 	return {
 		ReactiveVar,
 	}

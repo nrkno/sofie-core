@@ -161,7 +161,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			return this.props.studio ? (
 				<div className="studio-edit mod mhl mvn">
 					<div className="row">

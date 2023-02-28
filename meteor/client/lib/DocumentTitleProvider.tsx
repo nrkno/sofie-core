@@ -57,21 +57,21 @@ export const DocumentTitleProvider = translateWithTracker((_props: IProps) => {
 			document.title = compiledTitle.join(' – ')
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			const { doc, cs } = this.props
 			this.formatDocumentTitle(doc || undefined, cs?.name)
 		}
 
-		componentDidUpdate() {
+		componentDidUpdate(): void {
 			const { doc, cs } = this.props
 			this.formatDocumentTitle(doc || undefined, cs?.name)
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			this.formatDocumentTitle(undefined, undefined)
 		}
 
-		render() {
+		render(): React.ReactNode {
 			return null
 		}
 	}

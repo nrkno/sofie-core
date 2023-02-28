@@ -46,7 +46,7 @@ interface IStudioMappingsProps {
 	manifest: MappingsManifest | undefined
 }
 
-export function StudioMappings({ manifest, studio }: IStudioMappingsProps) {
+export function StudioMappings({ manifest, studio }: IStudioMappingsProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
@@ -509,7 +509,12 @@ interface IDeviceMappingSettingsProps {
 	manifest: MappingManifestEntry[] | undefined
 }
 
-export function DeviceMappingSettings({ attribute, showOptional, manifest, studio }: IDeviceMappingSettingsProps) {
+export function DeviceMappingSettings({
+	attribute,
+	showOptional,
+	manifest,
+	studio,
+}: IDeviceMappingSettingsProps): JSX.Element | null {
 	if (manifest) {
 		return (
 			<React.Fragment>

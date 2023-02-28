@@ -3,7 +3,6 @@ import { Switch, Route, Redirect } from 'react-router-dom'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 
 import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
-import { WithTiming } from '../RundownView/RundownTiming/withTiming'
 
 import { objectPathGet } from '../../../lib/lib'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -36,8 +35,8 @@ export const ClockView = withTracker(function (props: IPropsHeader) {
 		studioId,
 	}
 })(
-	class ClockView extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
-		componentDidMount() {
+	class ClockView extends MeteorReactComponent<IPropsHeader, IStateHeader> {
+		componentDidMount(): void {
 			const { studioId } = this.props
 			if (studioId) {
 				this.subscribe(PubSub.rundownPlaylists, {
@@ -47,7 +46,7 @@ export const ClockView = withTracker(function (props: IPropsHeader) {
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			return (
 				<Switch>
 					<Route path="/countdowns/:studioId/presenter">

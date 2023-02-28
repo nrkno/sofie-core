@@ -41,7 +41,7 @@ export const DevicePackageManagerSettings = translateWithTracker<
 				status: undefined,
 			}
 		}
-		componentDidMount() {
+		componentDidMount(): void {
 			if (!this.reloadInterval) {
 				this.reloadInterval = Meteor.setInterval(() => {
 					if (this.props.device) {
@@ -50,7 +50,7 @@ export const DevicePackageManagerSettings = translateWithTracker<
 				}, 1000)
 			}
 		}
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			if (this.reloadInterval) {
 				Meteor.clearInterval(this.reloadInterval)
 				this.reloadInterval = null
@@ -96,7 +96,7 @@ export const DevicePackageManagerSettings = translateWithTracker<
 				})
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			if (this.props.device) {
 				return (

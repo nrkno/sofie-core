@@ -375,7 +375,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			// Subscribe to data:
 			this.subscribe(PubSub.mediaWorkFlows, {}) // TODO: add some limit
 			this.subscribe(PubSub.mediaWorkFlowSteps, {})
@@ -437,7 +437,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 				})
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (

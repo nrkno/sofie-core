@@ -276,8 +276,8 @@ MeteorStartupAsync(async () => {
 	ThreadedClassManager.onEvent(
 		worker,
 		'error',
-		Meteor.bindEnvironment((e0) => {
-			logger.error('Error in Worker threads IPC: ', e0)
+		Meteor.bindEnvironment((e0: unknown) => {
+			logger.error(`Error in Worker threads IPC: ${stringifyError(e0)}`)
 		})
 	)
 	ThreadedClassManager.onEvent(

@@ -28,7 +28,7 @@ export const StudioTimeline = createSyncCustomPublicationMongoCollection(CustomC
 interface TimelineViewRouteParams {
 	studioId: string | undefined
 }
-function TimelineView() {
+function TimelineView(): JSX.Element {
 	const { t } = useTranslation()
 
 	const { studioId } = useParams<TimelineViewRouteParams>()
@@ -451,7 +451,7 @@ function TimelineChangesLog({ resolvedTl, timelineHash }: TimelineChangesLogProp
 	)
 }
 
-function TimelineStudioSelect() {
+function TimelineStudioSelect(): JSX.Element {
 	return <StudioSelect path="timeline" title="Timeline" />
 }
 

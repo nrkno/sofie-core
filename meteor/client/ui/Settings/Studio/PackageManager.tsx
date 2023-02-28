@@ -804,7 +804,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 			return arr
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div>

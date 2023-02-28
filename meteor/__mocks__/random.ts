@@ -12,7 +12,7 @@ export class RandomMock {
 		return (RandomMock.mockI++ / 1.6180339887) % 1
 	}
 }
-export function setup() {
+export function setup(): any {
 	return {
 		Random: RandomMock,
 		nanoid: RandomMock.id.bind(RandomMock),
@@ -20,12 +20,12 @@ export function setup() {
 	}
 }
 
-export function restartRandomId() {
+export function restartRandomId(): void {
 	RandomMock.mockI = 9000
 	RandomMock.mockIds = []
 }
 
-export function resetRandomId() {
+export function resetRandomId(): void {
 	// move the iterator forward and tie to next 1000
 	// This will help with making the random id more consistend in tests
 	RandomMock.mockI += 500

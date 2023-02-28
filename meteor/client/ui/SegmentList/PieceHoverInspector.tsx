@@ -23,7 +23,7 @@ export function PieceHoverInspector({
 	originPosition,
 	mousePosition,
 	layer,
-}: IProps & { mousePosition: number }) {
+}: IProps & { mousePosition: number }): JSX.Element | null {
 	const mediaPreviewUrl = studio.settings.mediaPreviewsUrl
 
 	const status = pieceInstance.instance.piece.status

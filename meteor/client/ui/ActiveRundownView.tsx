@@ -56,7 +56,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.subscribe(
 				PubSub.rundownPlaylists,
 				_.extend(
@@ -91,12 +91,12 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 			document.body.classList.add('dark', 'vertical-overflow-only')
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			super.componentWillUnmount()
 			document.body.classList.remove('dark', 'vertical-overflow-only')
 		}
 
-		componentDidUpdate() {
+		componentDidUpdate(): void {
 			document.body.classList.add('dark', 'vertical-overflow-only')
 		}
 
@@ -126,7 +126,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 			)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			if (!this.state.subsReady) {
 				return (

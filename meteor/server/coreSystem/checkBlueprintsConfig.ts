@@ -13,7 +13,7 @@ import { logger } from '../logging'
 import { removeSystemStatus, setSystemStatus } from '../systemStatus/systemStatus'
 
 let checkBlueprintsConfigRunning = false
-export function queueCheckBlueprintsConfig() {
+export function queueCheckBlueprintsConfig(): void {
 	const RATE_LIMIT = 10000
 
 	// We want to rate limit this. It doesn't matter if it is delayed, so lets do that to keep it simple

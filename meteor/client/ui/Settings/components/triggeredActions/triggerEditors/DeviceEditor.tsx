@@ -17,7 +17,7 @@ interface IProps {
 	onChange: (newVal: IBlueprintDeviceTrigger) => void
 }
 
-export const DeviceEditor = function DeviceEditor({ trigger, modified, readonly, onChange }: IProps) {
+export const DeviceEditor = function DeviceEditor({ trigger, modified, readonly, onChange }: IProps): JSX.Element {
 	const opened = useMemo(() => getCurrentTime(), [])
 	const deviceTriggersPreview = useTracker<UIDeviceTriggerPreview[], UIDeviceTriggerPreview[]>(
 		() =>

@@ -35,7 +35,7 @@ interface IRundownListItemViewProps {
 	isOnlyRundownInPlaylist?: boolean
 }
 
-export default function RundownListItemView(props: IRundownListItemViewProps) {
+export default function RundownListItemView(props: IRundownListItemViewProps): JSX.Element | null {
 	const {
 		isActive,
 		connectDragSource,

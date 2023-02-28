@@ -29,16 +29,16 @@ export class OverflowingContainer extends React.Component<IProps, IState> {
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		window.addEventListener('resize', this.resizeHandler)
 		this.resizeHandler()
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		window.removeEventListener('resize', this.resizeHandler)
 	}
 
-	UNSAFE_componentWillUpdate() {
+	UNSAFE_componentWillUpdate(): void {
 		this.resizeHandler()
 	}
 
@@ -53,14 +53,14 @@ export class OverflowingContainer extends React.Component<IProps, IState> {
 		}
 	}, 125)
 
-	startScroll = (by: number) => {
+	private startScroll = (by: number) => {
 		if (this._element) {
 			this._scrollFactor = by
 		}
 		this.scroll()
 	}
 
-	scroll = () => {
+	private scroll = () => {
 		const clb = () => {
 			if (this._scrollFactor === 0) return
 			if (this._element) {
@@ -73,11 +73,11 @@ export class OverflowingContainer extends React.Component<IProps, IState> {
 		window.requestAnimationFrame(clb)
 	}
 
-	stopScroll = () => {
+	private stopScroll = () => {
 		this._scrollFactor = 0
 	}
 
-	render() {
+	render(): JSX.Element {
 		return (
 			<React.Fragment>
 				{this.state.overflowing && (

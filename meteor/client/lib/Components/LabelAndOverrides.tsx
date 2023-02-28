@@ -32,7 +32,7 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 	overrideHelper,
 	labelAfter,
 	formatDefaultValue,
-}: LabelAndOverridesProps<T, TValue>) {
+}: LabelAndOverridesProps<T, TValue>): JSX.Element {
 	const { t } = useTranslation()
 
 	const clearOverride = useCallback(() => {
@@ -93,7 +93,7 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 
 export function LabelAndOverridesForCheckbox<T extends object>(
 	props: Omit<LabelAndOverridesProps<T, boolean>, 'labelAfter' | 'formatDefaultValue'>
-) {
+): JSX.Element {
 	return <LabelAndOverrides<T, boolean> {...props} labelAfter={true} />
 }
 
@@ -106,7 +106,7 @@ export function LabelAndOverridesForDropdown<T extends object, TValue = any>(
 			options: DropdownInputOption<TValue>[]
 		) => React.ReactNode
 	}
-) {
+): JSX.Element {
 	const formatter = useCallback(
 		(defaultValue: any) => {
 			if (defaultValue === undefined) return '""'
@@ -133,7 +133,7 @@ function formatDefaultMultilineTextValue(value: any) {
 
 export function LabelAndOverridesForMultiLineText<T extends object>(
 	props: Omit<LabelAndOverridesProps<T, string[]>, 'labelAfter' | 'formatDefaultValue'>
-) {
+): JSX.Element {
 	return <LabelAndOverrides<T, string[]> {...props} formatDefaultValue={formatDefaultMultilineTextValue} />
 }
 
@@ -141,7 +141,7 @@ export function LabelAndOverridesForInt<T extends object>(
 	props: Omit<LabelAndOverridesProps<T, number>, 'labelAfter' | 'formatDefaultValue'> & {
 		zeroBased?: boolean
 	}
-) {
+): JSX.Element {
 	const formatter = useCallback(
 		(defaultValue: any) => {
 			if (typeof defaultValue === 'number' && props.zeroBased) {

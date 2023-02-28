@@ -11,7 +11,6 @@ const {
 const tmpRules = {
 	// Temporary rules to be removed over time
 	'@typescript-eslint/ban-types': 'off',
-	'@typescript-eslint/explicit-module-boundary-types': 'off',
 	'@typescript-eslint/no-namespace': 'off',
 	'@typescript-eslint/no-var-requires': 'off',
 	'@typescript-eslint/no-inferrable-types': 'off',

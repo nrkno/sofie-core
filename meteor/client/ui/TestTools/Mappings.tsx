@@ -29,7 +29,7 @@ const MappingsView = translateWithTracker<IMappingsViewProps, IMappingsViewState
 			super(props)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (
@@ -86,7 +86,7 @@ export const ComponentMappingsTable = withTracker<IMappingsTableProps, IMappings
 				time: null,
 			}
 		}
-		componentDidMount() {
+		componentDidMount(): void {
 			this.subscribe(PubSub.mappingsForStudio, this.props.studioId)
 		}
 		renderMappingsState(state: RoutedMappings) {
@@ -112,7 +112,7 @@ export const ComponentMappingsTable = withTracker<IMappingsTableProps, IMappings
 				</tr>
 			))
 		}
-		render() {
+		render(): JSX.Element {
 			const { mappings } = this.props
 			return (
 				<div>
@@ -139,10 +139,8 @@ export const ComponentMappingsTable = withTracker<IMappingsTableProps, IMappings
 	}
 )
 
-class MappingsStudioSelect extends React.Component<{}, {}> {
-	render() {
-		return <StudioSelect path="mappings" title="Mappings" />
-	}
+function MappingsStudioSelect(): JSX.Element {
+	return <StudioSelect path="mappings" title="Mappings" />
 }
 
 export { MappingsView, MappingsStudioSelect }

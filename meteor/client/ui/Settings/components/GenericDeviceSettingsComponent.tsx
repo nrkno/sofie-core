@@ -53,11 +53,11 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.refreshDebugStatesInterval = setInterval(this.refreshDebugStates, 1000)
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			if (this.refreshDebugStatesInterval) clearInterval(this.refreshDebugStatesInterval)
 		}
 
@@ -689,7 +689,7 @@ export const GenericDeviceSettingsComponent = withTranslation()(
 			return <div>{fields}</div>
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t, subDevices, device } = this.props
 
 			return (

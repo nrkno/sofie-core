@@ -32,7 +32,7 @@ interface IOutputSettingsProps {
 	showStyleBase: ShowStyleBase
 }
 
-export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps) {
+export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()

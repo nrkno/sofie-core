@@ -70,7 +70,7 @@ export class VirtualElement extends React.Component<IProps, IState> {
 		}
 	}
 
-	visibleChanged = (inView: boolean) => {
+	private visibleChanged = (inView: boolean) => {
 		this.props._debug && console.log(this.props.id, 'Changed', inView)
 		if (this.optimizeTimeout) {
 			clearTimeout(this.optimizeTimeout)
@@ -94,7 +94,7 @@ export class VirtualElement extends React.Component<IProps, IState> {
 		}
 	}
 
-	measureElement = (): IElementMeasurements | null => {
+	private measureElement = (): IElementMeasurements | null => {
 		if (this.el) {
 			const style = this.styleObj || window.getComputedStyle(this.el)
 			this.styleObj = style
@@ -114,7 +114,7 @@ export class VirtualElement extends React.Component<IProps, IState> {
 		return null
 	}
 
-	refreshSizing = () => {
+	private refreshSizing = () => {
 		this.refreshSizingTimeout = null
 		const measurements = this.measureElement()
 		if (measurements) {
@@ -125,7 +125,7 @@ export class VirtualElement extends React.Component<IProps, IState> {
 		}
 	}
 
-	findChildElement = () => {
+	private findChildElement = () => {
 		if (!this.el || !this.el.parentElement) {
 			const el = this.instance ? (this.instance.firstElementChild as HTMLElement) : null
 			if (el && !el.classList.contains('virtual-element-placeholder')) {
@@ -136,23 +136,23 @@ export class VirtualElement extends React.Component<IProps, IState> {
 		}
 	}
 
-	setRef = (instance: HTMLElement | null) => {
+	private setRef = (instance: HTMLElement | null) => {
 		this.instance = instance
 		this.findChildElement()
 	}
 
-	componentDidUpdate(_, prevState: IState) {
+	componentDidUpdate(_: IProps, prevState: IState): void {
 		if (this.state.inView && prevState.inView !== this.state.inView) {
 			this.findChildElement()
 		}
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		if (this.optimizeTimeout) clearTimeout(this.optimizeTimeout)
 		if (this.refreshSizingTimeout) clearTimeout(this.refreshSizingTimeout)
 	}
 
-	render() {
+	render(): JSX.Element {
 		this.props._debug &&
 			console.log(
 				this.props.id,

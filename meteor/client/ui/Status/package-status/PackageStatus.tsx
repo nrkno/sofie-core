@@ -183,7 +183,7 @@ export const PackageStatus = withTranslation()(
 				return unprotectString(this.props.package._id)
 			}
 		}
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			const statuses = this.props.statuses.sort((a, b) => {
 				if ((a.displayRank ?? 999) > (b.displayRank ?? 999)) return 1

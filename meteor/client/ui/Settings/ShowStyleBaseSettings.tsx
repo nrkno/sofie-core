@@ -237,7 +237,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			)
 		}
 
-		render() {
+		render(): JSX.Element {
 			if (this.props.showStyleBase) {
 				return this.renderEditForm(this.props.showStyleBase)
 			} else {

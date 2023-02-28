@@ -49,7 +49,7 @@ export class CustomLayerItemRenderer<
 	IProps extends ICustomLayerItemProps,
 	IState extends ISourceLayerItemState
 > extends React.Component<ICustomLayerItemProps & IProps, ISourceLayerItemState & IState> {
-	getSourceDurationLabelAlignment(): SourceDurationLabelAlignment {
+	protected getSourceDurationLabelAlignment(): SourceDurationLabelAlignment {
 		return (
 			(this.props.getSourceDurationLabelAlignment &&
 				typeof this.props.getSourceDurationLabelAlignment === 'function' &&
@@ -58,7 +58,7 @@ export class CustomLayerItemRenderer<
 		)
 	}
 
-	getItemLabelOffsetLeft(): React.CSSProperties {
+	protected getItemLabelOffsetLeft(): React.CSSProperties {
 		if (this.props.getItemLabelOffsetLeft && typeof this.props.getItemLabelOffsetLeft === 'function') {
 			return this.props.getItemLabelOffsetLeft()
 		} else {
@@ -66,7 +66,7 @@ export class CustomLayerItemRenderer<
 		}
 	}
 
-	getItemLabelOffsetRight(): React.CSSProperties {
+	protected getItemLabelOffsetRight(): React.CSSProperties {
 		if (this.props.getItemLabelOffsetRight && typeof this.props.getItemLabelOffsetRight === 'function') {
 			return this.props.getItemLabelOffsetRight()
 		} else {
@@ -74,27 +74,27 @@ export class CustomLayerItemRenderer<
 		}
 	}
 
-	getFloatingInspectorStyle(): React.CSSProperties {
+	protected getFloatingInspectorStyle(): React.CSSProperties {
 		return {
 			left: (this.props.elementPosition.left + this.props.cursorPosition.left).toString() + 'px',
 			top: this.props.elementPosition.top + 'px',
 		}
 	}
 
-	getItemDuration(returnInfinite?: boolean): number {
+	protected getItemDuration(returnInfinite?: boolean): number {
 		if (typeof this.props.getItemDuration === 'function') {
 			return this.props.getItemDuration(returnInfinite)
 		}
 		return this.props.partDuration
 	}
 
-	setAnchoredElsWidths(leftAnchoredWidth: number, rightAnchoredWidth: number): void {
+	protected setAnchoredElsWidths(leftAnchoredWidth: number, rightAnchoredWidth: number): void {
 		if (this.props.setAnchoredElsWidths && typeof this.props.setAnchoredElsWidths === 'function') {
 			return this.props.setAnchoredElsWidths(leftAnchoredWidth, rightAnchoredWidth)
 		}
 	}
 
-	doesOverflowTime(): number | false {
+	protected doesOverflowTime(): number | false {
 		const uiPiece = this.props.piece
 		const innerPiece = uiPiece.instance.piece
 
@@ -119,7 +119,7 @@ export class CustomLayerItemRenderer<
 		return false
 	}
 
-	renderOverflowTimeLabel() {
+	protected renderOverflowTimeLabel(): JSX.Element | null {
 		const overflowTime = this.doesOverflowTime()
 		if (
 			overflowTime !== false &&
@@ -136,7 +136,7 @@ export class CustomLayerItemRenderer<
 		return null
 	}
 
-	renderInfiniteItemContentEnded() {
+	protected renderInfiniteItemContentEnded(): JSX.Element | null {
 		const uiPiece = this.props.piece
 		const innerPiece = uiPiece.instance.piece
 
@@ -167,7 +167,7 @@ export class CustomLayerItemRenderer<
 		return null
 	}
 
-	renderInfiniteIcon() {
+	protected renderInfiniteIcon(): JSX.Element | null {
 		const uiPiece = this.props.piece
 		const innerPiece = uiPiece.instance.piece
 
@@ -186,7 +186,7 @@ export class CustomLayerItemRenderer<
 		) : null
 	}
 
-	renderContentTrimmed() {
+	protected renderContentTrimmed(): JSX.Element | null {
 		const innerPiece = this.props.piece.instance.piece
 		const vtContent = innerPiece.content as VTContent | undefined
 
@@ -200,7 +200,7 @@ export class CustomLayerItemRenderer<
 		) : null
 	}
 
-	renderDuration() {
+	protected renderDuration(): JSX.Element | null {
 		const uiPiece = this.props.piece
 		const innerPiece = uiPiece.instance.piece
 		const content = innerPiece.content
@@ -218,7 +218,7 @@ export class CustomLayerItemRenderer<
 		return null
 	}
 
-	render() {
+	render(): React.ReactNode {
 		return this.props.children
 	}
 }

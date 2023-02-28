@@ -90,7 +90,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.subscribe(PubSub.pieces, { _id: this.props.pieceId, startRundownId: this.props.rundownId })
 			this.autorun(() => {
 				const content = this.props.piece?.content as VTContent | undefined
@@ -224,7 +224,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 			this.props.onChange((ns.inPoint / this.props.frameRate) * 1000, (ns.duration / this.props.frameRate) * 1000)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			let previewUrl: string | undefined = undefined
 			if (this.props.mediaObject && this.props.studio) {

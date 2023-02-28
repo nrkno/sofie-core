@@ -27,15 +27,8 @@ interface INextInfoPanelTrackedProps {
 	nextSegment?: Segment
 }
 
-interface IState {}
-
-export class NextInfoPanelInner extends MeteorReactComponent<INextInfoPanelProps & INextInfoPanelTrackedProps, IState> {
-	constructor(props) {
-		super(props)
-		this.state = {}
-	}
-
-	render() {
+export class NextInfoPanelInner extends MeteorReactComponent<INextInfoPanelProps & INextInfoPanelTrackedProps> {
+	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const showAny =
 			!this.props.panel.hideForDynamicallyInsertedParts || this.props.nextPartInstance?.orphaned !== 'adlib-part'
@@ -66,7 +59,7 @@ export class NextInfoPanelInner extends MeteorReactComponent<INextInfoPanelProps
 	}
 }
 
-export const NextInfoPanel = withTracker<INextInfoPanelProps, IState, INextInfoPanelTrackedProps>(
+export const NextInfoPanel = withTracker<INextInfoPanelProps, {}, INextInfoPanelTrackedProps>(
 	(props: INextInfoPanelProps & INextInfoPanelTrackedProps) => {
 		let nextPartInstance: PartInstance | undefined = undefined
 		let nextSegment: Segment | undefined = undefined

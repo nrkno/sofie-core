@@ -520,18 +520,18 @@ export const ExternalFramePanel = withTranslation()(
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			window.addEventListener('message', this.onReceiveMessage)
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			// reject all outstanding promises for replies
 			_.each(this.awaitingReply, (promise) => promise.reject(new Error('ExternalFramePanel unmounting')))
 			this.unregisterHandlers()
 			window.removeEventListener('message', this.onReceiveMessage)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 			const scale = isDashboardLayout ? (this.props.panel as DashboardLayoutExternalFrame).scale || 1 : 1
 			const frameStyle = {
