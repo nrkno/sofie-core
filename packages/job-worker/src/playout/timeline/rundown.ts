@@ -279,7 +279,7 @@ function generateCurrentInfinitePieceObjects(
 	)
 
 	let nowInParent = currentPartInfo.nowInPart // Where is 'now' inside of the infiniteGroup?
-	if (pieceInstance.plannedStartedPlayback) {
+	if (pieceInstance.plannedStartedPlayback !== undefined) {
 		// We have a absolute start time, so we should use that.
 		let infiniteGroupStart = pieceInstance.plannedStartedPlayback
 		nowInParent = currentTime - pieceInstance.plannedStartedPlayback
@@ -307,6 +307,16 @@ function generateCurrentInfinitePieceObjects(
 				infiniteGroup.enable.end = 'now'
 			}
 		}
+	}
+
+	let pieceStartOffset = 0
+	const isInfiniteContinuation =
+		pieceInstance.infinite && pieceInstance.piece.startPartId !== currentPartInfo.partInstance.part._id
+
+	if (isInfiniteContinuation) {
+		pieceEnable.start = 0
+
+		if (pieceInstance.piece.enable.start !== 'now') pieceStartOffset = pieceInstance.piece.enable.start
 	}
 
 	// If this infinite piece continues to the next part, and has a duration then we should respect that in case it is really close to the take
@@ -351,7 +361,7 @@ function generateCurrentInfinitePieceObjects(
 			nowInParent,
 			pieceInstance,
 			pieceEnable,
-			0,
+			pieceStartOffset,
 			groupClasses,
 			isInHold,
 			isOriginOfInfinite
