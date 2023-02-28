@@ -17,6 +17,7 @@ import {
 	activateRundownPlaylist,
 	deactivateRundownPlaylist,
 	handleTimelineTriggerTime,
+	onPlayoutPlaybackChanged,
 	takeNextPart,
 } from '../playout'
 import { fixSnapshot } from '../../__mocks__/helpers/snapshot'
@@ -60,6 +61,8 @@ import { EmptyPieceTimelineObjectsBlob, PieceStatusCode } from '@sofie-automatio
 import { adjustFakeTime, useFakeCurrentTime, useRealCurrentTime } from '../../__mocks__/time'
 import { restartRandomId } from '../../__mocks__/nanoid'
 import { ProcessedShowStyleCompound } from '../../jobs'
+import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 
 interface PartTimelineTimings {
 	previousPart: TimelineEnableExt | null
@@ -1318,6 +1321,163 @@ describe('Timeline', () => {
 							},
 						},
 						currentInfinitePieces: {},
+						previousOutTransition: undefined,
+					})
+				}
+			))
+	})
+
+	describe('Infinite Pieces', () => {
+		async function getPieceInstances(partInstanceId: PartInstanceId): Promise<PieceInstance[]> {
+			return context.directCollections.PieceInstances.findFetch({
+				partInstanceId,
+			})
+		}
+
+		test('Infinite Piece has stable timing across timeline regenerations with/without plannedStartedPlayback', async () =>
+			runTimelineTimings(
+				async (
+					context: MockJobContext,
+					playlistId: RundownPlaylistId,
+					rundownId: RundownId,
+					showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
+				): Promise<RundownId> => {
+					const sourceLayerIds = Object.keys(showStyle.sourceLayers)
+
+					await setupRundownBase(
+						context,
+						playlistId,
+						rundownId,
+						showStyle,
+						{},
+						{
+							piece0: { prerollDuration: 500 },
+							piece1: {
+								prerollDuration: 50,
+								sourceLayerId: sourceLayerIds[3],
+								lifespan: PieceLifespan.OutOnSegmentEnd,
+							},
+						}
+					)
+
+					return rundownId
+				},
+				async (playlistId, rundownId, parts, getPartInstances, checkTimings) => {
+					// Take the only Part:
+					await doTakePart(context, playlistId, null, parts[0]._id, null)
+
+					const { currentPartInstance } = await getPartInstances()
+					expect(currentPartInstance).toBeTruthy()
+					if (!currentPartInstance) throw new Error('currentPartInstance must be defined')
+
+					// Should look normal for now
+					await checkTimings({
+						previousPart: null,
+						currentPieces: {
+							piece000: {
+								// This one gave the preroll
+								controlObj: {
+									start: 500,
+								},
+								childGroup: {
+									preroll: 500,
+									postroll: 0,
+								},
+							},
+						},
+						currentInfinitePieces: {
+							piece001: {
+								pieceGroup: {
+									childGroup: {
+										preroll: 50,
+										postroll: 0,
+									},
+									controlObj: {
+										start: 500,
+									},
+								},
+								partGroup: {
+									start: `#part_group_${currentPartInstance._id}.start`,
+								},
+							},
+						},
+						previousOutTransition: undefined,
+					})
+
+					const currentPieceInstances = await getPieceInstances(currentPartInstance._id)
+					const pieceInstance0 = currentPieceInstances.find(
+						(instance) => instance.piece._id === protectString(`${rundownId}_piece000`)
+					)
+					if (!pieceInstance0) throw new Error('pieceInstance0 must be defined')
+					const pieceInstance1 = currentPieceInstances.find(
+						(instance) => instance.piece._id === protectString(`${rundownId}_piece001`)
+					)
+					if (!pieceInstance1) throw new Error('pieceInstance1 must be defined')
+
+					const currentTime = 12300
+					await onPlayoutPlaybackChanged(context, {
+						playlistId,
+						changes: [
+							{
+								type: PlayoutChangedType.PART_PLAYBACK_STARTED,
+								data: {
+									partInstanceId: currentPartInstance._id,
+									time: currentTime,
+								},
+								objId: getPartGroupId(currentPartInstance._id),
+							},
+							{
+								type: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
+								data: {
+									partInstanceId: currentPartInstance._id,
+									pieceInstanceId: pieceInstance0._id,
+									time: currentTime,
+								},
+								objId: getPieceControlObjectId(pieceInstance0),
+							},
+							{
+								type: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
+								data: {
+									partInstanceId: currentPartInstance._id,
+									pieceInstanceId: pieceInstance1._id,
+									time: currentTime,
+								},
+								objId: getPieceControlObjectId(pieceInstance1),
+							},
+						],
+					})
+
+					await doUpdateTimeline(context, playlistId)
+
+					await checkTimings({
+						previousPart: null,
+						currentPieces: {
+							piece000: {
+								controlObj: {
+									start: 500,
+								},
+								childGroup: {
+									preroll: 500,
+									postroll: 0,
+								},
+							},
+						},
+						currentInfinitePieces: {
+							piece001: {
+								pieceGroup: {
+									childGroup: {
+										preroll: 50,
+										postroll: 0,
+									},
+									controlObj: {
+										start: 500,
+									},
+								},
+								partGroup: {
+									start: currentTime - 500, // preroll from piece0
+								},
+							},
+						},
 						previousOutTransition: undefined,
 					})
 				}
