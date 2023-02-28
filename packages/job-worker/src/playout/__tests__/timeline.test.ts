@@ -64,26 +64,51 @@ import { ProcessedShowStyleCompound } from '../../jobs'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 
+/**
+ * An object used to represent the simplified timeline structure.
+ * This allows for a simple declarative form of the timeline containing only the bits that are relevant to the layout of the parts and pieces
+ */
 interface PartTimelineTimings {
+	/** Expected enable for the previous part group, if it is on the timeline */
 	previousPart: TimelineEnableExt | null
 	currentPieces: {
+		/**
+		 * The pieces for the current part.
+		 * Every piece in the part must be represented here or in currentInfinitePieces.
+		 * Use null for pieces that have no presence in the timeline
+		 */
 		[id: string]: {
+			/** Expected offsets of the child group relative to the control object */
 			childGroup: PreAndPostRoll | PreAndPostRoll[]
+			/** Expected enable for the control object */
 			controlObj: TimelineEnableExt | TimelineEnableExt[]
 		} | null
 	}
 	currentInfinitePieces: {
+		/**
+		 * The pieces for the current part.
+		 * Every piece in the part must be represented here or in currentPieces.
+		 * Use null for pieces that have no presence in the timeline
+		 */
 		[id: string]: {
+			/** Expected enable for the virtual part group wrapping this infinite */
 			partGroup: TimelineEnableExt | TimelineEnableExt[]
 			pieceGroup: {
+				/** Expected offsets of the child group relative to the control object */
 				childGroup: PreAndPostRoll | PreAndPostRoll[]
+				/** Expected enable for the control object */
 				controlObj: TimelineEnableExt | TimelineEnableExt[]
 			}
 		} | null
 	}
+	/**
+	 * If there is a previous outTransition, then the piece generated must be represented here
+	 */
 	previousOutTransition:
 		| {
+				/** Expected offsets of the child group relative to the control object */
 				childGroup: PreAndPostRoll | PreAndPostRoll[]
+				/** Expected enable for the control object */
 				controlObj: TimelineEnableExt | TimelineEnableExt[]
 		  }
 		| null
@@ -95,7 +120,12 @@ interface PreAndPostRoll {
 	postroll: number
 	invalid?: string
 }
-function getPrerollAndPostroll(enable: TimelineEnableExt | TimelineEnableExt[]): PreAndPostRoll | PreAndPostRoll[] {
+/**
+ * Parse a TimelineEnable for a piece group timeline object into a simplifeid form of just the numbers ignoring the id of the control object it is relative to
+ */
+function parsePieceGroupPrerollAndPostroll(
+	enable: TimelineEnableExt | TimelineEnableExt[]
+): PreAndPostRoll | PreAndPostRoll[] {
 	const doIt = (enable: TimelineEnableExt): PreAndPostRoll => {
 		const res: PreAndPostRoll = {
 			preroll: 0,
@@ -184,7 +214,7 @@ async function checkTimingsRaw(
 
 			targetCurrentPieces[entryId] = controlObj
 				? {
-						childGroup: getPrerollAndPostroll(pieceObj?.enable ?? []),
+						childGroup: parsePieceGroupPrerollAndPostroll(pieceObj?.enable ?? []),
 						controlObj: controlObj.enable,
 				  }
 				: null
@@ -200,7 +230,7 @@ async function checkTimingsRaw(
 				targetCurrentInfinitePieces[entryId] = {
 					partGroup: partObj.enable,
 					pieceGroup: {
-						childGroup: getPrerollAndPostroll(pieceObj?.enable ?? []),
+						childGroup: parsePieceGroupPrerollAndPostroll(pieceObj?.enable ?? []),
 						controlObj: controlObj?.enable ?? [],
 					},
 				}
@@ -224,7 +254,7 @@ async function checkTimingsRaw(
 				const controlObj = objs.get(getPieceControlObjectId(piece))
 				previousOutTransition = controlObj
 					? {
-							childGroup: getPrerollAndPostroll(pieceObj?.enable ?? []),
+							childGroup: parsePieceGroupPrerollAndPostroll(pieceObj?.enable ?? []),
 							controlObj: controlObj.enable,
 					  }
 					: null
@@ -458,6 +488,14 @@ describe('Timeline', () => {
 		expect(fixSnapshot(await context.directCollections.Timelines.findFetch())).toMatchSnapshot()
 	})
 
+	/**
+	 * Perform a test to check how a transition is formed on the timeline.
+	 * This simulates two takes then allows for analysis of the state.
+	 * @param name Name of the test
+	 * @param customRundownFactory Factory to produce the rundown to play
+	 * @param checkFcn Function used to check the resulting timeline
+	 * @param timeout Override the timeout of the test
+	 */
 	function testTransitionTimings(
 		name: string,
 		customRundownFactory: (
@@ -503,6 +541,12 @@ describe('Timeline', () => {
 		)
 	}
 
+	/**
+	 * Perform a test to check how a timeline is formed
+	 * This simulates two takes then allows for analysis of the state.
+	 * @param customRundownFactory Factory to produce the rundown to play
+	 * @param fcn Function to perform some playout operations and check the results
+	 */
 	async function runTimelineTimings(
 		customRundownFactory: (
 			context: MockJobContext,
