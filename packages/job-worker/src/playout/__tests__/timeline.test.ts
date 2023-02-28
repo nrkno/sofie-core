@@ -61,8 +61,12 @@ import { EmptyPieceTimelineObjectsBlob, PieceStatusCode } from '@sofie-automatio
 import { adjustFakeTime, useFakeCurrentTime, useRealCurrentTime } from '../../__mocks__/time'
 import { restartRandomId } from '../../__mocks__/nanoid'
 import { ProcessedShowStyleCompound } from '../../jobs'
-import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import {
+	PlayoutChangedResult,
+	PlayoutChangedType,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import _ = require('underscore')
 
 /**
  * An object used to represent the simplified timeline structure.
@@ -318,6 +322,79 @@ async function doTakePart(
 	return { currentPartInstance, nextPartInstance, previousPartInstance }
 }
 
+/** Perform the playback timing confirmation from playout-gateway */
+async function doOnPlayoutPlaybackChanged(
+	context: MockJobContext,
+	playlistId: RundownPlaylistId,
+	timings: {
+		/** Base time for the part and pieces */
+		baseTime: number
+		/** Id of the part being affected */
+		partId: PartInstanceId
+		/** Whether to report the part as started */
+		includePart: boolean
+		/**
+		 * Times of pieces having started playback, as offset relative to baseTime.
+		 * Note: every piece in the part must be represented here, use null if it should not be reported as playing
+		 */
+		pieceOffsets: Record<string, number | null>
+	}
+) {
+	const pieceInstances = await context.directCollections.PieceInstances.findFetch({ partInstanceId: timings.partId })
+	for (const pieceInstance of pieceInstances) {
+		expect(timings.pieceOffsets[unprotectString(pieceInstance._id)]).not.toBeUndefined()
+	}
+
+	await onPlayoutPlaybackChanged(context, {
+		playlistId,
+		changes: _.compact<(PlayoutChangedResult | undefined)[]>([
+			timings.includePart
+				? {
+						type: PlayoutChangedType.PART_PLAYBACK_STARTED,
+						data: {
+							partInstanceId: timings.partId,
+							time: timings.baseTime,
+						},
+						objId: getPartGroupId(timings.partId),
+				  }
+				: undefined,
+			// The piece controlObjects start offset into the part, so need a manual offset
+			...Object.entries(timings.pieceOffsets).map(([pieceInstanceId, offset]) =>
+				offset !== null
+					? {
+							type: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
+							data: {
+								partInstanceId: timings.partId,
+								pieceInstanceId: protectString(pieceInstanceId),
+								time: timings.baseTime + offset,
+							},
+							objId: getPieceControlObjectId(protectString(pieceInstanceId)),
+					  }
+					: undefined
+			),
+		]),
+	})
+}
+
+/** Perform the playback timing confirmation from playout-gateway using automatic timings */
+async function doAutoPlayoutPlaybackChangedForPart(
+	context: MockJobContext,
+	playlistId: RundownPlaylistId,
+	partInstanceId: PartInstanceId,
+	takeTime: number
+) {
+	// Report the first part as having started playback
+	const pieceInstances = await context.directCollections.PieceInstances.findFetch({
+		partInstanceId: partInstanceId,
+	})
+	await doOnPlayoutPlaybackChanged(context, playlistId, {
+		baseTime: takeTime,
+		partId: partInstanceId,
+		includePart: true,
+		pieceOffsets: Object.fromEntries(pieceInstances.map((piece) => [piece._id, piece.piece.enable.start])),
+	})
+}
+
 /** Perform an activate and check the next part id is as expected */
 async function doActivatePlaylist(context: MockJobContext, playlistId: RundownPlaylistId, nextPartId: PartId) {
 	adjustFakeTime(1000)
@@ -509,7 +586,8 @@ describe('Timeline', () => {
 			timeline: null,
 			currentPartInstance: DBPartInstance,
 			previousPartInstance: DBPartInstance,
-			checkTimings: (timings: PartTimelineTimings) => Promise<void>
+			checkTimings: (timings: PartTimelineTimings) => Promise<void>,
+			previousTakeTime: number
 		) => Promise<void>,
 		timeout?: number
 	) {
@@ -522,7 +600,22 @@ describe('Timeline', () => {
 					customRundownFactory,
 					async (playlistId, rundownId, parts, _getPartInstances, checkTimings) => {
 						// Take the first Part:
-						await doTakePart(context, playlistId, null, parts[0]._id, parts[1]._id)
+						const { currentPartInstance: currentPartInstance0 } = await doTakePart(
+							context,
+							playlistId,
+							null,
+							parts[0]._id,
+							parts[1]._id
+						)
+
+						// Report the first part as having started playback
+						const previousTakeTime = 10000
+						await doAutoPlayoutPlaybackChangedForPart(
+							context,
+							playlistId,
+							currentPartInstance0!._id,
+							previousTakeTime
+						)
 
 						// Take the second Part:
 						const { currentPartInstance, previousPartInstance } = await doTakePart(
@@ -533,8 +626,23 @@ describe('Timeline', () => {
 							null
 						)
 
+						// Report the second part as having started playback
+						await doAutoPlayoutPlaybackChangedForPart(
+							context,
+							playlistId,
+							currentPartInstance!._id,
+							previousTakeTime + 10000
+						)
+
 						// Run the result check
-						await checkFcn(rundownId, null, currentPartInstance!, previousPartInstance!, checkTimings)
+						await checkFcn(
+							rundownId,
+							null,
+							currentPartInstance!,
+							previousPartInstance!,
+							checkTimings,
+							previousTakeTime
+						)
 					}
 				),
 			timeout
@@ -753,7 +861,14 @@ describe('Timeline', () => {
 		testTransitionTimings(
 			'inTransition with existing infinites',
 			setupRundownWithInTransitionExistingInfinite,
-			async (_rundownId0, _timeline, currentPartInstance, _previousPartInstance, checkTimings) => {
+			async (
+				_rundownId0,
+				_timeline,
+				currentPartInstance,
+				_previousPartInstance,
+				checkTimings,
+				previousTakeTime
+			) => {
 				await checkTimings({
 					// old part is extended due to transition keepalive
 					previousPart: { end: `#${getPartGroupId(currentPartInstance)}.start + 1000` },
@@ -771,10 +886,10 @@ describe('Timeline', () => {
 					},
 					currentInfinitePieces: {
 						piece002: {
-							// No delay applied as it started before this part, so should be left untouched
-							partGroup: { start: `#part_group_${currentPartInstance?._id}.start` },
+							// Should still be based on the time of previousPart, offset for preroll
+							partGroup: { start: previousTakeTime - 500 },
 							pieceGroup: {
-								controlObj: { start: 0 },
+								controlObj: { start: 500 },
 								childGroup: { preroll: 0, postroll: 0 },
 							},
 						},
@@ -1459,36 +1574,14 @@ describe('Timeline', () => {
 					if (!pieceInstance1) throw new Error('pieceInstance1 must be defined')
 
 					const currentTime = 12300
-					await onPlayoutPlaybackChanged(context, {
-						playlistId,
-						changes: [
-							{
-								type: PlayoutChangedType.PART_PLAYBACK_STARTED,
-								data: {
-									partInstanceId: currentPartInstance._id,
-									time: currentTime,
-								},
-								objId: getPartGroupId(currentPartInstance._id),
-							},
-							{
-								type: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
-								data: {
-									partInstanceId: currentPartInstance._id,
-									pieceInstanceId: pieceInstance0._id,
-									time: currentTime,
-								},
-								objId: getPieceControlObjectId(pieceInstance0),
-							},
-							{
-								type: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
-								data: {
-									partInstanceId: currentPartInstance._id,
-									pieceInstanceId: pieceInstance1._id,
-									time: currentTime,
-								},
-								objId: getPieceControlObjectId(pieceInstance1),
-							},
-						],
+					await doOnPlayoutPlaybackChanged(context, playlistId, {
+						baseTime: currentTime,
+						partId: currentPartInstance._id,
+						includePart: true,
+						pieceOffsets: {
+							[unprotectString(pieceInstance0._id)]: 500,
+							[unprotectString(pieceInstance1._id)]: 500,
+						},
 					})
 
 					await doUpdateTimeline(context, playlistId)
@@ -1518,7 +1611,7 @@ describe('Timeline', () => {
 									},
 								},
 								partGroup: {
-									start: currentTime - 500, // preroll from piece0
+									start: currentTime, // same as the partGroup, note that this counteracts the offset in onPlayoutPlaybackChanged
 								},
 							},
 						},

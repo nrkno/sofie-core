@@ -309,16 +309,6 @@ function generateCurrentInfinitePieceObjects(
 		}
 	}
 
-	let pieceStartOffset = 0
-	const isInfiniteContinuation =
-		pieceInstance.infinite && pieceInstance.piece.startPartId !== currentPartInfo.partInstance.part._id
-
-	if (isInfiniteContinuation) {
-		pieceEnable.start = 0
-
-		if (pieceInstance.piece.enable.start !== 'now') pieceStartOffset = pieceInstance.piece.enable.start
-	}
-
 	// If this infinite piece continues to the next part, and has a duration then we should respect that in case it is really close to the take
 	const hasDurationOrEnd = (enable: TSR.Timeline.TimelineEnable) =>
 		enable.duration !== undefined || enable.end !== undefined
@@ -361,7 +351,7 @@ function generateCurrentInfinitePieceObjects(
 			nowInParent,
 			pieceInstance,
 			pieceEnable,
-			pieceStartOffset,
+			0,
 			groupClasses,
 			isInHold,
 			isOriginOfInfinite
