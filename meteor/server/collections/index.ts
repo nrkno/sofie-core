@@ -27,7 +27,7 @@ import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { DBUser } from '../../lib/collections/Users'
 import { WorkerStatus } from '../../lib/collections/Workers'
 import { registerIndex } from './indices'
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime, MeteorStartupAsync } from '../../lib/lib'
 import { createAsyncMongoCollection, createAsyncOnlyMongoCollection, wrapMongoCollection } from './collection'
 import { ObserveChangesForHash, registerCollection } from './lib'
 
@@ -154,7 +154,7 @@ registerIndex(Users, {
 	organizationId: 1,
 })
 
-export const Workers = createAsyncMongoCollection<WorkerStatus>(CollectionName.Workers)
+export const Workers = createAsyncOnlyMongoCollection<WorkerStatus>(CollectionName.Workers)
 
 export const WorkerThreadStatuses = createAsyncOnlyMongoCollection<WorkerThreadStatus>(CollectionName.WorkerThreads)
 
@@ -167,12 +167,17 @@ const removeOldCommands = () => {
 		}
 	})
 }
-Meteor.startup(() => {
+MeteorStartupAsync(async () => {
 	Meteor.setInterval(() => removeOldCommands(), 5 * 60 * 1000)
 
-	ObserveChangesForHash(ShowStyleBases, '_rundownVersionHash', ['blueprintConfigWithOverrides', 'blueprintId'])
+	await Promise.allSettled([
+		ObserveChangesForHash(ShowStyleBases, '_rundownVersionHash', ['blueprintConfigWithOverrides', 'blueprintId']),
 
-	ObserveChangesForHash(ShowStyleVariants, '_rundownVersionHash', ['blueprintConfigWithOverrides', 'showStyleBaseId'])
+		ObserveChangesForHash(ShowStyleVariants, '_rundownVersionHash', [
+			'blueprintConfigWithOverrides',
+			'showStyleBaseId',
+		]),
 
-	ObserveChangesForHash(Studios, '_rundownVersionHash', ['blueprintConfigWithOverrides'])
+		ObserveChangesForHash(Studios, '_rundownVersionHash', ['blueprintConfigWithOverrides']),
+	])
 })

@@ -12,9 +12,10 @@ import {
 	getOrCreateMongoCollection,
 	FindOptions,
 	collectionsCache,
+	IndexSpecifier,
 } from '../../lib/collections/lib'
 import { makePromise, stringifyError, waitForPromise } from '../../lib/lib'
-import type { AnyBulkWriteOperation } from 'mongodb'
+import type { AnyBulkWriteOperation, Collection as RawCollection, CreateIndexesOptions } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import _ from 'underscore'
 import { registerCollection } from './lib'
@@ -214,6 +215,8 @@ export interface ServerAsyncOnlyMongoCollection<DBInterface extends { _id: Prote
 		fetch?: string[]
 		// transform?: Function
 	}): boolean
+
+	_ensureIndex(keys: IndexSpecifier<DBInterface> | string, options?: CreateIndexesOptions): void
 }
 
 export interface ServerMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
@@ -260,6 +263,12 @@ export interface AsyncMongoCollection<DBInterface extends { _id: ProtectedString
 		AsyncOnlyMongoCollection<DBInterface> {}
 export interface AsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedString<any> }> {
 	name: string | null
+
+	/**
+	 * Returns the [`Collection`](http://mongodb.github.io/node-mongodb-native/3.0/api/Collection.html) object corresponding to this collection from the
+	 * [npm `mongodb` driver module](https://www.npmjs.com/package/mongodb) which is wrapped by `Mongo.Collection`.
+	 */
+	rawCollection(): RawCollection<DBInterface>
 
 	findFetchAsync(selector: MongoQuery<DBInterface>, options?: FindOptions<DBInterface>): Promise<Array<DBInterface>>
 	findOneAsync(

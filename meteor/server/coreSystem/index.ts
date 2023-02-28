@@ -1,5 +1,5 @@
 import { SYSTEM_ID, parseVersion, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
-import { getCurrentTime, waitForPromise } from '../../lib/lib'
+import { getCurrentTime, MeteorStartupAsync } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { prepareMigration, runMigration } from '../migration/databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
@@ -15,7 +15,7 @@ import path from 'path'
 import { queueCheckBlueprintsConfig } from './checkBlueprintsConfig'
 import { checkDatabaseVersions } from './checkDatabaseVersions'
 import PLazy from 'p-lazy'
-import { getCoreSystem, getCoreSystemCursor } from './collection'
+import { getCoreSystem, getCoreSystemAsync, getCoreSystemCursor } from './collection'
 
 export { PackageInfo }
 
@@ -41,13 +41,13 @@ export function isRunningInJest(): boolean {
 	return !!process.env.JEST_WORKER_ID
 }
 
-function initializeCoreSystem() {
-	const system = getCoreSystem()
+async function initializeCoreSystem() {
+	const system = await getCoreSystemAsync()
 	if (!system) {
 		// At this point, we probably have a system that is as fresh as it gets
 
 		const version = parseVersion(GENESIS_SYSTEM_VERSION)
-		CoreSystem.insert({
+		await CoreSystem.insertAsync({
 			_id: SYSTEM_ID,
 			created: getCurrentTime(),
 			modified: getCurrentTime(),
@@ -155,7 +155,7 @@ export const RelevantSystemVersions = PLazy.from(async () => {
 	return versions
 })
 
-function startupMessage() {
+async function startupMessage() {
 	if (!Meteor.isTest) {
 		console.log('process started') // This is a message all Sofie processes log upon startup
 
@@ -171,20 +171,20 @@ function startupMessage() {
 			)
 		}
 
-		const versions = waitForPromise(RelevantSystemVersions)
+		const versions = await RelevantSystemVersions
 		for (const [name, version] of Object.entries(versions)) {
 			logger.info(`Core package ${name} version: "${version}"`)
 		}
 	}
 }
 
-function startInstrumenting() {
+async function startInstrumenting() {
 	if (Meteor.isTest) {
 		return
 	}
 
 	// attempt init elastic APM
-	const system = getCoreSystem()
+	const system = await getCoreSystemAsync()
 	const { APM_HOST, APM_SECRET, KIBANA_INDEX, APP_HOST } = process.env
 
 	if (APM_HOST && system && system.apm) {
@@ -219,18 +219,18 @@ function updateLoggerLevel(startup: boolean) {
 	}
 }
 
-Meteor.startup(() => {
+MeteorStartupAsync(async () => {
 	if (Meteor.isServer) {
-		startupMessage()
+		await startupMessage()
 		updateLoggerLevel(true)
-		initializeCoreSystem()
-		startInstrumenting()
+		await initializeCoreSystem()
+		await startInstrumenting()
 
 		if (!isRunningInJest()) {
 			// Ensure the storepath exists
 			const storePath = getSystemStorePath()
 			logger.info(`Using storePath: ${storePath}`)
-			waitForPromise(fs.mkdir(storePath, { recursive: true }))
+			await fs.mkdir(storePath, { recursive: true })
 		}
 	}
 })

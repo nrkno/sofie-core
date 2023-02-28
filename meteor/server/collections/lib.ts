@@ -4,7 +4,7 @@ import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
-import { stringifyObjects, waitForPromise, waitForPromiseAll } from '../../lib/lib'
+import { stringifyObjects, waitForPromise } from '../../lib/lib'
 import { logger } from '../logging'
 import { AsyncMongoCollection, AsyncOnlyMongoCollection } from './collection'
 
@@ -23,12 +23,12 @@ export function getCollectionKey(collection: AsyncOnlyMongoCollection<any>): Col
 	return o[0] // collectionName
 }
 
-export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString<any> }>(
+export async function ObserveChangesForHash<DBInterface extends { _id: ProtectedString<any> }>(
 	collection: AsyncMongoCollection<DBInterface>,
 	hashName: keyof DBInterface,
 	hashFields: (keyof DBInterface)[],
 	skipEnsureUpdatedOnStart?: boolean
-): void {
+): Promise<void> {
 	const doUpdate = async (obj: DBInterface): Promise<void> => {
 		const newHash = getHash(stringifyObjects(_.pick(obj, ...(hashFields as string[]))))
 
@@ -40,16 +40,16 @@ export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString
 		}
 	}
 
-	ObserveChangesHelper(collection, hashFields, doUpdate, ObserveChangeBufferTimeout, skipEnsureUpdatedOnStart)
+	await ObserveChangesHelper(collection, hashFields, doUpdate, ObserveChangeBufferTimeout, skipEnsureUpdatedOnStart)
 }
 
-export function ObserveChangesHelper<DBInterface extends { _id: ProtectedString<any> }>(
+export async function ObserveChangesHelper<DBInterface extends { _id: ProtectedString<any> }>(
 	collection: AsyncMongoCollection<DBInterface>,
 	watchFields: (keyof DBInterface)[],
 	doUpdate: (doc: DBInterface) => Promise<void>,
 	changeDebounce: number,
 	skipEnsureUpdatedOnStart?: boolean
-): void {
+): Promise<void> {
 	const observedChangesTimeouts = new Map<DBInterface['_id'], Timeout>()
 
 	const projection: MongoFieldSpecifierOnes<DBInterface> = {}
@@ -85,6 +85,6 @@ export function ObserveChangesHelper<DBInterface extends { _id: ProtectedString<
 
 	if (!skipEnsureUpdatedOnStart) {
 		const existing = collection.find().fetch()
-		waitForPromiseAll(existing.map(async (doc) => doUpdate(doc)))
+		await Promise.all(existing.map(async (doc) => doUpdate(doc)))
 	}
 }

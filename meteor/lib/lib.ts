@@ -220,6 +220,13 @@ export function toc(name: string = 'default', logStr?: string | Promise<any>[]):
 }
 
 /**
+ * Make Meteor.startup support async functions
+ */
+export function MeteorStartupAsync(fcn: () => Promise<void>): void {
+	Meteor.startup(() => waitForPromise(fcn()))
+}
+
+/**
  * Make Meteor.wrapAsync a bit more type safe
  * The original version makes the callback be after the last non-undefined parameter, rather than after or replacing the last parameter.
  * Which makes it incredibly hard to find without iterating over all the parameters. This does that for you, so you dont need to check as many places

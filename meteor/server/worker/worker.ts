@@ -13,9 +13,9 @@ import {
 	getCurrentTime,
 	getRandomString,
 	ManualPromise,
+	MeteorStartupAsync,
 	stringifyError,
 	Time,
-	waitForPromise,
 } from '../../lib/lib'
 import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { triggerFastTrackObserver, FastTrackObservers } from '../publications/fastTrack'
@@ -221,7 +221,7 @@ async function logLine(msg: LogEntry): Promise<void> {
 }
 
 let worker: Promisify<IpcJobWorker> | undefined
-Meteor.startup(() => {
+MeteorStartupAsync(async () => {
 	if (Meteor.isDevelopment) {
 		// Ensure meteor restarts when the _force_restart file changes
 		try {
@@ -250,29 +250,27 @@ Meteor.startup(() => {
 
 	logger.info('Worker threads initializing')
 	const workerInstanceId = `${Date.now()}_${getRandomString(4)}`
-	const workerId = initializeWorkerStatus(workerInstanceId, 'Default')
+	const workerId = await initializeWorkerStatus(workerInstanceId, 'Default')
 	// Startup the worker 'parent' at startup
-	worker = waitForPromise(
-		threadedClass<IpcJobWorker, typeof IpcJobWorker>(
-			workerEntrypoint,
-			'IpcJobWorker',
-			[
-				workerId,
-				jobFinished,
-				interruptJobStream,
-				waitForNextJob,
-				getNextJob,
-				queueJobWithoutResult,
-				logLine,
-				fastTrackTimeline,
-			],
-			{
-				autoRestart: true,
-				freezeLimit: FREEZE_LIMIT,
-				restartTimeout: RESTART_TIMEOUT,
-				killTimeout: KILL_TIMEOUT,
-			}
-		)
+	worker = await threadedClass<IpcJobWorker, typeof IpcJobWorker>(
+		workerEntrypoint,
+		'IpcJobWorker',
+		[
+			workerId,
+			jobFinished,
+			interruptJobStream,
+			waitForNextJob,
+			getNextJob,
+			queueJobWithoutResult,
+			logLine,
+			fastTrackTimeline,
+		],
+		{
+			autoRestart: true,
+			freezeLimit: FREEZE_LIMIT,
+			restartTimeout: RESTART_TIMEOUT,
+			killTimeout: KILL_TIMEOUT,
+		}
 	)
 
 	ThreadedClassManager.onEvent(
@@ -291,8 +289,9 @@ Meteor.startup(() => {
 			worker!.run(mongoUri, dbName).catch((e) => {
 				logger.error(`Failed to reinit worker threads after restart: ${stringifyError(e)}`)
 			})
-
-			setWorkerStatus(workerId, true, 'restarted', true)
+			setWorkerStatus(workerId, true, 'restarted', true).catch((e) => {
+				logger.error(`Failed to update worker threads status after restart: ${stringifyError(e)}`)
+			})
 		})
 	)
 	ThreadedClassManager.onEvent(
@@ -306,15 +305,17 @@ Meteor.startup(() => {
 			}
 			runningJobs.clear()
 
-			setWorkerStatus(workerId, false, 'Closed')
+			setWorkerStatus(workerId, false, 'Closed').catch((e) => {
+				logger.error(`Failed to update worker threads status: ${stringifyError(e)}`)
+			})
 		})
 	)
 
-	setWorkerStatus(workerId, true, 'Initializing...')
+	await setWorkerStatus(workerId, true, 'Initializing...')
 
 	logger.info('Worker threads starting')
-	waitForPromise(worker.run(mongoUri, dbName))
-	setWorkerStatus(workerId, true, 'OK')
+	await worker.run(mongoUri, dbName)
+	await setWorkerStatus(workerId, true, 'OK')
 	logger.info('Worker threads ready')
 })
 

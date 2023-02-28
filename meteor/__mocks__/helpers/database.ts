@@ -1024,7 +1024,7 @@ export async function setupMockWorker(doc?: Partial<WorkerStatus>): Promise<{
 
 		...doc,
 	}
-	Workers.insert(worker)
+	await Workers.insertAsync(worker)
 
 	const workerThreadStatus0: WorkerThreadStatus = {
 		_id: getRandomId(),
