@@ -3095,7 +3095,7 @@
   version "1.47.0-in-testing.8"
   dependencies:
     "@sofie-automation/shared-lib" "link:shared-lib"
-    timeline-state-resolver-types "7.5.0-nightly-test-viz-purge-fix-20230215-110410-316318801.0"
+    timeline-state-resolver-types "7.5.0"
     tslib "^2.4.0"
     type-fest "^2.19.0"
 
@@ -3382,9 +3382,9 @@
   resolved "https://registry.yarnpkg.com/@trysound/sax/-/sax-0.2.0.tgz#cccaab758af56761eb7bf37af6f03f326dd798ad"
   integrity sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==
 
-"@tv2media/v-connection@git+https://github.com/nrkno/v-connection.git#1465f25db772d69c5ba7fc655c25d902f6f8e03a":
+"@tv2media/v-connection@git+https://github.com/nrkno/v-connection.git#5386986d87ea6d1b5164d206ea42c975654b36cd":
   version "7.2.1"
-  resolved "git+https://github.com/nrkno/v-connection.git#1465f25db772d69c5ba7fc655c25d902f6f8e03a"
+  resolved "git+https://github.com/nrkno/v-connection.git#5386986d87ea6d1b5164d206ea42c975654b36cd"
   dependencies:
     request "^2.88.2"
     request-promise-native "^1.0.9"
@@ -7766,6 +7766,23 @@ got@^11.8.5:
     p-cancelable "^2.0.0"
     responselike "^2.0.0"
 
+got@^11.8.6:
+  version "11.8.6"
+  resolved "https://registry.yarnpkg.com/got/-/got-11.8.6.tgz#276e827ead8772eddbcfc97170590b841823233a"
+  integrity sha512-6tfZ91bOr7bOXnK7PRDCGBLa1H4U080YHNaAQ2KsMGlLEzRbk44nsZF2E1IeRc3vtJHPVbKCYgdFbaGO2ljd8g==
+  dependencies:
+    "@sindresorhus/is" "^4.0.0"
+    "@szmarczak/http-timer" "^4.0.5"
+    "@types/cacheable-request" "^6.0.1"
+    "@types/responselike" "^1.0.0"
+    cacheable-lookup "^5.0.3"
+    cacheable-request "^7.0.2"
+    decompress-response "^6.0.0"
+    http2-wrapper "^1.0.0-beta.5.2"
+    lowercase-keys "^2.0.0"
+    p-cancelable "^2.0.0"
+    responselike "^2.0.0"
+
 got@^9.6.0:
   version "9.6.0"
   resolved "https://registry.yarnpkg.com/got/-/got-9.6.0.tgz#edf45e7d67f99545705de1f7bbeeeb121765ed85"
@@ -8178,10 +8195,10 @@ htmlparser2@^8.0.1:
     domutils "^3.0.1"
     entities "^4.3.0"
 
-http-cache-semantics@^4.0.0, http-cache-semantics@^4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/http-cache-semantics/-/http-cache-semantics-4.1.0.tgz#49e91c5cbf36c9b94bcfcd71c23d5249ec74e390"
-  integrity sha512-carPklcUh7ROWRK7Cv27RPtdhYhUsela/ue5/jKzjegVvXDqM2ILE9Q2BGn9JZJh1g87cp56su/FgQSzcWS8cQ==
+http-cache-semantics@^4.1.0, http-cache-semantics@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/http-cache-semantics/-/http-cache-semantics-4.1.1.tgz#abe02fcb2985460bf0323be664436ec3476a6d5a"
+  integrity sha512-er295DKPVsV82j5kw1Gjt+ADA/XYHsajl82cGNQG2eyoPkvgUhX+nDIyelzhIWbbsXP39EHcI6l5tYs2FYqYXQ==
 
 http-deceiver@^1.2.7:
   version "1.2.7"
@@ -13971,19 +13988,19 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.5.0-nightly-test-viz-purge-fix-20230215-110410-316318801.0:
-  version "7.5.0-nightly-test-viz-purge-fix-20230215-110410-316318801.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.5.0-nightly-test-viz-purge-fix-20230215-110410-316318801.0.tgz#01238cd649a893f2db92347d7285cf270419c815"
-  integrity sha512-ZVUb+FPfOTv3kPkKyMliFpzr+gVi7aTL7xh3090vVUPE+vLlwo6Bie4lWnT806EErM3lTkMjks/cP1JTBAMOJw==
+timeline-state-resolver-types@7.5.0:
+  version "7.5.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.5.0.tgz#122b4ec78b99b45665ff74f0f7d184a2866123ab"
+  integrity sha512-K9vp91tVX+F2mTOY37ZX9zmzn28KYUdwMm4p05s9LxfCsZCJEUQLZ1oBQN5mzhFL+06UJceEdflUoG2Y4WFhpQ==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@7.5.0-nightly-test-viz-purge-fix-20230215-110410-316318801.0:
-  version "7.5.0-nightly-test-viz-purge-fix-20230215-110410-316318801.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.5.0-nightly-test-viz-purge-fix-20230215-110410-316318801.0.tgz#e5fae4d3ceed77d679e7eaa2c8d1cc5a0db6ee90"
-  integrity sha512-tx5g8l4qIf3RrF5hqnKRA4RIZ7iAL1Fo2htUbvR9CWLXJLtRX12pvFbmtTz4rv30DbC9EljFIGqXfWqwIS3ibA==
+timeline-state-resolver@7.5.0:
+  version "7.5.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.5.0.tgz#ee885336648e7ecac9dc700bb5d42cdcbb5e2d09"
+  integrity sha512-cBwQXLxKK+r77ldDhvwhLzfA9UQwbCb7EVf2mxoYvV9xq+4tbRIZSIkCA9nNOONVFfDDAcwSJDP/ruXVZz6bHA==
   dependencies:
-    "@tv2media/v-connection" "git+https://github.com/nrkno/v-connection.git#1465f25db772d69c5ba7fc655c25d902f6f8e03a"
+    "@tv2media/v-connection" "git+https://github.com/nrkno/v-connection.git#5386986d87ea6d1b5164d206ea42c975654b36cd"
     atem-connection "2.4.0"
     atem-state "^0.12.2"
     casparcg-connection "^5.1.0"
@@ -14003,7 +14020,7 @@ timeline-state-resolver@7.5.0-nightly-test-viz-purge-fix-20230215-110410-3163188
     sprintf-js "^1.1.2"
     superfly-timeline "^8.3.1"
     threadedclass "^1.1.1"
-    timeline-state-resolver-types "7.5.0-nightly-test-viz-purge-fix-20230215-110410-316318801.0"
+    timeline-state-resolver-types "7.5.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.5"
     underscore "^1.13.4"
