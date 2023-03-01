@@ -18,7 +18,7 @@ describe('Network client', () => {
 	const showStyleBaseIds: string[] = []
 	test('can request all ShowStyleBases', async () => {
 		const showStyles = await showStylesApi.getShowStyleBases()
-		expect(showStyles.success).toBe(200)
+		expect(showStyles.status).toBe(200)
 		expect(showStyles).toHaveProperty('result')
 		expect(showStyles.result.length).toBeGreaterThanOrEqual(1)
 		showStyles.result.forEach((id) => showStyleBaseIds.push(id))
@@ -29,7 +29,7 @@ describe('Network client', () => {
 		const showStyle = await showStylesApi.showStyleBase({
 			showStyleBaseId: showStyleBaseIds[0],
 		})
-		expect(showStyle.success).toBe(200)
+		expect(showStyle.status).toBe(200)
 		expect(showStyle).toHaveProperty('result')
 		expect(showStyle.result).toHaveProperty('name')
 		expect(showStyle.result).toHaveProperty('blueprintId')
@@ -48,7 +48,7 @@ describe('Network client', () => {
 					showStyleBase: newShowStyleBase,
 				},
 			})
-			expect(showStyle.success).toBe(200)
+			expect(showStyle.status).toBe(200)
 		})
 
 		test('can update a ShowStyleBase', async () => {
@@ -64,14 +64,14 @@ describe('Network client', () => {
 					},
 				},
 			})
-			expect(showStyle.success).toBe(200)
+			expect(showStyle.status).toBe(200)
 		})
 
 		test('can remove a ShowStyleBase', async () => {
 			const showStyle = await showStylesApi.deleteShowStyleBase({
 				showStyleBaseId: 'SSB0',
 			})
-			expect(showStyle.success).toBe(200)
+			expect(showStyle.status).toBe(200)
 		})
 	} else {
 		test.todo('Setup mocks for ShowStyles')
@@ -82,7 +82,7 @@ describe('Network client', () => {
 		const showStyleVariants = await showStylesApi.getShowStyleVariants({
 			showStyleBaseId: showStyleBaseIds[0],
 		})
-		expect(showStyleVariants.success).toBe(200)
+		expect(showStyleVariants.status).toBe(200)
 		expect(showStyleVariants).toHaveProperty('result')
 		expect(showStyleVariants.result.length).toBeGreaterThanOrEqual(1)
 		showStyleVariants.result.forEach((id) => showStyleVariantIds.push(id))
@@ -100,7 +100,7 @@ describe('Network client', () => {
 					},
 				},
 			})
-			expect(showStyleVariant.success).toBe(200)
+			expect(showStyleVariant.status).toBe(200)
 		})
 	} else {
 		test.todo('todo - can add a ShowStyleVariant')
@@ -111,7 +111,7 @@ describe('Network client', () => {
 			showStyleBaseId: showStyleBaseIds[0],
 			showStyleVariantId: showStyleVariantIds[0],
 		})
-		expect(showStyleVariant.success).toBe(200)
+		expect(showStyleVariant.status).toBe(200)
 		expect(showStyleVariant).toHaveProperty('result')
 		expect(showStyleVariant.result).toHaveProperty('name')
 		expect(showStyleVariant.result).toHaveProperty('showStyleBaseId')
@@ -131,7 +131,7 @@ describe('Network client', () => {
 					},
 				},
 			})
-			expect(showStyleVariant.success).toBe(200)
+			expect(showStyleVariant.status).toBe(200)
 		})
 
 		test('can remove a ShowStyleVariant', async () => {
@@ -139,7 +139,7 @@ describe('Network client', () => {
 				showStyleBaseId: 'SSB0',
 				showStyleVariantId: 'SSV',
 			})
-			expect(showStyle.success).toBe(200)
+			expect(showStyle.status).toBe(200)
 		})
 	} else {
 		test.todo('Setup mocks for ShowStyleVariants')

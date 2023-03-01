@@ -15,7 +15,7 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                   result:
@@ -46,7 +46,7 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                   result:
@@ -83,6 +83,9 @@ components:
           schema:
             type: object
             properties:
+              status:
+                type: number
+                example: 404
               message:
                 type: string
     internalServerError:
@@ -92,5 +95,8 @@ components:
           schema:
             type: object
             properties:
+              status:
+                type: number
+                example: 500
               message:
                 type: string

@@ -18,7 +18,7 @@ describe('Network client', () => {
 	if (testServer) {
 		test('can request all Studios', async () => {
 			const studios = await studiosApi.getStudios()
-			expect(studios.success).toBe(200)
+			expect(studios.status).toBe(200)
 		})
 	} else {
 		test.todo('Yet to be implemented')
@@ -39,14 +39,14 @@ describe('Network client', () => {
 					},
 				},
 			})
-			expect(studio.success).toBe(200)
+			expect(studio.status).toBe(200)
 		})
 
 		test('can request a Studio by id', async () => {
 			const studio = await studiosApi.getStudio({
 				studioId: 'B0avqzSM41UJDpbyf3U28',
 			})
-			expect(studio.success).toBe(200)
+			expect(studio.status).toBe(200)
 		})
 
 		test('can update a studio', async () => {
@@ -64,14 +64,14 @@ describe('Network client', () => {
 					},
 				},
 			})
-			expect(studio.success).toBe(200)
+			expect(studio.status).toBe(200)
 		})
 
 		test('can remove a Studio by id', async () => {
 			const studio = await studiosApi.deleteStudio({
 				studioId: 'B0avqzSM41UJDpbyf3U28',
 			})
-			expect(studio.success).toBe(200)
+			expect(studio.status).toBe(200)
 		})
 
 		test('can activate a route set in a studio', async () => {
@@ -79,7 +79,7 @@ describe('Network client', () => {
 				studioId: 'B0avqzSM41UJDpbyf3U28',
 				switchRouteSetRequest: { routeSetId: 'Main', active: true },
 			})
-			expect(routeSet.success).toBe(200)
+			expect(routeSet.status).toBe(200)
 		})
 
 		test('can deactivate a route set in a studio', async () => {
@@ -87,12 +87,12 @@ describe('Network client', () => {
 				studioId: 'B0avqzSM41UJDpbyf3U28',
 				switchRouteSetRequest: { routeSetId: 'Main', active: false },
 			})
-			expect(routeSet.success).toBe(200)
+			expect(routeSet.status).toBe(200)
 		})
 
 		test('can request a list of devices for a studio', async () => {
 			const devices = await studiosApi.devices({ studioId: 'B0avqzSM41UJDpbyf3U28' })
-			expect(devices.success).toBe(200)
+			expect(devices.status).toBe(200)
 		})
 
 		test('can attach a device to a studio', async () => {
@@ -102,7 +102,7 @@ describe('Network client', () => {
 					deviceId: 'playoutgateway0',
 				},
 			})
-			expect(attach.success).toBe(200)
+			expect(attach.status).toBe(200)
 		})
 
 		test('can detach a device from a studio', async () => {
@@ -110,7 +110,7 @@ describe('Network client', () => {
 				studioId: 'B0avqzSM41UJDpbyf3U28',
 				deviceId: 'playoutgateway0',
 			})
-			expect(detach.success).toBe(200)
+			expect(detach.status).toBe(200)
 		})
 	} else {
 		test.todo('Setup mocks for Sofie')

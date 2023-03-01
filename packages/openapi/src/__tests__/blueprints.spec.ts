@@ -17,7 +17,7 @@ describe('Network client', () => {
 	const blueprintIds: string[] = []
 	test('can request all blueprints available in Sofie', async () => {
 		const blueprints = await blueprintsApi.blueprints()
-		expect(blueprints.success).toBe(200)
+		expect(blueprints.status).toBe(200)
 		expect(blueprints).toHaveProperty('result')
 		expect(blueprints.result.length).toBeGreaterThanOrEqual(3)
 		blueprints.result.forEach((id) => blueprintIds.push(id))
@@ -31,7 +31,7 @@ describe('Network client', () => {
 		const blueprint = await blueprintsApi.blueprint({
 			blueprintId: blueprintIds.length ? blueprintIds[blueprintIds.length - 1] : '',
 		})
-		expect(blueprint.success).toBe(200)
+		expect(blueprint.status).toBe(200)
 		expect(blueprint).toHaveProperty('result')
 		expect(blueprint.result).toHaveProperty('id')
 		expect(blueprint.result).toHaveProperty('name')

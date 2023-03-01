@@ -41,13 +41,13 @@ function rewrapError(methodName: string, e: any): ClientAPI.ClientResponseError 
 	} else {
 		// Rewrap errors as a UserError
 		const err = e instanceof Error ? e : new Error(stringifyError(e))
-		userError = UserError.from(err, UserErrorMessage.InternalError)
+		userError = UserError.from(err, UserErrorMessage.InternalError, undefined, e.error)
 	}
 
 	logger.info(`UserAction "${methodName}" failed: ${stringifyError(userError)}`)
 
 	// Forward the error to the caller
-	return ClientAPI.responseError(userError)
+	return ClientAPI.responseError(userError, userError.errorCode)
 }
 
 export namespace ServerClientAPI {

@@ -18,14 +18,14 @@ describe('Network client', () => {
 	const deviceIds: string[] = []
 	test('can request all peripheral devices attached to Sofie', async () => {
 		const devices = await devicesApi.devices()
-		expect(devices.success).toBe(200)
+		expect(devices.status).toBe(200)
 		expect(devices).toHaveProperty('result')
 		devices.result.forEach((id) => deviceIds.push(id))
 	})
 
 	test('can request details of a specified peripheral device attached to Sofie', async () => {
 		const device = await devicesApi.device({ deviceId: deviceIds[0] })
-		expect(device.success).toBe(200)
+		expect(device.status).toBe(200)
 		expect(device).toHaveProperty('result')
 		expect(device.result).toHaveProperty('id')
 		expect(device.result).toHaveProperty('name')
@@ -41,7 +41,7 @@ describe('Network client', () => {
 				deviceId: deviceIds[0],
 				actionRequest: { action: 'restart' },
 			})
-			expect(action.success).toBe(202)
+			expect(action.status).toBe(202)
 		})
 	} else {
 		test.todo(`Add an action that doesn't kill the peripheral device!`)

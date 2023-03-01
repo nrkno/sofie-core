@@ -15,7 +15,7 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                   result:
@@ -44,7 +44,7 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                   result:
@@ -118,11 +118,11 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 202
         404:
-          description: The requested device does not exist.
+          $ref: '#/components/responses/deviceNotFound'
 
 components:
   schemas:
@@ -134,3 +134,17 @@ components:
           const: restart
       required: [action]
       additionalProperties: false
+  responses:
+    deviceNotFound:
+      description: The specified Device does not exist.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: number
+                example: 404
+              message:
+                type: string
+                example: The specified Device was not found

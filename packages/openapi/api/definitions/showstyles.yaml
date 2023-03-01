@@ -15,7 +15,7 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                   result:
@@ -48,7 +48,7 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                   result:
@@ -61,11 +61,25 @@ resources:
                       - id
                     additionalProperties: false
                 required:
-                  - success
+                  - status
                   - result
                 additionalProperties: false
         400:
           description: Invalid ShowStyleBase, blueprint Id is not a ShowStyle blueprint.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 400
+                  message:
+                    type: string
+                required:
+                  - status
+                  - message
+                additionalProperties: false
         500:
           $ref: '#/components/responses/internalServerError'
   showStyleBase:
@@ -89,7 +103,7 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                   result:
@@ -129,13 +143,41 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
         400:
           description: Invalid ShowStyleBase, blueprint Id is not a ShowStyle blueprint.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 400
+                  message:
+                    type: string
+                required:
+                  - status
+                  - message
+                additionalProperties: false
         412:
           description: The specified ShowStyleBase is in use in an on-air Rundown.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+                required:
+                  - status
+                  - message
+                additionalProperties: false
         500:
           $ref: '#/components/responses/internalServerError'
     delete:
@@ -158,11 +200,25 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
         412:
           description: The specified ShowStyleBase is in use in an on-air Rundown.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+                required:
+                  - status
+                  - message
+                additionalProperties: false
         500:
           $ref: '#/components/responses/internalServerError'
   showStyleVariants:
@@ -186,15 +242,15 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                   result:
                     type: array
                     items:
                       type: string
-        400:
-          description: Invalid ShowStyleVariant
+        404:
+          $ref: '#/components/responses/showStyleBaseNotFound'
         500:
           $ref: '#/components/responses/internalServerError'
     post:
@@ -228,7 +284,7 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                   result:
@@ -269,20 +325,13 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                   result:
                     $ref: '#/components/schemas/showStyleVariant'
         404:
-          description: The specified ShowStyleBase or ShowStyleVariant does not exist.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+          $ref: '#/components/responses/showStyleBaseNotFound'
         500:
           $ref: '#/components/responses/internalServerError'
     put:
@@ -322,15 +371,43 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
         400:
           description: Invalid ShowStyleVariant
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 400
+                  message:
+                    type: string
+                required:
+                  - status
+                  - message
+                additionalProperties: false
         404:
           $ref: '#/components/responses/showStyleBaseNotFound'
         412:
           description: The specified ShowStyleVariant is in use in an on-air Rundown.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+                required:
+                  - status
+                  - message
+                additionalProperties: false
         500:
           $ref: '#/components/responses/internalServerError'
     delete:
@@ -359,14 +436,28 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                 required:
-                  - success
+                  - status
                 additionalProperties: false
         412:
           description: The specified ShowStyleVariant is in use in an on-air Rundown.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+                required:
+                  - status
+                  - message
+                additionalProperties: false
         500:
           $ref: '#/components/responses/internalServerError'
 components:
@@ -378,9 +469,13 @@ components:
           schema:
             type: object
             properties:
+              status:
+                type: number
+                example: 500
               message:
                 type: string
             required:
+              - status
               - message
             additionalProperties: false
     showStyleBaseNotFound:
@@ -390,9 +485,13 @@ components:
           schema:
             type: object
             properties:
+              status:
+                type: number
+                example: 404
               message:
                 type: string
             required:
+              - status
               - message
             additionalProperties: false
   schemas:

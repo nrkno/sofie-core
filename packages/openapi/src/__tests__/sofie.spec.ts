@@ -17,7 +17,7 @@ describe('Network client', () => {
 	const sofieApi = new SofieApi(config)
 	test('can request current version of Sofie application', async () => {
 		const sofieVersion = await sofieApi.index()
-		expect(sofieVersion.success).toBe(200)
+		expect(sofieVersion.status).toBe(200)
 		expect(sofieVersion.result.version).toMatch(/^(\d+\.)?(\d+\.)?(\d+)/)
 	})
 
@@ -30,12 +30,12 @@ describe('Network client', () => {
 			const sofieVersion = await sofieApi.assignSystemBlueprint({
 				assignSystemBlueprintRequest: { blueprintId: 'systemBlueprint' },
 			})
-			expect(sofieVersion.success).toBe(200)
+			expect(sofieVersion.status).toBe(200)
 		})
 
 		test('can unassign a blueprint for Sofie Core', async () => {
 			const sofieVersion = await sofieApi.unassignSystemBlueprint()
-			expect(sofieVersion.success).toBe(200)
+			expect(sofieVersion.status).toBe(200)
 		})
 	} else {
 		test.todo('Setup mocks for Sofie')

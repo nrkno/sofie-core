@@ -24,27 +24,18 @@ export default class Logging implements Middleware {
 	}
 
 	async post(context: ResponseContext): Promise<void | Response> {
-		if (context.response && !(context.response.status >= 200 && context.response.status < 300)) {
-			console.log(
-				`Error Response ${context.response.url} ${context.response.status} ${context.response.statusText}`
-			)
-			// Return a response with a status of 200 to avoid a throw in the auto-generated client
-			return new Response(
-				JSON.stringify({ success: context.response.status, message: context.response.statusText }),
-				{ headers: context.response.headers, status: 200, statusText: context.response.statusText }
-			)
-		}
 		await this._logResponse(context.response)
 	}
 
 	async _logResponse(response: Response): Promise<void> {
-		let message: string
-		try {
-			message = JSON.stringify(await response.json(), null, 2)
-		} catch (e) {
-			console.log('Response not JSON!')
-		}
-		if (this._logging)
+		if (this._logging) {
+			let message: string
+			try {
+				message = JSON.stringify(await response.json(), null, 2)
+			} catch (e) {
+				message = 'Response body is not JSON!'
+			}
 			console.log(`Response ${response.url} ${response.status} ${response.statusText} - ${message}`)
+		}
 	}
 }

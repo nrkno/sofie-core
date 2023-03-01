@@ -15,7 +15,7 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                   result:
@@ -48,7 +48,7 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                   result:
@@ -85,7 +85,7 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                   id:
@@ -128,7 +128,7 @@ resources:
             application/json:
               schema:
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                   id:
@@ -159,7 +159,7 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
         412:
@@ -230,7 +230,7 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                   result:
@@ -273,7 +273,7 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
         404:
@@ -316,7 +316,7 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
         404:
@@ -410,7 +410,7 @@ components:
           schema:
             type: object
             properties:
-              success:
+              status:
                 type: number
                 example: 200
     studioNotFound:
@@ -420,6 +420,9 @@ components:
           schema:
             type: object
             properties:
+              status:
+                type: number
+                example: 404
               message:
                 type: string
     internalServerError:
@@ -429,5 +432,8 @@ components:
           schema:
             type: object
             properties:
+              status:
+                type: number
+                example: 500
               message:
                 type: string

@@ -1,5 +1,5 @@
 // eslint-disable-next-line node/no-missing-import
-import { Configuration, PlaylistsApi } from '../../client/ts'
+import { Configuration, PlaylistsApi, ResponseError } from '../../client/ts'
 import { checkServer } from '../checkServer'
 import Logging from '../httpLogging'
 
@@ -18,18 +18,45 @@ describe('Network client', () => {
 	const playlistIds: string[] = []
 	test('can request all playlists available in Sofie', async () => {
 		const playlists = await playlistsApi.playlists()
-		expect(playlists.success).toBe(200)
+		expect(playlists.status).toBe(200)
 		expect(playlists).toHaveProperty('result')
 		expect(playlists.result.length).toBeGreaterThanOrEqual(1)
-		playlists.result.forEach((id) => playlistIds.push(id))
+		playlists.result.forEach((id) => {
+			expect(typeof id).toBe('string')
+			playlistIds.push(id)
+		})
 	})
+
+	if (!testServer) {
+		class NoErrorThrownError extends Error {}
+		const doActivateWithBadId = async () => {
+			try {
+				await playlistsApi.activate({
+					playlistId: playlistIds[0] + 'err',
+					activateRequest: { rehearsal: true },
+				})
+				return new NoErrorThrownError()
+			} catch (error) {
+				return error
+			}
+		}
+		test('fails to activate a playlist with a bad id', async () => {
+			const error = await doActivateWithBadId()
+			expect(error).not.toBeInstanceOf(NoErrorThrownError)
+			const resErr = await (error as ResponseError).response.json()
+			expect(resErr).toHaveProperty('status')
+			expect(resErr.status).toBe(404)
+			expect(resErr).toHaveProperty('message')
+			expect(typeof resErr.message).toBe('string')
+		})
+	}
 
 	test('can activate a playlist', async () => {
 		const active = await playlistsApi.activate({
 			playlistId: playlistIds[0],
 			activateRequest: { rehearsal: true },
 		})
-		expect(active.success).toBe(200)
+		expect(active.status).toBe(200)
 	})
 
 	let partId = ''
@@ -38,14 +65,14 @@ describe('Network client', () => {
 			playlistId: playlistIds[0],
 			moveNextPartRequest: { delta: 2 },
 		})
-		expect(move.success).toBe(200)
+		expect(move.status).toBe(200)
 		expect(typeof move.result).toBe('string')
 		partId = move.result
 	})
 
 	test('can reset a playlist', async () => {
 		const reset = await playlistsApi.resetPlaylist({ playlistId: playlistIds[0] })
-		expect(reset.success).toBe(200)
+		expect(reset.status).toBe(200)
 	})
 
 	test('can set next part in a playlist', async () => {
@@ -53,7 +80,7 @@ describe('Network client', () => {
 			playlistId: playlistIds[0],
 			setNextPartRequest: { partId: partId },
 		})
-		expect(setNext.success).toBe(200)
+		expect(setNext.status).toBe(200)
 	})
 
 	test('can move next segment in a playlist', async () => {
@@ -62,7 +89,7 @@ describe('Network client', () => {
 			playlistId: playlistIds[0],
 			moveNextSegmentRequest: { delta: 2 },
 		})
-		expect(move.success).toBe(200)
+		expect(move.status).toBe(200)
 		expect(typeof move.result).toBe('string')
 	})
 
@@ -73,7 +100,7 @@ describe('Network client', () => {
 				playlistId: playlistIds[0],
 				setNextSegmentRequest: { segmentId: 'cIt0kEWuHOvQVMDEKzCrBpgGWSs_' },
 			})
-			expect(setNext.success).toBe(200)
+			expect(setNext.status).toBe(200)
 		})
 	} else {
 		test.todo('todo - set next segment in a playlist - need to read a segmentId')
@@ -81,7 +108,7 @@ describe('Network client', () => {
 
 	test('can send take action to the Sofie application', async () => {
 		const take = await playlistsApi.take({ playlistId: playlistIds[0] })
-		expect(take.success).toBe(200)
+		expect(take.status).toBe(200)
 	})
 
 	if (testServer) {
@@ -90,7 +117,7 @@ describe('Network client', () => {
 				playlistId: playlistIds[0],
 				executeAdLibRequest: { adLibId: 'JustDoIt' },
 			})
-			expect(execute.success).toBe(200)
+			expect(execute.status).toBe(200)
 		})
 	} else {
 		test.todo('Setup mocks for Sofie')
@@ -98,11 +125,11 @@ describe('Network client', () => {
 
 	test('can deactivate a playlist', async () => {
 		const deactive = await playlistsApi.deactivate({ playlistId: playlistIds[0] })
-		expect(deactive.success).toBe(200)
+		expect(deactive.status).toBe(200)
 	})
 
 	test('can reload a playlist', async () => {
 		const reload = await playlistsApi.reloadPlaylist({ playlistId: playlistIds[0] })
-		expect(reload.success).toBe(200)
+		expect(reload.status).toBe(200)
 	})
 })

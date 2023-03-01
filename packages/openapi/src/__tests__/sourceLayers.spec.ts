@@ -40,7 +40,7 @@ describe('Network client', () => {
 				playlistId: 'OKAgZmZ0Buc99lE_2uPPSKVbMrQ_',
 				sourceLayerId: '42',
 			})
-			expect(sofieVersion.success).toBe(200)
+			expect(sofieVersion.status).toBe(200)
 		})
 
 		test('fails to recall the last sticky Piece with null playlistId', async () => {
@@ -66,7 +66,7 @@ describe('Network client', () => {
 				playlistId: 'OKAgZmZ0Buc99lE_2uPPSKVbMrQ_',
 				sourceLayerId: '42',
 			})
-			expect(sofieVersion.success).toBe(200)
+			expect(sofieVersion.status).toBe(200)
 		})
 	} else {
 		test.todo('Setup mocks for Sofie')

@@ -15,7 +15,7 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                   result:
@@ -60,8 +60,12 @@ resources:
               schema:
                 type: object
                 properties:
+                  status:
+                    type: number
+                    example: 412
                   message:
                     type: string
+                    example: Rundown Playlist is active, please deactivate before preparing it for broadcast
         500:
           $ref: '#/components/responses/internalServerError'
   deactivate:
@@ -126,8 +130,12 @@ resources:
               schema:
                 type: object
                 properties:
+                  status:
+                    type: number
+                    example: 412
                   message:
                     type: string
+                    example: AdLib could not be found!
         500:
           $ref: '#/components/responses/internalServerError'
   moveNextPart:
@@ -163,7 +171,7 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                   result:
@@ -178,8 +186,12 @@ resources:
               schema:
                 type: object
                 properties:
+                  status:
+                    type: number
+                    example: 412
                   message:
                     type: string
+                    example: The selected part does not exist
         500:
           $ref: '#/components/responses/internalServerError'
   moveNextSegment:
@@ -215,7 +227,7 @@ resources:
               schema:
                 type: object
                 properties:
-                  success:
+                  status:
                     type: number
                     example: 200
                   result:
@@ -230,8 +242,12 @@ resources:
               schema:
                 type: object
                 properties:
+                  status:
+                    type: number
+                    example: 412
                   message:
                     type: string
+                    example: The selected part does not exist
         500:
           $ref: '#/components/responses/internalServerError'
   reloadPlaylist:
@@ -279,8 +295,12 @@ resources:
               schema:
                 type: object
                 properties:
+                  status:
+                    type: number
+                    example: 412
                   message:
                     type: string
+                    example: RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.
         500:
           $ref: '#/components/responses/internalServerError'
   setNextPart:
@@ -320,8 +340,12 @@ resources:
               schema:
                 type: object
                 properties:
+                  status:
+                    type: number
+                    example: 412
                   message:
                     type: string
+                    example: The selected part does not exist
         500:
           $ref: '#/components/responses/internalServerError'
   setNextSegment:
@@ -361,8 +385,12 @@ resources:
               schema:
                 type: object
                 properties:
+                  status:
+                    type: number
+                    example: 412
                   message:
                     type: string
+                    example: The selected part does not exist
         500:
           $ref: '#/components/responses/internalServerError'
   take:
@@ -400,8 +428,12 @@ resources:
               schema:
                 type: object
                 properties:
+                  status:
+                    type: number
+                    example: 412
                   message:
                     type: string
+                    example: No Next point found, please set a part as Next before doing a TAKE.
         500:
           $ref: '#/components/responses/internalServerError'
   sourceLayer:
@@ -427,14 +459,7 @@ resources:
         200:
           $ref: '#/components/responses/putSuccess'
         404:
-          description: The specified Playlist or SourceLayer does not exist.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+          $ref: '#/components/responses/playlistNotFound'
         412:
           description: Playlist is not active.
           content:
@@ -442,8 +467,12 @@ resources:
               schema:
                 type: object
                 properties:
+                  status:
+                    type: number
+                    example: 412
                   message:
                     type: string
+                    example: Rundown must be active!
         500:
           $ref: '#/components/responses/internalServerError'
     put:
@@ -468,14 +497,7 @@ resources:
         200:
           $ref: '#/components/responses/putSuccess'
         404:
-          description: The specified Playlist or SourceLayer does not exist.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+          $ref: '#/components/responses/playlistNotFound'
         412:
           description: Playlist is not active, SourceLayer is not sticky, or there is no sticky piece for this SourceLayer.
           content:
@@ -483,8 +505,12 @@ resources:
               schema:
                 type: object
                 properties:
+                  status:
+                    type: number
+                    example: 412
                   message:
                     type: string
+                    example: Rundown must be active!
         500:
           $ref: '#/components/responses/internalServerError'
 
@@ -497,7 +523,7 @@ components:
           schema:
             type: object
             properties:
-              success:
+              status:
                 type: number
                 example: 200
     executeActionSuccess:
@@ -507,7 +533,7 @@ components:
           schema:
             type: object
             properties:
-              success:
+              status:
                 type: number
                 example: 200
               result:
@@ -526,8 +552,12 @@ components:
           schema:
             type: object
             properties:
+              status:
+                type: number
+                example: 404
               message:
                 type: string
+                example: The specified Playlist was not found
     internalServerError:
       description: An error unlikely to be the fault of the caller has occurred.
       content:
@@ -535,5 +565,9 @@ components:
           schema:
             type: object
             properties:
+              status:
+                type: number
+                example: 500
               message:
                 type: string
+                example: Internal Server Error
