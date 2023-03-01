@@ -66,7 +66,7 @@ import {
 	PlayoutChangedType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import _ = require('underscore')
+import * as _ from 'underscore'
 
 /**
  * An object used to represent the simplified timeline structure.
