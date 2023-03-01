@@ -13,13 +13,7 @@ import {
 } from '@sofie-automation/corelib/dist/playout/infinites'
 import { MongoQuery } from './typings/meteor'
 import { invalidateAfter } from '../client/lib/invalidatingTime'
-import {
-	convertCorelibToMeteorMongoQuery,
-	getCurrentTime,
-	ProtectedString,
-	protectString,
-	unprotectString,
-} from './lib'
+import { convertCorelibToMeteorMongoQuery, getCurrentTime, groupByToMap, ProtectedString, protectString } from './lib'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from './collections/RundownPlaylists'
 import { Rundown } from './collections/Rundowns'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
@@ -278,12 +272,12 @@ export function getSegmentsWithPartInstances(
 	)
 	const playlistActivationId = playlist.activationId ?? protectString('')
 
-	const partsBySegment = _.groupBy(rawParts, (p) => unprotectString(p.segmentId))
-	const partInstancesBySegment = _.groupBy(rawPartInstances, (p) => unprotectString(p.segmentId))
+	const partsBySegment = groupByToMap(rawParts, 'segmentId')
+	const partInstancesBySegment = groupByToMap(rawPartInstances, 'segmentId')
 
 	return segments.map((segment) => {
-		const segmentParts = partsBySegment[unprotectString(segment._id)] || []
-		const segmentPartInstances = partInstancesBySegment[unprotectString(segment._id)] || []
+		const segmentParts = partsBySegment.get(segment._id) ?? []
+		const segmentPartInstances = partInstancesBySegment.get(segment._id) ?? []
 
 		if (segmentPartInstances.length === 0) {
 			return {

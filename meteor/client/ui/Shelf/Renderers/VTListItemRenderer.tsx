@@ -134,7 +134,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 					typeClass={props.layer && RundownUtils.getSourceLayerClassName(props.layer.type)}
 					itemElement={itemIcon.current}
 					contentMetaData={props.metadata || null}
-					noticeMessage={props.message || null}
+					noticeMessages={props.messages || null}
 					noticeLevel={
 						props.status !== null && props.status !== undefined ? getNoticeLevelForPieceStatus(props.status) : null
 					}

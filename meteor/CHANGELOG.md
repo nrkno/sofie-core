@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.48.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.48.0-in-testing.2...v1.48.0-in-testing.3) (2023-02-14)
+
+## [1.48.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.44.2...v1.48.0-in-testing.2) (2023-02-14)
+
+
+### Bug Fixes
+
+* add os hostname to influx traces ([ee35f8a](https://github.com/nrkno/sofie-core/commit/ee35f8a42b4980b12020e31eb93f06c0f77f4657))
+* bad migration ([abc3ddb](https://github.com/nrkno/sofie-core/commit/abc3ddb49db6b70c35b4fe46a899c22d7788df3a))
+* bad migration ([d3b2c6b](https://github.com/nrkno/sofie-core/commit/d3b2c6bc26b9433e1c552f3c7366ebb1d89d8e90))
+* cleanup old properties when generating *WithOverrides versions ([49e0bd5](https://github.com/nrkno/sofie-core/commit/49e0bd50b8be4f4374b3505682deeb221105d521))
+* missing package-manager methods ([#838](https://github.com/nrkno/sofie-core/issues/838)) ([03cf060](https://github.com/nrkno/sofie-core/commit/03cf060dff3f6bca1162f0dcbc01d04957223422))
+* **PoGw:** resolve issues with reporting context from TSR ([687193f](https://github.com/nrkno/sofie-core/commit/687193ffeb599d5193f2f06d49b987a71a766206))
+* put vizPurgeRundown method on the sub-device instead ([e3e4d06](https://github.com/nrkno/sofie-core/commit/e3e4d060cd87eb96f2b7219d6ffe3ca66726b23e))
+
+## [1.47.0](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.8...v1.47.0) (2023-03-01)
+
+
+### Features
+
+* add `callBackgroundPeripheralDeviceFunction` ([3ce75bd](https://github.com/nrkno/sofie-core/commit/3ce75bdb8c9d2427ce76e96bebaada09c497b50b))
+
+
+### Bug Fixes
+
+* change GUI message before purgin viz-elements ([77e5334](https://github.com/nrkno/sofie-core/commit/77e53340f09a7b3e00e536bcbf7b5b6b02468d1c))
+* fix bug on package-manager status page ([d6a8465](https://github.com/nrkno/sofie-core/commit/d6a8465f52f7e7eefb8b812871d5925543004ea5))
+* fix bug on package-manager status page ([575b557](https://github.com/nrkno/sofie-core/commit/575b5571174e3367a75bb517f73ba061d16feae1))
+* remove client-side write to PeripheralDeviceCommands ([2db2242](https://github.com/nrkno/sofie-core/commit/2db2242ce41aef81c599840444bde08e7ba8ec99))
+
 ## [1.47.0-in-testing.8](https://github.com/nrkno/sofie-core/compare/v1.44.2...v1.47.0-in-testing.8) (2023-02-14)
 
 
@@ -302,6 +332,8 @@ All notable changes to this project will be documented in this file. See [standa
 * fixed duplicated shoutcuts ([da344a6](https://github.com/nrkno/sofie-core/commit/da344a68d878ebe143523ace20536cf5aacd1ed1))
 
 ## [1.47.0-in-testing.7](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.6...v1.47.0-in-testing.7) (2023-01-24)
+
+## [1.47.0-in-testing.6](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.5...v1.47.0-in-testing.6) (2023-01-16)
 
 
 ### Bug Fixes

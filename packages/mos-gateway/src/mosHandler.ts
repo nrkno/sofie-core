@@ -23,11 +23,11 @@ import {
 } from 'mos-connection'
 import * as Winston from 'winston'
 import { CoreHandler, CoreMosDeviceHandler } from './coreHandler'
-import { CollectionObj } from '@sofie-automation/server-core-integration'
 import {
 	DEFAULT_MOS_TIMEOUT_TIME,
 	DEFAULT_MOS_HEARTBEAT_INTERVAL,
 } from '@sofie-automation/shared-lib/dist/core/constants'
+import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 
 export interface MosConfig {
 	self: IConnectionConfig
@@ -97,7 +97,7 @@ export class MosHandler {
 
 		const peripheralDevice = await coreHandler.core.getPeripheralDevice()
 
-		this._settings = peripheralDevice.settings || {}
+		this._settings = peripheralDevice.settings as any
 
 		await this._initMosConnection()
 
@@ -159,7 +159,7 @@ export class MosHandler {
 	private _deviceOptionsChanged() {
 		const peripheralDevice = this.getThisPeripheralDevice()
 		if (peripheralDevice) {
-			const settings: MosDeviceSettings = peripheralDevice.settings || {}
+			const settings: MosDeviceSettings = (peripheralDevice.settings || {}) as any
 			if (this.debugLogging !== settings.debugLogging) {
 				this._logger.info('Changing debugLogging to ' + settings.debugLogging)
 
@@ -376,7 +376,7 @@ export class MosHandler {
 			}
 		}
 	}
-	private getThisPeripheralDevice(): CollectionObj | undefined {
+	private getThisPeripheralDevice(): PeripheralDevicePublic | undefined {
 		if (!this._coreHandler) {
 			throw Error('_coreHandler is undefined!')
 		}
@@ -385,7 +385,7 @@ export class MosHandler {
 			throw Error('_coreHandler.core is undefined')
 		}
 
-		const peripheralDevices = this._coreHandler.core.getCollection('peripheralDevices')
+		const peripheralDevices = this._coreHandler.core.getCollection<PeripheralDevicePublic>('peripheralDevices')
 		return peripheralDevices.findOne(this._coreHandler.core.deviceId)
 	}
 	private async _updateDevices(): Promise<void> {
@@ -397,7 +397,7 @@ export class MosHandler {
 		const peripheralDevice = this.getThisPeripheralDevice()
 
 		if (peripheralDevice) {
-			const settings: MosDeviceSettings = peripheralDevice.settings || {}
+			const settings: MosDeviceSettings = (peripheralDevice.settings || {}) as any
 
 			const devices = settings.devices || {}
 
@@ -557,7 +557,7 @@ export class MosHandler {
 	private _getDevice(deviceId: string): MosDevice | null {
 		return this._ownMosDevices[deviceId] || null
 	}
-	private async _getROAck(roId: MosString128, p: Promise<IMOSROAck>) {
+	private async _getROAck(roId: MosString128, p: Promise<any>): Promise<IMOSROAck> {
 		return p
 			.then(() => {
 				const roAck: IMOSROAck = {

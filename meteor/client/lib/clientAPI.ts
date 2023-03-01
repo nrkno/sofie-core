@@ -22,6 +22,16 @@ export async function callPeripheralDeviceFunction(
 		...params
 	)
 }
+export async function callPeripheralDeviceAction(
+	e: any,
+	deviceId: PeripheralDeviceId,
+	timeoutTime: number | undefined,
+	actionId: string,
+	payload?: Record<string, any>
+): Promise<any> {
+	const eventContext = eventContextForLog(e)
+	return MeteorCall.client.callPeripheralDeviceAction(eventContext[0], deviceId, timeoutTime, actionId, payload)
+}
 
 export namespace PeripheralDevicesAPI {
 	export async function restartDevice(

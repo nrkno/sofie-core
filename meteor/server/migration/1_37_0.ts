@@ -501,7 +501,6 @@ export const addSteps = addMigrationSteps('1.37.0', [
 					showStyleBaseId: null,
 					actionsWithOverrides: wrapDefaultObject(triggeredAction.actions),
 					triggersWithOverrides: wrapDefaultObject(triggeredAction.triggers),
-					_rundownVersionHash: '',
 				})
 			})
 		},

@@ -2,7 +2,7 @@ import { PartId, PartInstanceId, PieceInstanceId } from '@sofie-automation/corel
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import { isStringOrProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { isStringOrProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import {
 	ActivateHoldProps,
 	ActivateRundownPlaylistProps,
@@ -59,7 +59,13 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { getCurrentTime, getSystemVersion } from '../lib'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { applyToArray, assertNever, getRandomId, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import {
+	applyToArray,
+	assertNever,
+	getRandomId,
+	groupByToMap,
+	stringifyError,
+} from '@sofie-automation/corelib/dist/lib'
 import {
 	ActionExecutionContext,
 	ActionPartChange,
@@ -433,15 +439,15 @@ export async function moveNextPartInner(
 				? considerSegments.slice(targetSegmentIndex)
 				: considerSegments.slice(0, targetSegmentIndex + 1).reverse()
 
-		const playablePartsBySegment = _.groupBy(
+		const playablePartsBySegment = groupByToMap(
 			rawParts.filter((p) => isPartPlayable(p)),
-			(p) => unprotectString(p.segmentId)
+			'segmentId'
 		)
 
 		// Iterate through segments and find the first part
 		let selectedPart: DBPart | undefined
 		for (const segment of allowedSegments) {
-			const parts = playablePartsBySegment[unprotectString(segment._id)] || []
+			const parts = playablePartsBySegment.get(segment._id) ?? []
 			// Cant go to the current part (yet)
 			const filteredParts = parts.filter((p) => p._id !== currentPartInstance?.part._id)
 			if (filteredParts.length > 0) {
@@ -1155,7 +1161,11 @@ export async function executeAction(context: JobContext, data: ExecuteActionProp
 							}
 
 							// If any action cannot be done due to timings, that needs to be rejected by the context
-							logger.info(`Executing AdlibAction "${data.actionId}": ${JSON.stringify(data.userData)}`)
+							logger.info(
+								`Executing AdlibAction "${data.actionId}": ${JSON.stringify(data.userData)} (${
+									data.triggerMode
+								})`
+							)
 
 							try {
 								await blueprint.blueprint.executeAction(

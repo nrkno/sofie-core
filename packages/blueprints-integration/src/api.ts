@@ -1,4 +1,4 @@
-import { TSRTimelineObjBase } from 'timeline-state-resolver-types'
+import { TSRTimelineContent, TSRTimelineObj } from 'timeline-state-resolver-types'
 
 import { ActionUserData, IBlueprintActionManifest } from './action'
 import { ConfigManifestEntry } from './config'
@@ -111,7 +111,11 @@ export interface StudioBlueprintManifest extends BlueprintManifestBase {
 	) => BlueprintResultRundownPlaylist | null
 
 	/** Preprocess config before storing it by core to later be returned by context's getStudioConfig. If not provided, getStudioConfig will return unprocessed blueprint config */
-	preprocessConfig?: (context: ICommonContext, config: IBlueprintConfig) => unknown
+	preprocessConfig?: (
+		context: ICommonContext,
+		config: IBlueprintConfig,
+		coreConfig: BlueprintConfigCoreConfig
+	) => unknown
 }
 
 export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
@@ -187,7 +191,11 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	) => IBlueprintAdLibPiece | IBlueprintActionManifest | null
 
 	/** Preprocess config before storing it by core to later be returned by context's getShowStyleConfig. If not provided, getShowStyleConfig will return unprocessed blueprint config */
-	preprocessConfig?: (context: ICommonContext, config: IBlueprintConfig) => unknown
+	preprocessConfig?: (
+		context: ICommonContext,
+		config: IBlueprintConfig,
+		coreConfig: BlueprintConfigCoreConfig
+	) => unknown
 
 	// Events
 
@@ -202,7 +210,7 @@ export interface ShowStyleBlueprintManifest extends BlueprintManifestBase {
 	/** Called after the timeline has been generated, used to manipulate the timeline */
 	onTimelineGenerate?: (
 		context: ITimelineEventContext,
-		timeline: OnGenerateTimelineObj[],
+		timeline: OnGenerateTimelineObj<TSRTimelineContent>[],
 		previousPersistentState: TimelinePersistentState | undefined,
 		previousPartEndState: PartEndState | undefined,
 		resolvedPieces: IBlueprintResolvedPieceInstance[]
@@ -233,11 +241,11 @@ export type PartEndState = unknown
 export type TimelinePersistentState = unknown
 
 export interface BlueprintResultTimeline {
-	timeline: OnGenerateTimelineObj[]
+	timeline: OnGenerateTimelineObj<TSRTimelineContent>[]
 	persistentState: TimelinePersistentState
 }
 export interface BlueprintResultBaseline {
-	timelineObjects: TSRTimelineObjBase[]
+	timelineObjects: TSRTimelineObj<TSRTimelineContent>[]
 	/** @deprecated */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	expectedPackages?: ExpectedPackage.Any[]
@@ -302,4 +310,8 @@ export interface BlueprintResultRundownPlaylist {
 	playlist: IBlueprintResultRundownPlaylist
 	/** Returns information about the order of rundowns in a playlist, null will use natural sorting on rundown name */
 	order: BlueprintResultOrderedRundowns | null
+}
+
+export interface BlueprintConfigCoreConfig {
+	hostUrl: string
 }

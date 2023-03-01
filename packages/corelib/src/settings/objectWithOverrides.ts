@@ -1,7 +1,7 @@
 import objectPath = require('object-path')
 import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
-import { assertNever, clone } from '../lib'
+import { assertNever, clone, literal } from '../lib'
 
 /**
  * This is an object which allows for overrides to be tracked and reapplied
@@ -50,6 +50,29 @@ export function wrapDefaultObject<T extends object>(obj: T): ObjectWithOverrides
 		defaults: obj,
 		overrides: [],
 	}
+}
+/**
+ * In some cases, an ObjectWithOverrides should have no defaults. This is common for when the user owns the object containing the ObjectWithOverrides.
+ * This helper takes an ObjectWithOverrides, and converts it to have no defaults, and have each contained object as an override
+ */
+export function convertObjectIntoOverrides<T>(
+	rawObj: ReadonlyDeep<Record<string, T>> | undefined
+): ObjectWithOverrides<Record<string, T>> {
+	const result = wrapDefaultObject<Record<string, T>>({})
+
+	if (rawObj) {
+		for (const [id, obj] of Object.entries(rawObj)) {
+			result.overrides.push(
+				literal<ObjectOverrideSetOp>({
+					op: 'set',
+					path: id,
+					value: obj,
+				})
+			)
+		}
+	}
+
+	return result
 }
 
 /**

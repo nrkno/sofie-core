@@ -1,10 +1,9 @@
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RundownLayoutsAPI } from '../../../../../lib/api/rundownLayouts'
 import { RundownLayoutBase, RundownLayouts } from '../../../../../lib/collections/RundownLayouts'
-import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
 import { unprotectString } from '../../../../../lib/lib'
 import { EditAttribute } from '../../../../lib/EditAttribute'
 
@@ -16,21 +15,21 @@ function filterLayouts(
 }
 
 interface IProps {
-	showStyleBase: ShowStyleBase
+	sourceLayers: SourceLayers
 	item: RundownLayoutBase
 	layouts: RundownLayoutBase[]
 }
 
-export default function RundownViewLayoutSettings({ showStyleBase, item, layouts }: IProps) {
+export default function RundownViewLayoutSettings({ sourceLayers, item, layouts }: IProps) {
 	const { t } = useTranslation()
 
 	const sourceLayerOptions = useMemo(
 		() =>
-			Object.values(applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj)
+			Object.values(sourceLayers)
 				.filter((s): s is ISourceLayer => !!s)
 				.sort((a, b) => a._rank - b._rank)
 				.map((sourceLayer) => ({ name: sourceLayer.name, value: sourceLayer._id })),
-		[showStyleBase.sourceLayersWithOverrides]
+		[sourceLayers]
 	)
 
 	return (

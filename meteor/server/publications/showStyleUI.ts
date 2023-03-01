@@ -41,7 +41,7 @@ async function setupUIShowStyleBasePublicationObservers(
 	return [
 		ShowStyleBases.find(args.showStyleBaseId, {
 			fields: fieldSpecifier,
-		}).observe({
+		}).observeChanges({
 			added: () => triggerUpdate({ invalidateShowStyle: true }),
 			changed: () => triggerUpdate({ invalidateShowStyle: true }),
 			removed: () => triggerUpdate({ invalidateShowStyle: true }),

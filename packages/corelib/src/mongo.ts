@@ -42,7 +42,7 @@ export type MongoModifier<TDoc> = UpdateFilter<TDoc>
 
 /** End of hacks */
 
-export function mongoWhereFilter<T, R>(items: R[], selector: MongoQuery<T>): R[] {
+export function mongoWhereFilter<T, R extends Record<string, any>>(items: R[], selector: MongoQuery<T>): R[] {
 	const results: R[] = []
 	for (const item of items) {
 		if (mongoWhere(item, selector)) results.push(item)

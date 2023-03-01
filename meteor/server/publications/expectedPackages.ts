@@ -101,7 +101,7 @@ async function setupExpectedPackagesPublicationObservers(
 				...omit(studioFieldSpecifier, 'mappingsWithOverrides', 'routeSets'),
 				mappingsHash: 1,
 			},
-		}).observe({
+		}).observeChanges({
 			added: () => triggerUpdate({ invalidateStudio: true }),
 			changed: () => triggerUpdate({ invalidateStudio: true }),
 			removed: () => triggerUpdate({ invalidateStudio: true }),
@@ -114,14 +114,14 @@ async function setupExpectedPackagesPublicationObservers(
 					settings: 1,
 				},
 			}
-		).observe({
+		).observeChanges({
 			added: () => triggerUpdate({ invalidatePeripheralDevices: true }),
 			changed: () => triggerUpdate({ invalidatePeripheralDevices: true }),
 			removed: () => triggerUpdate({ invalidatePeripheralDevices: true }),
 		}),
 		ExpectedPackages.find({
 			studioId: args.studioId,
-		}).observe({
+		}).observeChanges({
 			added: () => triggerUpdate({ invalidateExpectedPackages: true }),
 			changed: () => triggerUpdate({ invalidateExpectedPackages: true }),
 			removed: () => triggerUpdate({ invalidateExpectedPackages: true }),
@@ -133,7 +133,7 @@ async function setupExpectedPackagesPublicationObservers(
 			{
 				fields: rundownPlaylistFieldSpecifier,
 			}
-		).observe({
+		).observeChanges({
 			added: () => triggerUpdate({ invalidateRundownPlaylist: true }),
 			changed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
 			removed: () => triggerUpdate({ invalidateRundownPlaylist: true }),

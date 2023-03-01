@@ -69,7 +69,14 @@ export class MidiPedalController extends ControllerAbstract {
 			this.reverseSpeedMap
 		)
 
-		webmidi.enable(this.setupMidiListeners.bind(this))
+		try {
+			webmidi.enable(this.setupMidiListeners.bind(this))
+		} catch (e: any) {
+			console.error(e)
+			console.warn(
+				'Are you accessing the page over HTTPS? If not, look at setting Chrome flag unsafely-treat-insecure-origin-as-secure'
+			)
+		}
 	}
 
 	public destroy() {

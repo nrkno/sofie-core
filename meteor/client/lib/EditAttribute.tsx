@@ -1,8 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { withTracker } from './ReactMeteorData/react-meteor-data'
-import { faCheckSquare, faSquare } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { MultiSelect, MultiSelectEvent, MultiSelectOptions } from './multiSelect'
 import ClassNames from 'classnames'
@@ -10,6 +8,13 @@ import { ColorPickerEvent, ColorPicker } from './colorPicker'
 import { IconPicker, IconPickerEvent } from './iconPicker'
 import { assertNever, getRandomString } from '../../lib/lib'
 import { MongoCollection } from '../../lib/collections/lib'
+import { CheckboxControl } from './Components/Checkbox'
+import { TextInputControl } from './Components/TextInput'
+import { IntInputControl } from './Components/IntInput'
+import { DropdownInputControl, getDropdownInputOptions } from './Components/DropdownInput'
+import { FloatInputControl } from './Components/FloatInput'
+import { joinLines, MultiLineTextInputControl, splitValueIntoLines } from './Components/MultiLineTextInput'
+import { JsonTextInputControl, tryParseJson } from './Components/JsonTextInput'
 
 interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
@@ -107,6 +112,7 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 		this.handleUpdate = this.handleUpdate.bind(this)
 		this.handleDiscard = this.handleDiscard.bind(this)
 	}
+	/** Update the temporary value of this field, optionally saving a value */
 	handleEdit(inputValue: any, storeValue?: any) {
 		this.setState({
 			value: inputValue,
@@ -116,20 +122,24 @@ export class EditAttributeBase extends React.Component<IEditAttributeBaseProps, 
 			this.updateValue(storeValue ?? inputValue)
 		}
 	}
+	/** Update and save the value of this field */
 	handleUpdate(inputValue: any, storeValue?: any) {
 		this.handleUpdateButDontSave(inputValue)
 		this.updateValue(storeValue ?? inputValue)
 	}
+	/** Update the temporary value of this field, and save it */
 	handleUpdateEditing(newValue) {
 		this.handleUpdateButDontSave(newValue, true)
 		this.updateValue(newValue)
 	}
+	/** Update the temporary value of this field, marking whether is being edited */
 	handleUpdateButDontSave(newValue, editing = false) {
 		this.setState({
 			value: newValue,
 			editing,
 		})
 	}
+	/** Discard the temporary value of this field */
 	handleDiscard() {
 		this.setState({
 			value: this.getAttribute(),
@@ -222,39 +232,20 @@ const EditAttributeText = wrapEditAttribute(
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
-			this.handleBlur = this.handleBlur.bind(this)
-			this.handleEscape = this.handleEscape.bind(this)
 		}
-		handleChange(event) {
-			this.handleEdit(event.target.value)
-		}
-		handleBlur(event) {
-			this.handleUpdate(event.target.value)
-		}
-		handleEscape(event) {
-			const e = event as KeyboardEvent
-			if (e.key === 'Escape') {
-				this.handleDiscard()
-			}
+		private handleChange(value: string) {
+			this.handleUpdate(value)
 		}
 		render() {
 			return (
-				<input
-					type="text"
-					className={
-						'form-control' +
-						' ' +
-						(this.state.valueError ? 'error ' : '') +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '')
-					}
-					placeholder={this.props.label}
-					value={this.getEditAttribute() || ''}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
-					onKeyUp={this.handleEscape}
+				<TextInputControl
+					classNames={`${this.props.className || ''} ${this.state.valueError ? 'error ' : ''}`}
+					modifiedClassName={this.props.modifiedClassName}
 					disabled={this.props.disabled}
+					placeholder={this.props.label}
+					updateOnKey={this.props.updateOnKey}
+					value={this.getAttribute() ?? ''}
+					handleUpdate={this.handleChange}
 				/>
 			)
 		}
@@ -266,45 +257,20 @@ const EditAttributeMultilineText = wrapEditAttribute(
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
-			this.handleBlur = this.handleBlur.bind(this)
-			this.handleEscape = this.handleEscape.bind(this)
 		}
-		handleChange(event) {
-			this.handleEdit(event.target.value)
-		}
-		handleBlur(event) {
-			this.handleUpdate(event.target.value)
-		}
-		handleEscape(event) {
-			const e = event as KeyboardEvent
-			if (e.key === 'Escape') {
-				this.handleDiscard()
-			}
-		}
-		handleEnterKey(event) {
-			const e = event as KeyboardEvent
-			if (e.key === 'Enter') {
-				e.stopPropagation()
-			}
+		private handleChange(value: string[]) {
+			this.handleEdit(joinLines(value)) // as single string
 		}
 		render() {
 			return (
-				<textarea
-					className={
-						'form-control' +
-						' ' +
-						(this.state.valueError ? 'error ' : '') +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '')
-					}
-					placeholder={this.props.label}
-					value={this.getEditAttribute() || ''}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
-					onKeyUp={this.handleEscape}
-					onKeyPress={this.handleEnterKey}
+				<MultiLineTextInputControl
+					classNames={`${this.props.className || ''} ${this.state.valueError ? 'error ' : ''}`}
+					modifiedClassName={this.props.modifiedClassName}
 					disabled={this.props.disabled}
+					placeholder={this.props.label}
+					updateOnKey={this.props.updateOnKey}
+					value={splitValueIntoLines(this.getAttribute())}
+					handleUpdate={this.handleChange}
 				/>
 			)
 		}
@@ -316,42 +282,20 @@ const EditAttributeInt = wrapEditAttribute(
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
-			this.handleBlur = this.handleBlur.bind(this)
 		}
-		getValue(event) {
-			return parseInt(event.target.value, 10)
-		}
-		handleChange(event) {
-			// this.handleEdit(this.getValue(event))
-			const v = this.getValue(event)
-			_.isNaN(v) ? this.handleUpdateButDontSave(v, true) : this.handleUpdateEditing(v)
-		}
-		handleBlur(event) {
-			const v = this.getValue(event)
-			_.isNaN(v) ? this.handleDiscard() : this.handleUpdate(v)
-		}
-		getEditAttributeNumber() {
-			let val = this.getEditAttribute()
-			if (_.isNaN(val)) val = ''
-			return val
+		private handleChange(value: number) {
+			this.handleUpdate(value)
 		}
 		render() {
 			return (
-				<input
-					type="number"
-					step="1"
-					className={
-						'form-control' +
-						' ' +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '')
-					}
-					placeholder={this.props.label}
-					value={this.getEditAttributeNumber()}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
+				<IntInputControl
+					classNames={this.props.className || ''}
+					modifiedClassName={this.props.modifiedClassName}
 					disabled={this.props.disabled}
+					placeholder={this.props.label}
+					updateOnKey={this.props.updateOnKey}
+					value={this.getAttribute() ?? ''}
+					handleUpdate={this.handleChange}
 				/>
 			)
 		}
@@ -363,42 +307,20 @@ const EditAttributeFloat = wrapEditAttribute(
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
-			this.handleBlur = this.handleBlur.bind(this)
 		}
-		getValue(event) {
-			return parseFloat(event.target.value.replace(',', '.'))
-		}
-		handleChange(event) {
-			// this.handleEdit(this.getValue(event))
-			const v = this.getValue(event)
-			_.isNaN(v) ? this.handleUpdateButDontSave(v, true) : this.handleUpdateEditing(v)
-		}
-		handleBlur(event) {
-			const v = this.getValue(event)
-			_.isNaN(v) ? this.handleDiscard() : this.handleUpdate(v)
-		}
-		getEditAttributeNumber() {
-			let val = this.getEditAttribute()
-			if (_.isNaN(val)) val = ''
-			return val
+		private handleChange(value: number) {
+			this.handleUpdate(value)
 		}
 		render() {
 			return (
-				<input
-					type="number"
-					step="0.1"
-					className={
-						'form-control' +
-						' ' +
-						(this.props.className || '') +
-						' ' +
-						(this.state.editing ? this.props.modifiedClassName || '' : '')
-					}
-					placeholder={this.props.label}
-					value={this.getEditAttributeNumber()}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
+				<FloatInputControl
+					classNames={this.props.className || ''}
+					modifiedClassName={this.props.modifiedClassName}
 					disabled={this.props.disabled}
+					placeholder={this.props.label}
+					updateOnKey={this.props.updateOnKey}
+					value={this.getAttribute() ?? ''}
+					handleUpdate={this.handleChange}
 				/>
 			)
 		}
@@ -411,38 +333,23 @@ const EditAttributeCheckbox = wrapEditAttribute(
 
 			this.handleChange = this.handleChange.bind(this)
 		}
-		isChecked() {
-			return !!this.getEditAttribute()
-		}
-		handleChange() {
-			this.handleUpdate(!this.state.value)
+		private handleChange(value: boolean) {
+			this.handleUpdate(value)
 		}
 		render() {
+			const classNames = _.compact([
+				this.props.className,
+				this.state.editing ? this.props.modifiedClassName : undefined,
+			]).join(' ')
+
 			return (
 				<label>
-					<span
-						className={
-							'checkbox' +
-							' ' +
-							(this.props.className || '') +
-							' ' +
-							(this.state.editing ? this.props.modifiedClassName || '' : '')
-						}
-					>
-						<input
-							type="checkbox"
-							className="form-control"
-							checked={this.isChecked()}
-							onChange={this.handleChange}
-							disabled={this.props.disabled}
-						/>
-						<span className="checkbox-checked">
-							<FontAwesomeIcon icon={faCheckSquare} />
-						</span>
-						<span className="checkbox-unchecked">
-							<FontAwesomeIcon icon={faSquare} />
-						</span>
-					</span>
+					<CheckboxControl
+						classNames={classNames}
+						value={!!this.getAttribute()}
+						handleUpdate={this.handleChange}
+						disabled={this.props.disabled}
+					/>
 				</label>
 			)
 		}
@@ -457,7 +364,9 @@ const EditAttributeToggle = wrapEditAttribute(
 			return !!this.getEditAttribute()
 		}
 		handleChange = () => {
-			this.handleUpdate(!this.state.value)
+			if (!this.props.disabled) {
+				this.handleUpdate(!this.state.value)
+			}
 		}
 		handleClick = () => {
 			this.handleChange()
@@ -531,17 +440,6 @@ const EditAttributeSwitch = wrapEditAttribute(
 	}
 )
 
-interface EditAttributeDropdownOption {
-	value: any
-	name: string
-	i?: number
-}
-
-interface EditAttributeDropdownOptionsResult {
-	options: EditAttributeDropdownOption[]
-	currentOptionMissing: boolean
-}
-
 const EditAttributeDropdown = wrapEditAttribute(
 	class EditAttributeDropdown extends EditAttributeBase {
 		constructor(props) {
@@ -549,120 +447,20 @@ const EditAttributeDropdown = wrapEditAttribute(
 
 			this.handleChange = this.handleChange.bind(this)
 		}
-		handleChange(event) {
-			// because event.target.value is always a string, use the original value instead
-			const option = _.find(this.getOptions().options, (o) => {
-				return o.value + '' === event.target.value + ''
-			})
-
-			const value = option ? option.value : event.target.value
-
+		handleChange(value: string) {
 			this.handleUpdate(this.props.optionsAreNumbers ? parseInt(value, 10) : value)
 		}
-		getOptions(addOptionForCurrentValue?: boolean): EditAttributeDropdownOptionsResult {
-			const options: EditAttributeDropdownOption[] = []
-
-			if (Array.isArray(this.props.options)) {
-				// is it an enum?
-				for (const val of this.props.options) {
-					if (typeof val === 'object') {
-						options.push({
-							name: val.name,
-							value: val.value,
-						})
-					} else {
-						options.push({
-							name: val,
-							value: val,
-						})
-					}
-				}
-			} else if (typeof this.props.options === 'object') {
-				// Is options an enum?
-				const keys = Object.keys(this.props.options)
-				const first = this.props.options[keys[0]]
-				if (this.props.options[first] + '' === keys[0] + '') {
-					// is an enum, only pick
-					for (const key in this.props.options) {
-						if (!_.isNaN(parseInt(key, 10))) {
-							// key is a number (the key)
-							const enumValue = this.props.options[key]
-							const enumKey = this.props.options[enumValue]
-							options.push({
-								name: enumValue,
-								value: enumKey,
-							})
-						}
-					}
-				} else {
-					for (const key in this.props.options) {
-						const val = this.props.options[key]
-						if (Array.isArray(val)) {
-							options.push({
-								name: key,
-								value: val,
-							})
-						} else {
-							options.push({
-								name: key + ': ' + val,
-								value: val,
-							})
-						}
-					}
-				}
-			}
-
-			const currentValue = this.getAttribute()
-			const currentOption = options.find((o) =>
-				Array.isArray(o.value) ? o.value.includes(currentValue) : o.value === currentValue
-			)
-
-			if (addOptionForCurrentValue) {
-				if (!currentOption) {
-					// if currentOption not found, then add it to the list:
-					options.push({
-						name: 'Value: ' + currentValue,
-						value: currentValue,
-					})
-				}
-			}
-
-			for (let i = 0; i < options.length; i++) {
-				options[i].i = i
-			}
-
-			return { options, currentOptionMissing: !currentOption }
-		}
 		render() {
-			const options = this.getOptions(true)
+			const options = getDropdownInputOptions<string>(this.props.options)
+
 			return (
-				<select
-					className={ClassNames(
-						'form-control',
-						this.props.className,
-						this.state.editing && this.props.modifiedClassName,
-						options.currentOptionMissing && 'option-missing'
-					)}
-					value={this.getAttributeText()}
-					onChange={this.handleChange}
+				<DropdownInputControl
+					classNames={this.props.className}
 					disabled={this.props.disabled}
-				>
-					{options.options.map((o, j) =>
-						Array.isArray(o.value) ? (
-							<optgroup key={j} label={o.name}>
-								{o.value.map((v, i) => (
-									<option key={i} value={v + ''}>
-										{v}
-									</option>
-								))}
-							</optgroup>
-						) : (
-							<option key={o.i} value={o.value + ''}>
-								{o.name}
-							</option>
-						)
-					)}
-				</select>
+					value={this.getAttribute()}
+					options={options}
+					handleUpdate={this.handleChange}
+				/>
 			)
 		}
 	}
@@ -703,78 +501,8 @@ const EditAttributeDropdownText = wrapEditAttribute(
 				this.handleDiscard()
 			}
 		}
-		getOptions(addOptionForCurrentValue?: boolean) {
-			const options: Array<{ value: any; name: string; i?: number }> = []
-
-			if (Array.isArray(this.props.options)) {
-				// is it an enum?
-				for (const val of this.props.options) {
-					if (typeof val === 'object') {
-						options.push({
-							name: val.name,
-							value: val.value,
-						})
-					} else {
-						options.push({
-							name: val,
-							value: val,
-						})
-					}
-				}
-			} else if (typeof this.props.options === 'object') {
-				// Is options an enum?
-				const keys = Object.keys(this.props.options)
-				const first = this.props.options[keys[0]]
-				if (this.props.options[first] + '' === keys[0] + '') {
-					// is an enum, only pick
-					for (const key in this.props.options) {
-						if (!_.isNaN(parseInt(key, 10))) {
-							// key is a number (the key)
-							const enumValue = this.props.options[key]
-							const enumKey = this.props.options[enumValue]
-							options.push({
-								name: enumValue,
-								value: enumKey,
-							})
-						}
-					}
-				} else {
-					for (const key in this.props.options) {
-						const val = this.props.options[key]
-						if (Array.isArray(val)) {
-							options.push({
-								name: key,
-								value: val,
-							})
-						} else {
-							options.push({
-								name: key + ': ' + val,
-								value: val,
-							})
-						}
-					}
-				}
-			}
-
-			if (addOptionForCurrentValue) {
-				const currentValue = this.getAttribute()
-				const currentOption = options.find((o) =>
-					Array.isArray(o.value) ? o.value.includes(currentValue) : o.value === currentValue
-				)
-				if (!currentOption) {
-					// if currentOption not found, then add it to the list:
-					options.push({
-						name: 'Value: ' + currentValue,
-						value: currentValue,
-					})
-				}
-			}
-
-			for (let i = 0; i < options.length; i++) {
-				options[i].i = i
-			}
-
-			return options
+		getOptions() {
+			return getDropdownInputOptions(this.props.options)
 		}
 		render() {
 			return (
@@ -800,7 +528,7 @@ const EditAttributeDropdownText = wrapEditAttribute(
 					/>
 
 					<datalist id={this._id}>
-						{this.getOptions(false).map((o, j) =>
+						{this.getOptions().map((o, j) =>
 							Array.isArray(o.value) ? (
 								<optgroup key={j} label={o.name}>
 									{o.value.map((v, i) => (
@@ -905,82 +633,26 @@ const EditAttributeJson = wrapEditAttribute(
 			super(props)
 
 			this.handleChange = this.handleChange.bind(this)
-			this.handleBlur = this.handleBlur.bind(this)
-			this.handleEscape = this.handleEscape.bind(this)
 		}
-		isJson(str: string) {
-			try {
-				const parsed = JSON.parse(str)
-				if (typeof parsed === 'object') return { parsed: parsed }
-			} catch (err) {
-				// ignore
-			}
-			return false
-		}
-		handleChange(event) {
-			const v = event.target.value
-
-			const jsonObj = this.isJson(v)
-			if (jsonObj) {
-				const storeValue = this.props.storeJsonAsObject ? jsonObj.parsed : v
-				this.handleEdit(v, storeValue)
-				this.setState({
-					valueError: false,
-				})
-			} else {
-				this.handleUpdateButDontSave(v, true)
-			}
-		}
-		handleBlur(event) {
-			let v = event.target.value
-			if (v === '') {
-				v = '{}'
-			}
-			const jsonObj = this.isJson(v)
-			if (jsonObj) {
-				const storeValue = this.props.storeJsonAsObject ? jsonObj.parsed : v
-				this.handleUpdate(v, storeValue)
-				this.setState({
-					valueError: false,
-				})
-			} else {
-				this.handleUpdateButDontSave(v, true)
-				this.setState({
-					valueError: true,
-				})
-			}
-		}
-		handleEscape(event) {
-			const e = event as KeyboardEvent
-			if (e.key === 'Escape') {
-				this.handleDiscard()
-			}
-		}
-		getAttribute() {
-			const value = super.getAttribute()
-			if (this.props.storeJsonAsObject) {
-				return value ? JSON.stringify(value, null, 2) : value
-			} else return value
+		private handleChange(value: object) {
+			const storeValue = this.props.storeJsonAsObject ? value : JSON.stringify(value, undefined, 2)
+			this.handleUpdate(storeValue)
 		}
 		render() {
+			const value = this.props.storeJsonAsObject ? this.getAttribute() : tryParseJson(this.getAttribute())?.parsed
+
 			return (
-				<input
-					type="text"
-					className={ClassNames(
-						'form-control',
-						this.props.className,
-						this.state.valueError && this.props.invalidClassName
-							? this.props.invalidClassName
-							: this.state.editing
-							? this.props.modifiedClassName || ''
-							: ''
-					)}
-					placeholder={this.props.label}
-					value={this.getEditAttribute() || ''}
-					onChange={this.handleChange}
-					onBlur={this.handleBlur}
-					onKeyUp={this.handleEscape}
+				<JsonTextInputControl
+					classNames={`${this.props.className || ''} ${
+						this.state.valueError ? `${this.props.invalidClassName || 'error'} ` : ''
+					}`}
+					invalidClassName={this.props.invalidClassName}
+					modifiedClassName={this.props.modifiedClassName}
 					disabled={this.props.disabled}
+					placeholder={this.props.label}
+					updateOnKey={this.props.updateOnKey}
+					value={value}
+					handleUpdate={this.handleChange}
 				/>
 			)
 		}
