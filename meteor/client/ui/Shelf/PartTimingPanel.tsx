@@ -15,14 +15,14 @@ import { getAllowSpeaking } from '../../lib/localStorage'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
 import { CurrentPartElapsed } from '../RundownView/RundownTiming/CurrentPartElapsed'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
 
 interface IPartTimingPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutPartTiming
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 }
 
 interface IPartTimingPanelTrackedProps {

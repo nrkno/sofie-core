@@ -1,27 +1,26 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Accounts } from 'meteor/accounts-base'
-import { makePromise, unprotectString, waitForPromise, protectString, waitTime } from '../../lib/lib'
+import { unprotectString, protectString, waitTime, waitForPromise } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { NewUserAPI, UserAPIMethods, createUser } from '../../lib/api/user'
 import { registerClassToMeteorMethods } from '../methods'
 import { SystemWriteAccess } from '../security/system'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { logNotAllowed } from '../../server/security/lib/lib'
-import { User, UserId, Users } from '../../lib/collections/Users'
+import { User, Users } from '../../lib/collections/Users'
 import { createOrganization } from './organizations'
-import { DBOrganizationBase, Organizations, OrganizationId } from '../../lib/collections/Organization'
+import { DBOrganizationBase, Organizations } from '../../lib/collections/Organization'
 import { resetCredentials } from '../security/lib/credentials'
+import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-export function enrollUser(email: string, name: string): UserId {
+async function enrollUser(email: string, name: string): Promise<UserId> {
 	triggerWriteAccessBecauseNoCheckNecessary()
 
-	const id = waitForPromise(
-		createUser({
-			email: email,
-			profile: { name: name },
-		})
-	)
+	const id = await createUser({
+		email: email,
+		profile: { name: name },
+	})
 	try {
 		Accounts.sendEnrollmentEmail(unprotectString(id), email)
 	} catch (error) {
@@ -37,7 +36,7 @@ function afterCreateNewUser(userId: UserId, organization: DBOrganizationBase): O
 	sendVerificationEmail(userId)
 
 	// Create an organization for the user:
-	const orgId = createOrganization(organization)
+	const orgId = waitForPromise(createOrganization(organization))
 	// Add user to organization:
 	Users.update(userId, { $set: { organizationId: orgId } })
 	Organizations.update(orgId, {
@@ -70,7 +69,7 @@ function sendVerificationEmail(userId: UserId) {
 	}
 }
 
-export function requestResetPassword(email: string): boolean {
+async function requestResetPassword(email: string): Promise<boolean> {
 	triggerWriteAccessBecauseNoCheckNecessary()
 	const meteorUser = Accounts.findUserByEmail(email) as unknown
 	const user = meteorUser as User
@@ -79,24 +78,24 @@ export function requestResetPassword(email: string): boolean {
 	return true
 }
 
-export function removeUser(context: MethodContext) {
+async function removeUser(context: MethodContext) {
 	triggerWriteAccess()
 	if (!context.userId) throw new Meteor.Error(403, `Not logged in`)
-	const access = SystemWriteAccess.currentUser(context.userId, context)
+	const access = await SystemWriteAccess.currentUser(context.userId, context)
 	if (!access) return logNotAllowed('Current user', 'Invalid user id or permissions')
-	Users.remove(context.userId)
+	await Users.removeAsync(context.userId)
 	return true
 }
 
 class ServerUserAPI extends MethodContextAPI implements NewUserAPI {
 	async enrollUser(email: string, name: string) {
-		return makePromise(() => enrollUser(email, name))
+		return enrollUser(email, name)
 	}
 	async requestPasswordReset(email: string) {
-		return makePromise(() => requestResetPassword(email))
+		return requestResetPassword(email)
 	}
 	async removeUser() {
-		return makePromise(() => removeUser(this))
+		return removeUser(this)
 	}
 }
 
@@ -105,7 +104,7 @@ registerClassToMeteorMethods(UserAPIMethods, ServerUserAPI, false)
 Accounts.onCreateUser((options, user) => {
 	user.profile = options.profile
 
-	// @ts-ignore hack, add the property "createOrganization" to trigger creation of an org
+	// @ts-expect-error hack, add the property "createOrganization" to trigger creation of an org
 	const createOrganization = options.createOrganization
 	if (createOrganization) {
 		Meteor.defer(() => {

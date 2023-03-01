@@ -56,28 +56,23 @@ export async function updateExpectedPlayoutItemsOnRundown(context: JobContext, c
 		cache.RundownBaselineAdLibActions.get(),
 	])
 
-	for (const piece of cache.Pieces.findFetch({})) {
+	for (const piece of cache.Pieces.findAll(null)) {
 		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, piece.startPartId, piece))
 	}
-	for (const piece of cache.AdLibPieces.findFetch({})) {
+	for (const piece of cache.AdLibPieces.findAll(null)) {
 		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, piece.partId, piece))
 	}
-	for (const piece of baselineAdlibPieces.findFetch({})) {
+	for (const piece of baselineAdlibPieces.findAll(null)) {
 		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, undefined, piece))
 	}
-	for (const action of cache.AdLibActions.findFetch({})) {
+	for (const action of cache.AdLibActions.findAll(null)) {
 		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, action.partId, action))
 	}
-	for (const action of baselineAdlibActions.findFetch({})) {
+	for (const action of baselineAdlibActions.findAll(null)) {
 		expectedPlayoutItems.push(...extractExpectedPlayoutItems(studioId, rundownId, undefined, action))
 	}
 
-	saveIntoCache<ExpectedPlayoutItem>(
-		context,
-		cache.ExpectedPlayoutItems,
-		{ baseline: { $exists: false } },
-		expectedPlayoutItems
-	)
+	saveIntoCache<ExpectedPlayoutItem>(context, cache.ExpectedPlayoutItems, (p) => !p.baseline, expectedPlayoutItems)
 }
 
 export function updateBaselineExpectedPlayoutItemsOnRundown(
@@ -88,7 +83,7 @@ export function updateBaselineExpectedPlayoutItemsOnRundown(
 	saveIntoCache<ExpectedPlayoutItem>(
 		context,
 		cache.ExpectedPlayoutItems,
-		{ baseline: 'rundown' },
+		(p) => p.baseline === 'rundown',
 		(items || []).map((item): ExpectedPlayoutItemRundown => {
 			return {
 				...item,

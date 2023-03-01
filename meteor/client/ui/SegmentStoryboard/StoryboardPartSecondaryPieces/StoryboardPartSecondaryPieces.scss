@@ -108,6 +108,10 @@ $source-layer-margin: 0.2rem;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
+
+	&::before {
+		z-index: -1;
+	}
 }
 
 .part__piece__right-align-label-container {

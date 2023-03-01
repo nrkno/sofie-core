@@ -3,6 +3,7 @@ import type { Sorensen } from '@sofie-automation/sorensen'
 import CoreIcons from '@nrk/core-icons/jsx'
 import Escape from 'react-escape'
 import { SorensenContext } from '../../../SorensenContext'
+import { Settings } from '../../../../../lib/Settings'
 
 export interface IModalAttributes {
 	show?: boolean
@@ -35,11 +36,11 @@ export class Modal extends React.Component<IModalAttributes> {
 
 	bindKeys = () => {
 		if (this.props.show) {
-			this.sorensen.bind('Enter', this.preventDefault, {
+			this.sorensen.bind(Settings.confirmKeyCode, this.preventDefault, {
 				up: false,
 				prepend: true,
 			})
-			this.sorensen.bind('Enter', this.handleKey, {
+			this.sorensen.bind(Settings.confirmKeyCode, this.handleKey, {
 				up: true,
 				prepend: true,
 			})
@@ -57,8 +58,8 @@ export class Modal extends React.Component<IModalAttributes> {
 	}
 
 	unbindKeys = () => {
-		this.sorensen.unbind('Enter', this.preventDefault)
-		this.sorensen.unbind('Enter', this.handleKey)
+		this.sorensen.unbind(Settings.confirmKeyCode, this.preventDefault)
+		this.sorensen.unbind(Settings.confirmKeyCode, this.handleKey)
 		this.sorensen.unbind('Escape', this.preventDefault)
 		this.sorensen.unbind('Escape', this.handleKey)
 	}

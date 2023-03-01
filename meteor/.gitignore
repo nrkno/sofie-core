@@ -5,3 +5,7 @@ src/**/*.js.map
 coverage
 settings.json
 server/_force_restart.js
+
+# Ignore TV2-features:
+client/styles/tv2
+client/ui/Shelf/Keyboard

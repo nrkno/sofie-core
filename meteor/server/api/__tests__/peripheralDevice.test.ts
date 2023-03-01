@@ -7,11 +7,10 @@ import {
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
-import { Rundowns, RundownId } from '../../../lib/collections/Rundowns'
-import { Segments, SegmentId } from '../../../lib/collections/Segments'
+import { Rundowns } from '../../../lib/collections/Rundowns'
+import { Segments } from '../../../lib/collections/Segments'
 import { Parts } from '../../../lib/collections/Parts'
 import { EmptyPieceTimelineObjectsBlob, Pieces, PieceStatusCode } from '../../../lib/collections/Pieces'
-import { PeripheralDeviceAPI, PeripheralDeviceAPIMethods } from '../../../lib/api/peripheralDevice'
 import {
 	getCurrentTime,
 	literal,
@@ -26,7 +25,7 @@ import {
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { setLogLevel } from '../../logging'
-import { RundownPlaylists, RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import {
 	IngestDeviceSettings,
 	IngestDeviceSecretSettings,
@@ -47,7 +46,13 @@ import '../peripheralDevice'
 import { OnTimelineTriggerTimeProps, StudioJobFunc, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
-import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import {
+	PeripheralDeviceInitOptions,
+	PlayoutChangedType,
+	TimelineTriggerTimeResult,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import { RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
 
 const DEBUG = false
 
@@ -128,8 +133,8 @@ describe('test peripheralDevice general API methods', () => {
 			},
 			externalId: '',
 			name: 'Mock',
-			sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-			outputLayerId: env.showStyleBase.outputLayers[0]._id,
+			sourceLayerId: Object.keys(env.showStyleBase.sourceLayersWithOverrides.defaults)[0],
+			outputLayerId: Object.keys(env.showStyleBase.outputLayersWithOverrides.defaults)[0],
 			startPartId: protectString('part000'),
 			startSegmentId: segmentID,
 			startRundownId: rundownID,
@@ -176,7 +181,7 @@ describe('test peripheralDevice general API methods', () => {
 
 		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
 
-		const options: PeripheralDeviceAPI.InitOptions = {
+		const options: PeripheralDeviceInitOptions = {
 			category: PeripheralDeviceCategory.INGEST,
 			type: PeripheralDeviceType.MOS,
 			subType: 'mos_connection',
@@ -401,7 +406,7 @@ describe('test peripheralDevice general API methods', () => {
 
 		QueueStudioJobSpy.mockImplementation(async () => CreateFakeResult(Promise.resolve(null)))
 
-		const timelineTriggerTimeResult: PeripheralDeviceAPI.TimelineTriggerTimeResult = []
+		const timelineTriggerTimeResult: TimelineTriggerTimeResult = []
 		for (let i = 0; i < 10; i++) {
 			timelineTriggerTimeResult.push({
 				id: getRandomString(),
@@ -507,7 +512,7 @@ describe('test peripheralDevice general API methods', () => {
 
 	// Note: this test fails, due to a backwards-compatibility hack in #c579c8f0
 	// testInFiber('initialize with bad arguments', () => {
-	// 	let options: PeripheralDeviceAPI.InitOptions = {
+	// 	let options: PeripheralDeviceInitOptions = {
 	// 		category: PeripheralDeviceCategory.INGEST,
 	// 		type: PeripheralDeviceType.MOS,
 	// 		subType: 'mos_connection',

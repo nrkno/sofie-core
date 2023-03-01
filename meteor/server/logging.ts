@@ -8,7 +8,7 @@ import * as _ from 'underscore'
 export function getLogLevel(): LogLevel {
 	return logger.level as LogLevel
 }
-export function setLogLevel(level: LogLevel, startup = false) {
+export function setLogLevel(level: LogLevel, startup = false): void {
 	if (logger.level !== level || startup) {
 		logger.level = level
 		if (transports.console) {
@@ -22,6 +22,10 @@ export function setLogLevel(level: LogLevel, startup = false) {
 			console.log(`Setting logger level to "${level}"`)
 		}
 	}
+}
+
+export function getEnvLogLevel(): LogLevel | undefined {
+	return Object.values(LogLevel).find((level) => level === process.env.LOG_LEVEL)
 }
 
 // @todo: remove this and do a PR to https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/winston
@@ -98,19 +102,18 @@ if (logToFile || logPath !== '') {
 			leadingZeros(time.getSeconds(), 2)
 		const logDirectory = getAbsolutePath() + '/.meteor/local/log'
 		logPath = logDirectory + '/log_' + startDate + '.log'
-		// let logPath = './log/'
 
 		if (!fs.existsSync(logDirectory)) {
 			fs.mkdirSync(logDirectory)
 		}
 	}
 	const transportConsole = new Winston.transports.Console({
-		level: process.env.LOG_LEVEL || 'verbose',
+		level: getEnvLogLevel() ?? 'verbose',
 		handleExceptions: true,
 		handleRejections: true,
 	})
 	const transportFile = new Winston.transports.File({
-		level: 'silly',
+		level: getEnvLogLevel() ?? 'silly',
 		handleExceptions: true,
 		handleRejections: true,
 		filename: logPath,
@@ -127,7 +130,7 @@ if (logToFile || logPath !== '') {
 	console.log('Logging to ' + logPath)
 } else {
 	const transportConsole = new Winston.transports.Console({
-		level: process.env.LOG_LEVEL || 'silly',
+		level: getEnvLogLevel() ?? 'silly',
 		handleExceptions: true,
 		handleRejections: true,
 	})

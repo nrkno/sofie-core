@@ -21,7 +21,7 @@ export class TimeJumpDetector {
 
 	constructor(private jumpCheckInterval: number, private onJumpDetected: (syncDiff: number) => void) {}
 
-	public start() {
+	public start(): void {
 		Meteor.setInterval(() => {
 			if (Meteor.isServer || Meteor.status().connected) {
 				this.detectTimeJump()
@@ -36,7 +36,7 @@ export class TimeJumpDetector {
 
 	/** Returns a Monotonic Time, which is not influenced by any NTP-sync  */
 	private static getMonotonicTime() {
-		return Meteor.isServer ? Number(process.hrtime.bigint() / BigInt(1000000)) : Date.now()
+		return Meteor.isServer ? Number(process.hrtime.bigint() / BigInt(1000000)) : performance.now()
 	}
 
 	private detectTimeJump() {
@@ -70,15 +70,16 @@ if (Meteor.isServer) {
 	const updateDiffTime = (force?: boolean) => {
 		// Calculate an "adjusted standard deviation", something that increases over time.
 		// Using this we can decide wether a new measurement is better or worse than previous one. (the lower, the better)
-		const currentSyncDegradation = systemTime.stdDev + (Date.now() - systemTime.lastSync) * ASSUMED_CLOCK_DRIFT
+		const currentSyncDegradation =
+			systemTime.stdDev + (performance.now() - systemTime.lastSync) * ASSUMED_CLOCK_DRIFT
 
 		// If the sync is assumed to have degraded enough, it's time to resync
 		if (currentSyncDegradation > TARGET_TIME_SYNC_QUALITY || force) {
-			const sentTime = Date.now()
+			const sentTime = performance.now()
 			MeteorCall.peripheralDevice
 				.getTimeDiff()
 				.then((stat) => {
-					const replyTime = Date.now()
+					const replyTime = performance.now()
 
 					const diff = Math.round(Date.now() + (sentTime - replyTime) / 2 - stat.currentTime)
 					const stdDev = Math.abs(Math.round(sentTime - replyTime)) / 2 // Not really a standard deviation calculation, but it's what we can do with just one measuring point..
@@ -97,7 +98,7 @@ if (Meteor.isServer) {
 						// Store the result into the global variable `systemTime` (used in getCurrentTime()):
 						systemTime.diff = diff
 						systemTime.stdDev = stdDev
-						systemTime.lastSync = Date.now()
+						systemTime.lastSync = performance.now()
 						systemTime.hasBeenSet = true
 						systemTime.timeOriginDiff = getCurrentTime() - (performance.timeOrigin + performance.now())
 					}

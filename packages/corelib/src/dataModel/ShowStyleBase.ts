@@ -1,5 +1,5 @@
-import { IBlueprintShowStyleBase, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { ProtectedStringProperties } from '../protectedString'
+import { IBlueprintConfig, IOutputLayer, ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { ObjectWithOverrides } from '../settings/objectWithOverrides'
 import { BlueprintId, OrganizationId, ShowStyleBaseId } from './Ids'
 
 export interface HotkeyDefinition {
@@ -20,7 +20,11 @@ export interface HotkeyDefinition {
 	up?: (e: any) => void
 	down?: (e: any) => void
 }
-export interface DBShowStyleBase extends ProtectedStringProperties<IBlueprintShowStyleBase, '_id' | 'blueprintId'> {
+
+export type OutputLayers = Record<string, IOutputLayer | undefined>
+export type SourceLayers = Record<string, ISourceLayer | undefined>
+
+export interface DBShowStyleBase {
 	_id: ShowStyleBaseId
 
 	/** Name of this show style */
@@ -32,6 +36,14 @@ export interface DBShowStyleBase extends ProtectedStringProperties<IBlueprintSho
 
 	/** A list of hotkeys, used to display a legend of hotkeys for the user in GUI */
 	hotkeyLegend?: Array<HotkeyDefinition>
+
+	/** "Outputs" in the UI */
+	outputLayersWithOverrides: ObjectWithOverrides<OutputLayers>
+	/** "Layers" in the GUI */
+	sourceLayersWithOverrides: ObjectWithOverrides<SourceLayers>
+
+	/** Config values are used by the Blueprints */
+	blueprintConfigWithOverrides: ObjectWithOverrides<IBlueprintConfig>
 
 	_rundownVersionHash: string
 }

@@ -8,10 +8,8 @@ import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/Reac
 import {
 	RundownPlaylist,
 	RundownPlaylists,
-	RundownPlaylistId,
 	RundownPlaylistCollectionUtil,
 } from '../../../lib/collections/RundownPlaylists'
-import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { parse as queryStringParse } from 'query-string'
 
 import { Spinner } from '../../lib/Spinner'
@@ -20,13 +18,14 @@ import { objectPathGet, firstIfArray, literal, protectString } from '../../../li
 import { PrompterData, PrompterAPI, PrompterDataPart } from '../../../lib/api/prompter'
 import { PrompterControlManager } from './controller/manager'
 import { PubSub } from '../../../lib/api/pubsub'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { documentTitle } from '../../lib/DocumentTitleProvider'
 import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
 import { OverUnderTimer } from './OverUnderTimer'
 import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
-import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, PieceId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { UIStudios } from '../Collections'
+import { UIStudio } from '../../../lib/api/studios'
 
 const DEFAULT_UPDATE_THROTTLE = 250 //ms
 const PIECE_MISSING_UPDATE_THROTTLE = 2000 //ms
@@ -85,7 +84,7 @@ interface IProps {
 
 interface ITrackedProps {
 	rundownPlaylist?: RundownPlaylist
-	studio?: Studio
+	studio?: UIStudio
 	studioId?: StudioId
 	// isReady: boolean
 }
@@ -210,9 +209,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 	componentDidMount() {
 		if (this.props.studioId) {
-			this.subscribe(PubSub.studios, {
-				_id: this.props.studioId,
-			})
+			this.subscribe(PubSub.uiStudio, this.props.studioId)
 
 			this.subscribe(PubSub.rundownPlaylists, {
 				activationId: { $exists: true },
@@ -233,9 +230,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				}
 			) as Pick<RundownPlaylist, '_id'> | undefined
 			if (playlist?._id) {
-				this.subscribe(PubSub.rundowns, {
-					playlistId: playlist._id,
-				})
+				this.subscribe(PubSub.rundowns, [playlist._id], null)
 			}
 		})
 
@@ -558,7 +553,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 }
 export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
 	const studioId = objectPathGet(props, 'match.params.studioId')
-	const studio = studioId ? Studios.findOne(studioId) : undefined
+	const studio = studioId ? UIStudios.findOne(studioId) : undefined
 
 	const rundownPlaylist = RundownPlaylists.findOne(
 		{
@@ -609,7 +604,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 		}
 
 		componentDidMount() {
-			this.subscribe(PubSub.rundowns, { playlistId: this.props.rundownPlaylistId })
+			this.subscribe(PubSub.rundowns, [this.props.rundownPlaylistId], null)
 
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(this.props.rundownPlaylistId, {
@@ -623,14 +618,8 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 					this.subscribe(PubSub.segments, {
 						rundownId: { $in: rundownIDs },
 					})
-					this.subscribe(PubSub.parts, {
-						rundownId: { $in: rundownIDs },
-					})
-					this.subscribe(PubSub.partInstances, {
-						rundownId: { $in: rundownIDs },
-						playlistActivationId: playlist.activationId,
-						reset: { $ne: true },
-					})
+					this.subscribe(PubSub.parts, rundownIDs)
+					this.subscribe(PubSub.partInstances, rundownIDs, playlist.activationId)
 					this.subscribe(PubSub.pieces, {
 						startRundownId: { $in: rundownIDs },
 					})
@@ -651,11 +640,9 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 						},
 					}
 				).fetch() as Pick<Rundown, '_id' | 'showStyleBaseId'>[]
-				this.subscribe(PubSub.showStyleBases, {
-					_id: {
-						$in: rundowns.map((rundown) => rundown.showStyleBaseId),
-					},
-				})
+				for (const rundown of rundowns) {
+					this.subscribe(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
+				}
 			})
 		}
 

@@ -1,4 +1,4 @@
-import { OrganizationId } from '../../lib/collections/Organization'
+import { OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface NewOrganizationAPI {
 	removeOrganization(organizationId: OrganizationId): Promise<void>

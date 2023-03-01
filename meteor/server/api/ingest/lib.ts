@@ -1,17 +1,13 @@
 import { Meteor } from 'meteor/meteor'
 import { getHash, getCurrentTime, protectString, stringifyError } from '../../../lib/lib'
-import { StudioId } from '../../../lib/collections/Studios'
 import {
 	PeripheralDevice,
 	PeripheralDevices,
 	getStudioIdFromDevice,
-	PeripheralDeviceId,
 	PeripheralDeviceCategory,
 } from '../../../lib/collections/PeripheralDevices'
-import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
-import { SegmentId } from '../../../lib/collections/Segments'
-import { PartId } from '../../../lib/collections/Parts'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import { MethodContext } from '../../../lib/api/methods'
 import { Credentials } from '../../security/lib/credentials'
@@ -19,6 +15,13 @@ import { profiler } from '../profiler'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { QueueIngestJob } from '../../worker/worker'
 import { checkStudioExists } from '../../../lib/collections/optimizations'
+import {
+	PartId,
+	PeripheralDeviceId,
+	RundownId,
+	SegmentId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 /**
  * Run an ingest operation via the worker.
@@ -63,14 +66,14 @@ export async function runIngestOperation<T extends keyof IngestJobFunc>(
 }
 
 /** Check Access and return PeripheralDevice, throws otherwise */
-export function checkAccessAndGetPeripheralDevice(
+export async function checkAccessAndGetPeripheralDevice(
 	deviceId: PeripheralDeviceId,
 	token: string | undefined,
 	context: Credentials | MethodContext
-): PeripheralDevice {
+): Promise<PeripheralDevice> {
 	const span = profiler.startSpan('lib.checkAccessAndGetPeripheralDevice')
 
-	const { device: peripheralDevice } = PeripheralDeviceContentWriteAccess.peripheralDevice(
+	const { device: peripheralDevice } = await PeripheralDeviceContentWriteAccess.peripheralDevice(
 		{ userId: context.userId, token },
 		deviceId
 	)
@@ -98,15 +101,15 @@ export function getPartId(rundownId: RundownId, partExternalId: string): PartId 
 	return protectString<PartId>(getHash(`${rundownId}_part_${partExternalId}`))
 }
 
-export function fetchStudioIdFromDevice(peripheralDevice: PeripheralDevice): StudioId {
+export async function fetchStudioIdFromDevice(peripheralDevice: PeripheralDevice): Promise<StudioId> {
 	const span = profiler.startSpan('mosDevice.lib.getStudioIdFromDevice')
 
-	const studioId = getStudioIdFromDevice(peripheralDevice)
+	const studioId = await getStudioIdFromDevice(peripheralDevice)
 	if (!studioId) throw new Meteor.Error(500, 'PeripheralDevice "' + peripheralDevice._id + '" has no Studio')
 
 	updateDeviceLastDataReceived(peripheralDevice._id)
 
-	const studioExists = checkStudioExists(studioId)
+	const studioExists = await checkStudioExists(studioId)
 	if (!studioExists) throw new Meteor.Error(404, `Studio "${studioId}" of device "${peripheralDevice._id}" not found`)
 
 	span?.end()

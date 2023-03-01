@@ -10,7 +10,7 @@ import {
 } from '@sofie-automation/corelib/dist/lib'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { startTransaction } from '../profiler'
-import { ChangeStream, MongoClient } from 'mongodb'
+import { MongoClient } from 'mongodb'
 import { createInvalidateWorkerDataCache, InvalidateWorkerDataCache } from './caches'
 import { logger } from '../logging'
 import { LocksManager } from '../locks'
@@ -25,6 +25,8 @@ export enum ThreadStatus {
 	Closed = 0,
 	PendingInit = 1,
 	Ready = 2,
+	/** This is _manual_, in the sense that it's not being handled by threadedClass, but by the worker-parent */
+	ManualRestarting = 3,
 }
 
 /** How often to check the job for reaching the max duration */
@@ -72,8 +74,6 @@ export abstract class WorkerParentBase {
 	readonly #jobManager: JobManager
 	readonly #jobStream: JobStream
 
-	readonly #streams: Array<ChangeStream<any>> = []
-
 	#pendingInvalidations: InvalidateWorkerDataCache | null = null
 
 	#threadStatus = ThreadStatus.Closed
@@ -116,6 +116,10 @@ export abstract class WorkerParentBase {
 			this.#jobStream.interrupt()
 		})
 		ThreadedClassManager.onEvent(workerThread, 'thread_closed', () => {
+			if (this.#threadStatus === ThreadStatus.ManualRestarting) {
+				// ignore closed events when manually restarting
+				return
+			}
 			logger.info(`Worker ${this.#prettyName} closed`)
 			this.#threadStatus = ThreadStatus.Closed
 			this.#jobStream.interrupt()
@@ -141,18 +145,40 @@ export abstract class WorkerParentBase {
 	/** Inform the worker thread about a lock change */
 	public abstract workerLockChange(lockId: string, locked: boolean): Promise<void>
 
+	private async tryRestartThread() {
+		// Ensure that the status is set to manual restart so that if this fails, we'll retry later:
+
+		this.#threadStatus = ThreadStatus.ManualRestarting
+		logger.info(`Worker ${this.#prettyName} manually restarting child`)
+
+		try {
+			await this.restartWorkerThread()
+			// Note: the 'restarted' event isn't fired when we are the ones restarting the worker.
+
+			// At this point we have successfully restarted.
+			logger.info(`Worker ${this.#prettyName} manually restarted`)
+			this.#threadInstanceId = getRandomString()
+
+			this.#threadStatus = ThreadStatus.PendingInit
+		} catch (error) {
+			logger.error(`Error when trying to restart worker thread ${this.#prettyName}: ${stringifyError(error)}`)
+		}
+	}
+
 	/** Start the loop feeding work to the worker */
 	protected startWorkerLoop(mongoUri: string): void {
 		if (!this.#watchdog) {
 			// Start a watchdog, to detect if a job has been running for longer than a max threshold. If it has, then we forcefully kill it
-			// ThreadedClass will propogate the completion error through the usual route
+			// ThreadedClass will propagate the completion error through the usual route
 			this.#watchdog = setInterval(() => {
 				if (this.#watchdogJobStarted && this.#watchdogJobStarted + WATCHDOG_KILL_DURATION < Date.now()) {
 					// A job has been running for too long.
 
 					logger.warn(`Force restarting worker thread: "${this.#queueName}"`)
 					this.#watchdogJobStarted = undefined
-					this.restartWorkerThread().catch((e) => {
+
+					// Force a restart now, to kill the running job
+					this.tryRestartThread().catch((e) => {
 						logger.warn(`Restarting worker thread "${this.#queueName}" error: ${stringifyError(e)}`)
 					})
 				}
@@ -185,15 +211,32 @@ export abstract class WorkerParentBase {
 									await sleep(100)
 									// Check again
 									continue
+								case ThreadStatus.ManualRestarting:
+									await this.tryRestartThread()
+
+									// Make sure the loop doesn't run as fast as possible:
+									await sleep(5000)
+
+									continue
 								case ThreadStatus.PendingInit:
 									logger.debug(`Re-initialising worker thread: "${this.#queueName}"`)
-									// Reinit the worker
-									await this.initWorker(mongoUri, this.#mongoDbName)
+									// Reinitialize the worker
+									try {
+										await this.initWorker(mongoUri, this.#mongoDbName)
+										logger.info(`Worker ${this.#prettyName} ready`)
+										this.#threadStatus = ThreadStatus.Ready
+									} catch (error) {
+										// Initializing failed, restart the child:
+										logger.error(
+											`Worker ${this.#prettyName} failed to initialize: ${stringifyError(error)}`
+										)
 
-									logger.info(`Worker ${this.#prettyName} ready`)
-									this.#threadStatus = ThreadStatus.Ready
+										this.#threadStatus = ThreadStatus.ManualRestarting
+										// Make sure the loop doesn't run as fast as possible:
+										await sleep(5000)
+									}
 
-									break
+									continue
 								case ThreadStatus.Ready:
 									// Thread is happy to accept a job
 									break
@@ -201,7 +244,8 @@ export abstract class WorkerParentBase {
 									assertNever(this.#threadStatus)
 							}
 
-							const job = await this.#jobStream.next() // Note: this blocks
+							// Wait for a job to appear in the queue:
+							await this.#jobStream.wait() // Note: this blocks
 
 							// Handle any invalidations
 							if (this.#pendingInvalidations) {
@@ -214,7 +258,8 @@ export abstract class WorkerParentBase {
 								await this.invalidateWorkerCaches(invalidations)
 							}
 
-							// we may not get a job even when blocking, so try again
+							// fetch the job, if there was one
+							const job = await this.#jobStream.pop()
 							if (job) {
 								// Ensure the lock is still good
 								// await job.extendLock(this.#workerId, 10000) // Future - ensure the job is locked for enough to process
@@ -228,8 +273,8 @@ export abstract class WorkerParentBase {
 								this.#watchdogJobStarted = startTime
 
 								try {
-									logger.debug(`Starting work ${job.id}: "${job.name}"`)
-									logger.verbose(`Payload ${job.id}: ${JSON.stringify(job.data)}`)
+									logger.verbose(`Starting work ${job.id}: "${job.name}"`)
+									logger.debug(`Payload ${job.id}: ${JSON.stringify(job.data)}`)
 
 									// Future - extend the job lock on an interval
 									let result: WorkerJobResult
@@ -278,7 +323,10 @@ export abstract class WorkerParentBase {
 								transaction?.end()
 							}
 						} catch (e) {
-							logger.error(`Uncaught error in worker loop for ${this.#prettyName}: ${e}`)
+							logger.error(`Uncaught error in worker loop for ${this.#prettyName}: ${stringifyError(e)}`)
+
+							// To avoid flooding logs when re-running the loop, wait a little bit:
+							await sleep(5000)
 						}
 					}
 
@@ -317,6 +365,7 @@ export abstract class WorkerParentBase {
 				statusCode = StatusCode.BAD
 				reason = 'Closed'
 				break
+			case ThreadStatus.ManualRestarting:
 			case ThreadStatus.PendingInit:
 				statusCode = StatusCode.BAD
 				reason = 'Thread restarting'
@@ -391,8 +440,6 @@ export abstract class WorkerParentBase {
 
 		// stop the thread
 		await this.terminateWorkerThread()
-
-		await Promise.all(this.#streams.map((s) => s.close()))
 
 		await this.#jobStream.close()
 	}

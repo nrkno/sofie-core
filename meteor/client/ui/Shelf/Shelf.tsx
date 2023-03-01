@@ -9,7 +9,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { RundownLayoutFilter, RundownLayoutShelfBase } from '../../../lib/collections/RundownLayouts'
 import { UIStateStorage } from '../../lib/UIStateStorage'
@@ -22,7 +21,6 @@ import { Bucket } from '../../../lib/collections/Buckets'
 import { RundownViewBuckets, BucketAdLibItem } from './RundownViewBuckets'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ShelfInspector } from './Inspector/ShelfInspector'
-import { Studio } from '../../../lib/collections/Studios'
 import RundownViewEventBus, {
 	IEventContext,
 	RundownViewEvents,
@@ -36,6 +34,9 @@ import { doUserAction, UserAction } from '../../lib/userAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { ShelfDisplayOptions } from '../../lib/shelf'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
 
 export enum ShelfTabs {
 	ADLIB = 'adlib',
@@ -48,8 +49,8 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	buckets: Array<Bucket>
 	playlist: RundownPlaylist
 	currentRundown: Rundown
-	studio: Studio
-	showStyleBase: ShowStyleBase
+	studio: UIStudio
+	showStyleBase: UIShowStyleBase
 	showStyleVariant: ShowStyleVariant
 	studioMode: boolean
 	hotkeys: Array<{
@@ -58,13 +59,8 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	}>
 	rundownLayout?: RundownLayoutShelfBase
 	fullViewport?: boolean
-	shelfDisplayOptions: {
-		buckets: boolean
-		layout: boolean
-		inspector: boolean
-	}
+	shelfDisplayOptions: ShelfDisplayOptions
 	bucketDisplayFilter: number[] | undefined
-	showBuckets: boolean
 	showInspector: boolean
 
 	onChangeExpanded: (value: boolean) => void
@@ -144,6 +140,8 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		RundownViewEventBus.on(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
 		RundownViewEventBus.on(RundownViewEvents.SHELF_STATE, this.onShelfStateChange)
 
+		// NOTE: When not in shelfOnly mode, the RundownHeader is responsible for listening to the for soft takes.
+		//       This caused shelfOnly mode to not registering takes.
 		if (this.props.fullViewport) {
 			RundownViewEventBus.on(RundownViewEvents.TAKE, this.onTake)
 		}
@@ -219,7 +217,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 
 	blurActiveElement = () => {
 		try {
-			// @ts-ignore
+			// @ts-expect-error blur isnt always valid
 			document.activeElement.blur()
 		} catch (e) {
 			// do nothing
@@ -399,7 +397,12 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 				})}
 				style={fullViewport ? undefined : this.getStyle()}
 			>
-				{!this.props.rundownLayout?.disableContextMenu && <ShelfContextMenu />}
+				{!this.props.rundownLayout?.disableContextMenu && (
+					<ShelfContextMenu
+						shelfDisplayOptions={this.props.shelfDisplayOptions}
+						hideDefaultStartExecute={!!this.props.rundownLayout?.hideDefaultStartExecute}
+					/>
+				)}
 				{!fullViewport && (
 					<div
 						className="rundown-view__shelf__handle dark"
@@ -411,7 +414,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 					</div>
 				)}
 				<div className="rundown-view__shelf__contents">
-					{shelfDisplayOptions.layout ? (
+					{shelfDisplayOptions.enableLayout ? (
 						<ContextMenuTrigger
 							id="shelf-context-menu"
 							attributes={{
@@ -465,7 +468,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							</ErrorBoundary>
 						</ContextMenuTrigger>
 					) : null}
-					{shelfDisplayOptions.buckets ? (
+					{shelfDisplayOptions.enableBuckets ? (
 						<ErrorBoundary>
 							<RundownViewBuckets
 								buckets={this.props.buckets}
@@ -474,9 +477,9 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 								showStyleBase={this.props.showStyleBase}
 								fullViewport={
 									!!this.props.fullViewport &&
-									this.props.shelfDisplayOptions.buckets === true &&
-									this.props.shelfDisplayOptions.inspector === false &&
-									this.props.shelfDisplayOptions.layout === false
+									this.props.shelfDisplayOptions.enableBuckets === true &&
+									this.props.shelfDisplayOptions.enableInspector === false &&
+									this.props.shelfDisplayOptions.enableLayout === false
 								}
 								displayBuckets={this.props.bucketDisplayFilter}
 								selectedPiece={this.state.selectedPiece}
@@ -484,7 +487,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 							/>
 						</ErrorBoundary>
 					) : null}
-					{shelfDisplayOptions.inspector && this.props.rundownLayout?.showInspector ? (
+					{this.props.rundownLayout?.showInspector ? (
 						<ErrorBoundary>
 							<ShelfInspector
 								selected={this.state.selectedPiece}

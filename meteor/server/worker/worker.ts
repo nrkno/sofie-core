@@ -14,9 +14,9 @@ import {
 	getRandomString,
 	ManualPromise,
 	stringifyError,
+	Time,
 	waitForPromise,
 } from '../../lib/lib'
-import { Time } from 'superfly-timeline'
 import { UserActionsLogItem, UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { triggerFastTrackObserver, FastTrackObservers } from '../publications/fastTrack'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
@@ -28,7 +28,7 @@ import { MongoQuery } from '../../lib/typings/meteor'
 
 const FREEZE_LIMIT = 1000 // how long to wait for a response to a Ping
 const RESTART_TIMEOUT = 30000 // how long to wait for a restart to complete before throwing an error
-const KILL_TIMOUT = 30000 // how long to wait for a thread to terminate before throwing an error
+const KILL_TIMEOUT = 30000 // how long to wait for a thread to terminate before throwing an error
 
 interface JobEntry {
 	spec: JobSpec
@@ -39,7 +39,7 @@ interface JobEntry {
 interface JobQueue {
 	jobs: Array<JobEntry | null>
 	/** Notify that there is a job waiting (aka worker is long-polling) */
-	notifyWorker: ManualPromise<JobSpec | null> | null
+	notifyWorker: ManualPromise<void> | null
 }
 
 type JobCompletionHandler = (startedTime: number, finishedTime: number, err: any, result: any) => void
@@ -74,15 +74,11 @@ async function jobFinished(
 	}
 }
 /** This is called by each Worker Thread, when it is idle and wants another job */
-async function getNextJob(queueName: string): Promise<JobSpec | null> {
+async function waitForNextJob(queueName: string): Promise<void> {
 	// Check if there is a job waiting:
 	const queue = getOrCreateQueue(queueName)
-	const job = queue.jobs.shift()
-	if (job) {
-		// If there is a completion handler, register it for execution
-		if (job.completionHandler) runningJobs.set(job.spec.id, job.completionHandler)
-		// Pass the job to the worker
-		return job.spec
+	if (queue.jobs.length > 0) {
+		return
 	}
 	// No job ready, do a long-poll
 
@@ -104,6 +100,21 @@ async function getNextJob(queueName: string): Promise<JobSpec | null> {
 	queue.notifyWorker = createManualPromise()
 	return queue.notifyWorker
 }
+/** This is called by each Worker Thread, when it thinks there is a job to execute */
+async function getNextJob(queueName: string): Promise<JobSpec | null> {
+	// Check if there is a job waiting:
+	const queue = getOrCreateQueue(queueName)
+	const job = queue.jobs.shift()
+	if (job) {
+		// If there is a completion handler, register it for execution
+		if (job.completionHandler) runningJobs.set(job.spec.id, job.completionHandler)
+		// Pass the job to the worker
+		return job.spec
+	}
+
+	// No job ready
+	return null
+}
 /** This is called by each Worker Thread, when it is idle and wants another job */
 async function interruptJobStream(queueName: string): Promise<void> {
 	// Check if there is a job waiting:
@@ -115,7 +126,7 @@ async function interruptJobStream(queueName: string): Promise<void> {
 		Meteor.defer(() => {
 			try {
 				// Notify the worker in the background
-				oldNotify.manualResolve(null)
+				oldNotify.manualResolve()
 			} catch (e) {
 				// Ignore
 			}
@@ -143,23 +154,18 @@ function queueJobInner(queueName: string, jobToQueue: JobEntry): void {
 	// If there is a worker waiting to pick up a job
 	if (queue.notifyWorker) {
 		const notify = queue.notifyWorker
-		const job = queue.jobs.shift()
-		if (job) {
-			// If there is a completion handler, register it for execution
-			if (job.completionHandler) runningJobs.set(job.spec.id, job.completionHandler)
 
-			// Worker is about to be notified, so clear the handle:
-			queue.notifyWorker = null
-			Meteor.defer(() => {
-				try {
-					// Notify the worker in the background
-					notify.manualResolve(job.spec)
-				} catch (e) {
-					// Queue failed, inform caller
-					if (job.completionHandler) job.completionHandler(0, 0, e, null)
-				}
-			})
-		}
+		// Worker is about to be notified, so clear the handle:
+		queue.notifyWorker = null
+		Meteor.defer(() => {
+			try {
+				// Notify the worker in the background
+				notify.manualResolve()
+			} catch (e) {
+				// Queue failed
+				logger.error(`Error in notifyWorker: ${stringifyError(e)}`)
+			}
+		})
 	}
 }
 
@@ -175,7 +181,7 @@ function queueJobAndWrapResult<TRes>(queueName: string, job: JobSpec, now: Time)
 }
 
 async function fastTrackTimeline(newTimeline: TimelineComplete): Promise<void> {
-	const studio = fetchStudioLight(newTimeline._id)
+	const studio = await fetchStudioLight(newTimeline._id)
 	if (!studio) throw new Error(`Studio "${newTimeline._id}" was not found for timeline fast-track`)
 
 	// Also do a fast-track for the timeline to be published faster:
@@ -249,12 +255,21 @@ Meteor.startup(() => {
 		threadedClass<IpcJobWorker, typeof IpcJobWorker>(
 			workerEntrypoint,
 			'IpcJobWorker',
-			[workerId, jobFinished, interruptJobStream, getNextJob, queueJobWithoutResult, logLine, fastTrackTimeline],
+			[
+				workerId,
+				jobFinished,
+				interruptJobStream,
+				waitForNextJob,
+				getNextJob,
+				queueJobWithoutResult,
+				logLine,
+				fastTrackTimeline,
+			],
 			{
 				autoRestart: true,
 				freezeLimit: FREEZE_LIMIT,
 				restartTimeout: RESTART_TIMEOUT,
-				killTimeout: KILL_TIMOUT,
+				killTimeout: KILL_TIMEOUT,
 			}
 		)
 	)

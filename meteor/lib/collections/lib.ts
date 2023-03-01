@@ -1,22 +1,23 @@
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
-import { MongoModifier, MongoQuery, UserId } from '../typings/meteor'
+import { MongoModifier, MongoQuery } from '../typings/meteor'
 import {
 	stringifyObjects,
 	getHash,
 	ProtectedString,
 	makePromise,
-	sleep,
 	registerCollection,
 	stringifyError,
 	protectString,
-	MongoFieldSpecifier,
-	SortSpecifier,
+	waitForPromise,
 } from '../lib'
 import * as _ from 'underscore'
 import { logger } from '../logging'
 import type { AnyBulkWriteOperation, Collection as RawCollection, Db as RawDb, CreateIndexesOptions } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { MongoFieldSpecifier, SortSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { CustomCollectionType } from '../api/pubsub'
+import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const ObserveChangeBufferTimeout = 2000
 
@@ -24,17 +25,17 @@ type Timeout = number
 
 export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString<any> }>(
 	collection: AsyncMongoCollection<DBInterface>,
-	hashName: string,
-	hashFields: string[],
+	hashName: keyof DBInterface,
+	hashFields: (keyof DBInterface)[],
 	skipEnsureUpdatedOnStart?: boolean
-) {
+): void {
 	const doUpdate = (id: DBInterface['_id'], obj: any) => {
-		const newHash = getHash(stringifyObjects(_.pick(obj, ...hashFields)))
+		const newHash = getHash(stringifyObjects(_.pick(obj, ...(hashFields as string[]))))
 
 		if (newHash !== obj[hashName]) {
-			logger.debug('Updating hash:', id, hashName + ':', newHash)
+			logger.debug('Updating hash:', id, `${String(hashName)}:${newHash}`)
 			const update: Partial<DBInterface> = {}
-			update[hashName] = newHash
+			update[String(hashName)] = newHash
 			collection.update(id, { $set: update })
 		}
 	}
@@ -44,7 +45,7 @@ export function ObserveChangesForHash<DBInterface extends { _id: ProtectedString
 	collection.find().observeChanges({
 		changed: (id: DBInterface['_id'], changedFields) => {
 			// Ignore the hash field, to stop an infinite loop
-			delete changedFields[hashName]
+			delete changedFields[String(hashName)]
 
 			if (_.keys(changedFields).length > 0) {
 				const data: Timeout | undefined = observedChangesTimeouts.get(id)
@@ -126,6 +127,17 @@ export function createInMemoryMongoCollection<DBInterface extends { _id: Protect
 	return new WrappedMongoCollection<DBInterface>(collection, name)
 }
 
+/**
+ * Create a Mongo Collection for a virtual collection populated by a custom-publication
+ * @param name Name of the custom-collection
+ */
+export function createCustomPublicationMongoCollection<K extends keyof CustomCollectionType>(
+	name: K
+): MongoCollection<CustomCollectionType[K]> {
+	const collection = new Mongo.Collection<CustomCollectionType[K]>(name)
+	return new WrappedMongoCollection<CustomCollectionType[K]>(collection, name)
+}
+
 class WrappedMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
 	implements MongoCollection<DBInterface>
 {
@@ -151,12 +163,12 @@ class WrappedMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
 	allow(args: Parameters<MongoCollection<DBInterface>['allow']>[0]): boolean {
 		const { insert: origInsert, update: origUpdate, remove: origRemove } = args
 		const options: Parameters<Mongo.Collection<DBInterface>['allow']>[0] = {
-			insert: origInsert ? (userId, doc) => origInsert(protectString(userId), doc) : undefined,
+			insert: origInsert ? (userId, doc) => waitForPromise(origInsert(protectString(userId), doc)) : undefined,
 			update: origUpdate
 				? (userId, doc, fieldNames, modifier) =>
-						origUpdate(protectString(userId), doc, fieldNames as any, modifier)
+						waitForPromise(origUpdate(protectString(userId), doc, fieldNames as any, modifier))
 				: undefined,
-			remove: origRemove ? (userId, doc) => origRemove(protectString(userId), doc) : undefined,
+			remove: origRemove ? (userId, doc) => waitForPromise(origRemove(protectString(userId), doc)) : undefined,
 			fetch: args.fetch,
 		}
 		return this.#collection.allow(options)
@@ -164,12 +176,12 @@ class WrappedMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
 	deny(args: Parameters<MongoCollection<DBInterface>['deny']>[0]): boolean {
 		const { insert: origInsert, update: origUpdate, remove: origRemove } = args
 		const options: Parameters<Mongo.Collection<DBInterface>['deny']>[0] = {
-			insert: origInsert ? (userId, doc) => origInsert(protectString(userId), doc) : undefined,
+			insert: origInsert ? (userId, doc) => waitForPromise(origInsert(protectString(userId), doc)) : undefined,
 			update: origUpdate
 				? (userId, doc, fieldNames, modifier) =>
-						origUpdate(protectString(userId), doc, fieldNames as any, modifier)
+						waitForPromise(origUpdate(protectString(userId), doc, fieldNames as any, modifier))
 				: undefined,
-			remove: origRemove ? (userId, doc) => origRemove(protectString(userId), doc) : undefined,
+			remove: origRemove ? (userId, doc) => waitForPromise(origRemove(protectString(userId), doc)) : undefined,
 			fetch: args.fetch,
 		}
 		return this.#collection.deny(options)
@@ -278,12 +290,9 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 		options?: FindOptions<DBInterface>
 	): Promise<Array<DBInterface>> {
 		// Make the collection fethcing in another Fiber:
-		const p = makePromise(() => {
+		return makePromise(() => {
 			return this.find(selector as any, options).fetch()
 		})
-		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-		await sleep(0)
-		return p
 	}
 
 	async findOneAsync(
@@ -295,12 +304,9 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 	}
 
 	async insertAsync(doc: DBInterface): Promise<DBInterface['_id']> {
-		const p = makePromise(() => {
+		return makePromise(() => {
 			return this.insert(doc)
 		})
-		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-		await sleep(0)
-		return p
 	}
 
 	async insertManyAsync(docs: DBInterface[]): Promise<Array<DBInterface['_id']>> {
@@ -308,19 +314,15 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 	}
 
 	async insertIgnoreAsync(doc: DBInterface): Promise<DBInterface['_id']> {
-		const p = makePromise(() => {
+		return makePromise(() => {
 			return this.insert(doc)
 		}).catch((err) => {
 			if (err.toString().match(/duplicate key/i)) {
-				// @ts-ignore id duplicate, doc._id must exist
 				return doc._id
 			} else {
 				throw err
 			}
 		})
-		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-		await sleep(0)
-		return p
 	}
 
 	async updateAsync(
@@ -328,12 +330,9 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 		modifier: MongoModifier<DBInterface>,
 		options?: UpdateOptions
 	): Promise<number> {
-		const p = makePromise(() => {
+		return makePromise(() => {
 			return this.update(selector, modifier, options)
 		})
-		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-		await sleep(0)
-		return p
 	}
 
 	async upsertAsync(
@@ -341,12 +340,9 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 		modifier: MongoModifier<DBInterface>,
 		options?: UpsertOptions
 	): Promise<{ numberAffected?: number; insertedId?: DBInterface['_id'] }> {
-		const p = makePromise(() => {
+		return makePromise(() => {
 			return this.upsert(selector, modifier, options)
 		})
-		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-		await sleep(0)
-		return p
 	}
 
 	async upsertManyAsync(docs: DBInterface[]): Promise<{ numberAffected: number; insertedIds: DBInterface['_id'][] }> {
@@ -369,12 +365,9 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 	}
 
 	async removeAsync(selector: MongoQuery<DBInterface> | DBInterface['_id']): Promise<number> {
-		const p = makePromise(() => {
+		return makePromise(() => {
 			return this.remove(selector)
 		})
-		// Pause the current Fiber briefly, in order to allow for the other Fiber to start executing:
-		await sleep(0)
-		return p
 	}
 
 	async bulkWriteAsync(ops: Array<AnyBulkWriteOperation<DBInterface>>): Promise<void> {
@@ -445,7 +438,6 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 			return this.insert(doc)
 		} catch (err) {
 			if (stringifyError(err).match(/duplicate key/i)) {
-				// @ts-ignore id duplicate, doc._id must exist
 				return doc._id
 			} else {
 				throw err
@@ -561,14 +553,14 @@ export interface MongoCollection<DBInterface extends { _id: ProtectedString<any>
 	 * Allow users to write directly to this collection from client code, subject to limitations you define.
 	 */
 	allow(options: {
-		insert?: (userId: UserId, doc: DBInterface) => boolean
+		insert?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
 		update?: (
 			userId: UserId,
 			doc: DBInterface,
 			fieldNames: FieldNames<DBInterface>,
 			modifier: MongoModifier<DBInterface>
-		) => boolean
-		remove?: (userId: UserId, doc: DBInterface) => boolean
+		) => Promise<boolean> | boolean
+		remove?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
 		fetch?: string[]
 		// transform?: Function
 	}): boolean
@@ -577,14 +569,14 @@ export interface MongoCollection<DBInterface extends { _id: ProtectedString<any>
 	 * Override allow rules.
 	 */
 	deny(options: {
-		insert?: (userId: UserId, doc: DBInterface) => boolean
+		insert?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
 		update?: (
 			userId: UserId,
 			doc: DBInterface,
 			fieldNames: FieldNames<DBInterface>,
 			modifier: MongoModifier<DBInterface>
-		) => boolean
-		remove?: (userId: UserId, doc: DBInterface) => boolean
+		) => Promise<boolean> | boolean
+		remove?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
 		fetch?: string[]
 		// transform?: Function
 	}): boolean
@@ -668,13 +660,7 @@ export interface MongoCollection<DBInterface extends { _id: ProtectedString<any>
 	/** @deprecated - use createIndex */
 	_ensureIndex(keys: IndexSpecifier<DBInterface> | string, options?: CreateIndexesOptions): void
 
-	_dropIndex(
-		keys:
-			| {
-					[key: string]: number | string
-			  }
-			| string
-	): void
+	_dropIndex(indexName: string): void
 }
 
 export interface UpdateOptions {

@@ -5,7 +5,7 @@ import _ = require('underscore')
 import { JobContext } from '../jobs'
 import { logger } from '../logging'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
-import { onPartHasStoppedPlaying, resetRundownPlaylist, selectNextPart, setNextPart } from './lib'
+import { resetRundownPlaylist, selectNextPart, setNextPart } from './lib'
 import { updateStudioTimeline, updateTimeline } from './timeline/generate'
 import { RundownEventContext } from '../blueprints/context'
 import { getCurrentTime } from '../lib'
@@ -13,6 +13,8 @@ import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/Rundo
 import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { executePeripheralDeviceFunction } from '../peripheralDevice'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
+import { RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { cleanTimelineDatastore } from './datastore'
 
 export async function activateRundownPlaylist(
 	context: JobContext,
@@ -42,23 +44,22 @@ export async function activateRundownPlaylist(
 		await resetRundownPlaylist(context, cache)
 	}
 
-	cache.Playlist.update({
-		$set: {
-			activationId: getRandomId(),
-			rehearsal: rehearsal,
-		},
+	const newActivationId: RundownPlaylistActivationId = getRandomId()
+	cache.Playlist.update((p) => {
+		p.activationId = newActivationId
+		p.rehearsal = rehearsal
+		return p
 	})
 
 	let rundown: DBRundown | undefined
 
 	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 	if (!currentPartInstance || currentPartInstance.reset) {
-		cache.Playlist.update({
-			$set: {
-				currentPartInstanceId: null,
-				nextPartInstanceId: null,
-				previousPartInstanceId: null,
-			},
+		cache.Playlist.update((p) => {
+			p.currentPartInstanceId = null
+			p.nextPartInstanceId = null
+			p.previousPartInstanceId = null
+			return p
 		})
 
 		// If we are not playing anything, then regenerate the next part
@@ -79,11 +80,21 @@ export async function activateRundownPlaylist(
 				cache.Playlist.doc.previousPartInstanceId,
 			])
 		)
-		cache.PartInstances.update((p) => partInstancesToPreserve.has(p._id), {
-			$set: { playlistActivationId: cache.Playlist.doc.activationId },
+		cache.PartInstances.updateAll((p) => {
+			if (partInstancesToPreserve.has(p._id)) {
+				p.playlistActivationId = newActivationId
+				return p
+			} else {
+				return false
+			}
 		})
-		cache.PieceInstances.update((p) => partInstancesToPreserve.has(p.partInstanceId), {
-			$set: { playlistActivationId: cache.Playlist.doc.activationId },
+		cache.PieceInstances.updateAll((p) => {
+			if (partInstancesToPreserve.has(p.partInstanceId)) {
+				p.playlistActivationId = newActivationId
+				return p
+			} else {
+				return false
+			}
 		})
 
 		if (cache.Playlist.doc.nextPartInstanceId) {
@@ -123,6 +134,8 @@ export async function deactivateRundownPlaylist(context: JobContext, cache: Cach
 	const rundown = await deactivateRundownPlaylistInner(context, cache)
 
 	await updateStudioTimeline(context, cache)
+
+	await cleanTimelineDatastore(context, cache)
 
 	cache.defer(async () => {
 		if (rundown) {
@@ -174,28 +187,34 @@ export async function deactivateRundownPlaylistInner(
 		rundown = cache.Rundowns.findOne(nextPartInstance.rundownId)
 	}
 
-	if (currentPartInstance) onPartHasStoppedPlaying(cache, currentPartInstance, getCurrentTime())
+	cache.Playlist.update((p) => {
+		p.previousPartInstanceId = null
+		p.currentPartInstanceId = null
+		p.holdState = RundownHoldState.NONE
 
-	cache.Playlist.update({
-		$set: {
-			previousPartInstanceId: null,
-			currentPartInstanceId: null,
-			holdState: RundownHoldState.NONE,
-		},
-		$unset: {
-			activationId: 1,
-			nextSegmentId: 1,
-		},
+		delete p.activationId
+		delete p.nextSegmentId
+
+		return p
 	})
 	await setNextPart(context, cache, null)
 
 	if (currentPartInstance) {
-		cache.PartInstances.update(currentPartInstance._id, {
-			$set: {
-				'timings.takeOut': getCurrentTime(),
-			},
+		// Set the current PartInstance as stopped
+		cache.PartInstances.updateOne(currentPartInstance._id, (instance) => {
+			if (
+				instance.timings &&
+				instance.timings.plannedStartedPlayback &&
+				!instance.timings.plannedStoppedPlayback
+			) {
+				instance.timings.plannedStoppedPlayback = getCurrentTime()
+				instance.timings.duration = getCurrentTime() - instance.timings.plannedStartedPlayback
+				return instance
+			}
+			return false
 		})
 	}
+
 	if (span) span.end()
 	return rundown
 }
@@ -212,7 +231,7 @@ export async function prepareStudioForBroadcast(
 	const rundownPlaylistToBeActivated = cache.Playlist.doc
 	logger.info('prepareStudioForBroadcast ' + context.studio._id)
 
-	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceType.PLAYOUT)
+	const playoutDevices = cache.PeripheralDevices.findAll((p) => p.type === PeripheralDeviceType.PLAYOUT)
 
 	for (const device of playoutDevices) {
 		// Fire the command and don't wait for the result
@@ -244,7 +263,7 @@ export async function standDownStudio(
 ): Promise<void> {
 	logger.info('standDownStudio ' + context.studio._id)
 
-	const playoutDevices = cache.PeripheralDevices.findFetch((p) => p.type === PeripheralDeviceType.PLAYOUT)
+	const playoutDevices = cache.PeripheralDevices.findAll((p) => p.type === PeripheralDeviceType.PLAYOUT)
 
 	for (const device of playoutDevices) {
 		// Fire the command and don't wait for the result

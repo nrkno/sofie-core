@@ -11,11 +11,12 @@ import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/col
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { RundownSystemStatus } from '../RundownView/RundownSystemStatus'
-import { DBStudio } from '../../../lib/collections/Studios'
-import { DBRundown, Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
+import { DBRundown, Rundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { UIStudio } from '../../../lib/api/studios'
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface ISystemStatusPanelProps {
-	studio: DBStudio
+	studio: UIStudio
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutSytemStatus

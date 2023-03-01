@@ -15,7 +15,6 @@ import {
 	PlaylistTimingNone,
 	ShowStyleBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { Studios, Studio } from '../../../lib/collections/Studios'
 import { Blueprints } from '../../../lib/collections/Blueprints'
 import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
@@ -25,7 +24,9 @@ import { MeteorCall } from '../../../lib/api/methods'
 import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
+	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 require('../../api/peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../api') // include in order to create the Meteor methods needed
@@ -106,7 +107,7 @@ describe('Migrations', () => {
 		setupMockPeripheralDevice(
 			PeripheralDeviceCategory.PLAYOUT,
 			PeripheralDeviceType.PLAYOUT,
-			PeripheralDeviceAPI.SUBTYPE_PROCESS
+			PERIPHERAL_SUBTYPE_PROCESS
 		)
 
 		// Continue with migration:
@@ -128,7 +129,7 @@ describe('Migrations', () => {
 		expect(migrationResult1).toMatchObject({
 			migrationCompleted: true,
 			// partialMigration: true,
-			warnings: expect.any(Array),
+			warnings: [],
 			snapshot: expect.any(String),
 		})
 
@@ -161,11 +162,14 @@ describe('Migrations', () => {
 							sofieUrl: '',
 							frameRate: 25,
 						},
-						mappings: {},
-						// @ts-ignore
-						config: [],
+						mappingsWithOverrides: wrapDefaultObject({}),
+						blueprintConfigWithOverrides: wrapDefaultObject({}),
 						_rundownVersionHash: '',
 						routeSets: {},
+						routeSetExclusivityGroups: {},
+						packageContainers: {},
+						previewContainerIds: [],
+						thumbnailContainerIds: [],
 					})
 				},
 			},
@@ -189,11 +193,14 @@ describe('Migrations', () => {
 							sofieUrl: '',
 							frameRate: 25,
 						},
-						mappings: {},
-						// @ts-ignore
-						config: [],
+						mappingsWithOverrides: wrapDefaultObject({}),
+						blueprintConfigWithOverrides: wrapDefaultObject({}),
 						_rundownVersionHash: '',
 						routeSets: {},
+						routeSetExclusivityGroups: {},
+						packageContainers: {},
+						previewContainerIds: [],
+						thumbnailContainerIds: [],
 					})
 				},
 			},
@@ -217,11 +224,14 @@ describe('Migrations', () => {
 							sofieUrl: '',
 							frameRate: 25,
 						},
-						mappings: {},
-						// @ts-ignore
-						config: [],
+						mappingsWithOverrides: wrapDefaultObject({}),
+						blueprintConfigWithOverrides: wrapDefaultObject({}),
 						_rundownVersionHash: '',
 						routeSets: {},
+						routeSetExclusivityGroups: {},
+						packageContainers: {},
+						previewContainerIds: [],
+						thumbnailContainerIds: [],
 					})
 				},
 			},
@@ -236,9 +246,9 @@ describe('Migrations', () => {
 		expect(migration.migrationNeeded).toEqual(true)
 		expect(migration.automaticStepCount).toEqual(3)
 
-		expect(_.find(migration.steps, (s) => s.id.match(/myCoreMockStep1/))).toBeTruthy()
-		expect(_.find(migration.steps, (s) => s.id.match(/myCoreMockStep2/))).toBeTruthy()
-		expect(_.find(migration.steps, (s) => s.id.match(/myCoreMockStep3/))).toBeTruthy()
+		expect(_.find(migration.steps, (s) => !!s.id.match(/myCoreMockStep1/))).toBeTruthy()
+		expect(_.find(migration.steps, (s) => !!s.id.match(/myCoreMockStep2/))).toBeTruthy()
+		expect(_.find(migration.steps, (s) => !!s.id.match(/myCoreMockStep3/))).toBeTruthy()
 
 		const studio = Studios.findOne() as Studio
 		expect(studio).toBeTruthy()
@@ -379,11 +389,10 @@ describe('Migrations', () => {
 			name: '',
 			organizationId: null,
 			blueprintId: protectString('showStyle0'),
-			outputLayers: [],
-			sourceLayers: [],
+			outputLayersWithOverrides: wrapDefaultObject({}),
+			sourceLayersWithOverrides: wrapDefaultObject({}),
 			hotkeyLegend: [],
-			// @ts-ignore
-			config: [],
+			blueprintConfigWithOverrides: wrapDefaultObject({}),
 			_rundownVersionHash: '',
 		})
 
@@ -391,8 +400,7 @@ describe('Migrations', () => {
 			_id: protectString('variant0'),
 			name: '',
 			showStyleBaseId: protectString('showStyle0'),
-			// @ts-ignore
-			config: [],
+			blueprintConfigWithOverrides: wrapDefaultObject({}),
 			_rundownVersionHash: '',
 		})
 

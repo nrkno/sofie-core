@@ -3,7 +3,6 @@ import { createMongoCollection } from './lib'
 import { registerIndex } from '../database'
 import { RundownLayoutId, UserId, ShowStyleBaseId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-export { RundownLayoutId }
 import { DashboardPanel } from '../../client/ui/Shelf/DashboardPanel'
 
 /**
@@ -253,6 +252,7 @@ export interface RundownLayoutFilterBase extends RundownLayoutElementBase {
 	 * 'only': show only Rundown Baseline AdLib Pieces matching this filter
 	 */
 	rundownBaseline: boolean | 'only'
+	disableHoverInspector: boolean
 }
 
 export interface RundownLayoutFilter extends RundownLayoutFilterBase {
@@ -345,6 +345,7 @@ export interface RundownLayoutBase {
 	iconColor: string
 	/* Customizable region that the layout modifies. */
 	regionId: CustomizableRegions
+	isDefaultLayout: boolean
 }
 
 export interface RundownLayoutWithFilters extends RundownLayoutBase {
@@ -379,9 +380,9 @@ export interface RundownLayoutShelfBase extends RundownLayoutWithFilters {
 	exposeAsStandalone: boolean
 	openByDefault: boolean
 	startingHeight?: number
-	showBuckets: boolean
 	showInspector: boolean
 	disableContextMenu: boolean
+	hideDefaultStartExecute: boolean
 	/* Customizable region that the layout modifies. */
 	regionId: CustomizableRegions
 }

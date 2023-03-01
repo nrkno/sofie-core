@@ -3,6 +3,7 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDevices,
 	PeripheralDeviceType,
+	PERIPHERAL_SUBTYPE_PROCESS,
 } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { StudioContentAccess } from '../security/studio'
@@ -26,7 +27,7 @@ export namespace PackageManagerAPI {
 			studioId: access.studioId,
 			category: PeripheralDeviceCategory.PACKAGE_MANAGER,
 			type: PeripheralDeviceType.PACKAGE_MANAGER,
-			subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
+			subType: PERIPHERAL_SUBTYPE_PROCESS,
 		}).fetch()
 
 		await Promise.all(

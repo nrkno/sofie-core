@@ -36,7 +36,6 @@ $previewline-color: rgb(38, 137, 186);
 	functional part of the timeline starts at the same level as the segment title
 */
 $segment-timeline-padding: $segment-header-height 0 1.5em;
-$segment-border-radius: 11px;
 
 $segment-layer-height: 1.5em;
 $segment-layer-separator-color: transparentize(#000, 0.5);
@@ -93,9 +92,9 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 }
 
 .rundown-view {
-	padding-top: 4rem;
+	// padding-top: 4rem;
 	padding-bottom: 50vh;
-	padding-right: $statusbar-width;
+	// padding-right: $statusbar-width;
 	transition: 0s padding-right 0s;
 
 	.invert-flash {
@@ -142,11 +141,11 @@ $segment-layer-separator-color: transparentize(#000, 0.5);
 	}
 
 	&.notification-center-open {
-		padding-right: calc(#{$statusbar-width} + #{$notification-center-width});
+		padding-right: $notification-center-width;
 		transition: 0s padding-right 1s;
 
 		> .header .rundown-overview {
-			padding-right: calc(#{$statusbar-width} + #{$notification-center-width} + 1.5em);
+			padding-right: calc(#{$notification-center-width} + 1.5em);
 			transition: 0s padding-right 1s;
 		}
 	}
@@ -207,13 +206,6 @@ body.no-overflow {
 }
 
 .header.rundown {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	z-index: 200;
-	user-select: none;
-
 	.row {
 		width: 100%;
 
@@ -259,6 +251,7 @@ body.no-overflow {
 			&.left {
 				text-align: left;
 			}
+
 
 			&.time-now {
 				position: absolute;
@@ -453,7 +446,7 @@ svg.icon {
 	display: grid;
 	grid-column-gap: 0;
 	grid-row-gap: 0;
-	grid-template-columns: [segment-name] $segment-header-width [segment-group-controls] $segment-group-controls-width [timeline] auto [end]; // 120px [future-timeline-end]
+	grid-template-columns: [segment-name] ($segment-header-width / 2) [duration-onAirIn-split] ($segment-header-width / 2) [segment-group-controls] $segment-group-controls-width [timeline] auto [end]; // 120px [future-timeline-end]
 	grid-template-rows: [header] $segment-header-height [main-view] auto [zoom-area] auto [end];
 	overflow: hidden;
 	user-select: none;
@@ -461,7 +454,7 @@ svg.icon {
 	-webkit-user-select: none;
 
 	width: auto;
-	margin: 0.8em 0.75em;
+	margin: $segment-margin-y $segment-margin-x;
 	// padding: 0 0 0.15em 0.15em;
 
 	background: $segment-background-color;
@@ -503,7 +496,7 @@ svg.icon {
 			margin: 0;
 			padding: 0.3em;
 			line-height: 1.2em;
-			letter-spacing: 0px;
+			//letter-spacing: 0px;
 			font-weight: 400;
 			hyphens: auto;
 			-webkit-hyphens: auto;
@@ -518,49 +511,6 @@ svg.icon {
 			font-size: 0.75em;
 			font-weight: 400;
 			grid-row: title-notifications / title-identifiers;
-
-			> .segment-timeline__title__notes__note {
-				position: relative;
-				padding-left: 20px;
-				cursor: pointer;
-
-				&:not(:last-child) {
-					margin-bottom: 5px;
-				}
-
-				> svg {
-					position: absolute;
-					left: 0;
-					top: -0.1em;
-					height: 1.6em;
-					width: 1.6em;
-				}
-
-				> .segment-timeline__title__notes__count {
-					display: inline-block;
-					min-width: 1.1em;
-					line-height: 1.1em;
-					font-weight: 600;
-					text-align: center;
-					border-radius: 1em;
-					font-size: 0.9em;
-					position: relative;
-					top: -0.3em;
-					left: -0.3em;
-					white-space: nowrap;
-					padding: 0 2px 0 0.3em;
-				}
-
-				> svg.type-warning + .segment-timeline__title__notes__count {
-					background: yellow;
-					color: #000;
-				}
-
-				> svg.type-critical + .segment-timeline__title__notes__count {
-					background: red;
-					color: #fff;
-				}
-			}
 		}
 
 		.segment-timeline__part-identifiers {
@@ -570,10 +520,10 @@ svg.icon {
 				font-weight: 300;
 				text-shadow: none;
 				margin: 2.5px;
-				padding: 0 4px;
+				padding: 1px 4px;
 				background-color: $part-identifier;
 				color: $part-identifier-text;
-				border-radius: 0 10px 10px 0;
+				border-radius: 10px;
 				font-size: 0.85rem;
 
 				&:hover {
@@ -696,12 +646,6 @@ svg.icon {
 		display: none;
 	}
 
-	// TODOSYNC: Disabled for TV2
-	// the identifier is an installation-specific feature that needs to be supported by the blueprints. It's disabled in the UI by default.
-	// .segment-timeline__identifier {
-	// 	display: none;
-	// }
-
 	// This is the display in the top-left corner of the segment
 	.segment-timeline__timeUntil,
 	.segment-timeline__duration {
@@ -711,7 +655,7 @@ svg.icon {
 		padding: 0;
 		text-align: right;
 
-		grid-column: segment-name / segment-group-controls;
+		grid-column: segment-name / duration-onAirIn-split;
 		grid-row: header / main-view;
 
 		padding-right: 0px;
@@ -721,7 +665,6 @@ svg.icon {
 		letter-spacing: 0;
 		font-weight: 400;
 
-		cursor: pointer;
 		transition: 0.3s color;
 
 		> span.negative {
@@ -753,14 +696,14 @@ svg.icon {
 			right: auto;
 		}
 	}
+
 	.segment-timeline__timeUntil {
+		grid-column: duration-onAirIn-split / segment-group-controls;
 		color: #888;
+		cursor: pointer;
 	}
 
 	&.time-of-day-countdowns {
-		.segment-timeline__duration {
-			color: #888;
-		}
 		.segment-timeline__timeUntil {
 			color: #fff;
 			font-weight: 500;
@@ -772,6 +715,45 @@ svg.icon {
 	}
 }
 
+.segment-timeline__switch-view-mode-button {
+	grid-row: header / main-view;
+	grid-column: timeline / end;
+	justify-self: end;
+	align-self: start;
+	z-index: 1;
+	background: $segment-background-color;
+	width: 1.4em;
+	height: 1.4em;
+	padding: 0;
+
+	border: none;
+	border-radius: 2em;
+	transition: 0.3s background-color;
+
+	margin-top: 0.1em;
+	margin-right: 0.1em;
+
+	&:hover {
+		background: #8c8c8c;
+		transition: 0s background-color;
+
+		> svg path {
+			color: #fff;
+		}
+	}
+
+	&:active {
+		background: $ui-button-primary;
+		transition: 0s background-color;
+	}
+
+	> svg {
+		position: relative;
+		top: 0.1em;
+		color: #999999;
+	}
+}
+
 .segment-timeline {
 	.segment-timeline__timeline-zoom-buttons {
 		position: relative;
@@ -779,8 +761,8 @@ svg.icon {
 		grid-column: segment-group-controls / timeline;
 		grid-row: header / end;
 		align-self: end;
-		grid-template-columns: 1.3fr 1fr 1fr 1fr;
-		padding: 0 0.3em 0.05em 0.3em;
+		grid-template-columns: 1fr 1fr 1fr;
+		padding: 0 1.2em 0.05em;
 
 		> .segment-timeline__timeline-zoom-buttons__button {
 			min-width: 22px;
@@ -1839,134 +1821,6 @@ svg.icon {
 							background-color: rgba(0, 0, 0, 0.6);
 						}
 
-						// TODOSYNC: This was added by TV2, to be checked why?
-						// .segment-timeline__piece__label {
-						// 	position: relative;
-						// 	z-index: 10;
-						// 	margin: 0 0.3em;
-						// 	text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
-						// 	font-weight: 400;
-						// 	transition: ($output-layer-group-collapse-animation-duration * 1/3) opacity
-						// 		($output-layer-group-collapse-animation-duration * 2/3);
-						// 	pointer-events: none;
-						// 	white-space: nowrap;
-
-						// 	transform: translate3d(0, 0, 1px); // Just to make it render in front
-
-						// 	&:not(.right-side) {
-						// 		overflow: hidden;
-						// 		text-overflow: ellipsis;
-						// 	}
-
-						// 	&.with-overflow {
-						// 		overflow: visible !important;
-						// 	}
-
-						// 	&.secondary {
-						// 		font-weight: 300;
-						// 	}
-
-						// 	&.third {
-						// 		font-weight: 200;
-						// 	}
-
-						// 	&.emphasis {
-						// 		font-weight: 500;
-						// 	}
-
-						// 	&.missing {
-						// 		color: orange;
-						// 	}
-
-						// 	&.first-words {
-						// 		position: absolute;
-						// 		left: 0;
-						// 		font-weight: 300;
-						// 		font-style: italic;
-
-						// 		> * {
-						// 			position: relative;
-						// 		}
-						// 	}
-
-						// 	&.right-side {
-						// 		position: absolute;
-						// 		right: 0;
-						// 		transform: translate3d(0, 0, 15px);
-						// 		text-align: right;
-						// 		margin: 0;
-						// 		padding: 0 0.3em;
-						// 		max-width: calc(100% - 10px);
-						// 		overflow: hidden;
-						// 		text-overflow: clip;
-
-						// 		> * {
-						// 			position: relative;
-						// 		}
-
-						// 		> .segment-timeline__piece__label {
-						// 			margin-right: 0 !important;
-						// 			margin-left: 5px !important;
-						// 			overflow: initial;
-						// 			max-width: none;
-						// 		}
-
-						// 		> .label-icon {
-						// 			margin: 0 -10px 0 0;
-						// 		}
-
-						// 		> .label-icon.label-infinite-icon {
-						// 			margin: 0 0 0 0;
-						// 		}
-						// 	}
-
-						// 	&.last-words {
-						// 		font-weight: 300;
-						// 		font-style: italic;
-
-						// 		display: block;
-						// 	}
-
-						// 	&.file-name {
-						// 		font-weight: 200;
-						// 	}
-
-						// 	&.label-icon {
-						// 		margin: 0;
-						// 	}
-
-						// 	&.label-overflow-time {
-						// 		text-shadow: 1px -1px 1px black, -1px 1px 1px black, -1px -1px 1px black, 1px 1px 1px black,
-						// 			1px 1px 3px black, 1px 1px 8px black, 1px 1px 8px black, 1px 1px 8px black;
-						// 		top: -7px;
-						// 		right: -5px;
-						// 		color: white;
-						// 		font-weight: 600;
-						// 		padding: 0;
-						// 		font-size: 0.8em;
-						// 		margin: 0;
-						// 	}
-
-						// 	> .segment-timeline__piece__label {
-						// 		margin: 0;
-						// 		max-width: none;
-						// 	}
-
-						// 	> .segment-timeline__piece__label + .segment-timeline__piece__label {
-						// 		margin: 0 0.3em;
-						// 	}
-
-						// 	.segment-timeline__piece__label__transition-icon {
-						// 		max-width: 16px;
-						// 		max-height: 1.4em;
-						// 		vertical-align: top;
-						// 		height: 1.4em;
-						// 		object-fit: contain;
-						// 		object-position: center center;
-						// 		margin-left: 0.5em;
-						// 	}
-						// }
-
 						&.hide-overflow-labels {
 							.segment-timeline__piece__label {
 								&.overflow-label {
@@ -2273,9 +2127,22 @@ svg.icon {
 					}
 				}
 				.segment-timeline__piece__label__colored-mark {
-					font-size: 600%;
 					line-height: 23px;
 					width: 25px;
+					margin: 0 3px 0 2px;
+
+					&::before {
+						content: ' ';
+						display: inline-block;
+						width: 12px;
+						height: 12px;
+						background-color: currentColor;
+						border: 1px solid rgba(255, 255, 255, 0.3);
+						border-radius: 100%;
+						box-shadow: 0 0 4px black;
+						vertical-align: top;
+						margin-top: 0.35em;
+					}
 				}
 			}
 
@@ -2773,6 +2640,49 @@ svg.icon {
 	}
 }
 
+.segment-timeline__title__notes__note {
+	position: relative;
+	padding-left: 20px;
+	cursor: pointer;
+
+	&:not(:last-child) {
+		margin-bottom: 5px;
+	}
+
+	> svg {
+		position: absolute;
+		left: 0;
+		top: -0.1em;
+		height: 1.6em;
+		width: 1.6em;
+	}
+
+	> .segment-timeline__title__notes__count {
+		display: inline-block;
+		min-width: 1.1em;
+		line-height: 1.1em;
+		font-weight: 600;
+		text-align: center;
+		border-radius: 1em;
+		font-size: 0.9em;
+		position: relative;
+		top: -0.3em;
+		left: -0.3em;
+		white-space: nowrap;
+		padding: 0 2px 0 0.3em;
+	}
+
+	> svg.type-warning + .segment-timeline__title__notes__count {
+		background: yellow;
+		color: #000;
+	}
+
+	> svg.type-critical + .segment-timeline__title__notes__count {
+		background: red;
+		color: #fff;
+	}
+}
+
 // TODO: this is just a debug label, should not be visible in final app
 .segment-timeline__debug-info {
 	position: absolute;
@@ -3013,8 +2923,8 @@ svg.icon {
 		> .video-preview,
 		> .thumbnail {
 			display: block;
-			width: 160px;
-			height: 90px;
+			width: 320px;
+			height: 180px;
 			background: #000;
 		}
 

@@ -2,13 +2,10 @@ import { check } from '../../lib/check'
 import { literal, getCurrentTime, Time, getRandomId, stringifyError } from '../../lib/lib'
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
-import { UserActionsLog, UserActionsLogItem, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
+import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
-import { PeripheralDeviceId, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
-import { UserId } from '../../lib/typings/meteor'
-import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { resolveCredentials } from '../security/lib/credentials'
 import { isInTestWrite, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
@@ -17,10 +14,17 @@ import { endTrace, sendTrace, startTrace } from './integration/influx'
 import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
-import { StudioId } from '../../lib/collections/Studios'
 import { QueueStudioJob } from '../worker/worker'
 import { profiler } from './profiler'
-import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	OrganizationId,
+	PeripheralDeviceId,
+	RundownId,
+	RundownPlaylistId,
+	StudioId,
+	UserActionsLogItemId,
+	UserId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	checkAccessToPlaylist,
 	checkAccessToRundown,
@@ -68,7 +72,7 @@ export namespace ServerClientAPI {
 			async (_credentials, userActionMetadata) => {
 				checkArgs()
 
-				const access = checkAccessToPlaylist(context, playlistId)
+				const access = await checkAccessToPlaylist(context, playlistId)
 				return runStudioJob(access.playlist.studioId, jobName, jobArguments, userActionMetadata)
 			}
 		)
@@ -95,7 +99,7 @@ export namespace ServerClientAPI {
 			async (_credentials, userActionMetadata) => {
 				checkArgs()
 
-				const access = checkAccessToRundown(context, rundownId)
+				const access = await checkAccessToRundown(context, rundownId)
 				return runStudioJob(access.rundown.studioId, jobName, jobArguments, userActionMetadata)
 			}
 		)
@@ -117,7 +121,8 @@ export namespace ServerClientAPI {
 		return runUserActionInLog(context, userEvent, eventTime, methodName, args, async () => {
 			checkArgs()
 
-			return fcn(checkAccessToPlaylist(context, playlistId))
+			const access = await checkAccessToPlaylist(context, playlistId)
+			return fcn(access)
 		})
 	}
 
@@ -137,7 +142,8 @@ export namespace ServerClientAPI {
 		return runUserActionInLog(context, userEvent, eventTime, methodName, args, async () => {
 			checkArgs()
 
-			return fcn(checkAccessToRundown(context, rundownId))
+			const access = await checkAccessToRundown(context, rundownId)
+			return fcn(access)
 		})
 	}
 
@@ -208,7 +214,7 @@ export namespace ServerClientAPI {
 					return rewrapError(methodName, e)
 				}
 			} else {
-				const credentials = getLoggedInCredentials(context)
+				const credentials = await getLoggedInCredentials(context)
 
 				// Start the db entry, but don't wait for it
 				const actionId: UserActionsLogItemId = getRandomId()
@@ -323,7 +329,7 @@ export namespace ServerClientAPI {
 			})
 		}
 
-		const access = PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
+		const access = await PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
 
 		await UserActionsLog.insertAsync(
 			literal<UserActionsLogItem>({
@@ -366,13 +372,55 @@ export namespace ServerClientAPI {
 				return Promise.reject(err)
 			})
 	}
-	function getLoggedInCredentials(methodContext: MethodContext): BasicAccessContext {
+
+	export async function callBackgroundPeripheralDeviceFunction(
+		methodContext: MethodContext,
+		deviceId: PeripheralDeviceId,
+		timeoutTime: number | undefined,
+		functionName: string,
+		...args: any[]
+	): Promise<any> {
+		check(deviceId, String)
+		check(functionName, String)
+
+		logger.debug(`Calling "${deviceId}" with "${functionName}", ${JSON.stringify(args)}`)
+
+		if (!methodContext.connection) {
+			// In this case, it was called internally from server-side.
+			// Just run and return right away:
+			triggerWriteAccessBecauseNoCheckNecessary()
+			return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+				deviceId,
+				timeoutTime,
+				functionName,
+				...args
+			).catch(async (e) => {
+				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
+				logger.error(errMsg)
+				// allow the exception to be handled by the Client code
+				return Promise.reject(e)
+			})
+		}
+
+		void PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
+
+		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, functionName, ...args).catch(
+			async (err) => {
+				const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
+				logger.error(errMsg)
+				// allow the exception to be handled by the Client code
+				return Promise.reject(err)
+			}
+		)
+	}
+
+	async function getLoggedInCredentials(methodContext: MethodContext): Promise<BasicAccessContext> {
 		let userId: UserId | null = null
 		let organizationId: OrganizationId | null = null
 		if (Settings.enableUserAccounts) {
-			const cred = resolveCredentials({ userId: methodContext.userId })
+			const cred = await resolveCredentials({ userId: methodContext.userId })
 			if (cred.user) userId = cred.user._id
-			if (cred.organization) organizationId = cred.organization._id
+			organizationId = cred.organizationId
 		}
 		return { userId, organizationId }
 	}
@@ -408,19 +456,16 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 		functionName: string,
 		...args: any[]
 	) {
-		const methodContext: MethodContext = this // eslint-disable-line @typescript-eslint/no-this-alias
-		if (!Settings.enableUserAccounts) {
-			// Note: This is a temporary hack to keep backwards compatibility.
-			// in the case of not enableUserAccounts, a token is needed, but not provided when called from client
-			const device = PeripheralDevices.findOne(deviceId)
-			if (device) {
-				// @ts-ignore hack
-				methodContext.token = device.token
-			}
-		}
-		return ServerClientAPI.callPeripheralDeviceFunction(
-			methodContext,
-			context,
+		return ServerClientAPI.callPeripheralDeviceFunction(this, context, deviceId, timeoutTime, functionName, ...args)
+	}
+	async callBackgroundPeripheralDeviceFunction(
+		deviceId: PeripheralDeviceId,
+		timeoutTime: number | undefined,
+		functionName: string,
+		...args: any[]
+	): Promise<any> {
+		return ServerClientAPI.callBackgroundPeripheralDeviceFunction(
+			this,
 			deviceId,
 			timeoutTime,
 			functionName,

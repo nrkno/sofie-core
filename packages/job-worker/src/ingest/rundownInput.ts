@@ -1,19 +1,4 @@
 import { PeripheralDeviceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import {
-	IngestRegenerateRundownProps,
-	IngestRegenerateSegmentProps,
-	IngestRemovePartProps,
-	IngestRemoveRundownProps,
-	IngestRemoveSegmentProps,
-	IngestUpdatePartProps,
-	IngestUpdateRundownMetaDataProps,
-	IngestUpdateRundownProps,
-	IngestUpdateSegmentProps,
-	IngestUpdateSegmentRanksProps,
-	RemoveOrphanedSegmentsProps,
-	UserRemoveRundownProps,
-	UserUnsyncRundownProps,
-} from '@sofie-automation/corelib/dist/worker/ingest'
 import { getCurrentTime } from '../lib'
 import { JobContext } from '../jobs'
 import { logger } from '../logging'
@@ -40,6 +25,21 @@ import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import {
+	IngestRegenerateRundownProps,
+	IngestRegenerateSegmentProps,
+	IngestRemovePartProps,
+	IngestRemoveRundownProps,
+	IngestRemoveSegmentProps,
+	IngestUpdatePartProps,
+	IngestUpdateRundownMetaDataProps,
+	IngestUpdateRundownProps,
+	IngestUpdateSegmentProps,
+	IngestUpdateSegmentRanksProps,
+	RemoveOrphanedSegmentsProps,
+	UserRemoveRundownProps,
+	UserUnsyncRundownProps,
+} from '@sofie-automation/corelib/dist/worker/ingest'
 
 export async function handleRemovedRundown(context: JobContext, data: IngestRemoveRundownProps): Promise<void> {
 	return runIngestJob(
@@ -52,15 +52,12 @@ export async function handleRemovedRundown(context: JobContext, data: IngestRemo
 		async (_context, cache) => {
 			const rundown = getRundown(cache)
 
-			return {
+			return literal<CommitIngestData>({
 				changedSegmentIds: [],
 				removedSegmentIds: [],
 				renamedSegments: new Map(),
 				removeRundown: data.forceDelete || canRundownBeUpdated(rundown, false),
-
-				showStyle: undefined,
-				blueprint: undefined,
-			}
+			})
 		}
 	)
 }
@@ -259,9 +256,6 @@ export async function handleUpdatedRundownMetaDataInner(
 		renamedSegments: new Map(),
 
 		removeRundown: false,
-
-		showStyle: showStyle.compound,
-		blueprint: showStyleBlueprint,
 	})
 }
 export async function handleRegenerateRundown(context: JobContext, data: IngestRegenerateRundownProps): Promise<void> {
@@ -344,16 +338,13 @@ export async function handleRemovedSegment(context: JobContext, data: IngestRemo
 				// segment has already been deleted
 				return null
 			} else {
-				return {
+				return literal<CommitIngestData>({
 					changedSegmentIds: [],
 					removedSegmentIds: [segmentId],
 					renamedSegments: new Map(),
 
 					removeRundown: false,
-
-					showStyle: undefined,
-					blueprint: undefined,
-				}
+				})
 			}
 		}
 	)
@@ -406,28 +397,24 @@ export async function handleUpdatedSegmentRanks(
 			const changedSegmentIds: SegmentId[] = []
 			for (const [externalId, rank] of Object.entries(data.newRanks)) {
 				const segmentId = getSegmentId(cache.RundownId, externalId)
-				const changed = cache.Segments.update(segmentId, {
-					$set: {
-						_rank: rank,
-					},
+				const changed = cache.Segments.updateOne(segmentId, (s) => {
+					s._rank = rank
+					return s
 				})
 
-				if (changed.length === 0) {
+				if (!changed) {
 					logger.warn(`Failed to update rank of segment "${externalId}" (${data.rundownExternalId})`)
 				} else {
 					changedSegmentIds.push(segmentId)
 				}
 			}
 
-			return {
+			return literal<CommitIngestData>({
 				changedSegmentIds,
 				removedSegmentIds: [],
 				renamedSegments: new Map(),
 				removeRundown: false,
-
-				showStyle: undefined,
-				blueprint: undefined,
-			}
+			})
 		}
 	)
 }
@@ -445,7 +432,7 @@ export async function handleRemoveOrphanedSegemnts(
 
 			// Find the segments that are still orphaned (in case they have resynced before this executes)
 			// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
-			const stillOrphanedSegments = ingestCache.Segments.findFetch((s) => !!s.orphaned)
+			const stillOrphanedSegments = ingestCache.Segments.findAll((s) => !!s.orphaned)
 
 			const stillHiddenSegments = stillOrphanedSegments
 				.filter(
@@ -460,9 +447,9 @@ export async function handleRemoveOrphanedSegemnts(
 				)
 				.map((s) => s._id)
 
-			const hiddenSegmentIds = ingestCache.Segments.findFetch({
-				_id: { $in: stillHiddenSegments },
-			}).map((s) => s._id)
+			const hiddenSegmentIds = ingestCache.Segments.findAll((s) => stillHiddenSegments.includes(s._id)).map(
+				(s) => s._id
+			)
 
 			const { result } = await regenerateSegmentsFromIngestData(
 				context,
@@ -478,7 +465,10 @@ export async function handleRemoveOrphanedSegemnts(
 				if (!changedHiddenSegments.includes(segmentId)) {
 					const segment = ingestCache.Segments.findOne(segmentId)
 					if (segment?.isHidden && segment.orphaned === SegmentOrphanedReason.HIDDEN) {
-						ingestCache.Segments.update(segmentId, { $unset: { orphaned: 1 } })
+						ingestCache.Segments.updateOne(segmentId, (s) => {
+							delete s.orphaned
+							return s
+						})
 						changedHiddenSegments.push(segmentId)
 					}
 				}
@@ -489,14 +479,12 @@ export async function handleRemoveOrphanedSegemnts(
 				return null
 			}
 
-			return {
+			return literal<CommitIngestData>({
 				changedSegmentIds: changedHiddenSegments,
 				removedSegmentIds: stillDeletedSegments,
 				renamedSegments: new Map(),
 				removeRundown: false,
-				showStyle: undefined,
-				blueprint: undefined,
-			}
+			})
 		}
 	)
 }

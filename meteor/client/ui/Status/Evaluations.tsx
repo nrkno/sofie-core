@@ -133,6 +133,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 														str = o.name
 														return true
 													}
+													return false
 												})
 											}
 											return (

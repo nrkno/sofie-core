@@ -3,7 +3,7 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { ServerResponse, IncomingMessage } from 'http'
 import { check, Match } from '../../lib/check'
-import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
+import { Studio, Studios } from '../../lib/collections/Studios'
 import {
 	Snapshots,
 	SnapshotType,
@@ -11,7 +11,6 @@ import {
 	SnapshotDebug,
 	SnapshotBase,
 	SnapshotRundownPlaylist,
-	SnapshotId,
 } from '../../lib/collections/Snapshots'
 import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PieceGeneric } from '../../lib/collections/Pieces'
@@ -28,26 +27,29 @@ import {
 	unprotectStringArray,
 	unprotectString,
 } from '../../lib/lib'
-import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
+import { ShowStyleBases, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import {
+	PeripheralDevices,
+	PeripheralDevice,
+	PERIPHERAL_SUBTYPE_PROCESS,
+} from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
 import { Timeline, TimelineComplete } from '../../lib/collections/Timeline'
 import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
-import { getCoreSystem, ICoreSystem, CoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
+import { ICoreSystem, CoreSystem, parseVersion, getCoreSystemAsync } from '../../lib/collections/CoreSystem'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
 import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
+import { Blueprints, Blueprint } from '../../lib/collections/Blueprints'
 import { IngestRundown, VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { importIngestRundown } from './ingest/http'
-import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylists, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
-import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { Credentials, isResolvedCredentials } from '../security/lib/credentials'
@@ -73,6 +75,16 @@ import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { ReadonlyDeep } from 'type-fest'
 import { checkAccessToPlaylist, VerifiedRundownPlaylistContentAccess } from './lib'
 import { PackageInfo } from '../coreSystem'
+import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import {
+	BlueprintId,
+	OrganizationId,
+	PeripheralDeviceId,
+	RundownPlaylistId,
+	ShowStyleBaseId,
+	SnapshotId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface RundownPlaylistSnapshot extends CoreRundownPlaylistSnapshot {
 	versionExtended: string | undefined
@@ -132,7 +144,7 @@ async function createSystemSnapshot(
 	const snapshotId: SnapshotId = getRandomId()
 	logger.info(`Generating System snapshot "${snapshotId}"` + (studioId ? `for studio "${studioId}"` : ''))
 
-	const coreSystem = getCoreSystem()
+	const coreSystem = await getCoreSystemAsync()
 	if (!coreSystem) throw new Meteor.Error(500, `coreSystem not set up`)
 
 	if (Settings.enableUserAccounts && !organizationId)
@@ -256,7 +268,7 @@ async function createDebugSnapshot(studioId: StudioId, organizationId: Organizat
 	const deviceSnaphots: Array<DeviceSnapshot> = _.compact(
 		await Promise.all(
 			systemSnapshot.devices.map(async (device) => {
-				if (device.connected && device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS) {
+				if (device.connected && device.subType === PERIPHERAL_SUBTYPE_PROCESS) {
 					const startTime = getCurrentTime()
 
 					// defer to another fiber
@@ -319,7 +331,7 @@ async function createRundownPlaylistSnapshot(
 		full,
 	})
 	const coreResult = await queuedJob.complete
-	const coreSnapshot: CoreRundownPlaylistSnapshot = JSON.parse(coreResult.snapshotJson)
+	const coreSnapshot: CoreRundownPlaylistSnapshot = JSONBlobParse(coreResult.snapshotJson)
 
 	const mediaObjectIds: Array<string> = [
 		...getPiecesMediaObjects(coreSnapshot.pieces),
@@ -429,7 +441,7 @@ async function storeSnaphot(
 	organizationId: OrganizationId | null,
 	comment: string
 ): Promise<SnapshotId> {
-	const system = getCoreSystem()
+	const system = await getCoreSystemAsync()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
@@ -467,17 +479,17 @@ async function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): Pro
 		if (snapshot.type === SnapshotType.RUNDOWNPLAYLIST) {
 			if (!snapshot.studioId)
 				throw new Meteor.Error(500, `Snapshot is of type "${snapshot.type}" but hase no studioId`)
-			StudioContentWriteAccess.dataFromSnapshot(cred0, snapshot.studioId)
+			await StudioContentWriteAccess.dataFromSnapshot(cred0, snapshot.studioId)
 		} else if (snapshot.type === SnapshotType.SYSTEM) {
 			if (!snapshot.organizationId)
 				throw new Meteor.Error(500, `Snapshot is of type "${snapshot.type}" but has no organizationId`)
-			OrganizationContentWriteAccess.dataFromSnapshot(cred0, snapshot.organizationId)
+			await OrganizationContentWriteAccess.dataFromSnapshot(cred0, snapshot.organizationId)
 		} else {
-			SystemWriteAccess.coreSystem(cred0)
+			await SystemWriteAccess.coreSystem(cred0)
 		}
 	}
 
-	const system = getCoreSystem()
+	const system = await getCoreSystemAsync()
 	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
@@ -496,13 +508,13 @@ async function restoreFromSnapshot(snapshot: AnySnapshot): Promise<void> {
 
 	if (!_.isObject(snapshot)) throw new Meteor.Error(500, `Restore input data is not an object`)
 	// First, some special (debugging) cases:
-	// @ts-ignore is's not really a snapshot here:
+	// @ts-expect-error is's not really a snapshot here:
 	if (snapshot.externalId && snapshot.segments && snapshot.type === 'mos') {
 		// Special: Not a snapshot, but a datadump of a MOS rundown
 		const studioId: StudioId = Meteor.settings.manualSnapshotIngestStudioId || 'studio0'
-		const studioExists = checkStudioExists(studioId)
+		const studioExists = await checkStudioExists(studioId)
 		if (studioExists) {
-			importIngestRundown(studioId, snapshot as unknown as IngestRundown)
+			await importIngestRundown(studioId, snapshot as unknown as IngestRundown)
 			return
 		}
 		throw new Meteor.Error(500, `No Studio found`)
@@ -547,7 +559,7 @@ async function restoreFromRundownPlaylistSnapshot(
 	}
 
 	const queuedJob = await QueueStudioJob(StudioJobs.RestorePlaylistSnapshot, studioId, {
-		snapshotJson: JSON.stringify(omit(snapshot, 'mediaObjects', 'userActions')),
+		snapshotJson: JSONBlobStringify(omit(snapshot, 'mediaObjects', 'userActions')),
 	})
 	await queuedJob.complete
 
@@ -601,7 +613,7 @@ export async function storeSystemSnapshot(
 	reason: string
 ): Promise<SnapshotId> {
 	if (!_.isNull(studioId)) check(studioId, String)
-	const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(context)
+	const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(context)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
@@ -640,7 +652,7 @@ export async function storeDebugSnapshot(
 	reason: string
 ): Promise<SnapshotId> {
 	check(studioId, String)
-	const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(context)
+	const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(context)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
@@ -649,7 +661,7 @@ export async function storeDebugSnapshot(
 }
 export async function restoreSnapshot(context: MethodContext, snapshotId: SnapshotId): Promise<void> {
 	check(snapshotId, String)
-	const { cred } = OrganizationContentWriteAccess.snapshot(context)
+	const { cred } = await OrganizationContentWriteAccess.snapshot(context)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
@@ -658,7 +670,7 @@ export async function restoreSnapshot(context: MethodContext, snapshotId: Snapsh
 }
 export async function removeSnapshot(context: MethodContext, snapshotId: SnapshotId): Promise<void> {
 	check(snapshotId, String)
-	const { snapshot, cred } = OrganizationContentWriteAccess.snapshot(context, snapshotId)
+	const { snapshot, cred } = await OrganizationContentWriteAccess.snapshot(context, snapshotId)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
 	}
@@ -668,7 +680,7 @@ export async function removeSnapshot(context: MethodContext, snapshotId: Snapsho
 
 	if (snapshot.fileName) {
 		// remove from disk
-		const system = getCoreSystem()
+		const system = await getCoreSystemAsync()
 		if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
 		if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
 
@@ -691,13 +703,13 @@ export async function removeSnapshot(context: MethodContext, snapshotId: Snapsho
 if (!Settings.enableUserAccounts) {
 	// For backwards compatibility:
 
-	PickerGET.route('/snapshot/system/:studioId', async (params, req: IncomingMessage, response: ServerResponse) => {
+	PickerGET.route('/snapshot/system/:studioId', async (params, _req: IncomingMessage, response: ServerResponse) => {
 		return handleResponse(response, async () => {
 			check(params.studioId, Match.Optional(String))
 
 			const cred0: Credentials = { userId: null, token: params.token }
-			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
-			StudioReadAccess.studio({ _id: protectString(params.studioId) }, cred)
+			const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(cred0)
+			await StudioReadAccess.studio(protectString(params.studioId), cred)
 
 			return createSystemSnapshot(protectString(params.studioId), organizationId)
 		})
@@ -708,34 +720,34 @@ if (!Settings.enableUserAccounts) {
 			check(params.full, Match.Optional(String))
 
 			const cred0: Credentials = { userId: null, token: params.token }
-			const { cred } = OrganizationContentWriteAccess.snapshot(cred0)
+			const { cred } = await OrganizationContentWriteAccess.snapshot(cred0)
 			const playlist = RundownPlaylists.findOne(protectString(params.playlistId))
 			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${params.playlistId}" not found`)
-			StudioReadAccess.studioContent({ studioId: playlist.studioId }, cred)
+			await StudioReadAccess.studioContent(playlist.studioId, cred)
 
 			return createRundownPlaylistSnapshot(playlist, params.full === 'true')
 		})
 	}
-	PickerGET.route('/snapshot/rundown/:playlistId', async (params, req: IncomingMessage, response: ServerResponse) =>
+	PickerGET.route('/snapshot/rundown/:playlistId', async (params, _req: IncomingMessage, response: ServerResponse) =>
 		createRundownSnapshot(response, params)
 	)
 	PickerGET.route(
 		'/snapshot/rundown/:playlistId/:full',
-		async (params, req: IncomingMessage, response: ServerResponse) => createRundownSnapshot(response, params)
+		async (params, _req: IncomingMessage, response: ServerResponse) => createRundownSnapshot(response, params)
 	)
-	PickerGET.route('/snapshot/debug/:studioId', async (params, req: IncomingMessage, response: ServerResponse) => {
+	PickerGET.route('/snapshot/debug/:studioId', async (params, _req: IncomingMessage, response: ServerResponse) => {
 		return handleResponse(response, async () => {
 			check(params.studioId, String)
 
 			const cred0: Credentials = { userId: null, token: params.token }
-			const { organizationId, cred } = OrganizationContentWriteAccess.snapshot(cred0)
-			StudioReadAccess.studio({ _id: protectString(params.studioId) }, cred)
+			const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(cred0)
+			await StudioReadAccess.studio(protectString(params.studioId), cred)
 
 			return createDebugSnapshot(protectString(params.studioId), organizationId)
 		})
 	})
 }
-PickerPOST.route('/snapshot/restore', async (params, req: IncomingMessage, response: ServerResponse) => {
+PickerPOST.route('/snapshot/restore', async (_params, req: IncomingMessage, response: ServerResponse) => {
 	const content = 'ok'
 	try {
 		response.setHeader('Content-Type', 'text/plain')
@@ -767,7 +779,7 @@ if (!Settings.enableUserAccounts) {
 	// Retrieve snapshot:
 	PickerGET.route(
 		'/snapshot/retrieve/:snapshotId',
-		async (params, req: IncomingMessage, response: ServerResponse) => {
+		async (params, _req: IncomingMessage, response: ServerResponse) => {
 			return handleResponse(response, async () => {
 				check(params.snapshotId, String)
 				return retreiveSnapshot(protectString(params.snapshotId), { userId: null })
@@ -778,7 +790,7 @@ if (!Settings.enableUserAccounts) {
 // Retrieve snapshot:
 PickerGET.route(
 	'/snapshot/:token/retrieve/:snapshotId',
-	async (params, req: IncomingMessage, response: ServerResponse) => {
+	async (params, _req: IncomingMessage, response: ServerResponse) => {
 		return handleResponse(response, async () => {
 			check(params.snapshotId, String)
 			return retreiveSnapshot(protectString(params.snapshotId), { userId: null, token: params.token })
@@ -792,7 +804,7 @@ class ServerSnapshotAPI extends MethodContextAPI implements NewSnapshotAPI {
 	}
 	async storeRundownPlaylist(playlistId: RundownPlaylistId, reason: string) {
 		check(playlistId, String)
-		const access = checkAccessToPlaylist(this, playlistId)
+		const access = await checkAccessToPlaylist(this, playlistId)
 		return storeRundownPlaylistSnapshot(access, reason)
 	}
 	async storeDebugSnapshot(studioId: StudioId, reason: string) {

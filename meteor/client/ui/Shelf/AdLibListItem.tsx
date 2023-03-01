@@ -8,12 +8,12 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { unprotectString } from '../../../lib/lib'
 import renderItem from './Renderers/ItemRendererFactory'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
-import { Studio } from '../../../lib/collections/Studios'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime, ensureHasTrailingSlash } from '../../lib/lib'
 import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { AdLibPieceUi } from '../../lib/shelf'
+import { UIStudio } from '../../../lib/api/studios'
 
 export interface IAdLibListItem extends AdLibPieceUi {
 	status: PieceStatusCode
@@ -28,7 +28,7 @@ export interface IAdLibListItem extends AdLibPieceUi {
 
 interface IListViewItemProps {
 	piece: IAdLibListItem
-	studio: Studio
+	studio: UIStudio
 	layer: ISourceLayer | undefined
 	selected: boolean
 	disabled?: boolean
@@ -54,7 +54,7 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 							floated: this.props.piece.floated,
 							disabled: this.props.disabled,
 						}),
-						//@ts-ignore React.HTMLAttributes does not list data attributes, but that's fine
+						//@ts-expect-error React.HTMLAttributes does not list data attributes, but that's fine
 						'data-obj-id': this.props.piece._id,
 						onClick: () => this.props.onSelectAdLib && this.props.onSelectAdLib(this.props.piece),
 						onContextMenu: () => this.props.onSelectAdLib && this.props.onSelectAdLib(this.props.piece),

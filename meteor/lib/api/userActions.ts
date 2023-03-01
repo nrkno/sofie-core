@@ -1,25 +1,30 @@
 import { ClientAPI } from '../api/client'
 import { MethodContext } from './methods'
-import { RundownPlaylistId } from '../collections/RundownPlaylists'
-import { PartId } from '../collections/Parts'
-import { RundownId } from '../collections/Rundowns'
-import { PartInstanceId } from '../collections/PartInstances'
-import { PieceInstanceId } from '../collections/PieceInstances'
-import { PieceId } from '../collections/Pieces'
 import { EvaluationBase } from '../collections/Evaluations'
-import { StudioId } from '../collections/Studios'
-import { MediaWorkFlowId } from '../collections/MediaWorkFlows'
-import { SnapshotId } from '../collections/Snapshots'
-import { SegmentId } from '../collections/Segments'
-import { BucketId, Bucket } from '../collections/Buckets'
+import { Bucket } from '../collections/Buckets'
 import { IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
 import { BucketAdLib } from '../collections/BucketAdlibs'
-import { AdLibActionId, AdLibActionCommon } from '../collections/AdLibActions'
+import { AdLibActionCommon } from '../collections/AdLibActions'
 import { BucketAdLibAction } from '../collections/BucketAdlibActions'
-import { PeripheralDeviceId } from '../collections/PeripheralDevices'
-import { RundownBaselineAdLibActionId } from '../collections/RundownBaselineAdLibActions'
-import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import { Time } from '../lib'
+import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studio'
+import {
+	AdLibActionId,
+	BucketId,
+	MediaWorkFlowId,
+	PartId,
+	PartInstanceId,
+	PeripheralDeviceId,
+	PieceId,
+	PieceInstanceId,
+	RundownBaselineAdLibActionId,
+	RundownId,
+	RundownPlaylistId,
+	SegmentId,
+	ShowStyleBaseId,
+	SnapshotId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface NewUserActionAPI extends MethodContext {
 	take(
@@ -111,7 +116,7 @@ export interface NewUserActionAPI extends MethodContext {
 		actionId: string,
 		userData: ActionUserData,
 		triggerMode?: string
-	): Promise<ClientAPI.ClientResponse<{ queuedPartInstanceId?: PartInstanceId; taken?: boolean }>>
+	): Promise<ClientAPI.ClientResponse<ExecuteActionResult>>
 	segmentAdLibPieceStart(
 		userEvent: string,
 		eventTime: Time,

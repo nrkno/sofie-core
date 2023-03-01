@@ -13,10 +13,10 @@ import { TFunction } from 'i18next'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { MeteorCall } from '../methods'
-import { PartInstance, PartInstanceId, PartInstances } from '../../collections/PartInstances'
-import { PartId, Parts } from '../../collections/Parts'
-import { RundownPlaylist, RundownPlaylistCollectionUtil, RundownPlaylistId } from '../../collections/RundownPlaylists'
-import { ShowStyleBase } from '../../collections/ShowStyleBases'
+import { PartInstance, PartInstances } from '../../collections/PartInstances'
+import { Parts } from '../../collections/Parts'
+import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../collections/RundownPlaylists'
+import { ShowStyleBase, SourceLayers } from '../../collections/ShowStyleBases'
 import { Studio } from '../../collections/Studios'
 import { assertNever } from '../../lib'
 import { logger } from '../../logging'
@@ -30,8 +30,8 @@ import {
 	IWrappedAdLib,
 } from './actionFilterChainCompilers'
 import { ClientAPI } from '../client'
-import { RundownId } from '../../collections/Rundowns'
 import { ReactiveVar } from 'meteor/reactive-var'
+import { PartId, PartInstanceId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 // as described in this issue: https://github.com/Microsoft/TypeScript/issues/14094
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
@@ -193,15 +193,15 @@ function createRundownPlaylistContext(
  * particular AdLib type
  *
  * @param {AdLibFilterChainLink[]} filterChain
- * @param {ShowStyleBase} showStyleBase
+ * @param {SourceLayers} sourceLayers
  * @return {*}  {ExecutableAdLibAction}
  */
 function createAdLibAction(
 	filterChain: AdLibFilterChainLink[],
-	showStyleBase: ShowStyleBase,
+	sourceLayers: SourceLayers,
 	actionArguments: IAdlibPlayoutActionArguments | undefined
 ): ExecutableAdLibAction {
-	const compiledAdLibFilter = compileAdLibFilter(filterChain, showStyleBase)
+	const compiledAdLibFilter = compileAdLibFilter(filterChain, sourceLayers)
 
 	return {
 		action: PlayoutActions.adlib,
@@ -320,7 +320,7 @@ function createAdLibAction(
 	}
 }
 
-function createShelfAction(filterChain: IGUIContextFilterLink[], state: boolean | 'toggle'): ExecutableAction {
+function createShelfAction(_filterChain: IGUIContextFilterLink[], state: boolean | 'toggle'): ExecutableAction {
 	return {
 		action: ClientActions.shelf,
 		execute: () => {
@@ -334,7 +334,7 @@ function createShelfAction(filterChain: IGUIContextFilterLink[], state: boolean 
 function createMiniShelfQueueAdLibAction(_filterChain: IGUIContextFilterLink[], forward: boolean): ExecutableAction {
 	return {
 		action: ClientActions.miniShelfQueueAdLib,
-		execute: (t, e) => {
+		execute: (_t, e) => {
 			RundownViewEventBus.emit(RundownViewEvents.MINI_SHELF_QUEUE_ADLIB, {
 				forward,
 				context: e,
@@ -364,7 +364,7 @@ function createRewindSegmentsAction(_filterChain: IGUIContextFilterLink[]): Exec
 function createRundownPlaylistSoftTakeAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
 	return {
 		action: PlayoutActions.take,
-		execute: (t, e) => {
+		execute: (_t, e) => {
 			RundownViewEventBus.emit(RundownViewEvents.TAKE, {
 				context: e,
 			})
@@ -378,7 +378,7 @@ function createRundownPlaylistSoftActivateAction(
 ): ExecutableAction {
 	return {
 		action: PlayoutActions.activateRundownPlaylist,
-		execute: (t, e) => {
+		execute: (_t, e) => {
 			RundownViewEventBus.emit(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, {
 				context: e,
 				rehearsal,
@@ -387,10 +387,21 @@ function createRundownPlaylistSoftActivateAction(
 	}
 }
 
+function createRundownPlaylistSoftDeactivateAction(): ExecutableAction {
+	return {
+		action: PlayoutActions.deactivateRundownPlaylist,
+		execute: (_t, e) => {
+			RundownViewEventBus.emit(RundownViewEvents.DEACTIVATE_RUNDOWN_PLAYLIST, {
+				context: e,
+			})
+		},
+	}
+}
+
 function createRundownPlaylistSoftResyncAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
 	return {
 		action: PlayoutActions.resyncRundownPlaylist,
-		execute: (t, e) => {
+		execute: (_t, e) => {
 			RundownViewEventBus.emit(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, {
 				context: e,
 			})
@@ -414,8 +425,19 @@ function createShowEntireCurrentSegmentAction(_filterChain: IGUIContextFilterLin
 function createRundownPlaylistSoftResetRundownAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
 	return {
 		action: PlayoutActions.resetRundownPlaylist,
-		execute: (t, e) => {
+		execute: (_t, e) => {
 			RundownViewEventBus.emit(RundownViewEvents.RESET_RUNDOWN_PLAYLIST, {
+				context: e,
+			})
+		},
+	}
+}
+
+function createTakeRundownSnapshotAction(_filterChain: IGUIContextFilterLink[]): ExecutableAction {
+	return {
+		action: PlayoutActions.createSnapshotForDebug,
+		execute: (_t, e) => {
+			RundownViewEventBus.emit(RundownViewEvents.CREATE_SNAPSHOT_FOR_DEBUG, {
 				context: e,
 			})
 		},
@@ -450,10 +472,10 @@ function createUserActionWithCtx(
 /**
  * This is a factory method to create the ExecutableAction from a SomeAction-type description
  * @param action
- * @param showStyleBase
+ * @param sourceLayers
  * @returns
  */
-export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): ExecutableAction {
+export function createAction(action: SomeAction, sourceLayers: SourceLayers): ExecutableAction {
 	switch (action.action) {
 		case ClientActions.shelf:
 			return createShelfAction(action.filterChain, action.state)
@@ -462,7 +484,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 		case ClientActions.rewindSegments:
 			return createRewindSegmentsAction(action.filterChain)
 		case PlayoutActions.adlib:
-			return createAdLibAction(action.filterChain, showStyleBase, action.arguments || undefined)
+			return createAdLibAction(action.filterChain, sourceLayers, action.arguments || undefined)
 		case PlayoutActions.activateRundownPlaylist:
 			if (action.force) {
 				return createUserActionWithCtx(
@@ -477,7 +499,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 						)
 				)
 			} else {
-				if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
+				if (isActionTriggeredFromUiContext(action)) {
 					return createRundownPlaylistSoftActivateAction(
 						action.filterChain as IGUIContextFilterLink[],
 						!!action.rehearsal
@@ -489,11 +511,14 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 				}
 			}
 		case PlayoutActions.deactivateRundownPlaylist:
+			if (isActionTriggeredFromUiContext(action)) {
+				return createRundownPlaylistSoftDeactivateAction()
+			}
 			return createUserActionWithCtx(action, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, async (e, ts, ctx) =>
 				MeteorCall.userAction.deactivate(e, ts, ctx.rundownPlaylistId.get())
 			)
 		case PlayoutActions.take:
-			if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
+			if (isActionTriggeredFromUiContext(action)) {
 				return createRundownPlaylistSoftTakeAction(action.filterChain as IGUIContextFilterLink[])
 			} else {
 				return createUserActionWithCtx(action, UserAction.TAKE, async (e, ts, ctx) =>
@@ -509,9 +534,13 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 				MeteorCall.userAction.disableNextPiece(e, ts, ctx.rundownPlaylistId.get(), !!action.undo)
 			)
 		case PlayoutActions.createSnapshotForDebug:
-			return createUserActionWithCtx(action, UserAction.CREATE_SNAPSHOT_FOR_DEBUG, async (e, ts, ctx) =>
-				MeteorCall.userAction.storeRundownSnapshot(e, ts, ctx.rundownPlaylistId.get(), `action`, false)
-			)
+			if (isActionTriggeredFromUiContext(action)) {
+				return createTakeRundownSnapshotAction(action.filterChain as IGUIContextFilterLink[])
+			} else {
+				return createUserActionWithCtx(action, UserAction.CREATE_SNAPSHOT_FOR_DEBUG, async (e, ts, ctx) =>
+					MeteorCall.userAction.storeRundownSnapshot(e, ts, ctx.rundownPlaylistId.get(), `action`, false)
+				)
+			}
 		case PlayoutActions.moveNext:
 			return createUserActionWithCtx(action, UserAction.MOVE_NEXT, async (e, ts, ctx) =>
 				MeteorCall.userAction.moveNext(
@@ -523,7 +552,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 				)
 			)
 		case PlayoutActions.reloadRundownPlaylistData:
-			if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
+			if (isActionTriggeredFromUiContext(action)) {
 				return createRundownPlaylistSoftResyncAction(action.filterChain as IGUIContextFilterLink[])
 			} else {
 				return createUserActionWithCtx(action, UserAction.RELOAD_RUNDOWN_PLAYLIST_DATA, async (e, ts, ctx) =>
@@ -533,7 +562,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 				)
 			}
 		case PlayoutActions.resetRundownPlaylist:
-			if (Meteor.isClient && action.filterChain.every((link) => link.object === 'view')) {
+			if (isActionTriggeredFromUiContext(action)) {
 				return createRundownPlaylistSoftResetRundownAction(action.filterChain as IGUIContextFilterLink[])
 			} else {
 				return createUserActionWithCtx(action, UserAction.RESET_RUNDOWN_PLAYLIST, async (e, ts, ctx) =>
@@ -555,11 +584,15 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 
 	// return a NO-OP, if not recognized
 	return {
-		// @ts-ignore action.action is "never", based on TypeScript rules, but if input doesn't folllow them,
+		// @ts-expect-error action.action is "never", based on TypeScript rules, but if input doesn't folllow them,
 		// it can actually exist
 		action: action.action,
 		execute: () => {
 			// Nothing
 		},
 	}
+}
+
+function isActionTriggeredFromUiContext(action: SomeAction): boolean {
+	return Meteor.isClient && action.filterChain.every((link) => link.object === 'view')
 }

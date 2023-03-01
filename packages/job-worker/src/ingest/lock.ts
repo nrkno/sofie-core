@@ -1,7 +1,5 @@
 import { SegmentId, PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { ReadOnlyCache } from '../cache/CacheBase'
 import { getRundownsSegmentsAndPartsFromCache } from '../playout/lib'
 import { clone } from 'underscore'
@@ -13,7 +11,6 @@ import { getRundownId } from './lib'
 import { JobContext } from '../jobs'
 import { IngestPropsBase } from '@sofie-automation/corelib/dist/worker/ingest'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { ReadonlyDeep } from 'type-fest'
 import { RundownLock } from '../jobs/lock'
 
 export interface CommitIngestData {
@@ -30,11 +27,6 @@ export interface CommitIngestData {
 
 	/** Whether the rundown should be removed or orphaned */
 	removeRundown: boolean
-
-	/** ShowStyle, if loaded to reuse */
-	showStyle: ReadonlyDeep<ShowStyleCompound> | undefined
-	/** Blueprint, if loaded to reuse */
-	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint> | undefined
 }
 
 export enum UpdateIngestRundownAction {

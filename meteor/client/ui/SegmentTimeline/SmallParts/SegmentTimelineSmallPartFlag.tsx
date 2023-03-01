@@ -5,10 +5,10 @@ import { SegmentTimelineSmallPartFlagIcon } from './SegmentTimelineSmallPartFlag
 import { protectString, unprotectString } from '../../../../lib/lib'
 import { PartUi, SegmentUi } from '../SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { Studio } from '../../../../lib/collections/Studios'
 import { SegmentTimelinePartHoverPreview } from './SegmentTimelinePartHoverPreview'
 import { TFunction } from 'i18next'
 import RundownViewEventBus, { RundownViewEvents } from '../../RundownView/RundownViewEventBus'
+import { UIStudio } from '../../../../lib/api/studios'
 
 export const SegmentTimelineSmallPartFlag = ({
 	t,
@@ -37,7 +37,7 @@ export const SegmentTimelineSmallPartFlag = ({
 
 	segment: SegmentUi
 	playlist: RundownPlaylist
-	studio: Studio
+	studio: UIStudio
 	collapsedOutputs: {
 		[key: string]: boolean
 	}

@@ -9,7 +9,6 @@ import { ActionExecutionContext, ActionPartChange } from '../context/adlibAction
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { CacheForPlayout } from '../../playout/cache'
 import { WatchedPackagesHelper } from '../context/watchedPackages'
-import { ReadonlyDeep } from 'type-fest'
 import { setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { runJobWithPlayoutCache } from '../../playout/lock'
 import { defaultRundownPlaylist } from '../../__mocks__/defaultCollectionObjects'
@@ -23,7 +22,7 @@ import {
 	RundownPlaylistId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { setupDefaultRundown, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { JobContext } from '../../jobs'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PieceInstance, ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -141,7 +140,7 @@ describe('Test blueprint api context', () => {
 	async function getActionExecutionContext(jobContext: JobContext, cache: CacheForPlayout) {
 		const playlist = cache.Playlist.doc
 		expect(playlist).toBeTruthy()
-		const rundown = cache.Rundowns.findOne({}) as DBRundown
+		const rundown = cache.Rundowns.findOne(() => true) as DBRundown
 		expect(rundown).toBeTruthy()
 
 		const activationId = playlist.activationId as RundownPlaylistActivationId
@@ -376,12 +375,12 @@ describe('Test blueprint api context', () => {
 					(
 						context2: JobContext,
 						cache2: CacheForPlayout,
-						showStyleBase: ReadonlyDeep<DBShowStyleBase>,
+						sourceLayers: SourceLayers,
 						partInstance: DBPartInstance
 					) => {
 						expect(context2).toBe(jobContext)
 						expect(cache2).toBeInstanceOf(CacheForPlayout)
-						expect(showStyleBase).toBeTruthy()
+						expect(sourceLayers).toBeTruthy()
 						mockCalledIds.push(partInstance._id)
 						return [
 							{
@@ -459,7 +458,7 @@ describe('Test blueprint api context', () => {
 
 					expect(allPartInstances).toHaveLength(5)
 
-					const sourceLayerIds = context.showStyleCompound.sourceLayers.map((l) => l._id)
+					const sourceLayerIds = Object.keys(context.showStyleCompound.sourceLayers)
 					expect(sourceLayerIds).toHaveLength(4)
 
 					// No playback has begun, so nothing should happen
@@ -489,7 +488,7 @@ describe('Test blueprint api context', () => {
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
-						startedPlayback: 1000,
+						plannedStartedPlayback: 1000,
 					})
 					// We need to push changes back to 'mongo' for these tests
 					await cache.saveAllToDatabase()
@@ -524,7 +523,7 @@ describe('Test blueprint api context', () => {
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
-						startedPlayback: 2000,
+						plannedStartedPlayback: 2000,
 					})
 					// We need to push changes back to 'mongo' for these tests
 					await cache.saveAllToDatabase()
@@ -553,7 +552,7 @@ describe('Test blueprint api context', () => {
 
 					expect(allPartInstances).toHaveLength(5)
 
-					const sourceLayerIds = context.showStyleCompound.sourceLayers.map((l) => l._id)
+					const sourceLayerIds = Object.keys(context.showStyleCompound.sourceLayers)
 					expect(sourceLayerIds).toHaveLength(4)
 
 					// No playback has begun, so nothing should happen
@@ -583,7 +582,7 @@ describe('Test blueprint api context', () => {
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
-						startedPlayback: 1000,
+						plannedStartedPlayback: 1000,
 					})
 					const pieceId1: PieceInstanceId = getRandomId()
 					cache.PieceInstances.insert({
@@ -607,7 +606,7 @@ describe('Test blueprint api context', () => {
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
-						startedPlayback: 2000,
+						plannedStartedPlayback: 2000,
 					})
 					// We need to push changes back to 'mongo' for these tests
 					await cache.saveAllToDatabase()
@@ -639,7 +638,7 @@ describe('Test blueprint api context', () => {
 
 					expect(allPartInstances).toHaveLength(5)
 
-					const sourceLayerIds = context.showStyleCompound.sourceLayers.map((l) => l._id)
+					const sourceLayerIds = Object.keys(context.showStyleCompound.sourceLayers)
 					expect(sourceLayerIds).toHaveLength(4)
 
 					// No playback has begun, so nothing should happen
@@ -668,7 +667,7 @@ describe('Test blueprint api context', () => {
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
-						startedPlayback: 1000,
+						plannedStartedPlayback: 1000,
 					})
 					const pieceId1: PieceInstanceId = getRandomId()
 					cache.PieceInstances.insert({
@@ -695,7 +694,7 @@ describe('Test blueprint api context', () => {
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
-						startedPlayback: 2000,
+						plannedStartedPlayback: 2000,
 					})
 					// We need to push changes back to 'mongo' for these tests
 					await cache.saveAllToDatabase()
@@ -731,7 +730,7 @@ describe('Test blueprint api context', () => {
 					// We need to push changes back to 'mongo' for these tests
 					await cache.saveAllToDatabase()
 
-					const sourceLayerIds = context.showStyleCompound.sourceLayers.map((l) => l._id)
+					const sourceLayerIds = Object.keys(context.showStyleCompound.sourceLayers)
 					expect(sourceLayerIds).toHaveLength(4)
 
 					// No playback has begun, so nothing should happen
@@ -765,7 +764,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					const sourceLayerIds = context.showStyleCompound.sourceLayers.map((l) => l._id)
+					const sourceLayerIds = Object.keys(context.showStyleCompound.sourceLayers)
 					expect(sourceLayerIds).toHaveLength(4)
 
 					const expectedPieceInstanceSourceLayer0 = pieceInstances.find(
@@ -818,7 +817,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					const sourceLayerIds = context.showStyleCompound.sourceLayers.map((l) => l._id)
+					const sourceLayerIds = Object.keys(context.showStyleCompound.sourceLayers)
 					expect(sourceLayerIds).toHaveLength(4)
 
 					await expect(
@@ -852,7 +851,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					const sourceLayerIds = context.showStyleCompound.sourceLayers.map((l) => l._id)
+					const sourceLayerIds = Object.keys(context.showStyleCompound.sourceLayers)
 					expect(sourceLayerIds).toHaveLength(4)
 
 					const expectedPieceInstanceSourceLayer0 = pieceInstances.find(
@@ -1349,13 +1348,10 @@ describe('Test blueprint api context', () => {
 					partInstance.part.autoNext = true
 					partInstance.part.expectedDuration = 700
 					partInstance.timings = {
-						startedPlayback: getCurrentTime(),
-						stoppedPlayback: undefined,
+						plannedStartedPlayback: getCurrentTime(),
+						plannedStoppedPlayback: undefined,
 						playOffset: 0,
 						take: undefined,
-						takeDone: undefined,
-						takeOut: undefined,
-						next: undefined,
 					}
 					cache.PartInstances.replace(partInstance)
 
@@ -1611,7 +1607,7 @@ describe('Test blueprint api context', () => {
 
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
-					const beforePieceInstancesCount = cache.PieceInstances.findFetch({}).length // Because only those frm current, next, prev are included..
+					const beforePieceInstancesCount = cache.PieceInstances.findAll(null).length // Because only those frm current, next, prev are included..
 					expect(beforePieceInstancesCount).not.toEqual(0)
 
 					const pieceInstanceFromOther = (await jobContext.directCollections.PieceInstances.findOne({
@@ -1625,7 +1621,7 @@ describe('Test blueprint api context', () => {
 						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 						context.removePieceInstances('next', [unprotectString(pieceInstanceFromOther._id)])
 					).resolves.toEqual([]) // Try and remove something belonging to a different part
-					expect(cache.PieceInstances.findFetch({}).length).toEqual(beforePieceInstancesCount)
+					expect(cache.PieceInstances.findAll(null).length).toEqual(beforePieceInstancesCount)
 				})
 			})
 
@@ -1640,10 +1636,10 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					expect(cache.PieceInstances.findFetch({}).length).not.toEqual(0)
+					expect(cache.PieceInstances.findAll(null).length).not.toEqual(0)
 
 					// Find the instance, and create its backing piece
-					const targetPieceInstance = cache.PieceInstances.findOne({}) as PieceInstance
+					const targetPieceInstance = cache.PieceInstances.findOne(() => true) as PieceInstance
 					expect(targetPieceInstance).toBeTruthy()
 
 					await expect(
@@ -1725,7 +1721,7 @@ describe('Test blueprint api context', () => {
 						badProperty: 9, // This will be dropped
 					}
 					const resultPiece = await context.updatePartInstance('next', partInstance0Delta)
-					const partInstance1 = cache.PartInstances.findOne({}) as DBPartInstance
+					const partInstance1 = cache.PartInstances.findOne(() => true) as DBPartInstance
 					expect(partInstance1).toBeTruthy()
 
 					expect(resultPiece).toEqual(convertPartInstanceToBlueprints(partInstance1))

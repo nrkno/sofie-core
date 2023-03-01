@@ -1,13 +1,12 @@
 import { PieceInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { normalizeArrayToMap, omit } from '@sofie-automation/corelib/dist/lib'
 import { protectString, protectStringArray, unprotectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { CacheForPlayout } from '../../playout/cache'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
-import { ReadonlyDeep, SetRequired } from 'type-fest'
+import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
 import { ContextInfo, RundownUserContext } from './context'
 import {
@@ -29,10 +28,12 @@ import {
 } from './lib'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { JobContext } from '../../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { logChanges } from '../../cache/lib'
-import { MongoModifier } from '../../db'
-import { serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import {
+	PieceTimelineObjectsBlob,
+	serializePieceTimelineObjectsBlob,
+} from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export class SyncIngestUpdateToPartInstanceContext
 	extends RundownUserContext
@@ -42,14 +43,16 @@ export class SyncIngestUpdateToPartInstanceContext
 	private readonly _pieceInstanceCache: DbCacheWriteCollection<PieceInstance>
 	private readonly _proposedPieceInstances: Map<PieceInstanceId, PieceInstance>
 
+	private partInstance: DBPartInstance | undefined
+
 	constructor(
 		private readonly _context: JobContext,
 		contextInfo: ContextInfo,
 		private readonly playlistActivationId: RundownPlaylistActivationId,
 		studio: ReadonlyDeep<DBStudio>,
-		showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>,
-		private partInstance: DBPartInstance,
+		partInstance: DBPartInstance,
 		pieceInstances: PieceInstance[],
 		proposedPieceInstances: PieceInstance[],
 		private playStatus: 'previous' | 'current' | 'next'
@@ -62,6 +65,8 @@ export class SyncIngestUpdateToPartInstanceContext
 			_context.getShowStyleBlueprintConfig(showStyleCompound),
 			rundown
 		)
+
+		this.partInstance = partInstance
 
 		// Create temporary cache databases
 		this._pieceInstanceCache = DbCacheWriteCollection.createFromArray(
@@ -101,6 +106,8 @@ export class SyncIngestUpdateToPartInstanceContext
 			throw new Error(`PieceInstance "${pieceInstanceId}" could not be found`)
 		}
 
+		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
+
 		// filter the submission to the allowed ones
 		const piece = modifiedPiece
 			? postProcessPieces(
@@ -133,6 +140,8 @@ export class SyncIngestUpdateToPartInstanceContext
 	insertPieceInstance(piece0: IBlueprintPiece): IBlueprintPieceInstance {
 		const trimmedPiece: IBlueprintPiece = _.pick(piece0, IBlueprintPieceObjectsSampleKeys)
 
+		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
+
 		const piece = postProcessPieces(
 			this._context,
 			[trimmedPiece],
@@ -158,6 +167,8 @@ export class SyncIngestUpdateToPartInstanceContext
 			throw new Error(`Cannot update PieceInstance "${pieceInstanceId}". Some valid properties must be defined`)
 		}
 
+		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
+
 		const pieceInstance = this._pieceInstanceCache.findOne(protectString(pieceInstanceId))
 		if (!pieceInstance) {
 			throw new Error(`PieceInstance "${pieceInstanceId}" could not be found`)
@@ -166,32 +177,30 @@ export class SyncIngestUpdateToPartInstanceContext
 			throw new Error(`PieceInstance "${pieceInstanceId}" does not belong to the current PartInstance`)
 		}
 
-		const update: SetRequired<MongoModifier<PieceInstance>, '$set' | '$unset'> = {
-			$set: {},
-			$unset: {},
-		}
-
-		if (updatedPiece.content?.timelineObjects) {
-			update.$set['piece.timelineObjectsString'] = serializePieceTimelineObjectsBlob(
+		let timelineObjectsString: PieceTimelineObjectsBlob | undefined
+		if (trimmedPiece.content?.timelineObjects) {
+			timelineObjectsString = serializePieceTimelineObjectsBlob(
 				postProcessTimelineObjects(
 					pieceInstance.piece._id,
 					this.showStyleCompound.blueprintId,
-					updatedPiece.content.timelineObjects
+					trimmedPiece.content.timelineObjects
 				)
 			)
 			// This has been processed
-			updatedPiece.content = omit(updatedPiece.content, 'timelineObjects') as WithTimeline<SomeContent>
+			trimmedPiece.content = omit(trimmedPiece.content, 'timelineObjects') as WithTimeline<SomeContent>
 		}
 
-		for (const [k, val] of Object.entries(trimmedPiece)) {
-			if (val === undefined) {
-				update.$unset[`piece.${k}`] = 1
-			} else {
-				update.$set[`piece.${k}`] = val
+		this._pieceInstanceCache.updateOne(pieceInstance._id, (p) => {
+			if (timelineObjectsString !== undefined) p.piece.timelineObjectsString = timelineObjectsString
+
+			return {
+				...p,
+				piece: {
+					...p.piece,
+					...(trimmedPiece as any), // TODO: this needs to be more type safe
+				},
 			}
-		}
-
-		this._pieceInstanceCache.update(pieceInstance._id, update)
+		})
 
 		const updatedPieceInstance = this._pieceInstanceCache.findOne(pieceInstance._id)
 		if (!updatedPieceInstance) {
@@ -202,25 +211,24 @@ export class SyncIngestUpdateToPartInstanceContext
 	}
 	updatePartInstance(updatePart: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance {
 		// filter the submission to the allowed ones
-		const trimmedProps: Partial<IBlueprintMutatablePart> = _.pick(updatePart, IBlueprintMutatablePartSampleKeys)
+		const trimmedProps: Partial<IBlueprintMutatablePart> = _.pick(updatePart, [
+			...IBlueprintMutatablePartSampleKeys,
+		])
 		if (Object.keys(trimmedProps).length === 0) {
 			throw new Error(`Cannot update PartInstance. Some valid properties must be defined`)
 		}
 
-		const update: any = {
-			$set: {},
-			$unset: {},
-		}
+		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
 
-		for (const [k, val] of Object.entries(trimmedProps)) {
-			if (val === undefined) {
-				update.$unset[`part.${k}`] = val
-			} else {
-				update.$set[`part.${k}`] = val
+		this._partInstanceCache.updateOne(this.partInstance._id, (p) => {
+			return {
+				...p,
+				part: {
+					...p.part,
+					...trimmedProps,
+				},
 			}
-		}
-
-		this._partInstanceCache.update(this.partInstance._id, update)
+		})
 
 		const updatedPartInstance = this._partInstanceCache.findOne(this.partInstance._id)
 		if (!updatedPartInstance) {
@@ -229,16 +237,32 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		return convertPartInstanceToBlueprints(updatedPartInstance)
 	}
+
+	removePartInstance(): void {
+		if (this.playStatus !== 'next') throw new Error(`Only the 'next' PartInstance can be removed`)
+
+		if (this.partInstance) {
+			const partInstanceId = this.partInstance._id
+
+			this._partInstanceCache.remove(partInstanceId)
+			this._pieceInstanceCache.remove((piece) => piece.partInstanceId === partInstanceId)
+		}
+	}
+
 	removePieceInstances(...pieceInstanceIds: string[]): string[] {
-		const pieceInstances = this._pieceInstanceCache.findFetch({
-			partInstanceId: this.partInstance._id,
-			_id: { $in: protectStringArray(pieceInstanceIds) },
-		})
+		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
 
-		this._pieceInstanceCache.remove({
-			_id: { $in: pieceInstances.map((p) => p._id) },
-		})
+		const partInstanceId = this.partInstance._id
+		const rawPieceInstanceIdSet = new Set(protectStringArray(pieceInstanceIds))
+		const pieceInstances = this._pieceInstanceCache.findAll(
+			(p) => p.partInstanceId === partInstanceId && rawPieceInstanceIdSet.has(p._id)
+		)
 
-		return unprotectStringArray(pieceInstances.map((p) => p._id))
+		const pieceInstanceIdsToRemove = pieceInstances.map((p) => p._id)
+
+		const pieceInstanceIdsSet = new Set(pieceInstanceIdsToRemove)
+		this._pieceInstanceCache.remove((p) => pieceInstanceIdsSet.has(p._id))
+
+		return unprotectStringArray(pieceInstanceIdsToRemove)
 	}
 }

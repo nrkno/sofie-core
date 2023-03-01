@@ -1,7 +1,6 @@
-import { RundownId } from '../../../lib/collections/Rundowns'
 import { isProtectedString } from '../../../lib/lib'
-import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
+import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 enum RundownListDragDropTypes {
 	RUNDOWN = 'rundown',

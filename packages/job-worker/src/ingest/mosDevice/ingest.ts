@@ -201,7 +201,7 @@ export async function handleMosRundownMetadata(context: JobContext, data: MosRun
 }
 
 export async function handleMosRundownStatus(context: JobContext, data: MosRundownStatusProps): Promise<void> {
-	const rundownId = getRundownId(context.studio, data.rundownExternalId)
+	const rundownId = getRundownId(context.studioId, data.rundownExternalId)
 
 	return runWithRundownLock(context, rundownId, async (rundown) => {
 		if (!rundown) throw new Error(`Rundown "${rundownId}" not found!`)
@@ -236,10 +236,9 @@ export async function handleMosRundownReadyToAir(context: JobContext, data: MosR
 			// If rundown is orphaned, then it should be ignored
 			if (cache.Rundown.doc.orphaned) return null
 
-			cache.Rundown.update({
-				$set: {
-					airStatus: data.status,
-				},
+			cache.Rundown.update((rd) => {
+				rd.airStatus = data.status
+				return rd
 			})
 
 			return handleUpdatedRundownMetaDataInner(context, cache, ingestRundown, data.peripheralDeviceId)
@@ -248,7 +247,7 @@ export async function handleMosRundownReadyToAir(context: JobContext, data: MosR
 }
 
 export async function handleMosStoryStatus(context: JobContext, data: MosStoryStatusProps): Promise<void> {
-	const rundownId = getRundownId(context.studio, data.rundownExternalId)
+	const rundownId = getRundownId(context.studioId, data.rundownExternalId)
 
 	return runWithRundownLock(context, rundownId, async (rundown) => {
 		if (!rundown) throw new Error(`Rundown "${rundownId}" not found!`)
@@ -276,7 +275,7 @@ export async function handleMosStoryStatus(context: JobContext, data: MosStorySt
 					},
 					{
 						$set: {
-							status: data.status,
+							'part.status': data.status,
 						},
 					}
 				),

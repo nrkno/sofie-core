@@ -9,9 +9,9 @@ import { onElementResize } from '../../lib/resizeObserver'
 import { PartUi } from './SegmentTimelineContainer'
 import { getCurrentTime } from '../../../lib/lib'
 import { RundownTiming } from '../RundownView/RundownTiming/RundownTiming'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
 import { RundownTimingContext } from '../../lib/rundownTiming'
+import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 // We're cheating a little: Fontface
 declare class FontFace {

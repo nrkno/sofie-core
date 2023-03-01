@@ -6,6 +6,7 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDevices,
 	PeripheralDeviceType,
+	PERIPHERAL_SUBTYPE_PROCESS,
 } from '../../../../lib/collections/PeripheralDevices'
 import { literal, getRandomId, protectString, unprotectString } from '../../../../lib/lib'
 import {
@@ -20,15 +21,19 @@ import {
 	TriggerType,
 	ClientActions,
 	PlayoutActions,
+	IBlueprintTriggeredActions,
 } from '@sofie-automation/blueprints-integration'
 import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle, MigrationContextSystem } from '../migrationContext'
-import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
-import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, ShowStyleBases, SourceLayers } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
 import { CoreSystem } from '../../../../lib/collections/CoreSystem'
 import { TriggeredActions } from '../../../../lib/collections/TriggeredActions'
+import {
+	applyAndValidateOverrides,
+	wrapDefaultObject,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 describe('Test blueprint migrationContext', () => {
 	beforeAll(async () => {
@@ -50,7 +55,7 @@ describe('Test blueprint migrationContext', () => {
 			function getMappingFromDb(studio: Studio, mappingId: string): MappingExt | undefined {
 				const studio2 = Studios.findOne(studio._id) as Studio
 				expect(studio2).toBeTruthy()
-				return studio2.mappings[mappingId]
+				return studio2.mappingsWithOverrides.defaults[mappingId]
 			}
 
 			testInFiber('getMapping: no id', () => {
@@ -71,14 +76,14 @@ describe('Test blueprint migrationContext', () => {
 					deviceId: protectString('dev1'),
 					lookahead: LookaheadMode.NONE,
 				}
-				studio.mappings['mapping1'] = rawMapping
+				studio.mappingsWithOverrides.defaults['mapping1'] = rawMapping
 
 				const mapping = ctx.getMapping('mapping1') as BlueprintMapping
 				expect(mapping).toEqual(rawMapping)
 
 				// Ensure it is a copy
 				mapping.deviceId = 'changed'
-				expect(mapping).not.toEqual(studio.mappings['mapping1'])
+				expect(mapping).not.toEqual(studio.mappingsWithOverrides.defaults['mapping1'])
 			})
 
 			testInFiber('insertMapping: good', () => {
@@ -242,7 +247,7 @@ describe('Test blueprint migrationContext', () => {
 			function getAllConfigFromDb(studio: Studio): IBlueprintConfig {
 				const studio2 = Studios.findOne(studio._id) as Studio
 				expect(studio2).toBeTruthy()
-				return studio2.blueprintConfig
+				return studio2.blueprintConfigWithOverrides.defaults
 			}
 
 			testInFiber('getConfig: no id', () => {
@@ -259,28 +264,28 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
 
-				studio.blueprintConfig['conf1'] = 5
+				studio.blueprintConfigWithOverrides.defaults['conf1'] = 5
 				expect(ctx.getConfig('conf1')).toEqual(5)
 
-				studio.blueprintConfig['conf2'] = '   af '
+				studio.blueprintConfigWithOverrides.defaults['conf2'] = '   af '
 				expect(ctx.getConfig('conf2')).toEqual('af')
 			})
 
 			testInFiber('setConfig: no id', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialConfig = _.clone(studio.blueprintConfig)
+				const initialConfig = _.clone(studio.blueprintConfigWithOverrides.defaults)
 
 				expect(() => ctx.setConfig('', 34)).toThrow(`[500] Config id "" is invalid`)
 
 				// Config should not have changed
-				expect(studio.blueprintConfig).toEqual(initialConfig)
+				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
 				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 			testInFiber('setConfig: insert', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialConfig = _.clone(studio.blueprintConfig)
+				const initialConfig = _.clone(studio.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getConfig('conf1')).toBeFalsy()
 
 				ctx.setConfig('conf1', 34)
@@ -293,13 +298,13 @@ describe('Test blueprint migrationContext', () => {
 
 				// Config should have changed
 				initialConfig[expectedItem._id] = expectedItem.value
-				expect(studio.blueprintConfig).toEqual(initialConfig)
+				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
 				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 			testInFiber('setConfig: insert undefined', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialConfig = _.clone(studio.blueprintConfig)
+				const initialConfig = _.clone(studio.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getConfig('confUndef')).toBeFalsy()
 
 				ctx.setConfig('confUndef', undefined as any)
@@ -312,14 +317,14 @@ describe('Test blueprint migrationContext', () => {
 
 				// Config should have changed
 				initialConfig[expectedItem._id] = expectedItem.value
-				expect(studio.blueprintConfig).toEqual(initialConfig)
+				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
 				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 
 			testInFiber('setConfig: update', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialConfig = _.clone(studio.blueprintConfig)
+				const initialConfig = _.clone(studio.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getConfig('conf1')).toBeTruthy()
 
 				ctx.setConfig('conf1', 'hello')
@@ -332,13 +337,13 @@ describe('Test blueprint migrationContext', () => {
 
 				// Config should have changed
 				initialConfig[expectedItem._id] = expectedItem.value
-				expect(studio.blueprintConfig).toEqual(initialConfig)
+				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
 				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 			testInFiber('setConfig: update undefined', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialConfig = _.clone(studio.blueprintConfig)
+				const initialConfig = _.clone(studio.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getConfig('conf1')).toBeTruthy()
 
 				ctx.setConfig('conf1', undefined as any)
@@ -351,7 +356,7 @@ describe('Test blueprint migrationContext', () => {
 
 				// Config should have changed
 				initialConfig[expectedItem._id] = expectedItem.value
-				expect(studio.blueprintConfig).toEqual(initialConfig)
+				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
 				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 
@@ -359,20 +364,20 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
 				ctx.setConfig('conf1', true)
-				const initialConfig = _.clone(studio.blueprintConfig)
+				const initialConfig = _.clone(studio.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getConfig('conf1')).toBeTruthy()
 
 				// Should not error
 				ctx.removeConfig('')
 
 				// Config should not have changed
-				expect(studio.blueprintConfig).toEqual(initialConfig)
+				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
 				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 			testInFiber('removeConfig: missing', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialConfig = _.clone(studio.blueprintConfig)
+				const initialConfig = _.clone(studio.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getConfig('conf1')).toBeTruthy()
 				expect(ctx.getConfig('fake_conf')).toBeFalsy()
 
@@ -380,13 +385,13 @@ describe('Test blueprint migrationContext', () => {
 				ctx.removeConfig('fake_conf')
 
 				// Config should not have changed
-				expect(studio.blueprintConfig).toEqual(initialConfig)
+				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
 				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 			testInFiber('removeConfig: good', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialConfig = _.clone(studio.blueprintConfig)
+				const initialConfig = _.clone(studio.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getConfig('conf1')).toBeTruthy()
 
 				// Should not error
@@ -394,7 +399,7 @@ describe('Test blueprint migrationContext', () => {
 
 				// Config should have changed
 				delete initialConfig['conf1']
-				expect(studio.blueprintConfig).toEqual(initialConfig)
+				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
 				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 		})
@@ -407,7 +412,7 @@ describe('Test blueprint migrationContext', () => {
 					organizationId: null,
 					type: PeripheralDeviceType.PLAYOUT,
 					category: PeripheralDeviceCategory.PLAYOUT,
-					subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
+					subType: PERIPHERAL_SUBTYPE_PROCESS,
 					studioId: studio._id,
 					created: 0,
 					lastConnected: 0,
@@ -437,7 +442,7 @@ describe('Test blueprint migrationContext', () => {
 					studioId: studio._id,
 					type: PeripheralDeviceType.PLAYOUT,
 					category: PeripheralDeviceCategory.PLAYOUT,
-					subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
+					subType: PERIPHERAL_SUBTYPE_PROCESS,
 				})
 				expect(device).toBeTruthy()
 				return device as PeripheralDevice
@@ -666,7 +671,7 @@ describe('Test blueprint migrationContext', () => {
 				_id: protectString(ctx.getVariantId(id)),
 				name: 'test',
 				showStyleBaseId: showStyle._id,
-				blueprintConfig: config || {},
+				blueprintConfigWithOverrides: wrapDefaultObject(config || {}),
 				_rundownVersionHash: '',
 			})
 			ShowStyleVariants.insert(rawVariant)
@@ -766,7 +771,7 @@ describe('Test blueprint migrationContext', () => {
 						_id: protectString(variantId),
 						showStyleBaseId: getShowStyle(ctx)._id,
 						name: 'test2',
-						blueprintConfig: {},
+						blueprintConfigWithOverrides: wrapDefaultObject({}),
 						_rundownVersionHash: '',
 					}) as any as IBlueprintShowStyleVariant
 				)
@@ -851,10 +856,10 @@ describe('Test blueprint migrationContext', () => {
 		})
 
 		describe('sourcelayer', () => {
-			function getAllSourceLayersFromDb(showStyle: ShowStyleBase): ISourceLayer[] {
+			function getAllSourceLayersFromDb(showStyle: ShowStyleBase): SourceLayers {
 				const showStyle2 = ShowStyleBases.findOne(showStyle._id) as ShowStyleBase
 				expect(showStyle2).toBeTruthy()
-				return showStyle2.sourceLayers
+				return showStyle2.sourceLayersWithOverrides.defaults
 			}
 
 			testInFiber('getSourceLayer: no id', () => {
@@ -883,7 +888,7 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('insertSourceLayer: no id', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialSourceLayers = _.clone(showStyle.sourceLayers)
+				const initialSourceLayers = _.clone(showStyle.sourceLayersWithOverrides.defaults)
 
 				expect(() =>
 					ctx.insertSourceLayer('', {
@@ -893,13 +898,13 @@ describe('Test blueprint migrationContext', () => {
 					})
 				).toThrow(`[500] SourceLayer id "" is invalid`)
 
-				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
+				expect(getShowStyle(ctx).sourceLayersWithOverrides.defaults).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
 			})
 			testInFiber('insertSourceLayer: existing', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialSourceLayers = _.clone(showStyle.sourceLayers)
+				const initialSourceLayers = _.clone(showStyle.sourceLayersWithOverrides.defaults)
 
 				expect(() =>
 					ctx.insertSourceLayer('vt0', {
@@ -909,13 +914,13 @@ describe('Test blueprint migrationContext', () => {
 					})
 				).toThrow(`[500] SourceLayer "vt0" already exists`)
 
-				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
+				expect(getShowStyle(ctx).sourceLayersWithOverrides.defaults).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
 			})
 			testInFiber('insertSourceLayer: good', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialSourceLayers = _.clone(showStyle.sourceLayers)
+				const initialSourceLayers = _.clone(showStyle.sourceLayersWithOverrides.defaults)
 
 				const rawLayer = {
 					name: 'test',
@@ -925,18 +930,18 @@ describe('Test blueprint migrationContext', () => {
 
 				ctx.insertSourceLayer('lay1', rawLayer)
 
-				initialSourceLayers.push({
+				initialSourceLayers['lay1'] = {
 					...rawLayer,
 					_id: 'lay1',
-				})
-				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
+				}
+				expect(getShowStyle(ctx).sourceLayersWithOverrides.defaults).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
 			})
 
 			testInFiber('updateSourceLayer: no id', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialSourceLayers = _.clone(showStyle.sourceLayers)
+				const initialSourceLayers = _.clone(showStyle.sourceLayersWithOverrides.defaults)
 
 				expect(() =>
 					ctx.updateSourceLayer('', {
@@ -946,13 +951,13 @@ describe('Test blueprint migrationContext', () => {
 					})
 				).toThrow(`[500] SourceLayer id "" is invalid`)
 
-				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
+				expect(getShowStyle(ctx).sourceLayersWithOverrides.defaults).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
 			})
 			testInFiber('updateSourceLayer: missing', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialSourceLayers = _.clone(showStyle.sourceLayers)
+				const initialSourceLayers = _.clone(showStyle.sourceLayersWithOverrides.defaults)
 
 				expect(() =>
 					ctx.updateSourceLayer('fake99', {
@@ -962,13 +967,13 @@ describe('Test blueprint migrationContext', () => {
 					})
 				).toThrow(`[404] SourceLayer "fake99" cannot be updated as it does not exist`)
 
-				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
+				expect(getShowStyle(ctx).sourceLayersWithOverrides.defaults).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
 			})
 			testInFiber('updateSourceLayer: good', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialSourceLayers = _.clone(showStyle.sourceLayers)
+				const initialSourceLayers = _.clone(showStyle.sourceLayersWithOverrides.defaults)
 				expect(ctx.getSourceLayer('lay1')).toBeTruthy()
 
 				const rawLayer = {
@@ -978,60 +983,56 @@ describe('Test blueprint migrationContext', () => {
 
 				ctx.updateSourceLayer('lay1', rawLayer)
 
-				_.each(initialSourceLayers, (layer, i) => {
-					if (layer._id === 'lay1') {
-						initialSourceLayers[i] = {
-							...layer,
-							...rawLayer,
-						}
-					}
-				})
-				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
+				initialSourceLayers['lay1'] = {
+					...initialSourceLayers['lay1']!,
+					...rawLayer,
+				}
+				expect(getShowStyle(ctx).sourceLayersWithOverrides.defaults).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
 			})
 
 			testInFiber('removeSourceLayer: no id', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialSourceLayers = _.clone(showStyle.sourceLayers)
+				const initialSourceLayers = _.clone(showStyle.sourceLayersWithOverrides.defaults)
 
 				expect(() => ctx.removeSourceLayer('')).toThrow(`[500] SourceLayer id "" is invalid`)
 
-				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
+				expect(getShowStyle(ctx).sourceLayersWithOverrides.defaults).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
 			})
 			testInFiber('removeSourceLayer: missing', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialSourceLayers = _.clone(showStyle.sourceLayers)
+				const initialSourceLayers = _.clone(showStyle.sourceLayersWithOverrides.defaults)
 				expect(ctx.getSourceLayer('fake99')).toBeFalsy()
 
 				// Should not error
 				ctx.removeSourceLayer('fake99')
 
-				expect(getShowStyle(ctx).sourceLayers).toEqual(initialSourceLayers)
+				expect(getShowStyle(ctx).sourceLayersWithOverrides.defaults).toEqual(initialSourceLayers)
 				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
 			})
 			testInFiber('removeSourceLayer: good', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialSourceLayers = _.clone(showStyle.sourceLayers)
+				const initialSourceLayers = _.clone(showStyle.sourceLayersWithOverrides.defaults)
 				expect(ctx.getSourceLayer('lay1')).toBeTruthy()
 
 				// Should not error
 				ctx.removeSourceLayer('lay1')
 
-				const expectedSourceLayers = _.filter(initialSourceLayers, (layer) => layer._id !== 'lay1')
-				expect(getShowStyle(ctx).sourceLayers).toEqual(expectedSourceLayers)
-				expect(getAllSourceLayersFromDb(showStyle)).toEqual(expectedSourceLayers)
+				delete initialSourceLayers['lay1']
+				expect(getShowStyle(ctx).sourceLayersWithOverrides.defaults).toEqual(initialSourceLayers)
+				expect(getAllSourceLayersFromDb(showStyle)).toEqual(initialSourceLayers)
 			})
 		})
 
 		describe('outputlayer', () => {
-			function getAllOutputLayersFromDb(showStyle: ShowStyleBase): IOutputLayer[] {
+			function getAllOutputLayersFromDb(showStyle: ShowStyleBase): Record<string, IOutputLayer | undefined> {
 				const showStyle2 = ShowStyleBases.findOne(showStyle._id) as ShowStyleBase
 				expect(showStyle2).toBeTruthy()
-				return showStyle2.outputLayers
+				return showStyle2.outputLayersWithOverrides.defaults
 			}
 
 			testInFiber('getOutputLayer: no id', () => {
@@ -1056,7 +1057,7 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('insertOutputLayer: no id', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialOutputLayers = _.clone(showStyle.outputLayers)
+				const initialOutputLayers = _.clone(showStyle.outputLayersWithOverrides.defaults)
 
 				expect(() =>
 					ctx.insertOutputLayer('', {
@@ -1066,13 +1067,13 @@ describe('Test blueprint migrationContext', () => {
 					})
 				).toThrow(`[500] OutputLayer id "" is invalid`)
 
-				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
 			})
 			testInFiber('insertOutputLayer: existing', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialOutputLayers = _.clone(showStyle.outputLayers)
+				const initialOutputLayers = _.clone(showStyle.outputLayersWithOverrides.defaults)
 
 				expect(() =>
 					ctx.insertOutputLayer('pgm', {
@@ -1082,13 +1083,13 @@ describe('Test blueprint migrationContext', () => {
 					})
 				).toThrow(`[500] OutputLayer "pgm" already exists`)
 
-				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
 			})
 			testInFiber('insertOutputLayer: good', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialOutputLayers = _.clone(showStyle.outputLayers)
+				const initialOutputLayers = _.clone(showStyle.outputLayersWithOverrides.defaults)
 
 				const rawLayer = {
 					name: 'test',
@@ -1098,18 +1099,18 @@ describe('Test blueprint migrationContext', () => {
 
 				ctx.insertOutputLayer('lay1', rawLayer)
 
-				initialOutputLayers.push({
+				initialOutputLayers['lay1'] = {
 					...rawLayer,
 					_id: 'lay1',
-				})
-				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
+				}
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
 			})
 
 			testInFiber('updateOutputLayer: no id', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialOutputLayers = _.clone(showStyle.outputLayers)
+				const initialOutputLayers = _.clone(showStyle.outputLayersWithOverrides.defaults)
 
 				expect(() =>
 					ctx.updateOutputLayer('', {
@@ -1119,13 +1120,13 @@ describe('Test blueprint migrationContext', () => {
 					})
 				).toThrow(`[500] OutputLayer id "" is invalid`)
 
-				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
 			})
 			testInFiber('updateOutputLayer: missing', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialOutputLayers = _.clone(showStyle.outputLayers)
+				const initialOutputLayers = _.clone(showStyle.outputLayersWithOverrides.defaults)
 
 				expect(() =>
 					ctx.updateOutputLayer('fake99', {
@@ -1135,13 +1136,13 @@ describe('Test blueprint migrationContext', () => {
 					})
 				).toThrow(`[404] OutputLayer "fake99" cannot be updated as it does not exist`)
 
-				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
 			})
 			testInFiber('updateOutputLayer: good', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialOutputLayers = _.clone(showStyle.outputLayers)
+				const initialOutputLayers = _.clone(showStyle.outputLayersWithOverrides.defaults)
 				expect(ctx.getOutputLayer('lay1')).toBeTruthy()
 
 				const rawLayer = {
@@ -1150,52 +1151,49 @@ describe('Test blueprint migrationContext', () => {
 
 				ctx.updateOutputLayer('lay1', rawLayer)
 
-				_.each(initialOutputLayers, (layer, i) => {
-					if (layer._id === 'lay1') {
-						initialOutputLayers[i] = {
-							...layer,
-							...rawLayer,
-						}
-					}
-				})
-				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
+				initialOutputLayers['lay1'] = {
+					...initialOutputLayers['lay1']!,
+					...rawLayer,
+				}
+
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
 			})
 
 			testInFiber('removeOutputLayer: no id', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialOutputLayers = _.clone(showStyle.outputLayers)
+				const initialOutputLayers = _.clone(showStyle.outputLayersWithOverrides.defaults)
 
 				expect(() => ctx.removeOutputLayer('')).toThrow(`[500] OutputLayer id "" is invalid`)
 
-				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
 			})
 			testInFiber('removeOutputLayer: missing', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialOutputLayers = _.clone(showStyle.outputLayers)
+				const initialOutputLayers = _.clone(showStyle.outputLayersWithOverrides.defaults)
 				expect(ctx.getOutputLayer('fake99')).toBeFalsy()
 
 				// Should not error
 				ctx.removeOutputLayer('fake99')
 
-				expect(getShowStyle(ctx).outputLayers).toEqual(initialOutputLayers)
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(initialOutputLayers)
 				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
 			})
 			testInFiber('removeOutputLayer: good', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialOutputLayers = _.clone(showStyle.outputLayers)
+				const initialOutputLayers = _.clone(showStyle.outputLayersWithOverrides.defaults)
 				expect(ctx.getOutputLayer('lay1')).toBeTruthy()
 
 				// Should not error
 				ctx.removeOutputLayer('lay1')
 
-				const expectedOutputLayers = _.filter(initialOutputLayers, (layer) => layer._id !== 'lay1')
-				expect(getShowStyle(ctx).outputLayers).toEqual(expectedOutputLayers)
-				expect(getAllOutputLayersFromDb(showStyle)).toEqual(expectedOutputLayers)
+				delete initialOutputLayers['lay1']
+				expect(getShowStyle(ctx).outputLayersWithOverrides.defaults).toEqual(initialOutputLayers)
+				expect(getAllOutputLayersFromDb(showStyle)).toEqual(initialOutputLayers)
 			})
 		})
 
@@ -1203,7 +1201,7 @@ describe('Test blueprint migrationContext', () => {
 			function getAllBaseConfigFromDb(showStyle: ShowStyleBase): IBlueprintConfig {
 				const showStyle2 = ShowStyleBases.findOne(showStyle._id) as ShowStyleBase
 				expect(showStyle2).toBeTruthy()
-				return showStyle2.blueprintConfig
+				return showStyle2.blueprintConfigWithOverrides.defaults
 			}
 
 			testInFiber('getBaseConfig: no id', () => {
@@ -1220,28 +1218,28 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
 
-				showStyle.blueprintConfig['conf1'] = 5
+				showStyle.blueprintConfigWithOverrides.defaults['conf1'] = 5
 				expect(ctx.getBaseConfig('conf1')).toEqual(5)
 
-				showStyle.blueprintConfig['conf2'] = '   af '
+				showStyle.blueprintConfigWithOverrides.defaults['conf2'] = '   af '
 				expect(ctx.getBaseConfig('conf2')).toEqual('af')
 			})
 
 			testInFiber('setBaseConfig: no id', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
+				const initialBaseConfig = _.clone(showStyle.blueprintConfigWithOverrides.defaults)
 
 				expect(() => ctx.setBaseConfig('', 34)).toThrow(`[500] Config id "" is invalid`)
 
 				// BaseConfig should not have changed
-				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
+				expect(showStyle.blueprintConfigWithOverrides.defaults).toEqual(initialBaseConfig)
 				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig)
 			})
 			testInFiber('setBaseConfig: insert', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
+				const initialBaseConfig = _.clone(showStyle.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getBaseConfig('conf1')).toBeFalsy()
 
 				ctx.setBaseConfig('conf1', 34)
@@ -1254,13 +1252,13 @@ describe('Test blueprint migrationContext', () => {
 
 				// BaseConfig should have changed
 				initialBaseConfig[expectedItem._id] = expectedItem.value
-				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
+				expect(showStyle.blueprintConfigWithOverrides.defaults).toEqual(initialBaseConfig)
 				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig)
 			})
 			testInFiber('setBaseConfig: insert undefined', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
+				const initialBaseConfig = _.clone(showStyle.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getBaseConfig('confUndef')).toBeFalsy()
 
 				expect(() => ctx.setBaseConfig('confUndef', undefined as any)).toThrow(
@@ -1268,14 +1266,14 @@ describe('Test blueprint migrationContext', () => {
 				)
 
 				// BaseConfig should not have changed
-				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
+				expect(showStyle.blueprintConfigWithOverrides.defaults).toEqual(initialBaseConfig)
 				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig)
 			})
 
 			testInFiber('setBaseConfig: update', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
+				const initialBaseConfig = _.clone(showStyle.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getBaseConfig('conf1')).toBeTruthy()
 
 				ctx.setBaseConfig('conf1', 'hello')
@@ -1288,13 +1286,13 @@ describe('Test blueprint migrationContext', () => {
 
 				// BaseConfig should have changed
 				initialBaseConfig[expectedItem._id] = expectedItem.value
-				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
+				expect(showStyle.blueprintConfigWithOverrides.defaults).toEqual(initialBaseConfig)
 				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig)
 			})
 			testInFiber('setBaseConfig: update undefined', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
+				const initialBaseConfig = _.clone(showStyle.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getBaseConfig('conf1')).toBeTruthy()
 
 				expect(() => ctx.setBaseConfig('conf1', undefined as any)).toThrow(
@@ -1302,7 +1300,7 @@ describe('Test blueprint migrationContext', () => {
 				)
 
 				// BaseConfig should not have changed
-				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
+				expect(showStyle.blueprintConfigWithOverrides.defaults).toEqual(initialBaseConfig)
 				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig)
 			})
 
@@ -1310,20 +1308,20 @@ describe('Test blueprint migrationContext', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
 				ctx.setBaseConfig('conf1', true)
-				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
+				const initialBaseConfig = _.clone(showStyle.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getBaseConfig('conf1')).toBeTruthy()
 
 				// Should not error
 				ctx.removeBaseConfig('')
 
 				// BaseConfig should not have changed
-				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
+				expect(showStyle.blueprintConfigWithOverrides.defaults).toEqual(initialBaseConfig)
 				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig)
 			})
 			testInFiber('removeBaseConfig: missing', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
+				const initialBaseConfig = _.clone(showStyle.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getBaseConfig('conf1')).toBeTruthy()
 				expect(ctx.getBaseConfig('fake_conf')).toBeFalsy()
 
@@ -1331,13 +1329,13 @@ describe('Test blueprint migrationContext', () => {
 				ctx.removeBaseConfig('fake_conf')
 
 				// BaseConfig should not have changed
-				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
+				expect(showStyle.blueprintConfigWithOverrides.defaults).toEqual(initialBaseConfig)
 				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig)
 			})
 			testInFiber('removeBaseConfig: good', () => {
 				const ctx = getContext()
 				const showStyle = getShowStyle(ctx)
-				const initialBaseConfig = _.clone(showStyle.blueprintConfig)
+				const initialBaseConfig = _.clone(showStyle.blueprintConfigWithOverrides.defaults)
 				expect(ctx.getBaseConfig('conf1')).toBeTruthy()
 
 				// Should not error
@@ -1345,7 +1343,7 @@ describe('Test blueprint migrationContext', () => {
 
 				// BaseConfig should have changed
 				delete initialBaseConfig['conf1']
-				expect(showStyle.blueprintConfig).toEqual(initialBaseConfig)
+				expect(showStyle.blueprintConfigWithOverrides.defaults).toEqual(initialBaseConfig)
 				expect(getAllBaseConfigFromDb(showStyle)).toEqual(initialBaseConfig)
 			})
 		})
@@ -1355,7 +1353,7 @@ describe('Test blueprint migrationContext', () => {
 					protectString(ctx.getVariantId(variantId))
 				) as ShowStyleVariant
 				expect(variant).toBeTruthy()
-				return variant.blueprintConfig
+				return variant.blueprintConfigWithOverrides.defaults
 			}
 
 			testInFiber('getVariantConfig: no variant id', () => {
@@ -1523,12 +1521,20 @@ describe('Test blueprint migrationContext', () => {
 			expect(coreSystem).toBeTruthy()
 			return new MigrationContextSystem()
 		}
-		function getSystemTriggeredActions() {
+		function getSystemTriggeredActions(): IBlueprintTriggeredActions[] {
 			const systemTriggeredActions = TriggeredActions.find({
 				showStyleBaseId: null,
 			}).fetch()
 			expect(systemTriggeredActions).toHaveLength(3)
-			return systemTriggeredActions
+			return systemTriggeredActions.map((doc) =>
+				literal<IBlueprintTriggeredActions>({
+					_id: unprotectString(doc._id),
+					_rank: doc._rank,
+					name: doc.name,
+					triggers: applyAndValidateOverrides(doc.triggersWithOverrides).obj,
+					actions: applyAndValidateOverrides(doc.actionsWithOverrides).obj,
+				})
+			)
 		}
 		describe('triggeredActions', () => {
 			testInFiber('getAllTriggeredActions: return all triggeredActions', () => {
@@ -1552,9 +1558,7 @@ describe('Test blueprint migrationContext', () => {
 
 				const existingTriggeredActions = getSystemTriggeredActions()[0]
 				expect(existingTriggeredActions).toBeTruthy()
-				expect(ctx.getTriggeredAction(unprotectString(existingTriggeredActions._id))).toMatchObject(
-					existingTriggeredActions
-				)
+				expect(ctx.getTriggeredAction(existingTriggeredActions._id)).toMatchObject(existingTriggeredActions)
 			})
 			testInFiber('setTriggeredAction: set undefined', () => {
 				const ctx = getContext()
@@ -1604,8 +1608,8 @@ describe('Test blueprint migrationContext', () => {
 				ctx.setTriggeredAction({
 					_id: blueprintLocalId,
 					_rank: 1001,
-					actions: [
-						{
+					actions: {
+						'0': {
 							action: ClientActions.shelf,
 							filterChain: [
 								{
@@ -1614,13 +1618,13 @@ describe('Test blueprint migrationContext', () => {
 							],
 							state: 'toggle',
 						},
-					],
-					triggers: [
-						{
+					},
+					triggers: {
+						'0': {
 							type: TriggerType.hotkey,
 							keys: 'Digit1',
 						},
-					],
+					},
 				})
 				const insertedTriggeredAction = ctx.getTriggeredAction(blueprintLocalId)
 				expect(insertedTriggeredAction).toBeTruthy()
@@ -1638,8 +1642,8 @@ describe('Test blueprint migrationContext', () => {
 				ctx.setTriggeredAction({
 					_id: 'mockTriggeredAction_core0',
 					_rank: 0,
-					actions: [
-						{
+					actions: {
+						'0': {
 							action: PlayoutActions.activateRundownPlaylist,
 							rehearsal: false,
 							filterChain: [
@@ -1648,13 +1652,13 @@ describe('Test blueprint migrationContext', () => {
 								},
 							],
 						},
-					],
-					triggers: [
-						{
+					},
+					triggers: {
+						'0': {
 							type: TriggerType.hotkey,
 							keys: 'Control+Shift+Enter',
 						},
-					],
+					},
 				})
 
 				const newCoreAction = ctx.getTriggeredAction('mockTriggeredAction_core0')

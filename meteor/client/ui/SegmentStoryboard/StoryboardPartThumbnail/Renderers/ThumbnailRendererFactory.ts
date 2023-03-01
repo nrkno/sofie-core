@@ -1,7 +1,6 @@
 import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { PartInstanceId } from '../../../../../lib/collections/PartInstances'
-import { PartId } from '../../../../../lib/collections/Parts'
-import { Studio } from '../../../../../lib/collections/Studios'
+import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { UIStudio } from '../../../../../lib/api/studios'
 import { assertNever } from '../../../../../lib/lib'
 import { OffsetPosition } from '../../../../utils/positions'
 import { PieceUi } from '../../../SegmentContainer/withResolvedSegment'
@@ -16,7 +15,7 @@ export interface IProps {
 	partId: PartId
 	partInstanceId: PartInstanceId
 	partAutoNext: boolean
-	studio: Studio
+	studio: UIStudio
 	pieceInstance: PieceUi
 	hoverScrubTimePosition: number
 	hovering: boolean
@@ -46,7 +45,6 @@ export default function renderThumbnail(props: IProps) {
 		case SourceLayerType.AUDIO:
 		case SourceLayerType.SCRIPT:
 		case SourceLayerType.TRANSITION:
-		case SourceLayerType.METADATA:
 		case SourceLayerType.UNKNOWN:
 		case undefined:
 			return DefaultThumbnailRenderer(props)

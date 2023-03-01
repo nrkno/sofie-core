@@ -2,8 +2,8 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import { registerClassToMeteorMethods } from '../../methods'
 import { NewStudiosAPI, StudiosAPIMethods } from '../../../lib/api/studios'
-import { Studios, DBStudio, StudioId } from '../../../lib/collections/Studios'
-import { literal, getRandomId, makePromise, lazyIgnore } from '../../../lib/lib'
+import { Studios, DBStudio } from '../../../lib/collections/Studios'
+import { literal, getRandomId, lazyIgnore } from '../../../lib/lib'
 import { Rundowns } from '../../../lib/collections/Rundowns'
 import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { MethodContextAPI, MethodContext } from '../../../lib/api/methods'
@@ -13,28 +13,29 @@ import { Timeline } from '../../../lib/collections/Timeline'
 import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQueue'
 import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { Credentials } from '../../security/lib/credentials'
-import { OrganizationId } from '../../../lib/collections/Organization'
 import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatuses } from '../../../lib/collections/ExpectedPackageWorkStatuses'
 import { PackageInfos } from '../../../lib/collections/PackageInfos'
 import { PackageContainerPackageStatuses } from '../../../lib/collections/PackageContainerPackageStatus'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { OrganizationId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-export function insertStudio(context: MethodContext | Credentials, newId?: StudioId): StudioId {
+async function insertStudio(context: MethodContext | Credentials, newId?: StudioId): Promise<StudioId> {
 	if (newId) check(newId, String)
 
-	const access = OrganizationContentWriteAccess.studio(context)
+	const access = await OrganizationContentWriteAccess.studio(context)
 	return insertStudioInner(access.organizationId, newId)
 }
-export function insertStudioInner(organizationId: OrganizationId | null, newId?: StudioId): StudioId {
-	return Studios.insert(
+export async function insertStudioInner(organizationId: OrganizationId | null, newId?: StudioId): Promise<StudioId> {
+	return Studios.insertAsync(
 		literal<DBStudio>({
 			_id: newId || getRandomId(),
 			name: 'New Studio',
 			organizationId: organizationId,
 			// blueprintId?: BlueprintId
-			mappings: {},
+			mappingsWithOverrides: wrapDefaultObject({}),
 			supportedShowStyleBase: [],
-			blueprintConfig: {},
+			blueprintConfigWithOverrides: wrapDefaultObject({}),
 			// testToolsConfig?: ITestToolsConfig
 			settings: {
 				frameRate: 25,
@@ -50,48 +51,51 @@ export function insertStudioInner(organizationId: OrganizationId | null, newId?:
 		})
 	)
 }
-export function removeStudio(context: MethodContext, studioId: StudioId): void {
+async function removeStudio(context: MethodContext, studioId: StudioId): Promise<void> {
 	check(studioId, String)
-	const access = OrganizationContentWriteAccess.studio(context, studioId)
+
+	const access = await OrganizationContentWriteAccess.studio(context, studioId)
 	const studio = access.studio
 	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found`)
 
 	// allowed to remove?
-	const rundown = Rundowns.findOne({ studioId: studio._id })
+	const rundown = await Rundowns.findOneAsync({ studioId: studio._id }, { fields: { _id: 1 } })
 	if (rundown)
 		throw new Meteor.Error(404, `Can't remove studio "${studioId}", because the rundown "${rundown._id}" is in it.`)
 
-	const playlist = RundownPlaylists.findOne({ studioId: studio._id })
+	const playlist = await RundownPlaylists.findOneAsync({ studioId: studio._id }, { fields: { _id: 1 } })
 	if (playlist)
 		throw new Meteor.Error(
 			404,
 			`Can't remove studio "${studioId}", because the rundownPlaylist "${playlist._id}" is in it.`
 		)
 
-	const peripheralDevice = PeripheralDevices.findOne({ studioId: studio._id })
+	const peripheralDevice = await PeripheralDevices.findOneAsync({ studioId: studio._id }, { fields: { _id: 1 } })
 	if (peripheralDevice)
 		throw new Meteor.Error(
 			404,
 			`Can't remoce studio "${studioId}", because the peripheralDevice "${peripheralDevice._id}" is in it.`
 		)
 
-	Studios.remove(studio._id)
-	Studios.remove({ studioId: studio._id })
-	ExternalMessageQueue.remove({ studioId: studio._id })
-	MediaObjects.remove({ studioId: studio._id })
-	Timeline.remove({ studioId: studio._id })
-	ExpectedPackages.remove({ studioId: studio._id })
-	ExpectedPackageWorkStatuses.remove({ studioId: studio._id })
-	PackageInfos.remove({ studioId: studio._id })
-	PackageContainerPackageStatuses.remove({ studioId: studio._id })
+	await Promise.all([
+		Studios.removeAsync(studio._id),
+		// Studios.remove({ studioId: studio._id }) // TODO - what was this supposed to be?
+		ExternalMessageQueue.removeAsync({ studioId: studio._id }),
+		MediaObjects.removeAsync({ studioId: studio._id }),
+		Timeline.removeAsync({ studioId: studio._id }),
+		ExpectedPackages.removeAsync({ studioId: studio._id }),
+		ExpectedPackageWorkStatuses.removeAsync({ studioId: studio._id }),
+		PackageInfos.removeAsync({ studioId: studio._id }),
+		PackageContainerPackageStatuses.removeAsync({ studioId: studio._id }),
+	])
 }
 
 class ServerStudiosAPI extends MethodContextAPI implements NewStudiosAPI {
 	async insertStudio() {
-		return makePromise(() => insertStudio(this))
+		return insertStudio(this)
 	}
 	async removeStudio(studioId: StudioId) {
-		return makePromise(() => removeStudio(this, studioId))
+		return removeStudio(this, studioId)
 	}
 }
 registerClassToMeteorMethods(StudiosAPIMethods, ServerStudiosAPI, false)
@@ -114,7 +118,7 @@ Studios.find(
 	{},
 	{
 		fields: {
-			mappings: 1,
+			mappingsWithOverrides: 1,
 			routeSets: 1,
 		},
 	}

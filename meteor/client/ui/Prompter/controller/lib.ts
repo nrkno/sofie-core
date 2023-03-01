@@ -1,9 +1,6 @@
-import { PrompterViewInner } from '../PrompterView'
-
 export const LONGPRESS_TIME = 500
 
 export abstract class ControllerAbstract {
-	constructor(_view: PrompterViewInner) {}
 	public abstract destroy(): void
 	public abstract onKeyDown(e: KeyboardEvent): void
 	public abstract onKeyUp(e: KeyboardEvent): void

@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/job-worker",
-	"version": "1.44.2",
+	"version": "1.47.0",
 	"description": "Worker for things",
 	"main": "dist/index.js",
 	"license": "MIT",
@@ -44,25 +44,25 @@
 		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
 		"@sofie-automation/corelib": "link:../corelib",
 		"@sofie-automation/shared-lib": "link:../shared-lib",
-		"amqplib": "^0.8.0",
+		"amqplib": "^0.10.3",
 		"debounce-fn": "^4.0.0",
 		"deepmerge": "^4.2.2",
-		"elastic-apm-node": "^3.33.0",
+		"elastic-apm-node": "^3.38.0",
 		"eventemitter3": "^4.0.7",
-		"mongodb": "^4.6.0",
+		"mongodb": "^4.9.1",
 		"p-lazy": "^3.1.0",
 		"p-timeout": "^4.1.0",
 		"superfly-timeline": "^8.3.1",
-		"threadedclass": "^1.1.0",
+		"threadedclass": "^1.1.2",
 		"tslib": "^2.4.0",
-		"type-fest": "^2.12.2",
-		"underscore": "^1.13.3",
-		"vm2": "^3.9.9"
+		"type-fest": "^2.19.0",
+		"underscore": "^1.13.4",
+		"vm2": "^3.9.11"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [
-			"prettier --write"
+			"prettier"
 		],
 		"*.{ts,tsx}": [
 			"yarn lint:raw"

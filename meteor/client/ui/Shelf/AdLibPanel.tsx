@@ -3,18 +3,17 @@ import _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { useTranslation } from 'react-i18next'
-import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
-import { DBSegment, Segment, SegmentId } from '../../../lib/collections/Segments'
-import { DBPart, PartId } from '../../../lib/collections/Parts'
+import { DBSegment, Segment } from '../../../lib/collections/Segments'
+import { DBPart } from '../../../lib/collections/Parts'
 import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { OutputLayers, SourceLayers } from '../../../lib/collections/ShowStyleBases'
 import {
-	IOutputLayer,
 	ISourceLayer,
 	PieceLifespan,
 	IBlueprintActionTriggerMode,
@@ -33,11 +32,7 @@ import {
 } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { literal, normalizeArray, unprotectString, protectString } from '../../../lib/lib'
 import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
-import {
-	PartInstances,
-	PartInstanceId,
-	findPartInstanceOrWrapToTemporary,
-} from '../../../lib/collections/PartInstances'
+import { PartInstances, findPartInstanceOrWrapToTemporary, PartInstance } from '../../../lib/collections/PartInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { AdLibActions, AdLibAction } from '../../../lib/collections/AdLibActions'
@@ -47,7 +42,6 @@ import {
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibAction,
 } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { Studio } from '../../../lib/collections/Studios'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
@@ -58,13 +52,17 @@ import { sortAdlibs } from '../../../lib/Rundown'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { AdLibListView } from './AdLibListView'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
+import { UIStudios } from '../Collections'
+import { PartId, PartInstanceId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined
 	visible: boolean
 	playlist: RundownPlaylist
-	studio: Studio
-	showStyleBase: ShowStyleBase
+	studio: UIStudio
+	showStyleBase: UIShowStyleBase
 	studioMode: boolean
 	filter?: RundownLayoutFilterBase
 	includeGlobalAdLibs?: boolean
@@ -72,8 +70,6 @@ export interface IAdLibPanelProps {
 
 	onSelectPiece?: (piece: AdLibPieceUi | PieceUi) => void
 }
-
-export type SourceLayerLookup = Record<string, ISourceLayer>
 
 type MinimalRundown = Pick<
 	Rundown,
@@ -84,14 +80,14 @@ export interface AdLibFetchAndFilterProps {
 	uiSegments: Array<AdlibSegmentUi>
 	uiSegmentMap: Map<SegmentId, AdlibSegmentUi>
 	liveSegment: AdlibSegmentUi | undefined
-	sourceLayerLookup: SourceLayerLookup
+	sourceLayerLookup: SourceLayers
 	rundownBaselineAdLibs: Array<AdLibPieceUi>
 }
 
 function actionToAdLibPieceUi(
 	action: AdLibAction | RundownBaselineAdLibAction,
-	sourceLayers: _.Dictionary<ISourceLayer>,
-	outputLayers: _.Dictionary<IOutputLayer>
+	sourceLayers: SourceLayers,
+	outputLayers: OutputLayers
 ): AdLibPieceUi {
 	let sourceLayerId = ''
 	let outputLayerId = ''
@@ -134,14 +130,14 @@ interface IFetchAndFilterProps {
 		RundownPlaylist,
 		'_id' | 'currentPartInstanceId' | 'nextPartInstanceId' | 'previousPartInstanceId' | 'rundownIdsInOrder'
 	>
-	showStyleBase: Pick<ShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>
+	showStyleBase: Pick<UIShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>
 	filter?: RundownLayoutFilterBase
 	includeGlobalAdLibs?: boolean
 }
 
 export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilterProps {
-	const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id')
-	const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
+	const sourceLayerLookup = props.showStyleBase && props.showStyleBase.sourceLayers
+	const outputLayerLookup = props.showStyleBase && props.showStyleBase.outputLayers
 
 	if (!props.playlist || !props.showStyleBase) {
 		return {
@@ -179,9 +175,25 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 			segments: Segment[],
 			rundowns: Record<string, MinimalRundown>
 		) => {
-			const { currentPartInstance, nextPartInstance } = RundownPlaylistCollectionUtil.getSelectedPartInstances(
-				props.playlist
-			)
+			const currentPartInstance =
+				currentPartInstanceId &&
+				(PartInstances.findOne(currentPartInstanceId, {
+					projection: {
+						_id: 1,
+						segmentId: 1,
+						rundownId: 1,
+					},
+				}) as Pick<PartInstance, '_id' | 'segmentId' | 'rundownId'> | undefined)
+			const nextPartInstance =
+				nextPartInstanceId &&
+				(PartInstances.findOne(nextPartInstanceId, {
+					projection: {
+						_id: 1,
+						segmentId: 1,
+						rundownId: 1,
+					},
+				}) as Pick<PartInstance, '_id' | 'segmentId' | 'rundownId'> | undefined)
+
 			// This is a map of partIds mapped onto segments they are part of
 			const uiPartSegmentMap = new Map<PartId, AdlibSegmentUi>()
 			const uiPartMap = new Map<PartId, DBPart>()
@@ -314,7 +326,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 						},
 					},
 					{
-						// @ts-ignore deep-property
+						// @ts-expect-error deep-property
 						sort: { 'display._rank': 1 },
 					}
 				).map<{
@@ -335,7 +347,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 			const segment = uiPartSegmentMap.get(action.partId)
 			if (segment) {
 				action.piece.disabled = !segment.isCompatibleShowStyle
-				segment.pieces.push(action.piece)
+				segment.pieces.push({ ...action.piece, segmentId: segment._id })
 			}
 		})
 
@@ -384,7 +396,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 			// memoizedIsolatedAutorun
 
 			rundownBaselineAdLibs = memoizedIsolatedAutorun(
-				(currentRundownId: RundownId, sourceLayerLookup: SourceLayerLookup) => {
+				(currentRundownId: RundownId, sourceLayerLookup: SourceLayers) => {
 					const rundownAdLibItems: Array<Omit<RundownBaselineAdLibItem, 'timelineObjectsString'>> =
 						RundownBaselineAdLibPieces.find(
 							{
@@ -395,8 +407,8 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 							}
 						).fetch()
 					rundownBaselineAdLibs = rundownAdLibItems.concat(
-						props.showStyleBase.sourceLayers
-							.filter((i) => i.isSticky)
+						Object.values(sourceLayerLookup)
+							.filter((i): i is ISourceLayer => !!(i && i.isSticky))
 							.sort((a, b) => a._rank - b._rank)
 							.map((layer) =>
 								literal<AdLibPieceUi>({
@@ -429,7 +441,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 									},
 								},
 								{
-									// @ts-ignore deep-property
+									// @ts-expect-error deep-property
 									sort: { 'display._rank': 1 },
 								}
 							)
@@ -471,9 +483,9 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 
 		if ((props.filter as DashboardLayoutFilter).includeClearInRundownBaseline) {
 			const rundownBaselineClearAdLibs = memoizedIsolatedAutorun(
-				(sourceLayers: ISourceLayer[]) => {
-					return sourceLayers
-						.filter((i) => !!i.isClearable)
+				(sourceLayers: SourceLayers) => {
+					return Object.values(sourceLayers)
+						.filter((i): i is ISourceLayer => !!i && !!i.isClearable)
 						.sort((a, b) => a._rank - b._rank)
 						.map((layer) =>
 							literal<AdLibPieceUi>({
@@ -522,11 +534,7 @@ export function AdLibPanel({
 	onSelectPiece,
 }: IAdLibPanelProps): JSX.Element | null {
 	const { t } = useTranslation()
-	const studio = useTracker(
-		() => RundownPlaylistCollectionUtil.getStudio(playlist as Pick<RundownPlaylist, '_id' | 'studioId'>),
-		[playlist._id, playlist.studioId],
-		undefined
-	)
+	const studio = useTracker(() => UIStudios.findOne(playlist.studioId), [playlist.studioId], undefined)
 
 	const [searchFilter, setSearchFilter] = useState<string | undefined>(undefined)
 	const [selectedSegment, setSelectedSegment] = useState<AdlibSegmentUi | undefined>(undefined)
@@ -544,7 +552,7 @@ export function AdLibPanel({
 					| 'previousPartInstanceId'
 					| 'rundownIdsInOrder'
 				>,
-				showStyleBase: showStyleBase as Pick<ShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>,
+				showStyleBase: showStyleBase as Pick<UIShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>,
 				filter,
 				includeGlobalAdLibs,
 			}),
@@ -653,7 +661,6 @@ export function AdLibPanel({
 			) {
 				console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
 				return
-				// TODOSYNC: TV2 uses queue = false
 			}
 			if (currentPartInstanceId) {
 				if (adlibPiece.isAction && adlibPiece.adlibAction) {
@@ -710,7 +717,7 @@ export function AdLibPanel({
 						next: segment.isNext && !segment.isLive,
 						past:
 							segment.parts.reduce((memo, part) => {
-								return part.timings?.startedPlayback && part.timings?.duration ? memo : false
+								return part.timings?.plannedStartedPlayback && part.timings?.duration ? memo : false
 							}, true) === true,
 					})}
 					onClick={() => setSelectedSegment(segment)}

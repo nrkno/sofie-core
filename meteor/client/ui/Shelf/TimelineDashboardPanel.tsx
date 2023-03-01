@@ -9,7 +9,12 @@ import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter } from './Ad
 import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { matchFilter } from './AdLibListView'
 import { DashboardPieceButton } from './DashboardPieceButton'
-import { ensureHasTrailingSlash, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
+import {
+	contextMenuHoldToDisplayTime,
+	ensureHasTrailingSlash,
+	UserAgentPointer,
+	USER_AGENT_POINTER_PROPERTY,
+} from '../../lib/lib'
 import {
 	DashboardPanelInner,
 	dashboardElementStyle,
@@ -18,8 +23,11 @@ import {
 } from './DashboardPanel'
 import { unprotectString } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { AdLibPieceUi, getNextPieceInstancesGrouped, getUnfinishedPieceInstancesGrouped } from '../../lib/shelf'
+import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
+import { ContextType, setShelfContextMenuContext } from './ShelfContextMenu'
+import { UIStudios } from '../Collections'
+import { Meteor } from 'meteor/meteor'
 
 export const TimelineDashboardPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IDashboardPanelProps>,
@@ -27,6 +35,9 @@ export const TimelineDashboardPanel = translateWithTracker<
 	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
+		const studio = UIStudios.findOne(props.playlist.studioId)
+		if (!studio) throw new Meteor.Error(404, 'Studio "' + props.playlist.studioId + '" not found!')
+
 		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
 			props.playlist,
 			props.showStyleBase
@@ -34,14 +45,14 @@ export const TimelineDashboardPanel = translateWithTracker<
 		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist, props.showStyleBase)
 		return {
 			...fetchAndFilter(props),
-			studio: RundownPlaylistCollectionUtil.getStudio(props.playlist),
+			studio,
 			unfinishedAdLibIds,
 			unfinishedTags,
 			nextAdLibIds,
 			nextTags,
 		}
 	},
-	(data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
+	(_data, props: IAdLibPanelProps, nextProps: IAdLibPanelProps) => {
 		return !_.isEqual(props, nextProps)
 	}
 )(
@@ -122,19 +133,17 @@ export const TimelineDashboardPanel = translateWithTracker<
 									<div className="dashboard-panel__panel__group">
 										{filteredRudownBaselineAdLibs.map((adLibListItem: AdLibPieceUi) => {
 											return (
-												<DashboardPieceButton
-													key={unprotectString(adLibListItem._id)}
-													piece={adLibListItem}
-													studio={this.props.studio}
-													layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
-													outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
-													onToggleAdLib={this.onToggleOrSelectAdLib}
-													onSelectAdLib={this.onSelectAdLib}
-													isSelected={
-														(this.props.selectedPiece &&
-															RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
-															this.props.selectedPiece._id === adLibListItem._id) ||
-														false
+												<ContextMenuTrigger
+													id="shelf-context-menu"
+													collect={() =>
+														setShelfContextMenuContext({
+															type: ContextType.ADLIB,
+															details: {
+																adLib: adLibListItem,
+																onToggle: !adLibListItem.disabled ? this.onToggleAdLib : undefined,
+																disabled: adLibListItem.disabled,
+															},
+														})
 													}
 													playlist={this.props.playlist}
 													isOnAir={this.isAdLibOnAir(adLibListItem)}
@@ -147,10 +156,41 @@ export const TimelineDashboardPanel = translateWithTracker<
 													heightScale={filter.buttonHeightScale}
 													displayStyle={PieceDisplayStyle.BUTTONS}
 													showThumbnailsInList={filter.showThumbnailsInList}
-													toggleOnSingleClick={this.state.singleClickMode}
+													toggleOnSingleClick={filter.toggleOnSingleClick || this.state.singleClickMode}
+													renderTag="span"
+													key={unprotectString(adLibListItem._id)}
+													holdToDisplay={contextMenuHoldToDisplayTime()}
 												>
-													{adLibListItem.name}
-												</DashboardPieceButton>
+													<DashboardPieceButton
+														key={unprotectString(adLibListItem._id)}
+														piece={adLibListItem}
+														studio={this.props.studio}
+														layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
+														outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
+														onToggleAdLib={this.onToggleOrSelectAdLib}
+														onSelectAdLib={this.onSelectAdLib}
+														isSelected={
+															(this.props.selectedPiece &&
+																RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
+																this.props.selectedPiece._id === adLibListItem._id) ||
+															false
+														}
+														playlist={this.props.playlist}
+														isOnAir={this.isAdLibOnAir(adLibListItem)}
+														mediaPreviewUrl={
+															this.props.studio
+																? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
+																: ''
+														}
+														widthScale={filter.buttonWidthScale}
+														heightScale={filter.buttonHeightScale}
+														displayStyle={PieceDisplayStyle.BUTTONS}
+														showThumbnailsInList={filter.showThumbnailsInList}
+														toggleOnSingleClick={filter.toggleOnSingleClick || this.state.singleClickMode}
+													>
+														{adLibListItem.name}
+													</DashboardPieceButton>
+												</ContextMenuTrigger>
 											)
 										})}
 									</div>
@@ -184,18 +224,17 @@ export const TimelineDashboardPanel = translateWithTracker<
 											)}
 											{filteredPieces.map((adLibListItem: AdLibPieceUi) => {
 												return (
-													<DashboardPieceButton
-														key={unprotectString(adLibListItem._id)}
-														piece={adLibListItem}
-														layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
-														outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
-														onToggleAdLib={this.onToggleOrSelectAdLib}
-														onSelectAdLib={this.onSelectAdLib}
-														isSelected={
-															(this.props.selectedPiece &&
-																RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
-																this.props.selectedPiece._id === adLibListItem._id) ||
-															false
+													<ContextMenuTrigger
+														id="shelf-context-menu"
+														collect={() =>
+															setShelfContextMenuContext({
+																type: ContextType.ADLIB,
+																details: {
+																	adLib: adLibListItem,
+																	onToggle: !adLibListItem.disabled ? this.onToggleAdLib : undefined,
+																	disabled: adLibListItem.disabled,
+																},
+															})
 														}
 														playlist={this.props.playlist}
 														studio={this.props.studio}
@@ -210,10 +249,42 @@ export const TimelineDashboardPanel = translateWithTracker<
 														showThumbnailsInList={filter.showThumbnailsInList}
 														canOverflowHorizontally={filter.overflowHorizontally}
 														displayStyle={filter.displayStyle}
-														toggleOnSingleClick={this.state.singleClickMode}
+														toggleOnSingleClick={filter.toggleOnSingleClick || this.state.singleClickMode}
+														renderTag="span"
+														key={unprotectString(adLibListItem._id)}
+														holdToDisplay={contextMenuHoldToDisplayTime()}
 													>
-														{adLibListItem.name}
-													</DashboardPieceButton>
+														<DashboardPieceButton
+															key={unprotectString(adLibListItem._id)}
+															piece={adLibListItem}
+															layer={this.state.sourceLayers[adLibListItem.sourceLayerId]}
+															outputLayer={this.state.outputLayers[adLibListItem.outputLayerId]}
+															onToggleAdLib={this.onToggleOrSelectAdLib}
+															onSelectAdLib={this.onSelectAdLib}
+															isSelected={
+																(this.props.selectedPiece &&
+																	RundownUtils.isAdLibPiece(this.props.selectedPiece) &&
+																	this.props.selectedPiece._id === adLibListItem._id) ||
+																false
+															}
+															playlist={this.props.playlist}
+															studio={this.props.studio}
+															isOnAir={this.isAdLibOnAir(adLibListItem)}
+															mediaPreviewUrl={
+																this.props.studio
+																	? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
+																	: ''
+															}
+															widthScale={filter.buttonWidthScale}
+															heightScale={filter.buttonHeightScale}
+															showThumbnailsInList={filter.showThumbnailsInList}
+															canOverflowHorizontally={filter.overflowHorizontally}
+															displayStyle={filter.displayStyle}
+															toggleOnSingleClick={filter.toggleOnSingleClick || this.state.singleClickMode}
+														>
+															{adLibListItem.name}
+														</DashboardPieceButton>
+													</ContextMenuTrigger>
 												)
 											})}
 										</div>

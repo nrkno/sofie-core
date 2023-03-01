@@ -1,4 +1,4 @@
-import { ExternalMessageQueueObjId } from '../collections/ExternalMessageQueue'
+import { ExternalMessageQueueObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface NewExternalMessageQueueAPI {
 	remove(messageId: ExternalMessageQueueObjId): Promise<void>

@@ -1,7 +1,6 @@
 import { createMongoCollection } from './lib'
 import { DBStudio, ResultingMappingRoutes } from './Studios'
-import { StudioId, TimelineObjId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-export { TimelineObjId }
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import {

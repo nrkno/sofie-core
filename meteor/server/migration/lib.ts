@@ -4,6 +4,7 @@ import {
 	MigrationStepInput,
 	MigrationStepInputFilteredResult,
 	MigrationStepBase,
+	MigrationStepCore,
 } from '@sofie-automation/blueprints-integration'
 import { Collections, objectPathGet, ProtectedString } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
@@ -18,6 +19,7 @@ export function ensureCollectionProperty<T = any>(
 	collectionName: CollectionName,
 	selector: Mongo.Selector<T>,
 	property: string,
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 	defaultValue: any,
 	dependOnResultFrom?: string
 ): MigrationStepBase {
@@ -62,10 +64,11 @@ export function ensureCollectionPropertyManual<T = any>(
 	collectionName: CollectionName,
 	selector: Mongo.Selector<T>,
 	property: string,
-	inputType?: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch', // EditAttribute types
-	label?: string,
-	description?: string,
-	defaultValue?: any,
+	inputType: 'text' | 'multiline' | 'int' | 'checkbox' | 'dropdown' | 'switch', // EditAttribute types
+	label: string,
+	description: string,
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+	defaultValue: any,
 	dependOnResultFrom?: string
 ): MigrationStepBase {
 	const collection = Collections.get(collectionName)
@@ -168,7 +171,7 @@ export function renamePropertiesInCollection<DBInterface extends { _id: Protecte
 	collectionName: string,
 	renames: Partial<{ [newAttr in keyof DBInterface]: string | RenameContent }>,
 	dependOnResultFrom?: string
-) {
+): Omit<MigrationStepCore, 'version'> {
 	const m: any = {
 		$or: [],
 	}

@@ -11,6 +11,7 @@ import { unprotectString } from '../../../../../lib/lib'
 import { FreezeFrameIcon } from '../../../../lib/ui/icons/freezeFrame'
 import { PieceStatusIcon } from '../../../../lib/ui/PieceStatusIcon'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { FREEZE_FRAME_FLASH } from '../../../SegmentContainer/withResolvedSegment'
 
 export function VTThumbnailRenderer({
 	partId,
@@ -89,7 +90,7 @@ export function VTThumbnailRenderer({
 						>
 							<span
 								className={classNames('segment-storyboard__thumbnail__countdown-icon', {
-									'segment-storyboard__thumbnail__countdown-icon--flash': isLive && contentLeft < 5000,
+									'segment-storyboard__thumbnail__countdown-icon--flash': isLive && contentLeft < FREEZE_FRAME_FLASH,
 								})}
 							>
 								<FreezeFrameIcon />

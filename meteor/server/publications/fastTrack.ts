@@ -37,7 +37,12 @@ export function setupFastTrackObserver<T>(
 }
 
 /** Trigger a FastTrackObserver, which was setup in setupFastTrackObserver(). */
-export function triggerFastTrackObserver(observerKey: FastTrackObservers, keyArgs: any[], data: any) {
+export function triggerFastTrackObserver(
+	observerKey: FastTrackObservers,
+	keyArgs: any[],
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+	data: any
+): void {
 	const key = getKey(observerKey, keyArgs)
 
 	try {

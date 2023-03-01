@@ -1,12 +1,12 @@
 import React, { useLayoutEffect, useState } from 'react'
 import { TFunction } from 'i18next'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { Studio } from '../../../../lib/collections/Studios'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
 import { PartUi, SegmentUi } from '../SegmentTimelineContainer'
 import { SegmentTimelinePart } from '../Parts/SegmentTimelinePart'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { UIStudio } from '../../../../lib/api/studios'
 
 export const SegmentTimelinePartHoverPreview = ({
 	t,
@@ -32,7 +32,7 @@ export const SegmentTimelinePartHoverPreview = ({
 
 	segment: SegmentUi
 	playlist: RundownPlaylist
-	studio: Studio
+	studio: UIStudio
 	collapsedOutputs: {
 		[key: string]: boolean
 	}

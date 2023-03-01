@@ -19,6 +19,7 @@ import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
 import { Parts } from '../lib/collections/Parts'
 import { PartInstances } from '../lib/collections/PartInstances'
 import { PieceInstances } from '../lib/collections/PieceInstances'
+import { deferAsync } from '@sofie-automation/corelib/dist/lib'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -37,7 +38,7 @@ function isLowSeason() {
 let lastNightlyCronjob = 0
 let failedRetries = 0
 
-export function nightlyCronjobInner() {
+export function nightlyCronjobInner(): void {
 	const previousLastNightlyCronjob = lastNightlyCronjob
 	lastNightlyCronjob = getCurrentTime()
 	logger.info('Nightly cronjob: starting...')
@@ -66,7 +67,7 @@ export function nightlyCronjobInner() {
 			.map((part) => part._id)
 		const oldPartInstanceSelector = {
 			reset: true,
-			'timings.takeOut': { $lt: cleanLimitTime },
+			'timings.plannedStoppedPlayback': { $lt: cleanLimitTime },
 			'part._id': { $nin: existingPartIds },
 		}
 		const oldPartInstanceIds = PartInstances.find(oldPartInstanceSelector, { fields: { _id: 1 } })
@@ -207,16 +208,21 @@ Meteor.startup(() => {
 
 	function cleanupPlaylists(force?: boolean) {
 		if (isLowSeason() || force) {
-			// Ensure there are no empty playlists on an interval
-			const studioIds = fetchStudioIds({})
-			Promise.all(
-				studioIds.map(async (studioId) => {
-					const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
-					await job.complete
-				})
-			).catch((e) => {
-				logger.error(`Cron: CleanupPlaylists error: ${e}`)
-			})
+			deferAsync(
+				async () => {
+					// Ensure there are no empty playlists on an interval
+					const studioIds = await fetchStudioIds({})
+					await Promise.all(
+						studioIds.map(async (studioId) => {
+							const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
+							await job.complete
+						})
+					)
+				},
+				(e) => {
+					logger.error(`Cron: CleanupPlaylists error: ${e}`)
+				}
+			)
 		}
 	}
 	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes

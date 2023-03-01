@@ -11,10 +11,11 @@ import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
-import { PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
+import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
 import { Segment } from '../../../lib/collections/Segments'
 import { dashboardElementStyle } from './DashboardPanel'
 import { Meteor } from 'meteor/meteor'
+import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IMiniRundownPanelProps {
 	key: string
@@ -46,19 +47,31 @@ export class MiniRundownPanelInner extends MeteorReactComponent<
 	static nextSegmentCssClass: string = 'next-segment'
 	static panelContainerId: string = 'mini-rundown-panel__container'
 	static nextSegmentId: string = 'mini-rundown__next-segment'
+	static currentSegmentId: string = 'mini-rundown__current-segment'
 
 	constructor(props) {
 		super(props)
 		this.state = {}
 	}
 
+	componentDidMount() {
+		this.scrollIntoView()
+	}
+
 	componentDidUpdate() {
+		this.scrollIntoView()
+	}
+
+	scrollIntoView() {
 		Meteor.setTimeout(() => {
 			const container = document.getElementById(MiniRundownPanelInner.panelContainerId)
-			const element = document.getElementById(MiniRundownPanelInner.nextSegmentId)
-			if (container && element) {
-				const magicLineHeight: number = 49
-				container.scrollTop = element.offsetTop - magicLineHeight
+			if (!container) return
+			const nextElement = document.getElementById(MiniRundownPanelInner.nextSegmentId)
+			const currentElement = document.getElementById(MiniRundownPanelInner.currentSegmentId)
+			if (nextElement) {
+				container.scrollTop = nextElement.offsetTop - nextElement.clientHeight
+			} else if (currentElement) {
+				container.scrollTop = currentElement.offsetTop
 			}
 		}, 500)
 	}
@@ -142,6 +155,7 @@ function getMiniRundownList(
 	const miniRundownSegments: MiniRundownSegment[] = []
 
 	allSegments?.forEach((segment: Segment) => {
+		if (segment.isHidden) return
 		miniRundownSegments.push({
 			identifier: getSegmentIdentifier(segment),
 			segmentName: getSegmentName(segment),
@@ -193,5 +207,12 @@ function getElementKey(prefix: string, identifier: string, index: number): strin
 }
 
 function getIdAttributeForNextSegment(cssClass: string) {
-	return cssClass === MiniRundownPanelInner.nextSegmentCssClass ? { id: MiniRundownPanelInner.nextSegmentId } : {}
+	switch (cssClass) {
+		case MiniRundownPanelInner.nextSegmentCssClass:
+			return { id: MiniRundownPanelInner.nextSegmentId }
+		case MiniRundownPanelInner.currentSegmentCssClass:
+			return { id: MiniRundownPanelInner.currentSegmentId }
+		default:
+			return {}
+	}
 }

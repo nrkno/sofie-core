@@ -1,15 +1,18 @@
 import { Accessor, ExpectedPackage, ExpectedPackageStatusAPI } from '@sofie-automation/blueprints-integration'
-import { AdLibActionId } from '../../../lib/collections/AdLibActions'
-import { getExpectedPackageId, getSideEffect } from '../../../lib/collections/ExpectedPackages'
-import { MediaObject } from '../../../lib/collections/MediaObjects'
-import { PieceId } from '../../../lib/collections/Pieces'
-import { RundownBaselineAdLibActionId } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { RundownId } from '../../../lib/collections/Rundowns'
-import { Studio, StudioId } from '../../../lib/collections/Studios'
 import { getPackageContainerPackageStatus } from '../../../lib/globalStores'
 import { PieceUi } from '../../ui/SegmentContainer/withResolvedSegment'
 import { ensureHasTrailingSlash } from '../lib'
 import { AdLibPieceUi } from '../shelf'
+import { getExpectedPackageId, getSideEffect } from '../../../lib/collections/ExpectedPackages'
+import { MediaObject } from '../../../lib/collections/MediaObjects'
+import { UIStudio } from '../../../lib/api/studios'
+import {
+	AdLibActionId,
+	PieceId,
+	RundownBaselineAdLibActionId,
+	RundownId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 type OwnerId = PieceId | AdLibActionId | RundownBaselineAdLibActionId | RundownId | StudioId
 
@@ -18,7 +21,7 @@ function getAssetUrlFromExpectedPackages(
 	assetPath: string,
 	assetContainerId: string,
 	expectedPackage: ExpectedPackage.Any,
-	studio: Studio
+	studio: UIStudio
 ): string | undefined {
 	const packageContainer = studio.packageContainers[assetContainerId]
 	if (!packageContainer) return
@@ -54,7 +57,7 @@ function getAssetUrlFromExpectedPackages(
 function getPreviewUrlFromExpectedPackages(
 	ownerId: OwnerId,
 	expectedPackages: ExpectedPackage.Any[],
-	studio: Studio
+	studio: UIStudio
 ): string | undefined {
 	// use Expected packages:
 	// Just use the first one we find.
@@ -81,7 +84,7 @@ function getPreviewUrlFromExpectedPackages(
 function getThumbnailUrlFromExpectedPackages(
 	ownerId: PieceId | AdLibActionId | RundownBaselineAdLibActionId | RundownId | StudioId,
 	expectedPackages: ExpectedPackage.Any[],
-	studio: Studio
+	studio: UIStudio
 ): string | undefined {
 	// use Expected packages:
 	// Just use the first one we find.
@@ -128,7 +131,7 @@ function getPreviewUrlFromContentMetaData(contentMetaData: MediaObject, mediaPre
 
 export function getThumbnailUrlForAdLibPieceUi(
 	piece: AdLibPieceUi,
-	studio: Studio,
+	studio: UIStudio,
 	mediaPreviewUrl: string | undefined
 ): string | undefined {
 	if (piece.expectedPackages) {
@@ -142,7 +145,7 @@ export function getThumbnailUrlForAdLibPieceUi(
 
 export function getThumbnailUrlForPieceUi(
 	pieceInstance: PieceUi,
-	studio: Studio,
+	studio: UIStudio,
 	mediaPreviewUrl: string | undefined
 ): string | undefined {
 	const piece = pieceInstance.instance.piece
@@ -157,7 +160,7 @@ export function getThumbnailUrlForPieceUi(
 
 export function getPreviewUrlForAdLibPieceUi(
 	piece: AdLibPieceUi,
-	studio: Studio,
+	studio: UIStudio,
 	mediaPreviewUrl: string | undefined
 ): string | undefined {
 	if (piece.expectedPackages) {
@@ -171,7 +174,7 @@ export function getPreviewUrlForAdLibPieceUi(
 
 export function getPreviewUrlForPieceUi(
 	pieceInstance: PieceUi,
-	studio: Studio,
+	studio: UIStudio,
 	mediaPreviewUrl: string | undefined
 ): string | undefined {
 	const piece = pieceInstance.instance.piece
@@ -186,7 +189,7 @@ export function getPreviewUrlForPieceUi(
 
 export function getPreviewUrlForExpectedPackagesAndContentMetaData(
 	ownerId: OwnerId,
-	studio: Studio | undefined,
+	studio: UIStudio | undefined,
 	mediaPreviewUrl: string | undefined,
 	expectedPackages: ExpectedPackage.Any[] | undefined,
 	contentMetaData: MediaObject | null | undefined

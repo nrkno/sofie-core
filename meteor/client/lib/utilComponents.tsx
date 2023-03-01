@@ -26,8 +26,7 @@ export function makeTableOfObject(o: any) {
 								// ignore
 							}
 							if (json) {
-								// @ts-ignore
-								content = <pre>{JSON.stringify(json, '', ' ')}</pre>
+								content = <pre>{JSON.stringify(json, undefined, ' ')}</pre>
 							}
 						}
 					}

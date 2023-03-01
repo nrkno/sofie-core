@@ -2,8 +2,14 @@ _gsdata_/
 settings.json
 meteor/.coverage/
 node_modules
-
+**/yarn-error.log
+scratch/
 
 # Exclude JetBrains IDE specific files
 .idea
-**/yarn-error.log
+
+# Exclude TV2-specific things:
+.github/workflows/automerge.yml
+.github/workflows/deps.yaml
+.github/workflows/forkSync.yml
+.github/workflows/forkSynk.yml

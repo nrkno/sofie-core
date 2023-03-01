@@ -6,8 +6,8 @@ import { DefaultListItemRenderer } from './DefaultListItemRenderer'
 import { VTListItemRenderer } from './VTListItemRenderer'
 import { L3rdListItemRenderer } from './L3rdListItemRenderer'
 import { ScanInfoForPackages } from '../../../../lib/mediaObjects'
-import { Studio } from '../../../../lib/collections/Studios'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { UIStudio } from '../../../../lib/api/studios'
 
 export interface ILayerItemRendererProps {
 	adLibListItem: IAdLibListItem
@@ -19,7 +19,7 @@ export interface ILayerItemRendererProps {
 	metadata?: MediaObject | null
 	mediaPreviewUrl: string | undefined
 	packageInfos: ScanInfoForPackages | undefined
-	studio: Studio | undefined
+	studio: UIStudio | undefined
 }
 
 export default function renderItem(props: ILayerItemRendererProps): JSX.Element {

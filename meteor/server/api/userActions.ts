@@ -2,13 +2,12 @@ import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
 import { getCurrentTime, getHash, Time } from '../../lib/lib'
-import { Rundowns, RundownId } from '../../lib/collections/Rundowns'
-import { Parts, PartId } from '../../lib/collections/Parts'
+import { Rundowns } from '../../lib/collections/Rundowns'
+import { Parts } from '../../lib/collections/Parts'
 import { ServerPlayoutAPI } from './playout/playout'
 import { NewUserActionAPI, RESTART_SALT, UserActionAPIMethods } from '../../lib/api/userActions'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
-import { StudioId } from '../../lib/collections/Studios'
-import { Pieces, PieceId } from '../../lib/collections/Pieces'
+import { Pieces } from '../../lib/collections/Pieces'
 import { IngestPart, IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
 import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../methods'
@@ -17,31 +16,39 @@ import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
 import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
-import { RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
-import { PartInstanceId } from '../../lib/collections/PartInstances'
-import { PieceInstanceId } from '../../lib/collections/PieceInstances'
-import { MediaWorkFlowId } from '../../lib/collections/MediaWorkFlows'
 import { MethodContextAPI } from '../../lib/api/methods'
 import { ServerClientAPI } from './client'
-import { SegmentId } from '../../lib/collections/Segments'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { SystemWriteAccess } from '../security/system'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
-import { BucketId, Bucket } from '../../lib/collections/Buckets'
+import { Bucket } from '../../lib/collections/Buckets'
 import { BucketsAPI } from './buckets'
 import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
-import { AdLibActionId, AdLibActionCommon } from '../../lib/collections/AdLibActions'
+import { AdLibActionCommon } from '../../lib/collections/AdLibActions'
 import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { VerifiedRundownPlaylistContentAccess } from './lib'
 import { PackageManagerAPI } from './packageManager'
 import { ServerPeripheralDeviceAPI } from './peripheralDevice'
-import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
-import { RundownBaselineAdLibActionId } from '../../lib/collections/RundownBaselineAdLibActions'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { StudioContentWriteAccess } from '../security/studio'
 import { BucketSecurity } from '../security/buckets'
-import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
+import {
+	AdLibActionId,
+	BucketId,
+	MediaWorkFlowId,
+	PartId,
+	PartInstanceId,
+	PeripheralDeviceId,
+	PieceId,
+	PieceInstanceId,
+	RundownBaselineAdLibActionId,
+	RundownId,
+	RundownPlaylistId,
+	SegmentId,
+	ShowStyleBaseId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 async function pieceSetInOutPoints(
 	access: VerifiedRundownPlaylistContentAccess,
@@ -516,7 +523,7 @@ class ServerUserActionAPI
 				check(showStyleBaseId, String)
 				check(ingestItem, Object)
 
-				const access = BucketSecurity.allowWriteAccess(this, bucketId)
+				const access = await BucketSecurity.allowWriteAccess(this, bucketId)
 				return BucketsAPI.importAdlibToBucket(access, showStyleBaseId, undefined, ingestItem)
 			}
 		)
@@ -727,7 +734,7 @@ class ServerUserActionAPI
 			async () => {
 				check(workflowId, String)
 
-				const access = PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
+				const access = await PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
 				return MediaManagerAPI.restartWorkflow(access)
 			}
 		)
@@ -742,7 +749,7 @@ class ServerUserActionAPI
 			async () => {
 				check(workflowId, String)
 
-				const access = PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
+				const access = await PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
 				return MediaManagerAPI.abortWorkflow(access)
 			}
 		)
@@ -757,7 +764,7 @@ class ServerUserActionAPI
 			async () => {
 				check(workflowId, String)
 
-				const access = PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
+				const access = await PeripheralDeviceContentWriteAccess.mediaWorkFlow(this, workflowId)
 				return MediaManagerAPI.prioritizeWorkflow(access)
 			}
 		)
@@ -770,7 +777,7 @@ class ServerUserActionAPI
 			'mediaRestartAllWorkflows',
 			[],
 			async () => {
-				const access = OrganizationContentWriteAccess.mediaWorkFlows(this)
+				const access = await OrganizationContentWriteAccess.mediaWorkFlows(this)
 				return MediaManagerAPI.restartAllWorkflows(access)
 			}
 		)
@@ -783,7 +790,7 @@ class ServerUserActionAPI
 			'mediaAbortAllWorkflows',
 			[],
 			async () => {
-				const access = OrganizationContentWriteAccess.mediaWorkFlows(this)
+				const access = await OrganizationContentWriteAccess.mediaWorkFlows(this)
 				return MediaManagerAPI.abortAllWorkflows(access)
 			}
 		)
@@ -804,7 +811,7 @@ class ServerUserActionAPI
 				check(deviceId, String)
 				check(workId, String)
 
-				const access = PeripheralDeviceContentWriteAccess.peripheralDevice(this, deviceId)
+				const access = await PeripheralDeviceContentWriteAccess.executeFunction(this, deviceId)
 				return PackageManagerAPI.restartExpectation(access, workId)
 			}
 		)
@@ -819,7 +826,7 @@ class ServerUserActionAPI
 			async () => {
 				check(studioId, String)
 
-				const access = StudioContentWriteAccess.anyContent(this, studioId)
+				const access = await StudioContentWriteAccess.executeFunction(this, studioId)
 				return PackageManagerAPI.restartAllExpectationsInStudio(access)
 			}
 		)
@@ -840,7 +847,7 @@ class ServerUserActionAPI
 				check(deviceId, String)
 				check(workId, String)
 
-				const access = PeripheralDeviceContentWriteAccess.peripheralDevice(this, deviceId)
+				const access = await PeripheralDeviceContentWriteAccess.executeFunction(this, deviceId)
 				return PackageManagerAPI.abortExpectation(access, workId)
 			}
 		)
@@ -861,7 +868,7 @@ class ServerUserActionAPI
 				check(deviceId, String)
 				check(containerId, String)
 
-				const access = PeripheralDeviceContentWriteAccess.peripheralDevice(this, deviceId)
+				const access = await PeripheralDeviceContentWriteAccess.executeFunction(this, deviceId)
 				return PackageManagerAPI.restartPackageContainer(access, containerId)
 			}
 		)
@@ -883,7 +890,8 @@ class ServerUserActionAPI
 	}
 	async generateRestartToken(userEvent: string, eventTime: Time) {
 		return ServerClientAPI.runUserActionInLog(this, userEvent, eventTime, 'generateRestartToken', [], async () => {
-			SystemWriteAccess.system(this)
+			await SystemWriteAccess.systemActions(this)
+
 			restartToken = getHash('restart_' + getCurrentTime())
 			return restartToken
 		})
@@ -898,7 +906,7 @@ class ServerUserActionAPI
 			async () => {
 				check(hashedRestartToken, String)
 
-				SystemWriteAccess.system(this)
+				await SystemWriteAccess.systemActions(this)
 
 				if (hashedRestartToken !== getHash(RESTART_SALT + restartToken)) {
 					throw new Meteor.Error(401, `Restart token is invalid`)
@@ -934,7 +942,7 @@ class ServerUserActionAPI
 			async () => {
 				check(bucketId, String)
 
-				const access = BucketSecurity.allowWriteAccess(this, bucketId)
+				const access = await BucketSecurity.allowWriteAccess(this, bucketId)
 				return BucketsAPI.removeBucket(access)
 			}
 		)
@@ -955,7 +963,7 @@ class ServerUserActionAPI
 				check(bucketId, String)
 				check(bucketProps, Object)
 
-				const access = BucketSecurity.allowWriteAccess(this, bucketId)
+				const access = await BucketSecurity.allowWriteAccess(this, bucketId)
 				return BucketsAPI.modifyBucket(access, bucketProps)
 			}
 		)
@@ -970,7 +978,7 @@ class ServerUserActionAPI
 			async () => {
 				check(bucketId, String)
 
-				const access = BucketSecurity.allowWriteAccess(this, bucketId)
+				const access = await BucketSecurity.allowWriteAccess(this, bucketId)
 				return BucketsAPI.emptyBucket(access)
 			}
 		)
@@ -986,7 +994,7 @@ class ServerUserActionAPI
 				check(studioId, String)
 				check(name, String)
 
-				const access = StudioContentWriteAccess.bucket(this, studioId)
+				const access = await StudioContentWriteAccess.bucket(this, studioId)
 				return BucketsAPI.createNewBucket(access, name)
 			}
 		)
@@ -1001,7 +1009,7 @@ class ServerUserActionAPI
 			'bucketsRemoveBucketAdLib',
 			[adlibId],
 			async () => {
-				const access = BucketSecurity.allowWriteAccessPiece(this, adlibId)
+				const access = await BucketSecurity.allowWriteAccessPiece(this, adlibId)
 				return BucketsAPI.removeBucketAdLib(access)
 			}
 		)
@@ -1016,7 +1024,7 @@ class ServerUserActionAPI
 			async () => {
 				check(actionId, String)
 
-				const access = BucketSecurity.allowWriteAccessAction(this, actionId)
+				const access = await BucketSecurity.allowWriteAccessAction(this, actionId)
 				return BucketsAPI.removeBucketAdLibAction(access)
 			}
 		)
@@ -1037,7 +1045,7 @@ class ServerUserActionAPI
 				check(adlibId, String)
 				check(adlibProps, Object)
 
-				const access = BucketSecurity.allowWriteAccessPiece(this, adlibId)
+				const access = await BucketSecurity.allowWriteAccessPiece(this, adlibId)
 				return BucketsAPI.modifyBucketAdLib(access, adlibProps)
 			}
 		)
@@ -1058,7 +1066,7 @@ class ServerUserActionAPI
 				check(actionId, String)
 				check(actionProps, Object)
 
-				const access = BucketSecurity.allowWriteAccessAction(this, actionId)
+				const access = await BucketSecurity.allowWriteAccessAction(this, actionId)
 				return BucketsAPI.modifyBucketAdLibAction(access, actionProps)
 			}
 		)
@@ -1081,7 +1089,7 @@ class ServerUserActionAPI
 				check(bucketId, String)
 				check(action, Object)
 
-				const access = BucketSecurity.allowWriteAccess(this, bucketId)
+				const access = await BucketSecurity.allowWriteAccess(this, bucketId)
 				return BucketsAPI.saveAdLibActionIntoBucket(access, action)
 			}
 		)
@@ -1104,7 +1112,7 @@ class ServerUserActionAPI
 				check(routeSetId, String)
 				check(state, Boolean)
 
-				const access = StudioContentWriteAccess.routeSet(this, studioId)
+				const access = await StudioContentWriteAccess.routeSet(this, studioId)
 				return ServerPlayoutAPI.switchRouteSet(access, routeSetId, state)
 			}
 		)
@@ -1171,7 +1179,7 @@ class ServerUserActionAPI
 				check(subDeviceId, String)
 				check(disable, Boolean)
 
-				const access = PeripheralDeviceContentWriteAccess.peripheralDevice(this, peripheralDeviceId)
+				const access = await PeripheralDeviceContentWriteAccess.peripheralDevice(this, peripheralDeviceId)
 				return ServerPeripheralDeviceAPI.disableSubDevice(access, subDeviceId, disable)
 			}
 		)

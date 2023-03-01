@@ -12,17 +12,19 @@ import { makeTableOfObject } from '../../lib/utilComponents'
 import ClassNames from 'classnames'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import moment from 'moment'
-import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { faTrash, faPause, faPlay, faRedo } from '@fortawesome/free-solid-svg-icons'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
+import { UIStudios } from '../Collections'
+import { UIStudio } from '../../../lib/api/studios'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IExternalMessagesProps {}
 interface IExternalMessagesState {
 	studioId: StudioId | undefined
 }
 interface IExternalMessagesTrackedProps {
-	studios: Array<Studio>
+	studios: Array<UIStudio>
 }
 
 const ExternalMessages = translateWithTracker<
@@ -31,7 +33,7 @@ const ExternalMessages = translateWithTracker<
 	IExternalMessagesTrackedProps
 >((_props: IExternalMessagesProps) => {
 	return {
-		studios: Studios.find({}).fetch(),
+		studios: UIStudios.find({}).fetch(),
 	}
 })(
 	class ExternalMessages extends MeteorReactComponent<
@@ -45,7 +47,7 @@ const ExternalMessages = translateWithTracker<
 			}
 		}
 		componentDidMount() {
-			this.subscribe(PubSub.studios, {})
+			this.subscribe(PubSub.uiStudio, null)
 		}
 		onClickStudio = (studio) => {
 			this.setState({
