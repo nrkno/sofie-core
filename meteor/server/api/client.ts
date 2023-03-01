@@ -394,12 +394,10 @@ export namespace ServerClientAPI {
 			// In this case, it was called internally from server-side.
 			// Just run and return right away:
 			triggerWriteAccessBecauseNoCheckNecessary()
-			return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
-				deviceId,
-				timeoutTime,
+			return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, {
 				functionName,
-				...args
-			).catch(async (e) => {
+				args,
+			}).catch(async (e) => {
 				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
 				logger.error(errMsg)
 				// allow the exception to be handled by the Client code
@@ -409,14 +407,15 @@ export namespace ServerClientAPI {
 
 		void PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
 
-		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, functionName, ...args).catch(
-			async (err) => {
-				const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
-				logger.error(errMsg)
-				// allow the exception to be handled by the Client code
-				return Promise.reject(err)
-			}
-		)
+		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, {
+			functionName,
+			args,
+		}).catch(async (err) => {
+			const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
+			logger.error(errMsg)
+			// allow the exception to be handled by the Client code
+			return Promise.reject(err)
+		})
 	}
 
 	async function getLoggedInCredentials(methodContext: MethodContext): Promise<BasicAccessContext> {
