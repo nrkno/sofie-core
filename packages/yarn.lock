@@ -4199,10 +4199,9 @@
   resolved "https://registry.yarnpkg.com/@trysound/sax/-/sax-0.2.0.tgz#cccaab758af56761eb7bf37af6f03f326dd798ad"
   integrity sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==
 
-"@tv2media/v-connection@^6.0.3":
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-6.1.0.tgz#c1b97967a49703b5b0d464c81c144cffb544b891"
-  integrity sha512-Tubfcb9PWyQ2P2tjwEWTDxM+oYM66rlle7d0R8xmeeQOdG3MU/EoSqbs1VFQnX25DD75zDYxzZQBE0g1jWj1BQ==
+"@tv2media/v-connection@git+https://github.com/nrkno/v-connection.git#5386986d87ea6d1b5164d206ea42c975654b36cd":
+  version "7.2.1"
+  resolved "git+https://github.com/nrkno/v-connection.git#5386986d87ea6d1b5164d206ea42c975654b36cd"
   dependencies:
     request "^2.88.2"
     request-promise-native "^1.0.9"
@@ -8626,6 +8625,23 @@ got@^11.8.6:
     p-cancelable "^2.0.0"
     responselike "^2.0.0"
 
+got@^11.8.6:
+  version "11.8.6"
+  resolved "https://registry.yarnpkg.com/got/-/got-11.8.6.tgz#276e827ead8772eddbcfc97170590b841823233a"
+  integrity sha512-6tfZ91bOr7bOXnK7PRDCGBLa1H4U080YHNaAQ2KsMGlLEzRbk44nsZF2E1IeRc3vtJHPVbKCYgdFbaGO2ljd8g==
+  dependencies:
+    "@sindresorhus/is" "^4.0.0"
+    "@szmarczak/http-timer" "^4.0.5"
+    "@types/cacheable-request" "^6.0.1"
+    "@types/responselike" "^1.0.0"
+    cacheable-lookup "^5.0.3"
+    cacheable-request "^7.0.2"
+    decompress-response "^6.0.0"
+    http2-wrapper "^1.0.0-beta.5.2"
+    lowercase-keys "^2.0.0"
+    p-cancelable "^2.0.0"
+    responselike "^2.0.0"
+
 got@^9.6.0:
   version "9.6.0"
   resolved "https://registry.yarnpkg.com/got/-/got-9.6.0.tgz#edf45e7d67f99545705de1f7bbeeeb121765ed85"
@@ -9031,10 +9047,10 @@ htmlparser2@^8.0.1:
     domutils "^3.0.1"
     entities "^4.3.0"
 
-http-cache-semantics@^4.0.0, http-cache-semantics@^4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/http-cache-semantics/-/http-cache-semantics-4.1.0.tgz#49e91c5cbf36c9b94bcfcd71c23d5249ec74e390"
-  integrity sha512-carPklcUh7ROWRK7Cv27RPtdhYhUsela/ue5/jKzjegVvXDqM2ILE9Q2BGn9JZJh1g87cp56su/FgQSzcWS8cQ==
+http-cache-semantics@^4.1.0, http-cache-semantics@^4.1.1:
+  version "4.1.1"
+  resolved "https://registry.yarnpkg.com/http-cache-semantics/-/http-cache-semantics-4.1.1.tgz#abe02fcb2985460bf0323be664436ec3476a6d5a"
+  integrity sha512-er295DKPVsV82j5kw1Gjt+ADA/XYHsajl82cGNQG2eyoPkvgUhX+nDIyelzhIWbbsXP39EHcI6l5tYs2FYqYXQ==
 
 http-deceiver@^1.2.7:
   version "1.2.7"
@@ -14776,7 +14792,7 @@ timeline-state-resolver@8.0.0-nightly-release49-20230222-082434-b08fa0305.0:
   resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-8.0.0-nightly-release49-20230222-082434-b08fa0305.0.tgz#2803212534a925f52bbe594bb666212eab213f20"
   integrity sha512-vCHwDpVN+5D0rSuLKPkEn+Ab+eAqzQc0nylHRFOtWF033PEyx0xMcd0O3ubi2b8hh99Xw/RTbwfLb2hYvL+8SQ==
   dependencies:
-    "@tv2media/v-connection" "^6.0.3"
+    "@tv2media/v-connection" "git+https://github.com/nrkno/v-connection.git#5386986d87ea6d1b5164d206ea42c975654b36cd"
     atem-connection "2.4.0"
     atem-state "^0.12.2"
     casparcg-connection "^6.0.0"

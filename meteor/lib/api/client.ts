@@ -21,6 +21,12 @@ export interface NewClientAPI {
 		actionId: string,
 		payload?: Record<string, any>
 	): Promise<any>
+	callBackgroundPeripheralDeviceFunction(
+		deviceId: PeripheralDeviceId,
+		timeoutTime: number | undefined,
+		functionName: string,
+		...args: any[]
+	): Promise<any>
 }
 
 export enum ClientAPIMethods {
@@ -28,6 +34,7 @@ export enum ClientAPIMethods {
 	'clientLogNotification' = 'client.clientLogNotification',
 	'callPeripheralDeviceFunction' = 'client.callPeripheralDeviceFunction',
 	'callPeripheralDeviceAction' = 'client.callPeripheralDeviceAction',
+	'callBackgroundPeripheralDeviceFunction' = 'client.callBackgroundPeripheralDeviceFunction',
 }
 
 export namespace ClientAPI {

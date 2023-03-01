@@ -182,6 +182,7 @@
 		}
 	},
 	"resolutions": {
-		"url-parse": "^1.5.9"
+		"url-parse": "^1.5.9",
+		"decode-uri-component": "^0.2.1"
 	}
 }
