@@ -17,6 +17,21 @@ All notable changes to this project will be documented in this file. See [standa
 * **PoGw:** resolve issues with reporting context from TSR ([687193f](https://github.com/nrkno/sofie-core/commit/687193ffeb599d5193f2f06d49b987a71a766206))
 * put vizPurgeRundown method on the sub-device instead ([e3e4d06](https://github.com/nrkno/sofie-core/commit/e3e4d060cd87eb96f2b7219d6ffe3ca66726b23e))
 
+## [1.47.0](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.8...v1.47.0) (2023-03-01)
+
+
+### Features
+
+* add `callBackgroundPeripheralDeviceFunction` ([3ce75bd](https://github.com/nrkno/sofie-core/commit/3ce75bdb8c9d2427ce76e96bebaada09c497b50b))
+
+
+### Bug Fixes
+
+* change GUI message before purgin viz-elements ([77e5334](https://github.com/nrkno/sofie-core/commit/77e53340f09a7b3e00e536bcbf7b5b6b02468d1c))
+* fix bug on package-manager status page ([d6a8465](https://github.com/nrkno/sofie-core/commit/d6a8465f52f7e7eefb8b812871d5925543004ea5))
+* fix bug on package-manager status page ([575b557](https://github.com/nrkno/sofie-core/commit/575b5571174e3367a75bb517f73ba061d16feae1))
+* remove client-side write to PeripheralDeviceCommands ([2db2242](https://github.com/nrkno/sofie-core/commit/2db2242ce41aef81c599840444bde08e7ba8ec99))
+
 ## [1.47.0-in-testing.8](https://github.com/nrkno/sofie-core/compare/v1.44.2...v1.47.0-in-testing.8) (2023-02-14)
 
 

@@ -376,6 +376,48 @@ export namespace ServerClientAPI {
 				return Promise.reject(err)
 			})
 	}
+
+	export async function callBackgroundPeripheralDeviceFunction(
+		methodContext: MethodContext,
+		deviceId: PeripheralDeviceId,
+		timeoutTime: number | undefined,
+		functionName: string,
+		...args: any[]
+	): Promise<any> {
+		check(deviceId, String)
+		check(functionName, String)
+
+		logger.debug(`Calling "${deviceId}" with "${functionName}", ${JSON.stringify(args)}`)
+
+		if (!methodContext.connection) {
+			// In this case, it was called internally from server-side.
+			// Just run and return right away:
+			triggerWriteAccessBecauseNoCheckNecessary()
+			return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+				deviceId,
+				timeoutTime,
+				functionName,
+				...args
+			).catch(async (e) => {
+				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
+				logger.error(errMsg)
+				// allow the exception to be handled by the Client code
+				return Promise.reject(e)
+			})
+		}
+
+		void PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
+
+		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, functionName, ...args).catch(
+			async (err) => {
+				const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
+				logger.error(errMsg)
+				// allow the exception to be handled by the Client code
+				return Promise.reject(err)
+			}
+		)
+	}
+
 	async function getLoggedInCredentials(methodContext: MethodContext): Promise<BasicAccessContext> {
 		let userId: UserId | null = null
 		let organizationId: OrganizationId | null = null
@@ -434,6 +476,20 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 			actionId,
 			payload,
 		})
+	}
+	async callBackgroundPeripheralDeviceFunction(
+		deviceId: PeripheralDeviceId,
+		timeoutTime: number | undefined,
+		functionName: string,
+		...args: any[]
+	): Promise<any> {
+		return ServerClientAPI.callBackgroundPeripheralDeviceFunction(
+			this,
+			deviceId,
+			timeoutTime,
+			functionName,
+			...args
+		)
 	}
 }
 registerClassToMeteorMethods(ClientAPIMethods, ServerClientAPIClass, false)
