@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices } from '../../collections'
+import { eventContextForLog } from '../../../lib/clientUserAction'
 
 interface IDevicePackageManagerSettingsProps {
 	deviceId: PeripheralDeviceId
