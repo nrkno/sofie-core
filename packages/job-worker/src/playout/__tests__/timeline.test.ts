@@ -56,28 +56,59 @@ import { EmptyPieceTimelineObjectsBlob, PieceStatusCode } from '@sofie-automatio
 import { adjustFakeTime, useFakeCurrentTime, useRealCurrentTime } from '../../__mocks__/time'
 import { restartRandomId } from '../../__mocks__/nanoid'
 import { ProcessedShowStyleCompound } from '../../jobs'
-import { handleTimelineTriggerTime } from '../timings'
+import { handleOnPlayoutPlaybackChanged, handleTimelineTriggerTime } from '../timings'
+import {
+	PlayoutChangedResult,
+	PlayoutChangedType,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import * as _ from 'underscore'
 
+/**
+ * An object used to represent the simplified timeline structure.
+ * This allows for a simple declarative form of the timeline containing only the bits that are relevant to the layout of the parts and pieces
+ */
 interface PartTimelineTimings {
+	/** Expected enable for the previous part group, if it is on the timeline */
 	previousPart: TimelineEnableExt | null
 	currentPieces: {
+		/**
+		 * The pieces for the current part.
+		 * Every piece in the part must be represented here or in currentInfinitePieces.
+		 * Use null for pieces that have no presence in the timeline
+		 */
 		[id: string]: {
+			/** Expected offsets of the child group relative to the control object */
 			childGroup: PreAndPostRoll | PreAndPostRoll[]
+			/** Expected enable for the control object */
 			controlObj: TimelineEnableExt | TimelineEnableExt[]
 		} | null
 	}
 	currentInfinitePieces: {
+		/**
+		 * The pieces for the current part.
+		 * Every piece in the part must be represented here or in currentPieces.
+		 * Use null for pieces that have no presence in the timeline
+		 */
 		[id: string]: {
+			/** Expected enable for the virtual part group wrapping this infinite */
 			partGroup: TimelineEnableExt | TimelineEnableExt[]
 			pieceGroup: {
+				/** Expected offsets of the child group relative to the control object */
 				childGroup: PreAndPostRoll | PreAndPostRoll[]
+				/** Expected enable for the control object */
 				controlObj: TimelineEnableExt | TimelineEnableExt[]
 			}
 		} | null
 	}
+	/**
+	 * If there is a previous outTransition, then the piece generated must be represented here
+	 */
 	previousOutTransition:
 		| {
+				/** Expected offsets of the child group relative to the control object */
 				childGroup: PreAndPostRoll | PreAndPostRoll[]
+				/** Expected enable for the control object */
 				controlObj: TimelineEnableExt | TimelineEnableExt[]
 		  }
 		| null
@@ -89,7 +120,12 @@ interface PreAndPostRoll {
 	postroll: number
 	invalid?: string
 }
-function getPrerollAndPostroll(enable: TimelineEnableExt | TimelineEnableExt[]): PreAndPostRoll | PreAndPostRoll[] {
+/**
+ * Parse a TimelineEnable for a piece group timeline object into a simplifeid form of just the numbers ignoring the id of the control object it is relative to
+ */
+function parsePieceGroupPrerollAndPostroll(
+	enable: TimelineEnableExt | TimelineEnableExt[]
+): PreAndPostRoll | PreAndPostRoll[] {
 	const doIt = (enable: TimelineEnableExt): PreAndPostRoll => {
 		const res: PreAndPostRoll = {
 			preroll: 0,
@@ -178,7 +214,7 @@ async function checkTimingsRaw(
 
 			targetCurrentPieces[entryId] = controlObj
 				? {
-						childGroup: getPrerollAndPostroll(pieceObj?.enable ?? []),
+						childGroup: parsePieceGroupPrerollAndPostroll(pieceObj?.enable ?? []),
 						controlObj: controlObj.enable,
 				  }
 				: null
@@ -194,7 +230,7 @@ async function checkTimingsRaw(
 				targetCurrentInfinitePieces[entryId] = {
 					partGroup: partObj.enable,
 					pieceGroup: {
-						childGroup: getPrerollAndPostroll(pieceObj?.enable ?? []),
+						childGroup: parsePieceGroupPrerollAndPostroll(pieceObj?.enable ?? []),
 						controlObj: controlObj?.enable ?? [],
 					},
 				}
@@ -218,7 +254,7 @@ async function checkTimingsRaw(
 				const controlObj = objs.get(getPieceControlObjectId(piece))
 				previousOutTransition = controlObj
 					? {
-							childGroup: getPrerollAndPostroll(pieceObj?.enable ?? []),
+							childGroup: parsePieceGroupPrerollAndPostroll(pieceObj?.enable ?? []),
 							controlObj: controlObj.enable,
 					  }
 					: null
@@ -280,6 +316,79 @@ async function doTakePart(
 	}
 
 	return { currentPartInstance, nextPartInstance, previousPartInstance }
+}
+
+/** Perform the playback timing confirmation from playout-gateway */
+async function doOnPlayoutPlaybackChanged(
+	context: MockJobContext,
+	playlistId: RundownPlaylistId,
+	timings: {
+		/** Base time for the part and pieces */
+		baseTime: number
+		/** Id of the part being affected */
+		partId: PartInstanceId
+		/** Whether to report the part as started */
+		includePart: boolean
+		/**
+		 * Times of pieces having started playback, as offset relative to baseTime.
+		 * Note: every piece in the part must be represented here, use null if it should not be reported as playing
+		 */
+		pieceOffsets: Record<string, number | null>
+	}
+) {
+	const pieceInstances = await context.directCollections.PieceInstances.findFetch({ partInstanceId: timings.partId })
+	for (const pieceInstance of pieceInstances) {
+		expect(timings.pieceOffsets[unprotectString(pieceInstance._id)]).not.toBeUndefined()
+	}
+
+	await handleOnPlayoutPlaybackChanged(context, {
+		playlistId,
+		changes: _.compact<(PlayoutChangedResult | undefined)[]>([
+			timings.includePart
+				? {
+						type: PlayoutChangedType.PART_PLAYBACK_STARTED,
+						data: {
+							partInstanceId: timings.partId,
+							time: timings.baseTime,
+						},
+						objId: getPartGroupId(timings.partId),
+				  }
+				: undefined,
+			// The piece controlObjects start offset into the part, so need a manual offset
+			...Object.entries(timings.pieceOffsets).map(([pieceInstanceId, offset]) =>
+				offset !== null
+					? {
+							type: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
+							data: {
+								partInstanceId: timings.partId,
+								pieceInstanceId: protectString(pieceInstanceId),
+								time: timings.baseTime + offset,
+							},
+							objId: getPieceControlObjectId(protectString(pieceInstanceId)),
+					  }
+					: undefined
+			),
+		]),
+	})
+}
+
+/** Perform the playback timing confirmation from playout-gateway using automatic timings */
+async function doAutoPlayoutPlaybackChangedForPart(
+	context: MockJobContext,
+	playlistId: RundownPlaylistId,
+	partInstanceId: PartInstanceId,
+	takeTime: number
+) {
+	// Report the first part as having started playback
+	const pieceInstances = await context.directCollections.PieceInstances.findFetch({
+		partInstanceId: partInstanceId,
+	})
+	await doOnPlayoutPlaybackChanged(context, playlistId, {
+		baseTime: takeTime,
+		partId: partInstanceId,
+		includePart: true,
+		pieceOffsets: Object.fromEntries(pieceInstances.map((piece) => [piece._id, piece.piece.enable.start])),
+	})
 }
 
 /** Perform an activate and check the next part id is as expected */
@@ -452,6 +561,14 @@ describe('Timeline', () => {
 		expect(fixSnapshot(await context.directCollections.Timelines.findFetch())).toMatchSnapshot()
 	})
 
+	/**
+	 * Perform a test to check how a transition is formed on the timeline.
+	 * This simulates two takes then allows for analysis of the state.
+	 * @param name Name of the test
+	 * @param customRundownFactory Factory to produce the rundown to play
+	 * @param checkFcn Function used to check the resulting timeline
+	 * @param timeout Override the timeout of the test
+	 */
 	function testTransitionTimings(
 		name: string,
 		customRundownFactory: (
@@ -465,7 +582,8 @@ describe('Timeline', () => {
 			timeline: null,
 			currentPartInstance: DBPartInstance,
 			previousPartInstance: DBPartInstance,
-			checkTimings: (timings: PartTimelineTimings) => Promise<void>
+			checkTimings: (timings: PartTimelineTimings) => Promise<void>,
+			previousTakeTime: number
 		) => Promise<void>,
 		timeout?: number
 	) {
@@ -478,7 +596,22 @@ describe('Timeline', () => {
 					customRundownFactory,
 					async (playlistId, rundownId, parts, _getPartInstances, checkTimings) => {
 						// Take the first Part:
-						await doTakePart(context, playlistId, null, parts[0]._id, parts[1]._id)
+						const { currentPartInstance: currentPartInstance0 } = await doTakePart(
+							context,
+							playlistId,
+							null,
+							parts[0]._id,
+							parts[1]._id
+						)
+
+						// Report the first part as having started playback
+						const previousTakeTime = 10000
+						await doAutoPlayoutPlaybackChangedForPart(
+							context,
+							playlistId,
+							currentPartInstance0!._id,
+							previousTakeTime
+						)
 
 						// Take the second Part:
 						const { currentPartInstance, previousPartInstance } = await doTakePart(
@@ -489,14 +622,35 @@ describe('Timeline', () => {
 							null
 						)
 
+						// Report the second part as having started playback
+						await doAutoPlayoutPlaybackChangedForPart(
+							context,
+							playlistId,
+							currentPartInstance!._id,
+							previousTakeTime + 10000
+						)
+
 						// Run the result check
-						await checkFcn(rundownId, null, currentPartInstance!, previousPartInstance!, checkTimings)
+						await checkFcn(
+							rundownId,
+							null,
+							currentPartInstance!,
+							previousPartInstance!,
+							checkTimings,
+							previousTakeTime
+						)
 					}
 				),
 			timeout
 		)
 	}
 
+	/**
+	 * Perform a test to check how a timeline is formed
+	 * This simulates two takes then allows for analysis of the state.
+	 * @param customRundownFactory Factory to produce the rundown to play
+	 * @param fcn Function to perform some playout operations and check the results
+	 */
 	async function runTimelineTimings(
 		customRundownFactory: (
 			context: MockJobContext,
@@ -703,7 +857,14 @@ describe('Timeline', () => {
 		testTransitionTimings(
 			'inTransition with existing infinites',
 			setupRundownWithInTransitionExistingInfinite,
-			async (_rundownId0, _timeline, currentPartInstance, _previousPartInstance, checkTimings) => {
+			async (
+				_rundownId0,
+				_timeline,
+				currentPartInstance,
+				_previousPartInstance,
+				checkTimings,
+				previousTakeTime
+			) => {
 				await checkTimings({
 					// old part is extended due to transition keepalive
 					previousPart: { end: `#${getPartGroupId(currentPartInstance)}.start + 1000` },
@@ -721,10 +882,10 @@ describe('Timeline', () => {
 					},
 					currentInfinitePieces: {
 						piece002: {
-							// No delay applied as it started before this part, so should be left untouched
-							partGroup: { start: `#part_group_${currentPartInstance?._id}.start` },
+							// Should still be based on the time of previousPart, offset for preroll
+							partGroup: { start: previousTakeTime - 500 },
 							pieceGroup: {
-								controlObj: { start: 0 },
+								controlObj: { start: 500 },
 								childGroup: { preroll: 0, postroll: 0 },
 							},
 						},
@@ -1315,6 +1476,141 @@ describe('Timeline', () => {
 							},
 						},
 						currentInfinitePieces: {},
+						previousOutTransition: undefined,
+					})
+				}
+			))
+	})
+
+	describe('Infinite Pieces', () => {
+		async function getPieceInstances(partInstanceId: PartInstanceId): Promise<PieceInstance[]> {
+			return context.directCollections.PieceInstances.findFetch({
+				partInstanceId,
+			})
+		}
+
+		test('Infinite Piece has stable timing across timeline regenerations with/without plannedStartedPlayback', async () =>
+			runTimelineTimings(
+				async (
+					context: MockJobContext,
+					playlistId: RundownPlaylistId,
+					rundownId: RundownId,
+					showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
+				): Promise<RundownId> => {
+					const sourceLayerIds = Object.keys(showStyle.sourceLayers)
+
+					await setupRundownBase(
+						context,
+						playlistId,
+						rundownId,
+						showStyle,
+						{},
+						{
+							piece0: { prerollDuration: 500 },
+							piece1: {
+								prerollDuration: 50,
+								sourceLayerId: sourceLayerIds[3],
+								lifespan: PieceLifespan.OutOnSegmentEnd,
+							},
+						}
+					)
+
+					return rundownId
+				},
+				async (playlistId, rundownId, parts, getPartInstances, checkTimings) => {
+					// Take the only Part:
+					await doTakePart(context, playlistId, null, parts[0]._id, null)
+
+					const { currentPartInstance } = await getPartInstances()
+					expect(currentPartInstance).toBeTruthy()
+					if (!currentPartInstance) throw new Error('currentPartInstance must be defined')
+
+					// Should look normal for now
+					await checkTimings({
+						previousPart: null,
+						currentPieces: {
+							piece000: {
+								// This one gave the preroll
+								controlObj: {
+									start: 500,
+								},
+								childGroup: {
+									preroll: 500,
+									postroll: 0,
+								},
+							},
+						},
+						currentInfinitePieces: {
+							piece001: {
+								pieceGroup: {
+									childGroup: {
+										preroll: 50,
+										postroll: 0,
+									},
+									controlObj: {
+										start: 500,
+									},
+								},
+								partGroup: {
+									start: `#part_group_${currentPartInstance._id}.start`,
+								},
+							},
+						},
+						previousOutTransition: undefined,
+					})
+
+					const currentPieceInstances = await getPieceInstances(currentPartInstance._id)
+					const pieceInstance0 = currentPieceInstances.find(
+						(instance) => instance.piece._id === protectString(`${rundownId}_piece000`)
+					)
+					if (!pieceInstance0) throw new Error('pieceInstance0 must be defined')
+					const pieceInstance1 = currentPieceInstances.find(
+						(instance) => instance.piece._id === protectString(`${rundownId}_piece001`)
+					)
+					if (!pieceInstance1) throw new Error('pieceInstance1 must be defined')
+
+					const currentTime = 12300
+					await doOnPlayoutPlaybackChanged(context, playlistId, {
+						baseTime: currentTime,
+						partId: currentPartInstance._id,
+						includePart: true,
+						pieceOffsets: {
+							[unprotectString(pieceInstance0._id)]: 500,
+							[unprotectString(pieceInstance1._id)]: 500,
+						},
+					})
+
+					await doUpdateTimeline(context, playlistId)
+
+					await checkTimings({
+						previousPart: null,
+						currentPieces: {
+							piece000: {
+								controlObj: {
+									start: 500,
+								},
+								childGroup: {
+									preroll: 500,
+									postroll: 0,
+								},
+							},
+						},
+						currentInfinitePieces: {
+							piece001: {
+								pieceGroup: {
+									childGroup: {
+										preroll: 50,
+										postroll: 0,
+									},
+									controlObj: {
+										start: 500,
+									},
+								},
+								partGroup: {
+									start: currentTime, // same as the partGroup, note that this counteracts the offset in onPlayoutPlaybackChanged
+								},
+							},
+						},
 						previousOutTransition: undefined,
 					})
 				}
