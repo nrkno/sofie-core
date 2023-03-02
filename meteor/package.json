@@ -173,7 +173,9 @@
 		},
 		"nodeModules": {
 			"recompile": {
-				"mos-connection": "legacy"
+				"mos-connection": "legacy",
+				"@sofie-automation/corelib": "legacy",
+				"@sofie-automation/shared-lib": "legacy"
 			}
 		}
 	},
