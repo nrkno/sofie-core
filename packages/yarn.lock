@@ -8190,7 +8190,7 @@ htmlparser2@^8.0.1:
     domutils "^3.0.1"
     entities "^4.3.0"
 
-http-cache-semantics@^4.1.0, http-cache-semantics@^4.1.1:
+http-cache-semantics@^4.0.0, http-cache-semantics@^4.1.0:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/http-cache-semantics/-/http-cache-semantics-4.1.1.tgz#abe02fcb2985460bf0323be664436ec3476a6d5a"
   integrity sha512-er295DKPVsV82j5kw1Gjt+ADA/XYHsajl82cGNQG2eyoPkvgUhX+nDIyelzhIWbbsXP39EHcI6l5tYs2FYqYXQ==
@@ -13995,7 +13995,7 @@ timeline-state-resolver@8.0.0-release48.1:
   resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-8.0.0-release48.1.tgz#83f9ddc03cbb3b12d4a415819836bcbe8881931c"
   integrity sha512-ZSjPPR79He03mFU+X2BJu9LjZQ9P1QLANCazJqcZsnjPN+FCeRQ0VdpddDfo2erD2PbUvJudzQ6G3bC5Aucn2Q==
   dependencies:
-    "@tv2media/v-connection" "git+https://github.com/nrkno/v-connection.git#5386986d87ea6d1b5164d206ea42c975654b36cd"
+    "@tv2media/v-connection" "^6.0.3"
     atem-connection "2.4.0"
     atem-state "^0.12.2"
     casparcg-connection "^6.0.0"

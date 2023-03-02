@@ -250,11 +250,11 @@ function renderConfigValue(t: TFunction, item: ConfigManifestEntry, rawValue: Co
 					))}
 				</ul>
 			) : (
-				value.toString()
+				String(value)
 			)
 		case ConfigManifestEntryType.INT:
-			return _.isNumber(value) && item.zeroBased ? (value + 1).toString() : value.toString()
+			return _.isNumber(value) && item.zeroBased ? String(value + 1) : String(value)
 		default:
-			return value.toString()
+			return String(value)
 	}
 }
