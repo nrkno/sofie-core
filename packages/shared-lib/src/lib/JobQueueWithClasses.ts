@@ -71,7 +71,12 @@ export class JobQueueWithClasses {
 				resolve,
 				reject,
 			})
-			if (this.#autoStart && this.#paused) this.start()
+			if (this.#autoStart) {
+				// debounce so fn() isn't executed synchronously with .add():
+				setImmediate(() => {
+					this.start()
+				})
+			}
 		})
 	}
 	/** Clear queue */
