@@ -1480,7 +1480,7 @@ const makeConnection = (
 			/* no-op */
 		},
 		clientAddress: ctx.req.headers.host || 'unknown',
-		httpHeaders: ctx.req.headers,
+		httpHeaders: ctx.req.headers as Record<string, string>,
 	}
 }
 
