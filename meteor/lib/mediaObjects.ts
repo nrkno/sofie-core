@@ -522,9 +522,7 @@ function checkPieceContentExpectedPackageStatus(
 				) {
 					messages.push({
 						status: PieceStatusCode.SOURCE_MISSING,
-						message: generateTranslation(
-							`Clip can't be played because it doesn't exist on the playout system`
-						),
+						message: generateTranslation(`Clip can't be found on the playout system`),
 					})
 				} else if (
 					packageOnPackageContainer.status.status ===
@@ -532,9 +530,15 @@ function checkPieceContentExpectedPackageStatus(
 				) {
 					messages.push({
 						status: PieceStatusCode.SOURCE_MISSING,
-						message: generateTranslation('{{sourceLayer}} is not yet ready on the playout system', {
-							sourceLayer: sourceLayer.name,
-						}),
+						message: generateTranslation(
+							'{{reason}} Clip exists, but is not yet ready on the playout system.',
+							{
+								reason: ((packageOnPackageContainer?.status.statusReason.user || 'N/A') + '.').replace(
+									/\.\.$/,
+									'.'
+								), // remove any trailing double "."
+							}
+						),
 					})
 				} else if (
 					packageOnPackageContainer.status.status ===
@@ -542,9 +546,7 @@ function checkPieceContentExpectedPackageStatus(
 				) {
 					messages.push({
 						status: PieceStatusCode.OK,
-						message: generateTranslation('{{sourceLayer}} is transferring to the the playout system', {
-							sourceLayer: sourceLayer.name,
-						}),
+						message: generateTranslation('Clip is transferring to the the playout system'),
 					})
 				} else if (
 					packageOnPackageContainer.status.status ===
@@ -553,10 +555,7 @@ function checkPieceContentExpectedPackageStatus(
 					messages.push({
 						status: PieceStatusCode.SOURCE_MISSING,
 						message: generateTranslation(
-							'{{sourceLayer}} is transferring to the the playout system and cannot be played yet',
-							{
-								sourceLayer: sourceLayer.name,
-							}
+							'Clip is transferring to the the playout system but cannot be played yet'
 						),
 					})
 				} else if (
