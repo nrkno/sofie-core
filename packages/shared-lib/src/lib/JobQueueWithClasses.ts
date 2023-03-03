@@ -26,6 +26,8 @@ export class JobQueueWithClasses {
 	#executionWrapper?: WrapperFunction<any>
 	#resolutionWrapper?: DeferFunction
 
+	#waitForDonePromises: { resolve: () => void }[] = []
+
 	constructor(opts?: Options) {
 		this.#autoStart = opts?.autoStart ?? true
 		this.#executionWrapper = opts?.executionWrapper
@@ -96,7 +98,13 @@ export class JobQueueWithClasses {
 			// eslint-disable-next-line no-constant-condition
 			while (true) {
 				const firstIn = this.#queue.shift()
-				if (!firstIn) break
+				if (!firstIn) {
+					// No more jobs on queue.
+					this.#waitForDonePromises.forEach((p) => {
+						p.resolve()
+					})
+					break
+				}
 				try {
 					await firstIn.fn()
 					firstIn.resolve()
@@ -107,6 +115,18 @@ export class JobQueueWithClasses {
 			this.#paused = true
 		})().catch((error) => {
 			console.error(error)
+		})
+	}
+	/** Returns the count of waiting jobs in the queue (ie not started yet) */
+	getWaiting(): number {
+		return this.#queue.length
+	}
+	/** Returns a Promise that resolves when the queue is eventually empty */
+	async waitForDone(): Promise<void> {
+		if (!this.#queue.length) return Promise.resolve()
+
+		return new Promise((resolve) => {
+			this.#waitForDonePromises.push({ resolve })
 		})
 	}
 }
