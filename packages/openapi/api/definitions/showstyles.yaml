@@ -528,6 +528,9 @@ components:
         name:
           type: string
           description: ShowStyle variant Name.
+        rank:
+          type: number
+          description: Rank for ordering variants for display.
         showStyleBaseId:
           type: string
           description: Id of the ShowStyleBase this ShowStyleVariant is based on.
@@ -536,6 +539,7 @@ components:
           description: Blueprint config.
         required:
           - name
+          - rank
           - showStyleBaseId
           - blueprintId
           - config
