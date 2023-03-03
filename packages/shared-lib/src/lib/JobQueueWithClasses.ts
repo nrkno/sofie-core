@@ -1,6 +1,6 @@
 export type Options = {
 	/** If true, newly added jobs will automatically start. If false, .start() needs to be called for the queue to start executing. (Defaults to true) */
-	autoStart: boolean
+	autoStart?: boolean
 	executionWrapper?: WrapperFunction<any>
 	resolutionWrapper?: DeferFunction
 }
@@ -15,7 +15,9 @@ export type JobOptions = {
 
 /**
  * A simple Job-queue runner with the added benefit of being able to set a `className` to a job.
- * By calling .remove(className) all jobs with a certain className is discarded from the queue.
+ * When calling .add() a job will be added to the queue.
+ * Jobs in the queue are executed one at a time, in the order they where added.
+ * By calling .remove(className) all jobs with a certain className are discarded from the queue.
  */
 export class JobQueueWithClasses {
 	#queue: JobDescription[] = []
@@ -57,7 +59,7 @@ export class JobQueueWithClasses {
 				})
 			} else {
 				wrappedFn = async () => {
-					new Promise<void>((resolve, reject) => {
+					return new Promise<void>((resolve, reject) => {
 						handlePromise(fn(), resolve, reject)
 					}).catch(reject)
 				}
