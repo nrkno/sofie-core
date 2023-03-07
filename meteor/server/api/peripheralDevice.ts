@@ -62,6 +62,7 @@ import { insertInputDeviceTriggerIntoPreview } from '../publications/deviceTrigg
 import { receiveInputDeviceTrigger } from './deviceTriggers/observer'
 import { upsertBundles, generateTranslationBundleOriginId } from './translationsBundles'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -160,7 +161,7 @@ export namespace ServerPeripheralDeviceAPI {
 							translations: undefined,
 					  }
 					: literal<DeviceConfigManifest>({
-							deviceConfigSchema: '',
+							deviceConfigSchema: JSONBlobStringify({}),
 							subdeviceManifest: {},
 					  }),
 			})
@@ -375,7 +376,7 @@ export namespace ServerPeripheralDeviceAPI {
 		let subDeviceCommonSchema: any
 		try {
 			// Try and parse the schema, making sure to hide the parse error if it isn't json
-			subDeviceCommonSchema = JSON.parse(subDeviceCommonSchemaStr)
+			subDeviceCommonSchema = JSONBlobParse(subDeviceCommonSchemaStr)
 		} catch (_e) {
 			throw new Meteor.Error(
 				405,

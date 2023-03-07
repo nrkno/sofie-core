@@ -38,6 +38,7 @@ import {
 	Studios,
 	TriggeredActions,
 } from '../../../collections'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 describe('Test blueprint migrationContext', () => {
 	beforeAll(async () => {
@@ -440,7 +441,7 @@ describe('Test blueprint migrationContext', () => {
 						},
 					},
 					configManifest: {
-						deviceConfigSchema: '', // can be empty as it's only useful for UI.
+						deviceConfigSchema: JSONBlobStringify({}), // can be empty as it's only useful for UI.
 						subdeviceManifest: {},
 					},
 				})

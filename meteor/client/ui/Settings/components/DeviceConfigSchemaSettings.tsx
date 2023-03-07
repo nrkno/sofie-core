@@ -2,7 +2,6 @@ import React, { useCallback, useMemo } from 'react'
 import { SubdeviceManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { useTranslation } from 'react-i18next'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -21,6 +20,7 @@ import {
 import { SchemaFormForCollection } from '../../../lib/forms/schemaFormForCollection'
 import { getSchemaDefaultValues } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
 import { JSONBlob, JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { PeripheralDevices } from '../../../collections'
 
 interface SubDevicesConfigProps {
 	translationNamespaces: string[]

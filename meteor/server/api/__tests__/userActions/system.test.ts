@@ -14,6 +14,7 @@ import {
 import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { PeripheralDevices } from '../../../collections'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 require('../../userActions') // include in order to create the Meteor methods needed
 
@@ -41,14 +42,14 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 					},
 				},
 				configManifest: {
-					deviceConfigSchema: '', // unused
+					deviceConfigSchema: JSONBlobStringify({}), // unused
 					subdeviceManifest: {
 						dummy: {
 							displayName: 'Test device',
-							configSchema: '', // unused
+							configSchema: JSONBlobStringify({}), // unused
 						},
 					},
-					subdeviceConfigSchema: JSON.stringify({
+					subdeviceConfigSchema: JSONBlobStringify({
 						// Based on 'common-options' from TSR
 						$schema: 'https://json-schema.org/draft/2020-12/schema',
 						title: 'Device Common Options',
@@ -61,7 +62,7 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 							},
 						},
 						required: [],
-						additionalProperties: false,
+						// additionalProperties: false,
 					}),
 				},
 			}
@@ -164,14 +165,14 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 					},
 				},
 				configManifest: {
-					deviceConfigSchema: '', // unused
+					deviceConfigSchema: JSONBlobStringify({}), // unused
 					subdeviceManifest: {
 						dummy: {
 							displayName: 'Test device',
-							configSchema: '', // unused
+							configSchema: JSONBlobStringify({}), // unused
 						},
 					},
-					subdeviceConfigSchema: JSON.stringify({
+					subdeviceConfigSchema: JSONBlobStringify({
 						// Based on 'common-options' from TSR
 						$schema: 'https://json-schema.org/draft/2020-12/schema',
 						title: 'Device Common Options',
@@ -184,7 +185,7 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 							},
 						},
 						required: [],
-						additionalProperties: false,
+						// additionalProperties: false,
 					}),
 				},
 			}

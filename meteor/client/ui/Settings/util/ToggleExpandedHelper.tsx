@@ -1,8 +1,8 @@
 import { useState, useCallback } from 'react'
 
 export function useToggleExpandHelper(): {
-	toggleExpanded(id: string, forceState?: boolean): void
-	isExpanded(id: string): boolean
+	toggleExpanded(id: string | number, forceState?: boolean): void
+	isExpanded(id: string | number): boolean
 } {
 	const [expandedItemIds, setExpandedItemIds] = useState({})
 

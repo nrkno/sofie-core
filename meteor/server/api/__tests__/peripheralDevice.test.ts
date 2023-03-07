@@ -61,6 +61,7 @@ import {
 	Segments,
 } from '../../collections'
 import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 const DEBUG = false
 
@@ -196,7 +197,7 @@ describe('test peripheralDevice general API methods', () => {
 			name: 'test',
 			connectionId: 'test',
 			configManifest: {
-				deviceConfigSchema: '',
+				deviceConfigSchema: JSONBlobStringify({}),
 				subdeviceManifest: {},
 			},
 		}
@@ -532,7 +533,7 @@ describe('test peripheralDevice general API methods', () => {
 	// 		name: 'test',
 	// 		connectionId: 'test',
 	// 		configManifest: {
-	// 			deviceConfigSchema: '',
+	// 			deviceConfigSchema: JSONBlobStringify({}),
 	//			subdeviceManifest: {}
 	// 		},
 	// 	}
@@ -601,7 +602,7 @@ describe('test peripheralDevice general API methods', () => {
 				settings: {},
 				category: PeripheralDeviceCategory.MEDIA_MANAGER,
 				configManifest: {
-					deviceConfigSchema: '',
+					deviceConfigSchema: JSONBlobStringify({}),
 					subdeviceManifest: {},
 				},
 				connected: true,
@@ -756,7 +757,7 @@ describe('test peripheralDevice general API methods', () => {
 				settings: {},
 				category: PeripheralDeviceCategory.MEDIA_MANAGER,
 				configManifest: {
-					deviceConfigSchema: '',
+					deviceConfigSchema: JSONBlobStringify({}),
 					subdeviceManifest: {},
 				},
 				connected: true,

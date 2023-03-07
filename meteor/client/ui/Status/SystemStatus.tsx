@@ -36,6 +36,7 @@ import { SchemaFormInPlace } from '../../lib/forms/schemaFormInPlace'
 import { CoreSystem, PeripheralDevices } from '../../collections'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { DebugStateTable } from './DebugState'
+import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -152,7 +153,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 					no: t('Cancel'),
 					message: action.payload ? (
 						<SchemaFormInPlace
-							schema={JSON.parse(action.payload)}
+							schema={JSONBlobParse(action.payload)}
 							object={payload}
 							translationNamespaces={namespaces}
 						/>
