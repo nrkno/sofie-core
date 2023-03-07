@@ -13,26 +13,26 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 	rightLabel: HTMLElement | null
 	lastOverflowTime: boolean
 
-	updateAnchoredElsWidths = () => {
+	private updateAnchoredElsWidths = () => {
 		const leftLabelWidth = this.leftLabel ? getElementWidth(this.leftLabel) : 0
 		const rightLabelWidth = this.rightLabel ? getElementWidth(this.rightLabel) : 0
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
-	setLeftLabelRef = (e: HTMLSpanElement) => {
+	private setLeftLabelRef = (e: HTMLSpanElement) => {
 		this.leftLabel = e
 	}
 
-	setRightLabelRef = (e: HTMLSpanElement) => {
+	private setRightLabelRef = (e: HTMLSpanElement) => {
 		this.rightLabel = e
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		this.updateAnchoredElsWidths()
 	}
 
-	componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
+	componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>): void {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -47,7 +47,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 		}
 	}
 
-	render() {
+	render(): JSX.Element {
 		const innerPiece = this.props.piece.instance.piece
 		const noraContent = innerPiece.content as NoraContent | undefined
 

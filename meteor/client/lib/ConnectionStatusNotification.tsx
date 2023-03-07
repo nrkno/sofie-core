@@ -17,9 +17,10 @@ import { WithManagedTracker } from './reactiveData/reactiveDataHelper'
 import { withTranslation } from 'react-i18next'
 import { NotificationCenterPopUps } from './notifications/NotificationCenterPanel'
 import { PubSub } from '../../lib/api/pubsub'
-import { CoreSystem, ICoreSystem, ServiceMessage, Criticality } from '../../lib/collections/CoreSystem'
+import { ICoreSystem, ServiceMessage, Criticality } from '../../lib/collections/CoreSystem'
 import * as i18next from 'i18next'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { CoreSystem } from '../collections'
 
 export class ConnectionStatusNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
@@ -80,7 +81,7 @@ export class ConnectionStatusNotifier extends WithManagedTracker {
 		})
 	}
 
-	stop() {
+	stop(): void {
 		super.stop()
 
 		this._notifier.stop()
@@ -245,15 +246,15 @@ export const ConnectionStatusNotification = withTranslation()(
 			super(props)
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.notifier = new ConnectionStatusNotifier(this.props.t)
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			this.notifier.stop()
 		}
 
-		render() {
+		render(): JSX.Element {
 			// this.props.connected
 			return <NotificationCenterPopUps />
 		}

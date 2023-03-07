@@ -39,8 +39,6 @@ export enum PieceType {
 	ACTION = 'action',
 }
 
-// TODO-PartInstance generate these for when the part has no need, but the instance still references something
-
 function generateExpectedMediaItems<T extends ExpectedMediaItemBase>(
 	sourceId: ProtectedString<any>,
 	commonProps: Subtract<T, ExpectedMediaItemBase>,
@@ -135,6 +133,11 @@ function generateExpectedMediaItemsFull(
 	return eMIs
 }
 
+/**
+ * Remove any ExpectedMediaItems belonging to the provided Bucket adlib ids
+ * @param context Context for the job
+ * @param adLibIds Ids to remove documents matchig
+ */
 export async function cleanUpExpectedMediaItemForBucketAdLibPiece(
 	context: JobContext,
 	adLibIds: PieceId[]
@@ -150,6 +153,11 @@ export async function cleanUpExpectedMediaItemForBucketAdLibPiece(
 	}
 }
 
+/**
+ * Remove any ExpectedMediaItems belonging to the provided Bucket action ids
+ * @param context Context for the job
+ * @param actionIds Ids to remove documents matchig
+ */
 export async function cleanUpExpectedMediaItemForBucketAdLibActions(
 	context: JobContext,
 	actionIds: AdLibActionId[]
@@ -165,6 +173,12 @@ export async function cleanUpExpectedMediaItemForBucketAdLibActions(
 	}
 }
 
+/**
+ * Regenerate the ExpectedMediaItems belonging to a BucketAdLib
+ * Writes result directly to database
+ * @param context Context for the Job
+ * @param piece BucketAdLib to regenerate for
+ */
 export async function updateExpectedMediaItemForBucketAdLibPiece(
 	context: JobContext,
 	piece: BucketAdLib
@@ -191,6 +205,12 @@ export async function updateExpectedMediaItemForBucketAdLibPiece(
 	)
 }
 
+/**
+ * Regenerate the ExpectedMediaItems belonging to a BucketAdLibAction
+ * Writes result directly to database
+ * @param context Context for the Job
+ * @param action BucketAdLibAction to regenerate for
+ */
 export async function updateExpectedMediaItemForBucketAdLibAction(
 	context: JobContext,
 	action: BucketAdLibAction
@@ -217,7 +237,11 @@ export async function updateExpectedMediaItemForBucketAdLibAction(
 	)
 }
 
-/** @deprecated */
+/**
+ * Regenerate the ExpectedMediaItems belonging to a Rundown
+ * @param context Context for the Job
+ * @param cache Cache containing the Rundown and resulting ExpectedMediaItems
+ */
 export async function updateExpectedMediaItemsOnRundown(context: JobContext, cache: CacheForIngest): Promise<void> {
 	const pieces = cache.Pieces.findAll(null)
 	const adlibs = cache.AdLibPieces.findAll(null)

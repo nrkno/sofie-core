@@ -1,13 +1,14 @@
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import * as _ from 'underscore'
 import { Fiber } from './Fibers'
+import { MongoMock } from './mongo'
 
 let controllableDefer: boolean = false
 
-export function useControllableDefer() {
+export function useControllableDefer(): void {
 	controllableDefer = true
 }
-export function useNextTickDefer() {
+export function useNextTickDefer(): void {
 	controllableDefer = false
 }
 
@@ -89,7 +90,7 @@ export class MeteorMock {
 	static get isClient(): boolean {
 		return mockIsClient
 	}
-	static get isServer() {
+	static get isServer(): boolean {
 		return !MeteorMock.isClient
 	}
 }
@@ -138,32 +139,32 @@ export namespace MeteorMock {
 			this._stack = stack
 			// console.log(this._stack)
 		}
-		get name() {
+		get name(): string {
 			return this.toString()
 		}
-		get message() {
+		get message(): string {
 			return this.toString()
 		}
-		get details() {
+		get details(): any {
 			return undefined
 		}
-		get errorType() {
+		get errorType(): string {
 			return 'Meteor.Error'
 		}
-		get isClientSafe() {
+		get isClientSafe(): boolean {
 			return false
 		}
-		get stack() {
+		get stack(): string | undefined {
 			return this._stack
 		}
-		toString() {
+		toString(): string {
 			return `[${this.error}] ${this.reason}` // TODO: This should be changed to "${this.reason} [${this.error}]"
 		}
 	}
-	export function methods(addMethods: { [name: string]: Function }) {
+	export function methods(addMethods: { [name: string]: Function }): void {
 		Object.assign(mockMethods, addMethods)
 	}
-	export function call(methodName: string, ...args: any[]) {
+	export function call(methodName: string, ...args: any[]): any {
 		const fcn: Function = mockMethods[methodName]
 		if (!fcn) {
 			console.log(methodName)
@@ -202,10 +203,12 @@ export namespace MeteorMock {
 			returnStubValue?: boolean
 			throwStubExceptions?: boolean
 		},
-		_asyncCallback?: Function
+		asyncCallback?: Function
 	): any {
 		// ?
-		mockMethods[methodName].call(getMethodContext(), ...args)
+		// This is a bad mock, since it doesn't support any of the options..
+		// but it'll do for now:
+		call(methodName, ...args, asyncCallback)
 	}
 	export function absoluteUrl(path?: string): string {
 		return path + '' // todo
@@ -215,7 +218,7 @@ export namespace MeteorMock {
 			runInFiber(fcn).catch(console.error)
 		}, time) as number
 	}
-	export function clearTimeout(timer: number) {
+	export function clearTimeout(timer: number): void {
 		$.clearTimeout(timer)
 	}
 	export function setInterval(fcn: () => void | Promise<void>, time: number): number {
@@ -223,10 +226,10 @@ export namespace MeteorMock {
 			runInFiber(fcn).catch(console.error)
 		}, time) as number
 	}
-	export function clearInterval(timer: number) {
+	export function clearInterval(timer: number): void {
 		$.clearInterval(timer)
 	}
-	export function defer(fcn: () => void | Promise<void>) {
+	export function defer(fcn: () => void | Promise<void>): void {
 		return (controllableDefer ? $.setTimeout : $.orgSetTimeout)(() => {
 			runInFiber(fcn).catch(console.error)
 		}, 0)
@@ -275,32 +278,32 @@ export namespace MeteorMock {
 			}
 		}
 	}
-	export let users: any = undefined
+	export let users: MongoMock.Collection<any> | undefined = undefined
 
 	// -- Mock functions: --------------------------
 	/**
 	 * Run the Meteor.startup() functions
 	 */
-	export function mockRunMeteorStartup() {
+	export function mockRunMeteorStartup(): void {
 		_.each(mockStartupFunctions, (fcn) => {
 			fcn()
 		})
 
 		waitTimeNoFakeTimers(10) // So that any observers or defers has had time to run.
 	}
-	export function mockLoginUser(newUser: Meteor.User) {
+	export function mockLoginUser(newUser: Meteor.User): void {
 		mockUser = newUser
 	}
-	export function mockSetUsersCollection(usersCollection) {
+	export function mockSetUsersCollection(usersCollection: MongoMock.Collection<any>): void {
 		users = usersCollection
 	}
-	export function mockSetClientEnvironment() {
+	export function mockSetClientEnvironment(): void {
 		mockIsClient = true
 	}
-	export function mockSetServerEnvironment() {
+	export function mockSetServerEnvironment(): void {
 		mockIsClient = false
 	}
-	export function mockGetPublications() {
+	export function mockGetPublications(): Record<string, Function> {
 		return publications
 	}
 
@@ -328,7 +331,7 @@ export namespace MeteorMock {
 		return new Promise<void>((resolve) => $.orgSetTimeout(resolve, time))
 	}
 }
-export function setup() {
+export function setup(): any {
 	return {
 		Meteor: MeteorMock,
 	}

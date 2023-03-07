@@ -1,11 +1,6 @@
-import {
-	IBlueprintActionManifest,
-	ITranslatableMessage as IBlueprintTranslatableMessage,
-} from '@sofie-automation/blueprints-integration'
+import { ITranslatableMessage as IBlueprintTranslatableMessage } from '@sofie-automation/blueprints-integration'
 import { TFunction } from 'i18next'
-import { BucketAdLibAction } from './dataModel/BucketAdLibAction'
 import { BlueprintId } from './dataModel/Ids'
-import { ArrayElement } from './lib'
 
 /**
  * @enum - A translatable message (i18next)
@@ -106,62 +101,6 @@ export function wrapTranslatableMessageFromBlueprints(
 	return {
 		...message,
 		namespaces: blueprintIds.map((id) => `blueprint_${id}`),
-	}
-}
-
-/**
- * A utility function to add namespaces to ITranslatableMessages found in AdLib Actions
- *
- * @export
- * @template K
- * @template T
- * @param {T} itemOrig
- * @param {BlueprintId} blueprintId
- * @param {number} [rank]
- * @return {*}  {(Pick<K, 'display' | 'triggerModes'>)}
- */
-export function processAdLibActionITranslatableMessages<
-	K extends {
-		display: IBlueprintActionManifest['display'] & {
-			label: ITranslatableMessage
-			triggerLabel?: ITranslatableMessage
-			description?: ITranslatableMessage
-		}
-		triggerModes?: (ArrayElement<IBlueprintActionManifest['triggerModes']> & {
-			display: ArrayElement<IBlueprintActionManifest['triggerModes']>['display'] & {
-				label: ITranslatableMessage
-				description?: ITranslatableMessage
-			}
-		})[]
-	},
-	T extends IBlueprintActionManifest
->(itemOrig: T, blueprintId: BlueprintId, rank?: number): Pick<K, 'display' | 'triggerModes'> {
-	return {
-		display: {
-			...itemOrig.display,
-			_rank: rank ?? itemOrig.display._rank,
-			label: wrapTranslatableMessageFromBlueprints(itemOrig.display.label, [blueprintId]),
-			triggerLabel:
-				itemOrig.display.triggerLabel &&
-				wrapTranslatableMessageFromBlueprints(itemOrig.display.triggerLabel, [blueprintId]),
-			description:
-				itemOrig.display.description &&
-				wrapTranslatableMessageFromBlueprints(itemOrig.display.description, [blueprintId]),
-		},
-		triggerModes:
-			itemOrig.triggerModes &&
-			itemOrig.triggerModes.map(
-				(triggerMode): ArrayElement<BucketAdLibAction['triggerModes']> => ({
-					...triggerMode,
-					display: {
-						...triggerMode.display,
-						label: wrapTranslatableMessageFromBlueprints(triggerMode.display.label, [blueprintId]),
-						description:
-							triggerMode.display.description &&
-							wrapTranslatableMessageFromBlueprints(triggerMode.display.description, [blueprintId]),
-					},
-				})
-			),
 	}
 }
 

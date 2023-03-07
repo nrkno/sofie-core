@@ -6,11 +6,11 @@ import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { DeviceTriggerArguments } from '../../lib/api/triggers/MountedTriggers'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { getCurrentTime } from '../../lib/lib'
 import { setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication'
 import { CustomPublish, meteorCustomPublish } from '../lib/customPublication/publish'
 import { StudioReadAccess } from '../security/studio'
+import { PeripheralDevices } from '../collections'
 
 type DeviceTriggerPreviewId = ProtectedString<'deviceTriggerPreviewId'>
 
@@ -38,7 +38,6 @@ meteorCustomPublish(
 		if (await StudioReadAccess.studioContent(studioId, { userId: this.userId, token })) {
 			await createObserverForDeviceTriggersPreviewsPublication(pub, PubSub.mountedTriggersForDevice, studioId)
 		}
-		return
 	}
 )
 
@@ -47,7 +46,7 @@ export async function insertInputDeviceTriggerIntoPreview(
 	triggerDeviceId: string,
 	triggerId: string,
 	values?: DeviceTriggerArguments
-) {
+): Promise<void> {
 	if (typeof deviceId !== 'string') return
 	const pDevice = await PeripheralDevices.findOneAsync(deviceId)
 

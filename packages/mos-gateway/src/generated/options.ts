@@ -8,4 +8,5 @@
 export interface MosGatewayConfig {
 	mosId: string
 	debugLogging?: boolean
+	strict?: boolean
 }

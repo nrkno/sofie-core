@@ -5,27 +5,25 @@ import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
 import { Route } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import {
-	RundownPlaylist,
-	RundownPlaylists,
-	RundownPlaylistCollectionUtil,
-} from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { parse as queryStringParse } from 'query-string'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { objectPathGet, firstIfArray, literal, protectString } from '../../../lib/lib'
-import { PrompterData, PrompterAPI, PrompterDataPart } from '../../../lib/api/prompter'
+import { PrompterData, PrompterAPI, PrompterDataPart } from './prompter'
 import { PrompterControlManager } from './controller/manager'
 import { PubSub } from '../../../lib/api/pubsub'
 import { documentTitle } from '../../lib/DocumentTitleProvider'
 import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
 import { OverUnderTimer } from './OverUnderTimer'
-import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { PartInstanceId, PieceId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
+import { RundownPlaylists, Rundowns } from '../../collections'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 const DEFAULT_UPDATE_THROTTLE = 250 //ms
 const PIECE_MISSING_UPDATE_THROTTLE = 2000 //ms
@@ -115,7 +113,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 	private checkWindowScroll: number | null = null
 
-	constructor(props) {
+	constructor(props: Translated<IProps & ITrackedProps>) {
 		super(props)
 		this.state = {
 			subsReady: false,
@@ -174,14 +172,14 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this._controller = new PrompterControlManager(this)
 	}
 
-	DEBUG_controllerSpeed(speed: number) {
+	DEBUG_controllerSpeed(speed: number): void {
 		const speedEl = document.getElementById('prompter-debug-speed')
 		if (speedEl) {
 			speedEl.textContent = speed + ''
 		}
 	}
 
-	DEBUG_controllerState(state: IPrompterControllerState) {
+	DEBUG_controllerState(state: IPrompterControllerState): void {
 		const debug = document.getElementById('prompter-debug')
 		if (debug) {
 			debug.textContent = ''
@@ -207,7 +205,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		if (this.props.studioId) {
 			this.subscribe(PubSub.uiStudio, this.props.studioId)
 
@@ -263,7 +261,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		this.setDocumentTitle()
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		super.componentWillUnmount()
 
 		documentTitle.set(null)
@@ -282,7 +280,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		window.removeEventListener('scroll', this.onWindowScroll)
 	}
 
-	componentDidUpdate() {
+	componentDidUpdate(): void {
 		this.triggerCheckCurrentTakeMarkers()
 		this.checkScrollToCurrent()
 	}
@@ -293,7 +291,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		documentTitle.set(t('Prompter'))
 	}
 
-	checkScrollToCurrent() {
+	private checkScrollToCurrent() {
 		const playlistId: RundownPlaylistId =
 			(this.props.rundownPlaylist && this.props.rundownPlaylist._id) || protectString('')
 		const playlist = RundownPlaylists.findOne(playlistId)
@@ -306,7 +304,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 		this.scrollToPartInstance(playlist.currentPartInstanceId)
 	}
-	calculateScrollPosition() {
+	private calculateScrollPosition() {
 		let pixelMargin = this.calculateMarginPosition()
 		switch (this.configOptions.marker) {
 			case 'top':
@@ -322,11 +320,11 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		}
 		return pixelMargin
 	}
-	calculateMarginPosition() {
+	private calculateMarginPosition() {
 		// margin in pixels
 		return ((this.configOptions.margin || 0) * window.innerHeight) / 100
 	}
-	scrollToPartInstance(partInstanceId: PartInstanceId) {
+	scrollToPartInstance(partInstanceId: PartInstanceId): void {
 		const scrollMargin = this.calculateScrollPosition()
 		const target = document.querySelector(`#partInstance_${partInstanceId}`)
 
@@ -335,7 +333,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			Velocity(target, 'scroll', { offset: -1 * scrollMargin, duration: 400, easing: 'ease-out' })
 		}
 	}
-	scrollToLive() {
+	scrollToLive(): void {
 		const scrollMargin = this.calculateScrollPosition()
 		const current = document.querySelector('.prompter .live') || document.querySelector('.prompter .next')
 
@@ -344,7 +342,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			Velocity(current, 'scroll', { offset: -1 * scrollMargin, duration: 400, easing: 'ease-out' })
 		}
 	}
-	scrollToNext() {
+	scrollToNext(): void {
 		const scrollMargin = this.calculateScrollPosition()
 		const next = document.querySelector('.prompter .next')
 
@@ -353,7 +351,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			Velocity(next, 'scroll', { offset: -1 * scrollMargin, duration: 400, easing: 'ease-out' })
 		}
 	}
-	scrollToPrevious() {
+	scrollToPrevious(): void {
 		const scrollMargin = this.calculateScrollPosition()
 		const anchors = this.listAnchorPositions(-1, 10 + scrollMargin)
 
@@ -367,7 +365,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			easing: 'ease-out',
 		})
 	}
-	scrollToFollowing() {
+	scrollToFollowing(): void {
 		const scrollMargin = this.calculateScrollPosition()
 		const anchors = this.listAnchorPositions(40 + scrollMargin, -1)
 
@@ -399,10 +397,10 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 	findAnchorPosition(startY: number, endY: number, sortDirection: number = 1): number | null {
 		return (this.listAnchorPositions(startY, endY, sortDirection)[0] || [])[0] || null
 	}
-	onWindowScroll = () => {
+	private onWindowScroll = () => {
 		this.triggerCheckCurrentTakeMarkers()
 	}
-	triggerCheckCurrentTakeMarkers = () => {
+	private triggerCheckCurrentTakeMarkers = () => {
 		// Rate limit:
 		if (!this.checkWindowScroll) {
 			this.checkWindowScroll = Meteor.setTimeout(() => {
@@ -412,7 +410,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			}, 500)
 		}
 	}
-	checkCurrentTakeMarkers = () => {
+	private checkCurrentTakeMarkers = () => {
 		const playlist = this.props.rundownPlaylist
 
 		if (playlist !== undefined) {
@@ -476,7 +474,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		}
 	}
 
-	renderMessage(message: string) {
+	private renderMessage(message: string) {
 		const { t } = this.props
 
 		return (
@@ -502,7 +500,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		)
 	}
 
-	render() {
+	render(): JSX.Element {
 		const { t } = this.props
 
 		const overUnderStyle: React.CSSProperties = {
@@ -603,7 +601,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.subscribe(PubSub.rundowns, [this.props.rundownPlaylistId], null)
 
 			this.autorun(() => {
@@ -818,7 +816,7 @@ export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTracke
 
 			return lines
 		}
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			if (this.props.prompterData) {

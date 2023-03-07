@@ -4,7 +4,7 @@ import { promises as fsp } from 'fs'
 import { getCurrentTime, unprotectString, getRandomId } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
-import { Blueprints, Blueprint } from '../../../lib/collections/Blueprints'
+import { Blueprint } from '../../../lib/collections/Blueprints'
 import {
 	BlueprintManifestType,
 	IShowStyleConfigPreset,
@@ -14,7 +14,7 @@ import {
 import { check, Match } from '../../../lib/check'
 import { NewBlueprintAPI, BlueprintAPIMethods } from '../../../lib/api/blueprint'
 import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../../methods'
-import { parseVersion, CoreSystem, SYSTEM_ID } from '../../../lib/collections/CoreSystem'
+import { parseVersion, SYSTEM_ID } from '../../../lib/collections/CoreSystem'
 import { evalBlueprint } from './cache'
 import { removeSystemStatus } from '../../systemStatus/systemStatus'
 import { MethodContext, MethodContextAPI } from '../../../lib/api/methods'
@@ -23,12 +23,13 @@ import { SystemWriteAccess } from '../../security/system'
 import { Credentials, isResolvedCredentials } from '../../security/lib/credentials'
 import { Settings } from '../../../lib/Settings'
 import { generateTranslationBundleOriginId, upsertBundles } from '../translationsBundles'
-import { BlueprintLight, fetchBlueprintLight } from '../../../lib/collections/optimizations'
 import { BlueprintId, OrganizationId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Blueprints, CoreSystem, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
+import { fetchBlueprintLight, BlueprintLight } from '../../serverOptimisations'
 import { getSystemStorePath } from '../../coreSystem'
-import { Studio, Studios } from '../../../lib/collections/Studios'
-import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { Studio } from '../../../lib/collections/Studios'
 
 export async function insertBlueprint(
 	methodContext: MethodContext,

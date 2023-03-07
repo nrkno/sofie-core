@@ -3,7 +3,12 @@ import React from 'react'
 import { L3rdFloatingInspector } from '../../../FloatingInspectors/L3rdFloatingInspector'
 import { IDefaultRendererProps } from './DefaultRenderer'
 
-export function GraphicsRenderer({ piece: pieceInstance, hovering, elementOffset, typeClass }: IDefaultRendererProps) {
+export function GraphicsRenderer({
+	piece: pieceInstance,
+	hovering,
+	elementOffset,
+	typeClass,
+}: IDefaultRendererProps): JSX.Element {
 	const content = pieceInstance.instance.piece.content as NoraContent | GraphicsContent | undefined
 
 	return (

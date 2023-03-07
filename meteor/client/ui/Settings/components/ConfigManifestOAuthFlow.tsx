@@ -124,7 +124,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 				})
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			const settings = (this.props.device.settings || {}) as IngestDeviceSettings
 			const device = this.props.device

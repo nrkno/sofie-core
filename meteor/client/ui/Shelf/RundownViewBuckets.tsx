@@ -149,7 +149,7 @@ export const RundownViewBuckets = withTranslation()(
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			super.componentDidMount && super.componentDidMount()
 
 			RundownViewEventBus.on(RundownViewEvents.CREATE_BUCKET, this.createNewBucket)
@@ -161,7 +161,7 @@ export const RundownViewBuckets = withTranslation()(
 			RundownViewEventBus.on(RundownViewEvents.RENAME_BUCKET_ADLIB, this.beginRenameBucketAdLib)
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			super.componentWillUnmount && super.componentWillUnmount()
 
 			RundownViewEventBus.off(RundownViewEvents.CREATE_BUCKET, this.createNewBucket)
@@ -540,7 +540,7 @@ export const RundownViewBuckets = withTranslation()(
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { playlist, showStyleBase, shouldQueue } = this.props
 			const { localBuckets: buckets } = this.state
 			return (

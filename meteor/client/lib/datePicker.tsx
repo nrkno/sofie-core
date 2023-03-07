@@ -76,7 +76,7 @@ export const DatePickerFromTo = withTranslation()(
 				dateTo: new Date(to + range),
 			})
 		}
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div className="datepicker-from-to">

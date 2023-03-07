@@ -9,8 +9,8 @@ import { SupportPopUpToggle, SupportPopUp } from './SupportPopUp'
 import * as VelocityReact from 'velocity-react'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
-import { CoreSystem } from '../../lib/collections/CoreSystem'
 import { Settings } from '../../lib/Settings'
+import { CoreSystem } from '../collections'
 
 interface IPropsHeader {
 	user: boolean
@@ -20,7 +20,7 @@ interface IPropsHeader {
 }
 
 interface ITrackedPropsHeader {
-	name: string
+	name: string | undefined
 }
 
 interface IStateHeader {
@@ -29,7 +29,7 @@ interface IStateHeader {
 }
 
 class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedPropsHeader>, IStateHeader> {
-	constructor(props: IPropsHeader & WithTranslation) {
+	constructor(props: Translated<IPropsHeader & ITrackedPropsHeader>) {
 		super(props)
 
 		this.state = {
@@ -71,7 +71,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 		})
 	}
 
-	render() {
+	render(): JSX.Element {
 		const { t } = this.props
 
 		return (
@@ -193,7 +193,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 	}
 }
 
-export default translateWithTracker((_props: IPropsHeader & WithTranslation) => {
+export default translateWithTracker((_props: IPropsHeader & WithTranslation): ITrackedPropsHeader => {
 	const coreSystem = CoreSystem.findOne()
 	let name: string | undefined = undefined
 

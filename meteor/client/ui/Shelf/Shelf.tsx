@@ -120,11 +120,11 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		}
 	}
 
-	onTake = (e: IEventContext) => {
+	private onTake = (e: IEventContext) => {
 		this.take(e.context)
 	}
 
-	take = (e: any) => {
+	private take = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
 			doUserAction(t, e, UserAction.TAKE, (e, ts) =>
@@ -133,7 +133,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		this.restoreDefaultTab()
 
 		RundownViewEventBus.on(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
@@ -147,7 +147,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		}
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		RundownViewEventBus.off(RundownViewEvents.SWITCH_SHELF_TAB, this.onSwitchShelfTab)
 		RundownViewEventBus.off(RundownViewEvents.SELECT_PIECE, this.onSelectPiece)
 		RundownViewEventBus.off(RundownViewEvents.SHELF_STATE, this.onShelfStateChange)
@@ -157,7 +157,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		}
 	}
 
-	componentDidUpdate(prevProps: IShelfProps, prevState: IState) {
+	componentDidUpdate(prevProps: IShelfProps, prevState: IState): void {
 		if (prevProps.isExpanded !== this.props.isExpanded || prevState.shelfHeight !== this.state.shelfHeight) {
 			if (this.props.onChangeBottomMargin && typeof this.props.onChangeBottomMargin === 'function') {
 				this.props.onChangeBottomMargin(this.getHeight() || '0px')
@@ -167,7 +167,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		this.restoreDefaultTab()
 	}
 
-	restoreDefaultTab() {
+	private restoreDefaultTab() {
 		if (
 			this.state.selectedTab === undefined &&
 			this.props.rundownLayout &&
@@ -187,12 +187,12 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		}
 	}
 
-	getHeight(): string {
+	private getHeight(): string {
 		const top = parseFloat(this.state.shelfHeight.substr(0, this.state.shelfHeight.length - 2))
 		return this.props.isExpanded ? (100 - top).toString() + 'vh' : '0px'
 	}
 
-	getTop(newState?: boolean): string | undefined {
+	private getTop(newState?: boolean): string | undefined {
 		return this.state.overrideHeight
 			? (this.state.overrideHeight / window.innerHeight) * 100 + 'vh'
 			: (newState !== undefined ? newState : this.props.isExpanded)
@@ -200,22 +200,14 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			: undefined
 	}
 
-	getStyle() {
+	private getStyle() {
 		return {
 			top: this.getTop(),
 			transition: this.state.moving ? '' : '0.5s top ease-out',
 		}
 	}
 
-	keyBlurActiveElement = () => {
-		this.blurActiveElement()
-	}
-
-	keyToggleShelf = () => {
-		this.toggleShelf()
-	}
-
-	blurActiveElement = () => {
+	private blurActiveElement = () => {
 		try {
 			// @ts-expect-error blur isnt always valid
 			document.activeElement.blur()
@@ -224,12 +216,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		}
 	}
 
-	toggleShelf = () => {
-		this.blurActiveElement()
-		this.props.onChangeExpanded(!this.props.isExpanded)
-	}
-
-	dropHandle = (e: MouseEvent) => {
+	private dropHandle = (e: MouseEvent) => {
 		document.removeEventListener('mouseup', this.dropHandle)
 		document.removeEventListener('mouseleave', this.dropHandle)
 		document.removeEventListener('mousemove', this.dragHandle)
@@ -239,7 +226,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		e.preventDefault()
 	}
 
-	dragHandle = (e: MouseEvent) => {
+	private dragHandle = (e: MouseEvent) => {
 		if (e.buttons !== 1) {
 			this.dropHandle(e)
 			return
@@ -252,7 +239,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		e.preventDefault()
 	}
 
-	grabHandle = (e: React.MouseEvent<HTMLDivElement>) => {
+	private grabHandle = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (e.button !== 0) {
 			return
 		}
@@ -266,7 +253,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		e.preventDefault()
 	}
 
-	touchMoveHandle = (e: TouchEvent) => {
+	private touchMoveHandle = (e: TouchEvent) => {
 		this.setState({
 			overrideHeight: e.touches[0].clientY + this._mouseOffset.y,
 		})
@@ -274,7 +261,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		e.preventDefault()
 	}
 
-	touchOffHandle = (e: TouchEvent) => {
+	private touchOffHandle = (e: TouchEvent) => {
 		document.removeEventListener('touchmove', this.touchMoveHandle)
 		document.removeEventListener('touchcancel', this.touchOffHandle)
 		document.removeEventListener('touchend', this.touchOffHandle)
@@ -284,7 +271,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		e.preventDefault()
 	}
 
-	touchOnHandle = (e: React.TouchEvent<HTMLDivElement>) => {
+	private touchOnHandle = (e: React.TouchEvent<HTMLDivElement>) => {
 		document.addEventListener('touchmove', this.touchMoveHandle, {
 			passive: false,
 		})
@@ -303,7 +290,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		e.preventDefault()
 	}
 
-	endResize = () => {
+	private endResize = () => {
 		const stateChange: Partial<IState> = {
 			moving: false,
 			overrideHeight: undefined,
@@ -332,7 +319,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		localStorage.setItem(`${this.state.localStorageName}.shelfHeight`, this.state.shelfHeight)
 	}
 
-	beginResize = (x: number, y: number, targetElement: HTMLElement) => {
+	private beginResize = (x: number, y: number, targetElement: HTMLElement) => {
 		this._mouseStart.x = x
 		this._mouseStart.y = y
 
@@ -351,18 +338,18 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		})
 	}
 
-	onShelfStateChange = (e: ShelfStateEvent) => {
+	private onShelfStateChange = (e: ShelfStateEvent) => {
 		this.blurActiveElement()
 		this.props.onChangeExpanded(e.state === 'toggle' ? !this.props.isExpanded : e.state)
 	}
 
-	onSwitchShelfTab = (e: SwitchToShelfTabEvent) => {
+	private onSwitchShelfTab = (e: SwitchToShelfTabEvent) => {
 		if (e.tab) {
 			this.switchTab(e.tab)
 		}
 	}
 
-	switchTab = (tab: string) => {
+	private switchTab = (tab: string) => {
 		this.setState({
 			selectedTab: tab,
 		})
@@ -374,19 +361,19 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		this.selectPiece(e.piece)
 	}
 
-	selectPiece = (piece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined) => {
+	private selectPiece = (piece: BucketAdLibItem | IAdLibListItem | PieceUi | undefined) => {
 		this.setState({
 			selectedPiece: piece,
 		})
 	}
 
-	changeQueueAdLib = (shouldQueue: boolean) => {
+	private changeQueueAdLib = (shouldQueue: boolean) => {
 		this.setState({
 			shouldQueue,
 		})
 	}
 
-	render() {
+	render(): JSX.Element {
 		const { fullViewport, shelfDisplayOptions } = this.props
 		return (
 			<div

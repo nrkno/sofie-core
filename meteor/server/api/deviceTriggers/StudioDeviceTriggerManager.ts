@@ -21,6 +21,7 @@ import { StudioActionManager, StudioActionManagers } from './StudioActionManager
 import { DeviceTriggerMountedActionAdlibsPreview, DeviceTriggerMountedActions } from './observer'
 import { ContentCache } from './reactiveContentCache'
 import { logger } from '../../logging'
+import { SomeAction, SomeBlueprintTrigger } from '@sofie-automation/blueprints-integration'
 
 export class StudioDeviceTriggerManager {
 	#lastShowStyleBaseId: ShowStyleBaseId | null = null
@@ -196,7 +197,7 @@ export class StudioDeviceTriggerManager {
 		this.#lastShowStyleBaseId = null
 	}
 
-	stop() {
+	stop(): void {
 		this.clearTriggers()
 		StudioActionManagers.delete(this.studioId)
 	}
@@ -210,8 +211,8 @@ function convertDocument(doc: ReadonlyObjectDeep<DBTriggeredActions>): UITrigger
 		showStyleBaseId: doc.showStyleBaseId,
 		name: doc.name,
 
-		actions: applyAndValidateOverrides(doc.actionsWithOverrides).obj,
-		triggers: applyAndValidateOverrides(doc.triggersWithOverrides).obj,
+		actions: applyAndValidateOverrides<Record<string, SomeAction>>(doc.actionsWithOverrides).obj,
+		triggers: applyAndValidateOverrides<Record<string, SomeBlueprintTrigger>>(doc.triggersWithOverrides).obj,
 	})
 }
 

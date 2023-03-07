@@ -1,16 +1,14 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../lib/check'
-import { Rundowns, Rundown } from '../../lib/collections/Rundowns'
-import { normalizeArrayToMap } from '../../lib/lib'
+import { Rundown } from '../../lib/collections/Rundowns'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewRundownAPI, RundownAPIMethods, RundownPlaylistValidateBlueprintConfigResult } from '../../lib/api/rundown'
-import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PackageInfo } from '../coreSystem'
 import { IngestActions } from './ingest/actions'
-import { RundownPlaylistCollectionUtil } from '../../lib/collections/RundownPlaylists'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
@@ -24,10 +22,12 @@ import {
 	VerifiedRundownContentAccess,
 	VerifiedRundownPlaylistContentAccess,
 } from './lib'
-import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
-import { Studio, Studios } from '../../lib/collections/Studios'
+import { Blueprint } from '../../lib/collections/Blueprints'
+import { Studio } from '../../lib/collections/Studios'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Blueprints, Rundowns, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
+import { normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 
 export namespace ServerRundownAPI {
 	/** Remove an individual rundown */
@@ -80,7 +80,15 @@ export namespace ClientRundownAPI {
 		const access = await StudioContentWriteAccess.rundownPlaylist(context, playlistId)
 		const playlist = access.playlist
 
-		const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist)
+		const rundowns = await Rundowns.findFetchAsync(
+			{
+				playlistId: playlist._id,
+			},
+			{
+				sort: { _id: 1 },
+			}
+		)
+
 		const errors = await Promise.all(
 			rundowns.map(async (rundown) => {
 				if (!rundown.importVersions) return 'unknown'
@@ -153,7 +161,15 @@ export namespace ClientRundownAPI {
 			: null
 		if (!studioBlueprint) throw new Meteor.Error(404, `Studio blueprint "${studio.blueprintId}" not found!`)
 
-		const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(rundownPlaylist)
+		const rundowns = await Rundowns.findFetchAsync(
+			{
+				playlistId: rundownPlaylist._id,
+			},
+			{
+				sort: { _id: 1 },
+			}
+		)
+
 		const uniqueShowStyleCompounds = _.uniq(
 			rundowns,
 			undefined,

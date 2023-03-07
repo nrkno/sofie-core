@@ -4,7 +4,6 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import {
 	Studio,
-	Studios,
 	DBStudio,
 	StudioRouteSet,
 	StudioRouteBehavior,
@@ -29,6 +28,7 @@ import { SchemaFormForCollection } from '../../../lib/forms/schemaFormForCollect
 import { literal, objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import { DropdownInputOption } from '../../../lib/Components/DropdownInput'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
+import { Studios } from '../../../collections'
 
 interface IStudioRoutingsProps {
 	translationNamespaces: string[]
@@ -706,7 +706,7 @@ export const StudioRoutings = withTranslation()(
 			})
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div>

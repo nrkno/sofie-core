@@ -24,7 +24,7 @@ export function VTThumbnailRenderer({
 	originPosition,
 	studio,
 	layer,
-}: IProps) {
+}: IProps): JSX.Element {
 	const mediaPreviewUrl = studio.settings.mediaPreviewsUrl
 
 	const status = pieceInstance.instance.piece.status

@@ -18,7 +18,7 @@ export const HotkeyTrigger = ({
 	selected?: boolean
 	deleted?: boolean
 	onClick?: () => void
-}) => {
+}): JSX.Element => {
 	const [_updatedKeyboardMap, setUpdatedKeyboardMap] = useState(Symbol())
 	const Sorensen = useContext(SorensenContext)
 	const { t } = useTranslation()

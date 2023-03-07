@@ -47,7 +47,7 @@ export const SegmentTimelineSmallPartFlag = ({
 	isLastInSegment: boolean
 	timelineWidth: number
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
-}) => {
+}): JSX.Element => {
 	const flagRef = useRef<HTMLDivElement>(null)
 
 	const [isHover, setHover] = useState(false)

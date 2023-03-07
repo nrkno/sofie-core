@@ -1,6 +1,5 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
-import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ISourceLayer, IOutputLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
@@ -38,12 +37,12 @@ interface IListViewItemProps {
 }
 
 export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
-	class AdLibListItem extends MeteorReactComponent<Translated<IListViewItemProps>> {
+	class AdLibListItem extends MeteorReactComponent<IListViewItemProps> {
 		constructor(props: IListViewItemProps) {
 			super(props)
 		}
 
-		render() {
+		render(): JSX.Element {
 			return (
 				<ContextMenuTrigger
 					id="shelf-context-menu"

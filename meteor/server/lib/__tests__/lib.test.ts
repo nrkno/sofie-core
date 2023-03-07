@@ -3,12 +3,12 @@ import {
 	TimelineObjGeneric,
 	TimelineObjType,
 	TimelineComplete,
-	Timeline,
 	deserializeTimelineBlob,
 	serializeTimelineBlob,
 } from '../../../lib/collections/Timeline'
 import { protectString } from '../../../lib/lib'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { Timeline } from '../../collections'
 import { SaveIntoDbHooks, saveIntoDb, sumChanges, anythingChanged } from '../database'
 
 describe('server/lib', () => {

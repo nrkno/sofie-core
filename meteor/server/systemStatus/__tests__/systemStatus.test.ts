@@ -5,7 +5,6 @@ import { generateTranslation, literal, protectString, unprotectString } from '..
 import { MeteorMock } from '../../../__mocks__/meteor'
 import { status2ExternalStatus, setSystemStatus } from '../systemStatus'
 import { StatusResponse } from '../../../lib/api/systemStatus'
-import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { stripVersion } from '../../../lib/collections/CoreSystem'
 import semver from 'semver'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
@@ -20,6 +19,7 @@ const PackageInfo = require('../../../package.json')
 
 import * as checkUpgradeStatus from '../../migration/upgrades/checkStatus'
 import { GetUpgradeStatusResult } from '../../../lib/api/migration'
+import { PeripheralDevices } from '../../collections'
 const getUpgradeStatusMock = jest.spyOn(checkUpgradeStatus, 'getUpgradeStatus')
 
 describe('systemStatus', () => {

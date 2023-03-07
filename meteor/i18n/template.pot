@@ -5,8 +5,8 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1)\n"
-"POT-Creation-Date: 2022-08-02T12:04:21.289Z\n"
-"PO-Revision-Date: 2022-08-02T12:04:21.289Z\n"
+"POT-Creation-Date: 2023-02-09T08:18:53.604Z\n"
+"PO-Revision-Date: 2023-02-09T08:18:53.604Z\n"
 
 msgid "Account Page"
 msgstr ""
@@ -741,6 +741,9 @@ msgstr ""
 msgid "Go to On Air Segment"
 msgstr ""
 
+msgid "Switch Segment View Mode"
+msgstr ""
+
 msgid "Toggle Switchboard Panel"
 msgstr ""
 
@@ -834,10 +837,16 @@ msgstr ""
 msgid "Off"
 msgstr ""
 
-msgid "segment"
+msgid "Switch to Timeline View"
 msgstr ""
 
-msgid "Critical problems"
+msgid "Switch to Storyboard View"
+msgstr ""
+
+msgid "Switch to List View"
+msgstr ""
+
+msgid "On Air"
 msgstr ""
 
 msgid "On Air At"
@@ -849,13 +858,13 @@ msgstr ""
 msgid "Unsynced"
 msgstr ""
 
+msgid "Critical problems"
+msgstr ""
+
+msgid "segment"
+msgstr ""
+
 msgid "Sources"
-msgstr ""
-
-msgid "Switch to Timeline mode"
-msgstr ""
-
-msgid "On Air"
 msgstr ""
 
 msgid "Loops to top"
@@ -891,9 +900,6 @@ msgstr ""
 msgid "Play from Here"
 msgstr ""
 
-msgid "Switch to Storyboard mode"
-msgstr ""
-
 msgid "Zoom Out"
 msgstr ""
 
@@ -906,117 +912,52 @@ msgstr ""
 msgid "Parts Duration"
 msgstr ""
 
-msgid "Unknown"
-msgstr ""
-
-msgid "Good"
-msgstr ""
-
-msgid "Minor Warning"
-msgstr ""
-
-msgid "Warning"
-msgstr ""
-
-msgid "Bad"
-msgstr ""
-
-msgid "Fatal"
-msgstr ""
-
-msgid "Connected"
-msgstr ""
-
-msgid "Disconnected"
-msgstr ""
-
-msgid "MOS Gateway"
-msgstr ""
-
-msgid "Spreadsheet Gateway"
-msgstr ""
-
-msgid "Play-out Gateway"
-msgstr ""
-
-msgid "Media Manager"
-msgstr ""
-
-msgid "Unknown Device"
-msgstr ""
-
-msgid "Delete this Studio?"
-msgstr ""
-
-msgid "Are you sure you want to delete the studio \"{{studioId}}\"?"
-msgstr ""
-
-msgid "Delete this Show Style?"
-msgstr ""
-
-msgid "Are you sure you want to delete the show style \"{{showStyleId}}\"?"
-msgstr ""
-
-msgid "Delete this Blueprint?"
-msgstr ""
-
-msgid "Are you sure you want to delete the blueprint \"{{blueprintId}}\"?"
-msgstr ""
-
-msgid "Remove this Device?"
-msgstr ""
-
-msgid ""
-"Are you sure you want to remove the device \"{{deviceName}}\" and all of "
-"it's sub-devices?"
-msgstr ""
-
-msgid "Studios"
-msgstr ""
-
-msgid "Unnamed Studio"
-msgstr ""
-
-msgid "Show Styles"
-msgstr ""
-
-msgid "Unnamed Show Style"
-msgstr ""
-
-msgid "Source Layers"
-msgstr ""
-
-msgid "Output Channels"
-msgstr ""
-
-msgid "Blueprints"
-msgstr ""
-
-msgid "Unnamed blueprint"
-msgstr ""
-
-msgid "Type"
-msgstr ""
-
-msgid "Version"
-msgstr ""
-
-msgid "Devices"
-msgstr ""
-
-msgid "Tools"
-msgstr ""
-
-msgid "Core System settings"
-msgstr ""
-
-msgid "Upgrade Database"
-msgstr ""
-
-msgid "Manage Snapshots"
-msgstr ""
-
 msgid "System Settings"
+msgstr ""
+
+msgid "Add config item"
+msgstr ""
+
+msgid "Add"
+msgstr ""
+
+msgid "Item"
+msgstr ""
+
+msgid "Value"
+msgstr ""
+
+msgid "true"
+msgstr ""
+
+msgid "false"
+msgstr ""
+
+msgid "{{count}} rows"
+msgstr ""
+
+msgid "Failed to update config: {{errorMessage}}"
+msgstr ""
+
+msgid "Export"
+msgstr ""
+
+msgid "Import"
+msgstr ""
+
+msgid "Reset this item?"
+msgstr ""
+
+msgid "Reset"
+msgstr ""
+
+msgid "Are you sure you want to reset this config item \"{{configId}}\"?"
+msgstr ""
+
+msgid "Blueprint Configuration"
+msgstr ""
+
+msgid "More settings specific to this studio can be found here"
 msgstr ""
 
 msgid "Update Blueprints?"
@@ -1095,6 +1036,15 @@ msgstr ""
 msgid "Upload Blueprints"
 msgstr ""
 
+msgid "Unknown table type"
+msgstr ""
+
+msgid "Unknown type"
+msgstr ""
+
+msgid "Defaults to '{{defaultVal}}' if left empty"
+msgstr ""
+
 msgid "OAuth credentials succesfully uploaded."
 msgstr ""
 
@@ -1107,16 +1057,16 @@ msgstr ""
 msgid "Failed to reset OAuth credentials: {{errorMessage}}"
 msgstr ""
 
-msgid "Reset Authentication"
+msgid "Reset App Credentials"
+msgstr ""
+
+msgid "Reset User Credentials"
 msgstr ""
 
 msgid "Application credentials"
 msgstr ""
 
-msgid "Access token"
-msgstr ""
-
-msgid "Click on the link below and accept the permissions request."
+msgid "Authorize App Access"
 msgstr ""
 
 msgid "Waiting for gateway to generate URL..."
@@ -1152,10 +1102,16 @@ msgstr ""
 msgid "Include Clear Source Layer in Ad-Libs"
 msgstr ""
 
+msgid "Source Layers"
+msgstr ""
+
 msgid "Source Layer Types"
 msgstr ""
 
 msgid "Filter disabled"
+msgstr ""
+
+msgid "Output Channels"
 msgstr ""
 
 msgid "Label contains"
@@ -1183,6 +1139,9 @@ msgid "Queue all adlibs"
 msgstr ""
 
 msgid "Toggle AdLibs on single mouse click"
+msgstr ""
+
+msgid "Disable the hover Inspector when hovering over the button"
 msgstr ""
 
 msgid "Current part can contain next pieces"
@@ -1263,6 +1222,9 @@ msgid "Script Source Layers"
 msgstr ""
 
 msgid "Source layers containing script"
+msgstr ""
+
+msgid "Type"
 msgstr ""
 
 msgid "Require Piece on Source Layer"
@@ -1432,13 +1394,16 @@ msgstr ""
 msgid "Default shelf height"
 msgstr ""
 
-msgid "Show Buckets"
+msgid "Disable Context Menu"
 msgstr ""
 
 msgid "Show Inspector"
 msgstr ""
 
-msgid "Disable Context Menu"
+msgid "Hide default AdLib Start/Execute options"
+msgstr ""
+
+msgid "Only custom trigger modes will be shown"
 msgstr ""
 
 msgid "This action has an invalid combination of filters"
@@ -1594,7 +1559,25 @@ msgstr ""
 msgid "Executes within the currently open Rundown, requires a Client-side trigger."
 msgstr ""
 
+msgid "Unknown"
+msgstr ""
+
+msgid "Restore Deleted Action"
+msgstr ""
+
 msgid "Select Action"
+msgstr ""
+
+msgid "Reset Action"
+msgstr ""
+
+msgid "Duplicate Action Trigger"
+msgstr ""
+
+msgid "Edit Action Trigger"
+msgstr ""
+
+msgid "Delete Action Trigger"
 msgstr ""
 
 msgid ""
@@ -1658,52 +1641,7 @@ msgstr ""
 msgid "Hotkey"
 msgstr ""
 
-msgid "Trigger Type"
-msgstr ""
-
-msgid "Failed to update config: {{errorMessage}}"
-msgstr ""
-
-msgid "Export"
-msgstr ""
-
-msgid "Import"
-msgstr ""
-
-msgid "true"
-msgstr ""
-
-msgid "false"
-msgstr ""
-
-msgid "{{count}} rows"
-msgstr ""
-
-msgid "Value"
-msgstr ""
-
-msgid "Create"
-msgstr ""
-
-msgid "Add config item"
-msgstr ""
-
-msgid "Add"
-msgstr ""
-
-msgid "Item"
-msgstr ""
-
-msgid "Delete this item?"
-msgstr ""
-
-msgid "Are you sure you want to delete this config item \"{{configId}}\"?"
-msgstr ""
-
-msgid "Blueprint Configuration"
-msgstr ""
-
-msgid "More settings specific to this studio can be found here"
+msgid "Device"
 msgstr ""
 
 msgid "There was an error: {{error}}"
@@ -1799,9 +1737,6 @@ msgstr ""
 msgid "Re-check"
 msgstr ""
 
-msgid "Reset Version to"
-msgstr ""
-
 msgid "Reset All Versions"
 msgstr ""
 
@@ -1889,6 +1824,9 @@ msgstr ""
 msgid "Icon color"
 msgstr ""
 
+msgid "Use as default"
+msgstr ""
+
 msgid "Filters"
 msgstr ""
 
@@ -1924,6 +1862,107 @@ msgstr ""
 msgid "Failed to upload shelf layout: {{errorMessage}}"
 msgstr ""
 
+msgid "Studios"
+msgstr ""
+
+msgid "Show Styles"
+msgstr ""
+
+msgid "Blueprints"
+msgstr ""
+
+msgid "Devices"
+msgstr ""
+
+msgid "Tools"
+msgstr ""
+
+msgid "Core System settings"
+msgstr ""
+
+msgid "Upgrade Database"
+msgstr ""
+
+msgid "Manage Snapshots"
+msgstr ""
+
+msgid "Delete this Studio?"
+msgstr ""
+
+msgid "Are you sure you want to delete the studio \"{{studioId}}\"?"
+msgstr ""
+
+msgid "Attached Devices"
+msgstr ""
+
+msgid "Layer Mappings"
+msgstr ""
+
+msgid "Route Sets"
+msgstr ""
+
+msgid "Unnamed Studio"
+msgstr ""
+
+msgid "Delete this Show Style?"
+msgstr ""
+
+msgid "Are you sure you want to delete the show style \"{{showStyleId}}\"?"
+msgstr ""
+
+msgid "Source/Output Layers"
+msgstr ""
+
+msgid "Custom Hotkey Labels"
+msgstr ""
+
+msgid "Variants"
+msgstr ""
+
+msgid "Unnamed Show Style"
+msgstr ""
+
+msgid "Delete this Blueprint?"
+msgstr ""
+
+msgid "Are you sure you want to delete the blueprint \"{{blueprintId}}\"?"
+msgstr ""
+
+msgid "Unnamed blueprint"
+msgstr ""
+
+msgid "Version"
+msgstr ""
+
+msgid "Remove this Device?"
+msgstr ""
+
+msgid ""
+"Are you sure you want to remove the device \"{{deviceName}}\" and all of "
+"it's sub-devices?"
+msgstr ""
+
+msgid "Connected"
+msgstr ""
+
+msgid "Disconnected"
+msgstr ""
+
+msgid "Good"
+msgstr ""
+
+msgid "Minor Warning"
+msgstr ""
+
+msgid "Warning"
+msgstr ""
+
+msgid "Bad"
+msgstr ""
+
+msgid "Fatal"
+msgstr ""
+
 msgid "Show Style Base Name"
 msgstr ""
 
@@ -1933,10 +1972,70 @@ msgstr ""
 msgid "Blueprint not set"
 msgstr ""
 
+msgid "Blueprint config preset"
+msgstr ""
+
+msgid "Blueprint config preset not set"
+msgstr ""
+
+msgid "Blueprint config preset is missing"
+msgstr ""
+
 msgid "Compatible Studios:"
 msgstr ""
 
 msgid "This Show Style is not compatible with any Studio"
+msgstr ""
+
+msgid "Key"
+msgstr ""
+
+msgid "Host Key"
+msgstr ""
+
+msgid "Source Layer type"
+msgstr ""
+
+msgid "Key color"
+msgstr ""
+
+msgid "AHK"
+msgstr ""
+
+msgid "New Output"
+msgstr ""
+
+msgid "Output channels are required for your studio to work"
+msgstr ""
+
+msgid "Output channels"
+msgstr ""
+
+msgid "No output channels set"
+msgstr ""
+
+msgid "No PGM output"
+msgstr ""
+
+msgid "Delete this output?"
+msgstr ""
+
+msgid "Are you sure you want to delete output layer \"{{outputId}}\"?"
+msgstr ""
+
+msgid "Channel Name"
+msgstr ""
+
+msgid "Internal ID"
+msgstr ""
+
+msgid "Is PGM Output"
+msgstr ""
+
+msgid "Is collapsed by default"
+msgstr ""
+
+msgid "Is flattened"
 msgstr ""
 
 msgid "Camera"
@@ -1966,12 +2065,6 @@ msgstr ""
 msgid "Clips"
 msgstr ""
 
-msgid "Metadata"
-msgstr ""
-
-msgid "Camera Movement"
-msgstr ""
-
 msgid "Unknown Layer"
 msgstr ""
 
@@ -1990,6 +2083,15 @@ msgstr ""
 msgid "New Source"
 msgstr ""
 
+msgid "Add some source layers (e.g. Graphics) for your data to appear in rundowns"
+msgstr ""
+
+msgid "No source layers set"
+msgstr ""
+
+msgid "Delete this item?"
+msgstr ""
+
 msgid "Are you sure you want to delete source layer \"{{sourceLayerId}}\"?"
 msgstr ""
 
@@ -1997,9 +2099,6 @@ msgid "Source Name"
 msgstr ""
 
 msgid "Source Abbreviation"
-msgstr ""
-
-msgid "Internal ID"
 msgstr ""
 
 msgid "Source Type"
@@ -2015,6 +2114,12 @@ msgid "Is hidden"
 msgstr ""
 
 msgid "Display on Presenter's Screen"
+msgstr ""
+
+msgid "Display in a column in List View"
+msgstr ""
+
+msgid "Display AdLibs in a column in List View"
 msgstr ""
 
 msgid "Pieces on this layer can be cleared"
@@ -2035,76 +2140,45 @@ msgstr ""
 msgid "Exclusivity group"
 msgstr ""
 
-msgid "Add some source layers (e.g. Graphics) for your data to appear in rundowns"
-msgstr ""
-
-msgid "No source layers set"
-msgstr ""
-
-msgid "Delete this output?"
-msgstr ""
-
-msgid "Are you sure you want to delete source layer \"{{outputId}}\"?"
-msgstr ""
-
-msgid "New Output"
-msgstr ""
-
-msgid "Channel Name"
-msgstr ""
-
-msgid "Is PGM Output"
-msgstr ""
-
-msgid "Is collapsed by default"
-msgstr ""
-
-msgid "Is flattened"
-msgstr ""
-
-msgid "Output channels are required for your studio to work"
-msgstr ""
-
-msgid "Output channels"
-msgstr ""
-
-msgid "No output channels set"
-msgstr ""
-
-msgid "No PGM output"
-msgstr ""
-
-msgid "Key"
-msgstr ""
-
-msgid "Host Key"
-msgstr ""
-
-msgid "Source Layer type"
-msgstr ""
-
-msgid "Key color"
-msgstr ""
-
-msgid "Custom Hotkey Labels"
-msgstr ""
-
-msgid "AHK"
-msgstr ""
-
-msgid "Remove this Variant?"
-msgstr ""
-
-msgid "Are you sure you want to remove the variant \"{{showStyleVariantId}}\"?"
-msgstr ""
-
 msgid "Unnamed variant"
 msgstr ""
 
-msgid "Variant Name"
+msgid ""
+"Failed to import Show Style Variant {{name}}. Make sure it is not already "
+"imported."
 msgstr ""
 
-msgid "Variants"
+msgid "Failed to import new Show Style Variants: {{errorMessage}}"
+msgstr ""
+
+msgid "Failed to copy Show Style Variant: {{errorMessage}}"
+msgstr ""
+
+msgid "Failed to add a new Show Style Variant: {{errorMessage}}"
+msgstr ""
+
+msgid "Remove this Show Style Variant?"
+msgstr ""
+
+msgid "Failed to delete Show Style Variant: {{errorMessage}}"
+msgstr ""
+
+msgid "Are you sure you want to remove the Variant \"{{showStyleVariantId}}\"?"
+msgstr ""
+
+msgid "Failed to remove all Show Style Variants: {{errorMessage}}"
+msgstr ""
+
+msgid "Remove all Show Style Variants?"
+msgstr ""
+
+msgid "Are you sure you want to remove all Variants in the table?"
+msgstr ""
+
+msgid "Failed to reorderShow Style Variant: {{errorMessage}}"
+msgstr ""
+
+msgid "Show Style Variants"
 msgstr ""
 
 msgid "Restore from this Snapshot file?"
@@ -2156,6 +2230,15 @@ msgstr ""
 msgid "Show \"Remove snapshots\"-buttons"
 msgstr ""
 
+msgid "Studio Baseline needs update: "
+msgstr ""
+
+msgid "Baseline needs reload, this studio may not work until reloaded"
+msgstr ""
+
+msgid "Reload Baseline"
+msgstr ""
+
 msgid "Remove this device?"
 msgstr ""
 
@@ -2165,22 +2248,72 @@ msgstr ""
 msgid "Devices are needed to control your studio hardware"
 msgstr ""
 
-msgid "Attached Devices"
-msgstr ""
-
 msgid "No devices connected"
 msgstr ""
 
 msgid "Playout gateway not connected"
 msgstr ""
 
+msgid "None"
+msgstr ""
+
+msgid "Studio Name"
+msgstr ""
+
+msgid "Select Compatible Show Styles"
+msgstr ""
+
+msgid "Show style not set"
+msgstr ""
+
+msgid "Click to show available Show Styles"
+msgstr ""
+
+msgid "Frame Rate"
+msgstr ""
+
+msgid "Enable \"Play from Anywhere\""
+msgstr ""
+
+msgid "Media Preview URL"
+msgstr ""
+
+msgid "Slack Webhook URLs"
+msgstr ""
+
+msgid "Supported Media Formats"
+msgstr ""
+
+msgid "Supported Audio Formats"
+msgstr ""
+
+msgid "Force the Multi-gateway-mode"
+msgstr ""
+
+msgid "Multi-gateway-mode delay time"
+msgstr ""
+
+msgid "Preserve contents of playing segment when unsynced"
+msgstr ""
+
+msgid "Allow Rundowns to be reset while on-air"
+msgstr ""
+
+msgid ""
+"Preserve position of segments when unsynced relative to other segments. "
+"Note: this has only been tested for the iNews gateway"
+msgstr ""
+
+msgid "Add a playout device to the studio in order to edit the layer mappings"
+msgstr ""
+
+msgid "This layer is now rerouted by an active Route Set: {{routeSets}}"
+msgstr ""
+
 msgid "Remove this mapping?"
 msgstr ""
 
 msgid "Are you sure you want to remove mapping for layer \"{{mappingId}}\"?"
-msgstr ""
-
-msgid "This layer is now rerouted by an active Route Set: {{routeSets}}"
 msgstr ""
 
 msgid "Layer ID"
@@ -2206,124 +2339,10 @@ msgstr ""
 msgid "Lookahead Mode"
 msgstr ""
 
-msgid "Lookahead Target Objects (Default = 1)"
+msgid "Lookahead Target Objects (Undefined = 1)"
 msgstr ""
 
-msgid "Lookahead Maximum Search Distance (Default = {{limit}})"
-msgstr ""
-
-msgid "Layer Mappings"
-msgstr ""
-
-msgid "Add a playout device to the studio in order to edit the layer mappings"
-msgstr ""
-
-msgid "Remove this Exclusivity Group?"
-msgstr ""
-
-msgid ""
-"Are you sure you want to remove exclusivity group \"{{eGroupName}}\"?\n"
-"Route Sets assigned to this group will be reset to no group."
-msgstr ""
-
-msgid "Remove this Route from this Route Set?"
-msgstr ""
-
-msgid ""
-"Are you sure you want to remove the Route from \"{{sourceLayerId}}\" to "
-"\"{{newLayerId}}\"?"
-msgstr ""
-
-msgid "Remove this Route Set?"
-msgstr ""
-
-msgid "Are you sure you want to remove the Route Set \"{{routeId}}\"?"
-msgstr ""
-
-msgid "Routes"
-msgstr ""
-
-msgid "There are no routes set up yet"
-msgstr ""
-
-msgid "Original Layer"
-msgstr ""
-
-msgid "None"
-msgstr ""
-
-msgid "New Layer"
-msgstr ""
-
-msgid "Route Type"
-msgstr ""
-
-msgid "Source Layer not found"
-msgstr ""
-
-msgid "There are no exclusivity groups set up."
-msgstr ""
-
-msgid "Exclusivity Group ID"
-msgstr ""
-
-msgid "Exclusivity Group Name"
-msgstr ""
-
-msgid "Display name of the Exclusivity Group"
-msgstr ""
-
-msgid "Active"
-msgstr ""
-
-msgid "Not Active"
-msgstr ""
-
-msgid "Not defined"
-msgstr ""
-
-msgid "There are no Route Sets set up."
-msgstr ""
-
-msgid "Route Set ID"
-msgstr ""
-
-msgid "Is this Route Set currently active"
-msgstr ""
-
-msgid "Default State"
-msgstr ""
-
-msgid "The default state of this Route Set"
-msgstr ""
-
-msgid "Route Set Name"
-msgstr ""
-
-msgid "Display name of the Route Set"
-msgstr ""
-
-msgid "If set, only one Route Set will be active per exclusivity group"
-msgstr ""
-
-msgid "Behavior"
-msgstr ""
-
-msgid "The way this Route Set should behave towards the user"
-msgstr ""
-
-msgid "Route Sets"
-msgstr ""
-
-msgid "Add a playout device to the studio in order to configure the route sets"
-msgstr ""
-
-msgid ""
-"Controls for exposed Route Sets will be displayed to the producer within "
-"the Rundown View in the Switchboard."
-msgstr ""
-
-msgid "Exclusivity Groups"
+msgid "Lookahead Maximum Search Distance (Undefined = {{limit}})"
 msgstr ""
 
 msgid "Remove this Package Container?"
@@ -2437,7 +2456,10 @@ msgstr ""
 msgid "Server ID"
 msgstr ""
 
-msgid "Server ID. For sources, this should generally be omitted (or set to 0) so clip-searches are zone-wide. If set, clip-searches are limited to that server."
+msgid ""
+"Server ID. For sources, this should generally be omitted (or set to 0) so "
+"clip-searches are zone-wide. If set, clip-searches are limited to that "
+"server."
 msgstr ""
 
 msgid "Quantel transformer URL"
@@ -2479,63 +2501,106 @@ msgstr ""
 msgid "Package Containers"
 msgstr ""
 
-msgid "Studio Baseline needs update: "
-msgstr ""
-
-msgid "Baseline needs reload, this studio may not work until reloaded"
-msgstr ""
-
-msgid "Reload Baseline"
-msgstr ""
-
-msgid "Studio Name"
-msgstr ""
-
-msgid "Select Compatible Show Styles"
-msgstr ""
-
-msgid "Show style not set"
-msgstr ""
-
-msgid "Click to show available Show Styles"
-msgstr ""
-
-msgid "Frame Rate"
-msgstr ""
-
-msgid "Enable \"Play from Anywhere\""
-msgstr ""
-
-msgid "Media Preview URL"
-msgstr ""
-
-msgid "Sofie Host URL"
-msgstr ""
-
-msgid "Slack Webhook URLs"
-msgstr ""
-
-msgid "Supported Media Formats"
-msgstr ""
-
-msgid "Supported Audio Formats"
-msgstr ""
-
-msgid "Force the Multi-gateway-mode"
-msgstr ""
-
-msgid "Multi-gateway-mode delay time"
-msgstr ""
-
-msgid "Preserve contents of playing segment when unsynced"
-msgstr ""
-
-msgid "Allow Rundowns to be reset while on-air"
+msgid "Remove this Exclusivity Group?"
 msgstr ""
 
 msgid ""
-"Preserve position of segments when unsynced relative to other segments. "
-"Note: this has only been tested for the iNews gateway"
+"Are you sure you want to remove exclusivity group \"{{eGroupName}}\"?\n"
+"Route Sets assigned to this group will be reset to no group."
+msgstr ""
+
+msgid "Remove this Route from this Route Set?"
+msgstr ""
+
+msgid ""
+"Are you sure you want to remove the Route from \"{{sourceLayerId}}\" to "
+"\"{{newLayerId}}\"?"
+msgstr ""
+
+msgid "Remove this Route Set?"
+msgstr ""
+
+msgid "Are you sure you want to remove the Route Set \"{{routeId}}\"?"
+msgstr ""
+
+msgid "Routes"
+msgstr ""
+
+msgid "There are no routes set up yet"
+msgstr ""
+
+msgid "Original Layer"
+msgstr ""
+
+msgid "New Layer"
+msgstr ""
+
+msgid "Route Type"
+msgstr ""
+
+msgid "Source Layer not found"
+msgstr ""
+
+msgid "There are no exclusivity groups set up."
+msgstr ""
+
+msgid "Exclusivity Group ID"
+msgstr ""
+
+msgid "Exclusivity Group Name"
+msgstr ""
+
+msgid "Display name of the Exclusivity Group"
+msgstr ""
+
+msgid "Active"
+msgstr ""
+
+msgid "Not Active"
+msgstr ""
+
+msgid "Not defined"
+msgstr ""
+
+msgid "There are no Route Sets set up."
+msgstr ""
+
+msgid "Route Set ID"
+msgstr ""
+
+msgid "Is this Route Set currently active"
+msgstr ""
+
+msgid "Default State"
+msgstr ""
+
+msgid "The default state of this Route Set"
+msgstr ""
+
+msgid "Route Set Name"
+msgstr ""
+
+msgid "Display name of the Route Set"
+msgstr ""
+
+msgid "If set, only one Route Set will be active per exclusivity group"
+msgstr ""
+
+msgid "Behavior"
+msgstr ""
+
+msgid "The way this Route Set should behave towards the user"
+msgstr ""
+
+msgid "Add a playout device to the studio in order to configure the route sets"
+msgstr ""
+
+msgid ""
+"Controls for exposed Route Sets will be displayed to the producer within "
+"the Rundown View in the Switchboard."
+msgstr ""
+
+msgid "Exclusivity Groups"
 msgstr ""
 
 msgid "Remove indexes"
@@ -2650,6 +2715,51 @@ msgid "Remove old data"
 msgstr ""
 
 msgid "The old data was removed."
+msgstr ""
+
+msgid "Failed to check status."
+msgstr ""
+
+msgid "Apply blueprint upgrades"
+msgstr ""
+
+msgid "Upgrade config for {{name}}"
+msgstr ""
+
+msgid "Config looks good"
+msgstr ""
+
+msgid "Apply"
+msgstr ""
+
+msgid "Ignore and apply"
+msgstr ""
+
+msgid "Config for {{name}} upgraded successfully"
+msgstr ""
+
+msgid "Config for {{name}} upgraded failed"
+msgstr ""
+
+msgid "Failed to validate config"
+msgstr ""
+
+msgid "No changes"
+msgstr ""
+
+msgid "Dismiss"
+msgstr ""
+
+msgid "Unable to upgrade"
+msgstr ""
+
+msgid "Upgrade required"
+msgstr ""
+
+msgid "Show config changes"
+msgstr ""
+
+msgid "Validate Config"
 msgstr ""
 
 msgid "Last {{layerName}}"
@@ -2784,6 +2894,9 @@ msgid "User Log"
 msgstr ""
 
 msgid "Evaluations"
+msgstr ""
+
+msgid "Debug State"
 msgstr ""
 
 msgid "Timestamp"
@@ -2933,42 +3046,36 @@ msgstr ""
 msgid "Not Connected"
 msgstr ""
 
-msgid "Do you want to restart CasparCG Server?"
+msgid "MOS Gateway"
 msgstr ""
 
-msgid "Restart Quantel Gateway"
+msgid "Play-out Gateway"
 msgstr ""
 
-msgid "Do you want to restart Quantel Gateway?"
+msgid "Media Manager"
 msgstr ""
 
-msgid "Quantel Gateway restarting..."
+msgid "Unknown Device"
 msgstr ""
 
-msgid "Failed to restart Quantel Gateway: {{errorMessage}}"
+msgid "Executed {{actionName}} on device \"{{deviceName}}\": {{response}}"
 msgstr ""
 
-msgid "Format HyperDeck disks"
+msgid "Executed {{actionName}} on device \"{{deviceName}}\"..."
 msgstr ""
 
 msgid ""
-"Do you want to format the HyperDeck disks? This is a destructive action and "
-"cannot be undone."
+"Failed to execute {{actionName}} on device: \"{{deviceName}}\": "
+"{{errorMessage}}"
 msgstr ""
 
-msgid "Formatting HyperDeck disks on device \"{{deviceName}}\"..."
-msgstr ""
-
-msgid "Failed to format HyperDecks on device: \"{{deviceName}}\": {{errorMessage}}"
+msgid "Do you want to execute {{actionName}}? This may the disrupt the output"
 msgstr ""
 
 msgid "Last seen"
 msgstr ""
 
 msgid "Connect some devices to the playout gateway"
-msgstr ""
-
-msgid "Format disks"
 msgstr ""
 
 msgid "Are you sure you want to delete this device: \"{{deviceId}}\"?"
@@ -3072,39 +3179,34 @@ msgstr ""
 msgid "More documentation available at:"
 msgstr ""
 
+msgid "Device Triggers"
+msgstr ""
+
 msgid "Timeline"
+msgstr ""
+
+msgid "Timeline Datastore"
 msgstr ""
 
 msgid "Mappings"
 msgstr ""
 
-msgid "User Log Player"
-msgstr ""
-
 msgid "Routed Mappings"
 msgstr ""
 
-msgid "Play from here"
-msgstr ""
-
-msgid "Exectute Single"
-msgstr ""
-
-msgid "Next Action"
-msgstr ""
-
-msgid "Run in"
-msgstr ""
-
-msgid "Stop"
-msgstr ""
-
-msgid ""
-"Clip \"{{fileName}}\" can't be played because it doesn't exist on the "
-"playout system"
+msgid "{{sourceLayer}} is missing a file path"
 msgstr ""
 
 msgid "{{sourceLayer}} is not yet ready on the playout system"
+msgstr ""
+
+msgid "{{sourceLayer}} is being ingested"
+msgstr ""
+
+msgid "Source is missing"
+msgstr ""
+
+msgid "Clip can't be played because it doesn't exist on the playout system"
 msgstr ""
 
 msgid "{{sourceLayer}} is transferring to the the playout system"
@@ -3113,6 +3215,9 @@ msgstr ""
 msgid ""
 "{{sourceLayer}} is transferring to the the playout system and cannot be "
 "played yet"
+msgstr ""
+
+msgid "{{sourceLayer}} is in an unknown state"
 msgstr ""
 
 msgid "{{sourceLayer}} doesn't have both audio & video"
@@ -3124,55 +3229,28 @@ msgstr ""
 msgid "{{sourceLayer}} has {{audioStreams}} audio streams"
 msgstr ""
 
-msgid "Clip starts with {{frames}} {{type}} frames"
+msgid "Clip starts with {{frames}} black frames"
 msgstr ""
 
-msgid "This clip ends with {{type}} frames after {{count}} seconds"
+msgid "This clip ends with black frames after {{seconds}} seconds"
 msgstr ""
 
-msgid "{{frames}} {{type}} frames detected within the clip"
+msgid "{{frames}} black frames detected within the clip"
 msgstr ""
 
-msgid "{{frames}} {{type}} frames detected in the clip"
+msgid "{{frames}} black frames detected in the clip"
 msgstr ""
 
-msgid "black"
+msgid "Clip starts with {{frames}} freeze frames"
 msgstr ""
 
-msgid "freeze"
+msgid "This clip ends with freeze frames after {{seconds}} seconds"
 msgstr ""
 
-msgid "{{sourceLayer}} is missing a file path"
+msgid "{{frames}} freeze frames detected within the clip"
 msgstr ""
 
-msgid "Clip doesn't have audio & video"
-msgstr ""
-
-msgid "Clip starts with {{frames}} {{type}} frame"
-msgstr ""
-
-msgid "This clip ends with {{type}} frames after {{count}} second"
-msgstr ""
-
-msgid "{{frames}} {{type}} frame detected within the clip"
-msgstr ""
-
-msgid "{{frames}} {{type}} frame detected in clip"
-msgstr ""
-
-msgid "{{sourceLayer}} is being ingested"
-msgstr ""
-
-msgid "Source is missing"
-msgstr ""
-
-msgid "Segment no longer exists in {{nrcs}}"
-msgstr ""
-
-msgid "Segment was hidden in {{nrcs}}"
-msgstr ""
-
-msgid "The following parts no longer exist in {{nrcs}}: {{partNames}}"
+msgid "{{frames}} freeze frames detected in the clip"
 msgstr ""
 
 msgid "Toggle Shelf"
@@ -3202,6 +3280,42 @@ msgstr ""
 msgid "Rewind segments to start"
 msgstr ""
 
+msgid "Invalid blueprint: \"{{blueprintId}}\""
+msgstr ""
+
+msgid ""
+"Invalid config preset for blueprint: \"{{configPresetId}}\" "
+"({{blueprintId}})"
+msgstr ""
+
+msgid "Config has not been applied before"
+msgstr ""
+
+msgid "Blueprint has been changed. From \"{{ oldValue }}\", to \"{{ newValue }}\""
+msgstr ""
+
+msgid ""
+"Blueprint config preset has been changed. From \"{{ oldValue }}\", to \"{{ "
+"newValue }}\""
+msgstr ""
+
+msgid "Blueprint has a new version"
+msgstr ""
+
+msgid "Blueprint config has changed"
+msgstr ""
+
+msgid "Test Info message"
+msgstr ""
+
+msgid "Test ERROR message"
+msgstr ""
+
+msgid ""
+"Config value \"{{ name }}\" has changed. From \"{{ oldValue }}\", to \"{{ "
+"newValue }}\""
+msgstr ""
+
 msgctxt "°°°°°°plural"
 msgid "{{count}} rows°°°°°°"
 msgstr ""
@@ -3214,36 +3328,4 @@ msgctxt "°°°°°°plural"
 msgid ""
 "There are {{count}} documents that can be removed, do you want to "
 "continue?°°°°°°"
-msgstr ""
-
-msgctxt "°°°°°°plural"
-msgid "Clip starts with {{frames}} {{type}} frames°°°°°°"
-msgstr ""
-
-msgctxt "°°°°°°plural"
-msgid "This clip ends with {{type}} frames after {{count}} seconds°°°°°°"
-msgstr ""
-
-msgctxt "°°°°°°plural"
-msgid "{{frames}} {{type}} frames detected within the clip°°°°°°"
-msgstr ""
-
-msgctxt "°°°°°°plural"
-msgid "{{frames}} {{type}} frames detected in the clip°°°°°°"
-msgstr ""
-
-msgctxt "°°°°°°plural"
-msgid "Clip starts with {{frames}} {{type}} frame°°°°°°"
-msgstr ""
-
-msgctxt "°°°°°°plural"
-msgid "This clip ends with {{type}} frames after {{count}} second°°°°°°"
-msgstr ""
-
-msgctxt "°°°°°°plural"
-msgid "{{frames}} {{type}} frame detected within the clip°°°°°°"
-msgstr ""
-
-msgctxt "°°°°°°plural"
-msgid "{{frames}} {{type}} frame detected in clip°°°°°°"
 msgstr ""

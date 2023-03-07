@@ -1,20 +1,53 @@
-import React, { useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { PeripheralDevices, PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceType } from '../../../../lib/collections/PeripheralDevices'
 import { DeviceItem } from '../../Status/SystemStatus'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
-import { unprotectString } from '../../../../lib/lib'
+import { protectString, unprotectString } from '../../../../lib/lib'
 import { SubDevicesConfig } from './DeviceConfigSchemaSettings'
 import { SchemaFormForCollection } from '../../../lib/forms/schemaFormForCollection'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { PeripheralDevices } from '../../../collections'
+import { MeteorCall } from '../../../../lib/api/methods'
+import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IGenericDeviceSettingsComponentProps {
 	device: PeripheralDevice
 	subDevices: PeripheralDevice[] | undefined
 }
 
-export function GenericDeviceSettingsComponent({ device, subDevices }: IGenericDeviceSettingsComponentProps) {
+export function GenericDeviceSettingsComponent({
+	device,
+	subDevices,
+}: IGenericDeviceSettingsComponentProps): JSX.Element {
 	const { t } = useTranslation()
+
+	const [debugStates, setDebugStates] = useState(() => new Map<PeripheralDeviceId, object>())
+	const deviceHasDebugStates = !!(
+		device.type === PeripheralDeviceType.PLAYOUT &&
+		device.settings &&
+		device.settings['debugState']
+	)
+	useEffect(() => {
+		if (deviceHasDebugStates) {
+			const interval = setInterval(() => {
+				MeteorCall.systemStatus
+					.getDebugStates(device._id)
+					.then((res) => {
+						const states: Map<PeripheralDeviceId, object> = new Map()
+						for (const [key, state] of Object.entries(res)) {
+							states.set(protectString(key), state)
+						}
+						setDebugStates(states)
+					})
+					.catch((err) => console.log(`Error fetching device states: ${err}`))
+			}, 1000)
+
+			return () => {
+				clearInterval(interval)
+			}
+		}
+	}, [device._id, device.type, device.settings])
 
 	const translationNamespaces = useMemo(() => ['peripheralDevice_' + device._id], [device._id])
 	const parsedSchema = useMemo(
@@ -59,7 +92,12 @@ export function GenericDeviceSettingsComponent({ device, subDevices }: IGenericD
 				<React.Fragment>
 					<h2 className="mhn">{t('Attached Subdevices')}</h2>
 					{subDevices.map((device) => (
-						<DeviceItem key={unprotectString(device._id)} device={device} showRemoveButtons={true} />
+						<DeviceItem
+							key={unprotectString(device._id)}
+							device={device}
+							showRemoveButtons={true}
+							debugState={debugStates.get(device._id)}
+						/>
 					))}
 				</React.Fragment>
 			)}

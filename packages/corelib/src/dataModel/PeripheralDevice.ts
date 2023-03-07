@@ -1,7 +1,7 @@
 import { Time } from '@sofie-automation/blueprints-integration'
 import { assertNever } from '../lib'
 import { DeviceConfigManifest } from '../deviceConfig'
-import { PeripheralDeviceId, OrganizationId } from './Ids'
+import { OrganizationId } from './Ids'
 
 import {
 	PeripheralDeviceStatusObject,
@@ -32,14 +32,6 @@ export interface PeripheralDevice extends PeripheralDevicePublic {
 	/** If set, this device is owned by that organization */
 	organizationId: OrganizationId | null
 
-	/** Name of the device (set by the device) */
-	deviceName?: string
-
-	category: PeripheralDeviceCategory
-	type: PeripheralDeviceType
-	subType: PeripheralDeviceSubType
-
-	parentDeviceId?: PeripheralDeviceId
 	/** Versions reported from the device */
 	versions?: {
 		[libraryName: string]: string
@@ -47,8 +39,6 @@ export interface PeripheralDevice extends PeripheralDevicePublic {
 	/** Whether version checks should be disabled for this version */
 	disableVersionChecks?: boolean
 
-	created: Time
-	status: PeripheralDeviceStatusObject
 	lastSeen: Time // Updated continously while connected
 	lastConnected: Time // Updated upon connection, not continously
 

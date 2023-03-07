@@ -14,8 +14,8 @@ import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
-import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { Meteor } from 'meteor/meteor'
+import { RundownPlaylists } from '../../collections'
 
 interface IRundownListItemViewProps {
 	isActive: boolean
@@ -35,7 +35,7 @@ interface IRundownListItemViewProps {
 	isOnlyRundownInPlaylist?: boolean
 }
 
-export default function RundownListItemView(props: IRundownListItemViewProps) {
+export default function RundownListItemView(props: IRundownListItemViewProps): JSX.Element | null {
 	const {
 		isActive,
 		connectDragSource,

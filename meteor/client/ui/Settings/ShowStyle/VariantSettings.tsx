@@ -11,7 +11,7 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { useTranslation } from 'react-i18next'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { SourceLayerDropdownOption } from '../BlueprintConfigManifest'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -22,7 +22,7 @@ import { VariantListItem } from './VariantListItem'
 import { downloadBlob } from '../../../lib/downloadBlob'
 import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
-import { Blueprints } from '../../../../lib/collections/Blueprints'
+import { Blueprints, ShowStyleVariants } from '../../../collections'
 
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
@@ -40,7 +40,7 @@ export const ShowStyleVariantsSettings = ({
 	blueprintConfigManifest,
 	layerMappings,
 	sourceLayers,
-}: IShowStyleVariantsProps) => {
+}: IShowStyleVariantsProps): JSX.Element => {
 	const [localVariants, setLocalVariants] = useState<ShowStyleVariant[]>([])
 	const [editedVariants, setEditedVariants] = useState<ShowStyleVariantId[]>([])
 	const [timestampedFileKey, setTimestampedFileKey] = useState(0)

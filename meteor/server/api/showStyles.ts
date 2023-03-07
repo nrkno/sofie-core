@@ -2,10 +2,9 @@ import { check } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewShowStylesAPI, ShowStylesAPIMethods } from '../../lib/api/showStyles'
 import { Meteor } from 'meteor/meteor'
-import { ShowStyleBases, ShowStyleBase, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleBase, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { protectString, getRandomId, omit } from '../../lib/lib'
-import { RundownLayouts } from '../../lib/collections/RundownLayouts'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
@@ -18,6 +17,7 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 import { OrganizationId, ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownLayouts, ShowStyleBases, ShowStyleVariants } from '../collections'
 
 export interface ShowStyleCompound extends Omit<DBShowStyleBase, 'blueprintConfigWithOverrides'> {
 	showStyleVariantId: ShowStyleVariantId
@@ -39,7 +39,7 @@ export async function getShowStyleCompound(
 export function createBlueprintConfigCompound(
 	baseConfig: ObjectWithOverrides<IBlueprintConfig>,
 	variantConfig: ObjectWithOverrides<IBlueprintConfig>
-) {
+): IBlueprintConfig {
 	const baseConfig2 = applyAndValidateOverrides(baseConfig).obj
 	const variantConfig2 = applyAndValidateOverrides(variantConfig).obj
 

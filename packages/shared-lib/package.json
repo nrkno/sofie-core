@@ -30,7 +30,7 @@
 		"license-validate": "yarn sofie-licensecheck"
 	},
 	"engines": {
-		"node": "^14.19 || ^16.14 || ^18.12"
+		"node": ">=14.19"
 	},
 	"files": [
 		"/dist",
@@ -41,7 +41,8 @@
 	"dependencies": {
 		"timeline-state-resolver-types": "8.0.0-nightly-feat-config-schema-20230120-171243-3aa950d18.0",
 		"tslib": "^2.4.0",
-		"type-fest": "^3.5.1"
+		"type-fest": "^2.19.0",
+		"@mos-connection/model": "^3.0.1"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {

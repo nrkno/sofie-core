@@ -65,7 +65,7 @@ function useChildPropsForFormComponent(props: SchemaFormWithOverridesProps) {
 	}, [props.schema, props.translationNamespaces, props.attr, props.item, props.overrideHelper])
 }
 
-export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps) {
+export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const childProps = useChildPropsForFormComponent(props)

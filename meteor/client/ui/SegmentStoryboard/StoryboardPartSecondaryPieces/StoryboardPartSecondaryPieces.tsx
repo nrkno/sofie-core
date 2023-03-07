@@ -12,7 +12,7 @@ interface IProps {
 
 const showHiddenSourceLayers = getShowHiddenSourceLayers()
 
-export function filterSecondarySourceLayers(sourceLayers: ISourceLayerExtended[]) {
+export function filterSecondarySourceLayers(sourceLayers: ISourceLayerExtended[]): ISourceLayerExtended[] {
 	return sourceLayers.filter(
 		(sourceLayer) =>
 			(showHiddenSourceLayers || !sourceLayer.isHidden) &&

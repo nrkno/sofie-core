@@ -139,7 +139,7 @@ export const ClipTrimDialog = withTranslation()(
 				)
 			}, 5 * 1000)
 		}
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<ModalDialog

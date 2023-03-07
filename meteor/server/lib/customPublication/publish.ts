@@ -31,14 +31,14 @@ export class CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
 	/**
 	 * Register a function to be called when the subscriber unsubscribes
 	 */
-	onStop(callback: () => void) {
+	onStop(callback: () => void): void {
 		this.#onStop = callback
 	}
 
 	/**
 	 * Send the intial documents to the subscriber
 	 */
-	init(docs: DBObj[]) {
+	init(docs: DBObj[]): void {
 		if (this.#isReady) throw new Meteor.Error(500, 'CustomPublish has already been initialised')
 
 		for (const doc of docs) {

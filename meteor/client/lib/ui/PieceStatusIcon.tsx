@@ -6,7 +6,7 @@ export interface IProps {
 	noticeLevel: NoticeLevel
 }
 
-export function PieceStatusIcon(props: IProps) {
+export function PieceStatusIcon(props: IProps): JSX.Element {
 	return (
 		<div className="piece__status-icon">
 			{props.noticeLevel === NoticeLevel.CRITICAL ? (

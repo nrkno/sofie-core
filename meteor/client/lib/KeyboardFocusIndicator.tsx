@@ -19,7 +19,7 @@ export class KeyboardFocusIndicator extends React.Component<
 > {
 	private keyboardFocusInterval: number
 
-	constructor(props) {
+	constructor(props: IKeyboardFocusIndicatorProps) {
 		super(props)
 
 		this.state = {
@@ -27,7 +27,7 @@ export class KeyboardFocusIndicator extends React.Component<
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		this.keyboardFocusInterval = Meteor.setInterval(() => this.checkFocus(), 3000)
 		document.body.addEventListener('focusin', this.checkFocus)
 		document.body.addEventListener('focus', this.checkFocus)
@@ -35,7 +35,7 @@ export class KeyboardFocusIndicator extends React.Component<
 		document.addEventListener('visibilitychange', this.checkFocus)
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		Meteor.clearInterval(this.keyboardFocusInterval)
 		document.body.removeEventListener('focusin', this.checkFocus)
 		document.body.removeEventListener('focus', this.checkFocus)
@@ -43,7 +43,7 @@ export class KeyboardFocusIndicator extends React.Component<
 		document.removeEventListener('visibilitychange', this.checkFocus)
 	}
 
-	checkFocus = () => {
+	private checkFocus = () => {
 		const focusNow = document.hasFocus()
 		if (this.state.inFocus !== focusNow) {
 			this.setState({
@@ -65,7 +65,7 @@ export class KeyboardFocusIndicator extends React.Component<
 		}
 	}
 
-	render() {
+	render(): React.ReactNode {
 		if ((this.state.inFocus && !this.props.showWhenFocused) || (!this.state.inFocus && this.props.showWhenFocused)) {
 			return null
 		} else {

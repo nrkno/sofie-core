@@ -20,6 +20,9 @@ import { removeRundownFromDb } from '../rundownPlaylists'
 import { getRundownId } from './lib'
 import { RundownLock } from '../jobs/lock'
 
+/**
+ * Cache of relevant documents for an Ingest Operation
+ */
 export class CacheForIngest extends CacheBase<CacheForIngest> {
 	public readonly isIngest = true
 	private toBeRemoved = false
@@ -192,6 +195,10 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 		])
 	}
 
+	/**
+	 * Load the Lazy Baseline collections
+	 * @returns Loaded Baseline collections
+	 */
 	async loadBaselineCollections(): Promise<{
 		baselineObjects: DbCacheWriteCollection<RundownBaselineObj>
 		baselineAdlibPieces: DbCacheWriteCollection<RundownBaselineAdLibItem>

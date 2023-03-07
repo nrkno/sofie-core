@@ -1,19 +1,19 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
-import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import {
 	ConfigManifestEntry as BlueprintConfigManifestEntry,
 	ConfigManifestEntryType,
 } from '@sofie-automation/blueprints-integration'
 import { MongoCollection } from '../../../../lib/collections/lib'
+import { PeripheralDevices } from '../../../collections'
 
 const renderEditAttribute = (
 	collection: MongoCollection<any>,
 	configField: BlueprintConfigManifestEntry,
 	obj: object,
 	prefix?: string
-) => {
+): JSX.Element | undefined => {
 	const attribute = prefix + configField.id
 	const opts = {
 		modifiedClassName: 'bghl',
@@ -83,8 +83,8 @@ export function ConfigManifestEntryComponent({
 	prefix,
 	collection,
 	className,
-}: IConfigManifestEntryComponentProps) {
-	const { t } = useTranslation()
+}: IConfigManifestEntryComponentProps): JSX.Element {
+	const { t } = useTranslation() // TODO - should this use a namespace?
 
 	return (
 		<div>

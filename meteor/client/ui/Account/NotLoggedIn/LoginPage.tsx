@@ -73,7 +73,7 @@ export const LoginPage = translateWithTracker((_props: ILoginProps) => {
 			this.setState({ error: msg })
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			const token = this.props.match.params.token
 			const user = this.props.user
 			if (token && (!user || (user && !user.emails[0].verified))) {
@@ -87,7 +87,7 @@ export const LoginPage = translateWithTracker((_props: ILoginProps) => {
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (

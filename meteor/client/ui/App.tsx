@@ -214,7 +214,7 @@ export const App = translateWithTracker(() => {
 			)
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			// Global subscription of the currently logged in user:
 			this.subscribe(PubSub.loggedInUser)
 			this.autorun(() => {
@@ -251,7 +251,7 @@ export const App = translateWithTracker(() => {
 			}
 		}
 
-		componentDidUpdate() {
+		componentDidUpdate(): void {
 			if (Settings.enableUserAccounts && this.props.user) {
 				const roles = {
 					allowConfigure: getAllowConfigure(),
@@ -267,7 +267,7 @@ export const App = translateWithTracker(() => {
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<Router

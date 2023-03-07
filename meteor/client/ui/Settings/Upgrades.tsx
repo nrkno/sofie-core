@@ -19,7 +19,7 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
 import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
 
-export function UpgradesView() {
+export function UpgradesView(): JSX.Element {
 	const { t } = useTranslation()
 
 	const [refreshToken, setRefreshToken] = useState(() => getRandomString())

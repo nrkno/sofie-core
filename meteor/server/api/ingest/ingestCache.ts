@@ -1,10 +1,11 @@
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { IngestRundown, IngestSegment, IngestPart } from '@sofie-automation/blueprints-integration'
-import { IngestDataCache, IngestCacheType, IngestDataCacheObj } from '../../../lib/collections/IngestDataCache'
 import { logger } from '../../../lib/logging'
 import { profiler } from '../profiler'
 import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { IngestDataCache } from '../../collections'
+import { IngestCacheType, IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
 
 interface LocalIngestBase {

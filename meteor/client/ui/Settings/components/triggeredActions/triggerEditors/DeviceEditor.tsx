@@ -3,7 +3,7 @@ import { protectString, unprotectString } from '@sofie-automation/corelib/dist/p
 import classNames from 'classnames'
 import React, { useMemo } from 'react'
 import { PubSub } from '../../../../../../lib/api/pubsub'
-import { Studios } from '../../../../../../lib/collections/Studios'
+import { Studios } from '../../../../../collections'
 import { getCurrentTime } from '../../../../../../lib/lib'
 import { UIDeviceTriggerPreview } from '../../../../../../server/publications/deviceTriggersPreview'
 import { useSubscription, useTracker } from '../../../../../lib/ReactMeteorData/ReactMeteorData'
@@ -17,7 +17,7 @@ interface IProps {
 	onChange: (newVal: IBlueprintDeviceTrigger) => void
 }
 
-export const DeviceEditor = function DeviceEditor({ trigger, modified, readonly, onChange }: IProps) {
+export const DeviceEditor = function DeviceEditor({ trigger, modified, readonly, onChange }: IProps): JSX.Element {
 	const opened = useMemo(() => getCurrentTime(), [])
 	const deviceTriggersPreview = useTracker<UIDeviceTriggerPreview[], UIDeviceTriggerPreview[]>(
 		() =>

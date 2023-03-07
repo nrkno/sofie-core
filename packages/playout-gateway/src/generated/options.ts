@@ -10,6 +10,7 @@ export interface PlayoutGatewayConfig {
 	 * Activate Debug Logging
 	 */
 	debugLogging?: boolean
+	debugState?: boolean
 	/**
 	 * Activate Multi-Threading
 	 */

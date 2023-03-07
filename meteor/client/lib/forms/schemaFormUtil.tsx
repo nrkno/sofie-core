@@ -59,7 +59,10 @@ export interface SchemaSummaryField {
 	transform?: (val: any) => string
 }
 
-export function getSchemaSummaryFieldsForObject(schema: Record<string, JSONSchema | undefined>, prefix?: string) {
+export function getSchemaSummaryFieldsForObject(
+	schema: Record<string, JSONSchema | undefined>,
+	prefix?: string
+): SchemaSummaryField[] {
 	const fieldNames: SchemaSummaryField[] = []
 
 	for (const [index, prop] of Object.entries(schema)) {

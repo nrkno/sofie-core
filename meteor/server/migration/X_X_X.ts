@@ -1,11 +1,12 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { Blueprints } from '../../lib/collections/Blueprints'
+import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { Blueprints, PeripheralDevices, ShowStyleVariants, Studios } from '../collections'
 import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
-import { PeripheralDevices, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
-import { MappingExt, Studio, Studios } from '../../lib/collections/Studios'
+import { MappingExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { PeripheralDeviceType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import _ from 'underscore'
+import { Studio } from '../../lib/collections/Studios'
 
 /*
  * **************************************************************************************

@@ -28,7 +28,7 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 	dataResolution: TimingDataResolution.Synced,
 })(
 	class CurrentPartRemaining extends React.Component<WithTiming<IPartRemainingProps>> {
-		render() {
+		render(): JSX.Element {
 			const displayTimecode = this.props.timingDurations.remainingTimeOnCurrentPart
 			return (
 				<span

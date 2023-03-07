@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { getCurrentTime } from '../../../lib/lib'
 import { invalidateAfter } from '../../../lib/invalidatingTime'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -12,6 +12,7 @@ import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTi
 import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylists } from '../../collections'
 
 interface IProps {
 	// the studio to be displayed in the screen saver
@@ -39,7 +40,11 @@ interface IState {
 	subsReady: boolean
 }
 
-export const findNextPlaylist = (props: IProps) => {
+interface FindNextPlaylistResult {
+	studio: Pick<UIStudio, 'name'> | undefined
+	rundownPlaylist: Pick<RundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'> | undefined
+}
+export const findNextPlaylist = (props: IProps): FindNextPlaylistResult => {
 	invalidateAfter(5000)
 	const now = getCurrentTime()
 
@@ -63,7 +68,7 @@ export const findNextPlaylist = (props: IProps) => {
 				}
 			).fetch() as Pick<RundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'>[]
 		)
-			.sort(PlaylistTiming.sortTiminings)
+			.sort(PlaylistTiming.sortTimings)
 			.find((rundownPlaylist) => {
 				const expectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
 				const expectedDuration = PlaylistTiming.getExpectedDuration(rundownPlaylist.timing)
@@ -118,7 +123,7 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.subscribe(PubSub.uiStudio, this.props.studioId)
 			this.subscribe(PubSub.rundownPlaylists, {
 				studioId: this.props.studioId,
@@ -150,7 +155,7 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 			}
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			super.componentWillUnmount()
 
 			if (this.props.ownBackground) {
@@ -319,7 +324,7 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 			)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t, rundownPlaylist } = this.props
 			const expectedStart = rundownPlaylist && PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
 			const hasRundown = !!expectedStart

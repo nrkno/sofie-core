@@ -108,6 +108,8 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Reording Rundowns in Playlist')
 		case UserAction.RUNDOWN_ORDER_RESET:
 			return t('Resetting Playlist to default order')
+		case UserAction.PERIPHERAL_DEVICE_REFRESH_DEBUG_STATES:
+			return t('Refreshing debug states')
 		default:
 			assertNever(userAction)
 	}
@@ -135,12 +137,13 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
  */
 export function doUserAction<Result>(
 	t: i18next.TFunction,
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 	userEvent: any,
 	action: UserAction,
 	fcn: (event: string, timeStamp: Time) => Promise<ClientAPI.ClientResponse<Result>>,
 	callback?: (err: any, res?: Result) => void | boolean,
 	okMessage?: string
-) {
+): void {
 	const actionName = userActionToLabel(action, t)
 
 	// Display a progress message, if the method takes a long time to execute:
@@ -240,6 +243,7 @@ export function doUserAction<Result>(
 		})
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function eventContextForLog(e: any): [string, Time] {
 	const timeStamp = getEventTimestamp(e)
 	if (!e) return ['', timeStamp]
@@ -278,6 +282,7 @@ function keyboardEventToShortcut(e: KeyboardEvent): string {
 	return combo.join('+')
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 export function getEventTimestamp(e: any): Time {
 	return e.timeStamp ? performance.timeOrigin + e.timeStamp + systemTime.timeOriginDiff : getCurrentTime()
 }

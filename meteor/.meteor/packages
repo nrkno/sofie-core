@@ -33,4 +33,4 @@ meteorhacks:picker
 ostrio:meteor-root
 accounts-password@2.3.1
 
-# kschingiz:meteor-elastic-apm
+julusian:meteor-elastic-apm@2.5.2

@@ -31,7 +31,7 @@ export const OverlayScreen = withTranslation()(
 			class OverlayScreen extends PresenterScreenBase {
 				protected bodyClassList: string[] = ['transparent']
 
-				render() {
+				render(): JSX.Element {
 					const { playlist, segments, nextShowStyleBaseId, t, playlistId, currentPartInstance, nextPartInstance } =
 						this.props
 

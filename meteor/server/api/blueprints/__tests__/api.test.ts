@@ -2,12 +2,14 @@ import * as _ from 'underscore'
 import { setupDefaultStudioEnvironment, packageBlueprint } from '../../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { literal, getRandomId, protectString } from '../../../../lib/lib'
-import { Blueprints, Blueprint } from '../../../../lib/collections/Blueprints'
+import { Blueprint } from '../../../../lib/collections/Blueprints'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
-import { CoreSystem, SYSTEM_ID, ICoreSystem } from '../../../../lib/collections/CoreSystem'
+import { SYSTEM_ID, ICoreSystem } from '../../../../lib/collections/CoreSystem'
 import { insertBlueprint, uploadBlueprint } from '../api'
 import { MeteorCall, MethodContext } from '../../../../lib/api/methods'
 import '../../../../__mocks__/_extendJest'
+import { Blueprints, CoreSystem } from '../../../collections'
+import { SupressLogMessages } from '../../../../__mocks__/suppressLogging'
 
 // we don't want the deviceTriggers observer to start up at this time
 jest.mock('../../deviceTriggers/observer')
@@ -82,6 +84,7 @@ describe('Test blueprint management api', () => {
 		testInFiber('empty id', async () => {
 			const initialBlueprintId = getActiveSystemBlueprintId()
 
+			SupressLogMessages.suppressLogMessage(/Blueprint not found/i)
 			await expect(MeteorCall.blueprint.assignSystemBlueprint(protectString(''))).rejects.toThrowMeteor(
 				404,
 				'Blueprint not found'
@@ -93,6 +96,7 @@ describe('Test blueprint management api', () => {
 			const blueprint = ensureSystemBlueprint()
 			const initialBlueprintId = getActiveSystemBlueprintId()
 
+			SupressLogMessages.suppressLogMessage(/Blueprint not found/i)
 			await expect(
 				MeteorCall.blueprint.assignSystemBlueprint(protectString(blueprint._id + '_no'))
 			).rejects.toThrowMeteor(404, 'Blueprint not found')
@@ -127,6 +131,7 @@ describe('Test blueprint management api', () => {
 			const initialBlueprintId = getActiveSystemBlueprintId()
 			expect(initialBlueprintId).not.toEqual(blueprint._id)
 
+			SupressLogMessages.suppressLogMessage(/Blueprint not of type SYSTEM/i)
 			await expect(MeteorCall.blueprint.assignSystemBlueprint(blueprint._id)).rejects.toThrowMeteor(
 				404,
 				'Blueprint not of type SYSTEM'
@@ -139,12 +144,14 @@ describe('Test blueprint management api', () => {
 
 	describe('removeBlueprint', () => {
 		testInFiber('undefined id', async () => {
+			SupressLogMessages.suppressLogMessage(/Match error/i)
 			await expect(MeteorCall.blueprint.removeBlueprint(undefined as any)).rejects.toThrow(
 				'Match error: Expected string, got undefined'
 			)
 		})
 
 		testInFiber('empty id', async () => {
+			SupressLogMessages.suppressLogMessage(/Blueprint id/i)
 			await expect(MeteorCall.blueprint.removeBlueprint(protectString(''))).rejects.toThrowMeteor(
 				404,
 				'Blueprint id "" was not found'

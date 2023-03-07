@@ -15,7 +15,7 @@ export interface IProps {
 	children?: React.ReactElement<HTMLElement>
 }
 
-export function ReactNotification(props: IProps) {
+export function ReactNotification(props: IProps): JSX.Element | null {
 	useEffect(() => {
 		const notificationId = getRandomString()
 		const notification = new Notification(

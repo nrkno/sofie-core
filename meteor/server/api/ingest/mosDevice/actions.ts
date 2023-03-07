@@ -2,7 +2,7 @@ import { MOS } from '@sofie-automation/corelib'
 import { logger } from '../../../logging'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { Meteor } from 'meteor/meteor'
-import { PeripheralDevice, PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { IngestPart } from '@sofie-automation/blueprints-integration'
@@ -13,6 +13,7 @@ import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
 import { runIngestOperation } from '../lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { DEFAULT_MOS_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
+import { PeripheralDevices } from '../../../collections'
 
 export namespace MOSDeviceActions {
 	export async function reloadRundown(
@@ -44,7 +45,7 @@ export namespace MOSDeviceActions {
 				rundownExternalId: rundown.externalId,
 				peripheralDeviceId: peripheralDevice._id,
 				mosRunningOrder: mosRunningOrder,
-				isCreateAction: false,
+				isUpdateOperation: true,
 			})
 
 			// Since the Reload reply is asynchronously followed by ROFullStories, the reload is technically not completed at this point

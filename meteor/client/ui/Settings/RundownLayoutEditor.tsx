@@ -6,7 +6,6 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { faUpload, faPlus, faCheck, faPencilAlt, faDownload, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-	RundownLayouts,
 	RundownLayoutType,
 	RundownLayoutBase,
 	RundownLayoutFilter,
@@ -37,6 +36,7 @@ import RundownHeaderLayoutSettings from './components/rundownLayouts/RundownHead
 import RundownViewLayoutSettings from './components/rundownLayouts/RundownViewLayoutSettings'
 import { RundownLayoutId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { RundownLayouts } from '../../collections'
 
 export interface IProps {
 	showStyleBaseId: ShowStyleBaseId
@@ -79,7 +79,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			super.componentDidMount && super.componentDidMount()
 
 			this.subscribe(PubSub.rundownLayouts, {})
@@ -581,7 +581,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			reader.readAsText(file)
 		}
 
-		render() {
+		render(): JSX.Element {
 			return (
 				<div className="studio-edit rundown-layout-editor">
 					<h2 className="mhn">{this.props.customRegion.title}</h2>

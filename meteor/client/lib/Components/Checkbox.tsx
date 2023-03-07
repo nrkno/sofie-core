@@ -10,7 +10,7 @@ interface ICheckboxControlProps {
 	value: boolean
 	handleUpdate: (value: boolean) => void
 }
-export function CheckboxControl({ classNames, value, disabled, handleUpdate }: ICheckboxControlProps) {
+export function CheckboxControl({ classNames, value, disabled, handleUpdate }: ICheckboxControlProps): JSX.Element {
 	const handleChange = useCallback(
 		(e: React.ChangeEvent<HTMLInputElement>) => {
 			handleUpdate(!!e.currentTarget.checked)

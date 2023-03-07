@@ -232,7 +232,7 @@ class OverrideOpHelperImpl implements OverrideOpHelper {
 		}
 	}
 
-	setItemValue = (itemId: string, subPath: string, value: any): void => {
+	setItemValue = (itemId: string, subPath: string, value: unknown): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
 		if (subPath === '_id') {
@@ -290,7 +290,7 @@ class OverrideOpHelperImpl implements OverrideOpHelper {
 		}
 	}
 
-	replaceItem = (itemId: string, value: any): void => {
+	replaceItem = (itemId: string, value: unknown): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
 		// Set a property

@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import {
-	PeripheralDevices,
 	PeripheralDevice,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
@@ -28,10 +27,12 @@ import { OrganizationReadAccess } from '../security/organization'
 import { resolveCredentials, Credentials } from '../security/lib/credentials'
 import { SystemReadAccess } from '../security/system'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
-import { Workers } from '../../lib/collections/Workers'
-import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
-import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDevices, Workers, WorkerThreadStatuses } from '../collections'
 import { getUpgradeSystemStatusMessages } from '../migration/upgrades'
+import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ServerPeripheralDeviceAPI } from '../api/peripheralDevice'
+import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
+import { MethodContext } from '../../lib/api/methods'
 
 const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
@@ -41,7 +42,7 @@ const integrationVersionAllowPrerelease = isPrerelease(PackageInfo.version)
 const expectedLibraryVersions: { [libName: string]: string } = {
 	'superfly-timeline': stripVersion(require('superfly-timeline/package.json').version),
 	// eslint-disable-next-line node/no-extraneous-require
-	'mos-connection': stripVersion(require('mos-connection/package.json').version),
+	'@mos-connection/helper': stripVersion(require('@mos-connection/helper/package.json').version),
 }
 
 /**
@@ -400,4 +401,11 @@ export function status2ExternalStatus(statusCode: StatusCode): ExternalStatus {
 		return 'FAIL'
 	}
 	return 'UNDEFINED'
+}
+export async function getDebugStates(
+	methodContext: MethodContext,
+	peripheralDeviceId: PeripheralDeviceId
+): Promise<object> {
+	const access = await PeripheralDeviceContentWriteAccess.peripheralDevice(methodContext, peripheralDeviceId)
+	return ServerPeripheralDeviceAPI.getDebugStates(access)
 }

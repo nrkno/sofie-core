@@ -4,12 +4,12 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Spinner } from '../../lib/Spinner'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
+import { Blueprint } from '../../../lib/collections/Blueprints'
 import Moment from 'react-moment'
 import { Link } from 'react-router-dom'
-import { Studio, Studios } from '../../../lib/collections/Studios'
-import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { ICoreSystem, CoreSystem } from '../../../lib/collections/CoreSystem'
+import { Studio } from '../../../lib/collections/Studios'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { fetchFrom } from '../../lib/lib'
@@ -19,6 +19,7 @@ import { faUpload, faExclamationTriangle } from '@fortawesome/free-solid-svg-ico
 import { unprotectString } from '../../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../../collections'
 
 interface IProps {
 	match: {
@@ -340,7 +341,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			)
 		}
 
-		render() {
+		render(): JSX.Element {
 			if (this.props.blueprint) {
 				return this.renderEditForm(this.props.blueprint)
 			} else {

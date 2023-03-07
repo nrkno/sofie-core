@@ -220,7 +220,7 @@ export const RundownPlaylistUi = DropTarget(
 				}
 			}
 
-			render() {
+			render(): JSX.Element | null {
 				const { playlist, connectDropTarget, t, isActiveDropZone, rundownLayouts } = this.props
 
 				if (playlist.rundowns.length === 0) {

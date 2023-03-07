@@ -1,8 +1,9 @@
-import { PeripheralDevices, PeripheralDevice } from '../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '../lib/collections/PeripheralDevices'
 import { getCurrentTime } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from './logging'
 import { sendTrace } from './api/integration/influx'
+import { PeripheralDevices } from './collections'
 
 const connections = new Set<string>()
 

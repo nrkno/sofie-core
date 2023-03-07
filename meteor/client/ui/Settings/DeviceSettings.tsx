@@ -1,7 +1,6 @@
 import * as React from 'react'
 import {
 	PeripheralDevice,
-	PeripheralDevices,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '../../../lib/collections/PeripheralDevices'
@@ -20,6 +19,7 @@ import { GenericDeviceSettingsComponent } from './components/GenericDeviceSettin
 import { DevicePackageManagerSettings } from './DevicePackageManagerSettings'
 import { getExpectedLatency } from '@sofie-automation/corelib/dist/studio/playout'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDevices } from '../../collections'
 
 interface IDeviceSettingsProps {
 	match: {
@@ -233,7 +233,7 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			if (this.props.device) {
 				return this.renderEditForm(this.props.device)
 			} else {

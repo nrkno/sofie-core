@@ -11,17 +11,12 @@ import {
 import { MeteorCall } from '../../lib/api/methods'
 import { PubSub } from '../../lib/api/pubsub'
 import { StatusResponse } from '../../lib/api/systemStatus'
-import { GENESIS_SYSTEM_VERSION, getCoreSystem, ICoreSystem } from '../../lib/collections/CoreSystem'
-import { RundownLayoutBase, RundownLayouts } from '../../lib/collections/RundownLayouts'
-import {
-	RundownPlaylist,
-	RundownPlaylistCollectionUtil,
-	RundownPlaylists,
-} from '../../lib/collections/RundownPlaylists'
-import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
+import { GENESIS_SYSTEM_VERSION, ICoreSystem } from '../../lib/collections/CoreSystem'
+import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { Rundown } from '../../lib/collections/Rundowns'
 import { getAllowConfigure, getHelpMode } from '../lib/localStorage'
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { extendMandadory, unprotectString } from '../../lib/lib'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
@@ -38,6 +33,8 @@ import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { UIShowStyleBases, UIStudios } from './Collections'
 import { RundownId, RundownPlaylistId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { getCoreSystem, RundownLayouts, RundownPlaylists, Rundowns, ShowStyleVariants } from '../collections'
+import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -184,7 +181,7 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 				}
 			}
 
-			componentDidMount() {
+			componentDidMount(): void {
 				const { t } = this.props
 
 				// Subscribe to data:
@@ -270,7 +267,7 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 				)
 			}
 
-			render() {
+			render(): JSX.Element {
 				const { t, rundownPlaylists, activateDropZone, connectDropTarget } = this.props
 
 				const step = this.tooltipStep()

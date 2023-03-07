@@ -7,7 +7,7 @@ import { SchemaFormWithOverrides } from './schemaFormWithOverrides'
 interface SchemaFormInPlaceProps extends SchemaFormCommonProps {
 	object: any
 }
-export function SchemaFormInPlace({ object, ...commonProps }: SchemaFormInPlaceProps) {
+export function SchemaFormInPlace({ object, ...commonProps }: SchemaFormInPlaceProps): JSX.Element {
 	// This is a hack to avoid issues with the UI re-rendering as 'nothing' changed
 	const [editCount, setEditCount] = useState(0)
 	const forceRender = useCallback(() => setEditCount((v) => v + 1), [])

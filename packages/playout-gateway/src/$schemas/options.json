@@ -10,6 +10,11 @@
 			"description": "Activate Debug Logging",
 			"default": false
 		},
+		"debugState": {
+			"type": "boolean",
+			"ui:title": "Activate State Debugging",
+			"default": false
+		},
 		"multiThreading": {
 			"type": "boolean",
 			"ui:title": "Activate Multi-Threading",

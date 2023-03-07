@@ -7,7 +7,13 @@ function widthInBase(pieceMaxDuration: number, timelineBase: number): number {
 	return size * 100
 }
 
-export function PartAutoNextMarker({ partDuration, timelineBase }: { partDuration: number; timelineBase: number }) {
+export function PartAutoNextMarker({
+	partDuration,
+	timelineBase,
+}: {
+	partDuration: number
+	timelineBase: number
+}): JSX.Element {
 	const { t } = useTranslation()
 
 	const style = useMemo<React.CSSProperties>(

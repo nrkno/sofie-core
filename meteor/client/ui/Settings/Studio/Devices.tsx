@@ -5,16 +5,13 @@ import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons'
-import {
-	PeripheralDevice,
-	PeripheralDevices,
-	PeripheralDeviceType,
-} from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceType } from '../../../../lib/collections/PeripheralDevices'
 import { Link } from 'react-router-dom'
 import { MomentFromNow } from '../../../lib/Moment'
 import { withTranslation } from 'react-i18next'
 import { getHelpMode } from '../../../lib/localStorage'
 import { unprotectString } from '../../../../lib/lib'
+import { PeripheralDevices } from '../../../collections'
 
 interface IStudioDevicesProps {
 	studio: Studio
@@ -99,7 +96,7 @@ export const StudioDevices = withTranslation()(
 			return !!this.props.studioDevices.find((device) => device.type === PeripheralDeviceType.PLAYOUT)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div>

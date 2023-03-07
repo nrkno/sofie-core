@@ -931,7 +931,7 @@
     "Next Action": "Neste handling",
     "Run in": "Køyr i",
     "Stop": "Stopp",
-    "Clip can't be played because it doesn't exist on the playout system": "Klippet kan ikkje spelast av, fordi det ikkje finst på utspelingssystemet",
+    "Clip \"{{fileName}}\" can't be played because it doesn't exist on the playout system": "Klippet \"{{fileName}}\" kan ikkje spelast av fordi det ikkje finnast på utspelingssystemet",
     "{{sourceLayer}} is not yet ready on the playout system": "{{sourceLayer}} er enno ikkje klar til å spelast ut fra avviklingsserver",
     "{{sourceLayer}} is transferring to the the playout system": "{{sourceLayer}} overførast til avviklingsserver",
     "{{sourceLayer}} is transferring to the the playout system and cannot be played yet": "{{sourceLayer}} overførast til avviklingsserver og kan ikkje spelast av enno",

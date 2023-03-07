@@ -117,6 +117,7 @@ export class TSRHandler {
 	private _triggerUpdateDevicesTimeout: NodeJS.Timeout | undefined
 
 	private defaultDeviceOptions: { [deviceType: string]: Record<string, any> } = {}
+	private _debugStates: Map<string, object> = new Map()
 
 	constructor(logger: Logger) {
 		this.logger = logger
@@ -627,6 +628,19 @@ export class TSRHandler {
 				debugLoggingPs.push(device.setDebugLogging(debug))
 			}
 		}
+		// Set debugState on devices:
+		for (const device of this.tsr.getDevices()) {
+			const options: DeviceOptionsAny | undefined = deviceOptions.get(device.deviceId)
+			if (!options) {
+				continue
+			}
+
+			const debug: boolean = this.getDeviceDebugState(options)
+			if (device.debugState !== debug) {
+				this.logger.info(`Setting debugState of device ${device.deviceId} to ${debug}`)
+				debugLoggingPs.push(device.setDebugState(debug))
+			}
+		}
 		await Promise.all(debugLoggingPs)
 
 		this._triggerupdateExpectedPlayoutItems() // So that any recently created devices will get all the ExpectedPlayoutItems
@@ -643,6 +657,9 @@ export class TSRHandler {
 
 	private getDeviceDebug(deviceOptions: DeviceOptionsAny): boolean {
 		return deviceOptions.debug || this._coreHandler.logDebug || false
+	}
+	private getDeviceDebugState(deviceOptions: DeviceOptionsAny): boolean {
+		return (deviceOptions.debugState && this._coreHandler.logState) || false
 	}
 	private async _reportResult(resultsOrTimeout: UpdateDeviceOperationsResult): Promise<void> {
 		this.logger.warn(JSON.stringify(resultsOrTimeout))
@@ -809,8 +826,7 @@ export class TSRHandler {
 			}
 			const onCommandError = (error: any, context: any) => {
 				// todo: handle this better
-				this.logger.error(error)
-				this.logger.debug(context)
+				this.logger.error(fixError(error), { context })
 			}
 			const onUpdateMediaObject = (collectionId: string, docId: string, doc: MediaObject | null) => {
 				coreTsrHandler.onUpdateMediaObject(collectionId, docId, doc)
@@ -828,6 +844,11 @@ export class TSRHandler {
 				if (_.isString(e)) e = name + ': ' + e
 
 				return e
+			}
+			const fixContext = (...context: any[]): any => {
+				return {
+					context,
+				}
 			}
 			await coreTsrHandler.init()
 
@@ -864,13 +885,13 @@ export class TSRHandler {
 			await device.device.on('clearMediaObjects', onClearMediaObjectCollection as () => void)
 
 			await device.device.on('info', ((e: any, ...args: any[]) => {
-				this.logger.info(fixError(e), ...args)
+				this.logger.info(fixError(e), fixContext(args))
 			}) as () => void)
 			await device.device.on('warning', ((e: any, ...args: any[]) => {
-				this.logger.warn(fixError(e), ...args)
+				this.logger.warn(fixError(e), fixContext(args))
 			}) as () => void)
 			await device.device.on('error', ((e: any, ...args: any[]) => {
-				this.logger.error(fixError(e), ...args)
+				this.logger.error(fixError(e), fixContext(args))
 			}) as () => void)
 
 			await device.device.on('debug', (...args: any[]) => {
@@ -883,6 +904,14 @@ export class TSRHandler {
 				}
 				const data = args.map((arg) => (typeof arg === 'object' ? JSON.stringify(arg) : arg))
 				this.logger.debug(`Device "${device.deviceName || deviceId}" (${device.instanceId})`, { data })
+			})
+
+			await device.device.on('debugState', (...args: any[]) => {
+				if (device.debugState && this._coreHandler.logDebug) {
+					// Fetch the Id that core knows this device by
+					const coreId = this._coreTsrHandlers[device.deviceId].core.deviceId
+					this._debugStates.set(unprotectString(coreId), args[0])
+				}
 			})
 
 			await device.device.on('timeTrace', ((trace: FinishedTrace) => sendTrace(trace)) as () => void)
@@ -1165,6 +1194,10 @@ export class TSRHandler {
 		if (!this.sendCallbacksTimeout) {
 			this.sendCallbacksTimeout = setTimeout(this.sendChangedResults, 20)
 		}
+	}
+
+	public getDebugStates(): Map<string, object> {
+		return this._debugStates
 	}
 }
 

@@ -2,7 +2,6 @@ import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 import {
@@ -35,18 +34,18 @@ import {
 	USER_AGENT_POINTER_PROPERTY,
 } from '../../lib/lib'
 import { IDashboardPanelTrackedProps } from './DashboardPanel'
-import { BucketAdLib, BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
+import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { Bucket } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { PieceStatusCode } from '../../../lib/collections/Pieces'
 import { BucketPieceButton } from './BucketPieceButton'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import update from 'immutability-helper'
-import { PartInstances, PartInstance, DBPartInstance } from '../../../lib/collections/PartInstances'
-import { BucketAdLibActions, BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
+import { PartInstance, DBPartInstance } from '../../../lib/collections/PartInstances'
+import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
 import { RundownUtils } from '../../lib/rundown'
 import { BucketAdLibItem, BucketAdLibActionUi, isAdLibAction, isAdLib, BucketAdLibUi } from './RundownViewBuckets'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
@@ -66,6 +65,8 @@ import {
 	isAdLibOnAir,
 } from '../../lib/shelf'
 import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
+import { BucketAdLibActions, BucketAdLibs, PartInstances, Rundowns } from '../../collections'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIStudio } from '../../../lib/api/studios'
 import { UIStudios } from '../Collections'
@@ -76,6 +77,7 @@ import {
 	ShowStyleBaseId,
 	ShowStyleVariantId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, _monitor: DragSourceMonitor, component: any) {
@@ -361,7 +363,11 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				_nameTextBox: HTMLInputElement | null = null
 				_panel: HTMLDivElement | null = null
 
-				constructor(props: Translated<IBucketPanelProps & IBucketPanelTrackedProps>) {
+				constructor(
+					props: Translated<IBucketPanelProps & IBucketPanelTrackedProps> &
+						BucketSourceCollectedProps &
+						BucketTargetCollectedProps
+				) {
 					super(props)
 
 					this.state = {
@@ -372,7 +378,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					}
 				}
 
-				componentDidMount() {
+				componentDidMount(): void {
 					this.subscribe(PubSub.buckets, {
 						_id: this.props.bucket._id,
 					})
@@ -420,7 +426,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					RundownViewEventBus.off(RundownViewEvents.REVEAL_IN_SHELF, this.onRevealInShelf)
 				}
 
-				componentWillUnmount() {
+				componentWillUnmount(): void {
 					this._cleanUp()
 
 					window.removeEventListener(MOSEvents.dragenter, this.onDragEnter)
@@ -780,7 +786,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 					)
 				}
 
-				render() {
+				render(): JSX.Element | null {
 					const { connectDragSource, connectDragPreview, connectDropTarget } = this.props
 
 					if (this.props.showStyleBase) {

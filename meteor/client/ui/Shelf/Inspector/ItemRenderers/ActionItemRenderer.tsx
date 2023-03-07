@@ -11,14 +11,13 @@ import {
 import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { AdLibActionCommon } from '../../../../../lib/collections/AdLibActions'
-import { createInMemoryMongoCollection } from '../../../../../lib/collections/lib'
+import { createInMemorySyncMongoCollection } from '../../../../../lib/collections/lib'
 import { ConfigManifestEntryComponent } from '../../../Settings/components/ConfigManifestEntryComponent'
 import { Spinner } from '../../../../lib/Spinner'
 import InspectorTitle from './InspectorTitle'
 import { ProtectedString } from '../../../../../lib/lib'
 import { doUserAction, UserAction } from '../../../../../lib/clientUserAction'
 import { MeteorCall } from '../../../../../lib/api/methods'
-import { Buckets } from '../../../../../lib/collections/Buckets'
 import { BucketAdLibItem, BucketAdLibActionUi } from '../../RundownViewBuckets'
 import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
 import { actionToAdLibPieceUi } from '../../BucketPanel'
@@ -29,6 +28,7 @@ import { AdLibPieceUi } from '../../../../lib/shelf'
 import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
 import { UIStudio } from '../../../../../lib/api/studios'
 import { BucketId, PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Buckets } from '../../../../collections'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 
 export { isActionItem }
@@ -62,7 +62,7 @@ function transformedAdLibActionToAction(transformed: TransformedAdLibAction): Ad
 }
 
 // create a temporary collection to store changes to the AdLib Actions
-const LocalActionItems = createInMemoryMongoCollection<TransformedAdLibAction>('TransformedAdLibAction')
+const LocalActionItems = createInMemorySyncMongoCollection<TransformedAdLibAction>('TransformedAdLibAction')
 
 export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
 	const piece = RundownUtils.isPieceInstance(props.piece)
@@ -92,7 +92,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 	}
 })(
 	class ActionItemRenderer extends MeteorReactComponent<Translated<IProps & ITrackedProps>> {
-		componentDidMount() {
+		componentDidMount(): void {
 			const action = this.getActionItem()
 
 			if (action) {
@@ -138,7 +138,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 			}
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			super.componentWillUnmount()
 
 			if (this.props.targetAction) {
@@ -235,7 +235,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t, targetAction } = this.props
 			const action = this.getActionItem()
 

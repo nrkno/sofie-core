@@ -109,7 +109,7 @@ export async function updateStudioTimeline(
 				timelineObjects: [],
 			}
 		}
-		baselineObjects = postProcessStudioBaselineObjects(studio, studioBaseline.timelineObjects)
+		baselineObjects = postProcessStudioBaselineObjects(studio.blueprintId, studioBaseline.timelineObjects)
 	}
 
 	const versions = generateTimelineVersions(

@@ -2,11 +2,10 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Blueprints } from '../../../lib/collections/Blueprints'
-import { OutputLayers, ShowStyleBase, ShowStyleBases, SourceLayers } from '../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { OutputLayers, ShowStyleBase, SourceLayers } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import RundownLayoutEditor from './RundownLayoutEditor'
-import { Studio, Studios, MappingsExt } from '../../../lib/collections/Studios'
+import { Studio, MappingsExt } from '../../../lib/collections/Studios'
 import {
 	BlueprintManifestType,
 	ConfigManifestEntry,
@@ -28,6 +27,7 @@ import {
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 
@@ -237,7 +237,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			)
 		}
 
-		render() {
+		render(): JSX.Element {
 			if (this.props.showStyleBase) {
 				return this.renderEditForm(this.props.showStyleBase)
 			} else {

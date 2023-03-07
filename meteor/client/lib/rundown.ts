@@ -22,12 +22,12 @@ import {
 	getSegmentsWithPartInstances,
 } from '../../lib/Rundown'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { Segment, Segments } from '../../lib/collections/Segments'
+import { Segment } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { literal, getCurrentTime, applyToArray } from '../../lib/lib'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
-import { PieceInstances, PieceInstance } from '../../lib/collections/PieceInstances'
+import { PieceInstance } from '../../lib/collections/PieceInstances'
 import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
 import { FindOptions } from '../../lib/collections/lib'
@@ -38,6 +38,7 @@ import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automat
 import { AdLibPieceUi } from './shelf'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { PartId, PieceId, RundownId, SegmentId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PieceInstances, Segments } from '../collections'
 
 interface PieceTimelineMetadataExt extends PieceTimelineMetadata {
 	id: PieceId
@@ -49,7 +50,7 @@ export namespace RundownUtils {
 		return input.toString(10).padStart(places, '0')
 	}
 
-	export function getSegmentDuration(parts: Array<PartUi>, display?: boolean) {
+	export function getSegmentDuration(parts: Array<PartUi>, display?: boolean): number {
 		return parts.reduce((memo, part) => {
 			return (
 				memo +
@@ -193,7 +194,7 @@ export namespace RundownUtils {
 		partStartsAt: number | undefined,
 		partDuration: number | undefined,
 		piece?: PieceUi
-	) {
+	): boolean {
 		if (
 			scrollLeft + scrollWidth <
 			(partStartsAt || part.startsAt || 0) + (piece !== undefined ? piece.renderedInPoint || 0 : 0)

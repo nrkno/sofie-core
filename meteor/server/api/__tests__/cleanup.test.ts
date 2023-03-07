@@ -1,8 +1,9 @@
-import { Collections } from '../../../lib/lib'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { cleanupOldDataInner } from '../cleanup'
+import { Collections } from '../../collections/lib'
 
 import '../../../lib/main' // include this in order to get all of the collection set up
-import { cleanupOldDataInner } from '../cleanup'
+import '../../collections' // include this in order to get all of the collection set up
 
 describe('Cleanup', () => {
 	testInFiber('Check that all collections are covered', async () => {

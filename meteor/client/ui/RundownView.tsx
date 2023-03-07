@@ -14,18 +14,12 @@ import Escape from 'react-escape'
 import * as i18next from 'i18next'
 import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
-import {
-	RundownPlaylist,
-	RundownPlaylists,
-	RundownPlaylistCollectionUtil,
-} from '../../lib/collections/RundownPlaylists'
-import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { Rundown } from '../../lib/collections/Rundowns'
 import { DBSegment, Segment } from '../../lib/collections/Segments'
 import { StudioRouteSet } from '../../lib/collections/Studios'
-import { Part, Parts } from '../../lib/collections/Parts'
-
+import { Part } from '../../lib/collections/Parts'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
-
 import { RundownTimingProvider } from './RundownView/RundownTiming/RundownTimingProvider'
 import { withTiming, WithTiming } from './RundownView/RundownTiming/withTiming'
 import { CurrentPartRemaining } from './RundownView/RundownTiming/CurrentPartRemaining'
@@ -34,10 +28,8 @@ import { SegmentTimelineContainer, PieceUi, PartUi, SegmentUi } from './SegmentT
 import { SegmentContextMenu } from './SegmentTimeline/SegmentContextMenu'
 import { Shelf, ShelfTabs } from './Shelf/Shelf'
 import { RundownSystemStatus } from './RundownView/RundownSystemStatus'
-
 import { getCurrentTime, unprotectString, protectString } from '../../lib/lib'
 import { RundownUtils } from '../lib/rundown'
-
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { ModalDialog, doModalDialog, isModalShowing } from '../lib/ModalDialog'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
@@ -65,13 +57,12 @@ import { NotificationCenterPanel } from '../lib/notifications/NotificationCenter
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
 import { KeyboardFocusIndicator } from '../lib/KeyboardFocusIndicator'
-import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
 import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
 import {
-	RundownLayouts,
 	RundownLayoutType,
 	RundownLayoutBase,
 	RundownViewLayout,
@@ -82,7 +73,7 @@ import {
 import { VirtualElement } from '../lib/VirtualElement'
 import { SEGMENT_TIMELINE_ELEMENT_ID } from './SegmentTimeline/SegmentTimeline'
 import { NoraPreviewRenderer } from './FloatingInspectors/NoraFloatingInspector'
-import { Buckets, Bucket } from '../../lib/collections/Buckets'
+import { Bucket } from '../../lib/collections/Buckets'
 import { contextMenuHoldToDisplayTime, isEventInInputField } from '../lib/lib'
 import { OffsetPosition } from '../utils/positions'
 import { MeteorCall } from '../../lib/api/methods'
@@ -112,7 +103,7 @@ import { RundownName } from './RundownView/RundownTiming/RundownName'
 import { TimeOfDay } from './RundownView/RundownTiming/TimeOfDay'
 import { PlaylistEndTiming } from './RundownView/RundownTiming/PlaylistEndTiming'
 import { NextBreakTiming } from './RundownView/RundownTiming/NextBreakTiming'
-import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { BucketAdLibItem } from './Shelf/RundownViewBuckets'
 import { IAdLibListItem } from './Shelf/AdLibListItem'
 import { ShelfDashboardLayout } from './Shelf/ShelfDashboardLayout'
@@ -127,7 +118,6 @@ import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studi
 import { SegmentListContainer } from './SegmentList/SegmentListContainer'
 import { getNextMode as getNextSegmentViewMode } from './SegmentContainer/SwitchViewModeButton'
 import { IProps as IResolvedSegmentProps } from './SegmentContainer/withResolvedSegment'
-import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { UIShowStyleBases, UIStudios } from './Collections'
 import { UIStudio } from '../../lib/api/studios'
 import {
@@ -140,6 +130,17 @@ import {
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import {
+	Buckets,
+	Parts,
+	PeripheralDevices,
+	RundownLayouts,
+	RundownPlaylists,
+	Rundowns,
+	ShowStyleVariants,
+} from '../collections'
+import { UIShowStyleBase } from '../../lib/api/showStyles'
+import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -213,7 +214,7 @@ const WarningDisplay = withTranslation()(
 				this.props.oneMinuteBeforeAction(e)
 			}
 
-			render() {
+			render(): JSX.Element | null {
 				const { t } = this.props
 
 				if (!this.props.playlist) return null
@@ -254,7 +255,7 @@ interface ITimingDisplayProps {
 const TimingDisplay = withTranslation()(
 	withTiming<ITimingDisplayProps & WithTranslation, {}>()(
 		class TimingDisplay extends React.Component<Translated<WithTiming<ITimingDisplayProps>>> {
-			render() {
+			render(): JSX.Element | null {
 				const { t, rundownPlaylist, currentRundown } = this.props
 
 				if (!rundownPlaylist) return null
@@ -360,7 +361,7 @@ const RundownHeader = withTranslation()(
 				selectedPiece: undefined,
 			}
 		}
-		componentDidMount() {
+		componentDidMount(): void {
 			RundownViewEventBus.on(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
 			RundownViewEventBus.on(RundownViewEvents.DEACTIVATE_RUNDOWN_PLAYLIST, this.eventDeactivate)
 			RundownViewEventBus.on(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
@@ -371,7 +372,7 @@ const RundownHeader = withTranslation()(
 			reloadRundownPlaylistClick.set(this.reloadRundownPlaylist)
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			RundownViewEventBus.off(RundownViewEvents.ACTIVATE_RUNDOWN_PLAYLIST, this.eventActivate)
 			RundownViewEventBus.off(RundownViewEvents.DEACTIVATE_RUNDOWN_PLAYLIST, this.eventDeactivate)
 			RundownViewEventBus.off(RundownViewEvents.RESYNC_RUNDOWN_PLAYLIST, this.eventResync)
@@ -941,7 +942,7 @@ const RundownHeader = withTranslation()(
 			})
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<>
@@ -1540,7 +1541,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			const playlistId = this.props.rundownPlaylistId
 
 			this.subscribe(PubSub.rundownPlaylists, {
@@ -1884,7 +1885,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			}
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			this._cleanUp()
 			document.body.classList.remove('dark', 'vertical-overflow-only')
 			window.removeEventListener('beforeunload', this.onBeforeUnload)
@@ -3123,7 +3124,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			)
 		}
 
-		render() {
+		render(): JSX.Element {
 			if (!this.state.subsReady) {
 				return (
 					<div className="rundown-view rundown-view--loading">

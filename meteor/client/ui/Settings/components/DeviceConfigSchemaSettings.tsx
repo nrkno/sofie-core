@@ -36,7 +36,7 @@ export function SubDevicesConfig({
 	commonSchema,
 	configSchema,
 	subDevices,
-}: SubDevicesConfigProps) {
+}: SubDevicesConfigProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const parsedCommonSchema = commonSchema ? JSONBlobParse(commonSchema) : undefined

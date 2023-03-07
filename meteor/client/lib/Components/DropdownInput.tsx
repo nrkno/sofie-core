@@ -7,7 +7,7 @@ export interface DropdownInputOption<TValue> {
 	i: number
 }
 
-export function getDropdownInputOptions<T>(rawOptions: any): DropdownInputOption<T>[] {
+export function getDropdownInputOptions<T>(rawOptions: unknown): DropdownInputOption<T>[] {
 	const options: Omit<DropdownInputOption<T>, 'i'>[] = []
 
 	if (Array.isArray(rawOptions)) {
@@ -25,7 +25,7 @@ export function getDropdownInputOptions<T>(rawOptions: any): DropdownInputOption
 				})
 			}
 		}
-	} else if (typeof rawOptions === 'object') {
+	} else if (rawOptions && typeof rawOptions === 'object') {
 		// Is options an enum?
 		const keys = Object.keys(rawOptions)
 		const first = rawOptions[keys[0]]
@@ -89,7 +89,7 @@ export function DropdownInputControl<TValue>({
 	disabled,
 	options,
 	handleUpdate,
-}: IDropdownInputControlProps<TValue>) {
+}: IDropdownInputControlProps<TValue>): JSX.Element {
 	const handleChange = useCallback(
 		(event: React.ChangeEvent<HTMLSelectElement>) => {
 			// because event.target.value is always a string, use the original value instead

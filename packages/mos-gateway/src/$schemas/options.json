@@ -14,6 +14,12 @@
 			"type": "boolean",
 			"ui:title": "Activate Debug Logging",
 			"default": false
+		},
+		"strict": {
+			"type": "boolean",
+			"ui:title": "(Optional) Strict MOS data handling",
+			"ui:description": "When set, the MOS-connection will follow the MOS-specification literally (one example is that it wont accept certain strings that are longer than 128 characters)",
+			"default": false
 		}
 	},
 	"required": ["mosId"],

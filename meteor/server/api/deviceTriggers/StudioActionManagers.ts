@@ -15,11 +15,11 @@ export class StudioActionManager {
 	private allDeviceActions = new Map<DeviceActionId, ExecutableAction>()
 	private currentStudioContext: ReactivePlaylistActionContext | undefined
 
-	setAction(actionId: DeviceActionId, action: ExecutableAction) {
+	setAction(actionId: DeviceActionId, action: ExecutableAction): void {
 		this.allDeviceActions.set(actionId, action)
 	}
 
-	deleteAction(actionId: DeviceActionId) {
+	deleteAction(actionId: DeviceActionId): void {
 		this.allDeviceActions.delete(actionId)
 	}
 
@@ -27,7 +27,7 @@ export class StudioActionManager {
 		return this.allDeviceActions.get(actionId)
 	}
 
-	deleteActionsOtherThan(actionId: DeviceActionId[]) {
+	deleteActionsOtherThan(actionId: DeviceActionId[]): void {
 		const presentIds = this.allDeviceActions.keys()
 		for (const id of presentIds) {
 			if (!actionId.includes(id)) {
@@ -36,11 +36,11 @@ export class StudioActionManager {
 		}
 	}
 
-	setContext(context: ReactivePlaylistActionContext) {
+	setContext(context: ReactivePlaylistActionContext): void {
 		this.currentStudioContext = context
 	}
 
-	deleteContext() {
+	deleteContext(): void {
 		this.currentStudioContext = undefined
 	}
 

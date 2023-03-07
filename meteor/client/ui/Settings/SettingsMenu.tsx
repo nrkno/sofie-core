@@ -4,26 +4,23 @@ import { unprotectString } from '../../../lib/lib'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { NavLink, useLocation } from 'react-router-dom'
 
-import { DBStudio, Studio, Studios } from '../../../lib/collections/Studios'
-import {
-	PeripheralDevice,
-	PeripheralDevices,
-	PERIPHERAL_SUBTYPE_PROCESS,
-} from '../../../lib/collections/PeripheralDevices'
+import { DBStudio, Studio } from '../../../lib/collections/Studios'
+import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '../../../lib/collections/PeripheralDevices'
 
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 
 import { faPlus, faTrash, faExclamationTriangle, faCaretRight, faCaretDown } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { Blueprint, Blueprints } from '../../../lib/collections/Blueprints'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { Blueprint } from '../../../lib/collections/Blueprints'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Settings as MeteorSettings } from '../../../lib/Settings'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { TFunction, useTranslation } from 'react-i18next'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
+import { Blueprints, PeripheralDevices, ShowStyleBases, Studios } from '../../collections'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 interface ISettingsMenuProps {
@@ -83,7 +80,7 @@ export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMe
 			})
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div className="tight-xs htight-xs text-s">

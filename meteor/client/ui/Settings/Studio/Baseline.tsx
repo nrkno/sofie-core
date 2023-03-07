@@ -30,20 +30,20 @@ export class StudioBaselineStatus extends MeteorReactComponent<
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		const updatePeriod = 30000 // every 30s
 		this.updateInterval = Meteor.setInterval(() => this.updateStatus(), updatePeriod)
 		this.updateStatus()
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		if (this.updateInterval) {
 			Meteor.clearInterval(this.updateInterval)
 			this.updateInterval = undefined
 		}
 	}
 
-	updateStatus(props?: Translated<IStudioBaselineStatusProps>) {
+	private updateStatus(props?: Translated<IStudioBaselineStatusProps>) {
 		const studio = props ? props.studio : this.props.studio
 
 		MeteorCall.playout
@@ -57,7 +57,7 @@ export class StudioBaselineStatus extends MeteorReactComponent<
 			})
 	}
 
-	reloadBaseline() {
+	private reloadBaseline() {
 		MeteorCall.playout
 			.updateStudioBaseline(this.props.studio._id)
 			.then((result) => {
@@ -69,7 +69,7 @@ export class StudioBaselineStatus extends MeteorReactComponent<
 			})
 	}
 
-	render() {
+	render(): JSX.Element {
 		const { t } = this.props
 		const { needsUpdate } = this.state
 

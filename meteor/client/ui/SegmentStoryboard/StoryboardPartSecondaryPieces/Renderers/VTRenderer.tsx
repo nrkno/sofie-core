@@ -11,7 +11,7 @@ export function VTRenderer({
 	elementOffset,
 	studio,
 	typeClass,
-}: IDefaultRendererProps) {
+}: IDefaultRendererProps): JSX.Element {
 	const mediaPreviewUrl = studio?.settings.mediaPreviewsUrl
 
 	const status = pieceInstance.instance.piece.status

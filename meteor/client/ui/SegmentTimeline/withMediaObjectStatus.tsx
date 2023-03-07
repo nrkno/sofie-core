@@ -193,7 +193,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 				})
 			}
 
-			componentDidMount() {
+			componentDidMount(): void {
 				window.requestIdleCallback(
 					() => {
 						this.updateMediaObjectSubscription()
@@ -214,7 +214,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 				}
 			}
 
-			componentWillUnmount() {
+			componentWillUnmount(): void {
 				this.destroyed = true
 				if (this.subscription) {
 					this.subscription.stop()
@@ -227,7 +227,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 				super.componentWillUnmount()
 			}
 
-			render() {
+			render(): JSX.Element {
 				return <WrappedComponent {...this.props} {...this.overrides} />
 			}
 		}

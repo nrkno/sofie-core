@@ -1,14 +1,15 @@
 import React, { useCallback, useMemo } from 'react'
 import { PubSub } from '../../../../lib/api/pubsub'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { AdLibActions, AdLibAction } from '../../../../lib/collections/AdLibActions'
-import { AdLibPiece, AdLibPieces } from '../../../../lib/collections/AdLibPieces'
+import { AdLibAction } from '../../../../lib/collections/AdLibActions'
+import { AdLibPiece } from '../../../../lib/collections/AdLibPieces'
 import { ISourceLayerExtended } from '../../../../lib/Rundown'
 import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { LinePartIndicator } from './LinePartIndicator'
 import { useTranslation } from 'react-i18next'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import StudioContext from '../../RundownView/StudioContext'
+import { AdLibActions, AdLibPieces } from '../../../collections'
 import RundownViewEventBus, { RundownViewEvents } from '../../../../lib/api/triggers/RundownViewEventBus'
 
 interface IProps {

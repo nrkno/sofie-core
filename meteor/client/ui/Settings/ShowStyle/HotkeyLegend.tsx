@@ -7,7 +7,7 @@ import { HotkeyDefinition } from '@sofie-automation/corelib/dist/dataModel/ShowS
 import { literal, getRandomString } from '@sofie-automation/corelib/dist/lib'
 import { Random } from 'meteor/random'
 import { withTranslation } from 'react-i18next'
-import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { AHKBaseHeader, AHKModifierMap, AHKKeyboardMap, useAHKComboTemplate } from '../../../../lib/tv2/AHKkeyboardMap'
 import { defaultColorPickerPalette } from '../../../lib/colorPicker'
 import { downloadBlob } from '../../../lib/downloadBlob'
@@ -18,6 +18,7 @@ import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { UploadButton } from '../../../lib/uploadButton'
 import _ from 'underscore'
 import { Settings } from '../../../../lib/Settings'
+import { ShowStyleBases } from '../../../collections'
 
 interface IHotkeyLegendSettingsProps {
 	showStyleBase: ShowStyleBase
@@ -325,7 +326,7 @@ export const HotkeyLegendSettings = withTranslation()(
 			})
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div>

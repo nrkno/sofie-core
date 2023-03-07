@@ -54,7 +54,7 @@ export class TimecodeEncoder extends React.Component<IProps, IState> {
 		return Timecode.init({ framerate: fps.toString(), timecode: time, drop_frame: !Number.isInteger(fps) }).toString()
 	}
 
-	validate(): null | number {
+	private validate(): null | number {
 		const p = /^\d{2}\:\d{2}\:\d{2}[\:\;]\d{2}$/
 		const match = p.exec(this.state.currentValue)
 		if (!match) return null
@@ -66,7 +66,7 @@ export class TimecodeEncoder extends React.Component<IProps, IState> {
 		return t.frame_count
 	}
 
-	triggerChange = (input: string | number) => {
+	private triggerChange = (input: string | number) => {
 		const valid = Timecode.init({
 			framerate: this.props.fps.toString(),
 			timecode: input,
@@ -75,19 +75,19 @@ export class TimecodeEncoder extends React.Component<IProps, IState> {
 		if (this.props.onChange) this.props.onChange(valid.frame_count)
 	}
 
-	handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+	private handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		this.setState({
 			currentValue: e.target.value,
 		})
 	}
 
-	handleFocus = (_e: React.FocusEvent<HTMLInputElement>) => {
+	private handleFocus = (_e: React.FocusEvent<HTMLInputElement>) => {
 		this.setState({
 			isEdited: true,
 		})
 	}
 
-	handleBlur = (_e: React.FocusEvent<HTMLInputElement>) => {
+	private handleBlur = (_e: React.FocusEvent<HTMLInputElement>) => {
 		const input = this.validate()
 		if (input !== null) {
 			const valid = Timecode.init({
@@ -112,7 +112,7 @@ export class TimecodeEncoder extends React.Component<IProps, IState> {
 		}
 	}
 
-	add = (timecode: string) => {
+	private add = (timecode: string) => {
 		const t = Timecode.init({
 			framerate: this.props.fps.toString(),
 			timecode: this.state.validValue,
@@ -128,7 +128,7 @@ export class TimecodeEncoder extends React.Component<IProps, IState> {
 		this.triggerChange(t.frame_count)
 	}
 
-	substract = (timecode: string) => {
+	private substract = (timecode: string) => {
 		const t = Timecode.init({
 			framerate: this.props.fps.toString(),
 			timecode: this.state.validValue,
@@ -147,7 +147,7 @@ export class TimecodeEncoder extends React.Component<IProps, IState> {
 		this.triggerChange(t.frame_count)
 	}
 
-	render() {
+	render(): JSX.Element {
 		return (
 			<div
 				className={ClassNames('timecode-encoder', {

@@ -123,11 +123,11 @@ export const VideoEditMonitor = withTranslation()(
 			// TODO
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			this.cleanUpListeners()
 		}
 
-		componentDidUpdate() {
+		componentDidUpdate(): void {
 			if (this.videoEl) {
 				if (this.videoEl.src !== this.props.src) {
 					this.videoEl.src = this.props.src || ''
@@ -137,7 +137,7 @@ export const VideoEditMonitor = withTranslation()(
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			return (
 				<div className="video-edit-monitor">
 					<div

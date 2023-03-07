@@ -32,13 +32,14 @@ import { unprotectString } from '../../../lib/lib'
 import RundownListItemView from './RundownListItemView'
 import { Settings } from '../../../lib/Settings'
 import { MeteorCall } from '../../../lib/api/methods'
-import { ShowStyleVariant, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
 import { UIShowStyleBases, UIStudios } from '../Collections'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIStudio } from '../../../lib/api/studios'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ShowStyleVariants } from '../../collections'
 
 export const HTML_ID_PREFIX = 'rundown-'
 
@@ -223,7 +224,7 @@ export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, I
 					}
 				}
 
-				render() {
+				render(): JSX.Element {
 					const {
 						isActive,
 						t,

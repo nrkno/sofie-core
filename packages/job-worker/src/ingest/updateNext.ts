@@ -5,9 +5,15 @@ import {
 	getSelectedPartInstancesFromCache,
 } from '../playout/cache'
 import { JobContext } from '../jobs'
-import { setNextPartInner } from '../playout/playout'
+import { setNextPartInner } from '../playout/setNext'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 
+/**
+ * Make sure that the nextPartInstance for the current Playlist is still correct
+ * This will often change the nextPartInstance
+ * @param context Context of the job being run
+ * @param cache Playout Cache to operate on
+ */
 export async function ensureNextPartIsValid(context: JobContext, cache: CacheForPlayout): Promise<void> {
 	const span = context.startSpan('api.ingest.ensureNextPartIsValid')
 

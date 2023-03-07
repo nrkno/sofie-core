@@ -3,12 +3,12 @@ import { CustomPublish, meteorCustomPublish } from '../lib/customPublication'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
 import { DeviceTriggerMountedActionAdlibsPreview, DeviceTriggerMountedActions } from '../api/deviceTriggers/observer'
 import { Mongo } from 'meteor/mongo'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import _ from 'underscore'
+import { PeripheralDevices } from '../collections'
 
 const PUBLICATION_DEBOUNCE = 20
 

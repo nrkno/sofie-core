@@ -62,10 +62,10 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				inputValues: {},
 			}
 		}
-		componentDidMount() {
+		componentDidMount(): void {
 			this.updateVersions()
 		}
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			super.componentWillUnmount()
 			this.cancelRequests = true
 		}
@@ -250,7 +250,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 				})
 			}
 		}
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (

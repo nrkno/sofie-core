@@ -42,7 +42,14 @@ function getTriggerTypes(t: TFunction): DropdownInputOption<TriggerType>[] {
 	]
 }
 
-export const TriggerEditor = function TriggerEditor({ opened, canReset, isDeleted, trigger, id, ...props }: IProps) {
+export const TriggerEditor = function TriggerEditor({
+	opened,
+	canReset,
+	isDeleted,
+	trigger,
+	id,
+	...props
+}: IProps): JSX.Element {
 	const { t } = useTranslation()
 	const [localTrigger, setLocalTrigger] = useState<DBBlueprintTrigger>({ ...trigger })
 	const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null)

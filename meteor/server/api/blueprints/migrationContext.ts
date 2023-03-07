@@ -11,8 +11,8 @@ import {
 	clone,
 	Complete,
 } from '../../../lib/lib'
-import { Studios, Studio, DBStudio } from '../../../lib/collections/Studios'
-import { ShowStyleBase, ShowStyleBases, DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { Studio, DBStudio } from '../../../lib/collections/Studios'
+import { ShowStyleBase, DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
 import {
 	ConfigItemValue,
@@ -29,14 +29,15 @@ import {
 	IBlueprintTriggeredActions,
 } from '@sofie-automation/blueprints-integration'
 
-import { ShowStyleVariants, ShowStyleVariant, DBShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant, DBShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { check } from '../../../lib/check'
-import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
-import { TriggeredActions, TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
+import { PeripheralDevice, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
+import { TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
 import { Match } from 'meteor/check'
 import { MongoModifier, MongoQuery } from '../../../lib/typings/meteor'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId, ShowStyleVariantId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDevices, ShowStyleBases, ShowStyleVariants, Studios, TriggeredActions } from '../../collections'
 
 function convertTriggeredActionToBlueprints(triggeredAction: TriggeredActionsObj): IBlueprintTriggeredActions {
 	const obj: Complete<IBlueprintTriggeredActions> = {

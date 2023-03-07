@@ -82,15 +82,15 @@ export class CoreHandler {
 
 		this.core.onConnected(() => {
 			this.logger.info('Core Connected!')
-			this.setupObserversAndSubscriptions().catch((e) => {
-				this.logger.error('Core Error during setupObserversAndSubscriptions:', e)
+			this.setupObserversAndSubscriptions().catch((e: any) => {
+				this.logger.error(`Core Error during setupObserversAndSubscriptions: ${e}`, { error: e })
 			})
 			if (this._onConnected) this._onConnected()
 		})
 		this.core.onDisconnected(() => {
 			this.logger.warn('Core Disconnected!')
 		})
-		this.core.onError((err) => {
+		this.core.onError((err: any) => {
 			this.logger.error('Core Error: ' + (typeof err === 'string' ? err : err.message || err.toString() || err))
 		})
 
@@ -232,10 +232,10 @@ export class CoreHandler {
 					.autoSubscribe('timeline', {
 						studioId: studioId,
 					})
-					.then((subscriptionId) => {
+					.then((subscriptionId: string | null) => {
 						this._timelineSubscription = subscriptionId
 					})
-					.catch((err) => {
+					.catch((err: any) => {
 						this.logger.error(err)
 					})
 
@@ -248,10 +248,10 @@ export class CoreHandler {
 					.autoSubscribe('expectedPlayoutItems', {
 						studioId: studioId,
 					})
-					.then((subscriptionId) => {
+					.then((subscriptionId: string | null) => {
 						this._expectedItemsSubscription = subscriptionId
 					})
-					.catch((err) => {
+					.catch((err: any) => {
 						this.logger.error(err)
 					})
 				this.logger.debug('VIZDEBUG: Subscription to expectedPlayoutItems done')
@@ -265,6 +265,9 @@ export class CoreHandler {
 	get logDebug(): boolean {
 		return !!this.deviceSettings['debugLogging']
 	}
+	get logState(): boolean {
+		return !!this.deviceSettings['debugState']
+	}
 	get estimateResolveTimeMultiplier(): number {
 		if (!isNaN(Number(this.deviceSettings['estimateResolveTimeMultiplier']))) {
 			return this.deviceSettings['estimateResolveTimeMultiplier'] || 1
@@ -274,17 +277,24 @@ export class CoreHandler {
 	executeFunction(cmd: PeripheralDeviceCommand, fcnObject: CoreHandler | CoreTSRDeviceHandler): void {
 		if (cmd) {
 			if (this._executedFunctions[unprotectString(cmd._id)]) return // prevent it from running multiple times
+
 			const cb = (err: any, res?: any) => {
 				if (err) {
-					this.logger.error('executeFunction error', err, err.stack)
+					this.logger.error('executeFunction error', {
+						error: err,
+						stacktrace: err.stack,
+					})
 				}
-				fcnObject.core.coreMethods.functionReply(cmd._id, err, res).catch((e) => {
-					this.logger.error(e)
+				fcnObject.core.coreMethods.functionReply(cmd._id, err, res).catch((error: any) => {
+					this.logger.error(error)
 				})
 			}
 
 			if (cmd.functionName) {
-				this.logger.debug(`Executing function "${cmd.functionName}", args: ${JSON.stringify(cmd.args)}`)
+				// Ignore specific commands, to reduce noise:
+				if (cmd.functionName !== 'getDebugStates') {
+					this.logger.debug(`Executing function "${cmd.functionName}", args: ${JSON.stringify(cmd.args)}`)
+				}
 				this._executedFunctions[unprotectString(cmd._id)] = true
 				// @ts-expect-error Untyped bunch of functions
 				// eslint-disable-next-line @typescript-eslint/ban-types
@@ -435,6 +445,11 @@ export class CoreHandler {
 			throw new Error('TSR not set up!')
 		}
 	}
+	async getDebugStates(): Promise<any> {
+		if (!this._tsrHandler) throw new Error('TSRHandler is not initialized')
+
+		return Object.fromEntries(this._tsrHandler.getDebugStates().entries())
+	}
 	async updateCoreStatus(): Promise<any> {
 		let statusCode = StatusCode.GOOD
 		const messages: Array<string> = []
@@ -524,7 +539,7 @@ export class CoreTSRDeviceHandler {
 				this._device.deviceOptions.type
 			)
 		)
-		this.core.onError((err) => {
+		this.core.onError((err: any) => {
 			this._coreParentHandler.logger.error(
 				'Core Error: ' + ((_.isObject(err) && err.message) || err.toString() || err)
 			)
@@ -584,9 +599,12 @@ export class CoreTSRDeviceHandler {
 	sendStatus(): void {
 		if (!this.core) return // not initialized yet
 
-		this.core
-			.setStatus(this._deviceStatus)
-			.catch((e) => this._coreParentHandler.logger.error('Error when setting status: ', e, e.stack))
+		this.core.setStatus(this._deviceStatus).catch((e: any) =>
+			this._coreParentHandler.logger.error(`Error when setting status: ${e}`, {
+				error: e,
+				stacktrace: e.stack,
+			})
+		)
 	}
 	onCommandError(
 		_errorMessage: string,
@@ -600,20 +618,30 @@ export class CoreTSRDeviceHandler {
 	): void {
 		// This is not implemented in Core
 		// this.core
-		// 	.callMethodLowPrio(PeripheralDeviceAPIMethods.reportCommandError, [errorMessage, ref])
-		// 	.catch((e) => this._coreParentHandler.logger.error('Error when callMethodLowPrio: ', e, e.stack))
+		// 		.callMethodLowPrio(PeripheralDeviceAPIMethods.reportCommandError, [errorMessage, ref])
+		// 		.catch((e: any) =>
+		// 			this._coreParentHandler.logger.error(`Error when callMethodLowPrio: ${e}`, {
+		// 				error: e,
+		// 				stacktrace: e.stack,
+		// 			})
+		// 		)
+		// }
 	}
 	onUpdateMediaObject(collectionId: string, docId: string, doc: MediaObject | null): void {
-		this.core.coreMethodsLowPriority
-			.updateMediaObject(collectionId, docId, doc as any)
-			.catch((e) => this._coreParentHandler.logger.error('Error when updating Media Object: ' + e, e.stack))
+		this.core.coreMethodsLowPriority.updateMediaObject(collectionId, docId, doc as any).catch((e: any) =>
+			this._coreParentHandler.logger.error(`Error when updating Media Object: ${e}`, {
+				error: e,
+				stacktrace: e.stack,
+			})
+		)
 	}
 	onClearMediaObjectCollection(collectionId: string): void {
-		this.core.coreMethodsLowPriority
-			.clearMediaObjectCollection(collectionId)
-			.catch((e) =>
-				this._coreParentHandler.logger.error('Error when clearing Media Objects collection: ' + e, e.stack)
-			)
+		this.core.coreMethodsLowPriority.clearMediaObjectCollection(collectionId).catch((e: any) =>
+			this._coreParentHandler.logger.error(`Error when clearing Media Objects collection: ${e}`, {
+				error: e,
+				stacktrace: e.stack,
+			})
+		)
 	}
 
 	async dispose(): Promise<void> {

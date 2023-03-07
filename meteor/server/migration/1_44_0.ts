@@ -1,6 +1,5 @@
 import { addMigrationSteps } from './databaseMigration'
-import { RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { Rundowns } from '../../lib/collections/Rundowns'
+import { RundownPlaylists, Rundowns } from '../collections'
 
 export const addSteps = addMigrationSteps('1.44.0', [
 	{

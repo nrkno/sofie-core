@@ -3,7 +3,7 @@ import _ from 'underscore'
 import { AdLibAction } from '../../lib/collections/AdLibActions'
 import { AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
+import { PieceInstance } from '../../lib/collections/PieceInstances'
 import { RundownBaselineAdLibAction } from '../../lib/collections/RundownBaselineAdLibActions'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { DBSegment } from '../../lib/collections/Segments'
@@ -13,6 +13,7 @@ import { getUnfinishedPieceInstancesReactive } from './rundownLayouts'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { PieceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { PieceInstances } from '../collections'
 
 export interface ShelfDisplayOptions {
 	enableBuckets: boolean
@@ -125,7 +126,7 @@ export function getNextPieceInstancesGrouped(
 	return { nextAdLibIds, nextTags, nextPieceInstances }
 }
 
-export function isAdLibOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi) {
+export function isAdLibOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi): boolean {
 	if (
 		unfinishedAdLibIds.includes(adLib._id) ||
 		(adLib.currentPieceTags &&
@@ -137,7 +138,7 @@ export function isAdLibOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: stri
 	return false
 }
 
-export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: string[], adLib: AdLibPieceUi) {
+export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: string[], adLib: AdLibPieceUi): boolean {
 	if (
 		nextAdLibIds.includes(adLib._id) ||
 		(adLib.nextPieceTags &&
@@ -149,7 +150,11 @@ export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: string[], adLib: 
 	return false
 }
 
-export function isAdLibDisplayedAsOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi) {
+export function isAdLibDisplayedAsOnAir(
+	unfinishedAdLibIds: PieceId[],
+	unfinishedTags: string[],
+	adLib: AdLibPieceUi
+): boolean {
 	const isOnAir = isAdLibOnAir(unfinishedAdLibIds, unfinishedTags, adLib)
 	return adLib.invertOnAirState ? !isOnAir : isOnAir
 }

@@ -10,7 +10,7 @@ export interface IActiveProgressBarProps {
 
 export const ActiveProgressBar = timer(1000)(
 	class ActiveProgressBar extends React.Component<IActiveProgressBarProps> {
-		render() {
+		render(): JSX.Element | null {
 			const { startedPlayback, timing } = this.props.rundownPlaylist
 			const expectedDuration = PlaylistTiming.getExpectedDuration(timing)
 			if (startedPlayback && expectedDuration) {

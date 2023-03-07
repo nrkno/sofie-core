@@ -4,50 +4,30 @@ const commonConfig = {
 	modulePaths: ['<rootDir>/node_modules/'],
 	moduleNameMapper: {},
 	unmockedModulePathPatterns: ['/^imports\\/.*\\.jsx?$/', '/^node_modules/'],
-	globals: {
-		'ts-jest': {
-			tsconfig: 'tsconfig.json',
-			babelConfig: {
-				plugins: [
-					'@babel/plugin-transform-modules-commonjs',
-					// Fibers and await do not work well together. This transpiles await calls to something that works
-					'./__mocks__/plugins/meteor-async-await.js',
-				],
-			},
-			diagnostics: {
-				ignoreCodes: ['TS151001'],
-			},
-		},
-	},
+	globals: {},
 	moduleFileExtensions: ['ts', 'js'],
 	transform: {
-		'^.+\\.(ts|tsx)$': 'ts-jest',
+		'^.+\\.(ts|tsx)$': [
+			'ts-jest',
+			{
+				tsconfig: 'tsconfig.json',
+				babelConfig: {
+					plugins: [
+						'@babel/plugin-transform-modules-commonjs',
+						// Fibers and await do not work well together. This transpiles await calls to something that works
+						'./__mocks__/plugins/meteor-async-await.js',
+					],
+				},
+				diagnostics: {
+					ignoreCodes: ['TS151001'],
+				},
+			},
+		],
 		'^.+\\.(js|jsx|mjs)$': path.resolve('./scripts/babel-jest.js'),
 	},
 	transformIgnorePatterns: ['node_modules/(?!(debounce-fn|p-queue|p-timeout|mimic-fn)/)', '\\.pnp\\.[^\\/]+$'],
 	globalSetup: './__mocks__/global-setup.js',
 	setupFilesAfterEnv: ['./__mocks__/_setupMocks.ts'],
-	coverageThreshold: {
-		global: {
-			branches: 0,
-			functions: 0,
-			lines: 0,
-			statements: 0,
-		},
-	},
-	coverageDirectory: './.coverage/',
-	collectCoverageFrom: [
-		'server/**/*.{js,ts}',
-		'lib/**/*.{js,ts}',
-		'client/**/*.{js,ts}',
-		'!**/*.{tsx}',
-		'!**/client/main.js',
-		'!.meteor/**/*.*',
-		'!**/__tests__/**',
-		'!**/__mocks__/**',
-		'!**/node_modules/**',
-	],
-	collectCoverage: false,
 	watchPathIgnorePatterns: ['/.meteor/'],
 }
 
@@ -82,4 +62,26 @@ module.exports = {
 			testEnvironment: 'node',
 		}),
 	],
+	coverageProvider: 'v8',
+	coverageThreshold: {
+		global: {
+			branches: 0,
+			functions: 0,
+			lines: 0,
+			statements: 0,
+		},
+	},
+	coverageDirectory: './.coverage/',
+	collectCoverageFrom: [
+		'server/**/*.{js,ts}',
+		'lib/**/*.{js,ts}',
+		'client/**/*.{js,ts}',
+		'!**/*.{tsx}',
+		'!**/client/main.js',
+		'!.meteor/**/*.*',
+		'!**/__tests__/**',
+		'!**/__mocks__/**',
+		'!**/node_modules/**',
+	],
+	collectCoverage: false,
 }

@@ -3,7 +3,7 @@ import classNames from 'classnames'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DragSourceMonitor, DropTargetMonitor, useDrag, useDrop } from 'react-dnd'
 import { Identifier } from 'dnd-core'
-import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { BlueprintConfigManifestSettings, SourceLayerDropdownOption } from '../BlueprintConfigManifest'
 import { ShowStyleDragDropTypes } from './DragDropTypesShowStyle'
@@ -26,6 +26,7 @@ import { ConfigManifestEntry, IBlueprintConfig } from '@sofie-automation/bluepri
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { iconDragHandle } from '../../RundownList/icons'
+import { ShowStyleVariants } from '../../../collections'
 
 interface DraggableVariant {
 	id: ShowStyleVariantId
@@ -76,7 +77,7 @@ export const VariantListItem = ({
 	onDelete: (showStyleVariant: ShowStyleVariant) => void
 	onSaveOverrides: (showStyleVariantId: ShowStyleVariantId, newOps: SomeObjectOverrideOp[]) => void
 	onPushOverride: (showStyleVariantId: ShowStyleVariantId, newOp: SomeObjectOverrideOp) => void
-}) => {
+}): JSX.Element => {
 	const ref = useRef<HTMLTableRowElement>(null)
 	const [{ handlerId }, drop] = useDrop<DraggableVariant, DraggableDropResult, { handlerId: Identifier | null }>({
 		accept: ShowStyleDragDropTypes.VARIANT,

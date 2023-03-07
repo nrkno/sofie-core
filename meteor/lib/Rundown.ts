@@ -1,10 +1,10 @@
 import * as _ from 'underscore'
-import { Pieces, Piece } from './collections/Pieces'
+import { Piece } from './collections/Pieces'
 import { IOutputLayer, ISourceLayer, ITranslatableMessage } from '@sofie-automation/blueprints-integration'
 import { DBSegment, Segment } from './collections/Segments'
 import { DBPart } from './collections/Parts'
 import { PartInstance, wrapPartToTemporaryInstance } from './collections/PartInstances'
-import { PieceInstance, PieceInstances } from './collections/PieceInstances'
+import { PieceInstance } from './collections/PieceInstances'
 import {
 	getPieceInstancesForPart,
 	buildPiecesStartingInThisPartQuery,
@@ -14,7 +14,7 @@ import {
 import { MongoQuery } from './typings/meteor'
 import { invalidateAfter } from '../lib/invalidatingTime'
 import { convertCorelibToMeteorMongoQuery, getCurrentTime, groupByToMap, ProtectedString, protectString } from './lib'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from './collections/RundownPlaylists'
+import { RundownPlaylist } from './collections/RundownPlaylists'
 import { Rundown } from './collections/Rundowns'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { mongoWhereFilter } from '@sofie-automation/corelib/dist/mongo'
@@ -26,6 +26,8 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PieceInstances, Pieces } from './collections/libCollections'
+import { RundownPlaylistCollectionUtil } from './collections/rundownPlaylistUtil'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */

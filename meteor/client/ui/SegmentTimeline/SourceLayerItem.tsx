@@ -443,11 +443,11 @@ export const SourceLayerItem = withTranslation()(
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			super.componentWillUnmount && super.componentWillUnmount()
 			RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 			clearTimeout(this.highlightTimeout)
@@ -683,7 +683,7 @@ export const SourceLayerItem = withTranslation()(
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			if (this.isInsideViewport()) {
 				const typeClass = RundownUtils.getSourceLayerClassName(this.props.layer.type)
 

@@ -6,7 +6,7 @@ import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-inte
 import { assertNever, literal, getRandomString } from '@sofie-automation/corelib/dist/lib'
 import Tooltip from 'rc-tooltip'
 import { TFunction, useTranslation } from 'react-i18next'
-import { ShowStyleBase, ShowStyleBases } from '../../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { getHelpMode } from '../../../lib/localStorage'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { findHighestRank } from '../StudioSettings'
@@ -28,6 +28,7 @@ import {
 	LabelAndOverridesForDropdown,
 	LabelAndOverridesForInt,
 } from '../../../lib/Components/LabelAndOverrides'
+import { ShowStyleBases } from '../../../collections'
 
 function sourceLayerString(t: TFunction<'translation', undefined>, type: SourceLayerType) {
 	switch (type) {
@@ -69,7 +70,7 @@ interface IStudioSourcesSettingsProps {
 	showStyleBase: ShowStyleBase
 }
 
-export function SourceLayerSettings({ showStyleBase }: IStudioSourcesSettingsProps) {
+export function SourceLayerSettings({ showStyleBase }: IStudioSourcesSettingsProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
@@ -233,6 +234,26 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 			),
 		})
 	}, [t, item.id, item.computed.name, overrideHelper])
+	const confirmReset = useCallback(() => {
+		doModalDialog({
+			title: t('Reset this item?'),
+			yes: t('Reset'),
+			no: t('Cancel'),
+			onAccept: () => {
+				overrideHelper.resetItem(item.id)
+			},
+			message: (
+				<React.Fragment>
+					<p>
+						{t('Are you sure you want to reset all overrides for the source layer "{{sourceLayerId}}"?', {
+							sourceLayerId: item.computed.name,
+						})}
+					</p>
+					<p>{t('Please note: This action is irreversible!')}</p>
+				</React.Fragment>
+			),
+		})
+	}, [t, item.id, overrideHelper])
 
 	return (
 		<>
@@ -247,10 +268,20 @@ function SourceLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 					{sourceLayerString(t, Number.parseInt(item.computed.type.toString(), 10) as SourceLayerType)}
 				</td>
 				<td className="settings-studio-source-table__actions table-item-actions c3">
-					<button className="action-btn" onClick={toggleEditItem}>
+					{!item.defaults && (
+						<button className="action-btn" disabled>
+							<FontAwesomeIcon icon={faSync} title={t('Source layer cannot be reset as it has no default values')} />
+						</button>
+					)}
+					{item.defaults && item.overrideOps.length > 0 && (
+						<button className="action-btn" onClick={confirmReset} title={t('Reset source layer to default values')}>
+							<FontAwesomeIcon icon={faSync} />
+						</button>
+					)}
+					<button className="action-btn" onClick={toggleEditItem} title={t('Edit source layer')}>
 						<FontAwesomeIcon icon={faPencilAlt} />
 					</button>
-					<button className="action-btn" onClick={confirmDelete}>
+					<button className="action-btn" onClick={confirmDelete} title={t('Delete source layer')}>
 						<FontAwesomeIcon icon={faTrash} />
 					</button>
 				</td>

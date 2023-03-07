@@ -2,11 +2,9 @@ import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { getCurrentTime, getRandomId, protectString } from '../../../../lib/lib'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
-import { MediaWorkFlows } from '../../../../lib/collections/MediaWorkFlows'
-import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
-import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { MediaWorkFlowId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MediaWorkFlows, PeripheralDeviceCommands, PeripheralDevices } from '../../../collections'
 
 require('../../client') // include in order to create the Meteor methods needed
 require('../../userActions') // include in order to create the Meteor methods needed

@@ -6,7 +6,7 @@ import { MomentFromNow } from '../../lib/Moment'
 import { getAllowConfigure } from '../../lib/localStorage'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
-import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
+import { ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import ClassNames from 'classnames'
@@ -18,6 +18,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExternalMessageQueue } from '../../collections'
 
 interface IExternalMessagesProps {}
 interface IExternalMessagesState {
@@ -46,7 +47,7 @@ const ExternalMessages = translateWithTracker<
 				studioId: undefined,
 			}
 		}
-		componentDidMount() {
+		componentDidMount(): void {
 			this.subscribe(PubSub.uiStudio, null)
 		}
 		onClickStudio = (studio) => {
@@ -54,7 +55,7 @@ const ExternalMessages = translateWithTracker<
 				studioId: studio._id,
 			})
 		}
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (
@@ -144,11 +145,11 @@ const ExternalMessagesInStudio = translateWithTracker<
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			// Subscribe to data:
 			this.updateSubscription()
 		}
-		componentDidUpdate() {
+		componentDidUpdate(): void {
 			this.updateSubscription()
 		}
 		updateSubscription() {
@@ -167,7 +168,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 				})
 			}
 		}
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			if (this._sub) {
 				this._sub.stop()
 			}
@@ -322,7 +323,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 			})
 		}
 
-		render() {
+		render(): JSX.Element {
 			return (
 				<div className="mhl gutter external-message-status">
 					<div className="paging alc">

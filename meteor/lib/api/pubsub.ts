@@ -1,3 +1,4 @@
+import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import {
 	ExpectedPackageId,
 	PeripheralDeviceId,
@@ -22,7 +23,6 @@ import { ExpectedPackageDB } from '../collections/ExpectedPackages'
 import { ExpectedPackageWorkStatus } from '../collections/ExpectedPackageWorkStatuses'
 import { ExpectedPlayoutItem } from '../collections/ExpectedPlayoutItems'
 import { ExternalMessageQueueObj } from '../collections/ExternalMessageQueue'
-import { IngestDataCacheObj } from '../collections/IngestDataCache'
 import { MediaObject } from '../collections/MediaObjects'
 import { MediaWorkFlow } from '../collections/MediaWorkFlows'
 import { MediaWorkFlowStep } from '../collections/MediaWorkFlowSteps'

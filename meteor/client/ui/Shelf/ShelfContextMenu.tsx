@@ -53,7 +53,12 @@ export interface ShelfContextMenuContextAdLib extends ShelfContextMenuContextBas
 		adLib: IAdLibListItem
 		canQueue?: boolean
 		disabled?: boolean
-		onToggle?: (aSLine: IAdLibListItem, queue: boolean, context: any, mode?: IBlueprintActionTriggerMode) => void
+		onToggle?: (
+			aSLine: IAdLibListItem,
+			queue: boolean,
+			context: React.SyntheticEvent,
+			mode?: IBlueprintActionTriggerMode
+		) => void
 	}
 }
 
@@ -64,11 +69,11 @@ type ShelfContextMenuContext =
 
 const shelfContextMenuContext: ReactiveVar<ShelfContextMenuContext | undefined> = new ReactiveVar(undefined)
 
-export function setShelfContextMenuContext(context: ShelfContextMenuContext | undefined) {
+export function setShelfContextMenuContext(context: ShelfContextMenuContext | undefined): void {
 	shelfContextMenuContext.set(context)
 }
 
-export default function ShelfContextMenu(props: ShelfContextMenuProps) {
+export default function ShelfContextMenu(props: ShelfContextMenuProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const context = useTracker(() => {

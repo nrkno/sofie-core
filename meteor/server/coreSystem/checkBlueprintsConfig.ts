@@ -1,10 +1,11 @@
 import { BlueprintManifestType, StatusCode } from '@sofie-automation/blueprints-integration'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { Blueprint, Blueprints } from '../../lib/collections/Blueprints'
-import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { Studio, Studios } from '../../lib/collections/Studios'
+import { Blueprint } from '../../lib/collections/Blueprints'
+import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
+import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { Studio } from '../../lib/collections/Studios'
 import { lazyIgnore } from '../../lib/lib'
 import { findMissingConfigs } from '../api/blueprints/config'
 import { createBlueprintConfigCompound } from '../api/showStyles'
@@ -12,7 +13,7 @@ import { logger } from '../logging'
 import { removeSystemStatus, setSystemStatus } from '../systemStatus/systemStatus'
 
 let checkBlueprintsConfigRunning = false
-export function queueCheckBlueprintsConfig() {
+export function queueCheckBlueprintsConfig(): void {
 	const RATE_LIMIT = 10000
 
 	// We want to rate limit this. It doesn't matter if it is delayed, so lets do that to keep it simple

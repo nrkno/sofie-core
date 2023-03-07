@@ -500,18 +500,27 @@ function getPackageWarningMessage(
 		packageOnPackageContainer.status.status ===
 			ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_FOUND
 	) {
+		// Examples of contents in packageOnPackageContainer?.status.statusReason.user:
+		// * Target package: Quantel clip "XXX" not found
+		// * Can't read the Package from PackageContainer "Quantel source 0" (on accessor "${accessorLabel}"), due to: Quantel clip "XXX" not found
+
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation(`Clip can't be played because it doesn't exist on the playout system`),
+			message: generateTranslation(`Clip can't be found on the playout system`),
 		}
 	} else if (
 		packageOnPackageContainer.status.status ===
 		ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_READY
 	) {
+		// Examples of contents in packageOnPackageContainer?.status.statusReason.user:
+		// * Source file is still growing
+		// * Reserved clip (0 frames)
+		// * Reserved clip (1-9 frames)
+
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation('{{sourceLayer}} is not yet ready on the playout system', {
-				sourceLayer: sourceLayer.name,
+			message: generateTranslation('{{reason}} Clip exists, but is not yet ready on the playout system.', {
+				reason: ((packageOnPackageContainer?.status.statusReason.user || 'N/A') + '.').replace(/\.\.$/, '.'), // remove any trailing double "."
 			}),
 		}
 	} else if (
@@ -520,9 +529,7 @@ function getPackageWarningMessage(
 	) {
 		return {
 			status: PieceStatusCode.OK,
-			message: generateTranslation('{{sourceLayer}} is transferring to the the playout system', {
-				sourceLayer: sourceLayer.name,
-			}),
+			message: generateTranslation('Clip is transferring to the the playout system'),
 		}
 	} else if (
 		packageOnPackageContainer.status.status ===
@@ -530,12 +537,7 @@ function getPackageWarningMessage(
 	) {
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation(
-				'{{sourceLayer}} is transferring to the the playout system and cannot be played yet',
-				{
-					sourceLayer: sourceLayer.name,
-				}
-			),
+			message: generateTranslation('Clip is transferring to the the playout system but cannot be played yet'),
 		}
 	} else if (
 		packageOnPackageContainer.status.status === ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.READY

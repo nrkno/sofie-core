@@ -62,7 +62,7 @@ const ONAIR_OVER = {
 	animationData: On_Air_MouseOver,
 }
 
-export function RundownRightHandControls(props: IProps) {
+export function RundownRightHandControls(props: IProps): JSX.Element {
 	const { t } = useTranslation()
 	const [onAirHover, setOnAirHover] = useState(false)
 	const [switchboardOpen, setSwitchboardOpen] = useState(false)

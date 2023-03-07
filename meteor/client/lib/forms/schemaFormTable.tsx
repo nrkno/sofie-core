@@ -32,7 +32,7 @@ export const SchemaFormTable = ({
 	attr,
 	item,
 	overrideHelper,
-}: SchemaFormTableProps) => {
+}: SchemaFormTableProps): JSX.Element => {
 	const rows = useMemo(() => (attr ? objectPathGet(item.computed, attr) : item.computed) || [], [attr, item.computed])
 
 	const addNewItem = useCallback(() => {
@@ -174,7 +174,7 @@ export function SchemaTableSummaryRow<T extends string | number>({
 	isEdited,
 	editItem,
 	removeItem,
-}: SchemaTableSummaryRowProps<T>) {
+}: SchemaTableSummaryRowProps<T>): JSX.Element {
 	const editItem2 = useCallback(() => editItem(rowId), [editItem, rowId])
 	const removeItem2 = useCallback(() => removeItem(rowId), [removeItem, rowId])
 

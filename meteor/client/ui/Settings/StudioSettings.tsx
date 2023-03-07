@@ -1,15 +1,14 @@
 import * as React from 'react'
-import { Studio, Studios, MappingsExt } from '../../../lib/collections/Studios'
+import { Studio, MappingsExt } from '../../../lib/collections/Studios'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-import { PeripheralDevice, PeripheralDevices, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
-import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { BlueprintManifestType, ConfigManifestEntry } from '@sofie-automation/blueprints-integration'
 import { BlueprintConfigManifestSettings } from './BlueprintConfigManifest'
-import { Blueprints } from '../../../lib/collections/Blueprints'
 import { StudioRoutings } from './Studio/Routings'
 import { StudioDevices } from './Studio/Devices'
 import { MappingsSettingsManifest, MappingsSettingsManifests, StudioMappings } from './Studio/Mappings'
@@ -23,6 +22,7 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyDeep } from 'type-fest'
 import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Blueprints, PeripheralDevices, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { translateStringIfHasNamespaces } from '../../lib/forms/schemaFormUtil'
@@ -184,7 +184,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			return this.props.studio ? (
 				<div className="studio-edit mod mhl mvn">
 					<div className="row">

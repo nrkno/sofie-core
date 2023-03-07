@@ -9,8 +9,8 @@ import { ensureNextPartIsValid as ensureNextPartIsValidRaw } from '../updateNext
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { runJobWithPlayoutCache } from '../../playout/lock'
 
-jest.mock('../../playout/playout')
-import { setNextPartInner } from '../../playout/playout'
+jest.mock('../../playout/setNext')
+import { setNextPartInner } from '../../playout/setNext'
 type TsetNextPartInner = jest.MockedFunction<typeof setNextPartInner>
 const setNextPartInnerMock = setNextPartInner as TsetNextPartInner
 setNextPartInnerMock.mockImplementation(async () => Promise.resolve()) // Default mock

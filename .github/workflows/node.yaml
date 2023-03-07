@@ -7,6 +7,7 @@ on:
     tags:
       - "v**"
   pull_request:
+  workflow_dispatch:
 
 jobs:
   lint-core:
@@ -29,6 +30,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('meteor/yarn.lock') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Prepare Environment
         run: |
+          yarn config set cache-folder /home/runner/lint-core-cache
           yarn
           yarn build:packages
         env:
@@ -59,6 +61,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('meteor/yarn.lock') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Prepare Environment
         run: |
+          yarn config set cache-folder /home/runner/test-core-cache
           yarn
           yarn build:packages
         env:
@@ -184,6 +187,7 @@ jobs:
           context: .
           file: ./meteor/Dockerfile.circle
           push: true
+          provenance: false
           labels: ${{ steps.ghcr-tag.outputs.labels }}
           tags: "${{ steps.ghcr-tag.outputs.tags }}"
       - name: Build and push to DockerHub
@@ -193,6 +197,7 @@ jobs:
           context: .
           file: ./meteor/Dockerfile.circle
           push: true
+          provenance: false
           labels: ${{ steps.dockerhub-tag.outputs.labels }}
           tags: "${{ steps.dockerhub-tag.outputs.tags }}"
 
@@ -296,6 +301,7 @@ jobs:
           context: ./packages
           file: ./packages/${{ matrix.gateway-name }}/Dockerfile.circle
           push: true
+          provenance: false
           labels: ${{ steps.ghcr-tag.outputs.labels }}
           tags: "${{ steps.ghcr-tag.outputs.tags }}"
       - name: Build and push to DockerHub
@@ -305,6 +311,7 @@ jobs:
           context: ./packages
           file: ./packages/${{ matrix.gateway-name }}/Dockerfile.circle
           push: true
+          provenance: false
           labels: ${{ steps.dockerhub-tag.outputs.labels }}
           tags: "${{ steps.dockerhub-tag.outputs.tags }}"
 
@@ -335,6 +342,7 @@ jobs:
       - name: Prepare Environment
         run: |
           cd packages
+          yarn config set cache-folder /home/runner/${{ matrix.package-name }}-cache
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
@@ -358,7 +366,7 @@ jobs:
           - blueprints-integration
           - server-core-integration
           - shared-lib
-        node-version: [14.x, 16.x, 18.x]
+        node-version: [14.x, 16.x]
         include:
           # include additional configs, to run certain packages only for a certain version of node
           - node-version: 14.x
@@ -382,6 +390,7 @@ jobs:
       - name: Prepare Environment
         run: |
           cd packages
+          yarn config set cache-folder /home/runner/test-packages-cache
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
@@ -411,6 +420,7 @@ jobs:
       - name: Prepare Environment
         run: |
           cd packages
+          yarn config set cache-folder /home/runner/publish-docs-cache
           yarn install
           yarn build
         env:
@@ -465,6 +475,7 @@ jobs:
       - name: Prepare Environment # have to run this first to make sure the semver lib is available
         run: |
           cd packages
+          yarn config set cache-folder /home/runner/release-libs-cache
           yarn install
         env:
           CI: true
@@ -526,6 +537,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('meteor/yarn.lock') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Prepare Environment
         run: |
+          yarn config set cache-folder /home/runner/check-for-multiple-library-versions-cache
           yarn
         env:
           CI: true

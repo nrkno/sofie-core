@@ -53,25 +53,29 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,
 	IState
 > {
-	constructor(props: Translated<IAdLibPanelProps & AdLibFetchAndFilterProps>) {
+	constructor(
+		props: Translated<
+			IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps
+		>
+	) {
 		super(props)
 
 		this.state = {}
 	}
 
-	isAdLibOnAir(adLib: AdLibPieceUi) {
+	private isAdLibOnAir(adLib: AdLibPieceUi) {
 		return isAdLibOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
 	}
 
-	isAdLibDisplayedAsOnAir(adLib: AdLibPieceUi) {
+	private isAdLibDisplayedAsOnAir(adLib: AdLibPieceUi) {
 		return isAdLibDisplayedAsOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
 	}
 
-	isAdLibNext(adLib: AdLibPieceUi) {
+	private isAdLibNext(adLib: AdLibPieceUi) {
 		return isAdLibNext(this.props.nextAdLibIds, this.props.nextTags, adLib)
 	}
 
-	onToggleSticky = (sourceLayerId: string, e: any) => {
+	private onToggleSticky = (sourceLayerId: string, e: any) => {
 		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.activationId) {
 			const { t } = this.props
 			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e, ts) =>
@@ -80,7 +84,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 		}
 	}
 
-	toggleAdLib(e: any, piece?: AdLibPieceUi, queueWhenOnAir?: boolean) {
+	private toggleAdLib(e: any, piece?: AdLibPieceUi, queueWhenOnAir?: boolean) {
 		const { t } = this.props
 		if (!piece) {
 			return
@@ -141,7 +145,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 		}
 	}
 
-	take = (e: any) => {
+	private take = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
 			doUserAction(t, e, UserAction.TAKE, (e, ts) =>
@@ -150,7 +154,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 		}
 	}
 
-	onAction = (e: any, piece?: AdLibPieceUi) => {
+	private onAction = (e: any, piece?: AdLibPieceUi) => {
 		switch (this.props.panel.role) {
 			case RundownLayoutAdLibRegionRole.QUEUE:
 				this.toggleAdLib(e, piece, true)
@@ -163,7 +167,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 		}
 	}
 
-	getThumbnailUrl = (): string | undefined => {
+	private getThumbnailUrl = (): string | undefined => {
 		const { piece } = this.props
 		const { mediaPreviewsUrl } = this.props.studio.settings
 		if (piece && piece.contentMetaData && piece.contentMetaData.previewPath && mediaPreviewsUrl) {
@@ -179,14 +183,14 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 		return undefined
 	}
 
-	renderPreview() {
+	private renderPreview() {
 		const thumbnailUrl = this.getThumbnailUrl()
 		if (thumbnailUrl) {
 			return <img src={thumbnailUrl} className="adlib-region-panel__image" />
 		}
 	}
 
-	render() {
+	render(): JSX.Element {
 		const liveSegment = this.props.uiSegments.find((i) => i.isLive === true)
 		const piece =
 			this.props.panel.tags && this.props.rundownBaselineAdLibs
