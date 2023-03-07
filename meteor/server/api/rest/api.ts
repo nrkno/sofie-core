@@ -18,13 +18,7 @@ import {
 	RestAPI,
 	APIShowStyleBase,
 	APIShowStyleVariant,
-	showStyleBaseFrom,
-	showStyleVariantFrom,
-	APIShowStyleBaseFrom,
-	APIShowStyleVariantFrom,
 	APIStudio,
-	studioFrom,
-	APIStudioFrom,
 } from '../../../lib/api/rest'
 import { MeteorCall, MethodContextAPI } from '../../../lib/api/methods'
 import { ServerClientAPI } from '../client'
@@ -69,6 +63,14 @@ import {
 	ShowStyleVariants,
 	Studios,
 } from '../../collections'
+import {
+	APIShowStyleBaseFrom,
+	APIShowStyleVariantFrom,
+	APIStudioFrom,
+	showStyleBaseFrom,
+	showStyleVariantFrom,
+	studioFrom,
+} from './typeConversion'
 
 function restAPIUserEvent(
 	ctx: Koa.ParameterizedContext<
