@@ -33,13 +33,7 @@ resources:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                showStyleBase:
-                  $ref: '#/components/schemas/showStyleBase'
-              required:
-                - showStyleBase
-              additionalProperties: false
+              $ref: '#/components/schemas/showStyleBase'
       responses:
         200:
           description: Create successful, Id of new ShowStyle is returned.
@@ -52,14 +46,8 @@ resources:
                     type: number
                     example: 200
                   result:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                        description: Id of the newly created ShowStyle.
-                    required:
-                      - id
-                    additionalProperties: false
+                    type: string
+                    description: Id of the newly created ShowStyle.
                 required:
                   - status
                   - result
@@ -128,13 +116,7 @@ resources:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                showStyleBase:
-                  $ref: '#/components/schemas/showStyleBase'
-              required:
-                - showStyleBase
-              additionalProperties: false
+              $ref: '#/components/schemas/showStyleBase'
       responses:
         200:
           description: Operation successful.
@@ -269,13 +251,7 @@ resources:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                showStyleVariant:
-                  $ref: '#/components/schemas/showStyleVariant'
-              required:
-                - showStyleVariant
-              additionalProperties: false
+              $ref: '#/components/schemas/showStyleVariant'
       responses:
         200:
           description: Create successful, Id of new ShowStyle is returned.
@@ -288,14 +264,10 @@ resources:
                     type: number
                     example: 200
                   result:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                        description: Id of the newly created ShowStyle.
-                    required:
-                      - id
-                    additionalProperties: false
+                    type: string
+                    description: Id of the newly created ShowStyle Variant.
+        404:
+          $ref: '#/components/responses/showStyleBaseNotFound'
         500:
           $ref: '#/components/responses/internalServerError'
   showStyleVariant:
@@ -356,13 +328,7 @@ resources:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                showStyleVariant:
-                  $ref: '#/components/schemas/showStyleVariant'
-              required:
-                - showStyleVariant
-              additionalProperties: false
+              $ref: '#/components/schemas/showStyleVariant'
       responses:
         200:
           description: Operation successful.
@@ -442,6 +408,8 @@ resources:
                 required:
                   - status
                 additionalProperties: false
+        404:
+          $ref: '#/components/responses/showStyleBaseNotFound'
         412:
           description: The specified ShowStyleVariant is in use in an on-air Rundown.
           content:

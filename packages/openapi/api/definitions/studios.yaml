@@ -22,6 +22,8 @@ resources:
                     type: array
                     items:
                       type: string
+                    example:
+                      - studio0
         500:
           $ref: '#/components/responses/internalServerError'
     post:
@@ -33,13 +35,7 @@ resources:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                studio:
-                  $ref: '#/components/schemas/studio'
-              required:
-                - studio
-              additionalProperties: false
+              $ref: '#/components/schemas/studio'
       responses:
         200:
           description: Create successful, Id of new Studio is returned.
@@ -52,16 +48,24 @@ resources:
                     type: number
                     example: 200
                   result:
-                    type: object
-                    properties:
-                      id:
-                        type: string
-                        description: Id of the newly created Studio.
-                    required:
-                      - id
-                    additionalProperties: false
+                    type: string
+                    description: Id of the newly created Studio.
         400:
-          description: Invalid Studio, blueprint Id is not a Studio blueprint.
+          description: Invalid Studio.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 400
+                  message:
+                    type: string
+                required:
+                  - status
+                  - message
+                additionalProperties: false
         500:
           $ref: '#/components/responses/internalServerError'
   studio:
@@ -88,11 +92,7 @@ resources:
                   status:
                     type: number
                     example: 200
-                  id:
-                    type: string
-                    description: Studio Id.
-                    example: 'Studio0'
-                  studio:
+                  result:
                     $ref: '#/components/schemas/studio'
         404:
           $ref: '#/components/responses/studioNotFound'
@@ -114,29 +114,12 @@ resources:
         content:
           application/json:
             schema:
-              type: object
-              properties:
-                studio:
-                  $ref: '#/components/schemas/studio'
-              required:
-                - studio
-              additionalProperties: false
+              $ref: '#/components/schemas/studio'
       responses:
         200:
-          description: Studio found.
-          content:
-            application/json:
-              schema:
-                properties:
-                  status:
-                    type: number
-                    example: 200
-                  id:
-                    type: string
-                    description: Studio Id.
-                    example: 'Studio0'
-                  studio:
-                    $ref: '#/components/schemas/studio'
+          $ref: '#/components/responses/putSuccess'
+        404:
+          $ref: '#/components/responses/studioNotFound'
         500:
           $ref: '#/components/responses/internalServerError'
     delete:
@@ -162,6 +145,8 @@ resources:
                   status:
                     type: number
                     example: 200
+        404:
+          $ref: '#/components/responses/studioNotFound'
         412:
           description: The specified Studio is in use in an on-air Rundown.
         500:
@@ -199,14 +184,7 @@ resources:
         200:
           $ref: '#/components/responses/putSuccess'
         404:
-          description: The specified Studio or route set does not exist.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
+          $ref: '#/components/responses/studioNotFound'
         500:
           $ref: '#/components/responses/internalServerError'
   devices:
@@ -331,16 +309,25 @@ components:
         name:
           type: string
           description: Studio display name.
+          example: Default Studio
         blueprintId:
           type: string
           description: Id of the Blueprint to use for the Studio.
+          example: studio0
         supportedShowStyleBase:
           type: array
           items:
             type: string
             description: ShowStyleBases that this Studio wants to support.
+          example:
+            - showstyle0
+            - showstyle1
         config:
           type: object
+          properties:
+            name:
+              type: string
+              example: Studio config
           additionalProperties: true
           description: Blueprint configuration.
         settings:

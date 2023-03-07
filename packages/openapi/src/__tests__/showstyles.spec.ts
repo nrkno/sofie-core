@@ -1,10 +1,9 @@
 // eslint-disable-next-line node/no-missing-import
-import { Configuration, ShowStyleBase, ShowstylesApi } from '../../client/ts'
+import { Configuration, ShowStyleBase, ShowstylesApi, ShowStyleVariant } from '../../client/ts'
 import { checkServer } from '../checkServer'
 import Logging from '../httpLogging'
 
 const httpLogging = false
-const testServer = process.env.SERVER_TYPE === 'TEST'
 
 describe('Network client', () => {
 	const config = new Configuration({
@@ -24,7 +23,7 @@ describe('Network client', () => {
 		showStyles.result.forEach((id) => showStyleBaseIds.push(id))
 	})
 
-	let showStyleBase: ShowStyleBase | undefined
+	let newShowStyleBase: ShowStyleBase | undefined
 	test('can request a ShowStyleBase by id', async () => {
 		const showStyle = await showStylesApi.showStyleBase({
 			showStyleBaseId: showStyleBaseIds[0],
@@ -36,46 +35,28 @@ describe('Network client', () => {
 		expect(showStyle.result).toHaveProperty('outputLayers')
 		expect(showStyle.result).toHaveProperty('sourceLayers')
 		expect(showStyle.result).toHaveProperty('config')
-		showStyleBase = showStyle.result
+		newShowStyleBase = JSON.parse(JSON.stringify(showStyle.result))
 	})
 
-	if (testServer) {
-		test('can add a ShowStyleBase', async () => {
-			const newShowStyleBase = { ...showStyleBase }
-			newShowStyleBase.name = showStyleBase.name + 'added'
-			const showStyle = await showStylesApi.addShowStyleBase({
-				addShowStyleBaseRequest: {
-					showStyleBase: newShowStyleBase,
-				},
-			})
-			expect(showStyle.status).toBe(200)
+	let testShowStyleBaseId: string | undefined
+	test('can add a ShowStyleBase', async () => {
+		newShowStyleBase.name = newShowStyleBase.name + 'Added'
+		const showStyle = await showStylesApi.addShowStyleBase({
+			showStyleBase: newShowStyleBase,
 		})
+		expect(showStyle.status).toBe(200)
+		expect(typeof showStyle.result).toBe('string')
+		testShowStyleBaseId = showStyle.result
+	})
 
-		test('can update a ShowStyleBase', async () => {
-			const showStyle = await showStylesApi.addOrUpdateShowStyleBase({
-				showStyleBaseId: 'SSB0',
-				addShowStyleBaseRequest: {
-					showStyleBase: {
-						name: 'SSB',
-						blueprintId: 'SSB0',
-						outputLayers: [],
-						sourceLayers: [],
-						config: {},
-					},
-				},
-			})
-			expect(showStyle.status).toBe(200)
+	test('can update a ShowStyleBase', async () => {
+		newShowStyleBase.name = newShowStyleBase.name.substring(0, newShowStyleBase.name.length - 5) + 'Updated'
+		const showStyle = await showStylesApi.addOrUpdateShowStyleBase({
+			showStyleBaseId: testShowStyleBaseId,
+			showStyleBase: newShowStyleBase,
 		})
-
-		test('can remove a ShowStyleBase', async () => {
-			const showStyle = await showStylesApi.deleteShowStyleBase({
-				showStyleBaseId: 'SSB0',
-			})
-			expect(showStyle.status).toBe(200)
-		})
-	} else {
-		test.todo('Setup mocks for ShowStyles')
-	}
+		expect(showStyle.status).toBe(200)
+	})
 
 	const showStyleVariantIds: string[] = []
 	test('can request all ShowStyleVariants', async () => {
@@ -88,24 +69,7 @@ describe('Network client', () => {
 		showStyleVariants.result.forEach((id) => showStyleVariantIds.push(id))
 	})
 
-	if (testServer) {
-		test('can add a ShowStyleVariant', async () => {
-			const showStyleVariant = await showStylesApi.addShowStyleVariant({
-				showStyleBaseId: showStyleBaseIds[0],
-				addShowStyleVariantRequest: {
-					showStyleVariant: {
-						name: 'SSV',
-						showStyleBaseId: 'SSB0',
-						config: {},
-					},
-				},
-			})
-			expect(showStyleVariant.status).toBe(200)
-		})
-	} else {
-		test.todo('todo - can add a ShowStyleVariant')
-	}
-
+	let newShowStyleVariant: ShowStyleVariant | undefined
 	test('can request a ShowStyleVariant by id', async () => {
 		const showStyleVariant = await showStylesApi.showStyleVariant({
 			showStyleBaseId: showStyleBaseIds[0],
@@ -114,34 +78,47 @@ describe('Network client', () => {
 		expect(showStyleVariant.status).toBe(200)
 		expect(showStyleVariant).toHaveProperty('result')
 		expect(showStyleVariant.result).toHaveProperty('name')
+		expect(showStyleVariant.result).toHaveProperty('rank')
 		expect(showStyleVariant.result).toHaveProperty('showStyleBaseId')
 		expect(showStyleVariant.result).toHaveProperty('config')
+		newShowStyleVariant = JSON.parse(JSON.stringify(showStyleVariant.result))
 	})
 
-	if (testServer) {
-		test('can update a ShowStyleVariant', async () => {
-			const showStyleVariant = await showStylesApi.addOrUpdateShowStyleVariant({
-				showStyleBaseId: 'SSB0',
-				showStyleVariantId: 'SSV',
-				addShowStyleVariantRequest: {
-					showStyleVariant: {
-						name: 'SSB',
-						showStyleBaseId: 'SSB0',
-						config: {},
-					},
-				},
-			})
-			expect(showStyleVariant.status).toBe(200)
+	let testShowStyleVariantId: string | undefined
+	test('can add a ShowStyleVariant', async () => {
+		newShowStyleVariant.name = newShowStyleVariant.name + 'Added'
+		const showStyleVariant = await showStylesApi.addShowStyleVariant({
+			showStyleBaseId: showStyleBaseIds[0],
+			showStyleVariant: newShowStyleVariant,
 		})
+		expect(showStyleVariant.status).toBe(200)
+		expect(typeof showStyleVariant.result).toBe('string')
+		testShowStyleVariantId = showStyleVariant.result
+	})
 
-		test('can remove a ShowStyleVariant', async () => {
-			const showStyle = await showStylesApi.deleteShowStyleVariant({
-				showStyleBaseId: 'SSB0',
-				showStyleVariantId: 'SSV',
-			})
-			expect(showStyle.status).toBe(200)
+	test('can update a ShowStyleVariant', async () => {
+		newShowStyleVariant.name =
+			newShowStyleVariant.name.substring(0, newShowStyleVariant.name.length - 5) + 'Updated'
+		const showStyleVariant = await showStylesApi.addOrUpdateShowStyleVariant({
+			showStyleBaseId: showStyleBaseIds[0],
+			showStyleVariantId: testShowStyleVariantId,
+			showStyleVariant: newShowStyleVariant,
 		})
-	} else {
-		test.todo('Setup mocks for ShowStyleVariants')
-	}
+		expect(showStyleVariant.status).toBe(200)
+	})
+
+	test('can remove a ShowStyleVariant', async () => {
+		const showStyle = await showStylesApi.deleteShowStyleVariant({
+			showStyleBaseId: showStyleBaseIds[0],
+			showStyleVariantId: testShowStyleVariantId,
+		})
+		expect(showStyle.status).toBe(200)
+	})
+
+	test('can remove a ShowStyleBase', async () => {
+		const showStyle = await showStylesApi.deleteShowStyleBase({
+			showStyleBaseId: testShowStyleBaseId,
+		})
+		expect(showStyle.status).toBe(200)
+	})
 })

@@ -77,7 +77,7 @@ function restAPIUserEvent(
 		unknown
 	>
 ): string {
-	return `rest_api_${ctx.method}_${ctx.URL.toString()}`
+	return `rest_api_${ctx.method}_${ctx.URL.origin}/api2${ctx.URL.pathname}}`
 }
 
 class ServerRestAPI implements RestAPI {
@@ -764,10 +764,10 @@ class ServerRestAPI implements RestAPI {
 		const variant = showStyleVariantFrom(showStyleVariant)
 		if (!variant) throw new Meteor.Error(400, `Invalid ShowStyleVariant`)
 
-		const showStyleId = variant._id
+		const variantId = variant._id
 		ShowStyleVariants.insert(variant)
 
-		return ClientAPI.responseSuccess(unprotectString(showStyleId), 200)
+		return ClientAPI.responseSuccess(unprotectString(variantId), 200)
 	}
 
 	async getShowStyleVariant(
@@ -1253,10 +1253,69 @@ sofieAPIRequest<{ deviceId: string }, { action: PeripheralDeviceActionType }, vo
 	}
 )
 
+sofieAPIRequest<never, never, string[]>(
+	'get',
+	'/studios',
+	new Map(),
+	async (serverAPI, connection, event, _params, _) => {
+		logger.info(`koa GET: Studios`)
+		return await serverAPI.getStudios(connection, event)
+	}
+)
+
+sofieAPIRequest<{ studioId: string }, APIStudio, string>(
+	'post',
+	'/studios',
+	new Map(),
+	async (serverAPI, connection, event, _params, body) => {
+		logger.info(`koa POST: Add studio ${body.name}`)
+		return await serverAPI.addStudio(connection, event, body)
+	}
+)
+
+sofieAPIRequest<{ studioId: string }, never, APIStudio>(
+	'get',
+	'/studios/:studioId',
+	new Map([[404, UserErrorMessage.StudioNotFound]]),
+	async (serverAPI, connection, event, params, _) => {
+		const studioId = protectString<StudioId>(params.studioId)
+		logger.info(`koa GET: studio ${studioId}`)
+
+		check(studioId, String)
+		return await serverAPI.getStudio(connection, event, studioId)
+	}
+)
+
+sofieAPIRequest<{ studioId: string }, APIStudio, void>(
+	'put',
+	'/studios/:studioId',
+	new Map([[404, UserErrorMessage.StudioNotFound]]),
+	async (serverAPI, connection, event, params, body) => {
+		const studioId = protectString<StudioId>(params.studioId)
+		logger.info(`koa PUT: Add or Update studio ${studioId} ${body.name}`)
+
+		check(studioId, String)
+		return await serverAPI.addOrUpdateStudio(connection, event, studioId, body)
+	}
+)
+
+sofieAPIRequest<{ studioId: string }, never, void>(
+	'delete',
+	'/studios/:studioId',
+	new Map([[404, UserErrorMessage.StudioNotFound]]),
+	async (serverAPI, connection, event, params, _) => {
+		const studioId = protectString<StudioId>(params.studioId)
+		logger.info(`koa DELETE: studio ${studioId}`)
+
+		check(studioId, String)
+		return await serverAPI.deleteStudio(connection, event, studioId)
+	}
+)
+
 sofieAPIRequest<{ studioId: string }, never, string[]>(
 	'get',
 	'/studios/:studioId/devices',
-	new Map(),
+	new Map([[404, UserErrorMessage.StudioNotFound]]),
 	async (serverAPI, connection, event, params, _) => {
 		const studioId = protectString<StudioId>(params.studioId)
 		logger.info(`koa GET: peripheral devices for studio ${studioId}`)
@@ -1269,7 +1328,7 @@ sofieAPIRequest<{ studioId: string }, never, string[]>(
 sofieAPIRequest<{ studioId: string }, { routeSetId: string; active: boolean }, void>(
 	'put',
 	'/studios/:studioId/switchRouteSet',
-	new Map(),
+	new Map([[404, UserErrorMessage.StudioNotFound]]),
 	async (serverAPI, connection, event, params, body) => {
 		const studioId = protectString<StudioId>(params.studioId)
 		const routeSetId = body.routeSetId
@@ -1280,6 +1339,32 @@ sofieAPIRequest<{ studioId: string }, { routeSetId: string; active: boolean }, v
 		check(routeSetId, String)
 		check(active, Boolean)
 		return await serverAPI.switchRouteSet(connection, event, studioId, routeSetId, active)
+	}
+)
+
+sofieAPIRequest<{ studioId: string }, { deviceId: string }, void>(
+	'put',
+	'/studios/:studioId/devices',
+	new Map([[404, UserErrorMessage.StudioNotFound]]),
+	async (serverAPI, connection, events, params, body) => {
+		const studioId = protectString<StudioId>(params.studioId)
+		const deviceId = protectString<PeripheralDeviceId>(body.deviceId)
+		logger.info(`koa PUT: Attach device ${deviceId} to studio ${studioId}`)
+
+		return await serverAPI.attachDeviceToStudio(connection, events, studioId, deviceId)
+	}
+)
+
+sofieAPIRequest<{ studioId: string; deviceId: string }, never, void>(
+	'delete',
+	'/studios/:studioId/devices/:deviceId',
+	new Map([[404, UserErrorMessage.StudioNotFound]]),
+	async (serverAPI, connection, events, params, _) => {
+		const studioId = protectString<StudioId>(params.studioId)
+		const deviceId = protectString<PeripheralDeviceId>(params.deviceId)
+		logger.info(`koa DELETE: Detach device ${deviceId} from studio ${studioId}`)
+
+		return await serverAPI.detachDeviceFromStudio(connection, events, studioId, deviceId)
 	}
 )
 
@@ -1329,32 +1414,6 @@ sofieAPIRequest<never, never, void>(
 	}
 )
 
-sofieAPIRequest<{ studioId: string }, { deviceId: string }, void>(
-	'put',
-	'/studios/:studioId/devices',
-	new Map(),
-	async (serverAPI, connection, events, params, body) => {
-		const studioId = protectString<StudioId>(params.studioId)
-		const deviceId = protectString<PeripheralDeviceId>(body.deviceId)
-		logger.info(`koa PUT: Attach device ${deviceId} to studio ${studioId}`)
-
-		return await serverAPI.attachDeviceToStudio(connection, events, studioId, deviceId)
-	}
-)
-
-sofieAPIRequest<{ studioId: string; deviceId: string }, never, void>(
-	'delete',
-	'/studios/:studioId/devices/:deviceId',
-	new Map(),
-	async (serverAPI, connection, events, params, _) => {
-		const studioId = protectString<StudioId>(params.studioId)
-		const deviceId = protectString<PeripheralDeviceId>(params.deviceId)
-		logger.info(`koa DELETE: Detach device ${deviceId} from studio ${studioId}`)
-
-		return await serverAPI.detachDeviceFromStudio(connection, events, studioId, deviceId)
-	}
-)
-
 sofieAPIRequest<never, never, string[]>(
 	'get',
 	'/showstyles',
@@ -1365,41 +1424,44 @@ sofieAPIRequest<never, never, string[]>(
 	}
 )
 
-sofieAPIRequest<never, { showStyleBase: APIShowStyleBase }, string>(
+sofieAPIRequest<never, APIShowStyleBase, string>(
 	'post',
 	'/showstyles',
-	new Map(),
+	new Map([[400, UserErrorMessage.BlueprintNotFound]]),
 	async (serverAPI, connection, event, _params, body) => {
-		return await serverAPI.addShowStyleBase(connection, event, body.showStyleBase)
+		return await serverAPI.addShowStyleBase(connection, event, body)
 	}
 )
 
 sofieAPIRequest<{ showStyleBaseId: ShowStyleBaseId }, never, APIShowStyleBase>(
 	'get',
 	'/showstyles/:showStyleBaseId',
-	new Map(),
+	new Map([[404, UserErrorMessage.BlueprintNotFound]]),
 	async (serverAPI, connection, event, params, _body) => {
 		logger.info(`koa GET: ShowStyleBase ${params.showStyleBaseId}`)
 		return await serverAPI.getShowStyleBase(connection, event, params.showStyleBaseId)
 	}
 )
 
-sofieAPIRequest<{ showStyleBaseId: string }, { showStyleBase: APIShowStyleBase }, void>(
+sofieAPIRequest<{ showStyleBaseId: string }, APIShowStyleBase, void>(
 	'put',
 	'/showstyles/:showStyleBaseId',
-	new Map(),
+	new Map([
+		[400, UserErrorMessage.BlueprintNotFound],
+		[412, UserErrorMessage.RundownAlreadyActive],
+	]),
 	async (serverAPI, connection, event, params, body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
 
 		check(showStyleBaseId, String)
-		return await serverAPI.addOrUpdateShowStyleBase(connection, event, showStyleBaseId, body.showStyleBase)
+		return await serverAPI.addOrUpdateShowStyleBase(connection, event, showStyleBaseId, body)
 	}
 )
 
 sofieAPIRequest<{ showStyleBaseId: string }, never, void>(
 	'delete',
 	'/showstyles/:showStyleBaseId',
-	new Map(),
+	new Map([[412, UserErrorMessage.RundownAlreadyActive]]),
 	async (serverAPI, connection, event, params, _body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
 
@@ -1411,7 +1473,7 @@ sofieAPIRequest<{ showStyleBaseId: string }, never, void>(
 sofieAPIRequest<{ showStyleBaseId: string }, never, string[]>(
 	'get',
 	'/showstyles/:showStyleBaseId/variants',
-	new Map(),
+	new Map([[404, UserErrorMessage.BlueprintNotFound]]),
 	async (serverAPI, connection, event, params, _body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
 		logger.info(`koa GET: ShowStyleVariants ${showStyleBaseId}`)
@@ -1421,22 +1483,22 @@ sofieAPIRequest<{ showStyleBaseId: string }, never, string[]>(
 	}
 )
 
-sofieAPIRequest<{ showStyleBaseId: string }, { showStyleVariant: APIShowStyleVariant }, string>(
+sofieAPIRequest<{ showStyleBaseId: string }, APIShowStyleVariant, string>(
 	'post',
 	'/showstyles/:showStyleBaseId/variants',
-	new Map(),
+	new Map([[404, UserErrorMessage.BlueprintNotFound]]),
 	async (serverAPI, connection, event, params, body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
 
 		check(showStyleBaseId, String)
-		return await serverAPI.addShowStyleVariant(connection, event, showStyleBaseId, body.showStyleVariant)
+		return await serverAPI.addShowStyleVariant(connection, event, showStyleBaseId, body)
 	}
 )
 
 sofieAPIRequest<{ showStyleBaseId: string; showStyleVariantId: string }, never, APIShowStyleVariant>(
 	'get',
 	'/showstyles/:showStyleBaseId/variants/:showStyleVariantId',
-	new Map(),
+	new Map([[404, UserErrorMessage.BlueprintNotFound]]),
 	async (serverAPI, connection, event, params, _body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
 		const showStyleVariantId = protectString<ShowStyleVariantId>(params.showStyleVariantId)
@@ -1448,34 +1510,31 @@ sofieAPIRequest<{ showStyleBaseId: string; showStyleVariantId: string }, never, 
 	}
 )
 
-sofieAPIRequest<
-	{ showStyleBaseId: string; showStyleVariantId: string },
-	{ showStyleVariant: APIShowStyleVariant },
-	void
->(
+sofieAPIRequest<{ showStyleBaseId: string; showStyleVariantId: string }, APIShowStyleVariant, void>(
 	'put',
 	'/showstyles/:showStyleBaseId/variants/:showStyleVariantId',
-	new Map(),
+	new Map([
+		[400, UserErrorMessage.BlueprintNotFound],
+		[404, UserErrorMessage.BlueprintNotFound],
+		[412, UserErrorMessage.RundownAlreadyActive],
+	]),
 	async (serverAPI, connection, event, params, body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
 		const showStyleVariantId = protectString<ShowStyleVariantId>(params.showStyleVariantId)
 
 		check(showStyleBaseId, String)
 		check(showStyleVariantId, String)
-		return await serverAPI.addOrUpdateShowStyleVariant(
-			connection,
-			event,
-			showStyleBaseId,
-			showStyleVariantId,
-			body.showStyleVariant
-		)
+		return await serverAPI.addOrUpdateShowStyleVariant(connection, event, showStyleBaseId, showStyleVariantId, body)
 	}
 )
 
 sofieAPIRequest<{ showStyleBaseId: string; showStyleVariantId: string }, never, void>(
 	'delete',
 	'/showstyles/:showStyleBaseId/variants/:showStyleVariantId',
-	new Map(),
+	new Map([
+		[404, UserErrorMessage.BlueprintNotFound],
+		[412, UserErrorMessage.RundownAlreadyActive],
+	]),
 	async (serverAPI, connection, event, params, _body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
 		const showStyleVariantId = protectString<ShowStyleVariantId>(params.showStyleVariantId)
@@ -1511,6 +1570,14 @@ Meteor.startup(() => {
 	if (!Meteor.isAppTest) {
 		WebApp.connectHandlers.use('/api2', Meteor.bindEnvironment(app.callback()))
 	}
+	app.use(async (ctx, next) => {
+		// Strange - sometimes a JSON body gets parsed by Koa before here (eg for a POST call?).
+		if (typeof ctx.req.body === 'object') {
+			ctx.disableBodyParser = true
+			ctx.request.body = { ...ctx.req.body }
+		}
+		await next()
+	})
 	app.use(cors())
 	app.use(bodyParser()).use(koaRouter.routes()).use(koaRouter.allowedMethods())
 })

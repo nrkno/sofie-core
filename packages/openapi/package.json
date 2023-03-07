@@ -10,7 +10,7 @@
 	},
 	"scripts": {
 		"prepare": "yarn build",
-		"build": "rimraf dist && yarn genclient:ts && yarn build:main",
+		"build": "rimraf dist",
 		"build:main": "tsc -p tsconfig.build.json",
 		"cov": "yarn unit && open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
