@@ -22,6 +22,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
 import { getCoreSystem } from '../../coreSystem/collection'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 require('../../api/peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../api') // include in order to create the Meteor methods needed
@@ -231,7 +232,7 @@ describe('Migrations', () => {
 				},
 			},
 
-			studioConfigManifest: [],
+			studioConfigSchema: JSONBlobStringify({}),
 			studioMigrations: [
 				{
 					version: '0.2.0',
@@ -304,7 +305,7 @@ describe('Migrations', () => {
 				},
 			},
 
-			showStyleConfigManifest: [],
+			showStyleConfigSchema: JSONBlobStringify({}),
 			showStyleMigrations: [
 				{
 					version: '0.2.0',

@@ -93,11 +93,11 @@ async function checkStudioBlueprintConfigs(updateSystemStatusIds: Set<string>) {
 			{
 				fields: {
 					_id: 1,
-					studioConfigManifest: 1,
+					studioConfigSchema: 1,
 				},
 			}
-		)) as Pick<Blueprint, '_id' | 'studioConfigManifest'>
-		if (!blueprint || !blueprint.studioConfigManifest) return
+		)) as Pick<Blueprint, '_id' | 'studioConfigSchema'>
+		if (!blueprint || !blueprint.studioConfigSchema) return
 
 		const blueprintConfig = applyAndValidateOverrides(studio.blueprintConfigWithOverrides).obj
 		const diff = findMissingConfigs(blueprint.studioConfigManifest, blueprintConfig)
@@ -131,11 +131,11 @@ async function checkShowStyleBlueprintConfigs(updateSystemStatusIds: Set<string>
 			{
 				fields: {
 					_id: 1,
-					showStyleConfigManifest: 1,
+					showStyleConfigSchema: 1,
 				},
 			}
-		)) as Pick<Blueprint, '_id' | 'showStyleConfigManifest'>
-		if (!blueprint || !blueprint.showStyleConfigManifest) return
+		)) as Pick<Blueprint, '_id' | 'showStyleConfigSchema'>
+		if (!blueprint || !blueprint.showStyleConfigSchema) return
 
 		const variants = (await ShowStyleVariants.findFetchAsync(
 			{ showStyleBaseId: showStyleBase._id },

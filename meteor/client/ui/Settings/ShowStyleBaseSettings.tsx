@@ -6,12 +6,7 @@ import { OutputLayers, ShowStyleBase, SourceLayers } from '../../../lib/collecti
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import RundownLayoutEditor from './RundownLayoutEditor'
 import { Studio, MappingsExt } from '../../../lib/collections/Studios'
-import {
-	BlueprintManifestType,
-	ConfigManifestEntry,
-	IShowStyleConfigPreset,
-	ISourceLayer,
-} from '@sofie-automation/blueprints-integration'
+import { BlueprintManifestType, IShowStyleConfigPreset, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { BlueprintConfigManifestSettings, SourceLayerDropdownOption } from './BlueprintConfigManifest'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
@@ -30,6 +25,8 @@ import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
+import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 
 interface IProps {
 	match: {
@@ -50,7 +47,7 @@ interface ITrackedProps {
 	showStyleBase?: ShowStyleBase
 	showStyleVariants: Array<ShowStyleVariant>
 	compatibleStudios: Array<Studio>
-	blueprintConfigManifest: ConfigManifestEntry[]
+	blueprintConfigSchema: JSONSchema | undefined
 	blueprintConfigPreset: IShowStyleConfigPreset | undefined
 	sourceLayersLight: Array<SourceLayerDropdownOption> | undefined
 	sourceLayers: SourceLayers
@@ -97,7 +94,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			  ).fetch()
 			: [],
 		compatibleStudios: compatibleStudios,
-		blueprintConfigManifest: blueprint ? blueprint.showStyleConfigManifest || [] : [],
+		blueprintConfigSchema: blueprint?.showStyleConfigSchema
+			? JSONBlobParse(blueprint.showStyleConfigSchema)
+			: undefined,
 		blueprintConfigPreset:
 			blueprint && blueprint.showStyleConfigPresets && showStyleBase?.blueprintConfigPresetId
 				? blueprint.showStyleConfigPresets[showStyleBase.blueprintConfigPresetId]
@@ -209,7 +208,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									<Route path={`${this.props.match.path}/blueprint-config`}>
 										<BlueprintConfigManifestSettings
 											configManifestId={unprotectString(showStyleBase._id)}
-											manifest={this.props.blueprintConfigManifest}
+											schema={this.props.blueprintConfigSchema}
 											layerMappings={this.props.layerMappings}
 											sourceLayers={this.props.sourceLayersLight}
 											configObject={showStyleBase.blueprintConfigWithOverrides}
@@ -220,7 +219,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									<Route path={`${this.props.match.path}/variants`}>
 										<ShowStyleVariantsSettings
 											showStyleVariants={this.props.showStyleVariants}
-											blueprintConfigManifest={this.props.blueprintConfigManifest}
+											schema={this.props.blueprintConfigSchema}
 											blueprintConfigPreset={this.props.blueprintConfigPreset}
 											showStyleBase={showStyleBase}
 											layerMappings={this.props.layerMappings}

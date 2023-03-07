@@ -155,9 +155,9 @@ export namespace ClientRundownAPI {
 			? ((await Blueprints.findOneAsync(studio.blueprintId, {
 					fields: {
 						_id: 1,
-						studioConfigManifest: 1,
+						studioConfigSchema: 1,
 					},
-			  })) as Pick<Blueprint, '_id' | 'studioConfigManifest'>)
+			  })) as Pick<Blueprint, '_id' | 'studioConfigSchema'>)
 			: null
 		if (!studioBlueprint) throw new Meteor.Error(404, `Studio blueprint "${studio.blueprintId}" not found!`)
 
@@ -192,10 +192,10 @@ export namespace ClientRundownAPI {
 			{
 				fields: {
 					_id: 1,
-					showStyleConfigManifest: 1,
+					showStyleConfigSchema: 1,
 				},
 			}
-		)) as Array<Pick<Blueprint, '_id' | 'showStyleConfigManifest'>>
+		)) as Array<Pick<Blueprint, '_id' | 'showStyleConfigSchema'>>
 
 		const showStyleBasesMap = normalizeArrayToMap(showStyleBases, '_id')
 		const showStyleVariantsMap = normalizeArrayToMap(showStyleVariants, '_id')

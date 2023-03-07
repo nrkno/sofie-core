@@ -10,6 +10,7 @@ import { MeteorCall, MethodContext } from '../../../../lib/api/methods'
 import '../../../../__mocks__/_extendJest'
 import { Blueprints, CoreSystem } from '../../../collections'
 import { SupressLogMessages } from '../../../../__mocks__/suppressLogging'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 // we don't want the deviceTriggers observer to start up at this time
 jest.mock('../../deviceTriggers/observer')
@@ -56,8 +57,8 @@ describe('Test blueprint management api', () => {
 				blueprintType: BlueprintManifestType.SYSTEM,
 				blueprintHash: getRandomId(),
 
-				studioConfigManifest: [],
-				showStyleConfigManifest: [],
+				studioConfigSchema: JSONBlobStringify({}),
+				showStyleConfigSchema: JSONBlobStringify({}),
 
 				databaseVersion: {
 					showStyle: {},
@@ -295,8 +296,8 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						showStyleConfigManifest: ['show1'],
-						studioConfigManifest: ['studio1'],
+						showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
+						studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
 					}
 				}
 			)
@@ -313,8 +314,8 @@ describe('Test blueprint management api', () => {
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
 					TSRVersion: '0.3.0',
-					showStyleConfigManifest: ['show1'] as any,
-					studioConfigManifest: [],
+					showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
+					studioConfigSchema: undefined,
 					hasCode: !!blueprintStr,
 					code: blueprintStr,
 				})
@@ -332,8 +333,8 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						showStyleConfigManifest: ['show1'],
-						studioConfigManifest: ['studio1'],
+						showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
+						studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
 					}
 				}
 			)
@@ -355,8 +356,8 @@ describe('Test blueprint management api', () => {
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
 					TSRVersion: '0.3.0',
-					showStyleConfigManifest: [],
-					studioConfigManifest: ['studio1'] as any,
+					showStyleConfigSchema: undefined,
+					studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
 					hasCode: !!blueprintStr,
 					code: blueprintStr,
 				})
@@ -375,8 +376,8 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						showStyleConfigManifest: ['show1'],
-						studioConfigManifest: ['studio1'],
+						showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
+						studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
 					}
 				}
 			)
@@ -398,8 +399,8 @@ describe('Test blueprint management api', () => {
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
 					TSRVersion: '0.3.0',
-					showStyleConfigManifest: [],
-					studioConfigManifest: [],
+					showStyleConfigSchema: undefined,
+					studioConfigSchema: undefined,
 					hasCode: !!blueprintStr,
 					code: blueprintStr,
 				})
@@ -417,8 +418,8 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						showStyleConfigManifest: ['show1'],
-						studioConfigManifest: ['studio1'],
+						showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
+						studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
 					}
 				}
 			)
@@ -439,8 +440,8 @@ describe('Test blueprint management api', () => {
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
 					TSRVersion: '0.3.0',
-					showStyleConfigManifest: [],
-					studioConfigManifest: ['studio1'] as any,
+					showStyleConfigSchema: undefined,
+					studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
 					hasCode: !!blueprintStr,
 					code: blueprintStr,
 				})
@@ -459,8 +460,8 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						showStyleConfigManifest: ['show1'],
-						studioConfigManifest: ['studio1'],
+						showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
+						studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
 					}
 				}
 			)
@@ -484,8 +485,8 @@ describe('Test blueprint management api', () => {
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
 					TSRVersion: '0.3.0',
-					showStyleConfigManifest: ['show1'] as any,
-					studioConfigManifest: [],
+					showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
+					studioConfigSchema: undefined,
 					hasCode: !!blueprintStr,
 					code: blueprintStr,
 				})
@@ -504,8 +505,8 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						showStyleConfigManifest: ['show1'],
-						studioConfigManifest: ['studio1'],
+						showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
+						studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
 					}
 				}
 			)
@@ -534,8 +535,8 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						showStyleConfigManifest: ['show1'],
-						studioConfigManifest: ['studio1'],
+						showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
+						studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
 					}
 				}
 			)

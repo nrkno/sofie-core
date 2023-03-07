@@ -20,6 +20,7 @@ import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib
 import * as blueprintCache from '../../../api/blueprints/cache'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleBases, TriggeredActions } from '../../../collections'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 describe('ShowStyleBase upgrades', () => {
 	afterEach(() => {
@@ -48,7 +49,7 @@ describe('ShowStyleBase upgrades', () => {
 					},
 				},
 
-				showStyleConfigManifest: [],
+				showStyleConfigSchema: JSONBlobStringify({}),
 				showStyleMigrations: [],
 				getShowStyleVariantId: (): string | null => {
 					return null

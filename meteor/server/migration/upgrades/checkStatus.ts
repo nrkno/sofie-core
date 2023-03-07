@@ -2,7 +2,6 @@ import {
 	BlueprintManifestType,
 	IStudioConfigPreset,
 	IShowStyleConfigPreset,
-	ConfigManifestEntry,
 	ITranslatableMessage,
 } from '@sofie-automation/blueprints-integration'
 import { Blueprint, BlueprintHash } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
@@ -19,6 +18,8 @@ import { Blueprints, ShowStyleBases, Studios } from '../../collections'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Studio } from '../../../lib/collections/Studios'
 import { generateTranslation } from '../../../lib/lib'
+import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 
 export async function getUpgradeStatus(): Promise<GetUpgradeStatusResult> {
 	const studioUpgrades = await checkStudiosUpgradeStatus()
@@ -56,7 +57,7 @@ async function checkStudiosUpgradeStatus(): Promise<GetUpgradeStatusResultStudio
 			fields: {
 				_id: 1,
 				studioConfigPresets: 1,
-				studioConfigManifest: 1,
+				studioConfigSchema: 1,
 				blueprintHash: 1,
 			},
 		}
@@ -68,7 +69,7 @@ async function checkStudiosUpgradeStatus(): Promise<GetUpgradeStatusResultStudio
 			literal<BlueprintMapEntry>({
 				_id: doc._id,
 				configPresets: doc.studioConfigPresets,
-				configManifest: doc.studioConfigManifest,
+				configSchema: doc.studioConfigSchema,
 				blueprintHash: doc.blueprintHash,
 			})
 		),
@@ -111,7 +112,7 @@ async function checkShowStyleBaseUpgradeStatus(): Promise<GetUpgradeStatusResult
 			fields: {
 				_id: 1,
 				showStyleConfigPresets: 1,
-				showStyleConfigManifest: 1,
+				showStyleConfigSchema: 1,
 				blueprintHash: 1,
 			},
 		}
@@ -123,7 +124,7 @@ async function checkShowStyleBaseUpgradeStatus(): Promise<GetUpgradeStatusResult
 			literal<BlueprintMapEntry>({
 				_id: doc._id,
 				configPresets: doc.showStyleConfigPresets,
-				configManifest: doc.showStyleConfigManifest,
+				configSchema: doc.showStyleConfigSchema,
 				blueprintHash: doc.blueprintHash,
 			})
 		),
@@ -150,17 +151,17 @@ type ShowStyleBaseForUpgradeCheck = Pick<
 >
 type StudioBlueprintForUpgradeCheck = Pick<
 	Blueprint,
-	'_id' | 'studioConfigPresets' | 'studioConfigManifest' | 'blueprintHash'
+	'_id' | 'studioConfigPresets' | 'studioConfigSchema' | 'blueprintHash'
 >
 type ShowStyleBlueprintForUpgradeCheck = Pick<
 	Blueprint,
-	'_id' | 'showStyleConfigPresets' | 'showStyleConfigManifest' | 'blueprintHash'
+	'_id' | 'showStyleConfigPresets' | 'showStyleConfigSchema' | 'blueprintHash'
 >
 
 interface BlueprintMapEntry {
 	_id: BlueprintId
 	configPresets: Record<string, IStudioConfigPreset> | Record<string, IShowStyleConfigPreset> | undefined
-	configManifest: ConfigManifestEntry[] | undefined
+	configSchema: JSONBlob<JSONSchema> | undefined
 	blueprintHash: BlueprintHash | undefined
 }
 

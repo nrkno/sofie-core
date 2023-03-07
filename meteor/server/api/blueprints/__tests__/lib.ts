@@ -1,6 +1,7 @@
 import { BlueprintManifestType, SomeBlueprintManifest } from '@sofie-automation/blueprints-integration'
 import { getRandomId, literal, protectString } from '../../../../lib/lib'
 import { Blueprint } from '../../../../lib/collections/Blueprints'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 export function generateFakeBlueprint(
 	id: string,
@@ -38,8 +39,8 @@ export function generateFakeBlueprint(
 		blueprintType: type,
 		blueprintHash: getRandomId(),
 
-		studioConfigManifest: [],
-		showStyleConfigManifest: [],
+		studioConfigSchema: JSONBlobStringify({}),
+		showStyleConfigSchema: JSONBlobStringify({}),
 
 		databaseVersion: {
 			showStyle: {},
