@@ -5,7 +5,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { literal } from '@sofie-automation/corelib/dist/lib'
+import { assertNever, literal } from '@sofie-automation/corelib/dist/lib'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	OnGenerateTimelineObjExt,
@@ -88,6 +88,24 @@ export function findLookaheadObjectsForPart(
 
 	const allObjs: Array<LookaheadTimelineObject> = []
 	for (const rawPiece of partInfo.pieces) {
+		switch (rawPiece.piece.pieceType) {
+			case IBlueprintPieceType.InTransition:
+				// Ignore if the part will not use the transition
+				if (!partInfo.usesInTransition) {
+					continue
+				}
+				break
+			case IBlueprintPieceType.OutTransition:
+				// Always ignore for now
+				continue
+			case IBlueprintPieceType.Normal:
+				// Always allow
+				break
+			default:
+				assertNever(rawPiece.piece.pieceType)
+				break
+		}
+
 		const obj = getObjectMapForPiece(rawPiece).get(layer)
 		if (obj) {
 			allObjs.push(
