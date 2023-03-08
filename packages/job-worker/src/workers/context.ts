@@ -266,7 +266,9 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		if (!blueprint)
 			throw new Error(`Blueprint "${showStyle.blueprintId}" must be loaded before its config can be retrieved`)
 
-		const config = deepFreeze(clone(preprocessShowStyleConfig(showStyle, blueprint.blueprint)))
+		const config = deepFreeze(
+			clone(preprocessShowStyleConfig(showStyle, blueprint.blueprint, this.studio.settings))
+		)
 		this.cacheData.showStyleBlueprintConfig.set(showStyle.showStyleVariantId, config)
 
 		// Return the raw object, as it was frozen before being cached
