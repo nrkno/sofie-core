@@ -28,7 +28,7 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 	const result = blueprint.blueprint.applyConfig(
 		blueprintContext,
 		clone(rawBlueprintConfig),
-		compileCoreConfigValues()
+		compileCoreConfigValues(context.studio.settings)
 	)
 
 	await context.directCollections.Studios.update(context.studioId, {
