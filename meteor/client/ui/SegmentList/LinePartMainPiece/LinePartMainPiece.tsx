@@ -1,5 +1,5 @@
 import _ from 'underscore'
-import { EvsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { EvsContent, NoraContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import React, { useMemo, useState, useRef } from 'react'
 import { PieceExtended } from '../../../../lib/Rundown'
 import { MediaObject } from '../../../../lib/collections/MediaObjects'
@@ -16,6 +16,7 @@ import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel
 import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
 import { UIStudio } from '../../../../lib/api/studios'
+import classNames from 'classnames'
 
 interface IProps {
 	partId: PartId
@@ -250,6 +251,12 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 	const status = piece.instance.piece.status
 	const noticeLevel = status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null
 
+	const noraContent = piece.instance.piece.content as NoraContent | undefined
+
+	const hasStepChevron =
+		(piece.sourceLayer?.type === SourceLayerType.GRAPHICS || piece.sourceLayer?.type === SourceLayerType.LOWER_THIRD) &&
+		noraContent?.payload?.step?.enabled
+
 	return (
 		<PieceElement
 			className="segment-opl__main-piece"
@@ -266,8 +273,19 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 				<div className="segment-opl__main-piece__bkg">{getSplitItems(piece, 'segment-opl__main-piece__item')}</div>
 			)}
 			{anomalies}
-			<div className="segment-opl__main-piece__label">
+			<div
+				className={classNames('segment-opl__main-piece__label', {
+					mln: hasStepChevron,
+				})}
+			>
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
+				{hasStepChevron && (
+					<span className="segment-opl__main-piece__label__step-chevron">
+						{noraContent?.payload?.step?.to === 'next'
+							? (noraContent.payload.step?.from || 0) + 1
+							: noraContent.payload.step?.to || 1}
+					</span>
+				)}
 				{piece.sourceLayer?.type === SourceLayerType.LOCAL && (piece.instance.piece.content as EvsContent).color && (
 					<ColoredMark color={(piece.instance.piece.content as EvsContent).color} />
 				)}
