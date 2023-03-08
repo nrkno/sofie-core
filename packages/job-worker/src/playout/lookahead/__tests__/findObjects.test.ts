@@ -34,7 +34,7 @@ describe('findLookaheadObjectsForPart', () => {
 		const currentPartInstanceId: PartInstanceId | null = null
 		const rundownId: RundownId = protectString('rundown0')
 		const layerName = 'layer0'
-		const partInfo = { part: definePart(rundownId), pieces: [] }
+		const partInfo = { part: definePart(rundownId), usesInTransition: true, pieces: [] }
 		const objects = findLookaheadObjectsForPart(
 			context,
 			currentPartInstanceId,
@@ -75,6 +75,7 @@ describe('findLookaheadObjectsForPart', () => {
 
 		const partInfo = {
 			part: definePart(rundownId),
+			usesInTransition: true,
 			pieces: literal<PieceInstance[]>([
 				{
 					...defaultPieceInstanceProps,
@@ -112,6 +113,7 @@ describe('findLookaheadObjectsForPart', () => {
 
 		const partInfo = {
 			part: definePart(rundownId),
+			usesInTransition: true,
 			pieces: literal<PieceInstance[]>([
 				{
 					...defaultPieceInstanceProps,
@@ -195,6 +197,7 @@ describe('findLookaheadObjectsForPart', () => {
 
 		const partInfo = {
 			part: definePart(rundownId),
+			usesInTransition: true,
 			pieces: literal<PieceInstance[]>([
 				{
 					...defaultPieceInstanceProps,
@@ -330,6 +333,7 @@ describe('findLookaheadObjectsForPart', () => {
 
 		const partInfo = {
 			part: definePart(rundownId),
+			usesInTransition: true,
 			pieces: literal<PieceInstance[]>([
 				{
 					...defaultPieceInstanceProps,
@@ -468,6 +472,7 @@ describe('findLookaheadObjectsForPart', () => {
 
 		const partInfo = {
 			part: definePart(rundownId),
+			usesInTransition: true,
 			pieces: literal<PieceInstance[]>([
 				{
 					...defaultPieceInstanceProps,
@@ -660,6 +665,7 @@ describe('findLookaheadObjectsForPart', () => {
 
 		const partInfo = {
 			part: definePart(rundownId),
+			usesInTransition: true,
 			pieces: sortPieceInstancesByStart(
 				literal<PieceInstance[]>([
 					{
