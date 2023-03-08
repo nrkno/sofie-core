@@ -302,6 +302,7 @@ describe('findLookaheadObjectsForPart', () => {
 		])
 
 		// No previous should still allow it
+		partInfo.usesInTransition = false
 		const objects3 = findLookaheadObjectsForPart(
 			context,
 			currentPartInstanceId,
@@ -313,7 +314,7 @@ describe('findLookaheadObjectsForPart', () => {
 		expect(stripObjectProperties(objects3, true)).toStrictEqual(stripObjectProperties(objects1, true))
 
 		// Previous disables transition
-		const blockedPreviousPart: DBPart = { disableNextInTransition: true, classesForNext: undefined } as any
+		const blockedPreviousPart: DBPart = { classesForNext: undefined } as any
 		const objects4 = findLookaheadObjectsForPart(
 			context,
 			currentPartInstanceId,
@@ -634,6 +635,7 @@ describe('findLookaheadObjectsForPart', () => {
 		])
 
 		// No previous should still allow it
+		partInfo.usesInTransition = false
 		const objects3 = findLookaheadObjectsForPart(
 			context,
 			currentPartInstanceId,
@@ -645,7 +647,7 @@ describe('findLookaheadObjectsForPart', () => {
 		expect(stripObjectProperties(objects3, true)).toStrictEqual(stripObjectProperties(objects1, true))
 
 		// Previous disables transition
-		const blockedPreviousPart: DBPart = { disableNextInTransition: true, classesForNext: undefined } as any
+		const blockedPreviousPart: DBPart = { classesForNext: undefined } as any
 		const objects4 = findLookaheadObjectsForPart(
 			context,
 			currentPartInstanceId,
@@ -787,6 +789,7 @@ describe('findLookaheadObjectsForPart', () => {
 		])
 
 		// No previous part
+		partInfo.usesInTransition = false
 		const objects3 = findLookaheadObjectsForPart(
 			context,
 			currentPartInstanceId,
