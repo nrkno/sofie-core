@@ -21,6 +21,7 @@ import { AddItemModalRef, AddItemModal } from './AddItemModal'
 import { SourceLayerDropdownOption } from './resolveColumns'
 import { BlueprintConfigManifestRow, WrappedOverridableExt } from './ConfigItemRow'
 import { doModalDialog } from '../../../lib/ModalDialog'
+import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 
 export { SourceLayerDropdownOption }
 
@@ -28,7 +29,7 @@ interface IConfigManifestSettingsProps {
 	/** An 'id' of this config manifest, eg the studioId it is in refernce to */
 	configManifestId: string
 
-	manifest: ConfigManifestEntry[]
+	schema: JSONSchema | undefined
 
 	/** Object used as a fallback for obtaining options for ConfigManifestEntrySelectFromColumn */
 	alternateConfig: IBlueprintConfig | undefined
@@ -82,7 +83,7 @@ function getAllCurrentAndDeletedItemsFromOverrides(
 
 export function BlueprintConfigManifestSettings({
 	configManifestId,
-	manifest,
+	schema,
 	alternateConfig,
 	layerMappings,
 	sourceLayers,

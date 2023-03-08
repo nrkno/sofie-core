@@ -22,7 +22,7 @@ import {
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { useTranslation } from 'react-i18next'
-import { ConfigManifestEntry, IBlueprintConfig } from '@sofie-automation/blueprints-integration'
+import { IBlueprintConfig, JSONSchema } from '@sofie-automation/blueprints-integration'
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { iconDragHandle } from '../../RundownList/icons'
@@ -45,7 +45,7 @@ export const VariantListItem = ({
 	onDragCancel,
 	isEdited,
 
-	blueprintConfigManifest,
+	blueprintConfigSchema,
 	baseBlueprintConfigWithOverrides,
 	blueprintPresetConfigOptions,
 	layerMappings,
@@ -64,7 +64,7 @@ export const VariantListItem = ({
 	onDragEnd: (draggedId: ShowStyleVariantId) => void
 	onDragCancel: () => void
 	isEdited: boolean
-	blueprintConfigManifest: ConfigManifestEntry[]
+	blueprintConfigSchema: JSONSchema | undefined
 	baseBlueprintConfigWithOverrides: ObjectWithOverrides<IBlueprintConfig>
 	blueprintPresetConfigOptions: { name: string; value: string | null }[]
 	layerMappings?: { [studioId: string]: MappingsExt }
@@ -202,7 +202,7 @@ export const VariantListItem = ({
 								<div className="col c12 r1-c12 phs">
 									<BlueprintConfigManifestSettings
 										configManifestId={unprotectString(showStyleVariant._id)}
-										manifest={blueprintConfigManifest}
+										schema={blueprintConfigSchema}
 										alternateConfig={applyAndValidateOverrides(baseBlueprintConfigWithOverrides).obj}
 										layerMappings={layerMappings}
 										sourceLayers={sourceLayers}

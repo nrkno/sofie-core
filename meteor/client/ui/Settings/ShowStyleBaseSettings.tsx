@@ -219,7 +219,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									<Route path={`${this.props.match.path}/variants`}>
 										<ShowStyleVariantsSettings
 											showStyleVariants={this.props.showStyleVariants}
-											schema={this.props.blueprintConfigSchema}
+											blueprintConfigSchema={this.props.blueprintConfigSchema}
 											blueprintConfigPreset={this.props.blueprintConfigPreset}
 											showStyleBase={showStyleBase}
 											layerMappings={this.props.layerMappings}

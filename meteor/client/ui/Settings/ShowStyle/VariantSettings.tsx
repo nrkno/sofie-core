@@ -1,11 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { faTrash, faPlus, faDownload, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import {
-	BlueprintManifestType,
-	ConfigManifestEntry,
-	IShowStyleConfigPreset,
-} from '@sofie-automation/blueprints-integration'
+import { BlueprintManifestType, IShowStyleConfigPreset, JSONSchema } from '@sofie-automation/blueprints-integration'
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { useTranslation } from 'react-i18next'
@@ -27,7 +23,7 @@ import { Blueprints, ShowStyleVariants } from '../../../collections'
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
 	showStyleVariants: ShowStyleVariant[]
-	blueprintConfigManifest: ConfigManifestEntry[]
+	blueprintConfigSchema: JSONSchema | undefined
 	blueprintConfigPreset: IShowStyleConfigPreset | undefined // TODO - use this
 
 	layerMappings?: { [studioId: string]: MappingsExt }
@@ -37,7 +33,7 @@ interface IShowStyleVariantsProps {
 export const ShowStyleVariantsSettings = ({
 	showStyleBase,
 	showStyleVariants,
-	blueprintConfigManifest,
+	blueprintConfigSchema,
 	layerMappings,
 	sourceLayers,
 }: IShowStyleVariantsProps): JSX.Element => {
@@ -350,7 +346,7 @@ export const ShowStyleVariantsSettings = ({
 							onDragCancel={onDragCancel}
 							blueprintPresetConfigOptions={blueprintPresetConfigOptions}
 							baseBlueprintConfigWithOverrides={showStyleBase.blueprintConfigWithOverrides}
-							blueprintConfigManifest={blueprintConfigManifest}
+							blueprintConfigSchema={blueprintConfigSchema}
 							layerMappings={layerMappings}
 							sourceLayers={sourceLayers}
 							onCopy={onCopyShowStyleVariant}

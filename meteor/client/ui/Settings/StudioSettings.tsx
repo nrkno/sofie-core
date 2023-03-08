@@ -7,7 +7,7 @@ import { PeripheralDevice, PeripheralDeviceType } from '../../../lib/collections
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { BlueprintManifestType, ConfigManifestEntry } from '@sofie-automation/blueprints-integration'
+import { BlueprintManifestType, JSONSchema } from '@sofie-automation/blueprints-integration'
 import { BlueprintConfigManifestSettings } from './BlueprintConfigManifest'
 import { StudioRoutings } from './Studio/Routings'
 import { StudioDevices } from './Studio/Devices'
@@ -53,7 +53,7 @@ interface IStudioSettingsTrackedProps {
 		showStyleBase: ShowStyleBase
 	}>
 	availableDevices: Array<PeripheralDevice>
-	blueprintConfigManifest: ConfigManifestEntry[]
+	studioConfigSchema: JSONSchema | undefined
 	layerMappingsSchema: MappingsSettingsManifests | undefined
 	layerMappingsTranslationNamespaces: string[]
 }
@@ -155,7 +155,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 					},
 				}
 			).fetch(),
-			blueprintConfigManifest: blueprint ? blueprint.studioConfigManifest || [] : [],
+			studioConfigSchema: blueprint?.studioConfigSchema ? JSONBlobParse(blueprint.studioConfigSchema) : undefined,
 			layerMappingsTranslationNamespaces: translationNamespaces,
 			layerMappingsSchema: layerMappingsSchema,
 		}
@@ -207,7 +207,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									<Route path={`${this.props.match.path}/blueprint-config`}>
 										<BlueprintConfigManifestSettings
 											configManifestId={unprotectString(this.props.studio._id)}
-											manifest={this.props.blueprintConfigManifest}
+											schema={this.props.studioConfigSchema}
 											layerMappings={this.getLayerMappingsFlat()}
 											configObject={this.props.studio.blueprintConfigWithOverrides}
 											saveOverrides={this.saveBlueprintConfigOverrides}
