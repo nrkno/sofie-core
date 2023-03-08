@@ -46,6 +46,7 @@ export const VariantListItem = ({
 	isEdited,
 
 	blueprintConfigSchema,
+	blueprintTranslationNamespaces,
 	baseBlueprintConfigWithOverrides,
 	blueprintPresetConfigOptions,
 	layerMappings,
@@ -57,7 +58,6 @@ export const VariantListItem = ({
 	onFinishEdit,
 	onDelete,
 	onSaveOverrides,
-	onPushOverride,
 }: {
 	showStyleVariant: ShowStyleVariant
 	onDragVariant: (draggingId: ShowStyleVariantId, hoverId: ShowStyleVariantId) => void
@@ -65,6 +65,7 @@ export const VariantListItem = ({
 	onDragCancel: () => void
 	isEdited: boolean
 	blueprintConfigSchema: JSONSchema | undefined
+	blueprintTranslationNamespaces: string[]
 	baseBlueprintConfigWithOverrides: ObjectWithOverrides<IBlueprintConfig>
 	blueprintPresetConfigOptions: { name: string; value: string | null }[]
 	layerMappings?: { [studioId: string]: MappingsExt }
@@ -76,7 +77,6 @@ export const VariantListItem = ({
 	onFinishEdit: (showStyleVariantId: ShowStyleVariantId) => void
 	onDelete: (showStyleVariant: ShowStyleVariant) => void
 	onSaveOverrides: (showStyleVariantId: ShowStyleVariantId, newOps: SomeObjectOverrideOp[]) => void
-	onPushOverride: (showStyleVariantId: ShowStyleVariantId, newOp: SomeObjectOverrideOp) => void
 }): JSX.Element => {
 	const ref = useRef<HTMLTableRowElement>(null)
 	const [{ handlerId }, drop] = useDrop<DraggableVariant, DraggableDropResult, { handlerId: Identifier | null }>({
@@ -201,15 +201,14 @@ export const VariantListItem = ({
 							<div className="row">
 								<div className="col c12 r1-c12 phs">
 									<BlueprintConfigManifestSettings
-										configManifestId={unprotectString(showStyleVariant._id)}
 										schema={blueprintConfigSchema}
+										translationNamespaces={blueprintTranslationNamespaces}
 										alternateConfig={applyAndValidateOverrides(baseBlueprintConfigWithOverrides).obj}
 										layerMappings={layerMappings}
 										sourceLayers={sourceLayers}
 										subPanel={true}
 										configObject={showStyleVariant.blueprintConfigWithOverrides}
 										saveOverrides={(newOps) => onSaveOverrides(showStyleVariant._id, newOps)}
-										pushOverride={(newOp) => onPushOverride(showStyleVariant._id, newOp)}
 									/>
 								</div>
 							</div>

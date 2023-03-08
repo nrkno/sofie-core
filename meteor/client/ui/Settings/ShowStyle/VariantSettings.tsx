@@ -24,6 +24,7 @@ interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
 	showStyleVariants: ShowStyleVariant[]
 	blueprintConfigSchema: JSONSchema | undefined
+	blueprintTranslationNamespaces: string[]
 	blueprintConfigPreset: IShowStyleConfigPreset | undefined // TODO - use this
 
 	layerMappings?: { [studioId: string]: MappingsExt }
@@ -34,6 +35,7 @@ export const ShowStyleVariantsSettings = ({
 	showStyleBase,
 	showStyleVariants,
 	blueprintConfigSchema,
+	blueprintTranslationNamespaces,
 	layerMappings,
 	sourceLayers,
 }: IShowStyleVariantsProps): JSX.Element => {
@@ -323,13 +325,6 @@ export const ShowStyleVariantsSettings = ({
 			},
 		})
 	}
-	const pushBlueprintConfigOverride = (variantId: ShowStyleVariantId, newOp: SomeObjectOverrideOp) => {
-		ShowStyleVariants.update(variantId, {
-			$push: {
-				'blueprintConfigWithOverrides.overrides': newOp,
-			},
-		})
-	}
 
 	return (
 		<div>
@@ -347,6 +342,7 @@ export const ShowStyleVariantsSettings = ({
 							blueprintPresetConfigOptions={blueprintPresetConfigOptions}
 							baseBlueprintConfigWithOverrides={showStyleBase.blueprintConfigWithOverrides}
 							blueprintConfigSchema={blueprintConfigSchema}
+							blueprintTranslationNamespaces={blueprintTranslationNamespaces}
 							layerMappings={layerMappings}
 							sourceLayers={sourceLayers}
 							onCopy={onCopyShowStyleVariant}
@@ -354,9 +350,8 @@ export const ShowStyleVariantsSettings = ({
 							onDownload={onDownloadShowStyleVariant}
 							onEdit={onEditItem}
 							onFinishEdit={onFinishEditItem}
-							onPushOverride={pushBlueprintConfigOverride}
 							onSaveOverrides={saveBlueprintConfigOverrides}
-						></VariantListItem>
+						/>
 					))}
 				</table>
 			</div>

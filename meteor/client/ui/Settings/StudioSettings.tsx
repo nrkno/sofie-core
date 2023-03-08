@@ -23,7 +23,6 @@ import {
 import { ReadonlyDeep } from 'type-fest'
 import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Blueprints, PeripheralDevices, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
-import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { translateStringIfHasNamespaces } from '../../lib/forms/schemaFormUtil'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
@@ -206,8 +205,8 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 									</Route>
 									<Route path={`${this.props.match.path}/blueprint-config`}>
 										<BlueprintConfigManifestSettings
-											configManifestId={unprotectString(this.props.studio._id)}
 											schema={this.props.studioConfigSchema}
+											translationNamespaces={['blueprint_' + this.props.studio.blueprintId]}
 											layerMappings={this.getLayerMappingsFlat()}
 											configObject={this.props.studio.blueprintConfigWithOverrides}
 											saveOverrides={this.saveBlueprintConfigOverrides}
