@@ -121,7 +121,7 @@ export async function retrieveBlueprintAsset(_context: Credentials, fileId: stri
 	const storePath = getSystemStorePath()
 
 	// TODO: add access control here
-	return fsp.readFile(path.join(storePath, fileId))
+	return fsp.readFile(path.join(storePath, 'assets', fileId))
 }
 /** Only to be called from internal functions */
 export async function internalUploadBlueprint(
