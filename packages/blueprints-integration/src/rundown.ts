@@ -460,7 +460,9 @@ export { ExpectedPlayoutItemContent }
 /** Special types of pieces. Some are not always used in all circumstances */
 export enum IBlueprintPieceType {
 	Normal = 'normal',
+	/** ***CAUTION!*** This Piece will only be used, if the Part containing it has the inTransition property set */
 	InTransition = 'in-transition',
+	/** ***CAUTION!*** This Piece will only be used, if the Part containing it has the outTransition property set */
 	OutTransition = 'out-transition',
 }
 
