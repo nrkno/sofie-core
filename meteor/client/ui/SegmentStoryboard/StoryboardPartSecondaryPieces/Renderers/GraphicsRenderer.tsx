@@ -1,13 +1,16 @@
 import { GraphicsContent, NoraContent } from '@sofie-automation/blueprints-integration'
 import React from 'react'
 import { L3rdFloatingInspector } from '../../../FloatingInspectors/L3rdFloatingInspector'
-import { usePieceMultistepChevron } from '../../utils/usePieceMultistepChevron'
+import { PieceMultistepChevron } from '../../utils/PieceMultistepChevron'
 import { IDefaultRendererProps } from './DefaultRenderer'
 
 export function GraphicsRenderer({ piece: pieceInstance, hovering, elementOffset, typeClass }: IDefaultRendererProps) {
 	const content = pieceInstance.instance.piece.content as NoraContent | GraphicsContent | undefined
 
-	const multistepChevron = usePieceMultistepChevron('segment-storyboard__piece__step-chevron', pieceInstance)
+	const multistepChevron = PieceMultistepChevron({
+		className: 'segment-storyboard__piece__step-chevron',
+		piece: pieceInstance,
+	})
 
 	return (
 		<>
