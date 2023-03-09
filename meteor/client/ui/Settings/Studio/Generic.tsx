@@ -5,11 +5,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { withTranslation } from 'react-i18next'
 import { EditAttribute } from '../../../lib/EditAttribute'
-import { SettingsNavigation } from '../../../lib/SettingsNavigation'
 import { StudioBaselineStatus } from './Baseline'
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { Studios } from '../../../collections'
+import { useHistory } from 'react-router-dom'
+import { MeteorCall } from '../../../../lib/api/methods'
+import { useCallback } from 'react'
 
 interface IStudioGenericPropertiesProps {
 	studio: Studio
@@ -38,11 +40,10 @@ export const StudioGenericProperties = withTranslation()(
 					)
 					if (showStyleBase) {
 						buttons.push(
-							<SettingsNavigation
+							<RedirectToShowStyleButton
 								key={'settings-nevigation-' + showStyleBase.showStyleBase.name}
-								attribute="name"
-								obj={showStyleBase.showStyleBase}
-								type="showstyle"
+								name={showStyleBase.showStyleBase.name}
+								id={showStyleBase.showStyleBase._id}
 							/>
 						)
 					}
@@ -92,7 +93,7 @@ export const StudioGenericProperties = withTranslation()(
 								collection={Studios}
 							/>
 							{this.renderShowStyleEditButtons()}
-							<SettingsNavigation type="newshowstyle" />
+							<NewShowStyleButton />
 						</div>
 					</div>
 					<label className="field">
@@ -249,3 +250,34 @@ export const StudioGenericProperties = withTranslation()(
 		}
 	}
 )
+
+function NewShowStyleButton() {
+	const history = useHistory()
+
+	const onShowStyleAdd = useCallback(() => {
+		MeteorCall.showstyles
+			.insertShowStyleBase()
+			.then((showStyleBaseId) => {
+				history.push('/settings/showStyleBase/' + showStyleBaseId)
+			})
+			.catch(console.error)
+	}, [])
+
+	return (
+		<button className="btn btn-primary btn-add-new" onClick={onShowStyleAdd}>
+			New Show Style
+		</button>
+	)
+}
+
+function RedirectToShowStyleButton(props: { id: ShowStyleBaseId; name: string }) {
+	const history = useHistory()
+
+	const doRedirect = useCallback(() => history.push('/settings/showStyleBase/' + props.id), [props.id])
+
+	return (
+		<button className="btn btn-primary btn-add-new" onClick={doRedirect}>
+			Edit {props.name}
+		</button>
+	)
+}

@@ -5,7 +5,7 @@ import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { withTranslation } from 'react-i18next'
 import { unprotectString } from '../../../../lib/lib'
 import { EditAttribute } from '../../../lib/EditAttribute'
-import { SettingsNavigation } from '../../../lib/SettingsNavigation'
+import { RedirectToBlueprintButton } from '../../../lib/SettingsNavigation'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { Link } from 'react-router-dom'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
@@ -101,11 +101,8 @@ export const ShowStyleGenericProperties = withTranslation()(
 									collection={ShowStyleBases}
 									className="mdinput"
 								></EditAttribute>
-								<SettingsNavigation
-									attribute="blueprintId"
-									obj={this.props.showStyleBase}
-									type="blueprint"
-								></SettingsNavigation>
+								<RedirectToBlueprintButton id={this.props.showStyleBase.blueprintId} />
+
 								<span className="mdfx"></span>
 							</div>
 						</label>
