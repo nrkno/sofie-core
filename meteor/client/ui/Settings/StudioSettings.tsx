@@ -1,14 +1,11 @@
-import * as React from 'react'
+import React from 'react'
 import { Studio, MappingsExt } from '../../../lib/collections/Studios'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
 import { PeripheralDevice, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
-
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { BlueprintManifestType, JSONSchema } from '@sofie-automation/blueprints-integration'
-import { BlueprintConfigManifestSettings } from './BlueprintConfigManifest'
 import { StudioRoutings } from './Studio/Routings'
 import { StudioDevices } from './Studio/Devices'
 import { MappingsSettingsManifest, MappingsSettingsManifests, StudioMappings } from './Studio/Mappings'
@@ -16,17 +13,14 @@ import { StudioPackageManagerSettings } from './Studio/PackageManager'
 import { StudioGenericProperties } from './Studio/Generic'
 import { Redirect, Route, Switch } from 'react-router-dom'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
-import {
-	applyAndValidateOverrides,
-	SomeObjectOverrideOp,
-} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyDeep } from 'type-fest'
 import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Blueprints, PeripheralDevices, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
+import { PeripheralDevices, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { translateStringIfHasNamespaces } from '../../lib/forms/schemaFormUtil'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
-import { t } from 'i18next'
+import { StudioBlueprintConfigurationSettings } from './StudioBlueprintConfigurationSettings'
 
 interface IStudioSettingsProps {
 	match: {
@@ -53,7 +47,6 @@ interface IStudioSettingsTrackedProps {
 		showStyleBase: ShowStyleBase
 	}>
 	availableDevices: Array<PeripheralDevice>
-	studioConfigSchema: JSONSchema | undefined
 	layerMappingsSchema: MappingsSettingsManifests | undefined
 	layerMappingsTranslationNamespaces: string[]
 }
@@ -61,12 +54,6 @@ interface IStudioSettingsTrackedProps {
 export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, IStudioSettingsTrackedProps>(
 	(props: IStudioSettingsProps) => {
 		const studio = Studios.findOne(props.match.params.studioId)
-		const blueprint = studio
-			? Blueprints.findOne({
-					_id: studio.blueprintId,
-					blueprintType: BlueprintManifestType.STUDIO,
-			  })
-			: undefined
 
 		// TODO - these should come from the device the mapping is targeting but for now this will catch 99% of expected use cases
 		const firstPlayoutDevice = PeripheralDevices.findOne(
@@ -155,7 +142,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 					},
 				}
 			).fetch(),
-			studioConfigSchema: blueprint?.studioConfigSchema ? JSONBlobParse(blueprint.studioConfigSchema) : undefined,
+
 			layerMappingsTranslationNamespaces: translationNamespaces,
 			layerMappingsSchema: layerMappingsSchema,
 		}
@@ -165,25 +152,6 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 		Translated<IStudioSettingsProps & IStudioSettingsTrackedProps>,
 		IStudioSettingsState
 	> {
-		getLayerMappingsFlat() {
-			// TODO - this is too reactive
-			const mappings = {}
-			if (this.props.studio) {
-				mappings[this.props.studio.name] = applyAndValidateOverrides(this.props.studio.mappingsWithOverrides).obj
-			}
-			return mappings
-		}
-
-		private saveBlueprintConfigOverrides = (newOps: SomeObjectOverrideOp[]) => {
-			if (this.props.studio) {
-				Studios.update(this.props.studio._id, {
-					$set: {
-						'blueprintConfigWithOverrides.overrides': newOps,
-					},
-				})
-			}
-		}
-
 		render(): JSX.Element {
 			return this.props.studio ? (
 				<div className="studio-edit mod mhl mvn">
@@ -205,15 +173,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/blueprint-config`}>
-										<h2 className="mhn">{t('Blueprint Configuration')}</h2>
-										<BlueprintConfigManifestSettings
-											schema={this.props.studioConfigSchema}
-											translationNamespaces={['blueprint_' + this.props.studio.blueprintId]}
-											layerMappings={this.getLayerMappingsFlat()}
-											configObject={this.props.studio.blueprintConfigWithOverrides}
-											saveOverrides={this.saveBlueprintConfigOverrides}
-											alternateConfig={undefined}
-										/>
+										<StudioBlueprintConfigurationSettings studio={this.props.studio} />
 									</Route>
 									<Route path={`${this.props.match.path}/mappings`}>
 										<StudioMappings

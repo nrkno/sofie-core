@@ -156,54 +156,49 @@ export const VariantListItem = ({
 				{isEdited && (
 					<tr className="expando-details hl">
 						<td colSpan={5}>
-							<div>
-								<div className="mod mvs mhs">
-									<label className="field">
-										{t('Name')}
-										<EditAttribute
-											modifiedClassName="bghl"
-											attribute={'name'}
-											obj={showStyleVariant}
-											type="text"
-											collection={ShowStyleVariants}
-											className="input text-input input-l"
-										></EditAttribute>
-									</label>
-								</div>
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Name')}
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute={'name'}
+										obj={showStyleVariant}
+										type="text"
+										collection={ShowStyleVariants}
+										className="input text-input input-l"
+									></EditAttribute>
+								</label>
 							</div>
 
 							<div className="row">
 								<div className="col c12 r1-c12 phs">
 									<h3 className="mhn">{t('Blueprint Configuration')}</h3>
 
-									<div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Config preset')}
-												{!showStyleVariant.blueprintConfigPresetId && (
-													<div className="error-notice inline">
-														{t('Config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
-													</div>
-												)}
-												{showStyleVariant.blueprintConfigPresetIdUnlinked &&
-													showStyleVariant.blueprintConfigPresetId && (
-														<div className="error-notice inline">
-															{t('Config preset is missing')} <FontAwesomeIcon icon={faExclamationTriangle} />
-														</div>
-													)}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute="blueprintConfigPresetId"
-													obj={showStyleVariant}
-													type="dropdown"
-													options={blueprintPresetConfigOptions}
-													mutateDisplayValue={(v) => v || ''}
-													mutateUpdateValue={(v) => (v === '' ? undefined : v)}
-													collection={ShowStyleVariants}
-													className="mdinput"
-												/>
-											</label>
-										</div>
+									<div className="mod mvs mhs">
+										<label className="field">
+											{t('Config preset')}
+											{!showStyleVariant.blueprintConfigPresetId && (
+												<div className="error-notice inline">
+													{t('Config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+												</div>
+											)}
+											{showStyleVariant.blueprintConfigPresetIdUnlinked && showStyleVariant.blueprintConfigPresetId && (
+												<div className="error-notice inline">
+													{t('Config preset is missing')} <FontAwesomeIcon icon={faExclamationTriangle} />
+												</div>
+											)}
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute="blueprintConfigPresetId"
+												obj={showStyleVariant}
+												type="dropdown"
+												options={blueprintPresetConfigOptions}
+												mutateDisplayValue={(v) => v || ''}
+												mutateUpdateValue={(v) => (v === '' ? undefined : v)}
+												collection={ShowStyleVariants}
+												className="mdinput"
+											/>
+										</label>
 									</div>
 
 									<BlueprintConfigManifestSettings

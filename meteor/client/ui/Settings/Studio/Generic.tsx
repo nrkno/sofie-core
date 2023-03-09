@@ -4,14 +4,12 @@ import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { withTranslation } from 'react-i18next'
-import { protectString, unprotectString } from '../../../../lib/lib'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { SettingsNavigation } from '../../../lib/SettingsNavigation'
-import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { StudioBaselineStatus } from './Baseline'
-import { BlueprintId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
-import { Blueprints, Studios } from '../../../collections'
+import { Studios } from '../../../collections'
 
 interface IStudioGenericPropertiesProps {
 	studio: Studio
@@ -29,52 +27,6 @@ export const StudioGenericProperties = withTranslation()(
 	> {
 		constructor(props: Translated<IStudioGenericPropertiesProps>) {
 			super(props)
-		}
-
-		getBlueprintOptions() {
-			const { t } = this.props
-
-			const options: { name: string; value: BlueprintId | null }[] = [
-				{
-					name: t('None'),
-					value: protectString(''),
-				},
-			]
-
-			options.push(
-				...Blueprints.find({ blueprintType: BlueprintManifestType.STUDIO })
-					.fetch()
-					.map((blueprint) => {
-						return {
-							name: blueprint.name ? blueprint.name + ` (${blueprint._id})` : unprotectString(blueprint._id),
-							value: blueprint._id,
-						}
-					})
-			)
-
-			return options
-		}
-
-		getBlueprintConfigPresetOptions() {
-			const options: { name: string; value: string | null }[] = []
-
-			if (this.props.studio.blueprintId) {
-				const blueprint = Blueprints.findOne({
-					blueprintType: BlueprintManifestType.STUDIO,
-					_id: this.props.studio.blueprintId,
-				})
-
-				if (blueprint && blueprint.studioConfigPresets) {
-					for (const [id, preset] of Object.entries(blueprint.studioConfigPresets)) {
-						options.push({
-							value: id,
-							name: preset.name,
-						})
-					}
-				}
-			}
-
-			return options
 		}
 
 		renderShowStyleEditButtons() {
@@ -117,56 +69,6 @@ export const StudioGenericProperties = withTranslation()(
 								attribute="name"
 								obj={this.props.studio}
 								type="text"
-								collection={Studios}
-								className="mdinput"
-							/>
-							<span className="mdfx"></span>
-						</div>
-					</label>
-					<label className="field">
-						{t('Blueprint')}
-						{!this.props.studio.blueprintId ? (
-							<div className="error-notice inline">
-								{t('Blueprint not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
-							</div>
-						) : null}
-						<div className="mdi">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="blueprintId"
-								obj={this.props.studio}
-								type="dropdown"
-								options={this.getBlueprintOptions()}
-								mutateDisplayValue={(v) => v || ''}
-								mutateUpdateValue={(v) => (v === '' ? undefined : v)}
-								collection={Studios}
-								className="mdinput"
-							/>
-							<SettingsNavigation attribute="blueprintId" obj={this.props.studio} type="blueprint"></SettingsNavigation>
-							<span className="mdfx"></span>
-						</div>
-					</label>
-					<label className="field">
-						{t('Blueprint config preset')}
-						{!this.props.studio.blueprintConfigPresetId && (
-							<div className="error-notice inline">
-								{t('Blueprint config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
-							</div>
-						)}
-						{this.props.studio.blueprintConfigPresetIdUnlinked && this.props.studio.blueprintConfigPresetId && (
-							<div className="error-notice inline">
-								{t('Blueprint config preset is missing')} <FontAwesomeIcon icon={faExclamationTriangle} />
-							</div>
-						)}
-						<div className="mdi">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="blueprintConfigPresetId"
-								obj={this.props.studio}
-								type="dropdown"
-								options={this.getBlueprintConfigPresetOptions()}
-								mutateDisplayValue={(v) => v || ''}
-								mutateUpdateValue={(v) => (v === '' ? undefined : v)}
 								collection={Studios}
 								className="mdinput"
 							/>
