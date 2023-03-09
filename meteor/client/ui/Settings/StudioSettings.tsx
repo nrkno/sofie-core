@@ -20,7 +20,7 @@ import { PeripheralDevices, ShowStyleBases, ShowStyleVariants, Studios } from '.
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { translateStringIfHasNamespaces } from '../../lib/forms/schemaFormUtil'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
-import { StudioBlueprintConfigurationSettings } from './StudioBlueprintConfigurationSettings'
+import { StudioBlueprintConfigurationSettings } from './Studio/BlueprintConfiguration'
 
 interface IStudioSettingsProps {
 	match: {
