@@ -1,5 +1,5 @@
 import _ from 'underscore'
-import { EvsContent, NoraContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { EvsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import React, { useMemo, useState, useRef } from 'react'
 import { PieceExtended } from '../../../../lib/Rundown'
 import { MediaObject } from '../../../../lib/collections/MediaObjects'
@@ -17,6 +17,7 @@ import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notific
 import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
 import { UIStudio } from '../../../../lib/api/studios'
 import classNames from 'classnames'
+import { usePieceMultistepChevron } from '../../SegmentStoryboard/utils/usePieceMultistepChevron'
 
 interface IProps {
 	partId: PartId
@@ -251,11 +252,7 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 	const status = piece.instance.piece.status
 	const noticeLevel = status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null
 
-	const noraContent = piece.instance.piece.content as NoraContent | undefined
-
-	const hasStepChevron =
-		(piece.sourceLayer?.type === SourceLayerType.GRAPHICS || piece.sourceLayer?.type === SourceLayerType.LOWER_THIRD) &&
-		noraContent?.payload?.step?.enabled
+	const multistepChevron = usePieceMultistepChevron('segment-opl__main-piece__label__step-chevron', piece)
 
 	return (
 		<PieceElement
@@ -275,17 +272,11 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 			{anomalies}
 			<div
 				className={classNames('segment-opl__main-piece__label', {
-					mln: hasStepChevron,
+					mln: !!multistepChevron,
 				})}
 			>
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
-				{hasStepChevron && (
-					<span className="segment-opl__main-piece__label__step-chevron">
-						{noraContent?.payload?.step?.to === 'next'
-							? (noraContent.payload.step?.from || 0) + 1
-							: noraContent.payload.step?.to || 1}
-					</span>
-				)}
+				{multistepChevron}
 				{piece.sourceLayer?.type === SourceLayerType.LOCAL && (piece.instance.piece.content as EvsContent).color && (
 					<ColoredMark color={(piece.instance.piece.content as EvsContent).color} />
 				)}

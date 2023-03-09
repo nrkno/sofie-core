@@ -22,10 +22,5 @@ export interface IDefaultRendererProps {
 }
 
 export function DefaultRenderer({ piece }: IDefaultRendererProps) {
-	return (
-		<>
-			<span className="segment-storyboard__piece__step-chevron">3</span>
-			{piece.instance.piece.name}
-		</>
-	)
+	return <>{piece.instance.piece.name}</>
 }
