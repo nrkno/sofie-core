@@ -51,37 +51,50 @@ export function BlueprintConfigManifestSettings({
 			saveOverrides(
 				newOps.map((op) => ({
 					...op,
-					path: op.path.slice(2), // trim off 0.
+					path: op.path.startsWith('0.') ? op.path.slice(2) : op.path,
 				}))
 			)
 		},
 		[saveOverrides]
 	)
 
-	const overrideHelper = useOverrideOpHelper(saveOverrides2, configObject)
+	// TODO - this is pretty ugly and could do with some work to avoid needing to fake the itemId like this...
 
-	const wrappedItem = useMemo(() => {
-		const configObject2: ObjectWithOverrides<IBlueprintConfig> = alternateConfig
-			? {
-					defaults: deepmerge<IBlueprintConfig>(alternateConfig, configObject.defaults, {
-						arrayMerge: (_destinationArray, sourceArray, _options) => sourceArray,
-					}),
-					overrides: configObject.overrides,
-			  }
-			: configObject
+	const [wrappedItem, configObject2] = useMemo(() => {
+		const combinedDefaults: IBlueprintConfig = alternateConfig
+			? deepmerge<IBlueprintConfig>(alternateConfig, configObject.defaults, {
+					arrayMerge: (_destinationArray, sourceArray, _options) => sourceArray,
+			  })
+			: configObject.defaults
 
-		return literal<WrappedOverridableItemNormal<IBlueprintConfig>>({
+		const prefixedOps = configObject.overrides.map((op) => ({
+			...op,
+			// TODO: can we avoid doing this hack?
+			path: `0.${op.path}`,
+		}))
+
+		const computedValue = applyAndValidateOverrides({
+			defaults: combinedDefaults,
+			overrides: configObject.overrides,
+		}).obj
+
+		const wrappedItem = literal<WrappedOverridableItemNormal<IBlueprintConfig>>({
 			type: 'normal',
 			id: '0',
-			computed: applyAndValidateOverrides(configObject2).obj,
-			defaults: configObject2.defaults,
-			overrideOps: configObject2.overrides.map((op) => ({
-				...op,
-				// TODO: can we avoid doing this hack?
-				path: `0.${op.path}`,
-			})),
+			computed: computedValue,
+			defaults: combinedDefaults,
+			overrideOps: prefixedOps,
 		})
+
+		const configObject2: ObjectWithOverrides<IBlueprintConfig> = {
+			defaults: combinedDefaults,
+			overrides: prefixedOps,
+		}
+
+		return [wrappedItem, configObject2]
 	}, [configObject])
+
+	const overrideHelper = useOverrideOpHelper(saveOverrides2, configObject2)
 
 	return (
 		<div className="scroll-x">

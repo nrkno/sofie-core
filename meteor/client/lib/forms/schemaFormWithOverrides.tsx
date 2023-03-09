@@ -23,6 +23,7 @@ import {
 	SchemaFormUIField,
 	translateStringIfHasNamespaces,
 } from './schemaFormUtil'
+import { MultiSelectInputControl } from '../Components/MultiSelectInput'
 
 interface SchemaFormWithOverridesProps extends SchemaFormCommonProps {
 	attr: string
@@ -81,7 +82,7 @@ export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps): JS
 			}
 		case TypeName.Integer:
 			if (props.schema.enum) {
-				return <EnumFormWithOverrides {...childProps} />
+				return <EnumFormWithOverrides {...childProps} multiple={false} />
 			} else {
 				return <IntegerFormWithOverrides {...childProps} />
 			}
@@ -91,7 +92,7 @@ export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps): JS
 			return <BooleanFormWithOverrides {...childProps} />
 		case TypeName.String:
 			if (props.schema.enum) {
-				return <EnumFormWithOverrides {...childProps} />
+				return <EnumFormWithOverrides {...childProps} multiple={false} />
 			} else {
 				return <StringFormWithOverrides {...childProps} />
 			}
@@ -107,7 +108,11 @@ const ArrayFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 
 	switch (props.schema.items?.type) {
 		case TypeName.String:
-			return <StringArrayFormWithOverrides {...childProps} />
+			if (props.schema.items.enum) {
+				return <EnumFormWithOverrides {...childProps} schema={props.schema.items} multiple={true} />
+			} else {
+				return <StringArrayFormWithOverrides {...childProps} />
+			}
 		case TypeName.Object:
 			if (props.allowTables) {
 				return <SchemaFormTable {...props} />
@@ -141,7 +146,11 @@ const ObjectFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 	)
 }
 
-const EnumFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
+interface EnumFormComponentProps extends FormComponentProps {
+	multiple: boolean
+}
+
+const EnumFormWithOverrides = ({ schema, commonAttrs, multiple }: EnumFormComponentProps) => {
 	const tsEnumNames = (schema[SchemaFormUIField.TsEnumNames] || []) as string[]
 	const options = useMemo(() => {
 		return (schema.enum || []).map((value: any, i: number) =>
@@ -156,14 +165,27 @@ const EnumFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
 	return (
 		<div className="mod mvs mhs">
 			<LabelAndOverridesForDropdown {...commonAttrs} options={options}>
-				{(value, handleUpdate, options) => (
-					<DropdownInputControl
-						classNames="input text-input input-l"
-						options={options}
-						value={value}
-						handleUpdate={handleUpdate}
-					/>
-				)}
+				{(value, handleUpdate, options) => {
+					if (multiple) {
+						return (
+							<MultiSelectInputControl
+								classNames="input text-input dropdown input-l"
+								options={options}
+								value={value}
+								handleUpdate={handleUpdate}
+							/>
+						)
+					} else {
+						return (
+							<DropdownInputControl
+								classNames="input text-input input-l"
+								options={options}
+								value={value}
+								handleUpdate={handleUpdate}
+							/>
+						)
+					}
+				}}
 			</LabelAndOverridesForDropdown>
 		</div>
 	)
