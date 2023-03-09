@@ -171,42 +171,47 @@ export const VariantListItem = ({
 									</label>
 								</div>
 							</div>
-							<label className="field">
-								{t('Blueprint config preset')}
-								{!showStyleVariant.blueprintConfigPresetId && (
-									<div className="error-notice inline">
-										{t('Blueprint config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
-									</div>
-								)}
-								{showStyleVariant.blueprintConfigPresetIdUnlinked && showStyleVariant.blueprintConfigPresetId && (
-									<div className="error-notice inline">
-										{t('Blueprint config preset is missing')} <FontAwesomeIcon icon={faExclamationTriangle} />
-									</div>
-								)}
-								<div className="mdi">
-									<EditAttribute
-										modifiedClassName="bghl"
-										attribute="blueprintConfigPresetId"
-										obj={showStyleVariant}
-										type="dropdown"
-										options={blueprintPresetConfigOptions}
-										mutateDisplayValue={(v) => v || ''}
-										mutateUpdateValue={(v) => (v === '' ? undefined : v)}
-										collection={ShowStyleVariants}
-										className="mdinput"
-									/>
-									<span className="mdfx"></span>
-								</div>
-							</label>
+
 							<div className="row">
 								<div className="col c12 r1-c12 phs">
+									<h3 className="mhn">{t('Blueprint Configuration')}</h3>
+
+									<div>
+										<div className="mod mvs mhs">
+											<label className="field">
+												{t('Config preset')}
+												{!showStyleVariant.blueprintConfigPresetId && (
+													<div className="error-notice inline">
+														{t('Config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+													</div>
+												)}
+												{showStyleVariant.blueprintConfigPresetIdUnlinked &&
+													showStyleVariant.blueprintConfigPresetId && (
+														<div className="error-notice inline">
+															{t('Config preset is missing')} <FontAwesomeIcon icon={faExclamationTriangle} />
+														</div>
+													)}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute="blueprintConfigPresetId"
+													obj={showStyleVariant}
+													type="dropdown"
+													options={blueprintPresetConfigOptions}
+													mutateDisplayValue={(v) => v || ''}
+													mutateUpdateValue={(v) => (v === '' ? undefined : v)}
+													collection={ShowStyleVariants}
+													className="mdinput"
+												/>
+											</label>
+										</div>
+									</div>
+
 									<BlueprintConfigManifestSettings
 										schema={blueprintConfigSchema}
 										translationNamespaces={blueprintTranslationNamespaces}
 										alternateConfig={applyAndValidateOverrides(baseBlueprintConfigWithOverrides).obj}
 										layerMappings={layerMappings}
 										sourceLayers={sourceLayers}
-										subPanel={true}
 										configObject={showStyleVariant.blueprintConfigWithOverrides}
 										saveOverrides={(newOps) => onSaveOverrides(showStyleVariant._id, newOps)}
 									/>

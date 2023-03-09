@@ -26,6 +26,7 @@ import { Blueprints, PeripheralDevices, ShowStyleBases, ShowStyleVariants, Studi
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { translateStringIfHasNamespaces } from '../../lib/forms/schemaFormUtil'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { t } from 'i18next'
 
 interface IStudioSettingsProps {
 	match: {
@@ -204,6 +205,7 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/blueprint-config`}>
+										<h2 className="mhn">{t('Blueprint Configuration')}</h2>
 										<BlueprintConfigManifestSettings
 											schema={this.props.studioConfigSchema}
 											translationNamespaces={['blueprint_' + this.props.studio.blueprintId]}

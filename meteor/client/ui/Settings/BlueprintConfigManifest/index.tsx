@@ -32,8 +32,6 @@ interface IConfigManifestSettingsProps {
 	layerMappings?: { [studioId: string]: MappingsExt }
 	sourceLayers?: Array<SourceLayerDropdownOption>
 
-	subPanel?: boolean
-
 	configObject: ObjectWithOverrides<IBlueprintConfig>
 	saveOverrides: (newOps: SomeObjectOverrideOp[]) => void
 }
@@ -44,7 +42,6 @@ export function BlueprintConfigManifestSettings({
 	alternateConfig,
 	// layerMappings,
 	// sourceLayers,
-	subPanel,
 
 	configObject,
 	saveOverrides,
@@ -137,12 +134,6 @@ export function BlueprintConfigManifestSettings({
 
 	return (
 		<div className="scroll-x">
-			{subPanel ? (
-				<h3 className="mhn">{t('Blueprint Configuration')}</h3>
-			) : (
-				<h2 className="mhn">{t('Blueprint Configuration')}</h2>
-			)}
-
 			{groupedSchema.length ? (
 				<table className="expando settings-studio-source-table">
 					<tbody>

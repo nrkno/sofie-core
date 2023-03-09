@@ -205,6 +205,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									})}
 
 									<Route path={`${this.props.match.path}/blueprint-config`}>
+										<h2 className="mhn">{t('Blueprint Configuration')}</h2>
+
 										<BlueprintConfigManifestSettings
 											schema={this.props.blueprintConfigSchema}
 											translationNamespaces={['blueprint_' + this.props.showStyleBase?.blueprintId]}
