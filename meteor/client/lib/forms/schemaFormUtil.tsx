@@ -7,6 +7,10 @@ import { JSONSchema, TypeName } from '@sofie-automation/shared-lib/dist/lib/JSON
  */
 export enum SchemaFormUIField {
 	/**
+	 * Category of the property
+	 */
+	Category = 'ui:category',
+	/**
 	 * Title of the property
 	 */
 	Title = 'ui:title',
