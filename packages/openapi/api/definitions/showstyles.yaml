@@ -483,6 +483,11 @@ components:
         config:
           type: object
           description: Blueprint config.
+          properties:
+            developerMode:
+              type: boolean
+              example: true
+          additionalProperties: true
       required:
         - name
         - blueprintId
@@ -505,6 +510,11 @@ components:
         config:
           type: object
           description: Blueprint config.
+          properties:
+            developerMode:
+              type: boolean
+              example: true
+          additionalProperties: true
         required:
           - name
           - rank

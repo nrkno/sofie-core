@@ -261,10 +261,23 @@ resources:
               schema:
                 type: object
                 properties:
+                  status:
+                    type: number
+                    example: 404
                   message:
                     type: string
         412:
           description: The specified device is already attached to a different studio.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
         500:
           $ref: '#/components/responses/internalServerError'
   device:
@@ -324,12 +337,12 @@ components:
             - showstyle1
         config:
           type: object
-          properties:
-            name:
-              type: string
-              example: Studio config
-          additionalProperties: true
           description: Blueprint configuration.
+          properties:
+            developerMode:
+              type: boolean
+              example: true
+          additionalProperties: true
         settings:
           $ref: '#/components/schemas/studioSettings'
       required:

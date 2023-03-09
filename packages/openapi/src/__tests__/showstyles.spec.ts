@@ -50,10 +50,17 @@ describe('Network client', () => {
 	})
 
 	test('can update a ShowStyleBase', async () => {
-		newShowStyleBase.name = newShowStyleBase.name.substring(0, newShowStyleBase.name.length - 5) + 'Updated'
+		newShowStyleBase.config.developerMode = !newShowStyleBase.config.developerMode
 		const showStyle = await showStylesApi.addOrUpdateShowStyleBase({
 			showStyleBaseId: testShowStyleBaseId,
 			showStyleBase: newShowStyleBase,
+		})
+		expect(showStyle.status).toBe(200)
+	})
+
+	test('can remove a ShowStyleBase', async () => {
+		const showStyle = await showStylesApi.deleteShowStyleBase({
+			showStyleBaseId: testShowStyleBaseId,
 		})
 		expect(showStyle.status).toBe(200)
 	})
@@ -97,8 +104,7 @@ describe('Network client', () => {
 	})
 
 	test('can update a ShowStyleVariant', async () => {
-		newShowStyleVariant.name =
-			newShowStyleVariant.name.substring(0, newShowStyleVariant.name.length - 5) + 'Updated'
+		newShowStyleVariant.config.developerMode = !newShowStyleVariant.config.developerMode
 		const showStyleVariant = await showStylesApi.addOrUpdateShowStyleVariant({
 			showStyleBaseId: showStyleBaseIds[0],
 			showStyleVariantId: testShowStyleVariantId,
@@ -111,13 +117,6 @@ describe('Network client', () => {
 		const showStyle = await showStylesApi.deleteShowStyleVariant({
 			showStyleBaseId: showStyleBaseIds[0],
 			showStyleVariantId: testShowStyleVariantId,
-		})
-		expect(showStyle.status).toBe(200)
-	})
-
-	test('can remove a ShowStyleBase', async () => {
-		const showStyle = await showStylesApi.deleteShowStyleBase({
-			showStyleBaseId: testShowStyleBaseId,
 		})
 		expect(showStyle.status).toBe(200)
 	})

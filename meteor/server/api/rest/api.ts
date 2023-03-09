@@ -871,7 +871,7 @@ class ServerRestAPI implements RestAPI {
 		studioId: StudioId,
 		studio: APIStudio
 	): Promise<ClientAPI.ClientResponse<void>> {
-		const newStudio = studioFrom(studio)
+		const newStudio = studioFrom(studio, studioId)
 		if (!newStudio) throw new Meteor.Error(400, `Invalid Studio`)
 
 		const existingStudio = Studios.findOne(studioId)
@@ -1200,8 +1200,8 @@ sofieAPIRequest<{ playlistId: string; sourceLayerId: string }, never, void>(
 )
 
 sofieAPIRequest<{ playlistId: string; sourceLayerId: string }, never, void>(
-	'post',
-	'/playlists/:playlistId/sourceLayer/:sourceLayerId/recallSticky',
+	'put',
+	'/playlists/:playlistId/sourceLayer/:sourceLayerId',
 	new Map([
 		[404, UserErrorMessage.RundownPlaylistNotFound],
 		[412, UserErrorMessage.InactiveRundown],
@@ -1209,7 +1209,7 @@ sofieAPIRequest<{ playlistId: string; sourceLayerId: string }, never, void>(
 	async (serverAPI, connection, event, params, _) => {
 		const playlistId = protectString<RundownPlaylistId>(params.playlistId)
 		const sourceLayerId = params.sourceLayerId
-		logger.info(`koa POST: sourceLayer recallSticky ${playlistId} ${sourceLayerId}`)
+		logger.info(`koa PUT: sourceLayer recallSticky ${playlistId} ${sourceLayerId}`)
 
 		check(playlistId, String)
 		check(sourceLayerId, String)
@@ -1345,7 +1345,10 @@ sofieAPIRequest<{ studioId: string }, { routeSetId: string; active: boolean }, v
 sofieAPIRequest<{ studioId: string }, { deviceId: string }, void>(
 	'put',
 	'/studios/:studioId/devices',
-	new Map([[404, UserErrorMessage.StudioNotFound]]),
+	new Map([
+		[404, UserErrorMessage.StudioNotFound],
+		[412, UserErrorMessage.DeviceAlreadyAttachedToStudio],
+	]),
 	async (serverAPI, connection, events, params, body) => {
 		const studioId = protectString<StudioId>(params.studioId)
 		const deviceId = protectString<PeripheralDeviceId>(body.deviceId)
@@ -1429,6 +1432,7 @@ sofieAPIRequest<never, APIShowStyleBase, string>(
 	'/showstyles',
 	new Map([[400, UserErrorMessage.BlueprintNotFound]]),
 	async (serverAPI, connection, event, _params, body) => {
+		logger.info(`koa POST: Add ShowStyleBase ${body.name}`)
 		return await serverAPI.addShowStyleBase(connection, event, body)
 	}
 )
@@ -1452,6 +1456,7 @@ sofieAPIRequest<{ showStyleBaseId: string }, APIShowStyleBase, void>(
 	]),
 	async (serverAPI, connection, event, params, body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
+		logger.info(`koa PUT: Add or Update ShowStyleBase ${showStyleBaseId}`)
 
 		check(showStyleBaseId, String)
 		return await serverAPI.addOrUpdateShowStyleBase(connection, event, showStyleBaseId, body)
@@ -1464,6 +1469,7 @@ sofieAPIRequest<{ showStyleBaseId: string }, never, void>(
 	new Map([[412, UserErrorMessage.RundownAlreadyActive]]),
 	async (serverAPI, connection, event, params, _body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
+		logger.info(`koa DELETE: ShowStyleBase ${showStyleBaseId}`)
 
 		check(showStyleBaseId, String)
 		return await serverAPI.deleteShowStyleBase(connection, event, showStyleBaseId)
@@ -1489,6 +1495,7 @@ sofieAPIRequest<{ showStyleBaseId: string }, APIShowStyleVariant, string>(
 	new Map([[404, UserErrorMessage.BlueprintNotFound]]),
 	async (serverAPI, connection, event, params, body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
+		logger.info(`koa POST: Add ShowStyleVariant ${showStyleBaseId}`)
 
 		check(showStyleBaseId, String)
 		return await serverAPI.addShowStyleVariant(connection, event, showStyleBaseId, body)
@@ -1521,6 +1528,7 @@ sofieAPIRequest<{ showStyleBaseId: string; showStyleVariantId: string }, APIShow
 	async (serverAPI, connection, event, params, body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
 		const showStyleVariantId = protectString<ShowStyleVariantId>(params.showStyleVariantId)
+		logger.info(`koa PUT: Add or Update ShowStyleVariant ${showStyleBaseId} ${showStyleVariantId}`)
 
 		check(showStyleBaseId, String)
 		check(showStyleVariantId, String)
@@ -1538,6 +1546,7 @@ sofieAPIRequest<{ showStyleBaseId: string; showStyleVariantId: string }, never, 
 	async (serverAPI, connection, event, params, _body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
 		const showStyleVariantId = protectString<ShowStyleVariantId>(params.showStyleVariantId)
+		logger.info(`koa DELETE: ShowStyleVariant ${showStyleBaseId} ${showStyleVariantId}`)
 
 		check(showStyleBaseId, String)
 		check(showStyleVariantId, String)

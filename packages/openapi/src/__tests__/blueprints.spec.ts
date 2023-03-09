@@ -28,9 +28,7 @@ describe('Network client', () => {
 	})
 
 	test('can request information about a blueprint', async () => {
-		const blueprint = await blueprintsApi.blueprint({
-			blueprintId: blueprintIds.length ? blueprintIds[blueprintIds.length - 1] : '',
-		})
+		const blueprint = await blueprintsApi.blueprint({ blueprintId: blueprintIds[0] })
 		expect(blueprint.status).toBe(200)
 		expect(blueprint).toHaveProperty('result')
 		expect(blueprint.result).toHaveProperty('id')

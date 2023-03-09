@@ -44,46 +44,65 @@ describe('Network client', () => {
 		newStudio = JSON.parse(JSON.stringify(studio.result))
 	})
 
-	let testStudioId: string | undefined
-	test('can add a new Studio', async () => {
-		newStudio.name = newStudio.name + 'Added'
-		const studio = await studiosApi.addStudio({
+	test('can update a studio', async () => {
+		newStudio.config.developerMode = !newStudio.config.developerMode
+		const studio = await studiosApi.addOrUpdateStudio({
+			studioId: studioIds[0],
 			studio: newStudio,
 		})
 		expect(studio.status).toBe(200)
-		expect(studio).toHaveProperty('result')
-		expect(typeof studio.result).toBe('string')
-		testStudioId = studio.result
 	})
 
-	if (testServer) {
-		test('can update a studio', async () => {
-			newStudio.name = newStudio.name.substring(0, newStudio.name.length - 5) + 'Updated'
-			const studio = await studiosApi.addOrUpdateStudio({
-				studioId: testStudioId,
-				studio: newStudio,
-			})
-			expect(studio.status).toBe(200)
-		})
-	} else {
-		test.todo('Fix studio updates')
-	}
-
-	test('can remove a Studio by id', async () => {
-		const studio = await studiosApi.deleteStudio({
-			studioId: testStudioId,
-		})
-		expect(studio.status).toBe(200)
-	})
-
+	const studioDevices: string[] = []
 	test('can request a list of devices for a studio', async () => {
 		const devices = await studiosApi.devices({ studioId: studioIds[0] })
 		expect(devices.status).toBe(200)
 		expect(devices).toHaveProperty('result')
 		expect(devices.result.length).toBeGreaterThanOrEqual(1)
+		devices.result.forEach((id) => {
+			expect(typeof id).toBe('string')
+			studioDevices.push(id)
+		})
+	})
+
+	test('can detach a device from a studio', async () => {
+		const detach = await studiosApi.detachDevice({
+			studioId: studioIds[0],
+			deviceId: studioDevices[0],
+		})
+		expect(detach.status).toBe(200)
+	})
+
+	test('can attach a device to a studio', async () => {
+		const attach = await studiosApi.attachDevice({
+			studioId: studioIds[0],
+			attachDeviceRequest: {
+				deviceId: studioDevices[0],
+			},
+		})
+		expect(attach.status).toBe(200)
 	})
 
 	if (testServer) {
+		let testStudioId: string | undefined
+		test('can add a new Studio', async () => {
+			newStudio.name = newStudio.name + 'Added'
+			const studio = await studiosApi.addStudio({
+				studio: newStudio,
+			})
+			expect(studio.status).toBe(200)
+			expect(studio).toHaveProperty('result')
+			expect(typeof studio.result).toBe('string')
+			testStudioId = studio.result
+		})
+
+		test('can remove a Studio by id', async () => {
+			const studio = await studiosApi.deleteStudio({
+				studioId: testStudioId,
+			})
+			expect(studio.status).toBe(200)
+		})
+
 		test('can activate a route set in a studio', async () => {
 			const routeSet = await studiosApi.switchRouteSet({
 				studioId: 'B0avqzSM41UJDpbyf3U28',
@@ -98,24 +117,6 @@ describe('Network client', () => {
 				switchRouteSetRequest: { routeSetId: 'Main', active: false },
 			})
 			expect(routeSet.status).toBe(200)
-		})
-
-		test('can attach a device to a studio', async () => {
-			const attach = await studiosApi.attachDevice({
-				studioId: 'B0avqzSM41UJDpbyf3U28',
-				attachDeviceRequest: {
-					deviceId: 'playoutgateway0',
-				},
-			})
-			expect(attach.status).toBe(200)
-		})
-
-		test('can detach a device from a studio', async () => {
-			const detach = await studiosApi.detachDevice({
-				studioId: 'B0avqzSM41UJDpbyf3U28',
-				deviceId: 'playoutgateway0',
-			})
-			expect(detach.status).toBe(200)
 		})
 	} else {
 		test.todo('Setup mocks for Sofie')
