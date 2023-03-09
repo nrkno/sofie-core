@@ -5,12 +5,10 @@ import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { withTranslation } from 'react-i18next'
 import { unprotectString } from '../../../../lib/lib'
 import { EditAttribute } from '../../../lib/EditAttribute'
-import { RedirectToBlueprintButton } from '../../../lib/SettingsNavigation'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { Link } from 'react-router-dom'
-import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { Studio } from '../../../../lib/collections/Studios'
-import { Blueprints, ShowStyleBases } from '../../../collections'
+import { ShowStyleBases } from '../../../collections'
 
 interface IShowStyleGenericPropertiesProps {
 	showStyleBase: ShowStyleBase
@@ -24,39 +22,6 @@ export const ShowStyleGenericProperties = withTranslation()(
 	> {
 		constructor(props: Translated<IShowStyleGenericPropertiesProps>) {
 			super(props)
-		}
-
-		getOptionBlueprints() {
-			return Blueprints.find({ blueprintType: BlueprintManifestType.SHOWSTYLE })
-				.fetch()
-				.map((blueprint) => {
-					return {
-						name: blueprint.name ? blueprint.name + ` (${blueprint._id})` : blueprint._id,
-						value: blueprint._id,
-					}
-				})
-		}
-
-		getBlueprintConfigPresetOptions() {
-			const options: { name: string; value: string | null }[] = []
-
-			if (this.props.showStyleBase.blueprintId) {
-				const blueprint = Blueprints.findOne({
-					blueprintType: BlueprintManifestType.SHOWSTYLE,
-					_id: this.props.showStyleBase.blueprintId,
-				})
-
-				if (blueprint && blueprint.showStyleConfigPresets) {
-					for (const [id, preset] of Object.entries(blueprint.showStyleConfigPresets)) {
-						options.push({
-							value: id,
-							name: preset.name,
-						})
-					}
-				}
-			}
-
-			return options
 		}
 
 		render(): JSX.Element {
@@ -81,56 +46,6 @@ export const ShowStyleGenericProperties = withTranslation()(
 									collection={ShowStyleBases}
 									className="mdinput"
 								></EditAttribute>
-								<span className="mdfx"></span>
-							</div>
-						</label>
-						<label className="field">
-							{t('Blueprint')}
-							{!(this.props.showStyleBase && this.props.showStyleBase.blueprintId) ? (
-								<div className="error-notice inline">
-									{t('Blueprint not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
-								</div>
-							) : null}
-							<div className="mdi">
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute="blueprintId"
-									obj={showStyleBase}
-									type="dropdown"
-									options={this.getOptionBlueprints()}
-									collection={ShowStyleBases}
-									className="mdinput"
-								></EditAttribute>
-								<RedirectToBlueprintButton id={this.props.showStyleBase.blueprintId} />
-
-								<span className="mdfx"></span>
-							</div>
-						</label>
-						<label className="field">
-							{t('Blueprint config preset')}
-							{!this.props.showStyleBase.blueprintConfigPresetId && (
-								<div className="error-notice inline">
-									{t('Blueprint config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
-								</div>
-							)}
-							{this.props.showStyleBase.blueprintConfigPresetIdUnlinked &&
-								this.props.showStyleBase.blueprintConfigPresetId && (
-									<div className="error-notice inline">
-										{t('Blueprint config preset is missing')} <FontAwesomeIcon icon={faExclamationTriangle} />
-									</div>
-								)}
-							<div className="mdi">
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute="blueprintConfigPresetId"
-									obj={this.props.showStyleBase}
-									type="dropdown"
-									options={this.getBlueprintConfigPresetOptions()}
-									mutateDisplayValue={(v) => v || ''}
-									mutateUpdateValue={(v) => (v === '' ? undefined : v)}
-									collection={ShowStyleBases}
-									className="mdinput"
-								/>
 								<span className="mdfx"></span>
 							</div>
 						</label>

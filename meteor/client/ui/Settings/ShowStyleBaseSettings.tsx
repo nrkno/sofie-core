@@ -7,7 +7,7 @@ import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import RundownLayoutEditor from './RundownLayoutEditor'
 import { Studio, MappingsExt } from '../../../lib/collections/Studios'
 import { BlueprintManifestType, IShowStyleConfigPreset, ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { BlueprintConfigManifestSettings, SourceLayerDropdownOption } from './BlueprintConfigManifest'
+import { SourceLayerDropdownOption } from './BlueprintConfigManifest'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
 import { SourceLayerSettings } from './ShowStyle/SourceLayer'
@@ -26,6 +26,7 @@ import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../co
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
+import { ShowStyleBaseBlueprintConfigurationSettings } from './ShowStyleBlueprintConfigurationSettings'
 
 interface IProps {
 	match: {
@@ -205,16 +206,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 									})}
 
 									<Route path={`${this.props.match.path}/blueprint-config`}>
-										<h2 className="mhn">{t('Blueprint Configuration')}</h2>
-
-										<BlueprintConfigManifestSettings
+										<ShowStyleBaseBlueprintConfigurationSettings
+											showStyleBase={showStyleBase}
 											schema={this.props.blueprintConfigSchema}
-											translationNamespaces={['blueprint_' + this.props.showStyleBase?.blueprintId]}
 											layerMappings={this.props.layerMappings}
 											sourceLayers={this.props.sourceLayersLight}
-											configObject={showStyleBase.blueprintConfigWithOverrides}
-											saveOverrides={this.saveBlueprintConfigOverrides}
-											alternateConfig={undefined}
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/variants`}>
