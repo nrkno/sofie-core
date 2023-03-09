@@ -39,8 +39,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"@mos-connection/model": "^3.0.1",
-		"timeline-state-resolver-types": "8.0.0-nightly-release50-20230321-185451-d43f3dc70.0",
+		"timeline-state-resolver-types": "8.0.0-nightly-feat-replace-makeready-20230309-153238-4171e4816.0",
 		"tslib": "^2.4.0",
 		"type-fest": "^2.19.0"
 	},

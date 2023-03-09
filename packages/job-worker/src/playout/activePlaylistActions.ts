@@ -16,6 +16,7 @@ import { executePeripheralDeviceFunction } from '../peripheralDevice'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { cleanTimelineDatastore } from './datastore'
+import { RundownActivationContext } from '../blueprints/context/RundownActivationContext'
 
 export async function activateRundownPlaylist(
 	context: JobContext,
@@ -116,13 +117,14 @@ export async function activateRundownPlaylist(
 
 		try {
 			if (blueprint.blueprint.onRundownActivate) {
-				const context2 = new RundownEventContext(
-					context.studio,
-					context.getStudioBlueprintConfig(),
-					showStyle,
-					context.getShowStyleBlueprintConfig(showStyle),
-					rundown
-				)
+				const context2 = new RundownActivationContext(context, cache, showStyle, rundown)
+				// const context2 = new RundownEventContext(
+				// 	context.studio,
+				// 	context.getStudioBlueprintConfig(),
+				// 	showStyle,
+				// 	context.getShowStyleBlueprintConfig(showStyle),
+				// 	rundown
+				// )
 
 				await blueprint.blueprint.onRundownActivate(context2)
 			}
