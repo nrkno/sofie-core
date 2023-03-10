@@ -88,7 +88,7 @@ async function checkStudioBlueprintConfigs(updateSystemStatusIds: Set<string>) {
 		const blueprint = (await Blueprints.findOneAsync(
 			{
 				_id: studio.blueprintId,
-				blueprintType: BlueprintManifestType.SHOWSTYLE,
+				blueprintType: BlueprintManifestType.STUDIO,
 			},
 			{
 				fields: {
