@@ -16,7 +16,7 @@ import {
 import { MultiLineTextInputControl } from '../Components/MultiLineTextInput'
 import { TextInputControl } from '../Components/TextInput'
 import { JSONSchema, TypeName } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
-import { SchemaFormObjectTable, SchemaFormArrayTable } from './schemaFormTable'
+import { SchemaFormArrayTable } from './schemaFormTableArray'
 import {
 	joinObjectPathFragments,
 	SchemaFormCommonProps,
@@ -24,6 +24,7 @@ import {
 	translateStringIfHasNamespaces,
 } from './schemaFormUtil'
 import { MultiSelectInputControl } from '../Components/MultiSelectInput'
+import { SchemaFormObjectTable } from './schemaFormTableObject'
 
 interface SchemaFormWithOverridesProps extends SchemaFormCommonProps {
 	attr: string
