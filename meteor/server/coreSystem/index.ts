@@ -3,7 +3,7 @@ import { getCurrentTime, MeteorStartupAsync } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { prepareMigration, runMigration } from '../migration/databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
-import { Blueprints, CoreSystem, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
+import { Blueprints, CoreSystem } from '../collections'
 import { getEnvLogLevel, logger, LogLevel, setLogLevel } from '../logging'
 const PackageInfo = require('../../package.json')
 import Agent from 'meteor/julusian:meteor-elastic-apm'
@@ -12,7 +12,6 @@ import { TMP_TSR_VERSION } from '@sofie-automation/blueprints-integration'
 import { getAbsolutePath } from '../lib'
 import * as fs from 'fs/promises'
 import path from 'path'
-import { queueCheckBlueprintsConfig } from './checkBlueprintsConfig'
 import { checkDatabaseVersions } from './checkDatabaseVersions'
 import PLazy from 'p-lazy'
 import { getCoreSystem, getCoreSystemAsync, getCoreSystemCursor } from './collection'
@@ -85,7 +84,6 @@ async function initializeCoreSystem() {
 
 	const observeBlueprintChanges = () => {
 		checkDatabaseVersions()
-		queueCheckBlueprintsConfig()
 	}
 
 	const blueprintsCursor = Blueprints.find({}, { fields: { code: 0 } })
@@ -93,27 +91,6 @@ async function initializeCoreSystem() {
 		added: observeBlueprintChanges,
 		changed: observeBlueprintChanges,
 		removed: observeBlueprintChanges,
-	})
-
-	const studiosCursor = Studios.find({})
-	studiosCursor.observeChanges({
-		added: queueCheckBlueprintsConfig,
-		changed: queueCheckBlueprintsConfig,
-		removed: queueCheckBlueprintsConfig,
-	})
-
-	const showStyleBaseCursor = ShowStyleBases.find({})
-	showStyleBaseCursor.observeChanges({
-		added: queueCheckBlueprintsConfig,
-		changed: queueCheckBlueprintsConfig,
-		removed: queueCheckBlueprintsConfig,
-	})
-
-	const showStyleVariantCursor = ShowStyleVariants.find({})
-	showStyleVariantCursor.observeChanges({
-		added: queueCheckBlueprintsConfig,
-		changed: queueCheckBlueprintsConfig,
-		removed: queueCheckBlueprintsConfig,
 	})
 
 	checkDatabaseVersions()

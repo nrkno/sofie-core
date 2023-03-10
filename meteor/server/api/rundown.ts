@@ -1,10 +1,9 @@
-import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { check } from '../../lib/check'
 import { Rundown } from '../../lib/collections/Rundowns'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
-import { NewRundownAPI, RundownAPIMethods, RundownPlaylistValidateBlueprintConfigResult } from '../../lib/api/rundown'
+import { NewRundownAPI, RundownAPIMethods } from '../../lib/api/rundown'
 import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { PackageInfo } from '../coreSystem'
@@ -12,9 +11,7 @@ import { IngestActions } from './ingest/actions'
 import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
-import { findMissingConfigs } from './blueprints/config'
 import { runIngestOperation } from './ingest/lib'
-import { createShowStyleCompound } from './showStyles'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import {
 	checkAccessToPlaylist,
@@ -24,10 +21,8 @@ import {
 } from './lib'
 import { Blueprint } from '../../lib/collections/Blueprints'
 import { Studio } from '../../lib/collections/Studios'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Blueprints, Rundowns, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
-import { normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 
 export namespace ServerRundownAPI {
 	/** Remove an individual rundown */
@@ -138,121 +133,6 @@ export namespace ClientRundownAPI {
 
 		return _.compact(errors)
 	}
-	// Validate the blueprint config used for this rundown, to ensure that all the required fields are specified
-	export async function rundownPlaylistValidateBlueprintConfig(
-		context: MethodContext,
-		playlistId: RundownPlaylistId
-	): Promise<RundownPlaylistValidateBlueprintConfigResult> {
-		check(playlistId, String)
-
-		const access = await StudioContentWriteAccess.rundownPlaylist(context, playlistId)
-		const rundownPlaylist = access.playlist
-
-		const studio = Studios.findOne(rundownPlaylist.studioId)
-		if (!studio) throw new Meteor.Error(404, 'Studio "' + rundownPlaylist.studioId + '" not found!')
-
-		const studioBlueprint = studio.blueprintId
-			? ((await Blueprints.findOneAsync(studio.blueprintId, {
-					fields: {
-						_id: 1,
-						studioConfigSchema: 1,
-					},
-			  })) as Pick<Blueprint, '_id' | 'studioConfigSchema'>)
-			: null
-		if (!studioBlueprint) throw new Meteor.Error(404, `Studio blueprint "${studio.blueprintId}" not found!`)
-
-		const rundowns = await Rundowns.findFetchAsync(
-			{
-				playlistId: rundownPlaylist._id,
-			},
-			{
-				sort: { _id: 1 },
-			}
-		)
-
-		const uniqueShowStyleCompounds = _.uniq(
-			rundowns,
-			undefined,
-			(rundown) => `${rundown.showStyleBaseId}-${rundown.showStyleVariantId}`
-		)
-
-		// Load all variants/compounds
-		const [showStyleBases, showStyleVariants] = await Promise.all([
-			ShowStyleBases.findFetchAsync({
-				_id: { $in: uniqueShowStyleCompounds.map((r) => r.showStyleBaseId) },
-			}),
-			ShowStyleVariants.findFetchAsync({
-				_id: { $in: uniqueShowStyleCompounds.map((r) => r.showStyleVariantId) },
-			}),
-		])
-		const showStyleBlueprints = (await Blueprints.findFetchAsync(
-			{
-				_id: { $in: _.uniq(_.compact(showStyleBases.map((c) => c.blueprintId))) },
-			},
-			{
-				fields: {
-					_id: 1,
-					showStyleConfigSchema: 1,
-				},
-			}
-		)) as Array<Pick<Blueprint, '_id' | 'showStyleConfigSchema'>>
-
-		const showStyleBasesMap = normalizeArrayToMap(showStyleBases, '_id')
-		const showStyleVariantsMap = normalizeArrayToMap(showStyleVariants, '_id')
-		const showStyleBlueprintsMap = normalizeArrayToMap(showStyleBlueprints, '_id')
-
-		const showStyleWarnings: RundownPlaylistValidateBlueprintConfigResult['showStyles'] =
-			uniqueShowStyleCompounds.map((rundown) => {
-				const showStyleBase = showStyleBasesMap.get(rundown.showStyleBaseId)
-				const showStyleVariant = showStyleVariantsMap.get(rundown.showStyleVariantId)
-				const id = `${rundown.showStyleBaseId}-${rundown.showStyleVariantId}`
-				if (!showStyleBase || !showStyleVariant) {
-					return {
-						id: id,
-						name: `${showStyleBase ? showStyleBase.name : rundown.showStyleBaseId}-${
-							rundown.showStyleVariantId
-						}`,
-						checkFailed: true,
-						fields: [],
-					}
-				}
-
-				const compound = createShowStyleCompound(showStyleBase, showStyleVariant)
-				if (!compound) {
-					return {
-						id: id,
-						name: `${showStyleBase ? showStyleBase.name : rundown.showStyleBaseId}-${
-							rundown.showStyleVariantId
-						}`,
-						checkFailed: true,
-						fields: [],
-					}
-				}
-
-				const blueprint = showStyleBlueprintsMap.get(compound.blueprintId)
-				if (!blueprint) {
-					return {
-						id: id,
-						name: compound.name,
-						checkFailed: true,
-						fields: [],
-					}
-				} else {
-					return {
-						id: id,
-						name: compound.name,
-						checkFailed: false,
-						fields: findMissingConfigs(blueprint.showStyleConfigManifest, compound.combinedBlueprintConfig),
-					}
-				}
-			})
-
-		const studioBlueprintConfig = applyAndValidateOverrides(studio.blueprintConfigWithOverrides).obj
-		return {
-			studio: findMissingConfigs(studioBlueprint.studioConfigManifest, studioBlueprintConfig),
-			showStyles: showStyleWarnings,
-		}
-	}
 }
 
 class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
@@ -264,9 +144,6 @@ class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
 	}
 	async rundownPlaylistNeedsResync(playlistId: RundownPlaylistId) {
 		return ClientRundownAPI.rundownPlaylistNeedsResync(this, playlistId)
-	}
-	async rundownPlaylistValidateBlueprintConfig(playlistId: RundownPlaylistId) {
-		return ClientRundownAPI.rundownPlaylistValidateBlueprintConfig(this, playlistId)
 	}
 	async removeRundown(rundownId: RundownId) {
 		const access = await checkAccessToRundown(this, rundownId)
