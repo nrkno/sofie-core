@@ -36,11 +36,31 @@ export enum SchemaFormUIField {
 	 * Future: a new field should probably be added for the UI to use.
 	 */
 	TsEnumNames = 'tsEnumNames',
+	/**
+	 * Use a Sofie enum type
+	 * Only valid for string properties or arrays of strings
+	 * Valid values are 'mappings' and 'source-layers', any other value will result in an empty dropdown
+	 */
+	SofieEnum = 'ui:sofie-enum',
+	/**
+	 * When using `ui:sofie-enum`, filter the options by type
+	 */
+	SofieEnumFilter = 'ui:sofie-enum:filter',
+}
+
+export interface SchemaFormSofieEnumDefinition {
+	options: {
+		name: string
+		value: string
+		filter: number | string
+	}[]
 }
 
 export interface SchemaFormCommonProps {
 	schema: JSONSchema
 	translationNamespaces: string[]
+
+	sofieEnumDefinitons?: Record<string, SchemaFormSofieEnumDefinition>
 
 	/**
 	 * In some situations, it is desirable to not allow tables to be used by a schema

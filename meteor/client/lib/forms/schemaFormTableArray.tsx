@@ -8,6 +8,7 @@ import { useToggleExpandHelper } from '../../ui/Settings/util/ToggleExpandedHelp
 import { doModalDialog } from '../ModalDialog'
 import {
 	getSchemaSummaryFieldsForObject,
+	SchemaFormSofieEnumDefinition,
 	SchemaFormUIField,
 	SchemaSummaryField,
 	translateStringIfHasNamespaces,
@@ -21,6 +22,7 @@ import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 interface SchemaFormTableProps {
 	schema: JSONSchema
 	translationNamespaces: string[]
+	sofieEnumDefinitons?: Record<string, SchemaFormSofieEnumDefinition>
 
 	attr: string
 
@@ -30,6 +32,7 @@ interface SchemaFormTableProps {
 export const SchemaFormArrayTable = ({
 	schema,
 	translationNamespaces,
+	sofieEnumDefinitons,
 	attr,
 	item,
 	overrideHelper,
@@ -116,6 +119,7 @@ export const SchemaFormArrayTable = ({
 								columns={columns}
 								summaryFields={summaryFields}
 								translationNamespaces={translationNamespaces}
+								sofieEnumDefinitons={sofieEnumDefinitons}
 								overrideHelper={tableOverrideHelper}
 								rowId={i}
 								rowObject={obj}
@@ -149,6 +153,7 @@ interface TableRowProps {
 	columns: Record<string, JSONSchema | undefined>
 	summaryFields: SchemaSummaryField[]
 	translationNamespaces: string[]
+	sofieEnumDefinitons: Record<string, SchemaFormSofieEnumDefinition> | undefined
 
 	overrideHelper: OverrideOpHelperArrayTable
 
@@ -163,6 +168,7 @@ function TableRow({
 	columns,
 	summaryFields,
 	translationNamespaces,
+	sofieEnumDefinitons,
 	overrideHelper,
 	rowId,
 	rowObject,
@@ -196,6 +202,7 @@ function TableRow({
 			{isExpanded && (
 				<SchemaFormTableEditRow
 					translationNamespaces={translationNamespaces}
+					sofieEnumDefinitons={sofieEnumDefinitons}
 					rowId={rowId}
 					columns={columns}
 					rowItem={rowItem}

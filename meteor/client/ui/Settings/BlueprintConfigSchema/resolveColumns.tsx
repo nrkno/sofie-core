@@ -63,7 +63,7 @@ export function resolveTableColumns(
 			case ConfigManifestEntryType.SELECT_FROM_COLUMN:
 				return {
 					...column,
-					options: layerMappings ? getTableColumnValues(column, fullConfig, alternateConfig) : [],
+					options: alternateConfig ? getTableColumnValues(column, fullConfig, alternateConfig) : [],
 				}
 			default:
 				return column

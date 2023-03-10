@@ -4,7 +4,7 @@ import { objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import classNames from 'classnames'
 import React, { useCallback } from 'react'
 import { OverrideOpHelperForItemContents } from '../../ui/Settings/util/OverrideOpHelper'
-import { SchemaSummaryField } from './schemaFormUtil'
+import { SchemaFormSofieEnumDefinition, SchemaSummaryField } from './schemaFormUtil'
 import { SchemaFormWithOverrides } from './schemaFormWithOverrides'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 
@@ -63,6 +63,7 @@ export function SchemaTableSummaryRow<T extends string | number>({
 }
 
 interface SchemaFormTableEditRowProps {
+	sofieEnumDefinitons: Record<string, SchemaFormSofieEnumDefinition> | undefined
 	translationNamespaces: string[]
 	rowId: number | string
 	columns: Record<string, JSONSchema | undefined>
@@ -73,6 +74,7 @@ interface SchemaFormTableEditRowProps {
 	overrideHelper: OverrideOpHelperForItemContents
 }
 export function SchemaFormTableEditRow({
+	sofieEnumDefinitons,
 	translationNamespaces,
 	rowId,
 	columns,
@@ -91,6 +93,7 @@ export function SchemaFormTableEditRow({
 							<SchemaFormWithOverrides
 								key={id}
 								schema={schema}
+								sofieEnumDefinitons={sofieEnumDefinitons}
 								item={rowItem}
 								attr={id}
 								overrideHelper={overrideHelper}

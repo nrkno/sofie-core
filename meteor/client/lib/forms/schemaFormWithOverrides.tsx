@@ -20,6 +20,7 @@ import { SchemaFormArrayTable } from './schemaFormTableArray'
 import {
 	joinObjectPathFragments,
 	SchemaFormCommonProps,
+	SchemaFormSofieEnumDefinition,
 	SchemaFormUIField,
 	translateStringIfHasNamespaces,
 } from './schemaFormUtil'
@@ -98,7 +99,15 @@ export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps): JS
 		case TypeName.Boolean:
 			return <BooleanFormWithOverrides {...childProps} />
 		case TypeName.String:
-			if (props.schema.enum) {
+			if (props.schema[SchemaFormUIField.SofieEnum]) {
+				return (
+					<SofieEnumFormWithOverrides
+						{...childProps}
+						sofieEnumDefinitions={props.sofieEnumDefinitons}
+						multiple={false}
+					/>
+				)
+			} else if (props.schema.enum) {
 				return <EnumFormWithOverrides {...childProps} multiple={false} />
 			} else {
 				return <StringFormWithOverrides {...childProps} />
@@ -115,7 +124,15 @@ const ArrayFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 
 	switch (props.schema.items?.type) {
 		case TypeName.String:
-			if (props.schema.items.enum) {
+			if (props.schema[SchemaFormUIField.SofieEnum]) {
+				return (
+					<SofieEnumFormWithOverrides
+						{...childProps}
+						sofieEnumDefinitions={props.sofieEnumDefinitons}
+						multiple={true}
+					/>
+				)
+			} else if (props.schema.items.enum) {
 				return <EnumFormWithOverrides {...childProps} schema={props.schema.items} multiple={true} />
 			} else {
 				return <StringArrayFormWithOverrides {...childProps} />
@@ -145,6 +162,7 @@ const ObjectFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 						item={props.item}
 						overrideHelper={props.overrideHelper}
 						translationNamespaces={props.translationNamespaces}
+						sofieEnumDefinitons={props.sofieEnumDefinitons}
 						allowTables={props.allowTables}
 					/>
 				)
@@ -153,22 +171,59 @@ const ObjectFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 	)
 }
 
+interface SofieEnumFormComponentProps extends FormComponentProps {
+	sofieEnumDefinitions: Record<string, SchemaFormSofieEnumDefinition> | undefined
+
+	multiple: boolean
+}
+
+const SofieEnumFormWithOverrides = ({ sofieEnumDefinitions, ...props }: SofieEnumFormComponentProps) => {
+	const sofieEnum = props.schema[SchemaFormUIField.SofieEnum]
+	const sofieEnumFilter = props.schema[SchemaFormUIField.SofieEnumFilter]
+	const sofieEnumDefinition = sofieEnum && sofieEnumDefinitions ? sofieEnumDefinitions[sofieEnum] : undefined
+
+	const options: DropdownInputOption<any>[] = useMemo(() => {
+		if (sofieEnumDefinition && Array.isArray(sofieEnumFilter) && sofieEnumFilter.length) {
+			// Filter and convert options
+			const validFilter = new Set(sofieEnumFilter)
+			return sofieEnumDefinition.options.filter((opt) => validFilter.has(opt.filter)).map((opt, i) => ({ ...opt, i }))
+		} else if (sofieEnumDefinition) {
+			// Show all the options
+			return sofieEnumDefinition.options.map((opt, i) => ({ ...opt, i }))
+		} else {
+			// Not a valid enum
+			return []
+		}
+	}, [sofieEnumDefinition, sofieEnumFilter])
+
+	return <EnumFormControlWrapper {...props} options={options} />
+}
+
 interface EnumFormComponentProps extends FormComponentProps {
 	multiple: boolean
 }
 
-const EnumFormWithOverrides = ({ schema, commonAttrs, multiple }: EnumFormComponentProps) => {
-	const tsEnumNames = (schema[SchemaFormUIField.TsEnumNames] || []) as string[]
+const EnumFormWithOverrides = (props: EnumFormComponentProps) => {
+	const tsEnumNames = (props.schema[SchemaFormUIField.TsEnumNames] || []) as string[]
 	const options = useMemo(() => {
-		return (schema.enum || []).map((value: any, i: number) =>
+		return (props.schema.enum || []).map((value: any, i: number) =>
 			literal<DropdownInputOption<any>>({
 				value,
 				name: tsEnumNames[i] || value,
 				i,
 			})
 		)
-	}, [schema.enum, tsEnumNames])
+	}, [props.schema.enum, tsEnumNames])
 
+	return <EnumFormControlWrapper {...props} options={options} />
+}
+
+interface EnumFormControlWrapperProps extends FormComponentProps {
+	multiple: boolean
+
+	options: DropdownInputOption<any>[]
+}
+const EnumFormControlWrapper = ({ commonAttrs, multiple, options }: EnumFormControlWrapperProps) => {
 	return (
 		<div className="mod mvs mhs">
 			<LabelAndOverridesForDropdown {...commonAttrs} options={options}>

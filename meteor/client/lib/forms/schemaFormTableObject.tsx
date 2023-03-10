@@ -14,6 +14,7 @@ import { doModalDialog } from '../ModalDialog'
 import {
 	getSchemaSummaryFieldsForObject,
 	joinObjectPathFragments,
+	SchemaFormSofieEnumDefinition,
 	SchemaFormUIField,
 	SchemaSummaryField,
 	translateStringIfHasNamespaces,
@@ -26,6 +27,7 @@ import { SchemaFormTableEditRow, SchemaTableSummaryRow } from './schemaFormTable
 interface SchemaFormObjectTableProps {
 	schema: JSONSchema
 	translationNamespaces: string[]
+	sofieEnumDefinitons?: Record<string, SchemaFormSofieEnumDefinition>
 
 	attr: string
 
@@ -35,6 +37,7 @@ interface SchemaFormObjectTableProps {
 export const SchemaFormObjectTable = ({
 	schema,
 	translationNamespaces,
+	sofieEnumDefinitons,
 	attr,
 	item,
 	overrideHelper,
@@ -76,7 +79,6 @@ export const SchemaFormObjectTable = ({
 
 	const doUndeleteRow = useCallback(
 		(rowId: string) => {
-			console.log('undelete', item.id, joinObjectPathFragments(attr, rowId), rowId)
 			overrideHelper.clearItemOverrides(item.id, joinObjectPathFragments(attr, rowId))
 		},
 		[overrideHelper, item.id, attr]
@@ -174,6 +176,7 @@ export const SchemaFormObjectTable = ({
 									{isExpanded(rowItem.id) && (
 										<SchemaFormTableEditRow
 											translationNamespaces={translationNamespaces}
+											sofieEnumDefinitons={sofieEnumDefinitons}
 											rowId={rowItem.id}
 											columns={columns}
 											rowItem={rowItem}
