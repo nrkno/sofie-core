@@ -5,7 +5,7 @@ import { DragSourceMonitor, DropTargetMonitor, useDrag, useDrop } from 'react-dn
 import { Identifier } from 'dnd-core'
 import { ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
 import { EditAttribute } from '../../../lib/EditAttribute'
-import { BlueprintConfigManifestSettings, SourceLayerDropdownOption } from '../BlueprintConfigManifest'
+import { BlueprintConfigSchemaSettings, SourceLayerDropdownOption } from '../BlueprintConfigSchema'
 import { ShowStyleDragDropTypes } from './DragDropTypesShowStyle'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -201,7 +201,7 @@ export const VariantListItem = ({
 										</label>
 									</div>
 
-									<BlueprintConfigManifestSettings
+									<BlueprintConfigSchemaSettings
 										schema={blueprintConfigSchema}
 										translationNamespaces={blueprintTranslationNamespaces}
 										alternateConfig={applyAndValidateOverrides(baseBlueprintConfigWithOverrides).obj}

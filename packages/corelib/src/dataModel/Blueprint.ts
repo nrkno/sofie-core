@@ -33,8 +33,6 @@ export interface Blueprint {
 
 	studioConfigSchema?: JSONBlob<JSONSchema>
 	showStyleConfigSchema?: JSONBlob<JSONSchema>
-	// studioConfigManifest?: ConfigManifestEntry[]
-	// showStyleConfigManifest?: ConfigManifestEntry[]
 
 	studioConfigPresets?: Record<string, IStudioConfigPreset>
 	showStyleConfigPresets?: Record<string, IShowStyleConfigPreset>

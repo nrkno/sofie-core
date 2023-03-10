@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 import { useTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { BlueprintManifestType, JSONSchema } from '@sofie-automation/blueprints-integration'
-import { BlueprintConfigManifestSettings, SourceLayerDropdownOption } from '../BlueprintConfigManifest'
+import { BlueprintConfigSchemaSettings, SourceLayerDropdownOption } from '../BlueprintConfigSchema'
 import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Blueprints, ShowStyleBases } from '../../../collections'
 import { useTranslation } from 'react-i18next'
@@ -51,7 +51,7 @@ export function ShowStyleBaseBlueprintConfigurationSettings(
 			<SelectBlueprint showStyleBase={props.showStyleBase} />
 			<SelectConfigPreset showStyleBase={props.showStyleBase} />
 
-			<BlueprintConfigManifestSettings
+			<BlueprintConfigSchemaSettings
 				schema={props.schema}
 				translationNamespaces={translationNamespaces}
 				layerMappings={props.layerMappings}

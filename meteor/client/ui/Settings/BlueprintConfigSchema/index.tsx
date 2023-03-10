@@ -21,7 +21,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 export { SourceLayerDropdownOption }
 
-interface IConfigManifestSettingsProps {
+interface BlueprintConfigSchemaSettingsProps {
 	schema: JSONSchema | undefined
 
 	translationNamespaces: string[]
@@ -36,7 +36,7 @@ interface IConfigManifestSettingsProps {
 	saveOverrides: (newOps: SomeObjectOverrideOp[]) => void
 }
 
-export function BlueprintConfigManifestSettings({
+export function BlueprintConfigSchemaSettings({
 	schema,
 	translationNamespaces,
 	alternateConfig,
@@ -45,7 +45,7 @@ export function BlueprintConfigManifestSettings({
 
 	configObject,
 	saveOverrides,
-}: IConfigManifestSettingsProps): JSX.Element {
+}: BlueprintConfigSchemaSettingsProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const saveOverrides2 = useCallback(

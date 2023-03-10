@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 import { useTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
-import { BlueprintConfigManifestSettings } from '../BlueprintConfigManifest'
+import { BlueprintConfigSchemaSettings } from '../BlueprintConfigSchema'
 import {
 	applyAndValidateOverrides,
 	SomeObjectOverrideOp,
@@ -63,7 +63,7 @@ export function StudioBlueprintConfigurationSettings(props: StudioBlueprintConfi
 			<SelectBlueprint studio={props.studio} />
 			<SelectConfigPreset studio={props.studio} blueprint={blueprint} />
 
-			<BlueprintConfigManifestSettings
+			<BlueprintConfigSchemaSettings
 				schema={configSchema}
 				translationNamespaces={translationNamespaces}
 				layerMappings={layerMappings}
