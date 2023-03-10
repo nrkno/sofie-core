@@ -16,7 +16,7 @@ import {
 import { MultiLineTextInputControl } from '../Components/MultiLineTextInput'
 import { TextInputControl } from '../Components/TextInput'
 import { JSONSchema, TypeName } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
-import { SchemaFormTable } from './schemaFormTable'
+import { SchemaFormObjectTable, SchemaFormArrayTable } from './schemaFormTable'
 import {
 	joinObjectPathFragments,
 	SchemaFormCommonProps,
@@ -77,6 +77,12 @@ export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps): JS
 		case TypeName.Object:
 			if (props.schema[SchemaFormUIField.DisplayType] === 'json') {
 				return <JsonFormWithOverrides {...childProps} />
+			} else if (props.schema.patternProperties) {
+				if (props.allowTables) {
+					return <SchemaFormObjectTable {...props} />
+				} else {
+					return <>{t('Tables are not supported here')}</>
+				}
 			} else {
 				return <ObjectFormWithOverrides {...props} />
 			}
@@ -115,7 +121,7 @@ const ArrayFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 			}
 		case TypeName.Object:
 			if (props.allowTables) {
-				return <SchemaFormTable {...props} />
+				return <SchemaFormArrayTable {...props} />
 			} else {
 				return <>{t('Tables are not supported here')}</>
 			}

@@ -1,6 +1,6 @@
 import { faCheck, faPencilAlt, faPlus, faSync, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { clone, literal, objectPathGet, objectPathSet } from '@sofie-automation/corelib/dist/lib'
+import { clone, getRandomString, literal, objectPathGet, objectPathSet } from '@sofie-automation/corelib/dist/lib'
 import classNames from 'classnames'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -27,7 +27,57 @@ interface SchemaFormTableProps {
 	item: WrappedOverridableItemNormal<any>
 	overrideHelper: OverrideOpHelper
 }
-export const SchemaFormTable = ({
+export const SchemaFormArrayTable = ({
+	schema,
+	translationNamespaces,
+	attr,
+	item,
+	overrideHelper,
+}: SchemaFormTableProps): JSX.Element => {
+	const rowsArray: any[] = useMemo(
+		() => (attr ? objectPathGet(item.computed, attr) : item.computed) || [],
+		[attr, item.computed]
+	)
+	const rows: Record<string | number, any> = useMemo(() => Object.assign({}, rowsArray), [rowsArray])
+
+	const addNewItem = useCallback(() => {
+		// Build the new object
+		const newObj = clone(rowsArray)
+		newObj.push(getSchemaDefaultValues(schema.items))
+
+		// Send it onwards
+		overrideHelper.setItemValue(item.id, attr, newObj)
+	}, [schema.items, overrideHelper, rowsArray, item.id, attr])
+
+	const resyncTable = useCallback(
+		() => overrideHelper.clearItemOverrides(item.id, attr),
+		[overrideHelper, item.id, attr]
+	)
+
+	const tableOverrideHelper = useMemo(
+		() => new OverrideOpHelperArrayTable(overrideHelper, item.id, rowsArray, attr),
+		[overrideHelper, item.id, rows, attr]
+	)
+
+	const title = schema[SchemaFormUIField.Title]
+
+	return (
+		<>
+			{title && <h2 className="mhn">{translateStringIfHasNamespaces(title, translationNamespaces)}</h2>}
+			<SchemaFormInner
+				rowSchema={schema.items}
+				rows={rows}
+				addNewItem={addNewItem}
+				resyncTable={resyncTable}
+				tableOverrideHelper={tableOverrideHelper}
+				translationNamespaces={translationNamespaces}
+				attr={attr}
+				item={item}
+			/>
+		</>
+	)
+}
+export const SchemaFormObjectTable = ({
 	schema,
 	translationNamespaces,
 	attr,
@@ -36,36 +86,109 @@ export const SchemaFormTable = ({
 }: SchemaFormTableProps): JSX.Element => {
 	const { t } = useTranslation()
 
-	const rows = useMemo(() => (attr ? objectPathGet(item.computed, attr) : item.computed) || [], [attr, item.computed])
+	const rows: Record<string | number, any> = useMemo(
+		() => Object.assign({}, (attr ? objectPathGet(item.computed, attr) : item.computed) || {}),
+		[attr, item.computed]
+	)
+
+	const rowSchema = schema.patternProperties?.['']
 
 	const addNewItem = useCallback(() => {
 		// Build the new object
 		const newObj = clone(rows)
-		newObj.push(getSchemaDefaultValues(schema.items))
 
-		// Send it onwards
+		const newRow = getSchemaDefaultValues(rowSchema)
+
+		newObj[getRandomString()] = newRow
+
 		overrideHelper.setItemValue(item.id, attr, newObj)
-	}, [schema.items, overrideHelper, rows, item.id])
+	}, [rowSchema, overrideHelper, rows, item.id, attr])
+
 	const resyncTable = useCallback(
 		() => overrideHelper.clearItemOverrides(item.id, attr),
-		[schema.items, overrideHelper, rows, item.id]
+		[overrideHelper, item.id, attr]
 	)
 
 	const tableOverrideHelper = useMemo(
-		() => new OverrideOpHelperTable(overrideHelper, item.id, rows, attr),
+		() => new OverrideOpHelperObjectTable(overrideHelper, item.id, rows, attr),
 		[overrideHelper, item.id, rows, attr]
 	)
 
 	const title = schema[SchemaFormUIField.Title]
+	const titleElemenet = title && <h2 className="mhn">{translateStringIfHasNamespaces(title, translationNamespaces)}</h2>
+
+	if (Object.keys(schema.properties || {}).length > 0) {
+		return (
+			<>
+				{titleElemenet}
+				{t('Table is not allowed to have `properties` defined')}{' '}
+			</>
+		)
+	} else if (
+		schema.patternProperties?.['']?.type !== 'object' ||
+		Object.keys(schema.patternProperties || {}).length > 1
+	) {
+		return (
+			<>
+				{titleElemenet}
+				{t('Table is only allowed the wildcard `patternProperties`')}{' '}
+			</>
+		)
+	} else {
+		return (
+			<>
+				{titleElemenet}
+				<SchemaFormInner
+					rowSchema={rowSchema}
+					rows={rows}
+					addNewItem={addNewItem}
+					resyncTable={resyncTable}
+					tableOverrideHelper={tableOverrideHelper}
+					translationNamespaces={translationNamespaces}
+					attr={attr}
+					item={item}
+				/>
+			</>
+		)
+	}
+}
+
+interface SchemaFormTableInnerProps {
+	rowSchema: JSONSchema | undefined
+	rows: Record<string | number, any>
+
+	addNewItem: () => void
+	resyncTable: () => void
+	tableOverrideHelper: OverrideOpHelper
+
+	translationNamespaces: string[]
+
+	attr: string
+
+	item: WrappedOverridableItemNormal<any>
+}
+const SchemaFormInner = ({
+	rowSchema,
+	rows,
+
+	addNewItem,
+	resyncTable,
+	tableOverrideHelper,
+
+	translationNamespaces,
+	attr,
+	item,
+}: SchemaFormTableInnerProps): JSX.Element => {
+	const { t } = useTranslation()
+
 	const isOverridden = hasOpWithPath(item.overrideOps, item.id, attr)
 
 	return (
 		<>
-			{title && <h2 className="mhn">{translateStringIfHasNamespaces(title, translationNamespaces)}</h2>}
 			<table className={'expando setings-config-table table'}>
 				<SchemaFormTableContents
 					translationNamespaces={translationNamespaces}
-					columns={schema.items?.properties || {}}
+					columns={rowSchema?.properties || {}}
 					rows={rows}
 					overrideHelper={tableOverrideHelper}
 				/>
@@ -92,7 +215,7 @@ interface SchemaFormTableContentsProps {
 	columns: Record<string, JSONSchema>
 	translationNamespaces: string[]
 
-	rows: any[]
+	rows: Record<string | number, any>
 	overrideHelper: OverrideOpHelper
 }
 function SchemaFormTableContents({
@@ -105,7 +228,7 @@ function SchemaFormTableContents({
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
 
 	const confirmRemove = useCallback(
-		(rowId: number) => {
+		(rowId: number | string) => {
 			doModalDialog({
 				title: t('Remove this item?'),
 				no: t('Cancel'),
@@ -142,7 +265,8 @@ function SchemaFormTableContents({
 				</tr>
 			</thead>
 			<tbody>
-				{rows.map((obj: any, i: number) => {
+				{Object.entries(rows).map(([i0, obj]) => {
+					const i = i0 as string | number
 					return (
 						<React.Fragment key={i}>
 							<SchemaTableSummaryRow
@@ -228,9 +352,9 @@ export function SchemaTableSummaryRow<T extends string | number>({
 
 interface SchemaFormTableEditRowProps {
 	translationNamespaces: string[]
-	rowId: number
+	rowId: number | string
 	columns: Record<string, JSONSchema | undefined>
-	editItem: (rowId: number, forceState?: boolean) => void
+	editItem: (rowId: number | string, forceState?: boolean) => void
 
 	rowObject: any
 
@@ -293,13 +417,13 @@ function SchemaFormTableEditRow({
  * This is intended to be a break point to avoid tables from attempting to define operations on arrays,
  * and instead make the table be treated as a single blob.
  */
-class OverrideOpHelperTable implements OverrideOpHelper {
+class OverrideOpHelperArrayTable implements OverrideOpHelper {
 	readonly #baseHelper: OverrideOpHelper
 	readonly #itemId: string
-	readonly #currentRows: any
+	readonly #currentRows: any[]
 	readonly #path: string
 
-	constructor(baseHelper: OverrideOpHelper, itemId: string, currentRows: any, path: string) {
+	constructor(baseHelper: OverrideOpHelper, itemId: string, currentRows: any[], path: string) {
 		this.#baseHelper = baseHelper
 		this.#itemId = itemId
 		this.#currentRows = currentRows
@@ -339,6 +463,64 @@ class OverrideOpHelperTable implements OverrideOpHelper {
 			// Build the new object
 			const newObj = clone(this.#currentRows)
 			newObj[Number(rowId)] = value
+
+			// Send it onwards
+			this.#baseHelper.setItemValue(this.#itemId, this.#path, newObj)
+		}
+	}
+}
+
+/**
+ * The OverrideOp system does not support Arrays currently.
+ * This is intended to be a break point to avoid tables from attempting to define operations on arrays,
+ * and instead make the table be treated as a single blob.
+ */
+class OverrideOpHelperObjectTable implements OverrideOpHelper {
+	readonly #baseHelper: OverrideOpHelper
+	readonly #itemId: string
+	readonly #currentRows: Record<string | number, any>
+	readonly #path: string
+
+	constructor(baseHelper: OverrideOpHelper, itemId: string, currentRows: Record<string | number, any>, path: string) {
+		this.#baseHelper = baseHelper
+		this.#itemId = itemId
+		this.#currentRows = currentRows
+		this.#path = path
+	}
+
+	clearItemOverrides(_itemId: string, _subPath: string): void {
+		// Not supported as this is faking an item with overrides
+	}
+	resetItem(_itemId: string): void {
+		// Not supported as this is faking an item with overrides
+	}
+	deleteItem(rowId: string): void {
+		// Delete the row
+		const newObj = clone(this.#currentRows)
+		delete newObj[rowId]
+
+		// Send it onwards
+		this.#baseHelper.setItemValue(this.#itemId, this.#path, newObj)
+	}
+	changeItemId(_oldItemId: string, _newItemId: string): void {
+		// Not supported as this is faking an item with overrides
+	}
+	setItemValue(rowId: string, subPath: string, value: any): void {
+		// Build the new object
+		const newObj = clone(this.#currentRows)
+		objectPathSet(newObj, `${rowId}.${subPath}`, value)
+
+		// Send it onwards
+		this.#baseHelper.setItemValue(this.#itemId, this.#path, newObj)
+	}
+	replaceItem(rowId: string, value: any): void {
+		if (value === undefined) {
+			// No value means it is a delete
+			this.deleteItem(rowId)
+		} else {
+			// Build the new object
+			const newObj = clone(this.#currentRows)
+			newObj[rowId] = value
 
 			// Send it onwards
 			this.#baseHelper.setItemValue(this.#itemId, this.#path, newObj)
