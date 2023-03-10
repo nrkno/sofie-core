@@ -599,7 +599,7 @@ function checkStreamFormatsAndCounts(
 						status: PieceStatusCode.SOURCE_BROKEN,
 						message: generateTranslation('{{sourceLayer}} has the wrong format: {{format}}', {
 							sourceLayer: sourceLayer.name,
-							deepScanFormat,
+							format: deepScanFormat,
 						}),
 					})
 				}
