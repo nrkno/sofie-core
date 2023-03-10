@@ -11,7 +11,7 @@ import { TextInputControl } from '../../../lib/Components/TextInput'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { DropdownInputControl, DropdownInputOption } from '../../../lib/Components/DropdownInput'
-import { SchemaTableSummaryRow } from '../../../lib/forms/schemaFormTableArray'
+import { SchemaTableSummaryRow } from '../../../lib/forms/schemaFormTableShared'
 import {
 	SchemaSummaryField,
 	getSchemaSummaryFields,
