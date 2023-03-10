@@ -1,9 +1,10 @@
-import { ConfigManifestEntrySelectFromColumn, IBlueprintConfig } from '@sofie-automation/blueprints-integration'
+import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
 import { objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import { DropdownInputOption } from '../../../lib/Components/DropdownInput'
 
 export function getTableColumnValues(
-	item: ConfigManifestEntrySelectFromColumn<boolean>,
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+	item: any,
 	object: IBlueprintConfig,
 	alternateConfig: IBlueprintConfig | undefined
 ): DropdownInputOption<string>[] {
