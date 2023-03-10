@@ -1,4 +1,4 @@
-import { faCheck, faPencilAlt, faPlus, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faPencilAlt, faPlus, faSync, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { clone, literal, objectPathGet, objectPathSet } from '@sofie-automation/corelib/dist/lib'
 import classNames from 'classnames'
@@ -16,6 +16,7 @@ import {
 import { SchemaFormWithOverrides } from './schemaFormWithOverrides'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { getSchemaDefaultValues } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
+import { hasOpWithPath } from '../Components/util'
 
 interface SchemaFormTableProps {
 	schema: JSONSchema
@@ -33,6 +34,8 @@ export const SchemaFormTable = ({
 	item,
 	overrideHelper,
 }: SchemaFormTableProps): JSX.Element => {
+	const { t } = useTranslation()
+
 	const rows = useMemo(() => (attr ? objectPathGet(item.computed, attr) : item.computed) || [], [attr, item.computed])
 
 	const addNewItem = useCallback(() => {
@@ -43,6 +46,10 @@ export const SchemaFormTable = ({
 		// Send it onwards
 		overrideHelper.setItemValue(item.id, attr, newObj)
 	}, [schema.items, overrideHelper, rows, item.id])
+	const resyncTable = useCallback(
+		() => overrideHelper.clearItemOverrides(item.id, attr),
+		[schema.items, overrideHelper, rows, item.id]
+	)
 
 	const tableOverrideHelper = useMemo(
 		() => new OverrideOpHelperTable(overrideHelper, item.id, rows, attr),
@@ -50,6 +57,7 @@ export const SchemaFormTable = ({
 	)
 
 	const title = schema[SchemaFormUIField.Title]
+	const isOverridden = hasOpWithPath(item.overrideOps, item.id, attr)
 
 	return (
 		<>
@@ -67,6 +75,14 @@ export const SchemaFormTable = ({
 				<button className="btn btn-primary" onClick={addNewItem}>
 					<FontAwesomeIcon icon={faPlus} />
 				</button>
+				&nbsp;
+				{item.defaults && (
+					<button className="btn btn-primary" onClick={resyncTable} title="Reset to default" disabled={!isOverridden}>
+						{t('Reset')}
+						&nbsp;
+						<FontAwesomeIcon icon={faSync} />
+					</button>
+				)}
 			</div>
 		</>
 	)
