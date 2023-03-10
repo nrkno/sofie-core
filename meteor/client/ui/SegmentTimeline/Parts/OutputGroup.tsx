@@ -10,6 +10,7 @@ import { DEBUG_MODE } from '../SegmentTimelineDebugMode'
 import { RundownUtils } from '../../../lib/rundown'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { UIStudio } from '../../../../lib/api/studios'
+import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 interface IOutputGroupProps {
 	layer: IOutputLayerUi
@@ -18,6 +19,7 @@ interface IOutputGroupProps {
 	studio: UIStudio
 	segment: SegmentUi
 	part: PartUi
+	pieces: CalculateTimingsPiece[]
 	mediaPreviewUrl: string
 	startsAt: number
 	duration: number
@@ -70,6 +72,7 @@ export function OutputGroup(props: IOutputGroupProps): JSX.Element {
 							outputGroupCollapsed={isOutputGroupCollapsed}
 							segment={props.segment}
 							part={props.part}
+							pieces={props.pieces}
 							startsAt={props.startsAt}
 							duration={props.duration}
 							expectedDuration={props.expectedDuration}
@@ -107,6 +110,7 @@ export function OutputGroup(props: IOutputGroupProps): JSX.Element {
 						outputGroupCollapsed={isOutputGroupCollapsed}
 						segment={props.segment}
 						part={props.part}
+						pieces={props.pieces}
 						startsAt={props.startsAt}
 						duration={props.duration}
 						expectedDuration={props.expectedDuration}

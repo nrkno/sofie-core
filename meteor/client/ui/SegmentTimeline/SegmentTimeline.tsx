@@ -42,6 +42,7 @@ import { UIStudio } from '../../../lib/api/studios'
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentNoteCounts } from '../SegmentContainer/withResolvedSegment'
+import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 interface IProps {
 	id: string
@@ -51,6 +52,7 @@ interface IProps {
 	followLiveSegments: boolean
 	studio: UIStudio
 	parts: Array<PartUi>
+	pieces: Map<PartId, CalculateTimingsPiece[]>
 	segmentNoteCounts: SegmentNoteCounts
 	timeScale: number
 	maxTimeScale: number
@@ -159,7 +161,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 				total += duration
 			})
 		} else {
-			total = RundownUtils.getSegmentDuration(this.props.parts, true)
+			total = RundownUtils.getSegmentDuration(this.props.parts, this.props.pieces, true)
 		}
 		return total
 	}
@@ -583,7 +585,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	private getSegmentDuration() {
-		return (this.props.parts && RundownUtils.getSegmentDuration(this.props.parts)) || 0
+		return (this.props.parts && RundownUtils.getSegmentDuration(this.props.parts, this.props.pieces)) || 0
 	}
 
 	private isOutputGroupCollapsed(outputGroup: IOutputLayer) {
@@ -709,6 +711,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						<SegmentTimelineSmallPartFlag
 							t={t}
 							parts={emitSmallPartsInFlag}
+							pieces={this.props.pieces}
 							followingPart={part}
 							sourceLayers={this.props.segment.sourceLayers}
 							timeScale={this.props.timeScale}
@@ -754,12 +757,14 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						}
 						showDurationSourceLayers={this.props.showDurationSourceLayers}
 						part={part}
+						pieces={this.props.pieces.get(part.partId) ?? []}
 						isBudgetGap={false}
 					/>
 					{emitSmallPartsInFlag && emitSmallPartsInFlagAtEnd && (
 						<SegmentTimelineSmallPartFlag
 							t={t}
 							parts={emitSmallPartsInFlag}
+							pieces={this.props.pieces}
 							followingPart={undefined}
 							sourceLayers={this.props.segment.sourceLayers}
 							timeScale={this.props.timeScale}
@@ -810,6 +815,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				isAfterLastValidInSegmentAndItsLive={false}
 				isBudgetGap={true}
 				part={BUDGET_GAP_PART}
+				pieces={[]}
 				showDurationSourceLayers={this.props.showDurationSourceLayers}
 			/>
 		)
@@ -1027,6 +1033,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 							<SegmentDuration
 								segmentId={this.props.segment._id}
 								parts={this.props.parts}
+								pieces={this.props.pieces}
 								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
 								fixed={this.props.fixedSegmentDuration}
 							/>
@@ -1069,6 +1076,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					frameRate={this.props.studio.settings.frameRate}
 					isLiveSegment={this.props.isLiveSegment}
 					partInstances={this.props.parts}
+					pieces={this.props.pieces}
 					currentPartInstanceId={this.props.isLiveSegment ? this.props.playlist.currentPartInstanceId : null}
 				/>
 				<div

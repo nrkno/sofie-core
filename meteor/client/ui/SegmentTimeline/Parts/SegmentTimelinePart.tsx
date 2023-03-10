@@ -36,6 +36,7 @@ import { OutputGroup } from './OutputGroup'
 import { InvalidPartCover } from './InvalidPartCover'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { UIStudio } from '../../../../lib/api/studios'
+import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -51,6 +52,7 @@ interface IProps {
 	playlist: RundownPlaylist
 	studio: UIStudio
 	part: PartUi
+	pieces: CalculateTimingsPiece[]
 	timeScale: number
 	onCollapseOutputToggle?: (layer: IOutputLayerUi, event: any) => void
 	collapsedOutputs: {
@@ -200,6 +202,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 				nextProps.scrollLeft,
 				nextProps.scrollWidth,
 				nextProps.part,
+				nextProps.pieces,
 				SegmentTimelinePartClass.getPartStartsAt(nextProps),
 				partDisplayDuration
 			)
@@ -436,6 +439,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								sourceLayers={sourceLayers}
 								segment={this.props.segment}
 								part={part}
+								pieces={this.props.pieces}
 								playlist={this.props.playlist}
 								studio={this.props.studio}
 								startsAt={SegmentTimelinePartClass.getPartStartsAt(this.props) || this.props.part.startsAt || 0}

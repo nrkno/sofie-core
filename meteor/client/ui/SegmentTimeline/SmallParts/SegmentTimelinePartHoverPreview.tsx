@@ -7,11 +7,14 @@ import { PartUi, SegmentUi } from '../SegmentTimelineContainer'
 import { SegmentTimelinePart } from '../Parts/SegmentTimelinePart'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { UIStudio } from '../../../../lib/api/studios'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 export const SegmentTimelinePartHoverPreview = ({
 	t,
 	showMiniInspector,
 	parts,
+	pieces,
 	followingPart,
 	segment,
 	playlist,
@@ -28,6 +31,7 @@ export const SegmentTimelinePartHoverPreview = ({
 	t: TFunction
 	showMiniInspector: boolean
 	parts: PartUi[]
+	pieces: Map<PartId, CalculateTimingsPiece[]>
 	followingPart: PartUi | undefined
 
 	segment: SegmentUi
@@ -96,6 +100,7 @@ export const SegmentTimelinePartHoverPreview = ({
 							isLastInSegment={isLastInSegment && !followingPart && parts.length - 1 === index}
 							isAfterLastValidInSegmentAndItsLive={false}
 							part={part}
+							pieces={pieces.get(part.partId) ?? []}
 							isPreview={true}
 							isBudgetGap={false}
 							showDurationSourceLayers={showDurationSourceLayers}
@@ -123,6 +128,7 @@ export const SegmentTimelinePartHoverPreview = ({
 						isLastInSegment={false}
 						isAfterLastValidInSegmentAndItsLive={false}
 						part={followingPart}
+						pieces={pieces.get(followingPart.partId) ?? []}
 						isPreview={true}
 						cropDuration={followingPartPreviewDuration}
 						isBudgetGap={false}
