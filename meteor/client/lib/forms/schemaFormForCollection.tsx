@@ -6,7 +6,7 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import React, { useMemo } from 'react'
 import { MongoCollection } from '../../../lib/collections/lib'
-import { WrappedOverridableItemNormal, OverrideOpHelper } from '../../ui/Settings/util/OverrideOpHelper'
+import { WrappedOverridableItemNormal, OverrideOpHelperForItemContents } from '../../ui/Settings/util/OverrideOpHelper'
 import { SchemaFormCommonProps } from './schemaFormUtil'
 import { SchemaFormWithOverrides } from './schemaFormWithOverrides'
 
@@ -83,7 +83,7 @@ export function SchemaFormForCollection({
  * An alternate OverrideOpHelper designed to directly mutate a collection, instead of using the `ObjectWithOverrides` system.
  * This allows us to have one SchemaForm implementation that can handle working with `ObjectWithOverrides`, and basic objects in mongodb
  */
-class OverrideOpHelperCollection implements OverrideOpHelper {
+class OverrideOpHelperCollection implements OverrideOpHelperForItemContents {
 	readonly #collection: MongoCollection<any>
 	readonly #objectId: ProtectedString<any>
 	readonly #basePath: string
@@ -101,15 +101,6 @@ class OverrideOpHelperCollection implements OverrideOpHelper {
 			},
 		})
 	}
-	resetItem(_itemId: string): void {
-		// Not supported as this is faking an item with overrides
-	}
-	deleteItem(_itemId: string): void {
-		// Not supported as this is faking an item with overrides
-	}
-	changeItemId(_oldItemId: string, _newItemId: string): void {
-		// Not supported as this is faking an item with overrides
-	}
 	setItemValue(_itemId: string, subPath: string, value: any): void {
 		if (value === undefined) {
 			this.#collection.update(this.#objectId, {
@@ -124,8 +115,5 @@ class OverrideOpHelperCollection implements OverrideOpHelper {
 				},
 			})
 		}
-	}
-	replaceItem(_itemId: string, _value: any): void {
-		// Not supported as this is faking an item with overrides
 	}
 }

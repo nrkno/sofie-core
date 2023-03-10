@@ -109,7 +109,7 @@ export function getAllCurrentAndDeletedItemsFromOverrides<T extends object>(
 
 type SaveOverridesFunction = (newOps: SomeObjectOverrideOp[]) => void
 
-export interface OverrideOpHelper {
+export interface OverrideOpHelperForItemContents {
 	/**
 	 * Clear all of the overrides for an value inside of an item
 	 * This acts as a reset of property of its child properties
@@ -117,6 +117,14 @@ export interface OverrideOpHelper {
 	 */
 	clearItemOverrides(itemId: string, subPath: string): void
 
+	/**
+	 * Set the value of a property of an item.
+	 * Note: the id cannot be changed in this way
+	 */
+	setItemValue(itemId: string, subPath: string, value: any): void
+}
+
+export interface OverrideOpHelper extends OverrideOpHelperForItemContents {
 	/**
 	 * Clear all of the overrides for an item
 	 * This acts as a reset to defaults or undelete
@@ -135,12 +143,6 @@ export interface OverrideOpHelper {
 	 * Only possible when the item being renamed does not exist in the defaults
 	 */
 	changeItemId(oldItemId: string, newItemId: string): void
-
-	/**
-	 * Set the value of a property of an item.
-	 * Note: the id cannot be changed in this way
-	 */
-	setItemValue(itemId: string, subPath: string, value: any): void
 
 	/**
 	 * Replace a whole item with a new object

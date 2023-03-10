@@ -1,7 +1,7 @@
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { WrappedOverridableItemNormal, OverrideOpHelper } from '../../ui/Settings/util/OverrideOpHelper'
+import { WrappedOverridableItemNormal, OverrideOpHelperForItemContents } from '../../ui/Settings/util/OverrideOpHelper'
 import { CheckboxControl } from '../Components/Checkbox'
 import { DropdownInputOption, DropdownInputControl } from '../Components/DropdownInput'
 import { FloatInputControl } from '../Components/FloatInput'
@@ -29,7 +29,7 @@ interface SchemaFormWithOverridesProps extends SchemaFormCommonProps {
 	attr: string
 
 	item: WrappedOverridableItemNormal<any>
-	overrideHelper: OverrideOpHelper
+	overrideHelper: OverrideOpHelperForItemContents
 }
 
 interface FormComponentProps {
@@ -40,7 +40,7 @@ interface FormComponentProps {
 		hint: string | undefined
 
 		item: WrappedOverridableItemNormal<any>
-		overrideHelper: OverrideOpHelper
+		overrideHelper: OverrideOpHelperForItemContents
 		itemKey: string
 		opPrefix: string
 	}

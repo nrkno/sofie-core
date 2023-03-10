@@ -4,8 +4,7 @@ import { objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ReadonlyDeep } from 'type-fest'
-import { OverrideOpHelper, WrappedOverridableItemNormal } from '../../ui/Settings/util/OverrideOpHelper'
-import { MultiSelectOptions } from '../multiSelect'
+import { OverrideOpHelperForItemContents, WrappedOverridableItemNormal } from '../../ui/Settings/util/OverrideOpHelper'
 import { DropdownInputOption, findOptionByValue } from './DropdownInput'
 import { hasOpWithPath } from './util'
 
@@ -15,7 +14,7 @@ export interface LabelAndOverridesProps<T extends object, TValue> {
 	item: WrappedOverridableItemNormal<T>
 	itemKey: keyof ReadonlyDeep<T>
 	opPrefix: string
-	overrideHelper: OverrideOpHelper
+	overrideHelper: OverrideOpHelperForItemContents
 
 	/** Move the label to after the input */
 	labelAfter?: boolean

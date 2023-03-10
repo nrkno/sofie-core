@@ -1,6 +1,6 @@
 import { literal, objectPathSet } from '@sofie-automation/corelib/dist/lib'
 import React, { useCallback, useMemo, useState } from 'react'
-import { WrappedOverridableItemNormal, OverrideOpHelper } from '../../ui/Settings/util/OverrideOpHelper'
+import { WrappedOverridableItemNormal, OverrideOpHelperForItemContents } from '../../ui/Settings/util/OverrideOpHelper'
 import { SchemaFormCommonProps } from './schemaFormUtil'
 import { SchemaFormWithOverrides } from './schemaFormWithOverrides'
 
@@ -33,7 +33,7 @@ export function SchemaFormInPlace({ object, ...commonProps }: SchemaFormInPlaceP
  * An alternate OverrideOpHelper designed to directly mutate an object, instead of using the `ObjectWithOverrides` system.
  * This allows us to have one SchemaForm implementation that can handle working with `ObjectWithOverrides`, and simpler options
  */
-class OverrideOpHelperInPlace implements OverrideOpHelper {
+class OverrideOpHelperInPlace implements OverrideOpHelperForItemContents {
 	readonly #object: any
 	readonly #forceRender: () => void
 
@@ -45,20 +45,8 @@ class OverrideOpHelperInPlace implements OverrideOpHelper {
 	clearItemOverrides(_itemId: string, _subPath: string): void {
 		// Not supported as this is faking an item with overrides
 	}
-	resetItem(_itemId: string): void {
-		// Not supported as this is faking an item with overrides
-	}
-	deleteItem(_itemId: string): void {
-		// Not supported as this is faking an item with overrides
-	}
-	changeItemId(_oldItemId: string, _newItemId: string): void {
-		// Not supported as this is faking an item with overrides
-	}
 	setItemValue(_itemId: string, subPath: string, value: any): void {
 		objectPathSet(this.#object, subPath, value)
 		this.#forceRender()
-	}
-	replaceItem(_itemId: string, _value: any): void {
-		// Not supported as this is faking an item with overrides
 	}
 }

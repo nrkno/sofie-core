@@ -4,7 +4,7 @@ import { clone, getRandomString, literal, objectPathGet, objectPathSet } from '@
 import classNames from 'classnames'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { WrappedOverridableItemNormal, OverrideOpHelper } from '../../ui/Settings/util/OverrideOpHelper'
+import { WrappedOverridableItemNormal, OverrideOpHelperForItemContents } from '../../ui/Settings/util/OverrideOpHelper'
 import { useToggleExpandHelper } from '../../ui/Settings/util/ToggleExpandedHelper'
 import { doModalDialog } from '../ModalDialog'
 import {
@@ -25,7 +25,7 @@ interface SchemaFormTableProps {
 	attr: string
 
 	item: WrappedOverridableItemNormal<any>
-	overrideHelper: OverrideOpHelper
+	overrideHelper: OverrideOpHelperForItemContents
 }
 export const SchemaFormArrayTable = ({
 	schema,
@@ -159,7 +159,7 @@ interface SchemaFormTableInnerProps {
 
 	addNewItem: () => void
 	resyncTable: () => void
-	tableOverrideHelper: OverrideOpHelper
+	tableOverrideHelper: OverrideOpHelperTableBase
 
 	translationNamespaces: string[]
 
@@ -216,7 +216,7 @@ interface SchemaFormTableContentsProps {
 	translationNamespaces: string[]
 
 	rows: Record<string | number, any>
-	overrideHelper: OverrideOpHelper
+	overrideHelper: OverrideOpHelperTableBase
 }
 function SchemaFormTableContents({
 	columns,
@@ -358,7 +358,7 @@ interface SchemaFormTableEditRowProps {
 
 	rowObject: any
 
-	overrideHelper: OverrideOpHelper
+	overrideHelper: OverrideOpHelperForItemContents
 }
 function SchemaFormTableEditRow({
 	translationNamespaces,
@@ -412,18 +412,22 @@ function SchemaFormTableEditRow({
 	)
 }
 
+interface OverrideOpHelperTableBase extends OverrideOpHelperForItemContents {
+	deleteItem(rowId: string): void
+}
+
 /**
  * The OverrideOp system does not support Arrays currently.
  * This is intended to be a break point to avoid tables from attempting to define operations on arrays,
  * and instead make the table be treated as a single blob.
  */
-class OverrideOpHelperArrayTable implements OverrideOpHelper {
-	readonly #baseHelper: OverrideOpHelper
+class OverrideOpHelperArrayTable implements OverrideOpHelperTableBase {
+	readonly #baseHelper: OverrideOpHelperForItemContents
 	readonly #itemId: string
 	readonly #currentRows: any[]
 	readonly #path: string
 
-	constructor(baseHelper: OverrideOpHelper, itemId: string, currentRows: any[], path: string) {
+	constructor(baseHelper: OverrideOpHelperForItemContents, itemId: string, currentRows: any[], path: string) {
 		this.#baseHelper = baseHelper
 		this.#itemId = itemId
 		this.#currentRows = currentRows
@@ -431,9 +435,6 @@ class OverrideOpHelperArrayTable implements OverrideOpHelper {
 	}
 
 	clearItemOverrides(_itemId: string, _subPath: string): void {
-		// Not supported as this is faking an item with overrides
-	}
-	resetItem(_itemId: string): void {
 		// Not supported as this is faking an item with overrides
 	}
 	deleteItem(rowId: string): void {
@@ -444,9 +445,6 @@ class OverrideOpHelperArrayTable implements OverrideOpHelper {
 		// Send it onwards
 		this.#baseHelper.setItemValue(this.#itemId, this.#path, newObj)
 	}
-	changeItemId(_oldItemId: string, _newItemId: string): void {
-		// Not supported as this is faking an item with overrides
-	}
 	setItemValue(rowId: string, subPath: string, value: any): void {
 		// Build the new object
 		const newObj = clone(this.#currentRows)
@@ -455,19 +453,6 @@ class OverrideOpHelperArrayTable implements OverrideOpHelper {
 		// Send it onwards
 		this.#baseHelper.setItemValue(this.#itemId, this.#path, newObj)
 	}
-	replaceItem(rowId: string, value: any): void {
-		if (value === undefined) {
-			// No value means it is a delete
-			this.deleteItem(rowId)
-		} else {
-			// Build the new object
-			const newObj = clone(this.#currentRows)
-			newObj[Number(rowId)] = value
-
-			// Send it onwards
-			this.#baseHelper.setItemValue(this.#itemId, this.#path, newObj)
-		}
-	}
 }
 
 /**
@@ -475,13 +460,18 @@ class OverrideOpHelperArrayTable implements OverrideOpHelper {
  * This is intended to be a break point to avoid tables from attempting to define operations on arrays,
  * and instead make the table be treated as a single blob.
  */
-class OverrideOpHelperObjectTable implements OverrideOpHelper {
-	readonly #baseHelper: OverrideOpHelper
+class OverrideOpHelperObjectTable implements OverrideOpHelperTableBase {
+	readonly #baseHelper: OverrideOpHelperForItemContents
 	readonly #itemId: string
 	readonly #currentRows: Record<string | number, any>
 	readonly #path: string
 
-	constructor(baseHelper: OverrideOpHelper, itemId: string, currentRows: Record<string | number, any>, path: string) {
+	constructor(
+		baseHelper: OverrideOpHelperForItemContents,
+		itemId: string,
+		currentRows: Record<string | number, any>,
+		path: string
+	) {
 		this.#baseHelper = baseHelper
 		this.#itemId = itemId
 		this.#currentRows = currentRows
@@ -489,9 +479,6 @@ class OverrideOpHelperObjectTable implements OverrideOpHelper {
 	}
 
 	clearItemOverrides(_itemId: string, _subPath: string): void {
-		// Not supported as this is faking an item with overrides
-	}
-	resetItem(_itemId: string): void {
 		// Not supported as this is faking an item with overrides
 	}
 	deleteItem(rowId: string): void {
@@ -502,9 +489,6 @@ class OverrideOpHelperObjectTable implements OverrideOpHelper {
 		// Send it onwards
 		this.#baseHelper.setItemValue(this.#itemId, this.#path, newObj)
 	}
-	changeItemId(_oldItemId: string, _newItemId: string): void {
-		// Not supported as this is faking an item with overrides
-	}
 	setItemValue(rowId: string, subPath: string, value: any): void {
 		// Build the new object
 		const newObj = clone(this.#currentRows)
@@ -512,18 +496,5 @@ class OverrideOpHelperObjectTable implements OverrideOpHelper {
 
 		// Send it onwards
 		this.#baseHelper.setItemValue(this.#itemId, this.#path, newObj)
-	}
-	replaceItem(rowId: string, value: any): void {
-		if (value === undefined) {
-			// No value means it is a delete
-			this.deleteItem(rowId)
-		} else {
-			// Build the new object
-			const newObj = clone(this.#currentRows)
-			newObj[rowId] = value
-
-			// Send it onwards
-			this.#baseHelper.setItemValue(this.#itemId, this.#path, newObj)
-		}
 	}
 }
