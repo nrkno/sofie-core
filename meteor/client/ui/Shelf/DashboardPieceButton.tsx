@@ -420,6 +420,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<IDash
 						floated: this.props.piece.floated,
 						active: this.state.active,
 
+						'source-not-ready': this.props.piece.status === PieceStatusCode.SOURCE_NOT_READY,
 						'source-missing': this.props.piece.status === PieceStatusCode.SOURCE_MISSING,
 						'source-broken': this.props.piece.status === PieceStatusCode.SOURCE_BROKEN,
 						'unknown-state': this.props.piece.status === PieceStatusCode.UNKNOWN,

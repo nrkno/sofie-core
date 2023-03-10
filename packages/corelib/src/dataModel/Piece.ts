@@ -18,6 +18,12 @@ export enum PieceStatusCode {
 	/** No fault with piece, can be played */
 	OK = 0,
 
+	/**
+	 * The source exists in some form but shouldn't generate notifications.
+	 * TODO: Is this too similar to SOURCE_MISSING?
+	 */
+	SOURCE_NOT_READY = 5,
+
 	/** The source can be played, but some issues have been detected with it. It can be played fine from a technical standpoint, but the user should be notified. */
 	SOURCE_HAS_ISSUES = 10,
 

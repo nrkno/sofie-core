@@ -30,6 +30,7 @@ const InspectorTitle = withMediaObjectStatus<IProps, {}>()(function InspectorTit
 					'shelf-inspector__title__icon',
 					layer && RundownUtils.getSourceLayerClassName(layer.type),
 					{
+						'source-not-ready': piece.status === PieceStatusCode.SOURCE_NOT_READY,
 						'source-missing': piece.status === PieceStatusCode.SOURCE_MISSING,
 						'source-broken': piece.status === PieceStatusCode.SOURCE_BROKEN,
 						'unknown-state': piece.status === PieceStatusCode.UNKNOWN,

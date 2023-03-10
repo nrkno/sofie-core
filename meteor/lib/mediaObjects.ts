@@ -529,7 +529,7 @@ function getPackageWarningMessage(
 		ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.PLACEHOLDER
 	) {
 		return {
-			status: PieceStatusCode.OK,
+			status: PieceStatusCode.SOURCE_NOT_READY,
 			message: generateTranslation('{{reason}}', {
 				reason: ((packageOnPackageContainer?.status.statusReason.user || 'N/A') + '.').replace(/\.\.$/, '.'), // remove any trailing double "."
 			}),
