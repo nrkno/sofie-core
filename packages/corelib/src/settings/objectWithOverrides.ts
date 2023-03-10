@@ -123,7 +123,11 @@ function applySetOp<T extends object>(result: ApplyOverridesResult<T>, operation
 			result.unused.push(operation)
 		} else {
 			// Set the new value
-			objectPath.set(result.obj, operation.path, clone(operation.value))
+			if (operation.value === undefined) {
+				objectPath.del(result.obj, operation.path)
+			} else {
+				objectPath.set(result.obj, operation.path, clone(operation.value))
+			}
 		}
 	}
 }

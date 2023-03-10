@@ -4,11 +4,17 @@ import { clone, getRandomString, literal, objectPathGet, objectPathSet } from '@
 import classNames from 'classnames'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { WrappedOverridableItemNormal, OverrideOpHelperForItemContents } from '../../ui/Settings/util/OverrideOpHelper'
+import {
+	WrappedOverridableItemNormal,
+	OverrideOpHelperForItemContents,
+	getAllCurrentAndDeletedItemsFromOverrides,
+	WrappedOverridableItem,
+} from '../../ui/Settings/util/OverrideOpHelper'
 import { useToggleExpandHelper } from '../../ui/Settings/util/ToggleExpandedHelper'
 import { doModalDialog } from '../ModalDialog'
 import {
 	getSchemaSummaryFieldsForObject,
+	joinObjectPathFragments,
 	SchemaFormUIField,
 	SchemaSummaryField,
 	translateStringIfHasNamespaces,
@@ -17,6 +23,7 @@ import { SchemaFormWithOverrides } from './schemaFormWithOverrides'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { getSchemaDefaultValues } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
 import { hasOpWithPath } from '../Components/util'
+import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 interface SchemaFormTableProps {
 	schema: JSONSchema
@@ -34,6 +41,8 @@ export const SchemaFormArrayTable = ({
 	item,
 	overrideHelper,
 }: SchemaFormTableProps): JSX.Element => {
+	const { t } = useTranslation()
+
 	const rowsArray: any[] = useMemo(
 		() => (attr ? objectPathGet(item.computed, attr) : item.computed) || [],
 		[attr, item.computed]
@@ -59,139 +68,79 @@ export const SchemaFormArrayTable = ({
 		[overrideHelper, item.id, rows, attr]
 	)
 
+	const isOverridden = hasOpWithPath(item.overrideOps, item.id, attr)
+
+	const columns = useMemo(() => schema?.items?.properties || {}, [schema])
+	const summaryFields = useMemo(() => getSchemaSummaryFieldsForObject(columns), [columns])
+	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
+
+	const confirmRemove = useCallback(
+		(rowId: number | string) => {
+			doModalDialog({
+				title: t('Remove this item?'),
+				no: t('Cancel'),
+				yes: t('Remove'),
+				onAccept: () => {
+					tableOverrideHelper.deleteRow(rowId + '')
+				},
+				message: (
+					<React.Fragment>
+						<p>
+							{t('Are you sure you want to remove {{type}} "{{deviceId}}"?', {
+								type: 'item',
+								deviceId: rowId,
+							})}
+						</p>
+						<p>{t('Please note: This action is irreversible!')}</p>
+					</React.Fragment>
+				),
+			})
+		},
+		[t, tableOverrideHelper]
+	)
+
 	const title = schema[SchemaFormUIField.Title]
 
 	return (
 		<>
 			{title && <h2 className="mhn">{translateStringIfHasNamespaces(title, translationNamespaces)}</h2>}
-			<SchemaFormInner
-				rowSchema={schema.items}
-				rows={rows}
-				addNewItem={addNewItem}
-				resyncTable={resyncTable}
-				tableOverrideHelper={tableOverrideHelper}
-				translationNamespaces={translationNamespaces}
-				attr={attr}
-				item={item}
-			/>
-		</>
-	)
-}
-export const SchemaFormObjectTable = ({
-	schema,
-	translationNamespaces,
-	attr,
-	item,
-	overrideHelper,
-}: SchemaFormTableProps): JSX.Element => {
-	const { t } = useTranslation()
-
-	const rows: Record<string | number, any> = useMemo(
-		() => Object.assign({}, (attr ? objectPathGet(item.computed, attr) : item.computed) || {}),
-		[attr, item.computed]
-	)
-
-	const rowSchema = schema.patternProperties?.['']
-
-	const addNewItem = useCallback(() => {
-		// Build the new object
-		const newObj = clone(rows)
-
-		const newRow = getSchemaDefaultValues(rowSchema)
-
-		newObj[getRandomString()] = newRow
-
-		overrideHelper.setItemValue(item.id, attr, newObj)
-	}, [rowSchema, overrideHelper, rows, item.id, attr])
-
-	const resyncTable = useCallback(
-		() => overrideHelper.clearItemOverrides(item.id, attr),
-		[overrideHelper, item.id, attr]
-	)
-
-	const tableOverrideHelper = useMemo(
-		() => new OverrideOpHelperObjectTable(overrideHelper, item.id, rows, attr),
-		[overrideHelper, item.id, rows, attr]
-	)
-
-	const title = schema[SchemaFormUIField.Title]
-	const titleElemenet = title && <h2 className="mhn">{translateStringIfHasNamespaces(title, translationNamespaces)}</h2>
-
-	if (Object.keys(schema.properties || {}).length > 0) {
-		return (
-			<>
-				{titleElemenet}
-				{t('Table is not allowed to have `properties` defined')}{' '}
-			</>
-		)
-	} else if (
-		schema.patternProperties?.['']?.type !== 'object' ||
-		Object.keys(schema.patternProperties || {}).length > 1
-	) {
-		return (
-			<>
-				{titleElemenet}
-				{t('Table is only allowed the wildcard `patternProperties`')}{' '}
-			</>
-		)
-	} else {
-		return (
-			<>
-				{titleElemenet}
-				<SchemaFormInner
-					rowSchema={rowSchema}
-					rows={rows}
-					addNewItem={addNewItem}
-					resyncTable={resyncTable}
-					tableOverrideHelper={tableOverrideHelper}
-					translationNamespaces={translationNamespaces}
-					attr={attr}
-					item={item}
-				/>
-			</>
-		)
-	}
-}
-
-interface SchemaFormTableInnerProps {
-	rowSchema: JSONSchema | undefined
-	rows: Record<string | number, any>
-
-	addNewItem: () => void
-	resyncTable: () => void
-	tableOverrideHelper: OverrideOpHelperTableBase
-
-	translationNamespaces: string[]
-
-	attr: string
-
-	item: WrappedOverridableItemNormal<any>
-}
-const SchemaFormInner = ({
-	rowSchema,
-	rows,
-
-	addNewItem,
-	resyncTable,
-	tableOverrideHelper,
-
-	translationNamespaces,
-	attr,
-	item,
-}: SchemaFormTableInnerProps): JSX.Element => {
-	const { t } = useTranslation()
-
-	const isOverridden = hasOpWithPath(item.overrideOps, item.id, attr)
-
-	return (
-		<>
 			<table className={'expando setings-config-table table'}>
-				<SchemaFormTableContents
-					translationNamespaces={translationNamespaces}
-					columns={rowSchema?.properties || {}}
-					rows={rows}
-					overrideHelper={tableOverrideHelper}
-				/>
+				<thead>
+					<tr className="hl">
+						{summaryFields.map((col) => {
+							return <th key={col.attr}>{translateStringIfHasNamespaces(col.name, translationNamespaces)}</th>
+						})}
+						<th key="action">&nbsp;</th>
+					</tr>
+				</thead>
+				<tbody>
+					{Object.entries(rows).map(([i0, obj]) => {
+						const i = i0 as string | number
+						return (
+							<React.Fragment key={i}>
+								<SchemaTableSummaryRow
+									summaryFields={summaryFields}
+									rowId={i}
+									showRowId={false}
+									object={obj}
+									isEdited={isExpanded(i)}
+									editItem={toggleExpanded}
+									removeItem={confirmRemove}
+								/>
+								{isExpanded(i) && (
+									<SchemaFormTableEditRow
+										translationNamespaces={translationNamespaces}
+										rowId={i}
+										columns={columns}
+										rowObject={obj}
+										editItem={toggleExpanded}
+										overrideHelper={tableOverrideHelper}
+									/>
+								)}
+							</React.Fragment>
+						)
+					})}
+				</tbody>
 			</table>
 
 			<div className="mod mhs">
@@ -210,21 +159,64 @@ const SchemaFormInner = ({
 		</>
 	)
 }
-
-interface SchemaFormTableContentsProps {
-	columns: Record<string, JSONSchema>
-	translationNamespaces: string[]
-
-	rows: Record<string | number, any>
-	overrideHelper: OverrideOpHelperTableBase
-}
-function SchemaFormTableContents({
-	columns,
+export const SchemaFormObjectTable = ({
+	schema,
 	translationNamespaces,
-	rows,
+	attr,
+	item,
 	overrideHelper,
-}: SchemaFormTableContentsProps) {
+}: SchemaFormTableProps): JSX.Element => {
 	const { t } = useTranslation()
+
+	const wrappedRows = useMemo(() => {
+		const rawRows = (attr ? objectPathGet(item.defaults, attr) : item.defaults) || {}
+
+		const prefix = joinObjectPathFragments(item.id, attr) + '.'
+
+		// Filter and strip the ops to be local to the row object
+		const ops: SomeObjectOverrideOp[] = []
+		for (const op of item.overrideOps) {
+			if (op.path.startsWith(prefix)) {
+				ops.push({
+					...op,
+					path: op.path.slice(prefix.length),
+				})
+			}
+		}
+
+		const wrappedRows = getAllCurrentAndDeletedItemsFromOverrides(
+			{
+				defaults: rawRows,
+				overrides: ops,
+			},
+			(a, b) => a[0].localeCompare(b[0]) // TODO - better comparitor?
+		)
+
+		return wrappedRows
+	}, [attr, item.computed])
+
+	const rowSchema = schema.patternProperties?.['']
+
+	const addNewItem = useCallback(() => {
+		overrideHelper.setItemValue(item.id, `${attr}.${getRandomString()}`, getSchemaDefaultValues(rowSchema))
+	}, [rowSchema, overrideHelper, item.id, attr])
+
+	const doUndeleteRow = useCallback(
+		(rowId: string) => {
+			console.log('undelete', item.id, joinObjectPathFragments(attr, rowId), rowId)
+			overrideHelper.clearItemOverrides(item.id, joinObjectPathFragments(attr, rowId))
+		},
+		[overrideHelper, item.id, attr]
+	)
+
+	const tableOverrideHelper = useMemo(
+		() => new OverrideOpHelperObjectTable(overrideHelper, item.id, wrappedRows, attr),
+		[overrideHelper, item.id, wrappedRows, attr]
+	)
+
+	const columns = useMemo(() => rowSchema?.properties ?? {}, [rowSchema])
+	const summaryFields = useMemo(() => getSchemaSummaryFieldsForObject(columns), [columns])
+
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
 
 	const confirmRemove = useCallback(
@@ -234,7 +226,7 @@ function SchemaFormTableContents({
 				no: t('Cancel'),
 				yes: t('Remove'),
 				onAccept: () => {
-					overrideHelper.deleteItem(rowId + '')
+					tableOverrideHelper.deleteRow(rowId + '')
 				},
 				message: (
 					<React.Fragment>
@@ -249,50 +241,118 @@ function SchemaFormTableContents({
 				),
 			})
 		},
-		[t, overrideHelper]
+		[t, tableOverrideHelper]
 	)
 
-	const summaryFields = getSchemaSummaryFieldsForObject(columns)
+	const title = schema[SchemaFormUIField.Title]
+	const titleElement = title && <h2 className="mhn">{translateStringIfHasNamespaces(title, translationNamespaces)}</h2>
+
+	if (Object.keys(schema.properties || {}).length > 0) {
+		return (
+			<>
+				{titleElement}
+				{t('Table is not allowed to have `properties` defined')}{' '}
+			</>
+		)
+	} else if (
+		schema.patternProperties?.['']?.type !== 'object' ||
+		Object.keys(schema.patternProperties || {}).length > 1
+	) {
+		return (
+			<>
+				{titleElement}
+				{t('Table is only allowed the wildcard `patternProperties`')}{' '}
+			</>
+		)
+	} else {
+		return (
+			<>
+				{titleElement}
+				<table className={'expando setings-config-table table'}>
+					<thead>
+						<tr className="hl">
+							{summaryFields.map((col) => {
+								return <th key={col.attr}>{translateStringIfHasNamespaces(col.name, translationNamespaces)}</th>
+							})}
+							<th key="action">&nbsp;</th>
+						</tr>
+					</thead>
+					<tbody>
+						{wrappedRows.map((rowItem) =>
+							rowItem.type === 'deleted' ? (
+								<TableDeletedRow
+									key={rowItem.id}
+									summaryFields={summaryFields}
+									id={rowItem.id}
+									obj={rowItem.defaults}
+									doUndelete={doUndeleteRow}
+								/>
+							) : (
+								<React.Fragment key={rowItem.id}>
+									<SchemaTableSummaryRow
+										summaryFields={summaryFields}
+										rowId={rowItem.id}
+										showRowId={false}
+										object={rowItem.computed}
+										isEdited={isExpanded(rowItem.id)}
+										editItem={toggleExpanded}
+										removeItem={confirmRemove}
+									/>
+									{isExpanded(rowItem.id) && (
+										<SchemaFormTableEditRow
+											translationNamespaces={translationNamespaces}
+											rowId={rowItem.id}
+											columns={columns}
+											rowObject={rowItem.computed}
+											editItem={toggleExpanded}
+											overrideHelper={tableOverrideHelper}
+										/>
+									)}
+								</React.Fragment>
+							)
+						)}
+					</tbody>
+				</table>
+
+				<div className="mod mhs">
+					<button className="btn btn-primary" onClick={addNewItem}>
+						<FontAwesomeIcon icon={faPlus} />
+					</button>
+				</div>
+			</>
+		)
+	}
+}
+
+interface TableDeletedRowProps {
+	summaryFields: SchemaSummaryField[]
+	id: string
+	obj: any
+	doUndelete: (itemId: string) => void
+}
+function TableDeletedRow({ summaryFields, id, obj, doUndelete }: TableDeletedRowProps) {
+	const doUndeleteItem = useCallback(() => doUndelete(id), [doUndelete, id])
 
 	return (
-		<>
-			<thead>
-				<tr className="hl">
-					{summaryFields.map((col) => {
-						return <th key={col.attr}>{translateStringIfHasNamespaces(col.name, translationNamespaces)}</th>
-					})}
-					<th key="action">&nbsp;</th>
-				</tr>
-			</thead>
-			<tbody>
-				{Object.entries(rows).map(([i0, obj]) => {
-					const i = i0 as string | number
-					return (
-						<React.Fragment key={i}>
-							<SchemaTableSummaryRow
-								summaryFields={summaryFields}
-								rowId={i}
-								showRowId={false}
-								object={obj}
-								isEdited={isExpanded(i)}
-								editItem={toggleExpanded}
-								removeItem={confirmRemove}
-							/>
-							{isExpanded(i) && (
-								<SchemaFormTableEditRow
-									translationNamespaces={translationNamespaces}
-									rowId={i}
-									columns={columns}
-									rowObject={obj}
-									editItem={toggleExpanded}
-									overrideHelper={overrideHelper}
-								/>
-							)}
-						</React.Fragment>
-					)
-				})}
-			</tbody>
-		</>
+		<tr>
+			{summaryFields.map((field) => {
+				const rawValue = objectPathGet(obj, field.attr)
+				let value = field.transform ? field.transform(rawValue) : rawValue
+				if (Array.isArray(value)) value = value.join(', ')
+
+				return (
+					<td className="settings-studio-device__primary_id c4 deleted" key={field.attr}>
+						{value ?? ''}
+					</td>
+				)
+			})}
+
+			<td className="settings-studio-device__actions table-item-actions c1" key="action">
+				<button className="action-btn" onClick={doUndeleteItem} title="Restore to defaults">
+					<FontAwesomeIcon icon={faSync} />
+				</button>
+			</td>
+		</tr>
 	)
 }
 
@@ -413,7 +473,7 @@ function SchemaFormTableEditRow({
 }
 
 interface OverrideOpHelperTableBase extends OverrideOpHelperForItemContents {
-	deleteItem(rowId: string): void
+	deleteRow(rowId: string): void
 }
 
 /**
@@ -437,7 +497,7 @@ class OverrideOpHelperArrayTable implements OverrideOpHelperTableBase {
 	clearItemOverrides(_itemId: string, _subPath: string): void {
 		// Not supported as this is faking an item with overrides
 	}
-	deleteItem(rowId: string): void {
+	deleteRow(rowId: string): void {
 		// Delete the row
 		const newObj = clone(this.#currentRows)
 		newObj.splice(Number(rowId), 1)
@@ -463,13 +523,13 @@ class OverrideOpHelperArrayTable implements OverrideOpHelperTableBase {
 class OverrideOpHelperObjectTable implements OverrideOpHelperTableBase {
 	readonly #baseHelper: OverrideOpHelperForItemContents
 	readonly #itemId: string
-	readonly #currentRows: Record<string | number, any>
+	readonly #currentRows: WrappedOverridableItem<object>[]
 	readonly #path: string
 
 	constructor(
 		baseHelper: OverrideOpHelperForItemContents,
 		itemId: string,
-		currentRows: Record<string | number, any>,
+		currentRows: WrappedOverridableItem<object>[],
 		path: string
 	) {
 		this.#baseHelper = baseHelper
@@ -478,23 +538,37 @@ class OverrideOpHelperObjectTable implements OverrideOpHelperTableBase {
 		this.#path = path
 	}
 
-	clearItemOverrides(_itemId: string, _subPath: string): void {
-		// Not supported as this is faking an item with overrides
+	clearItemOverrides(rowId: string, subPath: string): void {
+		this.#baseHelper.clearItemOverrides(this.#itemId, joinObjectPathFragments(this.#path, rowId, subPath))
 	}
-	deleteItem(rowId: string): void {
-		// Delete the row
-		const newObj = clone(this.#currentRows)
-		delete newObj[rowId]
+	deleteRow(rowId: string): void {
+		// Clear any existing overrides
+		this.#baseHelper.clearItemOverrides(this.#itemId, joinObjectPathFragments(this.#path, rowId))
 
-		// Send it onwards
-		this.#baseHelper.setItemValue(this.#itemId, this.#path, newObj)
+		// If row was not user created (it has defaults), then don't store `undefined`
+		const row = this.#currentRows.find((r) => r.id === rowId)
+		if (row && row.defaults) {
+			// This is a bit of a hack, but it isn't possible to create a delete op from here
+			this.#baseHelper.setItemValue(this.#itemId, joinObjectPathFragments(this.#path, rowId), undefined)
+		}
 	}
 	setItemValue(rowId: string, subPath: string, value: any): void {
-		// Build the new object
-		const newObj = clone(this.#currentRows)
-		objectPathSet(newObj, `${rowId}.${subPath}`, value)
+		const currentRow = this.#currentRows.find((r) => r.id === rowId)
+		if (!currentRow || currentRow.type === 'deleted') return // Unable to set value
 
-		// Send it onwards
-		this.#baseHelper.setItemValue(this.#itemId, this.#path, newObj)
+		if (currentRow.defaults) {
+			// has defaults, so override the single value
+			this.#baseHelper.setItemValue(this.#itemId, joinObjectPathFragments(this.#path, rowId, subPath), value)
+		} else {
+			// no defaults, replace the whole object
+
+			// Ensure there arent existing overrides
+			this.#baseHelper.clearItemOverrides(this.#itemId, joinObjectPathFragments(this.#path, rowId))
+
+			// replace with a new override
+			const newObj = clone(currentRow.computed)
+			objectPathSet(newObj, subPath, value)
+			this.#baseHelper.setItemValue(this.#itemId, joinObjectPathFragments(this.#path, rowId), newObj)
+		}
 	}
 }
