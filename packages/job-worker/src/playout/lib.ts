@@ -722,6 +722,13 @@ export function prefixAllObjectIds<T extends TimelineObjGeneric>(
 			obj.inGroup = idMap[obj.inGroup] || obj.inGroup
 		}
 
+		// make sure any keyframes are unique
+		if (obj.keyframes) {
+			for (const kf of obj.keyframes) {
+				kf.id = `${kf.id}_${obj.id}`
+			}
+		}
+
 		return obj
 	})
 }
