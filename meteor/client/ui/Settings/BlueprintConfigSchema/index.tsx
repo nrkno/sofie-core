@@ -9,17 +9,23 @@ import {
 	ObjectWithOverrides,
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { OverrideOpHelper, useOverrideOpHelper, WrappedOverridableItemNormal } from '../util/OverrideOpHelper'
-import { SourceLayerDropdownOption } from './resolveColumns'
+import {
+	OverrideOpHelperForItemContents,
+	useOverrideOpHelper,
+	WrappedOverridableItemNormal,
+} from '../util/OverrideOpHelper'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { SchemaFormWithOverrides } from '../../../lib/forms/schemaFormWithOverrides'
 import deepmerge from 'deepmerge'
-import { SchemaFormUIField, translateStringIfHasNamespaces } from '../../../lib/forms/schemaFormUtil'
+import {
+	SchemaFormSofieEnumDefinition,
+	SchemaFormUIField,
+	translateStringIfHasNamespaces,
+} from '../../../lib/forms/schemaFormUtil'
 import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
 import { faPencilAlt, faCheck } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-
-export { SourceLayerDropdownOption }
+import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 
 interface BlueprintConfigSchemaSettingsProps {
 	schema: JSONSchema | undefined
@@ -30,7 +36,7 @@ interface BlueprintConfigSchemaSettingsProps {
 	alternateConfig: IBlueprintConfig | undefined
 
 	layerMappings?: { [studioId: string]: MappingsExt }
-	sourceLayers?: Array<SourceLayerDropdownOption>
+	sourceLayers?: SourceLayers
 
 	configObject: ObjectWithOverrides<IBlueprintConfig>
 	saveOverrides: (newOps: SomeObjectOverrideOp[]) => void
@@ -40,8 +46,8 @@ export function BlueprintConfigSchemaSettings({
 	schema,
 	translationNamespaces,
 	alternateConfig,
-	// layerMappings,
-	// sourceLayers,
+	layerMappings,
+	sourceLayers,
 
 	configObject,
 	saveOverrides,
@@ -59,6 +65,38 @@ export function BlueprintConfigSchemaSettings({
 		},
 		[saveOverrides]
 	)
+
+	const sofieEnumDefinitons: Record<string, SchemaFormSofieEnumDefinition> = useMemo(() => {
+		// Future: if there are multiple studios, this could result in duplicates
+		const mappingsDefinition: SchemaFormSofieEnumDefinition = { options: [] }
+		for (const mappings of Object.values(layerMappings || {})) {
+			for (const [mappingId, mapping] of Object.entries(mappings)) {
+				mappingsDefinition.options.push({
+					name: mapping.layerName || mappingId,
+					value: mappingId,
+					filter: mapping.device,
+				})
+			}
+		}
+		mappingsDefinition.options.sort((a, b) => a.name.localeCompare(b.name))
+
+		const sourceLayersDefinition: SchemaFormSofieEnumDefinition = { options: [] }
+		for (const [id, sourceLayer] of Object.entries(sourceLayers || {})) {
+			if (sourceLayer) {
+				sourceLayersDefinition.options.push({
+					name: sourceLayer.name,
+					value: id,
+					filter: sourceLayer.type,
+				})
+			}
+		}
+		sourceLayersDefinition.options.sort((a, b) => a.name.localeCompare(b.name))
+
+		return {
+			mappings: mappingsDefinition,
+			'source-layers': sourceLayersDefinition,
+		}
+	}, [layerMappings, sourceLayers])
 
 	// TODO - this is pretty ugly and could do with some work to avoid needing to fake the itemId like this...
 
@@ -96,7 +134,7 @@ export function BlueprintConfigSchemaSettings({
 		return [wrappedItem, configObject2]
 	}, [configObject])
 
-	const overrideHelper = useOverrideOpHelper(saveOverrides2, configObject2)
+	const overrideHelper = useOverrideOpHelper(saveOverrides2, configObject2) // TODO - replace based around a custom implementation of OverrideOpHelperForItemContents?
 
 	const groupedSchema = useMemo(() => {
 		if (schema?.type === 'object' && schema.properties) {
@@ -147,6 +185,7 @@ export function BlueprintConfigSchemaSettings({
 								isExpanded={isExpanded(categoryName ?? '__OTHER__')}
 								toggleExpanded={toggleExpanded2}
 								overrideHelper={overrideHelper}
+								sofieEnumDefinitons={sofieEnumDefinitons}
 							/>
 						))}
 					</tbody>
@@ -165,7 +204,8 @@ interface EntryProps {
 	categorySchema: JSONSchema
 	isExpanded: boolean
 	toggleExpanded: (itemId: string | null, force?: boolean) => void
-	overrideHelper: OverrideOpHelper
+	overrideHelper: OverrideOpHelperForItemContents
+	sofieEnumDefinitons: Record<string, SchemaFormSofieEnumDefinition>
 }
 function CategoryEntry({
 	translationNamespaces,
@@ -175,6 +215,7 @@ function CategoryEntry({
 	isExpanded,
 	toggleExpanded,
 	overrideHelper,
+	sofieEnumDefinitons,
 }: EntryProps) {
 	const { t } = useTranslation()
 
@@ -205,6 +246,7 @@ function CategoryEntry({
 								attr={''}
 								item={wrappedItem}
 								overrideHelper={overrideHelper}
+								sofieEnumDefinitons={sofieEnumDefinitons}
 							/>
 						</div>
 						<div className="mod alright">

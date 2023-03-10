@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 import { useTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { BlueprintManifestType, JSONSchema } from '@sofie-automation/blueprints-integration'
-import { BlueprintConfigSchemaSettings, SourceLayerDropdownOption } from '../BlueprintConfigSchema'
+import { BlueprintConfigSchemaSettings } from '../BlueprintConfigSchema'
 import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Blueprints, ShowStyleBases } from '../../../collections'
 import { useTranslation } from 'react-i18next'
@@ -12,7 +12,7 @@ import { EditAttribute } from '../../../lib/EditAttribute'
 import { RedirectToBlueprintButton } from '../../../lib/SettingsNavigation'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, SourceLayers } from '../../../../lib/collections/ShowStyleBases'
 
 interface ShowStyleBaseBlueprintConfigurationSettingsProps {
 	showStyleBase: ShowStyleBase
@@ -20,7 +20,7 @@ interface ShowStyleBaseBlueprintConfigurationSettingsProps {
 	schema: JSONSchema | undefined
 
 	layerMappings: { [studioId: string]: MappingsExt } | undefined
-	sourceLayers: Array<SourceLayerDropdownOption> | undefined
+	sourceLayers: SourceLayers | undefined
 }
 
 export function ShowStyleBaseBlueprintConfigurationSettings(

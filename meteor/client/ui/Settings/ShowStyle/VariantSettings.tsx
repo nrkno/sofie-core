@@ -6,10 +6,9 @@ import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { useTranslation } from 'react-i18next'
 import { MeteorCall } from '../../../../lib/api/methods'
-import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, SourceLayers } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
 import { doModalDialog } from '../../../lib/ModalDialog'
-import { SourceLayerDropdownOption } from '../BlueprintConfigSchema'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { NoticeLevel, NotificationCenter, Notification } from '../../../../lib/notifications/notifications'
 import { UploadButton } from '../../../lib/uploadButton'
@@ -28,7 +27,7 @@ interface IShowStyleVariantsProps {
 	blueprintConfigPreset: IShowStyleConfigPreset | undefined // TODO - use this
 
 	layerMappings?: { [studioId: string]: MappingsExt }
-	sourceLayers?: Array<SourceLayerDropdownOption>
+	sourceLayers?: SourceLayers
 }
 
 export const ShowStyleVariantsSettings = ({

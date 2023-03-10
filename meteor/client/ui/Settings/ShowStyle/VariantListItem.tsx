@@ -5,7 +5,7 @@ import { DragSourceMonitor, DropTargetMonitor, useDrag, useDrop } from 'react-dn
 import { Identifier } from 'dnd-core'
 import { ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
 import { EditAttribute } from '../../../lib/EditAttribute'
-import { BlueprintConfigSchemaSettings, SourceLayerDropdownOption } from '../BlueprintConfigSchema'
+import { BlueprintConfigSchemaSettings } from '../BlueprintConfigSchema'
 import { ShowStyleDragDropTypes } from './DragDropTypesShowStyle'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -27,6 +27,7 @@ import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { iconDragHandle } from '../../RundownList/icons'
 import { ShowStyleVariants } from '../../../collections'
+import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 
 interface DraggableVariant {
 	id: ShowStyleVariantId
@@ -69,7 +70,7 @@ export const VariantListItem = ({
 	baseBlueprintConfigWithOverrides: ObjectWithOverrides<IBlueprintConfig>
 	blueprintPresetConfigOptions: { name: string; value: string | null }[]
 	layerMappings?: { [studioId: string]: MappingsExt }
-	sourceLayers?: Array<SourceLayerDropdownOption>
+	sourceLayers?: SourceLayers
 
 	onDownload: (showStyleVariant: ShowStyleVariant) => void
 	onCopy: (showStyleVariantId: ShowStyleVariant) => void

@@ -6,8 +6,7 @@ import { OutputLayers, ShowStyleBase, SourceLayers } from '../../../lib/collecti
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import RundownLayoutEditor from './RundownLayoutEditor'
 import { Studio, MappingsExt } from '../../../lib/collections/Studios'
-import { BlueprintManifestType, IShowStyleConfigPreset, ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { SourceLayerDropdownOption } from './BlueprintConfigSchema'
+import { BlueprintManifestType, IShowStyleConfigPreset } from '@sofie-automation/blueprints-integration'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
 import { SourceLayerSettings } from './ShowStyle/SourceLayer'
@@ -20,7 +19,6 @@ import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
-import { literal } from '@sofie-automation/corelib/dist/lib'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { ShowStyleBaseBlueprintConfigurationSettings } from './ShowStyle/BlueprintConfiguration'
@@ -46,7 +44,6 @@ interface ITrackedProps {
 	compatibleStudios: Array<Studio>
 	blueprintConfigSchema: JSONSchema | undefined
 	blueprintConfigPreset: IShowStyleConfigPreset | undefined
-	sourceLayersLight: Array<SourceLayerDropdownOption> | undefined
 	sourceLayers: SourceLayers
 	outputLayers: OutputLayers
 	layerMappings: { [studioId: string]: MappingsExt }
@@ -100,18 +97,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				: undefined,
 		sourceLayers,
 		outputLayers,
-		sourceLayersLight: sourceLayers
-			? Object.values(sourceLayers)
-					.filter((layer): layer is ISourceLayer => !!layer)
-					.map((layer, i) =>
-						literal<SourceLayerDropdownOption>({
-							value: layer._id,
-							name: layer.name,
-							type: layer.type,
-							i,
-						})
-					)
-			: undefined,
 		layerMappings: mappings,
 	}
 })(
@@ -197,7 +182,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											showStyleBase={showStyleBase}
 											schema={this.props.blueprintConfigSchema}
 											layerMappings={this.props.layerMappings}
-											sourceLayers={this.props.sourceLayersLight}
+											sourceLayers={this.props.sourceLayers}
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/variants`}>
@@ -208,7 +193,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											blueprintConfigPreset={this.props.blueprintConfigPreset}
 											showStyleBase={showStyleBase}
 											layerMappings={this.props.layerMappings}
-											sourceLayers={this.props.sourceLayersLight}
+											sourceLayers={this.props.sourceLayers}
 										/>
 									</Route>
 
