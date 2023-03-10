@@ -204,7 +204,8 @@ export function SchemaTableSummaryRow<T extends string | number>({
 
 			{summaryFields.map((field) => {
 				const rawValue = objectPathGet(object, field.attr)
-				const value = field.transform ? field.transform(rawValue) : rawValue
+				let value = field.transform ? field.transform(rawValue) : rawValue
+				if (Array.isArray(value)) value = value.join(', ')
 
 				return (
 					<td className="settings-studio-device__primary_id c4" key={field.attr}>

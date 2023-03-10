@@ -89,7 +89,28 @@ export function getSchemaSummaryFields(schema: JSONSchema, prefix?: string): Sch
 			if (summaryTitle && prefix) {
 				let transform: SchemaSummaryField['transform']
 
-				if (schema.type === 'integer' && schema[SchemaFormUIField.ZeroBased]) {
+				// For an array of primitives, we should consider the primitive
+				const schemaForEnum =
+					schema.type === 'array' && (schema.items?.type === 'string' || schema.items?.type === 'integer')
+						? schema.items
+						: schema
+				if (schemaForEnum.enum && schemaForEnum[SchemaFormUIField.TsEnumNames]) {
+					// For enum items, we should display the pretty name
+					const tsEnumNames = (schemaForEnum[SchemaFormUIField.TsEnumNames] || []) as string[]
+					const valueToNameMap = new Map<string | number, string>()
+
+					schemaForEnum.enum.forEach((value: any, i: number) => {
+						valueToNameMap.set(value, tsEnumNames[i] || value)
+					})
+
+					transform = (val) => {
+						if (Array.isArray(val)) {
+							return val.map((v) => valueToNameMap.get(v) ?? v).join(', ')
+						} else {
+							return valueToNameMap.get(val) ?? val
+						}
+					}
+				} else if (schema.type === 'integer' && schema[SchemaFormUIField.ZeroBased]) {
 					// Int fields can be zero indexed
 					transform = (val) => {
 						if (!isNaN(val)) {
