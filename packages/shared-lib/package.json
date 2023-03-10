@@ -39,7 +39,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"timeline-state-resolver-types": "8.0.0-nightly-feat-config-schema-20230120-171243-3aa950d18.0",
+		"timeline-state-resolver-types": "8.0.0-nightly-feat-config-schema-20230307-144110-b39db7738.0",
 		"tslib": "^2.4.0",
 		"type-fest": "^2.19.0",
 		"@mos-connection/model": "^3.0.1"
