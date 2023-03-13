@@ -296,8 +296,8 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
-						studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
+						showStyleConfigSchema: JSON.stringify({ show1: true }) as any,
+						studioConfigSchema: JSON.stringify({ studio1: true }) as any,
 					}
 				}
 			)
@@ -314,12 +314,12 @@ describe('Test blueprint management api', () => {
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
 					TSRVersion: '0.3.0',
-					showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
-					studioConfigSchema: undefined,
+					showStyleConfigSchema: JSON.stringify({ show1: true }) as any,
 					hasCode: !!blueprintStr,
 					code: blueprintStr,
 				})
 			)
+			expect(blueprint.studioConfigSchema).toBeUndefined()
 		})
 		testInFiber('success - studio', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.STUDIO
@@ -333,8 +333,8 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
-						studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
+						showStyleConfigSchema: JSON.stringify({ show1: true }) as any,
+						studioConfigSchema: JSON.stringify({ studio1: true }) as any,
 					}
 				}
 			)
@@ -356,12 +356,12 @@ describe('Test blueprint management api', () => {
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
 					TSRVersion: '0.3.0',
-					showStyleConfigSchema: undefined,
 					studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
 					hasCode: !!blueprintStr,
 					code: blueprintStr,
 				})
 			)
+			expect(blueprint.showStyleConfigSchema).toBeUndefined()
 		})
 		testInFiber('success - system', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.SYSTEM
@@ -376,8 +376,8 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
-						studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
+						showStyleConfigSchema: JSON.stringify({ show1: true }) as any,
+						studioConfigSchema: JSON.stringify({ studio1: true }) as any,
 					}
 				}
 			)
@@ -399,12 +399,12 @@ describe('Test blueprint management api', () => {
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
 					TSRVersion: '0.3.0',
-					showStyleConfigSchema: undefined,
-					studioConfigSchema: undefined,
 					hasCode: !!blueprintStr,
 					code: blueprintStr,
 				})
 			)
+			expect(blueprint.showStyleConfigSchema).toBeUndefined()
+			expect(blueprint.studioConfigSchema).toBeUndefined()
 		})
 		testInFiber('update - studio', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.STUDIO
@@ -418,8 +418,8 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
-						studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
+						showStyleConfigSchema: JSON.stringify({ show1: true }) as any,
+						studioConfigSchema: JSON.stringify({ studio1: true }) as any,
 					}
 				}
 			)
@@ -440,12 +440,12 @@ describe('Test blueprint management api', () => {
 					blueprintVersion: '0.1.0',
 					integrationVersion: '0.2.0',
 					TSRVersion: '0.3.0',
-					showStyleConfigSchema: undefined,
 					studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
 					hasCode: !!blueprintStr,
 					code: blueprintStr,
 				})
 			)
+			expect(blueprint.showStyleConfigSchema).toBeUndefined()
 		})
 		testInFiber('update - matching blueprintId', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
@@ -460,8 +460,8 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
-						studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
+						showStyleConfigSchema: JSON.stringify({ show1: true }) as any,
+						studioConfigSchema: JSON.stringify({ studio1: true }) as any,
 					}
 				}
 			)
@@ -486,11 +486,11 @@ describe('Test blueprint management api', () => {
 					integrationVersion: '0.2.0',
 					TSRVersion: '0.3.0',
 					showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
-					studioConfigSchema: undefined,
 					hasCode: !!blueprintStr,
 					code: blueprintStr,
 				})
 			)
+			expect(blueprint.studioConfigSchema).toBeUndefined()
 		})
 		testInFiber('update - change blueprintId', async () => {
 			const BLUEPRINT_TYPE = BlueprintManifestType.SHOWSTYLE
@@ -505,8 +505,8 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
-						studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
+						showStyleConfigSchema: JSON.stringify({ show1: true }) as any,
+						studioConfigSchema: JSON.stringify({ studio1: true }) as any,
 					}
 				}
 			)
@@ -535,8 +535,8 @@ describe('Test blueprint management api', () => {
 						blueprintVersion: '0.1.0',
 						integrationVersion: '0.2.0',
 						TSRVersion: '0.3.0',
-						showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
-						studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
+						showStyleConfigSchema: JSON.stringify({ show1: true }) as any,
+						studioConfigSchema: JSON.stringify({ studio1: true }) as any,
 					}
 				}
 			)
