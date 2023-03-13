@@ -10,6 +10,7 @@ import { getElementWidth } from '../../../utils/dimensions'
 import { StyledTimecode } from '../../../lib/StyledTimecode'
 import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { HourglassIconSmall } from '../../../lib/ui/icons/notifications'
 
 export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps> = (
 	props: ILayerItemRendererProps
@@ -123,6 +124,11 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 				{(props.outputLayer && props.outputLayer.name) || null}
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--name">
+				{props.status === PieceStatusCode.SOURCE_NOT_READY && (
+					<div className="piece__status-icon type-hourglass">
+						<HourglassIconSmall />
+					</div>
+				)}
 				{props.adLibListItem.name}
 				<VTFloatingInspector
 					status={props.status || PieceStatusCode.UNKNOWN}
