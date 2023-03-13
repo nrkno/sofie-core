@@ -1,8 +1,8 @@
 import React, { useCallback, useMemo } from 'react'
 import ClassNames from 'classnames'
-import { MappingsExt } from '../../../../lib/collections/Studios'
+import { MappingsExt } from '../../../lib/collections/Studios'
 import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
-import { groupByToMapFunc, literal } from '../../../../lib/lib'
+import { groupByToMapFunc, literal } from '../../../lib/lib'
 import { useTranslation } from 'react-i18next'
 import {
 	applyAndValidateOverrides,
@@ -13,16 +13,16 @@ import {
 	OverrideOpHelperForItemContents,
 	useOverrideOpHelper,
 	WrappedOverridableItemNormal,
-} from '../util/OverrideOpHelper'
+} from './util/OverrideOpHelper'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
-import { SchemaFormWithOverrides } from '../../../lib/forms/schemaFormWithOverrides'
+import { SchemaFormWithOverrides } from '../../lib/forms/schemaFormWithOverrides'
 import deepmerge from 'deepmerge'
-import { SchemaFormSofieEnumDefinition, translateStringIfHasNamespaces } from '../../../lib/forms/schemaFormUtil'
-import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
+import { SchemaFormSofieEnumDefinition, translateStringIfHasNamespaces } from '../../lib/forms/schemaFormUtil'
+import { useToggleExpandHelper } from './util/ToggleExpandedHelper'
 import { faPencilAlt, faCheck } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { SchemaFormUIField } from '../../../../lib/jsonSchemaUtil'
+import { SchemaFormUIField } from '../../../lib/jsonSchemaUtil'
 
 interface BlueprintConfigSchemaSettingsProps {
 	schema: JSONSchema | undefined
