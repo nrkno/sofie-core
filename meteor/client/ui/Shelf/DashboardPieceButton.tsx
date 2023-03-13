@@ -419,17 +419,12 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<IDash
 						invalid: this.props.piece.invalid,
 						floated: this.props.piece.floated,
 						active: this.state.active,
-
-						'source-not-ready': this.props.piece.status === PieceStatusCode.SOURCE_NOT_READY,
-						'source-missing': this.props.piece.status === PieceStatusCode.SOURCE_MISSING,
-						'source-broken': this.props.piece.status === PieceStatusCode.SOURCE_BROKEN,
-						'unknown-state': this.props.piece.status === PieceStatusCode.UNKNOWN,
-
 						live: this.props.isOnAir,
 						disabled: this.props.disabled,
 						list: isList,
 						selected: this.props.isNext || this.props.isSelected,
 					},
+					RundownUtils.getPieceStatusClassName(this.props.piece.status),
 					...(this.props.piece.tags ? this.props.piece.tags.map((tag) => `piece-tag--${tag}`) : [])
 				)}
 				style={{

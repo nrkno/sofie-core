@@ -101,12 +101,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 				className={ClassNames(
 					'adlib-panel__list-view__list__table__cell--icon',
 					props.layer && RundownUtils.getSourceLayerClassName(props.layer.type),
-					{
-						'source-not-ready': props.status === PieceStatusCode.SOURCE_NOT_READY,
-						'source-missing': props.status === PieceStatusCode.SOURCE_MISSING,
-						'source-broken': props.status === PieceStatusCode.SOURCE_BROKEN,
-						'unknown-state': props.status === PieceStatusCode.UNKNOWN,
-					}
+					props.status && RundownUtils.getPieceStatusClassName(props.status),
 				)}
 				ref={itemIcon}
 				onMouseOver={handleOnMouseOver}
