@@ -68,6 +68,9 @@ export namespace ExpectedPackage {
 			/** Which container thumbnails are to be put into */
 			thumbnailContainerId?: string | null // null is used to disable the sideEffect
 			thumbnailPackageSettings?: SideEffectThumbnailSettings
+
+			/** Other custom configuration */
+			[key: string]: any
 		}
 	}
 	export interface SideEffectPreviewSettings {
