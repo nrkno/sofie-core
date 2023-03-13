@@ -9,7 +9,6 @@ import { doModalDialog } from '../ModalDialog'
 import {
 	getSchemaSummaryFieldsForObject,
 	SchemaFormSofieEnumDefinition,
-	SchemaFormUIField,
 	SchemaSummaryField,
 	translateStringIfHasNamespaces,
 } from './schemaFormUtil'
@@ -18,6 +17,7 @@ import { getSchemaDefaultValues } from '@sofie-automation/shared-lib/dist/lib/JS
 import { hasOpWithPath } from '../Components/util'
 import { SchemaTableSummaryRow, SchemaFormTableEditRow } from './schemaFormTableShared'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { SchemaFormUIField } from '../../../lib/jsonSchemaUtil'
 
 interface SchemaFormTableProps {
 	schema: JSONSchema

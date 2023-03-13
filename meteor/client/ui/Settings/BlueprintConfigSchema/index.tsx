@@ -17,15 +17,12 @@ import {
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { SchemaFormWithOverrides } from '../../../lib/forms/schemaFormWithOverrides'
 import deepmerge from 'deepmerge'
-import {
-	SchemaFormSofieEnumDefinition,
-	SchemaFormUIField,
-	translateStringIfHasNamespaces,
-} from '../../../lib/forms/schemaFormUtil'
+import { SchemaFormSofieEnumDefinition, translateStringIfHasNamespaces } from '../../../lib/forms/schemaFormUtil'
 import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
 import { faPencilAlt, faCheck } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { SchemaFormUIField } from '../../../../lib/jsonSchemaUtil'
 
 interface BlueprintConfigSchemaSettingsProps {
 	schema: JSONSchema | undefined

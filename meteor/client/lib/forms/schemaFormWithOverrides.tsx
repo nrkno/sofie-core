@@ -17,15 +17,10 @@ import { MultiLineTextInputControl } from '../Components/MultiLineTextInput'
 import { TextInputControl } from '../Components/TextInput'
 import { JSONSchema, TypeName } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { SchemaFormArrayTable } from './schemaFormTableArray'
-import {
-	joinObjectPathFragments,
-	SchemaFormCommonProps,
-	SchemaFormSofieEnumDefinition,
-	SchemaFormUIField,
-	translateStringIfHasNamespaces,
-} from './schemaFormUtil'
+import { SchemaFormCommonProps, SchemaFormSofieEnumDefinition, translateStringIfHasNamespaces } from './schemaFormUtil'
 import { MultiSelectInputControl } from '../Components/MultiSelectInput'
 import { SchemaFormObjectTable } from './schemaFormTableObject'
+import { joinObjectPathFragments, SchemaFormUIField } from '../../../lib/jsonSchemaUtil'
 
 interface SchemaFormWithOverridesProps extends SchemaFormCommonProps {
 	attr: string

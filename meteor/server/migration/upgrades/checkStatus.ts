@@ -6,7 +6,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { Blueprint, BlueprintHash } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { normalizeArrayToMap, literal, objectPathGet } from '@sofie-automation/corelib/dist/lib'
+import { normalizeArrayToMap, literal, objectPathGet, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import _ from 'underscore'
 import {
@@ -18,8 +18,10 @@ import { Blueprints, ShowStyleBases, Studios } from '../../collections'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Studio } from '../../../lib/collections/Studios'
 import { generateTranslation } from '../../../lib/lib'
-import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { JSONBlob, JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
+import { joinObjectPathFragments } from '../../../lib/jsonSchemaUtil'
+import { logger } from '../../logging'
 
 export async function getUpgradeStatus(): Promise<GetUpgradeStatusResult> {
 	const studioUpgrades = await checkStudiosUpgradeStatus()
@@ -232,23 +234,19 @@ function checkDocUpgradeStatus(
 			changes.push(generateTranslation('Blueprint config has changed'))
 
 			// also do a deeper diff
-			if (blueprint.configManifest) {
-				for (const entry of blueprint.configManifest) {
-					const oldValue = objectPathGet(oldConfig, entry.id)
-					const newValue = objectPathGet(newConfig, entry.id)
-
-					if (!_.isEqual(newValue, oldValue)) {
-						changes.push(
-							generateTranslation(
-								'Config value "{{ name }}" has changed. From "{{ oldValue }}", to "{{ newValue }}"',
-								{
-									name: entry.name,
-									oldValue: oldValue ?? '',
-									newValue: newValue ?? '',
-								}
-							)
+			if (blueprint.configSchema) {
+				try {
+					changes.push(
+						...diffJsonSchemaObjects(
+							JSONBlobParse(blueprint.configSchema),
+							['blueprint_' + doc.blueprintId],
+							oldConfig,
+							newConfig
 						)
-					}
+					)
+				} catch (e) {
+					changes.push(generateTranslation('Failed to compare config changes'))
+					logger.error(`Faield to compare configs: ${stringifyError(e)}`)
 				}
 			}
 		}
@@ -257,4 +255,44 @@ function checkDocUpgradeStatus(
 	return {
 		changes,
 	}
+}
+
+/**
+ * This is a slightly crude diffing of objects based on a jsonschema. Only keys in the schema will be compared.
+ * For now this has some limitations such as not looking inside of arrays, but this could be expanded later on
+ */
+function diffJsonSchemaObjects(
+	schema: JSONSchema,
+	translationNamespaces: string[],
+	objA: unknown,
+	objB: unknown,
+	pathPrefix?: string
+): ITranslatableMessage[] {
+	const changes: ITranslatableMessage[] = []
+
+	for (const [id, propSchema] of Object.entries(schema.properties || {})) {
+		const propPath = joinObjectPathFragments(pathPrefix, id)
+		const valueA = objectPathGet(objA, id)
+		const valueB = objectPathGet(objB, id)
+
+		if (propSchema.type === 'object' && !propSchema.patternProperties) {
+			changes.push(...diffJsonSchemaObjects(propSchema, translationNamespaces, valueA, valueB, propPath))
+		} else {
+			if (!_.isEqual(valueA, valueB)) {
+				changes.push(
+					generateTranslation(
+						'Config value "{{ name }}" has changed. From "{{ oldValue }}", to "{{ newValue }}"',
+						{
+							name: propSchema['ui:title'] || propPath,
+							oldValue: valueA ?? '',
+							newValue: valueB ?? '',
+						},
+						translationNamespaces
+					)
+				)
+			}
+		}
+	}
+
+	return changes
 }

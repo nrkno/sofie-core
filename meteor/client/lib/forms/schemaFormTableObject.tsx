@@ -13,9 +13,7 @@ import { useToggleExpandHelper } from '../../ui/Settings/util/ToggleExpandedHelp
 import { doModalDialog } from '../ModalDialog'
 import {
 	getSchemaSummaryFieldsForObject,
-	joinObjectPathFragments,
 	SchemaFormSofieEnumDefinition,
-	SchemaFormUIField,
 	SchemaSummaryField,
 	translateStringIfHasNamespaces,
 } from './schemaFormUtil'
@@ -23,6 +21,7 @@ import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaType
 import { getSchemaDefaultValues } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
 import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { SchemaFormTableEditRow, SchemaTableSummaryRow } from './schemaFormTableShared'
+import { joinObjectPathFragments, SchemaFormUIField } from '../../../lib/jsonSchemaUtil'
 
 interface SchemaFormObjectTableProps {
 	schema: JSONSchema
