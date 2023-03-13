@@ -7,7 +7,7 @@ To install it, begin by downloading the latest release of [Input Gateway from Gi
 Much like [Package Manager](./installing-package-manager), the Sofie instance that Input Gateway needs to connect to is configured through command line arguments. A minimal configuration could look something like this.
 
 ```bash
-input-gateway.exe --host <Core Host Name> --port <Core HTTP(S) port> --https --deviceId <Peripheral Device Id> --deviceToken <Peripheral Device Token/Password>
+input-gateway.exe --host <Core Host Name> --port <Core HTTP(S) port> --https --id <Peripheral Device Id> --token <Peripheral Device Token/Password>
 ```
 
 If not connecting over HTTPS, remove the `--https` flag.
