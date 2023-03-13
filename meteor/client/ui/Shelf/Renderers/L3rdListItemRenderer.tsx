@@ -12,7 +12,6 @@ import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInsp
 import { PieceInstancePiece } from '../../../../lib/collections/PieceInstances'
 import { AdLibPieceUi } from '../../../lib/shelf'
 import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
-import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererProps> = (
 	props: ILayerItemRendererProps

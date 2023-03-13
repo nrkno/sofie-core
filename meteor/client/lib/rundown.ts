@@ -239,7 +239,7 @@ export namespace RundownUtils {
 			case PieceStatusCode.SOURCE_BROKEN:
 				return 'source-broken'
 			case PieceStatusCode.SOURCE_MISSING:
-				return 'source-missing'				
+				return 'source-missing'
 			case PieceStatusCode.SOURCE_NOT_READY:
 				return 'source-not-ready'
 			case PieceStatusCode.UNKNOWN:
