@@ -19,6 +19,8 @@ import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
 import { Parts } from '../lib/collections/Parts'
 import { PartInstances } from '../lib/collections/PartInstances'
 import { PieceInstances } from '../lib/collections/PieceInstances'
+import { getRemovedOrOrphanedPackageInfos } from './api/studio/lib'
+import { PackageInfos } from '../lib/collections/PackageInfos'
 import { deferAsync } from '@sofie-automation/corelib/dist/lib'
 
 const lowPrioFcn = (fcn: () => any) => {
@@ -206,25 +208,46 @@ Meteor.startup(() => {
 	Meteor.setInterval(nightlyCronjob, 5 * 60 * 1000) // check every 5 minutes
 	nightlyCronjob()
 
-	function cleanupPlaylists(force?: boolean) {
-		if (isLowSeason() || force) {
-			deferAsync(
-				async () => {
-					// Ensure there are no empty playlists on an interval
-					const studioIds = await fetchStudioIds({})
-					await Promise.all(
-						studioIds.map(async (studioId) => {
-							const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
-							await job.complete
-						})
-					)
-				},
-				(e) => {
-					logger.error(`Cron: CleanupPlaylists error: ${e}`)
-				}
-			)
+	function anyTimeCronjob(force?: boolean) {
+		{
+			// Clean up playlists:
+			if (isLowSeason() || force) {
+				deferAsync(
+					async () => {
+						// Ensure there are no empty playlists on an interval
+						const studioIds = await fetchStudioIds({})
+						await Promise.all(
+							studioIds.map(async (studioId) => {
+								const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
+								await job.complete
+							})
+						)
+					},
+					(e) => {
+						logger.error(`Cron: CleanupPlaylists error: ${e}`)
+					}
+				)
+			}
+		}
+		{
+			// Clean up removed PackageInfos:
+			if (isLowSeason() || force) {
+				deferAsync(
+					async () => {
+						const removedPackageInfoIds = await getRemovedOrOrphanedPackageInfos()
+						if (removedPackageInfoIds.length) {
+							PackageInfos.remove({
+								_id: { $in: removedPackageInfoIds },
+							})
+						}
+					},
+					(e) => {
+						logger.error(`Cron: Cleanup PackageInfos error: ${e}`)
+					}
+				)
+			}
 		}
 	}
-	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes
-	cleanupPlaylists(true)
+	Meteor.setInterval(anyTimeCronjob, 30 * 60 * 1000) // every 30 minutes
+	anyTimeCronjob(true)
 })
