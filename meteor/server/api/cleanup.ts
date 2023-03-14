@@ -1,4 +1,4 @@
-import { ProtectedString, getCurrentTime, getCollectionKey } from '../../lib/lib'
+import { ProtectedString, getCurrentTime, getCollectionKey, waitForPromise } from '../../lib/lib'
 import { CollectionCleanupResult } from '../../lib/api/system'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { AdLibActions } from '../../lib/collections/AdLibActions'
@@ -35,7 +35,7 @@ import { Studios } from '../../lib/collections/Studios'
 import { Timeline } from '../../lib/collections/Timeline'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
-import { getActiveRundownPlaylistsInStudioFromDb } from './studio/lib'
+import { getActiveRundownPlaylistsInStudioFromDb, getRemovedOrOrphanedPackageInfos } from './studio/lib'
 import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatuses } from '../../lib/collections/ExpectedPackageWorkStatuses'
 import { PackageContainerPackageStatuses } from '../../lib/collections/PackageContainerPackageStatus'
@@ -293,6 +293,14 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 	{
 		ownedByStudioId(PackageInfos)
 		ownedByDeviceId(PackageInfos)
+
+		const removedPackageInfoIds = waitForPromise(getRemovedOrOrphanedPackageInfos())
+		addToResult(CollectionName.PackageInfos, removedPackageInfoIds.length)
+		if (actuallyCleanup) {
+			PackageInfos.remove({
+				_id: { $in: removedPackageInfoIds },
+			})
+		}
 	}
 	// Parts
 	{
