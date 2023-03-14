@@ -555,6 +555,61 @@ export interface RestAPI {
 		event: string,
 		studioId: StudioId
 	): Promise<ClientAPI.ClientResponse<void>>
+	/**
+	 * Send an action to a studio.
+	 *
+	 * Throws if the requested studio does not exits.
+	 * Throws if the action is not valid for the requested studio.
+	 * @param connection Connection data including client and header details
+	 * @param event User event string
+	 * @param studioId Studio to target
+	 * @param action Action to perform
+	 */
+	studioAction(
+		connection: Meteor.Connection,
+		event: string,
+		studioId: StudioId,
+		action: StudioAction
+	): Promise<ClientAPI.ClientResponse<void>>
+	/**
+	 * Send an action to a ShowStyleBase.
+	 *
+	 * Throws if the requested ShowStyleBase does not exits.
+	 * Throws if the action is not valid for the requested ShowStyleBase.
+	 * @param connection Connection data including client and header details
+	 * @param event User event string
+	 * @param showStyleBaseId ShowStyleBase to target
+	 * @param action Action to perform
+	 */
+	showStyleBaseAction(
+		connection: Meteor.Connection,
+		event: string,
+		showStyleBaseId: ShowStyleBaseId,
+		action: ShowStyleBaseAction
+	): Promise<ClientAPI.ClientResponse<void>>
+	/**
+	 * Get the pending migration steps at the system level.
+	 *
+	 * @param connection Connection data including client and header details
+	 * @param event User event string
+	 */
+	getPendingMigrations(
+		connection: Meteor.Connection,
+		event: string
+	): Promise<ClientAPI.ClientResponse<{ items: PendingMigrations }>>
+	/**
+	 * Apply system-level migrations.
+	 *
+	 * Throws if any of the specified migrations have already been applied.
+	 * @param connection Connection data including client and header details
+	 * @param event User event string
+	 * @param inputs Migration data to apply
+	 */
+	applyPendingMigrations(
+		connection: Meteor.Connection,
+		event: string,
+		inputs: MigrationData
+	): Promise<ClientAPI.ClientResponse<void>>
 }
 
 // This interface should be auto-generated in future
@@ -654,6 +709,35 @@ export interface PeripheralDeviceActionRestart extends PeripheralDeviceActionBas
 }
 
 export type PeripheralDeviceAction = PeripheralDeviceActionRestart
+
+export enum StudioActionType {
+	BLUEPRINT_UPGRADE = 'blueprint_upgrade',
+}
+
+export interface StudioActionBase {
+	type: StudioActionType
+}
+
+export interface StudioActionBlueprintUpgrade extends StudioActionBase {
+	type: StudioActionType.BLUEPRINT_UPGRADE
+}
+
+export type StudioAction = StudioActionBlueprintUpgrade
+
+export enum ShowStyleBaseActionType {
+	BLUEPRINT_UPGRADE = 'blueprint_upgrade',
+}
+
+export interface ShowStyleBaseActionBase {
+	type: ShowStyleBaseActionType
+}
+
+export interface ShowStyleBaseActionBlueprintUpgrade extends ShowStyleBaseActionBase {
+	type: ShowStyleBaseActionType.BLUEPRINT_UPGRADE
+}
+
+export type ShowStyleBaseAction = ShowStyleBaseActionBlueprintUpgrade
+
 export interface APIBlueprint {
 	id: string
 	name: string
@@ -745,3 +829,18 @@ export interface APIStudioSettings {
 	allowRundownResetOnAir?: boolean
 	preserveOrphanedSegmentPositionInRundown?: boolean
 }
+
+export interface PendingMigrationStep {
+	stepId: string
+	attributeId: string
+}
+
+export type PendingMigrations = Array<PendingMigrationStep>
+
+export interface MigrationStepData {
+	stepId: string
+	attributeId: string
+	migrationValue: string | number | boolean
+}
+
+export type MigrationData = Array<MigrationStepData>

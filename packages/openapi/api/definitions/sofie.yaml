@@ -81,8 +81,108 @@ resources:
                     type: string
         500:
           $ref: '#/components/responses/internalServerError'
+  migrations:
+    get:
+      operationId: getPendingMigrations
+      tags:
+        - sofie
+      summary: Gets a set of pending system-level migrations
+      responses:
+        200:
+          description: Command successfully handled - returns an array of migration steps
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/migrationInputs'
+        500:
+          $ref: '#/components/responses/internalServerError'
+    post:
+      operationId: applyPendingMigrations
+      tags:
+        - sofie
+      summary: Apply a set of migrations with a given set of values
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: object
+                properties:
+                  stepId:
+                    type: string
+                  attributeId:
+                    type: string
+                  migrationValue:
+                    oneOf:
+                      - type: string
+                      - type: number
+                      - type: boolean
+                additionalProperties: false
+                required:
+                  - stepId
+                  - attributeId
+                  - migrationValue
+      responses:
+        200:
+          $ref: '#/components/responses/postSuccess'
+        412:
+          description: Failed to apply migration due to migrations already having been applied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+        500:
+          $ref: '#/components/responses/internalServerError'
 components:
+  schemas:
+    migrationInputs:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+        - result
+      properties:
+        status:
+          type: number
+          example: 200
+        result:
+          type: object
+          additionalProperties: false
+          required:
+            - inputs
+          properties:
+            inputs:
+              type: array
+              items:
+                type: object
+                properties:
+                  stepId:
+                    type: string
+                  attributeId:
+                    type: string
+                additionalProperties: false
+                required:
+                  - stepId
+                  - attributeId
   responses:
+    postSuccess:
+      description: POST success.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: number
+                example: 200
     putSuccess:
       description: PUT success.
       content:

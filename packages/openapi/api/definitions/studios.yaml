@@ -314,6 +314,46 @@ resources:
           $ref: '#/components/responses/studioNotFound'
         500:
           $ref: '#/components/responses/internalServerError'
+  action:
+    put:
+      operationId: action
+      tags:
+        - studios
+      summary: Performs an action on a studio
+      parameters:
+        - name: studioId
+          in: path
+          description: Target studio.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Contains the action to perform.
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: '#/components/schemas/blueprintUpgrade'
+              example:
+                action: blueprintUpgrade
+      responses:
+        202:
+          description: The action is valid for the requested studio and will be dispatched. It may not have been dispatched yet.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 202
+        400:
+          $ref: '#/components/responses/badRequest'
+        404:
+          $ref: '#/components/responses/studioNotFound'
+        500:
+          $ref: '#/components/responses/internalServerError'
 components:
   schemas:
     studio:
@@ -402,6 +442,16 @@ components:
       required:
         - frameRate
         - mediaPreviewsUrl
+    blueprintUpgrade:
+      type: object
+      description: Runs blueprint upgrades.
+      properties:
+        action:
+          type: string
+          const: blueprintUpgrade
+      required:
+        - action
+      additionalProperties: false
   responses:
     putSuccess:
       description: Action successfully sent
@@ -413,6 +463,18 @@ components:
               status:
                 type: number
                 example: 200
+    badRequest:
+      description: Request is invalid
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: number
+                example: 400
+              message:
+                type: string
     studioNotFound:
       description: The specified Studio does not exist.
       content:
