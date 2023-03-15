@@ -1,18 +1,8 @@
-import {
-	PeripheralDevice,
-	PeripheralDeviceCategory,
-	PeripheralDeviceType,
-	PERIPHERAL_SUBTYPE_PROCESS,
-} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { removeRundownFromDb } from '../../rundownPlaylists'
-import {
-	setupMockPeripheralDevice,
-	setupDefaultRundownPlaylist,
-	setupMockShowStyleCompound,
-} from '../../__mocks__/presetCollections'
-import { activateRundownPlaylist, prepareStudioForBroadcast } from '../activePlaylistActions'
+import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
+import { activateRundownPlaylist } from '../activePlaylistActions'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { runJobWithPlayoutCache } from '../lock'
 import { runWithRundownLock } from '../../ingest/lock'
@@ -24,19 +14,11 @@ const executePeripheralDeviceFunctionMock = executePeripheralDeviceFunction as T
 
 describe('Playout Actions', () => {
 	let context: MockJobContext
-	let playoutDevice: PeripheralDevice
 
 	beforeEach(async () => {
 		context = setupDefaultJobEnvironment()
 
 		await setupMockShowStyleCompound(context)
-
-		playoutDevice = await setupMockPeripheralDevice(
-			context,
-			PeripheralDeviceCategory.PLAYOUT,
-			PeripheralDeviceType.PLAYOUT,
-			PERIPHERAL_SUBTYPE_PROCESS
-		)
 
 		const rundowns = await context.directCollections.Rundowns.findFetch()
 		for (const rundown of rundowns) {
@@ -102,30 +84,5 @@ describe('Playout Actions', () => {
 		).rejects.toMatchToString(/only one rundown can be active/i)
 
 		expect(executePeripheralDeviceFunctionMock).toHaveBeenCalledTimes(0)
-	})
-	test('prepareStudioForBroadcast', async () => {
-		expect(executePeripheralDeviceFunctionMock).toHaveBeenCalledTimes(0)
-
-		const { playlistId } = await setupDefaultRundownPlaylist(context, undefined, protectString('ro0'))
-		expect(playlistId).toBeTruthy()
-
-		const playlist = (await context.directCollections.RundownPlaylists.findOne(playlistId)) as DBRundownPlaylist
-		expect(playlist).toBeTruthy()
-
-		// prepareStudioForBroadcast
-		const okToDestroyStuff = true
-		await runJobWithPlayoutCache(context, { playlistId: playlistId }, null, async (cache) =>
-			prepareStudioForBroadcast(context, cache, okToDestroyStuff)
-		)
-
-		expect(executePeripheralDeviceFunctionMock).toHaveBeenCalledTimes(1)
-		expect(executePeripheralDeviceFunctionMock).toHaveBeenNthCalledWith(
-			1,
-			expect.anything(), // context
-			playoutDevice._id,
-			null,
-			'devicesMakeReady', // function
-			[okToDestroyStuff, playlist._id]
-		)
 	})
 })

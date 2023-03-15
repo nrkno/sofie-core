@@ -3972,7 +3972,7 @@
   version "1.50.0-in-development"
   dependencies:
     "@mos-connection/model" "^3.0.1"
-    timeline-state-resolver-types "8.0.0-nightly-feat-replace-makeready-20230309-153238-4171e4816.0"
+    timeline-state-resolver-types "8.0.0-nightly-feat-replace-makeready-20230315-070542-52c66a627.0"
     tslib "^2.4.0"
     type-fest "^2.19.0"
 
@@ -14976,17 +14976,17 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@8.0.0-nightly-feat-replace-makeready-20230309-153238-4171e4816.0:
-  version "8.0.0-nightly-feat-replace-makeready-20230309-153238-4171e4816.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-8.0.0-nightly-feat-replace-makeready-20230309-153238-4171e4816.0.tgz#8a03df609a24b85ca6ad76d127a21aaea127cd33"
-  integrity sha512-BWcLOQlLamCEO7HlsgQpBV52viTr4WV66Pm2PmDoyVXpLLQQ98s3A3jr3q8ag4lAuQ9QaSraHBWBFcVR7N+niA==
+timeline-state-resolver-types@8.0.0-nightly-feat-replace-makeready-20230315-070542-52c66a627.0:
+  version "8.0.0-nightly-feat-replace-makeready-20230315-070542-52c66a627.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-8.0.0-nightly-feat-replace-makeready-20230315-070542-52c66a627.0.tgz#7e9ce1a0fb63c8d59e59c823e49ae5ad241e5faa"
+  integrity sha512-wJQmdYDmYtXOoDw1gDXi2GW3jbESD9HaOtrQi1azEdA7gE2JhPD1xYOH5WEhK89cYkl9JYIbuoEiDlObb264qg==
   dependencies:
     tslib "^2.4.1"
 
-timeline-state-resolver@8.0.0-nightly-feat-replace-makeready-20230309-153238-4171e4816.0:
-  version "8.0.0-nightly-feat-replace-makeready-20230309-153238-4171e4816.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-8.0.0-nightly-feat-replace-makeready-20230309-153238-4171e4816.0.tgz#b36dab8a28a8ebcf35d418b756654927c731bdbf"
-  integrity sha512-7k8E8Kk+WugRXWMdKX/JE3ensO0guSXm/RL3KxANlnetecU61F2tWzkpdrkLYDczJz9woZ9e3UPXqcVeoGZxVg==
+timeline-state-resolver@8.0.0-nightly-feat-replace-makeready-20230315-070542-52c66a627.0:
+  version "8.0.0-nightly-feat-replace-makeready-20230315-070542-52c66a627.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-8.0.0-nightly-feat-replace-makeready-20230315-070542-52c66a627.0.tgz#4e7ca6966c4019d8f33da9039768c802ad929787"
+  integrity sha512-TwAuhHrcuG2+1YPWWR0NCntybSh8Op2DW4pcSLYxex62MnT7mlNVXB/DgGGYXdDTCI6VHm+qBktGtehp17AC1A==
   dependencies:
     "@tv2media/v-connection" "^7.3.0"
     atem-connection "2.4.0"
@@ -15008,7 +15008,7 @@ timeline-state-resolver@8.0.0-nightly-feat-replace-makeready-20230309-153238-417
     sprintf-js "^1.1.2"
     superfly-timeline "^8.3.1"
     threadedclass "^1.2.0"
-    timeline-state-resolver-types "8.0.0-nightly-feat-replace-makeready-20230309-153238-4171e4816.0"
+    timeline-state-resolver-types "8.0.0-nightly-feat-replace-makeready-20230315-070542-52c66a627.0"
     tslib "^2.4.1"
     tv-automation-quantel-gateway-client "^3.0.2"
     underscore "^1.13.4"

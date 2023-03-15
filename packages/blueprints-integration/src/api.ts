@@ -15,6 +15,7 @@ import {
 	IStudioBaselineContext,
 	IGetRundownContext,
 	IDataStoreActionExecutionContext,
+	IRundownActivationContext,
 } from './context'
 import { IngestAdlib, ExtendedIngestRundown, IngestSegment } from './ingest'
 import { IBlueprintExternalMessageQueueObj } from './message'
@@ -239,9 +240,9 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 
 	// Events
 
-	onRundownActivate?: (context: IRundownContext) => Promise<void>
+	onRundownActivate?: (context: IRundownActivationContext, rehearsal: boolean) => Promise<void>
 	onRundownFirstTake?: (context: IPartEventContext) => Promise<void>
-	onRundownDeActivate?: (context: IRundownContext) => Promise<void>
+	onRundownDeActivate?: (context: IRundownActivationContext) => Promise<void>
 
 	/** Called after a Take action */
 	onPreTake?: (context: IPartEventContext) => Promise<void>

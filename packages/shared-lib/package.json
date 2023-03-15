@@ -39,7 +39,7 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"timeline-state-resolver-types": "8.0.0-nightly-feat-replace-makeready-20230309-153238-4171e4816.0",
+		"timeline-state-resolver-types": "8.0.0-nightly-feat-replace-makeready-20230315-070542-52c66a627.0",
 		"tslib": "^2.4.0",
 		"type-fest": "^2.19.0"
 	},
