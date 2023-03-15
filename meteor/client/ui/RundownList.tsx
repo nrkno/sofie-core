@@ -179,8 +179,6 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 			}
 
 			componentDidMount(): void {
-				const { t } = this.props
-
 				// Subscribe to data:
 				this.subscribe(PubSub.rundownPlaylists, {})
 				this.subscribe(PubSub.uiStudio, null)
