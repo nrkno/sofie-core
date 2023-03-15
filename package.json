@@ -37,5 +37,6 @@
 		"rimraf": "^4.4.1",
 		"semver": "^7.3.8",
 		"snyk-nodejs-lockfile-parser": "^1.48.2"
-	}
+	},
+	"packageManager": "yarn@3.4.1"
 }

@@ -14,5 +14,5 @@ scratch/
 .github/workflows/forkSync.yml
 .github/workflows/forkSynk.yml
 
-# Temporarily ignore the .yarn folder
-.yarn
+
+.yarn/*

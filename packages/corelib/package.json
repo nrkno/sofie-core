@@ -62,5 +62,6 @@
 		"*.{ts,tsx}": [
 			"yarn lint:raw"
 		]
-	}
+	},
+	"packageManager": "yarn@3.4.1"
 }
