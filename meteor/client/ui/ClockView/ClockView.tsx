@@ -14,6 +14,7 @@ import { OverlayScreenSaver } from './OverlayScreenSaver'
 import { RundownPlaylists } from '../../collections'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CameraScreen } from './CameraScreen'
 
 interface IPropsHeader {
 	key: string
@@ -52,7 +53,7 @@ export const ClockView = withTracker(function (props: IPropsHeader) {
 					<Route path="/countdowns/:studioId/presenter">
 						{this.props.playlist ? (
 							<RundownTimingProvider playlist={this.props.playlist}>
-								<PresenterScreen studioId={this.props.studioId} playlistId={this.props.playlist._id} />
+								<PresenterScreen playlistId={this.props.playlist._id} studioId={this.props.studioId} />
 							</RundownTimingProvider>
 						) : (
 							<StudioScreenSaver studioId={this.props.studioId} ownBackground={true} />
@@ -66,6 +67,11 @@ export const ClockView = withTracker(function (props: IPropsHeader) {
 						) : (
 							<OverlayScreenSaver studioId={this.props.studioId} />
 						)}
+					</Route>
+					<Route path="/countdowns/:studioId/camera">
+						<RundownTimingProvider playlist={this.props.playlist}>
+							<CameraScreen playlist={this.props.playlist} studioId={this.props.studioId} />
+						</RundownTimingProvider>
 					</Route>
 					<Route>
 						<Redirect to="/" />
