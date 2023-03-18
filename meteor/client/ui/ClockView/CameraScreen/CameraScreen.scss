@@ -1,0 +1,34 @@
+@import '../../../styles/itemTypeColors';
+
+.camera-screen__segment {
+    > .camera-screen__segment-name {
+        font-size: 1em;
+    }
+
+    .camera-screen__piece {
+        position: relative;
+        font-size: 2em;
+
+        .camera-screen__piece-background {
+            position: absolute;
+            z-index: -1;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 100%;
+
+            @include item-type-colors();
+        }
+    }
+
+    .camera-screen__part {
+        position: relative;
+
+        .camera-screen__part-countdown {
+            position: absolute;
+            top: 0;
+            left: auto;
+            right: 0;
+        }
+    }
+}

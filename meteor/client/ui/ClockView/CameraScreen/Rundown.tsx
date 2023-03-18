@@ -9,17 +9,20 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { UIShowStyleBases } from '../../Collections'
 import { RundownToShowStyleContext, StudioContext } from '.'
+import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-export function Rundown({ playlist, rundown }: { playlist: RundownPlaylist; rundown: RundownObj }): JSX.Element | null {
+interface IProps {
+	playlist: RundownPlaylist
+	rundown: RundownObj
+	rundownIdsBefore: RundownId[]
+}
+
+export function Rundown({ playlist, rundown, rundownIdsBefore }: IProps): JSX.Element | null {
 	const rundownId = rundown._id
 
-	useSubscription(PubSub.segments, {
-		rundownId,
-	})
+	useSubscription(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
 
 	const segments = useTracker(() => Segments.find({ rundownId }).fetch(), [rundownId], [] as Segment[])
-
-	useSubscription(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
 
 	const showStyleBase = useTracker(
 		() => UIShowStyleBases.findOne(rundown.showStyleBaseId),
@@ -27,52 +30,45 @@ export function Rundown({ playlist, rundown }: { playlist: RundownPlaylist; rund
 		undefined
 	)
 
-	useSubscription(PubSub.partInstancesSimple, {
-		rundownId,
-	})
-
-	useSubscription(PubSub.parts, [rundownId])
-
-	useSubscription(PubSub.pieceInstancesSimple, {
-		rundownId,
-	})
-
-	useSubscription(PubSub.pieces, {
-		startRundownId: rundownId,
-	})
-
 	const studio = useContext(StudioContext)
 
 	if (!showStyleBase || !studio) return null
+
+	const segmentsIdsBefore: Set<SegmentId> = new Set()
 
 	return (
 		<div className="camera-screen__rundown">
 			{segments.map((segment) => (
 				<RundownToShowStyleContext.Consumer key={unprotectString(segment._id)}>
-					{(rundownToShowStyle) => (
-						<SegmentComponent
-							rundown={rundown}
-							rundownId={rundownId}
-							playlist={playlist}
-							segmentId={segment._id}
-							showStyleBase={showStyleBase}
-							studio={studio}
-							timeScale={1}
-							studioMode={false}
-							countdownToSegmentRequireLayers={undefined}
-							fixedSegmentDuration={false}
-							followLiveSegments={true}
-							isFollowingOnAirSegment={true}
-							isLastSegment={false} // TODO: fix
-							miniShelfFilter={undefined}
-							ownCurrentPartInstance={undefined}
-							ownNextPartInstance={undefined}
-							rundownViewLayout={undefined}
-							rundownsToShowstyles={rundownToShowStyle}
-							rundownIdsBefore={[]}
-							segmentsIdsBefore={new Set()}
-						/>
-					)}
+					{(rundownToShowStyle) => {
+						const thisSegmentsSegmentIdsBefore = new Set(segmentsIdsBefore)
+						segmentsIdsBefore.add(segment._id)
+
+						return (
+							<SegmentComponent
+								rundown={rundown}
+								rundownId={rundownId}
+								playlist={playlist}
+								segmentId={segment._id}
+								showStyleBase={showStyleBase}
+								studio={studio}
+								timeScale={1}
+								studioMode={false}
+								countdownToSegmentRequireLayers={undefined}
+								fixedSegmentDuration={false}
+								followLiveSegments={true}
+								isFollowingOnAirSegment={true}
+								isLastSegment={false} // TODO: fix
+								miniShelfFilter={undefined}
+								ownCurrentPartInstance={undefined}
+								ownNextPartInstance={undefined}
+								rundownViewLayout={undefined}
+								rundownsToShowstyles={rundownToShowStyle}
+								rundownIdsBefore={rundownIdsBefore}
+								segmentsIdsBefore={thisSegmentsSegmentIdsBefore}
+							/>
+						)
+					}}
 				</RundownToShowStyleContext.Consumer>
 			))}
 		</div>
