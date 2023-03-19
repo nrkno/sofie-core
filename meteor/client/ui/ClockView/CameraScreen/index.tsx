@@ -17,6 +17,7 @@ import { PartInstance } from '../../../../lib/collections/PartInstances'
 import { OrderedPartsProvider } from './OrderedPartsProvider'
 import { offElementResize, onElementResize } from '../../../lib/resizeObserver'
 import { useTranslation } from 'react-i18next'
+import { Spinner } from '../../../lib/Spinner'
 
 interface IProps {
 	playlist: RundownPlaylist | undefined
@@ -84,13 +85,14 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 	const rundownIds = useMemo(() => rundowns.map((rundown) => rundown._id), [rundowns])
 	const showStyleBaseIds = useMemo(() => rundowns.map((rundown) => rundown.showStyleBaseId), [rundowns])
 
-	useSubscription(PubSub.rundowns, playlistIds, null)
+	const rundownsReady = useSubscription(PubSub.rundowns, playlistIds, null)
 	useSubscription(PubSub.segments, {
 		rundownId: {
 			$in: rundownIds,
 		},
 	})
-	useSubscription(PubSub.uiStudio, studioId)
+
+	const studioReady = useSubscription(PubSub.uiStudio, studioId)
 	useSubscription(PubSub.partInstances, rundownIds, playlist?.activationId)
 
 	useSubscription(PubSub.parts, rundownIds)
@@ -101,11 +103,16 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 		},
 	})
 
-	useSubscription(PubSub.pieces, {
+	const piecesReady = useSubscription(PubSub.pieces, {
 		startRundownId: {
 			$in: rundownIds,
 		},
 	})
+
+	const [piecesReadyOnce, setPiecesReadyOnce] = useState(false)
+	useEffect(() => {
+		if (piecesReady) setPiecesReadyOnce(true)
+	}, [piecesReady])
 
 	const currentPartInstance = useTracker(
 		() => (playlist?.currentPartInstanceId ? PartInstances.findOne(playlist?.currentPartInstanceId) : undefined),
@@ -195,9 +202,17 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 		}
 	}, [canvasElRef.current])
 
-	if (!studio) return <h1 className="mod mal alc">{t("This studio doesn't exist.")}</h1>
+	if (!studio && studioReady) return <h1 className="mod mal alc">{t("This studio doesn't exist.")}</h1>
 
-	if (!playlist) return <h1 className="mod mal alc">{t('There is no rundown active in this studio.')}</h1>
+	if (!playlist && rundownsReady)
+		return <h1 className="mod mal alc">{t('There is no rundown active in this studio.')}</h1>
+
+	if ((playlist && !piecesReadyOnce) || !playlist)
+		return (
+			<div className="mod mal alc">
+				<Spinner />
+			</div>
+		)
 
 	const rundownIdsBefore: RundownId[] = []
 
