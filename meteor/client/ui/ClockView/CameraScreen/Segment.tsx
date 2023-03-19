@@ -1,70 +1,104 @@
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import classNames from 'classnames'
 import React, { useContext, useMemo } from 'react'
 import { ActivePartInstancesContext, PieceFilter } from '.'
-import { withResolvedSegment } from '../../SegmentContainer/withResolvedSegment'
+import {
+	withResolvedSegment,
+	IProps as IWithResolvedSegmentProps,
+	ITrackedProps as IWithResolvedSegmentInjectedProps,
+} from '../../SegmentContainer/withResolvedSegment'
 import { OrderedPartsContext } from './OrderedPartsProvider'
 import { Part } from './Part'
 
-export const Segment = withResolvedSegment(({ parts, segmentui }) => {
-	const activePartInstances = useContext(ActivePartInstancesContext)
+interface IProps extends IWithResolvedSegmentProps {
+	index: number
+}
 
-	const orderedPartIds = useContext(OrderedPartsContext)
+export const Segment = withResolvedSegment(
+	({ parts, segmentui, playlist }: IProps & IWithResolvedSegmentInjectedProps) => {
+		const activePartInstances = useContext(ActivePartInstancesContext)
 
-	const livePartIndex = useMemo(
-		() =>
-			activePartInstances.currentPartInstance?.part._id
-				? orderedPartIds.indexOf(activePartInstances.currentPartInstance?.part._id)
-				: -1,
-		[activePartInstances.currentPartInstance?.part._id]
-	)
+		const orderedPartIds = useContext(OrderedPartsContext)
 
-	const nextPartIndex = useMemo(
-		() =>
-			activePartInstances.nextPartInstance?.part._id
-				? orderedPartIds.indexOf(activePartInstances.nextPartInstance?.part._id)
-				: -1,
-		[activePartInstances.nextPartInstance?.part._id]
-	)
+		const livePartIndex = useMemo(
+			() =>
+				activePartInstances.currentPartInstance?.part._id
+					? orderedPartIds.indexOf(activePartInstances.currentPartInstance?.part._id)
+					: -1,
+			[activePartInstances.currentPartInstance?.part._id]
+		)
 
-	const unplayedValidParts = useMemo(
-		() => parts.filter((part) => !part.instance.part.invalid && !part.instance.timings?.plannedStoppedPlayback),
-		[parts, orderedPartIds]
-	)
+		const nextPartIndex = useMemo(
+			() =>
+				activePartInstances.nextPartInstance?.part._id
+					? orderedPartIds.indexOf(activePartInstances.nextPartInstance?.part._id)
+					: -1,
+			[activePartInstances.nextPartInstance?.part._id]
+		)
 
-	const selectPiece = useContext(PieceFilter)
+		const unplayedValidParts = useMemo(
+			() => parts.filter((part) => !part.instance.part.invalid && !part.instance.timings?.plannedStoppedPlayback),
+			[parts, orderedPartIds]
+		)
 
-	const partsAndPieces = useMemo(
-		() =>
-			unplayedValidParts
-				.map((part) => ({ part, piece: part.pieces.find(selectPiece) }))
-				.filter(
-					(pair) =>
-						pair.piece !== undefined &&
-						(orderedPartIds.indexOf(pair.part.partId) >= nextPartIndex ||
-							orderedPartIds.indexOf(pair.part.partId) === livePartIndex)
-				),
-		[selectPiece, parts, livePartIndex, nextPartIndex]
-	)
+		const selectPiece = useContext(PieceFilter)
 
-	if (partsAndPieces.length === 0) return null
+		const partsAndPieces = useMemo(
+			() =>
+				unplayedValidParts
+					.map((part) => ({ part, piece: part.pieces.find(selectPiece) }))
+					.filter(
+						(pair) =>
+							pair.piece !== undefined &&
+							(orderedPartIds.indexOf(pair.part.partId) >= nextPartIndex ||
+								orderedPartIds.indexOf(pair.part.partId) === livePartIndex)
+					),
+			[selectPiece, parts, livePartIndex, nextPartIndex]
+		)
 
-	return (
-		<div className="camera-screen__segment">
-			<div className="camera-screen__segment-name">{segmentui?.name}</div>
-			{partsAndPieces.map(({ part, piece }) => {
-				const isLive = activePartInstances.currentPartInstance?._id === part.instance._id
-				const isNext = activePartInstances.nextPartInstance?._id === part.instance._id
+		const ownCurrentPartInstance = useMemo(
+			() =>
+				activePartInstances.currentPartInstance?.segmentId === segmentui?._id
+					? activePartInstances.currentPartInstance
+					: undefined,
+			[activePartInstances.currentPartInstance, segmentui?._id]
+		)
 
-				return (
-					<Part
-						key={unprotectString(part.instance._id)}
-						part={part}
-						piece={piece!}
-						isLive={isLive}
-						isNext={isNext}
-					></Part>
-				)
-			})}
-		</div>
-	)
-})
+		const ownNextPartInstance = useMemo(
+			() =>
+				activePartInstances.nextPartInstance?.segmentId === segmentui?._id
+					? activePartInstances.nextPartInstance
+					: undefined,
+			[activePartInstances.nextPartInstance, segmentui?._id]
+		)
+
+		if (partsAndPieces.length === 0) return null
+
+		return (
+			<div
+				className={classNames('camera-screen__segment', {
+					live: !!ownCurrentPartInstance,
+					next: !!ownNextPartInstance,
+				})}
+				data-own-current-part-instance-id={ownCurrentPartInstance?._id}
+			>
+				<div className="camera-screen__segment-name">{segmentui?.name}</div>
+				{partsAndPieces.map(({ part, piece }) => {
+					const isLive = ownCurrentPartInstance?._id === part.instance._id
+					const isNext = ownNextPartInstance?._id === part.instance._id
+
+					return (
+						<Part
+							key={unprotectString(part.instance._id)}
+							part={part}
+							piece={piece!}
+							playlist={playlist}
+							isLive={isLive}
+							isNext={isNext}
+						></Part>
+					)
+				})}
+			</div>
+		)
+	}
+)

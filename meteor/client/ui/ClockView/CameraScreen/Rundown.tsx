@@ -38,7 +38,7 @@ export function Rundown({ playlist, rundown, rundownIdsBefore }: IProps): JSX.El
 
 	return (
 		<div className="camera-screen__rundown">
-			{segments.map((segment) => (
+			{segments.map((segment, index) => (
 				<RundownToShowStyleContext.Consumer key={unprotectString(segment._id)}>
 					{(rundownToShowStyle) => {
 						const thisSegmentsSegmentIdsBefore = new Set(segmentsIdsBefore)
@@ -46,6 +46,7 @@ export function Rundown({ playlist, rundown, rundownIdsBefore }: IProps): JSX.El
 
 						return (
 							<SegmentComponent
+								index={index}
 								rundown={rundown}
 								rundownId={rundownId}
 								playlist={playlist}

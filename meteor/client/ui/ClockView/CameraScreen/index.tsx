@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useState } from 'react'
-import { CameraContent, RemoteContent } from '@sofie-automation/blueprints-integration'
-import { RundownId, SegmentId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+import { CameraContent, RemoteContent, SourceLayerType, SplitsContent } from '@sofie-automation/blueprints-integration'
+import { RundownId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PubSub } from '../../../../lib/api/pubsub'
@@ -35,11 +35,10 @@ export const ActivePartInstancesContext = React.createContext<IActivePartInstanc
 	currentPartInstance: undefined,
 	nextPartInstance: undefined,
 })
-export const CurrentSegmentIdContext = React.createContext<SegmentId | undefined>(undefined)
-export const NextSegmentIdContext = React.createContext<SegmentId | undefined>(undefined)
 export const AreaZoom = React.createContext<number>(1)
+export const CanvasSizeContext = React.createContext<number>(1)
 
-const PARAM_NAME_STUDIO_LABEL = 'studioLabel'
+const PARAM_NAME_STUDIO_LABEL = 'studioLabels'
 const PARAM_NAME_SOURCE_LAYER_IDS = 'sourceLayerIds'
 
 export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null {
@@ -125,9 +124,6 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 		[currentPartInstance, nextPartInstance]
 	)
 
-	const currentSegmentId = useMemo(() => currentPartInstance?.segmentId, [currentPartInstance])
-	const nextSegmentId = useMemo(() => nextPartInstance?.segmentId, [nextPartInstance])
-
 	useEffect(() => {
 		document.body.classList.add('dark', 'xdark', 'vertical-overflow-only')
 
@@ -152,16 +148,34 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 
 	const pieceFilterFunction = useMemo(() => {
 		return (piece: PieceExtended) => {
-			const content = piece.instance.piece.content as CameraContent | RemoteContent
+			const camLikeContent = piece.instance.piece.content as CameraContent | RemoteContent
 			if (
 				sourceLayerIds !== null &&
 				(piece.sourceLayer?._id === undefined || !sourceLayerIds.includes(piece.sourceLayer?._id))
 			)
 				return false
-			if (studioLabels !== null && !studioLabels.includes(content.studioLabel)) return false
+			if (studioLabels !== null) {
+				if (piece.sourceLayer?.type === SourceLayerType.SPLITS) {
+					const splitContent = piece.instance.piece.content as SplitsContent
+					if (!splitContent.boxSourceConfiguration.find((item) => studioLabels.includes(item.studioLabel))) return false
+				} else {
+					if (!studioLabels.includes(camLikeContent.studioLabel)) return false
+				}
+			}
 			return true
 		}
 	}, [studioLabels, sourceLayerIds])
+
+	const [canvasWidth, setCanvasWidth] = useState(1)
+
+	const canvasElRef = useRef<HTMLDivElement>(null)
+
+	useLayoutEffect(() => {
+		const canvasEl = canvasElRef.current
+		const dimentions = canvasEl?.getBoundingClientRect()
+
+		setCanvasWidth(dimentions?.width ?? 1)
+	}, [canvasElRef.current])
 
 	if (!playlist || !studio) return null
 
@@ -173,25 +187,23 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 				<PieceFilter.Provider value={pieceFilterFunction}>
 					<OrderedPartsProvider>
 						<ActivePartInstancesContext.Provider value={partInstanceContext}>
-							<CurrentSegmentIdContext.Provider value={currentSegmentId}>
-								<NextSegmentIdContext.Provider value={nextSegmentId}>
-									<AreaZoom.Provider value={1 / 10000}>
-										<div className="camera-screen">
-											{rundowns.map((rundown) => {
-												rundownIdsBefore.push(rundown._id)
-												return (
-													<RundownComponent
-														key={unprotectString(rundown._id)}
-														playlist={playlist}
-														rundown={rundown}
-														rundownIdsBefore={rundownIdsBefore.slice(0, -1)}
-													/>
-												)
-											})}
-										</div>
-									</AreaZoom.Provider>
-								</NextSegmentIdContext.Provider>
-							</CurrentSegmentIdContext.Provider>
+							<AreaZoom.Provider value={0.01}>
+								<CanvasSizeContext.Provider value={canvasWidth}>
+									<div className="camera-screen" ref={canvasElRef}>
+										{rundowns.map((rundown) => {
+											rundownIdsBefore.push(rundown._id)
+											return (
+												<RundownComponent
+													key={unprotectString(rundown._id)}
+													playlist={playlist}
+													rundown={rundown}
+													rundownIdsBefore={rundownIdsBefore.slice(0, -1)}
+												/>
+											)
+										})}
+									</div>
+								</CanvasSizeContext.Provider>
+							</AreaZoom.Provider>
 						</ActivePartInstancesContext.Provider>
 					</OrderedPartsProvider>
 				</PieceFilter.Provider>
