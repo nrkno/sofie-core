@@ -26,8 +26,12 @@ $page-margin: 1rem 1rem 0 3rem;
 		.camera-screen__piece-label {
 			position: relative;
 			padding-left: 1.6rem;
+			margin-right: 5rem;
 			max-width: max-content;
 			min-width: 1.5em;
+			white-space: nowrap;
+			overflow: hidden;
+			text-overflow: ellipsis;
 		}
 
 		.camera-screen__piece-type-indicator {

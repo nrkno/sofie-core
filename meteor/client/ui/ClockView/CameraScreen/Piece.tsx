@@ -32,15 +32,21 @@ export const Piece = React.memo(function Piece({
 	}
 
 	const style = useMemo<React.CSSProperties>(
-		() => ({
-			width: `${pixelWidth}px`,
-			transform: `translate(${pixelLeft}px, 0)`,
-		}),
-		[pixelLeft, pixelWidth]
+		() =>
+			width === null
+				? {
+						width: `100%`,
+						transform: `translate(${pixelLeft}px, 0)`,
+				  }
+				: {
+						width: `${pixelWidth}px`,
+						transform: `translate(${pixelLeft}px, 0)`,
+				  },
+		[width, pixelLeft, pixelWidth]
 	)
 
 	return (
-		<div className={classNames('camera-screen__piece', { live: isLive })}>
+		<div className={classNames('camera-screen__piece', { live: isLive })} data-width={JSON.stringify(width)}>
 			{pixelLeft < canvasWidth ? (
 				<div
 					className={classNames(

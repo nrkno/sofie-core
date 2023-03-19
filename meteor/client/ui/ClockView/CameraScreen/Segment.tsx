@@ -37,8 +37,14 @@ export const Segment = withResolvedSegment(
 		)
 
 		const unplayedValidParts = useMemo(
-			() => parts.filter((part) => !part.instance.part.invalid && !part.instance.timings?.plannedStoppedPlayback),
-			[parts, orderedPartIds]
+			() =>
+				parts.filter((part) => {
+					if (part.instance.part.invalid) return false
+					const partIndex = orderedPartIds.indexOf(part.instance.part._id)
+					if (partIndex < nextPartIndex && partIndex !== livePartIndex) return false
+					return true
+				}),
+			[parts, orderedPartIds, nextPartIndex, livePartIndex]
 		)
 
 		const selectPiece = useContext(PieceFilter)
