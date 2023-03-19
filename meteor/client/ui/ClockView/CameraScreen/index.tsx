@@ -15,6 +15,8 @@ import { useLocation } from 'react-router-dom'
 import { parse as queryStringParse } from 'query-string'
 import { PartInstance } from '../../../../lib/collections/PartInstances'
 import { OrderedPartsProvider } from './OrderedPartsProvider'
+import { offElementResize, onElementResize } from '../../../lib/resizeObserver'
+import { useTranslation } from 'react-i18next'
 
 interface IProps {
 	playlist: RundownPlaylist | undefined
@@ -162,6 +164,7 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 					if (!studioLabels.includes(camLikeContent.studioLabel)) return false
 				}
 			}
+			if (sourceLayerIds === null && (piece.sourceLayer?.isHidden || !piece.outputLayer?.isPGM)) return false
 			return true
 		}
 	}, [studioLabels, sourceLayerIds])
@@ -170,14 +173,31 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 
 	const canvasElRef = useRef<HTMLDivElement>(null)
 
+	const { t } = useTranslation()
+
 	useLayoutEffect(() => {
 		const canvasEl = canvasElRef.current
 		const dimentions = canvasEl?.getBoundingClientRect()
 
 		setCanvasWidth(dimentions?.width ?? 1)
+
+		if (!canvasEl) return
+
+		function onReisze(entries: ResizeObserverEntry[]): void {
+			setCanvasWidth(entries[0].borderBoxSize[0].inlineSize)
+		}
+
+		const observer = onElementResize(canvasEl, onReisze)
+
+		return () => {
+			offElementResize(observer, canvasEl)
+			observer.disconnect()
+		}
 	}, [canvasElRef.current])
 
-	if (!playlist || !studio) return null
+	if (!studio) return <h1 className="mod mal alc">{t("This studio doesn't exist.")}</h1>
+
+	if (!playlist) return <h1 className="mod mal alc">{t('There is no rundown active in this studio.')}</h1>
 
 	const rundownIdsBefore: RundownId[] = []
 
