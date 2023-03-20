@@ -407,7 +407,7 @@ export namespace PackageManagerIntegration {
 			},
 		})
 
-		onUpdatedPackageInfo(packageId, doc)
+		await onUpdatedPackageInfo(packageId, doc)
 	}
 	export async function removePackageInfo(
 		context: MethodContext,
@@ -436,7 +436,7 @@ export namespace PackageManagerIntegration {
 			// Remove right away:
 			await PackageInfos.removeAsync(id)
 
-			onUpdatedPackageInfo(packageId, null) // ?
+			await onUpdatedPackageInfo(packageId, null) // ?
 		}
 	}
 }

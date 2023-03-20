@@ -361,10 +361,14 @@ async function listIngestRundowns(peripheralDevice: PeripheralDevice): Promise<s
 // hackGetMediaObjectDuration stuff
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		MediaObjects.find({}, { fields: { _id: 1, mediaId: 1, mediainfo: 1, studioId: 1 } }).observe({
-			added: onMediaObjectChanged,
-			changed: onMediaObjectChanged,
-		})
+		MediaObjects.observe(
+			{},
+			{
+				added: onMediaObjectChanged,
+				changed: onMediaObjectChanged,
+			},
+			{ fields: { _id: 1, mediaId: 1, mediainfo: 1, studioId: 1 } }
+		)
 	}
 })
 

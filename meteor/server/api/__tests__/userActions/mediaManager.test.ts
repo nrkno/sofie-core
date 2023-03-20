@@ -13,7 +13,7 @@ const MAX_WAIT_TIME = 300
 
 describe('User Actions - Media Manager', () => {
 	let env: DefaultEnvironment
-	function setupMockWorkFlow() {
+	async function setupMockWorkFlow() {
 		const workFlowId: MediaWorkFlowId = getRandomId()
 		const workFlow = {
 			_id: workFlowId,
@@ -26,7 +26,7 @@ describe('User Actions - Media Manager', () => {
 			studioId: env.studio._id,
 			success: false,
 		}
-		MediaWorkFlows.insert(workFlow)
+		await MediaWorkFlows.insertAsync(workFlow)
 
 		return { workFlow, workFlowId }
 	}
@@ -46,7 +46,7 @@ describe('User Actions - Media Manager', () => {
 		jest.resetAllMocks()
 	})
 	testInFiber('Restart workflow', async () => {
-		const { workFlowId } = setupMockWorkFlow()
+		const { workFlowId } = await setupMockWorkFlow()
 
 		// should fail if the workflow doesn't exist
 		await expect(
@@ -74,7 +74,7 @@ describe('User Actions - Media Manager', () => {
 		}
 	})
 	testInFiber('Abort worfklow', async () => {
-		const { workFlowId } = setupMockWorkFlow()
+		const { workFlowId } = await setupMockWorkFlow()
 
 		// should fail if the workflow doesn't exist
 		await expect(
@@ -103,7 +103,7 @@ describe('User Actions - Media Manager', () => {
 		}
 	})
 	testInFiber('Prioritize workflow', async () => {
-		const { workFlowId } = setupMockWorkFlow()
+		const { workFlowId } = await setupMockWorkFlow()
 
 		// should fail if the workflow doesn't exist
 		await expect(
@@ -131,7 +131,7 @@ describe('User Actions - Media Manager', () => {
 		}
 	})
 	testInFiber('Restart all workflows', async () => {
-		setupMockWorkFlow()
+		await setupMockWorkFlow()
 
 		{
 			// should execute function on all the target devices
@@ -153,7 +153,7 @@ describe('User Actions - Media Manager', () => {
 		}
 	})
 	testInFiber('Abort all workflows', async () => {
-		setupMockWorkFlow()
+		await setupMockWorkFlow()
 
 		{
 			// should execute function on all the target devices

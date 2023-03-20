@@ -25,7 +25,7 @@ import {
 	Studios,
 } from '../../collections'
 import { Studio } from '../../../lib/collections/Studios'
-import { literal, protectString } from '../../../lib/lib'
+import { literal, protectString, waitForPromise } from '../../../lib/lib'
 import { checkPieceContentStatus, PieceContentStatusObj } from '../../../lib/mediaObjects'
 import {
 	CustomPublishCollection,
@@ -420,30 +420,36 @@ function checkPieceContentStatusAndDependencies(
 
 	const getMediaObject = (mediaId: string) => {
 		pieceDependencies.mediaObjects.push(mediaId)
-		return MediaObjects.findOne({
-			studioId: uiStudio._id,
-			mediaId,
-		})
+		return waitForPromise(
+			MediaObjects.findOneAsync({
+				studioId: uiStudio._id,
+				mediaId,
+			})
+		)
 	}
 
 	const getPackageInfos = (packageId: ExpectedPackageId) => {
 		pieceDependencies.packageInfos.push(packageId)
-		return PackageInfos.find({
-			studioId: uiStudio._id,
-			packageId: packageId,
-			type: {
-				$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
-			},
-		}).fetch()
+		return waitForPromise(
+			PackageInfos.findFetchAsync({
+				studioId: uiStudio._id,
+				packageId: packageId,
+				type: {
+					$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
+				},
+			})
+		)
 	}
 
 	const getPackageContainerPackageStatus2 = (packageContainerId: string, expectedPackageId: ExpectedPackageId) => {
 		const id = getPackageContainerPackageId(uiStudio._id, packageContainerId, expectedPackageId)
 		pieceDependencies.packageContainerPackageStatuses.push(id)
-		return PackageContainerPackageStatuses.findOne({
-			_id: id,
-			studioId: uiStudio._id,
-		})
+		return waitForPromise(
+			PackageContainerPackageStatuses.findOneAsync({
+				_id: id,
+				studioId: uiStudio._id,
+			})
+		)
 	}
 
 	const status = checkPieceContentStatus(

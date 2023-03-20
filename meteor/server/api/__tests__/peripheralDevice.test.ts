@@ -627,7 +627,7 @@ describe('test peripheralDevice general API methods', () => {
 				type: PeripheralDeviceType.MEDIA_MANAGER,
 			})
 			device = (await PeripheralDevices.findOneAsync(deviceId))!
-			MediaWorkFlows.insert({
+			await MediaWorkFlows.insertAsync({
 				_id: workFlowId,
 				_rev: '1',
 				created: 0,
@@ -638,7 +638,7 @@ describe('test peripheralDevice general API methods', () => {
 				finished: false,
 				success: false,
 			})
-			MediaWorkFlowSteps.insert({
+			await MediaWorkFlowSteps.insertAsync({
 				_id: workStepIds[0],
 				_rev: '1',
 				criticalStep: false,
@@ -649,7 +649,7 @@ describe('test peripheralDevice general API methods', () => {
 				studioId: device.studioId!,
 				workFlowId: workFlowId,
 			})
-			MediaWorkFlowSteps.insert({
+			await MediaWorkFlowSteps.insertAsync({
 				_id: workStepIds[1],
 				_rev: '1',
 				criticalStep: false,
@@ -662,28 +662,28 @@ describe('test peripheralDevice general API methods', () => {
 			})
 		})
 		testInFiber('getMediaWorkFlowRevisions', async () => {
-			const workFlows = MediaWorkFlows.find({
-				studioId: device.studioId,
-			})
-				.fetch()
-				.map((wf) => ({
-					_id: wf._id,
-					_rev: wf._rev,
-				}))
+			const workFlows = (
+				await MediaWorkFlows.findFetchAsync({
+					studioId: device.studioId,
+				})
+			).map((wf) => ({
+				_id: wf._id,
+				_rev: wf._rev,
+			}))
 			expect(workFlows.length).toBeGreaterThan(0)
 			const res = await MeteorCall.peripheralDevice.getMediaWorkFlowRevisions(device._id, device.token)
 			expect(res).toHaveLength(workFlows.length)
 			expect(res).toMatchObject(workFlows)
 		})
 		testInFiber('getMediaWorkFlowStepRevisions', async () => {
-			const workFlowSteps = MediaWorkFlowSteps.find({
-				studioId: device.studioId,
-			})
-				.fetch()
-				.map((wf) => ({
-					_id: wf._id,
-					_rev: wf._rev,
-				}))
+			const workFlowSteps = (
+				await MediaWorkFlowSteps.findFetchAsync({
+					studioId: device.studioId,
+				})
+			).map((wf) => ({
+				_id: wf._id,
+				_rev: wf._rev,
+			}))
 			expect(workFlowSteps.length).toBeGreaterThan(0)
 			const res = await MeteorCall.peripheralDevice.getMediaWorkFlowStepRevisions(device._id, device.token)
 			expect(res).toHaveLength(workFlowSteps.length)
@@ -691,7 +691,7 @@ describe('test peripheralDevice general API methods', () => {
 		})
 		describe('updateMediaWorkFlow', () => {
 			testInFiber('update', async () => {
-				const workFlow = MediaWorkFlows.findOne(workFlowId)
+				const workFlow = await MediaWorkFlows.findOneAsync(workFlowId)
 
 				expect(workFlow).toBeTruthy()
 				const newWorkFlow = Object.assign({}, workFlow)
@@ -705,22 +705,22 @@ describe('test peripheralDevice general API methods', () => {
 					newWorkFlow
 				)
 
-				const updatedWorkFlow = MediaWorkFlows.findOne(workFlowId)
+				const updatedWorkFlow = await MediaWorkFlows.findOneAsync(workFlowId)
 				expect(updatedWorkFlow).toMatchObject(newWorkFlow)
 			})
 			testInFiber('remove', async () => {
-				const workFlow = MediaWorkFlows.findOne(workFlowId) as MediaWorkFlow
+				const workFlow = (await MediaWorkFlows.findOneAsync(workFlowId)) as MediaWorkFlow
 				expect(workFlow).toBeTruthy()
 
 				await MeteorCall.peripheralDevice.updateMediaWorkFlow(device._id, device.token, workFlow._id, null)
 
-				const updatedWorkFlow = MediaWorkFlows.findOne(workFlowId)
+				const updatedWorkFlow = await MediaWorkFlows.findOneAsync(workFlowId)
 				expect(updatedWorkFlow).toBeFalsy()
 			})
 		})
 		describe('updateMediaWorkFlowStep', () => {
 			testInFiber('update', async () => {
-				const workStep = MediaWorkFlowSteps.findOne(workStepIds[0])
+				const workStep = await MediaWorkFlowSteps.findOneAsync(workStepIds[0])
 
 				expect(workStep).toBeTruthy()
 				const newWorkStep = Object.assign({}, workStep)
@@ -734,16 +734,16 @@ describe('test peripheralDevice general API methods', () => {
 					newWorkStep
 				)
 
-				const updatedWorkFlow = MediaWorkFlowSteps.findOne(workStepIds[0])
+				const updatedWorkFlow = await MediaWorkFlowSteps.findOneAsync(workStepIds[0])
 				expect(updatedWorkFlow).toMatchObject(newWorkStep)
 			})
 			testInFiber('remove', async () => {
-				const workStep = MediaWorkFlowSteps.findOne(workStepIds[0]) as MediaWorkFlowStep
+				const workStep = (await MediaWorkFlowSteps.findOneAsync(workStepIds[0])) as MediaWorkFlowStep
 				expect(workStep).toBeTruthy()
 
 				await MeteorCall.peripheralDevice.updateMediaWorkFlowStep(device._id, device.token, workStep._id, null)
 
-				const updatedWorkFlow = MediaWorkFlowSteps.findOne(workStepIds[0])
+				const updatedWorkFlow = await MediaWorkFlowSteps.findOneAsync(workStepIds[0])
 				expect(updatedWorkFlow).toBeFalsy()
 			})
 		})
@@ -784,10 +784,10 @@ describe('test peripheralDevice general API methods', () => {
 			})
 			device = (await PeripheralDevices.findOneAsync(deviceId))!
 
-			MediaObjects.remove({
+			await MediaObjects.removeAsync({
 				collectionId: MOCK_COLLECTION,
 			})
-			MediaObjects.insert({
+			await MediaObjects.insertAsync({
 				_id: protectString(MOCK_COLLECTION + '_' + MOCK_OBJID),
 				_rev: '1',
 				_attachments: {},
@@ -805,14 +805,14 @@ describe('test peripheralDevice general API methods', () => {
 			})
 		})
 		testInFiber('getMediaObjectRevisions', async () => {
-			const mobjects = MediaObjects.find({
-				studioId: device.studioId,
-			})
-				.fetch()
-				.map((mo) => ({
-					_id: mo._id,
-					_rev: mo._rev,
-				}))
+			const mobjects = (
+				await MediaObjects.findFetchAsync({
+					studioId: device.studioId,
+				})
+			).map((mo) => ({
+				_id: mo._id,
+				_rev: mo._rev,
+			}))
 			expect(mobjects.length).toBeGreaterThan(0)
 
 			const revs = await MeteorCall.peripheralDevice.getMediaObjectRevisions(
@@ -826,10 +826,10 @@ describe('test peripheralDevice general API methods', () => {
 		})
 		describe('updateMediaObject', () => {
 			testInFiber('update', async () => {
-				const mo = MediaObjects.findOne({
+				const mo = (await MediaObjects.findOneAsync({
 					collectionId: MOCK_COLLECTION,
 					studioId: device.studioId!,
-				}) as MediaObject
+				})) as MediaObject
 				expect(mo).toBeTruthy()
 
 				const newMo = Object.assign({}, mo)
@@ -844,17 +844,17 @@ describe('test peripheralDevice general API methods', () => {
 					newMo
 				)
 
-				const updateMo = MediaObjects.findOne({
+				const updateMo = await MediaObjects.findOneAsync({
 					collectionId: MOCK_COLLECTION,
 					studioId: device.studioId!,
 				})
 				expect(updateMo).toMatchObject(newMo)
 			})
 			testInFiber('remove', async () => {
-				const mo = MediaObjects.findOne({
+				const mo = (await MediaObjects.findOneAsync({
 					collectionId: MOCK_COLLECTION,
 					studioId: device.studioId!,
-				}) as MediaObject
+				})) as MediaObject
 				expect(mo).toBeTruthy()
 
 				await MeteorCall.peripheralDevice.updateMediaObject(
@@ -865,7 +865,7 @@ describe('test peripheralDevice general API methods', () => {
 					null
 				)
 
-				const updateMo = MediaObjects.findOne({
+				const updateMo = await MediaObjects.findOneAsync({
 					collectionId: MOCK_COLLECTION,
 					studioId: device.studioId!,
 				})

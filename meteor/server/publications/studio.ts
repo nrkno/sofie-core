@@ -164,8 +164,8 @@ meteorPublish(
 		if (packageId) selector.packageId = packageId
 
 		if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId })) {
-			return PackageContainerPackageStatuses.find(selector, modifier) as MongoCursor<
-				Omit<PackageContainerPackageStatusDB, 'modified'>
+			return PackageContainerPackageStatuses.findWithCursor(selector, modifier) as Promise<
+				MongoCursor<Omit<PackageContainerPackageStatusDB, 'modified'>>
 			>
 		}
 		return null
