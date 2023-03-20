@@ -35,11 +35,11 @@ import { Studios } from '../../lib/collections/Studios'
 import { Timeline } from '../../lib/collections/Timeline'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
-import { getActiveRundownPlaylistsInStudioFromDb } from './studio/lib'
+import { getActiveRundownPlaylistsInStudioFromDb, getRemovedOrOrphanedPackageInfos } from './studio/lib'
 import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatuses } from '../../lib/collections/ExpectedPackageWorkStatuses'
 import { PackageContainerPackageStatuses } from '../../lib/collections/PackageContainerPackageStatus'
-import { getRemovedPackageInfos, PackageInfos } from '../../lib/collections/PackageInfos'
+import { PackageInfos } from '../../lib/collections/PackageInfos'
 import { Settings } from '../../lib/Settings'
 import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { AsyncMongoCollection } from '../../lib/collections/lib'
@@ -294,7 +294,7 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 		ownedByStudioId(PackageInfos)
 		ownedByDeviceId(PackageInfos)
 
-		const removedPackageInfoIds = await getRemovedPackageInfos()
+		const removedPackageInfoIds = await getRemovedOrOrphanedPackageInfos()
 		addToResult(CollectionName.PackageInfos, removedPackageInfoIds.length)
 		if (actuallyCleanup) {
 			PackageInfos.remove({
