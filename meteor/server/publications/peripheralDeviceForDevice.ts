@@ -115,13 +115,17 @@ async function setupPeripheralDevicePublicationObservers(
 
 		if (peripheralDeviceCompact?.studioId) {
 			return [
-				Studios.find(peripheralDeviceCompact.studioId, {
-					fields: studioFieldsSpecifier,
-				}).observeChanges({
-					added: () => triggerUpdate({ invalidatePublication: true }),
-					changed: () => triggerUpdate({ invalidatePublication: true }),
-					removed: () => triggerUpdate({ invalidatePublication: true }),
-				}),
+				Studios.observeChanges(
+					peripheralDeviceCompact.studioId,
+					{
+						added: () => triggerUpdate({ invalidatePublication: true }),
+						changed: () => triggerUpdate({ invalidatePublication: true }),
+						removed: () => triggerUpdate({ invalidatePublication: true }),
+					},
+					{
+						fields: studioFieldsSpecifier,
+					}
+				),
 			]
 		} else {
 			// Nothing to observe

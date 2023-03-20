@@ -228,7 +228,7 @@ export async function setupMockTriggeredActions(
 	}
 	return mocks
 }
-export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
+export async function setupMockStudio(doc?: Partial<DBStudio>): Promise<Studio> {
 	doc = doc || {}
 
 	const studio: DBStudio = {
@@ -237,7 +237,7 @@ export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
 		_rundownVersionHash: 'asdf',
 		...doc,
 	}
-	Studios.insert(studio)
+	await Studios.insertAsync(studio)
 	return studio
 }
 export async function setupMockShowStyleBase(
@@ -555,7 +555,7 @@ export async function setupDefaultStudioEnvironment(
 	const triggeredActions = await setupMockTriggeredActions(showStyleBase._id)
 	const showStyleVariant = await setupMockShowStyleVariant(showStyleBase._id, { _id: showStyleVariantId })
 
-	const studio = setupMockStudio({
+	const studio = await setupMockStudio({
 		blueprintId: studioBlueprint._id,
 		supportedShowStyleBase: [showStyleBaseId],
 		organizationId: organizationId,

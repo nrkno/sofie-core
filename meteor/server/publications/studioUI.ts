@@ -77,11 +77,15 @@ async function setupUIStudioPublicationObservers(
 
 	// Set up observers:
 	return [
-		Studios.find(args.studioId ? args.studioId : {}, { fields: fieldSpecifier }).observeChanges({
-			added: (id) => triggerUpdate(trackChange(id)),
-			changed: (id) => triggerUpdate(trackChange(id)),
-			removed: (id) => triggerUpdate(trackChange(id)),
-		}),
+		Studios.observeChanges(
+			args.studioId ? args.studioId : {},
+			{
+				added: (id) => triggerUpdate(trackChange(id)),
+				changed: (id) => triggerUpdate(trackChange(id)),
+				removed: (id) => triggerUpdate(trackChange(id)),
+			},
+			{ fields: fieldSpecifier }
+		),
 	]
 }
 async function manipulateUIStudioPublicationData(

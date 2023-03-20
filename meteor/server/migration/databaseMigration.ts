@@ -220,9 +220,8 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 				if (typeof bp.applyConfig === 'function') return
 
 				// Find all studios that use this blueprint
-				Studios.find({
-					blueprintId: blueprint._id,
-				}).forEach((studio) => {
+				const studios = waitForPromise(Studios.findFetchAsync({ blueprintId: blueprint._id }))
+				studios.forEach((studio) => {
 					const chunk: MigrationChunk = {
 						sourceType: MigrationStepType.STUDIO,
 						sourceName: 'Blueprint ' + blueprint.name + ' for studio ' + studio.name,
@@ -805,7 +804,7 @@ function getMigrationStudioContext(chunk: MigrationChunk): IMigrationContextStud
 	if (chunk.sourceId === 'system')
 		throw new Meteor.Error(500, `cunk.sourceId invalid in this context: ${chunk.sourceId}`)
 
-	const studio = Studios.findOne(chunk.sourceId as StudioId)
+	const studio = waitForPromise(Studios.findOneAsync(chunk.sourceId as StudioId))
 	if (!studio) throw new Meteor.Error(404, `Studio "${chunk.sourceId}" not found`)
 
 	return new MigrationContextStudio(studio)

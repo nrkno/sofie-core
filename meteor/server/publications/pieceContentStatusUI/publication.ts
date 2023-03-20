@@ -160,33 +160,45 @@ async function setupUIPieceContentStatusesPublicationObservers(
 	return [
 		rundownsObserver,
 
-		Studios.find({ _id: playlist.studioId }).observeChanges({
-			added: (id) => triggerUpdate({ invalidateStudio: id }),
-			changed: (id) => triggerUpdate({ invalidateStudio: id }),
-			removed: (id) => triggerUpdate({ invalidateStudio: id }),
-		}),
+		Studios.observeChanges(
+			{ _id: playlist.studioId },
+			{
+				added: (id) => triggerUpdate({ invalidateStudio: id }),
+				changed: (id) => triggerUpdate({ invalidateStudio: id }),
+				removed: (id) => triggerUpdate({ invalidateStudio: id }),
+			}
+		),
 
 		// Watch for affecting objects
-		MediaObjects.find({ studioId: playlist.studioId }).observe({
-			added: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
-			changed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
-			removed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
-		}),
-		PackageInfos.find({
-			studioId: playlist.studioId,
-			type: {
-				$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
+		MediaObjects.observe(
+			{ studioId: playlist.studioId },
+			{
+				added: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
+				changed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
+				removed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
+			}
+		),
+		PackageInfos.observe(
+			{
+				studioId: playlist.studioId,
+				type: {
+					$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
+				},
 			},
-		}).observe({
-			added: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
-			changed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
-			removed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
-		}),
-		PackageContainerPackageStatuses.find({ studioId: playlist.studioId }).observeChanges({
-			added: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
-			changed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
-			removed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
-		}),
+			{
+				added: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
+				changed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
+				removed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
+			}
+		),
+		PackageContainerPackageStatuses.observeChanges(
+			{ studioId: playlist.studioId },
+			{
+				added: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
+				changed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
+				removed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
+			}
+		),
 	]
 }
 

@@ -89,6 +89,7 @@ import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/Perip
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { Studio } from '../../../lib/collections/Studios'
 
 function restAPIUserEvent(
 	ctx: Koa.ParameterizedContext<
@@ -645,7 +646,7 @@ class ServerRestAPI implements RestAPI {
 		studioId: StudioId,
 		deviceId: PeripheralDeviceId
 	): Promise<ClientAPI.ClientResponse<void>> {
-		const studio = Studios.findOne(studioId)
+		const studio = await Studios.findOneAsync(studioId)
 		if (!studio)
 			return ClientAPI.responseError(
 				UserError.from(new Error(`Studio does not exist`), UserErrorMessage.StudioNotFound),
@@ -683,7 +684,7 @@ class ServerRestAPI implements RestAPI {
 		studioId: StudioId,
 		deviceId: PeripheralDeviceId
 	) {
-		const studio = Studios.findOne(studioId)
+		const studio = await Studios.findOneAsync(studioId)
 		if (!studio)
 			return ClientAPI.responseError(
 				UserError.from(new Error(`Studio does not exist`), UserErrorMessage.StudioNotFound),
@@ -889,7 +890,9 @@ class ServerRestAPI implements RestAPI {
 		_connection: Meteor.Connection,
 		_event: string
 	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>> {
-		return ClientAPI.responseSuccess(Studios.find().map((studio) => ({ id: unprotectString(studio._id) })))
+		const studios = (await Studios.findFetchAsync({}, { projection: { _id: 1 } })) as Array<Pick<Studio, '_id'>>
+
+		return ClientAPI.responseSuccess(studios.map((studio) => ({ id: unprotectString(studio._id) })))
 	}
 
 	async addStudio(
@@ -901,7 +904,7 @@ class ServerRestAPI implements RestAPI {
 		if (!newStudio) throw new Meteor.Error(400, `Invalid Studio`)
 
 		const newStudioId = newStudio._id
-		Studios.insert(newStudio)
+		await Studios.insertAsync(newStudio)
 
 		return ClientAPI.responseSuccess(unprotectString(newStudioId), 200)
 	}
@@ -911,7 +914,7 @@ class ServerRestAPI implements RestAPI {
 		_event: string,
 		studioId: StudioId
 	): Promise<ClientAPI.ClientResponse<APIStudio>> {
-		const studio = Studios.findOne(studioId)
+		const studio = await Studios.findOneAsync(studioId)
 		if (!studio) throw new Meteor.Error(404, `Studio ${studioId} not found`)
 
 		return ClientAPI.responseSuccess(APIStudioFrom(studio))
@@ -926,7 +929,7 @@ class ServerRestAPI implements RestAPI {
 		const newStudio = await studioFrom(studio, studioId)
 		if (!newStudio) throw new Meteor.Error(400, `Invalid Studio`)
 
-		const existingStudio = Studios.findOne(studioId)
+		const existingStudio = await Studios.findOneAsync(studioId)
 		if (existingStudio) {
 			const playlists = RundownPlaylists.find({ studioId }).fetch()
 			if (playlists.some((p) => p.activationId !== undefined)) {
@@ -934,7 +937,7 @@ class ServerRestAPI implements RestAPI {
 			}
 		}
 
-		Studios.upsert(studioId, newStudio)
+		await Studios.upsertAsync(studioId, newStudio)
 
 		const validation = await validateConfigForStudio(studioId)
 		const validateOK = validation.messages.reduce((acc, msg) => acc && msg.level === NoteSeverity.INFO, true)
@@ -951,7 +954,7 @@ class ServerRestAPI implements RestAPI {
 		event: string,
 		studioId: StudioId
 	): Promise<ClientAPI.ClientResponse<void>> {
-		const existingStudio = Studios.findOne(studioId)
+		const existingStudio = await Studios.findOneAsync(studioId)
 		if (existingStudio) {
 			const playlists = RundownPlaylists.find({ studioId }).fetch()
 			if (playlists.some((p) => p.activationId !== undefined)) {
@@ -978,7 +981,7 @@ class ServerRestAPI implements RestAPI {
 		)
 
 		await Promise.all(promises)
-		Studios.remove(studioId)
+		await Studios.removeAsync(studioId)
 
 		return ClientAPI.responseSuccess(undefined, 200)
 	}

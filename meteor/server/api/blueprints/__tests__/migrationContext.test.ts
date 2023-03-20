@@ -57,8 +57,8 @@ describe('Test blueprint migrationContext', () => {
 			return studio
 		}
 		describe('mappings', () => {
-			function getMappingFromDb(studio: Studio, mappingId: string): MappingExt | undefined {
-				const studio2 = Studios.findOne(studio._id) as Studio
+			async function getMappingFromDb(studio: Studio, mappingId: string): Promise<MappingExt | undefined> {
+				const studio2 = (await Studios.findOneAsync(studio._id)) as Studio
 				expect(studio2).toBeTruthy()
 				return studio2.mappingsWithOverrides.defaults[mappingId]
 			}
@@ -110,7 +110,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(mapping).toEqual(rawMapping)
 
 				// check db is the same
-				const dbMapping = getMappingFromDb(getStudio(ctx), 'mapping2')
+				const dbMapping = await getMappingFromDb(getStudio(ctx), 'mapping2')
 				expect(dbMapping).toEqual(rawMapping)
 			})
 			testInFiber('insertMapping: no id', async () => {
@@ -130,7 +130,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(mapping).toBeFalsy()
 
 				// check db is the same
-				const dbMapping = getMappingFromDb(getStudio(ctx), '')
+				const dbMapping = await getMappingFromDb(getStudio(ctx), '')
 				expect(dbMapping).toBeFalsy()
 			})
 			testInFiber('insertMapping: existing', async () => {
@@ -155,7 +155,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(mapping).toEqual(existingMapping)
 
 				// check db is the same
-				const dbMapping = getMappingFromDb(getStudio(ctx), 'mapping2')
+				const dbMapping = await getMappingFromDb(getStudio(ctx), 'mapping2')
 				expect(dbMapping).toEqual(existingMapping)
 			})
 
@@ -180,7 +180,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(mapping).toEqual(expectedMapping)
 
 				// check db is the same
-				const dbMapping = getMappingFromDb(getStudio(ctx), 'mapping2')
+				const dbMapping = await getMappingFromDb(getStudio(ctx), 'mapping2')
 				expect(dbMapping).toEqual(expectedMapping)
 			})
 			testInFiber('updateMapping: no props', async () => {
@@ -218,7 +218,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(mapping).toBeFalsy()
 
 				// check db is the same
-				const dbMapping = getMappingFromDb(getStudio(ctx), 'mapping1')
+				const dbMapping = await getMappingFromDb(getStudio(ctx), 'mapping1')
 				expect(dbMapping).toBeFalsy()
 			})
 
@@ -238,7 +238,7 @@ describe('Test blueprint migrationContext', () => {
 				ctx.removeMapping('')
 
 				// ensure other mappings still exist
-				expect(getMappingFromDb(getStudio(ctx), 'mapping2')).toBeTruthy()
+				expect(await getMappingFromDb(getStudio(ctx), 'mapping2')).toBeTruthy()
 			})
 			testInFiber('removeMapping: good', async () => {
 				const ctx = await getContext()
@@ -248,13 +248,13 @@ describe('Test blueprint migrationContext', () => {
 
 				// check was removed
 				expect(ctx.getMapping('mapping2')).toBeFalsy()
-				expect(getMappingFromDb(getStudio(ctx), 'mapping2')).toBeFalsy()
+				expect(await getMappingFromDb(getStudio(ctx), 'mapping2')).toBeFalsy()
 			})
 		})
 
 		describe('config', () => {
-			function getAllConfigFromDb(studio: Studio): IBlueprintConfig {
-				const studio2 = Studios.findOne(studio._id) as Studio
+			async function getAllConfigFromDb(studio: Studio): Promise<IBlueprintConfig> {
+				const studio2 = (await Studios.findOneAsync(studio._id)) as Studio
 				expect(studio2).toBeTruthy()
 				return studio2.blueprintConfigWithOverrides.defaults
 			}
@@ -289,7 +289,7 @@ describe('Test blueprint migrationContext', () => {
 
 				// Config should not have changed
 				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
-				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
+				expect(await getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 			testInFiber('setConfig: insert', async () => {
 				const ctx = await getContext()
@@ -308,7 +308,7 @@ describe('Test blueprint migrationContext', () => {
 				// Config should have changed
 				initialConfig[expectedItem._id] = expectedItem.value
 				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
-				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
+				expect(await getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 			testInFiber('setConfig: insert undefined', async () => {
 				const ctx = await getContext()
@@ -327,7 +327,7 @@ describe('Test blueprint migrationContext', () => {
 				// Config should have changed
 				initialConfig[expectedItem._id] = expectedItem.value
 				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
-				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
+				expect(await getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 
 			testInFiber('setConfig: update', async () => {
@@ -347,7 +347,7 @@ describe('Test blueprint migrationContext', () => {
 				// Config should have changed
 				initialConfig[expectedItem._id] = expectedItem.value
 				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
-				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
+				expect(await getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 			testInFiber('setConfig: update undefined', async () => {
 				const ctx = await getContext()
@@ -366,7 +366,7 @@ describe('Test blueprint migrationContext', () => {
 				// Config should have changed
 				initialConfig[expectedItem._id] = expectedItem.value
 				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
-				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
+				expect(await getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 
 			testInFiber('removeConfig: no id', async () => {
@@ -381,7 +381,7 @@ describe('Test blueprint migrationContext', () => {
 
 				// Config should not have changed
 				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
-				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
+				expect(await getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 			testInFiber('removeConfig: missing', async () => {
 				const ctx = await getContext()
@@ -395,7 +395,7 @@ describe('Test blueprint migrationContext', () => {
 
 				// Config should not have changed
 				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
-				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
+				expect(await getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 			testInFiber('removeConfig: good', async () => {
 				const ctx = await getContext()
@@ -409,14 +409,14 @@ describe('Test blueprint migrationContext', () => {
 				// Config should have changed
 				delete initialConfig['conf1']
 				expect(studio.blueprintConfigWithOverrides.defaults).toEqual(initialConfig)
-				expect(getAllConfigFromDb(studio)).toEqual(initialConfig)
+				expect(await getAllConfigFromDb(studio)).toEqual(initialConfig)
 			})
 		})
 
 		describe('devices', () => {
-			function getStudio(context: MigrationContextStudio): Studio {
+			async function getStudio(context: MigrationContextStudio): Promise<Studio> {
 				const studioId = (context as any).studio._id
-				const studio = Studios.findOne(studioId) as Studio
+				const studio = (await Studios.findOneAsync(studioId)) as Studio
 				expect(studio).toBeTruthy()
 				return studio
 			}
@@ -481,7 +481,7 @@ describe('Test blueprint migrationContext', () => {
 			})
 			testInFiber('getDevice: missing with parent', async () => {
 				const ctx = await getContext()
-				const studio = getStudio(ctx)
+				const studio = await getStudio(ctx)
 				const playoutId = await createPlayoutDevice(studio)
 				expect(playoutId).toBeTruthy()
 
@@ -490,7 +490,7 @@ describe('Test blueprint migrationContext', () => {
 			})
 			testInFiber('getDevice: good', async () => {
 				const ctx = await getContext()
-				const peripheral = getPlayoutDevice(getStudio(ctx))
+				const peripheral = getPlayoutDevice(await getStudio(ctx))
 				expect(peripheral).toBeTruthy()
 
 				const device = ctx.getDevice('device01')
@@ -503,7 +503,7 @@ describe('Test blueprint migrationContext', () => {
 
 			testInFiber('insertDevice: no id', async () => {
 				const ctx = await getContext()
-				const studio = getStudio(ctx)
+				const studio = await getStudio(ctx)
 				const initialSettings = studio.peripheralDeviceSettings.playoutDevices
 				expect(ctx.getDevice('')).toBeFalsy()
 
@@ -512,7 +512,7 @@ describe('Test blueprint migrationContext', () => {
 				)
 
 				expect(ctx.getDevice('')).toBeFalsy()
-				expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
+				expect((await getStudio(ctx)).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 			})
 			// testInFiber('insertDevice: no parent', () => { TODO
 			// 	const ctx = await getContext()
@@ -531,7 +531,7 @@ describe('Test blueprint migrationContext', () => {
 			// })
 			testInFiber('insertDevice: already exists', async () => {
 				const ctx = await getContext()
-				const studio = getStudio(ctx)
+				const studio = await getStudio(ctx)
 				const initialSettings = studio.peripheralDeviceSettings.playoutDevices
 				expect(ctx.getDevice('device01')).toBeTruthy()
 
@@ -539,11 +539,11 @@ describe('Test blueprint migrationContext', () => {
 					`[404] Device "device01" cannot be inserted as it already exists`
 				)
 
-				expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
+				expect((await getStudio(ctx)).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 			})
 			testInFiber('insertDevice: ok', async () => {
 				const ctx = await getContext()
-				const studio = getStudio(ctx)
+				const studio = await getStudio(ctx)
 				const initialSettings = studio.peripheralDeviceSettings.playoutDevices
 				expect(ctx.getDevice('device11')).toBeFalsy()
 
@@ -555,7 +555,7 @@ describe('Test blueprint migrationContext', () => {
 					peripheralDeviceId: (await getPlayoutDevice(studio))._id,
 					options: rawDevice,
 				}
-				expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
+				expect((await getStudio(ctx)).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 
 				const device = ctx.getDevice(deviceId)
 				expect(device).toEqual(rawDevice)
@@ -563,7 +563,7 @@ describe('Test blueprint migrationContext', () => {
 
 			testInFiber('updateDevice: no id', async () => {
 				const ctx = await getContext()
-				const studio = getStudio(ctx)
+				const studio = await getStudio(ctx)
 				const initialSettings = studio.peripheralDeviceSettings.playoutDevices
 				expect(ctx.getDevice('')).toBeFalsy()
 
@@ -572,7 +572,7 @@ describe('Test blueprint migrationContext', () => {
 				)
 
 				expect(ctx.getDevice('')).toBeFalsy()
-				expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
+				expect((await getStudio(ctx)).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 			})
 			// testInFiber('updateDevice: no parent', () => { TODO
 			// 	const ctx = await getContext()
@@ -591,7 +591,7 @@ describe('Test blueprint migrationContext', () => {
 			// })
 			testInFiber('updateDevice: missing', async () => {
 				const ctx = await getContext()
-				const studio = getStudio(ctx)
+				const studio = await getStudio(ctx)
 				const initialSettings = studio.peripheralDeviceSettings.playoutDevices
 				expect(ctx.getDevice('device22')).toBeFalsy()
 
@@ -599,11 +599,11 @@ describe('Test blueprint migrationContext', () => {
 					`[404] Device "device22" cannot be updated as it does not exist`
 				)
 
-				expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
+				expect((await getStudio(ctx)).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 			})
 			testInFiber('Device: good', async () => {
 				const ctx = await getContext()
-				const studio = getStudio(ctx)
+				const studio = await getStudio(ctx)
 				const initialSettings = studio.peripheralDeviceSettings.playoutDevices
 				expect(ctx.getDevice('device01')).toBeTruthy()
 
@@ -620,19 +620,19 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('device01')).toEqual(expectedDevice)
 
 				initialSettings.defaults['device01'].options = expectedDevice
-				expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
+				expect((await getStudio(ctx)).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 			})
 
 			testInFiber('removeDevice: no id', async () => {
 				const ctx = await getContext()
-				const studio = getStudio(ctx)
+				const studio = await getStudio(ctx)
 				const initialSettings = studio.peripheralDeviceSettings.playoutDevices
 				expect(ctx.getDevice('')).toBeFalsy()
 
 				expect(() => ctx.removeDevice('')).toThrow(`[500] Device id "" is invalid`)
 
 				expect(ctx.getDevice('')).toBeFalsy()
-				expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
+				expect((await getStudio(ctx)).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 			})
 			// testInFiber('removeDevice: no parent', () => { TODO
 			// 	const ctx = await getContext()
@@ -651,18 +651,18 @@ describe('Test blueprint migrationContext', () => {
 			// })
 			testInFiber('removeDevice: missing', async () => {
 				const ctx = await getContext()
-				const studio = getStudio(ctx)
+				const studio = await getStudio(ctx)
 				const initialSettings = studio.peripheralDeviceSettings.playoutDevices
 				expect(ctx.getDevice('device22')).toBeFalsy()
 
 				// Should not error
 				ctx.removeDevice('device22')
 
-				expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
+				expect((await getStudio(ctx)).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 			})
 			testInFiber('removeDevice: good', async () => {
 				const ctx = await getContext()
-				const studio = getStudio(ctx)
+				const studio = await getStudio(ctx)
 				const initialSettings = studio.peripheralDeviceSettings.playoutDevices
 				expect(ctx.getDevice('device01')).toBeTruthy()
 
@@ -671,7 +671,7 @@ describe('Test blueprint migrationContext', () => {
 
 				expect(ctx.getDevice('device01')).toBeFalsy()
 				delete initialSettings.defaults['device01']
-				expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
+				expect((await getStudio(ctx)).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 			})
 		})
 	})

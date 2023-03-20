@@ -115,7 +115,7 @@ registerIndex(Snapshots, {
 	created: 1,
 })
 
-export const Studios = createAsyncMongoCollection<Studio>(CollectionName.Studios)
+export const Studios = createAsyncOnlyMongoCollection<Studio>(CollectionName.Studios)
 registerIndex(Studios, {
 	organizationId: 1,
 })

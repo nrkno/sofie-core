@@ -187,7 +187,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 		const m: any = {}
 		m['mappingsWithOverrides.defaults.' + mappingId] = mapping
-		Studios.update(this.studio._id, { $set: m })
+		waitForPromise(Studios.updateAsync(this.studio._id, { $set: m }))
 		this.studio.mappingsWithOverrides.defaults[mappingId] = m['mappingsWithOverrides.defaults.' + mappingId] // Update local
 		return mappingId
 	}
@@ -203,7 +203,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 				this.studio.mappingsWithOverrides.defaults[mappingId],
 				mapping
 			)
-			Studios.update(this.studio._id, { $set: m })
+			waitForPromise(Studios.updateAsync(this.studio._id, { $set: m }))
 			this.studio.mappingsWithOverrides.defaults[mappingId] = m['mappingsWithOverrides.defaults.' + mappingId] // Update local
 		}
 	}
@@ -212,7 +212,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 		if (mappingId) {
 			const m: any = {}
 			m['mappingsWithOverrides.defaults.' + mappingId] = 1
-			Studios.update(this.studio._id, { $unset: m })
+			waitForPromise(Studios.updateAsync(this.studio._id, { $unset: m }))
 			delete this.studio.mappingsWithOverrides.defaults[mappingId] // Update local
 		}
 	}
@@ -247,26 +247,30 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			}
 			objectPathSet(this.studio.blueprintConfigWithOverrides.defaults, configId, value) // Update local
 		}
-		Studios.update(
-			{
-				_id: this.studio._id,
-			},
-			modifier
+		waitForPromise(
+			Studios.updateAsync(
+				{
+					_id: this.studio._id,
+				},
+				modifier
+			)
 		)
 	}
 	removeConfig(configId: string): void {
 		check(configId, String)
 
 		if (configId) {
-			Studios.update(
-				{
-					_id: this.studio._id,
-				},
-				{
-					$unset: {
-						[`blueprintConfigWithOverrides.defaults.${configId}`]: 1,
+			waitForPromise(
+				Studios.updateAsync(
+					{
+						_id: this.studio._id,
 					},
-				}
+					{
+						$unset: {
+							[`blueprintConfigWithOverrides.defaults.${configId}`]: 1,
+						},
+					}
+				)
 			)
 			// Update local:
 			objectPath.del(this.studio.blueprintConfigWithOverrides.defaults, configId)
@@ -276,7 +280,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	getDevice(deviceId: string): TSR.DeviceOptionsAny | undefined {
 		check(deviceId, String)
 
-		const studio = Studios.findOne(this.studio._id)
+		const studio = waitForPromise(Studios.findOneAsync(this.studio._id))
 		if (!studio || !studio.peripheralDeviceSettings.playoutDevices) return undefined
 
 		const playoutDevices = studio.peripheralDeviceSettings.playoutDevices.defaults
@@ -290,7 +294,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			throw new Meteor.Error(500, `Device id "${deviceId}" is invalid`)
 		}
 
-		const studio = Studios.findOne(this.studio._id)
+		const studio = waitForPromise(Studios.findOneAsync(this.studio._id))
 		if (!studio || !studio.peripheralDeviceSettings.playoutDevices)
 			throw new Meteor.Error(500, `Studio was not found`)
 
@@ -318,14 +322,16 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			throw new Meteor.Error(404, `Device "${deviceId}" cannot be updated as it does not exist`)
 		}
 
-		Studios.update(this.studio._id, {
-			$set: {
-				[`peripheralDeviceSettings.playoutDevices.defaults.${deviceId}`]: literal<StudioPlayoutDevice>({
-					peripheralDeviceId: parentDevice._id,
-					options: device,
-				}),
-			},
-		})
+		waitForPromise(
+			Studios.updateAsync(this.studio._id, {
+				$set: {
+					[`peripheralDeviceSettings.playoutDevices.defaults.${deviceId}`]: literal<StudioPlayoutDevice>({
+						peripheralDeviceId: parentDevice._id,
+						options: device,
+					}),
+				},
+			})
+		)
 
 		return deviceId
 	}
@@ -336,7 +342,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			throw new Meteor.Error(500, `Device id "${deviceId}" is invalid`)
 		}
 
-		const studio = Studios.findOne(this.studio._id)
+		const studio = waitForPromise(Studios.findOneAsync(this.studio._id))
 		if (!studio || !studio.peripheralDeviceSettings.playoutDevices)
 			throw new Meteor.Error(500, `Studio was not found`)
 
@@ -348,11 +354,13 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 
 		const newOptions = _.extend(playoutDevices[deviceId].options, device)
 
-		Studios.update(this.studio._id, {
-			$set: {
-				[`peripheralDeviceSettings.playoutDevices.defaults.${deviceId}.options`]: newOptions,
-			},
-		})
+		waitForPromise(
+			Studios.updateAsync(this.studio._id, {
+				$set: {
+					[`peripheralDeviceSettings.playoutDevices.defaults.${deviceId}.options`]: newOptions,
+				},
+			})
+		)
 	}
 	removeDevice(deviceId: string): void {
 		check(deviceId, String)
@@ -361,11 +369,13 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			throw new Meteor.Error(500, `Device id "${deviceId}" is invalid`)
 		}
 
-		Studios.update(this.studio._id, {
-			$unset: {
-				[`peripheralDeviceSettings.playoutDevices.defaults.${deviceId}`]: 1,
-			},
-		})
+		waitForPromise(
+			Studios.updateAsync(this.studio._id, {
+				$unset: {
+					[`peripheralDeviceSettings.playoutDevices.defaults.${deviceId}`]: 1,
+				},
+			})
+		)
 	}
 }
 

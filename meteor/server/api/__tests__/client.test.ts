@@ -26,7 +26,7 @@ const orgSetTimeout = setTimeout
 describe('ClientAPI', () => {
 	let mockDeviceId: PeripheralDeviceId = protectString('not set yet')
 	beforeAllInFiber(async () => {
-		const studio = setupMockStudio()
+		const studio = await setupMockStudio()
 		const mockDevice = await setupMockPeripheralDevice(
 			PeripheralDeviceCategory.PLAYOUT,
 			PeripheralDeviceType.PLAYOUT,

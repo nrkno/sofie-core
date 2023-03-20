@@ -69,14 +69,18 @@ Meteor.startup(() => {
 		}
 	}
 
-	Studios.find({}, { projection: { _id: 1 } }).observeChanges({
-		added: (studioId) => {
-			createObserverAndManager(studioId)
+	Studios.observeChanges(
+		{},
+		{
+			added: (studioId) => {
+				createObserverAndManager(studioId)
+			},
+			removed: (studioId) => {
+				destroyObserverAndManager(studioId)
+			},
 		},
-		removed: (studioId) => {
-			destroyObserverAndManager(studioId)
-		},
-	})
+		{ projection: { _id: 1 } }
+	)
 })
 
 // TODO: These actually don't have to be reactiveCacheCollections, they can be a plain Meteor in-memory collection

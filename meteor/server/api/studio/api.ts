@@ -3,7 +3,7 @@ import { check } from '../../../lib/check'
 import { registerClassToMeteorMethods } from '../../methods'
 import { NewStudiosAPI, StudiosAPIMethods } from '../../../lib/api/studios'
 import { DBStudio } from '../../../lib/collections/Studios'
-import { literal, getRandomId, lazyIgnore } from '../../../lib/lib'
+import { literal, getRandomId, lazyIgnore, stringifyError } from '../../../lib/lib'
 import {
 	ExpectedPackages,
 	ExpectedPackageWorkStatuses,
@@ -22,6 +22,7 @@ import { OrganizationContentWriteAccess } from '../../security/organization'
 import { Credentials } from '../../security/lib/credentials'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { OrganizationId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { logger } from '../../logging'
 
 async function insertStudio(context: MethodContext | Credentials, newId?: StudioId): Promise<StudioId> {
 	if (newId) check(newId, String)
@@ -113,25 +114,28 @@ function triggerUpdateStudioMappingsHash(studioId: StudioId) {
 	lazyIgnore(
 		`triggerUpdateStudio_${studioId}`,
 		() => {
-			Studios.update(studioId, {
+			Studios.updateAsync(studioId, {
 				$set: {
 					mappingsHash: getRandomId(),
 				},
+			}).catch((e) => {
+				logger.error(`triggerUpdateStudioMappingsHash: ${stringifyError(e)}`)
 			})
 		},
 		10
 	)
 }
-Studios.find(
+Studios.observeChanges(
 	{},
+	{
+		added: triggerUpdateStudioMappingsHash,
+		changed: triggerUpdateStudioMappingsHash,
+		removed: triggerUpdateStudioMappingsHash,
+	},
 	{
 		fields: {
 			mappingsWithOverrides: 1,
 			routeSets: 1,
 		},
 	}
-).observeChanges({
-	added: triggerUpdateStudioMappingsHash,
-	changed: triggerUpdateStudioMappingsHash,
-	removed: triggerUpdateStudioMappingsHash,
-})
+)

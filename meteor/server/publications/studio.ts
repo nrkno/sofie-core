@@ -215,17 +215,21 @@ async function setupMappingsPublicationObservers(
 ): Promise<Meteor.LiveQueryHandle[]> {
 	// Set up observers:
 	return [
-		Studios.find(args.studioId, {
-			fields: {
-				// It should be enough to watch the mappingsHash, since that should change whenever there is a
-				// change to the mappings or the routes
-				mappingsHash: 1,
+		Studios.observeChanges(
+			args.studioId,
+			{
+				added: () => triggerUpdate({ invalidateStudio: true }),
+				changed: () => triggerUpdate({ invalidateStudio: true }),
+				removed: () => triggerUpdate({ invalidateStudio: true }),
 			},
-		}).observeChanges({
-			added: () => triggerUpdate({ invalidateStudio: true }),
-			changed: () => triggerUpdate({ invalidateStudio: true }),
-			removed: () => triggerUpdate({ invalidateStudio: true }),
-		}),
+			{
+				fields: {
+					// It should be enough to watch the mappingsHash, since that should change whenever there is a
+					// change to the mappings or the routes
+					mappingsHash: 1,
+				},
+			}
+		),
 	]
 }
 async function manipulateMappingsPublicationData(

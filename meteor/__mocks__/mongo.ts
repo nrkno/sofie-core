@@ -17,7 +17,7 @@ import {
 } from '../lib/collections/lib'
 import { mongoWhere, mongoFindOptions, mongoModify } from '@sofie-automation/corelib/dist/mongo'
 import { Mongo } from 'meteor/mongo'
-import { AsyncMongoCollection } from '../server/collections/collection'
+import { AsyncMongoCollection, AsyncOnlyMongoCollection } from '../server/collections/collection'
 const clone = require('fast-clone')
 
 export namespace MongoMock {
@@ -288,7 +288,7 @@ export namespace MongoMock {
 	}
 	// Mock functions:
 	export function mockSetData<T extends CollectionObject>(
-		collection: AsyncMongoCollection<T>,
+		collection: AsyncOnlyMongoCollection<T>,
 		data: MockCollection<T> | Array<T> | null
 	) {
 		const collectionName = collection.name

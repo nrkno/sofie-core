@@ -113,7 +113,7 @@ describe('Migrations', () => {
 				id: 'myCoreMockStep2',
 				canBeRunAutomatically: true,
 				validate: async () => {
-					if (!Studios.findOne(protectString('studioMock2'))) return 'No Studio found'
+					if (!(await Studios.findOneAsync(protectString('studioMock2')))) return 'No Studio found'
 					return false
 				},
 				migrate: async () => {
@@ -149,7 +149,7 @@ describe('Migrations', () => {
 				id: 'myCoreMockStep3',
 				canBeRunAutomatically: true,
 				validate: async () => {
-					if (!Studios.findOne(protectString('studioMock3'))) return 'No Studio found'
+					if (!(await Studios.findOneAsync(protectString('studioMock3')))) return 'No Studio found'
 					return false
 				},
 				migrate: async () => {
@@ -185,7 +185,7 @@ describe('Migrations', () => {
 				id: 'myCoreMockStep1',
 				canBeRunAutomatically: true,
 				validate: async () => {
-					if (!Studios.findOne(protectString('studioMock1'))) return 'No Studio found'
+					if (!(await Studios.findOneAsync(protectString('studioMock1')))) return 'No Studio found'
 					return false
 				},
 				migrate: async () => {

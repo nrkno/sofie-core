@@ -35,7 +35,11 @@ export namespace ServerPlayoutAPI {
 		}
 	}
 
-	export function switchRouteSet(access: StudioContentAccess, routeSetId: string, state: boolean): void {
+	export async function switchRouteSet(
+		access: StudioContentAccess,
+		routeSetId: string,
+		state: boolean
+	): Promise<void> {
 		logger.debug(`switchRouteSet "${access.studioId}" "${routeSetId}"=${state}`)
 
 		const studio = access.studio
@@ -58,7 +62,7 @@ export namespace ServerPlayoutAPI {
 			})
 		}
 
-		Studios.update(studio._id, {
+		await Studios.updateAsync(studio._id, {
 			$set: modification,
 		})
 	}

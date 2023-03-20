@@ -31,8 +31,8 @@ describe('getUpgradeStatus', () => {
 	})
 
 	testInFiber('Studios and showStyles missing blueprints', async () => {
-		const studio0 = setupMockStudio()
-		const studio1 = setupMockStudio()
+		const studio0 = await setupMockStudio()
+		const studio1 = await setupMockStudio()
 		const showStyle0 = await setupMockShowStyleBase(protectString(''))
 		const showStyle1 = await setupMockShowStyleBase(protectString(''))
 
@@ -269,7 +269,7 @@ describe('getUpgradeStatus', () => {
 		const showStyleBlueprint = await setupMockShowStyleBlueprint(protectString(''))
 		const studioBlueprint = await setupMockStudioBlueprint(protectString(''))
 
-		const studio0 = setupMockStudio({
+		const studio0 = await setupMockStudio({
 			blueprintId: studioBlueprint._id,
 			blueprintConfigPresetId: 'main',
 			lastBlueprintConfig: {
@@ -279,7 +279,7 @@ describe('getUpgradeStatus', () => {
 				config: {},
 			},
 		})
-		const studio1 = setupMockStudio({
+		const studio1 = await setupMockStudio({
 			blueprintId: studioBlueprint._id,
 			blueprintConfigPresetId: 'main',
 			lastBlueprintConfig: {

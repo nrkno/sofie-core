@@ -246,7 +246,7 @@ export async function studioFrom(apiStudio: APIStudio, existingId?: StudioId): P
 	}
 
 	let studio: DBStudio | undefined
-	if (existingId) studio = Studios.findOne(existingId)
+	if (existingId) studio = await Studios.findOneAsync(existingId)
 
 	const blueprintConfig = studio
 		? updateOverrides(studio.blueprintConfigWithOverrides, apiStudio.config as IBlueprintConfig)
