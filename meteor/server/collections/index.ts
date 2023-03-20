@@ -40,7 +40,7 @@ registerIndex(Blueprints, {
 	organizationId: 1,
 })
 
-export const CoreSystem = createAsyncMongoCollection<ICoreSystem>(CollectionName.CoreSystem)
+export const CoreSystem = createAsyncOnlyMongoCollection<ICoreSystem>(CollectionName.CoreSystem)
 
 export const Evaluations = createAsyncOnlyMongoCollection<Evaluation>(CollectionName.Evaluations)
 registerIndex(Evaluations, {

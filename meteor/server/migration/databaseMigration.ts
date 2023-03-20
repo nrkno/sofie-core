@@ -50,7 +50,7 @@ import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { SnapshotId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../collections'
 import { getSystemStorePath } from '../coreSystem'
-import { getCoreSystem, setCoreSystemVersion } from '../coreSystem/collection'
+import { getCoreSystemAsync, setCoreSystemVersion } from '../coreSystem/collection'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)
@@ -117,7 +117,7 @@ export interface PreparedMigration {
 	partialMigration: boolean
 }
 export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
-	const databaseSystem = getCoreSystem()
+	const databaseSystem = waitForPromise(getCoreSystemAsync())
 	if (!databaseSystem) throw new Meteor.Error(500, 'System version not set up')
 
 	// Discover applicable migration steps:
@@ -257,9 +257,12 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 			} else if (blueprint.blueprintType === BlueprintManifestType.SYSTEM) {
 				const bp = blueprintManifest as SystemBlueprintManifest
 				// Check if the coreSystem uses this blueprint
-				CoreSystem.find({
-					blueprintId: blueprint._id,
-				}).forEach(() => {
+				const coreSystems = waitForPromise(
+					CoreSystem.findFetchAsync({
+						blueprintId: blueprint._id,
+					})
+				)
+				coreSystems.forEach(() => {
 					const chunk: MigrationChunk = {
 						sourceType: MigrationStepType.SYSTEM,
 						sourceName: 'Blueprint ' + blueprint.name + ' for system',
@@ -690,7 +693,7 @@ export function runMigration(
 function completeMigration(chunks: Array<MigrationChunk>) {
 	_.each(chunks, (chunk) => {
 		if (chunk.sourceType === MigrationStepType.CORE) {
-			setCoreSystemVersion(chunk._targetVersion)
+			waitForPromise(setCoreSystemVersion(chunk._targetVersion))
 		} else if (
 			chunk.sourceType === MigrationStepType.STUDIO ||
 			chunk.sourceType === MigrationStepType.SHOWSTYLE ||
@@ -730,7 +733,7 @@ function completeMigration(chunks: Array<MigrationChunk>) {
 }
 export function updateDatabaseVersion(targetVersionStr: string): void {
 	const targetVersion = parseVersion(targetVersionStr)
-	setCoreSystemVersion(targetVersion)
+	waitForPromise(setCoreSystemVersion(targetVersion))
 }
 
 export function updateDatabaseVersionToSystem(): void {

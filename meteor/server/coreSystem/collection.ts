@@ -1,26 +1,17 @@
-import { FindOptions } from '@sofie-automation/corelib/dist/mongo'
 import { Meteor } from 'meteor/meteor'
 import semver from 'semver'
 import { ICoreSystem, SYSTEM_ID, parseVersion } from '../../lib/collections/CoreSystem'
-import { MongoCursor } from '../../lib/collections/lib'
 import { logger } from '../logging'
 import { CoreSystem } from '../collections'
 
 // The CoreSystem collection will contain one (exactly 1) object.
 // This represents the "system"
 
-export function getCoreSystem(): ICoreSystem | undefined {
-	return CoreSystem.findOne(SYSTEM_ID)
-}
-
 export async function getCoreSystemAsync(): Promise<ICoreSystem | undefined> {
 	return CoreSystem.findOneAsync(SYSTEM_ID)
 }
-export function getCoreSystemCursor(options?: FindOptions<ICoreSystem>): MongoCursor<ICoreSystem> {
-	return CoreSystem.find(SYSTEM_ID, options)
-}
-export function setCoreSystemVersion(versionStr: string): string {
-	const system = getCoreSystem()
+export async function setCoreSystemVersion(versionStr: string): Promise<string> {
+	const system = await getCoreSystemAsync()
 	if (!system) throw new Meteor.Error(500, 'CoreSystem not found')
 
 	if (!Meteor.isServer) throw new Meteor.Error(500, 'This function can only be run server-side')
@@ -37,7 +28,7 @@ export function setCoreSystemVersion(versionStr: string): string {
 			previousVersion = system.version
 		}
 
-		CoreSystem.update(system._id, {
+		await CoreSystem.updateAsync(system._id, {
 			$set: {
 				version: versionStr,
 				previousVersion: previousVersion,

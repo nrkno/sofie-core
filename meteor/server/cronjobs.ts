@@ -11,7 +11,7 @@ import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { fetchStudioIds } from './optimizations'
 import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
 import { deferAsync } from '@sofie-automation/corelib/dist/lib'
-import { getCoreSystem } from './coreSystem/collection'
+import { getCoreSystemAsync } from './coreSystem/collection'
 import { cleanupOldDataInner } from './api/cleanup'
 import { CollectionCleanupResult } from '../lib/api/system'
 
@@ -36,7 +36,7 @@ export function nightlyCronjobInner(): void {
 	const previousLastNightlyCronjob = lastNightlyCronjob
 	lastNightlyCronjob = getCurrentTime()
 	logger.info('Nightly cronjob: starting...')
-	const system = getCoreSystem()
+	const system = waitForPromise(getCoreSystemAsync())
 
 	// Clean up old data:
 	try {

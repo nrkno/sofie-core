@@ -21,7 +21,7 @@ import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
-import { getCoreSystem } from '../../coreSystem/collection'
+import { getCoreSystemAsync } from '../../coreSystem/collection'
 
 require('../../api/peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../api') // include in order to create the Meteor methods needed
@@ -41,11 +41,11 @@ require('fs')
 	})
 
 describe('Migrations', () => {
-	beforeAll(() => {
-		setupEmptyEnvironment()
+	beforeAll(async () => {
+		await setupEmptyEnvironment()
 	})
-	function getSystem() {
-		return getCoreSystem() as ICoreSystem
+	async function getSystem() {
+		return (await getCoreSystemAsync()) as ICoreSystem
 	}
 	function userInput(
 		migrationStatus: GetMigrationStatusResult,
@@ -64,7 +64,7 @@ describe('Migrations', () => {
 		)
 	}
 	testInFiber('System migrations, initial setup', async () => {
-		expect(getSystem().version).toEqual(GENESIS_SYSTEM_VERSION)
+		expect((await getSystem()).version).toEqual(GENESIS_SYSTEM_VERSION)
 
 		const migrationStatus0: GetMigrationStatusResult = await MeteorCall.migration.getMigrationStatus()
 
@@ -98,13 +98,13 @@ describe('Migrations', () => {
 			snapshot: expect.any(String),
 		})
 
-		expect(getSystem().version).toEqual(CURRENT_SYSTEM_VERSION)
+		expect((await getSystem()).version).toEqual(CURRENT_SYSTEM_VERSION)
 	})
 
 	testInFiber('Ensure migrations run in correct order', async () => {
 		await MeteorCall.migration.resetDatabaseVersions()
 
-		expect(getSystem().version).toEqual(GENESIS_SYSTEM_VERSION)
+		expect((await getSystem()).version).toEqual(GENESIS_SYSTEM_VERSION)
 
 		clearMigrationSteps()
 

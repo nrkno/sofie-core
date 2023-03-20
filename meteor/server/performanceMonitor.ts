@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { getCoreSystem } from './coreSystem/collection'
+import { MeteorStartupAsync } from '../lib/lib'
+import { getCoreSystemAsync } from './coreSystem/collection'
 import { logger } from './logging'
 import { getRunningMethods, resetRunningMethods } from './methods'
 
@@ -196,8 +197,10 @@ const monitorBlockedThread = () => {
 		monitorBlockedThread()
 	}, PERMORMANCE_CHECK_INTERVAL)
 }
-Meteor.startup(() => {
-	if (getCoreSystem()?.enableMonitorBlockedThread) {
+
+MeteorStartupAsync(async () => {
+	const coreSystem = await getCoreSystemAsync()
+	if (coreSystem?.enableMonitorBlockedThread) {
 		Meteor.setTimeout(() => {
 			monitorBlockedThread()
 		}, 5000)

@@ -164,7 +164,7 @@ export async function setupMockPeripheralDevice(
 	await PeripheralDevices.insertAsync(device)
 	return device
 }
-export function setupMockCore(doc?: Partial<ICoreSystem>): ICoreSystem {
+export async function setupMockCore(doc?: Partial<ICoreSystem>): Promise<ICoreSystem> {
 	// Reset everything mongo, to keep the ids predictable
 	restartRandomId()
 	MongoMock.deleteAllData()
@@ -181,8 +181,8 @@ export function setupMockCore(doc?: Partial<ICoreSystem>): ICoreSystem {
 		serviceMessages: {},
 	}
 	const coreSystem = _.extend(defaultCore, doc)
-	CoreSystem.remove(SYSTEM_ID)
-	CoreSystem.insert(coreSystem)
+	await CoreSystem.removeAsync(SYSTEM_ID)
+	await CoreSystem.insertAsync(coreSystem)
 	return coreSystem
 }
 export async function setupMockTriggeredActions(
@@ -539,7 +539,7 @@ export interface DefaultEnvironment {
 export async function setupDefaultStudioEnvironment(
 	organizationId: OrganizationId | null = null
 ): Promise<DefaultEnvironment> {
-	const core = setupMockCore({})
+	const core = await setupMockCore({})
 	const systemTriggeredActions = await setupMockTriggeredActions()
 
 	const showStyleBaseId: ShowStyleBaseId = getRandomId()
@@ -601,8 +601,8 @@ export function setupDefaultRundownPlaylist(
 		playlistId,
 	}
 }
-export function setupEmptyEnvironment(): { core: ICoreSystem } {
-	const core = setupMockCore({})
+export async function setupEmptyEnvironment(): Promise<{ core: ICoreSystem }> {
+	const core = await setupMockCore({})
 
 	return {
 		core,

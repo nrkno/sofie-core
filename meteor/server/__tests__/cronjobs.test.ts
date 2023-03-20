@@ -74,7 +74,7 @@ describe('cronjobs', () => {
 		const o = setupDefaultRundownPlaylist(env)
 		rundownId = o.rundownId
 
-		CoreSystem.update(
+		await CoreSystem.updateAsync(
 			{},
 			{
 				$set: {
@@ -93,10 +93,10 @@ describe('cronjobs', () => {
 			return mockCurrentTime
 		})
 	})
-	afterAll(() => {
+	afterAll(async () => {
 		//@ts-ignore Return getCurrentTime to orig
 		lib.getCurrentTime = origGetCurrentTime
-		CoreSystem.remove(SYSTEM_ID)
+		await CoreSystem.removeAsync(SYSTEM_ID)
 	})
 	describe('Runs at the appropriate time', () => {
 		testInFiber("Doesn't run during the day", async () => {
@@ -577,7 +577,7 @@ describe('cronjobs', () => {
 				token: '',
 				settings: {},
 			})
-			CoreSystem.update(
+			await CoreSystem.updateAsync(
 				{},
 				{
 					$set: {

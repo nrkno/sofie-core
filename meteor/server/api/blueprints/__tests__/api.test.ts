@@ -76,14 +76,14 @@ describe('Test blueprint management api', () => {
 	}
 
 	describe('assignSystemBlueprint', () => {
-		function getActiveSystemBlueprintId() {
-			const core = CoreSystem.findOne(SYSTEM_ID) as ICoreSystem
+		async function getActiveSystemBlueprintId() {
+			const core = (await CoreSystem.findOneAsync(SYSTEM_ID)) as ICoreSystem
 			expect(core).toBeTruthy()
 			return core.blueprintId
 		}
 
 		testInFiber('empty id', async () => {
-			const initialBlueprintId = getActiveSystemBlueprintId()
+			const initialBlueprintId = await getActiveSystemBlueprintId()
 
 			SupressLogMessages.suppressLogMessage(/Blueprint not found/i)
 			await expect(MeteorCall.blueprint.assignSystemBlueprint(protectString(''))).rejects.toThrowMeteor(
@@ -91,38 +91,38 @@ describe('Test blueprint management api', () => {
 				'Blueprint not found'
 			)
 
-			expect(getActiveSystemBlueprintId()).toEqual(initialBlueprintId)
+			expect(await getActiveSystemBlueprintId()).toEqual(initialBlueprintId)
 		})
 		testInFiber('unknown id', async () => {
 			const blueprint = await ensureSystemBlueprint()
-			const initialBlueprintId = getActiveSystemBlueprintId()
+			const initialBlueprintId = await getActiveSystemBlueprintId()
 
 			SupressLogMessages.suppressLogMessage(/Blueprint not found/i)
 			await expect(
 				MeteorCall.blueprint.assignSystemBlueprint(protectString(blueprint._id + '_no'))
 			).rejects.toThrowMeteor(404, 'Blueprint not found')
 
-			expect(getActiveSystemBlueprintId()).toEqual(initialBlueprintId)
+			expect(await getActiveSystemBlueprintId()).toEqual(initialBlueprintId)
 		})
 		testInFiber('good', async () => {
 			const blueprint = await ensureSystemBlueprint()
 
 			// Ensure starts off 'wrong'
-			expect(getActiveSystemBlueprintId()).not.toEqual(blueprint._id)
+			expect(await getActiveSystemBlueprintId()).not.toEqual(blueprint._id)
 
 			await MeteorCall.blueprint.assignSystemBlueprint(blueprint._id)
 
 			// Ensure ends up good
-			expect(getActiveSystemBlueprintId()).toEqual(blueprint._id)
+			expect(await getActiveSystemBlueprintId()).toEqual(blueprint._id)
 		})
 		testInFiber('unassign', async () => {
 			// Ensure starts off 'wrong'
-			expect(getActiveSystemBlueprintId()).toBeTruthy()
+			expect(await getActiveSystemBlueprintId()).toBeTruthy()
 
 			await MeteorCall.blueprint.assignSystemBlueprint()
 
 			// Ensure ends up good
-			expect(getActiveSystemBlueprintId()).toBeFalsy()
+			expect(await getActiveSystemBlueprintId()).toBeFalsy()
 		})
 		testInFiber('wrong type', async () => {
 			const blueprint = (await Blueprints.findOneAsync({
@@ -131,7 +131,7 @@ describe('Test blueprint management api', () => {
 			expect(blueprint).toBeTruthy()
 
 			// Ensure starts off 'wrong'
-			const initialBlueprintId = getActiveSystemBlueprintId()
+			const initialBlueprintId = await getActiveSystemBlueprintId()
 			expect(initialBlueprintId).not.toEqual(blueprint._id)
 
 			SupressLogMessages.suppressLogMessage(/Blueprint not of type SYSTEM/i)
@@ -141,7 +141,7 @@ describe('Test blueprint management api', () => {
 			)
 
 			// Ensure ends up good
-			expect(getActiveSystemBlueprintId()).toEqual(initialBlueprintId)
+			expect(await getActiveSystemBlueprintId()).toEqual(initialBlueprintId)
 		})
 	})
 

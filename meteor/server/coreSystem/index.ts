@@ -1,5 +1,5 @@
 import { SYSTEM_ID, parseVersion, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
-import { getCurrentTime, MeteorStartupAsync } from '../../lib/lib'
+import { getCurrentTime, MeteorStartupAsync, stringifyError } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { prepareMigration, runMigration } from '../migration/databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
@@ -14,7 +14,7 @@ import * as fs from 'fs/promises'
 import path from 'path'
 import { checkDatabaseVersions } from './checkDatabaseVersions'
 import PLazy from 'p-lazy'
-import { getCoreSystem, getCoreSystemAsync, getCoreSystemCursor } from './collection'
+import { getCoreSystemAsync } from './collection'
 
 export { PackageInfo }
 
@@ -75,8 +75,7 @@ async function initializeCoreSystem() {
 	}
 
 	// Monitor database changes:
-	const systemCursor = getCoreSystemCursor()
-	systemCursor.observeChanges({
+	CoreSystem.observeChanges(SYSTEM_ID, {
 		added: onCoreSystemChanged,
 		changed: onCoreSystemChanged,
 		removed: onCoreSystemChanged,
@@ -101,7 +100,9 @@ async function initializeCoreSystem() {
 
 function onCoreSystemChanged() {
 	checkDatabaseVersions()
-	updateLoggerLevel(false)
+	updateLoggerLevel(false).catch((e) => {
+		logger.error(`Failed to update logger level: ${stringifyError(e)}`)
+	})
 }
 
 export const RelevantSystemVersions = PLazy.from(async () => {
@@ -188,9 +189,9 @@ async function startInstrumenting() {
 		})
 	}
 }
-function updateLoggerLevel(startup: boolean) {
+async function updateLoggerLevel(startup: boolean) {
 	if (Meteor.isTest) return // ignore this when running in tests
-	const coreSystem = getCoreSystem()
+	const coreSystem = await getCoreSystemAsync()
 
 	if (coreSystem) {
 		setLogLevel(coreSystem.logLevel ?? getEnvLogLevel() ?? LogLevel.SILLY, startup)
@@ -202,7 +203,7 @@ function updateLoggerLevel(startup: boolean) {
 MeteorStartupAsync(async () => {
 	if (Meteor.isServer) {
 		await startupMessage()
-		updateLoggerLevel(true)
+		await updateLoggerLevel(true)
 		await initializeCoreSystem()
 		await startInstrumenting()
 
