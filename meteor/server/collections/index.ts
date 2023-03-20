@@ -85,7 +85,7 @@ registerIndex(PeripheralDevices, {
 	token: 1,
 })
 
-export const RundownLayouts = createAsyncMongoCollection<RundownLayoutBase>(CollectionName.RundownLayouts)
+export const RundownLayouts = createAsyncOnlyMongoCollection<RundownLayoutBase>(CollectionName.RundownLayouts)
 // addIndex(RundownLayouts, {
 // 	studioId: 1,
 // 	collectionId: 1,
