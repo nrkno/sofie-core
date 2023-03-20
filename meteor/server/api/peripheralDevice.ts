@@ -1226,9 +1226,10 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		type: string,
-		packageId: ExpectedPackageId
+		packageId: ExpectedPackageId,
+		removeDelay?: number
 	) {
-		await PackageManagerIntegration.removePackageInfo(this, deviceId, deviceToken, type, packageId)
+		await PackageManagerIntegration.removePackageInfo(this, deviceId, deviceToken, type, packageId, removeDelay)
 	}
 	// --- Triggers ---
 	/**
