@@ -16,16 +16,11 @@ import { findMissingConfigs } from './blueprints/config'
 import { runIngestOperation } from './ingest/lib'
 import { createShowStyleCompound } from './showStyles'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
-import {
-	checkAccessToPlaylist,
-	checkAccessToRundown,
-	VerifiedRundownContentAccess,
-	VerifiedRundownPlaylistContentAccess,
-} from './lib'
+import { VerifiedRundownContentAccess, VerifiedRundownPlaylistContentAccess } from './lib'
 import { Blueprint } from '../../lib/collections/Blueprints'
 import { Studio } from '../../lib/collections/Studios'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Blueprints, Rundowns, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
 import { normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 
@@ -71,6 +66,7 @@ export namespace ServerRundownAPI {
 		return IngestActions.reloadRundown(rundown)
 	}
 }
+
 export namespace ClientRundownAPI {
 	export async function rundownPlaylistNeedsResync(
 		context: MethodContext,
@@ -256,29 +252,11 @@ export namespace ClientRundownAPI {
 }
 
 class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
-	async resyncRundownPlaylist(playlistId: RundownPlaylistId) {
-		check(playlistId, String)
-		const access = await checkAccessToPlaylist(this, playlistId)
-
-		return ServerRundownAPI.resyncRundownPlaylist(access)
-	}
 	async rundownPlaylistNeedsResync(playlistId: RundownPlaylistId) {
 		return ClientRundownAPI.rundownPlaylistNeedsResync(this, playlistId)
 	}
 	async rundownPlaylistValidateBlueprintConfig(playlistId: RundownPlaylistId) {
 		return ClientRundownAPI.rundownPlaylistValidateBlueprintConfig(this, playlistId)
-	}
-	async removeRundown(rundownId: RundownId) {
-		const access = await checkAccessToRundown(this, rundownId)
-		return ServerRundownAPI.removeRundown(access)
-	}
-	async resyncRundown(rundownId: RundownId) {
-		const access = await checkAccessToRundown(this, rundownId)
-		return ServerRundownAPI.innerResyncRundown(access.rundown)
-	}
-	async unsyncRundown(rundownId: RundownId) {
-		const access = await checkAccessToRundown(this, rundownId)
-		return ServerRundownAPI.unsyncRundown(access)
 	}
 }
 registerClassToMeteorMethods(RundownAPIMethods, ServerRundownAPIClass, false)
