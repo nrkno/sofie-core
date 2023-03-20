@@ -364,7 +364,7 @@ describe('cronjobs', () => {
 		testInFiber('Removes old entries in Snapshots', async () => {
 			// reasonably fresh entry
 			const snapshot0 = protectString<SnapshotId>(getRandomString())
-			Snapshots.insert({
+			await Snapshots.insertAsync({
 				_id: snapshot0,
 				organizationId: null,
 				comment: '',
@@ -377,7 +377,7 @@ describe('cronjobs', () => {
 			})
 			// stale entry
 			const snapshot1 = protectString<SnapshotId>(getRandomString())
-			Snapshots.insert({
+			await Snapshots.insertAsync({
 				_id: snapshot1,
 				organizationId: null,
 				comment: '',
@@ -391,10 +391,10 @@ describe('cronjobs', () => {
 
 			await runCronjobs()
 
-			expect(Snapshots.findOne(snapshot0)).toMatchObject({
+			expect(await Snapshots.findOneAsync(snapshot0)).toMatchObject({
 				_id: snapshot0,
 			})
-			expect(Snapshots.findOne(snapshot1)).toBeUndefined()
+			expect(await Snapshots.findOneAsync(snapshot1)).toBeUndefined()
 		})
 		testInFiber('Attempts to restart CasparCG when job is enabled', async () => {
 			const mockPlayoutGw = protectString<PeripheralDeviceId>(getRandomString())

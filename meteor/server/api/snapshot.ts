@@ -478,7 +478,7 @@ async function storeSnaphot(
 	return id
 }
 async function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): Promise<AnySnapshot> {
-	const snapshot = Snapshots.findOne(snapshotId)
+	const snapshot = await Snapshots.findOneAsync(snapshotId)
 	if (!snapshot) throw new Meteor.Error(404, `Snapshot not found!`)
 
 	if (Settings.enableUserAccounts) {

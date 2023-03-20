@@ -107,7 +107,7 @@ registerIndex(ShowStyleVariants, {
 	_rank: 1,
 })
 
-export const Snapshots = createAsyncMongoCollection<SnapshotItem>(CollectionName.Snapshots)
+export const Snapshots = createAsyncOnlyMongoCollection<SnapshotItem>(CollectionName.Snapshots)
 registerIndex(Snapshots, {
 	organizationId: 1,
 })
