@@ -31,7 +31,7 @@ meteorPublish(PubSub.loggedInUser, async function (token) {
 
 	if (!currentUserId) return null
 	if (await SystemReadAccess.currentUser(currentUserId, { userId: this.userId, token })) {
-		return Users.find(
+		return Users.findWithCursor(
 			{
 				_id: currentUserId,
 			},
@@ -52,7 +52,7 @@ meteorPublish(PubSub.loggedInUser, async function (token) {
 meteorPublish(PubSub.usersInOrganization, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	if (await OrganizationReadAccess.adminUsers(selector.organizationId, { userId: this.userId, token })) {
-		return Users.find(selector, {
+		return Users.findWithCursor(selector, {
 			fields: {
 				_id: 1,
 				username: 1,

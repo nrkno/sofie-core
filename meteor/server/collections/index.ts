@@ -29,7 +29,7 @@ import { WorkerStatus } from '../../lib/collections/Workers'
 import { registerIndex } from './indices'
 import { getCurrentTime, MeteorStartupAsync, stringifyError } from '../../lib/lib'
 import { createAsyncOnlyMongoCollection, wrapMongoCollection } from './collection'
-import { ObserveChangesForHash, registerCollection } from './lib'
+import { ObserveChangesForHash } from './lib'
 import { logger } from '../logging'
 
 export * from './bucket'
@@ -154,7 +154,6 @@ registerIndex(UserActionsLog, {
 
 // This is a somewhat special collection, as it draws from the Meteor.users collection from the Accounts package
 export const Users = wrapMongoCollection<DBUser>(Meteor.users as any, CollectionName.Users)
-registerCollection(CollectionName.Users, Users)
 registerIndex(Users, {
 	organizationId: 1,
 })

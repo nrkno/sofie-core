@@ -31,11 +31,15 @@ import { registerCollection } from './lib'
 export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	collection: Mongo.Collection<DBInterface>,
 	name: CollectionName
-): ServerMongoCollection<DBInterface> {
+): ServerAsyncOnlyMongoCollection<DBInterface> {
 	if (collectionsCache.has(name)) throw new Meteor.Error(500, `Collection "${name}" has already been created`)
 	collectionsCache.set(name, collection)
 
-	return new WrappedServerMongoCollection<DBInterface>(collection, name)
+	const wrapped = new WrappedServerMongoCollection<DBInterface>(collection, name)
+
+	registerCollection(name, wrapped)
+
+	return wrapped
 }
 
 /**
