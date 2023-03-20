@@ -40,13 +40,17 @@ async function setupUIShowStyleBasePublicationObservers(
 ): Promise<Meteor.LiveQueryHandle[]> {
 	// Set up observers:
 	return [
-		ShowStyleBases.find(args.showStyleBaseId, {
-			fields: fieldSpecifier,
-		}).observeChanges({
-			added: () => triggerUpdate({ invalidateShowStyle: true }),
-			changed: () => triggerUpdate({ invalidateShowStyle: true }),
-			removed: () => triggerUpdate({ invalidateShowStyle: true }),
-		}),
+		ShowStyleBases.observeChanges(
+			args.showStyleBaseId,
+			{
+				added: () => triggerUpdate({ invalidateShowStyle: true }),
+				changed: () => triggerUpdate({ invalidateShowStyle: true }),
+				removed: () => triggerUpdate({ invalidateShowStyle: true }),
+			},
+			{
+				fields: fieldSpecifier,
+			}
+		),
 	]
 }
 async function manipulateUIShowStyleBasePublicationData(

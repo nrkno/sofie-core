@@ -21,6 +21,7 @@ import { ContentCache } from './reactiveContentCache'
 import { RundownContentObserver } from './RundownContentObserver'
 import { RundownsObserver } from './RundownsObserver'
 import { PartInstances, RundownPlaylists, Rundowns, ShowStyleBases } from '../../collections'
+import { waitForPromise } from '../../../lib/lib'
 
 type ChangedHandler = (showStyleBaseId: ShowStyleBaseId, cache: ContentCache) => () => void
 
@@ -146,12 +147,14 @@ export class StudioObserver extends EventEmitter {
 			)
 			.next('showStyleBase', (chain) =>
 				chain.currentRundown
-					? (ShowStyleBases.find(
-							{ _id: chain.currentRundown.showStyleBaseId },
-							{
-								fields: showStyleBaseFieldSpecifier,
-								limit: 1,
-							}
+					? (waitForPromise(
+							ShowStyleBases.findWithCursor(
+								{ _id: chain.currentRundown.showStyleBaseId },
+								{
+									fields: showStyleBaseFieldSpecifier,
+									limit: 1,
+								}
+							)
 					  ) as MongoCursor<Pick<DBShowStyleBase, ShowStyleBaseFields>>)
 					: null
 			)

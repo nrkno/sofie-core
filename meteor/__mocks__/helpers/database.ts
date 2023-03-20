@@ -240,7 +240,10 @@ export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
 	Studios.insert(studio)
 	return studio
 }
-export function setupMockShowStyleBase(blueprintId: BlueprintId, doc?: Partial<ShowStyleBase>): ShowStyleBase {
+export async function setupMockShowStyleBase(
+	blueprintId: BlueprintId,
+	doc?: Partial<ShowStyleBase>
+): Promise<ShowStyleBase> {
 	doc = doc || {}
 
 	const defaultShowStyleBase: DBShowStyleBase = {
@@ -300,13 +303,13 @@ export function setupMockShowStyleBase(blueprintId: BlueprintId, doc?: Partial<S
 		lastBlueprintConfig: undefined,
 	}
 	const showStyleBase = _.extend(defaultShowStyleBase, doc)
-	ShowStyleBases.insert(showStyleBase)
+	await ShowStyleBases.insertAsync(showStyleBase)
 	return showStyleBase
 }
-export function setupMockShowStyleVariant(
+export async function setupMockShowStyleVariant(
 	showStyleBaseId: ShowStyleBaseId,
 	doc?: Partial<ShowStyleVariant>
-): ShowStyleVariant {
+): Promise<ShowStyleVariant> {
 	doc = doc || {}
 
 	const defaultShowStyleVariant: DBShowStyleVariant = {
@@ -318,7 +321,7 @@ export function setupMockShowStyleVariant(
 		_rank: 0,
 	}
 	const showStyleVariant = _.extend(defaultShowStyleVariant, doc)
-	ShowStyleVariants.insert(showStyleVariant)
+	await ShowStyleVariants.insertAsync(showStyleVariant)
 
 	return showStyleVariant
 }
@@ -545,12 +548,12 @@ export async function setupDefaultStudioEnvironment(
 	const studioBlueprint = await setupMockStudioBlueprint(showStyleBaseId, organizationId)
 	const showStyleBlueprint = await setupMockShowStyleBlueprint(showStyleVariantId, organizationId)
 
-	const showStyleBase = setupMockShowStyleBase(showStyleBlueprint._id, {
+	const showStyleBase = await setupMockShowStyleBase(showStyleBlueprint._id, {
 		_id: showStyleBaseId,
 		organizationId: organizationId,
 	})
 	const triggeredActions = await setupMockTriggeredActions(showStyleBase._id)
-	const showStyleVariant = setupMockShowStyleVariant(showStyleBase._id, { _id: showStyleVariantId })
+	const showStyleVariant = await setupMockShowStyleVariant(showStyleBase._id, { _id: showStyleVariantId })
 
 	const studio = setupMockStudio({
 		blueprintId: studioBlueprint._id,

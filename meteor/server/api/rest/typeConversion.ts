@@ -47,7 +47,7 @@ export async function showStyleBaseFrom(
 	if (blueprint.blueprintType !== BlueprintManifestType.SHOWSTYLE) return undefined
 
 	let showStyleBase: DBShowStyleBase | undefined
-	if (existingId) showStyleBase = ShowStyleBases.findOne(existingId)
+	if (existingId) showStyleBase = await ShowStyleBases.findOneAsync(existingId)
 
 	const newOutputLayers = apiShowStyleBase.outputLayers.reduce<Record<string, IOutputLayer>>((acc, op) => {
 		acc[op.id] = { _id: op.id, name: op.name, _rank: op.rank, isPGM: op.isPgm }

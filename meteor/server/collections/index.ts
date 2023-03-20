@@ -96,12 +96,12 @@ registerIndex(RundownLayouts, {
 	showStyleBaseId: 1,
 })
 
-export const ShowStyleBases = createAsyncMongoCollection<ShowStyleBase>(CollectionName.ShowStyleBases)
+export const ShowStyleBases = createAsyncOnlyMongoCollection<ShowStyleBase>(CollectionName.ShowStyleBases)
 registerIndex(ShowStyleBases, {
 	organizationId: 1,
 })
 
-export const ShowStyleVariants = createAsyncMongoCollection<ShowStyleVariant>(CollectionName.ShowStyleVariants)
+export const ShowStyleVariants = createAsyncOnlyMongoCollection<ShowStyleVariant>(CollectionName.ShowStyleVariants)
 registerIndex(ShowStyleVariants, {
 	showStyleBaseId: 1,
 	_rank: 1,

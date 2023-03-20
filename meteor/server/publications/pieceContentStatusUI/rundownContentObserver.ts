@@ -54,27 +54,28 @@ export class RundownContentObserver {
 				cache.ShowStyleSourceLayers.remove({})
 
 				return [
-					ShowStyleBases.find(
+					ShowStyleBases.observe(
 						{
 							// We can use the `this.#showStyleBaseIds` here, as this is restarted every time that property changes
 							_id: { $in: this.#showStyleBaseIds },
 						},
 						{
+							added: (doc) => {
+								const newDoc = convertShowStyleBase(doc)
+								cache.ShowStyleSourceLayers.upsert(doc._id, { $set: newDoc as Partial<Document> })
+							},
+							changed: (doc) => {
+								const newDoc = convertShowStyleBase(doc)
+								cache.ShowStyleSourceLayers.upsert(doc._id, { $set: newDoc as Partial<Document> })
+							},
+							removed: (doc) => {
+								cache.ShowStyleSourceLayers.remove(doc._id)
+							},
+						},
+						{
 							projection: showStyleBaseFieldSpecifier,
 						}
-					).observe({
-						added: (doc) => {
-							const newDoc = convertShowStyleBase(doc)
-							cache.ShowStyleSourceLayers.upsert(doc._id, { $set: newDoc as Partial<Document> })
-						},
-						changed: (doc) => {
-							const newDoc = convertShowStyleBase(doc)
-							cache.ShowStyleSourceLayers.upsert(doc._id, { $set: newDoc as Partial<Document> })
-						},
-						removed: (doc) => {
-							cache.ShowStyleSourceLayers.remove(doc._id)
-						},
-					}),
+					),
 				]
 			})
 		)

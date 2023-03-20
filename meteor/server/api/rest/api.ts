@@ -87,6 +87,8 @@ import {
 import { MigrationStepInputResult, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 
 function restAPIUserEvent(
 	ctx: Koa.ParameterizedContext<
@@ -700,7 +702,10 @@ class ServerRestAPI implements RestAPI {
 		_connection: Meteor.Connection,
 		_event: string
 	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>> {
-		return ClientAPI.responseSuccess(ShowStyleBases.find().map((base) => ({ id: unprotectString(base._id) })))
+		const showStyleBases = (await ShowStyleBases.findFetchAsync({}, { projection: { _id: 1 } })) as Array<
+			Pick<ShowStyleBase, '_id'>
+		>
+		return ClientAPI.responseSuccess(showStyleBases.map((base) => ({ id: unprotectString(base._id) })))
 	}
 
 	async addShowStyleBase(
@@ -711,7 +716,7 @@ class ServerRestAPI implements RestAPI {
 		const showStyle = await showStyleBaseFrom(showStyleBase)
 		if (!showStyle) throw new Meteor.Error(400, `Invalid ShowStyleBase`)
 		const showStyleId = showStyle._id
-		ShowStyleBases.insert(showStyle)
+		await ShowStyleBases.insertAsync(showStyle)
 
 		return ClientAPI.responseSuccess(unprotectString(showStyleId), 200)
 	}
@@ -721,7 +726,7 @@ class ServerRestAPI implements RestAPI {
 		_event: string,
 		showStyleBaseId: ShowStyleBaseId
 	): Promise<ClientAPI.ClientResponse<APIShowStyleBase>> {
-		const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+		const showStyleBase = await ShowStyleBases.findOneAsync(showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase ${showStyleBaseId} does not exist`)
 
 		return ClientAPI.responseSuccess(APIShowStyleBaseFrom(showStyleBase))
@@ -736,7 +741,7 @@ class ServerRestAPI implements RestAPI {
 		const showStyle = await showStyleBaseFrom(showStyleBase, showStyleBaseId)
 		if (!showStyle) throw new Meteor.Error(400, `Invalid ShowStyleBase`)
 
-		const existingShowStyle = ShowStyleBases.findOne(showStyleBaseId)
+		const existingShowStyle = await ShowStyleBases.findOneAsync(showStyleBaseId)
 		if (existingShowStyle) {
 			const rundowns = Rundowns.find({ showStyleBaseId })
 			const playlists = RundownPlaylists.find({ _id: { $in: rundowns.map((r) => r.playlistId) } }).fetch()
@@ -748,7 +753,7 @@ class ServerRestAPI implements RestAPI {
 			}
 		}
 
-		ShowStyleBases.upsert(showStyleBaseId, showStyle)
+		await ShowStyleBases.upsertAsync(showStyleBaseId, showStyle)
 
 		const validation = await validateConfigForShowStyleBase(showStyleBaseId)
 		const validateOK = validation.messages.reduce((acc, msg) => acc && msg.level === NoteSeverity.INFO, true)
@@ -776,7 +781,7 @@ class ServerRestAPI implements RestAPI {
 			)
 		}
 
-		ShowStyleBases.remove(showStyleBaseId)
+		await ShowStyleBases.removeAsync(showStyleBaseId)
 		return ClientAPI.responseSuccess(undefined)
 	}
 
@@ -785,12 +790,15 @@ class ServerRestAPI implements RestAPI {
 		_event: string,
 		showStyleBaseId: ShowStyleBaseId
 	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>> {
-		const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+		const showStyleBase = await ShowStyleBases.findOneAsync(showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase ${showStyleBaseId} not found`)
 
-		return ClientAPI.responseSuccess(
-			ShowStyleVariants.find({ showStyleBaseId }).map((variant) => ({ id: unprotectString(variant._id) }))
-		)
+		const showStyleVariants = (await ShowStyleVariants.findFetchAsync(
+			{ showStyleBaseId },
+			{ projection: { _id: 1 } }
+		)) as Array<Pick<ShowStyleVariant, '_id'>>
+
+		return ClientAPI.responseSuccess(showStyleVariants.map((variant) => ({ id: unprotectString(variant._id) })))
 	}
 
 	async addShowStyleVariant(
@@ -799,14 +807,14 @@ class ServerRestAPI implements RestAPI {
 		showStyleBaseId: ShowStyleBaseId,
 		showStyleVariant: APIShowStyleVariant
 	): Promise<ClientAPI.ClientResponse<string>> {
-		const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+		const showStyleBase = await ShowStyleBases.findOneAsync(showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase ${showStyleBaseId} not found`)
 
 		const variant = showStyleVariantFrom(showStyleVariant)
 		if (!variant) throw new Meteor.Error(400, `Invalid ShowStyleVariant`)
 
 		const variantId = variant._id
-		ShowStyleVariants.insert(variant)
+		await ShowStyleVariants.insertAsync(variant)
 
 		return ClientAPI.responseSuccess(unprotectString(variantId), 200)
 	}
@@ -817,10 +825,10 @@ class ServerRestAPI implements RestAPI {
 		showStyleBaseId: ShowStyleBaseId,
 		showStyleVariantId: ShowStyleVariantId
 	): Promise<ClientAPI.ClientResponse<APIShowStyleVariant>> {
-		const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+		const showStyleBase = await ShowStyleBases.findOneAsync(showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase ${showStyleBaseId} not found`)
 
-		const variant = ShowStyleVariants.findOne(showStyleVariantId)
+		const variant = await ShowStyleVariants.findOneAsync(showStyleVariantId)
 		if (!variant) throw new Meteor.Error(404, `ShowStyleVariant ${showStyleVariantId} not found`)
 
 		return ClientAPI.responseSuccess(APIShowStyleVariantFrom(variant))
@@ -833,13 +841,13 @@ class ServerRestAPI implements RestAPI {
 		showStyleVariantId: ShowStyleVariantId,
 		showStyleVariant: APIShowStyleVariant
 	): Promise<ClientAPI.ClientResponse<void>> {
-		const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+		const showStyleBase = await ShowStyleBases.findOneAsync(showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase ${showStyleBaseId} does not exist`)
 
 		const showStyle = showStyleVariantFrom(showStyleVariant, showStyleVariantId)
 		if (!showStyle) throw new Meteor.Error(400, `Invalid ShowStyleVariant`)
 
-		const existingShowStyle = ShowStyleVariants.findOne(showStyleVariantId)
+		const existingShowStyle = await ShowStyleVariants.findOneAsync(showStyleVariantId)
 		if (existingShowStyle) {
 			const rundowns = Rundowns.find({ showStyleVariantId })
 			const playlists = RundownPlaylists.find({ _id: { $in: rundowns.map((r) => r.playlistId) } }).fetch()
@@ -851,7 +859,7 @@ class ServerRestAPI implements RestAPI {
 			}
 		}
 
-		ShowStyleVariants.upsert(showStyleVariantId, showStyle)
+		await ShowStyleVariants.upsertAsync(showStyleVariantId, showStyle)
 		return ClientAPI.responseSuccess(undefined, 200)
 	}
 
@@ -861,7 +869,7 @@ class ServerRestAPI implements RestAPI {
 		showStyleBaseId: ShowStyleBaseId,
 		showStyleVariantId: ShowStyleVariantId
 	): Promise<ClientAPI.ClientResponse<void>> {
-		const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
+		const showStyleBase = await ShowStyleBases.findOneAsync(showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase ${showStyleBaseId} does not exist`)
 
 		const rundowns = Rundowns.find({ showStyleVariantId })
@@ -873,7 +881,7 @@ class ServerRestAPI implements RestAPI {
 			)
 		}
 
-		ShowStyleVariants.remove(showStyleVariantId)
+		await ShowStyleVariants.removeAsync(showStyleVariantId)
 		return ClientAPI.responseSuccess(undefined, 200)
 	}
 

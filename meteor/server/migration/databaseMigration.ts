@@ -179,9 +179,8 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 				if (typeof bp.applyConfig === 'function') return
 
 				// Find all showStyles that uses this blueprint:
-				ShowStyleBases.find({
-					blueprintId: blueprint._id,
-				}).forEach((showStyleBase) => {
+				const showStyleBases = waitForPromise(ShowStyleBases.findFetchAsync({ blueprintId: blueprint._id }))
+				showStyleBases.forEach((showStyleBase) => {
 					const chunk: MigrationChunk = {
 						sourceType: MigrationStepType.SHOWSTYLE,
 						sourceName: 'Blueprint ' + blueprint.name + ' for showStyle ' + showStyleBase.name,
@@ -818,7 +817,7 @@ function getMigrationShowStyleContext(chunk: MigrationChunk): IMigrationContextS
 	if (chunk.sourceId === 'system')
 		throw new Meteor.Error(500, `cunk.sourceId invalid in this context: ${chunk.sourceId}`)
 
-	const showStyleBase = ShowStyleBases.findOne(chunk.sourceId as ShowStyleBaseId)
+	const showStyleBase = waitForPromise(ShowStyleBases.findOneAsync(chunk.sourceId as ShowStyleBaseId))
 	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${chunk.sourceId}" not found`)
 
 	return new MigrationContextShowStyle(showStyleBase)

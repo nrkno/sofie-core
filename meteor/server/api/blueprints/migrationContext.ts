@@ -381,9 +381,11 @@ export class MigrationContextShowStyle
 	}
 
 	getAllVariants(): IBlueprintShowStyleVariant[] {
-		return ShowStyleVariants.find({
-			showStyleBaseId: this.showStyleBase._id,
-		}).map((variant) => unprotectObject(variant)) as any
+		return waitForPromise(
+			ShowStyleVariants.findFetchAsync({
+				showStyleBaseId: this.showStyleBase._id,
+			})
+		).map((variant) => unprotectObject(variant)) as any
 	}
 	getVariantId(variantId: string): string {
 		return getHash(this.showStyleBase._id + '_' + variantId)
@@ -392,17 +394,21 @@ export class MigrationContextShowStyle
 		return protectString<ShowStyleVariantId>(this.getVariantId(variantId))
 	}
 	private getVariantFromDb(variantId: string): ShowStyleVariant | undefined {
-		const variant = ShowStyleVariants.findOne({
-			showStyleBaseId: this.showStyleBase._id,
-			_id: this.getProtectedVariantId(variantId),
-		})
+		const variant = waitForPromise(
+			ShowStyleVariants.findOneAsync({
+				showStyleBaseId: this.showStyleBase._id,
+				_id: this.getProtectedVariantId(variantId),
+			})
+		)
 		if (variant) return variant
 
 		// Assume we were given the full id
-		return ShowStyleVariants.findOne({
-			showStyleBaseId: this.showStyleBase._id,
-			_id: protectString(variantId),
-		})
+		return waitForPromise(
+			ShowStyleVariants.findOneAsync({
+				showStyleBaseId: this.showStyleBase._id,
+				_id: protectString(variantId),
+			})
+		)
 	}
 	getVariant(variantId: string): IBlueprintShowStyleVariant | undefined {
 		check(variantId, String)
@@ -419,14 +425,16 @@ export class MigrationContextShowStyle
 		}
 
 		return unprotectString(
-			ShowStyleVariants.insert({
-				...variant,
-				_id: this.getProtectedVariantId(variantId),
-				showStyleBaseId: this.showStyleBase._id,
-				blueprintConfigWithOverrides: wrapDefaultObject({}),
-				_rundownVersionHash: '',
-				_rank: 0,
-			})
+			waitForPromise(
+				ShowStyleVariants.insertAsync({
+					...variant,
+					_id: this.getProtectedVariantId(variantId),
+					showStyleBaseId: this.showStyleBase._id,
+					blueprintConfigWithOverrides: wrapDefaultObject({}),
+					_rundownVersionHash: '',
+					_rank: 0,
+				})
+			)
 		)
 	}
 	updateVariant(variantId: string, newVariant: Partial<ShowStyleVariantPart>): void {
@@ -437,7 +445,7 @@ export class MigrationContextShowStyle
 		const variant = this.getVariantFromDb(variantId)
 		if (!variant) throw new Meteor.Error(404, `Variant "${variantId}" not found`)
 
-		ShowStyleVariants.update(variant._id, { $set: newVariant })
+		waitForPromise(ShowStyleVariants.updateAsync(variant._id, { $set: newVariant }))
 	}
 	removeVariant(variantId: string): void {
 		check(variantId, String)
@@ -445,10 +453,12 @@ export class MigrationContextShowStyle
 			throw new Meteor.Error(500, `Variant id "${variantId}" is invalid`)
 		}
 
-		ShowStyleVariants.remove({
-			_id: this.getProtectedVariantId(variantId),
-			showStyleBaseId: this.showStyleBase._id,
-		})
+		waitForPromise(
+			ShowStyleVariants.removeAsync({
+				_id: this.getProtectedVariantId(variantId),
+				showStyleBaseId: this.showStyleBase._id,
+			})
+		)
 	}
 	getSourceLayer(sourceLayerId: string): ISourceLayer | undefined {
 		check(sourceLayerId, String)
@@ -473,15 +483,17 @@ export class MigrationContextShowStyle
 			...layer,
 			_id: sourceLayerId,
 		}
-		ShowStyleBases.update(
-			{
-				_id: this.showStyleBase._id,
-			},
-			{
-				$set: {
-					[`sourceLayersWithOverrides.defaults.${sourceLayerId}`]: fullLayer,
+		waitForPromise(
+			ShowStyleBases.updateAsync(
+				{
+					_id: this.showStyleBase._id,
 				},
-			}
+				{
+					$set: {
+						[`sourceLayersWithOverrides.defaults.${sourceLayerId}`]: fullLayer,
+					},
+				}
+			)
 		)
 		this.showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId] = fullLayer // Update local
 		return fullLayer._id
@@ -501,16 +513,18 @@ export class MigrationContextShowStyle
 			...oldLayer,
 			...layer,
 		}
-		ShowStyleBases.update(
-			{
-				_id: this.showStyleBase._id,
-				'sourceLayers._id': sourceLayerId,
-			},
-			{
-				$set: {
-					[`sourceLayersWithOverrides.defaults.${sourceLayerId}`]: fullLayer,
+		waitForPromise(
+			ShowStyleBases.updateAsync(
+				{
+					_id: this.showStyleBase._id,
+					'sourceLayers._id': sourceLayerId,
 				},
-			}
+				{
+					$set: {
+						[`sourceLayersWithOverrides.defaults.${sourceLayerId}`]: fullLayer,
+					},
+				}
+			)
 		)
 		this.showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId] = fullLayer // Update local
 	}
@@ -520,15 +534,17 @@ export class MigrationContextShowStyle
 			throw new Meteor.Error(500, `SourceLayer id "${sourceLayerId}" is invalid`)
 		}
 
-		ShowStyleBases.update(
-			{
-				_id: this.showStyleBase._id,
-			},
-			{
-				$unset: {
-					[`sourceLayersWithOverrides.defaults.${sourceLayerId}`]: 1,
+		waitForPromise(
+			ShowStyleBases.updateAsync(
+				{
+					_id: this.showStyleBase._id,
 				},
-			}
+				{
+					$unset: {
+						[`sourceLayersWithOverrides.defaults.${sourceLayerId}`]: 1,
+					},
+				}
+			)
 		)
 		// Update local:
 		delete this.showStyleBase.sourceLayersWithOverrides.defaults[sourceLayerId]
@@ -556,15 +572,17 @@ export class MigrationContextShowStyle
 			...layer,
 			_id: outputLayerId,
 		}
-		ShowStyleBases.update(
-			{
-				_id: this.showStyleBase._id,
-			},
-			{
-				$set: {
-					[`outputLayersWithOverrides.defaults.${outputLayerId}`]: fullLayer,
+		waitForPromise(
+			ShowStyleBases.updateAsync(
+				{
+					_id: this.showStyleBase._id,
 				},
-			}
+				{
+					$set: {
+						[`outputLayersWithOverrides.defaults.${outputLayerId}`]: fullLayer,
+					},
+				}
+			)
 		)
 
 		this.showStyleBase.outputLayersWithOverrides.defaults[outputLayerId] = fullLayer // Update local
@@ -585,15 +603,17 @@ export class MigrationContextShowStyle
 			...oldLayer,
 			...layer,
 		}
-		ShowStyleBases.update(
-			{
-				_id: this.showStyleBase._id,
-			},
-			{
-				$set: {
-					[`outputLayersWithOverrides.defaults.${outputLayerId}`]: fullLayer,
+		waitForPromise(
+			ShowStyleBases.updateAsync(
+				{
+					_id: this.showStyleBase._id,
 				},
-			}
+				{
+					$set: {
+						[`outputLayersWithOverrides.defaults.${outputLayerId}`]: fullLayer,
+					},
+				}
+			)
 		)
 		this.showStyleBase.outputLayersWithOverrides.defaults[outputLayerId] = fullLayer // Update local
 	}
@@ -603,15 +623,17 @@ export class MigrationContextShowStyle
 			throw new Meteor.Error(500, `OutputLayer id "${outputLayerId}" is invalid`)
 		}
 
-		ShowStyleBases.update(
-			{
-				_id: this.showStyleBase._id,
-			},
-			{
-				$unset: {
-					[`outputLayersWithOverrides.defaults.${outputLayerId}`]: 1,
+		waitForPromise(
+			ShowStyleBases.updateAsync(
+				{
+					_id: this.showStyleBase._id,
 				},
-			}
+				{
+					$unset: {
+						[`outputLayersWithOverrides.defaults.${outputLayerId}`]: 1,
+					},
+				}
+			)
 		)
 		// Update local:
 		delete this.showStyleBase.outputLayersWithOverrides.defaults[outputLayerId]
@@ -637,26 +659,30 @@ export class MigrationContextShowStyle
 				[`blueprintConfigWithOverrides.defaults.${configId}`]: value,
 			},
 		}
-		ShowStyleBases.update(
-			{
-				_id: this.showStyleBase._id,
-			},
-			modifier
+		waitForPromise(
+			ShowStyleBases.updateAsync(
+				{
+					_id: this.showStyleBase._id,
+				},
+				modifier
+			)
 		)
 		objectPathSet(this.showStyleBase.blueprintConfigWithOverrides.defaults, configId, value) // Update local
 	}
 	removeBaseConfig(configId: string): void {
 		check(configId, String)
 		if (configId) {
-			ShowStyleBases.update(
-				{
-					_id: this.showStyleBase._id,
-				},
-				{
-					$unset: {
-						[`blueprintConfigWithOverrides.defaults.${configId}`]: 1,
+			waitForPromise(
+				ShowStyleBases.updateAsync(
+					{
+						_id: this.showStyleBase._id,
 					},
-				}
+					{
+						$unset: {
+							[`blueprintConfigWithOverrides.defaults.${configId}`]: 1,
+						},
+					}
+				)
 			)
 			// Update local:
 			objectPath.del(this.showStyleBase.blueprintConfigWithOverrides.defaults, configId)
@@ -693,11 +719,13 @@ export class MigrationContextShowStyle
 				[`blueprintConfigWithOverrides.defaults.${configId}`]: value,
 			},
 		}
-		ShowStyleVariants.update(
-			{
-				_id: variant._id,
-			},
-			modifier
+		waitForPromise(
+			ShowStyleVariants.updateAsync(
+				{
+					_id: variant._id,
+				},
+				modifier
+			)
 		)
 		objectPathSet(variant.blueprintConfigWithOverrides.defaults, configId, value) // Update local
 	}
@@ -709,15 +737,17 @@ export class MigrationContextShowStyle
 			const variant = this.getVariantFromDb(variantId)
 			if (!variant) throw new Meteor.Error(404, `ShowStyleVariant "${variantId}" not found`)
 
-			ShowStyleVariants.update(
-				{
-					_id: variant._id,
-				},
-				{
-					$unset: {
-						[`blueprintConfigWithOverrides.defaults.${configId}`]: 1,
+			waitForPromise(
+				ShowStyleVariants.updateAsync(
+					{
+						_id: variant._id,
 					},
-				}
+					{
+						$unset: {
+							[`blueprintConfigWithOverrides.defaults.${configId}`]: 1,
+						},
+					}
+				)
 			)
 			// Update local:
 			objectPath.del(variant.blueprintConfigWithOverrides.defaults, configId)

@@ -75,7 +75,7 @@ describe('ShowStyleBase upgrades', () => {
 
 		testInFiber('Missing config preset', async () => {
 			const blueprint = await setupMockShowStyleBlueprint(protectString(''))
-			const showStyleBase = setupMockShowStyleBase(blueprint._id)
+			const showStyleBase = await setupMockShowStyleBase(blueprint._id)
 
 			await expect(validateConfigForShowStyleBase(showStyleBase._id)).rejects.toThrowMeteor(
 				500,
@@ -84,7 +84,7 @@ describe('ShowStyleBase upgrades', () => {
 		})
 
 		testInFiber('Missing blueprint', async () => {
-			const showStyleBase = setupMockShowStyleBase(protectString('fakeId'), {
+			const showStyleBase = await setupMockShowStyleBase(protectString('fakeId'), {
 				blueprintConfigPresetId: 'fake-preset',
 			})
 
@@ -96,7 +96,7 @@ describe('ShowStyleBase upgrades', () => {
 
 		testInFiber('Unsupported blueprint', async () => {
 			const blueprint = await setupMockShowStyleBlueprint(protectString(''))
-			const showStyleBase = setupMockShowStyleBase(blueprint._id, {
+			const showStyleBase = await setupMockShowStyleBase(blueprint._id, {
 				blueprintConfigPresetId: 'fake-preset',
 			})
 
@@ -108,7 +108,7 @@ describe('ShowStyleBase upgrades', () => {
 
 		testInFiber('Success: no messages', async () => {
 			const blueprint = await setupMockShowStyleBlueprint(protectString(''))
-			const showStyleBase = setupMockShowStyleBase(blueprint._id, {
+			const showStyleBase = await setupMockShowStyleBase(blueprint._id, {
 				blueprintConfigPresetId: 'fake-preset',
 			})
 
@@ -125,7 +125,7 @@ describe('ShowStyleBase upgrades', () => {
 
 		testInFiber('Success: some messages', async () => {
 			const blueprint = await setupMockShowStyleBlueprint(protectString(''))
-			const showStyleBase = setupMockShowStyleBase(blueprint._id, {
+			const showStyleBase = await setupMockShowStyleBase(blueprint._id, {
 				blueprintConfigPresetId: 'fake-preset',
 			})
 
@@ -176,7 +176,7 @@ describe('ShowStyleBase upgrades', () => {
 
 		testInFiber('Missing config preset', async () => {
 			const blueprint = await setupMockShowStyleBlueprint(protectString(''))
-			const showStyleBase = setupMockShowStyleBase(blueprint._id)
+			const showStyleBase = await setupMockShowStyleBase(blueprint._id)
 
 			await expect(runUpgradeForShowStyleBase(showStyleBase._id)).rejects.toThrowMeteor(
 				500,
@@ -185,7 +185,7 @@ describe('ShowStyleBase upgrades', () => {
 		})
 
 		testInFiber('Missing blueprint', async () => {
-			const showStyleBase = setupMockShowStyleBase(protectString('fakeId'), {
+			const showStyleBase = await setupMockShowStyleBase(protectString('fakeId'), {
 				blueprintConfigPresetId: 'fake-preset',
 			})
 
@@ -197,7 +197,7 @@ describe('ShowStyleBase upgrades', () => {
 
 		testInFiber('Unsupported blueprint', async () => {
 			const blueprint = await setupMockShowStyleBlueprint(protectString(''))
-			const showStyleBase = setupMockShowStyleBase(blueprint._id, {
+			const showStyleBase = await setupMockShowStyleBase(blueprint._id, {
 				blueprintConfigPresetId: 'fake-preset',
 			})
 
@@ -210,7 +210,7 @@ describe('ShowStyleBase upgrades', () => {
 		testInFiber('Success', async () => {
 			const blueprint = await setupMockShowStyleBlueprint(protectString(''))
 			const showStyleBase = clone(
-				setupMockShowStyleBase(blueprint._id, {
+				await setupMockShowStyleBase(blueprint._id, {
 					blueprintConfigPresetId: 'fake-preset',
 				})
 			)
@@ -291,7 +291,7 @@ describe('ShowStyleBase upgrades', () => {
 			await runUpgradeForShowStyleBase(showStyleBase._id)
 
 			// Check the result matches as expected
-			const showStyleBase2 = ShowStyleBases.findOne(showStyleBase._id) as ShowStyleBase
+			const showStyleBase2 = (await ShowStyleBases.findOneAsync(showStyleBase._id)) as ShowStyleBase
 			expect(showStyleBase2).toBeTruthy()
 
 			expect(showStyleBase2.sourceLayersWithOverrides.defaults).not.toEqual(
