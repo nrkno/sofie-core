@@ -27,9 +27,10 @@ import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { DBUser } from '../../lib/collections/Users'
 import { WorkerStatus } from '../../lib/collections/Workers'
 import { registerIndex } from './indices'
-import { getCurrentTime, MeteorStartupAsync } from '../../lib/lib'
-import { createAsyncMongoCollection, createAsyncOnlyMongoCollection, wrapMongoCollection } from './collection'
+import { getCurrentTime, MeteorStartupAsync, stringifyError } from '../../lib/lib'
+import { createAsyncOnlyMongoCollection, wrapMongoCollection } from './collection'
 import { ObserveChangesForHash, registerCollection } from './lib'
+import { logger } from '../logging'
 
 export * from './bucket'
 export * from './packages-media'
@@ -66,7 +67,7 @@ registerIndex(ExternalMessageQueue, {
 
 export const Organizations = createAsyncOnlyMongoCollection<DBOrganization>(CollectionName.Organizations)
 
-export const PeripheralDeviceCommands = createAsyncMongoCollection<PeripheralDeviceCommand>(
+export const PeripheralDeviceCommands = createAsyncOnlyMongoCollection<PeripheralDeviceCommand>(
 	CollectionName.PeripheralDeviceCommands
 )
 registerIndex(PeripheralDeviceCommands, {
@@ -164,11 +165,18 @@ export const WorkerThreadStatuses = createAsyncOnlyMongoCollection<WorkerThreadS
 
 // Monitor and remove old, lingering commands:
 const removeOldCommands = () => {
-	PeripheralDeviceCommands.find().forEach((cmd) => {
-		if (getCurrentTime() - (cmd.time || 0) > 20 * 1000) {
-			// timeout a long time ago
-			PeripheralDeviceCommands.remove(cmd._id)
-		}
+	PeripheralDeviceCommands.removeAsync({
+		$or: [
+			{
+				time: { $exists: false },
+			},
+			{
+				// timeout a long time ago
+				time: { $lte: getCurrentTime() - 20 * 1000 },
+			},
+		],
+	}).catch((e) => {
+		logger.error(`Failed to cleanup old PeripheralDeviceCommands: ${stringifyError(e)}`)
 	})
 }
 MeteorStartupAsync(async () => {

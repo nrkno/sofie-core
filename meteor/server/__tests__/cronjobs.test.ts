@@ -479,7 +479,7 @@ describe('cronjobs', () => {
 			await waitForCronjobDone()
 
 			// check if the correct PeripheralDevice command has been issued, and only for CasparCG devices
-			const pendingCommands = PeripheralDeviceCommands.find({}).fetch()
+			const pendingCommands = await PeripheralDeviceCommands.findFetchAsync({})
 			expect(pendingCommands).toHaveLength(1)
 			expect(pendingCommands[0]).toMatchObject({
 				deviceId: mockCasparCg,
@@ -593,7 +593,7 @@ describe('cronjobs', () => {
 			jest.runOnlyPendingTimers()
 
 			// check if the no PeripheralDevice command have been issued
-			const pendingCommands = PeripheralDeviceCommands.find({}).fetch()
+			const pendingCommands = await PeripheralDeviceCommands.findFetchAsync({})
 			expect(pendingCommands).toHaveLength(0)
 
 			await waitForCronjobDone()

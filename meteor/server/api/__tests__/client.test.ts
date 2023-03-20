@@ -159,7 +159,7 @@ describe('ClientAPI', () => {
 				async () => {
 					SupressLogMessages.suppressLogMessage(/Failed/i)
 					SupressLogMessages.suppressLogMessage(/Failed/i)
-					PeripheralDeviceCommands.update(
+					await PeripheralDeviceCommands.updateAsync(
 						{
 							deviceId: mockDeviceId,
 							functionName: mockFailingFunctionName,

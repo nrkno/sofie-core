@@ -55,13 +55,13 @@ describe('User Actions - Media Manager', () => {
 
 		{
 			// should execute function on the target device
-			const p = waitUntil(() => {
-				const functionCall = PeripheralDeviceCommands.find({
+			const p = waitUntil(async () => {
+				const functionCall = await PeripheralDeviceCommands.findFetchAsync({
 					deviceId: env.ingestDevice._id,
 					functionName: 'restartWorkflow',
-				}).fetch()[0]
+				})[0]
 				expect(functionCall).toBeTruthy()
-				PeripheralDeviceCommands.update(functionCall._id, {
+				await PeripheralDeviceCommands.updateAsync(functionCall._id, {
 					$set: {
 						hasReply: true,
 						reply: 'done',
@@ -84,13 +84,13 @@ describe('User Actions - Media Manager', () => {
 		{
 			// should execute function on the target device
 
-			const p = waitUntil(() => {
-				const functionCall = PeripheralDeviceCommands.find({
+			const p = waitUntil(async () => {
+				const functionCall = await PeripheralDeviceCommands.findFetchAsync({
 					deviceId: env.ingestDevice._id,
 					functionName: 'abortWorkflow',
-				}).fetch()[0]
+				})[0]
 				expect(functionCall).toBeTruthy()
-				PeripheralDeviceCommands.update(functionCall._id, {
+				await PeripheralDeviceCommands.updateAsync(functionCall._id, {
 					$set: {
 						hasReply: true,
 						reply: 'done',
@@ -112,13 +112,13 @@ describe('User Actions - Media Manager', () => {
 
 		{
 			// should execute function on the target device
-			const p = waitUntil(() => {
-				const functionCall = PeripheralDeviceCommands.find({
+			const p = waitUntil(async () => {
+				const functionCall = await PeripheralDeviceCommands.findFetchAsync({
 					deviceId: env.ingestDevice._id,
 					functionName: 'prioritizeWorkflow',
-				}).fetch()[0]
+				})[0]
 				expect(functionCall).toBeTruthy()
-				PeripheralDeviceCommands.update(functionCall._id, {
+				await PeripheralDeviceCommands.updateAsync(functionCall._id, {
 					$set: {
 						hasReply: true,
 						reply: 'done',
@@ -135,12 +135,12 @@ describe('User Actions - Media Manager', () => {
 
 		{
 			// should execute function on all the target devices
-			const p = waitUntil(() => {
-				const functionCalls = PeripheralDeviceCommands.find({
+			const p = waitUntil(async () => {
+				const functionCalls = await PeripheralDeviceCommands.findFetchAsync({
 					functionName: 'restartAllWorkflows',
-				}).fetch()
+				})
 				expect(functionCalls).toHaveLength(1)
-				PeripheralDeviceCommands.update(functionCalls[0]._id, {
+				await PeripheralDeviceCommands.updateAsync(functionCalls[0]._id, {
 					$set: {
 						hasReply: true,
 						reply: 'done',
@@ -157,12 +157,12 @@ describe('User Actions - Media Manager', () => {
 
 		{
 			// should execute function on all the target devices
-			const p = waitUntil(() => {
-				const functionCalls = PeripheralDeviceCommands.find({
+			const p = waitUntil(async () => {
+				const functionCalls = await PeripheralDeviceCommands.findFetchAsync({
 					functionName: 'abortAllWorkflows',
-				}).fetch()
+				})
 				expect(functionCalls).toHaveLength(1)
-				PeripheralDeviceCommands.update(functionCalls[0]._id, {
+				await PeripheralDeviceCommands.updateAsync(functionCalls[0]._id, {
 					$set: {
 						hasReply: true,
 						reply: 'done',

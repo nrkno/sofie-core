@@ -62,6 +62,7 @@ import {
 } from '../../collections'
 import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
 import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
 
 const DEBUG = false
 
@@ -293,7 +294,9 @@ describe('test peripheralDevice general API methods', () => {
 		expect(((await PeripheralDevices.findOneAsync(device._id)) as PeripheralDevice).lastSeen).toBeGreaterThan(
 			lastSeen
 		)
-		const command = PeripheralDeviceCommands.find({ deviceId: device._id }).fetch()[0]
+		const command = (await PeripheralDeviceCommands.findOneAsync({
+			deviceId: device._id,
+		})) as PeripheralDeviceCommand
 		expect(command).toBeTruthy()
 		expect(command.hasReply).toBeFalsy()
 		expect(command.functionName).toBe('pingResponse')
@@ -312,7 +315,7 @@ describe('test peripheralDevice general API methods', () => {
 			replyMessage
 		)
 		await sleep(10)
-		expect(PeripheralDeviceCommands.findOne()).toBeFalsy()
+		expect(await PeripheralDeviceCommands.findOneAsync({})).toBeFalsy()
 
 		expect(resultErr).toBeNull()
 		expect(resultMessage).toEqual(replyMessage)
