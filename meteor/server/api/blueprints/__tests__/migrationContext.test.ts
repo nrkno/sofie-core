@@ -1546,10 +1546,10 @@ describe('Test blueprint migrationContext', () => {
 			expect(coreSystem).toBeTruthy()
 			return new MigrationContextSystem()
 		}
-		function getSystemTriggeredActions(): IBlueprintTriggeredActions[] {
-			const systemTriggeredActions = TriggeredActions.find({
+		async function getSystemTriggeredActions(): Promise<IBlueprintTriggeredActions[]> {
+			const systemTriggeredActions = await TriggeredActions.findFetchAsync({
 				showStyleBaseId: null,
-			}).fetch()
+			})
 			expect(systemTriggeredActions).toHaveLength(3)
 			return systemTriggeredActions.map((doc) =>
 				literal<IBlueprintTriggeredActions>({
@@ -1578,10 +1578,10 @@ describe('Test blueprint migrationContext', () => {
 
 				expect(ctx.getTriggeredAction('abc')).toBeFalsy()
 			})
-			testInFiber('getTriggeredAction: existing id', () => {
+			testInFiber('getTriggeredAction: existing id', async () => {
 				const ctx = getContext()
 
-				const existingTriggeredActions = getSystemTriggeredActions()[0]
+				const existingTriggeredActions = await getSystemTriggeredActions()[0]
 				expect(existingTriggeredActions).toBeTruthy()
 				expect(ctx.getTriggeredAction(existingTriggeredActions._id)).toMatchObject(existingTriggeredActions)
 			})

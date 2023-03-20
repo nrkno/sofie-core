@@ -10,6 +10,7 @@ import {
 	objectPathSet,
 	clone,
 	Complete,
+	waitForPromise,
 } from '../../../lib/lib'
 import { Studio, DBStudio, StudioPlayoutDevice } from '../../../lib/collections/Studios'
 import { ShowStyleBase, DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
@@ -61,22 +62,28 @@ class AbstractMigrationContextWithTriggeredActions {
 		return protectString(this.getTriggeredActionId(triggeredActionId))
 	}
 	getAllTriggeredActions(): IBlueprintTriggeredActions[] {
-		return TriggeredActions.find({
-			showStyleBaseId: this.showStyleBaseId,
-		}).map(convertTriggeredActionToBlueprints)
+		return waitForPromise(
+			TriggeredActions.findFetchAsync({
+				showStyleBaseId: this.showStyleBaseId,
+			})
+		).map(convertTriggeredActionToBlueprints)
 	}
 	private getTriggeredActionFromDb(triggeredActionId: string): TriggeredActionsObj | undefined {
-		const triggeredAction = TriggeredActions.findOne({
-			showStyleBaseId: this.showStyleBaseId,
-			_id: this.getProtectedTriggeredActionId(triggeredActionId),
-		})
+		const triggeredAction = waitForPromise(
+			TriggeredActions.findOneAsync({
+				showStyleBaseId: this.showStyleBaseId,
+				_id: this.getProtectedTriggeredActionId(triggeredActionId),
+			})
+		)
 		if (triggeredAction) return triggeredAction
 
 		// Assume we were given the full id
-		return TriggeredActions.findOne({
-			showStyleBaseId: this.showStyleBaseId,
-			_id: protectString(triggeredActionId),
-		})
+		return waitForPromise(
+			TriggeredActions.findOneAsync({
+				showStyleBaseId: this.showStyleBaseId,
+				_id: protectString(triggeredActionId),
+			})
+		)
 	}
 	getTriggeredAction(triggeredActionId: string): IBlueprintTriggeredActions | undefined {
 		check(triggeredActionId, String)
@@ -110,19 +117,23 @@ class AbstractMigrationContextWithTriggeredActions {
 
 		const currentTriggeredAction = this.getTriggeredActionFromDb(triggeredActions._id)
 		if (!currentTriggeredAction) {
-			TriggeredActions.insert({
-				...newObj,
-				showStyleBaseId: this.showStyleBaseId,
-				_id: this.getProtectedTriggeredActionId(triggeredActions._id),
-			})
+			waitForPromise(
+				TriggeredActions.insertAsync({
+					...newObj,
+					showStyleBaseId: this.showStyleBaseId,
+					_id: this.getProtectedTriggeredActionId(triggeredActions._id),
+				})
+			)
 		} else {
-			TriggeredActions.update(
-				{
-					_id: currentTriggeredAction._id,
-				},
-				{
-					$set: newObj,
-				}
+			waitForPromise(
+				TriggeredActions.updateAsync(
+					{
+						_id: currentTriggeredAction._id,
+					},
+					{
+						$set: newObj,
+					}
+				)
 			)
 		}
 	}
@@ -134,10 +145,12 @@ class AbstractMigrationContextWithTriggeredActions {
 
 		const currentTriggeredAction = this.getTriggeredActionFromDb(triggeredActionId)
 		if (currentTriggeredAction) {
-			TriggeredActions.remove({
-				_id: currentTriggeredAction._id,
-				showStyleBaseId: this.showStyleBaseId,
-			})
+			waitForPromise(
+				TriggeredActions.removeAsync({
+					_id: currentTriggeredAction._id,
+					showStyleBaseId: this.showStyleBaseId,
+				})
+			)
 		}
 	}
 }

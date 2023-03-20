@@ -185,11 +185,11 @@ export function setupMockCore(doc?: Partial<ICoreSystem>): ICoreSystem {
 	CoreSystem.insert(coreSystem)
 	return coreSystem
 }
-export function setupMockTriggeredActions(
+export async function setupMockTriggeredActions(
 	showStyleBaseId: ShowStyleBaseId | null = null,
 	num: number = 3,
 	doc?: Partial<DBTriggeredActions>
-): DBTriggeredActions[] {
+): Promise<DBTriggeredActions[]> {
 	doc = doc || {}
 	const mocks: DBTriggeredActions[] = []
 	for (let i = 0; i < num; i++) {
@@ -224,7 +224,7 @@ export function setupMockTriggeredActions(
 			...doc,
 		}
 		mocks.push(mock)
-		TriggeredActions.insert(mock)
+		await TriggeredActions.insertAsync(mock)
 	}
 	return mocks
 }
@@ -537,7 +537,7 @@ export async function setupDefaultStudioEnvironment(
 	organizationId: OrganizationId | null = null
 ): Promise<DefaultEnvironment> {
 	const core = setupMockCore({})
-	const systemTriggeredActions = setupMockTriggeredActions()
+	const systemTriggeredActions = await setupMockTriggeredActions()
 
 	const showStyleBaseId: ShowStyleBaseId = getRandomId()
 	const showStyleVariantId: ShowStyleVariantId = getRandomId()
@@ -549,7 +549,7 @@ export async function setupDefaultStudioEnvironment(
 		_id: showStyleBaseId,
 		organizationId: organizationId,
 	})
-	const triggeredActions = setupMockTriggeredActions(showStyleBase._id)
+	const triggeredActions = await setupMockTriggeredActions(showStyleBase._id)
 	const showStyleVariant = setupMockShowStyleVariant(showStyleBase._id, { _id: showStyleVariantId })
 
 	const studio = setupMockStudio({

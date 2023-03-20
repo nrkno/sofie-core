@@ -308,7 +308,7 @@ describe('ShowStyleBase upgrades', () => {
 				normalizeArray(targetResult.outputLayers, '_id')
 			)
 
-			const triggeredActions = TriggeredActions.find({ showStyleBaseId: showStyleBase._id }).fetch()
+			const triggeredActions = await TriggeredActions.findFetchAsync({ showStyleBaseId: showStyleBase._id })
 			expect(
 				triggeredActions.map((triggeredAction) => ({
 					_rank: triggeredAction._rank,

@@ -137,7 +137,7 @@ export const TranslationsBundles = createAsyncOnlyMongoCollection<TranslationsBu
 	CollectionName.TranslationsBundles
 )
 
-export const TriggeredActions = createAsyncMongoCollection<DBTriggeredActions>(CollectionName.TriggeredActions)
+export const TriggeredActions = createAsyncOnlyMongoCollection<DBTriggeredActions>(CollectionName.TriggeredActions)
 registerIndex(TriggeredActions, {
 	showStyleBaseId: 1,
 })
