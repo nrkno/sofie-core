@@ -19,10 +19,8 @@ import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
 import { Parts } from '../lib/collections/Parts'
 import { PartInstances } from '../lib/collections/PartInstances'
 import { PieceInstances } from '../lib/collections/PieceInstances'
-import { getRemovedOrOrphanedPackageInfos } from './api/studio/lib'
-import { PackageInfos } from '../lib/collections/PackageInfos'
+import { getExpiredRemovedPackageInfos, getOrphanedPackageInfos, removePackageInfos } from './api/studio/lib'
 import { deferAsync } from '@sofie-automation/corelib/dist/lib'
-import { PackageInfos } from '../lib/collections/PackageInfos'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -237,11 +235,16 @@ Meteor.startup(() => {
 			if (isLowSeason() || force) {
 				deferAsync(
 					async () => {
-						const removedPackageInfoIds = await getRemovedOrOrphanedPackageInfos()
-						if (removedPackageInfoIds.length) {
-							PackageInfos.remove({
-								_id: { $in: removedPackageInfoIds },
-							})
+						// Find any PackageInfos which have expired
+						const expiredPackageInfoIds = await getExpiredRemovedPackageInfos()
+						if (expiredPackageInfoIds.length) {
+							await removePackageInfos(expiredPackageInfoIds, 'purge')
+						}
+
+						// Find any PackageInfos which are missing the parent ExpectedPackage
+						const orphanedPackageInfoIds = await getOrphanedPackageInfos()
+						if (orphanedPackageInfoIds.length) {
+							await removePackageInfos(orphanedPackageInfoIds, 'defer')
 						}
 					},
 					(e) => {

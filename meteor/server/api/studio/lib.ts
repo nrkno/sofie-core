@@ -18,25 +18,12 @@ export async function getActiveRundownPlaylistsInStudioFromDb(
 	})
 }
 
-/** Returns a list of PackageInfos which are no longer valid */
-export async function getRemovedOrOrphanedPackageInfos(): Promise<PackageInfoDB['_id'][]> {
-	const knownExpectedPackageIds = (await ExpectedPackages.findFetchAsync({}, { fields: { _id: 1 } })).map(
-		(pkg) => pkg._id
-	)
-
+/** Returns a list of PackageInfos which have reached their removeTime */
+export async function getExpiredRemovedPackageInfos(): Promise<PackageInfoDB['_id'][]> {
 	const docs = await PackageInfos.findFetchAsync(
 		{
-			$or: [
-				{
-					// Marked for delayed removal, and that time has passed
-					removeTime: { $lte: getCurrentTime() },
-				},
-				{
-					// Not marked for delayed removal, and the expectedPackage has been deleted
-					packageId: { $nin: knownExpectedPackageIds },
-					removeTime: { $exists: false },
-				},
-			],
+			// Marked for delayed removal, and that time has passed
+			removeTime: { $lte: getCurrentTime() },
 		},
 		{
 			fields: {
@@ -45,4 +32,47 @@ export async function getRemovedOrOrphanedPackageInfos(): Promise<PackageInfoDB[
 		}
 	)
 	return docs.map((p) => p._id)
+}
+
+/** Returns a list of PackageInfos which are missing their parent ExpectedPackage */
+export async function getOrphanedPackageInfos(): Promise<PackageInfoDB['_id'][]> {
+	const knownExpectedPackageIds = (await ExpectedPackages.findFetchAsync({}, { fields: { _id: 1 } })).map(
+		(pkg) => pkg._id
+	)
+
+	const docs = await PackageInfos.findFetchAsync(
+		{
+			// Not marked for delayed removal, and the expectedPackage has been deleted
+			packageId: { $nin: knownExpectedPackageIds },
+			removeTime: { $exists: false },
+		},
+		{
+			fields: {
+				_id: 1,
+			},
+		}
+	)
+	return docs.map((p) => p._id)
+}
+
+/** Remove or mark for delayed removal some PackageInfos by id */
+export async function removePackageInfos(ids: PackageInfoDB['_id'][], mode: 'defer' | 'purge'): Promise<void> {
+	if (mode === 'defer') {
+		const removeDelay = 3600 * 24 // Arbitrary value of 24 hours
+
+		await PackageInfos.updateAsync(
+			{
+				_id: { $in: ids },
+			},
+			{
+				$set: {
+					removeTime: getCurrentTime() + removeDelay,
+				},
+			}
+		)
+	} else {
+		await PackageInfos.removeAsync({
+			_id: { $in: ids },
+		})
+	}
 }
