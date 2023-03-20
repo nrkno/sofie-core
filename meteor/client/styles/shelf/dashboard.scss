@@ -642,7 +642,7 @@ $dashboard-button-height: 5.625em;
 			width: $dashboard-button-width;
 			height: $dashboard-button-height;
 
-			&.source-missing, &.source-missing, &.unknown-state {
+			&.source-missing, &.source-not-ready, &.unknown-state {
 				&::before {
 					z-index: 2;
 				}

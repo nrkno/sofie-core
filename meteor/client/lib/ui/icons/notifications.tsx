@@ -188,3 +188,22 @@ export function CollapseChevrons(): JSX.Element {
 		</svg>
 	)
 }
+
+export function HourglassIconSmall(): JSX.Element {
+	return (
+		<svg width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+			<g clipPath="url(#clip0_5400_19956)">
+				<path
+					d="M7 5.44444L9.75741 2.52055C10.2941 1.94036 9.88203 1 9.09107 1L1.90893 1C1.11797 1 0.705885 1.94036 1.24259 2.52055L9.75741 11.4795C10.2941 12.0596 9.88203 13 9.09107 13C6.28627 13 4.71373 13 1.90893 13C1.11797 13 0.705883 12.0596 1.24259 11.4795L3.88888 8.55556"
+					stroke="white"
+					strokeWidth="2"
+				/>
+			</g>
+			<defs>
+				<clipPath id="clip0_5400_19956">
+					<rect width="16" height="14" fill="white" />
+				</clipPath>
+			</defs>
+		</svg>
+	)
+}

@@ -514,12 +514,23 @@ function getPackageWarningMessage(
 	) {
 		// Examples of contents in packageOnPackageContainer?.status.statusReason.user:
 		// * Source file is still growing
-		// * Reserved clip (0 frames)
-		// * Reserved clip (1-9 frames)
 
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
 			message: generateTranslation('{{reason}} Clip exists, but is not yet ready on the playout system.', {
+				reason: ((packageOnPackageContainer?.status.statusReason.user || 'N/A') + '.').replace(/\.\.$/, '.'), // remove any trailing double "."
+			}),
+		}
+	} else if (
+		// Examples of contents in packageOnPackageContainer?.status.statusReason.user:
+		// * Reserved clip (0 frames)
+		// * Reserved clip (1-9 frames)
+		packageOnPackageContainer.status.status ===
+		ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.PLACEHOLDER
+	) {
+		return {
+			status: PieceStatusCode.SOURCE_NOT_READY,
+			message: generateTranslation('{{reason}}', {
 				reason: ((packageOnPackageContainer?.status.statusReason.user || 'N/A') + '.').replace(/\.\.$/, '.'), // remove any trailing double "."
 			}),
 		}

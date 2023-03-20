@@ -18,6 +18,9 @@ export enum PieceStatusCode {
 	/** No fault with piece, can be played */
 	OK = 0,
 
+	/** The source exists but can't be played for a non-technical reason. E.G. A placeholder clip with no content. */
+	SOURCE_NOT_READY = 5,
+
 	/** The source can be played, but some issues have been detected with it. It can be played fine from a technical standpoint, but the user should be notified. */
 	SOURCE_HAS_ISSUES = 10,
 
