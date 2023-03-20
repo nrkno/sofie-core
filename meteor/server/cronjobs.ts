@@ -1,7 +1,7 @@
 import { PeripheralDevices, RundownPlaylists } from './collections'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
-import { getCurrentTime, stringifyError, waitForPromise, waitForPromiseAll } from '../lib/lib'
+import { getCurrentTime, stringifyError, waitForPromise } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { TSR } from '@sofie-automation/blueprints-integration'
@@ -55,56 +55,69 @@ export function nightlyCronjobInner(): void {
 		logger.error(error)
 	}
 
-	const ps: Array<Promise<any>> = []
-	// Restart casparcg
-	if (system?.cron?.casparCGRestart?.enabled) {
-		PeripheralDevices.find({
-			type: PeripheralDeviceType.PLAYOUT,
-		}).forEach((device) => {
-			PeripheralDevices.find({
-				parentDeviceId: device._id,
-			}).forEach((subDevice) => {
-				if (subDevice.type === PeripheralDeviceType.PLAYOUT && subDevice.subType === TSR.DeviceType.CASPARCG) {
-					logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')
+	deferAsync(
+		async () => {
+			const ps: Array<Promise<any>> = []
+			// Restart casparcg
+			if (system?.cron?.casparCGRestart?.enabled) {
+				const peripheralDevices = await PeripheralDevices.findFetchAsync({
+					type: PeripheralDeviceType.PLAYOUT,
+				})
 
-					ps.push(
-						PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
-							subDevice._id,
-							DEFAULT_TSR_ACTION_TIMEOUT_TIME,
-							{
-								actionId: TSR.CasparCGActions.RestartServer,
-							}
-						)
-							.then(() => {
-								logger.info('Cronjob: "' + subDevice._id + '": CasparCG restart done')
-							})
-							.catch((err) => {
-								logger.error(
-									`Cronjob: "${subDevice._id}": CasparCG restart error: ${stringifyError(err)}`
-								)
+				for (const device of peripheralDevices) {
+					const subDevices = await PeripheralDevices.findFetchAsync({
+						parentDeviceId: device._id,
+					})
 
-								if ((err + '').match(/timeout/i)) {
-									// If it was a timeout, maybe we could try again later?
-									if (failedRetries < 5) {
-										failedRetries++
-										lastNightlyCronjob = previousLastNightlyCronjob // try again later
+					for (const subDevice of subDevices) {
+						if (
+							subDevice.type === PeripheralDeviceType.PLAYOUT &&
+							subDevice.subType === TSR.DeviceType.CASPARCG
+						) {
+							logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')
+
+							ps.push(
+								PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+									subDevice._id,
+									DEFAULT_TSR_ACTION_TIMEOUT_TIME,
+									{
+										actionId: TSR.CasparCGActions.RestartServer,
 									}
-								} else {
-									// Propogate the error
-									throw err
-								}
-							})
-					)
+								)
+									.then(() => {
+										logger.info('Cronjob: "' + subDevice._id + '": CasparCG restart done')
+									})
+									.catch((err) => {
+										logger.error(
+											`Cronjob: "${subDevice._id}": CasparCG restart error: ${stringifyError(
+												err
+											)}`
+										)
+
+										if ((err + '').match(/timeout/i)) {
+											// If it was a timeout, maybe we could try again later?
+											if (failedRetries < 5) {
+												failedRetries++
+												lastNightlyCronjob = previousLastNightlyCronjob // try again later
+											}
+										} else {
+											// Propogate the error
+											throw err
+										}
+									})
+							)
+						}
+					}
 				}
-			})
-		})
-	}
-	try {
-		waitForPromiseAll(ps)
-		failedRetries = 0
-	} catch (err) {
-		logger.error(err)
-	}
+			}
+
+			await Promise.all(ps)
+			failedRetries = 0
+		},
+		(e) => {
+			logger.error(`Cron: Restart CasparCG error: ${e}`)
+		}
+	)
 
 	if (system?.cron?.storeRundownSnapshots?.enabled) {
 		const filter = system.cron.storeRundownSnapshots.rundownNames?.length
@@ -114,17 +127,12 @@ export function nightlyCronjobInner(): void {
 		RundownPlaylists.find(filter).forEach((playlist) => {
 			lowPrioFcn(() => {
 				logger.info(`Cronjob: Will store snapshot for rundown playlist "${playlist._id}"`)
-				ps.push(internalStoreRundownPlaylistSnapshot(playlist, 'Automatic, taken by cron job'))
+				internalStoreRundownPlaylistSnapshot(playlist, 'Automatic, taken by cron job').catch((err) => {
+					logger.error(err)
+				})
 			})
 		})
 	}
-	Promise.all(ps)
-		.then(() => {
-			failedRetries = 0
-		})
-		.catch((err) => {
-			logger.error(err)
-		})
 
 	// last:
 	logger.info('Nightly cronjob: done')

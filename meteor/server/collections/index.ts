@@ -73,7 +73,7 @@ registerIndex(PeripheralDeviceCommands, {
 	deviceId: 1,
 })
 
-export const PeripheralDevices = createAsyncMongoCollection<PeripheralDevice>(CollectionName.PeripheralDevices)
+export const PeripheralDevices = createAsyncOnlyMongoCollection<PeripheralDevice>(CollectionName.PeripheralDevices)
 registerIndex(PeripheralDevices, {
 	organizationId: 1,
 	studioId: 1,

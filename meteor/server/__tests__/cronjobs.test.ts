@@ -398,7 +398,7 @@ describe('cronjobs', () => {
 		})
 		testInFiber('Attempts to restart CasparCG when job is enabled', async () => {
 			const mockPlayoutGw = protectString<PeripheralDeviceId>(getRandomString())
-			PeripheralDevices.insert({
+			await PeripheralDevices.insertAsync({
 				_id: mockPlayoutGw,
 				organizationId: null,
 				type: PeripheralDeviceType.PLAYOUT,
@@ -422,7 +422,7 @@ describe('cronjobs', () => {
 				settings: {},
 			})
 			const mockCasparCg = protectString<PeripheralDeviceId>(getRandomString())
-			PeripheralDevices.insert({
+			await PeripheralDevices.insertAsync({
 				_id: mockCasparCg,
 				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
@@ -447,7 +447,7 @@ describe('cronjobs', () => {
 				settings: {},
 			})
 			const mockATEM = protectString<PeripheralDeviceId>(getRandomString())
-			PeripheralDevices.insert({
+			await PeripheralDevices.insertAsync({
 				_id: mockATEM,
 				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
@@ -504,7 +504,7 @@ describe('cronjobs', () => {
 		})
 		testInFiber('Does not attempt to restart CasparCG when job is disabled', async () => {
 			const mockPlayoutGw = protectString<PeripheralDeviceId>(getRandomString())
-			PeripheralDevices.insert({
+			await PeripheralDevices.insertAsync({
 				_id: mockPlayoutGw,
 				organizationId: null,
 				type: PeripheralDeviceType.PLAYOUT,
@@ -528,7 +528,7 @@ describe('cronjobs', () => {
 				settings: {},
 			})
 			const mockCasparCg = protectString<PeripheralDeviceId>(getRandomString())
-			PeripheralDevices.insert({
+			await PeripheralDevices.insertAsync({
 				_id: mockCasparCg,
 				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
@@ -553,7 +553,7 @@ describe('cronjobs', () => {
 				settings: {},
 			})
 			const mockATEM = protectString<PeripheralDeviceId>(getRandomString())
-			PeripheralDevices.insert({
+			await PeripheralDevices.insertAsync({
 				_id: mockATEM,
 				organizationId: null,
 				parentDeviceId: mockPlayoutGw,

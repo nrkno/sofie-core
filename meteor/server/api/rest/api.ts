@@ -85,6 +85,7 @@ import {
 	validateConfigForStudio,
 } from '../../migration/upgrades'
 import { MigrationStepInputResult, NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 function restAPIUserEvent(
 	ctx: Koa.ParameterizedContext<
@@ -527,7 +528,10 @@ class ServerRestAPI implements RestAPI {
 		_connection: Meteor.Connection,
 		_event: string
 	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>> {
-		return ClientAPI.responseSuccess(PeripheralDevices.find().map((p) => ({ id: unprotectString(p._id) })))
+		const peripheralDevices = (await PeripheralDevices.findFetchAsync({}, { projection: { _id: 1 } })) as Array<
+			Pick<PeripheralDevice, '_id'>
+		>
+		return ClientAPI.responseSuccess(peripheralDevices.map((p) => ({ id: unprotectString(p._id) })))
 	}
 
 	async getPeripheralDevice(
@@ -535,7 +539,7 @@ class ServerRestAPI implements RestAPI {
 		_event: string,
 		deviceId: PeripheralDeviceId
 	): Promise<ClientAPI.ClientResponse<APIPeripheralDevice>> {
-		const device = PeripheralDevices.findOne(deviceId)
+		const device = await PeripheralDevices.findOneAsync(deviceId)
 		if (!device)
 			return ClientAPI.responseError(
 				UserError.from(
@@ -553,7 +557,7 @@ class ServerRestAPI implements RestAPI {
 		deviceId: PeripheralDeviceId,
 		action: PeripheralDeviceActionRestart
 	): Promise<ClientAPI.ClientResponse<void>> {
-		const device = PeripheralDevices.findOne(deviceId)
+		const device = await PeripheralDevices.findOneAsync(deviceId)
 		if (!device)
 			return ClientAPI.responseError(
 				UserError.from(
@@ -580,9 +584,12 @@ class ServerRestAPI implements RestAPI {
 		_event: string,
 		studioId: StudioId
 	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>> {
-		return ClientAPI.responseSuccess(
-			PeripheralDevices.find({ studioId }).map((p) => ({ id: unprotectString(p._id) }))
-		)
+		const peripheralDevices = (await PeripheralDevices.findFetchAsync(
+			{ studioId },
+			{ projection: { _id: 1 } }
+		)) as Array<Pick<PeripheralDevice, '_id'>>
+
+		return ClientAPI.responseSuccess(peripheralDevices.map((p) => ({ id: unprotectString(p._id) })))
 	}
 
 	async getAllBlueprints(
@@ -638,7 +645,7 @@ class ServerRestAPI implements RestAPI {
 				404
 			)
 
-		const device = PeripheralDevices.findOne(deviceId)
+		const device = await PeripheralDevices.findOneAsync(deviceId)
 		if (!device)
 			return ClientAPI.responseError(
 				UserError.from(new Error(`Studio does not exist`), UserErrorMessage.PeripheralDeviceNotFound),
@@ -654,7 +661,7 @@ class ServerRestAPI implements RestAPI {
 				412
 			)
 		}
-		PeripheralDevices.update(deviceId, {
+		await PeripheralDevices.updateAsync(deviceId, {
 			$set: {
 				studioId,
 			},
@@ -675,7 +682,7 @@ class ServerRestAPI implements RestAPI {
 				UserError.from(new Error(`Studio does not exist`), UserErrorMessage.StudioNotFound),
 				404
 			)
-		PeripheralDevices.update(deviceId, {
+		await PeripheralDevices.updateAsync(deviceId, {
 			$unset: {
 				studioId: 1,
 			},
@@ -939,7 +946,7 @@ class ServerRestAPI implements RestAPI {
 			}
 		}
 
-		PeripheralDevices.update({ studioId }, { $unset: { studioId: 1 } })
+		await PeripheralDevices.updateAsync({ studioId }, { $unset: { studioId: 1 } })
 		const rundownPlaylists = RundownPlaylists.find({ studioId }).map((playlist) => playlist._id)
 		const promises = rundownPlaylists.map(async (rundownPlaylistId) =>
 			ServerClientAPI.runUserActionInLogForPlaylistOnWorker(

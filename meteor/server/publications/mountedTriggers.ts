@@ -17,7 +17,7 @@ meteorCustomPublish(
 	CustomCollectionName.MountedTriggers,
 	async function (pub, deviceId: PeripheralDeviceId, deviceIds: string[], token) {
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
-			const peripheralDevice = PeripheralDevices.findOne(deviceId)
+			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
 
@@ -44,7 +44,7 @@ meteorCustomPublish(
 	CustomCollectionName.MountedTriggersPreviews,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
-			const peripheralDevice = PeripheralDevices.findOne(deviceId)
+			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
 

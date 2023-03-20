@@ -56,7 +56,7 @@ meteorCustomPublish(
 	CustomCollectionName.StudioTimeline,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
-			const peripheralDevice = PeripheralDevices.findOne(deviceId)
+			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 
@@ -69,7 +69,7 @@ meteorCustomPublish(
 )
 meteorPublish(PubSub.timelineDatastoreForDevice, async function (deviceId, token) {
 	if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
-		const peripheralDevice = PeripheralDevices.findOne(deviceId)
+		const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 
 		if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 
@@ -122,17 +122,21 @@ async function setupTimelinePublicationObservers(
 ): Promise<Meteor.LiveQueryHandle[]> {
 	// Set up observers:
 	return [
-		Studios.find(args.studioId, {
-			fields: {
-				// It should be enough to watch the mappingsHash, since that should change whenever there is a
-				// change to the mappings or the routes
-				mappingsHash: 1,
+		Studios.observeChanges(
+			args.studioId,
+			{
+				added: () => triggerUpdate({ invalidateStudio: true }),
+				changed: () => triggerUpdate({ invalidateStudio: true }),
+				removed: () => triggerUpdate({ invalidateStudio: true }),
 			},
-		}).observeChanges({
-			added: () => triggerUpdate({ invalidateStudio: true }),
-			changed: () => triggerUpdate({ invalidateStudio: true }),
-			removed: () => triggerUpdate({ invalidateStudio: true }),
-		}),
+			{
+				fields: {
+					// It should be enough to watch the mappingsHash, since that should change whenever there is a
+					// change to the mappings or the routes
+					mappingsHash: 1,
+				},
+			}
+		),
 		Timeline.observe(args.studioId, {
 			added: (timeline) => triggerUpdate({ timeline }),
 			changed: (timeline) => triggerUpdate({ timeline }),

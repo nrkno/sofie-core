@@ -89,7 +89,8 @@ export namespace MOSDeviceActions {
 			modifiedFields.EditorialStart = undefined
 		}
 
-		const peripheralDevice = PeripheralDevices.findOne(rundown.peripheralDeviceId)
+		const peripheralDevice =
+			rundown.peripheralDeviceId && (await PeripheralDevices.findOneAsync(rundown.peripheralDeviceId))
 		if (!peripheralDevice)
 			throw new Meteor.Error(404, 'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found')
 

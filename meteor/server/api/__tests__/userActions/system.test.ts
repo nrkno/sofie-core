@@ -33,7 +33,7 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 	beforeEach(async () => {
 		const organizationId = null
 		env = await setupDefaultStudioEnvironment(organizationId)
-		pDevice = setupMockPeripheralDevice(
+		pDevice = await setupMockPeripheralDevice(
 			PeripheralDeviceCategory.PLAYOUT,
 			PeripheralDeviceType.PLAYOUT,
 			PERIPHERAL_SUBTYPE_PROCESS,
@@ -91,7 +91,7 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 			success: 200,
 		})
 
-		const studio = Studios.findOne(env.studio._id) as Studio
+		const studio = (await Studios.findOneAsync(env.studio._id)) as Studio
 		expect(studio).toBeDefined()
 		const playoutDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.playoutDevices).obj
 		expect(playoutDevices[mockSubDeviceId].options.disable).toBe(true)
@@ -110,7 +110,7 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 				success: 200,
 			})
 
-			const studio = Studios.findOne(env.studio._id) as Studio
+			const studio = (await Studios.findOneAsync(env.studio._id)) as Studio
 			expect(studio).toBeDefined()
 			const playoutDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.playoutDevices).obj
 			expect(playoutDevices[mockSubDeviceId].options.disable).toBe(true)
@@ -129,7 +129,7 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 				success: 200,
 			})
 
-			const studio = Studios.findOne(env.studio._id) as Studio
+			const studio = (await Studios.findOneAsync(env.studio._id)) as Studio
 			expect(studio).toBeDefined()
 			const playoutDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.playoutDevices).obj
 			expect(playoutDevices[mockSubDeviceId].options.disable).toBe(false)
@@ -158,7 +158,7 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 		).resolves.toMatchUserRawError(/not found/)
 	})
 	testInFiber("edit device that doesn't support the disable property throws an error", async () => {
-		const pDeviceUnsupported = setupMockPeripheralDevice(
+		const pDeviceUnsupported = await setupMockPeripheralDevice(
 			PeripheralDeviceCategory.PLAYOUT,
 			PeripheralDeviceType.PLAYOUT,
 			PERIPHERAL_SUBTYPE_PROCESS,

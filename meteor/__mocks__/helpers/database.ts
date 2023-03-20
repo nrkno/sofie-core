@@ -122,13 +122,13 @@ function getBlueprintDependencyVersions(): { TSR_VERSION: string; INTEGRATION_VE
 }
 
 let dbI: number = 0
-export function setupMockPeripheralDevice(
+export async function setupMockPeripheralDevice(
 	category: PeripheralDeviceCategory,
 	type: PeripheralDeviceType,
 	subType: PeripheralDeviceSubType,
 	studio?: Pick<Studio, '_id'>,
 	doc?: Partial<PeripheralDevice>
-): PeripheralDevice {
+): Promise<PeripheralDevice> {
 	doc = doc || {}
 
 	const defaultDevice: PeripheralDevice = {
@@ -161,7 +161,7 @@ export function setupMockPeripheralDevice(
 		},
 	}
 	const device: PeripheralDevice = _.extend(defaultDevice, doc)
-	PeripheralDevices.insert(device)
+	await PeripheralDevices.insertAsync(device)
 	return device
 }
 export function setupMockCore(doc?: Partial<ICoreSystem>): ICoreSystem {
@@ -557,7 +557,7 @@ export async function setupDefaultStudioEnvironment(
 		supportedShowStyleBase: [showStyleBaseId],
 		organizationId: organizationId,
 	})
-	const ingestDevice = setupMockPeripheralDevice(
+	const ingestDevice = await setupMockPeripheralDevice(
 		PeripheralDeviceCategory.INGEST,
 		PeripheralDeviceType.MOS,
 		PERIPHERAL_SUBTYPE_PROCESS,

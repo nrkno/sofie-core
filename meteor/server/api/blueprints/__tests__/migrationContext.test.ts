@@ -420,7 +420,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(studio).toBeTruthy()
 				return studio
 			}
-			function createPlayoutDevice(studio: Studio) {
+			async function createPlayoutDevice(studio: Studio) {
 				const peripheralDeviceId = getRandomId()
 				studio.peripheralDeviceSettings.playoutDevices.defaults = {
 					device01: {
@@ -432,8 +432,8 @@ describe('Test blueprint migrationContext', () => {
 					},
 				}
 
-				Studios.update(studio._id, studio)
-				return PeripheralDevices.insert({
+				await Studios.updateAsync(studio._id, studio)
+				return PeripheralDevices.insertAsync({
 					_id: peripheralDeviceId,
 					name: 'Fake parent device',
 					organizationId: null,
@@ -458,8 +458,8 @@ describe('Test blueprint migrationContext', () => {
 					},
 				})
 			}
-			function getPlayoutDevice(studio: Studio): PeripheralDevice {
-				const device = PeripheralDevices.findOne({
+			async function getPlayoutDevice(studio: Studio): Promise<PeripheralDevice> {
+				const device = await PeripheralDevices.findOneAsync({
 					studioId: studio._id,
 					type: PeripheralDeviceType.PLAYOUT,
 					category: PeripheralDeviceCategory.PLAYOUT,
@@ -479,10 +479,10 @@ describe('Test blueprint migrationContext', () => {
 				const device = ctx.getDevice('fake_device')
 				expect(device).toBeFalsy()
 			})
-			testInFiber('getDevice: missing with parent', () => {
+			testInFiber('getDevice: missing with parent', async () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const playoutId = createPlayoutDevice(studio)
+				const playoutId = await createPlayoutDevice(studio)
 				expect(playoutId).toBeTruthy()
 
 				const device = ctx.getDevice('fake_device')
@@ -501,7 +501,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(device2).toBeFalsy()
 			})
 
-			testInFiber('insertDevice: no id', () => {
+			testInFiber('insertDevice: no id', async () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
 				const initialSettings = studio.peripheralDeviceSettings.playoutDevices
@@ -529,7 +529,7 @@ describe('Test blueprint migrationContext', () => {
 			// 	expect(ctx.getDevice('')).toBeFalsy()
 			// 	expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 			// })
-			testInFiber('insertDevice: already exists', () => {
+			testInFiber('insertDevice: already exists', async () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
 				const initialSettings = studio.peripheralDeviceSettings.playoutDevices
@@ -541,7 +541,7 @@ describe('Test blueprint migrationContext', () => {
 
 				expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 			})
-			testInFiber('insertDevice: ok', () => {
+			testInFiber('insertDevice: ok', async () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
 				const initialSettings = studio.peripheralDeviceSettings.playoutDevices
@@ -552,7 +552,7 @@ describe('Test blueprint migrationContext', () => {
 				const deviceId = ctx.insertDevice('device11', rawDevice)
 				expect(deviceId).toEqual('device11')
 				initialSettings.defaults[deviceId] = {
-					peripheralDeviceId: getPlayoutDevice(studio)._id,
+					peripheralDeviceId: (await getPlayoutDevice(studio))._id,
 					options: rawDevice,
 				}
 				expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
@@ -561,7 +561,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(device).toEqual(rawDevice)
 			})
 
-			testInFiber('updateDevice: no id', () => {
+			testInFiber('updateDevice: no id', async () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
 				const initialSettings = studio.peripheralDeviceSettings.playoutDevices
@@ -589,7 +589,7 @@ describe('Test blueprint migrationContext', () => {
 			// 	expect(ctx.getDevice('')).toBeFalsy()
 			// 	expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 			// })
-			testInFiber('updateDevice: missing', () => {
+			testInFiber('updateDevice: missing', async () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
 				const initialSettings = studio.peripheralDeviceSettings.playoutDevices
@@ -601,7 +601,7 @@ describe('Test blueprint migrationContext', () => {
 
 				expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 			})
-			testInFiber('Device: good', () => {
+			testInFiber('Device: good', async () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
 				const initialSettings = studio.peripheralDeviceSettings.playoutDevices
@@ -623,7 +623,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 			})
 
-			testInFiber('removeDevice: no id', () => {
+			testInFiber('removeDevice: no id', async () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
 				const initialSettings = studio.peripheralDeviceSettings.playoutDevices
@@ -649,7 +649,7 @@ describe('Test blueprint migrationContext', () => {
 			// 	expect(ctx.getDevice('')).toBeFalsy()
 			// 	expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 			// })
-			testInFiber('removeDevice: missing', () => {
+			testInFiber('removeDevice: missing', async () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
 				const initialSettings = studio.peripheralDeviceSettings.playoutDevices
@@ -660,7 +660,7 @@ describe('Test blueprint migrationContext', () => {
 
 				expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 			})
-			testInFiber('removeDevice: good', () => {
+			testInFiber('removeDevice: good', async () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
 				const initialSettings = studio.peripheralDeviceSettings.playoutDevices

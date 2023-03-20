@@ -23,12 +23,12 @@ export namespace PackageManagerAPI {
 	}
 
 	export async function restartAllExpectationsInStudio(access: StudioContentAccess): Promise<void> {
-		const packageManagerDevices = PeripheralDevices.find({
+		const packageManagerDevices = await PeripheralDevices.findFetchAsync({
 			studioId: access.studioId,
 			category: PeripheralDeviceCategory.PACKAGE_MANAGER,
 			type: PeripheralDeviceType.PACKAGE_MANAGER,
 			subType: PERIPHERAL_SUBTYPE_PROCESS,
-		}).fetch()
+		})
 
 		await Promise.all(
 			packageManagerDevices.map(async (packageManagerDevice) => {

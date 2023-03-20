@@ -32,12 +32,12 @@ describe('User Actions - Media Manager', () => {
 	}
 	beforeEach(async () => {
 		// clean up old peripheral devices and MediaWorkFlows
-		PeripheralDevices.remove({
+		await PeripheralDevices.removeAsync({
 			_id: {
 				$exists: true,
 			},
 		})
-		MediaWorkFlows.remove({
+		await MediaWorkFlows.removeAsync({
 			_id: {
 				$exists: true,
 			},

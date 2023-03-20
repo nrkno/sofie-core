@@ -79,7 +79,7 @@ export namespace ServerPeripheralDeviceAPI {
 	): Promise<PeripheralDeviceId> {
 		triggerWriteAccess() // This is somewhat of a hack, since we want to check if it exists at all, before checking access
 		check(deviceId, String)
-		const existingDevice = PeripheralDevices.findOne(deviceId)
+		const existingDevice = await PeripheralDevices.findOneAsync(deviceId)
 		if (existingDevice) {
 			await PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
 		}
@@ -351,11 +351,11 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 		return false
 	}
-	export function disableSubDevice(
+	export async function disableSubDevice(
 		access: PeripheralDeviceContentWriteAccess.ContentAccess,
 		subDeviceId: string,
 		disable: boolean
-	): void {
+	): Promise<void> {
 		const peripheralDevice = access.device
 		const deviceId = access.deviceId
 
@@ -367,7 +367,7 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice.studioId)
 			throw new Meteor.Error(405, `PeripheralDevice "${deviceId}" does not belong to a Studio`)
 
-		const studio = Studios.findOne(peripheralDevice.studioId)
+		const studio = await Studios.findOneAsync(peripheralDevice.studioId)
 		if (!studio) throw new Meteor.Error(405, `PeripheralDevice "${deviceId}" does not belong to a Studio`)
 
 		const playoutDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.playoutDevices).obj
@@ -415,13 +415,13 @@ export namespace ServerPeripheralDeviceAPI {
 			(o) => o.path === propPath
 		)
 		if (existingIndex !== -1) {
-			Studios.update(peripheralDevice.studioId, {
+			await Studios.updateAsync(peripheralDevice.studioId, {
 				$set: {
 					[`${overridesPath}.${existingIndex}`]: newOverrideOp,
 				},
 			})
 		} else {
-			Studios.update(peripheralDevice.studioId, {
+			await Studios.updateAsync(peripheralDevice.studioId, {
 				$push: {
 					[overridesPath]: newOverrideOp,
 				},
@@ -607,7 +607,7 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', async (params, req: Inc
 
 		const credentials = JSON.parse(body)
 
-		PeripheralDevices.update(peripheralDevice._id, {
+		await PeripheralDevices.updateAsync(peripheralDevice._id, {
 			$set: {
 				'secretSettings.credentials': credentials,
 				'settings.secretCredentials': true,
@@ -688,7 +688,7 @@ PickerPOST.route('/devices/:deviceId/resetAuth', async (params, _req: IncomingMe
 		const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
-		PeripheralDevices.update(peripheralDevice._id, {
+		await PeripheralDevices.updateAsync(peripheralDevice._id, {
 			$unset: {
 				// User credentials
 				'secretSettings.accessToken': true,
@@ -722,7 +722,7 @@ PickerPOST.route(
 			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 			if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
-			PeripheralDevices.update(peripheralDevice._id, {
+			await PeripheralDevices.updateAsync(peripheralDevice._id, {
 				$unset: {
 					// App credentials
 					'secretSettings.credentials': true,

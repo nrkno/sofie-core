@@ -96,49 +96,60 @@ async function setupExpectedPackagesPublicationObservers(
 ): Promise<Meteor.LiveQueryHandle[]> {
 	// Set up observers:
 	return [
-		Studios.find(args.studioId, {
-			fields: {
-				// mappingsHash gets updated when either of these omitted fields changes
-				...omit(studioFieldSpecifier, 'mappingsWithOverrides', 'routeSets'),
-				mappingsHash: 1,
+		Studios.observeChanges(
+			args.studioId,
+			{
+				added: () => triggerUpdate({ invalidateStudio: true }),
+				changed: () => triggerUpdate({ invalidateStudio: true }),
+				removed: () => triggerUpdate({ invalidateStudio: true }),
 			},
-		}).observeChanges({
-			added: () => triggerUpdate({ invalidateStudio: true }),
-			changed: () => triggerUpdate({ invalidateStudio: true }),
-			removed: () => triggerUpdate({ invalidateStudio: true }),
-		}),
-		PeripheralDevices.find(
-			{ studioId: args.studioId },
+			{
+				fields: {
+					// mappingsHash gets updated when either of these omitted fields changes
+					...omit(studioFieldSpecifier, 'mappingsWithOverrides', 'routeSets'),
+					mappingsHash: 1,
+				},
+			}
+		),
+		PeripheralDevices.observeChanges(
+			{
+				studioId: args.studioId,
+			},
+			{
+				added: () => triggerUpdate({ invalidatePeripheralDevices: true }),
+				changed: () => triggerUpdate({ invalidatePeripheralDevices: true }),
+				removed: () => triggerUpdate({ invalidatePeripheralDevices: true }),
+			},
 			{
 				fields: {
 					// Only monitor settings
 					settings: 1,
 				},
 			}
-		).observeChanges({
-			added: () => triggerUpdate({ invalidatePeripheralDevices: true }),
-			changed: () => triggerUpdate({ invalidatePeripheralDevices: true }),
-			removed: () => triggerUpdate({ invalidatePeripheralDevices: true }),
-		}),
-		ExpectedPackages.find({
-			studioId: args.studioId,
-		}).observeChanges({
-			added: () => triggerUpdate({ invalidateExpectedPackages: true }),
-			changed: () => triggerUpdate({ invalidateExpectedPackages: true }),
-			removed: () => triggerUpdate({ invalidateExpectedPackages: true }),
-		}),
-		RundownPlaylists.find(
+		),
+		ExpectedPackages.observeChanges(
 			{
 				studioId: args.studioId,
 			},
 			{
+				added: () => triggerUpdate({ invalidateExpectedPackages: true }),
+				changed: () => triggerUpdate({ invalidateExpectedPackages: true }),
+				removed: () => triggerUpdate({ invalidateExpectedPackages: true }),
+			}
+		),
+		RundownPlaylists.observeChanges(
+			{
+				studioId: args.studioId,
+			},
+			{
+				added: () => triggerUpdate({ invalidateRundownPlaylist: true }),
+				changed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
+				removed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
+			},
+			{
 				fields: rundownPlaylistFieldSpecifier,
 			}
-		).observeChanges({
-			added: () => triggerUpdate({ invalidateRundownPlaylist: true }),
-			changed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
-			removed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
-		}),
+		),
 	]
 }
 
@@ -374,7 +385,7 @@ meteorCustomPublish(
 		token: string | undefined
 	) {
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
-			const peripheralDevice = PeripheralDevices.findOne(deviceId)
+			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 

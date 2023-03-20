@@ -69,7 +69,7 @@ import {
 	Workers,
 	WorkerThreadStatuses,
 } from '../collections'
-import { AsyncMongoCollection, AsyncOnlyMongoCollection } from '../collections/collection'
+import { AsyncOnlyMongoCollection } from '../collections/collection'
 import { getCollectionKey } from '../collections/lib'
 import { generateTranslationBundleOriginId } from './translationsBundles'
 
@@ -139,9 +139,9 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 			DBInterface extends { _id: ID; organizationId: OrganizationId | null | undefined },
 			ID extends ProtectedString<any>
 		>(
-			collection: AsyncMongoCollection<DBInterface>
+			collection: AsyncOnlyMongoCollection<DBInterface>
 		): Promise<ID[]> => {
-			return await removeByQuery(collection as AsyncMongoCollection<any>, {
+			return await removeByQuery(collection as AsyncOnlyMongoCollection<any>, {
 				$and: [
 					{
 						organizationId: { $nin: organizationIds },
@@ -169,9 +169,9 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 			DBInterface extends { _id: ID; deviceId: PeripheralDeviceId },
 			ID extends ProtectedString<any>
 		>(
-			collection: AsyncMongoCollection<DBInterface>
+			collection: AsyncOnlyMongoCollection<DBInterface>
 		): Promise<ID[]> => {
-			return await removeByQuery(collection as AsyncMongoCollection<any>, {
+			return await removeByQuery(collection as AsyncOnlyMongoCollection<any>, {
 				deviceId: { $nin: deviceIds },
 			})
 		}
@@ -250,9 +250,9 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 			DBInterface extends { _id: ID; playlistId: RundownPlaylistId },
 			ID extends ProtectedString<any>
 		>(
-			collection: AsyncMongoCollection<DBInterface>
+			collection: AsyncOnlyMongoCollection<DBInterface>
 		): Promise<ID[]> => {
-			return await removeByQuery(collection as AsyncMongoCollection<any>, {
+			return await removeByQuery(collection as AsyncOnlyMongoCollection<any>, {
 				playlistId: { $nin: playlistIds },
 			})
 		}
@@ -267,9 +267,9 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 			DBInterface extends { _id: ID; rundownId: RundownId },
 			ID extends ProtectedString<any>
 		>(
-			collection: AsyncMongoCollection<DBInterface>
+			collection: AsyncOnlyMongoCollection<DBInterface>
 		): Promise<ID[]> => {
-			return await removeByQuery(collection as AsyncMongoCollection<any>, {
+			return await removeByQuery(collection as AsyncOnlyMongoCollection<any>, {
 				rundownId: { $nin: rundownIds },
 			})
 		}

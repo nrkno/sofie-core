@@ -300,17 +300,19 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			throw new Meteor.Error(404, `Device "${deviceId}" cannot be inserted as it already exists`)
 		}
 
-		const parentDevice = PeripheralDevices.findOne(
-			{
-				type: PeripheralDeviceType.PLAYOUT,
-				subType: PERIPHERAL_SUBTYPE_PROCESS,
-				studioId: this.studio._id,
-			},
-			{
-				sort: {
-					created: 1,
+		const parentDevice = waitForPromise(
+			PeripheralDevices.findOneAsync(
+				{
+					type: PeripheralDeviceType.PLAYOUT,
+					subType: PERIPHERAL_SUBTYPE_PROCESS,
+					studioId: this.studio._id,
 				},
-			}
+				{
+					sort: {
+						created: 1,
+					},
+				}
+			)
 		)
 		if (!parentDevice) {
 			throw new Meteor.Error(404, `Device "${deviceId}" cannot be updated as it does not exist`)

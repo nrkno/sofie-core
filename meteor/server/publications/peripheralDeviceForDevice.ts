@@ -131,23 +131,27 @@ async function setupPeripheralDevicePublicationObservers(
 
 	// Set up observers:
 	return [
-		PeripheralDevices.find(args.deviceId, {
-			fields: peripheralDeviceFieldsSpecifier,
-		}).observeChanges({
-			added: () => {
-				studioObserver.restart()
-				triggerUpdate({ invalidatePublication: true })
-			},
-			changed: (_id, fields) => {
-				if ('studioId' in fields) studioObserver.restart()
+		PeripheralDevices.observeChanges(
+			args.deviceId,
+			{
+				added: () => {
+					studioObserver.restart()
+					triggerUpdate({ invalidatePublication: true })
+				},
+				changed: (_id, fields) => {
+					if ('studioId' in fields) studioObserver.restart()
 
-				triggerUpdate({ invalidatePublication: true })
+					triggerUpdate({ invalidatePublication: true })
+				},
+				removed: () => {
+					studioObserver.restart()
+					triggerUpdate({ invalidatePublication: true })
+				},
 			},
-			removed: () => {
-				studioObserver.restart()
-				triggerUpdate({ invalidatePublication: true })
-			},
-		}),
+			{
+				fields: peripheralDeviceFieldsSpecifier,
+			}
+		),
 		studioObserver,
 	]
 }
@@ -180,7 +184,7 @@ meteorCustomPublish(
 	CustomCollectionName.PeripheralDeviceForDevice,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
-			const peripheralDevice = PeripheralDevices.findOne(deviceId)
+			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 
