@@ -330,7 +330,7 @@ describe('cronjobs', () => {
 		testInFiber('Removes old entries in UserActionsLog', async () => {
 			// reasonably fresh entry
 			const userAction0 = protectString<UserActionsLogItemId>(getRandomString())
-			UserActionsLog.insert({
+			await UserActionsLog.insertAsync({
 				_id: userAction0,
 				organizationId: null,
 				userId: null,
@@ -343,7 +343,7 @@ describe('cronjobs', () => {
 			})
 			// stale entry
 			const userAction1 = protectString<UserActionsLogItemId>(getRandomString())
-			UserActionsLog.insert({
+			await UserActionsLog.insertAsync({
 				_id: userAction1,
 				organizationId: null,
 				userId: null,
@@ -356,10 +356,10 @@ describe('cronjobs', () => {
 
 			await runCronjobs()
 
-			expect(UserActionsLog.findOne(userAction0)).toMatchObject({
+			expect(await UserActionsLog.findOneAsync(userAction0)).toMatchObject({
 				_id: userAction0,
 			})
-			expect(UserActionsLog.findOne(userAction1)).toBeUndefined()
+			expect(await UserActionsLog.findOneAsync(userAction1)).toBeUndefined()
 		})
 		testInFiber('Removes old entries in Snapshots', async () => {
 			// reasonably fresh entry

@@ -71,20 +71,20 @@ describe('ClientAPI', () => {
 				await new Promise((resolve) => orgSetTimeout(resolve, 100))
 			})
 			testInFiber('Logs the call in UserActionsLog', async () => {
-				const log = UserActionsLog.findOne({
+				const log = (await UserActionsLog.findOneAsync({
 					method: logMethodName,
-				}) as UserActionsLogItem
+				})) as UserActionsLogItem
 				expect(log).toBeTruthy()
 
 				expect(log.method).toBe(logMethodName)
 				expect(log.userId).toBeDefined()
 			})
 
-			testInFiber('Sends a call to the peripheralDevice', () => {
-				const pdc = PeripheralDeviceCommands.findOne({
+			testInFiber('Sends a call to the peripheralDevice', async () => {
+				const pdc = (await PeripheralDeviceCommands.findOneAsync({
 					deviceId: mockDeviceId,
 					functionName: mockFunctionName,
-				}) as PeripheralDeviceCommand
+				})) as PeripheralDeviceCommand
 				expect(pdc).toBeTruthy()
 
 				expect(pdc.deviceId).toBe(mockDeviceId)
@@ -94,7 +94,7 @@ describe('ClientAPI', () => {
 			testInFiber(
 				'Resolves the returned promise once a response from the peripheralDevice is received',
 				async () => {
-					PeripheralDeviceCommands.update(
+					await PeripheralDeviceCommands.updateAsync(
 						{
 							deviceId: mockDeviceId,
 							functionName: mockFunctionName,
@@ -106,10 +106,10 @@ describe('ClientAPI', () => {
 							},
 						}
 					)
-					return promise.then((value) => {
-						const log = UserActionsLog.findOne({
+					return promise.then(async (value) => {
+						const log = (await UserActionsLog.findOneAsync({
 							method: logMethodName,
-						}) as UserActionsLogItem
+						})) as UserActionsLogItem
 						expect(log).toBeTruthy()
 
 						expect(log.success).toBe(true)
@@ -134,20 +134,20 @@ describe('ClientAPI', () => {
 					...mockArgs
 				)
 			})
-			testInFiber('Logs the call in UserActionsLog', () => {
-				const log = UserActionsLog.findOne({
+			testInFiber('Logs the call in UserActionsLog', async () => {
+				const log = (await UserActionsLog.findOneAsync({
 					method: logMethodName,
-				}) as UserActionsLogItem
+				})) as UserActionsLogItem
 				expect(log).toBeTruthy()
 
 				expect(log.method).toBe(logMethodName)
 				expect(log.userId).toBeDefined()
 			})
-			testInFiber('Sends a call to the peripheralDevice', () => {
-				const pdc = PeripheralDeviceCommands.findOne({
+			testInFiber('Sends a call to the peripheralDevice', async () => {
+				const pdc = (await PeripheralDeviceCommands.findOneAsync({
 					deviceId: mockDeviceId,
 					functionName: mockFailingFunctionName,
-				}) as PeripheralDeviceCommand
+				})) as PeripheralDeviceCommand
 				expect(pdc).toBeTruthy()
 
 				expect(pdc.deviceId).toBe(mockDeviceId)
@@ -176,9 +176,9 @@ describe('ClientAPI', () => {
 					// of checkReply and the observeChanges is not implemented in the mock
 					await expect(promise).rejects.toBe('Failed')
 
-					const log = UserActionsLog.findOne({
+					const log = (await UserActionsLog.findOneAsync({
 						method: logMethodName,
-					}) as UserActionsLogItem
+					})) as UserActionsLogItem
 					expect(log).toBeTruthy()
 
 					expect(log.success).toBe(false)

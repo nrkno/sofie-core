@@ -133,14 +133,16 @@ registerIndex(TimelineDatastore, {
 	studioId: 1,
 })
 
-export const TranslationsBundles = createAsyncMongoCollection<TranslationsBundle>(CollectionName.TranslationsBundles)
+export const TranslationsBundles = createAsyncOnlyMongoCollection<TranslationsBundle>(
+	CollectionName.TranslationsBundles
+)
 
 export const TriggeredActions = createAsyncMongoCollection<DBTriggeredActions>(CollectionName.TriggeredActions)
 registerIndex(TriggeredActions, {
 	showStyleBaseId: 1,
 })
 
-export const UserActionsLog = createAsyncMongoCollection<UserActionsLogItem>(CollectionName.UserActionsLog)
+export const UserActionsLog = createAsyncOnlyMongoCollection<UserActionsLogItem>(CollectionName.UserActionsLog)
 registerIndex(UserActionsLog, {
 	organizationId: 1,
 	timestamp: 1,

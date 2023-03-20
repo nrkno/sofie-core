@@ -251,7 +251,7 @@ async function fastTrackTimeline(newTimeline: TimelineComplete): Promise<void> {
 		selector.organizationId = studio.organizationId
 	}
 
-	UserActionsLog.update(
+	await UserActionsLog.updateAsync(
 		selector,
 		{
 			$set: {

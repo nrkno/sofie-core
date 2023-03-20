@@ -49,9 +49,9 @@ describe('User Actions - General', () => {
 		await expect(MeteorCall.userAction.guiFocused('click', getCurrentTime())).resolves.toMatchObject({
 			success: 200,
 		})
-		const logs0 = UserActionsLog.find({
+		const logs0 = await UserActionsLog.findFetchAsync({
 			method: 'guiFocused',
-		}).fetch()
+		})
 		expect(logs0).toHaveLength(1)
 		// expect(logs0[0]).toMatchObject({
 		// 	context: 'mousedown',
@@ -60,9 +60,9 @@ describe('User Actions - General', () => {
 		await expect(MeteorCall.userAction.guiBlurred('click', getCurrentTime())).resolves.toMatchObject({
 			success: 200,
 		})
-		const logs1 = UserActionsLog.find({
+		const logs1 = await UserActionsLog.findFetchAsync({
 			method: 'guiBlurred',
-		}).fetch()
+		})
 		expect(logs1).toHaveLength(1)
 		// expect(logs1[0]).toMatchObject({
 		// 	context: 'interval',
