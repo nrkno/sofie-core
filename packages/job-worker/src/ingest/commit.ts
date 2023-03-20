@@ -42,6 +42,7 @@ import {
 	SegmentOrphanedReason,
 } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 
 export type BeforePartMapItem = { id: PartId; rank: number }
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<BeforePartMapItem>>
@@ -66,7 +67,7 @@ export async function CommitIngestOperation(
 	beforeRundown: ReadonlyDeep<DBRundown> | undefined,
 	beforePartMap: BeforePartMap,
 	data: ReadonlyDeep<CommitIngestData>
-): Promise<void> {
+): Promise<UserError | void> {
 	const rundown = getRundown(ingestCache)
 
 	if (data.removeRundown && !beforeRundown) {
@@ -445,6 +446,11 @@ export async function CommitIngestOperation(
 			}
 		}
 	)
+
+	// Some failures should be reported to the caller
+	if (data.removeRundown && data.returnRemoveFailure) {
+		return UserError.create(UserErrorMessage.RundownRemoveWhileActive, { name: rundown.name })
+	}
 }
 
 function canRemoveSegment(
