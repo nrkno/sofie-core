@@ -36,7 +36,7 @@ meteorPublish(PubSub.timeline, async function (selector, token) {
 		fields: {},
 	}
 	if (await StudioReadAccess.studioContent(selector._id, { userId: this.userId, token })) {
-		return Timeline.find(selector, modifier)
+		return Timeline.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -46,7 +46,7 @@ meteorPublish(PubSub.timelineDatastore, async function (studioId, token) {
 		fields: {},
 	}
 	if (await StudioReadAccess.studioContent(studioId, { userId: this.userId, token })) {
-		return TimelineDatastore.find({ studioId }, modifier)
+		return TimelineDatastore.findWithCursor({ studioId }, modifier)
 	}
 	return null
 })
@@ -79,7 +79,7 @@ meteorPublish(PubSub.timelineDatastoreForDevice, async function (deviceId, token
 			fields: {},
 		}
 
-		return TimelineDatastore.find({ studioId }, modifier)
+		return TimelineDatastore.findWithCursor({ studioId }, modifier)
 	}
 	return null
 })
@@ -133,7 +133,7 @@ async function setupTimelinePublicationObservers(
 			changed: () => triggerUpdate({ invalidateStudio: true }),
 			removed: () => triggerUpdate({ invalidateStudio: true }),
 		}),
-		Timeline.find(args.studioId).observe({
+		Timeline.observe(args.studioId, {
 			added: (timeline) => triggerUpdate({ timeline }),
 			changed: (timeline) => triggerUpdate({ timeline }),
 			removed: () => triggerUpdate({ timeline: null }),

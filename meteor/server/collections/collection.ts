@@ -15,6 +15,7 @@ import {
 	IndexSpecifier,
 	MongoCursor,
 	ObserveChangesCallbacks,
+	ObserveCallbacks,
 } from '../../lib/collections/lib'
 import { makePromise, stringifyError, waitForPromise } from '../../lib/lib'
 import type { AnyBulkWriteOperation, Collection as RawCollection, CreateIndexesOptions } from 'mongodb'
@@ -115,6 +116,14 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 		options?: FindOptions<DBInterface>
 	): Meteor.LiveQueryHandle {
 		return this.find(selector as any, options).observeChanges(callbacks)
+	}
+
+	observe(
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		callbacks: ObserveCallbacks<DBInterface>,
+		options?: FindOptions<DBInterface>
+	): Meteor.LiveQueryHandle {
+		return this.find(selector as any, options).observe(callbacks)
 	}
 
 	async insertAsync(doc: DBInterface): Promise<DBInterface['_id']> {
@@ -322,6 +331,16 @@ export interface AsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedSt
 		options?: FindOptions<DBInterface>
 	): Meteor.LiveQueryHandle
 
+	/**
+	 * Observe changes on this collection
+	 * @param selector A query describing the documents to find
+	 */
+	observe(
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		callbacks: ObserveCallbacks<DBInterface>,
+		options?: FindOptions<DBInterface>
+	): Meteor.LiveQueryHandle
+
 	insertAsync(doc: DBInterface): Promise<DBInterface['_id']>
 
 	insertManyAsync(doc: DBInterface[]): Promise<Array<DBInterface['_id']>>
@@ -430,6 +449,14 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 		_options?: FindOptions<DBInterface>
 	): Meteor.LiveQueryHandle {
 		throw new Error('observeChanges not supported in tests')
+	}
+
+	observe(
+		_selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		_callbacks: ObserveCallbacks<DBInterface>,
+		_options?: FindOptions<DBInterface>
+	): Meteor.LiveQueryHandle {
+		throw new Error('observe not supported in tests')
 	}
 
 	async insertAsync(doc: DBInterface): Promise<DBInterface['_id']> {

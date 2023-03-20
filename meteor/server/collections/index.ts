@@ -120,13 +120,15 @@ registerIndex(Studios, {
 	organizationId: 1,
 })
 
-export const Timeline = createAsyncMongoCollection<TimelineComplete>(CollectionName.Timelines)
+export const Timeline = createAsyncOnlyMongoCollection<TimelineComplete>(CollectionName.Timelines)
 // Note: this index is always created by default, so it's not needed.
 // registerIndex(Timeline, {
 // 	_id: 1,
 // })
 
-export const TimelineDatastore = createAsyncMongoCollection<TimelineDatastoreEntry>(CollectionName.TimelineDatastore)
+export const TimelineDatastore = createAsyncOnlyMongoCollection<TimelineDatastoreEntry>(
+	CollectionName.TimelineDatastore
+)
 registerIndex(TimelineDatastore, {
 	studioId: 1,
 })

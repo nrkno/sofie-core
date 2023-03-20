@@ -192,9 +192,9 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 			DBInterface extends { _id: ID; studioId: StudioId },
 			ID extends ProtectedString<any>
 		>(
-			collection: AsyncMongoCollection<DBInterface>
+			collection: AsyncOnlyMongoCollection<DBInterface>
 		): Promise<ID[]> => {
-			return await removeByQuery(collection as AsyncMongoCollection<any>, {
+			return await removeByQuery(collection as AsyncOnlyMongoCollection<any>, {
 				studioId: { $nin: studioIds },
 			})
 		}
