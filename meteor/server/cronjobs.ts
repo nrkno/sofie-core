@@ -23,7 +23,7 @@ import { fetchStudioIds } from './optimizations'
 import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
 import { getExpiredRemovedPackageInfos, getOrphanedPackageInfos, removePackageInfos } from './api/studio/lib'
 import { deferAsync } from '@sofie-automation/corelib/dist/lib'
-import { getCoreSystem } from '../client/collections'
+import { getCoreSystem } from './coreSystem/collection'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
