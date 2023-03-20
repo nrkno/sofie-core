@@ -48,7 +48,7 @@ registerIndex(Evaluations, {
 	timestamp: 1,
 })
 
-export const ExternalMessageQueue = createAsyncMongoCollection<ExternalMessageQueueObj>(
+export const ExternalMessageQueue = createAsyncOnlyMongoCollection<ExternalMessageQueueObj>(
 	CollectionName.ExternalMessageQueue
 )
 registerIndex(ExternalMessageQueue, {

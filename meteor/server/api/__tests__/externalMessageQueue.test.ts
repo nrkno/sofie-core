@@ -15,7 +15,7 @@ describe('Test external message queue static methods', () => {
 	beforeAll(async () => {
 		studioEnv = await setupDefaultStudioEnvironment()
 		const now = getCurrentTime()
-		RundownPlaylists.insert({
+		await RundownPlaylists.insertAsync({
 			_id: protectString('playlist_1'),
 			externalId: 'mock_rpl',
 			name: 'Mock',
@@ -37,7 +37,7 @@ describe('Test external message queue static methods', () => {
 			},
 			rundownIdsInOrder: [protectString('rundown_1')],
 		})
-		Rundowns.insert({
+		await Rundowns.insertAsync({
 			_id: protectString('rundown_1'),
 			name: 'Mockito 1',
 			externalId: 'mockito',
@@ -64,7 +64,7 @@ describe('Test external message queue static methods', () => {
 		})
 		// rundown = Rundowns.findOne() as Rundown
 
-		ExternalMessageQueue.insert({
+		await ExternalMessageQueue.insertAsync({
 			_id: getRandomId(),
 			studioId: studioEnv.studio._id,
 			expires: now + 3600,
@@ -77,17 +77,17 @@ describe('Test external message queue static methods', () => {
 	})
 
 	testInFiber('toggleHold', async () => {
-		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		let message = (await ExternalMessageQueue.findOneAsync({})) as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 		expect(message.hold).toBeUndefined()
 
 		await MeteorCall.externalMessages.toggleHold(message._id)
-		message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		message = (await ExternalMessageQueue.findOneAsync({})) as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 		expect(message.hold).toBe(true)
 
 		await MeteorCall.externalMessages.toggleHold(message._id)
-		message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		message = (await ExternalMessageQueue.findOneAsync({})) as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 		expect(message.hold).toBe(false)
 	})
@@ -101,12 +101,12 @@ describe('Test external message queue static methods', () => {
 	})
 
 	testInFiber('retry', async () => {
-		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		let message = (await ExternalMessageQueue.findOneAsync({})) as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 
 		await MeteorCall.externalMessages.retry(message._id)
 
-		message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		message = (await ExternalMessageQueue.findOneAsync({})) as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 		expect(message).toMatchObject({
 			hold: false,
@@ -124,11 +124,11 @@ describe('Test external message queue static methods', () => {
 	})
 
 	testInFiber('remove', async () => {
-		const message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		const message = (await ExternalMessageQueue.findOneAsync({})) as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 
 		await MeteorCall.externalMessages.remove(message._id)
 
-		expect(ExternalMessageQueue.findOne()).toBeFalsy()
+		expect(await ExternalMessageQueue.findOneAsync({})).toBeFalsy()
 	})
 })

@@ -14,6 +14,7 @@ import {
 	collectionsCache,
 	IndexSpecifier,
 	MongoCursor,
+	ObserveChangesCallbacks,
 } from '../../lib/collections/lib'
 import { makePromise, stringifyError, waitForPromise } from '../../lib/lib'
 import type { AnyBulkWriteOperation, Collection as RawCollection, CreateIndexesOptions } from 'mongodb'
@@ -106,6 +107,14 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 		options?: FindOptions<DBInterface>
 	): Promise<MongoCursor<DBInterface>> {
 		return this.find(selector as any, options)
+	}
+
+	observeChanges(
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		callbacks: ObserveChangesCallbacks<DBInterface>,
+		options?: FindOptions<DBInterface>
+	): Meteor.LiveQueryHandle {
+		return this.find(selector as any, options).observeChanges(callbacks)
 	}
 
 	async insertAsync(doc: DBInterface): Promise<DBInterface['_id']> {
@@ -303,6 +312,16 @@ export interface AsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedSt
 		options?: FindOptions<DBInterface>
 	): Promise<MongoCursor<DBInterface>>
 
+	/**
+	 * Observe changes on this collection
+	 * @param selector A query describing the documents to find
+	 */
+	observeChanges(
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		callbacks: ObserveChangesCallbacks<DBInterface>,
+		options?: FindOptions<DBInterface>
+	): Meteor.LiveQueryHandle
+
 	insertAsync(doc: DBInterface): Promise<DBInterface['_id']>
 
 	insertManyAsync(doc: DBInterface[]): Promise<Array<DBInterface['_id']>>
@@ -403,6 +422,14 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 		_options?: FindOptions<DBInterface>
 	): Promise<MongoCursor<DBInterface>> {
 		throw new Error('findWithCursor not supported in tests')
+	}
+
+	observeChanges(
+		_selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		_callbacks: ObserveChangesCallbacks<DBInterface>,
+		_options?: FindOptions<DBInterface>
+	): Meteor.LiveQueryHandle {
+		throw new Error('observeChanges not supported in tests')
 	}
 
 	async insertAsync(doc: DBInterface): Promise<DBInterface['_id']> {
