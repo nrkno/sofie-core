@@ -24,7 +24,7 @@ meteorPublish(PubSub.organization, async function (selector0, token) {
 		isProtectedString(selector.organizationId) &&
 		(!cred || (await OrganizationReadAccess.organizationContent(selector.organizationId, cred)))
 	) {
-		return Organizations.find({ _id: selector.organizationId }, modifier)
+		return Organizations.findWithCursor({ _id: selector.organizationId }, modifier)
 	}
 	return null
 })
@@ -37,28 +37,28 @@ meteorPublish(PubSub.blueprints, async function (selector0, token) {
 		},
 	}
 	if (!cred || (await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) {
-		return Blueprints.find(selector, modifier)
+		return Blueprints.findWithCursor(selector, modifier)
 	}
 	return null
 })
 meteorPublish(PubSub.evaluations, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<Evaluation>(this.userId, selector0, token)
 	if (!cred || (await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) {
-		return Evaluations.find(selector)
+		return Evaluations.findWithCursor(selector)
 	}
 	return null
 })
 meteorPublish(PubSub.snapshots, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<SnapshotItem>(this.userId, selector0, token)
 	if (!cred || (await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) {
-		return Snapshots.find(selector)
+		return Snapshots.findWithCursor(selector)
 	}
 	return null
 })
 meteorPublish(PubSub.userActionsLog, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<UserActionsLogItem>(this.userId, selector0, token)
 	if (!cred || (await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) {
-		return UserActionsLog.find(selector)
+		return UserActionsLog.findWithCursor(selector)
 	}
 	return null
 })

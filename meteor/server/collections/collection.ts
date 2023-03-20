@@ -13,6 +13,7 @@ import {
 	FindOptions,
 	collectionsCache,
 	IndexSpecifier,
+	MongoCursor,
 } from '../../lib/collections/lib'
 import { makePromise, stringifyError, waitForPromise } from '../../lib/lib'
 import type { AnyBulkWriteOperation, Collection as RawCollection, CreateIndexesOptions } from 'mongodb'
@@ -98,6 +99,13 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 	): Promise<DBInterface | undefined> {
 		const arr = await this.findFetchAsync(selector, { ...options, limit: 1 })
 		return arr[0]
+	}
+
+	async findWithCursor(
+		selector?: MongoQuery<DBInterface> | DBInterface['_id'],
+		options?: FindOptions<DBInterface>
+	): Promise<MongoCursor<DBInterface>> {
+		return this.find(selector as any, options)
 	}
 
 	async insertAsync(doc: DBInterface): Promise<DBInterface['_id']> {
@@ -286,6 +294,15 @@ export interface AsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedSt
 		options?: FindOptions<DBInterface>
 	): Promise<DBInterface | undefined>
 
+	/**
+	 * Retrieve a cursor for use in a publication
+	 * @param selector A query describing the documents to find
+	 */
+	findWithCursor(
+		selector?: MongoQuery<DBInterface> | DBInterface['_id'],
+		options?: FindOptions<DBInterface>
+	): Promise<MongoCursor<DBInterface>>
+
 	insertAsync(doc: DBInterface): Promise<DBInterface['_id']>
 
 	insertManyAsync(doc: DBInterface[]): Promise<Array<DBInterface['_id']>>
@@ -375,6 +392,17 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 	): Promise<DBInterface | undefined> {
 		const arr = await this.findFetchAsync(selector, { ...options, limit: 1 })
 		return arr[0]
+	}
+
+	/**
+	 * Retrieve a cursor for use in a publication
+	 * @param selector A query describing the documents to find
+	 */
+	async findWithCursor(
+		_selector?: MongoQuery<DBInterface> | DBInterface['_id'],
+		_options?: FindOptions<DBInterface>
+	): Promise<MongoCursor<DBInterface>> {
+		throw new Error('findWithCursor not supported in tests')
 	}
 
 	async insertAsync(doc: DBInterface): Promise<DBInterface['_id']> {
