@@ -49,7 +49,7 @@ export namespace ServerRundownAPI {
 			rundowns.map(async (rundown) => {
 				return {
 					rundownId: rundown._id,
-					response: await innerResyncRundown(rundown),
+					response: await IngestActions.reloadRundown(rundown),
 				}
 			})
 		)
@@ -59,11 +59,8 @@ export namespace ServerRundownAPI {
 		}
 	}
 
-	export async function innerResyncRundown(rundown: Rundown): Promise<TriggerReloadDataResponse> {
-		logger.info('resyncRundown ' + rundown._id)
-
-		// Orphaned flag will be reset by the response update
-		return IngestActions.reloadRundown(rundown)
+	export async function resyncRundown(access: VerifiedRundownContentAccess): Promise<TriggerReloadDataResponse> {
+		return IngestActions.reloadRundown(access.rundown)
 	}
 }
 
