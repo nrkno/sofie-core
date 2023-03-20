@@ -64,7 +64,7 @@ registerIndex(ExternalMessageQueue, {
 	rundownId: 1,
 })
 
-export const Organizations = createAsyncMongoCollection<DBOrganization>(CollectionName.Organizations)
+export const Organizations = createAsyncOnlyMongoCollection<DBOrganization>(CollectionName.Organizations)
 
 export const PeripheralDeviceCommands = createAsyncMongoCollection<PeripheralDeviceCommand>(
 	CollectionName.PeripheralDeviceCommands

@@ -129,9 +129,9 @@ describe('Security', () => {
 	beforeAllInFiber(async () => {
 		env = await setupDefaultStudioEnvironment(org0._id)
 
-		Organizations.insert(org0)
-		Organizations.insert(org1)
-		Organizations.insert(org2)
+		await Organizations.insertAsync(org0)
+		await Organizations.insertAsync(org1)
+		await Organizations.insertAsync(org2)
 
 		Users.insert(getUser(idCreator, org0._id))
 		Users.insert(getUser(idUserB, org0._id))

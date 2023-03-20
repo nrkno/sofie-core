@@ -40,17 +40,19 @@ function afterCreateNewUser(userId: UserId, organization: DBOrganizationBase): O
 	const orgId = waitForPromise(createOrganization(organization))
 	// Add user to organization:
 	Users.update(userId, { $set: { organizationId: orgId } })
-	Organizations.update(orgId, {
-		$set: {
-			userRoles: {
-				[unprotectString(userId)]: {
-					admin: true,
-					studio: true,
-					configurator: true,
+	waitForPromise(
+		Organizations.updateAsync(orgId, {
+			$set: {
+				userRoles: {
+					[unprotectString(userId)]: {
+						admin: true,
+						studio: true,
+						configurator: true,
+					},
 				},
 			},
-		},
-	})
+		})
+	)
 
 	resetCredentials({ userId })
 
