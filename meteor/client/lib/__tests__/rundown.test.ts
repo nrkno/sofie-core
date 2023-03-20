@@ -28,7 +28,7 @@ describe('client/lib/rundown', () => {
 	let playlistId: RundownPlaylistId
 	beforeEach(async () => {
 		env = await setupDefaultStudioEnvironment()
-		playlistId = setupDefaultRundownPlaylist(env).playlistId
+		playlistId = (await setupDefaultRundownPlaylist(env)).playlistId
 	})
 	describe('RundownUtils.getResolvedSegment', () => {
 		testInFiber('Basic Segment resolution', () => {

@@ -90,6 +90,8 @@ import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { Studio } from '../../../lib/collections/Studios'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 function restAPIUserEvent(
 	ctx: Koa.ParameterizedContext<
@@ -130,8 +132,11 @@ class ServerRestAPI implements RestAPI {
 		_connection: Meteor.Connection,
 		_event: string
 	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>> {
+		const rundownPlaylists = (await RundownPlaylists.findFetchAsync({}, { projection: { _id: 1 } })) as Array<
+			Pick<RundownPlaylist, '_id'>
+		>
 		return ClientAPI.responseSuccess(
-			RundownPlaylists.find().map((rundownPlaylist) => ({ id: unprotectString(rundownPlaylist._id) }))
+			rundownPlaylists.map((rundownPlaylist) => ({ id: unprotectString(rundownPlaylist._id) }))
 		)
 	}
 
@@ -206,7 +211,7 @@ class ServerRestAPI implements RestAPI {
 		if (regularAdLibDoc) {
 			// This is an AdLib Piece
 			const pieceType = baselineAdLibDoc ? 'baseline' : segmentAdLibDoc ? 'normal' : 'bucket'
-			const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId, {
+			const rundownPlaylist = await RundownPlaylists.findOneAsync(rundownPlaylistId, {
 				projection: { currentPartInfo: 1 },
 			})
 			if (!rundownPlaylist)
@@ -417,7 +422,7 @@ class ServerRestAPI implements RestAPI {
 		fromPartInstanceId: PartInstanceId | undefined
 	): Promise<ClientAPI.ClientResponse<void>> {
 		triggerWriteAccess()
-		const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
+		const rundownPlaylist = await RundownPlaylists.findOneAsync(rundownPlaylistId)
 		if (!rundownPlaylist) throw new Error(`Rundown playlist ${rundownPlaylistId} does not exist`)
 
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
@@ -469,7 +474,7 @@ class ServerRestAPI implements RestAPI {
 		rundownPlaylistId: RundownPlaylistId,
 		sourceLayerId: string
 	): Promise<ClientAPI.ClientResponse<void>> {
-		const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId)
+		const rundownPlaylist = await RundownPlaylists.findOneAsync(rundownPlaylistId)
 		if (!rundownPlaylist)
 			return ClientAPI.responseError(
 				UserError.from(
@@ -744,8 +749,18 @@ class ServerRestAPI implements RestAPI {
 
 		const existingShowStyle = await ShowStyleBases.findOneAsync(showStyleBaseId)
 		if (existingShowStyle) {
-			const rundowns = Rundowns.find({ showStyleBaseId })
-			const playlists = RundownPlaylists.find({ _id: { $in: rundowns.map((r) => r.playlistId) } }).fetch()
+			const rundowns = (await Rundowns.findFetchAsync(
+				{ showStyleBaseId },
+				{ projection: { playlistId: 1 } }
+			)) as Array<Pick<Rundown, 'playlistId'>>
+			const playlists = (await RundownPlaylists.findFetchAsync(
+				{ _id: { $in: rundowns.map((r) => r.playlistId) } },
+				{
+					projection: {
+						activationId: 1,
+					},
+				}
+			)) as Array<Pick<RundownPlaylist, 'activationId'>>
 			if (playlists.some((playlist) => playlist.activationId !== undefined)) {
 				throw new Meteor.Error(
 					412,
@@ -773,8 +788,18 @@ class ServerRestAPI implements RestAPI {
 		_event: string,
 		showStyleBaseId: ShowStyleBaseId
 	): Promise<ClientAPI.ClientResponse<void>> {
-		const rundowns = Rundowns.find({ showStyleBaseId })
-		const playlists = RundownPlaylists.find({ _id: { $in: rundowns.map((r) => r.playlistId) } }).fetch()
+		const rundowns = (await Rundowns.findFetchAsync(
+			{ showStyleBaseId },
+			{ projection: { playlistId: 1 } }
+		)) as Array<Pick<Rundown, 'playlistId'>>
+		const playlists = (await RundownPlaylists.findFetchAsync(
+			{ _id: { $in: rundowns.map((r) => r.playlistId) } },
+			{
+				projection: {
+					activationId: 1,
+				},
+			}
+		)) as Array<Pick<RundownPlaylist, 'activationId'>>
 		if (playlists.some((playlist) => playlist.activationId !== undefined)) {
 			throw new Meteor.Error(
 				412,
@@ -850,8 +875,18 @@ class ServerRestAPI implements RestAPI {
 
 		const existingShowStyle = await ShowStyleVariants.findOneAsync(showStyleVariantId)
 		if (existingShowStyle) {
-			const rundowns = Rundowns.find({ showStyleVariantId })
-			const playlists = RundownPlaylists.find({ _id: { $in: rundowns.map((r) => r.playlistId) } }).fetch()
+			const rundowns = (await Rundowns.findFetchAsync(
+				{ showStyleVariantId },
+				{ projection: { playlistId: 1 } }
+			)) as Array<Pick<Rundown, 'playlistId'>>
+			const playlists = (await RundownPlaylists.findFetchAsync(
+				{ _id: { $in: rundowns.map((r) => r.playlistId) } },
+				{
+					projection: {
+						activationId: 1,
+					},
+				}
+			)) as Array<Pick<RundownPlaylist, 'activationId'>>
 			if (playlists.some((playlist) => playlist.activationId !== undefined)) {
 				throw new Meteor.Error(
 					412,
@@ -873,8 +908,18 @@ class ServerRestAPI implements RestAPI {
 		const showStyleBase = await ShowStyleBases.findOneAsync(showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase ${showStyleBaseId} does not exist`)
 
-		const rundowns = Rundowns.find({ showStyleVariantId })
-		const playlists = RundownPlaylists.find({ _id: { $in: rundowns.map((r) => r.playlistId) } }).fetch()
+		const rundowns = (await Rundowns.findFetchAsync(
+			{ showStyleVariantId },
+			{ projection: { playlistId: 1 } }
+		)) as Array<Pick<Rundown, 'playlistId'>>
+		const playlists = (await RundownPlaylists.findFetchAsync(
+			{ _id: { $in: rundowns.map((r) => r.playlistId) } },
+			{
+				projection: {
+					activationId: 1,
+				},
+			}
+		)) as Array<Pick<RundownPlaylist, 'activationId'>>
 		if (playlists.some((playlist) => playlist.activationId !== undefined)) {
 			throw new Meteor.Error(
 				412,
@@ -931,7 +976,14 @@ class ServerRestAPI implements RestAPI {
 
 		const existingStudio = await Studios.findOneAsync(studioId)
 		if (existingStudio) {
-			const playlists = RundownPlaylists.find({ studioId }).fetch()
+			const playlists = (await RundownPlaylists.findFetchAsync(
+				{ studioId },
+				{
+					projection: {
+						activationId: 1,
+					},
+				}
+			)) as Array<Pick<RundownPlaylist, 'activationId'>>
 			if (playlists.some((p) => p.activationId !== undefined)) {
 				throw new Meteor.Error(412, `Studio ${studioId} cannot be updated, it is in use in an active Playlist`)
 			}
@@ -956,26 +1008,42 @@ class ServerRestAPI implements RestAPI {
 	): Promise<ClientAPI.ClientResponse<void>> {
 		const existingStudio = await Studios.findOneAsync(studioId)
 		if (existingStudio) {
-			const playlists = RundownPlaylists.find({ studioId }).fetch()
+			const playlists = (await RundownPlaylists.findFetchAsync(
+				{ studioId },
+				{
+					projection: {
+						activationId: 1,
+					},
+				}
+			)) as Array<Pick<RundownPlaylist, 'activationId'>>
 			if (playlists.some((p) => p.activationId !== undefined)) {
 				throw new Meteor.Error(412, `Studio ${studioId} cannot be deleted, it is in use in an active Playlist`)
 			}
 		}
 
 		await PeripheralDevices.updateAsync({ studioId }, { $unset: { studioId: 1 } })
-		const rundownPlaylists = RundownPlaylists.find({ studioId }).map((playlist) => playlist._id)
-		const promises = rundownPlaylists.map(async (rundownPlaylistId) =>
+
+		const rundownPlaylists = (await RundownPlaylists.findFetchAsync(
+			{ studioId },
+			{
+				projection: {
+					_id: 1,
+				},
+			}
+		)) as Array<Pick<RundownPlaylist, '_id'>>
+
+		const promises = rundownPlaylists.map(async (rundownPlaylist) =>
 			ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 				ServerRestAPI.getMethodContext(connection),
 				event,
 				getCurrentTime(),
-				rundownPlaylistId,
+				rundownPlaylist._id,
 				() => {
-					check(rundownPlaylistId, String)
+					check(rundownPlaylist._id, String)
 				},
 				StudioJobs.RemovePlaylist,
 				{
-					playlistId: rundownPlaylistId,
+					playlistId: rundownPlaylist._id,
 				}
 			)
 		)

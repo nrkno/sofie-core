@@ -71,7 +71,7 @@ describe('cronjobs', () => {
 	beforeAllInFiber(async () => {
 		env = await setupDefaultStudioEnvironment()
 
-		const o = setupDefaultRundownPlaylist(env)
+		const o = await setupDefaultRundownPlaylist(env)
 		rundownId = o.rundownId
 
 		await CoreSystem.updateAsync(
@@ -152,10 +152,9 @@ describe('cronjobs', () => {
 
 		testInFiber('Remove IngestDataCache objects that are not connected to any Rundown', async () => {
 			// Set up a mock rundown, a detached IngestDataCache object and an object attached to the mock rundown
-
 			// Detached IngestDataCache object 0
 			const dataCache0Id = protectString<IngestDataCacheObjId>(getRandomString())
-			IngestDataCache.insert({
+			await IngestDataCache.insertAsync({
 				_id: dataCache0Id,
 				data: {
 					externalId: '',
@@ -170,7 +169,7 @@ describe('cronjobs', () => {
 			})
 			// Attached IngestDataCache object 1
 			const dataCache1Id = protectString<IngestDataCacheObjId>(getRandomString())
-			IngestDataCache.insert({
+			await IngestDataCache.insertAsync({
 				_id: dataCache1Id,
 				data: {
 					externalId: '',
@@ -186,10 +185,10 @@ describe('cronjobs', () => {
 
 			await runCronjobs()
 
-			expect(IngestDataCache.findOne(dataCache1Id)).toMatchObject({
+			expect(await IngestDataCache.findOneAsync(dataCache1Id)).toMatchObject({
 				_id: dataCache1Id,
 			})
-			expect(IngestDataCache.findOne(dataCache0Id)).toBeUndefined()
+			expect(await IngestDataCache.findOneAsync(dataCache0Id)).toBeUndefined()
 		})
 		testInFiber('Removes old PartInstances and PieceInstances', async () => {
 			// nightlyCronjobInner()
@@ -202,7 +201,7 @@ describe('cronjobs', () => {
 				rundownId,
 				name: 'mock segment',
 			}
-			Segments.insert(segment0)
+			await Segments.insertAsync(segment0)
 
 			const part0: DBPart = {
 				_id: getRandomId<PartId>(),
@@ -213,7 +212,7 @@ describe('cronjobs', () => {
 				title: '',
 				expectedDurationWithPreroll: undefined,
 			}
-			Parts.insert(part0)
+			await Parts.insertAsync(part0)
 			const part1: DBPart = {
 				_id: getRandomId<PartId>(),
 				_rank: 1,
@@ -223,7 +222,7 @@ describe('cronjobs', () => {
 				title: '',
 				expectedDurationWithPreroll: undefined,
 			}
-			Parts.insert(part1)
+			await Parts.insertAsync(part1)
 
 			const partInstance0: PartInstance = {
 				_id: protectString(`${part0._id}_${getRandomId()}`),
@@ -240,7 +239,7 @@ describe('cronjobs', () => {
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),
 			}
-			PartInstances.insert(partInstance0)
+			await PartInstances.insertAsync(partInstance0)
 
 			const partInstance1: PartInstance = {
 				_id: protectString(`${part0._id}_${getRandomId()}`),
@@ -253,7 +252,7 @@ describe('cronjobs', () => {
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),
 			}
-			PartInstances.insert(partInstance1)
+			await PartInstances.insertAsync(partInstance1)
 
 			const partInstance2: PartInstance = {
 				_id: protectString(`${part0._id}_${getRandomId()}`),
@@ -270,7 +269,7 @@ describe('cronjobs', () => {
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),
 			}
-			PartInstances.insert(partInstance2)
+			await PartInstances.insertAsync(partInstance2)
 
 			const pieceInstance0: PieceInstance = {
 				_id: protectString(`${partInstance0._id}_piece0`),
@@ -314,18 +313,18 @@ describe('cronjobs', () => {
 				},
 				playlistActivationId: protectString(''),
 			}
-			PieceInstances.insert(pieceInstance0)
-			PieceInstances.insert(pieceInstance1)
+			await PieceInstances.insertAsync(pieceInstance0)
+			await PieceInstances.insertAsync(pieceInstance1)
 			await runCronjobs()
 
-			expect(Parts.findOne(part0._id)).toBeDefined()
-			expect(Parts.findOne(part1._id)).toBeUndefined() // Removed, since owned by non-existent rundown
+			expect(await Parts.findOneAsync(part0._id)).toBeDefined()
+			expect(await Parts.findOneAsync(part1._id)).toBeUndefined() // Removed, since owned by non-existent rundown
 
-			expect(PartInstances.findOne(partInstance0._id)).toBeDefined()
-			expect(PartInstances.findOne(partInstance1._id)).toBeDefined()
-			expect(PartInstances.findOne(partInstance2._id)).toBeUndefined() // Removed, since owned by non-existent part1
-			expect(PieceInstances.findOne(pieceInstance0._id)).toBeDefined()
-			expect(PieceInstances.findOne(pieceInstance1._id)).toBeUndefined() // Removed, since owned by non-existent partInstance2
+			expect(await PartInstances.findOneAsync(partInstance0._id)).toBeDefined()
+			expect(await PartInstances.findOneAsync(partInstance1._id)).toBeDefined()
+			expect(await PartInstances.findOneAsync(partInstance2._id)).toBeUndefined() // Removed, since owned by non-existent part1
+			expect(await PieceInstances.findOneAsync(pieceInstance0._id)).toBeDefined()
+			expect(await PieceInstances.findOneAsync(pieceInstance1._id)).toBeUndefined() // Removed, since owned by non-existent partInstance2
 		})
 		testInFiber('Removes old entries in UserActionsLog', async () => {
 			// reasonably fresh entry

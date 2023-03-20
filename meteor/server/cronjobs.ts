@@ -119,20 +119,28 @@ export function nightlyCronjobInner(): void {
 		}
 	)
 
-	if (system?.cron?.storeRundownSnapshots?.enabled) {
-		const filter = system.cron.storeRundownSnapshots.rundownNames?.length
-			? { name: { $in: system.cron.storeRundownSnapshots.rundownNames } }
-			: {}
+	deferAsync(
+		async () => {
+			if (system?.cron?.storeRundownSnapshots?.enabled) {
+				const filter = system.cron.storeRundownSnapshots.rundownNames?.length
+					? { name: { $in: system.cron.storeRundownSnapshots.rundownNames } }
+					: {}
 
-		RundownPlaylists.find(filter).forEach((playlist) => {
-			lowPrioFcn(() => {
-				logger.info(`Cronjob: Will store snapshot for rundown playlist "${playlist._id}"`)
-				internalStoreRundownPlaylistSnapshot(playlist, 'Automatic, taken by cron job').catch((err) => {
-					logger.error(err)
-				})
-			})
-		})
-	}
+				const playlists = await RundownPlaylists.findFetchAsync(filter)
+				for (const playlist of playlists) {
+					lowPrioFcn(() => {
+						logger.info(`Cronjob: Will store snapshot for rundown playlist "${playlist._id}"`)
+						internalStoreRundownPlaylistSnapshot(playlist, 'Automatic, taken by cron job').catch((err) => {
+							logger.error(err)
+						})
+					})
+				}
+			}
+		},
+		(e) => {
+			logger.error(`Cron: Rundown Snapshots error: ${e}`)
+		}
+	)
 
 	// last:
 	logger.info('Nightly cronjob: done')

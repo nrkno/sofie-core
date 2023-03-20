@@ -19,10 +19,24 @@ export class RundownsObserver implements Meteor.LiveQueryHandle {
 
 	constructor(studioId: StudioId, playlistId: RundownPlaylistId, onChanged: ChangedHandler) {
 		this.#changed = onChanged
-		const cursor = Rundowns.find(
+		this.#rundownsLiveQuery = Rundowns.observe(
 			{
 				playlistId,
 				studioId,
+			},
+			{
+				added: (doc) => {
+					this.#rundownIds.add(doc._id)
+					this.updateRundownContent()
+				},
+				changed: (doc) => {
+					this.#rundownIds.add(doc._id)
+					this.updateRundownContent()
+				},
+				removed: (doc) => {
+					this.#rundownIds.delete(doc._id)
+					this.updateRundownContent()
+				},
 			},
 			{
 				projection: {
@@ -30,20 +44,6 @@ export class RundownsObserver implements Meteor.LiveQueryHandle {
 				},
 			}
 		)
-		this.#rundownsLiveQuery = cursor.observe({
-			added: (doc) => {
-				this.#rundownIds.add(doc._id)
-				this.updateRundownContent()
-			},
-			changed: (doc) => {
-				this.#rundownIds.add(doc._id)
-				this.updateRundownContent()
-			},
-			removed: (doc) => {
-				this.#rundownIds.delete(doc._id)
-				this.updateRundownContent()
-			},
-		})
 		this.updateRundownContent()
 	}
 

@@ -73,14 +73,16 @@ export class StudioObserver extends EventEmitter {
 			.next(
 				'activePlaylist',
 				() =>
-					RundownPlaylists.find(
-						{
-							studioId: studioId,
-							activationId: { $exists: true },
-						},
-						{
-							projection: rundownPlaylistFieldSpecifier,
-						}
+					waitForPromise(
+						RundownPlaylists.findWithCursor(
+							{
+								studioId: studioId,
+								activationId: { $exists: true },
+							},
+							{
+								projection: rundownPlaylistFieldSpecifier,
+							}
+						)
 					) as MongoCursor<Pick<DBRundownPlaylist, RundownPlaylistFields>>
 			)
 			.next('activePartInstance', (chain) => {
@@ -88,9 +90,11 @@ export class StudioObserver extends EventEmitter {
 					chain.activePlaylist.currentPartInfo?.partInstanceId ??
 					chain.activePlaylist.nextPartInfo?.partInstanceId
 				if (!activePartInstanceId) return null
-				return PartInstances.find(
-					{ _id: activePartInstanceId },
-					{ projection: partInstanceFieldSpecifier, limit: 1 }
+				return waitForPromise(
+					PartInstances.findWithCursor(
+						{ _id: activePartInstanceId },
+						{ projection: partInstanceFieldSpecifier, limit: 1 }
+					)
 				) as MongoCursor<Pick<DBPartInstance, PartInstanceFields>>
 			})
 			.end(this.updatePlaylistInStudio)
@@ -141,9 +145,9 @@ export class StudioObserver extends EventEmitter {
 			.next(
 				'currentRundown',
 				() =>
-					Rundowns.find({ _id: rundownId }, { fields: rundownFieldSpecifier, limit: 1 }) as MongoCursor<
-						Pick<DBRundown, RundownFields>
-					>
+					waitForPromise(
+						Rundowns.findWithCursor({ _id: rundownId }, { fields: rundownFieldSpecifier, limit: 1 })
+					) as MongoCursor<Pick<DBRundown, RundownFields>>
 			)
 			.next('showStyleBase', (chain) =>
 				chain.currentRundown

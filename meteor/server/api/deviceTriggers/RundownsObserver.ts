@@ -1,11 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import _ from 'underscore'
-import { Rundown } from '../../../lib/collections/Rundowns'
 import { Rundowns } from '../../collections'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
-import { MongoCursor } from '../../../lib/collections/lib'
 
 const REACTIVITY_DEBOUNCE = 20
 
@@ -24,24 +22,24 @@ export class RundownsObserver {
 
 	constructor(activePlaylistId: RundownPlaylistId, onChanged: ChangedHandler) {
 		this.#changed = onChanged
-		const cursor = Rundowns.find(
+		this.#rundownsLiveQuery = Rundowns.observeChanges(
 			{
 				playlistId: activePlaylistId,
 			},
 			{
+				added: (rundownId) => {
+					this.#rundownIds.add(rundownId)
+					this.updateRundownContent()
+				},
+				removed: (rundownId) => {
+					this.#rundownIds.delete(rundownId)
+					this.updateRundownContent()
+				},
+			},
+			{
 				projection: rundownFieldSpecifier,
 			}
-		) as MongoCursor<Pick<Rundown, RundownFields>>
-		this.#rundownsLiveQuery = cursor.observeChanges({
-			added: (rundownId) => {
-				this.#rundownIds.add(rundownId)
-				this.updateRundownContent()
-			},
-			removed: (rundownId) => {
-				this.#rundownIds.delete(rundownId)
-				this.updateRundownContent()
-			},
-		})
+		)
 		this.updateRundownContent()
 	}
 

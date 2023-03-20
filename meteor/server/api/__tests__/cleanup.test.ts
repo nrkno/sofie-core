@@ -88,8 +88,8 @@ describe('Cleanup', () => {
 			}
 		}
 
-		expect(RundownPlaylists.find().count()).toBe(1)
-		expect(Rundowns.find().count()).toBe(1)
+		expect(await RundownPlaylists.countDocuments()).toBe(1)
+		expect(await Rundowns.countDocuments()).toBe(1)
 	})
 	testInFiber('All dependants should be removed', async () => {
 		// Check that cleanupOldDataInner() cleans up all data from the database.
@@ -140,8 +140,8 @@ describe('Cleanup', () => {
 		await setDefaultDatatoDB(env, 0)
 
 		// Pre-check, just to check that there is data in the DB:
-		expect(PartInstances.find().count()).toBeGreaterThanOrEqual(1)
-		expect(PieceInstances.find().count()).toBeGreaterThanOrEqual(1)
+		expect(await PartInstances.countDocuments()).toBeGreaterThanOrEqual(1)
+		expect(await PieceInstances.countDocuments()).toBeGreaterThanOrEqual(1)
 
 		// Remove PartInstances, so that dependants will be removed in cleanup:
 		await PartInstances.removeAsync({})
@@ -151,8 +151,8 @@ describe('Cleanup', () => {
 		expect(typeof results).not.toBe('string')
 		if (typeof results === 'string') throw new Error(results)
 
-		expect(PartInstances.find().count()).toBeGreaterThanOrEqual(0)
-		expect(PieceInstances.find().count()).toBeGreaterThanOrEqual(0)
+		expect(await PartInstances.countDocuments()).toBeGreaterThanOrEqual(0)
+		expect(await PieceInstances.countDocuments()).toBeGreaterThanOrEqual(0)
 	})
 })
 
@@ -165,13 +165,13 @@ async function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 	const showStyleVariantId = env.showStyleVariantId
 	const deviceId = env.ingestDevice._id
 
-	const { playlistId, rundownId } = setupDefaultRundownPlaylist(env)
+	const { playlistId, rundownId } = await setupDefaultRundownPlaylist(env)
 
 	const segment = await Segments.findOneAsync({ rundownId })
 	if (!segment) throw new Error('No Segment found')
 	const segmentId = segment._id
 
-	const part = Parts.findOne({ rundownId })
+	const part = await Parts.findOneAsync({ rundownId })
 	if (!part) throw new Error('No Part found')
 	const partId = part._id
 

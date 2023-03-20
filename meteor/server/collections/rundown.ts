@@ -12,28 +12,28 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { Part } from '../../lib/collections/Parts'
 import { Segment } from '../../lib/collections/Segments'
-import { createAsyncMongoCollection } from './collection'
+import { createAsyncOnlyMongoCollection } from './collection'
 import { registerIndex } from './indices'
 
-export const AdLibActions = createAsyncMongoCollection<AdLibAction>(CollectionName.AdLibActions)
+export const AdLibActions = createAsyncOnlyMongoCollection<AdLibAction>(CollectionName.AdLibActions)
 registerIndex(AdLibActions, {
 	rundownId: 1,
 	partId: 1,
 })
 
-export const AdLibPieces = createAsyncMongoCollection<AdLibPiece>(CollectionName.AdLibPieces)
+export const AdLibPieces = createAsyncOnlyMongoCollection<AdLibPiece>(CollectionName.AdLibPieces)
 registerIndex(AdLibPieces, {
 	rundownId: 1,
 	partId: 1,
 	_rank: 1,
 })
 
-export const IngestDataCache = createAsyncMongoCollection<IngestDataCacheObj>(CollectionName.IngestDataCache)
+export const IngestDataCache = createAsyncOnlyMongoCollection<IngestDataCacheObj>(CollectionName.IngestDataCache)
 registerIndex(IngestDataCache, {
 	rundownId: 1,
 })
 
-export const PartInstances = createAsyncMongoCollection<PartInstance>(CollectionName.PartInstances)
+export const PartInstances = createAsyncOnlyMongoCollection<PartInstance>(CollectionName.PartInstances)
 registerIndex(PartInstances, {
 	rundownId: 1,
 	playlistActivationId: 1,
@@ -58,7 +58,7 @@ registerIndex(PartInstances, {
 	reset: 1,
 })
 
-export const Parts = createAsyncMongoCollection<Part>(CollectionName.Parts)
+export const Parts = createAsyncOnlyMongoCollection<Part>(CollectionName.Parts)
 registerIndex(Parts, {
 	rundownId: 1,
 	segmentId: 1,
@@ -69,7 +69,7 @@ registerIndex(Parts, {
 	_rank: 1,
 })
 
-export const PieceInstances = createAsyncMongoCollection<PieceInstance>(CollectionName.PieceInstances)
+export const PieceInstances = createAsyncOnlyMongoCollection<PieceInstance>(CollectionName.PieceInstances)
 registerIndex(PieceInstances, {
 	rundownId: 1,
 	partInstanceId: 1,
@@ -82,7 +82,7 @@ registerIndex(PieceInstances, {
 	reset: -1,
 })
 
-export const Pieces = createAsyncMongoCollection<Piece>(CollectionName.Pieces)
+export const Pieces = createAsyncOnlyMongoCollection<Piece>(CollectionName.Pieces)
 registerIndex(Pieces, {
 	startRundownId: 1,
 	startSegmentId: 1,
@@ -93,26 +93,28 @@ registerIndex(Pieces, {
 	startPartId: 1,
 })
 
-export const RundownBaselineAdLibActions = createAsyncMongoCollection<RundownBaselineAdLibAction>(
+export const RundownBaselineAdLibActions = createAsyncOnlyMongoCollection<RundownBaselineAdLibAction>(
 	CollectionName.RundownBaselineAdLibActions
 )
 registerIndex(RundownBaselineAdLibActions, {
 	rundownId: 1,
 })
 
-export const RundownBaselineAdLibPieces = createAsyncMongoCollection<RundownBaselineAdLibItem>(
+export const RundownBaselineAdLibPieces = createAsyncOnlyMongoCollection<RundownBaselineAdLibItem>(
 	CollectionName.RundownBaselineAdLibPieces
 )
 registerIndex(RundownBaselineAdLibPieces, {
 	rundownId: 1,
 })
 
-export const RundownBaselineObjs = createAsyncMongoCollection<RundownBaselineObj>(CollectionName.RundownBaselineObjects)
+export const RundownBaselineObjs = createAsyncOnlyMongoCollection<RundownBaselineObj>(
+	CollectionName.RundownBaselineObjects
+)
 registerIndex(RundownBaselineObjs, {
 	rundownId: 1,
 })
 
-export const Rundowns = createAsyncMongoCollection<DBRundown>(CollectionName.Rundowns)
+export const Rundowns = createAsyncOnlyMongoCollection<DBRundown>(CollectionName.Rundowns)
 registerIndex(Rundowns, {
 	playlistId: 1,
 })
@@ -120,13 +122,13 @@ registerIndex(Rundowns, {
 	playlistExternalId: 1,
 })
 
-export const RundownPlaylists = createAsyncMongoCollection<DBRundownPlaylist>(CollectionName.RundownPlaylists)
+export const RundownPlaylists = createAsyncOnlyMongoCollection<DBRundownPlaylist>(CollectionName.RundownPlaylists)
 registerIndex(RundownPlaylists, {
 	studioId: 1,
 	activationId: 1,
 })
 
-export const Segments = createAsyncMongoCollection<Segment>(CollectionName.Segments)
+export const Segments = createAsyncOnlyMongoCollection<Segment>(CollectionName.Segments)
 registerIndex(Segments, {
 	rundownId: 1,
 	_rank: 1,

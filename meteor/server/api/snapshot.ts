@@ -721,7 +721,7 @@ if (!Settings.enableUserAccounts) {
 
 			const cred0: Credentials = { userId: null, token: params.token }
 			const { cred } = await OrganizationContentWriteAccess.snapshot(cred0)
-			const playlist = RundownPlaylists.findOne(protectString(params.playlistId))
+			const playlist = await RundownPlaylists.findOneAsync(protectString(params.playlistId))
 			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${params.playlistId}" not found`)
 			await StudioReadAccess.studioContent(playlist.studioId, cred)
 

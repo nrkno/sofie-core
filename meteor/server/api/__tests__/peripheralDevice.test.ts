@@ -77,7 +77,7 @@ describe('test peripheralDevice general API methods', () => {
 		rundownID = protectString('rundown0')
 		rundownPlaylistID = protectString('rundownPlaylist0')
 		const rundownExternalID: string = 'rundown0'
-		RundownPlaylists.insert({
+		await RundownPlaylists.insertAsync({
 			_id: rundownPlaylistID,
 			externalId: 'mock_rpl',
 			name: 'Mock',
@@ -93,7 +93,7 @@ describe('test peripheralDevice general API methods', () => {
 			},
 			rundownIdsInOrder: [rundownID],
 		})
-		Rundowns.insert({
+		await Rundowns.insertAsync({
 			_id: rundownID,
 			externalId: rundownExternalID,
 			studioId: env.studio._id,
@@ -119,7 +119,7 @@ describe('test peripheralDevice general API methods', () => {
 		})
 		const segmentID: SegmentId = protectString('segment0')
 		const segmentExternalID = 'segment0'
-		Segments.insert({
+		await Segments.insertAsync({
 			_id: segmentID,
 			externalId: segmentExternalID,
 			_rank: 0,
@@ -127,7 +127,7 @@ describe('test peripheralDevice general API methods', () => {
 			name: 'Fire',
 			externalModified: 1,
 		})
-		Parts.insert({
+		await Parts.insertAsync({
 			_id: protectString('part000'),
 			_rank: 0,
 			externalId: 'part000',
@@ -136,7 +136,7 @@ describe('test peripheralDevice general API methods', () => {
 			title: 'Part 000',
 			expectedDurationWithPreroll: undefined,
 		})
-		Pieces.insert({
+		await Pieces.insertAsync({
 			_id: protectString('piece0001'),
 			enable: {
 				start: 0,
@@ -155,7 +155,7 @@ describe('test peripheralDevice general API methods', () => {
 			content: {},
 			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		})
-		Parts.insert({
+		await Parts.insertAsync({
 			_id: protectString('part001'),
 			_rank: 1,
 			externalId: 'part001',
@@ -164,7 +164,7 @@ describe('test peripheralDevice general API methods', () => {
 			title: 'Part 001',
 			expectedDurationWithPreroll: undefined,
 		})
-		Segments.insert({
+		await Segments.insertAsync({
 			_id: protectString('segment1'),
 			_rank: 1,
 			externalId: 'segment01',
@@ -172,7 +172,7 @@ describe('test peripheralDevice general API methods', () => {
 			name: 'Water',
 			externalModified: 1,
 		})
-		Segments.insert({
+		await Segments.insertAsync({
 			_id: protectString('segment2'),
 			_rank: 2,
 			externalId: 'segment02',

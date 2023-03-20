@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { IngestDataCache, MediaObjects, Parts, Rundowns, Segments } from '../../collections'
-import { lazyIgnore, literal } from '../../../lib/lib'
+import { lazyIgnore, literal, waitForPromise } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { RundownIngestDataCache } from './ingestCache'
@@ -383,13 +383,15 @@ function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: MediaObjec
 		(newDocument.mediainfo?.format?.duration &&
 			oldDocument.mediainfo?.format?.duration !== newDocument.mediainfo.format.duration)
 	) {
-		const rundownIdsInStudio = Rundowns.find({ studioId: newDocument.studioId }, { fields: { _id: 1 } })
-			.fetch()
-			.map((rundown) => rundown._id)
-		Parts.find({
-			rundownId: { $in: rundownIdsInStudio },
-			'hackListenToMediaObjectUpdates.mediaId': newDocument.mediaId,
-		})
+		const rundownIdsInStudio = waitForPromise(
+			Rundowns.findFetchAsync({ studioId: newDocument.studioId }, { fields: { _id: 1 } })
+		).map((rundown) => rundown._id)
+		waitForPromise(
+			Parts.findFetchAsync({
+				rundownId: { $in: rundownIdsInStudio },
+				'hackListenToMediaObjectUpdates.mediaId': newDocument.mediaId,
+			})
+		)
 			.map<MediaObjectUpdatedIds>((part) => {
 				return {
 					rundownId: part.rundownId,
@@ -412,16 +414,18 @@ function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: MediaObjec
 }
 
 function doesSegmentExistsInCache(mediaObjectUpdatedIds: MediaObjectUpdatedIds): boolean {
-	return !!IngestDataCache.findOne({
-		segmentId: mediaObjectUpdatedIds.segmentId,
-	})
+	return !!waitForPromise(
+		IngestDataCache.findOneAsync({
+			segmentId: mediaObjectUpdatedIds.segmentId,
+		})
+	)
 }
 
 async function updateSegmentFromCache(studioId: StudioId, mediaObjectUpdatedIds: MediaObjectUpdatedIds) {
-	const rundown = Rundowns.findOne(mediaObjectUpdatedIds.rundownId)
+	const rundown = await Rundowns.findOneAsync(mediaObjectUpdatedIds.rundownId)
 	if (!rundown)
 		throw new Meteor.Error(`Could not find rundown ${mediaObjectUpdatedIds.rundownId} in updateSegmentFromCache`)
-	const segment = Segments.findOne(mediaObjectUpdatedIds.segmentId)
+	const segment = await Segments.findOneAsync(mediaObjectUpdatedIds.segmentId)
 	if (!segment)
 		throw new Meteor.Error(`Could not find segment ${mediaObjectUpdatedIds.segmentId} in updateSegmentFromCache`)
 

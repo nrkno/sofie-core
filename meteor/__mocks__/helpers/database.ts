@@ -57,15 +57,7 @@ import { RundownBaselineAdLibItem } from '../../lib/collections/RundownBaselineA
 import { AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { restartRandomId } from '../random'
 import { MongoMock } from '../mongo'
-import {
-	defaultRundownPlaylist,
-	defaultRundown,
-	defaultSegment,
-	defaultPart,
-	defaultPiece,
-	defaultAdLibPiece,
-	defaultStudio,
-} from '../defaultCollectionObjects'
+import { defaultRundownPlaylist, defaultStudio } from '../defaultCollectionObjects'
 import { PackageInfo } from '../../server/coreSystem'
 import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
 import { WorkerStatus } from '../../lib/collections/Workers'
@@ -585,19 +577,19 @@ export async function setupDefaultStudioEnvironment(
 		workerThreadStatuses,
 	}
 }
-export function setupDefaultRundownPlaylist(
+export async function setupDefaultRundownPlaylist(
 	env: DefaultEnvironment,
 	rundownId0?: RundownId,
 	customRundownFactory?: (env: DefaultEnvironment, playlistId: RundownPlaylistId, rundownId: RundownId) => RundownId
-): { rundownId: RundownId; playlistId: RundownPlaylistId } {
+): Promise<{ rundownId: RundownId; playlistId: RundownPlaylistId }> {
 	const rundownId: RundownId = rundownId0 || getRandomId()
 
 	const playlist: DBRundownPlaylist = defaultRundownPlaylist(protectString('playlist_' + rundownId), env.studio._id)
 
-	const playlistId = RundownPlaylists.insert(playlist)
+	const playlistId = await RundownPlaylists.insertAsync(playlist)
 
 	return {
-		rundownId: (customRundownFactory || setupDefaultRundown)(env, playlistId, rundownId),
+		rundownId: await (customRundownFactory || setupDefaultRundown)(env, playlistId, rundownId),
 		playlistId,
 	}
 }
@@ -608,11 +600,11 @@ export async function setupEmptyEnvironment(): Promise<{ core: ICoreSystem }> {
 		core,
 	}
 }
-export function setupDefaultRundown(
+export async function setupDefaultRundown(
 	env: DefaultEnvironment,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
-): RundownId {
+): Promise<RundownId> {
 	const outputLayerIds = Object.keys(applyAndValidateOverrides(env.showStyleBase.outputLayersWithOverrides).obj)
 	const sourceLayerIds = Object.keys(applyAndValidateOverrides(env.showStyleBase.sourceLayersWithOverrides).obj)
 
@@ -644,9 +636,9 @@ export function setupDefaultRundown(
 
 		externalNRCSName: 'mock',
 	}
-	Rundowns.insert(rundown)
+	await Rundowns.insertAsync(rundown)
 
-	RundownPlaylists.update(playlistId, {
+	await RundownPlaylists.updateAsync(playlistId, {
 		$push: {
 			rundownIdsInOrder: rundown._id,
 		},
@@ -660,7 +652,7 @@ export function setupDefaultRundown(
 		name: 'Segment 0',
 		externalModified: 1,
 	}
-	Segments.insert(segment0)
+	await Segments.insertAsync(segment0)
 	/* tslint:disable:ter-indent*/
 	//
 	const part00: DBPart = {
@@ -672,7 +664,7 @@ export function setupDefaultRundown(
 		title: 'Part 0 0',
 		expectedDurationWithPreroll: undefined,
 	}
-	Parts.insert(part00)
+	await Parts.insertAsync(part00)
 
 	const piece000: Piece = {
 		_id: protectString(rundownId + '_piece000'),
@@ -693,7 +685,7 @@ export function setupDefaultRundown(
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	Pieces.insert(piece000)
+	await Pieces.insertAsync(piece000)
 
 	const piece001: Piece = {
 		_id: protectString(rundownId + '_piece001'),
@@ -714,7 +706,7 @@ export function setupDefaultRundown(
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	Pieces.insert(piece001)
+	await Pieces.insertAsync(piece001)
 
 	const adLibPiece000: AdLibPiece = {
 		_id: protectString(rundownId + '_adLib000'),
@@ -732,7 +724,7 @@ export function setupDefaultRundown(
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
-	AdLibPieces.insert(adLibPiece000)
+	await AdLibPieces.insertAsync(adLibPiece000)
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -743,7 +735,7 @@ export function setupDefaultRundown(
 		title: 'Part 0 1',
 		expectedDurationWithPreroll: undefined,
 	}
-	Parts.insert(part01)
+	await Parts.insertAsync(part01)
 
 	const piece010: Piece = {
 		_id: protectString(rundownId + '_piece010'),
@@ -764,7 +756,7 @@ export function setupDefaultRundown(
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	Pieces.insert(piece010)
+	await Pieces.insertAsync(piece010)
 
 	const segment1: DBSegment = {
 		_id: protectString(rundownId + '_segment1'),
@@ -774,7 +766,7 @@ export function setupDefaultRundown(
 		name: 'Segment 1',
 		externalModified: 1,
 	}
-	Segments.insert(segment1)
+	await Segments.insertAsync(segment1)
 
 	const part10: DBPart = {
 		_id: protectString(rundownId + '_part1_0'),
@@ -785,7 +777,7 @@ export function setupDefaultRundown(
 		title: 'Part 1 0',
 		expectedDurationWithPreroll: undefined,
 	}
-	Parts.insert(part10)
+	await Parts.insertAsync(part10)
 
 	const part11: DBPart = {
 		_id: protectString(rundownId + '_part1_1'),
@@ -796,7 +788,7 @@ export function setupDefaultRundown(
 		title: 'Part 1 1',
 		expectedDurationWithPreroll: undefined,
 	}
-	Parts.insert(part11)
+	await Parts.insertAsync(part11)
 
 	const part12: DBPart = {
 		_id: protectString(rundownId + '_part1_2'),
@@ -807,7 +799,7 @@ export function setupDefaultRundown(
 		title: 'Part 1 2',
 		expectedDurationWithPreroll: undefined,
 	}
-	Parts.insert(part12)
+	await Parts.insertAsync(part12)
 
 	const segment2: DBSegment = {
 		_id: protectString(rundownId + '_segment2'),
@@ -817,7 +809,7 @@ export function setupDefaultRundown(
 		name: 'Segment 2',
 		externalModified: 1,
 	}
-	Segments.insert(segment2)
+	await Segments.insertAsync(segment2)
 
 	const globalAdLib0: RundownBaselineAdLibItem = {
 		_id: protectString(rundownId + '_globalAdLib0'),
@@ -847,167 +839,8 @@ export function setupDefaultRundown(
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
-	RundownBaselineAdLibPieces.insert(globalAdLib0)
-	RundownBaselineAdLibPieces.insert(globalAdLib1)
-
-	return rundownId
-}
-export function setupRundownWithAutoplayPart0(
-	env: DefaultEnvironment,
-	playlistId: RundownPlaylistId,
-	rundownId: RundownId
-): RundownId {
-	const outputLayerIds = Object.keys(applyAndValidateOverrides(env.showStyleBase.outputLayersWithOverrides).obj)
-	const sourceLayerIds = Object.keys(applyAndValidateOverrides(env.showStyleBase.sourceLayersWithOverrides).obj)
-
-	const rundown: DBRundown = defaultRundown(
-		unprotectString(rundownId),
-		env.studio._id,
-		env.ingestDevice._id,
-		playlistId,
-		env.showStyleBase._id,
-		env.showStyleVariant._id
-	)
-	rundown._id = rundownId
-	Rundowns.insert(rundown)
-
-	const segment0: DBSegment = {
-		...defaultSegment(protectString(rundownId + '_segment0'), rundown._id),
-		_rank: 0,
-		externalId: 'MOCK_SEGMENT_0',
-		name: 'Segment 0',
-	}
-	Segments.insert(segment0)
-	/* tslint:disable:ter-indent*/
-	//
-	const part00: DBPart = {
-		...defaultPart(protectString(rundownId + '_part0_0'), rundown._id, segment0._id),
-		externalId: 'MOCK_PART_0_0',
-		title: 'Part 0 0',
-
-		expectedDuration: 20,
-		expectedDurationWithPreroll: 20,
-		autoNext: true,
-	}
-	Parts.insert(part00)
-
-	const piece000: Piece = {
-		...defaultPiece(protectString(rundownId + '_piece000'), rundown._id, part00.segmentId, part00._id),
-		externalId: 'MOCK_PIECE_000',
-		name: 'Piece 000',
-		sourceLayerId: sourceLayerIds[0],
-		outputLayerId: outputLayerIds[0],
-	}
-	Pieces.insert(piece000)
-
-	const piece001: Piece = {
-		...defaultPiece(protectString(rundownId + '_piece001'), rundown._id, part00.segmentId, part00._id),
-		externalId: 'MOCK_PIECE_001',
-		name: 'Piece 001',
-		sourceLayerId: sourceLayerIds[1],
-		outputLayerId: outputLayerIds[0],
-	}
-	Pieces.insert(piece001)
-
-	const adLibPiece000: AdLibPiece = {
-		...defaultAdLibPiece(protectString(rundownId + '_adLib000'), segment0.rundownId, part00._id),
-		expectedDuration: 1000,
-		externalId: 'MOCK_ADLIB_000',
-		status: PieceStatusCode.UNKNOWN,
-		name: 'AdLib 0',
-		sourceLayerId: sourceLayerIds[1],
-		outputLayerId: outputLayerIds[0],
-	}
-
-	AdLibPieces.insert(adLibPiece000)
-
-	const part01: DBPart = {
-		...defaultPart(protectString(rundownId + '_part0_1'), rundown._id, segment0._id),
-		_rank: 1,
-		externalId: 'MOCK_PART_0_1',
-		title: 'Part 0 1',
-	}
-	Parts.insert(part01)
-
-	const piece010: Piece = {
-		...defaultPiece(protectString(rundownId + '_piece010'), rundown._id, part01.segmentId, part01._id),
-		externalId: 'MOCK_PIECE_010',
-		name: 'Piece 010',
-		sourceLayerId: sourceLayerIds[0],
-		outputLayerId: outputLayerIds[0],
-	}
-	Pieces.insert(piece010)
-
-	const segment1: DBSegment = {
-		...defaultSegment(protectString(rundownId + '_segment1'), rundown._id),
-		_rank: 1,
-		externalId: 'MOCK_SEGMENT_2',
-		name: 'Segment 1',
-	}
-	Segments.insert(segment1)
-
-	const part10: DBPart = {
-		...defaultPart(protectString(rundownId + '_part1_0'), rundown._id, segment1._id),
-		_rank: 0,
-		externalId: 'MOCK_PART_1_0',
-		title: 'Part 1 0',
-	}
-	Parts.insert(part10)
-
-	const part11: DBPart = {
-		...defaultPart(protectString(rundownId + '_part1_1'), rundown._id, segment1._id),
-		_rank: 1,
-		externalId: 'MOCK_PART_1_1',
-		title: 'Part 1 1',
-	}
-	Parts.insert(part11)
-
-	const part12: DBPart = {
-		...defaultPart(protectString(rundownId + '_part1_2'), rundown._id, segment1._id),
-		_rank: 2,
-		externalId: 'MOCK_PART_1_2',
-		title: 'Part 1 2',
-	}
-	Parts.insert(part12)
-
-	const segment2: DBSegment = {
-		...defaultSegment(protectString(rundownId + '_segment2'), rundown._id),
-		_rank: 2,
-		externalId: 'MOCK_SEGMENT_2',
-		name: 'Segment 2',
-	}
-	Segments.insert(segment2)
-
-	const globalAdLib0: RundownBaselineAdLibItem = {
-		_id: protectString(rundownId + '_globalAdLib0'),
-		_rank: 0,
-		externalId: 'MOCK_GLOBAL_ADLIB_0',
-		lifespan: PieceLifespan.OutOnRundownChange,
-		rundownId: segment0.rundownId,
-		status: PieceStatusCode.UNKNOWN,
-		name: 'Global AdLib 0',
-		sourceLayerId: sourceLayerIds[0],
-		outputLayerId: outputLayerIds[0],
-		content: {},
-		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
-	}
-
-	const globalAdLib1: RundownBaselineAdLibItem = {
-		_id: protectString(rundownId + '_globalAdLib1'),
-		_rank: 0,
-		externalId: 'MOCK_GLOBAL_ADLIB_1',
-		lifespan: PieceLifespan.OutOnRundownChange,
-		rundownId: segment0.rundownId,
-		status: PieceStatusCode.UNKNOWN,
-		name: 'Global AdLib 1',
-		sourceLayerId: sourceLayerIds[1],
-		outputLayerId: outputLayerIds[0],
-		content: {},
-		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
-	}
-
-	RundownBaselineAdLibPieces.insert(globalAdLib0)
-	RundownBaselineAdLibPieces.insert(globalAdLib1)
+	await RundownBaselineAdLibPieces.insertAsync(globalAdLib0)
+	await RundownBaselineAdLibPieces.insertAsync(globalAdLib1)
 
 	return rundownId
 }

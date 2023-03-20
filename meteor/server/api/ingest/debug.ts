@@ -19,7 +19,7 @@ if (!Settings.enableUserAccounts) {
 			try {
 				check(rundownPlaylistId, String)
 
-				const playlist = RundownPlaylists.findOne(rundownPlaylistId)
+				const playlist = waitForPromise(RundownPlaylists.findOneAsync(rundownPlaylistId))
 				if (!playlist) throw new Error('Playlist not found')
 
 				const job = waitForPromise(
@@ -40,9 +40,9 @@ if (!Settings.enableUserAccounts) {
 		debug_segmentRunBlueprints: (segmentId: SegmentId) => {
 			check(segmentId, String)
 
-			const segment = Segments.findOne(segmentId)
+			const segment = waitForPromise(Segments.findOneAsync(segmentId))
 			if (!segment) throw new Meteor.Error(404, 'Segment not found')
-			const rundown = Rundowns.findOne(segment.rundownId)
+			const rundown = waitForPromise(Rundowns.findOneAsync(segment.rundownId))
 			if (!rundown) throw new Meteor.Error(404, 'Rundown not found')
 
 			waitForPromise(
@@ -59,9 +59,11 @@ if (!Settings.enableUserAccounts) {
 		 * This shouldn't be necessary as ingest will do this for each rundown as part of its workflow
 		 */
 		debug_recreateExpectedPackages() {
-			const rundowns = Rundowns.find({
-				restoredFromSnapshotId: { $exists: false },
-			}).fetch()
+			const rundowns = waitForPromise(
+				Rundowns.findFetchAsync({
+					restoredFromSnapshotId: { $exists: false },
+				})
+			)
 
 			waitForPromiseAll(
 				rundowns.map(async (rundown) =>

@@ -23,7 +23,7 @@ if (!Settings.enableUserAccounts) {
 		debug_removePlaylist(id: RundownPlaylistId) {
 			logger.debug('Remove rundown "' + id + '"')
 
-			const playlist = RundownPlaylists.findOne(id)
+			const playlist = waitForPromise(RundownPlaylists.findOneAsync(id))
 			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${id}" not found`)
 
 			const job = waitForPromise(
@@ -42,7 +42,7 @@ if (!Settings.enableUserAccounts) {
 			logger.debug('Remove all rundowns')
 
 			waitForPromiseAll(
-				RundownPlaylists.find({}).map(async (playlist) => {
+				waitForPromise(RundownPlaylists.findFetchAsync({})).map(async (playlist) => {
 					const job = await QueueStudioJob(StudioJobs.RemovePlaylist, playlist.studioId, {
 						playlistId: playlist._id,
 					})
@@ -86,7 +86,7 @@ if (!Settings.enableUserAccounts) {
 		debug_syncPlayheadInfinitesForNextPartInstance(id: RundownPlaylistId) {
 			logger.info(`syncPlayheadInfinitesForNextPartInstance ${id}`)
 
-			const playlist = RundownPlaylists.findOne(id)
+			const playlist = waitForPromise(RundownPlaylists.findOneAsync(id))
 			if (!playlist) throw new Error(`RundownPlaylist "${id}" not found`)
 
 			const job = waitForPromise(
@@ -116,8 +116,8 @@ if (!Settings.enableUserAccounts) {
 		debug_clearAllResetInstances() {
 			logger.info('clearAllResetInstances')
 
-			PartInstances.remove({ reset: true })
-			PieceInstances.remove({ reset: true })
+			waitForPromise(PartInstances.removeAsync({ reset: true }))
+			waitForPromise(PieceInstances.removeAsync({ reset: true }))
 		},
 
 		/**
@@ -127,7 +127,7 @@ if (!Settings.enableUserAccounts) {
 		debug_regenerateNextPartInstance(id: RundownPlaylistId) {
 			logger.info('regenerateNextPartInstance')
 
-			const playlist = RundownPlaylists.findOne(id)
+			const playlist = waitForPromise(RundownPlaylists.findOneAsync(id))
 			if (!playlist) throw new Error(`RundownPlaylist "${id}" not found`)
 
 			const job = waitForPromise(

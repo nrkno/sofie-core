@@ -70,7 +70,7 @@ async function onUpdatedPackageInfoForRundown(
 		return
 	}
 
-	const tmpRundown = Rundowns.findOne(rundownId)
+	const tmpRundown = await Rundowns.findOneAsync(rundownId)
 	if (!tmpRundown) {
 		logger.error(
 			`onUpdatedPackageInfoForRundown: Missing rundown "${rundownId}" for packages "${packageIds.join(', ')}"`
