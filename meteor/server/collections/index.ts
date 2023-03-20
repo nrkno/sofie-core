@@ -35,7 +35,7 @@ export * from './bucket'
 export * from './packages-media'
 export * from './rundown'
 
-export const Blueprints = createAsyncMongoCollection<Blueprint>(CollectionName.Blueprints)
+export const Blueprints = createAsyncOnlyMongoCollection<Blueprint>(CollectionName.Blueprints)
 registerIndex(Blueprints, {
 	organizationId: 1,
 })

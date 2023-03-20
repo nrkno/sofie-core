@@ -86,6 +86,7 @@ import {
 } from '../../migration/upgrades'
 import { MigrationStepInputResult, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 
 function restAPIUserEvent(
 	ctx: Koa.ParameterizedContext<
@@ -596,7 +597,11 @@ class ServerRestAPI implements RestAPI {
 		_connection: Meteor.Connection,
 		_event: string
 	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>> {
-		return ClientAPI.responseSuccess(Blueprints.find().map((blueprint) => ({ id: unprotectString(blueprint._id) })))
+		const blueprints = (await Blueprints.findFetchAsync({}, { projection: { _id: 1 } })) as Array<
+			Pick<Blueprint, '_id'>
+		>
+
+		return ClientAPI.responseSuccess(blueprints.map((blueprint) => ({ id: unprotectString(blueprint._id) })))
 	}
 
 	async getBlueprint(
@@ -604,7 +609,7 @@ class ServerRestAPI implements RestAPI {
 		_event: string,
 		blueprintId: BlueprintId
 	): Promise<ClientAPI.ClientResponse<APIBlueprint>> {
-		const blueprint = Blueprints.findOne(blueprintId)
+		const blueprint = await Blueprints.findOneAsync(blueprintId)
 		if (!blueprint) {
 			return ClientAPI.responseError(
 				UserError.from(new Error(`Blueprint ${blueprintId} not found`), UserErrorMessage.BlueprintNotFound),
@@ -703,7 +708,7 @@ class ServerRestAPI implements RestAPI {
 		_event: string,
 		showStyleBase: APIShowStyleBase
 	): Promise<ClientAPI.ClientResponse<string>> {
-		const showStyle = showStyleBaseFrom(showStyleBase)
+		const showStyle = await showStyleBaseFrom(showStyleBase)
 		if (!showStyle) throw new Meteor.Error(400, `Invalid ShowStyleBase`)
 		const showStyleId = showStyle._id
 		ShowStyleBases.insert(showStyle)
@@ -728,7 +733,7 @@ class ServerRestAPI implements RestAPI {
 		showStyleBaseId: ShowStyleBaseId,
 		showStyleBase: APIShowStyleBase
 	): Promise<ClientAPI.ClientResponse<void>> {
-		const showStyle = showStyleBaseFrom(showStyleBase, showStyleBaseId)
+		const showStyle = await showStyleBaseFrom(showStyleBase, showStyleBaseId)
 		if (!showStyle) throw new Meteor.Error(400, `Invalid ShowStyleBase`)
 
 		const existingShowStyle = ShowStyleBases.findOne(showStyleBaseId)
@@ -884,7 +889,7 @@ class ServerRestAPI implements RestAPI {
 		_event: string,
 		studio: APIStudio
 	): Promise<ClientAPI.ClientResponse<string>> {
-		const newStudio = studioFrom(studio)
+		const newStudio = await studioFrom(studio)
 		if (!newStudio) throw new Meteor.Error(400, `Invalid Studio`)
 
 		const newStudioId = newStudio._id
@@ -910,7 +915,7 @@ class ServerRestAPI implements RestAPI {
 		studioId: StudioId,
 		studio: APIStudio
 	): Promise<ClientAPI.ClientResponse<void>> {
-		const newStudio = studioFrom(studio, studioId)
+		const newStudio = await studioFrom(studio, studioId)
 		if (!newStudio) throw new Meteor.Error(400, `Invalid Studio`)
 
 		const existingStudio = Studios.findOne(studioId)

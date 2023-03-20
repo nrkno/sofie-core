@@ -38,11 +38,11 @@ This file contains functions that convert between the internal Sofie-Core types 
 When making changes to this file, be wary of breaking changes to the API.
 */
 
-export function showStyleBaseFrom(
+export async function showStyleBaseFrom(
 	apiShowStyleBase: APIShowStyleBase,
 	existingId?: ShowStyleBaseId
-): ShowStyleBase | undefined {
-	const blueprint = Blueprints.findOne(protectString(apiShowStyleBase.blueprintId))
+): Promise<ShowStyleBase | undefined> {
+	const blueprint = await Blueprints.findOneAsync(protectString(apiShowStyleBase.blueprintId))
 	if (!blueprint) return undefined
 	if (blueprint.blueprintType !== BlueprintManifestType.SHOWSTYLE) return undefined
 
@@ -237,10 +237,10 @@ export function APISourceLayerFrom(sourceLayer: ISourceLayer): APISourceLayer {
 	}
 }
 
-export function studioFrom(apiStudio: APIStudio, existingId?: StudioId): Studio | undefined {
+export async function studioFrom(apiStudio: APIStudio, existingId?: StudioId): Promise<Studio | undefined> {
 	let blueprint: Blueprint | undefined
 	if (apiStudio.blueprintId) {
-		blueprint = Blueprints.findOne(protectString(apiStudio.blueprintId))
+		blueprint = await Blueprints.findOneAsync(protectString(apiStudio.blueprintId))
 		if (!blueprint) return undefined
 		if (blueprint.blueprintType !== BlueprintManifestType.STUDIO) return undefined
 	}

@@ -230,7 +230,7 @@ describe('Migrations', () => {
 		expect(_.find(migration.steps, (s) => !!s.id.match(/myCoreMockStep2/))).toBeTruthy()
 		expect(_.find(migration.steps, (s) => !!s.id.match(/myCoreMockStep3/))).toBeTruthy()
 
-		const studio = Studios.findOne() as Studio
+		const studio = (await Studios.findOneAsync({})) as Studio
 		expect(studio).toBeTruthy()
 
 		const studioManifest = (): StudioBlueprintManifest => ({
@@ -383,9 +383,11 @@ describe('Migrations', () => {
 			}),
 		})
 
-		Blueprints.insert(generateFakeBlueprint('showStyle0', BlueprintManifestType.SHOWSTYLE, showStyleManifest))
+		await Blueprints.insertAsync(
+			generateFakeBlueprint('showStyle0', BlueprintManifestType.SHOWSTYLE, showStyleManifest)
+		)
 
-		ShowStyleBases.insert({
+		await ShowStyleBases.insertAsync({
 			_id: protectString('showStyle0'),
 			name: '',
 			organizationId: null,
@@ -398,7 +400,7 @@ describe('Migrations', () => {
 			lastBlueprintConfig: undefined,
 		})
 
-		ShowStyleVariants.insert({
+		await ShowStyleVariants.insertAsync({
 			_id: protectString('variant0'),
 			name: '',
 			showStyleBaseId: protectString('showStyle0'),
@@ -407,8 +409,8 @@ describe('Migrations', () => {
 			_rank: 0,
 		})
 
-		Blueprints.insert(generateFakeBlueprint('studio0', BlueprintManifestType.STUDIO, studioManifest))
-		Studios.update(studio._id, {
+		await Blueprints.insertAsync(generateFakeBlueprint('studio0', BlueprintManifestType.STUDIO, studioManifest))
+		await Studios.updateAsync(studio._id, {
 			$set: {
 				blueprintId: protectString('studio0'),
 			},

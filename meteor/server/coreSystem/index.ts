@@ -86,12 +86,15 @@ async function initializeCoreSystem() {
 		checkDatabaseVersions()
 	}
 
-	const blueprintsCursor = Blueprints.find({}, { fields: { code: 0 } })
-	blueprintsCursor.observeChanges({
-		added: observeBlueprintChanges,
-		changed: observeBlueprintChanges,
-		removed: observeBlueprintChanges,
-	})
+	Blueprints.observeChanges(
+		{},
+		{
+			added: observeBlueprintChanges,
+			changed: observeBlueprintChanges,
+			removed: observeBlueprintChanges,
+		},
+		{ fields: { code: 0 } }
+	)
 
 	checkDatabaseVersions()
 }

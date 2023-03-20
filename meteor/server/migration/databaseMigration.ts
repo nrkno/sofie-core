@@ -160,7 +160,8 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 	})
 
 	// Collect migration steps from blueprints:
-	Blueprints.find({}).forEach((blueprint) => {
+	const allBlueprints = waitForPromise(Blueprints.findFetchAsync({}))
+	allBlueprints.forEach((blueprint) => {
 		// console.log('bp', blueprint._id)
 		if (blueprint.code) {
 			const blueprintManifest = evalBlueprint(blueprint)
@@ -700,7 +701,7 @@ function completeMigration(chunks: Array<MigrationChunk>) {
 			if (!chunk.blueprintId) throw new Meteor.Error(500, `chunk.blueprintId missing!`)
 			if (!chunk.sourceId) throw new Meteor.Error(500, `chunk.sourceId missing!`)
 
-			const blueprint = Blueprints.findOne(chunk.blueprintId)
+			const blueprint = waitForPromise(Blueprints.findOneAsync(chunk.blueprintId))
 			if (!blueprint) throw new Meteor.Error(404, `Blueprint "${chunk.blueprintId}" not found!`)
 
 			const m: any = {}
@@ -725,7 +726,7 @@ function completeMigration(chunks: Array<MigrationChunk>) {
 				m[`databaseVersion.showStyle.${chunk.sourceId}`] = chunk._targetVersion
 			} else throw new Meteor.Error(500, `Bad chunk.sourcetype: "${chunk.sourceType}"`)
 
-			Blueprints.update(chunk.blueprintId, { $set: m })
+			waitForPromise(Blueprints.updateAsync(chunk.blueprintId, { $set: m }))
 		} else throw new Meteor.Error(500, `Unknown chunk.sourcetype: "${chunk.sourceType}"`)
 	})
 }
@@ -772,11 +773,14 @@ export function forceMigration(chunks: Array<MigrationChunk>): void {
 
 	return completeMigration(chunks)
 }
-export function resetDatabaseVersions(): void {
+export async function resetDatabaseVersions(): Promise<void> {
 	updateDatabaseVersion(GENESIS_SYSTEM_VERSION)
 
-	Blueprints.find().forEach((blueprint) => {
-		Blueprints.update(blueprint._id, {
+	await Blueprints.updateAsync(
+		{
+			// All
+		},
+		{
 			$set: {
 				databaseVersion: {
 					studio: {},
@@ -784,8 +788,8 @@ export function resetDatabaseVersions(): void {
 					system: '',
 				},
 			},
-		})
-	})
+		}
+	)
 }
 
 function getMigrationSystemContext(chunk: MigrationChunk): IMigrationContextSystem {
