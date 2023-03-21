@@ -391,6 +391,8 @@ export namespace ExpectedPackageStatusAPI {
 		NOT_FOUND = 'not_found',
 		/** The Package source is found, but not able to be transferred */
 		NOT_READY = 'not_ready',
+		/** The Package exists but doesn't have any content */
+		PLACEHOLDER = 'placeholder',
 		/** The Package is currently transferring, but can be played out */
 		TRANSFERRING_READY = 'transferring_ready',
 		/** The Package is currently transferring, and is not ready to be played out */

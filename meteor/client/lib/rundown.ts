@@ -39,6 +39,8 @@ import { AdLibPieceUi } from './shelf'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { PartId, PieceId, RundownId, SegmentId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstances, Segments } from '../collections'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
 
 interface PieceTimelineMetadataExt extends PieceTimelineMetadata {
 	id: PieceId
@@ -226,6 +228,25 @@ export namespace RundownUtils {
 		return ((SourceLayerType[sourceLayerType] || 'unknown-sourceLayer-' + sourceLayerType) + '')
 			.toLowerCase()
 			.replace(/_/g, '-')
+	}
+
+	export function getPieceStatusClassName(status: PieceStatusCode): string | undefined {
+		switch (status) {
+			case PieceStatusCode.OK:
+			case PieceStatusCode.SOURCE_HAS_ISSUES:
+			case PieceStatusCode.SOURCE_NOT_SET:
+				return
+			case PieceStatusCode.SOURCE_BROKEN:
+				return 'source-broken'
+			case PieceStatusCode.SOURCE_MISSING:
+				return 'source-missing'
+			case PieceStatusCode.SOURCE_NOT_READY:
+				return 'source-not-ready'
+			case PieceStatusCode.UNKNOWN:
+				return 'unknown-state'
+			default:
+				assertNever(status)
+		}
 	}
 
 	/**

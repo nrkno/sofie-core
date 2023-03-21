@@ -136,6 +136,7 @@ export class RundownContentObserver {
 			const newShowStyleBaseIds = this.#cache.Rundowns.find({}).map((rd) => rd.showStyleBaseId)
 
 			if (!equivalentArrays(newShowStyleBaseIds, this.#showStyleBaseIds)) {
+				this.#showStyleBaseIds = newShowStyleBaseIds
 				// trigger the rundown group to restart
 				this.#showStyleBaseIdObserver.restart()
 			}

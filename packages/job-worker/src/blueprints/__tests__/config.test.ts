@@ -56,6 +56,7 @@ describe('Test blueprint config', () => {
 		expect(res).toEqual({
 			core: {
 				hostUrl: 'https://sofie-in-jest:3000',
+				frameRate: 25,
 			},
 			studio: {
 				sdfsdf: 'one',

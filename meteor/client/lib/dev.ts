@@ -4,19 +4,15 @@ import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import * as _ from 'underscore'
 import { MeteorCall } from '../../lib/api/methods'
-import { StudioTimeline } from '../ui/TestTools/Timeline'
-import { ClientCollections } from '../../lib/collections/lib'
+import { ClientCollections, PublicationCollections } from '../../lib/collections/lib'
 
 // Note: These things are convenience functions to be used during development:
 
 Meteor.startup(() => {
-	ClientCollections.forEach((val, key) => {
-		;(window as any)[key] = val
-	})
-	window['StudioTimeline'] = StudioTimeline
+	window['Collections'] = Object.fromEntries(ClientCollections.entries())
+	window['PublicationCollections'] = Object.fromEntries(PublicationCollections.entries())
 })
 
-window['Collections'] = ClientCollections
 window['getCurrentTime'] = getCurrentTime
 window['Session'] = Session
 

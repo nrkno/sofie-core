@@ -3,7 +3,7 @@ import ClassNames from 'classnames'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../../RundownViewBuckets'
 import { RundownUtils } from '../../../../lib/rundown'
-import { Piece, PieceStatusCode } from '../../../../../lib/collections/Pieces'
+import { Piece } from '../../../../../lib/collections/Pieces'
 import { withMediaObjectStatus } from '../../../SegmentTimeline/withMediaObjectStatus'
 import { IAdLibListItem } from '../../AdLibListItem'
 import { AdLibPieceUi } from '../../../../lib/shelf'
@@ -29,11 +29,7 @@ const InspectorTitle = withMediaObjectStatus<IProps, {}>()(function InspectorTit
 				className={ClassNames(
 					'shelf-inspector__title__icon',
 					layer && RundownUtils.getSourceLayerClassName(layer.type),
-					{
-						'source-missing': piece.status === PieceStatusCode.SOURCE_MISSING,
-						'source-broken': piece.status === PieceStatusCode.SOURCE_BROKEN,
-						'unknown-state': piece.status === PieceStatusCode.UNKNOWN,
-					}
+					RundownUtils.getPieceStatusClassName(piece.status)
 				)}
 			>
 				<div className="shelf-inspector__title__layer">{layer && (layer.abbreviation || layer.name)}</div>

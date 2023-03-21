@@ -4214,10 +4214,10 @@
   resolved "https://registry.yarnpkg.com/@trysound/sax/-/sax-0.2.0.tgz#cccaab758af56761eb7bf37af6f03f326dd798ad"
   integrity sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==
 
-"@tv2media/v-connection@^6.0.3":
-  version "6.1.0"
-  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-6.1.0.tgz#c1b97967a49703b5b0d464c81c144cffb544b891"
-  integrity sha512-Tubfcb9PWyQ2P2tjwEWTDxM+oYM66rlle7d0R8xmeeQOdG3MU/EoSqbs1VFQnX25DD75zDYxzZQBE0g1jWj1BQ==
+"@tv2media/v-connection@^7.3.0":
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-7.3.0.tgz#1d6bed97a386d59b618b272ffd5867feb84cb284"
+  integrity sha512-rGg+rLS+Q69YuYgg8XfMD8ZiBr+zUlTNIQyTOFbOwnbV3ycBn+G0WDpNXuo6R73r5svh4BtCr+yapenUPO3jxg==
   dependencies:
     request "^2.88.2"
     request-promise-native "^1.0.9"
@@ -14988,7 +14988,7 @@ timeline-state-resolver@8.0.0-nightly-feat-config-schema-20230120-171243-3aa950d
   resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-8.0.0-nightly-feat-config-schema-20230120-171243-3aa950d18.0.tgz#260b4361a90ee2e7164958392db8683eef7884e2"
   integrity sha512-koHi/+cc8QcwaF5zWeyz2pHJQAjp+zfbBs0mhxVgct3/I+mo6mVDVzDyk4s8UpDZzMYGRvfOK81geND3f+DUVw==
   dependencies:
-    "@tv2media/v-connection" "^6.0.3"
+    "@tv2media/v-connection" "^7.3.0"
     atem-connection "2.4.0"
     atem-state "^0.12.2"
     casparcg-connection "^6.0.0"

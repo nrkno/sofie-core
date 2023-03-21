@@ -22,7 +22,6 @@ import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notific
 import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { getThumbnailUrlForAdLibPieceUi } from '../../lib/ui/clipPreview'
-import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 import { isTouchDevice } from '../../lib/lib'
 import { AdLibPieceUi } from '../../lib/shelf'
@@ -419,16 +418,12 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<IDash
 						invalid: this.props.piece.invalid,
 						floated: this.props.piece.floated,
 						active: this.state.active,
-
-						'source-missing': this.props.piece.status === PieceStatusCode.SOURCE_MISSING,
-						'source-broken': this.props.piece.status === PieceStatusCode.SOURCE_BROKEN,
-						'unknown-state': this.props.piece.status === PieceStatusCode.UNKNOWN,
-
 						live: this.props.isOnAir,
 						disabled: this.props.disabled,
 						list: isList,
 						selected: this.props.isNext || this.props.isSelected,
 					},
+					RundownUtils.getPieceStatusClassName(this.props.piece.status),
 					...(this.props.piece.tags ? this.props.piece.tags.map((tag) => `piece-tag--${tag}`) : [])
 				)}
 				style={{
