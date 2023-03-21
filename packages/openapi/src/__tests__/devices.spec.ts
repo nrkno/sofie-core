@@ -37,9 +37,9 @@ describe('Network client', () => {
 
 	if (testServer) {
 		test('can send a command to a specified peripheral device', async () => {
-			const action = await devicesApi.action({
+			const action = await devicesApi.deviceAction({
 				deviceId: deviceIds[0],
-				actionRequest: { action: 'restart' },
+				deviceActionRequest: { action: 'restart' },
 			})
 			expect(action.status).toBe(202)
 		})

@@ -314,9 +314,9 @@ resources:
           $ref: '#/components/responses/studioNotFound'
         500:
           $ref: '#/components/responses/internalServerError'
-  action:
+  studioAction:
     put:
-      operationId: action
+      operationId: studioAction
       tags:
         - studios
       summary: Performs an action on a studio

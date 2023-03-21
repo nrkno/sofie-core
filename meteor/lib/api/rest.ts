@@ -596,7 +596,7 @@ export interface RestAPI {
 	getPendingMigrations(
 		connection: Meteor.Connection,
 		event: string
-	): Promise<ClientAPI.ClientResponse<{ items: PendingMigrations }>>
+	): Promise<ClientAPI.ClientResponse<{ inputs: PendingMigrations }>>
 	/**
 	 * Apply system-level migrations.
 	 *

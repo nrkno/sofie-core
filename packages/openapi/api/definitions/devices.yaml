@@ -98,9 +98,9 @@ resources:
                       - connected
         404:
           description: The requested device does not exist.
-  action:
+  deviceAction:
     put:
-      operationId: action
+      operationId: deviceAction
       tags:
         - devices
       summary: Sends a command to a specified peripheral device

@@ -25,7 +25,7 @@ paths:
   /devices/{deviceId}:
     $ref: 'definitions/devices.yaml#/resources/device'
   /devices/{deviceId}/action:
-    $ref: 'definitions/devices.yaml#/resources/action'
+    $ref: 'definitions/devices.yaml#/resources/deviceAction'
   # blueprint operations
   /blueprints:
     $ref: 'definitions/blueprints.yaml#/resources/blueprints'
@@ -68,7 +68,7 @@ paths:
   /studios/{studioId}/devices/{deviceId}:
     $ref: 'definitions/studios.yaml#/resources/device'
   /studios/{studioId}/action:
-    $ref: 'definitions/studios.yaml#/resources/action'
+    $ref: 'definitions/studios.yaml#/resources/studioAction'
   # showstyle operations
   /showstyles:
     $ref: 'definitions/showstyles.yaml#/resources/showStyleBases'

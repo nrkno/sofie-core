@@ -967,9 +967,9 @@ class ServerRestAPI implements RestAPI {
 	async getPendingMigrations(
 		_connection: Meteor.Connection,
 		_event: string
-	): Promise<ClientAPI.ClientResponse<{ items: PendingMigrations }>> {
+	): Promise<ClientAPI.ClientResponse<{ inputs: PendingMigrations }>> {
 		let migrationStatus = await MeteorCall.migration.getMigrationStatus()
-		if (!migrationStatus.migrationNeeded) return ClientAPI.responseSuccess({ items: [] })
+		if (!migrationStatus.migrationNeeded) return ClientAPI.responseSuccess({ inputs: [] })
 
 		let requiredInputs: PendingMigrations = []
 		for (const migration of migrationStatus.migration.manualInputs) {
@@ -981,7 +981,7 @@ class ServerRestAPI implements RestAPI {
 			}
 		}
 
-		return ClientAPI.responseSuccess({ items: requiredInputs })
+		return ClientAPI.responseSuccess({ inputs: requiredInputs })
 	}
 
 	async applyPendingMigrations(
@@ -1646,11 +1646,37 @@ sofieAPIRequest<{ studioId: string }, { action: StudioAction }, void>(
 	async (serverAPI, connection, event, params, body) => {
 		const studioId = protectString<StudioId>(params.studioId)
 		const action = body.action
-		logger.info(`koa PUT: Studio action ${studioId} ${body.action}`)
+		logger.info(`koa PUT: Studio action ${studioId} ${body.action.type}`)
 
 		check(studioId, String)
 		check(action, Object)
 		return await serverAPI.studioAction(connection, event, studioId, action)
+	}
+)
+
+sofieAPIRequest<{ showStyleId: string }, { action: ShowStyleBaseAction }, void>(
+	'put',
+	'/studios/{showStyleBaseId}/actions',
+	new Map([[404, UserErrorMessage.ShowStyleBaseNotFound]]),
+	async (serverAPI, connection, event, params, body) => {
+		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleId)
+		const action = body.action
+		logger.info(`koa PUT: ShowStyleBase action ${showStyleBaseId} ${body.action.type}`)
+
+		check(showStyleBaseId, String)
+		check(action, Object)
+		return await serverAPI.showStyleBaseAction(connection, event, showStyleBaseId, action)
+	}
+)
+
+sofieAPIRequest<never, never, { inputs: PendingMigrations }>(
+	'get',
+	'/system/migrations',
+	new Map(),
+	async (serverAPI, connection, event, _params, _body) => {
+		logger.info(`koa GET: System migrations`)
+
+		return await serverAPI.getPendingMigrations(connection, event)
 	}
 )
 

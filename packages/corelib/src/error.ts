@@ -51,6 +51,7 @@ export enum UserErrorMessage {
 	BlueprintNotFound = 36,
 	StudioNotFound = 37,
 	DeviceAlreadyAttachedToStudio = 38,
+	ShowStyleBaseNotFound = 39,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -101,6 +102,7 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.BlueprintNotFound]: t(`Blueprint not found!`),
 	[UserErrorMessage.StudioNotFound]: t(`Studio not found!`),
 	[UserErrorMessage.DeviceAlreadyAttachedToStudio]: t(`Device is already attached to another studio.`),
+	[UserErrorMessage.ShowStyleBaseNotFound]: t(`ShowStyleBase not found!`),
 }
 
 export class UserError {

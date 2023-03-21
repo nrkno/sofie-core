@@ -108,22 +108,12 @@ resources:
             schema:
               type: array
               items:
-                type: object
-                properties:
-                  stepId:
-                    type: string
-                  attributeId:
-                    type: string
-                  migrationValue:
-                    oneOf:
-                      - type: string
-                      - type: number
-                      - type: boolean
-                additionalProperties: false
-                required:
-                  - stepId
-                  - attributeId
-                  - migrationValue
+                oneOf:
+                  # Multiple interfaces are required here because specifying 'migrationValue' as a 'oneOf' type
+                  #  makes the openapi-generator spit out incorrect typescript definitions.
+                  - $ref: '#/components/schemas/migrationString'
+                  - $ref: '#/components/schemas/migrationNumber'
+                  - $ref: '#/components/schemas/migrationBoolean'
       responses:
         200:
           $ref: '#/components/responses/postSuccess'
@@ -172,6 +162,48 @@ components:
                 required:
                   - stepId
                   - attributeId
+    migrationString:
+      type: object
+      properties:
+        stepId:
+          type: string
+        attributeId:
+          type: string
+        migrationValue:
+          type: string
+      required:
+        - stepId
+        - attributeId
+        - migrationValue
+      additionalProperties: false
+    migrationNumber:
+      type: object
+      properties:
+        stepId:
+          type: string
+        attributeId:
+          type: string
+        migrationValue:
+          type: number
+      required:
+        - stepId
+        - attributeId
+        - migrationValue
+      additionalProperties: false
+    migrationBoolean:
+      type: object
+      properties:
+        stepId:
+          type: string
+        attributeId:
+          type: string
+        migrationValue:
+          type: boolean
+      required:
+        - stepId
+        - attributeId
+        - migrationValue
+      additionalProperties: false
   responses:
     postSuccess:
       description: POST success.
