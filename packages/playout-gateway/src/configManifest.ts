@@ -19,6 +19,7 @@ import {
 	QuantelControlMode,
 	MappingVMixType,
 	MappingOBSType,
+	MappingTriCasterType,
 } from 'timeline-state-resolver'
 
 const PLAYOUT_SUBDEVICE_COMMON: ConfigManifestEntry[] = [
@@ -462,6 +463,7 @@ const PLAYOUT_SUBDEVICE_CONFIG: ImplementedSubDeviceConfig = {
 		},
 	],
 	[TSRDeviceType.TELEMETRICS]: [...PLAYOUT_SUBDEVICE_COMMON, ...PLAYOUT_SUBDEVICE_HOST_PORT],
+	[TSRDeviceType.TRICASTER]: [...PLAYOUT_SUBDEVICE_COMMON, ...PLAYOUT_SUBDEVICE_HOST_PORT],
 	[TSRDeviceType.MULTI_OSC]: [
 		...PLAYOUT_SUBDEVICE_COMMON,
 		{
@@ -727,6 +729,22 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 			type: ConfigManifestEntryType.STRING,
 			name: 'Window ID',
 			includeInSummary: true,
+		},
+	],
+	[TSRDeviceType.TRICASTER]: [
+		{
+			id: 'mappingType',
+			type: ConfigManifestEntryType.ENUM,
+			values: MappingTriCasterType,
+			name: 'Mapping Type',
+			includeInSummary: true,
+		},
+		{
+			id: 'name',
+			type: ConfigManifestEntryType.STRING,
+			name: 'Target Name',
+			includeInSummary: true,
+			optional: false,
 		},
 	],
 	[TSRDeviceType.MULTI_OSC]: [
