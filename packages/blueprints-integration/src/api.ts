@@ -355,6 +355,7 @@ export interface BlueprintResultRundownPlaylist {
 
 export interface BlueprintConfigCoreConfig {
 	hostUrl: string
+	frameRate: number
 }
 
 export interface IConfigMessage {

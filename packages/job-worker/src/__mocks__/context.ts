@@ -200,7 +200,7 @@ export class MockJobContext implements JobContext {
 		}
 	}
 	getShowStyleBlueprintConfig(showStyle: ReadonlyDeep<ProcessedShowStyleCompound>): ProcessedShowStyleConfig {
-		return preprocessShowStyleConfig(showStyle, this.#showStyleBlueprint)
+		return preprocessShowStyleConfig(showStyle, this.#showStyleBlueprint, this.#studio.settings)
 	}
 
 	hackPublishTimelineToFastTrack(_newTimeline: TimelineComplete): void {

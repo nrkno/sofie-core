@@ -1,105 +1,81 @@
-import React from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Meteor } from 'meteor/meteor'
 import Tooltip from 'rc-tooltip'
 import { MeteorCall } from '../../../../lib/api/methods'
-import { Studio } from '../../../../lib/collections/Studios'
 import { getHelpMode } from '../../../lib/localStorage'
-import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
-import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
+import { useTranslation } from 'react-i18next'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IStudioBaselineStatusProps {
-	studio: Studio
-}
-interface IStudioBaselineStatusState {
-	needsUpdate: boolean
+	studioId: StudioId
 }
 
-export class StudioBaselineStatus extends MeteorReactComponent<
-	Translated<IStudioBaselineStatusProps>,
-	IStudioBaselineStatusState
-> {
-	private updateInterval: number | undefined = undefined
+export function StudioBaselineStatus({ studioId }: IStudioBaselineStatusProps): JSX.Element {
+	const { t } = useTranslation()
 
-	constructor(props: Translated<IStudioBaselineStatusProps>) {
-		super(props)
-
-		this.state = {
-			needsUpdate: false,
+	const [needsUpdate, setNeedsUpdate] = useState(false)
+	useEffect(() => {
+		const updateStatus = () => {
+			MeteorCall.playout
+				.shouldUpdateStudioBaseline(studioId)
+				.then((result) => {
+					setNeedsUpdate(!!result)
+				})
+				.catch((err) => {
+					console.error('Failed to update studio baseline status', err)
+					setNeedsUpdate(false)
+				})
 		}
-	}
 
-	componentDidMount(): void {
 		const updatePeriod = 30000 // every 30s
-		this.updateInterval = Meteor.setInterval(() => this.updateStatus(), updatePeriod)
-		this.updateStatus()
-	}
+		const interval = Meteor.setInterval(() => updateStatus(), updatePeriod)
+		updateStatus()
 
-	componentWillUnmount(): void {
-		if (this.updateInterval) {
-			Meteor.clearInterval(this.updateInterval)
-			this.updateInterval = undefined
+		return () => {
+			Meteor.clearInterval(interval)
 		}
-	}
+	}, [studioId])
 
-	private updateStatus(props?: Translated<IStudioBaselineStatusProps>) {
-		const studio = props ? props.studio : this.props.studio
-
+	const reloadBaseline = useCallback(() => {
 		MeteorCall.playout
-			.shouldUpdateStudioBaseline(studio._id)
+			.updateStudioBaseline(studioId)
 			.then((result) => {
-				if (this.updateInterval) this.setState({ needsUpdate: !!result })
-			})
-			.catch((err) => {
-				console.error('Failed to update studio baseline status', err)
-				if (this.updateInterval) this.setState({ needsUpdate: false })
-			})
-	}
-
-	private reloadBaseline() {
-		MeteorCall.playout
-			.updateStudioBaseline(this.props.studio._id)
-			.then((result) => {
-				if (this.updateInterval) this.setState({ needsUpdate: !!result })
+				setNeedsUpdate(!!result)
 			})
 			.catch((err) => {
 				console.error('Failed to update studio baseline', err)
-				if (this.updateInterval) this.setState({ needsUpdate: false })
+				setNeedsUpdate(false)
 			})
-	}
+	}, [studioId])
 
-	render(): JSX.Element {
-		const { t } = this.props
-		const { needsUpdate } = this.state
-
-		return (
-			<div>
-				<p className="mhn">
-					{t('Studio Baseline needs update: ')}&nbsp;
-					{needsUpdate ? (
-						<Tooltip
-							overlay={t('Baseline needs reload, this studio may not work until reloaded')}
-							visible={getHelpMode()}
-							placement="right"
-						>
-							<span>{t('Yes')}</span>
-						</Tooltip>
-					) : (
-						t('No')
-					)}
-					{needsUpdate ? (
-						<span className="error-notice inline">
-							{t('Reload Baseline')} <FontAwesomeIcon icon={faExclamationTriangle} />
-						</span>
-					) : null}
-				</p>
-				<p className="mhn">
-					<button className="btn btn-primary" onClick={() => this.reloadBaseline()}>
-						{t('Reload Baseline')}
-					</button>
-				</p>
-			</div>
-		)
-	}
+	return (
+		<div>
+			<p className="mhn">
+				{t('Studio Baseline needs update: ')}&nbsp;
+				{needsUpdate ? (
+					<Tooltip
+						overlay={t('Baseline needs reload, this studio may not work until reloaded')}
+						visible={getHelpMode()}
+						placement="right"
+					>
+						<span>{t('Yes')}</span>
+					</Tooltip>
+				) : (
+					t('No')
+				)}
+				{needsUpdate ? (
+					<span className="error-notice inline">
+						{t('Reload Baseline')} <FontAwesomeIcon icon={faExclamationTriangle} />
+					</span>
+				) : null}
+			</p>
+			<p className="mhn">
+				<button className="btn btn-primary" onClick={reloadBaseline}>
+					{t('Reload Baseline')}
+				</button>
+			</p>
+		</div>
+	)
 }

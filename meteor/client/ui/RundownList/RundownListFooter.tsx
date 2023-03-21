@@ -1,18 +1,45 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Tooltip from 'rc-tooltip'
 import { getHelpMode } from '../../lib/localStorage'
 import { StatusResponse } from '../../../lib/api/systemStatus'
 import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
 import { useTranslation } from 'react-i18next'
+import { MeteorCall } from '../../../lib/api/methods'
+import { NoticeLevel, Notification, NotificationCenter } from '../../../lib/notifications/notifications'
 
 const PackageInfo = require('../../../package.json') as Record<string, any>
 
-interface IProps {
-	systemStatus: StatusResponse
-}
-
-export function RundownListFooter({ systemStatus }: IProps): JSX.Element {
+export function RundownListFooter(): JSX.Element {
 	const { t } = useTranslation()
+
+	const [systemStatus, setSystemStatus] = useState<StatusResponse | null>(null)
+	useEffect(() => {
+		const refreshSystemStatus = () => {
+			MeteorCall.systemStatus
+				.getSystemStatus()
+				.then((systemStatus: StatusResponse) => {
+					setSystemStatus(systemStatus)
+				})
+				.catch(() => {
+					setSystemStatus(null)
+					NotificationCenter.push(
+						new Notification(
+							'systemStatus_failed',
+							NoticeLevel.CRITICAL,
+							t('Could not get system status. Please consult system administrator.'),
+							'RundownList'
+						)
+					)
+				})
+		}
+
+		refreshSystemStatus()
+		const interval = setInterval(() => refreshSystemStatus, 5000)
+
+		return () => {
+			clearInterval(interval)
+		}
+	}, [])
 
 	const version = PackageInfo.version || 'UNSTABLE'
 	const versionExtended = PackageInfo.versionExtended || version

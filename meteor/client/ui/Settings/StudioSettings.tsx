@@ -1,80 +1,74 @@
-import React from 'react'
-import { Studio, MappingsExt } from '../../../lib/collections/Studios'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import React, { useMemo } from 'react'
+import { useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-import { PeripheralDevice, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 import { StudioRoutings } from './Studio/Routings'
 import { StudioDevices } from './Studio/Devices'
 import { MappingsSettingsManifest, MappingsSettingsManifests, StudioMappings } from './Studio/Mappings'
 import { StudioPackageManagerSettings } from './Studio/PackageManager'
 import { StudioGenericProperties } from './Studio/Generic'
-import { Redirect, Route, Switch } from 'react-router-dom'
+import { Redirect, Route, Switch, useRouteMatch } from 'react-router-dom'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { ReadonlyDeep } from 'type-fest'
-import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PeripheralDevices, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
-import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { PeripheralDevices, ShowStyleBases, Studios } from '../../collections'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { literal } from '@sofie-automation/corelib/dist/lib'
 import { translateStringIfHasNamespaces } from '../../lib/forms/schemaFormUtil'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { StudioBlueprintConfigurationSettings } from './Studio/BlueprintConfiguration'
 
-interface IStudioSettingsProps {
-	match: {
-		url: string
-		path: string
-		params: {
-			studioId: StudioId
-		}
-	}
-}
-interface IStudioSettingsState {}
-interface IStudioSettingsTrackedProps {
-	studio?: Studio
-	studioMappings: ReadonlyDeep<MappingsExt>
-	studioDevices: Array<PeripheralDevice>
-	availableShowStyleVariants: Array<{
-		name: string
-		value: ShowStyleVariantId
-		showStyleVariant: ShowStyleVariant
-	}>
-	availableShowStyleBases: Array<{
-		name: string
-		value: ShowStyleBaseId
-		showStyleBase: ShowStyleBase
-	}>
-	availableDevices: Array<PeripheralDevice>
-	layerMappingsSchema: MappingsSettingsManifests | undefined
-	layerMappingsTranslationNamespaces: string[]
-}
+export default function StudioSettings(): JSX.Element {
+	const match = useRouteMatch<{ studioId: string }>()
+	const studioId = protectString(match.params.studioId)
 
-export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, IStudioSettingsTrackedProps>(
-	(props: IStudioSettingsProps) => {
-		const studio = Studios.findOne(props.match.params.studioId)
+	const studio = useTracker(() => Studios.findOne(studioId), [studioId])
 
-		// TODO - these should come from the device the mapping is targeting but for now this will catch 99% of expected use cases
-		const firstPlayoutDevice = PeripheralDevices.findOne(
-			{
-				studioId: {
-					$eq: props.match.params.studioId,
-				},
-				parentDeviceId: {
-					$exists: false,
-				},
-				type: {
-					$eq: PeripheralDeviceType.PLAYOUT,
-				},
-			},
-			{
-				sort: {
-					lastConnected: -1,
-				},
-			}
-		)
+	const studioMappings = useMemo(
+		() => (studio ? applyAndValidateOverrides(studio.mappingsWithOverrides).obj : {}),
+		[studio?.mappingsWithOverrides]
+	)
 
+	// TODO - move into child-component
+	const availableShowStyleBases = useTracker(
+		() =>
+			ShowStyleBases.find()
+				.fetch()
+				.map((showStyle) => {
+					return {
+						name: `${showStyle.name}`,
+						value: showStyle._id,
+						showStyleBase: showStyle,
+					}
+				}),
+		[],
+		[]
+	)
+
+	const firstPlayoutDevice = useTracker(
+		() =>
+			PeripheralDevices.findOne(
+				{
+					studioId: {
+						$eq: studioId,
+					},
+					parentDeviceId: {
+						$exists: false,
+					},
+					type: {
+						$eq: PeripheralDeviceType.PLAYOUT,
+					},
+				},
+				{
+					sort: {
+						lastConnected: -1,
+					},
+				}
+			),
+
+		[studioId]
+	)
+
+	const { translationNamespaces, layerMappingsSchema } = useMemo(() => {
 		const translationNamespaces = [`peripheralDevice_${firstPlayoutDevice?._id}`]
 		const layerMappingsSchema: MappingsSettingsManifests = Object.fromEntries(
 			Object.entries(firstPlayoutDevice?.configManifest?.subdeviceManifest || {}).map(([id, val]) => {
@@ -92,119 +86,52 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 			})
 		)
 
-		return {
-			studio: studio,
-			studioMappings: studio ? applyAndValidateOverrides(studio.mappingsWithOverrides).obj : {},
-			studioDevices: PeripheralDevices.find({
-				studioId: props.match.params.studioId,
-			}).fetch(),
-			availableShowStyleVariants: ShowStyleVariants.find(
-				studio
-					? {
-							showStyleBaseId: {
-								$in: studio.supportedShowStyleBase || [],
-							},
-					  }
-					: {}
-			)
-				.fetch()
-				.map((variant) => {
-					const baseStyle = ShowStyleBases.findOne(variant.showStyleBaseId)
-					return {
-						name: `${(baseStyle || { name: '' }).name}: ${variant.name} (${variant._id})`,
-						value: variant._id,
-						showStyleVariant: variant,
-					}
-				}),
-			availableShowStyleBases: ShowStyleBases.find()
-				.fetch()
-				.map((showStyle) => {
-					return {
-						name: `${showStyle.name}`,
-						value: showStyle._id,
-						showStyleBase: showStyle,
-					}
-				}),
-			availableDevices: PeripheralDevices.find(
-				{
-					studioId: {
-						$not: {
-							$eq: props.match.params.studioId,
-						},
-					},
-					parentDeviceId: {
-						$exists: false,
-					},
-				},
-				{
-					sort: {
-						lastConnected: -1,
-					},
-				}
-			).fetch(),
+		return { translationNamespaces, layerMappingsSchema }
+	}, [firstPlayoutDevice])
 
-			layerMappingsTranslationNamespaces: translationNamespaces,
-			layerMappingsSchema: layerMappingsSchema,
-		}
-	}
-)(
-	class StudioSettings extends MeteorReactComponent<
-		Translated<IStudioSettingsProps & IStudioSettingsTrackedProps>,
-		IStudioSettingsState
-	> {
-		render(): JSX.Element {
-			return this.props.studio ? (
-				<div className="studio-edit mod mhl mvn">
-					<div className="row">
-						<div className="col c12 r1-c12">
-							<ErrorBoundary>
-								<Switch>
-									<Route path={`${this.props.match.path}/generic`}>
-										<StudioGenericProperties
-											studio={this.props.studio}
-											availableShowStyleBases={this.props.availableShowStyleBases}
-										/>
-									</Route>
-									<Route path={`${this.props.match.path}/devices`}>
-										<StudioDevices
-											studio={this.props.studio}
-											studioDevices={this.props.studioDevices}
-											availableDevices={this.props.availableDevices}
-										/>
-									</Route>
-									<Route path={`${this.props.match.path}/blueprint-config`}>
-										<StudioBlueprintConfigurationSettings studio={this.props.studio} />
-									</Route>
-									<Route path={`${this.props.match.path}/mappings`}>
-										<StudioMappings
-											studio={this.props.studio}
-											manifest={this.props.layerMappingsSchema}
-											translationNamespaces={this.props.layerMappingsTranslationNamespaces}
-										/>
-									</Route>
-									<Route path={`${this.props.match.path}/route-sets`}>
-										<StudioRoutings
-											translationNamespaces={this.props.layerMappingsTranslationNamespaces}
-											studio={this.props.studio}
-											studioMappings={this.props.studioMappings}
-											manifest={this.props.layerMappingsSchema}
-										/>
-									</Route>
-									<Route path={`${this.props.match.path}/package-manager`}>
-										<StudioPackageManagerSettings studio={this.props.studio} />
-									</Route>
-									<Redirect to={`${this.props.match.path}/generic`} />
-								</Switch>
-							</ErrorBoundary>
-						</div>
-					</div>
+	return studio ? (
+		<div className="studio-edit mod mhl mvn">
+			<div className="row">
+				<div className="col c12 r1-c12">
+					<ErrorBoundary>
+						<Switch>
+							<Route path={`${match.path}/generic`}>
+								<StudioGenericProperties studio={studio} availableShowStyleBases={availableShowStyleBases} />
+							</Route>
+							<Route path={`${match.path}/devices`}>
+								<StudioDevices studioId={studio._id} />
+							</Route>
+							<Route path={`${match.path}/blueprint-config`}>
+								<StudioBlueprintConfigurationSettings studio={studio} />
+							</Route>
+							<Route path={`${match.path}/mappings`}>
+								<StudioMappings
+									translationNamespaces={translationNamespaces}
+									studio={studio}
+									manifest={layerMappingsSchema}
+								/>
+							</Route>
+							<Route path={`${match.path}/route-sets`}>
+								<StudioRoutings
+									translationNamespaces={translationNamespaces}
+									studio={studio}
+									studioMappings={studioMappings}
+									manifest={layerMappingsSchema}
+								/>
+							</Route>
+							<Route path={`${match.path}/package-manager`}>
+								<StudioPackageManagerSettings studio={studio} />
+							</Route>
+							<Redirect to={`${match.path}/generic`} />
+						</Switch>
+					</ErrorBoundary>
 				</div>
-			) : (
-				<Spinner />
-			)
-		}
-	}
-)
+			</div>
+		</div>
+	) : (
+		<Spinner />
+	)
+}
 
 export function findHighestRank(array: Array<{ _rank: number } | undefined>): { _rank: number } | null {
 	if (!array) return null

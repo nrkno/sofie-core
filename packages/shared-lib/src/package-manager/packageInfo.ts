@@ -18,7 +18,7 @@ export namespace PackageInfo {
 	}
 	export interface FFProbeDeepScan extends Base {
 		type: Type.DEEPSCAN
-		payload: FFProbeDeepScan
+		payload: FFProbeDeepScanInfo
 	}
 	export interface FFOther extends Base {
 		// placeholder
@@ -120,7 +120,7 @@ export namespace PackageInfo {
 		}
 	}
 
-	export interface FFProbeDeepScan {
+	export interface FFProbeDeepScanInfo {
 		field_order?: FieldOrder
 		/** Timestamps (in seconds) for when scene-changes are detected */
 		scenes?: number[]

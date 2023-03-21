@@ -10,13 +10,11 @@ import {
 } from 'react-dnd'
 import { MeteorCall } from '../../lib/api/methods'
 import { PubSub } from '../../lib/api/pubsub'
-import { StatusResponse } from '../../lib/api/systemStatus'
 import { GENESIS_SYSTEM_VERSION, ICoreSystem } from '../../lib/collections/CoreSystem'
 import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../lib/collections/Rundowns'
 import { getAllowConfigure, getHelpMode } from '../lib/localStorage'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { extendMandadory, unprotectString } from '../../lib/lib'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
@@ -49,7 +47,6 @@ interface IRundownsListProps {
 }
 
 interface IRundownsListState {
-	systemStatus?: StatusResponse
 	subsReady: boolean
 }
 
@@ -182,8 +179,6 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 			}
 
 			componentDidMount(): void {
-				const { t } = this.props
-
 				// Subscribe to data:
 				this.subscribe(PubSub.rundownPlaylists, {})
 				this.subscribe(PubSub.uiStudio, null)
@@ -217,27 +212,6 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 						})
 					}
 				})
-
-				const refreshSystemStatus = () => {
-					MeteorCall.systemStatus
-						.getSystemStatus()
-						.then((systemStatus: StatusResponse) => {
-							this.setState({ systemStatus })
-						})
-						.catch(() => {
-							NotificationCenter.push(
-								new Notification(
-									'systemStatus_failed',
-									NoticeLevel.CRITICAL,
-									t('Could not get system status. Please consult system administrator.'),
-									'RundownList'
-								)
-							)
-						})
-				}
-
-				refreshSystemStatus()
-				setInterval(() => refreshSystemStatus, 5000)
 			}
 
 			private handleRundownDrop(rundownId: RundownId) {
@@ -331,7 +305,7 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 							</section>
 						)}
 
-						{this.state.systemStatus ? <RundownListFooter systemStatus={this.state.systemStatus} /> : null}
+						<RundownListFooter />
 					</React.Fragment>
 				)
 			}

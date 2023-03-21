@@ -243,7 +243,7 @@ export const StudioGenericProperties = withTranslation()(
 					</div>
 
 					<div className="col c12 r1-c12">
-						<StudioBaselineStatus studio={this.props.studio} t={t} i18n={this.props.i18n} tReady={this.props.tReady} />
+						<StudioBaselineStatus studioId={this.props.studio._id} />
 					</div>
 				</div>
 			)

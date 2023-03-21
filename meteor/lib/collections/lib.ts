@@ -5,7 +5,7 @@ import { ProtectedString, protectString } from '../lib'
 import type { Collection as RawCollection, Db as RawDb, CreateIndexesOptions } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { MongoFieldSpecifier, SortSpecifier } from '@sofie-automation/corelib/dist/mongo'
-import { CustomCollectionType } from '../api/pubsub'
+import { CustomCollectionName, CustomCollectionType } from '../api/pubsub'
 
 export const ClientCollections = new Map<CollectionName, MongoCollection<any> | WrappedMongoReadOnlyCollection<any>>()
 function registerClientCollection(
@@ -15,6 +15,8 @@ function registerClientCollection(
 	if (ClientCollections.has(name)) throw new Meteor.Error(`Cannot re-register collection "${name}"`)
 	ClientCollections.set(name, collection)
 }
+
+export const PublicationCollections = new Map<CustomCollectionName, WrappedMongoReadOnlyCollection<any>>()
 
 /**
  * Map of current collection objects.
@@ -97,8 +99,12 @@ export function createSyncCustomPublicationMongoCollection<K extends keyof Custo
 	name: K
 ): MongoReadOnlyCollection<CustomCollectionType[K]> {
 	const collection = new Mongo.Collection<CustomCollectionType[K]>(name)
+	const wrapped = new WrappedMongoReadOnlyCollection<CustomCollectionType[K]>(collection, name)
 
-	return new WrappedMongoReadOnlyCollection<CustomCollectionType[K]>(collection, name)
+	if (PublicationCollections.has(name)) throw new Meteor.Error(`Cannot re-register collection "${name}"`)
+	PublicationCollections.set(name, wrapped)
+
+	return wrapped
 }
 
 class WrappedMongoReadOnlyCollection<DBInterface extends { _id: ProtectedString<any> }>

@@ -43,6 +43,7 @@ export function getReactivePieceNoteCountsForSegment(segment: SegmentUi): Segmen
 		for (const obj of mediaObjectStatuses) {
 			switch (obj.status.status) {
 				case PieceStatusCode.OK:
+				case PieceStatusCode.SOURCE_NOT_READY:
 				case PieceStatusCode.UNKNOWN:
 					// Ignore
 					break
