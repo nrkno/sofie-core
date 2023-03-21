@@ -201,6 +201,8 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 		}
 	}, [isHeaderDetached, parts.length])
 
+	if (props.segment.isHidden) return null
+
 	return (
 		<div
 			id={props.id}
