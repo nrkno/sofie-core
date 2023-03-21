@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/shared-lib",
-	"version": "1.49.0-in-development",
+	"version": "1.50.0-in-development",
 	"private": false,
 	"description": "Library for types & values shared by core, workers and gateways",
 	"main": "dist/index.js",
@@ -39,10 +39,10 @@
 		"/LICENSE"
 	],
 	"dependencies": {
+		"@mos-connection/model": "^3.0.1",
 		"timeline-state-resolver-types": "8.0.0-release49.0",
 		"tslib": "^2.4.0",
-		"type-fest": "^2.19.0",
-		"@mos-connection/model": "^3.0.1"
+		"type-fest": "^2.19.0"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {
