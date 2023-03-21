@@ -6,8 +6,6 @@ import { Mongo } from 'meteor/mongo'
 import {
 	UpdateOptions,
 	UpsertOptions,
-	WrappedMongoCollection,
-	MongoCollection,
 	FieldNames,
 	getOrCreateMongoCollection,
 	FindOptions,
@@ -18,7 +16,7 @@ import {
 	ObserveCallbacks,
 } from '../../lib/collections/lib'
 import { makePromise, stringifyError, waitForPromise } from '../../lib/lib'
-import type { AnyBulkWriteOperation, Collection as RawCollection, CreateIndexesOptions } from 'mongodb'
+import type { AnyBulkWriteOperation, Collection as RawCollection, Db as RawDb, CreateIndexesOptions } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import _ from 'underscore'
 import { registerCollection } from './lib'
@@ -31,42 +29,15 @@ import { registerCollection } from './lib'
 export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	collection: Mongo.Collection<DBInterface>,
 	name: CollectionName
-): ServerAsyncOnlyMongoCollection<DBInterface> {
+): AsyncOnlyMongoCollection<DBInterface> {
 	if (collectionsCache.has(name)) throw new Meteor.Error(500, `Collection "${name}" has already been created`)
 	collectionsCache.set(name, collection)
 
-	const wrapped = new WrappedServerMongoCollection<DBInterface>(collection, name)
+	const wrapped = new WrappedAsyncMongoCollection<DBInterface>(collection, name)
 
 	registerCollection(name, wrapped)
 
 	return wrapped
-}
-
-/**
- * Create a fully featured MongoCollection
- * @param name Name of the collection in mongodb
- * @param options Open options
- */
-export function createAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
-	name: CollectionName
-	// options?: {
-	// 	connection?: Object | null
-	// 	idGeneration?: string
-	// }
-): ServerMongoCollection<DBInterface> {
-	const collection = getOrCreateMongoCollection(name)
-
-	let collection2: ServerMongoCollection<DBInterface>
-	if ((collection as any)._isMock) {
-		collection2 = new WrappedMockCollection(collection, name)
-	} else {
-		// Override the default mongodb methods, because the errors thrown by them doesn't contain the proper call stack
-		collection2 = new WrappedServerMongoCollection(collection, name)
-	}
-
-	registerCollection(name, collection2)
-
-	return collection2
 }
 
 /**
@@ -80,14 +51,122 @@ export function createAsyncOnlyMongoCollection<DBInterface extends { _id: Protec
 	// 	connection?: Object | null
 	// 	idGeneration?: string
 	// }
-): ServerAsyncOnlyMongoCollection<DBInterface> {
-	// TODO - this should be using a different class
-	return createAsyncMongoCollection(name)
+): AsyncOnlyMongoCollection<DBInterface> {
+	const collection = getOrCreateMongoCollection(name)
+
+	let collection2: AsyncOnlyMongoCollection<DBInterface>
+	if ((collection as any)._isMock) {
+		collection2 = new WrappedMockCollection(collection, name)
+	} else {
+		// Override the default mongodb methods, because the errors thrown by them doesn't contain the proper call stack
+		collection2 = new WrappedAsyncMongoCollection(collection, name)
+	}
+
+	registerCollection(name, collection2)
+
+	return collection2
+}
+
+class WrappedMongoCollectionBase<DBInterface extends { _id: ProtectedString<any> }> {
+	protected readonly _collection: Mongo.Collection<DBInterface>
+
+	public readonly name: string | null
+
+	constructor(collection: Mongo.Collection<DBInterface>, name: string | null) {
+		this._collection = collection
+		this.name = name
+	}
+
+	protected get _isMock() {
+		// @ts-expect-error re-export private property
+		return this._collection._isMock
+	}
+
+	public get mockCollection() {
+		return this._collection
+	}
+
+	protected wrapMongoError(e: any): never {
+		const str = (e && e.reason) || e.toString() || e || 'Unknown MongoDB Error'
+		throw new Meteor.Error((e && e.error) || 500, `Collection "${this.name}": ${str}`)
+	}
+
+	rawCollection(): RawCollection<DBInterface> {
+		return this._collection.rawCollection() as any
+	}
+	rawDatabase(): RawDb {
+		return this._collection.rawDatabase() as any
+	}
+
+	protected find(
+		selector?: MongoQuery<DBInterface> | DBInterface['_id'],
+		options?: FindOptions<DBInterface>
+	): MongoCursor<DBInterface> {
+		try {
+			return this._collection.find((selector ?? {}) as any, options as any) as MongoCursor<DBInterface>
+		} catch (e) {
+			this.wrapMongoError(e)
+		}
+	}
+
+	protected insert(doc: DBInterface): DBInterface['_id'] {
+		try {
+			const resultId = this._collection.insert(doc as unknown as Mongo.OptionalId<DBInterface>)
+			return protectString(resultId)
+		} catch (e) {
+			this.wrapMongoError(e)
+		}
+	}
+
+	protected remove(selector: MongoQuery<DBInterface> | DBInterface['_id']): number {
+		try {
+			return this._collection.remove(selector as any)
+		} catch (e) {
+			this.wrapMongoError(e)
+		}
+	}
+	protected update(
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		modifier: MongoModifier<DBInterface>,
+		options?: UpdateOptions
+	): number {
+		try {
+			return this._collection.update(selector as any, modifier as any, options)
+		} catch (e) {
+			this.wrapMongoError(e)
+		}
+	}
+	protected upsert(
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		modifier: MongoModifier<DBInterface>,
+		options?: UpsertOptions
+	): {
+		numberAffected?: number
+		insertedId?: DBInterface['_id']
+	} {
+		try {
+			const result = this._collection.upsert(selector as any, modifier as any, options)
+			return {
+				numberAffected: result.numberAffected,
+				insertedId: protectString(result.insertedId),
+			}
+		} catch (e) {
+			this.wrapMongoError(e)
+		}
+	}
+
+	_ensureIndex(keys: IndexSpecifier<DBInterface> | string, options?: CreateIndexesOptions): void {
+		try {
+			return this._collection._ensureIndex(keys as any, options)
+		} catch (e) {
+			this.wrapMongoError(e)
+		}
+	}
 }
 
 class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
-	extends WrappedMongoCollection<DBInterface>
-	implements AsyncMongoCollection<DBInterface>
+	extends WrappedMongoCollectionBase<DBInterface>
+	implements AsyncOnlyMongoCollection<DBInterface>
 {
 	async findFetchAsync(
 		selector: MongoQuery<DBInterface> | string,
@@ -220,54 +299,8 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 			}
 		})
 	}
-}
 
-export interface ServerAsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
-	extends AsyncOnlyMongoCollection<DBInterface> {
-	/**
-	 * Allow users to write directly to this collection from client code, subject to limitations you define.
-	 */
-	allow(options: {
-		insert?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
-		update?: (
-			userId: UserId,
-			doc: DBInterface,
-			fieldNames: FieldNames<DBInterface>,
-			modifier: MongoModifier<DBInterface>
-		) => Promise<boolean> | boolean
-		remove?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
-		fetch?: string[]
-		// transform?: Function
-	}): boolean
-
-	/**
-	 * Override allow rules.
-	 */
-	deny(options: {
-		insert?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
-		update?: (
-			userId: UserId,
-			doc: DBInterface,
-			fieldNames: FieldNames<DBInterface>,
-			modifier: MongoModifier<DBInterface>
-		) => Promise<boolean> | boolean
-		remove?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
-		fetch?: string[]
-		// transform?: Function
-	}): boolean
-
-	_ensureIndex(keys: IndexSpecifier<DBInterface> | string, options?: CreateIndexesOptions): void
-}
-
-export interface ServerMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
-	extends ServerAsyncOnlyMongoCollection<DBInterface>,
-		MongoCollection<DBInterface> {}
-
-class WrappedServerMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
-	extends WrappedAsyncMongoCollection<DBInterface>
-	implements ServerMongoCollection<DBInterface>
-{
-	allow(args: Parameters<ServerMongoCollection<DBInterface>['allow']>[0]): boolean {
+	allow(args: Parameters<AsyncOnlyMongoCollection<DBInterface>['allow']>[0]): boolean {
 		const { insert: origInsert, update: origUpdate, remove: origRemove } = args
 		const options: Parameters<Mongo.Collection<DBInterface>['allow']>[0] = {
 			insert: origInsert ? (userId, doc) => waitForPromise(origInsert(protectString(userId), doc)) : undefined,
@@ -280,7 +313,7 @@ class WrappedServerMongoCollection<DBInterface extends { _id: ProtectedString<an
 		}
 		return this._collection.allow(options)
 	}
-	deny(args: Parameters<ServerMongoCollection<DBInterface>['deny']>[0]): boolean {
+	deny(args: Parameters<AsyncOnlyMongoCollection<DBInterface>['deny']>[0]): boolean {
 		const { insert: origInsert, update: origUpdate, remove: origRemove } = args
 		const options: Parameters<Mongo.Collection<DBInterface>['deny']>[0] = {
 			insert: origInsert ? (userId, doc) => waitForPromise(origInsert(protectString(userId), doc)) : undefined,
@@ -296,11 +329,8 @@ class WrappedServerMongoCollection<DBInterface extends { _id: ProtectedString<an
 }
 
 /**
- * A minimal Async wrapping around the base Mongo.Collection type
+ * A minimal Async only wrapping around the base Mongo.Collection type
  */
-export interface AsyncMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
-	extends MongoCollection<DBInterface>,
-		AsyncOnlyMongoCollection<DBInterface> {}
 export interface AsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedString<any> }> {
 	name: string | null
 
@@ -374,12 +404,46 @@ export interface AsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedSt
 	 * @param selector A query describing the documents to find
 	 */
 	countDocuments(selector?: MongoQuery<DBInterface>, options?: FindOptions<DBInterface>): Promise<number>
+
+	/**
+	 * Allow users to write directly to this collection from client code, subject to limitations you define.
+	 */
+	allow(options: {
+		insert?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
+		update?: (
+			userId: UserId,
+			doc: DBInterface,
+			fieldNames: FieldNames<DBInterface>,
+			modifier: MongoModifier<DBInterface>
+		) => Promise<boolean> | boolean
+		remove?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
+		fetch?: string[]
+		// transform?: Function
+	}): boolean
+
+	/**
+	 * Override allow rules.
+	 */
+	deny(options: {
+		insert?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
+		update?: (
+			userId: UserId,
+			doc: DBInterface,
+			fieldNames: FieldNames<DBInterface>,
+			modifier: MongoModifier<DBInterface>
+		) => Promise<boolean> | boolean
+		remove?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
+		fetch?: string[]
+		// transform?: Function
+	}): boolean
+
+	_ensureIndex(keys: IndexSpecifier<DBInterface> | string, options?: CreateIndexesOptions): void
 }
 
 /** This is for the mock mongo collection, as internally it is sync and so we dont need or want to play around with fibers */
 class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
-	extends WrappedMongoCollection<DBInterface>
-	implements ServerMongoCollection<DBInterface>
+	extends WrappedMongoCollectionBase<DBInterface>
+	implements AsyncOnlyMongoCollection<DBInterface>
 {
 	private readonly realSleep: (time: number) => Promise<void>
 
@@ -393,7 +457,7 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 		this.realSleep = realSleep
 	}
 
-	allow(args: Parameters<ServerMongoCollection<DBInterface>['allow']>[0]): boolean {
+	allow(args: Parameters<AsyncOnlyMongoCollection<DBInterface>['allow']>[0]): boolean {
 		const { insert: origInsert, update: origUpdate, remove: origRemove } = args
 		const options: Parameters<Mongo.Collection<DBInterface>['allow']>[0] = {
 			insert: origInsert ? (userId, doc) => waitForPromise(origInsert(protectString(userId), doc)) : undefined,
@@ -406,7 +470,7 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 		}
 		return this._collection.allow(options)
 	}
-	deny(args: Parameters<ServerMongoCollection<DBInterface>['deny']>[0]): boolean {
+	deny(args: Parameters<AsyncOnlyMongoCollection<DBInterface>['deny']>[0]): boolean {
 		const { insert: origInsert, update: origUpdate, remove: origRemove } = args
 		const options: Parameters<Mongo.Collection<DBInterface>['deny']>[0] = {
 			insert: origInsert ? (userId, doc) => waitForPromise(origInsert(protectString(userId), doc)) : undefined,

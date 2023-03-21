@@ -5,7 +5,7 @@ import { objectPathGet, ProtectedString } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import { AsyncMongoCollection } from '../collections/collection'
+import { AsyncOnlyMongoCollection } from '../collections/collection'
 import { Collections } from '../collections/lib'
 
 /**
@@ -98,7 +98,7 @@ interface RenameContent {
 }
 export function renamePropertiesInCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	id: string,
-	collection: AsyncMongoCollection<DBInterface>,
+	collection: AsyncOnlyMongoCollection<DBInterface>,
 	collectionName: string,
 	renames: Partial<{ [newAttr in keyof DBInterface]: string | RenameContent }>,
 	dependOnResultFrom?: string

@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { sleep } from '../../lib/lib'
+import { sleep, waitForPromise } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import {
@@ -23,7 +23,7 @@ import { cleanupOldDataInner } from './cleanup'
 import { IndexSpecification } from 'mongodb'
 import { nightlyCronjobInner } from '../cronjobs'
 import { TranslationsBundleId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { AsyncMongoCollection, createAsyncMongoCollection } from '../collections/collection'
+import { createAsyncOnlyMongoCollection, AsyncOnlyMongoCollection } from '../collections/collection'
 
 async function setupIndexes(removeOldIndexes: boolean = false): Promise<Array<IndexSpecification>> {
 	// Note: This function should NOT run on Meteor.startup, due to getCollectionIndexes failing if run before indexes have been created.
@@ -108,11 +108,11 @@ async function runCronjob(context: MethodContext): Promise<void> {
 	return nightlyCronjobInner()
 }
 
-let mongoTest: AsyncMongoCollection<any> | undefined = undefined
+let mongoTest: AsyncOnlyMongoCollection<any> | undefined = undefined
 /** Runs a set of system benchmarks, that are designed to test various aspects of the hardware-performance on the server */
 async function doSystemBenchmarkInner() {
 	if (!mongoTest) {
-		mongoTest = createAsyncMongoCollection<any>('benchmark-test' as any)
+		mongoTest = createAsyncOnlyMongoCollection<any>('benchmark-test' as any)
 		mongoTest._ensureIndex({
 			indexedProp: 1,
 		})
@@ -120,7 +120,7 @@ async function doSystemBenchmarkInner() {
 	const cleanup = () => {
 		if (mongoTest) {
 			// clean up
-			mongoTest.remove({})
+			waitForPromise(mongoTest.removeAsync({}))
 		}
 	}
 
@@ -147,15 +147,15 @@ async function doSystemBenchmarkInner() {
 						ghjk: 123456,
 					},
 				}
-				insertedIds.push(mongoTest.insert(objectToInsert))
-				mongoTest.update(objectToInsert._id, {
+				insertedIds.push(await mongoTest.insertAsync(objectToInsert))
+				await mongoTest.updateAsync(objectToInsert._id, {
 					$set: {
 						prop1: 'qwerty',
 					},
 				})
 			}
 			for (const id of insertedIds) {
-				mongoTest.remove(id)
+				await mongoTest.removeAsync(id)
 			}
 			result.mongoWriteSmall = Date.now() - startTime
 		}
@@ -182,15 +182,15 @@ async function doSystemBenchmarkInner() {
 					}),
 					prop0: 'asdf',
 				}
-				insertedIds.push(mongoTest.insert(objectToInsert))
-				mongoTest.update(objectToInsert._id, {
+				insertedIds.push(await mongoTest.insertAsync(objectToInsert))
+				await mongoTest.updateAsync(objectToInsert._id, {
 					$set: {
 						prop1: 'qwerty',
 					},
 				})
 			}
 			for (const id of insertedIds) {
-				mongoTest.remove(id)
+				await mongoTest.removeAsync(id)
 			}
 			result.mongoWriteBig = Date.now() - startTime
 		}
@@ -210,8 +210,8 @@ async function doSystemBenchmarkInner() {
 					prop0: i,
 					indexedProp: i,
 				}
-				mongoTest.insert(objectToInsert)
-				mongoTest.update(objectToInsert._id, {
+				await mongoTest.insertAsync(objectToInsert)
+				await mongoTest.updateAsync(objectToInsert._id, {
 					$set: {
 						prop1: 'qwerty',
 					},
@@ -222,7 +222,7 @@ async function doSystemBenchmarkInner() {
 			// Reads with no help from index:
 			let startTime = Date.now()
 			for (let i = 0; i < DOC_COUNT; i++) {
-				const readData = mongoTest.find({ prop0: i }).fetch()
+				const readData = await mongoTest.findFetchAsync({ prop0: i })
 				if (readData.length !== 1) throw Error('Expected to have read 1 document')
 			}
 			result.mongoRead = Date.now() - startTime
@@ -230,13 +230,13 @@ async function doSystemBenchmarkInner() {
 			// Reads with help from index:
 			startTime = Date.now()
 			for (let i = 0; i < DOC_COUNT; i++) {
-				const readData = mongoTest.find({ indexedProp: i }).fetch()
+				const readData = await mongoTest.findFetchAsync({ indexedProp: i })
 				if (readData.length !== 1) throw Error('Expected to have read 1 document')
 			}
 			result.mongoIndexedRead = Date.now() - startTime
 
 			// cleanup:
-			mongoTest.remove({})
+			await mongoTest.removeAsync({})
 		}
 		await sleep(10)
 		// CPU test: arithmetic calculations:
