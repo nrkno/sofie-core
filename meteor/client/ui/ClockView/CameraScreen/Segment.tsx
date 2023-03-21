@@ -52,7 +52,10 @@ export const Segment = withResolvedSegment(
 		const partsAndPieces = useMemo(
 			() =>
 				unplayedValidParts
-					.map((part) => ({ part, piece: part.pieces.find(selectPiece) }))
+					.map((part) => ({
+						part,
+						piece: part.pieces.sort((a, b) => (b.renderedInPoint ?? 0) - (a.renderedInPoint ?? 0)).find(selectPiece),
+					}))
 					.filter((pair) => pair.piece !== undefined),
 			[selectPiece, unplayedValidParts]
 		)

@@ -103,6 +103,15 @@ $page-margin: 1rem 1rem 0 3rem;
 			letter-spacing: -0.3px;
 			opacity: 0.5;
 		}
+
+		.camera-screen__part-take-mode > div {
+			display: inline-block;
+			vertical-align: top;
+			text-transform: uppercase;
+			margin-right: 0.5em;
+			font-size: 0.7em;
+			margin-top: 0.42em;
+		}
 	}
 }
 

@@ -57,7 +57,9 @@ export const Part = withTiming<IProps, {}>({
 			<div className="camera-screen__part-duration-left">
 				{isLive && (
 					<>
-						<AutoNextStatus />
+						<span className="camera-screen__part-take-mode">
+							<AutoNextStatus />
+						</span>
 						<CurrentPartRemaining
 							currentPartInstanceId={part.instance._id}
 							speaking={getAllowSpeaking()}

@@ -43,8 +43,8 @@ export const ActivePartInstancesContext = React.createContext<IActivePartInstanc
 export const AreaZoom = React.createContext<number>(1)
 export const CanvasSizeContext = React.createContext<number>(1)
 
-const PARAM_NAME_STUDIO_LABEL = 'studioLabels'
 const PARAM_NAME_SOURCE_LAYER_IDS = 'sourceLayerIds'
+const PARAM_NAME_STUDIO_LABEL = 'studioLabels'
 const PARAM_NAME_FULLSCREEN = 'fullscreen'
 
 export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null {
