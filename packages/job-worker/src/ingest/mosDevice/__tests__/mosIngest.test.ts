@@ -35,6 +35,7 @@ import { removeRundownPlaylistFromDb } from '../../__tests__/lib'
 
 jest.mock('../../updateNext')
 import { ensureNextPartIsValid } from '../../updateNext'
+import { UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 type TensureNextPartIsValid = jest.MockedFunction<typeof ensureNextPartIsValid>
 const ensureNextPartIsValidMock = ensureNextPartIsValid as TensureNextPartIsValid
 
@@ -246,10 +247,12 @@ describe('Test recieved mos ingest payloads', () => {
 		expect(rundown).toBeTruthy()
 		expect(await context.directCollections.RundownPlaylists.findOne(rundown.playlistId)).toBeTruthy()
 
-		await handleRemovedRundown(context, {
-			peripheralDeviceId: device._id,
-			rundownExternalId: parseMosString(roData.ID),
-		})
+		await expect(
+			handleRemovedRundown(context, {
+				peripheralDeviceId: device._id,
+				rundownExternalId: parseMosString(roData.ID),
+			})
+		).rejects.toMatchUserError(UserErrorMessage.RundownRemoveWhileActive)
 
 		expect(
 			await context.directCollections.Rundowns.findOne({
