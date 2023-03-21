@@ -18,6 +18,8 @@ import { OrderedPartsProvider } from './OrderedPartsProvider'
 import { offElementResize, onElementResize } from '../../../lib/resizeObserver'
 import { useTranslation } from 'react-i18next'
 import { Spinner } from '../../../lib/Spinner'
+import { useBlackBrowserTheme } from '../../../lib/useBlackBrowserTheme'
+import { useWakeLock } from './useWakeLock'
 
 interface IProps {
 	playlist: RundownPlaylist | undefined
@@ -43,12 +45,16 @@ export const CanvasSizeContext = React.createContext<number>(1)
 
 const PARAM_NAME_STUDIO_LABEL = 'studioLabels'
 const PARAM_NAME_SOURCE_LAYER_IDS = 'sourceLayerIds'
+const PARAM_NAME_FULLSCREEN = 'fullscreen'
 
 export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null {
 	const playlistIds = playlist ? [playlist._id] : []
 
 	const [studioLabels, setStudioLabels] = useState<string[] | null>(null)
 	const [sourceLayerIds, setSourceLayerIds] = useState<string[] | null>(null)
+	const [fullscreenMode, setFullScreenMode] = useState<boolean>(false)
+
+	useBlackBrowserTheme()
 
 	const location = useLocation()
 	useEffect(() => {
@@ -58,6 +64,7 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 
 		const studioLabelParam = queryParams[PARAM_NAME_STUDIO_LABEL] ?? null
 		const sourceLayerTypeParam = queryParams[PARAM_NAME_SOURCE_LAYER_IDS] ?? null
+		const fullscreenParam = queryParams[PARAM_NAME_FULLSCREEN] ?? false
 
 		setStudioLabels(
 			Array.isArray(studioLabelParam) ? studioLabelParam : studioLabelParam === null ? null : [studioLabelParam]
@@ -69,6 +76,7 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 				? null
 				: [sourceLayerTypeParam]
 		)
+		setFullScreenMode(Array.isArray(fullscreenParam) ? fullscreenParam[0] === '1' : fullscreenParam === '1')
 	}, [location.search])
 
 	const rundowns = useTracker(
@@ -201,6 +209,31 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 			observer.disconnect()
 		}
 	}, [canvasElRef.current])
+
+	useLayoutEffect(() => {
+		if (!document.fullscreenEnabled || !fullscreenMode) return
+
+		const targetEl = document.documentElement
+
+		function onCanvasClick() {
+			if (document.fullscreenElement !== null) return
+			targetEl
+				?.requestFullscreen({
+					navigationUI: 'hide',
+				})
+				.catch((e) => {
+					console.error(`Could not get fullscreen: ${e}`)
+				})
+		}
+
+		document.documentElement.addEventListener('click', onCanvasClick)
+
+		return () => {
+			document.documentElement.removeEventListener('click', onCanvasClick)
+		}
+	}, [fullscreenMode])
+
+	useWakeLock()
 
 	if (!studio && studioReady) return <h1 className="mod mal alc">{t("This studio doesn't exist.")}</h1>
 

@@ -9,6 +9,8 @@ $page-margin: 1rem 1rem 0 3rem;
 
 	--piece-type-indicator-width: 2rem;
 	--piece-type-indicator-border-radius: 11px;
+
+	user-select: none;
 }
 
 .camera-screen__segment {

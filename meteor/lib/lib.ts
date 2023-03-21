@@ -486,6 +486,7 @@ export enum LocalStorageProperty {
 	DEVELOPER = 'developerMode',
 	TESTING = 'testingMode',
 	SPEAKING = 'speakingMode',
+	VIBRATING = 'vibratingMode',
 	SERVICE = 'serviceMode',
 	SHELF_FOLLOWS_ON_AIR = 'shelfFollowsOnAir',
 	SHOW_HIDDEN_SOURCE_LAYERS = 'showHiddenSourceLayers',

@@ -86,6 +86,13 @@ export function getAllowSpeaking(): boolean {
 	return localStorageGetCachedItem(LocalStorageProperty.SPEAKING) === '1'
 }
 
+export function setAllowVibrating(vibratingMode: boolean): void {
+	localStorageSetCachedItem(LocalStorageProperty.VIBRATING, vibratingMode ? '1' : '0')
+}
+export function getAllowVibrating(): boolean {
+	return localStorageGetCachedItem(LocalStorageProperty.VIBRATING) === '1'
+}
+
 export function setHelpMode(helpMode: boolean): void {
 	localStorageSetCachedItem(LocalStorageProperty.HELP_MODE, helpMode ? '1' : '0')
 }

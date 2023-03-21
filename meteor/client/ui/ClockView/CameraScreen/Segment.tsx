@@ -25,7 +25,7 @@ export const Segment = withResolvedSegment(
 				activePartInstances.currentPartInstance?.part._id
 					? orderedPartIds.indexOf(activePartInstances.currentPartInstance?.part._id)
 					: -1,
-			[activePartInstances.currentPartInstance?.part._id]
+			[activePartInstances.currentPartInstance?.part._id, orderedPartIds]
 		)
 
 		const nextPartIndex = useMemo(
@@ -33,7 +33,7 @@ export const Segment = withResolvedSegment(
 				activePartInstances.nextPartInstance?.part._id
 					? orderedPartIds.indexOf(activePartInstances.nextPartInstance?.part._id)
 					: -1,
-			[activePartInstances.nextPartInstance?.part._id]
+			[activePartInstances.nextPartInstance?.part._id, orderedPartIds]
 		)
 
 		const unplayedValidParts = useMemo(
@@ -53,13 +53,8 @@ export const Segment = withResolvedSegment(
 			() =>
 				unplayedValidParts
 					.map((part) => ({ part, piece: part.pieces.find(selectPiece) }))
-					.filter(
-						(pair) =>
-							pair.piece !== undefined &&
-							(orderedPartIds.indexOf(pair.part.partId) >= nextPartIndex ||
-								orderedPartIds.indexOf(pair.part.partId) === livePartIndex)
-					),
-			[selectPiece, parts, livePartIndex, nextPartIndex]
+					.filter((pair) => pair.piece !== undefined),
+			[selectPiece, unplayedValidParts]
 		)
 
 		const ownCurrentPartInstance = useMemo(

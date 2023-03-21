@@ -4,7 +4,7 @@ import React, { useContext } from 'react'
 import { AreaZoom } from '.'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PieceExtended } from '../../../../lib/Rundown'
-import { getAllowSpeaking } from '../../../lib/localStorage'
+import { getAllowSpeaking, getAllowVibrating } from '../../../lib/localStorage'
 import { AutoNextStatus } from '../../RundownView/RundownTiming/AutoNextStatus'
 import { CurrentPartRemaining } from '../../RundownView/RundownTiming/CurrentPartRemaining'
 import { PartCountdown } from '../../RundownView/RundownTiming/PartCountdown'
@@ -61,6 +61,7 @@ export const Part = withTiming<IProps, {}>({
 						<CurrentPartRemaining
 							currentPartInstanceId={part.instance._id}
 							speaking={getAllowSpeaking()}
+							vibrating={getAllowVibrating()}
 							heavyClassName="overtime"
 						/>
 					</>

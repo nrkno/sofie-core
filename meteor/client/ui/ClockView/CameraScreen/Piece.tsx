@@ -46,7 +46,7 @@ export const Piece = React.memo(function Piece({
 	)
 
 	return (
-		<div className={classNames('camera-screen__piece', { live: isLive })} data-width={JSON.stringify(width)}>
+		<div className={classNames('camera-screen__piece', { live: isLive })}>
 			{pixelLeft < canvasWidth ? (
 				<div
 					className={classNames(

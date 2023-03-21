@@ -104,6 +104,7 @@ export const App = translateWithTracker(() => {
 				}
 			}
 			if (params['speak']) setAllowSpeaking(params['speak'] === '1')
+			if (params['vibrate']) setAllowSpeaking(params['vibrate'] === '1')
 			if (params['help']) setHelpMode(params['help'] === '1')
 			if (params['zoom'] && typeof params['zoom'] === 'string') {
 				setUIZoom(parseFloat((params['zoom'] as string) || '1') / 100 || 1)
