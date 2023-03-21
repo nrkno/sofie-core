@@ -7,6 +7,11 @@ import {
 } from '../../peripheralDevice/peripheralDeviceAPI'
 import { SubdeviceAction } from '../deviceConfigManifest'
 
+export interface GenericPeripheralDeviceSettings {
+	devices?: Record<string, unknown>
+	[key: string]: unknown
+}
+
 export interface PeripheralDevicePublic {
 	_id: PeripheralDeviceId
 
@@ -29,7 +34,7 @@ export interface PeripheralDevicePublic {
 	created: number
 	status: PeripheralDeviceStatusObject
 
-	settings: PlayoutDeviceSettings | IngestDeviceSettings | { [key: string]: any }
+	settings: IngestDeviceSettings | GenericPeripheralDeviceSettings
 }
 
 /**
@@ -40,30 +45,7 @@ export interface PeripheralDevicePublicWithActions extends PeripheralDevicePubli
 	actions: SubdeviceAction[] | undefined
 }
 
-/**
- * The basic PlayoutDevice settings structure.
- * Note: playout-gateway will likely have more than this here, but this is that core needs to know about
- */
-export interface PlayoutDeviceSettings {
-	devices: {
-		[deviceId: string]: unknown // TSR.DeviceOptionsAny
-	}
-
-	/** Activate Debug Logging */
-	debugLogging?: boolean
-	/** Activate Multi-Threading */
-	multiThreading?: boolean
-	/** Activate Multi-Threaded Timeline Resolving */
-	multiThreadedResolver?: boolean
-	/** Activate Partial resolving, when resolving the Timeline */
-	useCacheWhenResolving?: boolean
-	/** Report command timings on all commands */
-	reportAllCommands?: boolean
-	/** Adjust resolve-time estimation */
-	estimateResolveTimeMultiplier?: number
-}
-
-export interface IngestDeviceSettings {
+export interface IngestDeviceSettings extends GenericPeripheralDeviceSettings {
 	/** OAuth: Set to true when secret value exists */
 	secretCredentials: boolean
 	secretAccessToken: boolean

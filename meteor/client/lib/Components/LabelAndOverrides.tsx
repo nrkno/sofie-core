@@ -1,5 +1,6 @@
 import { faSync } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ReadonlyDeep } from 'type-fest'
@@ -66,14 +67,18 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 			displayValue = `"${defaultValue}"`
 		}
 	}
+
+	const value = objectPathGet(item.computed, String(itemKey))
+
 	return (
 		<label className="field">
-			{children(item.computed[String(itemKey)] as any, setValue)}
 			{!labelAfter && label}
 
-			{hint && <span className="text-s dimmed">{hint}</span>}
+			{children(value, setValue)}
 
 			{labelAfter && label}
+
+			{hint && <span className="text-s dimmed">{hint}</span>}
 
 			{item.defaults && (
 				<>

@@ -61,6 +61,7 @@ import {
 	Segments,
 } from '../../collections'
 import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 const DEBUG = false
 
@@ -196,7 +197,8 @@ describe('test peripheralDevice general API methods', () => {
 			name: 'test',
 			connectionId: 'test',
 			configManifest: {
-				deviceConfig: [],
+				deviceConfigSchema: JSONBlobStringify({}),
+				subdeviceManifest: {},
 			},
 		}
 		await MeteorCall.peripheralDevice.initialize(device._id, device.token, options)
@@ -531,7 +533,8 @@ describe('test peripheralDevice general API methods', () => {
 	// 		name: 'test',
 	// 		connectionId: 'test',
 	// 		configManifest: {
-	// 			deviceConfig: [],
+	// 			deviceConfigSchema: JSONBlobStringify({}),
+	//			subdeviceManifest: {}
 	// 		},
 	// 	}
 
@@ -599,7 +602,8 @@ describe('test peripheralDevice general API methods', () => {
 				settings: {},
 				category: PeripheralDeviceCategory.MEDIA_MANAGER,
 				configManifest: {
-					deviceConfig: [],
+					deviceConfigSchema: JSONBlobStringify({}),
+					subdeviceManifest: {},
 				},
 				connected: true,
 				connectionId: '0',
@@ -753,7 +757,8 @@ describe('test peripheralDevice general API methods', () => {
 				settings: {},
 				category: PeripheralDeviceCategory.MEDIA_MANAGER,
 				configManifest: {
-					deviceConfig: [],
+					deviceConfigSchema: JSONBlobStringify({}),
+					subdeviceManifest: {},
 				},
 				connected: true,
 				connectionId: '0',

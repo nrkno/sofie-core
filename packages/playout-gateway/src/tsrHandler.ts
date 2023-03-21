@@ -45,15 +45,18 @@ import {
 	RoutedTimeline,
 	TimelineObjGeneric,
 } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
-import {
-	PeripheralDevicePublic,
-	PlayoutDeviceSettings,
-} from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { DBTimelineDatastoreEntry } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
-import { ConfigManifestEntry, TableConfigManifestEntry } from '@sofie-automation/server-core-integration'
 import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
+import { getSchemaDefaultValues } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
+import { PlayoutGatewayConfig } from './generated/options'
+import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 const debug = Debug('playout-gateway')
+
+export interface PlayoutGatewaySettings extends PlayoutGatewayConfig {
+	devices: Record<string, DeviceOptionsAny>
+}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface TSRConfig {}
@@ -129,7 +132,7 @@ export class TSRHandler {
 		this.logger.info('TSRHandler init')
 
 		const peripheralDevice = await coreHandler.core.getPeripheralDevice()
-		const settings: PlayoutDeviceSettings = peripheralDevice.settings as PlayoutDeviceSettings
+		const settings: PlayoutGatewaySettings = peripheralDevice.settings as PlayoutGatewaySettings
 
 		this.logger.info('Devices', settings.devices)
 		const c: ConductorOptions = {
@@ -229,23 +232,13 @@ export class TSRHandler {
 	}
 
 	private loadSubdeviceConfigurations(): { [deviceType: string]: Record<string, any> } {
-		const playoutGatewayDevicesConfig: ConfigManifestEntry | undefined = PLAYOUT_DEVICE_CONFIG.deviceConfig.find(
-			(deviceConfig: ConfigManifestEntry) => deviceConfig.id === 'devices'
-		)
-		if (!playoutGatewayDevicesConfig) {
-			return {}
-		}
-		const tableConfig: TableConfigManifestEntry = playoutGatewayDevicesConfig as TableConfigManifestEntry
 		const defaultDeviceOptions: { [deviceType: string]: Record<string, any> } = {}
-		for (const deviceType in tableConfig.config) {
-			const configEntries = tableConfig.config[deviceType]
-				.filter((configManifestEntry: ConfigManifestEntry) => configManifestEntry.defaultVal)
-				.map((configManifestEntry: ConfigManifestEntry) => [
-					configManifestEntry.id.replace('options.', ''),
-					configManifestEntry.defaultVal,
-				])
-			defaultDeviceOptions[deviceType] = Object.fromEntries(configEntries)
+
+		for (const [deviceType, deviceManifest] of Object.entries(PLAYOUT_DEVICE_CONFIG.subdeviceManifest)) {
+			const schema = JSONBlobParse(deviceManifest.configSchema)
+			defaultDeviceOptions[deviceType] = getSchemaDefaultValues(schema)
 		}
+
 		return defaultDeviceOptions
 	}
 
@@ -503,10 +496,10 @@ export class TSRHandler {
 		const deviceOptions = new Map<string, DeviceOptionsAny>()
 
 		if (peripheralDevice) {
-			const settings: PlayoutDeviceSettings = peripheralDevice.settings as PlayoutDeviceSettings
+			const settings: PlayoutGatewaySettings = peripheralDevice.settings as PlayoutGatewaySettings
 
 			for (const [deviceId, device0] of Object.entries(settings.devices)) {
-				const device = device0 as DeviceOptionsAny
+				const device = device0
 				if (!device.disable) {
 					deviceOptions.set(deviceId, device)
 				}

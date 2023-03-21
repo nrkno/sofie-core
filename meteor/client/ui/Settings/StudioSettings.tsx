@@ -5,7 +5,7 @@ import { PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { StudioRoutings } from './Studio/Routings'
 import { StudioDevices } from './Studio/Devices'
-import { StudioMappings } from './Studio/Mappings'
+import { MappingsSettingsManifest, MappingsSettingsManifests, StudioMappings } from './Studio/Mappings'
 import { StudioPackageManagerSettings } from './Studio/PackageManager'
 import { StudioGenericProperties } from './Studio/Generic'
 import { Redirect, Route, Switch, useRouteMatch } from 'react-router-dom'
@@ -18,6 +18,9 @@ import { Blueprints, PeripheralDevices, ShowStyleBases, Studios } from '../../co
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { BlueprintConfigManifestSettings } from './BlueprintConfigManifest'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { literal } from '@sofie-automation/corelib/dist/lib'
+import { translateStringIfHasNamespaces } from '../../lib/forms/schemaFormUtil'
+import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 export default function StudioSettings(): JSX.Element {
 	const match = useRouteMatch<{ studioId: string }>()
@@ -46,28 +49,50 @@ export default function StudioSettings(): JSX.Element {
 		[]
 	)
 
-	const layerMappingsManifest = useTracker(() => {
-		const peripheralDevice = PeripheralDevices.findOne(
-			{
-				studioId: {
-					$eq: studioId,
+	const firstPlayoutDevice = useTracker(
+		() =>
+			PeripheralDevices.findOne(
+				{
+					studioId: {
+						$eq: studioId,
+					},
+					parentDeviceId: {
+						$exists: false,
+					},
+					type: {
+						$eq: PeripheralDeviceType.PLAYOUT,
+					},
 				},
-				parentDeviceId: {
-					$exists: false,
-				},
-				type: {
-					$eq: PeripheralDeviceType.PLAYOUT,
-				},
-			},
-			{
-				sort: {
-					lastConnected: -1,
-				},
-			}
+				{
+					sort: {
+						lastConnected: -1,
+					},
+				}
+			),
+
+		[studioId]
+	)
+
+	const { translationNamespaces, layerMappingsSchema } = useMemo(() => {
+		const translationNamespaces = [`peripheralDevice_${firstPlayoutDevice?._id}`]
+		const layerMappingsSchema: MappingsSettingsManifests = Object.fromEntries(
+			Object.entries(firstPlayoutDevice?.configManifest?.subdeviceManifest || {}).map(([id, val]) => {
+				const mappingsSchema = val.playoutMappings
+					? Object.fromEntries(Object.entries(val.playoutMappings).map(([id, schema]) => [id, JSONBlobParse(schema)]))
+					: undefined
+
+				return [
+					id,
+					literal<MappingsSettingsManifest>({
+						displayName: translateStringIfHasNamespaces(val.displayName, translationNamespaces),
+						mappingsSchema,
+					}),
+				]
+			})
 		)
 
-		return peripheralDevice?.configManifest?.layerMappings
-	}, [studioId])
+		return { translationNamespaces, layerMappingsSchema }
+	}, [firstPlayoutDevice])
 
 	return studio ? (
 		<div className="studio-edit mod mhl mvn">
@@ -85,10 +110,19 @@ export default function StudioSettings(): JSX.Element {
 								<StudioBlueprintConfigManifest studio={studio} />
 							</Route>
 							<Route path={`${match.path}/mappings`}>
-								<StudioMappings studio={studio} manifest={layerMappingsManifest} />
+								<StudioMappings
+									translationNamespaces={translationNamespaces}
+									studio={studio}
+									manifest={layerMappingsSchema}
+								/>
 							</Route>
 							<Route path={`${match.path}/route-sets`}>
-								<StudioRoutings studio={studio} studioMappings={studioMappings} manifest={layerMappingsManifest} />
+								<StudioRoutings
+									translationNamespaces={translationNamespaces}
+									studio={studio}
+									studioMappings={studioMappings}
+									manifest={layerMappingsSchema}
+								/>
 							</Route>
 							<Route path={`${match.path}/package-manager`}>
 								<StudioPackageManagerSettings studio={studio} />

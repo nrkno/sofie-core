@@ -109,7 +109,46 @@ export function getAllCurrentAndDeletedItemsFromOverrides<T extends object>(
 
 type SaveOverridesFunction = (newOps: SomeObjectOverrideOp[]) => void
 
-export class OverrideOpHelper {
+export interface OverrideOpHelper {
+	/**
+	 * Clear all of the overrides for an value inside of an item
+	 * This acts as a reset of property of its child properties
+	 * Has no effect if there are no `overrideOps` on the `WrappedOverridableItemNormal`
+	 */
+	clearItemOverrides(itemId: string, subPath: string): void
+
+	/**
+	 * Clear all of the overrides for an item
+	 * This acts as a reset to defaults or undelete
+	 * Has no effect if there are no `overrideOps` on the `WrappedOverridableItemNormal`
+	 */
+	resetItem(itemId: string): void
+
+	/**
+	 * Delete an item from the object
+	 */
+	deleteItem(itemId: string): void
+
+	/**
+	 * Change the id of an item.
+	 * This is only possible for ones which were created by an override, and does not exist in the defaults
+	 * Only possible when the item being renamed does not exist in the defaults
+	 */
+	changeItemId(oldItemId: string, newItemId: string): void
+
+	/**
+	 * Set the value of a property of an item.
+	 * Note: the id cannot be changed in this way
+	 */
+	setItemValue(itemId: string, subPath: string, value: any): void
+
+	/**
+	 * Replace a whole item with a new object
+	 * Note: the id cannot be changed in this way
+	 */
+	replaceItem(itemId: string, value: any): void
+}
+class OverrideOpHelperImpl implements OverrideOpHelper {
 	readonly #saveOverrides: SaveOverridesFunction
 	readonly #objectWithOverridesRef: MutableRefObject<ObjectWithOverrides<any>>
 
@@ -121,10 +160,6 @@ export class OverrideOpHelper {
 		this.#objectWithOverridesRef = objectWithOverridesRef
 	}
 
-	/**
-	 * Clear all of the overrides for an value inside of an item
-	 * This acts as a reset of property of its child properties
-	 */
 	clearItemOverrides = (itemId: string, subPath: string): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
@@ -135,10 +170,6 @@ export class OverrideOpHelper {
 		this.#saveOverrides(newOps)
 	}
 
-	/**
-	 * Clear all of the overrides for an item
-	 * This acts as a reset to defaults or undelete
-	 */
 	resetItem = (itemId: string): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
@@ -147,9 +178,6 @@ export class OverrideOpHelper {
 		this.#saveOverrides(newOps)
 	}
 
-	/**
-	 * Delete an item from the object
-	 */
 	deleteItem = (itemId: string): void => {
 		const newOps = filterOverrideOpsForPrefix(this.#objectWithOverridesRef.current.overrides, itemId).otherOps
 		if (this.#objectWithOverridesRef.current.defaults[itemId]) {
@@ -165,10 +193,6 @@ export class OverrideOpHelper {
 		this.#saveOverrides(newOps)
 	}
 
-	/**
-	 * Change the id of an item.
-	 * This is only possible for ones which were created by an override, and does not exist in the defaults
-	 */
 	changeItemId = (oldItemId: string, newItemId: string): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
@@ -208,10 +232,6 @@ export class OverrideOpHelper {
 		}
 	}
 
-	/**
-	 * Set the value of a property of an item.
-	 * Note: the id cannot be changed in this way
-	 */
 	setItemValue = (itemId: string, subPath: string, value: unknown): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
@@ -224,9 +244,6 @@ export class OverrideOpHelper {
 				itemId
 			)
 
-			// Future: handle subPath being deeper
-			if (subPath.indexOf('.') !== -1) throw new Error('Deep subPath not yet implemented')
-
 			const setRootOp = opsForId.find((op) => op.path === itemId)
 			if (setRootOp && setRootOp.op === 'set') {
 				// This is as its base an override, so modify that instead
@@ -236,29 +253,43 @@ export class OverrideOpHelper {
 
 				newOps.push(newOp)
 			} else {
-				const newOp = literal<ObjectOverrideSetOp>({
-					op: 'set',
-					path: `${itemId}.${subPath}`,
-					value: value,
-				})
+				let newOp: ObjectOverrideSetOp | undefined
 
-				// Preserve any other overrides
-				for (const op of opsForId) {
-					if (op.path !== newOp.path) {
-						newOps.push(op)
-					}
+				// Look for a op which encompasses this new value
+				const parentOp = findParentOpToUpdate(opsForId, subPath)
+				if (parentOp) {
+					// Found an op at a higher level that can be modified instead
+					objectPathSet(parentOp.op.value, parentOp.newSubPath, value)
+				} else {
+					// Insert new op
+					newOp = literal<ObjectOverrideSetOp>({
+						op: 'set',
+						path: `${itemId}.${subPath}`,
+						value: value,
+					})
 				}
-				// Add the new override
-				newOps.push(newOp)
+
+				if (newOp) {
+					const newOpAsPrefix = `${newOp.path}.`
+
+					// Preserve any other overrides
+					for (const op of opsForId) {
+						if (op.path === newOp.path || op.path.startsWith(newOpAsPrefix)) {
+							// ignore, as op has been replaced by the one at a higher path
+						} else {
+							// Retain unrelated op
+							newOps.push(op)
+						}
+					}
+					// Add the new override
+					newOps.push(newOp)
+				}
 			}
 
 			this.#saveOverrides(newOps)
 		}
 	}
 
-	/**
-	 * TODO
-	 */
 	replaceItem = (itemId: string, value: unknown): void => {
 		if (!this.#objectWithOverridesRef.current) return
 
@@ -289,7 +320,7 @@ export function useOverrideOpHelper<T extends object>(
 	const objectWithOverridesRef = useRef(objectWithOverrides)
 
 	const helper = useMemo(
-		() => new OverrideOpHelper(saveOverrides, objectWithOverridesRef),
+		() => new OverrideOpHelperImpl(saveOverrides, objectWithOverridesRef),
 		[saveOverrides, objectWithOverridesRef]
 	)
 
@@ -299,4 +330,41 @@ export function useOverrideOpHelper<T extends object>(
 	}, [objectWithOverrides])
 
 	return helper
+}
+
+function findParentOpToUpdate(
+	opsForId: SomeObjectOverrideOp[],
+	subPath: string
+):
+	| {
+			op: ObjectOverrideSetOp
+			newSubPath: string
+	  }
+	| undefined {
+	const revOps = [...opsForId].reverse()
+
+	for (const op of revOps) {
+		if (subPath === op.path) {
+			// There is an op at the same path, this should be replaced by the current one
+			return undefined
+		}
+
+		if (subPath.startsWith(`${op.path}.`)) {
+			// The new value is inside of this op
+			if (op.op === 'delete') {
+				// Can't mutate a delete op like this
+				return undefined
+			}
+
+			// It's a set op, so we would be better to modify in place rather than add another mutate op
+			return {
+				op,
+				newSubPath: subPath.slice(op.path.length + 1),
+			}
+		}
+	}
+	//
+
+	// Nothing matched
+	return undefined
 }

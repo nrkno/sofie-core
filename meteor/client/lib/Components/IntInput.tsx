@@ -13,6 +13,10 @@ interface IIntInputControlProps {
 	zeroBased?: boolean
 	value: number | undefined
 	handleUpdate: (value: number) => void
+
+	min?: number
+	max?: number
+	step?: number
 }
 export function IntInputControl({
 	classNames,
@@ -23,6 +27,9 @@ export function IntInputControl({
 	handleUpdate,
 	updateOnKey,
 	zeroBased,
+	min,
+	max,
+	step,
 }: IIntInputControlProps): JSX.Element {
 	const [editingValue, setEditingValue] = useState<number | null>(null)
 
@@ -74,7 +81,9 @@ export function IntInputControl({
 	return (
 		<input
 			type="number"
-			step="1"
+			step={step ?? 1}
+			min={min}
+			max={max}
 			className={ClassNames('form-control', classNames, editingValue !== null && modifiedClassName)}
 			placeholder={placeholder}
 			value={showValue ?? ''}

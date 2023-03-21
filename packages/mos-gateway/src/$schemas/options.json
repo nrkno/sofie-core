@@ -1,0 +1,27 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://example.com/product.schema.json",
+	"title": "Mos Gateway Config",
+	"type": "object",
+	"properties": {
+		"mosId": {
+			"type": "string",
+			"ui:title": "MOS ID of Mos-Gateway (Sofie MOS ID)",
+			"ui:description": "MOS ID of the Sofie MOS device (ie our ID). Example: sofie.mos",
+			"default": ""
+		},
+		"debugLogging": {
+			"type": "boolean",
+			"ui:title": "Activate Debug Logging",
+			"default": false
+		},
+		"strict": {
+			"type": "boolean",
+			"ui:title": "(Optional) Strict MOS data handling",
+			"ui:description": "When set, the MOS-connection will follow the MOS-specification literally (one example is that it wont accept certain strings that are longer than 128 characters)",
+			"default": false
+		}
+	},
+	"required": ["mosId"],
+	"additionalProperties": false
+}

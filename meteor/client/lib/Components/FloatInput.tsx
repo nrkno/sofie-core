@@ -13,6 +13,10 @@ interface IFloatInputControlProps {
 	zeroBased?: boolean
 	value: number | undefined
 	handleUpdate: (value: number) => void
+
+	min?: number
+	max?: number
+	step?: number
 }
 export function FloatInputControl({
 	classNames,
@@ -23,6 +27,9 @@ export function FloatInputControl({
 	handleUpdate,
 	updateOnKey,
 	zeroBased,
+	min,
+	max,
+	step,
 }: IFloatInputControlProps): JSX.Element {
 	const [editingValue, setEditingValue] = useState<number | null>(null)
 
@@ -74,7 +81,9 @@ export function FloatInputControl({
 	return (
 		<input
 			type="number"
-			step="0.1"
+			step={step ?? 0.1}
+			min={min}
+			max={max}
 			className={ClassNames('form-control', classNames, editingValue !== null && modifiedClassName)}
 			placeholder={placeholder}
 			value={showValue ?? ''}

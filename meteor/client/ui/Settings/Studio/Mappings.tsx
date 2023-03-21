@@ -1,22 +1,13 @@
 import ClassNames from 'classnames'
 import React, { useCallback, useMemo } from 'react'
-import * as _ from 'underscore'
 import Tooltip from 'rc-tooltip'
 import { Studio, MappingExt, getActiveRoutes, ResultingMappingRoutes } from '../../../../lib/collections/Studios'
-import { EditAttribute } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faPencilAlt, faCheck, faPlus, faSync } from '@fortawesome/free-solid-svg-icons'
 import { useTranslation } from 'react-i18next'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
-import {
-	ConfigManifestEntryType,
-	MappingManifestEntry,
-	MappingsManifest,
-} from '@sofie-automation/corelib/dist/deviceConfig'
 import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib/dist/core/constants'
-import { MongoCollection } from '../../../../lib/collections/lib'
-import { ManifestEntryWithOverrides, renderEditAttribute } from '../components/ConfigManifestEntryComponent'
 import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
 import {
 	getAllCurrentAndDeletedItemsFromOverrides,
@@ -29,27 +20,54 @@ import {
 	ObjectOverrideSetOp,
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { literal } from '@sofie-automation/corelib/dist/lib'
+import { literal, objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { TextInputControl } from '../../../lib/Components/TextInput'
 import { IntInputControl } from '../../../lib/Components/IntInput'
-import { DropdownInputControl, getDropdownInputOptions } from '../../../lib/Components/DropdownInput'
+import {
+	DropdownInputControl,
+	DropdownInputOption,
+	getDropdownInputOptions,
+} from '../../../lib/Components/DropdownInput'
 import {
 	LabelAndOverrides,
 	LabelAndOverridesForDropdown,
 	LabelAndOverridesForInt,
 } from '../../../lib/Components/LabelAndOverrides'
+import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
+import { SchemaFormWithOverrides } from '../../../lib/forms/schemaFormWithOverrides'
+import {
+	getSchemaSummaryFields,
+	SchemaSummaryField,
+	translateStringIfHasNamespaces,
+} from '../../../lib/forms/schemaFormUtil'
 import { Studios } from '../../../collections'
+
+export interface MappingsSettingsManifest {
+	displayName: string
+	mappingsSchema?: Record<string, JSONSchema>
+}
+export type MappingsSettingsManifests = Record<string | number, MappingsSettingsManifest>
 
 interface IStudioMappingsProps {
 	studio: Studio
-	manifest: MappingsManifest | undefined
+	manifest: MappingsSettingsManifests | undefined
+	translationNamespaces: string[]
 }
 
-export function StudioMappings({ manifest, studio }: IStudioMappingsProps): JSX.Element {
+export function StudioMappings({ manifest, translationNamespaces, studio }: IStudioMappingsProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const { toggleExpanded, isExpanded } = useToggleExpandHelper()
+
+	const manifestNames = useMemo(() => {
+		return Object.fromEntries(
+			Object.entries(manifest || {}).map(([id, val]) => [
+				id,
+				translateStringIfHasNamespaces(val.displayName, translationNamespaces),
+			])
+		)
+	}, [manifest, translationNamespaces])
 
 	const addNewLayer = useCallback(() => {
 		const resolvedMappings = applyAndValidateOverrides(studio.mappingsWithOverrides).obj
@@ -66,6 +84,7 @@ export function StudioMappings({ manifest, studio }: IStudioMappingsProps): JSX.
 			device: TSR.DeviceType.CASPARCG,
 			deviceId: protectString('newDeviceId'),
 			lookahead: LookaheadMode.NONE,
+			options: {},
 		})
 
 		const addOp = literal<ObjectOverrideSetOp>({
@@ -121,6 +140,8 @@ export function StudioMappings({ manifest, studio }: IStudioMappingsProps): JSX.
 										activeRoutes={activeRoutes}
 										layerId={item.id}
 										manifest={manifest[item.defaults.device]}
+										manifestNames={manifestNames}
+										translationNamespaces={translationNamespaces}
 										mapping={item.defaults}
 										doUndelete={overrideHelper.resetItem}
 									/>
@@ -132,6 +153,8 @@ export function StudioMappings({ manifest, studio }: IStudioMappingsProps): JSX.
 										toggleExpanded={toggleExpanded}
 										isExpanded={isExpanded(item.id)}
 										manifest={manifest[item.computed.device]}
+										manifestNames={manifestNames}
+										translationNamespaces={translationNamespaces}
 										overrideHelper={overrideHelper}
 									/>
 								)
@@ -151,15 +174,32 @@ export function StudioMappings({ manifest, studio }: IStudioMappingsProps): JSX.
 
 interface DeletedEntryProps {
 	activeRoutes: ResultingMappingRoutes
-	manifest: MappingManifestEntry[] | undefined
+	manifest: MappingsSettingsManifest | undefined
+	manifestNames: Record<string | number, string>
+	translationNamespaces: string[]
+
 	mapping: MappingExt
 	layerId: string
 	doUndelete: (itemId: string) => void
 }
-function MappingDeletedEntry({ activeRoutes, manifest, mapping, layerId, doUndelete }: DeletedEntryProps) {
+function MappingDeletedEntry({
+	activeRoutes,
+	manifest,
+	manifestNames,
+	translationNamespaces,
+	mapping,
+	layerId,
+	doUndelete,
+}: DeletedEntryProps) {
 	const { t } = useTranslation()
 
 	const doUndeleteItem = useCallback(() => doUndelete(layerId), [doUndelete, layerId])
+
+	const mappingSchema = manifest?.mappingsSchema?.[mapping.options?.mappingType]
+	const mappingSummaryFields = useMemo(
+		() => (mappingSchema ? getSchemaSummaryFields(mappingSchema) : []),
+		[mappingSchema]
+	)
 
 	return (
 		<tr>
@@ -177,10 +217,10 @@ function MappingDeletedEntry({ activeRoutes, manifest, mapping, layerId, doUndel
 					</Tooltip>
 				) : null}
 			</th>
-			<td className="settings-studio-device__id c2 deleted">{TSR.DeviceType[mapping.device]}</td>
+			<td className="settings-studio-device__id c2 deleted">{manifestNames[mapping.device] ?? mapping.device}</td>
 			<td className="settings-studio-device__id c2 deleted">{mapping.deviceId}</td>
 			<td className="settings-studio-device__id c4 deleted">
-				<MappingSummary manifest={manifest} mapping={mapping} />
+				<MappingSummary translationNamespaces={translationNamespaces} fields={mappingSummaryFields} mapping={mapping} />
 			</td>
 			<td className="settings-studio-output-table__actions table-item-actions c3">
 				<button className="action-btn" onClick={doUndeleteItem} title="Restore to defaults">
@@ -193,7 +233,9 @@ function MappingDeletedEntry({ activeRoutes, manifest, mapping, layerId, doUndel
 
 interface StudioMappingsEntryProps {
 	activeRoutes: ResultingMappingRoutes
-	manifest: MappingManifestEntry[] | undefined
+	manifest: MappingsSettingsManifest | undefined
+	manifestNames: Record<string | number, string>
+	translationNamespaces: string[]
 
 	toggleExpanded: (layerId: string, force?: boolean) => void
 	isExpanded: boolean
@@ -205,6 +247,8 @@ interface StudioMappingsEntryProps {
 function StudioMappingsEntry({
 	activeRoutes,
 	manifest,
+	manifestNames,
+	translationNamespaces,
 	toggleExpanded,
 	isExpanded,
 	item,
@@ -258,6 +302,56 @@ function StudioMappingsEntry({
 		[overrideHelper, toggleExpanded, item.id]
 	)
 
+	const deviceTypeOptions = useMemo(() => {
+		const raw = Object.entries(manifestNames || {})
+		raw.sort((a, b) => a[1].localeCompare(b[1]))
+
+		return raw.map(([id, entry], i) =>
+			literal<DropdownInputOption<string | number>>({
+				value: id + '',
+				name: entry,
+				i,
+			})
+		)
+	}, [manifestNames])
+
+	const mappingTypeOptions = useMemo(() => {
+		const raw: Array<[string, JSONSchema]> = Object.entries(manifest?.mappingsSchema || {})
+
+		return raw.map(([id, entry], i) =>
+			literal<DropdownInputOption<string | number>>({
+				value: id + '',
+				name: entry?.title ?? id + '',
+				i,
+			})
+		)
+	}, [manifest?.mappingsSchema])
+
+	const mappingSchema = manifest?.mappingsSchema?.[item.computed.options?.mappingType]
+	const mappingSummaryFields = useMemo(
+		() => (mappingSchema ? getSchemaSummaryFields(mappingSchema) : []),
+		[mappingSchema]
+	)
+
+	const hasMappingTypeChangedFromDefault = !!(
+		item.defaults &&
+		(item.computed.device !== item.defaults?.device ||
+			item.computed.options?.mappingType !== item.defaults.options?.mappingType)
+	)
+	const mappingSchemaItem = useMemo(() => {
+		if (hasMappingTypeChangedFromDefault) {
+			return literal<WrappedOverridableItemNormal<MappingExt>>({
+				...item,
+				// The mappingType has changed, so the 'default' values likely don't match up with this mapping at all.
+				// Trick the form into thinking it doesnt have defaults
+				defaults: undefined,
+			})
+		} else {
+			// The existing item is good still
+			return item
+		}
+	}, [item, hasMappingTypeChangedFromDefault])
+
 	return (
 		<React.Fragment>
 			<tr
@@ -279,10 +373,14 @@ function StudioMappingsEntry({
 						</Tooltip>
 					) : null}
 				</th>
-				<td className="settings-studio-device__id c2">{TSR.DeviceType[item.computed.device]}</td>
+				<td className="settings-studio-device__id c2">{manifestNames[item.computed.device] ?? item.computed.device}</td>
 				<td className="settings-studio-device__id c2">{item.computed.deviceId}</td>
 				<td className="settings-studio-device__id c4">
-					<MappingSummary manifest={manifest} mapping={item.computed} />
+					<MappingSummary
+						translationNamespaces={translationNamespaces}
+						fields={mappingSummaryFields}
+						mapping={item.computed}
+					/>
 				</td>
 
 				<td className="settings-studio-device__actions table-item-actions c3">
@@ -348,13 +446,13 @@ function StudioMappingsEntry({
 									itemKey={'device'}
 									opPrefix={item.id}
 									overrideHelper={overrideHelper}
-									options={getDropdownInputOptions(TSR.DeviceType)}
+									options={deviceTypeOptions}
 								>
 									{(value, handleUpdate, options) => (
 										<DropdownInputControl
 											classNames="input text-input input-l"
 											options={options}
-											value={value}
+											value={value + ''}
 											handleUpdate={handleUpdate}
 										/>
 									)}
@@ -436,12 +534,41 @@ function StudioMappingsEntry({
 									)}
 								</LabelAndOverridesForInt>
 							</div>
-							{manifest &&
-								manifest.map((m) => (
-									<div className="mod mvs mhs" key={m.id}>
-										<ManifestEntryWithOverrides configField={m as any} item={item} overrideHelper={overrideHelper} />
+							{mappingTypeOptions.length > 0 && (
+								<>
+									<div className="mod mvs mhs">
+										<LabelAndOverridesForDropdown<any>
+											label={t('Mapping Type')}
+											hint={t('The type of mapping to use')}
+											item={item}
+											itemKey={'options.mappingType'}
+											opPrefix={item.id}
+											overrideHelper={overrideHelper}
+											options={mappingTypeOptions}
+										>
+											{(value, handleUpdate, options) => (
+												<DropdownInputControl
+													classNames="input text-input input-l"
+													options={options}
+													value={value + ''}
+													handleUpdate={handleUpdate}
+												/>
+											)}
+										</LabelAndOverridesForDropdown>
 									</div>
-								))}
+									{mappingSchema ? (
+										<SchemaFormWithOverrides
+											schema={mappingSchema}
+											translationNamespaces={translationNamespaces}
+											item={mappingSchemaItem}
+											attr="options"
+											overrideHelper={overrideHelper}
+										/>
+									) : (
+										<p>{t('No schema has been provided for this mapping')}</p>
+									)}
+								</>
+							)}
 						</div>
 						<div className="mod alright">
 							<button className={ClassNames('btn btn-primary')} onClick={toggleEditItem}>
@@ -456,28 +583,20 @@ function StudioMappingsEntry({
 }
 
 interface MappingSummaryProps {
-	manifest: MappingManifestEntry[] | undefined
+	translationNamespaces: string[]
+	fields: SchemaSummaryField[]
 	mapping: MappingExt
 }
-function MappingSummary({ manifest, mapping }: MappingSummaryProps) {
-	if (manifest) {
+function MappingSummary({ translationNamespaces, fields, mapping }: MappingSummaryProps) {
+	if (fields.length > 0) {
 		return (
 			<span>
-				{manifest
-					.filter((entry) => entry.includeInSummary)
+				{fields
 					.map((entry) => {
-						const summary = entry.name + ': '
+						const rawValue = objectPathGet(mapping.options, entry.attr)
+						const displayValue = entry.transform ? entry.transform(rawValue) : rawValue
 
-						let mappingValue = entry.values && entry.values[mapping[entry.id]]
-						if (!mappingValue) {
-							mappingValue = mapping[entry.id]
-						}
-
-						if (entry.type === ConfigManifestEntryType.INT && entry.zeroBased && _.isNumber(mappingValue)) {
-							mappingValue += 1
-						}
-
-						return summary + mappingValue
+						return `${translateStringIfHasNamespaces(entry.name, translationNamespaces)}: ${displayValue}`
 					})
 					.join(' - ')}
 			</span>
@@ -485,53 +604,4 @@ function MappingSummary({ manifest, mapping }: MappingSummaryProps) {
 	} else {
 		return <span>-</span>
 	}
-}
-
-function renderOptionalInput(attribute: string, obj: any, collection: MongoCollection<any>) {
-	return (
-		<EditAttribute
-			modifiedClassName="bghl"
-			attribute={attribute}
-			obj={obj}
-			type="checkbox"
-			collection={collection}
-			className="mod mvn mhs"
-			mutateDisplayValue={(v) => (v === undefined ? false : true)}
-			mutateUpdateValue={() => undefined}
-		/>
-	)
-}
-
-interface IDeviceMappingSettingsProps {
-	studio: Studio
-	attribute: string
-	showOptional?: boolean
-	manifest: MappingManifestEntry[] | undefined
-}
-
-export function DeviceMappingSettings({
-	attribute,
-	showOptional,
-	manifest,
-	studio,
-}: IDeviceMappingSettingsProps): JSX.Element | null {
-	if (manifest) {
-		return (
-			<React.Fragment>
-				{manifest.map((m) => (
-					<div className="mod mvs mhs" key={m.id}>
-						<label className="field">
-							{m.name}
-							{showOptional && renderOptionalInput(attribute + '.' + m.id, studio, Studios)}
-
-							{renderEditAttribute(Studios, m as any, studio, attribute + '.')}
-							{m.hint && <span className="text-s dimmed">{m.hint}</span>}
-						</label>
-					</div>
-				))}
-			</React.Fragment>
-		)
-	}
-
-	return null
 }

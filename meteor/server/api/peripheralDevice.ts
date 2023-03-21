@@ -38,11 +38,7 @@ import { PackageManagerIntegration } from './integration/expectedPackages'
 import { profiler } from './profiler'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import {
-	ConfigManifestEntryType,
-	DeviceConfigManifest,
-	TableConfigManifestEntry,
-} from '@sofie-automation/corelib/dist/deviceConfig'
+import { DeviceConfigManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import {
 	PlayoutChangedResults,
 	PeripheralDeviceInitOptions,
@@ -66,6 +62,7 @@ import { insertInputDeviceTriggerIntoPreview } from '../publications/deviceTrigg
 import { receiveInputDeviceTrigger } from './deviceTriggers/observer'
 import { upsertBundles, generateTranslationBundleOriginId } from './translationsBundles'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -164,7 +161,8 @@ export namespace ServerPeripheralDeviceAPI {
 							translations: undefined,
 					  }
 					: literal<DeviceConfigManifest>({
-							deviceConfig: [],
+							deviceConfigSchema: JSONBlobStringify({}),
+							subdeviceManifest: {},
 					  }),
 			})
 		}
@@ -358,41 +356,44 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice.configManifest)
 			throw new Meteor.Error(405, `PeripheralDevice "${deviceId}" does not provide a configuration manifest`)
 
-		const subDevicesProp = peripheralDevice.configManifest.deviceConfig.find(
-			(prop) => prop.type === ConfigManifestEntryType.TABLE && prop.isSubDevices === true
-		) as TableConfigManifestEntry | undefined
-
-		if (!subDevicesProp)
-			throw new Meteor.Error(
-				405,
-				`PeripheralDevice "${deviceId}" does not provide a subDevices configuration property`
-			)
-
-		const subDevicesPropId = subDevicesProp.id
-
-		const subDevices = peripheralDevice.settings[subDevicesPropId]
-		if (!subDevices) throw new Meteor.Error(500, `PeripheralDevice "${deviceId}" has a malformed settings object`)
+		if (!('devices' in peripheralDevice.settings) || !peripheralDevice.settings.devices)
+			throw new Meteor.Error(500, `PeripheralDevice "${deviceId}" has a malformed settings object`)
+		const subDevices = peripheralDevice.settings?.devices
 
 		// check if the subDevice supports disabling using the magical 'disable' BOOLEAN property.
-		const subDeviceSettings = subDevices[subDeviceId] as Record<string, any> | undefined
+		const subDeviceSettings = subDevices[subDeviceId]
 		if (!subDeviceSettings)
 			throw new Meteor.Error(404, `PeripheralDevice "${deviceId}", subDevice "${subDeviceId}" is not configured`)
 
-		const subDeviceType = subDeviceSettings[subDevicesProp.typeField || 'type']
-		const subDeviceSettingTopology = subDevicesProp.config[subDeviceType]
-
-		const hasDisableProperty = subDeviceSettingTopology.find(
-			(prop) => prop.id === 'disable' && prop.type === ConfigManifestEntryType.BOOLEAN
-		)
-		if (!hasDisableProperty)
+		// Check there is a common properties subdevice schema
+		const subDeviceCommonSchemaStr = peripheralDevice.configManifest.subdeviceConfigSchema
+		if (!subDeviceCommonSchemaStr)
 			throw new Meteor.Error(
 				405,
-				`PeripheralDevice "${deviceId}, subDevice "${subDeviceId}" of type "${subDeviceType}" does not support the disable property`
+				`PeripheralDevice "${deviceId}" does not provide a subDevices common configuration schema`
+			)
+
+		let subDeviceCommonSchema: any
+		try {
+			// Try and parse the schema, making sure to hide the parse error if it isn't json
+			subDeviceCommonSchema = JSONBlobParse(subDeviceCommonSchemaStr)
+		} catch (_e) {
+			throw new Meteor.Error(
+				405,
+				`PeripheralDevice "${deviceId}" does not provide a valid subDevices common configuration schema`
+			)
+		}
+
+		// Check for a boolean 'disable' property, if there is one
+		if (subDeviceCommonSchema?.properties?.disable?.type !== 'boolean')
+			throw new Meteor.Error(
+				405,
+				`PeripheralDevice "${deviceId} does not support the disable property for subDevices`
 			)
 
 		PeripheralDevices.update(deviceId, {
 			$set: {
-				[`settings.${subDevicesPropId}.${subDeviceId}.disable`]: disable,
+				[`settings.devices.${subDeviceId}.disable`]: disable,
 			},
 		})
 	}

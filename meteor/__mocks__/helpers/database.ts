@@ -101,6 +101,7 @@ import {
 	WorkerThreadStatuses,
 } from '../../server/collections'
 import { TSR_VERSION } from '@sofie-automation/shared-lib/dist/tsr'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -151,7 +152,8 @@ export function setupMockPeripheralDevice(
 		connectionId: 'myConnectionId',
 		token: 'mockToken',
 		configManifest: {
-			deviceConfig: [],
+			deviceConfigSchema: JSONBlobStringify({}),
+			subdeviceManifest: {},
 		},
 		versions: {
 			'@sofie-automation/server-core-integration': stripVersion(PackageInfo.version),

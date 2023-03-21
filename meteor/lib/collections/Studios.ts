@@ -95,6 +95,7 @@ export function getRoutedMappings<M extends MappingExt>(
 				lookahead: route.remapping.lookahead || LookaheadMode.NONE,
 				device: route.deviceType,
 				deviceId: protectString<any>(route.remapping.deviceId),
+				options: {},
 				...route.remapping,
 			}
 			outputMappings[route.outputMappedLayer] = routedMapping as M

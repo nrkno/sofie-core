@@ -32,6 +32,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				lookahead: v as LookaheadMode,
 				// lookaheadDepth: 0,
 				// lookaheadMaxSearchDistance: 0,
+				options: {},
 			}
 		}
 		context.setStudio({
