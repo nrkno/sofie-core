@@ -296,7 +296,9 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 		statusObj.components.push(so)
 	}
 
-	const versions: { [name: string]: string } = await RelevantSystemVersions
+	const versions: { [name: string]: string } = {
+		...(await RelevantSystemVersions),
+	}
 
 	for (const [blueprintId, blueprint] of Object.entries(await getBlueprintVersions())) {
 		// Use the name as key to make it easier to read for a human:
