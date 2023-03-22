@@ -1,6 +1,10 @@
-import { DeviceConfigManifest, SubdeviceManifest } from '@sofie-automation/server-core-integration'
-import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
-import { JSONBlob, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import {
+	DeviceConfigManifest,
+	JSONBlob,
+	JSONBlobStringify,
+	JSONSchema,
+	SubdeviceManifest,
+} from '@sofie-automation/server-core-integration'
 import { manifest as TSRManifest } from 'timeline-state-resolver'
 
 import Translations = require('timeline-state-resolver/dist/translations.json')

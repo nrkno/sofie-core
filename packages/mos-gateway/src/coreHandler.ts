@@ -1,4 +1,15 @@
-import { CoreConnection, CoreOptions, DDPConnectorOptions } from '@sofie-automation/server-core-integration'
+import {
+	CoreConnection,
+	CoreOptions,
+	DDPConnectorOptions,
+	ExternalPeripheralDeviceAPI,
+	PeripheralDeviceAPI,
+	PeripheralDeviceCommand,
+	PeripheralDeviceId,
+	protectString,
+	StatusCode,
+	unprotectString,
+} from '@sofie-automation/server-core-integration'
 import * as Winston from 'winston'
 import { Process } from './process'
 
@@ -29,17 +40,7 @@ import * as _ from 'underscore'
 import { MosHandler } from './mosHandler'
 import { DeviceConfig } from './connector'
 import { MOS_DEVICE_CONFIG_MANIFEST } from './configManifest'
-import { protectString, unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
-import {
-	PeripheralDeviceCategory,
-	PeripheralDeviceType,
-	PERIPHERAL_SUBTYPE_PROCESS,
-} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { PartialDeep } from 'type-fest'
-import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
-import { PeripheralDeviceCommand } from '@sofie-automation/shared-lib/dist/core/model/PeripheralDeviceCommand'
-import { ExternalPeripheralDeviceAPI } from '@sofie-automation/server-core-integration/dist/lib/methods'
 
 function deepMatch(object: any, attrs: any, deep: boolean): boolean {
 	const keys = Object.keys(attrs)
@@ -630,9 +631,9 @@ export class CoreHandler {
 			deviceId: protectString(this._deviceOptions.deviceId + subDeviceId),
 			deviceToken: this._deviceOptions.deviceToken,
 
-			deviceCategory: PeripheralDeviceCategory.INGEST,
-			deviceType: PeripheralDeviceType.MOS, // @todo: should not have this...
-			deviceSubType: parentProcess ? PERIPHERAL_SUBTYPE_PROCESS : 'mos_connection',
+			deviceCategory: PeripheralDeviceAPI.PeripheralDeviceCategory.INGEST,
+			deviceType: PeripheralDeviceAPI.PeripheralDeviceType.MOS, // @todo: should not have this...
+			deviceSubType: parentProcess ? PeripheralDeviceAPI.PERIPHERAL_SUBTYPE_PROCESS : 'mos_connection',
 
 			deviceName: name,
 			watchDog: this._coreConfig ? this._coreConfig.watchdog : true,

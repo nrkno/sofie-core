@@ -2,9 +2,7 @@
  * This file contains the manifest for the config as displayed in the server-core
  * UI.
  */
-import { DeviceConfigManifest } from '@sofie-automation/server-core-integration'
-import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
-import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { DeviceConfigManifest, JSONBlobStringify, JSONSchema } from '@sofie-automation/server-core-integration'
 
 // import {
 // 	DEFAULT_MOS_TIMEOUT_TIME,
