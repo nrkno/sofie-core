@@ -1,5 +1,5 @@
 import '../../../../__mocks__/_extendJest'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { testInFiber, waitUntil } from '../../../../__mocks__/helpers/jest'
 import { getCurrentTime, getRandomId, protectString } from '../../../../lib/lib'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
 import { MeteorCall } from '../../../../lib/api/methods'
@@ -8,6 +8,8 @@ import { MediaWorkFlows, PeripheralDeviceCommands, PeripheralDevices } from '../
 
 require('../../client') // include in order to create the Meteor methods needed
 require('../../userActions') // include in order to create the Meteor methods needed
+
+const MAX_WAIT_TIME = 300
 
 describe('User Actions - Media Manager', () => {
 	let env: DefaultEnvironment
@@ -53,12 +55,7 @@ describe('User Actions - Media Manager', () => {
 
 		{
 			// should execute function on the target device
-			let pResolve
-			const p = new Promise((resolve) => {
-				pResolve = resolve
-			})
-
-			setTimeout(() => {
+			const p = waitUntil(() => {
 				const functionCall = PeripheralDeviceCommands.find({
 					deviceId: env.ingestDevice._id,
 					functionName: 'restartWorkflow',
@@ -70,8 +67,7 @@ describe('User Actions - Media Manager', () => {
 						reply: 'done',
 					},
 				})
-				pResolve()
-			}, 50)
+			}, MAX_WAIT_TIME)
 
 			await MeteorCall.userAction.mediaRestartWorkflow('', getCurrentTime(), workFlowId)
 			await p
@@ -87,12 +83,8 @@ describe('User Actions - Media Manager', () => {
 
 		{
 			// should execute function on the target device
-			let pResolve
-			const p = new Promise((resolve) => {
-				pResolve = resolve
-			})
 
-			setTimeout(() => {
+			const p = waitUntil(() => {
 				const functionCall = PeripheralDeviceCommands.find({
 					deviceId: env.ingestDevice._id,
 					functionName: 'abortWorkflow',
@@ -104,8 +96,7 @@ describe('User Actions - Media Manager', () => {
 						reply: 'done',
 					},
 				})
-				pResolve()
-			}, 50)
+			}, MAX_WAIT_TIME)
 
 			await MeteorCall.userAction.mediaAbortWorkflow('', getCurrentTime(), workFlowId)
 			await p
@@ -121,12 +112,7 @@ describe('User Actions - Media Manager', () => {
 
 		{
 			// should execute function on the target device
-			let pResolve
-			const p = new Promise((resolve) => {
-				pResolve = resolve
-			})
-
-			setTimeout(() => {
+			const p = waitUntil(() => {
 				const functionCall = PeripheralDeviceCommands.find({
 					deviceId: env.ingestDevice._id,
 					functionName: 'prioritizeWorkflow',
@@ -138,8 +124,7 @@ describe('User Actions - Media Manager', () => {
 						reply: 'done',
 					},
 				})
-				pResolve()
-			}, 50)
+			}, MAX_WAIT_TIME)
 
 			await MeteorCall.userAction.mediaPrioritizeWorkflow('', getCurrentTime(), workFlowId)
 			await p
@@ -150,7 +135,7 @@ describe('User Actions - Media Manager', () => {
 
 		{
 			// should execute function on all the target devices
-			setTimeout(() => {
+			const p = waitUntil(() => {
 				const functionCalls = PeripheralDeviceCommands.find({
 					functionName: 'restartAllWorkflows',
 				}).fetch()
@@ -161,9 +146,10 @@ describe('User Actions - Media Manager', () => {
 						reply: 'done',
 					},
 				})
-			}, 50)
+			}, MAX_WAIT_TIME)
 
 			await MeteorCall.userAction.mediaRestartAllWorkflows('', getCurrentTime())
+			await p
 		}
 	})
 	testInFiber('Abort all workflows', async () => {
@@ -171,7 +157,7 @@ describe('User Actions - Media Manager', () => {
 
 		{
 			// should execute function on all the target devices
-			setTimeout(() => {
+			const p = waitUntil(() => {
 				const functionCalls = PeripheralDeviceCommands.find({
 					functionName: 'abortAllWorkflows',
 				}).fetch()
@@ -182,9 +168,10 @@ describe('User Actions - Media Manager', () => {
 						reply: 'done',
 					},
 				})
-			}, 50)
+			}, MAX_WAIT_TIME)
 
 			await MeteorCall.userAction.mediaAbortAllWorkflows('', getCurrentTime())
+			await p
 		}
 	})
 })
