@@ -367,6 +367,10 @@ components:
           type: string
           description: Id of the Blueprint to use for the Studio.
           example: studio0
+        blueprintConfigPresetId:
+          type: string
+          description: Id of the Blueprint config preset to use for the Studio.
+          example: fcr
         supportedShowStyleBase:
           type: array
           items:

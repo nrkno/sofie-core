@@ -1,7 +1,7 @@
 import { BlueprintManifestType, ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { DBStudio, IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { assertNever, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import {
@@ -20,7 +20,7 @@ import {
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { Studio } from '../../../lib/collections/Studios'
-import { Blueprints } from '../../collections'
+import { Blueprints, Studios } from '../../collections'
 
 export function showStyleBaseFrom(
 	apiShowStyleBase: APIShowStyleBase,
@@ -174,7 +174,10 @@ export function studioFrom(apiStudio: APIStudio, existingId?: StudioId): Studio 
 		if (blueprint.blueprintType !== BlueprintManifestType.STUDIO) return undefined
 	}
 
-	const blueprintConfig = wrapDefaultObject({})
+	let studio: DBStudio | undefined
+	if (existingId) studio = Studios.findOne(existingId)
+
+	const blueprintConfig = studio ? studio.blueprintConfigWithOverrides : wrapDefaultObject({})
 	blueprintConfig.overrides = Object.entries(apiStudio.config).map(([key, value]) =>
 		literal<ObjectOverrideSetOp>({
 			op: 'set',
@@ -182,11 +185,20 @@ export function studioFrom(apiStudio: APIStudio, existingId?: StudioId): Studio 
 			value,
 		})
 	)
+	const blueprintConfigWithOverrides = applyAndValidateOverrides(blueprintConfig)
+
+	// remove any overrides that don't make a change from the default value
+	blueprintConfig.overrides = blueprintConfig.overrides.filter((ov) => {
+		const preserveOp = blueprintConfigWithOverrides.preserve.find((pr) => pr.path === ov.path)
+		const unusedOp = blueprintConfigWithOverrides.unused.find((un) => un.path === ov.path)
+		return preserveOp && preserveOp !== unusedOp
+	})
 
 	return {
 		_id: existingId ?? getRandomId(),
 		name: apiStudio.name,
 		blueprintId: blueprint?._id,
+		blueprintConfigPresetId: apiStudio.blueprintConfigPresetId,
 		blueprintConfigWithOverrides: blueprintConfig,
 		settings: studioSettingsFrom(apiStudio.settings),
 		supportedShowStyleBase: apiStudio.supportedShowStyleBase?.map((id) => protectString<ShowStyleBaseId>(id)) ?? [],
@@ -208,6 +220,7 @@ export function APIStudioFrom(studio: Studio): APIStudio {
 	return {
 		name: studio.name,
 		blueprintId: unprotectString(studio.blueprintId),
+		blueprintConfigPresetId: studio.blueprintConfigPresetId,
 		config: applyAndValidateOverrides(studio.blueprintConfigWithOverrides).obj,
 		settings: studioSettings,
 		supportedShowStyleBase: studio.supportedShowStyleBase.map((id) => unprotectString(id)),

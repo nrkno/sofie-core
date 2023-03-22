@@ -15,7 +15,14 @@ export default class Logging implements Middleware {
 	}
 
 	async pre(context: RequestContext): Promise<void | FetchParams> {
-		if (this._logging) console.log(`Request ${context.url} - ${JSON.stringify(context.init).replace(/"/g, '')}`)
+		if (this._logging) {
+			// parse body to help readability of logging
+			const req = {
+				...context.init,
+				body: context.init.body ? JSON.parse(context.init.body.toString()) : undefined,
+			}
+			console.log(`Request ${context.url} - ${JSON.stringify(req, null, 2)}`)
+		}
 	}
 
 	async onError(context: ErrorContext): Promise<void | Response> {

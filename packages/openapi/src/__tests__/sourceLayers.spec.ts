@@ -1,5 +1,5 @@
 // eslint-disable-next-line node/no-missing-import
-import { Configuration, SourceLayersApi } from '../../client/ts'
+import { Configuration, PlaylistsApi, SourceLayersApi } from '../../client/ts'
 import { checkServer } from '../checkServer'
 import Logging from '../httpLogging'
 
@@ -7,68 +7,95 @@ const httpLogging = false
 const testServer = process.env.SERVER_TYPE === 'TEST'
 
 describe('Network client', () => {
-	if (testServer) {
-		const config = new Configuration({
-			basePath: process.env.ACTIONS_URL,
-			middleware: [new Logging(httpLogging)],
+	const config = new Configuration({
+		basePath: process.env.ACTIONS_URL,
+		middleware: [new Logging(httpLogging)],
+	})
+
+	beforeAll(async () => await checkServer(config))
+
+	const sourceLayersApi = new SourceLayersApi(config)
+	const playlistsApi = new PlaylistsApi(config)
+	const playlistIds: string[] = []
+	test('can request all playlists available in Sofie', async () => {
+		const playlists = await playlistsApi.playlists()
+		expect(playlists.status).toBe(200)
+		expect(playlists).toHaveProperty('result')
+		expect(playlists.result.length).toBeGreaterThanOrEqual(1)
+		playlists.result.forEach((id) => {
+			expect(typeof id).toBe('string')
+			playlistIds.push(id)
 		})
 
-		beforeAll(async () => await checkServer(config))
-
-		const sourceLayersApi = new SourceLayersApi(config)
-
-		test('fails to clear the target SourceLayer with null playlistId', async () => {
-			await expect(
-				sourceLayersApi.clearSourceLayer({
-					playlistId: null,
-					sourceLayerId: '42',
-				})
-			).rejects.toThrow()
+		const active = await playlistsApi.activate({
+			playlistId: playlistIds[0],
+			activateRequest: { rehearsal: true },
 		})
+		expect(active.status).toBe(200)
 
-		test('fails to clear the target SourceLayer with null sourceLayerId', async () => {
-			await expect(
-				sourceLayersApi.clearSourceLayer({
-					playlistId: 'OKAgZmZ0Buc99lE_2uPPSKVbMrQ_',
-					sourceLayerId: null,
-				})
-			).rejects.toThrow()
-		})
+		const take = await playlistsApi.take({ playlistId: playlistIds[0] })
+		expect(take.status).toBe(200)
+	})
 
-		test('can clear the target SourceLayer', async () => {
-			const sofieVersion = await sourceLayersApi.clearSourceLayer({
-				playlistId: 'OKAgZmZ0Buc99lE_2uPPSKVbMrQ_',
+	test('fails to clear the target SourceLayer with null playlistId', async () => {
+		await expect(
+			sourceLayersApi.clearSourceLayer({
+				playlistId: null,
 				sourceLayerId: '42',
 			})
-			expect(sofieVersion.status).toBe(200)
-		})
+		).rejects.toThrow()
+	})
 
-		test('fails to recall the last sticky Piece with null playlistId', async () => {
-			await expect(
-				sourceLayersApi.recallSticky({
-					playlistId: null,
-					sourceLayerId: '42',
-				})
-			).rejects.toThrow()
-		})
+	test('fails to clear the target SourceLayer with null sourceLayerId', async () => {
+		await expect(
+			sourceLayersApi.clearSourceLayer({
+				playlistId: playlistIds[0],
+				sourceLayerId: null,
+			})
+		).rejects.toThrow()
+	})
 
-		test('fails to recall the last sticky Piece with null sourceLayerId', async () => {
-			await expect(
-				sourceLayersApi.recallSticky({
-					playlistId: 'OKAgZmZ0Buc99lE_2uPPSKVbMrQ_',
-					sourceLayerId: null,
-				})
-			).rejects.toThrow()
-		})
-
-		test('can recall the last sticky Piece on the specified SourceLayer', async () => {
-			const sofieVersion = await sourceLayersApi.recallSticky({
-				playlistId: 'OKAgZmZ0Buc99lE_2uPPSKVbMrQ_',
+	if (testServer) {
+		test('can clear the target SourceLayer', async () => {
+			const sofieVersion = await sourceLayersApi.clearSourceLayer({
+				playlistId: playlistIds[0],
 				sourceLayerId: '42',
 			})
 			expect(sofieVersion.status).toBe(200)
 		})
 	} else {
-		test.todo('Setup mocks for Sofie')
+		test.todo('Get SourceLayerId for clear operation')
 	}
+
+	test('fails to recall the last sticky Piece with null playlistId', async () => {
+		await expect(
+			sourceLayersApi.recallSticky({
+				playlistId: null,
+				sourceLayerId: '42',
+			})
+		).rejects.toThrow()
+	})
+
+	test('fails to recall the last sticky Piece with null sourceLayerId', async () => {
+		await expect(
+			sourceLayersApi.recallSticky({
+				playlistId: playlistIds[0],
+				sourceLayerId: null,
+			})
+		).rejects.toThrow()
+	})
+
+	if (testServer) {
+		test('can recall the last sticky Piece on the specified SourceLayer', async () => {
+			const sofieVersion = await sourceLayersApi.recallSticky({
+				playlistId: playlistIds[0],
+				sourceLayerId: '42',
+			})
+			expect(sofieVersion.status).toBe(200)
+		})
+	} else {
+		test.todo('Get SourceLayerId for recall operation')
+	}
+
+	afterAll(async () => await playlistsApi.deactivate({ playlistId: playlistIds[0] }))
 })

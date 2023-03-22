@@ -36,6 +36,7 @@ describe('Network client', () => {
 		expect(studio).toHaveProperty('result')
 		expect(studio.result).toHaveProperty('name')
 		expect(studio.result).toHaveProperty('blueprintId')
+		expect(studio.result).toHaveProperty('blueprintConfigPresetId')
 		expect(studio.result).toHaveProperty('supportedShowStyleBase')
 		expect(studio.result).toHaveProperty('config')
 		expect(studio.result).toHaveProperty('settings')

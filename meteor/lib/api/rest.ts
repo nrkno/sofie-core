@@ -811,6 +811,7 @@ export interface APISourceLayer {
 export interface APIStudio {
 	name: string
 	blueprintId?: string
+	blueprintConfigPresetId?: string
 	supportedShowStyleBase?: string[]
 	config: object
 	settings: APIStudioSettings
