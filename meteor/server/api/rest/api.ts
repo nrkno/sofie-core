@@ -1680,6 +1680,19 @@ sofieAPIRequest<never, never, { inputs: PendingMigrations }>(
 	}
 )
 
+sofieAPIRequest<never, { inputs: MigrationData }, void>(
+	'post',
+	'/system/migrations',
+	new Map([[400, UserErrorMessage.NoMigrationsToApply]]),
+	async (serverAPI, connection, event, _params, body) => {
+		const inputs = body.inputs
+		logger.info(`koa POST: System migrations`)
+
+		check(inputs, Array)
+		return await serverAPI.applyPendingMigrations(connection, event, inputs)
+	}
+)
+
 const makeConnection = (
 	ctx: Koa.ParameterizedContext<
 		Koa.DefaultState,
