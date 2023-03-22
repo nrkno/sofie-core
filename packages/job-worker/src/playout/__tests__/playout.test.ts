@@ -1,5 +1,4 @@
 import {
-	PeripheralDevice,
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
@@ -59,7 +58,6 @@ const mockExecutePeripheralDeviceFunction = jest
 describe('Playout API', () => {
 	let context: MockJobContext
 	let showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
-	let playoutDevice: PeripheralDevice
 	// const origGetCurrentTime = lib.getCurrentTime
 
 	async function getAllRundownData(rundown: DBRundown) {
@@ -106,7 +104,7 @@ describe('Playout API', () => {
 
 		showStyle = await setupMockShowStyleCompound(context)
 
-		playoutDevice = await setupMockPeripheralDevice(
+		await setupMockPeripheralDevice(
 			context,
 			PeripheralDeviceCategory.PLAYOUT,
 			PeripheralDeviceType.PLAYOUT,
@@ -262,16 +260,6 @@ describe('Playout API', () => {
 			rehearsal: true,
 		})
 
-		expect(mockExecutePeripheralDeviceFunction).toHaveBeenCalledTimes(1)
-		expect(mockExecutePeripheralDeviceFunction).toHaveBeenNthCalledWith(
-			1,
-			context,
-			playoutDevice._id,
-			null,
-			'devicesMakeReady',
-			[true, playlistId0]
-		)
-
 		await expect(
 			handlePrepareRundownPlaylistForBroadcast(context, { playlistId: playlistId0 })
 		).rejects.toMatchUserError(UserErrorMessage.RundownAlreadyActive)
@@ -332,15 +320,6 @@ describe('Playout API', () => {
 			activationId: undefined,
 		})
 
-		expect(mockExecutePeripheralDeviceFunction).toHaveBeenCalledTimes(1)
-		expect(mockExecutePeripheralDeviceFunction).toHaveBeenNthCalledWith(
-			1,
-			context,
-			playoutDevice._id,
-			null,
-			'devicesMakeReady',
-			[true, playlistId0]
-		)
 		mockExecutePeripheralDeviceFunction.mockClear()
 
 		{
@@ -368,15 +347,6 @@ describe('Playout API', () => {
 			rehearsal: true,
 		})
 
-		expect(mockExecutePeripheralDeviceFunction).toHaveBeenCalledTimes(1)
-		expect(mockExecutePeripheralDeviceFunction).toHaveBeenNthCalledWith(
-			1,
-			context,
-			playoutDevice._id,
-			null,
-			'devicesMakeReady',
-			[true, playlistId1]
-		)
 		mockExecutePeripheralDeviceFunction.mockClear()
 
 		// Attempt to take the first Part of inactive playlist0, should throw

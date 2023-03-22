@@ -15,8 +15,6 @@ import {
 	activateRundownPlaylist,
 	deactivateRundownPlaylist,
 	deactivateRundownPlaylistInner,
-	prepareStudioForBroadcast,
-	standDownStudio,
 } from './activePlaylistActions'
 import { ReadonlyDeep } from 'type-fest'
 
@@ -56,7 +54,6 @@ export async function handlePrepareRundownPlaylistForBroadcast(
 		},
 		async (cache) => {
 			await resetRundownPlaylist(context, cache)
-			await prepareStudioForBroadcast(context, cache, true)
 
 			await activateRundownPlaylist(context, cache, true) // Activate rundownPlaylist (rehearsal)
 		}
@@ -117,7 +114,6 @@ export async function handleResetRundownPlaylist(context: JobContext, data: Rese
 
 			if (data.activate) {
 				// Do the activation
-				await prepareStudioForBroadcast(context, cache, true)
 				await activateRundownPlaylist(context, cache, data.activate !== 'active') // Activate rundown
 			} else if (cache.Playlist.doc.activationId) {
 				// Only update the timeline if this is the active playlist
@@ -143,10 +139,6 @@ export async function handleActivateRundownPlaylist(
 			await checkNoOtherPlaylistsActive(context, playlist)
 		},
 		async (cache) => {
-			// This will be false if already activated (like when going from rehearsal to broadcast)
-			const okToDestroyStuff = !cache.Playlist.doc.activationId
-			await prepareStudioForBroadcast(context, cache, okToDestroyStuff)
-
 			await activateRundownPlaylist(context, cache, data.rehearsal)
 		}
 	)
@@ -165,8 +157,6 @@ export async function handleDeactivateRundownPlaylist(
 		data,
 		null,
 		async (cache) => {
-			await standDownStudio(context, cache, true)
-
 			await deactivateRundownPlaylist(context, cache)
 		}
 	)
