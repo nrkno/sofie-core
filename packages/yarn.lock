@@ -3438,7 +3438,7 @@
     xml-js "^1.6.11"
     xmlbuilder "^15.1.1"
 
-"@mos-connection/model@3.0.1":
+"@mos-connection/model@3.0.1", "@mos-connection/model@^3.0.1":
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/@mos-connection/model/-/model-3.0.1.tgz#38b41d6848e3af58715ce462c5e55ddf1c5c456f"
   integrity sha512-e+vrLaghYayuzq5JZABbouofseMMnGmUk0mJcGzCG4aYK3YZ/9JoTe1mJBMecbEiqFQXld8idOHv/9rO8HRy4g==
@@ -3971,6 +3971,7 @@
 "@sofie-automation/shared-lib@link:shared-lib":
   version "1.50.0-in-development"
   dependencies:
+    "@mos-connection/model" "^3.0.1"
     timeline-state-resolver-types "8.0.0-nightly-release50-20230322-095047-9bf6bb77a.0"
     tslib "^2.4.0"
     type-fest "^2.19.0"
