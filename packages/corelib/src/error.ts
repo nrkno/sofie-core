@@ -45,6 +45,7 @@ export enum UserErrorMessage {
 	DisableNoPieceFound = 30,
 	TakeBlockedDuration = 31,
 	TakeFromIncorrectPart = 32,
+	RundownRemoveWhileActive = 33,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -89,6 +90,7 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.DisableNoPieceFound]: t(`Found no future pieces`),
 	[UserErrorMessage.TakeBlockedDuration]: t(`Cannot perform take for {{duration}}ms`),
 	[UserErrorMessage.TakeFromIncorrectPart]: t(`Ignoring take as playing part has changed since TAKE was requested.`),
+	[UserErrorMessage.RundownRemoveWhileActive]: t(`Cannot remove the rundown "{{name}}" while it is on-air.`),
 }
 
 export class UserError {
