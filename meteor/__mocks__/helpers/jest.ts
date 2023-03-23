@@ -62,7 +62,7 @@ export async function runTimersUntilNow(): Promise<void> {
 }
 
 /** Returns a Promise that resolves after a speficied number of milliseconds */
-export function waitTime(ms: number): Promise<void> {
+export async function waitTime(ms: number): Promise<void> {
 	return new Promise((resolve) => setTimeout(resolve, ms))
 }
 /**
@@ -83,13 +83,14 @@ export async function waitUntil(expectFcn: () => void, maxWaitTime: number): Pro
 	const iterateInterval = maxWaitTime < 100 ? 10 : 100
 
 	const startTime = Date.now()
+	// eslint-disable-next-line no-constant-condition
 	while (true) {
 		await waitTime(iterateInterval)
 		try {
 			expectFcn()
 			return
 		} catch (err) {
-			let waitedTime = Date.now() - startTime
+			const waitedTime = Date.now() - startTime
 			if (waitedTime > maxWaitTime) throw err
 			// else ignore error and try again later
 		}
