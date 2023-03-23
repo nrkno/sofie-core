@@ -8,7 +8,7 @@ import { PackageInfo, VTContent } from '@sofie-automation/blueprints-integration
 import { getSplitItems } from '../../SegmentStoryboard/utils/getSplitItems'
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
-import { PieceElement } from '../../SegmentStoryboard/utils/PieceElement'
+import { PieceElement } from '../../SegmentContainer/PieceElement'
 import { getElementWidth } from '../../../utils/dimensions'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { PieceHoverInspector } from '../PieceHoverInspector'
@@ -16,6 +16,8 @@ import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel
 import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
 import { UIStudio } from '../../../../lib/api/studios'
+import classNames from 'classnames'
+import { PieceMultistepChevron } from '../../SegmentContainer/PieceMultistepChevron'
 
 interface IProps {
 	partId: PartId
@@ -250,6 +252,11 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 	const status = piece.instance.piece.status
 	const noticeLevel = status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null
 
+	const multistepChevron = PieceMultistepChevron({
+		className: 'segment-opl__main-piece__label__step-chevron',
+		piece: piece,
+	})
+
 	return (
 		<PieceElement
 			className="segment-opl__main-piece"
@@ -266,8 +273,13 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 				<div className="segment-opl__main-piece__bkg">{getSplitItems(piece, 'segment-opl__main-piece__item')}</div>
 			)}
 			{anomalies}
-			<div className="segment-opl__main-piece__label">
+			<div
+				className={classNames('segment-opl__main-piece__label', {
+					mln: !!multistepChevron,
+				})}
+			>
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
+				{multistepChevron}
 				{piece.sourceLayer?.type === SourceLayerType.LOCAL && (piece.instance.piece.content as EvsContent).color && (
 					<ColoredMark color={(piece.instance.piece.content as EvsContent).color} />
 				)}
