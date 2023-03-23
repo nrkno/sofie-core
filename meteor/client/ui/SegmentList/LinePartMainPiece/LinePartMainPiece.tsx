@@ -8,7 +8,7 @@ import { PackageInfo, VTContent } from '@sofie-automation/blueprints-integration
 import { getSplitItems } from '../../SegmentStoryboard/utils/getSplitItems'
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
-import { PieceElement } from '../../SegmentStoryboard/utils/PieceElement'
+import { PieceElement } from '../../SegmentContainer/PieceElement'
 import { getElementWidth } from '../../../utils/dimensions'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { PieceHoverInspector } from '../PieceHoverInspector'
@@ -17,7 +17,7 @@ import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notific
 import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
 import { UIStudio } from '../../../../lib/api/studios'
 import classNames from 'classnames'
-import { PieceMultistepChevron } from '../../SegmentStoryboard/utils/PieceMultistepChevron'
+import { PieceMultistepChevron } from '../../SegmentContainer/PieceMultistepChevron'
 
 interface IProps {
 	partId: PartId

@@ -6,7 +6,7 @@ import { NoraContent, SourceLayerType } from '@sofie-automation/blueprints-integ
 import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector'
 import { RundownUtils } from '../../../lib/rundown'
 import classNames from 'classnames'
-import { PieceMultistepChevron } from '../../SegmentStoryboard/utils/PieceMultistepChevron'
+import { PieceMultistepChevron } from '../../SegmentContainer/PieceMultistepChevron'
 
 type IProps = ICustomLayerItemProps
 interface IState {}

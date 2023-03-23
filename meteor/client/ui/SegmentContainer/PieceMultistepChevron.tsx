@@ -1,8 +1,14 @@
 import React from 'react'
 import { NoraContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { PieceExtended } from '../../../../lib/Rundown'
+import { PieceExtended } from '../../../lib/Rundown'
 
-export function PieceMultistepChevron({ className, piece }: { className: string; piece: PieceExtended }) {
+export const PieceMultistepChevron = function PieceMultistepChevron({
+	className,
+	piece,
+}: {
+	className: string
+	piece: PieceExtended
+}) {
 	const noraContent = piece.instance.piece.content as NoraContent | undefined
 
 	const hasStepChevron =

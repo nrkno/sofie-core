@@ -2,16 +2,11 @@ import { GraphicsContent, NoraContent } from '@sofie-automation/blueprints-integ
 import React from 'react'
 import { RundownUtils } from '../../../../lib/rundown'
 import { L3rdFloatingInspector } from '../../../FloatingInspectors/L3rdFloatingInspector'
-import { PieceMultistepChevron } from '../../utils/PieceMultistepChevron'
+import { PieceMultistepChevron } from '../../../SegmentContainer/PieceMultistepChevron'
 import { IProps } from './ThumbnailRendererFactory'
 
 export function GraphicsThumbnailRenderer({ pieceInstance, hovering, layer, originPosition }: IProps) {
 	const content = pieceInstance.instance.piece.content as NoraContent | GraphicsContent | undefined
-
-	const multistepChevron = PieceMultistepChevron({
-		className: 'segment-storyboard__piece__step-chevron',
-		piece: pieceInstance,
-	})
 
 	return (
 		<>
@@ -31,7 +26,7 @@ export function GraphicsThumbnailRenderer({ pieceInstance, hovering, layer, orig
 				displayOn="document"
 			/>
 			<div className="segment-storyboard__thumbnail__label segment-storyboard__thumbnail__label--sm">
-				{multistepChevron}
+				<PieceMultistepChevron className="segment-storyboard__piece__step-chevron" piece={pieceInstance} />
 				{pieceInstance.instance.piece.name}
 			</div>
 		</>
