@@ -129,7 +129,7 @@ async function setupTimelinePublicationObservers(
 				// change to the mappings or the routes
 				mappingsHash: 1,
 			},
-		}).observe({
+		}).observeChanges({
 			added: () => triggerUpdate({ invalidateStudio: true }),
 			changed: () => triggerUpdate({ invalidateStudio: true }),
 			removed: () => triggerUpdate({ invalidateStudio: true }),
@@ -202,7 +202,7 @@ async function manipulateTimelinePublicationData(
 
 	if (!state.routes) {
 		// Routes need recalculating
-		state.routes = getActiveRoutes(state.studio)
+		state.routes = getActiveRoutes(state.studio.routeSets)
 		invalidateTimeline = true
 	}
 

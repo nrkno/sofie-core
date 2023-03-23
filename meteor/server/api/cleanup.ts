@@ -35,7 +35,12 @@ import { Studios } from '../../lib/collections/Studios'
 import { Timeline } from '../../lib/collections/Timeline'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { PieceInstances } from '../../lib/collections/PieceInstances'
-import { getActiveRundownPlaylistsInStudioFromDb } from './studio/lib'
+import {
+	getActiveRundownPlaylistsInStudioFromDb,
+	getExpiredRemovedPackageInfos,
+	getOrphanedPackageInfos,
+	removePackageInfos,
+} from './studio/lib'
 import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
 import { ExpectedPackageWorkStatuses } from '../../lib/collections/ExpectedPackageWorkStatuses'
 import { PackageContainerPackageStatuses } from '../../lib/collections/PackageContainerPackageStatus'
@@ -293,6 +298,22 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 	{
 		ownedByStudioId(PackageInfos)
 		ownedByDeviceId(PackageInfos)
+
+		// Future: there should be a way to force removal of the non-expired packageinfos
+
+		// Find any PackageInfos which have expired
+		const expiredPackageInfoIds = await getExpiredRemovedPackageInfos()
+		addToResult(CollectionName.PackageInfos, expiredPackageInfoIds.length)
+		if (actuallyCleanup && expiredPackageInfoIds.length) {
+			await removePackageInfos(expiredPackageInfoIds, 'purge')
+		}
+
+		// Find any PackageInfos which are missing the parent ExpectedPackage
+		const orphanedPackageInfoIds = await getOrphanedPackageInfos()
+		addToResult(CollectionName.PackageInfos, orphanedPackageInfoIds.length)
+		if (actuallyCleanup && orphanedPackageInfoIds.length) {
+			await removePackageInfos(orphanedPackageInfoIds, 'defer')
+		}
 	}
 	// Parts
 	{

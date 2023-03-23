@@ -9,7 +9,7 @@ import { IngestDataCache } from '../lib/collections/IngestDataCache'
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { UserActionsLog } from '../lib/collections/UserActionsLog'
 import { Snapshots } from '../lib/collections/Snapshots'
-import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
+import { DEFAULT_TSR_ACTION_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { getCoreSystem } from '../lib/collections/CoreSystem'
 import { QueueStudioJob } from './worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
@@ -19,6 +19,7 @@ import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
 import { Parts } from '../lib/collections/Parts'
 import { PartInstances } from '../lib/collections/PartInstances'
 import { PieceInstances } from '../lib/collections/PieceInstances'
+import { getExpiredRemovedPackageInfos, getOrphanedPackageInfos, removePackageInfos } from './api/studio/lib'
 import { deferAsync } from '@sofie-automation/corelib/dist/lib'
 
 const lowPrioFcn = (fcn: () => any) => {
@@ -134,8 +135,10 @@ export function nightlyCronjobInner(): void {
 					ps.push(
 						PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 							subDevice._id,
-							CASPARCG_RESTART_TIME,
-							'restartCasparCG'
+							DEFAULT_TSR_ACTION_TIMEOUT_TIME,
+							{
+								actionId: TSR.CasparCGActions.RestartServer,
+							}
 						)
 							.then(() => {
 								logger.info('Cronjob: "' + subDevice._id + '": CasparCG restart done')
@@ -206,25 +209,51 @@ Meteor.startup(() => {
 	Meteor.setInterval(nightlyCronjob, 5 * 60 * 1000) // check every 5 minutes
 	nightlyCronjob()
 
-	function cleanupPlaylists(force?: boolean) {
-		if (isLowSeason() || force) {
-			deferAsync(
-				async () => {
-					// Ensure there are no empty playlists on an interval
-					const studioIds = await fetchStudioIds({})
-					await Promise.all(
-						studioIds.map(async (studioId) => {
-							const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
-							await job.complete
-						})
-					)
-				},
-				(e) => {
-					logger.error(`Cron: CleanupPlaylists error: ${e}`)
-				}
-			)
+	function anyTimeCronjob(force?: boolean) {
+		{
+			// Clean up playlists:
+			if (isLowSeason() || force) {
+				deferAsync(
+					async () => {
+						// Ensure there are no empty playlists on an interval
+						const studioIds = await fetchStudioIds({})
+						await Promise.all(
+							studioIds.map(async (studioId) => {
+								const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
+								await job.complete
+							})
+						)
+					},
+					(e) => {
+						logger.error(`Cron: CleanupPlaylists error: ${e}`)
+					}
+				)
+			}
+		}
+		{
+			// Clean up removed PackageInfos:
+			if (isLowSeason() || force) {
+				deferAsync(
+					async () => {
+						// Find any PackageInfos which have expired
+						const expiredPackageInfoIds = await getExpiredRemovedPackageInfos()
+						if (expiredPackageInfoIds.length) {
+							await removePackageInfos(expiredPackageInfoIds, 'purge')
+						}
+
+						// Find any PackageInfos which are missing the parent ExpectedPackage
+						const orphanedPackageInfoIds = await getOrphanedPackageInfos()
+						if (orphanedPackageInfoIds.length) {
+							await removePackageInfos(orphanedPackageInfoIds, 'defer')
+						}
+					},
+					(e) => {
+						logger.error(`Cron: Cleanup PackageInfos error: ${e}`)
+					}
+				)
+			}
 		}
 	}
-	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes
-	cleanupPlaylists(true)
+	Meteor.setInterval(anyTimeCronjob, 30 * 60 * 1000) // every 30 minutes
+	anyTimeCronjob(true)
 })

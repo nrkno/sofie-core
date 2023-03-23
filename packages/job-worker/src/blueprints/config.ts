@@ -2,6 +2,7 @@ import { ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dat
 import { ReadonlyDeep } from 'type-fest'
 import {
 	BasicConfigItemValue,
+	BlueprintConfigCoreConfig,
 	ConfigItemValue,
 	ConfigManifestEntry,
 	IBlueprintConfig,
@@ -9,7 +10,7 @@ import {
 	StudioBlueprintManifest,
 	TableConfigItemValue,
 } from '@sofie-automation/blueprints-integration'
-import { objectPathGet, objectPathSet, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { getSofieHostUrl, objectPathGet, objectPathSet, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
 import { logger } from '../logging'
 import { CommonContext } from './context'
@@ -90,6 +91,12 @@ export interface ProcessedStudioConfig {
 	_studioConfig: never
 }
 
+function compileCoreConfigValues(): BlueprintConfigCoreConfig {
+	return {
+		hostUrl: getSofieHostUrl(),
+	}
+}
+
 export function preprocessStudioConfig(
 	studio: ReadonlyDeep<DBStudio>,
 	blueprint: ReadonlyDeep<StudioBlueprintManifest>
@@ -103,16 +110,14 @@ export function preprocessStudioConfig(
 		res = rawBlueprintConfig
 	}
 
-	// Expose special values as defined in the studio
-	res['SofieHostURL'] = studio.settings.sofieUrl
-
 	try {
 		if (blueprint.preprocessConfig) {
 			const context = new CommonContext({
 				name: `preprocessStudioConfig`,
 				identifier: `studioId=${studio._id}`,
 			})
-			res = blueprint.preprocessConfig(context, res)
+			res = blueprint.preprocessConfig(context, res, compileCoreConfigValues())
+			console.log(res, 'aaa')
 		}
 	} catch (err) {
 		logger.error(`Error in studioBlueprint.preprocessConfig: ${stringifyError(err)}`)
@@ -143,7 +148,7 @@ export function preprocessShowStyleConfig(
 				name: `preprocessShowStyleConfig`,
 				identifier: `showStyleBaseId=${showStyle._id},showStyleVariantId=${showStyle.showStyleVariantId}`,
 			})
-			res = blueprint.preprocessConfig(context, res)
+			res = blueprint.preprocessConfig(context, res, compileCoreConfigValues())
 		}
 	} catch (err) {
 		logger.error(`Error in showStyleBlueprint.preprocessConfig: ${stringifyError(err)}`)

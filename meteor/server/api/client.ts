@@ -297,17 +297,24 @@ export namespace ServerClientAPI {
 		}
 	}
 
-	export async function callPeripheralDeviceFunction(
+	export async function callPeripheralDeviceFunctionOrAction(
 		methodContext: MethodContext,
 		context: string,
 		deviceId: PeripheralDeviceId,
 		timeoutTime: number | undefined,
-		functionName: string,
-		...args: any[]
+		action: {
+			functionName?: string
+			args?: Array<any>
+			actionId?: string
+			payload?: Record<string, any>
+		}
 	): Promise<any> {
 		check(deviceId, String)
-		check(functionName, String)
 		check(context, String)
+
+		if (!action.functionName && !action.actionId) {
+			throw new Error('Either functionName or actionId should be specified')
+		}
 
 		const actionId: UserActionsLogItemId = getRandomId()
 		const startTime = Date.now()
@@ -316,17 +323,14 @@ export namespace ServerClientAPI {
 			// In this case, it was called internally from server-side.
 			// Just run and return right away:
 			triggerWriteAccessBecauseNoCheckNecessary()
-			return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
-				deviceId,
-				timeoutTime,
-				functionName,
-				...args
-			).catch(async (e) => {
-				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
-				logger.error(errMsg)
-				// allow the exception to be handled by the Client code
-				return Promise.reject(e)
-			})
+			return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, action).catch(
+				async (e) => {
+					const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
+					logger.error(errMsg)
+					// allow the exception to be handled by the Client code
+					return Promise.reject(e)
+				}
+			)
 		}
 
 		const access = await PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
@@ -338,13 +342,13 @@ export namespace ServerClientAPI {
 				organizationId: access.organizationId,
 				userId: access.userId,
 				context: context,
-				method: `${deviceId}: ${functionName}`,
-				args: JSON.stringify(args),
+				method: `${deviceId}: ${action.functionName || action.actionId}`,
+				args: JSON.stringify(action.args || action.payload),
 				timestamp: getCurrentTime(),
 			})
 		)
 
-		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, functionName, ...args)
+		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, action)
 			.then(async (result) => {
 				await UserActionsLog.updateAsync(actionId, {
 					$set: {
@@ -389,12 +393,10 @@ export namespace ServerClientAPI {
 			// In this case, it was called internally from server-side.
 			// Just run and return right away:
 			triggerWriteAccessBecauseNoCheckNecessary()
-			return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
-				deviceId,
-				timeoutTime,
+			return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, {
 				functionName,
-				...args
-			).catch(async (e) => {
+				args,
+			}).catch(async (e) => {
 				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
 				logger.error(errMsg)
 				// allow the exception to be handled by the Client code
@@ -404,14 +406,15 @@ export namespace ServerClientAPI {
 
 		void PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
 
-		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, functionName, ...args).catch(
-			async (err) => {
-				const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
-				logger.error(errMsg)
-				// allow the exception to be handled by the Client code
-				return Promise.reject(err)
-			}
-		)
+		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, {
+			functionName,
+			args,
+		}).catch(async (err) => {
+			const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
+			logger.error(errMsg)
+			// allow the exception to be handled by the Client code
+			return Promise.reject(err)
+		})
 	}
 
 	async function getLoggedInCredentials(methodContext: MethodContext): Promise<BasicAccessContext> {
@@ -456,7 +459,22 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 		functionName: string,
 		...args: any[]
 	) {
-		return ServerClientAPI.callPeripheralDeviceFunction(this, context, deviceId, timeoutTime, functionName, ...args)
+		return ServerClientAPI.callPeripheralDeviceFunctionOrAction(this, context, deviceId, timeoutTime, {
+			functionName,
+			args,
+		})
+	}
+	async callPeripheralDeviceAction(
+		context: string,
+		deviceId: PeripheralDeviceId,
+		timeoutTime: number | undefined,
+		actionId: string,
+		payload?: Record<string, any>
+	) {
+		return ServerClientAPI.callPeripheralDeviceFunctionOrAction(this, context, deviceId, timeoutTime, {
+			actionId,
+			payload,
+		})
 	}
 	async callBackgroundPeripheralDeviceFunction(
 		deviceId: PeripheralDeviceId,

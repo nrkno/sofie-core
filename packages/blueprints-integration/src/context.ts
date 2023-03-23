@@ -1,3 +1,4 @@
+import { TSRTimelineContent } from 'timeline-state-resolver-types'
 import { DatastorePersistenceMode, Time } from './common'
 import { IBlueprintExternalMessageQueueObj } from './message'
 import { PackageInfo } from './packageInfo'
@@ -288,7 +289,10 @@ export interface ITimelineEventContext extends IEventContext, IRundownContext {
 	 * Get the full session id for a timelineobject that belongs to an ab playback session
 	 * sessionName should also be used in calls to getPieceABSessionId for the owning piece
 	 */
-	getTimelineObjectAbSessionId(obj: OnGenerateTimelineObj, sessionName: string): string | undefined
+	getTimelineObjectAbSessionId(
+		obj: OnGenerateTimelineObj<TSRTimelineContent, any, any>,
+		sessionName: string
+	): string | undefined
 }
 
 export interface IPartEventContext extends IEventContext, IRundownContext {

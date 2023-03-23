@@ -176,10 +176,10 @@ export async function getLookeaheadObjects(
 }
 
 // elsewhere uses prefixAllObjectIds to do this, but we want to apply to a single object from itself
-const getStartOfObjectRef = (obj: TimelineObjRundown & OnGenerateTimelineObj): string =>
+const getStartOfObjectRef = (obj: TimelineObjRundown & OnGenerateTimelineObj<any>): string =>
 	`#${prefixSingleObjectId(obj, obj.pieceInstanceId ?? '')}.start`
 const calculateStartAfterPreviousObj = (
-	prevObj: TimelineObjRundown & OnGenerateTimelineObj
+	prevObj: TimelineObjRundown & OnGenerateTimelineObj<any>
 ): TimelineTypes.TimelineEnable => {
 	const prevHasDelayFlag = (prevObj.classes || []).indexOf('_lookahead_start_delay') !== -1
 

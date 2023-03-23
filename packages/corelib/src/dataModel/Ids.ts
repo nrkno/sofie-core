@@ -89,6 +89,7 @@ export type TimelineObjId = ProtectedString<'TimelineObjId'>
 
 /** A string identifying a translations bundle */
 export type TranslationsBundleId = ProtectedString<'TranslationsBundleId'>
+export type TranslationsBundleOriginId = ProtectedString<'TranslationsBundleOriginId'>
 
 /** A string identifying a triggered action */
 export type TriggeredActionId = ProtectedString<'TriggeredActionId'>
@@ -104,8 +105,5 @@ export type WorkerId = ProtectedString<'WorkerId'>
 
 /** A string, identifying a WorkerThread */
 export type WorkerThreadId = ProtectedString<'WorkerThreadId'>
-
-/** A string, identifyinf a TimelineDatastore entry */
-export type TimelineDatastoreEntryId = ProtectedString<'TimelineDatastoreEntryId'>
 
 export * from '@sofie-automation/shared-lib/dist/core/model/Ids'

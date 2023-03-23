@@ -168,7 +168,6 @@ export function setupMockCore(doc?: Partial<ICoreSystem>): ICoreSystem {
 		modified: 0,
 		version: '0.0.0',
 		previousVersion: '0.0.0',
-		storePath: '',
 		serviceMessages: {},
 	}
 	const coreSystem = _.extend(defaultCore, doc)
@@ -187,7 +186,6 @@ export function setupMockTriggeredActions(
 		const mock: DBTriggeredActions = {
 			_id: protectString(`mockTriggeredAction_${showStyleBaseId ?? 'core'}` + i),
 			_rank: i * 1000,
-			_rundownVersionHash: 'asdf',
 			showStyleBaseId,
 			blueprintUniqueId: null,
 			actionsWithOverrides: wrapDefaultObject({

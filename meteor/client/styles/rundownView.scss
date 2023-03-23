@@ -252,7 +252,6 @@ body.no-overflow {
 				text-align: left;
 			}
 
-
 			&.time-now {
 				position: absolute;
 				top: 0.05em;
@@ -1481,6 +1480,8 @@ svg.icon {
 			}
 
 			&.live {
+				--missing-overlay-animated: 1;
+
 				.segment-timeline__part__nextline:not(.segment-timeline__part__nextline--endline) {
 					&::after,
 					&::before {
@@ -1566,6 +1567,8 @@ svg.icon {
 			}
 
 			&.next {
+				--missing-overlay-animated: 1;
+
 				.segment-timeline__part__nextline:not(.offset) {
 					.segment-timeline__part__nextline__label {
 						> svg {

@@ -481,7 +481,6 @@ type NoMappingSettingsDeviceTypes =
 	| TSRDeviceType.VIZMSE
 	| TSRDeviceType.SHOTOKU
 	| TSRDeviceType.TELEMETRICS
-	| TSRDeviceType.SOFIE_CHEF
 
 type ImplementedMappingsManifest = Pick<MappingsManifest, Exclude<TSRDeviceType, NoMappingSettingsDeviceTypes>>
 
@@ -669,6 +668,14 @@ const MAPPING_MANIFEST: ImplementedMappingsManifest = {
 			name: 'Scene Name',
 			includeInSummary: true,
 			optional: true,
+		},
+	],
+	[TSRDeviceType.SOFIE_CHEF]: [
+		{
+			id: 'windowId',
+			type: ConfigManifestEntryType.STRING,
+			name: 'Window ID',
+			includeInSummary: true,
 		},
 	],
 }

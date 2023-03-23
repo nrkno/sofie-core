@@ -64,10 +64,10 @@ async function setupUITriggeredActionsPublicationObservers(
 
 	// Set up observers:
 	return [
-		TriggeredActions.find(compileMongoSelector(args.showStyleBaseId)).observe({
-			added: (obj) => triggerUpdate(trackChange(obj._id)),
-			changed: (obj) => triggerUpdate(trackChange(obj._id)),
-			removed: (obj) => triggerUpdate(trackChange(obj._id)),
+		TriggeredActions.find(compileMongoSelector(args.showStyleBaseId)).observeChanges({
+			added: (id) => triggerUpdate(trackChange(id)),
+			changed: (id) => triggerUpdate(trackChange(id)),
+			removed: (id) => triggerUpdate(trackChange(id)),
 		}),
 	]
 }

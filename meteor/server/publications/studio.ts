@@ -50,23 +50,6 @@ meteorPublish(PubSub.studios, async function (selector0, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.studioOfDevice, async function (deviceId: PeripheralDeviceId, token) {
-	if (await PeripheralDeviceReadAccess.peripheralDevice(deviceId, { userId: this.userId, token })) {
-		const peripheralDevice = PeripheralDevices.findOne(deviceId)
-
-		if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
-
-		const modifier: FindOptions<DBStudio> = {
-			fields: {},
-		}
-
-		const studioId = peripheralDevice.studioId
-		if (studioId && (await StudioReadAccess.studioContent(studioId, { userId: this.userId, token }))) {
-			return Studios.find(studioId, modifier)
-		}
-	}
-	return null
-})
 
 meteorPublish(PubSub.externalMessageQueue, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -208,7 +191,7 @@ async function setupMappingsPublicationObservers(
 				// change to the mappings or the routes
 				mappingsHash: 1,
 			},
-		}).observe({
+		}).observeChanges({
 			added: () => triggerUpdate({ invalidateStudio: true }),
 			changed: () => triggerUpdate({ invalidateStudio: true }),
 			removed: () => triggerUpdate({ invalidateStudio: true }),
@@ -227,7 +210,7 @@ async function manipulateMappingsPublicationData(
 	const studio = await Studios.findOneAsync(args.studioId)
 	if (!studio) return []
 
-	const routes = getActiveRoutes(studio)
+	const routes = getActiveRoutes(studio.routeSets)
 	const rawMappings = applyAndValidateOverrides(studio.mappingsWithOverrides)
 	const routedMappings = getRoutedMappings(rawMappings.obj, routes)
 
