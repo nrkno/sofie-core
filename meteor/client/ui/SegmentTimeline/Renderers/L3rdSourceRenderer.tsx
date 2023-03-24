@@ -5,6 +5,8 @@ import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerIte
 import { NoraContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector'
 import { RundownUtils } from '../../../lib/rundown'
+import classNames from 'classnames'
+import { PieceMultistepChevron } from '../../SegmentContainer/PieceMultistepChevron'
 
 type IProps = ICustomLayerItemProps
 interface IState {}
@@ -54,21 +56,24 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 		const stepContent = noraContent?.payload?.step
 		const isMultiStep = stepContent?.enabled === true
 
+		const multistepChevron = PieceMultistepChevron({
+			className: 'segment-timeline__piece__step-chevron',
+			piece: this.props.piece,
+		})
+
 		return (
 			<React.Fragment>
 				{!this.props.isTooSmallForText && (
 					<>
 						{!this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
 							<span
-								className="segment-timeline__piece__label"
+								className={classNames('segment-timeline__piece__label', {
+									mln: !!multistepChevron,
+								})}
 								ref={this.setLeftLabelRef}
 								style={this.getItemLabelOffsetLeft()}
 							>
-								{isMultiStep && stepContent ? (
-									<span className="segment-timeline__piece__step-chevron">
-										{stepContent.to === 'next' ? (stepContent.from || 0) + 1 : stepContent.to || 1}
-									</span>
-								) : null}
+								{multistepChevron}
 								<span className="segment-timeline__piece__label">{innerPiece.name}</span>
 							</span>
 						) : null}

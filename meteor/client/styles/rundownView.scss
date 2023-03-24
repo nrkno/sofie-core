@@ -3177,4 +3177,33 @@ svg.icon {
 	}
 }
 
+/** Multi-step Graphics chevron */
+
+.segment-storyboard__piece__step-chevron, .segment-opl__main-piece__label__step-chevron {
+	margin-right: 0.2em;
+	background: rgba(0, 0, 0, 0.4);
+	display: inline-block;
+	padding: 0 1em 0 0.4em;
+	color: $segment-piece-step-counter;
+	text-shadow: 0 0 1px #000, 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
+	clip-path: polygon(0 0, calc(100% - 0.6em) 0, 100% 50%, calc(100% - 0.6em) 100%, 0 100%);
+}
+
+.segment-storyboard__piece__step-chevron {
+	margin-left: -0.3em;
+	padding-left: 0.6em;
+}
+
+.segment-opl__main-piece__label__step-chevron {
+	padding-left: 1em;
+}
+
+.segment-opl__part.segment-opl__part--next
+	> .segment-opl__part-timeline
+	> .segment-opl__main-piece
+	> .segment-opl__main-piece__label.mln
+	> .segment-opl__main-piece__label__step-chevron {
+	padding-left: 4em;
+}
+
 @import 'rundownOverview';
