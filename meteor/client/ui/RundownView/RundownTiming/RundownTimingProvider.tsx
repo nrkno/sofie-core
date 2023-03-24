@@ -77,8 +77,8 @@ export const RundownTimingProvider = withTracker<
 		segments = incomingSegments
 		const partInstances = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist)
 
-		const currentPartInstance = partInstances.find((p) => p._id === props.playlist?.currentPartInstanceId)
-		const previousPartInstance = partInstances.find((p) => p._id === props.playlist?.previousPartInstanceId)
+		const currentPartInstance = partInstances.find((p) => p._id === props.playlist?.currentPartInfo?.partInstanceId)
+		const previousPartInstance = partInstances.find((p) => p._id === props.playlist?.previousPartInfo?.partInstanceId)
 
 		currentRundown = currentPartInstance ? rundowns.find((r) => r._id === currentPartInstance.rundownId) : rundowns[0]
 		// These are needed to retrieve the start time of a segment for calculating the remaining budget, in case the first partInstance was removed
@@ -239,8 +239,8 @@ export const RundownTimingProvider = withTracker<
 			}
 			if (
 				prevProps.parts !== this.props.parts ||
-				prevProps.playlist?.nextPartInstanceId !== this.props.playlist?.nextPartInstanceId ||
-				prevProps.playlist?.currentPartInstanceId !== this.props.playlist?.currentPartInstanceId
+				prevProps.playlist?.nextPartInfo?.partInstanceId !== this.props.playlist?.nextPartInfo?.partInstanceId ||
+				prevProps.playlist?.currentPartInfo?.partInstanceId !== this.props.playlist?.currentPartInfo?.partInstanceId
 			) {
 				// empty the temporary Part Instances cache
 				this.timingCalculator.clearTempPartInstances()

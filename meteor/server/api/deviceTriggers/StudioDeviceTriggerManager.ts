@@ -225,11 +225,11 @@ function createCurrentContextFromCache(cache: ContentCache): ReactivePlaylistAct
 
 	if (!rundownPlaylist) throw new Error('There should be an active RundownPlaylist!')
 
-	const currentPartInstance = rundownPlaylist.currentPartInstanceId
-		? cache.PartInstances.findOne(rundownPlaylist.currentPartInstanceId)
+	const currentPartInstance = rundownPlaylist.currentPartInfo
+		? cache.PartInstances.findOne(rundownPlaylist.currentPartInfo.partInstanceId)
 		: undefined
-	const nextPartInstance = rundownPlaylist.nextPartInstanceId
-		? cache.PartInstances.findOne(rundownPlaylist.nextPartInstanceId)
+	const nextPartInstance = rundownPlaylist.nextPartInfo
+		? cache.PartInstances.findOne(rundownPlaylist.nextPartInfo.partInstanceId)
 		: undefined
 
 	const currentSegmentPartIds = currentPartInstance

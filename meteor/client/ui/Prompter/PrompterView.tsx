@@ -298,11 +298,11 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 		if (!this.configOptions.followTake) return
 		if (!playlist) return
-		if (playlist.currentPartInstanceId === this.autoScrollPreviousPartInstanceId) return
-		this.autoScrollPreviousPartInstanceId = playlist.currentPartInstanceId
-		if (playlist.currentPartInstanceId === null) return
+		if (playlist.currentPartInfo?.partInstanceId === this.autoScrollPreviousPartInstanceId) return
+		this.autoScrollPreviousPartInstanceId = playlist.currentPartInfo?.partInstanceId ?? null
+		if (playlist.currentPartInfo === null) return
 
-		this.scrollToPartInstance(playlist.currentPartInstanceId)
+		this.scrollToPartInstance(playlist.currentPartInfo.partInstanceId)
 	}
 	private calculateScrollPosition() {
 		let pixelMargin = this.calculateMarginPosition()
@@ -427,11 +427,11 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				const current = anchors[index]
 				const next = index + 1 < anchors.length ? anchors[index + 1] : null
 
-				if (playlist.currentPartInstanceId && current.classList.contains(`live`)) {
+				if (playlist.currentPartInfo && current.classList.contains(`live`)) {
 					currentPartElement = current
 					currentPartElementAfter = next
 				}
-				if (playlist.nextPartInstanceId && current.classList.contains(`next`)) {
+				if (playlist.nextPartInfo && current.classList.contains(`next`)) {
 					nextPartElementAfter = next
 				}
 			}

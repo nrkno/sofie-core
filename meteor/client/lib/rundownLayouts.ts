@@ -38,7 +38,7 @@ export function getIsFilterActive(
 				? unfinishedPieces.find((piece: PieceInstance) => {
 						return (
 							(panel.requiredLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
-							piece.partInstanceId === playlist.currentPartInstanceId
+							piece.partInstanceId === playlist.currentPartInfo?.partInstanceId
 						)
 				  })
 				: undefined
@@ -54,7 +54,7 @@ export function getUnfinishedPieceInstancesReactive(
 	playlist: RundownPlaylist,
 	showStyleBase: UIShowStyleBase
 ): PieceInstance[] {
-	if (playlist.activationId && playlist.currentPartInstanceId) {
+	if (playlist.activationId && playlist.currentPartInfo) {
 		return memoizedIsolatedAutorun(
 			(
 				playlistActivationId: RundownPlaylistActivationId,
@@ -127,7 +127,7 @@ export function getUnfinishedPieceInstancesReactive(
 			},
 			'getUnfinishedPieceInstancesReactive',
 			playlist.activationId,
-			playlist.currentPartInstanceId,
+			playlist.currentPartInfo.partInstanceId,
 			showStyleBase
 		)
 	}

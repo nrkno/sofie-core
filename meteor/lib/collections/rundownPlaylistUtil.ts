@@ -239,10 +239,7 @@ export class RundownPlaylistCollectionUtil {
 		}
 	}
 	static getSelectedPartInstances(
-		playlist: Pick<
-			RundownPlaylist,
-			'_id' | 'currentPartInstanceId' | 'previousPartInstanceId' | 'nextPartInstanceId'
-		>,
+		playlist: Pick<RundownPlaylist, '_id' | 'currentPartInfo' | 'previousPartInfo' | 'nextPartInfo'>,
 		rundownIds0?: RundownId[]
 	): {
 		currentPartInstance: PartInstance | undefined
@@ -255,9 +252,9 @@ export class RundownPlaylistCollectionUtil {
 		}
 
 		const ids = _.compact([
-			playlist.currentPartInstanceId,
-			playlist.previousPartInstanceId,
-			playlist.nextPartInstanceId,
+			playlist.currentPartInfo?.partInstanceId,
+			playlist.previousPartInfo?.partInstanceId,
+			playlist.nextPartInfo?.partInstanceId,
 		])
 		const instances =
 			ids.length > 0
@@ -269,9 +266,9 @@ export class RundownPlaylistCollectionUtil {
 				: []
 
 		return {
-			currentPartInstance: instances.find((inst) => inst._id === playlist.currentPartInstanceId),
-			nextPartInstance: instances.find((inst) => inst._id === playlist.nextPartInstanceId),
-			previousPartInstance: instances.find((inst) => inst._id === playlist.previousPartInstanceId),
+			currentPartInstance: instances.find((inst) => inst._id === playlist.currentPartInfo?.partInstanceId),
+			nextPartInstance: instances.find((inst) => inst._id === playlist.nextPartInfo?.partInstanceId),
+			previousPartInstance: instances.find((inst) => inst._id === playlist.previousPartInfo?.partInstanceId),
 		}
 	}
 

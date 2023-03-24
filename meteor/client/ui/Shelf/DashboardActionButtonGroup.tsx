@@ -26,7 +26,12 @@ export const DashboardActionButtonGroup = withTranslation()(
 			if (this.props.studioMode) {
 				const { t } = this.props
 				doUserAction(t, e, UserAction.TAKE, (e, ts) =>
-					MeteorCall.userAction.take(e, ts, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+					MeteorCall.userAction.take(
+						e,
+						ts,
+						this.props.playlist._id,
+						this.props.playlist.currentPartInfo?.partInstanceId ?? null
+					)
 				)
 			}
 		}
@@ -81,7 +86,12 @@ export const DashboardActionButtonGroup = withTranslation()(
 						MeteorCall.userAction.resetAndActivate(e, ts, this.props.playlist._id)
 					)
 					doUserAction(t, e, UserAction.TAKE, (e, ts) =>
-						MeteorCall.userAction.take(e, ts, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+						MeteorCall.userAction.take(
+							e,
+							ts,
+							this.props.playlist._id,
+							this.props.playlist.currentPartInfo?.partInstanceId ?? null
+						)
 					)
 				}
 			}

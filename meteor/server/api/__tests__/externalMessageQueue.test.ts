@@ -22,8 +22,14 @@ describe('Test external message queue static methods', () => {
 			studioId: protectString(''),
 			created: 0,
 			modified: 0,
-			currentPartInstanceId: protectString('part_now'),
-			nextPartInstanceId: protectString('partNext'),
+			currentPartInfo: {
+				partInstanceId: protectString('part_now'),
+				rundownId: protectString('rundown_1'),
+			},
+			nextPartInfo: {
+				partInstanceId: protectString('partNext'),
+				rundownId: protectString('rundown_1'),
+			},
 			previousPartInfo: null,
 			activationId: protectString('active'),
 			timing: {
