@@ -3,7 +3,7 @@ import { SplitsContent } from '@sofie-automation/blueprints-integration'
 import { IProps } from './ThumbnailRendererFactory'
 import { RundownUtils } from '../../../../lib/rundown'
 import { SplitsFloatingInspector } from '../../../FloatingInspectors/SplitsFloatingInspector'
-import { getSplitItems } from '../../utils/getSplitItems'
+import { getSplitItems } from '../../../SegmentContainer/getSplitItems'
 
 export function SplitsThumbnailRenderer({ pieceInstance, originPosition, hovering, layer }: IProps): JSX.Element {
 	const splitItems = getSplitItems(pieceInstance, 'segment-storyboard__thumbnail__item')

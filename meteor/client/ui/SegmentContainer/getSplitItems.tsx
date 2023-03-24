@@ -1,9 +1,9 @@
 import React from 'react'
 import classNames from 'classnames'
 import { SplitsContent } from '@sofie-automation/blueprints-integration'
-import { RundownUtils } from '../../../lib/rundown'
-import { getSplitPreview, SplitRole } from '../../../lib/ui/splitPreview'
-import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
+import { RundownUtils } from '../../lib/rundown'
+import { getSplitPreview, SplitRole } from '../../lib/ui/splitPreview'
+import { PieceUi } from './withResolvedSegment'
 
 export function getSplitItems(pieceInstance: PieceUi, baseClassName: string): JSX.Element[] {
 	const splitsContent = pieceInstance.instance.piece.content as SplitsContent

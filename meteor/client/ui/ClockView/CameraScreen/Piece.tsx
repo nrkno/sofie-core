@@ -3,8 +3,8 @@ import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import classNames from 'classnames'
 import { CanvasSizeContext } from '.'
 import { PieceExtended } from '../../../../lib/Rundown'
-import { PieceElement } from '../../SegmentStoryboard/utils/PieceElement'
-import { getSplitItems } from '../../SegmentStoryboard/utils/getSplitItems'
+import { PieceElement } from '../../SegmentContainer/PieceElement'
+import { getSplitItems } from '../../SegmentContainer/getSplitItems'
 
 const PIECE_TYPE_INDICATOR_BORDER_RADIUS = 11
 

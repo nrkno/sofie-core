@@ -5,7 +5,7 @@ import { PieceExtended } from '../../../../lib/Rundown'
 import { MediaObject } from '../../../../lib/collections/MediaObjects'
 import { PackageInfo, VTContent } from '@sofie-automation/blueprints-integration'
 // TODO: Move to a shared lib file
-import { getSplitItems } from '../../SegmentStoryboard/utils/getSplitItems'
+import { getSplitItems } from '../../SegmentContainer/getSplitItems'
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
 import { PieceElement } from '../../SegmentContainer/PieceElement'
