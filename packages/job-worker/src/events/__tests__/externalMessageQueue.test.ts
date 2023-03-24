@@ -40,7 +40,7 @@ describe('Test external message queue static methods', () => {
 			modified: 0,
 			currentPartInstanceId: protectString('part_now'),
 			nextPartInstanceId: protectString('partNext'),
-			previousPartInstanceId: null,
+			previousPartInfo: null,
 			activationId: protectString('active'),
 			timing: {
 				type: PlaylistTimingType.None,
@@ -147,7 +147,7 @@ describe('Test sending messages to mocked endpoints', () => {
 			modified: 0,
 			currentPartInstanceId: protectString('part_now'),
 			nextPartInstanceId: protectString('partNext'),
-			previousPartInstanceId: null,
+			previousPartInfo: null,
 			activationId: protectString('active'),
 			timing: {
 				type: PlaylistTimingType.None,

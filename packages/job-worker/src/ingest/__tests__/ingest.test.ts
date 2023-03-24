@@ -1803,7 +1803,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				playlistId: rundown.playlistId,
 				rehearsal: true,
 			})
-			await expect(getPlaylist()).resolves.toMatchObject({ currentPartInstanceId: null })
+			await expect(getPlaylist()).resolves.toMatchObject({ currentPartInfo: null })
 
 			// Take the first part
 			await handleTakeNextPart(context, { playlistId: rundown.playlistId, fromPartInstanceId: null })

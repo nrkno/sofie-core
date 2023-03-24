@@ -63,7 +63,7 @@ export async function handleMoveNextPart(context: JobContext, data: MoveNextPart
 				throw UserError.create(UserErrorMessage.DuringHold)
 			}
 
-			if (!playlist.nextPartInstanceId && !playlist.currentPartInstanceId) {
+			if (!playlist.nextPartInfo && !playlist.currentPartInfo) {
 				throw UserError.create(UserErrorMessage.NoCurrentOrNextPart)
 			}
 		},

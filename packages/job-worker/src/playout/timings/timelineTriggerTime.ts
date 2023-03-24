@@ -36,7 +36,7 @@ export async function handleTimelineTriggerTime(context: JobContext, data: OnTim
 					const rundownIDs = (
 						await context.directCollections.Rundowns.findFetch({ playlistId }, { projection: { _id: 1 } })
 					).map((r) => r._id)
-					const partInstanceIDs = [activePlaylist.currentPartInstanceId].filter(
+					const partInstanceIDs = [activePlaylist.currentPartInfo?.partInstanceId].filter(
 						(id): id is PartInstanceId => id !== null
 					)
 
@@ -123,11 +123,11 @@ function timelineTriggerTimeInner(
 			}
 		})
 
-		if (lastTakeTime !== undefined && activePlaylist?.currentPartInstanceId && pieceInstanceCache) {
+		if (lastTakeTime !== undefined && activePlaylist?.currentPartInfo && pieceInstanceCache) {
 			// We updated some pieceInstance from now, so lets ensure any earlier adlibs do not still have a now
 			const remainingNowPieces = pieceInstanceCache.findAll(
 				(p) =>
-					p.partInstanceId === activePlaylist.currentPartInstanceId &&
+					p.partInstanceId === activePlaylist.currentPartInfo?.partInstanceId &&
 					p.dynamicallyInserted !== undefined &&
 					!p.disabled
 			)

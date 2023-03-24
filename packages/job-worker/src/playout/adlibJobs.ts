@@ -48,7 +48,7 @@ export async function handleTakePieceAsAdlibNow(context: JobContext, data: TakeP
 				throw UserError.create(UserErrorMessage.DuringHold)
 			}
 
-			if (playlist.currentPartInstanceId !== data.partInstanceId)
+			if (playlist.currentPartInfo?.partInstanceId !== data.partInstanceId)
 				throw UserError.create(UserErrorMessage.AdlibCurrentPart)
 		},
 		async (cache) => {
@@ -225,7 +225,7 @@ export async function handleAdLibPieceStart(context: JobContext, data: AdlibPiec
 				throw UserError.create(UserErrorMessage.DuringHold)
 			}
 
-			if (!data.queue && playlist.currentPartInstanceId !== data.partInstanceId)
+			if (!data.queue && playlist.currentPartInfo?.partInstanceId !== data.partInstanceId)
 				throw UserError.create(UserErrorMessage.AdlibCurrentPart)
 		},
 		async (cache) => {
@@ -305,7 +305,7 @@ export async function handleStartStickyPieceOnSourceLayer(
 			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 				throw UserError.create(UserErrorMessage.DuringHold)
 			}
-			if (!playlist.currentPartInstanceId) throw UserError.create(UserErrorMessage.NoCurrentPart)
+			if (!playlist.currentPartInfo) throw UserError.create(UserErrorMessage.NoCurrentPart)
 		},
 		async (cache) => {
 			const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
@@ -357,7 +357,7 @@ export async function handleStopPiecesOnSourceLayers(
 			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 				throw UserError.create(UserErrorMessage.DuringHold)
 			}
-			if (!playlist.currentPartInstanceId) throw UserError.create(UserErrorMessage.NoCurrentPart)
+			if (!playlist.currentPartInfo) throw UserError.create(UserErrorMessage.NoCurrentPart)
 		},
 		async (cache) => {
 			const partInstance = cache.PartInstances.findOne(data.partInstanceId)
@@ -399,13 +399,14 @@ export async function handleDisableNextPiece(context: JobContext, data: DisableN
 			const playlist = cache.Playlist.doc
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 
-			if (!playlist.currentPartInstanceId) throw UserError.create(UserErrorMessage.NoCurrentPart)
+			if (!playlist.currentPartInfo) throw UserError.create(UserErrorMessage.NoCurrentPart)
 		},
 		async (cache) => {
 			const playlist = cache.Playlist.doc
 
 			const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
-			if (!currentPartInstance) throw new Error(`PartInstance "${playlist.currentPartInstanceId}" not found!`)
+			if (!currentPartInstance)
+				throw new Error(`PartInstance "${playlist.currentPartInfo?.partInstanceId}" not found!`)
 
 			const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
 			if (!rundown) throw new Error(`Rundown "${currentPartInstance.rundownId}" not found!`)

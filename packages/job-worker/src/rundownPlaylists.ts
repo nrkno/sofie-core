@@ -198,9 +198,9 @@ export function produceRundownPlaylistInfoFromRundown(
 	if (playlistInfo) {
 		newPlaylist = {
 			created: getCurrentTime(),
-			currentPartInstanceId: null,
-			nextPartInstanceId: null,
-			previousPartInstanceId: null,
+			currentPartInfo: null,
+			nextPartInfo: null,
+			previousPartInfo: null,
 			rundownIdsInOrder: [],
 
 			...clone<DBRundownPlaylist | undefined>(existingPlaylist),
@@ -277,9 +277,9 @@ function defaultPlaylistForRundown(
 ): Omit<DBRundownPlaylist, '_id' | 'externalId'> {
 	return {
 		created: getCurrentTime(),
-		currentPartInstanceId: null,
-		nextPartInstanceId: null,
-		previousPartInstanceId: null,
+		currentPartInfo: null,
+		nextPartInfo: null,
+		previousPartInfo: null,
 		rundownIdsInOrder: [],
 
 		...clone<DBRundownPlaylist | undefined>(existingPlaylist),
@@ -327,7 +327,7 @@ export async function handleMoveRundownIntoPlaylist(
 							`RundownPlaylists "${rundown.playlistId}" for rundown "${rundown._id}" not found!`
 						)
 
-					if (!(await allowedToMoveRundownOutOfPlaylist(context, oldPlaylist, rundown))) {
+					if (!allowedToMoveRundownOutOfPlaylist(oldPlaylist, rundown)) {
 						throw new Error(`Not allowed to move currently playing rundown!`)
 					}
 

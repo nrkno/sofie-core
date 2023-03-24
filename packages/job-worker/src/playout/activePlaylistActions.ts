@@ -56,9 +56,9 @@ export async function activateRundownPlaylist(
 	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 	if (!currentPartInstance || currentPartInstance.reset) {
 		cache.Playlist.update((p) => {
-			p.currentPartInstanceId = null
-			p.nextPartInstanceId = null
-			p.previousPartInstanceId = null
+			p.currentPartInfo = null
+			p.nextPartInfo = null
+			p.previousPartInfo = null
 			return p
 		})
 
@@ -79,9 +79,9 @@ export async function activateRundownPlaylist(
 		// Otherwise preserve the active partInstances
 		const partInstancesToPreserve = new Set(
 			_.compact([
-				cache.Playlist.doc.nextPartInstanceId,
-				cache.Playlist.doc.currentPartInstanceId,
-				cache.Playlist.doc.previousPartInstanceId,
+				cache.Playlist.doc.nextPartInfo?.partInstanceId,
+				cache.Playlist.doc.currentPartInfo?.partInstanceId,
+				cache.Playlist.doc.previousPartInfo?.partInstanceId,
 			])
 		)
 		cache.PartInstances.updateAll((p) => {
@@ -101,10 +101,10 @@ export async function activateRundownPlaylist(
 			}
 		})
 
-		if (cache.Playlist.doc.nextPartInstanceId) {
-			const nextPartInstance = cache.PartInstances.findOne(cache.Playlist.doc.nextPartInstanceId)
+		if (cache.Playlist.doc.nextPartInfo) {
+			const nextPartInstance = cache.PartInstances.findOne(cache.Playlist.doc.nextPartInfo.partInstanceId)
 			if (!nextPartInstance)
-				throw new Error(`Could not find nextPartInstance "${cache.Playlist.doc.nextPartInstanceId}"`)
+				throw new Error(`Could not find nextPartInstance "${cache.Playlist.doc.nextPartInfo.partInstanceId}"`)
 			rundown = cache.Rundowns.findOne(nextPartInstance.rundownId)
 			if (!rundown) throw new Error(`Could not find rundown "${nextPartInstance.rundownId}"`)
 		}
@@ -180,8 +180,8 @@ export async function deactivateRundownPlaylistInner(
 	}
 
 	cache.Playlist.update((p) => {
-		p.previousPartInstanceId = null
-		p.currentPartInstanceId = null
+		p.previousPartInfo = null
+		p.currentPartInfo = null
 		p.holdState = RundownHoldState.NONE
 
 		delete p.activationId

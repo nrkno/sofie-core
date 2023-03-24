@@ -30,15 +30,15 @@ export async function handleExecuteAdlibAction(
 		if (!playlist) throw new Error(`Job playlist "${data.playlistId}" not found `)
 
 		if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
-		if (!playlist.currentPartInstanceId) throw UserError.create(UserErrorMessage.NoCurrentPart)
+		if (!playlist.currentPartInfo) throw UserError.create(UserErrorMessage.NoCurrentPart)
 
 		const initCache = await CacheForPlayoutPreInit.createPreInit(context, lock, playlist, false)
 
-		const currentPartInstance = playlist.currentPartInstanceId
-			? await context.directCollections.PartInstances.findOne(playlist.currentPartInstanceId)
-			: undefined
+		const currentPartInstance = await context.directCollections.PartInstances.findOne(
+			playlist.currentPartInfo.partInstanceId
+		)
 		if (!currentPartInstance)
-			throw new Error(`Current PartInstance "${playlist.currentPartInstanceId}" could not be found.`)
+			throw new Error(`Current PartInstance "${playlist.currentPartInfo.partInstanceId}" could not be found.`)
 
 		const rundown = initCache.Rundowns.findOne(currentPartInstance.rundownId)
 		if (!rundown) throw new Error(`Current Rundown "${currentPartInstance.rundownId}" could not be found`)
@@ -189,7 +189,7 @@ export async function executeActionInner(
 	}
 
 	if (actionContext.nextPartState !== ActionPartChange.NONE) {
-		const nextPartInstanceId = cache.Playlist.doc.nextPartInstanceId
+		const nextPartInstanceId = cache.Playlist.doc.nextPartInfo?.partInstanceId
 		if (nextPartInstanceId) {
 			updateExpectedDurationWithPrerollForPartInstance(cache, nextPartInstanceId)
 		}

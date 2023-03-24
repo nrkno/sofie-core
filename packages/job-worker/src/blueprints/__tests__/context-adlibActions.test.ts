@@ -264,7 +264,7 @@ describe('Test blueprint api context', () => {
 				})
 
 				await jobContext.directCollections.RundownPlaylists.update(playlistId, {
-					$set: { currentPartInstanceId: null, nextPartInstanceId: allPartInstances[2]._id },
+					$set: { currentPartInfo: null, nextPartInstanceId: allPartInstances[2]._id },
 				})
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
@@ -323,7 +323,7 @@ describe('Test blueprint api context', () => {
 				})
 
 				await jobContext.directCollections.RundownPlaylists.update(playlistId, {
-					$set: { currentPartInstanceId: null, nextPartInstanceId: allPartInstances[2]._id },
+					$set: { currentPartInfo: null, nextPartInstanceId: allPartInstances[2]._id },
 				})
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
@@ -414,7 +414,7 @@ describe('Test blueprint api context', () => {
 				getResolvedPiecesMock.mockClear()
 
 				await jobContext.directCollections.RundownPlaylists.update(playlistId, {
-					$set: { currentPartInstanceId: null, nextPartInstanceId: allPartInstances[2]._id },
+					$set: { currentPartInfo: null, nextPartInstanceId: allPartInstances[2]._id },
 				})
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
@@ -1178,7 +1178,7 @@ describe('Test blueprint api context', () => {
 				await jobContext.directCollections.RundownPlaylists.update(playlistId, {
 					$set: {
 						previousPartInstanceId: pieceInstanceOther.partInstanceId,
-						currentPartInstanceId: null,
+						currentPartInfo: null,
 						nextPartInstanceId: pieceInstance.partInstanceId,
 					},
 				})
@@ -1446,7 +1446,7 @@ describe('Test blueprint api context', () => {
 				})
 
 				await jobContext.directCollections.RundownPlaylists.update(playlistId, {
-					$set: { currentPartInstanceId: null },
+					$set: { currentPartInfo: null },
 				})
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
@@ -1522,7 +1522,7 @@ describe('Test blueprint api context', () => {
 				})
 
 				await jobContext.directCollections.RundownPlaylists.update(playlistId, {
-					$set: { currentPartInstanceId: null },
+					$set: { currentPartInfo: null },
 				})
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
@@ -1585,7 +1585,7 @@ describe('Test blueprint api context', () => {
 
 				// No instance id
 				await jobContext.directCollections.RundownPlaylists.update(playlistId, {
-					$set: { nextPartInstanceId: null },
+					$set: { nextPartInfo: null },
 				})
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)

@@ -121,10 +121,10 @@ function updatePartInstancePlannedTimes(
 	}
 
 	// Also mark the previous as ended
-	if (cache.Playlist.doc.previousPartInstanceId) {
+	if (cache.Playlist.doc.previousPartInfo) {
 		const previousPartEndTime = currentPartGroupStartTime + (timingContext.previousPartOverlap ?? 0)
 		cache.PartInstances.updateOne(
-			cache.Playlist.doc.previousPartInstanceId,
+			cache.Playlist.doc.previousPartInfo.partInstanceId,
 			(instance) => {
 				if (
 					instance.timings?.plannedStartedPlayback &&
@@ -259,8 +259,8 @@ function updatePlannedTimingsForPieceInstances(
 	timelineObjsMap: Record<string, TimelineObjRundown>
 ) {
 	const existingInfiniteTimings = new Map<PieceInstanceInfiniteId, Time>()
-	if (cache.Playlist.doc.previousPartInstanceId) {
-		const previousPartInstanceId = cache.Playlist.doc.previousPartInstanceId
+	if (cache.Playlist.doc.previousPartInfo) {
+		const previousPartInstanceId = cache.Playlist.doc.previousPartInfo.partInstanceId
 		const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === previousPartInstanceId)
 		for (const pieceInstance of pieceInstances) {
 			// Track the timings for the infinites
@@ -287,7 +287,7 @@ function updatePlannedTimingsForPieceInstances(
 		}
 	}, true)
 
-	if (cache.Playlist.doc.nextPartInstanceId && partGroupTimings.nextStartTime) {
+	if (cache.Playlist.doc.nextPartInfo && partGroupTimings.nextStartTime) {
 		const nextPartGroupStartTime0 = partGroupTimings.nextStartTime
 		cache.PieceInstances.updateAll((p) => {
 			if (p.partInstanceId === currentPartInstance._id) {

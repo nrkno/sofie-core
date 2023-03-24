@@ -166,7 +166,7 @@ describe('Playout API', () => {
 			await expect(getPlaylist0()).resolves.toMatchObject({
 				activationId: expect.stringMatching(/^randomId/),
 				rehearsal: false,
-				currentPartInstanceId: null,
+				currentPartInfo: null,
 				// nextPartInstanceId: parts[0]._id,
 			})
 		}
@@ -210,8 +210,8 @@ describe('Playout API', () => {
 		await handleDeactivateRundownPlaylist(context, { playlistId: playlistId0 })
 		await expect(getPlaylist0()).resolves.toMatchObject({
 			activationId: undefined,
-			currentPartInstanceId: null,
-			nextPartInstanceId: null,
+			currentPartInfo: null,
+			nextPartInfo: null,
 		})
 
 		expect(Timeline.operations).toMatchObject([

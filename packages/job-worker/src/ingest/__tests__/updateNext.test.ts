@@ -25,9 +25,9 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 		studioId: context.studioId,
 		created: 0,
 		modified: 0,
-		currentPartInstanceId: null,
-		nextPartInstanceId: null,
-		previousPartInstanceId: null,
+		currentPartInfo: null,
+		nextPartInfo: null,
+		previousPartInfo: null,
 		activationId: protectString('active'),
 		timing: {
 			type: 'none' as any,
@@ -325,7 +325,7 @@ describe('ensureNextPartIsValid', () => {
 			$set: {
 				nextPartInstanceId: nextPartInstanceId as any,
 				currentPartInstanceId: currentPartInstanceId as any,
-				previousPartInstanceId: null,
+				previousPartInfo: null,
 				nextPartManual: nextPartManual || false,
 			},
 		})
