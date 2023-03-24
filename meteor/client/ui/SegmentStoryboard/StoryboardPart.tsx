@@ -234,7 +234,7 @@ export function StoryboardPart({
 						'segment-storyboard__part__show-end--loop': isPlaylistLooping,
 					})}
 				>
-					{(!isLivePart || !doesPlaylistHaveNextPart || isPlaylistLooping) && (
+					{(!isLivePart || !doesPlaylistHaveNextPart || isPlaylistLooping) && isLastPartInSegment && (
 						<div className="segment-storyboard__part__show-end__label">
 							{isPlaylistLooping ? t('Loops to top') : t('Show End')}
 						</div>

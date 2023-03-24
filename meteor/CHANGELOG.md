@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.49.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.0...v1.49.0-in-testing.1) (2023-03-23)
+
+
+### Features
+
+* Add blueprint versions to /health endpoint ([a6fee5a](https://github.com/nrkno/sofie-core/commit/a6fee5a64005342db873af47380bd450f7ab2eb7))
+
 ## [1.49.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.47.0...v1.49.0-in-testing.0) (2023-03-21)
 
 

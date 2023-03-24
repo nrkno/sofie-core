@@ -518,8 +518,6 @@ export const SegmentStoryboard = React.memo(
 			setAnimateScrollLeft(true)
 		}
 
-		if (props.segment.isHidden) return null
-
 		return (
 			<div
 				id={props.id}
