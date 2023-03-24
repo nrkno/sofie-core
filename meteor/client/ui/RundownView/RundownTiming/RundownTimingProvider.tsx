@@ -207,12 +207,11 @@ export const RundownTimingProvider = withTracker<
 				this.dispatchLREvent(calmedDownNow)
 			}
 
-			const syncedEventTimeNow = Math.floor(now / 1000) * 1000
-			const dispatchSynced = Math.abs(syncedEventTimeNow - this.lastSyncedTime) >= 1000
+			const dispatchSynced = Math.abs(calmedDownNow - this.lastSyncedTime) >= 1000
 			if (dispatchSynced) {
-				this.lastSyncedTime = syncedEventTimeNow
-				this.updateDurations(syncedEventTimeNow, true)
-				this.dispatchSyncedEvent(syncedEventTimeNow)
+				this.lastSyncedTime = calmedDownNow
+				this.updateDurations(calmedDownNow, true)
+				this.dispatchSyncedEvent(calmedDownNow)
 			}
 
 			this.refreshDecimator++
@@ -239,6 +238,8 @@ export const RundownTimingProvider = withTracker<
 			) {
 				// empty the temporary Part Instances cache
 				this.timingCalculator.clearTempPartInstances()
+				this.refreshDecimator = 0 // Force LR update
+				this.lastSyncedTime = 0 // Force synced update
 				this.onRefreshTimer()
 			}
 		}
