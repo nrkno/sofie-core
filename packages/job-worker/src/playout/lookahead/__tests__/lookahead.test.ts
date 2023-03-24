@@ -135,7 +135,7 @@ describe('Lookahead', () => {
 		expect(findLookaheadForLayerMock).toHaveBeenNthCalledWith(
 			1,
 			context,
-			playlist.currentPartInstanceId,
+			playlist.currentPartInfo?.partInstanceId ?? null,
 			partInstances,
 			previous,
 			orderedPartsFollowingPlayhead,
@@ -146,7 +146,7 @@ describe('Lookahead', () => {
 		expect(findLookaheadForLayerMock).toHaveBeenNthCalledWith(
 			2,
 			context,
-			playlist.currentPartInstanceId,
+			playlist.currentPartInfo?.partInstanceId ?? null,
 			partInstances,
 			previous,
 			orderedPartsFollowingPlayhead,

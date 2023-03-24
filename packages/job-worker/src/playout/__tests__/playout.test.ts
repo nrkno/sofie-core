@@ -393,7 +393,7 @@ describe('Playout API', () => {
 		// Take the second Part of active playlist1 so that we have more pieceInstances to reset
 		await handleTakeNextPart(context, {
 			playlistId: playlistId1,
-			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
+			fromPartInstanceId: (await getPlaylist1()).currentPartInfo?.partInstanceId ?? null,
 		})
 
 		// should throw with 402 code, as resetting the rundown when active is forbidden, with default configuration
@@ -414,7 +414,7 @@ describe('Playout API', () => {
 
 		await handleTakeNextPart(context, {
 			playlistId: playlistId1,
-			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
+			fromPartInstanceId: (await getPlaylist1()).currentPartInfo?.partInstanceId ?? null,
 		})
 
 		// should contain one nonreset taken partInstance
@@ -437,7 +437,7 @@ describe('Playout API', () => {
 		// take the second part
 		await handleTakeNextPart(context, {
 			playlistId: playlistId1,
-			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
+			fromPartInstanceId: (await getPlaylist1()).currentPartInfo?.partInstanceId ?? null,
 		})
 
 		// Setting as next a part that is previous
@@ -449,13 +449,13 @@ describe('Playout API', () => {
 		})
 		await handleTakeNextPart(context, {
 			playlistId: playlistId1,
-			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
+			fromPartInstanceId: (await getPlaylist1()).currentPartInfo?.partInstanceId ?? null,
 		})
 
 		// take the second part to check if we reset all previous partInstances correctly
 		await handleTakeNextPart(context, {
 			playlistId: playlistId1,
-			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
+			fromPartInstanceId: (await getPlaylist1()).currentPartInfo?.partInstanceId ?? null,
 		})
 
 		// should contain two nonreset taken partInstances
@@ -487,7 +487,7 @@ describe('Playout API', () => {
 
 		await handleTakeNextPart(context, {
 			playlistId: playlistId1,
-			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
+			fromPartInstanceId: (await getPlaylist1()).currentPartInfo?.partInstanceId ?? null,
 		})
 
 		// Setting as next a non-previous and non-current part:
@@ -499,7 +499,7 @@ describe('Playout API', () => {
 		})
 		await handleTakeNextPart(context, {
 			playlistId: playlistId1,
-			fromPartInstanceId: (await getPlaylist1()).currentPartInstanceId,
+			fromPartInstanceId: (await getPlaylist1()).currentPartInfo?.partInstanceId ?? null,
 		})
 
 		// should contain two nonreset taken instance

@@ -770,7 +770,7 @@ describe('Test blueprint api context', () => {
 
 					const expectedPieceInstanceSourceLayer0 = pieceInstances.find(
 						(p) =>
-							p.partInstanceId === cache.Playlist.doc.currentPartInstanceId &&
+							p.partInstanceId === cache.Playlist.doc.currentPartInfo?.partInstanceId &&
 							p.piece.sourceLayerId === sourceLayerIds[0]
 					)
 					expect(expectedPieceInstanceSourceLayer0).not.toBeUndefined()
@@ -784,7 +784,7 @@ describe('Test blueprint api context', () => {
 
 					const expectedPieceInstanceSourceLayer1 = pieceInstances.find(
 						(p) =>
-							p.partInstanceId === cache.Playlist.doc.currentPartInstanceId &&
+							p.partInstanceId === cache.Playlist.doc.currentPartInfo?.partInstanceId &&
 							p.piece.sourceLayerId === sourceLayerIds[1]
 					)
 					expect(expectedPieceInstanceSourceLayer1).not.toBeUndefined()
@@ -857,7 +857,7 @@ describe('Test blueprint api context', () => {
 
 					const expectedPieceInstanceSourceLayer0 = pieceInstances.find(
 						(p) =>
-							p.partInstanceId === cache.Playlist.doc.currentPartInstanceId &&
+							p.partInstanceId === cache.Playlist.doc.currentPartInfo?.partInstanceId &&
 							p.piece.sourceLayerId === sourceLayerIds[0]
 					)
 					expect(expectedPieceInstanceSourceLayer0).not.toBeUndefined()
@@ -1400,7 +1400,7 @@ describe('Test blueprint api context', () => {
 					postProcessPiecesMock.mockImplementationOnce(postProcessPiecesOrig)
 					innerStartQueuedAdLibMock.mockImplementationOnce(innerStartQueuedAdLibOrig)
 					expect((await context.queuePart(newPart, [newPiece]))._id).toEqual(
-						cache.Playlist.doc.nextPartInstanceId
+						cache.Playlist.doc.nextPartInfo?.partInstanceId
 					)
 
 					expect(postProcessPiecesMock).toHaveBeenCalledTimes(1)
@@ -1409,8 +1409,8 @@ describe('Test blueprint api context', () => {
 
 					// Verify some properties not exposed to the blueprints
 					const newPartInstance = cache.PartInstances.findOne(
-						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-						cache.Playlist.doc.nextPartInstanceId!
+						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
+						cache.Playlist.doc.nextPartInfo?.partInstanceId!
 					) as DBPartInstance
 					expect(newPartInstance).toBeTruthy()
 					expect(newPartInstance.part._rank).toBeLessThan(9000)

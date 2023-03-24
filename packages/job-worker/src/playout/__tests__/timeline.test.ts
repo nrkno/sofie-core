@@ -282,7 +282,7 @@ async function doTakePart(
 
 		await handleTakeNextPart(context, {
 			playlistId: playlistId,
-			fromPartInstanceId: playlist.currentPartInstanceId,
+			fromPartInstanceId: playlist.currentPartInfo?.partInstanceId ?? null,
 		})
 	}
 

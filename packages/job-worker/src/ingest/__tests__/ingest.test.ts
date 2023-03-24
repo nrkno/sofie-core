@@ -2042,7 +2042,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 				await handleTakeNextPart(context, {
 					playlistId: rundown.playlistId,
-					fromPartInstanceId: playlist.currentPartInstanceId,
+					fromPartInstanceId: playlist.currentPartInfo?.partInstanceId ?? null,
 				})
 			}
 
@@ -2052,7 +2052,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 					rundown.playlistId
 				)) as DBRundownPlaylist
 				expect(playlist).toBeTruthy()
-				expect(playlist.currentPartInstanceId).toBe(partInstanceId0)
+				expect(playlist.currentPartInfo?.partInstanceId).toBe(partInstanceId0)
 
 				const currentPartInstance = (await getSelectedPartInstances(context, playlist))
 					.currentPartInstance as DBPartInstance
@@ -2107,7 +2107,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 					rundown.playlistId
 				)) as DBRundownPlaylist
 				expect(playlist).toBeTruthy()
-				expect(playlist.currentPartInstanceId).toBe(partInstanceId0)
+				expect(playlist.currentPartInfo?.partInstanceId).toBe(partInstanceId0)
 
 				const currentPartInstance = (await getSelectedPartInstances(context, playlist))
 					.currentPartInstance as DBPartInstance
@@ -2126,7 +2126,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 				await handleTakeNextPart(context, {
 					playlistId: rundown.playlistId,
-					fromPartInstanceId: playlist.currentPartInstanceId,
+					fromPartInstanceId: playlist.currentPartInfo?.partInstanceId ?? null,
 				})
 			}
 
@@ -2136,8 +2136,8 @@ describe('Test ingest actions for rundowns and segments', () => {
 					rundown.playlistId
 				)) as DBRundownPlaylist
 				expect(playlist).toBeTruthy()
-				expect(playlist.currentPartInstanceId).toBe(partInstanceId1)
-				expect(playlist.previousPartInstanceId).toBe(partInstanceId0)
+				expect(playlist.currentPartInfo?.partInstanceId).toBe(partInstanceId1)
+				expect(playlist.previousPartInfo?.partInstanceId).toBe(partInstanceId0)
 
 				const currentPartInstance = (await getSelectedPartInstances(context, playlist))
 					.currentPartInstance as DBPartInstance
@@ -2186,8 +2186,8 @@ describe('Test ingest actions for rundowns and segments', () => {
 					rundown.playlistId
 				)) as DBRundownPlaylist
 				expect(playlist).toBeTruthy()
-				expect(playlist.currentPartInstanceId).toBe(partInstanceId1)
-				expect(playlist.previousPartInstanceId).toBe(partInstanceId0)
+				expect(playlist.currentPartInfo?.partInstanceId).toBe(partInstanceId1)
+				expect(playlist.previousPartInfo?.partInstanceId).toBe(partInstanceId0)
 
 				const currentPartInstance = (await getSelectedPartInstances(context, playlist))
 					.currentPartInstance as DBPartInstance
@@ -2310,7 +2310,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				(await context.directCollections.RundownPlaylists.findOne(rundown.playlistId)) as DBRundownPlaylist
 			const getCurrentPartInstanceId = async () => {
 				const playlist = await getPlaylist()
-				return playlist.currentPartInstanceId
+				return playlist.currentPartInfo?.partInstanceId ?? null
 			}
 
 			const playlist = await getPlaylist()
@@ -2618,7 +2618,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				(await context.directCollections.RundownPlaylists.findOne(rundown.playlistId)) as DBRundownPlaylist
 			const getCurrentPartInstanceId = async () => {
 				const playlist = await getPlaylist()
-				return playlist.currentPartInstanceId
+				return playlist.currentPartInfo?.partInstanceId ?? null
 			}
 
 			const playlist = await getPlaylist()

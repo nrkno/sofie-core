@@ -38,8 +38,14 @@ describe('Test external message queue static methods', () => {
 			studioId: protectString(''),
 			created: 0,
 			modified: 0,
-			currentPartInstanceId: protectString('part_now'),
-			nextPartInstanceId: protectString('partNext'),
+			currentPartInfo: {
+				partInstanceId: protectString('part_now'),
+				rundownId: protectString('rundown_1'),
+			},
+			nextPartInfo: {
+				partInstanceId: protectString('partNext'),
+				rundownId: protectString('rundown_1'),
+			},
 			previousPartInfo: null,
 			activationId: protectString('active'),
 			timing: {
@@ -138,22 +144,7 @@ describe('Test sending messages to mocked endpoints', () => {
 		const showStyle = await setupMockShowStyleCompound(context)
 
 		const now = getCurrentTime()
-		await context.directCollections.RundownPlaylists.insertOne({
-			_id: protectString('playlist_1'),
-			externalId: 'mock_rpl',
-			name: 'Mock',
-			studioId: protectString(''),
-			created: 0,
-			modified: 0,
-			currentPartInstanceId: protectString('part_now'),
-			nextPartInstanceId: protectString('partNext'),
-			previousPartInfo: null,
-			activationId: protectString('active'),
-			timing: {
-				type: PlaylistTimingType.None,
-			},
-			rundownIdsInOrder: [protectString('rundown_1')],
-		})
+
 		const rundownId = await context.directCollections.Rundowns.insertOne({
 			_id: protectString('rundown_1'),
 			name: 'Mockito 1',
@@ -178,6 +169,28 @@ describe('Test sending messages to mocked endpoints', () => {
 			timing: {
 				type: PlaylistTimingType.None,
 			},
+		})
+		await context.directCollections.RundownPlaylists.insertOne({
+			_id: protectString('playlist_1'),
+			externalId: 'mock_rpl',
+			name: 'Mock',
+			studioId: protectString(''),
+			created: 0,
+			modified: 0,
+			currentPartInfo: {
+				partInstanceId: protectString('part_now'),
+				rundownId: rundownId,
+			},
+			nextPartInfo: {
+				partInstanceId: protectString('partNext'),
+				rundownId: rundownId,
+			},
+			previousPartInfo: null,
+			activationId: protectString('active'),
+			timing: {
+				type: PlaylistTimingType.None,
+			},
+			rundownIdsInOrder: [protectString('rundown_1')],
 		})
 
 		const rundown = (await context.directCollections.Rundowns.findOne(rundownId)) as DBRundown

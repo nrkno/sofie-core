@@ -3,14 +3,14 @@
 exports[`Test recieved mos ingest payloads mosRoCreate 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 0,
-  "currentPartInstanceId": null,
+  "created": 1679677954901,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 0,
+  "modified": 1679677954901,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -297,14 +297,14 @@ exports[`Test recieved mos ingest payloads mosRoCreate 4`] = `
 exports[`Test recieved mos ingest payloads mosRoCreate: replace existing 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 0,
-  "currentPartInstanceId": null,
+  "created": 1679677954901,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 0,
+  "modified": 1679677954921,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -582,14 +582,14 @@ exports[`Test recieved mos ingest payloads mosRoCreate: replace existing 4`] = `
 exports[`Test recieved mos ingest payloads mosRoFullStory: Valid data 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 0,
-  "currentPartInstanceId": null,
+  "created": 1679677954992,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 0,
+  "modified": 1679677955130,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -890,14 +890,14 @@ exports[`Test recieved mos ingest payloads mosRoFullStory: Valid data 5`] = `[]`
 exports[`Test recieved mos ingest payloads mosRoReadyToAir: Update ro 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 0,
-  "currentPartInstanceId": null,
+  "created": 1679677954992,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 0,
+  "modified": 1679677955008,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -1187,14 +1187,14 @@ exports[`Test recieved mos ingest payloads mosRoReadyToAir: Update ro 4`] = `
 exports[`Test recieved mos ingest payloads mosRoStatus: Update ro 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 0,
-  "currentPartInstanceId": null,
+  "created": 1679677954992,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 0,
+  "modified": 1679677954992,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -1482,14 +1482,14 @@ exports[`Test recieved mos ingest payloads mosRoStatus: Update ro 4`] = `
 exports[`Test recieved mos ingest payloads mosRoStoryDelete: Remove segment 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 0,
-  "currentPartInstanceId": null,
+  "created": 1679677954992,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 0,
+  "modified": 1679677955121,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -1744,14 +1744,14 @@ exports[`Test recieved mos ingest payloads mosRoStoryDelete: Remove segment 5`] 
 exports[`Test recieved mos ingest payloads mosRoStoryInsert: Into segment 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 0,
-  "currentPartInstanceId": null,
+  "created": 1679677954992,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 0,
+  "modified": 1679677955043,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -2053,14 +2053,14 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: Into segment 5`] = 
 exports[`Test recieved mos ingest payloads mosRoStoryInsert: New segment 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 0,
-  "currentPartInstanceId": null,
+  "created": 1679677954992,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 0,
+  "modified": 1679677955069,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -2371,14 +2371,14 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: New segment 5`] = `
 exports[`Test recieved mos ingest payloads mosRoStoryMove: Move whole segment to end 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 0,
-  "currentPartInstanceId": null,
+  "created": 1679677954992,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 0,
+  "modified": 1679677955187,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -2671,14 +2671,14 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Move whole segment to
 exports[`Test recieved mos ingest payloads mosRoStoryMove: Within segment 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 0,
-  "currentPartInstanceId": null,
+  "created": 1679677954992,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 0,
+  "modified": 1679677955180,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -2971,14 +2971,14 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Within segment 5`] = 
 exports[`Test recieved mos ingest payloads mosRoStoryReplace: Same segment 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 0,
-  "currentPartInstanceId": null,
+  "created": 1679677954992,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 0,
+  "modified": 1679677955099,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -3549,14 +3549,14 @@ exports[`Test recieved mos ingest payloads mosRoStoryStatus: Update part 4`] = `
 exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 0,
-  "currentPartInstanceId": null,
+  "created": 1679677954992,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 0,
+  "modified": 1679677955161,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -3840,14 +3840,14 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments 
 exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments2 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 0,
-  "currentPartInstanceId": null,
+  "created": 1679677954992,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 0,
+  "modified": 1679677955170,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -4167,14 +4167,14 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments2
 exports[`Test recieved mos ingest payloads mosRoStorySwap: With first in same segment 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 0,
-  "currentPartInstanceId": null,
+  "created": 1679677954992,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 0,
+  "modified": 1679677955152,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -4467,14 +4467,14 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: With first in same se
 exports[`Test recieved mos ingest payloads mosRoStorySwap: Within same segment 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 0,
-  "currentPartInstanceId": null,
+  "created": 1679677954992,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 0,
+  "modified": 1679677955143,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
