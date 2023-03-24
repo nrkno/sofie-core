@@ -1,20 +1,23 @@
-import { SourceLayerType, SplitsContent } from '@sofie-automation/blueprints-integration'
-import classNames from 'classnames'
 import React, { useContext, useMemo } from 'react'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import classNames from 'classnames'
 import { CanvasSizeContext } from '.'
 import { PieceExtended } from '../../../../lib/Rundown'
-import { RundownUtils } from '../../../lib/rundown'
+import { PieceElement } from '../../SegmentStoryboard/utils/PieceElement'
+import { getSplitItems } from '../../SegmentStoryboard/utils/getSplitItems'
 
 const PIECE_TYPE_INDICATOR_BORDER_RADIUS = 11
 
 export const Piece = React.memo(function Piece({
 	piece,
+	partId,
 	left,
 	width,
 	zoom,
 	isLive,
 }: {
 	piece: PieceExtended
+	partId: PartId
 	left: number
 	width: number | null
 	zoom: number
@@ -48,46 +51,25 @@ export const Piece = React.memo(function Piece({
 	return (
 		<div className={classNames('camera-screen__piece', { live: isLive })}>
 			{pixelLeft < canvasWidth ? (
-				<div
-					className={classNames(
-						'camera-screen__piece-background',
-						piece.sourceLayer?.type !== undefined
-							? RundownUtils.getSourceLayerClassName(piece.sourceLayer?.type)
-							: undefined
-					)}
+				<PieceElement
+					className="camera-screen__piece-background"
+					layer={piece.sourceLayer}
+					piece={piece}
+					partId={partId}
 					style={style}
 				>
-					<PieceSubContent className="camera-screen__piece-sub-background" piece={piece} />
-				</div>
+					{getSplitItems(piece, 'camera-screen__piece-sub-background')}
+				</PieceElement>
 			) : null}
-			<div
-				className={classNames(
-					'camera-screen__piece-type-indicator',
-					piece.sourceLayer?.type !== undefined
-						? RundownUtils.getSourceLayerClassName(piece.sourceLayer?.type)
-						: undefined
-				)}
+			<PieceElement
+				className="camera-screen__piece-type-indicator"
+				partId={partId}
+				layer={piece.sourceLayer}
+				piece={piece}
 			>
-				<PieceSubContent className="camera-screen__piece-type-indicator-sub-background" piece={piece} />
-			</div>
+				{getSplitItems(piece, 'camera-screen__piece-type-indicator-sub-background')}
+			</PieceElement>
 			<div className="camera-screen__piece-label">{piece.instance.piece.name}</div>
 		</div>
 	)
 })
-
-function PieceSubContent({ piece, className }: { piece: PieceExtended; className: string }) {
-	if (piece.sourceLayer?.type !== SourceLayerType.SPLITS) return null
-
-	const splitContent = piece.instance.piece.content as SplitsContent
-
-	return (
-		<>
-			{splitContent.boxSourceConfiguration.map((subContent, index) => (
-				<div
-					key={`sub-${index}`}
-					className={classNames(className, RundownUtils.getSourceLayerClassName(subContent.type))}
-				></div>
-			))}
-		</>
-	)
-}

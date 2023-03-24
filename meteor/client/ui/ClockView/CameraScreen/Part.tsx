@@ -48,9 +48,18 @@ export const Part = withTiming<IProps, {}>({
 		<div
 			className={classNames('camera-screen__part', { live: isLive, next: isNext })}
 			data-obj-id={part.instance._id}
-			data-part-obj-id={part.instance.part._id}
+			data-part-id={part.instance.part._id}
 		>
-			{piece && <Piece piece={piece} left={left} width={width} zoom={areaZoom} isLive={isLive} />}
+			{piece && (
+				<Piece
+					partId={part.instance.part._id}
+					piece={piece}
+					left={left}
+					width={width}
+					zoom={areaZoom}
+					isLive={isLive}
+				/>
+			)}
 			<div className="camera-screen__countdown">
 				<PartCountdown playlist={playlist} partId={part.partId} />
 			</div>
