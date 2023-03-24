@@ -112,11 +112,13 @@ export async function fetchStudioIdFromDevice(peripheralDevice: PeripheralDevice
 	span?.end()
 	return studioId
 }
-export function getPeripheralDeviceFromRundown(rundown: Rundown): PeripheralDevice {
+export async function getPeripheralDeviceFromRundown(
+	rundown: Pick<Rundown, '_id' | 'peripheralDeviceId'>
+): Promise<PeripheralDevice> {
 	if (!rundown.peripheralDeviceId)
 		throw new Meteor.Error(500, `Rundown "${rundown._id}" does not have a peripheralDeviceId`)
 
-	const device = PeripheralDevices.findOne(rundown.peripheralDeviceId)
+	const device = await PeripheralDevices.findOneAsync(rundown.peripheralDeviceId)
 	if (!device)
 		throw new Meteor.Error(
 			404,

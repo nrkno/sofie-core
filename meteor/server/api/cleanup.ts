@@ -2,7 +2,12 @@ import { ProtectedString, getCurrentTime } from '../../lib/lib'
 import { CollectionCleanupResult } from '../../lib/api/system'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { getActiveRundownPlaylistsInStudioFromDb, getRemovedPackageInfos } from './studio/lib'
+import {
+	getActiveRundownPlaylistsInStudioFromDb,
+	getExpiredRemovedPackageInfos,
+	getOrphanedPackageInfos,
+	removePackageInfos,
+} from './studio/lib'
 import { Settings } from '../../lib/Settings'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import {
@@ -308,12 +313,20 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 		ownedByStudioId(PackageInfos)
 		ownedByDeviceId(PackageInfos)
 
-		const removedPackageInfoIds = await getRemovedPackageInfos()
-		addToResult(CollectionName.PackageInfos, removedPackageInfoIds.length)
-		if (actuallyCleanup) {
-			PackageInfos.remove({
-				_id: { $in: removedPackageInfoIds },
-			})
+		// Future: there should be a way to force removal of the non-expired packageinfos
+
+		// Find any PackageInfos which have expired
+		const expiredPackageInfoIds = await getExpiredRemovedPackageInfos()
+		addToResult(CollectionName.PackageInfos, expiredPackageInfoIds.length)
+		if (actuallyCleanup && expiredPackageInfoIds.length) {
+			await removePackageInfos(expiredPackageInfoIds, 'purge')
+		}
+
+		// Find any PackageInfos which are missing the parent ExpectedPackage
+		const orphanedPackageInfoIds = await getOrphanedPackageInfos()
+		addToResult(CollectionName.PackageInfos, orphanedPackageInfoIds.length)
+		if (actuallyCleanup && orphanedPackageInfoIds.length) {
+			await removePackageInfos(orphanedPackageInfoIds, 'defer')
 		}
 	}
 	// Parts

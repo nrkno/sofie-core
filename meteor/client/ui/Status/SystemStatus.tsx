@@ -32,10 +32,11 @@ import { SubdeviceAction } from '@sofie-automation/shared-lib/dist/core/deviceCo
 import { StatusCodePill } from './StatusCodePill'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
-import { SchemaForm } from '../../lib/forms/schemaForm'
+import { SchemaFormInPlace } from '../../lib/forms/schemaFormInPlace'
 import { CoreSystem, PeripheralDevices } from '../../collections'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { DebugStateTable } from './DebugState'
+import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -70,13 +71,6 @@ export function statusCodeToString(t: i18next.TFunction, statusCode: StatusCode)
 
 export const DeviceItem = reacti18next.withTranslation()(
 	class DeviceItem extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
-		constructor(props: Translated<IDeviceItemProps>) {
-			super(props)
-			this.state = {
-				showDeleteDeviceConfirm: null,
-				showKillDeviceConfirm: null,
-			}
-		}
 		deviceTypeString() {
 			const t = this.props.t
 
@@ -158,10 +152,9 @@ export const DeviceItem = reacti18next.withTranslation()(
 					yes: t('Execute'),
 					no: t('Cancel'),
 					message: action.payload ? (
-						<SchemaForm
-							schema={JSON.parse(action.payload)}
+						<SchemaFormInPlace
+							schema={JSONBlobParse(action.payload)}
 							object={payload}
-							attr={''}
 							translationNamespaces={namespaces}
 						/>
 					) : (
@@ -188,6 +181,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 
 		render(): JSX.Element {
 			const { t } = this.props
+
+			const namespaces = ['peripheralDevice_' + this.props.device._id]
 
 			return (
 				<div key={unprotectString(this.props.device._id)} className="device-item">
@@ -252,7 +247,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 												this.onExecuteAction(e, this.props.device, action)
 											}}
 										>
-											{t(action.name)}
+											{translateMessage({ key: action.name, namespaces }, i18nTranslator)}
 										</button>
 									</React.Fragment>
 								))}

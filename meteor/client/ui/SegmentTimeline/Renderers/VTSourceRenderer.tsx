@@ -24,6 +24,8 @@ import { FreezeFrameIcon } from '../../../lib/ui/icons/freezeFrame'
 import StudioContext from '../../RundownView/StudioContext'
 import { Settings } from '../../../../lib/Settings'
 import { UIStudio } from '../../../../lib/api/studios'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { HourglassIconSmall } from '../../../lib/ui/icons/notifications'
 
 interface IProps extends ICustomLayerItemProps {
 	studio: UIStudio | undefined
@@ -407,6 +409,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		return !this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
 			<span className="segment-timeline__piece__label" ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
+				{this.props.piece.instance.piece.status === PieceStatusCode.SOURCE_NOT_READY && (
+					<div className="piece__status-icon type-hourglass">
+						<HourglassIconSmall />
+					</div>
+				)}
 				<span
 					className={ClassNames('segment-timeline__piece__label', {
 						'with-duration': !!duration,

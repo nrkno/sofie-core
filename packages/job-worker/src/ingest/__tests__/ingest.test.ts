@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+import '../../__mocks__/_extendJest'
 import {
 	IBlueprintPiece,
 	IngestPart,
@@ -45,6 +46,7 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { innerStartQueuedAdLib } from '../../playout/adlibUtils'
 import { IngestJobs, RemoveOrphanedSegmentsProps } from '@sofie-automation/corelib/dist/worker/ingest'
 import { removeRundownPlaylistFromDb } from './lib'
+import { UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -1642,10 +1644,12 @@ describe('Test ingest actions for rundowns and segments', () => {
 			})
 			await expect(getRundownOrphaned()).resolves.toBeUndefined()
 
-			await handleRemovedRundown(context, {
-				peripheralDeviceId: device2._id,
-				rundownExternalId: rundownData.externalId,
-			})
+			await expect(
+				handleRemovedRundown(context, {
+					peripheralDeviceId: device2._id,
+					rundownExternalId: rundownData.externalId,
+				})
+			).rejects.toMatchUserError(UserErrorMessage.RundownRemoveWhileActive)
 			await expect(getRundownOrphaned()).resolves.toEqual('deleted')
 
 			await resyncRundown()

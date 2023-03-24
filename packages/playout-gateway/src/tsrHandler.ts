@@ -28,16 +28,7 @@ import { Logger } from 'winston'
 import { disableAtemUpload } from './config'
 import Debug from 'debug'
 import { FinishedTrace, sendTrace } from './influxdb'
-import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
-import {
-	PartPlaybackCallbackData,
-	PiecePlaybackCallbackData,
-	PlayoutChangedResults,
-	PlayoutChangedType,
-	PeripheralDeviceStatusObject,
-} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { protectString, unprotectObject, unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+
 import { StudioId, TimelineHash } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import {
 	deserializeTimelineBlob,
@@ -45,15 +36,25 @@ import {
 	RoutedTimeline,
 	TimelineObjGeneric,
 } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
-import {
-	PeripheralDevicePublic,
-	PlayoutDeviceSettings,
-} from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { DBTimelineDatastoreEntry } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
-import { ConfigManifestEntry, TableConfigManifestEntry } from '@sofie-automation/server-core-integration'
 import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
+import { PlayoutGatewayConfig } from './generated/options'
+import {
+	assertNever,
+	getSchemaDefaultValues,
+	JSONBlobParse,
+	PeripheralDeviceAPI,
+	PeripheralDevicePublic,
+	protectString,
+	unprotectObject,
+	unprotectString,
+} from '@sofie-automation/server-core-integration'
 
 const debug = Debug('playout-gateway')
+
+export interface PlayoutGatewaySettings extends PlayoutGatewayConfig {
+	devices: Record<string, DeviceOptionsAny>
+}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface TSRConfig {}
@@ -129,7 +130,7 @@ export class TSRHandler {
 		this.logger.info('TSRHandler init')
 
 		const peripheralDevice = await coreHandler.core.getPeripheralDevice()
-		const settings: PlayoutDeviceSettings = peripheralDevice.settings as PlayoutDeviceSettings
+		const settings: PlayoutGatewaySettings = peripheralDevice.settings as PlayoutGatewaySettings
 
 		this.logger.info('Devices', settings.devices)
 		const c: ConductorOptions = {
@@ -229,23 +230,13 @@ export class TSRHandler {
 	}
 
 	private loadSubdeviceConfigurations(): { [deviceType: string]: Record<string, any> } {
-		const playoutGatewayDevicesConfig: ConfigManifestEntry | undefined = PLAYOUT_DEVICE_CONFIG.deviceConfig.find(
-			(deviceConfig: ConfigManifestEntry) => deviceConfig.id === 'devices'
-		)
-		if (!playoutGatewayDevicesConfig) {
-			return {}
-		}
-		const tableConfig: TableConfigManifestEntry = playoutGatewayDevicesConfig as TableConfigManifestEntry
 		const defaultDeviceOptions: { [deviceType: string]: Record<string, any> } = {}
-		for (const deviceType in tableConfig.config) {
-			const configEntries = tableConfig.config[deviceType]
-				.filter((configManifestEntry: ConfigManifestEntry) => configManifestEntry.defaultVal)
-				.map((configManifestEntry: ConfigManifestEntry) => [
-					configManifestEntry.id.replace('options.', ''),
-					configManifestEntry.defaultVal,
-				])
-			defaultDeviceOptions[deviceType] = Object.fromEntries(configEntries)
+
+		for (const [deviceType, deviceManifest] of Object.entries(PLAYOUT_DEVICE_CONFIG.subdeviceManifest)) {
+			const schema = JSONBlobParse(deviceManifest.configSchema)
+			defaultDeviceOptions[deviceType] = getSchemaDefaultValues(schema)
 		}
+
 		return defaultDeviceOptions
 	}
 
@@ -503,10 +494,10 @@ export class TSRHandler {
 		const deviceOptions = new Map<string, DeviceOptionsAny>()
 
 		if (peripheralDevice) {
-			const settings: PlayoutDeviceSettings = peripheralDevice.settings as PlayoutDeviceSettings
+			const settings: PlayoutGatewaySettings = peripheralDevice.settings as PlayoutGatewaySettings
 
 			for (const [deviceId, device0] of Object.entries(settings.devices)) {
-				const device = device0 as DeviceOptionsAny
+				const device = device0
 				if (!device.disable) {
 					deviceOptions.set(deviceId, device)
 				}
@@ -755,7 +746,7 @@ export class TSRHandler {
 			const deviceType = device.deviceType
 
 			const onDeviceStatusChanged = (connectedOrStatus: Partial<DeviceStatus>) => {
-				let deviceStatus: Partial<PeripheralDeviceStatusObject>
+				let deviceStatus: Partial<PeripheralDeviceAPI.PeripheralDeviceStatusObject>
 				if (_.isBoolean(connectedOrStatus)) {
 					// for backwards compability, to be removed later
 					if (connectedOrStatus) {
@@ -1105,7 +1096,7 @@ export class TSRHandler {
 		return transformedTimeline
 	}
 
-	private changedResults: PlayoutChangedResults | undefined = undefined
+	private changedResults: PeripheralDeviceAPI.PlayoutChangedResults | undefined = undefined
 	private sendCallbacksTimeout: NodeJS.Timer | undefined = undefined
 
 	private sendChangedResults = (): void => {
@@ -1122,15 +1113,15 @@ export class TSRHandler {
 		time: number,
 		objId: string,
 		callbackName0: string,
-		data: PartPlaybackCallbackData | PiecePlaybackCallbackData
+		data: PeripheralDeviceAPI.PartPlaybackCallbackData | PeripheralDeviceAPI.PiecePlaybackCallbackData
 	): void {
 		if (
 			![
-				PlayoutChangedType.PART_PLAYBACK_STARTED,
-				PlayoutChangedType.PART_PLAYBACK_STOPPED,
-				PlayoutChangedType.PIECE_PLAYBACK_STARTED,
-				PlayoutChangedType.PIECE_PLAYBACK_STOPPED,
-			].includes(callbackName0 as PlayoutChangedType)
+				PeripheralDeviceAPI.PlayoutChangedType.PART_PLAYBACK_STARTED,
+				PeripheralDeviceAPI.PlayoutChangedType.PART_PLAYBACK_STOPPED,
+				PeripheralDeviceAPI.PlayoutChangedType.PIECE_PLAYBACK_STARTED,
+				PeripheralDeviceAPI.PlayoutChangedType.PIECE_PLAYBACK_STOPPED,
+			].includes(callbackName0 as PeripheralDeviceAPI.PlayoutChangedType)
 		) {
 			// @ts-expect-error Untyped bunch of methods
 			const method = PeripheralDeviceAPIMethods[callbackName]
@@ -1152,7 +1143,7 @@ export class TSRHandler {
 				})
 			return
 		}
-		const callbackName = callbackName0 as PlayoutChangedType
+		const callbackName = callbackName0 as PeripheralDeviceAPI.PlayoutChangedType
 		// debounce
 		if (this.changedResults && this.changedResults.rundownPlaylistId !== data.rundownPlaylistId) {
 			// The playlistId changed. Send what we have right away and reset:
@@ -1169,26 +1160,26 @@ export class TSRHandler {
 		}
 
 		switch (callbackName) {
-			case PlayoutChangedType.PART_PLAYBACK_STARTED:
-			case PlayoutChangedType.PART_PLAYBACK_STOPPED:
+			case PeripheralDeviceAPI.PlayoutChangedType.PART_PLAYBACK_STARTED:
+			case PeripheralDeviceAPI.PlayoutChangedType.PART_PLAYBACK_STOPPED:
 				this.changedResults.changes.push({
 					type: callbackName,
 					objId,
 					data: {
 						time,
-						partInstanceId: (data as PartPlaybackCallbackData).partInstanceId,
+						partInstanceId: (data as PeripheralDeviceAPI.PartPlaybackCallbackData).partInstanceId,
 					},
 				})
 				break
-			case PlayoutChangedType.PIECE_PLAYBACK_STARTED:
-			case PlayoutChangedType.PIECE_PLAYBACK_STOPPED:
+			case PeripheralDeviceAPI.PlayoutChangedType.PIECE_PLAYBACK_STARTED:
+			case PeripheralDeviceAPI.PlayoutChangedType.PIECE_PLAYBACK_STOPPED:
 				this.changedResults.changes.push({
 					type: callbackName,
 					objId,
 					data: {
 						time,
-						partInstanceId: (data as PiecePlaybackCallbackData).partInstanceId,
-						pieceInstanceId: (data as PiecePlaybackCallbackData).pieceInstanceId,
+						partInstanceId: (data as PeripheralDeviceAPI.PiecePlaybackCallbackData).partInstanceId,
+						pieceInstanceId: (data as PeripheralDeviceAPI.PiecePlaybackCallbackData).pieceInstanceId,
 					},
 				})
 				break

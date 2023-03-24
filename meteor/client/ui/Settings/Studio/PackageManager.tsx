@@ -11,7 +11,6 @@ import { faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-s
 import { PeripheralDeviceCategory, PeripheralDeviceType } from '../../../../lib/collections/PeripheralDevices'
 import { withTranslation } from 'react-i18next'
 import { Accessor } from '@sofie-automation/blueprints-integration'
-import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
 import { PeripheralDevices, Studios } from '../../../collections'
 
 interface IStudioPackageManagerSettingsProps {
@@ -143,8 +142,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 					device.type === PeripheralDeviceType.PLAYOUT &&
 					device.settings
 				) {
-					const settings = device.settings as PlayoutDeviceSettings
-
+					const settings = device.settings
 					for (const deviceId of Object.keys(settings.devices || {})) {
 						deviceIds.push({
 							name: deviceId,

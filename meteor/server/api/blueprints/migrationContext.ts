@@ -32,7 +32,6 @@ import {
 import { ShowStyleVariant, DBShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { check } from '../../../lib/check'
 import { PeripheralDevice, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
-import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
 import { TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
 import { Match } from 'meteor/check'
 import { MongoModifier, MongoQuery } from '../../../lib/typings/meteor'
@@ -156,7 +155,12 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	getMapping(mappingId: string): BlueprintMapping | undefined {
 		check(mappingId, String)
 		const mapping = this.studio.mappingsWithOverrides.defaults[mappingId]
-		if (mapping) return unprotectObject(clone(mapping))
+		if (mapping) {
+			return clone({
+				...mapping,
+				deviceId: unprotectString(mapping.deviceId),
+			})
+		}
 	}
 	insertMapping(mappingId: string, mapping: OmitId<BlueprintMapping>): string {
 		check(mappingId, String)
@@ -270,8 +274,8 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			},
 		})
 
-		if (!parentDevice || !parentDevice.settings) return undefined
-		return (parentDevice.settings as PlayoutDeviceSettings).devices[deviceId] as TSR.DeviceOptionsAny
+		if (!parentDevice || !parentDevice.settings || !parentDevice.settings.devices) return undefined
+		return parentDevice.settings.devices[deviceId] as TSR.DeviceOptionsAny
 	}
 	insertDevice(deviceId: string, device: TSR.DeviceOptionsAny): string {
 		check(deviceId, String)
@@ -295,7 +299,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			throw new Meteor.Error(404, `No parent device for new device id "${deviceId}"`)
 		}
 
-		const settings = parentDevice.settings as PlayoutDeviceSettings | undefined
+		const settings = parentDevice.settings
 		if (settings && settings.devices && settings.devices[deviceId]) {
 			throw new Meteor.Error(404, `Device "${deviceId}" cannot be inserted as it already exists`)
 		}
@@ -327,15 +331,12 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 				created: 1,
 			},
 		})
-		if (!parentDevice || !parentDevice.settings) {
+		if (!parentDevice || !parentDevice.settings || !parentDevice.settings.devices) {
 			throw new Meteor.Error(404, `Device "${deviceId}" cannot be updated as it does not exist`)
 		}
 
 		const m: any = {}
-		m[`settings.devices.${deviceId}`] = _.extend(
-			(parentDevice.settings as PlayoutDeviceSettings).devices[deviceId],
-			device
-		)
+		m[`settings.devices.${deviceId}`] = _.extend(parentDevice.settings.devices[deviceId], device)
 		PeripheralDevices.update(selector, {
 			$set: m,
 		})

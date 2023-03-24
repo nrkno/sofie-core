@@ -9,6 +9,7 @@
 			"*": ["./node_modules/*"],
 			"mos-gateway": ["./src/index.ts"]
 		},
-		"types": ["node"]
+		"types": ["node"],
+		"resolveJsonModule": true
 	}
 }

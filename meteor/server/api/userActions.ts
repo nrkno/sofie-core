@@ -718,7 +718,7 @@ class ServerUserActionAPI
 			'resyncRundown',
 			[rundownId],
 			async (access) => {
-				return ServerRundownAPI.innerResyncRundown(access.rundown)
+				return ServerRundownAPI.resyncRundown(access)
 			}
 		)
 	}

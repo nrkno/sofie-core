@@ -57,6 +57,7 @@ export function pieceUiClassNames(
 			innerPiece.status === PieceStatusCode.SOURCE_MISSING ||
 			innerPiece.status === PieceStatusCode.SOURCE_NOT_SET,
 		'source-broken': innerPiece.status === PieceStatusCode.SOURCE_BROKEN,
+		'source-not-ready': innerPiece.status === PieceStatusCode.SOURCE_NOT_READY,
 		'unknown-state': innerPiece.status === PieceStatusCode.UNKNOWN,
 		disabled: pieceInstance.instance.disabled,
 
