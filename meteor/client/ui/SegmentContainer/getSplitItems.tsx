@@ -8,6 +8,8 @@ import { PieceUi } from './withResolvedSegment'
 export function getSplitItems(pieceInstance: PieceUi, baseClassName: string): JSX.Element[] {
 	const splitsContent = pieceInstance.instance.piece.content as SplitsContent
 
+	if (!splitsContent?.boxSourceConfiguration) return []
+
 	return getSplitPreview(splitsContent.boxSourceConfiguration)
 		.filter((i) => i.role !== SplitRole.ART)
 		.map((item, index, array) => {
