@@ -33,6 +33,7 @@ import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dat
 import { ServerPeripheralDeviceAPI } from '../api/peripheralDevice'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { MethodContext } from '../../lib/api/methods'
+import { getBlueprintVersions } from './blueprintVersions'
 
 const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
@@ -295,12 +296,26 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 		statusObj.components.push(so)
 	}
 
+	const versions: { [name: string]: string } = {
+		...(await RelevantSystemVersions),
+	}
+
+	for (const [blueprintId, blueprint] of Object.entries(await getBlueprintVersions())) {
+		// Use the name as key to make it easier to read for a human:
+		let key = 'blueprint_' + blueprint.name
+
+		// But if the name isn't unique, append the blueprintId to make it unique:
+		if (versions[key]) key += blueprintId
+
+		versions[key] = blueprint.version
+	}
+
 	const systemStatus: StatusCode = setStatus(statusObj)
 	statusObj._internal = {
 		// statusCode: systemStatus,
 		statusCodeString: StatusCode[systemStatus],
 		messages: collectMesages(statusObj),
-		versions: await RelevantSystemVersions,
+		versions,
 	}
 	statusObj.statusMessage = statusObj._internal.messages.join(', ')
 

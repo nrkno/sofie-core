@@ -1,6 +1,7 @@
 import { GraphicsContent, NoraContent } from '@sofie-automation/blueprints-integration'
 import React from 'react'
 import { L3rdFloatingInspector } from '../../../FloatingInspectors/L3rdFloatingInspector'
+import { PieceMultistepChevron } from '../../../SegmentContainer/PieceMultistepChevron'
 import { IDefaultRendererProps } from './DefaultRenderer'
 
 export function GraphicsRenderer({
@@ -32,6 +33,7 @@ export function GraphicsRenderer({
 				pieceRenderedIn={pieceInstance.renderedInPoint}
 				displayOn="document"
 			/>
+			<PieceMultistepChevron className="segment-storyboard__piece__step-chevron" piece={pieceInstance} />
 			{pieceInstance.instance.piece.name}
 		</>
 	)
