@@ -26,7 +26,8 @@ export class JobQueueWithClasses {
 	#executionWrapper?: WrapperFunction<any>
 	#resolutionWrapper?: DeferFunction
 
-	#waitForDonePromises: { resolve: () => void }[] = []
+	#waitForDonePromise: { resolve: () => void; promise: Promise<void> } | undefined
+	#jobIsRunning = false
 
 	constructor(opts?: Options) {
 		this.#autoStart = opts?.autoStart ?? true
@@ -93,41 +94,53 @@ export class JobQueueWithClasses {
 	/** Start executing the queue */
 	start(): void {
 		if (this.#paused === false) return
-		;(async () => {
-			this.#paused = false
-			// eslint-disable-next-line no-constant-condition
-			while (true) {
-				const firstIn = this.#queue.shift()
-				if (!firstIn) {
-					// No more jobs on queue.
-					this.#waitForDonePromises.forEach((p) => {
-						p.resolve()
-					})
-					break
+		Promise.resolve()
+			.then(async () => {
+				this.#paused = false
+				// eslint-disable-next-line no-constant-condition
+				while (true) {
+					const firstIn = this.#queue.shift()
+					if (!firstIn) {
+						// No more jobs on queue.
+						if (this.#waitForDonePromise) {
+							this.#waitForDonePromise.resolve()
+							this.#waitForDonePromise = undefined
+						}
+						break
+					}
+					try {
+						this.#jobIsRunning = true
+						await firstIn.fn()
+						this.#jobIsRunning = false
+						firstIn.resolve()
+					} catch (error) {
+						this.#jobIsRunning = false
+						firstIn.reject(error)
+					}
 				}
-				try {
-					await firstIn.fn()
-					firstIn.resolve()
-				} catch (error) {
-					firstIn.reject(error)
-				}
-			}
-			this.#paused = true
-		})().catch((error) => {
-			console.error(error)
-		})
+				this.#paused = true
+			})
+			.catch((error) => {
+				console.error(error)
+			})
 	}
 	/** Returns the count of waiting jobs in the queue (ie not started yet) */
 	getWaiting(): number {
 		return this.#queue.length
 	}
-	/** Returns a Promise that resolves when the queue is eventually empty */
+	/** Returns a Promise that resolves when the queue is eventually empty and all jobs are done */
 	async waitForDone(): Promise<void> {
-		if (!this.#queue.length) return Promise.resolve()
+		if (!this.#queue.length && !this.#jobIsRunning) return Promise.resolve()
 
-		return new Promise((resolve) => {
-			this.#waitForDonePromises.push({ resolve })
-		})
+		if (!this.#waitForDonePromise) {
+			let resolve: undefined | (() => void) = undefined
+			const promise = new Promise<void>((r) => {
+				resolve = r
+			})
+			if (!resolve) throw new Error(`Internal Error: resolve callback is undefined!`)
+			this.#waitForDonePromise = { resolve, promise }
+			return promise
+		} else return this.#waitForDonePromise.promise
 	}
 }
 
