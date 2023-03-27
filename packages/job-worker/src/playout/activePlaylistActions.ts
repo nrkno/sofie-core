@@ -23,6 +23,7 @@ export async function activateRundownPlaylist(
 	logger.info('Activating rundown ' + cache.Playlist.doc._id + (rehearsal ? ' (Rehearsal)' : ''))
 
 	rehearsal = !!rehearsal
+	const wasActive = !!cache.Playlist.doc.activationId
 
 	const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(
 		context,
@@ -120,7 +121,7 @@ export async function activateRundownPlaylist(
 			if (blueprint.blueprint.onRundownActivate) {
 				const context2 = new RundownActivationContext(context, cache, showStyle, rundown)
 
-				await blueprint.blueprint.onRundownActivate(context2, rehearsal)
+				await blueprint.blueprint.onRundownActivate(context2, wasActive)
 			}
 		} catch (err) {
 			logger.error(`Error in showStyleBlueprint.onRundownActivate: ${stringifyError(err)}`)

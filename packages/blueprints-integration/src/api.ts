@@ -240,7 +240,7 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 
 	// Events
 
-	onRundownActivate?: (context: IRundownActivationContext, rehearsal: boolean) => Promise<void>
+	onRundownActivate?: (context: IRundownActivationContext, wasActive: boolean) => Promise<void>
 	onRundownFirstTake?: (context: IPartEventContext) => Promise<void>
 	onRundownDeActivate?: (context: IRundownActivationContext) => Promise<void>
 
