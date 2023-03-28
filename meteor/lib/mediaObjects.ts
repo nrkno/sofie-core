@@ -42,13 +42,13 @@ export function buildFormatString(
 	}
 	if (stream.r_frame_rate) {
 		// More accurate method, for package-manager
-		const formattedFramerate = /(\d+)\/(\d+)/.exec(stream.r_frame_rate) as RegExpExecArray
+		const formattedFramerate = /^(\d+)\/(\d+)$/.exec(stream.r_frame_rate) as RegExpExecArray
 		let fps = Number(formattedFramerate[1]) / Number(formattedFramerate[2])
 		fps = Math.floor(fps * 100 * 100) / 100
 		format += fps
 	} else if (stream.codec_time_base) {
 		// Less accurate method, for media-manager
-		const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec_time_base) as RegExpExecArray
+		const formattedTimebase = /^(\d+)\/(\d+)$/.exec(stream.codec_time_base) as RegExpExecArray
 		let fps = Number(formattedTimebase[2]) / Number(formattedTimebase[1])
 		fps = Math.floor(fps * 100 * 100) / 100
 		format += fps
@@ -500,18 +500,38 @@ function getPackageWarningMessage(
 		packageOnPackageContainer.status.status ===
 			ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_FOUND
 	) {
+		// Examples of contents in packageOnPackageContainer?.status.statusReason.user:
+		// * Target package: Quantel clip "XXX" not found
+		// * Can't read the Package from PackageContainer "Quantel source 0" (on accessor "${accessorLabel}"), due to: Quantel clip "XXX" not found
+
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation(`Clip can't be played because it doesn't exist on the playout system`),
+			message: generateTranslation(`Clip can't be found on the playout system`),
 		}
 	} else if (
 		packageOnPackageContainer.status.status ===
 		ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.NOT_READY
 	) {
+		// Examples of contents in packageOnPackageContainer?.status.statusReason.user:
+		// * Source file is still growing
+
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation('{{sourceLayer}} is not yet ready on the playout system', {
-				sourceLayer: sourceLayer.name,
+			message: generateTranslation('{{reason}} Clip exists, but is not yet ready on the playout system.', {
+				reason: ((packageOnPackageContainer?.status.statusReason.user || 'N/A') + '.').replace(/\.\.$/, '.'), // remove any trailing double "."
+			}),
+		}
+	} else if (
+		// Examples of contents in packageOnPackageContainer?.status.statusReason.user:
+		// * Reserved clip (0 frames)
+		// * Reserved clip (1-9 frames)
+		packageOnPackageContainer.status.status ===
+		ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.PLACEHOLDER
+	) {
+		return {
+			status: PieceStatusCode.SOURCE_NOT_READY,
+			message: generateTranslation('{{reason}}', {
+				reason: ((packageOnPackageContainer?.status.statusReason.user || 'N/A') + '.').replace(/\.\.$/, '.'), // remove any trailing double "."
 			}),
 		}
 	} else if (
@@ -520,9 +540,7 @@ function getPackageWarningMessage(
 	) {
 		return {
 			status: PieceStatusCode.OK,
-			message: generateTranslation('{{sourceLayer}} is transferring to the the playout system', {
-				sourceLayer: sourceLayer.name,
-			}),
+			message: generateTranslation('Clip is transferring to the the playout system'),
 		}
 	} else if (
 		packageOnPackageContainer.status.status ===
@@ -530,12 +548,7 @@ function getPackageWarningMessage(
 	) {
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation(
-				'{{sourceLayer}} is transferring to the the playout system and cannot be played yet',
-				{
-					sourceLayer: sourceLayer.name,
-				}
-			),
+			message: generateTranslation('Clip is transferring to the the playout system but cannot be played yet'),
 		}
 	} else if (
 		packageOnPackageContainer.status.status === ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.READY
@@ -586,8 +599,8 @@ function checkStreamFormatsAndCounts(
 	for (const stream of streams) {
 		if (stream.width && stream.height) {
 			if (stream.codec_time_base) {
-				const formattedTimebase = /(\d+)\/(\d+)/.exec(stream.codec_time_base) as RegExpExecArray
-				timebase = (1000 * Number(formattedTimebase[1])) / Number(formattedTimebase[2])
+				const formattedTimebase = /^(\d+)\/(\d+)$/.exec(stream.codec_time_base) as RegExpExecArray
+				timebase = (1000 * Number(formattedTimebase[1])) / Number(formattedTimebase[2]) || 0
 			}
 
 			const deepScanFormat = getScanFormatString(stream)
@@ -597,7 +610,7 @@ function checkStreamFormatsAndCounts(
 						status: PieceStatusCode.SOURCE_BROKEN,
 						message: generateTranslation('{{sourceLayer}} has the wrong format: {{format}}', {
 							sourceLayer: sourceLayer.name,
-							deepScanFormat,
+							format: deepScanFormat,
 						}),
 					})
 				}

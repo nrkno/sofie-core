@@ -16,7 +16,7 @@ export async function sendSlackMessageToWebhook(message: string, _webhookURL: st
 
 const mockSender = jest.fn(sendSlackMessageToWebhook)
 
-export function setup() {
+export function setup(): any {
 	return {
 		sendSlackMessageToWebhook: mockSender,
 	}

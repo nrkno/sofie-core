@@ -18,7 +18,7 @@ export function MultiSelectInputControl({
 	disabled,
 	options,
 	handleUpdate,
-}: IMultiSelectInputControlProps) {
+}: IMultiSelectInputControlProps): JSX.Element {
 	const handleChange = useCallback((event: MultiSelectEvent) => handleUpdate(event.selectedValues), [handleUpdate])
 
 	const {

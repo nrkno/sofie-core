@@ -12,12 +12,12 @@ interface IRundownDragObject {
 	rundownLayouts: Array<RundownLayoutBase>
 }
 
-function isRundownDragObject(obj: any): obj is IRundownDragObject {
+function isRundownDragObject(obj: unknown): obj is IRundownDragObject {
 	if (!obj) {
 		return false
 	}
 
-	const { id } = obj
+	const { id } = obj as any
 
 	return isProtectedString(id)
 }
@@ -34,12 +34,12 @@ interface IRundownPlaylistUiAction {
 	targetPlaylistId?: RundownPlaylistId
 }
 
-function isRundownPlaylistUiAction(obj: any): obj is IRundownPlaylistUiAction {
+function isRundownPlaylistUiAction(obj: unknown): obj is IRundownPlaylistUiAction {
 	if (!obj) {
 		return false
 	}
 
-	const { type, rundownId, targetPlaylistId } = obj
+	const { type, rundownId, targetPlaylistId } = obj as any
 
 	if (!isProtectedString(rundownId)) {
 		return false

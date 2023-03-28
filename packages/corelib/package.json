@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/corelib",
-	"version": "1.49.0-in-development",
+	"version": "1.50.0-in-development",
 	"private": true,
 	"description": "Internal library for some types shared by core and workers",
 	"main": "dist/index.js",
@@ -44,7 +44,6 @@
 		"fast-clone": "^1.5.13",
 		"i18next": "^21.9.1",
 		"influx": "^5.9.3",
-		"mos-connection": "^2.0.1",
 		"nanoid": "^3.3.4",
 		"object-path": "^0.11.8",
 		"timecode": "0.0.4",
@@ -53,7 +52,7 @@
 		"underscore": "^1.13.4"
 	},
 	"peerDependencies": {
-		"mongodb": "^4.9.1"
+		"mongodb": "^4.13.0"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {

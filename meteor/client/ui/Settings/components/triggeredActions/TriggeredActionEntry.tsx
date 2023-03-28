@@ -1,9 +1,15 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react'
 import { faCopy, faPencilAlt, faPlus, faSync, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { PlayoutActions, SomeAction, SourceLayerType, TriggerType } from '@sofie-automation/blueprints-integration'
+import {
+	PlayoutActions,
+	SomeAction,
+	SomeBlueprintTrigger,
+	SourceLayerType,
+	TriggerType,
+} from '@sofie-automation/blueprints-integration'
 import classNames from 'classnames'
-import { DBBlueprintTrigger, TriggeredActions } from '../../../../../lib/collections/TriggeredActions'
+import { DBBlueprintTrigger } from '../../../../../lib/collections/TriggeredActions'
 import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { ActionEditor } from './actionEditors/ActionEditor'
 import { OutputLayers, SourceLayers } from '../../../../../lib/collections/ShowStyleBases'
@@ -25,7 +31,9 @@ import {
 	wrapDefaultObject,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { isHotkeyTrigger } from '../../../../../lib/api/triggers/triggerTypeSelectors'
 import { getAllCurrentAndDeletedItemsFromOverrides, useOverrideOpHelper } from '../../util/OverrideOpHelper'
+import { TriggeredActions } from '../../../../collections'
 
 interface IProps {
 	sourceLayers: SourceLayers | undefined
@@ -236,7 +244,9 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 		(id: string, newVal: DBBlueprintTrigger) => {
 			if (!triggeredAction?._id) return
 
-			LAST_UP_SETTING = !!newVal.up
+			if (isHotkeyTrigger(newVal)) {
+				LAST_UP_SETTING = !!newVal.up
+			}
 
 			triggersOverridesHelper.replaceItem(id, newVal)
 
@@ -335,19 +345,27 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 
 		const resolvedActions = applyAndValidateOverrides(triggeredAction.triggersWithOverrides).obj
 
-		const lastTrigger = last(Object.values(resolvedActions))
-		LAST_UP_SETTING = selectedTrigger ? !!resolvedActions[selectedTrigger]?.up : lastTrigger?.up ?? LAST_UP_SETTING
+		const lastTriggerObj = last(Object.values(resolvedActions))
+		const selectedTriggerObj = selectedTrigger ? resolvedActions[selectedTrigger] : null
+		if (!selectedTriggerObj || !isHotkeyTrigger(selectedTriggerObj)) {
+			if (!isHotkeyTrigger(lastTriggerObj)) return
+			LAST_UP_SETTING = lastTriggerObj?.up ?? LAST_UP_SETTING
+			return
+		}
+		LAST_UP_SETTING = !!selectedTriggerObj?.up
 	}, [triggeredAction?.triggersWithOverrides, selectedTrigger])
 
 	const sortedWrappedTriggers = useMemo(
 		() =>
-			triggeredAction ? getAllCurrentAndDeletedItemsFromOverrides(triggeredAction?.triggersWithOverrides, null) : [],
+			triggeredAction
+				? getAllCurrentAndDeletedItemsFromOverrides<SomeBlueprintTrigger>(triggeredAction.triggersWithOverrides, null)
+				: [],
 		[triggeredAction]
 	)
 	const sortedWrappedActions = useMemo(
 		() =>
 			triggeredAction
-				? getAllCurrentAndDeletedItemsFromOverrides<SomeAction>(triggeredAction?.actionsWithOverrides, null)
+				? getAllCurrentAndDeletedItemsFromOverrides<SomeAction>(triggeredAction.actionsWithOverrides, null)
 				: [],
 		[triggeredAction]
 	)

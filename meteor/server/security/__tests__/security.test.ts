@@ -1,8 +1,8 @@
 import '../../../__mocks__/_extendJest'
 
 import { MethodContext } from '../../../lib/api/methods'
-import { DBOrganization, Organizations } from '../../../lib/collections/Organization'
-import { User, Users } from '../../../lib/collections/Users'
+import { DBOrganization } from '../../../lib/collections/Organization'
+import { User } from '../../../lib/collections/Users'
 import { protectString } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
 import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
@@ -15,6 +15,8 @@ import { NoSecurityReadAccess } from '../noSecurity'
 import { OrganizationContentWriteAccess, OrganizationReadAccess } from '../organization'
 import { StudioContentWriteAccess } from '../studio'
 import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Organizations, Users } from '../../collections'
+import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
 
 describe('Security', () => {
 	function getContext(cred: Credentials): MethodContext {
@@ -153,11 +155,17 @@ describe('Security', () => {
 			await expectNotFound(async () => BucketSecurity.allowWriteAccessPiece(creator, unknownId))
 
 			// Not logged in:
+			if (Settings.enableUserAccounts) {
+				SupressLogMessages.suppressLogMessage(/No organization in credentials/i)
+			}
 			await expectReadNotAllowed(async () => BucketSecurity.allowReadAccess(nothing, bucket._id))
 			await expectNotLoggedIn(async () => BucketSecurity.allowWriteAccess(nothing, bucket._id))
 			// expectAccessNotLoggedIn(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credNothing))
 
 			// Non existing user:
+			if (Settings.enableUserAccounts) {
+				SupressLogMessages.suppressLogMessage(/No organization in credentials/i)
+			}
 			await expectReadNotAllowed(async () => BucketSecurity.allowReadAccess(nonExisting, bucket._id))
 			await expectNotLoggedIn(async () => BucketSecurity.allowWriteAccess(nonExisting, bucket._id))
 			// expectAccess(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credNonExistingUser))
@@ -168,6 +176,9 @@ describe('Security', () => {
 			// expectAccess(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credUserB))
 
 			// Other user in other org:
+			if (Settings.enableUserAccounts) {
+				SupressLogMessages.suppressLogMessage(/User is not in the same organization as the studio/i)
+			}
 			await expectReadNotAllowed(async () => BucketSecurity.allowReadAccess(wrongOrg, bucket._id))
 			await expectNotAllowed(async () => BucketSecurity.allowWriteAccess(wrongOrg, bucket._id))
 			// expectAccess(() => BucketSecurity.allowWriteAccessPiece({ _id: bucket._id }, credUserInWrongOrganization))
@@ -189,8 +200,17 @@ describe('Security', () => {
 			// === Read access: ===
 
 			// No user credentials:
+			if (Settings.enableUserAccounts) {
+				SupressLogMessages.suppressLogMessage(/No organization in credentials/i)
+			}
 			await expectReadNotAllowed(async () => OrganizationReadAccess.adminUsers(selectorId, nothing))
+			if (Settings.enableUserAccounts) {
+				SupressLogMessages.suppressLogMessage(/No organization in credentials/i)
+			}
 			await expectReadNotAllowed(async () => OrganizationReadAccess.organization(selectorId, nothing))
+			if (Settings.enableUserAccounts) {
+				SupressLogMessages.suppressLogMessage(/No organization in credentials/i)
+			}
 			await expectReadNotAllowed(async () => OrganizationReadAccess.organizationContent(selectorId, nothing))
 			// Normal user:
 			await expectReadAllowed(async () => OrganizationReadAccess.adminUsers(selectorId, creator))
@@ -201,16 +221,43 @@ describe('Security', () => {
 			await expectReadAllowed(async () => OrganizationReadAccess.organization(selectorId, userB))
 			await expectReadAllowed(async () => OrganizationReadAccess.organizationContent(selectorId, userB))
 			// Non-existing user:
+			if (Settings.enableUserAccounts) {
+				SupressLogMessages.suppressLogMessage(/No organization in credentials/i)
+			}
 			await expectReadNotAllowed(async () => OrganizationReadAccess.adminUsers(selectorId, nonExisting))
+			if (Settings.enableUserAccounts) {
+				SupressLogMessages.suppressLogMessage(/No organization in credentials/i)
+			}
 			await expectReadNotAllowed(async () => OrganizationReadAccess.organization(selectorId, nonExisting))
+			if (Settings.enableUserAccounts) {
+				SupressLogMessages.suppressLogMessage(/No organization in credentials/i)
+			}
 			await expectReadNotAllowed(async () => OrganizationReadAccess.organizationContent(selectorId, nonExisting))
 			// User in wrong organization:
+			if (Settings.enableUserAccounts) {
+				SupressLogMessages.suppressLogMessage(/User is not in the organization/i)
+			}
 			await expectReadNotAllowed(async () => OrganizationReadAccess.adminUsers(selectorId, wrongOrg))
+			if (Settings.enableUserAccounts) {
+				SupressLogMessages.suppressLogMessage(/User is not in the organization/i)
+			}
 			await expectReadNotAllowed(async () => OrganizationReadAccess.organization(selectorId, wrongOrg))
+			if (Settings.enableUserAccounts) {
+				SupressLogMessages.suppressLogMessage(/User is not in the organization/i)
+			}
 			await expectReadNotAllowed(async () => OrganizationReadAccess.organizationContent(selectorId, wrongOrg))
 			// SuperAdmin:
+			if (Settings.enableUserAccounts) {
+				SupressLogMessages.suppressLogMessage(/User is not in the organization/i)
+			}
 			await expectReadNotAllowed(async () => OrganizationReadAccess.adminUsers(selectorId, otherSuperAdmin))
+			if (Settings.enableUserAccounts) {
+				SupressLogMessages.suppressLogMessage(/User is not in the organization/i)
+			}
 			await expectReadNotAllowed(async () => OrganizationReadAccess.organization(selectorId, otherSuperAdmin))
+			if (Settings.enableUserAccounts) {
+				SupressLogMessages.suppressLogMessage(/User is not in the organization/i)
+			}
 			await expectReadNotAllowed(async () =>
 				OrganizationReadAccess.organizationContent(selectorId, otherSuperAdmin)
 			)

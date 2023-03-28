@@ -4,10 +4,9 @@ import { Meteor } from 'meteor/meteor'
 import { useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { useTranslation } from 'react-i18next'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { DBSegment, Segment } from '../../../lib/collections/Segments'
 import { DBPart } from '../../../lib/collections/Parts'
-import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
 import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 
@@ -19,31 +18,28 @@ import {
 	IBlueprintActionTriggerMode,
 	SomeContent,
 } from '@sofie-automation/blueprints-integration'
-import { doUserAction, UserAction } from '../../lib/userAction'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
+import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import {
 	RundownLayoutFilter,
 	RundownLayoutFilterBase,
 	DashboardLayoutFilter,
 } from '../../../lib/collections/RundownLayouts'
-import {
-	RundownBaselineAdLibItem,
-	RundownBaselineAdLibPieces,
-} from '../../../lib/collections/RundownBaselineAdLibPieces'
+import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
 import { literal, unprotectString, protectString } from '../../../lib/lib'
-import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
-import { PartInstances, findPartInstanceOrWrapToTemporary, PartInstance } from '../../../lib/collections/PartInstances'
+import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
+import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../../lib/collections/PartInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { AdLibActions, AdLibAction } from '../../../lib/collections/AdLibActions'
+import { AdLibAction } from '../../../lib/collections/AdLibActions'
 import { RundownUtils } from '../../lib/rundown'
 import { ShelfTabs } from './Shelf'
-import {
-	RundownBaselineAdLibActions,
-	RundownBaselineAdLibAction,
-} from '../../../lib/collections/RundownBaselineAdLibActions'
+import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
-import RundownViewEventBus, { RundownViewEvents, RevealInShelfEvent } from '../RundownView/RundownViewEventBus'
+import RundownViewEventBus, {
+	RundownViewEvents,
+	RevealInShelfEvent,
+} from '../../../lib/api/triggers/RundownViewEventBus'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
 import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
@@ -56,6 +52,14 @@ import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIStudio } from '../../../lib/api/studios'
 import { UIStudios } from '../Collections'
 import { PartId, PartInstanceId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	AdLibActions,
+	AdLibPieces,
+	PartInstances,
+	RundownBaselineAdLibActions,
+	RundownBaselineAdLibPieces,
+} from '../../collections'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined

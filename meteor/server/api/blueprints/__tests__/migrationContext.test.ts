@@ -4,7 +4,6 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
-	PeripheralDevices,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '../../../../lib/collections/PeripheralDevices'
@@ -23,17 +22,23 @@ import {
 	PlayoutActions,
 	IBlueprintTriggeredActions,
 } from '@sofie-automation/blueprints-integration'
-import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios'
+import { Studio, MappingExt } from '../../../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle, MigrationContextSystem } from '../migrationContext'
-import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
-import { ShowStyleBase, ShowStyleBases, SourceLayers } from '../../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
-import { CoreSystem } from '../../../../lib/collections/CoreSystem'
-import { TriggeredActions } from '../../../../lib/collections/TriggeredActions'
+import { ShowStyleBase, SourceLayers } from '../../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
 import {
 	applyAndValidateOverrides,
 	wrapDefaultObject,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import {
+	CoreSystem,
+	PeripheralDevices,
+	ShowStyleBases,
+	ShowStyleVariants,
+	Studios,
+	TriggeredActions,
+} from '../../../collections'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 describe('Test blueprint migrationContext', () => {
 	beforeAll(async () => {
@@ -71,10 +76,11 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('getMapping: good', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const rawMapping = {
+				const rawMapping: MappingExt<TSR.SomeMappingAbstract> = {
 					device: TSR.DeviceType.ABSTRACT,
 					deviceId: protectString('dev1'),
 					lookahead: LookaheadMode.NONE,
+					options: {},
 				}
 				studio.mappingsWithOverrides.defaults['mapping1'] = rawMapping
 
@@ -89,10 +95,11 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('insertMapping: good', () => {
 				const ctx = getContext()
 
-				const rawMapping = {
+				const rawMapping: BlueprintMapping<TSR.SomeMappingAbstract> = {
 					device: TSR.DeviceType.ABSTRACT,
 					deviceId: 'dev1',
 					lookahead: LookaheadMode.NONE,
+					options: {},
 				}
 
 				const mappingId = ctx.insertMapping('mapping2', rawMapping)
@@ -109,10 +116,11 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('insertMapping: no id', () => {
 				const ctx = getContext()
 
-				const rawMapping = {
+				const rawMapping: BlueprintMapping<TSR.SomeMappingAbstract> = {
 					device: TSR.DeviceType.ABSTRACT,
 					deviceId: 'dev1',
 					lookahead: LookaheadMode.NONE,
+					options: {},
 				}
 
 				expect(() => ctx.insertMapping('', rawMapping)).toThrow(`[500] Mapping id "" is invalid`)
@@ -130,10 +138,11 @@ describe('Test blueprint migrationContext', () => {
 				const existingMapping = ctx.getMapping('mapping2')
 				expect(existingMapping).toBeTruthy()
 
-				const rawMapping = {
+				const rawMapping: BlueprintMapping<TSR.SomeMappingAbstract> = {
 					device: TSR.DeviceType.ATEM,
 					deviceId: 'dev2',
 					lookahead: LookaheadMode.PRELOAD,
+					options: {},
 				}
 				expect(rawMapping).not.toEqual(existingMapping)
 
@@ -423,16 +432,17 @@ describe('Test blueprint migrationContext', () => {
 					connected: false,
 					connectionId: null,
 					token: '',
-					settings: literal<PlayoutDeviceSettings>({
+					settings: {
 						devices: {
 							device01: {
 								type: TSR.DeviceType.ABSTRACT,
 								options: {},
 							},
 						},
-					}),
+					},
 					configManifest: {
-						deviceConfig: [], // can be empty as it's only useful for UI.
+						deviceConfigSchema: JSONBlobStringify({}), // can be empty as it's only useful for UI.
+						subdeviceManifest: {},
 					},
 				})
 			}
@@ -522,15 +532,14 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('insertDevice: ok', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialSettings = getPlayoutDevice(studio).settings as PlayoutDeviceSettings
+				const initialSettings = getPlayoutDevice(studio).settings
 				expect(ctx.getDevice('device11')).toBeFalsy()
 
 				const rawDevice: any = { type: TSR.DeviceType.CASPARCG }
 
 				const deviceId = ctx.insertDevice('device11', rawDevice)
 				expect(deviceId).toEqual('device11')
-
-				initialSettings.devices[deviceId] = rawDevice
+				initialSettings.devices![deviceId] = rawDevice
 				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings)
 
 				const device = ctx.getDevice(deviceId)
@@ -580,14 +589,14 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('Device: good', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialSettings = getPlayoutDevice(studio).settings as PlayoutDeviceSettings
+				const initialSettings = getPlayoutDevice(studio).settings
 				expect(ctx.getDevice('device01')).toBeTruthy()
 
 				const rawDevice: any = {
 					type: TSR.DeviceType.HYPERDECK,
 				}
 				const expectedDevice = {
-					...(initialSettings.devices['device01'] as any),
+					...(initialSettings.devices!['device01'] as any),
 					...rawDevice,
 				}
 
@@ -595,7 +604,7 @@ describe('Test blueprint migrationContext', () => {
 
 				expect(ctx.getDevice('device01')).toEqual(expectedDevice)
 
-				initialSettings.devices['device01'] = expectedDevice
+				initialSettings.devices!['device01'] = expectedDevice
 				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings)
 			})
 
@@ -639,14 +648,14 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('removeDevice: good', () => {
 				const ctx = getContext()
 				const studio = getStudio(ctx)
-				const initialSettings = getPlayoutDevice(studio).settings as PlayoutDeviceSettings
+				const initialSettings = getPlayoutDevice(studio).settings
 				expect(ctx.getDevice('device01')).toBeTruthy()
 
 				// Should not error
 				ctx.removeDevice('device01')
 
 				expect(ctx.getDevice('device01')).toBeFalsy()
-				delete initialSettings.devices['device01']
+				delete initialSettings.devices!['device01']
 				expect(getPlayoutDevice(studio).settings).toEqual(initialSettings)
 			})
 		})
@@ -672,6 +681,7 @@ describe('Test blueprint migrationContext', () => {
 				showStyleBaseId: showStyle._id,
 				blueprintConfigWithOverrides: wrapDefaultObject(config || {}),
 				_rundownVersionHash: '',
+				_rank: 0,
 			})
 			ShowStyleVariants.insert(rawVariant)
 
@@ -772,6 +782,7 @@ describe('Test blueprint migrationContext', () => {
 						name: 'test2',
 						blueprintConfigWithOverrides: wrapDefaultObject({}),
 						_rundownVersionHash: '',
+						_rank: 0,
 					}) as any as IBlueprintShowStyleVariant
 				)
 				expect(ctx.getAllVariants()).toEqual(initialVariants)

@@ -84,14 +84,14 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 		},
 	}
 
-	constructor(props) {
+	constructor(props: {}) {
 		super(props)
 		this.state = {
 			error: null,
 		}
 	}
 
-	componentDidCatch(error: Error, info: React.ErrorInfo) {
+	componentDidCatch(error: Error, info: React.ErrorInfo): void {
 		this.setState({
 			error: { error, info },
 		})
@@ -105,11 +105,11 @@ export class ErrorBoundary extends React.Component<{}, IState> {
 	// 	this.setState({ expandedStack: !this.state.expandedStack })
 	// }
 
-	resetComponent = () => {
+	private resetComponent = () => {
 		this.setState({ error: null })
 	}
 
-	render() {
+	render(): React.ReactNode {
 		if (this.state.error) {
 			const error = this.state.error.error
 			const info = this.state.error.info

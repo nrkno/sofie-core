@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/server-core-integration",
-	"version": "1.49.0-in-development",
+	"version": "1.50.0-in-development",
 	"description": "Library for connecting to Core",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
@@ -48,7 +48,7 @@
 		"license-validate": "yarn sofie-licensecheck"
 	},
 	"engines": {
-		"node": "^14.19 || ^16.14 || ^18.12"
+		"node": ">=14.19"
 	},
 	"files": [
 		"/dist",
@@ -70,11 +70,11 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/shared-lib": "1.49.0-in-development",
+		"@sofie-automation/shared-lib": "1.50.0-in-development",
 		"ejson": "^2.2.3",
 		"eventemitter3": "^4.0.7",
 		"faye-websocket": "^0.11.4",
-		"got": "^11.8.5",
+		"got": "^11.8.6",
 		"tslib": "^2.4.0",
 		"underscore": "^1.13.4"
 	},

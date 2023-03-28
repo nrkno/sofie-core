@@ -1,7 +1,7 @@
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { unprotectString } from '../../../lib/lib'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { doUserAction, UserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { TFunction } from 'i18next'
 import { handleRundownReloadResponse } from '../RundownView'
@@ -53,7 +53,7 @@ export function getRundownWithShelfLayoutLink(
 	return `/rundown/${encodedRundownId}?rundownViewLayout=${encodedLayoutId}`
 }
 
-export function confirmDeleteRundown(rundown: Rundown, t: TFunction) {
+export function confirmDeleteRundown(rundown: Rundown, t: TFunction): void {
 	doModalDialog({
 		title: t('Delete rundown?'),
 		yes: t('Delete'),

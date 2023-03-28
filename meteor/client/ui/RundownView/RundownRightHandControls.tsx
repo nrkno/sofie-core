@@ -13,7 +13,7 @@ import * as On_Air_MouseOut from './On_Air_MouseOut.json'
 import * as On_Air_MouseOver from './On_Air_MouseOver.json'
 import { SupportPopUpToggle } from '../SupportPopUp'
 import classNames from 'classnames'
-import { NoticeLevel } from '../../lib/notifications/notifications'
+import { NoticeLevel } from '../../../lib/notifications/notifications'
 import { SwitchboardIcon, RouteSetOverrideIcon } from '../../lib/ui/icons/switchboard'
 import { SwitchboardPopUp } from './SwitchboardPopUp'
 import { useTranslation } from 'react-i18next'
@@ -62,7 +62,7 @@ const ONAIR_OVER = {
 	animationData: On_Air_MouseOver,
 }
 
-export function RundownRightHandControls(props: IProps) {
+export function RundownRightHandControls(props: IProps): JSX.Element {
 	const { t } = useTranslation()
 	const [onAirHover, setOnAirHover] = useState(false)
 	const [switchboardOpen, setSwitchboardOpen] = useState(false)

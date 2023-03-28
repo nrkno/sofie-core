@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/shared-lib",
-	"version": "1.49.0-in-development",
+	"version": "1.50.0-in-development",
 	"private": false,
 	"description": "Library for types & values shared by core, workers and gateways",
 	"main": "dist/index.js",
@@ -30,7 +30,7 @@
 		"license-validate": "yarn sofie-licensecheck"
 	},
 	"engines": {
-		"node": "^14.19 || ^16.14 || ^18.12"
+		"node": ">=14.19"
 	},
 	"files": [
 		"/dist",
@@ -39,7 +39,8 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"timeline-state-resolver-types": "8.0.0-release48.0",
+		"@mos-connection/model": "^3.0.1",
+		"timeline-state-resolver-types": "8.0.0-nightly-release50-20230322-095047-9bf6bb77a.0",
 		"tslib": "^2.4.0",
 		"type-fest": "^2.19.0"
 	},

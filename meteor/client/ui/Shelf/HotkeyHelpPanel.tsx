@@ -3,18 +3,14 @@ import type { Sorensen } from '@sofie-automation/sorensen'
 import { useTranslation } from 'react-i18next'
 import { hotkeyHelper } from '../../lib/hotkeyHelper'
 import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import {
-	MountedAdLibTrigger,
-	MountedAdLibTriggers,
-	MountedGenericTrigger,
-	MountedGenericTriggers,
-} from '../../lib/triggers/TriggersHandler'
+import { MountedAdLibTriggers, MountedGenericTriggers } from '../../lib/triggers/TriggersHandler'
 import { SorensenContext } from '../../lib/SorensenContext'
 import { codesToKeyLabels } from '../../lib/triggers/codesToKeyLabels'
 import { TFunction } from 'i18next'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { MongoCursor } from '../../../lib/collections/lib'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { MountedTrigger } from '../../../lib/api/triggers/MountedTriggers'
 
 interface IProps {
 	visible?: boolean
@@ -28,11 +24,7 @@ interface IProps {
 
 const _isMacLike = navigator.platform.match(/(Mac|iPhone|iPod|iPad)/i) ? true : false
 
-function mountedTriggerToHotkeyList(
-	hotkeys: MongoCursor<MountedAdLibTrigger | MountedGenericTrigger>,
-	sorensen: Sorensen | null,
-	t: TFunction
-) {
+function mountedTriggerToHotkeyList(hotkeys: MongoCursor<MountedTrigger>, sorensen: Sorensen | null, t: TFunction) {
 	return hotkeys.map((mountedTrigger) => ({
 		key: (sorensen ? mountedTrigger.keys.map((codes) => codesToKeyLabels(codes, sorensen)) : mountedTrigger.keys).join(
 			', '

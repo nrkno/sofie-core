@@ -1,7 +1,6 @@
 import * as React from 'react'
 import {
 	PeripheralDevice,
-	PeripheralDevices,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '../../../lib/collections/PeripheralDevices'
@@ -12,7 +11,7 @@ import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { StatusCodePill } from '../Status/StatusCodePill'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
@@ -20,6 +19,7 @@ import { GenericDeviceSettingsComponent } from './components/GenericDeviceSettin
 import { DevicePackageManagerSettings } from './DevicePackageManagerSettings'
 import { getExpectedLatency } from '@sofie-automation/corelib/dist/studio/playout'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDevices } from '../../collections'
 
 interface IDeviceSettingsProps {
 	match: {
@@ -30,8 +30,8 @@ interface IDeviceSettingsProps {
 }
 interface IDeviceSettingsState {}
 interface IDeviceSettingsTrackedProps {
-	device?: PeripheralDevice
-	subDevices?: PeripheralDevice[]
+	device: PeripheralDevice | undefined
+	subDevices: PeripheralDevice[] | undefined
 }
 export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, IDeviceSettingsTrackedProps>(
 	(props: IDeviceSettingsProps) => {
@@ -233,7 +233,7 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			if (this.props.device) {
 				return this.renderEditForm(this.props.device)
 			} else {

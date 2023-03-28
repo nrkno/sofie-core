@@ -126,6 +126,17 @@
 		}
 	}
 
+  .settings-studio-showStyleVariants-table__drag {
+	color: #a2a2a2;
+	cursor: grab;
+	margin-right: 10px;
+
+	svg {
+		width: 10px;
+		position: relative;
+	}
+  }
+
 	.settings-studio-accessors {
 		border-left: 0.5em solid #999;
 		margin-left: 1em;

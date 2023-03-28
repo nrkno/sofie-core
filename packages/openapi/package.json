@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/openapi",
-	"version": "1.49.0-in-development",
+	"version": "1.50.0-in-development",
 	"private": true,
 	"license": "MIT",
 	"repository": {
@@ -10,7 +10,7 @@
 	},
 	"scripts": {
 		"prepare": "yarn build",
-		"build": "rimraf dist",
+		"build": "rimraf dist && yarn genclient:ts && yarn build:main",
 		"build:main": "tsc -p tsconfig.build.json",
 		"cov": "yarn unit && open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",

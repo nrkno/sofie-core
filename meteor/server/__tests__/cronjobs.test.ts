@@ -2,11 +2,8 @@ import '../../__mocks__/_extendJest'
 import { testInFiber, runAllTimers, beforeAllInFiber } from '../../__mocks__/helpers/jest'
 import { MeteorMock } from '../../__mocks__/meteor'
 import { logger } from '../logging'
-import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { getRandomId, getRandomString, protectString } from '../../lib/lib'
-import { Rundowns } from '../../lib/collections/Rundowns'
-import { UserActionsLog } from '../../lib/collections/UserActionsLog'
-import { Snapshots, SnapshotType } from '../../lib/collections/Snapshots'
+import { SnapshotType } from '../../lib/collections/Snapshots'
 import {
 	IBlueprintPieceType,
 	PieceLifespan,
@@ -14,17 +11,12 @@ import {
 	StatusCode,
 	TSR,
 } from '@sofie-automation/blueprints-integration'
-import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
-import {
-	PeripheralDevices,
-	PeripheralDeviceType,
-	PeripheralDeviceCategory,
-} from '../../lib/collections/PeripheralDevices'
-import { CoreSystem, ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
+import { PeripheralDeviceType, PeripheralDeviceCategory } from '../../lib/collections/PeripheralDevices'
+import { ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import * as lib from '../../lib/lib'
-import { DBPart, Parts } from '../../lib/collections/Parts'
-import { PartInstance, PartInstances } from '../../lib/collections/PartInstances'
-import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
+import { DBPart } from '../../lib/collections/Parts'
+import { PartInstance } from '../../lib/collections/PartInstances'
+import { PieceInstance } from '../../lib/collections/PieceInstances'
 import { Meteor } from 'meteor/meteor'
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import {
@@ -41,10 +33,27 @@ import {
 let mockCurrentTime = 0
 let origGetCurrentTime
 jest.mock('../logging')
+// we don't want the deviceTriggers observer to start up at this time
+jest.mock('../api/deviceTriggers/observer')
 
 import '../cronjobs'
 
 import '../api/peripheralDevice'
+import {
+	CoreSystem,
+	IngestDataCache,
+	PartInstances,
+	Parts,
+	PeripheralDeviceCommands,
+	PeripheralDevices,
+	PieceInstances,
+	Rundowns,
+	Snapshots,
+	UserActionsLog,
+} from '../collections'
+import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+
 describe('cronjobs', () => {
 	beforeEach(() => {
 		// cannot use setupDefaultStudioEnvironment or setupMockCore because MeteorMock.mockRunMeteorStartup
@@ -392,7 +401,8 @@ describe('cronjobs', () => {
 				type: PeripheralDeviceType.PLAYOUT,
 				category: PeripheralDeviceCategory.PLAYOUT,
 				configManifest: {
-					deviceConfig: [],
+					deviceConfigSchema: JSONBlobStringify({}),
+					subdeviceManifest: {},
 				},
 				connected: true,
 				connectionId: '',
@@ -416,7 +426,8 @@ describe('cronjobs', () => {
 				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.CASPARCG,
 				configManifest: {
-					deviceConfig: [],
+					deviceConfigSchema: JSONBlobStringify({}),
+					subdeviceManifest: {},
 				},
 				connected: true,
 				connectionId: '',
@@ -439,7 +450,8 @@ describe('cronjobs', () => {
 				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.ATEM,
 				configManifest: {
-					deviceConfig: [],
+					deviceConfigSchema: JSONBlobStringify({}),
+					subdeviceManifest: {},
 				},
 				connected: true,
 				connectionId: '',
@@ -492,7 +504,8 @@ describe('cronjobs', () => {
 				type: PeripheralDeviceType.PLAYOUT,
 				category: PeripheralDeviceCategory.PLAYOUT,
 				configManifest: {
-					deviceConfig: [],
+					deviceConfigSchema: JSONBlobStringify({}),
+					subdeviceManifest: {},
 				},
 				connected: true,
 				connectionId: '',
@@ -516,7 +529,8 @@ describe('cronjobs', () => {
 				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.CASPARCG,
 				configManifest: {
-					deviceConfig: [],
+					deviceConfigSchema: JSONBlobStringify({}),
+					subdeviceManifest: {},
 				},
 				connected: true,
 				connectionId: '',
@@ -539,7 +553,8 @@ describe('cronjobs', () => {
 				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.ATEM,
 				configManifest: {
-					deviceConfig: [],
+					deviceConfigSchema: JSONBlobStringify({}),
+					subdeviceManifest: {},
 				},
 				connected: true,
 				connectionId: '',

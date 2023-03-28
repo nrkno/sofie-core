@@ -18,11 +18,11 @@ interface INoraEditorProps {
 class NoraItemEditor extends React.Component<INoraEditorProps> {
 	iframe: HTMLIFrameElement
 
-	componentDidMount() {
+	componentDidMount(): void {
 		this.setUpEventListeners(window)
 	}
 
-	componentDidUpdate(_prevProps: INoraEditorProps) {
+	componentDidUpdate(_prevProps: INoraEditorProps): void {
 		if (this.iframe && this.iframe.contentWindow) {
 			this.setUpEventListeners(this.iframe.contentWindow)
 		}
@@ -33,24 +33,24 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 		// }
 	}
 
-	shouldComponentUpdate() {
+	shouldComponentUpdate(): boolean {
 		return false
 	}
 
-	postPayload(target: Window | null) {
+	private postPayload(target: Window | null) {
 		if (target) {
 			const payloadXmlString = createMosObjectXmlStringNoraBluePrintPiece(this.props.piece)
 			target.postMessage(payloadXmlString, MODULE_BROWSER_ORIGIN)
 		}
 	}
 
-	setUpEventListeners(target: Window) {
+	private setUpEventListeners(target: Window) {
 		target.addEventListener('message', (event) => {
 			this.handleMessage(event)
 		})
 	}
 
-	handleMessage(event: MessageEvent) {
+	private handleMessage(event: MessageEvent) {
 		if (event.origin !== MODULE_BROWSER_ORIGIN) {
 			console.warn(`Origin rejected (wanted ${MODULE_BROWSER_ORIGIN}, got ${event.origin})`)
 			return
@@ -65,7 +65,7 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 		console.error('Unknown message', data)
 	}
 
-	handleMosMessage(mos: MosPluginMessage) {
+	private handleMosMessage(mos: MosPluginMessage) {
 		if (mos.ncsReqAppInfo) {
 			this.sendAppInfo(this.iframe.contentWindow)
 
@@ -76,7 +76,7 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 		}
 	}
 
-	sendAppInfo(target: Window | null) {
+	private sendAppInfo(target: Window | null) {
 		if (target) {
 			// let uiMetrics: MOSUIMetric[] | undefined = undefined
 			// if (this.iframe) {
@@ -100,7 +100,7 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 		}
 	}
 
-	render() {
+	render(): JSX.Element {
 		return React.createElement('iframe', {
 			ref: (element) => {
 				this.iframe = element as HTMLIFrameElement

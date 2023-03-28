@@ -13,15 +13,21 @@ import {
 	SomeContent,
 	Time,
 	WithTimeline,
+	TSR,
 } from '@sofie-automation/blueprints-integration'
-import { PartInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	PartInstanceId,
+	PeripheralDeviceId,
+	RundownPlaylistActivationId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { assertNever, getRandomId, omit } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
-import { getMediaObjectDuration, ShowStyleUserContext, UserContextInfo } from './context'
+import { UserContextInfo } from './CommonContext'
+import { ShowStyleUserContext } from './ShowStyleUserContext'
 import { WatchedPackagesHelper } from './watchedPackages'
 import { getCurrentTime } from '../../lib'
 import {
@@ -40,7 +46,7 @@ import {
 	innerStartAdLibPiece,
 	innerStartQueuedAdLib,
 	innerStopPieces,
-} from '../../playout/adlib'
+} from '../../playout/adlibUtils'
 import {
 	Piece,
 	PieceTimelineObjectsBlob,
@@ -52,17 +58,20 @@ import {
 	convertPieceInstanceToBlueprints,
 	convertPieceToBlueprints,
 	convertResolvedPieceInstanceToBlueprints,
+	getMediaObjectDuration,
 	IBlueprintMutatablePartSampleKeys,
 	IBlueprintPieceObjectsSampleKeys,
 } from './lib'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { moveNextPartInner } from '../../playout/playout'
+import { moveNextPartInner } from '../../playout/setNext'
 import _ = require('underscore')
 import { ProcessedShowStyleConfig } from '../config'
 import { DatastorePersistenceMode } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
 import { getDatastoreId } from '../../playout/datastore'
+import { executePeripheralDeviceAction, listPeripheralDevices } from '../../peripheralDevice'
+import { PeripheralDevicePublicWithActions } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -634,6 +643,18 @@ export class ActionExecutionContext
 	}
 
 	async hackGetMediaObjectDuration(mediaId: string): Promise<number | undefined> {
-		return getMediaObjectDuration(this._context, mediaId, this.studioId)
+		return getMediaObjectDuration(this._context, mediaId)
+	}
+
+	async listPeripheralDevices(): Promise<PeripheralDevicePublicWithActions[]> {
+		return listPeripheralDevices(this._context, this._cache)
+	}
+
+	async executeTSRAction(
+		deviceId: PeripheralDeviceId,
+		actionId: string,
+		payload: Record<string, any>
+	): Promise<TSR.ActionExecutionResult> {
+		return executePeripheralDeviceAction(this._context, deviceId, null, actionId, payload)
 	}
 }

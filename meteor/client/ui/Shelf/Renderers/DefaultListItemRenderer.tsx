@@ -3,7 +3,6 @@ import ClassNames from 'classnames'
 import { RundownUtils } from '../../../lib/rundown'
 import { ILayerItemRendererProps } from './ItemRendererFactory'
 import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
-import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export const DefaultListItemRenderer: React.FunctionComponent<ILayerItemRendererProps> = (
 	props: ILayerItemRendererProps
@@ -26,14 +25,12 @@ export const DefaultListItemRenderer: React.FunctionComponent<ILayerItemRenderer
 				className={ClassNames(
 					'adlib-panel__list-view__list__table__cell--icon',
 					props.layer && RundownUtils.getSourceLayerClassName(props.layer.type),
-					{
-						'source-missing': props.status === PieceStatusCode.SOURCE_MISSING,
-						'source-broken': props.status === PieceStatusCode.SOURCE_BROKEN,
-						'unknown-state': props.status === PieceStatusCode.UNKNOWN,
-					}
+					props.status && RundownUtils.getPieceStatusClassName(props.status)
 				)}
 			>
-				{(props.layer && (props.layer.abbreviation || props.layer.name)) || null}
+				<div className="adlib-panel__list-view__list__table__cell--layer">
+					{(props.layer && (props.layer.abbreviation || props.layer.name)) || null}
+				</div>
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--shortcut">
 				<ActionAdLibHotkeyPreview targetId={props.adLibListItem._id as any} type={type} />

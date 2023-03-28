@@ -91,7 +91,7 @@ export function BlueprintConfigManifestSettings({
 	configObject,
 	saveOverrides,
 	pushOverride,
-}: IConfigManifestSettingsProps) {
+}: IConfigManifestSettingsProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const addRef = useRef<AddItemModalRef>(null)

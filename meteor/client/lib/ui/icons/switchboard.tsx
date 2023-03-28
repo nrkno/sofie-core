@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-export function SwitchboardIcon(props: React.SVGProps<SVGSVGElement>) {
+export function SwitchboardIcon(props: React.SVGProps<SVGSVGElement>): JSX.Element {
 	return (
 		<svg
 			width="35"
@@ -29,7 +29,7 @@ export function SwitchboardIcon(props: React.SVGProps<SVGSVGElement>) {
 	)
 }
 
-export function RouteSetOverrideIcon(props: React.SVGProps<SVGSVGElement>) {
+export function RouteSetOverrideIcon(props: React.SVGProps<SVGSVGElement>): JSX.Element {
 	return (
 		<svg
 			width="28"

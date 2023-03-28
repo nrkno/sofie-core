@@ -53,7 +53,7 @@ describe('Test blueprint post-process', () => {
 		const context = setupDefaultJobEnvironment()
 		test('no objects', () => {
 			// Ensure that an empty array works ok
-			const res = postProcessStudioBaselineObjects(context.studio, [])
+			const res = postProcessStudioBaselineObjects(context.studio.blueprintId, [])
 			expect(res).toHaveLength(0)
 		})
 
@@ -95,7 +95,7 @@ describe('Test blueprint post-process', () => {
 
 			// TODO - mock getHash?
 
-			const res = postProcessStudioBaselineObjects(context.studio, clone(rawObjects))
+			const res = postProcessStudioBaselineObjects(context.studio.blueprintId, clone(rawObjects))
 
 			// Nothing should have been overridden (yet)
 			_.each(rawObjects, (obj) => {
@@ -151,7 +151,7 @@ describe('Test blueprint post-process', () => {
 				},
 			])
 
-			expect(() => postProcessStudioBaselineObjects(context.studio, clone(rawObjects))).toThrow(
+			expect(() => postProcessStudioBaselineObjects(context.studio.blueprintId, clone(rawObjects))).toThrow(
 				`Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`
 			)
 		})
@@ -600,7 +600,7 @@ describe('Test blueprint post-process', () => {
 				// Error in blueprint "blueprint9": Validation of timelineObjs failed:
 				// Error: Object "IJ0Ud5lJhbIllA0_kWFIVz51eL4_": "classes[0]":
 				// Error: The string "i-am-an-invalid-class" contains a character ("-") which isn't allowed in Timeline (is an operator)
-			}).toThrowError(/error in blueprint.*contains a character/i)
+			}).toThrow(/error in blueprint.*contains a character/i)
 		})
 	})
 })

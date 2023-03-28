@@ -5,7 +5,9 @@ import { Meteor } from 'meteor/meteor'
 import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../../__mocks__/meteorhacks-picker'
 import { Response as MockResponse, Request as MockRequest } from 'mock-http'
 
+jest.mock('../../deviceTriggers/observer')
 import * as api from '../api'
+import { SupressLogMessages } from '../../../../__mocks__/suppressLogging'
 jest.mock('../api.ts')
 
 const DEFAULT_CONTEXT = { userId: '' }
@@ -59,6 +61,7 @@ describe('Test blueprint http api', () => {
 		})
 
 		testInFiber('missing body', async () => {
+			SupressLogMessages.suppressLogMessage(/Missing request body/i)
 			const res = await callRoute('id1', undefined)
 			expect(res.statusCode).toEqual(500)
 			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Missing request body')
@@ -66,6 +69,7 @@ describe('Test blueprint http api', () => {
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
 		testInFiber('empty body', async () => {
+			SupressLogMessages.suppressLogMessage(/Missing request body/i)
 			const res = await callRoute('id1', '')
 			expect(res.statusCode).toEqual(500)
 			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Missing request body')
@@ -76,6 +80,7 @@ describe('Test blueprint http api', () => {
 			const id = 'id1'
 			const body = 99
 
+			SupressLogMessages.suppressLogMessage(/Invalid request body/i)
 			const res = await callRoute(id, body)
 			expect(res.statusCode).toEqual(500)
 			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Invalid request body')
@@ -114,6 +119,7 @@ describe('Test blueprint http api', () => {
 			})
 
 			try {
+				SupressLogMessages.suppressLogMessage(/Some thrown error/i)
 				const res = await callRoute(id, body)
 
 				expect(res.statusCode).toEqual(500)
@@ -178,6 +184,7 @@ describe('Test blueprint http api', () => {
 		})
 
 		testInFiber('missing body', async () => {
+			SupressLogMessages.suppressLogMessage(/Missing request body/i)
 			const res = await callRoute(undefined)
 			expect(res.statusCode).toEqual(500)
 			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Missing request body')
@@ -185,6 +192,7 @@ describe('Test blueprint http api', () => {
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
 		testInFiber('empty body', async () => {
+			SupressLogMessages.suppressLogMessage(/Missing request body/i)
 			const res = await callRoute('')
 			expect(res.statusCode).toEqual(500)
 			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Missing request body')
@@ -194,6 +202,7 @@ describe('Test blueprint http api', () => {
 		testInFiber('non-string body', async () => {
 			const body = 99
 
+			SupressLogMessages.suppressLogMessage(/Invalid request body/i)
 			const res = await callRoute(body)
 			expect(res.statusCode).toEqual(500)
 			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Invalid request body')
@@ -203,6 +212,7 @@ describe('Test blueprint http api', () => {
 		testInFiber('invalid body', async () => {
 			const body = '99'
 
+			SupressLogMessages.suppressLogMessage(/Invalid request body/i)
 			const res = await callRoute(body)
 			expect(res.statusCode).toEqual(500)
 			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Invalid request body')
@@ -212,6 +222,7 @@ describe('Test blueprint http api', () => {
 		testInFiber('non-json body', async () => {
 			const body = '0123456789012'
 
+			SupressLogMessages.suppressLogMessage(/Failed to parse request body/i)
 			const res = await callRoute(body)
 			expect(res.statusCode).toEqual(500)
 			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Failed to parse request body')
@@ -289,6 +300,8 @@ describe('Test blueprint http api', () => {
 			})
 
 			try {
+				SupressLogMessages.suppressLogMessage(/Some thrown error/i)
+				SupressLogMessages.suppressLogMessage(/Some thrown error/i)
 				const res = await callRoute(JSON.stringify(payload))
 				expect(res.statusCode).toEqual(500)
 				expect(res.bufferStr).toEqual(

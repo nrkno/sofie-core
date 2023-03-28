@@ -73,6 +73,7 @@ export enum PeripheralDeviceCategory {
 	MEDIA_MANAGER = 'media_manager',
 	PACKAGE_MANAGER = 'package_manager',
 	API = 'api',
+	TRIGGER_INPUT = 'trigger_input',
 }
 export enum PeripheralDeviceType {
 	// Ingest devices:
@@ -87,6 +88,8 @@ export enum PeripheralDeviceType {
 	PACKAGE_MANAGER = 'package_manager',
 	// API devices:
 	LIVE_STATUS = 'live_status',
+	// Trigger input and feedback devices:
+	INPUT = 'input',
 }
 // TODO: PeripheralDeviceSubType should be removed altogether at some point..
 export type PeripheralDeviceSubType = any

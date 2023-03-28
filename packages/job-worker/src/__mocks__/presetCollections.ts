@@ -36,6 +36,7 @@ import { createShowStyleCompound } from '../showStyles'
 import { ReadonlyDeep } from 'type-fest'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { processShowStyleBase, processShowStyleVariant } from '../jobs/showStyle'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -142,6 +143,7 @@ export async function setupMockShowStyleVariant(
 		showStyleBaseId: showStyleBaseId,
 		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		_rundownVersionHash: '',
+		_rank: 0,
 	}
 	const showStyleVariant = _.extend(defaultShowStyleVariant, doc)
 	await context.directCollections.ShowStyleVariants.insertOne(showStyleVariant)
@@ -159,7 +161,7 @@ export async function setupDefaultRundownPlaylist(
 	const showStyleCompound =
 		showStyleCompound0 ||
 		(await context.directCollections.ShowStyleVariants.findOne().then(
-			(v) => v && context.getShowStyleCompound(v._id)
+			async (v) => v && (await context.getShowStyleCompound(v._id))
 		))
 	if (!showStyleCompound) throw new Error('No ShowStyle compound exists in the database yet')
 
@@ -440,7 +442,8 @@ export async function setupMockPeripheralDevice(
 		connectionId: 'myConnectionId',
 		token: 'mockToken',
 		configManifest: {
-			deviceConfig: [],
+			deviceConfigSchema: JSONBlobStringify({}),
+			subdeviceManifest: {},
 		},
 		versions: {
 			'@sofie-automation/server-core-integration': getSystemVersion(),

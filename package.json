@@ -29,13 +29,13 @@
 		"validate:release:packages": "cd packages && yarn validate:dependencies && yarn test",
 		"meteor": "cd meteor && meteor",
 		"docs:serve": "cd packages && yarn docs:serve",
-		"reset": "meteor node scripts/reset.js",
+		"reset": "meteor node scripts/reset.mjs",
 		"test-all": "yarn install && yarn build:packages && yarn check-types:meteor && yarn lint:packages && yarn lint:meteor && yarn test:packages && yarn test:meteor"
 	},
 	"devDependencies": {
-		"concurrently": "^7.4.0",
-		"rimraf": "^3.0.2",
-		"semver": "^7.3.7",
-		"snyk-nodejs-lockfile-parser": "^1.43.1"
+		"concurrently": "^7.6.0",
+		"rimraf": "^4.1.2",
+		"semver": "^7.3.8",
+		"snyk-nodejs-lockfile-parser": "^1.45.1"
 	}
 }

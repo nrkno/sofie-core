@@ -3,16 +3,16 @@ import { Redirect } from 'react-router'
 import { Translated, withTracker } from './ReactMeteorData/ReactMeteorData'
 import { Mongo } from 'meteor/mongo'
 import { withTranslation } from 'react-i18next'
-import { Studios } from '../../lib/collections/Studios'
 import { MeteorCall } from '../../lib/api/methods'
 import { assertNever } from '../../lib/lib'
+import { Studios } from '../collections'
 
 interface ISettingsNavigation extends ISettingsNavigationBaseProps {
 	type: SettingsNavigationType
 }
 export type SettingsNavigationType = 'blueprint' | 'showstyle' | 'newshowstyle'
 export class SettingsNavigation extends React.Component<ISettingsNavigation> {
-	render() {
+	render(): JSX.Element {
 		if (this.props.type === 'blueprint') {
 			return <Blueprint {...this.props} />
 		} else if (this.props.type === 'showstyle') {
@@ -52,18 +52,18 @@ export class SettingsNavigationBase<TProps extends ISettingsNavigationBaseProps>
 		this.redirectUser = this.redirectUser.bind(this)
 	}
 
-	redirectUser(url: string) {
+	protected redirectUser(url: string): void {
 		this.setState({
 			redirect: true,
 			redirectRoute: url,
 		})
 	}
 
-	renderButton() {
+	protected renderButton(): JSX.Element {
 		return <button></button>
 	}
 
-	render() {
+	render(): JSX.Element {
 		if (this.state.redirect === true) {
 			return <Redirect to={this.state.redirectRoute} />
 		}

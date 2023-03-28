@@ -1,14 +1,9 @@
 import { ITranslatableMessage, SomeAction, SomeBlueprintTrigger } from '@sofie-automation/blueprints-integration'
-import { createMongoCollection } from './lib'
-import { registerIndex } from '../database'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
-import { PeripheralDeviceId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ObjectWithOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
-export type DBBlueprintTrigger = SomeBlueprintTrigger & {
-	deviceId?: PeripheralDeviceId
-}
+export type DBBlueprintTrigger = SomeBlueprintTrigger
 
 export interface UITriggeredActionsObj {
 	_id: TriggeredActionId
@@ -51,8 +46,3 @@ export interface DBTriggeredActions {
 
 /** Note: Use DBTriggeredActions instead */
 export type TriggeredActionsObj = DBTriggeredActions
-export const TriggeredActions = createMongoCollection<DBTriggeredActions>(CollectionName.TriggeredActions)
-
-registerIndex(TriggeredActions, {
-	showStyleBaseId: 1,
-})

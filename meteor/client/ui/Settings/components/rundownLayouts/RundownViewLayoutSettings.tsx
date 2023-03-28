@@ -3,7 +3,8 @@ import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyle
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RundownLayoutsAPI } from '../../../../../lib/api/rundownLayouts'
-import { RundownLayoutBase, RundownLayouts } from '../../../../../lib/collections/RundownLayouts'
+import { RundownLayouts } from '../../../../collections'
+import { RundownLayoutBase } from '../../../../../lib/collections/RundownLayouts'
 import { unprotectString } from '../../../../../lib/lib'
 import { EditAttribute } from '../../../../lib/EditAttribute'
 
@@ -20,7 +21,7 @@ interface IProps {
 	layouts: RundownLayoutBase[]
 }
 
-export default function RundownViewLayoutSettings({ sourceLayers, item, layouts }: IProps) {
+export default function RundownViewLayoutSettings({ sourceLayers, item, layouts }: IProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const sourceLayerOptions = useMemo(

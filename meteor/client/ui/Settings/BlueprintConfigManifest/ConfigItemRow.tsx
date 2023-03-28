@@ -52,7 +52,7 @@ export function BlueprintConfigManifestRow({
 	subPanel,
 	isExpanded,
 	toggleExpanded,
-}: BlueprintConfigManifestRowProps) {
+}: BlueprintConfigManifestRowProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const manifestEntry = wrappedItem.manifest

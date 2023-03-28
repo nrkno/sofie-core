@@ -7,7 +7,6 @@
 
 const { Meteor } = require('meteor/meteor')
 const util = require('util')
-const EJSON = require('ejson')
 
 Meteor.makeErrorType = function (name, constructor) {
 	var errorClass = function (/*arguments*/) {
@@ -187,22 +186,12 @@ var stringForErrorMessage = function (value, options) {
 		return typeof value
 	}
 
-	// Your average non-object things.  Saves from doing the try/catch below for.
-	if (typeof value !== 'object') {
-		return EJSON.stringify(value)
-	}
-
+	// This is a simplification of the actual stringForErrorMessage implementation
 	try {
-		// Find objects with circular references since EJSON doesn't support them yet (Issue #4778 + Unaccepted PR)
-		// If the native stringify is going to choke, EJSON.stringify is going to choke too.
-		JSON.stringify(value)
+		return JSON.stringify(value)
 	} catch (stringifyError) {
-		if (stringifyError.name === 'TypeError') {
-			return typeof value
-		}
+		return typeof value
 	}
-
-	return EJSON.stringify(value)
 }
 
 var typeofChecks = [

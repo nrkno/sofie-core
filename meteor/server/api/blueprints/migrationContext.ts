@@ -11,8 +11,8 @@ import {
 	clone,
 	Complete,
 } from '../../../lib/lib'
-import { Studios, Studio, DBStudio } from '../../../lib/collections/Studios'
-import { ShowStyleBase, ShowStyleBases, DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { Studio, DBStudio } from '../../../lib/collections/Studios'
+import { ShowStyleBase, DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
 import {
 	ConfigItemValue,
@@ -29,15 +29,15 @@ import {
 	IBlueprintTriggeredActions,
 } from '@sofie-automation/blueprints-integration'
 
-import { ShowStyleVariants, ShowStyleVariant, DBShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant, DBShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { check } from '../../../lib/check'
-import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
-import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
-import { TriggeredActions, TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
+import { PeripheralDevice, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
+import { TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
 import { Match } from 'meteor/check'
 import { MongoModifier, MongoQuery } from '../../../lib/typings/meteor'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId, ShowStyleVariantId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDevices, ShowStyleBases, ShowStyleVariants, Studios, TriggeredActions } from '../../collections'
 
 function convertTriggeredActionToBlueprints(triggeredAction: TriggeredActionsObj): IBlueprintTriggeredActions {
 	const obj: Complete<IBlueprintTriggeredActions> = {
@@ -155,7 +155,12 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	getMapping(mappingId: string): BlueprintMapping | undefined {
 		check(mappingId, String)
 		const mapping = this.studio.mappingsWithOverrides.defaults[mappingId]
-		if (mapping) return unprotectObject(clone(mapping))
+		if (mapping) {
+			return clone({
+				...mapping,
+				deviceId: unprotectString(mapping.deviceId),
+			})
+		}
 	}
 	insertMapping(mappingId: string, mapping: OmitId<BlueprintMapping>): string {
 		check(mappingId, String)
@@ -269,8 +274,8 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			},
 		})
 
-		if (!parentDevice || !parentDevice.settings) return undefined
-		return (parentDevice.settings as PlayoutDeviceSettings).devices[deviceId] as TSR.DeviceOptionsAny
+		if (!parentDevice || !parentDevice.settings || !parentDevice.settings.devices) return undefined
+		return parentDevice.settings.devices[deviceId] as TSR.DeviceOptionsAny
 	}
 	insertDevice(deviceId: string, device: TSR.DeviceOptionsAny): string {
 		check(deviceId, String)
@@ -294,7 +299,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			throw new Meteor.Error(404, `No parent device for new device id "${deviceId}"`)
 		}
 
-		const settings = parentDevice.settings as PlayoutDeviceSettings | undefined
+		const settings = parentDevice.settings
 		if (settings && settings.devices && settings.devices[deviceId]) {
 			throw new Meteor.Error(404, `Device "${deviceId}" cannot be inserted as it already exists`)
 		}
@@ -326,15 +331,12 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 				created: 1,
 			},
 		})
-		if (!parentDevice || !parentDevice.settings) {
+		if (!parentDevice || !parentDevice.settings || !parentDevice.settings.devices) {
 			throw new Meteor.Error(404, `Device "${deviceId}" cannot be updated as it does not exist`)
 		}
 
 		const m: any = {}
-		m[`settings.devices.${deviceId}`] = _.extend(
-			(parentDevice.settings as PlayoutDeviceSettings).devices[deviceId],
-			device
-		)
+		m[`settings.devices.${deviceId}`] = _.extend(parentDevice.settings.devices[deviceId], device)
 		PeripheralDevices.update(selector, {
 			$set: m,
 		})
@@ -416,6 +418,7 @@ export class MigrationContextShowStyle
 				showStyleBaseId: this.showStyleBase._id,
 				blueprintConfigWithOverrides: wrapDefaultObject({}),
 				_rundownVersionHash: '',
+				_rank: 0,
 			})
 		)
 	}

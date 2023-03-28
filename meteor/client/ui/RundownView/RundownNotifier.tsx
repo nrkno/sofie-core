@@ -9,7 +9,7 @@ import {
 	Notification,
 	NoticeLevel,
 	getNoticeLevelForPieceStatus,
-} from '../../lib/notifications/notifications'
+} from '../../../lib/notifications/notifications'
 import { RundownPlaylistValidateBlueprintConfigResult } from '../../../lib/api/rundown'
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
@@ -19,18 +19,18 @@ import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { doUserAction, UserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 // import { withTranslation, getI18n, getDefaults } from 'react-i18next'
 import { i18nTranslator as t } from '../i18n'
 import { PieceStatusCode } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownReloadResponse } from '../RundownView'
-import { RundownPlaylists, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { UISegmentPartNote } from '../../../lib/api/rundownNotifications'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { NoteSeverity, StatusCode } from '@sofie-automation/blueprints-integration'
 import { getAllowStudio, getIgnorePieceContentStatus } from '../../lib/localStorage'
+import { RundownPlaylists } from '../../collections'
 import { UIStudio } from '../../../lib/api/studios'
 import {
 	PartId,
@@ -42,6 +42,7 @@ import {
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { UIPieceContentStatuses, UISegmentPartNotes } from '../Collections'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -827,16 +828,16 @@ export const RundownNotifier = class RundownNotifier extends React.Component<IPr
 		return true
 	}
 
-	componentDidUpdate() {
+	componentDidUpdate(): void {
 		this.notifier.stop()
 		this.notifier = new RundownViewNotifier(this.props.playlistId, this.props.studio)
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		this.notifier.stop()
 	}
 
-	render() {
+	render(): React.ReactNode {
 		// this.props.connected
 		return null
 	}

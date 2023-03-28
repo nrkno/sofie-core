@@ -1,11 +1,9 @@
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
-import { Studios } from '../../lib/collections/Studios'
 import { getRandomId, protectString } from '../../lib/lib'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
 
 /**
  * This file contains system specific migration steps.
@@ -82,6 +80,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					showStyleBaseId: id,
 					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
+					_rank: 0,
 				})
 
 				if (!studio.supportedShowStyleBase || studio.supportedShowStyleBase.length === 0) {
@@ -114,6 +113,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					showStyleBaseId: id,
 					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
+					_rank: 0,
 				})
 			}
 		},

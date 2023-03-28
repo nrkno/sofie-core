@@ -1,11 +1,8 @@
-import { DeviceConfigManifest, ConfigManifestEntryType } from '@sofie-automation/server-core-integration'
+import { DeviceConfigManifest, JSONBlobStringify, JSONSchema } from '@sofie-automation/server-core-integration'
+
+import ConfigSchema = require('./$schemas/options.json')
 
 export const LIVE_STATUS_DEVICE_CONFIG: DeviceConfigManifest = {
-	deviceConfig: [
-		{
-			id: 'debugLogging',
-			name: 'Activate Debug Logging',
-			type: ConfigManifestEntryType.BOOLEAN,
-		},
-	],
+	deviceConfigSchema: JSONBlobStringify<JSONSchema>(ConfigSchema as any),
+	subdeviceManifest: {},
 }

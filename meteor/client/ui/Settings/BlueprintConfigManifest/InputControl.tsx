@@ -24,13 +24,14 @@ import {
 
 export function getInputControl(
 	manifest: BasicConfigManifestEntry | ResolvedBasicConfigManifestEntry,
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 	value: any,
 	handleUpdate: (value: any) => void,
 	layerMappings: { [studioId: string]: MappingsExt } | undefined,
 	sourceLayers: Array<SourceLayerDropdownOption> | undefined,
 	fullConfig: IBlueprintConfig | undefined,
 	alternateConfig: IBlueprintConfig | undefined
-) {
+): JSX.Element | undefined {
 	const commonProps = {
 		modifiedClassName: 'bghl',
 		value: value,

@@ -1,13 +1,12 @@
 import * as _ from 'underscore'
 import {
-	PeripheralDevices,
 	PeripheralDevice,
 	PeripheralDeviceType,
 	PeripheralDeviceCategory,
 	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDeviceSubType,
 } from '../../lib/collections/PeripheralDevices'
-import { Studio, Studios, DBStudio } from '../../lib/collections/Studios'
+import { Studio, DBStudio } from '../../lib/collections/Studios'
 import {
 	PieceLifespan,
 	IOutputLayer,
@@ -34,10 +33,10 @@ import {
 	IBlueprintPieceType,
 	IBlueprintActionManifest,
 } from '@sofie-automation/blueprints-integration'
-import { ShowStyleBase, ShowStyleBases, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant, DBShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
+import { ShowStyleBase, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant, DBShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { Blueprint } from '../../lib/collections/Blueprints'
-import { ICoreSystem, CoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
+import { ICoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
 import {
 	literal,
@@ -49,13 +48,13 @@ import {
 	Complete,
 	normalizeArray,
 } from '../../lib/lib'
-import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
-import { DBSegment, Segments } from '../../lib/collections/Segments'
-import { DBPart, Parts } from '../../lib/collections/Parts'
-import { EmptyPieceTimelineObjectsBlob, Piece, Pieces, PieceStatusCode } from '../../lib/collections/Pieces'
-import { DBRundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
-import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
-import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
+import { DBRundown } from '../../lib/collections/Rundowns'
+import { DBSegment } from '../../lib/collections/Segments'
+import { DBPart } from '../../lib/collections/Parts'
+import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '../../lib/collections/Pieces'
+import { DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { RundownBaselineAdLibItem } from '../../lib/collections/RundownBaselineAdLibPieces'
+import { AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { restartRandomId } from '../random'
 import { MongoMock } from '../mongo'
 import {
@@ -68,9 +67,8 @@ import {
 	defaultStudio,
 } from '../defaultCollectionObjects'
 import { PackageInfo } from '../../server/coreSystem'
-import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
-import { Workers, WorkerStatus } from '../../lib/collections/Workers'
-import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
+import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
+import { WorkerStatus } from '../../lib/collections/Workers'
 import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
 import {
 	applyAndValidateOverrides,
@@ -85,7 +83,25 @@ import {
 	ShowStyleBaseId,
 	ShowStyleVariantId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	AdLibPieces,
+	CoreSystem,
+	Parts,
+	PeripheralDevices,
+	Pieces,
+	RundownBaselineAdLibPieces,
+	RundownPlaylists,
+	Rundowns,
+	Segments,
+	ShowStyleBases,
+	ShowStyleVariants,
+	Studios,
+	TriggeredActions,
+	Workers,
+	WorkerThreadStatuses,
+} from '../../server/collections'
 import { TSR_VERSION } from '@sofie-automation/shared-lib/dist/tsr'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -112,7 +128,7 @@ export function setupMockPeripheralDevice(
 	subType: PeripheralDeviceSubType,
 	studio?: Pick<Studio, '_id'>,
 	doc?: Partial<PeripheralDevice>
-) {
+): PeripheralDevice {
 	doc = doc || {}
 
 	const defaultDevice: PeripheralDevice = {
@@ -136,7 +152,8 @@ export function setupMockPeripheralDevice(
 		connectionId: 'myConnectionId',
 		token: 'mockToken',
 		configManifest: {
-			deviceConfig: [],
+			deviceConfigSchema: JSONBlobStringify({}),
+			subdeviceManifest: {},
 		},
 		versions: {
 			'@sofie-automation/server-core-integration': stripVersion(PackageInfo.version),
@@ -297,6 +314,7 @@ export function setupMockShowStyleVariant(
 		showStyleBaseId: showStyleBaseId,
 		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		_rundownVersionHash: '',
+		_rank: 0,
 	}
 	const showStyleVariant = _.extend(defaultShowStyleVariant, doc)
 	ShowStyleVariants.insert(showStyleVariant)
@@ -545,7 +563,7 @@ export async function setupDefaultStudioEnvironment(
 		studio,
 		{ organizationId: organizationId }
 	)
-	const { worker, workerThreadStatuses } = setupMockWorker()
+	const { worker, workerThreadStatuses } = await setupMockWorker()
 
 	return {
 		showStyleBaseId,
@@ -579,7 +597,7 @@ export function setupDefaultRundownPlaylist(
 		playlistId,
 	}
 }
-export function setupEmptyEnvironment() {
+export function setupEmptyEnvironment(): { core: ICoreSystem } {
 	const core = setupMockCore({})
 
 	return {
@@ -990,10 +1008,10 @@ export function setupRundownWithAutoplayPart0(
 	return rundownId
 }
 
-export function setupMockWorker(doc?: Partial<WorkerStatus>): {
+export async function setupMockWorker(doc?: Partial<WorkerStatus>): Promise<{
 	worker: WorkerStatus
 	workerThreadStatuses: WorkerThreadStatus[]
-} {
+}> {
 	doc = doc || {}
 
 	const worker: WorkerStatus = {
@@ -1008,7 +1026,7 @@ export function setupMockWorker(doc?: Partial<WorkerStatus>): {
 
 		...doc,
 	}
-	Workers.insert(worker)
+	await Workers.insertAsync(worker)
 
 	const workerThreadStatus0: WorkerThreadStatus = {
 		_id: getRandomId(),
@@ -1018,7 +1036,7 @@ export function setupMockWorker(doc?: Partial<WorkerStatus>): {
 		statusCode: StatusCode.GOOD,
 		reason: 'OK',
 	}
-	WorkerThreadStatuses.insert(workerThreadStatus0)
+	await WorkerThreadStatuses.insertAsync(workerThreadStatus0)
 	const workerThreadStatus1: WorkerThreadStatus = {
 		_id: getRandomId(),
 		workerId: worker._id,
@@ -1027,7 +1045,7 @@ export function setupMockWorker(doc?: Partial<WorkerStatus>): {
 		statusCode: StatusCode.GOOD,
 		reason: 'OK',
 	}
-	WorkerThreadStatuses.insert(workerThreadStatus1)
+	await WorkerThreadStatuses.insertAsync(workerThreadStatus1)
 
 	return { worker, workerThreadStatuses: [workerThreadStatus0, workerThreadStatus1] }
 }

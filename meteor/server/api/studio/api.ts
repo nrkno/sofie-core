@@ -2,21 +2,24 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import { registerClassToMeteorMethods } from '../../methods'
 import { NewStudiosAPI, StudiosAPIMethods } from '../../../lib/api/studios'
-import { Studios, DBStudio } from '../../../lib/collections/Studios'
+import { DBStudio } from '../../../lib/collections/Studios'
 import { literal, getRandomId, lazyIgnore } from '../../../lib/lib'
-import { Rundowns } from '../../../lib/collections/Rundowns'
-import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import {
+	ExpectedPackages,
+	ExpectedPackageWorkStatuses,
+	ExternalMessageQueue,
+	MediaObjects,
+	PackageContainerPackageStatuses,
+	PackageInfos,
+	PeripheralDevices,
+	RundownPlaylists,
+	Rundowns,
+	Studios,
+	Timeline,
+} from '../../collections'
 import { MethodContextAPI, MethodContext } from '../../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../../security/organization'
-import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { Timeline } from '../../../lib/collections/Timeline'
-import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQueue'
-import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { Credentials } from '../../security/lib/credentials'
-import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
-import { ExpectedPackageWorkStatuses } from '../../../lib/collections/ExpectedPackageWorkStatuses'
-import { PackageInfos } from '../../../lib/collections/PackageInfos'
-import { PackageContainerPackageStatuses } from '../../../lib/collections/PackageContainerPackageStatus'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { OrganizationId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 

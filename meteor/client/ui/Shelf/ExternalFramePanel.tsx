@@ -10,9 +10,9 @@ import {
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
 import { assertNever, getRandomString, literal, protectString } from '../../../lib/lib'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
-import { PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
-import { parseMosPluginMessageXml, MosPluginMessage, fixMosData } from '../../lib/parsers/mos/mosXml2Js'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { PartInstance } from '../../../lib/collections/PartInstances'
+import { parseMosPluginMessageXml, MosPluginMessage } from '../../lib/parsers/mos/mosXml2Js'
 import {
 	createMosAppInfoXmlString,
 	UIMetric as MOSUIMetric,
@@ -20,15 +20,18 @@ import {
 	Events as MOSEvents,
 } from '../../lib/data/mos/plugin-support'
 import { MOS } from '@sofie-automation/corelib'
-import { doUserAction, UserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Buckets } from '../../../lib/collections/Buckets'
 import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
-import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { check } from '../../../lib/check'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Buckets, PartInstances, Rundowns } from '../../collections'
 import { BucketId, PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MOS_DATA_IS_STRICT } from '../../../lib/mos'
+import { getMosTypes, stringifyMosObject } from '@mos-connection/helper'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 const PackageInfo = require('../../../package.json')
 
@@ -219,6 +222,8 @@ export const ExternalFramePanel = withTranslation()(
 			}
 			const showStyleBaseId = targetRundown.showStyleBaseId
 
+			const mosTypes = getMosTypes(MOS_DATA_IS_STRICT)
+
 			doUserAction(t, e, UserAction.INGEST_BUCKET_ADLIB, (e, ts) =>
 				MeteorCall.userAction.bucketAdlibImport(
 					e,
@@ -226,10 +231,10 @@ export const ExternalFramePanel = withTranslation()(
 					targetBucket ? targetBucket._id : protectString(''),
 					showStyleBaseId,
 					literal<IngestAdlib>({
-						externalId: mosItem.ObjectID ? mosItem.ObjectID.toString() : '',
-						name: mosItem.ObjectSlug ? mosItem.ObjectSlug.toString() : '',
+						externalId: mosItem.ObjectID ? mosTypes.mosString128.stringify(mosItem.ObjectID) : '',
+						name: mosItem.ObjectSlug ? mosTypes.mosString128.stringify(mosItem.ObjectSlug) : '',
 						payloadType: 'MOS',
-						payload: fixMosData(mosItem),
+						payload: stringifyMosObject(mosItem, MOS_DATA_IS_STRICT),
 					})
 				)
 			)
@@ -515,18 +520,18 @@ export const ExternalFramePanel = withTranslation()(
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			window.addEventListener('message', this.onReceiveMessage)
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			// reject all outstanding promises for replies
 			_.each(this.awaitingReply, (promise) => promise.reject(new Error('ExternalFramePanel unmounting')))
 			this.unregisterHandlers()
 			window.removeEventListener('message', this.onReceiveMessage)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 			const scale = isDashboardLayout ? (this.props.panel as DashboardLayoutExternalFrame).scale || 1 : 1
 			const frameStyle = {

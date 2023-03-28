@@ -7,7 +7,7 @@ import { PartUi, SegmentUi } from '../SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { SegmentTimelinePartHoverPreview } from './SegmentTimelinePartHoverPreview'
 import { TFunction } from 'i18next'
-import RundownViewEventBus, { RundownViewEvents } from '../../RundownView/RundownViewEventBus'
+import RundownViewEventBus, { RundownViewEvents } from '../../../../lib/api/triggers/RundownViewEventBus'
 import { UIStudio } from '../../../../lib/api/studios'
 
 export const SegmentTimelineSmallPartFlag = ({
@@ -47,7 +47,7 @@ export const SegmentTimelineSmallPartFlag = ({
 	isLastInSegment: boolean
 	timelineWidth: number
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
-}) => {
+}): JSX.Element => {
 	const flagRef = useRef<HTMLDivElement>(null)
 
 	const [isHover, setHover] = useState(false)

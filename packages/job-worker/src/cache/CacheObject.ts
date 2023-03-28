@@ -13,7 +13,13 @@ import { JobContext } from '../jobs'
  * This should be used when the cache can only have one of something, and that must exist
  */
 export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOptional extends boolean = false> {
+	/**
+	 * The stored document
+	 */
 	protected _document: TDoc
+	/**
+	 * The stored document at the time this wrapper was created.
+	 */
 	protected _rawDocument: TDoc
 
 	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
@@ -29,10 +35,22 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 		this._document = doc ? clone(doc as any) : doc
 		this._rawDocument = clone(doc as any)
 	}
+
+	/**
+	 * Name of the mongo collection
+	 */
 	get name(): string | null {
 		return this._collection.name
 	}
 
+	/**
+	 * Create a DbCacheReadObject for an existing document
+	 * @param context Context of the job
+	 * @param collection Mongo collection the document belongs to
+	 * @param optional Whether the document is allowed to be missing
+	 * @param doc The document (this can be undefined if optional was set to true)
+	 * @returns DbCacheReadObject wrapping the provided document
+	 */
 	public static createFromDoc<TDoc extends { _id: ProtectedString<any> }, DocOptional extends boolean = false>(
 		context: JobContext,
 		collection: ICollection<TDoc>,
@@ -42,6 +60,15 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 		return new DbCacheReadObject<TDoc, DocOptional>(context, collection, optional, doc)
 	}
 
+	/**
+	 * Load an object from Mongodb and create a DbCacheReadObject for the document
+	 * Note: Once loaded you must make sure that the context allows access to the loaded document
+	 * @param context Context of the job
+	 * @param collection Mongo collection the document belongs to
+	 * @param optional Whether the document is allowed to be missing
+	 * @param id Id of the document to load
+	 * @returns DbCacheReadObject wrapping the loaded document
+	 */
 	public static async createFromDatabase<
 		TDoc extends { _id: ProtectedString<any> },
 		DocOptional extends boolean = false
@@ -75,7 +102,10 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 		return this._document as any
 	}
 
-	/** Called by the Cache when the Cache is marked as to be removed. The collection is emptied and marked to reject any further updates */
+	/**
+	 * Called to mark this document as pending deletion from mongo. This will cause it to reject any future updates
+	 * Note: The actual deletion must be handled elsewhere
+	 */
 	markForRemoval(): void {
 		this.isToBeRemoved = true
 	}
@@ -91,7 +121,7 @@ export class DbCacheWriteObject<
 > extends DbCacheReadObject<TDoc, DocOptional> {
 	private _updated = false
 
-	constructor(
+	protected constructor(
 		context: JobContext,
 		collection: ICollection<TDoc>,
 		optional: DocOptional,
@@ -100,6 +130,14 @@ export class DbCacheWriteObject<
 		super(context, collection, optional, doc)
 	}
 
+	/**
+	 * Create a DbCacheWriteObject for an existing document
+	 * @param context Context of the job
+	 * @param collection Mongo collection the document belongs to
+	 * @param optional Whether the document is allowed to be missing
+	 * @param doc The document (this can be undefined if optional was set to true)
+	 * @returns DbCacheWriteObject wrapping the provided document
+	 */
 	public static createFromDoc<TDoc extends { _id: ProtectedString<any> }, DocOptional extends boolean = false>(
 		context: JobContext,
 		collection: ICollection<TDoc>,
@@ -109,6 +147,15 @@ export class DbCacheWriteObject<
 		return new DbCacheWriteObject<TDoc, DocOptional>(context, collection, optional, doc)
 	}
 
+	/**
+	 * Load an object from Mongodb and create a DbCacheWriteObject for the document
+	 * Note: Once loaded you must make sure that the context allows access to the loaded document
+	 * @param context Context of the job
+	 * @param collection Mongo collection the document belongs to
+	 * @param optional Whether the document is allowed to be missing
+	 * @param id Id of the document to load
+	 * @returns DbCacheWriteObject wrapping the loaded document
+	 */
 	public static async createFromDatabase<
 		TDoc extends { _id: ProtectedString<any> },
 		DocOptional extends boolean = false
@@ -138,6 +185,9 @@ export class DbCacheWriteObject<
 		return res
 	}
 
+	/**
+	 * Internal check to check that `markForRemoval` has not been called
+	 */
 	protected assertNotToBeRemoved(methodName: string): void {
 		if (this.isToBeRemoved) {
 			const msg = `DbCacheWriteObject: got call to "${methodName} when cache has been flagged for removal"`
@@ -149,29 +199,43 @@ export class DbCacheWriteObject<
 		}
 	}
 
-	update(modifier: (doc: TDoc) => TDoc): boolean {
+	/**
+	 * Update the document in this wrapper
+	 * @param modifier Modifier function. Provided with a clone of the object, returns the new document or false if there are no changes
+	 * @param forceUpdate If true, the diff will be skipped and the document will be marked as having changed if the modifer returned a doc
+	 * @returns Whether any changes were found in the modified document
+	 */
+	update(modifier: (doc: TDoc) => TDoc | false, forceUpdate?: boolean): boolean {
 		this.assertNotToBeRemoved('update')
 
 		const localDoc: ReadonlyDeep<TDoc> | undefined = this.doc
 		if (!localDoc) throw new Error(`Error: The document does not yet exist`)
 
-		const newDoc: TDoc = modifier(clone(localDoc))
-		if (unprotectString(newDoc._id) !== unprotectString(localDoc._id)) {
-			throw new Error(`Error: The (immutable) field '_id' was found to have been altered to _id: "${newDoc._id}"`)
-		}
+		const newDoc = modifier(clone(localDoc))
+		if (newDoc) {
+			if (unprotectString(newDoc._id) !== unprotectString(localDoc._id)) {
+				throw new Error(
+					`Error: The (immutable) field '_id' was found to have been altered to _id: "${newDoc._id}"`
+				)
+			}
 
-		// ensure no properties are 'undefined'
-		deleteAllUndefinedProperties(newDoc)
+			// ensure no properties are 'undefined'
+			deleteAllUndefinedProperties(newDoc)
 
-		if (!_.isEqual(this.doc, newDoc)) {
-			this._document = newDoc
-			this._updated = true
-			return true
+			if (forceUpdate || this.isModified() || !_.isEqual(this.doc, newDoc)) {
+				this._document = newDoc
+				this._updated = true
+				return true
+			}
 		}
 
 		return false
 	}
 
+	/**
+	 * Write the document to mongo if it has any changes
+	 * @returns Changes object describing the saved changes
+	 */
 	async updateDatabaseWithData(): Promise<Changes> {
 		if (this._updated && !this.isToBeRemoved) {
 			const span = this.context.startSpan(`DbCacheWriteObject.updateDatabaseWithData.${this.name}`)
@@ -199,6 +263,10 @@ export class DbCacheWriteObject<
 		}
 	}
 
+	/**
+	 * Discard any changes that have been made locally to the document.
+	 * Restores the document as provided when this wrapper was created
+	 */
 	discardChanges(): void {
 		if (this.isModified()) {
 			this._updated = false
@@ -221,10 +289,17 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 > {
 	private _inserted = false
 
-	constructor(context: JobContext, collection: ICollection<TDoc>, doc: ReadonlyDeep<TDoc> | undefined) {
+	protected constructor(context: JobContext, collection: ICollection<TDoc>, doc: ReadonlyDeep<TDoc> | undefined) {
 		super(context, collection, true, doc)
 	}
 
+	/**
+	 * Create a DbCacheWriteOptionalObject for an existing document
+	 * @param context Context of the job
+	 * @param collection Mongo collection the document belongs to
+	 * @param doc The document or undefined
+	 * @returns DbCacheWriteOptionalObject wrapping the provided document
+	 */
 	public static createOptionalFromDoc<TDoc extends { _id: ProtectedString<any> }>(
 		context: JobContext,
 		collection: ICollection<TDoc>,
@@ -233,6 +308,14 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 		return new DbCacheWriteOptionalObject<TDoc>(context, collection, doc)
 	}
 
+	/**
+	 * Load an object from Mongodb and create a DbCacheWriteOptionalObject for the document
+	 * Note: Once loaded you must make sure that the context allows access to the loaded document
+	 * @param context Context of the job
+	 * @param collection Mongo collection the document belongs to
+	 * @param id Id of the document to load
+	 * @returns DbCacheWriteOptionalObject wrapping the loaded document
+	 */
 	public static async createOptionalFromDatabase<TDoc extends { _id: ProtectedString<any> }>(
 		context: JobContext,
 		collection: ICollection<TDoc>,
@@ -257,6 +340,11 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 		return res
 	}
 
+	/**
+	 * Replace the stored document with a new document
+	 * @param doc New document to store
+	 * @returns Reference to the stored document
+	 */
 	replace(doc: TDoc): ReadonlyDeep<TDoc> {
 		this.assertNotToBeRemoved('replace')
 
@@ -274,6 +362,10 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 		return this._document as any
 	}
 
+	/**
+	 * Write the document to mongo if it has any changes
+	 * @returns Changes object describing the saved changes
+	 */
 	async updateDatabaseWithData(): Promise<Changes> {
 		if (this._inserted && !this.isToBeRemoved) {
 			const span = this.context.startSpan(`DbCacheWriteOptionalObject.updateDatabaseWithData.${this.name}`)
@@ -290,5 +382,9 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 		} else {
 			return super.updateDatabaseWithData()
 		}
+	}
+
+	isModified(): boolean {
+		return this._inserted || super.isModified()
 	}
 }

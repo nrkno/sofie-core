@@ -24,7 +24,7 @@ export function PieceIndicatorMenu({
 	setIsOver: (isOver: boolean) => void
 	onPieceClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-}) {
+}): JSX.Element | null {
 	const [indicatorMenuEl, setIndicatorMenuEl] = useState<HTMLDivElement | null>(null)
 	const { styles, attributes, update } = usePopper(parentEl, indicatorMenuEl, {
 		placement: 'bottom',

@@ -25,12 +25,12 @@ class ShelfInspector extends React.Component<IShelfInspectorProps> {
 		super(props)
 	}
 
-	shouldComponentUpdate(nextProps: IShelfInspectorProps) {
+	shouldComponentUpdate(nextProps: IShelfInspectorProps): boolean {
 		if (_.isEqual(nextProps, this.props)) return false
 		return true
 	}
 
-	render() {
+	render(): JSX.Element {
 		const { selected, showStyleBase, studio, rundownPlaylist, onSelectPiece } = this.props
 		const content = selected && renderItem(selected, showStyleBase, studio, rundownPlaylist, onSelectPiece)
 

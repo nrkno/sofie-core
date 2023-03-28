@@ -20,11 +20,7 @@ interface ITextLabelPanelProps {
 interface IState {}
 
 export class TextLabelPanel extends MeteorReactComponent<ITextLabelPanelProps, IState> {
-	constructor(props) {
-		super(props)
-	}
-
-	render() {
+	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const { panel } = this.props
 

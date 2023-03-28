@@ -54,17 +54,17 @@ export class ColorPicker extends React.Component<IProps, IState> {
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		this.refreshChecked()
 	}
 
-	componentDidUpdate(prevProps: IProps) {
+	componentDidUpdate(prevProps: IProps): void {
 		if (this.props.value !== prevProps.value) {
 			this.refreshChecked()
 		}
 	}
 
-	refreshChecked() {
+	private refreshChecked() {
 		if (this.props.value) {
 			this.setState({
 				selectedValue: this.props.value,
@@ -76,7 +76,7 @@ export class ColorPicker extends React.Component<IProps, IState> {
 		}
 	}
 
-	handleChange = (value) => {
+	private handleChange = (value) => {
 		this.setState({
 			selectedValue: value,
 		})
@@ -87,13 +87,13 @@ export class ColorPicker extends React.Component<IProps, IState> {
 		this.toggleExpco()
 	}
 
-	toggleExpco = () => {
+	private toggleExpco = () => {
 		this.setState({
 			expanded: !this.state.expanded,
 		})
 	}
 
-	render() {
+	render(): JSX.Element {
 		return (
 			<div
 				className={ClassNames(

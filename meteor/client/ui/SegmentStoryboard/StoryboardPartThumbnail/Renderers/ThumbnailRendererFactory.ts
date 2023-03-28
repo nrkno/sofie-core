@@ -26,7 +26,7 @@ export interface IProps {
 	isFinished: boolean
 }
 
-export default function renderThumbnail(props: IProps) {
+export default function renderThumbnail(props: IProps): JSX.Element {
 	const type = props.layer?.type
 	switch (type) {
 		case SourceLayerType.VT:

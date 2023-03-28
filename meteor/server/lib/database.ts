@@ -1,10 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import _ from 'underscore'
-import { AsyncMongoCollection } from '../../lib/collections/lib'
 import { DBObj, normalizeArrayToMap, ProtectedString, deleteAllUndefinedProperties } from '../../lib/lib'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { profiler } from '../api/profiler'
+import { AsyncMongoCollection } from '../collections/collection'
 
 export interface Changes {
 	added: number

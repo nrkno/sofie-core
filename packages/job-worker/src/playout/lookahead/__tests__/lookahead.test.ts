@@ -46,6 +46,7 @@ describe('Lookahead', () => {
 					lookahead: v as LookaheadMode,
 					// lookaheadDepth: 0,
 					// lookaheadMaxSearchDistance: 0,
+					options: {},
 				}
 			}
 		}

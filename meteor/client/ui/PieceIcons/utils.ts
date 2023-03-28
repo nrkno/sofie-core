@@ -1,9 +1,10 @@
 import { SourceLayerType, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { SourceLayers } from '../../../lib/collections/ShowStyleBases'
-import { PieceInstances, PieceInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { IPropsHeader } from './PieceIcon'
 import { PieceExtended } from '../../../lib/Rundown'
 import { UIShowStyleBases } from '../Collections'
+import { PieceInstances } from '../../collections'
 
 export interface IFoundPieceInstance {
 	sourceLayer: ISourceLayer | undefined

@@ -2,7 +2,6 @@ import _ from 'underscore'
 import { addMigrationSteps } from './databaseMigration'
 import { ensureCollectionProperty } from './lib'
 import { CustomizableRegions } from '../../lib/collections/RundownLayouts'
-import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { generateTranslation as t, getHash, objectPathGet, protectString } from '../../lib/lib'
 import {
 	ClientActions,
@@ -12,11 +11,11 @@ import {
 	TriggerType,
 } from '@sofie-automation/blueprints-integration'
 import { logger } from '../logging'
-import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
-import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import { Blueprints } from '../../lib/collections/Blueprints'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { Blueprints, RundownPlaylists, Rundowns, TriggeredActions } from '../collections'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 // Release 37 (2021-12-09)
 

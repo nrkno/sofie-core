@@ -1,9 +1,7 @@
-import { ConfigManifestEntryType } from '@sofie-automation/corelib/dist/deviceConfig'
 import { MeteorCall } from '../../../../lib/api/methods'
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
-	PeripheralDevices,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '../../../../lib/collections/PeripheralDevices'
@@ -15,6 +13,8 @@ import {
 } from '../../../../__mocks__/helpers/database'
 import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { PeripheralDevices } from '../../../collections'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 require('../../userActions') // include in order to create the Meteor methods needed
 
@@ -42,25 +42,28 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 					},
 				},
 				configManifest: {
-					deviceConfig: [
-						{
-							id: 'devices',
-							type: ConfigManifestEntryType.TABLE,
-							isSubDevices: true,
-							defaultType: 'dummy',
-							typeField: 'type',
-							name: 'Devices',
-							config: {
-								dummy: [
-									{
-										id: 'disable',
-										type: ConfigManifestEntryType.BOOLEAN,
-										name: 'Disable',
-									},
-								],
+					deviceConfigSchema: JSONBlobStringify({}), // unused
+					subdeviceManifest: {
+						dummy: {
+							displayName: 'Test device',
+							configSchema: JSONBlobStringify({}), // unused
+						},
+					},
+					subdeviceConfigSchema: JSONBlobStringify({
+						// Based on 'common-options' from TSR
+						$schema: 'https://json-schema.org/draft/2020-12/schema',
+						title: 'Device Common Options',
+						type: 'object',
+						properties: {
+							disable: {
+								type: 'boolean',
+								'ui:title': 'Disable',
+								default: false,
 							},
 						},
-					],
+						required: [],
+						// additionalProperties: false,
+					}),
 				},
 			}
 		)
@@ -76,7 +79,9 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 		const peripheralDevice = PeripheralDevices.findOne(pDevice._id)
 		expect(peripheralDevice).toBeDefined()
 		expect(peripheralDevice?.settings).toBeDefined()
-		expect(peripheralDevice?.settings && peripheralDevice?.settings['devices'][mockSubDeviceId].disable).toBe(true)
+		expect(
+			peripheralDevice?.settings && (peripheralDevice?.settings['devices']![mockSubDeviceId] as any).disable
+		).toBe(true)
 	})
 	testInFiber('enable existing subDevice', async () => {
 		{
@@ -95,9 +100,9 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 			const peripheralDevice = PeripheralDevices.findOne(pDevice._id)
 			expect(peripheralDevice).toBeDefined()
 			expect(peripheralDevice?.settings).toBeDefined()
-			expect(peripheralDevice?.settings && peripheralDevice?.settings['devices'][mockSubDeviceId].disable).toBe(
-				true
-			)
+			expect(
+				peripheralDevice?.settings && (peripheralDevice?.settings['devices']![mockSubDeviceId] as any).disable
+			).toBe(true)
 		}
 
 		{
@@ -116,9 +121,9 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 			const peripheralDevice = PeripheralDevices.findOne(pDevice._id)
 			expect(peripheralDevice).toBeDefined()
 			expect(peripheralDevice?.settings).toBeDefined()
-			expect(peripheralDevice?.settings && peripheralDevice?.settings['devices'][mockSubDeviceId].disable).toBe(
-				false
-			)
+			expect(
+				peripheralDevice?.settings && (peripheralDevice?.settings['devices']![mockSubDeviceId] as any).disable
+			).toBe(false)
 		}
 	})
 	testInFiber('edit missing subDevice throws an error', async () => {
@@ -160,25 +165,28 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 					},
 				},
 				configManifest: {
-					deviceConfig: [
-						{
-							id: 'devices',
-							type: ConfigManifestEntryType.TABLE,
-							isSubDevices: true,
-							defaultType: 'dummy',
-							typeField: 'type',
-							name: 'Devices',
-							config: {
-								dummy: [
-									{
-										id: 'disable',
-										type: ConfigManifestEntryType.STRING,
-										name: 'A property mislabeled as Disable',
-									},
-								],
+					deviceConfigSchema: JSONBlobStringify({}), // unused
+					subdeviceManifest: {
+						dummy: {
+							displayName: 'Test device',
+							configSchema: JSONBlobStringify({}), // unused
+						},
+					},
+					subdeviceConfigSchema: JSONBlobStringify({
+						// Based on 'common-options' from TSR
+						$schema: 'https://json-schema.org/draft/2020-12/schema',
+						title: 'Device Common Options',
+						type: 'object',
+						properties: {
+							disable: {
+								type: 'string',
+								'ui:title': 'Mislabeled property',
+								default: false,
 							},
 						},
-					],
+						required: [],
+						// additionalProperties: false,
+					}),
 				},
 			}
 		)

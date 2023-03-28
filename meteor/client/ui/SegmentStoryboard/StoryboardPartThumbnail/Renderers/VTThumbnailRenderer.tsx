@@ -2,7 +2,7 @@ import React from 'react'
 import classNames from 'classnames'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { VTFloatingInspector } from '../../../FloatingInspectors/VTFloatingInspector'
-import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
+import { getNoticeLevelForPieceStatus } from '../../../../../lib/notifications/notifications'
 import { RundownUtils } from '../../../../lib/rundown'
 import { IProps } from './ThumbnailRendererFactory'
 import { getPreviewUrlForPieceUi, getThumbnailUrlForPieceUi } from '../../../../lib/ui/clipPreview'
@@ -24,7 +24,7 @@ export function VTThumbnailRenderer({
 	originPosition,
 	studio,
 	layer,
-}: IProps) {
+}: IProps): JSX.Element {
 	const mediaPreviewUrl = studio.settings.mediaPreviewsUrl
 
 	const status = pieceInstance.instance.piece.status

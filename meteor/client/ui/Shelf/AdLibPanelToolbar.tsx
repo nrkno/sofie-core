@@ -10,7 +10,7 @@ interface IToolbarPropsHeader {
 	searchFilter: string | undefined
 }
 
-export function AdLibPanelToolbar(props: IToolbarPropsHeader) {
+export function AdLibPanelToolbar(props: IToolbarPropsHeader): JSX.Element {
 	const { t } = useTranslation()
 
 	function searchInputChanged(e?: React.ChangeEvent<HTMLInputElement>) {
@@ -20,7 +20,8 @@ export function AdLibPanelToolbar(props: IToolbarPropsHeader) {
 
 	function searchInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
 		if (e.key === 'Escape' || e.key === 'Enter') {
-			document.querySelector('button')?.focus()
+			if (!(document.activeElement instanceof HTMLElement)) return
+			document.activeElement.blur()
 		} else if (e.key.match(/^F\d+$/)) {
 			e.preventDefault()
 		}

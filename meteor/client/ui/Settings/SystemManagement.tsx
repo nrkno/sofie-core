@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { ICoreSystem, CoreSystem } from '../../../lib/collections/CoreSystem'
+import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
 import { EditAttribute } from '../../lib/EditAttribute'
@@ -12,6 +12,7 @@ import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredA
 import { TFunction } from 'i18next'
 import { Meteor } from 'meteor/meteor'
 import { LogLevel } from '../../../lib/lib'
+import { CoreSystem } from '../../collections'
 
 interface IProps {}
 
@@ -25,7 +26,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 	}
 })(
 	class SystemManagement extends MeteorReactComponent<Translated<IProps & ITrackedProps>> {
-		componentDidMount() {
+		componentDidMount(): void {
 			meteorSubscribe(PubSub.coreSystem)
 		}
 		cleanUpOldDatabaseIndexes(): void {
@@ -62,7 +63,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 				})
 				.catch(console.error)
 		}
-		render() {
+		render(): JSX.Element | null {
 			const { t } = this.props
 
 			return this.props.coreSystem ? (

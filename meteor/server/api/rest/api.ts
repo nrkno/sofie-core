@@ -26,12 +26,11 @@ import {
 	studioFrom,
 	APIStudioFrom,
 } from '../../../lib/api/rest'
-import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall, MethodContextAPI } from '../../../lib/api/methods'
 import { ServerClientAPI } from '../client'
 import { ServerRundownAPI } from '../rundown'
 import { triggerWriteAccess } from '../../security/lib/securityVerify'
-import { ExecuteActionResult, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { CURRENT_SYSTEM_VERSION } from '../../migration/currentSystemVersion'
 import {
 	AdLibActionId,
@@ -48,25 +47,28 @@ import {
 	ShowStyleVariantId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { AdLibPieces } from '../../../lib/collections/AdLibPieces'
-import { AdLibActions } from '../../../lib/collections/AdLibActions'
-import { RundownBaselineAdLibPieces } from '../../../lib/collections/RundownBaselineAdLibPieces'
-import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { StudioContentWriteAccess } from '../../security/studio'
 import { ServerPlayoutAPI } from '../playout/playout'
 import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
 import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { Credentials } from '../../security/lib/credentials'
-import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { Blueprints } from '../../../lib/collections/Blueprints'
-import { Studios } from '../../../lib/collections/Studios'
-import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
-import { Rundowns } from '../../../lib/collections/Rundowns'
+import {
+	AdLibActions,
+	AdLibPieces,
+	Blueprints,
+	BucketAdLibs,
+	PeripheralDevices,
+	RundownBaselineAdLibActions,
+	RundownBaselineAdLibPieces,
+	RundownPlaylists,
+	Rundowns,
+	ShowStyleBases,
+	ShowStyleVariants,
+	Studios,
+} from '../../collections'
 
 function restAPIUserEvent(
 	ctx: Koa.ParameterizedContext<
@@ -107,7 +109,9 @@ class ServerRestAPI implements RestAPI {
 		_connection: Meteor.Connection,
 		_event: string
 	): Promise<ClientAPI.ClientResponse<string[]>> {
-		return ClientAPI.responseSuccess(RundownPlaylists.find().map((rundownPlaylist) => unprotectString(rundownPlaylist._id)))
+		return ClientAPI.responseSuccess(
+			RundownPlaylists.find().map((rundownPlaylist) => unprotectString(rundownPlaylist._id))
+		)
 	}
 
 	async activate(
@@ -973,7 +977,9 @@ function sofieAPIRequest<Params, Body, Response>(
 			ctx.status = response.success
 		} catch (e) {
 			const errCode = extractErrorCode(e)
-			const errMsg = extractErrorMessage(UserError.create(errMsgs.get(errCode) || UserErrorMessage.InternalError, undefined, errCode))
+			const errMsg = extractErrorMessage(
+				UserError.create(errMsgs.get(errCode) || UserErrorMessage.InternalError, undefined, errCode)
+			)
 
 			logger.error(`${method.toUpperCase()} failed for route ${route}: ${errCode} - ${errMsg}`)
 			ctx.type = 'application/json'
@@ -993,10 +999,15 @@ koaRouter.get('/', async (ctx, next) => {
 	await next()
 })
 
-sofieAPIRequest<never, never, string[]>('get', '/playlists', new Map(), async (serverAPI, connection, event, _params, _body) => {
-	logger.info(`koa GET: playlists`)
-	return await serverAPI.getAllRundownPlaylists(connection, event)
-})
+sofieAPIRequest<never, never, string[]>(
+	'get',
+	'/playlists',
+	new Map(),
+	async (serverAPI, connection, event, _params, _body) => {
+		logger.info(`koa GET: playlists`)
+		return await serverAPI.getAllRundownPlaylists(connection, event)
+	}
+)
 
 sofieAPIRequest<{ playlistId: string }, { rehearsal: boolean }, void>(
 	'put',
@@ -1018,9 +1029,7 @@ sofieAPIRequest<{ playlistId: string }, { rehearsal: boolean }, void>(
 sofieAPIRequest<{ playlistId: string }, never, void>(
 	'put',
 	'/playlists/:playlistId/deactivate',
-	new Map([
-		[404, UserErrorMessage.RundownPlaylistNotFound],
-	]),
+	new Map([[404, UserErrorMessage.RundownPlaylistNotFound]]),
 	async (serverAPI, connection, event, params, _) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		logger.info(`koa PUT: deactivate ${rundownPlaylistId}`)
@@ -1092,9 +1101,7 @@ sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
 sofieAPIRequest<{ playlistId: string }, never, object>(
 	'put',
 	'/playlists/:playlistId/reloadPlaylist',
-	new Map([
-		[404, UserErrorMessage.RundownPlaylistNotFound],
-	]),
+	new Map([[404, UserErrorMessage.RundownPlaylistNotFound]]),
 	async (serverAPI, connection, event, params, _) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		logger.info(`koa PUT: reloadPlaylist ${rundownPlaylistId}`)
@@ -1210,10 +1217,15 @@ sofieAPIRequest<{ playlistId: string; sourceLayerId: string }, never, void>(
 	}
 )
 
-sofieAPIRequest<never, never, string[]>('get', '/devices', new Map(), async (serverAPI, connection, event, _params, _body) => {
-	logger.info(`koa GET: peripheral devices`)
-	return await serverAPI.getPeripheralDevices(connection, event)
-})
+sofieAPIRequest<never, never, string[]>(
+	'get',
+	'/devices',
+	new Map(),
+	async (serverAPI, connection, event, _params, _body) => {
+		logger.info(`koa GET: peripheral devices`)
+		return await serverAPI.getPeripheralDevices(connection, event)
+	}
+)
 
 sofieAPIRequest<{ deviceId: string }, never, APIPeripheralDevice>(
 	'get',
@@ -1271,10 +1283,15 @@ sofieAPIRequest<{ studioId: string }, { routeSetId: string; active: boolean }, v
 	}
 )
 
-sofieAPIRequest<never, never, string[]>('get', '/blueprints', new Map(), async (serverAPI, connection, event, _params, _body) => {
-	logger.info(`koa GET: blueprints`)
-	return await serverAPI.getAllBlueprints(connection, event)
-})
+sofieAPIRequest<never, never, string[]>(
+	'get',
+	'/blueprints',
+	new Map(),
+	async (serverAPI, connection, event, _params, _body) => {
+		logger.info(`koa GET: blueprints`)
+		return await serverAPI.getAllBlueprints(connection, event)
+	}
+)
 
 sofieAPIRequest<{ blueprintId: string }, never, APIBlueprint>(
 	'get',
@@ -1338,10 +1355,15 @@ sofieAPIRequest<{ studioId: string; deviceId: string }, never, void>(
 	}
 )
 
-sofieAPIRequest<never, never, string[]>('get', '/showstyles', new Map(), async (serverAPI, connection, event, _params, _body) => {
-	logger.info(`koa GET: ShowStyleBases`)
-	return await serverAPI.getShowStyleBases(connection, event)
-})
+sofieAPIRequest<never, never, string[]>(
+	'get',
+	'/showstyles',
+	new Map(),
+	async (serverAPI, connection, event, _params, _body) => {
+		logger.info(`koa GET: ShowStyleBases`)
+		return await serverAPI.getShowStyleBases(connection, event)
+	}
+)
 
 sofieAPIRequest<never, { showStyleBase: APIShowStyleBase }, string>(
 	'post',

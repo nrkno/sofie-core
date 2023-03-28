@@ -1,8 +1,8 @@
 import { addMigrationSteps } from './databaseMigration'
-import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import * as semver from 'semver'
-import { PackageContainerPackageStatuses } from '../../lib/collections/PackageContainerPackageStatus'
 import { dropDeprecatedDatabase, getDeprecatedDatabase } from './deprecatedDatabases/1_35_0'
+import { PackageContainerPackageStatuses } from '../collections'
+import { getCoreSystem } from '../coreSystem/collection'
 
 // Release 35 (2021-07-13)
 export const addSteps = addMigrationSteps('1.35.0', [

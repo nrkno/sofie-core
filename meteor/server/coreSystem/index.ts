@@ -1,23 +1,13 @@
-import {
-	getCoreSystem,
-	CoreSystem,
-	SYSTEM_ID,
-	getCoreSystemCursor,
-	parseVersion,
-	GENESIS_SYSTEM_VERSION,
-} from '../../lib/collections/CoreSystem'
-import { getCurrentTime, waitForPromise } from '../../lib/lib'
+import { SYSTEM_ID, parseVersion, GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
+import { getCurrentTime, MeteorStartupAsync } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { prepareMigration, runMigration } from '../migration/databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
-import { Blueprints } from '../../lib/collections/Blueprints'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { Studios } from '../../lib/collections/Studios'
+import { Blueprints, CoreSystem, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
 import { getEnvLogLevel, logger, LogLevel, setLogLevel } from '../logging'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
 const PackageInfo = require('../../package.json')
-// import Agent from 'meteor/kschingiz:meteor-elastic-apm'
-// import { profiler } from './api/profiler'
+import Agent from 'meteor/julusian:meteor-elastic-apm'
+import { profiler } from '../api/profiler'
 import { TMP_TSR_VERSION } from '@sofie-automation/blueprints-integration'
 import { getAbsolutePath } from '../lib'
 import * as fs from 'fs/promises'
@@ -25,6 +15,7 @@ import path from 'path'
 import { queueCheckBlueprintsConfig } from './checkBlueprintsConfig'
 import { checkDatabaseVersions } from './checkDatabaseVersions'
 import PLazy from 'p-lazy'
+import { getCoreSystem, getCoreSystemAsync, getCoreSystemCursor } from './collection'
 
 export { PackageInfo }
 
@@ -50,13 +41,13 @@ export function isRunningInJest(): boolean {
 	return !!process.env.JEST_WORKER_ID
 }
 
-function initializeCoreSystem() {
-	const system = getCoreSystem()
+async function initializeCoreSystem() {
+	const system = await getCoreSystemAsync()
 	if (!system) {
 		// At this point, we probably have a system that is as fresh as it gets
 
 		const version = parseVersion(GENESIS_SYSTEM_VERSION)
-		CoreSystem.insert({
+		await CoreSystem.insertAsync({
 			_id: SYSTEM_ID,
 			created: getCurrentTime(),
 			modified: getCurrentTime(),
@@ -138,7 +129,7 @@ export const RelevantSystemVersions = PLazy.from(async () => {
 
 	const dependencies: any = PackageInfo.dependencies
 	if (dependencies) {
-		const libNames: string[] = ['mos-connection', 'superfly-timeline']
+		const libNames: string[] = ['@mos-connection/helper', 'superfly-timeline']
 
 		const getRealVersion = async (name: string, fallback: string): Promise<string> => {
 			try {
@@ -164,7 +155,7 @@ export const RelevantSystemVersions = PLazy.from(async () => {
 	return versions
 })
 
-function startupMessage() {
+async function startupMessage() {
 	if (!Meteor.isTest) {
 		console.log('process started') // This is a message all Sofie processes log upon startup
 
@@ -180,48 +171,45 @@ function startupMessage() {
 			)
 		}
 
-		const versions = waitForPromise(RelevantSystemVersions)
+		const versions = await RelevantSystemVersions
 		for (const [name, version] of Object.entries(versions)) {
 			logger.info(`Core package ${name} version: "${version}"`)
 		}
 	}
 }
 
-function startInstrumenting() {
+async function startInstrumenting() {
 	if (Meteor.isTest) {
 		return
 	}
 
 	// attempt init elastic APM
+	const system = await getCoreSystemAsync()
+	const { APM_HOST, APM_SECRET, KIBANA_INDEX, APP_HOST } = process.env
 
-	// Note: meteor-elastic-apm has been temporarily disabled due to being incompatible Meteor 2.3
-	// See https://github.com/Meteor-Community-Packages/meteor-elastic-apm/pull/61
-	//
-	// const system = getCoreSystem()
-	// const { APM_HOST, APM_SECRET, KIBANA_INDEX, APP_HOST } = process.env
-
-	// if (APM_HOST && system && system.apm) {
-	// 	logger.info(`APM agent starting up`)
-	// 	Agent.start({
-	// 		serviceName: KIBANA_INDEX || 'tv-automation-server-core',
-	// 		hostname: APP_HOST,
-	// 		serverUrl: APM_HOST,
-	// 		secretToken: APM_SECRET,
-	// 		active: system.apm.enabled,
-	// 		transactionSampleRate: system.apm.transactionSampleRate,
-	// 		disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
-	// 	})
-	// 	profiler.setActive(system.apm.enabled || false)
-	// } else {
-	// 	logger.info(`APM agent inactive`)
-	// 	Agent.start({
-	// 		serviceName: 'tv-automation-server-core',
-	// 		active: false,
-	// 		disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
-	// 	})
-	// }
+	if (APM_HOST && system && system.apm) {
+		logger.info(`APM agent starting up`)
+		Agent.start({
+			serviceName: KIBANA_INDEX || 'tv-automation-server-core',
+			hostname: APP_HOST,
+			serverUrl: APM_HOST,
+			secretToken: APM_SECRET,
+			active: system.apm.enabled,
+			transactionSampleRate: system.apm.transactionSampleRate,
+			disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
+		})
+		profiler.setActive(system.apm.enabled || false)
+	} else {
+		logger.info(`APM agent inactive`)
+		Agent.start({
+			serviceName: 'tv-automation-server-core',
+			active: false,
+			disableMeteorInstrumentations: ['methods', 'http-out', 'session', 'async', 'metrics'],
+		})
+	}
 }
 function updateLoggerLevel(startup: boolean) {
+	if (Meteor.isTest) return // ignore this when running in tests
 	const coreSystem = getCoreSystem()
 
 	if (coreSystem) {
@@ -231,18 +219,18 @@ function updateLoggerLevel(startup: boolean) {
 	}
 }
 
-Meteor.startup(() => {
+MeteorStartupAsync(async () => {
 	if (Meteor.isServer) {
-		startupMessage()
+		await startupMessage()
 		updateLoggerLevel(true)
-		initializeCoreSystem()
-		startInstrumenting()
+		await initializeCoreSystem()
+		await startInstrumenting()
 
 		if (!isRunningInJest()) {
 			// Ensure the storepath exists
 			const storePath = getSystemStorePath()
 			logger.info(`Using storePath: ${storePath}`)
-			waitForPromise(fs.mkdir(storePath, { recursive: true }))
+			await fs.mkdir(storePath, { recursive: true })
 		}
 	}
 })

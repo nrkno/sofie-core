@@ -23,12 +23,7 @@ type Link<T> = {
 	end: (complete: (state: T | null) => void) => Meteor.LiveQueryHandle
 }
 
-export function observerChain(): {
-	next: <L extends string, K extends { _id: ProtectedString<any> }>(
-		key: L,
-		cursorChain: () => MongoCursor<K> | null
-	) => Link<{ [P in StringLiteral<L>]: K }>
-} {
+export function observerChain(): Pick<Link<{}>, 'next'> {
 	function createNextLink(baseCollectorObject: Record<string, any>, liveQueryHandle: Meteor.LiveQueryHandle) {
 		let mode: 'next' | 'end' | undefined
 		let chainedCursor: (state: Record<string, any>) => MongoCursor<any> | null
@@ -36,7 +31,7 @@ export function observerChain(): {
 		let chainedKey: string | undefined = undefined
 		let previousObserver: Meteor.LiveQueryHandle | null = null
 
-		let nextChanged: (obj) => void = () => {
+		let nextChanged: (obj: Record<string, any>) => void = () => {
 			if (mode === 'end') return
 			throw new Error('nextChanged: Unfinished observer chain. This is a memory leak.')
 		}
@@ -45,7 +40,7 @@ export function observerChain(): {
 			throw new Error('nextChanged: Unfinished observer chain. This is a memory leak.')
 		}
 
-		function changedLink(collectorObject) {
+		function changedLink(collectorObject: Record<string, any>) {
 			if (previousObserver) {
 				previousObserver.stop()
 				previousObserver = null
@@ -59,7 +54,7 @@ export function observerChain(): {
 			previousObserver = cursorResult.observe({
 				added: (doc) => {
 					if (!chainedKey) throw new Error('Chained key needs to be defined')
-					const newCollectorObject = {
+					const newCollectorObject: Record<string, any> = {
 						...collectorObject,
 						[chainedKey]: doc,
 					}
@@ -82,7 +77,7 @@ export function observerChain(): {
 			})
 		}
 
-		function changedEnd(obj) {
+		function changedEnd(obj: Record<string, any>) {
 			completeFunction(obj)
 		}
 
@@ -100,7 +95,7 @@ export function observerChain(): {
 		}
 
 		return {
-			changed: (obj) => {
+			changed: (obj: Record<string, any>) => {
 				switch (mode) {
 					case 'next':
 						changedLink(obj)
@@ -129,7 +124,7 @@ export function observerChain(): {
 				}
 			},
 			link: {
-				next: (key: string, thisCursor) => {
+				next: (key: string, thisCursor: typeof chainedCursor) => {
 					if (mode !== undefined) throw new Error('Cannot redefine chain after setup')
 					if (!key) throw new Error('Key needs to be a defined, non-empty string')
 					chainedKey = key
@@ -140,7 +135,7 @@ export function observerChain(): {
 					nextStop = stop
 					return link
 				},
-				end: (complete) => {
+				end: (complete: typeof completeFunction) => {
 					if (mode !== undefined) throw new Error('Cannot redefine chain after setup')
 					mode = 'end'
 					completeFunction = complete
@@ -167,7 +162,7 @@ export function observerChain(): {
 					changed({})
 				})
 			)
-			return nextLink
+			return nextLink as any
 		},
 	}
 }

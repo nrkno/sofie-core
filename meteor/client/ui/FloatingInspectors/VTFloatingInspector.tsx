@@ -3,7 +3,7 @@ import { TFunction, useTranslation } from 'react-i18next'
 
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { FloatingInspector } from '../FloatingInspector'
-import { NoticeLevel } from '../../lib/notifications/notifications'
+import { NoticeLevel } from '../../../lib/notifications/notifications'
 import { ExpectedPackage, VTContent } from '@sofie-automation/blueprints-integration'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
@@ -148,7 +148,6 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 			{showMiniInspectorNotice && noticeLevel && renderNotice(t, noticeLevel, noticeMessages)}
 			{showMiniInspectorClipData && (
 				<div className="segment-timeline__mini-inspector__properties">
-					<span className="mini-inspector__label">{t('Clip:')}</span>
 					<span className="mini-inspector__value">{content?.fileName}</span>
 				</div>
 			)}

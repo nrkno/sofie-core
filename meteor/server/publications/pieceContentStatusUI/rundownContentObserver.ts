@@ -1,7 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { RundownId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Parts } from '../../../lib/collections/Parts'
-import { Segments } from '../../../lib/collections/Segments'
 import { logger } from '../../logging'
 import {
 	ContentCache,
@@ -14,9 +12,8 @@ import {
 	showStyleBaseFieldSpecifier,
 	SourceLayersDoc,
 } from './reactiveContentCache'
-import { Pieces } from '../../../lib/collections/Pieces'
-import { Rundowns } from '../../../lib/collections/Rundowns'
-import { ShowStyleBase, ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
+import { Parts, Pieces, Rundowns, Segments, ShowStyleBases } from '../../collections'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { equivalentArrays, waitForPromise } from '../../../lib/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReactiveMongoObserverGroup, ReactiveMongoObserverGroupHandle } from '../lib/observerGroup'
@@ -43,7 +40,7 @@ export class RundownContentObserver {
 
 	constructor(rundownIds: RundownId[], onChanged: ChangedHandler) {
 		logger.silly(`Creating RundownContentObserver for rundowns "${rundownIds.join(',')}"`)
-		const { cache, cancel: cancelCache } = createReactiveContentCache(() => {
+		const { cache, cancel: cancelCache } = createReactiveContentCache((cache) => {
 			this.#cleanup = onChanged(cache)
 		}, REACTIVITY_DEBOUNCE)
 
@@ -139,6 +136,7 @@ export class RundownContentObserver {
 			const newShowStyleBaseIds = this.#cache.Rundowns.find({}).map((rd) => rd.showStyleBaseId)
 
 			if (!equivalentArrays(newShowStyleBaseIds, this.#showStyleBaseIds)) {
+				this.#showStyleBaseIds = newShowStyleBaseIds
 				// trigger the rundown group to restart
 				this.#showStyleBaseIdObserver.restart()
 			}

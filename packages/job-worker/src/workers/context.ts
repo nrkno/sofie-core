@@ -174,6 +174,8 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		}
 
 		loadedDocs.sort((a, b) => {
+			if (a._rank > b._rank) return 1
+			if (a._rank < b._rank) return -1
 			if (a.name > b.name) return 1
 			if (a.name < b.name) return -1
 			if (a._id > b._id) return 1
@@ -264,7 +266,9 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		if (!blueprint)
 			throw new Error(`Blueprint "${showStyle.blueprintId}" must be loaded before its config can be retrieved`)
 
-		const config = deepFreeze(clone(preprocessShowStyleConfig(showStyle, blueprint.blueprint)))
+		const config = deepFreeze(
+			clone(preprocessShowStyleConfig(showStyle, blueprint.blueprint, this.studio.settings))
+		)
 		this.cacheData.showStyleBlueprintConfig.set(showStyle.showStyleVariantId, config)
 
 		// Return the raw object, as it was frozen before being cached

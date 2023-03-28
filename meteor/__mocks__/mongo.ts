@@ -1,20 +1,23 @@
+/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import * as _ from 'underscore'
-import { literal, ProtectedString, unprotectString, protectString, sleep } from '../lib/lib'
+import { literal, ProtectedString, unprotectString, protectString, sleep, getRandomString } from '../lib/lib'
 import { RandomMock } from './random'
 import { MeteorMock } from './meteor'
 import { Random } from 'meteor/random'
 import { Meteor } from 'meteor/meteor'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import {
-	AsyncMongoCollection,
 	FindOneOptions,
 	FindOptions,
+	MongoReadOnlyCollection,
 	ObserveCallbacks,
 	ObserveChangesCallbacks,
 	UpdateOptions,
 	UpsertOptions,
 } from '../lib/collections/lib'
 import { mongoWhere, mongoFindOptions, mongoModify } from '@sofie-automation/corelib/dist/mongo'
+import { Mongo } from 'meteor/mongo'
+import { AsyncMongoCollection } from '../server/collections/collection'
 const clone = require('fast-clone')
 
 export namespace MongoMock {
@@ -42,13 +45,13 @@ export namespace MongoMock {
 		private _options: any = {}
 		// @ts-expect-error used in test to check that it's a mock
 		private _isMock = true as const
-		private observers: ObserverEntry<T>[] = []
+		public observers: ObserverEntry<T>[] = []
 
 		public asyncBulkWriteDelay = 100
 
-		constructor(name: string, options?: any) {
+		constructor(name: string | null, options?: { transform?: never }) {
 			this._options = options || {}
-			this._name = name
+			this._name = name || getRandomString() // If `null`, then its an in memory unique collection
 
 			if (this._options.transform) throw new Error('document transform is no longer supported')
 		}
@@ -57,7 +60,10 @@ export namespace MongoMock {
 			if (_.isString(query)) query = { _id: query }
 			query = query || {}
 
-			const unimplementedUsedOptions = _.without(_.keys(options), 'sort', 'limit', 'fields')
+			const unimplementedUsedOptions = _.without(_.keys(options), 'sort', 'limit', 'fields', 'projection')
+			if (options && 'fields' in options && 'projection' in options) {
+				throw new Error(`Only one of 'fields' and 'projection' can be specified`)
+			}
 			if (unimplementedUsedOptions.length > 0) {
 				throw new Error(`find being performed using unimplemented options: ${unimplementedUsedOptions}`)
 			}
@@ -89,7 +95,7 @@ export namespace MongoMock {
 				count: () => {
 					return docs.length
 				},
-				observe(clbs: ObserveCallbacks<T>) {
+				observe(clbs: ObserveCallbacks<T>): Meteor.LiveQueryHandle {
 					const id = Random.id(5)
 					observers.push(
 						literal<ObserverEntry<T>>({
@@ -104,7 +110,7 @@ export namespace MongoMock {
 						},
 					}
 				},
-				observeChanges(clbs: ObserveChangesCallbacks<T>) {
+				observeChanges(clbs: ObserveChangesCallbacks<T>): Meteor.LiveQueryHandle {
 					// todo - finish implementing uses of callbacks
 					const id = Random.id(5)
 					observers.push(
@@ -325,8 +331,14 @@ export namespace MongoMock {
 		collection2.asyncWriteDelay = delay
 		return oldDelay
 	}
+
+	export function getInnerMockCollection<T extends { _id: ProtectedString<any> }>(
+		collection: MongoReadOnlyCollection<T>
+	): Mongo.Collection<T> {
+		return (collection as any).mockCollection
+	}
 }
-export function setup() {
+export function setup(): any {
 	return {
 		Mongo: MongoMock,
 	}

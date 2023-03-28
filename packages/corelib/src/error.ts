@@ -45,11 +45,12 @@ export enum UserErrorMessage {
 	DisableNoPieceFound = 30,
 	TakeBlockedDuration = 31,
 	TakeFromIncorrectPart = 32,
-	RundownPlaylistNotFound = 33,
-	PeripheralDeviceNotFound = 34,
-	BlueprintNotFound = 35,
-	StudioNotFound = 36,
-	DeviceAlreadyAttachedToStudio = 37,
+	RundownRemoveWhileActive = 33,
+	RundownPlaylistNotFound = 34,
+	PeripheralDeviceNotFound = 35,
+	BlueprintNotFound = 36,
+	StudioNotFound = 37,
+	DeviceAlreadyAttachedToStudio = 38,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -94,6 +95,7 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.DisableNoPieceFound]: t(`Found no future pieces`),
 	[UserErrorMessage.TakeBlockedDuration]: t(`Cannot perform take for {{duration}}ms`),
 	[UserErrorMessage.TakeFromIncorrectPart]: t(`Ignoring take as playing part has changed since TAKE was requested.`),
+	[UserErrorMessage.RundownRemoveWhileActive]: t(`Cannot remove the rundown "{{name}}" while it is on-air.`),
 	[UserErrorMessage.RundownPlaylistNotFound]: t(`Rundown Playlist not found!`),
 	[UserErrorMessage.PeripheralDeviceNotFound]: t(`Peripheral Device not found!`),
 	[UserErrorMessage.BlueprintNotFound]: t(`Blueprint not found!`),

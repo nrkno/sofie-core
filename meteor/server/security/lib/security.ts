@@ -3,19 +3,15 @@ import { MongoQueryKey } from '../../../lib/typings/meteor'
 import { Settings } from '../../../lib/Settings'
 import { resolveCredentials, ResolvedCredentials, Credentials, isResolvedCredentials } from './credentials'
 import { allAccess, noAccess, combineAccess, Access } from './access'
-import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { isProtectedString } from '../../../lib/lib'
-import { Organizations, DBOrganization } from '../../../lib/collections/Organization'
-import { PeripheralDevices, PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
-import { ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { DBOrganization } from '../../../lib/collections/Organization'
+import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
+import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { profiler } from '../../api/profiler'
-import {
-	fetchShowStyleBasesLight,
-	fetchStudioLight,
-	ShowStyleBaseLight,
-	StudioLight,
-} from '../../../lib/collections/optimizations'
+import { fetchShowStyleBasesLight, fetchStudioLight, ShowStyleBaseLight, StudioLight } from '../../optimizations'
+import { Organizations, PeripheralDevices, RundownPlaylists, Rundowns, ShowStyleVariants } from '../../collections'
 import {
 	OrganizationId,
 	PeripheralDeviceId,

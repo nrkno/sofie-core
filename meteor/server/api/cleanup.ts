@@ -1,48 +1,14 @@
-import { ProtectedString, getCurrentTime, getCollectionKey } from '../../lib/lib'
+import { ProtectedString, getCurrentTime } from '../../lib/lib'
 import { CollectionCleanupResult } from '../../lib/api/system'
 import { MongoQuery } from '../../lib/typings/meteor'
-import { AdLibActions } from '../../lib/collections/AdLibActions'
-import { AdLibPieces } from '../../lib/collections/AdLibPieces'
-import { Blueprints } from '../../lib/collections/Blueprints'
-import { BucketAdLibs } from '../../lib/collections/BucketAdlibs'
-import { BucketAdLibActions } from '../../lib/collections/BucketAdlibActions'
-import { Buckets } from '../../lib/collections/Buckets'
-import { Evaluations } from '../../lib/collections/Evaluations'
-import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
-import { ExpectedPlayoutItems } from '../../lib/collections/ExpectedPlayoutItems'
-import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
-import { IngestDataCache } from '../../lib/collections/IngestDataCache'
-import { MediaObjects } from '../../lib/collections/MediaObjects'
-import { MediaWorkFlows } from '../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowSteps } from '../../lib/collections/MediaWorkFlowSteps'
-import { Organizations } from '../../lib/collections/Organization'
-import { PartInstances } from '../../lib/collections/PartInstances'
-import { Parts } from '../../lib/collections/Parts'
-import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { Pieces } from '../../lib/collections/Pieces'
-import { RundownBaselineAdLibActions } from '../../lib/collections/RundownBaselineAdLibActions'
-import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
-import { RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
-import { RundownLayouts } from '../../lib/collections/RundownLayouts'
-import { RundownPlaylists, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { Rundowns } from '../../lib/collections/Rundowns'
-import { Segments } from '../../lib/collections/Segments'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { Snapshots } from '../../lib/collections/Snapshots'
-import { Studios } from '../../lib/collections/Studios'
-import { Timeline } from '../../lib/collections/Timeline'
-import { UserActionsLog } from '../../lib/collections/UserActionsLog'
-import { PieceInstances } from '../../lib/collections/PieceInstances'
-import { getActiveRundownPlaylistsInStudioFromDb } from './studio/lib'
-import { ExpectedPackages } from '../../lib/collections/ExpectedPackages'
-import { ExpectedPackageWorkStatuses } from '../../lib/collections/ExpectedPackageWorkStatuses'
-import { PackageContainerPackageStatuses } from '../../lib/collections/PackageContainerPackageStatus'
-import { getRemovedPackageInfos, PackageInfos } from '../../lib/collections/PackageInfos'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import {
+	getActiveRundownPlaylistsInStudioFromDb,
+	getExpiredRemovedPackageInfos,
+	getOrphanedPackageInfos,
+	removePackageInfos,
+} from './studio/lib'
 import { Settings } from '../../lib/Settings'
-import { TriggeredActions } from '../../lib/collections/TriggeredActions'
-import { AsyncMongoCollection } from '../../lib/collections/lib'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import {
 	OrganizationId,
@@ -51,6 +17,54 @@ import {
 	RundownPlaylistId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	AdLibActions,
+	AdLibPieces,
+	Blueprints,
+	BucketAdLibActions,
+	BucketAdLibs,
+	Buckets,
+	Evaluations,
+	ExpectedMediaItems,
+	ExpectedPackages,
+	ExpectedPackageWorkStatuses,
+	ExpectedPlayoutItems,
+	ExternalMessageQueue,
+	IngestDataCache,
+	MediaObjects,
+	MediaWorkFlows,
+	MediaWorkFlowSteps,
+	Organizations,
+	PackageContainerPackageStatuses,
+	PackageContainerStatuses,
+	PackageInfos,
+	PartInstances,
+	Parts,
+	PeripheralDeviceCommands,
+	PeripheralDevices,
+	PieceInstances,
+	Pieces,
+	RundownBaselineAdLibActions,
+	RundownBaselineAdLibPieces,
+	RundownBaselineObjs,
+	RundownLayouts,
+	RundownPlaylists,
+	Rundowns,
+	Segments,
+	ShowStyleBases,
+	ShowStyleVariants,
+	Snapshots,
+	Studios,
+	Timeline,
+	TimelineDatastore,
+	TranslationsBundles,
+	TriggeredActions,
+	UserActionsLog,
+	Workers,
+	WorkerThreadStatuses,
+} from '../collections'
+import { AsyncMongoCollection } from '../collections/collection'
+import { getCollectionKey } from '../collections/lib'
 
 export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Promise<CollectionCleanupResult | string> {
 	if (actuallyCleanup) {
@@ -289,17 +303,30 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 		ownedByStudioId(PackageContainerPackageStatuses)
 		ownedByDeviceId(PackageContainerPackageStatuses)
 	}
+	// PackageContainerStatuses
+	{
+		ownedByStudioId(PackageContainerStatuses)
+		ownedByDeviceId(PackageContainerStatuses)
+	}
 	// PackageInfos
 	{
 		ownedByStudioId(PackageInfos)
 		ownedByDeviceId(PackageInfos)
 
-		const removedPackageInfoIds = await getRemovedPackageInfos()
-		addToResult(CollectionName.PackageInfos, removedPackageInfoIds.length)
-		if (actuallyCleanup) {
-			PackageInfos.remove({
-				_id: { $in: removedPackageInfoIds },
-			})
+		// Future: there should be a way to force removal of the non-expired packageinfos
+
+		// Find any PackageInfos which have expired
+		const expiredPackageInfoIds = await getExpiredRemovedPackageInfos()
+		addToResult(CollectionName.PackageInfos, expiredPackageInfoIds.length)
+		if (actuallyCleanup && expiredPackageInfoIds.length) {
+			await removePackageInfos(expiredPackageInfoIds, 'purge')
+		}
+
+		// Find any PackageInfos which are missing the parent ExpectedPackage
+		const orphanedPackageInfoIds = await getOrphanedPackageInfos()
+		addToResult(CollectionName.PackageInfos, orphanedPackageInfoIds.length)
+		if (actuallyCleanup && orphanedPackageInfoIds.length) {
+			await removePackageInfos(orphanedPackageInfoIds, 'defer')
 		}
 	}
 	// Parts
@@ -386,6 +413,17 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 			_id: { $nin: studioIds },
 		})
 	}
+	// TimelineDatastore
+	{
+		removeByQuery(TimelineDatastore, {
+			studioId: { $nin: studioIds },
+		})
+	}
+	// TranslationsBundles
+	{
+		// Not supported
+		addToResult(getCollectionKey(TranslationsBundles), 0)
+	}
 	// TriggeredActions
 	{
 		removeByQuery(TriggeredActions, {
@@ -401,6 +439,16 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 	// Users
 	{
 		addToResult(CollectionName.Users, 0) // Do nothing
+	}
+	// Workers
+	{
+		// Not supported
+		addToResult(getCollectionKey(Workers), 0)
+	}
+	// WorkerThreadStatuses
+	{
+		// Not supported
+		addToResult(getCollectionKey(WorkerThreadStatuses), 0)
 	}
 
 	return result

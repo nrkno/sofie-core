@@ -42,6 +42,7 @@ import {
 	SegmentOrphanedReason,
 } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 
 export type BeforePartMapItem = { id: PartId; rank: number }
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<BeforePartMapItem>>
@@ -66,7 +67,7 @@ export async function CommitIngestOperation(
 	beforeRundown: ReadonlyDeep<DBRundown> | undefined,
 	beforePartMap: BeforePartMap,
 	data: ReadonlyDeep<CommitIngestData>
-): Promise<void> {
+): Promise<UserError | void> {
 	const rundown = getRundown(ingestCache)
 
 	if (data.removeRundown && !beforeRundown) {
@@ -174,9 +175,6 @@ export async function CommitIngestOperation(
 		await removeRundownFromDb(context, ingestCache.RundownLock)
 		return
 	}
-
-	const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
-	const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 
 	// Adopt the rundown into its new/retained playlist.
 	// We have to do the locking 'manually' because the playlist may not exist yet, but that is ok
@@ -417,18 +415,15 @@ export async function CommitIngestOperation(
 			const pSaveIngest = ingestCache.saveAllToDatabase()
 
 			try {
-				// Get the final copy of the rundown
-				const newRundown = getRundown(ingestCache)
-
 				// sync changes to the 'selected' partInstances
-				await syncChangesToPartInstances(context, playoutCache, ingestCache, showStyle, blueprint, newRundown)
+				await syncChangesToPartInstances(context, playoutCache, ingestCache)
 
 				playoutCache.deferAfterSave(() => {
 					// Run in the background, we don't want to hold onto the lock to do this
 					context
 						.queueEventJob(EventsJobs.RundownDataChanged, {
 							playlistId: playoutCache.PlaylistId,
-							rundownId: newRundown._id,
+							rundownId: ingestCache.RundownId,
 						})
 						.catch((e) => {
 							logger.error(`Queue RundownDataChanged failed: ${e}`)
@@ -451,6 +446,11 @@ export async function CommitIngestOperation(
 			}
 		}
 	)
+
+	// Some failures should be reported to the caller
+	if (data.removeRundown && data.returnRemoveFailure) {
+		return UserError.create(UserErrorMessage.RundownRemoveWhileActive, { name: rundown.name })
+	}
 }
 
 function canRemoveSegment(

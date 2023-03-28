@@ -8,6 +8,13 @@
 		margin-top: 1px; // TODOSYNC: NRK: -5px
 		margin-right: 4px;
 	}
+
+	&.type-hourglass {
+		>svg {
+			position: relative;
+			top: 1px;
+		}
+	}
 	// Temporarily disabled, pending user testing:
 	// @keyframes animated {
 	// 	0% {

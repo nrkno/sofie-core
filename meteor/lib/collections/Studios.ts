@@ -1,11 +1,7 @@
 import { omit, protectString, unprotectObject } from '../lib'
 import * as _ from 'underscore'
 import { LookaheadMode, ExpectedPackage } from '@sofie-automation/blueprints-integration'
-import { Meteor } from 'meteor/meteor'
-import { ObserveChangesForHash, createMongoCollection } from './lib'
-import { registerIndex } from '../database'
 import { ExpectedPackageDB } from './ExpectedPackages'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import {
 	ResultingMappingRoutes,
@@ -99,6 +95,7 @@ export function getRoutedMappings<M extends MappingExt>(
 				lookahead: route.remapping.lookahead || LookaheadMode.NONE,
 				device: route.deviceType,
 				deviceId: protectString<any>(route.remapping.deviceId),
+				options: {},
 				...route.remapping,
 			}
 			outputMappings[route.outputMappedLayer] = routedMapping as M
@@ -139,14 +136,3 @@ export function routeExpectedPackages(
 }
 
 export type Studio = DBStudio
-export const Studios = createMongoCollection<Studio>(CollectionName.Studios)
-
-registerIndex(Studios, {
-	organizationId: 1,
-})
-
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		ObserveChangesForHash(Studios, '_rundownVersionHash', ['blueprintConfigWithOverrides'])
-	}
-})

@@ -43,7 +43,7 @@ export const SegmentTimelinePartHoverPreview = ({
 	totalSegmentDuration: number
 	parentTimeScale: number
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
-}) => {
+}): JSX.Element | null => {
 	const [miniInspectorEl, setMiniInnspectorEl] = useState<HTMLDivElement | null>(null)
 	const [containOffset, setContainOffset] = useState(0)
 	const followingPartPreviewDuration = 0.15 * totalSegmentDuration

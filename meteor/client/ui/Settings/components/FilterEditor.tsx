@@ -14,7 +14,6 @@ import {
 	RundownLayoutElementBase,
 	RundownLayoutElementType,
 	RundownLayoutFilterBase,
-	RundownLayouts,
 } from '../../../../lib/collections/RundownLayouts'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -22,6 +21,7 @@ import { IOutputLayer, ISourceLayer, SourceLayerType } from '@sofie-automation/b
 import { withTranslation } from 'react-i18next'
 import { defaultColorPickerPalette } from '../../../lib/colorPicker'
 import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { RundownLayouts } from '../../../collections'
 
 interface IProps {
 	item: RundownLayoutBase
@@ -1723,7 +1723,7 @@ export default withTranslation()(
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			const isRundownLayout = RundownLayoutsAPI.isRundownLayout(this.props.item)

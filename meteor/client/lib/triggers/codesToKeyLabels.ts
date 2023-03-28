@@ -8,7 +8,7 @@ function toTitleCase(input: string): string {
 	return str.join(' ')
 }
 
-export function codesToKeyLabels(keys: string, sorensen: Sorensen) {
+export function codesToKeyLabels(keys: string, sorensen: Sorensen): string {
 	return keys
 		.split(/\s+/gi)
 		.map((note) =>
@@ -20,7 +20,7 @@ export function codesToKeyLabels(keys: string, sorensen: Sorensen) {
 		.join(' ')
 }
 
-export function keyLabelsToCodes(labels: string, sorensen: Sorensen) {
+export function keyLabelsToCodes(labels: string, sorensen: Sorensen): string {
 	return labels
 		.split(/\s+/gi)
 		.map((note) => {
@@ -31,7 +31,7 @@ export function keyLabelsToCodes(labels: string, sorensen: Sorensen) {
 		.join(' ')
 }
 
-export function getFinalKey(keys: string) {
+export function getFinalKey(keys: string): string {
 	const individualKeys = keys.split(/\+/gi)
 	return individualKeys[individualKeys.length - 1]
 }

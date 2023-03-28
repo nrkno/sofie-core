@@ -1,17 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
-import { getCurrentTime, systemTime, Time } from '../../lib/lib'
 
 export { multilineText, isEventInInputField }
 
-function multilineText(txt: string) {
+function multilineText(txt: string): React.ReactNode {
 	return _.map((txt + '').split('\n'), (line: string, i) => {
 		return <p key={i}>{line}</p>
 	})
 }
 
-function isEventInInputField(e: Event) {
+function isEventInInputField(e: Event): boolean {
 	// @ts-expect-error localName
 	return e && e.target && ['textarea', 'input'].indexOf(e.target.localName + '') !== -1
 }
@@ -34,7 +33,7 @@ export function isTouchDevice(): boolean {
 /**
  * Wrapper around fetch(), which doesn't rejects the promise if the result is an error
  */
-export function fetchFrom(input: RequestInfo, init?: RequestInit) {
+export function fetchFrom(input: RequestInfo, init?: RequestInit): Promise<Response & { bodyText: string }> {
 	return fetch(input, init).then((response) => {
 		// Read the body:
 		return response.text().then((bodyText: string) => {
@@ -70,7 +69,7 @@ export enum UserAgentPointer {
 
 type MutableRef<T> = ((instance: T | null) => void) | React.MutableRefObject<T | null> | null
 
-export function useCombinedRefs<T>(initial: T | null, ...refs: MutableRef<T>[]) {
+export function useCombinedRefs<T>(initial: T | null, ...refs: MutableRef<T>[]): React.RefObject<T> {
 	const targetRef = useRef<T>(initial)
 
 	useEffect(() => {
@@ -137,15 +136,11 @@ export function useInvalidateTimeout<K>(func: () => [K, number], deps: any[]): K
 	return value
 }
 
-export function isRunningInPWA() {
+export function isRunningInPWA(): boolean {
 	if (window.matchMedia('(display-mode: browser)').matches) {
 		return false
 	}
 	return true
-}
-
-export function getEventTimestamp(e: any): Time {
-	return e.timeStamp ? performance.timeOrigin + e.timeStamp + systemTime.timeOriginDiff : getCurrentTime()
 }
 
 export const TOOLTIP_DEFAULT_DELAY = 0.5

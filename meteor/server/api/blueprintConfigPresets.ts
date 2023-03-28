@@ -1,11 +1,11 @@
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
-import { Meteor } from 'meteor/meteor'
-import { Blueprints } from '../../lib/collections/Blueprints'
-import { ObserveChangesHelper } from '../../lib/collections/lib'
-import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants, ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
-import { Studio, Studios } from '../../lib/collections/Studios'
+import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
+import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { Studio } from '../../lib/collections/Studios'
+import { ObserveChangesHelper } from '../collections/lib'
+import { MeteorStartupAsync } from '../../lib/lib'
 
 const ObserveChangeBufferTimeout = 100
 
@@ -18,7 +18,7 @@ const ObserveChangeBufferTimeout = 100
  * Whenever the Studio changes the blueprint or config preset, ensure the config is synced across
  * We want it synced across, so that if the config-preset is removed, then there is some config that can be used
  */
-Meteor.startup(() => {
+MeteorStartupAsync(async () => {
 	const doUpdate = async (doc: Studio): Promise<void> => {
 		const markUnlinked = async () => {
 			await Studios.updateAsync(doc._id, {
@@ -57,14 +57,19 @@ Meteor.startup(() => {
 		})
 	}
 
-	ObserveChangesHelper(Studios, ['blueprintConfigPresetId', 'blueprintId'], doUpdate, ObserveChangeBufferTimeout)
+	await ObserveChangesHelper(
+		Studios,
+		['blueprintConfigPresetId', 'blueprintId'],
+		doUpdate,
+		ObserveChangeBufferTimeout
+	)
 })
 
 /**
  * Whenever the ShowStyleBase changes the blueprint or config preset, ensure the config is synced across
  * We want it synced across, so that if the config-preset is removed, then there is some config that can be used
  */
-Meteor.startup(() => {
+MeteorStartupAsync(async () => {
 	const doUpdate = async (doc: ShowStyleBase): Promise<void> => {
 		const markUnlinked = async () => {
 			await Promise.all([
@@ -150,7 +155,7 @@ Meteor.startup(() => {
 		await Promise.all(ps)
 	}
 
-	ObserveChangesHelper(
+	await ObserveChangesHelper(
 		ShowStyleBases,
 		['blueprintConfigPresetId', 'blueprintId'],
 		doUpdate,
@@ -162,7 +167,7 @@ Meteor.startup(() => {
  * Whenever the ShowStyleVariant changes the config preset, ensure the config is synced across
  * We want it synced across, so that if the config-preset is removed, then there is some config that can be used
  */
-Meteor.startup(() => {
+MeteorStartupAsync(async () => {
 	const doUpdate = async (doc: ShowStyleVariant): Promise<void> => {
 		const markUnlinked = async () => {
 			await ShowStyleVariants.updateAsync(doc._id, {
@@ -207,7 +212,7 @@ Meteor.startup(() => {
 		})
 	}
 
-	ObserveChangesHelper(
+	await ObserveChangesHelper(
 		ShowStyleVariants,
 		['blueprintConfigPresetId', 'showStyleBaseId'],
 		doUpdate,

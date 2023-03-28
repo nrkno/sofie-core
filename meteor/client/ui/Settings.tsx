@@ -20,7 +20,7 @@ import { SettingsMenu } from './Settings/SettingsMenu'
 import { getAllowConfigure } from '../lib/localStorage'
 
 class WelcomeToSettings extends React.Component {
-	render() {
+	render(): JSX.Element {
 		return <div></div>
 	}
 }
@@ -34,7 +34,7 @@ export const Settings = withTranslation()(
 			this.user = getUser()
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			// Subscribe to data:
 			this.subscribe(PubSub.peripheralDevices, {})
 			this.subscribe(PubSub.studios, {})
@@ -46,7 +46,7 @@ export const Settings = withTranslation()(
 				if (!access) this.props.history.push('/')
 			}
 		}
-		render() {
+		render(): JSX.Element {
 			// const { t } = this.props
 			return (
 				<div className="mtl gutter has-statusbar">

@@ -2,20 +2,16 @@ import ClassNames from 'classnames'
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { Studio, Studios, DBStudio, StudioPackageContainer } from '../../../../lib/collections/Studios'
+import { Studio, DBStudio, StudioPackageContainer } from '../../../../lib/collections/Studios'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
-import {
-	PeripheralDeviceCategory,
-	PeripheralDevices,
-	PeripheralDeviceType,
-} from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceCategory, PeripheralDeviceType } from '../../../../lib/collections/PeripheralDevices'
 import { withTranslation } from 'react-i18next'
 import { Accessor } from '@sofie-automation/blueprints-integration'
-import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
+import { PeripheralDevices, Studios } from '../../../collections'
 
 interface IStudioPackageManagerSettingsProps {
 	studio: Studio
@@ -146,8 +142,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 					device.type === PeripheralDeviceType.PLAYOUT &&
 					device.settings
 				) {
-					const settings = device.settings as PlayoutDeviceSettings
-
+					const settings = device.settings
 					for (const deviceId of Object.keys(settings.devices || {})) {
 						deviceIds.push({
 							name: deviceId,
@@ -685,7 +680,9 @@ export const StudioPackageManagerSettings = withTranslation()(
 															className="input text-input input-l"
 														></EditAttribute>
 														<span className="text-s dimmed">
-															{t('Server id (Can be omitted for sources, as clip-searches are zone-wide.)')}
+															{t(
+																'Server ID. For sources, this should generally be omitted (or set to 0) so clip-searches are zone-wide. If set, clip-searches are limited to that server.'
+															)}
 														</span>
 													</label>
 												</div>
@@ -805,7 +802,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 			return arr
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div>

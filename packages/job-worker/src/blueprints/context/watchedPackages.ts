@@ -7,6 +7,7 @@ import { Filter as FilterQuery } from 'mongodb'
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
 import { unprotectObjectArray } from '@sofie-automation/corelib/dist/protectedString'
 import { CacheForIngest } from '../../ingest/cache'
+import { ReadOnlyCache } from '../../cache/CacheBase'
 
 /**
  * This is a helper class to simplify exposing packageInfo to various places in the blueprints
@@ -73,7 +74,7 @@ export class WatchedPackagesHelper {
 	 */
 	static async createForIngest(
 		context: JobContext,
-		cache: CacheForIngest,
+		cache: ReadOnlyCache<CacheForIngest>,
 		func: ((pkg: ExpectedPackageDB) => boolean) | undefined
 	): Promise<WatchedPackagesHelper> {
 		const packages = cache.ExpectedPackages.findAll(func ?? null)

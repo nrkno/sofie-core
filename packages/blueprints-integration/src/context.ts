@@ -15,6 +15,8 @@ import {
 } from './rundown'
 import { BlueprintMappings } from './studio'
 import { TSR, OnGenerateTimelineObj } from './timeline'
+import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 
 /** Common */
 
@@ -133,10 +135,22 @@ export interface IGetRundownContext extends IShowStyleUserContext {
 
 export interface IRundownContext extends IShowStyleContext {
 	readonly rundownId: string
+	readonly playlistId: string
 	readonly rundown: Readonly<IBlueprintSegmentRundown>
 }
 
 export interface IRundownUserContext extends IUserNotesContext, IRundownContext {}
+
+export interface IRundownActivationContext extends IRundownContext {
+	/** Execute an action on a certain PeripheralDevice */
+	executeTSRAction(
+		deviceId: PeripheralDeviceId,
+		actionId: string,
+		payload: Record<string, any>
+	): Promise<TSR.ActionExecutionResult>
+	/** Returns a list of the PeripheralDevices */
+	listPeripheralDevices(): Promise<PeripheralDevicePublic[]>
+}
 
 export interface ISegmentUserContext extends IUserNotesContext, IRundownContext, IPackageInfoContext {
 	/** Display a notification to the user of an error */
@@ -228,6 +242,14 @@ export interface IActionExecutionContext
 	// updateAction(newManifest: Pick<IBlueprintAdLibActionManifest, 'description' | 'payload'>): void // only updates itself. to allow for the next one to do something different
 	// executePeripheralDeviceAction(deviceId: string, functionName: string, args: any[]): Promise<any>
 	// openUIDialogue(message: string) // ?????
+	/** Returns a list of the PeripheralDevices */
+	listPeripheralDevices(): Promise<PeripheralDevicePublic[]>
+	/** Execute an action on a certain PeripheralDevice */
+	executeTSRAction(
+		deviceId: PeripheralDeviceId,
+		actionId: string,
+		payload: Record<string, any>
+	): Promise<TSR.ActionExecutionResult>
 }
 
 /** Actions */

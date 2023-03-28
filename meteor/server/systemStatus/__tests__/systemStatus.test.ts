@@ -5,18 +5,21 @@ import { generateTranslation, literal, protectString, unprotectString } from '..
 import { MeteorMock } from '../../../__mocks__/meteor'
 import { status2ExternalStatus, setSystemStatus } from '../systemStatus'
 import { StatusResponse } from '../../../lib/api/systemStatus'
-import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 import { stripVersion } from '../../../lib/collections/CoreSystem'
 import semver from 'semver'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PeripheralDeviceStatusObject } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
+// we don't want the deviceTriggers observer to start up at this time
+jest.mock('../../api/deviceTriggers/observer')
+
 require('../api')
 const PackageInfo = require('../../../package.json')
 
 import * as checkUpgradeStatus from '../../migration/upgrades/checkStatus'
 import { GetUpgradeStatusResult } from '../../../lib/api/migration'
+import { PeripheralDevices } from '../../collections'
 const getUpgradeStatusMock = jest.spyOn(checkUpgradeStatus, 'getUpgradeStatus')
 
 describe('systemStatus', () => {

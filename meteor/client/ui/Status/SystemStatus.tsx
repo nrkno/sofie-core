@@ -2,14 +2,13 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import {
 	PeripheralDevice,
-	PeripheralDevices,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '../../../lib/collections/PeripheralDevices'
 import * as reacti18next from 'react-i18next'
 import * as i18next from 'i18next'
 import Moment from 'react-moment'
-import { assertNever, getCurrentTime, getHash, unprotectString } from '../../../lib/lib'
+import { assertNever, getCurrentTime, getHash, protectString, unprotectString } from '../../../lib/lib'
 import { Link } from 'react-router-dom'
 import Tooltip from 'rc-tooltip'
 import { faTrash, faEye } from '@fortawesome/free-solid-svg-icons'
@@ -18,14 +17,14 @@ import * as _ from 'underscore'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { callPeripheralDeviceAction, PeripheralDevicesAPI } from '../../lib/clientAPI'
-import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
+import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
 import { getAllowConfigure, getAllowDeveloper, getAllowStudio, getHelpMode } from '../../lib/localStorage'
 import { PubSub } from '../../../lib/api/pubsub'
 import ClassNames from 'classnames'
 import { StatusCode, TSR } from '@sofie-automation/blueprints-integration'
-import { CoreSystem, ICoreSystem } from '../../../lib/collections/CoreSystem'
+import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { StatusResponse } from '../../../lib/api/systemStatus'
-import { doUserAction, UserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RESTART_SALT } from '../../../lib/api/userActions'
 import { DEFAULT_TSR_ACTION_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
@@ -33,7 +32,11 @@ import { SubdeviceAction } from '@sofie-automation/shared-lib/dist/core/deviceCo
 import { StatusCodePill } from './StatusCodePill'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
-import { SchemaForm } from '../../lib/forms/schemaForm'
+import { SchemaFormInPlace } from '../../lib/forms/schemaFormInPlace'
+import { CoreSystem, PeripheralDevices } from '../../collections'
+import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { DebugStateTable } from './DebugState'
+import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -41,10 +44,12 @@ interface IDeviceItemProps {
 	showRemoveButtons?: boolean
 	toplevel?: boolean
 	hasChildren?: boolean
+
+	debugState: object | undefined
 }
 interface IDeviceItemState {}
 
-export function statusCodeToString(t: i18next.TFunction, statusCode: StatusCode) {
+export function statusCodeToString(t: i18next.TFunction, statusCode: StatusCode): string {
 	switch (statusCode) {
 		case StatusCode.UNKNOWN:
 			return t('Unknown')
@@ -66,13 +71,6 @@ export function statusCodeToString(t: i18next.TFunction, statusCode: StatusCode)
 
 export const DeviceItem = reacti18next.withTranslation()(
 	class DeviceItem extends React.Component<Translated<IDeviceItemProps>, IDeviceItemState> {
-		constructor(props: Translated<IDeviceItemProps>) {
-			super(props)
-			this.state = {
-				showDeleteDeviceConfirm: null,
-				showKillDeviceConfirm: null,
-			}
-		}
 		deviceTypeString() {
 			const t = this.props.t
 
@@ -156,10 +154,9 @@ export const DeviceItem = reacti18next.withTranslation()(
 					yes: t('Execute'),
 					no: t('Cancel'),
 					message: action.payload ? (
-						<SchemaForm
-							schema={JSON.parse(action.payload)}
+						<SchemaFormInPlace
+							schema={JSONBlobParse(action.payload)}
 							object={payload}
-							attr={''}
 							translationNamespaces={namespaces}
 						/>
 					) : (
@@ -184,8 +181,10 @@ export const DeviceItem = reacti18next.withTranslation()(
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
+
+			const namespaces = ['peripheralDevice_' + this.props.device._id]
 
 			return (
 				<div key={unprotectString(this.props.device._id)} className="device-item">
@@ -235,9 +234,11 @@ export const DeviceItem = reacti18next.withTranslation()(
 						</div>
 					) : null}
 
+					{this.props.debugState ? <DebugStateTable debugState={this.props.debugState} /> : null}
+
 					<div className="actions-container">
 						<div className="device-item__actions">
-							{this.props.device.configManifest.subdeviceManifest?.[this.props.device.subType] &&
+							{this.props.device.configManifest?.subdeviceManifest?.[this.props.device.subType] &&
 								this.props.device.configManifest.subdeviceManifest[this.props.device.subType].actions?.map((action) => (
 									<React.Fragment key={action.id}>
 										<button
@@ -248,7 +249,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 												this.onExecuteAction(e, this.props.device, action)
 											}}
 										>
-											{t(action.name)}
+											{translateMessage({ key: action.name, namespaces }, i18nTranslator)}
 										</button>
 									</React.Fragment>
 								))}
@@ -366,7 +367,7 @@ export const CoreItem = reacti18next.withTranslation()(
 			this.state = {}
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (
@@ -454,7 +455,7 @@ export const CoreItem = reacti18next.withTranslation()(
 															{},
 															UserAction.RESTART_CORE,
 															(e, ts) => MeteorCall.userAction.restartCore(e, ts, restartToken),
-															(err, token) => {
+															(err, token: string | undefined) => {
 																if (err || !token) {
 																	NotificationCenter.push(
 																		new Notification(
@@ -503,7 +504,9 @@ export const CoreItem = reacti18next.withTranslation()(
 interface ISystemStatusProps {}
 interface ISystemStatusState {
 	systemStatus: StatusResponse | undefined
+	deviceDebugState: Map<PeripheralDeviceId, object>
 }
+
 interface ISystemStatusTrackedProps {
 	coreSystem: ICoreSystem | undefined
 	devices: Array<PeripheralDevice>
@@ -525,6 +528,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 		ISystemStatusState
 	> {
 		private refreshInterval: NodeJS.Timer | undefined = undefined
+		private refreshDebugStatesInterval: NodeJS.Timer | undefined = undefined
 		private destroyed: boolean = false
 
 		constructor(props) {
@@ -532,19 +536,22 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 
 			this.state = {
 				systemStatus: undefined,
+				deviceDebugState: new Map(),
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.refreshSystemStatus()
 			this.refreshInterval = setInterval(this.refreshSystemStatus, 5000)
+			this.refreshDebugStatesInterval = setInterval(this.refreshDebugStates, 1000)
 
 			// Subscribe to data:
 			this.subscribe(PubSub.peripheralDevices, {})
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			if (this.refreshInterval) clearInterval(this.refreshInterval)
+			if (this.refreshDebugStatesInterval) clearInterval(this.refreshDebugStatesInterval)
 			this.destroyed = true
 		}
 
@@ -572,6 +579,25 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 					)
 					return
 				})
+		}
+
+		refreshDebugStates = () => {
+			for (const device of this.props.devices) {
+				if (device.type === PeripheralDeviceType.PLAYOUT && device.settings && device.settings['debugState']) {
+					MeteorCall.systemStatus
+						.getDebugStates(device._id)
+						.then((res) => {
+							const states: Map<PeripheralDeviceId, object> = new Map()
+							for (const [key, state] of Object.entries(res)) {
+								states.set(protectString(key), state)
+							}
+							this.setState({
+								deviceDebugState: states,
+							})
+						})
+						.catch((err) => console.log(`Error fetching device states: ${err}`))
+				}
+			}
 		}
 
 		renderPeripheralDevices() {
@@ -609,6 +635,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 						device={d.device}
 						toplevel={toplevel}
 						hasChildren={d.children.length !== 0}
+						debugState={this.state.deviceDebugState.get(d.device._id)}
 					/>,
 				]
 				if (d.children.length) {
@@ -643,7 +670,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 			)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (

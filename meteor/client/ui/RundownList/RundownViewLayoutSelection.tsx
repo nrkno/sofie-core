@@ -59,7 +59,7 @@ export const RundownViewLayoutSelection = withTranslation()(
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			const showstylesInPlaylist = this.props.rundowns.map((r) => r.showStyleBaseId)

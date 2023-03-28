@@ -1,11 +1,12 @@
 import { RundownPlaylistReadAccess } from '../security/rundownPlaylist'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
-import { DBRundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { RundownPlaylists } from '../collections'
 
 meteorPublish(PubSub.rundownPlaylists, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<DBRundownPlaylist>(this.userId, selector0, token)

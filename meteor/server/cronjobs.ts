@@ -1,26 +1,29 @@
-import { Rundowns } from '../lib/collections/Rundowns'
+import {
+	IngestDataCache,
+	PartInstances,
+	Parts,
+	PeripheralDevices,
+	PieceInstances,
+	RundownPlaylists,
+	Rundowns,
+	Snapshots,
+	UserActionsLog,
+} from './collections'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
+import { PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
 import * as _ from 'underscore'
 import { getCurrentTime, stringifyError, waitForPromiseAll } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
-import { IngestDataCache } from '../lib/collections/IngestDataCache'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { UserActionsLog } from '../lib/collections/UserActionsLog'
-import { Snapshots } from '../lib/collections/Snapshots'
 import { DEFAULT_TSR_ACTION_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
-import { getCoreSystem } from '../lib/collections/CoreSystem'
 import { QueueStudioJob } from './worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { fetchStudioIds } from '../lib/collections/optimizations'
-import { RundownPlaylists } from '../lib/collections/RundownPlaylists'
+import { fetchStudioIds } from './optimizations'
 import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
-import { Parts } from '../lib/collections/Parts'
-import { PartInstances } from '../lib/collections/PartInstances'
-import { PieceInstances } from '../lib/collections/PieceInstances'
+import { getExpiredRemovedPackageInfos, getOrphanedPackageInfos, removePackageInfos } from './api/studio/lib'
 import { deferAsync } from '@sofie-automation/corelib/dist/lib'
-import { getRemovedPackageInfos, PackageInfos } from '../lib/collections/PackageInfos'
+import { getCoreSystem } from './coreSystem/collection'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -232,19 +235,26 @@ Meteor.startup(() => {
 		}
 		{
 			// Clean up removed PackageInfos:
-			deferAsync(
-				async () => {
-					const removedPackageInfoIds = await getRemovedPackageInfos()
-					if (removedPackageInfoIds.length) {
-						PackageInfos.remove({
-							_id: { $in: removedPackageInfoIds },
-						})
+			if (isLowSeason() || force) {
+				deferAsync(
+					async () => {
+						// Find any PackageInfos which have expired
+						const expiredPackageInfoIds = await getExpiredRemovedPackageInfos()
+						if (expiredPackageInfoIds.length) {
+							await removePackageInfos(expiredPackageInfoIds, 'purge')
+						}
+
+						// Find any PackageInfos which are missing the parent ExpectedPackage
+						const orphanedPackageInfoIds = await getOrphanedPackageInfos()
+						if (orphanedPackageInfoIds.length) {
+							await removePackageInfos(orphanedPackageInfoIds, 'defer')
+						}
+					},
+					(e) => {
+						logger.error(`Cron: Cleanup PackageInfos error: ${e}`)
 					}
-				},
-				(e) => {
-					logger.error(`Cron: Cleanup PackageInfos error: ${e}`)
-				}
-			)
+				)
+			}
 		}
 	}
 	Meteor.setInterval(anyTimeCronjob, 30 * 60 * 1000) // every 30 minutes

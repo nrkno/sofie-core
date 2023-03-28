@@ -1,8 +1,9 @@
 import { WorkerId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Workers, getWorkerId, WorkerStatus } from '../../lib/collections/Workers'
+import { getWorkerId, WorkerStatus } from '../../lib/collections/Workers'
 import { getCurrentTime } from '../../lib/lib'
+import { Workers } from '../collections'
 
-export function initializeWorkerStatus(name: string, instanceId: string): WorkerId {
+export async function initializeWorkerStatus(name: string, instanceId: string): Promise<WorkerId> {
 	const workerId = getWorkerId()
 
 	const now = getCurrentTime()
@@ -16,9 +17,9 @@ export function initializeWorkerStatus(name: string, instanceId: string): Worker
 		status: 'Starting...',
 	}
 
-	const existing = Workers.findOne(workerId)
+	const existing = await Workers.findOneAsync(workerId)
 	if (existing) {
-		Workers.update(workerId, {
+		await Workers.updateAsync(workerId, {
 			$set: initWorkerProperties,
 		})
 		localWorkerCache.set(workerId, {
@@ -32,13 +33,18 @@ export function initializeWorkerStatus(name: string, instanceId: string): Worker
 			createdTime: now,
 			lastUsedTime: now,
 		}
-		Workers.insert(newWorkerStatus)
+		await Workers.insertAsync(newWorkerStatus)
 		localWorkerCache.set(workerId, newWorkerStatus)
 	}
 
 	return workerId
 }
-export function setWorkerStatus(workerId: WorkerId, connected: boolean, status: string, startup?: boolean): void {
+export async function setWorkerStatus(
+	workerId: WorkerId,
+	connected: boolean,
+	status: string,
+	startup?: boolean
+): Promise<void> {
 	const now = getCurrentTime()
 
 	const mod: Partial<WorkerStatus> = {
@@ -49,24 +55,24 @@ export function setWorkerStatus(workerId: WorkerId, connected: boolean, status: 
 	if (startup) {
 		mod.startTime = now
 	}
-	const result = Workers.update(workerId, {
+	const result = await Workers.updateAsync(workerId, {
 		$set: mod,
 	})
 
 	if (result > 0) {
-		updateLocalCache(workerId, mod)
+		await updateLocalCache(workerId, mod)
 	}
 }
 
 const localWorkerCache = new Map<WorkerId, WorkerStatus>()
 /** Returns the workerStatus, possibly from a local cache */
-function getWorkerStatus(workerId: WorkerId): WorkerStatus | undefined {
+async function getWorkerStatus(workerId: WorkerId): Promise<WorkerStatus | undefined> {
 	// Use local cache:
 	const cached = localWorkerCache.get(workerId)
 	if (cached) return cached
 
 	// Fetch from database:
-	const workerStatus = Workers.findOne(workerId)
+	const workerStatus = await Workers.findOneAsync(workerId)
 
 	// Update local cache:
 	if (workerStatus) {
@@ -76,8 +82,8 @@ function getWorkerStatus(workerId: WorkerId): WorkerStatus | undefined {
 	}
 	return workerStatus
 }
-function updateLocalCache(workerId: WorkerId, mod: Partial<WorkerStatus>) {
-	const cache = getWorkerStatus(workerId)
+async function updateLocalCache(workerId: WorkerId, mod: Partial<WorkerStatus>) {
+	const cache = await getWorkerStatus(workerId)
 	if (cache) {
 		localWorkerCache.set(workerId, {
 			...cache,
