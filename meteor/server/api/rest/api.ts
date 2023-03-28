@@ -1087,7 +1087,7 @@ sofieAPIRequest<never, never, string[]>(
 	'/playlists',
 	new Map(),
 	async (serverAPI, connection, event, _params, _body) => {
-		logger.info(`koa GET: playlists`)
+		logger.info(`API GET: playlists`)
 		return await serverAPI.getAllRundownPlaylists(connection, event)
 	}
 )
@@ -1102,7 +1102,7 @@ sofieAPIRequest<{ playlistId: string }, { rehearsal: boolean }, void>(
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const rehearsal = body.rehearsal
-		logger.info(`koa PUT: activate ${rundownPlaylistId} - ${rehearsal ? 'rehearsal' : 'live'}`)
+		logger.info(`API PUT: activate ${rundownPlaylistId} - ${rehearsal ? 'rehearsal' : 'live'}`)
 
 		check(rundownPlaylistId, String)
 		return await serverAPI.activate(connection, event, rundownPlaylistId, rehearsal)
@@ -1115,7 +1115,7 @@ sofieAPIRequest<{ playlistId: string }, never, void>(
 	new Map([[404, UserErrorMessage.RundownPlaylistNotFound]]),
 	async (serverAPI, connection, event, params, _) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
-		logger.info(`koa PUT: deactivate ${rundownPlaylistId}`)
+		logger.info(`API PUT: deactivate ${rundownPlaylistId}`)
 
 		check(rundownPlaylistId, String)
 		return await serverAPI.deactivate(connection, event, rundownPlaylistId)
@@ -1136,7 +1136,7 @@ sofieAPIRequest<{ playlistId: string }, { adLibId: string; actionType?: string }
 		)
 		const actionTypeObj = body
 		const triggerMode = actionTypeObj ? (actionTypeObj as { actionType: string }).actionType : undefined
-		logger.info(`koa PUT: executeAdLib ${rundownPlaylistId} ${adLibId} - triggerMode: ${triggerMode}`)
+		logger.info(`API PUT: executeAdLib ${rundownPlaylistId} ${adLibId} - triggerMode: ${triggerMode}`)
 
 		check(adLibId, String)
 		check(rundownPlaylistId, String)
@@ -1155,7 +1155,7 @@ sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const delta = body.delta
-		logger.info(`koa PUT: moveNextPart ${rundownPlaylistId} ${delta}`)
+		logger.info(`API PUT: moveNextPart ${rundownPlaylistId} ${delta}`)
 
 		check(rundownPlaylistId, String)
 		check(delta, Number)
@@ -1173,7 +1173,7 @@ sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const delta = body.delta
-		logger.info(`koa PUT: moveNextSegment ${rundownPlaylistId} ${delta}`)
+		logger.info(`API PUT: moveNextSegment ${rundownPlaylistId} ${delta}`)
 
 		check(rundownPlaylistId, String)
 		check(delta, Number)
@@ -1187,7 +1187,7 @@ sofieAPIRequest<{ playlistId: string }, never, object>(
 	new Map([[404, UserErrorMessage.RundownPlaylistNotFound]]),
 	async (serverAPI, connection, event, params, _) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
-		logger.info(`koa PUT: reloadPlaylist ${rundownPlaylistId}`)
+		logger.info(`API PUT: reloadPlaylist ${rundownPlaylistId}`)
 
 		check(rundownPlaylistId, String)
 		return await serverAPI.reloadPlaylist(connection, event, rundownPlaylistId)
@@ -1203,7 +1203,7 @@ sofieAPIRequest<{ playlistId: string }, never, void>(
 	]),
 	async (serverAPI, connection, event, params, _) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
-		logger.info(`koa PUT: resetPlaylist ${rundownPlaylistId}`)
+		logger.info(`API PUT: resetPlaylist ${rundownPlaylistId}`)
 
 		check(rundownPlaylistId, String)
 		return await serverAPI.resetPlaylist(connection, event, rundownPlaylistId)
@@ -1220,7 +1220,7 @@ sofieAPIRequest<{ playlistId: string }, { partId: string }, void>(
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const partId = protectString<PartId>(body.partId)
-		logger.info(`koa PUT: setNextPart ${rundownPlaylistId} ${partId}`)
+		logger.info(`API PUT: setNextPart ${rundownPlaylistId} ${partId}`)
 
 		check(rundownPlaylistId, String)
 		check(partId, String)
@@ -1238,7 +1238,7 @@ sofieAPIRequest<{ playlistId: string }, { segmentId: string }, void>(
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const segmentId = protectString<SegmentId>(body.segmentId)
-		logger.info(`koa PUT: setNextSegment ${rundownPlaylistId} ${segmentId}`)
+		logger.info(`API PUT: setNextSegment ${rundownPlaylistId} ${segmentId}`)
 
 		check(rundownPlaylistId, String)
 		check(segmentId, String)
@@ -1256,7 +1256,7 @@ sofieAPIRequest<{ playlistId: string }, { fromPartInstanceId?: string }, void>(
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const fromPartInstanceId = body.fromPartInstanceId
-		logger.info(`koa PUT: take ${rundownPlaylistId}`)
+		logger.info(`API PUT: take ${rundownPlaylistId}`)
 
 		check(rundownPlaylistId, String)
 		check(fromPartInstanceId, Match.Optional(String))
@@ -1274,7 +1274,7 @@ sofieAPIRequest<{ playlistId: string; sourceLayerId: string }, never, void>(
 	async (serverAPI, connection, event, params, _) => {
 		const playlistId = protectString<RundownPlaylistId>(params.playlistId)
 		const sourceLayerId = params.sourceLayerId
-		logger.info(`koa DELETE: sourceLayer ${playlistId} ${sourceLayerId}`)
+		logger.info(`API DELETE: sourceLayer ${playlistId} ${sourceLayerId}`)
 
 		check(playlistId, String)
 		check(sourceLayerId, String)
@@ -1292,7 +1292,7 @@ sofieAPIRequest<{ playlistId: string; sourceLayerId: string }, never, void>(
 	async (serverAPI, connection, event, params, _) => {
 		const playlistId = protectString<RundownPlaylistId>(params.playlistId)
 		const sourceLayerId = params.sourceLayerId
-		logger.info(`koa PUT: sourceLayer recallSticky ${playlistId} ${sourceLayerId}`)
+		logger.info(`API PUT: sourceLayer recallSticky ${playlistId} ${sourceLayerId}`)
 
 		check(playlistId, String)
 		check(sourceLayerId, String)
@@ -1305,7 +1305,7 @@ sofieAPIRequest<never, never, string[]>(
 	'/devices',
 	new Map(),
 	async (serverAPI, connection, event, _params, _body) => {
-		logger.info(`koa GET: peripheral devices`)
+		logger.info(`API GET: peripheral devices`)
 		return await serverAPI.getPeripheralDevices(connection, event)
 	}
 )
@@ -1316,7 +1316,7 @@ sofieAPIRequest<{ deviceId: string }, never, APIPeripheralDevice>(
 	new Map(),
 	async (serverAPI, connection, event, params, _) => {
 		const deviceId = protectString<PeripheralDeviceId>(params.deviceId)
-		logger.info(`koa GET: peripheral device ${deviceId}`)
+		logger.info(`API GET: peripheral device ${deviceId}`)
 
 		check(deviceId, String)
 		return await serverAPI.getPeripheralDevice(connection, event, deviceId)
@@ -1330,7 +1330,7 @@ sofieAPIRequest<{ deviceId: string }, { action: PeripheralDeviceAction }, void>(
 	async (serverAPI, connection, event, params, body) => {
 		const deviceId = protectString<PeripheralDeviceId>(params.deviceId)
 		const action = body.action
-		logger.info(`koa PUT: peripheral device ${deviceId} action ${action.type}`)
+		logger.info(`API PUT: peripheral device ${deviceId} action ${action.type}`)
 
 		check(deviceId, String)
 		check(action, Object)
@@ -1343,7 +1343,7 @@ sofieAPIRequest<never, never, string[]>(
 	'/studios',
 	new Map(),
 	async (serverAPI, connection, event, _params, _) => {
-		logger.info(`koa GET: Studios`)
+		logger.info(`API GET: Studios`)
 		return await serverAPI.getStudios(connection, event)
 	}
 )
@@ -1353,7 +1353,7 @@ sofieAPIRequest<{ studioId: string }, APIStudio, string>(
 	'/studios',
 	new Map(),
 	async (serverAPI, connection, event, _params, body) => {
-		logger.info(`koa POST: Add studio ${body.name}`)
+		logger.info(`API POST: Add studio ${body.name}`)
 		return await serverAPI.addStudio(connection, event, body)
 	}
 )
@@ -1364,7 +1364,7 @@ sofieAPIRequest<{ studioId: string }, never, APIStudio>(
 	new Map([[404, UserErrorMessage.StudioNotFound]]),
 	async (serverAPI, connection, event, params, _) => {
 		const studioId = protectString<StudioId>(params.studioId)
-		logger.info(`koa GET: studio ${studioId}`)
+		logger.info(`API GET: studio ${studioId}`)
 
 		check(studioId, String)
 		return await serverAPI.getStudio(connection, event, studioId)
@@ -1377,7 +1377,7 @@ sofieAPIRequest<{ studioId: string }, APIStudio, void>(
 	new Map([[404, UserErrorMessage.StudioNotFound]]),
 	async (serverAPI, connection, event, params, body) => {
 		const studioId = protectString<StudioId>(params.studioId)
-		logger.info(`koa PUT: Add or Update studio ${studioId} ${body.name}`)
+		logger.info(`API PUT: Add or Update studio ${studioId} ${body.name}`)
 
 		check(studioId, String)
 		return await serverAPI.addOrUpdateStudio(connection, event, studioId, body)
@@ -1390,7 +1390,7 @@ sofieAPIRequest<{ studioId: string }, never, void>(
 	new Map([[404, UserErrorMessage.StudioNotFound]]),
 	async (serverAPI, connection, event, params, _) => {
 		const studioId = protectString<StudioId>(params.studioId)
-		logger.info(`koa DELETE: studio ${studioId}`)
+		logger.info(`API DELETE: studio ${studioId}`)
 
 		check(studioId, String)
 		return await serverAPI.deleteStudio(connection, event, studioId)
@@ -1403,7 +1403,7 @@ sofieAPIRequest<{ studioId: string }, never, string[]>(
 	new Map([[404, UserErrorMessage.StudioNotFound]]),
 	async (serverAPI, connection, event, params, _) => {
 		const studioId = protectString<StudioId>(params.studioId)
-		logger.info(`koa GET: peripheral devices for studio ${studioId}`)
+		logger.info(`API GET: peripheral devices for studio ${studioId}`)
 
 		check(studioId, String)
 		return await serverAPI.getPeripheralDevicesForStudio(connection, event, studioId)
@@ -1418,7 +1418,7 @@ sofieAPIRequest<{ studioId: string }, { routeSetId: string; active: boolean }, v
 		const studioId = protectString<StudioId>(params.studioId)
 		const routeSetId = body.routeSetId
 		const active = body.active
-		logger.info(`koa PUT: switchRouteSet ${studioId} ${routeSetId} ${active}`)
+		logger.info(`API PUT: switchRouteSet ${studioId} ${routeSetId} ${active}`)
 
 		check(studioId, String)
 		check(routeSetId, String)
@@ -1437,7 +1437,7 @@ sofieAPIRequest<{ studioId: string }, { deviceId: string }, void>(
 	async (serverAPI, connection, events, params, body) => {
 		const studioId = protectString<StudioId>(params.studioId)
 		const deviceId = protectString<PeripheralDeviceId>(body.deviceId)
-		logger.info(`koa PUT: Attach device ${deviceId} to studio ${studioId}`)
+		logger.info(`API PUT: Attach device ${deviceId} to studio ${studioId}`)
 
 		return await serverAPI.attachDeviceToStudio(connection, events, studioId, deviceId)
 	}
@@ -1450,7 +1450,7 @@ sofieAPIRequest<{ studioId: string; deviceId: string }, never, void>(
 	async (serverAPI, connection, events, params, _) => {
 		const studioId = protectString<StudioId>(params.studioId)
 		const deviceId = protectString<PeripheralDeviceId>(params.deviceId)
-		logger.info(`koa DELETE: Detach device ${deviceId} from studio ${studioId}`)
+		logger.info(`API DELETE: Detach device ${deviceId} from studio ${studioId}`)
 
 		return await serverAPI.detachDeviceFromStudio(connection, events, studioId, deviceId)
 	}
@@ -1461,7 +1461,7 @@ sofieAPIRequest<never, never, string[]>(
 	'/blueprints',
 	new Map(),
 	async (serverAPI, connection, event, _params, _body) => {
-		logger.info(`koa GET: blueprints`)
+		logger.info(`API GET: blueprints`)
 		return await serverAPI.getAllBlueprints(connection, event)
 	}
 )
@@ -1472,7 +1472,7 @@ sofieAPIRequest<{ blueprintId: string }, never, APIBlueprint>(
 	new Map(),
 	async (serverAPI, connection, event, params, _) => {
 		const blueprintId = protectString<BlueprintId>(params.blueprintId)
-		logger.info(`koa GET: blueprint ${blueprintId}`)
+		logger.info(`API GET: blueprint ${blueprintId}`)
 
 		check(blueprintId, String)
 		return await serverAPI.getBlueprint(connection, event, blueprintId)
@@ -1484,7 +1484,7 @@ sofieAPIRequest<never, { blueprintId: string }, void>(
 	new Map(),
 	async (serverAPI, connection, events, _, body) => {
 		const blueprintId = protectString<BlueprintId>(body.blueprintId)
-		logger.info(`koa PUT: system blueprint ${blueprintId}`)
+		logger.info(`API PUT: system blueprint ${blueprintId}`)
 
 		check(blueprintId, String)
 		return await serverAPI.assignSystemBlueprint(connection, events, blueprintId)
@@ -1496,7 +1496,7 @@ sofieAPIRequest<never, never, void>(
 	'/system/blueprint',
 	new Map(),
 	async (serverAPI, connection, events, _params, _body) => {
-		logger.info(`koa DELETE: system blueprint`)
+		logger.info(`API DELETE: system blueprint`)
 
 		return await serverAPI.unassignSystemBlueprint(connection, events)
 	}
@@ -1507,7 +1507,7 @@ sofieAPIRequest<never, never, string[]>(
 	'/showstyles',
 	new Map(),
 	async (serverAPI, connection, event, _params, _body) => {
-		logger.info(`koa GET: ShowStyleBases`)
+		logger.info(`API GET: ShowStyleBases`)
 		return await serverAPI.getShowStyleBases(connection, event)
 	}
 )
@@ -1517,7 +1517,7 @@ sofieAPIRequest<never, APIShowStyleBase, string>(
 	'/showstyles',
 	new Map([[400, UserErrorMessage.BlueprintNotFound]]),
 	async (serverAPI, connection, event, _params, body) => {
-		logger.info(`koa POST: Add ShowStyleBase ${body.name}`)
+		logger.info(`API POST: Add ShowStyleBase ${body.name}`)
 		return await serverAPI.addShowStyleBase(connection, event, body)
 	}
 )
@@ -1527,7 +1527,7 @@ sofieAPIRequest<{ showStyleBaseId: ShowStyleBaseId }, never, APIShowStyleBase>(
 	'/showstyles/:showStyleBaseId',
 	new Map([[404, UserErrorMessage.BlueprintNotFound]]),
 	async (serverAPI, connection, event, params, _body) => {
-		logger.info(`koa GET: ShowStyleBase ${params.showStyleBaseId}`)
+		logger.info(`API GET: ShowStyleBase ${params.showStyleBaseId}`)
 		return await serverAPI.getShowStyleBase(connection, event, params.showStyleBaseId)
 	}
 )
@@ -1541,7 +1541,7 @@ sofieAPIRequest<{ showStyleBaseId: string }, APIShowStyleBase, void>(
 	]),
 	async (serverAPI, connection, event, params, body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
-		logger.info(`koa PUT: Add or Update ShowStyleBase ${showStyleBaseId}`)
+		logger.info(`API PUT: Add or Update ShowStyleBase ${showStyleBaseId}`)
 
 		check(showStyleBaseId, String)
 		return await serverAPI.addOrUpdateShowStyleBase(connection, event, showStyleBaseId, body)
@@ -1554,7 +1554,7 @@ sofieAPIRequest<{ showStyleBaseId: string }, never, void>(
 	new Map([[412, UserErrorMessage.RundownAlreadyActive]]),
 	async (serverAPI, connection, event, params, _body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
-		logger.info(`koa DELETE: ShowStyleBase ${showStyleBaseId}`)
+		logger.info(`API DELETE: ShowStyleBase ${showStyleBaseId}`)
 
 		check(showStyleBaseId, String)
 		return await serverAPI.deleteShowStyleBase(connection, event, showStyleBaseId)
@@ -1567,7 +1567,7 @@ sofieAPIRequest<{ showStyleBaseId: string }, never, string[]>(
 	new Map([[404, UserErrorMessage.BlueprintNotFound]]),
 	async (serverAPI, connection, event, params, _body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
-		logger.info(`koa GET: ShowStyleVariants ${showStyleBaseId}`)
+		logger.info(`API GET: ShowStyleVariants ${showStyleBaseId}`)
 
 		check(showStyleBaseId, String)
 		return await serverAPI.getShowStyleVariants(connection, event, showStyleBaseId)
@@ -1580,7 +1580,7 @@ sofieAPIRequest<{ showStyleBaseId: string }, APIShowStyleVariant, string>(
 	new Map([[404, UserErrorMessage.BlueprintNotFound]]),
 	async (serverAPI, connection, event, params, body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
-		logger.info(`koa POST: Add ShowStyleVariant ${showStyleBaseId}`)
+		logger.info(`API POST: Add ShowStyleVariant ${showStyleBaseId}`)
 
 		check(showStyleBaseId, String)
 		return await serverAPI.addShowStyleVariant(connection, event, showStyleBaseId, body)
@@ -1594,7 +1594,7 @@ sofieAPIRequest<{ showStyleBaseId: string; showStyleVariantId: string }, never, 
 	async (serverAPI, connection, event, params, _body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
 		const showStyleVariantId = protectString<ShowStyleVariantId>(params.showStyleVariantId)
-		logger.info(`koa GET: ShowStyleVariant ${showStyleBaseId} ${showStyleVariantId}`)
+		logger.info(`API GET: ShowStyleVariant ${showStyleBaseId} ${showStyleVariantId}`)
 
 		check(showStyleBaseId, String)
 		check(showStyleVariantId, String)
@@ -1613,7 +1613,7 @@ sofieAPIRequest<{ showStyleBaseId: string; showStyleVariantId: string }, APIShow
 	async (serverAPI, connection, event, params, body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
 		const showStyleVariantId = protectString<ShowStyleVariantId>(params.showStyleVariantId)
-		logger.info(`koa PUT: Add or Update ShowStyleVariant ${showStyleBaseId} ${showStyleVariantId}`)
+		logger.info(`API PUT: Add or Update ShowStyleVariant ${showStyleBaseId} ${showStyleVariantId}`)
 
 		check(showStyleBaseId, String)
 		check(showStyleVariantId, String)
@@ -1631,7 +1631,7 @@ sofieAPIRequest<{ showStyleBaseId: string; showStyleVariantId: string }, never, 
 	async (serverAPI, connection, event, params, _body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
 		const showStyleVariantId = protectString<ShowStyleVariantId>(params.showStyleVariantId)
-		logger.info(`koa DELETE: ShowStyleVariant ${showStyleBaseId} ${showStyleVariantId}`)
+		logger.info(`API DELETE: ShowStyleVariant ${showStyleBaseId} ${showStyleVariantId}`)
 
 		check(showStyleBaseId, String)
 		check(showStyleVariantId, String)
@@ -1646,7 +1646,7 @@ sofieAPIRequest<{ studioId: string }, { action: StudioAction }, void>(
 	async (serverAPI, connection, event, params, body) => {
 		const studioId = protectString<StudioId>(params.studioId)
 		const action = body.action
-		logger.info(`koa PUT: Studio action ${studioId} ${body.action.type}`)
+		logger.info(`API PUT: Studio action ${studioId} ${body.action.type}`)
 
 		check(studioId, String)
 		check(action, Object)
@@ -1661,7 +1661,7 @@ sofieAPIRequest<{ showStyleId: string }, { action: ShowStyleBaseAction }, void>(
 	async (serverAPI, connection, event, params, body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleId)
 		const action = body.action
-		logger.info(`koa PUT: ShowStyleBase action ${showStyleBaseId} ${body.action.type}`)
+		logger.info(`API PUT: ShowStyleBase action ${showStyleBaseId} ${body.action.type}`)
 
 		check(showStyleBaseId, String)
 		check(action, Object)
@@ -1674,7 +1674,7 @@ sofieAPIRequest<never, never, { inputs: PendingMigrations }>(
 	'/system/migrations',
 	new Map(),
 	async (serverAPI, connection, event, _params, _body) => {
-		logger.info(`koa GET: System migrations`)
+		logger.info(`API GET: System migrations`)
 
 		return await serverAPI.getPendingMigrations(connection, event)
 	}
@@ -1686,7 +1686,7 @@ sofieAPIRequest<never, { inputs: MigrationData }, void>(
 	new Map([[400, UserErrorMessage.NoMigrationsToApply]]),
 	async (serverAPI, connection, event, _params, body) => {
 		const inputs = body.inputs
-		logger.info(`koa POST: System migrations`)
+		logger.info(`API POST: System migrations`)
 
 		check(inputs, Array)
 		return await serverAPI.applyPendingMigrations(connection, event, inputs)
