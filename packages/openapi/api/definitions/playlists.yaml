@@ -180,7 +180,7 @@ resources:
         404:
           $ref: '#/components/responses/playlistNotFound'
         412:
-          description: Specified Playlist is not active or no next Part could be set (e.g. Playlist is empty, delta is too high and overflows the bounds of the Playlist)
+          description: Specified Playlist is not active or there is both no current or next Part.
           content:
             application/json:
               schema:
@@ -236,7 +236,7 @@ resources:
         404:
           $ref: '#/components/responses/playlistNotFound'
         412:
-          description: Specified Playlist is not active or there is no next Part set (e.g. Playlist is empty).
+          description: Specified Playlist is not active or there is both no current or next Part.
           content:
             application/json:
               schema:

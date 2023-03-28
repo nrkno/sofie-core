@@ -78,7 +78,7 @@ export interface RestAPI {
 	 * Moves the next point by `delta` places. Negative values are allowed to move "backwards" in the script.
 	 *
 	 * Throws if the target Playlist is not active.
-	 * Throws if no next Part could be set (e.g. Playlist is empty, delta is too high and overflows the bounds of the Playlist)
+	 * Throws if there is both no current or next Part.
 	 * If delta results in an index that is greater than the number of Parts available, no action will be taken.
 	 * @param connection Connection data including client and header details
 	 * @param event User event string
@@ -95,7 +95,7 @@ export interface RestAPI {
 	 * Moves the next Segment point by `delta` places. Negative values are allowed to move "backwards" in the script.
 	 *
 	 * Throws if the target Playlist is not active.
-	 * Throws if there is not next Part set (e.g. Playlist is empty)
+	 * Throws if there is both no current or next Part.
 	 * If delta results in an index that is greater than the number of Segments available, no action will be taken.
 	 * @param connection Connection data including client and header details
 	 * @param event User event string
