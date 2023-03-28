@@ -15,10 +15,6 @@ import {
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Meteor } from 'meteor/meteor'
-import { PeripheralDevice, PeripheralDeviceType } from '../collections/PeripheralDevices'
-import { assertNever, unprotectString } from '../lib'
-import { IOutputLayer, StatusCode } from '@sofie-automation/blueprints-integration'
-import { Blueprint } from '../collections/Blueprints'
 
 export interface RestAPI {
 	/**
@@ -631,71 +627,6 @@ export interface APIPeripheralDevice {
 	connected: boolean
 }
 
-export function APIPeripheralDeviceFrom(device: PeripheralDevice): APIPeripheralDevice {
-	let status: APIPeripheralDevice['status'] = 'unknown'
-	switch (device.status.statusCode) {
-		case StatusCode.BAD:
-			status = 'bad'
-			break
-		case StatusCode.FATAL:
-			status = 'fatal'
-			break
-		case StatusCode.GOOD:
-			status = 'good'
-			break
-		case StatusCode.WARNING_MAJOR:
-			status = 'warning_major'
-			break
-		case StatusCode.WARNING_MINOR:
-			status = 'marning_minor'
-			break
-		case StatusCode.UNKNOWN:
-			status = 'unknown'
-			break
-		default:
-			assertNever(device.status.statusCode)
-	}
-
-	let deviceType: APIPeripheralDevice['deviceType'] = 'unknown'
-	switch (device.type) {
-		case PeripheralDeviceType.INEWS:
-			deviceType = 'inews'
-			break
-		case PeripheralDeviceType.LIVE_STATUS:
-			deviceType = 'live_status'
-			break
-		case PeripheralDeviceType.MEDIA_MANAGER:
-			deviceType = 'media_manager'
-			break
-		case PeripheralDeviceType.MOS:
-			deviceType = 'mos'
-			break
-		case PeripheralDeviceType.PACKAGE_MANAGER:
-			deviceType = 'package_manager'
-			break
-		case PeripheralDeviceType.PLAYOUT:
-			deviceType = 'playout'
-			break
-		case PeripheralDeviceType.SPREADSHEET:
-			deviceType = 'spreadsheet'
-			break
-		case PeripheralDeviceType.INPUT:
-			deviceType = 'input'
-			break
-		default:
-			assertNever(device.type)
-	}
-
-	return {
-		id: unprotectString(device._id),
-		name: device.name,
-		status,
-		messages: device.status.messages ?? [],
-		deviceType,
-		connected: device.connected,
-	}
-}
-
 export enum PeripheralDeviceActionType {
 	RESTART = 'restart',
 }
@@ -745,17 +676,6 @@ export interface APIBlueprint {
 	blueprintVersion: string
 }
 
-export function APIBlueprintFrom(blueprint: Blueprint): APIBlueprint | undefined {
-	if (!blueprint.blueprintType) return undefined
-
-	return {
-		id: unprotectString(blueprint._id),
-		name: blueprint.name,
-		blueprintType: blueprint.blueprintType,
-		blueprintVersion: blueprint.blueprintVersion,
-	}
-}
-
 export interface APIShowStyleBase {
 	name: string
 	blueprintId: string
@@ -776,15 +696,6 @@ export interface APIOutputLayer {
 	name: string
 	rank: number
 	isPgm: boolean
-}
-
-export function APIOutputLayerFrom(outputLayer: IOutputLayer): APIOutputLayer {
-	return {
-		id: outputLayer._id,
-		name: outputLayer.name,
-		rank: outputLayer._rank,
-		isPgm: outputLayer.isPGM,
-	}
 }
 
 export interface APISourceLayer {

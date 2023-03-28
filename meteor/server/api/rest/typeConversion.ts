@@ -1,6 +1,13 @@
-import { BlueprintManifestType, ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import {
+	BlueprintManifestType,
+	IOutputLayer,
+	ISourceLayer,
+	SourceLayerType,
+	StatusCode,
+} from '@sofie-automation/blueprints-integration'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBStudio, IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { assertNever, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
@@ -10,7 +17,9 @@ import {
 	wrapDefaultObject,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import {
-	APIOutputLayerFrom,
+	APIBlueprint,
+	APIOutputLayer,
+	APIPeripheralDevice,
 	APIShowStyleBase,
 	APIShowStyleVariant,
 	APISourceLayer,
@@ -256,5 +265,90 @@ export function APIStudioSettingsFrom(settings: IStudioSettings): APIStudioSetti
 		preserveUnsyncedPlayingSegmentContents: settings.preserveUnsyncedPlayingSegmentContents,
 		allowRundownResetOnAir: settings.allowRundownResetOnAir,
 		preserveOrphanedSegmentPositionInRundown: settings.preserveOrphanedSegmentPositionInRundown,
+	}
+}
+
+export function APIPeripheralDeviceFrom(device: PeripheralDevice): APIPeripheralDevice {
+	let status: APIPeripheralDevice['status'] = 'unknown'
+	switch (device.status.statusCode) {
+		case StatusCode.BAD:
+			status = 'bad'
+			break
+		case StatusCode.FATAL:
+			status = 'fatal'
+			break
+		case StatusCode.GOOD:
+			status = 'good'
+			break
+		case StatusCode.WARNING_MAJOR:
+			status = 'warning_major'
+			break
+		case StatusCode.WARNING_MINOR:
+			status = 'marning_minor'
+			break
+		case StatusCode.UNKNOWN:
+			status = 'unknown'
+			break
+		default:
+			assertNever(device.status.statusCode)
+	}
+
+	let deviceType: APIPeripheralDevice['deviceType'] = 'unknown'
+	switch (device.type) {
+		case PeripheralDeviceType.INEWS:
+			deviceType = 'inews'
+			break
+		case PeripheralDeviceType.LIVE_STATUS:
+			deviceType = 'live_status'
+			break
+		case PeripheralDeviceType.MEDIA_MANAGER:
+			deviceType = 'media_manager'
+			break
+		case PeripheralDeviceType.MOS:
+			deviceType = 'mos'
+			break
+		case PeripheralDeviceType.PACKAGE_MANAGER:
+			deviceType = 'package_manager'
+			break
+		case PeripheralDeviceType.PLAYOUT:
+			deviceType = 'playout'
+			break
+		case PeripheralDeviceType.SPREADSHEET:
+			deviceType = 'spreadsheet'
+			break
+		case PeripheralDeviceType.INPUT:
+			deviceType = 'input'
+			break
+		default:
+			assertNever(device.type)
+	}
+
+	return {
+		id: unprotectString(device._id),
+		name: device.name,
+		status,
+		messages: device.status.messages ?? [],
+		deviceType,
+		connected: device.connected,
+	}
+}
+
+export function APIBlueprintFrom(blueprint: Blueprint): APIBlueprint | undefined {
+	if (!blueprint.blueprintType) return undefined
+
+	return {
+		id: unprotectString(blueprint._id),
+		name: blueprint.name,
+		blueprintType: blueprint.blueprintType,
+		blueprintVersion: blueprint.blueprintVersion,
+	}
+}
+
+export function APIOutputLayerFrom(outputLayer: IOutputLayer): APIOutputLayer {
+	return {
+		id: outputLayer._id,
+		name: outputLayer.name,
+		rank: outputLayer._rank,
+		isPgm: outputLayer.isPGM,
 	}
 }

@@ -10,11 +10,9 @@ import { ClientAPI } from '../../../lib/api/client'
 import { getCurrentTime, getRandomString, protectString, unprotectString } from '../../../lib/lib'
 import {
 	APIPeripheralDevice,
-	APIPeripheralDeviceFrom,
 	PeripheralDeviceActionRestart,
 	PeripheralDeviceActionType,
 	APIBlueprint,
-	APIBlueprintFrom,
 	RestAPI,
 	APIShowStyleBase,
 	APIShowStyleVariant,
@@ -71,6 +69,8 @@ import {
 	Studios,
 } from '../../collections'
 import {
+	APIBlueprintFrom,
+	APIPeripheralDeviceFrom,
 	APIShowStyleBaseFrom,
 	APIShowStyleVariantFrom,
 	APIStudioFrom,
