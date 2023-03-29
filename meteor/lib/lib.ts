@@ -311,7 +311,8 @@ export const waitForPromise: <T>(p: Promise<T> | T) => Awaited<T> = Meteor.wrapA
 		.catch((e) => {
 			cb(e)
 		})
-})
+}) as any
+
 /**
  * Convert a Fiber function into a promise
  * Makes the Fiber function to run in its own fiber and return a promise
