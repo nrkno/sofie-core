@@ -1,28 +1,21 @@
 import React, { useCallback, useMemo } from 'react'
-import ClassNames from 'classnames'
-import { MappingsExt } from '../../../lib/collections/Studios'
+import { MappingsExt } from '../../../../lib/collections/Studios'
 import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
-import { groupByToMapFunc, literal } from '../../../lib/lib'
+import { groupByToMapFunc, literal } from '../../../../lib/lib'
 import { useTranslation } from 'react-i18next'
 import {
 	applyAndValidateOverrides,
 	ObjectWithOverrides,
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import {
-	OverrideOpHelperForItemContents,
-	useOverrideOpHelper,
-	WrappedOverridableItemNormal,
-} from './util/OverrideOpHelper'
+import { useOverrideOpHelper, WrappedOverridableItemNormal } from '../util/OverrideOpHelper'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
-import { SchemaFormWithOverrides } from '../../lib/forms/SchemaFormWithOverrides'
 import deepmerge from 'deepmerge'
-import { SchemaFormSofieEnumDefinition, translateStringIfHasNamespaces } from '../../lib/forms/schemaFormUtil'
-import { useToggleExpandHelper } from './util/ToggleExpandedHelper'
-import { faPencilAlt, faCheck } from '@fortawesome/free-solid-svg-icons'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { SchemaFormSofieEnumDefinition, translateStringIfHasNamespaces } from '../../../lib/forms/schemaFormUtil'
+import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { SchemaFormUIField } from '../../../lib/jsonSchemaUtil'
+import { SchemaFormUIField } from '../../../../lib/jsonSchemaUtil'
+import { ConfigCategoryEntry } from './CategoryEntry'
 
 interface BlueprintConfigSchemaSettingsProps {
 	schema: JSONSchema | undefined
@@ -171,7 +164,7 @@ export function BlueprintConfigSchemaSettings({
 				<table className="expando settings-studio-source-table">
 					<tbody>
 						{groupedSchema.map(([categoryName, schema]) => (
-							<CategoryEntry
+							<ConfigCategoryEntry
 								key={categoryName ?? '__OTHER__'}
 								translationNamespaces={translationNamespaces}
 								wrappedItem={wrappedItem}
@@ -189,69 +182,5 @@ export function BlueprintConfigSchemaSettings({
 				<p>{t('This blueprint has not provided a valid config schema')}</p>
 			)}
 		</div>
-	)
-}
-
-interface EntryProps {
-	translationNamespaces: string[]
-	wrappedItem: WrappedOverridableItemNormal<IBlueprintConfig>
-	categoryName: string | null
-	categorySchema: JSONSchema
-	isExpanded: boolean
-	toggleExpanded: (itemId: string | null, force?: boolean) => void
-	overrideHelper: OverrideOpHelperForItemContents
-	sofieEnumDefinitons: Record<string, SchemaFormSofieEnumDefinition>
-}
-function CategoryEntry({
-	translationNamespaces,
-	wrappedItem,
-	categoryName,
-	categorySchema,
-	isExpanded,
-	toggleExpanded,
-	overrideHelper,
-	sofieEnumDefinitons,
-}: EntryProps) {
-	const { t } = useTranslation()
-
-	const toggleEditItem = useCallback(() => toggleExpanded(categoryName), [toggleExpanded, categoryName])
-
-	return (
-		<>
-			<tr
-				className={ClassNames({
-					hl: isExpanded,
-				})}
-			>
-				<th className="settings-studio-source-table__name c2">{categoryName ?? t('Other')}</th>
-				<td className="settings-studio-source-table__actions table-item-actions c3">
-					<button className="action-btn" onClick={toggleEditItem} title={t('Edit')}>
-						<FontAwesomeIcon icon={faPencilAlt} />
-					</button>
-				</td>
-			</tr>
-			{isExpanded && (
-				<tr className="expando-details hl">
-					<td colSpan={4}>
-						<div>
-							<SchemaFormWithOverrides
-								schema={categorySchema}
-								translationNamespaces={translationNamespaces}
-								allowTables
-								attr={''}
-								item={wrappedItem}
-								overrideHelper={overrideHelper}
-								sofieEnumDefinitons={sofieEnumDefinitons}
-							/>
-						</div>
-						<div className="mod alright">
-							<button className="btn btn-primary" onClick={toggleEditItem}>
-								<FontAwesomeIcon icon={faCheck} />
-							</button>
-						</div>
-					</td>
-				</tr>
-			)}
-		</>
 	)
 }
