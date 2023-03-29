@@ -6,6 +6,7 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { SourceLayerItemContainer } from '../SourceLayerItemContainer'
 import { ISourceLayerPropsBase, useMouseContext } from './SourceLayer'
 import { ISourceLayerExtended } from '../../../../lib/Rundown'
+import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 
 interface IFlattenedSourceLayerProps extends ISourceLayerPropsBase {
 	layers: ISourceLayerUi[]
@@ -14,6 +15,17 @@ interface IFlattenedSourceLayerProps extends ISourceLayerPropsBase {
 
 export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.Element {
 	const { getPartContext, onMouseUp } = useMouseContext(props)
+
+	const piecesForLayers = useMemo(() => {
+		let piecesForLayers: Map<string, PieceInstancePiece[]> = new Map()
+		for (const layer of props.layers) {
+			piecesForLayers.set(
+				layer._id,
+				layer.pieces.map((p) => p.instance.piece)
+			)
+		}
+		return piecesForLayers
+	}, [props.layers])
 
 	return (
 		<ContextMenuTrigger
@@ -41,9 +53,6 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.El
 						.sortBy((it) => it.renderedInPoint)
 						.sortBy((it) => it.cropped)
 						.map((piece) => {
-							const piecesForLayer = useMemo(() => {
-								return layer.pieces.map((p) => p.instance.piece)
-							}, [layer.pieces])
 							return (
 								<SourceLayerItemContainer
 									key={unprotectString(piece.instance._id)}
@@ -61,7 +70,7 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.El
 									onDoubleClick={props.onPieceDoubleClick}
 									mediaPreviewUrl={props.mediaPreviewUrl}
 									piece={piece}
-									pieces={piecesForLayer}
+									pieces={piecesForLayers.get(layer._id) ?? []}
 									layer={layer}
 									outputLayer={props.outputLayer}
 									part={props.part}
