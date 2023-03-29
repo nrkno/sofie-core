@@ -221,7 +221,7 @@ export class ActionExecutionContext
 	): Promise<IBlueprintPieceInstance | undefined> {
 		const query: MongoQuery<PieceInstance> = {}
 		if (options && options.pieceMetaDataFilter) {
-			for (const [key, value] of Object.entries(options.pieceMetaDataFilter)) {
+			for (const [key, value] of Object.entries<unknown>(options.pieceMetaDataFilter)) {
 				// TODO do we need better validation here?
 				// It should be pretty safe as we are working with the cache version (for now)
 				// @ts-expect-error metaData is `unknown` so no subkeys are known to be valid
@@ -255,7 +255,7 @@ export class ActionExecutionContext
 	): Promise<IBlueprintPieceDB | undefined> {
 		const query: MongoQuery<Piece> = {}
 		if (options && options.pieceMetaDataFilter) {
-			for (const [key, value] of Object.entries(options.pieceMetaDataFilter)) {
+			for (const [key, value] of Object.entries<unknown>(options.pieceMetaDataFilter)) {
 				// TODO do we need better validation here?
 				// It should be pretty safe as we are working with the cache version (for now)
 				// @ts-expect-error metaData is `unknown` so no subkeys are known to be valid

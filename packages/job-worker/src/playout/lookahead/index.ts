@@ -48,7 +48,7 @@ export async function getLookeaheadObjects(
 ): Promise<Array<TimelineObjRundown & OnGenerateTimelineObjExt>> {
 	const span = context.startSpan('getLookeaheadObjects')
 	const allMappings = applyAndValidateOverrides(context.studio.mappingsWithOverrides)
-	const mappingsToConsider = Object.entries(allMappings.obj).filter(
+	const mappingsToConsider = Object.entries<MappingExt>(allMappings.obj).filter(
 		([_id, map]) => map.lookahead !== LookaheadMode.NONE && map.lookahead !== undefined
 	)
 	if (mappingsToConsider.length === 0) {

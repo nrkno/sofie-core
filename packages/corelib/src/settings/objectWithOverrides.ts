@@ -61,7 +61,7 @@ export function convertObjectIntoOverrides<T>(
 	const result = wrapDefaultObject<Record<string, T>>({})
 
 	if (rawObj) {
-		for (const [id, obj] of Object.entries(rawObj)) {
+		for (const [id, obj] of Object.entries<ReadonlyDeep<T>>(rawObj)) {
 			result.overrides.push(
 				literal<ObjectOverrideSetOp>({
 					op: 'set',

@@ -51,7 +51,7 @@ export function getSchemaDefaultValues(schema: JSONSchema | undefined): any {
 		case TypeName.Object: {
 			const object: any = {}
 
-			for (const [index, prop] of Object.entries(schema.properties || {})) {
+			for (const [index, prop] of Object.entries<JSONSchema>(schema.properties || {})) {
 				object[index] = getSchemaDefaultValues(prop)
 			}
 

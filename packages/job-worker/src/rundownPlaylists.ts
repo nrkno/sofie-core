@@ -234,7 +234,7 @@ export function produceRundownPlaylistInfoFromRundown(
 
 			newPlaylist.rundownIdsInOrder = []
 
-			const blueprintOrder = Object.entries(playlistInfo.order)
+			const blueprintOrder = Object.entries<number>(playlistInfo.order)
 				.filter((e) => typeof e[1] === 'number')
 				.sort((a, b) => {
 					if (a[1] !== b[1]) {
