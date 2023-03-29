@@ -20,3 +20,7 @@ export * from './translations'
 export * from './triggers'
 
 export { MOS } from '@sofie-automation/shared-lib/dist/mos'
+
+export { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
+export * from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+export * from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'

@@ -4,14 +4,13 @@ import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { withTranslation } from 'react-i18next'
-import { protectString, unprotectString } from '../../../../lib/lib'
 import { EditAttribute } from '../../../lib/EditAttribute'
-import { SettingsNavigation } from '../../../lib/SettingsNavigation'
-import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { StudioBaselineStatus } from './Baseline'
-import { BlueprintId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
-import { Blueprints, Studios } from '../../../collections'
+import { Studios } from '../../../collections'
+import { useHistory } from 'react-router-dom'
+import { MeteorCall } from '../../../../lib/api/methods'
 
 interface IStudioGenericPropertiesProps {
 	studio: Studio
@@ -31,52 +30,6 @@ export const StudioGenericProperties = withTranslation()(
 			super(props)
 		}
 
-		getBlueprintOptions() {
-			const { t } = this.props
-
-			const options: { name: string; value: BlueprintId | null }[] = [
-				{
-					name: t('None'),
-					value: protectString(''),
-				},
-			]
-
-			options.push(
-				...Blueprints.find({ blueprintType: BlueprintManifestType.STUDIO })
-					.fetch()
-					.map((blueprint) => {
-						return {
-							name: blueprint.name ? blueprint.name + ` (${blueprint._id})` : unprotectString(blueprint._id),
-							value: blueprint._id,
-						}
-					})
-			)
-
-			return options
-		}
-
-		getBlueprintConfigPresetOptions() {
-			const options: { name: string; value: string | null }[] = []
-
-			if (this.props.studio.blueprintId) {
-				const blueprint = Blueprints.findOne({
-					blueprintType: BlueprintManifestType.STUDIO,
-					_id: this.props.studio.blueprintId,
-				})
-
-				if (blueprint && blueprint.studioConfigPresets) {
-					for (const [id, preset] of Object.entries(blueprint.studioConfigPresets)) {
-						options.push({
-							value: id,
-							name: preset.name,
-						})
-					}
-				}
-			}
-
-			return options
-		}
-
 		renderShowStyleEditButtons() {
 			const buttons: JSX.Element[] = []
 			if (this.props.studio) {
@@ -86,11 +39,10 @@ export const StudioGenericProperties = withTranslation()(
 					)
 					if (showStyleBase) {
 						buttons.push(
-							<SettingsNavigation
+							<RedirectToShowStyleButton
 								key={'settings-nevigation-' + showStyleBase.showStyleBase.name}
-								attribute="name"
-								obj={showStyleBase.showStyleBase}
-								type="showstyle"
+								name={showStyleBase.showStyleBase.name}
+								id={showStyleBase.showStyleBase._id}
 							/>
 						)
 					}
@@ -123,56 +75,6 @@ export const StudioGenericProperties = withTranslation()(
 							<span className="mdfx"></span>
 						</div>
 					</label>
-					<label className="field">
-						{t('Blueprint')}
-						{!this.props.studio.blueprintId ? (
-							<div className="error-notice inline">
-								{t('Blueprint not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
-							</div>
-						) : null}
-						<div className="mdi">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="blueprintId"
-								obj={this.props.studio}
-								type="dropdown"
-								options={this.getBlueprintOptions()}
-								mutateDisplayValue={(v) => v || ''}
-								mutateUpdateValue={(v) => (v === '' ? undefined : v)}
-								collection={Studios}
-								className="mdinput"
-							/>
-							<SettingsNavigation attribute="blueprintId" obj={this.props.studio} type="blueprint"></SettingsNavigation>
-							<span className="mdfx"></span>
-						</div>
-					</label>
-					<label className="field">
-						{t('Blueprint config preset')}
-						{!this.props.studio.blueprintConfigPresetId && (
-							<div className="error-notice inline">
-								{t('Blueprint config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
-							</div>
-						)}
-						{this.props.studio.blueprintConfigPresetIdUnlinked && this.props.studio.blueprintConfigPresetId && (
-							<div className="error-notice inline">
-								{t('Blueprint config preset is missing')} <FontAwesomeIcon icon={faExclamationTriangle} />
-							</div>
-						)}
-						<div className="mdi">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="blueprintConfigPresetId"
-								obj={this.props.studio}
-								type="dropdown"
-								options={this.getBlueprintConfigPresetOptions()}
-								mutateDisplayValue={(v) => v || ''}
-								mutateUpdateValue={(v) => (v === '' ? undefined : v)}
-								collection={Studios}
-								className="mdinput"
-							/>
-							<span className="mdfx"></span>
-						</div>
-					</label>
 					<div className="field">
 						{t('Select Compatible Show Styles')}
 						{!this.props.studio.supportedShowStyleBase.length ? (
@@ -190,7 +92,7 @@ export const StudioGenericProperties = withTranslation()(
 								collection={Studios}
 							/>
 							{this.renderShowStyleEditButtons()}
-							<SettingsNavigation type="newshowstyle" />
+							<NewShowStyleButton />
 						</div>
 					</div>
 					<label className="field">
@@ -347,3 +249,37 @@ export const StudioGenericProperties = withTranslation()(
 		}
 	}
 )
+
+const NewShowStyleButton = React.memo(function NewShowStyleButton() {
+	const history = useHistory()
+
+	const onShowStyleAdd = () => {
+		MeteorCall.showstyles
+			.insertShowStyleBase()
+			.then((showStyleBaseId) => {
+				history.push('/settings/showStyleBase/' + showStyleBaseId)
+			})
+			.catch(console.error)
+	}
+
+	return (
+		<button className="btn btn-primary btn-add-new" onClick={onShowStyleAdd}>
+			New Show Style
+		</button>
+	)
+})
+
+const RedirectToShowStyleButton = React.memo(function RedirectToShowStyleButton(props: {
+	id: ShowStyleBaseId
+	name: string
+}) {
+	const history = useHistory()
+
+	const doRedirect = () => history.push('/settings/showStyleBase/' + props.id)
+
+	return (
+		<button className="btn btn-primary btn-add-new" onClick={doRedirect}>
+			Edit {props.name}
+		</button>
+	)
+})

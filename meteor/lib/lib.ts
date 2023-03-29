@@ -463,10 +463,15 @@ export function equalArrays<T>(a: T[], b: T[]): boolean {
 }
 
 /** Generate the translation for a string, to be applied later when it gets rendered */
-export function generateTranslation(key: string, args?: { [k: string]: any }): ITranslatableMessage {
+export function generateTranslation(
+	key: string,
+	args?: { [k: string]: any },
+	namespaces?: string[]
+): ITranslatableMessage {
 	return {
 		key,
 		args,
+		namespaces,
 	}
 }
 

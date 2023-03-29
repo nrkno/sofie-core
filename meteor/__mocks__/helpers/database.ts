@@ -370,7 +370,7 @@ export async function setupMockStudioBlueprint(
 					},
 				},
 
-				studioConfigManifest: [],
+				studioConfigSchema: '{}' as any,
 				studioMigrations: [],
 				getBaseline: () => {
 					return {
@@ -427,7 +427,7 @@ export async function setupMockShowStyleBlueprint(
 					},
 				},
 
-				showStyleConfigManifest: [],
+				showStyleConfigSchema: '{}' as any,
 				showStyleMigrations: [],
 				getShowStyleVariantId: (): string | null => {
 					return SHOW_STYLE_VARIANT_ID

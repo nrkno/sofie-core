@@ -1,8 +1,7 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useMemo } from 'react'
 import { useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
 import { PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
-import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { StudioRoutings } from './Studio/Routings'
 import { StudioDevices } from './Studio/Devices'
 import { MappingsSettingsManifest, MappingsSettingsManifests, StudioMappings } from './Studio/Mappings'
@@ -10,17 +9,13 @@ import { StudioPackageManagerSettings } from './Studio/PackageManager'
 import { StudioGenericProperties } from './Studio/Generic'
 import { Redirect, Route, Switch, useRouteMatch } from 'react-router-dom'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
-import {
-	applyAndValidateOverrides,
-	SomeObjectOverrideOp,
-} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { Blueprints, PeripheralDevices, ShowStyleBases, Studios } from '../../collections'
-import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { BlueprintConfigManifestSettings } from './BlueprintConfigManifest'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { PeripheralDevices, ShowStyleBases, Studios } from '../../collections'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { translateStringIfHasNamespaces } from '../../lib/forms/schemaFormUtil'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { StudioBlueprintConfigurationSettings } from './Studio/BlueprintConfiguration'
 
 export default function StudioSettings(): JSX.Element {
 	const match = useRouteMatch<{ studioId: string }>()
@@ -107,7 +102,7 @@ export default function StudioSettings(): JSX.Element {
 								<StudioDevices studioId={studio._id} />
 							</Route>
 							<Route path={`${match.path}/blueprint-config`}>
-								<StudioBlueprintConfigManifest studio={studio} />
+								<StudioBlueprintConfigurationSettings studio={studio} />
 							</Route>
 							<Route path={`${match.path}/mappings`}>
 								<StudioMappings
@@ -135,58 +130,6 @@ export default function StudioSettings(): JSX.Element {
 		</div>
 	) : (
 		<Spinner />
-	)
-}
-
-interface StudioBlueprintConfigManifestProps {
-	studio: DBStudio
-}
-function StudioBlueprintConfigManifest({ studio }: StudioBlueprintConfigManifestProps) {
-	const saveBlueprintConfigOverrides = useCallback(
-		(newOps: SomeObjectOverrideOp[]) => {
-			Studios.update(studio._id, {
-				$set: {
-					'blueprintConfigWithOverrides.overrides': newOps,
-				},
-			})
-		},
-		[studio._id]
-	)
-
-	const blueprintConfigManifest = useTracker(
-		() => {
-			if (studio?.blueprintId) {
-				const blueprint = Blueprints.findOne({
-					_id: studio.blueprintId,
-					blueprintType: BlueprintManifestType.STUDIO,
-				})
-
-				return blueprint ? blueprint.studioConfigManifest || [] : []
-			} else {
-				return []
-			}
-		},
-		[studio?.blueprintId],
-		[]
-	)
-
-	const layerMappingsFlat = useMemo(() => {
-		const mappings = {}
-		if (studio) {
-			mappings[studio.name] = applyAndValidateOverrides(studio.mappingsWithOverrides).obj
-		}
-		return mappings
-	}, [studio?.name, studio?.mappingsWithOverrides])
-
-	return (
-		<BlueprintConfigManifestSettings
-			configManifestId={unprotectString(studio._id)}
-			manifest={blueprintConfigManifest}
-			layerMappings={layerMappingsFlat}
-			configObject={studio.blueprintConfigWithOverrides}
-			saveOverrides={saveBlueprintConfigOverrides}
-			alternateConfig={undefined}
-		/>
 	)
 }
 

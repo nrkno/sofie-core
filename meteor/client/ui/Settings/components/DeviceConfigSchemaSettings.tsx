@@ -11,13 +11,13 @@ import { TextInputControl } from '../../../lib/Components/TextInput'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { DropdownInputControl, DropdownInputOption } from '../../../lib/Components/DropdownInput'
-import { SchemaTableSummaryRow } from '../../../lib/forms/schemaFormTable'
+import { SchemaTableSummaryRow } from '../../../lib/forms/SchemaTableSummaryRow'
 import {
 	SchemaSummaryField,
 	getSchemaSummaryFields,
 	translateStringIfHasNamespaces,
 } from '../../../lib/forms/schemaFormUtil'
-import { SchemaFormForCollection } from '../../../lib/forms/schemaFormForCollection'
+import { SchemaFormForCollection } from '../../../lib/forms/SchemaFormForCollection'
 import { getSchemaDefaultValues } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
 import { JSONBlob, JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { PeripheralDevices } from '../../../collections'
