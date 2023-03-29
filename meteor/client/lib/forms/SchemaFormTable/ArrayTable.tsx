@@ -1,22 +1,24 @@
 import { faPlus, faSync } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { clone, objectPathGet, objectPathSet } from '@sofie-automation/corelib/dist/lib'
+import { clone, objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { WrappedOverridableItemNormal, OverrideOpHelperForItemContents } from '../../ui/Settings/util/OverrideOpHelper'
-import { useToggleExpandHelper } from '../../ui/Settings/util/ToggleExpandedHelper'
-import { doModalDialog } from '../ModalDialog'
+import {
+	WrappedOverridableItemNormal,
+	OverrideOpHelperForItemContents,
+} from '../../../ui/Settings/util/OverrideOpHelper'
+import { useToggleExpandHelper } from '../../../ui/Settings/util/ToggleExpandedHelper'
+import { doModalDialog } from '../../ModalDialog'
 import {
 	getSchemaSummaryFieldsForObject,
 	SchemaFormSofieEnumDefinition,
-	SchemaSummaryField,
 	translateStringIfHasNamespaces,
-} from './schemaFormUtil'
+} from '../schemaFormUtil'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { getSchemaDefaultValues, SchemaFormUIField } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
-import { hasOpWithPath } from '../Components/util'
-import { SchemaTableSummaryRow, SchemaFormTableEditRow } from './schemaFormTableShared'
-import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { hasOpWithPath } from '../../Components/util'
+import { ArrayTableRow } from './ArrayTableRow'
+import { OverrideOpHelperArrayTable } from './ArrayTableOpHelper'
 
 interface SchemaFormArrayTableProps {
 	/** Schema for each row in the table */
@@ -123,7 +125,7 @@ export const SchemaFormArrayTable = ({
 						const i = Number(i0)
 
 						return (
-							<TableRow
+							<ArrayTableRow
 								key={i}
 								columns={columns}
 								summaryFields={summaryFields}
@@ -156,108 +158,4 @@ export const SchemaFormArrayTable = ({
 			</div>
 		</>
 	)
-}
-
-interface TableRowProps {
-	columns: Record<string, JSONSchema | undefined>
-	summaryFields: SchemaSummaryField[]
-	translationNamespaces: string[]
-	sofieEnumDefinitons: Record<string, SchemaFormSofieEnumDefinition> | undefined
-
-	overrideHelper: OverrideOpHelperArrayTable
-
-	rowId: number
-	rowObject: any
-
-	isExpanded: boolean
-	toggleExpanded: (rowId: number | string, forceState?: boolean) => void
-	confirmRemove: (rowId: number | string) => void
-}
-function TableRow({
-	columns,
-	summaryFields,
-	translationNamespaces,
-	sofieEnumDefinitons,
-	overrideHelper,
-	rowId,
-	rowObject,
-	isExpanded,
-	toggleExpanded,
-	confirmRemove,
-}: TableRowProps) {
-	const rowItem = useMemo(
-		() =>
-			literal<WrappedOverridableItemNormal<any>>({
-				type: 'normal',
-				id: rowId + '',
-				computed: rowObject,
-				defaults: undefined,
-				overrideOps: [],
-			}),
-		[rowObject, rowId]
-	)
-
-	return (
-		<React.Fragment key={rowId}>
-			<SchemaTableSummaryRow
-				summaryFields={summaryFields}
-				rowId={rowId}
-				showRowId={false}
-				object={rowObject}
-				isEdited={isExpanded}
-				editItem={toggleExpanded}
-				removeItem={confirmRemove}
-			/>
-			{isExpanded && (
-				<SchemaFormTableEditRow
-					translationNamespaces={translationNamespaces}
-					sofieEnumDefinitons={sofieEnumDefinitons}
-					rowId={rowId}
-					columns={columns}
-					rowItem={rowItem}
-					editItem={toggleExpanded}
-					overrideHelper={overrideHelper}
-				/>
-			)}
-		</React.Fragment>
-	)
-}
-
-/**
- * The OverrideOp system does not support Arrays currently.
- * This is intended to be a break point to avoid tables from attempting to define operations on arrays,
- * and instead make the table be treated as a single blob.
- */
-class OverrideOpHelperArrayTable implements OverrideOpHelperForItemContents {
-	readonly #baseHelper: OverrideOpHelperForItemContents
-	readonly #itemId: string
-	readonly #currentRows: any[]
-	readonly #path: string
-
-	constructor(baseHelper: OverrideOpHelperForItemContents, itemId: string, currentRows: any[], path: string) {
-		this.#baseHelper = baseHelper
-		this.#itemId = itemId
-		this.#currentRows = currentRows
-		this.#path = path
-	}
-
-	clearItemOverrides(_itemId: string, _subPath: string): void {
-		// Not supported as this is faking an item with overrides
-	}
-	deleteRow(rowId: string): void {
-		// Delete the row
-		const newObj = clone(this.#currentRows)
-		newObj.splice(Number(rowId), 1)
-
-		// Send it onwards
-		this.#baseHelper.setItemValue(this.#itemId, this.#path, newObj)
-	}
-	setItemValue(rowId: string, subPath: string, value: any): void {
-		// Build the new object
-		const newObj = clone(this.#currentRows)
-		objectPathSet(newObj, `${rowId}.${subPath}`, value)
-
-		// Send it onwards
-		this.#baseHelper.setItemValue(this.#itemId, this.#path, newObj)
-	}
 }
