@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
 import { MappingsExt } from '../../../../lib/collections/Studios'
-import { IBlueprintConfig } from '@sofie-automation/blueprints-integration'
+import { IBlueprintConfig, SchemaFormUIField } from '@sofie-automation/blueprints-integration'
 import { groupByToMapFunc, literal } from '../../../../lib/lib'
 import { useTranslation } from 'react-i18next'
 import {
@@ -14,7 +14,6 @@ import deepmerge from 'deepmerge'
 import { SchemaFormSofieEnumDefinition, translateStringIfHasNamespaces } from '../../../lib/forms/schemaFormUtil'
 import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { SchemaFormUIField } from '../../../../lib/jsonSchemaUtil'
 import { ConfigCategoryEntry } from './CategoryEntry'
 
 interface BlueprintConfigSchemaSettingsProps {

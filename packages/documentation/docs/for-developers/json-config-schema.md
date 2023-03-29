@@ -63,7 +63,7 @@ Valid for both show-style and studio blueprint configuration
 
 This will provide a dropdown of all mappings in the studio, or studios where the show-style can be used.
 
-Setting `ui:sofie-enum:filter` to an array will filter the dropdown by the specified DeviceType.
+Setting `ui:sofie-enum:filter` to an array of numbers will filter the dropdown by the specified DeviceType.
 
 #### `source-layers`
 
@@ -71,7 +71,7 @@ Valid for only show-style blueprint configuration.
 
 This will provide a dropdown of all source-layers in the show-style.
 
-Setting `ui:sofie-enum:filter` to an array will filter the dropdown by the specified SourceLayerType.
+Setting `ui:sofie-enum:filter` to an array of numbers will filter the dropdown by the specified SourceLayerType.
 
 ## Supported types
 

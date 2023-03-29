@@ -13,11 +13,10 @@ import {
 	translateStringIfHasNamespaces,
 } from './schemaFormUtil'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
-import { getSchemaDefaultValues } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
+import { getSchemaDefaultValues, SchemaFormUIField } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
 import { hasOpWithPath } from '../Components/util'
 import { SchemaTableSummaryRow, SchemaFormTableEditRow } from './schemaFormTableShared'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { SchemaFormUIField } from '../../../lib/jsonSchemaUtil'
 
 interface SchemaFormArrayTableProps {
 	/** Schema for each row in the table */

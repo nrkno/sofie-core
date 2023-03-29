@@ -20,8 +20,8 @@ import { Studio } from '../../../lib/collections/Studios'
 import { generateTranslation } from '../../../lib/lib'
 import { JSONBlob, JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
-import { joinObjectPathFragments } from '../../../lib/jsonSchemaUtil'
 import { logger } from '../../logging'
+import { joinObjectPathFragments } from '../../../client/lib/forms/schemaFormUtil'
 
 export async function getUpgradeStatus(): Promise<GetUpgradeStatusResult> {
 	const studioUpgrades = await checkStudiosUpgradeStatus()
