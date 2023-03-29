@@ -221,7 +221,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 		}
 	}, [props.onSegmentScroll, isLiveSegment])
 
-	if (props.segmentui === undefined) {
+	if (props.segmentui === undefined || props.segmentui.isHidden) {
 		return null
 	}
 

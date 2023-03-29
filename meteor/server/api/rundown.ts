@@ -1,6 +1,5 @@
 import * as _ from 'underscore'
 import { check } from '../../lib/check'
-import { Rundown } from '../../lib/collections/Rundowns'
 import { logger } from '../logging'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewRundownAPI, RundownAPIMethods } from '../../lib/api/rundown'
@@ -13,15 +12,10 @@ import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { StudioContentWriteAccess } from '../security/studio'
 import { runIngestOperation } from './ingest/lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
-import {
-	checkAccessToPlaylist,
-	checkAccessToRundown,
-	VerifiedRundownContentAccess,
-	VerifiedRundownPlaylistContentAccess,
-} from './lib'
+import { VerifiedRundownContentAccess, VerifiedRundownPlaylistContentAccess } from './lib'
 import { Blueprint } from '../../lib/collections/Blueprints'
 import { Studio } from '../../lib/collections/Studios'
-import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Blueprints, Rundowns, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
 
 export namespace ServerRundownAPI {
@@ -49,7 +43,7 @@ export namespace ServerRundownAPI {
 			rundowns.map(async (rundown) => {
 				return {
 					rundownId: rundown._id,
-					response: await innerResyncRundown(rundown),
+					response: await IngestActions.reloadRundown(rundown),
 				}
 			})
 		)
@@ -59,13 +53,11 @@ export namespace ServerRundownAPI {
 		}
 	}
 
-	export async function innerResyncRundown(rundown: Rundown): Promise<TriggerReloadDataResponse> {
-		logger.info('resyncRundown ' + rundown._id)
-
-		// Orphaned flag will be reset by the response update
-		return IngestActions.reloadRundown(rundown)
+	export async function resyncRundown(access: VerifiedRundownContentAccess): Promise<TriggerReloadDataResponse> {
+		return IngestActions.reloadRundown(access.rundown)
 	}
 }
+
 export namespace ClientRundownAPI {
 	export async function rundownPlaylistNeedsResync(
 		context: MethodContext,
@@ -136,26 +128,8 @@ export namespace ClientRundownAPI {
 }
 
 class ServerRundownAPIClass extends MethodContextAPI implements NewRundownAPI {
-	async resyncRundownPlaylist(playlistId: RundownPlaylistId) {
-		check(playlistId, String)
-		const access = await checkAccessToPlaylist(this, playlistId)
-
-		return ServerRundownAPI.resyncRundownPlaylist(access)
-	}
 	async rundownPlaylistNeedsResync(playlistId: RundownPlaylistId) {
 		return ClientRundownAPI.rundownPlaylistNeedsResync(this, playlistId)
-	}
-	async removeRundown(rundownId: RundownId) {
-		const access = await checkAccessToRundown(this, rundownId)
-		return ServerRundownAPI.removeRundown(access)
-	}
-	async resyncRundown(rundownId: RundownId) {
-		const access = await checkAccessToRundown(this, rundownId)
-		return ServerRundownAPI.innerResyncRundown(access.rundown)
-	}
-	async unsyncRundown(rundownId: RundownId) {
-		const access = await checkAccessToRundown(this, rundownId)
-		return ServerRundownAPI.unsyncRundown(access)
 	}
 }
 registerClassToMeteorMethods(RundownAPIMethods, ServerRundownAPIClass, false)

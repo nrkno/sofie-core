@@ -177,7 +177,7 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 
 	const segmentRef = useRef<HTMLDivElement | null>(null)
 
-	if (props.segmentui === undefined) {
+	if (props.segmentui === undefined || props.segmentui.isHidden) {
 		return null
 	}
 

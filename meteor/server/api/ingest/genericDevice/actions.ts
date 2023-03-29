@@ -14,7 +14,7 @@ import { DEFAULT_NRCS_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/cor
 export namespace GenericDeviceActions {
 	export async function reloadRundown(
 		peripheralDevice: PeripheralDevice,
-		rundown: Rundown
+		rundown: Pick<Rundown, '_id' | 'studioId' | 'externalId'>
 	): Promise<TriggerReloadDataResponse> {
 		logger.info('reloadRundown ' + rundown._id)
 

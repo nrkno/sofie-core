@@ -148,7 +148,6 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 			{showMiniInspectorNotice && noticeLevel && renderNotice(t, noticeLevel, noticeMessages)}
 			{showMiniInspectorClipData && (
 				<div className="segment-timeline__mini-inspector__properties">
-					<span className="mini-inspector__label">{t('Clip:')}</span>
 					<span className="mini-inspector__value">{content?.fileName}</span>
 				</div>
 			)}

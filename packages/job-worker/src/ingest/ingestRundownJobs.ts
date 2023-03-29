@@ -15,6 +15,7 @@ import {
 	UserRemoveRundownProps,
 	UserUnsyncRundownProps,
 } from '@sofie-automation/corelib/dist/worker/ingest'
+import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 
 /**
  * Attempt to remove a rundown, or orphan it
@@ -30,11 +31,15 @@ export async function handleRemovedRundown(context: JobContext, data: IngestRemo
 		async (_context, cache) => {
 			const rundown = getRundown(cache)
 
+			const canRemove = data.forceDelete || canRundownBeUpdated(rundown, false)
+			if (!canRemove) throw UserError.create(UserErrorMessage.RundownRemoveWhileActive, { name: rundown.name })
+
 			return literal<CommitIngestData>({
 				changedSegmentIds: [],
 				removedSegmentIds: [],
 				renamedSegments: new Map(),
-				removeRundown: data.forceDelete || canRundownBeUpdated(rundown, false),
+				removeRundown: true,
+				returnRemoveFailure: true,
 			})
 		}
 	)

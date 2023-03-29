@@ -1,4 +1,4 @@
-import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { unprotectString } from '@sofie-automation/server-core-integration'
 import * as Influx from 'influx'
 import { config } from './config'
 

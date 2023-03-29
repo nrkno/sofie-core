@@ -1,5 +1,16 @@
-import { CoreConnection, CoreOptions, DDPConnectorOptions } from '@sofie-automation/server-core-integration'
-
+import {
+	CoreConnection,
+	CoreOptions,
+	DDPConnectorOptions,
+	PeripheralDeviceAPI,
+	PeripheralDeviceCommand,
+	PeripheralDeviceId,
+	PeripheralDevicePublic,
+	protectString,
+	StatusCode,
+	StudioId,
+	unprotectString,
+} from '@sofie-automation/server-core-integration'
 import {
 	DeviceType,
 	DeviceContainer,
@@ -7,7 +18,6 @@ import {
 	DeviceOptionsAny,
 	ActionExecutionResult,
 } from 'timeline-state-resolver'
-
 import * as _ from 'underscore'
 import { DeviceConfig } from './connector'
 import { TSRHandler } from './tsrHandler'
@@ -16,17 +26,6 @@ import { Logger } from 'winston'
 import { MemUsageReport as ThreadMemUsageReport } from 'threadedclass'
 import { Process } from './process'
 import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
-import {
-	PeripheralDeviceCategory,
-	PeripheralDeviceType,
-	PERIPHERAL_SUBTYPE_PROCESS,
-	PeripheralDeviceStatusObject,
-} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { protectString, unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { PeripheralDeviceId, StudioId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
-import { PeripheralDeviceCommand } from '@sofie-automation/shared-lib/dist/core/model/PeripheralDeviceCommand'
-import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
-import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 
 export interface CoreConfig {
 	host: string
@@ -77,7 +76,11 @@ export class CoreHandler {
 		this._process = process
 
 		this.core = new CoreConnection(
-			this.getCoreConnectionOptions('Playout gateway', 'PlayoutCoreParent', PERIPHERAL_SUBTYPE_PROCESS)
+			this.getCoreConnectionOptions(
+				'Playout gateway',
+				'PlayoutCoreParent',
+				PeripheralDeviceAPI.PERIPHERAL_SUBTYPE_PROCESS
+			)
 		)
 
 		this.core.onConnected(() => {
@@ -152,7 +155,7 @@ export class CoreHandler {
 	getCoreConnectionOptions(
 		name: string,
 		subDeviceId: string,
-		subDeviceType: DeviceType | PERIPHERAL_SUBTYPE_PROCESS
+		subDeviceType: DeviceType | PeripheralDeviceAPI.PERIPHERAL_SUBTYPE_PROCESS
 	): CoreOptions {
 		if (!this._deviceOptions.deviceId) {
 			// this.logger.warn('DeviceId not set, using a temporary random id!')
@@ -163,8 +166,8 @@ export class CoreHandler {
 			deviceId: protectString(this._deviceOptions.deviceId + subDeviceId),
 			deviceToken: this._deviceOptions.deviceToken,
 
-			deviceCategory: PeripheralDeviceCategory.PLAYOUT,
-			deviceType: PeripheralDeviceType.PLAYOUT,
+			deviceCategory: PeripheralDeviceAPI.PeripheralDeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceAPI.PeripheralDeviceType.PLAYOUT,
 			deviceSubType: subDeviceType,
 
 			deviceName: name,
@@ -178,7 +181,7 @@ export class CoreHandler {
 			options.deviceToken = 'unsecureToken'
 		}
 
-		if (subDeviceType === PERIPHERAL_SUBTYPE_PROCESS) options.versions = this._getVersions()
+		if (subDeviceType === PeripheralDeviceAPI.PERIPHERAL_SUBTYPE_PROCESS) options.versions = this._getVersions()
 		return options
 	}
 	onConnected(fcn: () => any): void {
@@ -511,7 +514,7 @@ export class CoreTSRDeviceHandler {
 	private _tsrHandler: TSRHandler
 	private _subscriptions: Array<string> = []
 	private _hasGottenStatusChange = false
-	private _deviceStatus: PeripheralDeviceStatusObject = {
+	private _deviceStatus: PeripheralDeviceAPI.PeripheralDeviceStatusObject = {
 		statusCode: StatusCode.BAD,
 		messages: ['Starting up...'],
 	}
@@ -586,7 +589,7 @@ export class CoreTSRDeviceHandler {
 		// setup observers
 		this._coreParentHandler.setupObserverForPeripheralDeviceCommands(this)
 	}
-	statusChanged(deviceStatus: Partial<PeripheralDeviceStatusObject>): void {
+	statusChanged(deviceStatus: Partial<PeripheralDeviceAPI.PeripheralDeviceStatusObject>): void {
 		this._hasGottenStatusChange = true
 
 		this._deviceStatus = {

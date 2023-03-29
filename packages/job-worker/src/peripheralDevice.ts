@@ -1,9 +1,13 @@
 import { TSR } from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceCommandId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { createManualPromise, getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { Complete, createManualPromise, getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { PeripheralDevicePublicWithActions } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { JobContext } from './jobs'
 import { getCurrentTime } from './lib'
 import { logger } from './logging'
+import { CacheForPlayout } from './playout/cache'
+import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 
 export async function executePeripheralDeviceAction(
 	context: JobContext,
@@ -169,4 +173,40 @@ async function executePeripheralDeviceGenericFunction(
 	})
 
 	return result
+}
+
+export async function listPeripheralDevices(
+	context: JobContext,
+	cache: CacheForPlayout
+): Promise<PeripheralDevicePublicWithActions[]> {
+	const parentDeviceIds = cache.PeripheralDevices.findAll(
+		(doc: PeripheralDevice) => doc.studioId === context.studioId && doc.type === PeripheralDeviceType.PLAYOUT
+	).map((doc) => doc._id)
+	if (parentDeviceIds.length === 0) {
+		throw new Error('No parent devices are configured')
+	}
+
+	const devices = await context.directCollections.PeripheralDevices.findFetch({
+		parentDeviceId: {
+			$in: parentDeviceIds,
+		},
+	})
+
+	return devices.map((d) => {
+		// Only expose a subset of the PeripheralDevice to the blueprints
+		return literal<Complete<PeripheralDevicePublicWithActions>>({
+			_id: d._id,
+			name: d.name,
+			deviceName: d.deviceName,
+			studioId: d.studioId,
+			category: d.category,
+			type: d.type,
+			subType: d.subType,
+			parentDeviceId: d.parentDeviceId,
+			created: d.created,
+			status: d.status,
+			settings: d.settings,
+			actions: d.configManifest.subdeviceManifest?.[d.subType]?.actions,
+		})
+	})
 }

@@ -135,10 +135,22 @@ export interface IGetRundownContext extends IShowStyleUserContext {
 
 export interface IRundownContext extends IShowStyleContext {
 	readonly rundownId: string
+	readonly playlistId: string
 	readonly rundown: Readonly<IBlueprintSegmentRundown>
 }
 
 export interface IRundownUserContext extends IUserNotesContext, IRundownContext {}
+
+export interface IRundownActivationContext extends IRundownContext {
+	/** Execute an action on a certain PeripheralDevice */
+	executeTSRAction(
+		deviceId: PeripheralDeviceId,
+		actionId: string,
+		payload: Record<string, any>
+	): Promise<TSR.ActionExecutionResult>
+	/** Returns a list of the PeripheralDevices */
+	listPeripheralDevices(): Promise<PeripheralDevicePublic[]>
+}
 
 export interface ISegmentUserContext extends IUserNotesContext, IRundownContext, IPackageInfoContext {
 	/** Display a notification to the user of an error */

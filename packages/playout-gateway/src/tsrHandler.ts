@@ -28,16 +28,7 @@ import { Logger } from 'winston'
 import { disableAtemUpload } from './config'
 import Debug from 'debug'
 import { FinishedTrace, sendTrace } from './influxdb'
-import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
-import {
-	PartPlaybackCallbackData,
-	PiecePlaybackCallbackData,
-	PlayoutChangedResults,
-	PlayoutChangedType,
-	PeripheralDeviceStatusObject,
-} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { protectString, unprotectObject, unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+
 import { StudioId, TimelineHash } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import {
 	deserializeTimelineBlob,
@@ -45,12 +36,19 @@ import {
 	RoutedTimeline,
 	TimelineObjGeneric,
 } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
-import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { DBTimelineDatastoreEntry } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
 import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
-import { getSchemaDefaultValues } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
 import { PlayoutGatewayConfig } from './generated/options'
-import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import {
+	assertNever,
+	getSchemaDefaultValues,
+	JSONBlobParse,
+	PeripheralDeviceAPI,
+	PeripheralDevicePublic,
+	protectString,
+	unprotectObject,
+	unprotectString,
+} from '@sofie-automation/server-core-integration'
 
 const debug = Debug('playout-gateway')
 
@@ -748,7 +746,7 @@ export class TSRHandler {
 			const deviceType = device.deviceType
 
 			const onDeviceStatusChanged = (connectedOrStatus: Partial<DeviceStatus>) => {
-				let deviceStatus: Partial<PeripheralDeviceStatusObject>
+				let deviceStatus: Partial<PeripheralDeviceAPI.PeripheralDeviceStatusObject>
 				if (_.isBoolean(connectedOrStatus)) {
 					// for backwards compability, to be removed later
 					if (connectedOrStatus) {
@@ -1098,7 +1096,7 @@ export class TSRHandler {
 		return transformedTimeline
 	}
 
-	private changedResults: PlayoutChangedResults | undefined = undefined
+	private changedResults: PeripheralDeviceAPI.PlayoutChangedResults | undefined = undefined
 	private sendCallbacksTimeout: NodeJS.Timer | undefined = undefined
 
 	private sendChangedResults = (): void => {
@@ -1115,15 +1113,15 @@ export class TSRHandler {
 		time: number,
 		objId: string,
 		callbackName0: string,
-		data: PartPlaybackCallbackData | PiecePlaybackCallbackData
+		data: PeripheralDeviceAPI.PartPlaybackCallbackData | PeripheralDeviceAPI.PiecePlaybackCallbackData
 	): void {
 		if (
 			![
-				PlayoutChangedType.PART_PLAYBACK_STARTED,
-				PlayoutChangedType.PART_PLAYBACK_STOPPED,
-				PlayoutChangedType.PIECE_PLAYBACK_STARTED,
-				PlayoutChangedType.PIECE_PLAYBACK_STOPPED,
-			].includes(callbackName0 as PlayoutChangedType)
+				PeripheralDeviceAPI.PlayoutChangedType.PART_PLAYBACK_STARTED,
+				PeripheralDeviceAPI.PlayoutChangedType.PART_PLAYBACK_STOPPED,
+				PeripheralDeviceAPI.PlayoutChangedType.PIECE_PLAYBACK_STARTED,
+				PeripheralDeviceAPI.PlayoutChangedType.PIECE_PLAYBACK_STOPPED,
+			].includes(callbackName0 as PeripheralDeviceAPI.PlayoutChangedType)
 		) {
 			// @ts-expect-error Untyped bunch of methods
 			const method = PeripheralDeviceAPIMethods[callbackName]
@@ -1145,7 +1143,7 @@ export class TSRHandler {
 				})
 			return
 		}
-		const callbackName = callbackName0 as PlayoutChangedType
+		const callbackName = callbackName0 as PeripheralDeviceAPI.PlayoutChangedType
 		// debounce
 		if (this.changedResults && this.changedResults.rundownPlaylistId !== data.rundownPlaylistId) {
 			// The playlistId changed. Send what we have right away and reset:
@@ -1162,26 +1160,26 @@ export class TSRHandler {
 		}
 
 		switch (callbackName) {
-			case PlayoutChangedType.PART_PLAYBACK_STARTED:
-			case PlayoutChangedType.PART_PLAYBACK_STOPPED:
+			case PeripheralDeviceAPI.PlayoutChangedType.PART_PLAYBACK_STARTED:
+			case PeripheralDeviceAPI.PlayoutChangedType.PART_PLAYBACK_STOPPED:
 				this.changedResults.changes.push({
 					type: callbackName,
 					objId,
 					data: {
 						time,
-						partInstanceId: (data as PartPlaybackCallbackData).partInstanceId,
+						partInstanceId: (data as PeripheralDeviceAPI.PartPlaybackCallbackData).partInstanceId,
 					},
 				})
 				break
-			case PlayoutChangedType.PIECE_PLAYBACK_STARTED:
-			case PlayoutChangedType.PIECE_PLAYBACK_STOPPED:
+			case PeripheralDeviceAPI.PlayoutChangedType.PIECE_PLAYBACK_STARTED:
+			case PeripheralDeviceAPI.PlayoutChangedType.PIECE_PLAYBACK_STOPPED:
 				this.changedResults.changes.push({
 					type: callbackName,
 					objId,
 					data: {
 						time,
-						partInstanceId: (data as PiecePlaybackCallbackData).partInstanceId,
-						pieceInstanceId: (data as PiecePlaybackCallbackData).pieceInstanceId,
+						partInstanceId: (data as PeripheralDeviceAPI.PiecePlaybackCallbackData).partInstanceId,
+						pieceInstanceId: (data as PeripheralDeviceAPI.PiecePlaybackCallbackData).pieceInstanceId,
 					},
 				})
 				break
