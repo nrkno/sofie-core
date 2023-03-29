@@ -8,13 +8,17 @@ import React, { useMemo } from 'react'
 import { MongoCollection } from '../../../lib/collections/lib'
 import { WrappedOverridableItemNormal, OverrideOpHelperForItemContents } from '../../ui/Settings/util/OverrideOpHelper'
 import { SchemaFormCommonProps } from './schemaFormUtil'
-import { SchemaFormWithOverrides } from './schemaFormWithOverrides'
+import { SchemaFormWithOverrides } from './SchemaFormWithOverrides'
 
 interface SchemaFormForCollectionProps extends SchemaFormCommonProps {
-	object: any
+	/** The collection to operate on */
 	collection: MongoCollection<any>
+	/** Id of the document in the collection */
 	objectId: ProtectedString<any>
+	/** Base path of the schema within the document */
 	basePath: string
+	/** The portion of the document where the schema applies, that will be modified */
+	object: any
 
 	/**
 	 * If set, this form is to build a Partial object of overrides to apply over the provided object

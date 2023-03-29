@@ -5,7 +5,7 @@ import classNames from 'classnames'
 import React, { useCallback } from 'react'
 import { OverrideOpHelperForItemContents } from '../../ui/Settings/util/OverrideOpHelper'
 import { SchemaFormSofieEnumDefinition, SchemaSummaryField } from './schemaFormUtil'
-import { SchemaFormWithOverrides } from './schemaFormWithOverrides'
+import { SchemaFormWithOverrides } from './SchemaFormWithOverrides'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 
 interface SchemaTableSummaryRowProps<T extends string | number> {

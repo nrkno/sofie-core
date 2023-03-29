@@ -15,7 +15,7 @@ import {
 	WrappedOverridableItemNormal,
 } from './util/OverrideOpHelper'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
-import { SchemaFormWithOverrides } from '../../lib/forms/schemaFormWithOverrides'
+import { SchemaFormWithOverrides } from '../../lib/forms/SchemaFormWithOverrides'
 import deepmerge from 'deepmerge'
 import { SchemaFormSofieEnumDefinition, translateStringIfHasNamespaces } from '../../lib/forms/schemaFormUtil'
 import { useToggleExpandHelper } from './util/ToggleExpandedHelper'

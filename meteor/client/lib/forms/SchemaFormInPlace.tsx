@@ -2,7 +2,7 @@ import { literal, objectPathSet } from '@sofie-automation/corelib/dist/lib'
 import React, { useCallback, useMemo, useState } from 'react'
 import { WrappedOverridableItemNormal, OverrideOpHelperForItemContents } from '../../ui/Settings/util/OverrideOpHelper'
 import { SchemaFormCommonProps } from './schemaFormUtil'
-import { SchemaFormWithOverrides } from './schemaFormWithOverrides'
+import { SchemaFormWithOverrides } from './SchemaFormWithOverrides'
 
 interface SchemaFormInPlaceProps extends SchemaFormCommonProps {
 	/** The object to be modified in place */

@@ -17,7 +17,7 @@ import {
 	getSchemaSummaryFields,
 	translateStringIfHasNamespaces,
 } from '../../../lib/forms/schemaFormUtil'
-import { SchemaFormForCollection } from '../../../lib/forms/schemaFormForCollection'
+import { SchemaFormForCollection } from '../../../lib/forms/SchemaFormForCollection'
 import { getSchemaDefaultValues } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
 import { JSONBlob, JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { PeripheralDevices } from '../../../collections'

@@ -35,7 +35,7 @@ import {
 	LabelAndOverridesForInt,
 } from '../../../lib/Components/LabelAndOverrides'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
-import { SchemaFormWithOverrides } from '../../../lib/forms/schemaFormWithOverrides'
+import { SchemaFormWithOverrides } from '../../../lib/forms/SchemaFormWithOverrides'
 import {
 	getSchemaSummaryFields,
 	SchemaSummaryField,
