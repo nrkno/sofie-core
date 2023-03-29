@@ -3,7 +3,7 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Rundown, DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { normalizeArrayToMap, normalizeArrayFunc } from '@sofie-automation/corelib/dist/lib'
+import { normalizeArrayToMap, normalizeArrayFunc, groupByToMap } from '@sofie-automation/corelib/dist/lib'
 import {
 	sortRundownIDsInPlaylist,
 	sortSegmentsInRundowns,
@@ -316,15 +316,7 @@ export class RundownPlaylistCollectionUtil {
 	}
 	static getPiecesForParts(parts: Array<PartId>): Map<PartId, Piece[]> {
 		const allPieces = Pieces.find({ startPartId: { $in: parts } }).fetch()
-		const piecesMap = new Map<PartId, Piece[]>()
-
-		for (const piece of allPieces) {
-			const entry = piecesMap.get(piece.startPartId) ?? []
-			entry.push(piece)
-			piecesMap.set(piece.startPartId, entry)
-		}
-
-		return piecesMap
+		return groupByToMap(allPieces, 'startPartId')
 	}
 
 	static _sortSegments<TSegment extends Pick<DBSegment, '_id' | 'rundownId' | '_rank'>>(
