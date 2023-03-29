@@ -7,6 +7,7 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { PartInstanceName } from './partInstances'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 export class PartHandler
 	extends CollectionBase<DBPart>
@@ -18,7 +19,7 @@ export class PartHandler
 	private _curPartInstance: DBPartInstance | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
-		super('PartHandler', 'parts', logger, coreHandler)
+		super('PartHandler', CollectionName.Parts, 'parts', logger, coreHandler)
 		this._core = coreHandler.coreConnection
 		this.observerName = this._name
 	}
@@ -58,13 +59,14 @@ export class PartHandler
 
 		await new Promise(process.nextTick.bind(this))
 		if (!this._collection) return
+		if (!this._publication) return
 		if (prevPlaylist?.rundownIdsInOrder !== this._activePlaylist?.rundownIdsInOrder) {
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._activePlaylist) {
 				const rundownIds = this._activePlaylist.rundownIdsInOrder.map((r) => unprotectString(r))
 				this._subscriptionId = await this._coreHandler.setupSubscription(
-					this._collection,
+					this._publication,
 					rundownIds,
 					undefined
 				)

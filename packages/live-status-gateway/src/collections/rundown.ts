@@ -8,6 +8,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { PartInstanceName } from './partInstances'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 export class RundownHandler
 	extends CollectionBase<DBRundown>
@@ -22,7 +23,7 @@ export class RundownHandler
 	private _curRundownId: RundownId | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
-		super('RundownHandler', 'rundowns', logger, coreHandler)
+		super('RundownHandler', CollectionName.Rundowns, 'rundowns', logger, coreHandler)
 		this._core = coreHandler.coreConnection
 		this.observerName = this._name
 	}
@@ -61,12 +62,13 @@ export class RundownHandler
 
 		await new Promise(process.nextTick.bind(this))
 		if (!this._collection) return
+		if (!this._publication) return
 		if (prevPlaylistId !== this._curPlaylistId) {
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._curPlaylistId) {
 				this._subscriptionId = await this._coreHandler.setupSubscription(
-					this._collection,
+					this._publication,
 					[this._curPlaylistId],
 					undefined
 				)

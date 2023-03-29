@@ -5,6 +5,7 @@ import { CoreConnection } from '@sofie-automation/server-core-integration'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 export class ShowStyleBaseHandler
 	extends CollectionBase<DBShowStyleBase>
@@ -15,7 +16,7 @@ export class ShowStyleBaseHandler
 	private _showStyleBaseId: ShowStyleBaseId | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
-		super('ShowStyleBaseHandler', 'showStyleBases', logger, coreHandler)
+		super('ShowStyleBaseHandler', CollectionName.ShowStyleBases, 'showStyleBases', logger, coreHandler)
 		this._core = coreHandler.coreConnection
 		this.observerName = this._name
 	}
@@ -40,11 +41,12 @@ export class ShowStyleBaseHandler
 
 		await new Promise(process.nextTick.bind(this))
 		if (!this._collection) return
+		if (!this._publication) return
 		if (prevShowStyleBaseId !== this._showStyleBaseId) {
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._showStyleBaseId) {
-				this._subscriptionId = await this._coreHandler.setupSubscription(this._collection, {
+				this._subscriptionId = await this._coreHandler.setupSubscription(this._publication, {
 					_id: this._showStyleBaseId,
 				})
 				this._dbObserver = this._coreHandler.setupObserver(this._collection)

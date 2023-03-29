@@ -4,21 +4,24 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { CoreHandler } from '../coreHandler'
 import { CollectionBase, Collection } from '../wsHandler'
 import { protectString, unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 export class StudioHandler extends CollectionBase<DBStudio> implements Collection<DBStudio> {
 	public observerName: string
 	private _core: CoreConnection
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
-		super('StudioHandler', 'studios', logger, coreHandler)
+		super('StudioHandler', CollectionName.Studios, 'studios', logger, coreHandler)
 		this._core = coreHandler.coreConnection
 		this.observerName = this._name
 	}
 
 	async init(): Promise<void> {
 		await super.init()
-		if (!(this._studioId && this._collection)) return
-		this._subscriptionId = await this._coreHandler.setupSubscription(this._collection, { _id: this._studioId })
+		if (!this._collection) return
+		if (!this._publication) return
+		if (!this._studioId) return
+		this._subscriptionId = await this._coreHandler.setupSubscription(this._publication, { _id: this._studioId })
 		this._dbObserver = this._coreHandler.setupObserver(this._collection)
 
 		if (this._collection) {

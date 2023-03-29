@@ -3,6 +3,7 @@ import { Observer } from '@sofie-automation/server-core-integration'
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
 import { CoreHandler } from './coreHandler'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 export abstract class WebSocketTopicBase {
 	protected _name: string
@@ -50,7 +51,8 @@ export interface WebSocketTopic {
 
 export abstract class CollectionBase<T> {
 	protected _name: string
-	protected _collection: string | undefined
+	protected _collection: CollectionName | undefined
+	protected _publication: string | undefined
 	protected _logger: Logger
 	protected _coreHandler: CoreHandler
 	protected _studioId: StudioId | undefined
@@ -60,9 +62,16 @@ export abstract class CollectionBase<T> {
 	protected _subscriptionId: string | undefined
 	protected _dbObserver: Observer | undefined
 
-	constructor(name: string, collection: string | undefined, logger: Logger, coreHandler: CoreHandler) {
+	constructor(
+		name: string,
+		collection: CollectionName | undefined,
+		publication: string | undefined,
+		logger: Logger,
+		coreHandler: CoreHandler
+	) {
 		this._name = name
 		this._collection = collection
+		this._publication = publication
 		this._logger = logger
 		this._coreHandler = coreHandler
 

@@ -3,18 +3,18 @@ import { CoreHandler } from '../coreHandler'
 import { CollectionBase, Collection } from '../wsHandler'
 import { CoreConnection } from '@sofie-automation/server-core-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 export class PlaylistsHandler extends CollectionBase<DBRundownPlaylist[]> implements Collection<DBRundownPlaylist[]> {
 	public observerName: string
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
-		super('PlaylistsHandler', undefined, logger, coreHandler)
-		this._collection = this._name
+		super('PlaylistsHandler', undefined, undefined, logger, coreHandler)
 		this.observerName = this._name
 	}
 
 	async setPlaylists(playlists: DBRundownPlaylist[]): Promise<void> {
-		this._logger.info(`'${this._collection}' handler received playlists update with ${playlists.length} playlists`)
+		this._logger.info(`'${this._name}' handler received playlists update with ${playlists.length} playlists`)
 		this._collectionData = playlists
 		await this.notify(this._collectionData)
 	}
@@ -22,7 +22,7 @@ export class PlaylistsHandler extends CollectionBase<DBRundownPlaylist[]> implem
 	// override notify to implement empty array handling
 	async notify(data: DBRundownPlaylist[] | undefined): Promise<void> {
 		this._logger.info(
-			`${this._collection} notifying all observers of an update with ${this._collectionData?.length} playlists`
+			`${this._name} notifying all observers of an update with ${this._collectionData?.length} playlists`
 		)
 		if (data !== undefined) {
 			for (const observer of this._observers) {
@@ -38,7 +38,7 @@ export class PlaylistHandler extends CollectionBase<DBRundownPlaylist> implement
 	private _playlistsHandler: PlaylistsHandler
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
-		super('PlaylistHandler', 'rundownPlaylists', logger, coreHandler)
+		super('PlaylistHandler', CollectionName.RundownPlaylists, 'rundownPlaylists', logger, coreHandler)
 		this._core = coreHandler.coreConnection
 		this.observerName = this._name
 		this._playlistsHandler = new PlaylistsHandler(this._logger, this._coreHandler)
@@ -46,8 +46,12 @@ export class PlaylistHandler extends CollectionBase<DBRundownPlaylist> implement
 
 	async init(): Promise<void> {
 		await super.init()
-		if (!(this._studioId && this._collection)) return
-		this._subscriptionId = await this._coreHandler.setupSubscription(this._collection, { studioId: this._studioId })
+		if (!this._studioId) return
+		if (!this._collection) return
+		if (!this._publication) return
+		this._subscriptionId = await this._coreHandler.setupSubscription(this._publication, {
+			studioId: this._studioId,
+		})
 		this._dbObserver = this._coreHandler.setupObserver(this._collection)
 		if (this._collection) {
 			const col = this._core.getCollection<DBRundownPlaylist>(this._collection)

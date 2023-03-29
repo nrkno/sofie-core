@@ -6,6 +6,7 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PartInstanceName } from './partInstances'
 import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 export class SegmentHandler
 	extends CollectionBase<DBSegment>
@@ -17,7 +18,7 @@ export class SegmentHandler
 	private _curSegmentId: SegmentId | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
-		super('SegmentHandler', 'segments', logger, coreHandler)
+		super('SegmentHandler', CollectionName.Segments, 'segments', logger, coreHandler)
 		this._core = coreHandler.coreConnection
 		this.observerName = this._name
 	}
@@ -42,11 +43,12 @@ export class SegmentHandler
 
 		await new Promise(process.nextTick.bind(this))
 		if (!this._collection) return
+		if (!this._publication) return
 		if (prevRundownId !== this._curRundownId) {
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._curRundownId) {
-				this._subscriptionId = await this._coreHandler.setupSubscription(this._collection, {
+				this._subscriptionId = await this._coreHandler.setupSubscription(this._publication, {
 					rundownId: this._curRundownId,
 				})
 				this._dbObserver = this._coreHandler.setupObserver(this._collection)
