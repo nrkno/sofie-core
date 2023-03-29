@@ -1,4 +1,4 @@
-import { literal } from '@sofie-automation/corelib/dist/lib'
+import { joinObjectPathFragments, literal } from '@sofie-automation/corelib/dist/lib'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { WrappedOverridableItemNormal, OverrideOpHelperForItemContents } from '../../ui/Settings/util/OverrideOpHelper'
@@ -17,12 +17,7 @@ import { MultiLineTextInputControl } from '../Components/MultiLineTextInput'
 import { TextInputControl } from '../Components/TextInput'
 import { JSONSchema, TypeName } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { SchemaFormArrayTable } from './SchemaFormTable/ArrayTable'
-import {
-	SchemaFormCommonProps,
-	SchemaFormSofieEnumDefinition,
-	joinObjectPathFragments,
-	translateStringIfHasNamespaces,
-} from './schemaFormUtil'
+import { SchemaFormCommonProps, SchemaFormSofieEnumDefinition, translateStringIfHasNamespaces } from './schemaFormUtil'
 import { MultiSelectInputControl } from '../Components/MultiSelectInput'
 import { SchemaFormObjectTable } from './SchemaFormTable/ObjectTable'
 import { SchemaFormUIField } from '@sofie-automation/blueprints-integration'

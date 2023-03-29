@@ -6,7 +6,13 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { Blueprint, BlueprintHash } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { normalizeArrayToMap, literal, objectPathGet, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import {
+	normalizeArrayToMap,
+	literal,
+	objectPathGet,
+	stringifyError,
+	joinObjectPathFragments,
+} from '@sofie-automation/corelib/dist/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import _ from 'underscore'
 import {
@@ -21,7 +27,6 @@ import { generateTranslation } from '../../../lib/lib'
 import { JSONBlob, JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { logger } from '../../logging'
-import { joinObjectPathFragments } from '../../../client/lib/forms/schemaFormUtil'
 
 export async function getUpgradeStatus(): Promise<GetUpgradeStatusResult> {
 	const studioUpgrades = await checkStudiosUpgradeStatus()

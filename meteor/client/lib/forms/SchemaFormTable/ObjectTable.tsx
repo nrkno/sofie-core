@@ -1,6 +1,6 @@
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { getRandomString, objectPathGet } from '@sofie-automation/corelib/dist/lib'
+import { getRandomString, joinObjectPathFragments, objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import {
@@ -12,7 +12,6 @@ import { useToggleExpandHelper } from '../../../ui/Settings/util/ToggleExpandedH
 import { doModalDialog } from '../../ModalDialog'
 import {
 	getSchemaSummaryFieldsForObject,
-	joinObjectPathFragments,
 	SchemaFormSofieEnumDefinition,
 	translateStringIfHasNamespaces,
 } from '../schemaFormUtil'

@@ -2,6 +2,7 @@ import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMes
 import { i18nTranslator } from '../../ui/i18n'
 import { JSONSchema, TypeName } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { SchemaFormUIField } from '@sofie-automation/blueprints-integration'
+import { joinObjectPathFragments } from '@sofie-automation/corelib/dist/lib'
 
 export interface SchemaFormSofieEnumDefinition {
 	options: {
@@ -107,8 +108,4 @@ export function getSchemaSummaryFields(schema: JSONSchema, prefix?: string): Sch
 			return []
 		}
 	}
-}
-
-export function joinObjectPathFragments(...fragments: Array<string | number | undefined>): string {
-	return fragments.filter((v) => v !== '' && v !== undefined && v !== null).join('.')
 }
