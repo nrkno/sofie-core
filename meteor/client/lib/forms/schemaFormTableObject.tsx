@@ -24,15 +24,25 @@ import { SchemaFormTableEditRow, SchemaTableSummaryRow } from './schemaFormTable
 import { joinObjectPathFragments, SchemaFormUIField } from '../../../lib/jsonSchemaUtil'
 
 interface SchemaFormObjectTableProps {
+	/** Schema for each row in the table */
 	schema: JSONSchema
+	/** Translation namespaces for the schama */
 	translationNamespaces: string[]
+	/** Allow special 'built-in' enum types to be used with the 'ui:sofie-enum' property in the schema */
 	sofieEnumDefinitons?: Record<string, SchemaFormSofieEnumDefinition>
 
-	attr: string
-
+	/** The base item, containing the rows represented in the table */
 	item: WrappedOverridableItemNormal<any>
+	/** Base property path for the rows inside the item */
+	attr: string
+	/** Helper to create/update the OverrideOps for the table rows */
 	overrideHelper: OverrideOpHelperForItemContents
 }
+
+/**
+ * An object based table using JSONSchema. This allows for granular overrides, as well as adding and removing rows.
+ * This should not be used directly, and should instead be used via SchemaFormWithOverrides or one of the alternative wrappers
+ */
 export const SchemaFormObjectTable = ({
 	schema,
 	translationNamespaces,

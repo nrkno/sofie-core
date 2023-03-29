@@ -19,16 +19,26 @@ import { SchemaTableSummaryRow, SchemaFormTableEditRow } from './schemaFormTable
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { SchemaFormUIField } from '../../../lib/jsonSchemaUtil'
 
-interface SchemaFormTableProps {
+interface SchemaFormArrayTableProps {
+	/** Schema for each row in the table */
 	schema: JSONSchema
+	/** Translation namespaces for the schama */
 	translationNamespaces: string[]
+	/** Allow special 'built-in' enum types to be used with the 'ui:sofie-enum' property in the schema */
 	sofieEnumDefinitons?: Record<string, SchemaFormSofieEnumDefinition>
 
-	attr: string
-
+	/** The base item, containing the rows represented in the table */
 	item: WrappedOverridableItemNormal<any>
+	/** Base property path for the rows inside the item */
+	attr: string
+	/** Helper to create/update the OverrideOps for the table rows */
 	overrideHelper: OverrideOpHelperForItemContents
 }
+
+/**
+ * An array based table using JSONSchema. This only allows editing the table as a single 'value', not for granular overrides.
+ * This should not be used directly, and should instead be used via SchemaFormWithOverrides or one of the alternative wrappers
+ */
 export const SchemaFormArrayTable = ({
 	schema,
 	translationNamespaces,
@@ -36,7 +46,7 @@ export const SchemaFormArrayTable = ({
 	attr,
 	item,
 	overrideHelper,
-}: SchemaFormTableProps): JSX.Element => {
+}: SchemaFormArrayTableProps): JSX.Element => {
 	const { t } = useTranslation()
 
 	const rowsArray: any[] = useMemo(

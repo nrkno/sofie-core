@@ -12,9 +12,12 @@ export interface SchemaFormSofieEnumDefinition {
 }
 
 export interface SchemaFormCommonProps {
+	/** Schema for each row in the table */
 	schema: JSONSchema
+	/** Translation namespaces for the schama */
 	translationNamespaces: string[]
 
+	/** Allow special 'built-in' enum types to be used with the 'ui:sofie-enum' property in the schema */
 	sofieEnumDefinitons?: Record<string, SchemaFormSofieEnumDefinition>
 
 	/**

@@ -5,6 +5,7 @@ import { SchemaFormCommonProps } from './schemaFormUtil'
 import { SchemaFormWithOverrides } from './schemaFormWithOverrides'
 
 interface SchemaFormInPlaceProps extends SchemaFormCommonProps {
+	/** The object to be modified in place */
 	object: any
 }
 export function SchemaFormInPlace({ object, ...commonProps }: SchemaFormInPlaceProps): JSX.Element {

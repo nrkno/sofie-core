@@ -23,9 +23,12 @@ import { SchemaFormObjectTable } from './schemaFormTableObject'
 import { joinObjectPathFragments, SchemaFormUIField } from '../../../lib/jsonSchemaUtil'
 
 interface SchemaFormWithOverridesProps extends SchemaFormCommonProps {
+	/** Base path of the schema within the document */
 	attr: string
 
+	/** The wrapped item to be edited, with its overrides */
 	item: WrappedOverridableItemNormal<any>
+	/** Helper to generate and save overrides for the item */
 	overrideHelper: OverrideOpHelperForItemContents
 }
 
