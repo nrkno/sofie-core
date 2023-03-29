@@ -160,7 +160,7 @@ function calculateExpectedDurationWithPreroll(rawDuration: number, timings: Part
 	// toPartDelay is removed from fromPartRemaining here, otherwise the values cancel out and the 'from' Part will
 	//  count overtime when prerolling into the 'to' Part.
 	// As a result, the 'to' Part will have a countdown which includes its own preroll.
-	return Math.max(0, rawDuration + timings.toPartDelay - (timings.fromPartRemaining - timings.toPartDelay))
+	return Math.max(0, rawDuration + 2 * timings.toPartDelay - timings.fromPartRemaining)
 }
 
 export function calculatePartExpectedDurationWithPreroll(
