@@ -27,10 +27,12 @@ export const StoryboardPartSecondaryPieces = React.memo(function StoryboardPartS
 }: IProps) {
 	return (
 		<div className="segment-storyboard__part__secondary-pieces">
-			{Object.values(outputLayers)
+			{Object.values<IOutputLayerUi>(outputLayers)
 				.filter((outputLayer) => outputLayer.used)
 				.map((outputLayer) => {
-					const sourceLayers = filterSecondarySourceLayers(Object.values(outputLayer.sourceLayers))
+					const sourceLayers = filterSecondarySourceLayers(
+						Object.values<ISourceLayerExtended>(outputLayer.sourceLayers)
+					)
 
 					if (sourceLayers.length === 0) return null
 

@@ -150,7 +150,7 @@ const ObjectFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 	return (
 		<>
 			{' '}
-			{Object.entries(props.schema.properties || {}).map(([index, schema]) => {
+			{Object.entries<JSONSchema>(props.schema.properties || {}).map(([index, schema]) => {
 				const path = joinObjectPathFragments(props.attr, index)
 				return (
 					<SchemaFormWithOverrides

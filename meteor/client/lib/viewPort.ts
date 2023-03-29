@@ -192,7 +192,7 @@ async function innerScrollToSegment(
 								bottom = Math.floor(bottom)
 
 								if (bottom > Math.floor(window.innerHeight) || top < headerHeight) {
-									return innerScrollToSegment(
+									innerScrollToSegment(
 										elementToScrollTo,
 										forceScroll,
 										true,

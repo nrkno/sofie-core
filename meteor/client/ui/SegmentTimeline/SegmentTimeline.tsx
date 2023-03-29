@@ -818,7 +818,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	private getActiveOutputGroups(): IOutputLayerUi[] {
 		if (this.props.segment.outputLayers === undefined) return []
 
-		return Object.values(this.props.segment.outputLayers)
+		return Object.values<IOutputLayerUi>(this.props.segment.outputLayers)
 			.sort((a, b) => {
 				return a._rank - b._rank
 			})

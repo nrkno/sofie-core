@@ -75,20 +75,20 @@ class RundownViewNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
 	private _notifier: NotifierHandle
 
-	private _mediaStatus: _.Dictionary<Notification | undefined> = {}
+	private _mediaStatus: Record<string, Notification | undefined> = {}
 	private _mediaStatusDep: Tracker.Dependency
 
-	private _notes: _.Dictionary<Notification | undefined> = {}
+	private _notes: Record<string, Notification | undefined> = {}
 	private _notesDep: Tracker.Dependency
 
-	private _rundownStatus: _.Dictionary<Notification | undefined> = {}
+	private _rundownStatus: Record<string, Notification | undefined> = {}
 	private _rundownStatusDep: Tracker.Dependency
 
-	private _deviceStatus: _.Dictionary<Notification | undefined> = {}
+	private _deviceStatus: Record<string, Notification | undefined> = {}
 	private _deviceStatusDep: Tracker.Dependency
 
 	private _rundownImportVersionStatus: Notification | undefined = undefined
-	private _rundownShowStyleConfigStatuses: _.Dictionary<Notification | undefined> = {}
+	private _rundownShowStyleConfigStatuses: Record<string, Notification | undefined> = {}
 	private _rundownStudioConfigStatus: Notification | undefined = undefined
 	private _rundownImportVersionStatusDep: Tracker.Dependency
 	private _rundownImportVersionAndConfigInterval: number | undefined = undefined
@@ -145,17 +145,18 @@ class RundownViewNotifier extends WithManagedTracker {
 			this._rundownImportVersionStatusDep.depend()
 			this._unsentExternalMessageStatusDep.depend()
 
-			const notifications = _.compact(Object.values(this._mediaStatus))
-				.concat(_.compact(Object.values(this._deviceStatus)))
-				.concat(_.compact(Object.values(this._notes)))
-				.concat(_.compact(Object.values(this._rundownStatus)))
-				.concat(
-					_.compact([this._rundownImportVersionStatus, this._rundownStudioConfigStatus]),
-					_.compact(Object.values(this._rundownShowStyleConfigStatuses))
-				)
-				.concat(_.compact([this._unsentExternalMessagesStatus]))
+			const notifications: Array<Notification | undefined> = [
+				...Object.values<Notification | undefined>(this._mediaStatus),
+				...Object.values<Notification | undefined>(this._deviceStatus),
+				...Object.values<Notification | undefined>(this._notes),
+				...Object.values<Notification | undefined>(this._rundownStatus),
+				this._rundownImportVersionStatus,
+				this._rundownStudioConfigStatus,
+				...Object.values<Notification | undefined>(this._rundownShowStyleConfigStatuses),
+				this._unsentExternalMessagesStatus,
+			]
 
-			this._notificationList.set(notifications)
+			this._notificationList.set(notifications.filter(Boolean) as Notification[])
 		})
 	}
 

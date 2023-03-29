@@ -101,7 +101,7 @@ export namespace MOSDeviceActions {
 				functionName: 'replaceStoryItem',
 				args: [mosPayload.RunningOrderId, mosPayload.ID, story, modifiedFields],
 			}
-		).then((response) => {
+		).then(async (response) => {
 			// If the response was a failed write, then reject
 			if (response && response.mos && response.mos.roAck && response.mos.roAck.roStatus !== 'OK')
 				return Promise.reject(response)

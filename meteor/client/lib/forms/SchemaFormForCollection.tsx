@@ -49,7 +49,7 @@ export function SchemaFormForCollection({
 			}
 
 			// Note: these ops use a prefix of `0.` to satisfy how the objectWithOverrides expects them to look
-			const overrideOps = Object.entries(object).map(([key, val]) =>
+			const overrideOps = Object.entries<any>(object).map(([key, val]) =>
 				val === undefined
 					? literal<ObjectOverrideDeleteOp>({
 							op: 'delete',

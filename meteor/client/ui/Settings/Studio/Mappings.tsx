@@ -62,7 +62,7 @@ export function StudioMappings({ manifest, translationNamespaces, studio }: IStu
 
 	const manifestNames = useMemo(() => {
 		return Object.fromEntries(
-			Object.entries(manifest || {}).map(([id, val]) => [
+			Object.entries<MappingsSettingsManifest>(manifest || {}).map(([id, val]) => [
 				id,
 				translateStringIfHasNamespaces(val.displayName, translationNamespaces),
 			])
@@ -303,7 +303,7 @@ function StudioMappingsEntry({
 	)
 
 	const deviceTypeOptions = useMemo(() => {
-		const raw = Object.entries(manifestNames || {})
+		const raw = Object.entries<string>(manifestNames || {})
 		raw.sort((a, b) => a[1].localeCompare(b[1]))
 
 		return raw.map(([id, entry], i) =>
@@ -316,9 +316,7 @@ function StudioMappingsEntry({
 	}, [manifestNames])
 
 	const mappingTypeOptions = useMemo(() => {
-		const raw: Array<[string, JSONSchema]> = Object.entries(manifest?.mappingsSchema || {})
-
-		return raw.map(([id, entry], i) =>
+		return Object.entries<JSONSchema>(manifest?.mappingsSchema || {}).map(([id, entry], i) =>
 			literal<DropdownInputOption<string | number>>({
 				value: id + '',
 				name: entry?.title ?? id + '',

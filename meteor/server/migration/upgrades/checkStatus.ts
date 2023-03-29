@@ -275,7 +275,7 @@ function diffJsonSchemaObjects(
 ): ITranslatableMessage[] {
 	const changes: ITranslatableMessage[] = []
 
-	for (const [id, propSchema] of Object.entries(schema.properties || {})) {
+	for (const [id, propSchema] of Object.entries<JSONSchema>(schema.properties || {})) {
 		const propPath = joinObjectPathFragments(pathPrefix, id)
 		const valueA = objectPathGet(objA, id)
 		const valueB = objectPathGet(objB, id)

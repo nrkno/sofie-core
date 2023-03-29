@@ -39,18 +39,23 @@ export function SubDevicesConfig({
 }: SubDevicesConfigProps): JSX.Element {
 	const { t } = useTranslation()
 
-	const parsedCommonSchema = commonSchema ? JSONBlobParse(commonSchema) : undefined
+	const parsedCommonSchema = useMemo(() => (commonSchema ? JSONBlobParse(commonSchema) : undefined), [commonSchema])
 
-	const parsedSchemas: Record<string, JSONSchema | undefined> = {}
-	for (const [id, obj] of Object.entries(configSchema || {})) {
-		if (obj.configSchema) {
-			parsedSchemas[id] = JSONBlobParse(obj.configSchema)
+	const [parsedSchemas, schemaTypes] = useMemo(() => {
+		const parsedSchemas: Record<string, JSONSchema | undefined> = {}
+		for (const [id, obj] of Object.entries<SubdeviceManifest[0]>(configSchema || {})) {
+			if (obj.configSchema) {
+				parsedSchemas[id] = JSONBlobParse(obj.configSchema)
+			}
 		}
-	}
-	const schemaTypes = Object.keys(parsedSchemas || {}).sort()
+
+		const schemaTypes = Object.keys(parsedSchemas || {}).sort()
+
+		return [parsedSchemas, schemaTypes]
+	}, [configSchema])
 
 	const subDeviceOptions = useMemo(() => {
-		const raw = Object.entries(configSchema || {})
+		const raw = Object.entries<SubdeviceManifest[0]>(configSchema || {})
 		for (const [_id, obj] of raw) {
 			obj.displayName = translateStringIfHasNamespaces(obj.displayName, translationNamespaces)
 		}
@@ -163,7 +168,7 @@ function SubDevicesTable({
 		const singleSchemaMode = Object.keys(parsedSchemas).length === 1
 
 		if (singleSchemaMode) {
-			const defaultSchema = Object.values(parsedSchemas)[0]!
+			const defaultSchema = Object.values<JSONSchema | undefined>(parsedSchemas)[0]!
 
 			return getSchemaSummaryFields(defaultSchema)
 		} else {
@@ -189,7 +194,7 @@ function SubDevicesTable({
 				</tr>
 			</thead>
 			<tbody>
-				{Object.entries(subDevices).map(([id, device]) => {
+				{Object.entries<any>(subDevices).map(([id, device]) => {
 					return (
 						<React.Fragment key={id}>
 							<SchemaTableSummaryRow
@@ -243,7 +248,7 @@ function SubDeviceEditRow({
 }: SubDeviceEditRowProps) {
 	const { t } = useTranslation()
 
-	const schemasArray = Object.values(schemas)
+	const schemasArray = Object.values<JSONSchema | undefined>(schemas)
 	const schema = schemasArray.length === 1 ? schemasArray[0] : schemas[object?.type]
 
 	const finishEditItem = useCallback(() => editItem(subdeviceId, false), [editItem, subdeviceId])

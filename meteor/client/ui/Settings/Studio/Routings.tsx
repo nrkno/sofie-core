@@ -297,9 +297,7 @@ export const StudioRoutings = withTranslation()(
 
 						const routeMappingSchema = manifest[(routeDeviceType ?? route.remapping?.device) as TSR.DeviceType]
 
-						const rawMappingTypeOptions: Array<[string, JSONSchema]> = Object.entries(
-							routeMappingSchema?.mappingsSchema || {}
-						)
+						const rawMappingTypeOptions = Object.entries<JSONSchema>(routeMappingSchema?.mappingsSchema || {})
 						const mappingTypeOptions = rawMappingTypeOptions.map(([id, entry], i) =>
 							literal<DropdownInputOption<string | number>>({
 								value: id + '',

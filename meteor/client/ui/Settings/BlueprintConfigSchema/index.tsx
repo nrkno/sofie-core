@@ -1,6 +1,6 @@
 import React, { useCallback, useMemo } from 'react'
-import { MappingsExt } from '../../../../lib/collections/Studios'
-import { IBlueprintConfig, SchemaFormUIField } from '@sofie-automation/blueprints-integration'
+import { MappingExt, MappingsExt } from '../../../../lib/collections/Studios'
+import { IBlueprintConfig, ISourceLayer, SchemaFormUIField } from '@sofie-automation/blueprints-integration'
 import { groupByToMapFunc, literal } from '../../../../lib/lib'
 import { useTranslation } from 'react-i18next'
 import {
@@ -58,8 +58,8 @@ export function BlueprintConfigSchemaSettings({
 	const sofieEnumDefinitons: Record<string, SchemaFormSofieEnumDefinition> = useMemo(() => {
 		// Future: if there are multiple studios, this could result in duplicates
 		const mappingsDefinition: SchemaFormSofieEnumDefinition = { options: [] }
-		for (const mappings of Object.values(layerMappings || {})) {
-			for (const [mappingId, mapping] of Object.entries(mappings)) {
+		for (const mappings of Object.values<MappingsExt>(layerMappings || {})) {
+			for (const [mappingId, mapping] of Object.entries<MappingExt>(mappings)) {
 				mappingsDefinition.options.push({
 					name: mapping.layerName || mappingId,
 					value: mappingId,
@@ -70,7 +70,7 @@ export function BlueprintConfigSchemaSettings({
 		mappingsDefinition.options.sort((a, b) => a.name.localeCompare(b.name))
 
 		const sourceLayersDefinition: SchemaFormSofieEnumDefinition = { options: [] }
-		for (const [id, sourceLayer] of Object.entries(sourceLayers || {})) {
+		for (const [id, sourceLayer] of Object.entries<ISourceLayer | undefined>(sourceLayers || {})) {
 			if (sourceLayer) {
 				sourceLayersDefinition.options.push({
 					name: sourceLayer.name,
@@ -126,7 +126,7 @@ export function BlueprintConfigSchemaSettings({
 	const groupedSchema = useMemo(() => {
 		if (schema?.type === 'object' && schema.properties) {
 			const groupedMap = groupByToMapFunc(
-				Object.entries(schema.properties),
+				Object.entries<JSONSchema>(schema.properties),
 				(v) => translateStringIfHasNamespaces(v[1][SchemaFormUIField.Category], translationNamespaces) || null
 			)
 

@@ -111,7 +111,7 @@ export class ReactiveCacheCollection<
 			},
 			changed: (id: Document['_id'], fields: Partial<Document>) => {
 				const unset: Partial<Record<keyof Document, 1>> = {}
-				for (const [key, value] of Object.entries(fields)) {
+				for (const [key, value] of Object.entries<unknown>(fields)) {
 					if (value !== undefined) continue
 					unset[key] = 1
 				}

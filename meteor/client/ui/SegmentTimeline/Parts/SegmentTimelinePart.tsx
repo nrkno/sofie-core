@@ -396,7 +396,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 			let indexAccumulator = 0
 
-			return Object.values(this.props.segment.outputLayers)
+			return Object.values<IOutputLayerUi>(this.props.segment.outputLayers)
 				.filter((layer) => {
 					return layer.used ? true : false
 				})

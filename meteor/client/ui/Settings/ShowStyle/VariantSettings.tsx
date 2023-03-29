@@ -1,7 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { faTrash, faPlus, faDownload, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { BlueprintManifestType, IShowStyleConfigPreset, JSONSchema } from '@sofie-automation/blueprints-integration'
+import {
+	BlueprintManifestType,
+	IShowStyleConfigPreset,
+	IShowStyleVariantConfigPreset,
+	JSONSchema,
+} from '@sofie-automation/blueprints-integration'
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { useTranslation } from 'react-i18next'
@@ -63,7 +68,7 @@ export const ShowStyleVariantsSettings = ({
 				if (blueprint && blueprint.showStyleConfigPresets) {
 					const basePreset = blueprint.showStyleConfigPresets[showStyleBase.blueprintConfigPresetId]
 					if (basePreset) {
-						for (const [id, preset] of Object.entries(basePreset.variants)) {
+						for (const [id, preset] of Object.entries<IShowStyleVariantConfigPreset>(basePreset.variants)) {
 							options.push({
 								value: id,
 								name: preset.name,

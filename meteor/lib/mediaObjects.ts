@@ -9,7 +9,12 @@ import {
 	LiveSpeakContent,
 } from '@sofie-automation/blueprints-integration'
 import { MediaObject } from './collections/MediaObjects'
-import { IStudioSettings, routeExpectedPackages } from './collections/Studios'
+import {
+	IStudioSettings,
+	MappingExtWithPackage,
+	StudioPackageContainer,
+	routeExpectedPackages,
+} from './collections/Studios'
 import { PackageInfoDB } from './collections/PackageInfos'
 import { assertNever, Complete, generateTranslation, literal, unprotectString } from './lib'
 import { getExpectedPackageId } from './collections/ExpectedPackages'
@@ -371,10 +376,12 @@ function checkPieceContentExpectedPackageStatus(
 
 		const checkedPackageContainers: { [containerId: string]: true } = {}
 
-		for (const mapping of Object.values(routedMappingsWithPackages)) {
+		for (const mapping of Object.values<MappingExtWithPackage>(routedMappingsWithPackages)) {
 			const mappingDeviceId = unprotectString(mapping.deviceId)
 			let packageContainerId: string | undefined
-			for (const [containerId, packageContainer] of Object.entries(studio.packageContainers)) {
+			for (const [containerId, packageContainer] of Object.entries<ReadonlyDeep<StudioPackageContainer>>(
+				studio.packageContainers
+			)) {
 				if (packageContainer.deviceIds.includes(mappingDeviceId)) {
 					// TODO: how to handle if a device has multiple containers?
 					packageContainerId = containerId
@@ -429,7 +436,7 @@ function checkPieceContentExpectedPackageStatus(
 		}
 	}
 	if (Object.keys(packageInfos).length) {
-		for (const [_packageId, packageInfo] of Object.entries(packageInfos)) {
+		for (const [_packageId, packageInfo] of Object.entries<ScanInfoForPackage>(packageInfos)) {
 			const { scan, deepScan } = packageInfo
 
 			if (scan && scan.streams) {

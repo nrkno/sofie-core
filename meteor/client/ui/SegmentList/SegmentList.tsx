@@ -91,7 +91,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 
 	const adLibIndicatorColumns = useMemo(() => {
 		const sourceColumns: Record<string, ISourceLayerExtended[]> = {}
-		Object.values(props.segment.sourceLayers).forEach((sourceLayer) => {
+		Object.values<ISourceLayerExtended>(props.segment.sourceLayers).forEach((sourceLayer) => {
 			if (!sourceLayer.onListViewAdLibColumn) return
 			let thisSourceColumn = sourceColumns[sourceLayer.name]
 			if (!thisSourceColumn) {
@@ -105,7 +105,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 
 	const indicatorColumns = useMemo(() => {
 		const sourceColumns: Record<string, ISourceLayerExtended[]> = {}
-		Object.values(props.segment.sourceLayers).forEach((sourceLayer) => {
+		Object.values<ISourceLayerExtended>(props.segment.sourceLayers).forEach((sourceLayer) => {
 			if (sourceLayer.isHidden) return
 			if (!sourceLayer.onListViewColumn) return
 			let thisSourceColumn = sourceColumns[sourceLayer.name]

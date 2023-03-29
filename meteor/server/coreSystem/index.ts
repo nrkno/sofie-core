@@ -149,7 +149,7 @@ async function startupMessage() {
 		}
 
 		const versions = await RelevantSystemVersions
-		for (const [name, version] of Object.entries(versions)) {
+		for (const [name, version] of Object.entries<string>(versions)) {
 			logger.info(`Core package ${name} version: "${version}"`)
 		}
 	}

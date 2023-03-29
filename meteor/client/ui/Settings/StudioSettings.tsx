@@ -14,8 +14,10 @@ import { PeripheralDevices, ShowStyleBases, Studios } from '../../collections'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { translateStringIfHasNamespaces } from '../../lib/forms/schemaFormUtil'
-import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { JSONBlob, JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { StudioBlueprintConfigurationSettings } from './Studio/BlueprintConfiguration'
+import { SubdeviceManifest } from '@sofie-automation/corelib/dist/deviceConfig'
+import { JSONSchema } from '@sofie-automation/blueprints-integration'
 
 export default function StudioSettings(): JSX.Element {
 	const match = useRouteMatch<{ studioId: string }>()
@@ -71,19 +73,26 @@ export default function StudioSettings(): JSX.Element {
 	const { translationNamespaces, layerMappingsSchema } = useMemo(() => {
 		const translationNamespaces = [`peripheralDevice_${firstPlayoutDevice?._id}`]
 		const layerMappingsSchema: MappingsSettingsManifests = Object.fromEntries(
-			Object.entries(firstPlayoutDevice?.configManifest?.subdeviceManifest || {}).map(([id, val]) => {
-				const mappingsSchema = val.playoutMappings
-					? Object.fromEntries(Object.entries(val.playoutMappings).map(([id, schema]) => [id, JSONBlobParse(schema)]))
-					: undefined
+			Object.entries<SubdeviceManifest[0]>(firstPlayoutDevice?.configManifest?.subdeviceManifest || {}).map(
+				([id, val]) => {
+					const mappingsSchema = val.playoutMappings
+						? Object.fromEntries(
+								Object.entries<JSONBlob<JSONSchema>>(val.playoutMappings).map(([id, schema]) => [
+									id,
+									JSONBlobParse(schema),
+								])
+						  )
+						: undefined
 
-				return [
-					id,
-					literal<MappingsSettingsManifest>({
-						displayName: translateStringIfHasNamespaces(val.displayName, translationNamespaces),
-						mappingsSchema,
-					}),
-				]
-			})
+					return [
+						id,
+						literal<MappingsSettingsManifest>({
+							displayName: translateStringIfHasNamespaces(val.displayName, translationNamespaces),
+							mappingsSchema,
+						}),
+					]
+				}
+			)
 		)
 
 		return { translationNamespaces, layerMappingsSchema }

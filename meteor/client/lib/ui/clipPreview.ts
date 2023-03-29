@@ -36,7 +36,7 @@ function getAssetUrlFromExpectedPackages(
 		return
 
 	// Look up an accessor we can use:
-	for (const accessor of Object.values(packageContainer.container.accessors)) {
+	for (const accessor of Object.values<Accessor.Any>(packageContainer.container.accessors)) {
 		if (
 			(accessor.type === Accessor.AccessType.HTTP || accessor.type === Accessor.AccessType.HTTP_PROXY) &&
 			accessor.baseUrl

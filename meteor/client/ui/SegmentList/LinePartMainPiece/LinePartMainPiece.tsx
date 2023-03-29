@@ -18,6 +18,7 @@ import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
 import { UIStudio } from '../../../../lib/api/studios'
 import classNames from 'classnames'
 import { PieceMultistepChevron } from '../../SegmentContainer/PieceMultistepChevron'
+import { ScanInfoForPackage } from '../../../../lib/mediaObjects'
 
 interface IProps {
 	partId: PartId
@@ -55,7 +56,7 @@ function widthInBase(pieceMaxDuration: number, timelineBase: number): number {
 function getScenes(piece: PieceUi): Array<number> | undefined {
 	if (piece.contentPackageInfos) {
 		// TODO: support multiple packages:
-		const contentPackageInfos = Object.values(piece.contentPackageInfos)
+		const contentPackageInfos = Object.values<ScanInfoForPackage>(piece.contentPackageInfos)
 		if (contentPackageInfos[0]?.deepScan?.scenes) {
 			return _.compact(contentPackageInfos[0].deepScan.scenes.map((i) => i * 1000)) // convert into milliseconds
 		}
@@ -77,7 +78,7 @@ function getFreezes(piece: PieceUi): Array<PackageInfo.Anomaly> | undefined {
 		let items: Array<PackageInfo.Anomaly> = []
 		// add freezes
 		// TODO: support multiple packages:
-		const contentPackageInfos = Object.values(piece.contentPackageInfos)
+		const contentPackageInfos = Object.values<ScanInfoForPackage>(piece.contentPackageInfos)
 		if (contentPackageInfos[0]?.deepScan?.freezes?.length) {
 			items = contentPackageInfos[0].deepScan.freezes.map((i): PackageInfo.Anomaly => {
 				return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
@@ -107,7 +108,7 @@ function getBlacks(piece: PieceUi): Array<PackageInfo.Anomaly> | undefined {
 		let items: Array<PackageInfo.Anomaly> = []
 		// add blacks
 		// TODO: support multiple packages:
-		const contentPackageInfos = Object.values(piece.contentPackageInfos)
+		const contentPackageInfos = Object.values<ScanInfoForPackage>(piece.contentPackageInfos)
 		if (contentPackageInfos[0]?.deepScan?.blacks) {
 			items = [
 				...items,

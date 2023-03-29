@@ -32,7 +32,7 @@ import { SubdeviceAction } from '@sofie-automation/shared-lib/dist/core/deviceCo
 import { StatusCodePill } from './StatusCodePill'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
-import { SchemaFormInPlace } from '../../lib/forms/SchemaFormInPlace'
+import { SchemaFormInPlace } from '../../lib/forms/schemaFormInPlace'
 import { CoreSystem, PeripheralDevices } from '../../collections'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { DebugStateTable } from './DebugState'
@@ -586,7 +586,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 						.getDebugStates(device._id)
 						.then((res) => {
 							const states: Map<PeripheralDeviceId, object> = new Map()
-							for (const [key, state] of Object.entries(res)) {
+							for (const [key, state] of Object.entries<any>(res)) {
 								states.set(protectString(key), state)
 							}
 							this.setState({

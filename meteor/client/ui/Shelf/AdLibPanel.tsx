@@ -411,7 +411,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 							}
 						).fetch()
 					rundownBaselineAdLibs = rundownAdLibItems.concat(
-						Object.values(sourceLayerLookup)
+						Object.values<ISourceLayer | undefined>(sourceLayerLookup)
 							.filter((i): i is ISourceLayer => !!(i && i.isSticky))
 							.sort((a, b) => a._rank - b._rank)
 							.map((layer) =>
@@ -488,7 +488,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 		if ((props.filter as DashboardLayoutFilter).includeClearInRundownBaseline) {
 			const rundownBaselineClearAdLibs = memoizedIsolatedAutorun(
 				(sourceLayers: SourceLayers) => {
-					return Object.values(sourceLayers)
+					return Object.values<ISourceLayer | undefined>(sourceLayers)
 						.filter((i): i is ISourceLayer => !!i && !!i.isClearable)
 						.sort((a, b) => a._rank - b._rank)
 						.map((layer) =>

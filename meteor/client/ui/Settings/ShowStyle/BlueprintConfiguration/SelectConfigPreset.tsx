@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react'
 import { useTracker } from '../../../../lib/ReactMeteorData/react-meteor-data'
-import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
+import { BlueprintManifestType, IShowStyleConfigPreset } from '@sofie-automation/blueprints-integration'
 import { Blueprints, ShowStyleBases } from '../../../../collections'
 import { useTranslation } from 'react-i18next'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
@@ -29,7 +29,7 @@ export function SelectConfigPreset({ showStyleBase }: SelectConfigPresetProps): 
 
 		if (blueprint?.showStyleConfigPresets) {
 			if (blueprint.showStyleConfigPresets) {
-				for (const [id, preset] of Object.entries(blueprint.showStyleConfigPresets)) {
+				for (const [id, preset] of Object.entries<IShowStyleConfigPreset>(blueprint.showStyleConfigPresets)) {
 					options.push({
 						value: id,
 						name: preset.name,

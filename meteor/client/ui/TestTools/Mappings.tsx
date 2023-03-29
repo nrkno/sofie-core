@@ -6,7 +6,7 @@ import { omit, Time } from '../../../lib/lib'
 import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import { StudioSelect } from './StudioSelect'
-import { RoutedMappings } from '../../../lib/collections/Studios'
+import { MappingExt, RoutedMappings } from '../../../lib/collections/Studios'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
 import { createSyncCustomPublicationMongoCollection } from '../../../lib/collections/lib'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -90,7 +90,7 @@ export const ComponentMappingsTable = withTracker<IMappingsTableProps, IMappings
 			this.subscribe(PubSub.mappingsForStudio, this.props.studioId)
 		}
 		renderMappingsState(state: RoutedMappings) {
-			const rows = _.sortBy(Object.entries(state.mappings), (o) => o[0])
+			const rows = _.sortBy(Object.entries<MappingExt>(state.mappings), (o) => o[0])
 			return rows.map(([id, obj]) => (
 				<tr key={id}>
 					<td>{id}</td>

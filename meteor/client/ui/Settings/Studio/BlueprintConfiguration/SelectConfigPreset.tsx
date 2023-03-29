@@ -6,6 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { EditAttribute } from '../../../../lib/EditAttribute'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { IStudioConfigPreset } from '@sofie-automation/blueprints-integration'
 
 interface SelectConfigPresetProps {
 	studio: DBStudio
@@ -20,7 +21,7 @@ export function SelectConfigPreset({ studio, blueprint }: SelectConfigPresetProp
 
 		if (blueprint?.studioConfigPresets) {
 			if (blueprint.studioConfigPresets) {
-				for (const [id, preset] of Object.entries(blueprint.studioConfigPresets)) {
+				for (const [id, preset] of Object.entries<IStudioConfigPreset>(blueprint.studioConfigPresets)) {
 					options.push({
 						value: id,
 						name: preset.name,

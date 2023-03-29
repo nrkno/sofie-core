@@ -142,11 +142,10 @@ describe('ServiceMessages API POST endpoint', () => {
 			})
 
 			it('should reject non-criticality positive number', async () => {
-				Object.values(Criticality)
 				const tooHigh =
-					(Object.values(Criticality).filter((value) => typeof value === 'number') as number[]).sort(
-						(a, b) => b - a
-					)[0] + 1
+					Object.values<Criticality>(Criticality as any)
+						.filter((value) => typeof value === 'number')
+						.sort((a, b) => b - a)[0] + 1
 				const invalidInput: any = { ...validInput }
 				invalidInput.criticality = tooHigh
 				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))

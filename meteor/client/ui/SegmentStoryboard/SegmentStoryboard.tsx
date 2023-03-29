@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { IContextMenuContext } from '../RundownView'
-import { PartUi, PieceUi, SegmentNoteCounts, SegmentUi } from '../SegmentContainer/withResolvedSegment'
+import { IOutputLayerUi, PartUi, PieceUi, SegmentNoteCounts, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
@@ -639,7 +639,7 @@ export const SegmentStoryboard = React.memo(
 				</div>
 				<div className="segment-timeline__mos-id">{props.segment.externalId}</div>
 				<div className="segment-timeline__source-layers" role="tree" aria-label={t('Sources')}>
-					{Object.values(props.segment.outputLayers)
+					{Object.values<IOutputLayerUi>(props.segment.outputLayers)
 						.filter((outputGroup) => outputGroup.used)
 						.map((outputGroup) => (
 							<div className="segment-timeline__output-group" key={outputGroup._id}>

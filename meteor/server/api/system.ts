@@ -9,7 +9,7 @@ import {
 	BenchmarkResult,
 	SystemBenchmarkResults,
 } from '../../lib/api/system'
-import { getTargetRegisteredIndexes } from '../collections/indices'
+import { CollectionIndexes, getTargetRegisteredIndexes } from '../collections/indices'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
 import { SystemWriteAccess } from '../security/system'
@@ -32,7 +32,7 @@ async function setupIndexes(removeOldIndexes: boolean = false): Promise<Array<In
 
 	const removeIndexes: IndexSpecification[] = []
 	await Promise.all(
-		Object.entries(registeredIndexes).map(async ([collectionName, targetInfo]) => {
+		Object.entries<CollectionIndexes<any>>(registeredIndexes).map(async ([collectionName, targetInfo]) => {
 			const rawCollection = targetInfo.collection.rawCollection()
 			const existingIndexes = (await rawCollection.indexes()) as any[]
 

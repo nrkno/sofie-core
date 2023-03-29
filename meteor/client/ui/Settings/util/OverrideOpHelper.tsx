@@ -67,7 +67,7 @@ export function getAllCurrentAndDeletedItemsFromOverrides<T extends object>(
 
 	// Convert the items into an array
 	const validItems: Array<[id: string, obj: T]> = []
-	for (const [id, obj] of Object.entries(resolvedObject)) {
+	for (const [id, obj] of Object.entries<T | undefined>(resolvedObject)) {
 		if (obj) validItems.push([id, obj])
 	}
 
@@ -88,7 +88,7 @@ export function getAllCurrentAndDeletedItemsFromOverrides<T extends object>(
 
 	// Find the items which have been deleted with an override
 	const computedOutputLayerIds = new Set(sortedItems.map((l) => l.id))
-	for (const [id, output] of Object.entries(rawObject.defaults)) {
+	for (const [id, output] of Object.entries<ReadonlyDeep<T | undefined>>(rawObject.defaults)) {
 		if (!computedOutputLayerIds.has(id) && output) {
 			removedOutputLayers.push(
 				literal<WrappedOverridableItemDeleted<T>>({

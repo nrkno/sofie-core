@@ -44,7 +44,7 @@ export function getSchemaSummaryFieldsForObject(
 ): SchemaSummaryField[] {
 	const fieldNames: SchemaSummaryField[] = []
 
-	for (const [index, prop] of Object.entries(schema)) {
+	for (const [index, prop] of Object.entries<JSONSchema | undefined>(schema)) {
 		if (prop) {
 			const newPrefix = joinObjectPathFragments(prefix, index)
 

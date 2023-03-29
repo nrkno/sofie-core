@@ -35,7 +35,7 @@ export function GenericDeviceSettingsComponent({
 					.getDebugStates(device._id)
 					.then((res) => {
 						const states: Map<PeripheralDeviceId, object> = new Map()
-						for (const [key, state] of Object.entries(res)) {
+						for (const [key, state] of Object.entries<any>(res)) {
 							states.set(protectString(key), state)
 						}
 						setDebugStates(states)

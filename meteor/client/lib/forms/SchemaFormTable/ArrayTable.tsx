@@ -121,7 +121,7 @@ export const SchemaFormArrayTable = ({
 					</tr>
 				</thead>
 				<tbody>
-					{Object.entries(rows).map(([i0, obj]) => {
+					{Object.entries<any>(rows).map(([i0, obj]) => {
 						const i = Number(i0)
 
 						return (

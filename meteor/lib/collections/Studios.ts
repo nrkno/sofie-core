@@ -104,8 +104,9 @@ export function getRoutedMappings<M extends MappingExt>(
 	return outputMappings
 }
 
+export type MappingExtWithPackage = MappingExt & { expectedPackages: (ExpectedPackage.Base & { rundownId?: string })[] }
 export type MappingsExtWithPackage = {
-	[layerName: string]: MappingExt & { expectedPackages: (ExpectedPackage.Base & { rundownId?: string })[] }
+	[layerName: string]: MappingExtWithPackage
 }
 export function routeExpectedPackages(
 	studio: ReadonlyDeep<Pick<Studio, 'routeSets'>>,

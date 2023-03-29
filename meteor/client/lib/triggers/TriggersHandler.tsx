@@ -6,7 +6,7 @@ import Sorensen from '@sofie-automation/sorensen'
 import { PubSub } from '../../../lib/api/pubsub'
 import { useSubscription, useTracker } from '../ReactMeteorData/ReactMeteorData'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PlayoutActions, SomeAction, TriggerType } from '@sofie-automation/blueprints-integration'
+import { PlayoutActions, SomeAction, SomeBlueprintTrigger, TriggerType } from '@sofie-automation/blueprints-integration'
 import {
 	isPreviewableAction,
 	ReactivePlaylistActionContext,
@@ -415,10 +415,16 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 		const previewAutoruns: Tracker.Computation[] = []
 
 		triggeredActions.forEach((pair) => {
-			const action = createAction(pair._id, Object.values(pair.actions), showStyleBase, t, getCurrentContext)
+			const action = createAction(
+				pair._id,
+				Object.values<SomeAction>(pair.actions),
+				showStyleBase,
+				t,
+				getCurrentContext
+			)
 			if (!props.simulateTriggerBinding) {
 				createdActions.current.set(pair._id, action.listener)
-				Object.values(pair.triggers).forEach((trigger) => {
+				Object.values<SomeBlueprintTrigger>(pair.triggers).forEach((trigger) => {
 					if (trigger.type === TriggerType.hotkey) {
 						bindHotkey(pair._id, trigger.keys, !!trigger.up, action.listener)
 					}
@@ -426,11 +432,13 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			}
 
 			if (pair.name) {
-				const triggers = Object.values(pair.triggers).filter((trigger) => trigger.type === TriggerType.hotkey)
+				const triggers = Object.values<SomeBlueprintTrigger>(pair.triggers).filter(
+					(trigger) => trigger.type === TriggerType.hotkey
+				)
 				const genericTriggerId = protectString(`${pair._id}`)
 				const keys = triggers.filter(isHotkeyTrigger).map((trigger) => trigger.keys)
 				const finalKeys = keys.map((key) => getFinalKey(key))
-				const adLibOnly = Object.values(pair.actions).every(
+				const adLibOnly = Object.values<SomeAction>(pair.actions).every(
 					(actionDescriptor) => actionDescriptor.action === PlayoutActions.adlib
 				)
 				MountedGenericTriggers.upsert(genericTriggerId, {
@@ -446,7 +454,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				})
 			}
 
-			const hotkeyTriggers = Object.values(pair.triggers)
+			const hotkeyTriggers = Object.values<SomeBlueprintTrigger>(pair.triggers)
 				.filter(isHotkeyTrigger)
 				.map((trigger) => trigger.keys)
 
@@ -493,7 +501,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				triggeredActions.forEach((pair) => {
 					const actionListener = createdActions.current.get(pair._id)
 					if (actionListener) {
-						Object.values(pair.triggers).forEach((trigger) => {
+						Object.values<SomeBlueprintTrigger>(pair.triggers).forEach((trigger) => {
 							if (trigger.type === TriggerType.hotkey) {
 								unbindHotkey(trigger.keys, actionListener)
 							}

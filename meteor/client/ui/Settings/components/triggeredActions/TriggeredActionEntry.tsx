@@ -158,7 +158,9 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 		() => {
 			try {
 				if (resolvedActions && selected && sourceLayers) {
-					const executableActions = Object.values(resolvedActions).map((value) => createAction(value, sourceLayers))
+					const executableActions = Object.values<SomeAction>(resolvedActions).map((value) =>
+						createAction(value, sourceLayers)
+					)
 					const ctx = previewContext
 					if (ctx && ctx.rundownPlaylist) {
 						return flatten(
@@ -345,7 +347,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 
 		const resolvedActions = applyAndValidateOverrides(triggeredAction.triggersWithOverrides).obj
 
-		const lastTriggerObj = last(Object.values(resolvedActions))
+		const lastTriggerObj = last(Object.values<SomeBlueprintTrigger>(resolvedActions))
 		const selectedTriggerObj = selectedTrigger ? resolvedActions[selectedTrigger] : null
 		if (!selectedTriggerObj || !isHotkeyTrigger(selectedTriggerObj)) {
 			if (!isHotkeyTrigger(lastTriggerObj)) return

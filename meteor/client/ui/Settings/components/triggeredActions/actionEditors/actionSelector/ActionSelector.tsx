@@ -185,7 +185,7 @@ function getAvailableActions(t: TFunction): Record<string, string> {
 	const result: Record<string, string> = {}
 
 	actionEnums.forEach((enumList) => {
-		Object.values(enumList).forEach((key) => {
+		Object.values<any>(enumList).forEach((key) => {
 			result[actionToLabel(t, key)] = key
 		})
 	})
