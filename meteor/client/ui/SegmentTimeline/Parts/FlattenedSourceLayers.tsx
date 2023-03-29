@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import * as _ from 'underscore'
 import { unprotectString } from '../../../../lib/lib'
 import { ISourceLayerUi } from '../SegmentTimelineContainer'
@@ -41,6 +41,9 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.El
 						.sortBy((it) => it.renderedInPoint)
 						.sortBy((it) => it.cropped)
 						.map((piece) => {
+							const piecesForLayer = useMemo(() => {
+								return layer.pieces.map((p) => p.instance.piece)
+							}, [layer.pieces])
 							return (
 								<SourceLayerItemContainer
 									key={unprotectString(piece.instance._id)}
@@ -58,7 +61,7 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.El
 									onDoubleClick={props.onPieceDoubleClick}
 									mediaPreviewUrl={props.mediaPreviewUrl}
 									piece={piece}
-									pieces={layer.pieces.map((p) => p.instance.piece)}
+									pieces={piecesForLayer}
 									layer={layer}
 									outputLayer={props.outputLayer}
 									part={props.part}
