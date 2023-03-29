@@ -79,7 +79,7 @@ function SelectBlueprint({ showStyleBase }: SelectBlueprintProps) {
 		if (allShowStyleBlueprints) {
 			return allShowStyleBlueprints.map((blueprint) => {
 				return {
-					name: blueprint.name ? blueprint.name + ` (${blueprint._id})` : unprotectString(blueprint._id),
+					name: blueprint.name ? `${blueprint.name} (${blueprint._id})` : unprotectString(blueprint._id),
 					value: blueprint._id,
 				}
 			})

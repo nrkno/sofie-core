@@ -46,21 +46,21 @@ export function BlueprintConfigSchemaSettings({
 	layerMappings,
 	sourceLayers,
 
-	configObject,
-	saveOverrides,
+	configObject: rawConfigObject,
+	saveOverrides: rawSaveOverrides,
 }: BlueprintConfigSchemaSettingsProps): JSX.Element {
 	const { t } = useTranslation()
 
-	const saveOverrides2 = useCallback(
+	const saveOverridesStrippingPrefix = useCallback(
 		(newOps: SomeObjectOverrideOp[]) => {
-			saveOverrides(
+			rawSaveOverrides(
 				newOps.map((op) => ({
 					...op,
 					path: op.path.startsWith('0.') ? op.path.slice(2) : op.path,
 				}))
 			)
 		},
-		[saveOverrides]
+		[rawSaveOverrides]
 	)
 
 	const sofieEnumDefinitons: Record<string, SchemaFormSofieEnumDefinition> = useMemo(() => {
@@ -95,16 +95,14 @@ export function BlueprintConfigSchemaSettings({
 		}
 	}, [layerMappings, sourceLayers])
 
-	// TODO - this is pretty ugly and could do with some work to avoid needing to fake the itemId like this...
-
-	const [wrappedItem, configObject2] = useMemo(() => {
+	const [wrappedItem, wrappedConfigObject] = useMemo(() => {
 		const combinedDefaults: IBlueprintConfig = alternateConfig
-			? deepmerge<IBlueprintConfig>(alternateConfig, configObject.defaults, {
+			? deepmerge<IBlueprintConfig>(alternateConfig, rawConfigObject.defaults, {
 					arrayMerge: (_destinationArray, sourceArray, _options) => sourceArray,
 			  })
-			: configObject.defaults
+			: rawConfigObject.defaults
 
-		const prefixedOps = configObject.overrides.map((op) => ({
+		const prefixedOps = rawConfigObject.overrides.map((op) => ({
 			...op,
 			// TODO: can we avoid doing this hack?
 			path: `0.${op.path}`,
@@ -112,7 +110,7 @@ export function BlueprintConfigSchemaSettings({
 
 		const computedValue = applyAndValidateOverrides({
 			defaults: combinedDefaults,
-			overrides: configObject.overrides,
+			overrides: rawConfigObject.overrides,
 		}).obj
 
 		const wrappedItem = literal<WrappedOverridableItemNormal<IBlueprintConfig>>({
@@ -123,15 +121,15 @@ export function BlueprintConfigSchemaSettings({
 			overrideOps: prefixedOps,
 		})
 
-		const configObject2: ObjectWithOverrides<IBlueprintConfig> = {
+		const wrappedConfigObject: ObjectWithOverrides<IBlueprintConfig> = {
 			defaults: combinedDefaults,
 			overrides: prefixedOps,
 		}
 
-		return [wrappedItem, configObject2]
-	}, [configObject])
+		return [wrappedItem, wrappedConfigObject]
+	}, [rawConfigObject])
 
-	const overrideHelper = useOverrideOpHelper(saveOverrides2, configObject2) // TODO - replace based around a custom implementation of OverrideOpHelperForItemContents?
+	const overrideHelper = useOverrideOpHelper(saveOverridesStrippingPrefix, wrappedConfigObject) // TODO - replace based around a custom implementation of OverrideOpHelperForItemContents?
 
 	const groupedSchema = useMemo(() => {
 		if (schema?.type === 'object' && schema.properties) {
