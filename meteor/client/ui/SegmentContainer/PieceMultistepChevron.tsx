@@ -8,7 +8,7 @@ export const PieceMultistepChevron = function PieceMultistepChevron({
 }: {
 	className: string
 	piece: PieceExtended
-}) {
+}): JSX.Element | null {
 	const noraContent = piece.instance.piece.content as NoraContent | undefined
 
 	const hasStepChevron =
