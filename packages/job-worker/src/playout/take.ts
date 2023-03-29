@@ -50,10 +50,10 @@ export async function handleTakeNextPart(context: JobContext, data: TakeNextPart
 		async (cache) => {
 			const playlist = cache.Playlist.doc
 
-			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
+			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
 
 			if (!playlist.nextPartInstanceId && playlist.holdState !== RundownHoldState.ACTIVE)
-				throw UserError.create(UserErrorMessage.TakeNoNextPart)
+				throw UserError.create(UserErrorMessage.TakeNoNextPart, undefined, 412)
 
 			if (playlist.currentPartInstanceId !== data.fromPartInstanceId)
 				throw UserError.create(UserErrorMessage.TakeFromIncorrectPart)

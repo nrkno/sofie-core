@@ -19,9 +19,9 @@ export async function handleSetNextPart(context: JobContext, data: SetNextPartPr
 		async (cache) => {
 			const playlist = cache.Playlist.doc
 
-			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
+			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
 			if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
-				throw UserError.create(UserErrorMessage.DuringHold)
+				throw UserError.create(UserErrorMessage.DuringHold, undefined, 412)
 			}
 		},
 		async (cache) => {
@@ -29,8 +29,8 @@ export async function handleSetNextPart(context: JobContext, data: SetNextPartPr
 			if (data.nextPartId) {
 				// Ensure the part is playable and found
 				nextPart = cache.Parts.findOne(data.nextPartId)
-				if (!nextPart) throw UserError.create(UserErrorMessage.PartNotFound)
-				if (!isPartPlayable(nextPart)) throw UserError.create(UserErrorMessage.PartNotPlayable)
+				if (!nextPart) throw UserError.create(UserErrorMessage.PartNotFound, undefined, 404)
+				if (!isPartPlayable(nextPart)) throw UserError.create(UserErrorMessage.PartNotPlayable, undefined, 412)
 			}
 
 			await setNextPartInner(
@@ -58,13 +58,13 @@ export async function handleMoveNextPart(context: JobContext, data: MoveNextPart
 
 			const playlist = cache.Playlist.doc
 
-			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
+			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
 			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
-				throw UserError.create(UserErrorMessage.DuringHold)
+				throw UserError.create(UserErrorMessage.DuringHold, undefined, 412)
 			}
 
 			if (!playlist.nextPartInstanceId && !playlist.currentPartInstanceId) {
-				throw UserError.create(UserErrorMessage.NoCurrentOrNextPart)
+				throw UserError.create(UserErrorMessage.NoCurrentOrNextPart, undefined, 412)
 			}
 		},
 		async (cache) => {
@@ -82,10 +82,10 @@ export async function handleSetNextSegment(context: JobContext, data: SetNextSeg
 		data,
 		async (cache) => {
 			const playlist = cache.Playlist.doc
-			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
+			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
 
 			if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
-				throw UserError.create(UserErrorMessage.DuringHold)
+				throw UserError.create(UserErrorMessage.DuringHold, undefined, 412)
 			}
 		},
 		async (cache) => {
