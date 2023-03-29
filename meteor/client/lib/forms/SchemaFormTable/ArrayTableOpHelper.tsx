@@ -9,10 +9,10 @@ import { OverrideOpHelperForItemContents } from '../../../ui/Settings/util/Overr
 export class OverrideOpHelperArrayTable implements OverrideOpHelperForItemContents {
 	readonly #baseHelper: OverrideOpHelperForItemContents
 	readonly #itemId: string
-	readonly #currentRows: any[]
+	readonly #currentRows: unknown[]
 	readonly #path: string
 
-	constructor(baseHelper: OverrideOpHelperForItemContents, itemId: string, currentRows: any[], path: string) {
+	constructor(baseHelper: OverrideOpHelperForItemContents, itemId: string, currentRows: unknown[], path: string) {
 		this.#baseHelper = baseHelper
 		this.#itemId = itemId
 		this.#currentRows = currentRows
@@ -30,7 +30,7 @@ export class OverrideOpHelperArrayTable implements OverrideOpHelperForItemConten
 		// Send it onwards
 		this.#baseHelper.setItemValue(this.#itemId, this.#path, newObj)
 	}
-	setItemValue(rowId: string, subPath: string, value: any): void {
+	setItemValue(rowId: string, subPath: string, value: unknown): void {
 		// Build the new object
 		const newObj = clone(this.#currentRows)
 		objectPathSet(newObj, `${rowId}.${subPath}`, value)

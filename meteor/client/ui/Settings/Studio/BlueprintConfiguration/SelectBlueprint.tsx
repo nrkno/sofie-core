@@ -15,7 +15,7 @@ interface SelectBlueprintProps {
 	studio: DBStudio
 }
 
-export function SelectBlueprint({ studio }: SelectBlueprintProps) {
+export function SelectBlueprint({ studio }: SelectBlueprintProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const allStudioBlueprints = useTracker(() => {

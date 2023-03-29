@@ -15,7 +15,7 @@ interface SelectBlueprintProps {
 	showStyleBase: ShowStyleBase
 }
 
-export function SelectBlueprint({ showStyleBase }: SelectBlueprintProps) {
+export function SelectBlueprint({ showStyleBase }: SelectBlueprintProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const allShowStyleBlueprints = useTracker(() => {

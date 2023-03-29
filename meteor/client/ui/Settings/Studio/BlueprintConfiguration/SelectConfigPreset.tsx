@@ -12,7 +12,7 @@ interface SelectConfigPresetProps {
 	blueprint: Blueprint | undefined
 }
 
-export function SelectConfigPreset({ studio, blueprint }: SelectConfigPresetProps) {
+export function SelectConfigPreset({ studio, blueprint }: SelectConfigPresetProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const configPresetOptions = useMemo(() => {

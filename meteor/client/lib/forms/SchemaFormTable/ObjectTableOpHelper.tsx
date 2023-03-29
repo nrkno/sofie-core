@@ -38,7 +38,7 @@ export class OverrideOpHelperObjectTable implements OverrideOpHelperForItemConte
 			this.#baseHelper.setItemValue(this.#itemId, joinObjectPathFragments(this.#path, rowId), undefined)
 		}
 	}
-	setItemValue(rowId: string, subPath: string, value: any): void {
+	setItemValue(rowId: string, subPath: string, value: unknown): void {
 		const currentRow = this.#currentRows.find((r) => r.id === rowId)
 		if (!currentRow || currentRow.type === 'deleted') return // Unable to set value
 

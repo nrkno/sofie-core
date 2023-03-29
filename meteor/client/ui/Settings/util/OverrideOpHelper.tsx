@@ -121,7 +121,7 @@ export interface OverrideOpHelperForItemContents {
 	 * Set the value of a property of an item.
 	 * Note: the id cannot be changed in this way
 	 */
-	setItemValue(itemId: string, subPath: string, value: any): void
+	setItemValue(itemId: string, subPath: string, value: unknown): void
 }
 
 export interface OverrideOpHelper extends OverrideOpHelperForItemContents {

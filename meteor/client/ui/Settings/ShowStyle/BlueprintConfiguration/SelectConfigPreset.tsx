@@ -12,7 +12,7 @@ interface SelectConfigPresetProps {
 	showStyleBase: ShowStyleBase
 }
 
-export function SelectConfigPreset({ showStyleBase }: SelectConfigPresetProps) {
+export function SelectConfigPreset({ showStyleBase }: SelectConfigPresetProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const blueprint = useTracker(() => {

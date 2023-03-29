@@ -34,7 +34,7 @@ export function ArrayTableRow({
 	isExpanded,
 	toggleExpanded,
 	confirmRemove,
-}: ArrayTableRowProps) {
+}: ArrayTableRowProps): JSX.Element {
 	const rowItem = useMemo(
 		() =>
 			literal<WrappedOverridableItemNormal<any>>({
