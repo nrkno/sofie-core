@@ -38,6 +38,7 @@ export function findLookaheadForLayer(
 
 		const partInfo: PartAndPieces = {
 			part: partInstanceInfo.part.part,
+			usesInTransition: partInstanceInfo.calculatedTimings.inTransitionStart !== null,
 			pieces: sortPieceInstancesByStart(partInstanceInfo.allPieces, partInstanceInfo.nowInPart),
 		}
 

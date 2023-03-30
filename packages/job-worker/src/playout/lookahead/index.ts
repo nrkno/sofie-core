@@ -23,6 +23,7 @@ import { prefixSingleObjectId } from '../lib'
 import { LookaheadTimelineObject } from './findObjects'
 import { hasPieceInstanceDefinitelyEnded } from '../timeline/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -97,6 +98,7 @@ export async function getLookeaheadObjects(
 					onTimeline: true,
 					nowInPart: partInstancesInfo0.current.nowInPart,
 					allPieces: getPrunedEndedPieceInstances(partInstancesInfo0.current),
+					calculatedTimings: partInstancesInfo0.current.calculatedTimings,
 			  })
 			: undefined,
 		partInstancesInfo0.next
@@ -105,6 +107,7 @@ export async function getLookeaheadObjects(
 					onTimeline: !!partInstancesInfo0.current?.partInstance?.part?.autoNext,
 					nowInPart: partInstancesInfo0.next.nowInPart,
 					allPieces: partInstancesInfo0.next.pieceInstances,
+					calculatedTimings: partInstancesInfo0.next.calculatedTimings,
 			  })
 			: undefined,
 	])
@@ -117,6 +120,7 @@ export async function getLookeaheadObjects(
 			onTimeline: true,
 			nowInPart: partInstancesInfo0.previous.nowInPart,
 			allPieces: getPrunedEndedPieceInstances(partInstancesInfo0.previous),
+			calculatedTimings: partInstancesInfo0.previous.calculatedTimings,
 		})
 	}
 
@@ -135,10 +139,18 @@ export async function getLookeaheadObjects(
 		}
 	}
 
-	const orderedPartInfos: Array<PartAndPieces> = orderedPartsFollowingPlayhead.map((part) => ({
-		part,
-		pieces: sortPieceInstancesByStart(piecesByPart.get(part._id) || [], 0),
-	}))
+	const orderedPartInfos: Array<PartAndPieces> = orderedPartsFollowingPlayhead.map((part, i) => {
+		const previousPart: DBPart | undefined =
+			i === 0
+				? (partInstancesInfo0.next?.partInstance ?? partInstancesInfo0.current?.partInstance)?.part
+				: orderedPartsFollowingPlayhead[i - 1]
+
+		return {
+			part,
+			usesInTransition: !previousPart?.disableNextInTransition, // aproximate, but accurate enough
+			pieces: sortPieceInstancesByStart(piecesByPart.get(part._id) || [], 0),
+		}
+	})
 
 	const span2 = context.startSpan('getLookeaheadObjects.iterate')
 	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
