@@ -199,7 +199,13 @@ export function lazyIgnore(name: string, f1: () => Promise<void> | void, t: numb
 	}
 	lazyIgnoreCache[name] = Meteor.setTimeout(() => {
 		delete lazyIgnoreCache[name]
-		waitForPromise(f1())
+		if (Meteor.isClient) {
+			f1()?.catch((e) => {
+				throw new Error(e)
+			})
+		} else {
+			waitForPromise(f1())
+		}
 	}, t)
 }
 

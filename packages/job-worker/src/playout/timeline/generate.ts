@@ -47,6 +47,11 @@ import { buildTimelineObjsForRundown, RundownTimelineTimingContext } from './run
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { deNowifyMultiGatewayTimeline } from './multi-gateway'
 import { validateTimeline } from 'superfly-timeline'
+import {
+	calculatePartTimings,
+	getPartTimingsOrDefaults,
+	PartCalculatedTimings,
+} from '@sofie-automation/corelib/dist/playout/timings'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
@@ -256,6 +261,7 @@ export interface SelectedPartInstanceTimelineInfo {
 	nowInPart: number
 	partInstance: DBPartInstance
 	pieceInstances: PieceInstanceWithTimings[]
+	calculatedTimings: PartCalculatedTimings
 }
 
 function getPartInstanceTimelineInfo(
@@ -274,6 +280,8 @@ function getPartInstanceTimelineInfo(
 			partInstance,
 			pieceInstances,
 			nowInPart,
+			// Approximate `calculatedTimings`, for the partInstances which already have it cached
+			calculatedTimings: getPartTimingsOrDefaults(partInstance, pieceInstances),
 		}
 	} else {
 		return undefined
@@ -318,6 +326,18 @@ async function getTimelineRundown(
 				current: getPartInstanceTimelineInfo(cache, currentTime, showStyle.sourceLayers, currentPartInstance),
 				next: getPartInstanceTimelineInfo(cache, currentTime, showStyle.sourceLayers, nextPartInstance),
 				previous: getPartInstanceTimelineInfo(cache, currentTime, showStyle.sourceLayers, previousPartInstance),
+			}
+			if (partInstancesInfo.next) {
+				// the nextPartInstance doesn't have accurate cached `calculatedTimings` yet, so calculate a prediction
+				partInstancesInfo.next.calculatedTimings = calculatePartTimings(
+					cache.Playlist.doc.holdState,
+					partInstancesInfo.current?.partInstance?.part,
+					partInstancesInfo.current?.pieceInstances?.map?.((p) => p.piece),
+					partInstancesInfo.next.partInstance.part,
+					partInstancesInfo.next.pieceInstances
+						.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0)
+						.map((p) => p.piece)
+				)
 			}
 
 			// next (on pvw (or on pgm if first))

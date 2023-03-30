@@ -6,7 +6,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { literal } from '@sofie-automation/corelib/dist/lib'
+import { assertNever, literal } from '@sofie-automation/corelib/dist/lib'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	OnGenerateTimelineObjExt,
@@ -74,6 +74,23 @@ function getObjectMapForPiece(piece: PieceInstanceWithObjectMap): NonNullable<Pi
 export type LookaheadTimelineObject = TimelineObjRundown &
 	SetRequired<OnGenerateTimelineObjExt, 'pieceInstanceId' | 'partInstanceId'>
 
+function shouldIgnorePiece(partInfo: PartAndPieces, piece: PieceInstanceWithObjectMap): boolean {
+	switch (piece.piece.pieceType) {
+		case IBlueprintPieceType.InTransition:
+			// Ignore if the part will not use the transition
+			return !partInfo.usesInTransition
+		case IBlueprintPieceType.OutTransition:
+			// Always ignore for now
+			return true
+		case IBlueprintPieceType.Normal:
+			// Always allow
+			return false
+		default:
+			assertNever(piece.piece.pieceType)
+			return false
+	}
+}
+
 export function findLookaheadObjectsForPart(
 	_context: JobContext,
 	currentPartInstanceId: PartInstanceId | null,
@@ -89,6 +106,8 @@ export function findLookaheadObjectsForPart(
 
 	const allObjs: Array<LookaheadTimelineObject> = []
 	for (const rawPiece of partInfo.pieces) {
+		if (shouldIgnorePiece(partInfo, rawPiece)) continue
+
 		const obj = getObjectMapForPiece(rawPiece).get(layer)
 		if (obj) {
 			allObjs.push(
@@ -109,15 +128,12 @@ export function findLookaheadObjectsForPart(
 		return []
 	}
 
-	let allowTransition = !partInstanceId
 	let classesFromPreviousPart: string[] = []
 	if (previousPart && currentPartInstanceId && partInstanceId) {
-		// If we have a previous and not at the start of the rundown
-		allowTransition = !previousPart.disableNextInTransition
 		classesFromPreviousPart = previousPart.classesForNext || []
 	}
 
-	const transitionPiece = allowTransition
+	const transitionPiece = partInfo.usesInTransition
 		? partInfo.pieces.find((i) => i.piece.pieceType === IBlueprintPieceType.InTransition)
 		: undefined
 
@@ -137,9 +153,7 @@ export function findLookaheadObjectsForPart(
 
 		const res: Array<LookaheadTimelineObject> = []
 		partInfo.pieces.forEach((piece) => {
-			if (!allowTransition && piece.piece.pieceType === IBlueprintPieceType.InTransition) {
-				return
-			}
+			if (shouldIgnorePiece(partInfo, piece)) return
 
 			// If there is a transition and this piece is abs0, it is assumed to be the primary piece and so does not need lookahead
 			if (
