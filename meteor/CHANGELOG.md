@@ -208,6 +208,16 @@ All notable changes to this project will be documented in this file. See [standa
 * **PoGw:** resolve issues with reporting context from TSR ([687193f](https://github.com/nrkno/sofie-core/commit/687193ffeb599d5193f2f06d49b987a71a766206))
 * put vizPurgeRundown method on the sub-device instead ([e3e4d06](https://github.com/nrkno/sofie-core/commit/e3e4d060cd87eb96f2b7219d6ffe3ca66726b23e))
 
+### [1.47.1-0](https://github.com/nrkno/sofie-core/compare/v1.47.0...v1.47.1-0) (2023-03-30)
+
+
+### Bug Fixes
+
+* "waitForPromise can't be used client-side" is periodically printed in the Browser Console ([14a51ad](https://github.com/nrkno/sofie-core/commit/14a51ad3436d7a258737aff4e0e077a369369eb5))
+* cleanup orphaned PackageInfos as part of regular cleanup SOFIE-2120 ([1459660](https://github.com/nrkno/sofie-core/commit/14596604f8734d06e44ab8340aeab3fb611fd0da))
+* ensure keyframes have unique ids ([#871](https://github.com/nrkno/sofie-core/issues/871)) ([2236c3b](https://github.com/nrkno/sofie-core/commit/2236c3bdf8d4a91c8200218d3ba13fcbe3070253))
+* lookahead loading skipped wipe for remainder of the part SOFIE-2168 ([bbc5e25](https://github.com/nrkno/sofie-core/commit/bbc5e253e0d00a6f2fdd61b9cc8b38278b9a7830))
+
 ## [1.47.0](https://github.com/nrkno/sofie-core/compare/v1.47.0-in-testing.8...v1.47.0) (2023-03-01)
 
 
