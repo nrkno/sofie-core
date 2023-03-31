@@ -1564,6 +1564,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					studioId: playlist.studioId,
 				})
 
+				// TODO: This is a hack, which should be replaced by something more clever, like in withMediaObjectStatus()
 				this.subscribe(PubSub.packageContainerPackageStatusesSimple, playlist.studioId)
 			})
 
