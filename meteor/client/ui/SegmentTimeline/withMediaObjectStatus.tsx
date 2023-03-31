@@ -5,7 +5,6 @@ import { RundownUtils } from '../../lib/rundown'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
 
-import * as _ from 'underscore'
 import { AdLibPieceUi } from '../../lib/shelf'
 import { UIStudio } from '../../../lib/api/studios'
 import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
