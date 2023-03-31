@@ -111,6 +111,7 @@ export enum PubSub {
 	expectedPackages = 'expectedPackages',
 	expectedPackageWorkStatuses = 'expectedPackageWorkStatuses',
 	packageContainerPackageStatuses = 'packageContainerPackageStatuses',
+	packageContainerPackageStatusesSimple = 'packageContainerPackageStatusesSimple',
 	packageContainerStatuses = 'packageContainerStatuses',
 	packageInfos = 'packageInfos',
 
@@ -215,6 +216,11 @@ export interface PubSubTypes {
 		token?: string
 	) => ExpectedPackageWorkStatus
 	[PubSub.packageContainerPackageStatuses]: (
+		studioId: StudioId,
+		containerId?: string | null,
+		packageId?: ExpectedPackageId | null
+	) => PackageContainerPackageStatusDB
+	[PubSub.packageContainerPackageStatusesSimple]: (
 		studioId: StudioId,
 		containerId?: string | null,
 		packageId?: ExpectedPackageId | null
