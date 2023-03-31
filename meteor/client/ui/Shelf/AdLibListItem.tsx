@@ -36,7 +36,7 @@ interface IListViewItemProps {
 	playlist: RundownPlaylist
 }
 
-export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
+export const AdLibListItem = withMediaObjectStatus<IListViewItemProps>()(
 	class AdLibListItem extends MeteorReactComponent<IListViewItemProps> {
 		constructor(props: IListViewItemProps) {
 			super(props)

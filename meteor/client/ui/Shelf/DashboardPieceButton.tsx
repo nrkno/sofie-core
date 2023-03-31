@@ -493,4 +493,4 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<IDash
 	}
 }
 
-export const DashboardPieceButton = withMediaObjectStatus<IDashboardButtonProps, {}>()(DashboardPieceButtonBase)
+export const DashboardPieceButton = withMediaObjectStatus<IDashboardButtonProps>()(DashboardPieceButtonBase)

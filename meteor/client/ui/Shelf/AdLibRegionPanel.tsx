@@ -235,10 +235,10 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 	}
 }
 
-export const AdLibRegionPanelWithStatus = withMediaObjectStatus<
-	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,
-	{}
->()(AdLibRegionPanelBase)
+export const AdLibRegionPanelWithStatus =
+	withMediaObjectStatus<
+		Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>
+	>()(AdLibRegionPanelBase)
 
 export const AdLibRegionPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps>,

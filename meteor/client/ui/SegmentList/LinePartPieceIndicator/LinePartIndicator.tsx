@@ -20,7 +20,7 @@ interface IProps {
 	onDoubleClick?: React.EventHandler<React.MouseEvent<HTMLDivElement>>
 }
 
-export const LinePartIndicator = withMediaObjectStatus<IProps, {}>()(function LinePartIndicator({
+export const LinePartIndicator = withMediaObjectStatus<IProps>()(function LinePartIndicator({
 	overlay,
 	count,
 	allSourceLayers,

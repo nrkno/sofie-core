@@ -16,7 +16,7 @@ interface IProps {
 	studio: UIStudio
 }
 
-const InspectorTitle = withMediaObjectStatus<IProps, {}>()(function InspectorTitle(props: IProps) {
+const InspectorTitle = withMediaObjectStatus<IProps>()(function InspectorTitle(props: IProps) {
 	const piece = RundownUtils.isPieceInstance(props.piece)
 		? (props.piece.instance.piece as Piece)
 		: (props.piece as AdLibPieceUi)

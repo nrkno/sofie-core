@@ -61,7 +61,7 @@ function renderPieceInside(
 
 type MousePagePosition = { pageX: number; pageY: number }
 
-export const StoryboardSecondaryPiece = withMediaObjectStatus<IProps, {}>()(function StoryboardSecondaryPiece(
+export const StoryboardSecondaryPiece = withMediaObjectStatus<IProps>()(function StoryboardSecondaryPiece(
 	props: IProps
 ) {
 	const {

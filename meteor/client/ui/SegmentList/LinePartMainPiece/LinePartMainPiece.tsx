@@ -135,7 +135,7 @@ function getBlacks(piece: PieceUi): Array<PackageInfo.Anomaly> | undefined {
 }
 
 // TODO: Create useMediaObjectStatus that would set up new subscriptions
-export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function LinePartMainPiece({
+export const LinePartMainPiece = withMediaObjectStatus<IProps>()(function LinePartMainPiece({
 	partId,
 	partInstanceId,
 	piece,

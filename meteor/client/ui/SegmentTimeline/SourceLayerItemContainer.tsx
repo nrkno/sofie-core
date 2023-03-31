@@ -9,6 +9,6 @@ interface IPropsHeader extends ISourceLayerItemProps {
 	studio: UIStudio
 }
 
-export const SourceLayerItemContainer = withMediaObjectStatus<IPropsHeader, {}>()((props: IPropsHeader) => (
+export const SourceLayerItemContainer = withMediaObjectStatus<IPropsHeader>()((props: IPropsHeader) => (
 	<SourceLayerItem {...props} />
 ))

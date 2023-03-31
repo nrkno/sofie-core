@@ -101,7 +101,7 @@ export class BucketPieceButtonBase extends DashboardPieceButtonBase<
 	}
 }
 
-export const BucketPieceButton = withMediaObjectStatus<IDashboardButtonProps & BucketPieceButtonBaseProps, {}>()(
+export const BucketPieceButton = withMediaObjectStatus<IDashboardButtonProps & BucketPieceButtonBaseProps>()(
 	DropTarget(DragDropItemTypes.BUCKET_ADLIB_PIECE, buttonTarget, (connect) => ({
 		connectDropTarget: connect.dropTarget(),
 	}))(

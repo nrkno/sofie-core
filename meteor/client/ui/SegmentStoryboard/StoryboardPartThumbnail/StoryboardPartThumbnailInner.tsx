@@ -22,7 +22,7 @@ interface IProps {
 	highlight?: boolean
 }
 
-export const StoryboardPartThumbnailInner = withMediaObjectStatus<IProps, {}>()(
+export const StoryboardPartThumbnailInner = withMediaObjectStatus<IProps>()(
 	({ piece, layer, partId, partInstanceId, studio, highlight, partAutoNext, isLive, isNext, isFinished }: IProps) => {
 		const [hover, setHover] = useState(false)
 		const [origin, setOrigin] = useState<OffsetPosition>({ left: 0, top: 0 })

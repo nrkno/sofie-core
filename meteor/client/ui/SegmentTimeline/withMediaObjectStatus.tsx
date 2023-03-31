@@ -1,235 +1,110 @@
-import * as React from 'react'
-import { Meteor } from 'meteor/meteor'
-import { Tracker } from 'meteor/tracker'
+import React, { useMemo } from 'react'
 import { PieceUi } from './SegmentTimelineContainer'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { PubSub } from '../../../lib/api/pubsub'
 import { RundownUtils } from '../../lib/rundown'
-import { getMediaObjectMediaId } from '../../../lib/mediaObjects'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
-import { literal } from '../../../lib/lib'
-import { getExpectedPackageId } from '../../../lib/collections/ExpectedPackages'
+
 import * as _ from 'underscore'
-import { MongoQuery } from '../../../lib/typings/meteor'
-import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
 import { AdLibPieceUi } from '../../lib/shelf'
 import { UIStudio } from '../../../lib/api/studios'
-import { ExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { checkPieceContentStatus } from '../../lib/mediaObjects'
+import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { UIPieceContentStatuses } from '../Collections'
+
+type SomePiece = BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi
 
 type AnyPiece = {
-	piece?: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi | undefined
+	piece?: SomePiece | undefined
 	layer?: ISourceLayer | undefined
 	isLiveLine?: boolean
 	studio: UIStudio | undefined
 }
 
-type IWrappedComponent<IProps extends AnyPiece, IState> = new (props: IProps, state: IState) => React.Component<
-	IProps,
-	IState
->
+export function useMediaObjectStatus<T extends SomePiece>(piece: T | undefined): T | undefined {
+	const pieceId = getPieceId(piece)
 
-export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
-	WrappedComponent: IWrappedComponent<IProps, IState> | React.FC<IProps>
-) => new (props: IProps, context: any) => React.Component<IProps, IState> {
-	return (WrappedComponent) => {
-		return class WithMediaObjectStatusHOCComponent extends MeteorReactComponent<IProps, IState> {
-			private statusComp: Tracker.Computation
-			private objId: string
-			private overrides: Partial<IProps>
-			private destroyed: boolean
-			private subscription: Meteor.SubscriptionHandle | undefined
+	const processedPiece = useTracker(() => {
+		if (!piece) return undefined
+		if (!pieceId) return undefined
 
-			private expectedPackageIds: ExpectedPackageId[] = []
-			private subPackageInfos: Meteor.SubscriptionHandle | undefined
+		const uiPieceContentStatus = UIPieceContentStatuses.findOne({
+			pieceId,
+		})
 
-			private updateMediaObjectSubscription() {
-				if (this.destroyed) return
+		if (!uiPieceContentStatus) return undefined
 
-				const layer = this.props.piece?.sourceLayer || (this.props.layer as ISourceLayer | undefined)
+		const { metadata, packageInfos, status, contentDuration, messages } = uiPieceContentStatus.status
 
-				if (this.props.piece && layer) {
-					const piece = WithMediaObjectStatusHOCComponent.unwrapPieceInstance(this.props.piece!)
-					const objId: string | undefined = getMediaObjectMediaId(piece, layer)
-
-					if (objId && objId !== this.objId && this.props.studio) {
-						if (this.subscription) this.subscription.stop()
-						this.objId = objId
-						this.subscription = this.subscribe(PubSub.mediaObjects, this.props.studio._id, {
-							mediaId: this.objId,
-						})
-					} else if (!objId && objId !== this.objId) {
-						if (this.subscription) this.subscription.stop()
-						this.subscription = undefined
-					}
-				}
-
-				if (this.props.piece) {
-					const piece = WithMediaObjectStatusHOCComponent.unwrapPieceInstance(this.props.piece!)
-
-					const expectedPackageIds: ExpectedPackageId[] = []
-					if (piece.expectedPackages) {
-						for (let i = 0; i < piece.expectedPackages.length; i++) {
-							const expectedPackage = piece.expectedPackages[i]
-							const id = expectedPackage._id || '__unnamed' + i
-
-							expectedPackageIds.push(getExpectedPackageId(piece._id, id))
-						}
-					}
-					if (this.props.studio) {
-						if (!_.isEqual(this.expectedPackageIds, expectedPackageIds)) {
-							this.expectedPackageIds = expectedPackageIds
-
-							if (this.subPackageInfos) {
-								this.subPackageInfos.stop()
-								delete this.subPackageInfos
-							}
-							if (this.expectedPackageIds.length) {
-								this.subPackageInfos = this.subscribe(
-									PubSub.packageInfos,
-									literal<MongoQuery<PackageInfoDB>>({
-										studioId: this.props.studio._id,
-										packageId: { $in: this.expectedPackageIds },
-									})
-								)
-							}
-						}
-					}
-				}
+		if (RundownUtils.isAdLibPieceOrAdLibListItem(piece)) {
+			const pieceCopy = {
+				...piece,
+				status,
+				contentMetaData: metadata,
+				contentPackageInfos: packageInfos,
+				messages,
 			}
 
-			private shouldDataTrackerUpdate(prevProps: IProps): boolean {
-				if (this.props.piece !== prevProps.piece) return true
-				if (this.props.studio !== prevProps.studio) return true
-				if (this.props.isLiveLine !== prevProps.isLiveLine) return true
-				return false
+			if (pieceCopy.content && pieceCopy.content.sourceDuration === undefined && contentDuration !== undefined) {
+				pieceCopy.content.sourceDuration = contentDuration
 			}
 
-			private static unwrapPieceInstance(
-				piece: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi
-			) {
-				if (RundownUtils.isPieceInstance(piece)) {
-					return piece.instance.piece
-				} else {
-					return piece
-				}
-			}
-
-			updateDataTracker() {
-				if (this.destroyed) return
-
-				this.statusComp = this.autorun(() => {
-					const { piece, studio, layer } = this.props
-					this.overrides = {}
-					const overrides = this.overrides
-
-					// Check item status
-					if (piece && (piece.sourceLayer || layer) && studio) {
-						const { metadata, packageInfos, status, contentDuration, messages } = checkPieceContentStatus(
-							WithMediaObjectStatusHOCComponent.unwrapPieceInstance(piece!),
-							piece.sourceLayer || layer,
-							studio
-						)
-						if (RundownUtils.isAdLibPieceOrAdLibListItem(piece!)) {
-							if (status !== piece.status || metadata || packageInfos) {
-								// Deep clone the required bits
-								const origPiece = (overrides.piece || this.props.piece) as AdLibPieceUi
-								const pieceCopy: AdLibPieceUi = {
-									...(origPiece as AdLibPieceUi),
-									status: status,
-									contentMetaData: metadata,
-									contentPackageInfos: packageInfos,
-									messages,
-								}
-
-								if (
-									pieceCopy.content &&
-									pieceCopy.content.sourceDuration === undefined &&
-									contentDuration !== undefined
-								) {
-									pieceCopy.content.sourceDuration = contentDuration
-								}
-
-								overrides.piece = {
-									...pieceCopy,
-								}
-							}
-						} else {
-							if (status !== piece.instance.piece.status || metadata || packageInfos) {
-								// Deep clone the required bits
-								const origPiece = (overrides.piece || piece) as PieceUi
-								const pieceCopy: PieceUi = {
-									...((overrides.piece || piece) as PieceUi),
-									instance: {
-										...origPiece.instance,
-										piece: {
-											...origPiece.instance.piece,
-											status: status,
-										},
-									},
-									contentMetaData: metadata,
-									contentPackageInfos: packageInfos,
-									messages,
-								}
-
-								if (
-									pieceCopy.instance.piece.content &&
-									pieceCopy.instance.piece.content.sourceDuration === undefined &&
-									contentDuration !== undefined
-								) {
-									pieceCopy.instance.piece.content.sourceDuration = contentDuration
-								}
-
-								overrides.piece = {
-									...pieceCopy,
-								}
-							}
-						}
-					}
-
-					this.forceUpdate()
-				})
-			}
-
-			componentDidMount(): void {
-				window.requestIdleCallback(
-					() => {
-						this.updateMediaObjectSubscription()
-						this.updateDataTracker()
+			return pieceCopy
+		} else {
+			const pieceCopy = {
+				...piece,
+				instance: {
+					...piece.instance,
+					piece: {
+						...piece.instance.piece,
+						status,
 					},
-					{
-						timeout: 500,
-					}
-				)
+				},
+				contentMetaData: metadata,
+				contentPackageInfos: packageInfos,
+				messages,
 			}
 
-			componentDidUpdate(prevProps: IProps) {
-				Meteor.defer(() => {
-					this.updateMediaObjectSubscription()
-				})
-				if (this.shouldDataTrackerUpdate(prevProps)) {
-					if (this.statusComp) this.statusComp.invalidate()
-				}
+			if (
+				pieceCopy.instance.piece.content &&
+				pieceCopy.instance.piece.content.sourceDuration === undefined &&
+				contentDuration !== undefined
+			) {
+				pieceCopy.instance.piece.content.sourceDuration = contentDuration
 			}
 
-			componentWillUnmount(): void {
-				this.destroyed = true
-				if (this.subscription) {
-					this.subscription.stop()
-					delete this.subscription
-				}
-				if (this.subPackageInfos) {
-					this.subPackageInfos.stop()
-					delete this.subPackageInfos
-				}
-				super.componentWillUnmount()
-			}
-
-			render(): JSX.Element {
-				return <WrappedComponent {...this.props} {...this.overrides} />
-			}
+			return pieceCopy
 		}
+	}, [pieceId, piece])
+
+	return processedPiece
+}
+
+export const withMediaObjectStatus = <TProps extends AnyPiece>() => {
+	return (WrappedComponent: React.ComponentType<TProps>): React.ComponentType<TProps> => {
+		return function WithMediaObjectStatusHOC(props: TProps): JSX.Element {
+			const processedPiece = useMediaObjectStatus(props.piece)
+
+			const overrides = useMemo(
+				() => ({
+					piece: processedPiece ?? props.piece,
+				}),
+				[processedPiece, props.piece]
+			)
+
+			return <WrappedComponent {...props} {...overrides} />
+		}
+	}
+}
+
+function getPieceId(
+	piece: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi | undefined
+): PieceId | undefined {
+	if (!piece) return undefined
+	if (RundownUtils.isAdLibPieceOrAdLibListItem(piece)) {
+		return piece._id
+	}
+	if (piece) {
+		return piece.instance.piece._id
 	}
 }
