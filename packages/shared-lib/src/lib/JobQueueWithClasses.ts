@@ -27,7 +27,6 @@ export class JobQueueWithClasses {
 	#resolutionWrapper?: DeferFunction
 
 	#waitForDonePromise: { resolve: () => void; promise: Promise<void> } | undefined
-	#jobIsRunning = false
 
 	constructor(opts?: Options) {
 		this.#autoStart = opts?.autoStart ?? true
