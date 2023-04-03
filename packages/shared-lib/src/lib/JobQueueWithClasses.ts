@@ -130,7 +130,7 @@ export class JobQueueWithClasses {
 	}
 	/** Returns a Promise that resolves when the queue is eventually empty and all jobs are done */
 	async waitForDone(): Promise<void> {
-		if (!this.#queue.length && !this.#jobIsRunning) return Promise.resolve()
+		if (!this.#queue.length) return Promise.resolve()
 
 		if (!this.#waitForDonePromise) {
 			let resolve: undefined | (() => void) = undefined
