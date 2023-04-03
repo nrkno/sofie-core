@@ -108,12 +108,9 @@ export class JobQueueWithClasses {
 						break
 					}
 					try {
-						this.#jobIsRunning = true
 						await firstIn.fn()
-						this.#jobIsRunning = false
 						firstIn.resolve()
 					} catch (error) {
-						this.#jobIsRunning = false
 						firstIn.reject(error)
 					}
 				}
