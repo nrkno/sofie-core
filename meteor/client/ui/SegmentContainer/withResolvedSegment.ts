@@ -210,7 +210,15 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 			)
 
 			const rundownOrder = RundownPlaylistCollectionUtil.getRundownOrderedIDs(props.playlist)
-			const pieces = RundownPlaylistCollectionUtil.getPiecesForParts(orderedAllPartIds)
+			const pieces = memoizedIsolatedAutorun(
+				(orderedParts) => {
+					return RundownPlaylistCollectionUtil.getPiecesForParts(orderedParts, {
+						fields: { enable: 1, prerollDuration: 1, postrollDuration: 1, pieceType: 1 },
+					})
+				},
+				'playlist.getPiecesForParts',
+				orderedAllPartIds
+			)
 			const rundownIndex = rundownOrder.indexOf(segment.rundownId)
 
 			const o = RundownUtils.getResolvedSegment(

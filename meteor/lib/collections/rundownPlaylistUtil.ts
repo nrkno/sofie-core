@@ -314,8 +314,23 @@ export class RundownPlaylistCollectionUtil {
 		const instances = RundownPlaylistCollectionUtil.getActivePartInstances(playlist, selector, options)
 		return normalizeArrayFunc(instances, (i) => unprotectString(i.part._id))
 	}
-	static getPiecesForParts(parts: Array<PartId>): Map<PartId, Piece[]> {
-		const allPieces = Pieces.find({ startPartId: { $in: parts } }).fetch()
+	static getPiecesForParts(
+		parts: Array<PartId>,
+		piecesOptions?: Omit<FindOptions<Piece>, 'projection'> // We are mangling fields, so block projection
+	): Map<PartId, Piece[]> {
+		const allPieces = Pieces.find(
+			{ startPartId: { $in: parts } },
+			{
+				...piecesOptions,
+				//@ts-expect-error This is too clever for the compiler
+				fields: piecesOptions?.fields
+					? {
+							...piecesOptions?.fields,
+							startPartId: 1,
+					  }
+					: undefined,
+			}
+		).fetch()
 		return groupByToMap(allPieces, 'startPartId')
 	}
 
