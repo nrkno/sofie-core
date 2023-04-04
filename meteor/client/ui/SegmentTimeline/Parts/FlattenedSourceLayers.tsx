@@ -17,7 +17,7 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.El
 	const { getPartContext, onMouseUp } = useMouseContext(props)
 
 	const piecesForLayers = useMemo(() => {
-		let piecesForLayers: Map<string, PieceInstancePiece[]> = new Map()
+		const piecesForLayers: Map<string, PieceInstancePiece[]> = new Map()
 		for (const layer of props.layers) {
 			piecesForLayers.set(
 				layer._id,
