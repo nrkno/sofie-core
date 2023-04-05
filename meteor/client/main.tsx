@@ -43,7 +43,6 @@ Meteor.startup(() => {
 	const root = createRoot(targetEl)
 
 	root.render(
-		// @ts-expect-error We are using an old DnDProvider whose typings don't work in React 18
 		<DndProvider backend={HTML5Backend}>
 			<SorensenContextProvider>
 				<App />
