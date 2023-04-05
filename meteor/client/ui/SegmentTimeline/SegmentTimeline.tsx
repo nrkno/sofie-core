@@ -549,15 +549,15 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		const partInstanceId = part.instance._id
 
 		this.setState((state) => {
-			if (isTooSmall && !state.smallParts.has(partInstanceId)) {
+			if (isTooSmall !== false && !state.smallParts.has(partInstanceId)) {
 				const smallParts = new Map(state.smallParts)
 				smallParts.set(partInstanceId, isTooSmall)
 				return {
 					smallParts,
 				}
-			} else if (!isTooSmall && state.smallParts.has(partInstanceId)) {
+			} else if (isTooSmall === false && state.smallParts.has(partInstanceId)) {
 				const smallParts = new Map(state.smallParts)
-				smallParts.delete(part.instance._id)
+				smallParts.delete(partInstanceId)
 				return {
 					smallParts,
 				}
