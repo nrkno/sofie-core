@@ -546,27 +546,24 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	private onPartTooSmallChanged = (part: PartUi, isTooSmall: number | false) => {
-		if (isTooSmall === false) {
-			if (this.state.smallParts.has(part.instance._id)) {
-				this.setState((state) => {
-					const smallParts = new Map(state.smallParts)
-					smallParts.delete(part.instance._id)
-					return {
-						smallParts,
-					}
-				})
+		const partInstanceId = part.instance._id
+
+		this.setState((state) => {
+			if (isTooSmall && !state.smallParts.has(partInstanceId)) {
+				const smallParts = new Map(state.smallParts)
+				smallParts.set(partInstanceId, isTooSmall)
+				return {
+					smallParts,
+				}
+			} else if (!isTooSmall && state.smallParts.has(partInstanceId)) {
+				const smallParts = new Map(state.smallParts)
+				smallParts.delete(part.instance._id)
+				return {
+					smallParts,
+				}
 			}
-		} else {
-			if (!this.state.smallParts.has(part.instance._id)) {
-				this.setState((state) => {
-					const smallParts = new Map(state.smallParts)
-					smallParts.set(part.instance._id, isTooSmall)
-					return {
-						smallParts,
-					}
-				})
-			}
-		}
+			return null
+		})
 	}
 
 	private getSegmentContext = (_props) => {
