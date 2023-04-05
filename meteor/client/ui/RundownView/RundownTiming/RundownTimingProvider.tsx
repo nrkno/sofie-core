@@ -1,5 +1,5 @@
+import React, { PropsWithChildren } from 'react'
 import { Meteor } from 'meteor/meteor'
-import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import { withTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { Part } from '../../../../lib/collections/Parts'
@@ -55,10 +55,10 @@ interface IRundownTimingProviderTrackedProps {
  * RundownTimingProvider is a container component that provides a timing context to all child elements.
  * It allows calculating a single
  * @class RundownTimingProvider
- * @extends React.Component<IRundownTimingProviderProps>
+ * @extends React.Component<PropsWithChildren<IRundownTimingProviderProps>>
  */
 export const RundownTimingProvider = withTracker<
-	IRundownTimingProviderProps,
+	PropsWithChildren<IRundownTimingProviderProps>,
 	IRundownTimingProviderState,
 	IRundownTimingProviderTrackedProps
 >((props) => {
@@ -158,7 +158,7 @@ export const RundownTimingProvider = withTracker<
 })(
 	class RundownTimingProvider
 		extends MeteorReactComponent<
-			IRundownTimingProviderProps & IRundownTimingProviderTrackedProps,
+			PropsWithChildren<IRundownTimingProviderProps> & IRundownTimingProviderTrackedProps,
 			IRundownTimingProviderState
 		>
 		implements React.ChildContextProvider<IRundownTimingProviderChildContext>

@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
-import { render } from 'react-dom'
+import { createRoot } from 'react-dom/client'
 
 import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
@@ -33,12 +33,21 @@ if ('serviceWorker' in navigator) {
 }
 
 Meteor.startup(() => {
-	render(
+	const targetEl = document.getElementById('render-target')
+
+	if (!targetEl) {
+		console.error('Could not find target element for mounting UI')
+		return
+	}
+
+	const root = createRoot(targetEl)
+
+	root.render(
+		// @ts-expect-error We are using an old DnDProvider whose typings don't work in React 18
 		<DndProvider backend={HTML5Backend}>
 			<SorensenContextProvider>
 				<App />
 			</SorensenContextProvider>
-		</DndProvider>,
-		document.getElementById('render-target')
+		</DndProvider>
 	)
 })
