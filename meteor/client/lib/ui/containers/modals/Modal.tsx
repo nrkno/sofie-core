@@ -1,7 +1,8 @@
 import * as React from 'react'
 import type { Sorensen } from '@sofie-automation/sorensen'
 import CoreIcons from '@nrk/core-icons/jsx'
-import Escape from 'react-escape'
+import Escape from './../../../Escape'
+
 import { SorensenContext } from '../../../SorensenContext'
 import { Settings } from '../../../../../lib/Settings'
 
@@ -13,7 +14,7 @@ export interface IModalAttributes {
 
 export type SomeEvent = Event | React.SyntheticEvent<object>
 
-export class Modal extends React.Component<IModalAttributes> {
+export class Modal extends React.Component<React.PropsWithChildren<IModalAttributes>> {
 	boundKeys: Array<string> = []
 	sorensen: Sorensen
 
@@ -22,7 +23,7 @@ export class Modal extends React.Component<IModalAttributes> {
 	}
 
 	componentDidMount(): void {
-		this.sorensen = this.context
+		this.sorensen = this.context as Sorensen
 		this.bindKeys()
 	}
 
