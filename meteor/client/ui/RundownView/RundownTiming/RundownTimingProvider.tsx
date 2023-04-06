@@ -244,6 +244,8 @@ export const RundownTimingProvider = withTracker<
 			) {
 				// empty the temporary Part Instances cache
 				this.timingCalculator.clearTempPartInstances()
+				this.refreshDecimator = 0 // Force LR update
+				this.lastSyncedTime = 0 // Force synced update
 				this.onRefreshTimer()
 			}
 		}

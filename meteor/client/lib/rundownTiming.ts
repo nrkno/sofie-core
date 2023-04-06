@@ -598,13 +598,14 @@ export class RundownTimingCalculator {
 			}
 
 			remainingTimeOnCurrentPart = lastStartedPlayback
-				? now - (lastStartedPlayback + onAirPartDuration)
+				? now - (Math.min(lastStartedPlayback, now) + onAirPartDuration)
 				: onAirPartDuration * -1
 
 			currentPartWillAutoNext = !!(currentLivePart.autoNext && currentLivePart.expectedDuration)
 		}
 
 		return literal<RundownTimingContext>({
+			currentPartInstanceId: playlist?.currentPartInstanceId,
 			totalPlaylistDuration: totalRundownDuration,
 			remainingPlaylistDuration: remainingRundownDuration,
 			asDisplayedPlaylistDuration: asDisplayedRundownDuration,
@@ -692,6 +693,8 @@ export class RundownTimingCalculator {
 }
 
 export interface RundownTimingContext {
+	/** This stores the part instance that was active when this timing information was generated. */
+	currentPartInstanceId?: PartInstanceId | null
 	/** This is the total duration of the playlist as planned (using expectedDurations). */
 	totalPlaylistDuration?: number
 	/** This is the content remaining to be played in the playlist (based on the expectedDurations).  */
