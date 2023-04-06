@@ -28,6 +28,7 @@ function addRootElement(rootElem: HTMLElement) {
  * const target = usePortal(id, [id]);
  * return createPortal(children, target);
  * @param {String} id The id of the target container, e.g 'modal' or 'spotlight'
+ * @param {Partial<Record<keyof React.CSSProperties, string>>} style An optional object specifying inline styles to be applied on the portal's root element.
  * @returns {HTMLElement} The DOM node to use as the Portal target.
  */
 function usePortal(id: string, style?: Partial<Record<keyof React.CSSProperties, string>>) {
