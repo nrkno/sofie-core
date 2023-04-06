@@ -28,13 +28,16 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 	dataResolution: TimingDataResolution.Synced,
 })(
 	class CurrentPartRemaining extends React.Component<WithTiming<IPartRemainingProps>> {
-		render(): JSX.Element {
+		render(): JSX.Element | null {
+			if (!this.props.timingDurations || !this.props.timingDurations.currentTime) return null
+			if (this.props.timingDurations.currentPartInstanceId !== this.props.currentPartInstanceId) return null
 			const displayTimecode = this.props.timingDurations.remainingTimeOnCurrentPart
+			if (displayTimecode === undefined) return null
 			return (
 				<span
 					className={ClassNames(
 						this.props.className,
-						Math.floor((displayTimecode || 0) / 1000) > 0 ? this.props.heavyClassName : undefined
+						Math.floor(displayTimecode / 1000) > 0 ? this.props.heavyClassName : undefined
 					)}
 					role="timer"
 				>
