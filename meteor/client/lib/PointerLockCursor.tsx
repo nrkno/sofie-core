@@ -1,5 +1,5 @@
 import * as React from 'react'
-import Escape from 'react-escape'
+import Escape from './Escape'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowsAltH } from '@fortawesome/free-solid-svg-icons'

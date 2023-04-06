@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { NoraContent } from '@sofie-automation/blueprints-integration'
-import Escape from 'react-escape'
+import Escape from './../../lib/Escape'
 
 interface IPropsHeader {
 	noraContent: NoraContent | undefined

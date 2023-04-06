@@ -1,6 +1,7 @@
 import * as React from 'react'
 import CoreIcons from '@nrk/core-icons/jsx'
-import Escape from 'react-escape'
+import Escape from './Escape'
+
 import ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
 import { logger } from '../../lib/logging'
@@ -40,7 +41,7 @@ interface ModalAction {
 type OnAction = (e: SomeEvent, inputResult: ModalInputResult) => void
 export type ModalInputResult = { [attribute: string]: any }
 export type SomeEvent = Event | React.SyntheticEvent<object>
-export class ModalDialog extends React.Component<IModalDialogAttributes> {
+export class ModalDialog extends React.Component<React.PropsWithChildren<IModalDialogAttributes>> {
 	sorensen: Sorensen
 
 	private inputResult: ModalInputResult = {}
@@ -50,7 +51,7 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 	}
 
 	componentDidMount(): void {
-		this.sorensen = this.context
+		this.sorensen = this.context as Sorensen
 		this.bindKeys()
 	}
 
