@@ -64,7 +64,10 @@ interface IState {
 	active: boolean
 }
 
-export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<IDashboardButtonProps & T, IState> {
+export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
+	React.PropsWithChildren<IDashboardButtonProps> & T,
+	IState
+> {
 	private element: HTMLDivElement | null = null
 	private positionAndSize: {
 		top: number
@@ -493,4 +496,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<IDash
 	}
 }
 
-export const DashboardPieceButton = withMediaObjectStatus<IDashboardButtonProps, {}>()(DashboardPieceButtonBase)
+export const DashboardPieceButton = withMediaObjectStatus<React.PropsWithChildren<IDashboardButtonProps>, {}>()(
+	DashboardPieceButtonBase
+)

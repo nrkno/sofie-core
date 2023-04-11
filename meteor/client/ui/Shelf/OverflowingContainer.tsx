@@ -15,7 +15,7 @@ interface IState {
 	overflowingRight: boolean
 }
 
-export class OverflowingContainer extends React.Component<IProps, IState> {
+export class OverflowingContainer extends React.Component<React.PropsWithChildren<IProps>, IState> {
 	_element: HTMLDivElement | null
 	_scrollFactor: number = 0
 

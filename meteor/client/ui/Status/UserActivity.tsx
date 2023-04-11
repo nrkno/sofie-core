@@ -11,9 +11,12 @@ import { Link, useHistory, useLocation } from 'react-router-dom'
 import classNames from 'classnames'
 import Tooltip from 'rc-tooltip'
 import { UserActionsLog } from '../../collections'
+import type { AlignType } from '@rc-component/trigger/lib/interface'
 
 const PARAM_DATE_FORMAT = 'YYYY-MM-DD'
 const PARAM_NAME_FROM_DATE = 'fromDate'
+
+const TOOLTIP_ALIGN_TOP_LEFT: AlignType = { points: ['tl'] }
 
 interface IUserActionsListProps {
 	logItems: UserActionsLogItem[]
@@ -85,7 +88,7 @@ function UserActionsList(props: IUserActionsListProps) {
 													<Tooltip
 														overlay={t('Time from platform user event to Action received by Core')}
 														placement="top"
-														align="left"
+														align={TOOLTIP_ALIGN_TOP_LEFT}
 													>
 														<span>{t('GUI')}:</span>
 													</Tooltip>
@@ -96,7 +99,11 @@ function UserActionsList(props: IUserActionsListProps) {
 										{msg.executionTime ? (
 											<tr>
 												<td>
-													<Tooltip overlay={t('Core + Worker processing time')} placement="top" align="left">
+													<Tooltip
+														overlay={t('Core + Worker processing time')}
+														placement="top"
+														align={TOOLTIP_ALIGN_TOP_LEFT}
+													>
 														<span>{t('Core')}:</span>
 													</Tooltip>
 												</td>
