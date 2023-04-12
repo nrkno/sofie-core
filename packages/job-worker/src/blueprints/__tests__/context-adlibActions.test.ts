@@ -217,6 +217,39 @@ describe('Test blueprint api context', () => {
 		}
 	}
 
+	async function setPartInstances(
+		jobContext: JobContext,
+		playlistId: RundownPlaylistId,
+		currentPartInstance: DBPartInstance | undefined | null,
+		nextPartInstance: DBPartInstance | undefined | null
+	) {
+		if (currentPartInstance !== undefined) {
+			await jobContext.directCollections.RundownPlaylists.update(playlistId, {
+				$set: {
+					currentPartInfo: currentPartInstance
+						? {
+								partInstanceId: currentPartInstance._id,
+								rundownId: currentPartInstance.rundownId,
+						  }
+						: null,
+				},
+			})
+		}
+
+		if (nextPartInstance !== undefined) {
+			await jobContext.directCollections.RundownPlaylists.update(playlistId, {
+				$set: {
+					nextPartInfo: nextPartInstance
+						? {
+								partInstanceId: nextPartInstance._id,
+								rundownId: nextPartInstance.rundownId,
+						  }
+						: null,
+				},
+			})
+		}
+	}
+
 	describe('ActionExecutionContext', () => {
 		describe('getPartInstance', () => {
 			test('invalid parameters', async () => {
@@ -248,9 +281,7 @@ describe('Test blueprint api context', () => {
 					await expect(context.getPartInstance('current')).resolves.toBeUndefined()
 				})
 
-				await jobContext.directCollections.RundownPlaylists.update(playlistId, {
-					$set: { currentPartInstanceId: allPartInstances[1]._id },
-				})
+				await setPartInstances(jobContext, playlistId, allPartInstances[1], undefined)
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
@@ -263,6 +294,7 @@ describe('Test blueprint api context', () => {
 					})
 				})
 
+				await setPartInstances(jobContext, playlistId, allPartInstances[1], undefined)
 				await jobContext.directCollections.RundownPlaylists.update(playlistId, {
 					$set: { currentPartInfo: null, nextPartInstanceId: allPartInstances[2]._id },
 				})
@@ -309,9 +341,7 @@ describe('Test blueprint api context', () => {
 					await expect(context.getPieceInstances('current')).resolves.toHaveLength(0)
 				})
 
-				await jobContext.directCollections.RundownPlaylists.update(playlistId, {
-					$set: { currentPartInstanceId: allPartInstances[1]._id },
-				})
+				await setPartInstances(jobContext, playlistId, allPartInstances[1], undefined)
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
@@ -322,9 +352,7 @@ describe('Test blueprint api context', () => {
 					await expect(context.getPieceInstances('current')).resolves.toHaveLength(5)
 				})
 
-				await jobContext.directCollections.RundownPlaylists.update(playlistId, {
-					$set: { currentPartInfo: null, nextPartInstanceId: allPartInstances[2]._id },
-				})
+				await setPartInstances(jobContext, playlistId, null, allPartInstances[2])
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
@@ -394,9 +422,7 @@ describe('Test blueprint api context', () => {
 					}
 				)
 
-				await jobContext.directCollections.RundownPlaylists.update(playlistId, {
-					$set: { currentPartInstanceId: allPartInstances[1]._id },
-				})
+				await setPartInstances(jobContext, playlistId, allPartInstances[1], undefined)
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
@@ -541,9 +567,7 @@ describe('Test blueprint api context', () => {
 			test('excludeCurrentPart', async () => {
 				const { jobContext, playlistId, allPartInstances } = await setupMyDefaultRundown()
 
-				await jobContext.directCollections.RundownPlaylists.update(playlistId, {
-					$set: { currentPartInstanceId: allPartInstances[2]._id },
-				})
+				await setPartInstances(jobContext, playlistId, allPartInstances[2], undefined)
 
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context, rundown, activationId } = await getActionExecutionContext(jobContext, cache)
@@ -627,9 +651,7 @@ describe('Test blueprint api context', () => {
 			test('pieceMetaDataFilter', async () => {
 				const { jobContext, playlistId, allPartInstances } = await setupMyDefaultRundown()
 
-				await jobContext.directCollections.RundownPlaylists.update(playlistId, {
-					$set: { currentPartInstanceId: allPartInstances[2]._id },
-				})
+				await setPartInstances(jobContext, playlistId, allPartInstances[2], undefined)
 
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context, rundown, activationId } = await getActionExecutionContext(jobContext, cache)
@@ -845,9 +867,7 @@ describe('Test blueprint api context', () => {
 				expect(pieceInstances).toHaveLength(10)
 
 				// Set Part 2 as current part
-				await jobContext.directCollections.RundownPlaylists.update(playlistId, {
-					$set: { currentPartInstanceId: partInstances[1]._id },
-				})
+				await setPartInstances(jobContext, playlistId, partInstances[1], undefined)
 
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
@@ -942,9 +962,7 @@ describe('Test blueprint api context', () => {
 				})
 
 				// Again with stuff in the cache
-				await jobContext.directCollections.RundownPlaylists.update(playlistId, {
-					$set: { currentPartInstanceId: allPartInstances[1]._id },
-				})
+				await setPartInstances(jobContext, playlistId, allPartInstances[1], undefined)
 
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
@@ -1044,9 +1062,7 @@ describe('Test blueprint api context', () => {
 			test('bad parameters', async () => {
 				const { jobContext, playlistId, allPartInstances } = await setupMyDefaultRundown()
 
-				await jobContext.directCollections.RundownPlaylists.update(playlistId, {
-					$set: { currentPartInstanceId: allPartInstances[0]._id },
-				})
+				await setPartInstances(jobContext, playlistId, allPartInstances[0], undefined)
 
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
