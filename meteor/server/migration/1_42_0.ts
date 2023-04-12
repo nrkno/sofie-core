@@ -1,5 +1,5 @@
 import { addMigrationSteps } from './databaseMigration'
-import { StudioRouteType } from '../../lib/collections/Studios'
+import { StudioRouteSet, StudioRouteType } from '../../lib/collections/Studios'
 import { Studios } from '../collections'
 
 export const addSteps = addMigrationSteps('1.42.0', [
@@ -19,7 +19,7 @@ export const addSteps = addMigrationSteps('1.42.0', [
 			Studios.find({}).forEach((studio) => {
 				const routeSets = studio.routeSets
 
-				Object.entries(routeSets).forEach(([routeSetId, routeSet]) => {
+				Object.entries<StudioRouteSet>(routeSets).forEach(([routeSetId, routeSet]) => {
 					routeSet.routes.forEach((route) => {
 						if (!route.routeType) {
 							route.routeType = StudioRouteType.REROUTE

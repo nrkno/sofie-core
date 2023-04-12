@@ -1,5 +1,5 @@
 import React from 'react'
-import Escape from 'react-escape'
+import Escape from './../lib/Escape'
 
 interface IProps {
 	shown: boolean

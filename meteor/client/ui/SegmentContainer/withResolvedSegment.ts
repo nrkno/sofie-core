@@ -227,15 +227,19 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 			if (props.rundownViewLayout && o.segmentExtended) {
 				if (props.rundownViewLayout.visibleSourceLayers) {
 					const visibleSourceLayers = props.rundownViewLayout.visibleSourceLayers
-					Object.entries(o.segmentExtended.sourceLayers).forEach(([id, sourceLayer]) => {
-						sourceLayer.isHidden = !visibleSourceLayers.includes(id)
-					})
+					Object.entries<ISourceLayerExtended>(o.segmentExtended.sourceLayers).forEach(
+						([id, sourceLayer]) => {
+							sourceLayer.isHidden = !visibleSourceLayers.includes(id)
+						}
+					)
 				}
 				if (props.rundownViewLayout.visibleOutputLayers) {
 					const visibleOutputLayers = props.rundownViewLayout.visibleOutputLayers
-					Object.entries(o.segmentExtended.outputLayers).forEach(([id, outputLayer]) => {
-						outputLayer.used = visibleOutputLayers.includes(id)
-					})
+					Object.entries<IOutputLayerExtended>(o.segmentExtended.outputLayers).forEach(
+						([id, outputLayer]) => {
+							outputLayer.used = visibleOutputLayers.includes(id)
+						}
+					)
 				}
 			}
 

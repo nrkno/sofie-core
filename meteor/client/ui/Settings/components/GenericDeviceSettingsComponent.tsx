@@ -5,7 +5,7 @@ import { DeviceItem } from '../../Status/SystemStatus'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
 import { protectString, unprotectString } from '../../../../lib/lib'
 import { SubDevicesConfig } from './DeviceConfigSchemaSettings'
-import { SchemaFormForCollection } from '../../../lib/forms/schemaFormForCollection'
+import { SchemaFormForCollection } from '../../../lib/forms/SchemaFormForCollection'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { PeripheralDevices } from '../../../collections'
 import { MeteorCall } from '../../../../lib/api/methods'
@@ -35,7 +35,7 @@ export function GenericDeviceSettingsComponent({
 					.getDebugStates(device._id)
 					.then((res) => {
 						const states: Map<PeripheralDeviceId, object> = new Map()
-						for (const [key, state] of Object.entries(res)) {
+						for (const [key, state] of Object.entries<any>(res)) {
 							states.set(protectString(key), state)
 						}
 						setDebugStates(states)

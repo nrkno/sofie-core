@@ -46,8 +46,8 @@
 		"@sofie-automation/shared-lib": "link:../shared-lib",
 		"amqplib": "^0.10.3",
 		"debounce-fn": "^4.0.0",
-		"deepmerge": "^4.2.2",
-		"elastic-apm-node": "^3.42.0",
+		"deepmerge": "^4.3.1",
+		"elastic-apm-node": "^3.43.0",
 		"eventemitter3": "^4.0.7",
 		"mongodb": "^4.13.0",
 		"p-lazy": "^3.1.0",
@@ -57,7 +57,7 @@
 		"tslib": "^2.4.0",
 		"type-fest": "^2.19.0",
 		"underscore": "^1.13.4",
-		"vm2": "^3.9.11"
+		"vm2": "^3.9.14"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {

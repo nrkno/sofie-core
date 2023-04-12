@@ -60,9 +60,6 @@ const renderEditAttribute = (
 				}
 			/>
 		)
-		// TODO: Handle these?
-		// } else if (configField.type === ConfigManifestEntryType.TABLE) {
-		// 	// not handled here, handled by GenericDeviceSettingsComponent
 		// } else {
 		// 	assertNever(configField.type)
 	}

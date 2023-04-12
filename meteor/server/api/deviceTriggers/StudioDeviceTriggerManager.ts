@@ -70,7 +70,7 @@ export class StudioDeviceTriggerManager {
 			},
 		}).map((pair) => convertDocument(pair))
 		const triggeredActions = allTriggeredActions.filter((pair) =>
-			Object.values(pair.triggers).find((trigger) => isDeviceTrigger(trigger))
+			Object.values<SomeBlueprintTrigger>(pair.triggers).find((trigger) => isDeviceTrigger(trigger))
 		)
 
 		const upsertedDeviceTriggerMountedActionIds: DeviceTriggerMountedActionId[] = []
@@ -79,7 +79,7 @@ export class StudioDeviceTriggerManager {
 		for (const triggeredAction of triggeredActions) {
 			const addedPreviewIds: PreviewWrappedAdLibId[] = []
 
-			Object.entries(triggeredAction.actions).forEach(([key, action]) => {
+			Object.entries<SomeAction>(triggeredAction.actions).forEach(([key, action]) => {
 				const actionId = protectString<DeviceActionId>(`${studioId}_${triggeredAction._id}_${key}`)
 				const existingAction = actionManager.getAction(actionId)
 				let thisAction: ExecutableAction
@@ -92,7 +92,7 @@ export class StudioDeviceTriggerManager {
 				}
 				touchedActionIds.push(actionId)
 
-				Object.entries(triggeredAction.triggers).forEach(([key, trigger]) => {
+				Object.entries<SomeBlueprintTrigger>(triggeredAction.triggers).forEach(([key, trigger]) => {
 					if (!isDeviceTrigger(trigger)) {
 						return
 					}

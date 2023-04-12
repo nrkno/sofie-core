@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react'
-import Escape from 'react-escape'
+import Escape from './../../../lib/Escape'
 import { PieceExtended } from '../../../../lib/Rundown'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { usePopper } from 'react-popper'

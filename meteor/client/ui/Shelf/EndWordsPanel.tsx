@@ -107,7 +107,7 @@ function getPieceWithScript(props: IEndsWordsPanelProps): PieceInstance | undefi
 	}).fetch()
 
 	return props.panel.requiredLayerIds && props.panel.requiredLayerIds.length
-		? _.flatten(Object.values(piecesInPart)).find((piece: PieceInstance) => {
+		? piecesInPart.find((piece: PieceInstance) => {
 				return (
 					(props.panel.requiredLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
 					piece.partInstanceId === props.playlist.currentPartInstanceId

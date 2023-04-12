@@ -29,7 +29,7 @@ export function iterateDeeply(
 					obj[k] = iterateDeeply(v, iteratee, k)
 				})
 			} else {
-				for (const [k, v] of Object.entries(obj)) {
+				for (const [k, v] of Object.entries<any>(obj)) {
 					obj[k] = iterateDeeply(v, iteratee, k)
 				}
 			}
@@ -64,7 +64,7 @@ export async function iterateDeeplyAsync(
 				)
 			} else {
 				await Promise.all(
-					Object.entries(obj).map(async ([k, v]) => {
+					Object.entries<any>(obj).map(async ([k, v]) => {
 						obj[k] = await iterateDeeplyAsync(v, iteratee, k)
 					})
 				)

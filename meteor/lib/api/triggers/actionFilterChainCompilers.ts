@@ -185,7 +185,7 @@ function sharedSourceLayerFilterCompiler(
 				sourceLayerIds = link.value
 				return
 			case 'sourceLayerType':
-				sourceLayerIds = Object.values(sourceLayers)
+				sourceLayerIds = Object.values<ISourceLayer | undefined>(sourceLayers)
 					.map((sourceLayer) =>
 						sourceLayer && link.value.includes(sourceLayer.type) ? sourceLayer._id : undefined
 					)
@@ -237,7 +237,7 @@ function compileAndRunClearFilter(filterChain: IAdLibFilterLink[], sourceLayers:
 	let result: IWrappedAdLib[] = []
 
 	if (!skip) {
-		result = Object.values(sourceLayers)
+		result = Object.values<ISourceLayer | undefined>(sourceLayers)
 			.filter(
 				(sourceLayer): sourceLayer is ISourceLayer =>
 					!!(
@@ -270,7 +270,7 @@ function compileAndRunStickyFilter(filterChain: IAdLibFilterLink[], sourceLayers
 	let result: IWrappedAdLib[] = []
 
 	if (!skip) {
-		result = Object.values(sourceLayers)
+		result = Object.values<ISourceLayer | undefined>(sourceLayers)
 			.filter(
 				(sourceLayer): sourceLayer is ISourceLayer =>
 					!!(
@@ -337,7 +337,7 @@ function compileAdLibActionFilter(
 				return
 			case 'sourceLayerType':
 				selector['display.sourceLayerId'] = {
-					$in: Object.values(sourceLayers)
+					$in: Object.values<ISourceLayer | undefined>(sourceLayers)
 						.map((sourceLayer) =>
 							sourceLayer && link.value.includes(sourceLayer.type) ? sourceLayer._id : undefined
 						)
@@ -433,7 +433,7 @@ function compileAdLibPieceFilter(
 				return
 			case 'sourceLayerType':
 				selector['sourceLayerId'] = {
-					$in: Object.values(sourceLayers)
+					$in: Object.values<ISourceLayer | undefined>(sourceLayers)
 						.map((sourceLayer) =>
 							sourceLayer && link.value.includes(sourceLayer.type) ? sourceLayer._id : undefined
 						)

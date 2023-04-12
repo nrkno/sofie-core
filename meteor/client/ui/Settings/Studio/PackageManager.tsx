@@ -784,9 +784,11 @@ export const StudioPackageManagerSettings = withTranslation()(
 				value: string
 			}[] = []
 
-			for (const [containerId, packageContainer] of Object.entries(this.props.studio.packageContainers)) {
+			for (const [containerId, packageContainer] of Object.entries<StudioPackageContainer>(
+				this.props.studio.packageContainers
+			)) {
 				let hasHttpAccessor = false
-				for (const accessor of Object.values(packageContainer.container.accessors)) {
+				for (const accessor of Object.values<Accessor.Any>(packageContainer.container.accessors)) {
 					if (accessor.type === Accessor.AccessType.HTTP_PROXY) {
 						hasHttpAccessor = true
 						break

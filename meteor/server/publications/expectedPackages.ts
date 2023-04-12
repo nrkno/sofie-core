@@ -1,7 +1,12 @@
 import { Meteor } from 'meteor/meteor'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
-import { MappingsExtWithPackage, routeExpectedPackages, Studio } from '../../lib/collections/Studios'
+import {
+	MappingsExtWithPackage,
+	routeExpectedPackages,
+	Studio,
+	StudioPackageContainer,
+} from '../../lib/collections/Studios'
 import { setUpOptimizedObserverArray, TriggerUpdate, meteorCustomPublish } from '../lib/customPublication'
 import { ExpectedPackageDB, getSideEffect } from '../../lib/collections/ExpectedPackages'
 import _ from 'underscore'
@@ -313,7 +318,9 @@ async function manipulateExpectedPackagesPublicationData(
 	}
 
 	const packageContainers: { [containerId: string]: PackageContainer } = {}
-	for (const [containerId, studioPackageContainer] of Object.entries(studio.packageContainers)) {
+	for (const [containerId, studioPackageContainer] of Object.entries<StudioPackageContainer>(
+		studio.packageContainers
+	)) {
 		packageContainers[containerId] = studioPackageContainer.container
 	}
 
@@ -487,7 +494,9 @@ function generateExpectedPackages(
 				const mappingDeviceId = unprotectString(mapping.deviceId)
 
 				let packageContainerId: string | undefined
-				for (const [containerId, packageContainer] of Object.entries(studio.packageContainers)) {
+				for (const [containerId, packageContainer] of Object.entries<StudioPackageContainer>(
+					studio.packageContainers
+				)) {
 					if (packageContainer.deviceIds.includes(mappingDeviceId)) {
 						// TODO: how to handle if a device has multiple containers?
 						packageContainerId = containerId

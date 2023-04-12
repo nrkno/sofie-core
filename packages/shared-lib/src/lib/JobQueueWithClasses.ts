@@ -1,6 +1,6 @@
 export type Options = {
 	/** If true, newly added jobs will automatically start. If false, .start() needs to be called for the queue to start executing. (Defaults to true) */
-	autoStart: boolean
+	autoStart?: boolean
 	executionWrapper?: WrapperFunction<any>
 	resolutionWrapper?: DeferFunction
 }
@@ -15,7 +15,9 @@ export type JobOptions = {
 
 /**
  * A simple Job-queue runner with the added benefit of being able to set a `className` to a job.
- * By calling .remove(className) all jobs with a certain className is discarded from the queue.
+ * When calling .add() a job will be added to the queue.
+ * Jobs in the queue are executed one at a time, in the order they where added.
+ * By calling .remove(className) all jobs with a certain className are discarded from the queue.
  */
 export class JobQueueWithClasses {
 	#queue: JobDescription[] = []
@@ -23,6 +25,8 @@ export class JobQueueWithClasses {
 	#paused = true
 	#executionWrapper?: WrapperFunction<any>
 	#resolutionWrapper?: DeferFunction
+
+	#waitForDonePromise: { resolve: () => void; promise: Promise<void> } | undefined
 
 	constructor(opts?: Options) {
 		this.#autoStart = opts?.autoStart ?? true
@@ -57,7 +61,7 @@ export class JobQueueWithClasses {
 				})
 			} else {
 				wrappedFn = async () => {
-					new Promise<void>((resolve, reject) => {
+					return new Promise<void>((resolve, reject) => {
 						handlePromise(fn(), resolve, reject)
 					}).catch(reject)
 				}
@@ -69,7 +73,12 @@ export class JobQueueWithClasses {
 				resolve,
 				reject,
 			})
-			if (this.#autoStart && this.#paused) this.start()
+			if (this.#autoStart) {
+				// debounce so fn() isn't executed synchronously with .add():
+				setImmediate(() => {
+					this.start()
+				})
+			}
 		})
 	}
 	/** Clear queue */
@@ -84,23 +93,50 @@ export class JobQueueWithClasses {
 	/** Start executing the queue */
 	start(): void {
 		if (this.#paused === false) return
-		;(async () => {
-			this.#paused = false
-			// eslint-disable-next-line no-constant-condition
-			while (true) {
-				const firstIn = this.#queue.shift()
-				if (!firstIn) break
-				try {
-					await firstIn.fn()
-					firstIn.resolve()
-				} catch (error) {
-					firstIn.reject(error)
+		Promise.resolve()
+			.then(async () => {
+				this.#paused = false
+				// eslint-disable-next-line no-constant-condition
+				while (true) {
+					const firstIn = this.#queue.shift()
+					if (!firstIn) {
+						// No more jobs on queue.
+						if (this.#waitForDonePromise) {
+							this.#waitForDonePromise.resolve()
+							this.#waitForDonePromise = undefined
+						}
+						break
+					}
+					try {
+						await firstIn.fn()
+						firstIn.resolve()
+					} catch (error) {
+						firstIn.reject(error)
+					}
 				}
-			}
-			this.#paused = true
-		})().catch((error) => {
-			console.error(error)
-		})
+				this.#paused = true
+			})
+			.catch((error) => {
+				console.error(error)
+			})
+	}
+	/** Returns the count of waiting jobs in the queue (ie not started yet) */
+	getWaiting(): number {
+		return this.#queue.length
+	}
+	/** Returns a Promise that resolves when the queue is eventually empty and all jobs are done */
+	async waitForDone(): Promise<void> {
+		if (!this.#queue.length) return Promise.resolve()
+
+		if (!this.#waitForDonePromise) {
+			let resolve: undefined | (() => void) = undefined
+			const promise = new Promise<void>((r) => {
+				resolve = r
+			})
+			if (!resolve) throw new Error(`Internal Error: resolve callback is undefined!`)
+			this.#waitForDonePromise = { resolve, promise }
+			return promise
+		} else return this.#waitForDonePromise.promise
 	}
 }
 

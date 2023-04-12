@@ -1,5 +1,5 @@
-import * as React from 'react'
-import * as _ from 'underscore'
+import React, { PropsWithChildren } from 'react'
+import _ from 'underscore'
 import Velocity from 'velocity-animate'
 import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
@@ -584,14 +584,17 @@ interface IPrompterTrackedProps {
 
 type ScrollAnchor = [number, string] | null
 
-export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTrackedProps>(
+export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, {}, IPrompterTrackedProps>(
 	(props: IPrompterProps) => ({
 		prompterData: PrompterAPI.getPrompterData(props.rundownPlaylistId),
 	}),
 	undefined,
 	true
 )(
-	class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, {}> {
+	class Prompter extends MeteorReactComponent<
+		Translated<PropsWithChildren<IPrompterProps> & IPrompterTrackedProps>,
+		{}
+	> {
 		private _debounceUpdate: NodeJS.Timer
 
 		constructor(props) {

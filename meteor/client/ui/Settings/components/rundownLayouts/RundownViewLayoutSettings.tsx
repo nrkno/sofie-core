@@ -26,7 +26,7 @@ export default function RundownViewLayoutSettings({ sourceLayers, item, layouts 
 
 	const sourceLayerOptions = useMemo(
 		() =>
-			Object.values(sourceLayers)
+			Object.values<ISourceLayer | undefined>(sourceLayers)
 				.filter((s): s is ISourceLayer => !!s)
 				.sort((a, b) => a._rank - b._rank)
 				.map((sourceLayer) => ({ name: sourceLayer.name, value: sourceLayer._id })),

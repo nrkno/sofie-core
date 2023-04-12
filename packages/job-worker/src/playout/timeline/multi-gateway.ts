@@ -214,7 +214,7 @@ function deNowifyCurrentPieces(
 
 	// Pieces without concrete times will add some special 'now' objects to the timeline that they can reference
 	// Make sure that the all have concrete times attached
-	for (const obj of Object.values(timelineObjsMap)) {
+	for (const obj of Object.values<TimelineObjRundown>(timelineObjsMap)) {
 		const objMetadata = obj.metaData as Partial<PieceTimelineMetadata> | undefined
 		if (objMetadata?.isPieceTimeline && !Array.isArray(obj.enable) && obj.enable.start === 'now') {
 			if (obj.inGroup === timingContext.currentPartGroup.id) {

@@ -188,7 +188,13 @@ export function lazyIgnore(name: string, f1: () => Promise<void> | void, t: numb
 	}
 	lazyIgnoreCache[name] = Meteor.setTimeout(() => {
 		delete lazyIgnoreCache[name]
-		waitForPromise(f1())
+		if (Meteor.isClient) {
+			f1()?.catch((e) => {
+				throw new Error(e)
+			})
+		} else {
+			waitForPromise(f1())
+		}
 	}, t)
 }
 
@@ -311,7 +317,8 @@ export const waitForPromise: <T>(p: Promise<T> | T) => Awaited<T> = Meteor.wrapA
 		.catch((e) => {
 			cb(e)
 		})
-})
+}) as any
+
 /**
  * Convert a Fiber function into a promise
  * Makes the Fiber function to run in its own fiber and return a promise
@@ -463,10 +470,15 @@ export function equalArrays<T>(a: T[], b: T[]): boolean {
 }
 
 /** Generate the translation for a string, to be applied later when it gets rendered */
-export function generateTranslation(key: string, args?: { [k: string]: any }): ITranslatableMessage {
+export function generateTranslation(
+	key: string,
+	args?: { [k: string]: any },
+	namespaces?: string[]
+): ITranslatableMessage {
 	return {
 		key,
 		args,
+		namespaces,
 	}
 }
 

@@ -25,11 +25,11 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		context = setupDefaultJobEnvironment()
 
 		const mappings: MappingsExt = {}
-		for (const [k, v] of Object.entries(LookaheadMode)) {
+		for (const [k, v] of Object.entries<LookaheadMode>(LookaheadMode as any)) {
 			mappings[k] = {
 				device: TSR.DeviceType.ABSTRACT,
 				deviceId: protectString('fake0'),
-				lookahead: v as LookaheadMode,
+				lookahead: v,
 				// lookaheadDepth: 0,
 				// lookaheadMaxSearchDistance: 0,
 				options: {},

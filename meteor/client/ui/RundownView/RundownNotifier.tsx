@@ -10,7 +10,6 @@ import {
 	NoticeLevel,
 	getNoticeLevelForPieceStatus,
 } from '../../../lib/notifications/notifications'
-import { RundownPlaylistValidateBlueprintConfigResult } from '../../../lib/api/rundown'
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
@@ -76,20 +75,20 @@ class RundownViewNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
 	private _notifier: NotifierHandle
 
-	private _mediaStatus: _.Dictionary<Notification | undefined> = {}
+	private _mediaStatus: Record<string, Notification | undefined> = {}
 	private _mediaStatusDep: Tracker.Dependency
 
-	private _notes: _.Dictionary<Notification | undefined> = {}
+	private _notes: Record<string, Notification | undefined> = {}
 	private _notesDep: Tracker.Dependency
 
-	private _rundownStatus: _.Dictionary<Notification | undefined> = {}
+	private _rundownStatus: Record<string, Notification | undefined> = {}
 	private _rundownStatusDep: Tracker.Dependency
 
-	private _deviceStatus: _.Dictionary<Notification | undefined> = {}
+	private _deviceStatus: Record<string, Notification | undefined> = {}
 	private _deviceStatusDep: Tracker.Dependency
 
 	private _rundownImportVersionStatus: Notification | undefined = undefined
-	private _rundownShowStyleConfigStatuses: _.Dictionary<Notification | undefined> = {}
+	private _rundownShowStyleConfigStatuses: Record<string, Notification | undefined> = {}
 	private _rundownStudioConfigStatus: Notification | undefined = undefined
 	private _rundownImportVersionStatusDep: Tracker.Dependency
 	private _rundownImportVersionAndConfigInterval: number | undefined = undefined
@@ -146,17 +145,18 @@ class RundownViewNotifier extends WithManagedTracker {
 			this._rundownImportVersionStatusDep.depend()
 			this._unsentExternalMessageStatusDep.depend()
 
-			const notifications = _.compact(Object.values(this._mediaStatus))
-				.concat(_.compact(Object.values(this._deviceStatus)))
-				.concat(_.compact(Object.values(this._notes)))
-				.concat(_.compact(Object.values(this._rundownStatus)))
-				.concat(
-					_.compact([this._rundownImportVersionStatus, this._rundownStudioConfigStatus]),
-					_.compact(Object.values(this._rundownShowStyleConfigStatuses))
-				)
-				.concat(_.compact([this._unsentExternalMessagesStatus]))
+			const notifications: Array<Notification | undefined> = [
+				...Object.values<Notification | undefined>(this._mediaStatus),
+				...Object.values<Notification | undefined>(this._deviceStatus),
+				...Object.values<Notification | undefined>(this._notes),
+				...Object.values<Notification | undefined>(this._rundownStatus),
+				this._rundownImportVersionStatus,
+				this._rundownStudioConfigStatus,
+				...Object.values<Notification | undefined>(this._rundownShowStyleConfigStatuses),
+				this._unsentExternalMessagesStatus,
+			]
 
-			this._notificationList.set(notifications)
+			this._notificationList.set(notifications.filter(Boolean) as Notification[])
 		})
 	}
 
@@ -652,116 +652,6 @@ class RundownViewNotifier extends WithManagedTracker {
 				)
 				if (!Notification.isEqual(this._rundownImportVersionStatus, newNotification)) {
 					this._rundownImportVersionStatus = newNotification
-					this._rundownImportVersionStatusDep.changed()
-				}
-			})
-
-		// Verify the showstyle & studio config look good
-		MeteorCall.rundown
-			.rundownPlaylistValidateBlueprintConfig(playlistId)
-			.then((configErrors: RundownPlaylistValidateBlueprintConfigResult) => {
-				let newStudioNotification: Notification | undefined = undefined
-				if (configErrors.studio.length > 0) {
-					let message = t('The Studio configuration is missing some required fields:')
-					message += configErrors.studio.join(',')
-					newStudioNotification = new Notification(
-						'rundown_validateStudioConfig',
-						NoticeLevel.WARNING,
-						message,
-						`rundownPlaylist_${playlistId}`,
-						getCurrentTime(),
-						true,
-						[],
-						-1
-					)
-				}
-
-				let hasChanges = false
-				if (!Notification.isEqual(this._rundownStudioConfigStatus, newStudioNotification)) {
-					this._rundownStudioConfigStatus = newStudioNotification
-					hasChanges = true
-				}
-
-				// Check show styles for changes
-				const oldShowStyleIds = Object.keys(this._rundownShowStyleConfigStatuses)
-				const newShowStyleIds: string[] = []
-				configErrors.showStyles.forEach((showStyleErrors) => {
-					let newNotification: Notification | undefined
-					if (showStyleErrors.checkFailed) {
-						const message = t('The Show Style configuration "{{name}}" could not be validated', {
-							name: showStyleErrors.name,
-						})
-						newNotification = new Notification(
-							'rundown_validateStudioConfig',
-							NoticeLevel.WARNING,
-							message,
-							`rundownPlaylist_${playlistId}`,
-							getCurrentTime(),
-							true,
-							[],
-							-1
-						)
-					} else if (showStyleErrors.fields.length > 0) {
-						let message = t('The ShowStyle "{{name}}" configuration is missing some required fields:', {
-							name: showStyleErrors.name,
-						})
-						message += showStyleErrors.fields.join(',')
-						newNotification = new Notification(
-							'rundown_validateShowStyleConfig',
-							NoticeLevel.WARNING,
-							message,
-							`rundownPlaylist_${playlistId}`,
-							getCurrentTime(),
-							true,
-							[],
-							-1
-						)
-					}
-
-					if (!Notification.isEqual(this._rundownShowStyleConfigStatuses[showStyleErrors.id], newNotification)) {
-						if (newNotification) {
-							this._rundownShowStyleConfigStatuses[showStyleErrors.id] = newNotification
-						} else {
-							delete this._rundownShowStyleConfigStatuses[showStyleErrors.id]
-						}
-						hasChanges = true
-					}
-
-					if (newNotification) {
-						newShowStyleIds.push(showStyleErrors.id)
-					}
-				})
-
-				// Track any removed showStyles
-				const removedShowStyleIds = _.difference(oldShowStyleIds, newShowStyleIds)
-				if (removedShowStyleIds.length > 0) {
-					removedShowStyleIds.forEach((id) => {
-						delete this._rundownShowStyleConfigStatuses[id]
-					})
-					hasChanges = true
-				}
-
-				if (hasChanges) {
-					this._rundownImportVersionStatusDep.changed()
-				}
-			})
-			.catch(() => {
-				const newNotification = new Notification(
-					'rundown_validateStudioConfig',
-					NoticeLevel.WARNING,
-					t('Unable to validate the system configuration'),
-					'rundownPlaylist_' + playlistId,
-					getCurrentTime(),
-					true,
-					undefined,
-					-1
-				)
-				if (
-					Object.keys(this._rundownShowStyleConfigStatuses).length > 0 ||
-					!Notification.isEqual(this._rundownStudioConfigStatus, newNotification)
-				) {
-					this._rundownStudioConfigStatus = newNotification
-					this._rundownShowStyleConfigStatuses = {}
 					this._rundownImportVersionStatusDep.changed()
 				}
 			})

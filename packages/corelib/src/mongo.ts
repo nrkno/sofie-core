@@ -59,7 +59,7 @@ export function mongoWhere<T>(o: Record<string, any>, selector: MongoQuery<T>): 
 	}
 
 	let ok = true
-	for (const [key, s] of Object.entries(selector)) {
+	for (const [key, s] of Object.entries<any>(selector)) {
 		if (!ok) break
 
 		try {
@@ -220,7 +220,7 @@ export function mongoModify<TDoc extends { _id: ProtectedString<any> }>(
 	modifier: MongoModifier<TDoc>
 ): TDoc {
 	let replace = false
-	for (const [key, value] of Object.entries(modifier) as any) {
+	for (const [key, value] of Object.entries<any>(modifier)) {
 		if (key === '$set') {
 			_.each(value, (value: any, key: string) => {
 				setOntoPath(doc, key, selector, value)

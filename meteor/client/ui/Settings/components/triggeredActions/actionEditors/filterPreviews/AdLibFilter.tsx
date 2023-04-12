@@ -116,7 +116,7 @@ function fieldToOptions(
 			return {}
 		case 'outputLayerId':
 			return outputLayers
-				? Object.values(outputLayers)
+				? Object.values<IOutputLayer | undefined>(outputLayers)
 						.filter((v): v is IOutputLayer => !!v)
 						.map((layer) => ({ name: `${layer.name} (${layer._id})`, value: layer._id }))
 				: []
@@ -132,7 +132,7 @@ function fieldToOptions(
 			}
 		case 'sourceLayerId':
 			return sourceLayers
-				? Object.values(sourceLayers)
+				? Object.values<ISourceLayer | undefined>(sourceLayers)
 						.filter((v): v is ISourceLayer => !!v)
 						.map((layer) => ({ name: `${layer.name} (${layer._id})`, value: layer._id }))
 				: []

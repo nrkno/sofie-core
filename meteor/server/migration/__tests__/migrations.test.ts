@@ -231,7 +231,7 @@ describe('Migrations', () => {
 				},
 			},
 
-			studioConfigManifest: [],
+			studioConfigSchema: '{}' as any,
 			studioMigrations: [
 				{
 					version: '0.2.0',
@@ -304,7 +304,7 @@ describe('Migrations', () => {
 				},
 			},
 
-			showStyleConfigManifest: [],
+			showStyleConfigSchema: '{}' as any,
 			showStyleMigrations: [
 				{
 					version: '0.2.0',

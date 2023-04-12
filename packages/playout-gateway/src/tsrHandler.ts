@@ -46,6 +46,7 @@ import {
 	PeripheralDeviceAPI,
 	PeripheralDevicePublic,
 	protectString,
+	SubdeviceManifest,
 	unprotectObject,
 	unprotectString,
 } from '@sofie-automation/server-core-integration'
@@ -232,7 +233,9 @@ export class TSRHandler {
 	private loadSubdeviceConfigurations(): { [deviceType: string]: Record<string, any> } {
 		const defaultDeviceOptions: { [deviceType: string]: Record<string, any> } = {}
 
-		for (const [deviceType, deviceManifest] of Object.entries(PLAYOUT_DEVICE_CONFIG.subdeviceManifest)) {
+		for (const [deviceType, deviceManifest] of Object.entries<SubdeviceManifest[0]>(
+			PLAYOUT_DEVICE_CONFIG.subdeviceManifest
+		)) {
 			const schema = JSONBlobParse(deviceManifest.configSchema)
 			defaultDeviceOptions[deviceType] = getSchemaDefaultValues(schema)
 		}
@@ -496,7 +499,7 @@ export class TSRHandler {
 		if (peripheralDevice) {
 			const settings: PlayoutGatewaySettings = peripheralDevice.settings as PlayoutGatewaySettings
 
-			for (const [deviceId, device0] of Object.entries(settings.devices)) {
+			for (const [deviceId, device0] of Object.entries<DeviceOptionsAny>(settings.devices)) {
 				const device = device0
 				if (!device.disable) {
 					deviceOptions.set(deviceId, device)
@@ -575,7 +578,9 @@ export class TSRHandler {
 					const keys = Object.keys(promiseOperations)
 					if (keys.length) {
 						this.logger.warn(
-							`Timeout in _updateDevices: ${Object.values(promiseOperations)
+							`Timeout in _updateDevices: ${Object.values<{ deviceId: string; operation: DeviceAction }>(
+								promiseOperations
+							)
 								.map((op) => op.deviceId)
 								.join(',')}`
 						)
@@ -585,7 +590,7 @@ export class TSRHandler {
 						// At this point in time, promiseOperations contains the promises that have timed out.
 						// If we tried to add or re-add a device, that apparently failed so we should remove the device in order to
 						// give it another chance next time _updateDevices() is called.
-						Object.values(promiseOperations)
+						Object.values<{ deviceId: string; operation: DeviceAction }>(promiseOperations)
 							.filter((op) => op.operation === DeviceAction.ADD || op.operation === DeviceAction.READD)
 							.map(async (op) =>
 								// the device was never added, should retry next round
@@ -595,7 +600,9 @@ export class TSRHandler {
 						.catch((e) => {
 							this.logger.error(
 								`Error when trying to remove unsuccessfully initialized devices: ${stringifyIds(
-									Object.values(promiseOperations).map((op) => op.deviceId)
+									Object.values<{ deviceId: string; operation: DeviceAction }>(promiseOperations).map(
+										(op) => op.deviceId
+									)
 								)}`,
 								e
 							)
@@ -646,8 +653,8 @@ export class TSRHandler {
 	}
 
 	private populateDefaultValuesIfMissing(deviceOptions: DeviceOptionsAny): DeviceOptionsAny {
-		const options = Object.fromEntries(
-			Object.entries({ ...deviceOptions.options }).filter(([_key, value]) => value !== '')
+		const options = Object.fromEntries<any>(
+			Object.entries<any>({ ...deviceOptions.options }).filter(([_key, value]) => value !== '')
 		)
 		deviceOptions.options = { ...this.defaultDeviceOptions[deviceOptions.type], ...options }
 		return deviceOptions
@@ -1074,7 +1081,7 @@ export class TSRHandler {
 
 		// Go through all objects:
 		const transformedTimeline: Array<TSRTimelineObj<TSRTimelineContent>> = []
-		for (const obj of Object.values(objects)) {
+		for (const obj of Object.values<TimelineContentObjectTmp<TSRTimelineContent>>(objects)) {
 			if (!obj.inGroup) {
 				// Add object to timeline
 				delete obj.inGroup

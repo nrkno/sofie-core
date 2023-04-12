@@ -3,6 +3,53 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.49.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.1-0...v1.49.0-in-testing.2) (2023-03-30)
+
+
+
+# [1.49.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.0...v1.49.0-in-testing.1) (2023-03-23)
+
+
+
+# [1.49.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0...v1.49.0-in-testing.0) (2023-03-21)
+
+
+
+# [1.48.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.48.0-in-testing.2...v1.48.0-in-testing.3) (2023-02-14)
+
+
+
+# [1.48.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.8...v1.48.0-in-testing.2) (2023-02-14)
+
+
+### Features
+
+* TSR device debug state ([#823](https://github.com/nrkno/tv-automation-server-core/issues/823)) ([ac6db85](https://github.com/nrkno/tv-automation-server-core/commit/ac6db85d6018929e58cfd06ced91cf153eacaf7f))
+
+
+
+# [1.48.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.48.0-in-testing.1) (2023-01-11)
+
+
+### Bug Fixes
+
+* handle incomplete peripheralDeviceCommands ([40f691e](https://github.com/nrkno/tv-automation-server-core/commit/40f691e0e9fca1def233b67d2cd3f1cded7152ca))
+* refactor playout-gateway types into shared-lib ([#827](https://github.com/nrkno/tv-automation-server-core/issues/827)) ([d8245ff](https://github.com/nrkno/tv-automation-server-core/commit/d8245ff4e681cbb92ba09e1fb948525b6854b093))
+* remove unnecessary blueprints-integration dependency from playout-gateway ([98ecb30](https://github.com/nrkno/tv-automation-server-core/commit/98ecb304a85bdabffa0dce85d3d119dfcb4946ae))
+
+
+### Features
+
+* initial translations for tsr actions ([889fa04](https://github.com/nrkno/tv-automation-server-core/commit/889fa04b368d5bf34bd0acd5ad8c377b4f3af264))
+* refactor timeline types to work better with typescript 4.7 ([#793](https://github.com/nrkno/tv-automation-server-core/issues/793)) ([1ec87ef](https://github.com/nrkno/tv-automation-server-core/commit/1ec87ef5578e4341225957e43132ef6a8f452503))
+* render from from json schema ([ce85248](https://github.com/nrkno/tv-automation-server-core/commit/ce85248eb21c3d507983de9931d9b99a27709d5d))
+* stronger ddp call typings in gateways ([#788](https://github.com/nrkno/tv-automation-server-core/issues/788)) ([2a1f8af](https://github.com/nrkno/tv-automation-server-core/commit/2a1f8affad1b0278a2350c6e4f6ed7d3070121a1))
+* tsr action manifests ([4987eaf](https://github.com/nrkno/tv-automation-server-core/commit/4987eaf3277a58311c1c2d2613af3bc72a5c4487))
+
+
+
+
+
 # [1.49.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.0...v1.49.0-in-testing.1) (2023-03-23)
 
 **Note:** Version bump only for package playout-gateway
@@ -51,6 +98,14 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 # [1.48.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.48.0-in-testing.2...v1.48.0-in-testing.3) (2023-02-14)
+
+## [1.47.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0...v1.47.1-0) (2023-03-30)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
 
 # [1.47.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.8...v1.47.0) (2023-03-01)
 
