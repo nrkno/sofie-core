@@ -605,7 +605,7 @@ export class RundownTimingCalculator {
 		}
 
 		return literal<RundownTimingContext>({
-			currentPartInstanceId: playlist?.currentPartInstanceId,
+			currentPartInstanceId: playlist ? playlist.currentPartInfo?.partInstanceId ?? null : undefined,
 			totalPlaylistDuration: totalRundownDuration,
 			remainingPlaylistDuration: remainingRundownDuration,
 			asDisplayedPlaylistDuration: asDisplayedRundownDuration,

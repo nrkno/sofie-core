@@ -3,10 +3,10 @@
 exports[`Test recieved mos ingest payloads mosRoCreate 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 1679677954901,
+  "created": 0,
   "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 1679677954901,
+  "modified": 0,
   "name": "All effect1 into clip combinations",
   "nextPartInfo": null,
   "organizationId": null,
@@ -297,10 +297,10 @@ exports[`Test recieved mos ingest payloads mosRoCreate 4`] = `
 exports[`Test recieved mos ingest payloads mosRoCreate: replace existing 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 1679677954901,
+  "created": 0,
   "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 1679677954921,
+  "modified": 0,
   "name": "All effect1 into clip combinations",
   "nextPartInfo": null,
   "organizationId": null,
@@ -582,10 +582,10 @@ exports[`Test recieved mos ingest payloads mosRoCreate: replace existing 4`] = `
 exports[`Test recieved mos ingest payloads mosRoFullStory: Valid data 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 1679677954992,
+  "created": 0,
   "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 1679677955130,
+  "modified": 0,
   "name": "All effect1 into clip combinations",
   "nextPartInfo": null,
   "organizationId": null,
@@ -890,10 +890,10 @@ exports[`Test recieved mos ingest payloads mosRoFullStory: Valid data 5`] = `[]`
 exports[`Test recieved mos ingest payloads mosRoReadyToAir: Update ro 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 1679677954992,
+  "created": 0,
   "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 1679677955008,
+  "modified": 0,
   "name": "All effect1 into clip combinations",
   "nextPartInfo": null,
   "organizationId": null,
@@ -1187,10 +1187,10 @@ exports[`Test recieved mos ingest payloads mosRoReadyToAir: Update ro 4`] = `
 exports[`Test recieved mos ingest payloads mosRoStatus: Update ro 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 1679677954992,
+  "created": 0,
   "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 1679677954992,
+  "modified": 0,
   "name": "All effect1 into clip combinations",
   "nextPartInfo": null,
   "organizationId": null,
@@ -1482,10 +1482,10 @@ exports[`Test recieved mos ingest payloads mosRoStatus: Update ro 4`] = `
 exports[`Test recieved mos ingest payloads mosRoStoryDelete: Remove segment 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 1679677954992,
+  "created": 0,
   "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 1679677955121,
+  "modified": 0,
   "name": "All effect1 into clip combinations",
   "nextPartInfo": null,
   "organizationId": null,
@@ -1744,10 +1744,10 @@ exports[`Test recieved mos ingest payloads mosRoStoryDelete: Remove segment 5`] 
 exports[`Test recieved mos ingest payloads mosRoStoryInsert: Into segment 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 1679677954992,
+  "created": 0,
   "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 1679677955043,
+  "modified": 0,
   "name": "All effect1 into clip combinations",
   "nextPartInfo": null,
   "organizationId": null,
@@ -2053,10 +2053,10 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: Into segment 5`] = 
 exports[`Test recieved mos ingest payloads mosRoStoryInsert: New segment 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 1679677954992,
+  "created": 0,
   "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 1679677955069,
+  "modified": 0,
   "name": "All effect1 into clip combinations",
   "nextPartInfo": null,
   "organizationId": null,
@@ -2371,10 +2371,10 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: New segment 5`] = `
 exports[`Test recieved mos ingest payloads mosRoStoryMove: Move whole segment to end 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 1679677954992,
+  "created": 0,
   "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 1679677955187,
+  "modified": 0,
   "name": "All effect1 into clip combinations",
   "nextPartInfo": null,
   "organizationId": null,
@@ -2671,10 +2671,10 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Move whole segment to
 exports[`Test recieved mos ingest payloads mosRoStoryMove: Within segment 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 1679677954992,
+  "created": 0,
   "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 1679677955180,
+  "modified": 0,
   "name": "All effect1 into clip combinations",
   "nextPartInfo": null,
   "organizationId": null,
@@ -2971,10 +2971,10 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Within segment 5`] = 
 exports[`Test recieved mos ingest payloads mosRoStoryReplace: Same segment 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 1679677954992,
+  "created": 0,
   "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 1679677955099,
+  "modified": 0,
   "name": "All effect1 into clip combinations",
   "nextPartInfo": null,
   "organizationId": null,
@@ -3549,10 +3549,10 @@ exports[`Test recieved mos ingest payloads mosRoStoryStatus: Update part 4`] = `
 exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 1679677954992,
+  "created": 0,
   "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 1679677955161,
+  "modified": 0,
   "name": "All effect1 into clip combinations",
   "nextPartInfo": null,
   "organizationId": null,
@@ -3840,10 +3840,10 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments 
 exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments2 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 1679677954992,
+  "created": 0,
   "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 1679677955170,
+  "modified": 0,
   "name": "All effect1 into clip combinations",
   "nextPartInfo": null,
   "organizationId": null,
@@ -4167,10 +4167,10 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments2
 exports[`Test recieved mos ingest payloads mosRoStorySwap: With first in same segment 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 1679677954992,
+  "created": 0,
   "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 1679677955152,
+  "modified": 0,
   "name": "All effect1 into clip combinations",
   "nextPartInfo": null,
   "organizationId": null,
@@ -4467,10 +4467,10 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: With first in same se
 exports[`Test recieved mos ingest payloads mosRoStorySwap: Within same segment 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "created": 1679677954992,
+  "created": 0,
   "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "modified": 1679677955143,
+  "modified": 0,
   "name": "All effect1 into clip combinations",
   "nextPartInfo": null,
   "organizationId": null,
