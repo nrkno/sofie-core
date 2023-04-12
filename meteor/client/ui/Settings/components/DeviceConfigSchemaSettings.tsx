@@ -74,7 +74,7 @@ export function SubDevicesConfig({
 		const selectedType = schemaTypes[0] // Future: This is slightly 'random' but will be consistent
 		const selectedSchemaJson = parsedSchemas[selectedType]
 		const defaults = selectedSchemaJson ? getSchemaDefaultValues(selectedSchemaJson) : {}
-		defaults.type = selectedType
+		defaults.type = parseInt(selectedType)
 
 		const existingDevices = new Set(Object.keys((PeripheralDevices.findOne(deviceId)?.settings as any)?.devices || {}))
 
@@ -284,7 +284,7 @@ function SubDeviceEditRow({
 		(val: any) => {
 			PeripheralDevices.update(parentId, {
 				$set: {
-					[`settings.devices.${subdeviceId}.type`]: val,
+					[`settings.devices.${subdeviceId}.type`]: parseInt(val),
 				},
 			})
 		},
