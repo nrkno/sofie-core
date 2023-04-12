@@ -22,7 +22,7 @@ import { PackageContainerPackageStatusDB } from '../../lib/collections/PackageCo
 import { Match } from 'meteor/check'
 import { literal } from '../../lib/lib'
 import { ReadonlyDeep } from 'type-fest'
-import { FindOptions } from '../../lib/collections/lib'
+import { FindOptions, MongoCursor } from '../../lib/collections/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ExpectedPackageId, PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
@@ -164,7 +164,9 @@ meteorPublish(
 		if (packageId) selector.packageId = packageId
 
 		if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId })) {
-			return PackageContainerPackageStatuses.find(selector, modifier)
+			return PackageContainerPackageStatuses.find(selector, modifier) as MongoCursor<
+				Omit<PackageContainerPackageStatusDB, 'modified'>
+			>
 		}
 		return null
 	}

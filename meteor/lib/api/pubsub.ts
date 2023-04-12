@@ -224,7 +224,7 @@ export interface PubSubTypes {
 		studioId: StudioId,
 		containerId?: string | null,
 		packageId?: ExpectedPackageId | null
-	) => PackageContainerPackageStatusDB
+	) => Omit<PackageContainerPackageStatusDB, 'modified'>
 	[PubSub.packageContainerStatuses]: (
 		selector: MongoQuery<PackageContainerStatusDB>,
 		token?: string
