@@ -323,8 +323,18 @@ describe('ensureNextPartIsValid', () => {
 	) {
 		await context.directCollections.RundownPlaylists.update(rundownPlaylistId, {
 			$set: {
-				nextPartInstanceId: nextPartInstanceId as any,
-				currentPartInstanceId: currentPartInstanceId as any,
+				nextPartInfo: nextPartInstanceId
+					? {
+							partInstanceId: nextPartInstanceId as any,
+							rundownId,
+					  }
+					: null,
+				currentPartInfo: currentPartInstanceId
+					? {
+							partInstanceId: currentPartInstanceId as any,
+							rundownId,
+					  }
+					: null,
 				previousPartInfo: null,
 				nextPartManual: nextPartManual || false,
 			},

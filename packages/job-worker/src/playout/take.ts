@@ -55,7 +55,7 @@ export async function handleTakeNextPart(context: JobContext, data: TakeNextPart
 			if (!playlist.nextPartInfo && playlist.holdState !== RundownHoldState.ACTIVE)
 				throw UserError.create(UserErrorMessage.TakeNoNextPart)
 
-			if (playlist.currentPartInfo !== data.fromPartInstanceId)
+			if ((playlist.currentPartInfo?.partInstanceId ?? null) !== data.fromPartInstanceId)
 				throw UserError.create(UserErrorMessage.TakeFromIncorrectPart)
 		},
 		async (cache) => {

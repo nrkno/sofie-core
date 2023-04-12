@@ -1658,7 +1658,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 			await handleTakeNextPart(context, { playlistId: rundown.playlistId, fromPartInstanceId: null })
 			const partInstance = await context.directCollections.PartInstances.findFetch({ 'part._id': parts[0]._id })
 			expect(partInstance).toHaveLength(1)
-			await expect(getPlaylist()).resolves.toMatchObject({ currentPartInstanceId: partInstance[0]._id })
+			await expect(getPlaylist()).resolves.toMatchObject({
+				currentPartInfo: { partInstanceId: partInstance[0]._id },
+			})
 			expect(partInstance[0].segmentId).toEqual(segments[0]._id)
 
 			await handleRemovedSegment(context, {
@@ -1808,7 +1810,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 			// Take the first part
 			await handleTakeNextPart(context, { playlistId: rundown.playlistId, fromPartInstanceId: null })
 			await expect(getPlaylist()).resolves.toMatchObject({
-				currentPartInstanceId: expect.stringContaining('random'),
+				currentPartInfo: {
+					partInstanceId: expect.stringContaining('random'),
+				},
 			})
 
 			{
