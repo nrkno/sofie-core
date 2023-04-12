@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { PieceUi } from './SegmentTimelineContainer'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
@@ -7,9 +7,15 @@ import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
 
 import { AdLibPieceUi } from '../../lib/shelf'
 import { UIStudio } from '../../../lib/api/studios'
-import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { UIPieceContentStatuses } from '../Collections'
+import { ExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { useConditionalSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { PubSub } from '../../../lib/api/pubsub'
+import StudioContext from '../RundownView/StudioContext'
+import { getMediaObjectMediaId } from '../../../lib/mediaObjects'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { getExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { checkPieceContentStatus } from '../../lib/mediaObjects'
+import { slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 
 type SomePiece = BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi
 
@@ -20,20 +26,60 @@ type AnyPiece = {
 	studio: UIStudio | undefined
 }
 
-export function useMediaObjectStatus<T extends SomePiece>(piece: T | undefined): T | undefined {
-	const pieceId = getPieceId(piece)
+const NEVER = '__do_not_match_on_anything'
+const PROTECTED_NEVER = protectString(NEVER)
+
+export function useMediaObjectStatus<T extends SomePiece>(
+	piece: T | undefined,
+	sourceLayer?: ISourceLayer
+): T | undefined {
+	const layer = useMemo(() => piece?.sourceLayer ?? sourceLayer, [piece, sourceLayer])
+
+	const unwrappedPiece = useMemo(() => {
+		if (!piece) return undefined
+		if (RundownUtils.isAdLibPieceOrAdLibListItem(piece)) return piece
+		return piece?.instance.piece
+	}, [piece])
+
+	const studio = useContext(StudioContext)
+
+	const objId = useMemo(
+		() => unwrappedPiece && layer && getMediaObjectMediaId(unwrappedPiece, layer),
+		[unwrappedPiece, layer]
+	)
+
+	useConditionalSubscription(PubSub.mediaObjects, !!(objId && studio?._id), studio?._id ?? PROTECTED_NEVER, {
+		mediaId: objId ?? NEVER,
+	})
+
+	const expectedPackageIds = useMemo(() => {
+		if (!unwrappedPiece?.expectedPackages || unwrappedPiece.expectedPackages.length === 0) return undefined
+
+		const result: ExpectedPackageId[] = []
+		for (let i = 0; i < unwrappedPiece.expectedPackages.length; i++) {
+			const expectedPackage = unwrappedPiece.expectedPackages[i]
+			const id = expectedPackage._id || '__unnamed' + i
+
+			result.push(getExpectedPackageId(unwrappedPiece._id, id))
+		}
+
+		return result
+	}, [unwrappedPiece])
+
+	useConditionalSubscription(PubSub.packageInfos, !!(studio?._id && expectedPackageIds?.length), {
+		studioId: studio?._id ?? PROTECTED_NEVER,
+		packageId: { $in: expectedPackageIds ?? [] },
+	})
 
 	const processedPiece = useTracker(() => {
-		if (!piece) return undefined
-		if (!pieceId) return undefined
+		if (!unwrappedPiece || !piece || !studio) return undefined
 
-		const uiPieceContentStatus = UIPieceContentStatuses.findOne({
-			pieceId,
-		})
+		// const { metadata, packageInfos, status, contentDuration, messages } = uiPieceContentStatus.status
 
-		if (!uiPieceContentStatus) return undefined
-
-		const { metadata, packageInfos, status, contentDuration, messages } = uiPieceContentStatus.status
+		const { metadata, packageInfos, status, contentDuration, messages } = slowDownReactivity(
+			() => checkPieceContentStatus(unwrappedPiece, piece.sourceLayer ?? layer, studio),
+			250
+		)
 
 		if (RundownUtils.isAdLibPieceOrAdLibListItem(piece)) {
 			const pieceCopy = {
@@ -74,7 +120,7 @@ export function useMediaObjectStatus<T extends SomePiece>(piece: T | undefined):
 
 			return pieceCopy
 		}
-	}, [pieceId, piece])
+	}, [unwrappedPiece, piece, studio])
 
 	return processedPiece
 }
@@ -82,7 +128,7 @@ export function useMediaObjectStatus<T extends SomePiece>(piece: T | undefined):
 export const withMediaObjectStatus = <TProps extends AnyPiece>() => {
 	return (WrappedComponent: React.ComponentType<TProps>): React.ComponentType<TProps> => {
 		return function WithMediaObjectStatusHOC(props: TProps): JSX.Element {
-			const processedPiece = useMediaObjectStatus(props.piece)
+			const processedPiece = useMediaObjectStatus(props.piece, props.layer)
 
 			const overrides = useMemo(
 				() => ({
@@ -93,17 +139,5 @@ export const withMediaObjectStatus = <TProps extends AnyPiece>() => {
 
 			return <WrappedComponent {...props} {...overrides} />
 		}
-	}
-}
-
-function getPieceId(
-	piece: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi | undefined
-): PieceId | undefined {
-	if (!piece) return undefined
-	if (RundownUtils.isAdLibPieceOrAdLibListItem(piece)) {
-		return piece._id
-	}
-	if (piece) {
-		return piece.instance.piece._id
 	}
 }

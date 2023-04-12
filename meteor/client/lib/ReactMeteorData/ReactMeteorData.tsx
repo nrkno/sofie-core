@@ -337,6 +337,7 @@ export function useTracker<T, K extends undefined | T = undefined>(
  * @param {PubSub} sub The subscription to be subscribed to
  * @param {...any[]} args A list of arugments for the subscription. This is used for optimizing the subscription across
  * 		renders so that it isn't torn down and created for every render.
+ * @return {*}  {boolean} Once this subscription is ready, this will be true
  */
 export function useSubscription<K extends keyof PubSubTypes>(sub: K, ...args: Parameters<PubSubTypes[K]>): boolean {
 	const [ready, setReady] = useState<boolean>(false)
@@ -351,6 +352,40 @@ export function useSubscription<K extends keyof PubSubTypes>(sub: K, ...args: Pa
 			}, 1000)
 		}
 	}, [stringifyObjects(args)])
+
+	return ready
+}
+
+/**
+ * A conditional variant of `useSubscription`. Will subscribe and unsubscribe to the data based on if the second argument is true or not
+ *
+ * @export
+ * @template K
+ * @param {PubSub} sub The subscription to be subscribed to
+ * @param {boolean} condition
+ * @param {...Parameters<PubSubTypes[K]>} args A list of arugments for the subscription. This is used for optimizing the subscription across
+ * 		renders so that it isn't torn down and created for every render.
+ * @return {*}  {boolean} Once this subscription is ready, this will be true
+ */
+export function useConditionalSubscription<K extends keyof PubSubTypes>(
+	sub: K,
+	condition: boolean,
+	...args: Parameters<PubSubTypes[K]>
+): boolean {
+	const [ready, setReady] = useState<boolean>(false)
+
+	useEffect(() => {
+		if (condition === false) return
+
+		const subscription = Tracker.nonreactive(() => meteorSubscribe(sub, ...args))
+		const isReadyComp = Tracker.nonreactive(() => Tracker.autorun(() => setReady(subscription.ready())))
+		return () => {
+			isReadyComp.stop()
+			setTimeout(() => {
+				subscription.stop()
+			}, 1000)
+		}
+	}, [condition, stringifyObjects(args)])
 
 	return ready
 }
