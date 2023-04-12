@@ -5,9 +5,9 @@ import {
 	SourceLayerType,
 	StatusCode,
 } from '@sofie-automation/blueprints-integration'
+import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBStudio, IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { assertNever, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
@@ -15,6 +15,7 @@ import {
 	applyAndValidateOverrides,
 	ObjectOverrideSetOp,
 	wrapDefaultObject,
+	updateOverrides,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import {
 	APIBlueprint,
@@ -26,10 +27,10 @@ import {
 	APIStudio,
 	APIStudioSettings,
 } from '../../../lib/api/rest'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { Studio } from '../../../lib/collections/Studios'
-import { Blueprints, Studios } from '../../collections'
+import { Blueprints, ShowStyleBases, Studios } from '../../collections'
 
 export function showStyleBaseFrom(
 	apiShowStyleBase: APIShowStyleBase,
@@ -39,34 +40,34 @@ export function showStyleBaseFrom(
 	if (!blueprint) return undefined
 	if (blueprint.blueprintType !== BlueprintManifestType.SHOWSTYLE) return undefined
 
-	const outputLayers = wrapDefaultObject({})
-	outputLayers.overrides = Object.entries(apiShowStyleBase.outputLayers).map(([key, value]) =>
-		literal<ObjectOverrideSetOp>({
-			op: 'set',
-			path: key,
-			value,
-		})
-	)
-	const sourceLayers = wrapDefaultObject({})
-	sourceLayers.overrides = Object.entries(apiShowStyleBase.sourceLayers).map(([key, value]) =>
-		literal<ObjectOverrideSetOp>({
-			op: 'set',
-			path: key,
-			value,
-		})
-	)
-	const blueprintConfig = wrapDefaultObject({})
-	blueprintConfig.overrides = Object.entries(apiShowStyleBase.config).map(([key, value]) =>
-		literal<ObjectOverrideSetOp>({
-			op: 'set',
-			path: key,
-			value,
-		})
-	)
+	let showStyleBase: DBShowStyleBase | undefined
+	if (existingId) showStyleBase = ShowStyleBases.findOne(existingId)
+
+	const newOutputLayers = apiShowStyleBase.outputLayers.reduce<Record<string, IOutputLayer>>((acc, op) => {
+		acc[op.id] = { _id: op.id, name: op.name, _rank: op.rank, isPGM: op.isPgm }
+		return acc
+	}, {} as Record<string, IOutputLayer>)
+	const outputLayers = showStyleBase
+		? updateOverrides(showStyleBase.outputLayersWithOverrides, newOutputLayers)
+		: wrapDefaultObject({})
+
+	const newSourceLayers = apiShowStyleBase.sourceLayers.reduce<Record<string, ISourceLayer>>((acc, op) => {
+		acc[op.id] = sourceLayerFrom(op)
+		return acc
+	}, {} as Record<string, ISourceLayer>)
+	const sourceLayers = showStyleBase
+		? updateOverrides(showStyleBase.sourceLayersWithOverrides, newSourceLayers)
+		: wrapDefaultObject({})
+
+	const blueprintConfig = showStyleBase
+		? updateOverrides(showStyleBase.blueprintConfigWithOverrides, apiShowStyleBase.config as IBlueprintConfig)
+		: wrapDefaultObject({})
+
 	return {
 		_id: existingId ?? getRandomId(),
 		name: apiShowStyleBase.name,
 		blueprintId: protectString(apiShowStyleBase.blueprintId),
+		blueprintConfigPresetId: apiShowStyleBase.blueprintConfigPresetId,
 		organizationId: null,
 		outputLayersWithOverrides: outputLayers,
 		sourceLayersWithOverrides: sourceLayers,
@@ -80,6 +81,7 @@ export function APIShowStyleBaseFrom(showStyleBase: ShowStyleBase): APIShowStyle
 	return {
 		name: showStyleBase.name,
 		blueprintId: unprotectString(showStyleBase.blueprintId),
+		blueprintConfigPresetId: showStyleBase.blueprintConfigPresetId,
 		outputLayers: Object.values(applyAndValidateOverrides(showStyleBase.outputLayersWithOverrides).obj).map(
 			(layer) => APIOutputLayerFrom(layer!)
 		),
@@ -118,6 +120,60 @@ export function APIShowStyleVariantFrom(showStyleVariant: ShowStyleVariant): API
 		rank: showStyleVariant._rank,
 		showStyleBaseId: unprotectString(showStyleVariant.showStyleBaseId),
 		config: applyAndValidateOverrides(showStyleVariant.blueprintConfigWithOverrides).obj,
+	}
+}
+
+export function sourceLayerFrom(apiSourceLayer: APISourceLayer): ISourceLayer {
+	let layerType: SourceLayerType = SourceLayerType.UNKNOWN
+	switch (apiSourceLayer.layerType) {
+		case 'audio':
+			layerType = SourceLayerType.AUDIO
+			break
+		case 'camera':
+			layerType = SourceLayerType.CAMERA
+			break
+		case 'graphics':
+			layerType = SourceLayerType.GRAPHICS
+			break
+		case 'live-speak':
+			layerType = SourceLayerType.LIVE_SPEAK
+			break
+		case 'local':
+			layerType = SourceLayerType.LOCAL
+			break
+		case 'lower-third':
+			layerType = SourceLayerType.LOWER_THIRD
+			break
+		case 'remote':
+			layerType = SourceLayerType.REMOTE
+			break
+		case 'script':
+			layerType = SourceLayerType.SCRIPT
+			break
+		case 'splits':
+			layerType = SourceLayerType.SPLITS
+			break
+		case 'transition':
+			layerType = SourceLayerType.TRANSITION
+			break
+		case 'unknown':
+			layerType = SourceLayerType.UNKNOWN
+			break
+		case 'vt':
+			layerType = SourceLayerType.VT
+			break
+		default:
+			layerType = SourceLayerType.UNKNOWN
+			assertNever(apiSourceLayer.layerType)
+	}
+
+	return {
+		_id: apiSourceLayer.id,
+		name: apiSourceLayer.name,
+		abbreviation: apiSourceLayer.abbreviation,
+		_rank: apiSourceLayer.rank,
+		type: layerType,
+		exclusiveGroup: apiSourceLayer.exclusiveGroup,
 	}
 }
 
@@ -186,22 +242,9 @@ export function studioFrom(apiStudio: APIStudio, existingId?: StudioId): Studio 
 	let studio: DBStudio | undefined
 	if (existingId) studio = Studios.findOne(existingId)
 
-	const blueprintConfig = studio ? studio.blueprintConfigWithOverrides : wrapDefaultObject({})
-	blueprintConfig.overrides = Object.entries(apiStudio.config).map(([key, value]) =>
-		literal<ObjectOverrideSetOp>({
-			op: 'set',
-			path: key,
-			value,
-		})
-	)
-	const blueprintConfigWithOverrides = applyAndValidateOverrides(blueprintConfig)
-
-	// remove any overrides that don't make a change from the default value
-	blueprintConfig.overrides = blueprintConfig.overrides.filter((ov) => {
-		const preserveOp = blueprintConfigWithOverrides.preserve.find((pr) => pr.path === ov.path)
-		const unusedOp = blueprintConfigWithOverrides.unused.find((un) => un.path === ov.path)
-		return preserveOp && preserveOp !== unusedOp
-	})
+	const blueprintConfig = studio
+		? updateOverrides(studio.blueprintConfigWithOverrides, apiStudio.config as IBlueprintConfig)
+		: wrapDefaultObject({})
 
 	return {
 		_id: existingId ?? getRandomId(),

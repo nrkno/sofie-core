@@ -144,6 +144,22 @@ resources:
                   - status
                   - message
                 additionalProperties: false
+        409:
+          description: The specified ShowStyleBase is not valid.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 409
+                  message:
+                    type: string
+                required:
+                  - status
+                  - message
+                additionalProperties: false
         412:
           description: The specified ShowStyleBase is in use in an on-air Rundown.
           content:
@@ -524,6 +540,9 @@ components:
         blueprintId:
           type: string
           description: Id of the blueprint used by this ShowStyleBase.
+        blueprintConfigPresetId:
+          type: string
+          description: Id of the Blueprint config preset to use for the ShowStyle.
         outputLayers:
           type: array
           items:

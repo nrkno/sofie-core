@@ -679,6 +679,7 @@ export interface APIBlueprint {
 export interface APIShowStyleBase {
 	name: string
 	blueprintId: string
+	blueprintConfigPresetId?: string
 	outputLayers: APIOutputLayer[]
 	sourceLayers: APISourceLayer[]
 	config: object

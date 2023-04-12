@@ -56,6 +56,8 @@ paths:
     $ref: 'definitions/playlists.yaml#/resources/take'
   /playlists/{playlistId}/sourceLayer/{sourceLayerId}:
     $ref: 'definitions/playlists.yaml#/resources/sourceLayer'
+  /playlists/{playlistId}/sourceLayer/{sourceLayerId}/sticky:
+    $ref: 'definitions/playlists.yaml#/resources/sourceLayer/sticky'
   # studio operations
   /studios:
     $ref: 'definitions/studios.yaml#/resources/studios'

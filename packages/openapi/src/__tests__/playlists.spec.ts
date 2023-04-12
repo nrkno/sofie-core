@@ -128,8 +128,12 @@ describe('Network client', () => {
 		expect(deactive.status).toBe(200)
 	})
 
-	test('can reload a playlist', async () => {
-		const reload = await playlistsApi.reloadPlaylist({ playlistId: playlistIds[0] })
-		expect(reload.status).toBe(200)
-	})
+	if (testServer) {
+		test('can reload a playlist', async () => {
+			const reload = await playlistsApi.reloadPlaylist({ playlistId: playlistIds[0] })
+			expect(reload.status).toBe(200)
+		})
+	} else {
+		test.todo('Reload playlist can be dependant on test order')
+	}
 })

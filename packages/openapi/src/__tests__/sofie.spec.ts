@@ -26,14 +26,14 @@ describe('Network client', () => {
 	})
 
 	if (testServer) {
-		test('can assign a blueprint for Sofie Core', async () => {
+		test('can assign a system blueprint for Sofie Core', async () => {
 			const sofieVersion = await sofieApi.assignSystemBlueprint({
 				assignSystemBlueprintRequest: { blueprintId: 'systemBlueprint' },
 			})
 			expect(sofieVersion.status).toBe(200)
 		})
 
-		test('can unassign a blueprint for Sofie Core', async () => {
+		test('can unassign a system blueprint for Sofie Core', async () => {
 			const sofieVersion = await sofieApi.unassignSystemBlueprint()
 			expect(sofieVersion.status).toBe(200)
 		})

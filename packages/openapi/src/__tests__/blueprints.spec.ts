@@ -27,13 +27,15 @@ describe('Network client', () => {
 		await expect(blueprintsApi.blueprint({ blueprintId: null })).rejects.toThrow()
 	})
 
-	test('can request information about a blueprint', async () => {
-		const blueprint = await blueprintsApi.blueprint({ blueprintId: blueprintIds[0] })
-		expect(blueprint.status).toBe(200)
-		expect(blueprint).toHaveProperty('result')
-		expect(blueprint.result).toHaveProperty('id')
-		expect(blueprint.result).toHaveProperty('name')
-		expect(blueprint.result).toHaveProperty('blueprintType')
-		expect(blueprint.result).toHaveProperty('blueprintVersion')
+	test('can request information about each blueprint', async () => {
+		for (const id of blueprintIds) {
+			const blueprint = await blueprintsApi.blueprint({ blueprintId: id })
+			expect(blueprint.status).toBe(200)
+			expect(blueprint).toHaveProperty('result')
+			expect(blueprint.result).toHaveProperty('id')
+			expect(blueprint.result).toHaveProperty('name')
+			expect(blueprint.result).toHaveProperty('blueprintType')
+			expect(blueprint.result).toHaveProperty('blueprintVersion')
+		}
 	})
 })

@@ -475,44 +475,45 @@ resources:
                     example: Rundown must be active!
         500:
           $ref: '#/components/responses/internalServerError'
-    put:
-      operationId: recallSticky
-      tags:
-        - sourceLayers
-      summary: Recalls the last sticky Piece on the specified SourceLayer, if there is any.
-      parameters:
-        - name: playlistId
-          in: path
-          description: Target playlist.
-          required: true
-          schema:
-            type: string
-        - name: sourceLayerId
-          in: path
-          description: Target sourcelayer.
-          required: true
-          schema:
-            type: string
-      responses:
-        200:
-          $ref: '#/components/responses/putSuccess'
-        404:
-          $ref: '#/components/responses/playlistNotFound'
-        412:
-          description: Playlist is not active, SourceLayer is not sticky, or there is no sticky piece for this SourceLayer.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  status:
-                    type: number
-                    example: 412
-                  message:
-                    type: string
-                    example: Rundown must be active!
-        500:
-          $ref: '#/components/responses/internalServerError'
+    sticky:
+      put:
+        operationId: recallSticky
+        tags:
+          - sourceLayers
+        summary: Recalls the last sticky Piece on the specified SourceLayer, if there is any.
+        parameters:
+          - name: playlistId
+            in: path
+            description: Target playlist.
+            required: true
+            schema:
+              type: string
+          - name: sourceLayerId
+            in: path
+            description: Target sourcelayer.
+            required: true
+            schema:
+              type: string
+        responses:
+          200:
+            $ref: '#/components/responses/putSuccess'
+          404:
+            $ref: '#/components/responses/playlistNotFound'
+          412:
+            description: Playlist is not active, SourceLayer is not sticky, or there is no sticky piece for this SourceLayer.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: number
+                      example: 412
+                    message:
+                      type: string
+                      example: Rundown must be active!
+          500:
+            $ref: '#/components/responses/internalServerError'
 
 components:
   responses:

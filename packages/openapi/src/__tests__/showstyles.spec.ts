@@ -32,10 +32,22 @@ describe('Network client', () => {
 		expect(showStyle).toHaveProperty('result')
 		expect(showStyle.result).toHaveProperty('name')
 		expect(showStyle.result).toHaveProperty('blueprintId')
+		expect(showStyle.result).toHaveProperty('blueprintConfigPresetId')
 		expect(showStyle.result).toHaveProperty('outputLayers')
 		expect(showStyle.result).toHaveProperty('sourceLayers')
 		expect(showStyle.result).toHaveProperty('config')
 		newShowStyleBase = JSON.parse(JSON.stringify(showStyle.result))
+	})
+
+	test('can update a ShowStyleBase', async () => {
+		newShowStyleBase.config.developerMode = !newShowStyleBase.config.developerMode
+		newShowStyleBase.outputLayers[0].rank = 1 - newShowStyleBase.outputLayers[0].rank
+		newShowStyleBase.sourceLayers[0].rank = 1 - newShowStyleBase.sourceLayers[0].rank
+		const showStyle = await showStylesApi.addOrUpdateShowStyleBase({
+			showStyleBaseId: showStyleBaseIds[0],
+			showStyleBase: newShowStyleBase,
+		})
+		expect(showStyle.status).toBe(200)
 	})
 
 	let testShowStyleBaseId: string | undefined
@@ -47,15 +59,6 @@ describe('Network client', () => {
 		expect(showStyle.status).toBe(200)
 		expect(typeof showStyle.result).toBe('string')
 		testShowStyleBaseId = showStyle.result
-	})
-
-	test('can update a ShowStyleBase', async () => {
-		newShowStyleBase.config.developerMode = !newShowStyleBase.config.developerMode
-		const showStyle = await showStylesApi.addOrUpdateShowStyleBase({
-			showStyleBaseId: testShowStyleBaseId,
-			showStyleBase: newShowStyleBase,
-		})
-		expect(showStyle.status).toBe(200)
 	})
 
 	test('can remove a ShowStyleBase', async () => {

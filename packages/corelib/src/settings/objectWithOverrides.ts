@@ -76,6 +76,66 @@ export function convertObjectIntoOverrides<T>(
 }
 
 /**
+ * Update the ObjectWithOverrides overrides values from a flat object.
+ * If there is an exiting override for a value update the override value if required.
+ * Otherwise if the flat object value is different to the default add an override to the new value.
+ */
+export function updateOverrides<T extends object>(
+	curObj: ReadonlyDeep<ObjectWithOverrides<T>>,
+	rawObj: ReadonlyDeep<T>
+): ObjectWithOverrides<T> {
+	const result: ObjectWithOverrides<T> = { defaults: clone(curObj.defaults), overrides: [] }
+	for (const [key, value] of Object.entries(rawObj)) {
+		const override = curObj.overrides.find((ov) => {
+			const parentPath = getParentObjectPath(ov.path)
+			return key === (parentPath ? parentPath : ov.path)
+		})
+		if (override) {
+			// Some or all members of the property are already overridden in curObj
+			if (objectPath.has(rawObj, override.path)) {
+				const rawValue = objectPath.get(rawObj, override.path)
+				if (override.op === 'delete' || (override.op === 'set' && _.isEqual(rawValue, override.value))) {
+					// Preserve all existing delete overrides and any set overrides where the value is not updated
+					result.overrides.push(override)
+				}
+			}
+		}
+
+		// check the values of the raw object against the current object, generating an override for each difference
+		const appliedCurObj = applyAndValidateOverrides(curObj).obj
+		for (const [curKey, curValue] of Object.entries(appliedCurObj)) {
+			if (key === curKey && !_.isEqual(value, curValue)) {
+				// Some or all members of the property have been modified
+				if (typeof value === 'object') {
+					// check one level down info the potentially modified object
+					for (const [rawKey, rawValue] of Object.entries(value)) {
+						if (!_.isEqual(rawValue, curValue[rawKey])) {
+							result.overrides.push(
+								literal<ObjectOverrideSetOp>({
+									op: 'set',
+									path: `${key}.${rawKey}`,
+									value: rawValue,
+								})
+							)
+						}
+					}
+				} else {
+					result.overrides.push(
+						literal<ObjectOverrideSetOp>({
+							op: 'set',
+							path: key,
+							value: value,
+						})
+					)
+				}
+			}
+		}
+		// }
+	}
+	return result
+}
+
+/**
  * Combine the ObjectWithOverrides to give the simplified object.
  * Also performs validation of the overrides, and classifies them
  * Note: No validation is done to make sure the type conforms to the typescript definition. It is assumed that the definitions which drive ui ensure that they dont violate the typings, and that any changes will be backwards compatible with old overrides

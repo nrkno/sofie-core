@@ -78,8 +78,13 @@ import {
 	showStyleVariantFrom,
 	studioFrom,
 } from './typeConversion'
-import { runUpgradeForShowStyleBase, runUpgradeForStudio } from '../../migration/upgrades'
-import { MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
+import {
+	runUpgradeForShowStyleBase,
+	runUpgradeForStudio,
+	validateConfigForShowStyleBase,
+	validateConfigForStudio,
+} from '../../migration/upgrades'
+import { MigrationStepInputResult, NoteSeverity } from '@sofie-automation/blueprints-integration'
 
 function restAPIUserEvent(
 	ctx: Koa.ParameterizedContext<
@@ -602,6 +607,7 @@ class ServerRestAPI implements RestAPI {
 		if (!apiBlueprint) throw new Error(`Blueprint could not be converted to API representation`)
 		return ClientAPI.responseSuccess(apiBlueprint)
 	}
+
 	async assignSystemBlueprint(
 		_connection: Meteor.Connection,
 		_event: string,
@@ -729,7 +735,17 @@ class ServerRestAPI implements RestAPI {
 		}
 
 		ShowStyleBases.upsert(showStyleBaseId, showStyle)
-		return ClientAPI.responseSuccess(undefined, 200)
+
+		const validation = await validateConfigForShowStyleBase(showStyleBaseId)
+		const validateOK = validation.messages.reduce((acc, msg) => acc && msg.level === NoteSeverity.INFO, true)
+		if (!validateOK) {
+			logger.error(
+				`addOrUpdateShowStyleBase failed validation with errors: ${JSON.stringify(validation.messages)}`
+			)
+			throw new Meteor.Error(409, `ShowStyleBase ${showStyleBaseId} has failed validation`)
+		}
+
+		return ClientAPI.responseSuccess(await runUpgradeForShowStyleBase(showStyleBaseId))
 	}
 
 	async deleteShowStyleBase(
@@ -894,7 +910,15 @@ class ServerRestAPI implements RestAPI {
 		}
 
 		Studios.upsert(studioId, newStudio)
-		return ClientAPI.responseSuccess(undefined, 200)
+
+		const validation = await validateConfigForStudio(studioId)
+		const validateOK = validation.messages.reduce((acc, msg) => acc && msg.level === NoteSeverity.INFO, true)
+		if (!validateOK) {
+			logger.error(`addOrUpdateStudio failed validation with errors: ${JSON.stringify(validation.messages)}`)
+			throw new Meteor.Error(409, `Studio ${studioId} has failed validation`)
+		}
+
+		return ClientAPI.responseSuccess(await runUpgradeForStudio(studioId))
 	}
 
 	async deleteStudio(
@@ -968,10 +992,10 @@ class ServerRestAPI implements RestAPI {
 		_connection: Meteor.Connection,
 		_event: string
 	): Promise<ClientAPI.ClientResponse<{ inputs: PendingMigrations }>> {
-		let migrationStatus = await MeteorCall.migration.getMigrationStatus()
+		const migrationStatus = await MeteorCall.migration.getMigrationStatus()
 		if (!migrationStatus.migrationNeeded) return ClientAPI.responseSuccess({ inputs: [] })
 
-		let requiredInputs: PendingMigrations = []
+		const requiredInputs: PendingMigrations = []
 		for (const migration of migrationStatus.migration.manualInputs) {
 			if (migration.stepId && migration.attribute) {
 				requiredInputs.push({
@@ -989,15 +1013,15 @@ class ServerRestAPI implements RestAPI {
 		_event: string,
 		inputs: MigrationData
 	): Promise<ClientAPI.ClientResponse<void>> {
-		let migrationStatus = await MeteorCall.migration.getMigrationStatus()
+		const migrationStatus = await MeteorCall.migration.getMigrationStatus()
 		if (!migrationStatus.migrationNeeded) throw new Error(`Migration does not need to be applied`)
 
-		let migrationData: MigrationStepInputResult[] = inputs.map((input) => ({
+		const migrationData: MigrationStepInputResult[] = inputs.map((input) => ({
 			stepId: input.stepId,
 			attribute: input.attributeId,
 			value: input.migrationValue,
 		}))
-		let result = await MeteorCall.migration.runMigration(
+		const result = await MeteorCall.migration.runMigration(
 			migrationStatus.migration.chunks,
 			migrationStatus.migration.hash,
 			migrationData
@@ -1284,7 +1308,7 @@ sofieAPIRequest<{ playlistId: string; sourceLayerId: string }, never, void>(
 
 sofieAPIRequest<{ playlistId: string; sourceLayerId: string }, never, void>(
 	'put',
-	'/playlists/:playlistId/sourceLayer/:sourceLayerId',
+	'/playlists/:playlistId/sourceLayer/:sourceLayerId/sticky',
 	new Map([
 		[404, UserErrorMessage.RundownPlaylistNotFound],
 		[412, UserErrorMessage.InactiveRundown],
@@ -1478,6 +1502,7 @@ sofieAPIRequest<{ blueprintId: string }, never, APIBlueprint>(
 		return await serverAPI.getBlueprint(connection, event, blueprintId)
 	}
 )
+
 sofieAPIRequest<never, { blueprintId: string }, void>(
 	'put',
 	'/system/blueprint',
