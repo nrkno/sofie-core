@@ -93,7 +93,7 @@ function restAPIUserEvent(
 		unknown
 	>
 ): string {
-	return `rest_api_${ctx.method}_${ctx.URL.origin}/api2${ctx.URL.pathname}}`
+	return `rest_api_${ctx.method}_${ctx.URL.origin}/api/v1.0${ctx.URL.pathname}}`
 }
 
 class ServerRestAPI implements RestAPI {
@@ -1741,7 +1741,7 @@ const makeConnection = (
 Meteor.startup(() => {
 	const app = new Koa()
 	if (!Meteor.isAppTest) {
-		WebApp.connectHandlers.use('/api2', Meteor.bindEnvironment(app.callback()))
+		WebApp.connectHandlers.use('/api/v1.0', Meteor.bindEnvironment(app.callback()))
 	}
 	app.use(async (ctx, next) => {
 		// Strange - sometimes a JSON body gets parsed by Koa before here (eg for a POST call?).
