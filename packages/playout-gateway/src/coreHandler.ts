@@ -11,13 +11,7 @@ import {
 	StudioId,
 	unprotectString,
 } from '@sofie-automation/server-core-integration'
-import {
-	DeviceType,
-	DeviceContainer,
-	MediaObject,
-	DeviceOptionsAny,
-	ActionExecutionResult,
-} from 'timeline-state-resolver'
+import { DeviceType, MediaObject, DeviceOptionsAny, ActionExecutionResult } from 'timeline-state-resolver'
 import * as _ from 'underscore'
 import { DeviceConfig } from './connector'
 import { TSRHandler } from './tsrHandler'
@@ -26,6 +20,7 @@ import { Logger } from 'winston'
 import { MemUsageReport as ThreadMemUsageReport } from 'threadedclass'
 import { Process } from './process'
 import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
+import { BaseRemoteDeviceIntegration } from 'timeline-state-resolver/dist/service/remoteDeviceInstance'
 
 export interface CoreConfig {
 	host: string
@@ -507,9 +502,9 @@ export class CoreHandler {
 export class CoreTSRDeviceHandler {
 	core!: CoreConnection
 	public _observers: Array<any> = []
-	public _devicePr: Promise<DeviceContainer<DeviceOptionsAny>>
+	public _devicePr: Promise<BaseRemoteDeviceIntegration<DeviceOptionsAny>>
 	public _deviceId: string
-	public _device!: DeviceContainer<DeviceOptionsAny>
+	public _device!: BaseRemoteDeviceIntegration<DeviceOptionsAny>
 	private _coreParentHandler: CoreHandler
 	private _tsrHandler: TSRHandler
 	private _subscriptions: Array<string> = []
@@ -521,7 +516,7 @@ export class CoreTSRDeviceHandler {
 
 	constructor(
 		parent: CoreHandler,
-		device: Promise<DeviceContainer<DeviceOptionsAny>>,
+		device: Promise<BaseRemoteDeviceIntegration<DeviceOptionsAny>>,
 		deviceId: string,
 		tsrHandler: TSRHandler
 	) {
@@ -550,13 +545,7 @@ export class CoreTSRDeviceHandler {
 		await this.core.init(this._coreParentHandler.core)
 
 		if (!this._hasGottenStatusChange) {
-			this._deviceStatus = {
-				statusCode: (await this._device.device.canConnect)
-					? (await this._device.device.connected)
-						? StatusCode.GOOD
-						: StatusCode.BAD
-					: StatusCode.GOOD,
-			}
+			this._deviceStatus = await this._device.device.getStatus()
 			this.sendStatus()
 		}
 		await this.setupSubscriptionsAndObservers()

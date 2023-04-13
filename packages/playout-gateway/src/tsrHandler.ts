@@ -4,7 +4,6 @@ import {
 	ConductorOptions,
 	TimelineTriggerTimeResult,
 	DeviceOptionsAny,
-	DeviceContainer,
 	TSRTimelineObj,
 	TSRTimeline,
 	TSRTimelineContent,
@@ -50,6 +49,7 @@ import {
 	unprotectObject,
 	unprotectString,
 } from '@sofie-automation/server-core-integration'
+import { BaseRemoteDeviceIntegration } from 'timeline-state-resolver/dist/service/remoteDeviceInstance'
 
 const debug = Debug('playout-gateway')
 
@@ -507,7 +507,10 @@ export class TSRHandler {
 			}
 
 			for (const [deviceId, orgDeviceOptions] of deviceOptions.entries()) {
-				const oldDevice: DeviceContainer<DeviceOptionsAny> | undefined = this.tsr.getDevice(deviceId, true)
+				const oldDevice: BaseRemoteDeviceIntegration<DeviceOptionsAny> | undefined = this.tsr.getDevice(
+					deviceId,
+					true
+				)
 
 				const deviceOptions = _.extend(
 					{
@@ -735,7 +738,10 @@ export class TSRHandler {
 				throw new Error(`There is already a _coreTsrHandlers for deviceId "${deviceId}"!`)
 			}
 
-			const devicePr: Promise<DeviceContainer<DeviceOptionsAny>> = this.tsr.createDevice(deviceId, options)
+			const devicePr: Promise<BaseRemoteDeviceIntegration<DeviceOptionsAny>> = this.tsr.createDevice(
+				deviceId,
+				options
+			)
 
 			const coreTsrHandler = new CoreTSRDeviceHandler(this._coreHandler, devicePr, deviceId, this)
 
@@ -962,7 +968,7 @@ export class TSRHandler {
 	 * // @todo: proper atem media management
 	 * /Balte - 22-08
 	 */
-	private uploadFilesToAtem(device: DeviceContainer<DeviceOptionsAny>, files: AtemMediaPoolAsset[]) {
+	private uploadFilesToAtem(device: BaseRemoteDeviceIntegration<DeviceOptionsAny>, files: AtemMediaPoolAsset[]) {
 		if (!device || device.deviceType !== DeviceType.ATEM) {
 			return
 		}
@@ -1025,7 +1031,7 @@ export class TSRHandler {
 
 		await Promise.all(
 			_.map(this.tsr.getDevices(), async (container) => {
-				if (!(await container.device.supportsExpectedPlayoutItems)) {
+				if (!container.details.supportsExpectedPlayoutItems) {
 					return
 				}
 				await container.device.handleExpectedPlayoutItems(
