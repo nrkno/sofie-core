@@ -1,5 +1,6 @@
 import moment from 'moment'
-import i18n, { TFunction, TFunctionResult } from 'i18next'
+import i18n, { TFunctionResult } from 'i18next'
+import { TFunction } from 'react-i18next'
 import Backend from 'i18next-http-backend'
 import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'

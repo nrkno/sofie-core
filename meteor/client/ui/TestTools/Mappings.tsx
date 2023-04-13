@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { omit, Time } from '../../../lib/lib'
+import { omit, Time, unprotectString } from '../../../lib/lib'
 import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import { StudioSelect } from './StudioSelect'
@@ -94,7 +94,7 @@ export const ComponentMappingsTable = withTracker<IMappingsTableProps, IMappings
 			return rows.map(([id, obj]) => (
 				<tr key={id}>
 					<td>{id}</td>
-					<td>{obj.deviceId}</td>
+					<td>{unprotectString(obj.deviceId)}</td>
 					<td>{TSR.DeviceType[obj.device]}</td>
 					<td>{obj.layerName}</td>
 					<td>

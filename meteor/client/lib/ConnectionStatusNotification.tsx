@@ -18,17 +18,17 @@ import { withTranslation } from 'react-i18next'
 import { NotificationCenterPopUps } from './notifications/NotificationCenterPanel'
 import { PubSub } from '../../lib/api/pubsub'
 import { ICoreSystem, ServiceMessage, Criticality } from '../../lib/collections/CoreSystem'
-import * as i18next from 'i18next'
+import { TFunction } from 'react-i18next'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { CoreSystem } from '../collections'
 
 export class ConnectionStatusNotifier extends WithManagedTracker {
 	private _notificationList: NotificationList
 	private _notifier: NotifierHandle
-	private _translator: i18next.TFunction
+	private _translator: TFunction
 	private _serviceMessageRegistry: { [index: string]: ServiceMessage }
 
-	constructor(t: i18next.TFunction) {
+	constructor(t: TFunction) {
 		super()
 
 		this.subscribe(PubSub.coreSystem)

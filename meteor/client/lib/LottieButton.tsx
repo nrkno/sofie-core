@@ -15,7 +15,7 @@ interface IState {
 	hover: boolean
 }
 
-export class LottieButton extends React.Component<IProps, IState> {
+export class LottieButton extends React.Component<React.PropsWithChildren<IProps>, IState> {
 	base: object = {
 		loop: false,
 		autoplay: true,

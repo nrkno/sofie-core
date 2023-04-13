@@ -131,7 +131,7 @@ function UserActionsList(props: IUserActionsListProps) {
 									</tbody>
 								</table>
 							</td>
-							<td className="user-action-log__userId">{msg.userId}</td>
+							<td className="user-action-log__userId">{unprotectString(msg.userId)}</td>
 							<td className="user-action-log__clientAddress">{msg.clientAddress}</td>
 							<td className="user-action-log__context">{msg.context}</td>
 							<td className="user-action-log__method">{msg.method}</td>
