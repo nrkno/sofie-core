@@ -46,7 +46,7 @@
 		"@fortawesome/fontawesome-svg-core": "~6.4.0",
 		"@fortawesome/free-solid-svg-icons": "^6.4.0",
 		"@fortawesome/react-fontawesome": "^0.2.0",
-		"@jstarpl/react-contextmenu": "^2.14.4",
+		"@jstarpl/react-contextmenu": "^2.15.0",
 		"@mos-connection/helper": "^3.0.2",
 		"@nrk/core-icons": "^9.6.0",
 		"@popperjs/core": "^2.11.7",

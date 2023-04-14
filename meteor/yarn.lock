@@ -1430,10 +1430,10 @@
     "@jridgewell/resolve-uri" "3.1.0"
     "@jridgewell/sourcemap-codec" "1.4.14"
 
-"@jstarpl/react-contextmenu@^2.14.4":
-  version "2.14.4"
-  resolved "https://registry.yarnpkg.com/@jstarpl/react-contextmenu/-/react-contextmenu-2.14.4.tgz#bf750b0cbeeb6462622579004fd622b348188042"
-  integrity sha512-3W8Fv623nsZPvKQJsAs7bHfDijjpx4jMuB8oW8Uv0XT51cfOsv3bJF5lsUQk3AuCCDaNMDxIXpDbN/1iYtR2bw==
+"@jstarpl/react-contextmenu@^2.15.0":
+  version "2.15.0"
+  resolved "https://registry.yarnpkg.com/@jstarpl/react-contextmenu/-/react-contextmenu-2.15.0.tgz#59632ac1e145f03ee797b7eac67f3ab5959b4cf5"
+  integrity sha512-SoTLzaMb6W8zt3rs5pbMp6X3ZQtKKDV1yoameSrjt2RIqg8GGYBiLjnAXICaLEHGTMPIb+PeyL1RDhUhtHCR2g==
   dependencies:
     classnames "^2.2.5"
     object-assign "^4.1.0"
