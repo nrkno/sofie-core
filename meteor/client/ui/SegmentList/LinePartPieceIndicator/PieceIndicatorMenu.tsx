@@ -9,6 +9,7 @@ import StudioContext from '../../RundownView/StudioContext'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
 
 const AUTO_HIDE_TIMEOUT = 7000
+const VIEWPORT_PADDING = { right: 70 }
 
 export function PieceIndicatorMenu({
 	pieces,
@@ -30,9 +31,15 @@ export function PieceIndicatorMenu({
 		placement: 'bottom',
 		modifiers: [
 			{
-				name: 'offset',
+				name: 'flip',
 				options: {
-					offset: [0, 0],
+					fallbackPlacements: ['top'],
+				},
+			},
+			{
+				name: 'preventOverflow',
+				options: {
+					padding: VIEWPORT_PADDING,
 				},
 			},
 			// sameWidth,
