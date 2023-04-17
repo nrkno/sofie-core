@@ -109,7 +109,7 @@ export class EventsWorkerChild {
 	async runJob(jobName: string, data: unknown): Promise<WorkerJobResult> {
 		if (!this.#staticData) throw new Error('Worker not initialised')
 
-		const trace = startTrace('studioWorker', jobName)
+		const trace = startTrace('studioWorker' + jobName)
 		const transaction = startTransaction(jobName, 'worker-studio')
 		if (transaction) {
 			transaction.setLabel('studioId', unprotectString(this.#staticData.dataCache.studio._id))
