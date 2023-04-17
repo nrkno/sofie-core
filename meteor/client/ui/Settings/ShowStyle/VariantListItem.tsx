@@ -32,7 +32,6 @@ import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyle
 interface DraggableVariant {
 	id: ShowStyleVariantId
 	rank: number
-	type: ShowStyleDragDropTypes
 }
 
 interface DraggableDropResult {
@@ -89,17 +88,16 @@ export const VariantListItem = ({
 			}
 			onDragVariant(hoverVariant.id, showStyleVariant._id)
 		},
-		drop: (item) => {
-			if (item.type === ShowStyleDragDropTypes.VARIANT) {
-				return {
-					overId: showStyleVariant._id,
-				}
+		drop: () => {
+			return {
+				overId: showStyleVariant._id,
 			}
 		},
 	})
 
 	const [{ isDragging }, drag] = useDrag<DraggableVariant, DraggableDropResult, { isDragging: boolean }>({
-		item: { type: ShowStyleDragDropTypes.VARIANT, id: showStyleVariant._id, rank: showStyleVariant._rank },
+		type: ShowStyleDragDropTypes.VARIANT,
+		item: { id: showStyleVariant._id, rank: showStyleVariant._rank },
 		collect: (monitor: DragSourceMonitor) => ({
 			isDragging: monitor.isDragging(),
 		}),

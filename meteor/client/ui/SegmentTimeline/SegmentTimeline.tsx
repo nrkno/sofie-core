@@ -114,6 +114,10 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 		durations: PropTypes.object.isRequired,
 	}
 
+	context: {
+		durations: RundownTimingContext
+	}
+
 	constructor(props, context) {
 		super(props, context)
 		this.state = {
