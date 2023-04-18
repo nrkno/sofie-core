@@ -65,7 +65,9 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 			isOver: monitor.isOver(),
 			canDrop: monitor.canDrop(),
 		}),
-		canDrop: (item) => (item.type === TRIGGERED_ACTION_ENTRY_DRAG_TYPE ? systemWideCollapsed : false),
+		canDrop: () => {
+			return systemWideCollapsed
+		},
 		drop: () => undefined,
 		hover: (_, monitor) => {
 			if (monitor.canDrop() && systemWideCollapsed) {

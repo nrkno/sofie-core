@@ -262,7 +262,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				<div className="studio-edit mod mhl mvn">
 					<div>
 						<div className="mod mvs mhn">
-							{t('Blueprint ID')}: <i>{blueprint._id}</i>
+							{t('Blueprint ID')}: <i>{unprotectString(blueprint._id)}</i>
 						</div>
 						<label className="field">
 							{t('Blueprint Name')}

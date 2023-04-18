@@ -52,6 +52,10 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		durations: PropTypes.object.isRequired,
 	}
 
+	context: {
+		durations: RundownTimingContext
+	}
+
 	canvasElement: HTMLCanvasElement | null
 	parentElement: HTMLDivElement | null
 	ctx: CanvasRenderingContext2D | null

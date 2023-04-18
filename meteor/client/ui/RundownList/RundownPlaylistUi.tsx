@@ -24,6 +24,7 @@ import {
 	DropTargetSpec,
 } from 'react-dnd'
 import {
+	IRundownDragObject,
 	IRundownPlaylistUiAction,
 	isRundownDragObject,
 	isRundownPlaylistUiAction,
@@ -93,7 +94,7 @@ const spec: DropTargetSpec<IRundownPlaylistUiProps> = {
 
 const collect: DropTargetCollector<IRundownPlaylistDropTargetProps, IRundownPlaylistUiProps> = function (
 	connect: DropTargetConnector,
-	monitor: DropTargetMonitor,
+	monitor: DropTargetMonitor<IRundownDragObject>,
 	props: IRundownPlaylistUiProps
 ): IRundownPlaylistDropTargetProps {
 	let action: IRundownPlaylistUiAction | undefined = undefined

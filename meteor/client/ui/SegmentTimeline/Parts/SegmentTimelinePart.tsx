@@ -1,7 +1,6 @@
 import React from 'react'
 import _ from 'underscore'
-import { TFunction } from 'i18next'
-import { withTranslation, WithTranslation } from 'react-i18next'
+import { withTranslation, WithTranslation, TFunction } from 'react-i18next'
 
 import ClassNames from 'classnames'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'

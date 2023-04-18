@@ -14,7 +14,7 @@ interface IKeyboardFocusIndicatorProps {
 }
 
 export class KeyboardFocusIndicator extends React.Component<
-	IKeyboardFocusIndicatorProps,
+	React.PropsWithChildren<IKeyboardFocusIndicatorProps>,
 	IKeyboardFocusIndicatorState
 > {
 	private keyboardFocusInterval: number
