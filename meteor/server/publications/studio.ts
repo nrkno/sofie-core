@@ -22,7 +22,7 @@ import { PackageContainerPackageStatusDB } from '../../lib/collections/PackageCo
 import { Match } from 'meteor/check'
 import { literal } from '../../lib/lib'
 import { ReadonlyDeep } from 'type-fest'
-import { FindOptions } from '../../lib/collections/lib'
+import { FindOptions, MongoCursor } from '../../lib/collections/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ExpectedPackageId, PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
@@ -139,6 +139,34 @@ meteorPublish(
 
 		if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId })) {
 			return PackageContainerPackageStatuses.find(selector, modifier)
+		}
+		return null
+	}
+)
+meteorPublish(
+	PubSub.packageContainerPackageStatusesSimple,
+	async function (studioId: StudioId, containerId?: string | null, packageId?: ExpectedPackageId | null) {
+		if (!studioId) throw new Meteor.Error(400, 'studioId argument missing')
+
+		check(studioId, String)
+		check(containerId, Match.Maybe(String))
+		check(packageId, Match.Maybe(String))
+
+		const modifier: FindOptions<PackageContainerPackageStatusDB> = {
+			projection: {
+				modified: 0,
+			},
+		}
+		const selector: MongoQuery<PackageContainerPackageStatusDB> = {
+			studioId: studioId,
+		}
+		if (containerId) selector.containerId = containerId
+		if (packageId) selector.packageId = packageId
+
+		if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId })) {
+			return PackageContainerPackageStatuses.find(selector, modifier) as MongoCursor<
+				Omit<PackageContainerPackageStatusDB, 'modified'>
+			>
 		}
 		return null
 	}
