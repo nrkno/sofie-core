@@ -167,7 +167,7 @@ export function checkPieceContentStatus(
 	getPackageContainerPackageStatus2: (
 		packageContainerId: string,
 		expectedPackageId: ExpectedPackageId
-	) => PackageContainerPackageStatusDB | undefined
+	) => Pick<PackageContainerPackageStatusDB, 'status'> | undefined
 ): PieceContentStatusObj {
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
 	if (!ignoreMediaStatus && sourceLayer && studio) {
@@ -353,7 +353,7 @@ function checkPieceContentExpectedPackageStatus(
 	getPackageContainerPackageStatus2: (
 		packageContainerId: string,
 		expectedPackageId: ExpectedPackageId
-	) => PackageContainerPackageStatusDB | undefined
+	) => Pick<PackageContainerPackageStatusDB, 'status'> | undefined
 ): PieceContentStatusObj {
 	let packageInfoToForward: ScanInfoForPackages | undefined = undefined
 	const settings: IStudioSettings | undefined = studio?.settings
@@ -492,7 +492,7 @@ function checkPieceContentExpectedPackageStatus(
 }
 
 function getPackageWarningMessage(
-	packageOnPackageContainer: PackageContainerPackageStatusDB | undefined,
+	packageOnPackageContainer: Pick<PackageContainerPackageStatusDB, 'status'> | undefined,
 	sourceLayer: ISourceLayer
 ): ContentMessage | null {
 	if (
