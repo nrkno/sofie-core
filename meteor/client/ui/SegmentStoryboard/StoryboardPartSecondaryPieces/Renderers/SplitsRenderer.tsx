@@ -16,7 +16,7 @@ export function SplitsRenderer({
 		<>
 			<div className="segment-storyboard__part__piece__contents">{splitItems}</div>
 			<SplitsFloatingInspector
-				floatingInspectorStyle={
+				position={
 					elementOffset
 						? {
 								top: elementOffset.top + 'px',

@@ -15,6 +15,7 @@ import classNames from 'classnames'
 import { UIStudio } from '../../../lib/api/studios'
 import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ITranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
 
 interface IProps {
 	status: PieceStatusCode
@@ -22,7 +23,7 @@ interface IProps {
 	typeClass?: string
 	showMiniInspector: boolean
 	itemElement: HTMLDivElement | null
-	floatingInspectorStyle: React.CSSProperties
+	position: IFloatingInspectorPosition
 	timePosition: number
 	content: VTContent | undefined
 	noticeLevel: NoticeLevel | null
@@ -106,7 +107,7 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 	showMiniInspector,
 	itemElement,
 	displayOn,
-	floatingInspectorStyle,
+	position,
 	typeClass,
 	status,
 }: IProps) => {
@@ -132,7 +133,9 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 	const showMiniInspectorData = showMiniInspectorNotice || showMiniInspectorClipData
 	const showAnyFloatingInspector = showVideoPlayerInspector || showMiniInspectorData
 
-	if (!showAnyFloatingInspector) {
+	const floatingInspectorStyle = useInspectorPosition(position, showMiniInspector, displayOn)
+
+	if (!showAnyFloatingInspector || !floatingInspectorStyle) {
 		return null
 	}
 

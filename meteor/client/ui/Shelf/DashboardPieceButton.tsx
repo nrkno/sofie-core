@@ -160,7 +160,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					showMiniInspector={this.state.isHovered}
 					timePosition={this.state.timePosition}
 					content={adLib.content as VTContent | undefined}
-					floatingInspectorStyle={{
+					position={{
 						top: this.positionAndSize?.top + 'px',
 						left: this.positionAndSize?.left + 'px',
 						transform: 'translate(0, -100%)',

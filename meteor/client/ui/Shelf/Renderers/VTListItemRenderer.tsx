@@ -130,7 +130,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 					showMiniInspector={showMiniInspector}
 					timePosition={hoverScrubTimePosition}
 					content={vtContent}
-					floatingInspectorStyle={{
+					position={{
 						top: itemIconPosition?.top + 'px',
 						left: itemIconPosition?.left + 'px',
 						transform: 'translate(0, -100%)',

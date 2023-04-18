@@ -43,10 +43,11 @@ export function VTThumbnailRenderer({
 				showMiniInspector={hovering}
 				timePosition={hoverScrubTimePosition}
 				content={vtContent}
-				floatingInspectorStyle={{
-					top: originPosition.top + 'px',
-					left: originPosition.left + 'px',
-					transform: 'translate(0, -100%)',
+				position={{
+					top: originPosition.top,
+					left: originPosition.left,
+					anchor: 'start',
+					position: 'top',
 				}}
 				typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 				itemElement={null}

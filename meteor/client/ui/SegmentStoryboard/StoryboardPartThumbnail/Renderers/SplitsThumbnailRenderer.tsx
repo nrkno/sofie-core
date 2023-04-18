@@ -15,7 +15,7 @@ export function SplitsThumbnailRenderer({ pieceInstance, originPosition, hoverin
 				{pieceInstance.instance.piece.name}
 			</div>
 			<SplitsFloatingInspector
-				floatingInspectorStyle={{
+				position={{
 					top: originPosition.top + 'px',
 					left: originPosition.left + 'px',
 					transform: 'translate(0, -100%)',
