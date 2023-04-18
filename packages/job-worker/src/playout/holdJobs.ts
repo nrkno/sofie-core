@@ -19,16 +19,17 @@ export async function handleActivateHold(context: JobContext, data: ActivateHold
 
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 
-			if (!playlist.currentPartInstanceId) throw UserError.create(UserErrorMessage.NoCurrentPart)
-			if (!playlist.nextPartInstanceId) throw UserError.create(UserErrorMessage.HoldNeedsNextPart)
+			if (!playlist.currentPartInfo) throw UserError.create(UserErrorMessage.NoCurrentPart)
+			if (!playlist.nextPartInfo) throw UserError.create(UserErrorMessage.HoldNeedsNextPart)
 
 			if (playlist.holdState) throw UserError.create(UserErrorMessage.HoldAlreadyActive)
 		},
 		async (cache) => {
 			const playlist = cache.Playlist.doc
 			const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
-			if (!currentPartInstance) throw new Error(`PartInstance "${playlist.currentPartInstanceId}" not found!`)
-			if (!nextPartInstance) throw new Error(`PartInstance "${playlist.nextPartInstanceId}" not found!`)
+			if (!currentPartInstance)
+				throw new Error(`PartInstance "${playlist.currentPartInfo?.partInstanceId}" not found!`)
+			if (!nextPartInstance) throw new Error(`PartInstance "${playlist.nextPartInfo?.partInstanceId}" not found!`)
 
 			if (
 				currentPartInstance.part.holdMode !== PartHoldMode.FROM ||

@@ -83,9 +83,9 @@ describe('test peripheralDevice general API methods', () => {
 			studioId: env.studio._id,
 			created: 0,
 			modified: 0,
-			currentPartInstanceId: null,
-			nextPartInstanceId: null,
-			previousPartInstanceId: null,
+			currentPartInfo: null,
+			nextPartInfo: null,
+			previousPartInfo: null,
 			activationId: protectString('active'),
 			timing: {
 				type: PlaylistTimingType.None,

@@ -443,13 +443,13 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 
 	private onRundownEventSegmentZoomOn = () => {
-		if (this.props.isLiveSegment || (this.props.isNextSegment && this.props.playlist.currentPartInstanceId === null)) {
+		if (this.props.isLiveSegment || (this.props.isNextSegment && this.props.playlist.currentPartInfo === null)) {
 			this.onTimelineZoomOn()
 		}
 	}
 
 	private onRundownEventSegmentZoomOff = () => {
-		if (this.props.isLiveSegment || (this.props.isNextSegment && this.props.playlist.currentPartInstanceId === null)) {
+		if (this.props.isLiveSegment || (this.props.isNextSegment && this.props.playlist.currentPartInfo === null)) {
 			this.onTimelineZoomOff()
 		}
 	}
@@ -652,7 +652,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					<div className="segment-timeline__liveline__timecode">
 						{this.props.displayLiveLineCounter && (
 							<CurrentPartRemaining
-								currentPartInstanceId={this.props.playlist.currentPartInstanceId}
+								currentPartInstanceId={this.props.playlist.currentPartInfo?.partInstanceId ?? null}
 								speaking={getAllowSpeaking()}
 								heavyClassName="overtime"
 							/>
@@ -678,7 +678,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		let smallPartsAccumulator: [PartUi, number][] = []
 		return this.props.parts.map((part, index) => {
 			const previousPartIsLive = partIsLive
-			partIsLive = part.instance._id === this.props.playlist.currentPartInstanceId
+			partIsLive = part.instance._id === this.props.playlist.currentPartInfo?.partInstanceId
 			let emitSmallPartsInFlag: [PartUi, number][] | undefined = undefined
 			let emitSmallPartsInFlagAtEnd: boolean = false
 			// if this is not undefined, it means that the part is on the list of small keys
@@ -747,7 +747,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						isAfterLastValidInSegmentAndItsLive={
 							index === (this.props.lastValidPartIndex || 0) + 1 &&
 							previousPartIsLive &&
-							!!this.props.playlist.nextPartInstanceId
+							!!this.props.playlist.nextPartInfo
 						}
 						showDurationSourceLayers={this.props.showDurationSourceLayers}
 						part={part}
@@ -916,7 +916,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 		let countdownToPartId: PartId | undefined = undefined
 		if (!this.props.isLiveSegment) {
 			const nextPart = this.props.isNextSegment
-				? this.props.parts.find((p) => p.instance._id === this.props.playlist.nextPartInstanceId)
+				? this.props.parts.find((p) => p.instance._id === this.props.playlist.nextPartInfo?.partInstanceId)
 				: this.props.parts[0]
 
 			if (nextPart) {
@@ -1066,7 +1066,9 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 					frameRate={this.props.studio.settings.frameRate}
 					isLiveSegment={this.props.isLiveSegment}
 					partInstances={this.props.parts}
-					currentPartInstanceId={this.props.isLiveSegment ? this.props.playlist.currentPartInstanceId : null}
+					currentPartInstanceId={
+						this.props.isLiveSegment ? this.props.playlist.currentPartInfo?.partInstanceId ?? null : null
+					}
 				/>
 				<div
 					className={ClassNames('segment-timeline__timeline-container', {

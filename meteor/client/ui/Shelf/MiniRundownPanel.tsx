@@ -125,13 +125,13 @@ export const MiniRundownPanel = withTracker<IMiniRundownPanelProps, IState, IMin
 		let currentPartInstance: PartInstance | undefined = undefined
 		let nextPartInstance: PartInstance | undefined = undefined
 
-		const currentPartInstanceId: PartInstanceId | null = props.playlist.currentPartInstanceId
+		const currentPartInstanceId: PartInstanceId | undefined = props.playlist.currentPartInfo?.partInstanceId
 		if (currentPartInstanceId) {
 			currentPartInstance = PartInstances.findOne(currentPartInstanceId)
 		}
 
-		if (props.playlist.nextPartInstanceId) {
-			nextPartInstance = PartInstances.findOne(props.playlist.nextPartInstanceId)
+		if (props.playlist.nextPartInfo) {
+			nextPartInstance = PartInstances.findOne(props.playlist.nextPartInfo.partInstanceId)
 		}
 
 		const allSegments: Segment[] = RundownPlaylistCollectionUtil.getSegments(props.playlist)

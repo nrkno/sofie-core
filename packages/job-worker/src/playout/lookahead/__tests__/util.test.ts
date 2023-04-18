@@ -152,7 +152,12 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			wrapPartToTemporaryInstance(protectString('active'), firstPart)
 		)
 		await context.directCollections.RundownPlaylists.update(playlistId, {
-			$set: { nextPartInstanceId: firstInstanceId },
+			$set: {
+				nextPartInfo: {
+					partInstanceId: firstInstanceId,
+					rundownId: firstPart.rundownId,
+				},
+			},
 		})
 
 		const parts = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
@@ -178,7 +183,12 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			wrapPartToTemporaryInstance(protectString('active'), firstPart)
 		)
 		await context.directCollections.RundownPlaylists.update(playlistId, {
-			$set: { nextPartInstanceId: firstInstanceId },
+			$set: {
+				nextPartInfo: {
+					partInstanceId: firstInstanceId,
+					rundownId: firstPart.rundownId,
+				},
+			},
 		})
 
 		const parts = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
@@ -204,7 +214,12 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			wrapPartToTemporaryInstance(protectString('active'), lastPart)
 		)
 		await context.directCollections.RundownPlaylists.update(playlistId, {
-			$set: { nextPartInstanceId: lastInstanceId },
+			$set: {
+				nextPartInfo: {
+					partInstanceId: lastInstanceId,
+					rundownId: lastPart.rundownId,
+				},
+			},
 		})
 
 		const parts = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
@@ -255,7 +270,12 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			wrapPartToTemporaryInstance(protectString('active'), nextPart)
 		)
 		await context.directCollections.RundownPlaylists.update(playlistId, {
-			$set: { nextPartInstanceId: nextInstanceId },
+			$set: {
+				nextPartInfo: {
+					partInstanceId: nextInstanceId,
+					rundownId: nextPart.rundownId,
+				},
+			},
 		})
 
 		const parts = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
@@ -274,7 +294,12 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			wrapPartToTemporaryInstance(protectString('active'), firstPart)
 		)
 		await context.directCollections.RundownPlaylists.update(playlistId, {
-			$set: { currentPartInstanceId: nextInstanceId },
+			$set: {
+				currentPartInfo: {
+					partInstanceId: nextInstanceId,
+					rundownId: firstPart.rundownId,
+				},
+			},
 		})
 
 		// Change next segment

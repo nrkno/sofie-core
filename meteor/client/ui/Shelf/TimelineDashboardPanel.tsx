@@ -211,16 +211,16 @@ export const TimelineDashboardPanel = translateWithTracker<
 										: []
 									return filteredPieces.length > 0 ||
 										seg.isLive ||
-										(seg.isNext && !this.props.playlist.currentPartInstanceId) ? (
+										(seg.isNext && !this.props.playlist.currentPartInfo) ? (
 										<div
 											key={unprotectString(seg._id)}
 											id={'dashboard-panel__panel__group__' + seg._id}
 											className={ClassNames('dashboard-panel__panel__group', {
 												live: seg.isLive,
-												next: seg.isNext && !this.props.playlist.currentPartInstanceId,
+												next: seg.isNext && !this.props.playlist.currentPartInfo,
 											})}
 										>
-											{(seg.isLive || (seg.isNext && !this.props.playlist.currentPartInstanceId)) && (
+											{(seg.isLive || (seg.isNext && !this.props.playlist.currentPartInfo)) && (
 												<div className="dashboard-panel__panel__group__liveline" ref={this.setRef}></div>
 											)}
 											{filteredPieces.map((adLibListItem: AdLibPieceUi) => {

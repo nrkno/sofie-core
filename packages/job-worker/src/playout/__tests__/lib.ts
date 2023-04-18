@@ -15,22 +15,23 @@ export async function getSelectedPartInstances(
 	previousPartInstance: DBPartInstance | null
 }> {
 	const [currentPartInstance, nextPartInstance, previousPartInstance] = await Promise.all([
-		playlist.currentPartInstanceId
-			? await context.directCollections.PartInstances.findOne(playlist.currentPartInstanceId)
+		playlist.currentPartInfo
+			? await context.directCollections.PartInstances.findOne(playlist.currentPartInfo.partInstanceId)
 			: null,
-		playlist.nextPartInstanceId
-			? await context.directCollections.PartInstances.findOne(playlist.nextPartInstanceId)
+		playlist.nextPartInfo
+			? await context.directCollections.PartInstances.findOne(playlist.nextPartInfo.partInstanceId)
 			: null,
-		playlist.previousPartInstanceId
-			? await context.directCollections.PartInstances.findOne(playlist.previousPartInstanceId)
+		playlist.previousPartInfo
+			? await context.directCollections.PartInstances.findOne(playlist.previousPartInfo.partInstanceId)
 			: null,
 	])
 
 	if (currentPartInstance === undefined)
-		throw new Error(`Missing currentPartInstance "${playlist.currentPartInstanceId}"`)
-	if (nextPartInstance === undefined) throw new Error(`Missing currentPartInstance "${playlist.nextPartInstanceId}"`)
+		throw new Error(`Missing currentPartInstance "${playlist.currentPartInfo?.partInstanceId}"`)
+	if (nextPartInstance === undefined)
+		throw new Error(`Missing currentPartInstance "${playlist.nextPartInfo?.partInstanceId}"`)
 	if (previousPartInstance === undefined)
-		throw new Error(`Missing currentPartInstance "${playlist.previousPartInstanceId}"`)
+		throw new Error(`Missing currentPartInstance "${playlist.previousPartInfo?.partInstanceId}"`)
 
 	return { currentPartInstance, nextPartInstance, previousPartInstance }
 }

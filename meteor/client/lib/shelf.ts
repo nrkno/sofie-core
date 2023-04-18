@@ -49,10 +49,10 @@ export interface AdlibSegmentUi extends DBSegment {
 
 export function getNextPiecesReactive(playlist: RundownPlaylist, showsStyleBase: UIShowStyleBase): PieceInstance[] {
 	let prospectivePieceInstances: PieceInstance[] = []
-	if (playlist.activationId && playlist.nextPartInstanceId) {
+	if (playlist.activationId && playlist.nextPartInfo) {
 		prospectivePieceInstances = PieceInstances.find({
 			playlistActivationId: playlist.activationId,
-			partInstanceId: playlist.nextPartInstanceId,
+			partInstanceId: playlist.nextPartInfo.partInstanceId,
 			$and: [
 				{
 					piece: {

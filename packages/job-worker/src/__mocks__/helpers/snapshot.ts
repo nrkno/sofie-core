@@ -88,7 +88,7 @@ function isTimelineComplete(o: any): o is TimelineComplete {
 // 	return o.enable && o._id && o.id && o.studioId
 // }
 function isPlaylist(o: any): o is DBRundownPlaylist {
-	return o._id && _.has(o, 'currentPartInstanceId')
+	return o._id && (_.has(o, 'currentPartInstanceId') || _.has(o, 'currentPartInfo'))
 }
 function isRundown(o: any): o is DBRundown {
 	return o._id && _.has(o, 'playlistId')

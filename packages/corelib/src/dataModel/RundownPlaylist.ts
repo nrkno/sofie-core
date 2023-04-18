@@ -69,15 +69,18 @@ export interface DBRundownPlaylist {
 	metaData?: unknown
 
 	/** the id of the Live Part - if empty, no part in this rundown is live */
-	currentPartInstanceId: PartInstanceId | null
+	// currentPartInstanceId: PartInstanceId | null
+	currentPartInfo: SelectedPartInstance | null
 	/** the id of the Next Part - if empty, no segment will follow Live Part */
-	nextPartInstanceId: PartInstanceId | null
+	// nextPartInstanceId: PartInstanceId | null
+	nextPartInfo: SelectedPartInstance | null
 	/** The time offset of the next line */
 	nextTimeOffset?: number | null
 	/** if nextPartId was set manually (ie from a user action) */
 	nextPartManual?: boolean
 	/** the id of the Previous Part */
-	previousPartInstanceId: PartInstanceId | null
+	// previousPartInstanceId: PartInstanceId | null
+	previousPartInfo: SelectedPartInstance | null
 
 	/** The id of the Next Segment. If set, the Next point will jump to that segment when moving out of currently playing segment. */
 	nextSegmentId?: SegmentId
@@ -101,3 +104,9 @@ export interface DBRundownPlaylist {
 	/** AB playback sessions calculated in the last call to ShowStyleBlueprint.onTimelineGenerate */
 	trackedAbSessions?: ABSessionInfo[]
 }
+
+// Information about a 'selected' PartInstance for the Playlist
+export type SelectedPartInstance = Readonly<{
+	partInstanceId: PartInstanceId
+	rundownId: RundownId
+}>

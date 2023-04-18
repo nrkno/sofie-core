@@ -110,7 +110,7 @@ export const SegmentStoryboard = React.memo(
 		let countdownToPartId: PartId | undefined = undefined
 		if (!props.isLiveSegment) {
 			const nextPart = props.isNextSegment
-				? props.parts.find((p) => p.instance._id === props.playlist.nextPartInstanceId)
+				? props.parts.find((p) => p.instance._id === props.playlist.nextPartInfo?.partInstanceId)
 				: props.parts[0]
 
 			if (nextPart) {
@@ -192,12 +192,12 @@ export const SegmentStoryboard = React.memo(
 		const squishedPartCardStride =
 			squishedPartsNum > 1 ? Math.max(4, (spaceLeft - PART_WIDTH) / (squishedPartsNum - 1)) : null
 
-		const playlistHasNextPart = !!props.playlist.nextPartInstanceId
+		const playlistHasNextPart = !!props.playlist.nextPartInfo
 		const playlistIsLooping = props.playlist.loop
 
 		renderedParts.forEach((part, index) => {
-			const isLivePart = part.instance._id === props.playlist.currentPartInstanceId
-			const isNextPart = part.instance._id === props.playlist.nextPartInstanceId
+			const isLivePart = part.instance._id === props.playlist.currentPartInfo?.partInstanceId
+			const isNextPart = part.instance._id === props.playlist.nextPartInfo?.partInstanceId
 
 			if (isLivePart) currentPartIndex = index
 			if (isNextPart) nextPartIndex = index

@@ -160,12 +160,12 @@ export class ActionExecutionContext
 		this.playlistActivationId = this._cache.Playlist.doc.activationId
 	}
 
-	private _getPartInstanceId(part: 'current' | 'next'): PartInstanceId | null {
+	private _getPartInstanceId(part: 'current' | 'next'): PartInstanceId | undefined {
 		switch (part) {
 			case 'current':
-				return this._cache.Playlist.doc.currentPartInstanceId
+				return this._cache.Playlist.doc.currentPartInfo?.partInstanceId
 			case 'next':
-				return this._cache.Playlist.doc.nextPartInstanceId
+				return this._cache.Playlist.doc.nextPartInfo?.partInstanceId
 			default:
 				assertNever(part)
 				logger.warn(`Blueprint action requested unknown PartInstance "${part}"`)
@@ -229,8 +229,8 @@ export class ActionExecutionContext
 			}
 		}
 
-		if (options && options.excludeCurrentPart && this._cache.Playlist.doc.currentPartInstanceId) {
-			query['partInstanceId'] = { $ne: this._cache.Playlist.doc.currentPartInstanceId }
+		if (options && options.excludeCurrentPart && this._cache.Playlist.doc.currentPartInfo) {
+			query['partInstanceId'] = { $ne: this._cache.Playlist.doc.currentPartInfo.partInstanceId }
 		}
 
 		const sourceLayerId = Array.isArray(sourceLayerId0) ? sourceLayerId0 : [sourceLayerId0]
@@ -263,9 +263,9 @@ export class ActionExecutionContext
 			}
 		}
 
-		if (options && options.excludeCurrentPart && this._cache.Playlist.doc.currentPartInstanceId) {
+		if (options && options.excludeCurrentPart && this._cache.Playlist.doc.currentPartInfo) {
 			const currentPartInstance = this._cache.PartInstances.findOne(
-				this._cache.Playlist.doc.currentPartInstanceId
+				this._cache.Playlist.doc.currentPartInfo.partInstanceId
 			)
 
 			if (currentPartInstance) {
@@ -380,11 +380,11 @@ export class ActionExecutionContext
 		}
 
 		const updatesCurrentPart: ActionPartChange =
-			pieceInstance.partInstanceId === this._cache.Playlist.doc.currentPartInstanceId
+			pieceInstance.partInstanceId === this._cache.Playlist.doc.currentPartInfo?.partInstanceId
 				? ActionPartChange.SAFE_CHANGE
 				: ActionPartChange.NONE
 		const updatesNextPart: ActionPartChange =
-			pieceInstance.partInstanceId === this._cache.Playlist.doc.nextPartInstanceId
+			pieceInstance.partInstanceId === this._cache.Playlist.doc.nextPartInfo?.partInstanceId
 				? ActionPartChange.SAFE_CHANGE
 				: ActionPartChange.NONE
 		if (!updatesCurrentPart && !updatesNextPart) {
@@ -427,8 +427,8 @@ export class ActionExecutionContext
 		return convertPieceInstanceToBlueprints(updatedPieceInstance)
 	}
 	async queuePart(rawPart: IBlueprintPart, rawPieces: IBlueprintPiece[]): Promise<IBlueprintPartInstance> {
-		const currentPartInstance = this._cache.Playlist.doc.currentPartInstanceId
-			? this._cache.PartInstances.findOne(this._cache.Playlist.doc.currentPartInstanceId)
+		const currentPartInstance = this._cache.Playlist.doc.currentPartInfo
+			? this._cache.PartInstances.findOne(this._cache.Playlist.doc.currentPartInfo.partInstanceId)
 			: undefined
 		if (!currentPartInstance) {
 			throw new Error('Cannot queue part when no current partInstance')
@@ -574,7 +574,7 @@ export class ActionExecutionContext
 		)
 	}
 	async removePieceInstances(_part: 'next', pieceInstanceIds: string[]): Promise<string[]> {
-		const partInstanceId = this._cache.Playlist.doc.nextPartInstanceId // this._getPartInstanceId(part)
+		const partInstanceId = this._cache.Playlist.doc.nextPartInfo?.partInstanceId // this._getPartInstanceId(part)
 		if (!partInstanceId) {
 			throw new Error('Cannot remove pieceInstances when no selected partInstance')
 		}
@@ -603,7 +603,7 @@ export class ActionExecutionContext
 		if (time !== null && (time < getCurrentTime() || typeof time !== 'number'))
 			throw new Error('Cannot block taking out of the current part, to a time in the past')
 
-		const partInstanceId = this._cache.Playlist.doc.currentPartInstanceId
+		const partInstanceId = this._cache.Playlist.doc.currentPartInfo?.partInstanceId
 		if (!partInstanceId) {
 			throw new Error('Cannot block take when there is no part playing')
 		}
@@ -618,10 +618,10 @@ export class ActionExecutionContext
 	}
 
 	private _stopPiecesByRule(filter: (pieceInstance: PieceInstance) => boolean, timeOffset: number | undefined) {
-		if (!this._cache.Playlist.doc.currentPartInstanceId) {
+		if (!this._cache.Playlist.doc.currentPartInfo) {
 			return []
 		}
-		const partInstance = this._cache.PartInstances.findOne(this._cache.Playlist.doc.currentPartInstanceId)
+		const partInstance = this._cache.PartInstances.findOne(this._cache.Playlist.doc.currentPartInfo.partInstanceId)
 		if (!partInstance) {
 			throw new Error('Cannot stop pieceInstances when no current partInstance')
 		}

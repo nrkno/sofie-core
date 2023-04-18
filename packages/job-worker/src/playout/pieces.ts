@@ -275,13 +275,17 @@ export function getResolvedPiecesFromFullTimeline(
 	const now = getCurrentTime()
 
 	const playlist = cache.Playlist.doc
-	const partInstanceIds = new Set(_.compact([playlist.previousPartInstanceId, playlist.currentPartInstanceId]))
+	const partInstanceIds = new Set(
+		_.compact([playlist.previousPartInfo?.partInstanceId, playlist.currentPartInfo?.partInstanceId])
+	)
 	const pieceInstances: PieceInstance[] = cache.PieceInstances.findAll((p) => partInstanceIds.has(p.partInstanceId))
 
 	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache) // todo: should these be passed as a parameter from getTimelineRundown?
 
-	if (currentPartInstance && currentPartInstance.part.autoNext && playlist.nextPartInstanceId) {
-		pieceInstances.push(...cache.PieceInstances.findAll((p) => p.partInstanceId === playlist.nextPartInstanceId))
+	if (currentPartInstance && currentPartInstance.part.autoNext && playlist.nextPartInfo) {
+		pieceInstances.push(
+			...cache.PieceInstances.findAll((p) => p.partInstanceId === playlist.nextPartInfo?.partInstanceId)
+		)
 	}
 
 	const transformedObjs = transformTimeline(objs)

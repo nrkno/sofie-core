@@ -264,7 +264,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		let showStyleBaseId: ShowStyleBaseId | undefined = undefined
 		let showStyleVariantId: ShowStyleVariantId | undefined = undefined
 
-		const selectedPart = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
+		const selectedPart = props.playlist.currentPartInfo?.partInstanceId || props.playlist.nextPartInfo?.partInstanceId
 		if (selectedPart) {
 			const part = PartInstances.findOne(selectedPart, {
 				fields: literal<MongoFieldSpecifierOnes<DBPartInstance>>({
@@ -477,8 +477,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 				onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
 					const { t } = this.props
-					if (this.props.playlist._id && this.props.playlist.currentPartInstanceId) {
-						const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+					if (this.props.playlist._id && this.props.playlist.currentPartInfo) {
+						const currentPartInstanceId = this.props.playlist.currentPartInfo.partInstanceId
 						doUserAction(t, e, UserAction.CLEAR_SOURCELAYER, (e) =>
 							MeteorCall.userAction.sourceLayerOnPartStop(
 								e,
@@ -525,7 +525,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
 						return
 					}
-					if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
+					if (this.props.playlist && this.props.playlist.currentPartInfo) {
 						if (isAdLibAction(piece as BucketAdLibItem)) {
 							const bucketAction = piece as BucketAdLibActionUi
 							doUserAction(t, e, UserAction.START_BUCKET_ADLIB, (e) =>
@@ -541,7 +541,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 							)
 						} else {
 							if (!this.isAdLibOnAir(piece as any as AdLibPieceUi) || !(sourceLayer && sourceLayer.isClearable)) {
-								const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+								const currentPartInstanceId = this.props.playlist.currentPartInfo.partInstanceId
 
 								doUserAction(t, e, UserAction.START_BUCKET_ADLIB, (e) =>
 									MeteorCall.userAction.bucketAdlibStart(

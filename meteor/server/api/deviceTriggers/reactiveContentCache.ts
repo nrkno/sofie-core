@@ -14,13 +14,13 @@ import { ReactiveCacheCollection } from './ReactiveCacheCollection'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 
-export type RundownPlaylistFields = '_id' | 'name' | 'activationId' | 'currentPartInstanceId' | 'nextPartInstanceId'
+export type RundownPlaylistFields = '_id' | 'name' | 'activationId' | 'currentPartInfo' | 'nextPartInfo'
 export const rundownPlaylistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownPlaylistFields>>({
 	_id: 1,
 	name: 1,
 	activationId: 1,
-	currentPartInstanceId: 1,
-	nextPartInstanceId: 1,
+	currentPartInfo: 1,
+	nextPartInfo: 1,
 })
 
 export type SegmentFields = '_id' | '_rank' | 'isHidden' | 'name' | 'rundownId' | 'identifier'

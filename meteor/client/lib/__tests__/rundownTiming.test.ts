@@ -19,9 +19,9 @@ function makeMockPlaylist(): RundownPlaylist {
 		name: 'Mock Playlist',
 		created: 0,
 		modified: 0,
-		currentPartInstanceId: null,
-		nextPartInstanceId: null,
-		previousPartInstanceId: null,
+		currentPartInfo: null,
+		nextPartInfo: null,
+		previousPartInfo: null,
 		timing: {
 			type: PlaylistTimingType.None,
 		},

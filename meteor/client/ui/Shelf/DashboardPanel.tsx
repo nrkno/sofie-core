@@ -340,8 +340,8 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
 			return
 		}
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
-			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+		if (this.props.playlist && this.props.playlist.currentPartInfo) {
+			const currentPartInstanceId = this.props.playlist.currentPartInfo.partInstanceId
 			if (!this.isAdLibOnAir(adlibPiece) || !(sourceLayer && sourceLayer.isClearable)) {
 				if (adlibPiece.isAction && adlibPiece.adlibAction) {
 					const action = adlibPiece.adlibAction
@@ -390,7 +390,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 	}
 
 	private onToggleSticky = (sourceLayerId: string, e: React.SyntheticEvent): void => {
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.activationId) {
+		if (this.props.playlist && this.props.playlist.currentPartInfo && this.props.playlist.activationId) {
 			const { t } = this.props
 			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e, ts) =>
 				MeteorCall.userAction.sourceLayerStickyPieceStart(e, ts, this.props.playlist._id, sourceLayerId)
@@ -400,9 +400,9 @@ export class DashboardPanelInner extends MeteorReactComponent<
 
 	private onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: React.SyntheticEvent): void => {
 		const { t } = this.props
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
+		if (this.props.playlist && this.props.playlist.currentPartInfo) {
 			const playlistId = this.props.playlist._id
-			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+			const currentPartInstanceId = this.props.playlist.currentPartInfo.partInstanceId
 			doUserAction(t, e, UserAction.CLEAR_SOURCELAYER, (e, ts) =>
 				MeteorCall.userAction.sourceLayerOnPartStop(
 					e,
@@ -426,7 +426,7 @@ export class DashboardPanelInner extends MeteorReactComponent<
 		if (this.state.selectedAdLib) {
 			const piece = this.state.selectedAdLib
 			const sourceLayer = this.props.sourceLayerLookup && this.props.sourceLayerLookup[piece.sourceLayerId]
-			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+			const currentPartInstanceId = this.props.playlist.currentPartInfo?.partInstanceId
 			if (this.props.playlist && currentPartInstanceId) {
 				if (!this.isAdLibOnAir(piece) || !(sourceLayer && sourceLayer.isClearable)) {
 					if (piece.isAction && piece.adlibAction) {

@@ -75,18 +75,18 @@ type RundownPlaylistFields =
 	| '_id'
 	| 'activationId'
 	| 'rehearsal'
-	| 'currentPartInstanceId'
-	| 'nextPartInstanceId'
-	| 'previousPartInstanceId'
+	| 'currentPartInfo'
+	| 'nextPartInfo'
+	| 'previousPartInfo'
 	| 'rundownIdsInOrder'
 const rundownPlaylistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownPlaylistFields>>({
 	// It should be enough to watch these fields for changes
 	_id: 1,
 	activationId: 1,
 	rehearsal: 1,
-	currentPartInstanceId: 1, // So that it invalidates when the current changes
-	nextPartInstanceId: 1, // So that it invalidates when the next changes
-	previousPartInstanceId: 1,
+	currentPartInfo: 1, // So that it invalidates when the current changes
+	nextPartInfo: 1, // So that it invalidates when the next changes
+	previousPartInfo: 1,
 	rundownIdsInOrder: 1,
 })
 
@@ -206,15 +206,15 @@ async function manipulateExpectedPackagesPublicationData(
 			).map((rd) => rd._id)
 
 			const [nextPartInstance, currentPartInstance] = await Promise.all([
-				activePlaylist.nextPartInstanceId &&
+				activePlaylist.nextPartInfo &&
 					PartInstances.findOneAsync({
-						_id: activePlaylist.nextPartInstanceId,
+						_id: activePlaylist.nextPartInfo.partInstanceId,
 						rundownId: { $in: validRundownIds },
 						reset: { $ne: true },
 					}),
-				activePlaylist.currentPartInstanceId &&
+				activePlaylist.currentPartInfo &&
 					PartInstances.findOneAsync({
-						_id: activePlaylist.currentPartInstanceId,
+						_id: activePlaylist.currentPartInfo.partInstanceId,
 						rundownId: { $in: validRundownIds },
 						reset: { $ne: true },
 					}),

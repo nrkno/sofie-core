@@ -128,7 +128,12 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 		const { t } = this.props
 		if (this.props.studioMode) {
 			doUserAction(t, e, UserAction.TAKE, (e, ts) =>
-				MeteorCall.userAction.take(e, ts, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+				MeteorCall.userAction.take(
+					e,
+					ts,
+					this.props.playlist._id,
+					this.props.playlist.currentPartInfo?.partInstanceId ?? null
+				)
 			)
 		}
 	}
