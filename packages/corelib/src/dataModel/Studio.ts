@@ -84,17 +84,56 @@ export interface DBStudio {
 	routeSets: Record<string, StudioRouteSet>
 	routeSetExclusivityGroups: Record<string, StudioRouteSetExclusivityGroup>
 
+	// peripheralSettings: {
 	/** Contains settings for which Package Containers are present in the studio.
 	 * (These are used by the Package Manager and the Expected Packages)
 	 */
 	packageContainers: Record<string, StudioPackageContainer>
+
+	// TODO Maybe, unless it gets too hard to move these two:
 	/** Which package containers is used for media previews in GUI */
 	previewContainerIds: string[]
 	thumbnailContainerIds: string[]
 
+	// 	/** Record<subdeviceId, ...> */
+	// 	playoutDevices: ObjectWithOverrides<Record<string, StudioPlayoutDevice>> ={
+	// 		"atem0": {
+	// 			peripheralDeviceId:'',
+	// 			settings: {
+	// 				ip: '10.10.10.10',
+	// 				mode: false
+	// 			}
+	// 		}
+	// 	}
+
+	// 	ingestSubDevices: ObjectWithOverrides<Record<string, StudioIngestDevice>>
+
+	// 	// TODO: ?
+	// 	inputDevices: {}
+
+	// 	// TODO - media-manager if absolutely necessary??
+
+	// 	// TODO: add a publcation that exposes compiled settings for a peripheralDevice
+	// }
+
 	/** Details on the last blueprint used to generate the defaults values for this */
 	lastBlueprintConfig: LastBlueprintConfig | undefined
 }
+
+// export interface StudioPlayoutDevice {
+// 	/**
+// 	 * The id of the gateway this is assigned to
+// 	 * Future: This may be replaced with some other grouping or way of assigning devices
+// 	 */
+// 	peripheralDeviceId: PeripheralDeviceId | undefined
+// 	peripheralDeviceType: 'playout'|'mos'
+
+// 	deviceType: ??? // used to lookup the configManifest so that we can draw a GUI with settings
+// 	disable: boolean
+
+// 	settings: any
+// }
+
 export interface StudioPackageContainer {
 	/** List of which peripheraldevices uses this packageContainer */
 	deviceIds: string[]
