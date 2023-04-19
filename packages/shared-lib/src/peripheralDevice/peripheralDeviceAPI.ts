@@ -88,18 +88,11 @@ export enum PeripheralDeviceType {
 	// Trigger input and feedback devices:
 	INPUT = 'input',
 }
-// TODO: PeripheralDeviceSubType should be removed altogether at some point..
-export type PeripheralDeviceSubType = any
-// | PERIPHERAL_SUBTYPE_PROCESS
-// | TSR.DeviceType
-// | MOS_DeviceType
-// | Spreadsheet_DeviceType
+export type PeripheralDeviceSubType = PERIPHERAL_SUBTYPE_PROCESS | string
 
 /** SUBTYPE_PROCESS means that the device is NOT a sub-device, but a (parent) process. */
 export type PERIPHERAL_SUBTYPE_PROCESS = '_process'
 export const PERIPHERAL_SUBTYPE_PROCESS: PERIPHERAL_SUBTYPE_PROCESS = '_process'
-export type MOS_DeviceType = 'mos_connection'
-export type Spreadsheet_DeviceType = 'spreadsheet_connection'
 
 export interface PeripheralDeviceInitOptions {
 	category: PeripheralDeviceCategory

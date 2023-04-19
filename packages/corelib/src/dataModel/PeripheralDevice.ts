@@ -9,8 +9,6 @@ import {
 	PeripheralDeviceType,
 	PeripheralDeviceSubType,
 	PERIPHERAL_SUBTYPE_PROCESS,
-	MOS_DeviceType,
-	Spreadsheet_DeviceType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 export {
@@ -19,8 +17,6 @@ export {
 	PeripheralDeviceType,
 	PeripheralDeviceSubType,
 	PERIPHERAL_SUBTYPE_PROCESS,
-	MOS_DeviceType,
-	Spreadsheet_DeviceType,
 }
 
 import {
