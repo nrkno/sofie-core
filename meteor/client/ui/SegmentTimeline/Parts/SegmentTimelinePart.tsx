@@ -330,14 +330,14 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	getPartStyle(): React.CSSProperties {
 		const style = this.getLayerStyle()
 
-		let foo = SegmentTimelinePartClass.getPartStartsAt(this.props)
+		let timeOffset = SegmentTimelinePartClass.getPartStartsAt(this.props)
 		if (this.props.isLiveSegment && !this.state.isLive) {
-			foo += SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale)
+			timeOffset += SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale)
 		}
 
 		return {
 			...style,
-			transform: `translateX(${this.convertTimeToPixels(foo)}px)`,
+			transform: `translateX(${this.convertTimeToPixels(timeOffset)}px)`,
 		}
 	}
 
