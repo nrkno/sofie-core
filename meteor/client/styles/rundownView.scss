@@ -1187,6 +1187,7 @@ svg.icon {
 	.segment-timeline__next-preview {
 		overflow: visible;
 		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
+		will-change: transform;
 
 		.segment-timeline__small-parts-flag {
 			margin-left: -0.3em;
@@ -1277,7 +1278,8 @@ svg.icon {
 
 		// Part is an element containing all output groups, with all the source layers, which in turn contain pieces
 		.segment-timeline__part {
-			position: relative;
+			position: absolute;
+			will-change: transform;
 			--invalid-reason-color-opaque: rgba(0, 0, 0, 1);
 			--invalid-reason-color-transparent: rgba(0, 0, 0, 0);
 

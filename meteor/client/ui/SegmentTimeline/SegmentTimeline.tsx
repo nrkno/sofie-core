@@ -756,6 +756,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						showDurationSourceLayers={this.props.showDurationSourceLayers}
 						part={part}
 						isBudgetGap={false}
+						isLiveSegment={this.props.isLiveSegment}
 					/>
 					{emitSmallPartsInFlag && emitSmallPartsInFlagAtEnd && (
 						<SegmentTimelineSmallPartFlag
@@ -812,6 +813,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				isBudgetGap={true}
 				part={BUDGET_GAP_PART}
 				showDurationSourceLayers={this.props.showDurationSourceLayers}
+				isLiveSegment={this.props.isLiveSegment}
 			/>
 		)
 	}

@@ -80,6 +80,7 @@ interface IProps {
 	cropDuration?: number
 	className?: string
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
+	isLiveSegment?: boolean
 }
 
 interface IState {
@@ -327,7 +328,21 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	}
 
 	getPartStyle(): React.CSSProperties {
-		return this.getLayerStyle()
+		const style = this.getLayerStyle()
+
+		let foo = SegmentTimelinePartClass.getPartStartsAt(this.props)
+		if (this.props.isLiveSegment && !this.state.isLive) {
+			foo += SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale)
+		}
+
+		return {
+			...style,
+			transform: `translateX(${this.convertTimeToPixels(foo)}px)`,
+		}
+	}
+
+	private convertTimeToPixels = (time: number) => {
+		return Math.round(this.props.timeScale * time)
 	}
 
 	static getPartExpectedDuration(props: WithTiming<IProps>): number {
