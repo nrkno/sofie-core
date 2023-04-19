@@ -1,9 +1,12 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { PeripheralDevices, Studios } from '../collections'
-import { clone } from '@sofie-automation/corelib/dist/lib'
+import { assertNever, clone } from '@sofie-automation/corelib/dist/lib'
 import { MappingExt, StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { PeripheralDeviceType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import _ from 'underscore'
 import { Studio } from '../../lib/collections/Studios'
 
@@ -184,6 +187,54 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 						},
 					})
 				}
+			}
+		},
+	},
+
+	{
+		id: `Ingest gateway populate nrcsName`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const objectCount = PeripheralDevices.find({
+				category: PeripheralDeviceCategory.INGEST,
+				nrcsName: { $exists: false },
+			}).count()
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: () => {
+			const objects = PeripheralDevices.find({
+				category: PeripheralDeviceCategory.INGEST,
+				nrcsName: { $exists: false },
+			}).fetch()
+			for (const device of objects) {
+				let nrcsName = ''
+
+				if (device.type === PeripheralDeviceType.MOS) {
+					nrcsName = 'ENPS'
+				} else if (device.type === PeripheralDeviceType.INEWS) {
+					nrcsName = 'iNews'
+				} else if (device.type === PeripheralDeviceType.SPREADSHEET) {
+					nrcsName = 'Google Sheet'
+				} else if (
+					device.type === PeripheralDeviceType.PLAYOUT ||
+					device.type === PeripheralDeviceType.MEDIA_MANAGER ||
+					device.type === PeripheralDeviceType.PACKAGE_MANAGER ||
+					device.type === PeripheralDeviceType.INPUT
+				) {
+					// These aren't ingest gateways
+				} else {
+					assertNever(device.type)
+				}
+
+				PeripheralDevices.update(device._id, {
+					$set: {
+						nrcsName: nrcsName,
+					},
+				})
 			}
 		},
 	},
