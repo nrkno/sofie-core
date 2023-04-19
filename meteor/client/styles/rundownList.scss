@@ -131,6 +131,7 @@
 		display: inline-grid;
 		grid-column: -1;
 		grid-template-columns: 1fr 1fr;
+		align-items: center;
 
 		.rundown-list-item__action {
 			all: unset; // unset button styles
