@@ -1,5 +1,4 @@
 import { Time } from '@sofie-automation/blueprints-integration'
-import { assertNever } from '../lib'
 import { DeviceConfigManifest } from '../deviceConfig'
 import { OrganizationId } from './Ids'
 
@@ -50,6 +49,8 @@ export interface PeripheralDevice extends PeripheralDevicePublic {
 
 	/** If the device is of category ingest, the name of the NRCS being used */
 	nrcsName?: string
+
+	documentationUrl?: string
 
 	/** Ignore this device when computing status in the GUI (other status reports are unaffected) */
 	ignore?: boolean

@@ -169,6 +169,8 @@ export class CoreHandler {
 			watchDog: this._coreConfig ? this._coreConfig.watchdog : true,
 
 			configManifest: PLAYOUT_DEVICE_CONFIG,
+
+			documentationUrl: 'https://github.com/nrkno/sofie-core',
 		}
 
 		if (!options.deviceToken) {

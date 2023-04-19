@@ -2,11 +2,11 @@ import { EventEmitter } from 'eventemitter3'
 import * as _ from 'underscore'
 import {
 	PeripheralDeviceCategory,
-	PeripheralDeviceType,
 	PeripheralDeviceSubType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDeviceStatusObject,
 	PeripheralDeviceInitOptions,
+	PeripheralDeviceType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
 
@@ -35,11 +35,30 @@ export interface CoreCredentials {
 }
 
 export interface CoreOptions extends CoreCredentials {
+	/**
+	 * Category of the Device
+	 */
 	deviceCategory: PeripheralDeviceCategory
-	deviceType: PeripheralDeviceType //  deprecated
-	deviceSubType?: PeripheralDeviceSubType // deprecated
+	/**
+	 * Type of the Device
+	 */
+	deviceType: PeripheralDeviceType
+	/**
+	 * SubType of the connection
+	 */
+	deviceSubType?: PeripheralDeviceSubType
 
+	/**
+	 * Name of the device
+	 * eg 'MOS Gateway'
+	 */
 	deviceName: string
+
+	/**
+	 * URL of documentation for this Device
+	 */
+	documentationUrl: string
+
 	versions?: {
 		[libraryName: string]: string
 	}
@@ -450,6 +469,8 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 			versions: this._coreOptions.versions,
 
 			configManifest: this._coreOptions.configManifest,
+
+			documentationUrl: this._coreOptions.documentationUrl,
 		}
 
 		if (options.subType === PERIPHERAL_SUBTYPE_PROCESS) {

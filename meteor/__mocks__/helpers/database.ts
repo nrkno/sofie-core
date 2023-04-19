@@ -141,6 +141,7 @@ export function setupMockPeripheralDevice(
 		category: category,
 		type: type,
 		subType: subType,
+		deviceName: `Mock ${type} Gateway`,
 
 		created: 1234,
 		status: {

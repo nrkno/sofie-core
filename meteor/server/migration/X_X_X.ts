@@ -219,20 +219,57 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					nrcsName = 'iNews'
 				} else if (device.type === PeripheralDeviceType.SPREADSHEET) {
 					nrcsName = 'Google Sheet'
-				} else if (
-					device.type === PeripheralDeviceType.PLAYOUT ||
-					device.type === PeripheralDeviceType.MEDIA_MANAGER ||
-					device.type === PeripheralDeviceType.PACKAGE_MANAGER ||
-					device.type === PeripheralDeviceType.INPUT
-				) {
-					// These aren't ingest gateways
+				}
+
+				PeripheralDevices.update(device._id, {
+					$set: {
+						nrcsName: nrcsName,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `PeripheralDevice populate documentationUrl`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const objectCount = PeripheralDevices.find({
+				documentationUrl: { $exists: false },
+			}).count()
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: () => {
+			const objects = PeripheralDevices.find({
+				documentationUrl: { $exists: false },
+			}).fetch()
+			for (const device of objects) {
+				let documentationUrl = ''
+
+				if (device.type === PeripheralDeviceType.MOS) {
+					documentationUrl = 'https://github.com/nrkno/sofie-core'
+				} else if (device.type === PeripheralDeviceType.SPREADSHEET) {
+					documentationUrl = 'https://github.com/SuperFlyTV/spreadsheet-gateway'
+				} else if (device.type === PeripheralDeviceType.PLAYOUT) {
+					documentationUrl = 'https://github.com/nrkno/sofie-core'
+				} else if (device.type === PeripheralDeviceType.MEDIA_MANAGER) {
+					documentationUrl = 'https://github.com/nrkno/sofie-media-management'
+				} else if (device.type === PeripheralDeviceType.INEWS) {
+					documentationUrl = 'https://github.com/olzzon/tv2-inews-ftp-gateway'
+				} else if (device.type === PeripheralDeviceType.PACKAGE_MANAGER) {
+					documentationUrl = 'https://github.com/nrkno/sofie-package-manager'
+				} else if (device.type === PeripheralDeviceType.INPUT) {
+					documentationUrl = 'https://github.com/nrkno/sofie-input-gateway'
 				} else {
 					assertNever(device.type)
 				}
 
 				PeripheralDevices.update(device._id, {
 					$set: {
-						nrcsName: nrcsName,
+						documentationUrl: documentationUrl,
 					},
 				})
 			}

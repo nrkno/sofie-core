@@ -200,6 +200,7 @@ describe('test peripheralDevice general API methods', () => {
 				deviceConfigSchema: JSONBlobStringify({}),
 				subdeviceManifest: {},
 			},
+			documentationUrl: 'http://example.com',
 		}
 		await MeteorCall.peripheralDevice.initialize(device._id, device.token, options)
 		const initDevice = PeripheralDevices.findOne(device._id) as PeripheralDevice
@@ -598,6 +599,7 @@ describe('test peripheralDevice general API methods', () => {
 				_id: deviceId,
 				organizationId: null,
 				name: 'Mock Media Manager',
+				deviceName: 'Media Manager',
 				studioId: env.studio._id,
 				settings: {},
 				category: PeripheralDeviceCategory.MEDIA_MANAGER,
@@ -753,6 +755,7 @@ describe('test peripheralDevice general API methods', () => {
 				_id: deviceId,
 				organizationId: null,
 				name: 'Mock Media Manager',
+				deviceName: 'Media Manager',
 				studioId: env.studio._id,
 				settings: {},
 				category: PeripheralDeviceCategory.MEDIA_MANAGER,

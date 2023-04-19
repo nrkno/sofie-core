@@ -400,6 +400,7 @@ describe('cronjobs', () => {
 				organizationId: null,
 				type: PeripheralDeviceType.PLAYOUT,
 				category: PeripheralDeviceCategory.PLAYOUT,
+				deviceName: 'Playout Gateway',
 				configManifest: {
 					deviceConfigSchema: JSONBlobStringify({}),
 					subdeviceManifest: {},
@@ -425,6 +426,7 @@ describe('cronjobs', () => {
 				type: PeripheralDeviceType.PLAYOUT,
 				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.CASPARCG,
+				deviceName: 'CasparCG',
 				configManifest: {
 					deviceConfigSchema: JSONBlobStringify({}),
 					subdeviceManifest: {},
@@ -449,6 +451,7 @@ describe('cronjobs', () => {
 				type: PeripheralDeviceType.PLAYOUT,
 				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.ATEM,
+				deviceName: 'ATEM',
 				configManifest: {
 					deviceConfigSchema: JSONBlobStringify({}),
 					subdeviceManifest: {},
@@ -503,6 +506,7 @@ describe('cronjobs', () => {
 				organizationId: null,
 				type: PeripheralDeviceType.PLAYOUT,
 				category: PeripheralDeviceCategory.PLAYOUT,
+				deviceName: 'Playout Gateway',
 				configManifest: {
 					deviceConfigSchema: JSONBlobStringify({}),
 					subdeviceManifest: {},
@@ -528,6 +532,7 @@ describe('cronjobs', () => {
 				type: PeripheralDeviceType.PLAYOUT,
 				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.CASPARCG,
+				deviceName: 'CasparCG',
 				configManifest: {
 					deviceConfigSchema: JSONBlobStringify({}),
 					subdeviceManifest: {},
@@ -552,6 +557,7 @@ describe('cronjobs', () => {
 				type: PeripheralDeviceType.PLAYOUT,
 				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.ATEM,
+				deviceName: 'ATEM',
 				configManifest: {
 					deviceConfigSchema: JSONBlobStringify({}),
 					subdeviceManifest: {},

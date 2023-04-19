@@ -88,17 +88,30 @@ export enum PeripheralDeviceType {
 	// Trigger input and feedback devices:
 	INPUT = 'input',
 }
-export type PeripheralDeviceSubType = PERIPHERAL_SUBTYPE_PROCESS | string
+export type PeripheralDeviceSubType = PERIPHERAL_SUBTYPE_PROCESS | string | number // @future remove numbers from here once TSR no longer needs it
 
 /** SUBTYPE_PROCESS means that the device is NOT a sub-device, but a (parent) process. */
 export type PERIPHERAL_SUBTYPE_PROCESS = '_process'
 export const PERIPHERAL_SUBTYPE_PROCESS: PERIPHERAL_SUBTYPE_PROCESS = '_process'
 
 export interface PeripheralDeviceInitOptions {
+	/**
+	 * Category of the Device
+	 */
 	category: PeripheralDeviceCategory
+	/**
+	 * Type of the Device
+	 */
 	type: PeripheralDeviceType
+	/**
+	 * SubType of the connection
+	 */
 	subType: PeripheralDeviceSubType
 
+	/**
+	 * Name of the device
+	 * eg 'MOS Gateway'
+	 */
 	name: string
 	connectionId: string
 	parentDeviceId?: PeripheralDeviceId
@@ -106,6 +119,8 @@ export interface PeripheralDeviceInitOptions {
 		[libraryName: string]: string
 	}
 	configManifest?: DeviceConfigManifest
+
+	documentationUrl: string
 }
 
 export interface TimeDiff {

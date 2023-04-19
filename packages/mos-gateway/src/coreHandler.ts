@@ -639,6 +639,8 @@ export class CoreHandler {
 			watchDog: this._coreConfig ? this._coreConfig.watchdog : true,
 
 			configManifest: MOS_DEVICE_CONFIG_MANIFEST,
+
+			documentationUrl: 'https://github.com/nrkno/sofie-core',
 		}
 
 		if (!options.deviceToken) {
