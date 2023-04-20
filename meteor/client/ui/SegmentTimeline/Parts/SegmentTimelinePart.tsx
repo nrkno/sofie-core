@@ -35,6 +35,7 @@ import { OutputGroup } from './OutputGroup'
 import { InvalidPartCover } from './InvalidPartCover'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { UIStudio } from '../../../../lib/api/studios'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -81,6 +82,7 @@ interface IProps {
 	className?: string
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 	isLiveSegment?: boolean
+	currentPartId?: PartId
 }
 
 interface IState {
@@ -345,6 +347,18 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		return Math.round(this.props.timeScale * time)
 	}
 
+	/**
+	 * Returns a time value in milliseconds.
+	 * Returns 0 if the playhead isn't in the part yet.
+	 */
+	private getPositionOfPlayheadInPart(partId: PartId) {
+		if (typeof this.props.livePosition !== 'number') {
+			return 0
+		}
+
+		return Math.max(0, this.props.livePosition - SegmentTimelinePartClass.getPartStartsAt(this.props, partId))
+	}
+
 	static getPartExpectedDuration(props: WithTiming<IProps>): number {
 		return (
 			props.part.instance.timings?.duration ||
@@ -380,7 +394,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		)
 	}
 
-	static getPartStartsAt(props: WithTiming<IProps>): number {
+	static getPartStartsAt(props: WithTiming<IProps>, partId?: PartId): number {
 		if (props.isBudgetGap) {
 			return Math.max(
 				0,
@@ -398,7 +412,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			0,
 			(props.firstPartInSegment &&
 				props.timingDurations.partDisplayStartsAt &&
-				props.timingDurations.partDisplayStartsAt[unprotectString(props.part.instance.part._id)] -
+				props.timingDurations.partDisplayStartsAt[unprotectString(partId ?? props.part.instance.part._id)] -
 					props.timingDurations.partDisplayStartsAt[unprotectString(props.firstPartInSegment.instance.part._id)]) ||
 				0
 		)
@@ -489,16 +503,19 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	}
 
 	private getFutureShadePaddingTime = () => {
+		if (!this.props.currentPartId || !this.props.timingDurations?.partDisplayDurations) return 0
+		const positionOfPlayheadInCurrentPart = this.getPositionOfPlayheadInPart(this.props.currentPartId)
+		const currentPartDuration =
+			this.props.timingDurations.partDisplayDurations[unprotectString(this.props.currentPartId)]
 		const partialTimePadding = Math.max(
 			0,
-			(this.props.livePosition || 0) +
+			positionOfPlayheadInCurrentPart +
 				SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale) -
-				(this.props.part.instance.part.expectedDurationWithPreroll || this.props.part.renderedDuration || 0)
+				currentPartDuration
 		)
-
 		const fullPadding = SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale)
 
-		if (fullPadding - partialTimePadding < 1) {
+		if (Math.abs(fullPadding - partialTimePadding) < 1) {
 			// Reduce jitter
 			return fullPadding
 		}
