@@ -47,7 +47,7 @@ export class CoreHandler {
 		// this.logger.info('========')
 		this._coreConfig = config
 		this._certificates = certificates
-		this.core = new CoreConnection(this.getCoreConnectionOptions('MOS gateway', 'MosCoreParent', true))
+		this.core = new CoreConnection(this.getCoreConnectionOptions())
 
 		this.core.onConnected(() => {
 			this.logger.info('Core Connected!')
@@ -109,24 +109,26 @@ export class CoreHandler {
 
 		await this.core.destroy()
 	}
-	getCoreConnectionOptions(name: string, subDeviceId: string, parentProcess: boolean): CoreOptions {
+	private getCoreConnectionOptions(): CoreOptions {
 		if (!this._deviceOptions.deviceId) {
 			// this.logger.warn('DeviceId not set, using a temporary random id!')
 			throw new Error('DeviceId is not set!')
 		}
 
 		const options: CoreOptions = {
-			deviceId: protectString(this._deviceOptions.deviceId + subDeviceId),
+			deviceId: protectString(this._deviceOptions.deviceId + 'MosCoreParent'),
 			deviceToken: this._deviceOptions.deviceToken,
 
 			deviceCategory: PeripheralDeviceAPI.PeripheralDeviceCategory.INGEST,
-			deviceType: PeripheralDeviceAPI.PeripheralDeviceType.MOS, // @todo: should not have this...
-			deviceSubType: parentProcess ? PeripheralDeviceAPI.PERIPHERAL_SUBTYPE_PROCESS : 'mos_connection',
+			deviceType: PeripheralDeviceAPI.PeripheralDeviceType.MOS,
+			deviceSubType: PeripheralDeviceAPI.PERIPHERAL_SUBTYPE_PROCESS,
 
-			deviceName: name,
+			deviceName: 'MOS gateway',
 			watchDog: this._coreConfig ? this._coreConfig.watchdog : true,
 
 			configManifest: MOS_DEVICE_CONFIG_MANIFEST,
+
+			versions: getVersions(this.logger),
 
 			documentationUrl: 'https://github.com/nrkno/sofie-core',
 		}
@@ -136,7 +138,6 @@ export class CoreHandler {
 			options.deviceToken = 'unsecureToken'
 		}
 
-		if (parentProcess) options.versions = getVersions(this.logger)
 		return options
 	}
 	async registerMosDevice(mosDevice: IMOSDevice, mosHandler: MosHandler): Promise<CoreMosDeviceHandler> {

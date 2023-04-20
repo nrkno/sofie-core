@@ -1,4 +1,4 @@
-import { CoreConnection, ExternalPeripheralDeviceAPI, StatusCode } from '@sofie-automation/server-core-integration'
+import { ExternalPeripheralDeviceAPI, StatusCode, protectString } from '@sofie-automation/server-core-integration'
 import {
 	IMOSConnectionStatus,
 	IMOSDevice,
@@ -26,6 +26,8 @@ import * as _ from 'underscore'
 import { MosHandler } from './mosHandler'
 import { PartialDeep } from 'type-fest'
 import type { CoreHandler } from './coreHandler'
+import { CoreConnectionChild } from '@sofie-automation/server-core-integration/dist/lib/CoreConnectionChild'
+import { Queue } from '@sofie-automation/server-core-integration/dist/lib/queue'
 
 function deepMatch(object: any, attrs: any, deep: boolean): boolean {
 	const keys = Object.keys(attrs)
@@ -58,7 +60,7 @@ interface IStoryItemChange {
  */
 
 export class CoreMosDeviceHandler {
-	core: CoreConnection
+	core!: CoreConnectionChild
 	public _observers: Array<any> = []
 	public _mosDevice: IMOSDevice
 	private _coreParentHandler: CoreHandler
@@ -69,23 +71,34 @@ export class CoreMosDeviceHandler {
 	private _pendingChangeTimeout: number = 60 * 1000
 	private mosTypes: MosTypes
 
+	private _messageQueue: Queue
+
 	constructor(parent: CoreHandler, mosDevice: IMOSDevice, mosHandler: MosHandler) {
 		this._coreParentHandler = parent
 		this._mosDevice = mosDevice
 		this._mosHandler = mosHandler
 
+		this._messageQueue = new Queue()
+
 		this._coreParentHandler.logger.info('new CoreMosDeviceHandler ' + mosDevice.idPrimary)
-		this.core = new CoreConnection(parent.getCoreConnectionOptions(mosDevice.idPrimary, mosDevice.idPrimary, false))
-		this.core.onError((err) => {
-			this._coreParentHandler.logger.error(
-				'Core Error: ' + (typeof err === 'string' ? err : err.message || err.toString())
-			)
-		})
 
 		this.mosTypes = getMosTypes(this._mosHandler.strict)
 	}
 	async init(): Promise<void> {
-		await this.core.init(this._coreParentHandler.core)
+		if (!this._coreParentHandler.core) throw new Error('parent missing core')
+
+		this.core = await this._coreParentHandler.core.createChild({
+			deviceId: protectString(this._coreParentHandler.core.deviceId + this._mosDevice.idPrimary),
+
+			deviceSubType: 'mos_connection',
+
+			deviceName: this._mosDevice.idPrimary,
+		})
+		this.core.on('error', (err) => {
+			this._coreParentHandler.logger.error(
+				'Core Error: ' + (typeof err === 'string' ? err : err.message || err.toString())
+			)
+		})
 
 		this.setupSubscriptionsAndObservers()
 	}
@@ -439,7 +452,7 @@ export class CoreMosDeviceHandler {
 		}) as any
 
 		// Make the commands be sent sequantially:
-		return this.core.putOnQueue('mos', async () => {
+		return this._messageQueue.putOnQueue(async () => {
 			// Log info about the sent command:
 			let msg = 'Command: ' + methodName
 			const attr0 = attrs[0] as any | undefined

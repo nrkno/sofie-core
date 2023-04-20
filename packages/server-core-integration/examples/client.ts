@@ -1,7 +1,6 @@
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 import {
-	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
@@ -12,7 +11,6 @@ const core = new CoreConnection({
 	deviceToken: 'abcd',
 	deviceCategory: PeripheralDeviceCategory.PLAYOUT,
 	deviceType: PeripheralDeviceType.PLAYOUT,
-	deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 	deviceName: 'Jest test framework',
 	documentationUrl: 'http://example.com',
 	versions: {},
