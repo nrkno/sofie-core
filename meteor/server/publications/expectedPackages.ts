@@ -56,20 +56,18 @@ interface ExpectedPackagesPublicationState {
 	nextPartInstance: PartInstance | undefined
 }
 
-type StudioFields =
-	| '_id'
-	| 'routeSets'
-	| 'mappingsWithOverrides'
-	| 'packageContainers'
-	| 'previewContainerIds'
-	| 'thumbnailContainerIds'
+type StudioFields = '_id' | 'routeSets' | 'mappingsWithOverrides' | 'peripheralDeviceSettings'
+// | 'packageContainers'
+// | 'previewContainerIds'
+// | 'thumbnailContainerIds'
 const studioFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
 	_id: 1,
 	routeSets: 1,
 	mappingsWithOverrides: 1,
-	packageContainers: 1,
-	previewContainerIds: 1,
-	thumbnailContainerIds: 1,
+	peripheralDeviceSettings: 1, // TODO - can this be more specific?
+	// packageContainers: 1,
+	// previewContainerIds: 1,
+	// thumbnailContainerIds: 1,
 })
 type RundownPlaylistFields =
 	| '_id'
@@ -319,7 +317,7 @@ async function manipulateExpectedPackagesPublicationData(
 
 	const packageContainers: { [containerId: string]: PackageContainer } = {}
 	for (const [containerId, studioPackageContainer] of Object.entries<StudioPackageContainer>(
-		studio.packageContainers
+		studio.peripheralDeviceSettings.packageContainers
 	)) {
 		packageContainers[containerId] = studioPackageContainer.container
 	}
@@ -425,7 +423,7 @@ enum Priorities {
 }
 
 function generateExpectedPackages(
-	studio: Pick<StudioLight, '_id' | 'packageContainers' | 'previewContainerIds' | 'thumbnailContainerIds'>,
+	studio: Pick<StudioLight, '_id' | 'peripheralDeviceSettings'>,
 	filterPlayoutDeviceIds: ReadonlyDeep<PeripheralDeviceId[] | undefined>,
 	routedMappingsWithPackages: MappingsExtWithPackage,
 	priority: Priorities
@@ -442,7 +440,7 @@ function generateExpectedPackages(
 				const combinedSources: PackageContainerOnPackage[] = []
 
 				for (const packageSource of expectedPackage.sources) {
-					const lookedUpSource = studio.packageContainers[packageSource.containerId]
+					const lookedUpSource = studio.peripheralDeviceSettings.packageContainers[packageSource.containerId]
 					if (lookedUpSource) {
 						// We're going to combine the accessor attributes set on the Package with the ones defined on the source
 						const combinedSource: PackageContainerOnPackage = {
@@ -495,7 +493,7 @@ function generateExpectedPackages(
 
 				let packageContainerId: string | undefined
 				for (const [containerId, packageContainer] of Object.entries<StudioPackageContainer>(
-					studio.packageContainers
+					studio.peripheralDeviceSettings.packageContainers
 				)) {
 					if (packageContainer.deviceIds.includes(mappingDeviceId)) {
 						// TODO: how to handle if a device has multiple containers?
@@ -506,7 +504,7 @@ function generateExpectedPackages(
 
 				const combinedTargets: PackageContainerOnPackage[] = []
 				if (packageContainerId) {
-					const lookedUpTarget = studio.packageContainers[packageContainerId]
+					const lookedUpTarget = studio.peripheralDeviceSettings.packageContainers[packageContainerId]
 					if (lookedUpTarget) {
 						// Todo: should the be any combination of properties here?
 						combinedTargets.push({
@@ -536,7 +534,7 @@ function generateExpectedPackages(
 				if (!combinedTargets.length) {
 					logger.warn(`Pub.expectedPackagesForDevice: No targets found for "${expectedPackage._id}"`)
 				}
-				expectedPackage.sideEffect = getSideEffect(expectedPackage, studio)
+				expectedPackage.sideEffect = getSideEffect(expectedPackage, studio.peripheralDeviceSettings)
 
 				routedExpectedPackages.push({
 					expectedPackage: unprotectObject(expectedPackage),

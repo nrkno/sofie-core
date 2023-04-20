@@ -444,9 +444,11 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				_rundownVersionHash: '',
 				routeSets: {},
 				routeSetExclusivityGroups: {},
-				packageContainers: {},
-				thumbnailContainerIds: [],
-				previewContainerIds: [],
+				peripheralDeviceSettings: {
+					packageContainers: {},
+					thumbnailContainerIds: [],
+					previewContainerIds: [],
+				},
 				lastBlueprintConfig: undefined,
 			})
 		},

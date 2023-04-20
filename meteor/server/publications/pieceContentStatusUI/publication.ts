@@ -80,11 +80,12 @@ const rundownPlaylistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<Rund
 	studioId: 1,
 })
 
-type StudioFields = '_id' | 'settings' | 'packageContainers' | 'mappingsWithOverrides' | 'routeSets'
+type StudioFields = '_id' | 'settings' | 'peripheralDeviceSettings' | 'mappingsWithOverrides' | 'routeSets'
 const studioFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
 	_id: 1,
 	settings: 1,
-	packageContainers: 1,
+	// packageContainers: 1,
+	peripheralDeviceSettings: 1, // TODO - can this be more specific?
 	mappingsWithOverrides: 1,
 	routeSets: 1,
 })
@@ -464,7 +465,7 @@ async function fetchStudio(studioId: StudioId): Promise<UIPieceContentStatusesSt
 	return {
 		_id: studio._id,
 		settings: studio.settings,
-		packageContainers: studio.packageContainers,
+		packageContainers: studio.peripheralDeviceSettings.packageContainers,
 		mappings: applyAndValidateOverrides(studio.mappingsWithOverrides).obj,
 		routeSets: studio.routeSets,
 	}

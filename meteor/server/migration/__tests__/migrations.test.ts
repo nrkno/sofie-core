@@ -131,9 +131,11 @@ describe('Migrations', () => {
 						_rundownVersionHash: '',
 						routeSets: {},
 						routeSetExclusivityGroups: {},
-						packageContainers: {},
-						previewContainerIds: [],
-						thumbnailContainerIds: [],
+						peripheralDeviceSettings: {
+							packageContainers: {},
+							previewContainerIds: [],
+							thumbnailContainerIds: [],
+						},
 						lastBlueprintConfig: undefined,
 					})
 				},
@@ -162,9 +164,11 @@ describe('Migrations', () => {
 						_rundownVersionHash: '',
 						routeSets: {},
 						routeSetExclusivityGroups: {},
-						packageContainers: {},
-						previewContainerIds: [],
-						thumbnailContainerIds: [],
+						peripheralDeviceSettings: {
+							packageContainers: {},
+							previewContainerIds: [],
+							thumbnailContainerIds: [],
+						},
 						lastBlueprintConfig: undefined,
 					})
 				},
@@ -193,9 +197,11 @@ describe('Migrations', () => {
 						_rundownVersionHash: '',
 						routeSets: {},
 						routeSetExclusivityGroups: {},
-						packageContainers: {},
-						previewContainerIds: [],
-						thumbnailContainerIds: [],
+						peripheralDeviceSettings: {
+							packageContainers: {},
+							previewContainerIds: [],
+							thumbnailContainerIds: [],
+						},
 						lastBlueprintConfig: undefined,
 					})
 				},

@@ -84,13 +84,18 @@ export interface DBStudio {
 	routeSets: Record<string, StudioRouteSet>
 	routeSetExclusivityGroups: Record<string, StudioRouteSetExclusivityGroup>
 
-	// peripheralSettings: {
+	peripheralDeviceSettings: StudioPeripheralDeviceSettings
+
+	/** Details on the last blueprint used to generate the defaults values for this */
+	lastBlueprintConfig: LastBlueprintConfig | undefined
+}
+
+export interface StudioPeripheralDeviceSettings {
 	/** Contains settings for which Package Containers are present in the studio.
 	 * (These are used by the Package Manager and the Expected Packages)
 	 */
 	packageContainers: Record<string, StudioPackageContainer>
 
-	// TODO Maybe, unless it gets too hard to move these two:
 	/** Which package containers is used for media previews in GUI */
 	previewContainerIds: string[]
 	thumbnailContainerIds: string[]
@@ -114,10 +119,6 @@ export interface DBStudio {
 	// 	// TODO - media-manager if absolutely necessary??
 
 	// 	// TODO: add a publcation that exposes compiled settings for a peripheralDevice
-	// }
-
-	/** Details on the last blueprint used to generate the defaults values for this */
-	lastBlueprintConfig: LastBlueprintConfig | undefined
 }
 
 // export interface StudioPlayoutDevice {

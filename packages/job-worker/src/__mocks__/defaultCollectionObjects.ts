@@ -101,9 +101,11 @@ export function defaultStudio(_id: StudioId): DBStudio {
 		},
 		routeSets: {},
 		routeSetExclusivityGroups: {},
-		packageContainers: {},
-		previewContainerIds: [],
-		thumbnailContainerIds: [],
+		peripheralDeviceSettings: {
+			packageContainers: {},
+			previewContainerIds: [],
+			thumbnailContainerIds: [],
+		},
 		_rundownVersionHash: '',
 		lastBlueprintConfig: undefined,
 	}

@@ -275,4 +275,41 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			}
 		},
 	},
+
+	{
+		id: `Studio move package-manager config fields`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const objectCount = Studios.find({
+				peripheralDeviceSettings: { $exists: false },
+			}).count()
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: () => {
+			const objects = Studios.find({
+				peripheralDeviceSettings: { $exists: false },
+			}).fetch()
+			for (const studio of objects) {
+				const studioOld = studio as any
+				Studios.update(studio._id, {
+					$set: {
+						peripheralDeviceSettings: {
+							packageContainers: studioOld.packageContainers,
+							previewContainerIds: studioOld.previewContainerIds,
+							thumbnailContainerIds: studioOld.thumbnailContainerIds,
+						},
+					},
+					$unset: {
+						packageContainers: 1,
+						previewContainerIds: 1,
+						thumbnailContainerIds: 1,
+					},
+				})
+			}
+		},
+	},
 ])

@@ -88,7 +88,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 			// find free key name
 			const newKeyName = 'newContainer'
 			let iter: number = 0
-			while ((this.props.studio.packageContainers || {})[newKeyName + iter]) {
+			while ((this.props.studio.peripheralDeviceSettings.packageContainers || {})[newKeyName + iter]) {
 				iter++
 			}
 
@@ -100,7 +100,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 				},
 			}
 			const setObject: Partial<DBStudio> = {}
-			setObject['packageContainers.' + newKeyName + iter] = newPackageContainer
+			setObject['peripheralDeviceSettings.packageContainers.' + newKeyName + iter] = newPackageContainer
 
 			Studios.update(this.props.studio._id, {
 				$set: setObject,
@@ -109,16 +109,16 @@ export const StudioPackageManagerSettings = withTranslation()(
 		containerId = (edit: EditAttributeBase, newValue: string) => {
 			const oldContainerId = edit.props.overrideDisplayValue
 			const newContainerId = newValue + ''
-			const packageContainer = this.props.studio.packageContainers[oldContainerId]
+			const packageContainer = this.props.studio.peripheralDeviceSettings.packageContainers[oldContainerId]
 
-			if (this.props.studio.packageContainers[newContainerId]) {
+			if (this.props.studio.peripheralDeviceSettings.packageContainers[newContainerId]) {
 				throw new Meteor.Error(400, 'PackageContainer "' + newContainerId + '" already exists')
 			}
 
 			const mSet = {}
 			const mUnset = {}
-			mSet['packageContainers.' + newContainerId] = packageContainer
-			mUnset['packageContainers.' + oldContainerId] = 1
+			mSet['peripheralDeviceSettings.packageContainers.' + newContainerId] = packageContainer
+			mUnset['peripheralDeviceSettings.packageContainers.' + oldContainerId] = 1
 
 			if (edit.props.collection) {
 				edit.props.collection.update(this.props.studio._id, {
@@ -156,7 +156,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 		renderPackageContainers() {
 			const { t } = this.props
 
-			if (Object.keys(this.props.studio.packageContainers).length === 0) {
+			if (Object.keys(this.props.studio.peripheralDeviceSettings.packageContainers).length === 0) {
 				return (
 					<tr>
 						<td className="mhn dimmed">{t('There are no Package Containers set up.')}</td>
@@ -165,7 +165,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 			}
 
 			return _.map(
-				this.props.studio.packageContainers,
+				this.props.studio.peripheralDeviceSettings.packageContainers,
 				(packageContainer: StudioPackageContainer, containerId: string) => {
 					return (
 						<React.Fragment key={containerId}>
@@ -195,7 +195,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 													{t('Package Container ID')}
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={'packageContainers'}
+														attribute={'peripheralDeviceSettings.packageContainers'}
 														overrideDisplayValue={containerId}
 														obj={this.props.studio}
 														type="text"
@@ -210,7 +210,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 													{t('Label')}
 													<EditAttribute
 														modifiedClassName="bghl"
-														attribute={`packageContainers.${containerId}.container.label`}
+														attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.label`}
 														obj={this.props.studio}
 														type="text"
 														collection={Studios}
@@ -223,7 +223,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 												<div className="field">
 													<label>{t('Playout devices which uses this package container')}</label>
 													<EditAttribute
-														attribute={`packageContainers.${containerId}.deviceIds`}
+														attribute={`peripheralDeviceSettings.packageContainers.${containerId}.deviceIds`}
 														obj={this.props.studio}
 														options={this.getPlayoutDeviceIds()}
 														label={t('Select playout devices')}
@@ -304,7 +304,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 		}
 		removeAccessor = (containerId: string, accessorId: string) => {
 			const unsetObject = {}
-			unsetObject[`packageContainers.${containerId}.container.accessors.${accessorId}`] = ''
+			unsetObject[`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}`] = ''
 			Studios.update(this.props.studio._id, {
 				$unset: unsetObject,
 			})
@@ -313,7 +313,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 			// find free key name
 			const newKeyName = 'local'
 			let iter: number = 0
-			const packageContainer = this.props.studio.packageContainers[containerId]
+			const packageContainer = this.props.studio.peripheralDeviceSettings.packageContainers[containerId]
 			if (!packageContainer) throw new Error(`Can't add an accessor to nonexistant Package Container "${containerId}"`)
 
 			while (packageContainer.container.accessors[newKeyName + iter]) {
@@ -329,7 +329,8 @@ export const StudioPackageManagerSettings = withTranslation()(
 				folderPath: '',
 			}
 			const setObject: Partial<DBStudio> = {}
-			setObject[`packageContainers.${containerId}.container.accessors.${accessorId}`] = newAccessor
+			setObject[`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}`] =
+				newAccessor
 
 			Studios.update(this.props.studio._id, {
 				$set: setObject,
@@ -340,19 +341,22 @@ export const StudioPackageManagerSettings = withTranslation()(
 			const newAccessorId = newValue + ''
 			const containerId = edit.props.attribute
 			if (!containerId) throw new Error(`containerId not set`)
-			const packageContainer = this.props.studio.packageContainers[containerId]
+			const packageContainer = this.props.studio.peripheralDeviceSettings.packageContainers[containerId]
 			if (!packageContainer) throw new Error(`Can't edit an accessor to nonexistant Package Container "${containerId}"`)
 
-			const accessor = this.props.studio.packageContainers[containerId].container.accessors[oldAccessorId]
+			const accessor =
+				this.props.studio.peripheralDeviceSettings.packageContainers[containerId].container.accessors[oldAccessorId]
 
-			if (this.props.studio.packageContainers[containerId].container.accessors[newAccessorId]) {
+			if (
+				this.props.studio.peripheralDeviceSettings.packageContainers[containerId].container.accessors[newAccessorId]
+			) {
 				throw new Meteor.Error(400, 'Accessor "' + newAccessorId + '" already exists')
 			}
 
 			const mSet = {}
 			const mUnset = {}
-			mSet[`packageContainers.${containerId}.container.accessors.${newAccessorId}`] = accessor
-			mUnset[`packageContainers.${containerId}.container.accessors.${oldAccessorId}`] = 1
+			mSet[`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${newAccessorId}`] = accessor
+			mUnset[`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${oldAccessorId}`] = 1
 
 			if (edit.props.collection) {
 				edit.props.collection.update(this.props.studio._id, {
@@ -368,7 +372,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 		renderAccessors(containerId: string, packageContainer: StudioPackageContainer) {
 			const { t } = this.props
 
-			if (Object.keys(this.props.studio.packageContainers).length === 0) {
+			if (Object.keys(this.props.studio.peripheralDeviceSettings.packageContainers).length === 0) {
 				return (
 					<tr>
 						<td className="mhn dimmed">{t('There are no Accessors set up.')}</td>
@@ -430,7 +434,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 												{t('Label')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.label`}
+													attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.label`}
 													obj={this.props.studio}
 													type="text"
 													collection={Studios}
@@ -444,7 +448,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 												{t('Accessor Type')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.type`}
+													attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.type`}
 													obj={this.props.studio}
 													type="dropdown"
 													options={Accessor.AccessType}
@@ -460,7 +464,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 														{t('Folder path')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.folderPath`}
+															attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.folderPath`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -474,7 +478,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 														{t('Resource Id')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.resourceId`}
+															attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.resourceId`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -493,7 +497,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 														{t('Base URL')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.baseUrl`}
+															attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.baseUrl`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -509,7 +513,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 														{t('Network Id')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.networkId`}
+															attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.networkId`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -530,7 +534,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 														{t('Base URL')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.baseUrl`}
+															attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.baseUrl`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -546,7 +550,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 														{t('Network Id')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.networkId`}
+															attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.networkId`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -567,7 +571,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 														{t('Base URL')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.folderPath`}
+															attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.folderPath`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -581,7 +585,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 														{t('UserName')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.userName`}
+															attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.userName`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -595,7 +599,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 														{t('Password')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.password`}
+															attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.password`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -609,7 +613,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 														{t('Network Id')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.networkId`}
+															attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.networkId`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -628,7 +632,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 														{t('Quantel gateway URL')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.quantelGatewayUrl`}
+															attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.quantelGatewayUrl`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -642,7 +646,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 														{t('ISA URLs')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.ISAUrls`}
+															attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.ISAUrls`}
 															obj={this.props.studio}
 															type="array"
 															arrayType="string"
@@ -659,7 +663,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 														{t('Zone ID')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.zoneId`}
+															attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.zoneId`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -673,7 +677,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 														{t('Server ID')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.serverId`}
+															attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.serverId`}
 															obj={this.props.studio}
 															type="int"
 															collection={Studios}
@@ -692,7 +696,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 														{t('Quantel transformer URL')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.transformerURL`}
+															attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.transformerURL`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -706,7 +710,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 														{t('Quantel FileFlow URL')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.fileflowURL`}
+															attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.fileflowURL`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -720,7 +724,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 														{t('Quantel FileFlow Profile name')}
 														<EditAttribute
 															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.fileflowProfile`}
+															attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.fileflowProfile`}
 															obj={this.props.studio}
 															type="text"
 															collection={Studios}
@@ -739,7 +743,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 												{t('Allow Read access')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.allowRead`}
+													attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.allowRead`}
 													obj={this.props.studio}
 													type="checkbox"
 													collection={Studios}
@@ -753,7 +757,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 												{t('Allow Write access')}
 												<EditAttribute
 													modifiedClassName="bghl"
-													attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.allowWrite`}
+													attribute={`peripheralDeviceSettings.packageContainers.${containerId}.container.accessors.${accessorId}.allowWrite`}
 													obj={this.props.studio}
 													type="checkbox"
 													collection={Studios}
@@ -785,7 +789,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 			}[] = []
 
 			for (const [containerId, packageContainer] of Object.entries<StudioPackageContainer>(
-				this.props.studio.packageContainers
+				this.props.studio.peripheralDeviceSettings.packageContainers
 			)) {
 				let hasHttpAccessor = false
 				for (const accessor of Object.values<Accessor.Any>(packageContainer.container.accessors)) {
@@ -818,7 +822,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 								<label>{t('Package Containers to use for previews')}</label>
 								<div className="mdi">
 									<EditAttribute
-										attribute="previewContainerIds"
+										attribute="peripheralDeviceSettings.previewContainerIds"
 										obj={this.props.studio}
 										options={this.getAvailablePackageContainers()}
 										label={t('Click to show available Package Containers')}
@@ -831,7 +835,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 								<label>{t('Package Containers to use for thumbnails')}</label>
 								<div className="mdi">
 									<EditAttribute
-										attribute="thumbnailContainerIds"
+										attribute="peripheralDeviceSettings.thumbnailContainerIds"
 										obj={this.props.studio}
 										options={this.getAvailablePackageContainers()}
 										label={t('Click to show available Package Containers')}
