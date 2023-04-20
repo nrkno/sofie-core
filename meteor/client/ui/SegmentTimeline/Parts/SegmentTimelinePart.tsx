@@ -334,6 +334,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 		let timeOffset = SegmentTimelinePartClass.getPartStartsAt(this.props)
 		if (this.props.isLiveSegment && !this.state.isLive) {
+			// This gets the amount of future shade padding time *from whichever part is currently live in the Segment*.
 			timeOffset += this.getFutureShadePaddingTime()
 		}
 
@@ -394,6 +395,9 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		)
 	}
 
+	/**
+	 * The second argument, partId, is optional and defaults to the part passed into props.
+	 */
 	static getPartStartsAt(props: WithTiming<IProps>, partId?: PartId): number {
 		if (props.isBudgetGap) {
 			return Math.max(
