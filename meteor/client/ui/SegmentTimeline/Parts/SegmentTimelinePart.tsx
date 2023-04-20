@@ -332,7 +332,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 		let timeOffset = SegmentTimelinePartClass.getPartStartsAt(this.props)
 		if (this.props.isLiveSegment && !this.state.isLive) {
-			timeOffset += SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale)
+			timeOffset += this.getFutureShadePaddingTime()
 		}
 
 		return {
@@ -488,20 +488,31 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		}
 	}
 
+	private getFutureShadePaddingTime = () => {
+		const partialTimePadding = Math.max(
+			0,
+			(this.props.livePosition || 0) +
+				SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale) -
+				(this.props.part.instance.part.expectedDurationWithPreroll || this.props.part.renderedDuration || 0)
+		)
+
+		const fullPadding = SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale)
+
+		if (fullPadding - partialTimePadding < 1) {
+			// Reduce jitter
+			return fullPadding
+		}
+
+		return Math.min(partialTimePadding, fullPadding)
+	}
+
+	private getFutureShadePaddingPixels = () => {
+		return this.getFutureShadePaddingTime() * this.props.timeScale
+	}
+
 	private getFutureShadeStyle = () => {
 		return {
-			width:
-				Math.min(
-					Math.max(
-						0,
-						(this.props.livePosition || 0) +
-							SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale) -
-							(this.props.part.instance.part.expectedDurationWithPreroll || this.props.part.renderedDuration || 0)
-					),
-					SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale)
-				) *
-					this.props.timeScale +
-				'px',
+			width: this.getFutureShadePaddingPixels() + 'px',
 		}
 	}
 
