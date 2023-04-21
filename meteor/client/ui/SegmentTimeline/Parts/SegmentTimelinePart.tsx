@@ -82,7 +82,7 @@ interface IProps {
 	className?: string
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 	isLiveSegment?: boolean
-	currentPartId?: PartId
+	anyPriorPartWasLive?: boolean
 }
 
 interface IState {
@@ -333,7 +333,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		const style = this.getLayerStyle()
 
 		let timeOffset = SegmentTimelinePartClass.getPartStartsAt(this.props)
-		if (this.props.isLiveSegment && !this.state.isLive) {
+		if (this.props.isLiveSegment && this.props.anyPriorPartWasLive) {
 			// This gets the amount of future shade padding time *from whichever part is currently live in the Segment*.
 			timeOffset += this.getFutureShadePaddingTime()
 		}

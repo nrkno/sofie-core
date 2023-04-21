@@ -678,10 +678,12 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	private renderTimeline() {
 		const { smallParts } = this.state
 		const { t } = this.props
+		let anyPriorPartWasLive = false
 		let partIsLive = false
 		let smallPartsAccumulator: [PartUi, number][] = []
 		return this.props.parts.map((part, index) => {
 			const previousPartIsLive = partIsLive
+			if (previousPartIsLive) anyPriorPartWasLive = true
 			partIsLive = part.instance._id === this.props.playlist.currentPartInfo?.partInstanceId
 			let emitSmallPartsInFlag: [PartUi, number][] | undefined = undefined
 			let emitSmallPartsInFlagAtEnd: boolean = false
@@ -757,10 +759,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						part={part}
 						isBudgetGap={false}
 						isLiveSegment={this.props.isLiveSegment}
-						currentPartId={
-							this.props.parts.find((part) => part.instance._id === this.props.playlist.currentPartInfo?.partInstanceId)
-								?.partId
-						}
+						anyPriorPartWasLive={anyPriorPartWasLive}
 					/>
 					{emitSmallPartsInFlag && emitSmallPartsInFlagAtEnd && (
 						<SegmentTimelineSmallPartFlag
@@ -818,9 +817,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				part={BUDGET_GAP_PART}
 				showDurationSourceLayers={this.props.showDurationSourceLayers}
 				isLiveSegment={this.props.isLiveSegment}
-				currentPartId={
-					this.props.parts.find((part) => part.instance._id === this.props.playlist.currentPartInfo?.partInstanceId)?.partId
-				}
+				anyPriorPartWasLive={true}
 			/>
 		)
 	}
