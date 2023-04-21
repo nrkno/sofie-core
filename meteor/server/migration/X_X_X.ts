@@ -9,6 +9,7 @@ import {
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import _ from 'underscore'
 import { Studio } from '../../lib/collections/Studios'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 /*
  * **************************************************************************************
@@ -301,6 +302,8 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 							packageContainers: studioOld.packageContainers,
 							previewContainerIds: studioOld.previewContainerIds,
 							thumbnailContainerIds: studioOld.thumbnailContainerIds,
+							playoutDevices: wrapDefaultObject({}),
+							ingestSubDevices: wrapDefaultObject({}),
 						},
 					},
 					$unset: {

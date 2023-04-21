@@ -109,6 +109,8 @@ export function defaultStudio(_id: StudioId): DBStudio {
 			packageContainers: {},
 			previewContainerIds: [],
 			thumbnailContainerIds: [],
+			playoutDevices: wrapDefaultObject({}),
+			ingestSubDevices: wrapDefaultObject({}),
 		},
 		lastBlueprintConfig: undefined,
 	}

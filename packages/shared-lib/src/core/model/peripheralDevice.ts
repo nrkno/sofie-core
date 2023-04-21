@@ -7,10 +7,11 @@ import {
 } from '../../peripheralDevice/peripheralDeviceAPI'
 import { SubdeviceAction } from '../deviceConfigManifest'
 
-export interface GenericPeripheralDeviceSettings {
-	devices?: Record<string, unknown>
-	[key: string]: unknown
-}
+export type GenericPeripheralDeviceSettings = Record<string, never>
+// export interface GenericPeripheralDeviceSettings {
+// 	// devices?: Record<string, unknown>
+// 	// [key: string]: unknown
+// }
 
 export interface PeripheralDevicePublic {
 	_id: PeripheralDeviceId
@@ -45,7 +46,7 @@ export interface PeripheralDevicePublicWithActions extends PeripheralDevicePubli
 	actions: SubdeviceAction[] | undefined
 }
 
-export interface IngestDeviceSettings extends GenericPeripheralDeviceSettings {
+export interface IngestDeviceSettings {
 	/** OAuth: Set to true when secret value exists */
 	secretCredentials: boolean
 	secretAccessToken: boolean
