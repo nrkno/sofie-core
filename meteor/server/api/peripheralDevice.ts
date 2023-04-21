@@ -3,7 +3,7 @@ import { check, Match } from '../../lib/check'
 import * as _ from 'underscore'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceCommands, PeripheralDevices, Rundowns, UserActionsLog } from '../collections'
+import { PeripheralDeviceCommands, PeripheralDevices, Rundowns, Studios, UserActionsLog } from '../collections'
 import { getCurrentTime, protectString, stringifyObjects, literal, unprotectString } from '../../lib/lib'
 import { logger } from '../logging'
 import { TimelineHash } from '../../lib/collections/Timeline'
@@ -63,6 +63,10 @@ import { receiveInputDeviceTrigger } from './deviceTriggers/observer'
 import { upsertBundles, generateTranslationBundleOriginId } from './translationsBundles'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import {
+	applyAndValidateOverrides,
+	SomeObjectOverrideOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -355,18 +359,21 @@ export namespace ServerPeripheralDeviceAPI {
 		const deviceId = access.deviceId
 
 		// check that the peripheralDevice has subDevices
-		if (!peripheralDevice.settings)
-			throw new Meteor.Error(405, `PeripheralDevice "${deviceId}" does not provide a settings object`)
+		if (peripheralDevice.type !== PeripheralDeviceType.PLAYOUT)
+			throw new Meteor.Error(405, `PeripheralDevice "${deviceId}" cannot have subdevice disabled`)
 		if (!peripheralDevice.configManifest)
 			throw new Meteor.Error(405, `PeripheralDevice "${deviceId}" does not provide a configuration manifest`)
+		if (!peripheralDevice.studioId)
+			throw new Meteor.Error(405, `PeripheralDevice "${deviceId}" does not belong to a Studio`)
 
-		if (!('devices' in peripheralDevice.settings) || !peripheralDevice.settings.devices)
-			throw new Meteor.Error(500, `PeripheralDevice "${deviceId}" has a malformed settings object`)
-		const subDevices = peripheralDevice.settings?.devices
+		const studio = Studios.findOne(peripheralDevice.studioId)
+		if (!studio) throw new Meteor.Error(405, `PeripheralDevice "${deviceId}" does not belong to a Studio`)
+
+		const playoutDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.playoutDevices).obj
 
 		// check if the subDevice supports disabling using the magical 'disable' BOOLEAN property.
-		const subDeviceSettings = subDevices[subDeviceId]
-		if (!subDeviceSettings)
+		const subDeviceSettings = playoutDevices[subDeviceId]
+		if (!subDeviceSettings || subDeviceSettings.peripheralDeviceId !== peripheralDevice._id)
 			throw new Meteor.Error(404, `PeripheralDevice "${deviceId}", subDevice "${subDeviceId}" is not configured`)
 
 		// Check there is a common properties subdevice schema
@@ -395,11 +402,30 @@ export namespace ServerPeripheralDeviceAPI {
 				`PeripheralDevice "${deviceId} does not support the disable property for subDevices`
 			)
 
-		PeripheralDevices.update(deviceId, {
-			$set: {
-				[`settings.devices.${subDeviceId}.disable`]: disable,
-			},
+		const overridesPath = `peripheralDeviceSettings.playoutDevices.overrides`
+		const propPath = `${subDeviceId}.options.disable`
+		const newOverrideOp = literal<SomeObjectOverrideOp>({
+			op: 'set',
+			path: propPath,
+			value: disable,
 		})
+
+		const existingIndex = studio.peripheralDeviceSettings.playoutDevices.overrides.findIndex(
+			(o) => o.path === propPath
+		)
+		if (existingIndex !== -1) {
+			Studios.update(peripheralDevice.studioId, {
+				$set: {
+					[`${overridesPath}.${existingIndex}`]: newOverrideOp,
+				},
+			})
+		} else {
+			Studios.update(peripheralDevice.studioId, {
+				$push: {
+					[overridesPath]: newOverrideOp,
+				},
+			})
+		}
 	}
 	export async function getDebugStates(access: PeripheralDeviceContentWriteAccess.ContentAccess): Promise<object> {
 		if (
