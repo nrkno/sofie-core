@@ -380,7 +380,6 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 	static getPartDisplayDuration(part: PartUi, timingDurations: RundownTimingContext): number {
 		return (
-			part.instance.timings?.duration ||
 			(timingDurations.partDisplayDurations &&
 				timingDurations.partDisplayDurations[unprotectString(part.instance.part._id)]) ||
 			part.renderedDuration ||
