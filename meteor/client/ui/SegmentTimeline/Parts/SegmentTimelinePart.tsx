@@ -348,18 +348,6 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		return Math.round(this.props.timeScale * time)
 	}
 
-	/**
-	 * Returns a time value in milliseconds.
-	 * Returns 0 if the playhead isn't in the part yet.
-	 */
-	private getPositionOfPlayheadInPart(partId: PartId) {
-		if (typeof this.props.livePosition !== 'number') {
-			return 0
-		}
-
-		return Math.max(0, this.props.livePosition - SegmentTimelinePartClass.getPartStartsAt(this.props, partId))
-	}
-
 	static getPartExpectedDuration(props: WithTiming<IProps>): number {
 		return (
 			props.part.instance.timings?.duration ||
@@ -395,10 +383,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		)
 	}
 
-	/**
-	 * The second argument, partId, is optional and defaults to the part passed into props.
-	 */
-	static getPartStartsAt(props: WithTiming<IProps>, partId?: PartId): number {
+	static getPartStartsAt(props: WithTiming<IProps>): number {
 		if (props.isBudgetGap) {
 			return Math.max(
 				0,
@@ -416,7 +401,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			0,
 			(props.firstPartInSegment &&
 				props.timingDurations.partDisplayStartsAt &&
-				props.timingDurations.partDisplayStartsAt[unprotectString(partId ?? props.part.instance.part._id)] -
+				props.timingDurations.partDisplayStartsAt[unprotectString(props.part.instance.part._id)] -
 					props.timingDurations.partDisplayStartsAt[unprotectString(props.firstPartInSegment.instance.part._id)]) ||
 				0
 		)
