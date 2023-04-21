@@ -20,7 +20,6 @@ export interface ICustomLayerItemProps {
 	isLiveLine: boolean
 	partStartsAt: number
 	partDuration: number // 0 if unknown
-	partExpectedDuration: number
 	piece: PieceUi
 	timeScale: number
 	onFollowLiveLine?: (state: boolean, event: any) => void

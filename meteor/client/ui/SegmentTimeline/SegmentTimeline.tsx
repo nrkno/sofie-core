@@ -717,7 +717,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 
 			const firstPartInSegment = this.props.parts[0]
 
-			const livePartStartsAt = livePart
+			const livePartStartsAt: number = livePart
 				? Math.max(
 						0,
 						(firstPartInSegment &&
@@ -729,7 +729,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 							0
 				  )
 				: 0
-			const livePartDuration = livePart
+			const livePartDisplayDuration = livePart
 				? SegmentTimelinePartClass.getPartDisplayDuration(livePart, this.props.timingDurations)
 				: 0
 
@@ -788,7 +788,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 						isLiveSegment={this.props.isLiveSegment}
 						anyPriorPartWasLive={anyPriorPartWasLive}
 						livePartStartsAt={livePartStartsAt}
-						livePartDuration={livePartDuration}
+						livePartDisplayDuration={livePartDisplayDuration}
 					/>
 					{emitSmallPartsInFlag && emitSmallPartsInFlagAtEnd && (
 						<SegmentTimelineSmallPartFlag
