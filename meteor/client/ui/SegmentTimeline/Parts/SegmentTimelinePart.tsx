@@ -507,15 +507,11 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	}
 
 	private getFutureShadePaddingTime = () => {
-		if (!this.props.currentPartId || !this.props.timingDurations?.partDisplayDurations) return 0
-		const positionOfPlayheadInCurrentPart = this.getPositionOfPlayheadInPart(this.props.currentPartId)
-		const currentPartDuration =
-			this.props.timingDurations.partDisplayDurations[unprotectString(this.props.currentPartId)]
 		const partialTimePadding = Math.max(
 			0,
-			positionOfPlayheadInCurrentPart +
+			(this.props.livePosition || 0) +
 				SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale) -
-				currentPartDuration
+				(this.props.part.instance.part.expectedDurationWithPreroll || this.props.part.renderedDuration || 0)
 		)
 		const fullPadding = SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale)
 
