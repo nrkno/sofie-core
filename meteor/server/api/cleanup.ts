@@ -262,7 +262,10 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 	// ExternalMessageQueue
 	{
 		removeByQuery(ExternalMessageQueue, {
-			created: { $lt: getCurrentTime() - Settings.maximumDataAge },
+			$or: [
+				{ created: { $lt: getCurrentTime() - Settings.maximumDataAge } },
+				{ expires: { $lt: getCurrentTime() } },
+			],
 		})
 	}
 	// IngestDataCache
