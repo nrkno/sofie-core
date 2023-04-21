@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as PropTypes from 'prop-types'
-import { withTranslation } from 'react-i18next'
+import { WithTranslation, withTranslation } from 'react-i18next'
 
 import ClassNames from 'classnames'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
@@ -8,7 +8,7 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi } from './SegmentTimelineContainer'
 import { TimelineGrid } from './TimelineGrid'
-import { SegmentTimelinePart } from './Parts/SegmentTimelinePart'
+import { SegmentTimelinePart, SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
 import { SegmentTimelineZoomControls } from './SegmentTimelineZoomControls'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
@@ -43,6 +43,12 @@ import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dis
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentNoteCounts } from '../SegmentContainer/withResolvedSegment'
 import { PartExtended } from '../../../lib/Rundown'
+import {
+	withTiming,
+	TimingTickResolution,
+	TimingDataResolution,
+	WithTiming,
+} from '../RundownView/RundownTiming/withTiming'
 
 interface IProps {
 	id: string
@@ -221,7 +227,7 @@ export const BUDGET_GAP_PART = {
 	willProbablyAutoNext: false,
 }
 
-export class SegmentTimelineClass extends React.Component<Translated<IProps>, IStateHeader> {
+export class SegmentTimelineClass extends React.Component<Translated<WithTiming<IProps>>, IStateHeader> {
 	static whyDidYouRender = true
 
 	timeline: HTMLDivElement
@@ -241,7 +247,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	private static _zoomOutLatch: number | undefined = undefined
 	private static _zoomOutLatchId: string | undefined = undefined
 
-	constructor(props: Translated<IProps>) {
+	constructor(props: Translated<WithTiming<IProps>>) {
 		super(props)
 		this.state = {
 			timelineWidth: 1,
@@ -709,6 +715,24 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 				smallPartsAccumulator = []
 			}
 
+			const firstPartInSegment = this.props.parts[0]
+
+			const livePartStartsAt = livePart
+				? Math.max(
+						0,
+						(firstPartInSegment &&
+							this.props.timingDurations.partDisplayStartsAt &&
+							this.props.timingDurations.partDisplayStartsAt[unprotectString(livePart.instance.part._id)] -
+								this.props.timingDurations.partDisplayStartsAt[
+									unprotectString(firstPartInSegment.instance.part._id)
+								]) ||
+							0
+				  )
+				: 0
+			const livePartDuration = livePart
+				? SegmentTimelinePartClass.getPartDisplayDuration(livePart, this.props.timingDurations)
+				: 0
+
 			return (
 				<React.Fragment key={unprotectString(part.instance._id)}>
 					{emitSmallPartsInFlag && !emitSmallPartsInFlagAtEnd && (
@@ -750,7 +774,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						onPieceDoubleClick={this.props.onItemDoubleClick}
 						onPartTooSmallChanged={this.onPartTooSmallChanged}
 						scrollWidth={this.state.timelineWidth / this.props.timeScale}
-						firstPartInSegment={this.props.parts[0]}
+						firstPartInSegment={firstPartInSegment}
 						isLastSegment={this.props.isLastSegment}
 						isLastInSegment={index === this.props.parts.length - 1}
 						isAfterLastValidInSegmentAndItsLive={
@@ -763,7 +787,8 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						isBudgetGap={false}
 						isLiveSegment={this.props.isLiveSegment}
 						anyPriorPartWasLive={anyPriorPartWasLive}
-						livePartEndsAt={livePart ? livePart.startsAt + livePart.renderedDuration : 0}
+						livePartStartsAt={livePartStartsAt}
+						livePartDuration={livePartDuration}
 					/>
 					{emitSmallPartsInFlag && emitSmallPartsInFlagAtEnd && (
 						<SegmentTimelineSmallPartFlag
@@ -1133,4 +1158,23 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	}
 }
 
-export const SegmentTimeline = withTranslation()(SegmentTimelineClass)
+export const SegmentTimeline = withTranslation()(
+	withTiming<IProps & WithTranslation, IStateHeader>((props: IProps) => {
+		return {
+			tickResolution: TimingTickResolution.Synced,
+			dataResolution: TimingDataResolution.High,
+			filter: (durations: RundownTimingContext) => {
+				durations = durations || {}
+
+				const livePart = props.parts.find(
+					(part) => part.instance._id === props.playlist.currentPartInfo?.partInstanceId
+				)
+				const livePartId = unprotectString(livePart?.instance.part._id)
+				return [
+					livePartId ? (durations.partDisplayStartsAt || {})[livePartId] : undefined,
+					livePartId ? (durations.partDisplayDurations || {})[livePartId] : undefined,
+				]
+			},
+		}
+	})(SegmentTimelineClass)
+)
