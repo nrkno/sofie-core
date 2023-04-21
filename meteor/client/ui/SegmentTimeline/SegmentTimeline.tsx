@@ -42,6 +42,7 @@ import { UIStudio } from '../../../lib/api/studios'
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentNoteCounts } from '../SegmentContainer/withResolvedSegment'
+import { PartExtended } from '../../../lib/Rundown'
 
 interface IProps {
 	id: string
@@ -678,6 +679,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 	private renderTimeline() {
 		const { smallParts } = this.state
 		const { t } = this.props
+		let livePart: PartExtended | null = null
 		let anyPriorPartWasLive = false
 		let partIsLive = false
 		let smallPartsAccumulator: [PartUi, number][] = []
@@ -685,6 +687,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 			const previousPartIsLive = partIsLive
 			if (previousPartIsLive) anyPriorPartWasLive = true
 			partIsLive = part.instance._id === this.props.playlist.currentPartInfo?.partInstanceId
+			if (partIsLive) livePart = part
 			let emitSmallPartsInFlag: [PartUi, number][] | undefined = undefined
 			let emitSmallPartsInFlagAtEnd: boolean = false
 			// if this is not undefined, it means that the part is on the list of small keys
@@ -760,6 +763,7 @@ export class SegmentTimelineClass extends React.Component<Translated<IProps>, IS
 						isBudgetGap={false}
 						isLiveSegment={this.props.isLiveSegment}
 						anyPriorPartWasLive={anyPriorPartWasLive}
+						livePartEndsAt={livePart ? livePart.startsAt + livePart.renderedDuration : 0}
 					/>
 					{emitSmallPartsInFlag && emitSmallPartsInFlagAtEnd && (
 						<SegmentTimelineSmallPartFlag

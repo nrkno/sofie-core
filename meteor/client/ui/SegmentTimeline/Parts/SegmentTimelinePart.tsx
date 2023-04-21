@@ -82,6 +82,7 @@ interface IProps {
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 	isLiveSegment?: boolean
 	anyPriorPartWasLive?: boolean
+	livePartEndsAt?: number
 }
 
 interface IState {
@@ -500,7 +501,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			0,
 			(this.props.livePosition || 0) +
 				SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale) -
-				(this.props.part.instance.part.expectedDurationWithPreroll || this.props.part.renderedDuration || 0)
+				(this.props.livePartEndsAt || 0)
 		)
 		const fullPadding = SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale)
 		return Math.min(partialTimePadding, fullPadding)
