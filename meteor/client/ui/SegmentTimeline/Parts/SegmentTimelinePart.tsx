@@ -35,7 +35,6 @@ import { OutputGroup } from './OutputGroup'
 import { InvalidPartCover } from './InvalidPartCover'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { UIStudio } from '../../../../lib/api/studios'
-import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -333,8 +332,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		const style = this.getLayerStyle()
 
 		let timeOffset = SegmentTimelinePartClass.getPartStartsAt(this.props)
-		if (this.props.isLiveSegment && this.props.anyPriorPartWasLive) {
-			// This gets the amount of future shade padding time *from whichever part is currently live in the Segment*.
+		if (this.props.isLiveSegment && this.props.anyPriorPartWasLive && !this.state.isLive) {
 			timeOffset += this.getFutureShadePaddingTime()
 		}
 
@@ -499,12 +497,6 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 				(this.props.part.instance.part.expectedDurationWithPreroll || this.props.part.renderedDuration || 0)
 		)
 		const fullPadding = SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale)
-
-		if (Math.abs(fullPadding - partialTimePadding) < 1) {
-			// Reduce jitter
-			return fullPadding
-		}
-
 		return Math.min(partialTimePadding, fullPadding)
 	}
 
