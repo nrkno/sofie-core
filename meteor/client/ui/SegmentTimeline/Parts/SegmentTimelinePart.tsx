@@ -332,6 +332,13 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		const style = this.getLayerStyle()
 
 		let timeOffset = SegmentTimelinePartClass.getPartStartsAt(this.props)
+
+		/**
+		 * WARNING: This is accomodating for potentially broken behavior!
+		 * As it stands right now, the future shade will show in some scenarios where it arguably shouldn't.
+		 * This implementation works with that "bug".
+		 * If that bug is fixed, this implementation may need to change with it.
+		 */
 		if (this.props.isLiveSegment && this.props.anyPriorPartWasLive && !this.state.isLive) {
 			timeOffset += this.getFutureShadePaddingTime()
 		}

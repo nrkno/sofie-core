@@ -447,10 +447,6 @@ export class RundownTimingCalculator {
 					partDisplayDuration = virtualDuration
 				}
 
-				if (liveSegmentId && (partInstance.part.title === 'testme4' || partInstance.part.title === 'testme3')) {
-					debugger
-				}
-
 				const partInstancePartId = unprotectString(partInstance.part._id)
 				this.partExpectedDurations[partInstancePartId] = partExpectedDuration
 				this.partStartsAt[partInstancePartId] = startsAtAccumulator
