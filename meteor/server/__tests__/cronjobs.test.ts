@@ -4,23 +4,16 @@ import { MeteorMock } from '../../__mocks__/meteor'
 import { logger } from '../logging'
 import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { getRandomId, getRandomString, protectString } from '../../lib/lib'
-import { Rundowns } from '../../lib/collections/Rundowns'
 import { UserActionsLog } from '../../lib/collections/UserActionsLog'
 import { Snapshots, SnapshotType } from '../../lib/collections/Snapshots'
-import {
-	IBlueprintPieceType,
-	PieceLifespan,
-	PlaylistTimingType,
-	StatusCode,
-	TSR,
-} from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceType, PieceLifespan, StatusCode, TSR } from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
 import {
 	PeripheralDevices,
 	PeripheralDeviceType,
 	PeripheralDeviceCategory,
 } from '../../lib/collections/PeripheralDevices'
-import { CoreSystem, ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
+import { CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import * as lib from '../../lib/lib'
 import { DBPart, Parts } from '../../lib/collections/Parts'
 import { PartInstance, PartInstances } from '../../lib/collections/PartInstances'
@@ -45,29 +38,39 @@ jest.mock('../logging')
 import '../cronjobs'
 
 import '../api/peripheralDevice'
+import {
+	DefaultEnvironment,
+	setupDefaultRundownPlaylist,
+	setupDefaultStudioEnvironment,
+} from '../../__mocks__/helpers/database'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { Segments } from '../../lib/collections/Segments'
+import { Settings } from '../../lib/Settings'
+
+// Override to be unaffected by jest.useFakeTimers():
+const orgSetTimeout = setTimeout
+async function sleep(ms: number): Promise<void> {
+	return new Promise((resolve) => orgSetTimeout(resolve, ms))
+}
 describe('cronjobs', () => {
-	beforeEach(() => {
-		// cannot use setupDefaultStudioEnvironment or setupMockCore because MeteorMock.mockRunMeteorStartup
-		// causes updateServerTime to pollute the log
-		const defaultCore: ICoreSystem = {
-			_id: SYSTEM_ID,
-			name: 'mock Core',
-			created: 0,
-			modified: 0,
-			version: '0.0.0',
-			previousVersion: '0.0.0',
-			storePath: '',
-			serviceMessages: {},
-			cron: {
-				casparCGRestart: {
-					enabled: true,
+	let env: DefaultEnvironment
+	let rundownId: RundownId
+
+	beforeAllInFiber(async () => {
+		env = await setupDefaultStudioEnvironment()
+
+		const o = setupDefaultRundownPlaylist(env)
+		rundownId = o.rundownId
+
+		CoreSystem.update(
+			{},
+			{
+				$set: {
+					'cron.casparCGRestart.enabled': true,
 				},
-			},
-		}
-		CoreSystem.remove(SYSTEM_ID)
-		CoreSystem.insert(defaultCore)
-	})
-	beforeAllInFiber(() => {
+			}
+		)
+
 		jest.useFakeTimers()
 		// set time to 2020/07/19 00:00 Local Time
 		mockCurrentTime = new Date(2020, 6, 19, 0, 0, 0).getTime()
@@ -134,32 +137,7 @@ describe('cronjobs', () => {
 
 		testInFiber('Remove IngestDataCache objects that are not connected to any Rundown', async () => {
 			// Set up a mock rundown, a detached IngestDataCache object and an object attached to the mock rundown
-			const rundown0Id = protectString<RundownId>(getRandomString())
-			// Mock Rundown 0
-			Rundowns.insert({
-				_id: rundown0Id,
-				created: lib.getCurrentTime() - 1000 * 3600 * 24 * 3,
-				organizationId: null,
-				externalId: '',
-				importVersions: {
-					blueprint: '',
-					core: '',
-					showStyleBase: '',
-					showStyleVariant: '',
-					studio: '',
-				},
-				modified: lib.getCurrentTime() - 1000 * 3600 * 24 * 3,
-				name: 'Mock Rundown 0',
-				peripheralDeviceId: protectString(''),
-				playlistId: protectString(''),
-				showStyleBaseId: protectString(''),
-				showStyleVariantId: protectString(''),
-				studioId: protectString(''),
-				externalNRCSName: 'mock',
-				timing: {
-					type: PlaylistTimingType.None,
-				},
-			})
+
 			// Detached IngestDataCache object 0
 			const dataCache0Id = protectString<IngestDataCacheObjId>(getRandomString())
 			IngestDataCache.insert({
@@ -187,7 +165,7 @@ describe('cronjobs', () => {
 				},
 				modified: new Date(2000, 0, 1, 0, 0, 0).getTime(),
 				// just some random ID
-				rundownId: rundown0Id,
+				rundownId: rundownId,
 				type: IngestCacheType.RUNDOWN,
 			})
 
@@ -199,27 +177,39 @@ describe('cronjobs', () => {
 			expect(IngestDataCache.findOne(dataCache0Id)).toBeUndefined()
 		})
 		testInFiber('Removes old PartInstances and PieceInstances', async () => {
-			const rundown0Id = getRandomId<RundownId>()
-			const segment0Id = getRandomId<SegmentId>()
+			// nightlyCronjobInner()
+
+			const segment0: DBSegment = {
+				_id: getRandomId<SegmentId>(),
+				_rank: 0,
+				externalId: '',
+				externalModified: 0,
+				rundownId,
+				name: 'mock segment',
+			}
+			Segments.insert(segment0)
+
 			const part0: DBPart = {
 				_id: getRandomId<PartId>(),
 				_rank: 0,
-				rundownId: rundown0Id,
-				segmentId: segment0Id,
-				externalId: '',
-				title: '',
-				expectedDurationWithPreroll: undefined,
-			}
-			const part1: DBPart = {
-				_id: getRandomId<PartId>(),
-				_rank: 1,
-				rundownId: rundown0Id,
-				segmentId: segment0Id,
+				rundownId: rundownId,
+				segmentId: segment0._id,
 				externalId: '',
 				title: '',
 				expectedDurationWithPreroll: undefined,
 			}
 			Parts.insert(part0)
+			const part1: DBPart = {
+				_id: getRandomId<PartId>(),
+				_rank: 1,
+				rundownId: getRandomId<RundownId>(), // non-existent
+				segmentId: getRandomId<SegmentId>(), // non-existent
+				externalId: '',
+				title: '',
+				expectedDurationWithPreroll: undefined,
+			}
+			Parts.insert(part1)
+
 			const partInstance0: PartInstance = {
 				_id: protectString(`${part0._id}_${getRandomId()}`),
 				rundownId: part0.rundownId,
@@ -235,6 +225,8 @@ describe('cronjobs', () => {
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),
 			}
+			PartInstances.insert(partInstance0)
+
 			const partInstance1: PartInstance = {
 				_id: protectString(`${part0._id}_${getRandomId()}`),
 				rundownId: part0.rundownId,
@@ -246,6 +238,8 @@ describe('cronjobs', () => {
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),
 			}
+			PartInstances.insert(partInstance1)
+
 			const partInstance2: PartInstance = {
 				_id: protectString(`${part0._id}_${getRandomId()}`),
 				rundownId: part1.rundownId,
@@ -261,9 +255,8 @@ describe('cronjobs', () => {
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),
 			}
-			PartInstances.insert(partInstance0)
-			PartInstances.insert(partInstance1)
 			PartInstances.insert(partInstance2)
+
 			const pieceInstance0: PieceInstance = {
 				_id: protectString(`${partInstance0._id}_piece0`),
 				rundownId: partInstance0.part.rundownId,
@@ -309,11 +302,15 @@ describe('cronjobs', () => {
 			PieceInstances.insert(pieceInstance0)
 			PieceInstances.insert(pieceInstance1)
 			await runCronjobs()
+
+			expect(Parts.findOne(part0._id)).toBeDefined()
+			expect(Parts.findOne(part1._id)).toBeUndefined() // Removed, since owned by non-existent rundown
+
 			expect(PartInstances.findOne(partInstance0._id)).toBeDefined()
 			expect(PartInstances.findOne(partInstance1._id)).toBeDefined()
-			expect(PartInstances.findOne(partInstance2._id)).toBeUndefined()
+			expect(PartInstances.findOne(partInstance2._id)).toBeUndefined() // Removed, since owned by non-existent part1
 			expect(PieceInstances.findOne(pieceInstance0._id)).toBeDefined()
-			expect(PieceInstances.findOne(pieceInstance1._id)).toBeUndefined()
+			expect(PieceInstances.findOne(pieceInstance1._id)).toBeUndefined() // Removed, since owned by non-existent partInstance2
 		})
 		testInFiber('Removes old entries in UserActionsLog', async () => {
 			// reasonably fresh entry
@@ -339,8 +336,7 @@ describe('cronjobs', () => {
 				clientAddress: '',
 				context: '',
 				method: '',
-				// 50 + 1 minute days old
-				timestamp: lib.getCurrentTime() - (1000 * 3600 * 24 * 50 + 1000 * 60),
+				timestamp: lib.getCurrentTime() - Settings.maximumDataAge - 1000,
 			})
 
 			await runCronjobs()
@@ -374,8 +370,8 @@ describe('cronjobs', () => {
 				name: '',
 				type: SnapshotType.DEBUG,
 				version: '',
-				// 50 + 1 minute days old
-				created: lib.getCurrentTime() - (1000 * 3600 * 24 * 50 + 1000 * 60),
+				// Very old:
+				created: lib.getCurrentTime() - Settings.maximumDataAge - 1000,
 			})
 
 			await runCronjobs()
@@ -459,6 +455,8 @@ describe('cronjobs', () => {
 			mockCurrentTime = new Date(2020, 6, date++, 4, 5, 0).getTime()
 			// cronjob is checked every 5 minutes, so advance 6 minutes
 			jest.advanceTimersByTime(6 * 60 * 1000)
+			jest.runOnlyPendingTimers()
+			await sleep(10) // so that promises in cronjob resolves
 			jest.runOnlyPendingTimers()
 
 			// check if the correct PeripheralDevice command has been issued, and only for CasparCG devices
