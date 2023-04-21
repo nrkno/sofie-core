@@ -45,12 +45,20 @@ import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { AsyncMongoCollection } from '../../lib/collections/lib'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import {
+	BlueprintId,
+	BucketId,
+	MediaWorkFlowId,
 	OrganizationId,
+	PartId,
 	PeripheralDeviceId,
 	RundownId,
 	RundownPlaylistId,
+	ShowStyleBaseId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Workers } from '../../lib/collections/Workers'
+import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
+import { TranslationsBundles } from '../../lib/collections/TranslationsBundles'
 
 /**
  * If actuallyCleanup=true, cleans up old data. Otherwise just checks what old data there is
@@ -74,134 +82,211 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 	}
 
 	// Preparations: ------------------------------------------------------------------------------
-	const getAllIdsInCollection = <DBInterface extends { _id: ProtectedString<any> }>(
-		collection: AsyncMongoCollection<DBInterface>
-	): DBInterface['_id'][] => {
-		return collection
-			.find(
-				{},
-				{
-					fields: {
-						_id: 1,
-					},
-				}
-			)
-			.map((o) => o._id)
-	}
-	const studioIds = getAllIdsInCollection(Studios)
-	const organizationIds = getAllIdsInCollection(Organizations)
-	const deviceIds = getAllIdsInCollection(PeripheralDevices)
-	const rundownIds = getAllIdsInCollection(Rundowns)
-	const playlistIds = getAllIdsInCollection(RundownPlaylists)
 
-	const removeByQuery = <DBInterface extends { _id: ProtectedString<any> }>(
+	const removeByQuery = <DBInterface extends { _id: ID }, ID extends ProtectedString<any>>(
 		// collectionName: string,
 		collection: AsyncMongoCollection<DBInterface>,
 		query: MongoQuery<DBInterface>
-	): void => {
+	): ID[] => {
 		const collectionName = getCollectionKey(collection)
 
-		const count = collection.find(query).count()
+		const ids = collection
+			.find(query, { fields: { _id: 1 } })
+			.fetch()
+			.map((doc) => doc._id)
+		const count = ids.length
 		if (actuallyCleanup) {
 			collection.remove(query)
 		}
 		addToResult(collectionName, count)
+
+		return ids
 	}
 
-	const ownedByRundownId = <DBInterface extends { _id: ProtectedString<any>; rundownId: RundownId }>(
-		collection: AsyncMongoCollection<DBInterface>
-	): void => {
-		removeByQuery(collection as AsyncMongoCollection<any>, {
-			rundownId: { $nin: rundownIds },
-		})
-	}
-	const ownedByRundownPlaylistId = <DBInterface extends { _id: ProtectedString<any>; playlistId: RundownPlaylistId }>(
-		collection: AsyncMongoCollection<DBInterface>
-	): void => {
-		removeByQuery(collection as AsyncMongoCollection<any>, {
-			playlistId: { $nin: playlistIds },
-		})
-	}
-	const ownedByStudioId = <DBInterface extends { _id: ProtectedString<any>; studioId: StudioId }>(
-		collection: AsyncMongoCollection<DBInterface>
-	): void => {
-		removeByQuery(collection as AsyncMongoCollection<any>, {
-			studioId: { $nin: studioIds },
-		})
-	}
-	const ownedByRundownIdOrStudioId = <
-		DBInterface extends { _id: ProtectedString<any>; rundownId?: RundownId; studioId: StudioId }
-	>(
-		collection: AsyncMongoCollection<DBInterface>
-	): void => {
-		removeByQuery(collection as AsyncMongoCollection<any>, {
-			$or: [
-				{
-					rundownId: { $exists: true, $nin: rundownIds },
-				},
-				{
-					rundownId: { $exists: false },
-					studioId: { $nin: studioIds },
-				},
-			],
-		})
-	}
-	const ownedByOrganizationId = <
-		DBInterface extends { _id: ProtectedString<any>; organizationId: OrganizationId | null | undefined }
-	>(
-		collection: AsyncMongoCollection<DBInterface>
-	): void => {
-		removeByQuery(collection as AsyncMongoCollection<any>, {
-			$and: [
-				{
-					organizationId: { $nin: [organizationIds] },
-				},
-				{
-					organizationId: { $exists: true },
-				},
-				{
-					organizationId: { $ne: null },
-				},
-			],
-		})
-	}
-	const ownedByDeviceId = <DBInterface extends { _id: ProtectedString<any>; deviceId: PeripheralDeviceId }>(
-		collection: AsyncMongoCollection<DBInterface>
-	): void => {
-		removeByQuery(collection as AsyncMongoCollection<any>, {
-			deviceId: { $nin: deviceIds },
-		})
-	}
+	// Go through and removing old data: --------------------------------------------------
 
-	// Going Through data and removing old data: --------------------------------------------------
 	// CoreSystem:
 	{
 		addToResult(CollectionName.CoreSystem, 0) // Do nothing
 	}
-	// AdLibActions
+	// Organizations
 	{
-		ownedByRundownId(AdLibActions)
+		addToResult(CollectionName.Organizations, 0) // Do nothing
 	}
-	// AdLibPieces
+	// Users
 	{
-		ownedByRundownId(AdLibPieces)
+		addToResult(CollectionName.Users, 0) // Do nothing
 	}
-	// Blueprints
+
+	// Documents owned by Organizations:
+	const organizationIds = getAllIdsInCollection(Organizations)
+	const removedStudioIds = new Set<StudioId>()
+	const removedShowStyleBases = new Set<ShowStyleBaseId>()
+	const removedBlueprints = new Set<BlueprintId>()
 	{
-		ownedByOrganizationId(Blueprints)
+		const ownedByOrganizationId = <
+			DBInterface extends { _id: ID; organizationId: OrganizationId | null | undefined },
+			ID extends ProtectedString<any>
+		>(
+			collection: AsyncMongoCollection<DBInterface>
+		): ID[] => {
+			return removeByQuery(collection as AsyncMongoCollection<any>, {
+				$and: [
+					{
+						organizationId: { $nin: organizationIds },
+					},
+					{
+						organizationId: { $exists: true },
+					},
+					{
+						organizationId: { $ne: null },
+					},
+				],
+			})
+		}
+		ownedByOrganizationId(Studios).forEach((id) => removedStudioIds.add(id))
+		ownedByOrganizationId(ShowStyleBases).forEach((id) => removedShowStyleBases.add(id))
+		ownedByOrganizationId(Blueprints).forEach((id) => removedBlueprints.add(id))
+		ownedByOrganizationId(PeripheralDevices)
 	}
-	// BucketAdLibs
+
+	// Documents owned by Studios:
+	const studioIds = getAllIdsInCollection(Studios, removedStudioIds)
+	const removedRundownPlaylists = new Set<RundownPlaylistId>()
+	const removedBuckets = new Set<BucketId>()
 	{
+		const ownedByStudioId = <DBInterface extends { _id: ID; studioId: StudioId }, ID extends ProtectedString<any>>(
+			collection: AsyncMongoCollection<DBInterface>
+		): ID[] => {
+			return removeByQuery(collection as AsyncMongoCollection<any>, {
+				studioId: { $nin: studioIds },
+			})
+		}
+		ownedByStudioId(RundownPlaylists).forEach((id) => removedRundownPlaylists.add(id))
 		ownedByStudioId(BucketAdLibs)
-	}
-	// BucketAdLibActions
-	{
 		ownedByStudioId(BucketAdLibActions)
+		ownedByStudioId(Buckets).forEach((id) => removedBuckets.add(id))
+		ownedByStudioId(ExpectedPackages)
+		ownedByStudioId(ExpectedPackageWorkStatuses)
+		ownedByStudioId(MediaObjects)
+		ownedByStudioId(PackageContainerPackageStatuses)
+		ownedByStudioId(PackageInfos)
+		removeByQuery(Timeline, {
+			_id: { $nin: studioIds },
+		})
 	}
-	// Buckets
+	// Documents owned by ShowStyleBases:
+	const showStyleBaseIds = getAllIdsInCollection(ShowStyleBases, removedShowStyleBases)
 	{
-		ownedByStudioId(Buckets)
+		removeByQuery(RundownLayouts, {
+			showStyleBaseId: { $nin: showStyleBaseIds },
+		})
+		removeByQuery(ShowStyleVariants, {
+			showStyleBaseId: { $nin: showStyleBaseIds },
+		})
+		removeByQuery(TriggeredActions, {
+			showStyleBaseId: { $nin: [...showStyleBaseIds, null] },
+		})
 	}
+
+	// Documents owned by Blueprints:
+	const blueprintIds = getAllIdsInCollection(Blueprints, removedBlueprints)
+	{
+		removeByQuery(TranslationsBundles, {
+			originBlueprintId: { $nin: blueprintIds },
+		})
+	}
+
+	// Documents owned by RundownPlaylists:
+	const playlistIds = getAllIdsInCollection(RundownPlaylists, removedRundownPlaylists)
+	const removedRundowns = new Set<RundownId>()
+
+	{
+		const ownedByRundownPlaylistId = <
+			DBInterface extends { _id: ID; playlistId: RundownPlaylistId },
+			ID extends ProtectedString<any>
+		>(
+			collection: AsyncMongoCollection<DBInterface>
+		): ID[] => {
+			return removeByQuery(collection as AsyncMongoCollection<any>, {
+				playlistId: { $nin: playlistIds },
+			})
+		}
+		ownedByRundownPlaylistId(Rundowns).forEach((id) => removedRundowns.add(id))
+	}
+
+	// Documents owned by Rundowns:
+	const rundownIds = getAllIdsInCollection(Rundowns, removedRundowns)
+	const removedParts = new Set<PartId>()
+	{
+		const ownedByRundownId = <
+			DBInterface extends { _id: ID; rundownId: RundownId },
+			ID extends ProtectedString<any>
+		>(
+			collection: AsyncMongoCollection<DBInterface>
+		): ID[] => {
+			return removeByQuery(collection as AsyncMongoCollection<any>, {
+				rundownId: { $nin: rundownIds },
+			})
+		}
+		ownedByRundownId(AdLibActions)
+		ownedByRundownId(AdLibPieces)
+		ownedByRundownId(IngestDataCache)
+		ownedByRundownId(Parts).forEach((id) => removedParts.add(id))
+		ownedByRundownId(RundownBaselineAdLibActions)
+		ownedByRundownId(RundownBaselineAdLibPieces)
+		ownedByRundownId(RundownBaselineObjs)
+		ownedByRundownId(Segments)
+		// Owned by RundownId Or StudioId:
+		{
+			removeByQuery(ExpectedPlayoutItems, {
+				$or: [
+					{
+						rundownId: { $exists: true, $nin: rundownIds },
+					},
+					{
+						rundownId: { $exists: false },
+						studioId: { $nin: studioIds },
+					},
+				],
+			})
+		}
+		removeByQuery(Pieces, {
+			startRundownId: { $nin: rundownIds },
+		})
+		ownedByRundownId(PieceInstances)
+	}
+	// Documents owned by PeripheralDevices:
+	const removedMediaWorkFlows = new Set<MediaWorkFlowId>()
+	{
+		const deviceIds = getAllIdsInCollection(PeripheralDevices)
+		const ownedByDeviceId = <
+			DBInterface extends { _id: ID; deviceId: PeripheralDeviceId },
+			ID extends ProtectedString<any>
+		>(
+			collection: AsyncMongoCollection<DBInterface>
+		): ID[] => {
+			return removeByQuery(collection as AsyncMongoCollection<any>, {
+				deviceId: { $nin: deviceIds },
+			})
+		}
+		ownedByDeviceId(ExpectedPackageWorkStatuses)
+		ownedByDeviceId(MediaWorkFlows).forEach((id) => removedMediaWorkFlows.add(id))
+		ownedByDeviceId(PackageContainerPackageStatuses)
+		ownedByDeviceId(PackageInfos)
+		ownedByDeviceId(PeripheralDeviceCommands)
+	}
+
+	// Documents owned by Parts:
+	{
+		const partIds = getAllIdsInCollection(Parts, removedParts)
+		removeByQuery(PartInstances, {
+			$or: [{ rundownId: { $nin: rundownIds } }, { 'part._id': { $nin: partIds } }],
+		})
+	}
+
+	// Other documents:
+
 	// Evaluations
 	{
 		removeByQuery(Evaluations, {
@@ -210,6 +295,7 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 	}
 	// ExpectedMediaItems
 	{
+		const bucketIds = getAllIdsInCollection(Buckets, removedBuckets)
 		const emiFromBuckets = ExpectedMediaItems.find(
 			{
 				$and: [
@@ -218,7 +304,7 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 						rundownId: { $exists: false },
 					},
 					{
-						bucketId: { $nin: getAllIdsInCollection(Buckets) },
+						bucketId: { $nin: bucketIds },
 					},
 				],
 			},
@@ -246,19 +332,6 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 			})
 		}
 	}
-	// ExpectedPackages
-	{
-		ownedByStudioId(ExpectedPackages)
-	}
-	// ExpectedPackageWorkStatuses
-	{
-		ownedByStudioId(ExpectedPackageWorkStatuses)
-		ownedByDeviceId(ExpectedPackageWorkStatuses)
-	}
-	// ExpectedPlayoutItems
-	{
-		ownedByRundownIdOrStudioId(ExpectedPlayoutItems)
-	}
 	// ExternalMessageQueue
 	{
 		removeByQuery(ExternalMessageQueue, {
@@ -268,39 +341,15 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 			],
 		})
 	}
-	// IngestDataCache
-	{
-		ownedByRundownId(IngestDataCache)
-	}
-	// MediaObjects
-	{
-		// TODO: Shouldn't this be owned by a device?
-		ownedByStudioId(MediaObjects)
-	}
-	// MediaWorkFlows
-	{
-		ownedByDeviceId(MediaWorkFlows)
-	}
 	// MediaWorkFlowSteps
 	{
+		const mediaWorkFlowIds = getAllIdsInCollection(MediaWorkFlows, removedMediaWorkFlows)
 		removeByQuery(MediaWorkFlowSteps, {
-			workFlowId: { $nin: getAllIdsInCollection(MediaWorkFlows) },
+			workFlowId: { $nin: mediaWorkFlowIds },
 		})
-	}
-	// Organizations
-	{
-		addToResult(CollectionName.Organizations, 0) // Do nothing
-	}
-	// PackageContainerPackageStatuses
-	{
-		ownedByStudioId(PackageContainerPackageStatuses)
-		ownedByDeviceId(PackageContainerPackageStatuses)
 	}
 	// PackageInfos
 	{
-		ownedByStudioId(PackageInfos)
-		ownedByDeviceId(PackageInfos)
-
 		const removedPackageInfoIds = waitForPromise(getRemovedOrOrphanedPackageInfos())
 		addToResult(CollectionName.PackageInfos, removedPackageInfoIds.length)
 		if (actuallyCleanup) {
@@ -309,94 +358,10 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 			})
 		}
 	}
-	// Parts
-	{
-		ownedByRundownId(Parts)
-	}
-	// PartInstances
-	{
-		ownedByRundownId(PartInstances)
-	}
-	// PeripheralDeviceCommands
-	{
-		ownedByDeviceId(PeripheralDeviceCommands)
-	}
-	// PeripheralDevices
-	{
-		ownedByOrganizationId(PeripheralDevices)
-	}
-	// Pieces
-	{
-		removeByQuery(Pieces, {
-			startRundownId: { $nin: rundownIds },
-		})
-	}
-	// PieceInstances
-	{
-		removeByQuery(PieceInstances, {
-			rundownId: { $nin: rundownIds },
-		})
-	}
-	// RundownBaselineAdLibActions
-	{
-		ownedByRundownId(RundownBaselineAdLibActions)
-	}
-	// RundownBaselineAdLibPieces
-	{
-		ownedByRundownId(RundownBaselineAdLibPieces)
-	}
-	// RundownBaselineObjs
-	{
-		ownedByRundownId(RundownBaselineObjs)
-	}
-	// RundownLayouts
-	{
-		removeByQuery(RundownLayouts, {
-			showStyleBaseId: { $nin: getAllIdsInCollection(ShowStyleBases) },
-		})
-	}
-	// RundownPlaylists
-	{
-		ownedByStudioId(RundownPlaylists)
-	}
-	// Rundowns
-	{
-		ownedByRundownPlaylistId(Rundowns)
-	}
-	// Segments
-	{
-		ownedByRundownId(Segments)
-	}
-	// ShowStyleBases
-	{
-		ownedByOrganizationId(ShowStyleBases)
-	}
-	// ShowStyleVariants
-	{
-		removeByQuery(ShowStyleVariants, {
-			showStyleBaseId: { $nin: getAllIdsInCollection(ShowStyleBases) },
-		})
-	}
 	// Snapshots
 	{
 		removeByQuery(Snapshots, {
 			created: { $lt: getCurrentTime() - Settings.maximumDataAge },
-		})
-	}
-	// Studios
-	{
-		ownedByOrganizationId(Studios)
-	}
-	// Timeline
-	{
-		removeByQuery(Timeline, {
-			_id: { $nin: studioIds },
-		})
-	}
-	// TriggeredActions
-	{
-		removeByQuery(TriggeredActions, {
-			showStyleBaseId: { $nin: [...getAllIdsInCollection(ShowStyleBases), null] },
 		})
 	}
 	// UserActionsLog
@@ -405,9 +370,16 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 			timestamp: { $lt: getCurrentTime() - Settings.maximumDataAge },
 		})
 	}
-	// Users
+	// Workers
 	{
-		addToResult(CollectionName.Users, 0) // Do nothing
+		addToResult(getCollectionKey(Workers), 0)
+	}
+	// WorkerThreadStatuses
+	{
+		const workerIds = getAllIdsInCollection(Workers)
+		removeByQuery(WorkerThreadStatuses, {
+			workerId: { $nin: workerIds },
+		})
 	}
 
 	return result
@@ -423,4 +395,22 @@ async function isAllowedToRunCleanup(): Promise<string | void> {
 			return `There is an active RundownPlaylist: "${activePlaylist.name}" in studio "${studio.name}" (${activePlaylist._id}, ${studio._id})`
 		}
 	}
+}
+/** Returns a list of the ids of all documents in a collection */
+function getAllIdsInCollection<DBInterface extends { _id: ID }, ID extends ProtectedString<any>>(
+	collection: AsyncMongoCollection<DBInterface>,
+	excludeIds?: Set<ID>
+): DBInterface['_id'][] {
+	let ids = collection
+		.find(
+			{},
+			{
+				fields: {
+					_id: 1,
+				},
+			}
+		)
+		.map((o) => o._id)
+	if (excludeIds) ids = ids.filter((id) => !excludeIds.has(id))
+	return ids
 }
