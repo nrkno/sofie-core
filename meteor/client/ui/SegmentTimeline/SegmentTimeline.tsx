@@ -316,7 +316,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 	}
 
 	private convertTimeToPixels = (time: number) => {
-		return Math.round(this.props.timeScale * time)
+		return this.props.timeScale * time
 	}
 
 	private onTimelineResize = (size: number[]) => {
@@ -604,7 +604,8 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		const showHiddenSourceLayers = getShowHiddenSourceLayers()
 
 		return {
-			transform: 'translate3d(-' + this.convertTimeToPixels(this.props.scrollLeft).toString() + 'px, 0, 0.1px)',
+			willChange: this.props.isLiveSegment ? 'transform' : 'none',
+			transform: 'translateX(-' + this.convertTimeToPixels(this.props.scrollLeft).toString() + 'px)',
 			height: `calc(${outputGroups.reduce(
 				(mem, group) =>
 					mem +

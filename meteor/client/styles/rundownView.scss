@@ -1187,7 +1187,6 @@ svg.icon {
 	.segment-timeline__next-preview {
 		overflow: visible;
 		transition: $output-layer-group-collapse-animation-duration padding ease-in-out;
-		will-change: transform;
 
 		.segment-timeline__small-parts-flag {
 			margin-left: -0.3em;
@@ -1279,17 +1278,8 @@ svg.icon {
 		// Part is an element containing all output groups, with all the source layers, which in turn contain pieces
 		.segment-timeline__part {
 			position: absolute;
-			will-change: transform;
 			--invalid-reason-color-opaque: rgba(0, 0, 0, 1);
 			--invalid-reason-color-transparent: rgba(0, 0, 0, 0);
-
-			&.segment-timeline__part--end-of-segment {
-				background: $segment-background-color;
-				height: 100%;
-				top: 0;
-				min-width: 100vw;
-				z-index: 0;
-			}
 
 			&.segment-timeline__part--shaded {
 				&::after {
@@ -1541,7 +1531,6 @@ svg.icon {
 				padding-left: 0.5em;
 				text-transform: uppercase;
 				font-size: 0.9em;
-
 				.segment-timeline__part__segment-end__label {
 					position: absolute;
 					top: 50%;
@@ -2670,7 +2659,7 @@ svg.icon {
 		text-align: center;
 		border-radius: 1em;
 		font-size: 0.9em;
-		letter-spacing:	-0.05em;
+		letter-spacing: -0.05em;
 		position: relative;
 		top: -0.3em;
 		left: -0.3em;
@@ -2786,12 +2775,6 @@ svg.icon {
 			> .segment-timeline__part {
 				display: inline-block;
 				vertical-align: top;
-
-				&.segment-timeline__part--end-of-segment {
-					position: absolute;
-					min-width: 14%;
-					background: $segment-mini-inspector-timeline-background;
-				}
 			}
 		}
 	}
@@ -2842,7 +2825,7 @@ svg.icon {
 
 	&.segment-timeline__mini-inspector--notice {
 		padding-left: 2.7em;
-		padding-bottom:	0.4em;
+		padding-bottom: 0.4em;
 	}
 
 	> .segment-timeline__mini-inspector__notice-header {
@@ -2865,7 +2848,7 @@ svg.icon {
 	}
 
 	> .segment-timeline__mini-inspector__notice + .segment-timeline__mini-inspector__properties {
-		color:#999999;
+		color: #999999;
 		margin-top: 0.5em;
 		padding-top: 0.2em;
 		border-top: 1px solid #333;
@@ -3031,14 +3014,14 @@ svg.icon {
 	.mini-inspector__label {
 		font-weight: 200;
 		font-size: 0.8em;
-		letter-spacing:	0.05em;
+		letter-spacing: 0.05em;
 		text-transform: capitalize;
 		padding-right: 0.5em;
 	}
 	.mini-inspector__value {
 		font-weight: 200;
 		font-size: 0.8em;
-		letter-spacing:	0em;
+		letter-spacing: 0em;
 		line-height: 80%;
 		max-width: 60vw;
 		overflow: hidden;
@@ -3181,7 +3164,8 @@ svg.icon {
 
 /** Multi-step Graphics chevron */
 
-.segment-storyboard__piece__step-chevron, .segment-opl__main-piece__label__step-chevron {
+.segment-storyboard__piece__step-chevron,
+.segment-opl__main-piece__label__step-chevron {
 	margin-right: 0.2em;
 	background: rgba(0, 0, 0, 0.4);
 	display: inline-block;

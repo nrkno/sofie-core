@@ -324,7 +324,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			}
 		} else {
 			return {
-				minWidth: Math.round(partDurationWithFutureShade * this.props.timeScale).toString() + 'px',
+				minWidth: (partDurationWithFutureShade * this.props.timeScale).toString() + 'px',
 			}
 		}
 	}
@@ -333,13 +333,6 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		const style = this.getLayerStyle()
 
 		let timeOffset = SegmentTimelinePartClass.getPartStartsAt(this.props)
-
-		/**
-		 * WARNING: This is accomodating for potentially broken behavior!
-		 * As it stands right now, the future shade will show in some scenarios where it arguably shouldn't.
-		 * This implementation works with that "bug".
-		 * If that bug is fixed, this implementation may need to change with it.
-		 */
 		if (this.props.isLiveSegment && this.props.anyPriorPartWasLive && !this.state.isLive) {
 			timeOffset += this.getFutureShadePaddingTime()
 		}
@@ -347,11 +340,14 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		return {
 			...style,
 			transform: `translateX(${this.convertTimeToPixels(timeOffset)}px)`,
+			willChange: this.props.isLiveSegment
+				? ['transform', this.props.relative ? 'width' : 'min-width'].join(', ')
+				: 'none',
 		}
 	}
 
 	private convertTimeToPixels = (time: number) => {
-		return Math.round(this.props.timeScale * time)
+		return this.props.timeScale * time
 	}
 
 	static getPartDuration(
@@ -399,6 +395,18 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 				props.timingDurations.partDisplayStartsAt[unprotectString(props.part.instance.part._id)] -
 					props.timingDurations.partDisplayStartsAt[unprotectString(props.firstPartInSegment.instance.part._id)]) ||
 				0
+		)
+	}
+
+	static getPartEndsAt(
+		props: WithTiming<IProps>,
+		liveDuration: number,
+		isDurationSettling: boolean,
+		durationSettlingStartsAt: number
+	) {
+		return (
+			SegmentTimelinePartClass.getPartStartsAt(props) +
+			SegmentTimelinePartClass.getPartDuration(props, liveDuration, isDurationSettling, durationSettlingStartsAt)
 		)
 	}
 
@@ -519,8 +527,20 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			this.state.isLive &&
 			((!this.props.isLastSegment && !this.props.isLastInSegment) || !!this.props.playlist.nextPartInfo) &&
 			!innerPart.invalid
+		let timeOffset = SegmentTimelinePartClass.getPartDisplayDuration(
+			this.props.part,
+			this.props.timingDurations
+		)
+		if (this.state.isLive) {
+			timeOffset += this.getFutureShadePaddingTime()
+		}
 		return (
-			<>
+			<div
+				className={ClassNames('segment-timeline__part__end-of-segment', { 'is-live': this.state.isLive })}
+				style={{
+					transform: `translateX(${this.convertTimeToPixels(timeOffset)}px)`,
+				}}
+			>
 				{this.props.isLastInSegment && !this.props.isBudgetGap && (
 					<div
 						className={ClassNames('segment-timeline__part__nextline', 'segment-timeline__part__nextline--endline', {
@@ -561,7 +581,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						</div>
 					</div>
 				)}
-			</>
+			</div>
 		)
 	}
 
