@@ -26,6 +26,7 @@ export interface SystemAPI {
 	cleanupIndexes(actuallyRemoveOldIndexes: boolean): Promise<any>
 	cleanupOldData(actuallyRemoveOldData: boolean): Promise<CollectionCleanupResult | string>
 
+	runCronjob(): Promise<void>
 	doSystemBenchmark(): Promise<SystemBenchmarkResults>
 
 	getTranslationBundle(bundleId: TranslationsBundleId): Promise<ClientAPI.ClientResponse<TranslationsBundle>>
