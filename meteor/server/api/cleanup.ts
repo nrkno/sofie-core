@@ -52,6 +52,10 @@ import {
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
+/**
+ * If actuallyCleanup=true, cleans up old data. Otherwise just checks what old data there is
+ * @returns A string if there is an issue preventing cleanup. CollectionCleanupResult otherwise
+ */
 export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Promise<CollectionCleanupResult | string> {
 	if (actuallyCleanup) {
 		const notAllowedReason = await isAllowedToRunCleanup()
