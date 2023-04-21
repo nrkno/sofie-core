@@ -5,7 +5,6 @@ import {
 	PeripheralDeviceType,
 	PeripheralDeviceSubType,
 } from '../../peripheralDevice/peripheralDeviceAPI'
-import { SubdeviceAction } from '../deviceConfigManifest'
 
 export type GenericPeripheralDeviceSettings = Record<string, never>
 // export interface GenericPeripheralDeviceSettings {
@@ -35,15 +34,7 @@ export interface PeripheralDevicePublic {
 	created: number
 	status: PeripheralDeviceStatusObject
 
-	settings: IngestDeviceSettings | GenericPeripheralDeviceSettings
-}
-
-/**
- * An extension of PeripheralDevicePublic to expose the available actions to the blueprints.
- */
-export interface PeripheralDevicePublicWithActions extends PeripheralDevicePublic {
-	/** Available actions for the device */
-	actions: SubdeviceAction[] | undefined
+	// settings: IngestDeviceSettings | GenericPeripheralDeviceSettings // TODO - this may be wanted, but is making it hard to fix up usages
 }
 
 export interface IngestDeviceSettings {
