@@ -29,7 +29,6 @@ import { HourglassIconSmall } from '../../../lib/ui/icons/notifications'
 
 interface IProps extends ICustomLayerItemProps {
 	studio: UIStudio | undefined
-	partExpectedDuration: number
 }
 interface IState {
 	scenes?: Array<number>

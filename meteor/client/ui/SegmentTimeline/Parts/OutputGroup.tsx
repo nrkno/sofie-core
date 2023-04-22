@@ -21,6 +21,7 @@ interface IOutputGroupProps {
 	mediaPreviewUrl: string
 	startsAt: number
 	duration: number
+	expectedDuration: number
 	timeScale: number
 	collapsedOutputs: {
 		[key: string]: boolean
@@ -71,6 +72,7 @@ export function OutputGroup(props: IOutputGroupProps): JSX.Element {
 							part={props.part}
 							startsAt={props.startsAt}
 							duration={props.duration}
+							expectedDuration={props.expectedDuration}
 							timeScale={props.timeScale}
 							autoNextPart={props.autoNextPart}
 							liveLinePadding={props.liveLinePadding}
@@ -107,6 +109,7 @@ export function OutputGroup(props: IOutputGroupProps): JSX.Element {
 						part={props.part}
 						startsAt={props.startsAt}
 						duration={props.duration}
+						expectedDuration={props.expectedDuration}
 						timeScale={props.timeScale}
 						autoNextPart={props.autoNextPart}
 						liveLinePadding={props.liveLinePadding}

@@ -21,6 +21,7 @@ export interface ISourceLayerPropsBase {
 	mediaPreviewUrl: string
 	startsAt: number
 	duration: number
+	expectedDuration: number
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
@@ -121,6 +122,7 @@ export function SourceLayer(props: ISourceLayerProps): JSX.Element {
 									part={props.part}
 									partStartsAt={props.startsAt}
 									partDuration={props.duration}
+									partExpectedDuration={props.expectedDuration}
 									timeScale={props.timeScale}
 									relative={props.relative}
 									autoNextPart={props.autoNextPart}

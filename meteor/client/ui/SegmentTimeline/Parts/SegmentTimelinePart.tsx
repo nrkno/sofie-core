@@ -350,6 +350,17 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		return this.props.timeScale * time
 	}
 
+	/** @TODO: This appears to have little to do with expectedDuration, should it be renamed or rewritten? */
+	static getPartExpectedDuration(props: WithTiming<IProps>): number {
+		return (
+			props.part.instance.timings?.duration ||
+			(props.timingDurations.partDisplayDurations &&
+				props.timingDurations.partDisplayDurations[unprotectString(props.part.instance.part._id)]) ||
+			props.part.renderedDuration ||
+			0
+		)
+	}
+
 	static getPartDuration(
 		props: WithTiming<IProps>,
 		liveDuration: number,
@@ -477,6 +488,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 												this.state.durationSettlingStartsAt
 										  )
 								}
+								expectedDuration={SegmentTimelinePartClass.getPartExpectedDuration(this.props)}
 								isLiveLine={this.props.playlist.currentPartInfo?.partInstanceId === part.instance._id}
 								isNextLine={this.props.playlist.nextPartInfo?.partInstanceId === part.instance._id}
 								isTooSmallForText={this.state.isTooSmallForText}
@@ -527,10 +539,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			this.state.isLive &&
 			((!this.props.isLastSegment && !this.props.isLastInSegment) || !!this.props.playlist.nextPartInfo) &&
 			!innerPart.invalid
-		let timeOffset = SegmentTimelinePartClass.getPartDisplayDuration(
-			this.props.part,
-			this.props.timingDurations
-		)
+		let timeOffset = SegmentTimelinePartClass.getPartDisplayDuration(this.props.part, this.props.timingDurations)
 		if (this.state.isLive) {
 			timeOffset += this.getFutureShadePaddingTime()
 		}
