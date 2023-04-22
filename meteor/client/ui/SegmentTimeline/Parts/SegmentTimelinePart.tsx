@@ -414,7 +414,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		liveDuration: number,
 		isDurationSettling: boolean,
 		durationSettlingStartsAt: number
-	) {
+	): number {
 		return (
 			SegmentTimelinePartClass.getPartStartsAt(props) +
 			SegmentTimelinePartClass.getPartDuration(props, liveDuration, isDurationSettling, durationSettlingStartsAt)
