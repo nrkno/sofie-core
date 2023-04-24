@@ -506,6 +506,10 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	}
 
 	private getFutureShadePaddingTime = () => {
+		if (this.props.autoNextPart) {
+			return 0
+		}
+
 		/**
 		 * How far into the live part we are, in milliseconds.
 		 */
