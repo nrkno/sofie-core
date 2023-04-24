@@ -1,8 +1,8 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { PeripheralDevices, Studios } from '../collections'
-import { assertNever, clone } from '@sofie-automation/corelib/dist/lib'
-import { MappingExt, StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { assertNever, clone, literal } from '@sofie-automation/corelib/dist/lib'
+import { MappingExt, StudioPlayoutDevice, StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
@@ -316,6 +316,50 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 						packageContainers: 1,
 						previewContainerIds: 1,
 						thumbnailContainerIds: 1,
+					},
+				})
+			}
+		},
+	},
+
+	{
+		id: `Studio move playout-gateway subdevices`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const objectCount = PeripheralDevices.find({
+				category: PeripheralDeviceCategory.PLAYOUT,
+				studioId: { $exists: true },
+				'settings.devices': { $exists: true },
+			}).count()
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: () => {
+			const objects = PeripheralDevices.find({
+				category: PeripheralDeviceCategory.PLAYOUT,
+				studioId: { $exists: true },
+				'settings.devices': { $exists: true },
+			}).fetch()
+			for (const device of objects) {
+				if (!device.studioId) continue
+
+				for (const [id, subDevice] of Object.entries<unknown>(device.settings?.['devices'] || {})) {
+					Studios.update(device.studioId, {
+						$set: {
+							[`peripheralDeviceSettings.playoutDevices.defaults.${id}`]: literal<StudioPlayoutDevice>({
+								peripheralDeviceId: device._id,
+								options: subDevice as any,
+							}),
+						},
+					})
+				}
+
+				PeripheralDevices.update(device._id, {
+					$unset: {
+						'settings.devices': 1,
 					},
 				})
 			}

@@ -3,6 +3,7 @@ import { PeripheralDevices } from '../../../../collections'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { StudioSelectDevices } from './SelectDevices'
+import { StudioPlayoutSubDevices } from './PlayoutSubDevices'
 
 interface IStudioDevicesProps {
 	studioId: StudioId
@@ -18,5 +19,11 @@ export function StudioDevices({ studioId }: IStudioDevicesProps): JSX.Element {
 		[]
 	)
 
-	return <StudioSelectDevices studioId={studioId} studioDevices={studioDevices} />
+	return (
+		<>
+			<StudioSelectDevices studioId={studioId} studioDevices={studioDevices} />
+
+			<StudioPlayoutSubDevices studioId={studioId} studioDevices={studioDevices} />
+		</>
+	)
 }
