@@ -7,7 +7,11 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
-import { IBlueprintActionManifestDisplayContent } from '@sofie-automation/blueprints-integration'
+import {
+	IBlueprintActionManifestDisplayContent,
+	IOutputLayer,
+	ISourceLayer,
+} from '@sofie-automation/blueprints-integration'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler'
 import { PartInstanceName } from '../collections/partInstances'
@@ -236,24 +240,28 @@ export class ActivePlaylistTopic
 					? applyAndValidateOverrides((data as DBShowStyleBase).outputLayersWithOverrides).obj
 					: {}
 				this._logger.info(
-					`${this._name} received showStyleBase update with sourceLayers [${Object.values(sourceLayers).map(
+					`${this._name} received showStyleBase update with sourceLayers [${Object.values<
+						ISourceLayer | undefined
+					>(sourceLayers).map(
 						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 						(s) => s!.name
 					)}]`
 				)
 				this._logger.info(
-					`${this._name} received showStyleBase update with outputLayers [${Object.values(outputLayers).map(
+					`${this._name} received showStyleBase update with outputLayers [${Object.values<
+						IOutputLayer | undefined
+					>(outputLayers).map(
 						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 						(s) => s!.name
 					)}]`
 				)
 				this._sourceLayersMap.clear()
 				this._outputLayersMap.clear()
-				for (const [layerId, sourceLayer] of Object.entries(sourceLayers)) {
+				for (const [layerId, sourceLayer] of Object.entries<ISourceLayer | undefined>(sourceLayers)) {
 					if (sourceLayer === undefined || sourceLayer === null) continue
 					this._sourceLayersMap.set(layerId, sourceLayer.name)
 				}
-				for (const [layerId, outputLayer] of Object.entries(outputLayers)) {
+				for (const [layerId, outputLayer] of Object.entries<IOutputLayer | undefined>(outputLayers)) {
 					if (outputLayer === undefined || outputLayer === null) continue
 					this._outputLayersMap.set(layerId, outputLayer.name)
 				}
