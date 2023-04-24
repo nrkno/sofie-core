@@ -75,7 +75,7 @@ export class Client extends EventEmitter {
 							data: EJSON.stringify(
 								literal<AnyMessage>({
 									msg: 'changed',
-									collection: 'peripheralDevices',
+									collection: 'peripheralDeviceForDevice',
 									id: 'JestTest',
 								})
 							),
@@ -174,7 +174,7 @@ export class Client extends EventEmitter {
 				data: JSON.stringify(
 					literal<AnyMessage>({
 						msg: 'removed',
-						collection: 'peripheralDevices',
+						collection: 'peripheralDeviceForDevice',
 						id: this.cachedId,
 					})
 				),

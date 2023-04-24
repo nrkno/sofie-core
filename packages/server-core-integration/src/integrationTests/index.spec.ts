@@ -1,5 +1,5 @@
 jest.dontMock('ddp')
-import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 import {
@@ -85,18 +85,16 @@ test('Integration: Test connection and basic Core functionality', async () => {
 	})
 
 	// Observe data:
-	const observer = core.observe('peripheralDevices')
+	const observer = core.observe('peripheralDeviceForDevice')
 	observer.added = jest.fn()
 	observer.changed = jest.fn()
 	observer.removed = jest.fn()
 
 	// Subscribe to data:
-	const coll0 = core.getCollection<PeripheralDevicePublic>('peripheralDevices')
+	const coll0 = core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
 	expect(coll0.findOne(id)).toBeFalsy()
-	const subId = await core.subscribe('peripheralDevices', {
-		_id: id,
-	})
-	const coll1 = core.getCollection<PeripheralDevicePublic>('peripheralDevices')
+	const subId = await core.subscribe('peripheralDeviceForDevice', id)
+	const coll1 = core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
 	expect(coll1.findOne(id)).toMatchObject({
 		_id: id,
 	})
@@ -276,12 +274,12 @@ test('Integration: autoSubscription', async () => {
 	const observerAdded = jest.fn()
 	const observerChanged = jest.fn()
 	const observerRemoved = jest.fn()
-	const observer = core.observe('peripheralDevices')
+	const observer = core.observe('peripheralDeviceForDevice')
 	observer.added = observerAdded
 	observer.changed = observerChanged
 	observer.removed = observerRemoved
 
-	await core.autoSubscribe('peripheralDevices', { _id: defaultDeviceId })
+	await core.autoSubscribe('peripheralDeviceForDevice', defaultDeviceId)
 
 	expect(observerAdded).toHaveBeenCalledTimes(1)
 

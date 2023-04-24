@@ -130,7 +130,7 @@ export interface StudioIngestDevice {
 	peripheralDeviceId: PeripheralDeviceId | undefined
 	// peripheralDeviceType: 'playout'|'mos'
 
-	deviceType: string // used to lookup the configManifest so that we can draw a GUI with settings
+	// deviceType: string // used to lookup the configManifest so that we can draw a GUI with settings
 	// disable: boolean
 
 	/** Settings blob of the subdevice, from the sub-device config schema */

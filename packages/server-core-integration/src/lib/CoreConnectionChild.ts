@@ -10,7 +10,7 @@ import { DDPConnector } from './ddpConnector'
 import { Observer } from './ddpClient'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { ConnectionMethodsQueue, ExternalPeripheralDeviceAPI, makeMethods, makeMethodsLowPrio } from './methods'
-import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { ProtectedString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { CoreConnection, Collection, CoreOptions } from './coreConnection'
 import { CorePinger } from './ping'
@@ -146,7 +146,7 @@ export class CoreConnectionChild extends EventEmitter<ChildCoreConnectionEvents>
 	async unInitialize(): Promise<PeripheralDeviceId> {
 		return this.coreMethods.unInitialize()
 	}
-	async getPeripheralDevice(): Promise<PeripheralDevicePublic> {
+	async getPeripheralDevice(): Promise<PeripheralDeviceForDevice> {
 		return this.coreMethods.getPeripheralDevice()
 	}
 	getCollection<DBObj extends { _id: ProtectedString<any> | string } = never>(

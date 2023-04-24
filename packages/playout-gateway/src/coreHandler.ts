@@ -5,7 +5,7 @@ import {
 	PeripheralDeviceAPI,
 	PeripheralDeviceCommand,
 	PeripheralDeviceId,
-	PeripheralDevicePublic,
+	PeripheralDeviceForDevice,
 	protectString,
 	StatusCode,
 	StudioId,
@@ -22,6 +22,7 @@ import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
 import { BaseRemoteDeviceIntegration } from 'timeline-state-resolver/dist/service/remoteDeviceInstance'
 import { getVersions } from './versions'
 import { CoreConnectionChild } from '@sofie-automation/server-core-integration/dist/lib/CoreConnectionChild'
+import { PlayoutGatewayConfig } from './generated/options'
 
 export interface CoreConfig {
 	host: string
@@ -41,7 +42,7 @@ export class CoreHandler {
 	core!: CoreConnection
 	logger: Logger
 	public _observers: Array<any> = []
-	public deviceSettings: { [key: string]: any } = {}
+	public deviceSettings: PlayoutGatewayConfig = {}
 
 	public errorReporting = false
 	public multithreading = false
@@ -113,9 +114,7 @@ export class CoreHandler {
 		this.logger.info('Core: Setting up subscriptions..')
 		this.logger.info('DeviceId: ' + this.core.deviceId)
 		await Promise.all([
-			this.core.autoSubscribe('peripheralDevices', {
-				_id: this.core.deviceId,
-			}),
+			this.core.autoSubscribe('peripheralDeviceForDevice', this.core.deviceId),
 			this.core.autoSubscribe('mappingsForDevice', this.core.deviceId),
 			this.core.autoSubscribe('timelineForDevice', this.core.deviceId),
 			this.core.autoSubscribe('timelineDatastoreForDevice', this.core.deviceId),
@@ -132,7 +131,7 @@ export class CoreHandler {
 			this._observers = []
 		}
 		// setup observers
-		const observer = this.core.observe('peripheralDevices')
+		const observer = this.core.observe('peripheralDeviceForDevice')
 		observer.added = (id: string) => this.onDeviceChanged(protectString(id))
 		observer.changed = (id: string) => this.onDeviceChanged(protectString(id))
 		this.setupObserverForPeripheralDeviceCommands(this)
@@ -178,17 +177,17 @@ export class CoreHandler {
 	}
 	onDeviceChanged(id: PeripheralDeviceId): void {
 		if (id === this.core.deviceId) {
-			const col = this.core.getCollection<PeripheralDevicePublic>('peripheralDevices')
+			const col = this.core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
 			if (!col) throw new Error('collection "peripheralDevices" not found!')
 
 			const device = col.findOne(id)
 			if (device) {
-				this.deviceSettings = device.settings || {}
+				this.deviceSettings = (device.deviceSettings || {}) as any
 			} else {
 				this.deviceSettings = {}
 			}
 
-			const logLevel = this.deviceSettings['debugLogging'] ? 'debug' : 'info'
+			const logLevel = this.deviceSettings.debugLogging ? 'debug' : 'info'
 			if (logLevel !== this.logger.level) {
 				this.logger.level = logLevel
 
@@ -199,14 +198,14 @@ export class CoreHandler {
 				this.logger.info('Loglevel: ' + this.logger.level)
 			}
 
-			if (this.deviceSettings['errorReporting'] !== this.errorReporting) {
-				this.errorReporting = this.deviceSettings['errorReporting']
+			if (this.deviceSettings.errorReporting !== this.errorReporting) {
+				this.errorReporting = this.deviceSettings.errorReporting || false
 			}
-			if (this.deviceSettings['multiThreading'] !== this.multithreading) {
-				this.multithreading = this.deviceSettings['multiThreading']
+			if (this.deviceSettings.multiThreading !== this.multithreading) {
+				this.multithreading = this.deviceSettings.multiThreading || false
 			}
-			if (this.deviceSettings['reportAllCommands'] !== this.reportAllCommands) {
-				this.reportAllCommands = this.deviceSettings['reportAllCommands']
+			if (this.deviceSettings.reportAllCommands !== this.reportAllCommands) {
+				this.reportAllCommands = this.deviceSettings.reportAllCommands || false
 			}
 
 			const studioId = device.studioId
@@ -261,8 +260,8 @@ export class CoreHandler {
 		return !!this.deviceSettings['debugState']
 	}
 	get estimateResolveTimeMultiplier(): number {
-		if (!isNaN(Number(this.deviceSettings['estimateResolveTimeMultiplier']))) {
-			return this.deviceSettings['estimateResolveTimeMultiplier'] || 1
+		if (!isNaN(Number(this.deviceSettings.estimateResolveTimeMultiplier))) {
+			return this.deviceSettings.estimateResolveTimeMultiplier || 1
 		} else return 1
 	}
 

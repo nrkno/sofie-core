@@ -17,7 +17,7 @@ import { WatchDog } from './watchDog'
 import { DeviceConfigManifest } from './configManifest'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { ConnectionMethodsQueue, ExternalPeripheralDeviceAPI, makeMethods, makeMethodsLowPrio } from './methods'
-import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { ProtectedString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { ChildCoreOptions, CoreConnectionChild } from './CoreConnectionChild'
 import { CorePinger } from './ping'
@@ -271,7 +271,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 	async unInitialize(): Promise<PeripheralDeviceId> {
 		return this.coreMethods.unInitialize()
 	}
-	async getPeripheralDevice(): Promise<PeripheralDevicePublic> {
+	async getPeripheralDevice(): Promise<PeripheralDeviceForDevice> {
 		return this.coreMethods.getPeripheralDevice()
 	}
 	getCollection<DBObj extends { _id: ProtectedString<any> | string } = never>(

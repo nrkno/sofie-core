@@ -39,17 +39,13 @@ core.onFailed((err) => {
 
 const setupSubscription = async () => {
 	console.log('Setup subscription')
-	return core
-		.subscribe('peripheralDevices', {
-			_id: core.deviceId,
-		})
-		.then(() => {
-			console.log('sub OK!')
-		})
+	return core.subscribe('peripheralDeviceForDevice', core.deviceId).then(() => {
+		console.log('sub OK!')
+	})
 }
 const setupObserver = () => {
 	console.log('Setup observer')
-	const observer = core.observe('peripheralDevices')
+	const observer = core.observe('peripheralDeviceForDevice')
 	observer.added = (id) => {
 		console.log('added', id)
 	}

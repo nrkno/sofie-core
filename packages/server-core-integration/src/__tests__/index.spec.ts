@@ -110,18 +110,16 @@ describe('coreConnection', () => {
 		})
 
 		// Observe data:
-		const observer = core.observe('peripheralDevices')
+		const observer = core.observe('peripheralDeviceForDevice')
 		observer.added = jest.fn()
 		observer.changed = jest.fn()
 		observer.removed = jest.fn()
 
 		// Subscribe to data:
-		const coll0 = core.getCollection<any>('peripheralDevices')
+		const coll0 = core.getCollection<any>('peripheralDeviceForDevice')
 		expect(coll0.findOne(id)).toBeFalsy()
-		const subId = await core.subscribe('peripheralDevices', {
-			_id: id,
-		})
-		const coll1 = core.getCollection<any>('peripheralDevices')
+		const subId = await core.subscribe('peripheralDeviceForDevice', id)
+		const coll1 = core.getCollection<any>('peripheralDeviceForDevice')
 		expect(coll1.findOne(id)).toMatchObject({
 			_id: id,
 		})
@@ -296,12 +294,12 @@ describe('coreConnection', () => {
 		const observerAdded = jest.fn()
 		const observerChanged = jest.fn()
 		const observerRemoved = jest.fn()
-		const observer = core.observe('peripheralDevices')
+		const observer = core.observe('peripheralDeviceForDevice')
 		observer.added = observerAdded
 		observer.changed = observerChanged
 		observer.removed = observerRemoved
 
-		await core.autoSubscribe('peripheralDevices', { _id: defaultDeviceId })
+		await core.autoSubscribe('peripheralDeviceForDevice', defaultDeviceId)
 
 		expect(observerAdded).toHaveBeenCalledTimes(1)
 

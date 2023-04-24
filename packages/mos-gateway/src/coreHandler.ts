@@ -195,9 +195,7 @@ export class CoreHandler {
 
 		this.logger.info('Core: Setting up subscriptions for ' + this.core.deviceId + '..')
 		const subs = await Promise.all([
-			this.core.autoSubscribe('peripheralDevices', {
-				_id: this.core.deviceId,
-			}),
+			this.core.autoSubscribe('peripheralDeviceForDevice', this.core.deviceId),
 			this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId),
 		])
 
