@@ -137,6 +137,7 @@ describe('Migrations', () => {
 							thumbnailContainerIds: [],
 							playoutDevices: wrapDefaultObject({}),
 							ingestSubDevices: wrapDefaultObject({}),
+							inputSubDevices: wrapDefaultObject({}),
 						},
 						lastBlueprintConfig: undefined,
 					})
@@ -172,6 +173,7 @@ describe('Migrations', () => {
 							thumbnailContainerIds: [],
 							playoutDevices: wrapDefaultObject({}),
 							ingestSubDevices: wrapDefaultObject({}),
+							inputSubDevices: wrapDefaultObject({}),
 						},
 						lastBlueprintConfig: undefined,
 					})
@@ -207,6 +209,7 @@ describe('Migrations', () => {
 							thumbnailContainerIds: [],
 							playoutDevices: wrapDefaultObject({}),
 							ingestSubDevices: wrapDefaultObject({}),
+							inputSubDevices: wrapDefaultObject({}),
 						},
 						lastBlueprintConfig: undefined,
 					})

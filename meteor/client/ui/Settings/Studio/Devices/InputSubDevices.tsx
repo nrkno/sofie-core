@@ -12,18 +12,17 @@ import {
 	SomeObjectOverrideOp,
 	wrapDefaultObject,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { StudioPlayoutDevice } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { StudioInputDevice } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { faPlus } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { TSR } from '@sofie-automation/blueprints-integration'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { GenericSubDevicesTable } from './GenericSubDevices'
 
-interface StudioPlayoutSubDevicesProps {
+interface StudioInputSubDevicesProps {
 	studioId: StudioId
 	studioDevices: PeripheralDevice[]
 }
-export function StudioPlayoutSubDevices({ studioId, studioDevices }: StudioPlayoutSubDevicesProps): JSX.Element {
+export function StudioInputSubDevices({ studioId, studioDevices }: StudioInputSubDevicesProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const studio = useTracker(() => Studios.findOne(studioId), [studioId])
@@ -33,7 +32,7 @@ export function StudioPlayoutSubDevices({ studioId, studioDevices }: StudioPlayo
 			if (studio?._id) {
 				Studios.update(studio._id, {
 					$set: {
-						'peripheralDeviceSettings.playoutDevices.overrides': newOps,
+						'peripheralDeviceSettings.inputSubDevices.overrides': newOps,
 					},
 				})
 			}
@@ -42,20 +41,20 @@ export function StudioPlayoutSubDevices({ studioId, studioDevices }: StudioPlayo
 	)
 
 	const baseSettings = useMemo(
-		() => studio?.peripheralDeviceSettings?.playoutDevices ?? wrapDefaultObject({}),
-		[studio?.peripheralDeviceSettings?.playoutDevices]
+		() => studio?.peripheralDeviceSettings?.inputSubDevices ?? wrapDefaultObject({}),
+		[studio?.peripheralDeviceSettings?.inputSubDevices]
 	)
 
 	const overrideHelper = useOverrideOpHelper(saveOverrides, baseSettings)
 
 	const wrappedSubDevices = useMemo(
 		() =>
-			getAllCurrentAndDeletedItemsFromOverrides<StudioPlayoutDevice>(baseSettings, (a, b) => a[0].localeCompare(b[0])),
+			getAllCurrentAndDeletedItemsFromOverrides<StudioInputDevice>(baseSettings, (a, b) => a[0].localeCompare(b[0])),
 		[baseSettings]
 	)
 
 	const filteredPeripheralDevices = useMemo(
-		() => studioDevices.filter((d) => d.category === PeripheralDeviceCategory.PLAYOUT),
+		() => studioDevices.filter((d) => d.category === PeripheralDeviceCategory.TRIGGER_INPUT),
 		[studioDevices]
 	)
 
@@ -67,11 +66,9 @@ export function StudioPlayoutSubDevices({ studioId, studioDevices }: StudioPlayo
 		}
 
 		const newId = `device${idx}`
-		const newDevice = literal<StudioPlayoutDevice>({
+		const newDevice = literal<StudioInputDevice>({
 			peripheralDeviceId: undefined,
-			options: {
-				type: TSR.DeviceType.ABSTRACT,
-			},
+			options: {},
 		})
 
 		const addOp = literal<ObjectOverrideSetOp>({
@@ -82,7 +79,7 @@ export function StudioPlayoutSubDevices({ studioId, studioDevices }: StudioPlayo
 
 		Studios.update(studioId, {
 			$push: {
-				'peripheralDeviceSettings.playoutDevices.overrides': addOp,
+				'peripheralDeviceSettings.inputSubDevices.overrides': addOp,
 			},
 		})
 	}, [studioId, wrappedSubDevices])
@@ -91,11 +88,11 @@ export function StudioPlayoutSubDevices({ studioId, studioDevices }: StudioPlayo
 		<div>
 			<h2 className="mhn">
 				<Tooltip
-					overlay={t('Playout devices are needed to control your studio hardware')}
+					overlay={t('Input devices allow you to trigger Sofie actions remotely')}
 					visible={getHelpMode() && !wrappedSubDevices.length}
 					placement="right"
 				>
-					<span>{t('Playout Devices')}</span>
+					<span>{t('Input Devices')}</span>
 				</Tooltip>
 			</h2>
 
