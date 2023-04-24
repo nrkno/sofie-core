@@ -76,7 +76,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 	}
 
 	private onToggleSticky = (sourceLayerId: string, e: any) => {
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.activationId) {
+		if (this.props.playlist && this.props.playlist.currentPartInfo && this.props.playlist.activationId) {
 			const { t } = this.props
 			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e, ts) =>
 				MeteorCall.userAction.sourceLayerStickyPieceStart(e, ts, this.props.playlist._id, sourceLayerId)
@@ -102,7 +102,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 			return
 		}
 
-		const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+		const currentPartInstanceId = this.props.playlist.currentPartInfo?.partInstanceId
 
 		if ((!this.isAdLibOnAir(piece) || queueWhenOnAir) && this.props.playlist && currentPartInstanceId) {
 			if (piece.isAction && piece.adlibAction) {
@@ -149,7 +149,12 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 		const { t } = this.props
 		if (this.props.studioMode) {
 			doUserAction(t, e, UserAction.TAKE, (e, ts) =>
-				MeteorCall.userAction.take(e, ts, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+				MeteorCall.userAction.take(
+					e,
+					ts,
+					this.props.playlist._id,
+					this.props.playlist.currentPartInfo?.partInstanceId ?? null
+				)
 			)
 		}
 	}

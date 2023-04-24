@@ -128,7 +128,7 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 		}
 
 		// check for any known libraries
-		for (const [libName, targetVersion] of Object.entries(expectedLibraryVersions)) {
+		for (const [libName, targetVersion] of Object.entries<string>(expectedLibraryVersions)) {
 			if (deviceVersions[libName] && targetVersion !== '0.0.0') {
 				const deviceLibVersion = parseVersion(deviceVersions[libName])
 				const checkMessage = compareSemverVersions(
@@ -192,7 +192,7 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 	await SystemReadAccess.systemStatus(cred0)
 
 	// Check systemStatuses:
-	for (const [key, status] of Object.entries(systemStatuses)) {
+	for (const [key, status] of Object.entries<StatusObjectInternal>(systemStatuses)) {
 		checks.push({
 			description: key,
 			status: status2ExternalStatus(status.statusCode),
@@ -302,7 +302,9 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 		...(await RelevantSystemVersions),
 	}
 
-	for (const [blueprintId, blueprint] of Object.entries(await getBlueprintVersions())) {
+	for (const [blueprintId, blueprint] of Object.entries<{ name: string; version: string }>(
+		await getBlueprintVersions()
+	)) {
 		// Use the name as key to make it easier to read for a human:
 		let key = 'blueprint_' + blueprint.name
 

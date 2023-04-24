@@ -1,5 +1,5 @@
+import React, { PropsWithChildren } from 'react'
 import { Meteor } from 'meteor/meteor'
-import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import { withTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { Part } from '../../../../lib/collections/Parts'
@@ -55,10 +55,10 @@ interface IRundownTimingProviderTrackedProps {
  * RundownTimingProvider is a container component that provides a timing context to all child elements.
  * It allows calculating a single
  * @class RundownTimingProvider
- * @extends React.Component<IRundownTimingProviderProps>
+ * @extends React.Component<PropsWithChildren<IRundownTimingProviderProps>>
  */
 export const RundownTimingProvider = withTracker<
-	IRundownTimingProviderProps,
+	PropsWithChildren<IRundownTimingProviderProps>,
 	IRundownTimingProviderState,
 	IRundownTimingProviderTrackedProps
 >((props) => {
@@ -77,8 +77,8 @@ export const RundownTimingProvider = withTracker<
 		segments = incomingSegments
 		const partInstances = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist)
 
-		const currentPartInstance = partInstances.find((p) => p._id === props.playlist?.currentPartInstanceId)
-		const previousPartInstance = partInstances.find((p) => p._id === props.playlist?.previousPartInstanceId)
+		const currentPartInstance = partInstances.find((p) => p._id === props.playlist?.currentPartInfo?.partInstanceId)
+		const previousPartInstance = partInstances.find((p) => p._id === props.playlist?.previousPartInfo?.partInstanceId)
 
 		currentRundown = currentPartInstance ? rundowns.find((r) => r._id === currentPartInstance.rundownId) : rundowns[0]
 		// These are needed to retrieve the start time of a segment for calculating the remaining budget, in case the first partInstance was removed
@@ -158,7 +158,7 @@ export const RundownTimingProvider = withTracker<
 })(
 	class RundownTimingProvider
 		extends MeteorReactComponent<
-			IRundownTimingProviderProps & IRundownTimingProviderTrackedProps,
+			PropsWithChildren<IRundownTimingProviderProps> & IRundownTimingProviderTrackedProps,
 			IRundownTimingProviderState
 		>
 		implements React.ChildContextProvider<IRundownTimingProviderChildContext>
@@ -239,11 +239,13 @@ export const RundownTimingProvider = withTracker<
 			}
 			if (
 				prevProps.parts !== this.props.parts ||
-				prevProps.playlist?.nextPartInstanceId !== this.props.playlist?.nextPartInstanceId ||
-				prevProps.playlist?.currentPartInstanceId !== this.props.playlist?.currentPartInstanceId
+				prevProps.playlist?.nextPartInfo?.partInstanceId !== this.props.playlist?.nextPartInfo?.partInstanceId ||
+				prevProps.playlist?.currentPartInfo?.partInstanceId !== this.props.playlist?.currentPartInfo?.partInstanceId
 			) {
 				// empty the temporary Part Instances cache
 				this.timingCalculator.clearTempPartInstances()
+				this.refreshDecimator = 0 // Force LR update
+				this.lastSyncedTime = 0 // Force synced update
 				this.onRefreshTimer()
 			}
 		}

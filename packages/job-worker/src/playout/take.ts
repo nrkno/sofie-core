@@ -52,34 +52,34 @@ export async function handleTakeNextPart(context: JobContext, data: TakeNextPart
 
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
 
-			if (!playlist.nextPartInstanceId && playlist.holdState !== RundownHoldState.ACTIVE)
+			if (!playlist.nextPartInfo && playlist.holdState !== RundownHoldState.ACTIVE)
 				throw UserError.create(UserErrorMessage.TakeNoNextPart, undefined, 412)
 
-			if (playlist.currentPartInstanceId !== data.fromPartInstanceId)
-				throw UserError.create(UserErrorMessage.TakeFromIncorrectPart)
+			if ((playlist.currentPartInfo?.partInstanceId ?? null) !== data.fromPartInstanceId)
+				throw UserError.create(UserErrorMessage.TakeFromIncorrectPart, undefined, 412)
 		},
 		async (cache) => {
 			const playlist = cache.Playlist.doc
 
 			let lastTakeTime = playlist.lastTakeTime ?? 0
 
-			if (playlist.currentPartInstanceId) {
-				const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
+			if (playlist.currentPartInfo) {
+				const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInfo.partInstanceId)
 				if (currentPartInstance && currentPartInstance.timings?.plannedStartedPlayback) {
 					lastTakeTime = Math.max(lastTakeTime, currentPartInstance.timings.plannedStartedPlayback)
 				} else {
 					// Don't throw an error here. It's bad, but it's more important to be able to continue with the take.
 					logger.error(
-						`PartInstance "${playlist.currentPartInstanceId}", set as currentPart in "${playlist._id}", not found!`
+						`PartInstance "${playlist.currentPartInfo.partInstanceId}", set as currentPart in "${playlist._id}", not found!`
 					)
 				}
 			}
 
 			if (lastTakeTime && now - lastTakeTime < MINIMUM_TAKE_SPAN) {
 				logger.debug(
-					`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${playlist.currentPartInstanceId}: ${
-						now - lastTakeTime
-					}`
+					`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${
+						playlist.currentPartInfo?.partInstanceId
+					}: ${now - lastTakeTime}`
 				)
 				throw UserError.create(UserErrorMessage.TakeRateLimit, { duration: MINIMUM_TAKE_SPAN })
 			}
@@ -212,8 +212,11 @@ export async function performTakeToNextedPart(context: JobContext, cache: CacheF
 	updatePartInstanceOnTake(context, cache, showStyle, blueprint, takeRundown, takePartInstance, currentPartInstance)
 
 	cache.Playlist.update((p) => {
-		p.previousPartInstanceId = p.currentPartInstanceId
-		p.currentPartInstanceId = takePartInstance._id
+		p.previousPartInfo = p.currentPartInfo
+		p.currentPartInfo = {
+			partInstanceId: takePartInstance._id,
+			rundownId: takePartInstance.rundownId,
+		}
 
 		if (!p.holdState || p.holdState === RundownHoldState.COMPLETE) {
 			p.holdState = RundownHoldState.NONE
@@ -240,7 +243,7 @@ export async function performTakeToNextedPart(context: JobContext, cache: CacheF
 
 	// Setup the parts for the HOLD we are starting
 	if (
-		cache.Playlist.doc.previousPartInstanceId &&
+		cache.Playlist.doc.previousPartInfo &&
 		(cache.Playlist.doc.holdState as RundownHoldState) === RundownHoldState.ACTIVE
 	) {
 		startHold(context, cache, playlistActivationId, currentPartInstance, nextPartInstance)
@@ -573,7 +576,7 @@ async function completeHold(
 		return p
 	})
 
-	if (cache.Playlist.doc.currentPartInstanceId) {
+	if (cache.Playlist.doc.currentPartInfo) {
 		if (!currentPartInstance) throw new Error('currentPart not found!')
 
 		// Clear the current extension line

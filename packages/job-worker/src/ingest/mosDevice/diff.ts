@@ -86,8 +86,8 @@ export async function diffAndApplyChanges(
 	const renamedSegments = applyExternalIdDiff(cache, segmentDiff)
 
 	// Figure out which segments need to be regenerated
-	const segmentsToRegenerate = Object.values(segmentDiff.added)
-	for (const changedSegment of Object.values(segmentDiff.changed)) {
+	const segmentsToRegenerate = Object.values<LocalIngestSegment>(segmentDiff.added)
+	for (const changedSegment of Object.values<LocalIngestSegment>(segmentDiff.changed)) {
 		// Rank changes are handled above
 		if (!segmentDiff.onlyRankChanged[changedSegment.externalId]) {
 			segmentsToRegenerate.push(changedSegment)

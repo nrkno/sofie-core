@@ -12,7 +12,7 @@ import { IContextMenuContext } from '../RundownView'
 import { literal } from '../../../lib/lib'
 import { SegmentTimelinePartElementId } from '../SegmentTimeline/Parts/SegmentTimelinePart'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
-import { getAllowSpeaking } from '../../lib/localStorage'
+import { getAllowSpeaking, getAllowVibrating } from '../../lib/localStorage'
 import RundownViewEventBus, { HighlightEvent, RundownViewEvents } from '../../../lib/api/triggers/RundownViewEventBus'
 import { Meteor } from 'meteor/meteor'
 import { StoryboardPartTransitions } from './StoryboardPartTransitions'
@@ -247,6 +247,7 @@ export function StoryboardPart({
 					<CurrentPartRemaining
 						currentPartInstanceId={part.instance._id}
 						speaking={getAllowSpeaking()}
+						vibrating={getAllowVibrating()}
 						heavyClassName="overtime"
 					/>
 				</div>

@@ -130,10 +130,7 @@ function actionToAdLibPieceUi(
 }
 
 interface IFetchAndFilterProps {
-	playlist: Pick<
-		RundownPlaylist,
-		'_id' | 'currentPartInstanceId' | 'nextPartInstanceId' | 'previousPartInstanceId' | 'rundownIdsInOrder'
-	>
+	playlist: Pick<RundownPlaylist, '_id' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo' | 'rundownIdsInOrder'>
 	showStyleBase: Pick<UIShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>
 	filter?: RundownLayoutFilterBase
 	includeGlobalAdLibs?: boolean
@@ -278,8 +275,8 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 			}
 		},
 		`uiSegments_${props.filter?._id || 'no_filter'}`,
-		props.playlist.currentPartInstanceId,
-		props.playlist.nextPartInstanceId,
+		props.playlist.currentPartInfo?.partInstanceId ?? null,
+		props.playlist.nextPartInfo?.partInstanceId ?? null,
 		segments,
 		rundowns
 	)
@@ -388,7 +385,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 		})
 
 		currentRundown = rundowns[0]
-		const partInstanceId = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
+		const partInstanceId = props.playlist.currentPartInfo?.partInstanceId || props.playlist.nextPartInfo?.partInstanceId
 		if (partInstanceId) {
 			const partInstance = PartInstances.findOne(partInstanceId)
 			if (partInstance) {
@@ -411,7 +408,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 							}
 						).fetch()
 					rundownBaselineAdLibs = rundownAdLibItems.concat(
-						Object.values(sourceLayerLookup)
+						Object.values<ISourceLayer | undefined>(sourceLayerLookup)
 							.filter((i): i is ISourceLayer => !!(i && i.isSticky))
 							.sort((a, b) => a._rank - b._rank)
 							.map((layer) =>
@@ -488,7 +485,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 		if ((props.filter as DashboardLayoutFilter).includeClearInRundownBaseline) {
 			const rundownBaselineClearAdLibs = memoizedIsolatedAutorun(
 				(sourceLayers: SourceLayers) => {
-					return Object.values(sourceLayers)
+					return Object.values<ISourceLayer | undefined>(sourceLayers)
 						.filter((i): i is ISourceLayer => !!i && !!i.isClearable)
 						.sort((a, b) => a._rank - b._rank)
 						.map((layer) =>
@@ -549,12 +546,7 @@ export function AdLibPanel({
 			fetchAndFilter({
 				playlist: playlist as Pick<
 					RundownPlaylist,
-					| '_id'
-					| 'studioId'
-					| 'currentPartInstanceId'
-					| 'nextPartInstanceId'
-					| 'previousPartInstanceId'
-					| 'rundownIdsInOrder'
+					'_id' | 'studioId' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo' | 'rundownIdsInOrder'
 				>,
 				showStyleBase: showStyleBase as Pick<UIShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>,
 				filter,
@@ -563,9 +555,9 @@ export function AdLibPanel({
 		[
 			playlist._id,
 			playlist.studioId,
-			playlist.currentPartInstanceId,
-			playlist.nextPartInstanceId,
-			playlist.previousPartInstanceId,
+			playlist.currentPartInfo?.partInstanceId,
+			playlist.nextPartInfo?.partInstanceId,
+			playlist.previousPartInfo?.partInstanceId,
 			playlist.rundownIdsInOrder,
 			showStyleBase._id,
 			showStyleBase.sourceLayers,
@@ -630,7 +622,7 @@ export function AdLibPanel({
 	}, [rundownBaselineAdLibs, uiSegments])
 
 	const playlistId = playlist._id
-	const currentPartInstanceId = playlist.currentPartInstanceId
+	const currentPartInstanceId = playlist.currentPartInfo?.partInstanceId
 
 	const onToggleAdLib = useCallback(
 		(adlibPiece: IAdLibListItem, queue: boolean, e: KeyboardEvent, mode?: IBlueprintActionTriggerMode | undefined) => {

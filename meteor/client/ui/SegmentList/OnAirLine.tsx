@@ -8,7 +8,7 @@ import {
 import { SIMULATED_PLAYBACK_HARD_MARGIN } from '../SegmentTimeline/SegmentTimelineContainer'
 import { PartInstanceLimited } from '../../../lib/Rundown'
 import { useTranslation } from 'react-i18next'
-import { getAllowSpeaking } from '../../lib/localStorage'
+import { getAllowSpeaking, getAllowVibrating } from '../../lib/localStorage'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
 import { AutoNextStatus } from '../RundownView/RundownTiming/AutoNextStatus'
 import classNames from 'classnames'
@@ -110,6 +110,7 @@ export const OnAirLine = withTiming<IProps, {}>({
 					<CurrentPartRemaining
 						currentPartInstanceId={partInstance._id}
 						speaking={getAllowSpeaking()}
+						vibrating={getAllowVibrating()}
 						heavyClassName="overtime"
 					/>
 				</div>

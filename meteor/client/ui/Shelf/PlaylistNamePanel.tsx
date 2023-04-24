@@ -62,13 +62,13 @@ class PlaylistNamePanelInner extends MeteorReactComponent<
 
 export const PlaylistNamePanel = withTracker<IPlaylistNamePanelProps, IState, IPlaylistNamePanelTrackedProps>(
 	(props: IPlaylistNamePanelProps) => {
-		if (props.playlist.currentPartInstanceId) {
+		if (props.playlist.currentPartInfo) {
 			const livePart: PartInstance = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist, {
-				_id: props.playlist.currentPartInstanceId,
+				_id: props.playlist.currentPartInfo.partInstanceId,
 			})[0]
 			if (!livePart) {
 				logger.warn(
-					`No PartInstance found for PartInstanceId: ${props.playlist.currentPartInstanceId} in Playlist: ${props.playlist._id}`
+					`No PartInstance found for PartInstanceId: ${props.playlist.currentPartInfo.partInstanceId} in Playlist: ${props.playlist._id}`
 				)
 				return {}
 			}

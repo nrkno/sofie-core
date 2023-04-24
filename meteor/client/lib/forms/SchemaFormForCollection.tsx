@@ -6,15 +6,19 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import React, { useMemo } from 'react'
 import { MongoCollection } from '../../../lib/collections/lib'
-import { WrappedOverridableItemNormal, OverrideOpHelper } from '../../ui/Settings/util/OverrideOpHelper'
+import { WrappedOverridableItemNormal, OverrideOpHelperForItemContents } from '../../ui/Settings/util/OverrideOpHelper'
 import { SchemaFormCommonProps } from './schemaFormUtil'
-import { SchemaFormWithOverrides } from './schemaFormWithOverrides'
+import { SchemaFormWithOverrides } from './SchemaFormWithOverrides'
 
 interface SchemaFormForCollectionProps extends SchemaFormCommonProps {
-	object: any
+	/** The collection to operate on */
 	collection: MongoCollection<any>
+	/** Id of the document in the collection */
 	objectId: ProtectedString<any>
+	/** Base path of the schema within the document */
 	basePath: string
+	/** The portion of the document where the schema applies, that will be modified */
+	object: any
 
 	/**
 	 * If set, this form is to build a Partial object of overrides to apply over the provided object
@@ -45,7 +49,7 @@ export function SchemaFormForCollection({
 			}
 
 			// Note: these ops use a prefix of `0.` to satisfy how the objectWithOverrides expects them to look
-			const overrideOps = Object.entries(object).map(([key, val]) =>
+			const overrideOps = Object.entries<any>(object).map(([key, val]) =>
 				val === undefined
 					? literal<ObjectOverrideDeleteOp>({
 							op: 'delete',
@@ -83,7 +87,7 @@ export function SchemaFormForCollection({
  * An alternate OverrideOpHelper designed to directly mutate a collection, instead of using the `ObjectWithOverrides` system.
  * This allows us to have one SchemaForm implementation that can handle working with `ObjectWithOverrides`, and basic objects in mongodb
  */
-class OverrideOpHelperCollection implements OverrideOpHelper {
+class OverrideOpHelperCollection implements OverrideOpHelperForItemContents {
 	readonly #collection: MongoCollection<any>
 	readonly #objectId: ProtectedString<any>
 	readonly #basePath: string
@@ -101,15 +105,6 @@ class OverrideOpHelperCollection implements OverrideOpHelper {
 			},
 		})
 	}
-	resetItem(_itemId: string): void {
-		// Not supported as this is faking an item with overrides
-	}
-	deleteItem(_itemId: string): void {
-		// Not supported as this is faking an item with overrides
-	}
-	changeItemId(_oldItemId: string, _newItemId: string): void {
-		// Not supported as this is faking an item with overrides
-	}
 	setItemValue(_itemId: string, subPath: string, value: any): void {
 		if (value === undefined) {
 			this.#collection.update(this.#objectId, {
@@ -124,8 +119,5 @@ class OverrideOpHelperCollection implements OverrideOpHelper {
 				},
 			})
 		}
-	}
-	replaceItem(_itemId: string, _value: any): void {
-		// Not supported as this is faking an item with overrides
 	}
 }

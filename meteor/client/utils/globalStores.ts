@@ -6,6 +6,8 @@ import {
 } from '../../lib/collections/PackageContainerPackageStatus'
 import { ReactiveStore } from '../../lib/ReactiveStore'
 
+export type UiPackageContainerPackageStatus = Omit<PackageContainerPackageStatusDB, 'modified'>
+
 const storePackageContainerPackageStatuses = new ReactiveStore<
 	PackageContainerPackageId,
 	PackageContainerPackageStatusDB | undefined
@@ -16,12 +18,19 @@ export const getPackageContainerPackageStatus = (
 	studioId: StudioId,
 	packageContainerId: string,
 	expectedPackageId: ExpectedPackageId
-): PackageContainerPackageStatusDB | undefined => {
+): UiPackageContainerPackageStatus | undefined => {
 	const id = getPackageContainerPackageId(studioId, packageContainerId, expectedPackageId)
 
 	return storePackageContainerPackageStatuses.getValue(id, () => {
-		return PackageContainerPackageStatuses.findOne({
-			_id: id,
-		})
+		return PackageContainerPackageStatuses.findOne(
+			{
+				_id: id,
+			},
+			{
+				projection: {
+					modified: 0,
+				},
+			}
+		)
 	})
 }

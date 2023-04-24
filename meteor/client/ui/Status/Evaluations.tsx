@@ -123,7 +123,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 											{evaluation.answers && evaluation.answers.q2}
 										</td>,
 										<td key="c2" className="user-action-log__rundown">
-											{evaluation.playlistId}
+											{unprotectString(evaluation.playlistId)}
 										</td>,
 									]
 									tds = tds.concat(

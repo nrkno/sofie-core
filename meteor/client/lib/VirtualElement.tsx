@@ -48,7 +48,7 @@ const OPTIMIZE_PERIOD = 5000
  * @class VirtualElement
  * @extends {React.Component<IProps, IState>}
  */
-export class VirtualElement extends React.Component<IProps, IState> {
+export class VirtualElement extends React.Component<React.PropsWithChildren<IProps>, IState> {
 	private el: HTMLElement | null = null
 	private instance: HTMLElement | null = null
 	private optimizeTimeout: NodeJS.Timer | null = null

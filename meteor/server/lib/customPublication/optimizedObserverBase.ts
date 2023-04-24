@@ -312,7 +312,7 @@ async function createOptimizedObserverWorker<
 			context: {},
 			lastData: [],
 			stopObservers: async () => {
-				await Promise.allSettled(observers.map((observer) => observer.stop()))
+				await Promise.allSettled(observers.map(async (observer) => observer.stop()))
 			},
 		}
 

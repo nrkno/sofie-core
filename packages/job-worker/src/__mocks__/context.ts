@@ -54,6 +54,7 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { defaultStudio } from './defaultCollectionObjects'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { processShowStyleBase, processShowStyleVariant } from '../jobs/showStyle'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 export function setupDefaultJobEnvironment(studioId?: StudioId): MockJobContext {
 	const collections = getMockCollections()
@@ -246,7 +247,7 @@ const MockStudioBlueprint: () => StudioBlueprintManifest = () => ({
 		},
 	},
 
-	studioConfigManifest: [],
+	studioConfigSchema: JSONBlobStringify({}),
 	studioMigrations: [],
 	getBaseline: () => {
 		return {
@@ -278,7 +279,7 @@ const MockShowStyleBlueprint: () => ShowStyleBlueprintManifest = () => ({
 		},
 	},
 
-	showStyleConfigManifest: [],
+	showStyleConfigSchema: JSONBlobStringify({}),
 	showStyleMigrations: [],
 	getShowStyleVariantId: (_context, variants): string | null => {
 		return variants[0]._id

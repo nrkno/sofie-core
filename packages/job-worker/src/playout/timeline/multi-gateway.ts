@@ -121,10 +121,10 @@ function updatePartInstancePlannedTimes(
 	}
 
 	// Also mark the previous as ended
-	if (cache.Playlist.doc.previousPartInstanceId) {
+	if (cache.Playlist.doc.previousPartInfo) {
 		const previousPartEndTime = currentPartGroupStartTime + (timingContext.previousPartOverlap ?? 0)
 		cache.PartInstances.updateOne(
-			cache.Playlist.doc.previousPartInstanceId,
+			cache.Playlist.doc.previousPartInfo.partInstanceId,
 			(instance) => {
 				if (
 					instance.timings?.plannedStartedPlayback &&
@@ -214,7 +214,7 @@ function deNowifyCurrentPieces(
 
 	// Pieces without concrete times will add some special 'now' objects to the timeline that they can reference
 	// Make sure that the all have concrete times attached
-	for (const obj of Object.values(timelineObjsMap)) {
+	for (const obj of Object.values<TimelineObjRundown>(timelineObjsMap)) {
 		const objMetadata = obj.metaData as Partial<PieceTimelineMetadata> | undefined
 		if (objMetadata?.isPieceTimeline && !Array.isArray(obj.enable) && obj.enable.start === 'now') {
 			if (obj.inGroup === timingContext.currentPartGroup.id) {
@@ -259,8 +259,8 @@ function updatePlannedTimingsForPieceInstances(
 	timelineObjsMap: Record<string, TimelineObjRundown>
 ) {
 	const existingInfiniteTimings = new Map<PieceInstanceInfiniteId, Time>()
-	if (cache.Playlist.doc.previousPartInstanceId) {
-		const previousPartInstanceId = cache.Playlist.doc.previousPartInstanceId
+	if (cache.Playlist.doc.previousPartInfo) {
+		const previousPartInstanceId = cache.Playlist.doc.previousPartInfo.partInstanceId
 		const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === previousPartInstanceId)
 		for (const pieceInstance of pieceInstances) {
 			// Track the timings for the infinites
@@ -287,7 +287,7 @@ function updatePlannedTimingsForPieceInstances(
 		}
 	}, true)
 
-	if (cache.Playlist.doc.nextPartInstanceId && partGroupTimings.nextStartTime) {
+	if (cache.Playlist.doc.nextPartInfo && partGroupTimings.nextStartTime) {
 		const nextPartGroupStartTime0 = partGroupTimings.nextStartTime
 		cache.PieceInstances.updateAll((p) => {
 			if (p.partInstanceId === currentPartInstance._id) {

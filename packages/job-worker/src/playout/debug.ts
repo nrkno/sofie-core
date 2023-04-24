@@ -38,7 +38,7 @@ export async function handleDebugRegenerateNextPartInstance(
 
 	await runJobWithPlayoutCache(context, data, null, async (cache) => {
 		const playlist = cache.Playlist.doc
-		if (playlist.nextPartInstanceId && playlist.activationId) {
+		if (playlist.nextPartInfo && playlist.activationId) {
 			const { nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 			const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
 			if (part) {

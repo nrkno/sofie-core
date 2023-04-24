@@ -106,7 +106,7 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 			if (options.projection) {
 				const fields2: any = (fields = {})
 
-				for (const [k, v] of Object.entries(options.projection)) {
+				for (const [k, v] of Object.entries<any>(options.projection)) {
 					if (v === 0 || v === false) {
 						fields2[k] = 0
 					} else if (v === 1 || v === true) {
@@ -121,7 +121,7 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 			if (options.sort) {
 				const sort2: any = (sort = {})
 				if (typeof options.sort !== 'object') throw new Error(`find expects sort to be an object (for now)`)
-				for (const [k, v] of Object.entries(options.sort)) {
+				for (const [k, v] of Object.entries<any>(options.sort)) {
 					if (v === 1 || v === -1) {
 						sort2[k] = v
 					} else {

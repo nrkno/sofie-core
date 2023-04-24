@@ -3,8 +3,6 @@ import { ReadonlyDeep } from 'type-fest'
 import {
 	BlueprintConfigCoreConfig,
 	ConfigItemValue,
-	ConfigManifestEntry,
-	IBlueprintConfig,
 	ShowStyleBlueprintManifest,
 	StudioBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
@@ -157,27 +155,4 @@ export function preprocessShowStyleConfig(
 	}
 
 	return res
-}
-
-/**
- * Find any config manifest keys marked as `required` that do not have values specified
- * @param manifest Blueprint Config Manifest to validate for
- * @param config Blueprint Config to check
- * @returns Array of manifest entry names that are missing values
- */
-export function findMissingConfigs(
-	manifest: ReadonlyDeep<ConfigManifestEntry[]> | undefined,
-	config: ReadonlyDeep<IBlueprintConfig>
-): string[] {
-	const missingKeys: string[] = []
-	if (manifest === undefined) {
-		return missingKeys
-	}
-	_.each(manifest, (m) => {
-		if (m.required && config && objectPathGet(config, m.id) === undefined) {
-			missingKeys.push(m.name)
-		}
-	})
-
-	return missingKeys
 }

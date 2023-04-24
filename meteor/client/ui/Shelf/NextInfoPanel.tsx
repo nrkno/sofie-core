@@ -64,8 +64,8 @@ export const NextInfoPanel = withTracker<INextInfoPanelProps, {}, INextInfoPanel
 		let nextPartInstance: PartInstance | undefined = undefined
 		let nextSegment: Segment | undefined = undefined
 
-		if (props.playlist.nextPartInstanceId) {
-			nextPartInstance = PartInstances.findOne(props.playlist.nextPartInstanceId)
+		if (props.playlist.nextPartInfo) {
+			nextPartInstance = PartInstances.findOne(props.playlist.nextPartInfo.partInstanceId)
 		}
 		if (nextPartInstance) {
 			nextSegment = Segments.findOne(nextPartInstance.segmentId)

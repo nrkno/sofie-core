@@ -1,10 +1,11 @@
 import {
 	BlueprintManifestType,
-	ConfigManifestEntry,
 	IBlueprintConfig,
 	IStudioConfigPreset,
 	IShowStyleConfigPreset,
 } from '@sofie-automation/blueprints-integration'
+import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { ProtectedString } from '../protectedString'
 import { BlueprintId, OrganizationId } from './Ids'
 
@@ -30,8 +31,8 @@ export interface Blueprint {
 	blueprintId: string
 	blueprintType?: BlueprintManifestType
 
-	studioConfigManifest?: ConfigManifestEntry[]
-	showStyleConfigManifest?: ConfigManifestEntry[]
+	studioConfigSchema?: JSONBlob<JSONSchema>
+	showStyleConfigSchema?: JSONBlob<JSONSchema>
 
 	studioConfigPresets?: Record<string, IStudioConfigPreset>
 	showStyleConfigPresets?: Record<string, IShowStyleConfigPreset>

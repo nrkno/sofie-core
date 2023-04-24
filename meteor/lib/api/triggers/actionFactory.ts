@@ -42,7 +42,7 @@ type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T
 export interface ReactivePlaylistActionContext {
 	rundownPlaylistId: ReactiveVar<RundownPlaylistId>
 	rundownPlaylist: ReactiveVar<
-		Pick<RundownPlaylist, '_id' | 'name' | 'activationId' | 'nextPartInstanceId' | 'currentPartInstanceId'>
+		Pick<RundownPlaylist, '_id' | 'name' | 'activationId' | 'nextPartInfo' | 'currentPartInfo'>
 	>
 
 	currentRundownId: ReactiveVar<RundownId | null>
@@ -120,7 +120,9 @@ function createRundownPlaylistContext(
 			nextPartId: new DummyReactiveVar(playlistContext.nextPartId),
 			currentSegmentPartIds: new DummyReactiveVar(playlistContext.currentSegmentPartIds),
 			nextSegmentPartIds: new DummyReactiveVar(playlistContext.nextSegmentPartIds),
-			currentPartInstanceId: new DummyReactiveVar(playlistContext.rundownPlaylist.currentPartInstanceId),
+			currentPartInstanceId: new DummyReactiveVar(
+				playlistContext.rundownPlaylist.currentPartInfo?.partInstanceId ?? null
+			),
 		}
 	} else if (filterChain[0].object === 'rundownPlaylist' && context.studio && Meteor.isServer) {
 		const playlist = rundownPlaylistFilter(
@@ -135,8 +137,8 @@ function createRundownPlaylistContext(
 				currentSegmentPartIds: PartId[] = [],
 				nextSegmentPartIds: PartId[] = []
 
-			if (playlist.currentPartInstanceId) {
-				currentPartInstance = PartInstances.findOne(playlist.currentPartInstanceId) ?? null
+			if (playlist.currentPartInfo) {
+				currentPartInstance = PartInstances.findOne(playlist.currentPartInfo.partInstanceId) ?? null
 				const currentPart = currentPartInstance?.part ?? null
 				if (currentPart) {
 					currentPartId = currentPart._id
@@ -145,8 +147,8 @@ function createRundownPlaylistContext(
 					}).map((part) => part._id)
 				}
 			}
-			if (playlist.nextPartInstanceId) {
-				const nextPart = PartInstances.findOne(playlist.nextPartInstanceId)?.part ?? null
+			if (playlist.nextPartInfo) {
+				const nextPart = PartInstances.findOne(playlist.nextPartInfo.partInstanceId)?.part ?? null
 				if (nextPart) {
 					nextPartId = nextPart._id
 					nextSegmentPartIds = Parts.find({
@@ -167,7 +169,7 @@ function createRundownPlaylistContext(
 				currentSegmentPartIds: new DummyReactiveVar(currentSegmentPartIds),
 				nextPartId: new DummyReactiveVar(nextPartId),
 				nextSegmentPartIds: new DummyReactiveVar(nextSegmentPartIds),
-				currentPartInstanceId: new DummyReactiveVar(playlist.currentPartInstanceId),
+				currentPartInstanceId: new DummyReactiveVar(playlist.currentPartInfo?.partInstanceId ?? null),
 			}
 		}
 	} else {
@@ -213,7 +215,7 @@ function createAdLibAction(
 				logger.warn(`Could not create RundownPlaylist context for executable AdLib Action`, filterChain)
 				return
 			}
-			const currentPartInstanceId = innerCtx.rundownPlaylist.get().currentPartInstanceId
+			const currentPartInstanceId = innerCtx.rundownPlaylist.get().currentPartInfo?.partInstanceId
 
 			const sourceLayerIdsToClear: string[] = []
 			Tracker.nonreactive(() => compiledAdLibFilter(innerCtx)).forEach((wrappedAdLib) => {

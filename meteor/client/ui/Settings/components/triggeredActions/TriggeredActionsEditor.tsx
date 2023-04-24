@@ -65,7 +65,9 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 			isOver: monitor.isOver(),
 			canDrop: monitor.canDrop(),
 		}),
-		canDrop: (item) => (item.type === TRIGGERED_ACTION_ENTRY_DRAG_TYPE ? systemWideCollapsed : false),
+		canDrop: () => {
+			return systemWideCollapsed
+		},
 		drop: () => undefined,
 		hover: (_, monitor) => {
 			if (monitor.canDrop() && systemWideCollapsed) {
@@ -213,8 +215,8 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 			let thisCurrentSegmentPartIds: PartId[] = []
 			let thisNextSegmentPartIds: PartId[] = []
 			if (rundownPlaylist) {
-				if (rundownPlaylist.currentPartInstanceId) {
-					const currentPartInstance = PartInstances.findOne(rundownPlaylist.currentPartInstanceId)
+				if (rundownPlaylist.currentPartInfo) {
+					const currentPartInstance = PartInstances.findOne(rundownPlaylist.currentPartInfo.partInstanceId)
 					if (currentPartInstance) {
 						thisCurrentPart = currentPartInstance.part
 						thisCurrentSegmentPartIds = Parts.find({
@@ -222,8 +224,8 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 						}).map((part) => part._id)
 					}
 				}
-				if (rundownPlaylist.nextPartInstanceId) {
-					const nextPartInstance = PartInstances.findOne(rundownPlaylist.nextPartInstanceId)
+				if (rundownPlaylist.nextPartInfo) {
+					const nextPartInstance = PartInstances.findOne(rundownPlaylist.nextPartInfo.partInstanceId)
 					if (nextPartInstance) {
 						thisNextPart = nextPartInstance.part
 						thisNextSegmentPartIds = Parts.find({
@@ -245,7 +247,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 				rundownPlaylist: rundownPlaylist,
 			})
 		},
-		[rundownPlaylist?.currentPartInstanceId, rundownPlaylist?.nextPartInstanceId],
+		[rundownPlaylist?.currentPartInfo?.partInstanceId, rundownPlaylist?.nextPartInfo?.partInstanceId],
 		{
 			currentPartId: null,
 			nextPartId: null,

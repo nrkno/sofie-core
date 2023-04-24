@@ -111,6 +111,7 @@ export enum PubSub {
 	expectedPackages = 'expectedPackages',
 	expectedPackageWorkStatuses = 'expectedPackageWorkStatuses',
 	packageContainerPackageStatuses = 'packageContainerPackageStatuses',
+	packageContainerPackageStatusesSimple = 'packageContainerPackageStatusesSimple',
 	packageContainerStatuses = 'packageContainerStatuses',
 	packageInfos = 'packageInfos',
 
@@ -219,6 +220,11 @@ export interface PubSubTypes {
 		containerId?: string | null,
 		packageId?: ExpectedPackageId | null
 	) => PackageContainerPackageStatusDB
+	[PubSub.packageContainerPackageStatusesSimple]: (
+		studioId: StudioId,
+		containerId?: string | null,
+		packageId?: ExpectedPackageId | null
+	) => Omit<PackageContainerPackageStatusDB, 'modified'>
 	[PubSub.packageContainerStatuses]: (
 		selector: MongoQuery<PackageContainerStatusDB>,
 		token?: string

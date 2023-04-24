@@ -34,6 +34,7 @@ describe('findLookaheadForLayer', () => {
 			previousPart?.part.part,
 			{
 				part: partInstanceInfo.part.part,
+				usesInTransition: false,
 				pieces: partInstanceInfo.allPieces,
 			},
 			partInstanceInfo.part._id
@@ -60,18 +61,21 @@ describe('findLookaheadForLayer', () => {
 				allPieces: [createFakePiece('1'), createFakePiece('2'), createFakePiece('3')],
 				onTimeline: true,
 				nowInPart: 2000,
+				calculatedTimings: { inTransitionStart: null },
 			},
 			{
 				part: { _id: '2', part: '2p' },
 				allPieces: [createFakePiece('4'), createFakePiece('5'), createFakePiece('6')],
 				onTimeline: true,
 				nowInPart: 1000,
+				calculatedTimings: { inTransitionStart: null },
 			},
 			{
 				part: { _id: '3', part: '3p' },
 				allPieces: [createFakePiece('7'), createFakePiece('8'), createFakePiece('9')],
 				onTimeline: false,
 				nowInPart: 0,
+				calculatedTimings: { inTransitionStart: null },
 			},
 		] as any
 
@@ -148,6 +152,7 @@ describe('findLookaheadForLayer', () => {
 			{ _id: 'p5' },
 		].map((p) => ({
 			part: p as any,
+			usesInTransition: true,
 			pieces: [{ _id: p._id + '_p1' } as any],
 		}))
 

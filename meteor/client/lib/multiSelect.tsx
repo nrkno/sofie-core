@@ -146,7 +146,10 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		}
 	}
 
-	private toggleExpco = async () => {
+	private toggleExpco = async (e: React.MouseEvent<any>) => {
+		e.preventDefault()
+		e.stopPropagation()
+
 		if (this.props.disabled) return
 
 		await this._popperUpdate()
@@ -272,9 +275,7 @@ export class MultiSelect extends React.Component<IProps, IState> {
 														<p className="expco-item" key={key}>
 															{key}
 														</p>
-														{_.map(value.value, (v) => {
-															return this.renderOption(v, v, value.className)
-														})}
+														{value.value.map((v) => this.renderOption(v, v, value.className))}
 													</React.Fragment>
 												) : (
 													this.renderOption(value.value, key, value.className)

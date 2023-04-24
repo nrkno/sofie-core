@@ -188,7 +188,13 @@ export function lazyIgnore(name: string, f1: () => Promise<void> | void, t: numb
 	}
 	lazyIgnoreCache[name] = Meteor.setTimeout(() => {
 		delete lazyIgnoreCache[name]
-		waitForPromise(f1())
+		if (Meteor.isClient) {
+			f1()?.catch((e) => {
+				throw new Error(e)
+			})
+		} else {
+			waitForPromise(f1())
+		}
 	}, t)
 }
 
@@ -463,10 +469,15 @@ export function equalArrays<T>(a: T[], b: T[]): boolean {
 }
 
 /** Generate the translation for a string, to be applied later when it gets rendered */
-export function generateTranslation(key: string, args?: { [k: string]: any }): ITranslatableMessage {
+export function generateTranslation(
+	key: string,
+	args?: { [k: string]: any },
+	namespaces?: string[]
+): ITranslatableMessage {
 	return {
 		key,
 		args,
+		namespaces,
 	}
 }
 
@@ -486,6 +497,7 @@ export enum LocalStorageProperty {
 	DEVELOPER = 'developerMode',
 	TESTING = 'testingMode',
 	SPEAKING = 'speakingMode',
+	VIBRATING = 'vibratingMode',
 	SERVICE = 'serviceMode',
 	SHELF_FOLLOWS_ON_AIR = 'shelfFollowsOnAir',
 	SHOW_HIDDEN_SOURCE_LAYERS = 'showHiddenSourceLayers',

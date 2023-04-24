@@ -40,7 +40,7 @@ export const SwitchboardPopUp = withTranslation()(
 				<div className="switchboard-pop-up-panel" role="dialog">
 					<div className="switchboard-pop-up-panel__inside">
 						<h2 className="mhn mvn">{t('Switchboard')}</h2>
-						{Object.entries(exclusivityGroups).map(([key, routeSets]) => (
+						{Object.entries<[string, StudioRouteSet][]>(exclusivityGroups).map(([key, routeSets]) => (
 							<div className="switchboard-pop-up-panel__group" key={key}>
 								{this.props.studioRouteSetExclusivityGroups[key]?.name && (
 									<p className="mhs mbs mtn">{this.props.studioRouteSetExclusivityGroups[key]?.name}</p>

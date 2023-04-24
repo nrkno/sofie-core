@@ -145,7 +145,7 @@ export async function handleUpdatedSegmentRanks(
 		},
 		async (_context, cache) => {
 			const changedSegmentIds: SegmentId[] = []
-			for (const [externalId, rank] of Object.entries(data.newRanks)) {
+			for (const [externalId, rank] of Object.entries<number>(data.newRanks)) {
 				const segmentId = getSegmentId(cache.RundownId, externalId)
 				const changed = cache.Segments.updateOne(segmentId, (s) => {
 					s._rank = rank

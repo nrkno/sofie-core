@@ -100,9 +100,9 @@ class RundownViewShelfInner extends MeteorReactComponent<
 
 	onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: any) => {
 		const { t } = this.props
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
+		if (this.props.playlist && this.props.playlist.currentPartInfo) {
 			const playlistId = this.props.playlist._id
-			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+			const currentPartInstanceId = this.props.playlist.currentPartInfo.partInstanceId
 			doUserAction(t, e, UserAction.CLEAR_SOURCELAYER, (e, ts) =>
 				MeteorCall.userAction.sourceLayerOnPartStop(
 					e,
@@ -116,7 +116,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.activationId) {
+		if (this.props.playlist && this.props.playlist.currentPartInfo && this.props.playlist.activationId) {
 			const { t } = this.props
 			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e, ts) =>
 				MeteorCall.userAction.sourceLayerStickyPieceStart(e, ts, this.props.playlist._id, sourceLayerId)
@@ -156,8 +156,8 @@ class RundownViewShelfInner extends MeteorReactComponent<
 			console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
 			queue = false
 		}
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
-			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+		if (this.props.playlist && this.props.playlist.currentPartInfo) {
+			const currentPartInstanceId = this.props.playlist.currentPartInfo.partInstanceId
 			if (!this.isAdLibOnAir(adlibPiece) || !(sourceLayer && sourceLayer.isClearable)) {
 				if (adlibPiece.isAction && adlibPiece.adlibAction) {
 					const action = adlibPiece.adlibAction
@@ -280,7 +280,7 @@ export const RundownViewShelf = translateWithTracker<
 		const outputLayerLookup = props.showStyleBase.outputLayers
 
 		const { unfinishedAdLibIds, unfinishedTags, nextAdLibIds, nextTags } = memoizedIsolatedAutorun(
-			(_currentPartInstanceId: PartInstanceId | null, _nextPartInstanceId: PartInstanceId | null) => {
+			(_currentPartInstanceId: PartInstanceId | undefined, _nextPartInstanceId: PartInstanceId | undefined) => {
 				const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
 					props.playlist,
 					props.showStyleBase
@@ -294,8 +294,8 @@ export const RundownViewShelf = translateWithTracker<
 				}
 			},
 			'unfinishedAndNextAdLibsAndTags',
-			props.playlist.currentPartInstanceId,
-			props.playlist.nextPartInstanceId
+			props.playlist.currentPartInfo?.partInstanceId,
+			props.playlist.nextPartInfo?.partInstanceId
 		)
 
 		return {

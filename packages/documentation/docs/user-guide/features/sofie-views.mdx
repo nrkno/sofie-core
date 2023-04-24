@@ -187,6 +187,26 @@ A fullscreen page, intended to be shown to the studio presenter. It displays cou
 
 A fullscreen view with transparent background, intended to be shown to the studio presenter as an overlay on top of the produced PGM signal. It displays a reduced amount of the information from the regular [Presenter screen](sofie-views#presenter-view): the countdown to the end of the current Part, a summary preview \(type and name\) of the next item in the Rundown and the current time of day. If no Rundown is active it will show the name of the Studio.
 
+## Camera Position View
+
+`/countdowns/:studioId/camera`
+
+![Camera Position View](/img/docs/main/features/camera-view.jpg)
+
+A fullscreen view designed specifically for use on mobile devices or extra screens displaying a summary of the currently active Rundown, filtered for Parts containing Pieces matching particular Source Layers and Studio Labels.
+
+The Pieces are displayed as a Timeline, with the Pieces moving right-to-left as time progresses, and Parts being displayed from the current one being played up till the end of the Rundown. The closest (not necessarily _Next_) Part has a countdown timer in the top-right corner showing when it's expected to be Live. Each Part also has a Duration counter on the bottom-right.
+
+This view can be configured using query parameters:
+
+| Query parameter | Type | Description | Default |
+| :-------------- | :--- | :---------- | :------ |
+| `sourceLayerIds` | string | A comma-separated list of Source Layer IDs to be considered for display | _(show all)_ |
+| `studioLabels` | string | A comma-separated list of Studio Labels (Piece `.content.studioLabel` values) to be considered for display | _(show all)_ |
+| `fullscreen` | 0 / 1 | Should the view become fullscreen on the device on first user interaction | 0 |
+
+Example: [http://127.0.0.1/countdowns/studio0/camera?sourceLayerIds=camera0,dve0&studioLabels=1,KAM%201,K1,KAM1&fullscreen=1](http://127.0.0.1/countdowns/studio0/camera?sourceLayerIds=camera0,dve0&studioLabels=1,KAM%201,K1,KAM1&fullscreen=1)
+
 ## Active Rundown View
 
 `/activeRundown/:studioId`

@@ -2,7 +2,7 @@ import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { PeripheralDevices, Studios } from '../collections'
 import { clone } from '@sofie-automation/corelib/dist/lib'
-import { MappingExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { MappingExt, StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { PeripheralDeviceType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import _ from 'underscore'
 import { Studio } from '../../lib/collections/Studios'
@@ -63,7 +63,7 @@ function convertRouteSetMappings(studio: Studio) {
 	let changed = false
 
 	const newRouteSets = clone(studio.routeSets || {})
-	for (const routeSet of Object.values(newRouteSets)) {
+	for (const routeSet of Object.values<StudioRouteSet>(newRouteSets)) {
 		for (const route of routeSet.routes) {
 			if (route.remapping && !route.remapping.options) {
 				// Update the remapping for a route
@@ -88,7 +88,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			const objects = PeripheralDevices.find({ type: PeripheralDeviceType.MOS }).fetch()
 			const badObject = objects.find(
 				(device) =>
-					!!Object.values(device.settings?.['devices'] ?? {}).find(
+					!!Object.values<unknown>(device.settings?.['devices'] ?? {}).find(
 						(subdev: any) => !subdev?.type || !subdev?.options
 					)
 			)
@@ -103,9 +103,8 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			for (const obj of objects) {
 				const newDevices: any = clone(obj.settings['devices'] || {})
 
-				for (const [id, subdev0] of Object.entries(newDevices)) {
-					if (!subdev0) continue
-					const subdev = subdev0 as any
+				for (const [id, subdev] of Object.entries<any>(newDevices)) {
+					if (!subdev) continue
 
 					const newdev = subdev.options ? subdev : { options: subdev }
 					delete newdev.options.type

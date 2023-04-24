@@ -32,8 +32,8 @@ export async function resetRundownPlaylist(context: JobContext, cache: CacheForP
 	resetPartInstancesWithPieceInstances(context, cache)
 
 	cache.Playlist.update((p) => {
-		p.previousPartInstanceId = null
-		p.currentPartInstanceId = null
+		p.previousPartInfo = null
+		p.currentPartInfo = null
 		p.holdState = RundownHoldState.NONE
 		p.resetTime = getCurrentTime()
 

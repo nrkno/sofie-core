@@ -45,7 +45,7 @@ export const DebugStateTable = reacti18next.withTranslation()(
 			}
 
 			const objectInDotNotation = toDotNotation({}, debugState)
-			return Object.entries(objectInDotNotation).map(([key, value]) => {
+			return Object.entries<any>(objectInDotNotation).map(([key, value]) => {
 				return (
 					<tr key={key}>
 						<td>{key}</td>

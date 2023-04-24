@@ -1,4 +1,4 @@
-import { DatastorePersistenceMode } from '@sofie-automation/blueprints-integration'
+import { DatastorePersistenceMode, TSR } from '@sofie-automation/blueprints-integration'
 import { StudioId, TimelineDatastoreEntryId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
@@ -22,7 +22,9 @@ export async function cleanTimelineDatastore(context: JobContext, cache: CacheFo
 	// find all references currently on the timeline
 	const timelineRefs = timelineObjs
 		.filter((o) => o.content.$references)
-		.flatMap((o) => Object.values(o.content.$references || {}).map((r) => r.datastoreKey)) // todo - this seems like it would be quite slow
+		.flatMap((o) =>
+			Object.values<TSR.TimelineDatastoreReferences[0]>(o.content.$references || {}).map((r) => r.datastoreKey)
+		) // todo - this seems like it would be quite slow
 
 	await context.directCollections.TimelineDatastores.remove({
 		_id: {

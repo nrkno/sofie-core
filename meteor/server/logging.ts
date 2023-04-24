@@ -35,7 +35,7 @@ export function restoreLogger(): void {
 }
 
 export function getEnvLogLevel(): LogLevel | undefined {
-	return Object.values(LogLevel).find((level) => level === process.env.LOG_LEVEL)
+	return Object.values<LogLevel>(LogLevel as any).find((level) => level === process.env.LOG_LEVEL)
 }
 
 // @todo: remove this and do a PR to https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/winston

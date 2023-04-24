@@ -28,10 +28,10 @@ interface IProps {
 }
 
 const supportedSourceLayerTypes = new Set(
-	Object.values(SourceLayerType).filter(
+	Object.values<SourceLayerType>(SourceLayerType as any).filter(
 		// Support all types, apart from TRANSITION and also filter out the inverse-enum strings
 		(val) => typeof val !== 'string' && val !== SourceLayerType.TRANSITION
-	) as SourceLayerType[]
+	)
 )
 
 function findMainPiece(pieces: PieceExtended[], original?: boolean) {

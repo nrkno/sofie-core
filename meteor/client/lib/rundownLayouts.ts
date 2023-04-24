@@ -1,6 +1,5 @@
 import { PartInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
-import _ from 'underscore'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { PieceInstance } from '../../lib/collections/PieceInstances'
 import { RequiresActiveLayers } from '../../lib/collections/RundownLayouts'
@@ -36,10 +35,10 @@ export function getIsFilterActive(
 	) {
 		activePieceInstance =
 			panel.requiredLayerIds && panel.requiredLayerIds.length
-				? _.flatten(Object.values(unfinishedPieces)).find((piece: PieceInstance) => {
+				? unfinishedPieces.find((piece: PieceInstance) => {
 						return (
 							(panel.requiredLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
-							piece.partInstanceId === playlist.currentPartInstanceId
+							piece.partInstanceId === playlist.currentPartInfo?.partInstanceId
 						)
 				  })
 				: undefined
@@ -55,7 +54,7 @@ export function getUnfinishedPieceInstancesReactive(
 	playlist: RundownPlaylist,
 	showStyleBase: UIShowStyleBase
 ): PieceInstance[] {
-	if (playlist.activationId && playlist.currentPartInstanceId) {
+	if (playlist.activationId && playlist.currentPartInfo) {
 		return memoizedIsolatedAutorun(
 			(
 				playlistActivationId: RundownPlaylistActivationId,
@@ -128,7 +127,7 @@ export function getUnfinishedPieceInstancesReactive(
 			},
 			'getUnfinishedPieceInstancesReactive',
 			playlist.activationId,
-			playlist.currentPartInstanceId,
+			playlist.currentPartInfo.partInstanceId,
 			showStyleBase
 		)
 	}

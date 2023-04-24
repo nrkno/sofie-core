@@ -401,8 +401,12 @@ export function convertShowStyleBaseToBlueprints(
 	const obj: Complete<IBlueprintShowStyleBase> = {
 		_id: unprotectString(showStyleBase._id),
 		blueprintId: unprotectString(showStyleBase.blueprintId),
-		outputLayers: clone(Object.values(showStyleBase.outputLayers).filter((l): l is IOutputLayer => !!l)),
-		sourceLayers: clone(Object.values(showStyleBase.sourceLayers).filter((l): l is ISourceLayer => !!l)),
+		outputLayers: clone(
+			Object.values<IOutputLayer | undefined>(showStyleBase.outputLayers).filter((l): l is IOutputLayer => !!l)
+		),
+		sourceLayers: clone(
+			Object.values<ISourceLayer | undefined>(showStyleBase.sourceLayers).filter((l): l is ISourceLayer => !!l)
+		),
 		blueprintConfig: clone<IBlueprintConfig>(showStyleBase.blueprintConfig),
 	}
 

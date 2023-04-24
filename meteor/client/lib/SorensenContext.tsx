@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { PropsWithChildren, useEffect, useState } from 'react'
 import Sorensen from '@sofie-automation/sorensen'
 
 export const SorensenContext = React.createContext<typeof Sorensen | null>(null)
@@ -7,7 +7,7 @@ export function preventDefault(e: KeyboardEvent): void {
 	e.preventDefault()
 }
 
-export const SorensenContextProvider: React.FC = function SorensenContextProvider(props) {
+export const SorensenContextProvider: React.FC<PropsWithChildren<{}>> = function SorensenContextProvider(props) {
 	const [initializedSorensen, setInitializedSorensen] = useState<typeof Sorensen | null>(null)
 	useEffect(() => {
 		Sorensen.init()

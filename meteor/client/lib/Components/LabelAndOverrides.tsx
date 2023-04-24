@@ -4,7 +4,7 @@ import { objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ReadonlyDeep } from 'type-fest'
-import { OverrideOpHelper, WrappedOverridableItemNormal } from '../../ui/Settings/util/OverrideOpHelper'
+import { OverrideOpHelperForItemContents, WrappedOverridableItemNormal } from '../../ui/Settings/util/OverrideOpHelper'
 import { DropdownInputOption, findOptionByValue } from './DropdownInput'
 import { hasOpWithPath } from './util'
 
@@ -14,7 +14,7 @@ export interface LabelAndOverridesProps<T extends object, TValue> {
 	item: WrappedOverridableItemNormal<T>
 	itemKey: keyof ReadonlyDeep<T>
 	opPrefix: string
-	overrideHelper: OverrideOpHelper
+	overrideHelper: OverrideOpHelperForItemContents
 
 	/** Move the label to after the input */
 	labelAfter?: boolean
@@ -112,17 +112,28 @@ export function LabelAndOverridesForDropdown<T extends object, TValue = any>(
 		) => React.ReactNode
 	}
 ): JSX.Element {
-	const formatter = useCallback(
-		(defaultValue: any) => {
-			if (defaultValue === undefined) return '""'
-			const matchedOption = findOptionByValue(props.options, defaultValue)
+	const formatSingle = useCallback(
+		(value: any) => {
+			const matchedOption = findOptionByValue(props.options, value)
 			if (matchedOption) {
 				return `"${matchedOption.name}"`
 			} else {
-				return `Value: "${defaultValue}"`
+				return `Value: "${value}"`
 			}
 		},
 		[props.options]
+	)
+	const formatter = useCallback(
+		(defaultValue: any) => {
+			if (defaultValue === undefined || defaultValue.length === 0) return '""'
+
+			if (Array.isArray(defaultValue)) {
+				return defaultValue.map(formatSingle).join(', ')
+			} else {
+				return formatSingle(defaultValue)
+			}
+		},
+		[formatSingle]
 	)
 
 	return (

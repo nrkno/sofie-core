@@ -199,16 +199,18 @@ export const ExternalFramePanel = withTranslation()(
 
 			let targetRundown: Rundown | undefined
 			let currentPart: PartInstance | undefined
-			if (playlist.currentPartInstanceId || playlist.nextPartInstanceId) {
-				if (playlist.currentPartInstanceId !== null) {
-					currentPart = PartInstances.findOne(playlist.currentPartInstanceId)
-				} else if (playlist.nextPartInstanceId !== null) {
-					currentPart = PartInstances.findOne(playlist.nextPartInstanceId)
+			if (playlist.currentPartInfo || playlist.nextPartInfo) {
+				if (playlist.currentPartInfo !== null) {
+					currentPart = PartInstances.findOne(playlist.currentPartInfo.partInstanceId)
+				} else if (playlist.nextPartInfo !== null) {
+					currentPart = PartInstances.findOne(playlist.nextPartInfo.partInstanceId)
 				}
 
 				if (!currentPart) {
 					throw new Meteor.Error(
-						`Selected part could not be found: "${playlist.currentPartInstanceId || playlist.nextPartInstanceId}"`
+						`Selected part could not be found: "${
+							playlist.currentPartInfo?.partInstanceId || playlist.nextPartInfo?.partInstanceId
+						}"`
 					)
 				}
 
@@ -252,7 +254,7 @@ export const ExternalFramePanel = withTranslation()(
 			check(message.id, String)
 			check(message.type, String)
 
-			if (Object.values(SofieExternalMessageType).indexOf(message.type) < 0) {
+			if (Object.values<SofieExternalMessageType>(SofieExternalMessageType as any).indexOf(message.type) < 0) {
 				console.error(`ExternalFramePanel: Unknown message type: ${message.type}`)
 				return
 			}
@@ -351,7 +353,7 @@ export const ExternalFramePanel = withTranslation()(
 					id: getRandomString(),
 					type: SofieExternalMessageType.CURRENT_PART_CHANGED,
 					payload: {
-						partInstanceId: this.props.playlist.currentPartInstanceId,
+						partInstanceId: this.props.playlist.currentPartInfo?.partInstanceId ?? null,
 					},
 				})
 			)
@@ -360,7 +362,7 @@ export const ExternalFramePanel = withTranslation()(
 					id: getRandomString(),
 					type: SofieExternalMessageType.NEXT_PART_CHANGED,
 					payload: {
-						partInstanceId: this.props.playlist.nextPartInstanceId,
+						partInstanceId: this.props.playlist.nextPartInfo?.partInstanceId ?? null,
 					},
 				})
 			)
@@ -493,27 +495,27 @@ export const ExternalFramePanel = withTranslation()(
 		}
 
 		componentDidUpdate(prevProps: IProps) {
-			if (prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId) {
+			if (prevProps.playlist.currentPartInfo?.partInstanceId !== this.props.playlist.currentPartInfo?.partInstanceId) {
 				this.sendSofieMessage(
 					literal<CurrentNextPartChangedSofieExternalMessage>({
 						id: getRandomString(),
 						type: SofieExternalMessageType.CURRENT_PART_CHANGED,
 						payload: {
-							partInstanceId: this.props.playlist.currentPartInstanceId,
-							prevPartInstanceId: prevProps.playlist.currentPartInstanceId,
+							partInstanceId: this.props.playlist.currentPartInfo?.partInstanceId ?? null,
+							prevPartInstanceId: prevProps.playlist.currentPartInfo?.partInstanceId ?? null,
 						},
 					})
 				)
 			}
 
-			if (prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId) {
+			if (prevProps.playlist.nextPartInfo?.partInstanceId !== this.props.playlist.nextPartInfo?.partInstanceId) {
 				this.sendSofieMessage(
 					literal<CurrentNextPartChangedSofieExternalMessage>({
 						id: getRandomString(),
 						type: SofieExternalMessageType.NEXT_PART_CHANGED,
 						payload: {
-							partInstanceId: this.props.playlist.nextPartInstanceId,
-							prevPartInstanceId: prevProps.playlist.nextPartInstanceId,
+							partInstanceId: this.props.playlist.nextPartInfo?.partInstanceId ?? null,
+							prevPartInstanceId: prevProps.playlist.nextPartInfo?.partInstanceId ?? null,
 						},
 					})
 				)

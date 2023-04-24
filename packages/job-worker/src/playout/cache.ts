@@ -252,9 +252,9 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		]
 	> {
 		const selectedPartInstanceIds = _.compact([
-			playlist.currentPartInstanceId,
-			playlist.nextPartInstanceId,
-			playlist.previousPartInstanceId,
+			playlist.currentPartInfo?.partInstanceId,
+			playlist.nextPartInfo?.partInstanceId,
+			playlist.previousPartInfo?.partInstanceId,
 		])
 
 		const partInstancesCollection = Promise.resolve().then(async () => {
@@ -430,14 +430,14 @@ export function getSelectedPartInstancesFromCache(cache: ReadOnlyCache<CacheForP
 	const playlist = cache.Playlist.doc
 
 	return {
-		currentPartInstance: playlist.currentPartInstanceId
-			? cache.PartInstances.findOne(playlist.currentPartInstanceId)
+		currentPartInstance: playlist.currentPartInfo
+			? cache.PartInstances.findOne(playlist.currentPartInfo.partInstanceId)
 			: undefined,
-		nextPartInstance: playlist.nextPartInstanceId
-			? cache.PartInstances.findOne(playlist.nextPartInstanceId)
+		nextPartInstance: playlist.nextPartInfo
+			? cache.PartInstances.findOne(playlist.nextPartInfo.partInstanceId)
 			: undefined,
-		previousPartInstance: playlist.previousPartInstanceId
-			? cache.PartInstances.findOne(playlist.previousPartInstanceId)
+		previousPartInstance: playlist.previousPartInfo
+			? cache.PartInstances.findOne(playlist.previousPartInfo.partInstanceId)
 			: undefined,
 	}
 }

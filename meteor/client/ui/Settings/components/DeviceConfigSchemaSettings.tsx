@@ -11,13 +11,13 @@ import { TextInputControl } from '../../../lib/Components/TextInput'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { DropdownInputControl, DropdownInputOption } from '../../../lib/Components/DropdownInput'
-import { SchemaTableSummaryRow } from '../../../lib/forms/schemaFormTable'
+import { SchemaTableSummaryRow } from '../../../lib/forms/SchemaTableSummaryRow'
 import {
 	SchemaSummaryField,
 	getSchemaSummaryFields,
 	translateStringIfHasNamespaces,
 } from '../../../lib/forms/schemaFormUtil'
-import { SchemaFormForCollection } from '../../../lib/forms/schemaFormForCollection'
+import { SchemaFormForCollection } from '../../../lib/forms/SchemaFormForCollection'
 import { getSchemaDefaultValues } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
 import { JSONBlob, JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { PeripheralDevices } from '../../../collections'
@@ -39,18 +39,23 @@ export function SubDevicesConfig({
 }: SubDevicesConfigProps): JSX.Element {
 	const { t } = useTranslation()
 
-	const parsedCommonSchema = commonSchema ? JSONBlobParse(commonSchema) : undefined
+	const parsedCommonSchema = useMemo(() => (commonSchema ? JSONBlobParse(commonSchema) : undefined), [commonSchema])
 
-	const parsedSchemas: Record<string, JSONSchema | undefined> = {}
-	for (const [id, obj] of Object.entries(configSchema || {})) {
-		if (obj.configSchema) {
-			parsedSchemas[id] = JSONBlobParse(obj.configSchema)
+	const [parsedSchemas, schemaTypes] = useMemo(() => {
+		const parsedSchemas: Record<string, JSONSchema | undefined> = {}
+		for (const [id, obj] of Object.entries<SubdeviceManifest[0]>(configSchema || {})) {
+			if (obj.configSchema) {
+				parsedSchemas[id] = JSONBlobParse(obj.configSchema)
+			}
 		}
-	}
-	const schemaTypes = Object.keys(parsedSchemas || {}).sort()
+
+		const schemaTypes = Object.keys(parsedSchemas || {}).sort()
+
+		return [parsedSchemas, schemaTypes]
+	}, [configSchema])
 
 	const subDeviceOptions = useMemo(() => {
-		const raw = Object.entries(configSchema || {})
+		const raw = Object.entries<SubdeviceManifest[0]>(configSchema || {})
 		for (const [_id, obj] of raw) {
 			obj.displayName = translateStringIfHasNamespaces(obj.displayName, translationNamespaces)
 		}
@@ -69,7 +74,7 @@ export function SubDevicesConfig({
 		const selectedType = schemaTypes[0] // Future: This is slightly 'random' but will be consistent
 		const selectedSchemaJson = parsedSchemas[selectedType]
 		const defaults = selectedSchemaJson ? getSchemaDefaultValues(selectedSchemaJson) : {}
-		defaults.type = selectedType
+		defaults.type = parseInt(selectedType)
 
 		const existingDevices = new Set(Object.keys((PeripheralDevices.findOne(deviceId)?.settings as any)?.devices || {}))
 
@@ -163,7 +168,7 @@ function SubDevicesTable({
 		const singleSchemaMode = Object.keys(parsedSchemas).length === 1
 
 		if (singleSchemaMode) {
-			const defaultSchema = Object.values(parsedSchemas)[0]!
+			const defaultSchema = Object.values<JSONSchema | undefined>(parsedSchemas)[0]!
 
 			return getSchemaSummaryFields(defaultSchema)
 		} else {
@@ -189,7 +194,7 @@ function SubDevicesTable({
 				</tr>
 			</thead>
 			<tbody>
-				{Object.entries(subDevices).map(([id, device]) => {
+				{Object.entries<any>(subDevices).map(([id, device]) => {
 					return (
 						<React.Fragment key={id}>
 							<SchemaTableSummaryRow
@@ -243,7 +248,7 @@ function SubDeviceEditRow({
 }: SubDeviceEditRowProps) {
 	const { t } = useTranslation()
 
-	const schemasArray = Object.values(schemas)
+	const schemasArray = Object.values<JSONSchema | undefined>(schemas)
 	const schema = schemasArray.length === 1 ? schemasArray[0] : schemas[object?.type]
 
 	const finishEditItem = useCallback(() => editItem(subdeviceId, false), [editItem, subdeviceId])
@@ -279,7 +284,7 @@ function SubDeviceEditRow({
 		(val: any) => {
 			PeripheralDevices.update(parentId, {
 				$set: {
-					[`settings.devices.${subdeviceId}.type`]: val,
+					[`settings.devices.${subdeviceId}.type`]: parseInt(val),
 				},
 			})
 		},

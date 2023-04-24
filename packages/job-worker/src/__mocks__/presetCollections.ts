@@ -161,7 +161,7 @@ export async function setupDefaultRundownPlaylist(
 	const showStyleCompound =
 		showStyleCompound0 ||
 		(await context.directCollections.ShowStyleVariants.findOne().then(
-			async (v) => v && (await context.getShowStyleCompound(v._id))
+			async (v) => v && context.getShowStyleCompound(v._id)
 		))
 	if (!showStyleCompound) throw new Error('No ShowStyle compound exists in the database yet')
 

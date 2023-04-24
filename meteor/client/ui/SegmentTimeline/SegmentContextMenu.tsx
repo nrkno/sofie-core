@@ -1,5 +1,5 @@
 import * as React from 'react'
-import Escape from 'react-escape'
+import Escape from './../../lib/Escape'
 import { withTranslation } from 'react-i18next'
 import { ContextMenu, MenuItem } from '@jstarpl/react-contextmenu'
 import { Part } from '../../../lib/collections/Parts'
@@ -34,7 +34,8 @@ export const SegmentContextMenu = withTranslation()(
 			const startsAt = this.getPartStartsAt()
 
 			const isCurrentPart =
-				(part && this.props.playlist && part.instance._id === this.props.playlist.currentPartInstanceId) || undefined
+				(part && this.props.playlist && part.instance._id === this.props.playlist.currentPartInfo?.partInstanceId) ||
+				undefined
 
 			const canSetAsNext = !!this.props.playlist?.activationId
 

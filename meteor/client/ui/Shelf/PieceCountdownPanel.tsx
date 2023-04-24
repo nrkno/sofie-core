@@ -108,10 +108,10 @@ export const PieceCountdownPanel = withTracker<IPieceCountdownPanelProps, IState
 		const unfinishedPieces = getUnfinishedPieceInstancesReactive(props.playlist, props.showStyleBase)
 		const livePieceInstance: PieceInstance | undefined =
 			props.panel.sourceLayerIds && props.panel.sourceLayerIds.length
-				? _.flatten(Object.values(unfinishedPieces)).find((piece: PieceInstance) => {
+				? unfinishedPieces.find((piece: PieceInstance) => {
 						return (
 							(props.panel.sourceLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
-							piece.partInstanceId === props.playlist.currentPartInstanceId
+							piece.partInstanceId === props.playlist.currentPartInfo?.partInstanceId
 						)
 				  })
 				: undefined

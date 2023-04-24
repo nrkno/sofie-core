@@ -202,7 +202,7 @@ class ServerRestAPI implements RestAPI {
 			// This is an AdLib Piece
 			const pieceType = baselineAdLibDoc ? 'baseline' : segmentAdLibDoc ? 'normal' : 'bucket'
 			const rundownPlaylist = RundownPlaylists.findOne(rundownPlaylistId, {
-				projection: { currentPartInstanceId: 1 },
+				projection: { currentPartInfo: 1 },
 			})
 			if (!rundownPlaylist)
 				return ClientAPI.responseError(
@@ -212,7 +212,7 @@ class ServerRestAPI implements RestAPI {
 					),
 					404
 				)
-			if (rundownPlaylist.currentPartInstanceId === null)
+			if (rundownPlaylist.currentPartInfo === null)
 				return ClientAPI.responseError(
 					UserError.from(Error(`No active Part in ${rundownPlaylistId}`), UserErrorMessage.PartNotFound),
 					412
@@ -231,7 +231,7 @@ class ServerRestAPI implements RestAPI {
 				{
 					playlistId: rundownPlaylistId,
 					adLibPieceId: regularAdLibDoc._id,
-					partInstanceId: rundownPlaylist.currentPartInstanceId,
+					partInstanceId: rundownPlaylist.currentPartInfo.partInstanceId,
 					pieceType,
 				}
 			)
@@ -426,7 +426,7 @@ class ServerRestAPI implements RestAPI {
 			StudioJobs.TakeNextPart,
 			{
 				playlistId: rundownPlaylistId,
-				fromPartInstanceId: fromPartInstanceId ?? rundownPlaylist.currentPartInstanceId,
+				fromPartInstanceId: fromPartInstanceId ?? rundownPlaylist.currentPartInfo?.partInstanceId ?? null,
 			}
 		)
 	}
@@ -473,7 +473,7 @@ class ServerRestAPI implements RestAPI {
 				),
 				412
 			)
-		if (!rundownPlaylist.currentPartInstanceId || !rundownPlaylist.activationId)
+		if (!rundownPlaylist.currentPartInfo?.partInstanceId || !rundownPlaylist.activationId)
 			return ClientAPI.responseError(
 				UserError.from(
 					new Error(`Rundown playlist ${rundownPlaylistId} is not currently active`),
@@ -494,7 +494,7 @@ class ServerRestAPI implements RestAPI {
 			StudioJobs.StopPiecesOnSourceLayers,
 			{
 				playlistId: rundownPlaylistId,
-				partInstanceId: rundownPlaylist.currentPartInstanceId,
+				partInstanceId: rundownPlaylist.currentPartInfo.partInstanceId,
 				sourceLayerIds: [sourceLayerId],
 			}
 		)

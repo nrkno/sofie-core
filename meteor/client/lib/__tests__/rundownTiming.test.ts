@@ -19,9 +19,9 @@ function makeMockPlaylist(): RundownPlaylist {
 		name: 'Mock Playlist',
 		created: 0,
 		modified: 0,
-		currentPartInstanceId: null,
-		nextPartInstanceId: null,
-		previousPartInstanceId: null,
+		currentPartInfo: null,
+		nextPartInfo: null,
+		previousPartInfo: null,
 		timing: {
 			type: PlaylistTimingType.None,
 		},
@@ -107,6 +107,7 @@ describe('rundown Timing Calculator', () => {
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
+				currentPartInstanceId: null,
 				isLowResolution: false,
 				asDisplayedPlaylistDuration: 0,
 				asPlayedPlaylistDuration: 0,
@@ -168,6 +169,7 @@ describe('rundown Timing Calculator', () => {
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
+				currentPartInstanceId: null,
 				isLowResolution: false,
 				asDisplayedPlaylistDuration: 4000,
 				asPlayedPlaylistDuration: 4000,
@@ -268,6 +270,7 @@ describe('rundown Timing Calculator', () => {
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
+				currentPartInstanceId: null,
 				isLowResolution: false,
 				asDisplayedPlaylistDuration: 4000,
 				asPlayedPlaylistDuration: 4000,
@@ -370,6 +373,7 @@ describe('rundown Timing Calculator', () => {
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
+				currentPartInstanceId: null,
 				isLowResolution: false,
 				asDisplayedPlaylistDuration: 4000,
 				asPlayedPlaylistDuration: 4000,
@@ -496,6 +500,7 @@ describe('rundown Timing Calculator', () => {
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
+				currentPartInstanceId: null,
 				isLowResolution: false,
 				asDisplayedPlaylistDuration: 4000,
 				asPlayedPlaylistDuration: 4000,
@@ -611,6 +616,7 @@ describe('rundown Timing Calculator', () => {
 		)
 		expect(result).toEqual(
 			literal<RundownTimingContext>({
+				currentPartInstanceId: null,
 				isLowResolution: false,
 				asDisplayedPlaylistDuration: 4000,
 				asPlayedPlaylistDuration: 8000,

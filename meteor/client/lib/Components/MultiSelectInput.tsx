@@ -28,15 +28,19 @@ export function MultiSelectInputControl({
 		const convertedOptions: MultiSelectOptions = {}
 
 		for (const option of options) {
-			convertedOptions[option.name] = { value: option.value }
+			convertedOptions[option.value] = { value: option.name }
 		}
 
 		let currentOptionMissing = false
-		for (const val of value) {
-			if (!convertedOptions[val]) {
-				convertedOptions[val] = { value: `${val}`, className: 'option-missing' }
-				currentOptionMissing = true
+		try {
+			for (const val of value) {
+				if (!convertedOptions[val]) {
+					convertedOptions[val] = { value: `${val}`, className: 'option-missing' }
+					currentOptionMissing = true
+				}
 			}
+		} catch (e) {
+			// `value` is probably invalid. We can't do much
 		}
 
 		return { optionsWithCurrentValue: convertedOptions, currentOptionMissing: currentOptionMissing }

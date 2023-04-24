@@ -1,7 +1,7 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react'
 import { ClientActions, PlayoutActions, SomeAction } from '@sofie-automation/blueprints-integration'
 import { useTranslation } from 'react-i18next'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { assertNever } from '../../../../../../../lib/lib'
 import { sameWidth } from '../../../../../../lib/popperUtils'
 import { usePopper } from 'react-popper'
@@ -185,7 +185,7 @@ function getAvailableActions(t: TFunction): Record<string, string> {
 	const result: Record<string, string> = {}
 
 	actionEnums.forEach((enumList) => {
-		Object.values(enumList).forEach((key) => {
+		Object.values<any>(enumList).forEach((key) => {
 			result[actionToLabel(t, key)] = key
 		})
 	})

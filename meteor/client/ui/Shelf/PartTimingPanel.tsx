@@ -11,7 +11,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { getAllowSpeaking } from '../../lib/localStorage'
+import { getAllowSpeaking, getAllowVibrating } from '../../lib/localStorage'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
 import { CurrentPartElapsed } from '../RundownView/RundownTiming/CurrentPartElapsed'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
@@ -59,8 +59,9 @@ class PartTimingPanelInner extends MeteorReactComponent<
 					{this.props.active &&
 						(panel.timingType === 'count_down' ? (
 							<CurrentPartRemaining
-								currentPartInstanceId={this.props.playlist.currentPartInstanceId}
+								currentPartInstanceId={this.props.playlist.currentPartInfo?.partInstanceId ?? null}
 								speaking={getAllowSpeaking() && panel.speakCountDown}
+								vibrating={getAllowVibrating() && panel.speakCountDown}
 								heavyClassName="overtime"
 								className="part-remaining"
 							/>
@@ -75,9 +76,9 @@ class PartTimingPanelInner extends MeteorReactComponent<
 
 export const PartTimingPanel = translateWithTracker<IPartTimingPanelProps, IState, IPartTimingPanelTrackedProps>(
 	(props: IPartTimingPanelProps) => {
-		if (props.playlist.currentPartInstanceId) {
+		if (props.playlist.currentPartInfo) {
 			const livePart = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist, {
-				_id: props.playlist.currentPartInstanceId,
+				_id: props.playlist.currentPartInfo.partInstanceId,
 			})[0]
 			const { active } = getIsFilterActive(props.playlist, props.showStyleBase, props.panel)
 

@@ -111,11 +111,11 @@ function reportPieceHasStarted(
 
 		// Update the copy in the next-part if there is one, so that the infinite has the same start after a take
 		const playlist = cache.Playlist.doc
-		if (pieceInstance.infinite && playlist.nextPartInstanceId) {
+		if (pieceInstance.infinite && playlist.nextPartInfo) {
 			const infiniteInstanceId = pieceInstance.infinite.infiniteInstanceId
 			cache.PieceInstances.updateAll((piece) => {
 				if (
-					piece.partInstanceId === playlist.nextPartInstanceId &&
+					piece.partInstanceId === playlist.nextPartInfo?.partInstanceId &&
 					!!piece.infinite &&
 					piece.infinite.infiniteInstanceId === infiniteInstanceId
 				) {

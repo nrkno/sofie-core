@@ -82,7 +82,7 @@ export class PartHandler
 
 		if (prevCurPartInstance !== this._curPartInstance) {
 			this._logger.info(
-				`${this._name} found updated partInstances with current part ${this._activePlaylist?.currentPartInstanceId}`
+				`${this._name} found updated partInstances with current part ${this._activePlaylist?.currentPartInfo?.partInstanceId}`
 			)
 			const col = this._core.getCollection<DBPart>(this._collection)
 			if (!col) throw new Error(`collection '${this._collection}' not found!`)

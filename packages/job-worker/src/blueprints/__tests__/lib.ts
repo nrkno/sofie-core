@@ -2,6 +2,7 @@ import { BlueprintManifestType, SomeBlueprintManifest } from '@sofie-automation/
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 export function generateFakeBlueprint(
 	id: string,
@@ -35,12 +36,12 @@ export function generateFakeBlueprint(
 		created: 0,
 		modified: 0,
 
-		blueprintId: protectString(''),
+		blueprintId: '',
 		blueprintType: type,
 		blueprintHash: getRandomId(),
 
-		studioConfigManifest: [],
-		showStyleConfigManifest: [],
+		studioConfigSchema: JSONBlobStringify({}),
+		showStyleConfigSchema: JSONBlobStringify({}),
 
 		databaseVersion: {
 			system: undefined,

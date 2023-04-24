@@ -1,4 +1,4 @@
-import { BlueprintMappings } from '@sofie-automation/blueprints-integration'
+import { BlueprintMapping, BlueprintMappings } from '@sofie-automation/blueprints-integration'
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
@@ -47,7 +47,7 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 function translateMappings(rawMappings: BlueprintMappings): MappingsExt {
 	const mappings: MappingsExt = {}
 
-	for (const [id, mapping] of Object.entries(rawMappings)) {
+	for (const [id, mapping] of Object.entries<BlueprintMapping>(rawMappings)) {
 		mappings[id] = {
 			...mapping,
 			deviceId: protectString(mapping.deviceId),
