@@ -1,6 +1,6 @@
-import { BlueprintMapping, BlueprintMappings } from '@sofie-automation/blueprints-integration'
-import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { clone } from '@sofie-automation/corelib/dist/lib'
+import { BlueprintMapping, BlueprintMappings, TSR } from '@sofie-automation/blueprints-integration'
+import { MappingsExt, StudioIngestDevice, StudioPlayoutDevice } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { Complete, clone, literal } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
@@ -31,9 +31,30 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 		compileCoreConfigValues(context.studio.settings)
 	)
 
+	const playoutDevices = Object.fromEntries(
+		Object.entries<TSR.DeviceOptionsAny>(result.playoutDevices ?? {}).map((dev) => [
+			dev[0],
+			literal<Complete<StudioPlayoutDevice>>({
+				peripheralDeviceId: undefined,
+				options: dev[1],
+			}),
+		])
+	)
+	const ingestDevices = Object.fromEntries(
+		Object.entries<unknown>(result.ingestDevices ?? {}).map((dev) => [
+			dev[0],
+			literal<Complete<StudioIngestDevice>>({
+				peripheralDeviceId: undefined,
+				options: dev[1],
+			}),
+		])
+	)
+
 	await context.directCollections.Studios.update(context.studioId, {
 		$set: {
 			'mappingsWithOverrides.defaults': translateMappings(result.mappings),
+			'peripheralDeviceSettings.playoutDevices.defaults': playoutDevices,
+			'peripheralDeviceSettings.ingestSubDevices.defaults': ingestDevices,
 			lastBlueprintConfig: {
 				blueprintHash: blueprint.blueprintDoc.blueprintHash,
 				blueprintId: blueprint.blueprintId,

@@ -366,6 +366,9 @@ export interface IConfigMessage {
 
 export interface BlueprintResultApplyStudioConfig {
 	mappings: BlueprintMappings
+
+	playoutDevices: Record<string, TSR.DeviceOptionsAny>
+	ingestDevices: Record<string, unknown>
 }
 
 export interface BlueprintResultApplyShowStyleConfig {

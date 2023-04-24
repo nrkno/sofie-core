@@ -105,10 +105,6 @@ export interface StudioPeripheralDeviceSettings {
 	ingestSubDevices: ObjectWithOverrides<Record<string, StudioIngestDevice>>
 
 	inputSubDevices: ObjectWithOverrides<Record<string, StudioInputDevice>>
-
-	// 	// TODO - media-manager if absolutely necessary??
-
-	// 	// TODO: add a publcation that exposes compiled settings for a peripheralDevice
 }
 
 export interface StudioIngestDevice {
