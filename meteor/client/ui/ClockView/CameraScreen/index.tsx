@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next'
 import { Spinner } from '../../../lib/Spinner'
 import { useBlackBrowserTheme } from '../../../lib/useBlackBrowserTheme'
 import { useWakeLock } from './useWakeLock'
+import { useDebounce } from '../../../lib/lib'
 
 interface IProps {
 	playlist: RundownPlaylist | undefined
@@ -122,16 +123,25 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 		if (piecesReady) setPiecesReadyOnce(true)
 	}, [piecesReady])
 
-	const currentPartInstance = useTracker(
-		() => (playlist?.currentPartInstanceId ? PartInstances.findOne(playlist?.currentPartInstanceId) : undefined),
-		[playlist?.currentPartInstanceId],
+	const currentPartInstanceVolatile = useTracker(
+		() =>
+			playlist?.currentPartInfo?.partInstanceId
+				? PartInstances.findOne(playlist?.currentPartInfo?.partInstanceId)
+				: undefined,
+		[playlist?.currentPartInfo?.partInstanceId],
 		undefined
 	)
-	const nextPartInstance = useTracker(
-		() => (playlist?.nextPartInstanceId ? PartInstances.findOne(playlist?.nextPartInstanceId) : undefined),
-		[playlist?.nextPartInstanceId],
+	const nextPartInstanceVolatile = useTracker(
+		() =>
+			playlist?.nextPartInfo?.partInstanceId
+				? PartInstances.findOne(playlist?.nextPartInfo?.partInstanceId)
+				: undefined,
+		[playlist?.nextPartInfo?.partInstanceId],
 		undefined
 	)
+
+	const currentPartInstance = useDebounce(currentPartInstanceVolatile, 100)
+	const nextPartInstance = useDebounce(nextPartInstanceVolatile, 100)
 
 	const partInstanceContext = useMemo(
 		() => ({
