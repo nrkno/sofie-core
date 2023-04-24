@@ -138,6 +138,59 @@ const peripheralDeviceFieldsSpecifier = literal<IncludeAllMongoFieldSpecifier<Pe
 	settings: 1,
 })
 
+export function convertPeripheralDeviceForGateway(
+	peripheralDevice: Pick<PeripheralDevice, PeripheralDeviceFields>,
+	studio: Pick<Studio, StudioFields> | undefined
+): PeripheralDeviceForDevice {
+	const playoutDevices: PeripheralDeviceForDevice['playoutDevices'] = {}
+	const ingestSubDevices: PeripheralDeviceForDevice['ingestSubDevices'] = {}
+
+	if (studio) {
+		switch (peripheralDevice.category) {
+			case PeripheralDeviceCategory.INGEST: {
+				const resolvedDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.ingestSubDevices).obj
+
+				for (const [id, device] of Object.entries<StudioIngestDevice>(resolvedDevices)) {
+					if (device.peripheralDeviceId === peripheralDevice._id) {
+						ingestSubDevices[id] = device.options // TODO - is this correct?
+					}
+				}
+
+				break
+			}
+			case PeripheralDeviceCategory.PLAYOUT: {
+				const resolvedDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.playoutDevices).obj
+
+				for (const [id, device] of Object.entries<StudioPlayoutDevice>(resolvedDevices)) {
+					if (device.peripheralDeviceId === peripheralDevice._id) {
+						playoutDevices[id] = device.options // TODO - is this correct?
+					}
+				}
+
+				break
+			}
+			case PeripheralDeviceCategory.MEDIA_MANAGER:
+			case PeripheralDeviceCategory.PACKAGE_MANAGER:
+			case PeripheralDeviceCategory.TRIGGER_INPUT:
+				// No subdevices to re-export
+				break
+			default:
+				assertNever(peripheralDevice.category)
+				break
+		}
+	}
+
+	return literal<Complete<PeripheralDeviceForDevice>>({
+		_id: peripheralDevice._id,
+		studioId: peripheralDevice.studioId,
+
+		deviceSettings: peripheralDevice.settings,
+
+		playoutDevices,
+		ingestSubDevices,
+	})
+}
+
 async function setupPeripheralDevicePublicationObservers(
 	args: ReadonlyDeep<PeripheralDeviceForDeviceArgs>,
 	triggerUpdate: TriggerUpdate<PeripheralDeviceForDeviceUpdateProps>
@@ -206,55 +259,7 @@ async function manipulatePeripheralDevicePublicationData(
 			| Pick<Studio, StudioFields>
 			| undefined)
 
-	const playoutDevices: PeripheralDeviceForDevice['playoutDevices'] = {}
-	const ingestSubDevices: PeripheralDeviceForDevice['ingestSubDevices'] = {}
-
-	if (studio) {
-		switch (peripheralDevice.category) {
-			case PeripheralDeviceCategory.INGEST: {
-				const resolvedDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.ingestSubDevices).obj
-
-				for (const [id, device] of Object.entries<StudioIngestDevice>(resolvedDevices)) {
-					if (device.peripheralDeviceId === peripheralDevice._id) {
-						ingestSubDevices[id] = device.options // TODO - is this correct?
-					}
-				}
-
-				break
-			}
-			case PeripheralDeviceCategory.PLAYOUT: {
-				const resolvedDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.playoutDevices).obj
-
-				for (const [id, device] of Object.entries<StudioPlayoutDevice>(resolvedDevices)) {
-					if (device.peripheralDeviceId === peripheralDevice._id) {
-						playoutDevices[id] = device.options // TODO - is this correct?
-					}
-				}
-
-				break
-			}
-			case PeripheralDeviceCategory.MEDIA_MANAGER:
-			case PeripheralDeviceCategory.PACKAGE_MANAGER:
-			case PeripheralDeviceCategory.TRIGGER_INPUT:
-				// No subdevices to re-export
-				break
-			default:
-				assertNever(peripheralDevice.category)
-				break
-		}
-	}
-
-	return [
-		literal<Complete<PeripheralDeviceForDevice>>({
-			_id: peripheralDevice._id,
-			studioId: peripheralDevice.studioId,
-
-			deviceSettings: peripheralDevice.settings,
-
-			playoutDevices,
-			ingestSubDevices,
-		}),
-	]
+	return [convertPeripheralDeviceForGateway(peripheralDevice, studio)]
 }
 
 meteorCustomPublish(

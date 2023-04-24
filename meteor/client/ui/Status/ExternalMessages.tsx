@@ -88,7 +88,6 @@ interface IExternalMessagesInStudioProps {
 	studioId: StudioId
 }
 interface IExternalMessagesInStudioState {
-	// devices: Array<PeripheralDevice>
 	dateFrom: Time
 	dateTo: Time
 }

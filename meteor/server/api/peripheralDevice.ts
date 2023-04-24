@@ -67,6 +67,7 @@ import {
 	applyAndValidateOverrides,
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { convertPeripheralDeviceForGateway } from '../publications/peripheralDevice'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -845,7 +846,9 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 	async getPeripheralDevice(deviceId: PeripheralDeviceId, deviceToken: string) {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, this)
 
-		return peripheralDevice
+		const studio = peripheralDevice.studioId && (await Studios.findOneAsync(peripheralDevice.studioId))
+
+		return convertPeripheralDeviceForGateway(peripheralDevice, studio)
 	}
 	async pingWithCommand(
 		deviceId: PeripheralDeviceId,

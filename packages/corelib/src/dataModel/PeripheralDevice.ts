@@ -18,7 +18,11 @@ export {
 	PERIPHERAL_SUBTYPE_PROCESS,
 }
 
-import { IngestDeviceSecretSettings } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import {
+	GenericPeripheralDeviceSettings,
+	IngestDeviceSecretSettings,
+	IngestDeviceSettings,
+} from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 
 export interface PeripheralDevice {
 	_id: PeripheralDeviceId
@@ -42,7 +46,7 @@ export interface PeripheralDevice {
 	created: number
 	status: PeripheralDeviceStatusObject
 
-	// settings: IngestDeviceSettings | GenericPeripheralDeviceSettings // TODO - this may be wanted, but is making it hard to fix up usages
+	settings: IngestDeviceSettings | GenericPeripheralDeviceSettings
 
 	/** If set, this device is owned by that organization */
 	organizationId: OrganizationId | null

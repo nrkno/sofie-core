@@ -2,10 +2,6 @@ import { TSR } from '../../tsr'
 import { PeripheralDeviceId, StudioId } from './Ids'
 
 export type GenericPeripheralDeviceSettings = Record<string, never>
-// export interface GenericPeripheralDeviceSettings {
-// 	// devices?: Record<string, unknown>
-// 	// [key: string]: unknown
-// }
 
 export interface IngestDeviceSettings {
 	/** OAuth: Set to true when secret value exists */
@@ -39,24 +35,8 @@ export interface AccessToken {
 export interface PeripheralDeviceForDevice {
 	_id: PeripheralDeviceId
 
-	// /** Name of the device (set by the device, modifiable by user) */
-	// name: string
-
-	// /** Name of the device (set by the device) */
-	// deviceName: string
-
 	/** The studio this device is assigned to */
 	studioId?: StudioId
-
-	// category: PeripheralDeviceCategory
-	// type: PeripheralDeviceType
-	// subType: PeripheralDeviceSubType
-
-	// parentDeviceId?: PeripheralDeviceId
-
-	// /** When the device was initially created [unix-timestamp] */
-	// created: number
-	// status: PeripheralDeviceStatusObject
 
 	deviceSettings: unknown
 

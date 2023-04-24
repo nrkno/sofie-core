@@ -89,7 +89,10 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 		id: `Mos gateway fix up config`,
 		canBeRunAutomatically: true,
 		validate: () => {
-			const objects = PeripheralDevices.find({ type: PeripheralDeviceType.MOS }).fetch()
+			const objects = PeripheralDevices.find({
+				type: PeripheralDeviceType.MOS,
+				'settings.device': { $exists: true },
+			}).fetch()
 			const badObject = objects.find(
 				(device) =>
 					!!Object.values<unknown>(device.settings?.['devices'] ?? {}).find(
@@ -103,7 +106,10 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			return false
 		},
 		migrate: () => {
-			const objects = PeripheralDevices.find({ type: PeripheralDeviceType.MOS }).fetch()
+			const objects = PeripheralDevices.find({
+				type: PeripheralDeviceType.MOS,
+				'settings.device': { $exists: true },
+			}).fetch()
 			for (const obj of objects) {
 				const newDevices: any = clone(obj.settings['devices'] || {})
 
