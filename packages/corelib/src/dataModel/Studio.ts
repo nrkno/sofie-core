@@ -100,22 +100,11 @@ export interface StudioPeripheralDeviceSettings {
 	previewContainerIds: string[]
 	thumbnailContainerIds: string[]
 
-	/** Record<subdeviceId, ...> */
 	playoutDevices: ObjectWithOverrides<Record<string, StudioPlayoutDevice>>
-	//  = {
-	// 	atem0: {
-	// 		peripheralDeviceId: '',
-	// 		settings: {
-	// 			ip: '10.10.10.10',
-	// 			mode: false,
-	// 		},
-	// 	},
-	// }
 
 	ingestSubDevices: ObjectWithOverrides<Record<string, StudioIngestDevice>>
 
-	// 	// TODO: ?
-	// 	inputDevices: {}
+	inputSubDevices: ObjectWithOverrides<Record<string, StudioInputDevice>>
 
 	// 	// TODO - media-manager if absolutely necessary??
 
@@ -128,11 +117,16 @@ export interface StudioIngestDevice {
 	 * Future: This may be replaced with some other grouping or way of assigning devices
 	 */
 	peripheralDeviceId: PeripheralDeviceId | undefined
-	// peripheralDeviceType: 'playout'|'mos'
+	/** Settings blob of the subdevice, from the sub-device config schema */
+	options: unknown
+}
 
-	// deviceType: string // used to lookup the configManifest so that we can draw a GUI with settings
-	// disable: boolean
-
+export interface StudioInputDevice {
+	/**
+	 * The id of the gateway this is assigned to
+	 * Future: This may be replaced with some other grouping or way of assigning devices
+	 */
+	peripheralDeviceId: PeripheralDeviceId | undefined
 	/** Settings blob of the subdevice, from the sub-device config schema */
 	options: unknown
 }
@@ -143,7 +137,6 @@ export interface StudioPlayoutDevice {
 	 * Future: This may be replaced with some other grouping or way of assigning devices
 	 */
 	peripheralDeviceId: PeripheralDeviceId | undefined
-	// peripheralDeviceType: 'playout'|'mos'
 
 	options: TSR.DeviceOptionsAny
 }

@@ -4,7 +4,6 @@ import { PeripheralDevice, PeripheralDeviceType } from '../../../../lib/collecti
 import { DeviceItem } from '../../Status/SystemStatus'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
 import { protectString, unprotectString } from '../../../../lib/lib'
-import { SubDevicesConfig } from './DeviceConfigSchemaSettings'
 import { SchemaFormForCollection } from '../../../lib/forms/SchemaFormForCollection'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { PeripheralDevices } from '../../../collections'
@@ -74,15 +73,7 @@ export function GenericDeviceSettingsComponent({
 						allowTables
 					/>
 
-					{device.configManifest.subdeviceManifest && (
-						<SubDevicesConfig
-							translationNamespaces={translationNamespaces}
-							deviceId={device._id}
-							commonSchema={device.configManifest.subdeviceConfigSchema}
-							configSchema={device.configManifest.subdeviceManifest}
-							subDevices={(device.settings as any)?.devices ?? {}}
-						/>
-					)}
+					<p>{t('Sub-devices can be configured in the Studio Peripheral Device settings')}</p>
 				</>
 			) : (
 				<p>{t('There is no JSON config schema provided by this Gateway')}</p>
