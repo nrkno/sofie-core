@@ -44,7 +44,6 @@ export class CoreHandler {
 	public _observers: Array<any> = []
 	public deviceSettings: PlayoutGatewayConfig = {}
 
-	public errorReporting = false
 	public multithreading = false
 	public reportAllCommands = false
 
@@ -181,8 +180,8 @@ export class CoreHandler {
 			if (!col) throw new Error('collection "peripheralDevices" not found!')
 
 			const device = col.findOne(id)
-			if (device) {
-				this.deviceSettings = (device.deviceSettings || {}) as any
+			if (device && device.deviceSettings) {
+				this.deviceSettings = device.deviceSettings
 			} else {
 				this.deviceSettings = {}
 			}
@@ -198,9 +197,6 @@ export class CoreHandler {
 				this.logger.info('Loglevel: ' + this.logger.level)
 			}
 
-			if (this.deviceSettings.errorReporting !== this.errorReporting) {
-				this.errorReporting = this.deviceSettings.errorReporting || false
-			}
 			if (this.deviceSettings.multiThreading !== this.multithreading) {
 				this.multithreading = this.deviceSettings.multiThreading || false
 			}

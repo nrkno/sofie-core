@@ -104,7 +104,6 @@ export class TSRHandler {
 	private _initialized = false
 	private _multiThreaded: boolean | null = null
 	private _reportAllCommands: boolean | null = null
-	private _errorReporting: boolean | null = null
 
 	private _updateDevicesIsRunning = false
 	private _lastReportedObjHashes: string[] = []
@@ -350,11 +349,6 @@ export class TSRHandler {
 			this.tsr.logDebug = this._coreHandler.logDebug
 		}
 
-		if (this._errorReporting !== this._coreHandler.errorReporting) {
-			this._errorReporting = this._coreHandler.errorReporting
-
-			this.logger.info('ErrorReporting: ' + this._multiThreaded)
-		}
 		if (this.tsr.estimateResolveTimeMultiplier !== this._coreHandler.estimateResolveTimeMultiplier) {
 			this.tsr.estimateResolveTimeMultiplier = this._coreHandler.estimateResolveTimeMultiplier
 			this.logger.info('estimateResolveTimeMultiplier: ' + this._coreHandler.estimateResolveTimeMultiplier)

@@ -43,7 +43,7 @@
 			"type": "integer",
 			"ui:title": "Adjust resolve-time estimation",
 			"description": "Adjust resolve-time estimation",
-			"default": false
+			"default": 0
 		}
 	},
 	"required": [],
