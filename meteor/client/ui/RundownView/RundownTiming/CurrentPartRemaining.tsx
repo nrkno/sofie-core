@@ -13,6 +13,7 @@ interface IPartRemainingProps {
 	className?: string
 	heavyClassName?: string
 	speaking?: boolean
+	vibrating?: boolean
 }
 
 // global variable for remembering last uttered displayTime
@@ -121,7 +122,9 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 					this.speak(displayTime)
 				}
 
-				this.vibrate(displayTime)
+				if (this.props.vibrating) {
+					this.vibrate(displayTime)
+				}
 
 				prevDisplayTime = displayTime
 			}
