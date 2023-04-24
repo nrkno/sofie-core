@@ -1,33 +1,24 @@
 import React, { useCallback, useState } from 'react'
 import Tooltip from 'rc-tooltip'
-import { doModalDialog } from '../../../lib/ModalDialog'
+import { doModalDialog } from '../../../../lib/ModalDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle, faTrash, faPlus } from '@fortawesome/free-solid-svg-icons'
-import { PeripheralDevice, PeripheralDeviceType } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceType } from '../../../../../lib/collections/PeripheralDevices'
 import { Link } from 'react-router-dom'
-import { MomentFromNow } from '../../../lib/Moment'
+import { MomentFromNow } from '../../../../lib/Moment'
 import { useTranslation } from 'react-i18next'
-import { getHelpMode } from '../../../lib/localStorage'
-import { unprotectString } from '../../../../lib/lib'
-import { PeripheralDevices } from '../../../collections'
+import { getHelpMode } from '../../../../lib/localStorage'
+import { unprotectString } from '../../../../../lib/lib'
+import { PeripheralDevices } from '../../../../collections'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
+import { useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 
-interface IStudioDevicesProps {
+interface StudioSelectDevicesProps {
 	studioId: StudioId
+	studioDevices: PeripheralDevice[]
 }
-
-export function StudioDevices({ studioId }: IStudioDevicesProps): JSX.Element {
+export function StudioSelectDevices({ studioId, studioDevices }: StudioSelectDevicesProps): JSX.Element {
 	const { t } = useTranslation()
-
-	const studioDevices = useTracker(
-		() =>
-			PeripheralDevices.find({
-				studioId: studioId,
-			}).fetch(),
-		[studioId],
-		[]
-	)
 
 	const availableDevices = useTracker(
 		() =>
@@ -95,7 +86,7 @@ export function StudioDevices({ studioId }: IStudioDevicesProps): JSX.Element {
 					visible={getHelpMode() && !studioDevices.length}
 					placement="right"
 				>
-					<span>{t('Attached Devices')}</span>
+					<span>{t('Peripheral Devices')}</span>
 				</Tooltip>
 			</h2>
 			&nbsp;
@@ -118,7 +109,7 @@ export function StudioDevices({ studioId }: IStudioDevicesProps): JSX.Element {
 			</table>
 			<div className="mod mhs">
 				<button className="btn btn-primary" onClick={toggleAvailableDevices}>
-					<FontAwesomeIcon icon={faPlus} />
+					<FontAwesomeIcon icon={faPlus} /> {t('Attach device')}
 				</button>
 				{showAvailableDevices && (
 					<div className="border-box text-s studio-devices-dropdown">
