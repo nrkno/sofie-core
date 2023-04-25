@@ -1,6 +1,6 @@
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import classNames from 'classnames'
-import React, { useContext, useEffect, useMemo } from 'react'
+import React, { useContext, useMemo } from 'react'
 import { ActivePartInstancesContext, PieceFilter } from '.'
 import {
 	withResolvedSegment,
