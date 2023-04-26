@@ -9,7 +9,7 @@
 	"scripts": {
 		"postinstall": "yarn install:packages && yarn install:meteor",
 		"install:meteor": "cd meteor && meteor --version && meteor npm install -g yarn && node ../scripts/fix-windows-yarn.js && meteor yarn install",
-		"install:packages": "cd packages && yarn install",
+		"install:packages": "cd packages && (node is_node_14.js && npx yarn-exclude --exclude openapi || yarn install)",
 		"start": "yarn install && yarn dev",
 		"dev": "node ./scripts/run.js",
 		"restart:meteor": "node ./scripts/meteor-force-restart.js",
