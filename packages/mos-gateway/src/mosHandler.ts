@@ -406,7 +406,7 @@ export class MosHandler {
 		const peripheralDevice = this.getThisPeripheralDevice()
 
 		if (peripheralDevice) {
-			const devices: MosSubDeviceSettings = (peripheralDevice.ingestSubDevices || {}) as any
+			const devices: MosSubDeviceSettings = (peripheralDevice.ingestDevices || {}) as any
 
 			const devicesToAdd: { [id: string]: { options: MosDeviceConfig } } = {}
 			const devicesToRemove: { [id: string]: true } = {}

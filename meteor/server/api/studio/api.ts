@@ -52,8 +52,8 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 				thumbnailContainerIds: [],
 				previewContainerIds: [],
 				playoutDevices: wrapDefaultObject({}),
-				ingestSubDevices: wrapDefaultObject({}),
-				inputSubDevices: wrapDefaultObject({}),
+				ingestDevices: wrapDefaultObject({}),
+				inputDevices: wrapDefaultObject({}),
 			},
 			lastBlueprintConfig: undefined,
 		})

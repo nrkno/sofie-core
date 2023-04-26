@@ -449,8 +449,8 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					thumbnailContainerIds: [],
 					previewContainerIds: [],
 					playoutDevices: wrapDefaultObject({}),
-					ingestSubDevices: wrapDefaultObject({}),
-					inputSubDevices: wrapDefaultObject({}),
+					ingestDevices: wrapDefaultObject({}),
+					inputDevices: wrapDefaultObject({}),
 				},
 				lastBlueprintConfig: undefined,
 			})

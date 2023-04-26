@@ -24,7 +24,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { ReactiveMongoObserverGroup } from './lib/observerGroup'
 import { Complete, assertNever, literal } from '@sofie-automation/corelib/dist/lib'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
-import { Studio, StudioIngestDevice, StudioPlayoutDevice } from '../../lib/collections/Studios'
+import { Studio, StudioIngestDevice, StudioInputDevice, StudioPlayoutDevice } from '../../lib/collections/Studios'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 /*
@@ -143,16 +143,17 @@ export function convertPeripheralDeviceForGateway(
 	studio: Pick<Studio, StudioFields> | undefined
 ): PeripheralDeviceForDevice {
 	const playoutDevices: PeripheralDeviceForDevice['playoutDevices'] = {}
-	const ingestSubDevices: PeripheralDeviceForDevice['ingestSubDevices'] = {}
+	const ingestDevices: PeripheralDeviceForDevice['ingestDevices'] = {}
+	const inputDevices: PeripheralDeviceForDevice['inputDevices'] = {}
 
 	if (studio) {
 		switch (peripheralDevice.category) {
 			case PeripheralDeviceCategory.INGEST: {
-				const resolvedDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.ingestSubDevices).obj
+				const resolvedDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.ingestDevices).obj
 
 				for (const [id, device] of Object.entries<StudioIngestDevice>(resolvedDevices)) {
 					if (device.peripheralDeviceId === peripheralDevice._id) {
-						ingestSubDevices[id] = device.options // TODO - is this correct?
+						ingestDevices[id] = device.options
 					}
 				}
 
@@ -163,7 +164,18 @@ export function convertPeripheralDeviceForGateway(
 
 				for (const [id, device] of Object.entries<StudioPlayoutDevice>(resolvedDevices)) {
 					if (device.peripheralDeviceId === peripheralDevice._id) {
-						playoutDevices[id] = device.options // TODO - is this correct?
+						playoutDevices[id] = device.options
+					}
+				}
+
+				break
+			}
+			case PeripheralDeviceCategory.TRIGGER_INPUT: {
+				const resolvedDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.inputDevices).obj
+
+				for (const [id, device] of Object.entries<StudioInputDevice>(resolvedDevices)) {
+					if (device.peripheralDeviceId === peripheralDevice._id) {
+						inputDevices[id] = device.options
 					}
 				}
 
@@ -171,7 +183,6 @@ export function convertPeripheralDeviceForGateway(
 			}
 			case PeripheralDeviceCategory.MEDIA_MANAGER:
 			case PeripheralDeviceCategory.PACKAGE_MANAGER:
-			case PeripheralDeviceCategory.TRIGGER_INPUT:
 				// No subdevices to re-export
 				break
 			default:
@@ -187,7 +198,8 @@ export function convertPeripheralDeviceForGateway(
 		deviceSettings: peripheralDevice.settings,
 
 		playoutDevices,
-		ingestSubDevices,
+		ingestDevices,
+		inputDevices,
 	})
 }
 

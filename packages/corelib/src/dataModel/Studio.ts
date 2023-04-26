@@ -102,9 +102,9 @@ export interface StudioPeripheralDeviceSettings {
 
 	playoutDevices: ObjectWithOverrides<Record<string, StudioPlayoutDevice>>
 
-	ingestSubDevices: ObjectWithOverrides<Record<string, StudioIngestDevice>>
+	ingestDevices: ObjectWithOverrides<Record<string, StudioIngestDevice>>
 
-	inputSubDevices: ObjectWithOverrides<Record<string, StudioInputDevice>>
+	inputDevices: ObjectWithOverrides<Record<string, StudioInputDevice>>
 }
 
 export interface StudioIngestDevice {

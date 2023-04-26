@@ -32,7 +32,7 @@ export function StudioInputSubDevices({ studioId, studioDevices }: StudioInputSu
 			if (studio?._id) {
 				Studios.update(studio._id, {
 					$set: {
-						'peripheralDeviceSettings.inputSubDevices.overrides': newOps,
+						'peripheralDeviceSettings.inputDevices.overrides': newOps,
 					},
 				})
 			}
@@ -41,8 +41,8 @@ export function StudioInputSubDevices({ studioId, studioDevices }: StudioInputSu
 	)
 
 	const baseSettings = useMemo(
-		() => studio?.peripheralDeviceSettings?.inputSubDevices ?? wrapDefaultObject({}),
-		[studio?.peripheralDeviceSettings?.inputSubDevices]
+		() => studio?.peripheralDeviceSettings?.inputDevices ?? wrapDefaultObject({}),
+		[studio?.peripheralDeviceSettings?.inputDevices]
 	)
 
 	const overrideHelper = useOverrideOpHelper(saveOverrides, baseSettings)
@@ -79,7 +79,7 @@ export function StudioInputSubDevices({ studioId, studioDevices }: StudioInputSu
 
 		Studios.update(studioId, {
 			$push: {
-				'peripheralDeviceSettings.inputSubDevices.overrides': addOp,
+				'peripheralDeviceSettings.inputDevices.overrides': addOp,
 			},
 		})
 	}, [studioId, wrappedSubDevices])

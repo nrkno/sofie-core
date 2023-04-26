@@ -321,8 +321,8 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 							previewContainerIds: studioOld.previewContainerIds,
 							thumbnailContainerIds: studioOld.thumbnailContainerIds,
 							playoutDevices: wrapDefaultObject({}),
-							ingestSubDevices: wrapDefaultObject({}),
-							inputSubDevices: wrapDefaultObject({}),
+							ingestDevices: wrapDefaultObject({}),
+							inputDevices: wrapDefaultObject({}),
 						},
 					},
 					$unset: {
@@ -429,7 +429,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 
 				Studios.update(device.studioId, {
 					$set: {
-						[`peripheralDeviceSettings.ingestSubDevices.overrides`]: newOverrides,
+						[`peripheralDeviceSettings.ingestDevices.overrides`]: newOverrides,
 					},
 				})
 
@@ -482,7 +482,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 
 				Studios.update(device.studioId, {
 					$set: {
-						[`peripheralDeviceSettings.inputSubDevices.overrides`]: newOverrides,
+						[`peripheralDeviceSettings.inputDevices.overrides`]: newOverrides,
 					},
 				})
 

@@ -54,7 +54,7 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 		$set: {
 			'mappingsWithOverrides.defaults': translateMappings(result.mappings),
 			'peripheralDeviceSettings.playoutDevices.defaults': playoutDevices,
-			'peripheralDeviceSettings.ingestSubDevices.defaults': ingestDevices,
+			'peripheralDeviceSettings.ingestDevices.defaults': ingestDevices,
 			lastBlueprintConfig: {
 				blueprintHash: blueprint.blueprintDoc.blueprintHash,
 				blueprintId: blueprint.blueprintId,

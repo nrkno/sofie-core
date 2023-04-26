@@ -41,5 +41,6 @@ export interface PeripheralDeviceForDevice {
 	deviceSettings: unknown
 
 	playoutDevices: Record<string, TSR.DeviceOptionsAny>
-	ingestSubDevices: Record<string, unknown>
+	ingestDevices: Record<string, unknown>
+	inputDevices: Record<string, unknown>
 }
