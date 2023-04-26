@@ -458,4 +458,34 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			}
 		},
 	},
+
+	{
+		id: `PeripheralDevice cleanup unused properties on child devices`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const objectCount = PeripheralDevices.find({
+				parentDeviceId: { $exists: true },
+				// One of:
+				configManifest: { $exists: true },
+			}).count()
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: () => {
+			PeripheralDevices.update(
+				{ parentDeviceId: { $exists: true } },
+				{
+					$unset: {
+						configManifest: 1,
+					},
+				},
+				{
+					multi: true,
+				}
+			)
+		},
+	},
 ])
