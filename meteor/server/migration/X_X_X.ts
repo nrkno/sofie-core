@@ -6,6 +6,7 @@ import {
 	MappingExt,
 	StudioIngestDevice,
 	StudioInputDevice,
+	StudioPeripheralDeviceSettings,
 	StudioPlayoutDevice,
 	StudioRouteSet,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -15,7 +16,12 @@ import {
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import _ from 'underscore'
 import { Studio } from '../../lib/collections/Studios'
-import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import {
+	wrapDefaultObject,
+	updateOverrides,
+	ObjectOverrideSetOp,
+	SomeObjectOverrideOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 /*
  * **************************************************************************************
@@ -353,16 +359,26 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			for (const device of objects) {
 				if (!device.studioId) continue
 
+				const newOverrides: SomeObjectOverrideOp[] = []
+
 				for (const [id, subDevice] of Object.entries<unknown>(device.settings?.['devices'] || {})) {
-					Studios.update(device.studioId, {
-						$set: {
-							[`peripheralDeviceSettings.playoutDevices.defaults.${id}`]: literal<StudioPlayoutDevice>({
+					newOverrides.push(
+						literal<ObjectOverrideSetOp>({
+							op: 'set',
+							path: id,
+							value: literal<StudioPlayoutDevice>({
 								peripheralDeviceId: device._id,
 								options: subDevice as any,
 							}),
-						},
-					})
+						})
+					)
 				}
+
+				Studios.update(device.studioId, {
+					$set: {
+						[`peripheralDeviceSettings.playoutDevices.overrides`]: newOverrides,
+					},
+				})
 
 				PeripheralDevices.update(device._id, {
 					$unset: {
@@ -396,16 +412,26 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			for (const device of objects) {
 				if (!device.studioId) continue
 
+				const newOverrides: SomeObjectOverrideOp[] = []
+
 				for (const [id, subDevice] of Object.entries<unknown>(device.settings?.['devices'] || {})) {
-					Studios.update(device.studioId, {
-						$set: {
-							[`peripheralDeviceSettings.ingestSubDevices.defaults.${id}`]: literal<StudioIngestDevice>({
+					newOverrides.push(
+						literal<ObjectOverrideSetOp>({
+							op: 'set',
+							path: id,
+							value: literal<StudioIngestDevice>({
 								peripheralDeviceId: device._id,
 								options: subDevice as any,
 							}),
-						},
-					})
+						})
+					)
 				}
+
+				Studios.update(device.studioId, {
+					$set: {
+						[`peripheralDeviceSettings.ingestSubDevices.overrides`]: newOverrides,
+					},
+				})
 
 				PeripheralDevices.update(device._id, {
 					$unset: {
@@ -439,16 +465,26 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			for (const device of objects) {
 				if (!device.studioId) continue
 
+				const newOverrides: SomeObjectOverrideOp[] = []
+
 				for (const [id, subDevice] of Object.entries<unknown>(device.settings?.['devices'] || {})) {
-					Studios.update(device.studioId, {
-						$set: {
-							[`peripheralDeviceSettings.inputSubDevices.defaults.${id}`]: literal<StudioInputDevice>({
+					newOverrides.push(
+						literal<ObjectOverrideSetOp>({
+							op: 'set',
+							path: id,
+							value: literal<StudioInputDevice>({
 								peripheralDeviceId: device._id,
 								options: subDevice as any,
 							}),
-						},
-					})
+						})
+					)
 				}
+
+				Studios.update(device.studioId, {
+					$set: {
+						[`peripheralDeviceSettings.inputSubDevices.overrides`]: newOverrides,
+					},
+				})
 
 				PeripheralDevices.update(device._id, {
 					$unset: {
