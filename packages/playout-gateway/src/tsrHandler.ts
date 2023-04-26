@@ -2,15 +2,12 @@ import {
 	Conductor,
 	DeviceType,
 	ConductorOptions,
-	Device,
 	TimelineTriggerTimeResult,
 	DeviceOptionsAny,
-	Mappings,
 	DeviceContainer,
-	Timeline as TimelineTypes,
 	TSRTimelineObj,
 	TSRTimeline,
-	TSRTimelineObjBase,
+	TSRTimelineContent,
 	CommandReport,
 	DeviceOptionsAtem,
 	AtemMediaPoolAsset,
@@ -23,13 +20,10 @@ import {
 	StatusCode,
 } from 'timeline-state-resolver'
 import { CoreHandler, CoreTSRDeviceHandler } from './coreHandler'
-import clone = require('fast-clone')
 import * as crypto from 'crypto'
 import * as cp from 'child_process'
 
 import * as _ from 'underscore'
-import { CoreConnection } from '@sofie-automation/server-core-integration'
-import { TimelineObjectCoreExt } from '@sofie-automation/blueprints-integration'
 import { Logger } from 'winston'
 import { disableAtemUpload } from './config'
 import Debug from 'debug'
@@ -43,79 +37,31 @@ import {
 	PeripheralDeviceStatusObject,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { protectString, unprotectObject, unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { StudioId, TimelineHash } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import {
+	deserializeTimelineBlob,
+	RoutedMappings,
+	RoutedTimeline,
+	TimelineObjGeneric,
+} from '@sofie-automation/shared-lib/dist/core/model/Timeline'
+import {
+	PeripheralDevicePublic,
+	PlayoutDeviceSettings,
+} from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import { DBTimelineDatastoreEntry } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
+import { ConfigManifestEntry, TableConfigManifestEntry } from '@sofie-automation/server-core-integration'
+import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
 
 const debug = Debug('playout-gateway')
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface TSRConfig {}
-export interface TSRSettings {
-	// Runtime settings from Core
-	devices: {
-		[deviceId: string]: DeviceOptionsAny
-	}
-	mappings: Mappings
-	errorReporting?: boolean
-	multiThreading?: boolean
-	multiThreadedResolver?: boolean
-	useCacheWhenResolving?: boolean
-}
-export interface TSRDevice {
-	coreConnection: CoreConnection
-	device: Device<DeviceOptionsAny>
-}
 
 // ----------------------------------------------------------------------------
-// interface copied from Core lib/collections/Timeline.ts
 
-export type TimelineEnableExt = TimelineTypes.TimelineEnable & { setFromNow?: boolean }
-export interface TimelineObjGeneric extends TimelineObjectCoreExt {
-	/** Unique within a timeline (ie within a studio) */
-	id: string
-	/** Set when the id of the object is prefixed */
-	originalId?: string
-
-	objectType: TimelineObjType
-
-	enable: TimelineEnableExt | TimelineEnableExt[]
-
-	/** The id of the group object this object is in  */
-	inGroup?: string
-}
-export enum TimelineObjType {
-	/** Objects played in a rundown */
-	RUNDOWN = 'rundown',
-	/** Objects controlling recording */
-	RECORDING = 'record',
-	/** Objects controlling manual playback */
-	MANUAL = 'manual',
-	/** "Magic object", used to calculate a hash of the timeline */
-	STAT = 'stat',
-}
-
-/** This is the data-object published from Core */
-export interface RoutedTimeline {
-	_id: string
-	/** Hash of the studio mappings */
-	mappingsHash: string
-
-	/** Hash of the Timeline */
-	timelineHash: string
-
-	/** serialized JSON Array containing all timeline-objects */
-	timelineBlob: string
-	generated: number
-
-	// this is the old way of storing the timeline, kept for backwards-compatibility
-	timeline?: TimelineObjGeneric[]
-}
-export interface RoutedMappings {
-	_id: string
-	mappingsHash: string | undefined
-	mappings: Mappings
-}
-// ----------------------------------------------------------------------------
-
-export interface TimelineContentObjectTmp extends TSRTimelineObjBase {
+export interface TimelineContentObjectTmp<TContent extends { deviceType: DeviceType }>
+	extends TSRTimelineObj<TContent> {
 	inGroup?: string
 }
 /** Max time for initializing devices */
@@ -155,7 +101,7 @@ export class TSRHandler {
 	private _triggerupdateExpectedPlayoutItemsTimeout: any = null
 	private _coreTsrHandlers: { [deviceId: string]: CoreTSRDeviceHandler } = {}
 	private _observers: Array<any> = []
-	private _cachedStudioId = ''
+	private _cachedStudioId: StudioId | null = null
 
 	private _initialized = false
 	private _multiThreaded: boolean | null = null
@@ -166,6 +112,9 @@ export class TSRHandler {
 	private _lastReportedObjHashes: string[] = []
 	private _triggerUpdateDevicesCheckAgain = false
 	private _triggerUpdateDevicesTimeout: NodeJS.Timeout | undefined
+
+	private defaultDeviceOptions: { [deviceType: string]: Record<string, any> } = {}
+	private _debugStates: Map<string, object> = new Map()
 
 	constructor(logger: Logger) {
 		this.logger = logger
@@ -180,7 +129,7 @@ export class TSRHandler {
 		this.logger.info('TSRHandler init')
 
 		const peripheralDevice = await coreHandler.core.getPeripheralDevice()
-		const settings: TSRSettings = peripheralDevice.settings || {}
+		const settings: PlayoutDeviceSettings = peripheralDevice.settings as PlayoutDeviceSettings
 
 		this.logger.info('Devices', settings.devices)
 		const c: ConductorOptions = {
@@ -191,6 +140,9 @@ export class TSRHandler {
 			useCacheWhenResolving: settings.useCacheWhenResolving === true,
 			proActiveResolve: true,
 		}
+
+		this.defaultDeviceOptions = this.loadSubdeviceConfigurations()
+
 		this.tsr = new Conductor(c)
 		this._triggerupdateTimelineAndMappings('TSRHandler.init()')
 
@@ -233,8 +185,8 @@ export class TSRHandler {
 		})
 
 		this.tsr.on('setTimelineTriggerTime', (r: TimelineTriggerTimeResult) => {
-			this._coreHandler.core
-				.callMethod(PeripheralDeviceAPIMethods.timelineTriggerTime, [r])
+			this._coreHandler.core.coreMethods
+				.timelineTriggerTime(r)
 				.catch((error) => this.logger.error('Error in setTimelineTriggerTime', error))
 		})
 
@@ -250,8 +202,8 @@ export class TSRHandler {
 				this._lastReportedObjHashes.length = 10
 			}
 
-			this._coreHandler.core
-				.callMethod('peripheralDevice.reportResolveDone', [timelineHash, resolveDuration])
+			this._coreHandler.core.coreMethods
+				.reportResolveDone(protectString<TimelineHash>(timelineHash), resolveDuration)
 				.catch((e) => {
 					this.logger.error('Error in reportResolveDone', e)
 				})
@@ -275,6 +227,28 @@ export class TSRHandler {
 		this._triggerUpdateDevices()
 		this.logger.debug('tsr init done')
 	}
+
+	private loadSubdeviceConfigurations(): { [deviceType: string]: Record<string, any> } {
+		const playoutGatewayDevicesConfig: ConfigManifestEntry | undefined = PLAYOUT_DEVICE_CONFIG.deviceConfig.find(
+			(deviceConfig: ConfigManifestEntry) => deviceConfig.id === 'devices'
+		)
+		if (!playoutGatewayDevicesConfig) {
+			return {}
+		}
+		const tableConfig: TableConfigManifestEntry = playoutGatewayDevicesConfig as TableConfigManifestEntry
+		const defaultDeviceOptions: { [deviceType: string]: Record<string, any> } = {}
+		for (const deviceType in tableConfig.config) {
+			const configEntries = tableConfig.config[deviceType]
+				.filter((configManifestEntry: ConfigManifestEntry) => configManifestEntry.defaultVal)
+				.map((configManifestEntry: ConfigManifestEntry) => [
+					configManifestEntry.id.replace('options.', ''),
+					configManifestEntry.defaultVal,
+				])
+			defaultDeviceOptions[deviceType] = Object.fromEntries(configEntries)
+		}
+		return defaultDeviceOptions
+	}
+
 	private setupObservers(): void {
 		if (this._observers.length) {
 			this.logger.debug('Clearing observers..')
@@ -366,9 +340,7 @@ export class TSRHandler {
 			return undefined
 		}
 
-		const timeline = this._coreHandler.core.getCollection('studioTimeline').findOne(studioId)
-
-		return timeline as any
+		return this._coreHandler.core.getCollection<RoutedTimeline>('studioTimeline').findOne(studioId)
 	}
 	getMappings(): RoutedMappings | undefined {
 		const studioId = this._getStudioId()
@@ -377,9 +349,7 @@ export class TSRHandler {
 			return undefined
 		}
 		// Note: The studioMappings virtual collection contains a single object that contains all mappings
-		const mappingsObject = this._coreHandler.core.getCollection('studioMappings').findOne(studioId)
-
-		return mappingsObject as any
+		return this._coreHandler.core.getCollection<RoutedMappings>('studioMappings').findOne(studioId)
 	}
 	onSettingsChanged(): void {
 		if (!this._initialized) return
@@ -455,35 +425,21 @@ export class TSRHandler {
 			})
 		}
 
-		const transformedTimeline = timeline.timelineBlob
-			? this._transformTimeline(JSON.parse(timeline.timelineBlob) as Array<TimelineObjGeneric>)
-			: timeline.timeline
-			? this._transformTimeline(clone(timeline.timeline))
-			: []
-		this.tsr.timelineHash = timeline.timelineHash
-		this.tsr.setTimelineAndMappings(transformedTimeline, mappingsObject.mappings)
+		const transformedTimeline = this._transformTimeline(deserializeTimelineBlob(timeline.timelineBlob))
+		this.tsr.timelineHash = unprotectString(timeline.timelineHash)
+		this.tsr.setTimelineAndMappings(transformedTimeline, unprotectObject(mappingsObject.mappings))
 	}
-	private _getPeripheralDevice() {
-		const peripheralDevices = this._coreHandler.core.getCollection('peripheralDevices')
-		return peripheralDevices.findOne(this._coreHandler.core.deviceId)
+	private _getPeripheralDevice(): PeripheralDevicePublic {
+		const peripheralDevices = this._coreHandler.core.getCollection<PeripheralDevicePublic>('peripheralDevices')
+		const doc = peripheralDevices.findOne(this._coreHandler.core.deviceId)
+		if (!doc) throw new Error('Missing PeripheralDevice document!')
+		return doc
 	}
-	private _getStudio(): any | null {
-		const peripheralDevice = this._getPeripheralDevice()
-		if (!peripheralDevice) {
-			return null
-		}
-		const studios = this._coreHandler.core.getCollection('studios')
-		return studios.findOne(peripheralDevice.studioId)
-	}
-	private _getStudioId(): string | null {
+	private _getStudioId(): StudioId | null {
 		if (this._cachedStudioId) return this._cachedStudioId
 
-		const studio = this._getStudio()
-		if (studio) {
-			this._cachedStudioId = studio._id
-			return studio._id
-		}
-		return null
+		const peripheralDevice = this._getPeripheralDevice()
+		return peripheralDevice.studioId ?? null
 	}
 	private _triggerUpdateDevices() {
 		if (!this._initialized) return
@@ -525,11 +481,11 @@ export class TSRHandler {
 				})
 		}, 10)
 	}
+
 	private async _updateDevices(): Promise<void> {
 		this.logger.debug('updateDevices start')
 
-		const peripheralDevices = this._coreHandler.core.getCollection('peripheralDevices')
-		const peripheralDevice = peripheralDevices.findOne(this._coreHandler.core.deviceId)
+		const peripheralDevice = this._getPeripheralDevice()
 
 		const ps: Promise<DeviceActionResult>[] = []
 		const promiseOperations: { [id: string]: { deviceId: string; operation: DeviceAction } } = {}
@@ -547,9 +503,10 @@ export class TSRHandler {
 		const deviceOptions = new Map<string, DeviceOptionsAny>()
 
 		if (peripheralDevice) {
-			const settings: TSRSettings = peripheralDevice.settings || {}
+			const settings: PlayoutDeviceSettings = peripheralDevice.settings as PlayoutDeviceSettings
 
-			for (const [deviceId, device] of Object.entries(settings.devices)) {
+			for (const [deviceId, device0] of Object.entries(settings.devices)) {
+				const device = device0 as DeviceOptionsAny
 				if (!device.disable) {
 					deviceOptions.set(deviceId, device)
 				}
@@ -565,7 +522,7 @@ export class TSRHandler {
 						limitSlowFulfilledCommand: 100,
 						options: {},
 					},
-					orgDeviceOptions
+					this.populateDefaultValuesIfMissing(orgDeviceOptions)
 				)
 
 				if (this._multiThreaded !== null && deviceOptions.isMultiThreaded === undefined) {
@@ -665,7 +622,7 @@ export class TSRHandler {
 
 		await this._reportResult(resultsOrTimeout)
 
-		const debugLoggingPs: Promise<any>[] = []
+		const debugLoggingPs: Promise<void>[] = []
 		// Set logDebug on the devices:
 		for (const device of this.tsr.getDevices()) {
 			const options: DeviceOptionsAny | undefined = deviceOptions.get(device.deviceId)
@@ -678,13 +635,38 @@ export class TSRHandler {
 				debugLoggingPs.push(device.setDebugLogging(debug))
 			}
 		}
+		// Set debugState on devices:
+		for (const device of this.tsr.getDevices()) {
+			const options: DeviceOptionsAny | undefined = deviceOptions.get(device.deviceId)
+			if (!options) {
+				continue
+			}
+
+			const debug: boolean = this.getDeviceDebugState(options)
+			if (device.debugState !== debug) {
+				this.logger.info(`Setting debugState of device ${device.deviceId} to ${debug}`)
+				debugLoggingPs.push(device.setDebugState(debug))
+			}
+		}
 		await Promise.all(debugLoggingPs)
 
 		this._triggerupdateExpectedPlayoutItems() // So that any recently created devices will get all the ExpectedPlayoutItems
 		this.logger.debug('updateDevices end')
 	}
+
+	private populateDefaultValuesIfMissing(deviceOptions: DeviceOptionsAny): DeviceOptionsAny {
+		const options = Object.fromEntries(
+			Object.entries({ ...deviceOptions.options }).filter(([_key, value]) => value !== '')
+		)
+		deviceOptions.options = { ...this.defaultDeviceOptions[deviceOptions.type], ...options }
+		return deviceOptions
+	}
+
 	private getDeviceDebug(deviceOptions: DeviceOptionsAny): boolean {
 		return deviceOptions.debug || this._coreHandler.logDebug || false
+	}
+	private getDeviceDebugState(deviceOptions: DeviceOptionsAny): boolean {
+		return (deviceOptions.debugState && this._coreHandler.logState) || false
 	}
 	private async _reportResult(resultsOrTimeout: UpdateDeviceOperationsResult): Promise<void> {
 		this.logger.warn(JSON.stringify(resultsOrTimeout))
@@ -931,6 +913,14 @@ export class TSRHandler {
 				this.logger.debug(`Device "${device.deviceName || deviceId}" (${device.instanceId})`, { data })
 			})
 
+			await device.device.on('debugState', (...args: any[]) => {
+				if (device.debugState && this._coreHandler.logDebug) {
+					// Fetch the Id that core knows this device by
+					const coreId = this._coreTsrHandlers[device.deviceId].core.deviceId
+					this._debugStates.set(unprotectString(coreId), args[0])
+				}
+			})
+
 			await device.device.on('timeTrace', ((trace: FinishedTrace) => sendTrace(trace)) as () => void)
 
 			// now initialize it
@@ -1015,20 +1005,21 @@ export class TSRHandler {
 			clearTimeout(this._triggerupdateExpectedPlayoutItemsTimeout)
 		}
 		this._triggerupdateExpectedPlayoutItemsTimeout = setTimeout(() => {
-			this._updateExpectedPlayoutItems().catch((error) =>
-				this.logger.error('Error in _updateExpectedPlayoutItems', error)
-			)
+			this._updateExpectedPlayoutItems().catch((e) => {
+				this.logger.error('Error in _updateExpectedPlayoutItems', e)
+			})
 		}, 200)
 	}
 	private async _updateExpectedPlayoutItems() {
-		const expectedPlayoutItems = this._coreHandler.core.getCollection('expectedPlayoutItems')
+		const expectedPlayoutItems = this._coreHandler.core.getCollection<any>('expectedPlayoutItems')
 		const peripheralDevice = this._getPeripheralDevice()
 
 		const expectedItems = expectedPlayoutItems.find({
 			studioId: peripheralDevice.studioId,
 		})
+
 		const rundowns = _.indexBy(
-			this._coreHandler.core.getCollection('rundowns').find({
+			this._coreHandler.core.getCollection<any>('rundowns').find({
 				studioId: peripheralDevice.studioId,
 			}),
 			'_id'
@@ -1065,7 +1056,7 @@ export class TSRHandler {
 		this._updateDatastore().catch((e) => this.logger.error('Error in _updateDatastore', e))
 	}
 	private async _updateDatastore() {
-		const datastoreCollection = this._coreHandler.core.getCollection('timelineDatastore')
+		const datastoreCollection = this._coreHandler.core.getCollection<DBTimelineDatastoreEntry>('timelineDatastore')
 		const peripheralDevice = this._getPeripheralDevice()
 
 		const datastoreObjs = datastoreCollection.find({
@@ -1084,49 +1075,33 @@ export class TSRHandler {
 	 * @param timeline
 	 */
 	private _transformTimeline(timeline: Array<TimelineObjGeneric>): TSRTimeline {
-		// _transformTimeline (timeline: Array<TimelineObj>): Array<TimelineContentObject> | null {
-
-		const transformObject = (obj: TimelineObjGeneric): TimelineContentObjectTmp => {
-			// TODO - this cast to any feels dangerous. Are any of these 'fixes' necessary?
-			const transformedObj: any = obj
-
-			if (!transformedObj.content) transformedObj.content = {}
-			if (transformedObj.isGroup) {
-				if (!transformedObj.content.objects) transformedObj.content.objects = []
-			}
-
-			return transformedObj
+		// First, transform and convert timeline to a key-value store, for fast referencing:
+		const objects: { [id: string]: TimelineContentObjectTmp<TSRTimelineContent> } = {}
+		for (const obj of timeline) {
+			objects[obj.id] = obj
 		}
 
-		// First, transform and convert timeline to a key-value store, for fast referencing:
-		const objects: { [id: string]: TimelineContentObjectTmp } = {}
-		_.each(timeline, (obj: TimelineObjGeneric) => {
-			const transformedObj = transformObject(obj)
-			objects[transformedObj.id] = transformedObj
-		})
-
 		// Go through all objects:
-		const transformedTimeline: Array<TSRTimelineObj> = []
-		_.each(objects, (obj: TimelineContentObjectTmp) => {
+		const transformedTimeline: Array<TSRTimelineObj<TSRTimelineContent>> = []
+		for (const obj of Object.values(objects)) {
 			if (!obj.inGroup) {
 				// Add object to timeline
 				delete obj.inGroup
-				transformedTimeline.push(obj as TSRTimelineObj)
-				return
+				transformedTimeline.push(obj)
+				continue
 			}
 			const groupObj = objects[obj.inGroup]
 			if (!groupObj) {
 				// referenced group not found
 				this.logger.error(`Referenced group "${obj.inGroup}" not found! Referenced by "${obj.id}"`)
-				return
+				continue
 			}
 			// Add object into group:
 			if (!groupObj.children) groupObj.children = []
-			if (groupObj.children) {
-				delete obj.inGroup
-				groupObj.children.push(obj)
-			}
-		})
+			groupObj.children.push(obj)
+			delete obj.inGroup
+		}
+
 		return transformedTimeline
 	}
 
@@ -1135,12 +1110,12 @@ export class TSRHandler {
 
 	private sendChangedResults = (): void => {
 		this.sendCallbacksTimeout = undefined
-		this._coreHandler.core
-			.callMethod(PeripheralDeviceAPIMethods.playoutPlaybackChanged, [this.changedResults])
-			.catch((error) => {
-				this.logger.error('Error in timelineCallback', error)
+		if (this.changedResults) {
+			this._coreHandler.core.coreMethods.playoutPlaybackChanged(this.changedResults).catch((e) => {
+				this.logger.error('Error in timelineCallback', e)
 			})
-		this.changedResults = undefined
+			this.changedResults = undefined
+		}
 	}
 
 	private handleTSRTimelineCallback(
@@ -1163,12 +1138,14 @@ export class TSRHandler {
 				this.logger.error(`Unknown callback method "${callbackName0}"`)
 				return
 			}
+
 			this._coreHandler.core
-				.callMethod(method, [
-					Object.assign({}, data, {
+				.callMethodRaw(method, [
+					{
+						...data,
 						objId: objId,
 						time: time,
-					}),
+					},
 				])
 				.catch((error) => {
 					this.logger.error('Error in timelineCallback', error)
@@ -1179,9 +1156,9 @@ export class TSRHandler {
 		// debounce
 		if (this.changedResults && this.changedResults.rundownPlaylistId !== data.rundownPlaylistId) {
 			// The playlistId changed. Send what we have right away and reset:
-			this._coreHandler.core
-				.callMethod(PeripheralDeviceAPIMethods.playoutPlaybackChanged, [this.changedResults])
-				.catch((error) => this.logger.error('Error in timelineCallback', error))
+			this._coreHandler.core.coreMethods.playoutPlaybackChanged(this.changedResults).catch((e) => {
+				this.logger.error('Error in timelineCallback', e)
+			})
 			this.changedResults = undefined
 		}
 		if (!this.changedResults) {
@@ -1224,6 +1201,10 @@ export class TSRHandler {
 		if (!this.sendCallbacksTimeout) {
 			this.sendCallbacksTimeout = setTimeout(this.sendChangedResults, 20)
 		}
+	}
+
+	public getDebugStates(): Map<string, object> {
+		return this._debugStates
 	}
 }
 

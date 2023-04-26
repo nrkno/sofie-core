@@ -2,13 +2,13 @@ import { Meteor } from 'meteor/meteor'
 import { allowAccessToStudio } from './lib/security'
 import { MongoQueryKey } from '../../lib/typings/meteor'
 import { logNotAllowed } from './lib/lib'
-import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
+import { ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
-import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Settings } from '../../lib/Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
-import { fetchStudioLight, StudioLight } from '../../lib/collections/optimizations'
+import { fetchStudioLight, StudioLight } from '../optimizations'
 import {
 	ExternalMessageQueueObjId,
 	OrganizationId,
@@ -16,6 +16,7 @@ import {
 	StudioId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExternalMessageQueue, RundownPlaylists } from '../collections'
 
 export namespace StudioReadAccess {
 	/** Handles read access for all studio document */
@@ -83,7 +84,7 @@ export namespace StudioContentWriteAccess {
 		return anyContent(cred0, studioId)
 	}
 
-	export async function timelineDatastore(cred0: Credentials, studioId: StudioId) {
+	export async function timelineDatastore(cred0: Credentials, studioId: StudioId): Promise<StudioContentAccess> {
 		return anyContent(cred0, studioId)
 	}
 	/** Check for permission to update the studio baseline */

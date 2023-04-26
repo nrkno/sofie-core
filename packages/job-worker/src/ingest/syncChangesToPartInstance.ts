@@ -1,14 +1,12 @@
 import { BlueprintSyncIngestNewData, BlueprintSyncIngestPartInstance } from '@sofie-automation/blueprints-integration'
 import { ReadOnlyCache } from '../cache/CacheBase'
-import { JobContext, ProcessedShowStyleCompound } from '../jobs'
+import { JobContext } from '../jobs'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
 import { CacheForIngest } from './cache'
-import { ReadonlyDeep } from 'type-fest'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PartNote, SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
 import {
@@ -18,8 +16,7 @@ import {
 } from '../playout/infinites'
 import { isTooCloseToAutonext, updateExpectedDurationWithPrerollForPartInstance } from '../playout/lib'
 import _ = require('underscore')
-import { SyncIngestUpdateToPartInstanceContext } from '../blueprints/context/syncIngestUpdateToPartInstance'
-import { WrappedShowStyleBlueprint } from '../blueprints/cache'
+import { SyncIngestUpdateToPartInstanceContext } from '../blueprints/context'
 import {
 	convertAdLibActionToBlueprints,
 	convertAdLibPieceToBlueprints,
@@ -27,9 +24,9 @@ import {
 	convertPartToBlueprints,
 	convertPieceInstanceToBlueprints,
 } from '../blueprints/context/lib'
+import { getRundown } from './lib'
 
 type PlayStatus = 'previous' | 'current' | 'next'
-type ReadOnlyIngestCacheWithoutRundown = Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'>
 type SyncedInstance = {
 	existingPartInstance: DBPartInstance
 	previousPartInstance: DBPartInstance | undefined
@@ -38,15 +35,25 @@ type SyncedInstance = {
 	piecesThatMayBeActive: Promise<Piece[]>
 }
 
+/**
+ * Attempt to sync the current and next Part into their PartInstances
+ * This defers out to the Blueprints to do the syncing
+ * @param context Context of the job ebeing run
+ * @param cache Playout cache containing containing the Rundown being ingested
+ * @param ingestCache Ingest cache for the Rundown
+ */
 export async function syncChangesToPartInstances(
 	context: JobContext,
 	cache: CacheForPlayout,
-	ingestCache: ReadOnlyIngestCacheWithoutRundown,
-	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
-	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
-	rundown: ReadonlyDeep<DBRundown>
+	ingestCache: ReadOnlyCache<CacheForIngest>
 ): Promise<void> {
 	if (cache.Playlist.doc.activationId) {
+		// Get the final copy of the rundown
+		const rundown = getRundown(ingestCache)
+
+		const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
+		const blueprint = await context.getShowStyleBlueprint(showStyle._id)
+
 		if (blueprint.blueprint.syncIngestUpdateToPartInstance) {
 			const playlistPartInstances = getSelectedPartInstancesFromCache(cache)
 			const instances: SyncedInstance[] = []
@@ -121,8 +128,7 @@ export async function syncChangesToPartInstances(
 					rundown,
 					newPart ?? existingPartInstance.part,
 					await piecesThatMayBeActive,
-					existingPartInstance._id,
-					false
+					existingPartInstance._id
 				)
 
 				logger.info(`Syncing ingest changes for part: ${partId} (orphaned: ${!!newPart})`)
@@ -224,7 +230,7 @@ function insertToSyncedInstanceCandidates(
 	context: JobContext,
 	instances: SyncedInstance[],
 	cache: CacheForPlayout,
-	ingestCache: ReadOnlyIngestCacheWithoutRundown,
+	ingestCache: ReadOnlyCache<CacheForIngest>,
 	thisPartInstance: DBPartInstance,
 	previousPartInstance: DBPartInstance | undefined,
 	part: DBPart | undefined,
@@ -252,7 +258,7 @@ function findPartAndInsertToSyncedInstanceCandidates(
 	context: JobContext,
 	instances: SyncedInstance[],
 	cache: CacheForPlayout,
-	ingestCache: ReadOnlyIngestCacheWithoutRundown,
+	ingestCache: ReadOnlyCache<CacheForIngest>,
 	thisPartInstance: DBPartInstance,
 	previousPartInstance: DBPartInstance | undefined,
 	playStatus: PlayStatus

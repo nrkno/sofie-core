@@ -16,11 +16,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { getPartGroupId } from '@sofie-automation/corelib/dist/playout/ids'
 import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/infinites'
-import {
-	PartCalculatedTimings,
-	getPartTimingsOrDefaults,
-	calculatePartTimings,
-} from '@sofie-automation/corelib/dist/playout/timings'
+import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { JobContext } from '../../jobs'
 import { ReadonlyDeep } from 'type-fest'
@@ -136,11 +132,6 @@ export function buildTimelineObjsForRundown(
 				  )
 				: new Map()
 
-		const currentPartInstanceTimings = getPartTimingsOrDefaults(
-			partInstancesInfo.current.partInstance,
-			partInstancesInfo.current.pieceInstances
-		)
-
 		// The startTime of this start is used as the reference point for the calculated timings, so we can use 'now' and everything will lie after this point
 		const currentPartEnable: PartEnable = { start: 'now' }
 		if (partInstancesInfo.current.partInstance.timings?.plannedStartedPlayback) {
@@ -155,7 +146,8 @@ export function buildTimelineObjsForRundown(
 		) {
 			// If there is a valid autonext out of the current part, then calculate the duration
 			currentPartEnable.duration =
-				partInstancesInfo.current.partInstance.part.expectedDuration + currentPartInstanceTimings.toPartDelay
+				partInstancesInfo.current.partInstance.part.expectedDuration +
+				partInstancesInfo.current.calculatedTimings.toPartDelay
 		}
 		const currentPartGroup = createPartGroup(partInstancesInfo.current.partInstance, currentPartEnable)
 
@@ -173,7 +165,7 @@ export function buildTimelineObjsForRundown(
 					partInstancesInfo.previous,
 					currentInfinitePieceIds,
 					timingContext,
-					currentPartInstanceTimings
+					partInstancesInfo.current.calculatedTimings
 				)
 			)
 		}
@@ -189,7 +181,7 @@ export function buildTimelineObjsForRundown(
 					timingContext,
 					infinitePiece,
 					currentTime,
-					currentPartInstanceTimings
+					partInstancesInfo.current.calculatedTimings
 				)
 			)
 		}
@@ -210,7 +202,7 @@ export function buildTimelineObjsForRundown(
 				groupClasses,
 				currentPartGroup,
 				partInstancesInfo.current.nowInPart,
-				currentPartInstanceTimings,
+				partInstancesInfo.current.calculatedTimings,
 				activePlaylist.holdState === RundownHoldState.ACTIVE,
 				partInstancesInfo.current.partInstance.part.outTransition ?? null
 			)
@@ -272,13 +264,31 @@ function generateCurrentInfinitePieceObjects(
 		groupClasses.push('continues_infinite')
 	}
 
+	const pieceEnable = getPieceEnableInsidePart(
+		pieceInstance,
+		currentPartInstanceTimings,
+		timingContext.currentPartGroup.id
+	)
+
 	let nowInParent = currentPartInfo.nowInPart // Where is 'now' inside of the infiniteGroup?
-	let isAbsoluteInfinitePartGroup = false
-	if (pieceInstance.plannedStartedPlayback) {
+	if (pieceInstance.plannedStartedPlayback !== undefined) {
 		// We have a absolute start time, so we should use that.
-		infiniteGroup.enable = { start: pieceInstance.plannedStartedPlayback }
+		let infiniteGroupStart = pieceInstance.plannedStartedPlayback
 		nowInParent = currentTime - pieceInstance.plannedStartedPlayback
-		isAbsoluteInfinitePartGroup = true
+
+		// infiniteGroupStart had an actual timestamp inside and pieceEnable.start being a number
+		// means that it expects an offset from it's parent
+		// The infiniteGroupStart is a timestamp of the actual start of the piece controlObj,
+		// which includes the value of `pieceEnable.start` so we need to offset by that value and avoid trimming
+		// the start of the piece group
+		if (typeof pieceEnable.start === 'number' && pieceEnable.start !== null) {
+			infiniteGroupStart -= pieceEnable.start
+		} else {
+			// We should never hit this, but in case pieceEnable.start is "now"
+			pieceEnable.start = 0
+		}
+
+		infiniteGroup.enable = { start: infiniteGroupStart }
 
 		// If an end time has been set by a hotkey, then update the duration to be correct
 		if (pieceInstance.userDuration && pieceInstance.piece.enable.start !== 'now') {
@@ -321,25 +331,6 @@ function generateCurrentInfinitePieceObjects(
 		}
 	}
 
-	const isInfiniteContinuation =
-		pieceInstance.infinite && pieceInstance.piece.startPartId !== currentPartInfo.partInstance.part._id
-
-	let pieceEnable: TSR.Timeline.TimelineEnable
-	let pieceStartOffset = 0
-	if (isAbsoluteInfinitePartGroup || isInfiniteContinuation) {
-		// The infiniteGroup has an absolute time, the piece should be relative to the start of that
-		pieceEnable = { start: 0 }
-
-		if (pieceInstance.piece.enable.start !== 'now') pieceStartOffset = pieceInstance.piece.enable.start
-	} else {
-		// The infiniteGroup is relative to the curretnPartGrou, the piece should follow 'normal' rules
-		pieceEnable = getPieceEnableInsidePart(
-			pieceInstance,
-			currentPartInstanceTimings,
-			timingContext.currentPartGroup.id
-		)
-	}
-
 	// Still show objects flagged as 'HoldMode.EXCEPT' if this is a infinite continuation as they belong to the previous too
 	const isOriginOfInfinite = pieceInstance.piece.startPartId !== currentPartInfo.partInstance.part._id
 	const isInHold = activePlaylist.holdState === RundownHoldState.ACTIVE
@@ -352,7 +343,7 @@ function generateCurrentInfinitePieceObjects(
 			nowInParent,
 			pieceInstance,
 			pieceEnable,
-			pieceStartOffset,
+			0,
 			groupClasses,
 			isInHold,
 			isOriginOfInfinite
@@ -396,7 +387,7 @@ function generatePreviousPartInstanceObjects(
 				groupClasses,
 				previousPartGroup,
 				previousPartInfo.nowInPart,
-				getPartTimingsOrDefaults(previousPartInfo.partInstance, previousPartInfo.pieceInstances),
+				previousPartInfo.calculatedTimings,
 				activePlaylist.holdState === RundownHoldState.ACTIVE,
 				previousPartInfo.partInstance.part.outTransition ?? null
 			),
@@ -413,21 +404,11 @@ function generateNextPartInstanceObjects(
 	nextPartInfo: SelectedPartInstanceTimelineInfo,
 	timingContext: RundownTimelineTimingContext
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
-	const currentToNextTimings = calculatePartTimings(
-		activePlaylist.holdState,
-		currentPartInfo.partInstance.part,
-		currentPartInfo.pieceInstances.map((p) => p.piece),
-		nextPartInfo.partInstance.part,
-		nextPartInfo.pieceInstances
-			.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0)
-			.map((p) => p.piece)
-	)
-
 	const nextPartGroup = createPartGroup(nextPartInfo.partInstance, {
-		start: `#${timingContext.currentPartGroup.id}.end - ${currentToNextTimings.fromPartRemaining}`,
+		start: `#${timingContext.currentPartGroup.id}.end - ${nextPartInfo.calculatedTimings.fromPartRemaining}`,
 	})
 	timingContext.nextPartGroup = nextPartGroup
-	timingContext.nextPartOverlap = currentToNextTimings.fromPartRemaining
+	timingContext.nextPartOverlap = nextPartInfo.calculatedTimings.fromPartRemaining
 
 	const nextPieceInstances = nextPartInfo?.pieceInstances.filter(
 		(i) => !i.infinite || i.infinite.infiniteInstanceIndex === 0
@@ -450,7 +431,7 @@ function generateNextPartInstanceObjects(
 			groupClasses,
 			nextPartGroup,
 			0,
-			currentToNextTimings,
+			nextPartInfo.calculatedTimings,
 			false,
 			nextPartInfo.partInstance.part.outTransition ?? null
 		),

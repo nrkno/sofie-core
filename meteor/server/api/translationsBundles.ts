@@ -1,26 +1,28 @@
 import { Meteor } from 'meteor/meteor'
-import {
-	TranslationsBundles as TranslationsBundleCollection,
-	Translation,
-	TranslationsBundle as DBTranslationsBundle,
-} from '../../lib/collections/TranslationsBundles'
+import { Translation, TranslationsBundle as DBTranslationsBundle } from '../../lib/collections/TranslationsBundles'
+import { TranslationsBundles as TranslationsBundleCollection } from '../collections'
 import {
 	I18NextData,
 	TranslationsBundle as BlueprintTranslationsbundle,
 	TranslationsBundleType,
 } from '@sofie-automation/blueprints-integration'
 import { getHash, protectString, unprotectString } from '../../lib/lib'
-import { BlueprintId, TranslationsBundleId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	BlueprintId,
+	PeripheralDeviceId,
+	TranslationsBundleId,
+	TranslationsBundleOriginId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 /**
  * Insert or update translation bundles in the database.
  *
  * @param bundles the bundles to insert or update
- * @param originBlueprintId id of the blueprint the translation bundles belongs to
+ * @param originId id of the blueprint the translation bundles belongs to
  */
 export async function upsertBundles(
 	bundles: BlueprintTranslationsbundle[],
-	originBlueprintId: BlueprintId
+	originId: TranslationsBundleOriginId
 ): Promise<void> {
 	for (const bundle of bundles) {
 		const { type, language, data } = bundle
@@ -31,15 +33,15 @@ export async function upsertBundles(
 
 		// doesn't matter if it's a new or existing bundle, the id will be the same with the same
 		// originating blueprint and language
-		const _id = createBundleId(originBlueprintId, language)
+		const _id = createBundleId(originId, language)
 
 		await TranslationsBundleCollection.upsertAsync(
 			_id,
 			{
 				_id,
-				originBlueprintId,
+				originId,
 				type,
-				namespace: unprotectString(originBlueprintId),
+				namespace: unprotectString(originId),
 				language,
 				data: fromI18NextData(data),
 				hash: getHash(JSON.stringify(data)),
@@ -58,7 +60,7 @@ export async function upsertBundles(
  * @param blueprintId the id of the blueprint the translations were bundled with
  * @param language the language the bundle contains translations for
  */
-function createBundleId(blueprintId: BlueprintId, language: string): TranslationsBundleId {
+function createBundleId(blueprintId: TranslationsBundleOriginId, language: string): TranslationsBundleId {
 	return protectString<TranslationsBundleId>(getHash(`TranslationsBundle${blueprintId}${language}`))
 }
 
@@ -91,4 +93,15 @@ function fromI18NextData(data: I18NextData): Translation[] {
 	}
 
 	return translations
+}
+
+export function generateTranslationBundleOriginId(
+	id: BlueprintId | PeripheralDeviceId,
+	bundleType: 'blueprints' | 'peripheralDevice'
+): TranslationsBundleOriginId {
+	if (bundleType === 'blueprints') {
+		return protectString('blueprint_' + id)
+	} else {
+		return protectString('peripheralDevice_' + id)
+	}
 }

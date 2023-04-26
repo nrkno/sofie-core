@@ -32,7 +32,7 @@ export interface UIMetric {
 	canClose?: boolean
 }
 
-export function createMosItemRequest() {
+export function createMosItemRequest(): string {
 	const doc = objectToXML(
 		{
 			ncsItemRequest: {},

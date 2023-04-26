@@ -15,7 +15,7 @@ import * as loopAnimation from './icon-loop.json'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
-import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
+import { NoticeLevel, getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
 import { VTFloatingInspector } from '../../FloatingInspectors/VTFloatingInspector'
 import { ScanInfoForPackages } from '../../../../lib/mediaObjects'
 import { clone } from '../../../../lib/lib'
@@ -24,6 +24,8 @@ import { FreezeFrameIcon } from '../../../lib/ui/icons/freezeFrame'
 import StudioContext from '../../RundownView/StudioContext'
 import { Settings } from '../../../../lib/Settings'
 import { UIStudio } from '../../../../lib/api/studios'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { HourglassIconSmall } from '../../../lib/ui/icons/notifications'
 
 interface IProps extends ICustomLayerItemProps {
 	studio: UIStudio | undefined
@@ -79,11 +81,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		this.countdownContainer = document.createElement('span')
 	}
 
-	setLeftLabelRef = (e: HTMLSpanElement) => {
+	private setLeftLabelRef = (e: HTMLSpanElement) => {
 		this.leftLabel = e
 	}
 
-	setRightLabelRef = (e: HTMLSpanElement) => {
+	private setRightLabelRef = (e: HTMLSpanElement) => {
 		this.rightLabel = e
 	}
 
@@ -96,7 +98,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 	}
 
-	mountRightLabelContainer(
+	private mountRightLabelContainer(
 		props: IProps,
 		prevProps: IProps | null,
 		newState: Partial<IState>,
@@ -176,7 +178,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		return newState
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		if (super.componentDidMount && typeof super.componentDidMount === 'function') {
 			super.componentDidMount()
 		}
@@ -214,14 +216,14 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 	}
 
-	updateAnchoredElsWidths = () => {
+	private updateAnchoredElsWidths = () => {
 		const leftLabelWidth = this.leftLabel ? getElementWidth(this.leftLabel) : 0
 		const rightLabelWidth = this.rightLabel ? getElementWidth(this.rightLabel) : 0
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
-	componentDidUpdate(prevProps: Readonly<IProps & WithTranslation>, prevState: Readonly<IState>) {
+	componentDidUpdate(prevProps: Readonly<IProps & WithTranslation>, prevState: Readonly<IState>): void {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -282,7 +284,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		if (super.componentWillUnmount && typeof super.componentWillUnmount === 'function') {
 			super.componentWillUnmount()
 		}
@@ -306,7 +308,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 	}
 
-	getScenes = (): Array<number> | undefined => {
+	private getScenes = (): Array<number> | undefined => {
 		if (this.props.piece) {
 			const piece = this.props.piece
 			if (piece.contentPackageInfos) {
@@ -325,7 +327,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 	}
 
-	getFreezes = (): Array<PackageInfo.Anomaly> | undefined => {
+	private getFreezes = (): Array<PackageInfo.Anomaly> | undefined => {
 		if (this.props.piece) {
 			if ((this.props.piece.instance.piece.content as VTContent | undefined)?.ignoreFreezeFrame) {
 				return
@@ -358,7 +360,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 	}
 
-	getBlacks = (): Array<PackageInfo.Anomaly> | undefined => {
+	private getBlacks = (): Array<PackageInfo.Anomaly> | undefined => {
 		if (this.props.piece) {
 			if ((this.props.piece.instance.piece.content as VTContent | undefined)?.ignoreBlackFrames) {
 				return
@@ -397,7 +399,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 	}
 
-	renderLeftLabel() {
+	private renderLeftLabel() {
 		const { noticeLevel, begin, end } = this.state
 
 		const vtContent = this.props.piece.instance.piece.content as VTContent | undefined
@@ -407,6 +409,11 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		return !this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
 			<span className="segment-timeline__piece__label" ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
+				{this.props.piece.instance.piece.status === PieceStatusCode.SOURCE_NOT_READY && (
+					<div className="piece__status-icon type-hourglass">
+						<HourglassIconSmall />
+					</div>
+				)}
 				<span
 					className={ClassNames('segment-timeline__piece__label', {
 						'with-duration': !!duration,
@@ -438,7 +445,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		) : null
 	}
 
-	renderRightLabel() {
+	private renderRightLabel() {
 		const { end } = this.state
 		const { isLiveLine, part } = this.props
 
@@ -473,7 +480,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		)
 	}
 
-	renderContentEndCountdown() {
+	private renderContentEndCountdown() {
 		const { piece: uiPiece, part, isLiveLine, livePosition, partStartsAt } = this.props
 		const innerPiece = uiPiece.instance.piece
 
@@ -533,7 +540,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		return this.countdownContainer && ReactDOM.createPortal(countdown, this.countdownContainer)
 	}
 
-	render() {
+	render(): JSX.Element {
 		const itemDuration = this.getItemDuration()
 		const vtContent = this.props.piece.instance.piece.content as VTContent | undefined
 		const seek = vtContent && vtContent.seek ? vtContent.seek : 0
@@ -613,7 +620,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					mediaPreviewUrl={this.props.mediaPreviewUrl}
 					typeClass={this.props.typeClass}
 					contentMetaData={this.props.piece.contentMetaData}
-					noticeMessage={this.props.piece.message || ''}
+					noticeMessages={this.props.piece.messages || []}
 					renderedDuration={this.props.piece.renderedDuration || undefined}
 					contentPackageInfos={this.props.piece.contentPackageInfos}
 					pieceId={this.props.piece.instance.piece._id}

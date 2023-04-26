@@ -336,13 +336,9 @@ async function setStoryStatusMOS(
 	status: MOS.IMOSObjectStatus
 ): Promise<void> {
 	logger.debug('setStoryStatus', { deviceId, externalId: rundownExternalId, storyId, status })
-	return executePeripheralDeviceFunction(
-		context,
-		deviceId,
-		DEFAULT_MOS_TIMEOUT_TIME + 1000,
-		'setStoryStatus',
+	return executePeripheralDeviceFunction(context, deviceId, DEFAULT_MOS_TIMEOUT_TIME + 1000, 'setStoryStatus', [
 		rundownExternalId,
 		storyId,
-		status
-	)
+		status,
+	])
 }

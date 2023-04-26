@@ -8,6 +8,7 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PubSub } from '../../../lib/api/pubsub'
 import { MappingsStudioSelect, MappingsView } from './Mappings'
 import { TimelineDatastoreStudioSelect, TimelineDatastoreView } from './TimelineDatastore'
+import { DeviceTriggersDeviceSelect, DeviceTriggersView } from './DeviceTriggers'
 
 interface IStatusMenuProps {
 	match?: any
@@ -15,7 +16,7 @@ interface IStatusMenuProps {
 type IStatusMenuState = {}
 const StatusMenu = withTranslation()(
 	class StatusMenu extends React.Component<Translated<IStatusMenuProps>, IStatusMenuState> {
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (
@@ -41,6 +42,13 @@ const StatusMenu = withTranslation()(
 					>
 						<h3>{t('Mappings')}</h3>
 					</NavLink>
+					<NavLink
+						activeClassName="selectable-selected"
+						className="testTools-menu__testTools-menu-item selectable clickable"
+						to={'/testTools/devicetriggers'}
+					>
+						<h3>{t('Device Triggers')}</h3>
+					</NavLink>
 				</div>
 			)
 		}
@@ -51,14 +59,14 @@ interface IStatusProps {
 	match?: any
 }
 class Status extends MeteorReactComponent<Translated<IStatusProps>> {
-	componentDidMount() {
+	componentDidMount(): void {
 		// Subscribe to data:
 
 		this.subscribe(PubSub.uiStudio, null)
 		this.subscribe(PubSub.showStyleBases, {})
 		this.subscribe(PubSub.showStyleVariants, {})
 	}
-	render() {
+	render(): JSX.Element {
 		return (
 			<div className="mtl gutter has-statusbar">
 				{/* <header className='mvs'>
@@ -82,6 +90,8 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 								<Route path="/testTools/mappings" component={MappingsStudioSelect} />
 								<Route path="/testTools/timelinedatastore/:studioId" component={TimelineDatastoreView} />
 								<Route path="/testTools/timelinedatastore" component={TimelineDatastoreStudioSelect} />
+								<Route path="/testTools/devicetriggers/:peripheralDeviceId" component={DeviceTriggersView} />
+								<Route path="/testTools/devicetriggers" component={DeviceTriggersDeviceSelect} />
 								<Redirect to="/testTools/timeline" />
 							</Switch>
 						</div>

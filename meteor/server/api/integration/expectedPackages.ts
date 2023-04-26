@@ -2,26 +2,17 @@ import { check } from '../../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { MethodContext } from '../../../lib/api/methods'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
-import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
 import { ExpectedPackageStatusAPI, PackageInfo } from '@sofie-automation/blueprints-integration'
-import {
-	ExpectedPackageWorkStatus,
-	ExpectedPackageWorkStatuses,
-} from '../../../lib/collections/ExpectedPackageWorkStatuses'
+import { ExpectedPackageWorkStatus } from '../../../lib/collections/ExpectedPackageWorkStatuses'
 import { assertNever, getCurrentTime, literal, protectString } from '../../../lib/lib'
 import {
 	getPackageContainerPackageId,
-	PackageContainerPackageStatuses,
 	PackageContainerPackageStatusDB,
 } from '../../../lib/collections/PackageContainerPackageStatus'
-import { getPackageInfoId, PackageInfoDB, PackageInfos } from '../../../lib/collections/PackageInfos'
+import { getPackageInfoId, PackageInfoDB } from '../../../lib/collections/PackageInfos'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import { onUpdatedPackageInfo } from '../ingest/packageInfo'
-import {
-	getPackageContainerId,
-	PackageContainerStatusDB,
-	PackageContainerStatuses,
-} from '../../../lib/collections/PackageContainerStatus'
+import { getPackageContainerId, PackageContainerStatusDB } from '../../../lib/collections/PackageContainerStatus'
 import {
 	ExpectedPackageId,
 	ExpectedPackageWorkStatusId,
@@ -29,6 +20,13 @@ import {
 	PackageContainerPackageId,
 	PeripheralDeviceId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	ExpectedPackages,
+	ExpectedPackageWorkStatuses,
+	PackageContainerPackageStatuses,
+	PackageContainerStatuses,
+	PackageInfos,
+} from '../../collections'
 
 export namespace PackageManagerIntegration {
 	export async function updateExpectedPackageWorkStatuses(
@@ -354,7 +352,10 @@ export namespace PackageManagerIntegration {
 
 		const ids = packageIds.map((packageId) => getPackageInfoId(packageId, type))
 		const packageInfos = await PackageInfos.findFetchAsync(
-			{ _id: { $in: ids } },
+			{
+				_id: { $in: ids },
+				$or: [{ removeTime: null }, { removeTime: { $exists: false } }],
+			},
 			{
 				fields: {
 					payload: 0,
@@ -401,6 +402,9 @@ export namespace PackageManagerIntegration {
 		}
 		await PackageInfos.upsertAsync(id, {
 			$set: doc,
+			$unset: {
+				removeTime: 1,
+			},
 		})
 
 		onUpdatedPackageInfo(packageId, doc)
@@ -410,7 +414,8 @@ export namespace PackageManagerIntegration {
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		type: string,
-		packageId: ExpectedPackageId
+		packageId: ExpectedPackageId,
+		removeDelay?: number
 	): Promise<void> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, deviceToken, context)
 		check(packageId, String)
@@ -420,8 +425,18 @@ export namespace PackageManagerIntegration {
 
 		const id = getPackageInfoId(packageId, type)
 
-		await PackageInfos.removeAsync(id)
+		if (removeDelay) {
+			// Set a time to remove the package later:
+			await PackageInfos.updateAsync(id, {
+				$set: {
+					removeTime: getCurrentTime() + removeDelay,
+				},
+			})
+		} else {
+			// Remove right away:
+			await PackageInfos.removeAsync(id)
 
-		onUpdatedPackageInfo(packageId, null) // ?
+			onUpdatedPackageInfo(packageId, null) // ?
+		}
 	}
 }

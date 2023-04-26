@@ -53,7 +53,7 @@ export const LostPasswordPage = translateWithTracker((props: ILostPasswordPagePr
 			this.setState({ error: msg })
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<NotLoggedInContainer>

@@ -6,7 +6,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import React from 'react'
-import { getNoticeLevelForPieceStatus } from '../../lib/notifications/notifications'
+import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { RundownUtils } from '../../lib/rundown'
 import { FloatingInspector } from '../FloatingInspector'
 import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'
@@ -23,7 +23,7 @@ export function PieceHoverInspector({
 	originPosition,
 	mousePosition,
 	layer,
-}: IProps & { mousePosition: number }) {
+}: IProps & { mousePosition: number }): JSX.Element | null {
 	const mediaPreviewUrl = studio.settings.mediaPreviewsUrl
 
 	const status = pieceInstance.instance.piece.status
@@ -88,7 +88,7 @@ export function PieceHoverInspector({
 					typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 					itemElement={null}
 					contentMetaData={pieceInstance.contentMetaData || null}
-					noticeMessage={pieceInstance.message || null}
+					noticeMessages={pieceInstance.messages || null}
 					noticeLevel={noticeLevel}
 					mediaPreviewUrl={mediaPreviewUrl}
 					contentPackageInfos={pieceInstance.contentPackageInfos}

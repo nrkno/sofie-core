@@ -13,7 +13,7 @@ export function withRenderLimiter<IProps, IState>(
 				return shouldComponentUpdate(this.props, nextProps)
 			}
 
-			render() {
+			render(): JSX.Element {
 				return <WrappedComponent {...this.props} />
 			}
 		}

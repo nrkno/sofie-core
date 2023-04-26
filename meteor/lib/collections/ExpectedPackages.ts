@@ -1,28 +1,10 @@
 import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { assertNever, literal } from '../lib'
-import { createMongoCollection } from './lib'
-import { registerIndex } from '../database'
-
-import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { StudioLight } from './Studios'
 import deepExtend from 'deep-extend'
+
 export * from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
-export const ExpectedPackages = createMongoCollection<ExpectedPackageDB>(CollectionName.ExpectedPackages)
-
-registerIndex(ExpectedPackages, {
-	studioId: 1,
-	fromPieceType: 1,
-})
-registerIndex(ExpectedPackages, {
-	studioId: 1,
-	pieceId: 1,
-})
-registerIndex(ExpectedPackages, {
-	rundownId: 1,
-	pieceId: 1,
-})
 export function getPreviewPackageSettings(
 	expectedPackage: ExpectedPackage.Any
 ): ExpectedPackage.SideEffectPreviewSettings | undefined {

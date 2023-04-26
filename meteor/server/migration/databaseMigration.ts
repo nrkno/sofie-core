@@ -35,17 +35,7 @@ import {
 } from '../../lib/api/migration'
 import { logger } from '../../lib/logging'
 import { internalStoreSystemSnapshot } from '../api/snapshot'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { Blueprints } from '../../lib/collections/Blueprints'
-import {
-	CoreSystem,
-	GENESIS_SYSTEM_VERSION,
-	getCoreSystem,
-	parseVersion,
-	setCoreSystemVersion,
-	Version,
-} from '../../lib/collections/CoreSystem'
-import { Studios } from '../../lib/collections/Studios'
+import { GENESIS_SYSTEM_VERSION, parseVersion, Version } from '../../lib/collections/CoreSystem'
 import { getHash, protectString, stringifyError, unprotectString, waitForPromise } from '../../lib/lib'
 import { evalBlueprint } from '../api/blueprints/cache'
 import {
@@ -55,6 +45,9 @@ import {
 } from '../api/blueprints/migrationContext'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { SnapshotId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../collections'
+import { getSystemStorePath } from '../coreSystem'
+import { getCoreSystem, setCoreSystemVersion } from '../coreSystem/collection'
 
 /**
  * These versions are not supported anymore (breaking changes occurred after these versions)
@@ -184,6 +177,9 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 			if (blueprint.blueprintType === BlueprintManifestType.SHOWSTYLE) {
 				const bp = blueprintManifest as ShowStyleBlueprintManifest
 
+				// If blueprint uses the new flow, don't attempt migrations
+				if (typeof bp.applyConfig === 'function') return
+
 				// Find all showStyles that uses this blueprint:
 				ShowStyleBases.find({
 					blueprintId: blueprint._id,
@@ -222,6 +218,10 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 				})
 			} else if (blueprint.blueprintType === BlueprintManifestType.STUDIO) {
 				const bp = blueprintManifest as StudioBlueprintManifest
+
+				// If blueprint uses the new flow, don't attempt migrations
+				if (typeof bp.applyConfig === 'function') return
+
 				// Find all studios that use this blueprint
 				Studios.find({
 					blueprintId: blueprint._id,
@@ -569,8 +569,8 @@ export function runMigration(
 	let snapshotId: SnapshotId = protectString('')
 	if (isFirstOfPartialMigrations) {
 		// First, take a system snapshot:
-		const system = getCoreSystem()
-		if (system && system.storePath) {
+		const storePath = getSystemStorePath()
+		if (storePath) {
 			try {
 				snapshotId = waitForPromise(
 					internalStoreSystemSnapshot(null, null, `Automatic, taken before migration`)

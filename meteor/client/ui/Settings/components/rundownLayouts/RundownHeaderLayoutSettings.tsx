@@ -1,6 +1,7 @@
 import React from 'react'
 import { withTranslation } from 'react-i18next'
-import { RundownLayoutBase, RundownLayouts, RundownLayoutType } from '../../../../../lib/collections/RundownLayouts'
+import { RundownLayouts } from '../../../../collections'
+import { RundownLayoutBase, RundownLayoutType } from '../../../../../lib/collections/RundownLayouts'
 import { EditAttribute } from '../../../../lib/EditAttribute'
 import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
 import { Translated } from '../../../../lib/ReactMeteorData/ReactMeteorData'
@@ -13,7 +14,7 @@ interface IState {}
 
 export default withTranslation()(
 	class RundownHeaderLayoutSettings extends MeteorReactComponent<Translated<IProps>, IState> {
-		render() {
+		render(): JSX.Element | null {
 			const { t } = this.props
 
 			return this.props.item.type === RundownLayoutType.RUNDOWN_HEADER_LAYOUT ? (

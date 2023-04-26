@@ -11,11 +11,12 @@ import { dashboardElementStyle } from './DashboardPanel'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
+import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
 import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
 import { getScriptPreview } from '../../lib/ui/scriptPreview'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { PieceInstances } from '../../collections'
 
 interface IEndsWordsPanelProps {
 	visible?: boolean
@@ -39,7 +40,7 @@ class EndWordsPanelInner extends MeteorReactComponent<
 		super(props)
 	}
 
-	render() {
+	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 
 		const { t, livePieceInstance, panel } = this.props

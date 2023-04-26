@@ -3,11 +3,150 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.49.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.2...v1.49.0-in-testing.3) (2023-04-18)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+
+
+
+
+# [1.49.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.1-0...v1.49.0-in-testing.2) (2023-03-30)
+
+
+
+# [1.49.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.0...v1.49.0-in-testing.1) (2023-03-23)
+
+
+
+# [1.49.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0...v1.49.0-in-testing.0) (2023-03-21)
+
+
+### Bug Fixes
+
+* downgrade type-fest (again) ([82346cc](https://github.com/nrkno/tv-automation-server-core/commit/82346cc9fc01a251c6dcb4d2f86ea954601ada32))
+
+
+### Features
+
+* add studio frameRate to coreConfig ([#870](https://github.com/nrkno/tv-automation-server-core/issues/870)) ([265ad61](https://github.com/nrkno/tv-automation-server-core/commit/265ad61048ca638471d2cb07eab1747dace8b92d))
+* Expose peripheralDeviceActions to blueprints ([fdb61c9](https://github.com/nrkno/tv-automation-server-core/commit/fdb61c9e23a77a52c1fdc65cd40ba36c3005ce31))
+
+
+
+# [1.48.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.48.0-in-testing.2...v1.48.0-in-testing.3) (2023-02-14)
+
+
+
+# [1.48.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.8...v1.48.0-in-testing.2) (2023-02-14)
+
+
+### Bug Fixes
+
+* update mos-connection dependency ([#820](https://github.com/nrkno/tv-automation-server-core/issues/820)) ([b5df74f](https://github.com/nrkno/tv-automation-server-core/commit/b5df74f26b29c1e0b85a6d85ae3b83277ed1f554))
+
+
+
+# [1.48.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.48.0-in-testing.1) (2023-01-11)
+
+
+### Bug Fixes
+
+* refactor playout-gateway types into shared-lib ([#827](https://github.com/nrkno/tv-automation-server-core/issues/827)) ([d8245ff](https://github.com/nrkno/tv-automation-server-core/commit/d8245ff4e681cbb92ba09e1fb948525b6854b093))
+
+
+### Features
+
+* Blueprints migrations replacement ([#808](https://github.com/nrkno/tv-automation-server-core/issues/808)) ([7a0692a](https://github.com/nrkno/tv-automation-server-core/commit/7a0692a2216b5fc720f7342d6c7bc26410faf417))
+* initial translations for tsr actions ([889fa04](https://github.com/nrkno/tv-automation-server-core/commit/889fa04b368d5bf34bd0acd5ad8c377b4f3af264))
+* refactor timeline types to work better with typescript 4.7 ([#793](https://github.com/nrkno/tv-automation-server-core/issues/793)) ([1ec87ef](https://github.com/nrkno/tv-automation-server-core/commit/1ec87ef5578e4341225957e43132ef6a8f452503))
+* remove initial system migrations with manual steps ([#779](https://github.com/nrkno/tv-automation-server-core/issues/779)) ([3f51952](https://github.com/nrkno/tv-automation-server-core/commit/3f519520fb0efdc36822982766bf780eed83bac7))
+* stronger ddp call typings in gateways ([#788](https://github.com/nrkno/tv-automation-server-core/issues/788)) ([2a1f8af](https://github.com/nrkno/tv-automation-server-core/commit/2a1f8affad1b0278a2350c6e4f6ed7d3070121a1))
+* tsr action manifests ([4987eaf](https://github.com/nrkno/tv-automation-server-core/commit/4987eaf3277a58311c1c2d2613af3bc72a5c4487))
+* typings WIP ([0101b29](https://github.com/nrkno/tv-automation-server-core/commit/0101b29bdff7b1367bd27d16d524c24a1a8ae90a))
+
+
+
+
+
+# [1.49.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.0...v1.49.0-in-testing.1) (2023-03-23)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+
+
+
+
+# [1.49.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0...v1.49.0-in-testing.0) (2023-03-21)
+
+
+### Bug Fixes
+
+* downgrade type-fest (again) ([82346cc](https://github.com/nrkno/tv-automation-server-core/commit/82346cc9fc01a251c6dcb4d2f86ea954601ada32))
+
+
+### Features
+
+* add studio frameRate to coreConfig ([#870](https://github.com/nrkno/tv-automation-server-core/issues/870)) ([265ad61](https://github.com/nrkno/tv-automation-server-core/commit/265ad61048ca638471d2cb07eab1747dace8b92d))
+* Expose peripheralDeviceActions to blueprints ([fdb61c9](https://github.com/nrkno/tv-automation-server-core/commit/fdb61c9e23a77a52c1fdc65cd40ba36c3005ce31))
+
+
+
+# [1.48.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.48.0-in-testing.2...v1.48.0-in-testing.3) (2023-02-14)
+
+
+
+# [1.48.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.8...v1.48.0-in-testing.2) (2023-02-14)
+
+
+### Bug Fixes
+
+* update mos-connection dependency ([#820](https://github.com/nrkno/tv-automation-server-core/issues/820)) ([b5df74f](https://github.com/nrkno/tv-automation-server-core/commit/b5df74f26b29c1e0b85a6d85ae3b83277ed1f554))
+
+
+
+# [1.48.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.48.0-in-testing.1) (2023-01-11)
+
+
+### Bug Fixes
+
+* refactor playout-gateway types into shared-lib ([#827](https://github.com/nrkno/tv-automation-server-core/issues/827)) ([d8245ff](https://github.com/nrkno/tv-automation-server-core/commit/d8245ff4e681cbb92ba09e1fb948525b6854b093))
+
+
+### Features
+
+* Blueprints migrations replacement ([#808](https://github.com/nrkno/tv-automation-server-core/issues/808)) ([7a0692a](https://github.com/nrkno/tv-automation-server-core/commit/7a0692a2216b5fc720f7342d6c7bc26410faf417))
+* initial translations for tsr actions ([889fa04](https://github.com/nrkno/tv-automation-server-core/commit/889fa04b368d5bf34bd0acd5ad8c377b4f3af264))
+* refactor timeline types to work better with typescript 4.7 ([#793](https://github.com/nrkno/tv-automation-server-core/issues/793)) ([1ec87ef](https://github.com/nrkno/tv-automation-server-core/commit/1ec87ef5578e4341225957e43132ef6a8f452503))
+* remove initial system migrations with manual steps ([#779](https://github.com/nrkno/tv-automation-server-core/issues/779)) ([3f51952](https://github.com/nrkno/tv-automation-server-core/commit/3f519520fb0efdc36822982766bf780eed83bac7))
+* stronger ddp call typings in gateways ([#788](https://github.com/nrkno/tv-automation-server-core/issues/788)) ([2a1f8af](https://github.com/nrkno/tv-automation-server-core/commit/2a1f8affad1b0278a2350c6e4f6ed7d3070121a1))
+* tsr action manifests ([4987eaf](https://github.com/nrkno/tv-automation-server-core/commit/4987eaf3277a58311c1c2d2613af3bc72a5c4487))
+* typings WIP ([0101b29](https://github.com/nrkno/tv-automation-server-core/commit/0101b29bdff7b1367bd27d16d524c24a1a8ae90a))
+
+
+
+
+
+# [1.48.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.48.0-in-testing.2...v1.48.0-in-testing.3) (2023-02-14)
+
+
+## [1.47.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0...v1.47.1-0) (2023-03-30)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+
+
+
+
 # [1.47.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.8...v1.47.0) (2023-03-01)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 
 
+
+
+
+# [1.48.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.2...v1.48.0-in-testing.2) (2023-02-14)
 
 
 
@@ -87,6 +226,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 # [1.47.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.6...v1.47.0-in-testing.7) (2023-01-24)
+
+
+# [1.47.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.47.0-in-testing.6) (2023-01-16)
+
 **Note:** Version bump only for package @sofie-automation/blueprints-integration
 # [1.47.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.47.0-in-testing.6) (2023-01-16)
 # [1.47.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.4...v1.47.0-in-testing.5) (2023-01-11)

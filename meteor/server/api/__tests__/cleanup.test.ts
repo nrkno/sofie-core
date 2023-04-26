@@ -1,47 +1,50 @@
-import { Collections, getRandomId } from '../../../lib/lib'
+import { getRandomId } from '../../../lib/lib'
 import { beforeEachInFiber, testInFiber } from '../../../__mocks__/helpers/jest'
 
-import '../../../lib/main' // include this in order to get all of the collection set up
+import '../../collections' // include this in order to get all of the collection set up
 import { cleanupOldDataInner } from '../cleanup'
 import {
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
 	setupDefaultStudioEnvironment,
 } from '../../../__mocks__/helpers/database'
-
-import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { Rundowns } from '../../../lib/collections/Rundowns'
-import { Studios } from '../../../lib/collections/Studios'
-import { Blueprints } from '../../../lib/collections/Blueprints'
-import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
-import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { TriggeredActions } from '../../../lib/collections/TriggeredActions'
-import { Workers } from '../../../lib/collections/Workers'
-import { AdLibActions } from '../../../lib/collections/AdLibActions'
-import { Parts } from '../../../lib/collections/Parts'
-import { Buckets } from '../../../lib/collections/Buckets'
-import { BucketAdLibActions } from '../../../lib/collections/BucketAdlibActions'
-import { BucketAdLibs } from '../../../lib/collections/BucketAdlibs'
-import { Evaluations } from '../../../lib/collections/Evaluations'
-import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
-import { Piece, Pieces } from '../../../lib/collections/Pieces'
-import { Segments } from '../../../lib/collections/Segments'
-import { ExpectedPackageWorkStatuses } from '../../../lib/collections/ExpectedPackageWorkStatuses'
-import { ExpectedPlayoutItems } from '../../../lib/collections/ExpectedPlayoutItems'
-import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQueue'
-import { IngestDataCache } from '../../../lib/collections/IngestDataCache'
-import { PackageContainerPackageStatuses } from '../../../lib/collections/PackageContainerPackageStatus'
-import { PackageInfos } from '../../../lib/collections/PackageInfos'
-import { PartInstances } from '../../../lib/collections/PartInstances'
-import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
-import { RundownBaselineAdLibActions } from '../../../lib/collections/RundownBaselineAdLibActions'
-import { RundownBaselineObjs } from '../../../lib/collections/RundownBaselineObjs'
-import { RundownLayouts } from '../../../lib/collections/RundownLayouts'
-import { Snapshots } from '../../../lib/collections/Snapshots'
-import { Timeline } from '../../../lib/collections/Timeline'
-import { UserActionsLog } from '../../../lib/collections/UserActionsLog'
-import { TranslationsBundles } from '../../../lib/collections/TranslationsBundles'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import {
+	RundownPlaylists,
+	Rundowns,
+	Studios,
+	ShowStyleBases,
+	Blueprints,
+	PeripheralDevices,
+	Workers,
+	TriggeredActions,
+	PartInstances,
+	PieceInstances,
+	Segments,
+	Parts,
+	Pieces,
+	AdLibActions,
+	Buckets,
+	BucketAdLibActions,
+	BucketAdLibs,
+	Evaluations,
+	ExpectedPackages,
+	ExpectedPackageWorkStatuses,
+	ExpectedPlayoutItems,
+	ExternalMessageQueue,
+	IngestDataCache,
+	PackageContainerPackageStatuses,
+	PackageInfos,
+	PeripheralDeviceCommands,
+	RundownBaselineAdLibActions,
+	RundownBaselineObjs,
+	RundownLayouts,
+	Snapshots,
+	UserActionsLog,
+	Timeline,
+	TranslationsBundles,
+} from '../../collections'
+import { Collections } from '../../collections/lib'
 
 describe('Cleanup', () => {
 	let env: DefaultEnvironment
@@ -100,7 +103,7 @@ describe('Cleanup', () => {
 		PeripheralDevices.remove({})
 
 		// Manually clean up things that aren't cleaned up in cleanupOldDataInner:
-		Workers.remove({})
+		await Workers.removeAsync({})
 		TriggeredActions.remove({
 			showStyleBaseId: null,
 		})
@@ -401,7 +404,7 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		data: [],
 		hash: '',
 		language: '',
-		originBlueprintId: env.studioBlueprint._id,
+		originId: env.studioBlueprint._id,
 		type: '' as any,
 	})
 

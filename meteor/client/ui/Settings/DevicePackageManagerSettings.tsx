@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
 
 import { useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
@@ -8,8 +7,9 @@ import { Meteor } from 'meteor/meteor'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { useTranslation } from 'react-i18next'
 import { MeteorCall } from '../../../lib/api/methods'
-import { eventContextForLog } from '../../lib/clientAPI'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDevices } from '../../collections'
+import { eventContextForLog } from '../../../lib/clientUserAction'
 
 interface IDevicePackageManagerSettingsProps {
 	deviceId: PeripheralDeviceId

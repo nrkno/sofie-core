@@ -9,11 +9,12 @@ import {
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Segment } from '../../../lib/collections/Segments'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartExtended } from '../../../lib/Rundown'
-import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
+import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
+import { slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { Part } from '../../../lib/collections/Parts'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { dashboardElementStyle } from './DashboardPanel'
@@ -21,6 +22,7 @@ import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { PartId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 interface ISegmentTimingPanelProps {
 	visible?: boolean
@@ -46,7 +48,7 @@ class SegmentTimingPanelInner extends MeteorReactComponent<
 		super(props)
 	}
 
-	render() {
+	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const { t, panel } = this.props
 

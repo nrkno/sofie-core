@@ -4,7 +4,12 @@ import ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
 import { translateWithTracker, Translated, withTracker } from '../ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../MeteorReactComponent'
-import { NotificationCenter, Notification, NoticeLevel, NotificationAction } from './notifications'
+import {
+	NotificationCenter,
+	Notification,
+	NoticeLevel,
+	NotificationAction,
+} from '../../../lib/notifications/notifications'
 import { ContextMenuTrigger, ContextMenu, MenuItem } from '@jstarpl/react-contextmenu'
 import * as _ from 'underscore'
 import { translateMessage, isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
@@ -29,7 +34,7 @@ interface IPopUpProps {
  * @extends React.Component<IPopUpProps>
  */
 class NotificationPopUp extends React.Component<IPopUpProps> {
-	triggerEvent = (action: NotificationAction, e) => {
+	triggerEvent = (action: NotificationAction, e: React.SyntheticEvent) => {
 		if (action.action) {
 			action.action()
 		} else {
@@ -39,7 +44,7 @@ class NotificationPopUp extends React.Component<IPopUpProps> {
 		}
 	}
 
-	render() {
+	render(): JSX.Element {
 		const { item } = this.props
 
 		const allActions: NotificationAction[] = item.actions || []
@@ -395,7 +400,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 			return `${item.created}$jsx_${btoa(JSON.stringify(item.message))}`
 		}
 
-		render() {
+		render(): JSX.Element | null {
 			const { t, highlightedSource, highlightedLevel } = this.props
 
 			const notifications = this.getNotificationsToDisplay()
@@ -464,7 +469,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
  * @class NotificationCenterPanel
  * @extends React.Component
  */
-export const NotificationCenterPanel = (props: { limitCount?: number; filter?: NoticeLevel }) => (
+export const NotificationCenterPanel = (props: { limitCount?: number; filter?: NoticeLevel }): JSX.Element => (
 	<div className="notification-center-panel">
 		<NotificationCenterPopUps
 			showEmptyListLabel={true}
@@ -507,7 +512,7 @@ export const NotificationCenterPanelToggle = withTracker<IToggleProps, {}, ITrac
 	}
 )(
 	class NotificationCenterPanelToggle extends MeteorReactComponent<IToggleProps & ITrackedCountProps> {
-		render() {
+		render(): JSX.Element {
 			return (
 				<button
 					className={ClassNames(

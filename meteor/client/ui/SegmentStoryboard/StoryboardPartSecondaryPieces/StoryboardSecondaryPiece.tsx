@@ -10,7 +10,7 @@ import { getElementDocumentOffset } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
 import { GraphicsRenderer } from './Renderers/GraphicsRenderer'
 import { SplitsRenderer } from './Renderers/SplitsRenderer'
-import { PieceElement } from '../utils/PieceElement'
+import { PieceElement } from '../../SegmentContainer/PieceElement'
 import { UIStudio } from '../../../../lib/api/studios'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 

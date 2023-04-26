@@ -156,7 +156,7 @@ export function getPartTimingsOrDefaults(
 	}
 }
 
-function calculatePartExpectedDurationWithPrerollInner(rawDuration: number, timings: PartCalculatedTimings): number {
+function calculateExpectedDurationWithPreroll(rawDuration: number, timings: PartCalculatedTimings): number {
 	return Math.max(0, rawDuration + timings.toPartDelay - timings.fromPartRemaining)
 }
 
@@ -168,7 +168,7 @@ export function calculatePartExpectedDurationWithPreroll(
 
 	const timings = calculatePartTimings(undefined, {}, [], part, pieces)
 
-	return calculatePartExpectedDurationWithPrerollInner(part.expectedDuration, timings)
+	return calculateExpectedDurationWithPreroll(part.expectedDuration, timings)
 }
 
 export function calculatePartInstanceExpectedDurationWithPreroll(
@@ -177,10 +177,7 @@ export function calculatePartInstanceExpectedDurationWithPreroll(
 	if (partInstance.part.expectedDuration === undefined) return undefined
 
 	if (partInstance.partPlayoutTimings) {
-		return calculatePartExpectedDurationWithPrerollInner(
-			partInstance.part.expectedDuration,
-			partInstance.partPlayoutTimings
-		)
+		return calculateExpectedDurationWithPreroll(partInstance.part.expectedDuration, partInstance.partPlayoutTimings)
 	} else {
 		return partInstance.part.expectedDurationWithPreroll ?? partInstance.part.expectedDuration
 	}

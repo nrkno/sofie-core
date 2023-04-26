@@ -4,7 +4,6 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
-	PeripheralDevices,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '../../../../lib/collections/PeripheralDevices'
@@ -23,17 +22,23 @@ import {
 	PlayoutActions,
 	IBlueprintTriggeredActions,
 } from '@sofie-automation/blueprints-integration'
-import { Studios, Studio, MappingExt } from '../../../../lib/collections/Studios'
+import { Studio, MappingExt } from '../../../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle, MigrationContextSystem } from '../migrationContext'
 import { PlayoutDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/playoutDevice'
-import { ShowStyleBase, ShowStyleBases, SourceLayers } from '../../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant, ShowStyleVariants } from '../../../../lib/collections/ShowStyleVariants'
-import { CoreSystem } from '../../../../lib/collections/CoreSystem'
-import { TriggeredActions } from '../../../../lib/collections/TriggeredActions'
+import { ShowStyleBase, SourceLayers } from '../../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
 import {
 	applyAndValidateOverrides,
 	wrapDefaultObject,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import {
+	CoreSystem,
+	PeripheralDevices,
+	ShowStyleBases,
+	ShowStyleVariants,
+	Studios,
+	TriggeredActions,
+} from '../../../collections'
 
 describe('Test blueprint migrationContext', () => {
 	beforeAll(async () => {
@@ -430,7 +435,6 @@ describe('Test blueprint migrationContext', () => {
 								options: {},
 							},
 						},
-						locations: {},
 					}),
 					configManifest: {
 						deviceConfig: [], // can be empty as it's only useful for UI.
@@ -673,6 +677,7 @@ describe('Test blueprint migrationContext', () => {
 				showStyleBaseId: showStyle._id,
 				blueprintConfigWithOverrides: wrapDefaultObject(config || {}),
 				_rundownVersionHash: '',
+				_rank: 0,
 			})
 			ShowStyleVariants.insert(rawVariant)
 
@@ -773,6 +778,7 @@ describe('Test blueprint migrationContext', () => {
 						name: 'test2',
 						blueprintConfigWithOverrides: wrapDefaultObject({}),
 						_rundownVersionHash: '',
+						_rank: 0,
 					}) as any as IBlueprintShowStyleVariant
 				)
 				expect(ctx.getAllVariants()).toEqual(initialVariants)

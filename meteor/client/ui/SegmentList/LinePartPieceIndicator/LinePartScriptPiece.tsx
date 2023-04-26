@@ -7,7 +7,7 @@ interface IProps {
 	pieces: PieceExtended[]
 }
 
-export function LinePartScriptPiece({ pieces }: IProps) {
+export function LinePartScriptPiece({ pieces }: IProps): JSX.Element {
 	const pieceEl = useRef<HTMLDivElement>(null)
 	const [miniInspectorPosition, setMiniInspectorPosition] = useState<React.CSSProperties>({})
 	const [isHover, setHover] = useState(false)

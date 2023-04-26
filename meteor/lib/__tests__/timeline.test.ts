@@ -137,6 +137,6 @@ describe('lib/timeline', () => {
 					layer: 'L1',
 				},
 			] as TimelineObjGeneric[])
-		}).toThrowError(/missing id/)
+		}).toThrow(/missing id/)
 	})
 })

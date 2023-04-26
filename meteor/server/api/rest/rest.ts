@@ -99,6 +99,7 @@ Meteor.startup(() => {
 						convArgs
 					)
 				)
+				console.log(f, cursor)
 				if (cursor) return cursor.fetch()
 				return []
 			})

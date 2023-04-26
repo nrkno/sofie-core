@@ -21,6 +21,6 @@ export interface IDefaultRendererProps {
 		| undefined
 }
 
-export function DefaultRenderer({ piece }: IDefaultRendererProps) {
+export function DefaultRenderer({ piece }: IDefaultRendererProps): JSX.Element {
 	return <>{piece.instance.piece.name}</>
 }

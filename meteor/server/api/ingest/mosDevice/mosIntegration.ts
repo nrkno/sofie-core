@@ -29,7 +29,7 @@ export namespace MosIntegration {
 		await runIngestOperation(studioId, IngestJobs.MosRundown, {
 			rundownExternalId: rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
-			isCreateAction: true,
+			isUpdateOperation: false,
 			mosRunningOrder: rundown,
 		})
 		transaction?.end()
@@ -54,7 +54,7 @@ export namespace MosIntegration {
 		await runIngestOperation(studioId, IngestJobs.MosRundown, {
 			rundownExternalId: rundownExternalId,
 			peripheralDeviceId: peripheralDevice._id,
-			isCreateAction: true,
+			isUpdateOperation: false,
 			mosRunningOrder: rundown,
 		})
 
@@ -65,7 +65,7 @@ export namespace MosIntegration {
 		context: MethodContext,
 		id: PeripheralDeviceId,
 		token: string,
-		rundownId: MOS.MosString128
+		rundownId: MOS.IMOSString128
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoDelete', apmNamespace)
 
@@ -220,7 +220,7 @@ export namespace MosIntegration {
 		id: PeripheralDeviceId,
 		token: string,
 		Action: MOS.IMOSStoryAction,
-		Stories: Array<MOS.MosString128>
+		Stories: Array<MOS.IMOSString128>
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStoryMove', apmNamespace)
 
@@ -246,7 +246,7 @@ export namespace MosIntegration {
 		id: PeripheralDeviceId,
 		token: string,
 		Action: MOS.IMOSROAction,
-		Stories: Array<MOS.MosString128>
+		Stories: Array<MOS.IMOSString128>
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStoryDelete', apmNamespace)
 
@@ -271,8 +271,8 @@ export namespace MosIntegration {
 		id: PeripheralDeviceId,
 		token: string,
 		Action: MOS.IMOSROAction,
-		StoryID0: MOS.MosString128,
-		StoryID1: MOS.MosString128
+		StoryID0: MOS.IMOSString128,
+		StoryID1: MOS.IMOSString128
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStorySwap', apmNamespace)
 
@@ -349,7 +349,7 @@ export namespace MosIntegration {
 		id: PeripheralDeviceId,
 		token: string,
 		Action: MOS.IMOSStoryAction,
-		Items: Array<MOS.MosString128>
+		Items: Array<MOS.IMOSString128>
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoItemDelete', apmNamespace)
 
@@ -416,7 +416,7 @@ export namespace MosIntegration {
 		id: PeripheralDeviceId,
 		token: string,
 		Action: MOS.IMOSItemAction,
-		Items: Array<MOS.MosString128>
+		Items: Array<MOS.IMOSString128>
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoItemMove', apmNamespace)
 
@@ -433,8 +433,8 @@ export namespace MosIntegration {
 		id: PeripheralDeviceId,
 		token: string,
 		Action: MOS.IMOSStoryAction,
-		ItemID0: MOS.MosString128,
-		ItemID1: MOS.MosString128
+		ItemID0: MOS.IMOSString128,
+		ItemID1: MOS.IMOSString128
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoItemSwap', apmNamespace)
 

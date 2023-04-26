@@ -331,7 +331,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		return total
 	}
 
-	render() {
+	render(): JSX.Element {
 		return (
 			<div className="segment-timeline__timeline-grid" ref={this.setParentRef}>
 				<canvas
@@ -386,7 +386,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		}
 	}
 
-	reattachTimingEventListeners = () => {
+	private reattachTimingEventListeners = () => {
 		if (this.props.isLiveSegment) {
 			window.removeEventListener(RundownTiming.Events.timeupdateLowResolution, this.onTimeupdate)
 			window.addEventListener(RundownTiming.Events.timeupdateHighResolution, this.onTimeupdate)
@@ -396,7 +396,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		if (this.canvasElement && this.parentElement && !this.ctx) {
 			this.initialize()
 		}
@@ -404,7 +404,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		this.reattachTimingEventListeners()
 	}
 
-	shouldComponentUpdate(nextProps: ITimelineGridProps) {
+	shouldComponentUpdate(nextProps: ITimelineGridProps): boolean {
 		if (
 			nextProps.timeScale !== this.props.timeScale ||
 			nextProps.scrollLeft !== this.props.scrollLeft ||
@@ -417,7 +417,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		return false
 	}
 
-	componentDidUpdate(prevProps: ITimelineGridProps) {
+	componentDidUpdate(prevProps: ITimelineGridProps): void {
 		if (this.canvasElement && this.parentElement && !this.ctx) {
 			this.initialize()
 		}
@@ -437,7 +437,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		this.requestRepaint()
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		this._resizeObserver.disconnect()
 		window.removeEventListener(RundownTiming.Events.timeupdateLowResolution, this.onTimeupdate)
 		window.removeEventListener(RundownTiming.Events.timeupdateHighResolution, this.onTimeupdate)

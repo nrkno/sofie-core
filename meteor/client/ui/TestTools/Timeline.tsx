@@ -20,15 +20,15 @@ import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Classnames from 'classnames'
-import { createCustomPublicationMongoCollection } from '../../../lib/collections/lib'
+import { createSyncCustomPublicationMongoCollection } from '../../../lib/collections/lib'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-export const StudioTimeline = createCustomPublicationMongoCollection(CustomCollectionName.StudioTimeline)
+export const StudioTimeline = createSyncCustomPublicationMongoCollection(CustomCollectionName.StudioTimeline)
 
 interface TimelineViewRouteParams {
 	studioId: string | undefined
 }
-function TimelineView() {
+function TimelineView(): JSX.Element {
 	const { t } = useTranslation()
 
 	const { studioId } = useParams<TimelineViewRouteParams>()
@@ -102,7 +102,7 @@ function ComponentTimelineSimulate({ studioId }: ITimelineSimulateProps) {
 			}
 
 			// TODO - dont repeat unless changed
-			const tl = Resolver.resolveTimeline(timeline, { time: tlComplete?.generated || now })
+			const tl = Resolver.resolveTimeline(timeline as any, { time: tlComplete?.generated || now })
 			return [tl, undefined]
 		} catch (e) {
 			return [undefined, `Failed to resolveTimeline:\n${e}`]
@@ -451,7 +451,7 @@ function TimelineChangesLog({ resolvedTl, timelineHash }: TimelineChangesLogProp
 	)
 }
 
-function TimelineStudioSelect() {
+function TimelineStudioSelect(): JSX.Element {
 	return <StudioSelect path="timeline" title="Timeline" />
 }
 

@@ -47,6 +47,11 @@ import { buildTimelineObjsForRundown, RundownTimelineTimingContext } from './run
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { deNowifyMultiGatewayTimeline } from './multi-gateway'
 import { validateTimeline } from 'superfly-timeline'
+import {
+	calculatePartTimings,
+	getPartTimingsOrDefaults,
+	PartCalculatedTimings,
+} from '@sofie-automation/corelib/dist/playout/timings'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
@@ -109,7 +114,7 @@ export async function updateStudioTimeline(
 				timelineObjects: [],
 			}
 		}
-		baselineObjects = postProcessStudioBaselineObjects(studio, studioBaseline.timelineObjects)
+		baselineObjects = postProcessStudioBaselineObjects(studio.blueprintId, studioBaseline.timelineObjects)
 	}
 
 	const versions = generateTimelineVersions(
@@ -256,6 +261,7 @@ export interface SelectedPartInstanceTimelineInfo {
 	nowInPart: number
 	partInstance: DBPartInstance
 	pieceInstances: PieceInstanceWithTimings[]
+	calculatedTimings: PartCalculatedTimings
 }
 
 function getPartInstanceTimelineInfo(
@@ -274,6 +280,8 @@ function getPartInstanceTimelineInfo(
 			partInstance,
 			pieceInstances,
 			nowInPart,
+			// Approximate `calculatedTimings`, for the partInstances which already have it cached
+			calculatedTimings: getPartTimingsOrDefaults(partInstance, pieceInstances),
 		}
 	} else {
 		return undefined
@@ -318,6 +326,18 @@ async function getTimelineRundown(
 				current: getPartInstanceTimelineInfo(cache, currentTime, showStyle.sourceLayers, currentPartInstance),
 				next: getPartInstanceTimelineInfo(cache, currentTime, showStyle.sourceLayers, nextPartInstance),
 				previous: getPartInstanceTimelineInfo(cache, currentTime, showStyle.sourceLayers, previousPartInstance),
+			}
+			if (partInstancesInfo.next) {
+				// the nextPartInstance doesn't have accurate cached `calculatedTimings` yet, so calculate a prediction
+				partInstancesInfo.next.calculatedTimings = calculatePartTimings(
+					cache.Playlist.doc.holdState,
+					partInstancesInfo.current?.partInstance?.part,
+					partInstancesInfo.current?.pieceInstances?.map?.((p) => p.piece),
+					partInstancesInfo.next.partInstance.part,
+					partInstancesInfo.next.pieceInstances
+						.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0)
+						.map((p) => p.piece)
+				)
 			}
 
 			// next (on pvw (or on pgm if first))
@@ -367,7 +387,7 @@ async function getTimelineRundown(
 					)
 					sendTrace(endTrace(influxTrace))
 					if (span) span.end()
-					timelineObjs = tlGenRes.timeline.map((object: OnGenerateTimelineObj) => {
+					timelineObjs = tlGenRes.timeline.map((object: OnGenerateTimelineObj<any>) => {
 						return literal<TimelineObjGeneric & OnGenerateTimelineObjExt>({
 							...(object as OnGenerateTimelineObjExt),
 							objectType: TimelineObjType.RUNDOWN,
@@ -427,8 +447,7 @@ function flattenAndProcessTimelineObjects(context: JobContext, timelineObjs: Arr
 	const fixObjectChildren = (o: TimelineObjGeneric): void => {
 		// Unravel children objects and put them on the (flat) timelineObjs array
 		if (o.isGroup && o.children && o.children.length) {
-			const children = o.children as TSR.TSRTimelineObjBase[]
-			for (const child of children) {
+			for (const child of o.children) {
 				const childFixed: TimelineObjGeneric = {
 					...child,
 					objectType: o.objectType,

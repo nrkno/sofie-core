@@ -1,29 +1,29 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Playout API Basic rundown control 1`] = `
-Array [
-  Object {
+[
+  {
     "_id": "mockStudio0",
     "generated": 12345,
-    "generationVersions": Object {
+    "generationVersions": {
       "blueprintId": "blueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
       "studio": "asdf",
     },
-    "timelineBlob": "[{\\"id\\":\\"playlist_randomId9000_status\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"while\\":1},\\"layer\\":\\"rundown_status\\",\\"content\\":{\\"deviceType\\":0},\\"classes\\":[\\"rundown_active\\"]},{\\"id\\":\\"part_group_randomId9000_part0_0_randomId9002\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":\\"now\\"},\\"priority\\":5,\\"layer\\":\\"\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"group\\"},\\"children\\":[],\\"isGroup\\":true,\\"metaData\\":{\\"isPieceTimeline\\":true}},{\\"id\\":\\"part_group_firstobject_randomId9000_part0_0_randomId9002\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":0},\\"layer\\":\\"group_first_object\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"callback\\",\\"callBack\\":\\"partPlaybackStarted\\",\\"callBackData\\":{\\"rundownPlaylistId\\":\\"playlist_randomId9000\\",\\"partInstanceId\\":\\"randomId9000_part0_0_randomId9002\\"},\\"callBackStopped\\":\\"partPlaybackStopped\\"},\\"inGroup\\":\\"part_group_randomId9000_part0_0_randomId9002\\",\\"classes\\":[]},{\\"id\\":\\"piece_group_control_randomId9000_part0_0_randomId9002_randomId9000_piece001\\",\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":0},\\"layer\\":\\"vt0\\",\\"priority\\":5,\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"callback\\",\\"callBack\\":\\"piecePlaybackStarted\\",\\"callBackData\\":{\\"rundownPlaylistId\\":\\"playlist_randomId9000\\",\\"partInstanceId\\":\\"randomId9000_part0_0_randomId9002\\",\\"pieceInstanceId\\":\\"randomId9000_part0_0_randomId9002_randomId9000_piece001\\",\\"dynamicallyInserted\\":false},\\"callBackStopped\\":\\"piecePlaybackStopped\\"},\\"classes\\":[\\"current_part\\"],\\"inGroup\\":\\"part_group_randomId9000_part0_0_randomId9002\\",\\"metaData\\":{\\"isPieceTimeline\\":true,\\"triggerPieceInstanceId\\":\\"randomId9000_part0_0_randomId9002_randomId9000_piece001\\"}},{\\"id\\":\\"piece_group_randomId9000_part0_0_randomId9002_randomId9000_piece001\\",\\"content\\":{\\"deviceType\\":0,\\"type\\":\\"group\\"},\\"children\\":[],\\"inGroup\\":\\"part_group_randomId9000_part0_0_randomId9002\\",\\"isGroup\\":true,\\"objectType\\":\\"rundown\\",\\"enable\\":{\\"start\\":\\"#piece_group_control_randomId9000_part0_0_randomId9002_randomId9000_piece001.start - 0\\",\\"end\\":\\"#piece_group_control_randomId9000_part0_0_randomId9002_randomId9000_piece001.end + 0\\"},\\"layer\\":\\"\\",\\"metaData\\":{\\"isPieceTimeline\\":true,\\"pieceInstanceGroupId\\":\\"randomId9000_part0_0_randomId9002_randomId9000_piece001\\"}}]",
+    "timelineBlob": "[{"id":"playlist_randomId9000_status","objectType":"rundown","enable":{"while":1},"layer":"rundown_status","content":{"deviceType":0},"classes":["rundown_active"]},{"id":"part_group_randomId9000_part0_0_randomId9002","objectType":"rundown","enable":{"start":"now"},"priority":5,"layer":"","content":{"deviceType":0,"type":"group"},"children":[],"isGroup":true,"metaData":{"isPieceTimeline":true}},{"id":"part_group_firstobject_randomId9000_part0_0_randomId9002","objectType":"rundown","enable":{"start":0},"layer":"group_first_object","content":{"deviceType":0,"type":"callback","callBack":"partPlaybackStarted","callBackData":{"rundownPlaylistId":"playlist_randomId9000","partInstanceId":"randomId9000_part0_0_randomId9002"},"callBackStopped":"partPlaybackStopped"},"inGroup":"part_group_randomId9000_part0_0_randomId9002","classes":[]},{"id":"piece_group_control_randomId9000_part0_0_randomId9002_randomId9000_piece001","objectType":"rundown","enable":{"start":0},"layer":"vt0","priority":5,"content":{"deviceType":0,"type":"callback","callBack":"piecePlaybackStarted","callBackData":{"rundownPlaylistId":"playlist_randomId9000","partInstanceId":"randomId9000_part0_0_randomId9002","pieceInstanceId":"randomId9000_part0_0_randomId9002_randomId9000_piece001","dynamicallyInserted":false},"callBackStopped":"piecePlaybackStopped"},"classes":["current_part"],"inGroup":"part_group_randomId9000_part0_0_randomId9002","metaData":{"isPieceTimeline":true,"triggerPieceInstanceId":"randomId9000_part0_0_randomId9002_randomId9000_piece001"}},{"id":"piece_group_randomId9000_part0_0_randomId9002_randomId9000_piece001","content":{"deviceType":0,"type":"group"},"children":[],"inGroup":"part_group_randomId9000_part0_0_randomId9002","isGroup":true,"objectType":"rundown","enable":{"start":"#piece_group_control_randomId9000_part0_0_randomId9002_randomId9000_piece001.start - 0","end":"#piece_group_control_randomId9000_part0_0_randomId9002_randomId9000_piece001.end + 0"},"layer":"","metaData":{"isPieceTimeline":true,"pieceInstanceGroupId":"randomId9000_part0_0_randomId9002_randomId9000_piece001"}}]",
     "timelineHash": "randomId9006",
   },
 ]
 `;
 
 exports[`Playout API Basic rundown control 2`] = `
-Object {
+{
   "_id": "randomId9000",
   "created": 0,
   "externalId": "MOCK_RUNDOWN",
   "externalNRCSName": "mock",
-  "importVersions": Object {
+  "importVersions": {
     "blueprint": "",
     "core": "",
     "showStyleBase": "",
@@ -37,18 +37,18 @@ Object {
   "showStyleBaseId": "mockShowStyleBase0",
   "showStyleVariantId": "mockShowStyleVariant0",
   "studioId": "mockStudio0",
-  "timing": Object {
+  "timing": {
     "type": "none",
   },
 }
 `;
 
 exports[`Playout API Basic rundown control 3`] = `
-Array [
-  Object {
+[
+  {
     "_id": "mockStudio0",
     "generated": 12345,
-    "generationVersions": Object {
+    "generationVersions": {
       "blueprintId": "studioBlueprint0",
       "blueprintVersion": "0.0.0",
       "core": "0.0.0-test",
@@ -61,7 +61,7 @@ Array [
 `;
 
 exports[`Playout API Basic rundown control 4`] = `
-Object {
+{
   "_id": "playlist_randomId9000",
   "created": 0,
   "currentPartInstanceId": null,
@@ -76,21 +76,21 @@ Object {
   "previousPartInstanceId": null,
   "rehearsal": false,
   "resetTime": 0,
-  "rundownIdsInOrder": Array [],
+  "rundownIdsInOrder": [],
   "studioId": "mockStudio0",
-  "timing": Object {
+  "timing": {
     "type": "none",
   },
 }
 `;
 
 exports[`Playout API Basic rundown control 5`] = `
-Object {
+{
   "_id": "randomId9000",
   "created": 0,
   "externalId": "MOCK_RUNDOWN",
   "externalNRCSName": "mock",
-  "importVersions": Object {
+  "importVersions": {
     "blueprint": "",
     "core": "",
     "showStyleBase": "",
@@ -104,7 +104,7 @@ Object {
   "showStyleBaseId": "mockShowStyleBase0",
   "showStyleVariantId": "mockShowStyleVariant0",
   "studioId": "mockStudio0",
-  "timing": Object {
+  "timing": {
     "type": "none",
   },
 }

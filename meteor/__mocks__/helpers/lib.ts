@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { LogLevel, ProtectedString } from '../../lib/lib'
-import { AsyncMongoCollection } from '../../lib/collections/lib'
+import { AsyncMongoCollection } from '../../server/collections/collection'
 import { getLogLevel, setLogLevel } from '../../server/logging'
 
 /*

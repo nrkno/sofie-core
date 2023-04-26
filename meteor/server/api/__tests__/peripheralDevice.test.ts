@@ -3,14 +3,9 @@ import { Meteor } from 'meteor/meteor'
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
-	PeripheralDevices,
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceCommands } from '../../../lib/collections/PeripheralDeviceCommands'
-import { Rundowns } from '../../../lib/collections/Rundowns'
-import { Segments } from '../../../lib/collections/Segments'
-import { Parts } from '../../../lib/collections/Parts'
-import { EmptyPieceTimelineObjectsBlob, Pieces, PieceStatusCode } from '../../../lib/collections/Pieces'
+import { EmptyPieceTimelineObjectsBlob, PieceStatusCode } from '../../../lib/collections/Pieces'
 import {
 	getCurrentTime,
 	literal,
@@ -21,19 +16,17 @@ import {
 	getRandomString,
 	sleep,
 } from '../../../lib/lib'
-
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { setLogLevel } from '../../logging'
-import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import {
 	IngestDeviceSettings,
 	IngestDeviceSecretSettings,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
-import { MediaWorkFlow, MediaWorkFlows } from '../../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowStep, MediaWorkFlowSteps } from '../../../lib/collections/MediaWorkFlowSteps'
+import { MediaWorkFlow } from '../../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlowStep } from '../../../lib/collections/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
-import { MediaObject, MediaObjects } from '../../../lib/collections/MediaObjects'
+import { MediaObject } from '../../../lib/collections/MediaObjects'
 import {
 	IBlueprintPieceType,
 	PieceLifespan,
@@ -41,6 +34,8 @@ import {
 	StatusCode,
 } from '@sofie-automation/blueprints-integration'
 import { CreateFakeResult, QueueStudioJobSpy } from '../../../__mocks__/worker'
+
+jest.mock('../../api/deviceTriggers/observer')
 
 import '../peripheralDevice'
 import { OnTimelineTriggerTimeProps, StudioJobFunc, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
@@ -53,6 +48,19 @@ import {
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
+import {
+	MediaObjects,
+	MediaWorkFlows,
+	MediaWorkFlowSteps,
+	Parts,
+	PeripheralDeviceCommands,
+	PeripheralDevices,
+	Pieces,
+	RundownPlaylists,
+	Rundowns,
+	Segments,
+} from '../../collections'
+import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
 
 const DEBUG = false
 
@@ -430,6 +438,7 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('killProcess with a rundown present', async () => {
 		// test this does not shutdown because Rundown stored
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
+		SupressLogMessages.suppressLogMessage(/Unable to run killProcess/i)
 		await expect(MeteorCall.peripheralDevice.killProcess(device._id, device.token, true)).rejects.toThrowMeteor(
 			400,
 			`Unable to run killProcess: Rundowns not empty!`
@@ -440,6 +449,7 @@ describe('test peripheralDevice general API methods', () => {
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		const result = await MeteorCall.peripheralDevice.testMethod(device._id, device.token, 'european')
 		expect(result).toBe('european')
+		SupressLogMessages.suppressLogMessage(/Error thrown/i)
 		await expect(
 			MeteorCall.peripheralDevice.testMethod(device._id, device.token, 'european', true)
 		).rejects.toThrowMeteor(418, `Error thrown, as requested`)
@@ -457,6 +467,7 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('requestUserAuthToken', async () => {
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 
+		SupressLogMessages.suppressLogMessage(/can only request user auth token/i)
 		await expect(
 			MeteorCall.peripheralDevice.requestUserAuthToken(device._id, device.token, 'https://auth.url/')
 		).rejects.toThrowMeteor(400, 'can only request user auth token for peripheral device of spreadsheet type')
@@ -481,6 +492,7 @@ describe('test peripheralDevice general API methods', () => {
 	// Should only really work for SpreadsheetDevice
 	testInFiber('storeAccessToken', async () => {
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
+		SupressLogMessages.suppressLogMessage(/can only store access token/i)
 		await expect(
 			MeteorCall.peripheralDevice.storeAccessToken(device._id, device.token, 'https://auth.url/')
 		).rejects.toThrowMeteor(400, 'can only store access token for peripheral device of spreadsheet type')

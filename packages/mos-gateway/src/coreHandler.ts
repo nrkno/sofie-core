@@ -6,8 +6,6 @@ import {
 	IMOSConnectionStatus,
 	IMOSDevice,
 	IMOSListMachInfo,
-	MosString128,
-	MosTime,
 	IMOSRunningOrder,
 	IMOSRunningOrderBase,
 	IMOSRunningOrderStatus,
@@ -20,18 +18,28 @@ import {
 	IMOSItem,
 	IMOSROReadyToAir,
 	IMOSROFullStory,
-	MosDuration,
 	IMOSObjectStatus,
 	IMOSROAck,
-} from 'mos-connection'
-
-export type DeepPartial<T> = {
-	[P in keyof T]?: T[P] extends Array<infer U>
-		? Array<DeepPartial<U>>
-		: T[P] extends ReadonlyArray<infer U>
-		? ReadonlyArray<DeepPartial<U>>
-		: DeepPartial<T[P]>
-}
+	getMosTypes,
+	MosTypes,
+	IMOSString128,
+	stringifyMosObject,
+} from '@mos-connection/connector'
+import * as _ from 'underscore'
+import { MosHandler } from './mosHandler'
+import { DeviceConfig } from './connector'
+import { MOS_DEVICE_CONFIG_MANIFEST } from './configManifest'
+import { protectString, unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+	PERIPHERAL_SUBTYPE_PROCESS,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import { PartialDeep } from 'type-fest'
+import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { PeripheralDeviceCommand } from '@sofie-automation/shared-lib/dist/core/model/PeripheralDeviceCommand'
+import { ExternalPeripheralDeviceAPI } from '@sofie-automation/server-core-integration/dist/lib/methods'
 
 function deepMatch(object: any, attrs: any, deep: boolean): boolean {
 	const keys = Object.keys(attrs)
@@ -47,34 +55,6 @@ function deepMatch(object: any, attrs: any, deep: boolean): boolean {
 	return true
 }
 
-import * as _ from 'underscore'
-import { MosHandler } from './mosHandler'
-import { DeviceConfig } from './connector'
-import { MOS_DEVICE_CONFIG_MANIFEST } from './configManifest'
-import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
-import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
-import {
-	PeripheralDeviceCategory,
-	PeripheralDeviceType,
-	PERIPHERAL_SUBTYPE_PROCESS,
-} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
-// import { STATUS_CODES } from 'http'
-export interface PeripheralDeviceCommand {
-	_id: string
-
-	deviceId: PeripheralDeviceId
-	functionName: string
-	args: Array<any>
-
-	hasReply: boolean
-	reply?: any
-	replyError?: any
-
-	time: number // time
-}
-
 export interface IStoryItemChange {
 	roID: string
 	storyID: string
@@ -84,7 +64,7 @@ export interface IStoryItemChange {
 	resolve: (value?: IMOSROAck | PromiseLike<IMOSROAck> | undefined) => void
 	reject: (error: any) => void
 
-	itemDiff: DeepPartial<IMOSItem>
+	itemDiff: PartialDeep<IMOSItem>
 }
 
 /**
@@ -100,6 +80,7 @@ export class CoreMosDeviceHandler {
 
 	private _pendingStoryItemChanges: Array<IStoryItemChange> = []
 	private _pendingChangeTimeout: number = 60 * 1000
+	private mosTypes: MosTypes
 
 	constructor(parent: CoreHandler, mosDevice: IMOSDevice, mosHandler: MosHandler) {
 		this._coreParentHandler = parent
@@ -113,6 +94,8 @@ export class CoreMosDeviceHandler {
 				'Core Error: ' + (typeof err === 'string' ? err : err.message || err.toString())
 			)
 		})
+
+		this.mosTypes = getMosTypes(this._mosHandler.strict)
 	}
 	async init(): Promise<void> {
 		return this.core
@@ -191,15 +174,15 @@ export class CoreMosDeviceHandler {
 	}
 	async getMachineInfo(): Promise<IMOSListMachInfo> {
 		const info: IMOSListMachInfo = {
-			manufacturer: new MosString128('SuperFly.tv'),
-			model: new MosString128('Core'),
-			hwRev: new MosString128('0'),
-			swRev: new MosString128('0'),
-			DOM: new MosTime('2018-01-01'),
-			SN: new MosString128('0000'),
-			ID: new MosString128('0000'),
-			time: new MosTime(new Date()),
-			mosRev: new MosString128('0'),
+			manufacturer: this.mosTypes.mosString128.create('SuperFly.tv'),
+			model: this.mosTypes.mosString128.create('Core'),
+			hwRev: this.mosTypes.mosString128.create('0'),
+			swRev: this.mosTypes.mosString128.create('0'),
+			DOM: this.mosTypes.mosString128.create('2018-01-01'),
+			SN: this.mosTypes.mosString128.create('0000'),
+			ID: this.mosTypes.mosString128.create('0000'),
+			time: this.mosTypes.mosTime.create(new Date()),
+			mosRev: this.mosTypes.mosString128.create('0'),
 			supportedProfiles: {
 				deviceType: 'MOS', // MOS, NCS
 				profile0: this._mosHandler?.mosOptions?.self.profiles['0'],
@@ -214,40 +197,42 @@ export class CoreMosDeviceHandler {
 		}
 		return Promise.resolve(info)
 	}
-	async mosRoCreate(ro: IMOSRunningOrder): Promise<any> {
-		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoCreate, ro)
+	async mosRoCreate(ro: IMOSRunningOrder): Promise<void> {
+		return this._coreMosManipulate('mosRoCreate', ro)
 	}
-	async mosRoReplace(ro: IMOSRunningOrder): Promise<any> {
-		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoReplace, ro)
+	async mosRoReplace(ro: IMOSRunningOrder): Promise<void> {
+		return this._coreMosManipulate('mosRoReplace', ro)
 	}
-	async mosRoDelete(runningOrderId: MosString128): Promise<any> {
-		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoDelete, runningOrderId)
+	async mosRoDelete(runningOrderId: IMOSString128): Promise<void> {
+		return this._coreMosManipulate('mosRoDelete', runningOrderId)
 	}
-	async mosRoMetadata(metadata: IMOSRunningOrderBase): Promise<any> {
-		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoMetadata, metadata)
+	async mosRoMetadata(metadata: IMOSRunningOrderBase): Promise<void> {
+		return this._coreMosManipulate('mosRoMetadata', metadata)
 	}
-	async mosRoStatus(status: IMOSRunningOrderStatus): Promise<any> {
-		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoStatus, status)
+	async mosRoStatus(status: IMOSRunningOrderStatus): Promise<void> {
+		return this._coreMosManipulate('mosRoStatus', status)
 	}
-	async mosRoStoryStatus(status: IMOSStoryStatus): Promise<any> {
-		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoStoryStatus, status)
+	async mosRoStoryStatus(status: IMOSStoryStatus): Promise<void> {
+		return this._coreMosManipulate('mosRoStoryStatus', status)
 	}
-	async mosRoItemStatus(status: IMOSItemStatus): Promise<any> {
-		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoItemStatus, status)
+	async mosRoItemStatus(status: IMOSItemStatus): Promise<void> {
+		return this._coreMosManipulate('mosRoItemStatus', status)
 	}
-	async mosRoStoryInsert(Action: IMOSStoryAction, Stories: Array<IMOSROStory>): Promise<any> {
-		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoStoryInsert, Action, Stories)
+	async mosRoStoryInsert(Action: IMOSStoryAction, Stories: Array<IMOSROStory>): Promise<void> {
+		return this._coreMosManipulate('mosRoStoryInsert', Action, Stories)
 	}
-	async mosRoStoryReplace(Action: IMOSStoryAction, Stories: Array<IMOSROStory>): Promise<any> {
-		const result = this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoStoryReplace, Action, Stories)
+	async mosRoStoryReplace(Action: IMOSStoryAction, Stories: Array<IMOSROStory>): Promise<void> {
+		const result = this._coreMosManipulate('mosRoStoryReplace', Action, Stories)
 
 		if (this._pendingStoryItemChanges.length > 0) {
 			Stories.forEach((story) => {
 				const pendingChange = this._pendingStoryItemChanges.find(
-					(change) => change.storyID === story.ID.toString()
+					(change) => change.storyID === this.mosTypes.mosString128.stringify(story.ID)
 				)
 				if (pendingChange) {
-					const pendingChangeItem = story.Items.find((item) => pendingChange.itemID === item.ID.toString())
+					const pendingChangeItem = story.Items.find(
+						(item) => pendingChange.itemID === this.mosTypes.mosString128.stringify(item.ID)
+					)
 					if (pendingChangeItem && deepMatch(pendingChangeItem, pendingChange.itemDiff, true)) {
 						pendingChange.resolve()
 					}
@@ -256,25 +241,27 @@ export class CoreMosDeviceHandler {
 		}
 		return result
 	}
-	async mosRoStoryMove(Action: IMOSStoryAction, Stories: Array<MosString128>): Promise<any> {
-		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoStoryMove, Action, Stories)
+	async mosRoStoryMove(Action: IMOSStoryAction, Stories: Array<IMOSString128>): Promise<void> {
+		return this._coreMosManipulate('mosRoStoryMove', Action, Stories)
 	}
-	async mosRoStoryDelete(Action: IMOSROAction, Stories: Array<MosString128>): Promise<any> {
-		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoStoryDelete, Action, Stories)
+	async mosRoStoryDelete(Action: IMOSROAction, Stories: Array<IMOSString128>): Promise<void> {
+		return this._coreMosManipulate('mosRoStoryDelete', Action, Stories)
 	}
-	async mosRoStorySwap(Action: IMOSROAction, StoryID0: MosString128, StoryID1: MosString128): Promise<any> {
-		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoStorySwap, Action, StoryID0, StoryID1)
+	async mosRoStorySwap(Action: IMOSROAction, StoryID0: IMOSString128, StoryID1: IMOSString128): Promise<void> {
+		return this._coreMosManipulate('mosRoStorySwap', Action, StoryID0, StoryID1)
 	}
-	async mosRoItemInsert(Action: IMOSItemAction, Items: Array<IMOSItem>): Promise<any> {
-		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoItemInsert, Action, Items)
+	async mosRoItemInsert(Action: IMOSItemAction, Items: Array<IMOSItem>): Promise<void> {
+		return this._coreMosManipulate('mosRoItemInsert', Action, Items)
 	}
-	async mosRoItemReplace(Action: IMOSItemAction, Items: Array<IMOSItem>): Promise<any> {
-		const result = this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoItemReplace, Action, Items)
+	async mosRoItemReplace(Action: IMOSItemAction, Items: Array<IMOSItem>): Promise<void> {
+		const result = this._coreMosManipulate('mosRoItemReplace', Action, Items)
 
 		if (this._pendingStoryItemChanges.length > 0) {
 			Items.forEach((item) => {
 				const pendingChange = this._pendingStoryItemChanges.find(
-					(change) => Action.StoryID.toString() === change.storyID && change.itemID === item.ID.toString()
+					(change) =>
+						this.mosTypes.mosString128.stringify(Action.StoryID) === change.storyID &&
+						change.itemID === this.mosTypes.mosString128.stringify(item.ID)
 				)
 				if (pendingChange && deepMatch(item, pendingChange.itemDiff, true)) {
 					pendingChange.resolve()
@@ -284,23 +271,25 @@ export class CoreMosDeviceHandler {
 
 		return result
 	}
-	async mosRoItemMove(Action: IMOSItemAction, Items: Array<MosString128>): Promise<any> {
-		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoItemMove, Action, Items)
+	async mosRoItemMove(Action: IMOSItemAction, Items: Array<IMOSString128>): Promise<void> {
+		return this._coreMosManipulate('mosRoItemMove', Action, Items)
 	}
-	async mosRoItemDelete(Action: IMOSStoryAction, Items: Array<MosString128>): Promise<any> {
-		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoItemDelete, Action, Items)
+	async mosRoItemDelete(Action: IMOSStoryAction, Items: Array<IMOSString128>): Promise<void> {
+		return this._coreMosManipulate('mosRoItemDelete', Action, Items)
 	}
-	async mosRoItemSwap(Action: IMOSStoryAction, ItemID0: MosString128, ItemID1: MosString128): Promise<any> {
-		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoItemSwap, Action, ItemID0, ItemID1)
+	async mosRoItemSwap(Action: IMOSStoryAction, ItemID0: IMOSString128, ItemID1: IMOSString128): Promise<void> {
+		return this._coreMosManipulate('mosRoItemSwap', Action, ItemID0, ItemID1)
 	}
-	async mosRoReadyToAir(Action: IMOSROReadyToAir): Promise<any> {
-		return this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoReadyToAir, Action)
+	async mosRoReadyToAir(Action: IMOSROReadyToAir): Promise<void> {
+		return this._coreMosManipulate('mosRoReadyToAir', Action)
 	}
-	async mosRoFullStory(story: IMOSROFullStory): Promise<any> {
-		const result = this._coreMosManipulate(PeripheralDeviceAPIMethods.mosRoFullStory, story)
+	async mosRoFullStory(story: IMOSROFullStory): Promise<void> {
+		const result = this._coreMosManipulate('mosRoFullStory', story)
 
 		if (this._pendingStoryItemChanges.length > 0) {
-			const pendingChange = this._pendingStoryItemChanges.find((change) => change.storyID === story.ID.toString())
+			const pendingChange = this._pendingStoryItemChanges.find(
+				(change) => change.storyID === this.mosTypes.mosString128.stringify(story.ID)
+			)
 			if (pendingChange) {
 				const pendingChangeItem = story.Body.find(
 					(item) => item.Type === 'storyItem' && pendingChange.itemID === item.Content.ID.toString()
@@ -330,7 +319,7 @@ export class CoreMosDeviceHandler {
 	async triggerGetRunningOrder(roId: string): Promise<any> {
 		// console.log('triggerGetRunningOrder ' + roId)
 		return this._mosDevice
-			.sendRequestRunningOrder(new MosString128(roId))
+			.sendRequestRunningOrder(this.mosTypes.mosString128.create(roId))
 			.then((ro) => {
 				// console.log('GOT REPLY', results)
 				return this.fixMosData(ro)
@@ -344,9 +333,9 @@ export class CoreMosDeviceHandler {
 		// console.log('setStoryStatus')
 		return this._mosDevice
 			.sendRunningOrderStatus({
-				ID: new MosString128(roId),
+				ID: this.mosTypes.mosString128.create(roId),
 				Status: status,
-				Time: new MosTime(),
+				Time: this.mosTypes.mosTime.create(undefined),
 			})
 			.then((result) => {
 				// console.log('got result', result)
@@ -357,10 +346,10 @@ export class CoreMosDeviceHandler {
 		// console.log('setStoryStatus')
 		return this._mosDevice
 			.sendStoryStatus({
-				RunningOrderId: new MosString128(roId),
-				ID: new MosString128(storyId),
+				RunningOrderId: this.mosTypes.mosString128.create(roId),
+				ID: this.mosTypes.mosString128.create(storyId),
 				Status: status,
-				Time: new MosTime(),
+				Time: this.mosTypes.mosTime.create(undefined),
 			})
 			.then((result) => {
 				// console.log('got result', result)
@@ -371,11 +360,11 @@ export class CoreMosDeviceHandler {
 		// console.log('setStoryStatus')
 		return this._mosDevice
 			.sendItemStatus({
-				RunningOrderId: new MosString128(roId),
-				StoryId: new MosString128(storyId),
-				ID: new MosString128(itemId),
+				RunningOrderId: this.mosTypes.mosString128.create(roId),
+				StoryId: this.mosTypes.mosString128.create(storyId),
+				ID: this.mosTypes.mosString128.create(itemId),
 				Status: status,
-				Time: new MosTime(),
+				Time: this.mosTypes.mosTime.create(undefined),
 			})
 			.then((result) => {
 				// console.log('got result', result)
@@ -386,13 +375,13 @@ export class CoreMosDeviceHandler {
 		roID: string,
 		storyID: string,
 		item: IMOSItem,
-		itemDiff?: DeepPartial<IMOSItem>
+		itemDiff?: PartialDeep<IMOSItem>
 	): Promise<any> {
 		// console.log(roID, storyID, item)
 		return this._mosDevice
 			.sendItemReplace({
-				roID: new MosString128(roID),
-				storyID: new MosString128(storyID),
+				roID: this.mosTypes.mosString128.create(roID),
+				storyID: this.mosTypes.mosString128.create(storyID),
 				item,
 			})
 			.then((result) => this.fixMosData(result))
@@ -417,7 +406,7 @@ export class CoreMosDeviceHandler {
 						const pendingChange: IStoryItemChange = {
 							roID,
 							storyID,
-							itemID: item.ID.toString(),
+							itemID: this.mosTypes.mosString128.stringify(item.ID),
 							timestamp: Date.now(),
 
 							resolve: () => {
@@ -486,43 +475,35 @@ export class CoreMosDeviceHandler {
 	 * @param o the object to convert
 	 */
 	private fixMosData(o: any): any {
-		if (_.isObject(o) && (o instanceof MosTime || o instanceof MosDuration || o instanceof MosString128)) {
-			return o.toString()
-		}
-		if (_.isArray(o)) {
-			return _.map(o, (val) => {
-				return this.fixMosData(val)
-			})
-		} else if (_.isObject(o)) {
-			const o2: any = {}
-			_.each(o, (val, key) => {
-				o2[key] = this.fixMosData(val)
-			})
-			return o2
-		} else {
-			return o
-		}
+		return stringifyMosObject(o, this.mosTypes.strict)
 	}
-	private async _coreMosManipulate(method: string, ...attrs: Array<any>): Promise<any> {
+	private async _coreMosManipulate<K extends keyof ExternalPeripheralDeviceAPI>(
+		methodName: K,
+		...attrs: Parameters<ExternalPeripheralDeviceAPI[K]>
+	): Promise<ReturnType<ExternalPeripheralDeviceAPI[K]>> {
 		attrs = _.map(attrs, (attr) => {
 			return this.fixMosData(attr)
-		})
+		}) as any
+
 		// Make the commands be sent sequantially:
 		return this.core.putOnQueue('mos', async () => {
 			// Log info about the sent command:
-			let msg = 'Command: ' + method
-			if (attrs[0] && attrs[0].ID) msg = `${method}: ${attrs[0].ID}`
-			else if (attrs[0] && attrs[0] instanceof MosString128) msg = `${method}: ${attrs[0].toString()}`
-			else if (attrs[0] && attrs[0].ObjectId) msg = `${method}: ${attrs[0].ObjectId}`
-			else if (attrs[0] && attrs[0].StoryId) msg = `${method}: ${attrs[0].StoryId}`
-			else if (attrs[0] && attrs[0].StoryID) msg = `${method}: ${attrs[0].StoryID}`
-			else if (attrs[0] && attrs[0].ItemID) msg = `${method}: ${attrs[0].ItemID}`
-			else if (attrs[0] && attrs[0].RunningOrderID) msg = `${method}: ${attrs[0].RunningOrderID}`
-			else if (attrs[0] && attrs[0].toString) msg = `${method}: ${attrs[0].toString()}`
+			let msg = 'Command: ' + methodName
+			const attr0 = attrs[0] as any | undefined
+			if (attr0?.ID) msg = `${methodName}: ${attr0.ID}`
+			else if (attr0 && this.mosTypes.mosString128.is(attr0))
+				msg = `${methodName}: ${this.mosTypes.mosString128.stringify(attr0)}`
+			else if (attr0?.ObjectId) msg = `${methodName}: ${attr0.ObjectId}`
+			else if (attr0?.StoryId) msg = `${methodName}: ${attr0.StoryId}`
+			else if (attr0?.StoryID) msg = `${methodName}: ${attr0.StoryID}`
+			else if (attr0?.ItemID) msg = `${methodName}: ${attr0.ItemID}`
+			else if (attr0?.RunningOrderID) msg = `${methodName}: ${attr0.RunningOrderID}`
+			else if (attr0?.toString) msg = `${methodName}: ${attr0.toString()}`
 
 			this._coreParentHandler.logger.info('Recieved MOS command: ' + msg)
 
-			return this.core.mosManipulate(method, ...attrs).catch((e) => {
+			const res = (this.core.coreMethods[methodName] as any)(...attrs)
+			return res.catch((e: any) => {
 				this._coreParentHandler.logger.info('MOS command rejected: ' + ((e && JSON.stringify(e)) || e))
 				throw e
 			})
@@ -592,7 +573,7 @@ export class CoreHandler {
 		}
 		return this.core
 			.init(ddpConfig)
-			.then((_id: string) => {
+			.then((_id: PeripheralDeviceId) => {
 				if (!this.core) {
 					throw Error('core is undefined!')
 				}
@@ -740,9 +721,9 @@ export class CoreHandler {
 	}
 	executeFunction(cmd: PeripheralDeviceCommand, fcnObject: CoreHandler | CoreMosDeviceHandler): void {
 		if (cmd) {
-			if (this._executedFunctions[cmd._id]) return // prevent it from running multiple times
-			this.logger.debug(cmd.functionName, cmd.args)
-			this._executedFunctions[cmd._id] = true
+			if (this._executedFunctions[unprotectString(cmd._id)]) return // prevent it from running multiple times
+			this.logger.debug(cmd.functionName || cmd.actionId || '', cmd.args)
+			this._executedFunctions[unprotectString(cmd._id)] = true
 			// console.log('executeFunction', cmd)
 			const cb = (err: any, res?: any) => {
 				// console.log('cb', err, res)
@@ -754,8 +735,8 @@ export class CoreHandler {
 					throw Error('fcnObject.core is undefined!')
 				}
 
-				fcnObject.core
-					.callMethod(PeripheralDeviceAPIMethods.functionReply, [cmd._id, err, res])
+				fcnObject.core.coreMethods
+					.functionReply(cmd._id, err, res)
 					.then(() => {
 						// console.log('cb done')
 					})
@@ -797,9 +778,9 @@ export class CoreHandler {
 				throw Error('functionObject.core is undefined!')
 			}
 
-			const cmds = functionObject.core.getCollection('peripheralDeviceCommands')
+			const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
 			if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
-			const cmd = cmds.findOne(id) as PeripheralDeviceCommand
+			const cmd = cmds.findOne(protectString(id))
 			if (!cmd) throw Error('PeripheralCommand "' + id + '" not found!')
 			// console.log('addedChangedCommand', id)
 			if (cmd.deviceId === functionObject.core.deviceId) {
@@ -817,10 +798,10 @@ export class CoreHandler {
 		observer.removed = (id: string) => {
 			this.retireExecuteFunction(id)
 		}
-		const cmds = functionObject.core.getCollection('peripheralDeviceCommands')
+		const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
 		if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
 		// any should be PeripheralDeviceCommand
-		cmds.find({}).forEach((cmd: any) => {
+		cmds.find({}).forEach((cmd) => {
 			if (!functionObject.core) {
 				throw Error('functionObject.core is undefined!')
 			}
@@ -858,7 +839,7 @@ export class CoreHandler {
 			versions['_process'] = process.env.npm_package_version
 		}
 
-		const pkgNames = ['mos-connection']
+		const pkgNames = ['@mos-connection/connector']
 		try {
 			for (const pkgName of pkgNames) {
 				try {

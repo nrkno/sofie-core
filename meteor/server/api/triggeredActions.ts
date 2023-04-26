@@ -1,34 +1,42 @@
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../methods'
-import { literal, getRandomId, protectString, unprotectString } from '../../lib/lib'
+import { literal, getRandomId, protectString, unprotectString, Complete } from '../../lib/lib'
 import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { PickerPOST, PickerGET } from './http'
-import { DBTriggeredActions, TriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
-import { NewTriggeredActionsAPI, TriggeredActionsAPIMethods } from '../../lib/api/triggeredActions'
+import { DBTriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
+import {
+	CreateTriggeredActionsContent,
+	NewTriggeredActionsAPI,
+	TriggeredActionsAPIMethods,
+} from '../../lib/api/triggeredActions'
 import { SystemWriteAccess } from '../security/system'
-import { fetchShowStyleBaseLight } from '../../lib/collections/optimizations'
-import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { fetchShowStyleBaseLight } from '../optimizations'
+import {
+	convertObjectIntoOverrides,
+	wrapDefaultObject,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { TriggeredActions } from '../collections'
 
 export async function createTriggeredActions(
 	showStyleBaseId: ShowStyleBaseId | null,
-	base?: Partial<Pick<DBTriggeredActions, '_rank' | 'triggersWithOverrides' | 'actionsWithOverrides' | 'name'>>
+	base?: CreateTriggeredActionsContent
 ): Promise<TriggeredActionId> {
 	const id: TriggeredActionId = getRandomId()
 	await TriggeredActions.insertAsync(
-		literal<TriggeredActionsObj>({
+		literal<Complete<TriggeredActionsObj>>({
 			_id: id,
 			_rank: base?._rank ?? 0,
 			name: base?.name,
 			showStyleBaseId,
 			blueprintUniqueId: null,
-			_rundownVersionHash: '',
-			actionsWithOverrides: base?.actionsWithOverrides ?? wrapDefaultObject({}),
-			triggersWithOverrides: base?.triggersWithOverrides ?? wrapDefaultObject({}),
+			// User source objects should be formed purely of overrides
+			actionsWithOverrides: convertObjectIntoOverrides(base?.actions),
+			triggersWithOverrides: convertObjectIntoOverrides(base?.triggers),
 		})
 	)
 	return id
@@ -89,7 +97,6 @@ PickerPOST.route(
 				check(triggeredActions[i].triggersWithOverrides, Object)
 				check(triggeredActions[i].actionsWithOverrides, Object)
 				triggeredActions[i].showStyleBaseId = showStyleBaseId ?? null
-				triggeredActions[i]._rundownVersionHash = ''
 			}
 
 			if (replace) {
@@ -97,6 +104,8 @@ PickerPOST.route(
 					showStyleBaseId: showStyleBaseId ?? null,
 				})
 			}
+
+			// TODO - should we clear `blueprintUniqueId`, to avoid blueprints getting them confused with data they own?
 
 			await TriggeredActions.upsertManyAsync(triggeredActions)
 
@@ -153,7 +162,7 @@ PickerGET.route(
 async function apiCreateTriggeredActions(
 	context: MethodContext,
 	showStyleBaseId: ShowStyleBaseId | null,
-	base: Partial<Pick<DBTriggeredActions, '_rank' | 'triggersWithOverrides' | 'actionsWithOverrides' | 'name'>> | null
+	base: CreateTriggeredActionsContent | null
 ) {
 	check(showStyleBaseId, Match.Maybe(String))
 	check(base, Match.Maybe(Object))
@@ -182,12 +191,7 @@ class ServerTriggeredActionsAPI
 	extends MethodContextAPI
 	implements ReplaceOptionalWithNullInMethodArguments<NewTriggeredActionsAPI>
 {
-	async createTriggeredActions(
-		showStyleBaseId: ShowStyleBaseId | null,
-		base: Partial<
-			Pick<DBTriggeredActions, '_rank' | 'triggersWithOverrides' | 'actionsWithOverrides' | 'name'>
-		> | null
-	) {
+	async createTriggeredActions(showStyleBaseId: ShowStyleBaseId | null, base: CreateTriggeredActionsContent | null) {
 		return apiCreateTriggeredActions(this, showStyleBaseId, base)
 	}
 	async removeTriggeredActions(triggeredActionId: TriggeredActionId) {

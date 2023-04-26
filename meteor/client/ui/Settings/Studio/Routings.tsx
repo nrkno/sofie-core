@@ -4,8 +4,6 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import {
 	Studio,
-	Studios,
-	MappingExt,
 	DBStudio,
 	StudioRouteSet,
 	StudioRouteBehavior,
@@ -21,12 +19,12 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { withTranslation } from 'react-i18next'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { protectString } from '../../../../lib/lib'
 import { MeteorCall } from '../../../../lib/api/methods'
-import { doUserAction, UserAction } from '../../../lib/userAction'
+import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
 import { MappingsManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { DeviceMappingSettings } from './Mappings'
 import { ReadonlyDeep } from 'type-fest'
+import { Studios } from '../../../collections'
 
 interface IStudioRoutingsProps {
 	studio: Studio
@@ -395,17 +393,10 @@ export const StudioRoutings = withTranslation()(
 												</label>
 											</div>
 											<DeviceMappingSettings
-												mapping={
-													{
-														device: routeDeviceType,
-														...route.remapping,
-														deviceId: route.remapping?.deviceId ? protectString(route.remapping.deviceId) : undefined,
-													} as MappingExt
-												}
 												studio={this.props.studio}
 												attribute={`routeSets.${routeSetId}.routes.${index}.remapping`}
 												showOptional={true}
-												manifest={manifest}
+												manifest={manifest[(routeDeviceType ?? route.remapping?.device) as TSR.DeviceType]}
 											/>
 										</>
 									) : null}
@@ -679,7 +670,7 @@ export const StudioRoutings = withTranslation()(
 			})
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div>

@@ -1,12 +1,13 @@
-import { Buckets, Bucket } from '../../lib/collections/Buckets'
+import { Bucket } from '../../lib/collections/Buckets'
 import { Credentials, ResolvedCredentials } from './lib/credentials'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { check } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { StudioReadAccess, StudioContentWriteAccess, StudioContentAccess } from './studio'
-import { BucketAdLib, BucketAdLibs } from '../../lib/collections/BucketAdlibs'
-import { BucketAdLibAction, BucketAdLibActions } from '../../lib/collections/BucketAdlibActions'
+import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
+import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { AdLibActionId, BucketId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BucketAdLibActions, BucketAdLibs, Buckets } from '../collections'
 
 export namespace BucketSecurity {
 	export interface BucketContentAccess extends StudioContentAccess {

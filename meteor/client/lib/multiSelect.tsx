@@ -10,7 +10,7 @@ export interface MultiSelectEvent {
 	selectedValues: Array<string>
 }
 
-export type MultiSelectOptions = _.Dictionary<{ value: string | string[]; className?: string }>
+export type MultiSelectOptions = Record<string, { value: string | string[]; className?: string }>
 
 interface IProps {
 	/**
@@ -22,6 +22,7 @@ interface IProps {
 	className?: string
 	value?: Array<string>
 	onChange?: (event: MultiSelectEvent) => void
+	disabled?: boolean
 }
 
 interface IState {
@@ -43,11 +44,11 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		this.refreshChecked()
 	}
 
-	async componentDidUpdate(prevProps: IProps) {
+	async componentDidUpdate(prevProps: IProps): Promise<void> {
 		if (this.props.value !== prevProps.value) {
 			this.refreshChecked()
 		}
@@ -57,7 +58,7 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		}
 	}
 
-	refreshChecked() {
+	private refreshChecked() {
 		if (this.props.value && _.isArray(this.props.value)) {
 			const checkedValues: _.Dictionary<boolean> = {}
 			_.forEach(this.props.value, (value) => {
@@ -74,10 +75,11 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		}
 	}
 
-	handleChange = (item) => {
-		const obj = {}
-		obj[item] = !this.state.checkedValues[item]
-		const valueUpdate = _.extend(this.state.checkedValues, obj)
+	private handleChange = (key: string) => {
+		const valueUpdate = {
+			...this.state.checkedValues,
+			[key]: !this.state.checkedValues[key],
+		}
 
 		this.setState({
 			checkedValues: valueUpdate,
@@ -96,11 +98,11 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		}
 	}
 
-	isChecked = (key: string): boolean => {
+	private isChecked = (key: string): boolean => {
 		return !!this.state.checkedValues[key]
 	}
 
-	generateSimpleSummary = () => {
+	private generateSimpleSummary = () => {
 		return _.compact(
 			_.values(
 				_.mapObject(this.state.checkedValues, (value, key) => {
@@ -110,7 +112,7 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		).join(', ')
 	}
 
-	generateRichSummary = () => {
+	private generateRichSummary = () => {
 		return (
 			<>
 				{_.compact(
@@ -128,7 +130,7 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		)
 	}
 
-	onBlur = (event: React.FocusEvent<HTMLDivElement>) => {
+	private onBlur = (event: React.FocusEvent<HTMLDivElement>) => {
 		if (
 			!(
 				event.relatedTarget &&
@@ -144,32 +146,34 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		}
 	}
 
-	toggleExpco = async () => {
+	private toggleExpco = async () => {
+		if (this.props.disabled) return
+
 		await this._popperUpdate()
 		this.setState({
 			expanded: !this.state.expanded,
 		})
 	}
 
-	setTitleRef = (ref, popperRef) => {
+	private setTitleRef = (ref, popperRef) => {
 		this._titleRef = ref
 		if (typeof popperRef === 'function') {
 			popperRef(ref)
 		}
 	}
 
-	setPopperRef = (ref, popperRef) => {
+	private setPopperRef = (ref, popperRef) => {
 		this._popperRef = ref
 		if (typeof popperRef === 'function') {
 			popperRef(ref)
 		}
 	}
 
-	setUpdate = (update) => {
+	private setUpdate = (update) => {
 		this._popperUpdate = update
 	}
 
-	renderOption = (value: string, key: string, className: string | undefined) => {
+	private renderOption = (value: string, key: string, className: string | undefined) => {
 		return (
 			<p className="expco-item" key={key}>
 				<label className={ClassNames('action-btn', className)}>
@@ -193,7 +197,7 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		)
 	}
 
-	render() {
+	render(): JSX.Element {
 		const simpleSummary = this.generateSimpleSummary()
 		return (
 			<Manager>
@@ -205,6 +209,7 @@ export class MultiSelect extends React.Component<IProps, IState> {
 								'expco subtle',
 								{
 									'expco-expanded': this.state.expanded,
+									disabled: this.props.disabled,
 								},
 								this.props.className
 							)}

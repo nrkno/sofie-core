@@ -3,7 +3,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { CacheForIngest } from '../cache'
 import { LocalIngestRundown, LocalIngestSegment } from '../ingestCache'
 import { canRundownBeUpdated, getRundown, getSegmentId } from '../lib'
-import { calculateSegmentsFromIngestData, saveSegmentChangesToCache } from '../generation'
+import { calculateSegmentsFromIngestData, saveSegmentChangesToCache } from '../generationSegment'
 import _ = require('underscore')
 import { clone, deleteAllUndefinedProperties, literal, normalizeArray } from '@sofie-automation/corelib/dist/lib'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -12,6 +12,15 @@ import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist
 import { CommitIngestData } from '../lock'
 import { removeSegmentContents } from '../cleanup'
 
+/**
+ * Update the Ids of Segments based on new Ingest data
+ * This assumes that no segments/parts were added or removed between the two LocalIngestRundowns provided
+ * @param context Context of the job being run
+ * @param cache Ingest cache for Rundown being updated
+ * @param oldIngestRundown Last known ingest data
+ * @param newIngestRundown New ingest data
+ * @returns Map of the SegmentId changes
+ */
 export function diffAndUpdateSegmentIds(
 	context: JobContext,
 	cache: CacheForIngest,
@@ -32,6 +41,15 @@ export function diffAndUpdateSegmentIds(
 	return renamedSegments
 }
 
+/**
+ * Update the Rundown for new Ingest data
+ * Performs a diff of the ingest data, and applies the changes including re-running blueprints on any changed segments
+ * @param context Context of the job being run
+ * @param cache Ingest cache for Rundown being updated
+ * @param newIngestRundown New ingest data (if any)
+ * @param oldIngestRundown Last known ingest data (if any)
+ * @returns Map of the SegmentId changes
+ */
 export async function diffAndApplyChanges(
 	context: JobContext,
 	cache: CacheForIngest,
@@ -113,9 +131,15 @@ export async function diffAndApplyChanges(
 	})
 }
 
+/**
+ * Apply the externalId renames from a DiffSegmentEntries
+ * @param cache Ingest cache of the rundown being updated
+ * @param segmentDiff Calculated Diff
+ * @returns Map of the SegmentId changes
+ */
 function applyExternalIdDiff(
 	cache: CacheForIngest,
-	segmentDiff: DiffSegmentEntries
+	segmentDiff: Pick<DiffSegmentEntries, 'externalIdChanged'>
 ): CommitIngestData['renamedSegments'] {
 	// Updated segments that has had their segment.externalId changed:
 	const renamedSegments = new Map<SegmentId, SegmentId>()
@@ -155,7 +179,13 @@ function applyExternalIdDiff(
 	return renamedSegments
 }
 
+/**
+ * Object of IngestSegment against their external ids
+ */
 export type SegmentEntries = { [segmentExternalId: string]: LocalIngestSegment }
+/**
+ * Convert an array of IngestSegment into SegmentEntries
+ */
 export function compileSegmentEntries(ingestSegments: ReadonlyDeep<Array<LocalIngestSegment>>): SegmentEntries {
 	const segmentEntries: SegmentEntries = {}
 
@@ -168,6 +198,10 @@ export function compileSegmentEntries(ingestSegments: ReadonlyDeep<Array<LocalIn
 
 	return segmentEntries
 }
+
+/**
+ * Result of diffing two SegmentEntries
+ */
 export interface DiffSegmentEntries {
 	added: { [segmentExternalId: string]: LocalIngestSegment }
 	changed: { [segmentExternalId: string]: LocalIngestSegment }
@@ -182,6 +216,15 @@ export interface DiffSegmentEntries {
 	/** Reference to segments which has been REMOVED, but it looks like there is an ADDED segment that is closely related to the removed one */
 	externalIdChanged: { [removedSegmentExternalId: string]: string } // contains the added segment's externalId
 }
+
+/**
+ * Perform a diff of SegmentEntries, to calculate what has changed.
+ * Considers that the ids of some IngestSegments could have changed
+ * @param oldSegmentEntries The last known SegmentEntries
+ * @param newSegmentEntries The new SegmentEntries
+ * @param oldSegments The Segments in the DB. This allows for maintaining a stable modified timestamp, and ranks
+ * @returns DiffSegmentEntries describing the found changes
+ */
 export function diffSegmentEntries(
 	oldSegmentEntries: SegmentEntries,
 	newSegmentEntries: SegmentEntries,

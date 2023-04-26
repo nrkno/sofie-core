@@ -23,7 +23,10 @@ import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 
 import { IContextMenuContext } from '../../RundownView'
 import { CSSProperties } from '../../../styles/_cssVariables'
-import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../../RundownView/RundownViewEventBus'
+import RundownViewEventBus, {
+	RundownViewEvents,
+	HighlightEvent,
+} from '../../../../lib/api/triggers/RundownViewEventBus'
 import { LoopingIcon } from '../../../lib/ui/icons/looping'
 import { SegmentEnd } from '../../../lib/ui/icons/segment'
 import { getShowHiddenSourceLayers } from '../../../lib/localStorage'
@@ -219,7 +222,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		return partial
 	}
 
-	static getLiveLineTimePadding(timeScale): number {
+	static getLiveLineTimePadding(timeScale: number): number {
 		return timeScale === 0 ? 0 : LIVE_LINE_TIME_PADDING / timeScale
 	}
 
@@ -251,7 +254,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		super.componentDidMount && super.componentDidMount()
 		RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		const tooSmallState = this.state.isTooSmallForDisplay || this.state.isTooSmallForText
@@ -269,13 +272,13 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		}
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		super.componentWillUnmount && super.componentWillUnmount()
 		RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		this.highlightTimeout && clearTimeout(this.highlightTimeout)
 	}
 
-	shouldComponentUpdate(nextProps: Readonly<WithTiming<IProps>>, nextState: Readonly<IState>) {
+	shouldComponentUpdate(nextProps: Readonly<WithTiming<IProps>>, nextState: Readonly<IState>): boolean {
 		if (!_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState)) {
 			return true
 		} else {
@@ -283,7 +286,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		}
 	}
 
-	componentDidUpdate(prevProps: Readonly<Translated<WithTiming<IProps>>>, prevState: IState, snapshot?: any) {
+	componentDidUpdate(prevProps: Readonly<Translated<WithTiming<IProps>>>, prevState: IState, snapshot?: unknown): void {
 		super.componentDidUpdate && super.componentDidUpdate(prevProps, prevState, snapshot)
 		const tooSmallState = this.state.isTooSmallForDisplay || this.state.isTooSmallForText
 		const prevTooSmallState = prevState.isTooSmallForDisplay || prevState.isTooSmallForText
@@ -550,7 +553,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		return { red, green, blue }
 	}
 
-	render() {
+	render(): JSX.Element {
 		const { t } = this.props
 
 		const innerPart = this.props.part.instance.part

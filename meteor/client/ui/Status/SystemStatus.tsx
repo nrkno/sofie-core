@@ -2,14 +2,13 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import {
 	PeripheralDevice,
-	PeripheralDevices,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '../../../lib/collections/PeripheralDevices'
 import * as reacti18next from 'react-i18next'
 import * as i18next from 'i18next'
 import Moment from 'react-moment'
-import { assertNever, getCurrentTime, getHash, unprotectString } from '../../../lib/lib'
+import { assertNever, getCurrentTime, getHash, protectString, unprotectString } from '../../../lib/lib'
 import { Link } from 'react-router-dom'
 import Tooltip from 'rc-tooltip'
 import { faTrash, faEye } from '@fortawesome/free-solid-svg-icons'
@@ -17,19 +16,26 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { callPeripheralDeviceFunction, PeripheralDevicesAPI } from '../../lib/clientAPI'
-import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
+import { callPeripheralDeviceAction, PeripheralDevicesAPI } from '../../lib/clientAPI'
+import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
 import { getAllowConfigure, getAllowDeveloper, getAllowStudio, getHelpMode } from '../../lib/localStorage'
 import { PubSub } from '../../../lib/api/pubsub'
 import ClassNames from 'classnames'
 import { StatusCode, TSR } from '@sofie-automation/blueprints-integration'
-import { CoreSystem, ICoreSystem } from '../../../lib/collections/CoreSystem'
+import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { StatusResponse } from '../../../lib/api/systemStatus'
-import { doUserAction, UserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RESTART_SALT } from '../../../lib/api/userActions'
-import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
+import { DEFAULT_TSR_ACTION_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
+import { SubdeviceAction } from '@sofie-automation/shared-lib/dist/core/deviceConfigManifest'
 import { StatusCodePill } from './StatusCodePill'
+import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { i18nTranslator } from '../i18n'
+import { SchemaForm } from '../../lib/forms/schemaForm'
+import { CoreSystem, PeripheralDevices } from '../../collections'
+import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { DebugStateTable } from './DebugState'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -37,10 +43,12 @@ interface IDeviceItemProps {
 	showRemoveButtons?: boolean
 	toplevel?: boolean
 	hasChildren?: boolean
+
+	debugState: object | undefined
 }
 interface IDeviceItemState {}
 
-export function statusCodeToString(t: i18next.TFunction, statusCode: StatusCode) {
+export function statusCodeToString(t: i18next.TFunction, statusCode: StatusCode): string {
 	switch (statusCode) {
 		case StatusCode.UNKNOWN:
 			return t('Unknown')
@@ -98,146 +106,87 @@ export const DeviceItem = reacti18next.withTranslation()(
 				},
 			})
 		}
-		onRestartCasparCG(device: PeripheralDevice) {
+		onExecuteAction(event: any, device: PeripheralDevice, action: SubdeviceAction) {
 			const { t } = this.props
+			const namespaces = ['peripheralDevice_' + device._id]
 
-			doModalDialog({
-				title: t('Restart CasparCG Server'),
-				message: t('Do you want to restart CasparCG Server?'),
-				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, CASPARCG_RESTART_TIME, 'restartCasparCG')
-						.then(() => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.NOTIFICATION,
-									t('CasparCG on device "{{deviceName}}" restarting...', { deviceName: device.name }),
-									'SystemStatus'
-								)
-							)
-						})
-						.catch((err) => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.WARNING,
-									t('Failed to restart CasparCG on device: "{{deviceName}}": {{errorMessage}}', {
-										deviceName: device.name,
-										errorMessage: err + '',
-									}),
-									'SystemStatus'
-								)
-							)
-						})
-				},
-			})
+			const processResponse = (r: TSR.ActionExecutionResult) => {
+				if (r?.result === TSR.ActionExecutionResultCode.Error) {
+					throw new Error(
+						r.response && isTranslatableMessage(r.response)
+							? translateMessage(r.response, i18nTranslator)
+							: t('Unknown error')
+					)
+				}
+				NotificationCenter.push(
+					new Notification(
+						undefined,
+						NoticeLevel.NOTIFICATION,
+						r?.response && isTranslatableMessage(r.response)
+							? t('Executed {{actionName}} on device "{{deviceName}}": {{response}}', {
+									actionName: action.name,
+									deviceName: device.name,
+									response: translateMessage(r.response, i18nTranslator),
+							  })
+							: t('Executed {{actionName}} on device "{{deviceName}}"...', {
+									actionName: action.name,
+									deviceName: device.name,
+							  }),
+						'SystemStatus'
+					)
+				)
+			}
+			const processError = (err: any) => {
+				NotificationCenter.push(
+					new Notification(
+						undefined,
+						NoticeLevel.WARNING,
+						t('Failed to execute {{actionName}} on device: "{{deviceName}}": {{errorMessage}}', {
+							actionName: action.name,
+							deviceName: device.name,
+							errorMessage: err,
+						}),
+						'SystemStatus'
+					)
+				)
+			}
+
+			if (action.destructive || action.payload) {
+				const payload = {}
+				doModalDialog({
+					title: translateMessage({ key: action.name, namespaces }, i18nTranslator),
+					yes: t('Execute'),
+					no: t('Cancel'),
+					message: action.payload ? (
+						<SchemaForm
+							schema={JSON.parse(action.payload)}
+							object={payload}
+							attr={''}
+							translationNamespaces={namespaces}
+						/>
+					) : (
+						t('Do you want to execute {{actionName}}? This may the disrupt the output', { actionName: action.name })
+					),
+					onAccept: (event: any) => {
+						callPeripheralDeviceAction(
+							event,
+							device._id,
+							action.timeout || DEFAULT_TSR_ACTION_TIMEOUT_TIME,
+							action.id,
+							payload
+						)
+							.then(processResponse)
+							.catch(processError)
+					},
+				})
+			} else {
+				callPeripheralDeviceAction(event, device._id, action.timeout || DEFAULT_TSR_ACTION_TIMEOUT_TIME, action.id)
+					.then(processResponse)
+					.catch(processError)
+			}
 		}
 
-		onRestartQuantel(device: PeripheralDevice) {
-			const { t } = this.props
-
-			doModalDialog({
-				title: t('Restart Quantel Gateway'),
-				message: t('Do you want to restart Quantel Gateway?'),
-				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, undefined, 'restartQuantel')
-						.then(() => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.NOTIFICATION,
-									t('Quantel Gateway restarting...'),
-									'SystemStatus'
-								)
-							)
-						})
-						.catch((err) => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.WARNING,
-									t('Failed to restart Quantel Gateway: {{errorMessage}}', { errorMessage: err + '' }),
-									'SystemStatus'
-								)
-							)
-						})
-				},
-			})
-		}
-
-		onFormatHyperdeck(device: PeripheralDevice) {
-			const { t } = this.props
-
-			doModalDialog({
-				title: t('Format HyperDeck disks'),
-				message: t('Do you want to format the HyperDeck disks? This is a destructive action and cannot be undone.'),
-				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, undefined, 'formatHyperdeck')
-						.then(() => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.NOTIFICATION,
-									t('Formatting HyperDeck disks on device "{{deviceName}}"...', { deviceName: device.name }),
-									'SystemStatus'
-								)
-							)
-						})
-						.catch((err) => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.WARNING,
-									t('Failed to format HyperDecks on device: "{{deviceName}}": {{errorMessage}}', {
-										deviceName: device.name,
-										errorMessage: err + '',
-									}),
-									'SystemStatus'
-								)
-							)
-						})
-				},
-			})
-		}
-		onVizPurgeRundown(device: PeripheralDevice) {
-			const { t } = this.props
-
-			doModalDialog({
-				title: t('Purge Viz Rundown'),
-				message: t(
-					'Do you want to purge all elements from the viz-rundown? Please note that you will have to deactivate + activate the Rundown in Sofie before you will be able to playout Viz again.'
-				),
-
-				onAccept: (event: any) => {
-					callPeripheralDeviceFunction(event, device._id, undefined, 'vizPurgeRundown')
-						.then(() => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.NOTIFICATION,
-									t('Purged all elements from rundown on Viz-device "{{deviceName}}"!', { deviceName: device.name }),
-									'SystemStatus'
-								)
-							)
-						})
-						.catch((err) => {
-							NotificationCenter.push(
-								new Notification(
-									undefined,
-									NoticeLevel.WARNING,
-									t('Purging failed: {{errorMessage}}', {
-										deviceName: device.name,
-										errorMessage: err + '',
-									}),
-									'SystemStatus'
-								)
-							)
-						})
-				},
-			})
-		}
-
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (
@@ -288,73 +237,25 @@ export const DeviceItem = reacti18next.withTranslation()(
 						</div>
 					) : null}
 
+					{this.props.debugState ? <DebugStateTable debugState={this.props.debugState} /> : null}
+
 					<div className="actions-container">
 						<div className="device-item__actions">
-							{getAllowStudio() &&
-							this.props.device.type === PeripheralDeviceType.PLAYOUT &&
-							this.props.device.subType === TSR.DeviceType.CASPARCG ? (
-								<React.Fragment>
-									<button
-										className="btn btn-secondary"
-										onClick={(e) => {
-											e.preventDefault()
-											e.stopPropagation()
-											this.onRestartCasparCG(this.props.device)
-										}}
-									>
-										{t('Restart')}
-										{/** IDK what this does, but it doesn't seem to make a lot of sense: JSON.stringify(this.props.device.settings) */}
-									</button>
-								</React.Fragment>
-							) : null}
-							{getAllowStudio() &&
-							this.props.device.type === PeripheralDeviceType.PLAYOUT &&
-							this.props.device.subType === TSR.DeviceType.HYPERDECK ? (
-								<React.Fragment>
-									<button
-										className="btn btn-secondary"
-										onClick={(e) => {
-											e.preventDefault()
-											e.stopPropagation()
-											this.onFormatHyperdeck(this.props.device)
-										}}
-									>
-										{t('Format disks')}
-									</button>
-								</React.Fragment>
-							) : null}
-							{getAllowStudio() &&
-							this.props.device.type === PeripheralDeviceType.PLAYOUT &&
-							this.props.device.subType === TSR.DeviceType.QUANTEL ? (
-								<React.Fragment>
-									<button
-										className="btn btn-secondary"
-										onClick={(e) => {
-											e.preventDefault()
-											e.stopPropagation()
-											this.onRestartQuantel(this.props.device)
-										}}
-									>
-										{t('Restart Quantel Gateway')}
-									</button>
-								</React.Fragment>
-							) : null}
-							{getAllowStudio() &&
-							this.props.device.type === PeripheralDeviceType.PLAYOUT &&
-							this.props.device.subType === TSR.DeviceType.VIZMSE ? (
-								<React.Fragment>
-									<button
-										className="btn btn-secondary"
-										onClick={(e) => {
-											e.preventDefault()
-											e.stopPropagation()
-											this.onVizPurgeRundown(this.props.device)
-										}}
-									>
-										{t('Purge Viz Rundown')}
-									</button>
-								</React.Fragment>
-							) : null}
+							{this.props.device.configManifest?.subdeviceManifest?.[this.props.device.subType] &&
+								this.props.device.configManifest.subdeviceManifest[this.props.device.subType].actions?.map((action) => (
+									<React.Fragment key={action.id}>
+										<button
+											className="btn btn-secondary"
+											onClick={(e) => {
+												e.preventDefault()
+												e.stopPropagation()
+												this.onExecuteAction(e, this.props.device, action)
+											}}
+										>
+											{t(action.name)}
+										</button>
+									</React.Fragment>
+								))}
 							{getAllowDeveloper() ? (
 								<button
 									key="button-ignore"
@@ -469,7 +370,7 @@ export const CoreItem = reacti18next.withTranslation()(
 			this.state = {}
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (
@@ -557,7 +458,7 @@ export const CoreItem = reacti18next.withTranslation()(
 															{},
 															UserAction.RESTART_CORE,
 															(e, ts) => MeteorCall.userAction.restartCore(e, ts, restartToken),
-															(err, token) => {
+															(err, token: string | undefined) => {
 																if (err || !token) {
 																	NotificationCenter.push(
 																		new Notification(
@@ -606,7 +507,9 @@ export const CoreItem = reacti18next.withTranslation()(
 interface ISystemStatusProps {}
 interface ISystemStatusState {
 	systemStatus: StatusResponse | undefined
+	deviceDebugState: Map<PeripheralDeviceId, object>
 }
+
 interface ISystemStatusTrackedProps {
 	coreSystem: ICoreSystem | undefined
 	devices: Array<PeripheralDevice>
@@ -628,6 +531,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 		ISystemStatusState
 	> {
 		private refreshInterval: NodeJS.Timer | undefined = undefined
+		private refreshDebugStatesInterval: NodeJS.Timer | undefined = undefined
 		private destroyed: boolean = false
 
 		constructor(props) {
@@ -635,19 +539,22 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 
 			this.state = {
 				systemStatus: undefined,
+				deviceDebugState: new Map(),
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.refreshSystemStatus()
 			this.refreshInterval = setInterval(this.refreshSystemStatus, 5000)
+			this.refreshDebugStatesInterval = setInterval(this.refreshDebugStates, 1000)
 
 			// Subscribe to data:
 			this.subscribe(PubSub.peripheralDevices, {})
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			if (this.refreshInterval) clearInterval(this.refreshInterval)
+			if (this.refreshDebugStatesInterval) clearInterval(this.refreshDebugStatesInterval)
 			this.destroyed = true
 		}
 
@@ -675,6 +582,25 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 					)
 					return
 				})
+		}
+
+		refreshDebugStates = () => {
+			for (const device of this.props.devices) {
+				if (device.type === PeripheralDeviceType.PLAYOUT && device.settings && device.settings['debugState']) {
+					MeteorCall.systemStatus
+						.getDebugStates(device._id)
+						.then((res) => {
+							const states: Map<PeripheralDeviceId, object> = new Map()
+							for (const [key, state] of Object.entries(res)) {
+								states.set(protectString(key), state)
+							}
+							this.setState({
+								deviceDebugState: states,
+							})
+						})
+						.catch((err) => console.log(`Error fetching device states: ${err}`))
+				}
+			}
 		}
 
 		renderPeripheralDevices() {
@@ -712,6 +638,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 						device={d.device}
 						toplevel={toplevel}
 						hasChildren={d.children.length !== 0}
+						debugState={this.state.deviceDebugState.get(d.device._id)}
 					/>,
 				]
 				if (d.children.length) {
@@ -746,7 +673,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 			)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (

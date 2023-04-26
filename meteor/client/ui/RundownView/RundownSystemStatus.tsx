@@ -6,7 +6,6 @@ import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/Reac
 import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
-	PeripheralDevices,
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
 import { Rundown } from '../../../lib/collections/Rundowns'
@@ -18,6 +17,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { UIStudio } from '../../../lib/api/studios'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDevices } from '../../collections'
 
 interface IMOSStatusProps {
 	lastUpdate: Time
@@ -27,13 +27,13 @@ export const MOSLastUpdateStatus = withTranslation()(
 	class MOSLastUpdateStatus extends React.Component<IMOSStatusProps & WithTranslation> {
 		_interval: number
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this._interval = Meteor.setInterval(() => {
 				this.tick()
 			}, 5000)
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			Meteor.clearInterval(this._interval)
 		}
 
@@ -41,7 +41,7 @@ export const MOSLastUpdateStatus = withTranslation()(
 			this.forceUpdate()
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			const timeDiff = getCurrentTime() - this.props.lastUpdate
 			return (
@@ -179,13 +179,13 @@ export const RundownSystemStatus = translateWithTracker(
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.subscribe(PubSub.peripheralDevicesAndSubDevices, {
 				studioId: this.props.studio._id,
 			})
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			super.componentWillUnmount()
 		}
 
@@ -200,7 +200,7 @@ export const RundownSystemStatus = translateWithTracker(
 				})
 			}
 		}
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			const playoutDevicesIssues = this.props.playoutDevices.offLine.filter((dev) => dev.connected)
 			const mosDevicesIssues = this.props.mosDevices.offLine.filter((dev) => dev.connected)

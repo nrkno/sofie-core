@@ -28,6 +28,7 @@ export async function cleanTimelineDatastore(context: JobContext, cache: CacheFo
 		_id: {
 			$nin: timelineRefs.map((r) => getDatastoreId(context.studioId, r)),
 		},
+		studioId: context.studioId,
 		mode: DatastorePersistenceMode.Temporary,
 	})
 }

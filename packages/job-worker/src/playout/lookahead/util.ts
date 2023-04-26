@@ -3,6 +3,7 @@ import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { JobContext } from '../../jobs'
 import {
 	CacheForPlayout,
@@ -16,13 +17,16 @@ export interface PartInstanceAndPieceInstances {
 	onTimeline: boolean
 	nowInPart: number
 	allPieces: PieceInstance[]
+	calculatedTimings: PartCalculatedTimings
 }
 export interface PieceInstanceWithObjectMap extends PieceInstance {
 	/** Cache of objects built by findObjects. */
-	objectMap?: Map<string, TimelineObjectCoreExt>
+	objectMap?: Map<string, TimelineObjectCoreExt<any>>
 }
 export interface PartAndPieces {
 	part: DBPart
+	/** Whether the inTransition from this part should be considered */
+	usesInTransition: boolean
 	pieces: PieceInstanceWithObjectMap[]
 }
 

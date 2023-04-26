@@ -1,19 +1,18 @@
+import { PeripheralDevices, RundownPlaylists } from './collections'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
+import { PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
+import * as _ from 'underscore'
 import { getCurrentTime, stringifyError, waitForPromise, waitForPromiseAll } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
-import { getCoreSystem } from '../lib/collections/CoreSystem'
+import { DEFAULT_TSR_ACTION_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { QueueStudioJob } from './worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { fetchStudioIds } from '../lib/collections/optimizations'
-import { RundownPlaylists } from '../lib/collections/RundownPlaylists'
+import { fetchStudioIds } from './optimizations'
 import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
-import { getRemovedOrOrphanedPackageInfos } from './api/studio/lib'
-import { PackageInfos } from '../lib/collections/PackageInfos'
 import { deferAsync } from '@sofie-automation/corelib/dist/lib'
+import { getCoreSystem } from './coreSystem/collection'
 import { cleanupOldDataInner } from './api/cleanup'
 
 const lowPrioFcn = (fcn: () => any) => {
@@ -71,8 +70,10 @@ export function nightlyCronjobInner(): void {
 					ps.push(
 						PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 							subDevice._id,
-							CASPARCG_RESTART_TIME,
-							'restartCasparCG'
+							DEFAULT_TSR_ACTION_TIMEOUT_TIME,
+							{
+								actionId: TSR.CasparCGActions.RestartServer,
+							}
 						)
 							.then(() => {
 								logger.info('Cronjob: "' + subDevice._id + '": CasparCG restart done')
@@ -168,14 +169,7 @@ Meteor.startup(() => {
 			// Clean up removed PackageInfos:
 			if (isLowSeason() || force) {
 				deferAsync(
-					async () => {
-						const removedPackageInfoIds = await getRemovedOrOrphanedPackageInfos()
-						if (removedPackageInfoIds.length) {
-							PackageInfos.remove({
-								_id: { $in: removedPackageInfoIds },
-							})
-						}
-					},
+					async () => {},
 					(e) => {
 						logger.error(`Cron: Cleanup PackageInfos error: ${e}`)
 					}

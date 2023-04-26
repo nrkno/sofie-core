@@ -16,7 +16,7 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 	leftLabel: HTMLElement
 	rightLabel: HTMLElement
 
-	constructor(props) {
+	constructor(props: IProps) {
 		super(props)
 
 		this.state = {
@@ -25,28 +25,28 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 		}
 	}
 
-	updateAnchoredElsWidths = () => {
+	private updateAnchoredElsWidths = () => {
 		const leftLabelWidth = this.leftLabel ? getElementWidth(this.leftLabel) : 0
 
 		this.setAnchoredElsWidths(leftLabelWidth, 0)
 	}
 
-	setLeftLabelRef = (e: HTMLSpanElement) => {
+	private setLeftLabelRef = (e: HTMLSpanElement) => {
 		this.leftLabel = e
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		this.updateAnchoredElsWidths()
 	}
 
 	// this will be triggered if the SVG icon for the transiton will 404.
-	iconFailed = () => {
+	private iconFailed = () => {
 		this.setState({
 			iconFailed: true,
 		})
 	}
 
-	componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
+	componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>): void {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -56,7 +56,7 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 		}
 	}
 
-	render() {
+	render(): JSX.Element {
 		const content = this.props.piece.instance.piece.content as TransitionContent | undefined
 		return (
 			<>

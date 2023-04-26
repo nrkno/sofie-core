@@ -7,7 +7,7 @@ const TOOLTIP_ALIGN = { points: ['tl', 'tl'], offset: [-8, 0] }
 const NO_TRIGGER: RCTooltip.Trigger[] = []
 const HOVER_TRIGGER: RCTooltip.Trigger[] = ['hover']
 
-export function LinePartTitle({ title }: { title: string }) {
+export function LinePartTitle({ title }: { title: string }): JSX.Element {
 	const elRef = useRef<HTMLHeadingElement>(null)
 	const [isTooltipEnabled, setTooltipEnabled] = useState(true)
 

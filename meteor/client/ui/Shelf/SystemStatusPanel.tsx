@@ -7,13 +7,15 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { RundownSystemStatus } from '../RundownView/RundownSystemStatus'
-import { DBRundown, Rundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { DBRundown, Rundown } from '../../../lib/collections/Rundowns'
 import { UIStudio } from '../../../lib/api/studios'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Rundowns } from '../../collections'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 interface ISystemStatusPanelProps {
 	studio: UIStudio
@@ -38,7 +40,7 @@ class SystemStatusPanelInner extends MeteorReactComponent<
 		super(props)
 	}
 
-	render() {
+	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const { t, panel } = this.props
 

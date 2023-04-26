@@ -4,7 +4,12 @@ import { IDefaultRendererProps } from './DefaultRenderer'
 import { SplitsFloatingInspector } from '../../../FloatingInspectors/SplitsFloatingInspector'
 import { getSplitItems } from '../../utils/getSplitItems'
 
-export function SplitsRenderer({ piece: pieceInstance, hovering, elementOffset, typeClass }: IDefaultRendererProps) {
+export function SplitsRenderer({
+	piece: pieceInstance,
+	hovering,
+	elementOffset,
+	typeClass,
+}: IDefaultRendererProps): JSX.Element {
 	const splitItems = getSplitItems(pieceInstance, 'segment-storyboard__part__piece__contents__item')
 
 	return (

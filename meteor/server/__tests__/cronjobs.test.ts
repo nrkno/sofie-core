@@ -2,22 +2,15 @@ import '../../__mocks__/_extendJest'
 import { testInFiber, runAllTimers, beforeAllInFiber } from '../../__mocks__/helpers/jest'
 import { MeteorMock } from '../../__mocks__/meteor'
 import { logger } from '../logging'
-import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { getRandomId, getRandomString, protectString } from '../../lib/lib'
-import { UserActionsLog } from '../../lib/collections/UserActionsLog'
-import { Snapshots, SnapshotType } from '../../lib/collections/Snapshots'
+import { SnapshotType } from '../../lib/collections/Snapshots'
 import { IBlueprintPieceType, PieceLifespan, StatusCode, TSR } from '@sofie-automation/blueprints-integration'
-import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
-import {
-	PeripheralDevices,
-	PeripheralDeviceType,
-	PeripheralDeviceCategory,
-} from '../../lib/collections/PeripheralDevices'
-import { CoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
+import { PeripheralDeviceType, PeripheralDeviceCategory } from '../../lib/collections/PeripheralDevices'
+import { SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import * as lib from '../../lib/lib'
-import { DBPart, Parts } from '../../lib/collections/Parts'
-import { PartInstance, PartInstances } from '../../lib/collections/PartInstances'
-import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
+import { DBPart } from '../../lib/collections/Parts'
+import { PartInstance } from '../../lib/collections/PartInstances'
+import { PieceInstance } from '../../lib/collections/PieceInstances'
 import { Meteor } from 'meteor/meteor'
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import {
@@ -34,17 +27,31 @@ import {
 let mockCurrentTime = 0
 let origGetCurrentTime
 jest.mock('../logging')
+// we don't want the deviceTriggers observer to start up at this time
+jest.mock('../api/deviceTriggers/observer')
 
 import '../cronjobs'
 
 import '../api/peripheralDevice'
+import {
+	CoreSystem,
+	IngestDataCache,
+	PartInstances,
+	Parts,
+	PeripheralDeviceCommands,
+	PeripheralDevices,
+	PieceInstances,
+	Snapshots,
+	UserActionsLog,
+	Segments,
+} from '../collections'
+import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import {
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
 	setupDefaultStudioEnvironment,
 } from '../../__mocks__/helpers/database'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { Segments } from '../../lib/collections/Segments'
 import { Settings } from '../../lib/Settings'
 
 // Override to be unaffected by jest.useFakeTimers():
@@ -464,7 +471,7 @@ describe('cronjobs', () => {
 			expect(pendingCommands).toHaveLength(1)
 			expect(pendingCommands[0]).toMatchObject({
 				deviceId: mockCasparCg,
-				functionName: 'restartCasparCG',
+				actionId: 'restartServer',
 			})
 
 			// Emulate that the restart was successful:
