@@ -9,7 +9,7 @@ class TestError extends Error {
 }
 
 export default class Logging implements Middleware {
-	_logging: boolean
+	private readonly _logging: boolean
 	constructor(logging?: boolean) {
 		this._logging = logging || false
 	}
