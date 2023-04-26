@@ -10,8 +10,8 @@ import { getUser, User } from '../../../../lib/collections/Users'
 import { NotLoggedInContainer } from './lib'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 
-interface ILoginProps extends RouteComponentProps<{ token: string }> {
-	requestedRoute: string
+interface ILoginProps extends RouteComponentProps<{ token?: string }> {
+	requestedRoute?: string
 }
 
 interface ILoginPageProps extends ILoginProps {

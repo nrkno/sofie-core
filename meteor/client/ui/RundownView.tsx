@@ -1091,12 +1091,7 @@ const RundownHeader = withTranslation()(
 )
 
 interface IProps {
-	match?: {
-		params: {
-			playlistId: RundownPlaylistId
-		}
-	}
-	playlistId?: RundownPlaylistId
+	playlistId: RundownPlaylistId
 	inActiveRundownView?: boolean
 	onlyShelf?: boolean
 }
@@ -1173,12 +1168,7 @@ interface ITrackedProps {
 	nextSegmentPartIds: PartId[]
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: Translated<IProps>) => {
-	let playlistId
-	if (props.match && props.match.params.playlistId) {
-		playlistId = decodeURIComponent(unprotectString(props.match.params.playlistId))
-	} else if (props.playlistId) {
-		playlistId = props.playlistId
-	}
+	const playlistId = props.playlistId
 
 	const playlist = RundownPlaylists.findOne(playlistId)
 	let rundowns: Rundown[] = []

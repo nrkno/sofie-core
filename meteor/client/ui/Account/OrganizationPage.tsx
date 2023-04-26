@@ -1,6 +1,5 @@
 import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { RouteComponentProps } from 'react-router'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { getUser, User, getUserRoles, DBUser } from '../../../lib/collections/Users'
 import { Spinner } from '../../lib/Spinner'
@@ -11,19 +10,19 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { Organizations, Users } from '../../collections'
 
-interface OrganizationProps extends RouteComponentProps {
+interface IOrganizationProps {
 	user: User | null
 	organization: DBOrganization | null
 	usersInOrg: User[]
 }
 
-interface OrganizationState {
+interface IOrganizationState {
 	newUserEmail: string
 	newUserName: string
 	editUser: string
 }
 
-export const OrganizationPage = translateWithTracker((_props: RouteComponentProps) => {
+export const OrganizationPage = translateWithTracker(() => {
 	const user = getUser()
 	const organization = user && Organizations.findOne({ _id: user.organizationId })
 
@@ -34,8 +33,8 @@ export const OrganizationPage = translateWithTracker((_props: RouteComponentProp
 		usersInOrg: usersInOrg || [],
 	}
 })(
-	class OrganizationPage extends MeteorReactComponent<Translated<OrganizationProps>, OrganizationState> {
-		state: OrganizationState = {
+	class OrganizationPage extends MeteorReactComponent<Translated<IOrganizationProps>, IOrganizationState> {
+		state: IOrganizationState = {
 			newUserEmail: '',
 			newUserName: '',
 			editUser: '',
