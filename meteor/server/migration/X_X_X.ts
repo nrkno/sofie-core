@@ -6,7 +6,6 @@ import {
 	MappingExt,
 	StudioIngestDevice,
 	StudioInputDevice,
-	StudioPeripheralDeviceSettings,
 	StudioPlayoutDevice,
 	StudioRouteSet,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -18,7 +17,6 @@ import _ from 'underscore'
 import { Studio } from '../../lib/collections/Studios'
 import {
 	wrapDefaultObject,
-	updateOverrides,
 	ObjectOverrideSetOp,
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'

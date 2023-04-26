@@ -369,6 +369,7 @@ export interface BlueprintResultApplyStudioConfig {
 
 	playoutDevices: Record<string, TSR.DeviceOptionsAny>
 	ingestDevices: Record<string, unknown>
+	inputDevices: Record<string, unknown>
 }
 
 export interface BlueprintResultApplyShowStyleConfig {
