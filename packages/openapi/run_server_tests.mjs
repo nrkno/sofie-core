@@ -1,3 +1,9 @@
+/**
+ * This file spins up a mock of the Sofie API and runs tests against it to verify that the generated Client and Server
+ * 	speak the same language. The tests in this package must be run against either a mock or a real Sofie server, so this
+ *  file should be used when running against a mock is desired.
+ */
+
 import { exec } from 'child_process'
 import { exit } from 'process'
 import { join } from 'path'
