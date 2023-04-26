@@ -83,12 +83,12 @@ export function APIShowStyleBaseFrom(showStyleBase: ShowStyleBase): APIShowStyle
 		name: showStyleBase.name,
 		blueprintId: unprotectString(showStyleBase.blueprintId),
 		blueprintConfigPresetId: showStyleBase.blueprintConfigPresetId,
-		outputLayers: Object.values(applyAndValidateOverrides(showStyleBase.outputLayersWithOverrides).obj).map(
-			(layer) => APIOutputLayerFrom(layer!)
-		),
-		sourceLayers: Object.values(applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj).map(
-			(layer) => APISourceLayerFrom(layer!)
-		),
+		outputLayers: Object.values<IOutputLayer | undefined>(
+			applyAndValidateOverrides(showStyleBase.outputLayersWithOverrides).obj
+		).map((layer) => APIOutputLayerFrom(layer!)),
+		sourceLayers: Object.values<ISourceLayer | undefined>(
+			applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj
+		).map((layer) => APISourceLayerFrom(layer!)),
 		config: applyAndValidateOverrides(showStyleBase.blueprintConfigWithOverrides).obj,
 	}
 }
@@ -98,7 +98,7 @@ export function showStyleVariantFrom(
 	existingId?: ShowStyleVariantId
 ): ShowStyleVariant | undefined {
 	const blueprintConfig = wrapDefaultObject({})
-	blueprintConfig.overrides = Object.entries(apiShowStyleVariant.config).map(([key, value]) =>
+	blueprintConfig.overrides = Object.entries<any>(apiShowStyleVariant.config).map(([key, value]) =>
 		literal<ObjectOverrideSetOp>({
 			op: 'set',
 			path: key,
