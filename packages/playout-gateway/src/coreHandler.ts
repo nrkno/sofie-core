@@ -152,7 +152,6 @@ export class CoreHandler {
 
 			deviceCategory: PeripheralDeviceAPI.PeripheralDeviceCategory.PLAYOUT,
 			deviceType: PeripheralDeviceAPI.PeripheralDeviceType.PLAYOUT,
-			deviceSubType: PeripheralDeviceAPI.PERIPHERAL_SUBTYPE_PROCESS,
 
 			deviceName: 'Playout gateway',
 			watchDog: this._coreConfig ? this._coreConfig.watchdog : true,

@@ -121,7 +121,6 @@ export class CoreHandler {
 
 			deviceCategory: PeripheralDeviceAPI.PeripheralDeviceCategory.INGEST,
 			deviceType: PeripheralDeviceAPI.PeripheralDeviceType.MOS,
-			deviceSubType: PeripheralDeviceAPI.PERIPHERAL_SUBTYPE_PROCESS,
 
 			deviceName: 'MOS gateway',
 			watchDog: this._coreConfig ? this._coreConfig.watchdog : true,
