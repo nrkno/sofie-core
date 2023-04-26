@@ -307,7 +307,18 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 		const partIds = await getAllIdsInCollection(Parts, removedParts)
 		;(
 			await removeByQuery(PartInstances, {
-				$or: [{ rundownId: { $nin: rundownIds } }, { 'part._id': { $nin: partIds } }],
+				$or: [
+					{
+						// Where the parent Rundown is missing:
+						rundownId: { $nin: rundownIds },
+					},
+					{
+						// Remove any from long running rundowns where they have long since expired:
+						reset: true,
+						'timings.plannedStoppedPlayback': { $lt: getCurrentTime() - Settings.maximumDataAge },
+						'part._id': { $nin: partIds },
+					},
+				],
 			})
 		).forEach((id) => removedPartInstances.add(id))
 	}
