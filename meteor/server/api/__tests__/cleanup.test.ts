@@ -1,5 +1,5 @@
 import { Collections, getRandomId } from '../../../lib/lib'
-import { beforeAllInFiber, testInFiber } from '../../../__mocks__/helpers/jest'
+import { beforeEachInFiber, testInFiber } from '../../../__mocks__/helpers/jest'
 
 import '../../../lib/main' // include this in order to get all of the collection set up
 import { cleanupOldDataInner } from '../cleanup'
@@ -46,7 +46,8 @@ import { TranslationsBundles } from '../../../lib/collections/TranslationsBundle
 describe('Cleanup', () => {
 	let env: DefaultEnvironment
 
-	beforeAllInFiber(async () => {
+	beforeEachInFiber(async () => {
+		clearAllDBCollections()
 		env = await setupDefaultStudioEnvironment()
 	})
 
@@ -65,7 +66,6 @@ describe('Cleanup', () => {
 	testInFiber('No bad removals', async () => {
 		// Check that cleanupOldDataInner() doesn't remove any data when the default data set is in the DB.
 
-		clearDefaultDataDB()
 		setDefaultDatatoDB(env, Date.now())
 
 		const results = await cleanupOldDataInner(true)
@@ -87,7 +87,6 @@ describe('Cleanup', () => {
 	testInFiber('All dependants should be removed', async () => {
 		// Check that cleanupOldDataInner() cleans up all data from the database.
 
-		clearDefaultDataDB()
 		setDefaultDatatoDB(env, 0)
 
 		// Pre-check, just to check that there is data in the DB:
@@ -127,6 +126,26 @@ describe('Cleanup', () => {
 				throw new Error(`${collectionName} ${e}`)
 			}
 		}
+	})
+	testInFiber('PieceInstance should be removed when PartInstance is removed', async () => {
+		// Check that cleanupOldDataInner() cleans up all data from the database.
+
+		setDefaultDatatoDB(env, 0)
+
+		// Pre-check, just to check that there is data in the DB:
+		expect(PartInstances.find().count()).toBeGreaterThanOrEqual(1)
+		expect(PieceInstances.find().count()).toBeGreaterThanOrEqual(1)
+
+		// Remove PartInstances, so that dependants will be removed in cleanup:
+		PartInstances.remove({})
+
+		const results = await cleanupOldDataInner(true)
+
+		expect(typeof results).not.toBe('string')
+		if (typeof results === 'string') throw new Error(results)
+
+		expect(PartInstances.find().count()).toBeGreaterThanOrEqual(0)
+		expect(PieceInstances.find().count()).toBeGreaterThanOrEqual(0)
 	})
 })
 
@@ -410,25 +429,9 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		}
 	}
 }
-/** clear data added in setDefaultDatatoDB() */
-function clearDefaultDataDB() {
-	AdLibActions.remove({})
-	BucketAdLibActions.remove({})
-	BucketAdLibs.remove({})
-	Evaluations.remove({})
-	ExpectedPackageWorkStatuses.remove({})
-	ExpectedPlayoutItems.remove({})
-	ExternalMessageQueue.remove({})
-	IngestDataCache.remove({})
-	PackageContainerPackageStatuses.remove({})
-	PackageInfos.remove({})
-	PieceInstances.remove({})
-	PeripheralDeviceCommands.remove({})
-	RundownBaselineAdLibActions.remove({})
-	RundownBaselineObjs.remove({})
-	RundownLayouts.remove({})
-	Snapshots.remove({})
-	Timeline.remove({})
-	UserActionsLog.remove({})
-	TranslationsBundles.remove({})
+
+function clearAllDBCollections() {
+	for (const collection of Collections.values()) {
+		collection.remove({})
+	}
 }

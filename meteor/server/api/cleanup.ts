@@ -50,6 +50,7 @@ import {
 	MediaWorkFlowId,
 	OrganizationId,
 	PartId,
+	PartInstanceId,
 	PeripheralDeviceId,
 	RundownId,
 	RundownPlaylistId,
@@ -278,15 +279,23 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 	}
 
 	// Documents owned by Parts:
+	const removedPartInstances = new Set<PartInstanceId>()
 	{
 		const partIds = getAllIdsInCollection(Parts, removedParts)
 		removeByQuery(PartInstances, {
 			$or: [{ rundownId: { $nin: rundownIds } }, { 'part._id': { $nin: partIds } }],
-		})
+		}).forEach((id) => removedPartInstances.add(id))
 	}
 
 	// Other documents:
 
+	// PieceInstances
+	{
+		const partInstanceIds = getAllIdsInCollection(PartInstances, removedPartInstances)
+		removeByQuery(PieceInstances, {
+			partInstanceId: { $nin: partInstanceIds },
+		})
+	}
 	// Evaluations
 	{
 		removeByQuery(Evaluations, {
