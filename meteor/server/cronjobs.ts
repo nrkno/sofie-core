@@ -1,7 +1,6 @@
 import { PeripheralDevices, RundownPlaylists } from './collections'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
-import * as _ from 'underscore'
 import { getCurrentTime, stringifyError, waitForPromise, waitForPromiseAll } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
@@ -161,17 +160,6 @@ Meteor.startup(() => {
 					},
 					(e) => {
 						logger.error(`Cron: CleanupPlaylists error: ${e}`)
-					}
-				)
-			}
-		}
-		{
-			// Clean up removed PackageInfos:
-			if (isLowSeason() || force) {
-				deferAsync(
-					async () => {},
-					(e) => {
-						logger.error(`Cron: Cleanup PackageInfos error: ${e}`)
 					}
 				)
 			}

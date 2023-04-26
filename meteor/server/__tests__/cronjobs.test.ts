@@ -54,10 +54,14 @@ import {
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { Settings } from '../../lib/Settings'
 
-// Override to be unaffected by jest.useFakeTimers():
-const orgSetTimeout = setTimeout
-async function sleep(ms: number): Promise<void> {
-	return new Promise((resolve) => orgSetTimeout(resolve, ms))
+async function waitForCronjobDone() {
+	// Run timers, so that all promises in the cronjob has a chance to resolve:
+
+	// Note: call these multiple times, since the cronjob handles a LOT of promises in series.
+	await runAllTimers()
+	await runAllTimers()
+	await runAllTimers()
+	await runAllTimers()
 }
 describe('cronjobs', () => {
 	let env: DefaultEnvironment
@@ -94,12 +98,14 @@ describe('cronjobs', () => {
 		CoreSystem.remove(SYSTEM_ID)
 	})
 	describe('Runs at the appropriate time', () => {
-		testInFiber("Doesn't run during the day", () => {
+		testInFiber("Doesn't run during the day", async () => {
 			// set time to 2020/07/19 12:00 Local Time
 			mockCurrentTime = new Date(2020, 6, 19, 12, 0, 0).getTime()
 			// cronjob is checked every 5 minutes, so advance 6 minutes
 			jest.advanceTimersByTime(6 * 60 * 1000)
 			expect(lib.getCurrentTime).toHaveBeenCalled()
+			await waitForCronjobDone()
+
 			expect(logger.info).toHaveBeenCalledTimes(0)
 		})
 		testInFiber("Runs at 4 o'clock", async () => {
@@ -108,7 +114,8 @@ describe('cronjobs', () => {
 			// cronjob is checked every 5 minutes, so advance 6 minutes
 			jest.advanceTimersByTime(6 * 60 * 1000)
 			expect(lib.getCurrentTime).toHaveBeenCalled()
-			await runAllTimers()
+			await waitForCronjobDone()
+
 			expect(logger.info).toHaveBeenLastCalledWith('Nightly cronjob: done')
 		})
 		testInFiber("Doesn't run if less than 20 hours have passed since last run", async () => {
@@ -117,7 +124,7 @@ describe('cronjobs', () => {
 			// cronjob is checked every 5 minutes, so advance 6 minutes
 			jest.advanceTimersByTime(6 * 60 * 1000)
 			expect(lib.getCurrentTime).toHaveBeenCalled()
-			await runAllTimers()
+			await waitForCronjobDone()
 			expect(logger.info).toHaveBeenLastCalledWith('Nightly cronjob: done')
 
 			// clear the mock
@@ -125,7 +132,7 @@ describe('cronjobs', () => {
 
 			mockCurrentTime = new Date(2020, 6, 20, 4, 50, 0).getTime()
 			jest.advanceTimersByTime(6 * 60 * 1000)
-			await runAllTimers()
+			await waitForCronjobDone()
 			// less than 24 hours have passed so we do not expect the cronjob to run
 			expect(logger.info).toHaveBeenCalledTimes(0)
 		})
@@ -138,7 +145,7 @@ describe('cronjobs', () => {
 			mockCurrentTime = new Date(2020, 6, date++, 4, 5, 0).getTime()
 			// cronjob is checked every 5 minutes, so advance 6 minutes
 			jest.advanceTimersByTime(6 * 60 * 1000)
-			await runAllTimers()
+			await waitForCronjobDone()
 			expect(logger.info).toHaveBeenLastCalledWith('Nightly cronjob: done')
 		}
 
@@ -462,9 +469,7 @@ describe('cronjobs', () => {
 			mockCurrentTime = new Date(2020, 6, date++, 4, 5, 0).getTime()
 			// cronjob is checked every 5 minutes, so advance 6 minutes
 			jest.advanceTimersByTime(6 * 60 * 1000)
-			jest.runOnlyPendingTimers()
-			await sleep(10) // so that promises in cronjob resolves
-			jest.runOnlyPendingTimers()
+			await waitForCronjobDone()
 
 			// check if the correct PeripheralDevice command has been issued, and only for CasparCG devices
 			const pendingCommands = PeripheralDeviceCommands.find({}).fetch()
@@ -486,7 +491,7 @@ describe('cronjobs', () => {
 				)
 			})
 
-			await runAllTimers()
+			await waitForCronjobDone()
 			// make sure that the cronjob ends
 			expect(logger.info).toHaveBeenLastCalledWith('Nightly cronjob: done')
 		})
@@ -578,7 +583,7 @@ describe('cronjobs', () => {
 			const pendingCommands = PeripheralDeviceCommands.find({}).fetch()
 			expect(pendingCommands).toHaveLength(0)
 
-			await runAllTimers()
+			await waitForCronjobDone()
 			// make sure that the cronjob ends
 			expect(logger.info).toHaveBeenLastCalledWith('Nightly cronjob: done')
 		})

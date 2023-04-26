@@ -71,6 +71,7 @@ import {
 } from '../collections'
 import { AsyncMongoCollection, AsyncOnlyMongoCollection } from '../collections/collection'
 import { getCollectionKey } from '../collections/lib'
+import { generateTranslationBundleOriginId } from './translationsBundles'
 
 /**
  * If actuallyCleanup=true, cleans up old data. Otherwise just checks what old data there is
@@ -132,6 +133,7 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 	const removedStudioIds = new Set<StudioId>()
 	const removedShowStyleBases = new Set<ShowStyleBaseId>()
 	const removedBlueprints = new Set<BlueprintId>()
+	const removedDeviceIds = new Set<PeripheralDeviceId>()
 	{
 		const ownedByOrganizationId = async <
 			DBInterface extends { _id: ID; organizationId: OrganizationId | null | undefined },
@@ -156,7 +158,29 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 		;(await ownedByOrganizationId(Studios)).forEach((id) => removedStudioIds.add(id))
 		;(await ownedByOrganizationId(ShowStyleBases)).forEach((id) => removedShowStyleBases.add(id))
 		;(await ownedByOrganizationId(Blueprints)).forEach((id) => removedBlueprints.add(id))
-		await ownedByOrganizationId(PeripheralDevices)
+		;(await ownedByOrganizationId(PeripheralDevices)).forEach((id) => removedDeviceIds.add(id))
+	}
+
+	// Documents owned by PeripheralDevices:
+	const removedMediaWorkFlows = new Set<MediaWorkFlowId>()
+	const deviceIds = await getAllIdsInCollection(PeripheralDevices, removedDeviceIds)
+	{
+		const ownedByDeviceId = async <
+			DBInterface extends { _id: ID; deviceId: PeripheralDeviceId },
+			ID extends ProtectedString<any>
+		>(
+			collection: AsyncMongoCollection<DBInterface>
+		): Promise<ID[]> => {
+			return await removeByQuery(collection as AsyncMongoCollection<any>, {
+				deviceId: { $nin: deviceIds },
+			})
+		}
+		await ownedByDeviceId(ExpectedPackageWorkStatuses)
+		;(await ownedByDeviceId(MediaWorkFlows)).forEach((id) => removedMediaWorkFlows.add(id))
+		await ownedByDeviceId(PackageContainerPackageStatuses)
+		await ownedByDeviceId(PackageContainerStatuses)
+		await ownedByDeviceId(PackageInfos)
+		await ownedByDeviceId(PeripheralDeviceCommands)
 	}
 
 	// Documents owned by Studios:
@@ -208,7 +232,12 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 	const blueprintIds = await getAllIdsInCollection(Blueprints, removedBlueprints)
 	{
 		await removeByQuery(TranslationsBundles, {
-			originBlueprintId: { $nin: blueprintIds },
+			originId: {
+				$nin: [
+					...blueprintIds.map((id) => generateTranslationBundleOriginId(id, 'blueprints')),
+					...deviceIds.map((id) => generateTranslationBundleOriginId(id, 'peripheralDevice')),
+				],
+			},
 		})
 	}
 
@@ -270,27 +299,6 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 			startRundownId: { $nin: rundownIds },
 		})
 		await ownedByRundownId(PieceInstances)
-	}
-	// Documents owned by PeripheralDevices:
-	const removedMediaWorkFlows = new Set<MediaWorkFlowId>()
-	{
-		const deviceIds = await getAllIdsInCollection(PeripheralDevices)
-		const ownedByDeviceId = async <
-			DBInterface extends { _id: ID; deviceId: PeripheralDeviceId },
-			ID extends ProtectedString<any>
-		>(
-			collection: AsyncMongoCollection<DBInterface>
-		): Promise<ID[]> => {
-			return await removeByQuery(collection as AsyncMongoCollection<any>, {
-				deviceId: { $nin: deviceIds },
-			})
-		}
-		await ownedByDeviceId(ExpectedPackageWorkStatuses)
-		;(await ownedByDeviceId(MediaWorkFlows)).forEach((id) => removedMediaWorkFlows.add(id))
-		await ownedByDeviceId(PackageContainerPackageStatuses)
-		await ownedByDeviceId(PackageContainerStatuses)
-		await ownedByDeviceId(PackageInfos)
-		await ownedByDeviceId(PeripheralDeviceCommands)
 	}
 
 	// Documents owned by Parts:

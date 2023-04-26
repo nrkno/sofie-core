@@ -43,8 +43,11 @@ import {
 	UserActionsLog,
 	Timeline,
 	TranslationsBundles,
+	PackageContainerStatuses,
+	TimelineDatastore,
 } from '../../collections'
 import { Collections } from '../../collections/lib'
+import { generateTranslationBundleOriginId } from '../translationsBundles'
 
 describe('Cleanup', () => {
 	let env: DefaultEnvironment
@@ -311,6 +314,14 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		status: '' as any,
 		studioId,
 	})
+	PackageContainerStatuses.insert({
+		_id: getRandomId(),
+		containerId: '',
+		deviceId,
+		modified: now,
+		status: {} as any,
+		studioId,
+	})
 	PackageInfos.insert({
 		_id: getRandomId(),
 		actualContentVersionHash: '',
@@ -389,6 +400,14 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		timelineBlob: '' as any,
 		timelineHash: '' as any,
 	})
+	TimelineDatastore.insert({
+		_id: getRandomId(),
+		key: '',
+		mode: '' as any,
+		modified: now,
+		studioId,
+		value: 0,
+	})
 	UserActionsLog.insert({
 		_id: getRandomId(),
 		args: '',
@@ -399,12 +418,21 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		timestamp: now,
 		userId: null,
 	})
+
 	TranslationsBundles.insert({
 		_id: getRandomId(),
 		data: [],
 		hash: '',
 		language: '',
-		originId: env.studioBlueprint._id,
+		originId: generateTranslationBundleOriginId(env.studioBlueprint._id, 'blueprints'),
+		type: '' as any,
+	})
+	TranslationsBundles.insert({
+		_id: getRandomId(),
+		data: [],
+		hash: '',
+		language: '',
+		originId: generateTranslationBundleOriginId(deviceId, 'peripheralDevice'),
 		type: '' as any,
 	})
 
