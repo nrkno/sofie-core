@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.47.1-1](https://github.com/nrkno/sofie-core/compare/v1.47.1-0...v1.47.1-1) (2023-04-26)
+
+
+### Bug Fixes
+
+* Failing tests ([ea09e77](https://github.com/nrkno/sofie-core/commit/ea09e7751bcce79b82d9e2f85bb6ebc2d8558c45))
+* Out of sync playhead countdown ([baa2761](https://github.com/nrkno/sofie-core/commit/baa27612f4dbf815b338c261068587d35a8484c4))
+* PieceInstance.`plannedStartedPlayback` not being propogated for infinites ([17399a6](https://github.com/nrkno/sofie-core/commit/17399a68566238d736f7cd9504fbfd421dca2811))
+* Reinstate syncedEventTImeNow ([21e8ed8](https://github.com/nrkno/sofie-core/commit/21e8ed8b358fd931aaf8601dd412174c91875238))
+
 ### [1.47.1-0](https://github.com/nrkno/sofie-core/compare/v1.47.0...v1.47.1-0) (2023-03-30)
 
 
