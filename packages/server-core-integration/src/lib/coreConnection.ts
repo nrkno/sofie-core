@@ -46,7 +46,7 @@ export interface CoreOptions extends CoreCredentials {
 	/**
 	 * SubType of the connection
 	 */
-	deviceSubType?: PeripheralDeviceSubType
+	deviceSubType: PeripheralDeviceSubType
 
 	/**
 	 * Name of the device
