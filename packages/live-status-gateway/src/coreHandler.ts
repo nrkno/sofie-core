@@ -156,7 +156,7 @@ export class CoreHandler {
 			deviceId: protectString(this._deviceOptions.deviceId + subDeviceId),
 			deviceToken: this._deviceOptions.deviceToken,
 
-			deviceCategory: PeripheralDeviceCategory.API,
+			deviceCategory: PeripheralDeviceCategory.LIVE_STATUS,
 			deviceType: PeripheralDeviceType.LIVE_STATUS,
 			deviceSubType: subDeviceType,
 

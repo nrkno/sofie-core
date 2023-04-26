@@ -72,7 +72,7 @@ export enum PeripheralDeviceCategory {
 	PLAYOUT = 'playout',
 	MEDIA_MANAGER = 'media_manager',
 	PACKAGE_MANAGER = 'package_manager',
-	API = 'api',
+	LIVE_STATUS = 'live_status',
 	TRIGGER_INPUT = 'trigger_input',
 }
 export enum PeripheralDeviceType {
