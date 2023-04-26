@@ -1,5 +1,6 @@
 import {
 	BlueprintManifestType,
+	IBlueprintConfig,
 	IOutputLayer,
 	ISourceLayer,
 	SourceLayerType,
