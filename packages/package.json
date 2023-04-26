@@ -16,7 +16,7 @@
 		]
 	},
 	"scripts": {
-		"prepare": "yarn lerna run prepare && cd .. && husky install",
+		"prepare": "(node is_node_14.js && yarn lerna run prepare --ignore @sofie-automation/openapi || yarn lerna run prepare) && cd .. && husky install",
 		"postinstall": "yarn lerna bootstrap",
 		"build": "yarn lerna run build",
 		"build:try": "yarn lerna run --no-bail build",
