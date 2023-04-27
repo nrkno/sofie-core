@@ -16,6 +16,7 @@ import { getUser } from '../../lib/collections/Users'
 import { Settings as MeteorSettings } from '../../lib/Settings'
 import { SettingsMenu } from './Settings/SettingsMenu'
 import { getAllowConfigure } from '../lib/localStorage'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 
 export function Settings(): JSX.Element | null {
 	const user = useTracker(() => getUser(), [], null)
@@ -53,7 +54,12 @@ export function Settings(): JSX.Element | null {
 								<Route path="/settings/peripheralDevice/:deviceId" component={DeviceSettings} />
 								<Route
 									path="/settings/blueprint/:blueprintId"
-									component={(props) => <BlueprintSettings {...props} userId={user?._id} />}
+									render={(props) => (
+										<BlueprintSettings
+											blueprintId={protectString(decodeURIComponent(props.match.params.blueprintId))}
+											userId={user?._id}
+										/>
+									)}
 								/>
 								<Route path="/settings/tools/snapshots" component={SnapshotsView} />
 								<Route path="/settings/tools/migration" component={MigrationView} />

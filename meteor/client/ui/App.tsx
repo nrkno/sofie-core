@@ -236,7 +236,7 @@ export const App: React.FC = function App() {
 											path="/"
 											render={(props) => <LoginPage {...props} requestedRoute={requestedRoute} />}
 										/>
-										<Route exact path="/login" component={() => <Redirect to="/" />} />
+										<Route exact path="/login" render={() => <Redirect to="/" />} />
 										<Route
 											exact
 											path="/login/verify-email/:token"
@@ -390,15 +390,10 @@ const RequireAuth = React.memo(function RequireAuth({ children }: React.PropsWit
 
 	let isAuthenticated = false
 	let isWorking = false
-	if (!Settings.enableUserAccounts) {
+	if (!Settings.enableUserAccounts || (ready && user)) {
 		isAuthenticated = true
-		isWorking = false
 	} else if (!ready) {
-		isAuthenticated = false
 		isWorking = true
-	} else if (ready && user) {
-		isAuthenticated = true
-		isWorking = false
 	}
 
 	if (isWorking) return <Spinner />
