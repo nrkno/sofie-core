@@ -69,159 +69,6 @@ const WINDOW_END_HOUR = 5
 const UserContext = React.createContext<User | null>(null)
 const UserSubscriptionReadyContext = React.createContext<boolean>(false)
 
-/**
- * This is a poly-fill, replicating the behavior of a <Navigate> element in React-Router-DOM v6.
- * TODO: Use React-Router-DOM element once React-Router-DOM is upgraded to v6.
- */
-const Navigate = React.memo(function Navigate({ to }: { to: string }): null {
-	const history = useHistory()
-
-	useEffect(() => {
-		history.push(to)
-	}, [to])
-
-	return null
-})
-
-const RequireAuth = React.memo(function RequireAuth({ children }: React.PropsWithChildren<{}>) {
-	const user = useContext(UserContext)
-	const ready = useContext(UserSubscriptionReadyContext)
-
-	let isAuthenticated = false
-	let isWorking = false
-	if (!Settings.enableUserAccounts) {
-		isAuthenticated = true
-		isWorking = false
-	} else if (!ready) {
-		isAuthenticated = false
-		isWorking = true
-	} else if (ready && user) {
-		isAuthenticated = true
-		isWorking = false
-	}
-
-	if (isWorking) return <Spinner />
-	if (isAuthenticated) return <>{children}</>
-
-	return <Navigate to="/" />
-})
-
-function useRoles(user: User | null, subsReady: boolean) {
-	const location = window.location
-
-	const [roles, setRoles] = useState(
-		Settings.enableUserAccounts
-			? {
-					studio: false,
-					configure: false,
-					developer: false,
-					testing: false,
-					service: false,
-			  }
-			: {
-					studio: getAllowStudio(),
-					configure: getAllowConfigure(),
-					developer: getAllowDeveloper(),
-					testing: getAllowTesting(),
-					service: getAllowService(),
-			  }
-	)
-
-	useEffect(() => {
-		if (!Settings.enableUserAccounts) {
-			if (!location.search) return
-
-			const params = queryStringParse(location.search)
-
-			if (params['studio']) setAllowStudio(params['studio'] === '1')
-			if (params['configure']) setAllowConfigure(params['configure'] === '1')
-			if (params['develop']) setAllowDeveloper(params['develop'] === '1')
-			if (params['testing']) setAllowTesting(params['testing'] === '1')
-			if (params['service']) setAllowService(params['service'] === '1')
-
-			if (params['admin']) {
-				const val = params['admin'] === '1'
-				setAllowStudio(val)
-				setAllowConfigure(val)
-				setAllowDeveloper(val)
-				setAllowTesting(val)
-				setAllowService(val)
-			}
-
-			setRoles({
-				studio: getAllowStudio(),
-				configure: getAllowConfigure(),
-				developer: getAllowDeveloper(),
-				testing: getAllowTesting(),
-				service: getAllowService(),
-			})
-		} else if (user && subsReady) {
-			setRoles({
-				studio: getAllowStudio(),
-				configure: getAllowConfigure(),
-				developer: getAllowDeveloper(),
-				testing: getAllowTesting(),
-				service: getAllowService(),
-			})
-		}
-	}, [location.search, user, subsReady])
-
-	return roles
-}
-
-function useFeatureFlags() {
-	const location = window.location
-
-	const [featureFlags, setFeatureFlags] = useState({
-		shelfFollowsOnAir: getShelfFollowsOnAir(),
-		speak: getAllowSpeaking(),
-		vibrate: getAllowVibrating(),
-		help: getHelpMode(),
-		zoom: getUIZoom(),
-		showHiddenSourceLayers: getShowHiddenSourceLayers(),
-		ignorePieceContentStatus: getIgnorePieceContentStatus(),
-		reportNotifications: getReportNotifications(),
-	})
-
-	useEffect(() => {
-		if (!location.search) return
-
-		const params = queryStringParse(location.search)
-
-		if (params['shelffollowsonair']) setShelfFollowsOnAir(params['shelffollowsonair'] === '1')
-		if (params['speak']) setAllowSpeaking(params['speak'] === '1')
-		if (params['vibrate']) setAllowVibrating(params['vibrate'] === '1')
-		if (params['help']) setHelpMode(params['help'] === '1')
-		if (params['zoom'] && typeof params['zoom'] === 'string') {
-			setUIZoom(parseFloat((params['zoom'] as string) || '1') / 100 || 1)
-		}
-		if (params['show_hidden_source_layers']) {
-			setShowHiddenSourceLayers(params['show_hidden_source_layers'] === '1')
-		}
-		if (params['ignore_piece_content_status']) {
-			setIgnorePieceContentStatus(params['ignore_piece_content_status'] === '1')
-		}
-		if (params['reportNotificationsId'] && params['reportNotificationsId'] !== '0') {
-			setReportNotifications(params['reportNotificationsId'] as string)
-		} else if (params['reportNotificationsId'] === '0') {
-			unsetReportNotifications()
-		}
-
-		setFeatureFlags({
-			shelfFollowsOnAir: getShelfFollowsOnAir(),
-			speak: getAllowSpeaking(),
-			vibrate: getAllowVibrating(),
-			help: getHelpMode(),
-			zoom: getUIZoom(),
-			showHiddenSourceLayers: getShowHiddenSourceLayers(),
-			ignorePieceContentStatus: getIgnorePieceContentStatus(),
-			reportNotifications: getReportNotifications(),
-		})
-	}, [location.search])
-
-	return featureFlags
-}
-
 export const App: React.FC = function App() {
 	const { t } = useTranslation()
 	const user = useTracker(
@@ -521,6 +368,159 @@ export const App: React.FC = function App() {
 			</UserSubscriptionReadyContext.Provider>
 		</UserContext.Provider>
 	)
+}
+
+/**
+ * This is a poly-fill, replicating the behavior of a <Navigate> element in React-Router-DOM v6.
+ * TODO: Use React-Router-DOM element once React-Router-DOM is upgraded to v6.
+ */
+const Navigate = React.memo(function Navigate({ to }: { to: string }): null {
+	const history = useHistory()
+
+	useEffect(() => {
+		history.push(to)
+	}, [to])
+
+	return null
+})
+
+const RequireAuth = React.memo(function RequireAuth({ children }: React.PropsWithChildren<{}>) {
+	const user = useContext(UserContext)
+	const ready = useContext(UserSubscriptionReadyContext)
+
+	let isAuthenticated = false
+	let isWorking = false
+	if (!Settings.enableUserAccounts) {
+		isAuthenticated = true
+		isWorking = false
+	} else if (!ready) {
+		isAuthenticated = false
+		isWorking = true
+	} else if (ready && user) {
+		isAuthenticated = true
+		isWorking = false
+	}
+
+	if (isWorking) return <Spinner />
+	if (isAuthenticated) return <>{children}</>
+
+	return <Navigate to="/" />
+})
+
+function useRoles(user: User | null, subsReady: boolean) {
+	const location = window.location
+
+	const [roles, setRoles] = useState(
+		Settings.enableUserAccounts
+			? {
+					studio: false,
+					configure: false,
+					developer: false,
+					testing: false,
+					service: false,
+			  }
+			: {
+					studio: getAllowStudio(),
+					configure: getAllowConfigure(),
+					developer: getAllowDeveloper(),
+					testing: getAllowTesting(),
+					service: getAllowService(),
+			  }
+	)
+
+	useEffect(() => {
+		if (!Settings.enableUserAccounts) {
+			if (!location.search) return
+
+			const params = queryStringParse(location.search)
+
+			if (params['studio']) setAllowStudio(params['studio'] === '1')
+			if (params['configure']) setAllowConfigure(params['configure'] === '1')
+			if (params['develop']) setAllowDeveloper(params['develop'] === '1')
+			if (params['testing']) setAllowTesting(params['testing'] === '1')
+			if (params['service']) setAllowService(params['service'] === '1')
+
+			if (params['admin']) {
+				const val = params['admin'] === '1'
+				setAllowStudio(val)
+				setAllowConfigure(val)
+				setAllowDeveloper(val)
+				setAllowTesting(val)
+				setAllowService(val)
+			}
+
+			setRoles({
+				studio: getAllowStudio(),
+				configure: getAllowConfigure(),
+				developer: getAllowDeveloper(),
+				testing: getAllowTesting(),
+				service: getAllowService(),
+			})
+		} else if (user && subsReady) {
+			setRoles({
+				studio: getAllowStudio(),
+				configure: getAllowConfigure(),
+				developer: getAllowDeveloper(),
+				testing: getAllowTesting(),
+				service: getAllowService(),
+			})
+		}
+	}, [location.search, user, subsReady])
+
+	return roles
+}
+
+function useFeatureFlags() {
+	const location = window.location
+
+	const [featureFlags, setFeatureFlags] = useState({
+		shelfFollowsOnAir: getShelfFollowsOnAir(),
+		speak: getAllowSpeaking(),
+		vibrate: getAllowVibrating(),
+		help: getHelpMode(),
+		zoom: getUIZoom(),
+		showHiddenSourceLayers: getShowHiddenSourceLayers(),
+		ignorePieceContentStatus: getIgnorePieceContentStatus(),
+		reportNotifications: getReportNotifications(),
+	})
+
+	useEffect(() => {
+		if (!location.search) return
+
+		const params = queryStringParse(location.search)
+
+		if (params['shelffollowsonair']) setShelfFollowsOnAir(params['shelffollowsonair'] === '1')
+		if (params['speak']) setAllowSpeaking(params['speak'] === '1')
+		if (params['vibrate']) setAllowVibrating(params['vibrate'] === '1')
+		if (params['help']) setHelpMode(params['help'] === '1')
+		if (params['zoom'] && typeof params['zoom'] === 'string') {
+			setUIZoom(parseFloat((params['zoom'] as string) || '1') / 100 || 1)
+		}
+		if (params['show_hidden_source_layers']) {
+			setShowHiddenSourceLayers(params['show_hidden_source_layers'] === '1')
+		}
+		if (params['ignore_piece_content_status']) {
+			setIgnorePieceContentStatus(params['ignore_piece_content_status'] === '1')
+		}
+		if (params['reportNotificationsId'] && params['reportNotificationsId'] !== '0') {
+			setReportNotifications(params['reportNotificationsId'] as string)
+		} else if (params['reportNotificationsId'] === '0') {
+			unsetReportNotifications()
+		}
+
+		setFeatureFlags({
+			shelfFollowsOnAir: getShelfFollowsOnAir(),
+			speak: getAllowSpeaking(),
+			vibrate: getAllowVibrating(),
+			help: getHelpMode(),
+			zoom: getUIZoom(),
+			showHiddenSourceLayers: getShowHiddenSourceLayers(),
+			ignorePieceContentStatus: getIgnorePieceContentStatus(),
+			reportNotifications: getReportNotifications(),
+		})
+	}, [location.search])
+
+	return featureFlags
 }
 
 export default App
