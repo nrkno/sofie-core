@@ -52,10 +52,7 @@ type StudioFields =
 	| 'settings'
 	| 'routeSets'
 	| 'routeSetExclusivityGroups'
-	| 'peripheralDeviceSettings' // TODO - can this be more specific?
-// | 'packageContainers'
-// | 'previewContainerIds'
-// | 'thumbnailContainerIds'
+	| 'peripheralDeviceSettings'
 const fieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
 	_id: 1,
 	name: 1,
@@ -63,10 +60,7 @@ const fieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
 	settings: 1,
 	routeSets: 1,
 	routeSetExclusivityGroups: 1,
-	peripheralDeviceSettings: 1,
-	// packageContainers: 1,
-	// previewContainerIds: 1,
-	// thumbnailContainerIds: 1,
+	peripheralDeviceSettings: 1, // Future: This is a bit over-reactive, but this should never be edited during a show so impact is minimal
 })
 
 async function setupUIStudioPublicationObservers(

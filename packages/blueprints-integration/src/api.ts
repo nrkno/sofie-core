@@ -364,11 +364,19 @@ export interface IConfigMessage {
 	message: ITranslatableMessage
 }
 
+/**
+ * Blueprint defined default values for various Studio configuration.
+ * Note: The user is able to override values from these in the UI, as well as add their own entries and disable ones which are defined here
+ */
 export interface BlueprintResultApplyStudioConfig {
+	/** Playout Mappings */
 	mappings: BlueprintMappings
 
+	/** Playout-gateway subdevices */
 	playoutDevices: Record<string, TSR.DeviceOptionsAny>
+	/** Ingest-gateway subdevices, the types here depend on the gateway you use */
 	ingestDevices: Record<string, unknown>
+	/** Input-gateway subdevices */
 	inputDevices: Record<string, unknown>
 }
 

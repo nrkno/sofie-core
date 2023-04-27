@@ -57,17 +57,11 @@ interface ExpectedPackagesPublicationState {
 }
 
 type StudioFields = '_id' | 'routeSets' | 'mappingsWithOverrides' | 'peripheralDeviceSettings'
-// | 'packageContainers'
-// | 'previewContainerIds'
-// | 'thumbnailContainerIds'
 const studioFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
 	_id: 1,
 	routeSets: 1,
 	mappingsWithOverrides: 1,
-	peripheralDeviceSettings: 1, // TODO - can this be more specific?
-	// packageContainers: 1,
-	// previewContainerIds: 1,
-	// thumbnailContainerIds: 1,
+	peripheralDeviceSettings: 1, // Future: This is a bit over-reactive, but this should never be edited during a show so impact is minimal
 })
 type RundownPlaylistFields =
 	| '_id'

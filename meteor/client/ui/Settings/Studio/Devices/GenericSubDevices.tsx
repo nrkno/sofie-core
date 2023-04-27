@@ -125,7 +125,7 @@ export function GenericSubDevicesTable({
 								key={item.id}
 								item={item}
 								peripheralDevice={peripheralDevice}
-								doUndelete={overrideHelper.resetItem}
+								undeleteItemWithId={overrideHelper.resetItem}
 							/>
 						)
 					} else {
@@ -138,14 +138,14 @@ export function GenericSubDevicesTable({
 									item={item}
 									peripheralDevice={peripheralDevice}
 									isEdited={isExpanded(item.id)}
-									editItem={toggleExpanded}
-									removeItem={confirmRemove}
+									editItemWithId={toggleExpanded}
+									removeItemWithId={confirmRemove}
 								/>
 								{isExpanded(item.id) && (
 									<SubDeviceEditRow
 										peripheralDevice={peripheralDevice}
 										peripheralDeviceOptions={peripheralDeviceOptions}
-										editItem={toggleExpanded}
+										editItemWithId={toggleExpanded}
 										item={item}
 										overrideHelper={overrideHelper}
 									/>
@@ -163,12 +163,18 @@ interface SummaryRowProps {
 	item: WrappedOverridableItemNormal<any>
 	peripheralDevice: PeripheralDeviceTranslated | undefined
 	isEdited: boolean
-	editItem: (rowId: string) => void
-	removeItem: (rowId: string) => void
+	editItemWithId: (itemId: string) => void
+	removeItemWithId: (itemId: string) => void
 }
-function SummaryRow({ item, peripheralDevice, isEdited, editItem, removeItem }: SummaryRowProps): JSX.Element {
-	const editItem2 = useCallback(() => editItem(item.id), [editItem, item.id])
-	const removeItem2 = useCallback(() => removeItem(item.id), [removeItem, item.id])
+function SummaryRow({
+	item,
+	peripheralDevice,
+	isEdited,
+	editItemWithId,
+	removeItemWithId,
+}: SummaryRowProps): JSX.Element {
+	const editItem = useCallback(() => editItemWithId(item.id), [editItemWithId, item.id])
+	const removeItem = useCallback(() => removeItemWithId(item.id), [removeItemWithId, item.id])
 
 	const deviceType = peripheralDevice
 		? peripheralDevice.subdeviceManifest[item.computed.options.type]?.displayName ?? '-'
@@ -189,10 +195,10 @@ function SummaryRow({ item, peripheralDevice, isEdited, editItem, removeItem }: 
 			<th className="settings-studio-device__type c2">{deviceType}</th>
 
 			<td className="settings-studio-device__actions table-item-actions c1" key="action">
-				<button className="action-btn" onClick={editItem2}>
+				<button className="action-btn" onClick={editItem}>
 					<FontAwesomeIcon icon={faPencilAlt} />
 				</button>
-				<button className="action-btn" onClick={removeItem2}>
+				<button className="action-btn" onClick={removeItem}>
 					<FontAwesomeIcon icon={faTrash} />
 				</button>
 			</td>
@@ -203,10 +209,10 @@ function SummaryRow({ item, peripheralDevice, isEdited, editItem, removeItem }: 
 interface DeletedSummaryRowProps {
 	item: WrappedOverridableItemDeleted<any>
 	peripheralDevice: PeripheralDeviceTranslated | undefined
-	doUndelete: (rowId: string) => void
+	undeleteItemWithId: (itemId: string) => void
 }
-function DeletedSummaryRow({ item, peripheralDevice, doUndelete }: DeletedSummaryRowProps): JSX.Element {
-	const doUndeleteItem = useCallback(() => doUndelete(item.id), [doUndelete, item.id])
+function DeletedSummaryRow({ item, peripheralDevice, undeleteItemWithId }: DeletedSummaryRowProps): JSX.Element {
+	const undeleteItem = useCallback(() => undeleteItemWithId(item.id), [undeleteItemWithId, item.id])
 
 	const deviceType = peripheralDevice
 		? peripheralDevice.subdeviceManifest[item.defaults.options.type]?.displayName ?? '-'
@@ -223,7 +229,7 @@ function DeletedSummaryRow({ item, peripheralDevice, doUndelete }: DeletedSummar
 			<th className="settings-studio-device__type c2 deleted">{deviceType}</th>
 
 			<td className="settings-studio-device__actions table-item-actions c1" key="action">
-				<button className="action-btn" onClick={doUndeleteItem} title="Restore to defaults">
+				<button className="action-btn" onClick={undeleteItem} title="Restore to defaults">
 					<FontAwesomeIcon icon={faSync} />
 				</button>
 			</td>
@@ -234,20 +240,20 @@ function DeletedSummaryRow({ item, peripheralDevice, doUndelete }: DeletedSummar
 interface SubDeviceEditRowProps {
 	peripheralDevice: PeripheralDeviceTranslated | undefined
 	peripheralDeviceOptions: DropdownInputOption<PeripheralDeviceId | undefined>[]
-	editItem: (subdeviceId: string, forceState?: boolean) => void
+	editItemWithId: (subdeviceId: string, forceState?: boolean) => void
 	item: WrappedOverridableItemNormal<any>
 	overrideHelper: OverrideOpHelper
 }
 function SubDeviceEditRow({
 	peripheralDevice,
 	peripheralDeviceOptions,
-	editItem,
+	editItemWithId,
 	item,
 	overrideHelper,
 }: SubDeviceEditRowProps) {
 	const { t } = useTranslation()
 
-	const finishEditItem = useCallback(() => editItem(item.id, false), [editItem, item.id])
+	const finishEditItem = useCallback(() => editItemWithId(item.id, false), [editItemWithId, item.id])
 
 	const updateObjectId = useCallback(
 		(newId: string) => {
@@ -256,10 +262,10 @@ function SubDeviceEditRow({
 			overrideHelper.changeItemId(item.id, newId)
 
 			// toggle ui visibility
-			editItem(item.id, false)
-			editItem(newId, true)
+			editItemWithId(item.id, false)
+			editItemWithId(newId, true)
 		},
-		[item.id, overrideHelper, editItem]
+		[item.id, overrideHelper, editItemWithId]
 	)
 
 	return (

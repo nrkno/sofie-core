@@ -38,9 +38,22 @@ export interface PeripheralDeviceForDevice {
 	/** The studio this device is assigned to */
 	studioId?: StudioId
 
+	/**
+	 * Settings for the PeripheralDevice
+	 * Note: this does not include any subdevices
+	 */
 	deviceSettings: unknown
 
+	/**
+	 * Settings for any playout subdevices
+	 */
 	playoutDevices: Record<string, TSR.DeviceOptionsAny>
+	/**
+	 * Settings for any ingest subdevices
+	 */
 	ingestDevices: Record<string, unknown>
+	/**
+	 * Settings for any input subdevices
+	 */
 	inputDevices: Record<string, unknown>
 }
