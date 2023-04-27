@@ -154,7 +154,7 @@ export interface TableConfigManifestEntry extends ConfigManifestEntryBase {
 	defaultType: string
 	/** Used when the .config indexes are different from the type enum */
 	deviceTypesMapping?: any
-	/** The name the property used to decide the type of the entry */
+	/** The name of the property used to decide the type of the entry */
 	typeField?: string
 	/** Only one type means that the type option will not be present. When using this as a subDevice configuration object,
 	 * a property of type BOOLEAN and id `disable` has special meaning and can be operated on outside of the GUI
