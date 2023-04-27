@@ -17,8 +17,8 @@ export function VTThumbnailRenderer({
 	partId,
 	pieceInstance,
 	partAutoNext,
+	partPlannedStoppedPlayback,
 	isLive,
-	isFinished,
 	hovering,
 	hoverScrubTimePosition,
 	originPosition,
@@ -64,6 +64,7 @@ export function VTThumbnailRenderer({
 					partPlayed: timingContext.partPlayed && timingContext.partPlayed[unprotectString(partId)],
 					partDisplayDurations:
 						timingContext.partDisplayDurations && timingContext.partDisplayDurations[unprotectString(partId)],
+					currentTime: timingContext.currentTime,
 				})}
 			>
 				{(timingContext) => {
@@ -76,6 +77,11 @@ export function VTThumbnailRenderer({
 					const contentLeft = contentEnd - partPlayed
 
 					const partExpectedDuration = timingContext.partDisplayDurations[unprotectString(partId)]
+
+					const isFinished =
+						!!partPlannedStoppedPlayback &&
+						!!timingContext.currentTime &&
+						partPlannedStoppedPlayback < timingContext.currentTime
 
 					const partLeft = partExpectedDuration - partPlayed
 

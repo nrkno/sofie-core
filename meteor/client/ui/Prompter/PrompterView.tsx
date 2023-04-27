@@ -10,7 +10,7 @@ import { parse as queryStringParse } from 'query-string'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { objectPathGet, firstIfArray, literal, protectString } from '../../../lib/lib'
+import { firstIfArray, literal, protectString } from '../../../lib/lib'
 import { PrompterData, PrompterAPI, PrompterDataPart } from './prompter'
 import { PrompterControlManager } from './controller/manager'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -73,18 +73,12 @@ export interface IPrompterControllerState {
 }
 
 interface IProps {
-	match?: {
-		params?: {
-			studioId: StudioId
-		}
-	}
+	studioId: StudioId
 }
 
 interface ITrackedProps {
 	rundownPlaylist?: RundownPlaylist
 	studio?: UIStudio
-	studioId?: StudioId
-	// isReady: boolean
 }
 
 interface IState {
@@ -549,9 +543,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		)
 	}
 }
-export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
-	const studioId = objectPathGet(props, 'match.params.studioId')
-	const studio = studioId ? UIStudios.findOne(studioId) : undefined
+export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>(({ studioId }: IProps) => {
+	const studio = UIStudios.findOne(studioId)
 
 	const rundownPlaylist = RundownPlaylists.findOne(
 		{
@@ -569,8 +562,6 @@ export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 	return literal<ITrackedProps>({
 		rundownPlaylist,
 		studio,
-		studioId,
-		// isReady: rundownSubscription.ready() && (studioSubscription ? studioSubscription.ready() : true)
 	})
 })(PrompterViewInner)
 

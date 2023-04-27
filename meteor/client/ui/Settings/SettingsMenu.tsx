@@ -25,7 +25,6 @@ import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settin
 
 interface ISettingsMenuProps {
 	superAdmin?: boolean
-	match?: any
 }
 interface ISettingsMenuState {}
 interface ISettingsMenuTrackedProps {

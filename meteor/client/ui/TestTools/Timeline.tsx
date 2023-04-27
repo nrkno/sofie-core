@@ -14,7 +14,7 @@ import {
 	TimelineObjectInstance,
 } from 'superfly-timeline'
 import { TimelineContentObject, transformTimeline } from '@sofie-automation/corelib/dist/playout/timeline'
-import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
+import { useCurrentTime } from '../../lib/lib'
 import { StudioSelect } from './StudioSelect'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
@@ -55,7 +55,7 @@ interface ITimelineSimulateProps {
 function ComponentTimelineSimulate({ studioId }: ITimelineSimulateProps) {
 	useSubscription(PubSub.timelineForStudio, studioId)
 
-	const now = useTracker(() => getCurrentTimeReactive(), [], Date.now())
+	const now = useCurrentTime()
 	const tlComplete = useTracker(() => StudioTimeline.findOne(studioId), [studioId])
 
 	const [resolvedTl, errorMsgResolve] = useMemo(() => {

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
+import { getCurrentTime } from '../../lib/lib'
 
 export { multilineText, isEventInInputField }
 
@@ -159,6 +160,22 @@ export function useDebounce<K>(value: K, delay: number): K {
 	}, [value, delay])
 
 	return debouncedValue
+}
+
+export function useCurrentTime(refreshPeriod: number = 1000): number {
+	const [time, setTime] = useState(getCurrentTime())
+
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setTime(getCurrentTime())
+		}, refreshPeriod)
+
+		return () => {
+			clearInterval(interval)
+		}
+	}, [refreshPeriod])
+
+	return time
 }
 
 export function isRunningInPWA(): boolean {
