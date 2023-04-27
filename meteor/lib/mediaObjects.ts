@@ -539,9 +539,12 @@ function getPackageWarningMessage(
 	) {
 		return {
 			status: PieceStatusCode.SOURCE_NOT_READY,
-			message: generateTranslation('{{reason}}', {
-				reason: ((packageOnPackageContainer?.status.statusReason.user || 'N/A') + '.').replace(/\.\.$/, '.'), // remove any trailing double "."
-			}),
+			message: packageOnPackageContainer?.status.statusReason.user
+				? {
+						// remove any trailing double "."
+						key: (packageOnPackageContainer?.status.statusReason.user + '.').replace(/\.\.$/, '.'),
+				  }
+				: generateTranslation('Source is in a placeholder state for an unknown workflow-defined reason'),
 		}
 	} else if (
 		packageOnPackageContainer.status.status ===
