@@ -334,52 +334,48 @@ export namespace ServerClientAPI {
 			)
 		}
 
-		try {
-			const access = await PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
+		const access = await PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
 
-			await UserActionsLog.insertAsync(
-				literal<UserActionsLogItem>({
-					_id: actionId,
-					clientAddress: methodContext.connection ? methodContext.connection.clientAddress : '',
-					organizationId: access.organizationId,
-					userId: access.userId,
-					context: context,
-					method: `${deviceId}: ${action.functionName || action.actionId}`,
-					args: JSON.stringify(action.args || action.payload),
-					timestamp: getCurrentTime(),
+		await UserActionsLog.insertAsync(
+			literal<UserActionsLogItem>({
+				_id: actionId,
+				clientAddress: methodContext.connection ? methodContext.connection.clientAddress : '',
+				organizationId: access.organizationId,
+				userId: access.userId,
+				context: context,
+				method: `${deviceId}: ${action.functionName || action.actionId}`,
+				args: JSON.stringify(action.args || action.payload),
+				timestamp: getCurrentTime(),
+			})
+		)
+
+		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, action)
+			.then(async (result) => {
+				await UserActionsLog.updateAsync(actionId, {
+					$set: {
+						success: true,
+						doneTime: getCurrentTime(),
+						executionTime: Date.now() - startTime,
+					},
 				})
-			)
 
-			return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, action)
-				.then(async (result) => {
-					await UserActionsLog.updateAsync(actionId, {
-						$set: {
-							success: true,
-							doneTime: getCurrentTime(),
-							executionTime: Date.now() - startTime,
-						},
-					})
-
-					return result
+				return result
+			})
+			.catch(async (err) => {
+				const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
+				logger.error(errMsg)
+				await UserActionsLog.updateAsync(actionId, {
+					$set: {
+						success: false,
+						doneTime: getCurrentTime(),
+						executionTime: Date.now() - startTime,
+						errorMessage: errMsg,
+					},
 				})
-				.catch(async (err) => {
-					const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
-					logger.error(errMsg)
-					await UserActionsLog.updateAsync(actionId, {
-						$set: {
-							success: false,
-							doneTime: getCurrentTime(),
-							executionTime: Date.now() - startTime,
-							errorMessage: errMsg,
-						},
-					})
 
-					// allow the exception to be handled by the Client code
-					return Promise.reject(err)
-				})
-		} catch (err) {
-			return Promise.reject(err)
-		}
+				// allow the exception to be handled by the Client code
+				return Promise.reject(err)
+			})
 	}
 
 	export async function callBackgroundPeripheralDeviceFunction(
@@ -409,21 +405,17 @@ export namespace ServerClientAPI {
 			})
 		}
 
-		try {
-			await PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
+		await PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
 
-			return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, {
-				functionName,
-				args,
-			}).catch(async (err) => {
-				const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
-				logger.error(errMsg)
-				// allow the exception to be handled by the Client code
-				return Promise.reject(err)
-			})
-		} catch (err) {
+		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, {
+			functionName,
+			args,
+		}).catch(async (err) => {
+			const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
+			logger.error(errMsg)
+			// allow the exception to be handled by the Client code
 			return Promise.reject(err)
-		}
+		})
 	}
 
 	async function getLoggedInCredentials(methodContext: MethodContext): Promise<BasicAccessContext> {
