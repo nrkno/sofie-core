@@ -25,8 +25,7 @@ export function ClockView({ studioId }: { studioId: StudioId }): JSX.Element {
 				activationId: { $exists: true },
 				studioId,
 			}),
-		[studioId],
-		undefined
+		[studioId]
 	)
 
 	return (
