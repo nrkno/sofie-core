@@ -138,7 +138,6 @@ function getBlacks(piece: PieceUi): Array<PackageInfo.Anomaly> | undefined {
 // TODO: Create useMediaObjectStatus that would set up new subscriptions
 export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function LinePartMainPiece({
 	partId,
-	partInstanceId,
 	piece,
 	partDuration,
 	timelineBase,
@@ -294,13 +293,7 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 					layer={piece.sourceLayer}
 					originPosition={origin}
 					mousePosition={mousePosition}
-					isFinished={false}
-					isLive={false}
-					isNext={false}
-					partAutoNext={false}
 					studio={studio}
-					partId={partId}
-					partInstanceId={partInstanceId}
 				/>
 			)}
 		</PieceElement>

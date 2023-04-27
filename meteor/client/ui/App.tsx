@@ -330,9 +330,9 @@ export const App: React.FC = function App() {
 								/>
 								<Route
 									path="/settings"
-									render={(props) => (
+									render={() => (
 										<RequireAuth>
-											<SettingsView {...props} />
+											<SettingsView />
 										</RequireAuth>
 									)}
 								/>

@@ -17,19 +17,10 @@ export function ActiveRundownView({ studioId }: { studioId: StudioId }): JSX.Ele
 	const { path } = useRouteMatch()
 
 	const studioReady = useSubscription(PubSub.uiStudio, studioId)
-	const playlistReady = useSubscription(
-		PubSub.rundownPlaylists,
-		_.extend(
-			{
-				activationId: { $exists: true },
-			},
-			studioId
-				? {
-						studioId,
-				  }
-				: {}
-		)
-	)
+	const playlistReady = useSubscription(PubSub.rundownPlaylists, {
+		activationId: { $exists: true },
+		studioId,
+	})
 
 	const subsReady = studioReady && playlistReady
 
