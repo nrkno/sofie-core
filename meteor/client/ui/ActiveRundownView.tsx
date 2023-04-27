@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react'
-import * as _ from 'underscore'
 import { NavLink, Route, Switch, useRouteMatch } from 'react-router-dom'
 import { useSubscription, useTracker } from '../lib/ReactMeteorData/ReactMeteorData'
 
