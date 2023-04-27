@@ -67,7 +67,7 @@ export function createPieceGroupAndCap(
 			},
 			callBackStopped: PlayoutChangedType.PIECE_PLAYBACK_STOPPED, // Will cause a callback to be called, when the object stops playing:
 		},
-		classes: controlObjClasses,
+		classes: controlObjClasses ? [...controlObjClasses] : [],
 		inGroup: partGroup && partGroup.id,
 		metaData: {
 			isPieceTimeline: true,
