@@ -8,6 +8,7 @@ import { FloatingInspector } from '../FloatingInspector'
 import { Time } from '../../../lib/lib'
 import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { FloatingInspectorTimeInformationRow } from './FloatingInspectorHelpers/FloatingInspectorTimeInformationRow'
+import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
 
 interface IProps {
 	piece: Omit<PieceInstancePiece, 'timelineObjectsString'>
@@ -16,7 +17,7 @@ interface IProps {
 	showMiniInspector: boolean
 	itemElement: HTMLDivElement | null
 	content: GraphicsContent | NoraContent | undefined
-	floatingInspectorStyle: React.CSSProperties
+	position: IFloatingInspectorPosition
 	typeClass?: string
 	displayOn?: 'document' | 'viewport'
 }
@@ -25,7 +26,7 @@ type KeyValue = { key: string; value: string }
 
 export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 	content,
-	floatingInspectorStyle,
+	position,
 	showMiniInspector,
 	piece,
 	pieceRenderedIn,
@@ -77,9 +78,11 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 		noraContent?.payload?.metadata?.templateVariant ??
 		(piece.name !== graphicContent?.fileName ? graphicContent?.fileName : undefined)
 
+	const floatingInspectorStyle = useInspectorPosition(position)
+
 	return noraContent && noraContent.payload && noraContent.previewRenderer ? (
 		showMiniInspector ? (
-			<NoraFloatingInspector noraContent={noraContent} style={floatingInspectorStyle} displayOn={displayOn} />
+			<NoraFloatingInspector noraContent={noraContent} style={floatingInspectorStyle ?? {}} displayOn={displayOn} />
 		) : null
 	) : (
 		<FloatingInspector shown={showMiniInspector} displayOn={displayOn}>

@@ -226,7 +226,7 @@ export const MicSourceRenderer = withTranslation()(
 					{content && (
 						<MicFloatingInspector
 							content={content}
-							floatingInspectorStyle={this.getFloatingInspectorStyle()}
+							position={this.getFloatingInspectorStyle()}
 							itemElement={this.props.itemElement}
 							showMiniInspector={this.props.showMiniInspector}
 							typeClass={this.props.typeClass}

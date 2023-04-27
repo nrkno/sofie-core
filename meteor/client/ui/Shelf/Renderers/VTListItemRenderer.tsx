@@ -131,9 +131,10 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 					timePosition={hoverScrubTimePosition}
 					content={vtContent}
 					position={{
-						top: itemIconPosition?.top + 'px',
-						left: itemIconPosition?.left + 'px',
-						transform: 'translate(0, -100%)',
+						top: itemIconPosition?.top ?? 0,
+						left: itemIconPosition?.left ?? 0,
+						anchor: 'start',
+						position: 'top',
 					}}
 					typeClass={props.layer && RundownUtils.getSourceLayerClassName(props.layer.type)}
 					itemElement={itemIcon.current}

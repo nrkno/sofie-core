@@ -133,7 +133,7 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 	const showMiniInspectorData = showMiniInspectorNotice || showMiniInspectorClipData
 	const showAnyFloatingInspector = showVideoPlayerInspector || showMiniInspectorData
 
-	const floatingInspectorStyle = useInspectorPosition(position, showMiniInspector, displayOn)
+	const floatingInspectorStyle = useInspectorPosition(position)
 
 	if (!showAnyFloatingInspector || !floatingInspectorStyle) {
 		return null

@@ -16,9 +16,10 @@ export function SplitsThumbnailRenderer({ pieceInstance, originPosition, hoverin
 			</div>
 			<SplitsFloatingInspector
 				position={{
-					top: originPosition.top + 'px',
-					left: originPosition.left + 'px',
-					transform: 'translate(0, -100%)',
+					top: originPosition.top,
+					left: originPosition.left,
+					anchor: 'start',
+					position: 'top',
 				}}
 				content={pieceInstance.instance.piece.content as Partial<SplitsContent>}
 				itemElement={null}

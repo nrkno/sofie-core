@@ -5,12 +5,13 @@ import Moment from 'react-moment'
 import { FloatingInspector } from '../FloatingInspector'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
 import { getScriptPreview } from '../../lib/ui/scriptPreview'
+import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
 
 interface IProps {
 	typeClass?: string
 	showMiniInspector: boolean
 	itemElement: HTMLDivElement | null
-	floatingInspectorStyle: React.CSSProperties
+	position: IFloatingInspectorPosition
 	content: ScriptContent
 	displayOn?: 'document' | 'viewport'
 }
@@ -20,13 +21,15 @@ export function MicFloatingInspector(props: IProps): JSX.Element {
 
 	const { startOfScript, endOfScript, breakScript } = getScriptPreview(props.content.fullScript || '')
 
+	const floatingInspectorStyle = useInspectorPosition(props.position)
+
 	return (
 		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>
 			<div
 				className={
 					'segment-timeline__mini-inspector ' + props.typeClass + ' segment-timeline__mini-inspector--pop-down'
 				}
-				style={props.floatingInspectorStyle}
+				style={floatingInspectorStyle}
 			>
 				<div>
 					{props.content && props.content.fullScript ? (

@@ -13,10 +13,11 @@ export function GraphicsThumbnailRenderer({ pieceInstance, hovering, layer, orig
 			<L3rdFloatingInspector
 				showMiniInspector={hovering}
 				content={content}
-				floatingInspectorStyle={{
-					top: originPosition.top + 'px',
-					left: originPosition.left + 'px',
-					transform: 'translate(0, -100%)',
+				position={{
+					top: originPosition.top,
+					left: originPosition.left,
+					anchor: 'start',
+					position: 'top',
 				}}
 				typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 				itemElement={null}
