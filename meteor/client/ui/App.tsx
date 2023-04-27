@@ -57,7 +57,7 @@ import { useTracker, useSubscription } from '../lib/ReactMeteorData/ReactMeteorD
 import { DocumentTitleProvider } from '../lib/DocumentTitleProvider'
 import { Spinner } from '../lib/Spinner'
 import { isRunningInPWA } from '../lib/lib'
-import { protectString } from '../../lib/lib'
+import { firstIfArray, protectString } from '../../lib/lib'
 
 const NullComponent = () => null
 
@@ -494,7 +494,7 @@ function useFeatureFlags() {
 		if (params['vibrate']) setAllowVibrating(params['vibrate'] === '1')
 		if (params['help']) setHelpMode(params['help'] === '1')
 		if (params['zoom'] && typeof params['zoom'] === 'string') {
-			setUIZoom(parseFloat((params['zoom'] as string) || '1') / 100 || 1)
+			setUIZoom(parseFloat(firstIfArray(params['zoom']) || '1') / 100 || 1)
 		}
 		if (params['show_hidden_source_layers']) {
 			setShowHiddenSourceLayers(params['show_hidden_source_layers'] === '1')
@@ -503,7 +503,8 @@ function useFeatureFlags() {
 			setIgnorePieceContentStatus(params['ignore_piece_content_status'] === '1')
 		}
 		if (params['reportNotificationsId'] && params['reportNotificationsId'] !== '0') {
-			setReportNotifications(params['reportNotificationsId'] as string)
+			const notificationsId = firstIfArray(params['reportNotificationsId'])
+			if (notificationsId) setReportNotifications(notificationsId)
 		} else if (params['reportNotificationsId'] === '0') {
 			unsetReportNotifications()
 		}
