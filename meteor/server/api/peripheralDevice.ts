@@ -67,7 +67,7 @@ import {
 	applyAndValidateOverrides,
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { convertPeripheralDeviceForGateway } from '../publications/peripheralDevice'
+import { convertPeripheralDeviceForGateway } from '../publications/peripheralDeviceForDevice'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
