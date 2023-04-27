@@ -90,7 +90,7 @@ describe('Pieces', () => {
 			pieceInstanceId: 'randomId9000',
 			partInstanceId: protectString('randomId9002'),
 			priority: 123,
-			classes: undefined,
+			classes: [],
 		})
 		const partGroup = { id: 'randomId9003' } as any as TimelineObjRundown
 

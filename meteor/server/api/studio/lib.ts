@@ -58,6 +58,7 @@ export async function getOrphanedPackageInfos(): Promise<PackageInfoDB['_id'][]>
 /** Remove or mark for delayed removal some PackageInfos by id */
 export async function removePackageInfos(ids: PackageInfoDB['_id'][], mode: 'defer' | 'purge'): Promise<void> {
 	if (mode === 'defer') {
+		// Mark for later removal
 		const removeDelay = 3600 * 24 // Arbitrary value of 24 hours
 
 		await PackageInfos.updateAsync(
@@ -71,6 +72,7 @@ export async function removePackageInfos(ids: PackageInfoDB['_id'][], mode: 'def
 			}
 		)
 	} else {
+		// Remove now
 		await PackageInfos.removeAsync({
 			_id: { $in: ids },
 		})

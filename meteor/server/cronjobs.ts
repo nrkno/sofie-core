@@ -1,18 +1,7 @@
-import {
-	IngestDataCache,
-	PartInstances,
-	Parts,
-	PeripheralDevices,
-	PieceInstances,
-	RundownPlaylists,
-	Rundowns,
-	Snapshots,
-	UserActionsLog,
-} from './collections'
+import { PeripheralDevices, RundownPlaylists } from './collections'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
-import * as _ from 'underscore'
-import { getCurrentTime, stringifyError, waitForPromiseAll } from '../lib/lib'
+import { getCurrentTime, stringifyError, waitForPromise, waitForPromiseAll } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { TSR } from '@sofie-automation/blueprints-integration'
@@ -21,9 +10,10 @@ import { QueueStudioJob } from './worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { fetchStudioIds } from './optimizations'
 import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
-import { getExpiredRemovedPackageInfos, getOrphanedPackageInfos, removePackageInfos } from './api/studio/lib'
 import { deferAsync } from '@sofie-automation/corelib/dist/lib'
 import { getCoreSystem } from './coreSystem/collection'
+import { cleanupOldDataInner } from './api/cleanup'
+import { CollectionCleanupResult } from '../lib/api/system'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -48,79 +38,21 @@ export function nightlyCronjobInner(): void {
 	logger.info('Nightly cronjob: starting...')
 	const system = getCoreSystem()
 
-	// Clean up Rundown data cache:
-	// Remove caches not related to rundowns:
-	let rundownCacheCount = 0
-	const rundownIds = _.map(Rundowns.find().fetch(), (rundown) => rundown._id)
-	IngestDataCache.find({
-		rundownId: { $nin: rundownIds },
-	}).forEach((roc) => {
-		lowPrioFcn(() => {
-			IngestDataCache.remove(roc._id)
-		})
-		rundownCacheCount++
-	})
-	if (rundownCacheCount) logger.info('Cronjob: Will remove cached data from ' + rundownCacheCount + ' rundowns')
-
-	const cleanLimitTime = getCurrentTime() - 1000 * 3600 * 24 * 50 // 50 days ago
-
-	// Remove old PartInstances and PieceInstances:
-	const getPartInstanceIdsToRemove = () => {
-		const existingPartIds = Parts.find({}, { fields: { _id: 1 } })
-			.fetch()
-			.map((part) => part._id)
-		const oldPartInstanceSelector = {
-			reset: true,
-			'timings.plannedStoppedPlayback': { $lt: cleanLimitTime },
-			'part._id': { $nin: existingPartIds },
+	// Clean up old data:
+	try {
+		const cleanupResults = waitForPromise(cleanupOldDataInner(true))
+		if (typeof cleanupResults === 'string') {
+			logger.warn(`Cronjob: Could not clean up old data due to: ${cleanupResults}`)
+		} else {
+			for (const result of Object.values<CollectionCleanupResult[0]>(cleanupResults)) {
+				if (result.docsToRemove > 0) {
+					logger.info(`Cronjob: Removed ${result.docsToRemove} documents from "${result.collectionName}"`)
+				}
+			}
 		}
-		const oldPartInstanceIds = PartInstances.find(oldPartInstanceSelector, { fields: { _id: 1 } })
-			.fetch()
-			.map((partInstance) => partInstance._id)
-		return oldPartInstanceIds
-	}
-	const partInstanceIdsToRemove = getPartInstanceIdsToRemove()
-	if (partInstanceIdsToRemove.length > 0) {
-		logger.info(`Cronjob: Will remove ${partInstanceIdsToRemove.length} PartInstances`)
-	}
-	const oldPieceInstances = PieceInstances.find({
-		partInstanceId: { $in: partInstanceIdsToRemove },
-	}).count()
-	if (oldPieceInstances > 0) {
-		logger.info(`Cronjob: Will remove ${oldPieceInstances} PieceInstances`)
-	}
-	lowPrioFcn(() => {
-		const partInstanceIdsToRemove = getPartInstanceIdsToRemove()
-		PartInstances.remove({ _id: { $in: partInstanceIdsToRemove } })
-		PieceInstances.remove({
-			partInstanceId: { $in: partInstanceIdsToRemove },
-		})
-	})
-
-	// Remove old entries in UserActionsLog:
-	const oldUserActionsLogCount: number = UserActionsLog.find({
-		timestamp: { $lt: cleanLimitTime },
-	}).count()
-	if (oldUserActionsLogCount > 0) {
-		logger.info(`Cronjob: Will remove ${oldUserActionsLogCount} entries from UserActionsLog`)
-		lowPrioFcn(() => {
-			UserActionsLog.remove({
-				timestamp: { $lt: cleanLimitTime },
-			})
-		})
-	}
-
-	// Remove old entries in Snapshots:
-	const oldSnapshotsCount: number = Snapshots.find({
-		created: { $lt: cleanLimitTime },
-	}).count()
-	if (oldSnapshotsCount > 0) {
-		logger.info(`Cronjob: Will remove ${oldSnapshotsCount} entries from Snapshots`)
-		lowPrioFcn(() => {
-			Snapshots.remove({
-				created: { $lt: cleanLimitTime },
-			})
-		})
+	} catch (error) {
+		logger.error(`Cronjob: Error when cleaning up old data: ${error}`)
+		logger.error(error)
 	}
 
 	const ps: Array<Promise<any>> = []
@@ -229,29 +161,6 @@ Meteor.startup(() => {
 					},
 					(e) => {
 						logger.error(`Cron: CleanupPlaylists error: ${e}`)
-					}
-				)
-			}
-		}
-		{
-			// Clean up removed PackageInfos:
-			if (isLowSeason() || force) {
-				deferAsync(
-					async () => {
-						// Find any PackageInfos which have expired
-						const expiredPackageInfoIds = await getExpiredRemovedPackageInfos()
-						if (expiredPackageInfoIds.length) {
-							await removePackageInfos(expiredPackageInfoIds, 'purge')
-						}
-
-						// Find any PackageInfos which are missing the parent ExpectedPackage
-						const orphanedPackageInfoIds = await getOrphanedPackageInfos()
-						if (orphanedPackageInfoIds.length) {
-							await removePackageInfos(orphanedPackageInfoIds, 'defer')
-						}
-					},
-					(e) => {
-						logger.error(`Cron: Cleanup PackageInfos error: ${e}`)
 					}
 				)
 			}
