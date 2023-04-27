@@ -8,31 +8,29 @@
 			"shared-lib",
 			"job-worker",
 			"documentation"
-		],
-		"nohoist": [
-			"**/timeline-state-resolver-types",
-			"**/timecode"
 		]
 	},
 	"scripts": {
 		"prepare": "cd .. && husky install",
-		"postinstall": "yarn lerna bootstrap",
-		"build": "yarn lerna run build",
-		"build:try": "yarn lerna run --no-bail build",
+		"build": "lerna run build",
+		"build:try": "lerna run --no-bail build",
 		"watch": "lerna run --parallel build:main -- --watch --preserveWatchOutput",
-		"stage-versions": "git add -u */package.json */CHANGELOG.md lerna.json",
+		"stage-versions": "git add -u */package.json */CHANGELOG.md lerna.json yarn.lock",
 		"set-version": "lerna version --exact --no-changelog --no-git-tag-version --no-push --yes",
 		"set-version-and-changelog": "lerna version --exact --force-publish --conventional-commits --no-git-tag-version --no-push --yes",
-		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
-		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck --allowPackages \"caniuse-lite@1.0.30001448;mos-gateway@$(node -p \"require('mos-gateway/package.json').version\");playout-gateway@$(node -p \"require('playout-gateway/package.json').version\");sofie-documentation@$(node -p \"require('sofie-documentation/package.json').version\");@sofie-automation/corelib@$(node -p \"require('@sofie-automation/corelib/package.json').version\");@sofie-automation/shared-lib@$(node -p \"require('@sofie-automation/shared-lib/package.json').version\");@sofie-automation/job-worker@$(node -p \"require('@sofie-automation/job-worker/package.json').version\");lunr-languages@1.10.0\"",
+		"validate:dependencies": "yarn npm audit --environment production && run license-validate",
+		"validate:dev-dependencies": "yarn npm audit --environment development",
+		"license-validate": "sofie-licensecheck --allowPackages \"caniuse-lite@1.0.30001448;mos-gateway@$(node -p \"require('mos-gateway/package.json').version\");playout-gateway@$(node -p \"require('playout-gateway/package.json').version\");sofie-documentation@$(node -p \"require('sofie-documentation/package.json').version\");@sofie-automation/corelib@$(node -p \"require('@sofie-automation/corelib/package.json').version\");@sofie-automation/shared-lib@$(node -p \"require('@sofie-automation/shared-lib/package.json').version\");@sofie-automation/job-worker@$(node -p \"require('@sofie-automation/job-worker/package.json').version\");lunr-languages@1.10.0\"",
 		"lint": "lerna run --concurrency 4 --stream lint",
 		"unit": "lerna run --concurrency 2 --stream unit -- --coverage=false",
 		"test": "lerna run --concurrency 2 --stream test -- --coverage=false",
-		"docs:typedoc": "yarn typedoc .",
+		"docs:typedoc": "typedoc .",
 		"docs:serve": "lerna run --scope sofie-documentation --stream start",
 		"watch-for-worker-changes": "nodemon --delay 2.5 --watch job-worker/dist --watch corelib/dist --watch shared-lib/dist --watch blueprints-integration/dist --watch server-core-integration/dist ../scripts/meteor-force-restart.js",
-		"generate-schema-types": "node scripts/schema-types.mjs"
+		"generate-schema-types": "node scripts/schema-types.mjs",
+		"lint-staged": "./node_modules/.bin/lint-staged",
+		"prettier": "cd $INIT_CWD && \"$PROJECT_CWD/node_modules/.bin/prettier\"",
+		"eslint": "cd $INIT_CWD && \"$PROJECT_CWD/node_modules/.bin/eslint\""
 	},
 	"devDependencies": {
 		"@babel/core": "^7.21.3",
@@ -61,5 +59,5 @@
 		"typescript": "~4.9"
 	},
 	"name": "packages",
-	"packageManager": "yarn@3.4.1"
+	"packageManager": "yarn@3.5.0"
 }

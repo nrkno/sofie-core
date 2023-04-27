@@ -32,20 +32,20 @@
 		}
 	],
 	"scripts": {
-		"build": "rimraf dist && yarn build:main && yarn copytypes",
-		"build:main": "tsc -p tsconfig.build.json",
-		"lint:raw": "eslint --ext .ts --ext .js --ignore-pattern dist",
-		"lint": "yarn lint:raw .",
-		"unit": "jest",
-		"test": "yarn lint && yarn unit",
-		"test:integration": "yarn lint && jest --config=jest-integration.config.js",
-		"watch": "jest --watch",
+		"build": "run -T rimraf dist && run build:main && run copytypes",
+		"build:main": "run -T tsc -p tsconfig.build.json",
+		"lint:raw": "run -T eslint --ext .ts --ext .js --ignore-pattern dist",
+		"lint": "run lint:raw .",
+		"unit": "run -T jest",
+		"test": "run lint && run unit",
+		"test:integration": "run lint && run -T jest --config=jest-integration.config.js",
+		"watch": "run -T jest --watch",
 		"copytypes": "copyfiles -u 1 src/types/* dist",
-		"cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
+		"cov": "run -T jest --coverage; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
-		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
-		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck"
+		"validate:dependencies": "yarn npm audit --environment production && run license-validate",
+		"validate:dev-dependencies": "yarn npm audit --environment development",
+		"license-validate": "run -T sofie-licensecheck"
 	},
 	"engines": {
 		"node": ">=14.19"
@@ -80,11 +80,11 @@
 	},
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [
-			"prettier"
+			"yarn run -T prettier"
 		],
 		"*.{ts,tsx}": [
 			"yarn lint:raw"
 		]
 	},
-	"packageManager": "yarn@3.4.1"
+	"packageManager": "yarn@3.5.0"
 }

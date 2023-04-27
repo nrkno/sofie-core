@@ -3,14 +3,15 @@
 FROM node:16
 WORKDIR /opt
 
-COPY package.json lerna.json yarn.lock tsconfig.json ./
+COPY package.json lerna.json yarn.lock tsconfig.json .yarn ./
 COPY playout-gateway playout-gateway
 COPY server-core-integration server-core-integration
 COPY shared-lib shared-lib
 
-RUN yarn install --check-files --frozen-lockfile
+RUN yarn install --immutable
 RUN yarn build
-RUN yarn install --check-files --frozen-lockfile --production --force --ignore-scripts # purge dev-dependencies
+RUN yarn plugin import workspace-tools
+RUN yarn workspaces focus --all --production # purge dev-dependencies
 
 # DEPLOY IMAGE
 FROM node:16-alpine
@@ -23,4 +24,4 @@ COPY --from=0 /opt/server-core-integration /opt/server-core-integration
 COPY --from=0 /opt/shared-lib /opt/shared-lib
 
 WORKDIR /opt/playout-gateway
-CMD ["yarn", "start"]
+CMD ["node", "dist/index.js"]

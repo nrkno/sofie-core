@@ -10,5 +10,11 @@ server/_force_restart.js
 client/styles/tv2
 client/ui/Shelf/Keyboard
 
-
+.pnp.*
 .yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
