@@ -506,7 +506,9 @@ function getPackageWarningMessage(
 
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation(`Clip can't be found on the playout system`),
+			message: generateTranslation(`{{sourceLayer}} can't be found on the playout system`, {
+				sourceLayer: sourceLayer.name,
+			}),
 		}
 	} else if (
 		packageOnPackageContainer.status.status ===
@@ -517,9 +519,16 @@ function getPackageWarningMessage(
 
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation('{{reason}} Clip exists, but is not yet ready on the playout system.', {
-				reason: ((packageOnPackageContainer?.status.statusReason.user || 'N/A') + '.').replace(/\.\.$/, '.'), // remove any trailing double "."
-			}),
+			message: generateTranslation(
+				'{{reason}} {{sourceLayer}} exists, but is not yet ready on the playout system',
+				{
+					reason: ((packageOnPackageContainer?.status.statusReason.user || 'N/A') + '.').replace(
+						/\.\.$/,
+						'.'
+					), // remove any trailing double "."
+					sourceLayer: sourceLayer.name,
+				}
+			),
 		}
 	} else if (
 		// Examples of contents in packageOnPackageContainer?.status.statusReason.user:
@@ -540,7 +549,9 @@ function getPackageWarningMessage(
 	) {
 		return {
 			status: PieceStatusCode.OK,
-			message: generateTranslation('Clip is transferring to the playout system'),
+			message: generateTranslation('{{sourceLayer}} is transferring to the playout system', {
+				sourceLayer: sourceLayer.name,
+			}),
 		}
 	} else if (
 		packageOnPackageContainer.status.status ===
@@ -548,7 +559,12 @@ function getPackageWarningMessage(
 	) {
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation('Clip is transferring to the playout system but cannot be played yet'),
+			message: generateTranslation(
+				'{{sourceLayer}} is transferring to the playout system but cannot be played yet',
+				{
+					sourceLayer: sourceLayer.name,
+				}
+			),
 		}
 	} else if (
 		packageOnPackageContainer.status.status === ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.READY
