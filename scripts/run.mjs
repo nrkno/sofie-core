@@ -1,5 +1,6 @@
-const process = require("process");
-const concurrently = require("concurrently");
+import process from "process";
+import concurrently from "concurrently";
+
 const args = process.argv.slice(2);
 
 const config = {
@@ -32,15 +33,13 @@ function watchWorker() {
 function watchMeteor() {
 	return [
 		{
-			command: "meteor yarn watch-types -- --preserveWatchOutput",
+			command: "meteor yarn watch-types --preserveWatchOutput",
 			cwd: "meteor",
 			name: "METEOR-TSC",
 			prefixColor: "blue",
 		},
 		{
-			command:
-				"meteor yarn debug" +
-				(config.inspectMeteor ? " --inspect" : ""),
+			command: "meteor yarn debug" + (config.inspectMeteor ? " --inspect" : ""),
 			cwd: "meteor",
 			name: "METEOR",
 			prefixColor: "cyan",
@@ -48,7 +47,7 @@ function watchMeteor() {
 	];
 }
 
-(async () => {
+try {
 	// Pre-steps
 	await concurrently(
 		[
@@ -79,7 +78,10 @@ function watchMeteor() {
 			restartTries: 0,
 		}
 	).result;
-})();
+} catch (e) {
+	console.error(e.message);
+	process.exit(1);
+}
 
 function signalHandler(signal) {
 	process.exit();
