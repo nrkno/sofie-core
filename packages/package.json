@@ -35,7 +35,7 @@
 	"devDependencies": {
 		"@babel/core": "^7.21.3",
 		"@babel/plugin-transform-modules-commonjs": "^7.21.2",
-		"@sofie-automation/code-standard-preset": "~2.4.1",
+		"@sofie-automation/code-standard-preset": "~2.4.6",
 		"@types/amqplib": "^0.10.1",
 		"@types/debug": "^4.1.7",
 		"@types/ejson": "^2.2.0",
