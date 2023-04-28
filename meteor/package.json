@@ -126,6 +126,7 @@
 		"@types/react-circular-progressbar": "^1.1.0",
 		"@types/react-datepicker": "^3.1.8",
 		"@types/react-dom": "^18.0.11",
+		"@types/react-router": "^5.1.20",
 		"@types/react-router-dom": "^5.3.3",
 		"@types/request": "^2.48.8",
 		"@types/semver": "^7.3.12",

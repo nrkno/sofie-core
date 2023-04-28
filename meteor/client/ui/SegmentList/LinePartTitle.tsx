@@ -1,12 +1,12 @@
 import React, { useRef, useLayoutEffect, useState } from 'react'
 import Tooltip from 'rc-tooltip'
 import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
-import type { ActionType, AlignType } from '@rc-component/trigger/lib/interface'
+import { TooltipProps } from 'rc-tooltip/lib/Tooltip'
 
-const TOOLTIP_ALIGN: AlignType = { points: ['tl', 'tl'], offset: [-8, 0] }
+const TOOLTIP_ALIGN: Required<TooltipProps>['align'] = { points: ['tl', 'tl'], offset: [-8, 0] }
 
-const NO_TRIGGER: ActionType[] = []
-const HOVER_TRIGGER: ActionType[] = ['hover']
+const NO_TRIGGER: Required<TooltipProps>['trigger'] = []
+const HOVER_TRIGGER: Required<TooltipProps>['trigger'] = ['hover']
 
 export function LinePartTitle({ title }: { title: string }): JSX.Element {
 	const elRef = useRef<HTMLHeadingElement>(null)

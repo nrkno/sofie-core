@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { Accounts } from 'meteor/accounts-base'
 import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
-import { RouteComponentProps } from 'react-router'
+import type { RouteComponentProps } from 'react-router'
 import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { getUser } from '../../../../lib/collections/Users'
 import { NotLoggedInContainer } from './lib'
