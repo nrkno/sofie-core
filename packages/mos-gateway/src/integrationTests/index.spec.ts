@@ -34,7 +34,7 @@ test('Simple test', async () => {
 			deviceId: 'JestTest',
 			deviceToken: '1234',
 		},
-		process: {
+		certificates: {
 			unsafeSSL: true,
 			certificates: [],
 		},

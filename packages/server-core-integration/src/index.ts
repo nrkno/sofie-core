@@ -2,6 +2,7 @@ export * from './lib/coreConnection'
 export * from './lib/configManifest'
 export * from './lib/ddpClient'
 export * from './lib/methods'
+export * from './lib/process'
 
 // Re-export some util from shared-lib
 export * from '@sofie-automation/shared-lib/dist/lib/lib'

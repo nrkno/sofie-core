@@ -25,7 +25,8 @@ import {
 } from '@mos-connection/connector'
 
 import * as Winston from 'winston'
-import { CoreHandler, CoreMosDeviceHandler } from './coreHandler'
+import { CoreHandler } from './coreHandler'
+import { CoreMosDeviceHandler } from './CoreMosDeviceHandler'
 import {
 	DEFAULT_MOS_TIMEOUT_TIME,
 	DEFAULT_MOS_HEARTBEAT_INTERVAL,

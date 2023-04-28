@@ -424,9 +424,11 @@ export async function setupMockPeripheralDevice(
 	const defaultDevice: PeripheralDevice = {
 		_id: protectString('mockDevice' + dbI),
 		name: 'mockDevice',
+		deviceName: 'Mock Gateway',
 		organizationId: null,
 		studioId: context.studioId,
 		settings: {},
+		nrcsName: category === PeripheralDeviceCategory.INGEST ? 'JEST-NRCS' : undefined,
 
 		category: category,
 		type: type,

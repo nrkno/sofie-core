@@ -26,7 +26,7 @@ exports[`Test recieved mos ingest payloads mosRoCreate 2`] = `
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -320,7 +320,7 @@ exports[`Test recieved mos ingest payloads mosRoCreate: replace existing 2`] = `
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -606,7 +606,7 @@ exports[`Test recieved mos ingest payloads mosRoFullStory: Valid data 2`] = `
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -914,7 +914,7 @@ exports[`Test recieved mos ingest payloads mosRoReadyToAir: Update ro 2`] = `
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -1210,7 +1210,7 @@ exports[`Test recieved mos ingest payloads mosRoStatus: Update ro 2`] = `
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -1506,7 +1506,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryDelete: Remove segment 2`] 
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -1768,7 +1768,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: Into segment 2`] = 
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -2077,7 +2077,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: New segment 2`] = `
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -2395,7 +2395,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Move whole segment to
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -2695,7 +2695,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Within segment 2`] = 
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -2995,7 +2995,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryReplace: Same segment 2`] =
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -3273,7 +3273,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryStatus: Update part 1`] = `
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -3573,7 +3573,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments 
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -3864,7 +3864,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments2
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -4191,7 +4191,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: With first in same se
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -4491,7 +4491,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Within same segment 2
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
