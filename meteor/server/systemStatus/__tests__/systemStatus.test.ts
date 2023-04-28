@@ -101,7 +101,7 @@ describe('systemStatus', () => {
 
 		const result0: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
 
-		// Expected status is WARNING_MAJOR, because the the device has a warning status
+		// Expected status is WARNING_MAJOR, because the device has a warning status
 		const expectedStatus0 = StatusCode.WARNING_MAJOR
 		expect(result0).toMatchObject({
 			status: status2ExternalStatus(expectedStatus0),
