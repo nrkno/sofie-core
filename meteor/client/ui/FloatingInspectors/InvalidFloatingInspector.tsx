@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { FloatingInspector } from '../FloatingInspector'
@@ -34,6 +34,7 @@ function renderReason(noticeLevel: NoteSeverity, noticeMessage: string | null): 
 
 export const InvalidFloatingInspector: React.FunctionComponent<IProps> = (props: IProps) => {
 	const { t } = useTranslation()
+	const ref = useRef<HTMLDivElement>(null)
 
 	if (!props.part.invalidReason) {
 		return null
@@ -41,7 +42,7 @@ export const InvalidFloatingInspector: React.FunctionComponent<IProps> = (props:
 
 	const noteSeverity = props.part.invalidReason.severity || NoteSeverity.INFO
 
-	const floatingInspectorStyle = useInspectorPosition(props.position)
+	const floatingInspectorStyle = useInspectorPosition(props.position, ref.current)
 
 	return (
 		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>
@@ -57,6 +58,7 @@ export const InvalidFloatingInspector: React.FunctionComponent<IProps> = (props:
 						: '')
 				}
 				style={floatingInspectorStyle}
+				ref={ref}
 			>
 				{renderReason(noteSeverity, translateMessage(props.part.invalidReason.message, t))}
 			</div>

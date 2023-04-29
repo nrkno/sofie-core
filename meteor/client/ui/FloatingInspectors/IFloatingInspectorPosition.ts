@@ -11,7 +11,7 @@ export interface IFloatingInspectorPosition {
 
 export function useInspectorPosition(
 	position: IFloatingInspectorPosition,
-	el?: HTMLElement | null | undefined
+	el: HTMLElement | null
 ): React.CSSProperties | undefined {
 	const positionRef = useRef({
 		...position,

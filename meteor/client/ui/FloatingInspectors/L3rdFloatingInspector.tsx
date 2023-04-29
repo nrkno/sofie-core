@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import * as _ from 'underscore'
 
 import { GraphicsContent, NoraContent } from '@sofie-automation/blueprints-integration'
@@ -78,7 +78,9 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 		noraContent?.payload?.metadata?.templateVariant ??
 		(piece.name !== graphicContent?.fileName ? graphicContent?.fileName : undefined)
 
-	const floatingInspectorStyle = useInspectorPosition(position)
+	const ref = useRef<HTMLDivElement>(null)
+
+	const floatingInspectorStyle = useInspectorPosition(position, ref.current)
 
 	return noraContent && noraContent.payload && noraContent.previewRenderer ? (
 		showMiniInspector ? (
@@ -86,7 +88,7 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 		) : null
 	) : (
 		<FloatingInspector shown={showMiniInspector} displayOn={displayOn}>
-			<div className={'segment-timeline__mini-inspector ' + typeClass} style={floatingInspectorStyle}>
+			<div className={'segment-timeline__mini-inspector ' + typeClass} style={floatingInspectorStyle} ref={ref}>
 				{templateName && (
 					<div className="mini-inspector__header">
 						<span>{templateName}</span>

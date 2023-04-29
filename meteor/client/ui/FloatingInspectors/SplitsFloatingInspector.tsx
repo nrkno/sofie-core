@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useRef } from 'react'
 import { FloatingInspector } from '../FloatingInspector'
 import { SplitsContent } from '@sofie-automation/blueprints-integration'
 import { getSplitPreview } from '../../lib/ui/splitPreview'
@@ -15,6 +15,8 @@ interface IProps {
 }
 
 export const SplitsFloatingInspector: React.FunctionComponent<IProps> = (props) => {
+	const ref = useRef(null)
+
 	const splitItems = useMemo(() => {
 		if (props.content.boxSourceConfiguration) {
 			return getSplitPreview(props.content.boxSourceConfiguration)
@@ -23,13 +25,14 @@ export const SplitsFloatingInspector: React.FunctionComponent<IProps> = (props) 
 		}
 	}, [props.content.boxSourceConfiguration])
 
-	const floatingInspectorStyle = useInspectorPosition(props.position)
+	const floatingInspectorStyle = useInspectorPosition(props.position, ref.current)
 
 	return (
 		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>
 			<div
 				className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
 				style={floatingInspectorStyle}
+				ref={ref}
 			>
 				<RenderSplitPreview subItems={splitItems} showLabels={true} />
 			</div>

@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import Moment from 'react-moment'
 
@@ -19,9 +19,11 @@ interface IProps {
 export function MicFloatingInspector(props: IProps): JSX.Element {
 	const { t } = useTranslation()
 
+	const ref = useRef<HTMLDivElement>(null)
+
 	const { startOfScript, endOfScript, breakScript } = getScriptPreview(props.content.fullScript || '')
 
-	const floatingInspectorStyle = useInspectorPosition(props.position)
+	const floatingInspectorStyle = useInspectorPosition(props.position, ref.current)
 
 	return (
 		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>
@@ -30,6 +32,7 @@ export function MicFloatingInspector(props: IProps): JSX.Element {
 					'segment-timeline__mini-inspector ' + props.typeClass + ' segment-timeline__mini-inspector--pop-down'
 				}
 				style={floatingInspectorStyle}
+				ref={ref}
 			>
 				<div>
 					{props.content && props.content.fullScript ? (

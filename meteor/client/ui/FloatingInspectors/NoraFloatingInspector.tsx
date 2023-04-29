@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useImperativeHandle } from 'react'
 import { NoraContent } from '@sofie-automation/blueprints-integration'
 import Escape from './../../lib/Escape'
 
@@ -17,7 +17,18 @@ interface IStateHeader extends IPropsHeader {
 	displayOn: 'document' | 'viewport'
 }
 
-export const NoraFloatingInspector: React.FunctionComponent<IPropsHeader> = (props: IPropsHeader) => {
+export const NoraFloatingInspector = React.forwardRef<HTMLDivElement, IPropsHeader>(function NoraFloatinInspector(
+	props: IPropsHeader,
+	ref
+) {
+	useImperativeHandle(
+		ref,
+		() => {
+			return NoraPreviewRenderer._singletonRef.rootElement
+		},
+		[]
+	)
+
 	useEffect(() => {
 		if (props.noraContent) {
 			NoraPreviewRenderer.show(props.noraContent, props.style, props.displayOn || 'document')
@@ -26,14 +37,16 @@ export const NoraFloatingInspector: React.FunctionComponent<IPropsHeader> = (pro
 		return () => {
 			NoraPreviewRenderer.hide()
 		}
-	})
+	}, [])
+
 	return null
-}
+})
 
 export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 	static _singletonRef: NoraPreviewRenderer
 
 	iframeElement: HTMLIFrameElement
+	rootElement: HTMLDivElement
 
 	private _intersections:
 		| {
@@ -186,6 +199,10 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		this._observer.observe(e)
 	}
 
+	private _setRootElement = (e: HTMLDivElement) => {
+		this.rootElement = e
+	}
+
 	componentWillUnmount(): void {
 		if (this._observer) this._observer.disconnect()
 	}
@@ -194,13 +211,13 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		const style = { ...this.state.style }
 		style.visibility = this.state.show ? 'visible' : 'hidden'
 
-		if (this.state.flip.x && this.state.flip.y) {
-			style.transform = 'translate(0, var(--popdown))'
-		} else if (this.state.flip.x) {
-			style.transform = 'translate(0, -100%)'
-		} else if (this.state.flip.y) {
-			style.transform = 'translate(-100%, var(--popdown))'
-		}
+		// if (this.state.flip.x && this.state.flip.y) {
+		// 	style.transform = 'translate(0, var(--popdown))'
+		// } else if (this.state.flip.x) {
+		// 	style.transform = 'translate(0, -100%)'
+		// } else if (this.state.flip.y) {
+		// 	style.transform = 'translate(-100%, var(--popdown))'
+		// }
 
 		return style
 	}
@@ -215,6 +232,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 					<div
 						className="segment-timeline__mini-inspector segment-timeline__mini-inspector--graphics segment-timeline__mini-inspector--graphics--preview"
 						style={this.getElStyle()}
+						ref={this._setRootElement}
 					>
 						<div className="preview">
 							<img width="100%" src="/images/previewBG.jpg" alt="" />
