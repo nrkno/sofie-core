@@ -32,7 +32,6 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 	pieceRenderedIn,
 	pieceRenderedDuration,
 	typeClass,
-	displayOn,
 }) => {
 	const noraContent = (content as NoraContent)?.payload?.content ? (content as NoraContent | undefined) : undefined
 
@@ -84,10 +83,10 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 
 	return noraContent && noraContent.payload && noraContent.previewRenderer ? (
 		showMiniInspector ? (
-			<NoraFloatingInspector noraContent={noraContent} style={floatingInspectorStyle ?? {}} displayOn={displayOn} />
+			<NoraFloatingInspector ref={ref} noraContent={noraContent} style={floatingInspectorStyle ?? {}} />
 		) : null
 	) : (
-		<FloatingInspector shown={showMiniInspector} displayOn={displayOn}>
+		<FloatingInspector shown={showMiniInspector} displayOn="viewport">
 			<div className={'segment-timeline__mini-inspector ' + typeClass} style={floatingInspectorStyle} ref={ref}>
 				{templateName && (
 					<div className="mini-inspector__header">

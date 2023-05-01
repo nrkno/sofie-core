@@ -10,6 +10,7 @@ import { getElementWidth } from '../../../utils/dimensions'
 import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector'
 import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { unprotectString } from '../../../../lib/lib'
+import { IFloatingInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
 
 type IProps = ICustomLayerItemProps
 interface IState {}
@@ -182,6 +183,15 @@ export const MicSourceRenderer = withTranslation()(
 				this.lineItem?.remove()
 			} catch (err) {
 				console.error('Error in MicSourceRenderer.componentWillUnmount', err)
+			}
+		}
+
+		protected getFloatingInspectorStyle(): IFloatingInspectorPosition {
+			return {
+				left: this.props.elementPosition.left + this.props.cursorPosition.left,
+				top: this.props.elementPosition.top,
+				anchor: 'start',
+				position: 'bottom',
 			}
 		}
 

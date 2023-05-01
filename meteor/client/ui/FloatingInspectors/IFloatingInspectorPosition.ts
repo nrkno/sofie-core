@@ -1,6 +1,7 @@
 import { VirtualElement } from '@popperjs/core'
 import React, { useMemo, useEffect, useRef } from 'react'
 import { usePopper } from 'react-popper'
+import { getHeaderHeight } from '../../lib/viewPort'
 
 export interface IFloatingInspectorPosition {
 	top: number
@@ -9,9 +10,11 @@ export interface IFloatingInspectorPosition {
 	anchor: 'start' | 'center' | 'end'
 }
 
+const LAYER_HEIGHT = 24
+
 export function useInspectorPosition(
 	position: IFloatingInspectorPosition,
-	el: HTMLElement | null
+	inspectorEl: HTMLElement | null
 ): React.CSSProperties | undefined {
 	const positionRef = useRef({
 		...position,
@@ -20,16 +23,21 @@ export function useInspectorPosition(
 	const virtualElement = useMemo<VirtualElement>(() => {
 		return {
 			getBoundingClientRect: (): DOMRect => {
-				console.log('getBoundingClientRect')
+				const top = (positionRef.current.top ?? 0) - window.scrollY
+				const left = (positionRef.current.left ?? 0) - window.scrollX
+				const right = left
+				const bottom = top - LAYER_HEIGHT
+				const x = left
+				const y = top
 				return {
-					top: positionRef.current.top ?? 0,
-					left: positionRef.current.left ?? 0,
+					top,
+					left,
 					width: 0,
-					height: 0,
-					right: positionRef.current.left ?? 0,
-					bottom: positionRef.current.top ?? 0,
-					x: positionRef.current.left ?? 0,
-					y: positionRef.current.top ?? 0,
+					height: LAYER_HEIGHT,
+					right,
+					bottom,
+					x,
+					y,
 					toJSON: () => '',
 				}
 			},
@@ -42,15 +50,33 @@ export function useInspectorPosition(
 		}
 	}, [position])
 
-	const { styles, update } = usePopper(virtualElement, el, {
+	const { styles, update } = usePopper(virtualElement, inspectorEl, {
 		placement: position.position,
+		modifiers: [
+			{
+				name: 'offset',
+				options: {
+					offset: [0, 8],
+				},
+			},
+			{
+				name: 'flip',
+				options: {
+					fallbackPlacements: ['top', 'bottom'],
+				},
+			},
+			{
+				name: 'preventOverflow',
+				options: {
+					padding: { top: getHeaderHeight() },
+				},
+			},
+		],
 	})
 
 	useEffect(() => {
 		if (update) update().catch(console.error)
 	}, [update, position])
-
-	console.log(styles.popper, position)
 
 	return styles.popper
 }

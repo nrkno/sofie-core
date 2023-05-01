@@ -26,7 +26,7 @@ export function MicFloatingInspector(props: IProps): JSX.Element {
 	const floatingInspectorStyle = useInspectorPosition(props.position, ref.current)
 
 	return (
-		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>
+		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn="viewport">
 			<div
 				className={
 					'segment-timeline__mini-inspector ' + props.typeClass + ' segment-timeline__mini-inspector--pop-down'

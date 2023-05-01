@@ -111,7 +111,6 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 	noticeMessages,
 	showMiniInspector,
 	itemElement,
-	displayOn,
 	position,
 	typeClass,
 	status,
@@ -165,7 +164,7 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 	)
 
 	return (
-		<FloatingInspector shown={showMiniInspector && itemElement !== undefined} displayOn={displayOn}>
+		<FloatingInspector shown={showMiniInspector && itemElement !== undefined} displayOn="viewport">
 			{showVideoPlayerInspector ? (
 				<VideoPreviewPlayerInspector
 					itemDuration={itemDuration}
