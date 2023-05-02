@@ -100,10 +100,13 @@ export interface StudioPeripheralDeviceSettings {
 	previewContainerIds: string[]
 	thumbnailContainerIds: string[]
 
+	/** Playout gateway sub-devices */
 	playoutDevices: ObjectWithOverrides<Record<string, StudioPlayoutDevice>>
 
+	/** Ingest gateway sub-devices */
 	ingestDevices: ObjectWithOverrides<Record<string, StudioIngestDevice>>
 
+	/** Input gateway sub-devices */
 	inputDevices: ObjectWithOverrides<Record<string, StudioInputDevice>>
 }
 
