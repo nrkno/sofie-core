@@ -45,7 +45,6 @@
 		"@sofie-automation/corelib": "link:../corelib",
 		"@sofie-automation/shared-lib": "link:../shared-lib",
 		"amqplib": "^0.10.3",
-		"debounce-fn": "^4.0.0",
 		"deepmerge": "^4.2.2",
 		"elastic-apm-node": "^3.38.0",
 		"eventemitter3": "^4.0.7",
