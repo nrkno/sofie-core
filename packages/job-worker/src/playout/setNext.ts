@@ -431,7 +431,7 @@ export async function moveNextPartInner(
 
 		const targetSegmentIndex = refSegmentIndex + segmentDelta
 		const targetSegment = considerSegments[targetSegmentIndex]
-		if (!targetSegment) throw new Error(`No Segment found!`)
+		if (!targetSegment) return null
 
 		// find the allowable segment ids
 		const allowedSegments =
