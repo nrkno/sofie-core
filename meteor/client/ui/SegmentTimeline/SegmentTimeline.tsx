@@ -747,7 +747,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 						studio={this.props.studio}
 						collapsedOutputs={this.props.collapsedOutputs}
 						scrollLeft={this.props.scrollLeft}
-						timeScale={this.props.timeScale}
+						timeToPixelRatio={this.props.timeScale}
 						autoNextPart={this.props.autoNextPart}
 						followLiveLine={this.props.followLiveLine}
 						liveLineHistorySize={this.props.liveLineHistorySize}
@@ -818,7 +818,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 				studio={this.props.studio}
 				collapsedOutputs={this.props.collapsedOutputs}
 				scrollLeft={this.props.scrollLeft}
-				timeScale={this.props.timeScale}
+				timeToPixelRatio={this.props.timeScale}
 				autoNextPart={this.props.autoNextPart}
 				followLiveLine={this.props.followLiveLine}
 				liveLineHistorySize={this.props.liveLineHistorySize}

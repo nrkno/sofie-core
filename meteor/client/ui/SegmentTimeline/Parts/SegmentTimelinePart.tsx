@@ -50,7 +50,7 @@ interface IProps {
 	playlist: RundownPlaylist
 	studio: UIStudio
 	part: PartUi
-	timeScale: number
+	timeToPixelRatio: number
 	onCollapseOutputToggle?: (layer: IOutputLayerUi, event: any) => void
 	collapsedOutputs: {
 		[key: string]: boolean
@@ -124,7 +124,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 							SegmentTimelinePartClass.getCurrentLiveLinePosition(
 								props.part,
 								props.timingDurations.currentTime || getCurrentTime()
-							) + SegmentTimelinePartClass.getLiveLineTimePadding(props.timeScale)) ||
+							) + SegmentTimelinePartClass.getLiveLineTimePadding(props.timeToPixelRatio)) ||
 							0,
 						props.timingDurations.partDurations
 							? partInstance.part.displayDuration ||
@@ -178,7 +178,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 							: SegmentTimelinePartClass.getCurrentLiveLinePosition(
 									nextProps.part,
 									nextProps.timingDurations.currentTime || getCurrentTime()
-							  ) + SegmentTimelinePartClass.getLiveLineTimePadding(nextProps.timeScale))) ||
+							  ) + SegmentTimelinePartClass.getLiveLineTimePadding(nextProps.timeToPixelRatio))) ||
 						0,
 					nextProps.timingDurations.partDurations
 						? nextPartInner.displayDuration ||
@@ -207,7 +207,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 				partDisplayDuration
 			)
 
-		const partDisplayWidth = partDisplayDuration * nextProps.timeScale
+		const partDisplayWidth = partDisplayDuration * nextProps.timeToPixelRatio
 		const isTooSmallForText = !isLive && !nextProps.relative && partDisplayWidth < BREAKPOINT_TOO_SMALL_FOR_TEXT
 		const isTooSmallForDisplay = !isLive && !nextProps.relative && partDisplayWidth < BREAKPOINT_TOO_SMALL_FOR_DISPLAY
 
@@ -324,7 +324,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			}
 		} else {
 			return {
-				minWidth: (partDurationWithFutureShade * this.props.timeScale).toString() + 'px',
+				minWidth: (partDurationWithFutureShade * this.props.timeToPixelRatio).toString() + 'px',
 			}
 		}
 	}
@@ -347,7 +347,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	}
 
 	private convertTimeToPixels = (time: number) => {
-		return this.props.timeScale * time
+		return this.props.timeToPixelRatio * time
 	}
 
 	/** @TODO: This appears to have little to do with expectedDuration, should it be renamed or rewritten? */
@@ -492,9 +492,9 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								isLiveLine={this.props.playlist.currentPartInfo?.partInstanceId === part.instance._id}
 								isNextLine={this.props.playlist.nextPartInfo?.partInstanceId === part.instance._id}
 								isTooSmallForText={this.state.isTooSmallForText}
-								timeScale={this.props.timeScale}
+								timeScale={this.props.timeToPixelRatio}
 								autoNextPart={this.props.autoNextPart}
-								liveLinePadding={SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale)}
+								liveLinePadding={SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeToPixelRatio)}
 								indexOffset={currentIndex}
 								isPreview={this.props.isPreview || false}
 								showDurationSourceLayers={this.props.showDurationSourceLayers}
@@ -518,7 +518,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		/**
 		 * The maximum amount of live line time padding to add, in milliseconds.
 		 */
-		const maxPadding = SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale)
+		const maxPadding = SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeToPixelRatio)
 
 		/**
 		 * The amount of live line time padding to add, based on some simple math, in milliseconds.
@@ -529,7 +529,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	}
 
 	private getFutureShadePaddingPixels = () => {
-		return this.getFutureShadePaddingTime() * this.props.timeScale
+		return this.getFutureShadePaddingTime() * this.props.timeToPixelRatio
 	}
 
 	private getFutureShadeStyle = () => {
@@ -698,7 +698,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 												) || 1)) *
 												100 +
 										  '%'
-										: Math.round(this.props.playlist.nextTimeOffset * this.props.timeScale) + 'px',
+										: Math.round(this.props.playlist.nextTimeOffset * this.props.timeToPixelRatio) + 'px',
 								}}
 							>
 								<div
