@@ -717,22 +717,8 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 			}
 
 			const firstPartInSegment = this.props.parts[0]
-
-			const livePartStartsAt: number = livePart
-				? Math.max(
-						0,
-						(firstPartInSegment &&
-							this.props.timingDurations.partDisplayStartsAt &&
-							this.props.timingDurations.partDisplayStartsAt[unprotectString(livePart.instance.part._id)] -
-								this.props.timingDurations.partDisplayStartsAt[
-									unprotectString(firstPartInSegment.instance.part._id)
-								]) ||
-							0
-				  )
-				: 0
-			const livePartDisplayDuration = livePart
-				? SegmentTimelinePartClass.getPartDisplayDuration(livePart, this.props.timingDurations)
-				: 0
+			const livePartStartsAt = this.calcLivePartStartsAt(livePart, firstPartInSegment)
+			const livePartDisplayDuration = this.calcLivePartDisplayDuration(livePart)
 
 			return (
 				<React.Fragment key={unprotectString(part.instance._id)}>
@@ -818,6 +804,13 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 	private renderBudgetGapPart() {
 		if (this.props.budgetDuration === undefined) return null
 
+		const livePart = this.props.parts.find(
+			(part) => part.instance._id === this.props.playlist.currentPartInfo?.partInstanceId
+		)
+		const firstPartInSegment = this.props.parts[0]
+		const livePartStartsAt = this.calcLivePartStartsAt(livePart, firstPartInSegment)
+		const livePartDisplayDuration = this.calcLivePartDisplayDuration(livePart)
+
 		return (
 			<SegmentTimelinePart
 				segment={this.props.segment}
@@ -838,7 +831,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 				onPieceClick={this.props.onItemClick}
 				onPieceDoubleClick={this.props.onItemDoubleClick}
 				scrollWidth={this.state.timelineWidth / this.props.timeScale}
-				firstPartInSegment={this.props.parts[0]}
+				firstPartInSegment={firstPartInSegment}
 				lastPartInSegment={this.props.parts[this.props.parts.length - 1]}
 				isLastSegment={this.props.isLastSegment}
 				isLastInSegment={false}
@@ -848,6 +841,8 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 				showDurationSourceLayers={this.props.showDurationSourceLayers}
 				isLiveSegment={this.props.isLiveSegment}
 				anyPriorPartWasLive={true}
+				livePartStartsAt={livePartStartsAt}
+				livePartDisplayDuration={livePartDisplayDuration}
 			/>
 		)
 	}
@@ -934,6 +929,26 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 			left: this.props.budgetDuration * this.props.timeScale - this.props.scrollLeft * this.props.timeScale + 'px',
 		}
 		return <div className="segment-timeline__editorialline" style={lineStyle}></div>
+	}
+
+	private calcLivePartStartsAt(
+		livePart: PartUi | undefined | null,
+		firstPartInSegment: PartUi | undefined | null
+	): number {
+		return livePart
+			? Math.max(
+					0,
+					(firstPartInSegment &&
+						this.props.timingDurations.partDisplayStartsAt &&
+						this.props.timingDurations.partDisplayStartsAt[unprotectString(livePart.instance.part._id)] -
+							this.props.timingDurations.partDisplayStartsAt[unprotectString(firstPartInSegment.instance.part._id)]) ||
+						0
+			  )
+			: 0
+	}
+
+	private calcLivePartDisplayDuration(livePart: PartUi | undefined | null): number {
+		return livePart ? SegmentTimelinePartClass.getPartDisplayDuration(livePart, this.props.timingDurations) : 0
 	}
 
 	render(): JSX.Element {

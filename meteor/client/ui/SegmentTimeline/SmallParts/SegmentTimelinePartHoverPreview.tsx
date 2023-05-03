@@ -99,6 +99,10 @@ export const SegmentTimelinePartHoverPreview = ({
 							isPreview={true}
 							isBudgetGap={false}
 							showDurationSourceLayers={showDurationSourceLayers}
+							isLiveSegment={undefined}
+							anyPriorPartWasLive={undefined}
+							livePartStartsAt={undefined}
+							livePartDisplayDuration={undefined}
 						/>
 					)
 				})}
@@ -127,6 +131,10 @@ export const SegmentTimelinePartHoverPreview = ({
 						cropDuration={followingPartPreviewDuration}
 						isBudgetGap={false}
 						showDurationSourceLayers={showDurationSourceLayers}
+						isLiveSegment={undefined}
+						anyPriorPartWasLive={undefined}
+						livePartStartsAt={undefined}
+						livePartDisplayDuration={undefined}
 					/>
 				)}
 			</div>

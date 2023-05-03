@@ -80,10 +80,10 @@ interface IProps {
 	cropDuration?: number
 	className?: string
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
-	isLiveSegment?: boolean
-	anyPriorPartWasLive?: boolean
-	livePartStartsAt?: number
-	livePartDisplayDuration?: number
+	isLiveSegment: boolean | undefined
+	anyPriorPartWasLive: boolean | undefined
+	livePartStartsAt: number | undefined
+	livePartDisplayDuration: number | undefined
 }
 
 interface IState {
