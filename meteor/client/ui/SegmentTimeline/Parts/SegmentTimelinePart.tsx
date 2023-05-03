@@ -337,12 +337,12 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 			timeOffset += this.getFutureShadePaddingTime()
 		}
 
+		const liveWillChangeValue = `transform, ${this.props.relative ? 'width' : 'min-width'}`
+
 		return {
 			...style,
 			transform: `translateX(${this.convertTimeToPixels(timeOffset)}px)`,
-			willChange: this.props.isLiveSegment
-				? ['transform', this.props.relative ? 'width' : 'min-width'].join(', ')
-				: 'none',
+			willChange: this.props.isLiveSegment ? liveWillChangeValue : 'none',
 		}
 	}
 
