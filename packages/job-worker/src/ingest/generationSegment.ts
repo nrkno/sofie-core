@@ -198,7 +198,6 @@ export async function calculateSegmentsFromIngestData(
 					}
 				}
 
-				const existingPart = cache.Parts.findOne(partId)
 				const part = literal<DBPart>({
 					...blueprintPart.part,
 					_id: partId,
@@ -216,8 +215,6 @@ export async function calculateSegmentsFromIngestData(
 						  }
 						: undefined,
 
-					// Preserve:
-					status: existingPart?.status, // This property is 'owned' by core and updated via its own flow
 					expectedDurationWithPreroll: undefined, // Below
 				})
 				res.parts.push(part)
