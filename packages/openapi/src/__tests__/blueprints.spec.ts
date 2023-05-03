@@ -20,7 +20,11 @@ describe('Network client', () => {
 		expect(blueprints.status).toBe(200)
 		expect(blueprints).toHaveProperty('result')
 		expect(blueprints.result.length).toBeGreaterThanOrEqual(3)
-		blueprints.result.forEach((id) => blueprintIds.push(id))
+		blueprints.result.forEach((blueprint) => {
+			expect(typeof blueprint).toBe('object')
+			expect(typeof blueprint.id).toBe('string')
+			blueprintIds.push(blueprint.id)
+		})
 	})
 
 	test('fails to request a blueprint with null id', async () => {

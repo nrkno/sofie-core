@@ -16,6 +16,12 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Meteor } from 'meteor/meteor'
 
+/* *************************************************************************
+This file contains types and interfaces that are used by the REST API.
+When making changes to these types, you should be aware of any breaking changes
+and update packages/openapi accordingly if needed.
+************************************************************************* */
+
 export interface RestAPI {
 	/**
 	 * Returns the current version of Sofie

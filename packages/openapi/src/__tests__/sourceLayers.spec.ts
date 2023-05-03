@@ -22,9 +22,9 @@ describe('Network client', () => {
 		expect(playlists.status).toBe(200)
 		expect(playlists).toHaveProperty('result')
 		expect(playlists.result.length).toBeGreaterThanOrEqual(1)
-		playlists.result.forEach((id) => {
-			expect(typeof id).toBe('string')
-			playlistIds.push(id)
+		playlists.result.forEach((playlist) => {
+			expect(typeof playlist.id).toBe('string')
+			playlistIds.push(playlist.id)
 		})
 
 		const active = await playlistsApi.activate({

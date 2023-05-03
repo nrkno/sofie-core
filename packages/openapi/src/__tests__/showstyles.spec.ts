@@ -20,7 +20,11 @@ describe('Network client', () => {
 		expect(showStyles.status).toBe(200)
 		expect(showStyles).toHaveProperty('result')
 		expect(showStyles.result.length).toBeGreaterThanOrEqual(1)
-		showStyles.result.forEach((id) => showStyleBaseIds.push(id))
+		showStyles.result.forEach((showStyleBase) => {
+			expect(typeof showStyleBase).toBe('object')
+			expect(typeof showStyleBase.id).toBe('string')
+			showStyleBaseIds.push(showStyleBase.id)
+		})
 	})
 
 	let newShowStyleBase: ShowStyleBase | undefined
@@ -76,7 +80,11 @@ describe('Network client', () => {
 		expect(showStyleVariants.status).toBe(200)
 		expect(showStyleVariants).toHaveProperty('result')
 		expect(showStyleVariants.result.length).toBeGreaterThanOrEqual(1)
-		showStyleVariants.result.forEach((id) => showStyleVariantIds.push(id))
+		showStyleVariants.result.forEach((showStyleVariant) => {
+			expect(typeof showStyleVariant).toBe('object')
+			expect(typeof showStyleVariant.id).toBe('string')
+			showStyleVariantIds.push(showStyleVariant.id)
+		})
 	})
 
 	let newShowStyleVariant: ShowStyleVariant | undefined

@@ -33,6 +33,11 @@ import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { Studio } from '../../../lib/collections/Studios'
 import { Blueprints, ShowStyleBases, Studios } from '../../collections'
 
+/*
+This file contains functions that convert between the internal Sofie-Core types and types exposed to the external API.
+When making changes to this file, be wary of breaking changes to the API.
+*/
+
 export function showStyleBaseFrom(
 	apiShowStyleBase: APIShowStyleBase,
 	existingId?: ShowStyleBaseId
@@ -125,7 +130,7 @@ export function APIShowStyleVariantFrom(showStyleVariant: ShowStyleVariant): API
 }
 
 export function sourceLayerFrom(apiSourceLayer: APISourceLayer): ISourceLayer {
-	let layerType: SourceLayerType = SourceLayerType.UNKNOWN
+	let layerType: SourceLayerType
 	switch (apiSourceLayer.layerType) {
 		case 'audio':
 			layerType = SourceLayerType.AUDIO
@@ -179,7 +184,7 @@ export function sourceLayerFrom(apiSourceLayer: APISourceLayer): ISourceLayer {
 }
 
 export function APISourceLayerFrom(sourceLayer: ISourceLayer): APISourceLayer {
-	let layerType: APISourceLayer['layerType'] = 'unknown'
+	let layerType: APISourceLayer['layerType']
 	switch (sourceLayer.type) {
 		case SourceLayerType.AUDIO:
 			layerType = 'audio'

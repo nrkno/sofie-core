@@ -20,7 +20,11 @@ describe('Network client', () => {
 		const devices = await devicesApi.devices()
 		expect(devices.status).toBe(200)
 		expect(devices).toHaveProperty('result')
-		devices.result.forEach((id) => deviceIds.push(id))
+		devices.result.forEach((device) => {
+			expect(typeof device).toBe('object')
+			expect(typeof device.id).toBe('string')
+			deviceIds.push(device.id)
+		})
 	})
 
 	test('can request details of a specified peripheral device attached to Sofie', async () => {

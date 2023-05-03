@@ -1097,6 +1097,12 @@ function sofieAPIRequest<Params, Body, Response>(
 	})
 }
 
+/* ****************************************************************************
+  IMPORTANT: IF YOU MAKE ANY MODIFICATIONS TO THE API, YOU MUST ENSURE THAT
+  THEY ARE REFLECTED IN THE OPENAPI SPECIFICATION FILES
+  (/packages/openapi/api/definitions)
+**************************************************************************** */
+
 koaRouter.get('/', async (ctx, next) => {
 	ctx.type = 'application/json'
 	const server = new ServerRestAPI()
@@ -1743,6 +1749,7 @@ Meteor.startup(() => {
 	if (!Meteor.isAppTest) {
 		// Expose the API at the url /api/v1.0
 		WebApp.connectHandlers.use('/api/v1.0', Meteor.bindEnvironment(app.callback()))
+		// TODO: add a redirect from 'api/latest' to current version number
 	}
 	app.use(async (ctx, next) => {
 		// Strange - sometimes a JSON body gets parsed by Koa before here (eg for a POST call?).

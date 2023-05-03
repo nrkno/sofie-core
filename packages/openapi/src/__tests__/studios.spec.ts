@@ -21,9 +21,10 @@ describe('Network client', () => {
 		expect(studios.status).toBe(200)
 		expect(studios).toHaveProperty('result')
 		expect(studios.result.length).toBeGreaterThanOrEqual(1)
-		studios.result.forEach((id) => {
-			expect(typeof id).toBe('string')
-			studioIds.push(id)
+		studios.result.forEach((studio) => {
+			expect(typeof studio).toBe('object')
+			expect(typeof studio.id).toBe('string')
+			studioIds.push(studio.id)
 		})
 	})
 

@@ -21,8 +21,10 @@ resources:
                   result:
                     type: array
                     items:
-                      type: string
-                    example: ['47', '27']
+                      $ref: '#/components/schemas/deviceItem'
+                    example:
+                      - id: 47
+                      - id: 27
   device:
     get:
       operationId: device
@@ -143,6 +145,14 @@ components:
         action:
           type: string
           const: restart
+      required:
+        - action
+      additionalProperties: false
+    deviceItem:
+      type: object
+      properties:
+        id:
+          type: string
       required:
         - action
       additionalProperties: false
