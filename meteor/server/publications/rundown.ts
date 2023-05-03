@@ -83,7 +83,7 @@ meteorPublish(PubSub.rundowns, async function (playlistIds, showStyleBaseIds, to
 
 	const modifier: FindOptions<DBRundown> = {
 		fields: {
-			metaData: 0,
+			// metaData: 0,
 		},
 	}
 
