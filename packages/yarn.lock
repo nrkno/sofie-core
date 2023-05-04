@@ -16124,6 +16124,7 @@ asn1@evs-broadcast/node-asn1:
     lerna: ^6.6.1
     nodemon: ^2.0.22
     open-cli: ^7.2.0
+    pinst: ^3.0.0
     rimraf: ^4.4.1
     semver: ^7.3.7
     ts-jest: ^29.0.5
@@ -16524,6 +16525,15 @@ asn1@evs-broadcast/node-asn1:
   bin:
     pino: bin.js
   checksum: eb13e12e3a3d682abe4a4da426455a9f4e041e55e4fa57d72d9677ee8d188a9c952f69347e728a3761c8262cdce76ef24bee29e1a53ab15aa9c5e851099163d0
+  languageName: node
+  linkType: hard
+
+"pinst@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "pinst@npm:3.0.0"
+  bin:
+    pinst: bin.js
+  checksum: 4ae48a6a60f79c37071233af51b4d91bfc85cfa3c12b66ccda60cdb642b4d14a4ab0cb3587afc55b1f6192cea1772a5e4822026a0d0d3528296edef00cc2d61f
   languageName: node
   linkType: hard
 
