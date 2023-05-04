@@ -45,8 +45,6 @@ export interface PieceInstance
 
 	/** A flag to signal a given Piece has been deactivated manually */
 	disabled?: boolean
-	/** A flag to signal that a given Piece should be hidden from the UI */
-	hidden?: boolean
 
 	/** If this piece has been created play-time using an AdLibPiece, this should be set to it's source piece */
 	adLibSourceId?: PieceId

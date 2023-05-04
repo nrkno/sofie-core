@@ -111,7 +111,6 @@ export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps): JS
 				.filter(
 					(piece) =>
 						(piece.renderedDuration === null || piece.renderedDuration > 0) &&
-						piece.instance.hidden !== true &&
 						piece.instance.piece.virtual !== true &&
 						piece.sourceLayer?._id === sourceLayer._id
 				)
