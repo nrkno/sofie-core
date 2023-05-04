@@ -11,7 +11,7 @@
 		]
 	},
 	"scripts": {
-		"prepare": "cd .. && husky install",
+		"postinstall": "cd .. && \"$PROJECT_CWD/node_modules/.bin/husky\" install",
 		"build": "lerna run build",
 		"build:try": "lerna run --no-bail build",
 		"watch": "lerna run --parallel build:main -- --watch --preserveWatchOutput",
