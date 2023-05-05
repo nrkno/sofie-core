@@ -21,7 +21,7 @@ resources:
                   result:
                     type: array
                     items:
-                      type: string
+                      $ref: '#/components/schemas/showStyleBaseItem'
         500:
           $ref: '#/components/responses/internalServerError'
     post:
@@ -231,7 +231,7 @@ resources:
           description: Id of the ShowStyleBase to fetch variants for.
           required: true
           schema:
-            type: string
+            $ref: '#/components/schemas/showStyleVariantItem'
       responses:
         200:
           description: Get successful
@@ -531,6 +531,22 @@ components:
               - message
             additionalProperties: false
   schemas:
+    showStyleBaseItem:
+      type: object
+      properties:
+        id:
+          type: string
+      required:
+        - id
+      additionalProperties: false
+    showStyleVariantItem:
+      type: object
+      properties:
+        id:
+          type: string
+      required:
+        - id
+      additionalProperties: false
     showStyleBase:
       type: object
       properties:

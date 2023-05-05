@@ -21,8 +21,9 @@ resources:
                   result:
                     type: array
                     items:
-                      type: string
-                    example: ['OKAgZmZ0Buc99lE_2uPPSKVbMrQ_']
+                      $ref: '#/components/schemas/playlistItem'
+                    example:
+                      - id: 'OKAgZmZ0Buc99lE_2uPPSKVbMrQ_'
         500:
           $ref: '#/components/responses/internalServerError'
   activate:
@@ -516,6 +517,15 @@ resources:
             $ref: '#/components/responses/internalServerError'
 
 components:
+  schemas:
+    playlistItem:
+      type: object
+      properties:
+        id:
+          type: string
+      required:
+        - id
+      additionalProperties: false
   responses:
     putSuccess:
       description: Action successfully sent

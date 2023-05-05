@@ -154,7 +154,7 @@ components:
         id:
           type: string
       required:
-        - action
+        - id
       additionalProperties: false
   responses:
     deviceNotFound:

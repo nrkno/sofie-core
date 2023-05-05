@@ -124,9 +124,9 @@ class ServerRestAPI implements RestAPI {
 	async getAllRundownPlaylists(
 		_connection: Meteor.Connection,
 		_event: string
-	): Promise<ClientAPI.ClientResponse<string[]>> {
+	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>> {
 		return ClientAPI.responseSuccess(
-			RundownPlaylists.find().map((rundownPlaylist) => unprotectString(rundownPlaylist._id))
+			RundownPlaylists.find().map((rundownPlaylist) => ({ id: unprotectString(rundownPlaylist._id) }))
 		)
 	}
 
@@ -586,8 +586,8 @@ class ServerRestAPI implements RestAPI {
 	async getAllBlueprints(
 		_connection: Meteor.Connection,
 		_event: string
-	): Promise<ClientAPI.ClientResponse<string[]>> {
-		return ClientAPI.responseSuccess(Blueprints.find().map((blueprint) => unprotectString(blueprint._id)))
+	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>> {
+		return ClientAPI.responseSuccess(Blueprints.find().map((blueprint) => ({ id: unprotectString(blueprint._id) })))
 	}
 
 	async getBlueprint(
@@ -685,8 +685,8 @@ class ServerRestAPI implements RestAPI {
 	async getShowStyleBases(
 		_connection: Meteor.Connection,
 		_event: string
-	): Promise<ClientAPI.ClientResponse<string[]>> {
-		return ClientAPI.responseSuccess(ShowStyleBases.find().map((base) => unprotectString(base._id)))
+	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>> {
+		return ClientAPI.responseSuccess(ShowStyleBases.find().map((base) => ({ id: unprotectString(base._id) })))
 	}
 
 	async addShowStyleBase(
@@ -770,12 +770,12 @@ class ServerRestAPI implements RestAPI {
 		_connection: Meteor.Connection,
 		_event: string,
 		showStyleBaseId: ShowStyleBaseId
-	): Promise<ClientAPI.ClientResponse<string[]>> {
+	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>> {
 		const showStyleBase = ShowStyleBases.findOne(showStyleBaseId)
 		if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase ${showStyleBaseId} not found`)
 
 		return ClientAPI.responseSuccess(
-			ShowStyleVariants.find({ showStyleBaseId }).map((variant) => unprotectString(variant._id))
+			ShowStyleVariants.find({ showStyleBaseId }).map((variant) => ({ id: unprotectString(variant._id) }))
 		)
 	}
 
@@ -863,8 +863,11 @@ class ServerRestAPI implements RestAPI {
 		return ClientAPI.responseSuccess(undefined, 200)
 	}
 
-	async getStudios(_connection: Meteor.Connection, _event: string): Promise<ClientAPI.ClientResponse<string[]>> {
-		return ClientAPI.responseSuccess(Studios.find().map((studio) => unprotectString(studio._id)))
+	async getStudios(
+		_connection: Meteor.Connection,
+		_event: string
+	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>> {
+		return ClientAPI.responseSuccess(Studios.find().map((studio) => ({ id: unprotectString(studio._id) })))
 	}
 
 	async addStudio(
@@ -1112,7 +1115,7 @@ koaRouter.get('/', async (ctx, next) => {
 	await next()
 })
 
-sofieAPIRequest<never, never, string[]>(
+sofieAPIRequest<never, never, Array<{ id: string }>>(
 	'get',
 	'/playlists',
 	new Map(),
@@ -1368,7 +1371,7 @@ sofieAPIRequest<{ deviceId: string }, { action: PeripheralDeviceAction }, void>(
 	}
 )
 
-sofieAPIRequest<never, never, string[]>(
+sofieAPIRequest<never, never, Array<{ id: string }>>(
 	'get',
 	'/studios',
 	new Map(),
@@ -1486,7 +1489,7 @@ sofieAPIRequest<{ studioId: string; deviceId: string }, never, void>(
 	}
 )
 
-sofieAPIRequest<never, never, string[]>(
+sofieAPIRequest<never, never, Array<{ id: string }>>(
 	'get',
 	'/blueprints',
 	new Map(),
@@ -1533,7 +1536,7 @@ sofieAPIRequest<never, never, void>(
 	}
 )
 
-sofieAPIRequest<never, never, string[]>(
+sofieAPIRequest<never, never, Array<{ id: string }>>(
 	'get',
 	'/showstyles',
 	new Map(),
@@ -1592,7 +1595,7 @@ sofieAPIRequest<{ showStyleBaseId: string }, never, void>(
 	}
 )
 
-sofieAPIRequest<{ showStyleBaseId: string }, never, string[]>(
+sofieAPIRequest<{ showStyleBaseId: string }, never, Array<{ id: string }>>(
 	'get',
 	'/showstyles/:showStyleBaseId/variants',
 	new Map([[404, UserErrorMessage.BlueprintNotFound]]),

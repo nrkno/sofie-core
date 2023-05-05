@@ -21,8 +21,11 @@ resources:
                   result:
                     type: array
                     items:
-                      type: string
-                    example: [system, studio, showstyle]
+                      $ref: '#/components/schemas/blueprintItem'
+                    example:
+                      - id: studio
+                      - id: showstyle
+                      - id: system
         500:
           $ref: '#/components/responses/internalServerError'
   blueprint:
@@ -75,6 +78,15 @@ resources:
         500:
           $ref: '#/components/responses/internalServerError'
 components:
+  schemas:
+    blueprintItem:
+      type: object
+      properties:
+        id:
+          type: string
+      required:
+        - id
+      additionalProperties: false
   responses:
     blueprintNotFound:
       description: The specified Blueprint does not exist.

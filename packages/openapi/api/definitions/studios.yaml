@@ -21,9 +21,9 @@ resources:
                   result:
                     type: array
                     items:
-                      type: string
+                      $ref: '#/components/schemas/studioItem'
                     example:
-                      - studio0
+                      - id: studio0
         500:
           $ref: '#/components/responses/internalServerError'
     post:
@@ -218,7 +218,7 @@ resources:
                   result:
                     type: array
                     items:
-                      type: string
+                      $ref: '#/components/schemas/deviceItem'
         404:
           $ref: '#/components/responses/studioNotFound'
         500:
@@ -360,6 +360,22 @@ resources:
           $ref: '#/components/responses/internalServerError'
 components:
   schemas:
+    studioItem:
+      type: object
+      properties:
+        id:
+          type: string
+      required:
+        - id
+      additionalProperties: false
+    deviceItem:
+      type: object
+      properties:
+        id:
+          type: string
+      required:
+        - id
+      additionalProperties: false
     studio:
       type: object
       properties:

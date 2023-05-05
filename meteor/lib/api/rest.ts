@@ -32,7 +32,10 @@ export interface RestAPI {
 	 * @param connection Connection data including client and header details
 	 * @param event User event string
 	 */
-	getAllRundownPlaylists(connection: Meteor.Connection, event: string): Promise<ClientAPI.ClientResponse<string[]>>
+	getAllRundownPlaylists(
+		connection: Meteor.Connection,
+		event: string
+	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>>
 	/**
 	 * Activates a Playlist.
 	 *
@@ -296,7 +299,10 @@ export interface RestAPI {
 	 * @param connection Connection data including client and header details
 	 * @param event User event string
 	 */
-	getAllBlueprints(connection: Meteor.Connection, event: string): Promise<ClientAPI.ClientResponse<string[]>>
+	getAllBlueprints(
+		connection: Meteor.Connection,
+		event: string
+	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>>
 	/**
 	 * Gets a specific Blueprint.
 	 *
@@ -367,7 +373,10 @@ export interface RestAPI {
 	 * @param connection Connection data including client and header details
 	 * @param event User event string
 	 */
-	getShowStyleBases(connection: Meteor.Connection, event: string): Promise<ClientAPI.ClientResponse<string[]>>
+	getShowStyleBases(
+		connection: Meteor.Connection,
+		event: string
+	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>>
 	/**
 	 * Adds a ShowStyleBase, returning the newly created Id.
 	 *
@@ -433,7 +442,7 @@ export interface RestAPI {
 		connection: Meteor.Connection,
 		event: string,
 		showStyleBaseId: ShowStyleBaseId
-	): Promise<ClientAPI.ClientResponse<string[]>>
+	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>>
 	/**
 	 * Adds a ShowStyleVariant to a specified ShowStyleBase.
 	 *
@@ -503,7 +512,7 @@ export interface RestAPI {
 	 * @param connection Connection data including client and header details
 	 * @param event User event string
 	 */
-	getStudios(connection: Meteor.Connection, event: string): Promise<ClientAPI.ClientResponse<string[]>>
+	getStudios(connection: Meteor.Connection, event: string): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>>
 	/**
 	 * Adds a new Studio, returns the Id of the newly created Studio.
 	 *
