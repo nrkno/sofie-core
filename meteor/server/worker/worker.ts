@@ -335,6 +335,15 @@ export interface WorkerJob<TRes> {
 }
 
 /**
+ * Collect all the prometheus metrics across all the worker threads
+ */
+export async function collectWorkerPrometheusMetrics(): Promise<string[]> {
+	if (!worker) return []
+
+	return worker.collectMetrics()
+}
+
+/**
  * Queue a force clear caches job for all workers
  * @param studioIds Studios to clear caches for
  */
