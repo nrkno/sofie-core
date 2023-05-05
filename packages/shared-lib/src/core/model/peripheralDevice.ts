@@ -19,7 +19,7 @@ export interface PeripheralDevicePublic {
 	name: string
 
 	/** Name of the device (set by the device) */
-	deviceName?: string
+	deviceName: string
 
 	/** The studio this device is assigned to. Will be undefined for sub-devices */
 	studioId?: StudioId

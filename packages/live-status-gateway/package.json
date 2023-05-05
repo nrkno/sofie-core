@@ -53,8 +53,8 @@
 	],
 	"dependencies": {
 		"@sofie-automation/blueprints-integration": "1.50.0-in-development",
-		"@sofie-automation/server-core-integration": "1.50.0-in-development",
 		"@sofie-automation/corelib": "1.50.0-in-development",
+		"@sofie-automation/server-core-integration": "1.50.0-in-development",
 		"@sofie-automation/shared-lib": "1.50.0-in-development",
 		"debug": "^4.3.2",
 		"fast-clone": "^1.5.13",

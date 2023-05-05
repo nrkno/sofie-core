@@ -10,7 +10,7 @@
 		"debug": "meteor run",
 		"libs:syncVersions": "node scripts/libs-sync-version.js",
 		"libs:syncVersionsAndChangelogs": "node scripts/libs-sync-version-and-changelog.js",
-		"postinstall": "meteor yarn prepareForTest",
+		"postinstall": "meteor yarn run prepareForTest",
 		"prepareForTest": "node ../scripts/fixTestFibers.js",
 		"inject-git-hash": "node ./scripts/generate-version-file.js",
 		"unit": "jest",
@@ -22,22 +22,21 @@
 		"ci:lint": "meteor yarn check-types && meteor yarn lint",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
 		"cov": "meteor yarn unitcov && meteor yarn cov-open",
-		"test-i": "yarn integration-test",
 		"license-validate": "node ../scripts/checkLicenses.js --allowed=\"MIT,BSD,ISC,Apache,Unlicense,CC0,LGPL,CC BY 3.0,CC BY 4.0,MPL 2.0,Python 2.0\" --excludePackages=timecode,rxjs/ajax,rxjs/fetch,rxjs/internal-compatibility,nw-pre-gyp-module-test,rxjs/operators,rxjs/testing,rxjs/webSocket,undefined,i18next-conv,@fortawesome/fontawesome-common-types,argv,indexof,custom-license,private,public-domain-module,@sofie-automation/corelib,@sofie-automation/shared-lib,@sofie-automation/job-worker",
-		"lint": "yarn lint:raw -- .",
+		"lint": "run lint:raw .",
 		"lint:raw": "eslint --ext .ts --ext .js --ext .tsx --ext .jsx",
-		"lintfix": "yarn lint -- --fix",
+		"lintfix": "run lint --fix",
 		"quickformat": "prettier \"__mocks__/**\" --write ; prettier \"lib/**\" --write ; prettier \"server/**\" --write ; prettier \"client/**\" --write ; prettier \"*.json\" --write ; prettier \"*.js\" --write ; prettier \"*.md\" --write",
 		"i18n-extract-pot": "node ./scripts/extract-i18next-pot.mjs -f \"{./client/ui/**/*.+(ts|tsx),./lib/mediaObjects.ts,./lib/rundownNotifications.ts,./server/migration/**/*.ts}\" -o i18n/template.pot",
 		"i18n-compile-json": "node ./scripts/i18n-compile-json.mjs",
 		"visualize": "meteor --production --extra-packages bundle-visualizer",
 		"release": "standard-version --commit-all",
-		"prepareChangelog": "yarn release -- --prerelease",
-		"validate:all-dependencies": "yarn validate:prod-dependencies && yarn validate:dev-dependencies && yarn license-validate",
-		"validate:prod-dependencies": "yarn audit --groups dependencies",
-		"validate:dev-dependencies": "yarn audit --groups devDependencies --audit-level=moderate",
+		"prepareChangelog": "run release --prerelease",
+		"validate:all-dependencies": "run validate:prod-dependencies && run validate:dev-dependencies && run license-validate",
+		"validate:prod-dependencies": "yarn npm audit --environment production",
+		"validate:dev-dependencies": "yarn npm audit --environment development --severity moderate",
 		"check-types": "tsc --noEmit -p tsconfig.json",
-		"watch-types": "yarn check-types -- --watch"
+		"watch-types": "run check-types --watch"
 	},
 	"dependencies": {
 		"@babel/runtime": "^7.21.0",
@@ -53,10 +52,10 @@
 		"@nrk/core-icons": "^9.6.0",
 		"@popperjs/core": "^2.11.7",
 		"@slack/webhook": "^6.1.0",
-		"@sofie-automation/blueprints-integration": "link:../packages/blueprints-integration",
-		"@sofie-automation/corelib": "link:../packages/corelib",
-		"@sofie-automation/job-worker": "link:../packages/job-worker",
-		"@sofie-automation/shared-lib": "link:../packages/shared-lib",
+		"@sofie-automation/blueprints-integration": "portal:../packages/blueprints-integration",
+		"@sofie-automation/corelib": "portal:../packages/corelib",
+		"@sofie-automation/job-worker": "portal:../packages/job-worker",
+		"@sofie-automation/shared-lib": "portal:../packages/shared-lib",
 		"@sofie-automation/sorensen": "^1.4.2",
 		"app-root-path": "^3.1.0",
 		"bcrypt": "^5.0.1",
@@ -66,7 +65,6 @@
 		"cubic-spline": "^3.0.3",
 		"deep-extend": "0.6.0",
 		"deepmerge": "^4.3.1",
-		"eslint-plugin-custom-rules": "file:eslint-rules",
 		"i18next": "^21.9.1",
 		"i18next-browser-languagedetector": "^6.1.5",
 		"i18next-http-backend": "^1.4.1",
@@ -78,6 +76,7 @@
 		"meteor-node-stubs": "^1.2.5",
 		"moment": "^2.29.2",
 		"nanoid": "^3.3.4",
+		"node-gyp": "^9.3.1",
 		"ntp-client": "^0.5.3",
 		"object-path": "^0.11.8",
 		"p-lazy": "^3.1.0",
@@ -115,7 +114,8 @@
 	"devDependencies": {
 		"@babel/core": "^7.21.3",
 		"@babel/plugin-transform-modules-commonjs": "^7.21.2",
-		"@sofie-automation/code-standard-preset": "~2.4.1",
+		"@sofie-automation/code-standard-preset": "~2.4.6",
+		"@sofie-automation/eslint-plugin": "^0.1.1",
 		"@types/app-root-path": "^1.2.4",
 		"@types/body-parser": "^1.19.2",
 		"@types/classnames": "^2.3.1",
@@ -133,16 +133,26 @@
 		"@types/react-circular-progressbar": "^1.1.0",
 		"@types/react-datepicker": "^3.1.8",
 		"@types/react-dom": "^18.0.11",
+		"@types/react-router": "^5.1.20",
 		"@types/react-router-dom": "^5.3.3",
 		"@types/request": "^2.48.8",
 		"@types/semver": "^7.3.12",
 		"@types/sinon": "^10.0.13",
 		"@types/underscore": "1.11.4",
 		"@types/xml2js": "^0.4.11",
+		"@typescript-eslint/eslint-plugin": "^5.59.1",
+		"@typescript-eslint/parser": "^5.59.1",
+		"@typescript-eslint/utils": "^5.59.1",
 		"@welldone-software/why-did-you-render": "^4.3.1",
 		"@xmldom/xmldom": "^0.8.0",
 		"babel-jest": "^29.5.0",
 		"ejson": "^2.2.3",
+		"eslint": "^8.39.0",
+		"eslint-config-prettier": "^8.8.0",
+		"eslint-plugin-custom-rules": "file:eslint-rules",
+		"eslint-plugin-jest": "^27.2.1",
+		"eslint-plugin-node": "^11.1.0",
+		"eslint-plugin-prettier": "^4.2.1",
 		"eslint-plugin-react": "^7.32.2",
 		"fast-clone": "^1.5.13",
 		"fibers-npm": "npm:fibers@4.0.3",
@@ -155,6 +165,7 @@
 		"meteor-promise": "0.9.0",
 		"mock-http": "^1.1.0",
 		"open-cli": "^7.2.0",
+		"prettier": "^2.8.8",
 		"sinon": "^14.0.0",
 		"standard-version": "^9.5.0",
 		"ts-jest": "^29.0.5",
@@ -165,7 +176,7 @@
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {
 		"*.{css,json,md,scss}": [
-			"prettier"
+			"yarn prettier"
 		],
 		"*.{ts,tsx,js,jsx}": [
 			"yarn lint:raw"
@@ -188,5 +199,12 @@
 		"scripts": {
 			"postbump": "yarn libs:syncVersionsAndChangelogs"
 		}
-	}
+	},
+	"resolutions": {
+		"@sofie-automation/blueprints-integration": "portal:../packages/blueprints-integration",
+		"@sofie-automation/corelib": "portal:../packages/corelib",
+		"@sofie-automation/job-worker": "portal:../packages/job-worker",
+		"@sofie-automation/shared-lib": "portal:../packages/shared-lib"
+	},
+	"packageManager": "yarn@3.5.0"
 }

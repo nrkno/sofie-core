@@ -76,7 +76,7 @@ export const Segment = withResolvedSegment(
 			[activePartInstances.nextPartInstance, segmentui?._id]
 		)
 
-		if (partsAndPieces.length === 0) return null
+		if (partsAndPieces.length === 0 || segmentui === undefined) return null
 
 		return (
 			<div
@@ -84,9 +84,10 @@ export const Segment = withResolvedSegment(
 					live: !!ownCurrentPartInstance,
 					next: !!ownNextPartInstance,
 				})}
+				data-segment-id={segmentui._id}
 				data-own-current-part-instance-id={ownCurrentPartInstance?._id}
 			>
-				<div className="camera-screen__segment-name">{segmentui?.name}</div>
+				<div className="camera-screen__segment-name">{segmentui.name}</div>
 				{partsAndPieces.map(({ part, piece }) => {
 					const isLive = ownCurrentPartInstance?._id === part.instance._id
 					const isNext = ownNextPartInstance?._id === part.instance._id

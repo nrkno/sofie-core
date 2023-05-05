@@ -194,7 +194,7 @@ logger.debug(`Test debug logging`)
 
 // App config -----------------------------------------
 const config: Config = {
-	process: {
+	certificates: {
 		unsafeSSL: unsafeSSL,
 		certificates: _.compact(certs),
 	},

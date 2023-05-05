@@ -27,7 +27,7 @@ jobs:
         run: |
           yarn
           cd meteor
-          meteor npm run validate:prod-dependencies
+          meteor yarn validate:prod-dependencies
         env:
           CI: true
 
@@ -53,7 +53,7 @@ jobs:
         run: |
           yarn
           cd meteor
-          meteor npm run validate:all-dependencies
+          meteor yarn run validate:all-dependencies
         env:
           CI: true
 

@@ -27,7 +27,7 @@ RUN npm install
 
 # Install production dependencies for the worker
 WORKDIR /opt/core/packages
-RUN yarn --prod --ignore-scripts
+RUN yarn workspaces focus --all --production
 
 # DEPLOY IMAGE
 FROM node:14-alpine

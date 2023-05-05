@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.49.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.2...v1.49.0-in-testing.3) (2023-04-18)
+
+
+### Bug Fixes
+
+* Failing tests ([ea09e77](https://github.com/nrkno/sofie-core/commit/ea09e7751bcce79b82d9e2f85bb6ebc2d8558c45))
+* improve warning icons on Pieces in Segment List View ([79bb2a3](https://github.com/nrkno/sofie-core/commit/79bb2a30c0f724a7334257571e9e0bee8cc947a7))
+* JobQueueWithClasses: add convenience methods ([eb89ab5](https://github.com/nrkno/sofie-core/commit/eb89ab5723777dddaded74c6e59090e9b1bd2fc6))
+* JobQueueWithClasses: don't start working on new jobs synchronously ([392cc3d](https://github.com/nrkno/sofie-core/commit/392cc3dda084301a1c1989b0c39834519f5416ee))
+* minor issues in JobQueueWithClasses ([7a1edcd](https://github.com/nrkno/sofie-core/commit/7a1edcd73290f9dfefb5d7a2da034b259837f270))
+* Out of sync playhead countdown ([baa2761](https://github.com/nrkno/sofie-core/commit/baa27612f4dbf815b338c261068587d35a8484c4))
+* PackageContainerPackageStatuses can be very reactive because the modified field can be updated all the time ([861c4cd](https://github.com/nrkno/sofie-core/commit/861c4cd129f0659a48858cc000175ff398afa201))
+* race condition in waitForDone() ([8b1f942](https://github.com/nrkno/sofie-core/commit/8b1f9426d7aa47190789035d7c5819bf82e95ce3))
+* Reinstate syncedEventTImeNow ([21e8ed8](https://github.com/nrkno/sofie-core/commit/21e8ed8b358fd931aaf8601dd412174c91875238))
+* **SegmentTimeline:** onPartTooSmallChanged was not using strict comparisons for potentially falsy values ([30f0b2d](https://github.com/nrkno/sofie-core/commit/30f0b2d7fa26df873a716258961bb42ad9db8d11))
+* use the low reactivity publication for packageContainerPackageStatuses ([13c03f0](https://github.com/nrkno/sofie-core/commit/13c03f0f413e7bec486b92c6c35bfc1cf9c62a72))
+
 ## [1.49.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.47.1-0...v1.49.0-in-testing.2) (2023-03-30)
 
 
@@ -401,6 +418,16 @@ All notable changes to this project will be documented in this file. See [standa
 * missing package-manager methods ([#838](https://github.com/nrkno/sofie-core/issues/838)) ([03cf060](https://github.com/nrkno/sofie-core/commit/03cf060dff3f6bca1162f0dcbc01d04957223422))
 * **PoGw:** resolve issues with reporting context from TSR ([687193f](https://github.com/nrkno/sofie-core/commit/687193ffeb599d5193f2f06d49b987a71a766206))
 * put vizPurgeRundown method on the sub-device instead ([e3e4d06](https://github.com/nrkno/sofie-core/commit/e3e4d060cd87eb96f2b7219d6ffe3ca66726b23e))
+
+### [1.47.1-1](https://github.com/nrkno/sofie-core/compare/v1.47.1-0...v1.47.1-1) (2023-04-26)
+
+
+### Bug Fixes
+
+* Failing tests ([ea09e77](https://github.com/nrkno/sofie-core/commit/ea09e7751bcce79b82d9e2f85bb6ebc2d8558c45))
+* Out of sync playhead countdown ([baa2761](https://github.com/nrkno/sofie-core/commit/baa27612f4dbf815b338c261068587d35a8484c4))
+* PieceInstance.`plannedStartedPlayback` not being propogated for infinites ([17399a6](https://github.com/nrkno/sofie-core/commit/17399a68566238d736f7cd9504fbfd421dca2811))
+* Reinstate syncedEventTImeNow ([21e8ed8](https://github.com/nrkno/sofie-core/commit/21e8ed8b358fd931aaf8601dd412174c91875238))
 
 ### [1.47.1-0](https://github.com/nrkno/sofie-core/compare/v1.47.0...v1.47.1-0) (2023-03-30)
 

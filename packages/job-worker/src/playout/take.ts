@@ -552,6 +552,8 @@ function startHold(
 				// Preserve the timings from the playing instance
 				reportedStartedPlayback: instance.reportedStartedPlayback,
 				reportedStoppedPlayback: instance.reportedStoppedPlayback,
+				plannedStartedPlayback: instance.plannedStartedPlayback,
+				plannedStoppedPlayback: instance.plannedStoppedPlayback,
 			})
 			const content = newInstance.piece.content as VTContent | undefined
 			if (content && content.fileName && content.sourceDuration && instance.plannedStartedPlayback) {

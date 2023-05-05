@@ -3,6 +3,7 @@ import {
 	PeripheralDevice,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
+	PeripheralDeviceCategory,
 } from '../../../lib/collections/PeripheralDevices'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -20,6 +21,7 @@ import { DevicePackageManagerSettings } from './DevicePackageManagerSettings'
 import { getExpectedLatency } from '@sofie-automation/corelib/dist/studio/playout'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices } from '../../collections'
+import { useTranslation } from 'react-i18next'
 
 interface IDeviceSettingsProps {
 	match: {
@@ -217,6 +219,8 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 						</label>
 					</div>
 
+					{device.category === PeripheralDeviceCategory.INGEST && <IngestDeviceCoreConfig device={device} />}
+
 					{this.renderSpecifics()}
 
 					{this.props.device &&
@@ -242,3 +246,28 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 		}
 	}
 )
+
+interface IngestDeviceCoreConfigProps {
+	device: PeripheralDevice
+}
+function IngestDeviceCoreConfig({ device }: IngestDeviceCoreConfigProps) {
+	const { t } = useTranslation()
+
+	return (
+		<>
+			<div className="mod mhv mhs">
+				<label className="field">
+					{t('NRCS Name')}
+					<EditAttribute
+						modifiedClassName="bghl"
+						attribute="nrcsName"
+						obj={device}
+						type="text"
+						collection={PeripheralDevices}
+						className="form-control input text-input input-l"
+					/>
+				</label>
+			</div>
+		</>
+	)
+}

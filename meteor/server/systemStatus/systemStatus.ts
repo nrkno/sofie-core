@@ -1,10 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import {
-	PeripheralDevice,
-	PeripheralDeviceType,
-	PERIPHERAL_SUBTYPE_PROCESS,
-} from '../../lib/collections/PeripheralDevices'
-import { getCurrentTime, Time, getRandomId, assertNever, literal } from '../../lib/lib'
+import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '../../lib/collections/PeripheralDevices'
+import { getCurrentTime, Time, getRandomId, literal } from '../../lib/lib'
 import {
 	parseVersion,
 	parseCoreIntegrationCompatabilityRange,
@@ -159,25 +155,8 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 		},
 		checks: checks,
 	}
-	if (device.type === PeripheralDeviceType.MOS) {
-		so.documentation = 'https://github.com/nrkno/sofie-core'
-	} else if (device.type === PeripheralDeviceType.SPREADSHEET) {
-		so.documentation = 'https://github.com/SuperFlyTV/spreadsheet-gateway'
-	} else if (device.type === PeripheralDeviceType.PLAYOUT) {
-		so.documentation = 'https://github.com/nrkno/sofie-core'
-	} else if (device.type === PeripheralDeviceType.MEDIA_MANAGER) {
-		so.documentation = 'https://github.com/nrkno/sofie-media-management'
-	} else if (device.type === PeripheralDeviceType.INEWS) {
-		so.documentation = 'https://github.com/olzzon/tv2-inews-ftp-gateway'
-	} else if (device.type === PeripheralDeviceType.PACKAGE_MANAGER) {
-		so.documentation = 'https://github.com/nrkno/sofie-package-manager'
-	} else if (device.type === PeripheralDeviceType.LIVE_STATUS) {
-		so.documentation = 'https://github.com/nrkno/sofie-core'
-	} else if (device.type === PeripheralDeviceType.INPUT) {
-		so.documentation = 'https://github.com/nrkno/sofie-input-gateway'
-	} else {
-		assertNever(device.type)
-	}
+
+	so.documentation = device.documentationUrl ?? ''
 
 	return so
 }

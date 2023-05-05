@@ -266,7 +266,7 @@ async function checkTimingsRaw(
 	}
 }
 
-/** Perform a take and check the the selected part ids are as expected */
+/** Perform a take and check the selected part ids are as expected */
 async function doTakePart(
 	context: MockJobContext,
 	playlistId: RundownPlaylistId,

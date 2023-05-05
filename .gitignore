@@ -13,3 +13,11 @@ scratch/
 .github/workflows/deps.yaml
 .github/workflows/forkSync.yml
 .github/workflows/forkSynk.yml
+
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions

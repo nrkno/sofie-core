@@ -66,7 +66,7 @@ export async function handlePartInstanceTimings(context: JobContext, data: PartI
 			)
 
 		if (blueprint.onRundownTimingEvent) {
-			// The the PartInstances(events) before and after the one we are processing
+			// The PartInstances(events) before and after the one we are processing
 			const [previousPartInstance, nextPartInstance] = await Promise.all([
 				context.directCollections.PartInstances.findOne(
 					{

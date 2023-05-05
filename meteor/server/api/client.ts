@@ -405,7 +405,7 @@ export namespace ServerClientAPI {
 			})
 		}
 
-		void PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
+		await PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
 
 		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, {
 			functionName,
