@@ -1,5 +1,7 @@
 import { register, collectDefaultMetrics } from 'prom-client'
 
+export { Gauge as MetricsGauge } from 'prom-client'
+
 /**
  * HTTP Content-type header for the metrics
  */
