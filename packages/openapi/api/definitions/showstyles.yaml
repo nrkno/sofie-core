@@ -231,7 +231,7 @@ resources:
           description: Id of the ShowStyleBase to fetch variants for.
           required: true
           schema:
-            $ref: '#/components/schemas/showStyleVariantItem'
+            type: string
       responses:
         200:
           description: Get successful
@@ -246,7 +246,7 @@ resources:
                   result:
                     type: array
                     items:
-                      type: string
+                      $ref: '#/components/schemas/showStyleVariantItem'
         404:
           $ref: '#/components/responses/showStyleBaseNotFound'
         500:

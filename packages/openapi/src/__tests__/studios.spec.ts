@@ -63,7 +63,7 @@ describe('Network client', () => {
 		expect(devices.result.length).toBeGreaterThanOrEqual(1)
 		devices.result.forEach((id) => {
 			expect(typeof id).toBe('string')
-			studioDevices.push(id)
+			studioDevices.push(id.id)
 		})
 	})
 
