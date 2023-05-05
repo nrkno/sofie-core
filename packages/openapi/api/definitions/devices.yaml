@@ -23,8 +23,8 @@ resources:
                     items:
                       $ref: '#/components/schemas/deviceItem'
                     example:
-                      - id: 47
-                      - id: 27
+                      - id: '47'
+                      - id: '27'
   device:
     get:
       operationId: device

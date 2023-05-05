@@ -526,8 +526,8 @@ class ServerRestAPI implements RestAPI {
 	async getPeripheralDevices(
 		_connection: Meteor.Connection,
 		_event: string
-	): Promise<ClientAPI.ClientResponse<string[]>> {
-		return ClientAPI.responseSuccess(PeripheralDevices.find().map((p) => unprotectString(p._id)))
+	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>> {
+		return ClientAPI.responseSuccess(PeripheralDevices.find().map((p) => ({ id: unprotectString(p._id) })))
 	}
 
 	async getPeripheralDevice(
@@ -579,8 +579,10 @@ class ServerRestAPI implements RestAPI {
 		_connection: Meteor.Connection,
 		_event: string,
 		studioId: StudioId
-	): Promise<ClientAPI.ClientResponse<string[]>> {
-		return ClientAPI.responseSuccess(PeripheralDevices.find({ studioId }).map((p) => unprotectString(p._id)))
+	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>> {
+		return ClientAPI.responseSuccess(
+			PeripheralDevices.find({ studioId }).map((p) => ({ id: unprotectString(p._id) }))
+		)
 	}
 
 	async getAllBlueprints(
@@ -1333,7 +1335,7 @@ sofieAPIRequest<{ playlistId: string; sourceLayerId: string }, never, void>(
 	}
 )
 
-sofieAPIRequest<never, never, string[]>(
+sofieAPIRequest<never, never, Array<{ id: string }>>(
 	'get',
 	'/devices',
 	new Map(),
@@ -1430,7 +1432,7 @@ sofieAPIRequest<{ studioId: string }, never, void>(
 	}
 )
 
-sofieAPIRequest<{ studioId: string }, never, string[]>(
+sofieAPIRequest<{ studioId: string }, never, Array<{ id: string }>>(
 	'get',
 	'/studios/:studioId/devices',
 	new Map([[404, UserErrorMessage.StudioNotFound]]),
