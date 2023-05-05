@@ -1749,7 +1749,14 @@ Meteor.startup(() => {
 	if (!Meteor.isAppTest) {
 		// Expose the API at the url /api/v1.0
 		WebApp.connectHandlers.use('/api/v1.0', Meteor.bindEnvironment(app.callback()))
-		// TODO: add a redirect from 'api/latest' to current version number
+		// Redirect `/latest` to the most recent API version
+		WebApp.connectHandlers.use(function (req, res, next) {
+			var path = req.url
+			if (path == '/latest') {
+				res.writeHead(307, { Location: '/api/v1.0' })
+				res.end()
+			} else next()
+		})
 	}
 	app.use(async (ctx, next) => {
 		// Strange - sometimes a JSON body gets parsed by Koa before here (eg for a POST call?).
