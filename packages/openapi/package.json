@@ -8,6 +8,7 @@
 		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
 		"directory": "packages/openapi"
 	},
+	"main": "dist/index.js",
 	"scripts": {
 		"prepare": "yarn build",
 		"build": "rimraf dist && yarn genclient:ts && yarn build:main",

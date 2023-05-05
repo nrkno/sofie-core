@@ -22,7 +22,6 @@ The current version of the API is always available on `/api/latest` which will r
 
 ## How to use
 
-
 ### How to write an external application that talks to Sofie
 
 By using the OpenAPI-definitions when talking to Sofie, you can be confident that your application is
@@ -33,10 +32,10 @@ npm install @sofie-automation/openapi
 ```
 
 ```typescript
-import { Configuration, PlaylistsApi, ResponseError } from '@sofie-automation/openapi/client/ts'
+import { Configuration, PlaylistsApi, ResponseError, API_VERSION } from '@sofie-automation/openapi'
 
 const config = new Configuration({
-    basePath: 'http://mysofie:3000'
+    basePath: `http://mysofie:3000/api/${API_VERSION}`
 })
 
 const sofieVersion = await sofieApi.index()
@@ -53,11 +52,8 @@ if (!firstPlaylist) throw new Error('No playlists found')
 await playlistsApi.activate({
     playlistId: firstPlaylist._id,
 	activateRequest: { rehearsal: true },
-})
-
-    
+}) 
 ```
-
 
 ## For developers
 
@@ -69,7 +65,7 @@ Implementation of changes to this package should be done inside of [/meteor/serv
 
 This package contains API definitions that are intended to be **STABLE**. When making changes to these, you should take extra care to try to avoid any breaking changes. Where breaking changes are necessary, [please open an issue](https://github.com/nrkno/sofie-core/issues) to announce the breaking change.
 
-Any breaking changes should result in a major version bump in [/packages/openapi/api/actions.yaml](api/actions.yaml).
+Any breaking changes should result in a major version bump in [/packages/openapi/api/actions.yaml](api/actions.yaml). The API version will also need to be updated in [/index.ts](/index.ts), as the version string is not exported by the OpenAPI code generator.
 
 ### Generate stuff
 

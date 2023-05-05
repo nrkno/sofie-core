@@ -2,12 +2,12 @@ openapi: '3.0.3'
 info:
   title: 'Sofie User Actions API'
   description: 'The Sofie User Actions API provides paths to allow a device to control a Sofie and query health information'
-  version: '0.0.1'
+  version: '1.0.0'
   license:
     name: 'MIT License'
     url: 'http://opensource.org/licenses/MIT'
 servers:
-  - url: /api/v1.0
+  - url: http://localhost:3000/api/v1.0
     description: Initial release of UserActions API - http - for use during development only!
 tags:
   - name: userActions
