@@ -1,6 +1,12 @@
 import { register, collectDefaultMetrics } from 'prom-client'
 
-export { Gauge as MetricsGauge } from 'prom-client'
+// Re-export types, to ensure the correct 'instance' of 'prom-client' is used
+export {
+	Gauge as MetricsGauge,
+	Counter as MetricsCounter,
+	Histogram as MetricsHistogram,
+	Summary as MetricsSummary,
+} from 'prom-client'
 
 /**
  * HTTP Content-type header for the metrics
