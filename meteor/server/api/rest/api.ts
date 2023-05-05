@@ -1153,7 +1153,7 @@ sofieAPIRequest<{ playlistId: string }, never, void>(
 )
 
 sofieAPIRequest<{ playlistId: string }, { adLibId: string; actionType?: string }, object>(
-	'put',
+	'post',
 	'/playlists/:playlistId/executeAdLib',
 	new Map([
 		[404, UserErrorMessage.RundownPlaylistNotFound],
@@ -1166,7 +1166,7 @@ sofieAPIRequest<{ playlistId: string }, { adLibId: string; actionType?: string }
 		)
 		const actionTypeObj = body
 		const triggerMode = actionTypeObj ? (actionTypeObj as { actionType: string }).actionType : undefined
-		logger.info(`API PUT: executeAdLib ${rundownPlaylistId} ${adLibId} - triggerMode: ${triggerMode}`)
+		logger.info(`API POST: executeAdLib ${rundownPlaylistId} ${adLibId} - triggerMode: ${triggerMode}`)
 
 		check(adLibId, String)
 		check(rundownPlaylistId, String)
@@ -1176,7 +1176,7 @@ sofieAPIRequest<{ playlistId: string }, { adLibId: string; actionType?: string }
 )
 
 sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
-	'put',
+	'post',
 	'/playlists/:playlistId/moveNextPart',
 	new Map([
 		[404, UserErrorMessage.RundownPlaylistNotFound],
@@ -1185,7 +1185,7 @@ sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const delta = body.delta
-		logger.info(`API PUT: moveNextPart ${rundownPlaylistId} ${delta}`)
+		logger.info(`API POST: moveNextPart ${rundownPlaylistId} ${delta}`)
 
 		check(rundownPlaylistId, String)
 		check(delta, Number)
@@ -1194,7 +1194,7 @@ sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
 )
 
 sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
-	'put',
+	'post',
 	'/playlists/:playlistId/moveNextSegment',
 	new Map([
 		[404, UserErrorMessage.RundownPlaylistNotFound],
@@ -1203,7 +1203,7 @@ sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const delta = body.delta
-		logger.info(`API PUT: moveNextSegment ${rundownPlaylistId} ${delta}`)
+		logger.info(`API POST: moveNextSegment ${rundownPlaylistId} ${delta}`)
 
 		check(rundownPlaylistId, String)
 		check(delta, Number)
@@ -1277,7 +1277,7 @@ sofieAPIRequest<{ playlistId: string }, { segmentId: string }, void>(
 )
 
 sofieAPIRequest<{ playlistId: string }, { fromPartInstanceId?: string }, void>(
-	'put',
+	'post',
 	'/playlists/:playlistId/take',
 	new Map([
 		[404, UserErrorMessage.RundownPlaylistNotFound],
@@ -1286,7 +1286,7 @@ sofieAPIRequest<{ playlistId: string }, { fromPartInstanceId?: string }, void>(
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const fromPartInstanceId = body.fromPartInstanceId
-		logger.info(`API PUT: take ${rundownPlaylistId}`)
+		logger.info(`API POST: take ${rundownPlaylistId}`)
 
 		check(rundownPlaylistId, String)
 		check(fromPartInstanceId, Match.Optional(String))
@@ -1313,7 +1313,7 @@ sofieAPIRequest<{ playlistId: string; sourceLayerId: string }, never, void>(
 )
 
 sofieAPIRequest<{ playlistId: string; sourceLayerId: string }, never, void>(
-	'put',
+	'post',
 	'/playlists/:playlistId/sourceLayer/:sourceLayerId/sticky',
 	new Map([
 		[404, UserErrorMessage.RundownPlaylistNotFound],
@@ -1322,7 +1322,7 @@ sofieAPIRequest<{ playlistId: string; sourceLayerId: string }, never, void>(
 	async (serverAPI, connection, event, params, _) => {
 		const playlistId = protectString<RundownPlaylistId>(params.playlistId)
 		const sourceLayerId = params.sourceLayerId
-		logger.info(`API PUT: sourceLayer recallSticky ${playlistId} ${sourceLayerId}`)
+		logger.info(`API POST: sourceLayer recallSticky ${playlistId} ${sourceLayerId}`)
 
 		check(playlistId, String)
 		check(sourceLayerId, String)
@@ -1354,13 +1354,13 @@ sofieAPIRequest<{ deviceId: string }, never, APIPeripheralDevice>(
 )
 
 sofieAPIRequest<{ deviceId: string }, { action: PeripheralDeviceAction }, void>(
-	'put',
+	'post',
 	'/devices/:deviceId/action',
 	new Map(),
 	async (serverAPI, connection, event, params, body) => {
 		const deviceId = protectString<PeripheralDeviceId>(params.deviceId)
 		const action = body.action
-		logger.info(`API PUT: peripheral device ${deviceId} action ${action.type}`)
+		logger.info(`API POST: peripheral device ${deviceId} action ${action.type}`)
 
 		check(deviceId, String)
 		check(action, Object)
@@ -1671,13 +1671,13 @@ sofieAPIRequest<{ showStyleBaseId: string; showStyleVariantId: string }, never, 
 )
 
 sofieAPIRequest<{ studioId: string }, { action: StudioAction }, void>(
-	'put',
+	'post',
 	'/studios/{studioId}/action',
 	new Map([[404, UserErrorMessage.StudioNotFound]]),
 	async (serverAPI, connection, event, params, body) => {
 		const studioId = protectString<StudioId>(params.studioId)
 		const action = body.action
-		logger.info(`API PUT: Studio action ${studioId} ${body.action.type}`)
+		logger.info(`API POST: Studio action ${studioId} ${body.action.type}`)
 
 		check(studioId, String)
 		check(action, Object)

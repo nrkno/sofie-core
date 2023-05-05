@@ -319,7 +319,7 @@ resources:
         500:
           $ref: '#/components/responses/internalServerError'
   studioAction:
-    put:
+    post:
       operationId: studioAction
       tags:
         - studios

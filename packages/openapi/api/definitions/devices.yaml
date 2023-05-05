@@ -101,7 +101,7 @@ resources:
         404:
           description: The requested device does not exist.
   deviceAction:
-    put:
+    post:
       operationId: deviceAction
       tags:
         - devices
