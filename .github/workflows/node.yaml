@@ -393,7 +393,7 @@ jobs:
         run: |
           cd packages
           yarn config set cacheFolder /home/runner/test-packages-cache
-          node is_node_14.js && npx yarn-exclude --exclude openapi || yarn install
+          node is_node_14.js && yarn lerna run --ignore openapi install || yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
           CI: true
