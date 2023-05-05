@@ -12,6 +12,7 @@
 		]
 	},
 	"scripts": {
+		"prepare": "(node is_node_14.js && yarn lerna run prepare --ignore @sofie-automation/openapi || yarn lerna run prepare)",
 		"postinstall": "cd .. && \"$PROJECT_CWD/node_modules/.bin/husky\" install",
 		"build": "lerna run build",
 		"build:try": "lerna run --no-bail build",
