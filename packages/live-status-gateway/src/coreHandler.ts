@@ -164,6 +164,7 @@ export class CoreHandler {
 			watchDog: this._coreConfig ? this._coreConfig.watchdog : true,
 
 			configManifest: LIVE_STATUS_DEVICE_CONFIG,
+			documentationUrl: `https://nrkno.github.io/sofie-core/`,
 		}
 
 		if (!options.deviceToken) {
