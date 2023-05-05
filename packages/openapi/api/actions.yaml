@@ -38,19 +38,19 @@ paths:
     $ref: 'definitions/playlists.yaml#/resources/activate'
   /playlists/{playlistId}/deactivate:
     $ref: 'definitions/playlists.yaml#/resources/deactivate'
-  /playlists/{playlistId}/executeAdLib:
+  /playlists/{playlistId}/execute-adlib:
     $ref: 'definitions/playlists.yaml#/resources/executeAdLib'
-  /playlists/{playlistId}/moveNextPart:
+  /playlists/{playlistId}/move-next-part:
     $ref: 'definitions/playlists.yaml#/resources/moveNextPart'
-  /playlists/{playlistId}/moveNextSegment:
+  /playlists/{playlistId}/move-next-segment:
     $ref: 'definitions/playlists.yaml#/resources/moveNextSegment'
-  /playlists/{playlistId}/reloadPlaylist:
+  /playlists/{playlistId}/reload-playlist:
     $ref: 'definitions/playlists.yaml#/resources/reloadPlaylist'
-  /playlists/{playlistId}/resetPlaylist:
+  /playlists/{playlistId}/reset-playlist:
     $ref: 'definitions/playlists.yaml#/resources/resetPlaylist'
-  /playlists/{playlistId}/setNextPart:
+  /playlists/{playlistId}/set-next-part:
     $ref: 'definitions/playlists.yaml#/resources/setNextPart'
-  /playlists/{playlistId}/setNextSegment:
+  /playlists/{playlistId}/set-next-segment:
     $ref: 'definitions/playlists.yaml#/resources/setNextSegment'
   /playlists/{playlistId}/take:
     $ref: 'definitions/playlists.yaml#/resources/take'
@@ -63,7 +63,7 @@ paths:
     $ref: 'definitions/studios.yaml#/resources/studios'
   /studios/{studioId}:
     $ref: 'definitions/studios.yaml#/resources/studio'
-  /studios/{studioId}/switchRouteSet:
+  /studios/{studioId}/switch-route-set:
     $ref: 'definitions/studios.yaml#/resources/switchRouteSet'
   /studios/{studioId}/devices:
     $ref: 'definitions/studios.yaml#/resources/devices'

@@ -1154,7 +1154,7 @@ sofieAPIRequest<{ playlistId: string }, never, void>(
 
 sofieAPIRequest<{ playlistId: string }, { adLibId: string; actionType?: string }, object>(
 	'post',
-	'/playlists/:playlistId/executeAdLib',
+	'/playlists/:playlistId/execute-adlib',
 	new Map([
 		[404, UserErrorMessage.RundownPlaylistNotFound],
 		[412, UserErrorMessage.AdlibNotFound],
@@ -1166,7 +1166,7 @@ sofieAPIRequest<{ playlistId: string }, { adLibId: string; actionType?: string }
 		)
 		const actionTypeObj = body
 		const triggerMode = actionTypeObj ? (actionTypeObj as { actionType: string }).actionType : undefined
-		logger.info(`API POST: executeAdLib ${rundownPlaylistId} ${adLibId} - triggerMode: ${triggerMode}`)
+		logger.info(`API POST: execute-adlib ${rundownPlaylistId} ${adLibId} - triggerMode: ${triggerMode}`)
 
 		check(adLibId, String)
 		check(rundownPlaylistId, String)
@@ -1177,7 +1177,7 @@ sofieAPIRequest<{ playlistId: string }, { adLibId: string; actionType?: string }
 
 sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
 	'post',
-	'/playlists/:playlistId/moveNextPart',
+	'/playlists/:playlistId/move-next-part',
 	new Map([
 		[404, UserErrorMessage.RundownPlaylistNotFound],
 		[412, UserErrorMessage.PartNotFound],
@@ -1185,7 +1185,7 @@ sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const delta = body.delta
-		logger.info(`API POST: moveNextPart ${rundownPlaylistId} ${delta}`)
+		logger.info(`API POST: move-next-part ${rundownPlaylistId} ${delta}`)
 
 		check(rundownPlaylistId, String)
 		check(delta, Number)
@@ -1195,7 +1195,7 @@ sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
 
 sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
 	'post',
-	'/playlists/:playlistId/moveNextSegment',
+	'/playlists/:playlistId/move-next-segment',
 	new Map([
 		[404, UserErrorMessage.RundownPlaylistNotFound],
 		[412, UserErrorMessage.PartNotFound],
@@ -1203,7 +1203,7 @@ sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const delta = body.delta
-		logger.info(`API POST: moveNextSegment ${rundownPlaylistId} ${delta}`)
+		logger.info(`API POST: move-next-segment ${rundownPlaylistId} ${delta}`)
 
 		check(rundownPlaylistId, String)
 		check(delta, Number)
@@ -1213,11 +1213,11 @@ sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
 
 sofieAPIRequest<{ playlistId: string }, never, object>(
 	'put',
-	'/playlists/:playlistId/reloadPlaylist',
+	'/playlists/:playlistId/reload-playlist',
 	new Map([[404, UserErrorMessage.RundownPlaylistNotFound]]),
 	async (serverAPI, connection, event, params, _) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
-		logger.info(`API PUT: reloadPlaylist ${rundownPlaylistId}`)
+		logger.info(`API PUT: reload-playlist ${rundownPlaylistId}`)
 
 		check(rundownPlaylistId, String)
 		return await serverAPI.reloadPlaylist(connection, event, rundownPlaylistId)
@@ -1226,14 +1226,14 @@ sofieAPIRequest<{ playlistId: string }, never, object>(
 
 sofieAPIRequest<{ playlistId: string }, never, void>(
 	'put',
-	'/playlists/:playlistId/resetPlaylist',
+	'/playlists/:playlistId/reset-playlist',
 	new Map([
 		[404, UserErrorMessage.RundownPlaylistNotFound],
 		[412, UserErrorMessage.RundownResetWhileActive],
 	]),
 	async (serverAPI, connection, event, params, _) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
-		logger.info(`API PUT: resetPlaylist ${rundownPlaylistId}`)
+		logger.info(`API PUT: reset-playlist ${rundownPlaylistId}`)
 
 		check(rundownPlaylistId, String)
 		return await serverAPI.resetPlaylist(connection, event, rundownPlaylistId)
@@ -1242,7 +1242,7 @@ sofieAPIRequest<{ playlistId: string }, never, void>(
 
 sofieAPIRequest<{ playlistId: string }, { partId: string }, void>(
 	'put',
-	'/playlists/:playlistId/setNextPart',
+	'/playlists/:playlistId/set-next-part',
 	new Map([
 		[404, UserErrorMessage.RundownPlaylistNotFound],
 		[412, UserErrorMessage.PartNotFound],
@@ -1250,7 +1250,7 @@ sofieAPIRequest<{ playlistId: string }, { partId: string }, void>(
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const partId = protectString<PartId>(body.partId)
-		logger.info(`API PUT: setNextPart ${rundownPlaylistId} ${partId}`)
+		logger.info(`API PUT: set-next-part ${rundownPlaylistId} ${partId}`)
 
 		check(rundownPlaylistId, String)
 		check(partId, String)
@@ -1260,7 +1260,7 @@ sofieAPIRequest<{ playlistId: string }, { partId: string }, void>(
 
 sofieAPIRequest<{ playlistId: string }, { segmentId: string }, void>(
 	'put',
-	'/playlists/:playlistId/setNextSegment',
+	'/playlists/:playlistId/set-next-segment',
 	new Map([
 		[404, UserErrorMessage.RundownPlaylistNotFound],
 		[412, UserErrorMessage.PartNotFound],
@@ -1268,7 +1268,7 @@ sofieAPIRequest<{ playlistId: string }, { segmentId: string }, void>(
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const segmentId = protectString<SegmentId>(body.segmentId)
-		logger.info(`API PUT: setNextSegment ${rundownPlaylistId} ${segmentId}`)
+		logger.info(`API PUT: set-next-segment ${rundownPlaylistId} ${segmentId}`)
 
 		check(rundownPlaylistId, String)
 		check(segmentId, String)
@@ -1442,13 +1442,13 @@ sofieAPIRequest<{ studioId: string }, never, string[]>(
 
 sofieAPIRequest<{ studioId: string }, { routeSetId: string; active: boolean }, void>(
 	'put',
-	'/studios/:studioId/switchRouteSet',
+	'/studios/:studioId/switch-route-set',
 	new Map([[404, UserErrorMessage.StudioNotFound]]),
 	async (serverAPI, connection, event, params, body) => {
 		const studioId = protectString<StudioId>(params.studioId)
 		const routeSetId = body.routeSetId
 		const active = body.active
-		logger.info(`API PUT: switchRouteSet ${studioId} ${routeSetId} ${active}`)
+		logger.info(`API PUT: switch-route-set ${studioId} ${routeSetId} ${active}`)
 
 		check(studioId, String)
 		check(routeSetId, String)
