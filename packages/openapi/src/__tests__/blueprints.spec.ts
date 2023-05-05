@@ -7,7 +7,7 @@ const httpLogging = false
 
 describe('Network client', () => {
 	const config = new Configuration({
-		basePath: process.env.ACTIONS_URL,
+		basePath: process.env.SERVER_URL,
 		middleware: [new Logging(httpLogging)],
 	})
 
