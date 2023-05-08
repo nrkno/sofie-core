@@ -55,7 +55,7 @@ export function meteorPublishUnsafe(
 		publicationGauge.inc()
 		this.onStop(() => publicationGauge.dec())
 
-		return waitForPromise(callback.apply(protectStringObject<Subscription, 'userId'>(this), args))
+		return waitForPromise(callback.apply(protectStringObject<Subscription, 'userId'>(this), args)) || []
 	})
 }
 
