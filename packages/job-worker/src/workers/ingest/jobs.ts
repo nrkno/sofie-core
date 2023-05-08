@@ -5,7 +5,6 @@ import {
 	handleMosFullStory,
 	handleMosInsertStories,
 	handleMosMoveStories,
-	handleMosStoryStatus,
 	handleMosSwapStories,
 } from '../../ingest/mosDevice/mosStoryJobs'
 import {
@@ -68,7 +67,6 @@ export const ingestJobHandlers: IngestJobHandlers = {
 	[IngestJobs.MosRundownMetadata]: handleMosRundownMetadata,
 	[IngestJobs.MosRundownStatus]: handleMosRundownStatus,
 	[IngestJobs.MosRundownReadyToAir]: handleMosRundownReadyToAir,
-	[IngestJobs.MosStoryStatus]: handleMosStoryStatus,
 	[IngestJobs.MosFullStory]: handleMosFullStory,
 	[IngestJobs.MosDeleteStory]: handleMosDeleteStory,
 	[IngestJobs.MosInsertStory]: handleMosInsertStories,
