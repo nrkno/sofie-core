@@ -511,11 +511,13 @@ jobs:
       - name: Publish to NPM
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+          yarn config set npmAuthToken $NPM_AUTH_TOKEN
+
           cd packages/${{ matrix.package-name }}
           NEW_VERSION=$(node -p "require('./package.json').version")
-          yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag ${{ steps.do-publish.outputs.tag }}
+          yarn npm publish --access=public --tag ${{ steps.do-publish.outputs.tag }}
         env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           CI: true
 
   check-for-multiple-library-versions:
