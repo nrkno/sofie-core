@@ -54,21 +54,22 @@ export function useInspectorPosition(
 		placement: position.position,
 		modifiers: [
 			{
-				name: 'offset',
-				options: {
-					offset: [0, 8],
-				},
-			},
-			{
 				name: 'flip',
 				options: {
-					fallbackPlacements: ['top', 'bottom'],
+					padding: { top: getHeaderHeight() - 10 },
+					fallbackPlacements: ['bottom', 'top'],
 				},
 			},
 			{
 				name: 'preventOverflow',
 				options: {
-					padding: { top: getHeaderHeight() },
+					mainAxis: true,
+				},
+			},
+			{
+				name: 'offset',
+				options: {
+					offset: [0, 8],
 				},
 			},
 		],
