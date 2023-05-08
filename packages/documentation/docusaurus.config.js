@@ -100,6 +100,15 @@ module.exports = {
 				autoCollapseCategories: true,
 			},
 		},
+		algolia: {
+			// The application ID provided by Algolia
+			appId: '0J21XARTCE',
+
+			// Public API key: it is safe to commit it
+			apiKey: '02e5ac360a8cb72fc576689375cc1e7f',
+
+			indexName: 'sofie-core',
+		},
 	},
 	presets: [
 		[
@@ -139,14 +148,6 @@ module.exports = {
 				routeBasePath: 'releases',
 				sidebarPath: false,
 				// ... other options
-			},
-		],
-		[
-			require.resolve('docusaurus-lunr-search'),
-			{
-				excludeRoutes: [
-					'docs/[0-9].*.[0-9]/**/*', // exclude changelogs from indexing
-				],
 			},
 		],
 	],
