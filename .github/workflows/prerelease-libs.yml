@@ -146,12 +146,3 @@ jobs:
         env:
           NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           CI: true
-      - name: Post published prerelease lib version comment in PR
-        if: ${{ steps.do-publish.outputs.publish }}
-        uses: mshick/add-pr-comment@v2
-        with:
-          message: |
-            ⚡ Published prerelease version **${{ matrix.package-name }}@${{ steps.publish-npm.outputs.version }}** to NPM
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CI: true
