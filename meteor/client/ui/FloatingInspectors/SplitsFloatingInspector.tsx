@@ -25,10 +25,12 @@ export const SplitsFloatingInspector: React.FunctionComponent<IProps> = (props) 
 		}
 	}, [props.content.boxSourceConfiguration])
 
-	const floatingInspectorStyle = useInspectorPosition(props.position, ref.current)
+	const shown = props.showMiniInspector && props.itemElement !== undefined
+
+	const floatingInspectorStyle = useInspectorPosition(props.position, ref, shown)
 
 	return (
-		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn="viewport">
+		<FloatingInspector shown={shown} displayOn="viewport">
 			<div
 				className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
 				style={floatingInspectorStyle}

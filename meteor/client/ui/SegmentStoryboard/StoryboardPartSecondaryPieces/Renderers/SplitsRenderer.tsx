@@ -20,7 +20,7 @@ export function SplitsRenderer({
 					top: elementOffset?.top ?? 0,
 					left: elementOffset?.left ?? 0,
 					anchor: 'start',
-					position: 'top',
+					position: 'top-start',
 				}}
 				itemElement={null}
 				content={pieceInstance.instance.piece.content as Partial<SplitsContent>}

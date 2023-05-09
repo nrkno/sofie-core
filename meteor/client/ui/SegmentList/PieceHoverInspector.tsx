@@ -72,7 +72,7 @@ export function PieceHoverInspector({
 						top: originPosition.top,
 						left: originPosition.left + mousePosition,
 						anchor: 'start',
-						position: 'top',
+						position: 'top-start',
 					}}
 					typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 					itemElement={null}
@@ -94,7 +94,7 @@ export function PieceHoverInspector({
 						top: originPosition.top,
 						left: originPosition.left + mousePosition,
 						anchor: 'start',
-						position: 'top',
+						position: 'top-start',
 					}}
 					typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 					itemElement={null}

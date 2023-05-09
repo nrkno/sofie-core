@@ -47,7 +47,7 @@ export function VTThumbnailRenderer({
 					top: originPosition.top,
 					left: originPosition.left,
 					anchor: 'start',
-					position: 'top',
+					position: 'top-start',
 				}}
 				typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 				itemElement={null}

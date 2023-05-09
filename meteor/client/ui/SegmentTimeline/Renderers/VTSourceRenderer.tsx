@@ -26,6 +26,7 @@ import { Settings } from '../../../../lib/Settings'
 import { UIStudio } from '../../../../lib/api/studios'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { HourglassIconSmall } from '../../../lib/ui/icons/notifications'
+import { IFloatingInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
 
 interface IProps extends ICustomLayerItemProps {
 	studio: UIStudio | undefined
@@ -538,6 +539,15 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		}
 
 		return this.countdownContainer && ReactDOM.createPortal(countdown, this.countdownContainer)
+	}
+
+	protected getFloatingInspectorStyle(): IFloatingInspectorPosition {
+		return {
+			left: this.props.elementPosition.left + this.props.cursorPosition.left,
+			top: this.props.elementPosition.top,
+			anchor: 'start',
+			position: 'top-start',
+		}
 	}
 
 	render(): JSX.Element {

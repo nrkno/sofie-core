@@ -121,7 +121,6 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 	}
 
 	private _hide() {
-		console.log('hide')
 		this.setState({
 			show: false,
 		})

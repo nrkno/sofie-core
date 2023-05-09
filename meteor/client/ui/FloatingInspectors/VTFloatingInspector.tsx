@@ -124,21 +124,26 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 
 	const offsetTimePosition = timePosition + seek
 
-	const previewUrl: string | undefined = getPreviewUrlForExpectedPackagesAndContentMetaData(
-		pieceId,
-		studio,
-		studio?.settings.mediaPreviewsUrl,
-		expectedPackages,
-		contentMetaData
-	)
+	// const previewUrl: string | undefined = getPreviewUrlForExpectedPackagesAndContentMetaData(
+	// 	pieceId,
+	// 	studio,
+	// 	studio?.settings.mediaPreviewsUrl,
+	// 	expectedPackages,
+	// 	contentMetaData
+	// )
+
+	const previewUrl =
+		'https://upload.wikimedia.org/wikipedia/commons/transcoded/2/22/Volcano_Lava_Sample.webm/Volcano_Lava_Sample.webm.160p.webm'
 
 	const showVideoPlayerInspector = !hideHoverscrubPreview && previewUrl
 	const showMiniInspectorClipData = shouldShowFloatingInspectorContent(status, content)
 	const showMiniInspectorNotice = noticeLevel !== null
 	const showMiniInspectorData = showMiniInspectorNotice || showMiniInspectorClipData
-	const showAnyFloatingInspector = showVideoPlayerInspector || showMiniInspectorData
+	const showAnyFloatingInspector = Boolean(showVideoPlayerInspector) || showMiniInspectorData
 
-	const floatingInspectorStyle = useInspectorPosition(position, inspectorRef.current)
+	const shown = showMiniInspector && itemElement !== undefined && showAnyFloatingInspector
+
+	const floatingInspectorStyle = useInspectorPosition(position, inspectorRef, shown)
 
 	if (!showAnyFloatingInspector || !floatingInspectorStyle) {
 		return null
@@ -164,7 +169,7 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 	)
 
 	return (
-		<FloatingInspector shown={showMiniInspector && itemElement !== undefined} displayOn="viewport">
+		<FloatingInspector shown={shown} displayOn="viewport">
 			{showVideoPlayerInspector ? (
 				<VideoPreviewPlayerInspector
 					itemDuration={itemDuration}

@@ -95,7 +95,7 @@ function TransitionFloatingInspector({
 	position: IFloatingInspectorPosition
 }) {
 	const ref = useRef<HTMLDivElement>(null)
-	const floatingInspectorStyle = useInspectorPosition(position, ref.current)
+	const floatingInspectorStyle = useInspectorPosition(position, ref)
 
 	return (
 		<FloatingInspector shown={true}>

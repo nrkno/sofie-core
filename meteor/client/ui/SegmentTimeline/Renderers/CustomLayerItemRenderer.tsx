@@ -82,7 +82,7 @@ export class CustomLayerItemRenderer<
 			left: this.props.elementPosition.left + this.props.cursorPosition.left,
 			top: this.props.elementPosition.top,
 			anchor: 'start',
-			position: 'top',
+			position: 'top-start',
 		}
 	}
 

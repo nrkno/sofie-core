@@ -42,10 +42,12 @@ export const InvalidFloatingInspector: React.FunctionComponent<IProps> = (props:
 
 	const noteSeverity = props.part.invalidReason.severity || NoteSeverity.INFO
 
-	const floatingInspectorStyle = useInspectorPosition(props.position, ref.current)
+	const shown = props.showMiniInspector && props.itemElement !== undefined
+
+	const floatingInspectorStyle = useInspectorPosition(props.position, ref, shown)
 
 	return (
-		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn="viewport">
+		<FloatingInspector shown={shown} displayOn="viewport">
 			<div
 				className={
 					'segment-timeline__mini-inspector ' +

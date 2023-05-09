@@ -31,7 +31,7 @@ export function VTRenderer({
 					top: elementOffset?.top ?? 0,
 					left: elementOffset?.left ?? 0,
 					anchor: 'start',
-					position: 'top',
+					position: 'top-start',
 				}}
 				typeClass={typeClass}
 				itemElement={null}

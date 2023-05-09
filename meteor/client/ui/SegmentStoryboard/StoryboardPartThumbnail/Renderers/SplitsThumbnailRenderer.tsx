@@ -19,7 +19,7 @@ export function SplitsThumbnailRenderer({ pieceInstance, originPosition, hoverin
 					top: originPosition.top,
 					left: originPosition.left,
 					anchor: 'start',
-					position: 'top',
+					position: 'top-start',
 				}}
 				content={pieceInstance.instance.piece.content as Partial<SplitsContent>}
 				itemElement={null}

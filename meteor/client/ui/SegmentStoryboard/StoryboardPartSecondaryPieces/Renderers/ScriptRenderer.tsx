@@ -23,7 +23,7 @@ export function ScriptRenderer(props: IDefaultRendererProps): JSX.Element | stri
 							top: props.elementOffset?.top ?? 0,
 							left: props.elementOffset?.left ?? 0,
 							anchor: 'start',
-							position: 'top',
+							position: 'bottom-start',
 						}}
 						itemElement={null}
 						showMiniInspector={!!props.hovering}

@@ -164,7 +164,7 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 						top: itemIconPosition?.top ?? 0,
 						left: itemIconPosition?.left ?? 0,
 						anchor: 'start',
-						position: 'top',
+						position: 'top-start',
 					}}
 					typeClass={props.layer && RundownUtils.getSourceLayerClassName(props.layer.type)}
 					itemElement={itemIcon.current}

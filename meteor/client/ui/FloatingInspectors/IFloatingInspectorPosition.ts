@@ -1,24 +1,50 @@
 import { VirtualElement } from '@popperjs/core'
-import React, { useMemo, useEffect, useRef } from 'react'
+import React, { useMemo, useEffect, useRef, RefObject, useLayoutEffect, useState } from 'react'
 import { usePopper } from 'react-popper'
 import { getHeaderHeight } from '../../lib/viewPort'
 
-export interface IFloatingInspectorPosition {
-	top: number
-	left: number
-	position: 'top' | 'bottom'
-	anchor: 'start' | 'center' | 'end'
-}
-
-const LAYER_HEIGHT = 24
-
 export function useInspectorPosition(
 	position: IFloatingInspectorPosition,
-	inspectorEl: HTMLElement | null
+	inspectorEl: RefObject<HTMLElement>,
+	shown: boolean = true
 ): React.CSSProperties | undefined {
+	const [, forceUpdate] = useState(Symbol())
+
 	const positionRef = useRef({
 		...position,
 	})
+
+	const popperModifiers = useMemo(() => {
+		let fallbackPlacements = ['bottom', 'top']
+
+		if (position.position === 'bottom-start' || position.position === 'top-start') {
+			fallbackPlacements = ['bottom-start', 'top-start']
+		} else if (position.position === 'bottom-end' || position.position === 'top-end') {
+			fallbackPlacements = ['bottom-end', 'top-end']
+		}
+
+		return [
+			{
+				name: 'flip',
+				options: {
+					padding: { top: getHeaderHeight() - 10 },
+					fallbackPlacements,
+				},
+			},
+			{
+				name: 'preventOverflow',
+				options: {
+					padding: { right: 70 },
+				},
+			},
+			{
+				name: 'offset',
+				options: {
+					offset: [0, 8],
+				},
+			},
+		]
+	}, [position.position])
 
 	const virtualElement = useMemo<VirtualElement>(() => {
 		return {
@@ -50,34 +76,35 @@ export function useInspectorPosition(
 		}
 	}, [position])
 
-	const { styles, update } = usePopper(virtualElement, inspectorEl, {
+	const { styles, update } = usePopper(virtualElement, inspectorEl.current, {
 		placement: position.position,
-		modifiers: [
-			{
-				name: 'flip',
-				options: {
-					padding: { top: getHeaderHeight() - 10 },
-					fallbackPlacements: ['bottom', 'top'],
-				},
-			},
-			{
-				name: 'preventOverflow',
-				options: {
-					mainAxis: true,
-				},
-			},
-			{
-				name: 'offset',
-				options: {
-					offset: [0, 8],
-				},
-			},
-		],
+		modifiers: popperModifiers,
 	})
 
 	useEffect(() => {
-		if (update) update().catch(console.error)
+		if (update) {
+			update().catch(console.error)
+		}
 	}, [update, position])
+
+	useLayoutEffect(() => {
+		const timeout = setTimeout(() => {
+			forceUpdate(Symbol())
+		}, 10)
+
+		return () => {
+			clearTimeout(timeout)
+		}
+	}, [shown])
 
 	return styles.popper
 }
+
+export interface IFloatingInspectorPosition {
+	top: number
+	left: number
+	position: 'top' | 'bottom' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end'
+	anchor: 'start' | 'center' | 'end'
+}
+
+const LAYER_HEIGHT = 24
