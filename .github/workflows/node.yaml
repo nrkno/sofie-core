@@ -26,8 +26,10 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
+            node_modules
             meteor/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('meteor/yarn.lock') }}-${{ hashFiles('meteor/.meteor/release') }}
+            packages/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('yarn.lock', 'meteor/yarn.lock', 'meteor/.meteor/release', 'packages/yarn.lock') }}
       - name: Prepare Environment
         run: |
           yarn config set cacheFolder /home/runner/lint-core-cache
@@ -57,8 +59,10 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
+            node_modules
             meteor/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('meteor/yarn.lock') }}-${{ hashFiles('meteor/.meteor/release') }}
+            packages/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('yarn.lock', 'meteor/yarn.lock', 'meteor/.meteor/release', 'packages/yarn.lock') }}
       - name: Prepare Environment
         run: |
           yarn config set cacheFolder /home/runner/test-core-cache
@@ -536,8 +540,10 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
+            node_modules
             meteor/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('meteor/yarn.lock') }}-${{ hashFiles('meteor/.meteor/release') }}
+            packages/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('yarn.lock', 'meteor/yarn.lock', 'meteor/.meteor/release', 'packages/yarn.lock') }}
       - name: Prepare Environment
         run: |
           yarn config set cacheFolder /home/runner/check-for-multiple-library-versions-cache
