@@ -20,6 +20,32 @@
 			"ui:title": "(Optional) Strict MOS data handling",
 			"ui:description": "When set, the MOS-connection will follow the MOS-specification literally (one example is that it wont accept certain strings that are longer than 128 characters)",
 			"default": false
+		},
+		"ports": {
+			"type": "object",
+			"ui:title": "Ports",
+			"properties": {
+				"lower": {
+					"type": "integer",
+					"ui:title": "(Optional) MOS Lower Port",
+					"ui:description": "When set, the MOS-connection will listen on an alternate port for 'lower' port MOS messages",
+					"default": 10540
+				},
+				"upper": {
+					"type": "integer",
+					"ui:title": "(Optional) MOS Upper Port",
+					"ui:description": "When set, the MOS-connection will listen on an alternate port for 'upper' port MOS messages",
+					"default": 10541
+				},
+				"query": {
+					"type": "integer",
+					"ui:title": "(Optional) MOS Query Port",
+					"ui:description": "When set, the MOS-connection will listen on an alternate port for 'query' port MOS messages",
+					"default": 10542
+				}
+			},
+			"required": ["lower", "upper", "query"],
+			"additionalProperties": false
 		}
 	},
 	"required": ["mosId"],
