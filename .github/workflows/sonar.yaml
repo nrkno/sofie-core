@@ -25,6 +25,14 @@ jobs:
         with:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
+      - name: restore node_modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            node_modules
+            meteor/node_modules
+            packages/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('yarn.lock', 'meteor/yarn.lock', 'meteor/.meteor/release', 'packages/yarn.lock') }}
       - name: Prepare Environment
         run: |
           yarn
