@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { DragLayer, DragLayerMonitor } from 'react-dnd'
+import { DragLayerMonitor, useDragLayer, XYCoord } from 'react-dnd'
 import { IRundownDragObject, RundownListDragDropTypes } from './DragAndDropTypes'
 import { Rundowns } from '../../collections'
 import RundownListItemView from './RundownListItemView'
@@ -17,8 +17,7 @@ const layerStyles: React.CSSProperties = {
 	height: '100%',
 }
 
-function getItemStyles(props) {
-	const { currentOffset, draggedWidth } = props
+function getItemStyles(currentOffset: XYCoord | null, draggedWidth: number | null) {
 	if (!currentOffset) {
 		return {
 			display: 'none',
@@ -34,8 +33,10 @@ function getItemStyles(props) {
 	}
 }
 
-function RundownPlaylistDragLayer(props) {
-	if (!props.isDragging) {
+export default function RundownPlaylistDragLayer(props: { draggedClassNames?: string[] }): JSX.Element | null {
+	const { isDragging, item, itemType, currentOffset, draggedWidth } = useDragLayer(collect)
+
+	if (!isDragging) {
 		return null
 	}
 
@@ -65,13 +66,13 @@ function RundownPlaylistDragLayer(props) {
 
 	return (
 		<div style={layerStyles} className="rundown-list">
-			<div style={getItemStyles(props)}>{renderItem(props.itemType, props.item)}</div>
+			<div style={getItemStyles(currentOffset, draggedWidth)}>{renderItem(itemType, item)}</div>
 		</div>
 	)
 }
 
 function collect(monitor: DragLayerMonitor) {
-	let draggedWidth: number | undefined
+	let draggedWidth: number | null = null
 	let draggedClassNames: string[] | undefined
 
 	const dragging = monitor.getItem()
@@ -86,13 +87,11 @@ function collect(monitor: DragLayerMonitor) {
 	}
 
 	return {
-		item: monitor.getItem(),
-		itemType: monitor.getItemType(),
+		item: monitor.getItem() as IRundownDragObject,
+		itemType: monitor.getItemType() as RundownListDragDropTypes,
 		currentOffset: monitor.getSourceClientOffset(),
 		isDragging: monitor.isDragging(),
 		draggedWidth,
 		draggedClassNames,
 	}
 }
-
-export default DragLayer(collect)(RundownPlaylistDragLayer)
