@@ -1757,7 +1757,7 @@ Meteor.startup(() => {
 		// Redirect `/latest` to the most recent API version
 		WebApp.connectHandlers.use(function (req, res, next) {
 			var path = req.url
-			if (path == '/latest') {
+			if (path == '/api/latest') {
 				res.writeHead(307, { Location: '/api/v1.0' })
 				res.end()
 			} else next()
