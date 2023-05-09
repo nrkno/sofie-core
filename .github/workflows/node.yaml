@@ -451,6 +451,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: ".node-version"
+      - name: restore node_modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            packages/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('packages/yarn.lock') }}
       - name: Prepare Environment
         run: |
           cd packages
