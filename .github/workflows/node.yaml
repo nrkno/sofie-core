@@ -69,7 +69,7 @@ jobs:
       - name: Run Tests
         run: |
           cd meteor
-          meteor yarn unitci
+          NODE_OPTIONS="--max-old-space-size=6144" meteor yarn unitci --force-exit
         env:
           CI: true
       - name: Send coverage
