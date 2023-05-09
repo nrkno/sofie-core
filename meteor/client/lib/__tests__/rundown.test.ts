@@ -53,6 +53,7 @@ describe('client/lib/rundown', () => {
 				[],
 				new Map(),
 				parts.map((part) => part._id),
+				new Map(),
 				currentPartInstance,
 				nextPartInstance
 			)
@@ -114,6 +115,7 @@ describe('client/lib/rundown', () => {
 				[],
 				new Map(),
 				parts.map((part) => part._id),
+				new Map(),
 				currentPartInstance,
 				nextPartInstance
 			)
@@ -199,6 +201,7 @@ describe('client/lib/rundown', () => {
 				[],
 				new Map(),
 				parts.map((part) => part._id),
+				new Map(),
 				currentPartInstance,
 				nextPartInstance
 			)
@@ -359,6 +362,7 @@ describe('client/lib/rundown', () => {
 					[],
 					new Map(),
 					parts.map((part) => part._id),
+					new Map(),
 					currentPartInstance,
 					nextPartInstance
 				)
