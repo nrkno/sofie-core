@@ -2721,6 +2721,11 @@ svg.icon {
 		width: 26em;
 	}
 
+	&.segment-timeline__mini-inspector--sub-inspector.segment-timeline__mini-inspector--sub-inspector-flipped {
+		bottom: auto;
+		top: 100%;
+	}
+
 	&.segment-timeline__mini-inspector--small-parts {
 		top: 0;
 		z-index: 1001;

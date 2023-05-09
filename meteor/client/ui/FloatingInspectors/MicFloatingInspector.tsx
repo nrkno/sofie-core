@@ -25,7 +25,7 @@ export function MicFloatingInspector(props: IProps): JSX.Element {
 
 	const shown = props.showMiniInspector && props.itemElement !== undefined
 
-	const floatingInspectorStyle = useInspectorPosition(props.position, ref, shown)
+	const { style: floatingInspectorStyle } = useInspectorPosition(props.position, ref, shown)
 
 	return (
 		<FloatingInspector shown={shown} displayOn="viewport">

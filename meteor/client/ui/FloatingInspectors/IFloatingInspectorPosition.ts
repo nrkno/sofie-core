@@ -7,7 +7,10 @@ export function useInspectorPosition(
 	position: IFloatingInspectorPosition,
 	inspectorEl: RefObject<HTMLElement>,
 	shown: boolean = true
-): React.CSSProperties | undefined {
+): {
+	style: React.CSSProperties | undefined
+	isFlipped: boolean
+} {
 	const [, forceUpdate] = useState(Symbol())
 
 	const positionRef = useRef({
@@ -15,25 +18,17 @@ export function useInspectorPosition(
 	})
 
 	const popperModifiers = useMemo(() => {
-		let fallbackPlacements = ['bottom', 'top']
-
-		if (position.position === 'bottom-start' || position.position === 'top-start') {
-			fallbackPlacements = ['bottom-start', 'top-start']
-		} else if (position.position === 'bottom-end' || position.position === 'top-end') {
-			fallbackPlacements = ['bottom-end', 'top-end']
-		}
-
 		return [
 			{
 				name: 'flip',
 				options: {
 					padding: { top: getHeaderHeight() - 10 },
-					fallbackPlacements,
 				},
 			},
 			{
 				name: 'preventOverflow',
 				options: {
+					// leave space for the right-hand panel (notifications and other panels)
 					padding: { right: 70 },
 				},
 			},
@@ -52,14 +47,15 @@ export function useInspectorPosition(
 				const top = (positionRef.current.top ?? 0) - window.scrollY
 				const left = (positionRef.current.left ?? 0) - window.scrollX
 				const right = left
-				const bottom = top - LAYER_HEIGHT
+				const height = positionRef.current.height ?? LAYER_HEIGHT
+				const bottom = top - height
 				const x = left
 				const y = top
 				return {
 					top,
 					left,
 					width: 0,
-					height: LAYER_HEIGHT,
+					height,
 					right,
 					bottom,
 					x,
@@ -76,7 +72,7 @@ export function useInspectorPosition(
 		}
 	}, [position])
 
-	const { styles, update } = usePopper(virtualElement, inspectorEl.current, {
+	const { styles, update, state } = usePopper(virtualElement, inspectorEl.current, {
 		placement: position.position,
 		modifiers: popperModifiers,
 	})
@@ -97,12 +93,21 @@ export function useInspectorPosition(
 		}
 	}, [shown])
 
-	return styles.popper
+	let isFlipped = false
+	if (state?.placement !== undefined && state.placement !== position.position) {
+		isFlipped = true
+	}
+
+	return {
+		style: styles.popper,
+		isFlipped,
+	}
 }
 
 export interface IFloatingInspectorPosition {
 	top: number
 	left: number
+	height?: number
 	position: 'top' | 'bottom' | 'top-start' | 'top-end' | 'bottom-start' | 'bottom-end'
 	anchor: 'start' | 'center' | 'end'
 }

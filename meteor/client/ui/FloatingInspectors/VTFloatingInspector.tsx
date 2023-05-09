@@ -124,16 +124,13 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 
 	const offsetTimePosition = timePosition + seek
 
-	// const previewUrl: string | undefined = getPreviewUrlForExpectedPackagesAndContentMetaData(
-	// 	pieceId,
-	// 	studio,
-	// 	studio?.settings.mediaPreviewsUrl,
-	// 	expectedPackages,
-	// 	contentMetaData
-	// )
-
-	const previewUrl =
-		'https://upload.wikimedia.org/wikipedia/commons/transcoded/2/22/Volcano_Lava_Sample.webm/Volcano_Lava_Sample.webm.160p.webm'
+	const previewUrl: string | undefined = getPreviewUrlForExpectedPackagesAndContentMetaData(
+		pieceId,
+		studio,
+		studio?.settings.mediaPreviewsUrl,
+		expectedPackages,
+		contentMetaData
+	)
 
 	const showVideoPlayerInspector = !hideHoverscrubPreview && previewUrl
 	const showMiniInspectorClipData = shouldShowFloatingInspectorContent(status, content)
@@ -143,7 +140,7 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 
 	const shown = showMiniInspector && itemElement !== undefined && showAnyFloatingInspector
 
-	const floatingInspectorStyle = useInspectorPosition(position, inspectorRef, shown)
+	const { style: floatingInspectorStyle, isFlipped } = useInspectorPosition(position, inspectorRef, shown)
 
 	if (!showAnyFloatingInspector || !floatingInspectorStyle) {
 		return null
@@ -153,6 +150,7 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 		<div
 			className={classNames('segment-timeline__mini-inspector', typeClass, {
 				'segment-timeline__mini-inspector--sub-inspector': showVideoPlayerInspector,
+				'segment-timeline__mini-inspector--sub-inspector-flipped': showVideoPlayerInspector && isFlipped,
 				'segment-timeline__mini-inspector--notice notice-critical': noticeLevel === NoticeLevel.CRITICAL,
 				'segment-timeline__mini-inspector--notice notice-warning': noticeLevel === NoticeLevel.WARNING,
 			})}
