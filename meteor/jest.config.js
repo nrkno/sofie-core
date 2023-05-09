@@ -13,7 +13,6 @@ const commonConfig = {
 				tsconfig: 'tsconfig.json',
 				babelConfig: {
 					plugins: [
-						'@babel/plugin-transform-modules-commonjs',
 						// Fibers and await do not work well together. This transpiles await calls to something that works
 						'./__mocks__/plugins/meteor-async-await.js',
 					],
