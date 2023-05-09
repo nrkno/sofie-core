@@ -64,7 +64,10 @@ interface IState {
 	active: boolean
 }
 
-export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<IDashboardButtonProps & T, IState> {
+export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
+	React.PropsWithChildren<IDashboardButtonProps> & T,
+	IState
+> {
 	private element: HTMLDivElement | null = null
 	private positionAndSize: {
 		top: number
@@ -75,6 +78,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<IDash
 	private _labelEl: HTMLTextAreaElement
 	private pointerId: number | null = null
 	private hoverTimeout: number | null = null
+	protected inBucket = false
 
 	constructor(props: IDashboardButtonProps & T) {
 		super(props)
@@ -423,6 +427,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<IDash
 						list: isList,
 						selected: this.props.isNext || this.props.isSelected,
 					},
+					!this.inBucket && this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type),
 					RundownUtils.getPieceStatusClassName(this.props.piece.status),
 					...(this.props.piece.tags ? this.props.piece.tags.map((tag) => `piece-tag--${tag}`) : [])
 				)}
@@ -467,14 +472,16 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<IDash
 
 					{this.renderHotkey()}
 					<div className="dashboard-panel__panel__button__label-container">
-						<div
-							className={ClassNames(
-								'dashboard-panel__panel__button__tag-container',
-								this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)
-							)}
-						>
-							&nbsp;
-						</div>
+						{this.inBucket && (
+							<div
+								className={ClassNames(
+									'dashboard-panel__panel__button__tag-container',
+									this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)
+								)}
+							>
+								&nbsp;
+							</div>
+						)}
 						{this.props.editableName ? (
 							<textarea
 								className="dashboard-panel__panel__button__label dashboard-panel__panel__button__label--editable"
@@ -493,4 +500,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<IDash
 	}
 }
 
-export const DashboardPieceButton = withMediaObjectStatus<IDashboardButtonProps, {}>()(DashboardPieceButtonBase)
+export const DashboardPieceButton = withMediaObjectStatus<React.PropsWithChildren<IDashboardButtonProps>, {}>()(
+	DashboardPieceButtonBase
+)

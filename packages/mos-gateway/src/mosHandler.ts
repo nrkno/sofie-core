@@ -25,7 +25,8 @@ import {
 } from '@mos-connection/connector'
 
 import * as Winston from 'winston'
-import { CoreHandler, CoreMosDeviceHandler } from './coreHandler'
+import { CoreHandler } from './coreHandler'
+import { CoreMosDeviceHandler } from './CoreMosDeviceHandler'
 import {
 	DEFAULT_MOS_TIMEOUT_TIME,
 	DEFAULT_MOS_HEARTBEAT_INTERVAL,
@@ -377,7 +378,9 @@ export class MosHandler {
 	}
 	private sendStatusOfAllMosDevices() {
 		// Send an update to Core of the status of all mos devices
-		for (const handler of Object.values(this.allMosDevices)) {
+		for (const handler of Object.values<{ mosDevice: IMOSDevice; coreMosHandler?: CoreMosDeviceHandler }>(
+			this.allMosDevices
+		)) {
 			if (handler.coreMosHandler) {
 				handler.coreMosHandler.onMosConnectionChanged(handler.mosDevice.getConnectionStatus())
 			}
@@ -411,7 +414,7 @@ export class MosHandler {
 			const devicesToAdd: { [id: string]: { options: MosDeviceConfig } } = {}
 			const devicesToRemove: { [id: string]: true } = {}
 
-			for (const [deviceId, device] of Object.entries(devices)) {
+			for (const [deviceId, device] of Object.entries<{ options: MosDeviceConfig }>(devices)) {
 				if (device) {
 					if (device.options.secondary) {
 						// If the host isn't set, don't use secondary:
@@ -439,7 +442,7 @@ export class MosHandler {
 				}
 			}
 
-			for (const [deviceId, oldDevice] of Object.entries(this._ownMosDevices)) {
+			for (const [deviceId, oldDevice] of Object.entries<MosDevice>(this._ownMosDevices)) {
 				if (oldDevice && !devices[deviceId]) {
 					this._logger.info('Un-initializing device: ' + deviceId)
 					devicesToRemove[deviceId] = true
@@ -453,7 +456,7 @@ export class MosHandler {
 			)
 
 			await Promise.all(
-				Object.entries(devicesToAdd).map(async ([deviceId, device]) => {
+				Object.entries<{ options: MosDeviceConfig }>(devicesToAdd).map(async ([deviceId, device]) => {
 					return this._addDevice(deviceId, device.options)
 				})
 			)

@@ -1,5 +1,5 @@
-import * as React from 'react'
-import * as _ from 'underscore'
+import React, { PropsWithChildren } from 'react'
+import _ from 'underscore'
 import Velocity from 'velocity-animate'
 import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
@@ -10,7 +10,7 @@ import { parse as queryStringParse } from 'query-string'
 
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { objectPathGet, firstIfArray, literal, protectString } from '../../../lib/lib'
+import { firstIfArray, literal, protectString } from '../../../lib/lib'
 import { PrompterData, PrompterAPI, PrompterDataPart } from './prompter'
 import { PrompterControlManager } from './controller/manager'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -73,18 +73,12 @@ export interface IPrompterControllerState {
 }
 
 interface IProps {
-	match?: {
-		params?: {
-			studioId: StudioId
-		}
-	}
+	studioId: StudioId
 }
 
 interface ITrackedProps {
 	rundownPlaylist?: RundownPlaylist
 	studio?: UIStudio
-	studioId?: StudioId
-	// isReady: boolean
 }
 
 interface IState {
@@ -298,11 +292,11 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 		if (!this.configOptions.followTake) return
 		if (!playlist) return
-		if (playlist.currentPartInstanceId === this.autoScrollPreviousPartInstanceId) return
-		this.autoScrollPreviousPartInstanceId = playlist.currentPartInstanceId
-		if (playlist.currentPartInstanceId === null) return
+		if (playlist.currentPartInfo?.partInstanceId === this.autoScrollPreviousPartInstanceId) return
+		this.autoScrollPreviousPartInstanceId = playlist.currentPartInfo?.partInstanceId ?? null
+		if (playlist.currentPartInfo === null) return
 
-		this.scrollToPartInstance(playlist.currentPartInstanceId)
+		this.scrollToPartInstance(playlist.currentPartInfo.partInstanceId)
 	}
 	private calculateScrollPosition() {
 		let pixelMargin = this.calculateMarginPosition()
@@ -427,11 +421,11 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 				const current = anchors[index]
 				const next = index + 1 < anchors.length ? anchors[index + 1] : null
 
-				if (playlist.currentPartInstanceId && current.classList.contains(`live`)) {
+				if (playlist.currentPartInfo && current.classList.contains(`live`)) {
 					currentPartElement = current
 					currentPartElementAfter = next
 				}
-				if (playlist.nextPartInstanceId && current.classList.contains(`next`)) {
+				if (playlist.nextPartInfo && current.classList.contains(`next`)) {
 					nextPartElementAfter = next
 				}
 			}
@@ -549,9 +543,8 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 		)
 	}
 }
-export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
-	const studioId = objectPathGet(props, 'match.params.studioId')
-	const studio = studioId ? UIStudios.findOne(studioId) : undefined
+export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>(({ studioId }: IProps) => {
+	const studio = UIStudios.findOne(studioId)
 
 	const rundownPlaylist = RundownPlaylists.findOne(
 		{
@@ -569,8 +562,6 @@ export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>((pro
 	return literal<ITrackedProps>({
 		rundownPlaylist,
 		studio,
-		studioId,
-		// isReady: rundownSubscription.ready() && (studioSubscription ? studioSubscription.ready() : true)
 	})
 })(PrompterViewInner)
 
@@ -584,14 +575,17 @@ interface IPrompterTrackedProps {
 
 type ScrollAnchor = [number, string] | null
 
-export const Prompter = translateWithTracker<IPrompterProps, {}, IPrompterTrackedProps>(
+export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, {}, IPrompterTrackedProps>(
 	(props: IPrompterProps) => ({
 		prompterData: PrompterAPI.getPrompterData(props.rundownPlaylistId),
 	}),
 	undefined,
 	true
 )(
-	class Prompter extends MeteorReactComponent<Translated<IPrompterProps & IPrompterTrackedProps>, {}> {
+	class Prompter extends MeteorReactComponent<
+		Translated<PropsWithChildren<IPrompterProps> & IPrompterTrackedProps>,
+		{}
+	> {
 		private _debounceUpdate: NodeJS.Timer
 
 		constructor(props) {

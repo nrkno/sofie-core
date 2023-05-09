@@ -524,13 +524,13 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 			}
 
 			if (data.fields) {
-				Object.entries(data.fields).forEach(([key, value]) => {
+				Object.entries<unknown>(data.fields).forEach(([key, value]) => {
 					this.collections[name][id][key] = value
 				})
 			}
 
 			if (this.observers[name]) {
-				Object.values(this.observers[name]).forEach((ob) => ob.added(id, data.fields))
+				Object.values<Observer>(this.observers[name]).forEach((ob) => ob.added(id, data.fields))
 			}
 		}
 	}
@@ -549,7 +549,7 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 			delete this.collections[name][id]
 
 			if (this.observers[name]) {
-				Object.values(this.observers[name]).forEach((ob) => ob.removed(id, oldValue))
+				Object.values<Observer>(this.observers[name]).forEach((ob) => ob.removed(id, oldValue))
 			}
 		}
 	}
@@ -571,7 +571,7 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 			const newFields: { [attr: string]: unknown } = {}
 
 			if (data.fields) {
-				Object.entries(data.fields).forEach(([key, value]) => {
+				Object.entries<unknown>(data.fields).forEach(([key, value]) => {
 					oldFields[key] = this.collections[name][id][key]
 					newFields[key] = value
 					this.collections[name][id][key] = value
@@ -585,7 +585,9 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 			}
 
 			if (this.observers[name]) {
-				Object.values(this.observers[name]).forEach((ob) => ob.changed(id, oldFields, clearedFields, newFields))
+				Object.values<Observer>(this.observers[name]).forEach((ob) =>
+					ob.changed(id, oldFields, clearedFields, newFields)
+				)
 			}
 		}
 	}

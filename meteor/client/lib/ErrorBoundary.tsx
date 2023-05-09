@@ -7,7 +7,7 @@ interface IState {
 	} | null
 }
 
-export class ErrorBoundary extends React.Component<{}, IState> {
+export class ErrorBoundary extends React.Component<React.PropsWithChildren<{}>, IState> {
 	static commonStyle: React.CSSProperties = {
 		// Override any inherited styles to ensure readability in any context:
 		fontSize: '1rem',

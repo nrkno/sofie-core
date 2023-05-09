@@ -1,5 +1,4 @@
 import { ActionUserData, IBlueprintActionManifest } from './action'
-import { ConfigManifestEntry } from './config'
 import {
 	IActionExecutionContext,
 	ISyncIngestUpdateToPartInstanceContext,
@@ -44,6 +43,8 @@ import { ITranslatableMessage } from './translations'
 import { NoteSeverity } from './lib'
 import { BlueprintMappings } from './studio'
 import { IBlueprintTriggeredActions } from './triggers'
+import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
+import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 export enum BlueprintManifestType {
 	SYSTEM = 'system',
@@ -90,7 +91,7 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 	blueprintType: BlueprintManifestType.STUDIO
 
 	/** A list of config items this blueprint expects to be available on the Studio */
-	studioConfigManifest: ConfigManifestEntry[]
+	studioConfigSchema: JSONBlob<JSONSchema>
 	/** A list of Migration steps related to a Studio */
 	studioMigrations: MigrationStep[]
 
@@ -147,7 +148,7 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	blueprintType: BlueprintManifestType.SHOWSTYLE
 
 	/** A list of config items this blueprint expects to be available on the ShowStyle */
-	showStyleConfigManifest: ConfigManifestEntry[]
+	showStyleConfigSchema: JSONBlob<JSONSchema>
 	/** A list of Migration steps related to a ShowStyle */
 	showStyleMigrations: MigrationStep[]
 
@@ -240,7 +241,7 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 
 	// Events
 
-	onRundownActivate?: (context: IRundownActivationContext, rehearsal: boolean) => Promise<void>
+	onRundownActivate?: (context: IRundownActivationContext, wasActive: boolean) => Promise<void>
 	onRundownFirstTake?: (context: IPartEventContext) => Promise<void>
 	onRundownDeActivate?: (context: IRundownActivationContext) => Promise<void>
 

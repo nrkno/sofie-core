@@ -298,7 +298,7 @@ export function getSegmentsWithPartInstances(
 			for (const partInstance of segmentPartInstances) {
 				// Check what we already have in the map for this PartId. If the map returns the currentPartInstance then we keep that, otherwise replace with this partInstance
 				const currentValue = partInstanceMap.get(partInstance.part._id)
-				if (!currentValue || currentValue._id !== playlist.currentPartInstanceId) {
+				if (!currentValue || currentValue._id !== playlist.currentPartInfo?.partInstanceId) {
 					partInstanceMap.set(partInstance.part._id, partInstance)
 				}
 			}

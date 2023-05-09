@@ -63,6 +63,11 @@ export function withTiming<IProps, IState>(
 				syncedDurations: PropTypes.object.isRequired,
 			}
 
+			context: {
+				durations: RundownTimingContext
+				syncedDurations: RundownTimingContext
+			}
+
 			filterGetter: (o: any) => any
 			previousValue: any = undefined
 			isDirty: boolean = false

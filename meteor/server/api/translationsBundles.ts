@@ -95,6 +95,11 @@ function fromI18NextData(data: I18NextData): Translation[] {
 	return translations
 }
 
+export function generateTranslationBundleOriginId(id: BlueprintId, bundleType: 'blueprints'): TranslationsBundleOriginId
+export function generateTranslationBundleOriginId(
+	id: PeripheralDeviceId,
+	bundleType: 'peripheralDevice'
+): TranslationsBundleOriginId
 export function generateTranslationBundleOriginId(
 	id: BlueprintId | PeripheralDeviceId,
 	bundleType: 'blueprints' | 'peripheralDevice'

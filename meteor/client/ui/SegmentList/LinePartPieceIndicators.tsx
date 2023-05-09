@@ -26,7 +26,7 @@ export const LinePartPieceIndicators: React.FC<IProps> = function LinePartPieceI
 	return (
 		<div className="segment-opl__piece-indicators">
 			<LinePartScriptPiece pieces={pieces} />
-			{Object.entries(indicatorColumns).map(([label, sourceLayers]) => (
+			{Object.entries<ISourceLayerExtended[]>(indicatorColumns).map(([label, sourceLayers]) => (
 				<LinePartPieceIndicator
 					key={label}
 					label={label}
@@ -37,7 +37,7 @@ export const LinePartPieceIndicators: React.FC<IProps> = function LinePartPieceI
 					onPieceDoubleClick={onPieceDoubleClick}
 				/>
 			))}
-			{Object.entries(adLibIndicatorColumns).map(([label, sourceLayers]) => (
+			{Object.entries<ISourceLayerExtended[]>(adLibIndicatorColumns).map(([label, sourceLayers]) => (
 				<LinePartAdLibIndicator key={label} label={label} sourceLayers={sourceLayers} partId={partId} />
 			))}
 		</div>

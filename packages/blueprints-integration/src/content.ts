@@ -124,7 +124,6 @@ export interface NoraPayload {
 
 export interface NoraContent extends BaseContent {
 	payload: NoraPayload
-	externalPayload: any
 	previewRenderer: string
 }
 

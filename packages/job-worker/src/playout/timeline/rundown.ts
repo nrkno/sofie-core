@@ -16,11 +16,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { getPartGroupId } from '@sofie-automation/corelib/dist/playout/ids'
 import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/infinites'
-import {
-	PartCalculatedTimings,
-	getPartTimingsOrDefaults,
-	calculatePartTimings,
-} from '@sofie-automation/corelib/dist/playout/timings'
+import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { JobContext } from '../../jobs'
 import { ReadonlyDeep } from 'type-fest'
@@ -78,8 +74,8 @@ export function buildTimelineObjsForRundown(
 				activePlaylist.rehearsal
 					? TimelineObjClassesCore.RundownRehearsal
 					: TimelineObjClassesCore.RundownActive,
-				!activePlaylist.currentPartInstanceId ? TimelineObjClassesCore.BeforeFirstPart : undefined,
-				!activePlaylist.nextPartInstanceId ? TimelineObjClassesCore.NoNextPart : undefined,
+				!activePlaylist.currentPartInfo ? TimelineObjClassesCore.BeforeFirstPart : undefined,
+				!activePlaylist.nextPartInfo ? TimelineObjClassesCore.NoNextPart : undefined,
 			].filter((v): v is TimelineObjClassesCore => v !== undefined),
 			partInstanceId: null,
 			metaData: undefined,
@@ -87,19 +83,18 @@ export function buildTimelineObjsForRundown(
 	)
 
 	// Fetch the nextPart first, because that affects how the currentPart will be treated
-	if (activePlaylist.nextPartInstanceId) {
+	if (activePlaylist.nextPartInfo) {
 		// We may be at the end of a show, where there is no next part
-		if (!partInstancesInfo.next) throw new Error(`PartInstance "${activePlaylist.nextPartInstanceId}" not found!`)
+		if (!partInstancesInfo.next) throw new Error(`PartInstance "${activePlaylist.nextPartInfo}" not found!`)
 	}
-	if (activePlaylist.currentPartInstanceId) {
+	if (activePlaylist.currentPartInfo) {
 		// We may be before the beginning of a show, and there can be no currentPart and we are waiting for the user to Take
-		if (!partInstancesInfo.current)
-			throw new Error(`PartInstance "${activePlaylist.currentPartInstanceId}" not found!`)
+		if (!partInstancesInfo.current) throw new Error(`PartInstance "${activePlaylist.currentPartInfo}" not found!`)
 	}
-	if (activePlaylist.previousPartInstanceId) {
+	if (activePlaylist.previousPartInfo) {
 		// We may be at the beginning of a show, where there is no previous part
 		if (!partInstancesInfo.previous)
-			logger.warn(`Previous PartInstance "${activePlaylist.previousPartInstanceId}" not found!`)
+			logger.warn(`Previous PartInstance "${activePlaylist.previousPartInfo}" not found!`)
 	}
 
 	if (!partInstancesInfo.next && !partInstancesInfo.current) {
@@ -136,11 +131,6 @@ export function buildTimelineObjsForRundown(
 				  )
 				: new Map()
 
-		const currentPartInstanceTimings = getPartTimingsOrDefaults(
-			partInstancesInfo.current.partInstance,
-			partInstancesInfo.current.pieceInstances
-		)
-
 		// The startTime of this start is used as the reference point for the calculated timings, so we can use 'now' and everything will lie after this point
 		const currentPartEnable: PartEnable = { start: 'now' }
 		if (partInstancesInfo.current.partInstance.timings?.plannedStartedPlayback) {
@@ -155,7 +145,8 @@ export function buildTimelineObjsForRundown(
 		) {
 			// If there is a valid autonext out of the current part, then calculate the duration
 			currentPartEnable.duration =
-				partInstancesInfo.current.partInstance.part.expectedDuration + currentPartInstanceTimings.toPartDelay
+				partInstancesInfo.current.partInstance.part.expectedDuration +
+				partInstancesInfo.current.calculatedTimings.toPartDelay
 		}
 		const currentPartGroup = createPartGroup(partInstancesInfo.current.partInstance, currentPartEnable)
 
@@ -173,7 +164,7 @@ export function buildTimelineObjsForRundown(
 					partInstancesInfo.previous,
 					currentInfinitePieceIds,
 					timingContext,
-					currentPartInstanceTimings
+					partInstancesInfo.current.calculatedTimings
 				)
 			)
 		}
@@ -189,7 +180,7 @@ export function buildTimelineObjsForRundown(
 					timingContext,
 					infinitePiece,
 					currentTime,
-					currentPartInstanceTimings
+					partInstancesInfo.current.calculatedTimings
 				)
 			)
 		}
@@ -210,7 +201,7 @@ export function buildTimelineObjsForRundown(
 				groupClasses,
 				currentPartGroup,
 				partInstancesInfo.current.nowInPart,
-				currentPartInstanceTimings,
+				partInstancesInfo.current.calculatedTimings,
 				activePlaylist.holdState === RundownHoldState.ACTIVE,
 				partInstancesInfo.current.partInstance.part.outTransition ?? null
 			)
@@ -395,7 +386,7 @@ function generatePreviousPartInstanceObjects(
 				groupClasses,
 				previousPartGroup,
 				previousPartInfo.nowInPart,
-				getPartTimingsOrDefaults(previousPartInfo.partInstance, previousPartInfo.pieceInstances),
+				previousPartInfo.calculatedTimings,
 				activePlaylist.holdState === RundownHoldState.ACTIVE,
 				previousPartInfo.partInstance.part.outTransition ?? null
 			),
@@ -412,21 +403,11 @@ function generateNextPartInstanceObjects(
 	nextPartInfo: SelectedPartInstanceTimelineInfo,
 	timingContext: RundownTimelineTimingContext
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
-	const currentToNextTimings = calculatePartTimings(
-		activePlaylist.holdState,
-		currentPartInfo.partInstance.part,
-		currentPartInfo.pieceInstances.map((p) => p.piece),
-		nextPartInfo.partInstance.part,
-		nextPartInfo.pieceInstances
-			.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0)
-			.map((p) => p.piece)
-	)
-
 	const nextPartGroup = createPartGroup(nextPartInfo.partInstance, {
-		start: `#${timingContext.currentPartGroup.id}.end - ${currentToNextTimings.fromPartRemaining}`,
+		start: `#${timingContext.currentPartGroup.id}.end - ${nextPartInfo.calculatedTimings.fromPartRemaining}`,
 	})
 	timingContext.nextPartGroup = nextPartGroup
-	timingContext.nextPartOverlap = currentToNextTimings.fromPartRemaining
+	timingContext.nextPartOverlap = nextPartInfo.calculatedTimings.fromPartRemaining
 
 	const nextPieceInstances = nextPartInfo?.pieceInstances.filter(
 		(i) => !i.infinite || i.infinite.infiniteInstanceIndex === 0
@@ -449,7 +430,7 @@ function generateNextPartInstanceObjects(
 			groupClasses,
 			nextPartGroup,
 			0,
-			currentToNextTimings,
+			nextPartInfo.calculatedTimings,
 			false,
 			nextPartInfo.partInstance.part.outTransition ?? null
 		),

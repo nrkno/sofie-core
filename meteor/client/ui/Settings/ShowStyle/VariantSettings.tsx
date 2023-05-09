@@ -3,17 +3,17 @@ import { faTrash, faPlus, faDownload, faUpload } from '@fortawesome/free-solid-s
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
 	BlueprintManifestType,
-	ConfigManifestEntry,
 	IShowStyleConfigPreset,
+	IShowStyleVariantConfigPreset,
+	JSONSchema,
 } from '@sofie-automation/blueprints-integration'
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { useTranslation } from 'react-i18next'
 import { MeteorCall } from '../../../../lib/api/methods'
-import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import { ShowStyleBase, SourceLayers } from '../../../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
 import { doModalDialog } from '../../../lib/ModalDialog'
-import { SourceLayerDropdownOption } from '../BlueprintConfigManifest'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { NoticeLevel, NotificationCenter, Notification } from '../../../../lib/notifications/notifications'
 import { UploadButton } from '../../../lib/uploadButton'
@@ -27,17 +27,19 @@ import { Blueprints, ShowStyleVariants } from '../../../collections'
 interface IShowStyleVariantsProps {
 	showStyleBase: ShowStyleBase
 	showStyleVariants: ShowStyleVariant[]
-	blueprintConfigManifest: ConfigManifestEntry[]
+	blueprintConfigSchema: JSONSchema | undefined
+	blueprintTranslationNamespaces: string[]
 	blueprintConfigPreset: IShowStyleConfigPreset | undefined // TODO - use this
 
 	layerMappings?: { [studioId: string]: MappingsExt }
-	sourceLayers?: Array<SourceLayerDropdownOption>
+	sourceLayers?: SourceLayers
 }
 
 export const ShowStyleVariantsSettings = ({
 	showStyleBase,
 	showStyleVariants,
-	blueprintConfigManifest,
+	blueprintConfigSchema,
+	blueprintTranslationNamespaces,
 	layerMappings,
 	sourceLayers,
 }: IShowStyleVariantsProps): JSX.Element => {
@@ -66,7 +68,7 @@ export const ShowStyleVariantsSettings = ({
 				if (blueprint && blueprint.showStyleConfigPresets) {
 					const basePreset = blueprint.showStyleConfigPresets[showStyleBase.blueprintConfigPresetId]
 					if (basePreset) {
-						for (const [id, preset] of Object.entries(basePreset.variants)) {
+						for (const [id, preset] of Object.entries<IShowStyleVariantConfigPreset>(basePreset.variants)) {
 							options.push({
 								value: id,
 								name: preset.name,
@@ -327,13 +329,6 @@ export const ShowStyleVariantsSettings = ({
 			},
 		})
 	}
-	const pushBlueprintConfigOverride = (variantId: ShowStyleVariantId, newOp: SomeObjectOverrideOp) => {
-		ShowStyleVariants.update(variantId, {
-			$push: {
-				'blueprintConfigWithOverrides.overrides': newOp,
-			},
-		})
-	}
 
 	return (
 		<div>
@@ -350,7 +345,8 @@ export const ShowStyleVariantsSettings = ({
 							onDragCancel={onDragCancel}
 							blueprintPresetConfigOptions={blueprintPresetConfigOptions}
 							baseBlueprintConfigWithOverrides={showStyleBase.blueprintConfigWithOverrides}
-							blueprintConfigManifest={blueprintConfigManifest}
+							blueprintConfigSchema={blueprintConfigSchema}
+							blueprintTranslationNamespaces={blueprintTranslationNamespaces}
 							layerMappings={layerMappings}
 							sourceLayers={sourceLayers}
 							onCopy={onCopyShowStyleVariant}
@@ -358,9 +354,8 @@ export const ShowStyleVariantsSettings = ({
 							onDownload={onDownloadShowStyleVariant}
 							onEdit={onEditItem}
 							onFinishEdit={onFinishEditItem}
-							onPushOverride={pushBlueprintConfigOverride}
 							onSaveOverrides={saveBlueprintConfigOverrides}
-						></VariantListItem>
+						/>
 					))}
 				</table>
 			</div>

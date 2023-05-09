@@ -298,7 +298,7 @@ class NotificationCenter0 {
 		notificationsDep.depend()
 
 		return _.flatten(
-			Object.values(notifiers)
+			Object.values<NotifierHandle>(notifiers)
 				.map((item) => {
 					item.result.forEach((i) => {
 						if (this._isOpen && !i.snoozed) i.snooze()
@@ -314,7 +314,7 @@ class NotificationCenter0 {
 					})
 					return item.result
 				})
-				.concat(Object.values(notifications))
+				.concat(Object.values<Notification>(notifications))
 		)
 	}
 
@@ -346,15 +346,15 @@ class NotificationCenter0 {
 		// )
 		if (filter === undefined) {
 			return (
-				Object.values(notifiers).reduce<number>((a, b) => a + (b.result || []).length, 0) +
-				Object.values(notifications).length
+				Object.values<NotifierHandle>(notifiers).reduce<number>((a, b) => a + (b.result || []).length, 0) +
+				Object.values<Notification>(notifications).length
 			)
 		} else {
 			return (
-				Object.values(notifiers).reduce<number>(
+				Object.values<NotifierHandle>(notifiers).reduce<number>(
 					(a, b) => a + (b.result || []).filter((item) => (item.status & filter) !== 0).length,
 					0
-				) + Object.values(notifications).filter((item) => (item.status & filter) !== 0).length
+				) + Object.values<Notification>(notifications).filter((item) => (item.status & filter) !== 0).length
 			)
 		}
 	}

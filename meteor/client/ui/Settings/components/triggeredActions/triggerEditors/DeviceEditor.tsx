@@ -84,7 +84,7 @@ export const DeviceEditor = function DeviceEditor({ trigger, modified, readonly,
 
 						{previewedTrigger.values && (
 							<p>
-								{Object.entries(previewedTrigger.values).map(([key, value]) => (
+								{Object.entries<string | number | boolean>(previewedTrigger.values).map(([key, value]) => (
 									<span key={key}>
 										{key}: {value}
 									</span>

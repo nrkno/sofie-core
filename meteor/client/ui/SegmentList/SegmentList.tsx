@@ -93,7 +93,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 
 	const adLibIndicatorColumns = useMemo(() => {
 		const sourceColumns: Record<string, ISourceLayerExtended[]> = {}
-		Object.values(props.segment.sourceLayers).forEach((sourceLayer) => {
+		Object.values<ISourceLayerExtended>(props.segment.sourceLayers).forEach((sourceLayer) => {
 			if (!sourceLayer.onListViewAdLibColumn) return
 			let thisSourceColumn = sourceColumns[sourceLayer.name]
 			if (!thisSourceColumn) {
@@ -107,7 +107,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 
 	const indicatorColumns = useMemo(() => {
 		const sourceColumns: Record<string, ISourceLayerExtended[]> = {}
-		Object.values(props.segment.sourceLayers).forEach((sourceLayer) => {
+		Object.values<ISourceLayerExtended>(props.segment.sourceLayers).forEach((sourceLayer) => {
 			if (sourceLayer.isHidden) return
 			if (!sourceLayer.onListViewColumn) return
 			let thisSourceColumn = sourceColumns[sourceLayer.name]
@@ -124,14 +124,14 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 	// let currentPartIndex: number = -1
 	// let nextPartIndex: number = -1
 
-	const playlistHasNextPart = !!props.playlist.nextPartInstanceId
+	const playlistHasNextPart = !!props.playlist.nextPartInfo
 
 	const renderedParts = props.parts.filter((part) => !(part.instance.part.invalid && part.instance.part.gap))
 	const isSinglePartInSegment = renderedParts.length === 1
 	let lastTimingGroup: string | undefined = undefined
 	renderedParts.forEach((part) => {
-		const isLivePart = part.instance._id === props.playlist.currentPartInstanceId
-		const isNextPart = part.instance._id === props.playlist.nextPartInstanceId
+		const isLivePart = part.instance._id === props.playlist.currentPartInfo?.partInstanceId
+		const isNextPart = part.instance._id === props.playlist.nextPartInfo?.partInstanceId
 
 		// if (isLivePart) currentPartIndex = index
 		// if (isNextPart) nextPartIndex = index
@@ -168,7 +168,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 
 	const isHeaderDetached =
 		(inView &&
-			(props.isLiveSegment || (props.isNextSegment && !props.playlist.currentPartInstanceId)) &&
+			(props.isLiveSegment || (props.isNextSegment && !props.playlist.currentPartInfo)) &&
 			parts.length > 1 &&
 			entry &&
 			entry.intersectionRatio < 1 &&

@@ -1,7 +1,6 @@
 import React from 'react'
 import _ from 'underscore'
-import { TFunction } from 'i18next'
-import { withTranslation, WithTranslation } from 'react-i18next'
+import { withTranslation, WithTranslation, TFunction } from 'react-i18next'
 
 import ClassNames from 'classnames'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
@@ -103,8 +102,8 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 		const partInstance = this.props.part.instance
 
-		const isLive = this.props.playlist.currentPartInstanceId === partInstance._id
-		const isNext = this.props.playlist.nextPartInstanceId === partInstance._id
+		const isLive = this.props.playlist.currentPartInfo?.partInstanceId === partInstance._id
+		const isNext = this.props.playlist.nextPartInfo?.partInstanceId === partInstance._id
 		const startedPlayback = partInstance.timings?.plannedStartedPlayback
 
 		this.state = {
@@ -138,9 +137,9 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		nextProps: Readonly<IProps & RundownTiming.InjectedROTimingProps>,
 		state: Readonly<IState>
 	): Partial<IState> {
-		const isPrevious = nextProps.playlist.previousPartInstanceId === nextProps.part.instance._id
-		const isLive = nextProps.playlist.currentPartInstanceId === nextProps.part.instance._id
-		const isNext = nextProps.playlist.nextPartInstanceId === nextProps.part.instance._id
+		const isPrevious = nextProps.playlist.previousPartInfo?.partInstanceId === nextProps.part.instance._id
+		const isLive = nextProps.playlist.currentPartInfo?.partInstanceId === nextProps.part.instance._id
+		const isNext = nextProps.playlist.nextPartInfo?.partInstanceId === nextProps.part.instance._id
 
 		const nextPartInner = nextProps.part.instance.part
 
@@ -399,7 +398,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 			let indexAccumulator = 0
 
-			return Object.values(this.props.segment.outputLayers)
+			return Object.values<IOutputLayerUi>(this.props.segment.outputLayers)
 				.filter((layer) => {
 					return layer.used ? true : false
 				})
@@ -462,8 +461,8 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 										  )
 								}
 								expectedDuration={SegmentTimelinePartClass.getPartExpectedDuration(this.props)}
-								isLiveLine={this.props.playlist.currentPartInstanceId === part.instance._id}
-								isNextLine={this.props.playlist.nextPartInstanceId === part.instance._id}
+								isLiveLine={this.props.playlist.currentPartInfo?.partInstanceId === part.instance._id}
+								isNextLine={this.props.playlist.nextPartInfo?.partInstanceId === part.instance._id}
 								isTooSmallForText={this.state.isTooSmallForText}
 								timeScale={this.props.timeScale}
 								autoNextPart={this.props.autoNextPart}
@@ -498,7 +497,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	private renderEndOfSegment = (t: TFunction, innerPart: Part, isEndOfShow: boolean, isEndOfLoopingShow?: boolean) => {
 		const isNext =
 			this.state.isLive &&
-			((!this.props.isLastSegment && !this.props.isLastInSegment) || !!this.props.playlist.nextPartInstanceId) &&
+			((!this.props.isLastSegment && !this.props.isLastInSegment) || !!this.props.playlist.nextPartInfo) &&
 			!innerPart.invalid
 		return (
 			<>
@@ -565,7 +564,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		const isEndOfShow =
 			this.props.isLastSegment &&
 			this.props.isLastInSegment &&
-			(!this.state.isLive || (this.state.isLive && !this.props.playlist.nextPartInstanceId))
+			(!this.state.isLive || (this.state.isLive && !this.props.playlist.nextPartInfo))
 		const isEndOfLoopingShow = this.props.isLastSegment && this.props.isLastInSegment && this.props.playlist.loop
 		let invalidReasonColorVars: CSSProperties | undefined = undefined
 		if (innerPart.invalidReason && innerPart.invalidReason.color) {

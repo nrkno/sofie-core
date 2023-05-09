@@ -1,10 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import {
-	PeripheralDevice,
-	PeripheralDeviceType,
-	PERIPHERAL_SUBTYPE_PROCESS,
-} from '../../lib/collections/PeripheralDevices'
-import { getCurrentTime, Time, getRandomId, assertNever, literal } from '../../lib/lib'
+import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '../../lib/collections/PeripheralDevices'
+import { getCurrentTime, Time, getRandomId, literal } from '../../lib/lib'
 import {
 	parseVersion,
 	parseCoreIntegrationCompatabilityRange,
@@ -128,7 +124,7 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 		}
 
 		// check for any known libraries
-		for (const [libName, targetVersion] of Object.entries(expectedLibraryVersions)) {
+		for (const [libName, targetVersion] of Object.entries<string>(expectedLibraryVersions)) {
 			if (deviceVersions[libName] && targetVersion !== '0.0.0') {
 				const deviceLibVersion = parseVersion(deviceVersions[libName])
 				const checkMessage = compareSemverVersions(
@@ -159,23 +155,8 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 		},
 		checks: checks,
 	}
-	if (device.type === PeripheralDeviceType.MOS) {
-		so.documentation = 'https://github.com/nrkno/sofie-core'
-	} else if (device.type === PeripheralDeviceType.SPREADSHEET) {
-		so.documentation = 'https://github.com/SuperFlyTV/spreadsheet-gateway'
-	} else if (device.type === PeripheralDeviceType.PLAYOUT) {
-		so.documentation = 'https://github.com/nrkno/sofie-core'
-	} else if (device.type === PeripheralDeviceType.MEDIA_MANAGER) {
-		so.documentation = 'https://github.com/nrkno/sofie-media-management'
-	} else if (device.type === PeripheralDeviceType.INEWS) {
-		so.documentation = 'https://github.com/olzzon/tv2-inews-ftp-gateway'
-	} else if (device.type === PeripheralDeviceType.PACKAGE_MANAGER) {
-		so.documentation = 'https://github.com/nrkno/sofie-package-manager'
-	} else if (device.type === PeripheralDeviceType.INPUT) {
-		so.documentation = 'https://github.com/nrkno/sofie-input-gateway'
-	} else {
-		assertNever(device.type)
-	}
+
+	so.documentation = device.documentationUrl ?? ''
 
 	return so
 }
@@ -190,7 +171,7 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 	await SystemReadAccess.systemStatus(cred0)
 
 	// Check systemStatuses:
-	for (const [key, status] of Object.entries(systemStatuses)) {
+	for (const [key, status] of Object.entries<StatusObjectInternal>(systemStatuses)) {
 		checks.push({
 			description: key,
 			status: status2ExternalStatus(status.statusCode),
@@ -300,7 +281,9 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 		...(await RelevantSystemVersions),
 	}
 
-	for (const [blueprintId, blueprint] of Object.entries(await getBlueprintVersions())) {
+	for (const [blueprintId, blueprint] of Object.entries<{ name: string; version: string }>(
+		await getBlueprintVersions()
+	)) {
 		// Use the name as key to make it easier to read for a human:
 		let key = 'blueprint_' + blueprint.name
 

@@ -1,7 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import Escape from 'react-escape'
+import Escape from './../../lib/Escape'
 import { ContextMenu, MenuItem } from '@jstarpl/react-contextmenu'
 import { ReactiveVar } from 'meteor/reactive-var'
 import { Bucket } from '../../../lib/collections/Buckets'

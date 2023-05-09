@@ -11,7 +11,6 @@ import {
 	handleMosFullStory,
 	handleMosInsertStories,
 	handleMosMoveStories,
-	handleMosStoryStatus,
 	handleMosSwapStories,
 } from '../mosStoryJobs'
 import { handleMosRundownData, handleMosRundownReadyToAir, handleMosRundownStatus } from '../mosRundownJobs'
@@ -412,68 +411,6 @@ describe('Test recieved mos ingest payloads', () => {
 				status: newStatus,
 			})
 		).rejects.toThrow(/Rundown.*not found/i)
-	})
-
-	test('mosRoStoryStatus: Update part', async () => {
-		const newStatus = MOS.IMOSObjectStatus.BUSY
-
-		let part = (await context.directCollections.Parts.findOne()) as DBPart
-		expect(part).toBeTruthy()
-		expect(part.status).not.toEqual(newStatus.toString())
-
-		const rundown = (await context.directCollections.Rundowns.findOne({ _id: part.rundownId })) as DBRundown
-		expect(rundown).toBeTruthy()
-
-		await handleMosStoryStatus(context, {
-			peripheralDeviceId: device._id,
-			rundownExternalId: rundown.externalId,
-			partExternalId: part.externalId,
-			status: newStatus,
-		})
-
-		part = (await context.directCollections.Parts.findOne(part._id)) as DBPart
-		expect(part).toBeTruthy()
-		expect(part.status).toEqual(newStatus.toString())
-
-		await expectRundownToMatchSnapshot(rundown._id, false, true)
-	})
-
-	test('mosRoStoryStatus: Wrong ro for part', async () => {
-		const newStatus = MOS.IMOSObjectStatus.STOP
-
-		const rundownExternalId = 'fakeId'
-		expect(await context.directCollections.Rundowns.findOne({ externalId: rundownExternalId })).toBeFalsy()
-
-		const part = (await context.directCollections.Parts.findOne()) as DBPart
-		expect(part).toBeTruthy()
-		expect(part.status).not.toEqual(newStatus.toString())
-
-		await expect(
-			handleMosStoryStatus(context, {
-				peripheralDeviceId: device._id,
-				rundownExternalId: rundownExternalId,
-				partExternalId: part.externalId,
-				status: newStatus,
-			})
-		).rejects.toThrow(/Rundown.*not found/i)
-	})
-
-	test('mosRoStoryStatus: Missing part', async () => {
-		const newStatus = MOS.IMOSObjectStatus.PLAY
-
-		const rundown = (await context.directCollections.Rundowns.findOne()) as DBRundown
-		expect(rundown).toBeTruthy()
-
-		const partExternalId = 'fakeId'
-
-		await expect(
-			handleMosStoryStatus(context, {
-				peripheralDeviceId: device._id,
-				rundownExternalId: rundown.externalId,
-				partExternalId: partExternalId,
-				status: newStatus,
-			})
-		).rejects.toThrow(`Part ${partExternalId} in rundown ${rundown._id} not found`)
 	})
 
 	test('mosRoStoryInsert: Into segment', async () => {

@@ -212,7 +212,7 @@ export async function syncChangesToPartInstances(
 					})
 				}
 
-				if (existingPartInstance._id === cache.Playlist.doc.currentPartInstanceId) {
+				if (existingPartInstance._id === cache.Playlist.doc.currentPartInfo?.partInstanceId) {
 					// This should be run after 'current', before 'next':
 					await syncPlayheadInfinitesForNextPartInstance(context, cache)
 				}

@@ -2,10 +2,9 @@ import React, { useRef } from 'react'
 import classNames from 'classnames'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DragSourceMonitor, DropTargetMonitor, useDrag, useDrop } from 'react-dnd'
-import { Identifier } from 'dnd-core'
 import { ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
 import { EditAttribute } from '../../../lib/EditAttribute'
-import { BlueprintConfigManifestSettings, SourceLayerDropdownOption } from '../BlueprintConfigManifest'
+import { BlueprintConfigSchemaSettings } from '../BlueprintConfigSchema'
 import { ShowStyleDragDropTypes } from './DragDropTypesShowStyle'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
@@ -22,16 +21,16 @@ import {
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { useTranslation } from 'react-i18next'
-import { ConfigManifestEntry, IBlueprintConfig } from '@sofie-automation/blueprints-integration'
+import { IBlueprintConfig, JSONSchema } from '@sofie-automation/blueprints-integration'
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { iconDragHandle } from '../../RundownList/icons'
 import { ShowStyleVariants } from '../../../collections'
+import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 
 interface DraggableVariant {
 	id: ShowStyleVariantId
 	rank: number
-	type: ShowStyleDragDropTypes
 }
 
 interface DraggableDropResult {
@@ -45,7 +44,8 @@ export const VariantListItem = ({
 	onDragCancel,
 	isEdited,
 
-	blueprintConfigManifest,
+	blueprintConfigSchema,
+	blueprintTranslationNamespaces,
 	baseBlueprintConfigWithOverrides,
 	blueprintPresetConfigOptions,
 	layerMappings,
@@ -57,18 +57,18 @@ export const VariantListItem = ({
 	onFinishEdit,
 	onDelete,
 	onSaveOverrides,
-	onPushOverride,
 }: {
 	showStyleVariant: ShowStyleVariant
 	onDragVariant: (draggingId: ShowStyleVariantId, hoverId: ShowStyleVariantId) => void
 	onDragEnd: (draggedId: ShowStyleVariantId) => void
 	onDragCancel: () => void
 	isEdited: boolean
-	blueprintConfigManifest: ConfigManifestEntry[]
+	blueprintConfigSchema: JSONSchema | undefined
+	blueprintTranslationNamespaces: string[]
 	baseBlueprintConfigWithOverrides: ObjectWithOverrides<IBlueprintConfig>
 	blueprintPresetConfigOptions: { name: string; value: string | null }[]
 	layerMappings?: { [studioId: string]: MappingsExt }
-	sourceLayers?: Array<SourceLayerDropdownOption>
+	sourceLayers?: SourceLayers
 
 	onDownload: (showStyleVariant: ShowStyleVariant) => void
 	onCopy: (showStyleVariantId: ShowStyleVariant) => void
@@ -76,10 +76,9 @@ export const VariantListItem = ({
 	onFinishEdit: (showStyleVariantId: ShowStyleVariantId) => void
 	onDelete: (showStyleVariant: ShowStyleVariant) => void
 	onSaveOverrides: (showStyleVariantId: ShowStyleVariantId, newOps: SomeObjectOverrideOp[]) => void
-	onPushOverride: (showStyleVariantId: ShowStyleVariantId, newOp: SomeObjectOverrideOp) => void
 }): JSX.Element => {
 	const ref = useRef<HTMLTableRowElement>(null)
-	const [{ handlerId }, drop] = useDrop<DraggableVariant, DraggableDropResult, { handlerId: Identifier | null }>({
+	const [{ handlerId }, drop] = useDrop<DraggableVariant, DraggableDropResult, { handlerId: string | symbol | null }>({
 		accept: ShowStyleDragDropTypes.VARIANT,
 		collect: (monitor: DropTargetMonitor) => ({ handlerId: monitor.getHandlerId() }),
 		hover(hoverVariant: DraggableVariant) {
@@ -88,17 +87,16 @@ export const VariantListItem = ({
 			}
 			onDragVariant(hoverVariant.id, showStyleVariant._id)
 		},
-		drop: (item) => {
-			if (item.type === ShowStyleDragDropTypes.VARIANT) {
-				return {
-					overId: showStyleVariant._id,
-				}
+		drop: () => {
+			return {
+				overId: showStyleVariant._id,
 			}
 		},
 	})
 
 	const [{ isDragging }, drag] = useDrag<DraggableVariant, DraggableDropResult, { isDragging: boolean }>({
-		item: { type: ShowStyleDragDropTypes.VARIANT, id: showStyleVariant._id, rank: showStyleVariant._rank },
+		type: ShowStyleDragDropTypes.VARIANT,
+		item: { id: showStyleVariant._id, rank: showStyleVariant._rank },
 		collect: (monitor: DragSourceMonitor) => ({
 			isDragging: monitor.isDragging(),
 		}),
@@ -156,60 +154,59 @@ export const VariantListItem = ({
 				{isEdited && (
 					<tr className="expando-details hl">
 						<td colSpan={5}>
-							<div>
-								<div className="mod mvs mhs">
-									<label className="field">
-										{t('Name')}
-										<EditAttribute
-											modifiedClassName="bghl"
-											attribute={'name'}
-											obj={showStyleVariant}
-											type="text"
-											collection={ShowStyleVariants}
-											className="input text-input input-l"
-										></EditAttribute>
-									</label>
-								</div>
-							</div>
-							<label className="field">
-								{t('Blueprint config preset')}
-								{!showStyleVariant.blueprintConfigPresetId && (
-									<div className="error-notice inline">
-										{t('Blueprint config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
-									</div>
-								)}
-								{showStyleVariant.blueprintConfigPresetIdUnlinked && showStyleVariant.blueprintConfigPresetId && (
-									<div className="error-notice inline">
-										{t('Blueprint config preset is missing')} <FontAwesomeIcon icon={faExclamationTriangle} />
-									</div>
-								)}
-								<div className="mdi">
+							<div className="mod mvs mhs">
+								<label className="field">
+									{t('Name')}
 									<EditAttribute
 										modifiedClassName="bghl"
-										attribute="blueprintConfigPresetId"
+										attribute={'name'}
 										obj={showStyleVariant}
-										type="dropdown"
-										options={blueprintPresetConfigOptions}
-										mutateDisplayValue={(v) => v || ''}
-										mutateUpdateValue={(v) => (v === '' ? undefined : v)}
+										type="text"
 										collection={ShowStyleVariants}
-										className="mdinput"
-									/>
-									<span className="mdfx"></span>
-								</div>
-							</label>
+										className="input text-input input-l"
+									></EditAttribute>
+								</label>
+							</div>
+
 							<div className="row">
 								<div className="col c12 r1-c12 phs">
-									<BlueprintConfigManifestSettings
-										configManifestId={unprotectString(showStyleVariant._id)}
-										manifest={blueprintConfigManifest}
+									<h3 className="mhn">{t('Blueprint Configuration')}</h3>
+
+									<div className="mod mvs mhs">
+										<label className="field">
+											{t('Config preset')}
+											{!showStyleVariant.blueprintConfigPresetId && (
+												<div className="error-notice inline">
+													{t('Config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+												</div>
+											)}
+											{showStyleVariant.blueprintConfigPresetIdUnlinked && showStyleVariant.blueprintConfigPresetId && (
+												<div className="error-notice inline">
+													{t('Config preset is missing')} <FontAwesomeIcon icon={faExclamationTriangle} />
+												</div>
+											)}
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute="blueprintConfigPresetId"
+												obj={showStyleVariant}
+												type="dropdown"
+												options={blueprintPresetConfigOptions}
+												mutateDisplayValue={(v) => v || ''}
+												mutateUpdateValue={(v) => (v === '' ? undefined : v)}
+												collection={ShowStyleVariants}
+												className="mdinput"
+											/>
+										</label>
+									</div>
+
+									<BlueprintConfigSchemaSettings
+										schema={blueprintConfigSchema}
+										translationNamespaces={blueprintTranslationNamespaces}
 										alternateConfig={applyAndValidateOverrides(baseBlueprintConfigWithOverrides).obj}
 										layerMappings={layerMappings}
 										sourceLayers={sourceLayers}
-										subPanel={true}
 										configObject={showStyleVariant.blueprintConfigWithOverrides}
 										saveOverrides={(newOps) => onSaveOverrides(showStyleVariant._id, newOps)}
-										pushOverride={(newOp) => onPushOverride(showStyleVariant._id, newOp)}
 									/>
 								</div>
 							</div>

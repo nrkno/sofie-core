@@ -26,12 +26,12 @@ type ChangedHandler = (showStyleBaseId: ShowStyleBaseId, cache: ContentCache) =>
 
 const REACTIVITY_DEBOUNCE = 20
 
-type RundownPlaylistFields = '_id' | 'nextPartInstanceId' | 'currentPartInstanceId' | 'activationId'
+type RundownPlaylistFields = '_id' | 'nextPartInfo' | 'currentPartInfo' | 'activationId'
 const rundownPlaylistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownPlaylistFields>>({
 	_id: 1,
 	activationId: 1,
-	currentPartInstanceId: 1,
-	nextPartInstanceId: 1,
+	currentPartInfo: 1,
+	nextPartInfo: 1,
 })
 
 type PartInstanceFields = '_id' | 'rundownId'
@@ -84,7 +84,8 @@ export class StudioObserver extends EventEmitter {
 			)
 			.next('activePartInstance', (chain) => {
 				const activePartInstanceId =
-					chain.activePlaylist.currentPartInstanceId ?? chain.activePlaylist.nextPartInstanceId
+					chain.activePlaylist.currentPartInfo?.partInstanceId ??
+					chain.activePlaylist.nextPartInfo?.partInstanceId
 				if (!activePartInstanceId) return null
 				return PartInstances.find(
 					{ _id: activePartInstanceId },

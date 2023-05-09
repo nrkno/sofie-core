@@ -29,7 +29,7 @@ import _ = require('underscore')
 import { resetPartInstancesWithPieceInstances, SelectNextPartResult } from './lib'
 import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 import { logger } from 'elastic-apm-node'
-import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { RundownHoldState, SelectedPartInstance } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { updateTimeline } from './timeline/generate'
 
@@ -104,26 +104,35 @@ export async function setNextPart(
 		const nextPart = nextPartInfo.type === 'partinstance' ? nextPartInfo.instance.part : nextPartInfo.part
 
 		// create new instance
-		let newInstanceId: PartInstanceId
+		let newInstanceInfo: SelectedPartInstance
 		if (nextPartInfo.type === 'partinstance') {
-			newInstanceId = nextPartInfo.instance._id
-			cache.PartInstances.updateOne(newInstanceId, (p) => {
+			newInstanceInfo = {
+				partInstanceId: nextPartInfo.instance._id,
+				rundownId: nextPartInfo.instance.rundownId,
+			}
+			cache.PartInstances.updateOne(newInstanceInfo.partInstanceId, (p) => {
 				delete p.consumesNextSegmentId
 				return p
 			})
 			await syncPlayheadInfinitesForNextPartInstance(context, cache)
 		} else if (nextPartInstance && nextPartInstance.part._id === nextPart._id) {
 			// Re-use existing
-			newInstanceId = nextPartInstance._id
+			newInstanceInfo = {
+				partInstanceId: nextPartInstance._id,
+				rundownId: nextPartInstance.rundownId,
+			}
 			const consumesNextSegmentId = nextPartInfo.consumesNextSegmentId ?? false
-			cache.PartInstances.updateOne(newInstanceId, (p) => {
+			cache.PartInstances.updateOne(newInstanceInfo.partInstanceId, (p) => {
 				p.consumesNextSegmentId = consumesNextSegmentId
 				return p
 			})
 			await syncPlayheadInfinitesForNextPartInstance(context, cache)
 		} else {
 			// Create new isntance
-			newInstanceId = protectString<PartInstanceId>(`${nextPart._id}_${getRandomId()}`)
+			newInstanceInfo = {
+				partInstanceId: protectString<PartInstanceId>(`${nextPart._id}_${getRandomId()}`),
+				rundownId: nextPart.rundownId,
+			}
 			const newTakeCount = currentPartInstance ? currentPartInstance.takeCount + 1 : 0 // Increment
 			const segmentPlayoutId: SegmentPlayoutId =
 				currentPartInstance && nextPart.segmentId === currentPartInstance.segmentId
@@ -131,7 +140,7 @@ export async function setNextPart(
 					: getRandomId()
 
 			cache.PartInstances.insert({
-				_id: newInstanceId,
+				_id: newInstanceInfo.partInstanceId,
 				takeCount: newTakeCount,
 				playlistActivationId: cache.Playlist.doc.activationId,
 				rundownId: nextPart.rundownId,
@@ -159,7 +168,7 @@ export async function setNextPart(
 				rundown,
 				nextPart,
 				possiblePieces,
-				newInstanceId
+				newInstanceInfo.partInstanceId
 			)
 			for (const pieceInstance of newPieceInstances) {
 				cache.PieceInstances.insert(pieceInstance)
@@ -167,9 +176,9 @@ export async function setNextPart(
 		}
 
 		const selectedPartInstanceIds = _.compact([
-			newInstanceId,
-			cache.Playlist.doc.currentPartInstanceId,
-			cache.Playlist.doc.previousPartInstanceId,
+			newInstanceInfo.partInstanceId,
+			cache.Playlist.doc.currentPartInfo?.partInstanceId,
+			cache.Playlist.doc.previousPartInfo?.partInstanceId,
 		])
 
 		// reset any previous instances of this part
@@ -181,7 +190,7 @@ export async function setNextPart(
 
 		const nextPartInstanceTmp = nextPartInfo.type === 'partinstance' ? nextPartInfo.instance : null
 		cache.Playlist.update((p) => {
-			p.nextPartInstanceId = newInstanceId
+			p.nextPartInfo = newInstanceInfo
 			p.nextPartManual = !!(setManually || nextPartInstanceTmp?.orphaned)
 			p.nextTimeOffset = nextTimeOffset || null
 			return p
@@ -190,7 +199,7 @@ export async function setNextPart(
 		// Set to null
 
 		cache.Playlist.update((p) => {
-			p.nextPartInstanceId = null
+			p.nextPartInfo = null
 			p.nextPartManual = !!setManually
 			p.nextTimeOffset = null
 			return p
@@ -201,8 +210,8 @@ export async function setNextPart(
 	const instancesIdsToRemove = cache.PartInstances.remove(
 		(p) =>
 			!p.isTaken &&
-			p._id !== cache.Playlist.doc.nextPartInstanceId &&
-			p._id !== cache.Playlist.doc.currentPartInstanceId
+			p._id !== cache.Playlist.doc.nextPartInfo?.partInstanceId &&
+			p._id !== cache.Playlist.doc.currentPartInfo?.partInstanceId
 	)
 	cache.PieceInstances.remove((p) => instancesIdsToRemove.includes(p.partInstanceId))
 
@@ -327,7 +336,10 @@ async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout)
 			continue
 		}
 
-		if (partInstance._id !== playlist.currentPartInstanceId && partInstance._id !== playlist.nextPartInstanceId) {
+		if (
+			partInstance._id !== playlist.currentPartInfo?.partInstanceId &&
+			partInstance._id !== playlist.nextPartInfo?.partInstanceId
+		) {
 			removePartInstanceIds.push(partInstance._id)
 		}
 	}

@@ -68,7 +68,7 @@ export namespace MongoMock {
 				throw new Error(`find being performed using unimplemented options: ${unimplementedUsedOptions}`)
 			}
 
-			const docsArray = Object.values(this.documents)
+			const docsArray = Object.values<T>(this.documents)
 			let docs: T[] = _.compact(
 				query._id && typeof query._id === 'string'
 					? [this.documents[query._id]]

@@ -10,7 +10,8 @@ import CoreIcon from '@nrk/core-icons/jsx'
 import { Spinner } from '../lib/Spinner'
 import ClassNames from 'classnames'
 import * as _ from 'underscore'
-import Escape from 'react-escape'
+import Escape from './../lib/Escape'
+
 import * as i18next from 'i18next'
 import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
@@ -284,10 +285,10 @@ const TimingDisplay = withTranslation()(
 							rundownCount={this.props.rundownCount}
 						/>
 						<TimeOfDay />
-						{rundownPlaylist.currentPartInstanceId && (
+						{rundownPlaylist.currentPartInfo && (
 							<span className="timing-clock current-remaining">
 								<CurrentPartRemaining
-									currentPartInstanceId={rundownPlaylist.currentPartInstanceId}
+									currentPartInstanceId={rundownPlaylist.currentPartInfo.partInstanceId}
 									heavyClassName="overtime"
 								/>
 								<AutoNextStatus />
@@ -503,7 +504,12 @@ const RundownHeader = withTranslation()(
 					})
 				} else {
 					doUserAction(t, e, UserAction.TAKE, (e, ts) =>
-						MeteorCall.userAction.take(e, ts, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+						MeteorCall.userAction.take(
+							e,
+							ts,
+							this.props.playlist._id,
+							this.props.playlist.currentPartInfo?.partInstanceId ?? null
+						)
 					)
 				}
 			}
@@ -853,8 +859,8 @@ const RundownHeader = withTranslation()(
 					(err, reloadResponse) => {
 						if (!err && reloadResponse) {
 							if (!handleRundownPlaylistReloadResponse(t, reloadResponse)) {
-								if (this.props.playlist && this.props.playlist.nextPartInstanceId) {
-									scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
+								if (this.props.playlist && this.props.playlist.nextPartInfo) {
+									scrollToPartInstance(this.props.playlist.nextPartInfo.partInstanceId).catch((error) => {
 										if (!error.toString().match(/another scroll/)) console.warn(error)
 									})
 								}
@@ -1085,12 +1091,7 @@ const RundownHeader = withTranslation()(
 )
 
 interface IProps {
-	match?: {
-		params: {
-			playlistId: RundownPlaylistId
-		}
-	}
-	playlistId?: RundownPlaylistId
+	playlistId: RundownPlaylistId
 	inActiveRundownView?: boolean
 	onlyShelf?: boolean
 }
@@ -1167,12 +1168,7 @@ interface ITrackedProps {
 	nextSegmentPartIds: PartId[]
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: Translated<IProps>) => {
-	let playlistId
-	if (props.match && props.match.params.playlistId) {
-		playlistId = decodeURIComponent(unprotectString(props.match.params.playlistId))
-	} else if (props.playlistId) {
-		playlistId = props.playlistId
-	}
+	const playlistId = props.playlistId
 
 	const playlist = RundownPlaylists.findOne(playlistId)
 	let rundowns: Rundown[] = []
@@ -1547,8 +1543,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			this.subscribe(PubSub.rundownPlaylists, {
 				_id: playlistId,
 			})
-			this.subscribe(PubSub.uiSegmentPartNotes, playlistId)
-			this.subscribe(PubSub.uiPieceContentStatuses, playlistId)
 			this.subscribe(PubSub.rundowns, [playlistId], null)
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
@@ -1559,12 +1553,14 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}) as Pick<RundownPlaylist, '_id' | 'studioId'> | undefined
 				if (!playlist) return
 
+				this.subscribe(PubSub.uiSegmentPartNotes, playlistId)
+				this.subscribe(PubSub.uiPieceContentStatuses, playlistId)
 				this.subscribe(PubSub.uiStudio, playlist.studioId)
 				this.subscribe(PubSub.buckets, {
 					studioId: playlist.studioId,
 				})
 				// TODO: This is a hack, which should be replaced by something more clever, like in withMediaObjectStatus()
-				this.subscribe(PubSub.packageContainerPackageStatuses, playlist.studioId)
+				this.subscribe(PubSub.packageContainerPackageStatusesSimple, playlist.studioId)
 			})
 
 			this.autorun(() => {
@@ -1630,13 +1626,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
 					fields: {
-						currentPartInstanceId: 1,
-						nextPartInstanceId: 1,
-						previousPartInstanceId: 1,
+						currentPartInfo: 1,
+						nextPartInfo: 1,
+						previousPartInfo: 1,
 					},
-				}) as
-					| Pick<RundownPlaylist, '_id' | 'currentPartInstanceId' | 'nextPartInstanceId' | 'previousPartInstanceId'>
-					| undefined
+				}) as Pick<RundownPlaylist, '_id' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo'> | undefined
 				if (playlist) {
 					const rundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 					// Use Meteor.subscribe so that this subscription doesn't mess with this.subscriptionsReady()
@@ -1648,9 +1642,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						},
 						partInstanceId: {
 							$in: [
-								playlist.currentPartInstanceId,
-								playlist.nextPartInstanceId,
-								playlist.previousPartInstanceId,
+								playlist.currentPartInfo?.partInstanceId,
+								playlist.nextPartInfo?.partInstanceId,
+								playlist.previousPartInfo?.partInstanceId,
 							].filter((p): p is PartInstanceId => p !== null),
 						},
 						reset: {
@@ -1717,7 +1711,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				if (
 					this.props.playlist &&
 					prevProps.playlist &&
-					prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId &&
+					prevProps.playlist.currentPartInfo?.partInstanceId !== this.props.playlist.currentPartInfo?.partInstanceId &&
 					prevProps.playlist.nextPartManual
 				) {
 					// reset followLiveSegments after a manual set as next
@@ -1725,8 +1719,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						manualSetAsNext: false,
 						followLiveSegments: true,
 					})
-					if (this.props.playlist.currentPartInstanceId) {
-						scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
+					if (this.props.playlist.currentPartInfo) {
+						scrollToPartInstance(this.props.playlist.currentPartInfo?.partInstanceId, true).catch((error) => {
 							if (!error.toString().match(/another scroll/)) console.warn(error)
 						})
 					}
@@ -1745,43 +1739,43 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					prevProps.playlist &&
 					!prevProps.playlist.activationId &&
 					this.props.playlist.activationId &&
-					this.props.playlist.nextPartInstanceId
+					this.props.playlist.nextPartInfo
 				) {
 					// scroll to next after activation
-					scrollToPartInstance(this.props.playlist.nextPartInstanceId).catch((error) => {
+					scrollToPartInstance(this.props.playlist.nextPartInfo.partInstanceId).catch((error) => {
 						if (!error.toString().match(/another scroll/)) console.warn(error)
 					})
 				} else if (
 					// after take
 					this.props.playlist &&
 					prevProps.playlist &&
-					this.props.playlist.currentPartInstanceId !== prevProps.playlist.currentPartInstanceId &&
-					this.props.playlist.currentPartInstanceId &&
+					this.props.playlist.currentPartInfo?.partInstanceId !== prevProps.playlist.currentPartInfo?.partInstanceId &&
+					this.props.playlist.currentPartInfo &&
 					this.state.followLiveSegments
 				) {
-					scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
+					scrollToPartInstance(this.props.playlist.currentPartInfo.partInstanceId, true).catch((error) => {
 						if (!error.toString().match(/another scroll/)) console.warn(error)
 					})
 				} else if (
 					this.props.playlist &&
 					prevProps.playlist &&
-					this.props.playlist.nextPartInstanceId !== prevProps.playlist.nextPartInstanceId &&
-					this.props.playlist.currentPartInstanceId === prevProps.playlist.currentPartInstanceId &&
-					this.props.playlist.nextPartInstanceId &&
+					this.props.playlist.nextPartInfo?.partInstanceId !== prevProps.playlist.nextPartInfo?.partInstanceId &&
+					this.props.playlist.currentPartInfo?.partInstanceId === prevProps.playlist.currentPartInfo?.partInstanceId &&
+					this.props.playlist.nextPartInfo &&
 					this.props.playlist.nextPartManual
 				) {
-					scrollToPartInstance(this.props.playlist.nextPartInstanceId, false).catch((error) => {
+					scrollToPartInstance(this.props.playlist.nextPartInfo.partInstanceId, false).catch((error) => {
 						if (!error.toString().match(/another scroll/)) console.warn(error)
 					})
 				} else if (
 					// initial Rundown open
 					this.props.playlist &&
-					this.props.playlist.currentPartInstanceId &&
+					this.props.playlist.currentPartInfo &&
 					this.state.subsReady &&
 					!prevState.subsReady
 				) {
 					// allow for some time for the Rundown to render
-					maintainFocusOnPartInstance(this.props.playlist.currentPartInstanceId, 7000, true, true)
+					maintainFocusOnPartInstance(this.props.playlist.currentPartInfo.partInstanceId, 7000, true, true)
 				}
 			}
 
@@ -1850,19 +1844,21 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		}
 
 		private hasCurrentPartChanged(prevProps: IProps & ITrackedProps) {
-			return prevProps.playlist!.currentPartInstanceId !== this.props.playlist!.currentPartInstanceId
+			return (
+				prevProps.playlist!.currentPartInfo?.partInstanceId !== this.props.playlist!.currentPartInfo?.partInstanceId
+			)
 		}
 
 		private isCurrentPartKeyboardQueuedPart() {
-			return this.props.playlist!.currentPartInstanceId === this.keyboardQueuedPartInstanceId
+			return this.props.playlist!.currentPartInfo?.partInstanceId === this.keyboardQueuedPartInstanceId
 		}
 
 		private hasNextPartChanged(prevProps: IProps & ITrackedProps) {
-			return prevProps.playlist!.nextPartInstanceId !== this.props.playlist!.nextPartInstanceId
+			return prevProps.playlist!.nextPartInfo?.partInstanceId !== this.props.playlist!.nextPartInfo?.partInstanceId
 		}
 
 		private isNextPartDifferentFromKeyboardQueuedPart() {
-			return this.props.playlist!.nextPartInstanceId !== this.keyboardQueuedPartInstanceId
+			return this.props.playlist!.nextPartInfo?.partInstanceId !== this.keyboardQueuedPartInstanceId
 		}
 
 		onSelectPiece = (piece: PieceUi) => {
@@ -1980,13 +1976,13 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			if (
 				this.props.playlist &&
 				this.props.playlist.activationId &&
-				!this.props.playlist.currentPartInstanceId &&
-				this.props.playlist.nextPartInstanceId
+				!this.props.playlist.currentPartInfo &&
+				this.props.playlist.nextPartInfo
 			) {
 				this.setState({
 					followLiveSegments: true,
 				})
-				scrollToPartInstance(this.props.playlist.nextPartInstanceId, true).catch((error) => {
+				scrollToPartInstance(this.props.playlist.nextPartInfo.partInstanceId, true).catch((error) => {
 					if (!error.toString().match(/another scroll/)) console.warn(error)
 				})
 				setTimeout(() => {
@@ -1995,11 +1991,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					})
 					RundownViewEventBus.emit(RundownViewEvents.REWIND_SEGMENTS)
 				}, 2000)
-			} else if (this.props.playlist && this.props.playlist.activationId && this.props.playlist.currentPartInstanceId) {
+			} else if (this.props.playlist && this.props.playlist.activationId && this.props.playlist.currentPartInfo) {
 				this.setState({
 					followLiveSegments: true,
 				})
-				scrollToPartInstance(this.props.playlist.currentPartInstanceId, true).catch((error) => {
+				scrollToPartInstance(this.props.playlist.currentPartInfo.partInstanceId, true).catch((error) => {
 					if (!error.toString().match(/another scroll/)) console.warn(error)
 				})
 				setTimeout(() => {
@@ -2044,7 +2040,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						})
 						if (!err && take && this.props.playlist) {
 							const playlistId = this.props.playlist._id
-							const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+							const currentPartInstanceId = this.props.playlist.currentPartInfo?.partInstanceId ?? null
 							doUserAction(t, e, UserAction.TAKE, (e, ts) =>
 								MeteorCall.userAction.take(e, ts, playlistId, currentPartInstanceId)
 							)
@@ -2079,11 +2075,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				item &&
 				item.instance &&
 				this.props.playlist &&
-				this.props.playlist.currentPartInstanceId
+				this.props.playlist.currentPartInfo
 			) {
 				const idToCopy = item.instance.isTemporary ? item.instance.piece._id : item.instance._id
 				const playlistId = this.props.playlist._id
-				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+				const currentPartInstanceId = this.props.playlist.currentPartInfo.partInstanceId
 				doUserAction(t, e, UserAction.TAKE_PIECE, (e, ts) =>
 					MeteorCall.userAction.pieceTakeNow(e, ts, playlistId, currentPartInstanceId, idToCopy)
 				)
@@ -2238,8 +2234,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				return
 			}
 
-			if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
-				const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+			if (this.props.playlist && this.props.playlist.currentPartInfo) {
+				const currentPartInstanceId = this.props.playlist.currentPartInfo.partInstanceId
 				if (!(sourceLayer && sourceLayer.isClearable)) {
 					if (adlibPiece.isAction && adlibPiece.adlibAction) {
 						const action = adlibPiece.adlibAction
@@ -2556,7 +2552,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						<PlaylistLoopingHeader
 							position="end"
 							multiRundown={this.props.matchedSegments.length > 1}
-							showCountdowns={!!(this.props.playlist.activationId && this.props.playlist.currentPartInstanceId)}
+							showCountdowns={!!(this.props.playlist.activationId && this.props.playlist.currentPartInfo)}
 						/>
 					)}
 				</React.Fragment>

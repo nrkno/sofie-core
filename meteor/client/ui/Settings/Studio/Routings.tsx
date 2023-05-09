@@ -24,7 +24,7 @@ import { MeteorCall } from '../../../../lib/api/methods'
 import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
 import { ReadonlyDeep } from 'type-fest'
 import { MappingsSettingsManifest, MappingsSettingsManifests } from './Mappings'
-import { SchemaFormForCollection } from '../../../lib/forms/schemaFormForCollection'
+import { SchemaFormForCollection } from '../../../lib/forms/SchemaFormForCollection'
 import { literal, objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import { DropdownInputOption } from '../../../lib/Components/DropdownInput'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
@@ -297,9 +297,7 @@ export const StudioRoutings = withTranslation()(
 
 						const routeMappingSchema = manifest[(routeDeviceType ?? route.remapping?.device) as TSR.DeviceType]
 
-						const rawMappingTypeOptions: Array<[string, JSONSchema]> = Object.entries(
-							routeMappingSchema?.mappingsSchema || {}
-						)
+						const rawMappingTypeOptions = Object.entries<JSONSchema>(routeMappingSchema?.mappingsSchema || {})
 						const mappingTypeOptions = rawMappingTypeOptions.map(([id, entry], i) =>
 							literal<DropdownInputOption<string | number>>({
 								value: id + '',

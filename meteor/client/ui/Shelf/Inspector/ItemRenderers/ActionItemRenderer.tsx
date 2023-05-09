@@ -5,7 +5,6 @@ import { RundownUtils } from '../../../../lib/rundown'
 import { Piece } from '../../../../../lib/collections/Pieces'
 import {
 	ConfigManifestEntry as BlueprintConfigManifestEntry,
-	ConfigManifestEntryType as BlueprintConfigManifestEntryType,
 	IBlueprintActionTriggerMode,
 } from '@sofie-automation/blueprints-integration'
 import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
@@ -161,18 +160,16 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 
 			return configManifest.length ? (
 				<div>
-					{configManifest.map((configField) =>
-						configField.type === BlueprintConfigManifestEntryType.TABLE ? null : (
-							<ConfigManifestEntryComponent
-								key={configField.id}
-								collection={LocalActionItems}
-								configField={configField}
-								obj={obj}
-								prefix={prefix}
-								className=""
-							/>
-						)
-					)}
+					{configManifest.map((configField) => (
+						<ConfigManifestEntryComponent
+							key={configField.id}
+							collection={LocalActionItems}
+							configField={configField}
+							obj={obj}
+							prefix={prefix}
+							className=""
+						/>
+					))}
 				</div>
 			) : (
 				<span>{t('AdLib does not provide any options')}</span>

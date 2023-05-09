@@ -61,7 +61,7 @@ export function convertObjectIntoOverrides<T>(
 	const result = wrapDefaultObject<Record<string, T>>({})
 
 	if (rawObj) {
-		for (const [id, obj] of Object.entries(rawObj)) {
+		for (const [id, obj] of Object.entries<ReadonlyDeep<T>>(rawObj)) {
 			result.overrides.push(
 				literal<ObjectOverrideSetOp>({
 					op: 'set',
@@ -123,7 +123,11 @@ function applySetOp<T extends object>(result: ApplyOverridesResult<T>, operation
 			result.unused.push(operation)
 		} else {
 			// Set the new value
-			objectPath.set(result.obj, operation.path, clone(operation.value))
+			if (operation.value === undefined) {
+				objectPath.del(result.obj, operation.path)
+			} else {
+				objectPath.set(result.obj, operation.path, clone(operation.value))
+			}
 		}
 	}
 }

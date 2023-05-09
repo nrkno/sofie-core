@@ -147,11 +147,11 @@ export async function innerFindLastScriptedPieceOnLayer(
 
 	// TODO - this should throw instead of return more?
 
-	if (!playlist.currentPartInstanceId || !playlist.activationId) {
+	if (!playlist.currentPartInfo || !playlist.activationId) {
 		return
 	}
 
-	const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInstanceId)
+	const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInfo.partInstanceId)
 
 	if (!currentPartInstance) {
 		return

@@ -85,7 +85,7 @@ export interface IProps {
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onSegmentScroll?: () => void
 	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
-	onSwitchViewMode: (newViewMode: SegmentViewMode) => void
+	onSwitchViewMode?: (newViewMode: SegmentViewMode) => void
 	followLiveSegments: boolean
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	isLastSegment: boolean
@@ -192,8 +192,8 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 								RundownPlaylistCollectionUtil.getSelectedPartInstances(props.playlist),
 							'playlist.getSelectedPartInstances',
 							props.playlist._id,
-							props.playlist.currentPartInstanceId,
-							props.playlist.nextPartInstanceId
+							props.playlist.currentPartInfo?.partInstanceId,
+							props.playlist.nextPartInfo?.partInstanceId
 						),
 					] as [
 						PartId[],
@@ -240,15 +240,19 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 			if (props.rundownViewLayout && o.segmentExtended) {
 				if (props.rundownViewLayout.visibleSourceLayers) {
 					const visibleSourceLayers = props.rundownViewLayout.visibleSourceLayers
-					Object.entries(o.segmentExtended.sourceLayers).forEach(([id, sourceLayer]) => {
-						sourceLayer.isHidden = !visibleSourceLayers.includes(id)
-					})
+					Object.entries<ISourceLayerExtended>(o.segmentExtended.sourceLayers).forEach(
+						([id, sourceLayer]) => {
+							sourceLayer.isHidden = !visibleSourceLayers.includes(id)
+						}
+					)
 				}
 				if (props.rundownViewLayout.visibleOutputLayers) {
 					const visibleOutputLayers = props.rundownViewLayout.visibleOutputLayers
-					Object.entries(o.segmentExtended.outputLayers).forEach(([id, outputLayer]) => {
-						outputLayer.used = visibleOutputLayers.includes(id)
-					})
+					Object.entries<IOutputLayerExtended>(o.segmentExtended.outputLayers).forEach(
+						([id, outputLayer]) => {
+							outputLayer.used = visibleOutputLayers.includes(id)
+						}
+					)
 				}
 			}
 
@@ -346,13 +350,13 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				return (
 					parts.find(
 						(i) =>
-							i.instance._id === props.playlist.currentPartInstanceId ||
-							i.instance._id === nextProps.playlist.currentPartInstanceId
+							i.instance._id === props.playlist.currentPartInfo?.partInstanceId ||
+							i.instance._id === nextProps.playlist.currentPartInfo?.partInstanceId
 					) ||
 					parts.find(
 						(i) =>
-							i.instance._id === props.playlist.nextPartInstanceId ||
-							i.instance._id === nextProps.playlist.nextPartInstanceId
+							i.instance._id === props.playlist.nextPartInfo?.partInstanceId ||
+							i.instance._id === nextProps.playlist.nextPartInfo?.partInstanceId
 					)
 				)
 			}
@@ -362,8 +366,9 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				(props.playlist.nextSegmentId !== nextProps.playlist.nextSegmentId &&
 					(props.playlist.nextSegmentId === props.segmentId ||
 						nextProps.playlist.nextSegmentId === props.segmentId)) ||
-				((props.playlist.currentPartInstanceId !== nextProps.playlist.currentPartInstanceId ||
-					props.playlist.nextPartInstanceId !== nextProps.playlist.nextPartInstanceId) &&
+				((props.playlist.currentPartInfo?.partInstanceId !==
+					nextProps.playlist.currentPartInfo?.partInstanceId ||
+					props.playlist.nextPartInfo?.partInstanceId !== nextProps.playlist.nextPartInfo?.partInstanceId) &&
 					data.parts &&
 					findNextOrCurrentPart(data.parts)) ||
 				props.playlist.holdState !== nextProps.playlist.holdState ||

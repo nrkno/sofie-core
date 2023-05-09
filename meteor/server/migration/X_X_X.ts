@@ -1,9 +1,12 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { PeripheralDevices, Studios } from '../collections'
-import { clone } from '@sofie-automation/corelib/dist/lib'
-import { MappingExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { PeripheralDeviceType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import { assertNever, clone } from '@sofie-automation/corelib/dist/lib'
+import { MappingExt, StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import _ from 'underscore'
 import { Studio } from '../../lib/collections/Studios'
 
@@ -63,7 +66,7 @@ function convertRouteSetMappings(studio: Studio) {
 	let changed = false
 
 	const newRouteSets = clone(studio.routeSets || {})
-	for (const routeSet of Object.values(newRouteSets)) {
+	for (const routeSet of Object.values<StudioRouteSet>(newRouteSets)) {
 		for (const route of routeSet.routes) {
 			if (route.remapping && !route.remapping.options) {
 				// Update the remapping for a route
@@ -88,7 +91,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			const objects = PeripheralDevices.find({ type: PeripheralDeviceType.MOS }).fetch()
 			const badObject = objects.find(
 				(device) =>
-					!!Object.values(device.settings?.['devices'] ?? {}).find(
+					!!Object.values<unknown>(device.settings?.['devices'] ?? {}).find(
 						(subdev: any) => !subdev?.type || !subdev?.options
 					)
 			)
@@ -103,9 +106,8 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			for (const obj of objects) {
 				const newDevices: any = clone(obj.settings['devices'] || {})
 
-				for (const [id, subdev0] of Object.entries(newDevices)) {
-					if (!subdev0) continue
-					const subdev = subdev0 as any
+				for (const [id, subdev] of Object.entries<any>(newDevices)) {
+					if (!subdev) continue
 
 					const newdev = subdev.options ? subdev : { options: subdev }
 					delete newdev.options.type
@@ -185,6 +187,91 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 						},
 					})
 				}
+			}
+		},
+	},
+
+	{
+		id: `Ingest gateway populate nrcsName`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const objectCount = PeripheralDevices.find({
+				category: PeripheralDeviceCategory.INGEST,
+				nrcsName: { $exists: false },
+			}).count()
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: () => {
+			const objects = PeripheralDevices.find({
+				category: PeripheralDeviceCategory.INGEST,
+				nrcsName: { $exists: false },
+			}).fetch()
+			for (const device of objects) {
+				let nrcsName = ''
+
+				if (device.type === PeripheralDeviceType.MOS) {
+					nrcsName = 'ENPS'
+				} else if (device.type === PeripheralDeviceType.INEWS) {
+					nrcsName = 'iNews'
+				} else if (device.type === PeripheralDeviceType.SPREADSHEET) {
+					nrcsName = 'Google Sheet'
+				}
+
+				PeripheralDevices.update(device._id, {
+					$set: {
+						nrcsName: nrcsName,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `PeripheralDevice populate documentationUrl`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const objectCount = PeripheralDevices.find({
+				documentationUrl: { $exists: false },
+			}).count()
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: () => {
+			const objects = PeripheralDevices.find({
+				documentationUrl: { $exists: false },
+			}).fetch()
+			for (const device of objects) {
+				let documentationUrl = ''
+
+				if (device.type === PeripheralDeviceType.MOS) {
+					documentationUrl = 'https://github.com/nrkno/sofie-core'
+				} else if (device.type === PeripheralDeviceType.SPREADSHEET) {
+					documentationUrl = 'https://github.com/SuperFlyTV/spreadsheet-gateway'
+				} else if (device.type === PeripheralDeviceType.PLAYOUT) {
+					documentationUrl = 'https://github.com/nrkno/sofie-core'
+				} else if (device.type === PeripheralDeviceType.MEDIA_MANAGER) {
+					documentationUrl = 'https://github.com/nrkno/sofie-media-management'
+				} else if (device.type === PeripheralDeviceType.INEWS) {
+					documentationUrl = 'https://github.com/olzzon/tv2-inews-ftp-gateway'
+				} else if (device.type === PeripheralDeviceType.PACKAGE_MANAGER) {
+					documentationUrl = 'https://github.com/nrkno/sofie-package-manager'
+				} else if (device.type === PeripheralDeviceType.INPUT) {
+					documentationUrl = 'https://github.com/nrkno/sofie-input-gateway'
+				} else {
+					assertNever(device.type)
+				}
+
+				PeripheralDevices.update(device._id, {
+					$set: {
+						documentationUrl: documentationUrl,
+					},
+				})
 			}
 		},
 	},

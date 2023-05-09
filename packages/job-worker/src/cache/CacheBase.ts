@@ -45,7 +45,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		const highPrioDBs: DbCacheWritable<any>[] = []
 		const lowPrioDBs: DbCacheWritable<any>[] = []
 
-		for (const [key, db0] of Object.entries(this)) {
+		for (const [key, db0] of Object.entries<any>(this)) {
 			let db = db0
 			if (db && typeof db === 'object' && 'getIfLoaded' in db) {
 				// If wrapped in a lazy

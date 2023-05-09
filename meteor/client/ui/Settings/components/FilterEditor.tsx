@@ -213,7 +213,7 @@ export default withTranslation()(
 							modifiedClassName="bghl"
 							attribute={`filters.${index}.sourceLayerIds`}
 							obj={item}
-							options={Object.values(this.props.sourceLayers)
+							options={Object.values<ISourceLayer | undefined>(this.props.sourceLayers)
 								.filter((s): s is ISourceLayer => !!s)
 								.sort((a, b) => a._rank - b._rank)
 								.map((l) => ({ name: l.name, value: l._id }))}
@@ -267,7 +267,7 @@ export default withTranslation()(
 							modifiedClassName="bghl"
 							attribute={`filters.${index}.outputLayerIds`}
 							obj={item}
-							options={Object.values(this.props.outputLayers)
+							options={Object.values<IOutputLayer | undefined>(this.props.outputLayers)
 								.filter((s): s is IOutputLayer => !!s)
 								.sort((a, b) => a._rank - b._rank)
 								.map((l) => ({ name: l.name, value: l._id }))}
@@ -671,7 +671,7 @@ export default withTranslation()(
 							modifiedClassName="bghl"
 							attribute={`filters.${index}.sourceLayerIds`}
 							obj={item}
-							options={Object.values(this.props.sourceLayers)
+							options={Object.values<ISourceLayer | undefined>(this.props.sourceLayers)
 								.filter((s): s is ISourceLayer => !!s)
 								.sort((a, b) => a._rank - b._rank)
 								.map((l) => ({ name: l.name, value: l._id }))}
@@ -1383,7 +1383,7 @@ export default withTranslation()(
 							modifiedClassName="bghl"
 							attribute={`filters.${index}.requiredLayerIds`}
 							obj={item}
-							options={Object.values(this.props.sourceLayers)
+							options={Object.values<ISourceLayer | undefined>(this.props.sourceLayers)
 								.filter((s): s is ISourceLayer => !!s)
 								.sort((a, b) => a._rank - b._rank)
 								.map((l) => ({ name: l.name, value: l._id }))}
@@ -1411,7 +1411,7 @@ export default withTranslation()(
 							modifiedClassName="bghl"
 							attribute={`filters.${index}.additionalLayers`}
 							obj={item}
-							options={Object.values(this.props.sourceLayers)
+							options={Object.values<ISourceLayer | undefined>(this.props.sourceLayers)
 								.filter((s): s is ISourceLayer => !!s)
 								.sort((a, b) => a._rank - b._rank)
 								.map((l) => ({ name: l.name, value: l._id }))}
@@ -1470,7 +1470,7 @@ export default withTranslation()(
 									modifiedClassName="bghl"
 									attribute={`filters.${index}.xUnit`}
 									obj={item}
-									options={Object.values(DashboardPanelUnit)}
+									options={Object.values<DashboardPanelUnit>(DashboardPanelUnit as any)}
 									type="dropdown"
 									collection={RundownLayouts}
 									className="input text-input"
@@ -1495,7 +1495,7 @@ export default withTranslation()(
 									modifiedClassName="bghl"
 									attribute={`filters.${index}.yUnit`}
 									obj={item}
-									options={Object.values(DashboardPanelUnit)}
+									options={Object.values<DashboardPanelUnit>(DashboardPanelUnit as any)}
 									type="dropdown"
 									collection={RundownLayouts}
 									className="input text-input"
@@ -1520,7 +1520,7 @@ export default withTranslation()(
 									modifiedClassName="bghl"
 									attribute={`filters.${index}.widthUnit`}
 									obj={item}
-									options={Object.values(DashboardPanelUnit)}
+									options={Object.values<DashboardPanelUnit>(DashboardPanelUnit as any)}
 									type="dropdown"
 									collection={RundownLayouts}
 									className="input text-input"
@@ -1545,7 +1545,7 @@ export default withTranslation()(
 									modifiedClassName="bghl"
 									attribute={`filters.${index}.heightUnit`}
 									obj={item}
-									options={Object.values(DashboardPanelUnit)}
+									options={Object.values<DashboardPanelUnit>(DashboardPanelUnit as any)}
 									type="dropdown"
 									collection={RundownLayouts}
 									className="input text-input"

@@ -9,8 +9,11 @@ import { useTranslation } from 'react-i18next'
 import { parse as queryStringParse } from 'query-string'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import classNames from 'classnames'
+import { getCoreSystem, UserActionsLog } from '../../collections'
 import Tooltip from 'rc-tooltip'
-import { UserActionsLog } from '../../collections'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faDownload } from '@fortawesome/free-solid-svg-icons'
+import { downloadBlob } from '../../lib/downloadBlob'
 
 const PARAM_DATE_FORMAT = 'YYYY-MM-DD'
 const PARAM_NAME_FROM_DATE = 'fromDate'
@@ -84,8 +87,7 @@ function UserActionsList(props: IUserActionsListProps) {
 												<td>
 													<Tooltip
 														overlay={t('Time from platform user event to Action received by Core')}
-														placement="top"
-														align="left"
+														placement="topLeft"
 													>
 														<span>{t('GUI')}:</span>
 													</Tooltip>
@@ -96,7 +98,7 @@ function UserActionsList(props: IUserActionsListProps) {
 										{msg.executionTime ? (
 											<tr>
 												<td>
-													<Tooltip overlay={t('Core + Worker processing time')} placement="top" align="left">
+													<Tooltip overlay={t('Core + Worker processing time')} placement="topLeft">
 														<span>{t('Core')}:</span>
 													</Tooltip>
 												</td>
@@ -124,7 +126,7 @@ function UserActionsList(props: IUserActionsListProps) {
 									</tbody>
 								</table>
 							</td>
-							<td className="user-action-log__userId">{msg.userId}</td>
+							<td className="user-action-log__userId">{unprotectString(msg.userId)}</td>
 							<td className="user-action-log__clientAddress">{msg.clientAddress}</td>
 							<td className="user-action-log__context">{msg.context}</td>
 							<td className="user-action-log__method">{msg.method}</td>
@@ -193,12 +195,30 @@ function UserActivity(): JSX.Element {
 
 	const logItems = log.filter(({ timestamp }) => timestamp >= dateFrom && timestamp < dateTo)
 
+	function onDownloadAllLogItems() {
+		const coreSystem = getCoreSystem()
+		const systemName = coreSystem?.name ?? 'Sofie'
+		const fileName = `${systemName}_UserActionsLog_${moment(dateFrom).format(PARAM_DATE_FORMAT)}.json`
+
+		downloadBlob(
+			new Blob([JSON.stringify(logItems)], {
+				type: 'application/json',
+			}),
+			fileName
+		)
+	}
+
 	const [highlighted, setHighlighted] = useState<string | undefined>(undefined)
 
 	function renderUserActivity() {
 		return (
 			<div>
 				<div className="paging">
+					<Tooltip overlay={t('Export visible')} placement="top">
+						<button className="btn btn-secondary mod rs-right mtm" onClick={onDownloadAllLogItems}>
+							<FontAwesomeIcon icon={faDownload} />
+						</button>
+					</Tooltip>
 					<DatePickerFromTo from={dateFrom} to={dateTo} onChange={onDateChange} />
 				</div>
 				<UserActionsList logItems={logItems} startDate={dateFrom} highlighted={highlighted} />

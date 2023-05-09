@@ -3262,11 +3262,11 @@ msgid "{{sourceLayer}} is not yet ready on the playout system"
 msgstr ""
 "{{sourceLayer}} er ennå ikke klar til å spilles ut fra avviklingsserver"
 
-msgid "{{sourceLayer}} is transferring to the the playout system"
+msgid "{{sourceLayer}} is transferring to the playout system"
 msgstr "{{sourceLayer}} overføres til avviklingsserver"
 
 msgid ""
-"{{sourceLayer}} is transferring to the the playout system and cannot be "
+"{{sourceLayer}} is transferring to the playout system and cannot be "
 "played yet"
 msgstr ""
 "{{sourceLayer}} overføres til avviklingsserver og kan ikke spilles av ennå"

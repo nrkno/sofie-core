@@ -148,7 +148,7 @@ function StudioDeviceEntry({ device, confirmRemove }: StudioDeviceEntryProps) {
 			<th className="settings-studio-device__name c3">
 				<Link to={'/settings/peripheralDevice/' + device._id}>{device.name}</Link>
 			</th>
-			<td className="settings-studio-device__id c3">{device._id}</td>
+			<td className="settings-studio-device__id c3">{unprotectString(device._id)}</td>
 			<td className="settings-studio-device__id c3">
 				<MomentFromNow date={device.lastSeen} />
 			</td>

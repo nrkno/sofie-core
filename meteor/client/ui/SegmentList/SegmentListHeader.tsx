@@ -68,7 +68,9 @@ export function SegmentListHeader({
 
 	let countdownToPartId: PartId | undefined = undefined
 	if (!isLiveSegment) {
-		const nextPart = isNextSegment ? parts.find((p) => p.instance._id === playlist.nextPartInstanceId) : parts[0]
+		const nextPart = isNextSegment
+			? parts.find((p) => p.instance._id === playlist.nextPartInfo?.partInstanceId)
+			: parts[0]
 
 		if (nextPart) {
 			countdownToPartId = nextPart.instance.part._id

@@ -28,7 +28,7 @@ export async function ReactiveMongoObserverGroup(
 
 	const stopAll = async () => {
 		if (handles) {
-			await Promise.allSettled(handles.map((h) => h.stop()))
+			await Promise.allSettled(handles.map(async (h) => h.stop()))
 			handles = null
 		}
 	}

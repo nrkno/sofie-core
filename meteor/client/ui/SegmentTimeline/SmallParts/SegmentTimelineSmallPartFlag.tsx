@@ -82,8 +82,8 @@ export const SegmentTimelineSmallPartFlag = ({
 				key={unprotectString(part.instance._id)}
 				partInstance={part}
 				sourceLayers={sourceLayers}
-				isNext={playlist.nextPartInstanceId === part.instance._id}
-				isLive={playlist.currentPartInstanceId === part.instance._id}
+				isNext={playlist.nextPartInfo?.partInstanceId === part.instance._id}
+				isLive={playlist.currentPartInfo?.partInstanceId === part.instance._id}
 				onClick={onClickFlagIcon}
 				data={{
 					'data-part-instance-id': unprotectString(part.instance._id), // this needs to match with onFlagClick handler

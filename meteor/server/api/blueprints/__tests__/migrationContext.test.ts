@@ -422,6 +422,7 @@ describe('Test blueprint migrationContext', () => {
 					type: PeripheralDeviceType.PLAYOUT,
 					category: PeripheralDeviceCategory.PLAYOUT,
 					subType: PERIPHERAL_SUBTYPE_PROCESS,
+					deviceName: 'Playout Gateway',
 					studioId: studio._id,
 					created: 0,
 					lastConnected: 0,

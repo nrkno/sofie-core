@@ -161,7 +161,7 @@ export async function setupDefaultRundownPlaylist(
 	const showStyleCompound =
 		showStyleCompound0 ||
 		(await context.directCollections.ShowStyleVariants.findOne().then(
-			(v) => v && context.getShowStyleCompound(v._id)
+			async (v) => v && context.getShowStyleCompound(v._id)
 		))
 	if (!showStyleCompound) throw new Error('No ShowStyle compound exists in the database yet')
 
@@ -424,9 +424,11 @@ export async function setupMockPeripheralDevice(
 	const defaultDevice: PeripheralDevice = {
 		_id: protectString('mockDevice' + dbI),
 		name: 'mockDevice',
+		deviceName: 'Mock Gateway',
 		organizationId: null,
 		studioId: context.studioId,
 		settings: {},
+		nrcsName: category === PeripheralDeviceCategory.INGEST ? 'JEST-NRCS' : undefined,
 
 		category: category,
 		type: type,

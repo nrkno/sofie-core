@@ -258,7 +258,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 								<br />
 							</React.Fragment>
 						) : null}
-						ID: {msg._id}
+						ID: {unprotectString(msg._id)}
 						<br />
 						Created: <MomentFromNow unit="seconds">{msg.created}</MomentFromNow>
 						{msg.queueForLaterReason !== undefined ? (

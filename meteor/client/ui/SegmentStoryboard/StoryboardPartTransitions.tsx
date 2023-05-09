@@ -20,7 +20,7 @@ export const StoryboardPartTransitions = React.memo(function StoryboardPartTrans
 	return (
 		<div className="segment-storyboard__part__transitions">
 			{filterSourceLayers(
-				Object.values(outputLayers)
+				Object.values<IOutputLayerUi>(outputLayers)
 					.map((outputLayer) => outputLayer.sourceLayers)
 					.flat()
 			).map((sourceLayer) => {

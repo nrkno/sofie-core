@@ -50,7 +50,7 @@ export interface ISourceLayerItemState {}
 export class CustomLayerItemRenderer<
 	IProps extends ICustomLayerItemProps,
 	IState extends ISourceLayerItemState
-> extends React.Component<ICustomLayerItemProps & IProps, ISourceLayerItemState & IState> {
+> extends React.Component<React.PropsWithChildren<ICustomLayerItemProps & IProps>, ISourceLayerItemState & IState> {
 	protected getSourceDurationLabelAlignment(): SourceDurationLabelAlignment {
 		return (
 			(this.props.getSourceDurationLabelAlignment &&

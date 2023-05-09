@@ -21,7 +21,7 @@ import {
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { literal, objectPathGet } from '@sofie-automation/corelib/dist/lib'
-import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { TextInputControl } from '../../../lib/Components/TextInput'
 import { IntInputControl } from '../../../lib/Components/IntInput'
 import {
@@ -35,7 +35,7 @@ import {
 	LabelAndOverridesForInt,
 } from '../../../lib/Components/LabelAndOverrides'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
-import { SchemaFormWithOverrides } from '../../../lib/forms/schemaFormWithOverrides'
+import { SchemaFormWithOverrides } from '../../../lib/forms/SchemaFormWithOverrides'
 import {
 	getSchemaSummaryFields,
 	SchemaSummaryField,
@@ -62,7 +62,7 @@ export function StudioMappings({ manifest, translationNamespaces, studio }: IStu
 
 	const manifestNames = useMemo(() => {
 		return Object.fromEntries(
-			Object.entries(manifest || {}).map(([id, val]) => [
+			Object.entries<MappingsSettingsManifest>(manifest || {}).map(([id, val]) => [
 				id,
 				translateStringIfHasNamespaces(val.displayName, translationNamespaces),
 			])
@@ -218,7 +218,7 @@ function MappingDeletedEntry({
 				) : null}
 			</th>
 			<td className="settings-studio-device__id c2 deleted">{manifestNames[mapping.device] ?? mapping.device}</td>
-			<td className="settings-studio-device__id c2 deleted">{mapping.deviceId}</td>
+			<td className="settings-studio-device__id c2 deleted">{unprotectString(mapping.deviceId)}</td>
 			<td className="settings-studio-device__id c4 deleted">
 				<MappingSummary translationNamespaces={translationNamespaces} fields={mappingSummaryFields} mapping={mapping} />
 			</td>
@@ -303,7 +303,7 @@ function StudioMappingsEntry({
 	)
 
 	const deviceTypeOptions = useMemo(() => {
-		const raw = Object.entries(manifestNames || {})
+		const raw = Object.entries<string>(manifestNames || {})
 		raw.sort((a, b) => a[1].localeCompare(b[1]))
 
 		return raw.map(([id, entry], i) =>
@@ -316,9 +316,7 @@ function StudioMappingsEntry({
 	}, [manifestNames])
 
 	const mappingTypeOptions = useMemo(() => {
-		const raw: Array<[string, JSONSchema]> = Object.entries(manifest?.mappingsSchema || {})
-
-		return raw.map(([id, entry], i) =>
+		return Object.entries<JSONSchema>(manifest?.mappingsSchema || {}).map(([id, entry], i) =>
 			literal<DropdownInputOption<string | number>>({
 				value: id + '',
 				name: entry?.title ?? id + '',
@@ -374,7 +372,7 @@ function StudioMappingsEntry({
 					) : null}
 				</th>
 				<td className="settings-studio-device__id c2">{manifestNames[item.computed.device] ?? item.computed.device}</td>
-				<td className="settings-studio-device__id c2">{item.computed.deviceId}</td>
+				<td className="settings-studio-device__id c2">{unprotectString(item.computed.deviceId)}</td>
 				<td className="settings-studio-device__id c4">
 					<MappingSummary
 						translationNamespaces={translationNamespaces}

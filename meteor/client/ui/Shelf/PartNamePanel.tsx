@@ -73,7 +73,9 @@ class PartNamePanelInner extends MeteorReactComponent<
 export const PartNamePanel = translateWithTracker<IPartNamePanelProps, IState, IPartNamePanelTrackedProps>(
 	(props) => {
 		const selectedPartInstanceId =
-			props.panel.part === 'current' ? props.playlist.currentPartInstanceId : props.playlist.nextPartInstanceId
+			props.panel.part === 'current'
+				? props.playlist.currentPartInfo?.partInstanceId
+				: props.playlist.nextPartInfo?.partInstanceId
 		let name: string | undefined
 		let instanceToShow: IFoundPieceInstance | undefined
 
@@ -101,8 +103,8 @@ export const PartNamePanel = translateWithTracker<IPartNamePanelProps, IState, I
 	(_data, props, nextProps) => {
 		return (
 			!_.isEqual(props.panel, nextProps.panel) ||
-			props.playlist.currentPartInstanceId !== nextProps.playlist.currentPartInstanceId ||
-			props.playlist.nextPartInstanceId !== nextProps.playlist.nextPartInstanceId
+			props.playlist.currentPartInfo?.partInstanceId !== nextProps.playlist.currentPartInfo?.partInstanceId ||
+			props.playlist.nextPartInfo?.partInstanceId !== nextProps.playlist.nextPartInfo?.partInstanceId
 		)
 	}
 )(PartNamePanelInner)

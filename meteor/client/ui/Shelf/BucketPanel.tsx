@@ -41,7 +41,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { PieceStatusCode } from '../../../lib/collections/Pieces'
-import { BucketPieceButton } from './BucketPieceButton'
+import { BucketPieceButton, IBucketPieceDropResult } from './BucketPieceButton'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import update from 'immutability-helper'
 import { PartInstance, DBPartInstance } from '../../../lib/collections/PartInstances'
@@ -79,6 +79,16 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
+interface IBucketPanelDragObject {
+	id: BucketId
+	size: {
+		width: number
+	}
+	originalIndex: number
+}
+
+type IBucketPanelDropResult = IBucketPieceDropResult
+
 const bucketSource = {
 	beginDrag(props: IBucketPanelProps, _monitor: DragSourceMonitor, component: any) {
 		const size = {
@@ -99,14 +109,17 @@ const bucketSource = {
 		}
 	},
 
-	endDrag(props: IBucketPanelProps, monitor: DragSourceMonitor) {
+	endDrag(props: IBucketPanelProps, monitor: DragSourceMonitor<IBucketPanelDragObject, IBucketPanelDropResult>) {
 		const { id: droppedId, originalIndex } = monitor.getItem()
 		const didDrop = monitor.didDrop()
 
 		if (!didDrop) {
 			props.moveBucket(droppedId, originalIndex)
 		} else {
-			const { index: newIndex } = monitor.getDropResult()
+			const dropResult = monitor.getDropResult()
+			if (!dropResult) return
+
+			const { index: newIndex } = dropResult
 			props.onBucketReorder(droppedId, newIndex, originalIndex)
 		}
 	},
@@ -117,7 +130,7 @@ const bucketTarget = {
 		return true
 	},
 
-	hover(props: IBucketPanelProps, monitor: DropTargetMonitor, component: any) {
+	hover(props: IBucketPanelProps, monitor: DropTargetMonitor<IBucketPanelDragObject>, component: any) {
 		if (monitor.getItemType() === DragDropItemTypes.BUCKET) {
 			const { id: draggedId, size: draggedSize } = monitor.getItem()
 			const overId = props.bucket._id
@@ -151,7 +164,7 @@ const bucketTarget = {
 		}
 	},
 
-	drop(props: IBucketPanelProps, monitor: DropTargetMonitor) {
+	drop(props: IBucketPanelProps, monitor: DropTargetMonitor<{ bucketId: BucketId }>) {
 		const { index } = props.findBucket(props.bucket._id)
 
 		return {
@@ -264,7 +277,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 		let showStyleBaseId: ShowStyleBaseId | undefined = undefined
 		let showStyleVariantId: ShowStyleVariantId | undefined = undefined
 
-		const selectedPart = props.playlist.currentPartInstanceId || props.playlist.nextPartInstanceId
+		const selectedPart = props.playlist.currentPartInfo?.partInstanceId || props.playlist.nextPartInfo?.partInstanceId
 		if (selectedPart) {
 			const part = PartInstances.findOne(selectedPart, {
 				fields: literal<MongoFieldSpecifierOnes<DBPartInstance>>({
@@ -477,8 +490,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 
 				onClearAllSourceLayer = (sourceLayer: ISourceLayer, e: any) => {
 					const { t } = this.props
-					if (this.props.playlist._id && this.props.playlist.currentPartInstanceId) {
-						const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+					if (this.props.playlist._id && this.props.playlist.currentPartInfo) {
+						const currentPartInstanceId = this.props.playlist.currentPartInfo.partInstanceId
 						doUserAction(t, e, UserAction.CLEAR_SOURCELAYER, (e) =>
 							MeteorCall.userAction.sourceLayerOnPartStop(
 								e,
@@ -525,7 +538,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 						console.log(`Item "${piece._id}" is on sourceLayer "${piece.sourceLayerId}" that is not queueable.`)
 						return
 					}
-					if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
+					if (this.props.playlist && this.props.playlist.currentPartInfo) {
 						if (isAdLibAction(piece as BucketAdLibItem)) {
 							const bucketAction = piece as BucketAdLibActionUi
 							doUserAction(t, e, UserAction.START_BUCKET_ADLIB, (e) =>
@@ -541,7 +554,7 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 							)
 						} else {
 							if (!this.isAdLibOnAir(piece as any as AdLibPieceUi) || !(sourceLayer && sourceLayer.isClearable)) {
-								const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+								const currentPartInstanceId = this.props.playlist.currentPartInfo.partInstanceId
 
 								doUserAction(t, e, UserAction.START_BUCKET_ADLIB, (e) =>
 									MeteorCall.userAction.bucketAdlibStart(

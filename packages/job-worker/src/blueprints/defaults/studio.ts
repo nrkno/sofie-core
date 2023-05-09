@@ -5,6 +5,7 @@ import {
 	IBlueprintShowStyleBase,
 	IStudioBaselineContext,
 	IStudioUserContext,
+	JSONBlobStringify,
 	StudioBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
 import { deepFreeze } from '@sofie-automation/corelib/dist/lib'
@@ -24,7 +25,7 @@ export const DefaultStudioBlueprint: ReadonlyDeep<StudioBlueprintManifest> = dee
 
 	blueprintType: BlueprintManifestType.STUDIO,
 
-	studioConfigManifest: [],
+	studioConfigSchema: JSONBlobStringify({}),
 	studioMigrations: [],
 
 	configPresets: {

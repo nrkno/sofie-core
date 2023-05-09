@@ -89,9 +89,9 @@ export const SegmentTimingPanel = translateWithTracker<
 	ISegmentTimingPanelTrackedProps
 >(
 	(props: ISegmentTimingPanelProps) => {
-		if (props.playlist.currentPartInstanceId) {
+		if (props.playlist.currentPartInfo) {
 			const livePart = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist, {
-				_id: props.playlist.currentPartInstanceId,
+				_id: props.playlist.currentPartInfo.partInstanceId,
 			})[0]
 			const liveSegment = livePart
 				? RundownPlaylistCollectionUtil.getSegments(props.playlist, { _id: livePart.segmentId })[0]
@@ -125,8 +125,8 @@ export const SegmentTimingPanel = translateWithTracker<
 								RundownPlaylistCollectionUtil.getSelectedPartInstances(props.playlist),
 							'playlist.getSelectedPartInstances',
 							props.playlist._id,
-							props.playlist.currentPartInstanceId,
-							props.playlist.nextPartInstanceId
+							props.playlist.currentPartInfo?.partInstanceId,
+							props.playlist.nextPartInfo?.partInstanceId
 						),
 					] as [
 						PartId[],

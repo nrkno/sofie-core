@@ -9,7 +9,12 @@ import {
 	LiveSpeakContent,
 } from '@sofie-automation/blueprints-integration'
 import { MediaObject } from './collections/MediaObjects'
-import { IStudioSettings, routeExpectedPackages } from './collections/Studios'
+import {
+	IStudioSettings,
+	MappingExtWithPackage,
+	StudioPackageContainer,
+	routeExpectedPackages,
+} from './collections/Studios'
 import { PackageInfoDB } from './collections/PackageInfos'
 import { assertNever, Complete, generateTranslation, literal, unprotectString } from './lib'
 import { getExpectedPackageId } from './collections/ExpectedPackages'
@@ -167,7 +172,7 @@ export function checkPieceContentStatus(
 	getPackageContainerPackageStatus2: (
 		packageContainerId: string,
 		expectedPackageId: ExpectedPackageId
-	) => PackageContainerPackageStatusDB | undefined
+	) => Pick<PackageContainerPackageStatusDB, 'status'> | undefined
 ): PieceContentStatusObj {
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
 	if (!ignoreMediaStatus && sourceLayer && studio) {
@@ -353,7 +358,7 @@ function checkPieceContentExpectedPackageStatus(
 	getPackageContainerPackageStatus2: (
 		packageContainerId: string,
 		expectedPackageId: ExpectedPackageId
-	) => PackageContainerPackageStatusDB | undefined
+	) => Pick<PackageContainerPackageStatusDB, 'status'> | undefined
 ): PieceContentStatusObj {
 	let packageInfoToForward: ScanInfoForPackages | undefined = undefined
 	const settings: IStudioSettings | undefined = studio?.settings
@@ -371,10 +376,12 @@ function checkPieceContentExpectedPackageStatus(
 
 		const checkedPackageContainers: { [containerId: string]: true } = {}
 
-		for (const mapping of Object.values(routedMappingsWithPackages)) {
+		for (const mapping of Object.values<MappingExtWithPackage>(routedMappingsWithPackages)) {
 			const mappingDeviceId = unprotectString(mapping.deviceId)
 			let packageContainerId: string | undefined
-			for (const [containerId, packageContainer] of Object.entries(studio.packageContainers)) {
+			for (const [containerId, packageContainer] of Object.entries<ReadonlyDeep<StudioPackageContainer>>(
+				studio.packageContainers
+			)) {
 				if (packageContainer.deviceIds.includes(mappingDeviceId)) {
 					// TODO: how to handle if a device has multiple containers?
 					packageContainerId = containerId
@@ -429,7 +436,7 @@ function checkPieceContentExpectedPackageStatus(
 		}
 	}
 	if (Object.keys(packageInfos).length) {
-		for (const [_packageId, packageInfo] of Object.entries(packageInfos)) {
+		for (const [_packageId, packageInfo] of Object.entries<ScanInfoForPackage>(packageInfos)) {
 			const { scan, deepScan } = packageInfo
 
 			if (scan && scan.streams) {
@@ -492,7 +499,7 @@ function checkPieceContentExpectedPackageStatus(
 }
 
 function getPackageWarningMessage(
-	packageOnPackageContainer: PackageContainerPackageStatusDB | undefined,
+	packageOnPackageContainer: Pick<PackageContainerPackageStatusDB, 'status'> | undefined,
 	sourceLayer: ISourceLayer
 ): ContentMessage | null {
 	if (
@@ -506,7 +513,9 @@ function getPackageWarningMessage(
 
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation(`Clip can't be found on the playout system`),
+			message: generateTranslation(`{{sourceLayer}} can't be found on the playout system`, {
+				sourceLayer: sourceLayer.name,
+			}),
 		}
 	} else if (
 		packageOnPackageContainer.status.status ===
@@ -517,9 +526,16 @@ function getPackageWarningMessage(
 
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation('{{reason}} Clip exists, but is not yet ready on the playout system.', {
-				reason: ((packageOnPackageContainer?.status.statusReason.user || 'N/A') + '.').replace(/\.\.$/, '.'), // remove any trailing double "."
-			}),
+			message: generateTranslation(
+				'{{reason}} {{sourceLayer}} exists, but is not yet ready on the playout system',
+				{
+					reason: ((packageOnPackageContainer?.status.statusReason.user || 'N/A') + '.').replace(
+						/\.\.$/,
+						'.'
+					), // remove any trailing double "."
+					sourceLayer: sourceLayer.name,
+				}
+			),
 		}
 	} else if (
 		// Examples of contents in packageOnPackageContainer?.status.statusReason.user:
@@ -530,9 +546,17 @@ function getPackageWarningMessage(
 	) {
 		return {
 			status: PieceStatusCode.SOURCE_NOT_READY,
-			message: generateTranslation('{{reason}}', {
-				reason: ((packageOnPackageContainer?.status.statusReason.user || 'N/A') + '.').replace(/\.\.$/, '.'), // remove any trailing double "."
-			}),
+			message: packageOnPackageContainer?.status.statusReason.user
+				? {
+						// remove any trailing double "."
+						key: (packageOnPackageContainer?.status.statusReason.user + '.').replace(/\.\.$/, '.'),
+				  }
+				: generateTranslation(
+						'{{sourceLayer}} is in a placeholder state for an unknown workflow-defined reason',
+						{
+							sourceLayer: sourceLayer.name,
+						}
+				  ),
 		}
 	} else if (
 		packageOnPackageContainer.status.status ===
@@ -540,7 +564,9 @@ function getPackageWarningMessage(
 	) {
 		return {
 			status: PieceStatusCode.OK,
-			message: generateTranslation('Clip is transferring to the the playout system'),
+			message: generateTranslation('{{sourceLayer}} is transferring to the playout system', {
+				sourceLayer: sourceLayer.name,
+			}),
 		}
 	} else if (
 		packageOnPackageContainer.status.status ===
@@ -548,7 +574,12 @@ function getPackageWarningMessage(
 	) {
 		return {
 			status: PieceStatusCode.SOURCE_MISSING,
-			message: generateTranslation('Clip is transferring to the the playout system but cannot be played yet'),
+			message: generateTranslation(
+				'{{sourceLayer}} is transferring to the playout system but cannot be played yet',
+				{
+					sourceLayer: sourceLayer.name,
+				}
+			),
 		}
 	} else if (
 		packageOnPackageContainer.status.status === ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.READY

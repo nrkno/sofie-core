@@ -92,6 +92,11 @@ export const SegmentTimelineContainer = withResolvedSegment(
 		mountedTime: number
 		nextPartOffset: number
 
+		context: {
+			durations: RundownTimingContext
+			syncedDurations: RundownTimingContext
+		}
+
 		private pastInfinitesComp: Tracker.Computation | undefined
 
 		constructor(props: IProps & ITrackedProps) {
@@ -201,7 +206,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			})
 			SpeechSynthesiser.init()
 
-			this.rundownCurrentPartInstanceId = this.props.playlist.currentPartInstanceId
+			this.rundownCurrentPartInstanceId = this.props.playlist.currentPartInfo?.partInstanceId ?? null
 			if (this.state.isLiveSegment === true) {
 				this.onFollowLiveLine(true)
 				this.startLive()
@@ -254,7 +259,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 				}
 			}
 
-			this.rundownCurrentPartInstanceId = this.props.playlist.currentPartInstanceId
+			this.rundownCurrentPartInstanceId = this.props.playlist.currentPartInfo?.partInstanceId ?? null
 
 			// segment is becoming live
 			if (this.state.isLiveSegment === false && isLiveSegment === true) {
@@ -275,18 +280,16 @@ export const SegmentTimelineContainer = withResolvedSegment(
 
 			// Setting the correct scroll position on parts when setting is next
 			const nextPartDisplayStartsAt =
-				currentNextPart &&
-				this.context.durations?.partDisplayStartsAt &&
-				this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)]
+				(currentNextPart && this.context.durations?.partDisplayStartsAt?.[unprotectString(currentNextPart.partId)]) ?? 0
 			const partOffset =
 				nextPartDisplayStartsAt -
 				(this.props.parts.length > 0
-					? this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] ?? 0
+					? this.context.durations?.partDisplayStartsAt?.[unprotectString(this.props.parts[0].instance.part._id)] ?? 0
 					: 0)
 			const nextPartIdOrOffsetHasChanged =
 				currentNextPart &&
-				this.props.playlist.nextPartInstanceId &&
-				(prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId ||
+				this.props.playlist.nextPartInfo &&
+				(prevProps.playlist.nextPartInfo?.partInstanceId !== this.props.playlist.nextPartInfo.partInstanceId ||
 					this.nextPartOffset !== partOffset)
 			const isBecomingNextSegment = this.state.isNextSegment === false && isNextSegment
 			// the segment isn't live, will be next, and either the nextPartId has changed or it is just becoming next

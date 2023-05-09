@@ -18,32 +18,26 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUpload, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { unprotectString } from '../../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'
-import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BlueprintId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../../collections'
 
 interface IProps {
-	match: {
-		params: {
-			blueprintId: BlueprintId
-		}
-	}
-	userId?: string
+	blueprintId: BlueprintId
+	userId?: UserId
 }
 interface IState {
 	uploadFileKey: number // Used to force clear the input after use
 }
 interface ITrackedProps {
-	userId?: string
 	blueprint?: Blueprint
 	assignedStudios: Studio[]
 	assignedShowStyles: ShowStyleBase[]
 	assignedSystem: ICoreSystem | undefined
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
-	const id = props.match.params.blueprintId
+	const id = props.blueprintId
 
 	return {
-		userId: props.userId,
 		blueprint: Blueprints.findOne(id),
 		assignedStudios: Studios.find({ blueprintId: id }).fetch(),
 		assignedShowStyles: ShowStyleBases.find({ blueprintId: id }).fetch(),
@@ -262,7 +256,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				<div className="studio-edit mod mhl mvn">
 					<div>
 						<div className="mod mvs mhn">
-							{t('Blueprint ID')}: <i>{blueprint._id}</i>
+							{t('Blueprint ID')}: <i>{unprotectString(blueprint._id)}</i>
 						</div>
 						<label className="field">
 							{t('Blueprint Name')}

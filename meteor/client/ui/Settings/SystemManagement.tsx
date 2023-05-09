@@ -9,10 +9,11 @@ import { MeteorCall } from '../../../lib/api/methods'
 import * as _ from 'underscore'
 import { languageAnd } from '../../lib/language'
 import { TriggeredActionsEditor } from './components/triggeredActions/TriggeredActionsEditor'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { Meteor } from 'meteor/meteor'
 import { LogLevel } from '../../../lib/lib'
 import { CoreSystem } from '../../collections'
+import { CollectionCleanupResult } from '../../../lib/api/system'
 
 interface IProps {}
 
@@ -288,7 +289,6 @@ export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft: number = 0)
 	MeteorCall.system
 		.cleanupOldData(false)
 		.then((results) => {
-			console.log(results)
 			if (typeof results === 'string') {
 				if (retriesLeft <= 0) {
 					doModalDialog({
@@ -306,7 +306,7 @@ export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft: number = 0)
 					}, 300)
 				}
 			} else {
-				const collections = Object.values(results).filter((o) => o.docsToRemove > 0)
+				const collections = Object.values<CollectionCleanupResult[0]>(results).filter((o) => o.docsToRemove > 0)
 				collections.sort((a, b) => {
 					return a.docsToRemove - b.docsToRemove
 				})
@@ -376,6 +376,15 @@ export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft: number = 0)
 									}
 								})
 								.catch(console.error)
+						},
+					})
+				} else {
+					doModalDialog({
+						title: t('Remove old data from database'),
+						message: t('Nothing to cleanup!'),
+						acceptOnly: true,
+						onAccept: () => {
+							// nothing
 						},
 					})
 				}

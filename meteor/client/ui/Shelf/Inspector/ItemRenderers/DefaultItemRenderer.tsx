@@ -9,6 +9,7 @@ import { BucketAdLibUi } from '../../RundownViewBuckets'
 import { AdLibPieceUi } from '../../../../lib/shelf'
 import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
 import { UIStudio } from '../../../../../lib/api/studios'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 export default function DefaultItemRenderer(props: {
 	piece: PieceUi | IAdLibListItem | BucketAdLibUi
@@ -39,7 +40,7 @@ export default function DefaultItemRenderer(props: {
 					{(piece as AdLibPieceUi).partId ? (
 						<>
 							<dd>partId</dd>
-							<dt>{(piece as AdLibPieceUi).partId}</dt>
+							<dt>{unprotectString((piece as AdLibPieceUi).partId)}</dt>
 						</>
 					) : null}
 					<dd>sourceLayerId</dd>
@@ -73,7 +74,7 @@ export default function DefaultItemRenderer(props: {
 					<dd>externalId</dd>
 					<dt>{piece.externalId}</dt>
 					<dd>startPartId</dd>
-					<dt>{piece.startPartId}</dt>
+					<dt>{unprotectString(piece.startPartId)}</dt>
 					<dd>sourceLayerId</dd>
 					<dt>{piece.sourceLayerId}</dt>
 					<dd>outputLayerId</dd>

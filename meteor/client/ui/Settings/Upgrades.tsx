@@ -10,7 +10,6 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { useTranslation } from 'react-i18next'
 import { Spinner } from '../../lib/Spinner'
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
-import { t } from 'i18next'
 import { i18nTranslator } from '../i18n'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -117,6 +116,8 @@ interface ShowUpgradesRowProps {
 	applyConfig: () => Promise<void>
 }
 function ShowUpgradesRow({ resourceName, upgradeResult, validateConfig, applyConfig }: ShowUpgradesRowProps) {
+	const { t } = useTranslation()
+
 	const clickValidate = useCallback(() => {
 		validateConfig()
 			.then((res) => {

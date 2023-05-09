@@ -46,7 +46,7 @@ export async function handleUpdateTimelineAfterIngest(
 	data: UpdateTimelineAfterIngestProps
 ): Promise<void> {
 	await runJobWithPlaylistLock(context, data, async (playlist, lock) => {
-		if (playlist && playlist.activationId && (playlist.currentPartInstanceId || playlist.nextPartInstanceId)) {
+		if (playlist && playlist.activationId && (playlist.currentPartInfo || playlist.nextPartInfo)) {
 			// TODO - r37 added a retry mechanic to this. should that be kept?
 			await runWithPlaylistCache(context, playlist, lock, null, async (cache) => {
 				const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)

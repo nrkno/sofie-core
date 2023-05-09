@@ -10,6 +10,8 @@ import {
 	IBlueprintActionManifestDisplayContent,
 	TimelineObjectCoreExt,
 	TSR,
+	IOutputLayer,
+	ISourceLayer,
 } from '@sofie-automation/blueprints-integration'
 import {
 	SegmentExtended,
@@ -366,7 +368,7 @@ export namespace RundownUtils {
 			// create local deep copies of the studio outputLayers and sourceLayers so that we can store
 			// pieces present on those layers inside and also figure out which layers are used when inside the rundown
 			const outputLayers: Record<string, IOutputLayerExtended> = {}
-			for (const [id, layer] of Object.entries(showStyleBase.outputLayers)) {
+			for (const [id, layer] of Object.entries<IOutputLayer | undefined>(showStyleBase.outputLayers)) {
 				if (layer) {
 					outputLayers[id] = {
 						...layer,
@@ -376,7 +378,7 @@ export namespace RundownUtils {
 				}
 			}
 			const sourceLayers: Record<string, ISourceLayerExtended> = {}
-			for (const [id, layer] of Object.entries(showStyleBase.sourceLayers)) {
+			for (const [id, layer] of Object.entries<ISourceLayer | undefined>(showStyleBase.sourceLayers)) {
 				if (layer) {
 					sourceLayers[id] = {
 						...layer,
@@ -599,7 +601,7 @@ export namespace RundownUtils {
 				const tlResolved = SuperTimeline.Resolver.resolveTimeline(partTimeline, { time: 0 })
 				// furthestDuration is used to figure out how much content (in terms of time) is there in the Part
 				let furthestDuration = 0
-				const objs = Object.values(tlResolved.objects)
+				const objs = Object.values<SuperTimeline.ResolvedTimelineObject>(tlResolved.objects)
 				for (let i = 0; i < objs.length; i++) {
 					const obj = objs[i]
 					const obj0 = obj as unknown as TimelineObjectCoreExt<any, PieceTimelineMetadataExt>
@@ -706,7 +708,7 @@ export namespace RundownUtils {
 						}
 					})
 
-					const itemsByLayer = Object.entries(
+					const itemsByLayer = Object.entries<PieceExtended[]>(
 						_.groupBy(part.pieces, (item) => {
 							return item.outputLayer && item.sourceLayer && item.outputLayer.isFlattened
 								? item.instance.piece.outputLayerId + '_' + item.sourceLayer.exclusiveGroup

@@ -1,19 +1,21 @@
 import {
 	GraphicsContent,
+	ISourceLayer,
 	SourceLayerType,
 	TransitionContent,
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import React from 'react'
+import { UIStudio } from '../../../lib/api/studios'
 import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { RundownUtils } from '../../lib/rundown'
+import { OffsetPosition } from '../../utils/positions'
 import { FloatingInspector } from '../FloatingInspector'
 import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'
 import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
-import { IProps } from '../SegmentStoryboard/StoryboardPartThumbnail/Renderers/ThumbnailRendererFactory'
+import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 
-// TODO: Clean up IProps for PieceHoverInspector, so that it only includes the items this component uses
 // TODO: Clean up upper-level component props
 export function PieceHoverInspector({
 	studio,
@@ -23,7 +25,15 @@ export function PieceHoverInspector({
 	originPosition,
 	mousePosition,
 	layer,
-}: IProps & { mousePosition: number }): JSX.Element | null {
+}: {
+	studio: UIStudio
+	pieceInstance: PieceUi
+	hovering: boolean
+	hoverScrubTimePosition: number
+	originPosition: OffsetPosition
+	mousePosition: number
+	layer: ISourceLayer | undefined
+}): JSX.Element | null {
 	const mediaPreviewUrl = studio.settings.mediaPreviewsUrl
 
 	const status = pieceInstance.instance.piece.status

@@ -75,7 +75,7 @@ export const EndWordsPanel = translateWithTracker<IEndsWordsPanelProps, IState, 
 )(EndWordsPanelInner)
 
 function getPieceWithScript(props: IEndsWordsPanelProps): PieceInstance | undefined {
-	const currentPartInstanceId: any = props.playlist.currentPartInstanceId
+	const currentPartInstanceId = props.playlist.currentPartInfo?.partInstanceId
 
 	const unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet = getUnfinishedPieceInstancesReactive(
 		props.playlist,
@@ -101,16 +101,18 @@ function getPieceWithScript(props: IEndsWordsPanelProps): PieceInstance | undefi
 	}
 
 	// we have to call this because getUnfinishedPieceInstancesReactive does not return script/manus pieces
-	const piecesInPart: PieceInstance[] = PieceInstances.find({
-		partInstanceId: currentPartInstanceId,
-		playlistActivationId: props.playlist.activationId,
-	}).fetch()
+	const piecesInPart: PieceInstance[] = currentPartInstanceId
+		? PieceInstances.find({
+				partInstanceId: currentPartInstanceId,
+				playlistActivationId: props.playlist.activationId,
+		  }).fetch()
+		: []
 
 	return props.panel.requiredLayerIds && props.panel.requiredLayerIds.length
-		? _.flatten(Object.values(piecesInPart)).find((piece: PieceInstance) => {
+		? piecesInPart.find((piece: PieceInstance) => {
 				return (
 					(props.panel.requiredLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
-					piece.partInstanceId === props.playlist.currentPartInstanceId
+					piece.partInstanceId === props.playlist.currentPartInfo?.partInstanceId
 				)
 		  })
 		: undefined

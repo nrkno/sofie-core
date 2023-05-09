@@ -4,13 +4,13 @@ exports[`Test recieved mos ingest payloads mosRoCreate 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "created": 0,
-  "currentPartInstanceId": null,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "modified": 0,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -26,7 +26,7 @@ exports[`Test recieved mos ingest payloads mosRoCreate 2`] = `
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -298,13 +298,13 @@ exports[`Test recieved mos ingest payloads mosRoCreate: replace existing 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "created": 0,
-  "currentPartInstanceId": null,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "modified": 0,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -320,7 +320,7 @@ exports[`Test recieved mos ingest payloads mosRoCreate: replace existing 2`] = `
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -583,13 +583,13 @@ exports[`Test recieved mos ingest payloads mosRoFullStory: Valid data 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "created": 0,
-  "currentPartInstanceId": null,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "modified": 0,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -606,7 +606,7 @@ exports[`Test recieved mos ingest payloads mosRoFullStory: Valid data 2`] = `
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -851,7 +851,6 @@ exports[`Test recieved mos ingest payloads mosRoFullStory: Valid data 4`] = `
     "notes": [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
     "segmentId": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
-    "status": "BUSY",
     "title": "SEGMENT1;PART1",
   },
   {
@@ -891,13 +890,13 @@ exports[`Test recieved mos ingest payloads mosRoReadyToAir: Update ro 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "created": 0,
-  "currentPartInstanceId": null,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "modified": 0,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -914,7 +913,7 @@ exports[`Test recieved mos ingest payloads mosRoReadyToAir: Update ro 2`] = `
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -1188,13 +1187,13 @@ exports[`Test recieved mos ingest payloads mosRoStatus: Update ro 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "created": 0,
-  "currentPartInstanceId": null,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "modified": 0,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -1210,7 +1209,7 @@ exports[`Test recieved mos ingest payloads mosRoStatus: Update ro 2`] = `
   "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -1483,13 +1482,13 @@ exports[`Test recieved mos ingest payloads mosRoStoryDelete: Remove segment 1`] 
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "created": 0,
-  "currentPartInstanceId": null,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "modified": 0,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -1506,7 +1505,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryDelete: Remove segment 2`] 
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -1713,7 +1712,6 @@ exports[`Test recieved mos ingest payloads mosRoStoryDelete: Remove segment 4`] 
     "notes": [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
     "segmentId": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
-    "status": "BUSY",
     "title": "SEGMENT1;PART1",
   },
   {
@@ -1745,13 +1743,13 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: Into segment 1`] = 
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "created": 0,
-  "currentPartInstanceId": null,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "modified": 0,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -1768,7 +1766,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: Into segment 2`] = 
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -2022,7 +2020,6 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: Into segment 4`] = 
     "notes": [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
     "segmentId": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
-    "status": "BUSY",
     "title": "SEGMENT1;PART1",
   },
   {
@@ -2054,13 +2051,13 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: New segment 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "created": 0,
-  "currentPartInstanceId": null,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "modified": 0,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -2077,7 +2074,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: New segment 2`] = `
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -2340,7 +2337,6 @@ exports[`Test recieved mos ingest payloads mosRoStoryInsert: New segment 4`] = `
     "notes": [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
     "segmentId": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
-    "status": "BUSY",
     "title": "SEGMENT1;PART1",
   },
   {
@@ -2372,13 +2368,13 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Move whole segment to
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "created": 0,
-  "currentPartInstanceId": null,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "modified": 0,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -2395,7 +2391,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Move whole segment to
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -2640,7 +2636,6 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Move whole segment to
     "notes": [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
     "segmentId": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
-    "status": "BUSY",
     "title": "SEGMENT1;PART1",
   },
   {
@@ -2672,13 +2667,13 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Within segment 1`] = 
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "created": 0,
-  "currentPartInstanceId": null,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "modified": 0,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -2695,7 +2690,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Within segment 2`] = 
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -2940,7 +2935,6 @@ exports[`Test recieved mos ingest payloads mosRoStoryMove: Within segment 4`] = 
     "notes": [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
     "segmentId": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
-    "status": "BUSY",
     "title": "SEGMENT1;PART1",
   },
   {
@@ -2972,13 +2966,13 @@ exports[`Test recieved mos ingest payloads mosRoStoryReplace: Same segment 1`] =
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "created": 0,
-  "currentPartInstanceId": null,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "modified": 0,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -2995,7 +2989,7 @@ exports[`Test recieved mos ingest payloads mosRoStoryReplace: Same segment 2`] =
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -3249,7 +3243,6 @@ exports[`Test recieved mos ingest payloads mosRoStoryReplace: Same segment 4`] =
     "notes": [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
     "segmentId": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
-    "status": "BUSY",
     "title": "SEGMENT1;PART1",
   },
   {
@@ -3267,296 +3260,17 @@ exports[`Test recieved mos ingest payloads mosRoStoryReplace: Same segment 4`] =
 
 exports[`Test recieved mos ingest payloads mosRoStoryReplace: Same segment 5`] = `[]`;
 
-exports[`Test recieved mos ingest payloads mosRoStoryStatus: Update part 1`] = `
-{
-  "_id": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  "airStatus": "READY",
-  "created": 0,
-  "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
-  "importVersions": {
-    "blueprint": "0.0.0",
-    "core": "0.0.0-test",
-    "showStyleBase": "",
-    "showStyleVariant": "",
-    "studio": "asdf",
-  },
-  "metaData": {
-    "airStatus": "READY",
-    "payload": {
-      "EditorialDuration": {
-        "_mosDuration": 540,
-      },
-      "EditorialStart": {
-        "_mosTime": 1541574000000,
-        "_timezone": "Z",
-        "_timezoneOffset": 0,
-      },
-      "ID": {
-        "_mosString128": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-      },
-      "MosExternalMetaData": [
-        {
-          "MosPayload": {
-            "AllowExternalMod": 1,
-            "AnsvRed": "DKSL",
-            "AutoArchiveClips": 1,
-            "Clipnames": "Klipp 1;\\Klipp 2;\\Klipp 3;\\Klipp 4;",
-            "ENPSItemType": 2,
-            "EndTime": "2018-09-07T07:09:00",
-            "Kanal": "NRK1",
-            "LocalStartTime": "2018-10-07T07:00:00",
-            "MOSROStatus": "PLAY",
-            "MOSROStatusMOS": "MOSART1.NDSL.MOS",
-            "MOSROStatusTime": "2018-05-14T11:21:13",
-            "MOSroBlock": "VIZ.DKOA.MOS;VIZ.NPRO.MOS;VIZ.TPRO.MOS",
-            "MOSroStorySend": "DPE01.NRK.MOS;OMNIBUS.NDSL.STORYMOS;SOFIE1.DKSL.MOS",
-            "ProdNr": "DKSL99090618",
-            "ProgramName": "DKSL TV 1850",
-            "Regionalsend": "SL",
-            "RundownDuration": "09:00",
-            "StartTime": "2018-10-07T07:00:00",
-            "roLayout": "PageNum_450|RowStatus_150|Slug_1920|SegStatus_210|Segment_2595|mosartType_1110|mosartVariant_1290|mosartTransition_825|ip1_460|ip2_535|MOSObjSlugs_8295|Estimated_555|Actual_570|MOSItemDurations_630|Float_600|Tekniske-opplysninger_1875|FrontTime_1005|ElapsedTime_1000",
-          },
-          "MosSchema": "http://SLENPS01:10505/schema/enpsro.dtd",
-          "MosScope": "PLAYLIST",
-        },
-      ],
-      "Slug": {
-        "_mosString128": "All effect1 into clip combinations",
-      },
-      "Stories": [
-        {
-          "ID": {
-            "_mosString128": "ro1;s1;p1",
-          },
-          "Items": [],
-          "Slug": {
-            "_mosString128": "SEGMENT1;PART1",
-          },
-        },
-        {
-          "ID": {
-            "_mosString128": "ro1;s1;p2",
-          },
-          "Items": [],
-          "Slug": {
-            "_mosString128": "SEGMENT1;PART2",
-          },
-        },
-        {
-          "ID": {
-            "_mosString128": "ro1;s1;p3",
-          },
-          "Items": [],
-          "Slug": {
-            "_mosString128": "SEGMENT1;PART3",
-          },
-        },
-        {
-          "ID": {
-            "_mosString128": "ro1;s2;p1",
-          },
-          "Items": [],
-          "Slug": {
-            "_mosString128": "SEGMENT2;PART1",
-          },
-        },
-        {
-          "ID": {
-            "_mosString128": "ro1;s2;p2",
-          },
-          "Items": [],
-          "Slug": {
-            "_mosString128": "SEGMENT2;PART2",
-          },
-        },
-        {
-          "ID": {
-            "_mosString128": "ro1;s3;p1",
-          },
-          "Items": [],
-          "Slug": {
-            "_mosString128": "SEGMENT3;PART1",
-          },
-        },
-        {
-          "ID": {
-            "_mosString128": "ro1;s3;p2",
-          },
-          "Items": [],
-          "Slug": {
-            "_mosString128": "SEGMENT3;PART2",
-          },
-        },
-        {
-          "ID": {
-            "_mosString128": "ro1;s4;p1",
-          },
-          "Items": [],
-          "Slug": {
-            "_mosString128": "SEGMENT2;PART3",
-          },
-        },
-      ],
-    },
-  },
-  "modified": 0,
-  "name": "All effect1 into clip combinations",
-  "notes": [],
-  "organizationId": null,
-  "peripheralDeviceId": "mockDevice0",
-  "playlistId": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
-  "showStyleBaseId": "mockShowStyleBase0",
-  "showStyleVariantId": "mockShowStyleVariant0",
-  "status": "BUSY",
-  "studioId": "mockStudio4",
-  "timing": {
-    "type": "none",
-  },
-}
-`;
-
-exports[`Test recieved mos ingest payloads mosRoStoryStatus: Update part 2`] = `
-[
-  {
-    "_id": "XF9ZBDI5IouvkmTbounEfoJ6ijY_",
-    "_rank": 3,
-    "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s4;p1",
-    "externalModified": 0,
-    "name": "SEGMENT2",
-    "notes": [],
-    "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  },
-  {
-    "_id": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
-    "_rank": 1,
-    "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT2_ro1;s2;p1",
-    "externalModified": 0,
-    "name": "SEGMENT2",
-    "notes": [],
-    "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  },
-  {
-    "_id": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
-    "_rank": 0,
-    "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT1_ro1;s1;p1",
-    "externalModified": 0,
-    "name": "SEGMENT1",
-    "notes": [],
-    "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  },
-  {
-    "_id": "8GUNgE7zUulco2K3yuhJ1Fyceeo_",
-    "_rank": 2,
-    "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ__SEGMENT3_ro1;s3;p1",
-    "externalModified": 0,
-    "name": "SEGMENT3",
-    "notes": [],
-    "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-  },
-]
-`;
-
-exports[`Test recieved mos ingest payloads mosRoStoryStatus: Update part 3`] = `
-[
-  {
-    "_id": "oU9pRUl9bAEUmAuKHrdzRERDOMo_",
-    "_rank": 1,
-    "externalId": "ro1;s3;p2",
-    "metaData": {},
-    "notes": [],
-    "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-    "segmentId": "8GUNgE7zUulco2K3yuhJ1Fyceeo_",
-    "title": "SEGMENT3;PART2",
-  },
-  {
-    "_id": "ghxL_vkAoa2R8iiCYqW_UcGe1e8_",
-    "_rank": 0,
-    "externalId": "ro1;s4;p1",
-    "metaData": {},
-    "notes": [],
-    "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-    "segmentId": "XF9ZBDI5IouvkmTbounEfoJ6ijY_",
-    "title": "SEGMENT2;PART3",
-  },
-  {
-    "_id": "MivD93hkMvZlrNItfhxePge_gQE_",
-    "_rank": 1,
-    "externalId": "ro1;s2;p2",
-    "metaData": {},
-    "notes": [],
-    "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-    "segmentId": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
-    "title": "SEGMENT2;PART2",
-  },
-  {
-    "_id": "JVcFyacYypoRSC7spru_RrvnDCQ_",
-    "_rank": 2,
-    "externalId": "ro1;s1;p3",
-    "metaData": {},
-    "notes": [],
-    "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-    "segmentId": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
-    "title": "SEGMENT1;PART3",
-  },
-  {
-    "_id": "IRXBo1bqspd4P6byce547MFtDsw_",
-    "_rank": 0,
-    "externalId": "ro1;s3;p1",
-    "metaData": {},
-    "notes": [],
-    "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-    "segmentId": "8GUNgE7zUulco2K3yuhJ1Fyceeo_",
-    "title": "SEGMENT3;PART1",
-  },
-  {
-    "_id": "GcMaXdvDQCZpQmHJduLP4GfJ5Dk_",
-    "_rank": 0,
-    "externalId": "ro1;s1;p1",
-    "metaData": {},
-    "notes": [],
-    "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-    "segmentId": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
-    "status": "BUSY",
-    "title": "SEGMENT1;PART1",
-  },
-  {
-    "_id": "EkhUUiK_CeS5dIs52jgOMcFmN7s_",
-    "_rank": 1,
-    "externalId": "ro1;s1;p2",
-    "metaData": {},
-    "notes": [],
-    "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-    "segmentId": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
-    "title": "SEGMENT1;PART2",
-  },
-  {
-    "_id": "DprIQxfOqR5rO86LS3n6XIgekE4_",
-    "_rank": 0,
-    "externalId": "ro1;s2;p1",
-    "metaData": {},
-    "notes": [],
-    "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
-    "segmentId": "Qz1OqWVatX_W4Sp5C0m8VhTTfME_",
-    "title": "SEGMENT2;PART1",
-  },
-]
-`;
-
-exports[`Test recieved mos ingest payloads mosRoStoryStatus: Update part 4`] = `[]`;
-
 exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments 1`] = `
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "created": 0,
-  "currentPartInstanceId": null,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "modified": 0,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -3573,7 +3287,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments 
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -3809,7 +3523,6 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments 
     "notes": [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
     "segmentId": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
-    "status": "BUSY",
     "title": "SEGMENT1;PART1",
   },
   {
@@ -3841,13 +3554,13 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments2
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "created": 0,
-  "currentPartInstanceId": null,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "modified": 0,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -3864,7 +3577,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments2
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -4136,7 +3849,6 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Swap across segments2
     "notes": [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
     "segmentId": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
-    "status": "BUSY",
     "title": "SEGMENT1;PART1",
   },
   {
@@ -4168,13 +3880,13 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: With first in same se
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "created": 0,
-  "currentPartInstanceId": null,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "modified": 0,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -4191,7 +3903,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: With first in same se
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -4436,7 +4148,6 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: With first in same se
     "notes": [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
     "segmentId": "apDVfF5nk1_StK474hEUxLMZIag_",
-    "status": "BUSY",
     "title": "SEGMENT1;PART1",
   },
   {
@@ -4468,13 +4179,13 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Within same segment 1
 {
   "_id": "rnTv7Yo4GAIL0Ye3r29Xi1jKvS0_",
   "created": 0,
-  "currentPartInstanceId": null,
+  "currentPartInfo": null,
   "externalId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   "modified": 0,
   "name": "All effect1 into clip combinations",
-  "nextPartInstanceId": null,
+  "nextPartInfo": null,
   "organizationId": null,
-  "previousPartInstanceId": null,
+  "previousPartInfo": null,
   "rundownIdsInOrder": [
     "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
   ],
@@ -4491,7 +4202,7 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Within same segment 2
   "airStatus": "READY",
   "created": 0,
   "externalId": "SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa",
-  "externalNRCSName": "ENPS",
+  "externalNRCSName": "JEST-NRCS",
   "importVersions": {
     "blueprint": "0.0.0",
     "core": "0.0.0-test",
@@ -4736,7 +4447,6 @@ exports[`Test recieved mos ingest payloads mosRoStorySwap: Within same segment 4
     "notes": [],
     "rundownId": "5meLdE_m5k28xXw1vtX2JX8mSYQ_",
     "segmentId": "MCxHIjO7_t3PRHpLiX0vbzwx4gg_",
-    "status": "BUSY",
     "title": "SEGMENT1;PART1",
   },
   {

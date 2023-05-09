@@ -8,7 +8,7 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '../dataModel/Ids'
-import { PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PieceInstance, PieceInstancePiece, rewrapPieceToInstance } from '../dataModel/PieceInstance'
 import { DBPartInstance } from '../dataModel/PartInstance'
 import { DBRundown } from '../dataModel/Rundown'
@@ -250,7 +250,7 @@ export function getPlayheadTrackingInfinitesForPart(
 
 	return flatten(
 		Array.from(piecesOnSourceLayers.values()).map((ps) => {
-			return _.compact(Object.values(ps).map(rewrapInstance))
+			return _.compact(Object.values<PieceInstance | undefined>(ps as any).map(rewrapInstance))
 		})
 	)
 }
@@ -260,6 +260,7 @@ function markPieceInstanceAsContinuation(previousInstance: PieceInstance, instan
 	instance.dynamicallyInserted = previousInstance.dynamicallyInserted
 	instance.adLibSourceId = previousInstance.adLibSourceId
 	instance.reportedStartedPlayback = previousInstance.reportedStartedPlayback
+	instance.plannedStartedPlayback = previousInstance.plannedStartedPlayback
 }
 
 export function isPiecePotentiallyActiveInPart(
@@ -562,7 +563,7 @@ export function processAndPrunePieceInstanceTimings(
 
 	// We want to group by exclusive groups, to let them be resolved
 	const exclusiveGroupMap = new Map<string, string>()
-	for (const layer of Object.values(sourceLayers)) {
+	for (const layer of Object.values<ISourceLayer | undefined>(sourceLayers)) {
 		if (layer?.exclusiveGroup) {
 			exclusiveGroupMap.set(layer._id, layer.exclusiveGroup)
 		}

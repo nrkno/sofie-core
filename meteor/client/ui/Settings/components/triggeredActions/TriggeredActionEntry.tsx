@@ -52,6 +52,16 @@ let LAST_UP_SETTING = false
 
 export const TRIGGERED_ACTION_ENTRY_DRAG_TYPE = 'TriggeredActionEntry'
 
+interface ITriggeredActionEntryDragObject {
+	id: TriggeredActionId
+}
+
+interface ITriggeredActionEntryDropResult {
+	overId: TriggeredActionId
+	overRank: number | null
+	overShowStyleBaseId: ShowStyleBaseId | null
+}
+
 export const TriggeredActionEntry: React.FC<IProps> = React.memo(function TriggeredActionEntry({
 	sourceLayers,
 	outputLayers,
@@ -70,8 +80,15 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 	const [selectedTrigger, setSelectedTrigger] = useState<string | null>(null)
 	const [selectedAction, setSelectedAction] = useState<string | null>(null)
 
-	const [{ isDragging }, drag, dragPreview] = useDrag({
-		item: { id: triggeredActionId, type: TRIGGERED_ACTION_ENTRY_DRAG_TYPE },
+	const [{ isDragging }, drag, dragPreview] = useDrag<
+		ITriggeredActionEntryDragObject,
+		ITriggeredActionEntryDropResult,
+		{
+			isDragging: boolean
+		}
+	>({
+		type: TRIGGERED_ACTION_ENTRY_DRAG_TYPE,
+		item: { id: triggeredActionId },
 		// The collect function utilizes a "monitor" instance (see the Overview for what this is)
 		// to pull important pieces of state from the DnD system.
 		collect: (monitor) => ({
@@ -127,7 +144,14 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 		},
 	})
 
-	const [{ isOver }, drop] = useDrop({
+	const [{ isOver }, drop] = useDrop<
+		ITriggeredActionEntryDragObject,
+		ITriggeredActionEntryDropResult,
+		{
+			isOver: boolean
+			canDrop: boolean
+		}
+	>({
 		// The type (or types) to accept - strings or symbols
 		accept: TRIGGERED_ACTION_ENTRY_DRAG_TYPE,
 		// Props to collect
@@ -135,13 +159,11 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 			isOver: monitor.isOver(),
 			canDrop: monitor.canDrop(),
 		}),
-		drop: (item) => {
-			if (item.type === TRIGGERED_ACTION_ENTRY_DRAG_TYPE) {
-				return {
-					overId: triggeredActionId,
-					overRank: triggeredAction?._rank,
-					overShowStyleBaseId: triggeredAction?.showStyleBaseId,
-				}
+		drop: () => {
+			return {
+				overId: triggeredActionId,
+				overRank: triggeredAction?._rank ?? null,
+				overShowStyleBaseId: triggeredAction?.showStyleBaseId ?? null,
 			}
 		},
 	})
@@ -158,7 +180,9 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 		() => {
 			try {
 				if (resolvedActions && selected && sourceLayers) {
-					const executableActions = Object.values(resolvedActions).map((value) => createAction(value, sourceLayers))
+					const executableActions = Object.values<SomeAction>(resolvedActions).map((value) =>
+						createAction(value, sourceLayers)
+					)
 					const ctx = previewContext
 					if (ctx && ctx.rundownPlaylist) {
 						return flatten(
@@ -345,7 +369,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 
 		const resolvedActions = applyAndValidateOverrides(triggeredAction.triggersWithOverrides).obj
 
-		const lastTriggerObj = last(Object.values(resolvedActions))
+		const lastTriggerObj = last(Object.values<SomeBlueprintTrigger>(resolvedActions))
 		const selectedTriggerObj = selectedTrigger ? resolvedActions[selectedTrigger] : null
 		if (!selectedTriggerObj || !isHotkeyTrigger(selectedTriggerObj)) {
 			if (!isHotkeyTrigger(lastTriggerObj)) return

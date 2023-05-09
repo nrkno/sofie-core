@@ -1,159 +1,87 @@
-import * as React from 'react'
-import * as _ from 'underscore'
-import { Route, Switch } from 'react-router-dom'
-import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import React, { useEffect } from 'react'
+import { NavLink, Route, Switch, useRouteMatch } from 'react-router-dom'
+import { useSubscription, useTracker } from '../lib/ReactMeteorData/ReactMeteorData'
 
 import { Spinner } from '../lib/Spinner'
 import { RundownView } from './RundownView'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { objectPathGet } from '../../lib/lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { UIStudios } from './Collections'
-import { UIStudio } from '../../lib/api/studios'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylists } from '../collections'
+import { useTranslation } from 'react-i18next'
 
-interface IProps {
-	match: {
-		params?: {
-			studioId: StudioId
-		}
-		path: string
-	}
-}
-interface ITrackedProps {
-	playlist?: RundownPlaylist
-	studio?: UIStudio
-	studioId?: StudioId
-	// isReady: boolean
-}
-interface IState {
-	subsReady: boolean
-}
-export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) => {
-	const studioId = objectPathGet(props, 'match.params.studioId')
-	let studio
-	if (studioId) {
-		studio = UIStudios.findOne(studioId)
-	}
-	const playlist = RundownPlaylists.findOne({
+export function ActiveRundownView({ studioId }: { studioId: StudioId }): JSX.Element | null {
+	const { t } = useTranslation()
+
+	const { path } = useRouteMatch()
+
+	const studioReady = useSubscription(PubSub.uiStudio, studioId)
+	const playlistReady = useSubscription(PubSub.rundownPlaylists, {
 		activationId: { $exists: true },
-		studioId: studioId,
+		studioId,
 	})
 
-	return {
-		playlist,
-		studio,
-		studioId,
-	}
-})(
-	class ActiveRundownView extends MeteorReactComponent<Translated<IProps & ITrackedProps>, IState> {
-		constructor(props) {
-			super(props)
-			this.state = {
-				subsReady: false,
-			}
-		}
+	const subsReady = studioReady && playlistReady
 
-		componentDidMount(): void {
-			this.subscribe(
-				PubSub.rundownPlaylists,
-				_.extend(
-					{
-						activationId: { $exists: true },
-					},
-					this.props.studioId
-						? {
-								studioId: this.props.studioId,
-						  }
-						: {}
-				)
-			)
+	const studio = useTracker(() => UIStudios.findOne(studioId), [studioId])
+	const playlist = useTracker(
+		() =>
+			RundownPlaylists.findOne({
+				activationId: { $exists: true },
+				studioId,
+			}),
+		[studioId]
+	)
 
-			if (this.props.studioId) {
-				this.subscribe(PubSub.uiStudio, this.props.studioId)
-			}
+	useEffect(() => {
+		document.body.classList.add('dark', 'vertical-overflow-only')
 
-			this.autorun(() => {
-				if (this.props.playlist) {
-					this.subscribe(PubSub.rundowns, [this.props.playlist._id], null)
-				}
-
-				const subsReady = this.subscriptionsReady()
-				if (subsReady !== this.state.subsReady) {
-					this.setState({
-						subsReady: subsReady,
-					})
-				}
-			})
-
-			document.body.classList.add('dark', 'vertical-overflow-only')
-		}
-
-		componentWillUnmount(): void {
-			super.componentWillUnmount()
+		return () => {
 			document.body.classList.remove('dark', 'vertical-overflow-only')
 		}
+	}, [playlist])
 
-		componentDidUpdate(): void {
-			document.body.classList.add('dark', 'vertical-overflow-only')
-		}
-
-		renderMessage(message: string) {
-			const { t } = this.props
-
+	if (!subsReady) {
+		return (
+			<div className="rundown-view rundown-view--loading">
+				<Spinner />
+			</div>
+		)
+	} else {
+		if (playlist) {
 			return (
-				<div className="rundown-view rundown-view--unpublished">
-					<div className="rundown-view__label">
-						<p>{message}</p>
-						<p>
-							<Route
-								render={({ history }) => (
-									<button
-										className="btn btn-primary"
-										onClick={() => {
-											history.push('/rundowns')
-										}}
-									>
-										{t('Return to list')}
-									</button>
-								)}
-							/>
-						</p>
-					</div>
-				</div>
+				<Switch>
+					<Route path={`${path}`} exact>
+						<RundownView playlistId={playlist._id} inActiveRundownView={true} />
+					</Route>
+					<Route path={`${path}/shelf`} exact>
+						<RundownView playlistId={playlist._id} inActiveRundownView={true} onlyShelf={true} />
+					</Route>
+				</Switch>
 			)
-		}
-
-		render(): JSX.Element {
-			const { t } = this.props
-			if (!this.state.subsReady) {
-				return (
-					<div className="rundown-view rundown-view--loading">
-						<Spinner />
-					</div>
-				)
-			} else {
-				if (this.props.playlist) {
-					return (
-						<Switch>
-							<Route path={this.props.match.path} exact>
-								<RundownView playlistId={this.props.playlist._id} inActiveRundownView={true} />
-							</Route>
-							<Route path={`${this.props.match.path}/shelf`}>
-								<RundownView playlistId={this.props.playlist._id} inActiveRundownView={true} onlyShelf={true} />
-							</Route>
-						</Switch>
-					)
-				} else if (this.props.studio) {
-					return this.renderMessage(t('There is no rundown active in this studio.'))
-				} else if (this.props.studioId) {
-					return this.renderMessage(t("This studio doesn't exist."))
-				} else {
-					return this.renderMessage(t('There are no active rundowns.'))
-				}
-			}
+		} else if (studio) {
+			return <NotFoundMessage message={t('There is no rundown active in this studio.')} />
+		} else if (studioId) {
+			return <NotFoundMessage message={t("This studio doesn't exist.")} />
+		} else {
+			return <NotFoundMessage message={t('There are no active rundowns.')} />
 		}
 	}
-)
+}
+
+function NotFoundMessage({ message }: { message: string }) {
+	const { t } = useTranslation()
+
+	return (
+		<div className="rundown-view rundown-view--unpublished">
+			<div className="rundown-view__label">
+				<p>{message}</p>
+				<p>
+					<NavLink to="/rundowns" className="btn btn-primary">
+						{t('Return to list')}
+					</NavLink>
+				</p>
+			</div>
+		</div>
+	)
+}

@@ -354,13 +354,11 @@ export class PresenterScreenBase extends MeteorReactComponent<
 						const playlistR = RundownPlaylists.findOne(this.props.playlistId, {
 							fields: {
 								_id: 1,
-								currentPartInstanceId: 1,
-								nextPartInstanceId: 1,
-								previousPartInstanceId: 1,
+								currentPartInfo: 1,
+								nextPartInfo: 1,
+								previousPartInfo: 1,
 							},
-						}) as
-							| Pick<RundownPlaylist, '_id' | 'currentPartInstanceId' | 'nextPartInstanceId' | 'previousPartInstanceId'>
-							| undefined
+						}) as Pick<RundownPlaylist, '_id' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo'> | undefined
 						if (playlistR) {
 							const { nextPartInstance, currentPartInstance } =
 								RundownPlaylistCollectionUtil.getSelectedPartInstances(playlistR)

@@ -135,6 +135,7 @@ export interface IGetRundownContext extends IShowStyleUserContext {
 
 export interface IRundownContext extends IShowStyleContext {
 	readonly rundownId: string
+	readonly playlistId: string
 	readonly rundown: Readonly<IBlueprintSegmentRundown>
 }
 

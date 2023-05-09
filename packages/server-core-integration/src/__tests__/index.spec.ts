@@ -38,6 +38,7 @@ describe('coreConnection', () => {
 			deviceType: PeripheralDeviceType.PLAYOUT,
 			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
+			documentationUrl: 'http://example.com',
 		})
 
 		const onConnectionChanged = jest.fn()
@@ -58,6 +59,7 @@ describe('coreConnection', () => {
 			deviceType: PeripheralDeviceType.PLAYOUT,
 			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
+			documentationUrl: 'http://example.com',
 		})
 
 		const onConnectionChanged = jest.fn()
@@ -179,6 +181,7 @@ describe('coreConnection', () => {
 			deviceType: PeripheralDeviceType.PLAYOUT,
 			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
+			documentationUrl: 'http://example.com',
 		})
 
 		const onConnectionChanged = jest.fn()
@@ -217,6 +220,7 @@ describe('coreConnection', () => {
 			deviceType: PeripheralDeviceType.PLAYOUT,
 			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
+			documentationUrl: 'http://example.com',
 		})
 
 		const onConnectionChanged = jest.fn()
@@ -261,6 +265,7 @@ describe('coreConnection', () => {
 			deviceType: PeripheralDeviceType.PLAYOUT,
 			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
+			documentationUrl: 'http://example.com',
 		})
 
 		const onConnectionChanged = jest.fn()
@@ -331,6 +336,7 @@ describe('coreConnection', () => {
 			deviceType: PeripheralDeviceType.PLAYOUT,
 			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
+			documentationUrl: 'http://example.com',
 		})
 
 		const onConnectionChanged = jest.fn()
@@ -386,6 +392,7 @@ describe('coreConnection', () => {
 			deviceType: PeripheralDeviceType.PLAYOUT,
 			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
+			documentationUrl: 'http://example.com',
 		})
 		const onError = jest.fn()
 		coreParent.onError(onError)
@@ -407,6 +414,7 @@ describe('coreConnection', () => {
 			deviceType: PeripheralDeviceType.PLAYOUT,
 			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework child',
+			documentationUrl: 'http://example.com',
 		})
 
 		const onChildConnectionChanged = jest.fn()
@@ -476,6 +484,7 @@ describe('coreConnection', () => {
 			deviceType: PeripheralDeviceType.PLAYOUT,
 			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
+			documentationUrl: 'http://example.com',
 		})
 		const onParentError = jest.fn()
 		coreParent.onError(onParentError)
@@ -492,6 +501,7 @@ describe('coreConnection', () => {
 			deviceType: PeripheralDeviceType.PLAYOUT,
 			deviceSubType: 'mos_connection',
 			deviceName: 'Jest test framework child',
+			documentationUrl: 'http://example.com',
 		})
 		const onChildConnectionChanged = jest.fn()
 		const onChildConnected = jest.fn()
@@ -554,6 +564,7 @@ describe('coreConnection', () => {
 			deviceType: PeripheralDeviceType.PLAYOUT,
 			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
+			documentationUrl: 'http://example.com',
 		})
 		const onParentError = jest.fn()
 		coreParent.onError(onParentError)
@@ -569,6 +580,7 @@ describe('coreConnection', () => {
 			deviceType: PeripheralDeviceType.PLAYOUT,
 			deviceSubType: 'mos_connection',
 			deviceName: 'Jest test framework child',
+			documentationUrl: 'http://example.com',
 		})
 		const onChildConnectionChanged = jest.fn()
 		const onChildConnected = jest.fn()
@@ -607,6 +619,7 @@ describe('coreConnection', () => {
 			deviceType: PeripheralDeviceType.PLAYOUT,
 			deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 			deviceName: 'Jest test framework',
+			documentationUrl: 'http://example.com',
 		})
 
 		const onError = jest.fn()

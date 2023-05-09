@@ -110,7 +110,7 @@ export const DevicePackageManagerSettings: React.FC<IDevicePackageManagerSetting
 								<h3 className="">{t('Package Manager')}</h3>
 								<table className="table">
 									<tbody>
-										{Object.entries(status.packageManager || {}).map(([key, value]) => {
+										{Object.entries<any>(status.packageManager || {}).map(([key, value]) => {
 											return (
 												<tr key={key}>
 													<td>{key}</td>
@@ -133,14 +133,16 @@ export const DevicePackageManagerSettings: React.FC<IDevicePackageManagerSetting
 									<h4 className="">{t('Statistics')}</h4>
 									<table className="table">
 										<tbody>
-											{Object.entries(status.expectationManager?.expectationStatistics || {}).map(([key, value]) => {
-												return (
-													<tr key={key}>
-														<td>{key}</td>
-														<td>{JSON.stringify(value)}</td>
-													</tr>
-												)
-											})}
+											{Object.entries<any>(status.expectationManager?.expectationStatistics || {}).map(
+												([key, value]) => {
+													return (
+														<tr key={key}>
+															<td>{key}</td>
+															<td>{JSON.stringify(value)}</td>
+														</tr>
+													)
+												}
+											)}
 										</tbody>
 									</table>
 								</div>
@@ -148,7 +150,7 @@ export const DevicePackageManagerSettings: React.FC<IDevicePackageManagerSetting
 									<h4 className="">{t('Times')}</h4>
 									<table className="table">
 										<tbody>
-											{Object.entries(status.expectationManager?.times || {}).map(([key, value]) => {
+											{Object.entries<any>(status.expectationManager?.times || {}).map(([key, value]) => {
 												return (
 													<tr key={key}>
 														<td>{key}</td>
@@ -303,7 +305,7 @@ const TableFromObjectArray: React.FC<TableFromObjectArrayData<any>> = function T
 	if (typeof dataObjs !== 'object') return <i>{dataObjs}</i>
 
 	const setOfKeys = new Set<string>()
-	for (const dataObj of Object.values(dataObjs)) {
+	for (const dataObj of Object.values<any>(dataObjs)) {
 		for (const key of Object.keys(dataObj)) {
 			setOfKeys.add(key)
 		}

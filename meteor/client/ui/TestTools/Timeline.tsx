@@ -14,7 +14,7 @@ import {
 	TimelineObjectInstance,
 } from 'superfly-timeline'
 import { TimelineContentObject, transformTimeline } from '@sofie-automation/corelib/dist/playout/timeline'
-import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
+import { useCurrentTime } from '../../lib/lib'
 import { StudioSelect } from './StudioSelect'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router-dom'
@@ -55,7 +55,7 @@ interface ITimelineSimulateProps {
 function ComponentTimelineSimulate({ studioId }: ITimelineSimulateProps) {
 	useSubscription(PubSub.timelineForStudio, studioId)
 
-	const now = useTracker(() => getCurrentTimeReactive(), [], Date.now())
+	const now = useCurrentTime()
 	const tlComplete = useTracker(() => StudioTimeline.findOne(studioId), [studioId])
 
 	const [resolvedTl, errorMsgResolve] = useMemo(() => {
@@ -234,7 +234,7 @@ function TimelineStateTable({ allStates, now }: TimelineStateTableProps) {
 }
 
 function renderTimelineState(state: TimelineState, filter: RegExp | string | undefined) {
-	const sortedLayers = _.sortBy(Object.values(state.layers), (o) => o.layer)
+	const sortedLayers = _.sortBy(Object.values<ResolvedTimelineObjectInstance>(state.layers), (o) => o.layer)
 	let filteredLayers: ResolvedTimelineObjectInstance[] = sortedLayers
 	if (filter) {
 		if (typeof filter === 'string') {
@@ -292,7 +292,10 @@ function TimelineInstancesTable({ resolvedTl }: TimelineInstancesTableProps) {
 }
 
 function renderTimelineInstances(resolvedTl: ResolvedTimeline, filter: RegExp | string | undefined) {
-	const sortedObjects = _.sortBy(Object.values(resolvedTl.objects), (o) => `${o.layer}:::${o.id}`)
+	const sortedObjects = _.sortBy(
+		Object.values<ResolvedTimelineObject>(resolvedTl.objects),
+		(o) => `${o.layer}:::${o.id}`
+	)
 
 	let filteredObjects: ResolvedTimelineObject[] = sortedObjects
 	if (filter) {

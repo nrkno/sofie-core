@@ -449,3 +449,7 @@ export function stringifyError(error: unknown, noStack = false): string {
 export function deferAsync(fn: () => Promise<void>, catcher: (e: unknown) => void): void {
 	fn().catch(catcher)
 }
+
+export function joinObjectPathFragments(...fragments: Array<string | number | undefined>): string {
+	return fragments.filter((v) => v !== '' && v !== undefined && v !== null).join('.')
+}

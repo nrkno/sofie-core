@@ -12,7 +12,7 @@ import { IContextMenuContext } from '../RundownView'
 import { literal } from '../../../lib/lib'
 import { SegmentTimelinePartElementId } from '../SegmentTimeline/Parts/SegmentTimelinePart'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
-import { getAllowSpeaking } from '../../lib/localStorage'
+import { getAllowSpeaking, getAllowVibrating } from '../../lib/localStorage'
 import RundownViewEventBus, { HighlightEvent, RundownViewEvents } from '../../../lib/api/triggers/RundownViewEventBus'
 import { Meteor } from 'meteor/meteor'
 import { StoryboardPartTransitions } from './StoryboardPartTransitions'
@@ -20,7 +20,6 @@ import { PartDisplayDuration } from '../RundownView/RundownTiming/PartDuration'
 import { InvalidPartCover } from '../SegmentTimeline/Parts/InvalidPartCover'
 import { SegmentEnd } from '../../lib/ui/icons/segment'
 import { AutoNextStatus } from '../RundownView/RundownTiming/AutoNextStatus'
-import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
 
 interface IProps {
 	className?: string
@@ -65,9 +64,6 @@ export function StoryboardPart({
 	const { t } = useTranslation()
 	const [highlight, setHighlight] = useState(false)
 	const willBeAutoNextedInto = isNextPart ? currentPartWillAutonext : part.willProbablyAutoNext
-	const isFinished =
-		!!part.instance.timings?.plannedStoppedPlayback &&
-		part.instance.timings.plannedStoppedPlayback > getCurrentTimeReactive()
 
 	const getPartContext = useCallback(() => {
 		const partElement = document.querySelector('#' + SegmentTimelinePartElementId + part.instance._id)
@@ -149,7 +145,7 @@ export function StoryboardPart({
 			<div className="segment-storyboard__identifier">{part.instance.part.identifier}</div>
 			{subscriptionsReady ? (
 				<>
-					<StoryboardPartThumbnail part={part} isLive={isLivePart} isNext={isNextPart} isFinished={isFinished} />
+					<StoryboardPartThumbnail part={part} isLive={isLivePart} isNext={isNextPart} />
 					<StoryboardPartTransitions part={part} outputLayers={outputLayers} />
 					<StoryboardPartSecondaryPieces part={part} outputLayers={outputLayers} />
 				</>
@@ -247,6 +243,7 @@ export function StoryboardPart({
 					<CurrentPartRemaining
 						currentPartInstanceId={part.instance._id}
 						speaking={getAllowSpeaking()}
+						vibrating={getAllowVibrating()}
 						heavyClassName="overtime"
 					/>
 				</div>

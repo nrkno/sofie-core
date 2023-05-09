@@ -2,7 +2,7 @@ import React from 'react'
 import { SplitsContent } from '@sofie-automation/blueprints-integration'
 import { IDefaultRendererProps } from './DefaultRenderer'
 import { SplitsFloatingInspector } from '../../../FloatingInspectors/SplitsFloatingInspector'
-import { getSplitItems } from '../../utils/getSplitItems'
+import { getSplitItems } from '../../../SegmentContainer/getSplitItems'
 
 export function SplitsRenderer({
 	piece: pieceInstance,

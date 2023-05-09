@@ -15,20 +15,20 @@
 	},
 	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/job-worker#readme",
 	"scripts": {
-		"dev": "nodemon --config nodemon.json src/index.ts",
-		"dev:debug": "nodemon --config nodemon.json --inspect-brk src/index.ts",
-		"build": "rimraf dist && yarn build:main",
-		"build:main": "tsc -p tsconfig.build.json",
-		"lint:raw": "eslint --ext .ts --ext .js --ignore-pattern dist",
-		"lint": "yarn lint:raw .",
-		"unit": "jest",
-		"test": "yarn lint && yarn unit",
-		"watch": "jest --watch",
-		"cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
+		"dev": "run -T nodemon --config nodemon.json src/index.ts",
+		"dev:debug": "run -T nodemon --config nodemon.json --inspect-brk src/index.ts",
+		"build": "run -T rimraf dist && run build:main",
+		"build:main": "run -T tsc -p tsconfig.build.json",
+		"lint:raw": "run -T eslint --ext .ts --ext .js --ignore-pattern dist",
+		"lint": "run lint:raw .",
+		"unit": "run -T jest",
+		"test": "run lint && run unit",
+		"watch": "run -T jest --watch",
+		"cov": "run -T jest --coverage; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
-		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
-		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck"
+		"validate:dependencies": "yarn npm audit --environment production && run license-validate",
+		"validate:dev-dependencies": "yarn npm audit --environment development",
+		"license-validate": "run -T sofie-licensecheck"
 	},
 	"engines": {
 		"node": "^14.19 || ^16.14 || ^18.12"
@@ -41,13 +41,13 @@
 	],
 	"dependencies": {
 		"@slack/webhook": "^6.1.0",
-		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
-		"@sofie-automation/corelib": "link:../corelib",
-		"@sofie-automation/shared-lib": "link:../shared-lib",
+		"@sofie-automation/blueprints-integration": "1.50.0-in-development",
+		"@sofie-automation/corelib": "1.50.0-in-development",
+		"@sofie-automation/shared-lib": "1.50.0-in-development",
 		"amqplib": "^0.10.3",
 		"debounce-fn": "^4.0.0",
-		"deepmerge": "^4.2.2",
-		"elastic-apm-node": "^3.42.0",
+		"deepmerge": "^4.3.1",
+		"elastic-apm-node": "^3.43.0",
 		"eventemitter3": "^4.0.7",
 		"mongodb": "^4.13.0",
 		"p-lazy": "^3.1.0",
@@ -57,15 +57,16 @@
 		"tslib": "^2.4.0",
 		"type-fest": "^2.19.0",
 		"underscore": "^1.13.4",
-		"vm2": "^3.9.11"
+		"vm2": "^3.9.14"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [
-			"prettier"
+			"yarn run -T prettier"
 		],
 		"*.{ts,tsx}": [
 			"yarn lint:raw"
 		]
-	}
+	},
+	"packageManager": "yarn@3.5.0"
 }

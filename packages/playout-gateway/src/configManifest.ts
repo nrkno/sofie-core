@@ -5,21 +5,21 @@ import {
 	JSONSchema,
 	SubdeviceManifest,
 } from '@sofie-automation/server-core-integration'
-import { manifest as TSRManifest } from 'timeline-state-resolver'
+import { TSRDevicesManifest, manifest as TSRManifest } from 'timeline-state-resolver'
 
 import Translations = require('timeline-state-resolver/dist/translations.json')
 
 import ConfigSchema = require('./$schemas/options.json')
 
 const subdeviceManifest: SubdeviceManifest = Object.fromEntries(
-	Object.entries(TSRManifest.subdevices).map(([id, dev]) => {
+	Object.entries<TSRDevicesManifest[0]>(TSRManifest.subdevices).map(([id, dev]) => {
 		return [
 			id,
 			{
 				displayName: dev.displayName,
 				configSchema: stringToJsonBlob(dev.configSchema),
-				playoutMappings: Object.fromEntries(
-					Object.entries(dev.mappingsSchemas).map(([id, str]) => [id, stringToJsonBlob(str)])
+				playoutMappings: Object.fromEntries<JSONBlob<JSONSchema>>(
+					Object.entries<string>(dev.mappingsSchemas).map(([id, str]) => [id, stringToJsonBlob(str)])
 				),
 				actions: dev.actions?.map((action) => ({
 					...action,

@@ -341,7 +341,10 @@ describe('client/lib/rundown', () => {
 
 				mockRundownPlaylistsCollection.update(playlistId, {
 					$set: {
-						currentPartInstanceId: mockCurrentPartInstance._id,
+						currentPartInfo: {
+							partInstanceId: mockCurrentPartInstance._id,
+							rundownId: mockCurrentPartInstance.rundownId,
+						},
 					},
 				})
 

@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useState } from 'react'
-import { TFunction } from 'i18next'
+import { TFunction } from 'react-i18next'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'

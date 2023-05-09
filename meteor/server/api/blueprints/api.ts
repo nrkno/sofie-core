@@ -54,9 +54,6 @@ export async function insertBlueprint(
 		blueprintId: '',
 		blueprintType: type,
 
-		studioConfigManifest: [],
-		showStyleConfigManifest: [],
-
 		databaseVersion: {
 			studio: {},
 			showStyle: {},
@@ -152,8 +149,6 @@ async function innerUploadBlueprint(
 		code: body,
 		hasCode: !!body,
 		modified: getCurrentTime(),
-		studioConfigManifest: [],
-		showStyleConfigManifest: [],
 		databaseVersion: blueprint
 			? blueprint.databaseVersion
 			: {
@@ -220,10 +215,10 @@ async function innerUploadBlueprint(
 	}
 
 	if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE) {
-		newBlueprint.showStyleConfigManifest = blueprintManifest.showStyleConfigManifest
+		newBlueprint.showStyleConfigSchema = blueprintManifest.showStyleConfigSchema
 		newBlueprint.showStyleConfigPresets = blueprintManifest.configPresets
 	} else if (blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
-		newBlueprint.studioConfigManifest = blueprintManifest.studioConfigManifest
+		newBlueprint.studioConfigSchema = blueprintManifest.studioConfigSchema
 		newBlueprint.studioConfigPresets = blueprintManifest.configPresets
 	}
 

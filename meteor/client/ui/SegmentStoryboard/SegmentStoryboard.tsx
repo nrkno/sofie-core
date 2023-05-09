@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { IContextMenuContext } from '../RundownView'
-import { PartUi, PieceUi, SegmentNoteCounts, SegmentUi } from '../SegmentContainer/withResolvedSegment'
+import { IOutputLayerUi, PartUi, PieceUi, SegmentNoteCounts, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
@@ -70,7 +70,7 @@ interface IProps {
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
-	onSwitchViewMode: (newViewMode: SegmentViewMode) => void
+	onSwitchViewMode?: (newViewMode: SegmentViewMode) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
 	budgetDuration?: number
@@ -112,7 +112,7 @@ export const SegmentStoryboard = React.memo(
 		let countdownToPartId: PartId | undefined = undefined
 		if (!props.isLiveSegment) {
 			const nextPart = props.isNextSegment
-				? props.parts.find((p) => p.instance._id === props.playlist.nextPartInstanceId)
+				? props.parts.find((p) => p.instance._id === props.playlist.nextPartInfo?.partInstanceId)
 				: props.parts[0]
 
 			if (nextPart) {
@@ -194,12 +194,12 @@ export const SegmentStoryboard = React.memo(
 		const squishedPartCardStride =
 			squishedPartsNum > 1 ? Math.max(4, (spaceLeft - PART_WIDTH) / (squishedPartsNum - 1)) : null
 
-		const playlistHasNextPart = !!props.playlist.nextPartInstanceId
+		const playlistHasNextPart = !!props.playlist.nextPartInfo
 		const playlistIsLooping = props.playlist.loop
 
 		renderedParts.forEach((part, index) => {
-			const isLivePart = part.instance._id === props.playlist.currentPartInstanceId
-			const isNextPart = part.instance._id === props.playlist.nextPartInstanceId
+			const isLivePart = part.instance._id === props.playlist.currentPartInfo?.partInstanceId
+			const isNextPart = part.instance._id === props.playlist.nextPartInfo?.partInstanceId
 
 			if (isLivePart) currentPartIndex = index
 			if (isNextPart) nextPartIndex = index
@@ -642,7 +642,7 @@ export const SegmentStoryboard = React.memo(
 				</div>
 				<div className="segment-timeline__mos-id">{props.segment.externalId}</div>
 				<div className="segment-timeline__source-layers" role="tree" aria-label={t('Sources')}>
-					{Object.values(props.segment.outputLayers)
+					{Object.values<IOutputLayerUi>(props.segment.outputLayers)
 						.filter((outputGroup) => outputGroup.used)
 						.map((outputGroup) => (
 							<div className="segment-timeline__output-group" key={outputGroup._id}>

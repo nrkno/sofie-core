@@ -141,6 +141,7 @@ export function setupMockPeripheralDevice(
 		category: category,
 		type: type,
 		subType: subType,
+		deviceName: `Mock ${type} Gateway`,
 
 		created: 1234,
 		status: {
@@ -370,7 +371,7 @@ export async function setupMockStudioBlueprint(
 					},
 				},
 
-				studioConfigManifest: [],
+				studioConfigSchema: '{}' as any,
 				studioMigrations: [],
 				getBaseline: () => {
 					return {
@@ -427,7 +428,7 @@ export async function setupMockShowStyleBlueprint(
 					},
 				},
 
-				showStyleConfigManifest: [],
+				showStyleConfigSchema: '{}' as any,
 				showStyleMigrations: [],
 				getShowStyleVariantId: (): string | null => {
 					return SHOW_STYLE_VARIANT_ID

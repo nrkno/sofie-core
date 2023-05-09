@@ -30,7 +30,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('meteor/yarn.lock') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Prepare Environment
         run: |
-          yarn config set cache-folder /home/runner/lint-core-cache
+          yarn config set cacheFolder /home/runner/lint-core-cache
           yarn
           yarn build:packages
         env:
@@ -38,7 +38,7 @@ jobs:
       - name: Run typecheck and linter
         run: |
           cd meteor
-          meteor npm run ci:lint
+          meteor yarn ci:lint
         env:
           CI: true
 
@@ -61,7 +61,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('meteor/yarn.lock') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Prepare Environment
         run: |
-          yarn config set cache-folder /home/runner/test-core-cache
+          yarn config set cacheFolder /home/runner/test-core-cache
           yarn
           yarn build:packages
         env:
@@ -182,7 +182,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push to GHCR
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./meteor/Dockerfile.circle
@@ -192,7 +192,7 @@ jobs:
           tags: "${{ steps.ghcr-tag.outputs.tags }}"
       - name: Build and push to DockerHub
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.dockerhub.outputs.dockerhub-publish == '1'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ./meteor/Dockerfile.circle
@@ -277,7 +277,8 @@ jobs:
           cd packages
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.gateway-name }} --include-dependencies --stream build
-          yarn install --prod --ignore-scripts
+          yarn run pinst --disable
+          yarn workspaces focus --all --production
       - name: Set up Docker Buildx
         if: steps.check-build-and-push.outputs.enable == 'true'
         uses: docker/setup-buildx-action@v2
@@ -296,7 +297,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and push to GHCR
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: ./packages
           file: ./packages/${{ matrix.gateway-name }}/Dockerfile.circle
@@ -306,7 +307,7 @@ jobs:
           tags: "${{ steps.ghcr-tag.outputs.tags }}"
       - name: Build and push to DockerHub
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.dockerhub.outputs.dockerhub-publish == '1'
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: ./packages
           file: ./packages/${{ matrix.gateway-name }}/Dockerfile.circle
@@ -342,7 +343,7 @@ jobs:
       - name: Prepare Environment
         run: |
           cd packages
-          yarn config set cache-folder /home/runner/${{ matrix.package-name }}-cache
+          yarn config set cacheFolder /home/runner/${{ matrix.package-name }}-cache
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
@@ -390,7 +391,7 @@ jobs:
       - name: Prepare Environment
         run: |
           cd packages
-          yarn config set cache-folder /home/runner/test-packages-cache
+          yarn config set cacheFolder /home/runner/test-packages-cache
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
@@ -420,7 +421,7 @@ jobs:
       - name: Prepare Environment
         run: |
           cd packages
-          yarn config set cache-folder /home/runner/publish-docs-cache
+          yarn config set cacheFolder /home/runner/publish-docs-cache
           yarn install
           yarn build
         env:
@@ -475,7 +476,7 @@ jobs:
       - name: Prepare Environment # have to run this first to make sure the semver lib is available
         run: |
           cd packages
-          yarn config set cache-folder /home/runner/release-libs-cache
+          yarn config set cacheFolder /home/runner/release-libs-cache
           yarn install
         env:
           CI: true
@@ -510,11 +511,13 @@ jobs:
       - name: Publish to NPM
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+          yarn config set npmAuthToken $NPM_AUTH_TOKEN
+
           cd packages/${{ matrix.package-name }}
           NEW_VERSION=$(node -p "require('./package.json').version")
-          yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag ${{ steps.do-publish.outputs.tag }}
+          yarn npm publish --access=public --tag ${{ steps.do-publish.outputs.tag }}
         env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           CI: true
 
   check-for-multiple-library-versions:
@@ -537,7 +540,7 @@ jobs:
           key: ${{ runner.os }}-${{ hashFiles('meteor/yarn.lock') }}-${{ hashFiles('meteor/.meteor/release') }}
       - name: Prepare Environment
         run: |
-          yarn config set cache-folder /home/runner/check-for-multiple-library-versions-cache
+          yarn config set cacheFolder /home/runner/check-for-multiple-library-versions-cache
           yarn
         env:
           CI: true

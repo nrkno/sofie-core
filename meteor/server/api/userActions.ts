@@ -55,14 +55,13 @@ async function pieceSetInOutPoints(
 	inPoint: number,
 	duration: number
 ): Promise<void> {
-	const playlist = access.playlist
-
 	const part = await Parts.findOneAsync(partId)
 	if (!part) throw new Meteor.Error(404, `Part "${partId}" not found!`)
-	if (playlist.activationId && part.status === 'PLAY') {
-		throw new Meteor.Error(`Part cannot be active while setting in/out!`) // @todo: un-hardcode
-	}
-	const rundown = await Rundowns.findOneAsync(part.rundownId)
+
+	const rundown = await Rundowns.findOneAsync({
+		_id: part.rundownId,
+		playlistId: access.playlist._id,
+	})
 	if (!rundown) throw new Meteor.Error(501, `Rundown "${part.rundownId}" not found!`)
 
 	const partCache = await IngestDataCache.findOneAsync({

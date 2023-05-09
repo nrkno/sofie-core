@@ -97,7 +97,7 @@ export async function CommitIngestOperation(
 			async (oldPlaylist, oldPlaylistLock) => {
 				// Aquire the playout lock so we can safely modify the playlist contents
 
-				if (oldPlaylist && !(await allowedToMoveRundownOutOfPlaylist(context, oldPlaylist, rundown))) {
+				if (oldPlaylist && !allowedToMoveRundownOutOfPlaylist(oldPlaylist, rundown)) {
 					// Don't allow removing currently playing rundown playlists:
 					logger.warn(
 						`Not allowing removal of currently playing rundown "${rundown._id}" from playlist "${beforePlaylistId}"`
@@ -564,7 +564,10 @@ async function updatePartInstancesBasicProperties(
 	const instancesToReset: PartInstanceId[] = []
 	const instancesToOrphan: PartInstanceId[] = []
 	for (const partInstance of partInstancesToOrphan) {
-		if (playlist.currentPartInstanceId !== partInstance._id && playlist.nextPartInstanceId !== partInstance._id) {
+		if (
+			playlist.currentPartInfo?.partInstanceId !== partInstance._id &&
+			playlist.nextPartInfo?.partInstanceId !== partInstance._id
+		) {
 			instancesToReset.push(partInstance._id)
 		} else {
 			instancesToOrphan.push(partInstance._id)
@@ -736,9 +739,9 @@ async function getSelectedPartInstances(
 	rundownIds: Array<RundownId>
 ) {
 	const ids = _.compact([
-		playlist.currentPartInstanceId,
-		playlist.previousPartInstanceId,
-		playlist.nextPartInstanceId,
+		playlist.currentPartInfo?.partInstanceId,
+		playlist.previousPartInfo?.partInstanceId,
+		playlist.nextPartInfo?.partInstanceId,
 	])
 
 	const instances =
@@ -751,8 +754,8 @@ async function getSelectedPartInstances(
 			: []
 
 	return {
-		currentPartInstance: instances.find((inst) => inst._id === playlist.currentPartInstanceId),
-		nextPartInstance: instances.find((inst) => inst._id === playlist.nextPartInstanceId),
-		previousPartInstance: instances.find((inst) => inst._id === playlist.previousPartInstanceId),
+		currentPartInstance: instances.find((inst) => inst._id === playlist.currentPartInfo?.partInstanceId),
+		nextPartInstance: instances.find((inst) => inst._id === playlist.nextPartInfo?.partInstanceId),
+		previousPartInstance: instances.find((inst) => inst._id === playlist.previousPartInfo?.partInstanceId),
 	}
 }

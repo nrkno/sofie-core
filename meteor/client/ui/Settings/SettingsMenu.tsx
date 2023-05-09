@@ -17,7 +17,7 @@ import { Blueprint } from '../../../lib/collections/Blueprints'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Settings as MeteorSettings } from '../../../lib/Settings'
-import { StatusCode } from '@sofie-automation/blueprints-integration'
+import { IOutputLayer, StatusCode } from '@sofie-automation/blueprints-integration'
 import { TFunction, useTranslation } from 'react-i18next'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Blueprints, PeripheralDevices, ShowStyleBases, Studios } from '../../collections'
@@ -25,7 +25,6 @@ import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settin
 
 interface ISettingsMenuProps {
 	superAdmin?: boolean
-	match?: any
 }
 interface ISettingsMenuState {}
 interface ISettingsMenuTrackedProps {
@@ -351,7 +350,7 @@ function SettingsMenuShowStyle({ showStyleBase }: SettingsMenuShowStyleProps) {
 
 		if (!Object.keys(resolvedSourceLayers).length) return true
 		if (!Object.keys(resolvedOutputLayers).length) return true
-		if (!Object.values(resolvedOutputLayers).find((l) => l && l.isPGM)) return true
+		if (!Object.values<IOutputLayer | undefined>(resolvedOutputLayers).find((l) => l && l.isPGM)) return true
 		return false
 	}, [showStyleBase.outputLayersWithOverrides, showStyleBase.sourceLayersWithOverrides])
 
