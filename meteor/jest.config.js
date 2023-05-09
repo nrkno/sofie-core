@@ -10,6 +10,7 @@ const commonConfig = {
 		'^.+\\.(ts|tsx)$': [
 			'ts-jest',
 			{
+				isolatedModules: true, // Skip type check to reduce memory impact, as we are already do a yarn check-types
 				tsconfig: 'tsconfig.json',
 				babelConfig: {
 					plugins: [
