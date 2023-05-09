@@ -144,6 +144,8 @@ export abstract class WorkerParentBase {
 	protected abstract restartWorkerThread(): Promise<void>
 	/** Inform the worker thread about a lock change */
 	public abstract workerLockChange(lockId: string, locked: boolean): Promise<void>
+	/** Collect prometheus metrics from the worker thread */
+	public abstract collectMetrics(): Promise<string>
 
 	private async tryRestartThread() {
 		// Ensure that the status is set to manual restart so that if this fails, we'll retry later:

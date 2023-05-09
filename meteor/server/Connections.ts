@@ -4,8 +4,13 @@ import { Meteor } from 'meteor/meteor'
 import { logger } from './logging'
 import { sendTrace } from './api/integration/influx'
 import { PeripheralDevices } from './collections'
+import { MetricsGauge } from '@sofie-automation/corelib/dist/prometheus'
 
 const connections = new Set<string>()
+const connectionsGauge = new MetricsGauge({
+	name: `sofie_meteor_ddp_connections_total`,
+	help: 'Number of open ddp connections',
+})
 
 Meteor.onConnection((conn: Meteor.Connection) => {
 	// This is called whenever a new ddp-connection is opened (ie a web-client or a peripheral-device)
@@ -53,6 +58,8 @@ Meteor.onConnection((conn: Meteor.Connection) => {
 
 let logTimeout: number | undefined = undefined
 function traceConnections() {
+	connectionsGauge.set(connections.size)
+
 	if (logTimeout) {
 		clearTimeout(logTimeout)
 	}
