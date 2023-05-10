@@ -223,7 +223,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        gateway-name: [playout-gateway, mos-gateway]
+        gateway-name: [playout-gateway, mos-gateway, 'live-status-gateway']
 
     steps:
       - uses: actions/checkout@v3
@@ -353,6 +353,7 @@ jobs:
           - corelib
           - shared-lib
           - job-worker
+          - live-status-gateway
 
     steps:
       - uses: actions/checkout@v3
@@ -424,7 +425,7 @@ jobs:
         run: |
           cd packages
           yarn config set cacheFolder /home/runner/test-packages-cache
-          yarn install
+          node is_node_14.js && yarn lerna run --ignore openapi install || yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
           CI: true
