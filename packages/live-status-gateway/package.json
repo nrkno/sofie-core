@@ -1,0 +1,79 @@
+{
+	"name": "live-status-gateway",
+	"version": "1.50.0-in-development",
+	"private": true,
+	"description": "Provides state from Sofie over sockets",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/nrkno/tv-automation-server-core.git",
+		"directory": "packages/live-status-gateway"
+	},
+	"bugs": {
+		"url": "https://github.com/nrkno/tv-automation-server-core/issues"
+	},
+	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/live-status-gateway#readme",
+	"contributors": [],
+	"scripts": {
+		"build": "run -T rimraf dist && run build:main",
+		"buildstart": "run build && run dev",
+		"buildinspect": "run build && run inspect",
+		"build:main": "run -T tsc -p tsconfig.build.json",
+		"lint:raw": "run -T eslint --ext .ts --ext .js --ignore-pattern dist",
+		"lint": "run lint:raw .",
+		"unit": "run -T jest",
+		"test": "run lint && run unit",
+		"watch": "run -T jest --watch",
+		"cov": "run -T jest; run -T open-cli coverage/lcov-report/index.html",
+		"cov-open": "open-cli coverage/lcov-report/index.html",
+		"ci": "run test",
+		"gendocs": "run -T rimraf docs && ag ./api/asyncapi.yaml @asyncapi/html-template -o docs -p singleFile=true -p outFilename=liveStatus.html",
+		"genserver": "run -T rimraf server && ag ./api/asyncapi.yaml @asyncapi/nodejs-ws-template -o server -p server=development",
+		"inspect": "node --experimental-fetch --inspect dist/index.js",
+		"start": "node --experimental-fetch dist/index.js",
+		"validate:dependencies": "yarn npm audit --groups dependencies && yarn license-validate",
+		"validate:dev-dependencies": "yarn npm audit --groups devDependencies",
+		"license-validate": "run -T sofie-licensecheck"
+	},
+	"engines": {
+		"node": "^14.18 || ^16.14 || ^18.5"
+	},
+	"keywords": [
+		"broadcast",
+		"socket",
+		"typescript",
+		"javascript",
+		"open",
+		"source",
+		"automation",
+		"ncs",
+		"nrcs",
+		"rundown",
+		"production"
+	],
+	"dependencies": {
+		"@sofie-automation/blueprints-integration": "1.50.0-in-development",
+		"@sofie-automation/corelib": "1.50.0-in-development",
+		"@sofie-automation/server-core-integration": "1.50.0-in-development",
+		"@sofie-automation/shared-lib": "1.50.0-in-development",
+		"debug": "^4.3.2",
+		"fast-clone": "^1.5.13",
+		"influx": "^5.9.2",
+		"tslib": "^2.4.0",
+		"winston": "^3.8.1",
+		"ws": "^8.10.0"
+	},
+	"devDependencies": {
+		"@asyncapi/generator": "1.9.13",
+		"@asyncapi/html-template": "0.26.0",
+		"@asyncapi/nodejs-ws-template": "0.9.25"
+	},
+	"lint-staged": {
+		"*.{css,json,md,scss}": [
+			"yarn run -T prettier"
+		],
+		"*.{ts,tsx,js,jsx,yaml}": [
+			"yarn lint:raw"
+		]
+	}
+}

@@ -1,9 +1,9 @@
-import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { Rundown, DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { normalizeArrayToMap, normalizeArrayFunc } from '@sofie-automation/corelib/dist/lib'
+import { normalizeArrayToMap, normalizeArrayFunc, groupByToMap } from '@sofie-automation/corelib/dist/lib'
 import {
 	sortRundownIDsInPlaylist,
 	sortSegmentsInRundowns,
@@ -12,13 +12,14 @@ import {
 } from '@sofie-automation/corelib/dist/playout/playlist'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import _ from 'underscore'
-import { Rundowns, Segments, Parts, PartInstances } from './libCollections'
+import { Rundowns, Segments, Parts, PartInstances, Pieces } from './libCollections'
 import { FindOptions } from './lib'
 import { PartInstance } from './PartInstances'
 import { Part } from './Parts'
 import { RundownPlaylist } from './RundownPlaylists'
 import { Segment } from './Segments'
 import { MongoQuery } from '../typings/meteor'
+import { Piece } from './Pieces'
 
 /**
  * Direct database accessors for the RundownPlaylist
@@ -309,6 +310,25 @@ export class RundownPlaylistCollectionUtil {
 	): Record<string, PartInstance> {
 		const instances = RundownPlaylistCollectionUtil.getActivePartInstances(playlist, selector, options)
 		return normalizeArrayFunc(instances, (i) => unprotectString(i.part._id))
+	}
+	static getPiecesForParts(
+		parts: Array<PartId>,
+		piecesOptions?: Omit<FindOptions<Piece>, 'projection'> // We are mangling fields, so block projection
+	): Map<PartId, Piece[]> {
+		const allPieces = Pieces.find(
+			{ startPartId: { $in: parts } },
+			{
+				...piecesOptions,
+				//@ts-expect-error This is too clever for the compiler
+				fields: piecesOptions?.fields
+					? {
+							...piecesOptions?.fields,
+							startPartId: 1,
+					  }
+					: undefined,
+			}
+		).fetch()
+		return groupByToMap(allPieces, 'startPartId')
 	}
 
 	static _sortSegments<TSegment extends Pick<DBSegment, '_id' | 'rundownId' | '_rank'>>(

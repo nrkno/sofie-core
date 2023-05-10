@@ -211,7 +211,7 @@ export interface SetNextSegmentProps extends RundownPlayoutPropsBase {
 	nextSegmentId: SegmentId | null
 }
 export interface ExecuteActionProps extends RundownPlayoutPropsBase {
-	actionDocId: AdLibActionId | RundownBaselineAdLibActionId
+	actionDocId: AdLibActionId | RundownBaselineAdLibActionId | null
 	actionId: string
 	userData: any
 	triggerMode?: string

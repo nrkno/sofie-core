@@ -40,6 +40,8 @@ export enum ClientAPIMethods {
 export namespace ClientAPI {
 	/** Response from a method that's called from the client */
 	export interface ClientResponseError {
+		/** On error, return status code (by default, use 500) */
+		errorCode: number
 		/** On error, provide a human-readable error message */
 		error: UserError
 	}
@@ -47,21 +49,21 @@ export namespace ClientAPI {
 	 * Used to reply to the user that the action didn't succeed (but it's not bad enough to log it as an error)
 	 * @param errorMessage
 	 */
-	export function responseError(error: UserError): ClientResponseError {
-		return { error }
+	export function responseError(error: UserError, errorCode?: number): ClientResponseError {
+		return { error, errorCode: errorCode ?? 500 }
 	}
 	export interface ClientResponseSuccess<Result> {
 		/** On success, return success code (by default, use 200) */
-		success: 200
+		success: number
 		/** Optionally, provide method result */
 		result?: Result
 	}
-	export function responseSuccess<Result>(result: Result): ClientResponseSuccess<Result> {
+	export function responseSuccess<Result>(result: Result, code?: number): ClientResponseSuccess<Result> {
 		if (isClientResponseSuccess(result)) result = result.result
 		else if (isClientResponseError(result)) throw result.error
 
 		return {
-			success: 200,
+			success: code ?? 200,
 			result,
 		}
 	}

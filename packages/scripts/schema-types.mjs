@@ -53,3 +53,17 @@ try {
 	console.error('Error while generating mos-gateway devices.json, continuing...')
 	console.error(e)
 }
+
+// convert live-status-gateway options
+try {
+	const schema = await compileFromFile('./live-status-gateway/src/$schemas/options.json', {
+		additionalProperties: false,
+		style: PrettierConf,
+		bannerComment: '',
+	})
+
+	await fs.writeFile('./live-status-gateway/src/generated/options.ts', BANNER + '\n' + schema)
+} catch (e) {
+	console.error('Error while generating live-status-gateway options.json, continuing...')
+	console.error(e)
+}

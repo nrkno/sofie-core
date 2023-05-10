@@ -280,6 +280,8 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					documentationUrl = 'https://github.com/nrkno/sofie-package-manager'
 				} else if (device.type === PeripheralDeviceType.INPUT) {
 					documentationUrl = 'https://github.com/nrkno/sofie-input-gateway'
+				} else if (device.type === PeripheralDeviceType.LIVE_STATUS) {
+					documentationUrl = 'https://nrkno.github.io/sofie-core/'
 				} else {
 					assertNever(device.type)
 				}

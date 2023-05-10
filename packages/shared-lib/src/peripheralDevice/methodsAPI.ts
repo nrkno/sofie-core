@@ -430,8 +430,6 @@ export enum PeripheralDeviceAPIMethods {
 	'dataPartCreate' = 'peripheralDevice.rundown.partCreate',
 	'dataPartUpdate' = 'peripheralDevice.rundown.partUpdate',
 
-	'resyncRundown' = 'peripheralDevice.mos.roResync',
-
 	'getMediaObjectRevisions' = 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
 	'updateMediaObject' = 'peripheralDevice.mediaScanner.updateMediaObject',
 	'clearMediaObjectCollection' = 'peripheralDevice.mediaScanner.clearMediaObjectCollection',

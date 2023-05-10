@@ -46,6 +46,13 @@ export enum UserErrorMessage {
 	TakeBlockedDuration = 31,
 	TakeFromIncorrectPart = 32,
 	RundownRemoveWhileActive = 33,
+	RundownPlaylistNotFound = 34,
+	PeripheralDeviceNotFound = 35,
+	BlueprintNotFound = 36,
+	StudioNotFound = 37,
+	DeviceAlreadyAttachedToStudio = 38,
+	ShowStyleBaseNotFound = 39,
+	NoMigrationsToApply = 40,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -91,42 +98,60 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.TakeBlockedDuration]: t(`Cannot perform take for {{duration}}ms`),
 	[UserErrorMessage.TakeFromIncorrectPart]: t(`Ignoring take as playing part has changed since TAKE was requested.`),
 	[UserErrorMessage.RundownRemoveWhileActive]: t(`Cannot remove the rundown "{{name}}" while it is on-air.`),
+	[UserErrorMessage.RundownPlaylistNotFound]: t(`Rundown Playlist not found!`),
+	[UserErrorMessage.PeripheralDeviceNotFound]: t(`Peripheral Device not found!`),
+	[UserErrorMessage.BlueprintNotFound]: t(`Blueprint not found!`),
+	[UserErrorMessage.StudioNotFound]: t(`Studio not found!`),
+	[UserErrorMessage.DeviceAlreadyAttachedToStudio]: t(`Device is already attached to another studio.`),
+	[UserErrorMessage.ShowStyleBaseNotFound]: t(`ShowStyleBase not found!`),
+	[UserErrorMessage.NoMigrationsToApply]: t(`No migrations to apply`),
 }
 
 export class UserError {
+	public readonly errorCode: number
+
 	private constructor(
 		/** The raw Error that was thrown */
 		public readonly rawError: Error,
 		/** The UserErrorMessage key (for matching certain error) */
 		public readonly key: UserErrorMessage,
 		/** The translatable string for the key */
-		public readonly message: ITranslatableMessage
-	) {}
+		public readonly message: ITranslatableMessage,
+		/** Appropriate HTTP status code. Defaults to 500 for generic internal error. */
+		errorCode: number | undefined
+	) {
+		this.errorCode = errorCode ?? 500
+	}
 
 	public toString(): string {
 		return UserError.toJSON(this)
 	}
 
 	/** Create a UserError with a custom error for the log */
-	static from(err: Error, key: UserErrorMessage, args?: { [k: string]: any }): UserError {
-		return new UserError(err, key, { key: UserErrorMessagesTranslations[key], args })
+	static from(err: Error, key: UserErrorMessage, args?: { [k: string]: any }, errCode?: number): UserError {
+		return new UserError(err, key, { key: UserErrorMessagesTranslations[key], args }, errCode)
 	}
 	/** Create a UserError with a custom error for the log */
-	static fromUnknown(err: unknown, key: UserErrorMessage, args?: { [k: string]: any }): UserError {
+	static fromUnknown(
+		err: unknown,
+		key: UserErrorMessage,
+		args?: { [k: string]: any },
+		errorCode?: number
+	): UserError {
 		const err2 = err instanceof Error ? err : new Error(stringifyError(err))
-		return new UserError(err2, key, { key: UserErrorMessagesTranslations[key], args })
+		return new UserError(err2, key, { key: UserErrorMessagesTranslations[key], args }, errorCode)
 	}
 
 	/** Create a UserError duplicating the same error for the log */
-	static create(key: UserErrorMessage, args?: { [k: string]: any }): UserError {
-		return UserError.from(new Error(UserErrorMessagesTranslations[key]), key, args)
+	static create(key: UserErrorMessage, args?: { [k: string]: any }, errorCode?: number): UserError {
+		return UserError.from(new Error(UserErrorMessagesTranslations[key]), key, args, errorCode)
 	}
 
 	static tryFromJSON(str: string): UserError | undefined {
 		try {
 			const p = JSON.parse(str)
 			if (UserError.isUserError(p)) {
-				return new UserError(new Error(p.rawError.toString()), p.key, p.message)
+				return new UserError(new Error(p.rawError.toString()), p.key, p.message, p.errorCode)
 			} else {
 				return undefined
 			}
@@ -140,6 +165,7 @@ export class UserError {
 			rawError: stringifyError(e.rawError),
 			message: e.message,
 			key: e.key,
+			errorCode: e.errorCode,
 		})
 	}
 

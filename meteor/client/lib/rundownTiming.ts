@@ -14,7 +14,10 @@
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
-import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
+import {
+	calculatePartInstanceExpectedDurationWithPreroll,
+	CalculateTimingsPiece,
+} from '@sofie-automation/corelib/dist/playout/timings'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import {
 	findPartInstanceInMapOrWrapToTemporary,
@@ -101,6 +104,7 @@ export class RundownTimingCalculator {
 		currentRundown: Rundown | undefined,
 		parts: Part[],
 		partInstancesMap: Map<PartId, PartInstance>,
+		pieces: Map<PartId, CalculateTimingsPiece[]>,
 		segments: DBSegment[],
 		/** Fallback duration for Parts that have no as-played duration of their own. */
 		defaultDuration: number = Settings.defaultDisplayDuration,
@@ -173,6 +177,7 @@ export class RundownTimingCalculator {
 
 			parts.forEach((origPart, itIndex) => {
 				const partInstance = this.getPartInstanceOrGetCachedTemp(partInstancesMap, origPart)
+				const piecesForPart = pieces.get(partInstance.part._id) ?? []
 
 				if (partInstance.segmentId !== lastSegmentId) {
 					this.untimedSegments.add(partInstance.segmentId)
@@ -215,7 +220,8 @@ export class RundownTimingCalculator {
 				// if the Part is using budgetDuration, this budget is calculated when going through all the segments
 				// in the Rundown (see further down)
 				if (!segmentUsesBudget && !partIsUntimed) {
-					totalRundownDuration += calculatePartInstanceExpectedDurationWithPreroll(partInstance) || 0
+					totalRundownDuration +=
+						calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart) || 0
 				}
 
 				const lastStartedPlayback = partInstance.timings?.plannedStartedPlayback
@@ -229,7 +235,7 @@ export class RundownTimingCalculator {
 				let displayDurationFromGroup = 0
 
 				partExpectedDuration =
-					calculatePartInstanceExpectedDurationWithPreroll(partInstance) ||
+					calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart) ||
 					partInstance.timings?.duration ||
 					0
 
@@ -252,7 +258,7 @@ export class RundownTimingCalculator {
 				) {
 					this.displayDurationGroups[partInstance.part.displayDurationGroup] =
 						(this.displayDurationGroups[partInstance.part.displayDurationGroup] || 0) +
-						(calculatePartInstanceExpectedDurationWithPreroll(partInstance) || 0)
+						(calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart) || 0)
 					displayDurationFromGroup =
 						partInstance.part.displayDuration ||
 						Math.max(
@@ -279,13 +285,15 @@ export class RundownTimingCalculator {
 						(duration ||
 							(memberOfDisplayDurationGroup
 								? displayDurationFromGroup
-								: calculatePartInstanceExpectedDurationWithPreroll(partInstance)) ||
+								: calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart)) ||
 							0) -
 							(now - lastStartedPlayback)
 					)
 					partDuration =
 						Math.max(
-							duration || calculatePartInstanceExpectedDurationWithPreroll(partInstance) || 0,
+							duration ||
+								calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart) ||
+								0,
 							now - lastStartedPlayback
 						) - playOffset
 					// because displayDurationGroups have no actual timing on them, we need to have a copy of the
@@ -295,7 +303,7 @@ export class RundownTimingCalculator {
 						duration ||
 						(memberOfDisplayDurationGroup
 							? displayDurationFromGroup
-							: calculatePartInstanceExpectedDurationWithPreroll(partInstance)) ||
+							: calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart)) ||
 						defaultDuration
 					partDisplayDuration = Math.max(partDisplayDurationNoPlayback, now - lastStartedPlayback)
 					this.partPlayed[unprotectString(partInstance.part._id)] = now - lastStartedPlayback
@@ -317,7 +325,7 @@ export class RundownTimingCalculator {
 							(partInstance.timings?.duration ||
 								(memberOfDisplayDurationGroup
 									? displayDurationFromGroup
-									: calculatePartInstanceExpectedDurationWithPreroll(partInstance)) ||
+									: calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart)) ||
 								0) -
 								(now - lastStartedPlayback)
 						)
@@ -325,13 +333,13 @@ export class RundownTimingCalculator {
 				} else {
 					partDuration =
 						(partInstance.timings?.duration ||
-							calculatePartInstanceExpectedDurationWithPreroll(partInstance) ||
+							calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart) ||
 							0) - playOffset
 					partDisplayDurationNoPlayback = Math.max(
 						0,
 						(partInstance.timings?.duration && partInstance.timings?.duration + playOffset) ||
 							displayDurationFromGroup ||
-							calculatePartInstanceExpectedDurationWithPreroll(partInstance) ||
+							calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart) ||
 							defaultDuration
 					)
 					partDisplayDuration = partDisplayDurationNoPlayback
@@ -354,7 +362,7 @@ export class RundownTimingCalculator {
 							valToAddToAsPlayedDuration = partInstance.timings.duration
 						} else if (partCounts) {
 							valToAddToAsPlayedDuration =
-								calculatePartInstanceExpectedDurationWithPreroll(partInstance) || 0
+								calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart) || 0
 						}
 
 						asPlayedRundownDuration += valToAddToAsPlayedDuration
@@ -391,15 +399,15 @@ export class RundownTimingCalculator {
 						memberOfDisplayDurationGroup
 							? Math.max(
 									partExpectedDuration,
-									calculatePartInstanceExpectedDurationWithPreroll(partInstance) || 0
+									calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart) || 0
 							  )
-							: calculatePartInstanceExpectedDurationWithPreroll(partInstance) || 0,
+							: calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart) || 0,
 						now - lastStartedPlayback
 					)
 				} else {
 					asDisplayedRundownDuration +=
 						partInstance.timings?.duration ||
-						calculatePartInstanceExpectedDurationWithPreroll(partInstance) ||
+						calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart) ||
 						0
 				}
 
@@ -464,12 +472,12 @@ export class RundownTimingCalculator {
 					waitDuration =
 						partInstance.timings?.duration ||
 						partDisplayDuration ||
-						calculatePartInstanceExpectedDurationWithPreroll(partInstance) ||
+						calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart) ||
 						0
 				} else {
 					waitDuration =
 						partInstance.timings?.duration ||
-						calculatePartInstanceExpectedDurationWithPreroll(partInstance) ||
+						calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart) ||
 						0
 				}
 				if (segmentUsesBudget) {
@@ -488,7 +496,8 @@ export class RundownTimingCalculator {
 						// this needs to use partInstance.part.expectedDuration as opposed to partExpectedDuration, because
 						// partExpectedDuration is affected by displayGroups, and if it hasn't played yet then it shouldn't
 						// add any duration to the "remaining" time pool
-						remainingRundownDuration += partInstance.part.expectedDuration || 0
+						remainingRundownDuration +=
+							calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart) || 0
 						// item is onAir right now, and it's is currently shorter than expectedDuration
 					} else if (
 						lastStartedPlayback &&
@@ -585,12 +594,13 @@ export class RundownTimingCalculator {
 		if (currentAIndex >= 0) {
 			const currentLivePart = parts[currentAIndex]
 			const currentLivePartInstance = findPartInstanceInMapOrWrapToTemporary(partInstancesMap, currentLivePart)
+			const piecesForPart = pieces.get(currentLivePartInstance.part._id) ?? []
 
 			const lastStartedPlayback = currentLivePartInstance.timings?.plannedStartedPlayback
 
 			let onAirPartDuration =
 				currentLivePartInstance.timings?.duration ||
-				calculatePartInstanceExpectedDurationWithPreroll(currentLivePartInstance) ||
+				calculatePartInstanceExpectedDurationWithPreroll(currentLivePartInstance, piecesForPart) ||
 				0
 			if (currentLivePart.displayDurationGroup) {
 				onAirPartDuration =

@@ -72,6 +72,7 @@ export enum PeripheralDeviceCategory {
 	PLAYOUT = 'playout',
 	MEDIA_MANAGER = 'media_manager',
 	PACKAGE_MANAGER = 'package_manager',
+	LIVE_STATUS = 'live_status',
 	TRIGGER_INPUT = 'trigger_input',
 }
 export enum PeripheralDeviceType {
@@ -85,6 +86,8 @@ export enum PeripheralDeviceType {
 	MEDIA_MANAGER = 'media_manager',
 	// Package_manager devices:
 	PACKAGE_MANAGER = 'package_manager',
+	// API devices:
+	LIVE_STATUS = 'live_status',
 	// Trigger input and feedback devices:
 	INPUT = 'input',
 }

@@ -211,6 +211,8 @@ export class MosHandler {
 
 		connectionConfig.strict = this.strict
 
+		connectionConfig.ports = this._settings.ports
+
 		this.mos = new MosConnection(connectionConfig)
 		this.mos.on('rawMessage', (source, type, message) => {
 			// Filter out heartbeat messages, to reduce log amount:
@@ -471,12 +473,6 @@ export class MosHandler {
 
 		deviceOptions = JSON.parse(JSON.stringify(deviceOptions)) // deep clone
 
-		// Note: This is useful to do when debugging locally, and running a mos-server on localhost:
-		// deviceOptions.primary.ports = {
-		// 	lower: 11540,
-		// 	upper: 11541,
-		// 	query: 11542,
-		// }
 		deviceOptions.primary.timeout = deviceOptions.primary.timeout || DEFAULT_MOS_TIMEOUT_TIME
 
 		deviceOptions.primary.heartbeatInterval =

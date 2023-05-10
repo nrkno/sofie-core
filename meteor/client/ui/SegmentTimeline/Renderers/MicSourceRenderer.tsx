@@ -136,9 +136,11 @@ export const MicSourceRenderer = withTranslation()(
 			if (
 				!_forceSizingRecheck &&
 				this._lineAtEnd === true &&
-				(calculatePartInstanceExpectedDurationWithPreroll(this.props.part.instance) || this.props.partDuration) *
+				(calculatePartInstanceExpectedDurationWithPreroll(this.props.part.instance, this.props.pieces) ||
+					this.props.partDuration) *
 					this.props.timeScale !==
-					(calculatePartInstanceExpectedDurationWithPreroll(prevProps.part.instance) || prevProps.partDuration) *
+					(calculatePartInstanceExpectedDurationWithPreroll(prevProps.part.instance, this.props.pieces) ||
+						prevProps.partDuration) *
 						prevProps.timeScale
 			) {
 				_forceSizingRecheck = true

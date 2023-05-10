@@ -5,8 +5,9 @@ import { DBSegment } from '../../../lib/collections/Segments'
 import { DBRundown } from '../../../lib/collections/Rundowns'
 import { literal, protectString } from '../../../lib/lib'
 import { RundownTimingCalculator, RundownTimingContext } from '../rundownTiming'
-import { PlaylistTimingType } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPieceType, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 const DEFAULT_DURATION = 4000
 
@@ -101,6 +102,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
+			new Map(),
 			segments,
 			DEFAULT_DURATION,
 			[]
@@ -163,6 +165,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
+			new Map(),
 			segments,
 			DEFAULT_DURATION,
 			[]
@@ -264,6 +267,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
+			new Map(),
 			segments,
 			DEFAULT_DURATION,
 			[]
@@ -367,6 +371,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
+			new Map(),
 			segments,
 			DEFAULT_DURATION,
 			[]
@@ -494,6 +499,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
+			new Map(),
 			segments,
 			DEFAULT_DURATION,
 			[]
@@ -610,6 +616,7 @@ describe('rundown Timing Calculator', () => {
 			undefined,
 			parts,
 			partInstancesMap,
+			new Map(),
 			segments,
 			DEFAULT_DURATION,
 			[]
@@ -679,6 +686,127 @@ describe('rundown Timing Calculator', () => {
 					[segmentId1]: 5000,
 					[segmentId2]: 3000,
 				},
+				segmentStartedPlayback: {},
+			})
+		)
+	})
+
+	it('Adds Piece preroll to Part durations', () => {
+		const timing = new RundownTimingCalculator()
+		const playlist: RundownPlaylist = makeMockPlaylist()
+		playlist.timing = {
+			type: 'forward-time' as any,
+			expectedStart: 0,
+			expectedDuration: 40000,
+		}
+		const rundownId = 'rundown1'
+		const segmentId1 = 'segment1'
+		const segmentId2 = 'segment2'
+		const segments: DBSegment[] = []
+		segments.push(makeMockSegment(segmentId1, 0, rundownId))
+		segments.push(makeMockSegment(segmentId2, 0, rundownId))
+		const parts: Part[] = []
+		parts.push(makeMockPart('part1', 0, rundownId, segmentId1, { expectedDuration: 1000 }))
+		parts.push(makeMockPart('part2', 0, rundownId, segmentId1, { expectedDuration: 1000 }))
+		parts.push(makeMockPart('part3', 0, rundownId, segmentId2, { expectedDuration: 1000 }))
+		parts.push(makeMockPart('part4', 0, rundownId, segmentId2, { expectedDuration: 1000 }))
+		const piecesMap: Map<PartId, CalculateTimingsPiece[]> = new Map()
+		piecesMap.set(protectString('part1'), [
+			literal<CalculateTimingsPiece>({
+				enable: {
+					start: 0,
+				},
+				prerollDuration: 5000,
+				pieceType: IBlueprintPieceType.Normal,
+			}),
+		])
+		piecesMap.set(protectString('part2'), [
+			literal<CalculateTimingsPiece>({
+				enable: {
+					start: 0,
+				},
+				prerollDuration: 240,
+				pieceType: IBlueprintPieceType.Normal,
+			}),
+		])
+		const partInstancesMap: Map<PartId, PartInstance> = new Map()
+		const rundown = makeMockRundown(rundownId, playlist)
+		const rundowns = [rundown]
+		const result = timing.updateDurations(
+			0,
+			false,
+			playlist,
+			rundowns,
+			undefined,
+			parts,
+			partInstancesMap,
+			piecesMap,
+			segments,
+			DEFAULT_DURATION,
+			[]
+		)
+		expect(result).toEqual(
+			literal<RundownTimingContext>({
+				isLowResolution: false,
+				asDisplayedPlaylistDuration: 9240,
+				asPlayedPlaylistDuration: 9240,
+				currentPartInstanceId: null,
+				currentPartWillAutoNext: false,
+				currentTime: 0,
+				rundownExpectedDurations: {
+					[rundownId]: 9240,
+				},
+				rundownAsPlayedDurations: {
+					[rundownId]: 9240,
+				},
+				partCountdown: {
+					part1: 0,
+					part2: 6000,
+					part3: 7240,
+					part4: 8240,
+				},
+				partDisplayDurations: {
+					part1: 6000,
+					part2: 1240,
+					part3: 1000,
+					part4: 1000,
+				},
+				partDisplayStartsAt: {
+					part1: 0,
+					part2: 6000,
+					part3: 7240,
+					part4: 8240,
+				},
+				partDurations: {
+					part1: 6000,
+					part2: 1240,
+					part3: 1000,
+					part4: 1000,
+				},
+				partExpectedDurations: {
+					part1: 6000,
+					part2: 1240,
+					part3: 1000,
+					part4: 1000,
+				},
+				partPlayed: {
+					part1: 0,
+					part2: 0,
+					part3: 0,
+					part4: 0,
+				},
+				partStartsAt: {
+					part1: 0,
+					part2: 6000,
+					part3: 7240,
+					part4: 8240,
+				},
+				remainingPlaylistDuration: 9240,
+				totalPlaylistDuration: 9240,
+				breakIsLastRundown: undefined,
+				remainingTimeOnCurrentPart: undefined,
+				rundownsBeforeNextBreak: undefined,
+				segmentBudgetDurations: {},
 				segmentStartedPlayback: {},
 			})
 		)

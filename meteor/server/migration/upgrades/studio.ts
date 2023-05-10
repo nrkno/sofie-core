@@ -4,6 +4,7 @@ import { Meteor } from 'meteor/meteor'
 import { Studio } from '../../../lib/collections/Studios'
 import { profiler } from '../../api/profiler'
 import { Studios } from '../../collections'
+import { logger } from '../../logging'
 import { QueueStudioJob } from '../../worker/worker'
 
 export async function validateConfigForStudio(studioId: StudioId): Promise<BlueprintValidateConfigForStudioResult> {
@@ -27,6 +28,7 @@ export async function validateConfigForStudio(studioId: StudioId): Promise<Bluep
 }
 
 export async function runUpgradeForStudio(studioId: StudioId): Promise<void> {
+	logger.info(`Running upgrade for Studio "${studioId}"`)
 	const studio = (await Studios.findOneAsync(studioId, {
 		fields: {
 			_id: 1,

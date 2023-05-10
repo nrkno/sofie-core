@@ -7,7 +7,12 @@ import { PartialDeep, ReadonlyDeep } from 'type-fest'
  * in order to provide stringer typings.
  */
 export interface ProtectedString<T> {
+	/**
+	 * @deprecated This property doesn't actually exist, don't try to use it.
+	 */
 	_protectedType: T
+	// Note: the toString method exists to make linters happy that ProtectedString can be used as a string
+	toString(): string
 }
 export type ProtectedStringProperties<T, K extends keyof T> = {
 	[P in keyof T]: P extends K ? ProtectedString<any> : T[P]

@@ -7,6 +7,8 @@
 		{ "path": "playout-gateway" },
 		{ "path": "job-worker" },
 		{ "path": "corelib" },
-		{ "path": "shared-lib" }
+		{ "path": "shared-lib" },
+		{ "path": "openapi" },
+		{ "path": "live-status-gateway" }
 	]
 }
