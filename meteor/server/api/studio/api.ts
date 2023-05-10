@@ -47,10 +47,10 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 			_rundownVersionHash: '',
 			routeSets: {},
 			routeSetExclusivityGroups: {},
+			packageContainers: {},
+			thumbnailContainerIds: [],
+			previewContainerIds: [],
 			peripheralDeviceSettings: {
-				packageContainers: {},
-				thumbnailContainerIds: [],
-				previewContainerIds: [],
 				playoutDevices: wrapDefaultObject({}),
 				ingestDevices: wrapDefaultObject({}),
 				inputDevices: wrapDefaultObject({}),

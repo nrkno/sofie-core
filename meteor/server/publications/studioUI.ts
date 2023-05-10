@@ -39,9 +39,9 @@ function convertDocument(studio: Pick<DBStudio, StudioFields>): UIStudio {
 
 		routeSets: studio.routeSets,
 		routeSetExclusivityGroups: studio.routeSetExclusivityGroups,
-		packageContainers: studio.peripheralDeviceSettings.packageContainers,
-		previewContainerIds: studio.peripheralDeviceSettings.previewContainerIds,
-		thumbnailContainerIds: studio.peripheralDeviceSettings.thumbnailContainerIds,
+		packageContainers: studio.packageContainers,
+		previewContainerIds: studio.previewContainerIds,
+		thumbnailContainerIds: studio.thumbnailContainerIds,
 	})
 }
 
@@ -52,7 +52,9 @@ type StudioFields =
 	| 'settings'
 	| 'routeSets'
 	| 'routeSetExclusivityGroups'
-	| 'peripheralDeviceSettings'
+	| 'packageContainers'
+	| 'previewContainerIds'
+	| 'thumbnailContainerIds'
 const fieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
 	_id: 1,
 	name: 1,
@@ -60,7 +62,9 @@ const fieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
 	settings: 1,
 	routeSets: 1,
 	routeSetExclusivityGroups: 1,
-	peripheralDeviceSettings: 1, // Future: This is a bit over-reactive, but this should never be edited during a show so impact is minimal
+	packageContainers: 1,
+	previewContainerIds: 1,
+	thumbnailContainerIds: 1,
 })
 
 async function setupUIStudioPublicationObservers(

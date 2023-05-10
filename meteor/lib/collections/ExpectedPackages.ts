@@ -1,6 +1,6 @@
 import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { assertNever, literal } from '../lib'
-import { StudioPeripheralDeviceSettings } from './Studios'
+import { StudioLight } from './Studios'
 import deepExtend from 'deep-extend'
 
 export * from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
@@ -49,16 +49,13 @@ export function getThumbnailPackageSettings(
 }
 export function getSideEffect(
 	expectedPackage: ExpectedPackage.Base,
-	studioPeripheralDeviceSettings: Pick<
-		StudioPeripheralDeviceSettings,
-		'previewContainerIds' | 'thumbnailContainerIds'
-	>
+	studio: Pick<StudioLight, 'previewContainerIds' | 'thumbnailContainerIds'>
 ): ExpectedPackage.Base['sideEffect'] {
 	return deepExtend(
 		{},
 		literal<ExpectedPackage.Base['sideEffect']>({
-			previewContainerId: studioPeripheralDeviceSettings.previewContainerIds[0], // just pick the first. Todo: something else?
-			thumbnailContainerId: studioPeripheralDeviceSettings.thumbnailContainerIds[0], // just pick the first. Todo: something else?
+			previewContainerId: studio.previewContainerIds[0], // just pick the first. Todo: something else?
+			thumbnailContainerId: studio.thumbnailContainerIds[0], // just pick the first. Todo: something else?
 			previewPackageSettings: getPreviewPackageSettings(expectedPackage as ExpectedPackage.Any),
 			thumbnailPackageSettings: getThumbnailPackageSettings(expectedPackage as ExpectedPackage.Any),
 		}),

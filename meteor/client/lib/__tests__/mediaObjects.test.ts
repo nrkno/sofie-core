@@ -42,7 +42,7 @@ describe('client/lib/mediaObjects', () => {
 		const mockStudio: Pick<UIStudio, '_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'> = {
 			_id: mockDefaultStudio._id,
 			settings: mockStudioSettings,
-			packageContainers: mockDefaultStudio.peripheralDeviceSettings.packageContainers,
+			packageContainers: mockDefaultStudio.packageContainers,
 			routeSets: mockDefaultStudio.routeSets,
 			mappings: applyAndValidateOverrides(mockDefaultStudio.mappingsWithOverrides).obj,
 		}

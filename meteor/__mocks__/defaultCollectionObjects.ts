@@ -105,10 +105,10 @@ export function defaultStudio(_id: StudioId): DBStudio {
 		_rundownVersionHash: '',
 		routeSets: {},
 		routeSetExclusivityGroups: {},
+		packageContainers: {},
+		previewContainerIds: [],
+		thumbnailContainerIds: [],
 		peripheralDeviceSettings: {
-			packageContainers: {},
-			previewContainerIds: [],
-			thumbnailContainerIds: [],
 			playoutDevices: wrapDefaultObject({}),
 			ingestDevices: wrapDefaultObject({}),
 			inputDevices: wrapDefaultObject({}),

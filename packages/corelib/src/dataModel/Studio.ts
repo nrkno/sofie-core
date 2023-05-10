@@ -84,13 +84,6 @@ export interface DBStudio {
 	routeSets: Record<string, StudioRouteSet>
 	routeSetExclusivityGroups: Record<string, StudioRouteSetExclusivityGroup>
 
-	peripheralDeviceSettings: StudioPeripheralDeviceSettings
-
-	/** Details on the last blueprint used to generate the defaults values for this */
-	lastBlueprintConfig: LastBlueprintConfig | undefined
-}
-
-export interface StudioPeripheralDeviceSettings {
 	/** Contains settings for which Package Containers are present in the studio.
 	 * (These are used by the Package Manager and the Expected Packages)
 	 */
@@ -100,6 +93,13 @@ export interface StudioPeripheralDeviceSettings {
 	previewContainerIds: string[]
 	thumbnailContainerIds: string[]
 
+	peripheralDeviceSettings: StudioPeripheralDeviceSettings
+
+	/** Details on the last blueprint used to generate the defaults values for this */
+	lastBlueprintConfig: LastBlueprintConfig | undefined
+}
+
+export interface StudioPeripheralDeviceSettings {
 	/** Playout gateway sub-devices */
 	playoutDevices: ObjectWithOverrides<Record<string, StudioPlayoutDevice>>
 
