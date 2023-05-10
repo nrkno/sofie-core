@@ -71,11 +71,16 @@ interface IRundownPlaylistDropTargetProps {
 }
 
 const spec: DropTargetSpec<IRundownPlaylistUiProps> = {
+	canDrop: (props, monitor) => {
+		console.log('canDrop', props, monitor)
+		return true
+	},
 	drop: (
 		props: IRundownPlaylistUiProps,
 		monitor: DropTargetMonitor,
 		_component: any
 	): IRundownPlaylistUiAction | undefined => {
+		console.log('drop', monitor.didDrop(), monitor.getItem())
 		if (monitor.didDrop()) {
 			return
 		}
@@ -103,8 +108,9 @@ const collect: DropTargetCollector<IRundownPlaylistDropTargetProps, IRundownPlay
 		draggingId !== undefined && !props.playlist.rundowns.some(({ _id }) => draggingId === _id)
 
 	const dropResult = monitor.getDropResult()
+	console.log('dropResult', dropResult)
 	if (isRundownPlaylistUiAction(dropResult)) {
-		action = dropResult as IRundownPlaylistUiAction
+		action = dropResult
 	}
 
 	return {
@@ -145,6 +151,8 @@ export const RundownPlaylistUi = DropTarget(
 				const { playlist, t } = this.props
 				const playlistId = this.props.playlist._id
 				const rundownOrder = this.state.rundownOrder.slice()
+
+				console.log('handleRundownDrop')
 
 				if (playlist.rundowns.findIndex((rundown) => rundownId === rundown._id) > -1) {
 					// finalize order from component state
@@ -193,6 +201,7 @@ export const RundownPlaylistUi = DropTarget(
 
 			componentDidUpdate(prevProps: IRundownPlaylistUiProps) {
 				const { action } = this.props
+				console.log(action)
 				if (action && action.targetPlaylistId === this.props.playlist._id) {
 					const { type, rundownId } = action
 					switch (type) {
