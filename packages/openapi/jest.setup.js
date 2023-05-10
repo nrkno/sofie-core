@@ -10,8 +10,10 @@ module.exports = async function () {
 		process.env.SERVER_TYPE = 'TEST'
 	}
 
+	const defaultPort = !isNaN(process.env.SERVER_PORT) ? Number(process.env.SERVER_PORT) : 3000
+
 	if (!process.env.SERVER_URL) {
-		process.env.SERVER_URL = 'http://localhost:3000/api/v1.0'
+		process.env.SERVER_URL = `http://localhost:${defaultPort}/api/v1.0`
 	}
 
 	await fetch(`${process.env.SERVER_URL}/`).catch(() => {

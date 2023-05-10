@@ -10,22 +10,21 @@
 	},
 	"main": "dist/index.js",
 	"scripts": {
-		"prepare": "yarn build",
-		"build": "rimraf dist && yarn genclient:ts && yarn build:main",
-		"build:main": "tsc -p tsconfig.build.json",
-		"cov": "yarn unit && open-cli coverage/lcov-report/index.html",
+		"build": "run -T rimraf dist && run genclient:ts && run build:main",
+		"build:main": "run -T tsc -p tsconfig.build.json",
+		"cov": "run unit && open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
-		"ci": "yarn genserver && node --experimental-fetch run_server_tests.mjs",
-		"lint:raw": "eslint . --ext .ts --ext .js --ext .yaml --ignore-pattern dist",
-		"lint": "yarn lint:raw .",
-		"lint-fix": "yarn lint --fix",
-		"genclient:ts": "rimraf client/ts && openapi-generator-cli generate -i ./api/actions.yaml -o client/ts -g typescript-fetch -p supportsES6=true",
-		"genclient:rs": "rimraf client/rs && openapi-generator-cli generate -i ./api/actions.yaml -o client/rs -g rust",
-		"gendocs": "rimraf docs && node install_swagger.js && java -jar ./jars/swagger-codegen-cli.jar generate -i ./api/actions.yaml -l html2 -o ./docs",
-		"genserver": "rimraf server && node install_swagger.js && java -jar ./jars/swagger-codegen-cli.jar generate -i ./api/actions.yaml -l nodejs-server -o server && cd server && npm install && cd ../",
-		"runserver": "yarn genserver && cd server && node index.js",
-		"test": "yarn lint && yarn genclient:ts && yarn ci",
-		"unit": "node --experimental-fetch ../node_modules/jest/bin/jest.js --detectOpenHandles --forceExit"
+		"unit": "run genserver && node --experimental-fetch run_server_tests.mjs",
+		"lint:raw": "run -T eslint . --ext .ts --ext .js --ext .yaml --ignore-pattern dist",
+		"lint": "run lint:raw .",
+		"lint-fix": "run lint --fix",
+		"genclient:ts": "run -T rimraf client/ts && openapi-generator-cli generate -i ./api/actions.yaml -o client/ts -g typescript-fetch -p supportsES6=true",
+		"genclient:rs": "run -T rimraf client/rs && openapi-generator-cli generate -i ./api/actions.yaml -o client/rs -g rust",
+		"gendocs": "run -T rimraf docs && node install_swagger.js && java -jar ./jars/swagger-codegen-cli.jar generate -i ./api/actions.yaml -l html2 -o ./docs",
+		"genserver": "run -T rimraf server && node install_swagger.js && java -jar ./jars/swagger-codegen-cli.jar generate -i ./api/actions.yaml -l nodejs-server -o server && cd server && npm install && cd ../",
+		"runserver": "run genserver && cd server && node index.js",
+		"test": "run lint && run genclient:ts && run unit",
+		"unit:no-server": "node --experimental-fetch ../node_modules/jest/bin/jest.js --detectOpenHandles --forceExit"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"engines": {
@@ -47,7 +46,7 @@
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [
-			"prettier"
+			"yarn run -T prettier"
 		],
 		"*.{ts,tsx,js,jsx,yaml}": [
 			"yarn lint:raw"

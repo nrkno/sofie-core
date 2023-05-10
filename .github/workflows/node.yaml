@@ -223,7 +223,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        gateway-name: [playout-gateway, mos-gateway, 'live-status-gateway']
+        gateway-name: [playout-gateway, mos-gateway, "live-status-gateway"]
 
     steps:
       - uses: actions/checkout@v3
@@ -353,6 +353,7 @@ jobs:
           - corelib
           - shared-lib
           - job-worker
+          - openapi
           - live-status-gateway
 
     steps:
@@ -394,7 +395,7 @@ jobs:
           - blueprints-integration
           - server-core-integration
           - shared-lib
-        node-version: [14.x, 16.x]
+        node-version: [14.x, 16.x, 18.x]
         include:
           # include additional configs, to run certain packages only for a certain version of node
           - node-version: 14.x
@@ -403,11 +404,18 @@ jobs:
           - node-version: 14.x
             package-name: job-worker
             send-coverage: true
+          # manual openapi to avoid testing for 14.x
+          - node-version: 16.x
+            package-name: openapi
+          - node-version: 18.x
+            package-name: openapi
           # No tests for the gateways yet
-          # - node-version: 12.x
+          # - node-version: 16.x
           #   package-name: playout-gateway
-          # - node-version: 12.x
+          # - node-version: 16.x
           #   package-name: mos-gateway
+          # - node-version: 16.x
+          #   package-name: live-status-gateway
 
     steps:
       - uses: actions/checkout@v3

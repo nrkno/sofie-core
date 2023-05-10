@@ -70,7 +70,7 @@
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [
-			"prettier"
+			"yarn run -T prettier"
 		],
 		"*.{ts,tsx,js,jsx,yaml}": [
 			"yarn lint:raw"
