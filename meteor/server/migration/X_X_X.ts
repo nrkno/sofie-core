@@ -1,14 +1,25 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
 import { PeripheralDevices, Studios } from '../collections'
-import { assertNever, clone } from '@sofie-automation/corelib/dist/lib'
-import { MappingExt, StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { assertNever, clone, literal } from '@sofie-automation/corelib/dist/lib'
+import {
+	MappingExt,
+	StudioIngestDevice,
+	StudioInputDevice,
+	StudioPlayoutDevice,
+	StudioRouteSet,
+} from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import _ from 'underscore'
 import { Studio } from '../../lib/collections/Studios'
+import {
+	wrapDefaultObject,
+	ObjectOverrideSetOp,
+	SomeObjectOverrideOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 /*
  * **************************************************************************************
@@ -88,7 +99,10 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 		id: `Mos gateway fix up config`,
 		canBeRunAutomatically: true,
 		validate: () => {
-			const objects = PeripheralDevices.find({ type: PeripheralDeviceType.MOS }).fetch()
+			const objects = PeripheralDevices.find({
+				type: PeripheralDeviceType.MOS,
+				'settings.device': { $exists: true },
+			}).fetch()
 			const badObject = objects.find(
 				(device) =>
 					!!Object.values<unknown>(device.settings?.['devices'] ?? {}).find(
@@ -102,7 +116,10 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			return false
 		},
 		migrate: () => {
-			const objects = PeripheralDevices.find({ type: PeripheralDeviceType.MOS }).fetch()
+			const objects = PeripheralDevices.find({
+				type: PeripheralDeviceType.MOS,
+				'settings.device': { $exists: true },
+			}).fetch()
 			for (const obj of objects) {
 				const newDevices: any = clone(obj.settings['devices'] || {})
 
@@ -275,6 +292,227 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					},
 				})
 			}
+		},
+	},
+
+	{
+		id: `Studio ensure peripheralDeviceSettings field`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const objectCount = Studios.find({
+				peripheralDeviceSettings: { $exists: false },
+			}).count()
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: () => {
+			const objects = Studios.find({
+				peripheralDeviceSettings: { $exists: false },
+			}).fetch()
+			for (const studio of objects) {
+				Studios.update(studio._id, {
+					$set: {
+						peripheralDeviceSettings: {
+							playoutDevices: wrapDefaultObject({}),
+							ingestDevices: wrapDefaultObject({}),
+							inputDevices: wrapDefaultObject({}),
+						},
+					},
+				})
+			}
+		},
+	},
+
+	{
+		id: `Studio move playout-gateway subdevices`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const objectCount = PeripheralDevices.find({
+				category: PeripheralDeviceCategory.PLAYOUT,
+				studioId: { $exists: true },
+				'settings.devices': { $exists: true },
+			}).count()
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: () => {
+			const objects = PeripheralDevices.find({
+				category: PeripheralDeviceCategory.PLAYOUT,
+				studioId: { $exists: true },
+				'settings.devices': { $exists: true },
+			}).fetch()
+			for (const device of objects) {
+				if (!device.studioId) continue
+
+				const newOverrides: SomeObjectOverrideOp[] = []
+
+				for (const [id, subDevice] of Object.entries<unknown>(device.settings?.['devices'] || {})) {
+					newOverrides.push(
+						literal<ObjectOverrideSetOp>({
+							op: 'set',
+							path: id,
+							value: literal<StudioPlayoutDevice>({
+								peripheralDeviceId: device._id,
+								options: subDevice as any,
+							}),
+						})
+					)
+				}
+
+				Studios.update(device.studioId, {
+					$set: {
+						[`peripheralDeviceSettings.playoutDevices.overrides`]: newOverrides,
+					},
+				})
+
+				PeripheralDevices.update(device._id, {
+					$unset: {
+						'settings.devices': 1,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `Studio move ingest subdevices`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const objectCount = PeripheralDevices.find({
+				category: PeripheralDeviceCategory.INGEST,
+				studioId: { $exists: true },
+				'settings.devices': { $exists: true },
+			}).count()
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: () => {
+			const objects = PeripheralDevices.find({
+				category: PeripheralDeviceCategory.INGEST,
+				studioId: { $exists: true },
+				'settings.devices': { $exists: true },
+			}).fetch()
+			for (const device of objects) {
+				if (!device.studioId) continue
+
+				const newOverrides: SomeObjectOverrideOp[] = []
+
+				for (const [id, subDevice] of Object.entries<unknown>(device.settings?.['devices'] || {})) {
+					newOverrides.push(
+						literal<ObjectOverrideSetOp>({
+							op: 'set',
+							path: id,
+							value: literal<StudioIngestDevice>({
+								peripheralDeviceId: device._id,
+								options: subDevice as any,
+							}),
+						})
+					)
+				}
+
+				Studios.update(device.studioId, {
+					$set: {
+						[`peripheralDeviceSettings.ingestDevices.overrides`]: newOverrides,
+					},
+				})
+
+				PeripheralDevices.update(device._id, {
+					$unset: {
+						'settings.devices': 1,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `Studio move input subdevices`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const objectCount = PeripheralDevices.find({
+				category: PeripheralDeviceCategory.TRIGGER_INPUT,
+				studioId: { $exists: true },
+				'settings.devices': { $exists: true },
+			}).count()
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: () => {
+			const objects = PeripheralDevices.find({
+				category: PeripheralDeviceCategory.TRIGGER_INPUT,
+				studioId: { $exists: true },
+				'settings.devices': { $exists: true },
+			}).fetch()
+			for (const device of objects) {
+				if (!device.studioId) continue
+
+				const newOverrides: SomeObjectOverrideOp[] = []
+
+				for (const [id, subDevice] of Object.entries<unknown>(device.settings?.['devices'] || {})) {
+					newOverrides.push(
+						literal<ObjectOverrideSetOp>({
+							op: 'set',
+							path: id,
+							value: literal<StudioInputDevice>({
+								peripheralDeviceId: device._id,
+								options: subDevice as any,
+							}),
+						})
+					)
+				}
+
+				Studios.update(device.studioId, {
+					$set: {
+						[`peripheralDeviceSettings.inputDevices.overrides`]: newOverrides,
+					},
+				})
+
+				PeripheralDevices.update(device._id, {
+					$unset: {
+						'settings.devices': 1,
+					},
+				})
+			}
+		},
+	},
+
+	{
+		id: `PeripheralDevice cleanup unused properties on child devices`,
+		canBeRunAutomatically: true,
+		validate: () => {
+			const objectCount = PeripheralDevices.find({
+				parentDeviceId: { $exists: true },
+				// One of:
+				configManifest: { $exists: true },
+			}).count()
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: () => {
+			PeripheralDevices.update(
+				{ parentDeviceId: { $exists: true } },
+				{
+					$unset: {
+						configManifest: 1,
+					},
+				},
+				{
+					multi: true,
+				}
+			)
 		},
 	},
 ])

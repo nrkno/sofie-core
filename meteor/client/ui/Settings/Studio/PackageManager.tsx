@@ -8,10 +8,10 @@ import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
-import { PeripheralDeviceCategory, PeripheralDeviceType } from '../../../../lib/collections/PeripheralDevices'
 import { withTranslation } from 'react-i18next'
 import { Accessor } from '@sofie-automation/blueprints-integration'
-import { PeripheralDevices, Studios } from '../../../collections'
+import { Studios } from '../../../collections'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 interface IStudioPackageManagerSettingsProps {
 	studio: Studio
@@ -136,21 +136,15 @@ export const StudioPackageManagerSettings = withTranslation()(
 				value: string
 			}[] = []
 
-			PeripheralDevices.find().forEach((device) => {
-				if (
-					device.category === PeripheralDeviceCategory.PLAYOUT &&
-					device.type === PeripheralDeviceType.PLAYOUT &&
-					device.settings
-				) {
-					const settings = device.settings
-					for (const deviceId of Object.keys(settings.devices || {})) {
-						deviceIds.push({
-							name: deviceId,
-							value: deviceId,
-						})
-					}
-				}
-			})
+			const playoutDevices = applyAndValidateOverrides(this.props.studio.peripheralDeviceSettings.playoutDevices).obj
+
+			for (const deviceId of Object.keys(playoutDevices)) {
+				deviceIds.push({
+					name: deviceId,
+					value: deviceId,
+				})
+			}
+
 			return deviceIds
 		}
 		renderPackageContainers() {

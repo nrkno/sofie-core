@@ -268,6 +268,11 @@ export function studioFrom(apiStudio: APIStudio, existingId?: StudioId): Studio 
 		packageContainers: {},
 		previewContainerIds: [],
 		thumbnailContainerIds: [],
+		peripheralDeviceSettings: {
+			playoutDevices: wrapDefaultObject({}),
+			ingestDevices: wrapDefaultObject({}),
+			inputDevices: wrapDefaultObject({}),
+		},
 		lastBlueprintConfig: undefined,
 	}
 }

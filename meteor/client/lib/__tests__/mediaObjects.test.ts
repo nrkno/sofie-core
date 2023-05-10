@@ -40,8 +40,10 @@ describe('client/lib/mediaObjects', () => {
 
 		const mockDefaultStudio = defaultStudio(protectString('studio0'))
 		const mockStudio: Pick<UIStudio, '_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'> = {
-			...mockDefaultStudio,
+			_id: mockDefaultStudio._id,
 			settings: mockStudioSettings,
+			packageContainers: mockDefaultStudio.packageContainers,
+			routeSets: mockDefaultStudio.routeSets,
 			mappings: applyAndValidateOverrides(mockDefaultStudio.mappingsWithOverrides).obj,
 		}
 

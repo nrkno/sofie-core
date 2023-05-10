@@ -33,21 +33,19 @@ import {
 } from '@sofie-automation/shared-lib/dist/core/constants'
 import { MosGatewayConfig } from './generated/options'
 import { MosDeviceConfig } from './generated/devices'
-import { PeripheralDevicePublic } from '@sofie-automation/server-core-integration'
+import { PeripheralDeviceForDevice } from '@sofie-automation/server-core-integration'
 
 export interface MosConfig {
 	self: IConnectionConfig
 	// devices: Array<IMOSDeviceConnectionOptions>
 }
-export interface MosDeviceSettings extends MosGatewayConfig {
-	devices: Record<
-		string,
-		{
-			type: ''
-			options: MosDeviceConfig
-		}
-	>
-}
+export type MosSubDeviceSettings = Record<
+	string,
+	{
+		type: ''
+		options: MosDeviceConfig
+	}
+>
 
 export class MosHandler {
 	public mos: MosConnection | undefined
@@ -59,7 +57,7 @@ export class MosHandler {
 	private _ownMosDevices: { [deviceId: string]: MosDevice } = {}
 	private _logger: Winston.Logger
 	private _disposed = false
-	private _settings?: MosDeviceSettings
+	private _settings?: MosGatewayConfig
 	private _coreHandler: CoreHandler | undefined
 	private _observers: Array<any> = []
 	private _triggerupdateDevicesTimeout: any = null
@@ -98,7 +96,7 @@ export class MosHandler {
 
 		const peripheralDevice = await coreHandler.core.getPeripheralDevice()
 
-		this._settings = peripheralDevice.settings as any
+		this._settings = peripheralDevice.deviceSettings as any
 
 		this.mosTypes = getMosTypes(this.strict)
 
@@ -139,7 +137,7 @@ export class MosHandler {
 			throw Error('_coreHandler.core is undefined!')
 		}
 
-		const deviceObserver = this._coreHandler.core.observe('peripheralDevices')
+		const deviceObserver = this._coreHandler.core.observe('peripheralDeviceForDevice')
 		deviceObserver.added = () => {
 			this._deviceOptionsChanged()
 		}
@@ -165,7 +163,7 @@ export class MosHandler {
 	private _deviceOptionsChanged() {
 		const peripheralDevice = this.getThisPeripheralDevice()
 		if (peripheralDevice) {
-			const settings: MosDeviceSettings = (peripheralDevice.settings || {}) as any
+			const settings: MosGatewayConfig = (peripheralDevice.deviceSettings || {}) as any
 			if (this.debugLogging !== settings.debugLogging) {
 				this._logger.info('Changing debugLogging to ' + settings.debugLogging)
 
@@ -388,7 +386,7 @@ export class MosHandler {
 			}
 		}
 	}
-	private getThisPeripheralDevice(): PeripheralDevicePublic | undefined {
+	private getThisPeripheralDevice(): PeripheralDeviceForDevice | undefined {
 		if (!this._coreHandler) {
 			throw Error('_coreHandler is undefined!')
 		}
@@ -397,7 +395,8 @@ export class MosHandler {
 			throw Error('_coreHandler.core is undefined')
 		}
 
-		const peripheralDevices = this._coreHandler.core.getCollection<PeripheralDevicePublic>('peripheralDevices')
+		const peripheralDevices =
+			this._coreHandler.core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
 		return peripheralDevices.findOne(this._coreHandler.core.deviceId)
 	}
 	private async _updateDevices(): Promise<void> {
@@ -409,9 +408,7 @@ export class MosHandler {
 		const peripheralDevice = this.getThisPeripheralDevice()
 
 		if (peripheralDevice) {
-			const settings: MosDeviceSettings = (peripheralDevice.settings || {}) as any
-
-			const devices = settings.devices || {}
+			const devices: MosSubDeviceSettings = (peripheralDevice.ingestDevices || {}) as any
 
 			const devicesToAdd: { [id: string]: { options: MosDeviceConfig } } = {}
 			const devicesToRemove: { [id: string]: true } = {}

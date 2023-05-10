@@ -1,6 +1,6 @@
 import { Time } from '@sofie-automation/blueprints-integration'
 import { DeviceConfigManifest } from '../deviceConfig'
-import { OrganizationId } from './Ids'
+import { OrganizationId, PeripheralDeviceId, StudioId } from './Ids'
 
 import {
 	PeripheralDeviceStatusObject,
@@ -19,11 +19,35 @@ export {
 }
 
 import {
+	GenericPeripheralDeviceSettings,
 	IngestDeviceSecretSettings,
-	PeripheralDevicePublic,
+	IngestDeviceSettings,
 } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 
-export interface PeripheralDevice extends PeripheralDevicePublic {
+export interface PeripheralDevice {
+	_id: PeripheralDeviceId
+
+	/** Name of the device (set by the device, modifiable by user) */
+	name: string
+
+	/** Name of the device (set by the device) */
+	deviceName: string
+
+	/** The studio this device is assigned to. Will be undefined for sub-devices */
+	studioId?: StudioId
+
+	category: PeripheralDeviceCategory
+	type: PeripheralDeviceType
+	subType: PeripheralDeviceSubType
+
+	parentDeviceId?: PeripheralDeviceId
+
+	/** When the device was initially created [unix-timestamp] */
+	created: number
+	status: PeripheralDeviceStatusObject
+
+	settings: IngestDeviceSettings | GenericPeripheralDeviceSettings
+
 	/** If set, this device is owned by that organization */
 	organizationId: OrganizationId | null
 

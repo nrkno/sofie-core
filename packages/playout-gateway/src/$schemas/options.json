@@ -24,13 +24,13 @@
 		"multiThreadedResolver": {
 			"type": "boolean",
 			"ui:title": "Activate Multi-Threaded Timeline Resolving",
-			"description": "Activate Multi-Threaded Timeline Resolving",
+			"description": "Requires restart of Gateway to apply",
 			"default": false
 		},
 		"useCacheWhenResolving": {
 			"type": "boolean",
 			"ui:title": "Activate Partial resolving, when resolving the Timeline",
-			"description": "Activate Partial resolving, when resolving the Timeline",
+			"description": "Requires restart of Gateway to apply",
 			"default": false
 		},
 		"reportAllCommands": {
@@ -40,10 +40,10 @@
 			"default": false
 		},
 		"estimateResolveTimeMultiplier": {
-			"type": "boolean",
+			"type": "integer",
 			"ui:title": "Adjust resolve-time estimation",
 			"description": "Adjust resolve-time estimation",
-			"default": false
+			"default": 0
 		}
 	},
 	"required": [],

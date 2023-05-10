@@ -14,6 +14,7 @@ import {
 	Time,
 	WithTimeline,
 	TSR,
+	IBlueprintPlayoutDevice,
 } from '@sofie-automation/blueprints-integration'
 import {
 	PartInstanceId,
@@ -70,8 +71,7 @@ import _ = require('underscore')
 import { ProcessedShowStyleConfig } from '../config'
 import { DatastorePersistenceMode } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
 import { getDatastoreId } from '../../playout/datastore'
-import { executePeripheralDeviceAction, listPeripheralDevices } from '../../peripheralDevice'
-import { PeripheralDevicePublicWithActions } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import { executePeripheralDeviceAction, listPlayoutDevices } from '../../peripheralDevice'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -646,8 +646,8 @@ export class ActionExecutionContext
 		return getMediaObjectDuration(this._context, mediaId)
 	}
 
-	async listPeripheralDevices(): Promise<PeripheralDevicePublicWithActions[]> {
-		return listPeripheralDevices(this._context, this._cache)
+	async listPlayoutDevices(): Promise<IBlueprintPlayoutDevice[]> {
+		return listPlayoutDevices(this._context, this._cache)
 	}
 
 	async executeTSRAction(

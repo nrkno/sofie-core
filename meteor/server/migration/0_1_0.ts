@@ -447,6 +447,11 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				packageContainers: {},
 				thumbnailContainerIds: [],
 				previewContainerIds: [],
+				peripheralDeviceSettings: {
+					playoutDevices: wrapDefaultObject({}),
+					ingestDevices: wrapDefaultObject({}),
+					inputDevices: wrapDefaultObject({}),
+				},
 				lastBlueprintConfig: undefined,
 			})
 		},

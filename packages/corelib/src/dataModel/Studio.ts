@@ -1,6 +1,6 @@
 import { BlueprintMapping, IBlueprintConfig, PackageContainer, TSR } from '@sofie-automation/blueprints-integration'
 import { ObjectWithOverrides } from '../settings/objectWithOverrides'
-import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId, MappingsHash } from './Ids'
+import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId, MappingsHash, PeripheralDeviceId } from './Ids'
 import { LastBlueprintConfig } from './Blueprint'
 import { MappingsExt, MappingExt } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 
@@ -88,13 +88,58 @@ export interface DBStudio {
 	 * (These are used by the Package Manager and the Expected Packages)
 	 */
 	packageContainers: Record<string, StudioPackageContainer>
+
 	/** Which package containers is used for media previews in GUI */
 	previewContainerIds: string[]
 	thumbnailContainerIds: string[]
 
+	peripheralDeviceSettings: StudioPeripheralDeviceSettings
+
 	/** Details on the last blueprint used to generate the defaults values for this */
 	lastBlueprintConfig: LastBlueprintConfig | undefined
 }
+
+export interface StudioPeripheralDeviceSettings {
+	/** Playout gateway sub-devices */
+	playoutDevices: ObjectWithOverrides<Record<string, StudioPlayoutDevice>>
+
+	/** Ingest gateway sub-devices */
+	ingestDevices: ObjectWithOverrides<Record<string, StudioIngestDevice>>
+
+	/** Input gateway sub-devices */
+	inputDevices: ObjectWithOverrides<Record<string, StudioInputDevice>>
+}
+
+export interface StudioIngestDevice {
+	/**
+	 * The id of the gateway this is assigned to
+	 * Future: This may be replaced with some other grouping or way of assigning devices
+	 */
+	peripheralDeviceId: PeripheralDeviceId | undefined
+	/** Settings blob of the subdevice, from the sub-device config schema */
+	options: unknown
+}
+
+export interface StudioInputDevice {
+	/**
+	 * The id of the gateway this is assigned to
+	 * Future: This may be replaced with some other grouping or way of assigning devices
+	 */
+	peripheralDeviceId: PeripheralDeviceId | undefined
+	/** Settings blob of the subdevice, from the sub-device config schema */
+	options: unknown
+}
+
+export interface StudioPlayoutDevice {
+	/**
+	 * The id of the gateway this is assigned to
+	 * Future: This may be replaced with some other grouping or way of assigning devices
+	 */
+	peripheralDeviceId: PeripheralDeviceId | undefined
+
+	options: TSR.DeviceOptionsAny
+}
+
 export interface StudioPackageContainer {
 	/** List of which peripheraldevices uses this packageContainer */
 	deviceIds: string[]
