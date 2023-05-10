@@ -1,5 +1,5 @@
 import { omit } from '@sofie-automation/corelib/dist/lib'
-import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
+import { ProtectedString, isProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { Mongo } from 'meteor/mongo'
 import { ObserveCallbacks } from '../../../lib/collections/lib'
 
@@ -18,8 +18,11 @@ export class ReactiveCacheCollection<
 		return id
 	}
 
-	remove(selector: string | Mongo.ObjectID | Mongo.Selector<Document>, callback?: Function): number {
-		const num = super.remove(selector, callback)
+	remove(
+		selector: Document['_id'] | string | Mongo.ObjectID | Mongo.Selector<Document>,
+		callback?: Function
+	): number {
+		const num = super.remove(isProtectedString(selector) ? unprotectString(selector) : selector, callback)
 		if (num > 0) {
 			this.runReaction()
 		}
@@ -27,7 +30,7 @@ export class ReactiveCacheCollection<
 	}
 
 	update(
-		selector: string | Mongo.ObjectID | Mongo.Selector<Document>,
+		selector: Document['_id'] | string | Mongo.ObjectID | Mongo.Selector<Document>,
 		modifier: Mongo.Modifier<Document>,
 		options?: {
 			multi?: boolean | undefined
@@ -36,7 +39,12 @@ export class ReactiveCacheCollection<
 		},
 		callback?: Function
 	): number {
-		const num = super.update(selector, modifier, options, callback)
+		const num = super.update(
+			isProtectedString(selector) ? unprotectString(selector) : selector,
+			modifier,
+			options,
+			callback
+		)
 		if (num > 0) {
 			this.runReaction()
 		}
@@ -44,12 +52,17 @@ export class ReactiveCacheCollection<
 	}
 
 	upsert(
-		selector: string | Mongo.ObjectID | Mongo.Selector<Document>,
+		selector: Document['_id'] | string | Mongo.ObjectID | Mongo.Selector<Document>,
 		modifier: Mongo.Modifier<Document>,
 		options?: { multi?: boolean | undefined },
 		callback?: Function
 	): { numberAffected?: number | undefined; insertedId?: string | undefined } {
-		const res = super.upsert(selector, modifier, options, callback)
+		const res = super.upsert(
+			isProtectedString(selector) ? unprotectString(selector) : selector,
+			modifier,
+			options,
+			callback
+		)
 		if (res.numberAffected || res.insertedId) {
 			this.runReaction()
 		}
@@ -64,10 +77,13 @@ export class ReactiveCacheCollection<
 	}
 
 	async removeAsync(
-		selector: string | Mongo.ObjectID | Mongo.Selector<Document>,
+		selector: Document['_id'] | string | Mongo.ObjectID | Mongo.Selector<Document>,
 		callback?: Function
 	): Promise<number> {
-		const result = await super.removeAsync(selector, callback)
+		const result = await super.removeAsync(
+			isProtectedString(selector) ? unprotectString(selector) : selector,
+			callback
+		)
 		if (result > 0) {
 			this.runReaction()
 		}
@@ -75,7 +91,7 @@ export class ReactiveCacheCollection<
 	}
 
 	async updateAsync(
-		selector: string | Mongo.ObjectID | Mongo.Selector<Document>,
+		selector: Document['_id'] | string | Mongo.ObjectID | Mongo.Selector<Document>,
 		modifier: Mongo.Modifier<Document>,
 		options?: {
 			multi?: boolean | undefined
@@ -84,7 +100,12 @@ export class ReactiveCacheCollection<
 		},
 		callback?: Function
 	): Promise<number> {
-		const result = await super.updateAsync(selector, modifier, options, callback)
+		const result = await super.updateAsync(
+			isProtectedString(selector) ? unprotectString(selector) : selector,
+			modifier,
+			options,
+			callback
+		)
 		if (result > 0) {
 			this.runReaction()
 		}
@@ -92,12 +113,17 @@ export class ReactiveCacheCollection<
 	}
 
 	async upsertAsync(
-		selector: string | Mongo.ObjectID | Mongo.Selector<Document>,
+		selector: Document['_id'] | string | Mongo.ObjectID | Mongo.Selector<Document>,
 		modifier: Mongo.Modifier<Document>,
 		options?: { multi?: boolean | undefined },
 		callback?: Function
 	): Promise<{ numberAffected?: number | undefined; insertedId?: string | undefined }> {
-		const result = await super.upsertAsync(selector, modifier, options, callback)
+		const result = await super.upsertAsync(
+			isProtectedString(selector) ? unprotectString(selector) : selector,
+			modifier,
+			options,
+			callback
+		)
 		if (result.numberAffected || result.insertedId) {
 			this.runReaction()
 		}
