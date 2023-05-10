@@ -179,11 +179,7 @@ export class CoreHandler {
 			if (!col) throw new Error('collection "peripheralDevices" not found!')
 
 			const device = col.findOne(id)
-			if (device && device.deviceSettings) {
-				this.deviceSettings = device.deviceSettings
-			} else {
-				this.deviceSettings = {}
-			}
+			this.deviceSettings = device?.deviceSettings ?? {}
 
 			const logLevel = this.deviceSettings.debugLogging ? 'debug' : 'info'
 			if (logLevel !== this.logger.level) {
@@ -203,7 +199,7 @@ export class CoreHandler {
 				this.reportAllCommands = this.deviceSettings.reportAllCommands || false
 			}
 
-			const studioId = device.studioId
+			const studioId = device?.studioId
 			if (!studioId) throw new Error('PeripheralDevice has no studio!')
 
 			if (studioId !== this._studioId) {
