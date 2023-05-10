@@ -29,7 +29,7 @@
 		"validate:release:packages": "cd packages && run validate:dependencies && run test",
 		"meteor": "cd meteor && meteor",
 		"docs:serve": "cd packages && run docs:serve",
-		"reset": "meteor node scripts/reset.mjs",
+		"reset": "node scripts/reset.mjs",
 		"test-all": "yarn install && run build:packages && run check-types:meteor && run lint:packages && run lint:meteor && run test:packages && run test:meteor"
 	},
 	"devDependencies": {
