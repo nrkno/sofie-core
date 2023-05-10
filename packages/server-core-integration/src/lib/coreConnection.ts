@@ -61,7 +61,7 @@ export interface CoreOptions extends CoreCredentials {
 
 export interface Collection<DBObj extends { _id: ProtectedString<any> | string }> {
 	find: (selector?: any) => Array<DBObj>
-	findOne: (docId: DBObj['_id']) => DBObj
+	findOne: (docId: DBObj['_id']) => DBObj | undefined
 }
 
 export type CoreConnectionEvents = {
@@ -295,7 +295,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 					return [collection[selector]]
 				}
 			},
-			findOne(docId: DBObj['_id']): DBObj {
+			findOne(docId: DBObj['_id']): DBObj | undefined {
 				const collection = (collections[collectionName] || {}) as any as Record<string, DBObj>
 				return collection[docId as string]
 			},

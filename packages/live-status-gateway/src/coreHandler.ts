@@ -1,31 +1,23 @@
 import { CoreConnection, CoreOptions, DDPConnectorOptions, Observer } from '@sofie-automation/server-core-integration'
-
 import { DeviceConfig } from './connector'
 import { Logger } from 'winston'
-// eslint-disable-next-line node/no-extraneous-import
-import { MemUsageReport as ThreadMemUsageReport } from 'threadedclass'
 import { Process } from './process'
 import { LIVE_STATUS_DEVICE_CONFIG } from './configManifest'
 import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
-	PERIPHERAL_SUBTYPE_PROCESS,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import { protectString, unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
-import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { PeripheralDeviceCommand } from '@sofie-automation/shared-lib/dist/core/model/PeripheralDeviceCommand'
+import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import { LiveStatusGatewayConfig } from './generated/options'
 
 export interface CoreConfig {
 	host: string
 	port: number
 	watchdog: boolean
-}
-
-export interface MemoryUsageReport {
-	main: number
-	threads: { [childId: string]: ThreadMemUsageReport }
 }
 
 /**
@@ -35,7 +27,7 @@ export class CoreHandler {
 	core!: CoreConnection
 	logger: Logger
 	public _observers: Array<any> = []
-	public deviceSettings: { [key: string]: any } = {}
+	public deviceSettings: LiveStatusGatewayConfig = {}
 
 	public errorReporting = false
 	public multithreading = false
@@ -62,9 +54,7 @@ export class CoreHandler {
 		this._coreConfig = config
 		this._process = process
 
-		this.core = new CoreConnection(
-			this.getCoreConnectionOptions('Live Status Gateway', 'LiveStatusGateway', PERIPHERAL_SUBTYPE_PROCESS)
-		)
+		this.core = new CoreConnection(this.getCoreConnectionOptions())
 
 		this.core.onConnected(() => {
 			this.logger.info('Core Connected!')
@@ -121,7 +111,7 @@ export class CoreHandler {
 		this.logger.info('DeviceId: ' + this.core.deviceId)
 
 		await Promise.all([
-			this.core.autoSubscribe('peripheralDevices', {
+			this.core.autoSubscribe('peripheralDeviceForDevice', {
 				_id: this.core.deviceId,
 			}),
 		])
@@ -134,7 +124,7 @@ export class CoreHandler {
 			this._observers = []
 		}
 		// setup observers
-		const observer = this.core.observe('peripheralDevices')
+		const observer = this.core.observe('peripheralDeviceForDevice')
 		observer.added = (id: string) => this.onDeviceChanged(protectString(id))
 		observer.changed = (id: string) => this.onDeviceChanged(protectString(id))
 	}
@@ -143,28 +133,25 @@ export class CoreHandler {
 		await this.updateCoreStatus()
 		await this.core.destroy()
 	}
-	getCoreConnectionOptions(
-		name: string,
-		subDeviceId: string,
-		subDeviceType: PERIPHERAL_SUBTYPE_PROCESS
-	): CoreOptions {
+	private getCoreConnectionOptions(): CoreOptions {
 		if (!this._deviceOptions.deviceId) {
 			throw new Error('DeviceId is not set!')
 		}
 
 		const options: CoreOptions = {
-			deviceId: protectString(this._deviceOptions.deviceId + subDeviceId),
+			deviceId: protectString(this._deviceOptions.deviceId + 'LiveStatusGateway'),
 			deviceToken: this._deviceOptions.deviceToken,
 
 			deviceCategory: PeripheralDeviceCategory.LIVE_STATUS,
 			deviceType: PeripheralDeviceType.LIVE_STATUS,
-			deviceSubType: subDeviceType,
 
-			deviceName: name,
+			deviceName: 'Live Status Gateway',
 			watchDog: this._coreConfig ? this._coreConfig.watchdog : true,
 
 			configManifest: LIVE_STATUS_DEVICE_CONFIG,
 			documentationUrl: `https://nrkno.github.io/sofie-core/`,
+
+			versions: this._getVersions(),
 		}
 
 		if (!options.deviceToken) {
@@ -172,7 +159,6 @@ export class CoreHandler {
 			options.deviceToken = 'unsecureToken'
 		}
 
-		if (subDeviceType === PERIPHERAL_SUBTYPE_PROCESS) options.versions = this._getVersions()
 		return options
 	}
 	onConnected(fcn: () => any): void {
@@ -181,14 +167,11 @@ export class CoreHandler {
 
 	onDeviceChanged(id: PeripheralDeviceId): void {
 		if (id !== this.core.deviceId) return
-		const col = this.core.getCollection<PeripheralDevicePublic>('peripheralDevices')
-		if (!col) throw new Error('collection "peripheralDevices" not found!')
+		const col = this.core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
+		if (!col) throw new Error('collection "peripheralDeviceForDevice" not found!')
 		const device = col.findOne(id)
-		if (device) {
-			this.deviceSettings = device.settings || {}
-		} else {
-			this.deviceSettings = {}
-		}
+
+		this.deviceSettings = device?.deviceSettings || {}
 		const logLevel = this.deviceSettings['debugLogging'] ? 'debug' : 'info'
 		if (logLevel !== this.logger.level) {
 			this.logger.level = logLevel
@@ -200,7 +183,7 @@ export class CoreHandler {
 			this.logger.info('Loglevel: ' + this.logger.level)
 		}
 
-		const studioId = device.studioId
+		const studioId = device?.studioId
 		if (studioId === undefined) {
 			throw new Error(`Live status gateway must be attached to a studio`)
 		}
