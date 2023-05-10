@@ -437,7 +437,7 @@ export class ActionExecutionContext
 		if (this.nextPartState !== ActionPartChange.NONE) {
 			// Ensure we dont insert a piece into a part before replacing it with a queued part, as this will cause some data integrity issues
 			// This could be changed if we have a way to abort the pending changes in the nextPart.
-			// TODO-PartInstances - perhaps this could be dropped as only the instance will have changed, and that will be trashed by the setAsNext?
+			// Future: perhaps this could be dropped as only the instance will have changed, and that will be trashed by the setAsNext?
 			throw new Error('Cannot queue part when next part has already been modified')
 		}
 

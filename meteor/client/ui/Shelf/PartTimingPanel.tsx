@@ -11,7 +11,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { getAllowSpeaking } from '../../lib/localStorage'
+import { getAllowSpeaking, getAllowVibrating } from '../../lib/localStorage'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
 import { CurrentPartElapsed } from '../RundownView/RundownTiming/CurrentPartElapsed'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
@@ -61,6 +61,7 @@ class PartTimingPanelInner extends MeteorReactComponent<
 							<CurrentPartRemaining
 								currentPartInstanceId={this.props.playlist.currentPartInfo?.partInstanceId ?? null}
 								speaking={getAllowSpeaking() && panel.speakCountDown}
+								vibrating={getAllowVibrating() && panel.speakCountDown}
 								heavyClassName="overtime"
 								className="part-remaining"
 							/>

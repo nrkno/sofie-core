@@ -20,7 +20,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { scrollToPart, lockPointer, unlockPointer } from '../../lib/viewPort'
 
-import { getAllowSpeaking, getShowHiddenSourceLayers } from '../../lib/localStorage'
+import { getAllowSpeaking, getAllowVibrating, getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerLockCursor'
 import { Settings } from '../../../lib/Settings'
 import { IContextMenuContext } from '../RundownView'
@@ -42,6 +42,7 @@ import { UIStudio } from '../../../lib/api/studios'
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentNoteCounts } from '../SegmentContainer/withResolvedSegment'
+import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { PartExtended } from '../../../lib/Rundown'
 import {
 	withTiming,
@@ -58,6 +59,7 @@ interface IProps {
 	followLiveSegments: boolean
 	studio: UIStudio
 	parts: Array<PartUi>
+	pieces: Map<PartId, CalculateTimingsPiece[]>
 	segmentNoteCounts: SegmentNoteCounts
 	timeScale: number
 	maxTimeScale: number
@@ -87,7 +89,7 @@ interface IProps {
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
-	onSwitchViewMode: (newViewMode: SegmentViewMode) => void
+	onSwitchViewMode?: (newViewMode: SegmentViewMode) => void
 	segmentRef?: (el: SegmentTimelineClass, segmentId: SegmentId) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
@@ -170,7 +172,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 				total += duration
 			})
 		} else {
-			total = RundownUtils.getSegmentDuration(this.props.parts, true)
+			total = RundownUtils.getSegmentDuration(this.props.parts, this.props.pieces, true)
 		}
 		return total
 	}
@@ -591,7 +593,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 	}
 
 	private getSegmentDuration() {
-		return (this.props.parts && RundownUtils.getSegmentDuration(this.props.parts)) || 0
+		return (this.props.parts && RundownUtils.getSegmentDuration(this.props.parts, this.props.pieces)) || 0
 	}
 
 	private isOutputGroupCollapsed(outputGroup: IOutputLayer) {
@@ -666,6 +668,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 							<CurrentPartRemaining
 								currentPartInstanceId={this.props.playlist.currentPartInfo?.partInstanceId ?? null}
 								speaking={getAllowSpeaking()}
+								vibrating={getAllowVibrating()}
 								heavyClassName="overtime"
 							/>
 						)}
@@ -726,6 +729,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 						<SegmentTimelineSmallPartFlag
 							t={t}
 							parts={emitSmallPartsInFlag}
+							pieces={this.props.pieces}
 							followingPart={part}
 							sourceLayers={this.props.segment.sourceLayers}
 							timeScale={this.props.timeScale}
@@ -771,6 +775,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 						}
 						showDurationSourceLayers={this.props.showDurationSourceLayers}
 						part={part}
+						pieces={this.props.pieces.get(part.partId) ?? []}
 						isBudgetGap={false}
 						isLiveSegment={this.props.isLiveSegment}
 						anyPriorPartWasLive={anyPriorPartWasLive}
@@ -781,6 +786,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 						<SegmentTimelineSmallPartFlag
 							t={t}
 							parts={emitSmallPartsInFlag}
+							pieces={this.props.pieces}
 							followingPart={undefined}
 							sourceLayers={this.props.segment.sourceLayers}
 							timeScale={this.props.timeScale}
@@ -838,6 +844,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 				isAfterLastValidInSegmentAndItsLive={false}
 				isBudgetGap={true}
 				part={BUDGET_GAP_PART}
+				pieces={[]}
 				showDurationSourceLayers={this.props.showDurationSourceLayers}
 				isLiveSegment={this.props.isLiveSegment}
 				anyPriorPartWasLive={true}
@@ -1079,6 +1086,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 							<SegmentDuration
 								segmentId={this.props.segment._id}
 								parts={this.props.parts}
+								pieces={this.props.pieces}
 								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
 								fixed={this.props.fixedSegmentDuration}
 							/>
@@ -1121,6 +1129,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 					frameRate={this.props.studio.settings.frameRate}
 					isLiveSegment={this.props.isLiveSegment}
 					partInstances={this.props.parts}
+					pieces={this.props.pieces}
 					currentPartInstanceId={
 						this.props.isLiveSegment ? this.props.playlist.currentPartInfo?.partInstanceId ?? null : null
 					}

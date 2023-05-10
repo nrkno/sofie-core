@@ -13,7 +13,7 @@ import { Settings } from '../../lib/Settings'
 import { CoreSystem } from '../collections'
 
 interface IPropsHeader {
-	user: boolean
+	loggedIn: boolean
 	allowConfigure?: boolean
 	allowTesting?: boolean
 	allowDeveloper?: boolean
@@ -173,12 +173,12 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 											{t('Settings')}
 										</NavLink>
 									)}
-									{Settings.enableUserAccounts && this.props.user && (
+									{Settings.enableUserAccounts && this.props.loggedIn && (
 										<NavLink to="/account" activeClassName="active">
 											{t('Account')}
 										</NavLink>
 									)}
-									{Settings.enableUserAccounts && this.props.user && (
+									{Settings.enableUserAccounts && this.props.loggedIn && (
 										<NavLink to="/" activeClassName="active" onClick={this.handleLogout}>
 											{t('Logout')}
 										</NavLink>

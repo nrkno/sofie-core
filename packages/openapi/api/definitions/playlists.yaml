@@ -1,0 +1,584 @@
+title: playlists
+description: Definitions for playlists API
+resources:
+  playlists:
+    get:
+      operationId: playlists
+      tags:
+        - playlists
+      summary: Returns all playlists available in Sofie.
+      responses:
+        200:
+          description: Command successfully handled - returns an array of playlist Ids.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 200
+                  result:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/playlistItem'
+                    example:
+                      - id: 'OKAgZmZ0Buc99lE_2uPPSKVbMrQ_'
+        500:
+          $ref: '#/components/responses/internalServerError'
+  activate:
+    put:
+      operationId: activate
+      tags:
+        - playlists
+      summary: Activates a Playlist.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Playlist to activate.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        description: Whether to activate into rehearsal mode.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rehearsal:
+                  type: boolean
+      responses:
+        200:
+          $ref: '#/components/responses/putSuccess'
+        404:
+          $ref: '#/components/responses/playlistNotFound'
+        412:
+          description: There is already an active Playlist for the studio that the Playlist belongs to.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+                    example: Rundown Playlist is active, please deactivate before preparing it for broadcast
+        500:
+          $ref: '#/components/responses/internalServerError'
+  deactivate:
+    put:
+      operationId: deactivate
+      tags:
+        - playlists
+      summary: Deactivates a Playlist.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Playlist to deactivate.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: '#/components/responses/putSuccess'
+        404:
+          $ref: '#/components/responses/playlistNotFound'
+        500:
+          $ref: '#/components/responses/internalServerError'
+  executeAdLib:
+    post:
+      operationId: executeAdLib
+      tags:
+        - playlists
+      summary: Executes the requested AdLib/AdLib Action. This is a "planned" AdLib (Action) that has been produced by the blueprints during the ingest process.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Playlist to execute adLib in.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                actionType:
+                  type: string
+                  description: An actionType string to specify a particular variation for the AdLibAction, valid strings are to be read from the status API
+                adLibId:
+                  type: string
+                  description: AdLib to execute
+              required:
+                - adLibId
+              example:
+                actionType: pvw
+      responses:
+        200:
+          $ref: '#/components/responses/executeActionSuccess'
+        404:
+          $ref: '#/components/responses/playlistNotFound'
+        412:
+          description: Specified Playlist is not active, there is not an on-air Part instance or an adLib for the provided `adLibId` cannot be found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+                    example: AdLib could not be found!
+        500:
+          $ref: '#/components/responses/internalServerError'
+  moveNextPart:
+    post:
+      operationId: moveNextPart
+      tags:
+        - playlists
+      summary: Moves the next point by `delta` places. Negative values are allowed to move "backwards" in the script.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Playlist to target.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                delta:
+                  type: number
+                  description: Amount to move next point by (+/-). If delta results in an index that is greater than the number of Parts available, no action will be taken.
+              required:
+                - delta
+      responses:
+        200:
+          description: Command successfully handled - returns a string with the new PartID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 200
+                  result:
+                    type: string
+                    example: '3Y9at66pZipxE8Kkn850LLV9Cz0_'
+        404:
+          $ref: '#/components/responses/playlistNotFound'
+        412:
+          description: Specified Playlist is not active or there is both no current or next Part.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+                    example: The selected part does not exist
+        500:
+          $ref: '#/components/responses/internalServerError'
+  moveNextSegment:
+    post:
+      operationId: moveNextSegment
+      tags:
+        - playlists
+      summary: Moves the next Segment point by `delta` places. Negative values are allowed to move "backwards" in the script.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Playlist to target.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                delta:
+                  type: number
+                  description: Amount to move next Segment point by (+/-). If delta results in an index that is greater than the number of Segments available, no action will be taken.
+              required:
+                - delta
+      responses:
+        200:
+          description: Command successfully handled - returns a string with the new PartID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 200
+                  result:
+                    type: string
+                    example: 'YjGd_1dWjta_E1ZuDaOczP1lsgk_'
+        404:
+          $ref: '#/components/responses/playlistNotFound'
+        412:
+          description: Specified Playlist is not active or there is both no current or next Part.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+                    example: The selected part does not exist
+        500:
+          $ref: '#/components/responses/internalServerError'
+  reloadPlaylist:
+    put:
+      operationId: reloadPlaylist
+      tags:
+        - playlists
+      summary: Reloads a Playlist from its ingest source (e.g. MOS/Spreadsheet etc.)
+      parameters:
+        - name: playlistId
+          in: path
+          description: Playlist to reload.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: '#/components/responses/putSuccess'
+        404:
+          $ref: '#/components/responses/playlistNotFound'
+        500:
+          $ref: '#/components/responses/internalServerError'
+  resetPlaylist:
+    put:
+      operationId: resetPlaylist
+      tags:
+        - playlists
+      summary: Resets a Playlist back to its pre-played state.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Playlist to reset.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: '#/components/responses/putSuccess'
+        404:
+          $ref: '#/components/responses/playlistNotFound'
+        412:
+          description: The target Playlist is currently active (reset while on-air can be enabled in core settings).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+                    example: RundownPlaylist is active but not in rehearsal, please deactivate it or set in in rehearsal to be able to reset it.
+        500:
+          $ref: '#/components/responses/internalServerError'
+  setNextPart:
+    put:
+      operationId: setNextPart
+      tags:
+        - playlists
+      summary: Sets the next Part to a given PartId.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Target playlist.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                partId:
+                  type: string
+                  description: Part to set as next.
+              required:
+                - partId
+      responses:
+        200:
+          $ref: '#/components/responses/putSuccess'
+        404:
+          $ref: '#/components/responses/playlistNotFound'
+        412:
+          description: Specified Playlist is not active, the specified Part does not exist, the specified Part is not playable, currently in hold, or the specified part is not playable.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+                    example: The selected part does not exist
+        500:
+          $ref: '#/components/responses/internalServerError'
+  setNextSegment:
+    put:
+      operationId: setNextSegment
+      tags:
+        - playlists
+      summary: Sets the next Segment to a given SegmentId.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Target playlist.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                segmentId:
+                  type: string
+                  description: Segment to set as next.
+              required:
+                - segmentId
+      responses:
+        200:
+          $ref: '#/components/responses/putSuccess'
+        404:
+          $ref: '#/components/responses/playlistNotFound'
+        412:
+          description: Specified Playlist is not active, the specified Segment does not exist, the specified Segment does not contain any playable parts, or currently in hold.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+                    example: The selected part does not exist
+        500:
+          $ref: '#/components/responses/internalServerError'
+  take:
+    post:
+      operationId: take
+      tags:
+        - playlists
+      summary: Performs a take in the given Playlist.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Target playlist.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fromPartInstanceId:
+                  type: string
+                  description: May be specified to ensure that multiple take requests from the same Part do not result in multiple takes.
+      responses:
+        200:
+          $ref: '#/components/responses/putSuccess'
+        404:
+          $ref: '#/components/responses/playlistNotFound'
+        412:
+          description: Specified Playlist is not active or specified Playlist does not have a next Part.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+                    example: No Next point found, please set a part as Next before doing a TAKE.
+        500:
+          $ref: '#/components/responses/internalServerError'
+  sourceLayer:
+    delete:
+      operationId: clearSourceLayer
+      tags:
+        - sourceLayers
+      summary: Clears the target SourceLayer.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Target playlist.
+          required: true
+          schema:
+            type: string
+        - name: sourceLayerId
+          in: path
+          description: Target SourceLayer.
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          $ref: '#/components/responses/putSuccess'
+        404:
+          $ref: '#/components/responses/playlistNotFound'
+        412:
+          description: Playlist is not active.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+                    example: Rundown must be active!
+        500:
+          $ref: '#/components/responses/internalServerError'
+    sticky:
+      post:
+        operationId: recallSticky
+        tags:
+          - sourceLayers
+        summary: Recalls the last sticky Piece on the specified SourceLayer, if there is any.
+        parameters:
+          - name: playlistId
+            in: path
+            description: Target playlist.
+            required: true
+            schema:
+              type: string
+          - name: sourceLayerId
+            in: path
+            description: Target sourcelayer.
+            required: true
+            schema:
+              type: string
+        responses:
+          200:
+            $ref: '#/components/responses/putSuccess'
+          404:
+            $ref: '#/components/responses/playlistNotFound'
+          412:
+            description: Playlist is not active, SourceLayer is not sticky, or there is no sticky piece for this SourceLayer.
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    status:
+                      type: number
+                      example: 412
+                    message:
+                      type: string
+                      example: Rundown must be active!
+          500:
+            $ref: '#/components/responses/internalServerError'
+
+components:
+  schemas:
+    playlistItem:
+      type: object
+      properties:
+        id:
+          type: string
+      required:
+        - id
+      additionalProperties: false
+  responses:
+    putSuccess:
+      description: Action successfully sent
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: number
+                example: 200
+    executeActionSuccess:
+      description: Command successfully handled - returns an object that informs whether a part was queued by the action and/or if the next part was automatically taken
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: number
+                example: 200
+              result:
+                type: object
+                properties:
+                  queuedPartInstanceId:
+                    type: string
+                    example: 'YjGd_1dWjta_E1ZuDaOczP1lsgk_'
+                  taken:
+                    type: boolean
+                    example: false
+    playlistNotFound:
+      description: The specified Playlist does not exist.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: number
+                example: 404
+              message:
+                type: string
+                example: The specified Playlist was not found
+    internalServerError:
+      description: An error unlikely to be the fault of the caller has occurred.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: number
+                example: 500
+              message:
+                type: string
+                example: Internal Server Error

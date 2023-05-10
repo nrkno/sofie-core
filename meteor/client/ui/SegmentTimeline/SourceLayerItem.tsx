@@ -20,6 +20,7 @@ import { pieceUiClassNames } from '../../lib/ui/pieceUiClassNames'
 import { SourceDurationLabelAlignment } from './Renderers/CustomLayerItemRenderer'
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 import { UIStudio } from '../../../lib/api/studios'
+import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 const MARGINAL_ANCHORED_WIDTH = 5
 
@@ -40,6 +41,8 @@ export interface ISourceLayerItemProps {
 	partExpectedDuration: number
 	/** The piece being rendered in this layer */
 	piece: PieceUi
+	/** Pieces belonging to the Part */
+	pieces: CalculateTimingsPiece[]
 	/** Scaling factor for this segment */
 	timeScale: number
 	/** Whether this part is live */
@@ -676,6 +679,7 @@ export const SourceLayerItem = withTranslation()(
 					this.props.scrollLeft,
 					this.props.scrollWidth,
 					this.props.part,
+					this.props.pieces,
 					this.props.partStartsAt,
 					this.props.partDuration,
 					this.props.piece

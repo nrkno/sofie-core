@@ -142,21 +142,10 @@ export namespace MosIntegration {
 	): Promise<void> {
 		const transaction = profiler.startTransaction('mosRoStoryStatus', apmNamespace)
 
-		const peripheralDevice = await checkAccessAndGetPeripheralDevice(id, token, context)
-		const studioId = await fetchStudioIdFromDevice(peripheralDevice)
+		await checkAccessAndGetPeripheralDevice(id, token, context)
 
-		const rundownExternalId = parseMosString(status.RunningOrderId)
-		const partExternalId = parseMosString(status.ID)
-
-		logger.info(`mosRoStoryStatus "${status.ID}"`)
+		logger.debug(`mosRoStoryStatus NOT SUPPORTED "${status.ID}"`)
 		logger.debug(status)
-
-		await runIngestOperation(studioId, IngestJobs.MosStoryStatus, {
-			rundownExternalId: rundownExternalId,
-			peripheralDeviceId: peripheralDevice._id,
-			partExternalId: partExternalId,
-			status: status.Status,
-		})
 
 		transaction?.end()
 	}

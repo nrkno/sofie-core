@@ -50,13 +50,13 @@ export async function handleTakeNextPart(context: JobContext, data: TakeNextPart
 		async (cache) => {
 			const playlist = cache.Playlist.doc
 
-			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
+			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
 
 			if (!playlist.nextPartInfo && playlist.holdState !== RundownHoldState.ACTIVE)
-				throw UserError.create(UserErrorMessage.TakeNoNextPart)
+				throw UserError.create(UserErrorMessage.TakeNoNextPart, undefined, 412)
 
 			if ((playlist.currentPartInfo?.partInstanceId ?? null) !== data.fromPartInstanceId)
-				throw UserError.create(UserErrorMessage.TakeFromIncorrectPart)
+				throw UserError.create(UserErrorMessage.TakeFromIncorrectPart, undefined, 412)
 		},
 		async (cache) => {
 			const playlist = cache.Playlist.doc
@@ -552,6 +552,8 @@ function startHold(
 				// Preserve the timings from the playing instance
 				reportedStartedPlayback: instance.reportedStartedPlayback,
 				reportedStoppedPlayback: instance.reportedStoppedPlayback,
+				plannedStartedPlayback: instance.plannedStartedPlayback,
+				plannedStoppedPlayback: instance.plannedStoppedPlayback,
 			})
 			const content = newInstance.piece.content as VTContent | undefined
 			if (content && content.fileName && content.sourceDuration && instance.plannedStartedPlayback) {

@@ -9,10 +9,13 @@ import { SegmentTimelinePartHoverPreview } from './SegmentTimelinePartHoverPrevi
 import { TFunction } from 'i18next'
 import RundownViewEventBus, { RundownViewEvents } from '../../../../lib/api/triggers/RundownViewEventBus'
 import { UIStudio } from '../../../../lib/api/studios'
+import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export const SegmentTimelineSmallPartFlag = ({
 	t,
 	parts,
+	pieces,
 	followingPart,
 	sourceLayers,
 	timeScale,
@@ -29,6 +32,7 @@ export const SegmentTimelineSmallPartFlag = ({
 }: {
 	t: TFunction
 	parts: [PartUi, number][]
+	pieces: Map<PartId, CalculateTimingsPiece[]>
 	followingPart: PartUi | undefined
 	sourceLayers: {
 		[key: string]: ISourceLayer
@@ -109,6 +113,7 @@ export const SegmentTimelineSmallPartFlag = ({
 				showMiniInspector={isHover}
 				followingPart={followingPart}
 				parts={parts.map(([part]) => part)}
+				pieces={pieces}
 				segment={segment}
 				playlist={playlist}
 				liveLineHistorySize={liveLineHistorySize}

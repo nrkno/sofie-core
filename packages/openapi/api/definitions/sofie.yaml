@@ -1,0 +1,239 @@
+title: sofie
+description: Sofie-wide methods
+resources:
+  index:
+    get:
+      operationId: index
+      tags:
+        - sofie
+      summary: Returns the current version of Sofie.
+      responses:
+        200:
+          description: Command successfully handled - returns a string with the version number
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 200
+                  result:
+                    type: object
+                    properties:
+                      version:
+                        type: string
+                        example: '1.44.0'
+  systemBlueprint:
+    put:
+      operationId: assignSystemBlueprint
+      tags:
+        - sofie
+      summary: Assigns a system Blueprint to Sofie core.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                blueprintId:
+                  type: string
+                  description: System blueprint to assign.
+              required:
+                - blueprintId
+      responses:
+        200:
+          $ref: '#/components/responses/putSuccess'
+        404:
+          description: The specified Blueprint Id does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 404
+                  message:
+                    type: string
+        500:
+          $ref: '#/components/responses/internalServerError'
+    delete:
+      operationId: unassignSystemBlueprint
+      tags:
+        - sofie
+      summary: Unassigns the assigned system Blueprint, if any Blueprint is assigned.
+      responses:
+        200:
+          $ref: '#/components/responses/putSuccess'
+        404:
+          description: The specified Blueprint Id does not exist.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 404
+                  message:
+                    type: string
+        500:
+          $ref: '#/components/responses/internalServerError'
+  migrations:
+    get:
+      operationId: getPendingMigrations
+      tags:
+        - sofie
+      summary: Gets a set of pending system-level migrations
+      responses:
+        200:
+          description: Command successfully handled - returns an array of migration steps
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/migrationInputs'
+        500:
+          $ref: '#/components/responses/internalServerError'
+    post:
+      operationId: applyPendingMigrations
+      tags:
+        - sofie
+      summary: Apply a set of migrations with a given set of values
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                oneOf:
+                  # Multiple interfaces are required here because specifying 'migrationValue' as a 'oneOf' type
+                  #  makes the openapi-generator spit out incorrect typescript definitions.
+                  - $ref: '#/components/schemas/migrationString'
+                  - $ref: '#/components/schemas/migrationNumber'
+                  - $ref: '#/components/schemas/migrationBoolean'
+      responses:
+        200:
+          $ref: '#/components/responses/postSuccess'
+        412:
+          description: Failed to apply migration due to migrations already having been applied
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+        500:
+          $ref: '#/components/responses/internalServerError'
+components:
+  schemas:
+    migrationInputs:
+      type: object
+      additionalProperties: false
+      required:
+        - status
+        - result
+      properties:
+        status:
+          type: number
+          example: 200
+        result:
+          type: object
+          additionalProperties: false
+          required:
+            - inputs
+          properties:
+            inputs:
+              type: array
+              items:
+                type: object
+                properties:
+                  stepId:
+                    type: string
+                  attributeId:
+                    type: string
+                additionalProperties: false
+                required:
+                  - stepId
+                  - attributeId
+    migrationString:
+      type: object
+      properties:
+        stepId:
+          type: string
+        attributeId:
+          type: string
+        migrationValue:
+          type: string
+      required:
+        - stepId
+        - attributeId
+        - migrationValue
+      additionalProperties: false
+    migrationNumber:
+      type: object
+      properties:
+        stepId:
+          type: string
+        attributeId:
+          type: string
+        migrationValue:
+          type: number
+      required:
+        - stepId
+        - attributeId
+        - migrationValue
+      additionalProperties: false
+    migrationBoolean:
+      type: object
+      properties:
+        stepId:
+          type: string
+        attributeId:
+          type: string
+        migrationValue:
+          type: boolean
+      required:
+        - stepId
+        - attributeId
+        - migrationValue
+      additionalProperties: false
+  responses:
+    postSuccess:
+      description: POST success.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: number
+                example: 200
+    putSuccess:
+      description: PUT success.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: number
+                example: 200
+    internalServerError:
+      description: An error unlikely to be the fault of the caller has occurred.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              status:
+                type: number
+                example: 500
+              message:
+                type: string

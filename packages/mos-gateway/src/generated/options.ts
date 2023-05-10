@@ -9,4 +9,9 @@ export interface MosGatewayConfig {
 	mosId: string
 	debugLogging?: boolean
 	strict?: boolean
+	ports?: {
+		lower: number
+		upper: number
+		query: number
+	}
 }

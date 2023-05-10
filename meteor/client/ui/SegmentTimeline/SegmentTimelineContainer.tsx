@@ -704,6 +704,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 							segment={this.props.segmentui}
 							studio={this.props.studio}
 							parts={this.props.parts}
+							pieces={this.props.pieces}
 							segmentNoteCounts={this.props.segmentNoteCounts}
 							timeScale={this.state.timeScale}
 							maxTimeScale={this.state.maxTimeScale}

@@ -5,7 +5,7 @@ import { PieceExtended } from '../../../../lib/Rundown'
 import { MediaObject } from '../../../../lib/collections/MediaObjects'
 import { PackageInfo, VTContent } from '@sofie-automation/blueprints-integration'
 // TODO: Move to a shared lib file
-import { getSplitItems } from '../../SegmentStoryboard/utils/getSplitItems'
+import { getSplitItems } from '../../SegmentContainer/getSplitItems'
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
 import { PieceElement } from '../../SegmentContainer/PieceElement'
@@ -138,7 +138,6 @@ function getBlacks(piece: PieceUi): Array<PackageInfo.Anomaly> | undefined {
 // TODO: Create useMediaObjectStatus that would set up new subscriptions
 export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function LinePartMainPiece({
 	partId,
-	partInstanceId,
 	piece,
 	partDuration,
 	timelineBase,
@@ -294,13 +293,7 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 					layer={piece.sourceLayer}
 					originPosition={origin}
 					mousePosition={mousePosition}
-					isFinished={false}
-					isLive={false}
-					isNext={false}
-					partAutoNext={false}
 					studio={studio}
-					partId={partId}
-					partInstanceId={partInstanceId}
 				/>
 			)}
 		</PieceElement>

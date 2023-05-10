@@ -1091,12 +1091,7 @@ const RundownHeader = withTranslation()(
 )
 
 interface IProps {
-	match?: {
-		params: {
-			playlistId: RundownPlaylistId
-		}
-	}
-	playlistId?: RundownPlaylistId
+	playlistId: RundownPlaylistId
 	inActiveRundownView?: boolean
 	onlyShelf?: boolean
 }
@@ -1173,12 +1168,7 @@ interface ITrackedProps {
 	nextSegmentPartIds: PartId[]
 }
 export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((props: Translated<IProps>) => {
-	let playlistId
-	if (props.match && props.match.params.playlistId) {
-		playlistId = decodeURIComponent(unprotectString(props.match.params.playlistId))
-	} else if (props.playlistId) {
-		playlistId = props.playlistId
-	}
+	const playlistId = props.playlistId
 
 	const playlist = RundownPlaylists.findOne(playlistId)
 	let rundowns: Rundown[] = []
@@ -1553,8 +1543,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			this.subscribe(PubSub.rundownPlaylists, {
 				_id: playlistId,
 			})
-			this.subscribe(PubSub.uiSegmentPartNotes, playlistId)
-			this.subscribe(PubSub.uiPieceContentStatuses, playlistId)
 			this.subscribe(PubSub.rundowns, [playlistId], null)
 			this.autorun(() => {
 				const playlist = RundownPlaylists.findOne(playlistId, {
@@ -1565,6 +1553,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}) as Pick<RundownPlaylist, '_id' | 'studioId'> | undefined
 				if (!playlist) return
 
+				this.subscribe(PubSub.uiSegmentPartNotes, playlistId)
+				this.subscribe(PubSub.uiPieceContentStatuses, playlistId)
 				this.subscribe(PubSub.uiStudio, playlist.studioId)
 				this.subscribe(PubSub.buckets, {
 					studioId: playlist.studioId,

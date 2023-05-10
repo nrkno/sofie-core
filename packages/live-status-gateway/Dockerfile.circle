@@ -1,0 +1,13 @@
+FROM node:16.17-alpine
+RUN apk add --no-cache tzdata
+
+COPY package.json /opt/
+COPY node_modules /opt/node_modules
+COPY live-status-gateway /opt/live-status-gateway
+COPY blueprints-integration /opt/blueprints-integration
+COPY server-core-integration /opt/server-core-integration
+COPY shared-lib /opt/shared-lib
+COPY corelib /opt/corelib
+
+WORKDIR /opt/live-status-gateway
+CMD ["yarn", "start"]

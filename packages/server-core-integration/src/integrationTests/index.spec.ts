@@ -3,6 +3,7 @@ import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/m
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 import {
+	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
@@ -32,7 +33,11 @@ test('Integration: Test connection and basic Core functionality', async () => {
 		deviceToken: 'abcd',
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+		deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 		deviceName: 'Jest test framework',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 
 	const onConnectionChanged = jest.fn()
@@ -153,7 +158,11 @@ test('Integration: Connection timeout', async () => {
 		deviceToken: 'abcd',
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+		deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 		deviceName: 'Jest test framework',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 
 	const onConnectionChanged = jest.fn()
@@ -193,7 +202,11 @@ test('Integration: Connection recover from close', async () => {
 		deviceToken: 'abcd',
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+		deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 		deviceName: 'Jest test framework',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 
 	const onConnectionChanged = jest.fn()
@@ -237,7 +250,11 @@ test('Integration: autoSubscription', async () => {
 		deviceToken: 'abcd',
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+		deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 		deviceName: 'Jest test framework',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 
 	const onConnectionChanged = jest.fn()
@@ -307,7 +324,11 @@ test('Integration: Connection recover from a close that lasts some time', async 
 		deviceToken: 'abcd',
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+		deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 		deviceName: 'Jest test framework',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 
 	const onConnectionChanged = jest.fn()
@@ -358,7 +379,11 @@ test('Integration: Parent connections', async () => {
 		deviceToken: 'abcd',
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+		deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 		deviceName: 'Jest test framework',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 	const onError = jest.fn()
 	coreParent.onError(onError)
@@ -378,7 +403,11 @@ test('Integration: Parent connections', async () => {
 		deviceToken: 'abcd2',
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+		deviceSubType: 'child',
 		deviceName: 'Jest test framework child',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 
 	const onChildConnectionChanged = jest.fn()
@@ -447,7 +476,11 @@ test('Integration: Parent destroy', async () => {
 		deviceToken: 'abcd',
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+		deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 		deviceName: 'Jest test framework',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 	const onParentError = jest.fn()
 	coreParent.onError(onParentError)
@@ -462,7 +495,11 @@ test('Integration: Parent destroy', async () => {
 		deviceToken: 'abcd2',
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+		deviceSubType: 'child',
 		deviceName: 'Jest test framework child',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 	const onChildConnectionChanged = jest.fn()
 	const onChildConnected = jest.fn()
@@ -523,7 +560,11 @@ test('Integration: Child destroy', async () => {
 		deviceToken: 'abcd',
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+		deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 		deviceName: 'Jest test framework',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 	const onParentError = jest.fn()
 	coreParent.onError(onParentError)
@@ -537,7 +578,11 @@ test('Integration: Child destroy', async () => {
 		deviceToken: 'abcd2',
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+		deviceSubType: 'child',
 		deviceName: 'Jest test framework child',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 	const onChildConnectionChanged = jest.fn()
 	const onChildConnected = jest.fn()
@@ -575,7 +620,11 @@ test('Integration: Test callMethodLowPrio', async () => {
 		deviceToken: 'abcd',
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+		deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 		deviceName: 'Jest test framework',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 
 	const onError = jest.fn()

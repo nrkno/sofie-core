@@ -2,7 +2,6 @@ import React, { useRef } from 'react'
 import classNames from 'classnames'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DragSourceMonitor, DropTargetMonitor, useDrag, useDrop } from 'react-dnd'
-import { Identifier } from 'dnd-core'
 import { ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { BlueprintConfigSchemaSettings } from '../BlueprintConfigSchema'
@@ -79,7 +78,7 @@ export const VariantListItem = ({
 	onSaveOverrides: (showStyleVariantId: ShowStyleVariantId, newOps: SomeObjectOverrideOp[]) => void
 }): JSX.Element => {
 	const ref = useRef<HTMLTableRowElement>(null)
-	const [{ handlerId }, drop] = useDrop<DraggableVariant, DraggableDropResult, { handlerId: Identifier | null }>({
+	const [{ handlerId }, drop] = useDrop<DraggableVariant, DraggableDropResult, { handlerId: string | symbol | null }>({
 		accept: ShowStyleDragDropTypes.VARIANT,
 		collect: (monitor: DropTargetMonitor) => ({ handlerId: monitor.getHandlerId() }),
 		hover(hoverVariant: DraggableVariant) {

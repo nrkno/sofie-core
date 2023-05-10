@@ -378,6 +378,15 @@ export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft: number = 0)
 								.catch(console.error)
 						},
 					})
+				} else {
+					doModalDialog({
+						title: t('Remove old data from database'),
+						message: t('Nothing to cleanup!'),
+						acceptOnly: true,
+						onAccept: () => {
+							// nothing
+						},
+					})
 				}
 			}
 		})

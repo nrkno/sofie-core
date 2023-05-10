@@ -18,9 +18,9 @@ import { TSRHandler } from './tsrHandler'
 import { Logger } from 'winston'
 // eslint-disable-next-line node/no-extraneous-import
 import { MemUsageReport as ThreadMemUsageReport } from 'threadedclass'
-import { Process } from './process'
 import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
 import { BaseRemoteDeviceIntegration } from 'timeline-state-resolver/dist/service/remoteDeviceInstance'
+import { getVersions } from './versions'
 
 export interface CoreConfig {
 	host: string
@@ -51,7 +51,7 @@ export class CoreHandler {
 	private _executedFunctions: { [id: string]: boolean } = {}
 	private _tsrHandler?: TSRHandler
 	private _coreConfig?: CoreConfig
-	private _process?: Process
+	private _certificates?: Buffer[]
 
 	private _studioId: StudioId | undefined
 	private _timelineSubscription: string | null = null
@@ -65,10 +65,10 @@ export class CoreHandler {
 		this._deviceOptions = deviceOptions
 	}
 
-	async init(config: CoreConfig, process: Process): Promise<void> {
+	async init(config: CoreConfig, certificates: Buffer[]): Promise<void> {
 		this._statusInitialized = false
 		this._coreConfig = config
-		this._process = process
+		this._certificates = certificates
 
 		this.core = new CoreConnection(
 			this.getCoreConnectionOptions(
@@ -96,9 +96,9 @@ export class CoreHandler {
 			host: config.host,
 			port: config.port,
 		}
-		if (this._process && this._process.certificates.length) {
+		if (this._certificates.length) {
 			ddpConfig.tlsOpts = {
-				ca: this._process.certificates,
+				ca: this._certificates,
 			}
 		}
 
@@ -169,6 +169,8 @@ export class CoreHandler {
 			watchDog: this._coreConfig ? this._coreConfig.watchdog : true,
 
 			configManifest: PLAYOUT_DEVICE_CONFIG,
+
+			documentationUrl: 'https://github.com/nrkno/sofie-core',
 		}
 
 		if (!options.deviceToken) {
@@ -176,7 +178,8 @@ export class CoreHandler {
 			options.deviceToken = 'unsecureToken'
 		}
 
-		if (subDeviceType === PeripheralDeviceAPI.PERIPHERAL_SUBTYPE_PROCESS) options.versions = this._getVersions()
+		if (subDeviceType === PeripheralDeviceAPI.PERIPHERAL_SUBTYPE_PROCESS)
+			options.versions = getVersions(this.logger)
 		return options
 	}
 	onConnected(fcn: () => any): void {
@@ -332,7 +335,6 @@ export class CoreHandler {
 	}
 	setupObserverForPeripheralDeviceCommands(functionObject: CoreTSRDeviceHandler | CoreHandler): void {
 		const observer = functionObject.core.observe('peripheralDeviceCommands')
-		functionObject.killProcess(0)
 		functionObject._observers.push(observer)
 		const addedChangedCommand = (id: string) => {
 			const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
@@ -363,16 +365,12 @@ export class CoreHandler {
 			}
 		})
 	}
-	killProcess(actually: number): boolean {
-		if (actually === 1) {
-			this.logger.info('KillProcess command received, shutting down in 1000ms!')
-			setTimeout(() => {
-				// eslint-disable-next-line no-process-exit
-				process.exit(0)
-			}, 1000)
-			return true
-		}
-		return false
+	killProcess(): void {
+		this.logger.info('KillProcess command received, shutting down in 1000ms!')
+		setTimeout(() => {
+			// eslint-disable-next-line no-process-exit
+			process.exit(0)
+		}, 1000)
 	}
 	async devicesMakeReady(okToDestroyStuff?: boolean, activeRundownId?: string): Promise<any> {
 		if (this._tsrHandler) {
@@ -465,37 +463,6 @@ export class CoreHandler {
 			statusCode: statusCode,
 			messages: messages,
 		})
-	}
-	private _getVersions() {
-		const versions: { [packageName: string]: string } = {}
-
-		if (process.env.npm_package_version) {
-			versions['_process'] = process.env.npm_package_version
-		}
-
-		const pkgNames = [
-			'timeline-state-resolver',
-			'atem-connection',
-			'atem-state',
-			'casparcg-connection',
-			'casparcg-state',
-			'emberplus-connection',
-			'superfly-timeline',
-		]
-		try {
-			for (const pkgName of pkgNames) {
-				try {
-					// eslint-disable-next-line @typescript-eslint/no-var-requires
-					const pkgInfo = require(`${pkgName}/package.json`)
-					versions[pkgName] = pkgInfo.version || 'N/A'
-				} catch (e) {
-					this.logger.error(`Failed to load package.json for lib "${pkgName}": ${e}`)
-				}
-			}
-		} catch (e) {
-			this.logger.error(e)
-		}
-		return versions
 	}
 }
 
@@ -647,8 +614,8 @@ export class CoreTSRDeviceHandler {
 			messages: ['Uninitialized'],
 		})
 	}
-	killProcess(actually: number): boolean {
-		return this._coreParentHandler.killProcess(actually)
+	killProcess(): void {
+		this._coreParentHandler.killProcess()
 	}
 	async executeAction(actionId: string, payload?: Record<string, any>): Promise<ActionExecutionResult> {
 		this._coreParentHandler.logger.info(`Exec ${actionId} on ${this._deviceId}`)

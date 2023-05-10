@@ -111,8 +111,6 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 					piece={piece}
 					timelineBase={timelineBase}
 					partDuration={partDuration}
-					partId={part.partId}
-					partInstanceId={part.instance._id}
 					onClick={onPieceClick}
 					onDoubleClick={onPieceDoubleClick}
 				/>

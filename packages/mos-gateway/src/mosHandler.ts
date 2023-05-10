@@ -25,7 +25,8 @@ import {
 } from '@mos-connection/connector'
 
 import * as Winston from 'winston'
-import { CoreHandler, CoreMosDeviceHandler } from './coreHandler'
+import { CoreHandler } from './coreHandler'
+import { CoreMosDeviceHandler } from './CoreMosDeviceHandler'
 import {
 	DEFAULT_MOS_TIMEOUT_TIME,
 	DEFAULT_MOS_HEARTBEAT_INTERVAL,
@@ -211,6 +212,8 @@ export class MosHandler {
 		connectionConfig.mosID = this._settings.mosId
 
 		connectionConfig.strict = this.strict
+
+		connectionConfig.ports = this._settings.ports
 
 		this.mos = new MosConnection(connectionConfig)
 		this.mos.on('rawMessage', (source, type, message) => {
@@ -473,12 +476,6 @@ export class MosHandler {
 
 		deviceOptions = JSON.parse(JSON.stringify(deviceOptions)) // deep clone
 
-		// Note: This is useful to do when debugging locally, and running a mos-server on localhost:
-		// deviceOptions.primary.ports = {
-		// 	lower: 11540,
-		// 	upper: 11541,
-		// 	query: 11542,
-		// }
 		deviceOptions.primary.timeout = deviceOptions.primary.timeout || DEFAULT_MOS_TIMEOUT_TIME
 
 		deviceOptions.primary.heartbeatInterval =

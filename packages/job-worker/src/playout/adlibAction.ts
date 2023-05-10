@@ -29,8 +29,8 @@ export async function handleExecuteAdlibAction(
 		// First load the minimum amount of data required to run the executeDataStoreAction handler
 		if (!playlist) throw new Error(`Job playlist "${data.playlistId}" not found `)
 
-		if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
-		if (!playlist.currentPartInfo) throw UserError.create(UserErrorMessage.NoCurrentPart)
+		if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
+		if (!playlist.currentPartInfo) throw UserError.create(UserErrorMessage.NoCurrentPart, undefined, 412)
 
 		const initCache = await CacheForPlayoutPreInit.createPreInit(context, lock, playlist, false)
 
