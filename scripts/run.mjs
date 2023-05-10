@@ -48,24 +48,66 @@ function watchMeteor() {
 }
 
 try {
-	// Pre-steps
-	await concurrently(
-		[
+	// Pre-steps:
+	{
+		// Install and build packages
+		console.log("###################################");
+		console.log("Installing and building packages...");
+		console.log("###################################");
+		await concurrently(
+			[
+				{
+					command: "yarn install",
+					cwd: "packages",
+					name: "PACKAGES-INSTALL",
+					prefixColor: "yellow",
+				},
+			],
 			{
-				command: "yarn build:try || true",
-				cwd: "packages",
-				name: "PACKAGES-BUILD",
-				prefixColor: "yellow",
-			},
-		],
-		{
-			prefix: "name",
-			killOthers: ["failure", "success"],
-			restartTries: 1,
-		}
-	).result;
+				prefix: "name",
+				killOthers: ["failure", "success"],
+				restartTries: 1,
+			}
+		).result;
+		await concurrently(
+			[
+				{
+					command: "yarn build:try || true",
+					cwd: "packages",
+					name: "PACKAGES-BUILD",
+					prefixColor: "yellow",
+				},
+			],
+			{
+				prefix: "name",
+				killOthers: ["failure", "success"],
+				restartTries: 1,
+			}
+		).result;
+		console.log("#################################");
+		console.log("Installing meteor dependencies...");
+		console.log("#################################");
+		await concurrently(
+			[
+				{
+					command: "meteor yarn install",
+					cwd: "meteor",
+					name: "METEOR-INSTALL",
+					prefixColor: "red",
+				},
+			],
+			{
+				prefix: "name",
+				killOthers: ["failure", "success"],
+				restartTries: 1,
+			}
+		).result;
+	}
 
 	// The main watching execution
+	console.log("#################################");
+	console.log("          Starting up...         ");
+	console.log("#################################");
 	await concurrently(
 		[
 			...(config.uiOnly ? [] : watchPackages()),
