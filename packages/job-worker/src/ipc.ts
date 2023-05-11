@@ -2,6 +2,7 @@ import { interceptLogging, LogEntry, logger } from './logging'
 import { FastTrackTimelineFunc, JobSpec, JobWorkerBase } from './main'
 import { JobManager, JobStream } from './manager'
 import { WorkerId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { getPrometheusMetricsString, setupPrometheusMetrics } from '@sofie-automation/corelib/dist/prometheus'
 
 /**
  * A very simple implementation of JobManager, that is designed to work via threadedClass over IPC
@@ -51,8 +52,13 @@ export class IpcJobWorker extends JobWorkerBase {
 	) {
 		// Intercept logging to pipe back over ipc
 		interceptLogging('worker-parent', async (msg) => logLine(msg))
+		setupPrometheusMetrics('worker-parent')
 
 		const jobManager = new IpcJobManager(jobFinished, queueJob, interruptJobStream, waitForNextJob, getNextJob)
 		super(workerId, jobManager, logLine, fastTrackTimeline)
+	}
+
+	public async collectMetrics(): Promise<string[]> {
+		return Promise.all([getPrometheusMetricsString(), ...this.collectWorkerSetMetrics()])
 	}
 }

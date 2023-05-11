@@ -4,16 +4,35 @@ import { getDebugStates, getSystemStatus } from './systemStatus'
 import { ServerResponse, IncomingMessage } from 'http'
 import { PickerGET } from '../api/http'
 import { protectString } from '../../lib/lib'
-
 import { Settings } from '../../lib/Settings'
 import { MethodContextAPI } from '../../lib/api/methods'
 import { profiler } from '../api/profiler'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PrometheusHTTPContentType, getPrometheusMetricsString } from '@sofie-automation/corelib/dist/prometheus'
+import { collectWorkerPrometheusMetrics } from '../worker/worker'
 
 const apmNamespace = 'http'
 
 if (!Settings.enableUserAccounts) {
 	// For backwards compatibility:
+
+	PickerGET.route('/metrics', async (_params, _req: IncomingMessage, res: ServerResponse) => {
+		const transaction = profiler.startTransaction('metrics', apmNamespace)
+		try {
+			res.setHeader('Content-Type', PrometheusHTTPContentType)
+
+			const [meteorMetrics, workerMetrics] = await Promise.all([
+				getPrometheusMetricsString(),
+				collectWorkerPrometheusMetrics(),
+			])
+
+			res.end([meteorMetrics, ...workerMetrics].join('\n\n'))
+		} catch (ex) {
+			res.statusCode = 500
+			res.end(ex)
+		}
+		transaction?.end()
+	})
 
 	PickerGET.route('/health', async (_params, _req: IncomingMessage, res: ServerResponse) => {
 		const transaction = profiler.startTransaction('health', apmNamespace)

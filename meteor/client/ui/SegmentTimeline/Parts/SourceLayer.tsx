@@ -105,7 +105,7 @@ export function SourceLayer(props: ISourceLayerProps): JSX.Element {
 							// filter only pieces belonging to this part
 							return piece.instance.partInstanceId === props.part.instance._id
 								? // filter only pieces, that have not been hidden from the UI
-								  piece.instance.hidden !== true && piece.instance.piece.virtual !== true
+								  piece.instance.piece.virtual !== true
 								: false
 						})
 				  )

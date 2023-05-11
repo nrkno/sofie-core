@@ -2131,6 +2131,7 @@ __metadata:
     influx: ^5.9.3
     nanoid: ^3.3.4
     object-path: ^0.11.8
+    prom-client: ^14.2.0
     timecode: 0.0.4
     tslib: ^2.4.0
     type-fest: ^2.19.0
@@ -2159,7 +2160,6 @@ __metadata:
     "@sofie-automation/corelib": 1.50.0-in-development
     "@sofie-automation/shared-lib": 1.50.0-in-development
     amqplib: ^0.10.3
-    debounce-fn: ^4.0.0
     deepmerge: ^4.3.1
     elastic-apm-node: ^3.43.0
     eventemitter3: ^4.0.7
@@ -2180,7 +2180,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@portal:../packages/shared-lib::locator=automation-core%40workspace%3A."
   dependencies:
     "@mos-connection/model": ^3.0.2
-    timeline-state-resolver-types: 8.0.0-nightly-release50-20230413-103141-6cf156314.0
+    timeline-state-resolver-types: 8.0.0-nightly-release50-20230510-114847-e6b95db66.0
     tslib: ^2.4.0
     type-fest: ^2.19.0
   languageName: node
@@ -3786,6 +3786,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"bintrees@npm:1.0.2":
+  version: 1.0.2
+  resolution: "bintrees@npm:1.0.2"
+  checksum: 56a52b7d3634e30002b1eda740d2517a22fa8e9e2eb088e919f37c030a0ed86e364ab59e472fc770fc8751308054bb1c892979d150e11d9e11ac33bcc1b5d16e
+  languageName: node
+  linkType: hard
+
 "bn.js@npm:^4.0.0, bn.js@npm:^4.1.0, bn.js@npm:^4.11.9":
   version: 4.12.0
   resolution: "bn.js@npm:4.12.0"
@@ -4949,15 +4956,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debounce-fn@npm:^4.0.0":
-  version: 4.0.0
-  resolution: "debounce-fn@npm:4.0.0"
-  dependencies:
-    mimic-fn: ^3.0.0
-  checksum: 7bf8d142b46a88453bbd6eda083f303049b4c8554af5114bdadfc2da56031030664360e81211ae08b708775e6904db7e6d72a421c4ff473344f4521c2c5e4a22
-  languageName: node
-  linkType: hard
-
 "debug@npm:2.6.9":
   version: 2.6.9
   resolution: "debug@npm:2.6.9"
@@ -5718,8 +5716,8 @@ __metadata:
 
 "eslint-plugin-custom-rules@file:eslint-rules::locator=automation-core%40workspace%3A.":
   version: 0.0.1
-  resolution: "eslint-plugin-custom-rules@file:eslint-rules#eslint-rules::hash=0ae038&locator=automation-core%40workspace%3A."
-  checksum: 6bd9c10938345999e4ca4a09457651f769001172f13f8e8dce0dd5f865d1c8beea73d86ff69c06d755cfacc8a4dd31e0ac41f07581955953e42cff4826f7105e
+  resolution: "eslint-plugin-custom-rules@file:eslint-rules#eslint-rules::hash=94db49&locator=automation-core%40workspace%3A."
+  checksum: 2e1bf2957c9484bdde478b8b196f9d932412934eaab7f37950685220638f3653fedaff3185fd5fa3cb2b773777cdfd59e4b864f985b57fab48709b4600c92d18
   languageName: node
   linkType: hard
 
@@ -9170,13 +9168,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mimic-fn@npm:^3.0.0":
-  version: 3.1.0
-  resolution: "mimic-fn@npm:3.1.0"
-  checksum: f7b167f9115b8bbdf2c3ee55dce9149d14be9e54b237259c4bc1d8d0512ea60f25a1b323f814eb1fe8f5a541662804bcfcfff3202ca58df143edb986849d58db
-  languageName: node
-  linkType: hard
-
 "mimic-fn@npm:^4.0.0":
   version: 4.0.0
   resolution: "mimic-fn@npm:4.0.0"
@@ -10462,6 +10453,15 @@ __metadata:
   version: 0.11.10
   resolution: "process@npm:0.11.10"
   checksum: bfcce49814f7d172a6e6a14d5fa3ac92cc3d0c3b9feb1279774708a719e19acd673995226351a082a9ae99978254e320ccda4240ddc474ba31a76c79491ca7c3
+  languageName: node
+  linkType: hard
+
+"prom-client@npm:^14.2.0":
+  version: 14.2.0
+  resolution: "prom-client@npm:14.2.0"
+  dependencies:
+    tdigest: ^0.1.1
+  checksum: d4c04e57616c72643dd02862d0d4bde09cf8869a19d0aef5e7b785e6e27d02439b66cdc165e3492f62d579fa91579183820870cc757a09b99399d2d02f46b9f1
   languageName: node
   linkType: hard
 
@@ -12420,6 +12420,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tdigest@npm:^0.1.1":
+  version: 0.1.2
+  resolution: "tdigest@npm:0.1.2"
+  dependencies:
+    bintrees: 1.0.2
+  checksum: 44de8246752b6f8c2924685f969fd3d94c36949f22b0907e99bef2b2220726dd8467f4730ea96b06040b9aa2587c0866049640039d1b956952dfa962bc2075a3
+  languageName: node
+  linkType: hard
+
 "temp-dir@npm:^2.0.0":
   version: 2.0.0
   resolution: "temp-dir@npm:2.0.0"
@@ -12526,12 +12535,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230413-103141-6cf156314.0":
-  version: 8.0.0-nightly-release50-20230413-103141-6cf156314.0
-  resolution: "timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230413-103141-6cf156314.0"
+"timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230510-114847-e6b95db66.0":
+  version: 8.0.0-nightly-release50-20230510-114847-e6b95db66.0
+  resolution: "timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230510-114847-e6b95db66.0"
   dependencies:
-    tslib: ^2.4.1
-  checksum: 6f2b259330afaee385a1e749c61d3a672f374c8403e3893bd2c5f6222b1e5d816efeee1d16648b411cf1d7dd8dd69aa3428a04c190ff870ef6a7f641dbb3b8b8
+    tslib: ^2.5.0
+  checksum: b2d0a450178135a55f7a0e440dcbbcc0f51a334f4da384d64f3ac8909c8167fefb99e06e38532c5a7855c89a647c44e575bd979efcd25c893fcc994c0a9bd8c5
   languageName: node
   linkType: hard
 
@@ -12745,7 +12754,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.1.0, tslib@npm:^2.2.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.4.1, tslib@npm:^2.5.0":
+"tslib@npm:^2.1.0, tslib@npm:^2.2.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.5.0":
   version: 2.5.0
   resolution: "tslib@npm:2.5.0"
   checksum: ae3ed5f9ce29932d049908ebfdf21b3a003a85653a9a140d614da6b767a93ef94f460e52c3d787f0e4f383546981713f165037dc2274df212ea9f8a4541004e1

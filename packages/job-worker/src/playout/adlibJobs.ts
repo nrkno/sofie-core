@@ -197,11 +197,7 @@ async function pieceTakeNowAsAdlib(
 			}
 		}
 
-		cache.PieceInstances.updateOne(pieceInstanceToCopy._id, (p) => {
-			p.disabled = true
-			p.hidden = true
-			return p
-		})
+		cache.PieceInstances.remove(pieceInstanceToCopy._id)
 	}
 
 	cache.PieceInstances.insert(newPieceInstance)

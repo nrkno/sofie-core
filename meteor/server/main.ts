@@ -66,6 +66,7 @@ import './Connections'
 import './coreSystem'
 import './cronjobs'
 import './email'
+import './prometheus'
 import './api/deviceTriggers/observer'
 // import './performanceMonitor' // called above
 
