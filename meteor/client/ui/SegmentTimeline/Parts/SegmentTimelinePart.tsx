@@ -613,7 +613,12 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		return { red, green, blue }
 	}
 
-	render(): JSX.Element {
+	render(): JSX.Element | null {
+		// optimize early, if not inside viewport
+		if (!this.state.isInsideViewport) {
+			return null
+		}
+
 		const { t } = this.props
 
 		const innerPart = this.props.part.instance.part
