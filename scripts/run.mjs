@@ -1,6 +1,9 @@
 import process from "process";
 import concurrently from "concurrently";
 
+/** These are extra packages in the mono-repo, not neccessary for Sofie Core development */
+const EXTRA_PACKAGES = ['@sofie-automation/openapi', 'live-status-gateway', 'mos-gateway']
+
 const args = process.argv.slice(2);
 
 const config = {
@@ -11,7 +14,7 @@ const config = {
 function watchPackages() {
 	return [
 		{
-			command: "yarn watch",
+			command: config.uiOnly ? `yarn watch ${EXTRA_PACKAGES.map((pkg) => `--ignore ${pkg}`).join(' ')}` : "yarn watch",
 			cwd: "packages",
 			name: "PACKAGES-TSC",
 			prefixColor: "red",
@@ -52,7 +55,7 @@ try {
 	await concurrently(
 		[
 			{
-				command: "yarn build:try || true",
+				command: config.uiOnly ? `yarn build:try ${EXTRA_PACKAGES.map((pkg) => `--ignore ${pkg}`).join(' ')} || true` : "yarn build:try || true",
 				cwd: "packages",
 				name: "PACKAGES-BUILD",
 				prefixColor: "yellow",

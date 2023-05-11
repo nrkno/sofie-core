@@ -5468,7 +5468,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
     "@mos-connection/model": ^3.0.2
-    timeline-state-resolver-types: 8.0.0-nightly-release50-20230413-103141-6cf156314.0
+    timeline-state-resolver-types: 8.0.0-nightly-release50-20230510-114847-e6b95db66.0
     tslib: ^2.4.0
     type-fest: ^2.19.0
   languageName: unknown
@@ -8500,6 +8500,17 @@ asn1@evs-broadcast/node-asn1:
     tslib: ^2.5.0
     xml2js: ^0.4.23
   checksum: 6fc53cbb8cd588a9baf43a3b9abd7ed25e9b3fe0ebfcfa69fd33cb3fd6d72ad794a9e220d61d699052e7b38324f62aaa4a7cf267b4bc0507e6e0ec41dd5e7e62
+  languageName: node
+  linkType: hard
+
+"casparcg-connection@npm:^6.0.2":
+  version: 6.0.3
+  resolution: "casparcg-connection@npm:6.0.3"
+  dependencies:
+    eventemitter3: ^4.0.7
+    tslib: ^2.5.0
+    xml2js: ^0.4.23
+  checksum: 747cfc551b5955d9f38236c8d46bb7fb9cc8642e0cb73501d3e4d566787ccdb7290502d16686c0c1994e685feaba6be5aa6721104619a362096d3c153f942630
   languageName: node
   linkType: hard
 
@@ -16813,7 +16824,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"node-fetch@npm:^2.6.0, node-fetch@npm:^2.6.1, node-fetch@npm:^2.6.7":
+"node-fetch@npm:^2.6.0, node-fetch@npm:^2.6.7":
   version: 2.6.9
   resolution: "node-fetch@npm:2.6.9"
   dependencies:
@@ -16824,6 +16835,20 @@ asn1@evs-broadcast/node-asn1:
     encoding:
       optional: true
   checksum: acb04f9ce7224965b2b59e71b33c639794d8991efd73855b0b250921382b38331ffc9d61bce502571f6cc6e11a8905ca9b1b6d4aeb586ab093e2756a1fd190d0
+  languageName: node
+  linkType: hard
+
+"node-fetch@npm:^2.6.1":
+  version: 2.6.11
+  resolution: "node-fetch@npm:2.6.11"
+  dependencies:
+    whatwg-url: ^5.0.0
+  peerDependencies:
+    encoding: ^0.1.0
+  peerDependenciesMeta:
+    encoding:
+      optional: true
+  checksum: 249d0666a9497553384d46b5ab296ba223521ac88fed4d8a17d6ee6c2efb0fc890f3e8091cafe7f9fba8151a5b8d925db2671543b3409a56c3cd522b468b47b3
   languageName: node
   linkType: hard
 
@@ -17821,7 +17846,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"osc@npm:^2.4.2":
+"osc@npm:^2.4.4":
   version: 2.4.4
   resolution: "osc@npm:2.4.4"
   dependencies:
@@ -18588,7 +18613,7 @@ asn1@evs-broadcast/node-asn1:
     "@sofie-automation/shared-lib": 1.50.0-in-development
     debug: ^4.3.3
     influx: ^5.9.3
-    timeline-state-resolver: 8.0.0-nightly-release50-20230413-103141-6cf156314.0
+    timeline-state-resolver: 8.0.0-nightly-release50-20230510-114847-e6b95db66.0
     tslib: ^2.4.0
     underscore: ^1.13.4
     winston: ^3.8.2
@@ -20311,7 +20336,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"request@npm:^2.88.0, request@npm:^2.88.2":
+"request@npm:^2.88.2":
   version: 2.88.2
   resolution: "request@npm:2.88.2"
   dependencies:
@@ -22265,48 +22290,47 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230413-103141-6cf156314.0":
-  version: 8.0.0-nightly-release50-20230413-103141-6cf156314.0
-  resolution: "timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230413-103141-6cf156314.0"
+"timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230510-114847-e6b95db66.0":
+  version: 8.0.0-nightly-release50-20230510-114847-e6b95db66.0
+  resolution: "timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230510-114847-e6b95db66.0"
   dependencies:
-    tslib: ^2.4.1
-  checksum: 6f2b259330afaee385a1e749c61d3a672f374c8403e3893bd2c5f6222b1e5d816efeee1d16648b411cf1d7dd8dd69aa3428a04c190ff870ef6a7f641dbb3b8b8
+    tslib: ^2.5.0
+  checksum: b2d0a450178135a55f7a0e440dcbbcc0f51a334f4da384d64f3ac8909c8167fefb99e06e38532c5a7855c89a647c44e575bd979efcd25c893fcc994c0a9bd8c5
   languageName: node
   linkType: hard
 
-"timeline-state-resolver@npm:8.0.0-nightly-release50-20230413-103141-6cf156314.0":
-  version: 8.0.0-nightly-release50-20230413-103141-6cf156314.0
-  resolution: "timeline-state-resolver@npm:8.0.0-nightly-release50-20230413-103141-6cf156314.0"
+"timeline-state-resolver@npm:8.0.0-nightly-release50-20230510-114847-e6b95db66.0":
+  version: 8.0.0-nightly-release50-20230510-114847-e6b95db66.0
+  resolution: "timeline-state-resolver@npm:8.0.0-nightly-release50-20230510-114847-e6b95db66.0"
   dependencies:
     "@tv2media/v-connection": ^7.3.0
     atem-connection: 2.4.0
     atem-state: ^0.12.2
-    casparcg-connection: ^6.0.0
+    casparcg-connection: ^6.0.2
     casparcg-state: ^3.0.2
     debug: ^4.3.1
-    deepmerge: ^4.2.2
+    deepmerge: ^4.3.1
     emberplus-connection: ^0.1.2
     eventemitter3: ^4.0.7
     got: ^11.8.6
     hyperdeck-connection: ^0.5.0
     obs-websocket-js: ^4.0.3
-    osc: ^2.4.2
+    osc: ^2.4.4
     p-all: ^3.0.0
     p-queue: ^6.4.0
     p-timeout: ^3.2.0
-    request: ^2.88.0
     sprintf-js: ^1.1.2
     superfly-timeline: ^8.3.1
     threadedclass: ^1.2.0
-    timeline-state-resolver-types: 8.0.0-nightly-release50-20230413-103141-6cf156314.0
-    tslib: ^2.4.1
+    timeline-state-resolver-types: 8.0.0-nightly-release50-20230510-114847-e6b95db66.0
+    tslib: ^2.5.0
     tv-automation-quantel-gateway-client: ^3.0.2
     underscore: ^1.13.4
     underscore-deep-extend: ^1.1.5
     utf-8-validate: ^5.0.10
     ws: ^7.5.7
     xml-js: ^1.6.11
-  checksum: 6d2d7d5417049f6cc5950886fca8c6de5fb563813e5131022b771c45f360094051f650c29203fa44df56e651d65bc9fdf7620bfc06f7fb68f9b69dfd4df3cd96
+  checksum: e392c4439d371c3005ed9a8f387f6756123c7c3d948c0fc911b788c4dcc9027fb771189827cdd3c6373efbe6453d7cd87439f7f6672dfc1f3471662d6c965ff4
   languageName: node
   linkType: hard
 
@@ -22704,7 +22728,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"tslib@npm:2.5.0, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.2.0, tslib@npm:^2.3.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.4.1, tslib@npm:^2.5.0":
+"tslib@npm:2.5.0, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.2.0, tslib@npm:^2.3.0, tslib@npm:^2.3.1, tslib@npm:^2.4.0, tslib@npm:^2.5.0":
   version: 2.5.0
   resolution: "tslib@npm:2.5.0"
   checksum: ae3ed5f9ce29932d049908ebfdf21b3a003a85653a9a140d614da6b767a93ef94f460e52c3d787f0e4f383546981713f165037dc2274df212ea9f8a4541004e1
