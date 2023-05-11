@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useState } from 'react'
-import { TFunction } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
@@ -11,7 +11,6 @@ import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 export const SegmentTimelinePartHoverPreview = ({
-	t,
 	showMiniInspector,
 	parts,
 	pieces,
@@ -28,7 +27,6 @@ export const SegmentTimelinePartHoverPreview = ({
 	parentTimeScale,
 	showDurationSourceLayers,
 }: {
-	t: TFunction
 	showMiniInspector: boolean
 	parts: PartUi[]
 	pieces: Map<PartId, CalculateTimingsPiece[]>
@@ -48,6 +46,7 @@ export const SegmentTimelinePartHoverPreview = ({
 	parentTimeScale: number
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 }): JSX.Element | null => {
+	const { t } = useTranslation()
 	const [miniInspectorEl, setMiniInnspectorEl] = useState<HTMLDivElement | null>(null)
 	const [containOffset, setContainOffset] = useState(0)
 	const followingPartPreviewDuration = 0.15 * totalSegmentDuration

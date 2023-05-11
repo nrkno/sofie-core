@@ -688,7 +688,6 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 
 	private renderTimeline() {
 		const { smallParts } = this.state
-		const { t } = this.props
 		let livePart: PartExtended | null = null
 		let anyPriorPartWasLive = false
 		let partIsLive = false
@@ -727,10 +726,10 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 				<React.Fragment key={unprotectString(part.instance._id)}>
 					{emitSmallPartsInFlag && !emitSmallPartsInFlagAtEnd && (
 						<SegmentTimelineSmallPartFlag
-							t={t}
 							parts={emitSmallPartsInFlag}
 							pieces={this.props.pieces}
 							followingPart={part}
+							firstPartInSegmentId={firstPartInSegment.partId}
 							sourceLayers={this.props.segment.sourceLayers}
 							timeScale={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
@@ -785,10 +784,10 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 					/>
 					{emitSmallPartsInFlag && emitSmallPartsInFlagAtEnd && (
 						<SegmentTimelineSmallPartFlag
-							t={t}
 							parts={emitSmallPartsInFlag}
 							pieces={this.props.pieces}
 							followingPart={undefined}
+							firstPartInSegmentId={firstPartInSegment.partId}
 							sourceLayers={this.props.segment.sourceLayers}
 							timeScale={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
