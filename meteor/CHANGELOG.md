@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.47.1](https://github.com/nrkno/sofie-core/compare/v1.47.1-1...v1.47.1) (2023-05-11)
+
+
+### Bug Fixes
+
+* leaking `debounce-fn`s when queuing `EventsJobs.PartInstanceTimings` jobs SOFIE-2307 ([#914](https://github.com/nrkno/sofie-core/issues/914)) ([302a98b](https://github.com/nrkno/sofie-core/commit/302a98b997fa8cda89fd47e77ef02900dfd179e2))
+* piece group objects within a part bleeding classes ([#909](https://github.com/nrkno/sofie-core/issues/909)) ([16dbd37](https://github.com/nrkno/sofie-core/commit/16dbd379430fcf92b0a7c8f3dbb4e247d31c6a94))
+
 ### [1.47.1-1](https://github.com/nrkno/sofie-core/compare/v1.47.1-0...v1.47.1-1) (2023-04-26)
 
 
