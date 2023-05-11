@@ -108,6 +108,7 @@ export const SegmentTimelinePartHoverPreview = ({
 							anyPriorPartWasLive={undefined}
 							livePartStartsAt={undefined}
 							livePartDisplayDuration={undefined}
+							budgetDuration={undefined}
 						/>
 					)
 				})}
@@ -141,6 +142,7 @@ export const SegmentTimelinePartHoverPreview = ({
 						anyPriorPartWasLive={undefined}
 						livePartStartsAt={undefined}
 						livePartDisplayDuration={undefined}
+						budgetDuration={undefined}
 					/>
 				)}
 			</div>
