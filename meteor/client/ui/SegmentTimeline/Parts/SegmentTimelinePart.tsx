@@ -86,6 +86,7 @@ interface IProps {
 	anyPriorPartWasLive: boolean | undefined
 	livePartStartsAt: number | undefined
 	livePartDisplayDuration: number | undefined
+	budgetDuration: number | undefined
 }
 
 interface IState {
@@ -313,21 +314,35 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 	}
 
 	getLayerStyle(): React.CSSProperties {
-		const partDisplayDuration = SegmentTimelinePartClass.getPartDisplayDuration(
-			this.props.part,
-			this.props.timingDurations
-		)
-		const partDuration = this.props.cropDuration
-			? Math.min(this.props.cropDuration, partDisplayDuration)
-			: partDisplayDuration
-		const partDurationWithFutureShade = partDuration + (this.state.isLive ? this.getFutureShadePaddingTime() : 0)
+		let partDuration: number
+		if (this.props.isBudgetGap && typeof this.props.budgetDuration === 'number') {
+			partDuration = this.props.budgetDuration - SegmentTimelinePartClass.getPartStartsAt(this.props)
+		} else {
+			const partDisplayDuration = SegmentTimelinePartClass.getPartDisplayDuration(
+				this.props.part,
+				this.props.timingDurations
+			)
+			partDuration = this.props.cropDuration
+				? Math.min(this.props.cropDuration, partDisplayDuration)
+				: partDisplayDuration
+		}
+
+		const futureShadeDuration =
+			this.state.isLive || (this.props.isBudgetGap && this.props.isLiveSegment)
+				? this.getFutureShadePaddingTime()
+				: 0
+		const partDurationWithFutureShadeAccountedFor = this.props.isBudgetGap
+			? partDuration - futureShadeDuration
+			: partDuration + futureShadeDuration
+
 		if (this.props.relative) {
 			return {
-				width: ((partDurationWithFutureShade / (this.props.totalSegmentDuration || 1)) * 100).toString() + '%',
+				width:
+					((partDurationWithFutureShadeAccountedFor / (this.props.totalSegmentDuration || 1)) * 100).toString() + '%',
 			}
 		} else {
 			return {
-				minWidth: (partDurationWithFutureShade * this.props.timeToPixelRatio).toString() + 'px',
+				minWidth: (partDurationWithFutureShadeAccountedFor * this.props.timeToPixelRatio).toString() + 'px',
 			}
 		}
 	}
