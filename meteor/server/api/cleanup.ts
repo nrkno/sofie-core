@@ -341,7 +341,7 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 	// ExpectedMediaItems
 	{
 		const bucketIds = await getAllIdsInCollection(Buckets, removedBuckets)
-		const emiFromBuckets = ExpectedMediaItems.find(
+		const emiFromBuckets = await ExpectedMediaItems.findFetchAsync(
 			{
 				$and: [
 					{
@@ -354,8 +354,8 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 				],
 			},
 			{ fields: { _id: 1 } }
-		).fetch()
-		const emiFromRundowns = ExpectedMediaItems.find(
+		)
+		const emiFromRundowns = await ExpectedMediaItems.findFetchAsync(
 			{
 				$and: [
 					{
@@ -368,11 +368,11 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 				],
 			},
 			{ fields: { _id: 1 } }
-		).fetch()
+		)
 		addToResult(CollectionName.ExpectedMediaItems, emiFromBuckets.length)
 		addToResult(CollectionName.ExpectedMediaItems, emiFromRundowns.length)
 		if (actuallyCleanup) {
-			ExpectedMediaItems.remove({
+			await ExpectedMediaItems.removeAsync({
 				_id: { $in: [...emiFromBuckets, ...emiFromRundowns].map((o) => o._id) },
 			})
 		}

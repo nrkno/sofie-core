@@ -12,8 +12,8 @@ type Timeout = number
 
 const ObserveChangeBufferTimeout = 2000
 
-export const Collections = new Map<CollectionName, AsyncMongoCollection<any>>()
-export function registerCollection(name: CollectionName, collection: AsyncMongoCollection<any>): void {
+export const Collections = new Map<CollectionName, AsyncOnlyMongoCollection<any>>()
+export function registerCollection(name: CollectionName, collection: AsyncOnlyMongoCollection<any>): void {
 	if (Collections.has(name)) throw new Meteor.Error(`Cannot re-register collection "${name}"`)
 	Collections.set(name, collection)
 }

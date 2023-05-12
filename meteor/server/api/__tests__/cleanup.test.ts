@@ -54,7 +54,7 @@ describe('Cleanup', () => {
 	let env: DefaultEnvironment
 
 	beforeEachInFiber(async () => {
-		clearAllDBCollections()
+		await clearAllDBCollections()
 		env = await setupDefaultStudioEnvironment()
 	})
 
@@ -73,7 +73,7 @@ describe('Cleanup', () => {
 	testInFiber('No bad removals', async () => {
 		// Check that cleanupOldDataInner() doesn't remove any data when the default data set is in the DB.
 
-		setDefaultDatatoDB(env, Date.now())
+		await setDefaultDatatoDB(env, Date.now())
 
 		const results = await cleanupOldDataInner(true)
 
@@ -94,21 +94,21 @@ describe('Cleanup', () => {
 	testInFiber('All dependants should be removed', async () => {
 		// Check that cleanupOldDataInner() cleans up all data from the database.
 
-		setDefaultDatatoDB(env, 0)
+		await setDefaultDatatoDB(env, 0)
 
 		// Pre-check, just to check that there is data in the DB:
-		expect(RundownPlaylists.find().count()).toBeGreaterThanOrEqual(1)
-		expect(Rundowns.find().count()).toBeGreaterThanOrEqual(1)
+		expect(await RundownPlaylists.countDocuments()).toBeGreaterThanOrEqual(1)
+		expect(await Rundowns.countDocuments()).toBeGreaterThanOrEqual(1)
 
 		// Remove top-level documents, so that dependants will be removed in cleanup:
-		Studios.remove({})
-		ShowStyleBases.remove({})
-		Blueprints.remove({})
-		PeripheralDevices.remove({})
+		await Studios.removeAsync({})
+		await ShowStyleBases.removeAsync({})
+		await Blueprints.removeAsync({})
+		await PeripheralDevices.removeAsync({})
 
 		// Manually clean up things that aren't cleaned up in cleanupOldDataInner:
 		await Workers.removeAsync({})
-		TriggeredActions.remove({
+		await TriggeredActions.removeAsync({
 			showStyleBaseId: null,
 		})
 
@@ -128,7 +128,7 @@ describe('Cleanup', () => {
 				continue
 
 			try {
-				expect(collection.find().count()).toBe(0)
+				expect(await collection.countDocuments()).toBe(0)
 			} catch (e) {
 				throw new Error(`${collectionName} ${e}`)
 			}
@@ -137,14 +137,14 @@ describe('Cleanup', () => {
 	testInFiber('PieceInstance should be removed when PartInstance is removed', async () => {
 		// Check that cleanupOldDataInner() cleans up all data from the database.
 
-		setDefaultDatatoDB(env, 0)
+		await setDefaultDatatoDB(env, 0)
 
 		// Pre-check, just to check that there is data in the DB:
 		expect(PartInstances.find().count()).toBeGreaterThanOrEqual(1)
 		expect(PieceInstances.find().count()).toBeGreaterThanOrEqual(1)
 
 		// Remove PartInstances, so that dependants will be removed in cleanup:
-		PartInstances.remove({})
+		await PartInstances.removeAsync({})
 
 		const results = await cleanupOldDataInner(true)
 
@@ -159,7 +159,7 @@ describe('Cleanup', () => {
 /**
  * Add "one of each" document into the database
  */
-function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
+async function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 	const studioId = env.studio._id
 	const showStyleBaseId = env.showStyleBaseId
 	const showStyleVariantId = env.showStyleVariantId
@@ -167,7 +167,7 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 
 	const { playlistId, rundownId } = setupDefaultRundownPlaylist(env)
 
-	const segment = Segments.findOne({ rundownId })
+	const segment = await Segments.findOneAsync({ rundownId })
 	if (!segment) throw new Error('No Segment found')
 	const segmentId = segment._id
 
@@ -192,9 +192,9 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		status: '' as any,
 		timelineObjectsString: '' as any,
 	}
-	const pieceId = Pieces.insert(piece)
+	const pieceId = await Pieces.insertAsync(piece)
 
-	AdLibActions.insert({
+	await AdLibActions.insertAsync({
 		_id: getRandomId(),
 		actionId: '',
 		externalId: '',
@@ -205,7 +205,7 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		userDataManifest: {} as any,
 	})
 
-	const bucketId = Buckets.insert({
+	const bucketId = await Buckets.insertAsync({
 		_id: getRandomId(),
 		_rank: 0,
 		buttonHeightScale: 0,
@@ -213,7 +213,7 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		name: 'mock',
 		studioId,
 	})
-	BucketAdLibActions.insert({
+	await BucketAdLibActions.insertAsync({
 		_id: getRandomId(),
 		bucketId,
 		externalId: '',
@@ -226,7 +226,7 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		userData: {} as any,
 		userDataManifest: {} as any,
 	})
-	BucketAdLibs.insert({
+	await BucketAdLibs.insertAsync({
 		_id: getRandomId(),
 		bucketId,
 		externalId: '',
@@ -242,7 +242,7 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		sourceLayerId: '',
 		timelineObjectsString: '' as any,
 	})
-	Evaluations.insert({
+	await Evaluations.insertAsync({
 		_id: getRandomId(),
 		answers: {} as any,
 		organizationId: null,
@@ -251,7 +251,7 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		timestamp: now,
 		userId: null,
 	})
-	const packageId = ExpectedPackages.insert({
+	const packageId = await ExpectedPackages.insertAsync({
 		_id: getRandomId(),
 		blueprintPackageId: '',
 		bucketId,
@@ -269,7 +269,7 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		type: '' as any,
 		version: {} as any,
 	})
-	ExpectedPackageWorkStatuses.insert({
+	await ExpectedPackageWorkStatuses.insertAsync({
 		_id: getRandomId(),
 		deviceId,
 		studioId,
@@ -282,14 +282,14 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		statusChanged: 0,
 		statusReason: {} as any,
 	})
-	ExpectedPlayoutItems.insert({
+	await ExpectedPlayoutItems.insertAsync({
 		_id: getRandomId(),
 		content: {} as any,
 		deviceSubType: {} as any,
 		rundownId,
 		studioId,
 	})
-	ExternalMessageQueue.insert({
+	await ExternalMessageQueue.insertAsync({
 		_id: getRandomId(),
 		created: now,
 		expires: now + 100000,
@@ -299,14 +299,14 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		tryCount: 0,
 		type: '' as any,
 	})
-	IngestDataCache.insert({
+	await IngestDataCache.insertAsync({
 		_id: getRandomId(),
 		data: {} as any,
 		modified: 0,
 		rundownId,
 		type: '' as any,
 	})
-	PackageContainerPackageStatuses.insert({
+	await PackageContainerPackageStatuses.insertAsync({
 		_id: getRandomId(),
 		containerId: '',
 		deviceId,
@@ -315,7 +315,7 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		status: '' as any,
 		studioId,
 	})
-	PackageContainerStatuses.insert({
+	await PackageContainerStatuses.insertAsync({
 		_id: getRandomId(),
 		containerId: '',
 		deviceId,
@@ -323,7 +323,7 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		status: {} as any,
 		studioId,
 	})
-	PackageInfos.insert({
+	await PackageInfos.insertAsync({
 		_id: getRandomId(),
 		actualContentVersionHash: '',
 		deviceId,
@@ -334,7 +334,7 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		type: '' as any,
 	})
 
-	const partInstanceId = PartInstances.insert({
+	const partInstanceId = await PartInstances.insertAsync({
 		_id: getRandomId(),
 		isTemporary: false,
 		part: part,
@@ -345,14 +345,14 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		segmentPlayoutId: getRandomId(),
 		takeCount: 0,
 	})
-	PieceInstances.insert({
+	await PieceInstances.insertAsync({
 		_id: getRandomId(),
 		partInstanceId,
 		piece,
 		playlistActivationId: getRandomId(),
 		rundownId,
 	})
-	PeripheralDeviceCommands.insert({
+	await PeripheralDeviceCommands.insertAsync({
 		_id: getRandomId(),
 		args: [],
 		deviceId,
@@ -360,7 +360,7 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		hasReply: false,
 		time: 0,
 	})
-	RundownBaselineAdLibActions.insert({
+	await RundownBaselineAdLibActions.insertAsync({
 		_id: getRandomId(),
 		actionId: '',
 		display: {} as any,
@@ -369,12 +369,12 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		userData: {} as any,
 		userDataManifest: {} as any,
 	})
-	RundownBaselineObjs.insert({
+	await RundownBaselineObjs.insertAsync({
 		_id: getRandomId(),
 		rundownId,
 		timelineObjectsString: '' as any,
 	})
-	RundownLayouts.insert({
+	await RundownLayouts.insertAsync({
 		_id: getRandomId(),
 		icon: '',
 		iconColor: '',
@@ -384,7 +384,7 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		showStyleBaseId,
 		type: '' as any,
 	})
-	Snapshots.insert({
+	await Snapshots.insertAsync({
 		_id: getRandomId(),
 		comment: '',
 		created: now,
@@ -394,14 +394,14 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		type: '' as any,
 		version: '',
 	})
-	Timeline.insert({
+	await Timeline.insertAsync({
 		_id: studioId,
 		generated: now,
 		generationVersions: {} as any,
 		timelineBlob: '' as any,
 		timelineHash: '' as any,
 	})
-	TimelineDatastore.insert({
+	await TimelineDatastore.insertAsync({
 		_id: getRandomId(),
 		key: '',
 		mode: '' as any,
@@ -409,7 +409,7 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		studioId,
 		value: 0,
 	})
-	UserActionsLog.insert({
+	await UserActionsLog.insertAsync({
 		_id: getRandomId(),
 		args: '',
 		clientAddress: '',
@@ -420,7 +420,7 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		userId: null,
 	})
 
-	TranslationsBundles.insert({
+	await TranslationsBundles.insertAsync({
 		_id: getRandomId(),
 		data: [],
 		hash: '',
@@ -428,7 +428,7 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		originId: generateTranslationBundleOriginId(env.studioBlueprint._id, 'blueprints'),
 		type: '' as any,
 	})
-	TranslationsBundles.insert({
+	await TranslationsBundles.insertAsync({
 		_id: getRandomId(),
 		data: [],
 		hash: '',
@@ -454,16 +454,15 @@ function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 			continue
 
 		try {
-			if (!collection.find().count()) console.log(collectionName)
-			expect(collection.find().count()).toBeGreaterThanOrEqual(1)
+			expect(await collection.countDocuments()).toBeGreaterThanOrEqual(1)
 		} catch (e) {
 			throw new Error(`${collectionName} ${e}`)
 		}
 	}
 }
 
-function clearAllDBCollections() {
+async function clearAllDBCollections() {
 	for (const collection of Collections.values()) {
-		collection.remove({})
+		await collection.removeAsync({})
 	}
 }
