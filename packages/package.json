@@ -30,7 +30,6 @@
 		"docs:serve": "lerna run --scope sofie-documentation --stream start",
 		"watch-for-worker-changes": "nodemon --delay 2.5 --watch job-worker/dist --watch corelib/dist --watch shared-lib/dist --watch blueprints-integration/dist --watch server-core-integration/dist ../scripts/meteor-force-restart.js",
 		"generate-schema-types": "node scripts/schema-types.mjs",
-		"lint-staged": "./node_modules/.bin/lint-staged",
 		"prettier": "cd $INIT_CWD && \"$PROJECT_CWD/node_modules/.bin/prettier\"",
 		"eslint": "cd $INIT_CWD && \"$PROJECT_CWD/node_modules/.bin/eslint\""
 	},

@@ -34,6 +34,7 @@
 	},
 	"devDependencies": {
 		"concurrently": "^8.0.1",
+		"lint-staged": "^13.2.2",
 		"rimraf": "^4.4.1",
 		"semver": "^7.3.8",
 		"snyk-nodejs-lockfile-parser": "^1.48.2"
