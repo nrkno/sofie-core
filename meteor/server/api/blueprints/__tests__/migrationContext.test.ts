@@ -1586,7 +1586,7 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('getTriggeredAction: existing id', async () => {
 				const ctx = await getContext()
 
-				const existingTriggeredActions = await getSystemTriggeredActions()[0]
+				const existingTriggeredActions = (await getSystemTriggeredActions())[0]
 				expect(existingTriggeredActions).toBeTruthy()
 				expect(ctx.getTriggeredAction(existingTriggeredActions._id)).toMatchObject(existingTriggeredActions)
 			})

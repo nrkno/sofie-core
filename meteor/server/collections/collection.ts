@@ -512,19 +512,19 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 	}
 
 	observeChanges(
-		_selector: MongoQuery<DBInterface> | DBInterface['_id'],
-		_callbacks: ObserveChangesCallbacks<DBInterface>,
-		_options?: FindOptions<DBInterface>
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		callbacks: ObserveChangesCallbacks<DBInterface>,
+		options?: FindOptions<DBInterface>
 	): Meteor.LiveQueryHandle {
-		throw new Error('observeChanges not supported in tests')
+		return this.find(selector, options).observeChanges(callbacks)
 	}
 
 	observe(
-		_selector: MongoQuery<DBInterface> | DBInterface['_id'],
-		_callbacks: ObserveCallbacks<DBInterface>,
-		_options?: FindOptions<DBInterface>
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
+		callbacks: ObserveCallbacks<DBInterface>,
+		options?: FindOptions<DBInterface>
 	): Meteor.LiveQueryHandle {
-		throw new Error('observe not supported in tests')
+		return this.find(selector, options).observe(callbacks)
 	}
 
 	async insertAsync(doc: DBInterface): Promise<DBInterface['_id']> {

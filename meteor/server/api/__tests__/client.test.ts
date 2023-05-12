@@ -68,6 +68,7 @@ describe('ClientAPI', () => {
 					mockFunctionName,
 					...mockArgs
 				)
+				promise.catch(() => null) // Dismiss uncaught promise warning
 				await new Promise((resolve) => orgSetTimeout(resolve, 100))
 			})
 			testInFiber('Logs the call in UserActionsLog', async () => {
@@ -121,19 +122,25 @@ describe('ClientAPI', () => {
 		})
 		describe('Call a failing method on the peripheralDevice', () => {
 			let logMethodName = `not set yet`
-			beforeAllInFiber(() => {
+			let promise: Promise<void>
+			beforeAllInFiber(async () => {
 				logMethodName = `${mockDeviceId}: ${mockFailingFunctionName}`
+
+				promise = makePromise(() => {
+					return Meteor.call(
+						ClientAPIMethods.callPeripheralDeviceFunction,
+						mockContext,
+						mockDeviceId,
+						undefined,
+						mockFailingFunctionName,
+						...mockArgs
+					)
+				})
+				promise.catch(() => null) // Dismiss uncaught promise warning
+
+				await new Promise((resolve) => orgSetTimeout(resolve, 100))
 			})
-			const promise = makePromise(() => {
-				return Meteor.call(
-					ClientAPIMethods.callPeripheralDeviceFunction,
-					mockContext,
-					mockDeviceId,
-					undefined,
-					mockFailingFunctionName,
-					...mockArgs
-				)
-			})
+
 			testInFiber('Logs the call in UserActionsLog', async () => {
 				const log = (await UserActionsLog.findOneAsync({
 					method: logMethodName,
