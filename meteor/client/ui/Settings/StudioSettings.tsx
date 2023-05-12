@@ -18,6 +18,7 @@ import { JSONBlob, JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/J
 import { StudioBlueprintConfigurationSettings } from './Studio/BlueprintConfiguration'
 import { SubdeviceManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { JSONSchema } from '@sofie-automation/blueprints-integration'
+import { StudioAllSettings } from './Studio/StudioAllSettings'
 
 export default function StudioSettings(): JSX.Element {
 	const match = useRouteMatch<{ studioId: string }>()
@@ -105,8 +106,9 @@ export default function StudioSettings(): JSX.Element {
 					<ErrorBoundary>
 						<Switch>
 							<Route path={`${match.path}/all-settings`}>
-								<StudioAllSettings studio={studio} availableShowStyleBases={availableShowStyleBases} />
+								<StudioAllSettings studioId={studio._id} availableShowStyleBases={availableShowStyleBases} />
 							</Route>
+							{/* Legacy: */}
 							<Route path={`${match.path}/generic`}>
 								<StudioGenericProperties studio={studio} availableShowStyleBases={availableShowStyleBases} />
 							</Route>

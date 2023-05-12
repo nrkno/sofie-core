@@ -17,6 +17,7 @@ interface IStudioDevicesProps {
 	studioId: StudioId
 }
 
+/** @deprecated */
 export function StudioDevices({ studioId }: IStudioDevicesProps): JSX.Element {
 	const { t } = useTranslation()
 

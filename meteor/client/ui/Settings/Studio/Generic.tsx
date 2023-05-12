@@ -21,6 +21,7 @@ interface IStudioGenericPropertiesProps {
 	}>
 }
 interface IStudioGenericPropertiesState {}
+/** @deprecated */
 export const StudioGenericProperties = withTranslation()(
 	class StudioGenericProperties extends React.Component<
 		Translated<IStudioGenericPropertiesProps>,

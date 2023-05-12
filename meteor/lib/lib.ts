@@ -533,3 +533,14 @@ export class DummyReactiveVar<T> implements ReactiveVar<T> {
 		this.value = newValue
 	}
 }
+/** Convenience method that does both a array.map() and an array.filter() */
+export function mapAndFilter<A, B>(sourceList: A[], mapAndFilterFcn: (source: A) => B | undefined): B[] {
+	const returnList: B[] = []
+	for (const item of sourceList) {
+		const returnItem = mapAndFilterFcn(item)
+		if (returnItem !== undefined) {
+			returnList.push(returnItem)
+		}
+	}
+	return returnList
+}

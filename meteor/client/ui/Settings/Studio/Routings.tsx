@@ -40,6 +40,7 @@ interface IStudioRoutingsState {
 	editedItems: Array<string>
 }
 
+/** @deprecated */
 export const StudioRoutings = withTranslation()(
 	class StudioRoutings extends React.Component<Translated<IStudioRoutingsProps>, IStudioRoutingsState> {
 		constructor(props: Translated<IStudioRoutingsProps>) {

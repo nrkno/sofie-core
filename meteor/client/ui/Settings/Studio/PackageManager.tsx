@@ -21,6 +21,7 @@ interface IStudioPackageManagerSettingsState {
 	editedAccessors: Array<string>
 }
 
+/** @deprecated */
 export const StudioPackageManagerSettings = withTranslation()(
 	class StudioPackageManagerSettings extends React.Component<
 		Translated<IStudioPackageManagerSettingsProps>,

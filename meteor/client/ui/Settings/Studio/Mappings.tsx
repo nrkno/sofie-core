@@ -55,6 +55,7 @@ interface IStudioMappingsProps {
 	translationNamespaces: string[]
 }
 
+/** @deprecated */
 export function StudioMappings({ manifest, translationNamespaces, studio }: IStudioMappingsProps): JSX.Element {
 	const { t } = useTranslation()
 
