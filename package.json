@@ -10,7 +10,8 @@
 		"postinstall": "run install:packages && run install:meteor",
 		"install:meteor": "cd meteor && meteor --version && meteor npm install -g yarn && node ../scripts/fix-windows-yarn.js && meteor yarn install",
 		"install:packages": "cd packages && yarn install",
-		"start": "yarn install && run dev",
+		"start": "yarn install && run install-and-build && run dev",
+		"install-and-build": "node ./scripts/install-and-build.mjs",
 		"dev": "node ./scripts/run.mjs",
 		"restart:meteor": "node ./scripts/meteor-force-restart.js",
 		"build:packages": "cd packages && run build",
@@ -24,13 +25,13 @@
 		"meteor:run": "cd meteor && meteor yarn start",
 		"lint": "run lint:meteor && run lint:packages",
 		"unit": "run unit:meteor && run unit:packages",
-		"validate:release": "yarn install && run build:packages && run validate:release:packages && run validate:release:meteor",
+		"validate:release": "yarn install && run install-and-build && run validate:release:packages && run validate:release:meteor",
 		"validate:release:meteor": "cd meteor && meteor yarn validate:prod-dependencies && meteor yarn license-validate && meteor yarn lint && meteor yarn test",
 		"validate:release:packages": "cd packages && run validate:dependencies && run test",
 		"meteor": "cd meteor && meteor",
 		"docs:serve": "cd packages && run docs:serve",
 		"reset": "node scripts/reset.mjs",
-		"test-all": "yarn install && run build:packages && run check-types:meteor && run lint:packages && run lint:meteor && run test:packages && run test:meteor"
+		"test-all": "yarn install && run install-and-build && run check-types:meteor && run lint:packages && run lint:meteor && run test:packages && run test:meteor"
 	},
 	"devDependencies": {
 		"concurrently": "^8.0.1",

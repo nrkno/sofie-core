@@ -48,61 +48,7 @@ function watchMeteor() {
 }
 
 try {
-	// Pre-steps:
-	{
-		// Install and build packages
-		console.log("###################################");
-		console.log("Installing and building packages...");
-		console.log("###################################");
-		await concurrently(
-			[
-				{
-					command: "yarn install",
-					cwd: "packages",
-					name: "PACKAGES-INSTALL",
-					prefixColor: "yellow",
-				},
-			],
-			{
-				prefix: "name",
-				killOthers: ["failure", "success"],
-				restartTries: 1,
-			}
-		).result;
-		await concurrently(
-			[
-				{
-					command: "yarn build:try",
-					cwd: "packages",
-					name: "PACKAGES-BUILD",
-					prefixColor: "yellow",
-				},
-			],
-			{
-				prefix: "name",
-				killOthers: ["failure", "success"],
-				restartTries: 1,
-			}
-		).result;
-		console.log("#################################");
-		console.log("Installing meteor dependencies...");
-		console.log("#################################");
-		await concurrently(
-			[
-				{
-					command: "meteor yarn install",
-					cwd: "meteor",
-					name: "METEOR-INSTALL",
-					prefixColor: "red",
-				},
-			],
-			{
-				prefix: "name",
-				killOthers: ["failure", "success"],
-				restartTries: 1,
-			}
-		).result;
-	}
+	// Note: This scricpt assumes that install-and-build.mjs has been run before
 
 	// The main watching execution
 	console.log("#################################");
