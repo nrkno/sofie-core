@@ -104,6 +104,9 @@ export default function StudioSettings(): JSX.Element {
 				<div className="col c12 r1-c12">
 					<ErrorBoundary>
 						<Switch>
+							<Route path={`${match.path}/all-settings`}>
+								<StudioAllSettings studio={studio} availableShowStyleBases={availableShowStyleBases} />
+							</Route>
 							<Route path={`${match.path}/generic`}>
 								<StudioGenericProperties studio={studio} availableShowStyleBases={availableShowStyleBases} />
 							</Route>
@@ -131,7 +134,7 @@ export default function StudioSettings(): JSX.Element {
 							<Route path={`${match.path}/package-manager`}>
 								<StudioPackageManagerSettings studio={studio} />
 							</Route>
-							<Redirect to={`${match.path}/generic`} />
+							<Redirect to={`${match.path}/all-settings`} />
 						</Switch>
 					</ErrorBoundary>
 				</div>

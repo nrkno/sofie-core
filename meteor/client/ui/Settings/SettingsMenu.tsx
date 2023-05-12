@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import React, { useCallback, useMemo } from 'react'
+import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { unprotectString } from '../../../lib/lib'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { NavLink, useLocation } from 'react-router-dom'
@@ -11,10 +11,9 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/noti
 
 import { faPlus, faTrash, faExclamationTriangle, faCaretRight, faCaretDown } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Blueprint } from '../../../lib/collections/Blueprints'
-import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { PubSub } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Settings as MeteorSettings } from '../../../lib/Settings'
 import { IOutputLayer, StatusCode } from '@sofie-automation/blueprints-integration'
@@ -23,141 +22,152 @@ import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Blueprints, PeripheralDevices, ShowStyleBases, Studios } from '../../collections'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
-interface ISettingsMenuProps {
+export const SettingsMenu: React.FC<{
 	superAdmin?: boolean
+}> = (props) => {
+	const { t } = useTranslation()
+
+	return (
+		<div className="tight-xs htight-xs text-s">
+			<SettingsMenuStudios />
+			<SettingsMenuShowStyles />
+
+			{(!MeteorSettings.enableUserAccounts || props.superAdmin) && <SettingsMenuBlueprints />}
+			<SettingsMenuDevices />
+
+			<>
+				<h2 className="mhs">{t('Tools')}</h2>
+				<hr className="vsubtle man" />
+				{(!MeteorSettings.enableUserAccounts || props.superAdmin) && (
+					<React.Fragment>
+						<NavLink
+							activeClassName="selectable-selected"
+							className="settings-menu__settings-menu-item selectable clickable"
+							to="/settings/tools/system"
+						>
+							<h3>{t('Core System settings')}</h3>
+						</NavLink>
+						<NavLink
+							activeClassName="selectable-selected"
+							className="settings-menu__settings-menu-item selectable clickable"
+							to="/settings/tools/migration"
+						>
+							<h3>{t('Upgrade Database')}</h3>
+						</NavLink>
+						<NavLink
+							activeClassName="selectable-selected"
+							className="settings-menu__settings-menu-item selectable clickable"
+							to="/settings/tools/snapshots"
+						>
+							<h3>{t('Manage Snapshots')}</h3>
+						</NavLink>
+					</React.Fragment>
+				)}
+			</>
+		</div>
+	)
 }
-interface ISettingsMenuState {}
-interface ISettingsMenuTrackedProps {
-	studios: Array<Studio>
-	showStyleBases: Array<ShowStyleBase>
-	blueprints: Array<Blueprint>
-	peripheralDevices: Array<PeripheralDevice>
+const SettingsMenuStudios: React.FC<{}> = () => {
+	const { t } = useTranslation()
+	useSubscription(PubSub.studios, {})
+	const onAddStudio = useCallback(() => {
+		MeteorCall.studio.insertStudio().catch(console.error)
+	}, [])
+	const studios = useTracker(() => Studios.find({}).fetch(), []) ?? []
+	return (
+		<>
+			<h2 className="mhs">
+				<button className="action-btn right" onClick={() => onAddStudio()}>
+					<FontAwesomeIcon icon={faPlus} />
+				</button>
+				{t('Studios')}
+			</h2>
+			<hr className="vsubtle man" />
+			{studios.map((studio) => (
+				<SettingsMenuStudio key={unprotectString(studio._id)} studio={studio} />
+			))}
+		</>
+	)
 }
-export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMenuState, ISettingsMenuTrackedProps>(
-	(_props: ISettingsMenuProps) => {
-		// TODO: add organizationId:
+const SettingsMenuShowStyles: React.FC<{}> = () => {
+	const { t } = useTranslation()
+	useSubscription(PubSub.showStyleBases, {})
+	useSubscription(PubSub.showStyleVariants, {})
+	const onAddShowStyleBase = useCallback(() => {
+		MeteorCall.showstyles.insertShowStyleBase().catch(console.error)
+	}, [])
+	const showStyleBases = useTracker(() => ShowStyleBases.find({}).fetch(), []) ?? []
 
-		meteorSubscribe(PubSub.studios, {})
-		meteorSubscribe(PubSub.showStyleBases, {})
-		meteorSubscribe(PubSub.showStyleVariants, {})
-		meteorSubscribe(PubSub.blueprints, {})
-		meteorSubscribe(PubSub.peripheralDevices, {})
+	return (
+		<>
+			<h2 className="mhs">
+				<button className="action-btn right" onClick={() => onAddShowStyleBase()}>
+					<FontAwesomeIcon icon={faPlus} />
+				</button>
+				{t('Show Styles')}
+			</h2>
+			<hr className="vsubtle man" />
+			{showStyleBases.map((showStyleBase) => (
+				<SettingsMenuShowStyle key={unprotectString(showStyleBase._id)} showStyleBase={showStyleBase} />
+			))}
+		</>
+	)
+}
+const SettingsMenuBlueprints: React.FC<{}> = () => {
+	const { t } = useTranslation()
+	useSubscription(PubSub.blueprints, {})
+	const onAddBlueprint = useCallback(() => {
+		MeteorCall.blueprint.insertBlueprint().catch((error) => {
+			NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, error.reason, 'Create New Blueprint'))
+		})
+	}, [])
+	const blueprints = useTracker(() => Blueprints.find({}).fetch(), []) ?? []
+	return (
+		<>
+			<h2 className="mhs">
+				<button className="action-btn right" onClick={() => onAddBlueprint()}>
+					<FontAwesomeIcon icon={faPlus} />
+				</button>
+				{t('Blueprints')}
+			</h2>
+			<hr className="vsubtle man" />
+			{blueprints.map((blueprint) => (
+				<SettingsMenuBlueprint key={unprotectString(blueprint._id)} blueprint={blueprint} />
+			))}
+		</>
+	)
+}
+const SettingsMenuDevices: React.FC<{}> = () => {
+	const { t } = useTranslation()
+	useSubscription(PubSub.peripheralDevices, {})
 
-		return {
-			studios: Studios.find({}).fetch(),
-			showStyleBases: ShowStyleBases.find({}).fetch(),
-			peripheralDevices: PeripheralDevices.find(
-				{},
-				{
-					sort: {
-						lastConnected: -1,
-					},
-				}
-			).fetch(),
-			blueprints: Blueprints.find({}).fetch(),
-		}
-	}
-)(
-	class SettingsMenu extends MeteorReactComponent<
-		Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>,
-		ISettingsMenuState
-	> {
-		constructor(props: Translated<ISettingsMenuProps & ISettingsMenuTrackedProps>) {
-			super(props)
-			this.state = {}
-		}
-
-		onAddStudio() {
-			MeteorCall.studio.insertStudio().catch(console.error)
-		}
-		onAddShowStyleBase() {
-			MeteorCall.showstyles.insertShowStyleBase().catch(console.error)
-		}
-		onAddBlueprint() {
-			MeteorCall.blueprint.insertBlueprint().catch((error) => {
-				NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, error.reason, 'Create New Blueprint'))
-			})
-		}
-
-		render(): JSX.Element {
-			const { t } = this.props
-			return (
-				<div className="tight-xs htight-xs text-s">
-					<h2 className="mhs">
-						<button className="action-btn right" onClick={() => this.onAddStudio()}>
-							<FontAwesomeIcon icon={faPlus} />
-						</button>
-						{t('Studios')}
-					</h2>
-					<hr className="vsubtle man" />
-					{this.props.studios.map((studio) => (
-						<SettingsMenuStudio key={unprotectString(studio._id)} studio={studio} />
-					))}
-					<h2 className="mhs">
-						<button className="action-btn right" onClick={() => this.onAddShowStyleBase()}>
-							<FontAwesomeIcon icon={faPlus} />
-						</button>
-						{t('Show Styles')}
-					</h2>
-					<hr className="vsubtle man" />
-					{this.props.showStyleBases.map((showStyleBase) => (
-						<SettingsMenuShowStyle key={unprotectString(showStyleBase._id)} showStyleBase={showStyleBase} />
-					))}
-					{(!MeteorSettings.enableUserAccounts || this.props.superAdmin) && (
-						<React.Fragment>
-							<h2 className="mhs">
-								<button className="action-btn right" onClick={() => this.onAddBlueprint()}>
-									<FontAwesomeIcon icon={faPlus} />
-								</button>
-								{t('Blueprints')}
-							</h2>
-							<hr className="vsubtle man" />
-							{this.props.blueprints.map((blueprint) => (
-								<SettingsMenuBlueprint key={unprotectString(blueprint._id)} blueprint={blueprint} />
-							))}
-						</React.Fragment>
-					)}
-					<h2 className="mhs">{t('Devices')}</h2>
-					<hr className="vsubtle man" />
-					{this.props.peripheralDevices
-						.filter((device) => {
-							return device.subType === PERIPHERAL_SUBTYPE_PROCESS
-						})
-						.map((device) => (
-							<SettingsMenuPeripheralDevice key={unprotectString(device._id)} device={device} />
-						))}
-					<h2 className="mhs">{t('Tools')}</h2>
-					<hr className="vsubtle man" />
-					{(!MeteorSettings.enableUserAccounts || this.props.superAdmin) && (
-						<React.Fragment>
-							<NavLink
-								activeClassName="selectable-selected"
-								className="settings-menu__settings-menu-item selectable clickable"
-								to="/settings/tools/system"
-							>
-								<h3>{t('Core System settings')}</h3>
-							</NavLink>
-							<NavLink
-								activeClassName="selectable-selected"
-								className="settings-menu__settings-menu-item selectable clickable"
-								to="/settings/tools/migration"
-							>
-								<h3>{t('Upgrade Database')}</h3>
-							</NavLink>
-							<NavLink
-								activeClassName="selectable-selected"
-								className="settings-menu__settings-menu-item selectable clickable"
-								to="/settings/tools/snapshots"
-							>
-								<h3>{t('Manage Snapshots')}</h3>
-							</NavLink>
-						</React.Fragment>
-					)}
-				</div>
-			)
-		}
-	}
-)
+	const peripheralDevices =
+		useTracker(
+			() =>
+				PeripheralDevices.find(
+					{},
+					{
+						sort: {
+							lastConnected: -1,
+						},
+					}
+				).fetch(),
+			[]
+		) ?? []
+	return (
+		<>
+			<h2 className="mhs">{t('Devices')}</h2>
+			<hr className="vsubtle man" />
+			{peripheralDevices
+				.filter((device) => {
+					return device.subType === PERIPHERAL_SUBTYPE_PROCESS
+				})
+				.map((device) => (
+					<SettingsMenuPeripheralDevice key={unprotectString(device._id)} device={device} />
+				))}
+		</>
+	)
+}
 
 interface SettingsCollapsibleGroupProps {
 	links: Array<{ label: string; subPath: string }>
@@ -252,12 +262,13 @@ function SettingsMenuStudio({ studio }: SettingsMenuStudioProps) {
 
 	const childLinks = React.useMemo(
 		() => [
-			{ label: t('Generic Properties'), subPath: `generic` },
-			{ label: t('Attached Devices'), subPath: `devices` },
-			{ label: t('Blueprint Configuration'), subPath: `blueprint-config` },
-			{ label: t('Layer Mappings'), subPath: `mappings` },
-			{ label: t('Route Sets'), subPath: `route-sets` },
-			{ label: t('Package Manager'), subPath: `package-manager` },
+			{ label: t('All settings'), subPath: `all-settings` },
+			// { label: t('Generic Properties'), subPath: `generic` },
+			// { label: t('Attached Devices'), subPath: `devices` },
+			// { label: t('Blueprint Configuration'), subPath: `blueprint-config` },
+			// { label: t('Layer Mappings'), subPath: `mappings` },
+			// { label: t('Route Sets'), subPath: `route-sets` },
+			// { label: t('Package Manager'), subPath: `package-manager` },
 		],
 		[studio._id]
 	)

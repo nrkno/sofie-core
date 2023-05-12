@@ -48,12 +48,12 @@ export function Settings(): JSX.Element | null {
 					<div className="col c12 rm-c9 settings-dialog">
 						<ErrorBoundary>
 							<Switch>
-								<Route path="/settings" exact component={WelcomeToSettings} />
-								<Route path="/settings/studio/:studioId" component={StudioSettings} />
-								<Route path="/settings/showStyleBase/:showStyleBaseId" component={ShowStyleSettings} />
-								<Route path="/settings/peripheralDevice/:deviceId" component={DeviceSettings} />
+								<Route path="/settingsOLD" exact component={WelcomeToSettings} />
+								<Route path="/settingsOLD/studio/:studioId" component={StudioSettings} />
+								<Route path="/settingsOLD/showStyleBase/:showStyleBaseId" component={ShowStyleSettings} />
+								<Route path="/settingsOLD/peripheralDevice/:deviceId" component={DeviceSettings} />
 								<Route
-									path="/settings/blueprint/:blueprintId"
+									path="/settingsOLD/blueprint/:blueprintId"
 									render={(props) => (
 										<BlueprintSettings
 											blueprintId={protectString(decodeURIComponent(props.match.params.blueprintId))}
@@ -61,10 +61,10 @@ export function Settings(): JSX.Element | null {
 										/>
 									)}
 								/>
-								<Route path="/settings/tools/snapshots" component={SnapshotsView} />
-								<Route path="/settings/tools/migration" component={MigrationView} />
-								<Route path="/settings/tools/system" component={SystemManagement} />
-								<Redirect to="/settings" />
+								<Route path="/settingsOLD/tools/snapshots" component={SnapshotsView} />
+								<Route path="/settingsOLD/tools/migration" component={MigrationView} />
+								<Route path="/settingsOLD/tools/system" component={SystemManagement} />
+								<Redirect to="/settingsOLD" />
 							</Switch>
 						</ErrorBoundary>
 					</div>

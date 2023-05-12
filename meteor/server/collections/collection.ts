@@ -100,6 +100,16 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 		return arr[0]
 	}
 
+	async findCountAsync(
+		selector: MongoQuery<DBInterface> | string,
+		options?: FindOptions<DBInterface>
+	): Promise<number> {
+		// Make the collection fethcing in another Fiber:
+		return makePromise(() => {
+			return this.find(selector as any, options).count()
+		})
+	}
+
 	async insertAsync(doc: DBInterface): Promise<DBInterface['_id']> {
 		return makePromise(() => {
 			return this.insert(doc)
@@ -275,6 +285,7 @@ export interface AsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedSt
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		options?: FindOptions<DBInterface>
 	): Promise<DBInterface | undefined>
+	findCountAsync(selector: MongoQuery<DBInterface>, options?: FindOptions<DBInterface>): Promise<number>
 
 	insertAsync(doc: DBInterface): Promise<DBInterface['_id']>
 
@@ -359,6 +370,14 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 	): Promise<DBInterface | undefined> {
 		const arr = await this.findFetchAsync(selector, { ...options, limit: 1 })
 		return arr[0]
+	}
+
+	async findCountAsync(
+		selector: MongoQuery<DBInterface> | string,
+		options?: FindOptions<DBInterface>
+	): Promise<number> {
+		await this.realSleep(0)
+		return this.find(selector as any, options).count()
 	}
 
 	async insertAsync(doc: DBInterface): Promise<DBInterface['_id']> {
