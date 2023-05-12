@@ -37,7 +37,9 @@ function watchMeteor() {
 			prefixColor: "blue",
 		},
 		{
-			command: `meteor yarn debug${config.inspectMeteor ? " --inspect" : ""}`,
+			command: `meteor yarn debug${config.inspectMeteor ? " --inspect" : ""}${
+				config.verbose ? " --verbose" : ""
+			}`,
 			cwd: "meteor",
 			name: "METEOR",
 			prefixColor: "cyan",
