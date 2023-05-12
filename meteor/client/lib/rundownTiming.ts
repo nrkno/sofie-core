@@ -50,11 +50,6 @@ export class RundownTimingCalculator {
 
 	private linearParts: Array<[PartId, number | null]> = []
 
-	// this.previousPartInstanceId is used to check if the previousPart has changed since last iteration.
-	// this is used to track takes and simulate the take timing for the previousPart
-	private previousPartInstanceId: PartInstanceId | null = null
-	// this is the "simulated" take time of previousPartInstanceId (or real one, if available)
-	private lastTakeAt: number | undefined = undefined
 	// we need to keep the nextSegmentId here for the brief moment when the next partinstance can't be found
 	private nextSegmentId: SegmentId | undefined = undefined
 
@@ -432,27 +427,6 @@ export class RundownTimingCalculator {
 				) {
 					this.displayDurationGroups[partInstance.part.displayDurationGroup] =
 						this.displayDurationGroups[partInstance.part.displayDurationGroup] - partDisplayDuration
-				}
-
-				// specially handle the previous part as it is being taken out
-				if (playlist.previousPartInfo?.partInstanceId === partInstance._id) {
-					if (this.previousPartInstanceId !== playlist.previousPartInfo?.partInstanceId) {
-						// it is possible that this.previousPartInstanceId !== playlist.previousPartInstanceId, because
-						// this is in fact the first iteration. If that's the case, it's more than likely that the
-						// previous part has already good "lastTake" information that we can use, in plannedStoppedPlayback,
-						// if there was no User Action.
-						// Finally, if this is undefined, we use "now", since what has happened
-						// is that user has taken out this part, but we're still waiting for timing and "now"
-						// is the best approximation of the take time we have.
-						this.lastTakeAt = partInstance.timings?.plannedStoppedPlayback || now
-						this.previousPartInstanceId = playlist.previousPartInfo.partInstanceId
-					}
-					// a simulated display duration, created using the "lastTakeAt" value
-					const virtualDuration =
-						this.lastTakeAt && lastStartedPlayback
-							? this.lastTakeAt - lastStartedPlayback
-							: partDisplayDuration
-					partDisplayDuration = virtualDuration
 				}
 
 				const partInstancePartId = unprotectString(partInstance.part._id)

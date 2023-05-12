@@ -253,7 +253,7 @@ function SettingsMenuStudio({ studio }: SettingsMenuStudioProps) {
 	const childLinks = React.useMemo(
 		() => [
 			{ label: t('Generic Properties'), subPath: `generic` },
-			{ label: t('Attached Devices'), subPath: `devices` },
+			{ label: t('Peripheral Devices'), subPath: `devices` },
 			{ label: t('Blueprint Configuration'), subPath: `blueprint-config` },
 			{ label: t('Layer Mappings'), subPath: `mappings` },
 			{ label: t('Route Sets'), subPath: `route-sets` },

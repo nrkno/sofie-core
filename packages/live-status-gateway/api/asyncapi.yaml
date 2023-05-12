@@ -1,0 +1,85 @@
+asyncapi: 2.5.0
+info:
+  title: Sofie Live Status Service
+  description: This service provides subscriptions for status updates from Sofie
+  version: 1.0.0
+  license:
+    name: MIT License
+    url: http://opensource.org/licenses/MIT
+
+servers:
+  development:
+    url: localhost
+    description: Server available without authorisation
+    protocol: ws
+    protocolVersion: '13'
+
+channels:
+  /:
+    publish:
+      description: Send messages to the root API
+      operationId: processRootMessage
+      message:
+        oneOf:
+          - $ref: '#/components/messages/ping'
+          - $ref: '#/components/messages/subscribe'
+          - $ref: '#/components/messages/unsubscribe'
+    subscribe:
+      description: Messages that are received from the API
+      operationId: sendRootMessage
+      message:
+        oneOf:
+          - $ref: '#/components/messages/pong'
+          - $ref: '#/components/messages/heartbeat'
+          - $ref: '#/components/messages/subscriptionStatus'
+          - $ref: '#/components/messages/studio'
+          - $ref: '#/components/messages/activePlaylist'
+components:
+  messages:
+    ping:
+      name: ping
+      summary: Ping server to determine whether connection is alive
+      description: Client can ping server to determine whether connection is alive, server responds with pong. This is an application level ping as opposed to default ping in websockets standard which is server initiated
+      payload:
+        $ref: './schemas/root.yaml#/$defs/ping'
+      x-response:
+        $ref: '#/components/messages/pong'
+    pong:
+      name: pong
+      summary: Pong is a response to ping message
+      description: Server pong response to a ping to determine whether connection is alive. This is an application level pong as opposed to default pong in websockets standard which is sent by client in response to a ping
+      payload:
+        $ref: './schemas/root.yaml#/$defs/pong'
+    heartbeat:
+      name: heartbeat
+      description: Server heartbeat sent if no subscription traffic within 1 second (approximately)
+      payload:
+        $ref: './schemas/root.yaml#/$defs/heartbeat'
+    subscribe:
+      name: subscribe
+      description: Subscribe to a topic
+      payload:
+        $ref: './schemas/root.yaml#/$defs/subscribe'
+      x-response:
+        $ref: './schemas/root.yaml#/$defs/subscriptionStatus'
+    unsubscribe:
+      name: unsubscribe
+      description: Unsubscribe from a topic
+      payload:
+        $ref: './schemas/root.yaml#/$defs/unsubscribe'
+      x-response:
+        $ref: './schemas/root.yaml#/$defs/subscriptionStatus'
+    subscriptionStatus:
+      description: Subscription status response to subscribe or unsubscribe
+      payload:
+        $ref: './schemas/root.yaml#/$defs/subscriptionStatus'
+    studio:
+      name: studio
+      description: Studio status
+      payload:
+        $ref: './schemas/studio.yaml#/$defs/studio'
+    activePlaylist:
+      name: activePlaylist
+      description: Active Playlist status
+      payload:
+        $ref: './schemas/activePlaylist.yaml#/$defs/activePlaylist'

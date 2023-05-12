@@ -81,6 +81,8 @@ export const DeviceItem = reacti18next.withTranslation()(
 					return t('Play-out Gateway')
 				case PeripheralDeviceType.MEDIA_MANAGER:
 					return t('Media Manager')
+				case PeripheralDeviceType.LIVE_STATUS:
+					return t('Live Status Gateway')
 				default:
 					return t('Unknown Device')
 			}

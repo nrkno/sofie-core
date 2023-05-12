@@ -67,7 +67,6 @@ $timeline-layer-height: 1em;
 		align-content: flex-start;
 		justify-content: flex-start;
 
-		will-change: transform;
 		contain: layout style;
 	}
 }
@@ -112,8 +111,14 @@ $timeline-layer-height: 1em;
 	pointer-events: none;
 	contain: layout;
 
-	&.segment-timeline__part--end-of-segment {
-		// this is end of segment
+	.segment-timeline__part__end-of-segment {
+		position: absolute;
+		top: 0;
+		height: 100%;
+
+		&.is-live {
+			will-change: transform
+		}
 	}
 
 	.segment-timeline__output-group {

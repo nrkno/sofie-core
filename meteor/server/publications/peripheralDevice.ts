@@ -46,8 +46,12 @@ meteorPublish(PubSub.peripheralDevices, async function (selector0, token) {
 	return null
 })
 
-meteorPublish(PubSub.peripheralDevicesAndSubDevices, async function (selector0, token) {
-	const { cred, selector } = await AutoFillSelector.organizationId<PeripheralDevice>(this.userId, selector0, token)
+meteorPublish(PubSub.peripheralDevicesAndSubDevices, async function (selector0) {
+	const { cred, selector } = await AutoFillSelector.organizationId<PeripheralDevice>(
+		this.userId,
+		selector0,
+		undefined
+	)
 	if (await checkAccess(cred, selector)) {
 		const parents = PeripheralDevices.find(selector).fetch()
 

@@ -43,7 +43,7 @@ import {
 	getSchemaDefaultValues,
 	JSONBlobParse,
 	PeripheralDeviceAPI,
-	PeripheralDevicePublic,
+	PeripheralDeviceForDevice,
 	protectString,
 	SubdeviceManifest,
 	unprotectObject,
@@ -52,10 +52,6 @@ import {
 import { BaseRemoteDeviceIntegration } from 'timeline-state-resolver/dist/service/remoteDeviceInstance'
 
 const debug = Debug('playout-gateway')
-
-export interface PlayoutGatewaySettings extends PlayoutGatewayConfig {
-	devices: Record<string, DeviceOptionsAny>
-}
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface TSRConfig {}
@@ -108,7 +104,6 @@ export class TSRHandler {
 	private _initialized = false
 	private _multiThreaded: boolean | null = null
 	private _reportAllCommands: boolean | null = null
-	private _errorReporting: boolean | null = null
 
 	private _updateDevicesIsRunning = false
 	private _lastReportedObjHashes: string[] = []
@@ -131,9 +126,10 @@ export class TSRHandler {
 		this.logger.info('TSRHandler init')
 
 		const peripheralDevice = await coreHandler.core.getPeripheralDevice()
-		const settings: PlayoutGatewaySettings = peripheralDevice.settings as PlayoutGatewaySettings
+		const settings: PlayoutGatewayConfig = peripheralDevice.deviceSettings as PlayoutGatewayConfig
+		const devices = peripheralDevice.playoutDevices
 
-		this.logger.info('Devices', settings.devices)
+		this.logger.info('Devices', devices)
 		const c: ConductorOptions = {
 			getCurrentTime: (): number => {
 				return this._coreHandler.core.getCurrentTime()
@@ -277,7 +273,7 @@ export class TSRHandler {
 		}
 		this._observers.push(mappingsObserver)
 
-		const deviceObserver = this._coreHandler.core.observe('peripheralDevices')
+		const deviceObserver = this._coreHandler.core.observe('peripheralDeviceForDevice')
 		deviceObserver.added = () => {
 			debug('triggerUpdateDevices from deviceObserver added')
 			this._triggerUpdateDevices()
@@ -353,11 +349,6 @@ export class TSRHandler {
 			this.tsr.logDebug = this._coreHandler.logDebug
 		}
 
-		if (this._errorReporting !== this._coreHandler.errorReporting) {
-			this._errorReporting = this._coreHandler.errorReporting
-
-			this.logger.info('ErrorReporting: ' + this._multiThreaded)
-		}
 		if (this.tsr.estimateResolveTimeMultiplier !== this._coreHandler.estimateResolveTimeMultiplier) {
 			this.tsr.estimateResolveTimeMultiplier = this._coreHandler.estimateResolveTimeMultiplier
 			this.logger.info('estimateResolveTimeMultiplier: ' + this._coreHandler.estimateResolveTimeMultiplier)
@@ -423,8 +414,9 @@ export class TSRHandler {
 		this.tsr.timelineHash = unprotectString(timeline.timelineHash)
 		this.tsr.setTimelineAndMappings(transformedTimeline, unprotectObject(mappingsObject.mappings))
 	}
-	private _getPeripheralDevice(): PeripheralDevicePublic {
-		const peripheralDevices = this._coreHandler.core.getCollection<PeripheralDevicePublic>('peripheralDevices')
+	private _getPeripheralDevice(): PeripheralDeviceForDevice {
+		const peripheralDevices =
+			this._coreHandler.core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
 		const doc = peripheralDevices.findOne(this._coreHandler.core.deviceId)
 		if (!doc) throw new Error('Missing PeripheralDevice document!')
 		return doc
@@ -497,9 +489,9 @@ export class TSRHandler {
 		const deviceOptions = new Map<string, DeviceOptionsAny>()
 
 		if (peripheralDevice) {
-			const settings: PlayoutGatewaySettings = peripheralDevice.settings as PlayoutGatewaySettings
+			const devices = peripheralDevice.playoutDevices
 
-			for (const [deviceId, device0] of Object.entries<DeviceOptionsAny>(settings.devices)) {
+			for (const [deviceId, device0] of Object.entries<DeviceOptionsAny>(devices)) {
 				const device = device0
 				if (!device.disable) {
 					deviceOptions.set(deviceId, device)

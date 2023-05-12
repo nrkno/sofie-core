@@ -7,7 +7,7 @@ import {
 	PeripheralDeviceId,
 	TimelineHash,
 } from '../core/model/Ids'
-import { PeripheralDevicePublic } from '../core/model/peripheralDevice'
+import { PeripheralDeviceForDevice } from '../core/model/peripheralDevice'
 import { IngestPlaylist, IngestRundown, IngestPart, IngestSegment } from './ingest'
 import { MediaObjectRevision, MediaWorkFlowRevision, MediaWorkFlowStepRevision } from './mediaManager'
 import {
@@ -98,7 +98,7 @@ export interface NewPeripheralDeviceAPI {
 		status: PeripheralDeviceStatusObject
 	): Promise<PeripheralDeviceStatusObject>
 	ping(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
-	getPeripheralDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<PeripheralDevicePublic>
+	getPeripheralDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<PeripheralDeviceForDevice>
 	playoutPlaybackChanged(deviceId: PeripheralDeviceId, deviceToken: string, r: PlayoutChangedResults): Promise<void>
 	pingWithCommand(
 		deviceId: PeripheralDeviceId,
@@ -429,8 +429,6 @@ export enum PeripheralDeviceAPIMethods {
 	'dataPartDelete' = 'peripheralDevice.rundown.partDelete',
 	'dataPartCreate' = 'peripheralDevice.rundown.partCreate',
 	'dataPartUpdate' = 'peripheralDevice.rundown.partUpdate',
-
-	'resyncRundown' = 'peripheralDevice.mos.roResync',
 
 	'getMediaObjectRevisions' = 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
 	'updateMediaObject' = 'peripheralDevice.mediaScanner.updateMediaObject',

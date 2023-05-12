@@ -1,7 +1,6 @@
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 import {
-	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
@@ -12,7 +11,6 @@ const core = new CoreConnection({
 	deviceToken: 'abcd',
 	deviceCategory: PeripheralDeviceCategory.PLAYOUT,
 	deviceType: PeripheralDeviceType.PLAYOUT,
-	deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 	deviceName: 'Jest test framework',
 	documentationUrl: 'http://example.com',
 	versions: {},
@@ -41,17 +39,13 @@ core.onFailed((err) => {
 
 const setupSubscription = async () => {
 	console.log('Setup subscription')
-	return core
-		.subscribe('peripheralDevices', {
-			_id: core.deviceId,
-		})
-		.then(() => {
-			console.log('sub OK!')
-		})
+	return core.subscribe('peripheralDeviceForDevice', core.deviceId).then(() => {
+		console.log('sub OK!')
+	})
 }
 const setupObserver = () => {
 	console.log('Setup observer')
-	const observer = core.observe('peripheralDevices')
+	const observer = core.observe('peripheralDeviceForDevice')
 	observer.added = (id) => {
 		console.log('added', id)
 	}

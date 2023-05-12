@@ -11,7 +11,7 @@ import {
 	clone,
 	Complete,
 } from '../../../lib/lib'
-import { Studio, DBStudio } from '../../../lib/collections/Studios'
+import { Studio, DBStudio, StudioPlayoutDevice } from '../../../lib/collections/Studios'
 import { ShowStyleBase, DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { Meteor } from 'meteor/meteor'
 import {
@@ -31,13 +31,14 @@ import {
 
 import { ShowStyleVariant, DBShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { check } from '../../../lib/check'
-import { PeripheralDevice, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
+import { PERIPHERAL_SUBTYPE_PROCESS, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 import { TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
 import { Match } from 'meteor/check'
-import { MongoModifier, MongoQuery } from '../../../lib/typings/meteor'
+import { MongoModifier } from '../../../lib/typings/meteor'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId, ShowStyleVariantId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices, ShowStyleBases, ShowStyleVariants, Studios, TriggeredActions } from '../../collections'
+import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 
 function convertTriggeredActionToBlueprints(triggeredAction: TriggeredActionsObj): IBlueprintTriggeredActions {
 	const obj: Complete<IBlueprintTriggeredActions> = {
@@ -262,20 +263,12 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 	getDevice(deviceId: string): TSR.DeviceOptionsAny | undefined {
 		check(deviceId, String)
 
-		const selector: MongoQuery<PeripheralDevice> = {
-			type: PeripheralDeviceType.PLAYOUT,
-			studioId: this.studio._id,
-		}
-		selector[`settings.devices.${deviceId}`] = { $exists: 1 }
+		const studio = Studios.findOne(this.studio._id)
+		if (!studio || !studio.peripheralDeviceSettings.playoutDevices) return undefined
 
-		const parentDevice = PeripheralDevices.findOne(selector, {
-			sort: {
-				created: 1,
-			},
-		})
+		const playoutDevices = studio.peripheralDeviceSettings.playoutDevices.defaults
 
-		if (!parentDevice || !parentDevice.settings || !parentDevice.settings.devices) return undefined
-		return parentDevice.settings.devices[deviceId] as TSR.DeviceOptionsAny
+		return playoutDevices[deviceId]?.options
 	}
 	insertDevice(deviceId: string, device: TSR.DeviceOptionsAny): string {
 		check(deviceId, String)
@@ -284,9 +277,20 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			throw new Meteor.Error(500, `Device id "${deviceId}" is invalid`)
 		}
 
+		const studio = Studios.findOne(this.studio._id)
+		if (!studio || !studio.peripheralDeviceSettings.playoutDevices)
+			throw new Meteor.Error(500, `Studio was not found`)
+
+		const playoutDevices = studio.peripheralDeviceSettings.playoutDevices.defaults
+
+		if (playoutDevices && playoutDevices[deviceId]) {
+			throw new Meteor.Error(404, `Device "${deviceId}" cannot be inserted as it already exists`)
+		}
+
 		const parentDevice = PeripheralDevices.findOne(
 			{
 				type: PeripheralDeviceType.PLAYOUT,
+				subType: PERIPHERAL_SUBTYPE_PROCESS,
 				studioId: this.studio._id,
 			},
 			{
@@ -296,19 +300,16 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			}
 		)
 		if (!parentDevice) {
-			throw new Meteor.Error(404, `No parent device for new device id "${deviceId}"`)
+			throw new Meteor.Error(404, `Device "${deviceId}" cannot be updated as it does not exist`)
 		}
 
-		const settings = parentDevice.settings
-		if (settings && settings.devices && settings.devices[deviceId]) {
-			throw new Meteor.Error(404, `Device "${deviceId}" cannot be inserted as it already exists`)
-		}
-
-		const m: any = {}
-		m[`settings.devices.${deviceId}`] = device
-
-		PeripheralDevices.update(parentDevice._id, {
-			$set: m,
+		Studios.update(this.studio._id, {
+			$set: {
+				[`peripheralDeviceSettings.playoutDevices.defaults.${deviceId}`]: literal<StudioPlayoutDevice>({
+					peripheralDeviceId: parentDevice._id,
+					options: device,
+				}),
+			},
 		})
 
 		return deviceId
@@ -320,25 +321,22 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			throw new Meteor.Error(500, `Device id "${deviceId}" is invalid`)
 		}
 
-		const selector: MongoQuery<PeripheralDevice> = {
-			type: PeripheralDeviceType.PLAYOUT,
-			studioId: this.studio._id,
-		}
-		selector[`settings.devices.${deviceId}`] = { $exists: 1 }
+		const studio = Studios.findOne(this.studio._id)
+		if (!studio || !studio.peripheralDeviceSettings.playoutDevices)
+			throw new Meteor.Error(500, `Studio was not found`)
 
-		const parentDevice = PeripheralDevices.findOne(selector, {
-			sort: {
-				created: 1,
-			},
-		})
-		if (!parentDevice || !parentDevice.settings || !parentDevice.settings.devices) {
+		const playoutDevices = studio.peripheralDeviceSettings.playoutDevices.defaults
+
+		if (!playoutDevices || !playoutDevices[deviceId]) {
 			throw new Meteor.Error(404, `Device "${deviceId}" cannot be updated as it does not exist`)
 		}
 
-		const m: any = {}
-		m[`settings.devices.${deviceId}`] = _.extend(parentDevice.settings.devices[deviceId], device)
-		PeripheralDevices.update(selector, {
-			$set: m,
+		const newOptions = _.extend(playoutDevices[deviceId].options, device)
+
+		Studios.update(this.studio._id, {
+			$set: {
+				[`peripheralDeviceSettings.playoutDevices.defaults.${deviceId}.options`]: newOptions,
+			},
 		})
 	}
 	removeDevice(deviceId: string): void {
@@ -348,17 +346,11 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 			throw new Meteor.Error(500, `Device id "${deviceId}" is invalid`)
 		}
 
-		const m: any = {}
-		m[`settings.devices.${deviceId}`] = 1
-		PeripheralDevices.update(
-			{
-				type: PeripheralDeviceType.PLAYOUT,
-				studioId: this.studio._id,
+		Studios.update(this.studio._id, {
+			$unset: {
+				[`peripheralDeviceSettings.playoutDevices.defaults.${deviceId}`]: 1,
 			},
-			{
-				$unset: m,
-			}
-		)
+		})
 	}
 }
 

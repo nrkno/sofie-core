@@ -16,11 +16,11 @@ export interface PlayoutGatewayConfig {
 	 */
 	multiThreading?: boolean
 	/**
-	 * Activate Multi-Threaded Timeline Resolving
+	 * Requires restart of Gateway to apply
 	 */
 	multiThreadedResolver?: boolean
 	/**
-	 * Activate Partial resolving, when resolving the Timeline
+	 * Requires restart of Gateway to apply
 	 */
 	useCacheWhenResolving?: boolean
 	/**
@@ -30,5 +30,5 @@ export interface PlayoutGatewayConfig {
 	/**
 	 * Adjust resolve-time estimation
 	 */
-	estimateResolveTimeMultiplier?: boolean
+	estimateResolveTimeMultiplier?: number
 }

@@ -58,6 +58,7 @@ import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'
 import { UIDeviceTriggerPreview } from '../../server/publications/deviceTriggersPreview'
 import { DeviceTriggerMountedAction, PreviewWrappedAdLib } from './triggers/MountedTriggers'
+import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 
 /**
  * Ids of possible DDP subscriptions
@@ -119,6 +120,7 @@ export enum PubSub {
 	rundownsForDevice = 'rundownsForDevice',
 
 	// custom publications:
+	peripheralDeviceForDevice = 'peripheralDeviceForDevice',
 	mappingsForDevice = 'mappingsForDevice',
 	timelineForDevice = 'timelineForDevice',
 	timelineDatastoreForDevice = 'timelineDatastoreForDevice',
@@ -155,10 +157,7 @@ export interface PubSubTypes {
 	[PubSub.mediaObjects]: (studioId: StudioId, selector: MongoQuery<MediaObject>, token?: string) => MediaObject
 	[PubSub.peripheralDeviceCommands]: (deviceId: PeripheralDeviceId, token?: string) => PeripheralDeviceCommand
 	[PubSub.peripheralDevices]: (selector: MongoQuery<PeripheralDevice>, token?: string) => PeripheralDevice
-	[PubSub.peripheralDevicesAndSubDevices]: (
-		selector: MongoQuery<PeripheralDevice>,
-		token?: string
-	) => PeripheralDevice
+	[PubSub.peripheralDevicesAndSubDevices]: (selector: MongoQuery<PeripheralDevice>) => PeripheralDevice
 	[PubSub.rundownBaselineAdLibPieces]: (
 		selector: MongoQuery<RundownBaselineAdLibItem>,
 		token?: string
@@ -235,6 +234,7 @@ export interface PubSubTypes {
 	[PubSub.rundownsForDevice]: (deviceId: PeripheralDeviceId, token: string) => DBRundown
 
 	// custom publications:
+	[PubSub.peripheralDeviceForDevice]: (deviceId: PeripheralDeviceId, token?: string) => PeripheralDeviceForDevice
 	[PubSub.mappingsForDevice]: (deviceId: PeripheralDeviceId, token?: string) => RoutedMappings
 	[PubSub.timelineForDevice]: (deviceId: PeripheralDeviceId, token?: string) => RoutedTimeline
 	[PubSub.timelineDatastoreForDevice]: (deviceId: PeripheralDeviceId, token?: string) => DBTimelineDatastoreEntry
@@ -266,6 +266,7 @@ export interface PubSubTypes {
  * Ids of possible Custom collections, populated by DDP subscriptions
  */
 export enum CustomCollectionName {
+	PeripheralDeviceForDevice = 'peripheralDeviceForDevice',
 	StudioMappings = 'studioMappings',
 	StudioTimeline = 'studioTimeline',
 	ExpectedPackagesForDevice = 'deviceExpectedPackages',
@@ -284,6 +285,7 @@ export enum CustomCollectionName {
  * All the CustomCollectionName ids must be present here, or they will produce type errors when used
  */
 export type CustomCollectionType = {
+	[CustomCollectionName.PeripheralDeviceForDevice]: PeripheralDeviceForDevice
 	[CustomCollectionName.StudioMappings]: RoutedMappings
 	[CustomCollectionName.StudioTimeline]: RoutedTimeline
 	[CustomCollectionName.ExpectedPackagesForDevice]: DBObj

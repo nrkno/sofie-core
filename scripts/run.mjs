@@ -1,17 +1,15 @@
 import process from "process";
 import concurrently from "concurrently";
-
-const args = process.argv.slice(2);
-
-const config = {
-	uiOnly: args.indexOf("--ui-only") >= 0 || false,
-	inspectMeteor: args.indexOf("--inspect-meteor") >= 0 || false,
-};
+import { EXTRA_PACKAGES, config } from "./lib.js";
 
 function watchPackages() {
 	return [
 		{
-			command: "yarn watch",
+			command: config.uiOnly
+				? `yarn watch ${EXTRA_PACKAGES.map((pkg) => `--ignore ${pkg}`).join(
+						" "
+				  )}`
+				: "yarn watch",
 			cwd: "packages",
 			name: "PACKAGES-TSC",
 			prefixColor: "red",
@@ -39,7 +37,7 @@ function watchMeteor() {
 			prefixColor: "blue",
 		},
 		{
-			command: "meteor yarn debug" + (config.inspectMeteor ? " --inspect" : ""),
+			command: `meteor yarn debug${config.inspectMeteor ? " --inspect" : ""}`,
 			cwd: "meteor",
 			name: "METEOR",
 			prefixColor: "cyan",

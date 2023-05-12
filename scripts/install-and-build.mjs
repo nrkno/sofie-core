@@ -1,12 +1,6 @@
 import process from "process";
 import concurrently from "concurrently";
-
-const args = process.argv.slice(2);
-
-const config = {
-	uiOnly: args.indexOf("--ui-only") >= 0 || false,
-	inspectMeteor: args.indexOf("--inspect-meteor") >= 0 || false,
-};
+import { EXTRA_PACKAGES, config } from "./lib.js";
 
 try {
 	// Install and build packages
@@ -43,7 +37,11 @@ try {
 	await concurrently(
 		[
 			{
-				command: "yarn build:try",
+				command: config.uiOnly
+					? `yarn build:try ${EXTRA_PACKAGES.map(
+							(pkg) => `--ignore ${pkg}`
+					  ).join(" ")}`
+					: "yarn build:try",
 				cwd: "packages",
 				name: "PACKAGES-BUILD",
 				prefixColor: "yellow",

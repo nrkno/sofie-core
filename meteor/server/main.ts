@@ -59,12 +59,14 @@ import './api/serviceMessages/api'
 import './webmanifest'
 
 // import all files that calls Meteor.startup:
+import './api/rest/api'
 import './api/rest/rest'
 import './api/systemTime/startup'
 import './Connections'
 import './coreSystem'
 import './cronjobs'
 import './email'
+import './prometheus'
 import './api/deviceTriggers/observer'
 // import './performanceMonitor' // called above
 

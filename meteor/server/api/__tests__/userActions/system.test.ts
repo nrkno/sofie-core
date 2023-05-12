@@ -13,8 +13,15 @@ import {
 } from '../../../../__mocks__/helpers/database'
 import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { PeripheralDevices } from '../../../collections'
+import { Studios } from '../../../collections'
 import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import {
+	applyAndValidateOverrides,
+	wrapDefaultObject,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { StudioPlayoutDevice } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { Studio } from '../../../../lib/collections/Studios'
 
 require('../../userActions') // include in order to create the Meteor methods needed
 
@@ -33,14 +40,7 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 			env.studio,
 			{
 				organizationId,
-				settings: {
-					devices: {
-						[mockSubDeviceId]: {
-							type: 'dummy',
-							disable: false,
-						},
-					},
-				},
+				settings: {},
 				configManifest: {
 					deviceConfigSchema: JSONBlobStringify({}), // unused
 					subdeviceManifest: {
@@ -67,6 +67,21 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 				},
 			}
 		)
+
+		await Studios.updateAsync(env.studio._id, {
+			$set: {
+				[`peripheralDeviceSettings.playoutDevices`]: wrapDefaultObject({
+					[mockSubDeviceId]: literal<StudioPlayoutDevice>({
+						peripheralDeviceId: pDevice._id,
+						options: {
+							type: 'dummy' as any,
+							disable: false,
+						},
+					}),
+				}),
+			},
+		})
+
 		jest.resetAllMocks()
 	})
 	testInFiber('disable existing subDevice', async () => {
@@ -76,12 +91,10 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 			success: 200,
 		})
 
-		const peripheralDevice = PeripheralDevices.findOne(pDevice._id)
-		expect(peripheralDevice).toBeDefined()
-		expect(peripheralDevice?.settings).toBeDefined()
-		expect(
-			peripheralDevice?.settings && (peripheralDevice?.settings['devices']![mockSubDeviceId] as any).disable
-		).toBe(true)
+		const studio = Studios.findOne(env.studio._id) as Studio
+		expect(studio).toBeDefined()
+		const playoutDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.playoutDevices).obj
+		expect(playoutDevices[mockSubDeviceId].options.disable).toBe(true)
 	})
 	testInFiber('enable existing subDevice', async () => {
 		{
@@ -97,12 +110,10 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 				success: 200,
 			})
 
-			const peripheralDevice = PeripheralDevices.findOne(pDevice._id)
-			expect(peripheralDevice).toBeDefined()
-			expect(peripheralDevice?.settings).toBeDefined()
-			expect(
-				peripheralDevice?.settings && (peripheralDevice?.settings['devices']![mockSubDeviceId] as any).disable
-			).toBe(true)
+			const studio = Studios.findOne(env.studio._id) as Studio
+			expect(studio).toBeDefined()
+			const playoutDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.playoutDevices).obj
+			expect(playoutDevices[mockSubDeviceId].options.disable).toBe(true)
 		}
 
 		{
@@ -118,12 +129,10 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 				success: 200,
 			})
 
-			const peripheralDevice = PeripheralDevices.findOne(pDevice._id)
-			expect(peripheralDevice).toBeDefined()
-			expect(peripheralDevice?.settings).toBeDefined()
-			expect(
-				peripheralDevice?.settings && (peripheralDevice?.settings['devices']![mockSubDeviceId] as any).disable
-			).toBe(false)
+			const studio = Studios.findOne(env.studio._id) as Studio
+			expect(studio).toBeDefined()
+			const playoutDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.playoutDevices).obj
+			expect(playoutDevices[mockSubDeviceId].options.disable).toBe(false)
 		}
 	})
 	testInFiber('edit missing subDevice throws an error', async () => {
@@ -156,14 +165,7 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 			env.studio,
 			{
 				organizationId: null,
-				settings: {
-					devices: {
-						[mockSubDeviceId]: {
-							type: 'dummy',
-							disable: false,
-						},
-					},
-				},
+				settings: {},
 				configManifest: {
 					deviceConfigSchema: JSONBlobStringify({}), // unused
 					subdeviceManifest: {
@@ -190,6 +192,13 @@ describe('User Actions - Disable Peripheral SubDevice', () => {
 				},
 			}
 		)
+
+		await Studios.updateAsync(env.studio._id, {
+			$set: {
+				[`peripheralDeviceSettings.playoutDevices.defaults.${mockSubDeviceId}.peripheralDeviceId`]:
+					pDeviceUnsupported._id,
+			},
+		})
 
 		await expect(
 			MeteorCall.userAction.disablePeripheralSubDevice(

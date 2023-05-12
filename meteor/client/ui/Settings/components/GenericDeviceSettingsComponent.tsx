@@ -4,7 +4,6 @@ import { PeripheralDevice, PeripheralDeviceType } from '../../../../lib/collecti
 import { DeviceItem } from '../../Status/SystemStatus'
 import { ConfigManifestOAuthFlowComponent } from './ConfigManifestOAuthFlow'
 import { protectString, unprotectString } from '../../../../lib/lib'
-import { SubDevicesConfig } from './DeviceConfigSchemaSettings'
 import { SchemaFormForCollection } from '../../../lib/forms/SchemaFormForCollection'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { PeripheralDevices } from '../../../collections'
@@ -73,33 +72,29 @@ export function GenericDeviceSettingsComponent({
 						translationNamespaces={translationNamespaces}
 						allowTables
 					/>
-
-					{device.configManifest.subdeviceManifest && (
-						<SubDevicesConfig
-							translationNamespaces={translationNamespaces}
-							deviceId={device._id}
-							commonSchema={device.configManifest.subdeviceConfigSchema}
-							configSchema={device.configManifest.subdeviceManifest}
-							subDevices={(device.settings as any)?.devices ?? {}}
-						/>
-					)}
 				</>
 			) : (
 				<p>{t('There is no JSON config schema provided by this Gateway')}</p>
 			)}
 
-			{subDevices && subDevices.length > 0 && (
-				<React.Fragment>
+			{Object.keys(device.configManifest.subdeviceManifest ?? {}).length > 0 && (
+				<>
 					<h2 className="mhn">{t('Attached Subdevices')}</h2>
-					{subDevices.map((device) => (
-						<DeviceItem
-							key={unprotectString(device._id)}
-							device={device}
-							showRemoveButtons={true}
-							debugState={debugStates.get(device._id)}
-						/>
-					))}
-				</React.Fragment>
+
+					<p>{t('Sub-devices can be configured in the Studio Peripheral Device settings')}</p>
+
+					{(!subDevices || subDevices.length === 0) && <p>{t('There are no sub-devices for this gateway')}</p>}
+
+					{subDevices &&
+						subDevices.map((device) => (
+							<DeviceItem
+								key={unprotectString(device._id)}
+								device={device}
+								showRemoveButtons={true}
+								debugState={debugStates.get(device._id)}
+							/>
+						))}
+				</>
 			)}
 		</div>
 	)

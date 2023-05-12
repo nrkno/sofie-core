@@ -1,8 +1,8 @@
 import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Meteor, Subscription } from 'meteor/meteor'
+import { Meteor } from 'meteor/meteor'
 import { CustomCollectionName, PubSubTypes } from '../../../lib/api/pubsub'
-import { ProtectedString, protectString, protectStringObject, unprotectString, waitForPromise } from '../../../lib/lib'
-import { SubscriptionContext } from '../../publications/lib'
+import { ProtectedString, unprotectString } from '../../../lib/lib'
+import { SubscriptionContext, meteorPublishUnsafe } from '../../publications/lib'
 
 export interface CustomPublishChanges<T extends { _id: ProtectedString<any> }> {
 	added: Array<T>
@@ -14,7 +14,7 @@ export class CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
 	#onStop: (() => void) | undefined
 	#isReady = false
 
-	constructor(private _meteorSubscription: Subscription, private _collectionName: CustomCollectionName) {
+	constructor(private _meteorSubscription: SubscriptionContext, private _collectionName: CustomCollectionName) {
 		this._meteorSubscription.onStop(() => {
 			if (this.#onStop) this.#onStop()
 		})
@@ -25,7 +25,7 @@ export class CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
 	}
 
 	get userId(): UserId | null {
-		return protectString(this._meteorSubscription.userId)
+		return this._meteorSubscription.userId
 	}
 
 	/**
@@ -69,26 +69,6 @@ export class CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
 	}
 }
 
-function genericMeteorCustomPublish<K extends keyof PubSubTypes>(
-	publicationName: K,
-	customCollectionName: CustomCollectionName,
-	cb: (
-		this: SubscriptionContext,
-		publication: CustomPublish<ReturnType<PubSubTypes[K]>>,
-		...args: Parameters<PubSubTypes[K]>
-	) => Promise<void>
-) {
-	Meteor.publish(publicationName, function (...args: any[]) {
-		waitForPromise(
-			cb.call(
-				protectStringObject<Subscription, 'userId'>(this),
-				new CustomPublish(this, customCollectionName),
-				...(args as any)
-			)
-		)
-	})
-}
-
 /** Wrapping of Meteor.publish to provide types for for custom publications */
 export function meteorCustomPublish<K extends keyof PubSubTypes>(
 	publicationName: K,
@@ -99,7 +79,7 @@ export function meteorCustomPublish<K extends keyof PubSubTypes>(
 		...args: Parameters<PubSubTypes[K]>
 	) => Promise<void>
 ): void {
-	genericMeteorCustomPublish(publicationName, customCollectionName, async function (pub, ...args) {
-		return cb.call(this, pub, ...args)
+	meteorPublishUnsafe(publicationName, async function (this: SubscriptionContext, ...args: any[]) {
+		return cb.call(this, new CustomPublish(this, customCollectionName), ...(args as any))
 	})
 }

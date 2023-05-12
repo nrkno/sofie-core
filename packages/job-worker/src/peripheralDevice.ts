@@ -1,8 +1,7 @@
-import { TSR } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPlayoutDevice, TSR } from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceCommandId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { Complete, createManualPromise, getRandomId } from '@sofie-automation/corelib/dist/lib'
-import { PeripheralDevicePublicWithActions } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import { Complete, createManualPromise, getRandomId, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { JobContext } from './jobs'
 import { getCurrentTime } from './lib'
 import { logger } from './logging'
@@ -175,13 +174,17 @@ async function executePeripheralDeviceGenericFunction(
 	return result
 }
 
-export async function listPeripheralDevices(
+export async function listPlayoutDevices(
 	context: JobContext,
 	cache: CacheForPlayout
-): Promise<PeripheralDevicePublicWithActions[]> {
-	const parentDeviceIds = cache.PeripheralDevices.findAll(
-		(doc: PeripheralDevice) => doc.studioId === context.studioId && doc.type === PeripheralDeviceType.PLAYOUT
-	).map((doc) => doc._id)
+): Promise<IBlueprintPlayoutDevice[]> {
+	const parentDevicesMap = normalizeArrayToMap(
+		cache.PeripheralDevices.findAll(
+			(doc: PeripheralDevice) => doc.studioId === context.studioId && doc.type === PeripheralDeviceType.PLAYOUT
+		),
+		'_id'
+	)
+	const parentDeviceIds = Array.from(parentDevicesMap.keys())
 	if (parentDeviceIds.length === 0) {
 		throw new Error('No parent devices are configured')
 	}
@@ -193,20 +196,13 @@ export async function listPeripheralDevices(
 	})
 
 	return devices.map((d) => {
+		// Future: Do we need to retrieve the config from the studio?
+		const parentDevice = d.parentDeviceId && parentDevicesMap.get(d.parentDeviceId)
+
 		// Only expose a subset of the PeripheralDevice to the blueprints
-		return literal<Complete<PeripheralDevicePublicWithActions>>({
-			_id: d._id,
-			name: d.name,
-			deviceName: d.deviceName,
-			studioId: d.studioId,
-			category: d.category,
-			type: d.type,
-			subType: d.subType,
-			parentDeviceId: d.parentDeviceId,
-			created: d.created,
-			status: d.status,
-			settings: d.settings,
-			actions: d.configManifest.subdeviceManifest?.[d.subType]?.actions,
+		return literal<Complete<IBlueprintPlayoutDevice>>({
+			deviceId: d._id,
+			actions: parentDevice?.configManifest?.subdeviceManifest?.[d.subType]?.actions,
 		})
 	})
 }

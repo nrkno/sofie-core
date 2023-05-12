@@ -88,7 +88,7 @@ export const SegmentTimelinePartHoverPreview = ({
 							studio={studio}
 							collapsedOutputs={collapsedOutputs}
 							scrollLeft={0}
-							timeScale={0}
+							timeToPixelRatio={0}
 							autoNextPart={autoNextPart}
 							followLiveLine={false}
 							liveLineHistorySize={liveLineHistorySize}
@@ -104,6 +104,10 @@ export const SegmentTimelinePartHoverPreview = ({
 							isPreview={true}
 							isBudgetGap={false}
 							showDurationSourceLayers={showDurationSourceLayers}
+							isLiveSegment={undefined}
+							anyPriorPartWasLive={undefined}
+							livePartStartsAt={undefined}
+							livePartDisplayDuration={undefined}
 						/>
 					)
 				})}
@@ -116,7 +120,7 @@ export const SegmentTimelinePartHoverPreview = ({
 						studio={studio}
 						collapsedOutputs={collapsedOutputs}
 						scrollLeft={0}
-						timeScale={0}
+						timeToPixelRatio={0}
 						autoNextPart={autoNextPart}
 						followLiveLine={false}
 						liveLineHistorySize={liveLineHistorySize}
@@ -133,6 +137,10 @@ export const SegmentTimelinePartHoverPreview = ({
 						cropDuration={followingPartPreviewDuration}
 						isBudgetGap={false}
 						showDurationSourceLayers={showDurationSourceLayers}
+						isLiveSegment={undefined}
+						anyPriorPartWasLive={undefined}
+						livePartStartsAt={undefined}
+						livePartDisplayDuration={undefined}
 					/>
 				)}
 			</div>

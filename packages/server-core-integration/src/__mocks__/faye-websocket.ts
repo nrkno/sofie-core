@@ -75,7 +75,7 @@ export class Client extends EventEmitter {
 							data: EJSON.stringify(
 								literal<AnyMessage>({
 									msg: 'changed',
-									collection: 'peripheralDevices',
+									collection: 'peripheralDeviceForDevice',
 									id: 'JestTest',
 								})
 							),
@@ -145,7 +145,7 @@ export class Client extends EventEmitter {
 			return
 		}
 		if (message.msg === 'sub') {
-			this.cachedId = (message.params![0] as any)._id
+			this.cachedId = message.params![0] as any
 			setTimeout(() => {
 				this.emit('message', {
 					data: EJSON.stringify(
@@ -174,7 +174,7 @@ export class Client extends EventEmitter {
 				data: JSON.stringify(
 					literal<AnyMessage>({
 						msg: 'removed',
-						collection: 'peripheralDevices',
+						collection: 'peripheralDeviceForDevice',
 						id: this.cachedId,
 					})
 				),
