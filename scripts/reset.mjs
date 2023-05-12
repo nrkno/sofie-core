@@ -16,17 +16,15 @@ if (parseInt(m[1]) < 16) {
 	process.exit(1);
 }
 
-(async () => {
-	console.log("Removing all artifacts...");
+console.log("Removing all artifacts...");
 
-	await rimrafLog("./meteor/.meteor/local");
-	await rimrafLog("./meteor/node_modules");
-	await rimrafLog("./meteor/coverage");
+await rimrafLog("./meteor/.meteor/local");
+await rimrafLog("./meteor/node_modules");
+await rimrafLog("./meteor/coverage");
 
-	await rimrafLog("./packages/node_modules");
-	await rimrafLog("./packages/*/node_modules");
-	await rimrafLog("./packages/*/dist");
+await rimrafLog("./packages/node_modules");
+await rimrafLog("./packages/*/node_modules");
+await rimrafLog("./packages/*/dist");
 
-	console.log(`...done!`);
-	console.log(`To install everything again, run "yarn start"`);
-})().catch(console.error());
+console.log(`...done!`);
+console.log(`To install everything again, run "yarn start"`);
