@@ -334,8 +334,11 @@ export class RundownTimingCalculator {
 						0,
 						(partInstance.timings?.duration && partInstance.timings?.duration + playOffset) ||
 							displayDurationFromGroup ||
-							calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart) ||
-							defaultDuration
+							ensureMinimumDefaultDurationIfNotAuto(
+								partInstance,
+								calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart),
+								defaultDuration
+							)
 					)
 					partDisplayDuration = partDisplayDurationNoPlayback
 					this.partPlayed[unprotectString(partInstance.part._id)] =
@@ -809,4 +812,16 @@ export function getPlaylistTimingDiff(
 	}
 
 	return diff
+}
+
+function ensureMinimumDefaultDurationIfNotAuto(
+	partInstance: PartInstance,
+	incomingDuration: number | undefined,
+	defaultDuration: number
+): number {
+	if (incomingDuration === undefined || !Number.isFinite(incomingDuration)) return defaultDuration
+
+	if (partInstance.part.autoNext) return incomingDuration
+
+	return Math.max(incomingDuration, defaultDuration)
 }

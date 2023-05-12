@@ -59,8 +59,6 @@ export interface ISourceLayerItemProps {
 	onClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	/** Callback fired when the element is double-clicked */
 	onDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-	/** Seemingly always true? */
-	relative?: boolean
 	/** Whether the movement of the element should follow the live line. False when the user is scrolling the segment themselves */
 	followLiveLine: boolean
 	/** True when we are automatically moving to the next part at the end of the allocated time */
@@ -149,7 +147,6 @@ export const SourceLayerItem = withTranslation()(
 		}
 
 		getItemLabelOffsetLeft = (): React.CSSProperties => {
-			if (this.props.relative) return {}
 			const maxLabelWidth = this.props.piece.maxLabelWidth
 
 			if (this.props.part && this.props.partStartsAt !== undefined) {
@@ -192,14 +189,13 @@ export const SourceLayerItem = withTranslation()(
 									: 'none',
 							transform:
 								'translate(' +
-								Math.floor(
-									widthConstrictedMode
-										? targetPos
-										: Math.min(targetPos, elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10)
+								(widthConstrictedMode
+									? targetPos
+									: Math.min(targetPos, elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10)
 								).toString() +
 								'px, 0) ' +
 								'translate(' +
-								Math.floor(liveLineHistoryWithMargin).toString() +
+								liveLineHistoryWithMargin.toString() +
 								'px, 0) ' +
 								'translate(-100%, 0)',
 						}
@@ -222,12 +218,13 @@ export const SourceLayerItem = withTranslation()(
 									: 'none',
 							transform:
 								'translate(' +
-								Math.floor(
-									Math.min(targetPos, elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10)
+								Math.min(
+									targetPos,
+									elementWidth - this.state.rightAnchoredWidth - liveLineHistoryWithMargin - 10
 								).toString() +
 								'px, 0) ' +
 								'translate(' +
-								Math.floor(liveLineHistoryWithMargin).toString() +
+								liveLineHistoryWithMargin.toString() +
 								'px, 0) ' +
 								'translate3d(-100%, 0)',
 						}
@@ -261,10 +258,9 @@ export const SourceLayerItem = withTranslation()(
 									: 'none',
 							transform:
 								'translate(' +
-								Math.floor(
-									widthConstrictedMode || this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0
-										? targetPos
-										: Math.min(targetPos, elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth)
+								(widthConstrictedMode || this.state.leftAnchoredWidth === 0 || this.state.rightAnchoredWidth === 0
+									? targetPos
+									: Math.min(targetPos, elementWidth - this.state.leftAnchoredWidth - this.state.rightAnchoredWidth)
 								).toString() +
 								'px,  0)',
 						}
@@ -286,8 +282,6 @@ export const SourceLayerItem = withTranslation()(
 		}
 
 		getItemLabelOffsetRight = (): React.CSSProperties => {
-			if (this.props.relative) return {}
-
 			if (!this.props.part || this.props.partStartsAt === undefined) return {}
 
 			const piece = this.props.piece
@@ -314,7 +308,7 @@ export const SourceLayerItem = withTranslation()(
 				)
 
 				return {
-					transform: 'translate(' + Math.floor(targetPos).toString() + 'px,  0)',
+					transform: 'translate(' + targetPos.toString() + 'px,  0)',
 				}
 			}
 			return {}
@@ -387,33 +381,16 @@ export const SourceLayerItem = withTranslation()(
 
 			// let liveLinePadding = this.props.autoNextPart ? 0 : (this.props.isLiveLine ? this.props.liveLinePadding : 0)
 
-			if (this.props.relative) {
-				const itemDuration = this.getItemDuration()
-
-				if (innerPiece.pieceType === IBlueprintPieceType.OutTransition) {
-					return {
-						left: 'auto',
-						right: '0',
-						width: ((itemDuration / (this.props.partDuration || 1)) * 100).toString() + '%',
-					}
-				}
+			if (innerPiece.pieceType === IBlueprintPieceType.OutTransition) {
 				return {
-					// also: don't render transitions in relative mode
-					left: (((piece.renderedInPoint || 0) / (this.props.partDuration || 1)) * 100).toString() + '%',
-					width: ((itemDuration / (this.props.partDuration || 1)) * 100).toString() + '%',
+					left: 'auto',
+					right: '0',
+					width: this.getElementAbsoluteWidth().toString() + 'px',
 				}
-			} else {
-				if (innerPiece.pieceType === IBlueprintPieceType.OutTransition) {
-					return {
-						left: 'auto',
-						right: '0',
-						width: this.getElementAbsoluteWidth().toString() + 'px',
-					}
-				}
-				return {
-					left: this.convertTimeToPixels(piece.renderedInPoint || 0).toString() + 'px',
-					width: this.getElementAbsoluteStyleWidth(),
-				}
+			}
+			return {
+				left: this.convertTimeToPixels(piece.renderedInPoint || 0).toString() + 'px',
+				width: this.getElementAbsoluteStyleWidth(),
 			}
 		}
 
@@ -672,19 +649,15 @@ export const SourceLayerItem = withTranslation()(
 		}
 
 		isInsideViewport() {
-			if (this.props.relative) {
-				return true
-			} else {
-				return RundownUtils.isInsideViewport(
-					this.props.scrollLeft,
-					this.props.scrollWidth,
-					this.props.part,
-					this.props.pieces,
-					this.props.partStartsAt,
-					this.props.partDuration,
-					this.props.piece
-				)
-			}
+			return RundownUtils.isInsideViewport(
+				this.props.scrollLeft,
+				this.props.scrollWidth,
+				this.props.part,
+				this.props.pieces,
+				this.props.partStartsAt,
+				this.props.partDuration,
+				this.props.piece
+			)
 		}
 
 		render(): JSX.Element {
@@ -704,7 +677,6 @@ export const SourceLayerItem = withTranslation()(
 							this.props.layer.type,
 							this.props.part.partId,
 							this.state.highlight,
-							this.props.relative,
 							elementWidth,
 							this.state
 						)}

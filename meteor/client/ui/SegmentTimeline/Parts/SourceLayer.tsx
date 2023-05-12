@@ -32,7 +32,6 @@ export interface ISourceLayerPropsBase {
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-	relative: boolean
 	followLiveLine: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
@@ -127,7 +126,6 @@ export function SourceLayer(props: ISourceLayerProps): JSX.Element {
 									partDuration={props.duration}
 									partExpectedDuration={props.expectedDuration}
 									timeScale={props.timeScale}
-									relative={props.relative}
 									autoNextPart={props.autoNextPart}
 									liveLinePadding={props.liveLinePadding}
 									scrollLeft={props.scrollLeft}

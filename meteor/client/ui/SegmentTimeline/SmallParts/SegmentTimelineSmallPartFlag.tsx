@@ -14,7 +14,7 @@ import { TimingDataResolution, TimingTickResolution, withTiming } from '../../Ru
 
 export const SegmentTimelineSmallPartFlag = withTiming<
 	{
-		parts: [PartUi, number][]
+		parts: [PartUi, number, number][]
 		pieces: Map<PartId, CalculateTimingsPiece[]>
 		followingPart: PartUi | undefined
 		firstPartInSegmentId: PartId
@@ -101,9 +101,11 @@ export const SegmentTimelineSmallPartFlag = withTiming<
 			[pixelOffsetPosition]
 		)
 
-		let partDurations = 0
-		const partFlags = parts.map(([part, duration]) => {
-			partDurations += duration
+		let partDisplayDurations = 0
+		let partActualDurations = 0
+		const partFlags = parts.map(([part, displayDuration, actualDuration]) => {
+			partDisplayDurations += displayDuration
+			partActualDurations += actualDuration
 			return (
 				<SegmentTimelineSmallPartFlagIcon
 					key={unprotectString(part.instance._id)}
@@ -130,7 +132,7 @@ export const SegmentTimelineSmallPartFlag = withTiming<
 					onMouseEnter={onMouseEnter}
 					onMouseLeave={onMouseLeave}
 					style={{
-						transform: `translateX(${(partDurations * timeScale) / 2}px)`,
+						transform: `translateX(${(partDisplayDurations * timeScale) / 2}px)`,
 					}}
 				>
 					<SmallPartFlag className="segment-timeline__small-parts-flag-pointer" />
@@ -149,7 +151,8 @@ export const SegmentTimelineSmallPartFlag = withTiming<
 					liveLineHistorySize={liveLineHistorySize}
 					isLastSegment={isLastSegment}
 					isLastInSegment={isLastInSegment}
-					totalSegmentDuration={partDurations}
+					totalSegmentDisplayDuration={partDisplayDurations}
+					actualPartsDuration={partActualDurations}
 					parentTimeScale={timeScale}
 					showDurationSourceLayers={showDurationSourceLayers}
 				/>
