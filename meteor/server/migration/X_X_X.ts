@@ -98,11 +98,11 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	{
 		id: `Mos gateway fix up config`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = PeripheralDevices.find({
+		validate: async () => {
+			const objects = await PeripheralDevices.findFetchAsync({
 				type: PeripheralDeviceType.MOS,
 				'settings.device': { $exists: true },
-			}).fetch()
+			})
 			const badObject = objects.find(
 				(device) =>
 					!!Object.values<unknown>(device.settings?.['devices'] ?? {}).find(
@@ -115,11 +115,11 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = PeripheralDevices.find({
+		migrate: async () => {
+			const objects = await PeripheralDevices.findFetchAsync({
 				type: PeripheralDeviceType.MOS,
 				'settings.device': { $exists: true },
-			}).fetch()
+			})
 			for (const obj of objects) {
 				const newDevices: any = clone(obj.settings['devices'] || {})
 
@@ -133,7 +133,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					newDevices[id] = newdev
 				}
 
-				PeripheralDevices.update(obj._id, {
+				await PeripheralDevices.updateAsync(obj._id, {
 					$set: {
 						'settings.devices': newDevices,
 					},
@@ -145,8 +145,8 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	{
 		id: `Fix up studio mappings`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const studios = Studios.find({ mappingsWithOverrides: { $exists: true } }).fetch()
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({ mappingsWithOverrides: { $exists: true } })
 
 			for (const studio of studios) {
 				const newOverrides = convertMappingsOverrideOps(studio)
@@ -157,8 +157,8 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 
 			return false
 		},
-		migrate: () => {
-			const studios = Studios.find({ mappingsWithOverrides: { $exists: true } }).fetch()
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({ mappingsWithOverrides: { $exists: true } })
 
 			for (const studio of studios) {
 				// Note: we can ignore the defaults of the mappings, as they will be replaced by an updated blueprint
@@ -166,7 +166,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 				const newOverrides = convertMappingsOverrideOps(studio)
 
 				if (newOverrides) {
-					Studios.update(studio._id, {
+					await Studios.updateAsync(studio._id, {
 						$set: {
 							'mappingsWithOverrides.overrides': newOverrides,
 						},
@@ -179,8 +179,8 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	{
 		id: `Fix up studio routesets`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const studios = Studios.find({ routeSets: { $exists: true } }).fetch()
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({ routeSets: { $exists: true } })
 
 			for (const studio of studios) {
 				const newOverrides = convertRouteSetMappings(studio)
@@ -191,14 +191,14 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 
 			return false
 		},
-		migrate: () => {
-			const studios = Studios.find({ routeSets: { $exists: true } }).fetch()
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({ routeSets: { $exists: true } })
 
 			for (const studio of studios) {
 				const newRouteSets = convertRouteSetMappings(studio)
 
 				if (newRouteSets) {
-					Studios.update(studio._id, {
+					await Studios.updateAsync(studio._id, {
 						$set: {
 							routeSets: newRouteSets,
 						},
@@ -211,22 +211,22 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	{
 		id: `Ingest gateway populate nrcsName`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objectCount = PeripheralDevices.find({
+		validate: async () => {
+			const objectCount = await PeripheralDevices.countDocuments({
 				category: PeripheralDeviceCategory.INGEST,
 				nrcsName: { $exists: false },
-			}).count()
+			})
 
 			if (objectCount) {
 				return `object needs to be updated`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = PeripheralDevices.find({
+		migrate: async () => {
+			const objects = await PeripheralDevices.findFetchAsync({
 				category: PeripheralDeviceCategory.INGEST,
 				nrcsName: { $exists: false },
-			}).fetch()
+			})
 			for (const device of objects) {
 				let nrcsName = ''
 
@@ -238,7 +238,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					nrcsName = 'Google Sheet'
 				}
 
-				PeripheralDevices.update(device._id, {
+				await PeripheralDevices.updateAsync(device._id, {
 					$set: {
 						nrcsName: nrcsName,
 					},
@@ -249,20 +249,20 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	{
 		id: `PeripheralDevice populate documentationUrl`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objectCount = PeripheralDevices.find({
+		validate: async () => {
+			const objectCount = await PeripheralDevices.countDocuments({
 				documentationUrl: { $exists: false },
-			}).count()
+			})
 
 			if (objectCount) {
 				return `object needs to be updated`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = PeripheralDevices.find({
+		migrate: async () => {
+			const objects = await PeripheralDevices.findFetchAsync({
 				documentationUrl: { $exists: false },
-			}).fetch()
+			})
 			for (const device of objects) {
 				let documentationUrl = ''
 
@@ -286,7 +286,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					assertNever(device.type)
 				}
 
-				PeripheralDevices.update(device._id, {
+				await PeripheralDevices.updateAsync(device._id, {
 					$set: {
 						documentationUrl: documentationUrl,
 					},
@@ -298,22 +298,22 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	{
 		id: `Studio ensure peripheralDeviceSettings field`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objectCount = Studios.find({
+		validate: async () => {
+			const objectCount = await Studios.countDocuments({
 				peripheralDeviceSettings: { $exists: false },
-			}).count()
+			})
 
 			if (objectCount) {
 				return `object needs to be updated`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = Studios.find({
+		migrate: async () => {
+			const objects = await Studios.findFetchAsync({
 				peripheralDeviceSettings: { $exists: false },
-			}).fetch()
+			})
 			for (const studio of objects) {
-				Studios.update(studio._id, {
+				await Studios.updateAsync(studio._id, {
 					$set: {
 						peripheralDeviceSettings: {
 							playoutDevices: wrapDefaultObject({}),
@@ -329,24 +329,24 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	{
 		id: `Studio move playout-gateway subdevices`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objectCount = PeripheralDevices.find({
+		validate: async () => {
+			const objectCount = await PeripheralDevices.countDocuments({
 				category: PeripheralDeviceCategory.PLAYOUT,
 				studioId: { $exists: true },
 				'settings.devices': { $exists: true },
-			}).count()
+			})
 
 			if (objectCount) {
 				return `object needs to be updated`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = PeripheralDevices.find({
+		migrate: async () => {
+			const objects = await PeripheralDevices.findFetchAsync({
 				category: PeripheralDeviceCategory.PLAYOUT,
 				studioId: { $exists: true },
 				'settings.devices': { $exists: true },
-			}).fetch()
+			})
 			for (const device of objects) {
 				if (!device.studioId) continue
 
@@ -365,13 +365,13 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					)
 				}
 
-				Studios.update(device.studioId, {
+				await Studios.updateAsync(device.studioId, {
 					$set: {
 						[`peripheralDeviceSettings.playoutDevices.overrides`]: newOverrides,
 					},
 				})
 
-				PeripheralDevices.update(device._id, {
+				await PeripheralDevices.updateAsync(device._id, {
 					$unset: {
 						'settings.devices': 1,
 					},
@@ -382,24 +382,24 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	{
 		id: `Studio move ingest subdevices`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objectCount = PeripheralDevices.find({
+		validate: async () => {
+			const objectCount = await PeripheralDevices.countDocuments({
 				category: PeripheralDeviceCategory.INGEST,
 				studioId: { $exists: true },
 				'settings.devices': { $exists: true },
-			}).count()
+			})
 
 			if (objectCount) {
 				return `object needs to be updated`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = PeripheralDevices.find({
+		migrate: async () => {
+			const objects = await PeripheralDevices.findFetchAsync({
 				category: PeripheralDeviceCategory.INGEST,
 				studioId: { $exists: true },
 				'settings.devices': { $exists: true },
-			}).fetch()
+			})
 			for (const device of objects) {
 				if (!device.studioId) continue
 
@@ -418,13 +418,13 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					)
 				}
 
-				Studios.update(device.studioId, {
+				await Studios.updateAsync(device.studioId, {
 					$set: {
 						[`peripheralDeviceSettings.ingestDevices.overrides`]: newOverrides,
 					},
 				})
 
-				PeripheralDevices.update(device._id, {
+				await PeripheralDevices.updateAsync(device._id, {
 					$unset: {
 						'settings.devices': 1,
 					},
@@ -435,24 +435,24 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	{
 		id: `Studio move input subdevices`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objectCount = PeripheralDevices.find({
+		validate: async () => {
+			const objectCount = await PeripheralDevices.countDocuments({
 				category: PeripheralDeviceCategory.TRIGGER_INPUT,
 				studioId: { $exists: true },
 				'settings.devices': { $exists: true },
-			}).count()
+			})
 
 			if (objectCount) {
 				return `object needs to be updated`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = PeripheralDevices.find({
+		migrate: async () => {
+			const objects = await PeripheralDevices.findFetchAsync({
 				category: PeripheralDeviceCategory.TRIGGER_INPUT,
 				studioId: { $exists: true },
 				'settings.devices': { $exists: true },
-			}).fetch()
+			})
 			for (const device of objects) {
 				if (!device.studioId) continue
 
@@ -471,13 +471,13 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					)
 				}
 
-				Studios.update(device.studioId, {
+				await Studios.updateAsync(device.studioId, {
 					$set: {
 						[`peripheralDeviceSettings.inputDevices.overrides`]: newOverrides,
 					},
 				})
 
-				PeripheralDevices.update(device._id, {
+				await PeripheralDevices.updateAsync(device._id, {
 					$unset: {
 						'settings.devices': 1,
 					},
@@ -489,20 +489,20 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	{
 		id: `PeripheralDevice cleanup unused properties on child devices`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objectCount = PeripheralDevices.find({
+		validate: async () => {
+			const objectCount = await PeripheralDevices.countDocuments({
 				parentDeviceId: { $exists: true },
 				// One of:
 				configManifest: { $exists: true },
-			}).count()
+			})
 
 			if (objectCount) {
 				return `object needs to be updated`
 			}
 			return false
 		},
-		migrate: () => {
-			PeripheralDevices.update(
+		migrate: async () => {
+			await PeripheralDevices.updateAsync(
 				{ parentDeviceId: { $exists: true } },
 				{
 					$unset: {

@@ -112,12 +112,12 @@ describe('Migrations', () => {
 			{
 				id: 'myCoreMockStep2',
 				canBeRunAutomatically: true,
-				validate: () => {
+				validate: async () => {
 					if (!Studios.findOne(protectString('studioMock2'))) return 'No Studio found'
 					return false
 				},
-				migrate: () => {
-					Studios.insert({
+				migrate: async () => {
+					await Studios.insertAsync({
 						_id: protectString('studioMock2'),
 						name: 'Default studio',
 						organizationId: null,
@@ -148,12 +148,12 @@ describe('Migrations', () => {
 			{
 				id: 'myCoreMockStep3',
 				canBeRunAutomatically: true,
-				validate: () => {
+				validate: async () => {
 					if (!Studios.findOne(protectString('studioMock3'))) return 'No Studio found'
 					return false
 				},
-				migrate: () => {
-					Studios.insert({
+				migrate: async () => {
+					await Studios.insertAsync({
 						_id: protectString('studioMock3'),
 						name: 'Default studio',
 						organizationId: null,
@@ -184,12 +184,12 @@ describe('Migrations', () => {
 			{
 				id: 'myCoreMockStep1',
 				canBeRunAutomatically: true,
-				validate: () => {
+				validate: async () => {
 					if (!Studios.findOne(protectString('studioMock1'))) return 'No Studio found'
 					return false
 				},
-				migrate: () => {
-					Studios.insert({
+				migrate: async () => {
+					await Studios.insertAsync({
 						_id: protectString('studioMock1'),
 						name: 'Default studio',
 						organizationId: null,

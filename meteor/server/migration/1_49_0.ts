@@ -1,5 +1,4 @@
 import { addMigrationSteps } from './databaseMigration'
-import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { Blueprints, ShowStyleVariants } from '../collections'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'
 
@@ -17,41 +16,45 @@ export const addSteps = addMigrationSteps('1.49.0', [
 	{
 		id: 'Add missing ranks to ShowStyleVariants',
 		canBeRunAutomatically: true,
-		validate: () => {
+		validate: async () => {
 			return (
-				ShowStyleVariants.find({
+				(await ShowStyleVariants.countDocuments({
 					_rank: { $exists: false },
-				}).count() > 0
+				})) > 0
 			)
 		},
-		migrate: () => {
+		migrate: async () => {
 			// This version introduces ShowStyleVariant sorting, this means we need to create them now
-			ShowStyleVariants.find({
+			const variants = await ShowStyleVariants.findFetchAsync({
 				_rank: { $exists: false },
-			}).forEach((variant: ShowStyleVariant, index: number) => {
-				ShowStyleVariants.upsert(variant._id, {
+			})
+
+			for (let i = 0; i < variants.length; i++) {
+				const variant = variants[i]
+
+				await ShowStyleVariants.updateAsync(variant._id, {
 					$set: {
-						_rank: index,
+						_rank: i,
 					},
 				})
-			})
+			}
 		},
 	},
 
 	{
 		id: `Blueprints ensure blueprintHash is set`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = Blueprints.find({ blueprintHash: { $exists: false } }).count()
+		validate: async () => {
+			const objects = await Blueprints.countDocuments({ blueprintHash: { $exists: false } })
 			if (objects > 0) {
 				return `object needs to be converted`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = Blueprints.find({ blueprintHash: { $exists: false } }).fetch()
+		migrate: async () => {
+			const objects = await Blueprints.findFetchAsync({ blueprintHash: { $exists: false } })
 			for (const obj of objects) {
-				Blueprints.update(obj._id, {
+				await Blueprints.updateAsync(obj._id, {
 					$set: {
 						blueprintHash: getRandomId(),
 					},

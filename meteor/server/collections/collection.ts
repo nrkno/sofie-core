@@ -180,6 +180,16 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 			}
 		}
 	}
+
+	async countDocuments(selector?: MongoQuery<DBInterface>, options?: FindOptions<DBInterface>): Promise<number> {
+		return makePromise(() => {
+			try {
+				return this._collection.find((selector ?? {}) as any, options as any).count()
+			} catch (e) {
+				this.wrapMongoError(e)
+			}
+		})
+	}
 }
 
 export interface ServerAsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedString<any> }>
@@ -299,6 +309,12 @@ export interface AsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedSt
 	removeAsync(selector: MongoQuery<DBInterface> | DBInterface['_id']): Promise<number>
 
 	bulkWriteAsync(ops: Array<AnyBulkWriteOperation<DBInterface>>): Promise<void>
+
+	/**
+	 * Count the number of docuyments in a collection that match the selector.
+	 * @param selector A query describing the documents to find
+	 */
+	countDocuments(selector?: MongoQuery<DBInterface>, options?: FindOptions<DBInterface>): Promise<number>
 }
 
 /** This is for the mock mongo collection, as internally it is sync and so we dont need or want to play around with fibers */
@@ -441,6 +457,15 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 					`Errors in rawCollection.bulkWrite: ${bulkWriteResult.result.writeErrors.join(',')}`
 				)
 			}
+		}
+	}
+
+	async countDocuments(selector?: MongoQuery<DBInterface>, options?: FindOptions<DBInterface>): Promise<number> {
+		await this.realSleep(0)
+		try {
+			return this._collection.find((selector ?? {}) as any, options as any).count()
+		} catch (e) {
+			this.wrapMongoError(e)
 		}
 	}
 }

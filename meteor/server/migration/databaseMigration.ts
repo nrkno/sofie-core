@@ -13,7 +13,6 @@ import {
 	MigrationContextShowStyle as IMigrationContextShowStyle,
 	MigrationContextStudio as IMigrationContextStudio,
 	MigrationStep,
-	MigrationStepBase,
 	MigrationStepInput,
 	MigrationStepInputFilteredResult,
 	MigrationStepInputResult,
@@ -25,6 +24,10 @@ import {
 	ValidateFunctionShowStyle,
 	ValidateFunctionStudio,
 	MigrateFunctionSystem,
+	ValidateFunction,
+	MigrateFunction,
+	InputFunction,
+	MigrationStepCore,
 } from '@sofie-automation/blueprints-integration'
 import * as _ from 'underscore'
 import {
@@ -59,6 +62,8 @@ export const UNSUPPORTED_VERSIONS = [
 	'<=0.18',
 	// 0.24.0 to 0.25.0: Major refactoring, Renaming of RunningOrders, segmentLines & segmentLineItems to Rundowns, parts & pieces. And a lot more
 	'<=0.24',
+	// Only support versions from the last 12 months:
+	'<0.39',
 ]
 
 export function isVersionSupported(version: Version): boolean {
@@ -71,36 +76,28 @@ export function isVersionSupported(version: Version): boolean {
 	return isSupported
 }
 
-interface MigrationStepInternal extends MigrationStep {
+interface MigrationStepInternal extends MigrationStep<ValidateFunction, MigrateFunction, InputFunction> {
 	chunk: MigrationChunk
 	_rank: number
 	_version: Version // step version
 	_validateResult: string | boolean
 }
 
-const coreMigrationSteps: Array<MigrationStep> = []
+const coreMigrationSteps: Array<MigrationStepCore> = []
 
-/**
- * Add new system Migration step
- * @param step
- */
-export function addMigrationStep(step: MigrationStep): void {
-	coreMigrationSteps.push(step)
-}
 /**
  * Convenience method to add multiple steps of the same version
  * @param version
  * @param steps
  */
-export function addMigrationSteps(version: string, steps: Array<MigrationStepBase>) {
+export function addMigrationSteps(version: string, steps: Array<Omit<MigrationStepCore, 'version'>>) {
 	return (): void => {
-		_.each(steps, (step) => {
-			addMigrationStep(
-				_.extend(step, {
-					version: version,
-				})
-			)
-		})
+		for (const step of steps) {
+			coreMigrationSteps.push({
+				...step,
+				version: version,
+			})
+		}
 	}
 }
 /** Removes all migration steps (used in tests) */
@@ -385,7 +382,7 @@ export function prepareMigration(returnAllChunks?: boolean): PreparedMigration {
 			try {
 				if (step.chunk.sourceType === MigrationStepType.CORE) {
 					const validate = step.validate as ValidateFunctionCore
-					step._validateResult = validate(false)
+					step._validateResult = waitForPromise(validate(false))
 				} else if (step.chunk.sourceType === MigrationStepType.SYSTEM) {
 					const validate = step.validate as ValidateFunctionSystem
 					step._validateResult = validate(getMigrationSystemContext(step.chunk), false)
@@ -605,7 +602,7 @@ export function runMigration(
 
 				if (step.chunk.sourceType === MigrationStepType.CORE) {
 					const migration = step.migrate as MigrateFunctionCore
-					migration(stepInput)
+					waitForPromise(migration(stepInput))
 				} else if (step.chunk.sourceType === MigrationStepType.SYSTEM) {
 					const migration = step.migrate as MigrateFunctionSystem
 					migration(getMigrationSystemContext(step.chunk), stepInput)
@@ -625,7 +622,7 @@ export function runMigration(
 
 			if (step.chunk.sourceType === MigrationStepType.CORE) {
 				const validate = step.validate as ValidateFunctionCore
-				validateMessage = validate(true)
+				validateMessage = waitForPromise(validate(true))
 			} else if (step.chunk.sourceType === MigrationStepType.SYSTEM) {
 				const validate = step.validate as ValidateFunctionSystem
 				validateMessage = validate(getMigrationSystemContext(step.chunk), true)
