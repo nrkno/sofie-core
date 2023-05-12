@@ -5717,7 +5717,6 @@ __metadata:
 "eslint-plugin-custom-rules@file:eslint-rules::locator=automation-core%40workspace%3A.":
   version: 0.0.1
   resolution: "eslint-plugin-custom-rules@file:eslint-rules#eslint-rules::hash=94db49&locator=automation-core%40workspace%3A."
-  checksum: 2e1bf2957c9484bdde478b8b196f9d932412934eaab7f37950685220638f3653fedaff3185fd5fa3cb2b773777cdfd59e4b864f985b57fab48709b4600c92d18
   languageName: node
   linkType: hard
 
