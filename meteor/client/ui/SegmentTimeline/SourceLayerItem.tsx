@@ -198,6 +198,7 @@ export const SourceLayerItem = withTranslation()(
 								liveLineHistoryWithMargin.toString() +
 								'px, 0) ' +
 								'translate(-100%, 0)',
+							willChange: 'transform',
 						}
 					} else if (
 						this.state.rightAnchoredWidth < elementWidth &&
@@ -227,6 +228,7 @@ export const SourceLayerItem = withTranslation()(
 								liveLineHistoryWithMargin.toString() +
 								'px, 0) ' +
 								'translate3d(-100%, 0)',
+							willChange: 'transform',
 						}
 					} else {
 						return {
