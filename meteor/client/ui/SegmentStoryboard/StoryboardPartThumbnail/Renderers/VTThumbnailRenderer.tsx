@@ -24,6 +24,7 @@ export function VTThumbnailRenderer({
 	originPosition,
 	studio,
 	layer,
+	height,
 }: IProps): JSX.Element {
 	const mediaPreviewUrl = studio.settings.mediaPreviewsUrl
 
@@ -46,6 +47,7 @@ export function VTThumbnailRenderer({
 				position={{
 					top: originPosition.top,
 					left: originPosition.left,
+					height,
 					anchor: 'start',
 					position: 'top-start',
 				}}

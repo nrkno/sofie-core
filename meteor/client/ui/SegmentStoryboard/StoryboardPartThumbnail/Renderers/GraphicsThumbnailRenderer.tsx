@@ -5,7 +5,13 @@ import { L3rdFloatingInspector } from '../../../FloatingInspectors/L3rdFloatingI
 import { PieceMultistepChevron } from '../../../SegmentContainer/PieceMultistepChevron'
 import { IProps } from './ThumbnailRendererFactory'
 
-export function GraphicsThumbnailRenderer({ pieceInstance, hovering, layer, originPosition }: IProps): JSX.Element {
+export function GraphicsThumbnailRenderer({
+	pieceInstance,
+	hovering,
+	layer,
+	originPosition,
+	height,
+}: IProps): JSX.Element {
 	const content = pieceInstance.instance.piece.content as NoraContent | GraphicsContent | undefined
 
 	return (
@@ -16,6 +22,7 @@ export function GraphicsThumbnailRenderer({ pieceInstance, hovering, layer, orig
 				position={{
 					top: originPosition.top,
 					left: originPosition.left,
+					height,
 					anchor: 'start',
 					position: 'top-start',
 				}}
