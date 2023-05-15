@@ -60,8 +60,6 @@ export const SegmentTimelinePartHoverPreview = ({
 
 		const { width } = inspectorRef.getBoundingClientRect()
 
-		console.log(previewWindowDuration, width)
-
 		setTimeToPixelRatio(width / previewWindowDuration)
 	}, [inspectorRef, previewWindowDuration])
 
