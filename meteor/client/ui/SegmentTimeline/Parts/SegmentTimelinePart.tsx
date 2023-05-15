@@ -328,9 +328,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		}
 
 		const futureShadeDuration =
-			this.state.isLive || (this.props.isBudgetGap && this.props.isLiveSegment)
-				? this.getFutureShadePaddingTime()
-				: 0
+			this.state.isLive || (this.props.isBudgetGap && this.props.isLiveSegment) ? this.getFutureShadePaddingTime() : 0
 		const partDurationWithFutureShadeAccountedFor = this.props.isBudgetGap
 			? partDuration - futureShadeDuration
 			: partDuration + futureShadeDuration
