@@ -4,7 +4,7 @@ import { EXTRA_PACKAGES, config } from "./lib.js";
 
 function hr() {
 	// write regular dashes if this is a "simple" output stream ()
-	if (!process.stdout.hasColors())
+	if (!process.stdout.hasColors || !process.stdout.hasColors())
 		return '-'.repeat(process.stdout.columns ?? 40)
 	return '─'.repeat(process.stdout.columns ?? 40)
 }
