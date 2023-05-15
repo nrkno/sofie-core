@@ -47,13 +47,19 @@ function watchMeteor() {
 	];
 }
 
+function hr() {
+	return '─'.repeat(process.stdout.columns)
+}
+
 try {
 	// Note: This scricpt assumes that install-and-build.mjs has been run before
 
+	
+
 	// The main watching execution
-	console.log("#################################");
-	console.log("          Starting up...         ");
-	console.log("#################################");
+	console.log(hr());
+	console.log(" ⚙️  Starting up in development mode...         ");
+	console.log(hr());
 	await concurrently(
 		[
 			...(config.uiOnly ? [] : watchPackages()),
