@@ -20,7 +20,12 @@
             "request": "attach",
             "name": "Attach",
             "port": 9229,
-            "cwd": "${workspaceFolder}/meteor"
-        },
+            "cwd": "${workspaceFolder}/meteor",
+            "outFiles": [
+                "${workspaceFolder}/**/*.js",
+                "!**/node_modules/**",
+                "${workspaceFolder:Blueprints}/dist/*.js",
+            ]
+        }
     ]
 }

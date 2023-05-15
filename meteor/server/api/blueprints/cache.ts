@@ -1,19 +1,28 @@
 import * as _ from 'underscore'
-import { VM } from 'vm2'
+import { VM, VMScript } from 'vm2'
 import { logger } from '../../logging'
 import { Blueprint } from '../../../lib/collections/Blueprints'
 import { SomeBlueprintManifest } from '@sofie-automation/blueprints-integration'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import path from 'path'
 
 export function evalBlueprint(blueprint: Pick<Blueprint, '_id' | 'name' | 'code'>): SomeBlueprintManifest {
 	const vm = new VM({
 		sandbox: {},
 	})
-
-	const entry = vm.run(
-		'__run_result = ' + blueprint.code + '; __run_result || blueprint',
-		`db/blueprint/${blueprint.name || blueprint._id}.js`
+	const blueprintPath =
+		'file:///' +
+		path.posix.join(
+			path.posix.normalize(process.env.BLUEPRINT_DIST_DIR ?? 'db/blueprint'),
+			`${blueprint.name || blueprint._id}-bundle.js`
+		)
+	const script = new VMScript(
+		`__run_result = ${blueprint.code}
+__run_result || blueprint`,
+		blueprintPath
 	)
+	const entry = vm.run(script)
+
 	const manifest: SomeBlueprintManifest = entry.default
 
 	// Wrap the functions, to emit better errors

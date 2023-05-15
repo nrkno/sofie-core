@@ -5,10 +5,11 @@ import {
 	StudioBlueprintManifest,
 	SystemBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
-import { VM } from 'vm2'
+import { VM, VMScript } from 'vm2'
 import { ReadonlyDeep } from 'type-fest'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
+import path = require('path')
 
 export interface WrappedSystemBlueprint {
 	blueprintId: BlueprintId
@@ -57,11 +58,19 @@ export async function parseBlueprintDocument(
 				sandbox: {},
 			})
 
-			// Future: we should look at freezing the object inside the vm
-			const entry = vm.run(
-				'__run_result = ' + blueprint.code + '; __run_result || blueprint',
-				`db/blueprint/${blueprint.name || blueprint._id}.js`
+			const blueprintPath =
+				'file:///' +
+				path.posix.join(
+					path.posix.normalize(process.env.BLUEPRINT_DIST_DIR ?? 'db/blueprint'),
+					`${blueprint.name || blueprint._id}-bundle.js`
+				)
+			const script = new VMScript(
+				`__run_result = ${blueprint.code}
+__run_result || blueprint`,
+				blueprintPath
 			)
+			// Future: we should look at freezing the object inside the vm
+			const entry = vm.run(script)
 			manifest = entry.default
 		} catch (e) {
 			throw new Error(`Syntax error in blueprint "${blueprint._id}": ${stringifyError(e)}`)
