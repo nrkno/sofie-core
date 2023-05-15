@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { IngestDataCache, MediaObjects, Parts, Rundowns, Segments } from '../../collections'
-import { lazyIgnore, literal, waitForPromise } from '../../../lib/lib'
+import { lazyIgnore, literal } from '../../../lib/lib'
 import { IngestRundown, IngestSegment, IngestPart, IngestPlaylist } from '@sofie-automation/blueprints-integration'
 import { logger } from '../../../lib/logging'
 import { RundownIngestDataCache } from './ingestCache'
@@ -11,6 +11,7 @@ import { MethodContext } from '../../../lib/api/methods'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { PeripheralDeviceId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 
 export namespace RundownInput {
 	export async function dataPlaylistGet(
@@ -377,29 +378,56 @@ interface MediaObjectUpdatedIds {
 	segmentId: SegmentId
 }
 
-function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: MediaObject) {
+async function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: MediaObject): Promise<void> {
 	if (
 		!oldDocument ||
 		(newDocument.mediainfo?.format?.duration &&
 			oldDocument.mediainfo?.format?.duration !== newDocument.mediainfo.format.duration)
 	) {
-		const rundownIdsInStudio = waitForPromise(
-			Rundowns.findFetchAsync({ studioId: newDocument.studioId }, { fields: { _id: 1 } })
+		const rundownIdsInStudio = (
+			await Rundowns.findFetchAsync({ studioId: newDocument.studioId }, { fields: { _id: 1 } })
 		).map((rundown) => rundown._id)
-		waitForPromise(
-			Parts.findFetchAsync({
-				rundownId: { $in: rundownIdsInStudio },
-				'hackListenToMediaObjectUpdates.mediaId': newDocument.mediaId,
-			})
-		)
-			.map<MediaObjectUpdatedIds>((part) => {
-				return {
-					rundownId: part.rundownId,
-					segmentId: part.segmentId,
+
+		const updateIds: MediaObjectUpdatedIds[] = (
+			await Parts.findFetchAsync(
+				{
+					rundownId: { $in: rundownIdsInStudio },
+					'hackListenToMediaObjectUpdates.mediaId': newDocument.mediaId,
+				},
+				{
+					fields: {
+						rundownId: 1,
+						segmentId: 1,
+					},
 				}
-			})
-			.filter(doesSegmentExistsInCache)
-			.forEach((mediaObjectUpdatedIds: MediaObjectUpdatedIds) => {
+			)
+		).map<MediaObjectUpdatedIds>((part) => {
+			return {
+				rundownId: part.rundownId,
+				segmentId: part.segmentId,
+			}
+		})
+
+		if (updateIds.length == 0) return
+
+		const validSegmentIds = new Set(
+			(
+				await IngestDataCache.findFetchAsync(
+					{
+						type: IngestCacheType.SEGMENT,
+						rundownId: { $in: updateIds.map((obj) => obj.rundownId) },
+					},
+					{
+						fields: {
+							segmentId: 1,
+						},
+					}
+				)
+			).map((obj) => obj.segmentId)
+		)
+
+		for (const mediaObjectUpdatedIds of updateIds) {
+			if (validSegmentIds.has(mediaObjectUpdatedIds.segmentId)) {
 				try {
 					lazyIgnore(
 						`updateSegmentFromMediaObject_${mediaObjectUpdatedIds.segmentId}`,
@@ -409,16 +437,9 @@ function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: MediaObjec
 				} catch (exception) {
 					logger.error('Error thrown while updating Segment from cache after MediaObject changed', exception)
 				}
-			})
+			}
+		}
 	}
-}
-
-function doesSegmentExistsInCache(mediaObjectUpdatedIds: MediaObjectUpdatedIds): boolean {
-	return !!waitForPromise(
-		IngestDataCache.findOneAsync({
-			segmentId: mediaObjectUpdatedIds.segmentId,
-		})
-	)
 }
 
 async function updateSegmentFromCache(studioId: StudioId, mediaObjectUpdatedIds: MediaObjectUpdatedIds) {

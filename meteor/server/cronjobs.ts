@@ -1,7 +1,7 @@
 import { PeripheralDevices, RundownPlaylists } from './collections'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
-import { getCurrentTime, stringifyError, waitForPromise } from '../lib/lib'
+import { getCurrentTime, stringifyError } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { TSR } from '@sofie-automation/blueprints-integration'
@@ -148,7 +148,9 @@ Meteor.startup(() => {
 			isLowSeason() &&
 			timeSinceLast > 20 * 3600 * 1000 // was last run yesterday
 		) {
-			waitForPromise(nightlyCronjobInner())
+			nightlyCronjobInner().catch((e) => {
+				logger.error(`Nightly cronjob: error: ${e}`)
+			})
 		}
 	}
 

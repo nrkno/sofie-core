@@ -15,6 +15,13 @@ export { Time, TimeDuration }
 export * from '@sofie-automation/corelib/dist/protectedString'
 export * from '@sofie-automation/corelib/dist/lib'
 
+export type PromisifyCallbacks<T> = {
+	[K in keyof T]: PromisifyFunction<T[K]>
+}
+type PromisifyFunction<T> = T extends (...args: any) => any
+	? (...args: Parameters<T>) => Promise<ReturnType<T>> | ReturnType<T>
+	: T
+
 /**
  * Convenience method to convert a Meteor.apply() into a Promise
  * @param callName {string} Method name
@@ -263,34 +270,6 @@ export function MeteorWrapAsync(func: Function, context?: Object): any {
 		}
 		throw new Meteor.Error(500, `Error in MeteorWrapAsync: No callback found!`)
 	})
-}
-
-/**
- * Blocks the fiber until all the Promises have resolved
- */
-export function waitForPromiseAll<T1, T2, T3, T4, T5, T6>(
-	ps: [
-		T1 | PromiseLike<T1>,
-		T2 | PromiseLike<T2>,
-		T3 | PromiseLike<T3>,
-		T4 | PromiseLike<T4>,
-		T5 | PromiseLike<T5>,
-		T6 | PromiseLike<T6>
-	]
-): [T1, T2, T3, T4, T5, T6]
-export function waitForPromiseAll<T1, T2, T3, T4, T5>(
-	ps: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>, T3 | PromiseLike<T3>, T4 | PromiseLike<T4>, T5 | PromiseLike<T5>]
-): [T1, T2, T3, T4, T5]
-export function waitForPromiseAll<T1, T2, T3, T4>(
-	ps: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>, T3 | PromiseLike<T3>, T4 | PromiseLike<T4>]
-): [T1, T2, T3, T4]
-export function waitForPromiseAll<T1, T2, T3>(
-	ps: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>, T3 | PromiseLike<T3>]
-): [T1, T2, T3]
-export function waitForPromiseAll<T1, T2>(ps: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>]): [T1, T2]
-export function waitForPromiseAll<T>(ps: (T | PromiseLike<T>)[]): T[]
-export function waitForPromiseAll<T>(ps: (T | PromiseLike<T>)[]): T[] {
-	return waitForPromise(Promise.all(ps))
 }
 
 export type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T

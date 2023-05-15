@@ -15,7 +15,7 @@ import {
 	ObserveChangesCallbacks,
 	ObserveCallbacks,
 } from '../../lib/collections/lib'
-import { makePromise, stringifyError, waitForPromise } from '../../lib/lib'
+import { PromisifyCallbacks, makePromise, stringifyError, waitForPromise } from '../../lib/lib'
 import type { AnyBulkWriteOperation, Collection as RawCollection, Db as RawDb, CreateIndexesOptions } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import _ from 'underscore'
@@ -169,7 +169,7 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 	implements AsyncOnlyMongoCollection<DBInterface>
 {
 	async findFetchAsync(
-		selector: MongoQuery<DBInterface> | string,
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		options?: FindOptions<DBInterface>
 	): Promise<Array<DBInterface>> {
 		// Make the collection fethcing in another Fiber:
@@ -361,7 +361,7 @@ export interface AsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedSt
 	 */
 	observeChanges(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
-		callbacks: ObserveChangesCallbacks<DBInterface>,
+		callbacks: PromisifyCallbacks<ObserveChangesCallbacks<DBInterface>>,
 		options?: FindOptions<DBInterface>
 	): Meteor.LiveQueryHandle
 
@@ -371,7 +371,7 @@ export interface AsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedSt
 	 */
 	observe(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
-		callbacks: ObserveCallbacks<DBInterface>,
+		callbacks: PromisifyCallbacks<ObserveCallbacks<DBInterface>>,
 		options?: FindOptions<DBInterface>
 	): Meteor.LiveQueryHandle
 
@@ -485,7 +485,7 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 	}
 
 	async findFetchAsync(
-		selector: MongoQuery<DBInterface> | string,
+		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		options?: FindOptions<DBInterface>
 	): Promise<Array<DBInterface>> {
 		await this.realSleep(0)
