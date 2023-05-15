@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { sleep, waitForPromise } from '../../lib/lib'
+import { sleep } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import {
@@ -117,10 +117,10 @@ async function doSystemBenchmarkInner() {
 			indexedProp: 1,
 		})
 	}
-	const cleanup = () => {
+	const cleanup = async () => {
 		if (mongoTest) {
 			// clean up
-			waitForPromise(mongoTest.removeAsync({}))
+			await mongoTest.removeAsync({})
 		}
 	}
 
@@ -278,9 +278,9 @@ async function doSystemBenchmarkInner() {
 		}
 		await sleep(10)
 
-		cleanup()
+		await cleanup()
 	} catch (error) {
-		cleanup()
+		await cleanup()
 		throw error
 	}
 

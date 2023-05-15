@@ -222,7 +222,7 @@ describe('Migrations', () => {
 
 		let migration: PreparedMigration
 
-		migration = prepareMigration(true)
+		migration = await prepareMigration(true)
 		expect(migration.migrationNeeded).toEqual(true)
 		expect(migration.automaticStepCount).toEqual(3)
 
@@ -417,7 +417,7 @@ describe('Migrations', () => {
 		})
 
 		// migrationStatus = Meteor.call(MigrationMethods.getMigrationStatus)
-		migration = prepareMigration(true)
+		migration = await prepareMigration(true)
 
 		expect(migration.migrationNeeded).toEqual(true)
 

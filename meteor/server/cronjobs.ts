@@ -33,26 +33,24 @@ function isLowSeason() {
 let lastNightlyCronjob = 0
 let failedRetries = 0
 
-export function nightlyCronjobInner(): void {
+export async function nightlyCronjobInner(): Promise<void> {
 	const previousLastNightlyCronjob = lastNightlyCronjob
 	lastNightlyCronjob = getCurrentTime()
 	logger.info('Nightly cronjob: starting...')
-	const system = waitForPromise(getCoreSystemAsync())
+	const system = await getCoreSystemAsync()
 
-	waitForPromise(
-		Promise.allSettled([
-			cleanupOldDataCronjob().catch((error) => {
-				logger.error(`Cronjob: Error when cleaning up old data: ${error}`)
-				logger.error(error)
-			}),
-			restartCasparCG(system, previousLastNightlyCronjob).catch((e) => {
-				logger.error(`Cron: Restart CasparCG error: ${e}`)
-			}),
-			storeSnapshots(system).catch((e) => {
-				logger.error(`Cron: Rundown Snapshots error: ${e}`)
-			}),
-		])
-	)
+	await Promise.allSettled([
+		cleanupOldDataCronjob().catch((error) => {
+			logger.error(`Cronjob: Error when cleaning up old data: ${error}`)
+			logger.error(error)
+		}),
+		restartCasparCG(system, previousLastNightlyCronjob).catch((e) => {
+			logger.error(`Cron: Restart CasparCG error: ${e}`)
+		}),
+		storeSnapshots(system).catch((e) => {
+			logger.error(`Cron: Rundown Snapshots error: ${e}`)
+		}),
+	])
 
 	// last:
 	logger.info('Nightly cronjob: done')
@@ -150,7 +148,7 @@ Meteor.startup(() => {
 			isLowSeason() &&
 			timeSinceLast > 20 * 3600 * 1000 // was last run yesterday
 		) {
-			nightlyCronjobInner()
+			waitForPromise(nightlyCronjobInner())
 		}
 	}
 
