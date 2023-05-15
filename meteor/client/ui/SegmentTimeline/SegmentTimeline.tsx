@@ -734,9 +734,10 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 							parts={emitSmallPartsInFlag}
 							pieces={this.props.pieces}
 							followingPart={part}
+							livePosition={this.props.livePosition}
 							firstPartInSegmentId={firstPartInSegment.partId}
 							sourceLayers={this.props.segment.sourceLayers}
-							timeScale={this.props.timeScale}
+							timeToPixelRatio={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
 							collapsedOutputs={this.props.collapsedOutputs}
 							playlist={this.props.playlist}
@@ -747,6 +748,10 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 							isLastInSegment={false}
 							timelineWidth={this.state.timelineWidth}
 							showDurationSourceLayers={this.props.showDurationSourceLayers}
+							isLiveSegment={this.props.isLiveSegment}
+							anyPriorPartWasLive={anyPriorPartWasLive}
+							livePartStartsAt={livePartStartsAt}
+							livePartDisplayDuration={livePartDisplayDuration}
 						/>
 					)}
 					<SegmentTimelinePart
@@ -791,9 +796,10 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 							parts={emitSmallPartsInFlag}
 							pieces={this.props.pieces}
 							followingPart={undefined}
+							livePosition={this.props.livePosition}
 							firstPartInSegmentId={firstPartInSegment.partId}
 							sourceLayers={this.props.segment.sourceLayers}
-							timeScale={this.props.timeScale}
+							timeToPixelRatio={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
 							collapsedOutputs={this.props.collapsedOutputs}
 							playlist={this.props.playlist}
@@ -804,6 +810,10 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 							isLastInSegment={true}
 							timelineWidth={this.state.timelineWidth}
 							showDurationSourceLayers={this.props.showDurationSourceLayers}
+							isLiveSegment={this.props.isLiveSegment}
+							anyPriorPartWasLive={anyPriorPartWasLive}
+							livePartStartsAt={livePartStartsAt}
+							livePartDisplayDuration={livePartDisplayDuration}
 						/>
 					)}
 				</React.Fragment>

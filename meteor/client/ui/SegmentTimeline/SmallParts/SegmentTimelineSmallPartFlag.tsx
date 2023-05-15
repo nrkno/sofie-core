@@ -11,6 +11,7 @@ import { UIStudio } from '../../../../lib/api/studios'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { TimingDataResolution, TimingTickResolution, withTiming } from '../../RundownView/RundownTiming/withTiming'
+import { SegmentTimelinePartClass } from '../Parts/SegmentTimelinePart'
 
 export const SegmentTimelineSmallPartFlag = withTiming<
 	{
@@ -21,7 +22,7 @@ export const SegmentTimelineSmallPartFlag = withTiming<
 		sourceLayers: {
 			[key: string]: ISourceLayer
 		}
-		timeScale: number
+		timeToPixelRatio: number
 
 		segment: SegmentUi
 		playlist: RundownPlaylist
@@ -35,6 +36,12 @@ export const SegmentTimelineSmallPartFlag = withTiming<
 		isLastInSegment: boolean
 		timelineWidth: number
 		showDurationSourceLayers?: Set<ISourceLayer['_id']>
+
+		livePosition: number
+		isLiveSegment: boolean | undefined
+		anyPriorPartWasLive: boolean | undefined
+		livePartStartsAt: number | undefined
+		livePartDisplayDuration: number | undefined
 	},
 	{}
 >((props) => ({
@@ -50,7 +57,7 @@ export const SegmentTimelineSmallPartFlag = withTiming<
 		pieces,
 		followingPart,
 		sourceLayers,
-		timeScale,
+		timeToPixelRatio,
 		firstPartInSegmentId,
 
 		segment,
@@ -63,15 +70,53 @@ export const SegmentTimelineSmallPartFlag = withTiming<
 		isLastInSegment,
 		showDurationSourceLayers,
 
+		livePosition,
+		isLiveSegment,
+		anyPriorPartWasLive,
+		livePartStartsAt,
+		livePartDisplayDuration,
+
 		timingDurations,
 	}): JSX.Element => {
 		const flagRef = useRef<HTMLDivElement>(null)
+
+		const futureShadePaddingTime = useMemo(() => {
+			// TODO: Refactor this to use a single implementation with SegmentTimelinePart
+			if (!isLiveSegment || !anyPriorPartWasLive || autoNextPart) {
+				return 0
+			}
+
+			/**
+			 * How far into the live part we are, in milliseconds.
+			 */
+			const timeIntoLivePart = Math.max(0, (livePosition || 0) - (livePartStartsAt || 0))
+
+			/**
+			 * The maximum amount of live line time padding to add, in milliseconds.
+			 */
+			const maxPadding = SegmentTimelinePartClass.getLiveLineTimePadding(timeToPixelRatio)
+
+			/**
+			 * The amount of live line time padding to add, based on some simple math, in milliseconds.
+			 */
+			const computedPadding = Math.max(0, timeIntoLivePart + maxPadding - (livePartDisplayDuration || 0))
+
+			return Math.min(computedPadding, maxPadding)
+		}, [
+			isLiveSegment,
+			anyPriorPartWasLive,
+			autoNextPart,
+			livePosition,
+			livePartStartsAt,
+			timeToPixelRatio,
+			livePartDisplayDuration,
+		])
 
 		const firstPartDisplayStartsAt =
 			(timingDurations.partDisplayStartsAt?.[unprotectString(parts[0][0].partId)] ?? 0) -
 			(timingDurations.partDisplayStartsAt?.[unprotectString(firstPartInSegmentId)] ?? 0)
 
-		const pixelOffsetPosition = firstPartDisplayStartsAt * timeScale
+		const pixelOffsetPosition = (firstPartDisplayStartsAt + futureShadePaddingTime) * timeToPixelRatio
 
 		const [isHover, setHover] = useState(false)
 		const onMouseEnter = () => {
@@ -132,7 +177,7 @@ export const SegmentTimelineSmallPartFlag = withTiming<
 					onMouseEnter={onMouseEnter}
 					onMouseLeave={onMouseLeave}
 					style={{
-						transform: `translateX(${(partDisplayDurations * timeScale) / 2}px)`,
+						transform: `translateX(${(partDisplayDurations * timeToPixelRatio) / 2}px)`,
 					}}
 				>
 					<SmallPartFlag className="segment-timeline__small-parts-flag-pointer" />
@@ -153,7 +198,7 @@ export const SegmentTimelineSmallPartFlag = withTiming<
 					isLastInSegment={isLastInSegment}
 					totalSegmentDisplayDuration={partDisplayDurations}
 					actualPartsDuration={partActualDurations}
-					parentTimeScale={timeScale}
+					parentTimeScale={timeToPixelRatio}
 					showDurationSourceLayers={showDurationSourceLayers}
 				/>
 			</div>
