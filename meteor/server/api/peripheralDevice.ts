@@ -144,7 +144,6 @@ export namespace ServerPeripheralDeviceAPI {
 				status: {
 					statusCode: StatusCode.UNKNOWN,
 				},
-				studioId: protectString(''),
 				settings: {},
 				connected: true,
 				connectionId: options.connectionId,
