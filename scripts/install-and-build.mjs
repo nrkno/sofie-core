@@ -2,11 +2,18 @@ import process from "process";
 import concurrently from "concurrently";
 import { EXTRA_PACKAGES, config } from "./lib.js";
 
+function hr() {
+	// write regular dashes if this is a "simple" output stream ()
+	if (!process.stdout.hasColors())
+		return '-'.repeat(process.stdout.columns ?? 40)
+	return '─'.repeat(process.stdout.columns ?? 40)
+}
+
 try {
 	// Install and build packages
-	console.log("###################################");
-	console.log("Installing dependencies...");
-	console.log("###################################");
+	console.log(hr());
+	console.log(" 📦  Installing dependencies...");
+	console.log(hr());
 
 	await concurrently(
 		[
@@ -30,9 +37,9 @@ try {
 		}
 	).result;
 
-	console.log("#################################");
-	console.log("Build packages...");
-	console.log("#################################");
+	console.log(hr());
+	console.log(" 🪛  Build packages...");
+	console.log(hr());
 
 	await concurrently(
 		[

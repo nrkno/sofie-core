@@ -48,7 +48,10 @@ function watchMeteor() {
 }
 
 function hr() {
-	return '─'.repeat(process.stdout.columns)
+	// write regular dashes if this is a "simple" output stream ()
+	if (!process.stdout.hasColors())
+		return '-'.repeat(process.stdout.columns ?? 40)
+	return '─'.repeat(process.stdout.columns ?? 40)
 }
 
 try {

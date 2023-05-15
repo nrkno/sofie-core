@@ -24,7 +24,7 @@ Follow these instructions to start up Sofie Core in development mode. (For produ
 ```bash
 git clone -b master https://github.com/nrkno/sofie-core.git
 cd sofie-core
-yarn install
+yarn install-and-build
 yarn start
 ```
 
