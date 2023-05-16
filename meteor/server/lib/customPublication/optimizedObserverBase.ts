@@ -236,6 +236,7 @@ async function createOptimizedObserverWorker<
 						) {
 							delete optimizedObservers[identifier]
 							await thisObserverWorker.stopObservers()
+							thisObserverWorker = undefined
 							return
 						}
 
@@ -325,6 +326,7 @@ async function createOptimizedObserverWorker<
 			// There is no longer any subscriber to this
 			delete optimizedObservers[identifier]
 			await thisObserverWorker.stopObservers()
+			thisObserverWorker = undefined
 
 			throw new Meteor.Error(500, 'All subscribers disappeared!')
 		}
