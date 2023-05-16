@@ -112,7 +112,7 @@ let mongoTest: AsyncOnlyMongoCollection<any> | undefined = undefined
 /** Runs a set of system benchmarks, that are designed to test various aspects of the hardware-performance on the server */
 async function doSystemBenchmarkInner() {
 	if (!mongoTest) {
-		mongoTest = createAsyncOnlyMongoCollection<any>('benchmark-test' as any)
+		mongoTest = createAsyncOnlyMongoCollection<any>('benchmark-test' as any, false)
 		mongoTest._ensureIndex({
 			indexedProp: 1,
 		})

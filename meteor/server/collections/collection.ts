@@ -21,19 +21,34 @@ import { registerCollection } from './lib'
 import { WrappedMockCollection } from './implementations/mock'
 import { WrappedAsyncMongoCollection } from './implementations/asyncCollection'
 import { WrappedReadOnlyMongoCollection } from './implementations/readonlyWrapper'
-import { PromisifyCallbacks } from '../../lib/lib'
+import { PromisifyCallbacks, protectString, waitForPromise } from '../../lib/lib'
+
+export interface MongoAllowRules<DBInterface> {
+	insert?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
+	update?: (
+		userId: UserId,
+		doc: DBInterface,
+		fieldNames: FieldNames<DBInterface>,
+		modifier: MongoModifier<DBInterface>
+	) => Promise<boolean> | boolean
+	remove?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
+}
 
 /**
  * Wrap an existing Mongo.Collection to have async methods. Primarily to convert the built-in Users collection
  * @param collection Collection to wrap
  * @param name Name of the collection
+ * @param allowRules The 'allow' rules for publications. Set to `false` to make readonly
  */
 export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	collection: Mongo.Collection<DBInterface>,
-	name: CollectionName
+	name: CollectionName,
+	allowRules: MongoAllowRules<DBInterface> | false
 ): AsyncOnlyMongoCollection<DBInterface> {
 	if (collectionsCache.has(name)) throw new Meteor.Error(500, `Collection "${name}" has already been created`)
 	collectionsCache.set(name, collection)
+
+	setupCollectionAllowRules(collection, allowRules)
 
 	const wrapped = new WrappedAsyncMongoCollection<DBInterface>(collection, name)
 
@@ -45,29 +60,49 @@ export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<a
 /**
  * Create a fully featured MongoCollection
  * @param name Name of the collection in mongodb
- * @param options Open options
+ * @param allowRules The 'allow' rules for publications. Set to `false` to make readonly
  */
 export function createAsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
-	name: CollectionName
-	// options?: {
-	// 	connection?: Object | null
-	// 	idGeneration?: string
-	// }
+	name: CollectionName,
+	allowRules: MongoAllowRules<DBInterface> | false
 ): AsyncOnlyMongoCollection<DBInterface> {
 	const collection = getOrCreateMongoCollection(name)
 
-	const wrappedCollection = createAsyncCollectionInner(collection, name)
+	setupCollectionAllowRules(collection, allowRules)
+
+	const wrappedCollection = wrapMeteorCollectionIntoAsyncCollection(collection, name)
 
 	registerCollection(name, wrappedCollection)
 
 	return wrappedCollection
 }
 
-function createAsyncCollectionInner<DBInterface extends { _id: ProtectedString<any> }>(
+/**
+ * Create a fully featured MongoCollection
+ * Note: this will automatically make this collection readonly to any publications
+ * @param name Name of the collection in mongodb
+ */
+export function createAsyncOnlyReadOnlyMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
+	name: CollectionName
+): AsyncOnlyReadOnlyMongoCollection<DBInterface> {
+	const collection = getOrCreateMongoCollection(name)
+
+	const mutableCollection = wrapMeteorCollectionIntoAsyncCollection(collection, name)
+	const readonlyCollection = new WrappedReadOnlyMongoCollection(mutableCollection)
+
+	registerCollection(name, readonlyCollection)
+
+	setupCollectionAllowRules(collection, false)
+
+	return readonlyCollection
+}
+
+function wrapMeteorCollectionIntoAsyncCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	collection: Mongo.Collection<DBInterface>,
 	name: CollectionName
 ) {
 	if ((collection as any)._isMock) {
+		// We use a special one in tests, to reduce the amount of hops between fibers and promises
 		return new WrappedMockCollection(collection, name)
 	} else {
 		// Override the default mongodb methods, because the errors thrown by them doesn't contain the proper call stack
@@ -75,35 +110,37 @@ function createAsyncCollectionInner<DBInterface extends { _id: ProtectedString<a
 	}
 }
 
-/**
- * Create a fully featured MongoCollection
- * @param name Name of the collection in mongodb
- * @param options Open options
- */
-export function createAsyncOnlyReadOnlyMongoCollection<DBInterface extends { _id: ProtectedString<any> }>(
-	name: CollectionName
-): AsyncOnlyReadOnlyMongoCollection<DBInterface> {
-	const collection = getOrCreateMongoCollection(name)
+function setupCollectionAllowRules<DBInterface extends { _id: ProtectedString<any> }>(
+	collection: Mongo.Collection<DBInterface>,
+	args: MongoAllowRules<DBInterface> | false
+) {
+	if (args) {
+		const { insert: origInsert, update: origUpdate, remove: origRemove } = args
 
-	const mutableCollection = createAsyncCollectionInner(collection, name)
-	const readonlyCollection = new WrappedReadOnlyMongoCollection(mutableCollection)
+		const options: Parameters<Mongo.Collection<DBInterface>['allow']>[0] = {
+			insert: origInsert ? (userId, doc) => waitForPromise(origInsert(protectString(userId), doc)) : () => false,
+			update: origUpdate
+				? (userId, doc, fieldNames, modifier) =>
+						waitForPromise(origUpdate(protectString(userId), doc, fieldNames as any, modifier))
+				: () => false,
+			remove: origRemove ? (userId, doc) => waitForPromise(origRemove(protectString(userId), doc)) : () => false,
+		}
 
-	registerCollection(name, readonlyCollection)
-
-	// Block all client mutations
-	collection.allow({
-		insert(): boolean {
-			return false
-		},
-		update() {
-			return false
-		},
-		remove() {
-			return false
-		},
-	})
-
-	return readonlyCollection
+		collection.allow(options)
+	} else {
+		// Block all client mutations
+		collection.allow({
+			insert(): boolean {
+				return false
+			},
+			update() {
+				return false
+			},
+			remove() {
+				return false
+			},
+		})
+	}
 }
 
 /**
@@ -165,38 +202,6 @@ export interface AsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedSt
 	 * @param ops Operations to perform
 	 */
 	bulkWriteAsync(ops: Array<AnyBulkWriteOperation<DBInterface>>): Promise<void>
-
-	/**
-	 * Allow users to write directly to this collection from client code, subject to limitations you define.
-	 */
-	allow(options: {
-		insert?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
-		update?: (
-			userId: UserId,
-			doc: DBInterface,
-			fieldNames: FieldNames<DBInterface>,
-			modifier: MongoModifier<DBInterface>
-		) => Promise<boolean> | boolean
-		remove?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
-		fetch?: string[]
-		// transform?: Function
-	}): boolean
-
-	/**
-	 * Override allow rules.
-	 */
-	deny(options: {
-		insert?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
-		update?: (
-			userId: UserId,
-			doc: DBInterface,
-			fieldNames: FieldNames<DBInterface>,
-			modifier: MongoModifier<DBInterface>
-		) => Promise<boolean> | boolean
-		remove?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
-		fetch?: string[]
-		// transform?: Function
-	}): boolean
 }
 
 /**
