@@ -3,7 +3,6 @@ import { logger } from '../../../logging'
 import { Rundown } from '../../../../lib/collections/Rundowns'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import { Piece } from '../../../../lib/collections/Pieces'
 import { IngestPart } from '@sofie-automation/blueprints-integration'
 import { parseMosString } from './lib'
@@ -14,6 +13,7 @@ import { runIngestOperation } from '../lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { DEFAULT_MOS_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { PeripheralDevices } from '../../../collections'
+import { executePeripheralDeviceFunctionWithCustomTimeout } from '../../peripheralDevice/executeFunction'
 
 export namespace MOSDeviceActions {
 	export async function reloadRundown(
@@ -23,7 +23,7 @@ export namespace MOSDeviceActions {
 		logger.info('reloadRundown ' + rundown._id)
 
 		try {
-			const mosRunningOrder: MOS.IMOSRunningOrder = await PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+			const mosRunningOrder: MOS.IMOSRunningOrder = await executePeripheralDeviceFunctionWithCustomTimeout(
 				peripheralDevice._id,
 				DEFAULT_MOS_TIMEOUT_TIME + 1000,
 				{ functionName: 'triggerGetRunningOrder', args: [rundown.externalId] }
@@ -94,7 +94,7 @@ export namespace MOSDeviceActions {
 		if (!peripheralDevice)
 			throw new Meteor.Error(404, 'PeripheralDevice "' + rundown.peripheralDeviceId + '" not found')
 
-		await PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+		await executePeripheralDeviceFunctionWithCustomTimeout(
 			peripheralDevice._id,
 			// we need a very long timeout to make sure we receive notification from the device
 			120 * 1000,
