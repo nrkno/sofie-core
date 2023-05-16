@@ -195,18 +195,18 @@ class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedString<any
 
 	observeChanges(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
-		callbacks: ObserveChangesCallbacks<DBInterface>,
+		callbacks: PromisifyCallbacks<ObserveChangesCallbacks<DBInterface>>,
 		options?: FindOptions<DBInterface>
 	): Meteor.LiveQueryHandle {
-		return this.find(selector as any, options).observeChanges(callbacks)
+		return this.find(selector as any, options).observeChanges(dePromiseObjectOfFunctions(callbacks))
 	}
 
 	observe(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
-		callbacks: ObserveCallbacks<DBInterface>,
+		callbacks: PromisifyCallbacks<ObserveCallbacks<DBInterface>>,
 		options?: FindOptions<DBInterface>
 	): Meteor.LiveQueryHandle {
-		return this.find(selector as any, options).observe(callbacks)
+		return this.find(selector as any, options).observe(dePromiseObjectOfFunctions(callbacks))
 	}
 
 	async insertAsync(doc: DBInterface): Promise<DBInterface['_id']> {
@@ -513,18 +513,18 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 
 	observeChanges(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
-		callbacks: ObserveChangesCallbacks<DBInterface>,
+		callbacks: PromisifyCallbacks<ObserveChangesCallbacks<DBInterface>>,
 		options?: FindOptions<DBInterface>
 	): Meteor.LiveQueryHandle {
-		return this.find(selector, options).observeChanges(callbacks)
+		return this.find(selector, options).observeChanges(dePromiseObjectOfFunctions(callbacks))
 	}
 
 	observe(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
-		callbacks: ObserveCallbacks<DBInterface>,
+		callbacks: PromisifyCallbacks<ObserveCallbacks<DBInterface>>,
 		options?: FindOptions<DBInterface>
 	): Meteor.LiveQueryHandle {
-		return this.find(selector, options).observe(callbacks)
+		return this.find(selector, options).observe(dePromiseObjectOfFunctions(callbacks))
 	}
 
 	async insertAsync(doc: DBInterface): Promise<DBInterface['_id']> {
@@ -618,4 +618,21 @@ class WrappedMockCollection<DBInterface extends { _id: ProtectedString<any> }>
 			this.wrapMongoError(e)
 		}
 	}
+}
+
+function dePromiseObjectOfFunctions<T extends { [k: string]: Function }>(input: PromisifyCallbacks<T>): T {
+	return Object.fromEntries(
+		Object.entries<any>(input).map(([id, fn]) => {
+			const fn2 = (...args: any[]) => {
+				try {
+					return waitForPromise(fn(...args))
+				} catch (e) {
+					console.trace(e)
+					throw e
+				}
+			}
+
+			return [id, fn2]
+		})
+	) as any
 }
