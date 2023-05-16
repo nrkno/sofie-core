@@ -3,7 +3,8 @@ import { EventEmitter } from 'eventemitter3'
 import { AnyBulkWriteOperation, ChangeStream, Collection as MongoCollection, FindOptions } from 'mongodb'
 import { IChangeStreamEvents } from '.'
 import { startSpanManual } from '../profiler'
-import { IChangeStream, ICollection, MongoModifier, MongoQuery } from './collections'
+import { IChangeStream, ICollection, IMongoTransaction, MongoModifier, MongoQuery } from './collections'
+import { MongoTransaction } from './transaction'
 
 /** Wrap some APM and better error small query modifications around a Mongo.Collection */
 class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements ICollection<TDoc> {
@@ -28,7 +29,11 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 		return this.#collection
 	}
 
-	async findFetch(selector: MongoQuery<TDoc>, options?: FindOptions<TDoc>): Promise<Array<TDoc>> {
+	async findFetch(
+		selector: MongoQuery<TDoc>,
+		options?: FindOptions<TDoc>,
+		transaction?: IMongoTransaction
+	): Promise<Array<TDoc>> {
 		const span = startSpanManual('WrappedCollection.findFetch')
 		if (span) {
 			span.addLabels({
@@ -36,18 +41,37 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 				query: JSON.stringify(selector),
 			})
 		}
+
+		if (transaction) {
+			if (!(transaction instanceof MongoTransaction)) throw new Error('Invalid transaction object provided')
+
+			options = options || {}
+			options.session = transaction.rawSession
+		}
+
 		const res = await this.#collection.find(selector as any, options).toArray()
 		if (span) span.end()
 		return res as any
 	}
 
-	async findOne(selector: MongoQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<TDoc | undefined> {
+	async findOne(
+		selector: MongoQuery<TDoc> | TDoc['_id'],
+		options?: FindOptions<TDoc>,
+		transaction?: IMongoTransaction
+	): Promise<TDoc | undefined> {
 		const span = startSpanManual('WrappedCollection.findOne')
 		if (span) {
 			span.addLabels({
 				collection: this.name,
 				query: JSON.stringify(selector),
 			})
+		}
+
+		if (transaction) {
+			if (!(transaction instanceof MongoTransaction)) throw new Error('Invalid transaction object provided')
+
+			options = options || {}
+			options.session = transaction.rawSession
 		}
 
 		if (typeof selector === 'string') {
@@ -58,7 +82,7 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 		return res ?? undefined
 	}
 
-	async insertOne(doc: TDoc): Promise<TDoc['_id']> {
+	async insertOne(doc: TDoc, transaction: IMongoTransaction | null): Promise<TDoc['_id']> {
 		const span = startSpanManual('WrappedCollection.insertOne')
 		if (span) {
 			span.addLabels({
@@ -67,7 +91,12 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 			})
 		}
 
-		const res = await this.#collection.insertOne(doc as any)
+		if (transaction && !(transaction instanceof MongoTransaction))
+			throw new Error('Invalid transaction object provided')
+
+		const res = await this.#collection.insertOne(doc as any, {
+			session: transaction?.rawSession,
+		})
 		if (span) span.end()
 		return res.insertedId
 	}
@@ -86,7 +115,7 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 	// 	return res.insertedIds
 	// }
 
-	async replace(doc: TDoc): Promise<boolean> {
+	async replace(doc: TDoc, transaction: IMongoTransaction | null): Promise<boolean> {
 		const span = startSpanManual('WrappedCollection.replace')
 		if (span) {
 			span.addLabels({
@@ -95,8 +124,12 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 			})
 		}
 
+		if (transaction && !(transaction instanceof MongoTransaction))
+			throw new Error('Invalid transaction object provided')
+
 		const res = await this.#collection.replaceOne({ _id: doc._id }, doc, {
 			upsert: true,
+			session: transaction?.rawSession,
 		})
 		if (span) span.end()
 		return res.matchedCount > 0
@@ -104,7 +137,8 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 
 	async update(
 		selector: MongoQuery<TDoc> | TDoc['_id'],
-		modifier: MongoModifier<TDoc>
+		modifier: MongoModifier<TDoc>,
+		transaction: IMongoTransaction | null
 		// options?: UpdateOptions
 	): Promise<number> {
 		const span = startSpanManual('WrappedCollection.update')
@@ -115,16 +149,21 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 			})
 		}
 
+		if (transaction && !(transaction instanceof MongoTransaction))
+			throw new Error('Invalid transaction object provided')
+
 		if (typeof selector === 'string') {
 			selector = { _id: selector }
 		}
 
-		const res = await this.#collection.updateMany(selector, modifier)
+		const res = await this.#collection.updateMany(selector, modifier, {
+			session: transaction?.rawSession,
+		})
 		if (span) span.end()
 		return res.upsertedCount
 	}
 
-	async remove(selector: MongoQuery<TDoc> | TDoc['_id']): Promise<number> {
+	async remove(selector: MongoQuery<TDoc> | TDoc['_id'], transaction: IMongoTransaction | null): Promise<number> {
 		const span = startSpanManual('WrappedCollection.remove')
 		if (span) {
 			span.addLabels({
@@ -133,16 +172,21 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 			})
 		}
 
+		if (transaction && !(transaction instanceof MongoTransaction))
+			throw new Error('Invalid transaction object provided')
+
 		if (typeof selector === 'string') {
 			selector = { _id: selector }
 		}
 
-		const res = await this.#collection.deleteMany(selector)
+		const res = await this.#collection.deleteMany(selector, {
+			session: transaction?.rawSession,
+		})
 		if (span) span.end()
 		return res.deletedCount
 	}
 
-	async bulkWrite(ops: Array<AnyBulkWriteOperation<TDoc>>): Promise<void> {
+	async bulkWrite(ops: Array<AnyBulkWriteOperation<TDoc>>, transaction: IMongoTransaction | null): Promise<void> {
 		const span = startSpanManual('WrappedCollection.bulkWrite')
 		if (span) {
 			span.addLabels({
@@ -151,9 +195,13 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 			})
 		}
 
+		if (transaction && !(transaction instanceof MongoTransaction))
+			throw new Error('Invalid transaction object provided')
+
 		if (ops.length > 0) {
 			const bulkWriteResult = await this.#collection.bulkWrite(ops, {
 				ordered: false,
+				session: transaction?.rawSession,
 			})
 			if (
 				bulkWriteResult &&

@@ -1,4 +1,4 @@
-import { ICollection, MongoQuery } from '../db'
+import { ICollection, IMongoTransaction, MongoQuery } from '../db'
 import { ReadonlyDeep } from 'type-fest'
 import { isProtectedString, ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import _ = require('underscore')
@@ -425,7 +425,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	 * Write the changed documents to mongo
 	 * @returns Changes object describing the saved changes
 	 */
-	async updateDatabaseWithData(): Promise<Changes> {
+	async updateDatabaseWithData(transaction: IMongoTransaction | null): Promise<Changes> {
 		const span = this.context.startSpan(`DBCache.updateDatabaseWithData.${this.name}`)
 		const changes: {
 			added: number
@@ -485,7 +485,8 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 			})
 		}
 
-		const pBulkWriteResult = updates.length > 0 ? this._collection.bulkWrite(updates) : Promise.resolve()
+		const pBulkWriteResult =
+			updates.length > 0 ? this._collection.bulkWrite(updates, transaction) : Promise.resolve()
 
 		_.each(removedDocs, (_id) => {
 			this.documents.delete(_id)

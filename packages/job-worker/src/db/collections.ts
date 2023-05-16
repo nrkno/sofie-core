@@ -7,6 +7,7 @@ import {
 	UpdateFilter,
 	Collection as MongoCollection,
 	ChangeStreamDocument,
+	MongoError,
 } from 'mongodb'
 import { wrapMongoCollection } from './collection'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
@@ -42,6 +43,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { MediaObjects } from '@sofie-automation/corelib/dist/dataModel/MediaObjects'
 import EventEmitter = require('eventemitter3')
+import { MongoTransaction } from './transaction'
 
 export type MongoQuery<TDoc> = Filter<TDoc>
 export type MongoModifier<TDoc> = UpdateFilter<TDoc>
@@ -51,17 +53,31 @@ export interface ICollection<TDoc extends { _id: ProtectedString<any> }> {
 
 	readonly rawCollection: MongoCollection<TDoc>
 
-	findFetch(selector?: MongoQuery<TDoc>, options?: FindOptions<TDoc>): Promise<Array<TDoc>>
-	findOne(selector?: MongoQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<TDoc | undefined>
-	insertOne(doc: TDoc | ReadonlyDeep<TDoc>): Promise<TDoc['_id']>
+	// TODO - should the find operations require a transaction?
+
+	findFetch(
+		selector?: MongoQuery<TDoc>,
+		options?: FindOptions<TDoc>,
+		transaction?: IMongoTransaction
+	): Promise<Array<TDoc>>
+	findOne(
+		selector?: MongoQuery<TDoc> | TDoc['_id'],
+		options?: FindOptions<TDoc>,
+		transaction?: IMongoTransaction
+	): Promise<TDoc | undefined>
+	insertOne(doc: TDoc | ReadonlyDeep<TDoc>, transaction: IMongoTransaction | null): Promise<TDoc['_id']>
 	// insertMany(docs: Array<TDoc | ReadonlyDeep<TDoc>>): Promise<Array<TDoc['_id']>>
-	remove(selector: MongoQuery<TDoc> | TDoc['_id']): Promise<number>
-	update(selector: MongoQuery<TDoc> | TDoc['_id'], modifier: MongoModifier<TDoc>): Promise<number>
+	remove(selector: MongoQuery<TDoc> | TDoc['_id'], transaction: IMongoTransaction | null): Promise<number>
+	update(
+		selector: MongoQuery<TDoc> | TDoc['_id'],
+		modifier: MongoModifier<TDoc>,
+		transaction: IMongoTransaction | null
+	): Promise<number>
 
 	/** Returns true if a doc was replaced, false if inserted */
-	replace(doc: TDoc | ReadonlyDeep<TDoc>): Promise<boolean>
+	replace(doc: TDoc | ReadonlyDeep<TDoc>, transaction: IMongoTransaction | null): Promise<boolean>
 
-	bulkWrite(ops: Array<AnyBulkWriteOperation<TDoc>>): Promise<unknown>
+	bulkWrite(ops: Array<AnyBulkWriteOperation<TDoc>>, transaction: IMongoTransaction | null): Promise<unknown>
 
 	/**
 	 * Watch the collection for changes
@@ -85,6 +101,8 @@ export interface IChangeStream<TDoc extends { _id: ProtectedString<any> }>
 }
 
 export interface IDirectCollections {
+	runInTransaction<T>(func: (transaction: IMongoTransaction) => Promise<T>): Promise<T>
+
 	AdLibActions: ICollection<AdLibAction>
 	AdLibPieces: ICollection<AdLibPiece>
 	Blueprints: ICollection<Blueprint>
@@ -116,7 +134,13 @@ export interface IDirectCollections {
 
 	ExternalMessageQueue: ICollection<ExternalMessageQueueObj>
 
-	MediaObjects: ICollection<MediaObjects>
+	MediaObjects: IReadOnlyCollection<MediaObjects>
+}
+
+export interface IMongoTransaction {
+	test(): Promise<void>
+	// commitTransaction(): Promise<void>
+	// abortTransaction(): Promise<void>
 }
 
 /**
@@ -131,8 +155,44 @@ export function getMongoCollections(
 	allowWatchers: boolean
 ): Readonly<IDirectCollections> {
 	const database = client.db(dbName)
+
+	const runInTransaction = async <T>(func: (transaction: IMongoTransaction) => Promise<T>): Promise<T> => {
+		const session = client.startSession()
+		try {
+			session.startTransaction({
+				// TODO - review/refine
+				readConcern: { level: 'snapshot' },
+				writeConcern: { w: 'majority' },
+				readPreference: 'primary',
+			})
+
+			const transaction = new MongoTransaction(session, id)
+			logger.silly(`Starting MongoDB Transaction: ${id}`)
+
+			const res = await func(transaction)
+
+			await session.commitTransaction()
+
+			return res
+		} catch (error) {
+			if (error instanceof MongoError && error.hasErrorLabel('UnknownTransactionCommitResult')) {
+				// add your logic to retry or handle the error
+			} else if (error instanceof MongoError && error.hasErrorLabel('TransientTransactionError')) {
+				// add your logic to retry or handle the error
+			}
+
+			await session.abortTransaction()
+
+			throw error
+		} finally {
+			await session.endSession()
+		}
+	}
+
 	return Object.freeze(
 		literal<IDirectCollections>({
+			runInTransaction,
+
 			AdLibActions: wrapMongoCollection(database.collection(CollectionName.AdLibActions), allowWatchers),
 			AdLibPieces: wrapMongoCollection(database.collection(CollectionName.AdLibPieces), allowWatchers),
 			Blueprints: wrapMongoCollection(database.collection(CollectionName.Blueprints), allowWatchers),

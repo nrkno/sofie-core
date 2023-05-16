@@ -385,94 +385,112 @@ export async function handleRestorePlaylistSnapshot(
 		return (objs || []).map((obj) => updateIds(obj))
 	}
 
-	await Promise.all([
-		saveIntoDb(context, context.directCollections.RundownPlaylists, { _id: playlistId }, [snapshot.playlist]),
-		saveIntoDb(context, context.directCollections.Rundowns, { playlistId }, snapshot.rundowns),
-		saveIntoDb(
-			context,
-			context.directCollections.IngestDataCache,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.ingestData, true)
-		),
-		saveIntoDb(
-			context,
-			context.directCollections.RundownBaselineObjects,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.baselineObjs, true)
-		),
-		saveIntoDb(
-			context,
-			context.directCollections.RundownBaselineAdLibPieces,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.baselineAdlibs, true)
-		),
-		saveIntoDb(
-			context,
-			context.directCollections.RundownBaselineAdLibActions,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.baselineAdLibActions, true)
-		),
-		saveIntoDb(
-			context,
-			context.directCollections.Segments,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.segments, false)
-		),
-		saveIntoDb(
-			context,
-			context.directCollections.Parts,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.parts, false)
-		),
-		saveIntoDb(
-			context,
-			context.directCollections.PartInstances,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.partInstances, false)
-		),
-		saveIntoDb(
-			context,
-			context.directCollections.Pieces,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.pieces, false)
-		),
-		saveIntoDb(
-			context,
-			context.directCollections.PieceInstances,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.pieceInstances, false)
-		),
-		saveIntoDb(
-			context,
-			context.directCollections.AdLibPieces,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.adLibPieces, true)
-		),
-		saveIntoDb(
-			context,
-			context.directCollections.AdLibActions,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.adLibActions, true)
-		),
-		saveIntoDb(
-			context,
-			context.directCollections.ExpectedMediaItems,
-			{ partId: { $in: protectStringArray(_.keys(partIdMap)) } },
-			updateItemIds(snapshot.expectedMediaItems, true)
-		),
-		saveIntoDb(
-			context,
-			context.directCollections.ExpectedPlayoutItems,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.expectedPlayoutItems || [], false)
-		),
-		saveIntoDb(
-			context,
-			context.directCollections.ExpectedPackages,
-			{ rundownId: { $in: rundownIds } },
-			updateItemIds(snapshot.expectedPackages || [], false)
-		),
-	])
+	await context.directCollections.runInTransaction(async (transaction) => {
+		await Promise.all([
+			saveIntoDb(context, context.directCollections.RundownPlaylists, transaction, { _id: playlistId }, [
+				snapshot.playlist,
+			]),
+			saveIntoDb(context, context.directCollections.Rundowns, transaction, { playlistId }, snapshot.rundowns),
+			saveIntoDb(
+				context,
+				context.directCollections.IngestDataCache,
+				transaction,
+				{ rundownId: { $in: rundownIds } },
+				updateItemIds(snapshot.ingestData, true)
+			),
+			saveIntoDb(
+				context,
+				context.directCollections.RundownBaselineObjects,
+				transaction,
+				{ rundownId: { $in: rundownIds } },
+				updateItemIds(snapshot.baselineObjs, true)
+			),
+			saveIntoDb(
+				context,
+				context.directCollections.RundownBaselineAdLibPieces,
+				transaction,
+				{ rundownId: { $in: rundownIds } },
+				updateItemIds(snapshot.baselineAdlibs, true)
+			),
+			saveIntoDb(
+				context,
+				context.directCollections.RundownBaselineAdLibActions,
+				transaction,
+				{ rundownId: { $in: rundownIds } },
+				updateItemIds(snapshot.baselineAdLibActions, true)
+			),
+			saveIntoDb(
+				context,
+				context.directCollections.Segments,
+				transaction,
+				{ rundownId: { $in: rundownIds } },
+				updateItemIds(snapshot.segments, false)
+			),
+			saveIntoDb(
+				context,
+				context.directCollections.Parts,
+				transaction,
+				{ rundownId: { $in: rundownIds } },
+				updateItemIds(snapshot.parts, false)
+			),
+			saveIntoDb(
+				context,
+				context.directCollections.PartInstances,
+				transaction,
+				{ rundownId: { $in: rundownIds } },
+				updateItemIds(snapshot.partInstances, false)
+			),
+			saveIntoDb(
+				context,
+				context.directCollections.Pieces,
+				transaction,
+				{ rundownId: { $in: rundownIds } },
+				updateItemIds(snapshot.pieces, false)
+			),
+			saveIntoDb(
+				context,
+				context.directCollections.PieceInstances,
+				transaction,
+				{ rundownId: { $in: rundownIds } },
+				updateItemIds(snapshot.pieceInstances, false)
+			),
+			saveIntoDb(
+				context,
+				context.directCollections.AdLibPieces,
+				transaction,
+				{ rundownId: { $in: rundownIds } },
+				updateItemIds(snapshot.adLibPieces, true)
+			),
+			saveIntoDb(
+				context,
+				context.directCollections.AdLibActions,
+				transaction,
+				{ rundownId: { $in: rundownIds } },
+				updateItemIds(snapshot.adLibActions, true)
+			),
+			saveIntoDb(
+				context,
+				context.directCollections.ExpectedMediaItems,
+				transaction,
+				{ partId: { $in: protectStringArray(_.keys(partIdMap)) } },
+				updateItemIds(snapshot.expectedMediaItems, true)
+			),
+			saveIntoDb(
+				context,
+				context.directCollections.ExpectedPlayoutItems,
+				transaction,
+				{ rundownId: { $in: rundownIds } },
+				updateItemIds(snapshot.expectedPlayoutItems || [], false)
+			),
+			saveIntoDb(
+				context,
+				context.directCollections.ExpectedPackages,
+				transaction,
+				{ rundownId: { $in: rundownIds } },
+				updateItemIds(snapshot.expectedPackages || [], false)
+			),
+		])
+	})
 
 	logger.info(`Restore done`)
 	return {

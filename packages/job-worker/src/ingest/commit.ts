@@ -43,6 +43,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+import { IMongoTransaction } from '../db'
 
 export type BeforePartMapItem = { id: PartId; rank: number }
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<BeforePartMapItem>>
@@ -138,31 +139,39 @@ export async function CommitIngestOperation(
 					// The rundown is safe to simply move or remove
 					trappedInPlaylistId = undefined
 
-					// Quickly move the rundown out of the playlist, so we an free the old playlist lock sooner
-					await context.directCollections.Rundowns.update(ingestCache.RundownId, {
-						$set: {
-							playlistId: protectString('__TMP__'),
-						},
-					})
-
-					if (oldPlaylist) {
-						// Ensure playlist is regenerated
-						const updatedOldPlaylist = await regeneratePlaylistAndRundownOrder(
-							context,
-							oldPlaylistLock,
-							oldPlaylist
+					await context.directCollections.runInTransaction(async (transaction) => {
+						// Quickly move the rundown out of the playlist, so we an free the old playlist lock sooner
+						await context.directCollections.Rundowns.update(
+							ingestCache.RundownId,
+							{
+								$set: {
+									playlistId: protectString('__TMP__'),
+								},
+							},
+							transaction
 						)
 
-						if (updatedOldPlaylist) {
-							// ensure the 'old' playout is updated to remove any references to the rundown
-							await updatePlayoutAfterChangingRundownInPlaylist(
+						if (oldPlaylist) {
+							// Ensure playlist is regenerated
+							const updatedOldPlaylist = await regeneratePlaylistAndRundownOrder(
 								context,
-								updatedOldPlaylist,
 								oldPlaylistLock,
-								null
+								transaction,
+								oldPlaylist
 							)
+
+							if (updatedOldPlaylist) {
+								// ensure the 'old' playout is updated to remove any references to the rundown
+								await updatePlayoutAfterChangingRundownInPlaylist(
+									context,
+									updatedOldPlaylist,
+									oldPlaylistLock,
+									transaction,
+									null
+								)
+							}
 						}
-					}
+					})
 				}
 			}
 		)
@@ -172,7 +181,9 @@ export async function CommitIngestOperation(
 	if (data.removeRundown && !trappedInPlaylistId) {
 		// It was removed from the playlist just above us, so this can simply discard the contents
 		ingestCache.discardChanges()
-		await removeRundownFromDb(context, ingestCache.RundownLock)
+		await context.directCollections.runInTransaction(async (transaction) => {
+			await removeRundownFromDb(context, ingestCache.RundownLock, transaction)
+		})
 		return
 	}
 
@@ -392,15 +403,23 @@ export async function CommitIngestOperation(
 			// Regenerate the full list of expected*Items / packages
 			await updateExpectedPackagesOnRundown(context, ingestCache)
 
-			// Save the rundowns and regenerated playlist
-			// This will reorder the rundowns a little before the playlist and the contents, but that is ok
-			await context.directCollections.RundownPlaylists.replace(newPlaylist)
-			// ensure instances are updated for rundown changes
-			await updatePartInstancesSegmentIds(context, ingestCache, data.renamedSegments)
-			await updatePartInstancesBasicProperties(context, ingestCache.Parts, ingestCache.RundownId, newPlaylist)
+			await context.directCollections.runInTransaction(async (transaction) => {
+				// Save the rundowns and regenerated playlist
+				// This will reorder the rundowns a little before the playlist and the contents, but that is ok
+				await context.directCollections.RundownPlaylists.replace(newPlaylist, transaction)
+				// ensure instances are updated for rundown changes
+				await updatePartInstancesSegmentIds(context, ingestCache, transaction, data.renamedSegments)
+				await updatePartInstancesBasicProperties(
+					context,
+					transaction,
+					ingestCache.Parts,
+					ingestCache.RundownId,
+					newPlaylist
+				)
 
-			// Update the playout to use the updated rundown
-			await updatePartInstanceRanks(context, ingestCache, data.changedSegmentIds, beforePartMap)
+				// Update the playout to use the updated rundown
+				await updatePartInstanceRanks(context, ingestCache, transaction, data.changedSegmentIds, beforePartMap)
+			})
 
 			// Create the full playout cache, now we have the rundowns and playlist updated
 			const playoutCache = await CacheForPlayout.fromIngest(
@@ -478,6 +497,7 @@ function canRemoveSegment(
 async function updatePartInstancesSegmentIds(
 	context: JobContext,
 	cache: CacheForIngest,
+	transaction: IMongoTransaction,
 	renamedSegments: ReadonlyMap<SegmentId, SegmentId>
 ) {
 	// A set of rules which can be translated to mongo queries for PartInstances to update
@@ -531,7 +551,8 @@ async function updatePartInstancesSegmentIds(
 						},
 					},
 				},
-			}))
+			})),
+			transaction
 		)
 	}
 }
@@ -541,6 +562,7 @@ async function updatePartInstancesSegmentIds(
  */
 async function updatePartInstancesBasicProperties(
 	context: JobContext,
+	transaction: IMongoTransaction,
 	partCache: DbCacheReadCollection<DBPart>,
 	rundownId: RundownId,
 	playlist: ReadonlyDeep<DBRundownPlaylist>
@@ -557,7 +579,8 @@ async function updatePartInstancesBasicProperties(
 				orphaned: { $exists: false },
 				'part._id': { $nin: knownPartIds },
 			},
-			{ projection: { _id: 1 } }
+			{ projection: { _id: 1 } },
+			transaction
 		)
 
 	// Figure out which of the PartInstances should be reset and which should be marked as orphaned: deleted
@@ -586,7 +609,8 @@ async function updatePartInstancesBasicProperties(
 					$set: {
 						reset: true,
 					},
-				}
+				},
+				transaction
 			)
 		)
 		ps.push(
@@ -598,7 +622,8 @@ async function updatePartInstancesBasicProperties(
 					$set: {
 						reset: true,
 					},
-				}
+				},
+				transaction
 			)
 		)
 	}
@@ -612,7 +637,8 @@ async function updatePartInstancesBasicProperties(
 					$set: {
 						orphaned: 'deleted',
 					},
-				}
+				},
+				transaction
 			)
 		)
 	}
@@ -627,6 +653,7 @@ async function updatePartInstancesBasicProperties(
 export async function regeneratePlaylistAndRundownOrder(
 	context: JobContext,
 	lock: PlaylistLock,
+	transaction: IMongoTransaction,
 	oldPlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	existingRundowns?: DBRundown[]
 ): Promise<DBRundownPlaylist | null> {
@@ -650,12 +677,12 @@ export async function regeneratePlaylistAndRundownOrder(
 		)
 
 		// Save the changes
-		await context.directCollections.RundownPlaylists.replace(newPlaylist)
+		await context.directCollections.RundownPlaylists.replace(newPlaylist, transaction)
 
 		return newPlaylist
 	} else {
 		// Playlist is empty and should be removed
-		await context.directCollections.RundownPlaylists.remove(oldPlaylist._id)
+		await context.directCollections.RundownPlaylists.remove(oldPlaylist._id, transaction)
 
 		return null
 	}
@@ -668,6 +695,7 @@ export async function updatePlayoutAfterChangingRundownInPlaylist(
 	context: JobContext,
 	playlist: DBRundownPlaylist,
 	playlistLock: PlaylistLock,
+	transaction: IMongoTransaction,
 	insertedRundown: ReadonlyDeep<DBRundown> | null
 ): Promise<void> {
 	// ensure the 'old' playout is updated to remove any references to the rundown
@@ -677,7 +705,7 @@ export async function updatePlayoutAfterChangingRundownInPlaylist(
 				throw new Error(`RundownPlaylist "${playoutCache.PlaylistId}" has no contents but is active...`)
 
 			// Remove an empty playlist
-			await context.directCollections.RundownPlaylists.remove({ _id: playoutCache.PlaylistId })
+			await context.directCollections.RundownPlaylists.remove({ _id: playoutCache.PlaylistId }, transaction)
 
 			playoutCache.assertNoChanges()
 			return
@@ -689,6 +717,7 @@ export async function updatePlayoutAfterChangingRundownInPlaylist(
 			// If a rundown has changes, ensure instances are updated
 			await updatePartInstancesBasicProperties(
 				context,
+				transaction,
 				playoutCache.Parts,
 				insertedRundown._id,
 				playoutCache.Playlist.doc
