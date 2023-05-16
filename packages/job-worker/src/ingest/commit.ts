@@ -700,37 +700,44 @@ export async function updatePlayoutAfterChangingRundownInPlaylist(
 	insertedRundown: ReadonlyDeep<DBRundown> | null
 ): Promise<void> {
 	// ensure the 'old' playout is updated to remove any references to the rundown
-	await runWithPlaylistCache(context, playlist, playlistLock, null, async (playoutCache) => {
-		if (playoutCache.Rundowns.documents.size === 0) {
-			if (playoutCache.Playlist.doc.activationId)
-				throw new Error(`RundownPlaylist "${playoutCache.PlaylistId}" has no contents but is active...`)
+	await runWithPlaylistCache(
+		context,
+		playlist,
+		playlistLock,
+		null,
+		async (playoutCache) => {
+			if (playoutCache.Rundowns.documents.size === 0) {
+				if (playoutCache.Playlist.doc.activationId)
+					throw new Error(`RundownPlaylist "${playoutCache.PlaylistId}" has no contents but is active...`)
 
-			// Remove an empty playlist
-			await context.directCollections.RundownPlaylists.remove({ _id: playoutCache.PlaylistId }, transaction)
+				// Remove an empty playlist
+				await context.directCollections.RundownPlaylists.remove({ _id: playoutCache.PlaylistId }, transaction)
 
-			playoutCache.assertNoChanges()
-			return
-		}
+				playoutCache.assertNoChanges()
+				return
+			}
 
-		// Ensure playout is in sync
+			// Ensure playout is in sync
 
-		if (insertedRundown) {
-			// If a rundown has changes, ensure instances are updated
-			await updatePartInstancesBasicProperties(
-				context,
-				transaction,
-				playoutCache.Parts,
-				insertedRundown._id,
-				playoutCache.Playlist.doc
-			)
-		}
+			if (insertedRundown) {
+				// If a rundown has changes, ensure instances are updated
+				await updatePartInstancesBasicProperties(
+					context,
+					transaction,
+					playoutCache.Parts,
+					insertedRundown._id,
+					playoutCache.Playlist.doc
+				)
+			}
 
-		await ensureNextPartIsValid(context, playoutCache)
+			await ensureNextPartIsValid(context, playoutCache)
 
-		if (playoutCache.Playlist.doc.activationId) {
-			triggerUpdateTimelineAfterIngestData(context, playoutCache.PlaylistId)
-		}
-	})
+			if (playoutCache.Playlist.doc.activationId) {
+				triggerUpdateTimelineAfterIngestData(context, playoutCache.PlaylistId)
+			}
+		},
+		transaction
+	)
 }
 
 interface UpdateTimelineFromIngestDataTimeout {

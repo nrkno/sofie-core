@@ -69,7 +69,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 			})
 		}
 
-		const docs = await collection.findFetch(selector)
+		const docs = await collection.findFetch(selector, undefined, null)
 
 		const res = DbCacheReadCollection.createFromArray(context, collection, docs)
 		if (span) span.end()
@@ -129,7 +129,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 
 	async fillWithDataFromDatabase(selector: MongoQuery<TDoc>): Promise<number> {
 		const span = this.context.startSpan(`DBCache.fillWithDataFromDatabase.${this.name}`)
-		const docs = await this._collection.findFetch(selector)
+		const docs = await this._collection.findFetch(selector, undefined, null)
 
 		span?.addLabels({ count: docs.length })
 
@@ -226,7 +226,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 			})
 		}
 
-		const docs = await collection.findFetch(selector)
+		const docs = await collection.findFetch(selector, undefined, null)
 
 		const res = DbCacheWriteCollection.createFromArray(context, collection, docs)
 		if (span) span.end()
