@@ -107,9 +107,6 @@ registerIndex(PeripheralDeviceCommands, {
 })
 
 export const PeripheralDevices = createAsyncOnlyMongoCollection<PeripheralDevice>(CollectionName.PeripheralDevices, {
-	insert(_userId, _doc: PeripheralDevice): boolean {
-		return true
-	},
 	update(_userId, doc, fields, _modifier) {
 		return rejectFields(doc, fields, [
 			'type',
@@ -191,20 +188,10 @@ registerIndex(Snapshots, {
 })
 
 export const Studios = createAsyncOnlyMongoCollection<Studio>(CollectionName.Studios, {
-	async insert(userId, doc: Studio) {
-		const access = await allowAccessToStudio({ userId: userId }, doc._id)
-		if (!access.insert) return logNotAllowed('Studio', access.reason)
-		return true
-	},
 	async update(userId, doc, fields, _modifier) {
 		const access = await allowAccessToStudio({ userId: userId }, doc._id)
 		if (!access.update) return logNotAllowed('Studio', access.reason)
 		return rejectFields(doc, fields, ['_id'])
-	},
-	async remove(userId, doc) {
-		const access = await allowAccessToStudio({ userId: userId }, doc._id)
-		if (!access.remove) return logNotAllowed('Studio', access.reason)
-		return true
 	},
 })
 registerIndex(Studios, {
