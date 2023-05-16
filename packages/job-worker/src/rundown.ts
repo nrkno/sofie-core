@@ -40,7 +40,7 @@ export function allowedToMoveRundownOutOfPlaylist(
 export async function updatePartInstanceRanks(
 	context: JobContext,
 	cache: CacheForIngest,
-	transaction: IMongoTransaction,
+	transaction: IMongoTransaction | null,
 	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
 	beforePartMap: BeforePartMap
 ): Promise<void> {

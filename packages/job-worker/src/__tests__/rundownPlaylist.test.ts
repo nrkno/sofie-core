@@ -32,7 +32,7 @@ describe('Rundown', () => {
 			showStyle,
 			protectString('rundown00')
 		)
-		let playlist0 = (await context.directCollections.RundownPlaylists.findOne(playlistId0)) as DBRundownPlaylist
+		let playlist0 = (await context.mockCollections.RundownPlaylists.findOne(playlistId0)) as DBRundownPlaylist
 		expect(playlist0).toBeTruthy()
 
 		// Add 2 more rundowns in it:
@@ -44,7 +44,7 @@ describe('Rundown', () => {
 		expect(rundownId01).toEqual('rundown01')
 		expect(rundownId02).toEqual('rundown02')
 		// The setupDefaultRundown doesn't set _rank, set expectedStart so that they will get a default order from that:
-		await context.directCollections.Rundowns.update(rundownId00, {
+		await context.mockCollections.Rundowns.update(rundownId00, {
 			$set: {
 				playlistId: playlistId0,
 				playlistIdIsSetInSofie: true,
@@ -52,7 +52,7 @@ describe('Rundown', () => {
 				externalId: `${rundownId00}_ext`,
 			},
 		})
-		await context.directCollections.Rundowns.update(rundownId01, {
+		await context.mockCollections.Rundowns.update(rundownId01, {
 			$set: {
 				playlistId: playlistId0,
 				playlistIdIsSetInSofie: true,
@@ -60,7 +60,7 @@ describe('Rundown', () => {
 				externalId: `${rundownId01}_ext`,
 			},
 		})
-		await context.directCollections.Rundowns.update(rundownId02, {
+		await context.mockCollections.Rundowns.update(rundownId02, {
 			$set: {
 				playlistId: playlistId0,
 				playlistIdIsSetInSofie: true,
@@ -69,12 +69,12 @@ describe('Rundown', () => {
 			},
 		})
 
-		const rundown00 = (await context.directCollections.Rundowns.findOne(rundownId00)) as Rundown
+		const rundown00 = (await context.mockCollections.Rundowns.findOne(rundownId00)) as Rundown
 		expect(rundown00).toBeTruthy()
 		expect(rundown00.playlistId).toEqual(playlistId0)
 
 		// This should set the default sorting of the rundowns in the plylist:
-		const allRundowns = await context.directCollections.Rundowns.findFetch({
+		const allRundowns = await context.mockCollections.Rundowns.findFetch({
 			playlistId: playlist0._id,
 		})
 		const rundownPlaylist = produceRundownPlaylistInfoFromRundown(
@@ -85,11 +85,11 @@ describe('Rundown', () => {
 			playlist0.externalId,
 			allRundowns
 		)
-		await context.directCollections.RundownPlaylists.update(playlist0._id, rundownPlaylist)
+		await context.mockCollections.RundownPlaylists.update(playlist0._id, rundownPlaylist)
 		expect(rundownPlaylist.rundownIdsInOrder).toEqual(['rundown00', 'rundown01', 'rundown02'])
 
 		const getRundownIDs = async (id: RundownPlaylistId) => {
-			const playlist = await context.directCollections.RundownPlaylists.findOne(id)
+			const playlist = await context.mockCollections.RundownPlaylists.findOne(id)
 			return playlist?.rundownIdsInOrder
 		}
 
@@ -107,7 +107,7 @@ describe('Rundown', () => {
 		})
 		await expect(getRundownIDs(playlist0._id)).resolves.toEqual(['rundown01', 'rundown02', 'rundown00'])
 
-		playlist0 = (await context.directCollections.RundownPlaylists.findOne(playlistId0)) as DBRundownPlaylist
+		playlist0 = (await context.mockCollections.RundownPlaylists.findOne(playlistId0)) as DBRundownPlaylist
 		expect(playlist0).toBeTruthy()
 
 		await handleMoveRundownIntoPlaylist(context, {
@@ -124,10 +124,10 @@ describe('Rundown', () => {
 			protectString('rundown10')
 		)
 		expect(rundownId10).toEqual('rundown10')
-		const playlist1 = (await context.directCollections.RundownPlaylists.findOne(playlistId1)) as DBRundownPlaylist
+		const playlist1 = (await context.mockCollections.RundownPlaylists.findOne(playlistId1)) as DBRundownPlaylist
 		expect(playlist1).toBeTruthy()
 
-		await expect(context.directCollections.RundownPlaylists.findFetch()).resolves.toHaveLength(2)
+		await expect(context.mockCollections.RundownPlaylists.findFetch()).resolves.toHaveLength(2)
 
 		// Move over a rundown to the other playlist:
 		await handleMoveRundownIntoPlaylist(context, {
@@ -146,9 +146,9 @@ describe('Rundown', () => {
 		})
 		await expect(getRundownIDs(playlist0._id)).resolves.toEqual(['rundown01', 'rundown00'])
 		await expect(getRundownIDs(playlist1._id)).resolves.toEqual(['rundown10'])
-		await expect(context.directCollections.RundownPlaylists.findFetch()).resolves.toHaveLength(3) // A new playlist has been created
+		await expect(context.mockCollections.RundownPlaylists.findFetch()).resolves.toHaveLength(3) // A new playlist has been created
 		// The newly created playlist:
-		const newPlaylist = (await context.directCollections.RundownPlaylists.findOne({
+		const newPlaylist = (await context.mockCollections.RundownPlaylists.findOne({
 			_id: { $nin: [playlistId0, playlistId1] },
 		})) as DBRundownPlaylist
 		expect(newPlaylist).toBeTruthy()
@@ -160,8 +160,8 @@ describe('Rundown', () => {
 			intoPlaylistId: null,
 			rundownsIdsInPlaylistInOrder: [],
 		})
-		await expect(context.directCollections.RundownPlaylists.findFetch()).resolves.toHaveLength(3) // A new playlist has been created, and an old one was removed
-		const newPlaylist2 = (await context.directCollections.RundownPlaylists.findOne({
+		await expect(context.mockCollections.RundownPlaylists.findFetch()).resolves.toHaveLength(3) // A new playlist has been created, and an old one was removed
+		const newPlaylist2 = (await context.mockCollections.RundownPlaylists.findOne({
 			_id: { $nin: [playlistId0, playlistId1, newPlaylist._id] },
 		})) as DBRundownPlaylist
 		expect(newPlaylist2).toBeTruthy()
@@ -177,7 +177,7 @@ describe('Rundown', () => {
 		})
 		await expect(getRundownIDs(playlist0._id)).resolves.toEqual(['rundown01', 'rundown00', 'rundown02'])
 		await expect(getRundownIDs(playlist1._id)).resolves.toEqual(['rundown10'])
-		await expect(context.directCollections.RundownPlaylists.findFetch()).resolves.toHaveLength(2) // A playlist was removed
+		await expect(context.mockCollections.RundownPlaylists.findFetch()).resolves.toHaveLength(2) // A playlist was removed
 
 		// Restore the order:
 		await handleRestoreRundownsInPlaylistToDefaultOrder(context, {

@@ -28,18 +28,18 @@ describe('canContinueAdlibOnEndInfinites', () => {
 		const defaultSetup = await setupDefaultRundownPlaylist(context)
 
 		// Mark playlist as active
-		await context.directCollections.RundownPlaylists.update(defaultSetup.playlistId, {
+		await context.mockCollections.RundownPlaylists.update(defaultSetup.playlistId, {
 			$set: {
 				activationId: getRandomId(),
 			},
 		})
 
-		const tmpPlaylist = (await context.directCollections.RundownPlaylists.findOne(
+		const tmpPlaylist = (await context.mockCollections.RundownPlaylists.findOne(
 			defaultSetup.playlistId
 		)) as DBRundownPlaylist
 		expect(tmpPlaylist).toBeTruthy()
 
-		const rundown = (await context.directCollections.Rundowns.findOne(defaultSetup.rundownId)) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne(defaultSetup.rundownId)) as DBRundown
 		expect(rundown).toBeTruthy()
 
 		return runJobWithPlayoutCache(context, { playlistId: tmpPlaylist._id }, null, async (cache) => {

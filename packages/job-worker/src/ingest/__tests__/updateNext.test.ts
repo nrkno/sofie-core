@@ -18,7 +18,7 @@ setNextPartInnerMock.mockImplementation(async () => Promise.resolve()) // Defaul
 const rundownId: RundownId = protectString('mock_ro')
 const rundownPlaylistId: RundownPlaylistId = protectString('mock_rpl')
 async function createMockRO(context: MockJobContext): Promise<RundownId> {
-	await context.directCollections.RundownPlaylists.insertOne({
+	await context.mockCollections.RundownPlaylists.insertOne({
 		_id: rundownPlaylistId,
 		externalId: 'mock_rpl',
 		name: 'Mock',
@@ -36,7 +36,7 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 		rundownIdsInOrder: [rundownId],
 	})
 
-	await context.directCollections.Rundowns.insertOne({
+	await context.mockCollections.Rundowns.insertOne({
 		_id: rundownId,
 		externalId: 'mock_ro',
 		name: 'Mock',
@@ -58,6 +58,7 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 	await saveIntoDb(
 		context,
 		context.directCollections.Segments,
+		null,
 		{
 			rundownId: rundownId,
 		},
@@ -290,6 +291,7 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 	await saveIntoDb(
 		context,
 		context.directCollections.PartInstances,
+		null,
 		{
 			rundownId: rundownId,
 		},
@@ -298,6 +300,7 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 	await saveIntoDb(
 		context,
 		context.directCollections.Parts,
+		null,
 		{
 			rundownId: rundownId,
 		},
@@ -321,7 +324,7 @@ describe('ensureNextPartIsValid', () => {
 		nextPartInstanceId: string | PartInstanceId | null,
 		nextPartManual?: boolean
 	) {
-		await context.directCollections.RundownPlaylists.update(rundownPlaylistId, {
+		await context.mockCollections.RundownPlaylists.update(rundownPlaylistId, {
 			$set: {
 				nextPartInfo: nextPartInstanceId
 					? {
@@ -456,7 +459,7 @@ describe('ensureNextPartIsValid', () => {
 	test('Next part instance is orphaned: "deleted"', async () => {
 		// Insert a temporary instance
 		const instanceId: PartInstanceId = protectString('orphaned_first_part')
-		await context.directCollections.PartInstances.insertOne(
+		await context.mockCollections.PartInstances.insertOne(
 			literal<DBPartInstance>({
 				_id: instanceId,
 				rundownId: rundownId,
@@ -492,7 +495,7 @@ describe('ensureNextPartIsValid', () => {
 	test('Next part instance is orphaned: "deleted" and manually set', async () => {
 		// Insert a temporary instance
 		const instanceId: PartInstanceId = protectString('orphaned_first_part')
-		await context.directCollections.PartInstances.insertOne(
+		await context.mockCollections.PartInstances.insertOne(
 			literal<DBPartInstance>({
 				_id: instanceId,
 				rundownId: rundownId,
@@ -537,7 +540,7 @@ describe('ensureNextPartIsValid', () => {
 			title: 'Orphan 1',
 			expectedDurationWithPreroll: undefined,
 		})
-		await context.directCollections.PartInstances.insertOne(
+		await context.mockCollections.PartInstances.insertOne(
 			literal<DBPartInstance>({
 				_id: instanceId,
 				rundownId: rundownId,
@@ -549,7 +552,7 @@ describe('ensureNextPartIsValid', () => {
 				part: part,
 			})
 		)
-		await context.directCollections.Parts.insertOne({
+		await context.mockCollections.Parts.insertOne({
 			...part,
 			invalid: true,
 		})
@@ -572,7 +575,7 @@ describe('ensureNextPartIsValid', () => {
 			title: 'Tmp Part 1',
 			expectedDurationWithPreroll: undefined,
 		})
-		await context.directCollections.PartInstances.insertOne(
+		await context.mockCollections.PartInstances.insertOne(
 			literal<DBPartInstance>({
 				_id: instanceId,
 				rundownId: rundownId,
@@ -584,7 +587,7 @@ describe('ensureNextPartIsValid', () => {
 				part: part,
 			})
 		)
-		await context.directCollections.Parts.insertOne(part)
+		await context.mockCollections.Parts.insertOne(part)
 
 		try {
 			// make sure it finds the part we expect
@@ -603,7 +606,7 @@ describe('ensureNextPartIsValid', () => {
 			await resetPartIds('mock_part_instance9', instanceId, false)
 
 			// remove the last part
-			await context.directCollections.Parts.remove(part._id)
+			await context.mockCollections.Parts.remove(part._id)
 
 			// make sure the next part gets cleared
 			await ensureNextPartIsValid()
@@ -616,8 +619,8 @@ describe('ensureNextPartIsValid', () => {
 			)
 		} finally {
 			// Cleanup to not mess with other tests
-			await context.directCollections.PartInstances.remove(instanceId)
-			await context.directCollections.Parts.remove(part._id)
+			await context.mockCollections.PartInstances.remove(instanceId)
+			await context.mockCollections.Parts.remove(part._id)
 		}
 	})
 })
