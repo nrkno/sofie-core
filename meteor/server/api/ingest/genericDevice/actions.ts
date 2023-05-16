@@ -4,12 +4,12 @@ import { Rundown } from '../../../../lib/collections/Rundowns'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
 import { stringifyError } from '../../../../lib/lib'
 import { logger } from '../../../logging'
-import { PeripheralDeviceAPI } from '../../../../lib/api/peripheralDevice'
 import * as _ from 'underscore'
 import { IngestRundown } from '@sofie-automation/blueprints-integration'
 import { runIngestOperation } from '../lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { DEFAULT_NRCS_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
+import { executePeripheralDeviceFunctionWithCustomTimeout } from '../../peripheralDevice/executeFunction'
 
 export namespace GenericDeviceActions {
 	export async function reloadRundown(
@@ -19,7 +19,7 @@ export namespace GenericDeviceActions {
 		logger.info('reloadRundown ' + rundown._id)
 
 		try {
-			const ingestRundown: IngestRundown | null = await PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+			const ingestRundown: IngestRundown | null = await executePeripheralDeviceFunctionWithCustomTimeout(
 				peripheralDevice._id,
 				DEFAULT_NRCS_TIMEOUT_TIME + 1000,
 				{ functionName: 'triggerReloadRundown', args: [rundown.externalId] }

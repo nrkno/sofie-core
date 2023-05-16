@@ -10,7 +10,6 @@ import { createSyncMongoCollection, createSyncReadOnlyMongoCollection } from './
 import { DBOrganization } from './Organization'
 import { PartInstance } from './PartInstances'
 import { Part } from './Parts'
-import { PeripheralDeviceCommand } from './PeripheralDeviceCommands'
 import { PieceInstance } from './PieceInstances'
 import { Piece } from './Pieces'
 import { RundownBaselineAdLibAction } from './RundownBaselineAdLibActions'
@@ -24,11 +23,6 @@ export const AdLibActions = createSyncReadOnlyMongoCollection<AdLibAction>(Colle
 export const AdLibPieces = createSyncReadOnlyMongoCollection<AdLibPiece>(CollectionName.AdLibPieces)
 
 export const Organizations = createSyncMongoCollection<DBOrganization>(CollectionName.Organizations)
-
-export const PeripheralDeviceCommands = createSyncMongoCollection<PeripheralDeviceCommand>(
-	CollectionName.PeripheralDeviceCommands
-	// TODO - this should be readonly
-)
 
 export const PieceInstances = createSyncReadOnlyMongoCollection<PieceInstance>(CollectionName.PieceInstances)
 

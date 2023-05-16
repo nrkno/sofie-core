@@ -1,5 +1,4 @@
 import { PeripheralDevices, RundownPlaylists } from './collections'
-import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
 import { getCurrentTime, stringifyError } from '../lib/lib'
 import { logger } from './logging'
@@ -15,6 +14,7 @@ import { getCoreSystemAsync } from './coreSystem/collection'
 import { cleanupOldDataInner } from './api/cleanup'
 import { CollectionCleanupResult } from '../lib/api/system'
 import { ICoreSystem } from '../lib/collections/CoreSystem'
+import { executePeripheralDeviceFunctionWithCustomTimeout } from './api/peripheralDevice/executeFunction'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -87,11 +87,12 @@ async function restartCasparCG(system: ICoreSystem | undefined, previousLastNigh
 					logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')
 
 					ps.push(
-						PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+						executePeripheralDeviceFunctionWithCustomTimeout(
 							subDevice._id,
 							DEFAULT_TSR_ACTION_TIMEOUT_TIME,
 							{
 								actionId: TSR.CasparCGActions.RestartServer,
+								payload: {},
 							}
 						)
 							.then(() => {
