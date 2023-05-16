@@ -12,6 +12,7 @@ import { BeforePartMap } from './ingest/commit'
 import { JobContext } from './jobs'
 import { logger } from './logging'
 import { CacheForPlayout } from './playout/cache'
+import { IMongoTransaction } from './db'
 
 /** Return true if the rundown is allowed to be moved out of that playlist */
 export function allowedToMoveRundownOutOfPlaylist(
@@ -39,14 +40,19 @@ export function allowedToMoveRundownOutOfPlaylist(
 export async function updatePartInstanceRanks(
 	context: JobContext,
 	cache: CacheForIngest,
+	transaction: IMongoTransaction,
 	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
 	beforePartMap: BeforePartMap
 ): Promise<void> {
 	const groupedPartInstances = groupByToMap(
-		await context.directCollections.PartInstances.findFetch({
-			reset: { $ne: true },
-			segmentId: { $in: changedSegmentIds as SegmentId[] },
-		}),
+		await context.directCollections.PartInstances.findFetch(
+			{
+				reset: { $ne: true },
+				segmentId: { $in: changedSegmentIds as SegmentId[] },
+			},
+			undefined,
+			transaction
+		),
 		'segmentId'
 	)
 	const groupedNewParts = groupByToMap(
@@ -106,7 +112,7 @@ export async function updatePartInstanceRanks(
 	}
 
 	if (writeOps.length > 0) {
-		await context.directCollections.PartInstances.bulkWrite(writeOps)
+		await context.directCollections.PartInstances.bulkWrite(writeOps, transaction)
 	}
 	logger.debug(`updatePartRanks: ${writeOps.length} PartInstances updated`)
 }

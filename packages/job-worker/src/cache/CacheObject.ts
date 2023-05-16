@@ -1,7 +1,7 @@
 import { clone, deleteAllUndefinedProperties, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
-import { ICollection } from '../db'
+import { ICollection, IMongoTransaction } from '../db'
 import { logger } from '../logging'
 import { Changes } from '../db/changes'
 import { IS_PRODUCTION } from '../environment'
@@ -236,11 +236,11 @@ export class DbCacheWriteObject<
 	 * Write the document to mongo if it has any changes
 	 * @returns Changes object describing the saved changes
 	 */
-	async updateDatabaseWithData(): Promise<Changes> {
+	async updateDatabaseWithData(transaction: IMongoTransaction): Promise<Changes> {
 		if (this._updated && !this.isToBeRemoved) {
 			const span = this.context.startSpan(`DbCacheWriteObject.updateDatabaseWithData.${this.name}`)
 
-			const pUpdate = await this._collection.replace(this._document)
+			const pUpdate = await this._collection.replace(this._document, transaction)
 			if (!pUpdate) {
 				throw new Error(`Failed to update`)
 			}
@@ -366,11 +366,11 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 	 * Write the document to mongo if it has any changes
 	 * @returns Changes object describing the saved changes
 	 */
-	async updateDatabaseWithData(): Promise<Changes> {
+	async updateDatabaseWithData(transaction: IMongoTransaction): Promise<Changes> {
 		if (this._inserted && !this.isToBeRemoved) {
 			const span = this.context.startSpan(`DbCacheWriteOptionalObject.updateDatabaseWithData.${this.name}`)
 
-			await this._collection.replace(this._document)
+			await this._collection.replace(this._document, transaction)
 
 			if (span) span.end()
 
@@ -380,7 +380,7 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 				removed: 0,
 			}
 		} else {
-			return super.updateDatabaseWithData()
+			return super.updateDatabaseWithData(transaction)
 		}
 	}
 

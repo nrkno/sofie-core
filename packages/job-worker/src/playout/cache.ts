@@ -133,6 +133,8 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 	public readonly BaselineObjects: DbCacheReadCollection<RundownBaselineObj>
 
+	// public readonly mongoTransaction: IMongoTransaction // TODO-transactions
+
 	protected constructor(
 		context: JobContext,
 		playlistLock: PlaylistLock,
@@ -364,7 +366,8 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 		// Discard any hooks too
 		this._deferredAfterSaveFunctions.length = 0
-		this._deferredFunctions.length = 0
+		this._deferredDuringSaveTransactionFunctions.length = 0
+		this._deferredBeforeSaveFunctions.length = 0
 
 		this.assertNoChanges()
 	}
@@ -383,7 +386,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			super.discardChanges()
 
 			// Remove the playlist doc
-			await this.context.directCollections.RundownPlaylists.remove(this.PlaylistId)
+			await this.context.directCollections.RundownPlaylists.remove(this.PlaylistId, null) // No transaction, its a single operation
 
 			// Cleanup the Rundowns in their own locks
 			this.PlaylistLock.deferAfterRelease(async () => {

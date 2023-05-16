@@ -22,7 +22,7 @@ export async function handleRemoveEmptyPlaylists(context: JobContext, _data: voi
 							{ projection: { _id: 1 } }
 						)
 						if (rundowns.length === 0) {
-							await context.directCollections.RundownPlaylists.remove({ _id: playlist._id })
+							await context.directCollections.RundownPlaylists.remove({ _id: playlist._id }, null)
 						}
 					}
 				})

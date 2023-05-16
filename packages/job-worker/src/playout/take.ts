@@ -252,7 +252,7 @@ export async function performTakeToNextedPart(context: JobContext, cache: CacheF
 
 	// Last:
 	const takeDoneTime = getCurrentTime()
-	cache.defer(async (cache2) => {
+	cache.deferBeforeSave(async (cache2) => {
 		await afterTakeUpdateTimingsAndEvents(context, cache2, showStyle, blueprint, isFirstTake, takeDoneTime)
 	})
 

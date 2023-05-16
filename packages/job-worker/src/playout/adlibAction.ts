@@ -58,34 +58,37 @@ export async function handleExecuteAdlibAction(
 			},
 		})
 
-		if (blueprint.blueprint.executeDataStoreAction) {
-			// now we can execute any datastore actions
-			const actionContext = new DatastoreActionExecutionContext(
-				{
-					name: `${rundown.name}(${playlist.name})`,
-					identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
-						currentPartInstance._id
-					},execution=${getRandomId()}`,
-					tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
-				},
-				context,
-				showStyle,
-				watchedPackages
-			)
+		try {
+			const executeDataStoreAction = blueprint.blueprint.executeDataStoreAction
+			if (executeDataStoreAction) {
+				await context.directCollections.runInTransaction(async (transaction) => {
+					// now we can execute any datastore actions
+					const actionContext = new DatastoreActionExecutionContext(
+						{
+							name: `${rundown.name}(${playlist.name})`,
+							identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
+								currentPartInstance._id
+							},execution=${getRandomId()}`,
+							tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
+						},
+						context,
+						transaction,
+						showStyle,
+						watchedPackages
+					)
 
-			logger.info(`Executing Datastore AdlibAction "${data.actionId}": ${JSON.stringify(data.userData)}`)
+					logger.info(`Executing Datastore AdlibAction "${data.actionId}": ${JSON.stringify(data.userData)}`)
 
-			try {
-				await blueprint.blueprint.executeDataStoreAction(
-					actionContext,
-					data.actionId,
-					data.userData,
-					data.triggerMode
-				)
-			} catch (err) {
-				logger.error(`Error in showStyleBlueprint.executeDatastoreAction: ${stringifyError(err)}`)
-				throw err
+					try {
+						await executeDataStoreAction(actionContext, data.actionId, data.userData, data.triggerMode)
+					} catch (err) {
+						logger.error(`Error in showStyleBlueprint.executeDatastoreAction: ${stringifyError(err)}`)
+						throw err
+					}
+				})
 			}
+		} catch (err) {
+			logger.error(`Error in showStyleBlueprint.executeDatastoreAction: ${stringifyError(err)}`)
 		}
 
 		if (blueprint.blueprint.executeAction) {

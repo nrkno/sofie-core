@@ -132,11 +132,15 @@ export async function handleMosRundownStatus(context: JobContext, data: MosRundo
 
 		if (!canRundownBeUpdated(rundown, false)) return
 
-		await context.directCollections.Rundowns.update(rundown._id, {
-			$set: {
-				status: data.status,
+		await context.directCollections.Rundowns.update(
+			rundown._id,
+			{
+				$set: {
+					status: data.status,
+				},
 			},
-		})
+			null // Single operation of this job
+		)
 	})
 }
 

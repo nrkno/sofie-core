@@ -35,6 +35,7 @@ import { RundownLock } from './jobs/lock'
 import { runWithRundownLock } from './ingest/lock'
 import { convertRundownToBlueprints } from './blueprints/context/lib'
 import { sortRundownIDsInPlaylist } from '@sofie-automation/corelib/dist/playout/playlist'
+import { IMongoTransaction } from './db'
 
 /**
  * Debug: Remove a Playlist and all its contents
@@ -42,7 +43,7 @@ import { sortRundownIDsInPlaylist } from '@sofie-automation/corelib/dist/playout
 export async function handleRemoveRundownPlaylist(context: JobContext, data: RemovePlaylistProps): Promise<void> {
 	const removed = await runJobWithPlaylistLock(context, data, async (playlist) => {
 		if (playlist) {
-			await context.directCollections.RundownPlaylists.remove(playlist._id)
+			await context.directCollections.RundownPlaylists.remove(playlist._id, null) // No transaction, as this is a debug operation
 			return true
 		} else {
 			return false
@@ -125,38 +126,45 @@ export async function cleanupRundownsForRemovedPlaylist(
 
 	await Promise.all(
 		rundowns.map(async (rd) => {
-			//
 			return runWithRundownLock(context, rd._id, async (rundown, lock) => {
 				// Make sure rundown exists, and still belongs to the playlist
 				if (rundown && rundown.playlistId === playlistId) {
-					await removeRundownFromDb(context, lock)
+					await removeRundownFromDb(
+						context,
+						lock,
+						null // No transaction needed, stray documents will not cause issues
+					)
 				}
 			})
 		})
 	)
 }
 
-export async function removeRundownFromDb(context: JobContext, lock: RundownLock): Promise<void> {
+export async function removeRundownFromDb(
+	context: JobContext,
+	lock: RundownLock,
+	transaction: IMongoTransaction | null
+): Promise<void> {
 	if (!lock.isLocked) throw new Error(`Can't delete Rundown without lock: ${lock.toString()}`)
 
 	const rundownId = lock.rundownId
 	// Note: playlists are not removed by this, one could be left behind empty
 	await Promise.allSettled([
-		context.directCollections.Rundowns.remove({ _id: rundownId }),
-		context.directCollections.AdLibActions.remove({ rundownId: rundownId }),
-		context.directCollections.AdLibPieces.remove({ rundownId: rundownId }),
-		context.directCollections.ExpectedMediaItems.remove({ rundownId: rundownId }),
-		context.directCollections.ExpectedPlayoutItems.remove({ rundownId: rundownId }),
-		context.directCollections.ExpectedPackages.remove({ rundownId: rundownId }),
-		context.directCollections.IngestDataCache.remove({ rundownId: rundownId }),
-		context.directCollections.RundownBaselineAdLibPieces.remove({ rundownId: rundownId }),
-		context.directCollections.Segments.remove({ rundownId: rundownId }),
-		context.directCollections.Parts.remove({ rundownId: rundownId }),
-		context.directCollections.PartInstances.remove({ rundownId: rundownId }),
-		context.directCollections.Pieces.remove({ startRundownId: rundownId }),
-		context.directCollections.PieceInstances.remove({ rundownId: rundownId }),
-		context.directCollections.RundownBaselineAdLibActions.remove({ rundownId: rundownId }),
-		context.directCollections.RundownBaselineObjects.remove({ rundownId: rundownId }),
+		context.directCollections.Rundowns.remove({ _id: rundownId }, transaction),
+		context.directCollections.AdLibActions.remove({ rundownId: rundownId }, transaction),
+		context.directCollections.AdLibPieces.remove({ rundownId: rundownId }, transaction),
+		context.directCollections.ExpectedMediaItems.remove({ rundownId: rundownId }, transaction),
+		context.directCollections.ExpectedPlayoutItems.remove({ rundownId: rundownId }, transaction),
+		context.directCollections.ExpectedPackages.remove({ rundownId: rundownId }, transaction),
+		context.directCollections.IngestDataCache.remove({ rundownId: rundownId }, transaction),
+		context.directCollections.RundownBaselineAdLibPieces.remove({ rundownId: rundownId }, transaction),
+		context.directCollections.Segments.remove({ rundownId: rundownId }, transaction),
+		context.directCollections.Parts.remove({ rundownId: rundownId }, transaction),
+		context.directCollections.PartInstances.remove({ rundownId: rundownId }, transaction),
+		context.directCollections.Pieces.remove({ startRundownId: rundownId }, transaction),
+		context.directCollections.PieceInstances.remove({ rundownId: rundownId }, transaction),
+		context.directCollections.RundownBaselineAdLibActions.remove({ rundownId: rundownId }, transaction),
+		context.directCollections.RundownBaselineObjects.remove({ rundownId: rundownId }, transaction),
 	])
 }
 
@@ -331,17 +339,37 @@ export async function handleMoveRundownIntoPlaylist(
 						throw new Error(`Not allowed to move currently playing rundown!`)
 					}
 
-					// Quickly Remove it from the old playlist so that we can free the playlist lock
-					await context.directCollections.Rundowns.update(rundown._id, {
-						$set: { playlistId: protectString('__TMP__'), playlistIdIsSetInSofie: true },
-					})
+					await context.directCollections.runInTransaction(async (transaction) => {
+						// Quickly Remove it from the old playlist so that we can free the playlist lock
+						await context.directCollections.Rundowns.update(
+							rundown._id,
+							{
+								$set: {
+									playlistId: protectString('__TMP__'),
+									playlistIdIsSetInSofie: true,
+								},
+							},
+							transaction
+						)
 
-					// Regenerate the playlist
-					const newPlaylist = await regeneratePlaylistAndRundownOrder(context, oldPlaylistLock, oldPlaylist)
-					if (newPlaylist) {
-						// ensure the 'old' playout is updated to remove any references to the rundown
-						await updatePlayoutAfterChangingRundownInPlaylist(context, newPlaylist, oldPlaylistLock, null)
-					}
+						// Regenerate the playlist
+						const newPlaylist = await regeneratePlaylistAndRundownOrder(
+							context,
+							oldPlaylistLock,
+							transaction,
+							oldPlaylist
+						)
+						if (newPlaylist) {
+							// ensure the 'old' playout is updated to remove any references to the rundown
+							await updatePlayoutAfterChangingRundownInPlaylist(
+								context,
+								newPlaylist,
+								oldPlaylistLock,
+								transaction,
+								null
+							)
+						}
+					})
 				}
 			)
 		}
@@ -357,96 +385,115 @@ export async function handleMoveRundownIntoPlaylist(
 							`RundownPlaylists "${data.intoPlaylistId}" for rundown "${rundown._id}" not found!`
 						)
 
-					const allRundowns = await context.directCollections.Rundowns.findFetch({
-						playlistId: intoPlaylist._id,
-					})
-
-					// Make sure the playlist is set to manual ordering
-					if (!intoPlaylist.rundownRanksAreSetInSofie) {
-						intoPlaylist.rundownRanksAreSetInSofie = true
-						// intoPlaylist.rundownRanks = TODO?
-						await context.directCollections.RundownPlaylists.update(intoPlaylist._id, {
-							$set: {
-								rundownRanksAreSetInSofie: true,
-							},
+					await context.directCollections.runInTransaction(async (transaction) => {
+						const allRundowns = await context.directCollections.Rundowns.findFetch({
+							playlistId: intoPlaylist._id,
 						})
-					}
 
-					if (intoPlaylist._id === rundown.playlistId) {
-						// Move the rundown within the playlist
-						const i = data.rundownsIdsInPlaylistInOrder.indexOf(data.rundownId)
-						if (i === -1)
-							throw new Error(`RundownId "${data.rundownId}" not found in rundownsIdsInPlaylistInOrder`)
-
-						// Determine the new order of the rundowns
-						let newRundownIdOrder = intoPlaylist.rundownIdsInOrder.filter((id) => id !== data.rundownId) // shallow clone. remove self from current position
-						if (data.rundownsIdsInPlaylistInOrder.length === 1) {
-							// Push to the end. No order was specified
-							newRundownIdOrder.push(data.rundownId)
-						} else if (data.rundownsIdsInPlaylistInOrder.length === 2) {
-							// It looks like we were sent a fragment, rather than a complete order
-							if (i === 0) {
-								const otherId = data.rundownsIdsInPlaylistInOrder[1]
-								const otherIndex = newRundownIdOrder.indexOf(otherId)
-
-								// Push rundown before otherId (or the start)
-								if (otherIndex === -1) {
-									newRundownIdOrder.unshift(data.rundownId)
-								} else {
-									newRundownIdOrder.splice(otherIndex, 0, data.rundownId)
-								}
-							} else {
-								const otherId = data.rundownsIdsInPlaylistInOrder[0]
-								const otherIndex = newRundownIdOrder.indexOf(otherId)
-
-								// Push rundown after otherId (or the end)
-								if (otherIndex === -1) {
-									newRundownIdOrder.push(data.rundownId)
-								} else {
-									newRundownIdOrder.splice(otherIndex + 1, 0, data.rundownId)
-								}
-							}
-						} else {
-							// Replace the complete order
-							newRundownIdOrder = data.rundownsIdsInPlaylistInOrder
+						// Make sure the playlist is set to manual ordering
+						if (!intoPlaylist.rundownRanksAreSetInSofie) {
+							intoPlaylist.rundownRanksAreSetInSofie = true
+							// intoPlaylist.rundownRanks = TODO?
+							await context.directCollections.RundownPlaylists.update(
+								intoPlaylist._id,
+								{
+									$set: {
+										rundownRanksAreSetInSofie: true,
+									},
+								},
+								transaction
+							)
 						}
 
-						// Ensure that all the rundowns are present
-						newRundownIdOrder = sortRundownIDsInPlaylist(
-							newRundownIdOrder,
-							allRundowns.map((r) => r._id)
+						if (intoPlaylist._id === rundown.playlistId) {
+							// Move the rundown within the playlist
+							const i = data.rundownsIdsInPlaylistInOrder.indexOf(data.rundownId)
+							if (i === -1)
+								throw new Error(
+									`RundownId "${data.rundownId}" not found in rundownsIdsInPlaylistInOrder`
+								)
+
+							// Determine the new order of the rundowns
+							let newRundownIdOrder = intoPlaylist.rundownIdsInOrder.filter((id) => id !== data.rundownId) // shallow clone. remove self from current position
+							if (data.rundownsIdsInPlaylistInOrder.length === 1) {
+								// Push to the end. No order was specified
+								newRundownIdOrder.push(data.rundownId)
+							} else if (data.rundownsIdsInPlaylistInOrder.length === 2) {
+								// It looks like we were sent a fragment, rather than a complete order
+								if (i === 0) {
+									const otherId = data.rundownsIdsInPlaylistInOrder[1]
+									const otherIndex = newRundownIdOrder.indexOf(otherId)
+
+									// Push rundown before otherId (or the start)
+									if (otherIndex === -1) {
+										newRundownIdOrder.unshift(data.rundownId)
+									} else {
+										newRundownIdOrder.splice(otherIndex, 0, data.rundownId)
+									}
+								} else {
+									const otherId = data.rundownsIdsInPlaylistInOrder[0]
+									const otherIndex = newRundownIdOrder.indexOf(otherId)
+
+									// Push rundown after otherId (or the end)
+									if (otherIndex === -1) {
+										newRundownIdOrder.push(data.rundownId)
+									} else {
+										newRundownIdOrder.splice(otherIndex + 1, 0, data.rundownId)
+									}
+								}
+							} else {
+								// Replace the complete order
+								newRundownIdOrder = data.rundownsIdsInPlaylistInOrder
+							}
+
+							// Ensure that all the rundowns are present
+							newRundownIdOrder = sortRundownIDsInPlaylist(
+								newRundownIdOrder,
+								allRundowns.map((r) => r._id)
+							)
+
+							// Set on the playlist, the `regeneratePlaylistAndRundownOrder` call will persist it
+							intoPlaylist.rundownIdsInOrder = newRundownIdOrder
+						} else {
+							// Moving from another playlist
+							allRundowns.push(rundown)
+
+							// Put the rundown into the playlist (it will appear at the end until we save the order)
+							await context.directCollections.Rundowns.update(
+								rundown._id,
+								{
+									$set: {
+										playlistId: intoPlaylist._id,
+										playlistIdIsSetInSofie: true,
+									},
+								},
+								transaction
+							)
+							rundown.playlistId = intoPlaylist._id
+							rundown.playlistIdIsSetInSofie = true
+						}
+
+						// Update the playlist and the order of the contents
+						const newPlaylist = await regeneratePlaylistAndRundownOrder(
+							context,
+							intoPlaylistLock,
+							transaction,
+							intoPlaylist,
+							allRundowns
 						)
+						if (!newPlaylist) {
+							throw new Error(`RundownPlaylist must still be valid as it has some Rundowns`)
+						}
 
-						// Set on the playlist, the `regeneratePlaylistAndRundownOrder` call will persist it
-						intoPlaylist.rundownIdsInOrder = newRundownIdOrder
-					} else {
-						// Moving from another playlist
-						allRundowns.push(rundown)
-
-						// Put the rundown into the playlist (it will appear at the end until we save the order)
-						await context.directCollections.Rundowns.update(rundown._id, {
-							$set: {
-								playlistId: intoPlaylist._id,
-								playlistIdIsSetInSofie: true,
-							},
-						})
-						rundown.playlistId = intoPlaylist._id
-						rundown.playlistIdIsSetInSofie = true
-					}
-
-					// Update the playlist and the order of the contents
-					const newPlaylist = await regeneratePlaylistAndRundownOrder(
-						context,
-						intoPlaylistLock,
-						intoPlaylist,
-						allRundowns
-					)
-					if (!newPlaylist) {
-						throw new Error(`RundownPlaylist must still be valid as it has some Rundowns`)
-					}
-
-					// If the playlist is active this could have changed lookahead
-					await updatePlayoutAfterChangingRundownInPlaylist(context, newPlaylist, intoPlaylistLock, rundown)
+						// If the playlist is active this could have changed lookahead
+						await updatePlayoutAfterChangingRundownInPlaylist(
+							context,
+							newPlaylist,
+							intoPlaylistLock,
+							transaction,
+							rundown
+						)
+					})
 				}
 			)
 		} else {
@@ -454,20 +501,26 @@ export async function handleMoveRundownIntoPlaylist(
 
 			// No point locking the playlist, as we are creating something fresh and unique here
 
-			const externalId = getRandomString()
-			const playlist: DBRundownPlaylist = {
-				...defaultPlaylistForRundown(rundown, studio),
-				externalId: externalId,
-				_id: getPlaylistIdFromExternalId(studio._id, externalId),
-				rundownIdsInOrder: [rundown._id],
-			}
-			await context.directCollections.RundownPlaylists.insertOne(playlist)
+			await context.directCollections.runInTransaction(async (transaction) => {
+				const externalId = getRandomString()
+				const playlist: DBRundownPlaylist = {
+					...defaultPlaylistForRundown(rundown, studio),
+					externalId: externalId,
+					_id: getPlaylistIdFromExternalId(studio._id, externalId),
+					rundownIdsInOrder: [rundown._id],
+				}
+				await context.directCollections.RundownPlaylists.insertOne(playlist, transaction)
 
-			await context.directCollections.Rundowns.update(rundown._id, {
-				$set: {
-					playlistId: playlist._id,
-					playlistIdIsSetInSofie: true,
-				},
+				await context.directCollections.Rundowns.update(
+					rundown._id,
+					{
+						$set: {
+							playlistId: playlist._id,
+							playlistIdIsSetInSofie: true,
+						},
+					},
+					transaction
+				)
 			})
 		}
 	})
@@ -482,22 +535,39 @@ export async function handleRestoreRundownsInPlaylistToDefaultOrder(
 ): Promise<void> {
 	await runJobWithPlaylistLock(context, data, async (playlist, playlistLock) => {
 		if (playlist) {
-			// Update the playlist
-			await context.directCollections.RundownPlaylists.update(playlist._id, {
-				$set: {
-					rundownRanksAreSetInSofie: false,
-				},
+			await context.directCollections.runInTransaction(async (transaction) => {
+				// Update the playlist
+				await context.directCollections.RundownPlaylists.update(
+					playlist._id,
+					{
+						$set: {
+							rundownRanksAreSetInSofie: false,
+						},
+					},
+					transaction
+				)
+				const newPlaylist = clone<DBRundownPlaylist>(playlist)
+				newPlaylist.rundownRanksAreSetInSofie = false
+
+				// Update the _rank of the rundowns
+				const updatedPlaylist = await regeneratePlaylistAndRundownOrder(
+					context,
+					playlistLock,
+					transaction,
+					newPlaylist
+				)
+
+				if (updatedPlaylist) {
+					// If the playlist is active this could have changed lookahead
+					await updatePlayoutAfterChangingRundownInPlaylist(
+						context,
+						updatedPlaylist,
+						playlistLock,
+						transaction,
+						null
+					)
+				}
 			})
-			const newPlaylist = clone<DBRundownPlaylist>(playlist)
-			newPlaylist.rundownRanksAreSetInSofie = false
-
-			// Update the _rank of the rundowns
-			const updatedPlaylist = await regeneratePlaylistAndRundownOrder(context, playlistLock, newPlaylist)
-
-			if (updatedPlaylist) {
-				// If the playlist is active this could have changed lookahead
-				await updatePlayoutAfterChangingRundownInPlaylist(context, updatedPlaylist, playlistLock, null)
-			}
 		}
 	})
 }
