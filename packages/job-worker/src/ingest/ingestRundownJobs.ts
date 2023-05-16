@@ -71,7 +71,8 @@ export async function handleUserRemoveRundown(context: JobContext, data: UserRem
 					// check if the playlist is now empty
 					const rundownCount: Pick<DBRundown, '_id'>[] = await context.directCollections.Rundowns.findFetch(
 						{ playlistId: rundown.playlistId },
-						{ projection: { _id: 1 } }
+						{ projection: { _id: 1 } },
+						transaction
 					)
 					if (rundownCount.length === 0) {
 						// A lazy approach, but good enough for snapshots

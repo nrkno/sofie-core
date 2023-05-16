@@ -662,7 +662,8 @@ export async function regeneratePlaylistAndRundownOrder(
 		throw new Error(`Lock is for wrong playlist. Holding "${lock.playlistId}", need "${oldPlaylist._id}"`)
 
 	const allRundowns =
-		existingRundowns ?? (await context.directCollections.Rundowns.findFetch({ playlistId: oldPlaylist._id }))
+		existingRundowns ??
+		(await context.directCollections.Rundowns.findFetch({ playlistId: oldPlaylist._id }, undefined, transaction))
 
 	if (allRundowns.length > 0) {
 		// Skip the update, if there are no rundowns left

@@ -139,7 +139,13 @@ export interface IDirectCollections {
 	MediaObjects: IReadOnlyCollection<MediaObjects>
 }
 
+/**
+ * Represents a MongoDB session and transaction
+ */
 export interface IMongoTransaction {
+	/**
+	 * A random id for this transaction
+	 */
 	readonly id: string
 }
 
