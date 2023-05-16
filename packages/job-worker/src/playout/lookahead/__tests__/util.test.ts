@@ -44,11 +44,11 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		rundownId = protectString(`rundown0`)
 		playlistId = protectString(`playlist0`)
 
-		await context.directCollections.RundownPlaylists.insertOne({
+		await context.mockCollections.RundownPlaylists.insertOne({
 			...defaultRundownPlaylist(playlistId, context.studioId),
 			activationId: protectString('active'),
 		})
-		await context.directCollections.Rundowns.insertOne({
+		await context.mockCollections.Rundowns.insertOne({
 			peripheralDeviceId: undefined,
 			organizationId: null,
 			studioId: context.studioId,
@@ -78,7 +78,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		})
 
 		const segmentIds = await Promise.all([
-			context.directCollections.Segments.insertOne({
+			context.mockCollections.Segments.insertOne({
 				_id: protectString(rundownId + '_segment0'),
 				_rank: 0,
 				externalId: 'MOCK_SEGMENT_0',
@@ -86,7 +86,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				name: 'Segment 0',
 				externalModified: 1,
 			}),
-			context.directCollections.Segments.insertOne({
+			context.mockCollections.Segments.insertOne({
 				_id: protectString(rundownId + '_segment01'),
 				_rank: 1,
 				externalId: 'MOCK_SEGMENT_1',
@@ -94,7 +94,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				name: 'Segment 1',
 				externalModified: 1,
 			}),
-			context.directCollections.Segments.insertOne({
+			context.mockCollections.Segments.insertOne({
 				_id: protectString(rundownId + '_segment2'),
 				_rank: 2,
 				externalId: 'MOCK_SEGMENT_2',
@@ -120,19 +120,19 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		}
 
 		partIds = await Promise.all([
-			context.directCollections.Parts.insertOne(createMockPart(0, segmentId0)),
-			context.directCollections.Parts.insertOne(createMockPart(1, segmentId0)),
-			context.directCollections.Parts.insertOne(createMockPart(2, segmentId0)),
-			context.directCollections.Parts.insertOne(createMockPart(3, segmentId0)),
-			context.directCollections.Parts.insertOne(createMockPart(4, segmentId0)),
+			context.mockCollections.Parts.insertOne(createMockPart(0, segmentId0)),
+			context.mockCollections.Parts.insertOne(createMockPart(1, segmentId0)),
+			context.mockCollections.Parts.insertOne(createMockPart(2, segmentId0)),
+			context.mockCollections.Parts.insertOne(createMockPart(3, segmentId0)),
+			context.mockCollections.Parts.insertOne(createMockPart(4, segmentId0)),
 
-			context.directCollections.Parts.insertOne(createMockPart(10, segmentId1)),
-			context.directCollections.Parts.insertOne(createMockPart(11, segmentId1)),
-			context.directCollections.Parts.insertOne(createMockPart(12, segmentId1)),
+			context.mockCollections.Parts.insertOne(createMockPart(10, segmentId1)),
+			context.mockCollections.Parts.insertOne(createMockPart(11, segmentId1)),
+			context.mockCollections.Parts.insertOne(createMockPart(12, segmentId1)),
 
-			context.directCollections.Parts.insertOne(createMockPart(20, segmentId2)),
-			context.directCollections.Parts.insertOne(createMockPart(21, segmentId2)),
-			context.directCollections.Parts.insertOne(createMockPart(22, segmentId2)),
+			context.mockCollections.Parts.insertOne(createMockPart(20, segmentId2)),
+			context.mockCollections.Parts.insertOne(createMockPart(21, segmentId2)),
+			context.mockCollections.Parts.insertOne(createMockPart(22, segmentId2)),
 		])
 	})
 	test('all parts come back', async () => {
@@ -144,14 +144,14 @@ describe('getOrderedPartsAfterPlayhead', () => {
 	})
 
 	test('first part is next', async () => {
-		const firstPart = (await context.directCollections.Parts.findOne(partIds[0])) as DBPart
+		const firstPart = (await context.mockCollections.Parts.findOne(partIds[0])) as DBPart
 		expect(firstPart).toBeTruthy()
 
 		// Convert to instance and set as next
-		const firstInstanceId = await context.directCollections.PartInstances.insertOne(
+		const firstInstanceId = await context.mockCollections.PartInstances.insertOne(
 			wrapPartToTemporaryInstance(protectString('active'), firstPart)
 		)
-		await context.directCollections.RundownPlaylists.update(playlistId, {
+		await context.mockCollections.RundownPlaylists.update(playlistId, {
 			$set: {
 				nextPartInfo: {
 					partInstanceId: firstInstanceId,
@@ -175,14 +175,14 @@ describe('getOrderedPartsAfterPlayhead', () => {
 	})
 
 	test('first part is current', async () => {
-		const firstPart = (await context.directCollections.Parts.findOne(partIds[0])) as DBPart
+		const firstPart = (await context.mockCollections.Parts.findOne(partIds[0])) as DBPart
 		expect(firstPart).toBeTruthy()
 
 		// Convert to instance and set as next
-		const firstInstanceId = await context.directCollections.PartInstances.insertOne(
+		const firstInstanceId = await context.mockCollections.PartInstances.insertOne(
 			wrapPartToTemporaryInstance(protectString('active'), firstPart)
 		)
-		await context.directCollections.RundownPlaylists.update(playlistId, {
+		await context.mockCollections.RundownPlaylists.update(playlistId, {
 			$set: {
 				nextPartInfo: {
 					partInstanceId: firstInstanceId,
@@ -206,14 +206,14 @@ describe('getOrderedPartsAfterPlayhead', () => {
 	})
 
 	test('last part is next', async () => {
-		const lastPart = (await context.directCollections.Parts.findOne(_.last(partIds))) as DBPart
+		const lastPart = (await context.mockCollections.Parts.findOne(_.last(partIds))) as DBPart
 		expect(lastPart).toBeTruthy()
 
 		// Convert to instance and set as next
-		const lastInstanceId = await context.directCollections.PartInstances.insertOne(
+		const lastInstanceId = await context.mockCollections.PartInstances.insertOne(
 			wrapPartToTemporaryInstance(protectString('active'), lastPart)
 		)
-		await context.directCollections.RundownPlaylists.update(playlistId, {
+		await context.mockCollections.RundownPlaylists.update(playlistId, {
 			$set: {
 				nextPartInfo: {
 					partInstanceId: lastInstanceId,
@@ -229,7 +229,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		expect(parts.map((p) => p._id)).toEqual([])
 
 		// Playlist could loop
-		await context.directCollections.RundownPlaylists.update(playlistId, { $set: { loop: true } })
+		await context.mockCollections.RundownPlaylists.update(playlistId, { $set: { loop: true } })
 		const parts2 = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
 			getOrderedPartsAfterPlayhead(context, cache, 5)
 		)
@@ -237,7 +237,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		expect(parts2.map((p) => p._id)).toEqual(partIds.slice(0, 5))
 
 		// Set some parts as unplayable
-		await context.directCollections.Parts.update(
+		await context.mockCollections.Parts.update(
 			{
 				_id: { $in: [partIds[1], partIds[4]] },
 			},
@@ -253,10 +253,10 @@ describe('getOrderedPartsAfterPlayhead', () => {
 	})
 
 	test('filter unplayable part is current', async () => {
-		const nextPart = (await context.directCollections.Parts.findOne(partIds[3])) as DBPart
+		const nextPart = (await context.mockCollections.Parts.findOne(partIds[3])) as DBPart
 		expect(nextPart).toBeTruthy()
 
-		await context.directCollections.Parts.update(
+		await context.mockCollections.Parts.update(
 			{
 				_id: { $in: [partIds[4], partIds[7]] },
 			},
@@ -266,10 +266,10 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		)
 
 		// Convert to instance and set as next
-		const nextInstanceId = await context.directCollections.PartInstances.insertOne(
+		const nextInstanceId = await context.mockCollections.PartInstances.insertOne(
 			wrapPartToTemporaryInstance(protectString('active'), nextPart)
 		)
-		await context.directCollections.RundownPlaylists.update(playlistId, {
+		await context.mockCollections.RundownPlaylists.update(playlistId, {
 			$set: {
 				nextPartInfo: {
 					partInstanceId: nextInstanceId,
@@ -286,14 +286,14 @@ describe('getOrderedPartsAfterPlayhead', () => {
 	})
 
 	test('filter unplayable part is current2', async () => {
-		const firstPart = (await context.directCollections.Parts.findOne(partIds[0])) as DBPart
+		const firstPart = (await context.mockCollections.Parts.findOne(partIds[0])) as DBPart
 		expect(firstPart).toBeTruthy()
 
 		// Convert to instance and set as next
-		const nextInstanceId = await context.directCollections.PartInstances.insertOne(
+		const nextInstanceId = await context.mockCollections.PartInstances.insertOne(
 			wrapPartToTemporaryInstance(protectString('active'), firstPart)
 		)
-		await context.directCollections.RundownPlaylists.update(playlistId, {
+		await context.mockCollections.RundownPlaylists.update(playlistId, {
 			$set: {
 				currentPartInfo: {
 					partInstanceId: nextInstanceId,
@@ -303,14 +303,14 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		})
 
 		// Change next segment
-		await context.directCollections.RundownPlaylists.update(playlistId, { $set: { nextSegmentId: segmentId2 } })
+		await context.mockCollections.RundownPlaylists.update(playlistId, { $set: { nextSegmentId: segmentId2 } })
 		const parts = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
 			getOrderedPartsAfterPlayhead(context, cache, 10)
 		)
 		expect(parts.map((p) => p._id)).toEqual([...partIds.slice(1, 5), ...partIds.slice(8)])
 
 		// Set start of next segment to unplayable
-		await context.directCollections.Parts.update(
+		await context.mockCollections.Parts.update(
 			{
 				_id: { $in: [partIds[8]] },
 			},
@@ -324,7 +324,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		expect(parts2.map((p) => p._id)).toEqual([...partIds.slice(1, 5), ...partIds.slice(9)])
 
 		// Set the rest of next segment to unplayable
-		await context.directCollections.Parts.update(
+		await context.mockCollections.Parts.update(
 			{
 				_id: { $in: partIds.slice(9) },
 			},

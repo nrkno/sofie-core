@@ -38,12 +38,13 @@ import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataMod
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
-import { literal } from '@sofie-automation/corelib/dist/lib'
+import { getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { MediaObjects } from '@sofie-automation/corelib/dist/dataModel/MediaObjects'
 import EventEmitter = require('eventemitter3')
 import { MongoTransaction } from './transaction'
+import { logger } from '../logging'
 
 export type MongoQuery<TDoc> = Filter<TDoc>
 export type MongoModifier<TDoc> = UpdateFilter<TDoc>
@@ -139,9 +140,7 @@ export interface IDirectCollections {
 }
 
 export interface IMongoTransaction {
-	test(): Promise<void>
-	// commitTransaction(): Promise<void>
-	// abortTransaction(): Promise<void>
+	readonly id: string
 }
 
 /**
@@ -159,6 +158,7 @@ export function getMongoCollections(
 
 	const runInTransaction = async <T>(func: (transaction: IMongoTransaction) => Promise<T>): Promise<T> => {
 		const session = client.startSession()
+		const id = getRandomString()
 		try {
 			session.startTransaction({
 				// TODO - review/refine
@@ -177,16 +177,18 @@ export function getMongoCollections(
 			return res
 		} catch (error) {
 			if (error instanceof MongoError && error.hasErrorLabel('UnknownTransactionCommitResult')) {
-				// add your logic to retry or handle the error
+				// Future: Some retry logic
 			} else if (error instanceof MongoError && error.hasErrorLabel('TransientTransactionError')) {
-				// add your logic to retry or handle the error
+				// Future: Some retry logic
 			}
 
+			logger.silly(`Aborted MongoDB Transaction: ${id}`)
 			await session.abortTransaction()
 
 			throw error
 		} finally {
 			await session.endSession()
+			logger.silly(`Completed MongoDB Transaction: ${id}`)
 		}
 	}
 

@@ -23,7 +23,7 @@ import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/Sho
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { clone, literal } from '@sofie-automation/corelib/dist/lib'
+import { clone, getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import {
 	FindOptions as CacheFindOptions,
 	mongoFindOptions,
@@ -34,8 +34,21 @@ import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import EventEmitter = require('eventemitter3')
 import { AnyBulkWriteOperation, Collection, FindOptions } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
-import { IChangeStream, IChangeStreamEvents, ICollection, IDirectCollections, MongoModifier, MongoQuery } from '../db'
+import {
+	IChangeStream,
+	IChangeStreamEvents,
+	ICollection,
+	IDirectCollections,
+	IMongoTransaction,
+	MongoModifier,
+	MongoQuery,
+} from '../db'
 import _ = require('underscore')
+import { ExpectedMediaItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
+import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
+import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
+import { MediaObjects } from '@sofie-automation/corelib/dist/dataModel/MediaObjects'
+import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 
 export interface CollectionOperation {
 	type: string
@@ -264,9 +277,31 @@ export async function defer(): Promise<void> {
 	return new Promise((resolve) => jest.requireActual('timers').setImmediate(resolve))
 }
 
-export function getMockCollections(): Readonly<IDirectCollections> {
-	return Object.freeze(
-		literal<IDirectCollections>({
+export class MockMongoTransaction implements IMongoTransaction {
+	#id: string
+
+	get id(): string {
+		return this.#id
+	}
+
+	constructor() {
+		this.#id = getRandomString()
+	}
+}
+
+export function getMockCollections(): {
+	jobCollections: Readonly<IDirectCollections>
+	mockCollections: Readonly<IMockCollections>
+} {
+	const runInTransaction = async <T>(func: (transaction: IMongoTransaction) => Promise<T>): Promise<T> => {
+		// We just need enough to satisfy the transaction types
+		const transaction = new MockMongoTransaction()
+
+		return func(transaction)
+	}
+
+	const mockCollections: IMockCollections = Object.freeze(
+		literal<IMockCollections>({
 			AdLibActions: new MockMongoCollection<AdLibAction>(CollectionName.AdLibActions),
 			AdLibPieces: new MockMongoCollection<AdLibPiece>(CollectionName.AdLibPieces),
 			Blueprints: new MockMongoCollection<Blueprint>(CollectionName.Blueprints),
@@ -305,4 +340,55 @@ export function getMockCollections(): Readonly<IDirectCollections> {
 			MediaObjects: new MockMongoCollection(CollectionName.MediaObjects),
 		})
 	)
+
+	const jobCollections = Object.freeze(
+		literal<IDirectCollections>({
+			runInTransaction,
+			...mockCollections,
+		})
+	)
+
+	return {
+		jobCollections,
+		mockCollections,
+	}
+}
+
+/**
+ * A version of IDirectCollections, with every collection swapped out for MockMongoCollection.
+ * This gives us mutable versions of readonly collections, and avoids the need to provide a `transaction` parameter
+ */
+export interface IMockCollections {
+	AdLibActions: MockMongoCollection<AdLibAction>
+	AdLibPieces: MockMongoCollection<AdLibPiece>
+	Blueprints: MockMongoCollection<Blueprint>
+	BucketAdLibActions: MockMongoCollection<BucketAdLibAction>
+	BucketAdLibPieces: MockMongoCollection<BucketAdLib>
+	ExpectedMediaItems: MockMongoCollection<ExpectedMediaItem>
+	ExpectedPlayoutItems: MockMongoCollection<ExpectedPlayoutItem>
+	IngestDataCache: MockMongoCollection<IngestDataCacheObj>
+	Parts: MockMongoCollection<DBPart>
+	PartInstances: MockMongoCollection<DBPartInstance>
+	PeripheralDevices: MockMongoCollection<PeripheralDevice>
+	PeripheralDeviceCommands: MockMongoCollection<PeripheralDeviceCommand>
+	Pieces: MockMongoCollection<Piece>
+	PieceInstances: MockMongoCollection<PieceInstance>
+	Rundowns: MockMongoCollection<DBRundown>
+	RundownBaselineAdLibActions: MockMongoCollection<RundownBaselineAdLibAction>
+	RundownBaselineAdLibPieces: MockMongoCollection<RundownBaselineAdLibItem>
+	RundownBaselineObjects: MockMongoCollection<RundownBaselineObj>
+	RundownPlaylists: MockMongoCollection<DBRundownPlaylist>
+	Segments: MockMongoCollection<DBSegment>
+	ShowStyleBases: MockMongoCollection<DBShowStyleBase>
+	ShowStyleVariants: MockMongoCollection<DBShowStyleVariant>
+	Studios: MockMongoCollection<DBStudio>
+	Timelines: MockMongoCollection<TimelineComplete>
+	TimelineDatastores: MockMongoCollection<DBTimelineDatastoreEntry>
+
+	ExpectedPackages: MockMongoCollection<ExpectedPackageDB>
+	PackageInfos: MockMongoCollection<PackageInfoDB>
+
+	ExternalMessageQueue: MockMongoCollection<ExternalMessageQueueObj>
+
+	MediaObjects: MockMongoCollection<MediaObjects>
 }
