@@ -61,7 +61,7 @@ export async function saveIntoDb<TDoc extends { _id: ProtectedString<any> }>(
 	newDocs: Array<TDoc>,
 	options?: SaveIntoDbHooks<TDoc>
 ): Promise<Changes> {
-	const preparedChanges = await prepareSaveIntoDb(context, collection, filter, newDocs, options)
+	const preparedChanges = await prepareSaveIntoDb(context, collection, transaction, filter, newDocs, options)
 
 	return savePreparedChanges(preparedChanges, collection, transaction, options ?? {})
 }
@@ -76,6 +76,7 @@ export interface PreparedChanges<T> {
 async function prepareSaveIntoDb<TDoc extends { _id: ProtectedString<any> }>(
 	context: JobContext,
 	collection: ICollection<TDoc>,
+	transaction: IMongoTransaction | null,
 	filter: MongoQuery<TDoc>,
 	newData: Array<TDoc>,
 	optionsOrg?: SaveIntoDbHooks<TDoc>
@@ -87,7 +88,7 @@ async function prepareSaveIntoDb<TDoc extends { _id: ProtectedString<any> }>(
 		unchanged: [],
 	}
 
-	const existing = await collection.findFetch(filter)
+	const existing = await collection.findFetch(filter, undefined, transaction)
 
 	saveIntoBase(context, collection.name, existing, newData, {
 		...optionsOrg,

@@ -237,7 +237,8 @@ export function resetPartInstancesWithPieceInstances(
 					},
 				],
 			},
-			{ projection: { _id: 1 } }
+			{ projection: { _id: 1 } },
+			transaction
 		).then((ps) => ps.map((p) => p._id))
 
 		// Do the reset
@@ -306,7 +307,8 @@ function removePartInstancesWithPieceInstances(
 					},
 				],
 			},
-			{ projection: { _id: 1 } }
+			{ projection: { _id: 1 } },
+			transaction
 		).then((ps) => ps.map((p) => p._id))
 
 		// Do the remove

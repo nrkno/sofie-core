@@ -197,7 +197,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		const { allDBs } = this.getAllCollections()
 
 		if (this._deferredBeforeSaveFunctions.length > 0) {
-			logger.silly(`hasChanges: _deferredFunctions.length=${this._deferredBeforeSaveFunctions.length}`)
+			logger.silly(`hasChanges: _deferredBeforeSaveFunctions.length=${this._deferredBeforeSaveFunctions.length}`)
 			return true
 		}
 
