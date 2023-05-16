@@ -153,9 +153,7 @@ export class RundownIngestDataCache {
 	}
 
 	async saveToDatabase(): Promise<Changes> {
-		return await this.context.directCollections.runInTransaction(async (transaction) => {
-			return this.collection.updateDatabaseWithData(transaction)
-		})
+		return this.collection.updateDatabaseWithData(null)
 	}
 }
 

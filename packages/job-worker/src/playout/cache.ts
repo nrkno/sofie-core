@@ -20,7 +20,7 @@ import { getRundownsSegmentsAndPartsFromCache } from './lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PlaylistLock } from '../jobs/lock'
 import { CacheForIngest } from '../ingest/cache'
-import { MongoQuery } from '../db'
+import { IMongoTransaction, MongoQuery } from '../db'
 import { logger } from '../logging'
 
 /**
@@ -271,7 +271,8 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 							projection: {
 								segmentId: 1,
 							},
-						}
+						},
+						null
 					)
 				).map((p) => p.segmentId)
 			)
@@ -372,7 +373,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		this.assertNoChanges()
 	}
 
-	async saveAllToDatabase(): Promise<void> {
+	async saveAllToDatabase(existingTransaction?: IMongoTransaction | null): Promise<void> {
 		logger.silly('saveAllToDatabase')
 		// TODO - ideally we should make sure to preserve the lock during this operation
 		if (!this.PlaylistLock.isLocked) {
@@ -386,7 +387,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			super.discardChanges()
 
 			// Remove the playlist doc
-			await this.context.directCollections.RundownPlaylists.remove(this.PlaylistId, null) // No transaction, its a single operation
+			await this.context.directCollections.RundownPlaylists.remove(this.PlaylistId, existingTransaction ?? null) // No transaction, its a single operation
 
 			// Cleanup the Rundowns in their own locks
 			this.PlaylistLock.deferAfterRelease(async () => {
@@ -396,7 +397,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			super.assertNoChanges()
 			span?.end()
 		} else {
-			return super.saveAllToDatabase()
+			return super.saveAllToDatabase(existingTransaction)
 		}
 	}
 

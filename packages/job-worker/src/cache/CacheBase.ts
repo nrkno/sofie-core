@@ -73,7 +73,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		}
 	}
 
-	async saveAllToDatabase(): Promise<void> {
+	async saveAllToDatabase(existingTransaction?: IMongoTransaction | null): Promise<void> {
 		const span = this.context.startSpan('Cache.saveAllToDatabase')
 
 		// Execute cache.deferBeforeSave()'s
@@ -84,7 +84,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 
 		const { highPrioDBs, lowPrioDBs } = this.getAllCollections()
 
-		await this.context.directCollections.runInTransaction(async (transaction) => {
+		const performSave = async (transaction: IMongoTransaction) => {
 			if (highPrioDBs.length) {
 				const anyThingChanged = anythingChanged(
 					sumChanges(
@@ -108,7 +108,13 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 				await fn(transaction, this as any)
 			}
 			this._deferredDuringSaveTransactionFunctions.length = 0 // clear the array
-		})
+		}
+
+		if (existingTransaction) {
+			await performSave(existingTransaction)
+		} else {
+			await this.context.directCollections.runInTransaction(async (transaction) => performSave(transaction))
+		}
 
 		// Execute cache.deferAfterSave()'s
 		for (const fn of this._deferredAfterSaveFunctions) {
