@@ -68,6 +68,17 @@ yarn start
 We provide a `settings.json.default` file in `.vscode` that you should consider using with your IDE. Also consider installing suggested
 extensions, which should help you create PRs consistent with project's code standards.
 
+### Debugging the blueprints in Visual Studio Code:
+
+The "Attach" config in `launch.json` supports debugging the blueprints.
+
+Local blueprints repo needs to be added to the Visual Studio Code workspace
+under the name "Blueprints".
+
+It is required to set
+`devtool` to  `'inline-source-map'` and
+`output.devtoolModuleFilenameTemplate` `'blueprint:///[resource-path]'` in webpack config of the blueprints.
+
 ### Dealing with strange errors
 
 If you get any strange errors (such as the application crashing, "Unable to resolve some modules" or errors during installation of dependencies), the last resort is to reset and restart:

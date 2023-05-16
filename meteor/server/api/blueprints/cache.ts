@@ -4,18 +4,13 @@ import { logger } from '../../logging'
 import { Blueprint } from '../../../lib/collections/Blueprints'
 import { SomeBlueprintManifest } from '@sofie-automation/blueprints-integration'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
-import path from 'path'
 
 export function evalBlueprint(blueprint: Pick<Blueprint, '_id' | 'name' | 'code'>): SomeBlueprintManifest {
 	const vm = new VM({
 		sandbox: {},
 	})
-	const blueprintPath =
-		'file:///' +
-		path.posix.join(
-			path.posix.normalize(process.env.BLUEPRINT_DIST_DIR ?? 'db/blueprint'),
-			`${blueprint.name || blueprint._id}-bundle.js`
-		)
+
+	const blueprintPath = `db:///blueprint/${blueprint.name || blueprint._id}-bundle.js`
 	const script = new VMScript(
 		`__run_result = ${blueprint.code}
 __run_result || blueprint`,

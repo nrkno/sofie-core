@@ -9,7 +9,6 @@ import { VM, VMScript } from 'vm2'
 import { ReadonlyDeep } from 'type-fest'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
-import path = require('path')
 
 export interface WrappedSystemBlueprint {
 	blueprintId: BlueprintId
@@ -58,12 +57,7 @@ export async function parseBlueprintDocument(
 				sandbox: {},
 			})
 
-			const blueprintPath =
-				'file:///' +
-				path.posix.join(
-					path.posix.normalize(process.env.BLUEPRINT_DIST_DIR ?? 'db/blueprint'),
-					`${blueprint.name || blueprint._id}-bundle.js`
-				)
+			const blueprintPath = `db:///blueprint/${blueprint.name || blueprint._id}-bundle.js`
 			const script = new VMScript(
 				`__run_result = ${blueprint.code}
 __run_result || blueprint`,
