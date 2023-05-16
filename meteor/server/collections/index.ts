@@ -35,26 +35,47 @@ import {
 } from './collection'
 import { ObserveChangesForHash } from './lib'
 import { logger } from '../logging'
+import { resolveCredentials } from '../security/lib/credentials'
+import { logNotAllowed, allowOnlyFields, rejectFields } from '../security/lib/lib'
+import {
+	allowAccessToCoreSystem,
+	allowAccessToOrganization,
+	allowAccessToShowStyleBase,
+	allowAccessToStudio,
+} from '../security/lib/security'
+import { SystemWriteAccess } from '../security/system'
 
 export * from './bucket'
 export * from './packages-media'
 export * from './rundown'
 
-export const Blueprints = createAsyncOnlyMongoCollection<Blueprint>(CollectionName.Blueprints)
+export const Blueprints = createAsyncOnlyMongoCollection<Blueprint>(CollectionName.Blueprints, {
+	update(_userId, doc, fields, _modifier) {
+		return allowOnlyFields(doc, fields, ['name', 'disableVersionChecks'])
+	},
+})
 registerIndex(Blueprints, {
 	organizationId: 1,
 })
 
-export const CoreSystem = createAsyncOnlyMongoCollection<ICoreSystem>(CollectionName.CoreSystem)
+export const CoreSystem = createAsyncOnlyMongoCollection<ICoreSystem>(CollectionName.CoreSystem, {
+	async update(userId, doc, fields, _modifier) {
+		const cred = await resolveCredentials({ userId: userId })
+		const access = await allowAccessToCoreSystem(cred)
+		if (!access.update) return logNotAllowed('CoreSystem', access.reason)
+		return allowOnlyFields(doc, fields, ['support', 'systemInfo', 'name', 'logLevel', 'apm', 'cron'])
+	},
+})
 
-export const Evaluations = createAsyncOnlyMongoCollection<Evaluation>(CollectionName.Evaluations)
+export const Evaluations = createAsyncOnlyMongoCollection<Evaluation>(CollectionName.Evaluations, false)
 registerIndex(Evaluations, {
 	organizationId: 1,
 	timestamp: 1,
 })
 
 export const ExternalMessageQueue = createAsyncOnlyMongoCollection<ExternalMessageQueueObj>(
-	CollectionName.ExternalMessageQueue
+	CollectionName.ExternalMessageQueue,
+	false
 )
 registerIndex(ExternalMessageQueue, {
 	studioId: 1,
@@ -69,16 +90,42 @@ registerIndex(ExternalMessageQueue, {
 	rundownId: 1,
 })
 
-export const Organizations = createAsyncOnlyMongoCollection<DBOrganization>(CollectionName.Organizations)
+export const Organizations = createAsyncOnlyMongoCollection<DBOrganization>(CollectionName.Organizations, {
+	async update(userId, doc, fields, _modifier) {
+		const access = await allowAccessToOrganization({ userId: userId }, doc._id)
+		if (!access.update) return logNotAllowed('Organization', access.reason)
+		return allowOnlyFields(doc, fields, ['userRoles'])
+	},
+})
 
 export const PeripheralDeviceCommands = createAsyncOnlyMongoCollection<PeripheralDeviceCommand>(
-	CollectionName.PeripheralDeviceCommands
+	CollectionName.PeripheralDeviceCommands,
+	false
 )
 registerIndex(PeripheralDeviceCommands, {
 	deviceId: 1,
 })
 
-export const PeripheralDevices = createAsyncOnlyMongoCollection<PeripheralDevice>(CollectionName.PeripheralDevices)
+export const PeripheralDevices = createAsyncOnlyMongoCollection<PeripheralDevice>(CollectionName.PeripheralDevices, {
+	insert(_userId, _doc: PeripheralDevice): boolean {
+		return true
+	},
+	update(_userId, doc, fields, _modifier) {
+		return rejectFields(doc, fields, [
+			'type',
+			'parentDeviceId',
+			'versions',
+			'created',
+			'status',
+			'lastSeen',
+			'lastConnected',
+			'connected',
+			'connectionId',
+			'token',
+			// 'settings' is allowed
+		])
+	},
+})
 registerIndex(PeripheralDevices, {
 	organizationId: 1,
 	studioId: 1,
@@ -90,7 +137,13 @@ registerIndex(PeripheralDevices, {
 	token: 1,
 })
 
-export const RundownLayouts = createAsyncOnlyMongoCollection<RundownLayoutBase>(CollectionName.RundownLayouts)
+export const RundownLayouts = createAsyncOnlyMongoCollection<RundownLayoutBase>(CollectionName.RundownLayouts, {
+	async update(userId, doc, fields) {
+		const access = await allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
+		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
+		return rejectFields(doc, fields, ['_id', 'showStyleBaseId'])
+	},
+})
 // addIndex(RundownLayouts, {
 // 	studioId: 1,
 // 	collectionId: 1,
@@ -101,18 +154,35 @@ registerIndex(RundownLayouts, {
 	showStyleBaseId: 1,
 })
 
-export const ShowStyleBases = createAsyncOnlyMongoCollection<ShowStyleBase>(CollectionName.ShowStyleBases)
+export const ShowStyleBases = createAsyncOnlyMongoCollection<ShowStyleBase>(CollectionName.ShowStyleBases, {
+	async update(userId, doc, fields) {
+		const access = await allowAccessToShowStyleBase({ userId: userId }, doc._id)
+		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
+		return rejectFields(doc, fields, ['_id'])
+	},
+})
 registerIndex(ShowStyleBases, {
 	organizationId: 1,
 })
 
-export const ShowStyleVariants = createAsyncOnlyMongoCollection<ShowStyleVariant>(CollectionName.ShowStyleVariants)
+export const ShowStyleVariants = createAsyncOnlyMongoCollection<ShowStyleVariant>(CollectionName.ShowStyleVariants, {
+	async update(userId, doc, fields) {
+		const access = await allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
+		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
+
+		return rejectFields(doc, fields, ['showStyleBaseId'])
+	},
+})
 registerIndex(ShowStyleVariants, {
 	showStyleBaseId: 1,
 	_rank: 1,
 })
 
-export const Snapshots = createAsyncOnlyMongoCollection<SnapshotItem>(CollectionName.Snapshots)
+export const Snapshots = createAsyncOnlyMongoCollection<SnapshotItem>(CollectionName.Snapshots, {
+	update(_userId, doc, fields, _modifier) {
+		return allowOnlyFields(doc, fields, ['comment'])
+	},
+})
 registerIndex(Snapshots, {
 	organizationId: 1,
 })
@@ -120,7 +190,23 @@ registerIndex(Snapshots, {
 	created: 1,
 })
 
-export const Studios = createAsyncOnlyMongoCollection<Studio>(CollectionName.Studios)
+export const Studios = createAsyncOnlyMongoCollection<Studio>(CollectionName.Studios, {
+	async insert(userId, doc: Studio) {
+		const access = await allowAccessToStudio({ userId: userId }, doc._id)
+		if (!access.insert) return logNotAllowed('Studio', access.reason)
+		return true
+	},
+	async update(userId, doc, fields, _modifier) {
+		const access = await allowAccessToStudio({ userId: userId }, doc._id)
+		if (!access.update) return logNotAllowed('Studio', access.reason)
+		return rejectFields(doc, fields, ['_id'])
+	},
+	async remove(userId, doc) {
+		const access = await allowAccessToStudio({ userId: userId }, doc._id)
+		if (!access.remove) return logNotAllowed('Studio', access.reason)
+		return true
+	},
+})
 registerIndex(Studios, {
 	organizationId: 1,
 })
@@ -139,15 +225,30 @@ registerIndex(TimelineDatastore, {
 })
 
 export const TranslationsBundles = createAsyncOnlyMongoCollection<TranslationsBundle>(
-	CollectionName.TranslationsBundles
+	CollectionName.TranslationsBundles,
+	false
 )
 
-export const TriggeredActions = createAsyncOnlyMongoCollection<DBTriggeredActions>(CollectionName.TriggeredActions)
+export const TriggeredActions = createAsyncOnlyMongoCollection<DBTriggeredActions>(CollectionName.TriggeredActions, {
+	async update(userId, doc, fields) {
+		const cred = await resolveCredentials({ userId: userId })
+
+		if (doc.showStyleBaseId) {
+			const access = await allowAccessToShowStyleBase(cred, doc.showStyleBaseId)
+			if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
+			return rejectFields(doc, fields, ['_id'])
+		} else {
+			const access = await allowAccessToCoreSystem(cred)
+			if (!access.update) return logNotAllowed('CoreSystem', access.reason)
+			return rejectFields(doc, fields, ['_id'])
+		}
+	},
+})
 registerIndex(TriggeredActions, {
 	showStyleBaseId: 1,
 })
 
-export const UserActionsLog = createAsyncOnlyMongoCollection<UserActionsLogItem>(CollectionName.UserActionsLog)
+export const UserActionsLog = createAsyncOnlyMongoCollection<UserActionsLogItem>(CollectionName.UserActionsLog, false)
 registerIndex(UserActionsLog, {
 	organizationId: 1,
 	timestamp: 1,
@@ -157,14 +258,31 @@ registerIndex(UserActionsLog, {
 })
 
 // This is a somewhat special collection, as it draws from the Meteor.users collection from the Accounts package
-export const Users = wrapMongoCollection<DBUser>(Meteor.users as any, CollectionName.Users)
+export const Users = wrapMongoCollection<DBUser>(Meteor.users as any, CollectionName.Users, {
+	async update(userId, doc, fields, _modifier) {
+		const access = await SystemWriteAccess.currentUser(userId, { userId })
+		if (!access) return logNotAllowed('CurrentUser', '')
+		return rejectFields(doc, fields, [
+			'_id',
+			'createdAt',
+			'services',
+			'emails',
+			'profile',
+			'organizationId',
+			'superAdmin',
+		])
+	},
+})
 registerIndex(Users, {
 	organizationId: 1,
 })
 
-export const Workers = createAsyncOnlyMongoCollection<WorkerStatus>(CollectionName.Workers)
+export const Workers = createAsyncOnlyMongoCollection<WorkerStatus>(CollectionName.Workers, false)
 
-export const WorkerThreadStatuses = createAsyncOnlyMongoCollection<WorkerThreadStatus>(CollectionName.WorkerThreads)
+export const WorkerThreadStatuses = createAsyncOnlyMongoCollection<WorkerThreadStatus>(
+	CollectionName.WorkerThreads,
+	false
+)
 
 // Monitor and remove old, lingering commands:
 const removeOldCommands = () => {

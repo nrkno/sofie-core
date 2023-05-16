@@ -5,19 +5,22 @@ import { Bucket } from '../../lib/collections/Buckets'
 import { createAsyncOnlyMongoCollection } from './collection'
 import { registerIndex } from './indices'
 
-export const BucketAdLibActions = createAsyncOnlyMongoCollection<BucketAdLibAction>(CollectionName.BucketAdLibActions)
+export const BucketAdLibActions = createAsyncOnlyMongoCollection<BucketAdLibAction>(
+	CollectionName.BucketAdLibActions,
+	false
+)
 registerIndex(BucketAdLibActions, {
 	bucketId: 1,
 	studioId: 1,
 })
 
-export const BucketAdLibs = createAsyncOnlyMongoCollection<BucketAdLib>(CollectionName.BucketAdLibPieces)
+export const BucketAdLibs = createAsyncOnlyMongoCollection<BucketAdLib>(CollectionName.BucketAdLibPieces, false)
 registerIndex(BucketAdLibs, {
 	bucketId: 1,
 	studioId: 1,
 })
 
-export const Buckets = createAsyncOnlyMongoCollection<Bucket>(CollectionName.Buckets)
+export const Buckets = createAsyncOnlyMongoCollection<Bucket>(CollectionName.Buckets, false)
 registerIndex(Buckets, {
 	studioId: 1,
 })

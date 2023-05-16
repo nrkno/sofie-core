@@ -1,5 +1,5 @@
 import { MongoModifier, MongoQuery } from '../../../lib/typings/meteor'
-import { ProtectedString, protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import {
@@ -10,7 +10,7 @@ import {
 	ObserveChangesCallbacks,
 	ObserveCallbacks,
 } from '../../../lib/collections/lib'
-import { PromisifyCallbacks, waitForPromise } from '../../../lib/lib'
+import { PromisifyCallbacks } from '../../../lib/lib'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import _ from 'underscore'
 import { AsyncOnlyMongoCollection } from '../collection'
@@ -35,33 +35,6 @@ export class WrappedMockCollection<DBInterface extends { _id: ProtectedString<an
 
 	get mutableCollection(): AsyncOnlyMongoCollection<DBInterface> {
 		return this
-	}
-
-	allow(args: Parameters<AsyncOnlyMongoCollection<DBInterface>['allow']>[0]): boolean {
-		const { insert: origInsert, update: origUpdate, remove: origRemove } = args
-		const options: Parameters<Mongo.Collection<DBInterface>['allow']>[0] = {
-			insert: origInsert ? (userId, doc) => waitForPromise(origInsert(protectString(userId), doc)) : undefined,
-			update: origUpdate
-				? (userId, doc, fieldNames, modifier) =>
-						waitForPromise(origUpdate(protectString(userId), doc, fieldNames as any, modifier))
-				: undefined,
-			remove: origRemove ? (userId, doc) => waitForPromise(origRemove(protectString(userId), doc)) : undefined,
-			fetch: args.fetch,
-		}
-		return this._collection.allow(options)
-	}
-	deny(args: Parameters<AsyncOnlyMongoCollection<DBInterface>['deny']>[0]): boolean {
-		const { insert: origInsert, update: origUpdate, remove: origRemove } = args
-		const options: Parameters<Mongo.Collection<DBInterface>['deny']>[0] = {
-			insert: origInsert ? (userId, doc) => waitForPromise(origInsert(protectString(userId), doc)) : undefined,
-			update: origUpdate
-				? (userId, doc, fieldNames, modifier) =>
-						waitForPromise(origUpdate(protectString(userId), doc, fieldNames as any, modifier))
-				: undefined,
-			remove: origRemove ? (userId, doc) => waitForPromise(origRemove(protectString(userId), doc)) : undefined,
-			fetch: args.fetch,
-		}
-		return this._collection.deny(options)
 	}
 
 	async findFetchAsync(

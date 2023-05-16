@@ -27,6 +27,7 @@ export const Organizations = createSyncMongoCollection<DBOrganization>(Collectio
 
 export const PeripheralDeviceCommands = createSyncMongoCollection<PeripheralDeviceCommand>(
 	CollectionName.PeripheralDeviceCommands
+	// TODO - this should be readonly
 )
 
 export const PieceInstances = createSyncReadOnlyMongoCollection<PieceInstance>(CollectionName.PieceInstances)
