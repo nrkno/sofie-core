@@ -72,12 +72,9 @@ extensions, which should help you create PRs consistent with project's code stan
 
 The "Attach" config in `launch.json` supports debugging the blueprints.
 
-Local blueprints repo needs to be added to the Visual Studio Code workspace
-under the name "Blueprints".
+Local blueprints repo needs to be added to the Visual Studio Code workspace under the name "Blueprints".
 
-It is required to set
-`devtool` to  `'inline-source-map'` and
-`output.devtoolModuleFilenameTemplate` `'blueprint:///[resource-path]'` in webpack config of the blueprints.
+It is required to set `devtool` to  `'inline-source-map'` and `output.devtoolModuleFilenameTemplate` to `'blueprint:///[resource-path]'` in webpack config of the blueprints.
 
 ### Dealing with strange errors
 
