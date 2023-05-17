@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
-import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { MongoQueryKey } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials } from './lib/credentials'
@@ -14,6 +13,7 @@ import { Settings } from '../../lib/Settings'
 import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices, Segments } from '../collections'
 import { getStudioIdFromDevice } from '../api/studio/lib'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 export namespace RundownReadAccess {
 	/** Check for read access to the rundown collection */
@@ -66,7 +66,7 @@ export namespace RundownReadAccess {
 	}
 	/** Check for read access for exoected media items in a rundown */
 	export async function expectedMediaItems(
-		selector: Mongo.Query<ExpectedMediaItem> | any,
+		selector: MongoQuery<ExpectedMediaItem> | any,
 		cred: Credentials
 	): Promise<PeripheralDevice | null | boolean> {
 		check(selector, Object)
@@ -100,7 +100,7 @@ export namespace RundownReadAccess {
 
 	/** Check for read access to expectedPlayoutItems */
 	export async function expectedPlayoutItems(
-		selector: Mongo.Query<ExpectedPlayoutItem> | any,
+		selector: MongoQuery<ExpectedPlayoutItem> | any,
 		cred: Credentials
 	): Promise<PeripheralDevice | null | boolean> {
 		check(selector, Object)

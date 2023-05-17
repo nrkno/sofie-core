@@ -3,6 +3,7 @@ import { MongoModifier, MongoQuery } from '../../lib/typings/meteor'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
+import { NpmModuleMongodb } from 'meteor/npm-mongo'
 import {
 	UpdateOptions,
 	UpsertOptions,
@@ -15,13 +16,13 @@ import {
 	ObserveChangesCallbacks,
 	ObserveCallbacks,
 } from '../../lib/collections/lib'
-import type { AnyBulkWriteOperation, Collection as RawCollection, CreateIndexesOptions } from 'mongodb'
+import { PromisifyCallbacks, protectString, waitForPromise } from '../../lib/lib'
+import type { AnyBulkWriteOperation, Collection as RawCollection } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { registerCollection } from './lib'
 import { WrappedMockCollection } from './implementations/mock'
 import { WrappedAsyncMongoCollection } from './implementations/asyncCollection'
 import { WrappedReadOnlyMongoCollection } from './implementations/readonlyWrapper'
-import { PromisifyCallbacks, protectString, waitForPromise } from '../../lib/lib'
 
 export interface MongoAllowRules<DBInterface> {
 	insert?: (userId: UserId, doc: DBInterface) => Promise<boolean> | boolean
@@ -274,5 +275,5 @@ export interface AsyncOnlyReadOnlyMongoCollection<DBInterface extends { _id: Pro
 	 */
 	countDocuments(selector?: MongoQuery<DBInterface>, options?: FindOptions<DBInterface>): Promise<number>
 
-	_ensureIndex(keys: IndexSpecifier<DBInterface> | string, options?: CreateIndexesOptions): void
+	_ensureIndex(keys: IndexSpecifier<DBInterface> | string, options?: NpmModuleMongodb.CreateIndexesOptions): void
 }

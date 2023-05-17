@@ -1,6 +1,6 @@
-import { Mongo } from 'meteor/mongo'
+// import { Mongo } from 'meteor/mongo'
 
-import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+// import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 // Note: This file is temporary, we should replace these types with ones which are stronger, or move them to a better home if they are good
 

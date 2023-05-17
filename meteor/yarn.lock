@@ -2789,15 +2789,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/jquery@npm:*":
-  version: 3.5.16
-  resolution: "@types/jquery@npm:3.5.16"
-  dependencies:
-    "@types/sizzle": "*"
-  checksum: 13c995f15d1c2f1d322103dc1cb0a22b95eecc3e7546f00279b8731aea21d7ec04550af40e609ee48e755d4e11bf61c25b4aa9f53df3bcbec4b8fe8e81471732
-  languageName: node
-  linkType: hard
-
 "@types/jsdom@npm:^20.0.0":
   version: 20.0.1
   resolution: "@types/jsdom@npm:20.0.1"
@@ -2875,20 +2866,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/meteor@npm:^2.9.2":
-  version: 2.9.2
-  resolution: "@types/meteor@npm:2.9.2"
-  dependencies:
-    "@types/connect": "*"
-    "@types/jquery": "*"
-    "@types/nodemailer": "*"
-    "@types/react": "*"
-    "@types/underscore": "*"
-    mongodb: ^4.3.1
-  checksum: 6395578e5d5f139aad8dfd0f70cb489dd70984b78ed2ab791bfabc59c70f94196cdb3cfc40659da0498ae1962f135782067579e5c320341c9a1a331553329f56
-  languageName: node
-  linkType: hard
-
 "@types/mime@npm:*":
   version: 3.0.1
   resolution: "@types/mime@npm:3.0.1"
@@ -2921,15 +2898,6 @@ __metadata:
   version: 14.18.53
   resolution: "@types/node@npm:14.18.53"
   checksum: 3acbcf4e38cdc5999c824db5c6689ca8f4a185562aad5c0263d9859381d8590a16e6a72343aeb30d48ff9a7ac9b6ae259bcb8c2d594703a30d12277904524704
-  languageName: node
-  linkType: hard
-
-"@types/nodemailer@npm:*":
-  version: 6.4.7
-  resolution: "@types/nodemailer@npm:6.4.7"
-  dependencies:
-    "@types/node": "*"
-  checksum: dc2a33a89135e04a5bea4921e8645e8453b90e3c3b05f0646f05071c5951ab697ea49ea1e503a690f04cb0a6abfc54967325c5a4036356793cfbb64ba64fb141
   languageName: node
   linkType: hard
 
@@ -3106,13 +3074,6 @@ __metadata:
   version: 8.1.2
   resolution: "@types/sinonjs__fake-timers@npm:8.1.2"
   checksum: bbc73a5ab6c0ec974929392f3d6e1e8db4ebad97ec506d785301e1c3d8a4f98a35b1aa95b97035daef02886fd8efd7788a2fa3ced2ec7105988bfd8dce61eedd
-  languageName: node
-  linkType: hard
-
-"@types/sizzle@npm:*":
-  version: 2.3.3
-  resolution: "@types/sizzle@npm:2.3.3"
-  checksum: 586a9fb1f6ff3e325e0f2cc1596a460615f0bc8a28f6e276ac9b509401039dd242fa8b34496d3a30c52f5b495873922d09a9e76c50c2ab2bcc70ba3fb9c4e160
   languageName: node
   linkType: hard
 

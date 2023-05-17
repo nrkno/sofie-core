@@ -9,7 +9,7 @@ import {
 import { RundownUtils } from '../rundown'
 import { Piece } from '../../../lib/collections/Pieces'
 import { defaultPartInstance, defaultPiece, defaultPieceInstance } from '../../../__mocks__/defaultCollectionObjects'
-import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -245,7 +245,7 @@ describe('client/lib/rundown', () => {
 				const outputLayerIds = Object.keys(showStyleBase.outputLayers)
 
 				const playlistActivationId = protectString('mock_activation_0')
-				mockRundownPlaylistsCollection.update(playlistId, {
+				mockRundownPlaylistsCollection.update(unprotectString(playlistId), {
 					$set: {
 						activationId: playlistActivationId,
 					},
@@ -339,7 +339,7 @@ describe('client/lib/rundown', () => {
 
 				mockPieceInstancesCollection.insert(followingPieceInstance)
 
-				mockRundownPlaylistsCollection.update(playlistId, {
+				mockRundownPlaylistsCollection.update(unprotectString(playlistId), {
 					$set: {
 						currentPartInfo: {
 							partInstanceId: mockCurrentPartInstance._id,
