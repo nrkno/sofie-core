@@ -40,7 +40,7 @@ function getAllClassMethods(myClass: any): string[] {
 
 /** This expects an array of values (likely the output of Parameters<T>), and makes anything optional be nullable instead */
 export type ReplaceOptionalWithNullInArray<T extends any[]> = {
-	[K in keyof T]: undefined extends T[K] ? NonNullable<T[K]> | null : T[K]
+	[K in keyof T]-?: undefined extends T[K] ? NonNullable<T[K]> | null : T[K]
 }
 
 /**

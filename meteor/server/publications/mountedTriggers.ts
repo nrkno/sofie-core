@@ -16,7 +16,7 @@ const PUBLICATION_DEBOUNCE = 20
 meteorCustomPublish(
 	PubSub.mountedTriggersForDevice,
 	CustomCollectionName.MountedTriggers,
-	async function (pub, deviceId: PeripheralDeviceId, deviceIds: string[], token) {
+	async function (pub, deviceId: PeripheralDeviceId, deviceIds: string[], token: string | undefined) {
 		check(deviceId, String)
 		check(deviceIds, [String])
 
@@ -46,7 +46,7 @@ meteorCustomPublish(
 meteorCustomPublish(
 	PubSub.mountedTriggersForDevicePreview,
 	CustomCollectionName.MountedTriggersPreviews,
-	async function (pub, deviceId: PeripheralDeviceId, token) {
+	async function (pub, deviceId: PeripheralDeviceId, token: string | undefined) {
 		check(deviceId, String)
 
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
