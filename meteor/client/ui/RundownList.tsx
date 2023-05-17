@@ -1,7 +1,5 @@
 import Tooltip from 'rc-tooltip'
 import * as React from 'react'
-import { DropTargetMonitor, useDrop } from 'react-dnd'
-import { MeteorCall } from '../../lib/api/methods'
 import { PubSub } from '../../lib/api/pubsub'
 import { GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
@@ -10,23 +8,15 @@ import { getAllowConfigure, getHelpMode } from '../lib/localStorage'
 import { extendMandadory, unprotectString } from '../../lib/lib'
 import { useSubscription, useTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../lib/Spinner'
-import {
-	IRundownDragObject,
-	IRundownPlaylistUiAction,
-	isRundownDragObject,
-	RundownListDragDropTypes,
-} from './RundownList/DragAndDropTypes'
 import { GettingStarted } from './RundownList/GettingStarted'
 import { RegisterHelp } from './RundownList/RegisterHelp'
 import { RundownDropZone } from './RundownList/RundownDropZone'
 import { RundownListFooter } from './RundownList/RundownListFooter'
 import RundownPlaylistDragLayer from './RundownList/RundownPlaylistDragLayer'
 import { RundownPlaylistUi } from './RundownList/RundownPlaylistUi'
-import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { UIStudios } from './Collections'
-import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	getCoreSystem,
 	RundownLayouts,
@@ -36,7 +26,7 @@ import {
 	ShowStyleVariants,
 } from '../collections'
 import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
@@ -45,10 +35,6 @@ export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
 	TOOLTIP_RUN_MIGRATIONS = 'TOOLTIP_RUN_MIGRATIONS',
 	TOOLTIP_EXTRAS = 'TOOLTIP_EXTRAS',
-}
-
-interface IRundownsListDropTargetProps {
-	activateDropZone: boolean
 }
 
 export function RundownList(): JSX.Element {
@@ -179,45 +165,6 @@ export function RundownList(): JSX.Element {
 
 	const showGettingStarted = coreSystem?.version === GENESIS_SYSTEM_VERSION && rundownPlaylists.length === 0
 
-	const [dropCollected, dropRef] = useDrop<IRundownDragObject, IRundownPlaylistUiAction, IRundownsListDropTargetProps>(
-		{
-			collect: (monitor: DropTargetMonitor): IRundownsListDropTargetProps => {
-				const activateDropZone = monitor.canDrop() && monitor.isOver()
-
-				return {
-					activateDropZone,
-				}
-			},
-			canDrop: (item) => {
-				/* We only accept rundowns from playlists with more than one rundown,
-				since there's no point in replacing a single rundown playlist with a new
-				single rundown playlist
-				*/
-				if (isRundownDragObject(item)) {
-					const { id } = item
-					const playlist = rundownPlaylists.find(
-						(playlist) => playlist.rundowns.findIndex((rundown) => rundown._id === id) > -1
-					)
-					return playlist?.rundowns !== undefined && playlist.rundowns.length > 1
-				}
-
-				console.debug('RundownList Not accepting drop of ', item)
-				return false
-			},
-			accept: [RundownListDragDropTypes.RUNDOWN],
-		},
-		[rundownPlaylists]
-	)
-
-	const handleDropZoneDrop = useCallback(
-		(rundownId: RundownId) => {
-			doUserAction(t, 'drag&drop in dropzone', UserAction.RUNDOWN_ORDER_MOVE, (e, ts) =>
-				MeteorCall.userAction.moveRundown(e, ts, rundownId, null, [rundownId])
-			)
-		},
-		[t]
-	)
-
 	function renderRundownPlaylists() {
 		if (rundownPlaylists.length < 1) {
 			return <p>{t('There are no rundowns ingested into Sofie.')}</p>
@@ -238,7 +185,7 @@ export function RundownList(): JSX.Element {
 
 			{showGettingStarted === true ? <GettingStarted step={step} /> : null}
 
-			<section className="mtl gutter has-statusbar" ref={dropRef}>
+			<section className="mtl gutter has-statusbar">
 				<header className="mvs">
 					<h1>{t('Rundowns')}</h1>
 				</header>
@@ -273,7 +220,7 @@ export function RundownList(): JSX.Element {
 						</header>
 						{renderRundownPlaylists()}
 						<footer>
-							{<RundownDropZone activated={dropCollected.activateDropZone} rundownDropHandler={handleDropZoneDrop} />}
+							<RundownDropZone />
 						</footer>
 						<RundownPlaylistDragLayer />
 					</section>

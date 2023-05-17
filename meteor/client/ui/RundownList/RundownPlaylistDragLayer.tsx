@@ -7,32 +7,6 @@ import { getElementWidth } from '../../utils/dimensions'
 import { HTML_ID_PREFIX } from './RundownListItem'
 import { UIShowStyleBases } from '../Collections'
 
-const layerStyles: React.CSSProperties = {
-	position: 'fixed',
-	pointerEvents: 'none',
-	zIndex: 100,
-	left: 0,
-	top: 0,
-	width: '100%',
-	height: '100%',
-}
-
-function getItemStyles(currentOffset: XYCoord | null, draggedWidth: number | null) {
-	if (!currentOffset) {
-		return {
-			display: 'none',
-		}
-	}
-
-	const { x, y } = currentOffset
-	const transform = `translate3d(${x}px, ${y}px, 1px)`
-	return {
-		transform: transform,
-		WebkitTransform: transform,
-		width: draggedWidth ? `${draggedWidth}px` : undefined,
-	}
-}
-
 export default function RundownPlaylistDragLayer(props: { draggedClassNames?: string[] }): JSX.Element | null {
 	const { isDragging, item, itemType, currentOffset, draggedWidth } = useDragLayer(collect)
 
@@ -94,4 +68,30 @@ function collect(monitor: DragLayerMonitor) {
 		draggedWidth,
 		draggedClassNames,
 	}
+}
+
+function getItemStyles(currentOffset: XYCoord | null, draggedWidth: number | null) {
+	if (!currentOffset) {
+		return {
+			display: 'none',
+		}
+	}
+
+	const { x, y } = currentOffset
+	const transform = `translate3d(${x}px, ${y}px, 1px)`
+	return {
+		transform: transform,
+		WebkitTransform: transform,
+		width: draggedWidth ? `${draggedWidth}px` : undefined,
+	}
+}
+
+const layerStyles: React.CSSProperties = {
+	position: 'fixed',
+	pointerEvents: 'none',
+	zIndex: 100,
+	left: 0,
+	top: 0,
+	width: '100%',
+	height: '100%',
 }
