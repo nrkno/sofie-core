@@ -48,23 +48,31 @@ import { MongoTransaction } from './transaction'
 export type MongoQuery<TDoc> = Filter<TDoc>
 export type MongoModifier<TDoc> = UpdateFilter<TDoc>
 
-export interface ICollection<TDoc extends { _id: ProtectedString<any> }> {
+export interface IReadOnlyCollection<TDoc extends { _id: ProtectedString<any> }> {
 	readonly name: string
 
 	readonly rawCollection: MongoCollection<TDoc>
 
-	// TODO - should the find operations require a transaction?
-
 	findFetch(
 		selector?: MongoQuery<TDoc>,
 		options?: FindOptions<TDoc>,
-		transaction?: IMongoTransaction
+		transaction?: IMongoTransaction | null
 	): Promise<Array<TDoc>>
 	findOne(
 		selector?: MongoQuery<TDoc> | TDoc['_id'],
 		options?: FindOptions<TDoc>,
-		transaction?: IMongoTransaction
+		transaction?: IMongoTransaction | null
 	): Promise<TDoc | undefined>
+
+	/**
+	 * Watch the collection for changes
+	 * This will throw when done in the context of a workqueue job
+	 * Note: This is an artificial limitation that could be changed with some thought on how to make sure it doesnt block for too long or leak
+	 */
+	watch(pipeline: any[]): IChangeStream<TDoc>
+}
+
+export interface ICollection<TDoc extends { _id: ProtectedString<any> }> extends IReadOnlyCollection<TDoc> {
 	insertOne(doc: TDoc | ReadonlyDeep<TDoc>, transaction: IMongoTransaction | null): Promise<TDoc['_id']>
 	// insertMany(docs: Array<TDoc | ReadonlyDeep<TDoc>>): Promise<Array<TDoc['_id']>>
 	remove(selector: MongoQuery<TDoc> | TDoc['_id'], transaction: IMongoTransaction | null): Promise<number>
@@ -78,13 +86,6 @@ export interface ICollection<TDoc extends { _id: ProtectedString<any> }> {
 	replace(doc: TDoc | ReadonlyDeep<TDoc>, transaction: IMongoTransaction | null): Promise<boolean>
 
 	bulkWrite(ops: Array<AnyBulkWriteOperation<TDoc>>, transaction: IMongoTransaction | null): Promise<unknown>
-
-	/**
-	 * Watch the collection for changes
-	 * This will throw when done in the context of a workqueue job
-	 * Note: This is an artificial limitation that could be changed with some thought on how to make sure it doesnt block for too long or leak
-	 */
-	watch(pipeline: any[]): IChangeStream<TDoc>
 }
 
 export type IChangeStreamEvents<TDoc extends { _id: ProtectedString<any> }> = {
@@ -113,7 +114,7 @@ export interface IDirectCollections {
 	IngestDataCache: ICollection<IngestDataCacheObj>
 	Parts: ICollection<DBPart>
 	PartInstances: ICollection<DBPartInstance>
-	PeripheralDevices: ICollection<PeripheralDevice>
+	PeripheralDevices: IReadOnlyCollection<PeripheralDevice>
 	PeripheralDeviceCommands: ICollection<PeripheralDeviceCommand>
 	Pieces: ICollection<Piece>
 	PieceInstances: ICollection<PieceInstance>
@@ -123,14 +124,14 @@ export interface IDirectCollections {
 	RundownBaselineObjects: ICollection<RundownBaselineObj>
 	RundownPlaylists: ICollection<DBRundownPlaylist>
 	Segments: ICollection<DBSegment>
-	ShowStyleBases: ICollection<DBShowStyleBase>
-	ShowStyleVariants: ICollection<DBShowStyleVariant>
+	ShowStyleBases: IReadOnlyCollection<DBShowStyleBase>
+	ShowStyleVariants: IReadOnlyCollection<DBShowStyleVariant>
 	Studios: ICollection<DBStudio>
 	Timelines: ICollection<TimelineComplete>
 	TimelineDatastores: ICollection<DBTimelineDatastoreEntry>
 
 	ExpectedPackages: ICollection<ExpectedPackageDB>
-	PackageInfos: ICollection<PackageInfoDB>
+	PackageInfos: IReadOnlyCollection<PackageInfoDB>
 
 	ExternalMessageQueue: ICollection<ExternalMessageQueueObj>
 

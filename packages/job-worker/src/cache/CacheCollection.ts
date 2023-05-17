@@ -1,4 +1,4 @@
-import { ICollection, IMongoTransaction, MongoQuery } from '../db'
+import { ICollection, IMongoTransaction, IReadOnlyCollection, MongoQuery } from '../db'
 import { ReadonlyDeep } from 'type-fest'
 import { isProtectedString, ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import _ = require('underscore')
@@ -26,7 +26,10 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
 	protected isToBeRemoved = false
 
-	protected constructor(protected readonly context: JobContext, protected readonly _collection: ICollection<TDoc>) {}
+	protected constructor(
+		protected readonly context: JobContext,
+		protected readonly _collection: IReadOnlyCollection<TDoc>
+	) {}
 
 	/**
 	 * Create a DbCacheReadCollection for existing documents
@@ -37,7 +40,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 	 */
 	public static createFromArray<TDoc extends { _id: ProtectedString<any> }>(
 		context: JobContext,
-		collection: ICollection<TDoc>,
+		collection: IReadOnlyCollection<TDoc>,
 		docs: TDoc[] | ReadonlyDeep<Array<TDoc>>
 	): DbCacheReadCollection<TDoc> {
 		const col = new DbCacheReadCollection(context, collection)
@@ -55,7 +58,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 	 */
 	public static async createFromDatabase<TDoc extends { _id: ProtectedString<any> }>(
 		context: JobContext,
-		collection: ICollection<TDoc>,
+		collection: IReadOnlyCollection<TDoc>,
 		selector: MongoQuery<TDoc>
 	): Promise<DbCacheReadCollection<TDoc>> {
 		const span = context.startSpan('DbCacheReadCollection.createFromDatabase')
@@ -170,6 +173,10 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 }
 /** Caches data, allowing writes that will later be committed to mongo */
 export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> extends DbCacheReadCollection<TDoc> {
+	protected constructor(context: JobContext, protected readonly _collection: ICollection<TDoc>) {
+		super(context, _collection)
+	}
+
 	protected assertNotToBeRemoved(methodName: string): void {
 		if (this.isToBeRemoved) {
 			const msg = `DbCacheWriteCollection: got call to "${methodName} when cache has been flagged for removal"`

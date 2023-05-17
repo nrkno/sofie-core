@@ -1,7 +1,7 @@
 import { clone, deleteAllUndefinedProperties, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
-import { ICollection, IMongoTransaction } from '../db'
+import { ICollection, IMongoTransaction, IReadOnlyCollection } from '../db'
 import { logger } from '../logging'
 import { Changes } from '../db/changes'
 import { IS_PRODUCTION } from '../environment'
@@ -27,7 +27,7 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 
 	protected constructor(
 		protected readonly context: JobContext,
-		protected readonly _collection: ICollection<TDoc>,
+		protected readonly _collection: IReadOnlyCollection<TDoc>,
 		// @ts-expect-error used for typings
 		private readonly _optional: DocOptional,
 		doc: DocOptional extends true ? ReadonlyDeep<TDoc> | undefined : ReadonlyDeep<TDoc>
@@ -53,7 +53,7 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 	 */
 	public static createFromDoc<TDoc extends { _id: ProtectedString<any> }, DocOptional extends boolean = false>(
 		context: JobContext,
-		collection: ICollection<TDoc>,
+		collection: IReadOnlyCollection<TDoc>,
 		optional: DocOptional,
 		doc: DocOptional extends true ? ReadonlyDeep<TDoc> | undefined : ReadonlyDeep<TDoc>
 	): DbCacheReadObject<TDoc, DocOptional> {
@@ -74,7 +74,7 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 		DocOptional extends boolean = false
 	>(
 		context: JobContext,
-		collection: ICollection<TDoc>,
+		collection: IReadOnlyCollection<TDoc>,
 		optional: DocOptional,
 		id: TDoc['_id']
 	): Promise<DbCacheReadObject<TDoc, DocOptional>> {
@@ -123,11 +123,11 @@ export class DbCacheWriteObject<
 
 	protected constructor(
 		context: JobContext,
-		collection: ICollection<TDoc>,
+		protected readonly _collection: ICollection<TDoc>,
 		optional: DocOptional,
 		doc: DocOptional extends true ? ReadonlyDeep<TDoc> | undefined : ReadonlyDeep<TDoc>
 	) {
-		super(context, collection, optional, doc)
+		super(context, _collection, optional, doc)
 	}
 
 	/**
