@@ -11,7 +11,6 @@ export function pieceUiClassNames(
 	layerType?: SourceLayerType,
 	partId?: PartId,
 	highlight?: boolean,
-	relative?: boolean,
 	elementWidth?: number,
 	uiState?: {
 		leftAnchoredWidth: number
@@ -24,12 +23,10 @@ export function pieceUiClassNames(
 
 	return classNames(baseClassName, typeClass, {
 		'with-in-transition':
-			!relative &&
 			innerPiece.transitions &&
 			innerPiece.transitions.inTransition &&
 			(innerPiece.transitions.inTransition.duration || 0) > 0,
 		'with-out-transition':
-			!relative &&
 			innerPiece.transitions &&
 			innerPiece.transitions.outTransition &&
 			(innerPiece.transitions.outTransition.duration || 0) > 0,

@@ -2721,12 +2721,12 @@ svg.icon {
 
 	&.segment-timeline__mini-inspector--small-parts {
 		top: 0;
-		z-index: 1001;
+		bottom: 0;
 		width: 350px;
 		max-width: 30vw;
 		transform: translate(0, 0);
 		border-radius: 0;
-		margin-left: 0;
+		margin-left: -1px;
 		box-shadow: 1px -1.5px 30px 15px rgba(0, 0, 0, 0.9);
 		animation: 0.2s inspector-wipeRight;
 		animation-timing-function: ease-out;

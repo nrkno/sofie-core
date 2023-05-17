@@ -1,5 +1,5 @@
-import React, { useLayoutEffect, useState } from 'react'
-import { TFunction } from 'react-i18next'
+import React, { useState, useLayoutEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
@@ -11,7 +11,6 @@ import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 export const SegmentTimelinePartHoverPreview = ({
-	t,
 	showMiniInspector,
 	parts,
 	pieces,
@@ -24,11 +23,10 @@ export const SegmentTimelinePartHoverPreview = ({
 	liveLineHistorySize,
 	isLastSegment,
 	isLastInSegment,
-	totalSegmentDuration,
-	parentTimeScale,
+	totalSegmentDisplayDuration,
+	actualPartsDuration,
 	showDurationSourceLayers,
 }: {
-	t: TFunction
 	showMiniInspector: boolean
 	parts: PartUi[]
 	pieces: Map<PartId, CalculateTimingsPiece[]>
@@ -44,39 +42,35 @@ export const SegmentTimelinePartHoverPreview = ({
 	liveLineHistorySize: number
 	isLastSegment: boolean
 	isLastInSegment: boolean
-	totalSegmentDuration: number
+	totalSegmentDisplayDuration: number
+	actualPartsDuration: number
 	parentTimeScale: number
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 }): JSX.Element | null => {
-	const [miniInspectorEl, setMiniInnspectorEl] = useState<HTMLDivElement | null>(null)
-	const [containOffset, setContainOffset] = useState(0)
-	const followingPartPreviewDuration = 0.15 * totalSegmentDuration
+	const { t } = useTranslation()
+	const [inspectorRef, setInspectorRef] = useState<HTMLDivElement | null>(null)
+	const [timeToPixelRatio, setTimeToPixelRatio] = useState(1)
+	// const [containOffset, setContainOffset] = useState(0)
+	const followingPartPreviewDuration = 0.15 * totalSegmentDisplayDuration
 	const previewWindowDuration =
-		totalSegmentDuration + (followingPart || isLastInSegment ? followingPartPreviewDuration : 0)
+		totalSegmentDisplayDuration + (followingPart || isLastInSegment ? followingPartPreviewDuration : 0)
 
 	useLayoutEffect(() => {
-		if (miniInspectorEl) {
-			const inspectorRect = miniInspectorEl.getBoundingClientRect()
-			const timelineRect = miniInspectorEl.parentElement?.parentElement?.parentElement?.getBoundingClientRect()
-			if (timelineRect && timelineRect.right < inspectorRect.right) {
-				setContainOffset(inspectorRect.right - timelineRect.right - containOffset)
-			}
-		} else {
-			setContainOffset(0)
-		}
-	}, [miniInspectorEl, parentTimeScale, totalSegmentDuration])
+		if (inspectorRef === null) return
+
+		const { width } = inspectorRef.getBoundingClientRect()
+
+		setTimeToPixelRatio(width / previewWindowDuration)
+	}, [inspectorRef, previewWindowDuration])
 
 	return showMiniInspector ? (
 		<div
 			className="segment-timeline__mini-inspector segment-timeline__mini-inspector--small-parts"
-			style={{
-				left: `${totalSegmentDuration * parentTimeScale * -1 - containOffset}px`,
-			}}
-			ref={(el) => setMiniInnspectorEl(el)}
+			ref={setInspectorRef}
 		>
 			<div className="segment-timeline__mini-inspector--small-parts__duration">
 				<span className="segment-timeline__mini-inspector--small-parts__duration__label">{t('Parts Duration')}</span>
-				{RundownUtils.formatDiffToTimecode(totalSegmentDuration, false, false, true, false, true)}
+				{RundownUtils.formatDiffToTimecode(actualPartsDuration, false, false, true, false, true)}
 			</div>
 			<div className="segment-timeline__mini-inspector__mini-timeline">
 				{parts.map((part, index) => {
@@ -88,14 +82,13 @@ export const SegmentTimelinePartHoverPreview = ({
 							studio={studio}
 							collapsedOutputs={collapsedOutputs}
 							scrollLeft={0}
-							timeToPixelRatio={0}
+							timeToPixelRatio={timeToPixelRatio}
 							autoNextPart={autoNextPart}
 							followLiveLine={false}
 							liveLineHistorySize={liveLineHistorySize}
 							livePosition={0}
 							totalSegmentDuration={previewWindowDuration}
-							relative={true}
-							scrollWidth={1}
+							scrollWidth={Number.POSITIVE_INFINITY}
 							isLastSegment={isLastSegment}
 							isLastInSegment={isLastInSegment && !followingPart && parts.length - 1 === index}
 							isAfterLastValidInSegmentAndItsLive={false}
@@ -109,6 +102,7 @@ export const SegmentTimelinePartHoverPreview = ({
 							livePartStartsAt={undefined}
 							livePartDisplayDuration={undefined}
 							budgetDuration={undefined}
+							firstPartInSegment={parts[0]}
 						/>
 					)
 				})}
@@ -121,14 +115,13 @@ export const SegmentTimelinePartHoverPreview = ({
 						studio={studio}
 						collapsedOutputs={collapsedOutputs}
 						scrollLeft={0}
-						timeToPixelRatio={0}
+						timeToPixelRatio={timeToPixelRatio}
 						autoNextPart={autoNextPart}
 						followLiveLine={false}
 						liveLineHistorySize={liveLineHistorySize}
 						livePosition={0}
 						totalSegmentDuration={previewWindowDuration}
-						relative={true}
-						scrollWidth={1}
+						scrollWidth={Number.POSITIVE_INFINITY}
 						isLastSegment={isLastSegment}
 						isLastInSegment={false}
 						isAfterLastValidInSegmentAndItsLive={false}
@@ -143,6 +136,7 @@ export const SegmentTimelinePartHoverPreview = ({
 						livePartStartsAt={undefined}
 						livePartDisplayDuration={undefined}
 						budgetDuration={undefined}
+						firstPartInSegment={parts[0]}
 					/>
 				)}
 			</div>
