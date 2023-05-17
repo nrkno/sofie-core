@@ -36,15 +36,15 @@ export const InvalidFloatingInspector: React.FunctionComponent<IProps> = (props:
 	const { t } = useTranslation()
 	const ref = useRef<HTMLDivElement>(null)
 
+	const shown = props.showMiniInspector && props.itemElement !== undefined
+
+	const { style: floatingInspectorStyle } = useInspectorPosition(props.position, ref, shown)
+
 	if (!props.part.invalidReason) {
 		return null
 	}
 
 	const noteSeverity = props.part.invalidReason.severity || NoteSeverity.INFO
-
-	const shown = props.showMiniInspector && props.itemElement !== undefined
-
-	const { style: floatingInspectorStyle } = useInspectorPosition(props.position, ref, shown)
 
 	return (
 		<FloatingInspector shown={shown} displayOn="viewport">
