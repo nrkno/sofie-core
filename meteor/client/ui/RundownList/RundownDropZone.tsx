@@ -24,8 +24,6 @@ export function RundownDropZone(): JSX.Element {
 			const dropped = item
 			const rundownId = dropped?.id
 
-			console.debug('Drop on drop zone:', dropped)
-
 			if (rundownId) {
 				doUserAction(t, 'drag&drop in dropzone', UserAction.RUNDOWN_ORDER_MOVE, (e, ts) =>
 					MeteorCall.userAction.moveRundown(e, ts, rundownId, null, [rundownId])

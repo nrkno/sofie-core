@@ -1,49 +1,30 @@
-import React from 'react'
+import React, { useEffect } from 'react'
+import classNames from 'classnames'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { confirmDeleteRundown, confirmReSyncRundown, getShowStyleBaseLink } from './util'
-import { UIStateStorage } from '../../lib/UIStateStorage'
-import {
-	ConnectDragSource,
-	ConnectDropTarget,
-	DragElementWrapper,
-	DragPreviewOptions,
-	DragSource,
-	DragSourceCollector,
-	DragSourceConnector,
-	DragSourceMonitor,
-	DragSourceSpec,
-	DropTarget,
-	DropTargetCollector,
-	DropTargetConnector,
-	DropTargetMonitor,
-	DropTargetSpec,
-} from 'react-dnd'
-import {
-	IRundownDragObject,
-	IRundownPlaylistUiAction,
-	isRundownDragObject,
-	RundownListDragDropTypes,
-	RundownPlaylistUiActionTypes,
-} from './DragAndDropTypes'
+import { useDrag, useDrop } from 'react-dnd'
+import { IRundownDragObject, IRundownPlaylistUiAction, RundownListDragDropTypes } from './DragAndDropTypes'
 import { getEmptyImage } from 'react-dnd-html5-backend'
 import { unprotectString } from '../../../lib/lib'
 import RundownListItemView from './RundownListItemView'
-import { Settings } from '../../../lib/Settings'
-import { MeteorCall } from '../../../lib/api/methods'
-import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
-import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
-import { UIShowStyleBases, UIStudios } from '../Collections'
-import { UIShowStyleBase } from '../../../lib/api/showStyles'
-import { UIStudio } from '../../../lib/api/studios'
+import { UIShowStyleBases } from '../Collections'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ShowStyleVariants } from '../../collections'
+import { useTranslation } from 'react-i18next'
 
 export const HTML_ID_PREFIX = 'rundown-'
 
-export interface IRundownListItemProps {
+export function RundownListItem({
+	isActive,
+	rundown,
+	rundownViewUrl,
+	rundownLayouts,
+	swapRundownOrder,
+	isOnlyRundownInPlaylist,
+}: {
 	isActive: boolean
 	rundown: Rundown
 	rundownViewUrl?: string
@@ -52,236 +33,90 @@ export interface IRundownListItemProps {
 	playlistId: RundownPlaylistId
 	isOnlyRundownInPlaylist?: boolean
 	action?: IRundownPlaylistUiAction
-}
+}): JSX.Element | null {
+	const { t } = useTranslation()
 
-interface IRundownListItemTrackedProps {
-	studio: UIStudio | undefined
-	showStyleBase: UIShowStyleBase | undefined
-	showStyleVariant: ShowStyleVariant | undefined
-}
-
-interface IRundownDragSourceProps {
-	connectDragSource: ConnectDragSource
-	dragPreview: DragElementWrapper<DragPreviewOptions>
-	isDragging: boolean
-}
-
-const dragSpec: DragSourceSpec<IRundownListItemProps, IRundownDragObject> = {
-	beginDrag: (props: IRundownListItemProps, _monitor, _component: React.Component) => {
-		const id = props.rundown._id
-		return { id, rundownLayouts: props.rundownLayouts }
-	},
-	isDragging: (props, monitor) => {
-		return props.rundown._id === monitor.getItem().id
-	},
-}
-
-const dragCollector: DragSourceCollector<IRundownDragSourceProps, IRundownListItemProps> = function (
-	connect: DragSourceConnector,
-	monitor: DragSourceMonitor,
-	_props: IRundownListItemProps
-): IRundownDragSourceProps {
-	return {
-		connectDragSource: connect.dragSource(),
-		dragPreview: connect.dragPreview(),
-		isDragging: monitor.isDragging(),
-	}
-}
-
-interface IRundownDropTargetProps {
-	connectDropTarget: ConnectDropTarget
-}
-
-const dropSpec: DropTargetSpec<IRundownListItemProps> = {
-	canDrop: (props: IRundownListItemProps, monitor: DropTargetMonitor): boolean => {
-		/*
-		 * Dropping a rundown on a rundown will add that rundown to the rundown's
-		 * parent playlist. This is only allowed if enabled in settings.
-		 * In addition it also should not be handled if the rundown is part of a
-		 * playlist with multiple rundowns, because then the playlist component
-		 * will be the legal drop target and handle the drop itself.
-		 */
-		return (
-			Settings.allowMultiplePlaylistsInGUI === true &&
-			props.isOnlyRundownInPlaylist === true &&
-			props.playlistId !== undefined &&
-			monitor.getItemType() === RundownListDragDropTypes.RUNDOWN
-		)
-	},
-
-	drop(props: IRundownListItemProps, monitor: DropTargetMonitor) {
-		if (monitor.didDrop()) {
-			return
-		}
-
-		const dropped = monitor.getItem()
-
-		console.debug(`Drop on rundown ${props.rundown._id} (playlist ${props.playlistId}):`, dropped)
-
-		if (isRundownDragObject(dropped)) {
-			return {
-				type: 'HANDLE_RUNDOWN_DROP',
-				rundownId: dropped.id,
-				targetPlaylistId: props.playlistId,
-			}
-		}
-	},
-
-	hover(props: IRundownListItemProps, monitor: DropTargetMonitor) {
-		if (monitor.getItemType() === RundownListDragDropTypes.RUNDOWN) {
-			const item = monitor.getItem() as IRundownDragObject
-
-			// if that rundown is not this rundown
-			if (item && props.rundown._id !== item.id) {
-				props.swapRundownOrder(props.rundown._id, item.id)
-			}
-		}
-	},
-}
-
-const dropCollect: DropTargetCollector<IRundownDropTargetProps, IRundownListItemProps> = (
-	connect: DropTargetConnector,
-	_monitor: DropTargetMonitor,
-	_props: IRundownListItemProps
-) => {
-	return {
-		connectDropTarget: connect.dropTarget(),
-	}
-}
-
-export const RundownListItem = translateWithTracker<IRundownListItemProps, {}, IRundownListItemTrackedProps>(
-	(props: Translated<IRundownListItemProps>) => {
-		const studio = UIStudios.findOne(props.rundown.studioId)
-		const showStyle = UIShowStyleBases.findOne(props.rundown.showStyleBaseId)
-		const showStyleVariant = ShowStyleVariants.findOne(props.rundown.showStyleVariantId)
-
-		return {
-			studio,
-			showStyleBase: showStyle,
-			showStyleVariant,
-		}
-	}
-)(
-	DragSource(
-		RundownListDragDropTypes.RUNDOWN,
-		dragSpec,
-		dragCollector
-	)(
-		DropTarget(
-			RundownListDragDropTypes.RUNDOWN,
-			dropSpec,
-			dropCollect
-		)(
-			class RundownListItem extends React.Component<
-				Translated<IRundownListItemProps> &
-					IRundownDragSourceProps &
-					IRundownDropTargetProps &
-					IRundownListItemTrackedProps
-			> {
-				constructor(
-					props: Translated<IRundownListItemProps> &
-						IRundownDragSourceProps &
-						IRundownDropTargetProps &
-						IRundownListItemTrackedProps
-				) {
-					super(props)
-
-					this.state = {
-						selectedView: UIStateStorage.getItemString(`rundownList.${props.studio?._id}`, 'defaultView', 'default'),
-					}
-
-					this.props.dragPreview(getEmptyImage()) // override default dom node screenshot behavior
-				}
-
-				handleRundownDrop(rundownId: RundownId) {
-					const { rundown, playlistId, t } = this.props
-					doUserAction(t, 'Drag and drop add rundown to playlist', UserAction.RUNDOWN_ORDER_MOVE, (e, ts) =>
-						MeteorCall.userAction.moveRundown(e, ts, rundownId, playlistId, [rundown._id, rundownId])
-					)
-				}
-
-				componentDidUpdate(prevProps) {
-					const { action } = this.props
-					if (action && action.targetPlaylistId === this.props.playlistId) {
-						const { type, rundownId } = action
-						switch (type) {
-							case RundownPlaylistUiActionTypes.HANDLE_RUNDOWN_DROP:
-								this.handleRundownDrop(rundownId)
-								break
-							default:
-								console.debug(`Unknown action type ${type}`, this.props.action)
-						}
-					}
-
-					if (prevProps.studio !== this.props.studio) {
-						this.setState({
-							selectedView: UIStateStorage.getItemString(
-								`rundownList.${this.props.studio?._id}`,
-								'defaultView',
-								'default'
-							),
-						})
-					}
-				}
-
-				render(): JSX.Element {
-					const {
-						isActive,
-						t,
-						rundown,
-						connectDragSource,
-						connectDropTarget,
-						isDragging,
-						rundownViewUrl,
-						rundownLayouts,
-						isOnlyRundownInPlaylist,
-					} = this.props
-					const userCanConfigure = getAllowConfigure()
-
-					const classNames: string[] = []
-					if (isDragging) classNames.push('dragging')
-					if (rundown.orphaned) classNames.push('unsynced')
-
-					// rundown ids can start with digits, which is illegal for HTML id attributes
-					const htmlElementId = `${HTML_ID_PREFIX}${unprotectString(rundown._id)}`
-
-					const showStyleLabel =
-						this.props.showStyleVariant &&
-						this.props.showStyleBase &&
-						this.props.showStyleVariant.name !== this.props.showStyleBase.name
-							? t('{{showStyleVariant}} – {{showStyleBase}}', {
-									showStyleVariant: this.props.showStyleVariant.name,
-									showStyleBase: this.props.showStyleBase.name,
-							  })
-							: this.props.showStyleBase?.name || ''
-
-					return (
-						<RundownListItemView
-							isActive={isActive}
-							classNames={classNames}
-							connectDragSource={connectDragSource}
-							connectDropTarget={connectDropTarget}
-							htmlElementId={htmlElementId}
-							isDragLayer={false}
-							renderTooltips={isDragging !== true}
-							rundownViewUrl={rundownViewUrl}
-							rundown={rundown}
-							isOnlyRundownInPlaylist={isOnlyRundownInPlaylist}
-							rundownLayouts={rundownLayouts}
-							showStyleName={showStyleLabel}
-							showStyleBaseURL={userCanConfigure ? getShowStyleBaseLink(rundown.showStyleBaseId) : undefined}
-							confirmDeleteRundownHandler={
-								(rundown.orphaned && getAllowStudio()) || userCanConfigure || getAllowService()
-									? () => confirmDeleteRundown(rundown, t)
-									: undefined
-							}
-							confirmReSyncRundownHandler={
-								rundown.orphaned && getAllowStudio() ? () => confirmReSyncRundown(rundown, t) : undefined
-							}
-						/>
-					)
-				}
-			}
-		)
+	// const studio = useTracker(() => UIStudios.findOne(rundown.studioId), [rundown.studioId])
+	const showStyleBase = useTracker(() => UIShowStyleBases.findOne(rundown.showStyleBaseId), [rundown.showStyleBaseId])
+	const showStyleVariant = useTracker(
+		() => ShowStyleVariants.findOne(rundown.showStyleVariantId),
+		[rundown.showStyleVariantId]
 	)
-)
+
+	const userCanConfigure = getAllowConfigure()
+
+	const [dragState, connectDragSource, connectDragPreview] = useDrag<IRundownDragObject, void, { isDragging: boolean }>(
+		{
+			type: RundownListDragDropTypes.RUNDOWN,
+			collect: (monitor) => {
+				return {
+					isDragging: monitor.isDragging(),
+				}
+			},
+			item: {
+				id: rundown._id,
+				rundownLayouts,
+			},
+		},
+		[rundown._id, rundownLayouts]
+	)
+
+	const [, connectDropTarget] = useDrop<IRundownDragObject, void, {}>(
+		{
+			accept: RundownListDragDropTypes.RUNDOWN,
+			hover: (item, monitor) => {
+				if (monitor.getItemType() === RundownListDragDropTypes.RUNDOWN) {
+					// if that rundown is not this rundown
+					if (item && rundown._id !== item.id) {
+						swapRundownOrder(rundown._id, item.id)
+					}
+				}
+			},
+		},
+		[rundown, swapRundownOrder]
+	)
+
+	useEffect(() => {
+		connectDragPreview(getEmptyImage())
+	}, [connectDragPreview])
+
+	// rundown ids can start with digits, which is illegal for HTML id attributes
+	const htmlElementId = `${HTML_ID_PREFIX}${unprotectString(rundown._id)}`
+
+	const showStyleLabel =
+		showStyleVariant && showStyleBase && showStyleVariant.name !== showStyleBase.name
+			? t('{{showStyleVariant}} – {{showStyleBase}}', {
+					showStyleVariant: showStyleVariant.name,
+					showStyleBase: showStyleBase.name,
+			  })
+			: showStyleBase?.name || ''
+
+	return (
+		<RundownListItemView
+			isActive={isActive}
+			className={classNames({
+				dragging: dragState.isDragging,
+				orphaned: rundown.orphaned,
+			})}
+			connectDragSource={connectDragSource}
+			connectDropTarget={connectDropTarget}
+			htmlElementId={htmlElementId}
+			isDragLayer={false}
+			renderTooltips={dragState.isDragging !== true}
+			rundownViewUrl={rundownViewUrl}
+			rundown={rundown}
+			isOnlyRundownInPlaylist={isOnlyRundownInPlaylist}
+			rundownLayouts={rundownLayouts}
+			showStyleName={showStyleLabel}
+			showStyleBaseURL={userCanConfigure ? getShowStyleBaseLink(rundown.showStyleBaseId) : undefined}
+			confirmDeleteRundownHandler={
+				(rundown.orphaned && getAllowStudio()) || userCanConfigure || getAllowService()
+					? () => confirmDeleteRundown(rundown, t)
+					: undefined
+			}
+			confirmReSyncRundownHandler={
+				rundown.orphaned && getAllowStudio() ? () => confirmReSyncRundown(rundown, t) : undefined
+			}
+		/>
+	)
+}

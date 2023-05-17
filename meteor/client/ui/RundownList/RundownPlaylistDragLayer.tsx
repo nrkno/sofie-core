@@ -7,7 +7,11 @@ import { getElementWidth } from '../../utils/dimensions'
 import { HTML_ID_PREFIX } from './RundownListItem'
 import { UIShowStyleBases } from '../Collections'
 
-export default function RundownPlaylistDragLayer(props: { draggedClassNames?: string[] }): JSX.Element | null {
+export default function RundownPlaylistDragLayer({
+	draggedClassNames,
+}: {
+	draggedClassNames?: string[]
+}): JSX.Element | null {
 	const { isDragging, item, itemType, currentOffset, draggedWidth } = useDragLayer(collect)
 
 	if (!isDragging) {
@@ -19,14 +23,13 @@ export default function RundownPlaylistDragLayer(props: { draggedClassNames?: st
 			case RundownListDragDropTypes.RUNDOWN: {
 				const rundown = Rundowns.findOne(item.id)
 				const showStyle = rundown ? UIShowStyleBases.findOne(rundown.showStyleBaseId) : undefined
-				const classNames = ['drag-preview'].concat(props.draggedClassNames || [])
 				return (
 					<RundownListItemView
 						isActive={false}
 						renderTooltips={false}
 						rundown={rundown!}
 						rundownLayouts={item.rundownLayouts}
-						classNames={classNames}
+						className={`drag-preview ${draggedClassNames ?? ''}`}
 						connectDragSource={(props) => props}
 						connectDropTarget={(props) => props}
 						htmlElementId="drag-preview"

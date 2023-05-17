@@ -123,7 +123,7 @@ export function RundownPlaylistUi({
 	}, [])
 
 	if (playlist.rundowns.length === 0) {
-		console.debug(`Playlist ${playlist._id} has no rundowns, aborting render`)
+		// Playlist has no rundowns, aborting render
 		return null
 	}
 
