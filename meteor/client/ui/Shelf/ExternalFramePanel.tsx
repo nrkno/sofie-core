@@ -10,13 +10,9 @@ import {
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
 import { assertNever, getRandomString, literal, protectString } from '../../../lib/lib'
-import {
-	RundownPlaylist,
-	RundownPlaylistCollectionUtil,
-	RundownPlaylistId,
-} from '../../../lib/collections/RundownPlaylists'
-import { PartInstanceId, PartInstances, PartInstance } from '../../../lib/collections/PartInstances'
-import { parseMosPluginMessageXml, MosPluginMessage, fixMosData } from '../../lib/parsers/mos/mosXml2Js'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { PartInstance } from '../../../lib/collections/PartInstances'
+import { parseMosPluginMessageXml, MosPluginMessage } from '../../lib/parsers/mos/mosXml2Js'
 import {
 	createMosAppInfoXmlString,
 	UIMetric as MOSUIMetric,
@@ -24,14 +20,18 @@ import {
 	Events as MOSEvents,
 } from '../../lib/data/mos/plugin-support'
 import { MOS } from '@sofie-automation/corelib'
-import { doUserAction, UserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Buckets, BucketId } from '../../../lib/collections/Buckets'
 import { IngestAdlib } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../../lib/api/methods'
-import { Rundowns, Rundown } from '../../../lib/collections/Rundowns'
 import { check } from '../../../lib/check'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Buckets, PartInstances, Rundowns } from '../../collections'
+import { BucketId, PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MOS_DATA_IS_STRICT } from '../../../lib/mos'
+import { getMosTypes, stringifyMosObject } from '@mos-connection/helper'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 const PackageInfo = require('../../../package.json')
 
@@ -199,16 +199,18 @@ export const ExternalFramePanel = withTranslation()(
 
 			let targetRundown: Rundown | undefined
 			let currentPart: PartInstance | undefined
-			if (playlist.currentPartInstanceId || playlist.nextPartInstanceId) {
-				if (playlist.currentPartInstanceId !== null) {
-					currentPart = PartInstances.findOne(playlist.currentPartInstanceId)
-				} else if (playlist.nextPartInstanceId !== null) {
-					currentPart = PartInstances.findOne(playlist.nextPartInstanceId)
+			if (playlist.currentPartInfo || playlist.nextPartInfo) {
+				if (playlist.currentPartInfo !== null) {
+					currentPart = PartInstances.findOne(playlist.currentPartInfo.partInstanceId)
+				} else if (playlist.nextPartInfo !== null) {
+					currentPart = PartInstances.findOne(playlist.nextPartInfo.partInstanceId)
 				}
 
 				if (!currentPart) {
 					throw new Meteor.Error(
-						`Selected part could not be found: "${playlist.currentPartInstanceId || playlist.nextPartInstanceId}"`
+						`Selected part could not be found: "${
+							playlist.currentPartInfo?.partInstanceId || playlist.nextPartInfo?.partInstanceId
+						}"`
 					)
 				}
 
@@ -222,6 +224,8 @@ export const ExternalFramePanel = withTranslation()(
 			}
 			const showStyleBaseId = targetRundown.showStyleBaseId
 
+			const mosTypes = getMosTypes(MOS_DATA_IS_STRICT)
+
 			doUserAction(t, e, UserAction.INGEST_BUCKET_ADLIB, (e, ts) =>
 				MeteorCall.userAction.bucketAdlibImport(
 					e,
@@ -229,10 +233,10 @@ export const ExternalFramePanel = withTranslation()(
 					targetBucket ? targetBucket._id : protectString(''),
 					showStyleBaseId,
 					literal<IngestAdlib>({
-						externalId: mosItem.ObjectID ? mosItem.ObjectID.toString() : '',
-						name: mosItem.ObjectSlug ? mosItem.ObjectSlug.toString() : '',
+						externalId: mosItem.ObjectID ? mosTypes.mosString128.stringify(mosItem.ObjectID) : '',
+						name: mosItem.ObjectSlug ? mosTypes.mosString128.stringify(mosItem.ObjectSlug) : '',
 						payloadType: 'MOS',
-						payload: fixMosData(mosItem),
+						payload: stringifyMosObject(mosItem, MOS_DATA_IS_STRICT),
 					})
 				)
 			)
@@ -250,7 +254,7 @@ export const ExternalFramePanel = withTranslation()(
 			check(message.id, String)
 			check(message.type, String)
 
-			if (Object.values(SofieExternalMessageType).indexOf(message.type) < 0) {
+			if (Object.values<SofieExternalMessageType>(SofieExternalMessageType as any).indexOf(message.type) < 0) {
 				console.error(`ExternalFramePanel: Unknown message type: ${message.type}`)
 				return
 			}
@@ -349,7 +353,7 @@ export const ExternalFramePanel = withTranslation()(
 					id: getRandomString(),
 					type: SofieExternalMessageType.CURRENT_PART_CHANGED,
 					payload: {
-						partInstanceId: this.props.playlist.currentPartInstanceId,
+						partInstanceId: this.props.playlist.currentPartInfo?.partInstanceId ?? null,
 					},
 				})
 			)
@@ -358,7 +362,7 @@ export const ExternalFramePanel = withTranslation()(
 					id: getRandomString(),
 					type: SofieExternalMessageType.NEXT_PART_CHANGED,
 					payload: {
-						partInstanceId: this.props.playlist.nextPartInstanceId,
+						partInstanceId: this.props.playlist.nextPartInfo?.partInstanceId ?? null,
 					},
 				})
 			)
@@ -491,45 +495,45 @@ export const ExternalFramePanel = withTranslation()(
 		}
 
 		componentDidUpdate(prevProps: IProps) {
-			if (prevProps.playlist.currentPartInstanceId !== this.props.playlist.currentPartInstanceId) {
+			if (prevProps.playlist.currentPartInfo?.partInstanceId !== this.props.playlist.currentPartInfo?.partInstanceId) {
 				this.sendSofieMessage(
 					literal<CurrentNextPartChangedSofieExternalMessage>({
 						id: getRandomString(),
 						type: SofieExternalMessageType.CURRENT_PART_CHANGED,
 						payload: {
-							partInstanceId: this.props.playlist.currentPartInstanceId,
-							prevPartInstanceId: prevProps.playlist.currentPartInstanceId,
+							partInstanceId: this.props.playlist.currentPartInfo?.partInstanceId ?? null,
+							prevPartInstanceId: prevProps.playlist.currentPartInfo?.partInstanceId ?? null,
 						},
 					})
 				)
 			}
 
-			if (prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId) {
+			if (prevProps.playlist.nextPartInfo?.partInstanceId !== this.props.playlist.nextPartInfo?.partInstanceId) {
 				this.sendSofieMessage(
 					literal<CurrentNextPartChangedSofieExternalMessage>({
 						id: getRandomString(),
 						type: SofieExternalMessageType.NEXT_PART_CHANGED,
 						payload: {
-							partInstanceId: this.props.playlist.nextPartInstanceId,
-							prevPartInstanceId: prevProps.playlist.nextPartInstanceId,
+							partInstanceId: this.props.playlist.nextPartInfo?.partInstanceId ?? null,
+							prevPartInstanceId: prevProps.playlist.nextPartInfo?.partInstanceId ?? null,
 						},
 					})
 				)
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			window.addEventListener('message', this.onReceiveMessage)
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			// reject all outstanding promises for replies
 			_.each(this.awaitingReply, (promise) => promise.reject(new Error('ExternalFramePanel unmounting')))
 			this.unregisterHandlers()
 			window.removeEventListener('message', this.onReceiveMessage)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 			const scale = isDashboardLayout ? (this.props.panel as DashboardLayoutExternalFrame).scale || 1 : 1
 			const frameStyle = {

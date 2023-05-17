@@ -16,13 +16,13 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
-import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
 interface IPieceCountdownPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutPieceCountdown
 	playlist: RundownPlaylist
-	showStyleBase: DBShowStyleBase
+	showStyleBase: UIShowStyleBase
 }
 
 interface IPieceCountdownPanelTrackedProps {
@@ -37,7 +37,7 @@ export class PieceCountdownPanelInner extends MeteorReactComponent<
 	IPieceCountdownPanelProps & IPieceCountdownPanelTrackedProps,
 	IState
 > {
-	constructor(props) {
+	constructor(props: IPieceCountdownPanelProps & IPieceCountdownPanelTrackedProps) {
 		super(props)
 		this.state = {
 			displayTimecode: 0,
@@ -45,21 +45,21 @@ export class PieceCountdownPanelInner extends MeteorReactComponent<
 		this.updateTimecode = this.updateTimecode.bind(this)
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		window.addEventListener(RundownTiming.Events.timeupdateLowResolution, this.updateTimecode)
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		window.removeEventListener(RundownTiming.Events.timeupdateLowResolution, this.updateTimecode)
 	}
 
-	updateTimecode(e: TimingEvent) {
+	private updateTimecode(e: TimingEvent) {
 		let timecode = 0
-		if (this.props.livePieceInstance && this.props.livePieceInstance.startedPlayback) {
+		if (this.props.livePieceInstance && this.props.livePieceInstance.plannedStartedPlayback) {
 			const vtContent = this.props.livePieceInstance.piece.content as VTContent | undefined
 			const sourceDuration = vtContent?.sourceDuration || 0
 			const seek = vtContent?.seek || 0
-			const startedPlayback = this.props.livePieceInstance.startedPlayback
+			const startedPlayback = this.props.livePieceInstance.plannedStartedPlayback
 			if (startedPlayback && sourceDuration > 0) {
 				timecode = e.detail.currentTime - (startedPlayback + sourceDuration - seek)
 			}
@@ -71,7 +71,7 @@ export class PieceCountdownPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	render() {
+	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		return (
 			<div
@@ -108,10 +108,10 @@ export const PieceCountdownPanel = withTracker<IPieceCountdownPanelProps, IState
 		const unfinishedPieces = getUnfinishedPieceInstancesReactive(props.playlist, props.showStyleBase)
 		const livePieceInstance: PieceInstance | undefined =
 			props.panel.sourceLayerIds && props.panel.sourceLayerIds.length
-				? _.flatten(Object.values(unfinishedPieces)).find((piece: PieceInstance) => {
+				? unfinishedPieces.find((piece: PieceInstance) => {
 						return (
 							(props.panel.sourceLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
-							piece.partInstanceId === props.playlist.currentPartInstanceId
+							piece.partInstanceId === props.playlist.currentPartInfo?.partInstanceId
 						)
 				  })
 				: undefined

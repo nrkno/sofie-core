@@ -10,14 +10,13 @@ interface IProps {
 	part: PartExtended
 	isLive: boolean
 	isNext: boolean
-	isFinished: boolean
 }
 
 const supportedSourceLayerTypes = new Set(
-	Object.values(SourceLayerType).filter(
+	Object.values<SourceLayerType>(SourceLayerType as any).filter(
 		// Support all types, apart from TRANSITION and also filter out the inverse-enum strings
 		(val) => typeof val !== 'string' && val !== SourceLayerType.TRANSITION
-	) as SourceLayerType[]
+	)
 )
 
 function findMainPiece(pieces: PieceExtended[]) {
@@ -27,12 +26,7 @@ function findMainPiece(pieces: PieceExtended[]) {
 	)
 }
 
-export const StoryboardPartThumbnail = React.memo(function StoryboardPartThumbnail({
-	part,
-	isLive,
-	isNext,
-	isFinished,
-}: IProps) {
+export const StoryboardPartThumbnail = React.memo(function StoryboardPartThumbnail({ part, isLive, isNext }: IProps) {
 	const [mainPiece, setMainPiece] = useState<PieceExtended | undefined>(findMainPiece(part.pieces))
 	const [highlight] = useState(false)
 
@@ -48,13 +42,13 @@ export const StoryboardPartThumbnail = React.memo(function StoryboardPartThumbna
 					piece={mainPiece}
 					isLive={isLive}
 					isNext={isNext}
-					isFinished={isFinished}
 					layer={mainPiece?.sourceLayer}
 					studio={studio}
 					partId={part.partId}
 					partInstanceId={part.instance._id}
 					highlight={highlight}
 					partAutoNext={part.instance.part.autoNext || false}
+					partPlannedStoppedPlayback={part.instance.timings?.plannedStoppedPlayback}
 				/>
 			)}
 		</StudioContext.Consumer>

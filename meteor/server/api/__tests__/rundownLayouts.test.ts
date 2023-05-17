@@ -4,14 +4,11 @@ import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mo
 import { protectString, literal, unprotectString, getRandomString } from '../../../lib/lib'
 import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../__mocks__/meteorhacks-picker'
 import { Response as MockResponse, Request as MockRequest } from 'mock-http'
-import {
-	RundownLayoutType,
-	RundownLayouts,
-	RundownLayout,
-	CustomizableRegions,
-	RundownLayoutId,
-} from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutType, RundownLayout, CustomizableRegions } from '../../../lib/collections/RundownLayouts'
 import { MeteorCall } from '../../../lib/api/methods'
+import { RundownLayoutId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownLayouts } from '../../collections'
+import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
 
 require('../client') // include in order to create the Meteor methods needed
 require('../rundownLayouts') // include in order to create the Meteor methods needed
@@ -32,20 +29,20 @@ describe('Rundown Layouts', () => {
 		expect(typeof res).toBe('string') // this should contain the ID for the rundown layout
 		rundownLayoutId = res
 
-		const item = RundownLayouts.findOne(rundownLayoutId)
+		const item = await RundownLayouts.findOneAsync(rundownLayoutId)
 		expect(item).toMatchObject({
 			_id: rundownLayoutId,
 		})
 	})
 	testInFiber('Remove rundown layout', async () => {
-		const item0 = RundownLayouts.findOne(rundownLayoutId)
+		const item0 = await RundownLayouts.findOneAsync(rundownLayoutId)
 		expect(item0).toMatchObject({
 			_id: rundownLayoutId,
 		})
 
 		await MeteorCall.rundownLayout.removeRundownLayout(rundownLayoutId)
 
-		const item1 = RundownLayouts.findOne(rundownLayoutId)
+		const item1 = await RundownLayouts.findOneAsync(rundownLayoutId)
 		expect(item1).toBeUndefined()
 	})
 
@@ -66,13 +63,14 @@ describe('Rundown Layouts', () => {
 				disableContextMenu: true,
 				hideDefaultStartExecute: false,
 				regionId: CustomizableRegions.Shelf,
+				isDefaultLayout: false,
 			})
 			return { rundownLayout: mockLayout, rundownLayoutId }
 		}
 
 		testInFiber('download shelf layout', async () => {
 			const { rundownLayout: mockLayout, rundownLayoutId } = makeMockLayout(env)
-			RundownLayouts.insert(mockLayout)
+			await RundownLayouts.insertAsync(mockLayout)
 
 			const routeName = '/shelfLayouts/download/:id'
 			const route = PickerMock.mockRoutes[routeName]
@@ -141,6 +139,7 @@ describe('Rundown Layouts', () => {
 				})
 				req.body = JSON.stringify(mockLayout)
 
+				SupressLogMessages.suppressLogMessage(/"FAKE_ID" not found/i)
 				await route.handler({ showStyleBaseId: fakeId }, req, res, jest.fn())
 
 				const resStr = parseResponseBuffer(res)
@@ -162,6 +161,7 @@ describe('Rundown Layouts', () => {
 					url: `/shelfLayouts/upload/${env.showStyleBaseId}`,
 				})
 
+				SupressLogMessages.suppressLogMessage(/Missing request body/i)
 				await route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
 
 				const resStr = parseResponseBuffer(res)
@@ -184,6 +184,7 @@ describe('Rundown Layouts', () => {
 				})
 				req.body = 'sdf'
 
+				SupressLogMessages.suppressLogMessage(/Invalid request body/i)
 				await route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
 
 				const resStr = parseResponseBuffer(res)
@@ -206,6 +207,7 @@ describe('Rundown Layouts', () => {
 				})
 				req.body = '{ type: dsfgsdfgsdf gsdfgsdfg sdfgsdfg sdf gsdfgsdfg sdfg }'
 
+				SupressLogMessages.suppressLogMessage(/SyntaxError/i)
 				await route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
 
 				const resStr = parseResponseBuffer(res)
@@ -238,7 +240,7 @@ describe('Rundown Layouts', () => {
 					})
 				)
 
-				expect(RundownLayouts.findOne(mockLayout._id)).toBeTruthy()
+				expect(await RundownLayouts.findOneAsync(mockLayout._id)).toBeTruthy()
 			}
 		})
 	})

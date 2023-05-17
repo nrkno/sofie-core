@@ -1,15 +1,11 @@
 import * as React from 'react'
-import { Bucket, BucketId } from '../../../lib/collections/Buckets'
+import { Bucket } from '../../../lib/collections/Buckets'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { BucketPanel } from './BucketPanel'
-import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
 import { ISourceLayer, IOutputLayer } from '@sofie-automation/blueprints-integration'
 import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
-import { ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
-import { StudioId } from '../../../lib/collections/Studios'
-
-import { doUserAction, UserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { ClientAPI } from '../../../lib/api/client'
 
 import { withTranslation } from 'react-i18next'
@@ -36,8 +32,10 @@ import RundownViewEventBus, {
 	BucketAdLibEvent,
 	BucketEvent,
 	IEventContext,
-} from '../RundownView/RundownViewEventBus'
+} from '../../../lib/api/triggers/RundownViewEventBus'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { BucketId, ShowStyleBaseId, ShowStyleVariantId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface BucketAdLibUi extends BucketAdLib {
 	sourceLayer?: ISourceLayer
@@ -81,7 +79,7 @@ export function isAdLib(item: BucketAdLibItem): item is BucketAdLibUi {
 interface IBucketsProps {
 	buckets: Bucket[] | undefined
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	shouldQueue: boolean
 	fullViewport: boolean
 	displayBuckets?: number[]
@@ -151,7 +149,7 @@ export const RundownViewBuckets = withTranslation()(
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			super.componentDidMount && super.componentDidMount()
 
 			RundownViewEventBus.on(RundownViewEvents.CREATE_BUCKET, this.createNewBucket)
@@ -163,7 +161,7 @@ export const RundownViewBuckets = withTranslation()(
 			RundownViewEventBus.on(RundownViewEvents.RENAME_BUCKET_ADLIB, this.beginRenameBucketAdLib)
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			super.componentWillUnmount && super.componentWillUnmount()
 
 			RundownViewEventBus.off(RundownViewEvents.CREATE_BUCKET, this.createNewBucket)
@@ -542,7 +540,7 @@ export const RundownViewBuckets = withTranslation()(
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { playlist, showStyleBase, shouldQueue } = this.props
 			const { localBuckets: buckets } = this.state
 			return (

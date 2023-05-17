@@ -1,7 +1,4 @@
-import { createMongoCollection } from './lib'
 import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-export { OrganizationId }
 
 /** An organization is the entity that owns data (studios, rundowns, etc..) in Sofie */
 export interface DBOrganizationBase {
@@ -34,5 +31,3 @@ export interface UserRoles {
 	/** Is Organization admin */
 	admin?: boolean
 }
-
-export const Organizations = createMongoCollection<DBOrganization>(CollectionName.Organizations)

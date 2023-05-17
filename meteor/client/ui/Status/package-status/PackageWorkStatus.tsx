@@ -7,11 +7,12 @@ import Tooltip from 'rc-tooltip'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faRedo, faStopCircle, faChevronDown, faChevronRight, faExclamation } from '@fortawesome/free-solid-svg-icons'
 import { MeteorCall } from '../../../../lib/api/methods'
-import { doUserAction, UserAction } from '../../../lib/userAction'
+import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
 
 import { withTranslation } from 'react-i18next'
 import { DisplayFormattedTime } from '../../RundownList/DisplayFormattedTime'
 import { JobStatusIcon } from './JobStatusIcon'
+import { ExpectedPackageStatusAPI } from '@sofie-automation/blueprints-integration'
 
 interface IPackageWorkStatusProps {
 	package: ExpectedPackageDB
@@ -44,7 +45,7 @@ export const PackageWorkStatus = withTranslation()(
 				MeteorCall.userAction.packageManagerAbortExpectation(e, ts, status.deviceId, unprotectString(status._id))
 			)
 		}
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			const status = this.props.status
 			return (
@@ -133,21 +134,23 @@ export const PackageWorkStatus = withTranslation()(
 											<td>
 												<ul>
 													{status.prevStatusReasons &&
-														Object.entries(status.prevStatusReasons).map(([key, reason]) => {
-															return (
-																<li key={key}>
-																	{key}:
-																	<Tooltip
-																		overlay={t('Technical reason: {{reason}}', {
-																			reason: reason.tech,
-																		})}
-																		placement="bottom"
-																	>
-																		<span>{reason.user ?? reason?.toString()}</span>
-																	</Tooltip>
-																</li>
-															)
-														})}
+														Object.entries<ExpectedPackageStatusAPI.Reason>(status.prevStatusReasons).map(
+															([key, reason]) => {
+																return (
+																	<li key={key}>
+																		{key}:
+																		<Tooltip
+																			overlay={t('Technical reason: {{reason}}', {
+																				reason: reason.tech,
+																			})}
+																			placement="bottom"
+																		>
+																			<span>{reason.user ?? reason?.toString()}</span>
+																		</Tooltip>
+																	</li>
+																)
+															}
+														)}
 												</ul>
 											</td>
 										</tr>

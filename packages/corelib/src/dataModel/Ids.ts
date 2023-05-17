@@ -53,9 +53,6 @@ export type PackageContainerPackageId = ProtectedString<'PackageContainerPackage
 
 export type SegmentPlayoutId = ProtectedString<'SegmentPlayoutId'>
 
-/** A string, identifying a Part */
-export type PartId = ProtectedString<'PartId'>
-
 export type PieceInstanceInfiniteId = ProtectedString<'PieceInstanceInfiniteId'>
 
 /** A string, identifying a Piece */
@@ -76,8 +73,6 @@ export type RundownId = ProtectedString<'RundownId'>
 /** A string, identifying a Segment */
 export type SegmentId = ProtectedString<'SegmentId'>
 
-/** A string, identifying a ShowStyleBase */
-export type ShowStyleBaseId = ProtectedString<'ShowStyleBaseId'>
 /** A string, identifying a ShowStyleVariant */
 export type ShowStyleVariantId = ProtectedString<'ShowStyleVariantId'>
 
@@ -89,9 +84,7 @@ export type TimelineObjId = ProtectedString<'TimelineObjId'>
 
 /** A string identifying a translations bundle */
 export type TranslationsBundleId = ProtectedString<'TranslationsBundleId'>
-
-/** A string identifying a triggered action */
-export type TriggeredActionId = ProtectedString<'TriggeredActionId'>
+export type TranslationsBundleOriginId = ProtectedString<'TranslationsBundleOriginId'>
 
 /** A string, identifying a UserActionsLogItem */
 export type UserActionsLogItemId = ProtectedString<'UserActionsLogItemId'>

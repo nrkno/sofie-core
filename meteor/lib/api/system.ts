@@ -1,4 +1,5 @@
-import { TranslationsBundle, TranslationsBundleId } from '../collections/TranslationsBundles'
+import { TranslationsBundleId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { TranslationsBundle } from '../collections/TranslationsBundles'
 import { ClientAPI } from './client'
 
 export interface CollectionCleanupResult {
@@ -25,6 +26,7 @@ export interface SystemAPI {
 	cleanupIndexes(actuallyRemoveOldIndexes: boolean): Promise<any>
 	cleanupOldData(actuallyRemoveOldData: boolean): Promise<CollectionCleanupResult | string>
 
+	runCronjob(): Promise<void>
 	doSystemBenchmark(): Promise<SystemBenchmarkResults>
 
 	getTranslationBundle(bundleId: TranslationsBundleId): Promise<ClientAPI.ClientResponse<TranslationsBundle>>

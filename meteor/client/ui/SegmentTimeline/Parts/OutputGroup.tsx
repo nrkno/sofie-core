@@ -1,6 +1,5 @@
 import React from 'react'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { Studio } from '../../../../lib/collections/Studios'
 import { ISourceLayerExtended } from '../../../../lib/Rundown'
 import { IContextMenuContext } from '../../RundownView'
 import { IOutputLayerUi, PartUi, PieceUi, SegmentUi } from '../SegmentTimelineContainer'
@@ -10,14 +9,17 @@ import classNames from 'classnames'
 import { DEBUG_MODE } from '../SegmentTimelineDebugMode'
 import { RundownUtils } from '../../../lib/rundown'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { UIStudio } from '../../../../lib/api/studios'
+import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 interface IOutputGroupProps {
 	layer: IOutputLayerUi
 	sourceLayers: ISourceLayerExtended[]
 	playlist: RundownPlaylist
-	studio: Studio
+	studio: UIStudio
 	segment: SegmentUi
 	part: PartUi
+	pieces: CalculateTimingsPiece[]
 	mediaPreviewUrl: string
 	startsAt: number
 	duration: number
@@ -39,14 +41,13 @@ interface IOutputGroupProps {
 	scrollWidth: number
 	liveLinePadding: number
 	autoNextPart: boolean
-	relative: boolean
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	indexOffset: number
 	isPreview: boolean
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 }
 
-export function OutputGroup(props: IOutputGroupProps) {
+export function OutputGroup(props: IOutputGroupProps): JSX.Element {
 	const isCollapsed =
 		props.collapsedOutputs[props.layer._id] !== undefined
 			? props.collapsedOutputs[props.layer._id] === true
@@ -70,6 +71,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 							outputGroupCollapsed={isOutputGroupCollapsed}
 							segment={props.segment}
 							part={props.part}
+							pieces={props.pieces}
 							startsAt={props.startsAt}
 							duration={props.duration}
 							expectedDuration={props.expectedDuration}
@@ -84,7 +86,6 @@ export function OutputGroup(props: IOutputGroupProps) {
 							isTooSmallForText={props.isTooSmallForText}
 							liveLineHistorySize={props.liveLineHistorySize}
 							livePosition={props.livePosition}
-							relative={props.relative}
 							scrollLeft={props.scrollLeft}
 							scrollWidth={props.scrollWidth}
 							onContextMenu={props.onContextMenu}
@@ -107,6 +108,7 @@ export function OutputGroup(props: IOutputGroupProps) {
 						outputGroupCollapsed={isOutputGroupCollapsed}
 						segment={props.segment}
 						part={props.part}
+						pieces={props.pieces}
 						startsAt={props.startsAt}
 						duration={props.duration}
 						expectedDuration={props.expectedDuration}
@@ -121,7 +123,6 @@ export function OutputGroup(props: IOutputGroupProps) {
 						isTooSmallForText={props.isTooSmallForText}
 						liveLineHistorySize={props.liveLineHistorySize}
 						livePosition={props.livePosition}
-						relative={props.relative}
 						scrollLeft={props.scrollLeft}
 						scrollWidth={props.scrollWidth}
 						onContextMenu={props.onContextMenu}

@@ -6,16 +6,17 @@ import type {
 	ManifestImageResource,
 	ShortcutItem,
 } from '../lib/typings/webmanifest'
-import { getCoreSystemAsync } from '../lib/collections/CoreSystem'
 import { logger } from '../lib/logging'
-import { MongoSelector } from '../lib/typings/meteor'
-import { DBStudio, Studios } from '../lib/collections/Studios'
-import { Rundowns } from '../lib/collections/Rundowns'
-import { DBRundownPlaylist, RundownPlaylists } from '../lib/collections/RundownPlaylists'
+import { MongoQuery } from '../lib/typings/meteor'
+import { DBStudio } from '../lib/collections/Studios'
+import { RundownPlaylists, Rundowns } from './collections'
 import { getLocale, Translations } from './lib'
 import { generateTranslation } from '../lib/lib'
 import { ITranslatableMessage } from '@sofie-automation/blueprints-integration'
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { DBRundownPlaylist } from '../lib/collections/RundownPlaylists'
+import { Studios } from './collections'
+import { getCoreSystemAsync } from './coreSystem/collection'
 
 const appShortName = 'Sofie'
 const SOFIE_DEFAULT_ICONS: ManifestImageResource[] = [
@@ -154,10 +155,10 @@ async function getWebManifest(languageCode: string): Promise<JSONSchemaForWebApp
 	}
 }
 
-function getRundownPlaylistFromExternalId(externalId: string): DBRundownPlaylist | undefined {
-	const rundown = Rundowns.findOne({ externalId })
+async function getRundownPlaylistFromExternalId(externalId: string): Promise<DBRundownPlaylist | undefined> {
+	const rundown = await Rundowns.findOneAsync({ externalId })
 
-	let rundownPlaylistSelector: MongoSelector<DBRundownPlaylist>
+	let rundownPlaylistSelector: MongoQuery<DBRundownPlaylist>
 	if (rundown) {
 		rundownPlaylistSelector = {
 			_id: rundown.playlistId,
@@ -168,7 +169,7 @@ function getRundownPlaylistFromExternalId(externalId: string): DBRundownPlaylist
 		}
 	}
 
-	return RundownPlaylists.findOne(rundownPlaylistSelector)
+	return RundownPlaylists.findOneAsync(rundownPlaylistSelector)
 }
 
 /**
@@ -232,7 +233,7 @@ PickerGET.route('/url/nrcs', async (_, req, res) => {
 		// URL interface and trick it into parsing the URL-encoded externalId
 		const parsedWebNrcsUrl = new URL(webNrcsUrl.replace(/^web\+nrcs:\/\//, 'http://'))
 		if (parsedWebNrcsUrl.host === 'rundown') {
-			webNrcsRundownRoute(res, parsedWebNrcsUrl)
+			await webNrcsRundownRoute(res, parsedWebNrcsUrl)
 			return
 		}
 
@@ -253,7 +254,7 @@ function sendResponseCode(res: ServerResponse, code: number, description: string
 	res.end(description)
 }
 
-function webNrcsRundownRoute(res: ServerResponse, parsedUrl: URL) {
+async function webNrcsRundownRoute(res: ServerResponse, parsedUrl: URL) {
 	// the "path" will contain the initial forward slash, so we need to strip that out
 	const externalId = decodeURIComponent(parsedUrl.pathname.substring(1))
 	if (externalId === null) {
@@ -261,7 +262,7 @@ function webNrcsRundownRoute(res: ServerResponse, parsedUrl: URL) {
 		return
 	}
 
-	const rundownPlaylist = getRundownPlaylistFromExternalId(externalId)
+	const rundownPlaylist = await getRundownPlaylistFromExternalId(externalId)
 
 	if (!rundownPlaylist) {
 		// we couldn't find the External ID for Rundown/Rundown Playlist

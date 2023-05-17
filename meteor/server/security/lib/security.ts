@@ -3,22 +3,25 @@ import { MongoQueryKey } from '../../../lib/typings/meteor'
 import { Settings } from '../../../lib/Settings'
 import { resolveCredentials, ResolvedCredentials, Credentials, isResolvedCredentials } from './credentials'
 import { allAccess, noAccess, combineAccess, Access } from './access'
-import { RundownPlaylist, RundownPlaylistId, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { RundownId, Rundowns, Rundown, RundownCollectionUtil } from '../../../lib/collections/Rundowns'
-import { StudioId } from '../../../lib/collections/Studios'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { isProtectedString } from '../../../lib/lib'
-import { OrganizationId, Organizations, DBOrganization } from '../../../lib/collections/Organization'
-import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../../lib/collections/PeripheralDevices'
-import { UserId } from '../../../lib/collections/Users'
-import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariantId, ShowStyleVariants, ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { DBOrganization } from '../../../lib/collections/Organization'
+import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
+import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { profiler } from '../../api/profiler'
+import { fetchShowStyleBasesLight, fetchStudioLight, ShowStyleBaseLight, StudioLight } from '../../optimizations'
+import { Organizations, PeripheralDevices, RundownPlaylists, Rundowns, ShowStyleVariants } from '../../collections'
 import {
-	fetchShowStyleBasesLight,
-	fetchStudioLight,
-	ShowStyleBaseLight,
-	StudioLight,
-} from '../../../lib/collections/optimizations'
+	OrganizationId,
+	PeripheralDeviceId,
+	RundownId,
+	RundownPlaylistId,
+	ShowStyleBaseId,
+	ShowStyleVariantId,
+	StudioId,
+	UserId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export const LIMIT_CACHE_TIME = 1000 * 60 * 15 // 15 minutes
 
@@ -87,7 +90,7 @@ export async function allowAccessToOrganization(
 	if (!isProtectedString(organizationId)) return noAccess('organizationId is not a string')
 	const cred = await resolveCredentials(cred0)
 
-	const organization = Organizations.findOne(organizationId)
+	const organization = await Organizations.findOneAsync(organizationId)
 	if (!organization) return noAccess('Organization not found')
 
 	return {
@@ -328,7 +331,7 @@ namespace AccessRules {
 		return { ...accessStudio(studio, cred), document: playlist }
 	}
 	export async function accessRundown(rundown: Rundown, cred: ResolvedCredentials): Promise<Access<Rundown>> {
-		const playlist = RundownCollectionUtil.getRundownPlaylist(rundown)
+		const playlist = await RundownPlaylists.findOneAsync(rundown.playlistId)
 		if (!playlist) return noAccess(`Rundown playlist of rundown "${rundown._id}" not found`)
 		return { ...(await accessRundownPlaylist(playlist, cred)), document: rundown }
 	}

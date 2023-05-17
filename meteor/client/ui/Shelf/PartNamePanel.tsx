@@ -7,22 +7,23 @@ import {
 	RundownLayoutPartName,
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { findPieceInstanceToShowFromInstances, IFoundPieceInstance } from '../PieceIcons/utils'
 import { pieceIconSupportedLayers } from '../PieceIcons/PieceIcon'
 import { RundownUtils } from '../../lib/rundown'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { PieceInstances } from '../../collections'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 interface IPartNamePanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutPartName
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 }
 
 interface IState {}
@@ -40,7 +41,7 @@ class PartNamePanelInner extends MeteorReactComponent<
 		super(props)
 	}
 
-	render() {
+	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const { t } = this.props
 
@@ -72,7 +73,9 @@ class PartNamePanelInner extends MeteorReactComponent<
 export const PartNamePanel = translateWithTracker<IPartNamePanelProps, IState, IPartNamePanelTrackedProps>(
 	(props) => {
 		const selectedPartInstanceId =
-			props.panel.part === 'current' ? props.playlist.currentPartInstanceId : props.playlist.nextPartInstanceId
+			props.panel.part === 'current'
+				? props.playlist.currentPartInfo?.partInstanceId
+				: props.playlist.nextPartInfo?.partInstanceId
 		let name: string | undefined
 		let instanceToShow: IFoundPieceInstance | undefined
 
@@ -85,10 +88,7 @@ export const PartNamePanel = translateWithTracker<IPartNamePanelProps, IState, I
 				const pieceInstances = PieceInstances.find({ partInstanceId: selectedPartInstance._id }).fetch()
 				instanceToShow = findPieceInstanceToShowFromInstances(
 					pieceInstances,
-					props.showStyleBase.sourceLayers.reduce((prev, curr) => {
-						prev[curr._id] = curr
-						return prev
-					}, {}),
+					props.showStyleBase.sourceLayers,
 					pieceIconSupportedLayers
 				)
 			}
@@ -103,8 +103,8 @@ export const PartNamePanel = translateWithTracker<IPartNamePanelProps, IState, I
 	(_data, props, nextProps) => {
 		return (
 			!_.isEqual(props.panel, nextProps.panel) ||
-			props.playlist.currentPartInstanceId !== nextProps.playlist.currentPartInstanceId ||
-			props.playlist.nextPartInstanceId !== nextProps.playlist.nextPartInstanceId
+			props.playlist.currentPartInfo?.partInstanceId !== nextProps.playlist.currentPartInfo?.partInstanceId ||
+			props.playlist.nextPartInfo?.partInstanceId !== nextProps.playlist.nextPartInfo?.partInstanceId
 		)
 	}
 )(PartNamePanelInner)

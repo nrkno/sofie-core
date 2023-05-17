@@ -17,11 +17,11 @@ import { protectString, unprotectString } from '@sofie-automation/corelib/dist/p
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { wrapPartToTemporaryInstance } from '../../__mocks__/partinstance'
 import { ReadonlyDeep } from 'type-fest'
 import { convertPartInstanceToBlueprints } from '../context/lib'
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { ProcessedShowStyleCompound } from '../../jobs'
 
 describe('Test blueprint api context', () => {
 	async function generateSparsePieceInstances(rundown: DBRundown) {
@@ -65,7 +65,7 @@ describe('Test blueprint api context', () => {
 	}
 
 	let jobContext: MockJobContext
-	let showStyle: ReadonlyDeep<ShowStyleCompound>
+	let showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 	beforeEach(async () => {
 		jobContext = setupDefaultJobEnvironment()
 
@@ -195,9 +195,7 @@ describe('Test blueprint api context', () => {
 			partInstance.playlistActivationId = protectString('something-else')
 
 			const context2 = await getContext(rundown, undefined, partInstance, undefined)
-			await expect(context2.getFirstPartInstanceInRundown()).rejects.toThrowError(
-				'No PartInstances found for Rundown'
-			)
+			await expect(context2.getFirstPartInstanceInRundown()).rejects.toThrow('No PartInstances found for Rundown')
 		})
 
 		test('getFirstPartInstanceInRundown - allowUntimed', async () => {
@@ -858,25 +856,36 @@ describe('Test blueprint api context', () => {
 
 			// existing 'distant' lookahead session
 			const obj2 = createTimelineObject(unprotectString(distantPartId), undefined, true)
-			expect(context.getTimelineObjectAbSessionId(obj2, 'name0')).toEqual('lookahead2')
+			expect(context.getTimelineObjectAbSessionId(obj2, 'name2')).toEqual('lookahead2')
 			expect(context.knownSessions).toHaveLength(1)
+
+			// new 'distant' lookahead session
+			const obj2a = createTimelineObject(unprotectString(distantPartId), undefined, true)
+			expect(context.getTimelineObjectAbSessionId(obj2a, 'name0')).toEqual(getSessionId(0))
+			expect(context.knownSessions).toHaveLength(2)
+			existingSessions.push({
+				id: getSessionId(0),
+				lookaheadForPartId: distantPartId,
+				name: 'name0',
+			})
 
 			// current partInstance session
 			const obj3 = createTimelineObject(currentPartInstance._id, undefined, true)
 			expect(context.getTimelineObjectAbSessionId(obj3, 'name1')).toEqual('current1')
-			expect(context.knownSessions).toHaveLength(2)
+			expect(context.knownSessions).toHaveLength(3)
 
 			// next partInstance session
 			const obj4 = createTimelineObject(nextPartInstance._id, undefined, true)
 			expect(context.getTimelineObjectAbSessionId(obj4, 'name0')).toEqual('next0')
-			expect(context.knownSessions).toHaveLength(3)
+			expect(context.knownSessions).toHaveLength(4)
 
 			// next partInstance new session
 			const obj5 = createTimelineObject(nextPartInstance._id, undefined, true)
-			expect(context.getTimelineObjectAbSessionId(obj5, 'name1')).toEqual(getSessionId(0))
-			expect(context.knownSessions).toHaveLength(4)
+			expect(context.getTimelineObjectAbSessionId(obj5, 'name1')).toEqual(getSessionId(1))
+			expect(context.knownSessions).toHaveLength(5)
+
 			existingSessions.push({
-				id: getSessionId(0),
+				id: getSessionId(1),
 				lookaheadForPartId: nextPartInstance.part._id,
 				name: 'name1',
 				partInstanceIds: [nextPartInstance._id],

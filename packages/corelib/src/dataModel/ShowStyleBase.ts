@@ -1,5 +1,6 @@
-import { IBlueprintShowStyleBase, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { ProtectedStringProperties } from '../protectedString'
+import { IBlueprintConfig, IOutputLayer, ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { ObjectWithOverrides } from '../settings/objectWithOverrides'
+import { LastBlueprintConfig } from './Blueprint'
 import { BlueprintId, OrganizationId, ShowStyleBaseId } from './Ids'
 
 export interface HotkeyDefinition {
@@ -20,18 +21,38 @@ export interface HotkeyDefinition {
 	up?: (e: any) => void
 	down?: (e: any) => void
 }
-export interface DBShowStyleBase extends ProtectedStringProperties<IBlueprintShowStyleBase, '_id' | 'blueprintId'> {
+
+export type OutputLayers = Record<string, IOutputLayer | undefined>
+export type SourceLayers = Record<string, ISourceLayer | undefined>
+
+export interface DBShowStyleBase {
 	_id: ShowStyleBaseId
 
 	/** Name of this show style */
 	name: string
 	/** Id of the blueprint used by this show-style */
 	blueprintId: BlueprintId
+	/** Id of the blueprint config preset */
+	blueprintConfigPresetId?: string
+	/** Whether blueprintConfigPresetId is invalid, and does not match a currently exposed preset from the Blueprint */
+	blueprintConfigPresetIdUnlinked?: boolean
+
 	/** If set, the Organization that owns this ShowStyleBase */
 	organizationId: OrganizationId | null
 
 	/** A list of hotkeys, used to display a legend of hotkeys for the user in GUI */
 	hotkeyLegend?: Array<HotkeyDefinition>
 
+	/** "Outputs" in the UI */
+	outputLayersWithOverrides: ObjectWithOverrides<OutputLayers>
+	/** "Layers" in the GUI */
+	sourceLayersWithOverrides: ObjectWithOverrides<SourceLayers>
+
+	/** Config values are used by the Blueprints */
+	blueprintConfigWithOverrides: ObjectWithOverrides<IBlueprintConfig>
+
 	_rundownVersionHash: string
+
+	/** Details on the last blueprint used to generate the defaults values for this */
+	lastBlueprintConfig: LastBlueprintConfig | undefined
 }

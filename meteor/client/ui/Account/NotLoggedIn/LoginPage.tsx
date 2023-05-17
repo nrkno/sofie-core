@@ -3,15 +3,15 @@ import { Meteor } from 'meteor/meteor'
 import { Accounts } from 'meteor/accounts-base'
 import { Translated, translateWithTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { Link } from 'react-router-dom'
-import { RouteComponentProps } from 'react-router'
+import type { RouteComponentProps } from 'react-router'
 import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { StatusResponse } from '../../../../lib/api/systemStatus'
 import { getUser, User } from '../../../../lib/collections/Users'
 import { NotLoggedInContainer } from './lib'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 
-interface ILoginProps extends RouteComponentProps<{ token: string }> {
-	requestedRoute: string
+interface ILoginProps extends RouteComponentProps<{ token?: string }> {
+	requestedRoute?: string
 }
 
 interface ILoginPageProps extends ILoginProps {
@@ -73,7 +73,7 @@ export const LoginPage = translateWithTracker((_props: ILoginProps) => {
 			this.setState({ error: msg })
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			const token = this.props.match.params.token
 			const user = this.props.user
 			if (token && (!user || (user && !user.emails[0].verified))) {
@@ -87,7 +87,7 @@ export const LoginPage = translateWithTracker((_props: ILoginProps) => {
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (

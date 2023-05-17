@@ -1,16 +1,21 @@
+import React, { PropsWithChildren } from 'react'
 import { Meteor } from 'meteor/meteor'
-import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import { withTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
-import { Part, PartId } from '../../../../lib/collections/Parts'
+import { Part } from '../../../../lib/collections/Parts'
 import { getCurrentTime } from '../../../../lib/lib'
 import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../../lib/collections/RundownPlaylists'
-import { PartInstance, PartInstances } from '../../../../lib/collections/PartInstances'
+import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { PartInstance } from '../../../../lib/collections/PartInstances'
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { RundownTimingCalculator, RundownTimingContext } from '../../../lib/rundownTiming'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstances } from '../../../collections'
+import { RundownPlaylistCollectionUtil } from '../../../../lib/collections/rundownPlaylistUtil'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 const TIMING_DEFAULT_REFRESH_INTERVAL = 1000 / 60 // the interval for high-resolution events (timeupdateHR)
 const LOW_RESOLUTION_TIMING_DECIMATOR = 15
@@ -44,6 +49,7 @@ interface IRundownTimingProviderTrackedProps {
 	currentRundown: Rundown | undefined
 	parts: Array<Part>
 	partInstancesMap: Map<PartId, PartInstance>
+	pieces: Map<PartId, CalculateTimingsPiece[]>
 	segmentEntryPartInstances: PartInstance[]
 	segments: DBSegment[]
 }
@@ -52,10 +58,10 @@ interface IRundownTimingProviderTrackedProps {
  * RundownTimingProvider is a container component that provides a timing context to all child elements.
  * It allows calculating a single
  * @class RundownTimingProvider
- * @extends React.Component<IRundownTimingProviderProps>
+ * @extends React.Component<PropsWithChildren<IRundownTimingProviderProps>>
  */
 export const RundownTimingProvider = withTracker<
-	IRundownTimingProviderProps,
+	PropsWithChildren<IRundownTimingProviderProps>,
 	IRundownTimingProviderState,
 	IRundownTimingProviderTrackedProps
 >((props) => {
@@ -63,6 +69,7 @@ export const RundownTimingProvider = withTracker<
 	let parts: Array<Part> = []
 	let segments: Array<DBSegment> = []
 	const partInstancesMap = new Map<PartId, PartInstance>()
+	let pieces: Map<PartId, Piece[]> = new Map()
 	let currentRundown: Rundown | undefined
 	const segmentEntryPartInstances: PartInstance[] = []
 	if (props.playlist) {
@@ -74,8 +81,8 @@ export const RundownTimingProvider = withTracker<
 		segments = incomingSegments
 		const partInstances = RundownPlaylistCollectionUtil.getActivePartInstances(props.playlist)
 
-		const currentPartInstance = partInstances.find((p) => p._id === props.playlist?.currentPartInstanceId)
-		const previousPartInstance = partInstances.find((p) => p._id === props.playlist?.previousPartInstanceId)
+		const currentPartInstance = partInstances.find((p) => p._id === props.playlist?.currentPartInfo?.partInstanceId)
+		const previousPartInstance = partInstances.find((p) => p._id === props.playlist?.previousPartInfo?.partInstanceId)
 
 		currentRundown = currentPartInstance ? rundowns.find((r) => r._id === currentPartInstance.rundownId) : rundowns[0]
 		// These are needed to retrieve the start time of a segment for calculating the remaining budget, in case the first partInstance was removed
@@ -137,22 +144,28 @@ export const RundownTimingProvider = withTracker<
 
 				if (insertBefore !== null) {
 					parts.splice(insertBefore, 0, partInstance.part)
+				} else if (foundSegment && partInstance.orphaned === 'adlib-part') {
+					// Part is right at the end of the rundown
+					parts.push(partInstance.part)
 				}
 			}
 		})
+
+		pieces = RundownPlaylistCollectionUtil.getPiecesForParts(parts.map((p) => p._id))
 	}
 	return {
 		rundowns,
 		currentRundown,
 		parts,
 		partInstancesMap,
+		pieces,
 		segmentEntryPartInstances,
 		segments,
 	}
 })(
 	class RundownTimingProvider
 		extends MeteorReactComponent<
-			IRundownTimingProviderProps & IRundownTimingProviderTrackedProps,
+			PropsWithChildren<IRundownTimingProviderProps> & IRundownTimingProviderTrackedProps,
 			IRundownTimingProviderState
 		>
 		implements React.ChildContextProvider<IRundownTimingProviderChildContext>
@@ -217,7 +230,7 @@ export const RundownTimingProvider = withTracker<
 			this.refreshDecimator++
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 			this.onRefreshTimer()
 
@@ -233,16 +246,18 @@ export const RundownTimingProvider = withTracker<
 			}
 			if (
 				prevProps.parts !== this.props.parts ||
-				prevProps.playlist?.nextPartInstanceId !== this.props.playlist?.nextPartInstanceId ||
-				prevProps.playlist?.currentPartInstanceId !== this.props.playlist?.currentPartInstanceId
+				prevProps.playlist?.nextPartInfo?.partInstanceId !== this.props.playlist?.nextPartInfo?.partInstanceId ||
+				prevProps.playlist?.currentPartInfo?.partInstanceId !== this.props.playlist?.currentPartInfo?.partInstanceId
 			) {
 				// empty the temporary Part Instances cache
 				this.timingCalculator.clearTempPartInstances()
+				this.refreshDecimator = 0 // Force LR update
+				this.lastSyncedTime = 0 // Force synced update
 				this.onRefreshTimer()
 			}
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			this._cleanUp()
 			delete window['rundownTimingContext']
 			Meteor.clearInterval(this.refreshTimer)
@@ -279,8 +294,16 @@ export const RundownTimingProvider = withTracker<
 		}
 
 		updateDurations(now: number, isSynced: boolean) {
-			const { playlist, rundowns, currentRundown, parts, partInstancesMap, segments, segmentEntryPartInstances } =
-				this.props
+			const {
+				playlist,
+				rundowns,
+				currentRundown,
+				parts,
+				partInstancesMap,
+				pieces,
+				segments,
+				segmentEntryPartInstances,
+			} = this.props
 			const updatedDurations = this.timingCalculator.updateDurations(
 				now,
 				isSynced,
@@ -289,6 +312,7 @@ export const RundownTimingProvider = withTracker<
 				currentRundown,
 				parts,
 				partInstancesMap,
+				pieces,
 				segments,
 				this.props.defaultDuration,
 				segmentEntryPartInstances
@@ -300,7 +324,7 @@ export const RundownTimingProvider = withTracker<
 			}
 		}
 
-		render() {
+		render(): React.ReactNode {
 			return this.props.children
 		}
 	}

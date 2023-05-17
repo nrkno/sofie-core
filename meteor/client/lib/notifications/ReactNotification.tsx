@@ -1,5 +1,10 @@
 import React, { useEffect } from 'react'
-import { NoticeLevel, NotificationCenter, Notification, NotificationAction } from './notifications'
+import {
+	NoticeLevel,
+	NotificationCenter,
+	Notification,
+	NotificationAction,
+} from '../../../lib/notifications/notifications'
 import { getCurrentTime, getRandomString } from '../../../lib/lib'
 
 export interface IProps {
@@ -10,7 +15,7 @@ export interface IProps {
 	children?: React.ReactElement<HTMLElement>
 }
 
-export function ReactNotification(props: IProps) {
+export function ReactNotification(props: IProps): JSX.Element | null {
 	useEffect(() => {
 		const notificationId = getRandomString()
 		const notification = new Notification(

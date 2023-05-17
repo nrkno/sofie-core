@@ -3,8 +3,7 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { normalizeArrayToMap, min } from '@sofie-automation/corelib/dist/lib'
-import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { normalizeArrayToMap, min, groupByToMap } from '@sofie-automation/corelib/dist/lib'
 import { AnyBulkWriteOperation } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
@@ -15,29 +14,21 @@ import { logger } from './logging'
 import { CacheForPlayout } from './playout/cache'
 
 /** Return true if the rundown is allowed to be moved out of that playlist */
-export async function allowedToMoveRundownOutOfPlaylist(
-	context: JobContext,
+export function allowedToMoveRundownOutOfPlaylist(
 	playlist: ReadonlyDeep<DBRundownPlaylist>,
 	rundown: ReadonlyDeep<Pick<DBRundown, '_id' | 'playlistId'>>
-): Promise<boolean> {
+): boolean {
 	if (rundown.playlistId !== playlist._id)
 		throw new Error(
 			`Wrong playlist "${playlist._id}" provided for rundown "${rundown._id}" ("${rundown.playlistId}")`
 		)
 
-	const partInstanceIds = _.compact([playlist.currentPartInstanceId, playlist.nextPartInstanceId])
-	if (!playlist.activationId || partInstanceIds.length === 0) return true
+	if (!playlist.activationId) return true
 
-	const selectedPartInstancesInRundown: Pick<DBPartInstance, '_id'>[] =
-		await context.directCollections.PartInstances.findFetch(
-			{
-				_id: { $in: partInstanceIds },
-				rundownId: rundown._id,
-			},
-			{ projection: { _id: 1 } }
-		)
-
-	return selectedPartInstancesInRundown.length === 0
+	return (
+		!playlist.activationId ||
+		(playlist.currentPartInfo?.rundownId !== rundown._id && playlist.nextPartInfo?.rundownId !== rundown._id)
+	)
 }
 
 /**
@@ -51,18 +42,16 @@ export async function updatePartInstanceRanks(
 	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
 	beforePartMap: BeforePartMap
 ): Promise<void> {
-	const groupedPartInstances = _.groupBy(
+	const groupedPartInstances = groupByToMap(
 		await context.directCollections.PartInstances.findFetch({
 			reset: { $ne: true },
 			segmentId: { $in: changedSegmentIds as SegmentId[] },
 		}),
-		(p) => unprotectString(p.segmentId)
+		'segmentId'
 	)
-	const groupedNewParts = _.groupBy(
-		cache.Parts.findFetch({
-			segmentId: { $in: changedSegmentIds as SegmentId[] },
-		}),
-		(p) => unprotectString(p.segmentId)
+	const groupedNewParts = groupByToMap(
+		cache.Parts.findAll((p) => changedSegmentIds.includes(p.segmentId)),
+		'segmentId'
 	)
 
 	const writeOps: AnyBulkWriteOperation<DBPartInstance>[] = []
@@ -70,11 +59,8 @@ export async function updatePartInstanceRanks(
 	for (const segmentId of changedSegmentIds) {
 		const oldPartIdsAndRanks = beforePartMap.get(segmentId) ?? []
 
-		const newParts = groupedNewParts[unprotectString(segmentId)] || []
-		const segmentPartInstances = _.sortBy(
-			groupedPartInstances[unprotectString(segmentId)] || [],
-			(p) => p.part._rank
-		)
+		const newParts = groupedNewParts.get(segmentId) ?? []
+		const segmentPartInstances = _.sortBy(groupedPartInstances.get(segmentId) ?? [], (p) => p.part._rank)
 
 		const newRanks = calculateNewRanksForParts(segmentId, oldPartIdsAndRanks, newParts, segmentPartInstances)
 		for (const [instanceId, info] of newRanks.entries()) {
@@ -130,35 +116,30 @@ export async function updatePartInstanceRanks(
  * Syncs the ranks from matching Parts to PartInstances.
  */
 export function updatePartInstanceRanksAfterAdlib(cache: CacheForPlayout, segmentId: SegmentId): void {
-	const newParts = cache.Parts.findFetch((p) => p.segmentId === segmentId)
+	const newParts = cache.Parts.findAll((p) => p.segmentId === segmentId)
 	const segmentPartInstances = _.sortBy(
-		cache.PartInstances.findFetch((p) => p.segmentId === segmentId),
+		cache.PartInstances.findAll((p) => p.segmentId === segmentId),
 		(p) => p.part._rank
 	)
 
 	const newRanks = calculateNewRanksForParts(segmentId, null, newParts, segmentPartInstances)
 	for (const [instanceId, info] of newRanks.entries()) {
 		if (info.deleted) {
-			cache.PartInstances.update(instanceId, {
-				$set: {
-					orphaned: 'deleted',
-					'part._rank': info.rank,
-				},
+			cache.PartInstances.updateOne(instanceId, (p) => {
+				p.part._rank = info.rank
+				p.orphaned = 'deleted'
+				return p
 			})
 		} else if (info.deleted === undefined) {
-			cache.PartInstances.update(instanceId, {
-				$set: {
-					'part._rank': info.rank,
-				},
+			cache.PartInstances.updateOne(instanceId, (p) => {
+				p.part._rank = info.rank
+				return p
 			})
 		} else {
-			cache.PartInstances.update(instanceId, {
-				$set: {
-					'part._rank': info.rank,
-				},
-				$unset: {
-					orphaned: 1,
-				},
+			cache.PartInstances.updateOne(instanceId, (p) => {
+				p.part._rank = info.rank
+				delete p.orphaned
+				return p
 			})
 		}
 	}

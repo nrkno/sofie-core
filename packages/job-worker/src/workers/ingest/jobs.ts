@@ -5,28 +5,30 @@ import {
 	handleMosFullStory,
 	handleMosInsertStories,
 	handleMosMoveStories,
+	handleMosSwapStories,
+} from '../../ingest/mosDevice/mosStoryJobs'
+import {
 	handleMosRundownData,
 	handleMosRundownMetadata,
 	handleMosRundownReadyToAir,
 	handleMosRundownStatus,
-	handleMosStoryStatus,
-	handleMosSwapStories,
-} from '../../ingest/mosDevice/ingest'
+} from '../../ingest/mosDevice/mosRundownJobs'
 import {
 	handleRegenerateRundown,
-	handleRegenerateSegment,
-	handleRemovedPart,
 	handleRemovedRundown,
-	handleRemovedSegment,
-	handleRemoveOrphanedSegemnts,
-	handleUpdatedPart,
 	handleUpdatedRundown,
 	handleUpdatedRundownMetaData,
-	handleUpdatedSegment,
-	handleUpdatedSegmentRanks,
 	handleUserRemoveRundown,
 	handleUserUnsyncRundown,
-} from '../../ingest/rundownInput'
+} from '../../ingest/ingestRundownJobs'
+import { handleRemovedPart, handleUpdatedPart } from '../../ingest/ingestPartJobs'
+import {
+	handleRegenerateSegment,
+	handleRemovedSegment,
+	handleRemoveOrphanedSegemnts,
+	handleUpdatedSegment,
+	handleUpdatedSegmentRanks,
+} from '../../ingest/ingestSegmentJobs'
 import { handleExpectedPackagesRegenerate, handleUpdatedPackageInfoForRundown } from '../../ingest/packageInfo'
 import {
 	handleBucketActionModify,
@@ -65,7 +67,6 @@ export const ingestJobHandlers: IngestJobHandlers = {
 	[IngestJobs.MosRundownMetadata]: handleMosRundownMetadata,
 	[IngestJobs.MosRundownStatus]: handleMosRundownStatus,
 	[IngestJobs.MosRundownReadyToAir]: handleMosRundownReadyToAir,
-	[IngestJobs.MosStoryStatus]: handleMosStoryStatus,
 	[IngestJobs.MosFullStory]: handleMosFullStory,
 	[IngestJobs.MosDeleteStory]: handleMosDeleteStory,
 	[IngestJobs.MosInsertStory]: handleMosInsertStories,

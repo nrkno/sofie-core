@@ -1,11 +1,14 @@
 import { Meteor } from 'meteor/meteor'
-import { PubSub } from '../../lib/api/pubsub'
+import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
-import { PeripheralDevices, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
-import { meteorCustomPublishArray } from '../lib/customPublication'
-import { MappingsExtWithPackage, routeExpectedPackages, Studio, StudioId, Studios } from '../../lib/collections/Studios'
-import { setUpOptimizedObserver, TriggerUpdate } from '../lib/optimizedObserver'
-import { ExpectedPackageDB, ExpectedPackages, getSideEffect } from '../../lib/collections/ExpectedPackages'
+import {
+	MappingsExtWithPackage,
+	routeExpectedPackages,
+	Studio,
+	StudioPackageContainer,
+} from '../../lib/collections/Studios'
+import { setUpOptimizedObserverArray, TriggerUpdate, meteorCustomPublish } from '../lib/customPublication'
+import { ExpectedPackageDB, getSideEffect } from '../../lib/collections/ExpectedPackages'
 import _ from 'underscore'
 import {
 	ExpectedPackage,
@@ -14,19 +17,19 @@ import {
 	PackageContainerOnPackage,
 	AccessorOnPackage,
 } from '@sofie-automation/blueprints-integration'
-import {
-	DBRundownPlaylist,
-	RundownPlaylistCollectionUtil,
-	RundownPlaylists,
-} from '../../lib/collections/RundownPlaylists'
-import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundown } from '../../lib/collections/Rundowns'
 import { clone, DBObj, literal, omit, protectString, unprotectObject, unprotectString } from '../../lib/lib'
 import deepExtend from 'deep-extend'
 import { logger } from '../logging'
 import { generateExpectedPackagesForPartInstance } from '../api/ingest/expectedPackages'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { StudioLight } from '../../lib/collections/optimizations'
+import { StudioLight } from '../optimizations'
 import { ReadonlyDeep } from 'type-fest'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExpectedPackages, RundownPlaylists, Rundowns, PeripheralDevices, Studios, PartInstances } from '../collections'
 
 interface ExpectedPackagesPublicationArgs {
 	readonly studioId: StudioId
@@ -42,16 +45,50 @@ interface ExpectedPackagesPublicationUpdateProps {
 }
 
 interface ExpectedPackagesPublicationState {
-	studio: Studio | undefined
+	studio: Pick<Studio, StudioFields> | undefined
 	expectedPackages: ExpectedPackageDB[]
 	routedExpectedPackages: ResultingExpectedPackage[]
 	/** ExpectedPackages relevant for playout */
 	routedPlayoutExpectedPackages: ResultingExpectedPackage[]
-	activePlaylist: DBRundownPlaylist | undefined
+	activePlaylist: Pick<RundownPlaylist, RundownPlaylistFields> | undefined
 	activeRundowns: DBRundown[]
 	currentPartInstance: PartInstance | undefined
 	nextPartInstance: PartInstance | undefined
 }
+
+type StudioFields =
+	| '_id'
+	| 'routeSets'
+	| 'mappingsWithOverrides'
+	| 'packageContainers'
+	| 'previewContainerIds'
+	| 'thumbnailContainerIds'
+const studioFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
+	_id: 1,
+	routeSets: 1,
+	mappingsWithOverrides: 1,
+	packageContainers: 1,
+	previewContainerIds: 1,
+	thumbnailContainerIds: 1,
+})
+type RundownPlaylistFields =
+	| '_id'
+	| 'activationId'
+	| 'rehearsal'
+	| 'currentPartInfo'
+	| 'nextPartInfo'
+	| 'previousPartInfo'
+	| 'rundownIdsInOrder'
+const rundownPlaylistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownPlaylistFields>>({
+	// It should be enough to watch these fields for changes
+	_id: 1,
+	activationId: 1,
+	rehearsal: 1,
+	currentPartInfo: 1, // So that it invalidates when the current changes
+	nextPartInfo: 1, // So that it invalidates when the next changes
+	previousPartInfo: 1,
+	rundownIdsInOrder: 1,
+})
 
 async function setupExpectedPackagesPublicationObservers(
 	args: ReadonlyDeep<ExpectedPackagesPublicationArgs>,
@@ -59,55 +96,60 @@ async function setupExpectedPackagesPublicationObservers(
 ): Promise<Meteor.LiveQueryHandle[]> {
 	// Set up observers:
 	return [
-		Studios.find(args.studioId, {
-			fields: {
-				mappingsHash: 1, // is changed when routes are changed
-				packageContainers: 1,
+		Studios.observeChanges(
+			args.studioId,
+			{
+				added: () => triggerUpdate({ invalidateStudio: true }),
+				changed: () => triggerUpdate({ invalidateStudio: true }),
+				removed: () => triggerUpdate({ invalidateStudio: true }),
 			},
-		}).observe({
-			added: () => triggerUpdate({ invalidateStudio: true }),
-			changed: () => triggerUpdate({ invalidateStudio: true }),
-			removed: () => triggerUpdate({ invalidateStudio: true }),
-		}),
-		PeripheralDevices.find(
-			{ studioId: args.studioId },
+			{
+				fields: {
+					// mappingsHash gets updated when either of these omitted fields changes
+					...omit(studioFieldSpecifier, 'mappingsWithOverrides', 'routeSets'),
+					mappingsHash: 1,
+				},
+			}
+		),
+		PeripheralDevices.observeChanges(
+			{
+				studioId: args.studioId,
+			},
+			{
+				added: () => triggerUpdate({ invalidatePeripheralDevices: true }),
+				changed: () => triggerUpdate({ invalidatePeripheralDevices: true }),
+				removed: () => triggerUpdate({ invalidatePeripheralDevices: true }),
+			},
 			{
 				fields: {
 					// Only monitor settings
 					settings: 1,
 				},
 			}
-		).observe({
-			added: () => triggerUpdate({ invalidatePeripheralDevices: true }),
-			changed: () => triggerUpdate({ invalidatePeripheralDevices: true }),
-			removed: () => triggerUpdate({ invalidatePeripheralDevices: true }),
-		}),
-		ExpectedPackages.find({
-			studioId: args.studioId,
-		}).observe({
-			added: () => triggerUpdate({ invalidateExpectedPackages: true }),
-			changed: () => triggerUpdate({ invalidateExpectedPackages: true }),
-			removed: () => triggerUpdate({ invalidateExpectedPackages: true }),
-		}),
-		RundownPlaylists.find(
+		),
+		ExpectedPackages.observeChanges(
 			{
 				studioId: args.studioId,
 			},
 			{
-				fields: {
-					// It should be enough to watch these fields for changes
-					_id: 1,
-					activationId: 1,
-					rehearsal: 1,
-					currentPartInstanceId: 1, // So that it invalidates when the current changes
-					nextPartInstanceId: 1, // So that it invalidates when the next changes
-				},
+				added: () => triggerUpdate({ invalidateExpectedPackages: true }),
+				changed: () => triggerUpdate({ invalidateExpectedPackages: true }),
+				removed: () => triggerUpdate({ invalidateExpectedPackages: true }),
 			}
-		).observe({
-			added: () => triggerUpdate({ invalidateRundownPlaylist: true }),
-			changed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
-			removed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
-		}),
+		),
+		RundownPlaylists.observeChanges(
+			{
+				studioId: args.studioId,
+			},
+			{
+				added: () => triggerUpdate({ invalidateRundownPlaylist: true }),
+				changed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
+				removed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
+			},
+			{
+				fields: rundownPlaylistFieldSpecifier,
+			}
+		),
 	]
 }
 
@@ -135,7 +177,9 @@ async function manipulateExpectedPackagesPublicationData(
 		invalidateRoutedExpectedPackages = true
 		invalidateRoutedPlayoutExpectedPackages = true
 
-		state.studio = await Studios.findOneAsync(args.studioId)
+		state.studio = (await Studios.findOneAsync(args.studioId, { fields: studioFieldSpecifier })) as
+			| Pick<Studio, StudioFields>
+			| undefined
 		if (!state.studio) {
 			logger.warn(`Pub.expectedPackagesForDevice: studio "${args.studioId}" not found!`)
 		}
@@ -157,17 +201,42 @@ async function manipulateExpectedPackagesPublicationData(
 		}
 	}
 	if (updateProps.invalidateRundownPlaylist) {
-		const activePlaylist = await RundownPlaylists.findOneAsync({
-			studioId: args.studioId,
-			activationId: { $exists: true },
-		})
+		const activePlaylist = (await RundownPlaylists.findOneAsync(
+			{
+				studioId: args.studioId,
+				activationId: { $exists: true },
+			},
+			{ fields: rundownPlaylistFieldSpecifier }
+		)) as Pick<RundownPlaylist, RundownPlaylistFields> | undefined
 		state.activePlaylist = activePlaylist
 		delete state.activeRundowns
 
-		const selectPartInstances =
-			activePlaylist && RundownPlaylistCollectionUtil.getSelectedPartInstances(activePlaylist)
-		state.nextPartInstance = selectPartInstances?.nextPartInstance
-		state.currentPartInstance = selectPartInstances?.currentPartInstance
+		if (activePlaylist) {
+			const validRundownIds = (
+				await Rundowns.findFetchAsync({ playlistId: activePlaylist._id }, { fields: { _id: 1 } })
+			).map((rd) => rd._id)
+
+			const [nextPartInstance, currentPartInstance] = await Promise.all([
+				activePlaylist.nextPartInfo &&
+					PartInstances.findOneAsync({
+						_id: activePlaylist.nextPartInfo.partInstanceId,
+						rundownId: { $in: validRundownIds },
+						reset: { $ne: true },
+					}),
+				activePlaylist.currentPartInfo &&
+					PartInstances.findOneAsync({
+						_id: activePlaylist.currentPartInfo.partInstanceId,
+						rundownId: { $in: validRundownIds },
+						reset: { $ne: true },
+					}),
+			])
+
+			state.nextPartInstance = nextPartInstance || undefined
+			state.currentPartInstance = currentPartInstance || undefined
+		} else {
+			state.nextPartInstance = undefined
+			state.currentPartInstance = undefined
+		}
 
 		invalidateRoutedPlayoutExpectedPackages = true
 	}
@@ -183,18 +252,20 @@ async function manipulateExpectedPackagesPublicationData(
 	if (!state.studio) {
 		return []
 	}
-	const studio: Studio = state.studio
+	const studio: Pick<Studio, StudioFields> = state.studio
+
+	const studioMappings = applyAndValidateOverrides(studio.mappingsWithOverrides).obj
 
 	if (invalidateRoutedExpectedPackages) {
 		// Map the expectedPackages onto their specified layer:
-		const routedMappingsWithPackages = routeExpectedPackages(studio, state.expectedPackages)
+		const routedMappingsWithPackages = routeExpectedPackages(studio, studioMappings, state.expectedPackages)
 
 		if (state.expectedPackages.length && !Object.keys(routedMappingsWithPackages).length) {
 			logger.info(`Pub.expectedPackagesForDevice: routedMappingsWithPackages is empty`)
 		}
 
 		state.routedExpectedPackages = generateExpectedPackages(
-			state.studio,
+			studio,
 			args.filterPlayoutDeviceIds,
 			routedMappingsWithPackages,
 			Priorities.OTHER // low priority
@@ -219,8 +290,16 @@ async function manipulateExpectedPackagesPublicationData(
 			: []
 
 		// Map the expectedPackages onto their specified layer:
-		const currentRoutedMappingsWithPackages = routeExpectedPackages(studio, playoutCurrentExpectedPackages)
-		const nextRoutedMappingsWithPackages = routeExpectedPackages(studio, playoutNextExpectedPackages)
+		const currentRoutedMappingsWithPackages = routeExpectedPackages(
+			studio,
+			studioMappings,
+			playoutCurrentExpectedPackages
+		)
+		const nextRoutedMappingsWithPackages = routeExpectedPackages(
+			studio,
+			studioMappings,
+			playoutNextExpectedPackages
+		)
 
 		if (
 			state.currentPartInstance &&
@@ -250,7 +329,9 @@ async function manipulateExpectedPackagesPublicationData(
 	}
 
 	const packageContainers: { [containerId: string]: PackageContainer } = {}
-	for (const [containerId, studioPackageContainer] of Object.entries(studio.packageContainers)) {
+	for (const [containerId, studioPackageContainer] of Object.entries<StudioPackageContainer>(
+		studio.packageContainers
+	)) {
 		packageContainers[containerId] = studioPackageContainer.container
 	}
 
@@ -294,9 +375,9 @@ async function manipulateExpectedPackagesPublicationData(
 	])
 }
 
-meteorCustomPublishArray(
+meteorCustomPublish(
 	PubSub.expectedPackagesForDevice,
-	'deviceExpectedPackages',
+	CustomCollectionName.ExpectedPackagesForDevice,
 	async function (
 		pub,
 		deviceId: PeripheralDeviceId,
@@ -304,7 +385,7 @@ meteorCustomPublishArray(
 		token: string | undefined
 	) {
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
-			const peripheralDevice = PeripheralDevices.findOne(deviceId)
+			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 
@@ -314,26 +395,21 @@ meteorCustomPublishArray(
 				return this.ready()
 			}
 
-			const observer = await setUpOptimizedObserver<
+			await setUpOptimizedObserverArray<
 				DBObj,
 				ExpectedPackagesPublicationArgs,
 				ExpectedPackagesPublicationState,
 				ExpectedPackagesPublicationUpdateProps
 			>(
-				`pub_${PubSub.expectedPackagesForDevice}_${studioId}_${deviceId}_${JSON.stringify(
+				`${PubSub.expectedPackagesForDevice}_${studioId}_${deviceId}_${JSON.stringify(
 					(filterPlayoutDeviceIds || []).sort()
 				)}`,
 				{ studioId, deviceId, filterPlayoutDeviceIds },
 				setupExpectedPackagesPublicationObservers,
 				manipulateExpectedPackagesPublicationData,
-				(_args, newData) => {
-					pub.updatedDocs(newData)
-				},
+				pub,
 				500 // ms, wait this time before sending an update
 			)
-			pub.onStop(() => {
-				observer.stop()
-			})
 		} else {
 			logger.warn(`Pub.expectedPackagesForDevice: Not allowed: "${deviceId}"`)
 		}
@@ -360,7 +436,7 @@ enum Priorities {
 }
 
 function generateExpectedPackages(
-	studio: StudioLight,
+	studio: Pick<StudioLight, '_id' | 'packageContainers' | 'previewContainerIds' | 'thumbnailContainerIds'>,
 	filterPlayoutDeviceIds: ReadonlyDeep<PeripheralDeviceId[] | undefined>,
 	routedMappingsWithPackages: MappingsExtWithPackage,
 	priority: Priorities
@@ -429,7 +505,9 @@ function generateExpectedPackages(
 				const mappingDeviceId = unprotectString(mapping.deviceId)
 
 				let packageContainerId: string | undefined
-				for (const [containerId, packageContainer] of Object.entries(studio.packageContainers)) {
+				for (const [containerId, packageContainer] of Object.entries<StudioPackageContainer>(
+					studio.packageContainers
+				)) {
 					if (packageContainer.deviceIds.includes(mappingDeviceId)) {
 						// TODO: how to handle if a device has multiple containers?
 						packageContainerId = containerId

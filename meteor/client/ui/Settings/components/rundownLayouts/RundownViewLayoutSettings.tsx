@@ -1,8 +1,10 @@
-import React from 'react'
+import { ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { RundownLayoutsAPI } from '../../../../../lib/api/rundownLayouts'
-import { RundownLayoutBase, RundownLayouts } from '../../../../../lib/collections/RundownLayouts'
-import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
+import { RundownLayouts } from '../../../../collections'
+import { RundownLayoutBase } from '../../../../../lib/collections/RundownLayouts'
 import { unprotectString } from '../../../../../lib/lib'
 import { EditAttribute } from '../../../../lib/EditAttribute'
 
@@ -14,13 +16,22 @@ function filterLayouts(
 }
 
 interface IProps {
-	showStyleBase: ShowStyleBase
+	sourceLayers: SourceLayers
 	item: RundownLayoutBase
 	layouts: RundownLayoutBase[]
 }
 
-export default function RundownViewLayoutSettings({ showStyleBase, item, layouts }: IProps) {
+export default function RundownViewLayoutSettings({ sourceLayers, item, layouts }: IProps): JSX.Element {
 	const { t } = useTranslation()
+
+	const sourceLayerOptions = useMemo(
+		() =>
+			Object.values<ISourceLayer | undefined>(sourceLayers)
+				.filter((s): s is ISourceLayer => !!s)
+				.sort((a, b) => a._rank - b._rank)
+				.map((sourceLayer) => ({ name: sourceLayer.name, value: sourceLayer._id })),
+		[sourceLayers]
+	)
 
 	return (
 		<>
@@ -95,9 +106,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 					modifiedClassName="bghl"
 					attribute={`liveLineProps.requiredLayerIds`}
 					obj={item}
-					options={showStyleBase.sourceLayers.map((l) => {
-						return { name: l.name, value: l._id }
-					})}
+					options={sourceLayerOptions}
 					type="multiselect"
 					label={t('Disabled')}
 					collection={RundownLayouts}
@@ -124,9 +133,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 					modifiedClassName="bghl"
 					attribute={`liveLineProps.additionalLayers`}
 					obj={item}
-					options={showStyleBase.sourceLayers.map((l) => {
-						return { name: l.name, value: l._id }
-					})}
+					options={sourceLayerOptions}
 					type="multiselect"
 					label={t('Disabled')}
 					collection={RundownLayouts}
@@ -194,9 +201,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 					modifiedClassName="bghl"
 					attribute={`countdownToSegmentRequireLayers`}
 					obj={item}
-					options={showStyleBase.sourceLayers.map((l) => {
-						return { name: l.name, value: l._id }
-					})}
+					options={sourceLayerOptions}
 					type="multiselect"
 					label={t('Disabled')}
 					collection={RundownLayouts}
@@ -232,12 +237,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 						modifiedClassName="bghl"
 						attribute={'visibleSourceLayers'}
 						obj={item}
-						options={showStyleBase.sourceLayers
-							.sort((a, b) => a._rank - b._rank)
-							.map((sourceLayer) => ({
-								value: sourceLayer._id,
-								name: sourceLayer.name,
-							}))}
+						options={sourceLayerOptions}
 						type="multiselect"
 						mutateUpdateValue={undefinedOnEmptyArray}
 						collection={RundownLayouts}
@@ -252,12 +252,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 						modifiedClassName="bghl"
 						attribute={'visibleOutputLayers'}
 						obj={item}
-						options={showStyleBase.outputLayers
-							.sort((a, b) => a._rank - b._rank)
-							.map((outputLayer) => ({
-								value: outputLayer._id,
-								name: outputLayer.name,
-							}))}
+						options={sourceLayerOptions}
 						type="multiselect"
 						mutateUpdateValue={undefinedOnEmptyArray}
 						collection={RundownLayouts}
@@ -281,9 +276,7 @@ export default function RundownViewLayoutSettings({ showStyleBase, item, layouts
 					modifiedClassName="bghl"
 					attribute={`showDurationSourceLayers`}
 					obj={item}
-					options={showStyleBase.sourceLayers.map((l) => {
-						return { name: l.name, value: l._id }
-					})}
+					options={sourceLayerOptions}
 					type="multiselect"
 					label={t('Disabled')}
 					collection={RundownLayouts}

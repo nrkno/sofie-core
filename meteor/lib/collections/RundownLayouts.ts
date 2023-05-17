@@ -1,10 +1,5 @@
 import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { createMongoCollection } from './lib'
-import { registerIndex } from '../database'
 import { RundownLayoutId, UserId, ShowStyleBaseId, BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-export { RundownLayoutId }
-import { DashboardPanel } from '../../client/ui/Shelf/DashboardPanel'
 
 /**
  * The view targeted by this layout:
@@ -346,6 +341,7 @@ export interface RundownLayoutBase {
 	iconColor: string
 	/* Customizable region that the layout modifies. */
 	regionId: CustomizableRegions
+	isDefaultLayout: boolean
 }
 
 export interface RundownLayoutWithFilters extends RundownLayoutBase {
@@ -436,15 +432,3 @@ export interface DashboardLayout extends RundownLayoutShelfBase {
 	type: RundownLayoutType.DASHBOARD_LAYOUT
 	actionButtons?: DashboardLayoutActionButton[]
 }
-
-export const RundownLayouts = createMongoCollection<RundownLayoutBase>(CollectionName.RundownLayouts)
-
-// addIndex(RundownLayouts, {
-// 	studioId: 1,
-// 	collectionId: 1,
-// 	objId: 1,
-// 	mediaId: 1
-// })
-registerIndex(RundownLayouts, {
-	showStyleBaseId: 1,
-})

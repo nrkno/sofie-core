@@ -22,8 +22,10 @@ export function transformPieceGroupAndObjects(
 	nowInPart: number,
 	pieceInstance: ReadonlyDeep<PieceInstanceWithTimings>,
 	pieceEnable: TSR.Timeline.TimelineEnable,
-	pieceStartOffset: number, // If the start of the piece has been offset inside the partgroup
+	/** If the start of the piece has been offset inside the partgroup  */
+	pieceStartOffset: number,
 	controlObjClasses: string[],
+	/** If true, we're playing in a HOLD situation */
 	isInHold: boolean,
 	includeHoldExceptObjects: boolean
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
@@ -35,9 +37,9 @@ export function transformPieceGroupAndObjects(
 	const { controlObj, childGroup, capObjs } = createPieceGroupAndCap(
 		playlistId,
 		pieceInstance,
+		pieceEnable,
 		controlObjClasses,
 		partGroup,
-		pieceEnable,
 		pieceStartOffset
 	)
 	// We need all these objects so that we can resolve all the piece timings in this timeline
@@ -69,7 +71,7 @@ export function transformPieceGroupAndObjects(
 
 			pieceObjects.push({
 				metaData: undefined,
-				...clone<TimelineObjectCoreExt>(o),
+				...clone<TimelineObjectCoreExt<any>>(o),
 				inGroup: childGroup.id,
 				objectType: TimelineObjType.RUNDOWN,
 				pieceInstanceId: unprotectString(pieceInstance._id),
@@ -101,5 +103,17 @@ export function getPieceEnableInsidePart(
 			pieceEnable.duration = `#${partGroupId} - ${partTimings.toPartPostroll}`
 		}
 	}
+
+	if (pieceInstance.userDuration) {
+		delete pieceEnable.duration
+
+		if ('endRelativeToPart' in pieceInstance.userDuration) {
+			pieceEnable.end = pieceInstance.userDuration.endRelativeToPart
+		} else {
+			// This will be fixed later
+			pieceEnable.end = 'now'
+		}
+	}
+
 	return pieceEnable
 }

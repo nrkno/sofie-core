@@ -21,6 +21,7 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { clone, literal } from '@sofie-automation/corelib/dist/lib'
 import {
@@ -105,7 +106,7 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 			if (options.projection) {
 				const fields2: any = (fields = {})
 
-				for (const [k, v] of Object.entries(options.projection)) {
+				for (const [k, v] of Object.entries<any>(options.projection)) {
 					if (v === 0 || v === false) {
 						fields2[k] = 0
 					} else if (v === 1 || v === true) {
@@ -120,7 +121,7 @@ export class MockMongoCollection<TDoc extends { _id: ProtectedString<any> }> imp
 			if (options.sort) {
 				const sort2: any = (sort = {})
 				if (typeof options.sort !== 'object') throw new Error(`find expects sort to be an object (for now)`)
-				for (const [k, v] of Object.entries(options.sort)) {
+				for (const [k, v] of Object.entries<any>(options.sort)) {
 					if (v === 1 || v === -1) {
 						sort2[k] = v
 					} else {
@@ -294,6 +295,7 @@ export function getMockCollections(): Readonly<IDirectCollections> {
 			ShowStyleVariants: new MockMongoCollection<DBShowStyleVariant>(CollectionName.ShowStyleVariants),
 			Studios: new MockMongoCollection<DBStudio>(CollectionName.Studios),
 			Timelines: new MockMongoCollection<TimelineComplete>(CollectionName.Timelines),
+			TimelineDatastores: new MockMongoCollection<DBTimelineDatastoreEntry>(CollectionName.TimelineDatastore),
 
 			ExpectedPackages: new MockMongoCollection<ExpectedPackageDB>(CollectionName.ExpectedPackages),
 			PackageInfos: new MockMongoCollection(CollectionName.PackageInfos),

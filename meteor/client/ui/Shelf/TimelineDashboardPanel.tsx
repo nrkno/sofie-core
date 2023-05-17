@@ -23,10 +23,11 @@ import {
 } from './DashboardPanel'
 import { unprotectString } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import { AdLibPieceUi, getNextPieceInstancesGrouped, getUnfinishedPieceInstancesGrouped } from '../../lib/shelf'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ContextType, setShelfContextMenuContext } from './ShelfContextMenu'
+import { UIStudios } from '../Collections'
+import { Meteor } from 'meteor/meteor'
 
 export const TimelineDashboardPanel = translateWithTracker<
 	Translated<IAdLibPanelProps & IDashboardPanelProps>,
@@ -34,6 +35,9 @@ export const TimelineDashboardPanel = translateWithTracker<
 	AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IDashboardPanelProps>) => {
+		const studio = UIStudios.findOne(props.playlist.studioId)
+		if (!studio) throw new Meteor.Error(404, 'Studio "' + props.playlist.studioId + '" not found!')
+
 		const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
 			props.playlist,
 			props.showStyleBase
@@ -41,7 +45,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 		const { nextAdLibIds, nextTags } = getNextPieceInstancesGrouped(props.playlist, props.showStyleBase)
 		return {
 			...fetchAndFilter(props),
-			studio: RundownPlaylistCollectionUtil.getStudio(props.playlist),
+			studio,
 			unfinishedAdLibIds,
 			unfinishedTags,
 			nextAdLibIds,
@@ -82,7 +86,7 @@ export const TimelineDashboardPanel = translateWithTracker<
 			super.componentDidUpdate(prevProps, prevState)
 			this.ensureLiveLineVisible()
 		}
-		componentDidMount() {
+		componentDidMount(): void {
 			super.componentDidMount()
 			this.ensureLiveLineVisible()
 		}
@@ -95,7 +99,8 @@ export const TimelineDashboardPanel = translateWithTracker<
 				})
 			}
 		}, 250)
-		render() {
+
+		render(): JSX.Element | null {
 			if (this.props.visible && this.props.showStyleBase && this.props.filter) {
 				const filter = this.props.filter as DashboardLayoutFilter
 				const uniquenessIds = new Set<string>()
@@ -206,16 +211,16 @@ export const TimelineDashboardPanel = translateWithTracker<
 										: []
 									return filteredPieces.length > 0 ||
 										seg.isLive ||
-										(seg.isNext && !this.props.playlist.currentPartInstanceId) ? (
+										(seg.isNext && !this.props.playlist.currentPartInfo) ? (
 										<div
 											key={unprotectString(seg._id)}
 											id={'dashboard-panel__panel__group__' + seg._id}
 											className={ClassNames('dashboard-panel__panel__group', {
 												live: seg.isLive,
-												next: seg.isNext && !this.props.playlist.currentPartInstanceId,
+												next: seg.isNext && !this.props.playlist.currentPartInfo,
 											})}
 										>
-											{(seg.isLive || (seg.isNext && !this.props.playlist.currentPartInstanceId)) && (
+											{(seg.isLive || (seg.isNext && !this.props.playlist.currentPartInfo)) && (
 												<div className="dashboard-panel__panel__group__liveline" ref={this.setRef}></div>
 											)}
 											{filteredPieces.map((adLibListItem: AdLibPieceUi) => {

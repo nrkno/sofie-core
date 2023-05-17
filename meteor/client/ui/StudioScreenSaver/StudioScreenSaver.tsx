@@ -1,15 +1,18 @@
 import * as React from 'react'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { StudioId, Studio, Studios } from '../../../lib/collections/Studios'
-import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { getCurrentTime } from '../../../lib/lib'
-import { invalidateAfter } from '../../lib/invalidatingTime'
+import { invalidateAfter } from '../../../lib/invalidatingTime'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { PubSub } from '../../../lib/api/pubsub'
 import classNames from 'classnames'
 import { Clock } from './Clock'
 import { Countdown } from './Countdown'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
+import { UIStudios } from '../Collections'
+import { UIStudio } from '../../../lib/api/studios'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylists } from '../../collections'
 
 interface IProps {
 	// the studio to be displayed in the screen saver
@@ -19,8 +22,8 @@ interface IProps {
 }
 
 interface ITrackedProps {
-	studio: Studio | undefined
-	rundownPlaylist: RundownPlaylist | undefined
+	studio: Pick<UIStudio, 'name'> | undefined
+	rundownPlaylist: Pick<RundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'> | undefined
 }
 
 interface IState {
@@ -37,30 +40,35 @@ interface IState {
 	subsReady: boolean
 }
 
-export const findNextPlaylist = (props: IProps) => {
+interface FindNextPlaylistResult {
+	studio: Pick<UIStudio, 'name'> | undefined
+	rundownPlaylist: Pick<RundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'> | undefined
+}
+export const findNextPlaylist = (props: IProps): FindNextPlaylistResult => {
 	invalidateAfter(5000)
 	const now = getCurrentTime()
 
 	return {
-		studio: Studios.findOne(props.studioId, {
+		studio: UIStudios.findOne(props.studioId, {
 			fields: {
 				name: 1,
 			},
-		}),
-		rundownPlaylist: RundownPlaylists.find(
-			{
-				studioId: props.studioId,
-			},
-			{
-				fields: {
-					name: 1,
-					timing: 1,
-					studioId: 1,
+		}) as Pick<UIStudio, 'name'> | undefined,
+		rundownPlaylist: (
+			RundownPlaylists.find(
+				{
+					studioId: props.studioId,
 				},
-			}
+				{
+					fields: {
+						name: 1,
+						timing: 1,
+						studioId: 1,
+					},
+				}
+			).fetch() as Pick<RundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'>[]
 		)
-			.fetch()
-			.sort(PlaylistTiming.sortTiminings)
+			.sort(PlaylistTiming.sortTimings)
 			.find((rundownPlaylist) => {
 				const expectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
 				const expectedDuration = PlaylistTiming.getExpectedDuration(rundownPlaylist.timing)
@@ -115,10 +123,8 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 			}
 		}
 
-		componentDidMount() {
-			this.subscribe(PubSub.studios, {
-				_id: this.props.studioId,
-			})
+		componentDidMount(): void {
+			this.subscribe(PubSub.uiStudio, this.props.studioId)
 			this.subscribe(PubSub.rundownPlaylists, {
 				studioId: this.props.studioId,
 			})
@@ -149,7 +155,7 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 			}
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			super.componentWillUnmount()
 
 			if (this.props.ownBackground) {
@@ -318,7 +324,7 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 			)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t, rundownPlaylist } = this.props
 			const expectedStart = rundownPlaylist && PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
 			const hasRundown = !!expectedStart

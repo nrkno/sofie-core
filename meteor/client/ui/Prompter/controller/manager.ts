@@ -43,7 +43,7 @@ export class PrompterControlManager {
 			this._controllers.push(new KeyboardController(this._view))
 		}
 	}
-	destroy() {
+	destroy(): void {
 		window.removeEventListener('keydown', this._onKeyDown)
 		window.removeEventListener('keyup', this._onKeyUp)
 		window.removeEventListener('wheel', this._onWheel)

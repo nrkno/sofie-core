@@ -1,14 +1,17 @@
-import { RundownLayoutId } from '../../../lib/collections/RundownLayouts'
-import { RundownPlaylistId } from '../../../lib/collections/RundownPlaylists'
-import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
-import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
-import { StudioId } from '../../../lib/collections/Studios'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { unprotectString } from '../../../lib/lib'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { doUserAction, UserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { TFunction } from 'i18next'
 import { handleRundownReloadResponse } from '../RundownView'
+import {
+	RundownId,
+	RundownLayoutId,
+	RundownPlaylistId,
+	ShowStyleBaseId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export function getRundownPlaylistLink(rundownPlaylistId: RundownPlaylistId): string {
 	// double encoding so that "/" are handled correctly
@@ -50,7 +53,7 @@ export function getRundownWithShelfLayoutLink(
 	return `/rundown/${encodedRundownId}?rundownViewLayout=${encodedLayoutId}`
 }
 
-export function confirmDeleteRundown(rundown: Rundown, t: TFunction) {
+export function confirmDeleteRundown(rundown: Rundown, t: TFunction): void {
 	doModalDialog({
 		title: t('Delete rundown?'),
 		yes: t('Delete'),

@@ -48,7 +48,7 @@ export default class SplitInputIcon extends React.Component<{
 		return 'remote'
 	}
 
-	render() {
+	render(): JSX.Element {
 		return (
 			<svg
 				className="piece_icon"

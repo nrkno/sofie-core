@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { NoraContent } from '@sofie-automation/blueprints-integration'
-import Escape from 'react-escape'
+import Escape from './../../lib/Escape'
 
 interface IPropsHeader {
 	noraContent: NoraContent | undefined
@@ -53,15 +53,15 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		| undefined
 	private _observer: IntersectionObserver | undefined
 
-	static show(noraContent: NoraContent, style: React.CSSProperties, displayOn: 'document' | 'viewport') {
+	static show(noraContent: NoraContent, style: React.CSSProperties, displayOn: 'document' | 'viewport'): void {
 		NoraPreviewRenderer._singletonRef._show(noraContent, style, displayOn)
 	}
 
-	static hide() {
+	static hide(): void {
 		NoraPreviewRenderer._singletonRef._hide()
 	}
 
-	constructor(props) {
+	constructor(props: {}) {
 		super(props)
 
 		this.state = {
@@ -186,11 +186,11 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		this._observer.observe(e)
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		if (this._observer) this._observer.disconnect()
 	}
 
-	getElStyle() {
+	private getElStyle() {
 		const style = { ...this.state.style }
 		style.visibility = this.state.show ? 'visible' : 'hidden'
 
@@ -205,7 +205,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		return style
 	}
 
-	render() {
+	render(): JSX.Element {
 		const stepContent = this.state.noraContent?.payload?.step
 		const isMultiStep = this.state.noraContent?.payload?.step?.enabled === true
 
@@ -217,7 +217,7 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 						style={this.getElStyle()}
 					>
 						<div className="preview">
-							<img width="100%" src="/images/previewBG.png" alt="" />
+							<img width="100%" src="/images/previewBG.jpg" alt="" />
 							<iframe
 								sandbox="allow-scripts allow-same-origin"
 								src={this.state.noraContent?.previewRenderer}

@@ -6,23 +6,26 @@ import { MomentFromNow } from '../../lib/Moment'
 import { getAllowConfigure } from '../../lib/localStorage'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import * as _ from 'underscore'
-import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
+import { ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import ClassNames from 'classnames'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import moment from 'moment'
-import { Studios, Studio, StudioId } from '../../../lib/collections/Studios'
 import { faTrash, faPause, faPlay, faRedo } from '@fortawesome/free-solid-svg-icons'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
+import { UIStudios } from '../Collections'
+import { UIStudio } from '../../../lib/api/studios'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExternalMessageQueue } from '../../collections'
 
 interface IExternalMessagesProps {}
 interface IExternalMessagesState {
 	studioId: StudioId | undefined
 }
 interface IExternalMessagesTrackedProps {
-	studios: Array<Studio>
+	studios: Array<UIStudio>
 }
 
 const ExternalMessages = translateWithTracker<
@@ -31,7 +34,7 @@ const ExternalMessages = translateWithTracker<
 	IExternalMessagesTrackedProps
 >((_props: IExternalMessagesProps) => {
 	return {
-		studios: Studios.find({}).fetch(),
+		studios: UIStudios.find({}).fetch(),
 	}
 })(
 	class ExternalMessages extends MeteorReactComponent<
@@ -44,15 +47,15 @@ const ExternalMessages = translateWithTracker<
 				studioId: undefined,
 			}
 		}
-		componentDidMount() {
-			this.subscribe(PubSub.studios, {})
+		componentDidMount(): void {
+			this.subscribe(PubSub.uiStudio, null)
 		}
 		onClickStudio = (studio) => {
 			this.setState({
 				studioId: studio._id,
 			})
 		}
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (
@@ -85,7 +88,6 @@ interface IExternalMessagesInStudioProps {
 	studioId: StudioId
 }
 interface IExternalMessagesInStudioState {
-	// devices: Array<PeripheralDevice>
 	dateFrom: Time
 	dateTo: Time
 }
@@ -142,11 +144,11 @@ const ExternalMessagesInStudio = translateWithTracker<
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			// Subscribe to data:
 			this.updateSubscription()
 		}
-		componentDidUpdate() {
+		componentDidUpdate(): void {
 			this.updateSubscription()
 		}
 		updateSubscription() {
@@ -165,7 +167,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 				})
 			}
 		}
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			if (this._sub) {
 				this._sub.stop()
 			}
@@ -255,7 +257,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 								<br />
 							</React.Fragment>
 						) : null}
-						ID: {msg._id}
+						ID: {unprotectString(msg._id)}
 						<br />
 						Created: <MomentFromNow unit="seconds">{msg.created}</MomentFromNow>
 						{msg.queueForLaterReason !== undefined ? (
@@ -320,7 +322,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 			})
 		}
 
-		render() {
+		render(): JSX.Element {
 			return (
 				<div className="mhl gutter external-message-status">
 					<div className="paging alc">

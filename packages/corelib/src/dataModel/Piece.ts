@@ -18,6 +18,9 @@ export enum PieceStatusCode {
 	/** No fault with piece, can be played */
 	OK = 0,
 
+	/** The source exists but can't be played for a non-technical reason. E.G. A placeholder clip with no content. */
+	SOURCE_NOT_READY = 5,
+
 	/** The source can be played, but some issues have been detected with it. It can be played fine from a technical standpoint, but the user should be notified. */
 	SOURCE_HAS_ISSUES = 10,
 
@@ -74,16 +77,18 @@ export interface Piece extends PieceGeneric, Omit<IBlueprintPieceDB, '_id' | 'co
 
 export type PieceTimelineObjectsBlob = ProtectedString<'PieceTimelineObjectsBlob'>
 
-export function deserializePieceTimelineObjectsBlob(timelineBlob: PieceTimelineObjectsBlob): TimelineObjectCoreExt[] {
+export function deserializePieceTimelineObjectsBlob(
+	timelineBlob: PieceTimelineObjectsBlob
+): TimelineObjectCoreExt<any>[] {
 	const str = unprotectString(timelineBlob) + ''
 	try {
-		return JSON.parse(str) as Array<TimelineObjectCoreExt>
+		return JSON.parse(str) as Array<TimelineObjectCoreExt<any>>
 	} catch (err) {
 		;(err as Error).message += ` Blob: ${str.slice(0, 100)}`
 		throw err
 	}
 }
-export function serializePieceTimelineObjectsBlob(timeline: TimelineObjectCoreExt[]): PieceTimelineObjectsBlob {
+export function serializePieceTimelineObjectsBlob(timeline: TimelineObjectCoreExt<any>[]): PieceTimelineObjectsBlob {
 	return protectString(JSON.stringify(timeline))
 }
 export const EmptyPieceTimelineObjectsBlob = serializePieceTimelineObjectsBlob([])

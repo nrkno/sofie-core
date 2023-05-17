@@ -1,8 +1,8 @@
 // tslint:disable-next-line:no-submodule-imports
-import * as tsrPkgInfo from 'timeline-state-resolver-types/package.json'
+import { TSR_VERSION } from '@sofie-automation/shared-lib/dist/tsr'
 
 /** @deprecated This is temporary and should be removed ASAP. Can we do it better? */
-export const TMP_TSR_VERSION: string = tsrPkgInfo.version
+export const TMP_TSR_VERSION: string = TSR_VERSION
 
 export enum iterateDeeplyEnum {
 	CONTINUE = '$continue',
@@ -29,7 +29,7 @@ export function iterateDeeply(
 					obj[k] = iterateDeeply(v, iteratee, k)
 				})
 			} else {
-				for (const [k, v] of Object.entries(obj)) {
+				for (const [k, v] of Object.entries<any>(obj)) {
 					obj[k] = iterateDeeply(v, iteratee, k)
 				}
 			}
@@ -64,7 +64,7 @@ export async function iterateDeeplyAsync(
 				)
 			} else {
 				await Promise.all(
-					Object.entries(obj).map(async ([k, v]) => {
+					Object.entries<any>(obj).map(async ([k, v]) => {
 						obj[k] = await iterateDeeplyAsync(v, iteratee, k)
 					})
 				)

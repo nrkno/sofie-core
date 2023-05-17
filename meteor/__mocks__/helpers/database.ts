@@ -1,13 +1,12 @@
 import * as _ from 'underscore'
 import {
-	PeripheralDevices,
 	PeripheralDevice,
 	PeripheralDeviceType,
 	PeripheralDeviceCategory,
 	PERIPHERAL_SUBTYPE_PROCESS,
+	PeripheralDeviceSubType,
 } from '../../lib/collections/PeripheralDevices'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
-import { Studio, Studios, DBStudio } from '../../lib/collections/Studios'
+import { Studio, DBStudio } from '../../lib/collections/Studios'
 import {
 	PieceLifespan,
 	IOutputLayer,
@@ -34,41 +33,67 @@ import {
 	IBlueprintPieceType,
 	IBlueprintActionManifest,
 } from '@sofie-automation/blueprints-integration'
-import { ShowStyleBase, ShowStyleBases, DBShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import {
-	ShowStyleVariant,
-	DBShowStyleVariant,
-	ShowStyleVariants,
-	ShowStyleVariantId,
-} from '../../lib/collections/ShowStyleVariants'
-import { Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
-import { ICoreSystem, CoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
+import { ShowStyleBase, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant, DBShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { Blueprint } from '../../lib/collections/Blueprints'
+import { ICoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
-import { literal, getCurrentTime, protectString, unprotectString, getRandomId, getRandomString } from '../../lib/lib'
-import { DBRundown, Rundowns, RundownId } from '../../lib/collections/Rundowns'
-import { DBSegment, Segments } from '../../lib/collections/Segments'
-import { DBPart, Parts } from '../../lib/collections/Parts'
-import { EmptyPieceTimelineObjectsBlob, Piece, Pieces, PieceStatusCode } from '../../lib/collections/Pieces'
-import { DBRundownPlaylist, RundownPlaylists, RundownPlaylistId } from '../../lib/collections/RundownPlaylists'
-import { RundownBaselineAdLibItem, RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
-import { AdLibPiece, AdLibPieces } from '../../lib/collections/AdLibPieces'
+import {
+	literal,
+	getCurrentTime,
+	protectString,
+	unprotectString,
+	getRandomId,
+	getRandomString,
+	Complete,
+	normalizeArray,
+} from '../../lib/lib'
+import { DBRundown } from '../../lib/collections/Rundowns'
+import { DBSegment } from '../../lib/collections/Segments'
+import { DBPart } from '../../lib/collections/Parts'
+import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '../../lib/collections/Pieces'
+import { DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { RundownBaselineAdLibItem } from '../../lib/collections/RundownBaselineAdLibPieces'
+import { AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { restartRandomId } from '../random'
 import { MongoMock } from '../mongo'
-import {
-	defaultRundownPlaylist,
-	defaultRundown,
-	defaultSegment,
-	defaultPart,
-	defaultPiece,
-	defaultAdLibPiece,
-	defaultStudio,
-} from '../defaultCollectionObjects'
-import { OrganizationId } from '../../lib/collections/Organization'
+import { defaultRundownPlaylist, defaultStudio } from '../defaultCollectionObjects'
 import { PackageInfo } from '../../server/coreSystem'
-import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
-import { Workers, WorkerStatus } from '../../lib/collections/Workers'
-import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
+import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
+import { WorkerStatus } from '../../lib/collections/Workers'
 import { WorkerThreadStatus } from '@sofie-automation/corelib/dist/dataModel/WorkerThreads'
+import {
+	applyAndValidateOverrides,
+	wrapDefaultObject,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { UIShowStyleBase } from '../../lib/api/showStyles'
+import {
+	BlueprintId,
+	OrganizationId,
+	RundownId,
+	RundownPlaylistId,
+	ShowStyleBaseId,
+	ShowStyleVariantId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	AdLibPieces,
+	CoreSystem,
+	Parts,
+	PeripheralDevices,
+	Pieces,
+	RundownBaselineAdLibPieces,
+	RundownPlaylists,
+	Rundowns,
+	Segments,
+	ShowStyleBases,
+	ShowStyleVariants,
+	Studios,
+	TriggeredActions,
+	Workers,
+	WorkerThreadStatuses,
+} from '../../server/collections'
+import { TSR_VERSION } from '@sofie-automation/shared-lib/dist/tsr'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -82,15 +107,6 @@ function getBlueprintDependencyVersions(): { TSR_VERSION: string; INTEGRATION_VE
 	const INTEGRATION_VERSION =
 		require('../../node_modules/@sofie-automation/blueprints-integration/package.json').version
 
-	let TSR_VERSION = ''
-	try {
-		// eslint-disable-next-line node/no-missing-require
-		TSR_VERSION = require('../../node_modules/timeline-state-resolver-types/package.json').version
-	} catch (e) {
-		TSR_VERSION =
-			require('../../node_modules/@sofie-automation/blueprints-integration/node_modules/timeline-state-resolver-types/package.json').version
-	}
-
 	return {
 		INTEGRATION_VERSION,
 		TSR_VERSION,
@@ -98,13 +114,13 @@ function getBlueprintDependencyVersions(): { TSR_VERSION: string; INTEGRATION_VE
 }
 
 let dbI: number = 0
-export function setupMockPeripheralDevice(
+export async function setupMockPeripheralDevice(
 	category: PeripheralDeviceCategory,
 	type: PeripheralDeviceType,
-	subType: PeripheralDeviceAPI.DeviceSubType,
+	subType: PeripheralDeviceSubType,
 	studio?: Pick<Studio, '_id'>,
 	doc?: Partial<PeripheralDevice>
-) {
+): Promise<PeripheralDevice> {
 	doc = doc || {}
 
 	const defaultDevice: PeripheralDevice = {
@@ -117,6 +133,7 @@ export function setupMockPeripheralDevice(
 		category: category,
 		type: type,
 		subType: subType,
+		deviceName: `Mock ${type} Gateway`,
 
 		created: 1234,
 		status: {
@@ -128,17 +145,18 @@ export function setupMockPeripheralDevice(
 		connectionId: 'myConnectionId',
 		token: 'mockToken',
 		configManifest: {
-			deviceConfig: [],
+			deviceConfigSchema: JSONBlobStringify({}),
+			subdeviceManifest: {},
 		},
 		versions: {
 			'@sofie-automation/server-core-integration': stripVersion(PackageInfo.version),
 		},
 	}
 	const device: PeripheralDevice = _.extend(defaultDevice, doc)
-	PeripheralDevices.insert(device)
+	await PeripheralDevices.insertAsync(device)
 	return device
 }
-export function setupMockCore(doc?: Partial<ICoreSystem>): ICoreSystem {
+export async function setupMockCore(doc?: Partial<ICoreSystem>): Promise<ICoreSystem> {
 	// Reset everything mongo, to keep the ids predictable
 	restartRandomId()
 	MongoMock.deleteAllData()
@@ -152,29 +170,28 @@ export function setupMockCore(doc?: Partial<ICoreSystem>): ICoreSystem {
 		modified: 0,
 		version: '0.0.0',
 		previousVersion: '0.0.0',
-		storePath: '',
 		serviceMessages: {},
 	}
 	const coreSystem = _.extend(defaultCore, doc)
-	CoreSystem.remove(SYSTEM_ID)
-	CoreSystem.insert(coreSystem)
+	await CoreSystem.removeAsync(SYSTEM_ID)
+	await CoreSystem.insertAsync(coreSystem)
 	return coreSystem
 }
-export function setupMockTriggeredActions(
+export async function setupMockTriggeredActions(
 	showStyleBaseId: ShowStyleBaseId | null = null,
 	num: number = 3,
 	doc?: Partial<DBTriggeredActions>
-): DBTriggeredActions[] {
+): Promise<DBTriggeredActions[]> {
 	doc = doc || {}
 	const mocks: DBTriggeredActions[] = []
 	for (let i = 0; i < num; i++) {
 		const mock: DBTriggeredActions = {
 			_id: protectString(`mockTriggeredAction_${showStyleBaseId ?? 'core'}` + i),
 			_rank: i * 1000,
-			_rundownVersionHash: 'asdf',
 			showStyleBaseId,
-			actions: [
-				{
+			blueprintUniqueId: null,
+			actionsWithOverrides: wrapDefaultObject({
+				'0': {
 					action: PlayoutActions.adlib,
 					filterChain: [
 						{
@@ -189,21 +206,21 @@ export function setupMockTriggeredActions(
 						},
 					],
 				},
-			],
-			triggers: [
-				{
+			}),
+			triggersWithOverrides: wrapDefaultObject({
+				'0': {
 					type: TriggerType.hotkey,
 					keys: `Key${String.fromCharCode(65 + i)}`, // KeyA and so on
 				},
-			],
+			}),
 			...doc,
 		}
 		mocks.push(mock)
-		TriggeredActions.insert(mock)
+		await TriggeredActions.insertAsync(mock)
 	}
 	return mocks
 }
-export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
+export async function setupMockStudio(doc?: Partial<DBStudio>): Promise<Studio> {
 	doc = doc || {}
 
 	const studio: DBStudio = {
@@ -212,76 +229,91 @@ export function setupMockStudio(doc?: Partial<DBStudio>): Studio {
 		_rundownVersionHash: 'asdf',
 		...doc,
 	}
-	Studios.insert(studio)
+	await Studios.insertAsync(studio)
 	return studio
 }
-export function setupMockShowStyleBase(blueprintId: BlueprintId, doc?: Partial<ShowStyleBase>): ShowStyleBase {
+export async function setupMockShowStyleBase(
+	blueprintId: BlueprintId,
+	doc?: Partial<ShowStyleBase>
+): Promise<ShowStyleBase> {
 	doc = doc || {}
 
 	const defaultShowStyleBase: DBShowStyleBase = {
 		_id: protectString('mockShowStyleBase' + dbI++),
 		name: 'mockShowStyleBase',
 		organizationId: null,
-		outputLayers: [
-			literal<IOutputLayer>({
-				_id: LAYER_IDS.OUTPUT_PGM,
-				_rank: 0,
-				isPGM: true,
-				name: 'PGM',
-			}),
-		],
-		sourceLayers: [
-			literal<ISourceLayer>({
-				_id: LAYER_IDS.SOURCE_CAM0,
-				_rank: 0,
-				name: 'Camera',
-				type: SourceLayerType.CAMERA,
-				exclusiveGroup: 'main',
-			}),
-			literal<ISourceLayer>({
-				_id: LAYER_IDS.SOURCE_VT0,
-				_rank: 1,
-				name: 'VT',
-				type: SourceLayerType.VT,
-				exclusiveGroup: 'main',
-			}),
-			literal<ISourceLayer>({
-				_id: LAYER_IDS.SOURCE_TRANSITION0,
-				_rank: 2,
-				name: 'Transition',
-				type: SourceLayerType.TRANSITION,
-			}),
-			literal<ISourceLayer>({
-				_id: LAYER_IDS.SOURCE_GRAPHICS0,
-				_rank: 3,
-				name: 'Graphic',
-				type: SourceLayerType.GRAPHICS,
-			}),
-		],
-		blueprintConfig: {},
+		outputLayersWithOverrides: wrapDefaultObject(
+			normalizeArray(
+				[
+					literal<IOutputLayer>({
+						_id: LAYER_IDS.OUTPUT_PGM,
+						_rank: 0,
+						isPGM: true,
+						name: 'PGM',
+					}),
+				],
+				'_id'
+			)
+		),
+		sourceLayersWithOverrides: wrapDefaultObject(
+			normalizeArray(
+				[
+					literal<ISourceLayer>({
+						_id: LAYER_IDS.SOURCE_CAM0,
+						_rank: 0,
+						name: 'Camera',
+						type: SourceLayerType.CAMERA,
+						exclusiveGroup: 'main',
+					}),
+					literal<ISourceLayer>({
+						_id: LAYER_IDS.SOURCE_VT0,
+						_rank: 1,
+						name: 'VT',
+						type: SourceLayerType.VT,
+						exclusiveGroup: 'main',
+					}),
+					literal<ISourceLayer>({
+						_id: LAYER_IDS.SOURCE_TRANSITION0,
+						_rank: 2,
+						name: 'Transition',
+						type: SourceLayerType.TRANSITION,
+					}),
+					literal<ISourceLayer>({
+						_id: LAYER_IDS.SOURCE_GRAPHICS0,
+						_rank: 3,
+						name: 'Graphic',
+						type: SourceLayerType.GRAPHICS,
+					}),
+				],
+				'_id'
+			)
+		),
+		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		blueprintId: blueprintId,
 		// hotkeyLegend?: Array<HotkeyDefinition>
 		_rundownVersionHash: '',
+		lastBlueprintConfig: undefined,
 	}
 	const showStyleBase = _.extend(defaultShowStyleBase, doc)
-	ShowStyleBases.insert(showStyleBase)
+	await ShowStyleBases.insertAsync(showStyleBase)
 	return showStyleBase
 }
-export function setupMockShowStyleVariant(
+export async function setupMockShowStyleVariant(
 	showStyleBaseId: ShowStyleBaseId,
 	doc?: Partial<ShowStyleVariant>
-): ShowStyleVariant {
+): Promise<ShowStyleVariant> {
 	doc = doc || {}
 
 	const defaultShowStyleVariant: DBShowStyleVariant = {
 		_id: protectString('mockShowStyleVariant' + dbI++),
 		name: 'mockShowStyleVariant',
 		showStyleBaseId: showStyleBaseId,
-		blueprintConfig: {},
+		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		_rundownVersionHash: '',
+		_rank: 0,
 	}
 	const showStyleVariant = _.extend(defaultShowStyleVariant, doc)
-	ShowStyleVariants.insert(showStyleVariant)
+	await ShowStyleVariants.insertAsync(showStyleVariant)
 
 	return showStyleVariant
 }
@@ -327,7 +359,14 @@ export async function setupMockStudioBlueprint(
 				integrationVersion: INTEGRATION_VERSION,
 				TSRVersion: TSR_VERSION,
 
-				studioConfigManifest: [],
+				configPresets: {
+					main: {
+						name: 'Main',
+						config: {},
+					},
+				},
+
+				studioConfigSchema: '{}' as any,
 				studioMigrations: [],
 				getBaseline: () => {
 					return {
@@ -370,7 +409,21 @@ export async function setupMockShowStyleBlueprint(
 				integrationVersion: INTEGRATION_VERSION,
 				TSRVersion: TSR_VERSION,
 
-				showStyleConfigManifest: [],
+				configPresets: {
+					main: {
+						name: 'Main',
+						config: {},
+
+						variants: {
+							main: {
+								name: 'Default',
+								config: {},
+							},
+						},
+					},
+				},
+
+				showStyleConfigSchema: '{}' as any,
 				showStyleMigrations: [],
 				getShowStyleVariantId: (): string | null => {
 					return SHOW_STYLE_VARIANT_ID
@@ -478,8 +531,8 @@ export interface DefaultEnvironment {
 export async function setupDefaultStudioEnvironment(
 	organizationId: OrganizationId | null = null
 ): Promise<DefaultEnvironment> {
-	const core = setupMockCore({})
-	const systemTriggeredActions = setupMockTriggeredActions()
+	const core = await setupMockCore({})
+	const systemTriggeredActions = await setupMockTriggeredActions()
 
 	const showStyleBaseId: ShowStyleBaseId = getRandomId()
 	const showStyleVariantId: ShowStyleVariantId = getRandomId()
@@ -487,26 +540,26 @@ export async function setupDefaultStudioEnvironment(
 	const studioBlueprint = await setupMockStudioBlueprint(showStyleBaseId, organizationId)
 	const showStyleBlueprint = await setupMockShowStyleBlueprint(showStyleVariantId, organizationId)
 
-	const showStyleBase = setupMockShowStyleBase(showStyleBlueprint._id, {
+	const showStyleBase = await setupMockShowStyleBase(showStyleBlueprint._id, {
 		_id: showStyleBaseId,
 		organizationId: organizationId,
 	})
-	const triggeredActions = setupMockTriggeredActions(showStyleBase._id)
-	const showStyleVariant = setupMockShowStyleVariant(showStyleBase._id, { _id: showStyleVariantId })
+	const triggeredActions = await setupMockTriggeredActions(showStyleBase._id)
+	const showStyleVariant = await setupMockShowStyleVariant(showStyleBase._id, { _id: showStyleVariantId })
 
-	const studio = setupMockStudio({
+	const studio = await setupMockStudio({
 		blueprintId: studioBlueprint._id,
 		supportedShowStyleBase: [showStyleBaseId],
 		organizationId: organizationId,
 	})
-	const ingestDevice = setupMockPeripheralDevice(
+	const ingestDevice = await setupMockPeripheralDevice(
 		PeripheralDeviceCategory.INGEST,
 		PeripheralDeviceType.MOS,
 		PERIPHERAL_SUBTYPE_PROCESS,
 		studio,
 		{ organizationId: organizationId }
 	)
-	const { worker, workerThreadStatuses } = setupMockWorker()
+	const { worker, workerThreadStatuses } = await setupMockWorker()
 
 	return {
 		showStyleBaseId,
@@ -524,34 +577,37 @@ export async function setupDefaultStudioEnvironment(
 		workerThreadStatuses,
 	}
 }
-export function setupDefaultRundownPlaylist(
+export async function setupDefaultRundownPlaylist(
 	env: DefaultEnvironment,
 	rundownId0?: RundownId,
 	customRundownFactory?: (env: DefaultEnvironment, playlistId: RundownPlaylistId, rundownId: RundownId) => RundownId
-): { rundownId: RundownId; playlistId: RundownPlaylistId } {
+): Promise<{ rundownId: RundownId; playlistId: RundownPlaylistId }> {
 	const rundownId: RundownId = rundownId0 || getRandomId()
 
 	const playlist: DBRundownPlaylist = defaultRundownPlaylist(protectString('playlist_' + rundownId), env.studio._id)
 
-	const playlistId = RundownPlaylists.insert(playlist)
+	const playlistId = await RundownPlaylists.insertAsync(playlist)
 
 	return {
-		rundownId: (customRundownFactory || setupDefaultRundown)(env, playlistId, rundownId),
+		rundownId: await (customRundownFactory || setupDefaultRundown)(env, playlistId, rundownId),
 		playlistId,
 	}
 }
-export function setupEmptyEnvironment() {
-	const core = setupMockCore({})
+export async function setupEmptyEnvironment(): Promise<{ core: ICoreSystem }> {
+	const core = await setupMockCore({})
 
 	return {
 		core,
 	}
 }
-export function setupDefaultRundown(
+export async function setupDefaultRundown(
 	env: DefaultEnvironment,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
-): RundownId {
+): Promise<RundownId> {
+	const outputLayerIds = Object.keys(applyAndValidateOverrides(env.showStyleBase.outputLayersWithOverrides).obj)
+	const sourceLayerIds = Object.keys(applyAndValidateOverrides(env.showStyleBase.sourceLayersWithOverrides).obj)
+
 	const rundown: DBRundown = {
 		peripheralDeviceId: env.ingestDevice._id,
 		organizationId: null,
@@ -580,9 +636,9 @@ export function setupDefaultRundown(
 
 		externalNRCSName: 'mock',
 	}
-	Rundowns.insert(rundown)
+	await Rundowns.insertAsync(rundown)
 
-	RundownPlaylists.update(playlistId, {
+	await RundownPlaylists.updateAsync(playlistId, {
 		$push: {
 			rundownIdsInOrder: rundown._id,
 		},
@@ -596,7 +652,7 @@ export function setupDefaultRundown(
 		name: 'Segment 0',
 		externalModified: 1,
 	}
-	Segments.insert(segment0)
+	await Segments.insertAsync(segment0)
 	/* tslint:disable:ter-indent*/
 	//
 	const part00: DBPart = {
@@ -608,7 +664,7 @@ export function setupDefaultRundown(
 		title: 'Part 0 0',
 		expectedDurationWithPreroll: undefined,
 	}
-	Parts.insert(part00)
+	await Parts.insertAsync(part00)
 
 	const piece000: Piece = {
 		_id: protectString(rundownId + '_piece000'),
@@ -621,15 +677,15 @@ export function setupDefaultRundown(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		pieceType: IBlueprintPieceType.Normal,
 		invalid: false,
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	Pieces.insert(piece000)
+	await Pieces.insertAsync(piece000)
 
 	const piece001: Piece = {
 		_id: protectString(rundownId + '_piece001'),
@@ -642,15 +698,15 @@ export function setupDefaultRundown(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[1],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		pieceType: IBlueprintPieceType.Normal,
 		invalid: false,
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	Pieces.insert(piece001)
+	await Pieces.insertAsync(piece001)
 
 	const adLibPiece000: AdLibPiece = {
 		_id: protectString(rundownId + '_adLib000'),
@@ -662,13 +718,13 @@ export function setupDefaultRundown(
 		rundownId: segment0.rundownId,
 		status: PieceStatusCode.UNKNOWN,
 		name: 'AdLib 0',
-		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[1],
+		outputLayerId: outputLayerIds[0],
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
-	AdLibPieces.insert(adLibPiece000)
+	await AdLibPieces.insertAsync(adLibPiece000)
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -679,7 +735,7 @@ export function setupDefaultRundown(
 		title: 'Part 0 1',
 		expectedDurationWithPreroll: undefined,
 	}
-	Parts.insert(part01)
+	await Parts.insertAsync(part01)
 
 	const piece010: Piece = {
 		_id: protectString(rundownId + '_piece010'),
@@ -692,15 +748,15 @@ export function setupDefaultRundown(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 		lifespan: PieceLifespan.WithinPart,
 		pieceType: IBlueprintPieceType.Normal,
 		invalid: false,
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	Pieces.insert(piece010)
+	await Pieces.insertAsync(piece010)
 
 	const segment1: DBSegment = {
 		_id: protectString(rundownId + '_segment1'),
@@ -710,7 +766,7 @@ export function setupDefaultRundown(
 		name: 'Segment 1',
 		externalModified: 1,
 	}
-	Segments.insert(segment1)
+	await Segments.insertAsync(segment1)
 
 	const part10: DBPart = {
 		_id: protectString(rundownId + '_part1_0'),
@@ -721,7 +777,7 @@ export function setupDefaultRundown(
 		title: 'Part 1 0',
 		expectedDurationWithPreroll: undefined,
 	}
-	Parts.insert(part10)
+	await Parts.insertAsync(part10)
 
 	const part11: DBPart = {
 		_id: protectString(rundownId + '_part1_1'),
@@ -732,7 +788,7 @@ export function setupDefaultRundown(
 		title: 'Part 1 1',
 		expectedDurationWithPreroll: undefined,
 	}
-	Parts.insert(part11)
+	await Parts.insertAsync(part11)
 
 	const part12: DBPart = {
 		_id: protectString(rundownId + '_part1_2'),
@@ -743,7 +799,7 @@ export function setupDefaultRundown(
 		title: 'Part 1 2',
 		expectedDurationWithPreroll: undefined,
 	}
-	Parts.insert(part12)
+	await Parts.insertAsync(part12)
 
 	const segment2: DBSegment = {
 		_id: protectString(rundownId + '_segment2'),
@@ -753,7 +809,7 @@ export function setupDefaultRundown(
 		name: 'Segment 2',
 		externalModified: 1,
 	}
-	Segments.insert(segment2)
+	await Segments.insertAsync(segment2)
 
 	const globalAdLib0: RundownBaselineAdLibItem = {
 		_id: protectString(rundownId + '_globalAdLib0'),
@@ -763,8 +819,8 @@ export function setupDefaultRundown(
 		rundownId: segment0.rundownId,
 		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 0',
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
@@ -777,178 +833,22 @@ export function setupDefaultRundown(
 		rundownId: segment0.rundownId,
 		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 1',
-		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[1],
+		outputLayerId: outputLayerIds[0],
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
-	RundownBaselineAdLibPieces.insert(globalAdLib0)
-	RundownBaselineAdLibPieces.insert(globalAdLib1)
-
-	return rundownId
-}
-export function setupRundownWithAutoplayPart0(
-	env: DefaultEnvironment,
-	playlistId: RundownPlaylistId,
-	rundownId: RundownId
-): RundownId {
-	const rundown: DBRundown = defaultRundown(
-		unprotectString(rundownId),
-		env.studio._id,
-		env.ingestDevice._id,
-		playlistId,
-		env.showStyleBase._id,
-		env.showStyleVariant._id
-	)
-	rundown._id = rundownId
-	Rundowns.insert(rundown)
-
-	const segment0: DBSegment = {
-		...defaultSegment(protectString(rundownId + '_segment0'), rundown._id),
-		_rank: 0,
-		externalId: 'MOCK_SEGMENT_0',
-		name: 'Segment 0',
-	}
-	Segments.insert(segment0)
-	/* tslint:disable:ter-indent*/
-	//
-	const part00: DBPart = {
-		...defaultPart(protectString(rundownId + '_part0_0'), rundown._id, segment0._id),
-		externalId: 'MOCK_PART_0_0',
-		title: 'Part 0 0',
-
-		expectedDuration: 20,
-		expectedDurationWithPreroll: 20,
-		autoNext: true,
-	}
-	Parts.insert(part00)
-
-	const piece000: Piece = {
-		...defaultPiece(protectString(rundownId + '_piece000'), rundown._id, part00.segmentId, part00._id),
-		externalId: 'MOCK_PIECE_000',
-		name: 'Piece 000',
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-	}
-	Pieces.insert(piece000)
-
-	const piece001: Piece = {
-		...defaultPiece(protectString(rundownId + '_piece001'), rundown._id, part00.segmentId, part00._id),
-		externalId: 'MOCK_PIECE_001',
-		name: 'Piece 001',
-		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-	}
-	Pieces.insert(piece001)
-
-	const adLibPiece000: AdLibPiece = {
-		...defaultAdLibPiece(protectString(rundownId + '_adLib000'), segment0.rundownId, part00._id),
-		expectedDuration: 1000,
-		externalId: 'MOCK_ADLIB_000',
-		status: PieceStatusCode.UNKNOWN,
-		name: 'AdLib 0',
-		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-	}
-
-	AdLibPieces.insert(adLibPiece000)
-
-	const part01: DBPart = {
-		...defaultPart(protectString(rundownId + '_part0_1'), rundown._id, segment0._id),
-		_rank: 1,
-		externalId: 'MOCK_PART_0_1',
-		title: 'Part 0 1',
-	}
-	Parts.insert(part01)
-
-	const piece010: Piece = {
-		...defaultPiece(protectString(rundownId + '_piece010'), rundown._id, part01.segmentId, part01._id),
-		externalId: 'MOCK_PIECE_010',
-		name: 'Piece 010',
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-	}
-	Pieces.insert(piece010)
-
-	const segment1: DBSegment = {
-		...defaultSegment(protectString(rundownId + '_segment1'), rundown._id),
-		_rank: 1,
-		externalId: 'MOCK_SEGMENT_2',
-		name: 'Segment 1',
-	}
-	Segments.insert(segment1)
-
-	const part10: DBPart = {
-		...defaultPart(protectString(rundownId + '_part1_0'), rundown._id, segment1._id),
-		_rank: 0,
-		externalId: 'MOCK_PART_1_0',
-		title: 'Part 1 0',
-	}
-	Parts.insert(part10)
-
-	const part11: DBPart = {
-		...defaultPart(protectString(rundownId + '_part1_1'), rundown._id, segment1._id),
-		_rank: 1,
-		externalId: 'MOCK_PART_1_1',
-		title: 'Part 1 1',
-	}
-	Parts.insert(part11)
-
-	const part12: DBPart = {
-		...defaultPart(protectString(rundownId + '_part1_2'), rundown._id, segment1._id),
-		_rank: 2,
-		externalId: 'MOCK_PART_1_2',
-		title: 'Part 1 2',
-	}
-	Parts.insert(part12)
-
-	const segment2: DBSegment = {
-		...defaultSegment(protectString(rundownId + '_segment2'), rundown._id),
-		_rank: 2,
-		externalId: 'MOCK_SEGMENT_2',
-		name: 'Segment 2',
-	}
-	Segments.insert(segment2)
-
-	const globalAdLib0: RundownBaselineAdLibItem = {
-		_id: protectString(rundownId + '_globalAdLib0'),
-		_rank: 0,
-		externalId: 'MOCK_GLOBAL_ADLIB_0',
-		lifespan: PieceLifespan.OutOnRundownChange,
-		rundownId: segment0.rundownId,
-		status: PieceStatusCode.UNKNOWN,
-		name: 'Global AdLib 0',
-		sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		content: {},
-		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
-	}
-
-	const globalAdLib1: RundownBaselineAdLibItem = {
-		_id: protectString(rundownId + '_globalAdLib1'),
-		_rank: 0,
-		externalId: 'MOCK_GLOBAL_ADLIB_1',
-		lifespan: PieceLifespan.OutOnRundownChange,
-		rundownId: segment0.rundownId,
-		status: PieceStatusCode.UNKNOWN,
-		name: 'Global AdLib 1',
-		sourceLayerId: env.showStyleBase.sourceLayers[1]._id,
-		outputLayerId: env.showStyleBase.outputLayers[0]._id,
-		content: {},
-		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
-	}
-
-	RundownBaselineAdLibPieces.insert(globalAdLib0)
-	RundownBaselineAdLibPieces.insert(globalAdLib1)
+	await RundownBaselineAdLibPieces.insertAsync(globalAdLib0)
+	await RundownBaselineAdLibPieces.insertAsync(globalAdLib1)
 
 	return rundownId
 }
 
-export function setupMockWorker(doc?: Partial<WorkerStatus>): {
+export async function setupMockWorker(doc?: Partial<WorkerStatus>): Promise<{
 	worker: WorkerStatus
 	workerThreadStatuses: WorkerThreadStatus[]
-} {
+}> {
 	doc = doc || {}
 
 	const worker: WorkerStatus = {
@@ -963,7 +863,7 @@ export function setupMockWorker(doc?: Partial<WorkerStatus>): {
 
 		...doc,
 	}
-	Workers.insert(worker)
+	await Workers.insertAsync(worker)
 
 	const workerThreadStatus0: WorkerThreadStatus = {
 		_id: getRandomId(),
@@ -973,7 +873,7 @@ export function setupMockWorker(doc?: Partial<WorkerStatus>): {
 		statusCode: StatusCode.GOOD,
 		reason: 'OK',
 	}
-	WorkerThreadStatuses.insert(workerThreadStatus0)
+	await WorkerThreadStatuses.insertAsync(workerThreadStatus0)
 	const workerThreadStatus1: WorkerThreadStatus = {
 		_id: getRandomId(),
 		workerId: worker._id,
@@ -982,7 +882,7 @@ export function setupMockWorker(doc?: Partial<WorkerStatus>): {
 		statusCode: StatusCode.GOOD,
 		reason: 'OK',
 	}
-	WorkerThreadStatuses.insert(workerThreadStatus1)
+	await WorkerThreadStatuses.insertAsync(workerThreadStatus1)
 
 	return { worker, workerThreadStatuses: [workerThreadStatus0, workerThreadStatus1] }
 }
@@ -990,3 +890,13 @@ export function setupMockWorker(doc?: Partial<WorkerStatus>): {
 // const studioBlueprint
 // const showStyleBlueprint
 // const showStyleVariant
+
+export function convertToUIShowStyleBase(showStyleBase: ShowStyleBase): UIShowStyleBase {
+	return literal<Complete<UIShowStyleBase>>({
+		_id: showStyleBase._id,
+		name: showStyleBase.name,
+		hotkeyLegend: showStyleBase.hotkeyLegend,
+		sourceLayers: applyAndValidateOverrides(showStyleBase.sourceLayersWithOverrides).obj,
+		outputLayers: applyAndValidateOverrides(showStyleBase.outputLayersWithOverrides).obj,
+	})
+}

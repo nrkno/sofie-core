@@ -3,11 +3,7 @@ import { findLookaheadForLayer, LookaheadResult } from './findForLayer'
 import { CacheForPlayout, getRundownIDsFromCache } from '../cache'
 import { sortPieceInstancesByStart } from '../pieces'
 import { MappingExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import {
-	Timeline as TimelineTypes,
-	LookaheadMode,
-	OnGenerateTimelineObj,
-} from '@sofie-automation/blueprints-integration'
+import { TSR, LookaheadMode, OnGenerateTimelineObj } from '@sofie-automation/blueprints-integration'
 import { SelectedPartInstancesTimelineInfo, SelectedPartInstanceTimelineInfo } from '../timeline/generate'
 import {
 	OnGenerateTimelineObjExt,
@@ -26,6 +22,8 @@ import { LOOKAHEAD_DEFAULT_SEARCH_DISTANCE } from '@sofie-automation/shared-lib/
 import { prefixSingleObjectId } from '../lib'
 import { LookaheadTimelineObject } from './findObjects'
 import { hasPieceInstanceDefinitelyEnded } from '../timeline/lib'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -50,7 +48,8 @@ export async function getLookeaheadObjects(
 	partInstancesInfo0: SelectedPartInstancesTimelineInfo
 ): Promise<Array<TimelineObjRundown & OnGenerateTimelineObjExt>> {
 	const span = context.startSpan('getLookeaheadObjects')
-	const mappingsToConsider = Object.entries(context.studio.mappings ?? {}).filter(
+	const allMappings = applyAndValidateOverrides(context.studio.mappingsWithOverrides)
+	const mappingsToConsider = Object.entries<MappingExt>(allMappings.obj).filter(
 		([_id, map]) => map.lookahead !== LookaheadMode.NONE && map.lookahead !== undefined
 	)
 	if (mappingsToConsider.length === 0) {
@@ -71,8 +70,7 @@ export async function getLookeaheadObjects(
 			metaData: 0,
 
 			// these are known to be chunky when they exist
-			'content.externalPayload': 0,
-			'content.payload': 0,
+			content: 0,
 		},
 	})
 
@@ -86,7 +84,7 @@ export async function getLookeaheadObjects(
 	}
 
 	function getPrunedEndedPieceInstances(info: SelectedPartInstanceTimelineInfo) {
-		if (!info.partInstance.timings?.startedPlayback) {
+		if (!info.partInstance.timings?.plannedStartedPlayback) {
 			return info.pieceInstances
 		} else {
 			return info.pieceInstances.filter((p) => !hasPieceInstanceDefinitelyEnded(p, info.nowInPart))
@@ -99,6 +97,7 @@ export async function getLookeaheadObjects(
 					onTimeline: true,
 					nowInPart: partInstancesInfo0.current.nowInPart,
 					allPieces: getPrunedEndedPieceInstances(partInstancesInfo0.current),
+					calculatedTimings: partInstancesInfo0.current.calculatedTimings,
 			  })
 			: undefined,
 		partInstancesInfo0.next
@@ -107,6 +106,7 @@ export async function getLookeaheadObjects(
 					onTimeline: !!partInstancesInfo0.current?.partInstance?.part?.autoNext,
 					nowInPart: partInstancesInfo0.next.nowInPart,
 					allPieces: partInstancesInfo0.next.pieceInstances,
+					calculatedTimings: partInstancesInfo0.next.calculatedTimings,
 			  })
 			: undefined,
 	])
@@ -119,6 +119,7 @@ export async function getLookeaheadObjects(
 			onTimeline: true,
 			nowInPart: partInstancesInfo0.previous.nowInPart,
 			allPieces: getPrunedEndedPieceInstances(partInstancesInfo0.previous),
+			calculatedTimings: partInstancesInfo0.previous.calculatedTimings,
 		})
 	}
 
@@ -137,10 +138,18 @@ export async function getLookeaheadObjects(
 		}
 	}
 
-	const orderedPartInfos: Array<PartAndPieces> = orderedPartsFollowingPlayhead.map((part) => ({
-		part,
-		pieces: sortPieceInstancesByStart(piecesByPart.get(part._id) || [], 0),
-	}))
+	const orderedPartInfos: Array<PartAndPieces> = orderedPartsFollowingPlayhead.map((part, i) => {
+		const previousPart: DBPart | undefined =
+			i === 0
+				? (partInstancesInfo0.next?.partInstance ?? partInstancesInfo0.current?.partInstance)?.part
+				: orderedPartsFollowingPlayhead[i - 1]
+
+		return {
+			part,
+			usesInTransition: !previousPart?.disableNextInTransition, // aproximate, but accurate enough
+			pieces: sortPieceInstancesByStart(piecesByPart.get(part._id) || [], 0),
+		}
+	})
 
 	const span2 = context.startSpan('getLookeaheadObjects.iterate')
 	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
@@ -155,7 +164,7 @@ export async function getLookeaheadObjects(
 
 			const lookaheadObjs = findLookaheadForLayer(
 				context,
-				cache.Playlist.doc.currentPartInstanceId,
+				cache.Playlist.doc.currentPartInfo?.partInstanceId ?? null,
 				partInstancesInfo,
 				previousPartInfo,
 				orderedPartInfos,
@@ -174,11 +183,11 @@ export async function getLookeaheadObjects(
 }
 
 // elsewhere uses prefixAllObjectIds to do this, but we want to apply to a single object from itself
-const getStartOfObjectRef = (obj: TimelineObjRundown & OnGenerateTimelineObj): string =>
+const getStartOfObjectRef = (obj: TimelineObjRundown & OnGenerateTimelineObj<any>): string =>
 	`#${prefixSingleObjectId(obj, obj.pieceInstanceId ?? '')}.start`
 const calculateStartAfterPreviousObj = (
-	prevObj: TimelineObjRundown & OnGenerateTimelineObj
-): TimelineTypes.TimelineEnable => {
+	prevObj: TimelineObjRundown & OnGenerateTimelineObj<any>
+): TSR.Timeline.TimelineEnable => {
 	const prevHasDelayFlag = (prevObj.classes || []).indexOf('_lookahead_start_delay') !== -1
 
 	// Start with previous piece
@@ -202,7 +211,12 @@ function mutateLookaheadObject(
 	obj.enable = enable
 	obj.isLookahead = true
 	if (obj.keyframes) {
-		obj.keyframes = obj.keyframes.filter((kf) => kf.preserveForLookahead)
+		obj.keyframes = obj.keyframes
+			.filter((kf) => kf.preserveForLookahead)
+			.map((kf, i) => ({
+				...kf,
+				id: `${obj.id}_keyframe_${i}`,
+			}))
 	}
 	delete obj.inGroup // force it to be cleared
 	obj.disabled = disabled
@@ -219,7 +233,7 @@ function processResult(lookaheadObjs: LookaheadResult, mode: ValidLookaheadMode)
 
 	// Add the objects that have some timing info
 	lookaheadObjs.timed.forEach((obj, i) => {
-		let enable: TimelineTypes.TimelineEnable = {
+		let enable: TSR.Timeline.TimelineEnable = {
 			start: 1, // Absolute 0 without a group doesnt work
 		}
 		if (i !== 0) {

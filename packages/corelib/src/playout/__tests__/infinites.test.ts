@@ -53,20 +53,18 @@ describe('Infinites', () => {
 		function runAndTidyResult(pieceInstances: PieceInstance[], nowInPart: number, includeVirtual?: boolean) {
 			const resolvedInstances = processAndPrunePieceInstanceTimings(
 				{
-					sourceLayers: [
-						{
-							_id: 'one',
-							_rank: 0,
-							type: SourceLayerType.UNKNOWN,
-							name: 'One',
-						},
-						{
-							_id: 'two',
-							_rank: 0,
-							type: SourceLayerType.UNKNOWN,
-							name: 'Two',
-						},
-					],
+					one: {
+						_id: 'one',
+						_rank: 0,
+						type: SourceLayerType.UNKNOWN,
+						name: 'One',
+					},
+					two: {
+						_id: 'two',
+						_rank: 0,
+						type: SourceLayerType.UNKNOWN,
+						name: 'Two',
+					},
 				},
 				pieceInstances,
 				nowInPart,
@@ -623,7 +621,7 @@ describe('Infinites', () => {
 						PieceLifespan.OutOnRundownChange,
 						true
 					),
-					userDuration: { end: 5000 },
+					userDuration: { endRelativeToPart: 5000 },
 				},
 				{
 					...createPieceInstanceAsInfinite(
@@ -634,7 +632,7 @@ describe('Infinites', () => {
 						'three',
 						PieceLifespan.OutOnRundownChange
 					),
-					stoppedPlayback: 5000,
+					plannedStoppedPlayback: 5000,
 				},
 			]
 			const part = { rundownId, segmentId }

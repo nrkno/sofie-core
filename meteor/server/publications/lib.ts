@@ -1,17 +1,30 @@
 import { Meteor, Subscription } from 'meteor/meteor'
 import { PubSubTypes } from '../../lib/api/pubsub'
 import { extractFunctionSignature } from '../lib'
-import { MongoQuery, UserId } from '../../lib/typings/meteor'
+import { MongoQuery } from '../../lib/typings/meteor'
 import { ResolvedCredentials, resolveCredentials } from '../security/lib/credentials'
 import { Settings } from '../../lib/Settings'
-import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { MongoCursor } from '../../lib/collections/lib'
-import { OrganizationId, PeripheralDeviceId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	OrganizationId,
+	PeripheralDeviceId,
+	ShowStyleBaseId,
+	UserId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectStringObject, waitForPromise } from '../../lib/lib'
-import { DBShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { PeripheralDevices, ShowStyleBases } from '../collections'
+import { MetricsGauge } from '@sofie-automation/corelib/dist/prometheus'
 
 export const MeteorPublicationSignatures: { [key: string]: string[] } = {}
 export const MeteorPublications: { [key: string]: Function } = {}
+
+const MeteorPublicationsGauge = new MetricsGauge({
+	name: `sofie_meteor_publication_subscribers_total`,
+	help: 'Number of subscribers on a Meteor publication (ignoring arguments)',
+	labelNames: ['publication'],
+})
 
 export interface SubscriptionContext extends Omit<Subscription, 'userId'> {
 	/**
@@ -20,6 +33,30 @@ export interface SubscriptionContext extends Omit<Subscription, 'userId'> {
 	 * is rerun with the new value, assuming it didn’t throw an error at the previous run.
 	 */
 	userId: UserId | null
+}
+
+/**
+ * Unsafe wrapper around Meteor.publish
+ * @param name
+ * @param callback
+ */
+export function meteorPublishUnsafe(
+	name: string,
+	callback: (this: SubscriptionContext, ...args: any) => Promise<any>
+): void {
+	const signature = extractFunctionSignature(callback)
+	if (signature) MeteorPublicationSignatures[name] = signature
+
+	MeteorPublications[name] = callback
+
+	const publicationGauge = MeteorPublicationsGauge.labels({ publication: name })
+
+	Meteor.publish(name, function (...args: any[]): any {
+		publicationGauge.inc()
+		this.onStop(() => publicationGauge.dec())
+
+		return waitForPromise(callback.apply(protectStringObject<Subscription, 'userId'>(this), args)) || []
+	})
 }
 
 /**
@@ -34,14 +71,7 @@ export function meteorPublish<K extends keyof PubSubTypes>(
 		...args: Parameters<PubSubTypes[K]>
 	) => Promise<MongoCursor<ReturnType<PubSubTypes[K]>> | null>
 ): void {
-	const signature = extractFunctionSignature(callback)
-	if (signature) MeteorPublicationSignatures[name] = signature
-
-	MeteorPublications[name] = callback
-
-	Meteor.publish(name, function (...args: any[]) {
-		return waitForPromise(callback.apply(protectStringObject<Subscription, 'userId'>(this), args as any)) || []
-	})
+	meteorPublishUnsafe(name, callback)
 }
 
 export namespace AutoFillSelector {

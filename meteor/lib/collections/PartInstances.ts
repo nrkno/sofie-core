@@ -1,20 +1,10 @@
 import { protectString, unprotectString } from '../lib'
-import { createMongoCollection } from './lib'
 import { DBPart } from './Parts'
-import { registerIndex } from '../database'
-import {
-	PartInstanceId,
-	SegmentPlayoutId,
-	PartId,
-	RundownPlaylistActivationId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
-export { PartInstanceId, SegmentPlayoutId }
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { PartId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 export * from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 
-/** Note: Use PartInstance instead */
 export interface PartInstance extends DBPartInstance {
 	isTemporary: boolean
 }
@@ -49,29 +39,3 @@ export function findPartInstanceOrWrapToTemporary<T extends Partial<PartInstance
 ): T {
 	return partInstances[unprotectString(part._id)] || (wrapPartToTemporaryInstance(protectString(''), part) as T)
 }
-
-export const PartInstances = createMongoCollection<PartInstance>(CollectionName.PartInstances)
-
-registerIndex(PartInstances, {
-	rundownId: 1,
-	playlistActivationId: 1,
-	reset: 1,
-})
-registerIndex(PartInstances, {
-	rundownId: 1,
-	segmentId: 1,
-	takeCount: 1,
-	reset: 1,
-})
-registerIndex(PartInstances, {
-	rundownId: 1,
-	takeCount: 1,
-	reset: 1,
-})
-registerIndex(PartInstances, {
-	rundownId: 1,
-	// @ts-expect-error deep property
-	'part._id': 1,
-	takeCount: 1,
-	reset: 1,
-})

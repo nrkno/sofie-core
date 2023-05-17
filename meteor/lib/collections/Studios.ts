@@ -1,32 +1,28 @@
 import { omit, protectString, unprotectObject } from '../lib'
 import * as _ from 'underscore'
 import { LookaheadMode, ExpectedPackage } from '@sofie-automation/blueprints-integration'
-import { Meteor } from 'meteor/meteor'
-import { ObserveChangesForHash, createMongoCollection } from './lib'
-import { registerIndex } from '../database'
 import { ExpectedPackageDB } from './ExpectedPackages'
-import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-export { StudioId }
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 import {
 	ResultingMappingRoutes,
 	DBStudio,
 	MappingExt,
-	MappingsHash,
-	StudioLight,
 	StudioRouteType,
+	MappingsExt,
+	StudioRouteSet,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { ReadonlyDeep } from 'type-fest'
 export * from '@sofie-automation/corelib/dist/dataModel/Studio'
+export { RoutedMappings } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 
-export function getActiveRoutes(studio: StudioLight): ResultingMappingRoutes {
+export function getActiveRoutes(routeSets: ReadonlyDeep<Record<string, StudioRouteSet>>): ResultingMappingRoutes {
 	const routes: ResultingMappingRoutes = {
 		existing: {},
 		inserted: [],
 	}
 
 	const exclusivityGroups: { [groupId: string]: true } = {}
-	_.each(studio.routeSets, (routeSet) => {
+	_.each(routeSets, (routeSet) => {
 		if (routeSet.active) {
 			let useRoute: boolean = true
 			if (routeSet.exclusivityGroup) {
@@ -99,6 +95,7 @@ export function getRoutedMappings<M extends MappingExt>(
 				lookahead: route.remapping.lookahead || LookaheadMode.NONE,
 				device: route.deviceType,
 				deviceId: protectString<any>(route.remapping.deviceId),
+				options: {},
 				...route.remapping,
 			}
 			outputMappings[route.outputMappedLayer] = routedMapping as M
@@ -107,18 +104,20 @@ export function getRoutedMappings<M extends MappingExt>(
 	return outputMappings
 }
 
+export type MappingExtWithPackage = MappingExt & { expectedPackages: (ExpectedPackage.Base & { rundownId?: string })[] }
 export type MappingsExtWithPackage = {
-	[layerName: string]: MappingExt & { expectedPackages: (ExpectedPackage.Base & { rundownId?: string })[] }
+	[layerName: string]: MappingExtWithPackage
 }
 export function routeExpectedPackages(
-	studio: Studio,
+	studio: ReadonlyDeep<Pick<Studio, 'routeSets'>>,
+	studioMappings: ReadonlyDeep<MappingsExt>,
 	expectedPackages: (ExpectedPackageDB | ExpectedPackage.Base)[]
 ): MappingsExtWithPackage {
 	// Map the expectedPackages onto their specified layer:
 	const mappingsWithPackages: MappingsExtWithPackage = {}
 	for (const expectedPackage of expectedPackages) {
 		for (const layerName of expectedPackage.layers) {
-			const mapping = studio.mappings[layerName]
+			const mapping = studioMappings[layerName]
 
 			if (mapping) {
 				if (!mappingsWithPackages[layerName]) {
@@ -133,25 +132,8 @@ export function routeExpectedPackages(
 	}
 
 	// Route the mappings
-	const routes = getActiveRoutes(studio)
+	const routes = getActiveRoutes(studio.routeSets)
 	return getRoutedMappings(mappingsWithPackages, routes)
 }
 
-export interface RoutedMappings {
-	_id: StudioId
-	mappingsHash: MappingsHash | undefined
-	mappings: { [layerName: string]: MappingExt }
-}
-
 export type Studio = DBStudio
-export const Studios = createMongoCollection<Studio>(CollectionName.Studios)
-
-registerIndex(Studios, {
-	organizationId: 1,
-})
-
-Meteor.startup(() => {
-	if (Meteor.isServer) {
-		ObserveChangesForHash(Studios, '_rundownVersionHash', ['blueprintConfig'])
-	}
-})

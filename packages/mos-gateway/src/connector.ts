@@ -1,20 +1,17 @@
 import { MosHandler, MosConfig } from './mosHandler'
 import { CoreHandler, CoreConfig } from './coreHandler'
 import * as Winston from 'winston'
-import { Process } from './process'
-import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import {
+	PeripheralDeviceId,
+	loadCertificatesFromDisk,
+	CertificatesConfig,
+} from '@sofie-automation/server-core-integration'
 
 export interface Config {
-	process: ProcessConfig
+	certificates: CertificatesConfig
 	device: DeviceConfig
 	core: CoreConfig
 	mos: MosConfig
-}
-export interface ProcessConfig {
-	/** Will cause the Node applocation to blindly accept all certificates. Not recommenced unless in local, controlled networks. */
-	unsafeSSL: boolean
-	/** Paths to certificates to load, for SSL-connections */
-	certificates: string[]
 }
 export interface DeviceConfig {
 	deviceId: PeripheralDeviceId
@@ -25,7 +22,6 @@ export class Connector {
 	private coreHandler: CoreHandler | undefined
 	private _config: Config | undefined
 	private _logger: Winston.Logger
-	private _process: Process | undefined
 
 	constructor(logger: Winston.Logger) {
 		this._logger = logger
@@ -34,49 +30,32 @@ export class Connector {
 	async init(config: Config): Promise<void> {
 		this._config = config
 
-		return Promise.resolve()
-			.then(() => {
-				this._logger.info('Initializing Process...')
-				return this.initProcess()
-			})
-			.then(async () => {
-				this._logger.info('Process initialized')
-				this._logger.info('Initializing Core...')
-				return this.initCore()
-			})
-			.then(async () => {
-				this._logger.info('Initializing Mos...')
-				return this.initMos()
-			})
-			.then(() => {
-				this._logger.info('Initialization done')
-				return
-			})
-			.catch((e) => {
-				this._logger.error('Error during initialization:', e, e.stack)
+		try {
+			this._logger.info('Initializing Process...')
+			const certificates = loadCertificatesFromDisk(this._logger, config.certificates)
+			this._logger.info('Process initialized')
 
-				this._logger.info('Shutting down in 10 seconds!')
+			this._logger.info('Initializing Core...')
+			await this.initCore(certificates)
 
-				this.dispose().catch((e2) => this._logger.error(e2))
+			this._logger.info('Initializing Mos...')
+			await this.initMos()
 
-				setTimeout(() => {
-					// eslint-disable-next-line no-process-exit
-					process.exit(0)
-				}, 10 * 1000)
+			this._logger.info('Initialization done')
+		} catch (e: any) {
+			this._logger.error('Error during initialization:', e, e.stack)
 
-				return
-			})
-	}
-	initProcess(): void {
-		this._process = new Process(this._logger)
+			this._logger.info('Shutting down in 10 seconds!')
 
-		if (!this._config) {
-			throw Error('_config is undefined!')
+			this.dispose().catch((e2) => this._logger.error(e2))
+
+			setTimeout(() => {
+				// eslint-disable-next-line no-process-exit
+				process.exit(0)
+			}, 10 * 1000)
 		}
-
-		this._process.init(this._config.process)
 	}
-	async initCore(): Promise<void> {
+	async initCore(certificates: Buffer[]): Promise<void> {
 		if (!this._config) {
 			throw Error('_config is undefined!')
 		}
@@ -87,11 +66,7 @@ export class Connector {
 			throw Error('coreHandler is undefined!')
 		}
 
-		if (!this._process) {
-			throw Error('_process is undefined!')
-		}
-
-		return this.coreHandler.init(this._config.core, this._process)
+		return this.coreHandler.init(this._config.core, certificates)
 	}
 	async initMos(): Promise<void> {
 		this.mosHandler = new MosHandler(this._logger)
@@ -107,12 +82,8 @@ export class Connector {
 		return this.mosHandler.init(this._config.mos, this.coreHandler)
 	}
 	async dispose(): Promise<void> {
-		return (this.mosHandler ? this.mosHandler.dispose() : Promise.resolve())
-			.then(async () => {
-				return this.coreHandler ? this.coreHandler.dispose() : Promise.resolve()
-			})
-			.then(() => {
-				return
-			})
+		if (this.mosHandler) await this.mosHandler.dispose()
+
+		if (this.coreHandler) await this.coreHandler.dispose()
 	}
 }

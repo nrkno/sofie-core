@@ -1,4 +1,4 @@
-import { Time } from './common'
+import { DatastorePersistenceMode, Time } from './common'
 import { IBlueprintExternalMessageQueueObj } from './message'
 import { PackageInfo } from './packageInfo'
 import {
@@ -14,7 +14,9 @@ import {
 	IBlueprintSegmentRundown,
 } from './rundown'
 import { BlueprintMappings } from './studio'
-import { OnGenerateTimelineObj } from './timeline'
+import { TSR, OnGenerateTimelineObj } from './timeline'
+import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { IBlueprintPlayoutDevice } from './lib'
 
 /** Common */
 
@@ -133,10 +135,22 @@ export interface IGetRundownContext extends IShowStyleUserContext {
 
 export interface IRundownContext extends IShowStyleContext {
 	readonly rundownId: string
+	readonly playlistId: string
 	readonly rundown: Readonly<IBlueprintSegmentRundown>
 }
 
 export interface IRundownUserContext extends IUserNotesContext, IRundownContext {}
+
+export interface IRundownActivationContext extends IRundownContext {
+	/** Execute an action on a certain PeripheralDevice */
+	executeTSRAction(
+		deviceId: PeripheralDeviceId,
+		actionId: string,
+		payload: Record<string, any>
+	): Promise<TSR.ActionExecutionResult>
+	/** Returns a list of the PeripheralDevices */
+	listPlayoutDevices(): Promise<IBlueprintPlayoutDevice[]>
+}
 
 export interface ISegmentUserContext extends IUserNotesContext, IRundownContext, IPackageInfoContext {
 	/** Display a notification to the user of an error */
@@ -148,7 +162,22 @@ export interface ISegmentUserContext extends IUserNotesContext, IRundownContext,
 }
 
 /** Actions */
-export interface IActionExecutionContext extends IShowStyleUserContext, IEventContext {
+export interface IDataStoreActionExecutionContext extends IShowStyleUserContext, IEventContext {
+	/**
+	 * Setting a value in the datastore allows us to overwrite parts of a timeline content object with that value
+	 * @param key Key to use when referencing from the timeline object
+	 * @param value Value to overwrite the timeline object's content with
+	 * @param mode In temporary mode the value may be removed when the key is no longer on the timeline
+	 */
+	setTimelineDatastoreValue(key: string, value: any, mode: DatastorePersistenceMode): Promise<void>
+	/** Deletes a previously set value from the datastore */
+	removeTimelineDatastoreValue(key: string): Promise<void>
+}
+
+export interface IActionExecutionContext
+	extends IShowStyleUserContext,
+		IEventContext,
+		IDataStoreActionExecutionContext {
 	/** Data fetching */
 	// getIngestRundown(): IngestRundown // TODO - for which part?
 	/** Get a PartInstance which can be modified */
@@ -213,6 +242,14 @@ export interface IActionExecutionContext extends IShowStyleUserContext, IEventCo
 	// updateAction(newManifest: Pick<IBlueprintAdLibActionManifest, 'description' | 'payload'>): void // only updates itself. to allow for the next one to do something different
 	// executePeripheralDeviceAction(deviceId: string, functionName: string, args: any[]): Promise<any>
 	// openUIDialogue(message: string) // ?????
+	/** Returns a list of the PeripheralDevices */
+	listPlayoutDevices(): Promise<IBlueprintPlayoutDevice[]>
+	/** Execute an action on a certain PeripheralDevice */
+	executeTSRAction(
+		deviceId: PeripheralDeviceId,
+		actionId: string,
+		payload: Record<string, any>
+	): Promise<TSR.ActionExecutionResult>
 }
 
 /** Actions */
@@ -273,7 +310,10 @@ export interface ITimelineEventContext extends IEventContext, IRundownContext {
 	 * Get the full session id for a timelineobject that belongs to an ab playback session
 	 * sessionName should also be used in calls to getPieceABSessionId for the owning piece
 	 */
-	getTimelineObjectAbSessionId(obj: OnGenerateTimelineObj, sessionName: string): string | undefined
+	getTimelineObjectAbSessionId(
+		obj: OnGenerateTimelineObj<TSR.TSRTimelineContent, any, any>,
+		sessionName: string
+	): string | undefined
 }
 
 export interface IPartEventContext extends IEventContext, IRundownContext {

@@ -1,29 +1,35 @@
 import * as _ from 'underscore'
 import path from 'path'
 import { promises as fsp } from 'fs'
-import { getCurrentTime, protectString, unprotectString, getRandomId } from '../../../lib/lib'
+import { getCurrentTime, unprotectString, getRandomId } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
-import { Blueprints, Blueprint, BlueprintId } from '../../../lib/collections/Blueprints'
+import { Blueprint } from '../../../lib/collections/Blueprints'
 import {
 	BlueprintManifestType,
+	IShowStyleConfigPreset,
 	SomeBlueprintManifest,
 	TranslationsBundle,
 } from '@sofie-automation/blueprints-integration'
 import { check, Match } from '../../../lib/check'
 import { NewBlueprintAPI, BlueprintAPIMethods } from '../../../lib/api/blueprint'
 import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../../methods'
-import { parseVersion, CoreSystem, SYSTEM_ID, getCoreSystemAsync } from '../../../lib/collections/CoreSystem'
+import { parseVersion, SYSTEM_ID } from '../../../lib/collections/CoreSystem'
 import { evalBlueprint } from './cache'
 import { removeSystemStatus } from '../../systemStatus/systemStatus'
 import { MethodContext, MethodContextAPI } from '../../../lib/api/methods'
 import { OrganizationContentWriteAccess, OrganizationReadAccess } from '../../security/organization'
 import { SystemWriteAccess } from '../../security/system'
-import { OrganizationId } from '../../../lib/collections/Organization'
 import { Credentials, isResolvedCredentials } from '../../security/lib/credentials'
 import { Settings } from '../../../lib/Settings'
-import { upsertBundles } from '../translationsBundles'
-import { BlueprintLight, fetchBlueprintLight } from '../../../lib/collections/optimizations'
+import { generateTranslationBundleOriginId, upsertBundles } from '../translationsBundles'
+import { BlueprintId, OrganizationId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Blueprints, CoreSystem, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
+import { fetchBlueprintLight, BlueprintLight } from '../../serverOptimisations'
+import { getSystemStorePath } from '../../coreSystem'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { Studio } from '../../../lib/collections/Studios'
 
 export async function insertBlueprint(
 	methodContext: MethodContext,
@@ -45,11 +51,8 @@ export async function insertBlueprint(
 		modified: getCurrentTime(),
 		created: getCurrentTime(),
 
-		blueprintId: protectString(''),
+		blueprintId: '',
 		blueprintType: type,
-
-		studioConfigManifest: [],
-		showStyleConfigManifest: [],
 
 		databaseVersion: {
 			studio: {},
@@ -60,6 +63,8 @@ export async function insertBlueprint(
 		blueprintVersion: '',
 		integrationVersion: '',
 		TSRVersion: '',
+
+		blueprintHash: getRandomId(),
 	})
 }
 export async function removeBlueprint(methodContext: MethodContext, blueprintId: BlueprintId): Promise<void> {
@@ -95,31 +100,25 @@ export async function uploadBlueprintAsset(_context: Credentials, fileId: string
 	check(fileId, String)
 	check(body, String)
 
-	const system = await getCoreSystemAsync()
-	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
-	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
+	const storePath = getSystemStorePath()
 
 	// TODO: add access control here
 	const data = Buffer.from(body, 'base64')
 	const parsedPath = path.parse(fileId)
 	logger.info(
-		`Write ${data.length} bytes to ${path.join(system.storePath, fileId)} (storePath: ${
-			system.storePath
-		}, fileId: ${fileId})`
+		`Write ${data.length} bytes to ${path.join(storePath, fileId)} (storePath: ${storePath}, fileId: ${fileId})`
 	)
 
-	await fsp.mkdir(path.join(system.storePath, parsedPath.dir), { recursive: true })
-	await fsp.writeFile(path.join(system.storePath, fileId), data)
+	await fsp.mkdir(path.join(storePath, parsedPath.dir), { recursive: true })
+	await fsp.writeFile(path.join(storePath, fileId), data)
 }
 export async function retrieveBlueprintAsset(_context: Credentials, fileId: string): Promise<Buffer> {
 	check(fileId, String)
 
-	const system = await getCoreSystemAsync()
-	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
-	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
+	const storePath = getSystemStorePath()
 
 	// TODO: add access control here
-	return fsp.readFile(path.join(system.storePath, fileId))
+	return fsp.readFile(path.join(storePath, fileId))
 }
 /** Only to be called from internal functions */
 export async function internalUploadBlueprint(
@@ -150,8 +149,6 @@ async function innerUploadBlueprint(
 		code: body,
 		hasCode: !!body,
 		modified: getCurrentTime(),
-		studioConfigManifest: [],
-		showStyleConfigManifest: [],
 		databaseVersion: blueprint
 			? blueprint.databaseVersion
 			: {
@@ -159,12 +156,13 @@ async function innerUploadBlueprint(
 					showStyle: {},
 					system: undefined,
 			  },
-		blueprintId: protectString(''),
+		blueprintId: '',
 		blueprintVersion: '',
 		integrationVersion: '',
 		TSRVersion: '',
 		disableVersionChecks: false,
 		blueprintType: undefined,
+		blueprintHash: getRandomId(),
 	}
 
 	let blueprintManifest: SomeBlueprintManifest | undefined
@@ -184,7 +182,7 @@ async function innerUploadBlueprint(
 		)
 	}
 
-	newBlueprint.blueprintId = protectString(blueprintManifest.blueprintId || '')
+	newBlueprint.blueprintId = blueprintManifest.blueprintId || ''
 	newBlueprint.blueprintType = blueprintManifest.blueprintType
 	newBlueprint.blueprintVersion = blueprintManifest.blueprintVersion
 	newBlueprint.integrationVersion = blueprintManifest.integrationVersion
@@ -217,11 +215,19 @@ async function innerUploadBlueprint(
 	}
 
 	if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE) {
-		newBlueprint.showStyleConfigManifest = blueprintManifest.showStyleConfigManifest
+		newBlueprint.showStyleConfigSchema = blueprintManifest.showStyleConfigSchema
+		newBlueprint.showStyleConfigPresets = blueprintManifest.configPresets
+	} else if (blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
+		newBlueprint.studioConfigSchema = blueprintManifest.studioConfigSchema
+		newBlueprint.studioConfigPresets = blueprintManifest.configPresets
 	}
-	if (blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
-		newBlueprint.studioConfigManifest = blueprintManifest.studioConfigManifest
-	}
+
+	// Parse the versions, just to verify that the format is correct:
+	parseVersion(blueprintManifest.blueprintVersion)
+	parseVersion(blueprintManifest.integrationVersion)
+	parseVersion(blueprintManifest.TSRVersion)
+
+	await Blueprints.upsertAsync(newBlueprint._id, newBlueprint)
 
 	// check for translations on the manifest and store them if they exist
 	if (
@@ -236,16 +242,116 @@ async function innerUploadBlueprint(
 		// Note that the type has to be string in the manifest interfaces to allow attaching the
 		// stringified JSON in the first place.
 		const translations = (blueprintManifest as any).translations as TranslationsBundle[]
-		await upsertBundles(translations, blueprintId)
+		await upsertBundles(translations, generateTranslationBundleOriginId(blueprintId, 'blueprints'))
 	}
 
-	// Parse the versions, just to verify that the format is correct:
-	parseVersion(blueprintManifest.blueprintVersion)
-	parseVersion(blueprintManifest.integrationVersion)
-	parseVersion(blueprintManifest.TSRVersion)
+	// Ensure anywhere that uses this blueprint has their configPreset updated
+	if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE) {
+		await syncConfigPresetsToShowStyles(newBlueprint)
+	} else if (blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
+		await syncConfigPresetsToStudios(newBlueprint)
+	}
 
-	await Blueprints.upsertAsync(newBlueprint._id, newBlueprint)
 	return newBlueprint
+}
+
+async function syncConfigPresetsToShowStyles(blueprint: Blueprint): Promise<void> {
+	const showStyles = (await ShowStyleBases.findFetchAsync(
+		{ blueprintId: blueprint._id },
+		{
+			fields: {
+				_id: 1,
+				blueprintConfigPresetId: 1,
+			},
+		}
+	)) as Pick<ShowStyleBase, '_id' | 'blueprintConfigPresetId'>[]
+
+	const configPresets = blueprint.showStyleConfigPresets || {}
+
+	const presetForShowStyle = new Map<ShowStyleBaseId, IShowStyleConfigPreset | undefined>()
+
+	await Promise.all(
+		showStyles.map(async (showStyle) => {
+			const configPreset = showStyle.blueprintConfigPresetId
+				? configPresets[showStyle.blueprintConfigPresetId]
+				: undefined
+			presetForShowStyle.set(showStyle._id, configPreset)
+
+			return ShowStyleBases.updateAsync(showStyle._id, {
+				$set: configPreset
+					? {
+							'blueprintConfigWithOverrides.defaults': configPreset.config,
+							blueprintConfigPresetIdUnlinked: false,
+					  }
+					: {
+							blueprintConfigPresetIdUnlinked: true,
+					  },
+			})
+		})
+	)
+
+	const variants = (await ShowStyleVariants.findFetchAsync(
+		{ showStyleBaseId: { $in: showStyles.map((s) => s._id) } },
+		{
+			fields: {
+				_id: 1,
+				showStyleBaseId: 1,
+				blueprintConfigPresetId: 1,
+			},
+		}
+	)) as Pick<ShowStyleVariant, '_id' | 'blueprintConfigPresetId' | 'showStyleBaseId'>[]
+
+	await Promise.all(
+		variants.map(async (variant) => {
+			const baseConfig = presetForShowStyle.get(variant.showStyleBaseId)
+			const configPreset =
+				baseConfig && variant.blueprintConfigPresetId
+					? baseConfig.variants[variant.blueprintConfigPresetId]
+					: undefined
+
+			return ShowStyleVariants.updateAsync(variant._id, {
+				$set: configPreset
+					? {
+							'blueprintConfigWithOverrides.defaults': configPreset.config,
+							blueprintConfigPresetIdUnlinked: false,
+					  }
+					: {
+							blueprintConfigPresetIdUnlinked: true,
+					  },
+			})
+		})
+	)
+}
+async function syncConfigPresetsToStudios(blueprint: Blueprint): Promise<void> {
+	const studios = (await Studios.findFetchAsync(
+		{ blueprintId: blueprint._id },
+		{
+			fields: {
+				_id: 1,
+				blueprintConfigPresetId: 1,
+			},
+		}
+	)) as Pick<Studio, '_id' | 'blueprintConfigPresetId'>[]
+
+	const configPresets = blueprint.studioConfigPresets || {}
+
+	await Promise.all(
+		studios.map(async (studio) => {
+			const configPreset = studio.blueprintConfigPresetId
+				? configPresets[studio.blueprintConfigPresetId]
+				: undefined
+			return Studios.updateAsync(studio._id, {
+				$set: configPreset
+					? {
+							'blueprintConfigWithOverrides.defaults': configPreset.config,
+							blueprintConfigPresetIdUnlinked: false,
+					  }
+					: {
+							blueprintConfigPresetIdUnlinked: true,
+					  },
+			})
+		})
+	)
 }
 
 async function assignSystemBlueprint(methodContext: MethodContext, blueprintId: BlueprintId | null): Promise<void> {

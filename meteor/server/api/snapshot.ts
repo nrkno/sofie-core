@@ -3,19 +3,17 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { ServerResponse, IncomingMessage } from 'http'
 import { check, Match } from '../../lib/check'
-import { Studio, Studios, StudioId } from '../../lib/collections/Studios'
+import { Studio } from '../../lib/collections/Studios'
 import {
-	Snapshots,
 	SnapshotType,
 	SnapshotSystem,
 	SnapshotDebug,
 	SnapshotBase,
 	SnapshotRundownPlaylist,
-	SnapshotId,
 } from '../../lib/collections/Snapshots'
-import { UserActionsLog, UserActionsLogItem } from '../../lib/collections/UserActionsLog'
+import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PieceGeneric } from '../../lib/collections/Pieces'
-import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
+import { MediaObject } from '../../lib/collections/MediaObjects'
 import {
 	getCurrentTime,
 	Time,
@@ -28,26 +26,25 @@ import {
 	unprotectStringArray,
 	unprotectString,
 } from '../../lib/lib'
-import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import { PeripheralDevices, PeripheralDevice, PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
+import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
-import { Timeline, TimelineComplete } from '../../lib/collections/Timeline'
-import { PeripheralDeviceCommands, PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
+import { TimelineComplete } from '../../lib/collections/Timeline'
+import { PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
-import { ICoreSystem, CoreSystem, parseVersion, getCoreSystemAsync } from '../../lib/collections/CoreSystem'
+import { ICoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
-import { ShowStyleVariant, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { Blueprints, Blueprint, BlueprintId } from '../../lib/collections/Blueprints'
+import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { Blueprint } from '../../lib/collections/Blueprints'
 import { IngestRundown, VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { importIngestRundown } from './ingest/http'
-import { RundownPlaylists, RundownPlaylistId, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { RundownLayouts, RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { DBTriggeredActions, TriggeredActions } from '../../lib/collections/TriggeredActions'
-import { OrganizationId } from '../../lib/collections/Organization'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
 import { Settings } from '../../lib/Settings'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { Credentials, isResolvedCredentials } from '../security/lib/credentials'
@@ -57,22 +54,46 @@ import { SystemWriteAccess } from '../security/system'
 import { PickerPOST, PickerGET } from './http'
 import { saveIntoDb, sumChanges } from '../lib/database'
 import * as fs from 'fs'
-import {
-	ExpectedPackageWorkStatus,
-	ExpectedPackageWorkStatuses,
-} from '../../lib/collections/ExpectedPackageWorkStatuses'
-import {
-	PackageContainerPackageStatusDB,
-	PackageContainerPackageStatuses,
-} from '../../lib/collections/PackageContainerPackageStatus'
-import { PackageInfoDB, PackageInfos } from '../../lib/collections/PackageInfos'
-import { checkStudioExists } from '../../lib/collections/optimizations'
+import { ExpectedPackageWorkStatus } from '../../lib/collections/ExpectedPackageWorkStatuses'
+import { PackageContainerPackageStatusDB } from '../../lib/collections/PackageContainerPackageStatus'
+import { PackageInfoDB } from '../../lib/collections/PackageInfos'
+import { checkStudioExists } from '../optimizations'
 import { CoreRundownPlaylistSnapshot } from '@sofie-automation/corelib/dist/snapshots'
 import { QueueStudioJob } from '../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { ReadonlyDeep } from 'type-fest'
 import { checkAccessToPlaylist, VerifiedRundownPlaylistContentAccess } from './lib'
-import { PackageInfo } from '../coreSystem'
+import { getSystemStorePath, PackageInfo } from '../coreSystem'
+import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import {
+	BlueprintId,
+	OrganizationId,
+	PeripheralDeviceId,
+	RundownPlaylistId,
+	ShowStyleBaseId,
+	SnapshotId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	Blueprints,
+	CoreSystem,
+	ExpectedPackageWorkStatuses,
+	MediaObjects,
+	PackageContainerPackageStatuses,
+	PackageInfos,
+	PeripheralDeviceCommands,
+	PeripheralDevices,
+	RundownLayouts,
+	RundownPlaylists,
+	ShowStyleBases,
+	ShowStyleVariants,
+	Snapshots,
+	Studios,
+	Timeline,
+	TriggeredActions,
+	UserActionsLog,
+} from '../collections'
+import { getCoreSystemAsync } from '../coreSystem/collection'
 
 interface RundownPlaylistSnapshot extends CoreRundownPlaylistSnapshot {
 	versionExtended: string | undefined
@@ -256,7 +277,7 @@ async function createDebugSnapshot(studioId: StudioId, organizationId: Organizat
 	const deviceSnaphots: Array<DeviceSnapshot> = _.compact(
 		await Promise.all(
 			systemSnapshot.devices.map(async (device) => {
-				if (device.connected && device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS) {
+				if (device.connected && device.subType === PERIPHERAL_SUBTYPE_PROCESS) {
 					const startTime = getCurrentTime()
 
 					// defer to another fiber
@@ -304,6 +325,9 @@ async function createRundownPlaylistSnapshot(
 	playlist: ReadonlyDeep<RundownPlaylist>,
 	full: boolean = false
 ): Promise<RundownPlaylistSnapshot> {
+	/** Max count of one type of items to include in the snapshot */
+	const LIMIT_COUNT = 500
+
 	const snapshotId: SnapshotId = getRandomId()
 	logger.info(
 		`Generating ${full ? 'full ' : ''}RundownPlaylist snapshot "${snapshotId}" for RundownPlaylist "${
@@ -316,7 +340,7 @@ async function createRundownPlaylistSnapshot(
 		full,
 	})
 	const coreResult = await queuedJob.complete
-	const coreSnapshot: CoreRundownPlaylistSnapshot = JSON.parse(coreResult.snapshotJson)
+	const coreSnapshot: CoreRundownPlaylistSnapshot = JSONBlobParse(coreResult.snapshotJson)
 
 	const mediaObjectIds: Array<string> = [
 		...getPiecesMediaObjects(coreSnapshot.pieces),
@@ -341,15 +365,30 @@ async function createRundownPlaylistSnapshot(
 		},
 	})
 
-	const pExpectedPackageWorkStatuses = ExpectedPackageWorkStatuses.findFetchAsync({
-		studioId: playlist.studioId,
-	})
-	const pPackageContainerPackageStatuses = PackageContainerPackageStatuses.findFetchAsync({
-		studioId: playlist.studioId,
-	})
-	const pPackageInfos = PackageInfos.findFetchAsync({
-		studioId: playlist.studioId,
-	})
+	const pExpectedPackageWorkStatuses = ExpectedPackageWorkStatuses.findFetchAsync(
+		{
+			studioId: playlist.studioId,
+		},
+		{
+			limit: LIMIT_COUNT,
+		}
+	)
+	const pPackageContainerPackageStatuses = PackageContainerPackageStatuses.findFetchAsync(
+		{
+			studioId: playlist.studioId,
+		},
+		{
+			limit: LIMIT_COUNT,
+		}
+	)
+	const pPackageInfos = PackageInfos.findFetchAsync(
+		{
+			studioId: playlist.studioId,
+		},
+		{
+			limit: LIMIT_COUNT,
+		}
+	)
 
 	const [mediaObjects, userActions, expectedPackageWorkStatuses, packageContainerPackageStatuses, packageInfos] =
 		await Promise.all([
@@ -411,12 +450,9 @@ async function storeSnaphot(
 	organizationId: OrganizationId | null,
 	comment: string
 ): Promise<SnapshotId> {
-	const system = await getCoreSystemAsync()
-	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
-	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
-
+	const storePath = getSystemStorePath()
 	const fileName = fixValidPath(snapshot.snapshot.name) + '.json'
-	const filePath = Path.join(system.storePath, fileName)
+	const filePath = Path.join(storePath, fileName)
 
 	const str = JSON.stringify(snapshot)
 
@@ -442,7 +478,7 @@ async function storeSnaphot(
 	return id
 }
 async function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): Promise<AnySnapshot> {
-	const snapshot = Snapshots.findOne(snapshotId)
+	const snapshot = await Snapshots.findOneAsync(snapshotId)
 	if (!snapshot) throw new Meteor.Error(404, `Snapshot not found!`)
 
 	if (Settings.enableUserAccounts) {
@@ -459,11 +495,8 @@ async function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): Pro
 		}
 	}
 
-	const system = await getCoreSystemAsync()
-	if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
-	if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
-
-	const filePath = Path.join(system.storePath, snapshot.fileName)
+	const storePath = getSystemStorePath()
+	const filePath = Path.join(storePath, snapshot.fileName)
 
 	const dataStr = !Meteor.isTest // If we're running in a unit-test, don't access files
 		? await fs.promises.readFile(filePath, { encoding: 'utf8' })
@@ -529,7 +562,7 @@ async function restoreFromRundownPlaylistSnapshot(
 	}
 
 	const queuedJob = await QueueStudioJob(StudioJobs.RestorePlaylistSnapshot, studioId, {
-		snapshotJson: JSON.stringify(omit(snapshot, 'mediaObjects', 'userActions')),
+		snapshotJson: JSONBlobStringify(omit(snapshot, 'mediaObjects', 'userActions')),
 	})
 	await queuedJob.complete
 
@@ -650,11 +683,8 @@ export async function removeSnapshot(context: MethodContext, snapshotId: Snapsho
 
 	if (snapshot.fileName) {
 		// remove from disk
-		const system = await getCoreSystemAsync()
-		if (!system) throw new Meteor.Error(500, `CoreSystem not found!`)
-		if (!system.storePath) throw new Meteor.Error(500, `CoreSystem.storePath not set!`)
-
-		const filePath = Path.join(system.storePath, snapshot.fileName)
+		const storePath = getSystemStorePath()
+		const filePath = Path.join(storePath, snapshot.fileName)
 		try {
 			logger.info(`Removing snapshot file ${filePath}`)
 
@@ -691,7 +721,7 @@ if (!Settings.enableUserAccounts) {
 
 			const cred0: Credentials = { userId: null, token: params.token }
 			const { cred } = await OrganizationContentWriteAccess.snapshot(cred0)
-			const playlist = RundownPlaylists.findOne(protectString(params.playlistId))
+			const playlist = await RundownPlaylists.findOneAsync(protectString(params.playlistId))
 			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${params.playlistId}" not found`)
 			await StudioReadAccess.studioContent(playlist.studioId, cred)
 

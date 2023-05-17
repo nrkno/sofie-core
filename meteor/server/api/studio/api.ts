@@ -2,22 +2,27 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../../lib/check'
 import { registerClassToMeteorMethods } from '../../methods'
 import { NewStudiosAPI, StudiosAPIMethods } from '../../../lib/api/studios'
-import { Studios, DBStudio, StudioId } from '../../../lib/collections/Studios'
-import { literal, getRandomId, lazyIgnore } from '../../../lib/lib'
-import { Rundowns } from '../../../lib/collections/Rundowns'
-import { PeripheralDevices } from '../../../lib/collections/PeripheralDevices'
+import { DBStudio } from '../../../lib/collections/Studios'
+import { literal, getRandomId, lazyIgnore, stringifyError } from '../../../lib/lib'
+import {
+	ExpectedPackages,
+	ExpectedPackageWorkStatuses,
+	ExternalMessageQueue,
+	MediaObjects,
+	PackageContainerPackageStatuses,
+	PackageInfos,
+	PeripheralDevices,
+	RundownPlaylists,
+	Rundowns,
+	Studios,
+	Timeline,
+} from '../../collections'
 import { MethodContextAPI, MethodContext } from '../../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../../security/organization'
-import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-import { Timeline } from '../../../lib/collections/Timeline'
-import { ExternalMessageQueue } from '../../../lib/collections/ExternalMessageQueue'
-import { MediaObjects } from '../../../lib/collections/MediaObjects'
 import { Credentials } from '../../security/lib/credentials'
-import { OrganizationId } from '../../../lib/collections/Organization'
-import { ExpectedPackages } from '../../../lib/collections/ExpectedPackages'
-import { ExpectedPackageWorkStatuses } from '../../../lib/collections/ExpectedPackageWorkStatuses'
-import { PackageInfos } from '../../../lib/collections/PackageInfos'
-import { PackageContainerPackageStatuses } from '../../../lib/collections/PackageContainerPackageStatus'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { OrganizationId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { logger } from '../../logging'
 
 async function insertStudio(context: MethodContext | Credentials, newId?: StudioId): Promise<StudioId> {
 	if (newId) check(newId, String)
@@ -32,14 +37,13 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 			name: 'New Studio',
 			organizationId: organizationId,
 			// blueprintId?: BlueprintId
-			mappings: {},
+			mappingsWithOverrides: wrapDefaultObject({}),
 			supportedShowStyleBase: [],
-			blueprintConfig: {},
+			blueprintConfigWithOverrides: wrapDefaultObject({}),
 			// testToolsConfig?: ITestToolsConfig
 			settings: {
 				frameRate: 25,
 				mediaPreviewsUrl: '',
-				sofieUrl: '',
 			},
 			_rundownVersionHash: '',
 			routeSets: {},
@@ -47,6 +51,12 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 			packageContainers: {},
 			thumbnailContainerIds: [],
 			previewContainerIds: [],
+			peripheralDeviceSettings: {
+				playoutDevices: wrapDefaultObject({}),
+				ingestDevices: wrapDefaultObject({}),
+				inputDevices: wrapDefaultObject({}),
+			},
+			lastBlueprintConfig: undefined,
 		})
 	)
 }
@@ -104,25 +114,28 @@ function triggerUpdateStudioMappingsHash(studioId: StudioId) {
 	lazyIgnore(
 		`triggerUpdateStudio_${studioId}`,
 		() => {
-			Studios.update(studioId, {
+			Studios.updateAsync(studioId, {
 				$set: {
 					mappingsHash: getRandomId(),
 				},
+			}).catch((e) => {
+				logger.error(`triggerUpdateStudioMappingsHash: ${stringifyError(e)}`)
 			})
 		},
 		10
 	)
 }
-Studios.find(
+Studios.observeChanges(
 	{},
 	{
+		added: triggerUpdateStudioMappingsHash,
+		changed: triggerUpdateStudioMappingsHash,
+		removed: triggerUpdateStudioMappingsHash,
+	},
+	{
 		fields: {
-			mappings: 1,
+			mappingsWithOverrides: 1,
 			routeSets: 1,
 		},
 	}
-).observeChanges({
-	added: triggerUpdateStudioMappingsHash,
-	changed: triggerUpdateStudioMappingsHash,
-	removed: triggerUpdateStudioMappingsHash,
-})
+)

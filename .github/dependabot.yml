@@ -14,7 +14,9 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-
+    reviewers:
+      - "@nrkno/sofie-ops"
+      
   # # Enable version updates for Docker
   # - package-ecosystem: "docker"
   #   directory: "/meteor"

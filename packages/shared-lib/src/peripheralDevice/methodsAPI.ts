@@ -3,15 +3,15 @@ import {
 	ExpectedPackageWorkStatusId,
 	MediaWorkFlowId,
 	MediaWorkFlowStepId,
+	PeripheralDeviceCommandId,
 	PeripheralDeviceId,
 	TimelineHash,
 } from '../core/model/Ids'
-import { PeripheralDevicePublic } from '../core/model/peripheralDevice'
+import { PeripheralDeviceForDevice } from '../core/model/peripheralDevice'
 import { IngestPlaylist, IngestRundown, IngestPart, IngestSegment } from './ingest'
 import { MediaObjectRevision, MediaWorkFlowRevision, MediaWorkFlowStepRevision } from './mediaManager'
 import {
 	IMOSRunningOrder,
-	MosString128,
 	IMOSRunningOrderBase,
 	IMOSRunningOrderStatus,
 	IMOSStoryStatus,
@@ -23,11 +23,12 @@ import {
 	IMOSROAction,
 	IMOSROReadyToAir,
 	IMOSROFullStory,
-} from './mos'
+} from '@mos-connection/model'
+import { IMOSString128 } from '@mos-connection/model'
 import { ExpectedPackageStatusAPI } from '../package-manager/package'
 import {
-	InitOptions,
-	StatusObject,
+	PeripheralDeviceInitOptions,
+	PeripheralDeviceStatusObject,
 	TimelineTriggerTimeResult,
 	DiffTimeResult,
 	TimeDiff,
@@ -37,12 +38,67 @@ import { MediaObject } from '../core/model/MediaObjects'
 import { MediaWorkFlow } from '../core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '../core/model/MediaWorkFlowSteps'
 
+export type UpdateExpectedPackageWorkStatusesChanges =
+	| {
+			id: ExpectedPackageWorkStatusId
+			type: 'delete'
+	  }
+	| {
+			id: ExpectedPackageWorkStatusId
+			type: 'insert'
+			status: ExpectedPackageStatusAPI.WorkStatus
+	  }
+	| {
+			id: ExpectedPackageWorkStatusId
+			type: 'update'
+			status: Partial<ExpectedPackageStatusAPI.WorkStatus>
+	  }
+
+export type UpdatePackageContainerPackageStatusesChanges =
+	| {
+			containerId: string
+			packageId: string
+			type: 'delete'
+	  }
+	| {
+			containerId: string
+			packageId: string
+			type: 'update'
+			status: ExpectedPackageStatusAPI.PackageContainerPackageStatus
+	  }
+
+export type UpdatePackageContainerStatusesChanges =
+	| {
+			containerId: string
+			type: 'delete'
+	  }
+	| {
+			containerId: string
+			type: 'update'
+			status: ExpectedPackageStatusAPI.PackageContainerStatus
+	  }
+
 export interface NewPeripheralDeviceAPI {
-	initialize(deviceId: PeripheralDeviceId, deviceToken: string, options: InitOptions): Promise<PeripheralDeviceId>
+	functionReply(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		commandId: PeripheralDeviceCommandId,
+		err: any,
+		result: any
+	): Promise<void>
+	initialize(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		options: PeripheralDeviceInitOptions
+	): Promise<PeripheralDeviceId>
 	unInitialize(deviceId: PeripheralDeviceId, deviceToken: string): Promise<PeripheralDeviceId>
-	setStatus(deviceId: PeripheralDeviceId, deviceToken: string, status: StatusObject): Promise<StatusObject>
+	setStatus(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		status: PeripheralDeviceStatusObject
+	): Promise<PeripheralDeviceStatusObject>
 	ping(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
-	getPeripheralDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<PeripheralDevicePublic>
+	getPeripheralDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<PeripheralDeviceForDevice>
 	playoutPlaybackChanged(deviceId: PeripheralDeviceId, deviceToken: string, r: PlayoutChangedResults): Promise<void>
 	pingWithCommand(
 		deviceId: PeripheralDeviceId,
@@ -137,7 +193,7 @@ export interface NewPeripheralDeviceAPI {
 
 	mosRoCreate(deviceId: PeripheralDeviceId, deviceToken: string, mosRunningOrder: IMOSRunningOrder): Promise<void>
 	mosRoReplace(deviceId: PeripheralDeviceId, deviceToken: string, mosRunningOrder: IMOSRunningOrder): Promise<void>
-	mosRoDelete(deviceId: PeripheralDeviceId, deviceToken: string, mosRunningOrderId: MosString128): Promise<void>
+	mosRoDelete(deviceId: PeripheralDeviceId, deviceToken: string, mosRunningOrderId: IMOSString128): Promise<void>
 	mosRoMetadata(deviceId: PeripheralDeviceId, deviceToken: string, metadata: IMOSRunningOrderBase): Promise<void>
 	mosRoStatus(deviceId: PeripheralDeviceId, deviceToken: string, status: IMOSRunningOrderStatus): Promise<void>
 	mosRoStoryStatus(deviceId: PeripheralDeviceId, deviceToken: string, status: IMOSStoryStatus): Promise<void>
@@ -170,39 +226,39 @@ export interface NewPeripheralDeviceAPI {
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		Action: IMOSStoryAction,
-		Stories: Array<MosString128>
+		Stories: Array<IMOSString128>
 	): Promise<void>
 	mosRoItemMove(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		Action: IMOSItemAction,
-		Items: Array<MosString128>
+		Items: Array<IMOSString128>
 	): Promise<void>
 	mosRoStoryDelete(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		Action: IMOSROAction,
-		Stories: Array<MosString128>
+		Stories: Array<IMOSString128>
 	): Promise<void>
 	mosRoItemDelete(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		Action: IMOSStoryAction,
-		Items: Array<MosString128>
+		Items: Array<IMOSString128>
 	): Promise<void>
 	mosRoStorySwap(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		Action: IMOSROAction,
-		StoryID0: MosString128,
-		StoryID1: MosString128
+		StoryID0: IMOSString128,
+		StoryID1: IMOSString128
 	): Promise<void>
 	mosRoItemSwap(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		Action: IMOSStoryAction,
-		ItemID0: MosString128,
-		ItemID1: MosString128
+		ItemID0: IMOSString128,
+		ItemID1: IMOSString128
 	): Promise<void>
 	mosRoReadyToAir(deviceId: PeripheralDeviceId, deviceToken: string, Action: IMOSROReadyToAir): Promise<void>
 	mosRoFullStory(deviceId: PeripheralDeviceId, deviceToken: string, story: IMOSROFullStory): Promise<void>
@@ -242,43 +298,23 @@ export interface NewPeripheralDeviceAPI {
 	updateExpectedPackageWorkStatuses(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		changes: (
-			| {
-					id: ExpectedPackageWorkStatusId
-					type: 'delete'
-			  }
-			| {
-					id: ExpectedPackageWorkStatusId
-					type: 'insert'
-					status: ExpectedPackageStatusAPI.WorkStatus
-			  }
-			| {
-					id: ExpectedPackageWorkStatusId
-					type: 'update'
-					status: Partial<ExpectedPackageStatusAPI.WorkStatus>
-			  }
-		)[]
+		changes: UpdateExpectedPackageWorkStatusesChanges[]
 	): Promise<void>
 	removeAllExpectedPackageWorkStatusOfDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
 
 	updatePackageContainerPackageStatuses(
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
-		changes: (
-			| {
-					containerId: string
-					packageId: string
-					type: 'delete'
-			  }
-			| {
-					containerId: string
-					packageId: string
-					type: 'update'
-					status: ExpectedPackageStatusAPI.PackageContainerPackageStatus
-			  }
-		)[]
+		changes: UpdatePackageContainerPackageStatusesChanges[]
 	): Promise<void>
 	removeAllPackageContainerPackageStatusesOfDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
+
+	updatePackageContainerStatuses(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		changes: UpdatePackageContainerStatusesChanges[]
+	): Promise<void>
+	removeAllPackageContainerStatusesOfDevice(deviceId: PeripheralDeviceId, deviceToken: string): Promise<void>
 
 	fetchPackageInfoMetadata(
 		deviceId: PeripheralDeviceId,
@@ -299,7 +335,31 @@ export interface NewPeripheralDeviceAPI {
 		deviceId: PeripheralDeviceId,
 		deviceToken: string,
 		type: string,
-		packageId: ExpectedPackageId
+		packageId: ExpectedPackageId,
+		removeDelay?: number
+	): Promise<void>
+
+	/**
+	 * This method is being called by a Peripheral Device handling external triggers when it receives an external
+	 * trigger event or an external input changes it's state (a knob changes it's rotation, a joystick is moved, etc.)
+	 *
+	 * @param {PeripheralDeviceId} deviceId
+	 * @param {string} deviceToken
+	 * @param {string} triggerDeviceId The ID of the actual input device providing this input.
+	 * Can be shared across multiple physical devices in the system with the same characteristics: a primary and
+	 * backup hardware controller, etc.
+	 * @param {string} triggerId The ID of the trigger within the input device providing the input. An identifier of a
+	 * button, control knob, GPI port, etc.
+	 * @param {(Record<string, string | number | boolean> | null)} [values] An arbitrary map of values acompanying this
+	 * input: voltage, pressure, position, etc.
+	 * @memberof NewPeripheralDeviceAPI
+	 */
+	inputDeviceTrigger(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		triggerDeviceId: string,
+		triggerId: string,
+		values: Record<string, string | number | boolean> | null
 	): Promise<void>
 
 	determineDiffTime(): Promise<DiffTimeResult>
@@ -329,7 +389,9 @@ export enum PeripheralDeviceAPIMethods {
 
 	'playoutPlaybackChanged' = 'peripheralDevice.playout.playbackChanged',
 
-	'reportCommandError' = 'peripheralDevice.playout.reportCommandError',
+	'getDebugStates' = 'peripheralDevice.playout.getDebugStates',
+
+	// 'reportCommandError' = 'peripheralDevice.playout.reportCommandError',
 
 	'mosRoCreate' = 'peripheralDevice.mos.roCreate',
 	'mosRoReplace' = 'peripheralDevice.mos.roReplace',
@@ -368,8 +430,6 @@ export enum PeripheralDeviceAPIMethods {
 	'dataPartCreate' = 'peripheralDevice.rundown.partCreate',
 	'dataPartUpdate' = 'peripheralDevice.rundown.partUpdate',
 
-	'resyncRundown' = 'peripheralDevice.mos.roResync',
-
 	'getMediaObjectRevisions' = 'peripheralDevice.mediaScanner.getMediaObjectRevisions',
 	'updateMediaObject' = 'peripheralDevice.mediaScanner.updateMediaObject',
 	'clearMediaObjectCollection' = 'peripheralDevice.mediaScanner.clearMediaObjectCollection',
@@ -394,4 +454,6 @@ export enum PeripheralDeviceAPIMethods {
 
 	'requestUserAuthToken' = 'peripheralDevice.spreadsheet.requestUserAuthToken',
 	'storeAccessToken' = 'peripheralDevice.spreadsheet.storeAccessToken',
+
+	'inputDeviceTrigger' = 'peripheralDevice.input.inputDeviceTrigger',
 }

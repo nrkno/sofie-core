@@ -121,7 +121,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ### Features
 
-* noop, just to get the the next version right ([89b3cb7](https://github.com/nrkno/tv-automation-server-core-integration/commit/89b3cb7))
+* noop, just to get the next version right ([89b3cb7](https://github.com/nrkno/tv-automation-server-core-integration/commit/89b3cb7))
 * update typings with copy from Core ([b2bbb74](https://github.com/nrkno/tv-automation-server-core-integration/commit/b2bbb74))
 
 

@@ -1,14 +1,8 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { ISourceLayer, NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import {
-	RundownPlaylist,
-	RundownPlaylistCollectionUtil,
-	RundownPlaylistId,
-} from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { Segments, SegmentId } from '../../../lib/collections/Segments'
-import { Studio } from '../../../lib/collections/Studios'
 import {
 	IOutputLayerExtended,
 	ISourceLayerExtended,
@@ -17,23 +11,33 @@ import {
 	SegmentExtended,
 } from '../../../lib/Rundown'
 import { IContextMenuContext } from '../RundownView'
-import { ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
 import { equalSets } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
-import { Rundown, RundownId, Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { PieceInstances } from '../../../lib/collections/PieceInstances'
-import { PartId, Part } from '../../../lib/collections/Parts'
-import { memoizedIsolatedAutorun, slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
+import { Part } from '../../../lib/collections/Parts'
+import { slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
+import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
-import { getBasicNotesForSegment } from '../../../lib/rundownNotifications'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { RundownLayoutFilterBase, RundownViewLayout } from '../../../lib/collections/RundownLayouts'
-import { getMinimumReactivePieceNotesForPart } from './getMinimumReactivePieceNotesForPart'
+import { getReactivePieceNoteCountsForSegment } from './getReactivePieceNoteCountsForSegment'
 import { SegmentViewMode } from './SegmentViewModes'
-import { SegmentNote, TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { AdlibSegmentUi } from '../../lib/shelf'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
+import {
+	PartId,
+	RundownId,
+	RundownPlaylistId,
+	SegmentId,
+	ShowStyleBaseId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { PieceInstances, Segments } from '../../collections'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -57,7 +61,7 @@ export interface PieceUi extends PieceExtended {
 	/** Metadata object */
 	contentMetaData?: any
 	contentPackageInfos?: ScanInfoForPackages
-	message?: string | null
+	messages?: ITranslatableMessage[]
 }
 
 export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'>
@@ -71,8 +75,8 @@ export interface IProps {
 	segmentsIdsBefore: Set<SegmentId>
 	rundownIdsBefore: RundownId[]
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
-	studio: Studio
-	showStyleBase: ShowStyleBase
+	studio: UIStudio
+	showStyleBase: UIShowStyleBase
 	playlist: RundownPlaylist
 	rundown: MinimalRundown
 	timeScale: number
@@ -81,7 +85,7 @@ export interface IProps {
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onSegmentScroll?: () => void
 	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
-	onSwitchViewMode: (newViewMode: SegmentViewMode) => void
+	onSwitchViewMode?: (newViewMode: SegmentViewMode) => void
 	followLiveSegments: boolean
 	segmentRef?: (el: React.ComponentClass, sId: string) => void
 	isLastSegment: boolean
@@ -97,10 +101,16 @@ export interface IProps {
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 }
 
+export interface SegmentNoteCounts {
+	criticial: number
+	warning: number
+}
+
 export interface ITrackedProps {
 	segmentui: SegmentUi | undefined
 	parts: Array<PartUi>
-	segmentNotes: Array<SegmentNote>
+	pieces: Map<PartId, CalculateTimingsPiece[]>
+	segmentNoteCounts: SegmentNoteCounts
 	hasRemoteItems: boolean
 	hasGuestItems: boolean
 	hasAlreadyPlayed: boolean
@@ -116,7 +126,7 @@ type IWrappedComponent<IProps, IState, TrackedProps> =
 
 export function withResolvedSegment<T extends IProps, IState = {}>(
 	WrappedComponent: IWrappedComponent<T, IState, ITrackedProps>
-) {
+): new (props: T) => React.Component<T, IState> {
 	return withTracker<T, IState, ITrackedProps>(
 		(props: T) => {
 			const segment = Segments.findOne(props.segmentId) as SegmentUi | undefined
@@ -126,7 +136,8 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				return {
 					segmentui: undefined,
 					parts: [],
-					segmentNotes: [],
+					pieces: new Map(),
+					segmentNoteCounts: { criticial: 0, warning: 0 },
 					hasRemoteItems: false,
 					hasGuestItems: false,
 					hasAlreadyPlayed: false,
@@ -136,10 +147,6 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 					showCountdownToSegment: true,
 				}
 			}
-
-			const rundownNrcsName = Rundowns.findOne(segment.rundownId, {
-				fields: { externalNRCSName: 1 },
-			})?.externalNRCSName
 
 			// This registers a reactive dependency on infinites-capping pieces, so that the segment can be
 			// re-evaluated when a piece like that appears.
@@ -185,8 +192,8 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 								RundownPlaylistCollectionUtil.getSelectedPartInstances(props.playlist),
 							'playlist.getSelectedPartInstances',
 							props.playlist._id,
-							props.playlist.currentPartInstanceId,
-							props.playlist.nextPartInstanceId
+							props.playlist.currentPartInfo?.partInstanceId,
+							props.playlist.nextPartInfo?.partInstanceId
 						),
 					] as [
 						PartId[],
@@ -203,6 +210,15 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 			)
 
 			const rundownOrder = RundownPlaylistCollectionUtil.getRundownOrderedIDs(props.playlist)
+			const pieces = memoizedIsolatedAutorun(
+				(orderedParts) => {
+					return RundownPlaylistCollectionUtil.getPiecesForParts(orderedParts, {
+						fields: { enable: 1, prerollDuration: 1, postrollDuration: 1, pieceType: 1 },
+					})
+				},
+				'playlist.getPiecesForParts',
+				orderedAllPartIds
+			)
 			const rundownIndex = rundownOrder.indexOf(segment.rundownId)
 
 			const o = RundownUtils.getResolvedSegment(
@@ -214,6 +230,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				rundownOrder.slice(0, rundownIndex),
 				props.rundownsToShowstyles,
 				orderedAllPartIds,
+				pieces,
 				currentPartInstance,
 				nextPartInstance,
 				true,
@@ -223,41 +240,23 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 			if (props.rundownViewLayout && o.segmentExtended) {
 				if (props.rundownViewLayout.visibleSourceLayers) {
 					const visibleSourceLayers = props.rundownViewLayout.visibleSourceLayers
-					Object.entries(o.segmentExtended.sourceLayers).forEach(([id, sourceLayer]) => {
-						sourceLayer.isHidden = !visibleSourceLayers.includes(id)
-					})
+					Object.entries<ISourceLayerExtended>(o.segmentExtended.sourceLayers).forEach(
+						([id, sourceLayer]) => {
+							sourceLayer.isHidden = !visibleSourceLayers.includes(id)
+						}
+					)
 				}
 				if (props.rundownViewLayout.visibleOutputLayers) {
 					const visibleOutputLayers = props.rundownViewLayout.visibleOutputLayers
-					Object.entries(o.segmentExtended.outputLayers).forEach(([id, outputLayer]) => {
-						outputLayer.used = visibleOutputLayers.includes(id)
-					})
+					Object.entries<IOutputLayerExtended>(o.segmentExtended.outputLayers).forEach(
+						([id, outputLayer]) => {
+							outputLayer.used = visibleOutputLayers.includes(id)
+						}
+					)
 				}
 			}
 
-			const notes: TrackedNote[] = getBasicNotesForSegment(
-				segment,
-				rundownNrcsName ?? 'NRCS',
-				o.parts.map((p) => p.instance.part),
-				o.parts.map((p) => p.instance)
-			)
-			o.parts.forEach((part) => {
-				notes.push(
-					...getMinimumReactivePieceNotesForPart(props.studio, props.showStyleBase, part.instance.part).map(
-						(note): TrackedNote => ({
-							...note,
-							rank: segment._rank,
-							origin: {
-								...note.origin,
-								partId: part.partId,
-								rundownId: segment.rundownId,
-								segmentId: segment._id,
-								segmentName: segment.name,
-							},
-						})
-					)
-				)
-			})
+			const segmentNoteCounts = getReactivePieceNoteCountsForSegment(segment)
 
 			let lastValidPartIndex = o.parts.length - 1
 
@@ -300,7 +299,8 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 			return {
 				segmentui: o.segmentExtended,
 				parts: o.parts,
-				segmentNotes: notes,
+				pieces,
+				segmentNoteCounts,
 				hasAlreadyPlayed: o.hasAlreadyPlayed,
 				hasRemoteItems: o.hasRemoteItems,
 				hasGuestItems: o.hasGuestItems,
@@ -350,13 +350,13 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				return (
 					parts.find(
 						(i) =>
-							i.instance._id === props.playlist.currentPartInstanceId ||
-							i.instance._id === nextProps.playlist.currentPartInstanceId
+							i.instance._id === props.playlist.currentPartInfo?.partInstanceId ||
+							i.instance._id === nextProps.playlist.currentPartInfo?.partInstanceId
 					) ||
 					parts.find(
 						(i) =>
-							i.instance._id === props.playlist.nextPartInstanceId ||
-							i.instance._id === nextProps.playlist.nextPartInstanceId
+							i.instance._id === props.playlist.nextPartInfo?.partInstanceId ||
+							i.instance._id === nextProps.playlist.nextPartInfo?.partInstanceId
 					)
 				)
 			}
@@ -366,8 +366,9 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				(props.playlist.nextSegmentId !== nextProps.playlist.nextSegmentId &&
 					(props.playlist.nextSegmentId === props.segmentId ||
 						nextProps.playlist.nextSegmentId === props.segmentId)) ||
-				((props.playlist.currentPartInstanceId !== nextProps.playlist.currentPartInstanceId ||
-					props.playlist.nextPartInstanceId !== nextProps.playlist.nextPartInstanceId) &&
+				((props.playlist.currentPartInfo?.partInstanceId !==
+					nextProps.playlist.currentPartInfo?.partInstanceId ||
+					props.playlist.nextPartInfo?.partInstanceId !== nextProps.playlist.nextPartInfo?.partInstanceId) &&
 					data.parts &&
 					findNextOrCurrentPart(data.parts)) ||
 				props.playlist.holdState !== nextProps.playlist.holdState ||

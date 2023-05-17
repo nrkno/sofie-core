@@ -1,6 +1,6 @@
 {
 	"name": "mos-gateway",
-	"version": "1.46.0-in-testing.0",
+	"version": "1.50.0-in-development",
 	"private": true,
 	"description": "MOS-Gateway for the Sofie project",
 	"license": "MIT",
@@ -26,29 +26,29 @@
 		}
 	],
 	"scripts": {
-		"build": "rimraf dist && yarn build:main",
-		"buildstart": "yarn build && yarn dev",
-		"buildinspect": "yarn build && yarn inspect",
-		"build:main": "tsc -p tsconfig.build.json",
-		"lint:raw": "eslint --ext .ts --ext .js --ext .tsx --ext .jsx --ignore-pattern dist",
-		"lint": "yarn lint:raw .",
-		"lint-fix": "yarn lint --fix",
-		"unit": "jest",
-		"test": "yarn lint && yarn unit",
-		"test:integration": "yarn lint && jest --config=jest-integration.config.js",
-		"watch": "jest --watch",
-		"cov": "jest; open-cli coverage/lcov-report/index.html",
+		"build": "run -T rimraf dist && run build:main",
+		"buildstart": "run build && run dev",
+		"buildinspect": "run build && run inspect",
+		"build:main": "run -T tsc -p tsconfig.build.json",
+		"lint:raw": "run -T eslint --ext .ts --ext .tsx --ignore-pattern dist",
+		"lint": "run lint:raw .",
+		"lint-fix": "run lint --fix",
+		"unit": "run -T jest",
+		"test": "run lint && run unit",
+		"test:integration": "run lint && run -T jest --config=jest-integration.config.js",
+		"watch": "run -T jest --watch",
+		"cov": "run -T jest; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
 		"inspect": "node --inspect dist/index.js",
-		"ci": "yarn test",
-		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
-		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck",
+		"ci": "run test",
+		"validate:dependencies": "yarn npm audit --environment production && run license-validate",
+		"validate:dev-dependencies": "yarn npm audit --environment development",
 		"start": "node dist/index.js",
-		"dev": "yarn start -id localDevMos"
+		"dev": "run start -id localDevMos",
+		"license-validate": "run -T sofie-licensecheck"
 	},
 	"engines": {
-		"node": "^14.19 || ^16.14"
+		"node": "^14.19 || ^16.14 || ^18.12"
 	},
 	"keywords": [
 		"mos",
@@ -65,20 +65,22 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/server-core-integration": "1.46.0-in-testing.0",
-		"@sofie-automation/shared-lib": "1.46.0-in-testing.0",
-		"mos-connection": "^2.0.1",
+		"@mos-connection/connector": "^3.0.2",
+		"@sofie-automation/server-core-integration": "1.50.0-in-development",
+		"@sofie-automation/shared-lib": "1.50.0-in-development",
 		"tslib": "^2.4.0",
+		"type-fest": "^2.19.0",
 		"underscore": "^1.13.4",
 		"winston": "^3.8.2"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [
-			"prettier"
+			"yarn run -T prettier"
 		],
 		"*.{ts,tsx}": [
 			"yarn lint:raw"
 		]
-	}
+	},
+	"packageManager": "yarn@3.5.0"
 }

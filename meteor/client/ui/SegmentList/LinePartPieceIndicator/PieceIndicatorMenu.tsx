@@ -1,5 +1,5 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react'
-import Escape from 'react-escape'
+import Escape from './../../../lib/Escape'
 import { PieceExtended } from '../../../../lib/Rundown'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { usePopper } from 'react-popper'
@@ -24,7 +24,7 @@ export function PieceIndicatorMenu({
 	setIsOver: (isOver: boolean) => void
 	onPieceClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-}) {
+}): JSX.Element | null {
 	const [indicatorMenuEl, setIndicatorMenuEl] = useState<HTMLDivElement | null>(null)
 	const { styles, attributes, update } = usePopper(parentEl, indicatorMenuEl, {
 		placement: 'bottom',

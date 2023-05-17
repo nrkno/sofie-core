@@ -1,22 +1,16 @@
-import { ICollection, MongoModifier, MongoQuery } from '../db'
+import { ICollection, MongoQuery } from '../db'
 import { ReadonlyDeep } from 'type-fest'
 import { isProtectedString, ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import _ = require('underscore')
 import { clone, deleteAllUndefinedProperties, getRandomId } from '@sofie-automation/corelib/dist/lib'
-import {
-	FindOneOptions,
-	FindOptions,
-	mongoFindOptions,
-	mongoModify,
-	mongoWhere,
-} from '@sofie-automation/corelib/dist/mongo'
+import { FindOneOptions, FindOptions, mongoFindOptions } from '@sofie-automation/corelib/dist/mongo'
 import { AnyBulkWriteOperation } from 'mongodb'
 import { IS_PRODUCTION } from '../environment'
 import { logger } from '../logging'
 import { Changes, ChangedIds } from '../db/changes'
 import { JobContext } from '../jobs'
 
-type SelectorFunction<TDoc> = (doc: TDoc) => boolean
+export type SelectorFunction<TDoc extends { _id: ProtectedString<any> }> = (doc: TDoc) => boolean
 type DbCacheCollectionDocument<TDoc> = {
 	inserted?: boolean
 	updated?: boolean
@@ -32,10 +26,15 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
 	protected isToBeRemoved = false
 
-	protected constructor(protected readonly context: JobContext, protected readonly _collection: ICollection<TDoc>) {
-		//
-	}
+	protected constructor(protected readonly context: JobContext, protected readonly _collection: ICollection<TDoc>) {}
 
+	/**
+	 * Create a DbCacheReadCollection for existing documents
+	 * @param context Context of the job
+	 * @param collection Mongo collection the documents belongs to
+	 * @param docs The documents
+	 * @returns DbCacheReadCollection containing the provided documents
+	 */
 	public static createFromArray<TDoc extends { _id: ProtectedString<any> }>(
 		context: JobContext,
 		collection: ICollection<TDoc>,
@@ -45,6 +44,15 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 		col.fillWithDataFromArray(docs as any)
 		return col
 	}
+
+	/**
+	 * Load an array of object from Mongodb and create a DbCacheReadCollection for the documents
+	 * Note: Make sure to use an appropriate selector to limit to documents allowed for the current context
+	 * @param context Context of the job
+	 * @param collection Mongo collection to load documents from
+	 * @param selector Mongo selector to use to load documents
+	 * @returns DbCacheReadCollection containing the loaded documents
+	 */
 	public static async createFromDatabase<TDoc extends { _id: ProtectedString<any> }>(
 		context: JobContext,
 		collection: ICollection<TDoc>,
@@ -69,42 +77,19 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 		return this._collection.name
 	}
 
-	findFetch(selector: MongoQuery<TDoc> | TDoc['_id'] | SelectorFunction<TDoc>, options?: FindOptions<TDoc>): TDoc[] {
-		const span = this.context.startSpan(`DBCache.findFetch.${this.name}`)
-
-		selector = selector || {}
-		if (isProtectedString(selector)) {
-			selector = { _id: selector } as MongoQuery<TDoc>
-		}
-
-		let docsToSearch = this.documents
-		if (
-			selector &&
-			typeof selector === 'object' &&
-			'_id' in selector &&
-			selector['_id'] &&
-			isProtectedString(selector['_id'])
-		) {
-			// Optimization: Make the lookup as small as possible:
-			docsToSearch = new Map()
-			const doc = this.documents.get(selector['_id'])
-			if (doc) {
-				docsToSearch.set(selector['_id'], doc)
-			}
-		}
+	/**
+	 * Find documents matching a criteria
+	 * @param selector selector function to match documents, or null to fetch all documents
+	 * @param options
+	 * @returns The matched documents
+	 */
+	findAll(selector: SelectorFunction<TDoc> | null, options?: FindOptions<TDoc>): TDoc[] {
+		const span = this.context.startSpan(`DBCache.findAll.${this.name}`)
 
 		const results: TDoc[] = []
-		docsToSearch.forEach((doc, _id) => {
+		this.documents.forEach((doc, _id) => {
 			if (doc === null) return
-			if (
-				!selector
-					? true
-					: isProtectedString(selector)
-					? selector === (_id as any)
-					: _.isFunction(selector)
-					? selector(doc.document)
-					: mongoWhere(doc.document, selector as any)
-			) {
+			if (selector === null || selector(doc.document)) {
 				if (doc.document['_id'] !== _id) {
 					throw new Error(`Error: document._id "${doc.document['_id']}" is not equal to the key "${_id}"`)
 				}
@@ -116,11 +101,27 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 		if (span) span.end()
 		return res
 	}
-	findOne(
-		selector: MongoQuery<TDoc> | TDoc['_id'] | SelectorFunction<TDoc>,
-		options?: FindOneOptions<TDoc>
-	): TDoc | undefined {
-		return this.findFetch(selector, options)[0]
+
+	/**
+	 * Find a single document
+	 * @param selector Id or selector function
+	 * @param options
+	 * @returns The first matched document, if any
+	 */
+	findOne(selector: TDoc['_id'] | SelectorFunction<TDoc>, options?: FindOneOptions<TDoc>): TDoc | undefined {
+		if (isProtectedString(selector)) {
+			const span = this.context.startSpan(`DBCache.findOne.${this.name}`)
+			const doc = this.documents.get(selector)
+			if (doc) {
+				const res = mongoFindOptions([doc.document], options)
+				if (span) span.end()
+				return res[0]
+			} else {
+				return undefined
+			}
+		} else {
+			return this.findAll(selector, options)[0]
+		}
 	}
 
 	async fillWithDataFromDatabase(selector: MongoQuery<TDoc>): Promise<number> {
@@ -156,7 +157,11 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 			this.documents.set(id, { document: clone(doc) })
 		})
 	}
-	/** Called by the Cache when the Cache is marked as to be removed. The collection is emptied and marked to reject any further updates */
+
+	/**
+	 * Called to mark all the objects in this collection as pending deletion from mongo. This will cause it to reject any future updates
+	 * Note: The actual deletion must be handled elsewhere
+	 */
 	markForRemoval(): void {
 		this.isToBeRemoved = true
 		this.documents = new Map()
@@ -176,6 +181,13 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		}
 	}
 
+	/**
+	 * Create a DbCacheWriteCollection for existing documents
+	 * @param context Context of the job
+	 * @param collection Mongo collection the documents belongs to
+	 * @param docs The documents
+	 * @returns DbCacheWriteCollection containing the provided documents
+	 */
 	public static createFromArray<TDoc extends { _id: ProtectedString<any> }>(
 		context: JobContext,
 		collection: ICollection<TDoc>,
@@ -185,6 +197,15 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		col.fillWithDataFromArray(docs as any)
 		return col
 	}
+
+	/**
+	 * Load an array of object from Mongodb and create a DbCacheWriteCollection for the documents
+	 * Note: Make sure to use an appropriate selector to limit to documents allowed for the current context
+	 * @param context Context of the job
+	 * @param collection Mongo collection to load documents from
+	 * @param selector Mongo selector to use to load documents
+	 * @returns DbCacheWriteCollection containing the loaded documents
+	 */
 	public static async createFromDatabase<TDoc extends { _id: ProtectedString<any> }>(
 		context: JobContext,
 		collection: ICollection<TDoc>,
@@ -205,6 +226,11 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		return res
 	}
 
+	/**
+	 * Insert a single document
+	 * @param doc The document to insert
+	 * @returns The id of the inserted document
+	 */
 	insert(doc: TDoc): TDoc['_id'] {
 		this.assertNotToBeRemoved('insert')
 
@@ -228,7 +254,13 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		if (span) span.end()
 		return doc._id
 	}
-	remove(selector: MongoQuery<TDoc> | TDoc['_id'] | SelectorFunction<TDoc>): Array<TDoc['_id']> {
+
+	/**
+	 * Remove one or more documents
+	 * @param selector Id of the document to update, a function to check each document, or null to remove all
+	 * @returns The ids of the removed documents
+	 */
+	remove(selector: TDoc['_id'] | SelectorFunction<TDoc> | null): Array<TDoc['_id']> {
 		this.assertNotToBeRemoved('remove')
 
 		const span = this.context.startSpan(`DBCache.remove.${this.name}`)
@@ -240,7 +272,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 				removedIds.push(selector)
 			}
 		} else {
-			const docsToRemove = this.findFetch(selector)
+			const docsToRemove = this.findAll(selector)
 			for (const doc of docsToRemove) {
 				removedIds.push(doc._id)
 				this.documents.set(doc._id, null)
@@ -252,64 +284,63 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	}
 
 	/**
-	 * Update some documents
-	 * @param selector Filter function or mongo query
-	 * @param modifier
-	 * @param forceUpdate If true, the diff will be skipped and the document will be marked as having changed
-	 * @returns All the ids that matched the selector
+	 * Update a single document
+	 * @param selector Id of the document to update
+	 * @param modifier The modifier to apply to the document. Return false to report the document as unchanged
+	 * @param forceUpdate If true, the diff will be skipped and the document will be marked as having changed if the modifer returned a doc
+	 * @returns The id of the updated document, if it was updated
 	 */
-	update(
-		selector: MongoQuery<TDoc> | TDoc['_id'] | SelectorFunction<TDoc>,
-		modifier: ((doc: TDoc) => TDoc) | MongoModifier<TDoc> = {},
+	updateOne(
+		selector: TDoc['_id'],
+		modifier: (doc: TDoc) => TDoc | false,
 		forceUpdate?: boolean
-	): Array<TDoc['_id']> {
-		this.assertNotToBeRemoved('update')
+	): TDoc['_id'] | undefined {
+		this.assertNotToBeRemoved('updateOne')
 
 		const span = this.context.startSpan(`DBCache.update.${this.name}`)
 
-		const selectorInModify: MongoQuery<TDoc> = _.isFunction(selector)
-			? {}
-			: isProtectedString(selector)
-			? ({ _id: selector } as any)
-			: selector
+		if (!isProtectedString(selector)) throw new Error('DBCacheCollection.update expects an id as the selector')
 
-		const changedIds: Array<TDoc['_id']> = []
-		_.each(this.findFetch(selector), (doc) => {
-			const _id = doc._id
+		const doc = this.documents.get(selector)
 
-			const newDoc: TDoc = _.isFunction(modifier)
-				? modifier(clone(doc))
-				: mongoModify(selectorInModify as any, clone(doc), modifier as any)
-			if (newDoc._id !== _id) {
-				throw new Error(
-					`Error: The (immutable) field '_id' was found to have been altered to _id: "${newDoc._id}"`
-				)
+		let result: TDoc['_id'] | undefined
+		if (doc) {
+			const _id = doc.document._id
+
+			const newDoc = modifier(clone(doc.document))
+			if (newDoc) {
+				if (newDoc._id !== _id) {
+					throw new Error(
+						`Error: The (immutable) field '_id' was found to have been altered to _id: "${newDoc._id}"`
+					)
+				}
+
+				// ensure no properties are 'undefined'
+				deleteAllUndefinedProperties(newDoc)
+
+				const docEntry = this.documents.get(_id)
+				if (!docEntry) {
+					throw new Error(
+						`Error: Trying to update a document "${newDoc._id}", that went missing half-way through!`
+					)
+				}
+
+				const hasPendingChanges = docEntry.inserted || docEntry.updated // If the doc is already dirty, then there is no point trying to diff it
+				if (forceUpdate || hasPendingChanges || !_.isEqual(doc, newDoc)) {
+					docEntry.document = newDoc
+					docEntry.updated = true
+				}
+				result = _id
 			}
+		}
 
-			// ensure no properties are 'undefined'
-			deleteAllUndefinedProperties(newDoc)
-
-			const docEntry = this.documents.get(_id)
-			if (!docEntry) {
-				throw new Error(
-					`Error: Trying to update a document "${newDoc._id}", that went missing half-way through!`
-				)
-			}
-
-			const hasPendingChanges = docEntry.inserted || docEntry.updated // If the doc is already dirty, then there is no point trying to diff it
-			if (forceUpdate || hasPendingChanges || !_.isEqual(doc, newDoc)) {
-				docEntry.document = newDoc
-				docEntry.updated = true
-			}
-			changedIds.push(_id)
-		})
 		if (span) span.end()
-		return changedIds
+		return result
 	}
 
 	/**
-	 * Update documents
-	 * @param modifier
+	 * Update multiple documents
+	 * @param modifier The modifier to apply to all the documents. Return false to report a document as unchanged
 	 * @param forceUpdate If true, the diff will be skipped and the document will be marked as having changed
 	 * @returns All the ids that were changed
 	 */
@@ -356,7 +387,11 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		return changedIds
 	}
 
-	/** Returns true if a doc was replace, false if inserted */
+	/**
+	 * Replace a single document
+	 * @param doc The document to insert
+	 * @returns True if the document was replaced, false if it was inserted
+	 */
 	replace(doc: TDoc | ReadonlyDeep<TDoc>): boolean {
 		this.assertNotToBeRemoved('replace')
 
@@ -386,6 +421,10 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		return !!oldDoc
 	}
 
+	/**
+	 * Write the changed documents to mongo
+	 * @returns Changes object describing the saved changes
+	 */
 	async updateDatabaseWithData(): Promise<Changes> {
 		const span = this.context.startSpan(`DBCache.updateDatabaseWithData.${this.name}`)
 		const changes: {
@@ -458,11 +497,17 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		if (span) span.end()
 		return changes
 	}
+
+	/**
+	 * Discard any changes that have been made locally to the collection.
+	 * Restores the documents as provided when this wrapper was created
+	 */
 	discardChanges(): void {
 		if (this.isModified()) {
 			this.fillWithDataFromArray(this.originalDocuments)
 		}
 	}
+
 	/**
 	 * Write all the documents in this cache into another. This assumes that this cache is a subset of the other and was populated with a subset of its data
 	 * @param otherCache The cache to update
@@ -499,6 +544,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 
 		return changes
 	}
+
 	isModified(): boolean {
 		for (const doc of Array.from(this.documents.values())) {
 			if (doc === null || doc.inserted || doc.updated) {

@@ -2,9 +2,14 @@ import React from 'react'
 import { SplitsContent } from '@sofie-automation/blueprints-integration'
 import { IDefaultRendererProps } from './DefaultRenderer'
 import { SplitsFloatingInspector } from '../../../FloatingInspectors/SplitsFloatingInspector'
-import { getSplitItems } from '../../utils/getSplitItems'
+import { getSplitItems } from '../../../SegmentContainer/getSplitItems'
 
-export function SplitsRenderer({ piece: pieceInstance, hovering, elementOffset, typeClass }: IDefaultRendererProps) {
+export function SplitsRenderer({
+	piece: pieceInstance,
+	hovering,
+	elementOffset,
+	typeClass,
+}: IDefaultRendererProps): JSX.Element {
 	const splitItems = getSplitItems(pieceInstance, 'segment-storyboard__part__piece__contents__item')
 
 	return (

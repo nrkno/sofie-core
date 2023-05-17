@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
-import { PeripheralDevices, PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
-import { getCurrentTime, Time, getRandomId, assertNever, literal } from '../../lib/lib'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
+import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '../../lib/collections/PeripheralDevices'
+import { getCurrentTime, Time, getRandomId, literal } from '../../lib/lib'
 import {
 	parseVersion,
 	parseCoreIntegrationCompatabilityRange,
@@ -17,16 +16,20 @@ import {
 	SystemInstanceId,
 	Component,
 } from '../../lib/api/systemStatus'
-import { getRelevantSystemVersions } from '../coreSystem'
-import { StudioId } from '../../lib/collections/Studios'
+import { RelevantSystemVersions } from '../coreSystem'
 import { Settings } from '../../lib/Settings'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { resolveCredentials, Credentials } from '../security/lib/credentials'
 import { SystemReadAccess } from '../security/system'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
-import { Workers } from '../../lib/collections/Workers'
-import { WorkerThreadStatuses } from '../../lib/collections/WorkerThreads'
+import { PeripheralDevices, Workers, WorkerThreadStatuses } from '../collections'
+import { getUpgradeSystemStatusMessages } from '../migration/upgrades'
+import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ServerPeripheralDeviceAPI } from '../api/peripheralDevice'
+import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
+import { MethodContext } from '../../lib/api/methods'
+import { getBlueprintVersions } from './blueprintVersions'
 
 const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
@@ -36,7 +39,7 @@ const integrationVersionAllowPrerelease = isPrerelease(PackageInfo.version)
 const expectedLibraryVersions: { [libName: string]: string } = {
 	'superfly-timeline': stripVersion(require('superfly-timeline/package.json').version),
 	// eslint-disable-next-line node/no-extraneous-require
-	'mos-connection': stripVersion(require('mos-connection/package.json').version),
+	'@mos-connection/helper': stripVersion(require('@mos-connection/helper/package.json').version),
 }
 
 /**
@@ -87,7 +90,7 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 
 		// Check core-integration version is as expected
 		if (
-			device.subType === PeripheralDeviceAPI.SUBTYPE_PROCESS ||
+			device.subType === PERIPHERAL_SUBTYPE_PROCESS ||
 			deviceVersions['@sofie-automation/server-core-integration']
 		) {
 			const integrationVersion = parseVersion(deviceVersions['@sofie-automation/server-core-integration'])
@@ -121,7 +124,7 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 		}
 
 		// check for any known libraries
-		for (const [libName, targetVersion] of Object.entries(expectedLibraryVersions)) {
+		for (const [libName, targetVersion] of Object.entries<string>(expectedLibraryVersions)) {
 			if (deviceVersions[libName] && targetVersion !== '0.0.0') {
 				const deviceLibVersion = parseVersion(deviceVersions[libName])
 				const checkMessage = compareSemverVersions(
@@ -152,21 +155,8 @@ function getSystemStatusForDevice(device: PeripheralDevice): StatusResponse {
 		},
 		checks: checks,
 	}
-	if (device.type === PeripheralDeviceType.MOS) {
-		so.documentation = 'https://github.com/nrkno/tv-automation-mos-gateway'
-	} else if (device.type === PeripheralDeviceType.SPREADSHEET) {
-		so.documentation = 'https://github.com/SuperFlyTV/spreadsheet-gateway'
-	} else if (device.type === PeripheralDeviceType.PLAYOUT) {
-		so.documentation = 'https://github.com/nrkno/tv-automation-playout-gateway'
-	} else if (device.type === PeripheralDeviceType.MEDIA_MANAGER) {
-		so.documentation = 'https://github.com/nrkno/tv-automation-media-management'
-	} else if (device.type === PeripheralDeviceType.INEWS) {
-		so.documentation = 'https://github.com/olzzon/tv2-inews-ftp-gateway'
-	} else if (device.type === PeripheralDeviceType.PACKAGE_MANAGER) {
-		so.documentation = 'https://github.com/nrkno/tv-automation-package-manager'
-	} else {
-		assertNever(device.type)
-	}
+
+	so.documentation = device.documentationUrl ?? ''
 
 	return so
 }
@@ -181,7 +171,7 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 	await SystemReadAccess.systemStatus(cred0)
 
 	// Check systemStatuses:
-	for (const [key, status] of Object.entries(systemStatuses)) {
+	for (const [key, status] of Object.entries<StatusObjectInternal>(systemStatuses)) {
 		checks.push({
 			description: key,
 			status: status2ExternalStatus(status.statusCode),
@@ -212,12 +202,12 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 		},
 		checks: checks,
 	}
+	if (!statusObj.components) statusObj.components = []
 
 	// Check status of workers
 	const workerStatuses = await Workers.findFetchAsync({})
 	if (workerStatuses.length) {
 		for (const workerStatus of workerStatuses) {
-			if (!statusObj.components) statusObj.components = []
 			const status = workerStatus.connected ? StatusCode.GOOD : StatusCode.BAD
 			statusObj.components.push(
 				literal<Component>({
@@ -235,7 +225,6 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 
 			const statuses = await WorkerThreadStatuses.findFetchAsync({ workerId: workerStatus._id })
 			for (const wts of statuses) {
-				if (!statusObj.components) statusObj.components = []
 				statusObj.components.push(
 					literal<Component>({
 						name: `worker-${wts.name}`,
@@ -252,6 +241,9 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 			}
 		}
 	}
+
+	const blueprintUpgradeMessages = await getUpgradeSystemStatusMessages()
+	statusObj.components.push(...blueprintUpgradeMessages)
 
 	// Check status of devices:
 	let devices: PeripheralDevice[] = []
@@ -285,12 +277,28 @@ export async function getSystemStatus(cred0: Credentials, studioId?: StudioId): 
 		statusObj.components.push(so)
 	}
 
+	const versions: { [name: string]: string } = {
+		...(await RelevantSystemVersions),
+	}
+
+	for (const [blueprintId, blueprint] of Object.entries<{ name: string; version: string }>(
+		await getBlueprintVersions()
+	)) {
+		// Use the name as key to make it easier to read for a human:
+		let key = 'blueprint_' + blueprint.name
+
+		// But if the name isn't unique, append the blueprintId to make it unique:
+		if (versions[key]) key += blueprintId
+
+		versions[key] = blueprint.version
+	}
+
 	const systemStatus: StatusCode = setStatus(statusObj)
 	statusObj._internal = {
 		// statusCode: systemStatus,
 		statusCodeString: StatusCode[systemStatus],
 		messages: collectMesages(statusObj),
-		versions: getRelevantSystemVersions(),
+		versions,
 	}
 	statusObj.statusMessage = statusObj._internal.messages.join(', ')
 
@@ -391,4 +399,11 @@ export function status2ExternalStatus(statusCode: StatusCode): ExternalStatus {
 		return 'FAIL'
 	}
 	return 'UNDEFINED'
+}
+export async function getDebugStates(
+	methodContext: MethodContext,
+	peripheralDeviceId: PeripheralDeviceId
+): Promise<object> {
+	const access = await PeripheralDeviceContentWriteAccess.peripheralDevice(methodContext, peripheralDeviceId)
+	return ServerPeripheralDeviceAPI.getDebugStates(access)
 }

@@ -29,7 +29,14 @@ interface IProps {
 	loop: boolean
 }
 
-export function VideoPreviewPlayer({ previewUrl, timePosition, itemDuration, seek, loop, studioSettings }: IProps) {
+export function VideoPreviewPlayer({
+	previewUrl,
+	timePosition,
+	itemDuration,
+	seek,
+	loop,
+	studioSettings,
+}: IProps): JSX.Element {
 	const videoElement = useRef<HTMLVideoElement>(null)
 
 	useEffect(() => {

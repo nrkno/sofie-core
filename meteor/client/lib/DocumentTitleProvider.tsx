@@ -1,10 +1,11 @@
 import * as React from 'react'
 
 import { translateWithTracker, Translated } from './ReactMeteorData/ReactMeteorData'
-import { CoreSystem, ICoreSystem } from '../../lib/collections/CoreSystem'
+import { ICoreSystem } from '../../lib/collections/CoreSystem'
 
 import { ReactiveVar } from 'meteor/reactive-var'
 import { isRunningInPWA } from './lib'
+import { CoreSystem } from '../collections'
 
 /**
  * A reactive variable that allows setting the title of the current view.
@@ -56,21 +57,21 @@ export const DocumentTitleProvider = translateWithTracker((_props: IProps) => {
 			document.title = compiledTitle.join(' – ')
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			const { doc, cs } = this.props
 			this.formatDocumentTitle(doc || undefined, cs?.name)
 		}
 
-		componentDidUpdate() {
+		componentDidUpdate(): void {
 			const { doc, cs } = this.props
 			this.formatDocumentTitle(doc || undefined, cs?.name)
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			this.formatDocumentTitle(undefined, undefined)
 		}
 
-		render() {
+		render(): React.ReactNode {
 			return null
 		}
 	}

@@ -9,9 +9,10 @@ import { onElementResize } from '../../lib/resizeObserver'
 import { PartUi } from './SegmentTimelineContainer'
 import { getCurrentTime } from '../../../lib/lib'
 import { RundownTiming } from '../RundownView/RundownTiming/RundownTiming'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
 import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
 import { RundownTimingContext } from '../../lib/rundownTiming'
+import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 // We're cheating a little: Fontface
 declare class FontFace {
@@ -40,6 +41,7 @@ interface ITimelineGridProps {
 	scrollLeft: number
 	isLiveSegment: boolean
 	partInstances: PartUi[]
+	pieces: Map<PartId, CalculateTimingsPiece[]>
 	currentPartInstanceId: PartInstanceId | null
 	onResize: (size: number[]) => void
 }
@@ -50,6 +52,10 @@ let gridFontAvailable: boolean = false
 export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	static contextTypes = {
 		durations: PropTypes.object.isRequired,
+	}
+
+	context: {
+		durations: RundownTimingContext
 	}
 
 	canvasElement: HTMLCanvasElement | null
@@ -326,12 +332,12 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 				total += duration
 			})
 		} else {
-			total = RundownUtils.getSegmentDuration(this.props.partInstances, true)
+			total = RundownUtils.getSegmentDuration(this.props.partInstances, this.props.pieces, true)
 		}
 		return total
 	}
 
-	render() {
+	render(): JSX.Element {
 		return (
 			<div className="segment-timeline__timeline-grid" ref={this.setParentRef}>
 				<canvas
@@ -386,7 +392,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		}
 	}
 
-	reattachTimingEventListeners = () => {
+	private reattachTimingEventListeners = () => {
 		if (this.props.isLiveSegment) {
 			window.removeEventListener(RundownTiming.Events.timeupdateLowResolution, this.onTimeupdate)
 			window.addEventListener(RundownTiming.Events.timeupdateHighResolution, this.onTimeupdate)
@@ -396,7 +402,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		if (this.canvasElement && this.parentElement && !this.ctx) {
 			this.initialize()
 		}
@@ -404,7 +410,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		this.reattachTimingEventListeners()
 	}
 
-	shouldComponentUpdate(nextProps: ITimelineGridProps) {
+	shouldComponentUpdate(nextProps: ITimelineGridProps): boolean {
 		if (
 			nextProps.timeScale !== this.props.timeScale ||
 			nextProps.scrollLeft !== this.props.scrollLeft ||
@@ -417,7 +423,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		return false
 	}
 
-	componentDidUpdate(prevProps: ITimelineGridProps) {
+	componentDidUpdate(prevProps: ITimelineGridProps): void {
 		if (this.canvasElement && this.parentElement && !this.ctx) {
 			this.initialize()
 		}
@@ -437,7 +443,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		this.requestRepaint()
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		this._resizeObserver.disconnect()
 		window.removeEventListener(RundownTiming.Events.timeupdateLowResolution, this.onTimeupdate)
 		window.removeEventListener(RundownTiming.Events.timeupdateHighResolution, this.onTimeupdate)

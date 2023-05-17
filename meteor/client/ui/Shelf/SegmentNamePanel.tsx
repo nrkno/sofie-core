@@ -6,12 +6,13 @@ import {
 	RundownLayoutSegmentName,
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { Segment } from '../../../lib/collections/Segments'
 import { PartInstance } from '../../../lib/collections/PartInstances'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 interface ISegmentNamePanelProps {
 	visible?: boolean
@@ -34,7 +35,7 @@ class SegmentNamePanelInner extends MeteorReactComponent<
 		super(props)
 	}
 
-	render() {
+	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const { t, panel } = this.props
 
@@ -58,10 +59,10 @@ class SegmentNamePanelInner extends MeteorReactComponent<
 }
 
 function getSegmentName(selectedSegment: 'current' | 'next', playlist: RundownPlaylist): string | undefined {
-	const currentPartInstance = playlist.currentPartInstanceId
-		? (RundownPlaylistCollectionUtil.getActivePartInstances(playlist, { _id: playlist.currentPartInstanceId })[0] as
-				| PartInstance
-				| undefined)
+	const currentPartInstance = playlist.currentPartInfo
+		? (RundownPlaylistCollectionUtil.getActivePartInstances(playlist, {
+				_id: playlist.currentPartInfo.partInstanceId,
+		  })[0] as PartInstance | undefined)
 		: undefined
 
 	if (!currentPartInstance) return
@@ -74,9 +75,9 @@ function getSegmentName(selectedSegment: 'current' | 'next', playlist: RundownPl
 			return segment?.name
 		}
 	} else {
-		if (playlist.nextPartInstanceId) {
+		if (playlist.nextPartInfo) {
 			const nextPartInstance = RundownPlaylistCollectionUtil.getActivePartInstances(playlist, {
-				_id: playlist.nextPartInstanceId,
+				_id: playlist.nextPartInfo.partInstanceId,
 			})[0] as PartInstance | undefined
 			if (nextPartInstance && nextPartInstance.segmentId !== currentPartInstance.segmentId) {
 				const segment = RundownPlaylistCollectionUtil.getSegments(playlist, { _id: nextPartInstance.segmentId })[0] as

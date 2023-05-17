@@ -1,8 +1,7 @@
 import { PartId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { getHash } from '@sofie-automation/corelib/dist/lib'
-import { isProtectedString, protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadOnlyCache } from '../cache/CacheBase'
 import { ReadonlyDeep } from 'type-fest'
 import { CacheForIngest } from './cache'
@@ -11,10 +10,10 @@ import { ExtendedIngestRundown, IngestRundown } from '@sofie-automation/blueprin
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { convertRundownToBlueprints } from '../blueprints/context/lib'
 
-export function getRundownId(studio: ReadonlyDeep<DBStudio> | StudioId, rundownExternalId: string): RundownId {
-	if (!studio) throw new Error('getRundownId: studio not set!')
+export function getRundownId(studioId: StudioId, rundownExternalId: string): RundownId {
+	if (!studioId) throw new Error('getRundownId: studio not set!')
 	if (!rundownExternalId) throw new Error('getRundownId: rundownExternalId must be set!')
-	return protectString<RundownId>(getHash(`${isProtectedString(studio) ? studio : studio._id}_${rundownExternalId}`))
+	return protectString<RundownId>(getHash(`${studioId}_${rundownExternalId}`))
 }
 export function getSegmentId(rundownId: RundownId, segmentExternalId: string): SegmentId {
 	if (!rundownId) throw new Error('getSegmentId: rundownId must be set!')

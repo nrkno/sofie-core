@@ -10,6 +10,9 @@ import { MeteorMethodSignatures } from '../../../methods'
 import { ClientAPI } from '../../../../lib/api/client'
 import '../../userActions.ts' // required to get the UserActionsAPI methods populated
 
+// we don't want the deviceTriggers observer to start up at this time
+jest.mock('../../deviceTriggers/observer')
+
 import '../rest.ts'
 
 describe('REST API', () => {
@@ -168,7 +171,7 @@ describe('REST API', () => {
 			}
 
 			const stringified: Record<string, string> = {}
-			Object.entries(params).forEach(([key, value]) => {
+			Object.entries<any>(params).forEach(([key, value]) => {
 				if (typeof value === 'string') {
 					stringified[key] = value
 				} else {
@@ -185,7 +188,7 @@ describe('REST API', () => {
 
 			const result = await callRoute(resource, docString, stringified)
 			expect(result.statusCode).toBe(200)
-			expect(resultingArgs).toMatchObject(Object.values(params))
+			expect(resultingArgs).toMatchObject(Object.values<any>(params))
 		})
 
 		testInFiber('lists available endpoints on /api/0', async () => {

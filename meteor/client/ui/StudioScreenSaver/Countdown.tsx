@@ -1,28 +1,20 @@
 import * as React from 'react'
 import { useTranslation } from 'react-i18next'
-import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { getCurrentTimeReactive } from '../../lib/currentTimeReactive'
+import { useCurrentTime } from '../../lib/lib'
 
 function floorCeil(val) {
 	return val < 0 ? Math.ceil(val) : Math.floor(val)
 }
 
-export const Countdown = withTracker<{ expectedStart: number; className?: string | undefined }, {}, { now: number }>(
-	() => {
-		return {
-			now: getCurrentTimeReactive(),
-		}
-	}
-)(function Countdown({
+export function Countdown({
 	expectedStart,
-	now,
 	className,
 }: {
 	expectedStart: number
-	now: number
 	className?: string | undefined
-}) {
+}): JSX.Element {
 	const { t } = useTranslation()
+	const now = useCurrentTime()
 	const diff = expectedStart - now
 
 	const days = floorCeil(diff / 86400000)
@@ -71,4 +63,4 @@ export const Countdown = withTracker<{ expectedStart: number; className?: string
 				: null}
 		</div>
 	)
-})
+}

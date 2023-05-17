@@ -3,7 +3,7 @@ import * as React from 'react'
 interface IProps {
 	children: JSX.Element[]
 }
-export function NotLoggedInContainer(props: IProps) {
+export function NotLoggedInContainer(props: IProps): JSX.Element {
 	return (
 		<div className="center-page">
 			<div className="mtl gutter flex-col page">

@@ -9,8 +9,8 @@ import { ensureNextPartIsValid as ensureNextPartIsValidRaw } from '../updateNext
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { runJobWithPlayoutCache } from '../../playout/lock'
 
-jest.mock('../../playout/playout')
-import { setNextPartInner } from '../../playout/playout'
+jest.mock('../../playout/setNext')
+import { setNextPartInner } from '../../playout/setNext'
 type TsetNextPartInner = jest.MockedFunction<typeof setNextPartInner>
 const setNextPartInnerMock = setNextPartInner as TsetNextPartInner
 setNextPartInnerMock.mockImplementation(async () => Promise.resolve()) // Default mock
@@ -25,9 +25,9 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 		studioId: context.studioId,
 		created: 0,
 		modified: 0,
-		currentPartInstanceId: null,
-		nextPartInstanceId: null,
-		previousPartInstanceId: null,
+		currentPartInfo: null,
+		nextPartInfo: null,
+		previousPartInfo: null,
 		activationId: protectString('active'),
 		timing: {
 			type: 'none' as any,
@@ -323,9 +323,19 @@ describe('ensureNextPartIsValid', () => {
 	) {
 		await context.directCollections.RundownPlaylists.update(rundownPlaylistId, {
 			$set: {
-				nextPartInstanceId: nextPartInstanceId as any,
-				currentPartInstanceId: currentPartInstanceId as any,
-				previousPartInstanceId: null,
+				nextPartInfo: nextPartInstanceId
+					? {
+							partInstanceId: nextPartInstanceId as any,
+							rundownId,
+					  }
+					: null,
+				currentPartInfo: currentPartInstanceId
+					? {
+							partInstanceId: currentPartInstanceId as any,
+							rundownId,
+					  }
+					: null,
+				previousPartInfo: null,
 				nextPartManual: nextPartManual || false,
 			},
 		})

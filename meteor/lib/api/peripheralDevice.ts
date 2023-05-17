@@ -1,33 +1,21 @@
 import { Meteor } from 'meteor/meteor'
 import { getCurrentTime, getRandomId } from '../lib'
-import { PeripheralDeviceCommands, PeripheralDeviceCommandId } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
-import * as OrgApi from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { PeripheralDeviceCommandId, PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { PeripheralDeviceCommands } from '../collections/libCollections'
 
-export { TimeDiff, DiffTimeResult } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 export * from '@sofie-automation/shared-lib/dist/peripheralDevice/mediaManager'
-export {
-	PeripheralDeviceAPIMethods,
-	NewPeripheralDeviceAPI,
-} from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
 
 export namespace PeripheralDeviceAPI {
-	export type DeviceSubType = OrgApi.PeripheralDeviceSubType
-	export type InitOptions = OrgApi.InitOptions
-	export type StatusObject = OrgApi.StatusObject
-	export type TimelineTriggerTimeResult = OrgApi.TimelineTriggerTimeResult
-	export type PartPlaybackStartedResult = OrgApi.PartPlaybackStartedResult
-	export type PartPlaybackStoppedResult = OrgApi.PartPlaybackStoppedResult
-	export type PiecePlaybackStartedResult = OrgApi.PiecePlaybackStartedResult
-	export type PiecePlaybackStoppedResult = OrgApi.PiecePlaybackStoppedResult
-	export const SUBTYPE_PROCESS = OrgApi.PERIPHERAL_SUBTYPE_PROCESS
-
 	export async function executeFunctionWithCustomTimeout(
 		deviceId: PeripheralDeviceId,
 		timeoutTime0: number | undefined,
-		functionName: string,
-		...args: any[]
+		action: {
+			functionName?: string
+			args?: Array<any>
+			actionId?: string
+			payload?: Record<string, any>
+		}
 	): Promise<any> {
 		return new Promise<any>((resolve, reject) => {
 			const timeoutTime: number = timeoutTime0 || 3000 // also handles null
@@ -98,9 +86,9 @@ export namespace PeripheralDeviceAPI {
 				_id: commandId,
 				deviceId: deviceId,
 				time: getCurrentTime(),
-				functionName,
-				args: args,
 				hasReply: false,
+
+				...action,
 			})
 		})
 	}
@@ -111,6 +99,6 @@ export namespace PeripheralDeviceAPI {
 		functionName: string,
 		...args: any[]
 	): Promise<any> {
-		return executeFunctionWithCustomTimeout(deviceId, undefined, functionName, ...args)
+		return executeFunctionWithCustomTimeout(deviceId, undefined, { functionName, args })
 	}
 }

@@ -2,55 +2,32 @@ import {
 	CoreConnection,
 	CoreOptions,
 	DDPConnectorOptions,
-	CollectionObj,
+	PeripheralDeviceAPI,
+	PeripheralDeviceCommand,
+	PeripheralDeviceId,
+	PeripheralDeviceForDevice,
+	protectString,
+	StatusCode,
+	StudioId,
+	unprotectString,
 } from '@sofie-automation/server-core-integration'
-
-import {
-	DeviceType,
-	CasparCGDevice,
-	DeviceContainer,
-	HyperdeckDevice,
-	QuantelDevice,
-	MediaObject,
-	DeviceOptionsAny,
-} from 'timeline-state-resolver'
-
+import { MediaObject, DeviceOptionsAny, ActionExecutionResult } from 'timeline-state-resolver'
 import * as _ from 'underscore'
 import { DeviceConfig } from './connector'
 import { TSRHandler } from './tsrHandler'
 import { Logger } from 'winston'
 // eslint-disable-next-line node/no-extraneous-import
-import { ThreadedClass, MemUsageReport as ThreadMemUsageReport } from 'threadedclass'
-import { Process } from './process'
+import { MemUsageReport as ThreadMemUsageReport } from 'threadedclass'
 import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
-import {
-	PeripheralDeviceCategory,
-	PeripheralDeviceType,
-	PERIPHERAL_SUBTYPE_PROCESS,
-	StatusObject,
-} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
-import { PeripheralDeviceAPIMethods } from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
-import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
+import { BaseRemoteDeviceIntegration } from 'timeline-state-resolver/dist/service/remoteDeviceInstance'
+import { getVersions } from './versions'
+import { CoreConnectionChild } from '@sofie-automation/server-core-integration/dist/lib/CoreConnectionChild'
+import { PlayoutGatewayConfig } from './generated/options'
 
 export interface CoreConfig {
 	host: string
 	port: number
 	watchdog: boolean
-}
-export interface PeripheralDeviceCommand {
-	_id: string
-
-	deviceId: PeripheralDeviceId
-	functionName: string
-	args: Array<any>
-
-	hasReply: boolean
-	reply?: any
-	replyError?: any
-
-	time: number // time
 }
 
 export interface MemoryUsageReport {
@@ -65,9 +42,8 @@ export class CoreHandler {
 	core!: CoreConnection
 	logger: Logger
 	public _observers: Array<any> = []
-	public deviceSettings: { [key: string]: any } = {}
+	public deviceSettings: PlayoutGatewayConfig = {}
 
-	public errorReporting = false
 	public multithreading = false
 	public reportAllCommands = false
 
@@ -76,9 +52,9 @@ export class CoreHandler {
 	private _executedFunctions: { [id: string]: boolean } = {}
 	private _tsrHandler?: TSRHandler
 	private _coreConfig?: CoreConfig
-	private _process?: Process
+	private _certificates?: Buffer[]
 
-	private _studioId: string | undefined
+	private _studioId: StudioId | undefined
 	private _timelineSubscription: string | null = null
 	private _expectedItemsSubscription: string | null = null
 
@@ -90,27 +66,24 @@ export class CoreHandler {
 		this._deviceOptions = deviceOptions
 	}
 
-	async init(config: CoreConfig, process: Process): Promise<void> {
-		// this.logger.info('========')
+	async init(config: CoreConfig, certificates: Buffer[]): Promise<void> {
 		this._statusInitialized = false
 		this._coreConfig = config
-		this._process = process
+		this._certificates = certificates
 
-		this.core = new CoreConnection(
-			this.getCoreConnectionOptions('Playout gateway', 'PlayoutCoreParent', PERIPHERAL_SUBTYPE_PROCESS)
-		)
+		this.core = new CoreConnection(this.getCoreConnectionOptions())
 
 		this.core.onConnected(() => {
 			this.logger.info('Core Connected!')
-			this.setupObserversAndSubscriptions().catch((e) => {
-				this.logger.error('Core Error during setupObserversAndSubscriptions:', e)
+			this.setupObserversAndSubscriptions().catch((e: any) => {
+				this.logger.error(`Core Error during setupObserversAndSubscriptions: ${e}`, { error: e })
 			})
 			if (this._onConnected) this._onConnected()
 		})
 		this.core.onDisconnected(() => {
 			this.logger.warn('Core Disconnected!')
 		})
-		this.core.onError((err) => {
+		this.core.onError((err: any) => {
 			this.logger.error('Core Error: ' + (typeof err === 'string' ? err : err.message || err.toString() || err))
 		})
 
@@ -118,9 +91,9 @@ export class CoreHandler {
 			host: config.host,
 			port: config.port,
 		}
-		if (this._process && this._process.certificates.length) {
+		if (this._certificates.length) {
 			ddpConfig.tlsOpts = {
-				ca: this._process.certificates,
+				ca: this._certificates,
 			}
 		}
 
@@ -140,12 +113,10 @@ export class CoreHandler {
 		this.logger.info('Core: Setting up subscriptions..')
 		this.logger.info('DeviceId: ' + this.core.deviceId)
 		await Promise.all([
-			this.core.autoSubscribe('peripheralDevices', {
-				_id: this.core.deviceId,
-			}),
-			this.core.autoSubscribe('studioOfDevice', this.core.deviceId),
+			this.core.autoSubscribe('peripheralDeviceForDevice', this.core.deviceId),
 			this.core.autoSubscribe('mappingsForDevice', this.core.deviceId),
 			this.core.autoSubscribe('timelineForDevice', this.core.deviceId),
+			this.core.autoSubscribe('timelineDatastoreForDevice', this.core.deviceId),
 			this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId),
 			this.core.autoSubscribe('rundownsForDevice', this.core.deviceId),
 		])
@@ -159,7 +130,7 @@ export class CoreHandler {
 			this._observers = []
 		}
 		// setup observers
-		const observer = this.core.observe('peripheralDevices')
+		const observer = this.core.observe('peripheralDeviceForDevice')
 		observer.added = (id: string) => this.onDeviceChanged(protectString(id))
 		observer.changed = (id: string) => this.onDeviceChanged(protectString(id))
 		this.setupObserverForPeripheralDeviceCommands(this)
@@ -169,28 +140,27 @@ export class CoreHandler {
 		await this.updateCoreStatus()
 		await this.core.destroy()
 	}
-	getCoreConnectionOptions(
-		name: string,
-		subDeviceId: string,
-		subDeviceType: DeviceType | PERIPHERAL_SUBTYPE_PROCESS
-	): CoreOptions {
+	private getCoreConnectionOptions(): CoreOptions {
 		if (!this._deviceOptions.deviceId) {
 			// this.logger.warn('DeviceId not set, using a temporary random id!')
 			throw new Error('DeviceId is not set!')
 		}
 
 		const options: CoreOptions = {
-			deviceId: protectString(this._deviceOptions.deviceId + subDeviceId),
+			deviceId: protectString(this._deviceOptions.deviceId + 'PlayoutCoreParent'),
 			deviceToken: this._deviceOptions.deviceToken,
 
-			deviceCategory: PeripheralDeviceCategory.PLAYOUT,
-			deviceType: PeripheralDeviceType.PLAYOUT,
-			deviceSubType: subDeviceType,
+			deviceCategory: PeripheralDeviceAPI.PeripheralDeviceCategory.PLAYOUT,
+			deviceType: PeripheralDeviceAPI.PeripheralDeviceType.PLAYOUT,
 
-			deviceName: name,
+			deviceName: 'Playout gateway',
 			watchDog: this._coreConfig ? this._coreConfig.watchdog : true,
 
 			configManifest: PLAYOUT_DEVICE_CONFIG,
+
+			versions: getVersions(this.logger),
+
+			documentationUrl: 'https://github.com/nrkno/sofie-core',
 		}
 
 		if (!options.deviceToken) {
@@ -198,7 +168,6 @@ export class CoreHandler {
 			options.deviceToken = 'unsecureToken'
 		}
 
-		if (subDeviceType === PERIPHERAL_SUBTYPE_PROCESS) options.versions = this._getVersions()
 		return options
 	}
 	onConnected(fcn: () => any): void {
@@ -206,17 +175,13 @@ export class CoreHandler {
 	}
 	onDeviceChanged(id: PeripheralDeviceId): void {
 		if (id === this.core.deviceId) {
-			const col = this.core.getCollection('peripheralDevices')
+			const col = this.core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
 			if (!col) throw new Error('collection "peripheralDevices" not found!')
 
 			const device = col.findOne(id)
-			if (device) {
-				this.deviceSettings = device.settings || {}
-			} else {
-				this.deviceSettings = {}
-			}
+			this.deviceSettings = device?.deviceSettings ?? {}
 
-			const logLevel = this.deviceSettings['debugLogging'] ? 'debug' : 'info'
+			const logLevel = this.deviceSettings.debugLogging ? 'debug' : 'info'
 			if (logLevel !== this.logger.level) {
 				this.logger.level = logLevel
 
@@ -225,29 +190,18 @@ export class CoreHandler {
 				}
 
 				this.logger.info('Loglevel: ' + this.logger.level)
-
-				// this.logger.debug('Test debug logging')
-				// // @ts-ignore
-				// this.logger.debug({ msg: 'test msg' })
-				// // @ts-ignore
-				// this.logger.debug({ message: 'test message' })
-				// // @ts-ignore
-				// this.logger.debug({ command: 'test command', context: 'test context' })
-
-				// this.logger.debug('End test debug logging')
 			}
 
-			if (this.deviceSettings['errorReporting'] !== this.errorReporting) {
-				this.errorReporting = this.deviceSettings['errorReporting']
+			if (this.deviceSettings.multiThreading !== this.multithreading) {
+				this.multithreading = this.deviceSettings.multiThreading || false
 			}
-			if (this.deviceSettings['multiThreading'] !== this.multithreading) {
-				this.multithreading = this.deviceSettings['multiThreading']
-			}
-			if (this.deviceSettings['reportAllCommands'] !== this.reportAllCommands) {
-				this.reportAllCommands = this.deviceSettings['reportAllCommands']
+			if (this.deviceSettings.reportAllCommands !== this.reportAllCommands) {
+				this.reportAllCommands = this.deviceSettings.reportAllCommands || false
 			}
 
-			const studioId = device.studioId
+			const studioId = device?.studioId
+			if (!studioId) throw new Error('PeripheralDevice has no studio!')
+
 			if (studioId !== this._studioId) {
 				this._studioId = studioId
 
@@ -260,10 +214,10 @@ export class CoreHandler {
 					.autoSubscribe('timeline', {
 						studioId: studioId,
 					})
-					.then((subscriptionId) => {
+					.then((subscriptionId: string | null) => {
 						this._timelineSubscription = subscriptionId
 					})
-					.catch((err) => {
+					.catch((err: any) => {
 						this.logger.error(err)
 					})
 
@@ -276,10 +230,10 @@ export class CoreHandler {
 					.autoSubscribe('expectedPlayoutItems', {
 						studioId: studioId,
 					})
-					.then((subscriptionId) => {
+					.then((subscriptionId: string | null) => {
 						this._expectedItemsSubscription = subscriptionId
 					})
-					.catch((err) => {
+					.catch((err: any) => {
 						this.logger.error(err)
 					})
 				this.logger.debug('VIZDEBUG: Subscription to expectedPlayoutItems done')
@@ -293,47 +247,67 @@ export class CoreHandler {
 	get logDebug(): boolean {
 		return !!this.deviceSettings['debugLogging']
 	}
+	get logState(): boolean {
+		return !!this.deviceSettings['debugState']
+	}
 	get estimateResolveTimeMultiplier(): number {
-		if (!isNaN(Number(this.deviceSettings['estimateResolveTimeMultiplier']))) {
-			return this.deviceSettings['estimateResolveTimeMultiplier'] || 1
+		if (!isNaN(Number(this.deviceSettings.estimateResolveTimeMultiplier))) {
+			return this.deviceSettings.estimateResolveTimeMultiplier || 1
 		} else return 1
 	}
 
 	executeFunction(cmd: PeripheralDeviceCommand, fcnObject: CoreHandler | CoreTSRDeviceHandler): void {
 		if (cmd) {
-			if (this._executedFunctions[cmd._id]) return // prevent it from running multiple times
-			this.logger.debug(`Executing function "${cmd.functionName}", args: ${JSON.stringify(cmd.args)}`)
-			this._executedFunctions[cmd._id] = true
-			// console.log('executeFunction', cmd)
-			const cb = (err: any, res?: any) => {
-				// console.log('cb', err, res)
-				if (err) {
-					this.logger.error('executeFunction error', err, err.stack)
-				}
-				fcnObject.core
-					.callMethod(PeripheralDeviceAPIMethods.functionReply, [cmd._id, err, res])
-					.then(() => {
-						// console.log('cb done')
-					})
-					.catch((e) => {
-						this.logger.error(e)
-					})
-			}
-			// @ts-expect-error Untyped bunch of functions
-			// eslint-disable-next-line @typescript-eslint/ban-types
-			const fcn: Function = fcnObject[cmd.functionName]
-			try {
-				if (!fcn) throw Error(`Function "${cmd.functionName}" not found on device "${cmd.deviceId}"!`)
+			if (this._executedFunctions[unprotectString(cmd._id)]) return // prevent it from running multiple times
 
-				Promise.resolve(fcn.apply(fcnObject, cmd.args))
-					.then((result) => {
-						cb(null, result)
+			const cb = (err: any, res?: any) => {
+				if (err) {
+					this.logger.error('executeFunction error', {
+						error: err,
+						stacktrace: err.stack,
 					})
-					.catch((e) => {
-						cb(e.toString(), null)
-					})
-			} catch (e: any) {
-				cb(e.toString(), null)
+				}
+				fcnObject.core.coreMethods.functionReply(cmd._id, err, res).catch((error: any) => {
+					this.logger.error(error)
+				})
+			}
+
+			if (cmd.functionName) {
+				// Ignore specific commands, to reduce noise:
+				if (cmd.functionName !== 'getDebugStates') {
+					this.logger.debug(`Executing function "${cmd.functionName}", args: ${JSON.stringify(cmd.args)}`)
+				}
+				this._executedFunctions[unprotectString(cmd._id)] = true
+				// @ts-expect-error Untyped bunch of functions
+				// eslint-disable-next-line @typescript-eslint/ban-types
+				const fcn: Function = fcnObject[cmd.functionName]
+				try {
+					if (!fcn) throw Error(`Function "${cmd.functionName}" not found on device "${cmd.deviceId}"!`)
+
+					Promise.resolve(fcn.apply(fcnObject, cmd.args))
+						.then((result) => {
+							cb(null, result)
+						})
+						.catch((e) => {
+							cb(e.toString(), null)
+						})
+				} catch (e: any) {
+					cb(e.toString(), null)
+				}
+			} else if (cmd.actionId && 'executeAction' in fcnObject) {
+				this.logger.debug(`Executing action "${cmd.actionId}", payload: ${JSON.stringify(cmd.payload)}`)
+				this._executedFunctions[unprotectString(cmd._id)] = true
+
+				fcnObject
+					.executeAction(cmd.actionId, cmd.payload)
+					.then((result) => cb(null, result))
+					.catch((e) => cb(e.toString, null))
+			} else if (cmd.actionId) {
+				this.logger.warning(`Could not execute action "${cmd.actionId}", because there is no handler`)
+				cb(`Could not execute action "${cmd.actionId}", because there is no handler`)
+			} else {
+				this.logger.debug('Received incomplete peripheralDeviceCommand')
+				cb('Received incomplete peripheralDeviceCommand')
 			}
 		}
 	}
@@ -342,12 +316,11 @@ export class CoreHandler {
 	}
 	setupObserverForPeripheralDeviceCommands(functionObject: CoreTSRDeviceHandler | CoreHandler): void {
 		const observer = functionObject.core.observe('peripheralDeviceCommands')
-		functionObject.killProcess(0)
 		functionObject._observers.push(observer)
 		const addedChangedCommand = (id: string) => {
-			const cmds = functionObject.core.getCollection('peripheralDeviceCommands')
+			const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
 			if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
-			const cmd = cmds.findOne(id) as PeripheralDeviceCommand
+			const cmd = cmds.findOne(protectString(id))
 			if (!cmd) throw Error('PeripheralCommand "' + id + '" not found!')
 			// console.log('addedChangedCommand', id)
 			if (cmd.deviceId === functionObject.core.deviceId) {
@@ -365,25 +338,20 @@ export class CoreHandler {
 		observer.removed = (id: string) => {
 			this.retireExecuteFunction(id)
 		}
-		const cmds = functionObject.core.getCollection('peripheralDeviceCommands')
+		const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
 		if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
-		cmds.find({}).forEach((cmd0: CollectionObj) => {
-			const cmd = cmd0 as PeripheralDeviceCommand
+		cmds.find({}).forEach((cmd) => {
 			if (cmd.deviceId === functionObject.core.deviceId) {
 				this.executeFunction(cmd, functionObject)
 			}
 		})
 	}
-	killProcess(actually: number): boolean {
-		if (actually === 1) {
-			this.logger.info('KillProcess command received, shutting down in 1000ms!')
-			setTimeout(() => {
-				// eslint-disable-next-line no-process-exit
-				process.exit(0)
-			}, 1000)
-			return true
-		}
-		return false
+	killProcess(): void {
+		this.logger.info('KillProcess command received, shutting down in 1000ms!')
+		setTimeout(() => {
+			// eslint-disable-next-line no-process-exit
+			process.exit(0)
+		}, 1000)
 	}
 	async devicesMakeReady(okToDestroyStuff?: boolean, activeRundownId?: string): Promise<any> {
 		if (this._tsrHandler) {
@@ -454,29 +422,10 @@ export class CoreHandler {
 			throw new Error('TSR not set up!')
 		}
 	}
-	async restartCasparCG(deviceId: string): Promise<any> {
+	async getDebugStates(): Promise<any> {
 		if (!this._tsrHandler) throw new Error('TSRHandler is not initialized')
 
-		const device = this._tsrHandler.tsr.getDevice(deviceId)?.device as ThreadedClass<CasparCGDevice>
-		if (!device) throw new Error(`TSR Device "${deviceId}" not found!`)
-
-		return device.restartCasparCG()
-	}
-	async restartQuantel(deviceId: string): Promise<any> {
-		if (!this._tsrHandler) throw new Error('TSRHandler is not initialized')
-
-		const device = this._tsrHandler.tsr.getDevice(deviceId)?.device as ThreadedClass<QuantelDevice>
-		if (!device) throw new Error(`TSR Device "${deviceId}" not found!`)
-
-		return device.restartGateway()
-	}
-	async formatHyperdeck(deviceId: string): Promise<void> {
-		if (!this._tsrHandler) throw new Error('TSRHandler is not initialized')
-
-		const device = this._tsrHandler.tsr.getDevice(deviceId)?.device as ThreadedClass<HyperdeckDevice>
-		if (!device) throw new Error(`TSR Device "${deviceId}" not found!`)
-
-		await device.formatDisks()
+		return Object.fromEntries(this._tsrHandler.getDebugStates().entries())
 	}
 	async updateCoreStatus(): Promise<any> {
 		let statusCode = StatusCode.GOOD
@@ -496,57 +445,26 @@ export class CoreHandler {
 			messages: messages,
 		})
 	}
-	private _getVersions() {
-		const versions: { [packageName: string]: string } = {}
-
-		if (process.env.npm_package_version) {
-			versions['_process'] = process.env.npm_package_version
-		}
-
-		const pkgNames = [
-			'timeline-state-resolver',
-			'atem-connection',
-			'atem-state',
-			'casparcg-connection',
-			'casparcg-state',
-			'emberplus-connection',
-			'superfly-timeline',
-		]
-		try {
-			for (const pkgName of pkgNames) {
-				try {
-					// eslint-disable-next-line @typescript-eslint/no-var-requires
-					const pkgInfo = require(`${pkgName}/package.json`)
-					versions[pkgName] = pkgInfo.version || 'N/A'
-				} catch (e) {
-					this.logger.error(`Failed to load package.json for lib "${pkgName}": ${e}`)
-				}
-			}
-		} catch (e) {
-			this.logger.error(e)
-		}
-		return versions
-	}
 }
 
 export class CoreTSRDeviceHandler {
-	core!: CoreConnection
+	core!: CoreConnectionChild
 	public _observers: Array<any> = []
-	public _devicePr: Promise<DeviceContainer<DeviceOptionsAny>>
+	public _devicePr: Promise<BaseRemoteDeviceIntegration<DeviceOptionsAny>>
 	public _deviceId: string
-	public _device!: DeviceContainer<DeviceOptionsAny>
+	public _device!: BaseRemoteDeviceIntegration<DeviceOptionsAny>
 	private _coreParentHandler: CoreHandler
 	private _tsrHandler: TSRHandler
 	private _subscriptions: Array<string> = []
 	private _hasGottenStatusChange = false
-	private _deviceStatus: StatusObject = {
+	private _deviceStatus: PeripheralDeviceAPI.PeripheralDeviceStatusObject = {
 		statusCode: StatusCode.BAD,
 		messages: ['Starting up...'],
 	}
 
 	constructor(
 		parent: CoreHandler,
-		device: Promise<DeviceContainer<DeviceOptionsAny>>,
+		device: Promise<BaseRemoteDeviceIntegration<DeviceOptionsAny>>,
 		deviceId: string,
 		tsrHandler: TSRHandler
 	) {
@@ -560,28 +478,21 @@ export class CoreTSRDeviceHandler {
 		const deviceId = this._device.deviceId
 		const deviceName = `${deviceId} (${this._device.deviceName})`
 
-		this.core = new CoreConnection(
-			this._coreParentHandler.getCoreConnectionOptions(
-				deviceName,
-				'Playout' + deviceId,
-				this._device.deviceOptions.type
-			)
-		)
-		this.core.onError((err) => {
+		this.core = await this._coreParentHandler.core.createChild({
+			deviceId: protectString(this._coreParentHandler.core.deviceId + 'Playout' + deviceId),
+
+			deviceName,
+
+			deviceSubType: this._device.deviceOptions.type,
+		})
+		this.core.on('error', (err: any) => {
 			this._coreParentHandler.logger.error(
 				'Core Error: ' + ((_.isObject(err) && err.message) || err.toString() || err)
 			)
 		})
-		await this.core.init(this._coreParentHandler.core)
 
 		if (!this._hasGottenStatusChange) {
-			this._deviceStatus = {
-				statusCode: (await this._device.device.canConnect)
-					? (await this._device.device.connected)
-						? StatusCode.GOOD
-						: StatusCode.BAD
-					: StatusCode.GOOD,
-			}
+			this._deviceStatus = await this._device.device.getStatus()
 			this.sendStatus()
 		}
 		await this.setupSubscriptionsAndObservers()
@@ -614,7 +525,7 @@ export class CoreTSRDeviceHandler {
 		// setup observers
 		this._coreParentHandler.setupObserverForPeripheralDeviceCommands(this)
 	}
-	statusChanged(deviceStatus: Partial<StatusObject>): void {
+	statusChanged(deviceStatus: Partial<PeripheralDeviceAPI.PeripheralDeviceStatusObject>): void {
 		this._hasGottenStatusChange = true
 
 		this._deviceStatus = {
@@ -627,13 +538,16 @@ export class CoreTSRDeviceHandler {
 	sendStatus(): void {
 		if (!this.core) return // not initialized yet
 
-		this.core
-			.setStatus(this._deviceStatus)
-			.catch((e) => this._coreParentHandler.logger.error('Error when setting status: ', e, e.stack))
+		this.core.setStatus(this._deviceStatus).catch((e: any) =>
+			this._coreParentHandler.logger.error(`Error when setting status: ${e}`, {
+				error: e,
+				stacktrace: e.stack,
+			})
+		)
 	}
 	onCommandError(
-		errorMessage: string,
-		ref: {
+		_errorMessage: string,
+		_ref: {
 			rundownId?: string
 			partId?: string
 			pieceId?: string
@@ -641,21 +555,32 @@ export class CoreTSRDeviceHandler {
 			timelineObjId: string
 		}
 	): void {
-		this.core
-			.callMethodLowPrio(PeripheralDeviceAPIMethods.reportCommandError, [errorMessage, ref])
-			.catch((e) => this._coreParentHandler.logger.error('Error when callMethodLowPrio: ', e, e.stack))
+		// This is not implemented in Core
+		// this.core
+		// 		.callMethodLowPrio(PeripheralDeviceAPIMethods.reportCommandError, [errorMessage, ref])
+		// 		.catch((e: any) =>
+		// 			this._coreParentHandler.logger.error(`Error when callMethodLowPrio: ${e}`, {
+		// 				error: e,
+		// 				stacktrace: e.stack,
+		// 			})
+		// 		)
+		// }
 	}
 	onUpdateMediaObject(collectionId: string, docId: string, doc: MediaObject | null): void {
-		this.core
-			.callMethodLowPrio(PeripheralDeviceAPIMethods.updateMediaObject, [collectionId, docId, doc])
-			.catch((e) => this._coreParentHandler.logger.error('Error when updating Media Object: ' + e, e.stack))
+		this.core.coreMethodsLowPriority.updateMediaObject(collectionId, docId, doc as any).catch((e: any) =>
+			this._coreParentHandler.logger.error(`Error when updating Media Object: ${e}`, {
+				error: e,
+				stacktrace: e.stack,
+			})
+		)
 	}
 	onClearMediaObjectCollection(collectionId: string): void {
-		this.core
-			.callMethodLowPrio(PeripheralDeviceAPIMethods.clearMediaObjectCollection, [collectionId])
-			.catch((e) =>
-				this._coreParentHandler.logger.error('Error when clearing Media Objects collection: ' + e, e.stack)
-			)
+		this.core.coreMethodsLowPriority.clearMediaObjectCollection(collectionId).catch((e: any) =>
+			this._coreParentHandler.logger.error(`Error when clearing Media Objects collection: ${e}`, {
+				error: e,
+				stacktrace: e.stack,
+			})
+		)
 	}
 
 	async dispose(): Promise<void> {
@@ -669,31 +594,13 @@ export class CoreTSRDeviceHandler {
 			messages: ['Uninitialized'],
 		})
 	}
-	killProcess(actually: number): boolean {
-		return this._coreParentHandler.killProcess(actually)
+	killProcess(): void {
+		this._coreParentHandler.killProcess()
 	}
-	async restartCasparCG(): Promise<any> {
-		const device = this._device.device as ThreadedClass<CasparCGDevice>
-		if (device.restartCasparCG) {
-			return device.restartCasparCG()
-		} else {
-			return Promise.reject('device.restartCasparCG not set')
-		}
-	}
-	async restartQuantel(): Promise<any> {
-		const device = this._device.device as ThreadedClass<QuantelDevice>
-		if (device.restartGateway) {
-			return device.restartGateway()
-		} else {
-			return Promise.reject('device.restartGateway not set')
-		}
-	}
-	async formatHyperdeck(): Promise<any> {
-		const device = this._device.device as ThreadedClass<HyperdeckDevice>
-		if (device.formatDisks) {
-			return device.formatDisks()
-		} else {
-			return Promise.reject('device.formatHyperdeck not set')
-		}
+	async executeAction(actionId: string, payload?: Record<string, any>): Promise<ActionExecutionResult> {
+		this._coreParentHandler.logger.info(`Exec ${actionId} on ${this._deviceId}`)
+		const device = this._device.device
+
+		return device.executeAction(actionId, payload)
 	}
 }

@@ -22,6 +22,13 @@ export * from './hash'
 
 export type Subtract<T extends T1, T1 extends object> = Pick<T, Exclude<keyof T, keyof T1>>
 
+export function getSofieHostUrl(): string {
+	const url = process.env.ROOT_URL
+	if (url) return url
+
+	throw new Error('ROOT_URL must be defined to launch Sofie')
+}
+
 /**
  * Make all optional properties be required and `| undefined`
  * This is useful to ensure that no property is missed, when manually converting between types, but allowing fields to be undefined
@@ -197,6 +204,51 @@ export function normalizeArrayToMapFunc<T, K>(array: Array<T>, getKey: (o: T) =>
 		}
 	}
 	return normalizedObject
+}
+
+/**
+ * Group items in an array by a property of the objects, as a Map of arrays
+ * Replacement for `_.groupBy`
+ * @param array Array of items to group
+ * @param indexKey Name of the property to use as the group-key
+ */
+export function groupByToMap<T, K extends keyof T>(array: Array<T> | IterableIterator<T>, indexKey: K): Map<T[K], T[]> {
+	const groupedItems = new Map<T[K], T[]>()
+	for (const item of array) {
+		const key = item[indexKey]
+		const existing = groupedItems.get(key)
+		if (existing) {
+			existing.push(item)
+		} else {
+			groupedItems.set(key, [item])
+		}
+	}
+	return groupedItems
+}
+
+/**
+ * Group items in an array by a value derived from the objects, as a Map of arrays
+ * Replacement for `_.groupBy`
+ * @param array Array of items to group
+ * @param getKey Function to get the group-key of the object
+ */
+export function groupByToMapFunc<T, K>(
+	array: Array<T> | IterableIterator<T>,
+	getKey: (o: T) => K | undefined
+): Map<K, T[]> {
+	const groupedItems = new Map<K, T[]>()
+	for (const item of array) {
+		const key = getKey(item)
+		if (key !== undefined) {
+			const existing = groupedItems.get(key)
+			if (existing) {
+				existing.push(item)
+			} else {
+				groupedItems.set(key, [item])
+			}
+		}
+	}
+	return groupedItems
 }
 
 /**
@@ -396,4 +448,8 @@ export function stringifyError(error: unknown, noStack = false): string {
  */
 export function deferAsync(fn: () => Promise<void>, catcher: (e: unknown) => void): void {
 	fn().catch(catcher)
+}
+
+export function joinObjectPathFragments(...fragments: Array<string | number | undefined>): string {
+	return fragments.filter((v) => v !== '' && v !== undefined && v !== null).join('.')
 }

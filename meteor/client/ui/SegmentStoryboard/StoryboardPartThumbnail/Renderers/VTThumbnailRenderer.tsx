@@ -2,7 +2,7 @@ import React from 'react'
 import classNames from 'classnames'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { VTFloatingInspector } from '../../../FloatingInspectors/VTFloatingInspector'
-import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
+import { getNoticeLevelForPieceStatus } from '../../../../../lib/notifications/notifications'
 import { RundownUtils } from '../../../../lib/rundown'
 import { IProps } from './ThumbnailRendererFactory'
 import { getPreviewUrlForPieceUi, getThumbnailUrlForPieceUi } from '../../../../lib/ui/clipPreview'
@@ -17,14 +17,14 @@ export function VTThumbnailRenderer({
 	partId,
 	pieceInstance,
 	partAutoNext,
+	partPlannedStoppedPlayback,
 	isLive,
-	isFinished,
 	hovering,
 	hoverScrubTimePosition,
 	originPosition,
 	studio,
 	layer,
-}: IProps) {
+}: IProps): JSX.Element {
 	const mediaPreviewUrl = studio.settings.mediaPreviewsUrl
 
 	const status = pieceInstance.instance.piece.status
@@ -51,7 +51,7 @@ export function VTThumbnailRenderer({
 				typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 				itemElement={null}
 				contentMetaData={pieceInstance.contentMetaData || null}
-				noticeMessage={pieceInstance.message || null}
+				noticeMessages={pieceInstance.messages || null}
 				noticeLevel={noticeLevel}
 				mediaPreviewUrl={mediaPreviewUrl}
 				contentPackageInfos={pieceInstance.contentPackageInfos}
@@ -64,6 +64,7 @@ export function VTThumbnailRenderer({
 					partPlayed: timingContext.partPlayed && timingContext.partPlayed[unprotectString(partId)],
 					partDisplayDurations:
 						timingContext.partDisplayDurations && timingContext.partDisplayDurations[unprotectString(partId)],
+					currentTime: timingContext.currentTime,
 				})}
 			>
 				{(timingContext) => {
@@ -76,6 +77,11 @@ export function VTThumbnailRenderer({
 					const contentLeft = contentEnd - partPlayed
 
 					const partExpectedDuration = timingContext.partDisplayDurations[unprotectString(partId)]
+
+					const isFinished =
+						!!partPlannedStoppedPlayback &&
+						!!timingContext.currentTime &&
+						partPlannedStoppedPlayback < timingContext.currentTime
 
 					const partLeft = partExpectedDuration - partPlayed
 

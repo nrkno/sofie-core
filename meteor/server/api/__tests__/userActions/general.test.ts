@@ -3,9 +3,9 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
 import { RESTART_SALT } from '../../../../lib/api/userActions'
 import { getCurrentTime, getHash } from '../../../../lib/lib'
-import { UserActionsLog } from '../../../../lib/collections/UserActionsLog'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { ClientAPI } from '../../../../lib/api/client'
+import { UserActionsLog } from '../../../collections'
 
 require('../../client') // include in order to create the Meteor methods needed
 require('../../userActions') // include in order to create the Meteor methods needed
@@ -49,9 +49,9 @@ describe('User Actions - General', () => {
 		await expect(MeteorCall.userAction.guiFocused('click', getCurrentTime())).resolves.toMatchObject({
 			success: 200,
 		})
-		const logs0 = UserActionsLog.find({
+		const logs0 = await UserActionsLog.findFetchAsync({
 			method: 'guiFocused',
-		}).fetch()
+		})
 		expect(logs0).toHaveLength(1)
 		// expect(logs0[0]).toMatchObject({
 		// 	context: 'mousedown',
@@ -60,9 +60,9 @@ describe('User Actions - General', () => {
 		await expect(MeteorCall.userAction.guiBlurred('click', getCurrentTime())).resolves.toMatchObject({
 			success: 200,
 		})
-		const logs1 = UserActionsLog.find({
+		const logs1 = await UserActionsLog.findFetchAsync({
 			method: 'guiBlurred',
-		}).fetch()
+		})
 		expect(logs1).toHaveLength(1)
 		// expect(logs1[0]).toMatchObject({
 		// 	context: 'interval',

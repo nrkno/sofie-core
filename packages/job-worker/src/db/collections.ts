@@ -33,22 +33,18 @@ import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowSt
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { ReadonlyDeep, Writable } from 'type-fest'
+import { ReadonlyDeep } from 'type-fest'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { MediaObjects } from '@sofie-automation/corelib/dist/dataModel/MediaObjects'
 import EventEmitter = require('eventemitter3')
 
 export type MongoQuery<TDoc> = Filter<TDoc>
 export type MongoModifier<TDoc> = UpdateFilter<TDoc>
-
-export type EditableMongoModifier<TDoc> = {
-	$set: Writable<NonNullable<MongoModifier<TDoc>['$set']>>
-	$unset: Writable<NonNullable<MongoModifier<TDoc>['$unset']>>
-}
 
 export interface ICollection<TDoc extends { _id: ProtectedString<any> }> {
 	readonly name: string
@@ -75,7 +71,7 @@ export interface ICollection<TDoc extends { _id: ProtectedString<any> }> {
 	watch(pipeline: any[]): IChangeStream<TDoc>
 }
 
-export type IChangeStreamEvents<TDoc> = {
+export type IChangeStreamEvents<TDoc extends { _id: ProtectedString<any> }> = {
 	error: [e: Error]
 	end: []
 	change: [doc: ChangeStreamDocument<TDoc>]
@@ -113,6 +109,7 @@ export interface IDirectCollections {
 	ShowStyleVariants: ICollection<DBShowStyleVariant>
 	Studios: ICollection<DBStudio>
 	Timelines: ICollection<TimelineComplete>
+	TimelineDatastores: ICollection<DBTimelineDatastoreEntry>
 
 	ExpectedPackages: ICollection<ExpectedPackageDB>
 	PackageInfos: ICollection<PackageInfoDB>
@@ -190,6 +187,10 @@ export function getMongoCollections(
 			),
 			Studios: wrapMongoCollection(database.collection(CollectionName.Studios), allowWatchers),
 			Timelines: wrapMongoCollection(database.collection(CollectionName.Timelines), allowWatchers),
+			TimelineDatastores: wrapMongoCollection(
+				database.collection(CollectionName.TimelineDatastore),
+				allowWatchers
+			),
 
 			ExpectedPackages: wrapMongoCollection(database.collection(CollectionName.ExpectedPackages), allowWatchers),
 			PackageInfos: wrapMongoCollection(database.collection(CollectionName.PackageInfos), allowWatchers),

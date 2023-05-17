@@ -3,15 +3,17 @@ import _ from 'underscore'
 import { AdLibAction } from '../../lib/collections/AdLibActions'
 import { AdLibPiece } from '../../lib/collections/AdLibPieces'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { PieceInstance, PieceInstances } from '../../lib/collections/PieceInstances'
-import { PieceId } from '../../lib/collections/Pieces'
+import { PieceInstance } from '../../lib/collections/PieceInstances'
 import { RundownBaselineAdLibAction } from '../../lib/collections/RundownBaselineAdLibActions'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { DBSegment, SegmentId } from '../../lib/collections/Segments'
-import { DBShowStyleBase, ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { DBSegment } from '../../lib/collections/Segments'
 import { ScanInfoForPackages } from '../../lib/mediaObjects'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 import { getUnfinishedPieceInstancesReactive } from './rundownLayouts'
+import { UIShowStyleBase } from '../../lib/api/showStyles'
+import { PieceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { PieceInstances } from '../collections'
 
 export interface ShelfDisplayOptions {
 	enableBuckets: boolean
@@ -32,7 +34,7 @@ export interface AdLibPieceUi extends Omit<AdLibPiece, 'timelineObjectsString'> 
 	adlibAction?: AdLibAction | RundownBaselineAdLibAction
 	contentMetaData?: any
 	contentPackageInfos?: ScanInfoForPackages
-	message?: string | null
+	messages?: ITranslatableMessage[]
 	segmentId?: SegmentId
 }
 
@@ -45,12 +47,12 @@ export interface AdlibSegmentUi extends DBSegment {
 	isCompatibleShowStyle: boolean
 }
 
-export function getNextPiecesReactive(playlist: RundownPlaylist, showsStyleBase: ShowStyleBase): PieceInstance[] {
+export function getNextPiecesReactive(playlist: RundownPlaylist, showsStyleBase: UIShowStyleBase): PieceInstance[] {
 	let prospectivePieceInstances: PieceInstance[] = []
-	if (playlist.activationId && playlist.nextPartInstanceId) {
+	if (playlist.activationId && playlist.nextPartInfo) {
 		prospectivePieceInstances = PieceInstances.find({
 			playlistActivationId: playlist.activationId,
-			partInstanceId: playlist.nextPartInstanceId,
+			partInstanceId: playlist.nextPartInfo.partInstanceId,
 			$and: [
 				{
 					piece: {
@@ -75,14 +77,18 @@ export function getNextPiecesReactive(playlist: RundownPlaylist, showsStyleBase:
 		}).fetch()
 	}
 
-	prospectivePieceInstances = processAndPrunePieceInstanceTimings(showsStyleBase, prospectivePieceInstances, 0)
+	prospectivePieceInstances = processAndPrunePieceInstanceTimings(
+		showsStyleBase.sourceLayers,
+		prospectivePieceInstances,
+		0
+	)
 
 	return prospectivePieceInstances
 }
 
 export function getUnfinishedPieceInstancesGrouped(
 	playlist: RundownPlaylist,
-	showStyleBase: DBShowStyleBase
+	showStyleBase: UIShowStyleBase
 ): { unfinishedPieceInstances: PieceInstance[]; unfinishedAdLibIds: PieceId[]; unfinishedTags: string[] } {
 	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist, showStyleBase)
 
@@ -105,7 +111,7 @@ export function getUnfinishedPieceInstancesGrouped(
 
 export function getNextPieceInstancesGrouped(
 	playlist: RundownPlaylist,
-	showsStyleBase: DBShowStyleBase
+	showsStyleBase: UIShowStyleBase
 ): { nextAdLibIds: PieceId[]; nextTags: string[]; nextPieceInstances: PieceInstance[] } {
 	const nextPieceInstances = getNextPiecesReactive(playlist, showsStyleBase)
 
@@ -120,7 +126,7 @@ export function getNextPieceInstancesGrouped(
 	return { nextAdLibIds, nextTags, nextPieceInstances }
 }
 
-export function isAdLibOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi) {
+export function isAdLibOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi): boolean {
 	if (
 		unfinishedAdLibIds.includes(adLib._id) ||
 		(adLib.currentPieceTags &&
@@ -132,7 +138,7 @@ export function isAdLibOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: stri
 	return false
 }
 
-export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: string[], adLib: AdLibPieceUi) {
+export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: string[], adLib: AdLibPieceUi): boolean {
 	if (
 		nextAdLibIds.includes(adLib._id) ||
 		(adLib.nextPieceTags &&
@@ -144,7 +150,11 @@ export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: string[], adLib: 
 	return false
 }
 
-export function isAdLibDisplayedAsOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi) {
+export function isAdLibDisplayedAsOnAir(
+	unfinishedAdLibIds: PieceId[],
+	unfinishedTags: string[],
+	adLib: AdLibPieceUi
+): boolean {
 	const isOnAir = isAdLibOnAir(unfinishedAdLibIds, unfinishedTags, adLib)
 	return adLib.invertOnAirState ? !isOnAir : isOnAir
 }

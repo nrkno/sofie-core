@@ -29,23 +29,27 @@ class ShowStylePanelInner extends MeteorReactComponent<Translated<IShowStylePane
 		super(props)
 	}
 
-	render() {
+	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const { t } = this.props
 
 		return (
 			<div
-				className="show-style-panel timing"
+				className="show-style-panel"
 				style={isDashboardLayout ? dashboardElementStyle(this.props.panel as DashboardLayoutShowStyleDisplay) : {}}
 			>
-				<span className="timing-clock left">
-					<span className="timing-clock-label">{t('Show Style')}</span>
-					<span className="name">{this.props.showStyleBase.name}</span>
-				</span>
-				<span className="timing-clock left">
-					<span className="timing-clock-label">{t('Show Style Variant')}</span>
-					<span className="name">{this.props.showStyleVariant.name}</span>
-				</span>
+				<div className="show-style-subpanel">
+					<div className="show-style-subpanel__label">{t('Show Style')}</div>
+					<div className="show-style-subpanel__name" title={this.props.showStyleBase.name}>
+						{this.props.showStyleBase.name}
+					</div>
+				</div>
+				<div className="show-style-subpanel">
+					<div className="show-style-subpanel__label">{t('Show Style Variant')}</div>
+					<div className="show-style-subpanel__name" title={this.props.showStyleVariant.name}>
+						{this.props.showStyleVariant.name}
+					</div>
+				</div>
 			</div>
 		)
 	}

@@ -1,6 +1,6 @@
 import { Config } from './connector'
 import * as _ from 'underscore'
-import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { protectString } from '@sofie-automation/server-core-integration'
 
 // CLI arguments / Environment variables --------------
 let host: string = process.env.CORE_HOST || '127.0.0.1'
@@ -64,7 +64,7 @@ process.argv.forEach((val) => {
 })
 
 const config: Config = {
-	process: {
+	certificates: {
 		unsafeSSL: unsafeSSL,
 		certificates: _.compact(certs),
 	},

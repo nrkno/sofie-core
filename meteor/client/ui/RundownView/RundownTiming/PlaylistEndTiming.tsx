@@ -27,7 +27,7 @@ interface IEndTimingProps {
 export const PlaylistEndTiming = withTranslation()(
 	withTiming<IEndTimingProps & WithTranslation, {}>()(
 		class PlaylistEndTiming extends React.Component<Translated<WithTiming<IEndTimingProps>>> {
-			render() {
+			render(): JSX.Element {
 				const { t } = this.props
 				const { rundownPlaylist, expectedStart, expectedEnd, expectedDuration } = this.props
 
@@ -57,7 +57,7 @@ export const PlaylistEndTiming = withTranslation()(
 								this.props.rundownPlaylist.loop ? (
 									this.props.timingDurations.partCountdown &&
 									rundownPlaylist.activationId &&
-									rundownPlaylist.currentPartInstanceId ? (
+									rundownPlaylist.currentPartInfo ? (
 										<span className="timing-clock plan-end right visual-last-child" role="timer">
 											{!this.props.hidePlannedEndLabel && (
 												<span className="timing-clock-label right">{t('Next Loop at')}</span>

@@ -2,9 +2,6 @@ import React, { useEffect, useRef } from 'react'
 import { Meteor } from 'meteor/meteor'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { PubSub } from '../../../lib/api/pubsub'
-import { PartInstances } from '../../../lib/collections/PartInstances'
-import { Parts } from '../../../lib/collections/Parts'
-import { Segments } from '../../../lib/collections/Segments'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import {
 	withResolvedSegment,
@@ -15,6 +12,7 @@ import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { SegmentList } from './SegmentList'
 import { unprotectString } from '../../../lib/lib'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/SegmentTimelineContainer'
+import { PartInstances, Parts, Segments } from '../../collections'
 
 export const LIVELINE_HISTORY_SIZE = TIMELINE_LIVELINE_HISTORY_SIZE
 
@@ -114,28 +112,28 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 
 	const isLiveSegment = useTracker(
 		() => {
-			if (!props.playlist.currentPartInstanceId || !props.playlist.activationId) {
+			if (!props.playlist.currentPartInfo || !props.playlist.activationId) {
 				return false
 			}
 
-			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInstanceId)
+			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInfo.partInstanceId)
 			if (!currentPartInstance) {
 				return false
 			}
 
 			return currentPartInstance.segmentId === segmentId
 		},
-		[segmentId, props.playlist.activationId, props.playlist.currentPartInstanceId],
+		[segmentId, props.playlist.activationId, props.playlist.currentPartInfo?.partInstanceId],
 		false
 	)
 
 	const isNextSegment = useTracker(
 		() => {
-			if (!props.playlist.nextPartInstanceId || !props.playlist.activationId) {
+			if (!props.playlist.nextPartInfo || !props.playlist.activationId) {
 				return false
 			}
 
-			const partInstance = PartInstances.findOne(props.playlist.nextPartInstanceId, {
+			const partInstance = PartInstances.findOne(props.playlist.nextPartInfo.partInstanceId, {
 				fields: {
 					segmentId: 1,
 					'part._id': 1,
@@ -147,17 +145,17 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 
 			return partInstance.segmentId === segmentId
 		},
-		[segmentId, props.playlist.activationId, props.playlist.nextPartInstanceId],
+		[segmentId, props.playlist.activationId, props.playlist.nextPartInfo?.partInstanceId],
 		false
 	)
 
 	const currentPartWillAutoNext = useTracker(
 		() => {
-			if (!props.playlist.currentPartInstanceId || !props.playlist.activationId) {
+			if (!props.playlist.currentPartInfo || !props.playlist.activationId) {
 				return false
 			}
 
-			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInstanceId, {
+			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInfo.partInstanceId, {
 				fields: {
 					'part.autoNext': 1,
 					'part.expectedDuration': 1,
@@ -169,7 +167,7 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 
 			return !!(currentPartInstance.part.autoNext && currentPartInstance.part.expectedDuration)
 		},
-		[segmentId, props.playlist.activationId, props.playlist.currentPartInstanceId],
+		[segmentId, props.playlist.activationId, props.playlist.currentPartInfo?.partInstanceId],
 		false
 	)
 
@@ -179,7 +177,7 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 
 	const segmentRef = useRef<HTMLDivElement | null>(null)
 
-	if (props.segmentui === undefined) {
+	if (props.segmentui === undefined || props.segmentui.isHidden) {
 		return null
 	}
 
@@ -226,10 +224,11 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 			key={unprotectString(props.segmentui._id)}
 			segment={props.segmentui}
 			parts={props.parts}
+			pieces={props.pieces}
 			playlist={props.playlist}
 			studio={props.studio}
 			currentPartWillAutoNext={currentPartWillAutoNext}
-			segmentNotes={props.segmentNotes}
+			segmentNoteCounts={props.segmentNoteCounts}
 			isLiveSegment={isLiveSegment}
 			isNextSegment={isNextSegment}
 			isQueuedSegment={props.playlist.nextSegmentId === props.segmentui._id}

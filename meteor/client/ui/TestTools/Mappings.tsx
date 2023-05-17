@@ -2,15 +2,16 @@ import * as React from 'react'
 import { Translated, translateWithTracker, withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { omit, Time } from '../../../lib/lib'
-import { PubSub } from '../../../lib/api/pubsub'
+import { omit, Time, unprotectString } from '../../../lib/lib'
+import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import { StudioSelect } from './StudioSelect'
-import { RoutedMappings, StudioId } from '../../../lib/collections/Studios'
-import { Mongo } from 'meteor/mongo'
+import { MappingExt, RoutedMappings } from '../../../lib/collections/Studios'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
+import { createSyncCustomPublicationMongoCollection } from '../../../lib/collections/lib'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-const StudioMappings = new Mongo.Collection<RoutedMappings>('studioMappings')
+const StudioMappings = createSyncCustomPublicationMongoCollection(CustomCollectionName.StudioMappings)
 
 interface IMappingsViewProps {
 	match?: {
@@ -28,7 +29,7 @@ const MappingsView = translateWithTracker<IMappingsViewProps, IMappingsViewState
 			super(props)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (
@@ -85,15 +86,15 @@ export const ComponentMappingsTable = withTracker<IMappingsTableProps, IMappings
 				time: null,
 			}
 		}
-		componentDidMount() {
+		componentDidMount(): void {
 			this.subscribe(PubSub.mappingsForStudio, this.props.studioId)
 		}
 		renderMappingsState(state: RoutedMappings) {
-			const rows = _.sortBy(Object.entries(state.mappings), (o) => o[0])
+			const rows = _.sortBy(Object.entries<MappingExt>(state.mappings), (o) => o[0])
 			return rows.map(([id, obj]) => (
 				<tr key={id}>
 					<td>{id}</td>
-					<td>{obj.deviceId}</td>
+					<td>{unprotectString(obj.deviceId)}</td>
 					<td>{TSR.DeviceType[obj.device]}</td>
 					<td>{obj.layerName}</td>
 					<td>
@@ -111,7 +112,7 @@ export const ComponentMappingsTable = withTracker<IMappingsTableProps, IMappings
 				</tr>
 			))
 		}
-		render() {
+		render(): JSX.Element {
 			const { mappings } = this.props
 			return (
 				<div>
@@ -138,10 +139,8 @@ export const ComponentMappingsTable = withTracker<IMappingsTableProps, IMappings
 	}
 )
 
-class MappingsStudioSelect extends React.Component<{}, {}> {
-	render() {
-		return <StudioSelect path="mappings" title="Mappings" />
-	}
+function MappingsStudioSelect(): JSX.Element {
+	return <StudioSelect path="mappings" title="Mappings" />
 }
 
 export { MappingsView, MappingsStudioSelect }

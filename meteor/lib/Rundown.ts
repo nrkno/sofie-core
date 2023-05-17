@@ -1,34 +1,33 @@
 import * as _ from 'underscore'
-import { Pieces, Piece } from './collections/Pieces'
+import { Piece } from './collections/Pieces'
 import { IOutputLayer, ISourceLayer, ITranslatableMessage } from '@sofie-automation/blueprints-integration'
-import { DBSegment, Segment, SegmentId } from './collections/Segments'
-import { PartId, DBPart } from './collections/Parts'
+import { DBSegment, Segment } from './collections/Segments'
+import { DBPart } from './collections/Parts'
 import { PartInstance, wrapPartToTemporaryInstance } from './collections/PartInstances'
-import { PieceInstance, PieceInstances } from './collections/PieceInstances'
+import { PieceInstance } from './collections/PieceInstances'
 import {
 	getPieceInstancesForPart,
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
 	PieceInstanceWithTimings,
 } from '@sofie-automation/corelib/dist/playout/infinites'
-import { FindOptions, MongoQuery } from './typings/meteor'
-import { invalidateAfter } from '../client/lib/invalidatingTime'
-import {
-	convertCorelibToMeteorMongoQuery,
-	getCurrentTime,
-	ProtectedString,
-	protectString,
-	unprotectString,
-} from './lib'
-import {
-	RundownPlaylist,
-	RundownPlaylistActivationId,
-	RundownPlaylistCollectionUtil,
-} from './collections/RundownPlaylists'
-import { Rundown, RundownId } from './collections/Rundowns'
-import { ShowStyleBaseId } from './collections/ShowStyleBases'
+import { MongoQuery } from './typings/meteor'
+import { invalidateAfter } from '../lib/invalidatingTime'
+import { convertCorelibToMeteorMongoQuery, getCurrentTime, groupByToMap, ProtectedString, protectString } from './lib'
+import { RundownPlaylist } from './collections/RundownPlaylists'
+import { Rundown } from './collections/Rundowns'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { mongoWhereFilter } from '@sofie-automation/corelib/dist/mongo'
+import { FindOptions } from './collections/lib'
+import {
+	PartId,
+	RundownId,
+	RundownPlaylistActivationId,
+	SegmentId,
+	ShowStyleBaseId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PieceInstances, Pieces } from './collections/libCollections'
+import { RundownPlaylistCollectionUtil } from './collections/rundownPlaylistUtil'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
@@ -204,7 +203,7 @@ export function getPieceInstancesForPartInstance(
 			pieceInstanceSimulation &&
 			results.length === 0 &&
 			(!partInstance.timings ||
-				(partInstance.timings.next || 0) > now - SIMULATION_INVALIDATION ||
+				(partInstance.timings.setAsNext || 0) > now - SIMULATION_INVALIDATION ||
 				(partInstance.timings.take || 0) > now - SIMULATION_INVALIDATION)
 		) {
 			// make sure to invalidate the current computation after SIMULATION_INVALIDATION has passed
@@ -275,12 +274,12 @@ export function getSegmentsWithPartInstances(
 	)
 	const playlistActivationId = playlist.activationId ?? protectString('')
 
-	const partsBySegment = _.groupBy(rawParts, (p) => unprotectString(p.segmentId))
-	const partInstancesBySegment = _.groupBy(rawPartInstances, (p) => unprotectString(p.segmentId))
+	const partsBySegment = groupByToMap(rawParts, 'segmentId')
+	const partInstancesBySegment = groupByToMap(rawPartInstances, 'segmentId')
 
 	return segments.map((segment) => {
-		const segmentParts = partsBySegment[unprotectString(segment._id)] || []
-		const segmentPartInstances = partInstancesBySegment[unprotectString(segment._id)] || []
+		const segmentParts = partsBySegment.get(segment._id) ?? []
+		const segmentPartInstances = partInstancesBySegment.get(segment._id) ?? []
 
 		if (segmentPartInstances.length === 0) {
 			return {
@@ -299,7 +298,7 @@ export function getSegmentsWithPartInstances(
 			for (const partInstance of segmentPartInstances) {
 				// Check what we already have in the map for this PartId. If the map returns the currentPartInstance then we keep that, otherwise replace with this partInstance
 				const currentValue = partInstanceMap.get(partInstance.part._id)
-				if (!currentValue || currentValue._id !== playlist.currentPartInstanceId) {
+				if (!currentValue || currentValue._id !== playlist.currentPartInfo?.partInstanceId) {
 					partInstanceMap.set(partInstance.part._id, partInstance)
 				}
 			}

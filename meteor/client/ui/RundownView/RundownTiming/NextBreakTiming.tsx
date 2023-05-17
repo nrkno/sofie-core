@@ -17,7 +17,7 @@ interface INextBreakTimingProps {
 export const NextBreakTiming = withTranslation()(
 	withTiming<INextBreakTimingProps & WithTranslation, {}>()(
 		class NextBreakTiming extends React.Component<Translated<WithTiming<INextBreakTimingProps>>> {
-			render() {
+			render(): JSX.Element | null {
 				const { t, rundownsBeforeBreak: _rundownsBeforeBreak } = this.props
 				const rundownsBeforeBreak = _rundownsBeforeBreak || this.props.timingDurations.rundownsBeforeNextBreak || []
 				const breakRundown = rundownsBeforeBreak.length

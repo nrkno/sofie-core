@@ -1,11 +1,9 @@
 import React from 'react'
 import _ from 'underscore'
-import { TFunction } from 'i18next'
-import { withTranslation, WithTranslation } from 'react-i18next'
+import { withTranslation, WithTranslation, TFunction } from 'react-i18next'
 
 import ClassNames from 'classnames'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { Studio } from '../../../../lib/collections/Studios'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi, LIVE_LINE_TIME_PADDING } from '../SegmentTimelineContainer'
 import {
 	TimingDataResolution,
@@ -24,7 +22,10 @@ import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 
 import { IContextMenuContext } from '../../RundownView'
 import { CSSProperties } from '../../../styles/_cssVariables'
-import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../../RundownView/RundownViewEventBus'
+import RundownViewEventBus, {
+	RundownViewEvents,
+	HighlightEvent,
+} from '../../../../lib/api/triggers/RundownViewEventBus'
 import { LoopingIcon } from '../../../lib/ui/icons/looping'
 import { SegmentEnd } from '../../../lib/ui/icons/segment'
 import { getShowHiddenSourceLayers } from '../../../lib/localStorage'
@@ -33,6 +34,8 @@ import { RundownTimingContext } from '../../../lib/rundownTiming'
 import { OutputGroup } from './OutputGroup'
 import { InvalidPartCover } from './InvalidPartCover'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { UIStudio } from '../../../../lib/api/studios'
+import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 export const SegmentTimelineLineElementId = 'rundown__segment__line__'
 export const SegmentTimelinePartElementId = 'rundown__segment__part__'
@@ -46,9 +49,10 @@ export const BREAKPOINT_TOO_SMALL_FOR_DISPLAY = 6
 interface IProps {
 	segment: SegmentUi
 	playlist: RundownPlaylist
-	studio: Studio
+	studio: UIStudio
 	part: PartUi
-	timeScale: number
+	pieces: CalculateTimingsPiece[]
+	timeToPixelRatio: number
 	onCollapseOutputToggle?: (layer: IOutputLayerUi, event: any) => void
 	collapsedOutputs: {
 		[key: string]: boolean
@@ -60,12 +64,11 @@ interface IProps {
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-	onPartTooSmallChanged?: (part: PartUi, isTooSmallForDisplay: number | false) => void
+	onPartTooSmallChanged?: (part: PartUi, displayDuration: number | false, expectedDuration: number | false) => void
 	followLiveLine: boolean
 	autoNextPart: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
-	relative: boolean
 	totalSegmentDuration?: number
 	firstPartInSegment?: PartUi
 	lastPartInSegment?: PartUi
@@ -78,6 +81,11 @@ interface IProps {
 	cropDuration?: number
 	className?: string
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
+	isLiveSegment: boolean | undefined
+	anyPriorPartWasLive: boolean | undefined
+	livePartStartsAt: number | undefined
+	livePartDisplayDuration: number | undefined
+	budgetDuration: number | undefined
 }
 
 interface IState {
@@ -98,9 +106,9 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 		const partInstance = this.props.part.instance
 
-		const isLive = this.props.playlist.currentPartInstanceId === partInstance._id
-		const isNext = this.props.playlist.nextPartInstanceId === partInstance._id
-		const startedPlayback = partInstance.timings?.startedPlayback
+		const isLive = this.props.playlist.currentPartInfo?.partInstanceId === partInstance._id
+		const isNext = this.props.playlist.nextPartInfo?.partInstanceId === partInstance._id
+		const startedPlayback = partInstance.timings?.plannedStartedPlayback
 
 		this.state = {
 			isLive,
@@ -118,7 +126,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 							SegmentTimelinePartClass.getCurrentLiveLinePosition(
 								props.part,
 								props.timingDurations.currentTime || getCurrentTime()
-							) + SegmentTimelinePartClass.getLiveLineTimePadding(props.timeScale)) ||
+							) + SegmentTimelinePartClass.getLiveLineTimePadding(props.timeToPixelRatio)) ||
 							0,
 						props.timingDurations.partDurations
 							? partInstance.part.displayDuration ||
@@ -133,13 +141,13 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		nextProps: Readonly<IProps & RundownTiming.InjectedROTimingProps>,
 		state: Readonly<IState>
 	): Partial<IState> {
-		const isPrevious = nextProps.playlist.previousPartInstanceId === nextProps.part.instance._id
-		const isLive = nextProps.playlist.currentPartInstanceId === nextProps.part.instance._id
-		const isNext = nextProps.playlist.nextPartInstanceId === nextProps.part.instance._id
+		const isPrevious = nextProps.playlist.previousPartInfo?.partInstanceId === nextProps.part.instance._id
+		const isLive = nextProps.playlist.currentPartInfo?.partInstanceId === nextProps.part.instance._id
+		const isNext = nextProps.playlist.nextPartInfo?.partInstanceId === nextProps.part.instance._id
 
 		const nextPartInner = nextProps.part.instance.part
 
-		const startedPlayback = nextProps.part.instance.timings?.startedPlayback
+		const startedPlayback = nextProps.part.instance.timings?.plannedStartedPlayback
 
 		const isDurationSettling =
 			!!nextProps.playlist.activationId &&
@@ -164,15 +172,10 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 				liveDuration = Math.max(
 					(startedPlayback &&
 						nextProps.timingDurations.partDurations &&
-						(nextProps.relative
-							? SegmentTimelinePartClass.getCurrentLiveLinePosition(
-									nextProps.part,
-									nextProps.timingDurations.currentTime || getCurrentTime()
-							  )
-							: SegmentTimelinePartClass.getCurrentLiveLinePosition(
-									nextProps.part,
-									nextProps.timingDurations.currentTime || getCurrentTime()
-							  ) + SegmentTimelinePartClass.getLiveLineTimePadding(nextProps.timeScale))) ||
+						SegmentTimelinePartClass.getCurrentLiveLinePosition(
+							nextProps.part,
+							nextProps.timingDurations.currentTime || getCurrentTime()
+						) + SegmentTimelinePartClass.getLiveLineTimePadding(nextProps.timeToPixelRatio)) ||
 						0,
 					nextProps.timingDurations.partDurations
 						? nextPartInner.displayDuration ||
@@ -191,19 +194,19 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		)
 
 		const isInsideViewport =
-			nextProps.relative ||
 			isLive ||
 			RundownUtils.isInsideViewport(
 				nextProps.scrollLeft,
 				nextProps.scrollWidth,
 				nextProps.part,
+				nextProps.pieces,
 				SegmentTimelinePartClass.getPartStartsAt(nextProps),
 				partDisplayDuration
 			)
 
-		const partDisplayWidth = partDisplayDuration * nextProps.timeScale
-		const isTooSmallForText = !isLive && !nextProps.relative && partDisplayWidth < BREAKPOINT_TOO_SMALL_FOR_TEXT
-		const isTooSmallForDisplay = !isLive && !nextProps.relative && partDisplayWidth < BREAKPOINT_TOO_SMALL_FOR_DISPLAY
+		const partDisplayWidth = partDisplayDuration * nextProps.timeToPixelRatio
+		const isTooSmallForText = !isLive && partDisplayWidth < BREAKPOINT_TOO_SMALL_FOR_TEXT
+		const isTooSmallForDisplay = !isLive && partDisplayWidth < BREAKPOINT_TOO_SMALL_FOR_DISPLAY
 
 		const partial = {
 			isLive,
@@ -219,16 +222,16 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		return partial
 	}
 
-	static getLiveLineTimePadding(timeScale): number {
+	static getLiveLineTimePadding(timeScale: number): number {
 		return timeScale === 0 ? 0 : LIVE_LINE_TIME_PADDING / timeScale
 	}
 
 	static getCurrentLiveLinePosition(part: Readonly<PartUi>, currentTime: number): number {
-		if (part.instance.timings?.startedPlayback) {
+		if (part.instance.timings?.plannedStartedPlayback) {
 			if (part.instance.timings?.duration) {
 				return part.instance.timings.duration
 			} else {
-				return currentTime - part.instance.timings.startedPlayback
+				return currentTime - part.instance.timings.plannedStartedPlayback
 			}
 		} else {
 			return 0
@@ -251,7 +254,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		super.componentDidMount && super.componentDidMount()
 		RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		const tooSmallState = this.state.isTooSmallForDisplay || this.state.isTooSmallForText
@@ -264,18 +267,19 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						this.state.liveDuration,
 						this.state.isDurationSettling,
 						this.state.durationSettlingStartsAt
-					)
+					),
+					SegmentTimelinePartClass.getPartActualDuration(this.props.part, this.props.timingDurations)
 				)
 		}
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		super.componentWillUnmount && super.componentWillUnmount()
 		RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		this.highlightTimeout && clearTimeout(this.highlightTimeout)
 	}
 
-	shouldComponentUpdate(nextProps: Readonly<WithTiming<IProps>>, nextState: Readonly<IState>) {
+	shouldComponentUpdate(nextProps: Readonly<WithTiming<IProps>>, nextState: Readonly<IState>): boolean {
 		if (!_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState)) {
 			return true
 		} else {
@@ -283,7 +287,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		}
 	}
 
-	componentDidUpdate(prevProps: Readonly<Translated<WithTiming<IProps>>>, prevState: IState, snapshot?: any) {
+	componentDidUpdate(prevProps: Readonly<Translated<WithTiming<IProps>>>, prevState: IState, snapshot?: unknown): void {
 		super.componentDidUpdate && super.componentDidUpdate(prevProps, prevState, snapshot)
 		const tooSmallState = this.state.isTooSmallForDisplay || this.state.isTooSmallForText
 		const prevTooSmallState = prevState.isTooSmallForDisplay || prevState.isTooSmallForText
@@ -298,36 +302,59 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								this.state.isDurationSettling,
 								this.state.durationSettlingStartsAt
 						  )
-						: false
+						: false,
+					SegmentTimelinePartClass.getPartActualDuration(this.props.part, this.props.timingDurations)
 				)
 		}
 	}
 
 	getLayerStyle(): React.CSSProperties {
-		const actualPartDuration = SegmentTimelinePartClass.getPartDuration(
-			this.props,
-			this.state.liveDuration,
-			this.state.isDurationSettling,
-			this.state.durationSettlingStartsAt
-		)
-		const partDuration = this.props.cropDuration
-			? Math.min(this.props.cropDuration, actualPartDuration)
-			: actualPartDuration
-		if (this.props.relative) {
-			return {
-				width: ((partDuration / (this.props.totalSegmentDuration || 1)) * 100).toString() + '%',
-			}
+		let partDuration: number
+		if (this.props.isBudgetGap && typeof this.props.budgetDuration === 'number') {
+			partDuration = this.props.budgetDuration - SegmentTimelinePartClass.getPartStartsAt(this.props)
 		} else {
-			return {
-				minWidth: Math.round(partDuration * this.props.timeScale).toString() + 'px',
-			}
+			const partDisplayDuration = SegmentTimelinePartClass.getPartDisplayDuration(
+				this.props.part,
+				this.props.timingDurations
+			)
+			partDuration = this.props.cropDuration
+				? Math.min(this.props.cropDuration, partDisplayDuration)
+				: partDisplayDuration
+		}
+
+		const futureShadeDuration =
+			this.state.isLive || (this.props.isBudgetGap && this.props.isLiveSegment) ? this.getFutureShadePaddingTime() : 0
+		const partDurationWithFutureShadeAccountedFor = this.props.isBudgetGap
+			? partDuration - futureShadeDuration
+			: partDuration + futureShadeDuration
+
+		return {
+			width: (partDurationWithFutureShadeAccountedFor * this.props.timeToPixelRatio).toString() + 'px',
 		}
 	}
 
 	getPartStyle(): React.CSSProperties {
-		return this.getLayerStyle()
+		const style = this.getLayerStyle()
+
+		let timeOffset = SegmentTimelinePartClass.getPartStartsAt(this.props)
+		if (this.props.isLiveSegment && this.props.anyPriorPartWasLive && !this.state.isLive) {
+			timeOffset += this.getFutureShadePaddingTime()
+		}
+
+		const liveWillChangeValue = `transform, width`
+
+		return {
+			...style,
+			transform: `translateX(${this.convertTimeToPixels(timeOffset)}px)`,
+			willChange: this.props.isLiveSegment ? liveWillChangeValue : 'none',
+		}
 	}
 
+	private convertTimeToPixels = (time: number) => {
+		return this.props.timeToPixelRatio * time
+	}
+
+	/** @TODO: This appears to have little to do with expectedDuration, should it be renamed or rewritten? */
 	static getPartExpectedDuration(props: WithTiming<IProps>): number {
 		return (
 			props.part.instance.timings?.duration ||
@@ -355,12 +382,15 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 
 	static getPartDisplayDuration(part: PartUi, timingDurations: RundownTimingContext): number {
 		return (
-			part.instance.timings?.duration ||
 			(timingDurations.partDisplayDurations &&
 				timingDurations.partDisplayDurations[unprotectString(part.instance.part._id)]) ||
 			part.renderedDuration ||
 			0
 		)
+	}
+
+	static getPartActualDuration(part: PartUi, timingDurations: RundownTimingContext): number {
+		return timingDurations?.partDurations?.[unprotectString(part.partId)] ?? part.renderedDuration
 	}
 
 	static getPartStartsAt(props: WithTiming<IProps>): number {
@@ -387,13 +417,25 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		)
 	}
 
+	static getPartEndsAt(
+		props: WithTiming<IProps>,
+		liveDuration: number,
+		isDurationSettling: boolean,
+		durationSettlingStartsAt: number
+	): number {
+		return (
+			SegmentTimelinePartClass.getPartStartsAt(props) +
+			SegmentTimelinePartClass.getPartDuration(props, liveDuration, isDurationSettling, durationSettlingStartsAt)
+		)
+	}
+
 	private renderTimelineOutputGroups(part: PartUi) {
 		if (this.props.segment.outputLayers !== undefined) {
 			const showHiddenSourceLayers = getShowHiddenSourceLayers()
 
 			let indexAccumulator = 0
 
-			return Object.values(this.props.segment.outputLayers)
+			return Object.values<IOutputLayerUi>(this.props.segment.outputLayers)
 				.filter((layer) => {
 					return layer.used ? true : false
 				})
@@ -427,12 +469,12 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								onPieceDoubleClick={this.props.onPieceDoubleClick}
 								scrollLeft={this.props.scrollLeft}
 								scrollWidth={this.props.scrollWidth}
-								relative={this.props.relative}
 								mediaPreviewUrl={ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''}
 								layer={layer}
 								sourceLayers={sourceLayers}
 								segment={this.props.segment}
 								part={part}
+								pieces={this.props.pieces}
 								playlist={this.props.playlist}
 								studio={this.props.studio}
 								startsAt={SegmentTimelinePartClass.getPartStartsAt(this.props) || this.props.part.startsAt || 0}
@@ -455,12 +497,12 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 										  )
 								}
 								expectedDuration={SegmentTimelinePartClass.getPartExpectedDuration(this.props)}
-								isLiveLine={this.props.playlist.currentPartInstanceId === part.instance._id}
-								isNextLine={this.props.playlist.nextPartInstanceId === part.instance._id}
+								isLiveLine={this.props.playlist.currentPartInfo?.partInstanceId === part.instance._id}
+								isNextLine={this.props.playlist.nextPartInfo?.partInstanceId === part.instance._id}
 								isTooSmallForText={this.state.isTooSmallForText}
-								timeScale={this.props.timeScale}
+								timeScale={this.props.timeToPixelRatio}
 								autoNextPart={this.props.autoNextPart}
-								liveLinePadding={SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale)}
+								liveLinePadding={SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeToPixelRatio)}
 								indexOffset={currentIndex}
 								isPreview={this.props.isPreview || false}
 								showDurationSourceLayers={this.props.showDurationSourceLayers}
@@ -471,30 +513,55 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		}
 	}
 
+	private getFutureShadePaddingTime = () => {
+		if (this.props.autoNextPart) {
+			return 0
+		}
+
+		/**
+		 * How far into the live part we are, in milliseconds.
+		 */
+		const timeIntoLivePart = Math.max(0, (this.props.livePosition || 0) - (this.props.livePartStartsAt || 0))
+
+		/**
+		 * The maximum amount of live line time padding to add, in milliseconds.
+		 */
+		const maxPadding = SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeToPixelRatio)
+
+		/**
+		 * The amount of live line time padding to add, based on some simple math, in milliseconds.
+		 */
+		const computedPadding = Math.max(0, timeIntoLivePart + maxPadding - (this.props.livePartDisplayDuration || 0))
+
+		return Math.min(computedPadding, maxPadding)
+	}
+
+	private getFutureShadePaddingPixels = () => {
+		return this.getFutureShadePaddingTime() * this.props.timeToPixelRatio
+	}
+
 	private getFutureShadeStyle = () => {
 		return {
-			width:
-				Math.min(
-					Math.max(
-						0,
-						(this.props.livePosition || 0) +
-							SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale) -
-							(this.props.part.instance.part.expectedDurationWithPreroll || this.props.part.renderedDuration || 0)
-					),
-					SegmentTimelinePartClass.getLiveLineTimePadding(this.props.timeScale)
-				) *
-					this.props.timeScale +
-				'px',
+			width: this.getFutureShadePaddingPixels() + 'px',
 		}
 	}
 
 	private renderEndOfSegment = (t: TFunction, innerPart: Part, isEndOfShow: boolean, isEndOfLoopingShow?: boolean) => {
 		const isNext =
 			this.state.isLive &&
-			((!this.props.isLastSegment && !this.props.isLastInSegment) || !!this.props.playlist.nextPartInstanceId) &&
+			((!this.props.isLastSegment && !this.props.isLastInSegment) || !!this.props.playlist.nextPartInfo) &&
 			!innerPart.invalid
+		let timeOffset = SegmentTimelinePartClass.getPartDisplayDuration(this.props.part, this.props.timingDurations)
+		if (this.state.isLive) {
+			timeOffset += this.getFutureShadePaddingTime()
+		}
 		return (
-			<>
+			<div
+				className={ClassNames('segment-timeline__part__end-of-segment', { 'is-live': this.state.isLive })}
+				style={{
+					transform: `translateX(${this.convertTimeToPixels(timeOffset)}px)`,
+				}}
+			>
 				{this.props.isLastInSegment && !this.props.isBudgetGap && (
 					<div
 						className={ClassNames('segment-timeline__part__nextline', 'segment-timeline__part__nextline--endline', {
@@ -535,7 +602,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 						</div>
 					</div>
 				)}
-			</>
+			</div>
 		)
 	}
 
@@ -550,7 +617,12 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		return { red, green, blue }
 	}
 
-	render() {
+	render(): JSX.Element | null {
+		// optimize early, if not inside viewport
+		if (!this.state.isInsideViewport) {
+			return null
+		}
+
 		const { t } = this.props
 
 		const innerPart = this.props.part.instance.part
@@ -558,7 +630,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 		const isEndOfShow =
 			this.props.isLastSegment &&
 			this.props.isLastInSegment &&
-			(!this.state.isLive || (this.state.isLive && !this.props.playlist.nextPartInstanceId))
+			(!this.state.isLive || (this.state.isLive && !this.props.playlist.nextPartInfo))
 		const isEndOfLoopingShow = this.props.isLastSegment && this.props.isLastInSegment && this.props.playlist.loop
 		let invalidReasonColorVars: CSSProperties | undefined = undefined
 		if (innerPart.invalidReason && innerPart.invalidReason.color) {
@@ -629,17 +701,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 									floated: innerPart.floated,
 								})}
 								style={{
-									left: this.props.relative
-										? (this.props.playlist.nextTimeOffset /
-												(SegmentTimelinePartClass.getPartDuration(
-													this.props,
-													this.state.liveDuration,
-													this.state.isDurationSettling,
-													this.state.durationSettlingStartsAt
-												) || 1)) *
-												100 +
-										  '%'
-										: Math.round(this.props.playlist.nextTimeOffset * this.props.timeScale) + 'px',
+									left: Math.round(this.props.playlist.nextTimeOffset * this.props.timeToPixelRatio) + 'px',
 								}}
 							>
 								<div
@@ -660,7 +722,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								</div>
 							</div>
 						)}
-					{this.state.isLive && !this.props.relative && !this.props.autoNextPart && !innerPart.autoNext && (
+					{this.state.isLive && !this.props.autoNextPart && !innerPart.autoNext && (
 						<div className="segment-timeline__part__future-shade" style={this.getFutureShadeStyle()}></div>
 					)}
 					{!this.props.isBudgetGap && (
@@ -694,7 +756,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								{this.props.isAfterLastValidInSegmentAndItsLive && !this.props.playlist.loop && <SegmentEnd />}
 								{this.props.isAfterLastValidInSegmentAndItsLive && this.props.playlist.loop && <LoopingIcon />}
 							</div>
-							{(!this.props.relative || this.props.isPreview) && this.props.part.instance.part.identifier && (
+							{this.props.isPreview && this.props.part.instance.part.identifier && (
 								<div className="segment-timeline__identifier">{this.props.part.instance.part.identifier}</div>
 							)}
 						</div>

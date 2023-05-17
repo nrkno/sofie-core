@@ -1,15 +1,53 @@
+import { IBlueprintPlayoutDevice, TSR } from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceCommandId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { createManualPromise, getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { Complete, createManualPromise, getRandomId, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { JobContext } from './jobs'
 import { getCurrentTime } from './lib'
 import { logger } from './logging'
+import { CacheForPlayout } from './playout/cache'
+import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
+
+export async function executePeripheralDeviceAction(
+	context: JobContext,
+	deviceId: PeripheralDeviceId,
+	timeoutTime0: number | null,
+	actionId: string,
+	payload: Record<string, any>
+): Promise<TSR.ActionExecutionResult> {
+	return executePeripheralDeviceGenericFunction(context, deviceId, timeoutTime0, {
+		actionId,
+		payload,
+	})
+}
 
 export async function executePeripheralDeviceFunction(
 	context: JobContext,
 	deviceId: PeripheralDeviceId,
 	timeoutTime0: number | null,
 	functionName: string,
-	...args: any[]
+	args: Array<any>
+): Promise<any> {
+	return executePeripheralDeviceGenericFunction(context, deviceId, timeoutTime0, {
+		functionName,
+		args,
+	})
+}
+
+async function executePeripheralDeviceGenericFunction(
+	context: JobContext,
+	deviceId: PeripheralDeviceId,
+	timeoutTime0: number | null,
+	action:
+		| {
+				actionId: string
+				payload: Record<string, any>
+		  }
+		| {
+				// Legacy (?) function calls:
+				functionName: string
+				args: Array<any>
+		  }
 ): Promise<any> {
 	const timeoutTime = timeoutTime0 ?? 3000 // also handles null
 
@@ -129,10 +167,42 @@ export async function executePeripheralDeviceFunction(
 		_id: commandId,
 		deviceId: deviceId,
 		time: getCurrentTime(),
-		functionName,
-		args: args,
+		...action,
 		hasReply: false,
 	})
 
 	return result
+}
+
+export async function listPlayoutDevices(
+	context: JobContext,
+	cache: CacheForPlayout
+): Promise<IBlueprintPlayoutDevice[]> {
+	const parentDevicesMap = normalizeArrayToMap(
+		cache.PeripheralDevices.findAll(
+			(doc: PeripheralDevice) => doc.studioId === context.studioId && doc.type === PeripheralDeviceType.PLAYOUT
+		),
+		'_id'
+	)
+	const parentDeviceIds = Array.from(parentDevicesMap.keys())
+	if (parentDeviceIds.length === 0) {
+		throw new Error('No parent devices are configured')
+	}
+
+	const devices = await context.directCollections.PeripheralDevices.findFetch({
+		parentDeviceId: {
+			$in: parentDeviceIds,
+		},
+	})
+
+	return devices.map((d) => {
+		// Future: Do we need to retrieve the config from the studio?
+		const parentDevice = d.parentDeviceId && parentDevicesMap.get(d.parentDeviceId)
+
+		// Only expose a subset of the PeripheralDevice to the blueprints
+		return literal<Complete<IBlueprintPlayoutDevice>>({
+			deviceId: d._id,
+			actions: parentDevice?.configManifest?.subdeviceManifest?.[d.subType]?.actions,
+		})
+	})
 }

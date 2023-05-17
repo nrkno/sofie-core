@@ -8,10 +8,8 @@ import {
 	PieceInstancePiece,
 	ResolvedPieceInstance,
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { clone, Complete, literal } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
@@ -28,13 +26,17 @@ import {
 	IBlueprintPieceInstance,
 	IBlueprintResolvedPieceInstance,
 	IBlueprintRundownDB,
+	IBlueprintRundownPlaylist,
 	IBlueprintSegmentDB,
+	IBlueprintSegmentRundown,
 	IBlueprintShowStyleBase,
 	IBlueprintShowStyleVariant,
 	IOutputLayer,
 	ISourceLayer,
 	RundownPlaylistTiming,
 } from '@sofie-automation/blueprints-integration'
+import { JobContext, ProcessedShowStyleBase, ProcessedShowStyleVariant } from '../../jobs'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 /**
  * Convert an object to have all the values of all keys (including optionals) be 'true'
@@ -105,8 +107,8 @@ function convertPieceInstanceToBlueprintsInner(pieceInstance: PieceInstance): Co
 		partInstanceId: unprotectString(pieceInstance.partInstanceId),
 		adLibSourceId: unprotectString(pieceInstance.adLibSourceId),
 		dynamicallyInserted: pieceInstance.dynamicallyInserted,
-		startedPlayback: pieceInstance.startedPlayback,
-		stoppedPlayback: pieceInstance.stoppedPlayback,
+		reportedStartedPlayback: pieceInstance.reportedStartedPlayback,
+		reportedStoppedPlayback: pieceInstance.reportedStoppedPlayback,
 		infinite: pieceInstance.infinite
 			? literal<Complete<IBlueprintPieceInstance['infinite']>>({
 					infinitePieceId: unprotectString(pieceInstance.infinite.infinitePieceId),
@@ -337,18 +339,74 @@ export function convertRundownToBlueprints(rundown: ReadonlyDeep<DBRundown>): IB
 }
 
 /**
+ * Convert a DBRundown into IBlueprintSegmentRundown, for passing into the blueprints
+ * @param rundown the DBRundown to convert
+ * @returns a cloned complete and clean IBlueprintSegmentRundown
+ */
+export function convertRundownToBlueprintSegmentRundown(
+	rundown: ReadonlyDeep<DBRundown>,
+	skipClone = false
+): IBlueprintSegmentRundown {
+	const obj: Complete<IBlueprintSegmentRundown> = {
+		externalId: rundown.externalId,
+		metaData: skipClone ? rundown.metaData : clone(rundown.metaData),
+	}
+
+	return obj
+}
+
+/**
+ * Convert a DBRundownPlaylist into IBlueprintRundownPlaylist, for passing into the blueprints
+ * Note: also requires an array of Rundowns that belong to the studio (or that belong to the playlist)
+ * @param playlist the DBRundownPlaylist to convert
+ * @param rundownsInStudio the Rundown for the studio, that may belong to this playlist
+ * @returns a cloned complete and clean IBlueprintRundownPlaylist
+ */
+export function convertRundownPlaylistToBlueprints(
+	playlist: DBRundownPlaylist,
+	rundownsInStudio: Pick<Rundown, '_id' | 'playlistId'>[]
+): IBlueprintRundownPlaylist {
+	const obj: Complete<IBlueprintRundownPlaylist> = {
+		name: playlist.name,
+
+		timing: clone<RundownPlaylistTiming>(playlist.timing),
+		outOfOrderTiming: playlist.outOfOrderTiming,
+		loop: playlist.loop,
+		timeOfDayCountdowns: playlist.timeOfDayCountdowns,
+
+		metaData: clone(playlist.metaData),
+
+		_id: unprotectString(playlist._id),
+		externalId: playlist.externalId,
+		created: playlist.created,
+		modified: playlist.modified,
+		isActive: !!playlist.activationId,
+		rehearsal: playlist.rehearsal ?? false,
+		startedPlayback: playlist.startedPlayback,
+
+		rundownCount: rundownsInStudio.filter((rundown) => rundown.playlistId === playlist._id).length,
+	}
+
+	return obj
+}
+
+/**
  * Convert a DBShowStyleBase into IBlueprintShowStyleBase, for passing into the blueprints
  * @param showStyleBase the DBShowStyleBase to convert
  * @returns a cloned complete and clean IBlueprintShowStyleBase
  */
 export function convertShowStyleBaseToBlueprints(
-	showStyleBase: ReadonlyDeep<DBShowStyleBase>
+	showStyleBase: ReadonlyDeep<ProcessedShowStyleBase>
 ): IBlueprintShowStyleBase {
 	const obj: Complete<IBlueprintShowStyleBase> = {
 		_id: unprotectString(showStyleBase._id),
 		blueprintId: unprotectString(showStyleBase.blueprintId),
-		outputLayers: clone<IOutputLayer[]>(showStyleBase.outputLayers),
-		sourceLayers: clone<ISourceLayer[]>(showStyleBase.sourceLayers),
+		outputLayers: clone(
+			Object.values<IOutputLayer | undefined>(showStyleBase.outputLayers).filter((l): l is IOutputLayer => !!l)
+		),
+		sourceLayers: clone(
+			Object.values<ISourceLayer | undefined>(showStyleBase.sourceLayers).filter((l): l is ISourceLayer => !!l)
+		),
 		blueprintConfig: clone<IBlueprintConfig>(showStyleBase.blueprintConfig),
 	}
 
@@ -361,7 +419,7 @@ export function convertShowStyleBaseToBlueprints(
  * @returns a cloned complete and clean IBlueprintShowStyleVariant
  */
 export function convertShowStyleVariantToBlueprints(
-	showStyleVariant: ReadonlyDeep<DBShowStyleVariant>
+	showStyleVariant: ReadonlyDeep<ProcessedShowStyleVariant>
 ): IBlueprintShowStyleVariant {
 	const obj: Complete<IBlueprintShowStyleVariant> = {
 		_id: unprotectString(showStyleVariant._id),
@@ -370,4 +428,27 @@ export function convertShowStyleVariantToBlueprints(
 	}
 
 	return obj
+}
+
+/**
+ * Get the durations of MediaObjects
+ * @param context Context for the job
+ * @param mediaId Id of the object to lookup
+ * @returns Found durations
+ */
+export async function getMediaObjectDuration(context: JobContext, mediaId: string): Promise<number | undefined> {
+	const span = context.startSpan('context.getMediaObjectDuration')
+	const selector = { mediaId: mediaId.toUpperCase(), studioId: context.studioId }
+	const mediaObjects = await context.directCollections.MediaObjects.findFetch(selector)
+
+	const durations: Array<number | undefined> = []
+	mediaObjects.forEach((doc) => {
+		if (doc !== undefined) {
+			durations.push(doc.mediainfo?.format?.duration as number)
+		}
+	})
+
+	if (span) span.end()
+
+	return durations.length > 0 ? durations[0] : undefined
 }

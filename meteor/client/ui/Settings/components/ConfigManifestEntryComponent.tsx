@@ -1,25 +1,25 @@
 import * as React from 'react'
-import { withTranslation } from 'react-i18next'
-import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
+import { useTranslation } from 'react-i18next'
 import { EditAttribute } from '../../../lib/EditAttribute'
-import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
-import { ConfigManifestEntry, ConfigManifestEntryType } from '@sofie-automation/corelib/dist/deviceConfig'
-import { ConfigManifestEntry as BlueprintConfigManifestEntry } from '@sofie-automation/blueprints-integration'
+import {
+	ConfigManifestEntry as BlueprintConfigManifestEntry,
+	ConfigManifestEntryType,
+} from '@sofie-automation/blueprints-integration'
 import { MongoCollection } from '../../../../lib/collections/lib'
+import { PeripheralDevices } from '../../../collections'
 
-export const renderEditAttribute = (
+const renderEditAttribute = (
 	collection: MongoCollection<any>,
-	configField: ConfigManifestEntry | BlueprintConfigManifestEntry,
+	configField: BlueprintConfigManifestEntry,
 	obj: object,
 	prefix?: string
-) => {
+): JSX.Element | undefined => {
 	const attribute = prefix + configField.id
 	const opts = {
 		modifiedClassName: 'bghl',
 		attribute,
 		obj,
 		collection,
-		label: (configField as ConfigManifestEntry).placeholder || '',
 	}
 
 	if (configField.type === ConfigManifestEntryType.FLOAT) {
@@ -43,17 +43,7 @@ export const renderEditAttribute = (
 			<EditAttribute
 				{...opts}
 				type="dropdown"
-				options={(configField as ConfigManifestEntry).values || []}
-				className="input text-input input-l"
-			></EditAttribute>
-		)
-	} else if (configField.type === ConfigManifestEntryType.OBJECT) {
-		return (
-			<EditAttribute
-				{...opts}
-				mutateDisplayValue={(v) => JSON.stringify(v, undefined, 2)}
-				mutateUpdateValue={(v) => JSON.parse(v)}
-				type="multiline"
+				options={configField.options || []}
 				className="input text-input input-l"
 			></EditAttribute>
 		)
@@ -70,50 +60,38 @@ export const renderEditAttribute = (
 				}
 			/>
 		)
-		// TODO: Handle these?
-		// } else if (configField.type === ConfigManifestEntryType.TABLE) {
-		// 	// not handled here, handled by GenericDeviceSettingsComponent
-		// } else if (configField.type === ConfigManifestEntryType.LABEL) {
-		// 	// todo ?
-		// } else if (configField.type === ConfigManifestEntryType.LINK) {
-		// 	// todo ?
 		// } else {
 		// 	assertNever(configField.type)
 	}
 }
 
 export interface IConfigManifestEntryComponentProps {
-	configField: ConfigManifestEntry | BlueprintConfigManifestEntry
+	configField: BlueprintConfigManifestEntry
 	obj: object
 	prefix?: string
-	hideLabel?: boolean
 	collection?: MongoCollection<any>
 	className?: string
 }
-export const ConfigManifestEntryComponent = withTranslation()(
-	class ConfigManifestEntryComponent extends React.Component<Translated<IConfigManifestEntryComponentProps>, {}> {
-		renderEditAttribute(configField: ConfigManifestEntry | BlueprintConfigManifestEntry, obj: object, prefix?: string) {
-			return renderEditAttribute(this.props.collection || PeripheralDevices, configField, obj, prefix)
-		}
 
-		renderConfigField(configField: ConfigManifestEntry | BlueprintConfigManifestEntry, obj: object, prefix?: string) {
-			const { t } = this.props
+/** @deprecated */
+export function ConfigManifestEntryComponent({
+	configField,
+	obj,
+	prefix,
+	collection,
+	className,
+}: IConfigManifestEntryComponentProps): JSX.Element {
+	const { t } = useTranslation() // TODO - should this use a namespace?
 
-			return (
-				<div className={this.props.className !== undefined ? this.props.className : 'mod mvs mhs'}>
-					<label className="field">
-						{t(configField.name)}
-						{this.renderEditAttribute(configField, obj, prefix)}
-						{configField.hint && <span className="text-s dimmed">{t(configField.hint)}</span>}
-					</label>
-				</div>
-			)
-		}
-
-		render() {
-			const { configField, obj, prefix } = this.props
-
-			return <div>{this.renderConfigField(configField, obj, prefix)}</div>
-		}
-	}
-)
+	return (
+		<div>
+			<div className={className ?? 'mod mvs mhs'}>
+				<label className="field">
+					{t(configField.name)}
+					{renderEditAttribute(collection || PeripheralDevices, configField, obj, prefix)}
+					{configField.hint && <span className="text-s dimmed">{t(configField.hint)}</span>}
+				</label>
+			</div>
+		</div>
+	)
+}

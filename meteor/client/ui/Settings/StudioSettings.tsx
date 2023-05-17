@@ -1,86 +1,39 @@
-import * as React from 'react'
-import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
-import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
+import React, { useMemo } from 'react'
+import { useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
-import { PeripheralDevice, PeripheralDevices, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
-
-import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ShowStyleVariants, ShowStyleVariant, ShowStyleVariantId } from '../../../lib/collections/ShowStyleVariants'
-import { ShowStyleBases, ShowStyleBase, ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
-import { BlueprintManifestType, ConfigManifestEntry } from '@sofie-automation/blueprints-integration'
-import { ConfigManifestSettings } from './ConfigManifestSettings'
-import { Blueprints } from '../../../lib/collections/Blueprints'
-import { MappingsManifest } from '@sofie-automation/corelib/dist/deviceConfig'
+import { PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 import { StudioRoutings } from './Studio/Routings'
 import { StudioDevices } from './Studio/Devices'
-import { StudioMappings } from './Studio/Mappings'
+import { MappingsSettingsManifest, MappingsSettingsManifests, StudioMappings } from './Studio/Mappings'
 import { StudioPackageManagerSettings } from './Studio/PackageManager'
 import { StudioGenericProperties } from './Studio/Generic'
-import { Redirect, Route, Switch } from 'react-router-dom'
+import { Redirect, Route, Switch, useRouteMatch } from 'react-router-dom'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { PeripheralDevices, ShowStyleBases, Studios } from '../../collections'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { literal } from '@sofie-automation/corelib/dist/lib'
+import { translateStringIfHasNamespaces } from '../../lib/forms/schemaFormUtil'
+import { JSONBlob, JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { StudioBlueprintConfigurationSettings } from './Studio/BlueprintConfiguration'
+import { SubdeviceManifest } from '@sofie-automation/corelib/dist/deviceConfig'
+import { JSONSchema } from '@sofie-automation/blueprints-integration'
 
-interface IStudioSettingsProps {
-	match: {
-		url: string
-		path: string
-		params: {
-			studioId: StudioId
-		}
-	}
-}
-interface IStudioSettingsState {}
-interface IStudioSettingsTrackedProps {
-	studio?: Studio
-	studioDevices: Array<PeripheralDevice>
-	availableShowStyleVariants: Array<{
-		name: string
-		value: ShowStyleVariantId
-		showStyleVariant: ShowStyleVariant
-	}>
-	availableShowStyleBases: Array<{
-		name: string
-		value: ShowStyleBaseId
-		showStyleBase: ShowStyleBase
-	}>
-	availableDevices: Array<PeripheralDevice>
-	blueprintConfigManifest: ConfigManifestEntry[]
-	layerMappingsManifest: MappingsManifest | undefined
-}
+export default function StudioSettings(): JSX.Element {
+	const match = useRouteMatch<{ studioId: string }>()
+	const studioId = protectString(match.params.studioId)
 
-export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, IStudioSettingsTrackedProps>(
-	(props: IStudioSettingsProps) => {
-		const studio = Studios.findOne(props.match.params.studioId)
-		const blueprint = studio
-			? Blueprints.findOne({
-					_id: studio.blueprintId,
-					blueprintType: BlueprintManifestType.STUDIO,
-			  })
-			: undefined
+	const studio = useTracker(() => Studios.findOne(studioId), [studioId])
 
-		return {
-			studio: studio,
-			studioDevices: PeripheralDevices.find({
-				studioId: props.match.params.studioId,
-			}).fetch(),
-			availableShowStyleVariants: ShowStyleVariants.find(
-				studio
-					? {
-							showStyleBaseId: {
-								$in: studio.supportedShowStyleBase || [],
-							},
-					  }
-					: {}
-			)
-				.fetch()
-				.map((variant) => {
-					const baseStyle = ShowStyleBases.findOne(variant.showStyleBaseId)
-					return {
-						name: `${(baseStyle || { name: '' }).name}: ${variant.name} (${variant._id})`,
-						value: variant._id,
-						showStyleVariant: variant,
-					}
-				}),
-			availableShowStyleBases: ShowStyleBases.find()
+	const studioMappings = useMemo(
+		() => (studio ? applyAndValidateOverrides(studio.mappingsWithOverrides).obj : {}),
+		[studio?.mappingsWithOverrides]
+	)
+
+	// TODO - move into child-component
+	const availableShowStyleBases = useTracker(
+		() =>
+			ShowStyleBases.find()
 				.fetch()
 				.map((showStyle) => {
 					return {
@@ -89,29 +42,16 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 						showStyleBase: showStyle,
 					}
 				}),
-			availableDevices: PeripheralDevices.find(
+		[],
+		[]
+	)
+
+	const firstPlayoutDevice = useTracker(
+		() =>
+			PeripheralDevices.findOne(
 				{
 					studioId: {
-						$not: {
-							$eq: props.match.params.studioId,
-						},
-					},
-					parentDeviceId: {
-						$exists: false,
-					},
-				},
-				{
-					sort: {
-						lastConnected: -1,
-					},
-				}
-			).fetch(),
-			blueprintConfigManifest: blueprint ? blueprint.studioConfigManifest || [] : [],
-			// TODO - these should come from the device the mapping is targeting but for now this will catch 99% of expected use cases
-			layerMappingsManifest: PeripheralDevices.findOne(
-				{
-					studioId: {
-						$eq: props.match.params.studioId,
+						$eq: studioId,
 					},
 					parentDeviceId: {
 						$exists: false,
@@ -125,82 +65,89 @@ export default translateWithTracker<IStudioSettingsProps, IStudioSettingsState, 
 						lastConnected: -1,
 					},
 				}
-			)?.configManifest?.layerMappings,
-		}
-	}
-)(
-	class StudioSettings extends MeteorReactComponent<
-		Translated<IStudioSettingsProps & IStudioSettingsTrackedProps>,
-		IStudioSettingsState
-	> {
-		getLayerMappingsFlat() {
-			const mappings = {}
-			if (this.props.studio) {
-				mappings[this.props.studio.name] = this.props.studio.mappings
-			}
-			return mappings
-		}
+			),
 
-		render() {
-			return this.props.studio ? (
-				<div className="studio-edit mod mhl mvn">
-					<div className="row">
-						<div className="col c12 r1-c12">
-							<ErrorBoundary>
-								<Switch>
-									<Route path={`${this.props.match.path}/generic`}>
-										<StudioGenericProperties
-											studio={this.props.studio}
-											availableShowStyleBases={this.props.availableShowStyleBases}
-										/>
-									</Route>
-									<Route path={`${this.props.match.path}/devices`}>
-										<StudioDevices
-											studio={this.props.studio}
-											studioDevices={this.props.studioDevices}
-											availableDevices={this.props.availableDevices}
-										/>
-									</Route>
-									<Route path={`${this.props.match.path}/blueprint-config`}>
-										<ConfigManifestSettings
-											t={this.props.t}
-											i18n={this.props.i18n}
-											tReady={this.props.tReady}
-											manifest={this.props.blueprintConfigManifest}
-											object={this.props.studio}
-											layerMappings={this.getLayerMappingsFlat()}
-											collection={Studios}
-											configPath={'blueprintConfig'}
-										/>
-									</Route>
-									<Route path={`${this.props.match.path}/mappings`}>
-										<StudioMappings studio={this.props.studio} manifest={this.props.layerMappingsManifest} />
-									</Route>
-									<Route path={`${this.props.match.path}/route-sets`}>
-										<StudioRoutings studio={this.props.studio} manifest={this.props.layerMappingsManifest} />
-									</Route>
-									<Route path={`${this.props.match.path}/package-manager`}>
-										<StudioPackageManagerSettings studio={this.props.studio} />
-									</Route>
-									<Redirect to={`${this.props.match.path}/generic`} />
-								</Switch>
-							</ErrorBoundary>
-						</div>
-					</div>
-				</div>
-			) : (
-				<Spinner />
+		[studioId]
+	)
+
+	const { translationNamespaces, layerMappingsSchema } = useMemo(() => {
+		const translationNamespaces = [`peripheralDevice_${firstPlayoutDevice?._id}`]
+		const layerMappingsSchema: MappingsSettingsManifests = Object.fromEntries(
+			Object.entries<SubdeviceManifest[0]>(firstPlayoutDevice?.configManifest?.subdeviceManifest || {}).map(
+				([id, val]) => {
+					const mappingsSchema = val.playoutMappings
+						? Object.fromEntries(
+								Object.entries<JSONBlob<JSONSchema>>(val.playoutMappings).map(([id, schema]) => [
+									id,
+									JSONBlobParse(schema),
+								])
+						  )
+						: undefined
+
+					return [
+						id,
+						literal<MappingsSettingsManifest>({
+							displayName: translateStringIfHasNamespaces(val.displayName, translationNamespaces),
+							mappingsSchema,
+						}),
+					]
+				}
 			)
-		}
-	}
-)
+		)
 
-export function findHighestRank(array: Array<{ _rank: number }>): { _rank: number } | null {
+		return { translationNamespaces, layerMappingsSchema }
+	}, [firstPlayoutDevice])
+
+	return studio ? (
+		<div className="studio-edit mod mhl mvn">
+			<div className="row">
+				<div className="col c12 r1-c12">
+					<ErrorBoundary>
+						<Switch>
+							<Route path={`${match.path}/generic`}>
+								<StudioGenericProperties studio={studio} availableShowStyleBases={availableShowStyleBases} />
+							</Route>
+							<Route path={`${match.path}/devices`}>
+								<StudioDevices studioId={studio._id} />
+							</Route>
+							<Route path={`${match.path}/blueprint-config`}>
+								<StudioBlueprintConfigurationSettings studio={studio} />
+							</Route>
+							<Route path={`${match.path}/mappings`}>
+								<StudioMappings
+									translationNamespaces={translationNamespaces}
+									studio={studio}
+									manifest={layerMappingsSchema}
+								/>
+							</Route>
+							<Route path={`${match.path}/route-sets`}>
+								<StudioRoutings
+									translationNamespaces={translationNamespaces}
+									studio={studio}
+									studioMappings={studioMappings}
+									manifest={layerMappingsSchema}
+								/>
+							</Route>
+							<Route path={`${match.path}/package-manager`}>
+								<StudioPackageManagerSettings studio={studio} />
+							</Route>
+							<Redirect to={`${match.path}/generic`} />
+						</Switch>
+					</ErrorBoundary>
+				</div>
+			</div>
+		</div>
+	) : (
+		<Spinner />
+	)
+}
+
+export function findHighestRank(array: Array<{ _rank: number } | undefined>): { _rank: number } | null {
 	if (!array) return null
 	let max: { _rank: number } | null = null
 
 	array.forEach((value) => {
-		if (max === null || max._rank < value._rank) {
+		if (value && (max === null || max._rank < value._rank)) {
 			max = value
 		}
 	})

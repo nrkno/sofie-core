@@ -1,14 +1,12 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { Studios, StudioRouteBehavior } from '../../../lib/collections/Studios'
-import { Blueprints } from '../../../lib/collections/Blueprints'
-import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
+import { StudioRouteBehavior } from '../../../lib/collections/Studios'
 import { PackageInfo } from '../../coreSystem'
 import { StudioContentAccess } from '../../security/studio'
 import { shouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
-import { Timeline } from '../../../lib/collections/Timeline'
 import { logger } from '../../logging'
+import { Blueprints, RundownPlaylists, Studios, Timeline } from '../../collections'
 
 export namespace ServerPlayoutAPI {
 	export async function shouldUpdateStudioBaseline(access: StudioContentAccess): Promise<string | false> {
@@ -37,7 +35,11 @@ export namespace ServerPlayoutAPI {
 		}
 	}
 
-	export function switchRouteSet(access: StudioContentAccess, routeSetId: string, state: boolean): void {
+	export async function switchRouteSet(
+		access: StudioContentAccess,
+		routeSetId: string,
+		state: boolean
+	): Promise<void> {
 		logger.debug(`switchRouteSet "${access.studioId}" "${routeSetId}"=${state}`)
 
 		const studio = access.studio
@@ -60,7 +62,7 @@ export namespace ServerPlayoutAPI {
 			})
 		}
 
-		Studios.update(studio._id, {
+		await Studios.updateAsync(studio._id, {
 			$set: modification,
 		})
 	}

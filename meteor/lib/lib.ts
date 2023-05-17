@@ -1,6 +1,4 @@
 import * as _ from 'underscore'
-import { AsyncMongoCollection } from './collections/lib'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { Meteor } from 'meteor/meteor'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
@@ -10,20 +8,34 @@ import { MongoQuery as CoreLibMongoQuery } from '@sofie-automation/corelib/dist/
 
 import { Time, TimeDuration } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { ReactiveVar } from 'meteor/reactive-var'
 export { Time, TimeDuration }
 
 // Legacy compatability
 export * from '@sofie-automation/corelib/dist/protectedString'
 export * from '@sofie-automation/corelib/dist/lib'
 
+export type PromisifyCallbacks<T> = {
+	[K in keyof T]: PromisifyFunction<T[K]>
+}
+type PromisifyFunction<T> = T extends (...args: any) => any
+	? (...args: Parameters<T>) => Promise<ReturnType<T>> | ReturnType<T>
+	: T
+
 /**
- * Convenience method to convert a Meteor.call() into a Promise
- * @param  {string} Method name
- * @return {Promise<any>}
+ * Convenience method to convert a Meteor.apply() into a Promise
+ * @param callName {string} Method name
+ * @param args {Array<any>} An array of arguments for the method call
+ * @param options (Optional) An object with options for the call. See Meteor documentation.
+ * @returns {Promise<any>} A promise containing the result of the called method.
  */
-export async function MeteorPromiseCall(callName: string, ...args: any[]): Promise<any> {
+export async function MeteorPromiseApply(
+	callName: Parameters<typeof Meteor.apply>[0],
+	args: Parameters<typeof Meteor.apply>[1],
+	options?: Parameters<typeof Meteor.apply>[2]
+): Promise<any> {
 	return new Promise((resolve, reject) => {
-		Meteor.call(callName, ...args, (err, res) => {
+		Meteor.apply(callName, args, options, (err, res) => {
 			if (err) reject(err)
 			else resolve(res)
 		})
@@ -58,15 +70,6 @@ export type Partial<T> = {
 }
 export function partial<T>(o: Partial<T>): Partial<T> {
 	return o
-}
-export interface IDObj {
-	_id: ProtectedString<any>
-}
-export function partialExceptId<T>(o: Partial<T> & IDObj): Partial<T> & IDObj {
-	return o
-}
-export interface ObjId {
-	_id: ProtectedString<any>
 }
 
 /**
@@ -121,16 +124,6 @@ export function stringifyObjects(objs: unknown): string {
 	} else {
 		return objs + ''
 	}
-}
-export const Collections = new Map<CollectionName, AsyncMongoCollection<any>>()
-export function registerCollection(name: CollectionName, collection: AsyncMongoCollection<any>): void {
-	if (Collections.has(name)) throw new Meteor.Error(`Cannot re-register collection "${name}"`)
-	Collections.set(name, collection)
-}
-export function getCollectionKey(collection: AsyncMongoCollection<any>): CollectionName {
-	const o = Array.from(Collections.entries()).find(([_key, col]) => col === collection)
-	if (!o) throw new Meteor.Error(500, `Collection "${collection.name}" not found in Collections!`)
-	return o[0] // collectionName
 }
 
 /** Convenience function, to be used when length of array has previously been verified */
@@ -195,14 +188,20 @@ function cleanOldCacheResult() {
 const lazyIgnoreCache: { [name: string]: number } = {}
 export function lazyIgnore(name: string, f1: () => Promise<void> | void, t: number): void {
 	// Don't execute the function f1 until the time t has passed.
-	// Subsequent calls will extend the lazyness and ignore the previous call
+	// Subsequent calls will extend the laziness and ignore the previous call
 
 	if (lazyIgnoreCache[name]) {
 		Meteor.clearTimeout(lazyIgnoreCache[name])
 	}
 	lazyIgnoreCache[name] = Meteor.setTimeout(() => {
 		delete lazyIgnoreCache[name]
-		waitForPromise(f1())
+		if (Meteor.isClient) {
+			f1()?.catch((e) => {
+				throw new Error(e)
+			})
+		} else {
+			waitForPromise(f1())
+		}
 	}, t)
 }
 
@@ -233,60 +232,44 @@ export function toc(name: string = 'default', logStr?: string | Promise<any>[]):
 	}
 }
 
-// export function MeteorWrapAsync(func: Function, context?: Object): any {
-// 	// A variant of Meteor.wrapAsync to fix the bug
-// 	// https://github.com/meteor/meteor/issues/11120
-
-// 	return Meteor.wrapAsync((...args: any[]) => {
-// 		// Find the callback-function:
-// 		for (let i = args.length - 1; i >= 0; i--) {
-// 			if (typeof args[i] === 'function') {
-// 				if (i < args.length - 1) {
-// 					// The callback is not the last argument, make it so then:
-// 					const callback = args[i]
-// 					const fixedArgs = args
-// 					fixedArgs[i] = undefined
-// 					fixedArgs.push(callback)
-
-// 					func.apply(context, fixedArgs)
-// 					return
-// 				} else {
-// 					// The callback is the last argument, that's okay
-// 					func.apply(context, args)
-// 					return
-// 				}
-// 			}
-// 		}
-// 		throw new Meteor.Error(500, `Error in MeteorWrapAsync: No callback found!`)
-// 	})
-// }
+/**
+ * Make Meteor.startup support async functions
+ */
+export function MeteorStartupAsync(fcn: () => Promise<void>): void {
+	Meteor.startup(() => waitForPromise(fcn()))
+}
 
 /**
- * Blocks the fiber until all the Promises have resolved
+ * Make Meteor.wrapAsync a bit more type safe
+ * The original version makes the callback be after the last non-undefined parameter, rather than after or replacing the last parameter.
+ * Which makes it incredibly hard to find without iterating over all the parameters. This does that for you, so you dont need to check as many places
  */
-export function waitForPromiseAll<T1, T2, T3, T4, T5, T6>(
-	ps: [
-		T1 | PromiseLike<T1>,
-		T2 | PromiseLike<T2>,
-		T3 | PromiseLike<T3>,
-		T4 | PromiseLike<T4>,
-		T5 | PromiseLike<T5>,
-		T6 | PromiseLike<T6>
-	]
-): [T1, T2, T3, T4, T5, T6]
-export function waitForPromiseAll<T1, T2, T3, T4, T5>(
-	ps: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>, T3 | PromiseLike<T3>, T4 | PromiseLike<T4>, T5 | PromiseLike<T5>]
-): [T1, T2, T3, T4, T5]
-export function waitForPromiseAll<T1, T2, T3, T4>(
-	ps: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>, T3 | PromiseLike<T3>, T4 | PromiseLike<T4>]
-): [T1, T2, T3, T4]
-export function waitForPromiseAll<T1, T2, T3>(
-	ps: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>, T3 | PromiseLike<T3>]
-): [T1, T2, T3]
-export function waitForPromiseAll<T1, T2>(ps: [T1 | PromiseLike<T1>, T2 | PromiseLike<T2>]): [T1, T2]
-export function waitForPromiseAll<T>(ps: (T | PromiseLike<T>)[]): T[]
-export function waitForPromiseAll<T>(ps: (T | PromiseLike<T>)[]): T[] {
-	return waitForPromise(Promise.all(ps))
+export function MeteorWrapAsync(func: Function, context?: Object): any {
+	// A variant of Meteor.wrapAsync to fix the bug
+	// https://github.com/meteor/meteor/issues/11120
+
+	return Meteor.wrapAsync((...args: any[]) => {
+		// Find the callback-function:
+		for (let i = args.length - 1; i >= 0; i--) {
+			if (typeof args[i] === 'function') {
+				if (i < args.length - 1) {
+					// The callback is not the last argument, make it so then:
+					const callback = args[i]
+					const fixedArgs = args
+					fixedArgs[i] = undefined
+					fixedArgs.push(callback)
+
+					func.apply(context, fixedArgs)
+					return
+				} else {
+					// The callback is the last argument, that's okay
+					func.apply(context, args)
+					return
+				}
+			}
+		}
+		throw new Meteor.Error(500, `Error in MeteorWrapAsync: No callback found!`)
+	})
 }
 
 export type Awaited<T> = T extends PromiseLike<infer U> ? Awaited<U> : T
@@ -313,13 +296,13 @@ export const waitForPromise: <T>(p: Promise<T> | T) => Awaited<T> = Meteor.wrapA
 		.catch((e) => {
 			cb(e)
 		})
-})
+}) as <T>(p: Promise<T> | T) => Awaited<T> // `wrapAsync` has opaque `Function` type
 /**
  * Convert a Fiber function into a promise
  * Makes the Fiber function to run in its own fiber and return a promise
  */
 export async function makePromise<T>(fcn: () => T): Promise<T> {
-	return new Promise((resolve, reject) => {
+	const p = new Promise<T>((resolve, reject) => {
 		Meteor.defer(() => {
 			try {
 				resolve(fcn())
@@ -328,6 +311,14 @@ export async function makePromise<T>(fcn: () => T): Promise<T> {
 			}
 		})
 	})
+
+	return (
+		await Promise.all([
+			p,
+			// Pause the current Fiber briefly, in order to allow for the deferred Fiber to start executing:
+			sleep(0),
+		])
+	)[0]
 }
 
 export function deferAsync(fcn: () => Promise<void>): void {
@@ -457,10 +448,15 @@ export function equalArrays<T>(a: T[], b: T[]): boolean {
 }
 
 /** Generate the translation for a string, to be applied later when it gets rendered */
-export function generateTranslation(key: string, args?: { [k: string]: any }): ITranslatableMessage {
+export function generateTranslation(
+	key: string,
+	args?: { [k: string]: any },
+	namespaces?: string[]
+): ITranslatableMessage {
 	return {
 		key,
 		args,
+		namespaces,
 	}
 }
 
@@ -474,6 +470,23 @@ export enum LogLevel {
 	NONE = 'crit',
 }
 
+export enum LocalStorageProperty {
+	STUDIO = 'studioMode',
+	CONFIGURE = 'configureMode',
+	DEVELOPER = 'developerMode',
+	TESTING = 'testingMode',
+	SPEAKING = 'speakingMode',
+	VIBRATING = 'vibratingMode',
+	SERVICE = 'serviceMode',
+	SHELF_FOLLOWS_ON_AIR = 'shelfFollowsOnAir',
+	SHOW_HIDDEN_SOURCE_LAYERS = 'showHiddenSourceLayers',
+	IGNORE_PIECE_CONTENT_STATUS = 'ignorePieceContentStatus',
+	UI_ZOOM_LEVEL = 'uiZoomLevel',
+	HELP_MODE = 'helpMode',
+	LOG_NOTIFICATIONS = 'logNotifications',
+	PROTO_ONE_PART_PER_LINE = 'proto:onePartPerLine',
+}
+
 /**
  * Convert a MongoQuery from @sofie-automation/corelib typings to Meteor typings.
  * They aren't compatible yet because Meteor is using some 'loose' custom typings, rather than corelib which uses the strong typings given by the mongodb library
@@ -483,4 +496,18 @@ export enum LogLevel {
  */
 export function convertCorelibToMeteorMongoQuery<T>(query: CoreLibMongoQuery<T>): MongoQuery<T> {
 	return query as any
+}
+
+/**
+ * This just looks like a ReactiveVar, but is not reactive.
+ * It's used to use the same interface/typings, but when code is run on both client and server side.
+ * */
+export class DummyReactiveVar<T> implements ReactiveVar<T> {
+	constructor(private value: T) {}
+	public get(): T {
+		return this.value
+	}
+	public set(newValue: T): void {
+		this.value = newValue
+	}
 }

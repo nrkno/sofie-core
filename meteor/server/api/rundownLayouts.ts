@@ -2,23 +2,16 @@ import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from '../../lib/api/rundownLayouts'
-import {
-	RundownLayouts,
-	RundownLayoutType,
-	RundownLayoutBase,
-	RundownLayoutId,
-	CustomizableRegions,
-} from '../../lib/collections/RundownLayouts'
+import { RundownLayoutType, RundownLayoutBase, CustomizableRegions } from '../../lib/collections/RundownLayouts'
 import { literal, getRandomId, protectString } from '../../lib/lib'
 import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
-import { ShowStyleBaseId } from '../../lib/collections/ShowStyleBases'
-import { BlueprintId } from '../../lib/collections/Blueprints'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
-import { UserId } from '../../lib/collections/Users'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
 import { PickerPOST, PickerGET } from './http'
-import { fetchShowStyleBaseLight } from '../../lib/collections/optimizations'
+import { fetchShowStyleBaseLight } from '../optimizations'
+import { BlueprintId, RundownLayoutId, ShowStyleBaseId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownLayouts } from '../collections'
 
 export async function createRundownLayout(
 	name: string,
@@ -40,6 +33,7 @@ export async function createRundownLayout(
 			icon: '',
 			iconColor: '#ffffff',
 			regionId,
+			isDefaultLayout: false,
 		})
 	)
 	return id

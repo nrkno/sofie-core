@@ -1,7 +1,9 @@
 jest.dontMock('ddp')
+import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { StatusCode } from '@sofie-automation/shared-lib/dist/lib/status'
 import {
+	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
@@ -32,6 +34,9 @@ test('Integration: Test connection and basic Core functionality', async () => {
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 
 	const onConnectionChanged = jest.fn()
@@ -80,32 +85,30 @@ test('Integration: Test connection and basic Core functionality', async () => {
 	})
 
 	// Observe data:
-	const observer = core.observe('peripheralDevices')
+	const observer = core.observe('peripheralDeviceForDevice')
 	observer.added = jest.fn()
 	observer.changed = jest.fn()
 	observer.removed = jest.fn()
 
 	// Subscribe to data:
-	const coll0 = core.getCollection('peripheralDevices')
-	expect(coll0.findOne({ _id: id })).toBeFalsy()
-	const subId = await core.subscribe('peripheralDevices', {
-		_id: id,
-	})
-	const coll1 = core.getCollection('peripheralDevices')
-	expect(coll1.findOne({ _id: id })).toMatchObject({
+	const coll0 = core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
+	expect(coll0.findOne(id)).toBeFalsy()
+	const subId = await core.subscribe('peripheralDeviceForDevice', id)
+	const coll1 = core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
+	expect(coll1.findOne(id)).toMatchObject({
 		_id: id,
 	})
 	expect(observer.added).toHaveBeenCalledTimes(1)
 
 	// Call a method
-	await expect(core.callMethod('peripheralDevice.testMethod', ['return123'])).resolves.toEqual('return123')
+	await expect(core.coreMethods.testMethod('return123')).resolves.toEqual('return123')
 	// Call a method which will throw error:
-	await expect(core.callMethod('peripheralDevice.testMethod', ['abcd', true])).rejects.toMatchObject({
+	await expect(core.coreMethods.testMethod('abcd', true)).rejects.toMatchObject({
 		error: 418,
 		reason: /error/,
 	})
 	// Call an unknown method
-	await expect(core.callMethod('myunknownMethod123', ['a', 'b'])).rejects.toMatchObject({
+	await expect(core.callMethodRaw('myunknownMethod123', ['a', 'b'])).rejects.toMatchObject({
 		error: 404,
 		reason: /error/,
 	})
@@ -153,6 +156,9 @@ test('Integration: Connection timeout', async () => {
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 
 	const onConnectionChanged = jest.fn()
@@ -193,6 +199,9 @@ test('Integration: Connection recover from close', async () => {
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 
 	const onConnectionChanged = jest.fn()
@@ -237,6 +246,9 @@ test('Integration: autoSubscription', async () => {
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 
 	const onConnectionChanged = jest.fn()
@@ -262,12 +274,12 @@ test('Integration: autoSubscription', async () => {
 	const observerAdded = jest.fn()
 	const observerChanged = jest.fn()
 	const observerRemoved = jest.fn()
-	const observer = core.observe('peripheralDevices')
+	const observer = core.observe('peripheralDeviceForDevice')
 	observer.added = observerAdded
 	observer.changed = observerChanged
 	observer.removed = observerRemoved
 
-	await core.autoSubscribe('peripheralDevices', { _id: defaultDeviceId })
+	await core.autoSubscribe('peripheralDeviceForDevice', defaultDeviceId)
 
 	expect(observerAdded).toHaveBeenCalledTimes(1)
 
@@ -307,6 +319,9 @@ test('Integration: Connection recover from a close that lasts some time', async 
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 
 	const onConnectionChanged = jest.fn()
@@ -358,6 +373,9 @@ test('Integration: Parent connections', async () => {
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 	const onError = jest.fn()
 	coreParent.onError(onError)
@@ -372,32 +390,16 @@ test('Integration: Parent connections', async () => {
 	expect(coreParent.connected).toEqual(true)
 
 	// Set child connection:
-	const coreChild = new CoreConnection({
+	const coreChild = await coreParent.createChild({
 		deviceId: protectString('JestTestChild'),
-		deviceToken: 'abcd2',
-		deviceType: PeripheralDeviceType.PLAYOUT,
-		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+		deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 		deviceName: 'Jest test framework child',
 	})
 
-	const onChildConnectionChanged = jest.fn()
-	const onChildConnected = jest.fn()
-	const onChildDisconnected = jest.fn()
 	const onChildError = jest.fn()
-	coreChild.onConnectionChanged(onChildConnectionChanged)
-	coreChild.onConnected(onChildConnected)
-	coreChild.onDisconnected(onChildDisconnected)
-	coreChild.onError(onChildError)
+	coreChild.on('error', onChildError)
 
-	const idChild = await coreChild.init(coreParent)
-
-	expect(idChild).toEqual(coreChild.deviceId)
 	expect(coreChild.connected).toEqual(true)
-
-	expect(onChildConnectionChanged).toHaveBeenCalledTimes(1)
-	expect(onChildConnectionChanged.mock.calls[0][0]).toEqual(true)
-	expect(onChildConnected).toHaveBeenCalledTimes(1)
-	expect(onChildDisconnected).toHaveBeenCalledTimes(0)
 
 	// Set some statuses:
 	let statusResponse = await coreChild.setStatus({
@@ -447,6 +449,9 @@ test('Integration: Parent destroy', async () => {
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 	const onParentError = jest.fn()
 	coreParent.onError(onParentError)
@@ -455,24 +460,16 @@ test('Integration: Parent destroy', async () => {
 		host: coreHost,
 		port: corePort,
 	})
+
 	// Set child connection:
-	const coreChild = new CoreConnection({
+	const coreChild = await coreParent.createChild({
 		deviceId: protectString('JestTestChild'),
-		deviceToken: 'abcd2',
-		deviceType: PeripheralDeviceType.PLAYOUT,
-		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+		deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 		deviceName: 'Jest test framework child',
 	})
-	const onChildConnectionChanged = jest.fn()
-	const onChildConnected = jest.fn()
-	const onChildDisconnected = jest.fn()
-	const onChildError = jest.fn()
-	coreChild.onConnectionChanged(onChildConnectionChanged)
-	coreChild.onConnected(onChildConnected)
-	coreChild.onDisconnected(onChildDisconnected)
-	coreChild.onError(onChildError)
 
-	await coreChild.init(coreParent)
+	const onChildError = jest.fn()
+	coreChild.on('error', onChildError)
 
 	expect(coreChild.connected).toEqual(true)
 
@@ -481,18 +478,6 @@ test('Integration: Parent destroy', async () => {
 
 	expect(coreChild.connected).toEqual(false)
 
-	expect(onChildConnectionChanged).toHaveBeenCalledTimes(2)
-	expect(onChildConnectionChanged.mock.calls[1][0]).toEqual(false)
-	expect(onChildConnected).toHaveBeenCalledTimes(1)
-	expect(onChildDisconnected).toHaveBeenCalledTimes(1)
-	// Setup stuff again
-	onChildConnectionChanged.mockClear()
-	onChildConnected.mockClear()
-	onChildDisconnected.mockClear()
-
-	coreChild.onConnectionChanged(onChildConnectionChanged)
-	coreChild.onConnected(onChildConnected)
-	coreChild.onDisconnected(onChildDisconnected)
 	// connect parent again:
 
 	await coreParent.init({
@@ -500,14 +485,7 @@ test('Integration: Parent destroy', async () => {
 		port: corePort,
 	})
 
-	await coreChild.init(coreParent)
-
 	expect(coreChild.connected).toEqual(true)
-
-	expect(onChildConnected).toHaveBeenCalledTimes(1)
-	expect(onChildConnectionChanged).toHaveBeenCalledTimes(1)
-	expect(onChildConnectionChanged.mock.calls[0][0]).toEqual(true)
-	expect(onChildDisconnected).toHaveBeenCalledTimes(0)
 
 	await coreParent.destroy()
 	await coreChild.destroy()
@@ -523,6 +501,9 @@ test('Integration: Child destroy', async () => {
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 	const onParentError = jest.fn()
 	coreParent.onError(onParentError)
@@ -530,24 +511,16 @@ test('Integration: Child destroy', async () => {
 		host: coreHost,
 		port: corePort,
 	})
+
 	// Set child connection:
-	const coreChild = new CoreConnection({
+	const coreChild = await coreParent.createChild({
 		deviceId: protectString('JestTestChild'),
-		deviceToken: 'abcd2',
-		deviceType: PeripheralDeviceType.PLAYOUT,
-		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
+		deviceSubType: PERIPHERAL_SUBTYPE_PROCESS,
 		deviceName: 'Jest test framework child',
 	})
-	const onChildConnectionChanged = jest.fn()
-	const onChildConnected = jest.fn()
-	const onChildDisconnected = jest.fn()
-	const onChildError = jest.fn()
-	coreChild.onConnectionChanged(onChildConnectionChanged)
-	coreChild.onConnected(onChildConnected)
-	coreChild.onDisconnected(onChildDisconnected)
-	coreChild.onError(onChildError)
 
-	await coreChild.init(coreParent)
+	const onChildError = jest.fn()
+	coreChild.on('error', onChildError)
 
 	expect(coreChild.connected).toEqual(true)
 
@@ -555,11 +528,6 @@ test('Integration: Child destroy', async () => {
 	await coreChild.destroy()
 
 	expect(coreChild.connected).toEqual(false)
-
-	expect(onChildConnectionChanged).toHaveBeenCalledTimes(2)
-	expect(onChildConnectionChanged.mock.calls[1][0]).toEqual(false)
-	expect(onChildConnected).toHaveBeenCalledTimes(1)
-	expect(onChildDisconnected).toHaveBeenCalledTimes(1)
 
 	await coreParent.destroy()
 
@@ -575,6 +543,9 @@ test('Integration: Test callMethodLowPrio', async () => {
 		deviceType: PeripheralDeviceType.PLAYOUT,
 		deviceCategory: PeripheralDeviceCategory.PLAYOUT,
 		deviceName: 'Jest test framework',
+		documentationUrl: 'http://example.com',
+		versions: {},
+		configManifest: {} as any,
 	})
 
 	const onError = jest.fn()
@@ -588,21 +559,21 @@ test('Integration: Test callMethodLowPrio', async () => {
 	expect(core.connected).toEqual(true)
 
 	// Call a method
-	await expect(core.callMethod('peripheralDevice.testMethod', ['return123'])).resolves.toEqual('return123')
+	await expect(core.coreMethods.testMethod('return123')).resolves.toEqual('return123')
 	// Call a low-prio method
-	await expect(core.callMethodLowPrio('peripheralDevice.testMethod', ['low123'])).resolves.toEqual('low123')
+	await expect(core.coreMethodsLowPriority.testMethod('low123')).resolves.toEqual('low123')
 
 	const ps: Promise<any>[] = []
 
 	// method should be called before low-prio:
 	let i = 0
 	ps.push(
-		core.callMethodLowPrio('peripheralDevice.testMethod', ['return123']).then(() => {
+		core.coreMethodsLowPriority.testMethod('return123').then(() => {
 			return i++
 		})
 	)
 	ps.push(
-		core.callMethod('peripheralDevice.testMethod', ['low123']).then(() => {
+		core.coreMethods.testMethod('low123').then(() => {
 			return i++
 		})
 	)

@@ -44,7 +44,7 @@ export const IconPicker = withTranslation()(
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.refreshChecked()
 		}
 
@@ -97,7 +97,7 @@ export const IconPicker = withTranslation()(
 				: this.state.iconPack
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div
@@ -130,7 +130,7 @@ export const IconPicker = withTranslation()(
 									</label>
 								</div>
 							)}
-							{Object.entries(this.getFilteredIcons()).map(([key, value]) => {
+							{Object.entries<IconDefinition | undefined>(this.getFilteredIcons()).map(([key, value]) => {
 								if (value) {
 									return (
 										<div className="expco-item" key={key}>

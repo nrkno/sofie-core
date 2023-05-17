@@ -3,8 +3,9 @@ import Tooltip from 'rc-tooltip'
 import { useTranslation } from 'react-i18next'
 import { PackageContainerStatusDB } from '../../../../lib/collections/PackageContainerStatus'
 import { StatusCodePill } from '../StatusCodePill'
-import { doUserAction, UserAction } from '../../../lib/userAction'
+import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
 import { MeteorCall } from '../../../../lib/api/methods'
+import { ExpectedPackageStatusAPI } from '@sofie-automation/blueprints-integration'
 
 interface IPackageContainerStatusProps {
 	packageContainerStatus: PackageContainerStatusDB
@@ -45,7 +46,9 @@ export const PackageContainerStatus: React.FC<IPackageContainerStatusProps> = fu
 					</button>
 				</td>
 			</tr>
-			{Object.entries(packageContainerStatus.status.monitors).map(([monitorId, monitor]) => {
+			{Object.entries<ExpectedPackageStatusAPI.PackageContainerMonitorStatus>(
+				packageContainerStatus.status.monitors
+			).map(([monitorId, monitor]) => {
 				return (
 					<tr className="packageContainer-monitor" key={monitorId}>
 						<td className="indent"></td>
@@ -74,7 +77,7 @@ export const PackageContainerStatus: React.FC<IPackageContainerStatusProps> = fu
 // 			this.state = {}
 // 		}
 
-// 		render() {
+// 		render(): JSX.Element {
 // 			const { t } = this.props
 // 			const packageContainerStatus = this.props.packageContainerStatus
 

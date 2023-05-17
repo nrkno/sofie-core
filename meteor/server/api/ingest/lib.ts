@@ -1,24 +1,24 @@
 import { Meteor } from 'meteor/meteor'
 import { getHash, getCurrentTime, protectString, stringifyError } from '../../../lib/lib'
-import { StudioId } from '../../../lib/collections/Studios'
-import {
-	PeripheralDevice,
-	PeripheralDevices,
-	getStudioIdFromDevice,
-	PeripheralDeviceId,
-	PeripheralDeviceCategory,
-} from '../../../lib/collections/PeripheralDevices'
-import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
+import { PeripheralDevice, PeripheralDeviceCategory } from '../../../lib/collections/PeripheralDevices'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { logger } from '../../logging'
-import { SegmentId } from '../../../lib/collections/Segments'
-import { PartId } from '../../../lib/collections/Parts'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'
 import { MethodContext } from '../../../lib/api/methods'
 import { Credentials } from '../../security/lib/credentials'
 import { profiler } from '../profiler'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
 import { QueueIngestJob } from '../../worker/worker'
-import { checkStudioExists } from '../../../lib/collections/optimizations'
+import { checkStudioExists } from '../../optimizations'
+import {
+	PartId,
+	PeripheralDeviceId,
+	RundownId,
+	SegmentId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDevices } from '../../collections'
+import { getStudioIdFromDevice } from '../studio/lib'
 
 /**
  * Run an ingest operation via the worker.
@@ -112,11 +112,13 @@ export async function fetchStudioIdFromDevice(peripheralDevice: PeripheralDevice
 	span?.end()
 	return studioId
 }
-export function getPeripheralDeviceFromRundown(rundown: Rundown): PeripheralDevice {
+export async function getPeripheralDeviceFromRundown(
+	rundown: Pick<Rundown, '_id' | 'peripheralDeviceId'>
+): Promise<PeripheralDevice> {
 	if (!rundown.peripheralDeviceId)
 		throw new Meteor.Error(500, `Rundown "${rundown._id}" does not have a peripheralDeviceId`)
 
-	const device = PeripheralDevices.findOne(rundown.peripheralDeviceId)
+	const device = await PeripheralDevices.findOneAsync(rundown.peripheralDeviceId)
 	if (!device)
 		throw new Meteor.Error(
 			404,

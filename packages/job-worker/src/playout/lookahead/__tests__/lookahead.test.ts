@@ -22,6 +22,7 @@ jest.mock('../util')
 type TgetOrderedPartsAfterPlayhead = jest.MockedFunction<typeof getOrderedPartsAfterPlayhead>
 import { getOrderedPartsAfterPlayhead, PartAndPieces, PartInstanceAndPieceInstances } from '../util'
 import { LookaheadTimelineObject } from '../findObjects'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 const getOrderedPartsAfterPlayheadMock = getOrderedPartsAfterPlayhead as TgetOrderedPartsAfterPlayhead
 
 describe('Lookahead', () => {
@@ -37,20 +38,21 @@ describe('Lookahead', () => {
 
 		context = setupDefaultJobEnvironment()
 		const mappings: MappingsExt = {}
-		for (const [k, v] of Object.entries(LookaheadMode)) {
+		for (const [k, v] of Object.entries<LookaheadMode>(LookaheadMode as any)) {
 			if (isNaN(parseInt(k))) {
 				mappings[k] = {
 					device: TSR.DeviceType.ABSTRACT,
 					deviceId: protectString('fake0'),
-					lookahead: v as LookaheadMode,
+					lookahead: v,
 					// lookaheadDepth: 0,
 					// lookaheadMaxSearchDistance: 0,
+					options: {},
 				}
 			}
 		}
 		context.setStudio({
 			...context.studio,
-			mappings: mappings,
+			mappingsWithOverrides: wrapDefaultObject(mappings),
 		})
 
 		// Create a playlist with some parts
@@ -133,7 +135,7 @@ describe('Lookahead', () => {
 		expect(findLookaheadForLayerMock).toHaveBeenNthCalledWith(
 			1,
 			context,
-			playlist.currentPartInstanceId,
+			playlist.currentPartInfo?.partInstanceId ?? null,
 			partInstances,
 			previous,
 			orderedPartsFollowingPlayhead,
@@ -144,7 +146,7 @@ describe('Lookahead', () => {
 		expect(findLookaheadForLayerMock).toHaveBeenNthCalledWith(
 			2,
 			context,
-			playlist.currentPartInstanceId,
+			playlist.currentPartInfo?.partInstanceId ?? null,
 			partInstances,
 			previous,
 			orderedPartsFollowingPlayhead,
@@ -158,7 +160,7 @@ describe('Lookahead', () => {
 	test('No pieces', async () => {
 		const partInstancesInfo: SelectedPartInstancesTimelineInfo = {}
 
-		const fakeParts = partIds.map((p) => ({ part: { _id: p } as any, pieces: [] }))
+		const fakeParts = partIds.map((p) => ({ part: { _id: p } as any, usesInTransition: true, pieces: [] }))
 		getOrderedPartsAfterPlayheadMock.mockReturnValueOnce(fakeParts.map((p) => p.part))
 
 		const res = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
@@ -183,7 +185,7 @@ describe('Lookahead', () => {
 	test('got some objects', async () => {
 		const partInstancesInfo: SelectedPartInstancesTimelineInfo = {}
 
-		const fakeParts = partIds.map((p) => ({ part: { _id: p } as any, pieces: [] }))
+		const fakeParts = partIds.map((p) => ({ part: { _id: p } as any, usesInTransition: true, pieces: [] }))
 		getOrderedPartsAfterPlayheadMock.mockReturnValueOnce(fakeParts.map((p) => p.part))
 
 		findLookaheadForLayerMock
@@ -220,8 +222,8 @@ describe('Lookahead', () => {
 		// Set really low
 		{
 			const studio = clone<DBStudio>(context.studio)
-			studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = 0
-			studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = 0
+			studio.mappingsWithOverrides.defaults['WHEN_CLEAR'].lookaheadMaxSearchDistance = 0
+			studio.mappingsWithOverrides.defaults['PRELOAD'].lookaheadMaxSearchDistance = 0
 			context.setStudio(studio)
 		}
 		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
@@ -234,8 +236,8 @@ describe('Lookahead', () => {
 		getOrderedPartsAfterPlayheadMock.mockClear()
 		{
 			const studio = clone<DBStudio>(context.studio)
-			studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = -1
-			studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = 2000
+			studio.mappingsWithOverrides.defaults['WHEN_CLEAR'].lookaheadMaxSearchDistance = -1
+			studio.mappingsWithOverrides.defaults['PRELOAD'].lookaheadMaxSearchDistance = 2000
 			context.setStudio(studio)
 		}
 		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
@@ -248,8 +250,8 @@ describe('Lookahead', () => {
 		getOrderedPartsAfterPlayheadMock.mockClear()
 		{
 			const studio = clone<DBStudio>(context.studio)
-			studio.mappings['WHEN_CLEAR'].lookaheadMaxSearchDistance = undefined
-			studio.mappings['PRELOAD'].lookaheadMaxSearchDistance = -1
+			studio.mappingsWithOverrides.defaults['WHEN_CLEAR'].lookaheadMaxSearchDistance = undefined
+			studio.mappingsWithOverrides.defaults['PRELOAD'].lookaheadMaxSearchDistance = -1
 			context.setStudio(studio)
 		}
 		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
@@ -260,7 +262,7 @@ describe('Lookahead', () => {
 	})
 
 	test('PartInstances translation', async () => {
-		const fakeParts = partIds.map((p) => ({ part: { _id: p } as any, pieces: [] }))
+		const fakeParts = partIds.map((p) => ({ part: { _id: p } as any, usesInTransition: true, pieces: [] }))
 		getOrderedPartsAfterPlayheadMock.mockReturnValue(fakeParts.map((p) => p.part))
 
 		// It does have assertions, but hidden inside helper methods
@@ -271,6 +273,7 @@ describe('Lookahead', () => {
 			partInstance: { _id: 'abc2', part: { _id: 'abc' } } as any,
 			nowInPart: 987,
 			pieceInstances: ['1', '2'] as any,
+			calculatedTimings: { inTransitionStart: null } as any,
 		}
 
 		const expectedPrevious = {
@@ -278,6 +281,7 @@ describe('Lookahead', () => {
 			onTimeline: true,
 			nowInPart: partInstancesInfo.previous.nowInPart,
 			allPieces: partInstancesInfo.previous.pieceInstances,
+			calculatedTimings: partInstancesInfo.previous.calculatedTimings,
 		}
 
 		// With a previous
@@ -291,12 +295,14 @@ describe('Lookahead', () => {
 			partInstance: { _id: 'curr', part: {} } as any,
 			nowInPart: 56,
 			pieceInstances: ['3', '4'] as any,
+			calculatedTimings: { inTransitionStart: null } as any,
 		}
 		const expectedCurrent = {
 			part: partInstancesInfo.current.partInstance,
 			onTimeline: true,
 			nowInPart: partInstancesInfo.current.nowInPart,
 			allPieces: partInstancesInfo.current.pieceInstances,
+			calculatedTimings: partInstancesInfo.current.calculatedTimings,
 		}
 		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
 			getLookeaheadObjects(context, cache, partInstancesInfo)
@@ -308,12 +314,14 @@ describe('Lookahead', () => {
 			partInstance: { _id: 'nxt2', part: { _id: 'nxt' } } as any,
 			nowInPart: -85,
 			pieceInstances: ['5'] as any,
+			calculatedTimings: { inTransitionStart: null } as any,
 		}
 		const expectedNext = {
 			part: partInstancesInfo.next.partInstance,
 			onTimeline: false,
 			nowInPart: partInstancesInfo.next.nowInPart,
 			allPieces: partInstancesInfo.next.pieceInstances,
+			calculatedTimings: partInstancesInfo.next.calculatedTimings,
 		}
 		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
 			getLookeaheadObjects(context, cache, partInstancesInfo)

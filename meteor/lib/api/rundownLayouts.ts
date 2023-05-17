@@ -3,7 +3,6 @@ import {
 	RundownLayout,
 	DashboardLayout,
 	RundownLayoutType,
-	RundownLayoutId,
 	RundownLayoutElementBase,
 	RundownLayoutFilterBase,
 	RundownLayoutElementType,
@@ -37,12 +36,11 @@ import {
 	RundownLayoutColoredBox,
 	RundownLayoutMiniRundown,
 } from '../collections/RundownLayouts'
-import { ShowStyleBaseId } from '../collections/ShowStyleBases'
 import * as _ from 'underscore'
 import { literal } from '../lib'
 import { TFunction } from 'i18next'
-import { StudioId } from '../collections/Studios'
 import { Settings } from '../Settings'
+import { RundownLayoutId, ShowStyleBaseId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface NewRundownLayoutsAPI {
 	createRundownLayout(
@@ -301,6 +299,10 @@ export namespace RundownLayoutsAPI {
 
 	export function isRundownHeaderLayout(layout: RundownLayoutBase): layout is RundownLayoutRundownHeader {
 		return layout.type === RundownLayoutType.RUNDOWN_HEADER_LAYOUT
+	}
+
+	export function isDefaultLayout(layout: RundownLayoutBase): boolean {
+		return layout.isDefaultLayout
 	}
 
 	export function isFilter(element: RundownLayoutElementBase): element is RundownLayoutFilterBase {

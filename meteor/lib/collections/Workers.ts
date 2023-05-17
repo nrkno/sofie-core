@@ -1,9 +1,6 @@
 import { Time } from '@sofie-automation/blueprints-integration'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { WorkerId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '../lib'
-import { createMongoCollection } from './lib'
-export { WorkerId }
 
 export interface WorkerStatus {
 	_id: WorkerId
@@ -24,8 +21,6 @@ export interface WorkerStatus {
 	status: string
 	// studioId (or other context-descriptor)
 }
-
-export const Workers = createMongoCollection<WorkerStatus>(CollectionName.Workers)
 
 export function getWorkerId(): WorkerId {
 	// This is a placeholder function for now.

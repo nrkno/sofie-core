@@ -1,37 +1,43 @@
 import '../../../__mocks__/_extendJest'
-import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
-import { Rundowns } from '../../../lib/collections/Rundowns'
+import { ExternalMessageQueueObj } from '../../../lib/collections/ExternalMessageQueue'
+import { ExternalMessageQueue, RundownPlaylists, Rundowns } from '../../collections'
 import { IBlueprintExternalMessageQueueType, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { DefaultEnvironment, setupDefaultStudioEnvironment } from '../../../__mocks__/helpers/database'
 import { getCurrentTime, getRandomId, protectString } from '../../../lib/lib'
-import { RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 
 import '../ExternalMessageQueue'
+import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
 
 describe('Test external message queue static methods', () => {
 	let studioEnv: DefaultEnvironment
 	beforeAll(async () => {
 		studioEnv = await setupDefaultStudioEnvironment()
 		const now = getCurrentTime()
-		RundownPlaylists.insert({
+		await RundownPlaylists.insertAsync({
 			_id: protectString('playlist_1'),
 			externalId: 'mock_rpl',
 			name: 'Mock',
 			studioId: protectString(''),
 			created: 0,
 			modified: 0,
-			currentPartInstanceId: protectString('part_now'),
-			nextPartInstanceId: protectString('partNext'),
-			previousPartInstanceId: null,
+			currentPartInfo: {
+				partInstanceId: protectString('part_now'),
+				rundownId: protectString('rundown_1'),
+			},
+			nextPartInfo: {
+				partInstanceId: protectString('partNext'),
+				rundownId: protectString('rundown_1'),
+			},
+			previousPartInfo: null,
 			activationId: protectString('active'),
 			timing: {
 				type: PlaylistTimingType.None,
 			},
 			rundownIdsInOrder: [protectString('rundown_1')],
 		})
-		Rundowns.insert({
+		await Rundowns.insertAsync({
 			_id: protectString('rundown_1'),
 			name: 'Mockito 1',
 			externalId: 'mockito',
@@ -58,7 +64,7 @@ describe('Test external message queue static methods', () => {
 		})
 		// rundown = Rundowns.findOne() as Rundown
 
-		ExternalMessageQueue.insert({
+		await ExternalMessageQueue.insertAsync({
 			_id: getRandomId(),
 			studioId: studioEnv.studio._id,
 			expires: now + 3600,
@@ -71,22 +77,23 @@ describe('Test external message queue static methods', () => {
 	})
 
 	testInFiber('toggleHold', async () => {
-		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		let message = (await ExternalMessageQueue.findOneAsync({})) as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 		expect(message.hold).toBeUndefined()
 
 		await MeteorCall.externalMessages.toggleHold(message._id)
-		message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		message = (await ExternalMessageQueue.findOneAsync({})) as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 		expect(message.hold).toBe(true)
 
 		await MeteorCall.externalMessages.toggleHold(message._id)
-		message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		message = (await ExternalMessageQueue.findOneAsync({})) as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 		expect(message.hold).toBe(false)
 	})
 
 	testInFiber('toggleHold unknown id', async () => {
+		SupressLogMessages.suppressLogMessage(/ExternalMessage/i)
 		await expect(MeteorCall.externalMessages.toggleHold(protectString('cake'))).rejects.toThrowMeteor(
 			404,
 			'ExternalMessage "cake" not found!'
@@ -94,12 +101,12 @@ describe('Test external message queue static methods', () => {
 	})
 
 	testInFiber('retry', async () => {
-		let message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		let message = (await ExternalMessageQueue.findOneAsync({})) as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 
 		await MeteorCall.externalMessages.retry(message._id)
 
-		message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		message = (await ExternalMessageQueue.findOneAsync({})) as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 		expect(message).toMatchObject({
 			hold: false,
@@ -109,6 +116,7 @@ describe('Test external message queue static methods', () => {
 	})
 
 	testInFiber('retry unknown id', async () => {
+		SupressLogMessages.suppressLogMessage(/ExternalMessage/i)
 		await expect(MeteorCall.externalMessages.retry(protectString('is_a_lie'))).rejects.toThrowMeteor(
 			404,
 			'ExternalMessage "is_a_lie" not found!'
@@ -116,11 +124,11 @@ describe('Test external message queue static methods', () => {
 	})
 
 	testInFiber('remove', async () => {
-		const message = ExternalMessageQueue.findOne() as ExternalMessageQueueObj
+		const message = (await ExternalMessageQueue.findOneAsync({})) as ExternalMessageQueueObj
 		expect(message).toBeTruthy()
 
 		await MeteorCall.externalMessages.remove(message._id)
 
-		expect(ExternalMessageQueue.findOne()).toBeFalsy()
+		expect(await ExternalMessageQueue.findOneAsync({})).toBeFalsy()
 	})
 })

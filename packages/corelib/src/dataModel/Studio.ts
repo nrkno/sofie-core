@@ -1,13 +1,10 @@
 import { BlueprintMapping, IBlueprintConfig, PackageContainer, TSR } from '@sofie-automation/blueprints-integration'
-import { ProtectedString } from '../protectedString'
-import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId, PeripheralDeviceId } from './Ids'
+import { ObjectWithOverrides } from '../settings/objectWithOverrides'
+import { StudioId, OrganizationId, BlueprintId, ShowStyleBaseId, MappingsHash, PeripheralDeviceId } from './Ids'
+import { LastBlueprintConfig } from './Blueprint'
+import { MappingsExt, MappingExt } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 
-export interface MappingsExt {
-	[layerName: string]: MappingExt
-}
-export interface MappingExt extends Omit<BlueprintMapping, 'deviceId'> {
-	deviceId: PeripheralDeviceId
-}
+export { MappingsExt, MappingExt, MappingsHash }
 
 export interface IStudioSettings {
 	/** The framerate (frames per second) used to convert internal timing information (in milliseconds)
@@ -18,8 +15,6 @@ export interface IStudioSettings {
 
 	/** URL to endpoint where media preview are exposed */
 	mediaPreviewsUrl: string // (former media_previews_url in config)
-	/** URL to Sofie Core endpoint */
-	sofieUrl: string // (former sofie_url in config)
 	/** URLs for slack webhook to send evaluations */
 	slackEvaluationUrls?: string // (former slack_evaluation in config)
 
@@ -31,13 +26,15 @@ export interface IStudioSettings {
 	/** Should the play from anywhere feature be enabled in this studio */
 	enablePlayFromAnywhere?: boolean
 
-	/** If set, forces the "now"-time to be set right away (aka the "multi-playout-gateway" feature).
-	 * even for single playout-gateways */
-	forceSettingNowTime?: boolean
+	/**
+	 * If set, forces the multi-playout-gateway mode (aka set "now"-time right away)
+	 * for single playout-gateways setups
+	 */
+	forceMultiGatewayMode?: boolean
 
 	/** How much extra delay to add to the Now-time (used for the "multi-playout-gateway" feature) .
 	 * A higher value adds delays in playout, but reduces the risk of missed frames. */
-	nowSafeLatency?: number
+	multiGatewayNowSafeLatency?: number
 
 	/** Preserve unsynced segment contents when the playing segment is removed, rather than removing all but the playing part */
 	preserveUnsyncedPlayingSegmentContents?: boolean
@@ -47,9 +44,8 @@ export interface IStudioSettings {
 	/** Preserve unsynced segments psoition in the rundown, relative to the other segments */
 	preserveOrphanedSegmentPositionInRundown?: boolean
 }
-export type MappingsHash = ProtectedString<'MappingsHash'>
 
-export type StudioLight = Omit<DBStudio, 'mappings' | 'blueprintConfig'>
+export type StudioLight = Omit<DBStudio, 'mappingsWithOverrides' | 'blueprintConfigWithOverrides'>
 
 /** A set of available layer groups in a given installation */
 export interface DBStudio {
@@ -61,9 +57,13 @@ export interface DBStudio {
 	name: string
 	/** Id of the blueprint used by this studio-installation */
 	blueprintId?: BlueprintId
+	/** Id of the blueprint config preset */
+	blueprintConfigPresetId?: string
+	/** Whether blueprintConfigPresetId is invalid, and does not match a currently exposed preset from the Blueprint */
+	blueprintConfigPresetIdUnlinked?: boolean
 
 	/** Mappings between the physical devices / outputs and logical ones */
-	mappings: MappingsExt
+	mappingsWithOverrides: ObjectWithOverrides<MappingsExt>
 
 	/**
 	 * A hash that is to be changed whenever there is a change to the mappings or routeSets
@@ -75,7 +75,7 @@ export interface DBStudio {
 	supportedShowStyleBase: Array<ShowStyleBaseId>
 
 	/** Config values are used by the Blueprints */
-	blueprintConfig: IBlueprintConfig
+	blueprintConfigWithOverrides: ObjectWithOverrides<IBlueprintConfig>
 
 	settings: IStudioSettings
 
@@ -88,10 +88,58 @@ export interface DBStudio {
 	 * (These are used by the Package Manager and the Expected Packages)
 	 */
 	packageContainers: Record<string, StudioPackageContainer>
+
 	/** Which package containers is used for media previews in GUI */
 	previewContainerIds: string[]
 	thumbnailContainerIds: string[]
+
+	peripheralDeviceSettings: StudioPeripheralDeviceSettings
+
+	/** Details on the last blueprint used to generate the defaults values for this */
+	lastBlueprintConfig: LastBlueprintConfig | undefined
 }
+
+export interface StudioPeripheralDeviceSettings {
+	/** Playout gateway sub-devices */
+	playoutDevices: ObjectWithOverrides<Record<string, StudioPlayoutDevice>>
+
+	/** Ingest gateway sub-devices */
+	ingestDevices: ObjectWithOverrides<Record<string, StudioIngestDevice>>
+
+	/** Input gateway sub-devices */
+	inputDevices: ObjectWithOverrides<Record<string, StudioInputDevice>>
+}
+
+export interface StudioIngestDevice {
+	/**
+	 * The id of the gateway this is assigned to
+	 * Future: This may be replaced with some other grouping or way of assigning devices
+	 */
+	peripheralDeviceId: PeripheralDeviceId | undefined
+	/** Settings blob of the subdevice, from the sub-device config schema */
+	options: unknown
+}
+
+export interface StudioInputDevice {
+	/**
+	 * The id of the gateway this is assigned to
+	 * Future: This may be replaced with some other grouping or way of assigning devices
+	 */
+	peripheralDeviceId: PeripheralDeviceId | undefined
+	/** Settings blob of the subdevice, from the sub-device config schema */
+	options: unknown
+}
+
+export interface StudioPlayoutDevice {
+	/**
+	 * The id of the gateway this is assigned to
+	 * Future: This may be replaced with some other grouping or way of assigning devices
+	 */
+	peripheralDeviceId: PeripheralDeviceId | undefined
+
+	options: TSR.DeviceOptionsAny
+}
+
 export interface StudioPackageContainer {
 	/** List of which peripheraldevices uses this packageContainer */
 	deviceIds: string[]

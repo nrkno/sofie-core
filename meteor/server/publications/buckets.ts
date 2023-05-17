@@ -1,13 +1,14 @@
 import { Meteor } from 'meteor/meteor'
-import { FindOptions } from '../../lib/typings/meteor'
+import { FindOptions } from '../../lib/collections/lib'
 import { BucketSecurity } from '../security/buckets'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
-import { Buckets, Bucket } from '../../lib/collections/Buckets'
-import { BucketAdLibs, BucketAdLib } from '../../lib/collections/BucketAdlibs'
-import { BucketAdLibActions, BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
+import { Bucket } from '../../lib/collections/Buckets'
+import { BucketAdLib } from '../../lib/collections/BucketAdlibs'
+import { BucketAdLibAction } from '../../lib/collections/BucketAdlibActions'
 import { StudioReadAccess } from '../security/studio'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
+import { BucketAdLibActions, BucketAdLibs, Buckets } from '../collections'
 
 meteorPublish(PubSub.buckets, async function (selector, _token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -20,7 +21,7 @@ meteorPublish(PubSub.buckets, async function (selector, _token) {
 			(await StudioReadAccess.studioContent(selector.studioId, this))) ||
 		(isProtectedString(selector._id) && selector._id && (await BucketSecurity.allowReadAccess(this, selector._id)))
 	) {
-		return Buckets.find(selector, modifier)
+		return Buckets.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -31,7 +32,7 @@ meteorPublish(PubSub.bucketAdLibPieces, async function (selector, _token) {
 		fields: {},
 	}
 	if (isProtectedString(selector.bucketId) && (await BucketSecurity.allowReadAccess(this, selector.bucketId))) {
-		return BucketAdLibs.find(selector, modifier)
+		return BucketAdLibs.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -42,7 +43,7 @@ meteorPublish(PubSub.bucketAdLibActions, async function (selector, _token) {
 		fields: {},
 	}
 	if (isProtectedString(selector.bucketId) && (await BucketSecurity.allowReadAccess(this, selector.bucketId))) {
-		return BucketAdLibActions.find(selector, modifier)
+		return BucketAdLibActions.findWithCursor(selector, modifier)
 	}
 	return null
 })

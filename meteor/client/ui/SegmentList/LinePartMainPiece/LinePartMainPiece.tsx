@@ -1,28 +1,30 @@
 import _ from 'underscore'
 import { EvsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import React, { useMemo, useState, useRef } from 'react'
-import { DBStudio } from '../../../../lib/collections/Studios'
 import { PieceExtended } from '../../../../lib/Rundown'
 import { MediaObject } from '../../../../lib/collections/MediaObjects'
 import { PackageInfo, VTContent } from '@sofie-automation/blueprints-integration'
 // TODO: Move to a shared lib file
-import { getSplitItems } from '../../SegmentStoryboard/utils/getSplitItems'
+import { getSplitItems } from '../../SegmentContainer/getSplitItems'
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
-import { PieceElement } from '../../SegmentStoryboard/utils/PieceElement'
-import { PartId } from '../../../../lib/collections/Parts'
+import { PieceElement } from '../../SegmentContainer/PieceElement'
 import { getElementWidth } from '../../../utils/dimensions'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { PieceHoverInspector } from '../PieceHoverInspector'
-import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
+import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
 import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
+import { UIStudio } from '../../../../lib/api/studios'
+import classNames from 'classnames'
+import { PieceMultistepChevron } from '../../SegmentContainer/PieceMultistepChevron'
+import { ScanInfoForPackage } from '../../../../lib/mediaObjects'
 
 interface IProps {
 	partId: PartId
 	partInstanceId: PartInstanceId
 	piece: PieceExtended
-	studio: DBStudio | undefined
+	studio: UIStudio | undefined
 	timelineBase: number
 	partDuration: number
 	capToPartDuration: boolean
@@ -54,7 +56,7 @@ function widthInBase(pieceMaxDuration: number, timelineBase: number): number {
 function getScenes(piece: PieceUi): Array<number> | undefined {
 	if (piece.contentPackageInfos) {
 		// TODO: support multiple packages:
-		const contentPackageInfos = Object.values(piece.contentPackageInfos)
+		const contentPackageInfos = Object.values<ScanInfoForPackage>(piece.contentPackageInfos)
 		if (contentPackageInfos[0]?.deepScan?.scenes) {
 			return _.compact(contentPackageInfos[0].deepScan.scenes.map((i) => i * 1000)) // convert into milliseconds
 		}
@@ -76,7 +78,7 @@ function getFreezes(piece: PieceUi): Array<PackageInfo.Anomaly> | undefined {
 		let items: Array<PackageInfo.Anomaly> = []
 		// add freezes
 		// TODO: support multiple packages:
-		const contentPackageInfos = Object.values(piece.contentPackageInfos)
+		const contentPackageInfos = Object.values<ScanInfoForPackage>(piece.contentPackageInfos)
 		if (contentPackageInfos[0]?.deepScan?.freezes?.length) {
 			items = contentPackageInfos[0].deepScan.freezes.map((i): PackageInfo.Anomaly => {
 				return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
@@ -106,7 +108,7 @@ function getBlacks(piece: PieceUi): Array<PackageInfo.Anomaly> | undefined {
 		let items: Array<PackageInfo.Anomaly> = []
 		// add blacks
 		// TODO: support multiple packages:
-		const contentPackageInfos = Object.values(piece.contentPackageInfos)
+		const contentPackageInfos = Object.values<ScanInfoForPackage>(piece.contentPackageInfos)
 		if (contentPackageInfos[0]?.deepScan?.blacks) {
 			items = [
 				...items,
@@ -136,7 +138,6 @@ function getBlacks(piece: PieceUi): Array<PackageInfo.Anomaly> | undefined {
 // TODO: Create useMediaObjectStatus that would set up new subscriptions
 export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function LinePartMainPiece({
 	partId,
-	partInstanceId,
 	piece,
 	partDuration,
 	timelineBase,
@@ -251,6 +252,11 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 	const status = piece.instance.piece.status
 	const noticeLevel = status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null
 
+	const multistepChevron = PieceMultistepChevron({
+		className: 'segment-opl__main-piece__label__step-chevron',
+		piece: piece,
+	})
+
 	return (
 		<PieceElement
 			className="segment-opl__main-piece"
@@ -267,8 +273,13 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 				<div className="segment-opl__main-piece__bkg">{getSplitItems(piece, 'segment-opl__main-piece__item')}</div>
 			)}
 			{anomalies}
-			<div className="segment-opl__main-piece__label">
+			<div
+				className={classNames('segment-opl__main-piece__label', {
+					mln: !!multistepChevron,
+				})}
+			>
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
+				{multistepChevron}
 				{piece.sourceLayer?.type === SourceLayerType.LOCAL && (piece.instance.piece.content as EvsContent).color && (
 					<ColoredMark color={(piece.instance.piece.content as EvsContent).color} />
 				)}
@@ -282,13 +293,7 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 					layer={piece.sourceLayer}
 					originPosition={origin}
 					mousePosition={mousePosition}
-					isFinished={false}
-					isLive={false}
-					isNext={false}
-					partAutoNext={false}
 					studio={studio}
-					partId={partId}
-					partInstanceId={partInstanceId}
 				/>
 			)}
 		</PieceElement>

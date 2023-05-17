@@ -2,19 +2,21 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { SnapshotItem, Snapshots, SnapshotId } from '../../../lib/collections/Snapshots'
+import { SnapshotItem } from '../../../lib/collections/Snapshots'
 import { getCurrentTime, unprotectString } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { logger } from '../../../lib/logging'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { faWindowClose, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Studio, Studios, StudioId } from '../../../lib/collections/Studios'
+import { Studio } from '../../../lib/collections/Studios'
 import { multilineText, fetchFrom } from '../../lib/lib'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { UploadButton } from '../../lib/uploadButton'
 import { PubSub } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
+import { SnapshotId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Snapshots, Studios } from '../../collections'
 
 interface IProps {
 	match: {
@@ -54,7 +56,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 				removeSnapshots: false,
 			}
 		}
-		componentDidMount() {
+		componentDidMount(): void {
 			this.subscribe(PubSub.snapshots, {
 				created: {
 					$gt: getCurrentTime() - 30 * 24 * 3600 * 1000, // last 30 days
@@ -222,7 +224,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 				})
 			}
 		}
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (

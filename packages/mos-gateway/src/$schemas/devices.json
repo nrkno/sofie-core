@@ -1,0 +1,141 @@
+{
+	"$schema": "https://json-schema.org/draft/2020-12/schema",
+	"$id": "https://example.com/product.schema.json",
+	"ui:title": "Mos Gateway Sub-device",
+	"title": "Mos Device Config",
+	"type": "object",
+	"properties": {
+		"primary": {
+			"type": "object",
+			"ui:title": "Primary",
+			"properties": {
+				"id": {
+					"type": "string",
+					"ui:title": "Primary ID",
+					"ui:description": "MOS ID of the Newsroom System (NRCS) we connect to",
+					"ui:summaryTitle": "Primary ID",
+					"default": ""
+				},
+				"host": {
+					"type": "string",
+					"ui:title": "Primary Host",
+					"ui:description": "IP or Hostname",
+					"ui:summaryTitle": "Primary Host",
+					"default": ""
+				},
+				"dontUseQueryPort": {
+					"type": "boolean",
+					"ui:title": "Primary: Don't use the Query port",
+					"default": false
+				},
+				"timeout": {
+					"type": "integer",
+					"ui:title": "Primary Timeout (ms)",
+					"ui:description": "Timeout for sent messages",
+					"default": 10000
+				},
+				"heartbeatInterval": {
+					"type": "integer",
+					"ui:title": "Primary Heartbeat interval (ms)",
+					"ui:description": "How often to ping NRCS to determine connection status",
+					"default": 30000
+				},
+				"ports": {
+					"type": "object",
+					"ui:title": "Ports",
+					"properties": {
+						"lower": {
+							"type": "integer",
+							"ui:title": "(Optional) MOS Lower Port",
+							"ui:description": "Connect to an alternate port for 'lower' port MOS messages",
+							"default": 10540
+						},
+						"upper": {
+							"type": "integer",
+							"ui:title": "(Optional) MOS Upper Port",
+							"ui:description": "Connect to an alternate port for 'upper' port MOS messages",
+							"default": 10541
+						},
+						"query": {
+							"type": "integer",
+							"ui:title": "(Optional) MOS Query Port",
+							"ui:description": "Connect to an alternate port for 'query' port MOS messages",
+							"default": 10542
+						}	
+					},
+					"required": ["lower", "upper", "query"],
+					"additionalProperties": false
+				}
+			},
+			"required": ["id", "host"],
+			"additionalProperties": false
+		},
+		"secondary": {
+			"type": "object",
+			"ui:title": "Secondary",
+			"properties": {
+				"id": {
+					"type": "string",
+					"ui:title": "Secondary ID",
+					"ui:description": "MOS ID of the Newsroom System (NRCS) we connect to",
+					"ui:summaryTitle": "Secondary ID",
+					"default": ""
+				},
+				"host": {
+					"type": "string",
+					"ui:title": "Secondary Host",
+					"ui:description": "IP or Hostname",
+					"ui:summaryTitle": "Secondary Host",
+					"default": ""
+				},
+				"dontUseQueryPort": {
+					"type": "boolean",
+					"ui:title": "Secondary: Don't use the Query port",
+					"default": false
+				},
+				"timeout": {
+					"type": "integer",
+					"ui:title": "Secondary Timeout (ms)",
+					"ui:description": "Timeout for sent messages",
+					"default": 10000
+				},
+				"heartbeatInterval": {
+					"type": "integer",
+					"ui:title": "Secondary Heartbeat interval (ms)",
+					"ui:description": "How often to ping NRCS to determine connection status",
+					"default": 30000
+				},
+				"ports": {
+					"type": "object",
+					"ui:title": "Ports",
+					"properties": {
+						"lower": {
+							"type": "integer",
+							"ui:title": "(Optional) MOS Lower Port",
+							"ui:description": "Connect to an alternate port for 'lower' port MOS messages",
+							"default": 10540
+						},
+						"upper": {
+							"type": "integer",
+							"ui:title": "(Optional) MOS Upper Port",
+							"ui:description": "Connect to an alternate port for 'upper' port MOS messages",
+							"default": 10541
+						},
+						"query": {
+							"type": "integer",
+							"ui:title": "(Optional) MOS Query Port",
+							"ui:description": "Connect to an alternate port for 'query' port MOS messages",
+							"default": 10542
+						}	
+					},
+					"required": ["lower", "upper", "query"],
+					"additionalProperties": false
+				}				
+			},
+			"required": ["id", "host"],
+			"additionalProperties": false
+		}
+	},
+	"required": ["primary"],
+	"additionalProperties": false
+}

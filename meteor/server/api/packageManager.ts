@@ -1,11 +1,12 @@
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import {
 	PeripheralDeviceCategory,
-	PeripheralDevices,
 	PeripheralDeviceType,
+	PERIPHERAL_SUBTYPE_PROCESS,
 } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { StudioContentAccess } from '../security/studio'
+import { PeripheralDevices } from '../collections'
 
 export namespace PackageManagerAPI {
 	export async function restartExpectation(
@@ -22,12 +23,12 @@ export namespace PackageManagerAPI {
 	}
 
 	export async function restartAllExpectationsInStudio(access: StudioContentAccess): Promise<void> {
-		const packageManagerDevices = PeripheralDevices.find({
+		const packageManagerDevices = await PeripheralDevices.findFetchAsync({
 			studioId: access.studioId,
 			category: PeripheralDeviceCategory.PACKAGE_MANAGER,
 			type: PeripheralDeviceType.PACKAGE_MANAGER,
-			subType: PeripheralDeviceAPI.SUBTYPE_PROCESS,
-		}).fetch()
+			subType: PERIPHERAL_SUBTYPE_PROCESS,
+		})
 
 		await Promise.all(
 			packageManagerDevices.map(async (packageManagerDevice) => {

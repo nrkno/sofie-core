@@ -1,23 +1,21 @@
 import { TSRHandler, TSRConfig } from './tsrHandler'
 import { CoreHandler, CoreConfig } from './coreHandler'
 import { Logger } from 'winston'
-import { Process } from './process'
 import { InfluxConfig } from './influxdb'
-import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import {
+	CertificatesConfig,
+	PeripheralDeviceId,
+	loadCertificatesFromDisk,
+} from '@sofie-automation/server-core-integration'
 
 export interface Config {
-	process: ProcessConfig
+	certificates: CertificatesConfig
 	device: DeviceConfig
 	core: CoreConfig
 	tsr: TSRConfig
 	influx: InfluxConfig
 }
-export interface ProcessConfig {
-	/** Will cause the Node applocation to blindly accept all certificates. Not recommenced unless in local, controlled networks. */
-	unsafeSSL: boolean
-	/** Paths to certificates to load, for SSL-connections */
-	certificates: string[]
-}
+
 export interface DeviceConfig {
 	deviceId: PeripheralDeviceId
 	deviceToken: string
@@ -26,7 +24,7 @@ export class Connector {
 	private tsrHandler: TSRHandler | undefined
 	private coreHandler: CoreHandler | undefined
 	private _logger: Logger
-	private _process: Process | undefined
+	private _certificates: Buffer[] | undefined
 
 	constructor(logger: Logger) {
 		this._logger = logger
@@ -34,14 +32,13 @@ export class Connector {
 
 	public async init(config: Config): Promise<void> {
 		try {
-			this._logger.info('Initializing Process...')
-			this._process = new Process(this._logger)
-			this._process.init(config.process)
-			this._logger.info('Process initialized')
+			this._logger.info('Initializing Certificates...')
+			this._certificates = loadCertificatesFromDisk(this._logger, config.certificates)
+			this._logger.info('Certificates initialized')
 
 			this._logger.info('Initializing Core...')
 			this.coreHandler = new CoreHandler(this._logger, config.device)
-			await this.coreHandler.init(config.core, this._process)
+			await this.coreHandler.init(config.core, this._certificates)
 			this._logger.info('Core initialized')
 
 			this._logger.info('Initializing TSR...')

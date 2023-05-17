@@ -33,6 +33,11 @@
 		text-shadow: 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
 		z-index: 0;
 
+		> .piece__status-icon {
+			margin-bottom: -1em;
+			vertical-align: top;
+		}
+
 		> .segment-opl__main-piece__label__colored-mark {
 			line-height: 1em;
 			width: 25px;
@@ -115,6 +120,6 @@
 .segment-opl__part.segment-opl__part--next
 	> .segment-opl__part-timeline
 	> .segment-opl__main-piece
-	> .segment-opl__main-piece__label {
+	> .segment-opl__main-piece__label:not(.mln) {
 	left: 3em;
 }

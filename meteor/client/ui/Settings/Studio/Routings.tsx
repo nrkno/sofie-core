@@ -4,14 +4,14 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import {
 	Studio,
-	Studios,
-	MappingExt,
 	DBStudio,
 	StudioRouteSet,
 	StudioRouteBehavior,
 	RouteMapping,
 	StudioRouteSetExclusivityGroup,
 	StudioRouteType,
+	MappingsExt,
+	MappingExt,
 } from '../../../../lib/collections/Studios'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
@@ -20,15 +20,21 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faPencilAlt, faCheck, faPlus } from '@fortawesome/free-solid-svg-icons'
 import { withTranslation } from 'react-i18next'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { protectString } from '../../../../lib/lib'
 import { MeteorCall } from '../../../../lib/api/methods'
-import { doUserAction, UserAction } from '../../../lib/userAction'
-import { MappingsManifest } from '@sofie-automation/corelib/dist/deviceConfig'
-import { DeviceMappingSettings } from './Mappings'
+import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
+import { ReadonlyDeep } from 'type-fest'
+import { MappingsSettingsManifest, MappingsSettingsManifests } from './Mappings'
+import { SchemaFormForCollection } from '../../../lib/forms/SchemaFormForCollection'
+import { literal, objectPathGet } from '@sofie-automation/corelib/dist/lib'
+import { DropdownInputOption } from '../../../lib/Components/DropdownInput'
+import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
+import { Studios } from '../../../collections'
 
 interface IStudioRoutingsProps {
+	translationNamespaces: string[]
 	studio: Studio
-	manifest?: MappingsManifest
+	studioMappings: ReadonlyDeep<MappingsExt>
+	manifest: MappingsSettingsManifests | undefined
 }
 interface IStudioRoutingsState {
 	editedItems: Array<string>
@@ -269,7 +275,7 @@ export const StudioRoutings = withTranslation()(
 			)
 		}
 
-		renderRoutes(routeSet: StudioRouteSet, routeSetId: string, manifest: MappingsManifest) {
+		renderRoutes(routeSet: StudioRouteSet, routeSetId: string, manifest: MappingsSettingsManifests) {
 			const { t } = this.props
 
 			return (
@@ -279,15 +285,27 @@ export const StudioRoutings = withTranslation()(
 						<p className="text-s dimmed mhs">{t('There are no routes set up yet')}</p>
 					) : null}
 					{routeSet.routes.map((route, index) => {
-						const deviceTypeFromMappedLayer: TSR.DeviceType | undefined = route.mappedLayer
-							? this.props.studio.mappings[route.mappedLayer]?.device
-							: undefined
+						const mappedLayer = route.mappedLayer ? this.props.studioMappings[route.mappedLayer] : undefined
+						const deviceTypeFromMappedLayer: TSR.DeviceType | undefined = mappedLayer?.device
+
 						const routeDeviceType: TSR.DeviceType | undefined =
 							route.routeType === StudioRouteType.REMAP
 								? route.deviceType
 								: route.mappedLayer
 								? deviceTypeFromMappedLayer
 								: route.deviceType
+
+						const routeMappingSchema = manifest[(routeDeviceType ?? route.remapping?.device) as TSR.DeviceType]
+
+						const rawMappingTypeOptions = Object.entries<JSONSchema>(routeMappingSchema?.mappingsSchema || {})
+						const mappingTypeOptions = rawMappingTypeOptions.map(([id, entry], i) =>
+							literal<DropdownInputOption<string | number>>({
+								value: id + '',
+								name: entry?.title ?? id + '',
+								i,
+							})
+						)
+
 						return (
 							<div className="route-sets-editor mod pan mas" key={index}>
 								<button
@@ -305,7 +323,7 @@ export const StudioRoutings = withTranslation()(
 												attribute={`routeSets.${routeSetId}.routes.${index}.mappedLayer`}
 												obj={this.props.studio}
 												type="dropdowntext"
-												options={Object.keys(this.props.studio.mappings)}
+												options={Object.keys(this.props.studioMappings)}
 												label={t('None')}
 												collection={Studios}
 												className="input text-input input-l"
@@ -365,6 +383,22 @@ export const StudioRoutings = withTranslation()(
 											></EditAttribute>
 										)}
 									</div>
+									{mappingTypeOptions.length > 0 && (
+										<>
+											<div className="mod mvs mhs">
+												{t('Mapping Type')}
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={`routeSets.${routeSetId}.routes.${index}.remapping.options.mappingType`}
+													obj={this.props.studio}
+													type="dropdown"
+													options={mappingTypeOptions}
+													collection={Studios}
+													className="input text-input input-l"
+												></EditAttribute>
+											</div>
+										</>
+									)}
 									{route.routeType === StudioRouteType.REMAP ||
 									(routeDeviceType !== undefined && route.remapping !== undefined) ? (
 										<>
@@ -392,17 +426,11 @@ export const StudioRoutings = withTranslation()(
 												</label>
 											</div>
 											<DeviceMappingSettings
-												mapping={
-													{
-														device: routeDeviceType,
-														...route.remapping,
-														deviceId: route.remapping?.deviceId ? protectString(route.remapping.deviceId) : undefined,
-													} as MappingExt
-												}
+												translationNamespaces={this.props.translationNamespaces}
 												studio={this.props.studio}
-												attribute={`routeSets.${routeSetId}.routes.${index}.remapping`}
-												showOptional={true}
-												manifest={manifest}
+												attribute={`routeSets.${routeSetId}.routes.${index}.remapping.options`}
+												mappedLayer={mappedLayer}
+												manifest={routeMappingSchema}
 											/>
 										</>
 									) : null}
@@ -506,7 +534,7 @@ export const StudioRoutings = withTranslation()(
 			)
 		}
 
-		renderRouteSets(manifest: MappingsManifest) {
+		renderRouteSets(manifest: MappingsSettingsManifests) {
 			const { t } = this.props
 
 			const DEFAULT_ACTIVE_OPTIONS = {
@@ -676,7 +704,7 @@ export const StudioRoutings = withTranslation()(
 			})
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div>
@@ -716,3 +744,40 @@ export const StudioRoutings = withTranslation()(
 		}
 	}
 )
+
+interface IDeviceMappingSettingsProps {
+	translationNamespaces: string[]
+	studio: Studio
+	attribute: string
+	manifest: MappingsSettingsManifest | undefined
+	mappedLayer: ReadonlyDeep<MappingExt> | undefined
+}
+
+function DeviceMappingSettings({
+	translationNamespaces,
+	attribute,
+	manifest,
+	studio,
+	mappedLayer,
+}: IDeviceMappingSettingsProps) {
+	const routeRemapping = objectPathGet(studio, attribute)
+
+	const mappingType = routeRemapping?.mappingType ?? mappedLayer?.options?.mappingType
+	const mappingSchema = manifest?.mappingsSchema?.[mappingType]
+
+	if (mappingSchema && routeRemapping) {
+		return (
+			<SchemaFormForCollection
+				schema={mappingSchema}
+				object={routeRemapping}
+				basePath={attribute}
+				translationNamespaces={translationNamespaces}
+				collection={Studios}
+				objectId={studio._id}
+				partialOverridesForObject={mappedLayer}
+			/>
+		)
+	} else {
+		return null
+	}
+}

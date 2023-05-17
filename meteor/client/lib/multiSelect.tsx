@@ -10,16 +10,19 @@ export interface MultiSelectEvent {
 	selectedValues: Array<string>
 }
 
+export type MultiSelectOptions = Record<string, { value: string | string[]; className?: string }>
+
 interface IProps {
 	/**
 	 * A value of type string results in a checkbox with the key becoming the label.
 	 * A value of type string[] results in a group of checkboxes with the key becoming the header of the group.
 	 */
-	availableOptions: _.Dictionary<string | string[]>
+	availableOptions: MultiSelectOptions
 	placeholder?: string
 	className?: string
 	value?: Array<string>
 	onChange?: (event: MultiSelectEvent) => void
+	disabled?: boolean
 }
 
 interface IState {
@@ -41,11 +44,11 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		this.refreshChecked()
 	}
 
-	async componentDidUpdate(prevProps: IProps) {
+	async componentDidUpdate(prevProps: IProps): Promise<void> {
 		if (this.props.value !== prevProps.value) {
 			this.refreshChecked()
 		}
@@ -55,7 +58,7 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		}
 	}
 
-	refreshChecked() {
+	private refreshChecked() {
 		if (this.props.value && _.isArray(this.props.value)) {
 			const checkedValues: _.Dictionary<boolean> = {}
 			_.forEach(this.props.value, (value) => {
@@ -72,10 +75,11 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		}
 	}
 
-	handleChange = (item) => {
-		const obj = {}
-		obj[item] = !this.state.checkedValues[item]
-		const valueUpdate = _.extend(this.state.checkedValues, obj)
+	private handleChange = (key: string) => {
+		const valueUpdate = {
+			...this.state.checkedValues,
+			[key]: !this.state.checkedValues[key],
+		}
 
 		this.setState({
 			checkedValues: valueUpdate,
@@ -94,21 +98,39 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		}
 	}
 
-	isChecked = (key: string): boolean => {
+	private isChecked = (key: string): boolean => {
 		return !!this.state.checkedValues[key]
 	}
 
-	generateSummary = () => {
+	private generateSimpleSummary = () => {
 		return _.compact(
 			_.values(
 				_.mapObject(this.state.checkedValues, (value, key) => {
-					return value ? this.props.availableOptions[key] || key : null
+					return value ? this.props.availableOptions[key].value || key : null
 				})
 			)
 		).join(', ')
 	}
 
-	onBlur = (event: React.FocusEvent<HTMLDivElement>) => {
+	private generateRichSummary = () => {
+		return (
+			<>
+				{_.compact(
+					_.values(
+						_.mapObject(this.state.checkedValues, (value, key) => {
+							return value ? (
+								<span key={key} className={this.props.availableOptions[key].className}>
+									{this.props.availableOptions[key].value || key}
+								</span>
+							) : null
+						})
+					)
+				)}
+			</>
+		)
+	}
+
+	private onBlur = (event: React.FocusEvent<HTMLDivElement>) => {
 		if (
 			!(
 				event.relatedTarget &&
@@ -124,35 +146,40 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		}
 	}
 
-	toggleExpco = async () => {
+	private toggleExpco = async (e: React.MouseEvent<any>) => {
+		e.preventDefault()
+		e.stopPropagation()
+
+		if (this.props.disabled) return
+
 		await this._popperUpdate()
 		this.setState({
 			expanded: !this.state.expanded,
 		})
 	}
 
-	setTitleRef = (ref, popperRef) => {
+	private setTitleRef = (ref, popperRef) => {
 		this._titleRef = ref
 		if (typeof popperRef === 'function') {
 			popperRef(ref)
 		}
 	}
 
-	setPopperRef = (ref, popperRef) => {
+	private setPopperRef = (ref, popperRef) => {
 		this._popperRef = ref
 		if (typeof popperRef === 'function') {
 			popperRef(ref)
 		}
 	}
 
-	setUpdate = (update) => {
+	private setUpdate = (update) => {
 		this._popperUpdate = update
 	}
 
-	renderOption = (value: string, key: string) => {
+	private renderOption = (value: string, key: string, className: string | undefined) => {
 		return (
 			<p className="expco-item" key={key}>
-				<label className="action-btn">
+				<label className={ClassNames('action-btn', className)}>
 					<span className="checkbox">
 						<input
 							type="checkbox"
@@ -173,8 +200,8 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		)
 	}
 
-	render() {
-		const summary = this.generateSummary()
+	render(): JSX.Element {
+		const simpleSummary = this.generateSimpleSummary()
 		return (
 			<Manager>
 				<Reference>
@@ -185,6 +212,7 @@ export class MultiSelect extends React.Component<IProps, IState> {
 								'expco subtle',
 								{
 									'expco-expanded': this.state.expanded,
+									disabled: this.props.disabled,
 								},
 								this.props.className
 							)}
@@ -193,12 +221,12 @@ export class MultiSelect extends React.Component<IProps, IState> {
 						>
 							<div
 								className={ClassNames('expco-title', {
-									placeholder: !summary,
+									placeholder: !simpleSummary,
 								})}
 								onClick={this.toggleExpco}
-								title={summary || this.props.placeholder || ''}
+								title={simpleSummary || this.props.placeholder || ''}
 							>
-								{summary || this.props.placeholder || ''}
+								{this.generateRichSummary() || this.props.placeholder || ''}
 							</div>
 							<a className="action-btn right expco-expand subtle" onClick={this.toggleExpco}>
 								<FontAwesomeIcon icon={faChevronUp} />
@@ -242,17 +270,15 @@ export class MultiSelect extends React.Component<IProps, IState> {
 									<div className="expco-body bd">
 										{_.values(
 											_.mapObject(this.props.availableOptions, (value, key) => {
-												return Array.isArray(value) ? (
+												return Array.isArray(value.value) ? (
 													<React.Fragment key={key}>
 														<p className="expco-item" key={key}>
 															{key}
 														</p>
-														{_.map(value, (v) => {
-															return this.renderOption(v, v)
-														})}
+														{value.value.map((v) => this.renderOption(v, v, value.className))}
 													</React.Fragment>
 												) : (
-													this.renderOption(value, key)
+													this.renderOption(value.value, key, value.className)
 												)
 											})
 										)}

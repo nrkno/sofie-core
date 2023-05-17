@@ -12,8 +12,8 @@ import { IContextMenuContext } from '../RundownView'
 import { literal } from '../../../lib/lib'
 import { SegmentTimelinePartElementId } from '../SegmentTimeline/Parts/SegmentTimelinePart'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
-import { getAllowSpeaking } from '../../lib/localStorage'
-import RundownViewEventBus, { HighlightEvent, RundownViewEvents } from '../RundownView/RundownViewEventBus'
+import { getAllowSpeaking, getAllowVibrating } from '../../lib/localStorage'
+import RundownViewEventBus, { HighlightEvent, RundownViewEvents } from '../../../lib/api/triggers/RundownViewEventBus'
 import { Meteor } from 'meteor/meteor'
 import { StoryboardPartTransitions } from './StoryboardPartTransitions'
 import { PartDisplayDuration } from '../RundownView/RundownTiming/PartDuration'
@@ -60,11 +60,10 @@ export function StoryboardPart({
 	onContextMenu,
 	onHoverOver,
 	onHoverOut,
-}: IProps) {
+}: IProps): JSX.Element {
 	const { t } = useTranslation()
 	const [highlight, setHighlight] = useState(false)
 	const willBeAutoNextedInto = isNextPart ? currentPartWillAutonext : part.willProbablyAutoNext
-	const isFinished = (part.instance.timings?.stoppedPlayback ?? part.instance.timings?.takeOut) !== undefined
 
 	const getPartContext = useCallback(() => {
 		const partElement = document.querySelector('#' + SegmentTimelinePartElementId + part.instance._id)
@@ -146,7 +145,7 @@ export function StoryboardPart({
 			<div className="segment-storyboard__identifier">{part.instance.part.identifier}</div>
 			{subscriptionsReady ? (
 				<>
-					<StoryboardPartThumbnail part={part} isLive={isLivePart} isNext={isNextPart} isFinished={isFinished} />
+					<StoryboardPartThumbnail part={part} isLive={isLivePart} isNext={isNextPart} />
 					<StoryboardPartTransitions part={part} outputLayers={outputLayers} />
 					<StoryboardPartSecondaryPieces part={part} outputLayers={outputLayers} />
 				</>
@@ -231,7 +230,7 @@ export function StoryboardPart({
 						'segment-storyboard__part__show-end--loop': isPlaylistLooping,
 					})}
 				>
-					{(!isLivePart || !doesPlaylistHaveNextPart || isPlaylistLooping) && (
+					{(!isLivePart || !doesPlaylistHaveNextPart || isPlaylistLooping) && isLastPartInSegment && (
 						<div className="segment-storyboard__part__show-end__label">
 							{isPlaylistLooping ? t('Loops to top') : t('Show End')}
 						</div>
@@ -244,6 +243,7 @@ export function StoryboardPart({
 					<CurrentPartRemaining
 						currentPartInstanceId={part.instance._id}
 						speaking={getAllowSpeaking()}
+						vibrating={getAllowVibrating()}
 						heavyClassName="overtime"
 					/>
 				</div>

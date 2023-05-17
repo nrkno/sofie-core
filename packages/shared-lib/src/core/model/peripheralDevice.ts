@@ -1,29 +1,7 @@
+import { TSR } from '../../tsr'
 import { PeripheralDeviceId, StudioId } from './Ids'
 
-export interface PeripheralDevicePublic {
-	_id: PeripheralDeviceId
-
-	/** Name of the device (set by the device, modifiable by user) */
-	name: string
-
-	/** The studio this device is assigned to. Will be undefined for sub-devices */
-	studioId?: StudioId
-
-	settings: PlayoutDeviceSettings | IngestDeviceSettings | { [key: string]: any }
-}
-
-/**
- * The basic PlayoutDevice settings structure.
- * Note: playout-gateway will likely have more than this here, but this is that core needs to know about
- */
-export interface PlayoutDeviceSettings {
-	devices: {
-		[deviceId: string]: unknown // TSR.DeviceOptionsAny
-	}
-	locations: {
-		[deviceId: string]: any // todo
-	}
-}
+export type GenericPeripheralDeviceSettings = Record<string, never>
 
 export interface IngestDeviceSettings {
 	/** OAuth: Set to true when secret value exists */
@@ -52,4 +30,30 @@ export interface AccessToken {
 	scope: string
 	token_type: string
 	expiry_date: number
+}
+
+export interface PeripheralDeviceForDevice {
+	_id: PeripheralDeviceId
+
+	/** The studio this device is assigned to */
+	studioId?: StudioId
+
+	/**
+	 * Settings for the PeripheralDevice
+	 * Note: this does not include any subdevices
+	 */
+	deviceSettings: unknown
+
+	/**
+	 * Settings for any playout subdevices
+	 */
+	playoutDevices: Record<string, TSR.DeviceOptionsAny>
+	/**
+	 * Settings for any ingest subdevices
+	 */
+	ingestDevices: Record<string, unknown>
+	/**
+	 * Settings for any input subdevices
+	 */
+	inputDevices: Record<string, unknown>
 }

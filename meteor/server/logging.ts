@@ -23,9 +23,19 @@ export function setLogLevel(level: LogLevel, startup = false): void {
 		}
 	}
 }
+let originalLogger: LoggerInstanceFixed | undefined = undefined
+/** For use in unit tests */
+export function overrideLogger(fcn: (logger: LoggerInstanceFixed) => LoggerInstanceFixed): void {
+	originalLogger = logger
+	logger = fcn(logger)
+}
+export function restoreLogger(): void {
+	if (!originalLogger) throw new Error('No logger to restore, run overrideLogger first!')
+	logger = originalLogger
+}
 
 export function getEnvLogLevel(): LogLevel | undefined {
-	return Object.values(LogLevel).find((level) => level === process.env.LOG_LEVEL)
+	return Object.values<LogLevel>(LogLevel as any).find((level) => level === process.env.LOG_LEVEL)
 }
 
 // @todo: remove this and do a PR to https://github.com/DefinitelyTyped/DefinitelyTyped/tree/master/types/winston

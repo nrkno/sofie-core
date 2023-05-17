@@ -1,7 +1,6 @@
 import React, { useCallback, useState } from 'react'
 import _ from 'underscore'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
-import { Studio } from '../../../../lib/collections/Studios'
 import { literal, unprotectString } from '../../../../lib/lib'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { IContextMenuContext } from '../../RundownView'
@@ -10,14 +9,17 @@ import { SegmentTimelinePartElementId } from './SegmentTimelinePart'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { SourceLayerItemContainer } from '../SourceLayerItemContainer'
 import { contextMenuHoldToDisplayTime } from '../../../lib/lib'
+import { UIStudio } from '../../../../lib/api/studios'
+import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 export interface ISourceLayerPropsBase {
 	key: string
 	outputLayer: IOutputLayerUi
 	playlist: RundownPlaylist
-	studio: Studio
+	studio: UIStudio
 	segment: SegmentUi
 	part: PartUi
+	pieces: CalculateTimingsPiece[]
 	mediaPreviewUrl: string
 	startsAt: number
 	duration: number
@@ -30,7 +32,6 @@ export interface ISourceLayerPropsBase {
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-	relative: boolean
 	followLiveLine: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
@@ -47,7 +48,10 @@ interface ISourceLayerProps extends ISourceLayerPropsBase {
 	showDuration?: boolean
 }
 
-export function useMouseContext(props: ISourceLayerPropsBase) {
+export function useMouseContext(props: ISourceLayerPropsBase): {
+	getPartContext(): IContextMenuContext
+	onMouseUp(e: React.MouseEvent<HTMLDivElement>): void
+} {
 	const [mousePosition, setMousePosition] = useState<OffsetPosition>({ left: 0, top: 0 })
 
 	return {
@@ -76,7 +80,7 @@ export function useMouseContext(props: ISourceLayerPropsBase) {
 	}
 }
 
-export function SourceLayer(props: ISourceLayerProps) {
+export function SourceLayer(props: ISourceLayerProps): JSX.Element {
 	const { getPartContext, onMouseUp } = useMouseContext(props)
 
 	return (
@@ -100,7 +104,7 @@ export function SourceLayer(props: ISourceLayerProps) {
 							// filter only pieces belonging to this part
 							return piece.instance.partInstanceId === props.part.instance._id
 								? // filter only pieces, that have not been hidden from the UI
-								  piece.instance.hidden !== true && piece.instance.piece.virtual !== true
+								  piece.instance.piece.virtual !== true
 								: false
 						})
 				  )
@@ -117,11 +121,11 @@ export function SourceLayer(props: ISourceLayerProps) {
 									layer={props.layer}
 									outputLayer={props.outputLayer}
 									part={props.part}
+									pieces={props.pieces}
 									partStartsAt={props.startsAt}
 									partDuration={props.duration}
 									partExpectedDuration={props.expectedDuration}
 									timeScale={props.timeScale}
-									relative={props.relative}
 									autoNextPart={props.autoNextPart}
 									liveLinePadding={props.liveLinePadding}
 									scrollLeft={props.scrollLeft}

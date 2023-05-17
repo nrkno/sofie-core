@@ -1,10 +1,9 @@
 import * as _ from 'underscore'
-import { MeteorPromiseCall } from '../lib'
+import { MeteorPromiseApply } from '../lib'
 import { NewBlueprintAPI, BlueprintAPIMethods } from './blueprint'
 import { NewClientAPI, ClientAPIMethods } from './client'
 import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from './ExternalMessageQueue'
 import { NewMigrationAPI, MigrationAPIMethods } from './migration'
-import { NewPeripheralDeviceAPI, PeripheralDeviceAPIMethods } from './peripheralDevice'
 import { NewPlayoutAPI, PlayoutAPIMethods } from './playout'
 import { NewRundownAPI, RundownAPIMethods } from './rundown'
 import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from './rundownLayouts'
@@ -16,10 +15,13 @@ import { StudiosAPIMethods, NewStudiosAPI } from './studios'
 import { NewOrganizationAPI, OrganizationAPIMethods } from './organization'
 import { NewUserAPI, UserAPIMethods } from './user'
 import { SystemAPIMethods, SystemAPI } from './system'
-import { UserId } from '../typings/meteor'
-import { RundownNotificationsAPI, RundownNotificationsAPIMethods } from './rundownNotifications'
 import { Meteor } from 'meteor/meteor'
 import { NewTriggeredActionsAPI, TriggeredActionsAPIMethods } from './triggeredActions'
+import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	NewPeripheralDeviceAPI,
+	PeripheralDeviceAPIMethods,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/methodsAPI'
 
 /** All methods typings are defined here, the actual implementation is defined in other places */
 export type MethodsBase = {
@@ -42,7 +44,6 @@ interface IMeteorCall {
 	user: NewUserAPI
 	userAction: NewUserActionAPI
 	organization: NewOrganizationAPI
-	rundownNotifications: RundownNotificationsAPI
 	system: SystemAPI
 }
 export const MeteorCall: IMeteorCall = {
@@ -60,17 +61,27 @@ export const MeteorCall: IMeteorCall = {
 	studio: makeMethods(StudiosAPIMethods),
 	systemStatus: makeMethods(SystemStatusAPIMethods),
 	user: makeMethods(UserAPIMethods),
-	userAction: makeMethods(UserActionAPIMethods),
+	userAction: makeMethods(UserActionAPIMethods, ['storeRundownSnapshot']),
 	organization: makeMethods(OrganizationAPIMethods),
-	rundownNotifications: makeMethods(RundownNotificationsAPIMethods),
 	system: makeMethods(SystemAPIMethods),
 }
-function makeMethods(methods: object): any {
-	const o = {}
-	_.each(methods, (value: any, methodName: string) => {
-		o[methodName] = async (...args) => MeteorPromiseCall(value, ...args)
+function makeMethods<Enum extends { [key: string]: string }>(
+	methods: Enum,
+	/** (Optional) An array of methodnames. Calls to these methods won't be retried in the case of a loss-of-connection for the client. */
+	listOfMethodsThatShouldNotRetry?: (keyof Enum)[]
+): any {
+	const resultingMethods = {}
+	_.each(methods, (serverMethodName: any, methodName: string) => {
+		if (listOfMethodsThatShouldNotRetry?.includes(methodName)) {
+			resultingMethods[methodName] = async (...args) =>
+				MeteorPromiseApply(serverMethodName, args, {
+					noRetry: true,
+				})
+		} else {
+			resultingMethods[methodName] = async (...args) => MeteorPromiseApply(serverMethodName, args)
+		}
 	})
-	return o
+	return resultingMethods
 }
 export interface MethodContext extends Omit<Meteor.MethodThisType, 'userId'> {
 	userId: UserId | null
@@ -93,10 +104,4 @@ export abstract class MethodContextAPI implements MethodContext {
 		)
 	}
 	public connection: Meteor.Connection | null
-}
-/** Convenience-method to call a userAction method old-Meteor.call-style */
-export function CallUserActionAPIMethod(method: UserActionAPIMethods, ...args: any[]): any {
-	const m: string = method
-	const fcn = MeteorCall[m.replace(/^userAction\./, '')]
-	return fcn(...args)
 }

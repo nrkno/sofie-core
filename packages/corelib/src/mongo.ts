@@ -19,10 +19,18 @@ export type MongoFieldSpecifierZeroes<T> = {
 }
 export type MongoFieldSpecifier<T> = MongoFieldSpecifierOnes<T> | MongoFieldSpecifierZeroes<T>
 
+/**
+ * Type helper to construct a field specifier to include all the keys mentioned in a type union.
+ * This ensures with Typescript that the fields specified in the query, match what we cast to afterwards
+ */
+export type IncludeAllMongoFieldSpecifier<T extends string> = { [key in T]: 1 }
+
 export interface FindOneOptions<TDoc> {
 	sort?: SortSpecifier<TDoc>
 	skip?: number
+	/** @deprecated */
 	fields?: MongoFieldSpecifier<TDoc>
+	projection?: MongoFieldSpecifier<TDoc>
 }
 export interface FindOptions<TDoc> extends FindOneOptions<TDoc> {
 	limit?: number
@@ -36,7 +44,7 @@ export type MongoModifier<TDoc> = UpdateFilter<TDoc>
 
 /** End of hacks */
 
-export function mongoWhereFilter<T, R>(items: R[], selector: MongoQuery<T>): R[] {
+export function mongoWhereFilter<T, R extends Record<string, any>>(items: R[], selector: MongoQuery<T>): R[] {
 	const results: R[] = []
 	for (const item of items) {
 		if (mongoWhere(item, selector)) results.push(item)
@@ -51,7 +59,7 @@ export function mongoWhere<T>(o: Record<string, any>, selector: MongoQuery<T>): 
 	}
 
 	let ok = true
-	for (const [key, s] of Object.entries(selector)) {
+	for (const [key, s] of Object.entries<any>(selector)) {
 		if (!ok) break
 
 		try {
@@ -175,16 +183,19 @@ export function mongoFindOptions<TDoc extends { _id: ProtectedString<any> }>(
 			docs = _.take(docs, options.limit)
 		}
 
-		if (options.fields !== undefined) {
-			const fields = options.fields as any
-			const idVal = fields['_id']
-			const includeKeys = _.keys(fields).filter((key) => key !== '_id' && fields[key] !== 0)
-			const excludeKeys: string[] = _.keys(options.fields).filter((key) => key !== '_id' && fields[key] === 0)
+		if ('fields' in options && 'projection' in options) {
+			throw new Error(`Only one of 'fields' and 'projection' can be specified`)
+		}
+		const projection = (options.projection || options.fields) as any
+		if (projection !== undefined) {
+			const idVal = projection['_id']
+			const includeKeys = _.keys(projection).filter((key) => key !== '_id' && projection[key] !== 0)
+			const excludeKeys: string[] = _.keys(projection).filter((key) => key !== '_id' && projection[key] === 0)
 
 			// Mongo does allow mixed include and exclude (exception being excluding _id)
 			// https://docs.mongodb.com/manual/reference/method/db.collection.find/#projection
 			if (includeKeys.length !== 0 && excludeKeys.length !== 0) {
-				throw new Error(`options.fields cannot contain both include and exclude rules`)
+				throw new Error(`options.projection cannot contain both include and exclude rules`)
 			}
 
 			// TODO - does this need to use objectPath in some way?
@@ -209,7 +220,7 @@ export function mongoModify<TDoc extends { _id: ProtectedString<any> }>(
 	modifier: MongoModifier<TDoc>
 ): TDoc {
 	let replace = false
-	for (const [key, value] of Object.entries(modifier) as any) {
+	for (const [key, value] of Object.entries<any>(modifier)) {
 		if (key === '$set') {
 			_.each(value, (value: any, key: string) => {
 				setOntoPath(doc, key, selector, value)

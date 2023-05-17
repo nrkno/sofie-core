@@ -1,11 +1,9 @@
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	TimelineObjGeneric,
 	TimelineObjRundown,
 	TimelineObjType,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { ReadonlyDeep } from 'type-fest'
 import {
 	IBlueprintActionManifest,
 	IBlueprintAdLibPiece,
@@ -14,8 +12,8 @@ import {
 	TSR,
 	PieceLifespan,
 	IBlueprintPieceType,
+	ITranslatableMessage,
 } from '@sofie-automation/blueprints-integration'
-import { ShowStyleContext } from './context'
 import {
 	AdLibActionId,
 	BlueprintId,
@@ -25,7 +23,7 @@ import {
 	RundownId,
 	SegmentId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { JobContext } from '../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import {
 	EmptyPieceTimelineObjectsBlob,
 	Piece,
@@ -35,16 +33,18 @@ import {
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
-import { getHash, literal, omit } from '@sofie-automation/corelib/dist/lib'
+import { ArrayElement, getHash, literal, omit } from '@sofie-automation/corelib/dist/lib'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { RundownImportVersions } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import {
 	interpollateTranslation,
-	processAdLibActionITranslatableMessages,
+	wrapTranslatableMessageFromBlueprints,
 } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { setDefaultIdOnExpectedPackages } from '../ingest/expectedPackages'
 import { logger } from '../logging'
+import { validateTimeline } from 'superfly-timeline'
+import { ReadonlyDeep } from 'type-fest'
 
 function getIdHash(docType: string, usedIds: Map<string, number>, uniqueId: string): string {
 	const count = usedIds.get(uniqueId)
@@ -60,9 +60,15 @@ function getIdHash(docType: string, usedIds: Map<string, number>, uniqueId: stri
 }
 
 /**
- *
- * allowNowForPiece: allows the pieces to use a start of 'now', should be true for adlibs and false for ingest
- * prefixAllTimelineObjects: Add a prefix to the timeline object ids, to ensure duplicate ids don't occur when inserting a copy of a piece
+ * Process and validate some IBlueprintPiece into Piece
+ * @param context Context from the job queue
+ * @param pieces IBlueprintPiece to process
+ * @param blueprintId Id of the Blueprint the Pieces are from
+ * @param rundownId Id of the Rundown the Pieces belong to
+ * @param segmentId Id of the Segment the Pieces belong to
+ * @param partId Id of the Part the Pieces belong to
+ * @param allowNowForPiece Allows the pieces to use a start of 'now'. should be true for pieces being inserted into the currently playing part
+ * @param setInvalid If true all Pieces will be marked as `invalid`, this should be set to match the owning Part
  */
 export function postProcessPieces(
 	context: JobContext,
@@ -139,7 +145,7 @@ export function postProcessPieces(
 	return processedPieces
 }
 
-function isNow(enable: TSR.TSRTimelineObjBase['enable']): boolean {
+function isNow(enable: TSR.TSRTimelineObj<any>['enable']): boolean {
 	if (Array.isArray(enable)) {
 		return !!enable.find((e) => e.start === 'now')
 	} else {
@@ -147,13 +153,20 @@ function isNow(enable: TSR.TSRTimelineObjBase['enable']): boolean {
 	}
 }
 
+/**
+ * Process and validate some TSRTimelineObj into TimelineObjRundown
+ * @param pieceId Id of the Piece the Objects are from
+ * @param blueprintId Id of the Blueprint the Objects are from
+ * @param timelineObjects Array of TSRTimelineObj to process
+ * @param timelineUniqueIds Optional Set of ids that are not allowed. Ids of processed objects will be added to ths set
+ */
 export function postProcessTimelineObjects(
 	pieceId: PieceId,
 	blueprintId: BlueprintId,
-	timelineObjects: TSR.TSRTimelineObjBase[],
+	timelineObjects: TSR.TSRTimeline,
 	timelineUniqueIds: Set<string> = new Set<string>()
 ): TimelineObjRundown[] {
-	return timelineObjects.map((o: TimelineObjectCoreExt, i) => {
+	const postProcessedTimeline = timelineObjects.map((o: TimelineObjectCoreExt<any>, i) => {
 		const obj: TimelineObjRundown = {
 			...o,
 			id: o.id,
@@ -170,10 +183,37 @@ export function postProcessTimelineObjects(
 			throw new Error(`Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("${obj.id}")`)
 		timelineUniqueIds.add(obj.id)
 
+		if (obj.keyframes) {
+			obj.keyframes = obj.keyframes.map((kf, i) => {
+				return {
+					...kf,
+					id: `${obj.id}_keyframe_${kf.id || i}`,
+				}
+			})
+		}
+
 		return obj
 	})
+
+	try {
+		// Do a validation of the timeline, to ensure that it doesn't contain any nastiness that can crash the Timeline-resolving later.
+		// We're using the "strict" mode here, to ensure blueprints are forward compatible with future versions of Timeline.
+		validateTimeline(postProcessedTimeline, true)
+	} catch (err) {
+		throw new Error(`Error in blueprint "${blueprintId}": Validation of timelineObjs failed: ${err}`)
+	}
+
+	return postProcessedTimeline
 }
 
+/**
+ * Process and validate some IBlueprintAdLibPiece into AdLibPiece
+ * @param context Context from the job queue
+ * @param blueprintId Id of the Blueprint the Pieces are from
+ * @param rundownId Id of the Rundown the Pieces belong to
+ * @param partId Id of the Part the Pieces belong to (if any)
+ * @param adLibPieces IBlueprintPiece to process
+ */
 export function postProcessAdLibPieces(
 	context: JobContext,
 	blueprintId: BlueprintId,
@@ -231,6 +271,12 @@ export function postProcessAdLibPieces(
 	return processedPieces
 }
 
+/**
+ * Process and validate some Rundown owned IBlueprintActionManifest into RundownBaselineAdLibAction
+ * @param blueprintId Id of the Blueprint the AdlibActions are from
+ * @param rundownId Id of the Rundown the AdlibActions belong to
+ * @param adlibActions IBlueprintActionManifest to process
+ */
 export function postProcessGlobalAdLibActions(
 	blueprintId: BlueprintId,
 	rundownId: RundownId,
@@ -266,6 +312,13 @@ export function postProcessGlobalAdLibActions(
 	})
 }
 
+/**
+ * Process and validate some Part owned IBlueprintActionManifest into AdLibAction
+ * @param blueprintId Id of the Blueprint the AdlibActions are from
+ * @param rundownId Id of the Rundown the AdlibActions belong to
+ * @param partId Id of the Part the AdlibActions belong to
+ * @param adlibActions IBlueprintActionManifest to process
+ */
 export function postProcessAdLibActions(
 	blueprintId: BlueprintId,
 	rundownId: RundownId,
@@ -300,22 +353,44 @@ export function postProcessAdLibActions(
 	})
 }
 
+/**
+ * Process and validate TSRTimelineObj for the StudioBaseline into TimelineObjRundown
+ * @param blueprintId Id of the Blueprint the TSRTimelineObj are from
+ * @param objs Array of TSRTimelineObj to process
+ */
 export function postProcessStudioBaselineObjects(
-	studio: ReadonlyDeep<DBStudio>,
-	objs: TSR.TSRTimelineObjBase[]
+	blueprintId: BlueprintId | undefined,
+	objs: TSR.TSRTimeline
 ): TimelineObjRundown[] {
-	return postProcessTimelineObjects(protectString('studio'), studio.blueprintId ?? protectString(''), objs)
+	return postProcessTimelineObjects(protectString('studio'), blueprintId ?? protectString(''), objs)
 }
 
+/**
+ * Process and validate TSRTimelineObj for the Rundown Baseline into TimelineObjRundown
+ * @param blueprintId Id of the Blueprint the TSRTimelineObj are from
+ * @param objs Array of TSRTimelineObj to process
+ */
 export function postProcessRundownBaselineItems(
 	blueprintId: BlueprintId,
-	baselineItems: TSR.TSRTimelineObjBase[]
+	baselineItems: TSR.TSRTimeline
 ): TimelineObjGeneric[] {
 	return postProcessTimelineObjects(protectString('baseline'), blueprintId, baselineItems)
 }
 
+/**
+ * Process and validate a bucket owned IBlueprintAdLibPiece into BucketAdLib
+ * @param context Context from the job queue
+ * @param showStyleCompound ShowStyle the adlib was generated for
+ * @param itemOrig IBlueprintAdLibPiece to process
+ * @param externalId External id of the Adlib being processed
+ * @param blueprintId Id of the Blueprint the IBlueprintAdLibPiece is from
+ * @param bucketId Id of the Bucket the IBlueprintAdLibPiece belong to
+ * @param rank Rank to assign for the adlib
+ * @param importVersions Versions of documents the IBlueprintAdLibPiece was processed against
+ */
 export function postProcessBucketAdLib(
-	innerContext: ShowStyleContext,
+	context: JobContext,
+	showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 	itemOrig: IBlueprintAdLibPiece,
 	externalId: string,
 	blueprintId: BlueprintId,
@@ -324,18 +399,16 @@ export function postProcessBucketAdLib(
 	importVersions: RundownImportVersions
 ): BucketAdLib {
 	const id: PieceId = protectString(
-		getHash(
-			`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
-		)
+		getHash(`${showStyleCompound.showStyleVariantId}_${context.studioId}_${bucketId}_bucket_adlib_${externalId}`)
 	)
 	const piece: BucketAdLib = {
 		...itemOrig,
 		content: omit(itemOrig.content, 'timelineObjects'),
 		_id: id,
 		externalId,
-		studioId: innerContext.studioIdProtected,
-		showStyleBaseId: innerContext.showStyleCompound._id,
-		showStyleVariantId: innerContext.showStyleCompound.showStyleVariantId,
+		studioId: context.studioId,
+		showStyleBaseId: showStyleCompound._id,
+		showStyleVariantId: showStyleCompound.showStyleVariantId,
 		bucketId,
 		importVersions,
 		_rank: rank || itemOrig._rank,
@@ -350,8 +423,20 @@ export function postProcessBucketAdLib(
 	return piece
 }
 
+/**
+ * Process and validate a bucket owned IBlueprintActionManifest into BucketAdLibAction
+ * @param context Context from the job queue
+ * @param showStyleCompound ShowStyle the adlib was generated for
+ * @param itemOrig IBlueprintActionManifest to process
+ * @param externalId External id of the Adlib being processed
+ * @param blueprintId Id of the Blueprint the IBlueprintAdLibPiece is from
+ * @param bucketId Id of the Bucket the IBlueprintAdLibPiece belong to
+ * @param rank Rank to assign for the adlib
+ * @param importVersions Versions of documents the IBlueprintAdLibPiece was processed against
+ */
 export function postProcessBucketAction(
-	innerContext: ShowStyleContext,
+	context: JobContext,
+	showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 	itemOrig: IBlueprintActionManifest,
 	externalId: string,
 	blueprintId: BlueprintId,
@@ -360,17 +445,15 @@ export function postProcessBucketAction(
 	importVersions: RundownImportVersions
 ): BucketAdLibAction {
 	const id: AdLibActionId = protectString(
-		getHash(
-			`${innerContext.showStyleCompound.showStyleVariantId}_${innerContext.studioIdProtected}_${bucketId}_bucket_adlib_${externalId}`
-		)
+		getHash(`${showStyleCompound.showStyleVariantId}_${context.studioId}_${bucketId}_bucket_adlib_${externalId}`)
 	)
 	const action: BucketAdLibAction = {
 		...omit(itemOrig, 'partId'),
 		_id: id,
 		externalId,
-		studioId: innerContext.studioIdProtected,
-		showStyleBaseId: innerContext.showStyleCompound._id,
-		showStyleVariantId: itemOrig.allVariants ? null : innerContext.showStyleCompound.showStyleVariantId,
+		studioId: context.studioId,
+		showStyleBaseId: showStyleCompound._id,
+		showStyleVariantId: itemOrig.allVariants ? null : showStyleCompound.showStyleVariantId,
 		bucketId,
 		importVersions,
 		...processAdLibActionITranslatableMessages(itemOrig, blueprintId, rank),
@@ -380,4 +463,60 @@ export function postProcessBucketAction(
 	setDefaultIdOnExpectedPackages(action.expectedPackages)
 
 	return action
+}
+
+/**
+ * A utility function to add namespaces to ITranslatableMessages found in AdLib Actions
+ *
+ * @export
+ * @template K
+ * @template T
+ * @param {T} itemOrig
+ * @param {BlueprintId} blueprintId
+ * @param {number} [rank]
+ * @return {*}  {(Pick<K, 'display' | 'triggerModes'>)}
+ */
+function processAdLibActionITranslatableMessages<
+	K extends {
+		display: IBlueprintActionManifest['display'] & {
+			label: ITranslatableMessage
+			triggerLabel?: ITranslatableMessage
+			description?: ITranslatableMessage
+		}
+		triggerModes?: (ArrayElement<IBlueprintActionManifest['triggerModes']> & {
+			display: ArrayElement<IBlueprintActionManifest['triggerModes']>['display'] & {
+				label: ITranslatableMessage
+				description?: ITranslatableMessage
+			}
+		})[]
+	},
+	T extends IBlueprintActionManifest
+>(itemOrig: T, blueprintId: BlueprintId, rank?: number): Pick<K, 'display' | 'triggerModes'> {
+	return {
+		display: {
+			...itemOrig.display,
+			_rank: rank ?? itemOrig.display._rank,
+			label: wrapTranslatableMessageFromBlueprints(itemOrig.display.label, [blueprintId]),
+			triggerLabel:
+				itemOrig.display.triggerLabel &&
+				wrapTranslatableMessageFromBlueprints(itemOrig.display.triggerLabel, [blueprintId]),
+			description:
+				itemOrig.display.description &&
+				wrapTranslatableMessageFromBlueprints(itemOrig.display.description, [blueprintId]),
+		},
+		triggerModes:
+			itemOrig.triggerModes &&
+			itemOrig.triggerModes.map(
+				(triggerMode): ArrayElement<BucketAdLibAction['triggerModes']> => ({
+					...triggerMode,
+					display: {
+						...triggerMode.display,
+						label: wrapTranslatableMessageFromBlueprints(triggerMode.display.label, [blueprintId]),
+						description:
+							triggerMode.display.description &&
+							wrapTranslatableMessageFromBlueprints(triggerMode.display.description, [blueprintId]),
+					},
+				})
+			),
+	}
 }

@@ -13,5 +13,5 @@ export const DEFAULT_MOS_HEARTBEAT_INTERVAL = 30 * 1000
 /** After this time, messages to the NRCS are considered to have timed out */
 export const DEFAULT_NRCS_TIMEOUT_TIME = 10 * 1000
 
-/** An appropriate time to wait for the 'restartcasparcg' peripheral-function to execute  */
-export const CASPARCG_RESTART_TIME = 10 * 1000
+/** After this time, actions executed by the TSR are considered to have timed out */
+export const DEFAULT_TSR_ACTION_TIMEOUT_TIME = 5 * 1000

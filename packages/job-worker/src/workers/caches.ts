@@ -1,5 +1,5 @@
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { loadBlueprintById, WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
+import { parseBlueprintDocument, WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
 import { ReadonlyDeep } from 'type-fest'
 import { IDirectCollections } from '../db'
 import {
@@ -8,8 +8,6 @@ import {
 	ShowStyleVariantId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../blueprints/config'
 import { DefaultStudioBlueprint } from '../blueprints/defaults/studio'
@@ -17,7 +15,7 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { clone, deepFreeze } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
 import deepmerge = require('deepmerge')
-import { StudioCacheContext } from '../jobs'
+import { ProcessedShowStyleBase, ProcessedShowStyleVariant, StudioCacheContext } from '../jobs'
 import { StudioCacheContextImpl } from './context'
 
 /**
@@ -105,8 +103,8 @@ export interface WorkerDataCache {
 	studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint>
 	studioBlueprintConfig: ProcessedStudioConfig | undefined
 
-	showStyleBases: Map<ShowStyleBaseId, ReadonlyDeep<DBShowStyleBase> | null> // null when not found
-	showStyleVariants: Map<ShowStyleVariantId, ReadonlyDeep<DBShowStyleVariant> | null> // null when not found
+	showStyleBases: Map<ShowStyleBaseId, ReadonlyDeep<ProcessedShowStyleBase> | null> // null when not found
+	showStyleVariants: Map<ShowStyleVariantId, ReadonlyDeep<ProcessedShowStyleVariant> | null> // null when not found
 	showStyleBlueprints: Map<BlueprintId, ReadonlyDeep<WrappedShowStyleBlueprint> | null> // null when not found
 	showStyleBlueprintConfig: Map<ShowStyleVariantId, ProcessedShowStyleConfig>
 }
@@ -200,7 +198,7 @@ export async function invalidateWorkerDataCache(
 		cache.studioBlueprintConfig = undefined
 	}
 
-	const purgeShowStyleVariants = (keep: (variant: ReadonlyDeep<DBShowStyleVariant>) => boolean) => {
+	const purgeShowStyleVariants = (keep: (variant: ReadonlyDeep<ProcessedShowStyleVariant>) => boolean) => {
 		for (const [id, v] of Array.from(cache.showStyleVariants.entries())) {
 			if (v === null || !keep(v)) {
 				logger.debug(`WorkerDataCache: Discarding ShowStyleVariant "${id}"`)
@@ -296,12 +294,14 @@ async function loadStudioBlueprintOrPlaceholder(
 ): Promise<ReadonlyDeep<WrappedStudioBlueprint>> {
 	if (!studio.blueprintId) {
 		return Object.freeze({
+			blueprintDoc: undefined,
 			blueprintId: protectString('__placeholder__'),
 			blueprint: DefaultStudioBlueprint,
 		})
 	}
 
-	const blueprintManifest = await loadBlueprintById(collections, studio.blueprintId)
+	const blueprintDoc = await collections.Blueprints.findOne(studio.blueprintId)
+	const blueprintManifest = await parseBlueprintDocument(blueprintDoc)
 	if (!blueprintManifest) {
 		throw new Error(`Blueprint "${studio.blueprintId}" not found! (referenced by Studio "${studio._id}")`)
 	}
@@ -313,6 +313,7 @@ async function loadStudioBlueprintOrPlaceholder(
 	}
 
 	return Object.freeze({
+		blueprintDoc: blueprintDoc,
 		blueprintId: studio.blueprintId,
 		blueprint: blueprintManifest,
 	})

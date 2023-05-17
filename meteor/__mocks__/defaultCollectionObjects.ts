@@ -1,18 +1,31 @@
-import { DBStudio, StudioId } from '../lib/collections/Studios'
+import { DBStudio } from '../lib/collections/Studios'
 import { clone, getCurrentTime, unprotectString } from '../lib/lib'
-import { DBRundownPlaylist, RundownPlaylistActivationId, RundownPlaylistId } from '../lib/collections/RundownPlaylists'
-import { PeripheralDeviceId } from '../lib/collections/PeripheralDevices'
-import { ShowStyleBaseId } from '../lib/collections/ShowStyleBases'
-import { ShowStyleVariantId } from '../lib/collections/ShowStyleVariants'
-import { DBRundown, RundownId } from '../lib/collections/Rundowns'
-import { DBSegment, SegmentId } from '../lib/collections/Segments'
-import { PartId, DBPart } from '../lib/collections/Parts'
+import { DBRundownPlaylist } from '../lib/collections/RundownPlaylists'
+import { DBRundown } from '../lib/collections/Rundowns'
+import { DBSegment } from '../lib/collections/Segments'
+import { DBPart } from '../lib/collections/Parts'
 import { IBlueprintPieceType, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { PieceId, Piece, PieceStatusCode, EmptyPieceTimelineObjectsBlob } from '../lib/collections/Pieces'
+import { Piece, PieceStatusCode, EmptyPieceTimelineObjectsBlob } from '../lib/collections/Pieces'
 import { AdLibPiece } from '../lib/collections/AdLibPieces'
 import { getRundownId } from '../server/api/ingest/lib'
-import { PartInstance, PartInstanceId, SegmentPlayoutId } from '../lib/collections/PartInstances'
-import { PieceInstance, PieceInstanceId } from '../lib/collections/PieceInstances'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { PartInstance } from '../lib/collections/PartInstances'
+import { PieceInstance } from '../lib/collections/PieceInstances'
+import {
+	PartId,
+	PartInstanceId,
+	PeripheralDeviceId,
+	PieceId,
+	PieceInstanceId,
+	RundownId,
+	RundownPlaylistActivationId,
+	RundownPlaylistId,
+	SegmentId,
+	SegmentPlayoutId,
+	ShowStyleBaseId,
+	ShowStyleVariantId,
+	StudioId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioId): DBRundownPlaylist {
 	return {
@@ -28,9 +41,9 @@ export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioI
 
 		// activationId: undefined,
 		rehearsal: false,
-		currentPartInstanceId: null,
-		nextPartInstanceId: null,
-		previousPartInstanceId: null,
+		currentPartInfo: null,
+		nextPartInfo: null,
+		previousPartInfo: null,
 		timing: {
 			type: 'none' as any,
 		},
@@ -82,13 +95,12 @@ export function defaultStudio(_id: StudioId): DBStudio {
 
 		name: 'mockStudio',
 		organizationId: null,
-		mappings: {},
+		mappingsWithOverrides: wrapDefaultObject({}),
 		supportedShowStyleBase: [],
-		blueprintConfig: {},
+		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		settings: {
 			frameRate: 25,
 			mediaPreviewsUrl: '',
-			sofieUrl: '',
 		},
 		_rundownVersionHash: '',
 		routeSets: {},
@@ -96,6 +108,12 @@ export function defaultStudio(_id: StudioId): DBStudio {
 		packageContainers: {},
 		previewContainerIds: [],
 		thumbnailContainerIds: [],
+		peripheralDeviceSettings: {
+			playoutDevices: wrapDefaultObject({}),
+			ingestDevices: wrapDefaultObject({}),
+			inputDevices: wrapDefaultObject({}),
+		},
+		lastBlueprintConfig: undefined,
 	}
 }
 

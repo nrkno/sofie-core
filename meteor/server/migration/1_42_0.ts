@@ -1,5 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
-import { StudioRouteType, Studios } from '../../lib/collections/Studios'
+import { StudioRouteSet, StudioRouteType } from '../../lib/collections/Studios'
+import { Studios } from '../collections'
 
 export const addSteps = addMigrationSteps('1.42.0', [
 	// Add some migrations!
@@ -7,18 +8,20 @@ export const addSteps = addMigrationSteps('1.42.0', [
 	{
 		id: 'Add new routeType property to routeSets where missing',
 		canBeRunAutomatically: true,
-		validate: () => {
+		validate: async () => {
 			return (
-				Studios.find({
+				(await Studios.countDocuments({
 					routeSets: { $exists: false },
-				}).count() > 0
+				})) > 0
 			)
 		},
-		migrate: () => {
-			Studios.find({}).forEach((studio) => {
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({})
+
+			for (const studio of studios) {
 				const routeSets = studio.routeSets
 
-				Object.entries(routeSets).forEach(([routeSetId, routeSet]) => {
+				Object.entries<StudioRouteSet>(routeSets).forEach(([routeSetId, routeSet]) => {
 					routeSet.routes.forEach((route) => {
 						if (!route.routeType) {
 							route.routeType = StudioRouteType.REROUTE
@@ -28,8 +31,8 @@ export const addSteps = addMigrationSteps('1.42.0', [
 					routeSets[routeSetId] = routeSet
 				})
 
-				Studios.update(studio._id, { $set: { routeSets } })
-			})
+				await Studios.updateAsync(studio._id, { $set: { routeSets } })
+			}
 		},
 	},
 ])

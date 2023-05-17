@@ -8,8 +8,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { ActiveProgressBar } from './ActiveProgressBar'
 import { RundownListItem } from './RundownListItem'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown, RundownId } from '../../../lib/collections/Rundowns'
-import { ShowStyleBaseId } from '../../../lib/collections/ShowStyleBases'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -25,6 +24,7 @@ import {
 	DropTargetSpec,
 } from 'react-dnd'
 import {
+	IRundownDragObject,
 	IRundownPlaylistUiAction,
 	isRundownDragObject,
 	isRundownPlaylistUiAction,
@@ -36,11 +36,12 @@ import { RundownUtils } from '../../lib/rundown'
 import PlaylistRankResetButton from './PlaylistRankResetButton'
 import { DisplayFormattedTime } from './DisplayFormattedTime'
 import { getAllowStudio } from '../../lib/localStorage'
-import { doUserAction, UserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { RundownViewLayoutSelection } from './RundownViewLayoutSelection'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
+import { RundownId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
 	rundowns: Rundown[]
@@ -93,7 +94,7 @@ const spec: DropTargetSpec<IRundownPlaylistUiProps> = {
 
 const collect: DropTargetCollector<IRundownPlaylistDropTargetProps, IRundownPlaylistUiProps> = function (
 	connect: DropTargetConnector,
-	monitor: DropTargetMonitor,
+	monitor: DropTargetMonitor<IRundownDragObject>,
 	props: IRundownPlaylistUiProps
 ): IRundownPlaylistDropTargetProps {
 	let action: IRundownPlaylistUiAction | undefined = undefined
@@ -220,7 +221,7 @@ export const RundownPlaylistUi = DropTarget(
 				}
 			}
 
-			render() {
+			render(): JSX.Element | null {
 				const { playlist, connectDropTarget, t, isActiveDropZone, rundownLayouts } = this.props
 
 				if (playlist.rundowns.length === 0) {

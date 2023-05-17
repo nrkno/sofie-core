@@ -10,11 +10,14 @@ import {
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
-import { PartInstance, PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { PartInstance } from '../../../lib/collections/PartInstances'
 import { Segment } from '../../../lib/collections/Segments'
 import { dashboardElementStyle } from './DashboardPanel'
 import { Meteor } from 'meteor/meteor'
+import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstances } from '../../collections'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 interface IMiniRundownPanelProps {
 	key: string
@@ -39,8 +42,7 @@ interface MiniRundownSegment {
 }
 
 export class MiniRundownPanelInner extends MeteorReactComponent<
-	IMiniRundownPanelProps & IMiniRundownPanelTrackedProps,
-	IState
+	IMiniRundownPanelProps & IMiniRundownPanelTrackedProps
 > {
 	static currentSegmentCssClass: string = 'current-segment'
 	static nextSegmentCssClass: string = 'next-segment'
@@ -48,20 +50,15 @@ export class MiniRundownPanelInner extends MeteorReactComponent<
 	static nextSegmentId: string = 'mini-rundown__next-segment'
 	static currentSegmentId: string = 'mini-rundown__current-segment'
 
-	constructor(props) {
-		super(props)
-		this.state = {}
-	}
-
-	componentDidMount() {
+	componentDidMount(): void {
 		this.scrollIntoView()
 	}
 
-	componentDidUpdate() {
+	componentDidUpdate(): void {
 		this.scrollIntoView()
 	}
 
-	scrollIntoView() {
+	private scrollIntoView() {
 		Meteor.setTimeout(() => {
 			const container = document.getElementById(MiniRundownPanelInner.panelContainerId)
 			if (!container) return
@@ -75,7 +72,7 @@ export class MiniRundownPanelInner extends MeteorReactComponent<
 		}, 500)
 	}
 
-	render() {
+	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const style = getElementStyle(this.props, isDashboardLayout)
 
@@ -128,13 +125,13 @@ export const MiniRundownPanel = withTracker<IMiniRundownPanelProps, IState, IMin
 		let currentPartInstance: PartInstance | undefined = undefined
 		let nextPartInstance: PartInstance | undefined = undefined
 
-		const currentPartInstanceId: PartInstanceId | null = props.playlist.currentPartInstanceId
+		const currentPartInstanceId: PartInstanceId | undefined = props.playlist.currentPartInfo?.partInstanceId
 		if (currentPartInstanceId) {
 			currentPartInstance = PartInstances.findOne(currentPartInstanceId)
 		}
 
-		if (props.playlist.nextPartInstanceId) {
-			nextPartInstance = PartInstances.findOne(props.playlist.nextPartInstanceId)
+		if (props.playlist.nextPartInfo) {
+			nextPartInstance = PartInstances.findOne(props.playlist.nextPartInfo.partInstanceId)
 		}
 
 		const allSegments: Segment[] = RundownPlaylistCollectionUtil.getSegments(props.playlist)

@@ -1,6 +1,7 @@
 import * as React from 'react'
 import CoreIcons from '@nrk/core-icons/jsx'
-import Escape from 'react-escape'
+import Escape from './Escape'
+
 import ClassNames from 'classnames'
 import * as VelocityReact from 'velocity-react'
 import { logger } from '../../lib/logging'
@@ -40,7 +41,7 @@ interface ModalAction {
 type OnAction = (e: SomeEvent, inputResult: ModalInputResult) => void
 export type ModalInputResult = { [attribute: string]: any }
 export type SomeEvent = Event | React.SyntheticEvent<object>
-export class ModalDialog extends React.Component<IModalDialogAttributes> {
+export class ModalDialog extends React.Component<React.PropsWithChildren<IModalDialogAttributes>> {
 	sorensen: Sorensen
 
 	private inputResult: ModalInputResult = {}
@@ -49,20 +50,20 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 		super(args)
 	}
 
-	componentDidMount() {
-		this.sorensen = this.context
+	componentDidMount(): void {
+		this.sorensen = this.context as Sorensen
 		this.bindKeys()
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		this.unbindKeys()
 	}
 
-	componentDidUpdate(prevProps: IModalDialogAttributes) {
+	componentDidUpdate(prevProps: IModalDialogAttributes): void {
 		if (prevProps.show !== this.props.show) this.bindKeys()
 	}
 
-	bindKeys = () => {
+	private bindKeys = () => {
 		if (this.props.show) {
 			this.sorensen.bind(Settings.confirmKeyCode, this.preventDefault, {
 				up: false,
@@ -85,14 +86,14 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 		}
 	}
 
-	unbindKeys = () => {
+	private unbindKeys = () => {
 		this.sorensen.unbind(Settings.confirmKeyCode, this.preventDefault)
 		this.sorensen.unbind(Settings.confirmKeyCode, this.handleKey)
 		this.sorensen.unbind('Escape', this.preventDefault)
 		this.sorensen.unbind('Escape', this.handleKey)
 	}
 
-	handleKey = (e: KeyboardEvent) => {
+	private handleKey = (e: KeyboardEvent) => {
 		if (this.props.show) {
 			if (e.code === 'Enter' || e.code === 'NumpadEnter') {
 				if (!this.props.warning) this.handleAccept(e)
@@ -108,34 +109,34 @@ export class ModalDialog extends React.Component<IModalDialogAttributes> {
 		}
 	}
 
-	handleAccept = (e: SomeEvent) => {
+	private handleAccept = (e: SomeEvent) => {
 		if (this.props.onAccept && typeof this.props.onAccept === 'function') {
 			this.props.onAccept(e, this.inputResult)
 		}
 	}
 
-	handleSecondary = (e: SomeEvent) => {
+	private handleSecondary = (e: SomeEvent) => {
 		if (this.props.onSecondary && typeof this.props.onSecondary === 'function') {
 			this.props.onSecondary(e, this.inputResult)
 		}
 	}
-	handleAction = (e: SomeEvent, on: OnAction) => {
+	private handleAction = (e: SomeEvent, on: OnAction) => {
 		if (on && typeof on === 'function') {
 			on(e, this.inputResult)
 		}
 	}
 
-	handleDiscard = (e: SomeEvent) => {
+	private handleDiscard = (e: SomeEvent) => {
 		if (this.props.onDiscard && typeof this.props.onDiscard === 'function') {
 			this.props.onDiscard(e, this.inputResult)
 		} else {
 			this.handleSecondary(e)
 		}
 	}
-	updatedInput = (edit: EditAttributeBase, newValue: any) => {
+	private updatedInput = (edit: EditAttributeBase, newValue: any) => {
 		this.inputResult[edit.props.attribute || ''] = newValue
 	}
-	render() {
+	render(): JSX.Element | null {
 		return this.props.show ? (
 			<Escape to="viewport">
 				<VelocityReact.VelocityTransitionGroup
@@ -348,7 +349,7 @@ class ModalDialogGlobalContainer0 extends React.Component<
 			return <p key={i}>{line.trim()}</p>
 		})
 	}
-	render() {
+	render(): JSX.Element | null {
 		const { t } = this.props
 		const onQueue = _.first(this.state.queue)
 
@@ -393,7 +394,7 @@ let modalDialogGlobalContainerSingleton: ModalDialogGlobalContainer0
  * 		},
  * 	})
  */
-export function doModalDialog(q: ModalDialogQueueItem) {
+export function doModalDialog(q: ModalDialogQueueItem): void {
 	if (modalDialogGlobalContainerSingleton) {
 		modalDialogGlobalContainerSingleton.addQueue(q)
 	} else {

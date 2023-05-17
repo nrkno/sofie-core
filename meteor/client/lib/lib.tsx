@@ -1,17 +1,17 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
-import { getCurrentTime, systemTime, Time } from '../../lib/lib'
+import { getCurrentTime } from '../../lib/lib'
 
 export { multilineText, isEventInInputField }
 
-function multilineText(txt: string) {
+function multilineText(txt: string): React.ReactNode {
 	return _.map((txt + '').split('\n'), (line: string, i) => {
 		return <p key={i}>{line}</p>
 	})
 }
 
-function isEventInInputField(e: Event) {
+function isEventInInputField(e: Event): boolean {
 	// @ts-expect-error localName
 	return e && e.target && ['textarea', 'input'].indexOf(e.target.localName + '') !== -1
 }
@@ -34,7 +34,7 @@ export function isTouchDevice(): boolean {
 /**
  * Wrapper around fetch(), which doesn't rejects the promise if the result is an error
  */
-export function fetchFrom(input: RequestInfo, init?: RequestInit) {
+export function fetchFrom(input: RequestInfo, init?: RequestInit): Promise<Response & { bodyText: string }> {
 	return fetch(input, init).then((response) => {
 		// Read the body:
 		return response.text().then((bodyText: string) => {
@@ -53,7 +53,7 @@ export function fetchFrom(input: RequestInfo, init?: RequestInit) {
 
 export function ensureHasTrailingSlash(input: string | null): string | undefined {
 	if (input) {
-		return input.substr(-1) === '/' ? input : input + '/'
+		return input.endsWith('/') ? input : input + '/'
 	} else {
 		return undefined
 	}
@@ -70,7 +70,7 @@ export enum UserAgentPointer {
 
 type MutableRef<T> = ((instance: T | null) => void) | React.MutableRefObject<T | null> | null
 
-export function useCombinedRefs<T>(initial: T | null, ...refs: MutableRef<T>[]) {
+export function useCombinedRefs<T>(initial: T | null, ...refs: MutableRef<T>[]): React.RefObject<T> {
 	const targetRef = useRef<T>(initial)
 
 	useEffect(() => {
@@ -137,15 +137,52 @@ export function useInvalidateTimeout<K>(func: () => [K, number], deps: any[]): K
 	return value
 }
 
-export function isRunningInPWA() {
+/**
+ * Limit the reactivity of a value and wait at least `delay` number of milliseconds before updating
+ *
+ * @export
+ * @template K
+ * @param {K} value value to be debounced
+ * @param {number} delay how long to wait after an update before updating the state
+ * @return {*} debounced value
+ */
+export function useDebounce<K>(value: K, delay: number): K {
+	const [debouncedValue, setDebouncedValue] = useState(value)
+
+	useEffect(() => {
+		const handler = setTimeout(() => {
+			setDebouncedValue(value)
+		}, delay)
+
+		return () => {
+			clearTimeout(handler)
+		}
+	}, [value, delay])
+
+	return debouncedValue
+}
+
+export function useCurrentTime(refreshPeriod: number = 1000): number {
+	const [time, setTime] = useState(getCurrentTime())
+
+	useEffect(() => {
+		const interval = setInterval(() => {
+			setTime(getCurrentTime())
+		}, refreshPeriod)
+
+		return () => {
+			clearInterval(interval)
+		}
+	}, [refreshPeriod])
+
+	return time
+}
+
+export function isRunningInPWA(): boolean {
 	if (window.matchMedia('(display-mode: browser)').matches) {
 		return false
 	}
 	return true
-}
-
-export function getEventTimestamp(e: any): Time {
-	return e.timeStamp ? performance.timeOrigin + e.timeStamp + systemTime.timeOriginDiff : getCurrentTime()
 }
 
 export const TOOLTIP_DEFAULT_DELAY = 0.5

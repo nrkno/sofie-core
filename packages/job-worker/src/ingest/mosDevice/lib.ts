@@ -1,16 +1,10 @@
 import { MOS } from '@sofie-automation/corelib'
 import { IngestPart } from '@sofie-automation/blueprints-integration'
-import { getPartId, getRundownId } from '../lib'
+import { getPartId } from '../lib'
 import { PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import _ = require('underscore')
-import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
-export function getRundownIdFromMosRO(studio: DBStudio, runningOrderMosId: MOS.MosString128): RundownId {
-	if (!runningOrderMosId) throw new Error('parameter runningOrderMosId missing!')
-	return getRundownId(studio, parseMosString(runningOrderMosId))
-}
-
-export function getPartIdFromMosStory(rundownId: RundownId, partMosId: MOS.MosString128 | string): PartId {
+export function getPartIdFromMosStory(rundownId: RundownId, partMosId: MOS.IMOSString128 | string): PartId {
 	if (!partMosId) throw new Error('parameter partMosId missing!')
 	return getPartId(rundownId, typeof partMosId === 'string' ? partMosId : parseMosString(partMosId))
 }
@@ -38,7 +32,9 @@ export function fixIllegalObject(o: unknown): void {
 	}
 }
 
-export function parseMosString(str: MOS.MosString128): string {
+const mosTypes = MOS.getMosTypes(false)
+export function parseMosString(str: MOS.IMOSString128): string {
 	if (!str) throw new Error('parseMosString: str parameter missing!')
-	return str['_str'] || str.toString()
+	if (mosTypes.mosString128.is(str)) return mosTypes.mosString128.stringify(str)
+	return (str as any).toString()
 }

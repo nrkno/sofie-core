@@ -10,6 +10,7 @@ import { runJobWithPlayoutCache } from '../../../playout/lock'
 import { defaultRundownPlaylist } from '../../../__mocks__/defaultCollectionObjects'
 import _ = require('underscore')
 import { wrapPartToTemporaryInstance } from '../../../__mocks__/partinstance'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 
 describe('getOrderedPartsAfterPlayhead', () => {
 	let context!: MockJobContext
@@ -24,18 +25,19 @@ describe('getOrderedPartsAfterPlayhead', () => {
 		context = setupDefaultJobEnvironment()
 
 		const mappings: MappingsExt = {}
-		for (const [k, v] of Object.entries(LookaheadMode)) {
+		for (const [k, v] of Object.entries<LookaheadMode>(LookaheadMode as any)) {
 			mappings[k] = {
 				device: TSR.DeviceType.ABSTRACT,
 				deviceId: protectString('fake0'),
-				lookahead: v as LookaheadMode,
+				lookahead: v,
 				// lookaheadDepth: 0,
 				// lookaheadMaxSearchDistance: 0,
+				options: {},
 			}
 		}
 		context.setStudio({
 			...context.studio,
-			mappings: mappings,
+			mappingsWithOverrides: wrapDefaultObject(mappings),
 		})
 
 		// Create a playlist with some parts
@@ -150,7 +152,12 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			wrapPartToTemporaryInstance(protectString('active'), firstPart)
 		)
 		await context.directCollections.RundownPlaylists.update(playlistId, {
-			$set: { nextPartInstanceId: firstInstanceId },
+			$set: {
+				nextPartInfo: {
+					partInstanceId: firstInstanceId,
+					rundownId: firstPart.rundownId,
+				},
+			},
 		})
 
 		const parts = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
@@ -176,7 +183,12 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			wrapPartToTemporaryInstance(protectString('active'), firstPart)
 		)
 		await context.directCollections.RundownPlaylists.update(playlistId, {
-			$set: { nextPartInstanceId: firstInstanceId },
+			$set: {
+				nextPartInfo: {
+					partInstanceId: firstInstanceId,
+					rundownId: firstPart.rundownId,
+				},
+			},
 		})
 
 		const parts = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
@@ -202,7 +214,12 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			wrapPartToTemporaryInstance(protectString('active'), lastPart)
 		)
 		await context.directCollections.RundownPlaylists.update(playlistId, {
-			$set: { nextPartInstanceId: lastInstanceId },
+			$set: {
+				nextPartInfo: {
+					partInstanceId: lastInstanceId,
+					rundownId: lastPart.rundownId,
+				},
+			},
 		})
 
 		const parts = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
@@ -253,7 +270,12 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			wrapPartToTemporaryInstance(protectString('active'), nextPart)
 		)
 		await context.directCollections.RundownPlaylists.update(playlistId, {
-			$set: { nextPartInstanceId: nextInstanceId },
+			$set: {
+				nextPartInfo: {
+					partInstanceId: nextInstanceId,
+					rundownId: nextPart.rundownId,
+				},
+			},
 		})
 
 		const parts = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
@@ -272,7 +294,12 @@ describe('getOrderedPartsAfterPlayhead', () => {
 			wrapPartToTemporaryInstance(protectString('active'), firstPart)
 		)
 		await context.directCollections.RundownPlaylists.update(playlistId, {
-			$set: { currentPartInstanceId: nextInstanceId },
+			$set: {
+				currentPartInfo: {
+					partInstanceId: nextInstanceId,
+					rundownId: firstPart.rundownId,
+				},
+			},
 		})
 
 		// Change next segment

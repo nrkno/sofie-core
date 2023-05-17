@@ -12,13 +12,24 @@ import {
 } from 'react-dnd'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
-import { PieceId } from '../../../lib/collections/Pieces'
-import { BucketId } from '../../../lib/collections/Buckets'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { BucketAdLibActionUi, BucketAdLibItem } from './RundownViewBuckets'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
+import { BucketId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 type IDashboardButtonPropsCombined = BucketPieceButtonBaseProps & IDashboardButtonProps
+
+interface IBucketPieceDragObject {
+	id: PieceId
+	bucketId: BucketId
+	originalIndex: number
+}
+
+export interface IBucketPieceDropResult {
+	index: number
+	bucketId: BucketId
+	action: 'reorder' | 'move' | undefined
+}
 
 const buttonSource = {
 	beginDrag(props: IDashboardButtonPropsCombined, _monitor: DragSourceMonitor, _component: any) {
@@ -29,19 +40,25 @@ const buttonSource = {
 		}
 	},
 
-	endDrag(props: IDashboardButtonPropsCombined, monitor: DragSourceMonitor) {
+	endDrag(
+		props: IDashboardButtonPropsCombined,
+		monitor: DragSourceMonitor<IBucketPieceDragObject, IBucketPieceDropResult>
+	) {
 		const { id: droppedId, originalIndex } = monitor.getItem()
 		const didDrop = monitor.didDrop()
 
 		if (!didDrop) {
 			props.moveAdLib(droppedId, originalIndex)
 		} else {
-			const { action } = monitor.getDropResult()
+			const dropResult = monitor.getDropResult()
+			if (!dropResult) return
+
+			const { action } = dropResult
 			if (action === 'reorder') {
 				const { index: newIndex } = props.findAdLib(droppedId)
 				props.onAdLibReorder(droppedId, newIndex, originalIndex)
 			} else if (action === 'move') {
-				const { bucketId } = monitor.getDropResult()
+				const { bucketId } = dropResult
 				props.onAdLibMove(droppedId, bucketId)
 			}
 		}
@@ -53,7 +70,11 @@ const buttonTarget = {
 		return true
 	},
 
-	hover(props: IDashboardButtonPropsCombined, monitor: DropTargetMonitor, _component: any) {
+	hover(
+		props: IDashboardButtonPropsCombined,
+		monitor: DropTargetMonitor<IBucketPieceDragObject, IBucketPieceDropResult>,
+		_component: any
+	) {
 		const { id: draggedId } = monitor.getItem()
 		const overId = props.piece._id
 
@@ -95,18 +116,18 @@ interface ButtonTargetCollectedProps {
 export class BucketPieceButtonBase extends DashboardPieceButtonBase<
 	ButtonSourceCollectedProps & ButtonTargetCollectedProps
 > {
-	constructor(props) {
-		super(props)
-	}
-
-	render() {
+	inBucket = true
+	render(): JSX.Element {
 		const { connectDragSource, connectDropTarget } = this.props
 
 		return connectDropTarget(connectDragSource(super.render() as ConnectableElement)) as JSX.Element
 	}
 }
 
-export const BucketPieceButton = withMediaObjectStatus<IDashboardButtonProps & BucketPieceButtonBaseProps, {}>()(
+export const BucketPieceButton = withMediaObjectStatus<
+	React.PropsWithChildren<IDashboardButtonProps> & BucketPieceButtonBaseProps,
+	{}
+>()(
 	DropTarget(DragDropItemTypes.BUCKET_ADLIB_PIECE, buttonTarget, (connect) => ({
 		connectDropTarget: connect.dropTarget(),
 	}))(

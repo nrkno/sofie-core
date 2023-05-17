@@ -35,10 +35,10 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 			...speedMap.slice(),
 		]
 	}
-	public destroy() {
+	public destroy(): void {
 		// Nothing
 	}
-	public onKeyDown(e: KeyboardEvent) {
+	public onKeyDown(e: KeyboardEvent): void {
 		let speed = -1
 		let newSpeedStep = this.lastSpeedMapPosition
 		let inverse = false
@@ -158,16 +158,16 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 			lastEvent: 'keyup: ' + e.code,
 		})
 	}
-	public onKeyUp(_e: KeyboardEvent) {
+	public onKeyUp(_e: KeyboardEvent): void {
 		// Nothing
 	}
-	public onMouseKeyDown(_e: MouseEvent) {
+	public onMouseKeyDown(_e: MouseEvent): void {
 		// Nothing
 	}
-	public onMouseKeyUp(_e: MouseEvent) {
+	public onMouseKeyUp(_e: MouseEvent): void {
 		// Nothing
 	}
-	public onWheel(_e: WheelEvent) {
+	public onWheel(_e: WheelEvent): void {
 		// Nothing
 	}
 

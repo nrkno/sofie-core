@@ -35,7 +35,10 @@ describe('DatabaseCaches', () => {
 					externalId: 'test',
 					expectedDurationWithPreroll: undefined,
 				})
-				cache.Parts.update(id, { $set: { title: 'Test2' } })
+				cache.Parts.updateOne(id, (p) => {
+					p.title = 'Test2'
+					return p
+				})
 
 				expect(cache.Parts.findOne(id)).toBeTruthy()
 				await expect(context.directCollections.Parts.findOne(id)).resolves.toBeFalsy()
@@ -68,12 +71,14 @@ describe('DatabaseCaches', () => {
 				expect(dbObj).toMatchObject({ title: 'Test2' })
 
 				// Update a document:
-				cache.Parts.update(
-					{
-						title: 'Test2',
-					},
-					{ $set: { title: 'Test4' } }
-				)
+				cache.Parts.updateAll((p) => {
+					if (p.title === 'Test2') {
+						p.title = 'Test4'
+						return p
+					} else {
+						return false
+					}
+				})
 
 				await cache.saveAllToDatabase()
 
@@ -186,7 +191,10 @@ describe('DatabaseCaches', () => {
 				expect(deferAfterSaveFcn0).toHaveReturnedTimes(0)
 
 				// Update the document:
-				cache.Parts.update(id, { $set: { title: 'updated' } })
+				cache.Parts.updateOne(id, (p) => {
+					p.title = 'updated'
+					return p
+				})
 				// add new defered functions:
 				const deferFcn1 = jest.fn(async () => {
 					await expect(context.directCollections.Parts.findOne(id)).resolves.toMatchObject({
@@ -271,14 +279,17 @@ describe('DatabaseCaches', () => {
 						externalId: 'test',
 						expectedDurationWithPreroll: undefined,
 					})
-					cache.Parts.update(id, { $set: { title: 'insertthenupdate' } })
+					cache.Parts.updateOne(id, (p) => {
+						p.title = 'insertthenupdate'
+						return p
+					})
 
 					expect(cache.Parts.findOne(id)).toBeTruthy()
 					await expect(context.directCollections.Parts.findOne(id)).resolves.toBeFalsy()
 
 					expect(() => {
 						cache.assertNoChanges()
-					}).toThrowError(/failed .+ assertion,.+ was modified/gi)
+					}).toThrow(/failed .+ assertion,.+ was modified/gi)
 				}
 
 				{
@@ -291,7 +302,7 @@ describe('DatabaseCaches', () => {
 
 					expect(() => {
 						cache.assertNoChanges()
-					}).toThrowError(/failed .+ assertion,.+ deferred/gi)
+					}).toThrow(/failed .+ assertion,.+ deferred/gi)
 				}
 
 				{
@@ -304,7 +315,7 @@ describe('DatabaseCaches', () => {
 
 					expect(() => {
 						cache.assertNoChanges()
-					}).toThrowError(/failed .+ assertion,.+ after-save deferred/gi)
+					}).toThrow(/failed .+ assertion,.+ after-save deferred/gi)
 				}
 			} finally {
 				await lock.release()

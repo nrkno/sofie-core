@@ -1,8 +1,14 @@
 import { SourceLayerType } from './content'
 import { ITranslatableMessage } from './translations'
+import {
+	SomeActionIdentifier,
+	ClientActions,
+	PlayoutActions,
+} from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 
 export enum TriggerType {
 	hotkey = 'hotkey',
+	device = 'device',
 }
 
 /**
@@ -63,32 +69,36 @@ export interface IBlueprintHotkeyTrigger extends IBlueprintTrigger {
 	up?: boolean
 }
 
-export type SomeBlueprintTrigger = IBlueprintHotkeyTrigger
+export interface IBlueprintDeviceTrigger extends IBlueprintTrigger {
+	type: TriggerType.device
 
-export enum PlayoutActions {
-	adlib = 'adlib',
-	activateRundownPlaylist = 'activateRundownPlaylist',
-	deactivateRundownPlaylist = 'deactivateRundownPlaylist',
-	take = 'take',
-	hold = 'hold',
-	createSnapshotForDebug = 'createSnapshotForDebug',
-	resyncRundownPlaylist = 'resyncRundownPlaylist',
-	moveNext = 'moveNext',
-	resetRundownPlaylist = 'resetRundownPlaylist',
-	reloadRundownPlaylistData = 'reloadRundownPlaylistData',
-	disableNextPiece = 'disableNextPiece',
+	/**
+	 * This is an external identifier, identifying a device providing triggers (a panel, keyboard, etc.)
+	 */
+	deviceId: string
+
+	/**
+	 * An optional, user-presentable string identifying the device class ("Stream Deck", "X-Keys")
+	 */
+	deviceClass?: string
+
+	/**
+	 * This is an external identifier, identifying an individual event source (a button, a key, a GPI input pin)
+	 */
+	triggerId: string
+
+	/**
+	 * Additional arguements, provided by the trigger, that are required to match
+	 */
+	values?: DeviceTriggerArguments
 }
 
-export enum ClientActions {
-	'shelf' = 'shelf',
-	'goToOnAirLine' = 'goToOnAirLine',
-	'rewindSegments' = 'rewindSegments',
-	'showEntireCurrentSegment' = 'showEntireCurrentSegment',
-	'miniShelfQueueAdLib' = 'miniShelfQueueAdLib',
-}
+export type DeviceTriggerArguments = Record<string, string | number | boolean>
+
+export type SomeBlueprintTrigger = IBlueprintHotkeyTrigger | IBlueprintDeviceTrigger
 
 export interface ITriggeredActionBase {
-	action: PlayoutActions | ClientActions
+	action: SomeActionIdentifier
 	filterChain: IBaseFilterLink[]
 }
 
@@ -296,7 +306,9 @@ export interface IBlueprintTriggeredActions {
 	/** Optional label to specify what this triggered action is supposed to do, a comment basically */
 	name?: ITranslatableMessage | string
 	/** A list of triggers that will make the list of actions in `.actions` happen */
-	triggers: SomeBlueprintTrigger[]
+	triggers: Record<string, SomeBlueprintTrigger>
 	/** A list of actions to execute */
-	actions: SomeAction[]
+	actions: Record<string, SomeAction>
 }
+
+export { SomeActionIdentifier, ClientActions, PlayoutActions }

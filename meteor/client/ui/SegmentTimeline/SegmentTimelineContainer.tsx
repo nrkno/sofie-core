@@ -2,7 +2,6 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { Segments, SegmentId } from '../../../lib/collections/Segments'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
 import { computeSegmentDisplayDuration, RundownTiming, TimingEvent } from '../RundownView/RundownTiming/RundownTiming'
 import { UIStateStorage } from '../../lib/UIStateStorage'
@@ -15,15 +14,13 @@ import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/
 import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
 import { unprotectString, equalSets, equivalentArrays } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
-import { PartInstanceId, PartInstances } from '../../../lib/collections/PartInstances'
-import { Parts } from '../../../lib/collections/Parts'
 import { Tracker } from 'meteor/tracker'
 import { Meteor } from 'meteor/meteor'
 import RundownViewEventBus, {
 	RundownViewEvents,
 	GoToPartEvent,
 	GoToPartInstanceEvent,
-} from '../RundownView/RundownViewEventBus'
+} from '../../../lib/api/triggers/RundownViewEventBus'
 import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
 import {
 	PartUi,
@@ -34,6 +31,8 @@ import {
 } from '../SegmentContainer/withResolvedSegment'
 import { computeSegmentDuration, RundownTimingContext } from '../../lib/rundownTiming'
 import { RundownViewShelf } from '../RundownView/RundownViewShelf'
+import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstances, Parts, Segments } from '../../collections'
 
 // Kept for backwards compatibility
 export { SegmentUi, PartUi, PieceUi, ISourceLayerUi, IOutputLayerUi } from '../SegmentContainer/withResolvedSegment'
@@ -93,6 +92,11 @@ export const SegmentTimelineContainer = withResolvedSegment(
 		mountedTime: number
 		nextPartOffset: number
 
+		context: {
+			durations: RundownTimingContext
+			syncedDurations: RundownTimingContext
+		}
+
 		private pastInfinitesComp: Tracker.Computation | undefined
 
 		constructor(props: IProps & ITrackedProps) {
@@ -127,7 +131,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			return !_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState)
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.autorun(() => {
 				const partIds = Parts.find(
 					{
@@ -202,7 +206,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			})
 			SpeechSynthesiser.init()
 
-			this.rundownCurrentPartInstanceId = this.props.playlist.currentPartInstanceId
+			this.rundownCurrentPartInstanceId = this.props.playlist.currentPartInfo?.partInstanceId ?? null
 			if (this.state.isLiveSegment === true) {
 				this.onFollowLiveLine(true)
 				this.startLive()
@@ -255,7 +259,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 				}
 			}
 
-			this.rundownCurrentPartInstanceId = this.props.playlist.currentPartInstanceId
+			this.rundownCurrentPartInstanceId = this.props.playlist.currentPartInfo?.partInstanceId ?? null
 
 			// segment is becoming live
 			if (this.state.isLiveSegment === false && isLiveSegment === true) {
@@ -276,18 +280,16 @@ export const SegmentTimelineContainer = withResolvedSegment(
 
 			// Setting the correct scroll position on parts when setting is next
 			const nextPartDisplayStartsAt =
-				currentNextPart &&
-				this.context.durations?.partDisplayStartsAt &&
-				this.context.durations.partDisplayStartsAt[unprotectString(currentNextPart.partId)]
+				(currentNextPart && this.context.durations?.partDisplayStartsAt?.[unprotectString(currentNextPart.partId)]) ?? 0
 			const partOffset =
 				nextPartDisplayStartsAt -
 				(this.props.parts.length > 0
-					? this.context.durations.partDisplayStartsAt[unprotectString(this.props.parts[0].instance.part._id)] ?? 0
+					? this.context.durations?.partDisplayStartsAt?.[unprotectString(this.props.parts[0].instance.part._id)] ?? 0
 					: 0)
 			const nextPartIdOrOffsetHasChanged =
 				currentNextPart &&
-				this.props.playlist.nextPartInstanceId &&
-				(prevProps.playlist.nextPartInstanceId !== this.props.playlist.nextPartInstanceId ||
+				this.props.playlist.nextPartInfo &&
+				(prevProps.playlist.nextPartInfo?.partInstanceId !== this.props.playlist.nextPartInfo.partInstanceId ||
 					this.nextPartOffset !== partOffset)
 			const isBecomingNextSegment = this.state.isNextSegment === false && isNextSegment
 			// the segment isn't live, will be next, and either the nextPartId has changed or it is just becoming next
@@ -363,7 +365,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			})
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			this._cleanUp()
 			if (this.intersectionObserver && this.state.isLiveSegment && this.props.followLiveSegments) {
 				if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
@@ -559,9 +561,9 @@ export const SegmentTimelineContainer = withResolvedSegment(
 						(this.context.durations?.partDisplayStartsAt?.[unprotectString(this.props.parts[0]?.instance.part._id)] ||
 							0)
 
-					let isExpectedToPlay = !!currentLivePartInstance.timings?.startedPlayback
+					let isExpectedToPlay = !!currentLivePartInstance.timings?.plannedStartedPlayback
 					const lastTake = currentLivePartInstance.timings?.take
-					const lastStartedPlayback = currentLivePartInstance.timings?.startedPlayback
+					const lastStartedPlayback = currentLivePartInstance.timings?.plannedStartedPlayback
 					const lastTakeOffset = currentLivePartInstance.timings?.playOffset || 0
 					const virtualStartedPlayback =
 						(lastTake || 0) > (lastStartedPlayback || -1)
@@ -691,7 +693,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			this.onTimeScaleChange(newScale)
 		}
 
-		render() {
+		render(): JSX.Element | null {
 			return this.props.segmentui ? (
 				<React.Fragment key={unprotectString(this.props.segmentui._id)}>
 					{!this.props.segmentui.isHidden && (
@@ -702,7 +704,8 @@ export const SegmentTimelineContainer = withResolvedSegment(
 							segment={this.props.segmentui}
 							studio={this.props.studio}
 							parts={this.props.parts}
-							segmentNotes={this.props.segmentNotes}
+							pieces={this.props.pieces}
+							segmentNoteCounts={this.props.segmentNoteCounts}
 							timeScale={this.state.timeScale}
 							maxTimeScale={this.state.maxTimeScale}
 							onRecalculateMaxTimeScale={this.updateMaxTimeScale}

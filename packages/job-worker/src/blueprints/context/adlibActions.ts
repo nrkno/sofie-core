@@ -1,5 +1,6 @@
 import {
 	IActionExecutionContext,
+	IDataStoreActionExecutionContext,
 	IBlueprintMutatablePart,
 	IBlueprintPart,
 	IBlueprintPartInstance,
@@ -12,16 +13,22 @@ import {
 	SomeContent,
 	Time,
 	WithTimeline,
+	TSR,
+	IBlueprintPlayoutDevice,
 } from '@sofie-automation/blueprints-integration'
-import { PartInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	PartInstanceId,
+	PeripheralDeviceId,
+	RundownPlaylistActivationId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { assertNever, getRandomId, omit } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
 import { CacheForPlayout, getRundownIDsFromCache } from '../../playout/cache'
-import { getMediaObjectDuration, ShowStyleUserContext, UserContextInfo } from './context'
+import { UserContextInfo } from './CommonContext'
+import { ShowStyleUserContext } from './ShowStyleUserContext'
 import { WatchedPackagesHelper } from './watchedPackages'
 import { getCurrentTime } from '../../lib'
 import {
@@ -31,8 +38,8 @@ import {
 	unprotectStringArray,
 } from '@sofie-automation/corelib/dist/protectedString'
 import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
-import { JobContext } from '../../jobs'
-import { EditableMongoModifier, MongoQuery } from '../../db'
+import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
+import { MongoQuery } from '../../db'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	innerFindLastPieceOnLayer,
@@ -40,32 +47,89 @@ import {
 	innerStartAdLibPiece,
 	innerStartQueuedAdLib,
 	innerStopPieces,
-} from '../../playout/adlib'
-import { Piece, serializePieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
+} from '../../playout/adlibUtils'
+import {
+	Piece,
+	PieceTimelineObjectsBlob,
+	serializePieceTimelineObjectsBlob,
+} from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import {
 	convertPartInstanceToBlueprints,
 	convertPieceInstanceToBlueprints,
 	convertPieceToBlueprints,
 	convertResolvedPieceInstanceToBlueprints,
+	getMediaObjectDuration,
 	IBlueprintMutatablePartSampleKeys,
 	IBlueprintPieceObjectsSampleKeys,
 } from './lib'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { moveNextPartInner } from '../../playout/playout'
+import { moveNextPartInner } from '../../playout/setNext'
 import _ = require('underscore')
 import { ProcessedShowStyleConfig } from '../config'
+import { DatastorePersistenceMode } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
+import { getDatastoreId } from '../../playout/datastore'
+import { executePeripheralDeviceAction, listPlayoutDevices } from '../../peripheralDevice'
 
 export enum ActionPartChange {
 	NONE = 0,
 	SAFE_CHANGE = 1,
 }
 
+export class DatastoreActionExecutionContext
+	extends ShowStyleUserContext
+	implements IDataStoreActionExecutionContext, IEventContext
+{
+	protected readonly _context: JobContext
+
+	constructor(
+		contextInfo: UserContextInfo,
+		context: JobContext,
+		showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
+		watchedPackages: WatchedPackagesHelper
+	) {
+		super(contextInfo, context, showStyle, watchedPackages)
+		this._context = context
+	}
+
+	async setTimelineDatastoreValue(key: string, value: unknown, mode: DatastorePersistenceMode): Promise<void> {
+		const studioId = this._context.studioId
+		const id = protectString(`${studioId}_${key}`)
+		const collection = this._context.directCollections.TimelineDatastores
+
+		await collection.replace({
+			_id: id,
+			studioId: studioId,
+
+			key,
+			value,
+
+			modified: Date.now(),
+			mode,
+		})
+	}
+
+	async removeTimelineDatastoreValue(key: string): Promise<void> {
+		const studioId = this._context.studioId
+		const id = getDatastoreId(studioId, key)
+		const collection = this._context.directCollections.TimelineDatastores
+
+		await collection.remove({ _id: id })
+	}
+
+	getCurrentTime(): number {
+		return getCurrentTime()
+	}
+}
+
 /** Actions */
-export class ActionExecutionContext extends ShowStyleUserContext implements IActionExecutionContext, IEventContext {
-	private readonly _context: JobContext
+export class ActionExecutionContext
+	extends DatastoreActionExecutionContext
+	implements IActionExecutionContext, IEventContext
+{
+	// private readonly _context: JobContext
 	private readonly _cache: CacheForPlayout
 	private readonly rundown: DBRundown
 	private readonly playlistActivationId: RundownPlaylistActivationId
@@ -81,13 +145,13 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		contextInfo: UserContextInfo,
 		context: JobContext,
 		cache: CacheForPlayout,
-		showStyle: ReadonlyDeep<ShowStyleCompound>,
+		showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 		_showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: DBRundown,
 		watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, context, showStyle, watchedPackages)
-		this._context = context
+		// this._context = context
 		this._cache = cache
 		this.rundown = rundown
 		this.takeAfterExecute = false
@@ -96,21 +160,17 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		this.playlistActivationId = this._cache.Playlist.doc.activationId
 	}
 
-	private _getPartInstanceId(part: 'current' | 'next'): PartInstanceId | null {
+	private _getPartInstanceId(part: 'current' | 'next'): PartInstanceId | undefined {
 		switch (part) {
 			case 'current':
-				return this._cache.Playlist.doc.currentPartInstanceId
+				return this._cache.Playlist.doc.currentPartInfo?.partInstanceId
 			case 'next':
-				return this._cache.Playlist.doc.nextPartInstanceId
+				return this._cache.Playlist.doc.nextPartInfo?.partInstanceId
 			default:
 				assertNever(part)
 				logger.warn(`Blueprint action requested unknown PartInstance "${part}"`)
 				throw new Error(`Unknown part "${part}"`)
 		}
-	}
-
-	getCurrentTime(): number {
-		return getCurrentTime()
 	}
 
 	async getPartInstance(part: 'current' | 'next'): Promise<IBlueprintPartInstance | undefined> {
@@ -128,7 +188,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			return []
 		}
 
-		const pieceInstances = this._cache.PieceInstances.findFetch({ partInstanceId })
+		const pieceInstances = this._cache.PieceInstances.findAll((p) => p.partInstanceId === partInstanceId)
 		return pieceInstances.map(convertPieceInstanceToBlueprints)
 	}
 	async getResolvedPieceInstances(part: 'current' | 'next'): Promise<IBlueprintResolvedPieceInstance[]> {
@@ -142,7 +202,12 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			return []
 		}
 
-		const resolvedInstances = getResolvedPieces(this._context, this._cache, this.showStyleCompound, partInstance)
+		const resolvedInstances = getResolvedPieces(
+			this._context,
+			this._cache,
+			this.showStyleCompound.sourceLayers,
+			partInstance
+		)
 		return resolvedInstances.map(convertResolvedPieceInstanceToBlueprints)
 	}
 
@@ -156,7 +221,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	): Promise<IBlueprintPieceInstance | undefined> {
 		const query: MongoQuery<PieceInstance> = {}
 		if (options && options.pieceMetaDataFilter) {
-			for (const [key, value] of Object.entries(options.pieceMetaDataFilter)) {
+			for (const [key, value] of Object.entries<unknown>(options.pieceMetaDataFilter)) {
 				// TODO do we need better validation here?
 				// It should be pretty safe as we are working with the cache version (for now)
 				// @ts-expect-error metaData is `unknown` so no subkeys are known to be valid
@@ -164,8 +229,8 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			}
 		}
 
-		if (options && options.excludeCurrentPart && this._cache.Playlist.doc.currentPartInstanceId) {
-			query['partInstanceId'] = { $ne: this._cache.Playlist.doc.currentPartInstanceId }
+		if (options && options.excludeCurrentPart && this._cache.Playlist.doc.currentPartInfo) {
+			query['partInstanceId'] = { $ne: this._cache.Playlist.doc.currentPartInfo.partInstanceId }
 		}
 
 		const sourceLayerId = Array.isArray(sourceLayerId0) ? sourceLayerId0 : [sourceLayerId0]
@@ -190,7 +255,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	): Promise<IBlueprintPieceDB | undefined> {
 		const query: MongoQuery<Piece> = {}
 		if (options && options.pieceMetaDataFilter) {
-			for (const [key, value] of Object.entries(options.pieceMetaDataFilter)) {
+			for (const [key, value] of Object.entries<unknown>(options.pieceMetaDataFilter)) {
 				// TODO do we need better validation here?
 				// It should be pretty safe as we are working with the cache version (for now)
 				// @ts-expect-error metaData is `unknown` so no subkeys are known to be valid
@@ -198,9 +263,9 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			}
 		}
 
-		if (options && options.excludeCurrentPart && this._cache.Playlist.doc.currentPartInstanceId) {
+		if (options && options.excludeCurrentPart && this._cache.Playlist.doc.currentPartInfo) {
 			const currentPartInstance = this._cache.PartInstances.findOne(
-				this._cache.Playlist.doc.currentPartInstanceId
+				this._cache.Playlist.doc.currentPartInfo.partInstanceId
 			)
 
 			if (currentPartInstance) {
@@ -251,7 +316,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		})
 		if (!pieceDB) throw new Error(`Cannot find Piece ${piece._id}`)
 
-		return this._cache.Parts.findOne({ _id: pieceDB.startPartId })
+		return this._cache.Parts.findOne(pieceDB.startPartId)
 	}
 
 	async insertPiece(part: 'current' | 'next', rawPiece: IBlueprintPiece): Promise<IBlueprintPieceInstance> {
@@ -315,24 +380,20 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 
 		const updatesCurrentPart: ActionPartChange =
-			pieceInstance.partInstanceId === this._cache.Playlist.doc.currentPartInstanceId
+			pieceInstance.partInstanceId === this._cache.Playlist.doc.currentPartInfo?.partInstanceId
 				? ActionPartChange.SAFE_CHANGE
 				: ActionPartChange.NONE
 		const updatesNextPart: ActionPartChange =
-			pieceInstance.partInstanceId === this._cache.Playlist.doc.nextPartInstanceId
+			pieceInstance.partInstanceId === this._cache.Playlist.doc.nextPartInfo?.partInstanceId
 				? ActionPartChange.SAFE_CHANGE
 				: ActionPartChange.NONE
 		if (!updatesCurrentPart && !updatesNextPart) {
 			throw new Error('Can only update piece instances in current or next part instance')
 		}
 
-		const update: EditableMongoModifier<PieceInstance> = {
-			$set: {},
-			$unset: {},
-		}
-
+		let timelineObjectsString: PieceTimelineObjectsBlob | undefined
 		if (trimmedPiece.content?.timelineObjects) {
-			update.$set['piece.timelineObjectsString'] = serializePieceTimelineObjectsBlob(
+			timelineObjectsString = serializePieceTimelineObjectsBlob(
 				postProcessTimelineObjects(
 					pieceInstance.piece._id,
 					this.showStyleCompound.blueprintId,
@@ -343,18 +404,19 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			trimmedPiece.content = omit(trimmedPiece.content, 'timelineObjects') as WithTimeline<SomeContent>
 		}
 
-		for (const [k, val] of Object.entries(trimmedPiece)) {
-			if (val === undefined) {
-				update.$unset[`piece.${k}`] = 1
-			} else {
-				// @ts-expect-error This can't key correctly because of the loosely typed `k`
-				update.$set[`piece.${k}`] = val
-			}
-		}
-
 		setupPieceInstanceInfiniteProperties(pieceInstance)
 
-		this._cache.PieceInstances.update(pieceInstance._id, update)
+		this._cache.PieceInstances.updateOne(pieceInstance._id, (p) => {
+			if (timelineObjectsString !== undefined) p.piece.timelineObjectsString = timelineObjectsString
+
+			return {
+				...p,
+				piece: {
+					...p.piece,
+					...(trimmedPiece as any), // TODO: this needs to be more type safe
+				},
+			}
+		})
 
 		this.nextPartState = Math.max(this.nextPartState, updatesNextPart)
 		this.currentPartState = Math.max(this.currentPartState, updatesCurrentPart)
@@ -365,8 +427,8 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		return convertPieceInstanceToBlueprints(updatedPieceInstance)
 	}
 	async queuePart(rawPart: IBlueprintPart, rawPieces: IBlueprintPiece[]): Promise<IBlueprintPartInstance> {
-		const currentPartInstance = this._cache.Playlist.doc.currentPartInstanceId
-			? this._cache.PartInstances.findOne(this._cache.Playlist.doc.currentPartInstanceId)
+		const currentPartInstance = this._cache.Playlist.doc.currentPartInfo
+			? this._cache.PartInstances.findOne(this._cache.Playlist.doc.currentPartInfo.partInstanceId)
 			: undefined
 		if (!currentPartInstance) {
 			throw new Error('Cannot queue part when no current partInstance')
@@ -375,7 +437,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		if (this.nextPartState !== ActionPartChange.NONE) {
 			// Ensure we dont insert a piece into a part before replacing it with a queued part, as this will cause some data integrity issues
 			// This could be changed if we have a way to abort the pending changes in the nextPart.
-			// TODO-PartInstances - perhaps this could be dropped as only the instance will have changed, and that will be trashed by the setAsNext?
+			// Future: perhaps this could be dropped as only the instance will have changed, and that will be trashed by the setAsNext?
 			throw new Error('Cannot queue part when next part has already been modified')
 		}
 
@@ -464,20 +526,15 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('PartInstance could not be found')
 		}
 
-		const update: any = {
-			$set: {},
-			$unset: {},
-		}
-
-		for (const [k, val] of Object.entries(trimmedProps)) {
-			if (val === undefined) {
-				update.$unset[`part.${k}`] = val
-			} else {
-				update.$set[`part.${k}`] = val
+		this._cache.PartInstances.updateOne(partInstance._id, (p) => {
+			return {
+				...p,
+				part: {
+					...p.part,
+					...trimmedProps,
+				},
 			}
-		}
-
-		this._cache.PartInstances.update(partInstance._id, update)
+		})
 
 		this.nextPartState = Math.max(
 			this.nextPartState,
@@ -517,24 +574,23 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		)
 	}
 	async removePieceInstances(_part: 'next', pieceInstanceIds: string[]): Promise<string[]> {
-		const partInstanceId = this._cache.Playlist.doc.nextPartInstanceId // this._getPartInstanceId(part)
+		const partInstanceId = this._cache.Playlist.doc.nextPartInfo?.partInstanceId // this._getPartInstanceId(part)
 		if (!partInstanceId) {
 			throw new Error('Cannot remove pieceInstances when no selected partInstance')
 		}
 
-		const pieceInstances = this._cache.PieceInstances.findFetch({
-			partInstanceId: partInstanceId,
-			_id: { $in: protectStringArray(pieceInstanceIds) },
-		})
+		const rawPieceInstanceIdSet = new Set(protectStringArray(pieceInstanceIds))
+		const pieceInstances = this._cache.PieceInstances.findAll(
+			(p) => p.partInstanceId === partInstanceId && rawPieceInstanceIdSet.has(p._id)
+		)
 
-		this._cache.PieceInstances.remove({
-			partInstanceId: partInstanceId,
-			_id: { $in: pieceInstances.map((p) => p._id) },
-		})
+		const pieceInstanceIdsToRemove = pieceInstances.map((p) => p._id)
+		const pieceInstanceIdsSet = new Set(pieceInstanceIdsToRemove)
+		this._cache.PieceInstances.remove((p) => p.partInstanceId === partInstanceId && pieceInstanceIdsSet.has(p._id))
 
 		this.nextPartState = Math.max(this.nextPartState, ActionPartChange.SAFE_CHANGE)
 
-		return unprotectStringArray(pieceInstances.map((p) => p._id))
+		return unprotectStringArray(pieceInstanceIdsToRemove)
 	}
 
 	async takeAfterExecuteAction(take: boolean): Promise<boolean> {
@@ -547,11 +603,11 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		if (time !== null && (time < getCurrentTime() || typeof time !== 'number'))
 			throw new Error('Cannot block taking out of the current part, to a time in the past')
 
-		const partInstanceId = this._cache.Playlist.doc.currentPartInstanceId
+		const partInstanceId = this._cache.Playlist.doc.currentPartInfo?.partInstanceId
 		if (!partInstanceId) {
 			throw new Error('Cannot block take when there is no part playing')
 		}
-		this._cache.PartInstances.update(partInstanceId, (doc) => {
+		this._cache.PartInstances.updateOne(partInstanceId, (doc) => {
 			if (time) {
 				doc.blockTakeUntil = time
 			} else {
@@ -562,10 +618,10 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	}
 
 	private _stopPiecesByRule(filter: (pieceInstance: PieceInstance) => boolean, timeOffset: number | undefined) {
-		if (!this._cache.Playlist.doc.currentPartInstanceId) {
+		if (!this._cache.Playlist.doc.currentPartInfo) {
 			return []
 		}
-		const partInstance = this._cache.PartInstances.findOne(this._cache.Playlist.doc.currentPartInstanceId)
+		const partInstance = this._cache.PartInstances.findOne(this._cache.Playlist.doc.currentPartInfo.partInstanceId)
 		if (!partInstance) {
 			throw new Error('Cannot stop pieceInstances when no current partInstance')
 		}
@@ -573,7 +629,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		const stoppedIds = innerStopPieces(
 			this._context,
 			this._cache,
-			this.showStyleCompound,
+			this.showStyleCompound.sourceLayers,
 			partInstance,
 			filter,
 			timeOffset
@@ -587,6 +643,18 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	}
 
 	async hackGetMediaObjectDuration(mediaId: string): Promise<number | undefined> {
-		return getMediaObjectDuration(this._context, mediaId, this.studioId)
+		return getMediaObjectDuration(this._context, mediaId)
+	}
+
+	async listPlayoutDevices(): Promise<IBlueprintPlayoutDevice[]> {
+		return listPlayoutDevices(this._context, this._cache)
+	}
+
+	async executeTSRAction(
+		deviceId: PeripheralDeviceId,
+		actionId: string,
+		payload: Record<string, any>
+	): Promise<TSR.ActionExecutionResult> {
+		return executePeripheralDeviceAction(this._context, deviceId, null, actionId, payload)
 	}
 }

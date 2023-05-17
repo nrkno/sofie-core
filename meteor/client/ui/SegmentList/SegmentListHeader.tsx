@@ -6,9 +6,7 @@ import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
-import { Studio } from '../../../lib/collections/Studios'
-import { PartUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
-import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
+import { PartUi, SegmentNoteCounts, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -17,16 +15,19 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { IContextMenuContext } from '../RundownView'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
+import { UIStudio } from '../../../lib/api/studios'
+import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 export function SegmentListHeader({
 	isDetached,
 	isDetachedStick,
 	segment,
 	parts,
+	pieces,
 	playlist,
 	studio,
 	highlight,
-	segmentNotes,
+	segmentNoteCounts,
 	isLiveSegment,
 	isNextSegment,
 	isQueuedSegment,
@@ -43,9 +44,10 @@ export function SegmentListHeader({
 	isDetachedStick: boolean
 	segment: SegmentUi
 	playlist: RundownPlaylist
-	studio: Studio
+	studio: UIStudio
 	parts: Array<PartUi>
-	segmentNotes: Array<SegmentNote>
+	pieces: Map<PartId, CalculateTimingsPiece[]>
+	segmentNoteCounts: SegmentNoteCounts
 	highlight: boolean
 	isLiveSegment: boolean
 	isNextSegment: boolean
@@ -58,7 +60,7 @@ export function SegmentListHeader({
 	onTimeUntilClick: () => void
 	getSegmentContext: () => IContextMenuContext
 	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
-}) {
+}): JSX.Element {
 	const { t } = useTranslation()
 
 	// TODO: This still needs to detect when it should stop being detached, because the original segment is no longer
@@ -66,7 +68,9 @@ export function SegmentListHeader({
 
 	let countdownToPartId: PartId | undefined = undefined
 	if (!isLiveSegment) {
-		const nextPart = isNextSegment ? parts.find((p) => p.instance._id === playlist.nextPartInstanceId) : parts[0]
+		const nextPart = isNextSegment
+			? parts.find((p) => p.instance._id === playlist.nextPartInfo?.partInstanceId)
+			: parts[0]
 
 		if (nextPart) {
 			countdownToPartId = nextPart.instance.part._id
@@ -78,14 +82,8 @@ export function SegmentListHeader({
 	// 	setDetached(shouldDetach)
 	// }
 
-	const criticalNotes = segmentNotes.reduce((prev, item) => {
-		if (item.type === NoteSeverity.ERROR) return ++prev
-		return prev
-	}, 0)
-	const warningNotes = segmentNotes.reduce((prev, item) => {
-		if (item.type === NoteSeverity.WARNING) return ++prev
-		return prev
-	}, 0)
+	const criticalNotes = segmentNoteCounts.criticial
+	const warningNotes = segmentNoteCounts.warning
 
 	const contents = (
 		<ContextMenuTrigger
@@ -108,6 +106,7 @@ export function SegmentListHeader({
 						<SegmentDuration
 							segmentId={segment._id}
 							parts={parts}
+							pieces={pieces}
 							label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
 							fixed={fixedSegmentDuration}
 						/>

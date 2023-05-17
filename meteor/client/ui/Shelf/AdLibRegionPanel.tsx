@@ -11,12 +11,11 @@ import { dashboardElementStyle, IDashboardPanelTrackedProps } from './DashboardP
 import ClassNames from 'classnames'
 import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter } from './AdLibPanel'
 import { matchFilter } from './AdLibListView'
-import { doUserAction, UserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { MeteorCall } from '../../../lib/api/methods'
-import { RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
 import {
 	AdLibPieceUi,
 	getNextPieceInstancesGrouped,
@@ -30,6 +29,8 @@ import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
+import { UIStudios } from '../Collections'
+import { Meteor } from 'meteor/meteor'
 
 interface IState {
 	objId?: string
@@ -52,26 +53,30 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,
 	IState
 > {
-	constructor(props: Translated<IAdLibPanelProps & AdLibFetchAndFilterProps>) {
+	constructor(
+		props: Translated<
+			IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps
+		>
+	) {
 		super(props)
 
 		this.state = {}
 	}
 
-	isAdLibOnAir(adLib: AdLibPieceUi) {
+	private isAdLibOnAir(adLib: AdLibPieceUi) {
 		return isAdLibOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
 	}
 
-	isAdLibDisplayedAsOnAir(adLib: AdLibPieceUi) {
+	private isAdLibDisplayedAsOnAir(adLib: AdLibPieceUi) {
 		return isAdLibDisplayedAsOnAir(this.props.unfinishedAdLibIds, this.props.unfinishedTags, adLib)
 	}
 
-	isAdLibNext(adLib: AdLibPieceUi) {
+	private isAdLibNext(adLib: AdLibPieceUi) {
 		return isAdLibNext(this.props.nextAdLibIds, this.props.nextTags, adLib)
 	}
 
-	onToggleSticky = (sourceLayerId: string, e: any) => {
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.activationId) {
+	private onToggleSticky = (sourceLayerId: string, e: any) => {
+		if (this.props.playlist && this.props.playlist.currentPartInfo && this.props.playlist.activationId) {
 			const { t } = this.props
 			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e, ts) =>
 				MeteorCall.userAction.sourceLayerStickyPieceStart(e, ts, this.props.playlist._id, sourceLayerId)
@@ -79,7 +84,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 		}
 	}
 
-	toggleAdLib(e: any, piece?: AdLibPieceUi, queueWhenOnAir?: boolean) {
+	private toggleAdLib(e: any, piece?: AdLibPieceUi, queueWhenOnAir?: boolean) {
 		const { t } = this.props
 		if (!piece) {
 			return
@@ -97,7 +102,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 			return
 		}
 
-		const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+		const currentPartInstanceId = this.props.playlist.currentPartInfo?.partInstanceId
 
 		if ((!this.isAdLibOnAir(piece) || queueWhenOnAir) && this.props.playlist && currentPartInstanceId) {
 			if (piece.isAction && piece.adlibAction) {
@@ -140,16 +145,21 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 		}
 	}
 
-	take = (e: any) => {
+	private take = (e: any) => {
 		const { t } = this.props
 		if (this.props.studioMode) {
 			doUserAction(t, e, UserAction.TAKE, (e, ts) =>
-				MeteorCall.userAction.take(e, ts, this.props.playlist._id, this.props.playlist.currentPartInstanceId)
+				MeteorCall.userAction.take(
+					e,
+					ts,
+					this.props.playlist._id,
+					this.props.playlist.currentPartInfo?.partInstanceId ?? null
+				)
 			)
 		}
 	}
 
-	onAction = (e: any, piece?: AdLibPieceUi) => {
+	private onAction = (e: any, piece?: AdLibPieceUi) => {
 		switch (this.props.panel.role) {
 			case RundownLayoutAdLibRegionRole.QUEUE:
 				this.toggleAdLib(e, piece, true)
@@ -162,7 +172,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 		}
 	}
 
-	getThumbnailUrl = (): string | undefined => {
+	private getThumbnailUrl = (): string | undefined => {
 		const { piece } = this.props
 		const { mediaPreviewsUrl } = this.props.studio.settings
 		if (piece && piece.contentMetaData && piece.contentMetaData.previewPath && mediaPreviewsUrl) {
@@ -178,14 +188,14 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 		return undefined
 	}
 
-	renderPreview() {
+	private renderPreview() {
 		const thumbnailUrl = this.getThumbnailUrl()
 		if (thumbnailUrl) {
 			return <img src={thumbnailUrl} className="adlib-region-panel__image" />
 		}
 	}
 
-	render() {
+	render(): JSX.Element {
 		const liveSegment = this.props.uiSegments.find((i) => i.isLive === true)
 		const piece =
 			this.props.panel.tags && this.props.rundownBaselineAdLibs
@@ -241,7 +251,9 @@ export const AdLibRegionPanel = translateWithTracker<
 	AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps
 >(
 	(props: Translated<IAdLibPanelProps & IAdLibRegionPanelProps>) => {
-		const studio = RundownPlaylistCollectionUtil.getStudio(props.playlist)
+		const studio = UIStudios.findOne(props.playlist.studioId)
+		if (!studio) throw new Meteor.Error(404, 'Studio "' + props.playlist.studioId + '" not found!')
+
 		const { unfinishedAdLibIds, unfinishedTags, unfinishedPieceInstances } = getUnfinishedPieceInstancesGrouped(
 			props.playlist,
 			props.showStyleBase
@@ -270,9 +282,7 @@ export const AdLibRegionPanel = translateWithTracker<
 			  }
 			: undefined
 
-		const sourceLayer =
-			thumbnailPiece &&
-			props.showStyleBase.sourceLayers.find((layer) => thumbnailPiece.piece.sourceLayerId === layer._id)
+		const sourceLayer = thumbnailPiece && props.showStyleBase.sourceLayers[thumbnailPiece.piece.sourceLayerId]
 
 		return Object.assign({}, fetchAndFilter(props), {
 			studio,

@@ -1,9 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
-import { PartInstances } from '../../../lib/collections/PartInstances'
-import { Parts } from '../../../lib/collections/Parts'
-import { Segments } from '../../../lib/collections/Segments'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import {
 	// PartUi,
@@ -15,6 +12,7 @@ import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { SegmentStoryboard } from './SegmentStoryboard'
 import { unprotectString } from '../../../lib/lib'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/SegmentTimelineContainer'
+import { PartInstances, Parts, Segments } from '../../collections'
 
 export const LIVELINE_HISTORY_SIZE = TIMELINE_LIVELINE_HISTORY_SIZE
 
@@ -114,28 +112,28 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 
 	const isLiveSegment = useTracker(
 		() => {
-			if (!props.playlist.currentPartInstanceId || !props.playlist.activationId) {
+			if (!props.playlist.currentPartInfo || !props.playlist.activationId) {
 				return false
 			}
 
-			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInstanceId)
+			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInfo.partInstanceId)
 			if (!currentPartInstance) {
 				return false
 			}
 
 			return currentPartInstance.segmentId === segmentId
 		},
-		[segmentId, props.playlist.activationId, props.playlist.currentPartInstanceId],
+		[segmentId, props.playlist.activationId, props.playlist.currentPartInfo?.partInstanceId],
 		false
 	)
 
 	const isNextSegment = useTracker(
 		() => {
-			if (!props.playlist.nextPartInstanceId || !props.playlist.activationId) {
+			if (!props.playlist.nextPartInfo || !props.playlist.activationId) {
 				return false
 			}
 
-			const partInstance = PartInstances.findOne(props.playlist.nextPartInstanceId, {
+			const partInstance = PartInstances.findOne(props.playlist.nextPartInfo.partInstanceId, {
 				fields: {
 					//@ts-expect-error typescript doesnt like it
 					segmentId: 1,
@@ -148,17 +146,17 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 
 			return partInstance.segmentId === segmentId
 		},
-		[segmentId, props.playlist.activationId, props.playlist.nextPartInstanceId],
+		[segmentId, props.playlist.activationId, props.playlist.nextPartInfo?.partInstanceId],
 		false
 	)
 
 	const currentPartWillAutoNext = useTracker(
 		() => {
-			if (!props.playlist.currentPartInstanceId || !props.playlist.activationId) {
+			if (!props.playlist.currentPartInfo || !props.playlist.activationId) {
 				return false
 			}
 
-			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInstanceId, {
+			const currentPartInstance = PartInstances.findOne(props.playlist.currentPartInfo.partInstanceId, {
 				fields: {
 					//@ts-expect-error deep property
 					'part.autoNext': 1,
@@ -171,7 +169,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 
 			return !!(currentPartInstance.part.autoNext && currentPartInstance.part.expectedDuration)
 		},
-		[segmentId, props.playlist.activationId, props.playlist.currentPartInstanceId],
+		[segmentId, props.playlist.activationId, props.playlist.currentPartInfo?.partInstanceId],
 		false
 	)
 
@@ -223,7 +221,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 		}
 	}, [props.onSegmentScroll, isLiveSegment])
 
-	if (props.segmentui === undefined) {
+	if (props.segmentui === undefined || props.segmentui.isHidden) {
 		return null
 	}
 
@@ -235,7 +233,8 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 			segment={props.segmentui}
 			studio={props.studio}
 			parts={props.parts}
-			segmentNotes={props.segmentNotes}
+			pieces={props.pieces}
+			segmentNoteCounts={props.segmentNoteCounts}
 			onItemClick={props.onPieceClick}
 			onItemDoubleClick={props.onPieceDoubleClick}
 			playlist={props.playlist}

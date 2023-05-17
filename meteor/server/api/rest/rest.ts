@@ -88,14 +88,15 @@ Meteor.startup(() => {
 				docString += `/:${paramName}`
 			})
 
-			assignRoute('GET', resource, docString, (args) => {
+			assignRoute('GET', resource, docString, async (args) => {
 				const convArgs = typeConvertUrlParameters(args)
-				const cursor = f.apply(
+				const cursor = await f.apply(
 					{
 						ready: () => null,
 					},
 					convArgs
 				)
+
 				if (cursor) return cursor.fetch()
 				return []
 			})

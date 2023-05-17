@@ -1,33 +1,38 @@
+import '../../../__mocks__/_vm2'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import {
 	setupDefaultStudioEnvironment,
 	DefaultEnvironment,
 	setupDefaultRundownPlaylist,
+	convertToUIShowStyleBase,
 } from '../../../__mocks__/helpers/database'
 import { RundownUtils } from '../rundown'
-import {
-	RundownPlaylists,
-	RundownPlaylistId,
-	RundownPlaylistCollectionUtil,
-} from '../../../lib/collections/RundownPlaylists'
-import { Piece, Pieces } from '../../../lib/collections/Pieces'
+import { Piece } from '../../../lib/collections/Pieces'
 import { defaultPartInstance, defaultPiece, defaultPieceInstance } from '../../../__mocks__/defaultCollectionObjects'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { PartInstance, PartInstances } from '../../../lib/collections/PartInstances'
+import { PartInstance } from '../../../lib/collections/PartInstances'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { PieceInstances } from '../../../lib/collections/PieceInstances'
+import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstances, PieceInstances, Pieces, RundownPlaylists } from '../../collections'
+import { MongoMock } from '../../../__mocks__/mongo'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+
+const mockRundownPlaylistsCollection = MongoMock.getInnerMockCollection(RundownPlaylists)
+const mockPartInstancesCollection = MongoMock.getInnerMockCollection(PartInstances)
+const mockPieceInstancesCollection = MongoMock.getInnerMockCollection(PieceInstances)
+const mockPiecesCollection = MongoMock.getInnerMockCollection(Pieces)
 
 describe('client/lib/rundown', () => {
 	let env: DefaultEnvironment
 	let playlistId: RundownPlaylistId
 	beforeEach(async () => {
 		env = await setupDefaultStudioEnvironment()
-		playlistId = setupDefaultRundownPlaylist(env).playlistId
+		playlistId = (await setupDefaultRundownPlaylist(env)).playlistId
 	})
 	describe('RundownUtils.getResolvedSegment', () => {
 		testInFiber('Basic Segment resolution', () => {
-			const showStyleBase = env.showStyleBase
+			const showStyleBase = convertToUIShowStyleBase(env.showStyleBase)
 			const playlist = RundownPlaylists.findOne(playlistId)
 			if (!playlist) throw new Error('Rundown not found')
 
@@ -48,6 +53,7 @@ describe('client/lib/rundown', () => {
 				[],
 				new Map(),
 				parts.map((part) => part._id),
+				new Map(),
 				currentPartInstance,
 				nextPartInstance
 			)
@@ -67,7 +73,10 @@ describe('client/lib/rundown', () => {
 		})
 
 		testInFiber('Infinite Piece starting in first Part is populated across the Segment', () => {
-			const showStyleBase = env.showStyleBase
+			const showStyleBase = convertToUIShowStyleBase(env.showStyleBase)
+			const sourceLayerIds = Object.keys(showStyleBase.sourceLayers)
+			const outputLayerIds = Object.keys(showStyleBase.outputLayers)
+
 			const playlist = RundownPlaylists.findOne(playlistId)
 			if (!playlist) throw new Error('Playlist not found')
 
@@ -87,15 +96,15 @@ describe('client/lib/rundown', () => {
 				...defaultPiece(protectString(rundownId + '_infinite_piece'), rundownId, segment._id, firstPart._id),
 				externalId: 'MOCK_INFINITE_PIECE',
 				name: 'Infinite',
-				sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-				outputLayerId: env.showStyleBase.outputLayers[0]._id,
+				sourceLayerId: sourceLayerIds[0],
+				outputLayerId: outputLayerIds[0],
 				enable: {
 					start: 1000,
 				},
 				lifespan: PieceLifespan.OutOnSegmentEnd,
 			}
 
-			Pieces.insert(infinitePiece)
+			mockPiecesCollection.insert(infinitePiece)
 
 			const resolvedSegment = RundownUtils.getResolvedSegment(
 				showStyleBase,
@@ -106,6 +115,7 @@ describe('client/lib/rundown', () => {
 				[],
 				new Map(),
 				parts.map((part) => part._id),
+				new Map(),
 				currentPartInstance,
 				nextPartInstance
 			)
@@ -136,7 +146,10 @@ describe('client/lib/rundown', () => {
 		})
 
 		testInFiber('Infinite Piece starting in first Part is cropped by another Piece', () => {
-			const showStyleBase = env.showStyleBase
+			const showStyleBase = convertToUIShowStyleBase(env.showStyleBase)
+			const sourceLayerIds = Object.keys(showStyleBase.sourceLayers)
+			const outputLayerIds = Object.keys(showStyleBase.outputLayers)
+
 			const playlist = RundownPlaylists.findOne(playlistId)
 			if (!playlist) throw new Error('Playlist not found')
 
@@ -156,28 +169,28 @@ describe('client/lib/rundown', () => {
 				...defaultPiece(protectString(rundownId + '_infinite_piece'), rundownId, segment._id, firstPart._id),
 				externalId: 'MOCK_INFINITE_PIECE',
 				name: 'Infinite',
-				sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-				outputLayerId: env.showStyleBase.outputLayers[0]._id,
+				sourceLayerId: sourceLayerIds[0],
+				outputLayerId: outputLayerIds[0],
 				enable: {
 					start: 1000,
 				},
 				lifespan: PieceLifespan.OutOnSegmentChange,
 			}
-			Pieces.insert(infinitePiece)
+			mockPiecesCollection.insert(infinitePiece)
 
 			const croppingPiece: Piece = {
 				...defaultPiece(protectString(rundownId + '_cropping_piece'), rundownId, segment._id, firstPart._id),
 				externalId: 'MOCK_CROPPING_PIECE',
 				name: 'Cropping',
-				sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-				outputLayerId: env.showStyleBase.outputLayers[0]._id,
+				sourceLayerId: sourceLayerIds[0],
+				outputLayerId: outputLayerIds[0],
 				enable: {
 					start: 4000,
 					duration: 1000,
 				},
 				lifespan: PieceLifespan.WithinPart,
 			}
-			Pieces.insert(croppingPiece)
+			mockPiecesCollection.insert(croppingPiece)
 
 			const resolvedSegment = RundownUtils.getResolvedSegment(
 				showStyleBase,
@@ -188,6 +201,7 @@ describe('client/lib/rundown', () => {
 				[],
 				new Map(),
 				parts.map((part) => part._id),
+				new Map(),
 				currentPartInstance,
 				nextPartInstance
 			)
@@ -226,10 +240,12 @@ describe('client/lib/rundown', () => {
 		testInFiber(
 			"User-Stopped Infinite Piece starting in first Part maintains it's length when followed by another Piece",
 			() => {
-				const showStyleBase = env.showStyleBase
+				const showStyleBase = convertToUIShowStyleBase(env.showStyleBase)
+				const sourceLayerIds = Object.keys(showStyleBase.sourceLayers)
+				const outputLayerIds = Object.keys(showStyleBase.outputLayers)
 
 				const playlistActivationId = protectString('mock_activation_0')
-				RundownPlaylists.update(playlistId, {
+				mockRundownPlaylistsCollection.update(playlistId, {
 					$set: {
 						activationId: playlistActivationId,
 					},
@@ -256,14 +272,14 @@ describe('client/lib/rundown', () => {
 					),
 					externalId: 'MOCK_INFINITE_PIECE',
 					name: 'Infinite',
-					sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-					outputLayerId: env.showStyleBase.outputLayers[0]._id,
+					sourceLayerId: sourceLayerIds[0],
+					outputLayerId: outputLayerIds[0],
 					enable: {
 						start: 1000,
 					},
 					lifespan: PieceLifespan.OutOnSegmentChange,
 				}
-				Pieces.insert(infinitePiece)
+				mockPiecesCollection.insert(infinitePiece)
 
 				const followingPiece: Piece = {
 					...defaultPiece(
@@ -274,15 +290,15 @@ describe('client/lib/rundown', () => {
 					),
 					externalId: 'MOCK_CROPPING_PIECE',
 					name: 'Cropping',
-					sourceLayerId: env.showStyleBase.sourceLayers[0]._id,
-					outputLayerId: env.showStyleBase.outputLayers[0]._id,
+					sourceLayerId: sourceLayerIds[0],
+					outputLayerId: outputLayerIds[0],
 					enable: {
 						start: 4000,
 						duration: 1000,
 					},
 					lifespan: PieceLifespan.WithinPart,
 				}
-				Pieces.insert(followingPiece)
+				mockPiecesCollection.insert(followingPiece)
 
 				const segmentPlayoutId = protectString('mock_segment_playout_0')
 				const mockCurrentPartInstance: PartInstance = {
@@ -294,7 +310,7 @@ describe('client/lib/rundown', () => {
 					),
 				}
 
-				PartInstances.insert(mockCurrentPartInstance)
+				mockPartInstancesCollection.insert(mockCurrentPartInstance)
 
 				const infinitePieceInstance: PieceInstance = {
 					...defaultPieceInstance(
@@ -305,11 +321,11 @@ describe('client/lib/rundown', () => {
 						infinitePiece
 					),
 					userDuration: {
-						end: 2000,
+						endRelativeToPart: 2000,
 					},
 				}
 
-				PieceInstances.insert(infinitePieceInstance)
+				mockPieceInstancesCollection.insert(infinitePieceInstance)
 
 				const followingPieceInstance: PieceInstance = {
 					...defaultPieceInstance(
@@ -321,11 +337,14 @@ describe('client/lib/rundown', () => {
 					),
 				}
 
-				PieceInstances.insert(followingPieceInstance)
+				mockPieceInstancesCollection.insert(followingPieceInstance)
 
-				RundownPlaylists.update(playlistId, {
+				mockRundownPlaylistsCollection.update(playlistId, {
 					$set: {
-						currentPartInstanceId: mockCurrentPartInstance._id,
+						currentPartInfo: {
+							partInstanceId: mockCurrentPartInstance._id,
+							rundownId: mockCurrentPartInstance.rundownId,
+						},
 					},
 				})
 
@@ -343,6 +362,7 @@ describe('client/lib/rundown', () => {
 					[],
 					new Map(),
 					parts.map((part) => part._id),
+					new Map(),
 					currentPartInstance,
 					nextPartInstance
 				)

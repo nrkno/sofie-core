@@ -1,7 +1,8 @@
 import * as React from 'react'
 import type { Sorensen } from '@sofie-automation/sorensen'
 import CoreIcons from '@nrk/core-icons/jsx'
-import Escape from 'react-escape'
+import Escape from './../../../Escape'
+
 import { SorensenContext } from '../../../SorensenContext'
 import { Settings } from '../../../../../lib/Settings'
 
@@ -13,7 +14,7 @@ export interface IModalAttributes {
 
 export type SomeEvent = Event | React.SyntheticEvent<object>
 
-export class Modal extends React.Component<IModalAttributes> {
+export class Modal extends React.Component<React.PropsWithChildren<IModalAttributes>> {
 	boundKeys: Array<string> = []
 	sorensen: Sorensen
 
@@ -21,20 +22,20 @@ export class Modal extends React.Component<IModalAttributes> {
 		super(props)
 	}
 
-	componentDidMount() {
-		this.sorensen = this.context
+	componentDidMount(): void {
+		this.sorensen = this.context as Sorensen
 		this.bindKeys()
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		this.unbindKeys()
 	}
 
-	componentDidUpdate(prevProps: IModalAttributes) {
+	componentDidUpdate(prevProps: IModalAttributes): void {
 		if (prevProps.show !== this.props.show) this.bindKeys()
 	}
 
-	bindKeys = () => {
+	private bindKeys = () => {
 		if (this.props.show) {
 			this.sorensen.bind(Settings.confirmKeyCode, this.preventDefault, {
 				up: false,
@@ -57,14 +58,14 @@ export class Modal extends React.Component<IModalAttributes> {
 		}
 	}
 
-	unbindKeys = () => {
+	private unbindKeys = () => {
 		this.sorensen.unbind(Settings.confirmKeyCode, this.preventDefault)
 		this.sorensen.unbind(Settings.confirmKeyCode, this.handleKey)
 		this.sorensen.unbind('Escape', this.preventDefault)
 		this.sorensen.unbind('Escape', this.handleKey)
 	}
 
-	handleKey = (e: KeyboardEvent) => {
+	private handleKey = (e: KeyboardEvent) => {
 		if (this.props.show) {
 			if (e.code === 'Escape') {
 				this.handleDiscard(e)
@@ -74,13 +75,13 @@ export class Modal extends React.Component<IModalAttributes> {
 		}
 	}
 
-	handleDiscard = (e: SomeEvent) => {
+	private handleDiscard = (e: SomeEvent) => {
 		if (this.props.onDiscard && typeof this.props.onDiscard === 'function') {
 			this.props.onDiscard(e)
 		}
 	}
 
-	render() {
+	render(): JSX.Element | null {
 		if (!this.props.show) {
 			return null
 		}

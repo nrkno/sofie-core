@@ -1,29 +1,26 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { SegmentId } from '../../../lib/collections/Segments'
-import { Studio } from '../../../lib/collections/Studios'
 import { IContextMenuContext } from '../RundownView'
-import { PartUi, PieceUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
+import { IOutputLayerUi, PartUi, PieceUi, SegmentNoteCounts, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
 import { contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib'
-import { isPartPlayable, PartId } from '../../../lib/collections/Parts'
+import { isPartPlayable } from '../../../lib/collections/Parts'
 import { useTranslation } from 'react-i18next'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { literal, unprotectString } from '../../../lib/lib'
 import { lockPointer, scrollToPart, unlockPointer } from '../../lib/viewPort'
 import { StoryboardPart } from './StoryboardPart'
-import { RundownHoldState } from '../../../lib/collections/Rundowns'
 import classNames from 'classnames'
 import RundownViewEventBus, {
 	GoToPartEvent,
 	GoToPartInstanceEvent,
 	HighlightEvent,
 	RundownViewEvents,
-} from '../RundownView/RundownViewEventBus'
+} from '../../../lib/api/triggers/RundownViewEventBus'
 import { getElementWidth } from '../../utils/dimensions'
 import { HOVER_TIMEOUT } from '../Shelf/DashboardPieceButton'
 import { Meteor } from 'meteor/meteor'
@@ -32,18 +29,22 @@ import { SegmentScrollbar } from './SegmentScrollbar'
 import { OptionalVelocityComponent } from '../../lib/utilComponents'
 import { filterSecondarySourceLayers } from './StoryboardPartSecondaryPieces/StoryboardPartSecondaryPieces'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
-import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { ErrorBoundary } from '../../lib/ErrorBoundary'
 import { SwitchViewModeButton } from '../SegmentContainer/SwitchViewModeButton'
+import { UIStudio } from '../../../lib/api/studios'
+import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 interface IProps {
 	id: string
 	key: string
 	segment: SegmentUi
 	playlist: RundownPlaylist
-	studio: Studio
+	studio: UIStudio
 	parts: Array<PartUi>
-	segmentNotes: Array<SegmentNote>
+	pieces: Map<PartId, CalculateTimingsPiece[]>
+	segmentNoteCounts: SegmentNoteCounts
 	// timeScale: number
 	// maxTimeScale: number
 	// onRecalculateMaxTimeScale: () => Promise<number>
@@ -69,7 +70,7 @@ interface IProps {
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onHeaderNoteClick?: (segmentId: SegmentId, level: NoteSeverity) => void
-	onSwitchViewMode: (newViewMode: SegmentViewMode) => void
+	onSwitchViewMode?: (newViewMode: SegmentViewMode) => void
 	isLastSegment: boolean
 	lastValidPartIndex: number | undefined
 	budgetDuration?: number
@@ -93,7 +94,6 @@ export const SegmentStoryboard = React.memo(
 		const [touched, setTouched] = useState<{ clientX: number; clientY: number } | null>(null)
 		const [animateScrollLeft, setAnimateScrollLeft] = useState(true)
 		const { t } = useTranslation()
-		const notes: Array<SegmentNote> = props.segmentNotes
 		const [squishedHover, setSquishedHover] = useState<null | number>(null)
 		const [highlight, setHighlight] = useState(false)
 		const squishedHoverTimeout = useRef<number | null>(null)
@@ -112,7 +112,7 @@ export const SegmentStoryboard = React.memo(
 		let countdownToPartId: PartId | undefined = undefined
 		if (!props.isLiveSegment) {
 			const nextPart = props.isNextSegment
-				? props.parts.find((p) => p.instance._id === props.playlist.nextPartInstanceId)
+				? props.parts.find((p) => p.instance._id === props.playlist.nextPartInfo?.partInstanceId)
 				: props.parts[0]
 
 			if (nextPart) {
@@ -120,14 +120,8 @@ export const SegmentStoryboard = React.memo(
 			}
 		}
 
-		const criticalNotes = notes.reduce((prev, item) => {
-			if (item.type === NoteSeverity.ERROR) return ++prev
-			return prev
-		}, 0)
-		const warningNotes = notes.reduce((prev, item) => {
-			if (item.type === NoteSeverity.WARNING) return ++prev
-			return prev
-		}, 0)
+		const criticalNotes = props.segmentNoteCounts.criticial
+		const warningNotes = props.segmentNoteCounts.warning
 
 		const [useTimeOfDayCountdowns, setUseTimeOfDayCountdowns] = useState(
 			UIStateStorage.getItemBoolean(
@@ -200,12 +194,12 @@ export const SegmentStoryboard = React.memo(
 		const squishedPartCardStride =
 			squishedPartsNum > 1 ? Math.max(4, (spaceLeft - PART_WIDTH) / (squishedPartsNum - 1)) : null
 
-		const playlistHasNextPart = !!props.playlist.nextPartInstanceId
+		const playlistHasNextPart = !!props.playlist.nextPartInfo
 		const playlistIsLooping = props.playlist.loop
 
 		renderedParts.forEach((part, index) => {
-			const isLivePart = part.instance._id === props.playlist.currentPartInstanceId
-			const isNextPart = part.instance._id === props.playlist.nextPartInstanceId
+			const isLivePart = part.instance._id === props.playlist.currentPartInfo?.partInstanceId
+			const isNextPart = part.instance._id === props.playlist.nextPartInfo?.partInstanceId
 
 			if (isLivePart) currentPartIndex = index
 			if (isNextPart) nextPartIndex = index
@@ -620,6 +614,7 @@ export const SegmentStoryboard = React.memo(
 							<SegmentDuration
 								segmentId={props.segment._id}
 								parts={props.parts}
+								pieces={props.pieces}
 								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
 								fixed={props.fixedSegmentDuration}
 							/>
@@ -647,7 +642,7 @@ export const SegmentStoryboard = React.memo(
 				</div>
 				<div className="segment-timeline__mos-id">{props.segment.externalId}</div>
 				<div className="segment-timeline__source-layers" role="tree" aria-label={t('Sources')}>
-					{Object.values(props.segment.outputLayers)
+					{Object.values<IOutputLayerUi>(props.segment.outputLayers)
 						.filter((outputGroup) => outputGroup.used)
 						.map((outputGroup) => (
 							<div className="segment-timeline__output-group" key={outputGroup._id}>

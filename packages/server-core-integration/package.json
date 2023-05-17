@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/server-core-integration",
-	"version": "1.46.0-in-testing.0",
+	"version": "1.50.0-in-development",
 	"description": "Library for connecting to Core",
 	"main": "dist/index.js",
 	"typings": "dist/index.d.ts",
@@ -32,23 +32,23 @@
 		}
 	],
 	"scripts": {
-		"build": "rimraf dist && yarn build:main && yarn copytypes",
-		"build:main": "tsc -p tsconfig.build.json",
-		"lint:raw": "eslint --ext .ts --ext .js --ignore-pattern dist",
-		"lint": "yarn lint:raw .",
-		"unit": "jest",
-		"test": "yarn lint && yarn unit",
-		"test:integration": "yarn lint && jest --config=jest-integration.config.js",
-		"watch": "jest --watch",
+		"build": "run -T rimraf dist && run build:main && run copytypes",
+		"build:main": "run -T tsc -p tsconfig.build.json",
+		"lint:raw": "run -T eslint --ext .ts --ext .js --ignore-pattern dist",
+		"lint": "run lint:raw .",
+		"unit": "run -T jest",
+		"test": "run lint && run unit",
+		"test:integration": "run lint && run -T jest --config=jest-integration.config.js",
+		"watch": "run -T jest --watch",
 		"copytypes": "copyfiles -u 1 src/types/* dist",
-		"cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
+		"cov": "run -T jest --coverage; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
-		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
-		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck"
+		"validate:dependencies": "yarn npm audit --environment production && run license-validate",
+		"validate:dev-dependencies": "yarn npm audit --environment development",
+		"license-validate": "run -T sofie-licensecheck"
 	},
 	"engines": {
-		"node": "^14.19 || ^16.14"
+		"node": ">=14.19"
 	},
 	"files": [
 		"/dist",
@@ -70,20 +70,21 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/shared-lib": "1.46.0-in-testing.0",
+		"@sofie-automation/shared-lib": "1.50.0-in-development",
 		"ejson": "^2.2.3",
 		"eventemitter3": "^4.0.7",
 		"faye-websocket": "^0.11.4",
-		"got": "^11.8.5",
+		"got": "^11.8.6",
 		"tslib": "^2.4.0",
 		"underscore": "^1.13.4"
 	},
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [
-			"prettier"
+			"yarn run -T prettier"
 		],
 		"*.{ts,tsx}": [
 			"yarn lint:raw"
 		]
-	}
+	},
+	"packageManager": "yarn@3.5.0"
 }

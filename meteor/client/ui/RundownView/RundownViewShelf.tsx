@@ -3,12 +3,11 @@ import * as _ from 'underscore'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { SegmentUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { normalizeArray, unprotectString } from '../../../lib/lib'
+import { unprotectString } from '../../../lib/lib'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { OutputLayers, SourceLayers } from '../../../lib/collections/ShowStyleBases'
 import { DashboardPieceButton } from '../Shelf/DashboardPieceButton'
-import { IBlueprintActionTriggerMode, IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { Studio } from '../../../lib/collections/Studios'
+import { IBlueprintActionTriggerMode, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import {
 	contextMenuHoldToDisplayTime,
 	ensureHasTrailingSlash,
@@ -20,11 +19,9 @@ import {
 	PieceDisplayStyle,
 	RundownLayoutFilterBase,
 } from '../../../lib/collections/RundownLayouts'
-import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
-import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
-import { PartInstanceId } from '../../../lib/collections/PartInstances'
-import { PieceId } from '../../../lib/collections/Pieces'
-import { doUserAction, UserAction } from '../../lib/userAction'
+import { NoticeLevel, Notification, NotificationCenter } from '../../../lib/notifications/notifications'
+import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import {
 	AdLibPieceUi,
@@ -36,12 +33,15 @@ import {
 } from '../../lib/shelf'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { ContextType, setShelfContextMenuContext } from '../Shelf/ShelfContextMenu'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { UIStudio } from '../../../lib/api/studios'
+import { PartInstanceId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IRundownViewShelfProps {
-	studio: Studio
+	studio: UIStudio
 	segment: SegmentUi
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 	adLibSegmentUi: AdlibSegmentUi
 	hotkeyGroup: string
 	studioMode: boolean
@@ -49,12 +49,8 @@ interface IRundownViewShelfProps {
 }
 
 interface IRundownViewShelfTrackedProps {
-	outputLayers: {
-		[key: string]: IOutputLayer
-	}
-	sourceLayers: {
-		[key: string]: ISourceLayer
-	}
+	outputLayers: OutputLayers
+	sourceLayers: SourceLayers
 	unfinishedAdLibIds: PieceId[]
 	unfinishedTags: string[]
 	nextAdLibIds: PieceId[]
@@ -104,9 +100,9 @@ class RundownViewShelfInner extends MeteorReactComponent<
 
 	onClearAllSourceLayers = (sourceLayers: ISourceLayer[], e: any) => {
 		const { t } = this.props
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
+		if (this.props.playlist && this.props.playlist.currentPartInfo) {
 			const playlistId = this.props.playlist._id
-			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+			const currentPartInstanceId = this.props.playlist.currentPartInfo.partInstanceId
 			doUserAction(t, e, UserAction.CLEAR_SOURCELAYER, (e, ts) =>
 				MeteorCall.userAction.sourceLayerOnPartStop(
 					e,
@@ -120,7 +116,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 	}
 
 	onToggleSticky = (sourceLayerId: string, e: any) => {
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId && this.props.playlist.activationId) {
+		if (this.props.playlist && this.props.playlist.currentPartInfo && this.props.playlist.activationId) {
 			const { t } = this.props
 			doUserAction(t, e, UserAction.START_STICKY_PIECE, (e, ts) =>
 				MeteorCall.userAction.sourceLayerStickyPieceStart(e, ts, this.props.playlist._id, sourceLayerId)
@@ -160,8 +156,8 @@ class RundownViewShelfInner extends MeteorReactComponent<
 			console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
 			queue = false
 		}
-		if (this.props.playlist && this.props.playlist.currentPartInstanceId) {
-			const currentPartInstanceId = this.props.playlist.currentPartInstanceId
+		if (this.props.playlist && this.props.playlist.currentPartInfo) {
+			const currentPartInstanceId = this.props.playlist.currentPartInfo.partInstanceId
 			if (!this.isAdLibOnAir(adlibPiece) || !(sourceLayer && sourceLayer.isClearable)) {
 				if (adlibPiece.isAction && adlibPiece.adlibAction) {
 					const action = adlibPiece.adlibAction
@@ -209,7 +205,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 		}
 	}
 
-	render() {
+	render(): JSX.Element | null {
 		const { pieces } = this.props.adLibSegmentUi
 		if (!pieces.length) return null
 		return (
@@ -280,11 +276,11 @@ export const RundownViewShelf = translateWithTracker<
 	IRundownViewShelfTrackedProps
 >(
 	(props: IRundownViewShelfProps) => {
-		const sourceLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.sourceLayers, '_id') // @todo: optimize
-		const outputLayerLookup = normalizeArray(props.showStyleBase && props.showStyleBase.outputLayers, '_id')
+		const sourceLayerLookup = props.showStyleBase.sourceLayers
+		const outputLayerLookup = props.showStyleBase.outputLayers
 
 		const { unfinishedAdLibIds, unfinishedTags, nextAdLibIds, nextTags } = memoizedIsolatedAutorun(
-			(_currentPartInstanceId: PartInstanceId | null, _nextPartInstanceId: PartInstanceId | null) => {
+			(_currentPartInstanceId: PartInstanceId | undefined, _nextPartInstanceId: PartInstanceId | undefined) => {
 				const { unfinishedAdLibIds, unfinishedTags } = getUnfinishedPieceInstancesGrouped(
 					props.playlist,
 					props.showStyleBase
@@ -298,8 +294,8 @@ export const RundownViewShelf = translateWithTracker<
 				}
 			},
 			'unfinishedAndNextAdLibsAndTags',
-			props.playlist.currentPartInstanceId,
-			props.playlist.nextPartInstanceId
+			props.playlist.currentPartInfo?.partInstanceId,
+			props.playlist.nextPartInfo?.partInstanceId
 		)
 
 		return {

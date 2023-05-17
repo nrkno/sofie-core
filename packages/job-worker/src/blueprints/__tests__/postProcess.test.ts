@@ -41,7 +41,7 @@ describe('Test blueprint post-process', () => {
 			for (const key of _.keys(template)) {
 				const key2 = key as keyof T
 				if (obj[key2] === undefined) {
-					errs.push(`${i}.${key2}`)
+					errs.push(`${i}.${String(key2)}`)
 				}
 			}
 		})
@@ -53,15 +53,15 @@ describe('Test blueprint post-process', () => {
 		const context = setupDefaultJobEnvironment()
 		test('no objects', () => {
 			// Ensure that an empty array works ok
-			const res = postProcessStudioBaselineObjects(context.studio, [])
+			const res = postProcessStudioBaselineObjects(context.studio.blueprintId, [])
 			expect(res).toHaveLength(0)
 		})
 
 		test('some no ids', () => {
-			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
+			const rawObjects = literal<TSR.TSRTimelineObj<any>[]>([
 				{
 					id: 'testObj',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'one',
 					content: {
 						deviceType: TSR.DeviceType.ABSTRACT,
@@ -69,7 +69,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: '',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'two',
 					content: {
 						deviceType: TSR.DeviceType.CASPARCG,
@@ -77,7 +77,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: 'finalObj',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'three',
 					content: {
 						deviceType: TSR.DeviceType.ATEM,
@@ -85,7 +85,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: '',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'four',
 					content: {
 						deviceType: TSR.DeviceType.HYPERDECK,
@@ -95,7 +95,7 @@ describe('Test blueprint post-process', () => {
 
 			// TODO - mock getHash?
 
-			const res = postProcessStudioBaselineObjects(context.studio, clone(rawObjects))
+			const res = postProcessStudioBaselineObjects(context.studio.blueprintId, clone(rawObjects))
 
 			// Nothing should have been overridden (yet)
 			_.each(rawObjects, (obj) => {
@@ -116,10 +116,10 @@ describe('Test blueprint post-process', () => {
 		test('duplicate ids', () => {
 			const blueprintId = context.studio.blueprintId
 
-			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
+			const rawObjects = literal<TSR.TSRTimelineObj<any>[]>([
 				{
 					id: 'testObj',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'one',
 					content: {
 						deviceType: TSR.DeviceType.ABSTRACT,
@@ -127,7 +127,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: '',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'two',
 					content: {
 						deviceType: TSR.DeviceType.CASPARCG,
@@ -135,7 +135,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: 'testObj',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'three',
 					content: {
 						deviceType: TSR.DeviceType.ATEM,
@@ -143,7 +143,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: '',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'four',
 					content: {
 						deviceType: TSR.DeviceType.HYPERDECK,
@@ -151,7 +151,7 @@ describe('Test blueprint post-process', () => {
 				},
 			])
 
-			expect(() => postProcessStudioBaselineObjects(context.studio, clone(rawObjects))).toThrow(
+			expect(() => postProcessStudioBaselineObjects(context.studio.blueprintId, clone(rawObjects))).toThrow(
 				`Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`
 			)
 		})
@@ -165,10 +165,10 @@ describe('Test blueprint post-process', () => {
 		})
 
 		test('some no ids', () => {
-			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
+			const rawObjects = literal<TSR.TSRTimelineObj<any>[]>([
 				{
 					id: 'testObj',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'one',
 					content: {
 						deviceType: TSR.DeviceType.ABSTRACT,
@@ -176,7 +176,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: '',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'two',
 					content: {
 						deviceType: TSR.DeviceType.CASPARCG,
@@ -184,7 +184,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: 'finalObj',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'three',
 					content: {
 						deviceType: TSR.DeviceType.ATEM,
@@ -192,7 +192,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: '',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'four',
 					content: {
 						deviceType: TSR.DeviceType.HYPERDECK,
@@ -232,7 +232,7 @@ describe('Test blueprint post-process', () => {
 			const tmpObj = literal<TimelineObjGeneric>({
 				id: '',
 				layer: '',
-				enable: {},
+				enable: { while: 1 },
 				content: {} as any,
 				objectType: TimelineObjType.RUNDOWN,
 			})
@@ -240,10 +240,10 @@ describe('Test blueprint post-process', () => {
 		})
 
 		test('duplicate ids', () => {
-			const rawObjects = literal<TSR.TSRTimelineObjBase[]>([
+			const rawObjects = literal<TSR.TSRTimelineObj<any>[]>([
 				{
 					id: 'testObj',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'one',
 					content: {
 						deviceType: TSR.DeviceType.ABSTRACT,
@@ -251,7 +251,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: '',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'two',
 					content: {
 						deviceType: TSR.DeviceType.CASPARCG,
@@ -259,7 +259,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: 'testObj',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'three',
 					content: {
 						deviceType: TSR.DeviceType.ATEM,
@@ -267,7 +267,7 @@ describe('Test blueprint post-process', () => {
 				},
 				{
 					id: '',
-					enable: {},
+					enable: { while: 1 },
 					layer: 'four',
 					content: {
 						deviceType: TSR.DeviceType.HYPERDECK,
@@ -393,9 +393,9 @@ describe('Test blueprint post-process', () => {
 				outputLayerId: 'ol0',
 				content: {
 					timelineObjects: [
-						literal<TimelineObjectCoreExt>({
+						literal<TimelineObjectCoreExt<any>>({
 							id: '',
-							enable: {},
+							enable: { while: 1 },
 							layer: 'four',
 							content: {
 								deviceType: TSR.DeviceType.HYPERDECK,
@@ -529,9 +529,9 @@ describe('Test blueprint post-process', () => {
 				outputLayerId: 'ol0',
 				content: {
 					timelineObjects: [
-						literal<TimelineObjectCoreExt>({
+						literal<TimelineObjectCoreExt<any>>({
 							id: '',
-							enable: {},
+							enable: { while: 1 },
 							layer: 'four',
 							content: {
 								deviceType: TSR.DeviceType.HYPERDECK,
@@ -561,6 +561,46 @@ describe('Test blueprint post-process', () => {
 
 			const resObjs = deserializePieceTimelineObjectsBlob(res[0].timelineObjectsString)
 			expect(resObjs[0].id).not.toEqual('')
+		})
+		test('piece with bad Timeline', () => {
+			const jobContext = setupDefaultJobEnvironment()
+
+			const piece = literal<IBlueprintPiece>({
+				name: 'test2',
+				externalId: 'eid2',
+				enable: { start: 0 },
+				sourceLayerId: 'sl0',
+				outputLayerId: 'ol0',
+				content: {
+					timelineObjects: [
+						literal<TimelineObjectCoreExt<any>>({
+							id: '',
+							enable: { while: 1 },
+							layer: 'four',
+							classes: ['i-am-an-invalid-class'], // invalid since it contains "-"
+							content: {
+								deviceType: TSR.DeviceType.HYPERDECK,
+							},
+						}),
+					],
+				},
+				lifespan: PieceLifespan.OutOnRundownEnd,
+			})
+
+			expect(() => {
+				postProcessPieces(
+					jobContext,
+					[piece],
+					protectString('blueprint9'),
+					protectString('fakeRo'),
+					protectString('segment8'),
+					protectString('part6'),
+					false
+				)
+				// Error in blueprint "blueprint9": Validation of timelineObjs failed:
+				// Error: Object "IJ0Ud5lJhbIllA0_kWFIVz51eL4_": "classes[0]":
+				// Error: The string "i-am-an-invalid-class" contains a character ("-") which isn't allowed in Timeline (is an operator)
+			}).toThrow(/error in blueprint.*contains a character/i)
 		})
 	})
 })

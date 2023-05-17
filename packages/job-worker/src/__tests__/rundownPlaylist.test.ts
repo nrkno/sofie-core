@@ -2,13 +2,13 @@ import { PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { protectString, protectStringArray } from '@sofie-automation/corelib/dist/protectedString'
+import { ProcessedShowStyleCompound } from '../jobs'
 import { ReadonlyDeep } from 'type-fest'
 import {
-	moveRundownIntoPlaylist,
+	handleMoveRundownIntoPlaylist,
 	produceRundownPlaylistInfoFromRundown,
-	restoreRundownsInPlaylistToDefaultOrder,
+	handleRestoreRundownsInPlaylistToDefaultOrder,
 } from '../rundownPlaylists'
 import { MockJobContext, setupDefaultJobEnvironment } from '../__mocks__/context'
 import {
@@ -19,7 +19,7 @@ import {
 
 describe('Rundown', () => {
 	let context: MockJobContext
-	let showStyle: ReadonlyDeep<ShowStyleCompound>
+	let showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
 	beforeAll(async () => {
 		context = setupDefaultJobEnvironment()
 
@@ -94,13 +94,13 @@ describe('Rundown', () => {
 		}
 
 		// Ensure they stay still when restoring default order:
-		await restoreRundownsInPlaylistToDefaultOrder(context, {
+		await handleRestoreRundownsInPlaylistToDefaultOrder(context, {
 			playlistId: playlist0._id,
 		})
 		await expect(getRundownIDs(playlist0._id)).resolves.toEqual(['rundown00', 'rundown01', 'rundown02'])
 
 		// Move the rundown:
-		await moveRundownIntoPlaylist(context, {
+		await handleMoveRundownIntoPlaylist(context, {
 			rundownId: rundownId00,
 			intoPlaylistId: playlist0._id,
 			rundownsIdsInPlaylistInOrder: protectStringArray(['rundown01', 'rundown02', 'rundown00']),
@@ -110,7 +110,7 @@ describe('Rundown', () => {
 		playlist0 = (await context.directCollections.RundownPlaylists.findOne(playlistId0)) as DBRundownPlaylist
 		expect(playlist0).toBeTruthy()
 
-		await moveRundownIntoPlaylist(context, {
+		await handleMoveRundownIntoPlaylist(context, {
 			rundownId: rundownId02,
 			intoPlaylistId: playlist0._id,
 			rundownsIdsInPlaylistInOrder: protectStringArray(['rundown02', 'rundown01', 'rundown00']),
@@ -130,7 +130,7 @@ describe('Rundown', () => {
 		await expect(context.directCollections.RundownPlaylists.findFetch()).resolves.toHaveLength(2)
 
 		// Move over a rundown to the other playlist:
-		await moveRundownIntoPlaylist(context, {
+		await handleMoveRundownIntoPlaylist(context, {
 			rundownId: rundownId02,
 			intoPlaylistId: playlist1._id,
 			rundownsIdsInPlaylistInOrder: protectStringArray(['rundown10', 'rundown02']), // Note: this gets ignored
@@ -139,7 +139,7 @@ describe('Rundown', () => {
 		await expect(getRundownIDs(playlist1._id)).resolves.toEqual(['rundown02', 'rundown10'])
 
 		// Move a rundown out of a playlist:
-		await moveRundownIntoPlaylist(context, {
+		await handleMoveRundownIntoPlaylist(context, {
 			rundownId: rundownId02,
 			intoPlaylistId: null,
 			rundownsIdsInPlaylistInOrder: [],
@@ -155,7 +155,7 @@ describe('Rundown', () => {
 		await expect(getRundownIDs(newPlaylist._id)).resolves.toEqual(['rundown02'])
 
 		// Move the last rundown into another playlist:
-		await moveRundownIntoPlaylist(context, {
+		await handleMoveRundownIntoPlaylist(context, {
 			rundownId: rundownId02,
 			intoPlaylistId: null,
 			rundownsIdsInPlaylistInOrder: [],
@@ -170,7 +170,7 @@ describe('Rundown', () => {
 		// Move the rundown back into a playlist:
 		await expect(getRundownIDs(playlist0._id)).resolves.toEqual(['rundown01', 'rundown00'])
 		// Note: the order here will be ignored, new rundowns are placed last:
-		await moveRundownIntoPlaylist(context, {
+		await handleMoveRundownIntoPlaylist(context, {
 			rundownId: rundownId02,
 			intoPlaylistId: playlist0._id,
 			rundownsIdsInPlaylistInOrder: protectStringArray(['rundown01', 'rundown02', 'rundown00']),
@@ -180,7 +180,7 @@ describe('Rundown', () => {
 		await expect(context.directCollections.RundownPlaylists.findFetch()).resolves.toHaveLength(2) // A playlist was removed
 
 		// Restore the order:
-		await restoreRundownsInPlaylistToDefaultOrder(context, {
+		await handleRestoreRundownsInPlaylistToDefaultOrder(context, {
 			playlistId: playlist0._id,
 		})
 		await expect(getRundownIDs(playlist0._id)).resolves.toEqual(['rundown00', 'rundown01', 'rundown02'])

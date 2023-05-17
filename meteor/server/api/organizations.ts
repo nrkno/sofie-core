@@ -2,17 +2,15 @@ import { literal, getRandomId, getCurrentTime } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { NewOrganizationAPI, OrganizationAPIMethods } from '../../lib/api/organization'
 import { registerClassToMeteorMethods } from '../methods'
-import { Organizations, OrganizationId, DBOrganization, DBOrganizationBase } from '../../lib/collections/Organization'
+import { DBOrganization, DBOrganizationBase } from '../../lib/collections/Organization'
 import { OrganizationContentWriteAccess } from '../security/organization'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { insertStudioInner } from './studio/api'
 import { insertShowStyleBaseInner } from './showStyles'
-import { Studios } from '../../lib/collections/Studios'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { Blueprints, BlueprintId } from '../../lib/collections/Blueprints'
-import { CoreSystem, getCoreSystemAsync } from '../../lib/collections/CoreSystem'
-import { Users } from '../../lib/collections/Users'
 import { resetCredentials } from '../security/lib/credentials'
+import { BlueprintId, OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Blueprints, CoreSystem, Organizations, ShowStyleBases, Studios, Users } from '../collections'
+import { getCoreSystemAsync } from '../coreSystem/collection'
 
 async function createDefaultEnvironmentForOrg(orgId: OrganizationId) {
 	let systemBlueprintId: BlueprintId | undefined
@@ -72,7 +70,7 @@ async function removeOrganization(context: MethodContext, organizationId: Organi
 	users.forEach((user) => {
 		resetCredentials({ userId: user._id })
 	})
-	Organizations.remove(organizationId)
+	await Organizations.removeAsync(organizationId)
 }
 
 class ServerOrganizationAPI extends MethodContextAPI implements NewOrganizationAPI {

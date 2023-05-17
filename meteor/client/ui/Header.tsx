@@ -3,24 +3,24 @@ import { WithTranslation } from 'react-i18next'
 import { Meteor } from 'meteor/meteor'
 import { NavLink, Link } from 'react-router-dom'
 import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/notifications/NotificationCenterPanel'
-import { NotificationCenter, Notification, NoticeLevel } from '../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { SupportPopUpToggle, SupportPopUp } from './SupportPopUp'
 import * as VelocityReact from 'velocity-react'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
-import { CoreSystem } from '../../lib/collections/CoreSystem'
 import { Settings } from '../../lib/Settings'
+import { CoreSystem } from '../collections'
 
 interface IPropsHeader {
-	user: boolean
+	loggedIn: boolean
 	allowConfigure?: boolean
 	allowTesting?: boolean
 	allowDeveloper?: boolean
 }
 
 interface ITrackedPropsHeader {
-	name: string
+	name: string | undefined
 }
 
 interface IStateHeader {
@@ -29,7 +29,7 @@ interface IStateHeader {
 }
 
 class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedPropsHeader>, IStateHeader> {
-	constructor(props: IPropsHeader & WithTranslation) {
+	constructor(props: Translated<IPropsHeader & ITrackedPropsHeader>) {
 		super(props)
 
 		this.state = {
@@ -71,7 +71,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 		})
 	}
 
-	render() {
+	render(): JSX.Element {
 		const { t } = this.props
 
 		return (
@@ -173,12 +173,12 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 											{t('Settings')}
 										</NavLink>
 									)}
-									{Settings.enableUserAccounts && this.props.user && (
+									{Settings.enableUserAccounts && this.props.loggedIn && (
 										<NavLink to="/account" activeClassName="active">
 											{t('Account')}
 										</NavLink>
 									)}
-									{Settings.enableUserAccounts && this.props.user && (
+									{Settings.enableUserAccounts && this.props.loggedIn && (
 										<NavLink to="/" activeClassName="active" onClick={this.handleLogout}>
 											{t('Logout')}
 										</NavLink>
@@ -193,7 +193,7 @@ class Header extends MeteorReactComponent<Translated<IPropsHeader & ITrackedProp
 	}
 }
 
-export default translateWithTracker((_props: IPropsHeader & WithTranslation) => {
+export default translateWithTracker((_props: IPropsHeader & WithTranslation): ITrackedPropsHeader => {
 	const coreSystem = CoreSystem.findOne()
 	let name: string | undefined = undefined
 

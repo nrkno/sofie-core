@@ -1277,17 +1277,9 @@ svg.icon {
 
 		// Part is an element containing all output groups, with all the source layers, which in turn contain pieces
 		.segment-timeline__part {
-			position: relative;
+			position: absolute;
 			--invalid-reason-color-opaque: rgba(0, 0, 0, 1);
 			--invalid-reason-color-transparent: rgba(0, 0, 0, 0);
-
-			&.segment-timeline__part--end-of-segment {
-				background: $segment-background-color;
-				height: 100%;
-				top: 0;
-				min-width: 100vw;
-				z-index: 0;
-			}
 
 			&.segment-timeline__part--shaded {
 				&::after {
@@ -1480,6 +1472,8 @@ svg.icon {
 			}
 
 			&.live {
+				--missing-overlay-animated: 1;
+
 				.segment-timeline__part__nextline:not(.segment-timeline__part__nextline--endline) {
 					&::after,
 					&::before {
@@ -1537,7 +1531,6 @@ svg.icon {
 				padding-left: 0.5em;
 				text-transform: uppercase;
 				font-size: 0.9em;
-
 				.segment-timeline__part__segment-end__label {
 					position: absolute;
 					top: 50%;
@@ -1565,6 +1558,8 @@ svg.icon {
 			}
 
 			&.next {
+				--missing-overlay-animated: 1;
+
 				.segment-timeline__part__nextline:not(.offset) {
 					.segment-timeline__part__nextline__label {
 						> svg {
@@ -2664,11 +2659,12 @@ svg.icon {
 		text-align: center;
 		border-radius: 1em;
 		font-size: 0.9em;
+		letter-spacing: -0.05em;
 		position: relative;
 		top: -0.3em;
 		left: -0.3em;
 		white-space: nowrap;
-		padding: 0 2px 0 0.3em;
+		padding: 0 0.2em 0 0.2em;
 	}
 
 	> svg.type-warning + .segment-timeline__title__notes__count {
@@ -2725,12 +2721,12 @@ svg.icon {
 
 	&.segment-timeline__mini-inspector--small-parts {
 		top: 0;
-		z-index: 1001;
+		bottom: 0;
 		width: 350px;
 		max-width: 30vw;
 		transform: translate(0, 0);
 		border-radius: 0;
-		margin-left: 0;
+		margin-left: -1px;
 		box-shadow: 1px -1.5px 30px 15px rgba(0, 0, 0, 0.9);
 		animation: 0.2s inspector-wipeRight;
 		animation-timing-function: ease-out;
@@ -2779,12 +2775,6 @@ svg.icon {
 			> .segment-timeline__part {
 				display: inline-block;
 				vertical-align: top;
-
-				&.segment-timeline__part--end-of-segment {
-					position: absolute;
-					min-width: 14%;
-					background: $segment-mini-inspector-timeline-background;
-				}
 			}
 		}
 	}
@@ -2834,31 +2824,33 @@ svg.icon {
 	}
 
 	&.segment-timeline__mini-inspector--notice {
-		padding-left: 3.5em;
+		padding-left: 2.7em;
+		padding-bottom: 0.4em;
 	}
 
 	> .segment-timeline__mini-inspector__notice-header {
 		position: absolute;
 		top: 0;
 		left: 0;
-		width: 2.5em;
+		width: 1.8em;
 		bottom: 0;
 		border-top-left-radius: inherit;
 		border-bottom-left-radius: inherit;
 
 		> svg {
 			position: relative;
-			top: 0.6em;
-			left: 0.5em;
+			top: 0.4em;
+			left: 0.2em;
 			filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
-			width: 1.7em;
-			height: 1.7em;
+			width: 1.5em;
+			height: 1.5em;
 		}
 	}
 
 	> .segment-timeline__mini-inspector__notice + .segment-timeline__mini-inspector__properties {
+		color: #999999;
 		margin-top: 0.5em;
-		padding-top: 0.5em;
+		padding-top: 0.2em;
 		border-top: 1px solid #333;
 	}
 
@@ -2922,8 +2914,8 @@ svg.icon {
 		> .video-preview,
 		> .thumbnail {
 			display: block;
-			width: 160px;
-			height: 90px;
+			width: 320px;
+			height: 180px;
 			background: #000;
 		}
 
@@ -3021,13 +3013,16 @@ svg.icon {
 	}
 	.mini-inspector__label {
 		font-weight: 200;
-		font-size: 0.9em;
+		font-size: 0.8em;
+		letter-spacing: 0.05em;
 		text-transform: capitalize;
 		padding-right: 0.5em;
 	}
 	.mini-inspector__value {
-		font-weight: 300;
-		font-size: 0.9em;
+		font-weight: 200;
+		font-size: 0.8em;
+		letter-spacing: 0em;
+		line-height: 80%;
 		max-width: 60vw;
 		overflow: hidden;
 		text-overflow: ellipsis;
@@ -3075,7 +3070,9 @@ svg.icon {
 		text-shadow: 0 0 2px rgba(0, 0, 0, 0.5);
 	}
 	.mini-inspector__changed {
+		font-weight: 200;
 		font-size: 0.8em;
+		color: #999999;
 	}
 	table {
 		> tbody {
@@ -3163,6 +3160,36 @@ svg.icon {
 			display: none;
 		}
 	}
+}
+
+/** Multi-step Graphics chevron */
+
+.segment-storyboard__piece__step-chevron,
+.segment-opl__main-piece__label__step-chevron {
+	margin-right: 0.2em;
+	background: rgba(0, 0, 0, 0.4);
+	display: inline-block;
+	padding: 0 1em 0 0.4em;
+	color: $segment-piece-step-counter;
+	text-shadow: 0 0 1px #000, 0.5px 0.5px 8px rgba(0, 0, 0, 0.8);
+	clip-path: polygon(0 0, calc(100% - 0.6em) 0, 100% 50%, calc(100% - 0.6em) 100%, 0 100%);
+}
+
+.segment-storyboard__piece__step-chevron {
+	margin-left: -0.3em;
+	padding-left: 0.6em;
+}
+
+.segment-opl__main-piece__label__step-chevron {
+	padding-left: 1em;
+}
+
+.segment-opl__part.segment-opl__part--next
+	> .segment-opl__part-timeline
+	> .segment-opl__main-piece
+	> .segment-opl__main-piece__label.mln
+	> .segment-opl__main-piece__label__step-chevron {
+	padding-left: 4em;
 }
 
 @import 'rundownOverview';

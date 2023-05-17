@@ -2,8 +2,8 @@ import * as React from 'react'
 import ClassNames from 'classnames'
 import { TimingDataResolution, TimingTickResolution, withTiming, WithTiming } from './withTiming'
 import { RundownUtils } from '../../../lib/rundown'
-import { PartId } from '../../../../lib/collections/Parts'
 import { unprotectString } from '../../../../lib/lib'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IPartElapsedProps {
 	currentPartId: PartId | undefined
@@ -20,7 +20,7 @@ export const CurrentPartElapsed = withTiming<IPartElapsedProps, {}>({
 	tickResolution: TimingTickResolution.High,
 })(
 	class CurrentPartElapsed extends React.Component<WithTiming<IPartElapsedProps>> {
-		render() {
+		render(): JSX.Element {
 			const displayTimecode =
 				this.props.currentPartId && this.props.timingDurations.partPlayed
 					? this.props.timingDurations.partPlayed[unprotectString(this.props.currentPartId)] || 0

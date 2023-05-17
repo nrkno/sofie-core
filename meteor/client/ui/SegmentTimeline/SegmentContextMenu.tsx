@@ -1,5 +1,5 @@
 import * as React from 'react'
-import Escape from 'react-escape'
+import Escape from './../../lib/Escape'
 import { withTranslation } from 'react-i18next'
 import { ContextMenu, MenuItem } from '@jstarpl/react-contextmenu'
 import { Part } from '../../../lib/collections/Parts'
@@ -8,7 +8,7 @@ import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
 import { IContextMenuContext } from '../RundownView'
 import { PartUi, SegmentUi } from './SegmentTimelineContainer'
-import { SegmentId } from '../../../lib/collections/Segments'
+import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
 	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void
@@ -26,7 +26,7 @@ export const SegmentContextMenu = withTranslation()(
 			super(props)
 		}
 
-		render() {
+		render(): JSX.Element | null {
 			const { t } = this.props
 
 			const part = this.getPartFromContext()
@@ -34,7 +34,8 @@ export const SegmentContextMenu = withTranslation()(
 			const startsAt = this.getPartStartsAt()
 
 			const isCurrentPart =
-				(part && this.props.playlist && part.instance._id === this.props.playlist.currentPartInstanceId) || undefined
+				(part && this.props.playlist && part.instance._id === this.props.playlist.currentPartInfo?.partInstanceId) ||
+				undefined
 
 			const canSetAsNext = !!this.props.playlist?.activationId
 
@@ -76,13 +77,13 @@ export const SegmentContextMenu = withTranslation()(
 								</MenuItem>
 								{startsAt !== null && part && this.props.enablePlayFromAnywhere ? (
 									<>
-										<MenuItem
+										{/* <MenuItem
 											onClick={(e) => this.onSetAsNextFromHere(part.instance.part, e)}
 											disabled={isCurrentPart || !!part.instance.orphaned || !canSetAsNext}
 										>
 											<span dangerouslySetInnerHTML={{ __html: t('Set <strong>Next</strong> Here') }}></span> (
 											{RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
-										</MenuItem>
+										</MenuItem> */}
 										<MenuItem
 											onClick={(e) => this.onPlayFromHere(part.instance.part, e)}
 											disabled={isCurrentPart || !!part.instance.orphaned || !canSetAsNext}

@@ -19,11 +19,10 @@ import {
 	SourceLayerType,
 	StatusCode,
 } from '@sofie-automation/blueprints-integration'
-import { JobContext } from '../jobs'
+import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
+import { getRandomId, literal, normalizeArray } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
 import { defaultRundownPlaylist } from './defaultCollectionObjects'
 import {
@@ -35,6 +34,9 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { createShowStyleCompound } from '../showStyles'
 import { ReadonlyDeep } from 'type-fest'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { processShowStyleBase, processShowStyleVariant } from '../jobs/showStyle'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -49,10 +51,10 @@ export async function setupMockShowStyleCompound(
 	blueprintId?: BlueprintId,
 	doc?: Partial<DBShowStyleBase>,
 	doc2?: Partial<DBShowStyleVariant>
-): Promise<ReadonlyDeep<ShowStyleCompound>> {
+): Promise<ReadonlyDeep<ProcessedShowStyleCompound>> {
 	const base = await setupMockShowStyleBase(context, blueprintId, doc)
 	const variant = await setupMockShowStyleVariant(context, base._id, doc2)
-	const compound = createShowStyleCompound(base, variant)
+	const compound = createShowStyleCompound(processShowStyleBase(base), processShowStyleVariant(variant))
 	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	return compound!
 }
@@ -70,46 +72,57 @@ export async function setupMockShowStyleBase(
 		_id: protectString('mockShowStyleBase' + dbI),
 		name: 'mockShowStyleBase',
 		organizationId: null,
-		outputLayers: [
-			literal<IOutputLayer>({
-				_id: LAYER_IDS.OUTPUT_PGM,
-				_rank: 0,
-				isPGM: true,
-				name: 'PGM',
-			}),
-		],
-		sourceLayers: [
-			literal<ISourceLayer>({
-				_id: LAYER_IDS.SOURCE_CAM0,
-				_rank: 0,
-				name: 'Camera',
-				type: SourceLayerType.CAMERA,
-				exclusiveGroup: 'main',
-			}),
-			literal<ISourceLayer>({
-				_id: LAYER_IDS.SOURCE_VT0,
-				_rank: 1,
-				name: 'VT',
-				type: SourceLayerType.VT,
-				exclusiveGroup: 'main',
-			}),
-			literal<ISourceLayer>({
-				_id: LAYER_IDS.SOURCE_TRANSITION0,
-				_rank: 2,
-				name: 'Transition',
-				type: SourceLayerType.TRANSITION,
-			}),
-			literal<ISourceLayer>({
-				_id: LAYER_IDS.SOURCE_GRAPHICS0,
-				_rank: 3,
-				name: 'Graphic',
-				type: SourceLayerType.GRAPHICS,
-			}),
-		],
-		blueprintConfig: {},
+		outputLayersWithOverrides: wrapDefaultObject(
+			normalizeArray(
+				[
+					literal<IOutputLayer>({
+						_id: LAYER_IDS.OUTPUT_PGM,
+						_rank: 0,
+						isPGM: true,
+						name: 'PGM',
+					}),
+				],
+				'_id'
+			)
+		),
+		sourceLayersWithOverrides: wrapDefaultObject(
+			normalizeArray(
+				[
+					literal<ISourceLayer>({
+						_id: LAYER_IDS.SOURCE_CAM0,
+						_rank: 0,
+						name: 'Camera',
+						type: SourceLayerType.CAMERA,
+						exclusiveGroup: 'main',
+					}),
+					literal<ISourceLayer>({
+						_id: LAYER_IDS.SOURCE_VT0,
+						_rank: 1,
+						name: 'VT',
+						type: SourceLayerType.VT,
+						exclusiveGroup: 'main',
+					}),
+					literal<ISourceLayer>({
+						_id: LAYER_IDS.SOURCE_TRANSITION0,
+						_rank: 2,
+						name: 'Transition',
+						type: SourceLayerType.TRANSITION,
+					}),
+					literal<ISourceLayer>({
+						_id: LAYER_IDS.SOURCE_GRAPHICS0,
+						_rank: 3,
+						name: 'Graphic',
+						type: SourceLayerType.GRAPHICS,
+					}),
+				],
+				'_id'
+			)
+		),
+		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		blueprintId: blueprintId ?? protectString('blueprint0'),
 		// hotkeyLegend?: Array<HotkeyDefinition>
 		_rundownVersionHash: '',
+		lastBlueprintConfig: undefined,
 	}
 	const showStyleBase = _.extend(defaultShowStyleBase, doc)
 	await context.directCollections.ShowStyleBases.insertOne(showStyleBase)
@@ -128,8 +141,9 @@ export async function setupMockShowStyleVariant(
 		_id: protectString('mockShowStyleVariant' + dbI),
 		name: 'mockShowStyleVariant',
 		showStyleBaseId: showStyleBaseId,
-		blueprintConfig: {},
+		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		_rundownVersionHash: '',
+		_rank: 0,
 	}
 	const showStyleVariant = _.extend(defaultShowStyleVariant, doc)
 	await context.directCollections.ShowStyleVariants.insertOne(showStyleVariant)
@@ -139,7 +153,7 @@ export async function setupMockShowStyleVariant(
 
 export async function setupDefaultRundownPlaylist(
 	context: JobContext,
-	showStyleCompound0?: ReadonlyDeep<ShowStyleCompound>,
+	showStyleCompound0?: ReadonlyDeep<ProcessedShowStyleCompound>,
 	rundownId0?: RundownId
 ): Promise<{ rundownId: RundownId; playlistId: RundownPlaylistId }> {
 	const rundownId: RundownId = rundownId0 ?? getRandomId()
@@ -147,7 +161,7 @@ export async function setupDefaultRundownPlaylist(
 	const showStyleCompound =
 		showStyleCompound0 ||
 		(await context.directCollections.ShowStyleVariants.findOne().then(
-			(v) => v && context.getShowStyleCompound(v._id)
+			async (v) => v && context.getShowStyleCompound(v._id)
 		))
 	if (!showStyleCompound) throw new Error('No ShowStyle compound exists in the database yet')
 
@@ -164,10 +178,13 @@ export async function setupDefaultRundownPlaylist(
 
 export async function setupDefaultRundown(
 	context: JobContext,
-	showStyleCompound: ReadonlyDeep<ShowStyleCompound>,
+	showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
 ): Promise<void> {
+	const outputLayerIds = Object.keys(showStyleCompound.outputLayers)
+	const sourceLayerIds = Object.keys(showStyleCompound.sourceLayers)
+
 	await context.directCollections.Rundowns.insertOne({
 		peripheralDeviceId: undefined,
 		organizationId: null,
@@ -229,8 +246,8 @@ export async function setupDefaultRundown(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: showStyleCompound.sourceLayers[0]._id,
-		outputLayerId: showStyleCompound.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 		pieceType: IBlueprintPieceType.Normal,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
@@ -250,8 +267,8 @@ export async function setupDefaultRundown(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: showStyleCompound.sourceLayers[1]._id,
-		outputLayerId: showStyleCompound.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[1],
+		outputLayerId: outputLayerIds[0],
 		pieceType: IBlueprintPieceType.Normal,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
@@ -270,8 +287,8 @@ export async function setupDefaultRundown(
 		rundownId: rundownId,
 		status: PieceStatusCode.UNKNOWN,
 		name: 'AdLib 0',
-		sourceLayerId: showStyleCompound.sourceLayers[1]._id,
-		outputLayerId: showStyleCompound.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[1],
+		outputLayerId: outputLayerIds[0],
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
@@ -300,8 +317,8 @@ export async function setupDefaultRundown(
 		enable: {
 			start: 0,
 		},
-		sourceLayerId: showStyleCompound.sourceLayers[0]._id,
-		outputLayerId: showStyleCompound.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 		pieceType: IBlueprintPieceType.Normal,
 		lifespan: PieceLifespan.WithinPart,
 		invalid: false,
@@ -369,8 +386,8 @@ export async function setupDefaultRundown(
 		rundownId: rundownId,
 		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 0',
-		sourceLayerId: showStyleCompound.sourceLayers[0]._id,
-		outputLayerId: showStyleCompound.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[0],
+		outputLayerId: outputLayerIds[0],
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
@@ -383,8 +400,8 @@ export async function setupDefaultRundown(
 		rundownId: rundownId,
 		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 1',
-		sourceLayerId: showStyleCompound.sourceLayers[1]._id,
-		outputLayerId: showStyleCompound.outputLayers[0]._id,
+		sourceLayerId: sourceLayerIds[1],
+		outputLayerId: outputLayerIds[0],
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
@@ -407,9 +424,11 @@ export async function setupMockPeripheralDevice(
 	const defaultDevice: PeripheralDevice = {
 		_id: protectString('mockDevice' + dbI),
 		name: 'mockDevice',
+		deviceName: 'Mock Gateway',
 		organizationId: null,
 		studioId: context.studioId,
 		settings: {},
+		nrcsName: category === PeripheralDeviceCategory.INGEST ? 'JEST-NRCS' : undefined,
 
 		category: category,
 		type: type,
@@ -425,7 +444,8 @@ export async function setupMockPeripheralDevice(
 		connectionId: 'myConnectionId',
 		token: 'mockToken',
 		configManifest: {
-			deviceConfig: [],
+			deviceConfigSchema: JSONBlobStringify({}),
+			subdeviceManifest: {},
 		},
 		versions: {
 			'@sofie-automation/server-core-integration': getSystemVersion(),

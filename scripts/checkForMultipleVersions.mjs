@@ -6,7 +6,7 @@ import { buildDepTreeFromFiles } from "snyk-nodejs-lockfile-parser";
  */
 const libsToConsider = [
 	["superfly-timeline"],
-	["mos-connection"],
+	["@mos-connection/connector", "@mos-connection/helper", "@mos-connection/model"],
 	["timeline-state-resolver", "timeline-state-resolver-types"],
 ];
 
@@ -53,6 +53,8 @@ await addDepsForRoot("./packages", "corelib");
 await addDepsForRoot("./packages", "shared-lib");
 await addDepsForRoot("./packages", "job-worker");
 await addDepsForRoot("./packages", "playout-gateway");
+await addDepsForRoot("./packages", "openapi");
+await addDepsForRoot("./packages", "live-status-gateway");
 
 let hasFailure = false;
 

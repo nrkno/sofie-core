@@ -1,25 +1,20 @@
-import { Rundowns } from '../lib/collections/Rundowns'
+import { PeripheralDevices, RundownPlaylists } from './collections'
 import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
-import { PeripheralDevices, PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
-import * as _ from 'underscore'
-import { getCurrentTime, stringifyError, waitForPromiseAll } from '../lib/lib'
+import { PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
+import { getCurrentTime, stringifyError } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
-import { IngestDataCache } from '../lib/collections/IngestDataCache'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { UserActionsLog } from '../lib/collections/UserActionsLog'
-import { Snapshots } from '../lib/collections/Snapshots'
-import { CASPARCG_RESTART_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
-import { getCoreSystem } from '../lib/collections/CoreSystem'
+import { DEFAULT_TSR_ACTION_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { QueueStudioJob } from './worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { fetchStudioIds } from '../lib/collections/optimizations'
-import { RundownPlaylists } from '../lib/collections/RundownPlaylists'
+import { fetchStudioIds } from './optimizations'
 import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
-import { Parts } from '../lib/collections/Parts'
-import { PartInstances } from '../lib/collections/PartInstances'
-import { PieceInstances } from '../lib/collections/PieceInstances'
 import { deferAsync } from '@sofie-automation/corelib/dist/lib'
+import { getCoreSystemAsync } from './coreSystem/collection'
+import { cleanupOldDataInner } from './api/cleanup'
+import { CollectionCleanupResult } from '../lib/api/system'
+import { ICoreSystem } from '../lib/collections/CoreSystem'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -38,104 +33,66 @@ function isLowSeason() {
 let lastNightlyCronjob = 0
 let failedRetries = 0
 
-export function nightlyCronjobInner(): void {
+export async function nightlyCronjobInner(): Promise<void> {
 	const previousLastNightlyCronjob = lastNightlyCronjob
 	lastNightlyCronjob = getCurrentTime()
 	logger.info('Nightly cronjob: starting...')
-	const system = getCoreSystem()
+	const system = await getCoreSystemAsync()
 
-	// Clean up Rundown data cache:
-	// Remove caches not related to rundowns:
-	let rundownCacheCount = 0
-	const rundownIds = _.map(Rundowns.find().fetch(), (rundown) => rundown._id)
-	IngestDataCache.find({
-		rundownId: { $nin: rundownIds },
-	}).forEach((roc) => {
-		lowPrioFcn(() => {
-			IngestDataCache.remove(roc._id)
-		})
-		rundownCacheCount++
-	})
-	if (rundownCacheCount) logger.info('Cronjob: Will remove cached data from ' + rundownCacheCount + ' rundowns')
+	await Promise.allSettled([
+		cleanupOldDataCronjob().catch((error) => {
+			logger.error(`Cronjob: Error when cleaning up old data: ${error}`)
+			logger.error(error)
+		}),
+		restartCasparCG(system, previousLastNightlyCronjob).catch((e) => {
+			logger.error(`Cron: Restart CasparCG error: ${e}`)
+		}),
+		storeSnapshots(system).catch((e) => {
+			logger.error(`Cron: Rundown Snapshots error: ${e}`)
+		}),
+	])
 
-	const cleanLimitTime = getCurrentTime() - 1000 * 3600 * 24 * 50 // 50 days ago
+	// last:
+	logger.info('Nightly cronjob: done')
+}
 
-	// Remove old PartInstances and PieceInstances:
-	const getPartInstanceIdsToRemove = () => {
-		const existingPartIds = Parts.find({}, { fields: { _id: 1 } })
-			.fetch()
-			.map((part) => part._id)
-		const oldPartInstanceSelector = {
-			reset: true,
-			'timings.takeOut': { $lt: cleanLimitTime },
-			'part._id': { $nin: existingPartIds },
+async function cleanupOldDataCronjob() {
+	const cleanupResults = await cleanupOldDataInner(true)
+	if (typeof cleanupResults === 'string') {
+		logger.warn(`Cronjob: Could not clean up old data due to: ${cleanupResults}`)
+	} else {
+		for (const result of Object.values<CollectionCleanupResult[0]>(cleanupResults)) {
+			if (result.docsToRemove > 0) {
+				logger.info(`Cronjob: Removed ${result.docsToRemove} documents from "${result.collectionName}"`)
+			}
 		}
-		const oldPartInstanceIds = PartInstances.find(oldPartInstanceSelector, { fields: { _id: 1 } })
-			.fetch()
-			.map((partInstance) => partInstance._id)
-		return oldPartInstanceIds
 	}
-	const partInstanceIdsToRemove = getPartInstanceIdsToRemove()
-	if (partInstanceIdsToRemove.length > 0) {
-		logger.info(`Cronjob: Will remove ${partInstanceIdsToRemove.length} PartInstances`)
-	}
-	const oldPieceInstances = PieceInstances.find({
-		partInstanceId: { $in: partInstanceIdsToRemove },
-	}).count()
-	if (oldPieceInstances > 0) {
-		logger.info(`Cronjob: Will remove ${oldPieceInstances} PieceInstances`)
-	}
-	lowPrioFcn(() => {
-		const partInstanceIdsToRemove = getPartInstanceIdsToRemove()
-		PartInstances.remove({ _id: { $in: partInstanceIdsToRemove } })
-		PieceInstances.remove({
-			partInstanceId: { $in: partInstanceIdsToRemove },
-		})
-	})
+}
 
-	// Remove old entries in UserActionsLog:
-	const oldUserActionsLogCount: number = UserActionsLog.find({
-		timestamp: { $lt: cleanLimitTime },
-	}).count()
-	if (oldUserActionsLogCount > 0) {
-		logger.info(`Cronjob: Will remove ${oldUserActionsLogCount} entries from UserActionsLog`)
-		lowPrioFcn(() => {
-			UserActionsLog.remove({
-				timestamp: { $lt: cleanLimitTime },
-			})
-		})
-	}
-
-	// Remove old entries in Snapshots:
-	const oldSnapshotsCount: number = Snapshots.find({
-		created: { $lt: cleanLimitTime },
-	}).count()
-	if (oldSnapshotsCount > 0) {
-		logger.info(`Cronjob: Will remove ${oldSnapshotsCount} entries from Snapshots`)
-		lowPrioFcn(() => {
-			Snapshots.remove({
-				created: { $lt: cleanLimitTime },
-			})
-		})
-	}
-
+async function restartCasparCG(system: ICoreSystem | undefined, previousLastNightlyCronjob: number) {
 	const ps: Array<Promise<any>> = []
 	// Restart casparcg
 	if (system?.cron?.casparCGRestart?.enabled) {
-		PeripheralDevices.find({
+		const peripheralDevices = await PeripheralDevices.findFetchAsync({
 			type: PeripheralDeviceType.PLAYOUT,
-		}).forEach((device) => {
-			PeripheralDevices.find({
+		})
+
+		for (const device of peripheralDevices) {
+			const subDevices = await PeripheralDevices.findFetchAsync({
 				parentDeviceId: device._id,
-			}).forEach((subDevice) => {
+			})
+
+			for (const subDevice of subDevices) {
 				if (subDevice.type === PeripheralDeviceType.PLAYOUT && subDevice.subType === TSR.DeviceType.CASPARCG) {
 					logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')
 
 					ps.push(
 						PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
 							subDevice._id,
-							CASPARCG_RESTART_TIME,
-							'restartCasparCG'
+							DEFAULT_TSR_ACTION_TIMEOUT_TIME,
+							{
+								actionId: TSR.CasparCGActions.RestartServer,
+							}
 						)
 							.then(() => {
 								logger.info('Cronjob: "' + subDevice._id + '": CasparCG restart done')
@@ -158,38 +115,30 @@ export function nightlyCronjobInner(): void {
 							})
 					)
 				}
-			})
-		})
-	}
-	try {
-		waitForPromiseAll(ps)
-		failedRetries = 0
-	} catch (err) {
-		logger.error(err)
+			}
+		}
 	}
 
+	await Promise.all(ps)
+	failedRetries = 0
+}
+
+async function storeSnapshots(system: ICoreSystem | undefined) {
 	if (system?.cron?.storeRundownSnapshots?.enabled) {
 		const filter = system.cron.storeRundownSnapshots.rundownNames?.length
 			? { name: { $in: system.cron.storeRundownSnapshots.rundownNames } }
 			: {}
 
-		RundownPlaylists.find(filter).forEach((playlist) => {
+		const playlists = await RundownPlaylists.findFetchAsync(filter)
+		for (const playlist of playlists) {
 			lowPrioFcn(() => {
 				logger.info(`Cronjob: Will store snapshot for rundown playlist "${playlist._id}"`)
-				ps.push(internalStoreRundownPlaylistSnapshot(playlist, 'Automatic, taken by cron job'))
+				internalStoreRundownPlaylistSnapshot(playlist, 'Automatic, taken by cron job').catch((err) => {
+					logger.error(err)
+				})
 			})
-		})
+		}
 	}
-	Promise.all(ps)
-		.then(() => {
-			failedRetries = 0
-		})
-		.catch((err) => {
-			logger.error(err)
-		})
-
-	// last:
-	logger.info('Nightly cronjob: done')
 }
 
 Meteor.startup(() => {
@@ -199,32 +148,37 @@ Meteor.startup(() => {
 			isLowSeason() &&
 			timeSinceLast > 20 * 3600 * 1000 // was last run yesterday
 		) {
-			nightlyCronjobInner()
+			nightlyCronjobInner().catch((e) => {
+				logger.error(`Nightly cronjob: error: ${e}`)
+			})
 		}
 	}
 
 	Meteor.setInterval(nightlyCronjob, 5 * 60 * 1000) // check every 5 minutes
 	nightlyCronjob()
 
-	function cleanupPlaylists(force?: boolean) {
-		if (isLowSeason() || force) {
-			deferAsync(
-				async () => {
-					// Ensure there are no empty playlists on an interval
-					const studioIds = await fetchStudioIds({})
-					await Promise.all(
-						studioIds.map(async (studioId) => {
-							const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
-							await job.complete
-						})
-					)
-				},
-				(e) => {
-					logger.error(`Cron: CleanupPlaylists error: ${e}`)
-				}
-			)
+	function anyTimeCronjob(force?: boolean) {
+		{
+			// Clean up playlists:
+			if (isLowSeason() || force) {
+				deferAsync(
+					async () => {
+						// Ensure there are no empty playlists on an interval
+						const studioIds = await fetchStudioIds({})
+						await Promise.all(
+							studioIds.map(async (studioId) => {
+								const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
+								await job.complete
+							})
+						)
+					},
+					(e) => {
+						logger.error(`Cron: CleanupPlaylists error: ${e}`)
+					}
+				)
+			}
 		}
 	}
-	Meteor.setInterval(cleanupPlaylists, 30 * 60 * 1000) // every 30 minutes
-	cleanupPlaylists(true)
+	Meteor.setInterval(anyTimeCronjob, 30 * 60 * 1000) // every 30 minutes
+	anyTimeCronjob(true)
 })

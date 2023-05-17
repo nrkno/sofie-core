@@ -2,8 +2,8 @@ import * as React from 'react'
 import ClassNames from 'classnames'
 import { TimingDataResolution, TimingTickResolution, withTiming, WithTiming } from './withTiming'
 import { RundownUtils } from '../../../lib/rundown'
-import { PartInstanceId } from '../../../../lib/collections/PartInstances'
 import { SpeechSynthesiser } from '../../../lib/speechSynthesis'
+import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 const SPEAK_ADVANCE = 500
 
@@ -13,6 +13,7 @@ interface IPartRemainingProps {
 	className?: string
 	heavyClassName?: string
 	speaking?: boolean
+	vibrating?: boolean
 }
 
 // global variable for remembering last uttered displayTime
@@ -28,13 +29,16 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 	dataResolution: TimingDataResolution.Synced,
 })(
 	class CurrentPartRemaining extends React.Component<WithTiming<IPartRemainingProps>> {
-		render() {
+		render(): JSX.Element | null {
+			if (!this.props.timingDurations || !this.props.timingDurations.currentTime) return null
+			if (this.props.timingDurations.currentPartInstanceId !== this.props.currentPartInstanceId) return null
 			const displayTimecode = this.props.timingDurations.remainingTimeOnCurrentPart
+			if (displayTimecode === undefined) return null
 			return (
 				<span
 					className={ClassNames(
 						this.props.className,
-						Math.floor((displayTimecode || 0) / 1000) > 0 ? this.props.heavyClassName : undefined
+						Math.floor(displayTimecode / 1000) > 0 ? this.props.heavyClassName : undefined
 					)}
 					role="timer"
 				>
@@ -118,7 +122,9 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 					this.speak(displayTime)
 				}
 
-				this.vibrate(displayTime)
+				if (this.props.vibrating) {
+					this.vibrate(displayTime)
+				}
 
 				prevDisplayTime = displayTime
 			}

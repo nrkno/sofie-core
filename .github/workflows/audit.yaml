@@ -18,7 +18,7 @@ jobs:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
       - name: restore node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             meteor/node_modules
@@ -27,7 +27,7 @@ jobs:
         run: |
           yarn
           cd meteor
-          meteor npm run validate:prod-dependencies
+          meteor yarn validate:prod-dependencies
         env:
           CI: true
 
@@ -44,7 +44,7 @@ jobs:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
       - name: restore node_modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: |
             meteor/node_modules
@@ -53,7 +53,7 @@ jobs:
         run: |
           yarn
           cd meteor
-          meteor npm run validate:all-dependencies
+          meteor yarn run validate:all-dependencies
         env:
           CI: true
 
@@ -72,6 +72,7 @@ jobs:
           - shared-lib
           - playout-gateway
           - mos-gateway
+          - live-status-gateway
 
     steps:
       - uses: actions/checkout@v3

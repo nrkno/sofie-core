@@ -13,14 +13,13 @@ import { TFunction } from 'i18next'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { MeteorCall } from '../methods'
-import { PartInstance, PartInstanceId, PartInstances } from '../../collections/PartInstances'
-import { PartId, Parts } from '../../collections/Parts'
-import { RundownPlaylist, RundownPlaylistCollectionUtil, RundownPlaylistId } from '../../collections/RundownPlaylists'
-import { ShowStyleBase } from '../../collections/ShowStyleBases'
+import { PartInstance } from '../../collections/PartInstances'
+import { RundownPlaylist } from '../../collections/RundownPlaylists'
+import { ShowStyleBase, SourceLayers } from '../../collections/ShowStyleBases'
 import { Studio } from '../../collections/Studios'
-import { assertNever } from '../../lib'
+import { assertNever, DummyReactiveVar } from '../../lib'
 import { logger } from '../../logging'
-import RundownViewEventBus, { RundownViewEvents } from '../../../client/ui/RundownView/RundownViewEventBus'
+import RundownViewEventBus, { RundownViewEvents } from './RundownViewEventBus'
 import { UserAction } from '../../userAction'
 import { doUserAction } from './universalDoUserActionAdapter'
 import {
@@ -30,32 +29,20 @@ import {
 	IWrappedAdLib,
 } from './actionFilterChainCompilers'
 import { ClientAPI } from '../client'
-import { RundownId } from '../../collections/Rundowns'
 import { ReactiveVar } from 'meteor/reactive-var'
+import { PartId, PartInstanceId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstances, Parts } from '../../collections/libCollections'
+import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 
 // as described in this issue: https://github.com/Microsoft/TypeScript/issues/14094
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
 // eslint-disable-next-line @typescript-eslint/ban-types
 type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T) : T | U
 
-/**
- * This just looks like a ReactiveVar, but is not reactive.
- * It's used to use the same interface/typings, but when code is run on both client and server side.
- * */
-class DummyReactiveVar<T> implements ReactiveVar<T> {
-	constructor(private value: T) {}
-	public get(): T {
-		return this.value
-	}
-	public set(newValue: T): void {
-		this.value = newValue
-	}
-}
-
 export interface ReactivePlaylistActionContext {
 	rundownPlaylistId: ReactiveVar<RundownPlaylistId>
 	rundownPlaylist: ReactiveVar<
-		Pick<RundownPlaylist, '_id' | 'name' | 'activationId' | 'nextPartInstanceId' | 'currentPartInstanceId'>
+		Pick<RundownPlaylist, '_id' | 'name' | 'activationId' | 'nextPartInfo' | 'currentPartInfo'>
 	>
 
 	currentRundownId: ReactiveVar<RundownId | null>
@@ -91,7 +78,7 @@ type ActionExecutor = (t: TFunction, e: any, ctx: ActionContext) => void
  *
  * @interface ExecutableAction
  */
-interface ExecutableAction {
+export interface ExecutableAction {
 	action: ITriggeredActionBase['action']
 	/** Execute the action */
 	execute: ActionExecutor
@@ -133,7 +120,9 @@ function createRundownPlaylistContext(
 			nextPartId: new DummyReactiveVar(playlistContext.nextPartId),
 			currentSegmentPartIds: new DummyReactiveVar(playlistContext.currentSegmentPartIds),
 			nextSegmentPartIds: new DummyReactiveVar(playlistContext.nextSegmentPartIds),
-			currentPartInstanceId: new DummyReactiveVar(playlistContext.rundownPlaylist.currentPartInstanceId),
+			currentPartInstanceId: new DummyReactiveVar(
+				playlistContext.rundownPlaylist.currentPartInfo?.partInstanceId ?? null
+			),
 		}
 	} else if (filterChain[0].object === 'rundownPlaylist' && context.studio && Meteor.isServer) {
 		const playlist = rundownPlaylistFilter(
@@ -148,8 +137,8 @@ function createRundownPlaylistContext(
 				currentSegmentPartIds: PartId[] = [],
 				nextSegmentPartIds: PartId[] = []
 
-			if (playlist.currentPartInstanceId) {
-				currentPartInstance = PartInstances.findOne(playlist.currentPartInstanceId) ?? null
+			if (playlist.currentPartInfo) {
+				currentPartInstance = PartInstances.findOne(playlist.currentPartInfo.partInstanceId) ?? null
 				const currentPart = currentPartInstance?.part ?? null
 				if (currentPart) {
 					currentPartId = currentPart._id
@@ -158,8 +147,8 @@ function createRundownPlaylistContext(
 					}).map((part) => part._id)
 				}
 			}
-			if (playlist.nextPartInstanceId) {
-				const nextPart = PartInstances.findOne(playlist.nextPartInstanceId)?.part ?? null
+			if (playlist.nextPartInfo) {
+				const nextPart = PartInstances.findOne(playlist.nextPartInfo.partInstanceId)?.part ?? null
 				if (nextPart) {
 					nextPartId = nextPart._id
 					nextSegmentPartIds = Parts.find({
@@ -180,7 +169,7 @@ function createRundownPlaylistContext(
 				currentSegmentPartIds: new DummyReactiveVar(currentSegmentPartIds),
 				nextPartId: new DummyReactiveVar(nextPartId),
 				nextSegmentPartIds: new DummyReactiveVar(nextSegmentPartIds),
-				currentPartInstanceId: new DummyReactiveVar(playlist.currentPartInstanceId),
+				currentPartInstanceId: new DummyReactiveVar(playlist.currentPartInfo?.partInstanceId ?? null),
 			}
 		}
 	} else {
@@ -193,15 +182,15 @@ function createRundownPlaylistContext(
  * particular AdLib type
  *
  * @param {AdLibFilterChainLink[]} filterChain
- * @param {ShowStyleBase} showStyleBase
+ * @param {SourceLayers} sourceLayers
  * @return {*}  {ExecutableAdLibAction}
  */
 function createAdLibAction(
 	filterChain: AdLibFilterChainLink[],
-	showStyleBase: ShowStyleBase,
+	sourceLayers: SourceLayers,
 	actionArguments: IAdlibPlayoutActionArguments | undefined
 ): ExecutableAdLibAction {
-	const compiledAdLibFilter = compileAdLibFilter(filterChain, showStyleBase)
+	const compiledAdLibFilter = compileAdLibFilter(filterChain, sourceLayers)
 
 	return {
 		action: PlayoutActions.adlib,
@@ -226,7 +215,7 @@ function createAdLibAction(
 				logger.warn(`Could not create RundownPlaylist context for executable AdLib Action`, filterChain)
 				return
 			}
-			const currentPartInstanceId = innerCtx.rundownPlaylist.get().currentPartInstanceId
+			const currentPartInstanceId = innerCtx.rundownPlaylist.get().currentPartInfo?.partInstanceId
 
 			const sourceLayerIdsToClear: string[] = []
 			Tracker.nonreactive(() => compiledAdLibFilter(innerCtx)).forEach((wrappedAdLib) => {
@@ -472,10 +461,10 @@ function createUserActionWithCtx(
 /**
  * This is a factory method to create the ExecutableAction from a SomeAction-type description
  * @param action
- * @param showStyleBase
+ * @param sourceLayers
  * @returns
  */
-export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): ExecutableAction {
+export function createAction(action: SomeAction, sourceLayers: SourceLayers): ExecutableAction {
 	switch (action.action) {
 		case ClientActions.shelf:
 			return createShelfAction(action.filterChain, action.state)
@@ -484,7 +473,7 @@ export function createAction(action: SomeAction, showStyleBase: ShowStyleBase): 
 		case ClientActions.rewindSegments:
 			return createRewindSegmentsAction(action.filterChain)
 		case PlayoutActions.adlib:
-			return createAdLibAction(action.filterChain, showStyleBase, action.arguments || undefined)
+			return createAdLibAction(action.filterChain, sourceLayers, action.arguments || undefined)
 		case PlayoutActions.activateRundownPlaylist:
 			if (action.force) {
 				return createUserActionWithCtx(

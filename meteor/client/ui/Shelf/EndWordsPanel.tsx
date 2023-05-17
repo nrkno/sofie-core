@@ -11,18 +11,19 @@ import { dashboardElementStyle } from './DashboardPanel'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PieceInstance, PieceInstances } from '../../../lib/collections/PieceInstances'
+import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { getScriptPreview } from '../../lib/ui/scriptPreview'
 import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
+import { getScriptPreview } from '../../lib/ui/scriptPreview'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { PieceInstances } from '../../collections'
 
 interface IEndsWordsPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutEndWords
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
+	showStyleBase: UIShowStyleBase
 }
 
 interface IEndsWordsPanelTrackedProps {
@@ -39,7 +40,7 @@ class EndWordsPanelInner extends MeteorReactComponent<
 		super(props)
 	}
 
-	render() {
+	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 
 		const { t, livePieceInstance, panel } = this.props
@@ -74,7 +75,7 @@ export const EndWordsPanel = translateWithTracker<IEndsWordsPanelProps, IState, 
 )(EndWordsPanelInner)
 
 function getPieceWithScript(props: IEndsWordsPanelProps): PieceInstance | undefined {
-	const currentPartInstanceId: any = props.playlist.currentPartInstanceId
+	const currentPartInstanceId = props.playlist.currentPartInfo?.partInstanceId
 
 	const unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet = getUnfinishedPieceInstancesReactive(
 		props.playlist,
@@ -82,13 +83,13 @@ function getPieceWithScript(props: IEndsWordsPanelProps): PieceInstance | undefi
 	)
 
 	const highestStartedPlayback = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.reduce(
-		(hsp, piece: PieceInstance) => Math.max(hsp, piece.startedPlayback ?? 0),
+		(hsp, piece: PieceInstance) => Math.max(hsp, piece.reportedStartedPlayback ?? 0),
 		0
 	)
 
 	const unfinishedPieces = unfinishedPiecesIncludingFinishedPiecesWhereEndTimeHaveNotBeenSet.filter(
 		(pieceInstance: PieceInstance) => {
-			return !pieceInstance.startedPlayback || pieceInstance.startedPlayback == highestStartedPlayback
+			return !pieceInstance.reportedStartedPlayback || pieceInstance.reportedStartedPlayback == highestStartedPlayback
 		}
 	)
 
@@ -100,16 +101,18 @@ function getPieceWithScript(props: IEndsWordsPanelProps): PieceInstance | undefi
 	}
 
 	// we have to call this because getUnfinishedPieceInstancesReactive does not return script/manus pieces
-	const piecesInPart: PieceInstance[] = PieceInstances.find({
-		partInstanceId: currentPartInstanceId,
-		playlistActivationId: props.playlist.activationId,
-	}).fetch()
+	const piecesInPart: PieceInstance[] = currentPartInstanceId
+		? PieceInstances.find({
+				partInstanceId: currentPartInstanceId,
+				playlistActivationId: props.playlist.activationId,
+		  }).fetch()
+		: []
 
 	return props.panel.requiredLayerIds && props.panel.requiredLayerIds.length
-		? _.flatten(Object.values(piecesInPart)).find((piece: PieceInstance) => {
+		? piecesInPart.find((piece: PieceInstance) => {
 				return (
 					(props.panel.requiredLayerIds || []).indexOf(piece.piece.sourceLayerId) !== -1 &&
-					piece.partInstanceId === props.playlist.currentPartInstanceId
+					piece.partInstanceId === props.playlist.currentPartInfo?.partInstanceId
 				)
 		  })
 		: undefined

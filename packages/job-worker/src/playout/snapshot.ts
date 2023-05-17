@@ -22,12 +22,22 @@ import _ = require('underscore')
 import { JobContext } from '../jobs'
 import { runWithPlaylistLock } from './lock'
 import { CoreRundownPlaylistSnapshot } from '@sofie-automation/corelib/dist/snapshots'
-import { unprotectString, ProtectedString, protectStringArray } from '@sofie-automation/corelib/dist/protectedString'
+import {
+	unprotectString,
+	ProtectedString,
+	protectStringArray,
+	protectString,
+} from '@sofie-automation/corelib/dist/protectedString'
 import { saveIntoDb } from '../db/changes'
 import { getPartId, getSegmentId } from '../ingest/lib'
 import { assertNever, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
+import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
+/**
+ * Generate the Playlist owned portions of a Playlist snapshot
+ */
 export async function handleGeneratePlaylistSnapshot(
 	context: JobContext,
 	props: GeneratePlaylistSnapshotProps
@@ -65,7 +75,10 @@ export async function handleGeneratePlaylistSnapshot(
 				? { rundownId: { $in: rundownIds } }
 				: {
 						rundownId: { $in: rundownIds },
-						$or: [{ 'timings.takeOut': { $gte: validTime }, reset: true }, { reset: { $ne: true } }],
+						$or: [
+							{ 'timings.plannedStoppedPlayback': { $gte: validTime }, reset: true },
+							{ reset: { $ne: true } },
+						],
 				  }
 		)
 		const pieces = await context.directCollections.Pieces.findFetch({ startRundownId: { $in: rundownIds } })
@@ -123,16 +136,19 @@ export async function handleGeneratePlaylistSnapshot(
 	})
 
 	return {
-		snapshotJson: JSON.stringify(snapshot, undefined, 2),
+		snapshotJson: JSONBlobStringify(snapshot),
 	}
 }
 
+/**
+ * Restore the Playlist owned portions of a Playlist snapshot
+ */
 export async function handleRestorePlaylistSnapshot(
 	context: JobContext,
 	props: RestorePlaylistSnapshotProps
 ): Promise<RestorePlaylistSnapshotResult> {
 	// Future: we should validate this against a schema or something
-	const snapshot: CoreRundownPlaylistSnapshot = JSON.parse(props.snapshotJson)
+	const snapshot: CoreRundownPlaylistSnapshot = JSONBlobParse(props.snapshotJson)
 
 	const oldPlaylistId = snapshot.playlistId
 
@@ -222,12 +238,14 @@ export async function handleRestorePlaylistSnapshot(
 
 		partIdMap.set(oldId, part._id)
 	}
+	const partInstanceOldRundownIdMap = new Map<PartInstanceId, RundownId>()
 	const partInstanceIdMap = new Map<PartInstanceId, PartInstanceId>()
 	for (const partInstance of snapshot.partInstances) {
 		const oldId = partInstance._id
 		partInstance._id = getRandomId()
 		partInstanceIdMap.set(oldId, partInstance._id)
 		partInstance.part._id = partIdMap.get(partInstance.part._id) || getRandomId()
+		partInstanceOldRundownIdMap.set(oldId, partInstance.rundownId)
 	}
 	const segmentIdMap = new Map<SegmentId, SegmentId>()
 	for (const segment of snapshot.segments) {
@@ -271,18 +289,21 @@ export async function handleRestorePlaylistSnapshot(
 		}
 	}
 
-	if (snapshot.playlist.currentPartInstanceId) {
-		snapshot.playlist.currentPartInstanceId =
-			partInstanceIdMap.get(snapshot.playlist.currentPartInstanceId) || snapshot.playlist.currentPartInstanceId
-	}
-	if (snapshot.playlist.nextPartInstanceId) {
-		snapshot.playlist.nextPartInstanceId =
-			partInstanceIdMap.get(snapshot.playlist.nextPartInstanceId) || snapshot.playlist.nextPartInstanceId
-	}
-	if (snapshot.playlist.previousPartInstanceId) {
-		snapshot.playlist.previousPartInstanceId =
-			partInstanceIdMap.get(snapshot.playlist.previousPartInstanceId) || snapshot.playlist.previousPartInstanceId
-	}
+	fixupImportedSelectedPartInstanceIds(
+		snapshot,
+		rundownIdMap,
+		partInstanceIdMap,
+		partInstanceOldRundownIdMap,
+		'current'
+	)
+	fixupImportedSelectedPartInstanceIds(snapshot, rundownIdMap, partInstanceIdMap, partInstanceOldRundownIdMap, 'next')
+	fixupImportedSelectedPartInstanceIds(
+		snapshot,
+		rundownIdMap,
+		partInstanceIdMap,
+		partInstanceOldRundownIdMap,
+		'previous'
+	)
 
 	for (const expectedPackage of snapshot.expectedPackages) {
 		switch (expectedPackage.fromPieceType) {
@@ -462,4 +483,31 @@ export async function handleRestorePlaylistSnapshot(
 function getRandomIdAndWarn<T extends ProtectedString<any>>(name: string): T {
 	logger.warn(`Couldn't find "${name}" when restoring snapshot`)
 	return getRandomId<T>()
+}
+
+function fixupImportedSelectedPartInstanceIds(
+	snapshot: CoreRundownPlaylistSnapshot,
+	rundownIdMap: Map<RundownId, RundownId>,
+	partInstanceIdMap: Map<PartInstanceId, PartInstanceId>,
+	partInstanceOldRundownIdMap: Map<PartInstanceId, RundownId>,
+	property: 'current' | 'next' | 'previous'
+) {
+	const fullOldKey = `${property}PartInstanceId`
+	if (fullOldKey in snapshot.playlist) {
+		const oldId = (snapshot.playlist as any)[fullOldKey] as PartInstanceId
+		snapshot.playlist.currentPartInfo = {
+			partInstanceId: oldId,
+			rundownId: partInstanceOldRundownIdMap.get(oldId) || protectString(''),
+		}
+	}
+
+	const fullNewKey: keyof DBRundownPlaylist = `${property}PartInfo`
+
+	const snapshotInfo = snapshot.playlist[fullNewKey]
+	if (snapshotInfo) {
+		snapshot.playlist[fullNewKey] = {
+			partInstanceId: partInstanceIdMap.get(snapshotInfo.partInstanceId) || snapshotInfo.partInstanceId,
+			rundownId: rundownIdMap.get(snapshotInfo.rundownId) || snapshotInfo.rundownId,
+		}
+	}
 }

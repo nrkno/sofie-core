@@ -13,6 +13,8 @@ import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { setupInfluxDb } from '../../influx'
 import { getStudioQueueName } from '@sofie-automation/corelib/dist/worker/studio'
 import { WorkerJobResult } from '../parent-base'
+import { endTrace, sendTrace, startTrace } from '@sofie-automation/corelib/dist/influxdb'
+import { getPrometheusMetricsString, setupPrometheusMetrics } from '@sofie-automation/corelib/dist/prometheus'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
@@ -38,6 +40,7 @@ export class StudioWorkerChild {
 	) {
 		// Intercept logging to pipe back over ipc
 		interceptLogging(getStudioQueueName(studioId), logLine)
+		setupPrometheusMetrics(getStudioQueueName(studioId))
 
 		setupApmAgent()
 		setupInfluxDb()
@@ -57,6 +60,7 @@ export class StudioWorkerChild {
 		// Load some 'static' data from the db
 		const dataCache = await loadWorkerDataCache(collections, this.#studioId)
 
+		// Now that everything is loaded, set #staticData to mark it as initialised:
 		this.#staticData = {
 			mongoClient,
 			collections,
@@ -85,9 +89,13 @@ export class StudioWorkerChild {
 			transaction?.end()
 		}
 	}
+	async collectMetrics(): Promise<string> {
+		return getPrometheusMetricsString()
+	}
 	async runJob(jobName: string, data: unknown): Promise<WorkerJobResult> {
 		if (!this.#staticData) throw new Error('Worker not initialised')
 
+		const trace = startTrace('studioWorker:' + jobName)
 		const transaction = startTransaction(jobName, 'worker-studio')
 		if (transaction) {
 			transaction.setLabel('studioId', unprotectString(this.#staticData.dataCache.studio._id))
@@ -128,6 +136,7 @@ export class StudioWorkerChild {
 		} finally {
 			await context.cleanupResources()
 
+			sendTrace(endTrace(trace))
 			transaction?.end()
 		}
 	}

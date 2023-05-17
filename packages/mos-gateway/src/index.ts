@@ -1,7 +1,7 @@
 import { Connector, Config } from './connector'
 import * as Winston from 'winston'
 import _ = require('underscore')
-import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
+import { protectString } from '@sofie-automation/server-core-integration'
 
 console.log('process started') // This is a message all Sofie processes log upon startup
 
@@ -194,7 +194,7 @@ logger.debug(`Test debug logging`)
 
 // App config -----------------------------------------
 const config: Config = {
-	process: {
+	certificates: {
 		unsafeSSL: unsafeSSL,
 		certificates: _.compact(certs),
 	},

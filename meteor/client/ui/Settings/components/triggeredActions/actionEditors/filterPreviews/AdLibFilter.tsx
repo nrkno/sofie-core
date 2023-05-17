@@ -1,22 +1,25 @@
 import React from 'react'
 import _ from 'underscore'
-import { IAdLibFilterLink, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { IAdLibFilterLink, IOutputLayer, ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 import { assertNever } from '../../../../../../../lib/lib'
 import { FilterEditor } from './FilterEditor'
-import { ShowStyleBase } from '../../../../../../../lib/collections/ShowStyleBases'
+import { OutputLayers, SourceLayers } from '../../../../../../../lib/collections/ShowStyleBases'
 import { EditAttributeType } from '../../../../../../lib/EditAttribute'
 import { useTracker } from '../../../../../../lib/ReactMeteorData/ReactMeteorData'
-import { RundownBaselineAdLibActions } from '../../../../../../../lib/collections/RundownBaselineAdLibActions'
-import { AdLibActions } from '../../../../../../../lib/collections/AdLibActions'
-import { RundownBaselineAdLibPieces } from '../../../../../../../lib/collections/RundownBaselineAdLibPieces'
-import { AdLibPieces } from '../../../../../../../lib/collections/AdLibPieces'
+import {
+	AdLibActions,
+	AdLibPieces,
+	RundownBaselineAdLibActions,
+	RundownBaselineAdLibPieces,
+} from '../../../../../../collections'
 
 interface IProps {
 	index: number
 	link: IAdLibFilterLink
-	showStyleBase: ShowStyleBase | undefined
+	sourceLayers: SourceLayers | undefined
+	outputLayers: OutputLayers | undefined
 	readonly?: boolean
 	opened: boolean
 	onChange: (index, newVal: IAdLibFilterLink, oldVal: IAdLibFilterLink) => void
@@ -95,7 +98,8 @@ function fieldToLabel(t: TFunction, field: IAdLibFilterLink['field']): string {
 
 function fieldToOptions(
 	t: TFunction,
-	showStyleBase: ShowStyleBase | undefined,
+	sourceLayers: SourceLayers | undefined,
+	outputLayers: OutputLayers | undefined,
 	field: IAdLibFilterLink['field']
 ): Record<string, any> {
 	switch (field) {
@@ -111,8 +115,10 @@ function fieldToOptions(
 		case 'tag':
 			return {}
 		case 'outputLayerId':
-			return showStyleBase
-				? showStyleBase.outputLayers.map((layer) => ({ name: `${layer.name} (${layer._id})`, value: layer._id }))
+			return outputLayers
+				? Object.values<IOutputLayer | undefined>(outputLayers)
+						.filter((v): v is IOutputLayer => !!v)
+						.map((layer) => ({ name: `${layer.name} (${layer._id})`, value: layer._id }))
 				: []
 		case 'part':
 			return {
@@ -125,8 +131,10 @@ function fieldToOptions(
 				[t('Next')]: 'next',
 			}
 		case 'sourceLayerId':
-			return showStyleBase
-				? showStyleBase.sourceLayers.map((layer) => ({ name: `${layer.name} (${layer._id})`, value: layer._id }))
+			return sourceLayers
+				? Object.values<ISourceLayer | undefined>(sourceLayers)
+						.filter((v): v is ISourceLayer => !!v)
+						.map((layer) => ({ name: `${layer.name} (${layer._id})`, value: layer._id }))
 				: []
 		case 'sourceLayerType':
 			return _.pick(SourceLayerType, (key) => Number.isInteger(key))
@@ -138,7 +146,12 @@ function fieldToOptions(
 	}
 }
 
-function fieldValueToValueLabel(t: TFunction, showStyleBase: ShowStyleBase | undefined, link: IAdLibFilterLink) {
+function fieldValueToValueLabel(
+	t: TFunction,
+	sourceLayers: SourceLayers | undefined,
+	outputLayers: OutputLayers | undefined,
+	link: IAdLibFilterLink
+) {
 	if (link.value === undefined || (Array.isArray(link.value) && link.value.length === 0)) {
 		return ''
 	}
@@ -155,13 +168,8 @@ function fieldValueToValueLabel(t: TFunction, showStyleBase: ShowStyleBase | und
 			return String(Number(link.value ?? 0) + 1)
 		case 'outputLayerId':
 			return Array.isArray(link.value)
-				? showStyleBase
-					? link.value
-							.map(
-								(outputLayerId) =>
-									showStyleBase.outputLayers.find((layer) => layer._id === outputLayerId)?.name ?? outputLayerId
-							)
-							.join(', ')
+				? outputLayers
+					? link.value.map((outputLayerId) => outputLayers[outputLayerId]?.name ?? outputLayerId).join(', ')
 					: link.value.join(', ')
 				: link.value
 		case 'part':
@@ -180,13 +188,8 @@ function fieldValueToValueLabel(t: TFunction, showStyleBase: ShowStyleBase | und
 			)
 		case 'sourceLayerId':
 			return Array.isArray(link.value)
-				? showStyleBase
-					? link.value
-							.map(
-								(sourceLayerId) =>
-									showStyleBase.sourceLayers.find((layer) => layer._id === sourceLayerId)?.name ?? sourceLayerId
-							)
-							.join(', ')
+				? sourceLayers
+					? link.value.map((sourceLayerId) => sourceLayers[sourceLayerId]?.name ?? sourceLayerId).join(', ')
 					: link.value.join(', ')
 				: link.value
 		case 'sourceLayerType':
@@ -274,7 +277,8 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 	index,
 	link,
 	readonly,
-	showStyleBase,
+	sourceLayers,
+	outputLayers,
 	opened,
 	onClose,
 	onChange,
@@ -315,11 +319,11 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 					.uniq()
 					.value() as string[]
 			} else {
-				return fieldToOptions(t, showStyleBase, link.field)
+				return fieldToOptions(t, sourceLayers, outputLayers, link.field)
 			}
 		},
 		[link.field],
-		fieldToOptions(t, showStyleBase, link.field)
+		fieldToOptions(t, sourceLayers, outputLayers, link.field)
 	)
 
 	return (
@@ -328,7 +332,7 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 			field={link.field}
 			fields={getAvailableFields(t, fields)}
 			fieldLabel={fieldToLabel(t, link.field)}
-			valueLabel={fieldValueToValueLabel(t, showStyleBase, link)}
+			valueLabel={fieldValueToValueLabel(t, sourceLayers, outputLayers, link)}
 			value={fieldValueToEditorValue(link)}
 			final={isLinkFinal(link)}
 			values={availableOptions}

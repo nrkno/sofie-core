@@ -1,7 +1,7 @@
 import { PieceLifespan, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import classNames from 'classnames'
-import { PartId } from '../../../lib/collections/Parts'
 import { PieceUi } from '../../ui/SegmentContainer/withResolvedSegment'
 import { RundownUtils } from '../rundown'
 
@@ -11,7 +11,6 @@ export function pieceUiClassNames(
 	layerType?: SourceLayerType,
 	partId?: PartId,
 	highlight?: boolean,
-	relative?: boolean,
 	elementWidth?: number,
 	uiState?: {
 		leftAnchoredWidth: number
@@ -24,12 +23,10 @@ export function pieceUiClassNames(
 
 	return classNames(baseClassName, typeClass, {
 		'with-in-transition':
-			!relative &&
 			innerPiece.transitions &&
 			innerPiece.transitions.inTransition &&
 			(innerPiece.transitions.inTransition.duration || 0) > 0,
 		'with-out-transition':
-			!relative &&
 			innerPiece.transitions &&
 			innerPiece.transitions.outTransition &&
 			(innerPiece.transitions.outTransition.duration || 0) > 0,
@@ -57,6 +54,7 @@ export function pieceUiClassNames(
 			innerPiece.status === PieceStatusCode.SOURCE_MISSING ||
 			innerPiece.status === PieceStatusCode.SOURCE_NOT_SET,
 		'source-broken': innerPiece.status === PieceStatusCode.SOURCE_BROKEN,
+		'source-not-ready': innerPiece.status === PieceStatusCode.SOURCE_NOT_READY,
 		'unknown-state': innerPiece.status === PieceStatusCode.UNKNOWN,
 		disabled: pieceInstance.instance.disabled,
 

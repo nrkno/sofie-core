@@ -4,44 +4,40 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/reac
 import { Spinner } from '../../lib/Spinner'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Blueprint, Blueprints, BlueprintId } from '../../../lib/collections/Blueprints'
+import { Blueprint } from '../../../lib/collections/Blueprints'
 import Moment from 'react-moment'
 import { Link } from 'react-router-dom'
-import { Studio, Studios } from '../../../lib/collections/Studios'
-import { ShowStyleBases, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { ICoreSystem, CoreSystem } from '../../../lib/collections/CoreSystem'
+import { Studio } from '../../../lib/collections/Studios'
+import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { fetchFrom } from '../../lib/lib'
 import { UploadButton } from '../../lib/uploadButton'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUpload, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { unprotectString } from '../../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'
+import { BlueprintId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../../collections'
 
 interface IProps {
-	match: {
-		params: {
-			blueprintId: BlueprintId
-		}
-	}
-	userId?: string
+	blueprintId: BlueprintId
+	userId?: UserId
 }
 interface IState {
 	uploadFileKey: number // Used to force clear the input after use
 }
 interface ITrackedProps {
-	userId?: string
 	blueprint?: Blueprint
 	assignedStudios: Studio[]
 	assignedShowStyles: ShowStyleBase[]
 	assignedSystem: ICoreSystem | undefined
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {
-	const id = props.match.params.blueprintId
+	const id = props.blueprintId
 
 	return {
-		userId: props.userId,
 		blueprint: Blueprints.findOne(id),
 		assignedStudios: Studios.find({ blueprintId: id }).fetch(),
 		assignedShowStyles: ShowStyleBases.find({ blueprintId: id }).fetch(),
@@ -260,7 +256,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				<div className="studio-edit mod mhl mvn">
 					<div>
 						<div className="mod mvs mhn">
-							{t('Blueprint ID')}: <i>{blueprint._id}</i>
+							{t('Blueprint ID')}: <i>{unprotectString(blueprint._id)}</i>
 						</div>
 						<label className="field">
 							{t('Blueprint Name')}
@@ -339,7 +335,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			)
 		}
 
-		render() {
+		render(): JSX.Element {
 			if (this.props.blueprint) {
 				return this.renderEditForm(this.props.blueprint)
 			} else {

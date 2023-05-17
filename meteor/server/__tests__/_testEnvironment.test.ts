@@ -1,34 +1,35 @@
 import { Meteor } from 'meteor/meteor'
 import { RandomMock } from '../../__mocks__/random'
 import { MongoMock } from '../../__mocks__/mongo'
-
 import { waitForPromise, protectString, waitTime, getRandomString } from '../../lib/lib'
 import { testInFiber } from '../../__mocks__/helpers/jest'
-
-import { AdLibPieces } from '../../lib/collections/AdLibPieces'
-import { Blueprints } from '../../lib/collections/Blueprints'
-import { CoreSystem } from '../../lib/collections/CoreSystem'
-import { Evaluations } from '../../lib/collections/Evaluations'
-import { ExpectedMediaItems } from '../../lib/collections/ExpectedMediaItems'
-import { ExternalMessageQueue } from '../../lib/collections/ExternalMessageQueue'
-import { IngestDataCache } from '../../lib/collections/IngestDataCache'
-import { MediaObjects } from '../../lib/collections/MediaObjects'
-import { MediaWorkFlows } from '../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowSteps } from '../../lib/collections/MediaWorkFlowSteps'
-import { Parts } from '../../lib/collections/Parts'
-import { PeripheralDeviceCommands } from '../../lib/collections/PeripheralDeviceCommands'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { Pieces } from '../../lib/collections/Pieces'
-import { RundownBaselineAdLibPieces } from '../../lib/collections/RundownBaselineAdLibPieces'
-import { RundownBaselineObjs } from '../../lib/collections/RundownBaselineObjs'
-import { Rundowns } from '../../lib/collections/Rundowns'
-import { Segments } from '../../lib/collections/Segments'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { Snapshots } from '../../lib/collections/Snapshots'
-import { Studios, DBStudio } from '../../lib/collections/Studios'
-import { Timeline } from '../../lib/collections/Timeline'
-import { UserActionsLog } from '../../lib/collections/UserActionsLog'
+import {
+	AdLibPieces,
+	Blueprints,
+	CoreSystem,
+	Evaluations,
+	ExpectedMediaItems,
+	ExternalMessageQueue,
+	IngestDataCache,
+	MediaObjects,
+	MediaWorkFlows,
+	MediaWorkFlowSteps,
+	Parts,
+	PeripheralDeviceCommands,
+	PeripheralDevices,
+	Pieces,
+	RundownBaselineAdLibPieces,
+	RundownBaselineObjs,
+	Rundowns,
+	Segments,
+	ShowStyleBases,
+	ShowStyleVariants,
+	Snapshots,
+	Studios,
+	Timeline,
+	UserActionsLog,
+} from '../collections'
+import { DBStudio } from '../../lib/collections/Studios'
 import { isInFiber } from '../../__mocks__/Fibers'
 import { Mongo } from 'meteor/mongo'
 import { defaultStudio } from '../../__mocks__/defaultCollectionObjects'
@@ -108,8 +109,8 @@ describe('Basic test of test environment', () => {
 		// @ts-ignore
 		expect(UserActionsLog._isMock).toBeTruthy()
 	})
-	test('Mock collection data', () => {
-		expect(Studios.find().fetch()).toHaveLength(0)
+	test('Mock collection data', async () => {
+		expect(await Studios.findFetchAsync({})).toHaveLength(0)
 
 		MongoMock.mockSetData<DBStudio>(Studios, [
 			{
@@ -124,47 +125,47 @@ describe('Basic test of test environment', () => {
 			},
 		])
 
-		expect(Studios.find().fetch()).toHaveLength(2)
+		expect(await Studios.findFetchAsync({})).toHaveLength(2)
 
 		expect(
-			Studios.findOne({
+			await Studios.findOneAsync({
 				_id: protectString('def'),
 			})
 		).toMatchObject({
 			_id: 'def',
 		})
-		Studios.update(protectString('abc'), {
+		await Studios.updateAsync(protectString('abc'), {
 			$set: {
 				_rundownVersionHash: 'myHash',
 			},
 		})
 
 		expect(
-			Studios.findOne({
+			await Studios.findOneAsync({
 				name: 'abc',
 			})
 		).toMatchObject({
 			_rundownVersionHash: 'myHash',
 		})
 
-		Studios.remove(protectString('def'))
-		const studios = Studios.find().fetch()
+		await Studios.removeAsync(protectString('def'))
+		const studios = await Studios.findFetchAsync({})
 		expect(studios).toHaveLength(1)
 
-		const observer = Studios.find({ _id: protectString('abc') }).observeChanges({})
+		const observer = Studios.observeChanges({ _id: protectString('abc') }, {})
 		expect(observer).toBeTruthy()
 
-		Studios.insert({
+		await Studios.insertAsync({
 			...defaultStudio(protectString('xyz')),
 			name: 'xyz',
 			_rundownVersionHash: 'xyz',
 		})
-		expect(Studios.find().fetch()).toHaveLength(2)
+		expect(await Studios.findFetchAsync({})).toHaveLength(2)
 
 		observer.stop()
 
 		MongoMock.mockSetData(Studios, null)
-		expect(Studios.find().fetch()).toHaveLength(0)
+		expect(await Studios.findFetchAsync({})).toHaveLength(0)
 	})
 	testInFiber('Promises in fibers', () => {
 		const p = new Promise((resolve) => {

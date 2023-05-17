@@ -1,10 +1,8 @@
 import React, { ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import classNames from 'classnames'
-import { SegmentNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
-import { RundownHoldState, RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Studio } from '../../../lib/collections/Studios'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { UIStateStorage } from '../../lib/UIStateStorage'
-import { PartUi, PieceUi, SegmentUi } from '../SegmentContainer/withResolvedSegment'
+import { PartUi, PieceUi, SegmentNoteCounts, SegmentUi } from '../SegmentContainer/withResolvedSegment'
 import { IContextMenuContext } from '../RundownView'
 import { useCombinedRefs } from '../../lib/lib'
 import { literal } from '@sofie-automation/corelib/dist/lib'
@@ -16,8 +14,11 @@ import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
 import { SegmentListHeader } from './SegmentListHeader'
 import { useInView } from 'react-intersection-observer'
 import { getHeaderHeight } from '../../lib/viewPort'
-import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
+import { UIStudio } from '../../../lib/api/studios'
+import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 interface IProps {
 	id: string
@@ -31,9 +32,10 @@ interface IProps {
 	key: string
 	segment: SegmentUi
 	playlist: RundownPlaylist
-	studio: Studio
+	studio: UIStudio
 	parts: Array<PartUi>
-	segmentNotes: Array<SegmentNote>
+	pieces: Map<PartId, CalculateTimingsPiece[]>
+	segmentNoteCounts: SegmentNoteCounts
 
 	fixedSegmentDuration: boolean
 	showCountdownToSegment: boolean
@@ -91,7 +93,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 
 	const adLibIndicatorColumns = useMemo(() => {
 		const sourceColumns: Record<string, ISourceLayerExtended[]> = {}
-		Object.values(props.segment.sourceLayers).forEach((sourceLayer) => {
+		Object.values<ISourceLayerExtended>(props.segment.sourceLayers).forEach((sourceLayer) => {
 			if (!sourceLayer.onListViewAdLibColumn) return
 			let thisSourceColumn = sourceColumns[sourceLayer.name]
 			if (!thisSourceColumn) {
@@ -105,7 +107,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 
 	const indicatorColumns = useMemo(() => {
 		const sourceColumns: Record<string, ISourceLayerExtended[]> = {}
-		Object.values(props.segment.sourceLayers).forEach((sourceLayer) => {
+		Object.values<ISourceLayerExtended>(props.segment.sourceLayers).forEach((sourceLayer) => {
 			if (sourceLayer.isHidden) return
 			if (!sourceLayer.onListViewColumn) return
 			let thisSourceColumn = sourceColumns[sourceLayer.name]
@@ -122,14 +124,14 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 	// let currentPartIndex: number = -1
 	// let nextPartIndex: number = -1
 
-	const playlistHasNextPart = !!props.playlist.nextPartInstanceId
+	const playlistHasNextPart = !!props.playlist.nextPartInfo
 
 	const renderedParts = props.parts.filter((part) => !(part.instance.part.invalid && part.instance.part.gap))
 	const isSinglePartInSegment = renderedParts.length === 1
 	let lastTimingGroup: string | undefined = undefined
 	renderedParts.forEach((part) => {
-		const isLivePart = part.instance._id === props.playlist.currentPartInstanceId
-		const isNextPart = part.instance._id === props.playlist.nextPartInstanceId
+		const isLivePart = part.instance._id === props.playlist.currentPartInfo?.partInstanceId
+		const isNextPart = part.instance._id === props.playlist.nextPartInfo?.partInstanceId
 
 		// if (isLivePart) currentPartIndex = index
 		// if (isNextPart) nextPartIndex = index
@@ -145,7 +147,9 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				isNextPart={isNextPart}
 				isSinglePartInSegment={isSinglePartInSegment}
 				isPreceededByTimingGroupSibling={part.instance.part.displayDurationGroup === lastTimingGroup}
-				hasAlreadyPlayed={!!part.instance.timings?.stoppedPlayback || !!part.instance.timings?.takeOut}
+				hasAlreadyPlayed={
+					!!part.instance.timings?.reportedStoppedPlayback || !!part.instance.timings?.plannedStoppedPlayback
+				}
 				displayLiveLineCounter={false}
 				inHold={!!(props.playlist.holdState && props.playlist.holdState !== RundownHoldState.COMPLETE)}
 				currentPartWillAutonext={isNextPart && props.currentPartWillAutoNext}
@@ -164,7 +168,7 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 
 	const isHeaderDetached =
 		(inView &&
-			(props.isLiveSegment || (props.isNextSegment && !props.playlist.currentPartInstanceId)) &&
+			(props.isLiveSegment || (props.isNextSegment && !props.playlist.currentPartInfo)) &&
 			parts.length > 1 &&
 			entry &&
 			entry.intersectionRatio < 1 &&
@@ -220,10 +224,11 @@ const SegmentListInner = React.forwardRef<HTMLDivElement, IProps>(function Segme
 				isDetached={isHeaderDetached}
 				isDetachedStick={isHeaderDetachedStick}
 				parts={props.parts}
+				pieces={props.pieces}
 				segment={props.segment}
 				playlist={props.playlist}
 				studio={props.studio}
-				segmentNotes={props.segmentNotes}
+				segmentNoteCounts={props.segmentNoteCounts}
 				highlight={highlight}
 				isLiveSegment={props.isLiveSegment}
 				isNextSegment={props.isNextSegment}

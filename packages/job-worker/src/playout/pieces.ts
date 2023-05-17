@@ -7,12 +7,12 @@ import {
 import { TimelineObjGeneric, TimelineObjRundown } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
-import { PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration/dist'
+import { PieceLifespan, IBlueprintPieceType, TSR } from '@sofie-automation/blueprints-integration/dist'
 import { clone, getRandomId, literal, normalizeArray, applyToArray } from '@sofie-automation/corelib/dist/lib'
 import { Resolver, TimelineEnable } from 'superfly-timeline'
 import { logger } from '../logging'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { JobContext } from '../jobs'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
@@ -26,7 +26,14 @@ import {
 	processAndPrunePieceInstanceTimings,
 } from '@sofie-automation/corelib/dist/playout/infinites'
 import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
+import { ReadOnlyCache } from '../cache/CacheBase'
 
+/**
+ * Approximate compare Piece start times (for use in .sort())
+ * @param a First Piece
+ * @param b Second Piece
+ * @param nowInPart Approximate time to substitute for 'now'
+ */
 function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
 	if (a.pieceType === IBlueprintPieceType.OutTransition && b.pieceType !== IBlueprintPieceType.OutTransition) {
 		return 1
@@ -59,11 +66,25 @@ function comparePieceStart<T extends PieceInstancePiece>(a: T, b: T, nowInPart: 
 	}
 }
 
+/**
+ * Approximate sorting of PieceInstances, by start time within the PartInstance
+ * This assumes all provided PieceInstances belong to the same PartInstance
+ * @param pieces PieceInstances to sort
+ * @param nowInPart Approximate time to substitute for 'now'
+ * @returns Sorted PieceInstances
+ */
 export function sortPieceInstancesByStart(pieces: PieceInstance[], nowInPart: number): PieceInstance[] {
 	pieces.sort((a, b) => comparePieceStart(a.piece, b.piece, nowInPart))
 	return pieces
 }
 
+/**
+ * Approximate sorting of PieceInstances, by start time within the PartInstance
+ * This assumes all provided Pieces belong to the same Part.
+ * Uses '0' as an approximation for 'now'
+ * @param pieces Pieces to sort
+ * @returns Sorted Pieces
+ */
 export function sortPiecesByStart<T extends PieceInstancePiece>(pieces: T[]): T[] {
 	pieces.sort((a, b) => comparePieceStart(a, b, 0))
 	return pieces
@@ -75,7 +96,7 @@ function resolvePieceTimeline(
 	pieceInstanceMap: { [id: string]: PieceInstance | undefined },
 	resolveForStr: string
 ): ResolvedPieceInstance[] {
-	const tlResolved = Resolver.resolveTimeline(objs, { time: baseTime })
+	const tlResolved = Resolver.resolveTimeline(objs as any, { time: baseTime })
 	const resolvedPieces: Array<ResolvedPieceInstance> = []
 
 	const unresolvedIds: string[] = []
@@ -161,23 +182,32 @@ function resolvePieceTimeline(
 	return resolvedPieces
 }
 
+/**
+ * Resolve the PieceInstances for a PartInstance
+ * Uses the getCurrentTime() as approximation for 'now'
+ * @param context Context for current job
+ * @param cache Cache for the active Playlist
+ * @param sourceLayers SourceLayers for the current ShowStyle
+ * @param partInstance PartInstance to resolve
+ * @returns ResolvedPieceInstances sorted by startTime
+ */
 export function getResolvedPieces(
 	context: JobContext,
-	cache: CacheForPlayout,
-	showStyleBase: ReadonlyDeep<DBShowStyleBase>,
+	cache: ReadOnlyCache<CacheForPlayout>,
+	sourceLayers: SourceLayers,
 	partInstance: DBPartInstance
 ): ResolvedPieceInstance[] {
 	const span = context.startSpan('getResolvedPieces')
-	const pieceInstances = cache.PieceInstances.findFetch({ partInstanceId: partInstance._id })
+	const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === partInstance._id)
 
 	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
 
 	const now = getCurrentTime()
-	const partStarted = partInstance.timings?.startedPlayback
+	const partStarted = partInstance.timings?.plannedStartedPlayback
 	const nowInPart = now - (partStarted ?? 0)
 
 	const preprocessedPieces: ReadonlyDeep<PieceInstanceWithTimings[]> = processAndPrunePieceInstanceTimings(
-		showStyleBase,
+		sourceLayers,
 		pieceInstances,
 		nowInPart
 	)
@@ -196,7 +226,20 @@ export function getResolvedPieces(
 
 	const objs: TimelineObjGeneric[] = []
 	for (const piece of preprocessedPieces) {
-		const { controlObj, childGroup, capObjs } = createPieceGroupAndCap(cache.PlaylistId, piece)
+		let controlObjEnable: TSR.Timeline.TimelineEnable = piece.piece.enable
+		if (piece.userDuration) {
+			controlObjEnable = {
+				start: piece.piece.enable.start,
+			}
+
+			if ('endRelativeToPart' in piece.userDuration) {
+				controlObjEnable.end = piece.userDuration.endRelativeToPart
+			} else {
+				controlObjEnable.end = nowInPart + piece.userDuration.endRelativeToNow
+			}
+		}
+
+		const { controlObj, childGroup, capObjs } = createPieceGroupAndCap(cache.PlaylistId, piece, controlObjEnable)
 		objs.push(deNowify(controlObj), ...capObjs.map(deNowify), deNowify(childGroup))
 	}
 
@@ -210,9 +253,18 @@ export function getResolvedPieces(
 	if (span) span.end()
 	return resolvedPieces
 }
+
+/**
+ * Parse the timeline, to compile the resolved PieceInstances on the timeline
+ * Uses the getCurrentTime() as approximation for 'now'
+ * @param context Context for current job
+ * @param cache Cache for the active Playlist
+ * @param allObjs TimelineObjects to consider
+ * @returns ResolvedPieceInstances sorted by startTime
+ */
 export function getResolvedPiecesFromFullTimeline(
 	context: JobContext,
-	cache: CacheForPlayout,
+	cache: ReadOnlyCache<CacheForPlayout>,
 	allObjs: TimelineObjGeneric[]
 ): { pieces: ResolvedPieceInstance[]; time: number } {
 	const span = context.startSpan('getResolvedPiecesFromFullTimeline')
@@ -223,13 +275,17 @@ export function getResolvedPiecesFromFullTimeline(
 	const now = getCurrentTime()
 
 	const playlist = cache.Playlist.doc
-	const partInstanceIds = new Set(_.compact([playlist.previousPartInstanceId, playlist.currentPartInstanceId]))
-	const pieceInstances: PieceInstance[] = cache.PieceInstances.findFetch((p) => partInstanceIds.has(p.partInstanceId))
+	const partInstanceIds = new Set(
+		_.compact([playlist.previousPartInfo?.partInstanceId, playlist.currentPartInfo?.partInstanceId])
+	)
+	const pieceInstances: PieceInstance[] = cache.PieceInstances.findAll((p) => partInstanceIds.has(p.partInstanceId))
 
 	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache) // todo: should these be passed as a parameter from getTimelineRundown?
 
-	if (currentPartInstance && currentPartInstance.part.autoNext && playlist.nextPartInstanceId) {
-		pieceInstances.push(...cache.PieceInstances.findFetch((p) => p.partInstanceId === playlist.nextPartInstanceId))
+	if (currentPartInstance && currentPartInstance.part.autoNext && playlist.nextPartInfo) {
+		pieceInstances.push(
+			...cache.PieceInstances.findAll((p) => p.partInstanceId === playlist.nextPartInfo?.partInstanceId)
+		)
 	}
 
 	const transformedObjs = transformTimeline(objs)
@@ -249,10 +305,15 @@ export function getResolvedPiecesFromFullTimeline(
  * Replace any start:'now' in the timeline with concrete times.
  * This assumes that the structure is of a typical timeline, with 'now' being present at the root level, and one level deep.
  * If the parent group of a 'now' is not using a numeric start value, it will not be fixed
+ * @param transformedObjs Timeline objects to consider
+ * @param nowTime Time to substitute in instead of 'now'
  */
-export function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTime: number): void {
+function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTime: number): void {
 	for (const obj of transformedObjs) {
 		let groupAbsoluteStart: number | null = null
+
+		const obj2 = obj as TimelineContentObject & { partInstanceId?: PartInstanceId }
+		const partInstanceId = 'partInstanceId' in obj2 ? obj2.partInstanceId : undefined
 
 		// Anything at this level can use nowTime directly
 		let count = 0
@@ -272,12 +333,7 @@ export function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTi
 
 		// We know the time of the parent, or there are too many enable times for it
 		if (groupAbsoluteStart !== null || count !== 1) {
-			if (
-				'partInstanceId' in (obj as TimelineContentObject & { partInstanceId?: PartInstanceId }) &&
-				obj.isGroup &&
-				obj.children &&
-				obj.children.length
-			) {
+			if (partInstanceId && obj.isGroup && obj.children && obj.children.length) {
 				// This should be piece groups, which are allowed to use 'now'
 				for (const childObj of obj.children) {
 					applyToArray(childObj.enable, (enable: TimelineEnable) => {
@@ -294,9 +350,14 @@ export function deNowifyTimeline(transformedObjs: TimelineContentObject[], nowTi
 	}
 }
 
+/**
+ * Wrap a Piece into an AdLibPiece, so that it can be re-played as an AdLib
+ * @param context Context of the current job
+ * @param piece The Piece to wrap
+ * @returns AdLibPiece
+ */
 export function convertPieceToAdLibPiece(context: JobContext, piece: PieceInstancePiece): AdLibPiece {
 	const span = context.startSpan('convertPieceToAdLibPiece')
-	// const oldId = piece._id
 	const newAdLibPiece = literal<AdLibPiece>({
 		...piece,
 		_id: getRandomId(),
@@ -309,6 +370,15 @@ export function convertPieceToAdLibPiece(context: JobContext, piece: PieceInstan
 	return newAdLibPiece
 }
 
+/**
+ * Convert some form of Piece into a PieceInstance, played as an AdLib
+ * @param context Context of the current job
+ * @param playlistActivationId ActivationId for the active current playlist
+ * @param adLibPiece The piece or AdLibPiece to convert
+ * @param partInstance The PartInstance the Adlibbed PieceInstance will belong to
+ * @param queue Whether this is being queued as a new PartInstance, or adding to the already playing PartInstance
+ * @returns The PieceInstance that was constructed
+ */
 export function convertAdLibToPieceInstance(
 	context: JobContext,
 	playlistActivationId: RundownPlaylistActivationId,
@@ -350,6 +420,10 @@ export function convertAdLibToPieceInstance(
 	return newPieceInstance
 }
 
+/**
+ * Setup a PieceInstance to be the start of an infinite chain
+ * @param pieceInstance PieceInstance to setup
+ */
 export function setupPieceInstanceInfiniteProperties(pieceInstance: PieceInstance): void {
 	if (pieceInstance.piece.lifespan !== PieceLifespan.WithinPart) {
 		// Set it up as an infinite

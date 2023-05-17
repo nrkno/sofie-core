@@ -1,18 +1,19 @@
 import '../../../../__mocks__/_extendJest'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
+import { testInFiber, waitUntil } from '../../../../__mocks__/helpers/jest'
 import { getCurrentTime, getRandomId, protectString } from '../../../../lib/lib'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../../__mocks__/helpers/database'
-import { MediaWorkFlowId, MediaWorkFlows } from '../../../../lib/collections/MediaWorkFlows'
-import { PeripheralDeviceCommands } from '../../../../lib/collections/PeripheralDeviceCommands'
-import { PeripheralDevices } from '../../../../lib/collections/PeripheralDevices'
 import { MeteorCall } from '../../../../lib/api/methods'
+import { MediaWorkFlowId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MediaWorkFlows, PeripheralDeviceCommands, PeripheralDevices } from '../../../collections'
 
 require('../../client') // include in order to create the Meteor methods needed
 require('../../userActions') // include in order to create the Meteor methods needed
 
+const MAX_WAIT_TIME = 300
+
 describe('User Actions - Media Manager', () => {
 	let env: DefaultEnvironment
-	function setupMockWorkFlow() {
+	async function setupMockWorkFlow() {
 		const workFlowId: MediaWorkFlowId = getRandomId()
 		const workFlow = {
 			_id: workFlowId,
@@ -25,18 +26,18 @@ describe('User Actions - Media Manager', () => {
 			studioId: env.studio._id,
 			success: false,
 		}
-		MediaWorkFlows.insert(workFlow)
+		await MediaWorkFlows.insertAsync(workFlow)
 
 		return { workFlow, workFlowId }
 	}
 	beforeEach(async () => {
 		// clean up old peripheral devices and MediaWorkFlows
-		PeripheralDevices.remove({
+		await PeripheralDevices.removeAsync({
 			_id: {
 				$exists: true,
 			},
 		})
-		MediaWorkFlows.remove({
+		await MediaWorkFlows.removeAsync({
 			_id: {
 				$exists: true,
 			},
@@ -45,7 +46,7 @@ describe('User Actions - Media Manager', () => {
 		jest.resetAllMocks()
 	})
 	testInFiber('Restart workflow', async () => {
-		const { workFlowId } = setupMockWorkFlow()
+		const { workFlowId } = await setupMockWorkFlow()
 
 		// should fail if the workflow doesn't exist
 		await expect(
@@ -54,32 +55,28 @@ describe('User Actions - Media Manager', () => {
 
 		{
 			// should execute function on the target device
-			let pResolve
-			const p = new Promise((resolve) => {
-				pResolve = resolve
-			})
-
-			setTimeout(() => {
-				const functionCall = PeripheralDeviceCommands.find({
-					deviceId: env.ingestDevice._id,
-					functionName: 'restartWorkflow',
-				}).fetch()[0]
+			const p = waitUntil(async () => {
+				const functionCall = (
+					await PeripheralDeviceCommands.findFetchAsync({
+						deviceId: env.ingestDevice._id,
+						functionName: 'restartWorkflow',
+					})
+				)[0]
 				expect(functionCall).toBeTruthy()
-				PeripheralDeviceCommands.update(functionCall._id, {
+				await PeripheralDeviceCommands.updateAsync(functionCall._id, {
 					$set: {
 						hasReply: true,
 						reply: 'done',
 					},
 				})
-				pResolve()
-			}, 50)
+			}, MAX_WAIT_TIME)
 
 			await MeteorCall.userAction.mediaRestartWorkflow('', getCurrentTime(), workFlowId)
 			await p
 		}
 	})
 	testInFiber('Abort worfklow', async () => {
-		const { workFlowId } = setupMockWorkFlow()
+		const { workFlowId } = await setupMockWorkFlow()
 
 		// should fail if the workflow doesn't exist
 		await expect(
@@ -88,32 +85,29 @@ describe('User Actions - Media Manager', () => {
 
 		{
 			// should execute function on the target device
-			let pResolve
-			const p = new Promise((resolve) => {
-				pResolve = resolve
-			})
 
-			setTimeout(() => {
-				const functionCall = PeripheralDeviceCommands.find({
-					deviceId: env.ingestDevice._id,
-					functionName: 'abortWorkflow',
-				}).fetch()[0]
+			const p = waitUntil(async () => {
+				const functionCall = (
+					await PeripheralDeviceCommands.findFetchAsync({
+						deviceId: env.ingestDevice._id,
+						functionName: 'abortWorkflow',
+					})
+				)[0]
 				expect(functionCall).toBeTruthy()
-				PeripheralDeviceCommands.update(functionCall._id, {
+				await PeripheralDeviceCommands.updateAsync(functionCall._id, {
 					$set: {
 						hasReply: true,
 						reply: 'done',
 					},
 				})
-				pResolve()
-			}, 50)
+			}, MAX_WAIT_TIME)
 
 			await MeteorCall.userAction.mediaAbortWorkflow('', getCurrentTime(), workFlowId)
 			await p
 		}
 	})
 	testInFiber('Prioritize workflow', async () => {
-		const { workFlowId } = setupMockWorkFlow()
+		const { workFlowId } = await setupMockWorkFlow()
 
 		// should fail if the workflow doesn't exist
 		await expect(
@@ -122,70 +116,69 @@ describe('User Actions - Media Manager', () => {
 
 		{
 			// should execute function on the target device
-			let pResolve
-			const p = new Promise((resolve) => {
-				pResolve = resolve
-			})
+			const p = waitUntil(async () => {
+				const functionCall = (
+					await PeripheralDeviceCommands.findFetchAsync({
+						deviceId: env.ingestDevice._id,
+						functionName: 'prioritizeWorkflow',
+					})
+				)[0]
 
-			setTimeout(() => {
-				const functionCall = PeripheralDeviceCommands.find({
-					deviceId: env.ingestDevice._id,
-					functionName: 'prioritizeWorkflow',
-				}).fetch()[0]
 				expect(functionCall).toBeTruthy()
-				PeripheralDeviceCommands.update(functionCall._id, {
+				await PeripheralDeviceCommands.updateAsync(functionCall._id, {
 					$set: {
 						hasReply: true,
 						reply: 'done',
 					},
 				})
-				pResolve()
-			}, 50)
+			}, MAX_WAIT_TIME)
 
 			await MeteorCall.userAction.mediaPrioritizeWorkflow('', getCurrentTime(), workFlowId)
 			await p
 		}
 	})
 	testInFiber('Restart all workflows', async () => {
-		setupMockWorkFlow()
+		await setupMockWorkFlow()
 
 		{
 			// should execute function on all the target devices
-			setTimeout(() => {
-				const functionCalls = PeripheralDeviceCommands.find({
+			const p = waitUntil(async () => {
+				const functionCalls = await PeripheralDeviceCommands.findFetchAsync({
 					functionName: 'restartAllWorkflows',
-				}).fetch()
+				})
 				expect(functionCalls).toHaveLength(1)
-				PeripheralDeviceCommands.update(functionCalls[0]._id, {
+				await PeripheralDeviceCommands.updateAsync(functionCalls[0]._id, {
 					$set: {
 						hasReply: true,
 						reply: 'done',
 					},
 				})
-			}, 50)
+			}, MAX_WAIT_TIME)
 
 			await MeteorCall.userAction.mediaRestartAllWorkflows('', getCurrentTime())
+			await p
 		}
 	})
 	testInFiber('Abort all workflows', async () => {
-		setupMockWorkFlow()
+		await setupMockWorkFlow()
 
 		{
 			// should execute function on all the target devices
-			setTimeout(() => {
-				const functionCalls = PeripheralDeviceCommands.find({
+			const p = waitUntil(async () => {
+				const functionCalls = await PeripheralDeviceCommands.findFetchAsync({
 					functionName: 'abortAllWorkflows',
-				}).fetch()
+				})
 				expect(functionCalls).toHaveLength(1)
-				PeripheralDeviceCommands.update(functionCalls[0]._id, {
+				await PeripheralDeviceCommands.updateAsync(functionCalls[0]._id, {
 					$set: {
 						hasReply: true,
 						reply: 'done',
 					},
 				})
-			}, 50)
+			}, MAX_WAIT_TIME)
 
 			await MeteorCall.userAction.mediaAbortAllWorkflows('', getCurrentTime())
+			await p
 		}
 	})
 })

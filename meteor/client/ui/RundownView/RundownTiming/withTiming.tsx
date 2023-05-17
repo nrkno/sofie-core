@@ -63,6 +63,11 @@ export function withTiming<IProps, IState>(
 				syncedDurations: PropTypes.object.isRequired,
 			}
 
+			context: {
+				durations: RundownTimingContext
+				syncedDurations: RundownTimingContext
+			}
+
 			filterGetter: (o: any) => any
 			previousValue: any = undefined
 			isDirty: boolean = false
@@ -88,14 +93,14 @@ export function withTiming<IProps, IState>(
 				}
 			}
 
-			componentDidMount() {
+			componentDidMount(): void {
 				window.addEventListener(
 					rundownTimingEventFromTickResolution(expandedOptions.tickResolution),
 					this.refreshComponent
 				)
 			}
 
-			componentWillUnmount() {
+			componentWillUnmount(): void {
 				window.removeEventListener(
 					rundownTimingEventFromTickResolution(expandedOptions.tickResolution),
 					this.refreshComponent
@@ -115,7 +120,7 @@ export function withTiming<IProps, IState>(
 				}
 			}
 
-			render() {
+			render(): JSX.Element {
 				const highResDurations: RundownTimingContext = this.context.durations
 				const syncedDurations: RundownTimingContext = this.context.syncedDurations
 

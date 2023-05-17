@@ -1,59 +1,437 @@
-import * as _ from 'underscore'
 import { addMigrationSteps } from './databaseMigration'
 import { logger } from '../logging'
-import { Studios, Studio } from '../../lib/collections/Studios'
-import { ensureCollectionPropertyManual } from './lib'
-import { PeripheralDevices, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
-import { getRandomId, protectString } from '../../lib/lib'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import { ShowStyleBases } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariantId, ShowStyleVariants } from '../../lib/collections/ShowStyleVariants'
-import { getCoreSystem, setCoreSystemStorePath } from '../../lib/collections/CoreSystem'
+import { getRandomId, protectString, generateTranslation as t, getHash } from '../../lib/lib'
+import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ShowStyleBases, ShowStyleVariants, Studios, TriggeredActions } from '../collections'
+import {
+	IBlueprintTriggeredActions,
+	ClientActions,
+	TriggerType,
+	PlayoutActions,
+} from '@sofie-automation/blueprints-integration'
 
 /**
  * This file contains system specific migration steps.
  * These files are combined with / overridden by migration steps defined in the blueprints.
  */
 
+let j = 0
+
+const DEFAULT_CORE_TRIGGERS: IBlueprintTriggeredActions[] = [
+	{
+		_id: 'core_toggleShelf',
+		actions: {
+			'0': {
+				action: ClientActions.shelf,
+				filterChain: [
+					{
+						object: 'view',
+					},
+				],
+				state: 'toggle',
+			},
+		},
+		triggers: {
+			'0': {
+				type: TriggerType.hotkey,
+				keys: 'Tab',
+				up: true,
+			},
+		},
+		_rank: ++j * 1000,
+		name: t('Toggle Shelf'),
+	},
+	{
+		_id: 'core_activateRundownPlaylist',
+		actions: {
+			'0': {
+				action: PlayoutActions.activateRundownPlaylist,
+				rehearsal: false,
+				filterChain: [
+					{
+						object: 'view',
+					},
+				],
+			},
+		},
+		triggers: {
+			'0': {
+				type: TriggerType.hotkey,
+				keys: 'Backquote',
+				up: true,
+			},
+		},
+		_rank: ++j * 1000,
+		name: t('Activate (On-Air)'),
+	},
+	{
+		_id: 'core_activateRundownPlaylist_rehearsal',
+		actions: {
+			'0': {
+				action: PlayoutActions.activateRundownPlaylist,
+				rehearsal: true,
+				filterChain: [
+					{
+						object: 'view',
+					},
+				],
+			},
+		},
+		triggers: {
+			'0': {
+				type: TriggerType.hotkey,
+				keys: 'Control+Backquote',
+				up: true,
+			},
+		},
+		_rank: ++j * 1000,
+		name: t('Activate (Rehearsal)'),
+	},
+	{
+		_id: 'core_deactivateRundownPlaylist',
+		actions: {
+			'0': {
+				action: PlayoutActions.deactivateRundownPlaylist,
+				filterChain: [
+					{
+						object: 'view',
+					},
+				],
+			},
+		},
+		triggers: {
+			'0': {
+				type: TriggerType.hotkey,
+				keys: 'Control+Shift+Backquote',
+				up: true,
+			},
+		},
+		_rank: ++j * 1000,
+		name: t('Deactivate'),
+	},
+	{
+		_id: 'core_take',
+		actions: {
+			'0': {
+				action: PlayoutActions.take,
+				filterChain: [
+					{
+						object: 'view',
+					},
+				],
+			},
+		},
+		triggers: {
+			'0': {
+				type: TriggerType.hotkey,
+				keys: 'NumpadEnter',
+				up: true,
+			},
+			'1': {
+				type: TriggerType.hotkey,
+				keys: 'F12',
+				up: true,
+			},
+		},
+		_rank: ++j * 1000,
+		name: t('Take'),
+	},
+	{
+		_id: 'core_hold',
+		actions: {
+			'0': {
+				action: PlayoutActions.hold,
+				filterChain: [
+					{
+						object: 'view',
+					},
+				],
+			},
+		},
+		triggers: {
+			'0': {
+				type: TriggerType.hotkey,
+				keys: 'KeyH',
+				up: true,
+			},
+		},
+		_rank: ++j * 1000,
+		name: t('Hold'),
+	},
+	{
+		_id: 'core_hold_undo',
+		actions: {
+			'0': {
+				action: PlayoutActions.hold,
+				undo: true,
+				filterChain: [
+					{
+						object: 'view',
+					},
+				],
+			},
+		},
+		triggers: {
+			'0': {
+				type: TriggerType.hotkey,
+				keys: 'Shift+KeyH',
+				up: true,
+			},
+		},
+		_rank: ++j * 1000,
+		name: t('Undo Hold'),
+	},
+	{
+		_id: 'core_reset_rundown_playlist',
+		actions: {
+			'0': {
+				action: PlayoutActions.resetRundownPlaylist,
+				filterChain: [
+					{
+						object: 'view',
+					},
+				],
+			},
+		},
+		triggers: {
+			'0': {
+				type: TriggerType.hotkey,
+				keys: 'Control+Shift+F12',
+				up: true,
+			},
+			'1': {
+				type: TriggerType.hotkey,
+				keys: 'Control+Shift+AnyEnter',
+				up: true,
+			},
+		},
+		_rank: ++j * 1000,
+		name: t('Reset Rundown'),
+	},
+	{
+		_id: 'core_disable_next_piece',
+		actions: {
+			'0': {
+				action: PlayoutActions.disableNextPiece,
+				filterChain: [
+					{
+						object: 'view',
+					},
+				],
+			},
+		},
+		triggers: {
+			'0': {
+				type: TriggerType.hotkey,
+				keys: 'KeyG',
+				up: true,
+			},
+		},
+		_rank: ++j * 1000,
+		name: t('Disable the next element'),
+	},
+	{
+		_id: 'core_disable_next_piece_undo',
+		actions: {
+			'0': {
+				action: PlayoutActions.disableNextPiece,
+				filterChain: [
+					{
+						object: 'view',
+					},
+				],
+				undo: true,
+			},
+		},
+		triggers: {
+			'0': {
+				type: TriggerType.hotkey,
+				keys: 'Shift+KeyG',
+				up: true,
+			},
+		},
+		_rank: ++j * 1000,
+		name: t('Undo Disable the next element'),
+	},
+	{
+		_id: 'core_create_snapshot_for_debug',
+		actions: {
+			'0': {
+				action: PlayoutActions.createSnapshotForDebug,
+				filterChain: [
+					{
+						object: 'view',
+					},
+				],
+			},
+		},
+		triggers: {
+			'0': {
+				type: TriggerType.hotkey,
+				keys: 'Backspace',
+				up: true,
+			},
+		},
+		_rank: ++j * 1000,
+		name: t('Store Snapshot'),
+	},
+	{
+		_id: 'core_move_next_part',
+		actions: {
+			'0': {
+				action: PlayoutActions.moveNext,
+				filterChain: [
+					{
+						object: 'view',
+					},
+				],
+				parts: 1,
+				segments: 0,
+			},
+		},
+		triggers: {
+			'0': {
+				type: TriggerType.hotkey,
+				keys: 'F9',
+				up: true,
+			},
+		},
+		_rank: ++j * 1000,
+		name: t('Move Next forwards'),
+	},
+	{
+		_id: 'core_move_next_segment',
+		actions: {
+			'0': {
+				action: PlayoutActions.moveNext,
+				filterChain: [
+					{
+						object: 'view',
+					},
+				],
+				parts: 0,
+				segments: 1,
+			},
+		},
+		triggers: {
+			'0': {
+				type: TriggerType.hotkey,
+				keys: 'F10',
+				up: true,
+			},
+		},
+		_rank: ++j * 1000,
+		name: t('Move Next to the following segment'),
+	},
+	{
+		_id: 'core_move_previous_part',
+		actions: {
+			'0': {
+				action: PlayoutActions.moveNext,
+				filterChain: [
+					{
+						object: 'view',
+					},
+				],
+				parts: -1,
+				segments: 0,
+			},
+		},
+		triggers: {
+			'0': {
+				type: TriggerType.hotkey,
+				keys: 'Shift+F9',
+				up: true,
+			},
+		},
+		_rank: ++j * 1000,
+		name: t('Move Next backwards'),
+	},
+	{
+		_id: 'core_move_previous_segment',
+		actions: {
+			'0': {
+				action: PlayoutActions.moveNext,
+				filterChain: [
+					{
+						object: 'view',
+					},
+				],
+				parts: 0,
+				segments: -1,
+			},
+		},
+		triggers: {
+			'0': {
+				type: TriggerType.hotkey,
+				keys: 'Shift+F10',
+				up: true,
+			},
+		},
+		_rank: ++j * 1000,
+		name: t('Move Next to the previous segment'),
+	},
+	{
+		_id: 'core_go_to_onAir_line',
+		actions: {
+			'0': {
+				action: ClientActions.goToOnAirLine,
+				filterChain: [
+					{
+						object: 'view',
+					},
+				],
+			},
+		},
+		triggers: {
+			'0': {
+				type: TriggerType.hotkey,
+				keys: 'Control+Home',
+				up: true,
+			},
+		},
+		_rank: ++j * 1000,
+		name: t('Go to On Air line'),
+	},
+	{
+		_id: 'core_rewind_segments',
+		actions: {
+			'0': {
+				action: ClientActions.rewindSegments,
+				filterChain: [
+					{
+						object: 'view',
+					},
+				],
+			},
+		},
+		triggers: {
+			'0': {
+				type: TriggerType.hotkey,
+				keys: 'Shift+Home',
+				up: true,
+			},
+		},
+		_rank: ++j * 1000,
+		name: t('Rewind segments to start'),
+	},
+]
+
 // 0.1.0: These are the "base" migration steps, setting up a default system
 export const addSteps = addMigrationSteps('0.1.0', [
 	{
-		id: 'CoreSystem.storePath',
-		canBeRunAutomatically: false,
-		validate: () => {
-			const system = getCoreSystem()
-			if (!system) return 'CoreSystem not found!'
-			if (!system.storePath) return 'CoreSystem.storePath not set!'
-			if (!_.isString(system.storePath)) return 'CoreSystem.storePath must be a string!'
-			if (system.storePath.slice(-1) === '/') return 'CoreSystem.storePath must not end with "/"!'
-			return false
-		},
-		migrate: (input) => {
-			if (input.storePath) {
-				setCoreSystemStorePath(input.storePath)
-			}
-		},
-		input: [
-			{
-				label: 'File path for persistant storage',
-				description: 'Enter the file path for the persistant storage (example "/opt/coredisk")',
-				inputType: 'text',
-				attribute: 'storePath',
-			},
-		],
-	},
-
-	{
 		id: 'studio exists',
 		canBeRunAutomatically: true,
-		validate: () => {
-			if (!Studios.findOne()) return 'No Studio found'
+		validate: async () => {
+			const count = await Studios.countDocuments()
+			if (count === 0) return 'No Studio found'
 			return false
 		},
-		migrate: () => {
+		migrate: async () => {
 			// create default studio
 			logger.info(`Migration: Add default studio`)
-			Studios.insert({
+			await Studios.insertAsync({
 				_id: protectString('studio0'),
 				name: 'Default studio',
 				organizationId: null,
@@ -61,85 +439,23 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				settings: {
 					frameRate: 25,
 					mediaPreviewsUrl: '',
-					sofieUrl: '',
 				},
-				mappings: {},
-				blueprintConfig: {},
+				mappingsWithOverrides: wrapDefaultObject({}),
+				blueprintConfigWithOverrides: wrapDefaultObject({}),
 				_rundownVersionHash: '',
 				routeSets: {},
 				routeSetExclusivityGroups: {},
 				packageContainers: {},
 				thumbnailContainerIds: [],
 				previewContainerIds: [],
+				peripheralDeviceSettings: {
+					playoutDevices: wrapDefaultObject({}),
+					ingestDevices: wrapDefaultObject({}),
+					inputDevices: wrapDefaultObject({}),
+				},
+				lastBlueprintConfig: undefined,
 			})
 		},
-	},
-
-	{
-		id: 'Assign devices to studio',
-		canBeRunAutomatically: true,
-		dependOnResultFrom: 'studio exists',
-		validate: () => {
-			const studios = Studios.find().fetch()
-			if (studios.length > 1) {
-				return false
-			}
-
-			let missing: string | boolean = false
-			PeripheralDevices.find({
-				parentDeviceId: { $exists: false },
-			}).forEach((device) => {
-				if (!device.studioId) missing = `Peripheral Device ${device._id} has no studio`
-			})
-			return missing
-		},
-		migrate: () => {
-			const studios = Studios.find().fetch()
-			if (studios.length === 1) {
-				const studio = studios[0]
-
-				PeripheralDevices.find({
-					parentDeviceId: { $exists: false },
-				}).forEach((device) => {
-					if (!device.studioId) PeripheralDevices.update(device._id, { $set: { studioId: studio._id } })
-				})
-			} else {
-				throw new Error(
-					`Unable to automatically assign Peripheral Devices to a studio, since there are ${studios.length} studios. Please assign them manually`
-				)
-			}
-		},
-	},
-
-	{
-		id: 'Playout-gateway exists',
-		canBeRunAutomatically: false,
-		dependOnResultFrom: 'studio exists',
-		validate: () => {
-			const studios = Studios.find().fetch()
-			let missing: string | boolean = false
-			_.each(studios, (studio: Studio) => {
-				const dev = PeripheralDevices.findOne({
-					type: PeripheralDeviceType.PLAYOUT,
-					studioId: studio._id,
-				})
-				if (!dev) {
-					missing = `Playout Gateway is missing on ${studio._id}`
-				}
-			})
-
-			return missing
-		},
-		// Note: No migrate() function, user must fix this him/herself
-		input: [
-			{
-				label: 'Playout Gateway not set up for all Studios',
-				description:
-					"Start up the Playout Gateway, make sure it's connected to Sofie and assigned to a Studio.",
-				inputType: null,
-				attribute: null,
-			},
-		],
 	},
 
 	{
@@ -147,40 +463,43 @@ export const addSteps = addMigrationSteps('0.1.0', [
 		id: 'showStyleBase exists',
 		canBeRunAutomatically: true,
 		dependOnResultFrom: 'studio exists',
-		validate: () => {
-			if (!ShowStyleBases.findOne()) return 'No ShowStyleBase found'
+		validate: async () => {
+			const count = await ShowStyleBases.countDocuments()
+			if (count === 0) return 'No ShowStyleBase found'
 			return false
 		},
-		migrate: () => {
+		migrate: async () => {
 			// maybe copy from studio?
-			const studios = Studios.find().fetch()
+			const studios = await Studios.findFetchAsync({})
 			if (studios.length === 1) {
 				const studio = studios[0]
 
 				const id = protectString('show0')
-				ShowStyleBases.insert({
+				await ShowStyleBases.insertAsync({
 					_id: id,
 					name: 'Default ShowStyle',
 					organizationId: null,
 					blueprintId: protectString(''),
-					outputLayers: [],
-					sourceLayers: [],
+					outputLayersWithOverrides: wrapDefaultObject({}),
+					sourceLayersWithOverrides: wrapDefaultObject({}),
 					hotkeyLegend: [],
-					blueprintConfig: {},
+					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
+					lastBlueprintConfig: undefined,
 				})
 
 				const variantId: ShowStyleVariantId = getRandomId()
-				ShowStyleVariants.insert({
+				await ShowStyleVariants.insertAsync({
 					_id: variantId,
 					name: 'Default Variant',
 					showStyleBaseId: id,
-					blueprintConfig: {},
+					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
+					_rank: 0,
 				})
 
 				if (!studio.supportedShowStyleBase || studio.supportedShowStyleBase.length === 0) {
-					Studios.update(studio._id, {
+					await Studios.updateAsync(studio._id, {
 						$set: {
 							supportedShowStyleBase: [id],
 						},
@@ -191,69 +510,55 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				logger.info(`Migration: Add default ShowStyleBase`)
 
 				const id = protectString('show0')
-				ShowStyleBases.insert({
+				await ShowStyleBases.insertAsync({
 					_id: id,
 					name: 'Default ShowStyle',
 					organizationId: null,
 					blueprintId: protectString(''),
-					outputLayers: [],
-					sourceLayers: [],
-					blueprintConfig: {},
+					outputLayersWithOverrides: wrapDefaultObject({}),
+					sourceLayersWithOverrides: wrapDefaultObject({}),
+					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
+					lastBlueprintConfig: undefined,
 				})
 
-				ShowStyleVariants.insert({
+				await ShowStyleVariants.insertAsync({
 					_id: getRandomId(),
 					name: 'Default Variant',
 					showStyleBaseId: id,
-					blueprintConfig: {},
+					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
+					_rank: 0,
 				})
 			}
 		},
 	},
+	{
+		id: 'TriggeredActions.core',
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const coreTriggeredActionsCount = await TriggeredActions.countDocuments({
+				showStyleBaseId: null,
+			})
 
-	ensureCollectionPropertyManual(
-		CollectionName.Studios,
-		{},
-		'settings.sofieUrl',
-		'text',
-		'Sofie URL',
-		"Enter the URL to the Sofie Core (that's what's in your browser URL,), example: https://xxsofie without trailing" +
-			' /; short form server name is OK.',
-		undefined
-	),
+			if (coreTriggeredActionsCount === 0) {
+				return `No system-wide triggered actions set up.`
+			}
 
-	ensureCollectionPropertyManual(
-		CollectionName.Studios,
-		{},
-		'settings.mediaPreviewsUrl',
-		'text',
-		'Media Preview Service',
-		'Enter the URL to the Media Preview service, example: https://10.0.1.100:8000/. Note that Cross-Origin Resource' +
-			' Sharing needs to be enabled for this Sofie installation the Media Preview Service, or the Media Preview ' +
-			' Service needs to have the same Origin as Sofie. Read more: ' +
-			'https://developer.mozilla.org/en-US/docs/Web/Security/Same-origin_policy',
-		undefined
-	),
-
-	ensureCollectionPropertyManual(
-		CollectionName.Studios,
-		{},
-		'settings.slackEvaluationUrls',
-		'text',
-		'Evaluations Slack Integration',
-		'Enter the URL for the Slack WebHook (example: "https://hooks.slack.com/services/[WEBHOOKURL]") where Evaluations by Users will be sent',
-		undefined
-	),
-
-	ensureCollectionPropertyManual(
-		CollectionName.Studios,
-		{},
-		'settings.supportedMediaFormats',
-		'text',
-		'Media Quality Control',
-		'Provide a list of accepted media formats for playback (example: "1920x1080i5000tff,1280x720p5000")',
-		undefined
-	),
+			return false
+		},
+		migrate: async () => {
+			for (const triggeredAction of DEFAULT_CORE_TRIGGERS) {
+				await TriggeredActions.insertAsync({
+					_id: protectString(getHash(triggeredAction._id)),
+					_rank: triggeredAction._rank,
+					name: triggeredAction.name,
+					blueprintUniqueId: null,
+					showStyleBaseId: null,
+					actionsWithOverrides: wrapDefaultObject(triggeredAction.actions),
+					triggersWithOverrides: wrapDefaultObject(triggeredAction.triggers),
+				})
+			}
+		},
+	},
 ])

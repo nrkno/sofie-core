@@ -2,13 +2,10 @@ import { check } from '../../lib/check'
 import { literal, getCurrentTime, Time, getRandomId, stringifyError } from '../../lib/lib'
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
-import { UserActionsLog, UserActionsLogItem, UserActionsLogItemId } from '../../lib/collections/UserActionsLog'
+import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
-import { PeripheralDeviceId } from '../../lib/collections/PeripheralDevices'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
-import { UserId } from '../../lib/typings/meteor'
-import { OrganizationId } from '../../lib/collections/Organization'
 import { Settings } from '../../lib/Settings'
 import { resolveCredentials } from '../security/lib/credentials'
 import { isInTestWrite, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
@@ -17,10 +14,17 @@ import { endTrace, sendTrace, startTrace } from './integration/influx'
 import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
-import { StudioId } from '../../lib/collections/Studios'
 import { QueueStudioJob } from '../worker/worker'
 import { profiler } from './profiler'
-import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	OrganizationId,
+	PeripheralDeviceId,
+	RundownId,
+	RundownPlaylistId,
+	StudioId,
+	UserActionsLogItemId,
+	UserId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	checkAccessToPlaylist,
 	checkAccessToRundown,
@@ -28,7 +32,8 @@ import {
 	VerifiedRundownPlaylistContentAccess,
 } from './lib'
 import { BasicAccessContext } from '../security/organization'
-import { NoticeLevel } from '../../client/lib/notifications/notifications'
+import { NoticeLevel } from '../../lib/notifications/notifications'
+import { UserActionsLog } from '../collections'
 
 function rewrapError(methodName: string, e: any): ClientAPI.ClientResponseError {
 	let userError: UserError
@@ -37,13 +42,13 @@ function rewrapError(methodName: string, e: any): ClientAPI.ClientResponseError 
 	} else {
 		// Rewrap errors as a UserError
 		const err = e instanceof Error ? e : new Error(stringifyError(e))
-		userError = UserError.from(err, UserErrorMessage.InternalError)
+		userError = UserError.from(err, UserErrorMessage.InternalError, undefined, e.error)
 	}
 
 	logger.info(`UserAction "${methodName}" failed: ${stringifyError(userError)}`)
 
 	// Forward the error to the caller
-	return ClientAPI.responseError(userError)
+	return ClientAPI.responseError(userError, userError.errorCode)
 }
 
 export namespace ServerClientAPI {
@@ -293,17 +298,24 @@ export namespace ServerClientAPI {
 		}
 	}
 
-	export async function callPeripheralDeviceFunction(
+	export async function callPeripheralDeviceFunctionOrAction(
 		methodContext: MethodContext,
 		context: string,
 		deviceId: PeripheralDeviceId,
 		timeoutTime: number | undefined,
-		functionName: string,
-		...args: any[]
+		action: {
+			functionName?: string
+			args?: Array<any>
+			actionId?: string
+			payload?: Record<string, any>
+		}
 	): Promise<any> {
 		check(deviceId, String)
-		check(functionName, String)
 		check(context, String)
+
+		if (!action.functionName && !action.actionId) {
+			throw new Error('Either functionName or actionId should be specified')
+		}
 
 		const actionId: UserActionsLogItemId = getRandomId()
 		const startTime = Date.now()
@@ -312,17 +324,14 @@ export namespace ServerClientAPI {
 			// In this case, it was called internally from server-side.
 			// Just run and return right away:
 			triggerWriteAccessBecauseNoCheckNecessary()
-			return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
-				deviceId,
-				timeoutTime,
-				functionName,
-				...args
-			).catch(async (e) => {
-				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
-				logger.error(errMsg)
-				// allow the exception to be handled by the Client code
-				return Promise.reject(e)
-			})
+			return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, action).catch(
+				async (e) => {
+					const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
+					logger.error(errMsg)
+					// allow the exception to be handled by the Client code
+					return Promise.reject(e)
+				}
+			)
 		}
 
 		const access = await PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
@@ -334,13 +343,13 @@ export namespace ServerClientAPI {
 				organizationId: access.organizationId,
 				userId: access.userId,
 				context: context,
-				method: `${deviceId}: ${functionName}`,
-				args: JSON.stringify(args),
+				method: `${deviceId}: ${action.functionName || action.actionId}`,
+				args: JSON.stringify(action.args || action.payload),
 				timestamp: getCurrentTime(),
 			})
 		)
 
-		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, functionName, ...args)
+		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, action)
 			.then(async (result) => {
 				await UserActionsLog.updateAsync(actionId, {
 					$set: {
@@ -368,6 +377,47 @@ export namespace ServerClientAPI {
 				return Promise.reject(err)
 			})
 	}
+
+	export async function callBackgroundPeripheralDeviceFunction(
+		methodContext: MethodContext,
+		deviceId: PeripheralDeviceId,
+		timeoutTime: number | undefined,
+		functionName: string,
+		...args: any[]
+	): Promise<any> {
+		check(deviceId, String)
+		check(functionName, String)
+
+		logger.debug(`Calling "${deviceId}" with "${functionName}", ${JSON.stringify(args)}`)
+
+		if (!methodContext.connection) {
+			// In this case, it was called internally from server-side.
+			// Just run and return right away:
+			triggerWriteAccessBecauseNoCheckNecessary()
+			return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, {
+				functionName,
+				args,
+			}).catch(async (e) => {
+				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
+				logger.error(errMsg)
+				// allow the exception to be handled by the Client code
+				return Promise.reject(e)
+			})
+		}
+
+		await PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
+
+		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, {
+			functionName,
+			args,
+		}).catch(async (err) => {
+			const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
+			logger.error(errMsg)
+			// allow the exception to be handled by the Client code
+			return Promise.reject(err)
+		})
+	}
+
 	async function getLoggedInCredentials(methodContext: MethodContext): Promise<BasicAccessContext> {
 		let userId: UserId | null = null
 		let organizationId: OrganizationId | null = null
@@ -410,7 +460,36 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 		functionName: string,
 		...args: any[]
 	) {
-		return ServerClientAPI.callPeripheralDeviceFunction(this, context, deviceId, timeoutTime, functionName, ...args)
+		return ServerClientAPI.callPeripheralDeviceFunctionOrAction(this, context, deviceId, timeoutTime, {
+			functionName,
+			args,
+		})
+	}
+	async callPeripheralDeviceAction(
+		context: string,
+		deviceId: PeripheralDeviceId,
+		timeoutTime: number | undefined,
+		actionId: string,
+		payload?: Record<string, any>
+	) {
+		return ServerClientAPI.callPeripheralDeviceFunctionOrAction(this, context, deviceId, timeoutTime, {
+			actionId,
+			payload,
+		})
+	}
+	async callBackgroundPeripheralDeviceFunction(
+		deviceId: PeripheralDeviceId,
+		timeoutTime: number | undefined,
+		functionName: string,
+		...args: any[]
+	): Promise<any> {
+		return ServerClientAPI.callBackgroundPeripheralDeviceFunction(
+			this,
+			deviceId,
+			timeoutTime,
+			functionName,
+			...args
+		)
 	}
 }
 registerClassToMeteorMethods(ClientAPIMethods, ServerClientAPIClass, false)

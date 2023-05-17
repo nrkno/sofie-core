@@ -5,9 +5,6 @@ import {
 	ShowStyleVariantId,
 	RundownId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { ShowStyleCompound } from '@sofie-automation/corelib/dist/dataModel/ShowStyleCompound'
-import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { EventsJobFunc } from '@sofie-automation/corelib/dist/worker/events'
 import { IngestJobFunc } from '@sofie-automation/corelib/dist/worker/ingest'
@@ -22,7 +19,13 @@ import {
 import { ReadOnlyCacheBase } from '../cache/CacheBase'
 import { PlaylistLock, RundownLock } from '../jobs/lock'
 import { ReadonlyDeep } from 'type-fest'
-import { ApmSpan, JobContext } from '../jobs'
+import {
+	ApmSpan,
+	ProcessedShowStyleBase,
+	JobContext,
+	ProcessedShowStyleCompound,
+	ProcessedShowStyleVariant,
+} from '../jobs'
 import { createShowStyleCompound } from '../showStyles'
 import { getMockCollections } from './collection'
 import { clone } from '@sofie-automation/corelib/dist/lib'
@@ -50,6 +53,8 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 // import _ = require('underscore')
 import { defaultStudio } from './defaultCollectionObjects'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { processShowStyleBase, processShowStyleVariant } from '../jobs/showStyle'
+import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 export function setupDefaultJobEnvironment(studioId?: StudioId): MockJobContext {
 	const collections = getMockCollections()
@@ -93,6 +98,7 @@ export class MockJobContext implements JobContext {
 
 	get studioBlueprint(): ReadonlyDeep<WrappedStudioBlueprint> {
 		return {
+			blueprintDoc: undefined,
 			blueprintId: this.studio.blueprintId || protectString('fake'),
 			blueprint: this.#studioBlueprint,
 		}
@@ -136,28 +142,40 @@ export class MockJobContext implements JobContext {
 	getStudioBlueprintConfig(): ProcessedStudioConfig {
 		return preprocessStudioConfig(this.studio, this.#studioBlueprint)
 	}
-	async getShowStyleBases(): Promise<ReadonlyDeep<Array<DBShowStyleBase>>> {
-		return this.directCollections.ShowStyleBases.findFetch()
+	async getShowStyleBases(): Promise<ReadonlyDeep<Array<ProcessedShowStyleBase>>> {
+		const docs = await this.directCollections.ShowStyleBases.findFetch()
+
+		return docs.map(processShowStyleBase)
 	}
-	async getShowStyleBase(id: ShowStyleBaseId): Promise<DBShowStyleBase> {
-		const style = await this.directCollections.ShowStyleBases.findOne(id)
-		if (!style) throw new Error(`ShowStyleBase "${id}" Not found!`)
-		return style
+	async getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<ProcessedShowStyleBase>> {
+		const doc = await this.directCollections.ShowStyleBases.findOne(id)
+		if (!doc) throw new Error(`ShowStyleBase "${id}" Not found!`)
+		return processShowStyleBase(doc)
 	}
-	async getShowStyleVariants(id: ShowStyleBaseId): Promise<ReadonlyDeep<Array<DBShowStyleVariant>>> {
-		return this.directCollections.ShowStyleVariants.findFetch({
-			showStyleBaseId: id,
-		})
+	async getShowStyleVariants(id: ShowStyleBaseId): Promise<ReadonlyDeep<Array<ProcessedShowStyleVariant>>> {
+		const docs = await this.directCollections.ShowStyleVariants.findFetch(
+			{
+				showStyleBaseId: id,
+			},
+			{
+				sort: {
+					_rank: 1,
+					_id: 1,
+				},
+			}
+		)
+
+		return docs.map(processShowStyleVariant)
 	}
-	async getShowStyleVariant(id: ShowStyleVariantId): Promise<DBShowStyleVariant> {
-		const style = await this.directCollections.ShowStyleVariants.findOne(id)
-		if (!style) throw new Error(`ShowStyleVariant "${id}" Not found!`)
-		return style
+	async getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<ProcessedShowStyleVariant>> {
+		const doc = await this.directCollections.ShowStyleVariants.findOne(id)
+		if (!doc) throw new Error(`ShowStyleVariant "${id}" Not found!`)
+		return processShowStyleVariant(doc)
 	}
 	async getShowStyleCompound(
 		variantId: ShowStyleVariantId,
 		baseId?: ShowStyleBaseId
-	): Promise<ReadonlyDeep<ShowStyleCompound>> {
+	): Promise<ReadonlyDeep<ProcessedShowStyleCompound>> {
 		const [variant, base0] = await Promise.all([
 			this.getShowStyleVariant(variantId),
 			baseId ? this.getShowStyleBase(baseId) : null,
@@ -181,8 +199,8 @@ export class MockJobContext implements JobContext {
 			blueprint: this.#showStyleBlueprint,
 		}
 	}
-	getShowStyleBlueprintConfig(showStyle: ReadonlyDeep<ShowStyleCompound>): ProcessedShowStyleConfig {
-		return preprocessShowStyleConfig(showStyle, this.#showStyleBlueprint)
+	getShowStyleBlueprintConfig(showStyle: ReadonlyDeep<ProcessedShowStyleCompound>): ProcessedShowStyleConfig {
+		return preprocessShowStyleConfig(showStyle, this.#showStyleBlueprint, this.#studio.settings)
 	}
 
 	hackPublishTimelineToFastTrack(_newTimeline: TimelineComplete): void {
@@ -222,7 +240,14 @@ const MockStudioBlueprint: () => StudioBlueprintManifest = () => ({
 	integrationVersion: '0.0.0',
 	TSRVersion: '0.0.0',
 
-	studioConfigManifest: [],
+	configPresets: {
+		defaults: {
+			name: 'Defaults',
+			config: {},
+		},
+	},
+
+	studioConfigSchema: JSONBlobStringify({}),
 	studioMigrations: [],
 	getBaseline: () => {
 		return {
@@ -240,7 +265,21 @@ const MockShowStyleBlueprint: () => ShowStyleBlueprintManifest = () => ({
 	integrationVersion: '0.0.0',
 	TSRVersion: '0.0.0',
 
-	showStyleConfigManifest: [],
+	configPresets: {
+		defaults: {
+			name: 'Defaults',
+			config: {},
+
+			variants: {
+				0: {
+					name: 'Variant 0',
+					config: {},
+				},
+			},
+		},
+	},
+
+	showStyleConfigSchema: JSONBlobStringify({}),
 	showStyleMigrations: [],
 	getShowStyleVariantId: (_context, variants): string | null => {
 		return variants[0]._id

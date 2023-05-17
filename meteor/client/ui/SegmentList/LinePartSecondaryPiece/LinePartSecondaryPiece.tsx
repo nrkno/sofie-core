@@ -1,6 +1,5 @@
 import classNames from 'classnames'
 import React, { CSSProperties, useCallback, useMemo, useRef, useState } from 'react'
-import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceExtended } from '../../../../lib/Rundown'
 import { RundownUtils } from '../../../lib/rundown'
 import { PieceHoverInspector } from '../PieceHoverInspector'
@@ -10,8 +9,6 @@ import StudioContext from '../../RundownView/StudioContext'
 
 interface IProps {
 	piece: PieceExtended
-	partId: PartId
-	partInstanceId: PartInstanceId
 	timelineBase: number
 	partDuration: number
 	onClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
@@ -26,8 +23,6 @@ function timeInBase(time: number, partDuration: number, timelineBase: number): n
 
 export const LinePartSecondaryPiece: React.FC<IProps> = React.memo(function LinePartSecondaryPiece({
 	piece,
-	partId,
-	partInstanceId,
 	partDuration,
 	timelineBase,
 	onClick: incomingOnClick,
@@ -109,16 +104,10 @@ export const LinePartSecondaryPiece: React.FC<IProps> = React.memo(function Line
 					studio && (
 						<PieceHoverInspector
 							hovering={hovering}
-							partId={partId}
-							partInstanceId={partInstanceId}
 							hoverScrubTimePosition={0}
-							isFinished={false}
-							isLive={false}
-							isNext={false}
 							layer={piece.sourceLayer}
 							mousePosition={mousePosition}
 							originPosition={origin}
-							partAutoNext={false}
 							pieceInstance={piece}
 							studio={studio}
 						/>

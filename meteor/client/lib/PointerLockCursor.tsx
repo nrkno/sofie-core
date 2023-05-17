@@ -1,5 +1,5 @@
 import * as React from 'react'
-import Escape from 'react-escape'
+import Escape from './Escape'
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowsAltH } from '@fortawesome/free-solid-svg-icons'
@@ -13,7 +13,7 @@ interface IState {
 let PointerLockCursorSingleton: PointerLockCursor
 
 export class PointerLockCursor extends React.Component<{}, IState> {
-	constructor(props) {
+	constructor(props: {}) {
 		super(props)
 
 		// eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -26,7 +26,7 @@ export class PointerLockCursor extends React.Component<{}, IState> {
 		}
 	}
 
-	render() {
+	render(): JSX.Element {
 		return (
 			<Escape to="viewport">
 				<div
@@ -50,7 +50,7 @@ export class PointerLockCursor extends React.Component<{}, IState> {
 		)
 	}
 
-	show = (left: number, top: number) => {
+	show = (left: number, top: number): void => {
 		this.setState({
 			showCursor: true,
 			pointerX: left,
@@ -58,19 +58,19 @@ export class PointerLockCursor extends React.Component<{}, IState> {
 		})
 	}
 
-	hide = () => {
+	hide = (): void => {
 		this.setState({
 			showCursor: false,
 		})
 	}
 }
 
-export function showPointerLockCursor(left: number, top: number) {
+export function showPointerLockCursor(left: number, top: number): void {
 	if (!PointerLockCursorSingleton) return
 	PointerLockCursorSingleton.show(left, top)
 }
 
-export function hidePointerLockCursor() {
+export function hidePointerLockCursor(): void {
 	if (!PointerLockCursorSingleton) return
 	PointerLockCursorSingleton.hide()
 }

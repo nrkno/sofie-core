@@ -20,7 +20,7 @@ interface IRundownNameProps {
 export const RundownName = withTranslation()(
 	withTiming<IRundownNameProps & WithTranslation, {}>()(
 		class RundownName extends React.Component<Translated<WithTiming<IRundownNameProps>>> {
-			render() {
+			render(): JSX.Element {
 				const { rundownPlaylist, currentRundown, rundownCount, t } = this.props
 				const expectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
 				return (

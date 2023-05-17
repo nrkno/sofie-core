@@ -343,8 +343,27 @@ $layer-types: join($layer-types-solid, $layer-types-gradient);
 
 @mixin missing-overlay {
 	&.source-broken,
-	&.source-missing {
+	&.source-missing,
+	&.source-not-ready {
 		&::before {
+			@keyframes animated-zebra {
+				0% {
+					opacity: 0.4;
+				}
+				49% {
+					opacity: 0.4;
+				}
+				50% {
+					opacity: 0.9;
+				}
+				99% {
+					opacity: 0.9;
+				}
+				100% {
+					opacity: 0.4;
+				}
+			}
+
 			content: ' ';
 			display: block;
 			position: absolute;
@@ -353,21 +372,31 @@ $layer-types: join($layer-types-solid, $layer-types-gradient);
 			right: 0;
 			bottom: 0;
 			mix-blend-mode: normal;
+			animation-name: animated-zebra;
+			animation-fill-mode: forwards;
+			animation-duration: calc(
+				0.25s * var(--missing-overlay-animated)
+			); // If the var is not set, the animation will stop at first frame
+			animation-iteration-count: infinite;
+
+			opacity: 0.4;
+			pointer-events: none;
+
 			background-image: repeating-linear-gradient(
 				45deg,
 				transparent,
-				transparent 10px,
-				black 11px,
-				black 15px,
+				transparent 7px,
+				black 8px,
+				black 12px,
+				transparent 13px,
 				transparent 16px
 			);
-			opacity: 0.4;
-			pointer-events: none;
 		}
 	}
 
 	&.vt.source-broken,
-	&.vt.source-missing {
+	&.vt.source-missing,
+	&.vt.source-not-ready {
 		&::before {
 			opacity: 0.6;
 		}
@@ -388,7 +417,7 @@ $layer-types: join($layer-types-solid, $layer-types-gradient);
 
 	// Don't treat an unknown state as an issue
 	/*  {
-		background-blend-mode: overlay; 
+		background-blend-mode: overlay;
 		background-image: repeating-linear-gradient(
 		45deg,
 		transparent,
