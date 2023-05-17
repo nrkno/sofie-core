@@ -866,12 +866,16 @@ describe('Playout API', () => {
 
 		{
 			// set next segment when next part is already outside of the current one
-			await handleSetNextSegment(context, { playlistId: playlistId0, nextSegmentId: segments[2]._id })
+			const segmentToQueueId = segments[2]._id
+			await handleSetNextSegment(context, { playlistId: playlistId0, nextSegmentId: segmentToQueueId })
 			const playlist = await getPlaylist0()
 			// expect to just set first part of the queued segment as next
 			expect(playlist.nextSegmentId).toBeUndefined()
 			const { nextPartInstance } = await getSelectedPartInstances(context, playlist)
-			expect(nextPartInstance?.part._id).toBe(parts[2]._id)
+			const firstPartOfQueuedSegment = parts.find((part) => part.segmentId === segmentToQueueId)
+			if (!firstPartOfQueuedSegment) throw new Error('Did not find a part of Queued Segment')
+			expect(nextPartInstance?.part._id).toBe(firstPartOfQueuedSegment._id)
+			if (firstPartOfQueuedSegment.invalid) throw new Error('Selected Part is invalid')
 		}
 	})
 })

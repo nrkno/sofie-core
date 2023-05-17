@@ -350,13 +350,42 @@ async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout)
 	}
 }
 
-export function setNextSegment(context: JobContext, cache: CacheForPlayout, nextSegment: DBSegment | null): void {
+export async function setNextSegment(
+	context: JobContext,
+	cache: CacheForPlayout,
+	nextSegment: DBSegment | null
+): Promise<void> {
 	const span = context.startSpan('setNextSegment')
 	if (nextSegment) {
 		// Just run so that errors will be thrown if something wrong:
-		const partsInSegment = cache.Parts.findAll((p) => p.segmentId === nextSegment._id)
-		if (!partsInSegment.find((p) => isPartPlayable(p))) {
+		const partsInSegment = sortPartsInSortedSegments(
+			cache.Parts.findAll((p) => p.segmentId === nextSegment._id),
+			[nextSegment]
+		)
+		const firstPlayablePart = partsInSegment.find((p) => isPartPlayable(p))
+		if (!firstPlayablePart) {
 			throw new Error('Segment contains no valid parts')
+		}
+
+		const currentPartInstanceId = cache.Playlist.doc.currentPartInfo?.partInstanceId
+		const nextPartInstanceId = cache.Playlist.doc.nextPartInfo?.partInstanceId
+
+		const currentPartInstance = currentPartInstanceId
+			? cache.PartInstances.findOne(currentPartInstanceId)
+			: undefined
+		const nextPartInstance = nextPartInstanceId ? cache.PartInstances.findOne(nextPartInstanceId) : undefined
+
+		// if there is not currentPartInstance or the nextPartInstance is not in the current segment
+		// behave as if user chose SetNextPart on the first playable part of the segment
+		if (currentPartInstance === undefined || currentPartInstance.segmentId !== nextPartInstance?.segmentId) {
+			return setNextPart(
+				context,
+				cache,
+				{
+					part: firstPlayablePart,
+				},
+				true
+			)
 		}
 
 		cache.Playlist.update((p) => {
@@ -408,7 +437,7 @@ export async function setNextPartInner(
 	}
 
 	if (clearNextSegment) {
-		setNextSegment(context, cache, null)
+		await setNextSegment(context, cache, null)
 	}
 
 	await setNextPart(context, cache, nextPart ? { part: nextPart } : null, setManually, nextTimeOffset)
