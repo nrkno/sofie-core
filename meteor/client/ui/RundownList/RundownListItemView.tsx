@@ -35,7 +35,7 @@ interface IRundownListItemViewProps {
 	isOnlyRundownInPlaylist?: boolean
 }
 
-export default function RundownListItemView({
+export default React.memo(function RundownListItemView({
 	isActive,
 	className,
 	connectDragSource,
@@ -213,4 +213,4 @@ export default function RundownListItemView({
 			</span>
 		</li>
 	)
-}
+})
