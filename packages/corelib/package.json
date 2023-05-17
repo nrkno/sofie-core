@@ -49,7 +49,7 @@
 		"prom-client": "^14.2.0",
 		"timecode": "0.0.4",
 		"tslib": "^2.6.0",
-		"type-fest": "^2.19.0",
+		"type-fest": "^3.10.0",
 		"underscore": "^1.13.6"
 	},
 	"peerDependencies": {

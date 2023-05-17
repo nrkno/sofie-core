@@ -69,7 +69,7 @@
 		"@sofie-automation/server-core-integration": "1.51.0-in-development",
 		"@sofie-automation/shared-lib": "1.51.0-in-development",
 		"tslib": "^2.6.0",
-		"type-fest": "^2.19.0",
+		"type-fest": "^3.10.0",
 		"underscore": "^1.13.6",
 		"winston": "^3.9.0"
 	},
