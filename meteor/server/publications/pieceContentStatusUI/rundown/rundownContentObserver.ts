@@ -89,7 +89,7 @@ export class RundownContentObserver {
 
 		// Subscribe to the database, and pipe any updates into the ReactiveCacheCollections
 		this.#observers = [
-			Rundowns.observe(
+			Rundowns.observeChanges(
 				{
 					_id: {
 						$in: rundownIds,
@@ -105,7 +105,7 @@ export class RundownContentObserver {
 			),
 			this.#showStyleBaseIdObserver,
 
-			Segments.observe(
+			Segments.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
@@ -116,7 +116,7 @@ export class RundownContentObserver {
 					projection: segmentFieldSpecifier,
 				}
 			),
-			Parts.observe(
+			Parts.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
@@ -127,7 +127,7 @@ export class RundownContentObserver {
 					projection: partFieldSpecifier,
 				}
 			),
-			Pieces.observe(
+			Pieces.observeChanges(
 				{
 					startRundownId: {
 						$in: rundownIds,

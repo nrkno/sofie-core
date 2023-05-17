@@ -1,7 +1,7 @@
 import { omit } from '@sofie-automation/corelib/dist/lib'
-import { ProtectedString, isProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { isProtectedString, ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { Mongo } from 'meteor/mongo'
-import { ObserveCallbacks } from '../../../lib/collections/lib'
+import { ObserveChangesCallbacks } from '../../../lib/collections/lib'
 
 type Reaction = () => void
 
@@ -76,70 +76,23 @@ export class ReactiveCacheCollection<Document extends { _id: ProtectedString<any
 		return res
 	}
 
-	async insertAsync(doc: Mongo.OptionalId<Document>): Promise<string> {
-		const result = await this.#collection.insertAsync(doc)
-		this.runReaction()
-		return result
-	}
-
-	async removeAsync(selector: Document['_id'] | Mongo.Selector<Document>): Promise<number> {
-		const result = await this.#collection.removeAsync(
-			isProtectedString(selector) ? unprotectString(selector) : selector
-		)
-		if (result > 0) {
-			this.runReaction()
-		}
-		return result
-	}
-
-	async updateAsync(
-		selector: Document['_id'] | Mongo.Selector<Document>,
-		modifier: Mongo.Modifier<Document>,
-		options?: {
-			multi?: boolean
-			upsert?: boolean
-			arrayFilters?: { [identifier: string]: any }[]
-		}
-	): Promise<number> {
-		const result = await this.#collection.updateAsync(
-			isProtectedString(selector) ? unprotectString(selector) : selector,
-			modifier,
-			options
-		)
-		if (result > 0) {
-			this.runReaction()
-		}
-		return result
-	}
-
-	async upsertAsync(
-		selector: Document['_id'] | Mongo.Selector<Document>,
-		modifier: Mongo.Modifier<Document>,
-		options?: { multi?: boolean }
-	): Promise<{ numberAffected?: number; insertedId?: string }> {
-		const result = await this.#collection.upsertAsync(
-			isProtectedString(selector) ? unprotectString(selector) : selector,
-			modifier,
-			options
-		)
-		if (result.numberAffected || result.insertedId) {
-			this.runReaction()
-		}
-		return result
-	}
-
-	link(cb?: () => void): ObserveCallbacks<Document> {
+	link(cb?: () => void): ObserveChangesCallbacks<Document> {
 		return {
-			added: (doc: Document) => {
-				this.upsert(doc._id, { $set: omit(doc, '_id') as Partial<Document> })
+			added: (id: Document['_id'], fields: Partial<Document>) => {
+				this.upsert(id, { $set: omit(fields, '_id') as any })
 				cb?.()
 			},
-			changed: (doc: Document) => {
-				this.upsert(doc._id, { $set: omit(doc, '_id') as Partial<Document> })
+			changed: (id: Document['_id'], fields: Partial<Document>) => {
+				const unset: Partial<Record<keyof Document, 1>> = {}
+				for (const [key, value] of Object.entries<unknown>(fields)) {
+					if (value !== undefined) continue
+					unset[key] = 1
+				}
+				this.upsert(id, { $set: omit(fields, '_id') as any, $unset: unset as any })
 				cb?.()
 			},
-			removed: (doc: Document) => {
-				this.remove(doc._id)
+			removed: (id: Document['_id']) => {
+				this.remove(id)
 				cb?.()
 			},
 		}
