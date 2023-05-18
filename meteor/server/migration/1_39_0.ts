@@ -30,7 +30,7 @@ export const addSteps = addMigrationSteps('1.39.0', [
 				},
 			})
 			for (const obj of objects) {
-				await Parts.updateAsync(obj._id, {
+				await Parts.mutableCollection.updateAsync(obj._id, {
 					$set: {
 						expectedDurationWithPreroll: obj.expectedDuration,
 					},

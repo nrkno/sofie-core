@@ -28,7 +28,11 @@ import { DBUser } from '../../lib/collections/Users'
 import { WorkerStatus } from '../../lib/collections/Workers'
 import { registerIndex } from './indices'
 import { getCurrentTime, MeteorStartupAsync, stringifyError } from '../../lib/lib'
-import { createAsyncOnlyMongoCollection, wrapMongoCollection } from './collection'
+import {
+	createAsyncOnlyMongoCollection,
+	createAsyncOnlyReadOnlyMongoCollection,
+	wrapMongoCollection,
+} from './collection'
 import { ObserveChangesForHash } from './lib'
 import { logger } from '../logging'
 
@@ -121,13 +125,13 @@ registerIndex(Studios, {
 	organizationId: 1,
 })
 
-export const Timeline = createAsyncOnlyMongoCollection<TimelineComplete>(CollectionName.Timelines)
+export const Timeline = createAsyncOnlyReadOnlyMongoCollection<TimelineComplete>(CollectionName.Timelines)
 // Note: this index is always created by default, so it's not needed.
 // registerIndex(Timeline, {
 // 	_id: 1,
 // })
 
-export const TimelineDatastore = createAsyncOnlyMongoCollection<TimelineDatastoreEntry>(
+export const TimelineDatastore = createAsyncOnlyReadOnlyMongoCollection<TimelineDatastoreEntry>(
 	CollectionName.TimelineDatastore
 )
 registerIndex(TimelineDatastore, {

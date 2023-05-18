@@ -19,6 +19,10 @@ export class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedStr
 	extends WrappedMongoCollectionBase<DBInterface>
 	implements AsyncOnlyMongoCollection<DBInterface>
 {
+	get mutableCollection(): AsyncOnlyMongoCollection<DBInterface> {
+		return this
+	}
+
 	async findFetchAsync(
 		selector: MongoQuery<DBInterface> | DBInterface['_id'],
 		options?: FindOptions<DBInterface>
@@ -68,18 +72,6 @@ export class WrappedAsyncMongoCollection<DBInterface extends { _id: ProtectedStr
 
 	async insertManyAsync(docs: DBInterface[]): Promise<Array<DBInterface['_id']>> {
 		return Promise.all(docs.map((doc) => this.insert(doc)))
-	}
-
-	async insertIgnoreAsync(doc: DBInterface): Promise<DBInterface['_id']> {
-		return makePromise(() => {
-			return this.insert(doc)
-		}).catch((err) => {
-			if (err.toString().match(/duplicate key/i)) {
-				return doc._id
-			} else {
-				throw err
-			}
-		})
 	}
 
 	async updateAsync(

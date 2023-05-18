@@ -586,7 +586,7 @@ export async function setupDefaultRundownPlaylist(
 
 	const playlist: DBRundownPlaylist = defaultRundownPlaylist(protectString('playlist_' + rundownId), env.studio._id)
 
-	const playlistId = await RundownPlaylists.insertAsync(playlist)
+	const playlistId = await RundownPlaylists.mutableCollection.insertAsync(playlist)
 
 	return {
 		rundownId: await (customRundownFactory || setupDefaultRundown)(env, playlistId, rundownId),
@@ -636,9 +636,9 @@ export async function setupDefaultRundown(
 
 		externalNRCSName: 'mock',
 	}
-	await Rundowns.insertAsync(rundown)
+	await Rundowns.mutableCollection.insertAsync(rundown)
 
-	await RundownPlaylists.updateAsync(playlistId, {
+	await RundownPlaylists.mutableCollection.updateAsync(playlistId, {
 		$push: {
 			rundownIdsInOrder: rundown._id,
 		},
@@ -652,7 +652,7 @@ export async function setupDefaultRundown(
 		name: 'Segment 0',
 		externalModified: 1,
 	}
-	await Segments.insertAsync(segment0)
+	await Segments.mutableCollection.insertAsync(segment0)
 	/* tslint:disable:ter-indent*/
 	//
 	const part00: DBPart = {
@@ -664,7 +664,7 @@ export async function setupDefaultRundown(
 		title: 'Part 0 0',
 		expectedDurationWithPreroll: undefined,
 	}
-	await Parts.insertAsync(part00)
+	await Parts.mutableCollection.insertAsync(part00)
 
 	const piece000: Piece = {
 		_id: protectString(rundownId + '_piece000'),
@@ -685,7 +685,7 @@ export async function setupDefaultRundown(
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	await Pieces.insertAsync(piece000)
+	await Pieces.mutableCollection.insertAsync(piece000)
 
 	const piece001: Piece = {
 		_id: protectString(rundownId + '_piece001'),
@@ -706,7 +706,7 @@ export async function setupDefaultRundown(
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	await Pieces.insertAsync(piece001)
+	await Pieces.mutableCollection.insertAsync(piece001)
 
 	const adLibPiece000: AdLibPiece = {
 		_id: protectString(rundownId + '_adLib000'),
@@ -724,7 +724,7 @@ export async function setupDefaultRundown(
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
-	await AdLibPieces.insertAsync(adLibPiece000)
+	await AdLibPieces.mutableCollection.insertAsync(adLibPiece000)
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -735,7 +735,7 @@ export async function setupDefaultRundown(
 		title: 'Part 0 1',
 		expectedDurationWithPreroll: undefined,
 	}
-	await Parts.insertAsync(part01)
+	await Parts.mutableCollection.insertAsync(part01)
 
 	const piece010: Piece = {
 		_id: protectString(rundownId + '_piece010'),
@@ -756,7 +756,7 @@ export async function setupDefaultRundown(
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	await Pieces.insertAsync(piece010)
+	await Pieces.mutableCollection.insertAsync(piece010)
 
 	const segment1: DBSegment = {
 		_id: protectString(rundownId + '_segment1'),
@@ -766,7 +766,7 @@ export async function setupDefaultRundown(
 		name: 'Segment 1',
 		externalModified: 1,
 	}
-	await Segments.insertAsync(segment1)
+	await Segments.mutableCollection.insertAsync(segment1)
 
 	const part10: DBPart = {
 		_id: protectString(rundownId + '_part1_0'),
@@ -777,7 +777,7 @@ export async function setupDefaultRundown(
 		title: 'Part 1 0',
 		expectedDurationWithPreroll: undefined,
 	}
-	await Parts.insertAsync(part10)
+	await Parts.mutableCollection.insertAsync(part10)
 
 	const part11: DBPart = {
 		_id: protectString(rundownId + '_part1_1'),
@@ -788,7 +788,7 @@ export async function setupDefaultRundown(
 		title: 'Part 1 1',
 		expectedDurationWithPreroll: undefined,
 	}
-	await Parts.insertAsync(part11)
+	await Parts.mutableCollection.insertAsync(part11)
 
 	const part12: DBPart = {
 		_id: protectString(rundownId + '_part1_2'),
@@ -799,7 +799,7 @@ export async function setupDefaultRundown(
 		title: 'Part 1 2',
 		expectedDurationWithPreroll: undefined,
 	}
-	await Parts.insertAsync(part12)
+	await Parts.mutableCollection.insertAsync(part12)
 
 	const segment2: DBSegment = {
 		_id: protectString(rundownId + '_segment2'),
@@ -809,7 +809,7 @@ export async function setupDefaultRundown(
 		name: 'Segment 2',
 		externalModified: 1,
 	}
-	await Segments.insertAsync(segment2)
+	await Segments.mutableCollection.insertAsync(segment2)
 
 	const globalAdLib0: RundownBaselineAdLibItem = {
 		_id: protectString(rundownId + '_globalAdLib0'),
@@ -839,8 +839,8 @@ export async function setupDefaultRundown(
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
-	await RundownBaselineAdLibPieces.insertAsync(globalAdLib0)
-	await RundownBaselineAdLibPieces.insertAsync(globalAdLib1)
+	await RundownBaselineAdLibPieces.mutableCollection.insertAsync(globalAdLib0)
+	await RundownBaselineAdLibPieces.mutableCollection.insertAsync(globalAdLib1)
 
 	return rundownId
 }

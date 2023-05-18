@@ -29,7 +29,7 @@ export const addSteps = addMigrationSteps('1.41.0', [
 				objects: { $exists: true },
 			})
 			for (const obj of objects) {
-				await RundownBaselineObjs.updateAsync(obj._id, {
+				await RundownBaselineObjs.mutableCollection.updateAsync(obj._id, {
 					$set: {
 						timelineObjectsString: serializePieceTimelineObjectsBlob(
 							(obj as any).objects as TimelineObjGeneric[]
@@ -59,7 +59,7 @@ export const addSteps = addMigrationSteps('1.41.0', [
 				'content.timelineObjects': { $exists: true },
 			})
 			for (const obj of objects) {
-				await Pieces.updateAsync(obj._id, {
+				await Pieces.mutableCollection.updateAsync(obj._id, {
 					$set: {
 						timelineObjectsString: serializePieceTimelineObjectsBlob((obj as any).content.timelineObjects),
 					},
@@ -87,7 +87,7 @@ export const addSteps = addMigrationSteps('1.41.0', [
 				'content.timelineObjects': { $exists: true },
 			})
 			for (const obj of objects) {
-				await AdLibPieces.updateAsync(obj._id, {
+				await AdLibPieces.mutableCollection.updateAsync(obj._id, {
 					$set: {
 						timelineObjectsString: serializePieceTimelineObjectsBlob((obj as any).content.timelineObjects),
 					},
@@ -115,7 +115,7 @@ export const addSteps = addMigrationSteps('1.41.0', [
 				'content.timelineObjects': { $exists: true },
 			})
 			for (const obj of objects) {
-				await RundownBaselineAdLibPieces.updateAsync(obj._id, {
+				await RundownBaselineAdLibPieces.mutableCollection.updateAsync(obj._id, {
 					$set: {
 						timelineObjectsString: serializePieceTimelineObjectsBlob((obj as any).content.timelineObjects),
 					},
@@ -171,7 +171,7 @@ export const addSteps = addMigrationSteps('1.41.0', [
 				'piece.content.timelineObjects': { $exists: true },
 			})
 			for (const obj of objects) {
-				await PieceInstances.updateAsync(obj._id, {
+				await PieceInstances.mutableCollection.updateAsync(obj._id, {
 					$set: {
 						timelineObjectsString: serializePieceTimelineObjectsBlob(
 							(obj as any).piece.content.timelineObjects

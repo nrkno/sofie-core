@@ -11,30 +11,18 @@ import { PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceC
 import { MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
 import { MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
 import {
-	AdLibPieces,
 	Blueprints,
 	Buckets,
 	CoreSystem,
 	Evaluations,
-	ExpectedMediaItems,
-	ExpectedPlayoutItems,
 	ExternalMessageQueue,
-	IngestDataCache,
 	MediaObjects,
 	MediaWorkFlows,
 	MediaWorkFlowSteps,
 	Organizations,
-	PartInstances,
-	Parts,
 	PeripheralDeviceCommands,
 	PeripheralDevices,
-	PieceInstances,
-	Pieces,
-	RundownBaselineAdLibPieces,
 	RundownLayouts,
-	RundownPlaylists,
-	Rundowns,
-	Segments,
 	ShowStyleBases,
 	ShowStyleVariants,
 	Snapshots,
@@ -48,7 +36,6 @@ import {
 import { SystemWriteAccess } from './system'
 import { StudioContentWriteAccess } from './studio'
 import { resolveCredentials } from './lib/credentials'
-import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 // Set up direct collection write access
 
@@ -148,18 +135,8 @@ Blueprints.allow({
 		return false
 	},
 })
+
 // Owned by Studio:
-RundownPlaylists.allow({
-	insert(_userId, _doc: DBRundownPlaylist): boolean {
-		return false
-	},
-	update(_userId, _doc, _fields, _modifier) {
-		return false
-	},
-	remove(_userId, _doc) {
-		return false
-	},
-})
 Studios.allow({
 	async insert(userId, doc: Studio) {
 		const access = await allowAccessToStudio({ userId: userId }, doc._id)
@@ -356,143 +333,6 @@ MediaWorkFlows.allow({
 		return false
 	},
 	remove(_userId, _doc) {
-		return false
-	},
-})
-
-// Owned By Rundown:
-Rundowns.allow({
-	insert(): boolean {
-		return false
-	},
-	update() {
-		return false
-	},
-	remove() {
-		return false
-	},
-})
-
-// ----------------------------------------------------------------------------
-// Rundown content:
-// ----------------------------------------------------------------------------
-
-// Collections security set up:
-
-Segments.allow({
-	insert(): boolean {
-		return false
-	},
-	update() {
-		return false
-	},
-	remove() {
-		return false
-	},
-})
-
-Parts.allow({
-	insert(): boolean {
-		return false
-	},
-	update() {
-		return false
-	},
-	remove() {
-		return false
-	},
-})
-PartInstances.allow({
-	insert(): boolean {
-		return false
-	},
-	update() {
-		return false
-	},
-	remove() {
-		return false
-	},
-})
-Pieces.allow({
-	insert(): boolean {
-		return false
-	},
-	update() {
-		return false
-	},
-	remove() {
-		return false
-	},
-})
-PieceInstances.allow({
-	insert(): boolean {
-		return false
-	},
-	update() {
-		return false
-	},
-	remove() {
-		return false
-	},
-})
-AdLibPieces.allow({
-	insert(): boolean {
-		return false
-	},
-	update() {
-		return false
-	},
-	remove() {
-		return false
-	},
-})
-RundownBaselineAdLibPieces.allow({
-	insert(): boolean {
-		return false
-	},
-	update() {
-		return false
-	},
-	remove() {
-		return false
-	},
-})
-IngestDataCache.allow({
-	insert(): boolean {
-		return false
-	},
-	update() {
-		return false
-	},
-	remove() {
-		return false
-	},
-})
-
-ExpectedMediaItems.allow({
-	insert(): boolean {
-		return false
-	},
-
-	update() {
-		return false
-	},
-
-	remove() {
-		return false
-	},
-})
-
-ExpectedPlayoutItems.allow({
-	insert(): boolean {
-		return false
-	},
-
-	update() {
-		return false
-	},
-
-	remove() {
 		return false
 	},
 })

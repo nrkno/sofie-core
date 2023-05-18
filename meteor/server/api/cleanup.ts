@@ -69,7 +69,7 @@ import {
 	Workers,
 	WorkerThreadStatuses,
 } from '../collections'
-import { AsyncOnlyMongoCollection } from '../collections/collection'
+import { AsyncOnlyMongoCollection, AsyncOnlyReadOnlyMongoCollection } from '../collections/collection'
 import { getCollectionKey } from '../collections/lib'
 import { generateTranslationBundleOriginId } from './translationsBundles'
 
@@ -98,7 +98,7 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 
 	const removeByQuery = async <DBInterface extends { _id: ID }, ID extends ProtectedString<any>>(
 		// collectionName: string,
-		collection: AsyncOnlyMongoCollection<DBInterface>,
+		collection: AsyncOnlyReadOnlyMongoCollection<DBInterface>,
 		query: MongoQuery<DBInterface>
 	): Promise<ID[]> => {
 		const collectionName = getCollectionKey(collection)
@@ -106,7 +106,7 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 		const ids = (await collection.findFetchAsync(query, { fields: { _id: 1 } })).map((doc) => doc._id)
 		const count = ids.length
 		if (actuallyCleanup) {
-			await collection.removeAsync(query)
+			await collection.mutableCollection.removeAsync(query)
 		}
 		addToResult(collectionName, count)
 
@@ -139,9 +139,9 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 			DBInterface extends { _id: ID; organizationId: OrganizationId | null | undefined },
 			ID extends ProtectedString<any>
 		>(
-			collection: AsyncOnlyMongoCollection<DBInterface>
+			collection: AsyncOnlyReadOnlyMongoCollection<DBInterface>
 		): Promise<ID[]> => {
-			return await removeByQuery(collection as AsyncOnlyMongoCollection<any>, {
+			return await removeByQuery(collection.mutableCollection as AsyncOnlyMongoCollection<any>, {
 				$and: [
 					{
 						organizationId: { $nin: organizationIds },
@@ -169,9 +169,9 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 			DBInterface extends { _id: ID; deviceId: PeripheralDeviceId },
 			ID extends ProtectedString<any>
 		>(
-			collection: AsyncOnlyMongoCollection<DBInterface>
+			collection: AsyncOnlyReadOnlyMongoCollection<DBInterface>
 		): Promise<ID[]> => {
-			return await removeByQuery(collection as AsyncOnlyMongoCollection<any>, {
+			return await removeByQuery(collection.mutableCollection as AsyncOnlyMongoCollection<any>, {
 				deviceId: { $nin: deviceIds },
 			})
 		}
@@ -192,9 +192,9 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 			DBInterface extends { _id: ID; studioId: StudioId },
 			ID extends ProtectedString<any>
 		>(
-			collection: AsyncOnlyMongoCollection<DBInterface>
+			collection: AsyncOnlyReadOnlyMongoCollection<DBInterface>
 		): Promise<ID[]> => {
-			return await removeByQuery(collection as AsyncOnlyMongoCollection<any>, {
+			return await removeByQuery(collection.mutableCollection as AsyncOnlyMongoCollection<any>, {
 				studioId: { $nin: studioIds },
 			})
 		}
@@ -250,9 +250,9 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 			DBInterface extends { _id: ID; playlistId: RundownPlaylistId },
 			ID extends ProtectedString<any>
 		>(
-			collection: AsyncOnlyMongoCollection<DBInterface>
+			collection: AsyncOnlyReadOnlyMongoCollection<DBInterface>
 		): Promise<ID[]> => {
-			return await removeByQuery(collection as AsyncOnlyMongoCollection<any>, {
+			return await removeByQuery(collection.mutableCollection as AsyncOnlyMongoCollection<any>, {
 				playlistId: { $nin: playlistIds },
 			})
 		}
@@ -267,9 +267,9 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 			DBInterface extends { _id: ID; rundownId: RundownId },
 			ID extends ProtectedString<any>
 		>(
-			collection: AsyncOnlyMongoCollection<DBInterface>
+			collection: AsyncOnlyReadOnlyMongoCollection<DBInterface>
 		): Promise<ID[]> => {
-			return await removeByQuery(collection as AsyncOnlyMongoCollection<any>, {
+			return await removeByQuery(collection.mutableCollection as AsyncOnlyMongoCollection<any>, {
 				rundownId: { $nin: rundownIds },
 			})
 		}
@@ -372,7 +372,7 @@ export async function cleanupOldDataInner(actuallyCleanup: boolean = false): Pro
 		addToResult(CollectionName.ExpectedMediaItems, emiFromBuckets.length)
 		addToResult(CollectionName.ExpectedMediaItems, emiFromRundowns.length)
 		if (actuallyCleanup) {
-			await ExpectedMediaItems.removeAsync({
+			await ExpectedMediaItems.mutableCollection.removeAsync({
 				_id: { $in: [...emiFromBuckets, ...emiFromRundowns].map((o) => o._id) },
 			})
 		}
@@ -462,7 +462,7 @@ async function isAllowedToRunCleanup(): Promise<string | void> {
 }
 /** Returns a list of the ids of all documents in a collection */
 async function getAllIdsInCollection<DBInterface extends { _id: ID }, ID extends ProtectedString<any>>(
-	collection: AsyncOnlyMongoCollection<DBInterface>,
+	collection: AsyncOnlyReadOnlyMongoCollection<DBInterface>,
 	excludeIds?: Set<ID>
 ): Promise<DBInterface['_id'][]> {
 	let ids = (

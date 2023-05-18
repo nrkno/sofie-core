@@ -34,7 +34,7 @@ describe('server/lib', () => {
 				objectType: TimelineObjType.RUNDOWN,
 			},
 		]
-		await Timeline.insertAsync({
+		await Timeline.mutableCollection.insertAsync({
 			_id: protectString('myStudio'),
 			timelineHash: protectString('abc'),
 			generated: 1234,
@@ -53,7 +53,7 @@ describe('server/lib', () => {
 				objectType: TimelineObjType.RUNDOWN,
 			},
 		]
-		await Timeline.insertAsync({
+		await Timeline.mutableCollection.insertAsync({
 			_id: protectString('myStudio2'),
 			timelineHash: protectString('abc'),
 			generated: 1234,
@@ -81,7 +81,7 @@ describe('server/lib', () => {
 		}
 
 		const changes = await saveIntoDb(
-			Timeline,
+			Timeline.mutableCollection,
 			{
 				_id: protectString('myStudio'),
 			},

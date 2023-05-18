@@ -9,11 +9,13 @@ import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageI
 import { MediaObject } from '../../lib/collections/MediaObjects'
 import { MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
-import { createAsyncOnlyMongoCollection } from './collection'
+import { createAsyncOnlyMongoCollection, createAsyncOnlyReadOnlyMongoCollection } from './collection'
 import { registerIndex } from './indices'
 
 /** @deprecated */
-export const ExpectedMediaItems = createAsyncOnlyMongoCollection<ExpectedMediaItem>(CollectionName.ExpectedMediaItems)
+export const ExpectedMediaItems = createAsyncOnlyReadOnlyMongoCollection<ExpectedMediaItem>(
+	CollectionName.ExpectedMediaItems
+)
 registerIndex(ExpectedMediaItems, {
 	path: 1,
 })
@@ -25,7 +27,9 @@ registerIndex(ExpectedMediaItems, {
 	rundownId: 1,
 })
 
-export const ExpectedPackages = createAsyncOnlyMongoCollection<ExpectedPackageDB>(CollectionName.ExpectedPackages)
+export const ExpectedPackages = createAsyncOnlyReadOnlyMongoCollection<ExpectedPackageDB>(
+	CollectionName.ExpectedPackages
+)
 registerIndex(ExpectedPackages, {
 	studioId: 1,
 	fromPieceType: 1,
@@ -51,7 +55,7 @@ registerIndex(ExpectedPackageWorkStatuses, {
 // })
 
 /** @deprecated */
-export const ExpectedPlayoutItems = createAsyncOnlyMongoCollection<ExpectedPlayoutItem>(
+export const ExpectedPlayoutItems = createAsyncOnlyReadOnlyMongoCollection<ExpectedPlayoutItem>(
 	CollectionName.ExpectedPlayoutItems
 )
 registerIndex(ExpectedPlayoutItems, {
