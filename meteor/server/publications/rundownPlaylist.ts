@@ -7,7 +7,7 @@ import { NoSecurityReadAccess } from '../security/noSecurity'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { RundownPlaylists } from '../collections'
-import { MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 meteorPublish(
 	PubSub.rundownPlaylists,

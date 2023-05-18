@@ -9,7 +9,7 @@ import { FindOptions } from '../../lib/collections/lib'
 import { DBOrganization } from '../../lib/collections/Organization'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Blueprints, Evaluations, Organizations, Snapshots, UserActionsLog } from '../collections'
-import { MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 meteorPublish(PubSub.organization, async function (organizationId: OrganizationId | null, token: string | undefined) {

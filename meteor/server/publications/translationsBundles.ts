@@ -4,7 +4,7 @@ import { TranslationsBundlesSecurity } from '../security/translationsBundles'
 import { meteorPublish } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { TranslationsBundles } from '../collections'
-import { MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { TranslationsBundle } from '../../lib/collections/TranslationsBundles'
 
 meteorPublish(

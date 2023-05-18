@@ -49,7 +49,6 @@ import { TranslationsBundle } from '../collections/TranslationsBundles'
 import { DBTriggeredActions, UITriggeredActionsObj } from '../collections/TriggeredActions'
 import { UserActionsLogItem } from '../collections/UserActionsLog'
 import { DBUser } from '../collections/Users'
-import { MongoQuery } from '../typings/meteor'
 import { UIBucketContentStatus, UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications'
 import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'
@@ -61,6 +60,7 @@ import {
 	PackageManagerPackageContainers,
 	PackageManagerPlayoutContext,
 } from '@sofie-automation/shared-lib/dist/package-manager/publications'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 /**
  * Ids of possible DDP subscriptions

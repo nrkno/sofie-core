@@ -11,13 +11,12 @@ import {
 	buildPastInfinitePiecesForThisPartQuery,
 } from '@sofie-automation/corelib/dist/playout/infinites'
 import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
-import { MongoQuery } from './typings/meteor'
 import { invalidateAfter } from '../lib/invalidatingTime'
-import { convertCorelibToMeteorMongoQuery, getCurrentTime, groupByToMap, ProtectedString, protectString } from './lib'
+import { getCurrentTime, groupByToMap, ProtectedString, protectString } from './lib'
 import { RundownPlaylist } from './collections/RundownPlaylists'
 import { Rundown } from './collections/Rundowns'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { mongoWhereFilter } from '@sofie-automation/corelib/dist/mongo'
+import { mongoWhereFilter, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { FindOptions } from './collections/lib'
 import {
 	PartId,
@@ -105,7 +104,7 @@ export function fetchPiecesThatMayBeActiveForPart(
 		// Fast-path: if we already have the pieces, we can use them directly:
 		piecesStartingInPart = mongoWhereFilter(allPieces, selector)
 	} else {
-		piecesStartingInPart = Pieces.find(convertCorelibToMeteorMongoQuery(selector)).fetch()
+		piecesStartingInPart = Pieces.find(selector).fetch()
 	}
 
 	const partsBeforeThisInSegment = Array.from(partsBeforeThisInSegmentSet.values())
@@ -122,9 +121,7 @@ export function fetchPiecesThatMayBeActiveForPart(
 		// Fast-path: if we already have the pieces, we can use them directly:
 		infinitePieces = infinitePieceQuery ? mongoWhereFilter(allPieces, infinitePieceQuery) : []
 	} else {
-		infinitePieces = infinitePieceQuery
-			? Pieces.find(convertCorelibToMeteorMongoQuery(infinitePieceQuery)).fetch()
-			: []
+		infinitePieces = infinitePieceQuery ? Pieces.find(infinitePieceQuery).fetch() : []
 	}
 
 	return piecesStartingInPart.concat(infinitePieces) // replace spread with concat, as 3x is faster (https://stackoverflow.com/questions/48865710/spread-operator-vs-array-concat)

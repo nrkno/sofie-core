@@ -10,7 +10,7 @@ import { StudioReadAccess } from '../security/studio'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { BucketAdLibActions, BucketAdLibs, Buckets } from '../collections'
 import { check, Match } from 'meteor/check'
-import { MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 meteorPublish(PubSub.buckets, async function (studioId, bucketId, _token) {
 	check(studioId, String)

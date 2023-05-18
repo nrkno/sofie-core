@@ -1,6 +1,6 @@
 import { UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MongoModifier, MongoQuery } from '../../lib/typings/meteor'
-import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
+import { MongoModifier, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+import { ProtectedString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { NpmModuleMongodb } from 'meteor/npm-mongo'
@@ -16,7 +16,7 @@ import {
 	ObserveChangesCallbacks,
 	ObserveCallbacks,
 } from '../../lib/collections/lib'
-import { PromisifyCallbacks, protectString, waitForPromise } from '../../lib/lib'
+import { PromisifyCallbacks, waitForPromise } from '../../lib/lib'
 import type { AnyBulkWriteOperation, Collection as RawCollection } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { registerCollection } from './lib'

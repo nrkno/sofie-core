@@ -8,7 +8,7 @@ import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/collections/lib'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { RundownLayouts, ShowStyleBases, ShowStyleVariants, TriggeredActions } from '../collections'
-import { MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
 
 meteorPublish(

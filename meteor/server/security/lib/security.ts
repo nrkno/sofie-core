@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { MongoQueryKey } from '../../../lib/typings/meteor'
+import { MongoQueryKey } from '@sofie-automation/corelib/dist/mongo'
 import { Settings } from '../../../lib/Settings'
 import { resolveCredentials, ResolvedCredentials, Credentials, isResolvedCredentials } from './credentials'
 import { allAccess, noAccess, combineAccess, Access } from './access'

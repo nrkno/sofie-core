@@ -5,7 +5,7 @@ import { SystemReadAccess } from '../security/system'
 import { OrganizationReadAccess } from '../security/organization'
 import { CoreSystem, Users } from '../collections'
 import { SYSTEM_ID } from '../../lib/collections/CoreSystem'
-import { MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBUser } from '../../lib/collections/Users'
 
 meteorPublish(PubSub.coreSystem, async function (token: string | undefined) {

@@ -16,7 +16,7 @@ import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataMod
 import { DBRundownPlaylist, RundownPlaylist } from '../../collections/RundownPlaylists'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { assertNever, generateTranslation } from '../../lib'
-import { MongoQuery } from '../../typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBRundown } from '../../collections/Rundowns'
 import { DBSegment } from '../../collections/Segments'
 import { sortAdlibs } from '../../Rundown'

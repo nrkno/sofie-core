@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { allowAccessToStudio } from './lib/security'
-import { MongoQueryKey } from '../../lib/typings/meteor'
+import { MongoQueryKey } from '@sofie-automation/corelib/dist/mongo'
 import { logNotAllowed } from './lib/lib'
 import { ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'

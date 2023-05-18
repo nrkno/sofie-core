@@ -5,7 +5,7 @@ import type {
 	ShortcutItem,
 } from '../lib/typings/webmanifest'
 import { logger } from '../lib/logging'
-import { MongoQuery } from '../lib/typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBStudio } from '../lib/collections/Studios'
 import { RundownPlaylists, Rundowns } from './collections'
 import { getLocale, Translations } from './lib'

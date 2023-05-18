@@ -30,7 +30,7 @@ import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dat
 import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
 import { PeripheralDevices, Studios, Timeline, TimelineDatastore } from '../collections'
 import { check } from 'meteor/check'
-import { MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 meteorPublish(PubSub.timeline, async function (selector: MongoQuery<TimelineComplete>, token: string | undefined) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
