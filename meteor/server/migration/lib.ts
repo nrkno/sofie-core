@@ -1,4 +1,3 @@
-import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
 import { MigrationStepCore } from '@sofie-automation/blueprints-integration'
 import { objectPathGet, ProtectedString } from '../../lib/lib'
@@ -7,13 +6,14 @@ import { logger } from '../logging'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { AsyncOnlyMongoCollection } from '../collections/collection'
 import { Collections } from '../collections/lib'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 /**
  * Returns a migration step that ensures the provided property is set in the collection
  */
 export function ensureCollectionProperty<T = any>(
 	collectionName: CollectionName,
-	selector: Mongo.Selector<T>,
+	selector: MongoQuery<T>,
 	property: string,
 	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 	defaultValue: any,
@@ -56,7 +56,7 @@ export function ensureCollectionProperty<T = any>(
 
 export function removeCollectionProperty<T = any>(
 	collectionName: CollectionName,
-	selector: Mongo.Selector<T>,
+	selector: MongoQuery<T>,
 	property: string,
 	dependOnResultFrom?: string
 ): Omit<MigrationStepCore, 'version'> {

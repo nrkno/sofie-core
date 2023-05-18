@@ -10,9 +10,12 @@ import { DBOrganization } from '../../lib/collections/Organization'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Blueprints, Evaluations, Organizations, Snapshots, UserActionsLog } from '../collections'
 import { MongoQuery } from '../../lib/typings/meteor'
+import { OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-meteorPublish(PubSub.organization, async function (selector0: MongoQuery<DBOrganization>, token: string | undefined) {
-	const { cred, selector } = await AutoFillSelector.organizationId(this.userId, selector0, token)
+meteorPublish(PubSub.organization, async function (organizationId: OrganizationId | null, token: string | undefined) {
+	if (!organizationId) return null
+
+	const { cred, selector } = await AutoFillSelector.organizationId(this.userId, { _id: organizationId }, token)
 	const modifier: FindOptions<DBOrganization> = {
 		fields: {
 			name: 1,

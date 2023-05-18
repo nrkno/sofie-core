@@ -1,6 +1,7 @@
 import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import {
 	BucketId,
+	OrganizationId,
 	PeripheralDeviceId,
 	RundownId,
 	RundownPlaylistActivationId,
@@ -205,8 +206,8 @@ export interface PubSubTypes {
 	[PubSub.rundownLayouts]: (selector: MongoQuery<RundownLayoutBase>, token?: string) => RundownLayoutBase
 	[PubSub.loggedInUser]: (token?: string) => DBUser
 	[PubSub.usersInOrganization]: (selector: MongoQuery<DBUser>, token?: string) => DBUser
-	[PubSub.organization]: (selector: MongoQuery<DBOrganization>, token?: string) => DBOrganization
-	[PubSub.buckets]: (studioId: StudioId, bucketId: BucketId | null, token?: string) => Bucket
+	[PubSub.organization]: (organizationId: OrganizationId | null, token?: string) => DBOrganization
+	[PubSub.buckets]: (selector: MongoQuery<Bucket>, token?: string) => Bucket
 	[PubSub.bucketAdLibPieces]: (selector: MongoQuery<BucketAdLib>, token?: string) => BucketAdLib
 	[PubSub.bucketAdLibActions]: (selector: MongoQuery<BucketAdLibAction>, token?: string) => BucketAdLibAction
 	[PubSub.translationsBundles]: (selector: MongoQuery<TranslationsBundle>, token?: string) => TranslationsBundle

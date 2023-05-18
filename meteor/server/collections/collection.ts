@@ -53,7 +53,7 @@ export function wrapMongoCollection<DBInterface extends { _id: ProtectedString<a
 
 	const wrapped = new WrappedAsyncMongoCollection<DBInterface>(collection, name)
 
-	registerCollection(name, wrapped)
+	registerCollection(name, wrapped as WrappedAsyncMongoCollection<any>)
 
 	return wrapped
 }
@@ -104,10 +104,10 @@ function wrapMeteorCollectionIntoAsyncCollection<DBInterface extends { _id: Prot
 ) {
 	if ((collection as any)._isMock) {
 		// We use a special one in tests, to reduce the amount of hops between fibers and promises
-		return new WrappedMockCollection(collection, name)
+		return new WrappedMockCollection<DBInterface>(collection, name)
 	} else {
 		// Override the default mongodb methods, because the errors thrown by them doesn't contain the proper call stack
-		return new WrappedAsyncMongoCollection(collection, name)
+		return new WrappedAsyncMongoCollection<DBInterface>(collection, name)
 	}
 }
 

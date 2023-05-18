@@ -1,7 +1,8 @@
 import { omit } from '@sofie-automation/corelib/dist/lib'
-import { isProtectedString, ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Mongo } from 'meteor/mongo'
 import { ObserveChangesCallbacks } from '../../../lib/collections/lib'
+import { MongoModifier, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 type Reaction = () => void
 
@@ -16,14 +17,14 @@ export class ReactiveCacheCollection<Document extends { _id: ProtectedString<any
 		selector: Document['_id'] | Mongo.Selector<Document>,
 		options?: Mongo.Options<Document>
 	): Mongo.Cursor<Document, Document> {
-		return this.#collection.find(isProtectedString(selector) ? unprotectString(selector) : selector, options)
+		return this.#collection.find(selector as any, options)
 	}
 
 	findOne(
 		selector: Document['_id'] | Mongo.Selector<Document>,
 		options?: Omit<Mongo.Options<Document>, 'limit'>
 	): Document | undefined {
-		return this.#collection.findOne(isProtectedString(selector) ? unprotectString(selector) : selector, options)
+		return this.#collection.findOne(selector as any, options)
 	}
 
 	insert(doc: Mongo.OptionalId<Document>): string {
@@ -32,8 +33,8 @@ export class ReactiveCacheCollection<Document extends { _id: ProtectedString<any
 		return id
 	}
 
-	remove(selector: Document['_id'] | Mongo.Selector<Document>): number {
-		const num = this.#collection.remove(isProtectedString(selector) ? unprotectString(selector) : selector)
+	remove(selector: Document['_id'] | MongoQuery<Document>): number {
+		const num = this.#collection.remove(selector as any)
 		if (num > 0) {
 			this.runReaction()
 		}
@@ -41,19 +42,15 @@ export class ReactiveCacheCollection<Document extends { _id: ProtectedString<any
 	}
 
 	update(
-		selector: Document['_id'] | Mongo.Selector<Document>,
-		modifier: Mongo.Modifier<Document>,
+		selector: Document['_id'] | MongoQuery<Document>,
+		modifier: MongoModifier<Document>,
 		options?: {
 			multi?: boolean
 			upsert?: boolean
 			arrayFilters?: { [identifier: string]: any }[]
 		}
 	): number {
-		const num = this.#collection.update(
-			isProtectedString(selector) ? unprotectString(selector) : selector,
-			modifier,
-			options
-		)
+		const num = this.#collection.update(selector as any, modifier as any, options)
 		if (num > 0) {
 			this.runReaction()
 		}
@@ -65,11 +62,7 @@ export class ReactiveCacheCollection<Document extends { _id: ProtectedString<any
 		modifier: Mongo.Modifier<Document>,
 		options?: { multi?: boolean }
 	): { numberAffected?: number; insertedId?: string } {
-		const res = this.#collection.upsert(
-			isProtectedString(selector) ? unprotectString(selector) : selector,
-			modifier,
-			options
-		)
+		const res = this.#collection.upsert(selector as any, modifier as any, options)
 		if (res.numberAffected || res.insertedId) {
 			this.runReaction()
 		}

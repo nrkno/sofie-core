@@ -33,10 +33,10 @@ export interface ShowStyleContentAccess {
 export namespace ShowStyleReadAccess {
 	/** Handles read access for all showstyle document */
 	export async function showStyleBase(
-		selector: MongoQuery<{ _id: ShowStyleBaseId }>,
+		showStyleBaseId: MongoQueryKey<ShowStyleBaseId>,
 		cred: Credentials | ResolvedCredentials
 	): Promise<boolean> {
-		return showStyleBaseContent({ showStyleBaseId: selector._id }, cred)
+		return showStyleBaseContent({ showStyleBaseId }, cred)
 	}
 
 	/** Handles read access for all showstyle content */

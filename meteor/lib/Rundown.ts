@@ -247,8 +247,8 @@ export function getPieceInstancesForPartInstance(
  *
  * @export
  * @param {RundownPlaylist} playlist
- * @param {(MongoQuery<DBSegment> | Mongo.QueryWithModifiers<DBSegment>)} [segmentsQuery]
- * @param {(MongoQuery<DBPart> | Mongo.QueryWithModifiers<DBPart>)} [partsQuery]
+ * @param {(MongoQuery<DBSegment>)} [segmentsQuery]
+ * @param {(MongoQuery<DBPart>)} [partsQuery]
  * @param {MongoQuery<PartInstance>} [partInstancesQuery]
  * @param {FindOptions<DBSegment>} [segmentsOptions]
  * @param {FindOptions<DBPart>} [partsOptions]

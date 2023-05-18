@@ -788,7 +788,7 @@ export function rundownPlaylistFilter(
 			case 'studioId':
 				selector['$and']?.push({
 					studioId: {
-						$regex: link.value,
+						$regex: link.value as any,
 					},
 				})
 				break

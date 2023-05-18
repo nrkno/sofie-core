@@ -23,7 +23,7 @@ meteorPublish(
 			NoSecurityReadAccess.any() ||
 			(selector.organizationId &&
 				(await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) ||
-			(selector._id && (await ShowStyleReadAccess.showStyleBase(selector, cred)))
+			(selector._id && (await ShowStyleReadAccess.showStyleBase(selector.id, cred)))
 		) {
 			return ShowStyleBases.findWithCursor(selector, modifier)
 		}
