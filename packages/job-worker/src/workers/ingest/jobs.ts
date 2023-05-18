@@ -34,11 +34,11 @@ import {
 	handleBucketActionModify,
 	handleBucketActionRegenerateExpectedPackages,
 	handleBucketEmpty,
-	handleBucketItemImport,
 	handleBucketPieceModify,
 	handleBucketRemoveAdlibAction,
 	handleBucketRemoveAdlibPiece,
-} from '../../ingest/bucketAdlibs'
+} from '../../ingest/bucket/bucketAdlibs'
+import { handleBucketItemImport } from '../../ingest/bucket/import'
 
 type ExecutableFunction<T extends keyof IngestJobFunc> = (
 	context: JobContext,

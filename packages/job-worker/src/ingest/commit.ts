@@ -5,7 +5,7 @@ import {
 	RundownId,
 	PartInstanceId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBRundown, DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DbCacheReadCollection } from '../cache/CacheCollection'
 import { logger } from '../logging'
@@ -93,7 +93,6 @@ export async function CommitIngestOperation(
 		const beforePlaylistId = beforeRundown.playlistId
 		await runJobWithPlaylistLock(
 			context,
-			// 'ingest.commit.removeRundownFromOldPlaylist',
 			{ playlistId: beforePlaylistId },
 			async (oldPlaylist, oldPlaylistLock) => {
 				// Aquire the playout lock so we can safely modify the playlist contents
@@ -106,72 +105,17 @@ export async function CommitIngestOperation(
 
 					// Discard proposed playlistId changes
 					trappedInPlaylistId = { id: oldPlaylist._id, externalId: oldPlaylist.externalId }
-					ingestCache.Rundown.update((rd) => {
-						rd.playlistId = oldPlaylist._id
-						return rd
-					})
-
-					if (data.removeRundown) {
-						// Orphan the deleted rundown
-						ingestCache.Rundown.update((rd) => {
-							rd.orphaned = 'deleted'
-							return rd
-						})
-					} else {
-						// The rundown is still synced, but is in the wrong playlist. Notify the user
-						ingestCache.Rundown.update((rd) => {
-							rd.notes = [
-								...(rd.notes ?? []),
-								{
-									type: NoteSeverity.WARNING,
-									message: getTranslatedMessage(
-										ServerTranslatedMesssages.PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN
-									),
-									origin: {
-										name: 'Data update',
-									},
-								},
-							]
-							return rd
-						})
-					}
+					setRundownAsTrapepdInPlaylist(ingestCache, oldPlaylist._id, data.removeRundown)
 				} else {
 					// The rundown is safe to simply move or remove
 					trappedInPlaylistId = undefined
 
-					await context.directCollections.runInTransaction(async (transaction) => {
-						// Quickly move the rundown out of the playlist, so we an free the old playlist lock sooner
-						await context.directCollections.Rundowns.update(
-							ingestCache.RundownId,
-							{
-								$set: {
-									playlistId: protectString('__TMP__'),
-								},
-							},
-							transaction
-						)
-
-						if (oldPlaylist) {
-							// Ensure playlist is regenerated
-							const updatedOldPlaylist = await regeneratePlaylistAndRundownOrder(
-								context,
-								oldPlaylistLock,
-								transaction,
-								oldPlaylist
-							)
-
-							if (updatedOldPlaylist) {
-								// ensure the 'old' playout is updated to remove any references to the rundown
-								await updatePlayoutAfterChangingRundownInPlaylist(
-									context,
-									updatedOldPlaylist,
-									oldPlaylistLock,
-									transaction,
-									null
-								)
-							}
-						}
-					})
+					await removeRundownFromPlaylistAndUpdatePlaylist(
+						context,
+						ingestCache.RundownId,
+						oldPlaylist,
+						oldPlaylistLock
+					)
 				}
 			}
 		)
@@ -236,169 +180,15 @@ export async function CommitIngestOperation(
 				rundownsInPlaylist
 			)
 
-			const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
+			// Do the segment removals
+			await removeSegments(
 				context,
 				newPlaylist,
-				rundownsInPlaylist.map((r) => r._id)
+				rundownsInPlaylist,
+				ingestCache,
+				data.changedSegmentIds,
+				data.removedSegmentIds
 			)
-
-			const changedSegmentIdsSet = new Set(data.changedSegmentIds)
-			const segmentsChangedToHidden = ingestCache.Segments.findAll(
-				(s) => !!s.isHidden && changedSegmentIdsSet.has(s._id)
-			).map((segment) => segment._id)
-
-			// Do the segment removals
-			{
-				const purgeSegmentIds = new Set<SegmentId>()
-				const orphanDeletedSegmentIds = new Set<SegmentId>()
-				const orphanHiddenSegmentIds = new Set<SegmentId>()
-				for (const segmentId of data.removedSegmentIds) {
-					if (canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
-						purgeSegmentIds.add(segmentId)
-					} else {
-						logger.warn(
-							`Not allowing removal of current playing segment "${segmentId}", making segment unsynced instead`
-						)
-						orphanDeletedSegmentIds.add(segmentId)
-					}
-				}
-
-				if (context.studio.settings.preserveUnsyncedPlayingSegmentContents) {
-					// Find segments that are hidden, not removed, and are not safe to remove (e.g. a live segment)
-					const hiddenSegmentsToRestore = segmentsChangedToHidden
-						.filter((segmentId) => !data.removedSegmentIds.includes(segmentId))
-						.filter((segmentId) => !canRemoveSegment(currentPartInstance, nextPartInstance, segmentId))
-
-					for (const segmentId of [...data.removedSegmentIds, ...hiddenSegmentsToRestore]) {
-						const newParts = ingestCache.Parts.findAll((p) => p.segmentId === segmentId)
-
-						// Blueprints have updated the hidden segment, so we won't try to preserve the contents
-						if (newParts.length) {
-							continue
-						}
-
-						// Restore old data
-						const oldParts = await context.directCollections.Parts.findFetch({
-							rundownId: ingestCache.RundownId,
-							segmentId,
-						})
-						const oldPartIds = oldParts.map((part) => part._id)
-
-						const [oldPieces, oldAdLibPieces, oldAdLibActions] = await Promise.all([
-							await context.directCollections.Pieces.findFetch({
-								startRundownId: ingestCache.RundownId,
-								startPartId: { $in: oldPartIds },
-							}),
-							await context.directCollections.AdLibPieces.findFetch({
-								rundownId: ingestCache.RundownId,
-								partId: { $in: oldPartIds },
-							}),
-							await context.directCollections.AdLibActions.findFetch({
-								rundownId: ingestCache.RundownId,
-								partId: { $in: oldPartIds },
-							}),
-						])
-
-						for (const part of oldParts) {
-							ingestCache.Parts.insert(part)
-						}
-						for (const piece of oldPieces) {
-							ingestCache.Pieces.insert(piece)
-						}
-						for (const adLib of oldAdLibPieces) {
-							ingestCache.AdLibPieces.insert(adLib)
-						}
-						for (const action of oldAdLibActions) {
-							ingestCache.AdLibActions.insert(action)
-						}
-					}
-				}
-
-				for (const [segmentId, segment] of ingestCache.Segments.documents) {
-					if (segment?.document.isHidden) {
-						if (!canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
-							// Protect live segment from being hidden
-							logger.warn(`Cannot hide live segment ${segmentId}, it will be orphaned`)
-							switch (segment.document.orphaned) {
-								case SegmentOrphanedReason.DELETED:
-									orphanDeletedSegmentIds.add(segmentId)
-									break
-								default:
-									orphanHiddenSegmentIds.add(segmentId)
-									break
-							}
-						} else {
-							// This ensures that it doesn't accidently get played while hidden
-							ingestCache.Parts.updateAll((p) => {
-								if (p.segmentId === segmentId) {
-									p.invalid = true
-									return p
-								} else {
-									return false
-								}
-							})
-						}
-					} else if (
-						!orphanDeletedSegmentIds.has(segmentId) &&
-						!ingestCache.Parts.findOne((p) => p.segmentId === segmentId)
-					) {
-						// No parts in segment
-
-						if (!canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
-							// Protect live segment from being hidden
-							logger.warn(`Cannot hide live segment ${segmentId}, it will be orphaned`)
-							orphanHiddenSegmentIds.add(segmentId)
-						} else {
-							// We can hide it
-							ingestCache.Segments.updateOne(segmentId, (s) => {
-								s.isHidden = true
-								delete s.orphaned
-								return s
-							})
-						}
-					}
-				}
-
-				const emptySegmentIds = context.studio.settings.preserveUnsyncedPlayingSegmentContents
-					? purgeSegmentIds
-					: new Set([...purgeSegmentIds.values(), ...orphanDeletedSegmentIds.values()])
-				removeSegmentContents(ingestCache, emptySegmentIds)
-				if (orphanDeletedSegmentIds.size) {
-					orphanDeletedSegmentIds.forEach((segmentId) => {
-						ingestCache.Segments.updateOne(segmentId, (s) => {
-							s.orphaned = SegmentOrphanedReason.DELETED
-							return s
-						})
-					})
-				}
-				if (orphanHiddenSegmentIds.size) {
-					const preserveSomeProperties = Object.keys(orphanedHiddenSegmentPropertiesToPreserve).length > 0
-					const oldSegments = preserveSomeProperties
-						? normalizeArrayToMap<Partial<DBSegment>, '_id'>(
-								await context.directCollections.Segments.findFetch(
-									{ _id: { $in: [...orphanHiddenSegmentIds] }, rundownId: ingestCache.RundownId },
-									{
-										projection: { _id: 1, ...orphanedHiddenSegmentPropertiesToPreserve },
-									}
-								),
-								'_id'
-						  )
-						: undefined
-					orphanHiddenSegmentIds.forEach((segmentId) => {
-						ingestCache.Segments.updateOne(segmentId, (s) => {
-							return {
-								...s,
-								...oldSegments?.get(segmentId),
-								isHidden: false,
-								orphaned: SegmentOrphanedReason.HIDDEN,
-							}
-						})
-					})
-				}
-				if (purgeSegmentIds.size) {
-					ingestCache.Segments.remove((s) => purgeSegmentIds.has(s._id))
-				}
-			}
 
 			// Regenerate the full list of expected*Items / packages
 			await updateExpectedPackagesOnRundown(context, ingestCache)
@@ -432,6 +222,7 @@ export async function CommitIngestOperation(
 
 			// Start the save
 			const pSaveIngest = ingestCache.saveAllToDatabase()
+			pSaveIngest.catch(() => null) // Ensure promise isn't reported as unhandled
 
 			try {
 				// sync changes to the 'selected' partInstances
@@ -794,5 +585,266 @@ async function getSelectedPartInstances(
 		currentPartInstance: instances.find((inst) => inst._id === playlist.currentPartInfo?.partInstanceId),
 		nextPartInstance: instances.find((inst) => inst._id === playlist.nextPartInfo?.partInstanceId),
 		previousPartInstance: instances.find((inst) => inst._id === playlist.previousPartInfo?.partInstanceId),
+	}
+}
+
+export async function removeRundownFromPlaylistAndUpdatePlaylist(
+	context: JobContext,
+	rundownId: RundownId,
+	playlist: DBRundownPlaylist | undefined,
+	playlistLock: PlaylistLock,
+	updatePlaylistIdIsSetInSofieTo?: boolean
+): Promise<void> {
+	await context.directCollections.runInTransaction(async (transaction) => {
+		// Quickly move the rundown out of the playlist, so we an free the old playlist lock sooner
+
+		await context.directCollections.Rundowns.update(
+			rundownId,
+			{
+				$set: {
+					playlistId: protectString('__TMP__'),
+					...(updatePlaylistIdIsSetInSofieTo !== undefined
+						? {
+								playlistIdIsSetInSofie: updatePlaylistIdIsSetInSofieTo,
+						  }
+						: {}),
+				},
+			},
+			transaction
+		)
+
+		// If no playlist, then there is nothing to regenerate
+		if (!playlist) return
+
+		// Ensure playlist is regenerated
+		const updatedPlaylist = await regeneratePlaylistAndRundownOrder(context, playlistLock, transaction, playlist)
+
+		if (updatedPlaylist) {
+			// ensure the 'old' playout is updated to remove any references to the rundown
+			await updatePlayoutAfterChangingRundownInPlaylist(context, updatedPlaylist, playlistLock, transaction, null)
+		}
+	})
+}
+
+function setRundownAsTrapepdInPlaylist(
+	ingestCache: CacheForIngest,
+	playlistId: RundownPlaylistId,
+	rundownIsToBeRemoved: boolean
+) {
+	ingestCache.Rundown.update((rd) => {
+		rd.playlistId = playlistId
+		return rd
+	})
+
+	if (rundownIsToBeRemoved) {
+		// Orphan the deleted rundown
+		ingestCache.Rundown.update((rd) => {
+			rd.orphaned = 'deleted'
+			return rd
+		})
+	} else {
+		// The rundown is still synced, but is in the wrong playlist. Notify the user
+		ingestCache.Rundown.update((rd) => {
+			rd.notes = [
+				...(rd.notes ?? []),
+				{
+					type: NoteSeverity.WARNING,
+					message: getTranslatedMessage(ServerTranslatedMesssages.PLAYLIST_ON_AIR_CANT_MOVE_RUNDOWN),
+					origin: {
+						name: 'Data update',
+					},
+				},
+			]
+			return rd
+		})
+	}
+}
+
+async function removeSegments(
+	context: JobContext,
+	newPlaylist: DBRundownPlaylist,
+	rundownsInPlaylist: Array<ReadonlyDeep<DBRundown>>,
+	ingestCache: CacheForIngest,
+	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
+	removedSegmentIds: ReadonlyDeep<SegmentId[]>
+) {
+	const { currentPartInstance, nextPartInstance } = await getSelectedPartInstances(
+		context,
+		newPlaylist,
+		rundownsInPlaylist.map((r) => r._id)
+	)
+
+	const purgeSegmentIds = new Set<SegmentId>()
+	const orphanDeletedSegmentIds = new Set<SegmentId>()
+	const orphanHiddenSegmentIds = new Set<SegmentId>()
+	for (const segmentId of removedSegmentIds) {
+		if (canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
+			purgeSegmentIds.add(segmentId)
+		} else {
+			logger.warn(
+				`Not allowing removal of current playing segment "${segmentId}", making segment unsynced instead`
+			)
+			orphanDeletedSegmentIds.add(segmentId)
+		}
+	}
+
+	if (context.studio.settings.preserveUnsyncedPlayingSegmentContents) {
+		await preserveUnsyncedPlayingSegmentContents(
+			context,
+			ingestCache,
+			changedSegmentIds,
+			removedSegmentIds,
+			currentPartInstance,
+			nextPartInstance
+		)
+	}
+
+	for (const [segmentId, segment] of ingestCache.Segments.documents) {
+		if (segment?.document.isHidden) {
+			if (!canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
+				// Protect live segment from being hidden
+				logger.warn(`Cannot hide live segment ${segmentId}, it will be orphaned`)
+				switch (segment.document.orphaned) {
+					case SegmentOrphanedReason.DELETED:
+						orphanDeletedSegmentIds.add(segmentId)
+						break
+					default:
+						orphanHiddenSegmentIds.add(segmentId)
+						break
+				}
+			} else {
+				// This ensures that it doesn't accidently get played while hidden
+				ingestCache.Parts.updateAll((p) => {
+					if (p.segmentId === segmentId) {
+						p.invalid = true
+						return p
+					} else {
+						return false
+					}
+				})
+			}
+		} else if (
+			!orphanDeletedSegmentIds.has(segmentId) &&
+			!ingestCache.Parts.findOne((p) => p.segmentId === segmentId)
+		) {
+			// No parts in segment
+
+			if (!canRemoveSegment(currentPartInstance, nextPartInstance, segmentId)) {
+				// Protect live segment from being hidden
+				logger.warn(`Cannot hide live segment ${segmentId}, it will be orphaned`)
+				orphanHiddenSegmentIds.add(segmentId)
+			} else {
+				// We can hide it
+				ingestCache.Segments.updateOne(segmentId, (s) => {
+					s.isHidden = true
+					delete s.orphaned
+					return s
+				})
+			}
+		}
+	}
+
+	const emptySegmentIds = context.studio.settings.preserveUnsyncedPlayingSegmentContents
+		? purgeSegmentIds
+		: new Set([...purgeSegmentIds.values(), ...orphanDeletedSegmentIds.values()])
+	removeSegmentContents(ingestCache, emptySegmentIds)
+	if (orphanDeletedSegmentIds.size) {
+		orphanDeletedSegmentIds.forEach((segmentId) => {
+			ingestCache.Segments.updateOne(segmentId, (s) => {
+				s.orphaned = SegmentOrphanedReason.DELETED
+				return s
+			})
+		})
+	}
+	if (orphanHiddenSegmentIds.size) {
+		const preserveSomeProperties = Object.keys(orphanedHiddenSegmentPropertiesToPreserve).length > 0
+		const oldSegments = preserveSomeProperties
+			? normalizeArrayToMap<Partial<DBSegment>, '_id'>(
+					await context.directCollections.Segments.findFetch(
+						{ _id: { $in: [...orphanHiddenSegmentIds] }, rundownId: ingestCache.RundownId },
+						{
+							projection: { _id: 1, ...orphanedHiddenSegmentPropertiesToPreserve },
+						}
+					),
+					'_id'
+			  )
+			: undefined
+		orphanHiddenSegmentIds.forEach((segmentId) => {
+			ingestCache.Segments.updateOne(segmentId, (s) => {
+				return {
+					...s,
+					...oldSegments?.get(segmentId),
+					isHidden: false,
+					orphaned: SegmentOrphanedReason.HIDDEN,
+				}
+			})
+		})
+	}
+	if (purgeSegmentIds.size) {
+		ingestCache.Segments.remove((s) => purgeSegmentIds.has(s._id))
+	}
+}
+
+async function preserveUnsyncedPlayingSegmentContents(
+	context: JobContext,
+	ingestCache: CacheForIngest,
+	changedSegmentIds: ReadonlyDeep<SegmentId[]>,
+	removedSegmentIds: ReadonlyDeep<SegmentId[]>,
+	currentPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
+	nextPartInstance: ReadonlyDeep<DBPartInstance> | undefined
+) {
+	const changedSegmentIdsSet = new Set(changedSegmentIds)
+
+	const segmentsChangedToHidden = ingestCache.Segments.findAll(
+		(s) => !!s.isHidden && changedSegmentIdsSet.has(s._id)
+	).map((segment) => segment._id)
+
+	// Find segments that are hidden, not removed, and are not safe to remove (e.g. a live segment)
+	const hiddenSegmentsToRestore = segmentsChangedToHidden
+		.filter((segmentId) => !removedSegmentIds.includes(segmentId))
+		.filter((segmentId) => !canRemoveSegment(currentPartInstance, nextPartInstance, segmentId))
+
+	for (const segmentId of [...removedSegmentIds, ...hiddenSegmentsToRestore]) {
+		const newParts = ingestCache.Parts.findAll((p) => p.segmentId === segmentId)
+
+		// Blueprints have updated the hidden segment, so we won't try to preserve the contents
+		if (newParts.length) {
+			continue
+		}
+
+		// Restore old data
+		const oldParts = await context.directCollections.Parts.findFetch({
+			rundownId: ingestCache.RundownId,
+			segmentId,
+		})
+		const oldPartIds = oldParts.map((part) => part._id)
+
+		const [oldPieces, oldAdLibPieces, oldAdLibActions] = await Promise.all([
+			await context.directCollections.Pieces.findFetch({
+				startRundownId: ingestCache.RundownId,
+				startPartId: { $in: oldPartIds },
+			}),
+			await context.directCollections.AdLibPieces.findFetch({
+				rundownId: ingestCache.RundownId,
+				partId: { $in: oldPartIds },
+			}),
+			await context.directCollections.AdLibActions.findFetch({
+				rundownId: ingestCache.RundownId,
+				partId: { $in: oldPartIds },
+			}),
+		])
+
+		for (const part of oldParts) {
+			ingestCache.Parts.insert(part)
+		}
+		for (const piece of oldPieces) {
+			ingestCache.Pieces.insert(piece)
+		}
+		for (const adLib of oldAdLibPieces) {
+			ingestCache.AdLibPieces.insert(adLib)
+		}
+		for (const action of oldAdLibActions) {
+			ingestCache.AdLibActions.insert(action)
+		}
 	}
 }

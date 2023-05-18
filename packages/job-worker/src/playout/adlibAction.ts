@@ -1,5 +1,4 @@
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { getRandomId, stringifyError } from '@sofie-automation/corelib/dist/lib'
@@ -17,6 +16,8 @@ import { updateExpectedDurationWithPrerollForPartInstance } from './lib'
 import { runJobWithPlaylistLock } from './lock'
 import { updateTimeline } from './timeline/generate'
 import { performTakeToNextedPart } from './take'
+import { ActionUserData } from '@sofie-automation/blueprints-integration'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 /**
  * Execute an AdLib Action
@@ -34,14 +35,8 @@ export async function handleExecuteAdlibAction(
 
 		const initCache = await CacheForPlayoutPreInit.createPreInit(context, lock, playlist, false)
 
-		const currentPartInstance = await context.directCollections.PartInstances.findOne(
-			playlist.currentPartInfo.partInstanceId
-		)
-		if (!currentPartInstance)
-			throw new Error(`Current PartInstance "${playlist.currentPartInfo.partInstanceId}" could not be found.`)
-
-		const rundown = initCache.Rundowns.findOne(currentPartInstance.rundownId)
-		if (!rundown) throw new Error(`Current Rundown "${currentPartInstance.rundownId}" could not be found`)
+		const rundown = initCache.Rundowns.findOne(playlist.currentPartInfo.rundownId)
+		if (!rundown) throw new Error(`Current Rundown "${playlist.currentPartInfo.rundownId}" could not be found`)
 
 		const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 
@@ -58,35 +53,22 @@ export async function handleExecuteAdlibAction(
 			},
 		})
 
+		const actionParameters: ExecuteActionParameters = {
+			actionId: data.actionId,
+			userData: data.userData,
+			triggerMode: data.triggerMode,
+		}
+
 		try {
-			const executeDataStoreAction = blueprint.blueprint.executeDataStoreAction
-			if (executeDataStoreAction) {
-				await context.directCollections.runInTransaction(async (transaction) => {
-					// now we can execute any datastore actions
-					const actionContext = new DatastoreActionExecutionContext(
-						{
-							name: `${rundown.name}(${playlist.name})`,
-							identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
-								currentPartInstance._id
-							},execution=${getRandomId()}`,
-							tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
-						},
-						context,
-						transaction,
-						showStyle,
-						watchedPackages
-					)
-
-					logger.info(`Executing Datastore AdlibAction "${data.actionId}": ${JSON.stringify(data.userData)}`)
-
-					try {
-						await executeDataStoreAction(actionContext, data.actionId, data.userData, data.triggerMode)
-					} catch (err) {
-						logger.error(`Error in showStyleBlueprint.executeDatastoreAction: ${stringifyError(err)}`)
-						throw err
-					}
-				})
-			}
+			await executeDataStoreAction(
+				context,
+				playlist,
+				rundown,
+				showStyle,
+				blueprint,
+				watchedPackages,
+				actionParameters
+			)
 		} catch (err) {
 			logger.error(`Error in showStyleBlueprint.executeDatastoreAction: ${stringifyError(err)}`)
 		}
@@ -101,32 +83,8 @@ export async function handleExecuteAdlibAction(
 					rundown,
 					showStyle,
 					blueprint,
-					currentPartInstance,
 					watchedPackages,
-					async (actionContext, _rundown, _currentPartInstance, _blueprint) => {
-						if (!blueprint.blueprint.executeAction) {
-							throw new Error('Blueprint exports no executeAction function')
-						}
-
-						// If any action cannot be done due to timings, that needs to be rejected by the context
-						logger.info(
-							`Executing AdlibAction "${data.actionId}": ${JSON.stringify(data.userData)} (${
-								data.triggerMode
-							})`
-						)
-
-						try {
-							await blueprint.blueprint.executeAction(
-								actionContext,
-								data.actionId,
-								data.userData,
-								data.triggerMode
-							)
-						} catch (err) {
-							logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
-							throw err
-						}
-					}
+					actionParameters
 				)
 
 				await fullCache.saveAllToDatabase()
@@ -146,20 +104,23 @@ export async function handleExecuteAdlibAction(
 	})
 }
 
+export interface ExecuteActionParameters {
+	/** Id of the action */
+	actionId: string
+	/** Properties defining the action behaviour */
+	userData: ActionUserData
+
+	triggerMode: string | undefined
+}
+
 export async function executeActionInner(
 	context: JobContext,
 	cache: CacheForPlayout,
 	rundown: DBRundown,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
-	currentPartInstance: DBPartInstance,
 	watchedPackages: WatchedPackagesHelper,
-	func: (
-		context: ActionExecutionContext,
-		rundown: DBRundown,
-		currentPartInstance: DBPartInstance,
-		blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>
-	) => Promise<void>
+	actionParameters: ExecuteActionParameters
 ): Promise<ExecuteActionResult> {
 	const now = getCurrentTime()
 
@@ -169,7 +130,7 @@ export async function executeActionInner(
 		{
 			name: `${rundown.name}(${playlist.name})`,
 			identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
-				currentPartInstance._id
+				playlist.currentPartInfo?.partInstanceId
 			},execution=${getRandomId()}`,
 			tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
 		},
@@ -182,8 +143,40 @@ export async function executeActionInner(
 	)
 
 	// If any action cannot be done due to timings, that needs to be rejected by the context
-	await func(actionContext, rundown, currentPartInstance, blueprint)
+	if (!blueprint.blueprint.executeAction) throw UserError.create(UserErrorMessage.ActionsNotSupported)
 
+	logger.info(
+		`Executing AdlibAction "${actionParameters.actionId}": ${JSON.stringify(actionParameters.userData)} (${
+			actionParameters.triggerMode
+		})`
+	)
+
+	try {
+		await blueprint.blueprint.executeAction(
+			actionContext,
+			actionParameters.actionId,
+			actionParameters.userData,
+			actionParameters.triggerMode
+		)
+	} catch (err) {
+		logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
+		throw UserError.fromUnknown(err, UserErrorMessage.InternalError)
+	}
+
+	await applyAnyExecutionSideEffects(context, cache, actionContext, now)
+
+	return {
+		queuedPartInstanceId: actionContext.queuedPartInstanceId,
+		taken: actionContext.takeAfterExecute,
+	}
+}
+
+async function applyAnyExecutionSideEffects(
+	context: JobContext,
+	cache: CacheForPlayout,
+	actionContext: ActionExecutionContext,
+	now: number
+) {
 	if (
 		actionContext.currentPartState !== ActionPartChange.NONE ||
 		actionContext.nextPartState !== ActionPartChange.NONE
@@ -208,9 +201,52 @@ export async function executeActionInner(
 			await updateTimeline(context, cache)
 		}
 	}
+}
 
-	return {
-		queuedPartInstanceId: actionContext.queuedPartInstanceId,
-		taken: actionContext.takeAfterExecute,
+async function executeDataStoreAction(
+	context: JobContext,
+	playlist: DBRundownPlaylist,
+	rundown: DBRundown,
+	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
+	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
+	watchedPackages: WatchedPackagesHelper,
+	actionParameters: ExecuteActionParameters
+) {
+	const executeDataStoreAction = blueprint.blueprint.executeDataStoreAction
+	if (executeDataStoreAction) {
+		await context.directCollections.runInTransaction(async (transaction) => {
+			// now we can execute any datastore actions
+			const actionContext = new DatastoreActionExecutionContext(
+				{
+					name: `${rundown.name}(${playlist.name})`,
+					identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
+						playlist.currentPartInfo?.partInstanceId
+					},execution=${getRandomId()}`,
+					tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
+				},
+				context,
+				transaction,
+				showStyle,
+				watchedPackages
+			)
+
+			logger.info(
+				`Executing Datastore AdlibAction "${actionParameters.actionId}": ${JSON.stringify(
+					actionParameters.userData
+				)}`
+			)
+
+			try {
+				await executeDataStoreAction(
+					actionContext,
+					actionParameters.actionId,
+					actionParameters.userData,
+					actionParameters.triggerMode
+				)
+			} catch (err) {
+				logger.error(`Error in showStyleBlueprint.executeDatastoreAction: ${stringifyError(err)}`)
+				throw err
+			}
+		})
 	}
 }
