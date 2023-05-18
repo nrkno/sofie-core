@@ -15,7 +15,7 @@ describe('Test external message queue static methods', () => {
 	beforeAll(async () => {
 		studioEnv = await setupDefaultStudioEnvironment()
 		const now = getCurrentTime()
-		await RundownPlaylists.insertAsync({
+		await RundownPlaylists.mutableCollection.insertAsync({
 			_id: protectString('playlist_1'),
 			externalId: 'mock_rpl',
 			name: 'Mock',
@@ -37,7 +37,7 @@ describe('Test external message queue static methods', () => {
 			},
 			rundownIdsInOrder: [protectString('rundown_1')],
 		})
-		await Rundowns.insertAsync({
+		await Rundowns.mutableCollection.insertAsync({
 			_id: protectString('rundown_1'),
 			name: 'Mockito 1',
 			externalId: 'mockito',

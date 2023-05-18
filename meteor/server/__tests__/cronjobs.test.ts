@@ -154,7 +154,7 @@ describe('cronjobs', () => {
 			// Set up a mock rundown, a detached IngestDataCache object and an object attached to the mock rundown
 			// Detached IngestDataCache object 0
 			const dataCache0Id = protectString<IngestDataCacheObjId>(getRandomString())
-			await IngestDataCache.insertAsync({
+			await IngestDataCache.mutableCollection.insertAsync({
 				_id: dataCache0Id,
 				data: {
 					externalId: '',
@@ -169,7 +169,7 @@ describe('cronjobs', () => {
 			})
 			// Attached IngestDataCache object 1
 			const dataCache1Id = protectString<IngestDataCacheObjId>(getRandomString())
-			await IngestDataCache.insertAsync({
+			await IngestDataCache.mutableCollection.insertAsync({
 				_id: dataCache1Id,
 				data: {
 					externalId: '',
@@ -201,7 +201,7 @@ describe('cronjobs', () => {
 				rundownId,
 				name: 'mock segment',
 			}
-			await Segments.insertAsync(segment0)
+			await Segments.mutableCollection.insertAsync(segment0)
 
 			const part0: DBPart = {
 				_id: getRandomId<PartId>(),
@@ -212,7 +212,7 @@ describe('cronjobs', () => {
 				title: '',
 				expectedDurationWithPreroll: undefined,
 			}
-			await Parts.insertAsync(part0)
+			await Parts.mutableCollection.insertAsync(part0)
 			const part1: DBPart = {
 				_id: getRandomId<PartId>(),
 				_rank: 1,
@@ -222,7 +222,7 @@ describe('cronjobs', () => {
 				title: '',
 				expectedDurationWithPreroll: undefined,
 			}
-			await Parts.insertAsync(part1)
+			await Parts.mutableCollection.insertAsync(part1)
 
 			const partInstance0: PartInstance = {
 				_id: protectString(`${part0._id}_${getRandomId()}`),
@@ -239,7 +239,7 @@ describe('cronjobs', () => {
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),
 			}
-			await PartInstances.insertAsync(partInstance0)
+			await PartInstances.mutableCollection.insertAsync(partInstance0)
 
 			const partInstance1: PartInstance = {
 				_id: protectString(`${part0._id}_${getRandomId()}`),
@@ -252,7 +252,7 @@ describe('cronjobs', () => {
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),
 			}
-			await PartInstances.insertAsync(partInstance1)
+			await PartInstances.mutableCollection.insertAsync(partInstance1)
 
 			const partInstance2: PartInstance = {
 				_id: protectString(`${part0._id}_${getRandomId()}`),
@@ -269,7 +269,7 @@ describe('cronjobs', () => {
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),
 			}
-			await PartInstances.insertAsync(partInstance2)
+			await PartInstances.mutableCollection.insertAsync(partInstance2)
 
 			const pieceInstance0: PieceInstance = {
 				_id: protectString(`${partInstance0._id}_piece0`),
@@ -313,8 +313,8 @@ describe('cronjobs', () => {
 				},
 				playlistActivationId: protectString(''),
 			}
-			await PieceInstances.insertAsync(pieceInstance0)
-			await PieceInstances.insertAsync(pieceInstance1)
+			await PieceInstances.mutableCollection.insertAsync(pieceInstance0)
+			await PieceInstances.mutableCollection.insertAsync(pieceInstance1)
 			await runCronjobs()
 
 			expect(await Parts.findOneAsync(part0._id)).toBeDefined()

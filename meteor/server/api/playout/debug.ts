@@ -112,8 +112,8 @@ MeteorDebugMethods({
 	async debug_clearAllResetInstances() {
 		logger.info('clearAllResetInstances')
 
-		await PartInstances.removeAsync({ reset: true })
-		await PieceInstances.removeAsync({ reset: true })
+		await PartInstances.mutableCollection.removeAsync({ reset: true })
+		await PieceInstances.mutableCollection.removeAsync({ reset: true })
 	},
 
 	/**

@@ -144,7 +144,7 @@ describe('Cleanup', () => {
 		expect(await PieceInstances.countDocuments()).toBeGreaterThanOrEqual(1)
 
 		// Remove PartInstances, so that dependants will be removed in cleanup:
-		await PartInstances.removeAsync({})
+		await PartInstances.mutableCollection.removeAsync({})
 
 		const results = await cleanupOldDataInner(true)
 
@@ -192,9 +192,9 @@ async function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		status: '' as any,
 		timelineObjectsString: '' as any,
 	}
-	const pieceId = await Pieces.insertAsync(piece)
+	const pieceId = await Pieces.mutableCollection.insertAsync(piece)
 
-	await AdLibActions.insertAsync({
+	await AdLibActions.mutableCollection.insertAsync({
 		_id: getRandomId(),
 		actionId: '',
 		externalId: '',
@@ -251,7 +251,7 @@ async function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		timestamp: now,
 		userId: null,
 	})
-	const packageId = await ExpectedPackages.insertAsync({
+	const packageId = await ExpectedPackages.mutableCollection.insertAsync({
 		_id: getRandomId(),
 		blueprintPackageId: '',
 		bucketId,
@@ -282,7 +282,7 @@ async function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		statusChanged: 0,
 		statusReason: {} as any,
 	})
-	await ExpectedPlayoutItems.insertAsync({
+	await ExpectedPlayoutItems.mutableCollection.insertAsync({
 		_id: getRandomId(),
 		content: {} as any,
 		deviceSubType: {} as any,
@@ -299,7 +299,7 @@ async function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		tryCount: 0,
 		type: '' as any,
 	})
-	await IngestDataCache.insertAsync({
+	await IngestDataCache.mutableCollection.insertAsync({
 		_id: getRandomId(),
 		data: {} as any,
 		modified: 0,
@@ -334,7 +334,7 @@ async function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		type: '' as any,
 	})
 
-	const partInstanceId = await PartInstances.insertAsync({
+	const partInstanceId = await PartInstances.mutableCollection.insertAsync({
 		_id: getRandomId(),
 		isTemporary: false,
 		part: part,
@@ -345,7 +345,7 @@ async function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		segmentPlayoutId: getRandomId(),
 		takeCount: 0,
 	})
-	await PieceInstances.insertAsync({
+	await PieceInstances.mutableCollection.insertAsync({
 		_id: getRandomId(),
 		partInstanceId,
 		piece,
@@ -360,7 +360,7 @@ async function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		hasReply: false,
 		time: 0,
 	})
-	await RundownBaselineAdLibActions.insertAsync({
+	await RundownBaselineAdLibActions.mutableCollection.insertAsync({
 		_id: getRandomId(),
 		actionId: '',
 		display: {} as any,
@@ -369,7 +369,7 @@ async function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		userData: {} as any,
 		userDataManifest: {} as any,
 	})
-	await RundownBaselineObjs.insertAsync({
+	await RundownBaselineObjs.mutableCollection.insertAsync({
 		_id: getRandomId(),
 		rundownId,
 		timelineObjectsString: '' as any,
@@ -394,14 +394,14 @@ async function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		type: '' as any,
 		version: '',
 	})
-	await Timeline.insertAsync({
+	await Timeline.mutableCollection.insertAsync({
 		_id: studioId,
 		generated: now,
 		generationVersions: {} as any,
 		timelineBlob: '' as any,
 		timelineHash: '' as any,
 	})
-	await TimelineDatastore.insertAsync({
+	await TimelineDatastore.mutableCollection.insertAsync({
 		_id: getRandomId(),
 		key: '',
 		mode: '' as any,
@@ -463,6 +463,6 @@ async function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 
 async function clearAllDBCollections() {
 	for (const collection of Collections.values()) {
-		await collection.removeAsync({})
+		await collection.mutableCollection.removeAsync({})
 	}
 }

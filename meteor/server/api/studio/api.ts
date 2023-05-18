@@ -86,13 +86,14 @@ async function removeStudio(context: MethodContext, studioId: StudioId): Promise
 			`Can't remoce studio "${studioId}", because the peripheralDevice "${peripheralDevice._id}" is in it.`
 		)
 
+	// This is allowed to mutate the job-worker 'owned' collections, as at this point the thread for that studio is about to be destroyed
 	await Promise.all([
 		Studios.removeAsync(studio._id),
 		// Studios.remove({ studioId: studio._id }) // TODO - what was this supposed to be?
 		ExternalMessageQueue.removeAsync({ studioId: studio._id }),
 		MediaObjects.removeAsync({ studioId: studio._id }),
-		Timeline.removeAsync({ studioId: studio._id }),
-		ExpectedPackages.removeAsync({ studioId: studio._id }),
+		Timeline.mutableCollection.removeAsync({ studioId: studio._id }),
+		ExpectedPackages.mutableCollection.removeAsync({ studioId: studio._id }),
 		ExpectedPackageWorkStatuses.removeAsync({ studioId: studio._id }),
 		PackageInfos.removeAsync({ studioId: studio._id }),
 		PackageContainerPackageStatuses.removeAsync({ studioId: studio._id }),

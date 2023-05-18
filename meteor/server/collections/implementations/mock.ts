@@ -10,7 +10,7 @@ import {
 	ObserveChangesCallbacks,
 	ObserveCallbacks,
 } from '../../../lib/collections/lib'
-import { PromisifyCallbacks, stringifyError, waitForPromise } from '../../../lib/lib'
+import { PromisifyCallbacks, waitForPromise } from '../../../lib/lib'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import _ from 'underscore'
 import { AsyncOnlyMongoCollection } from '../collection'
@@ -31,6 +31,10 @@ export class WrappedMockCollection<DBInterface extends { _id: ProtectedString<an
 		const realSleep = (Meteor as any).sleepNoFakeTimers
 		if (!realSleep) throw new Error('Missing Meteor.sleepNoFakeTimers, looks like the mock is broken?')
 		this.realSleep = realSleep
+	}
+
+	get mutableCollection(): AsyncOnlyMongoCollection<DBInterface> {
+		return this
 	}
 
 	allow(args: Parameters<AsyncOnlyMongoCollection<DBInterface>['allow']>[0]): boolean {
@@ -111,19 +115,6 @@ export class WrappedMockCollection<DBInterface extends { _id: ProtectedString<an
 	async insertManyAsync(docs: DBInterface[]): Promise<Array<DBInterface['_id']>> {
 		await this.realSleep(0)
 		return Promise.all(docs.map((doc) => this.insert(doc)))
-	}
-
-	async insertIgnoreAsync(doc: DBInterface): Promise<DBInterface['_id']> {
-		await this.realSleep(0)
-		try {
-			return this.insert(doc)
-		} catch (err) {
-			if (stringifyError(err).match(/duplicate key/i)) {
-				return doc._id
-			} else {
-				throw err
-			}
-		}
 	}
 
 	async updateAsync(

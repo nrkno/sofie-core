@@ -29,7 +29,6 @@ const METHOD_NAMES = [
 	'findOneAsync',
 	'insertAsync',
 	'insertManyAsync',
-	'insertIgnoreAsync',
 	'updateAsync',
 	'upsertAsync',
 	'removeAsync',
