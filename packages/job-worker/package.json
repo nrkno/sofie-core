@@ -48,7 +48,7 @@
 		"deepmerge": "^4.3.1",
 		"elastic-apm-node": "^3.47.0",
 		"eventemitter3": "^4.0.7",
-		"mongodb": "^4.16.0",
+		"mongodb": "^5.5.0",
 		"p-lazy": "^3.1.0",
 		"p-timeout": "^4.1.0",
 		"superfly-timeline": "^8.3.1",

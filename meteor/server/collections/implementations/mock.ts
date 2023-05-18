@@ -12,7 +12,6 @@ import {
 } from '../../../lib/collections/lib'
 import { PromisifyCallbacks } from '../../../lib/lib'
 import type { AnyBulkWriteOperation } from 'mongodb'
-import _ from 'underscore'
 import { AsyncOnlyMongoCollection } from '../collection'
 import { WrappedMongoCollectionBase, dePromiseObjectOfFunctions } from './base'
 
@@ -137,14 +136,10 @@ export class WrappedMockCollection<DBInterface extends { _id: ProtectedString<an
 			const bulkWriteResult = await rawCollection.bulkWrite(ops, {
 				ordered: false,
 			})
-			if (
-				bulkWriteResult &&
-				_.isArray(bulkWriteResult.result?.writeErrors) &&
-				bulkWriteResult.result.writeErrors.length
-			) {
+			if (bulkWriteResult && bulkWriteResult.hasWriteErrors()) {
 				throw new Meteor.Error(
 					500,
-					`Errors in rawCollection.bulkWrite: ${bulkWriteResult.result.writeErrors.join(',')}`
+					`Errors in rawCollection.bulkWrite: ${bulkWriteResult.getWriteErrors().join(',')}`
 				)
 			}
 		}
