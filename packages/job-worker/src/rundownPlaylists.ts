@@ -27,7 +27,11 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { WrappedStudioBlueprint } from './blueprints/cache'
 import { StudioUserContext } from './blueprints/context'
 import { getCurrentTime } from './lib'
-import { regeneratePlaylistAndRundownOrder, updatePlayoutAfterChangingRundownInPlaylist } from './ingest/commit'
+import {
+	regeneratePlaylistAndRundownOrder,
+	removeRundownFromPlaylistAndUpdatePlaylist,
+	updatePlayoutAfterChangingRundownInPlaylist,
+} from './ingest/commit'
 import { allowedToMoveRundownOutOfPlaylist } from './rundown'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
@@ -339,37 +343,8 @@ export async function handleMoveRundownIntoPlaylist(
 						throw new Error(`Not allowed to move currently playing rundown!`)
 					}
 
-					await context.directCollections.runInTransaction(async (transaction) => {
-						// Quickly Remove it from the old playlist so that we can free the playlist lock
-						await context.directCollections.Rundowns.update(
-							rundown._id,
-							{
-								$set: {
-									playlistId: protectString('__TMP__'),
-									playlistIdIsSetInSofie: true,
-								},
-							},
-							transaction
-						)
-
-						// Regenerate the playlist
-						const newPlaylist = await regeneratePlaylistAndRundownOrder(
-							context,
-							oldPlaylistLock,
-							transaction,
-							oldPlaylist
-						)
-						if (newPlaylist) {
-							// ensure the 'old' playout is updated to remove any references to the rundown
-							await updatePlayoutAfterChangingRundownInPlaylist(
-								context,
-								newPlaylist,
-								oldPlaylistLock,
-								transaction,
-								null
-							)
-						}
-					})
+					// Quickly Remove it from the old playlist so that we can free the playlist lock
+					await removeRundownFromPlaylistAndUpdatePlaylist(context, rundown._id, oldPlaylist, oldPlaylistLock)
 				}
 			)
 		}

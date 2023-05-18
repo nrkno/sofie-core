@@ -1,15 +1,9 @@
 import { PieceId, AdLibActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownImportVersions } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { ShowStyleUserContext } from '../blueprints/context'
-import { IBlueprintActionManifest, IBlueprintAdLibPiece } from '@sofie-automation/blueprints-integration'
-import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
-import { JobContext } from '../jobs'
-import { getSystemVersion } from '../lib'
+import { JobContext } from '../../jobs'
 import {
 	BucketActionModifyProps,
 	BucketActionRegenerateExpectedPackagesProps,
 	BucketEmptyProps,
-	BucketItemImportProps,
 	BucketPieceModifyProps,
 	BucketRemoveAdlibActionProps,
 	BucketRemoveAdlibPieceProps,
@@ -19,25 +13,18 @@ import {
 	cleanUpExpectedPackagesForBucketAdLibsActions,
 	updateExpectedPackagesForBucketAdLibPiece,
 	updateExpectedPackagesForBucketAdLibAction,
-} from './expectedPackages'
+} from '../expectedPackages'
 import {
 	cleanUpExpectedMediaItemForBucketAdLibActions,
 	cleanUpExpectedMediaItemForBucketAdLibPiece,
 	updateExpectedMediaItemForBucketAdLibAction,
 	updateExpectedMediaItemForBucketAdLibPiece,
-} from './expectedMediaItems'
-import { postProcessBucketAction, postProcessBucketAdLib } from '../blueprints/postProcess'
-import { omit, stringifyError } from '@sofie-automation/corelib/dist/lib'
+} from '../expectedMediaItems'
+import { omit } from '@sofie-automation/corelib/dist/lib'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { logger } from '../logging'
-import { createShowStyleCompound } from '../showStyles'
-import { MongoQuery } from '../db'
-
-function isAdlibAction(adlib: IBlueprintActionManifest | IBlueprintAdLibPiece): adlib is IBlueprintActionManifest {
-	return !!(adlib as IBlueprintActionManifest).actionId
-}
+import { MongoQuery } from '../../db'
 
 export async function handleBucketRemoveAdlibPiece(
 	context: JobContext,
@@ -115,198 +102,6 @@ export async function handleBucketEmpty(context: JobContext, data: BucketEmptyPr
 				transaction
 			),
 		])
-	})
-}
-
-export async function handleBucketItemImport(context: JobContext, data: BucketItemImportProps): Promise<void> {
-	const studio = context.studio
-
-	const [showStyleBase, allShowStyleVariants, allOldAdLibPieces, allOldAdLibActions, blueprint] = await Promise.all([
-		context.getShowStyleBase(data.showStyleBaseId),
-		context.getShowStyleVariants(data.showStyleBaseId),
-		context.directCollections.BucketAdLibPieces.findFetch({
-			externalId: data.payload.externalId,
-			showStyleBaseId: data.showStyleBaseId,
-			studioId: studio._id,
-			bucketId: data.bucketId,
-		}),
-		context.directCollections.BucketAdLibActions.findFetch({
-			externalId: data.payload.externalId,
-			showStyleBaseId: data.showStyleBaseId,
-			studioId: studio._id,
-			bucketId: data.bucketId,
-		}),
-		context.getShowStyleBlueprint(data.showStyleBaseId),
-	])
-
-	if (!showStyleBase) throw new Error(`ShowStyleBase "${data.showStyleBaseId}" not found`)
-
-	const showStyleVariants = allShowStyleVariants.filter((v) => {
-		if (data.showStyleVariantIds) return data.showStyleVariantIds.includes(v._id)
-		else return true
-	})
-	if (showStyleVariants.length === 0) throw new Error(`No ShowStyleVariants found for ${data.showStyleBaseId}`)
-
-	let adlibIdsToRemove = allOldAdLibPieces.map((p) => p._id)
-	let actionIdsToRemove = allOldAdLibActions.map((p) => p._id)
-
-	let newRank: number | undefined = undefined
-	let onlyGenerateOneItem = false
-
-	await context.directCollections.runInTransaction(async (transaction) => {
-		const ps: Promise<any>[] = []
-		let isFirstShowStyleVariant = true
-		for (const showStyleVariant of showStyleVariants) {
-			const showStyleCompound = createShowStyleCompound(showStyleBase, showStyleVariant)
-
-			if (!showStyleCompound)
-				throw new Error(
-					`Unable to create a ShowStyleCompound for ${showStyleBase._id}, ${showStyleVariant._id} `
-				)
-
-			const watchedPackages = WatchedPackagesHelper.empty(context)
-
-			const contextForVariant = new ShowStyleUserContext(
-				{
-					name: `Bucket Ad-Lib`,
-					identifier: `studioId=${context.studioId},showStyleBaseId=${showStyleBase._id},showStyleVariantId=${showStyleVariant._id}`,
-					tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT
-				},
-				context,
-				showStyleCompound,
-				watchedPackages
-			)
-
-			let rawAdlib: IBlueprintAdLibPiece | IBlueprintActionManifest | null = null
-			try {
-				if (blueprint.blueprint.getAdlibItem) {
-					rawAdlib = blueprint.blueprint.getAdlibItem(contextForVariant, data.payload)
-				}
-			} catch (err) {
-				logger.error(`Error in showStyleBlueprint.getShowStyleVariantId: ${stringifyError(err)}`)
-				rawAdlib = null
-			}
-
-			const importVersions: RundownImportVersions = {
-				studio: studio._rundownVersionHash,
-				showStyleBase: showStyleCompound._rundownVersionHash,
-				showStyleVariant: showStyleCompound._rundownVersionHashVariant,
-				blueprint: blueprint.blueprint.blueprintVersion,
-				core: getSystemVersion(),
-			}
-
-			if (rawAdlib) {
-				// Cache the newRank, so we only have to calculate it once:
-				if (newRank === undefined) {
-					const [highestAdlib, highestAction] = await Promise.all([
-						context.directCollections.BucketAdLibPieces.findFetch(
-							{
-								bucketId: data.bucketId,
-							},
-							{
-								sort: {
-									_rank: -1,
-								},
-								projection: {
-									_rank: 1,
-								},
-								limit: 1,
-							},
-							transaction
-						) as Promise<Array<Pick<BucketAdLib, '_rank'>>>,
-						context.directCollections.BucketAdLibActions.findFetch(
-							{
-								bucketId: data.bucketId,
-							},
-							{
-								sort: {
-									'display._rank': -1,
-								},
-								projection: {
-									'display._rank': 1,
-								},
-								limit: 1,
-							},
-							transaction
-						) as Promise<Array<{ display: Pick<BucketAdLibAction['display'], '_rank'> }>>,
-					])
-					newRank = Math.max(highestAdlib[0]?._rank ?? 0, highestAction[0]?.display?._rank ?? 0) + 1
-				} else {
-					newRank++
-				}
-
-				if (isAdlibAction(rawAdlib)) {
-					if (isFirstShowStyleVariant) {
-						if (rawAdlib.allVariants) {
-							// If the adlib can be used by all variants, we only should only generate it once.
-							onlyGenerateOneItem = true
-						}
-					} else {
-						delete rawAdlib.allVariants
-					}
-					const action: BucketAdLibAction = postProcessBucketAction(
-						context,
-						showStyleCompound,
-						rawAdlib,
-						data.payload.externalId,
-						blueprint.blueprintId,
-						data.bucketId,
-						newRank,
-						importVersions
-					)
-
-					ps.push(
-						context.directCollections.BucketAdLibActions.replace(action, transaction),
-						updateExpectedMediaItemForBucketAdLibAction(context, transaction, action),
-						updateExpectedPackagesForBucketAdLibAction(context, transaction, action)
-					)
-
-					// Preserve this one
-					actionIdsToRemove = actionIdsToRemove.filter((id) => id !== action._id)
-				} else {
-					const adlib = postProcessBucketAdLib(
-						context,
-						showStyleCompound,
-						rawAdlib,
-						data.payload.externalId,
-						blueprint.blueprintId,
-						data.bucketId,
-						newRank,
-						importVersions
-					)
-
-					ps.push(
-						context.directCollections.BucketAdLibPieces.replace(adlib, transaction),
-						updateExpectedMediaItemForBucketAdLibPiece(context, transaction, adlib),
-						updateExpectedPackagesForBucketAdLibPiece(context, transaction, adlib)
-					)
-
-					// Preserve this one
-					adlibIdsToRemove = adlibIdsToRemove.filter((id) => id !== adlib._id)
-				}
-
-				if (onlyGenerateOneItem) {
-					// We only need to generate one variant, so we can stop here
-					break
-				}
-			}
-			isFirstShowStyleVariant = false
-		}
-
-		// Cleanup old items:
-		ps.push(
-			cleanUpExpectedMediaItemForBucketAdLibPiece(context, transaction, adlibIdsToRemove),
-			cleanUpExpectedMediaItemForBucketAdLibActions(context, transaction, actionIdsToRemove),
-			cleanUpExpectedPackagesForBucketAdLibs(context, transaction, adlibIdsToRemove),
-			cleanUpExpectedPackagesForBucketAdLibsActions(context, transaction, actionIdsToRemove),
-			adlibIdsToRemove.length
-				? context.directCollections.BucketAdLibPieces.remove({ _id: { $in: adlibIdsToRemove } }, transaction)
-				: Promise.resolve(),
-			actionIdsToRemove.length
-				? context.directCollections.BucketAdLibActions.remove({ _id: { $in: actionIdsToRemove } }, transaction)
-				: Promise.resolve()
-		)
-		await Promise.all(ps)
 	})
 }
 
