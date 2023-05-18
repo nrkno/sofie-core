@@ -99,11 +99,7 @@ export async function runWithPlaylistCache<TRes>(
 
 		return res
 	} catch (err) {
-		try {
-			fullCache.discardChanges()
-		} catch (e) {
-			// Ignore
-		}
+		fullCache.dispose()
 		throw err
 	}
 }

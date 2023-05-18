@@ -91,7 +91,7 @@ export async function handleExecuteAdlibAction(
 
 				return res
 			} catch (err) {
-				fullCache.discardChanges()
+				fullCache.dispose()
 				throw err
 			}
 		}

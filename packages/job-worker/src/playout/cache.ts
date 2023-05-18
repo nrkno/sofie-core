@@ -365,11 +365,6 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		this.toBeRemoved = false
 		super.discardChanges()
 
-		// Discard any hooks too
-		this._deferredAfterSaveFunctions.length = 0
-		this._deferredDuringSaveTransactionFunctions.length = 0
-		this._deferredBeforeSaveFunctions.length = 0
-
 		this.assertNoChanges()
 	}
 
@@ -384,7 +379,9 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			const span = this.context.startSpan('CacheForPlayout.saveAllToDatabase')
 
 			// Ignoring any deferred functions
-			super.discardChanges()
+			this._deferredAfterSaveFunctions.length = 0
+			this._deferredDuringSaveTransactionFunctions.length = 0
+			this._deferredBeforeSaveFunctions.length = 0
 
 			// Remove the playlist doc
 			await this.context.directCollections.RundownPlaylists.remove(this.PlaylistId, existingTransaction ?? null) // No transaction, its a single operation

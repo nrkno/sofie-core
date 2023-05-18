@@ -5,7 +5,7 @@ import {
 	RundownId,
 	PartInstanceId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBRundown, DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { DbCacheReadCollection } from '../cache/CacheCollection'
 import { logger } from '../logging'

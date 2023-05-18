@@ -22,8 +22,10 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 	 */
 	protected _rawDocument: TDoc
 
-	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
-	protected isToBeRemoved = false
+	/**
+	 * Whether this cache has been disposed of and is no longer valid for use
+	 */
+	protected _disposed = false
 
 	protected constructor(
 		protected readonly context: JobContext,
@@ -99,15 +101,25 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 	}
 
 	get doc(): DocOptional extends true ? ReadonlyDeep<TDoc> | undefined : ReadonlyDeep<TDoc> {
+		this.assertNotDisposed()
+
 		return this._document as any
 	}
 
+	protected assertNotDisposed(): void {
+		if (this._disposed)
+			throw new Error(`CacheObject "${this._document?._id}" from "${this._collection.name}" has been disposed`)
+	}
+
 	/**
-	 * Called to mark this document as pending deletion from mongo. This will cause it to reject any future updates
-	 * Note: The actual deletion must be handled elsewhere
+	 * Discards all documents in this cache, and marks it as unusable
 	 */
-	markForRemoval(): void {
-		this.isToBeRemoved = true
+	dispose(): void {
+		this._disposed = false
+
+		// Force delete the documents
+		this._document = (this._document ? { _id: this._document._id } : null) as any
+		this._rawDocument = null as any
 	}
 }
 
@@ -120,6 +132,9 @@ export class DbCacheWriteObject<
 	DocOptional extends boolean = false
 > extends DbCacheReadObject<TDoc, DocOptional> {
 	private _updated = false
+
+	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
+	protected isToBeRemoved = false
 
 	protected constructor(
 		context: JobContext,
@@ -206,6 +221,7 @@ export class DbCacheWriteObject<
 	 * @returns Whether any changes were found in the modified document
 	 */
 	update(modifier: (doc: TDoc) => TDoc | false, forceUpdate?: boolean): boolean {
+		this.assertNotDisposed()
 		this.assertNotToBeRemoved('update')
 
 		const localDoc: ReadonlyDeep<TDoc> | undefined = this.doc
@@ -237,6 +253,8 @@ export class DbCacheWriteObject<
 	 * @returns Changes object describing the saved changes
 	 */
 	async updateDatabaseWithData(transaction: IMongoTransaction): Promise<Changes> {
+		this.assertNotDisposed()
+
 		if (this._updated && !this.isToBeRemoved) {
 			const span = this.context.startSpan(`DbCacheWriteObject.updateDatabaseWithData.${this.name}`)
 
@@ -264,14 +282,35 @@ export class DbCacheWriteObject<
 	}
 
 	/**
+	 * Called to mark this document as pending deletion from mongo. This will cause it to reject any future updates
+	 * Note: The actual deletion must be handled elsewhere
+	 */
+	markForRemoval(): void {
+		this.assertNotDisposed()
+
+		this.isToBeRemoved = true
+	}
+
+	/**
 	 * Discard any changes that have been made locally to the document.
 	 * Restores the document as provided when this wrapper was created
 	 */
 	discardChanges(): void {
+		this.assertNotDisposed()
+
 		if (this.isModified()) {
 			this._updated = false
 			this._document = this._rawDocument ? clone(this._rawDocument) : this._rawDocument
 		}
+	}
+
+	/**
+	 * Discards all documents in this cache, and marks it as unusable
+	 */
+	dispose(): void {
+		super.dispose()
+
+		this._updated = false
 	}
 
 	isModified(): boolean {
@@ -346,6 +385,7 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 	 * @returns Reference to the stored document
 	 */
 	replace(doc: TDoc): ReadonlyDeep<TDoc> {
+		this.assertNotDisposed()
 		this.assertNotToBeRemoved('replace')
 
 		this._inserted = true
@@ -367,6 +407,8 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 	 * @returns Changes object describing the saved changes
 	 */
 	async updateDatabaseWithData(transaction: IMongoTransaction): Promise<Changes> {
+		this.assertNotDisposed()
+
 		if (this._inserted && !this.isToBeRemoved) {
 			const span = this.context.startSpan(`DbCacheWriteOptionalObject.updateDatabaseWithData.${this.name}`)
 

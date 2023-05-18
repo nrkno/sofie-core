@@ -141,6 +141,21 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		this._deferredBeforeSaveFunctions.length = 0
 	}
 
+	/**
+	 * Discards all documents in this cache, and marks it as unusable
+	 */
+	dispose(): void {
+		const { allDBs } = this.getAllCollections()
+		for (const coll of allDBs) {
+			coll.dispose()
+		}
+
+		// Discard any hooks too
+		this._deferredAfterSaveFunctions.length = 0
+		this._deferredDuringSaveTransactionFunctions.length = 0
+		this._deferredBeforeSaveFunctions.length = 0
+	}
+
 	/** Inform all the collections of the intention for the Cache to be removed. The collections are emptied and marked to reject any further updates */
 	protected markCollectionsForRemoval(): void {
 		const { allDBs } = this.getAllCollections()
