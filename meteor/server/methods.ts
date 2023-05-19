@@ -108,6 +108,9 @@ function setMeteorMethods(orgMethods: MethodsInner, secret?: boolean): void {
 					const result = method.apply(this, args)
 
 					if (isPromise(result)) {
+						// Don't block execution of other methods while waiting for this to resolve. (This is how meteor 2.7 behaved, added to avoid breaking Sofie)
+						this.unblock()
+
 						// The method result is a promise
 						return Promise.resolve(result)
 							.finally(() => {
