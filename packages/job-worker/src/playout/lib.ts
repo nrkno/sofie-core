@@ -10,7 +10,7 @@ import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataMo
 import { DbCacheReadCollection } from '../cache/CacheCollection'
 import { ReadonlyDeep } from 'type-fest'
 import { sortPartsInSortedSegments, sortSegmentsInRundowns } from '@sofie-automation/corelib/dist/playout/playlist'
-import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache } from './cache'
+import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getRundownIDsFromCache } from './cache'
 import { logger } from '../logging'
 import { getCurrentTime } from '../lib'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
@@ -223,6 +223,7 @@ export function resetPartInstancesWithPieceInstances(
 
 	// Defer ones which arent loaded
 	cache.deferDuringSaveTransaction(async (transaction, cache) => {
+		const rundownIds = getRundownIDsFromCache(cache)
 		const partInstanceIdsInCache = cache.PartInstances.findAll(null).map((p) => p._id)
 
 		// Find all the partInstances which are not loaded, but should be reset
@@ -233,6 +234,7 @@ export function resetPartInstancesWithPieceInstances(
 					{
 						// Not any which are in the cache, as they have already been done if needed
 						_id: { $nin: partInstanceIdsInCache },
+						rundownId: { $in: rundownIds },
 						reset: { $ne: true },
 					},
 				],
@@ -248,6 +250,7 @@ export function resetPartInstancesWithPieceInstances(
 				? context.directCollections.PartInstances.update(
 						{
 							_id: { $in: resetInDb },
+							rundownId: { $in: rundownIds },
 							reset: { $ne: true },
 						},
 						{
@@ -262,6 +265,7 @@ export function resetPartInstancesWithPieceInstances(
 				? context.directCollections.PieceInstances.update(
 						{
 							partInstanceId: { $in: allToReset },
+							rundownId: { $in: rundownIds },
 							reset: { $ne: true },
 						},
 						{
@@ -293,6 +297,7 @@ function removePartInstancesWithPieceInstances(
 
 	// Defer ones which arent loaded
 	cache.deferDuringSaveTransaction(async (transaction, cache) => {
+		const rundownIds = getRundownIDsFromCache(cache)
 		// We need to keep any for PartInstances which are still existent in the cache (as they werent removed)
 		const partInstanceIdsInCache = cache.PartInstances.findAll(null).map((p) => p._id)
 
@@ -304,6 +309,7 @@ function removePartInstancesWithPieceInstances(
 					{
 						// Not any which are in the cache, as they have already been done if needed
 						_id: { $nin: partInstanceIdsInCache },
+						rundownId: { $in: rundownIds },
 					},
 				],
 			},
@@ -318,6 +324,7 @@ function removePartInstancesWithPieceInstances(
 				? context.directCollections.PartInstances.remove(
 						{
 							_id: { $in: removeFromDb },
+							rundownId: { $in: rundownIds },
 						},
 						transaction
 				  )
@@ -326,6 +333,7 @@ function removePartInstancesWithPieceInstances(
 				? context.directCollections.PieceInstances.remove(
 						{
 							partInstanceId: { $in: allToRemove },
+							rundownId: { $in: rundownIds },
 						},
 						transaction
 				  )
