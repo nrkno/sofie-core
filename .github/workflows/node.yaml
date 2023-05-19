@@ -40,6 +40,10 @@ jobs:
       - name: Run typecheck and linter
         run: |
           cd meteor
+
+          # setup zodern:types. No linters are setup, so this simply installs the packages
+          meteor lint
+
           meteor yarn ci:lint
         env:
           CI: true
@@ -73,6 +77,10 @@ jobs:
       - name: Run Tests
         run: |
           cd meteor
+
+          # setup zodern:types. No linters are setup, so this simply installs the packages
+          meteor lint
+
           NODE_OPTIONS="--max-old-space-size=6144" meteor yarn unitci --force-exit
         env:
           CI: true
