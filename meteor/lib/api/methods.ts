@@ -1,5 +1,4 @@
 import * as _ from 'underscore'
-import { MeteorPromiseApply } from '../lib'
 import { NewBlueprintAPI, BlueprintAPIMethods } from './blueprint'
 import { NewClientAPI, ClientAPIMethods } from './client'
 import { NewExternalMessageQueueAPI, ExternalMessageQueueAPIMethods } from './ExternalMessageQueue'
@@ -74,11 +73,11 @@ function makeMethods<Enum extends { [key: string]: string }>(
 	_.each(methods, (serverMethodName: any, methodName: string) => {
 		if (listOfMethodsThatShouldNotRetry?.includes(methodName)) {
 			resultingMethods[methodName] = async (...args) =>
-				MeteorPromiseApply(serverMethodName, args, {
+				Meteor.applyAsync(serverMethodName, args, {
 					noRetry: true,
 				})
 		} else {
-			resultingMethods[methodName] = async (...args) => MeteorPromiseApply(serverMethodName, args)
+			resultingMethods[methodName] = async (...args) => Meteor.applyAsync(serverMethodName, args)
 		}
 	})
 	return resultingMethods
