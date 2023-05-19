@@ -71,7 +71,7 @@ export function createAsyncOnlyMongoCollection<DBInterface extends { _id: Protec
 
 	setupCollectionAllowRules(collection, allowRules)
 
-	const wrappedCollection = wrapMeteorCollectionIntoAsyncCollection(collection, name)
+	const wrappedCollection = wrapMeteorCollectionIntoAsyncCollection<DBInterface>(collection, name)
 
 	registerCollection(name, wrappedCollection)
 
@@ -88,8 +88,8 @@ export function createAsyncOnlyReadOnlyMongoCollection<DBInterface extends { _id
 ): AsyncOnlyReadOnlyMongoCollection<DBInterface> {
 	const collection = getOrCreateMongoCollection(name)
 
-	const mutableCollection = wrapMeteorCollectionIntoAsyncCollection(collection, name)
-	const readonlyCollection = new WrappedReadOnlyMongoCollection(mutableCollection)
+	const mutableCollection = wrapMeteorCollectionIntoAsyncCollection<DBInterface>(collection, name)
+	const readonlyCollection = new WrappedReadOnlyMongoCollection<DBInterface>(mutableCollection)
 
 	registerCollection(name, readonlyCollection)
 
