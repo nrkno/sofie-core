@@ -25,6 +25,7 @@ import { resetPartInstancesWithPieceInstances } from './lib'
 import { RundownHoldState, SelectedPartInstance } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { SelectNextPartResult } from './selectNextPart'
+import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 
 /**
  * Set or clear the nexted part, from a given PartInstance, or SelectNextPartResult
@@ -42,12 +43,6 @@ export async function setNextPart(
 	nextTimeOffset?: number | undefined
 ): Promise<void> {
 	const span = context.startSpan('setNextPart')
-
-	const playlist = cache.Playlist.doc
-	if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
-	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
-		throw UserError.create(UserErrorMessage.DuringHold)
-	}
 
 	const rundownIds = getRundownIDsFromCache(cache)
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
@@ -375,11 +370,18 @@ export async function setNextSegment(
 		// if there is not currentPartInstance or the nextPartInstance is not in the current segment
 		// behave as if user chose SetNextPart on the first playable part of the segment
 		if (currentPartInstance === undefined || currentPartInstance.segmentId !== nextPartInstance?.segmentId) {
+			// Clear any existing nextSegment, as this call 'replaces' it
+			cache.Playlist.update((p) => {
+				delete p.nextSegmentId
+				return p
+			})
+
 			return setNextPart(
 				context,
 				cache,
 				{
 					part: firstPlayablePart,
+					consumesNextSegmentId: false,
 				},
 				true
 			)
@@ -413,6 +415,12 @@ export async function setNextPartFromPart(
 	setManually: boolean,
 	nextTimeOffset?: number | undefined
 ): Promise<void> {
+	const playlist = cache.Playlist.doc
+	if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
+	if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
+		throw UserError.create(UserErrorMessage.DuringHold)
+	}
+
 	const consumesNextSegmentId = doesPartConsumeNextSegmentId(cache, nextPart)
 
 	await setNextPart(context, cache, { part: nextPart, consumesNextSegmentId }, setManually, nextTimeOffset)

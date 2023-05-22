@@ -1237,6 +1237,9 @@ describe('Test recieved mos ingest payloads', () => {
 			expect(fixSnapshot(segments)).toMatchObject(fixSnapshot(segments0) || [])
 			expect(fixSnapshot(parts)).toMatchObject(fixSnapshot(parts0) || [])
 			expect(fixSnapshot(partInstances)).toMatchObject(fixSnapshot(partInstances0) || [])
+		} catch (e) {
+			console.error(e)
+			throw e
 		} finally {
 			// cleanup
 			await handleDeactivateRundownPlaylist(context, {
