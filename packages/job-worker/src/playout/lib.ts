@@ -61,15 +61,27 @@ export async function resetRundownPlaylist(context: JobContext, cache: CacheForP
 			null,
 			getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 		)
-		await setNextPart(context, cache, firstPart)
+		await setNextPart(context, cache, firstPart, false)
 	} else {
-		await setNextPart(context, cache, null)
+		await setNextPart(context, cache, null, false)
 	}
 }
 
 export interface SelectNextPartResult {
+	/**
+	 * The Part selected to be nexted
+	 */
 	part: DBPart
+
+	/**
+	 * The index of the Part in the provided list of all sorted Parts
+	 */
 	index: number
+
+	/**
+	 * Whether this Part consumes the `nextSegmentId` property on the rundown.
+	 * If true, when this PartInstance is taken, the `nextSegmentId` property on the Playlist will be cleared
+	 */
 	consumesNextSegmentId?: boolean
 }
 export interface PartsAndSegments {
@@ -77,6 +89,9 @@ export interface PartsAndSegments {
 	parts: DBPart[]
 }
 
+/**
+ * Select the Part in the Playlist which should be set as next
+ */
 export function selectNextPart(
 	context: JobContext,
 	rundownPlaylist: Pick<DBRundownPlaylist, 'nextSegmentId' | 'loop'>,

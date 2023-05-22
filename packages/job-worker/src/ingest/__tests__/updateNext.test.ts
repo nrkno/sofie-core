@@ -10,9 +10,9 @@ import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/cont
 import { runJobWithPlayoutCache } from '../../playout/lock'
 
 jest.mock('../../playout/setNext')
-import { setNextPartInner } from '../../playout/setNext'
-type TsetNextPartInner = jest.MockedFunction<typeof setNextPartInner>
-const setNextPartInnerMock = setNextPartInner as TsetNextPartInner
+import { setNextPartFromPart } from '../../playout/setNext'
+type TsetNextPartInner = jest.MockedFunction<typeof setNextPartFromPart>
+const setNextPartInnerMock = setNextPartFromPart as TsetNextPartInner
 setNextPartInnerMock.mockImplementation(async () => Promise.resolve()) // Default mock
 
 const rundownId: RundownId = protectString('mock_ro')

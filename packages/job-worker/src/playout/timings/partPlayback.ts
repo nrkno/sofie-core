@@ -105,7 +105,7 @@ export async function onPartPlaybackStarted(
 				null,
 				getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 			)
-			await setNextPart(context, cache, nextPart)
+			await setNextPart(context, cache, nextPart, false)
 
 			// complete the take
 			await afterTake(context, cache, playingPartInstance)

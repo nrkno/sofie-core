@@ -5,7 +5,7 @@ import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 import { logger } from 'elastic-apm-node'
-import { setNextPartInner } from './setNext'
+import { setNextPartFromPart } from './setNext'
 
 export async function moveNextPart(
 	context: JobContext,
@@ -60,7 +60,7 @@ export async function moveNextPart(
 		// TODO - looping playlists
 		if (selectedPart) {
 			// Switch to that part
-			await setNextPartInner(context, cache, selectedPart, true)
+			await setNextPartFromPart(context, cache, selectedPart, true)
 			return selectedPart._id
 		} else {
 			// Nothing looked valid so do nothing
@@ -89,7 +89,7 @@ export async function moveNextPart(
 
 		if (targetPart) {
 			// Switch to that part
-			await setNextPartInner(context, cache, targetPart, true)
+			await setNextPartFromPart(context, cache, targetPart, true)
 			return targetPart._id
 		} else {
 			// Nothing looked valid so do nothing
