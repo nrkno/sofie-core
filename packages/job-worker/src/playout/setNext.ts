@@ -49,6 +49,7 @@ export async function setNextPart(
 
 		// create new instance
 		let newPartInstance: DBPartInstance
+		let consumesNextSegmentId: boolean
 		if ('playlistActivationId' in rawNextPart) {
 			const inputPartInstance: DBPartInstance = rawNextPart
 			if (inputPartInstance.part.invalid) {
@@ -61,7 +62,8 @@ export async function setNextPart(
 				)
 			}
 
-			newPartInstance = await prepareExistingPartInstanceForBeingNexted(context, cache, inputPartInstance, false)
+			consumesNextSegmentId = false
+			newPartInstance = await prepareExistingPartInstanceForBeingNexted(context, cache, inputPartInstance)
 		} else {
 			const selectedPart: Omit<SelectNextPartResult, 'index'> = rawNextPart
 			if (selectedPart.part.invalid) {
@@ -74,26 +76,20 @@ export async function setNextPart(
 				)
 			}
 
+			consumesNextSegmentId = selectedPart.consumesNextSegmentId ?? false
+
 			if (nextPartInstance && nextPartInstance.part._id === selectedPart.part._id) {
 				// Re-use existing
 
-				const consumesNextSegmentId = selectedPart.consumesNextSegmentId ?? false
-				newPartInstance = await prepareExistingPartInstanceForBeingNexted(
-					context,
-					cache,
-					nextPartInstance,
-					consumesNextSegmentId
-				)
+				newPartInstance = await prepareExistingPartInstanceForBeingNexted(context, cache, nextPartInstance)
 			} else {
 				// Create new instance
-				const consumesNextSegmentId = selectedPart.consumesNextSegmentId ?? false
 				newPartInstance = await preparePartInstanceForPartBeingNexted(
 					context,
 					cache,
 					cache.Playlist.doc.activationId,
 					currentPartInstance,
-					selectedPart.part,
-					consumesNextSegmentId
+					selectedPart.part
 				)
 			}
 		}
@@ -116,6 +112,7 @@ export async function setNextPart(
 				partInstanceId: newPartInstance._id,
 				rundownId: newPartInstance.rundownId,
 				manuallySelected: !!(setManually || newPartInstance.orphaned),
+				consumesNextSegmentId,
 			})
 			p.nextTimeOffset = nextTimeOffset || null
 			return p
@@ -142,13 +139,8 @@ export async function setNextPart(
 async function prepareExistingPartInstanceForBeingNexted(
 	context: JobContext,
 	cache: CacheForPlayout,
-	instance: DBPartInstance,
-	consumesNextSegmentId: boolean
+	instance: DBPartInstance
 ): Promise<DBPartInstance> {
-	cache.PartInstances.updateOne(instance._id, (p) => {
-		p.consumesNextSegmentId = consumesNextSegmentId
-		return p
-	})
 	await syncPlayheadInfinitesForNextPartInstance(context, cache)
 
 	return instance
@@ -159,8 +151,7 @@ async function preparePartInstanceForPartBeingNexted(
 	cache: CacheForPlayout,
 	playlistActivationId: RundownPlaylistActivationId,
 	currentPartInstance: DBPartInstance | undefined,
-	nextPart: DBPart,
-	consumesNextSegmentId: boolean
+	nextPart: DBPart
 ): Promise<DBPartInstance> {
 	const partInstanceId = protectString<PartInstanceId>(`${nextPart._id}_${getRandomId()}`)
 
@@ -179,7 +170,6 @@ async function preparePartInstanceForPartBeingNexted(
 		segmentPlayoutId,
 		part: nextPart,
 		rehearsal: !!cache.Playlist.doc.rehearsal,
-		consumesNextSegmentId: consumesNextSegmentId,
 		timings: {
 			setAsNext: getCurrentTime(),
 		},
