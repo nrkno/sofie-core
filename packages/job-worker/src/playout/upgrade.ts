@@ -64,20 +64,24 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 		])
 	)
 
-	await context.directCollections.Studios.update(context.studioId, {
-		$set: {
-			'mappingsWithOverrides.defaults': translateMappings(result.mappings),
-			'peripheralDeviceSettings.playoutDevices.defaults': playoutDevices,
-			'peripheralDeviceSettings.ingestDevices.defaults': ingestDevices,
-			'peripheralDeviceSettings.inputDevices.defaults': inputDevices,
-			lastBlueprintConfig: {
-				blueprintHash: blueprint.blueprintDoc.blueprintHash,
-				blueprintId: blueprint.blueprintId,
-				blueprintConfigPresetId: context.studio.blueprintConfigPresetId,
-				config: rawBlueprintConfig,
+	await context.directCollections.Studios.update(
+		context.studioId,
+		{
+			$set: {
+				'mappingsWithOverrides.defaults': translateMappings(result.mappings),
+				'peripheralDeviceSettings.playoutDevices.defaults': playoutDevices,
+				'peripheralDeviceSettings.ingestDevices.defaults': ingestDevices,
+				'peripheralDeviceSettings.inputDevices.defaults': inputDevices,
+				lastBlueprintConfig: {
+					blueprintHash: blueprint.blueprintDoc.blueprintHash,
+					blueprintId: blueprint.blueprintId,
+					blueprintConfigPresetId: context.studio.blueprintConfigPresetId,
+					config: rawBlueprintConfig,
+				},
 			},
 		},
-	})
+		null // Single operation
+	)
 }
 
 function translateMappings(rawMappings: BlueprintMappings): MappingsExt {

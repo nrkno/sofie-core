@@ -52,7 +52,6 @@ import { ServerPlayoutAPI } from '../playout/playout'
 import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
 import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { Credentials } from '../../security/lib/credentials'
-import { PeripheralDeviceAPI } from '../../../lib/api/peripheralDevice'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
 import {
 	AdLibActions,
@@ -92,6 +91,7 @@ import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { Studio } from '../../../lib/collections/Studios'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { executePeripheralDeviceFunction } from '../peripheralDevice/executeFunction'
 
 function restAPIUserEvent(
 	ctx: Koa.ParameterizedContext<
@@ -579,7 +579,7 @@ class ServerRestAPI implements RestAPI {
 		switch (action.type) {
 			case PeripheralDeviceActionType.RESTART:
 				// This dispatches the command but does not wait for it to complete
-				await PeripheralDeviceAPI.executeFunction(deviceId, 'killProcess', 1).catch(logger.error)
+				await executePeripheralDeviceFunction(deviceId, 'killProcess', 1).catch(logger.error)
 				break
 			default:
 				assertNever(action.type)

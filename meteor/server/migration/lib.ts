@@ -46,7 +46,7 @@ export function ensureCollectionProperty<T = any>(
 					logger.info(
 						`Migration: Setting ${collectionName} object "${obj._id}".${property} to ${defaultValue}`
 					)
-					await collection.updateAsync(obj._id, { $set: m })
+					await collection.mutableCollection.updateAsync(obj._id, { $set: m })
 				}
 			}
 		},
@@ -85,7 +85,7 @@ export function removeCollectionProperty<T = any>(
 					const m = {}
 					m[property] = 1
 					logger.info(`Migration: Removing property ${collectionName}."${obj._id}".${property}`)
-					await collection.updateAsync(obj._id, { $unset: m })
+					await collection.mutableCollection.updateAsync(obj._id, { $unset: m })
 				}
 			}
 		},

@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import * as _ from 'underscore'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceCommands, PeripheralDevices, Rundowns, Studios, UserActionsLog } from '../collections'
 import { getCurrentTime, protectString, stringifyObjects, literal, unprotectString } from '../../lib/lib'
@@ -68,6 +67,7 @@ import {
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { convertPeripheralDeviceForGateway } from '../publications/peripheralDeviceForDevice'
+import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -316,7 +316,7 @@ export namespace ServerPeripheralDeviceAPI {
 	): Promise<void> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
-		PeripheralDeviceAPI.executeFunction(peripheralDevice._id, 'pingResponse', message)
+		executePeripheralDeviceFunction(peripheralDevice._id, 'pingResponse', message)
 			.then((res) => {
 				if (cb) cb(null, res)
 			})
@@ -441,7 +441,7 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 
 		try {
-			return await PeripheralDeviceAPI.executeFunction(access.deviceId, 'getDebugStates')
+			return await executePeripheralDeviceFunction(access.deviceId, 'getDebugStates')
 		} catch (e) {
 			logger.error(e)
 			return {}
@@ -655,7 +655,7 @@ PickerGET.route('/devices/:deviceId/oauthResponse', async (params, req: Incoming
 		if (accessToken && accessToken.length > 5) {
 			// If this fails, there's not much we can do except kick the user back to the
 			//  device config screen to try again.
-			PeripheralDeviceAPI.executeFunction(deviceId, 'receiveAuthToken', accessToken)
+			executePeripheralDeviceFunction(deviceId, 'receiveAuthToken', accessToken)
 				.then(() => {
 					logger.info(`Sent auth token to device "${deviceId}"`)
 				})
@@ -734,7 +734,7 @@ PickerPOST.route(
 				},
 			})
 
-			// PeripheralDeviceAPI.executeFunction(deviceId, 'killProcess', 1).catch(logger.error)
+			// executePeripheralDeviceFunction(deviceId, 'killProcess', 1).catch(logger.error)
 
 			res.statusCode = 200
 		} catch (e) {

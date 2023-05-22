@@ -5468,7 +5468,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
     "@mos-connection/model": ^3.0.2
-    timeline-state-resolver-types: 8.0.0-nightly-release50-20230510-114847-e6b95db66.0
+    timeline-state-resolver-types: 8.0.0-nightly-release50-20230518-100641-f60ce9709.0
     tslib: ^2.4.0
     type-fest: ^2.19.0
   languageName: unknown
@@ -8510,7 +8510,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"casparcg-connection@npm:^6.0.2":
+"casparcg-connection@npm:^6.0.3":
   version: 6.0.3
   resolution: "casparcg-connection@npm:6.0.3"
   dependencies:
@@ -9911,7 +9911,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"debug@npm:4, debug@npm:4.3.4, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.1, debug@npm:^4.3.2, debug@npm:^4.3.3, debug@npm:^4.3.4":
+"debug@npm:4, debug@npm:4.3.4, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.2, debug@npm:^4.3.3, debug@npm:^4.3.4":
   version: 4.3.4
   resolution: "debug@npm:4.3.4"
   dependencies:
@@ -18004,7 +18004,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"p-queue@npm:6.6.2, p-queue@npm:^6.4.0":
+"p-queue@npm:6.6.2, p-queue@npm:^6.6.2":
   version: 6.6.2
   resolution: "p-queue@npm:6.6.2"
   dependencies:
@@ -18604,7 +18604,7 @@ asn1@evs-broadcast/node-asn1:
     "@sofie-automation/shared-lib": 1.50.0-in-development
     debug: ^4.3.3
     influx: ^5.9.3
-    timeline-state-resolver: 8.0.0-nightly-release50-20230510-114847-e6b95db66.0
+    timeline-state-resolver: 8.0.0-nightly-release50-20230518-100641-f60ce9709.0
     tslib: ^2.4.0
     underscore: ^1.13.4
     winston: ^3.8.2
@@ -22247,7 +22247,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"threadedclass@npm:^1.1.2, threadedclass@npm:^1.2.0":
+"threadedclass@npm:^1.1.2, threadedclass@npm:^1.2.1":
   version: 1.2.1
   resolution: "threadedclass@npm:1.2.1"
   dependencies:
@@ -22299,25 +22299,25 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230510-114847-e6b95db66.0":
-  version: 8.0.0-nightly-release50-20230510-114847-e6b95db66.0
-  resolution: "timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230510-114847-e6b95db66.0"
+"timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230518-100641-f60ce9709.0":
+  version: 8.0.0-nightly-release50-20230518-100641-f60ce9709.0
+  resolution: "timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230518-100641-f60ce9709.0"
   dependencies:
-    tslib: ^2.5.0
-  checksum: b2d0a450178135a55f7a0e440dcbbcc0f51a334f4da384d64f3ac8909c8167fefb99e06e38532c5a7855c89a647c44e575bd979efcd25c893fcc994c0a9bd8c5
+    tslib: ^2.5.1
+  checksum: 02db63f168af7085899919e7d5c60cb9cbdb427263b16faab0d6393ef44215320b131467c0ff207685e02e6cf7a339979e8813515624e81867064d55fd06b392
   languageName: node
   linkType: hard
 
-"timeline-state-resolver@npm:8.0.0-nightly-release50-20230510-114847-e6b95db66.0":
-  version: 8.0.0-nightly-release50-20230510-114847-e6b95db66.0
-  resolution: "timeline-state-resolver@npm:8.0.0-nightly-release50-20230510-114847-e6b95db66.0"
+"timeline-state-resolver@npm:8.0.0-nightly-release50-20230518-100641-f60ce9709.0":
+  version: 8.0.0-nightly-release50-20230518-100641-f60ce9709.0
+  resolution: "timeline-state-resolver@npm:8.0.0-nightly-release50-20230518-100641-f60ce9709.0"
   dependencies:
     "@tv2media/v-connection": ^7.3.0
     atem-connection: 2.4.0
     atem-state: ^0.12.2
-    casparcg-connection: ^6.0.2
+    casparcg-connection: ^6.0.3
     casparcg-state: ^3.0.2
-    debug: ^4.3.1
+    debug: ^4.3.4
     deepmerge: ^4.3.1
     emberplus-connection: ^0.1.2
     eventemitter3: ^4.0.7
@@ -22326,20 +22326,20 @@ asn1@evs-broadcast/node-asn1:
     obs-websocket-js: ^4.0.3
     osc: ^2.4.4
     p-all: ^3.0.0
-    p-queue: ^6.4.0
+    p-queue: ^6.6.2
     p-timeout: ^3.2.0
     sprintf-js: ^1.1.2
     superfly-timeline: ^8.3.1
-    threadedclass: ^1.2.0
-    timeline-state-resolver-types: 8.0.0-nightly-release50-20230510-114847-e6b95db66.0
-    tslib: ^2.5.0
-    tv-automation-quantel-gateway-client: ^3.0.2
-    underscore: ^1.13.4
+    threadedclass: ^1.2.1
+    timeline-state-resolver-types: 8.0.0-nightly-release50-20230518-100641-f60ce9709.0
+    tslib: ^2.5.1
+    tv-automation-quantel-gateway-client: ^3.1.11-agent-debug-20230117-160455-c2c4ee4.0
+    underscore: ^1.13.6
     underscore-deep-extend: ^1.1.5
     utf-8-validate: ^5.0.10
-    ws: ^7.5.7
+    ws: ^7.5.9
     xml-js: ^1.6.11
-  checksum: e392c4439d371c3005ed9a8f387f6756123c7c3d948c0fc911b788c4dcc9027fb771189827cdd3c6373efbe6453d7cd87439f7f6672dfc1f3471662d6c965ff4
+  checksum: 4a87c0d41ddab1e1d0f8b1c2ba8ccf78eabfc2861563b171b7211c110216add0968116382f54131ddaafa5f8540ffb17061e03e3b65a6048ce68d2ded29f0c93
   languageName: node
   linkType: hard
 
@@ -22751,6 +22751,13 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
+"tslib@npm:^2.5.1":
+  version: 2.5.1
+  resolution: "tslib@npm:2.5.1"
+  checksum: 535e41e956b32d21aeff007a2c74989d1a6bf3fecb2b0141d80e5b9920bf90e23b4f0cd3772704bc03637c762dbdc1a314d75a407dd7189afbe3e83d80df9392
+  languageName: node
+  linkType: hard
+
 "tsutils@npm:^3.21.0":
   version: 3.21.0
   resolution: "tsutils@npm:3.21.0"
@@ -22788,12 +22795,12 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"tv-automation-quantel-gateway-client@npm:^3.0.2":
-  version: 3.1.7
-  resolution: "tv-automation-quantel-gateway-client@npm:3.1.7"
+"tv-automation-quantel-gateway-client@npm:^3.1.11-agent-debug-20230117-160455-c2c4ee4.0":
+  version: 3.1.11-agent-debug-20230117-160455-c2c4ee4.0
+  resolution: "tv-automation-quantel-gateway-client@npm:3.1.11-agent-debug-20230117-160455-c2c4ee4.0"
   dependencies:
     got: ^11.8.6
-  checksum: 84009ec17cd6286492a1993a040d10f0b08a5a73daf4869e82a80ab19f181e9f0f64fe2256294ddc4b391c5d5404009a648d86e80385910711f6ee13bb0d6022
+  checksum: 352bd6e5c8388322687dc9c46b1e655b2e53a65dfdd4c53efe311b156c00944e5c72bdfbdee04fdc53ad01c6df81511d42273f62b5e4f0e278b3d6f68f5ccf28
   languageName: node
   linkType: hard
 
@@ -24417,7 +24424,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"ws@npm:^7.2.0, ws@npm:^7.3.1, ws@npm:^7.4.6, ws@npm:^7.5.7":
+"ws@npm:^7.2.0, ws@npm:^7.3.1, ws@npm:^7.4.6, ws@npm:^7.5.9":
   version: 7.5.9
   resolution: "ws@npm:7.5.9"
   peerDependencies:

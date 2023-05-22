@@ -153,7 +153,7 @@ export class RundownIngestDataCache {
 	}
 
 	async saveToDatabase(): Promise<Changes> {
-		return this.collection.updateDatabaseWithData()
+		return this.collection.updateDatabaseWithData(null)
 	}
 }
 

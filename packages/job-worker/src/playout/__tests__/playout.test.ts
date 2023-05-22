@@ -23,8 +23,6 @@ import {
 } from '../activePlaylistJobs'
 import { getSelectedPartInstances } from './lib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { MockMongoCollection } from '../../__mocks__/collection'
-import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import * as peripheralDeviceLib from '../../peripheralDevice'
 import { sleep } from '@sofie-automation/corelib/dist/lib'
@@ -61,34 +59,34 @@ describe('Playout API', () => {
 	// const origGetCurrentTime = lib.getCurrentTime
 
 	async function getAllRundownData(rundown: DBRundown) {
-		const segments = await context.directCollections.Segments.findFetch({ rundownId: rundown._id })
-		const parts = await context.directCollections.Parts.findFetch({ rundownId: rundown._id })
+		const segments = await context.mockCollections.Segments.findFetch({ rundownId: rundown._id })
+		const parts = await context.mockCollections.Parts.findFetch({ rundownId: rundown._id })
 		const sortedSegments = sortSegmentsInRundowns(segments, { rundownIdsInOrder: [rundown._id] })
 		return {
 			parts: sortPartsInSortedSegments(parts, sortedSegments),
 			segments: sortedSegments,
-			rundown: (await context.directCollections.Rundowns.findOne(rundown._id)) as DBRundown,
-			pieces: await context.directCollections.Pieces.findFetch(
+			rundown: (await context.mockCollections.Rundowns.findOne(rundown._id)) as DBRundown,
+			pieces: await context.mockCollections.Pieces.findFetch(
 				{ startRundownId: rundown._id },
 				{ sort: { _id: 1 } }
 			),
-			adLibPieces: await context.directCollections.AdLibPieces.findFetch(
+			adLibPieces: await context.mockCollections.AdLibPieces.findFetch(
 				{ rundownId: rundown._id },
 				{ sort: { _id: 1 } }
 			),
 		}
 	}
 	async function getAllParts(rundownId: RundownId) {
-		return context.directCollections.Parts.findFetch({ rundownId })
+		return context.mockCollections.Parts.findFetch({ rundownId })
 	}
 	async function getAllPartInstances() {
-		return context.directCollections.PartInstances.findFetch()
+		return context.mockCollections.PartInstances.findFetch()
 	}
 	async function getAllPieceInstances() {
-		return context.directCollections.PieceInstances.findFetch()
+		return context.mockCollections.PieceInstances.findFetch()
 	}
 	async function getAllPieceInstancesForPartInstance(partInstanceId: PartInstanceId) {
-		return context.directCollections.PieceInstances.findFetch({
+		return context.mockCollections.PieceInstances.findFetch({
 			partInstanceId: partInstanceId,
 		})
 	}
@@ -120,19 +118,17 @@ describe('Playout API', () => {
 		mockExecutePeripheralDeviceFunction.mockClear()
 	})
 	test('Basic rundown control', async () => {
-		const Timeline = context.directCollections.Timelines as MockMongoCollection<TimelineComplete>
+		const Timeline = context.mockCollections.Timelines
 
 		const { rundownId: rundownId0, playlistId: playlistId0 } = await setupDefaultRundownPlaylist(context)
 		expect(rundownId0).toBeTruthy()
 		expect(playlistId0).toBeTruthy()
 
 		const getRundown0 = async () => {
-			return (await context.directCollections.Rundowns.findOne(rundownId0)) as DBRundown
+			return (await context.mockCollections.Rundowns.findOne(rundownId0)) as DBRundown
 		}
 		const getPlaylist0 = async () => {
-			const playlist = (await context.directCollections.RundownPlaylists.findOne(
-				playlistId0
-			)) as DBRundownPlaylist
+			const playlist = (await context.mockCollections.RundownPlaylists.findOne(playlistId0)) as DBRundownPlaylist
 			playlist.activationId = playlist.activationId ?? undefined
 			return playlist
 		}
@@ -237,9 +233,7 @@ describe('Playout API', () => {
 		expect(playlistId0).toBeTruthy()
 
 		const getPlaylist0 = async () => {
-			const playlist = (await context.directCollections.RundownPlaylists.findOne(
-				playlistId0
-			)) as DBRundownPlaylist
+			const playlist = (await context.mockCollections.RundownPlaylists.findOne(playlistId0)) as DBRundownPlaylist
 			playlist.activationId = playlist.activationId ?? undefined
 			return playlist
 		}
@@ -281,9 +275,7 @@ describe('Playout API', () => {
 		// 	return Rundowns.findOne(rundownId0) as Rundown
 		// }
 		const getPlaylist0 = async () => {
-			const playlist = (await context.directCollections.RundownPlaylists.findOne(
-				playlistId0
-			)) as DBRundownPlaylist
+			const playlist = (await context.mockCollections.RundownPlaylists.findOne(playlistId0)) as DBRundownPlaylist
 			playlist.activationId = playlist.activationId ?? undefined
 			return playlist
 		}
@@ -291,9 +283,7 @@ describe('Playout API', () => {
 		// 	return Rundowns.findOne(rundownId1) as Rundown
 		// }
 		const getPlaylist1 = async () => {
-			const playlist = (await context.directCollections.RundownPlaylists.findOne(
-				playlistId1
-			)) as DBRundownPlaylist
+			const playlist = (await context.mockCollections.RundownPlaylists.findOne(playlistId1)) as DBRundownPlaylist
 			playlist.activationId = playlist.activationId ?? undefined
 			return playlist
 		}
@@ -542,12 +532,10 @@ describe('Playout API', () => {
 		expect(playlistId0).toBeTruthy()
 
 		const getRundown0 = async () => {
-			return (await context.directCollections.Rundowns.findOne(rundownId0)) as DBRundown
+			return (await context.mockCollections.Rundowns.findOne(rundownId0)) as DBRundown
 		}
 		const getPlaylist0 = async () => {
-			const playlist = (await context.directCollections.RundownPlaylists.findOne(
-				playlistId0
-			)) as DBRundownPlaylist
+			const playlist = (await context.mockCollections.RundownPlaylists.findOne(playlistId0)) as DBRundownPlaylist
 			playlist.activationId = playlist.activationId ?? undefined
 			return playlist
 		}
@@ -715,7 +703,7 @@ describe('Playout API', () => {
 			expect(nextPartInstanceAfterTake).toBeTruthy()
 			expect(nextPartInstanceAfterTake?.part._id).toBe(parts[2]._id)
 
-			const previousPartInstanceAfterTake = await context.directCollections.PartInstances.findOne(
+			const previousPartInstanceAfterTake = await context.mockCollections.PartInstances.findOne(
 				currentPartInstanceBeforeTakeId
 			)
 			expect(previousPartInstanceAfterTake).toBeTruthy()
@@ -739,12 +727,10 @@ describe('Playout API', () => {
 		expect(playlistId0).toBeTruthy()
 
 		const getRundown0 = async () => {
-			return (await context.directCollections.Rundowns.findOne(rundownId0)) as DBRundown
+			return (await context.mockCollections.Rundowns.findOne(rundownId0)) as DBRundown
 		}
 		const getPlaylist0 = async () => {
-			const playlist = (await context.directCollections.RundownPlaylists.findOne(
-				playlistId0
-			)) as DBRundownPlaylist
+			const playlist = (await context.mockCollections.RundownPlaylists.findOne(playlistId0)) as DBRundownPlaylist
 			playlist.activationId = playlist.activationId ?? undefined
 			return playlist
 		}
@@ -888,7 +874,7 @@ async function setupRundownWithAutoplayPart0(
 	const outputLayerIds = Object.keys(showStyle.outputLayers)
 	const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
-	const playlistId = await context.directCollections.RundownPlaylists.insertOne(
+	const playlistId = await context.mockCollections.RundownPlaylists.insertOne(
 		defaultRundownPlaylist(protectString(`playlist_${rundownId}`), context.studioId)
 	)
 
@@ -901,7 +887,7 @@ async function setupRundownWithAutoplayPart0(
 		showStyle.showStyleVariantId
 	)
 	rundown._id = rundownId
-	await context.directCollections.Rundowns.insertOne(rundown)
+	await context.mockCollections.Rundowns.insertOne(rundown)
 
 	const segment0: DBSegment = {
 		...defaultSegment(protectString(rundownId + '_segment0'), rundown._id),
@@ -909,7 +895,7 @@ async function setupRundownWithAutoplayPart0(
 		externalId: 'MOCK_SEGMENT_0',
 		name: 'Segment 0',
 	}
-	await context.directCollections.Segments.insertOne(segment0)
+	await context.mockCollections.Segments.insertOne(segment0)
 
 	const part00: DBPart = {
 		...defaultPart(protectString(rundownId + '_part0_0'), rundown._id, segment0._id),
@@ -919,7 +905,7 @@ async function setupRundownWithAutoplayPart0(
 		expectedDuration: 20000,
 		autoNext: true,
 	}
-	await context.directCollections.Parts.insertOne(part00)
+	await context.mockCollections.Parts.insertOne(part00)
 
 	const piece000: Piece = {
 		...defaultPiece(protectString(rundownId + '_piece000'), rundown._id, part00.segmentId, part00._id),
@@ -928,7 +914,7 @@ async function setupRundownWithAutoplayPart0(
 		sourceLayerId: sourceLayerIds[0],
 		outputLayerId: outputLayerIds[0],
 	}
-	await context.directCollections.Pieces.insertOne(piece000)
+	await context.mockCollections.Pieces.insertOne(piece000)
 
 	const piece001: Piece = {
 		...defaultPiece(protectString(rundownId + '_piece001'), rundown._id, part00.segmentId, part00._id),
@@ -937,7 +923,7 @@ async function setupRundownWithAutoplayPart0(
 		sourceLayerId: sourceLayerIds[1],
 		outputLayerId: outputLayerIds[0],
 	}
-	await context.directCollections.Pieces.insertOne(piece001)
+	await context.mockCollections.Pieces.insertOne(piece001)
 
 	const adLibPiece000: AdLibPiece = {
 		...defaultAdLibPiece(protectString(rundownId + '_adLib000'), segment0.rundownId, part00._id),
@@ -949,7 +935,7 @@ async function setupRundownWithAutoplayPart0(
 		outputLayerId: outputLayerIds[0],
 	}
 
-	await context.directCollections.AdLibPieces.insertOne(adLibPiece000)
+	await context.mockCollections.AdLibPieces.insertOne(adLibPiece000)
 
 	const part01: DBPart = {
 		...defaultPart(protectString(rundownId + '_part0_1'), rundown._id, segment0._id),
@@ -957,7 +943,7 @@ async function setupRundownWithAutoplayPart0(
 		externalId: 'MOCK_PART_0_1',
 		title: 'Part 0 1',
 	}
-	await context.directCollections.Parts.insertOne(part01)
+	await context.mockCollections.Parts.insertOne(part01)
 
 	const piece010: Piece = {
 		...defaultPiece(protectString(rundownId + '_piece010'), rundown._id, part01.segmentId, part01._id),
@@ -966,7 +952,7 @@ async function setupRundownWithAutoplayPart0(
 		sourceLayerId: sourceLayerIds[0],
 		outputLayerId: outputLayerIds[0],
 	}
-	await context.directCollections.Pieces.insertOne(piece010)
+	await context.mockCollections.Pieces.insertOne(piece010)
 
 	const segment1: DBSegment = {
 		...defaultSegment(protectString(rundownId + '_segment1'), rundown._id),
@@ -974,7 +960,7 @@ async function setupRundownWithAutoplayPart0(
 		externalId: 'MOCK_SEGMENT_2',
 		name: 'Segment 1',
 	}
-	await context.directCollections.Segments.insertOne(segment1)
+	await context.mockCollections.Segments.insertOne(segment1)
 
 	const part10: DBPart = {
 		...defaultPart(protectString(rundownId + '_part1_0'), rundown._id, segment1._id),
@@ -982,7 +968,7 @@ async function setupRundownWithAutoplayPart0(
 		externalId: 'MOCK_PART_1_0',
 		title: 'Part 1 0',
 	}
-	await context.directCollections.Parts.insertOne(part10)
+	await context.mockCollections.Parts.insertOne(part10)
 
 	const piece100: Piece = {
 		...defaultPiece(protectString(rundownId + '_piece100'), rundown._id, part10.segmentId, part10._id),
@@ -993,7 +979,7 @@ async function setupRundownWithAutoplayPart0(
 		...defaultPart(protectString(rundownId + '_part1_1'), rundown._id, segment1._id),
 		_rank: 1,
 	}
-	await context.directCollections.Parts.insertOne(part11)
+	await context.mockCollections.Parts.insertOne(part11)
 
 	const piece110: Piece = {
 		...defaultPiece(protectString(rundownId + '_piece110'), rundown._id, part11.segmentId, part11._id),
@@ -1004,7 +990,7 @@ async function setupRundownWithAutoplayPart0(
 		...defaultPart(protectString(rundownId + '_part1_2'), rundown._id, segment1._id),
 		_rank: 2,
 	}
-	await context.directCollections.Parts.insertOne(part12)
+	await context.mockCollections.Parts.insertOne(part12)
 
 	const piece120: Piece = {
 		...defaultPiece(protectString(rundownId + '_piece120'), rundown._id, part12.segmentId, part12._id),
@@ -1015,7 +1001,7 @@ async function setupRundownWithAutoplayPart0(
 		...defaultSegment(protectString(rundownId + '_segment2'), rundown._id),
 		_rank: 2,
 	}
-	await context.directCollections.Segments.insertOne(segment2)
+	await context.mockCollections.Segments.insertOne(segment2)
 
 	const part20: DBPart = {
 		...defaultPart(protectString(rundownId + '_part2_0'), rundown._id, segment2._id),
@@ -1085,8 +1071,8 @@ async function setupRundownWithAutoplayPart0(
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
-	await context.directCollections.RundownBaselineAdLibPieces.insertOne(globalAdLib0)
-	await context.directCollections.RundownBaselineAdLibPieces.insertOne(globalAdLib1)
+	await context.mockCollections.RundownBaselineAdLibPieces.insertOne(globalAdLib0)
+	await context.mockCollections.RundownBaselineAdLibPieces.insertOne(globalAdLib1)
 
 	return { playlistId, rundownId }
 }

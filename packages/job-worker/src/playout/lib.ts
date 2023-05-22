@@ -222,7 +222,7 @@ export function resetPartInstancesWithPieceInstances(
 	}
 
 	// Defer ones which arent loaded
-	cache.deferAfterSave(async (cache) => {
+	cache.deferDuringSaveTransaction(async (transaction, cache) => {
 		const partInstanceIdsInCache = cache.PartInstances.findAll(null).map((p) => p._id)
 
 		// Find all the partInstances which are not loaded, but should be reset
@@ -237,7 +237,8 @@ export function resetPartInstancesWithPieceInstances(
 					},
 				],
 			},
-			{ projection: { _id: 1 } }
+			{ projection: { _id: 1 } },
+			transaction
 		).then((ps) => ps.map((p) => p._id))
 
 		// Do the reset
@@ -253,7 +254,8 @@ export function resetPartInstancesWithPieceInstances(
 							$set: {
 								reset: true,
 							},
-						}
+						},
+						transaction
 				  )
 				: undefined,
 			allToReset.length
@@ -266,7 +268,8 @@ export function resetPartInstancesWithPieceInstances(
 							$set: {
 								reset: true,
 							},
-						}
+						},
+						transaction
 				  )
 				: undefined,
 		])
@@ -289,7 +292,7 @@ function removePartInstancesWithPieceInstances(
 	}
 
 	// Defer ones which arent loaded
-	cache.deferAfterSave(async (cache) => {
+	cache.deferDuringSaveTransaction(async (transaction, cache) => {
 		// We need to keep any for PartInstances which are still existent in the cache (as they werent removed)
 		const partInstanceIdsInCache = cache.PartInstances.findAll(null).map((p) => p._id)
 
@@ -304,21 +307,28 @@ function removePartInstancesWithPieceInstances(
 					},
 				],
 			},
-			{ projection: { _id: 1 } }
+			{ projection: { _id: 1 } },
+			transaction
 		).then((ps) => ps.map((p) => p._id))
 
 		// Do the remove
 		const allToRemove = [...removeFromDb, ...partInstancesToRemove]
 		await Promise.all([
 			removeFromDb.length > 0
-				? context.directCollections.PartInstances.remove({
-						_id: { $in: removeFromDb },
-				  })
+				? context.directCollections.PartInstances.remove(
+						{
+							_id: { $in: removeFromDb },
+						},
+						transaction
+				  )
 				: undefined,
 			allToRemove.length > 0
-				? context.directCollections.PieceInstances.remove({
-						partInstanceId: { $in: allToRemove },
-				  })
+				? context.directCollections.PieceInstances.remove(
+						{
+							partInstanceId: { $in: allToRemove },
+						},
+						transaction
+				  )
 				: undefined,
 		])
 	})

@@ -1,7 +1,7 @@
 import { clone, deleteAllUndefinedProperties, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
-import { ICollection } from '../db'
+import { ICollection, IMongoTransaction, IReadOnlyCollection } from '../db'
 import { logger } from '../logging'
 import { Changes } from '../db/changes'
 import { IS_PRODUCTION } from '../environment'
@@ -22,12 +22,14 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 	 */
 	protected _rawDocument: TDoc
 
-	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
-	protected isToBeRemoved = false
+	/**
+	 * Whether this cache has been disposed of and is no longer valid for use
+	 */
+	protected _disposed = false
 
 	protected constructor(
 		protected readonly context: JobContext,
-		protected readonly _collection: ICollection<TDoc>,
+		protected readonly _collection: IReadOnlyCollection<TDoc>,
 		// @ts-expect-error used for typings
 		private readonly _optional: DocOptional,
 		doc: DocOptional extends true ? ReadonlyDeep<TDoc> | undefined : ReadonlyDeep<TDoc>
@@ -53,7 +55,7 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 	 */
 	public static createFromDoc<TDoc extends { _id: ProtectedString<any> }, DocOptional extends boolean = false>(
 		context: JobContext,
-		collection: ICollection<TDoc>,
+		collection: IReadOnlyCollection<TDoc>,
 		optional: DocOptional,
 		doc: DocOptional extends true ? ReadonlyDeep<TDoc> | undefined : ReadonlyDeep<TDoc>
 	): DbCacheReadObject<TDoc, DocOptional> {
@@ -74,7 +76,7 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 		DocOptional extends boolean = false
 	>(
 		context: JobContext,
-		collection: ICollection<TDoc>,
+		collection: IReadOnlyCollection<TDoc>,
 		optional: DocOptional,
 		id: TDoc['_id']
 	): Promise<DbCacheReadObject<TDoc, DocOptional>> {
@@ -86,7 +88,7 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 			})
 		}
 
-		const doc = await collection.findOne(id)
+		const doc = await collection.findOne(id, undefined, null)
 		if (!doc && !optional) {
 			throw new Error(
 				`DbCacheReadObject population for "${collection['name']}" failed. Document "${id}" was not found`
@@ -99,15 +101,25 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 	}
 
 	get doc(): DocOptional extends true ? ReadonlyDeep<TDoc> | undefined : ReadonlyDeep<TDoc> {
+		this.assertNotDisposed()
+
 		return this._document as any
 	}
 
+	protected assertNotDisposed(): void {
+		if (this._disposed)
+			throw new Error(`CacheObject "${this._document?._id}" from "${this._collection.name}" has been disposed`)
+	}
+
 	/**
-	 * Called to mark this document as pending deletion from mongo. This will cause it to reject any future updates
-	 * Note: The actual deletion must be handled elsewhere
+	 * Discards all documents in this cache, and marks it as unusable
 	 */
-	markForRemoval(): void {
-		this.isToBeRemoved = true
+	dispose(): void {
+		this._disposed = false
+
+		// Force delete the documents
+		this._document = (this._document ? { _id: this._document._id } : null) as any
+		this._rawDocument = null as any
 	}
 }
 
@@ -121,13 +133,16 @@ export class DbCacheWriteObject<
 > extends DbCacheReadObject<TDoc, DocOptional> {
 	private _updated = false
 
+	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
+	protected isToBeRemoved = false
+
 	protected constructor(
 		context: JobContext,
-		collection: ICollection<TDoc>,
+		protected readonly _collection: ICollection<TDoc>,
 		optional: DocOptional,
 		doc: DocOptional extends true ? ReadonlyDeep<TDoc> | undefined : ReadonlyDeep<TDoc>
 	) {
-		super(context, collection, optional, doc)
+		super(context, _collection, optional, doc)
 	}
 
 	/**
@@ -173,7 +188,7 @@ export class DbCacheWriteObject<
 			})
 		}
 
-		const doc = await collection.findOne(id)
+		const doc = await collection.findOne(id, undefined, null)
 		if (!doc && !optional) {
 			throw new Error(
 				`DbCacheWriteObject population for "${collection['name']}" failed. Document "${id}" was not found`
@@ -206,6 +221,7 @@ export class DbCacheWriteObject<
 	 * @returns Whether any changes were found in the modified document
 	 */
 	update(modifier: (doc: TDoc) => TDoc | false, forceUpdate?: boolean): boolean {
+		this.assertNotDisposed()
 		this.assertNotToBeRemoved('update')
 
 		const localDoc: ReadonlyDeep<TDoc> | undefined = this.doc
@@ -236,11 +252,13 @@ export class DbCacheWriteObject<
 	 * Write the document to mongo if it has any changes
 	 * @returns Changes object describing the saved changes
 	 */
-	async updateDatabaseWithData(): Promise<Changes> {
+	async updateDatabaseWithData(transaction: IMongoTransaction): Promise<Changes> {
+		this.assertNotDisposed()
+
 		if (this._updated && !this.isToBeRemoved) {
 			const span = this.context.startSpan(`DbCacheWriteObject.updateDatabaseWithData.${this.name}`)
 
-			const pUpdate = await this._collection.replace(this._document)
+			const pUpdate = await this._collection.replace(this._document, transaction)
 			if (!pUpdate) {
 				throw new Error(`Failed to update`)
 			}
@@ -264,14 +282,35 @@ export class DbCacheWriteObject<
 	}
 
 	/**
+	 * Called to mark this document as pending deletion from mongo. This will cause it to reject any future updates
+	 * Note: The actual deletion must be handled elsewhere
+	 */
+	markForRemoval(): void {
+		this.assertNotDisposed()
+
+		this.isToBeRemoved = true
+	}
+
+	/**
 	 * Discard any changes that have been made locally to the document.
 	 * Restores the document as provided when this wrapper was created
 	 */
 	discardChanges(): void {
+		this.assertNotDisposed()
+
 		if (this.isModified()) {
 			this._updated = false
 			this._document = this._rawDocument ? clone(this._rawDocument) : this._rawDocument
 		}
+	}
+
+	/**
+	 * Discards all documents in this cache, and marks it as unusable
+	 */
+	dispose(): void {
+		super.dispose()
+
+		this._updated = false
 	}
 
 	isModified(): boolean {
@@ -329,7 +368,7 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 			})
 		}
 
-		const doc = await collection.findOne(id)
+		const doc = await collection.findOne(id, undefined, null)
 
 		const res = DbCacheWriteOptionalObject.createOptionalFromDoc<TDoc>(
 			context,
@@ -346,6 +385,7 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 	 * @returns Reference to the stored document
 	 */
 	replace(doc: TDoc): ReadonlyDeep<TDoc> {
+		this.assertNotDisposed()
 		this.assertNotToBeRemoved('replace')
 
 		this._inserted = true
@@ -366,11 +406,13 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 	 * Write the document to mongo if it has any changes
 	 * @returns Changes object describing the saved changes
 	 */
-	async updateDatabaseWithData(): Promise<Changes> {
+	async updateDatabaseWithData(transaction: IMongoTransaction): Promise<Changes> {
+		this.assertNotDisposed()
+
 		if (this._inserted && !this.isToBeRemoved) {
 			const span = this.context.startSpan(`DbCacheWriteOptionalObject.updateDatabaseWithData.${this.name}`)
 
-			await this._collection.replace(this._document)
+			await this._collection.replace(this._document, transaction)
 
 			if (span) span.end()
 
@@ -380,7 +422,7 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 				removed: 0,
 			}
 		} else {
-			return super.updateDatabaseWithData()
+			return super.updateDatabaseWithData(transaction)
 		}
 	}
 

@@ -31,7 +31,7 @@ export const addSteps = addMigrationSteps('1.44.0', [
 					}
 				)
 
-				await RundownPlaylists.updateAsync(playlist._id, {
+				await RundownPlaylists.mutableCollection.updateAsync(playlist._id, {
 					$set: {
 						rundownIdsInOrder: rundowns.map((rd) => rd._id),
 					},

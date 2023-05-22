@@ -39,7 +39,7 @@ import {
 } from '@sofie-automation/corelib/dist/protectedString'
 import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
-import { MongoQuery } from '../../db'
+import { IMongoTransaction, MongoQuery } from '../../db'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	innerFindLastPieceOnLayer,
@@ -83,15 +83,18 @@ export class DatastoreActionExecutionContext
 	implements IDataStoreActionExecutionContext, IEventContext
 {
 	protected readonly _context: JobContext
+	protected readonly _transaction: IMongoTransaction | null
 
 	constructor(
 		contextInfo: UserContextInfo,
 		context: JobContext,
+		transaction: IMongoTransaction | null,
 		showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 		watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, context, showStyle, watchedPackages)
 		this._context = context
+		this._transaction = transaction
 	}
 
 	async setTimelineDatastoreValue(key: string, value: unknown, mode: DatastorePersistenceMode): Promise<void> {
@@ -99,16 +102,19 @@ export class DatastoreActionExecutionContext
 		const id = protectString(`${studioId}_${key}`)
 		const collection = this._context.directCollections.TimelineDatastores
 
-		await collection.replace({
-			_id: id,
-			studioId: studioId,
+		await collection.replace(
+			{
+				_id: id,
+				studioId: studioId,
 
-			key,
-			value,
+				key,
+				value,
 
-			modified: Date.now(),
-			mode,
-		})
+				modified: Date.now(),
+				mode,
+			},
+			this._transaction
+		)
 	}
 
 	async removeTimelineDatastoreValue(key: string): Promise<void> {
@@ -116,7 +122,7 @@ export class DatastoreActionExecutionContext
 		const id = getDatastoreId(studioId, key)
 		const collection = this._context.directCollections.TimelineDatastores
 
-		await collection.remove({ _id: id })
+		await collection.remove({ _id: id }, this._transaction)
 	}
 
 	getCurrentTime(): number {
@@ -125,11 +131,8 @@ export class DatastoreActionExecutionContext
 }
 
 /** Actions */
-export class ActionExecutionContext
-	extends DatastoreActionExecutionContext
-	implements IActionExecutionContext, IEventContext
-{
-	// private readonly _context: JobContext
+export class ActionExecutionContext extends ShowStyleUserContext implements IActionExecutionContext, IEventContext {
+	private readonly _context: JobContext
 	private readonly _cache: CacheForPlayout
 	private readonly rundown: DBRundown
 	private readonly playlistActivationId: RundownPlaylistActivationId
@@ -151,7 +154,7 @@ export class ActionExecutionContext
 		watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, context, showStyle, watchedPackages)
-		// this._context = context
+		this._context = context
 		this._cache = cache
 		this.rundown = rundown
 		this.takeAfterExecute = false
@@ -656,5 +659,41 @@ export class ActionExecutionContext
 		payload: Record<string, any>
 	): Promise<TSR.ActionExecutionResult> {
 		return executePeripheralDeviceAction(this._context, deviceId, null, actionId, payload)
+	}
+
+	async setTimelineDatastoreValue(key: string, value: unknown, mode: DatastorePersistenceMode): Promise<void> {
+		const studioId = this._context.studioId
+		const id = protectString(`${studioId}_${key}`)
+		const collection = this._context.directCollections.TimelineDatastores
+
+		this._cache.deferDuringSaveTransaction(async (transaction) => {
+			await collection.replace(
+				{
+					_id: id,
+					studioId: studioId,
+
+					key,
+					value,
+
+					modified: Date.now(),
+					mode,
+				},
+				transaction
+			)
+		})
+	}
+
+	async removeTimelineDatastoreValue(key: string): Promise<void> {
+		const studioId = this._context.studioId
+		const id = getDatastoreId(studioId, key)
+		const collection = this._context.directCollections.TimelineDatastores
+
+		this._cache.deferDuringSaveTransaction(async (transaction) => {
+			await collection.remove({ _id: id }, transaction)
+		})
+	}
+
+	getCurrentTime(): number {
+		return getCurrentTime()
 	}
 }
