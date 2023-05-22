@@ -793,12 +793,10 @@ describe('Playout API', () => {
 		expect(playlistId0).toBeTruthy()
 
 		const getRundown0 = async () => {
-			return (await context.directCollections.Rundowns.findOne(rundownId0)) as DBRundown
+			return (await context.mockCollections.Rundowns.findOne(rundownId0)) as DBRundown
 		}
 		const getPlaylist0 = async () => {
-			const playlist = (await context.directCollections.RundownPlaylists.findOne(
-				playlistId0
-			)) as DBRundownPlaylist
+			const playlist = (await context.mockCollections.RundownPlaylists.findOne(playlistId0)) as DBRundownPlaylist
 			playlist.activationId = playlist.activationId ?? undefined
 			return playlist
 		}
@@ -973,7 +971,7 @@ async function setupRundownWithAutoplayPart0(
 	const piece100: Piece = {
 		...defaultPiece(protectString(rundownId + '_piece100'), rundown._id, part10.segmentId, part10._id),
 	}
-	await context.directCollections.Pieces.insertOne(piece100)
+	await context.mockCollections.Pieces.insertOne(piece100)
 
 	const part11: DBPart = {
 		...defaultPart(protectString(rundownId + '_part1_1'), rundown._id, segment1._id),
@@ -984,7 +982,7 @@ async function setupRundownWithAutoplayPart0(
 	const piece110: Piece = {
 		...defaultPiece(protectString(rundownId + '_piece110'), rundown._id, part11.segmentId, part11._id),
 	}
-	await context.directCollections.Pieces.insertOne(piece110)
+	await context.mockCollections.Pieces.insertOne(piece110)
 
 	const part12: DBPart = {
 		...defaultPart(protectString(rundownId + '_part1_2'), rundown._id, segment1._id),
@@ -995,7 +993,7 @@ async function setupRundownWithAutoplayPart0(
 	const piece120: Piece = {
 		...defaultPiece(protectString(rundownId + '_piece120'), rundown._id, part12.segmentId, part12._id),
 	}
-	await context.directCollections.Pieces.insertOne(piece120)
+	await context.mockCollections.Pieces.insertOne(piece120)
 
 	const segment2: DBSegment = {
 		...defaultSegment(protectString(rundownId + '_segment2'), rundown._id),
@@ -1007,41 +1005,41 @@ async function setupRundownWithAutoplayPart0(
 		...defaultPart(protectString(rundownId + '_part2_0'), rundown._id, segment2._id),
 		_rank: 0,
 	}
-	await context.directCollections.Parts.insertOne(part20)
+	await context.mockCollections.Parts.insertOne(part20)
 
 	const piece200: Piece = {
 		...defaultPiece(protectString(rundownId + '_piece200'), rundown._id, part20.segmentId, part20._id),
 	}
-	await context.directCollections.Pieces.insertOne(piece200)
+	await context.mockCollections.Pieces.insertOne(piece200)
 
 	const part21: DBPart = {
 		...defaultPart(protectString(rundownId + '_part2_1'), rundown._id, segment2._id),
 		_rank: 1,
 	}
-	await context.directCollections.Parts.insertOne(part21)
+	await context.mockCollections.Parts.insertOne(part21)
 
 	const piece210: Piece = {
 		...defaultPiece(protectString(rundownId + '_piece210'), rundown._id, part21.segmentId, part21._id),
 	}
-	await context.directCollections.Pieces.insertOne(piece210)
+	await context.mockCollections.Pieces.insertOne(piece210)
 
 	const part22: DBPart = {
 		...defaultPart(protectString(rundownId + '_part2_2'), rundown._id, segment2._id),
 		_rank: 2,
 	}
-	await context.directCollections.Parts.insertOne(part22)
+	await context.mockCollections.Parts.insertOne(part22)
 
 	const segment3: DBSegment = {
 		...defaultSegment(protectString(rundownId + '_segment3'), rundown._id),
 		_rank: 3,
 	}
-	await context.directCollections.Segments.insertOne(segment3)
+	await context.mockCollections.Segments.insertOne(segment3)
 
 	const part30: DBPart = {
 		...defaultPart(protectString(rundownId + '_part3_0'), rundown._id, segment2._id),
 		_rank: 0,
 	}
-	await context.directCollections.Parts.insertOne(part30)
+	await context.mockCollections.Parts.insertOne(part30)
 
 	const globalAdLib0: RundownBaselineAdLibItem = {
 		_id: protectString(rundownId + '_globalAdLib0'),
