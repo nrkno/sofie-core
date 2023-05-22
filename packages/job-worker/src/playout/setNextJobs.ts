@@ -1,5 +1,5 @@
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
@@ -26,15 +26,12 @@ export async function handleSetNextPart(context: JobContext, data: SetNextPartPr
 			}
 		},
 		async (cache) => {
-			let nextPart: DBPart | undefined
-			if (data.nextPartId) {
-				// Ensure the part is playable and found
-				nextPart = cache.Parts.findOne(data.nextPartId)
-				if (!nextPart) throw UserError.create(UserErrorMessage.PartNotFound, undefined, 404)
-				if (!isPartPlayable(nextPart)) throw UserError.create(UserErrorMessage.PartNotPlayable, undefined, 412)
-			}
+			// Ensure the part is playable and found
+			const nextPart = cache.Parts.findOne(data.nextPartId)
+			if (!nextPart) throw UserError.create(UserErrorMessage.PartNotFound, undefined, 404)
+			if (!isPartPlayable(nextPart)) throw UserError.create(UserErrorMessage.PartNotPlayable, undefined, 412)
 
-			await setNextPartFromPart(context, cache, nextPart ?? null, data.setManually ?? false, data.nextTimeOffset)
+			await setNextPartFromPart(context, cache, nextPart, data.setManually ?? false, data.nextTimeOffset)
 
 			await updateTimeline(context, cache)
 		}
