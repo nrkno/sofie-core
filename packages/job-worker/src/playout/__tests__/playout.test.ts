@@ -61,7 +61,7 @@ describe('Playout API', () => {
 	async function getAllRundownData(rundown: DBRundown) {
 		const segments = await context.mockCollections.Segments.findFetch({ rundownId: rundown._id })
 		const parts = await context.mockCollections.Parts.findFetch({ rundownId: rundown._id })
-		const sortedSegments = sortSegmentsInRundowns(segments, { rundownIdsInOrder: [rundown._id] })
+		const sortedSegments = sortSegmentsInRundowns(segments, [rundown._id])
 		return {
 			parts: sortPartsInSortedSegments(parts, sortedSegments),
 			segments: sortedSegments,

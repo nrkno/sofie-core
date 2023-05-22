@@ -335,7 +335,7 @@ export class RundownPlaylistCollectionUtil {
 		segments: Array<TSegment>,
 		playlist: Pick<DBRundownPlaylist, 'rundownIdsInOrder'>
 	): TSegment[] {
-		return sortSegmentsInRundowns(segments, playlist)
+		return sortSegmentsInRundowns(segments, playlist.rundownIdsInOrder)
 	}
 	static _matchSegmentsAndRundowns<T extends DBRundown, E extends DBSegment>(
 		segments: E[],

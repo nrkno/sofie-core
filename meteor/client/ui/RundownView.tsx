@@ -1712,7 +1712,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					this.props.playlist &&
 					prevProps.playlist &&
 					prevProps.playlist.currentPartInfo?.partInstanceId !== this.props.playlist.currentPartInfo?.partInstanceId &&
-					prevProps.playlist.nextPartManual
+					prevProps.playlist.nextPartInfo?.manuallySelected
 				) {
 					// reset followLiveSegments after a manual set as next
 					this.setState({
@@ -1762,7 +1762,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					this.props.playlist.nextPartInfo?.partInstanceId !== prevProps.playlist.nextPartInfo?.partInstanceId &&
 					this.props.playlist.currentPartInfo?.partInstanceId === prevProps.playlist.currentPartInfo?.partInstanceId &&
 					this.props.playlist.nextPartInfo &&
-					this.props.playlist.nextPartManual
+					this.props.playlist.nextPartInfo.manuallySelected
 				) {
 					scrollToPartInstance(this.props.playlist.nextPartInfo.partInstanceId, false).catch((error) => {
 						if (!error.toString().match(/another scroll/)) console.warn(error)

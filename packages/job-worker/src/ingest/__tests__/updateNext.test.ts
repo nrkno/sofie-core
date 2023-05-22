@@ -330,16 +330,19 @@ describe('ensureNextPartIsValid', () => {
 					? {
 							partInstanceId: nextPartInstanceId as any,
 							rundownId,
+							manuallySelected: nextPartManual || false,
+							consumesNextSegmentId: false,
 					  }
 					: null,
 				currentPartInfo: currentPartInstanceId
 					? {
 							partInstanceId: currentPartInstanceId as any,
 							rundownId,
+							manuallySelected: false,
+							consumesNextSegmentId: false,
 					  }
 					: null,
 				previousPartInfo: null,
-				nextPartManual: nextPartManual || false,
 			},
 		})
 	}
