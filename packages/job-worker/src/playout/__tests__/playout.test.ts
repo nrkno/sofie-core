@@ -13,7 +13,7 @@ import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/cont
 import { PartInstanceId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { fixSnapshot } from '../../__mocks__/helpers/snapshot'
 import { sortPartsInSortedSegments, sortSegmentsInRundowns } from '@sofie-automation/corelib/dist/playout/playlist'
-import { handleSetNextPart, handleMoveNextPart } from '../setNextJobs'
+import { handleSetNextPart, handleMoveNextPart, handleSetNextSegment } from '../setNextJobs'
 import { setMinimumTakeSpan, handleTakeNextPart } from '../take'
 import {
 	handleActivateRundownPlaylist,
@@ -783,6 +783,85 @@ describe('Playout API', () => {
 			expect(nextPartInstance?.part._id).toBe(parts[0]._id)
 		}
 	})
+	test('setNextSegment', async () => {
+		const { rundownId: rundownId0, playlistId: playlistId0 } = await setupRundownWithAutoplayPart0(
+			context,
+			protectString('rundown0'),
+			showStyle
+		)
+		expect(rundownId0).toBeTruthy()
+		expect(playlistId0).toBeTruthy()
+
+		const getRundown0 = async () => {
+			return (await context.mockCollections.Rundowns.findOne(rundownId0)) as DBRundown
+		}
+		const getPlaylist0 = async () => {
+			const playlist = (await context.mockCollections.RundownPlaylists.findOne(playlistId0)) as DBRundownPlaylist
+			playlist.activationId = playlist.activationId ?? undefined
+			return playlist
+		}
+		const { parts, segments } = await getAllRundownData(await getRundown0())
+
+		// Prepare and activate
+		await handleResetRundownPlaylist(context, { playlistId: playlistId0, activate: 'active' })
+		// Take first part
+		await handleTakeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
+
+		{
+			// doesn't set a segment with no valid parts
+			await expect(
+				handleSetNextSegment(context, { playlistId: playlistId0, nextSegmentId: segments[3]._id })
+			).rejects.toThrow(/no valid parts/gi)
+		}
+
+		{
+			await handleSetNextSegment(context, { playlistId: playlistId0, nextSegmentId: segments[2]._id })
+			const playlist = await getPlaylist0()
+			expect(playlist.nextSegmentId).toBe(segments[2]._id)
+		}
+
+		{
+			// take last part of the first segment
+			await handleTakeNextPart(context, {
+				playlistId: playlistId0,
+				fromPartInstanceId: (await getPlaylist0()).currentPartInfo?.partInstanceId ?? null,
+			})
+			const { nextPartInstance } = await getSelectedPartInstances(context, await getPlaylist0())
+			// expect first part of queued segment is next
+			expect(nextPartInstance?.part._id).toBe(parts[5]._id)
+
+			await handleTakeNextPart(context, {
+				playlistId: playlistId0,
+				fromPartInstanceId: (await getPlaylist0()).currentPartInfo?.partInstanceId ?? null,
+			})
+			const playlist = await getPlaylist0()
+			const { currentPartInstance } = await getSelectedPartInstances(context, playlist)
+			// expect first part of queued segment was taken
+			expect(currentPartInstance?.part._id).toBe(parts[5]._id)
+			expect(playlist.nextSegmentId).toBeUndefined()
+
+			// back to last part of the first segment
+			await handleSetNextPart(context, { playlistId: playlistId0, nextPartId: parts[1]._id })
+			await handleTakeNextPart(context, {
+				playlistId: playlistId0,
+				fromPartInstanceId: playlist.currentPartInfo?.partInstanceId ?? null,
+			})
+		}
+
+		{
+			// set next segment when next part is already outside of the current one
+			const segmentToQueueId = segments[2]._id
+			await handleSetNextSegment(context, { playlistId: playlistId0, nextSegmentId: segmentToQueueId })
+			const playlist = await getPlaylist0()
+			// expect to just set first part of the queued segment as next
+			expect(playlist.nextSegmentId).toBeUndefined()
+			const { nextPartInstance } = await getSelectedPartInstances(context, playlist)
+			const firstPartOfQueuedSegment = parts.find((part) => part.segmentId === segmentToQueueId)
+			if (!firstPartOfQueuedSegment) throw new Error('Did not find a part of Queued Segment')
+			expect(nextPartInstance?.part._id).toBe(firstPartOfQueuedSegment._id)
+			if (firstPartOfQueuedSegment.invalid) throw new Error('Selected Part is invalid')
+		}
+	})
 })
 
 async function setupRundownWithAutoplayPart0(
@@ -889,29 +968,78 @@ async function setupRundownWithAutoplayPart0(
 	}
 	await context.mockCollections.Parts.insertOne(part10)
 
+	const piece100: Piece = {
+		...defaultPiece(protectString(rundownId + '_piece100'), rundown._id, part10.segmentId, part10._id),
+	}
+	await context.mockCollections.Pieces.insertOne(piece100)
+
 	const part11: DBPart = {
 		...defaultPart(protectString(rundownId + '_part1_1'), rundown._id, segment1._id),
 		_rank: 1,
-		externalId: 'MOCK_PART_1_1',
-		title: 'Part 1 1',
 	}
 	await context.mockCollections.Parts.insertOne(part11)
+
+	const piece110: Piece = {
+		...defaultPiece(protectString(rundownId + '_piece110'), rundown._id, part11.segmentId, part11._id),
+	}
+	await context.mockCollections.Pieces.insertOne(piece110)
 
 	const part12: DBPart = {
 		...defaultPart(protectString(rundownId + '_part1_2'), rundown._id, segment1._id),
 		_rank: 2,
-		externalId: 'MOCK_PART_1_2',
-		title: 'Part 1 2',
 	}
 	await context.mockCollections.Parts.insertOne(part12)
+
+	const piece120: Piece = {
+		...defaultPiece(protectString(rundownId + '_piece120'), rundown._id, part12.segmentId, part12._id),
+	}
+	await context.mockCollections.Pieces.insertOne(piece120)
 
 	const segment2: DBSegment = {
 		...defaultSegment(protectString(rundownId + '_segment2'), rundown._id),
 		_rank: 2,
-		externalId: 'MOCK_SEGMENT_2',
-		name: 'Segment 2',
 	}
 	await context.mockCollections.Segments.insertOne(segment2)
+
+	const part20: DBPart = {
+		...defaultPart(protectString(rundownId + '_part2_0'), rundown._id, segment2._id),
+		_rank: 0,
+	}
+	await context.mockCollections.Parts.insertOne(part20)
+
+	const piece200: Piece = {
+		...defaultPiece(protectString(rundownId + '_piece200'), rundown._id, part20.segmentId, part20._id),
+	}
+	await context.mockCollections.Pieces.insertOne(piece200)
+
+	const part21: DBPart = {
+		...defaultPart(protectString(rundownId + '_part2_1'), rundown._id, segment2._id),
+		_rank: 1,
+	}
+	await context.mockCollections.Parts.insertOne(part21)
+
+	const piece210: Piece = {
+		...defaultPiece(protectString(rundownId + '_piece210'), rundown._id, part21.segmentId, part21._id),
+	}
+	await context.mockCollections.Pieces.insertOne(piece210)
+
+	const part22: DBPart = {
+		...defaultPart(protectString(rundownId + '_part2_2'), rundown._id, segment2._id),
+		_rank: 2,
+	}
+	await context.mockCollections.Parts.insertOne(part22)
+
+	const segment3: DBSegment = {
+		...defaultSegment(protectString(rundownId + '_segment3'), rundown._id),
+		_rank: 3,
+	}
+	await context.mockCollections.Segments.insertOne(segment3)
+
+	const part30: DBPart = {
+		...defaultPart(protectString(rundownId + '_part3_0'), rundown._id, segment2._id),
+		_rank: 0,
+	}
+	await context.mockCollections.Parts.insertOne(part30)
 
 	const globalAdLib0: RundownBaselineAdLibItem = {
 		_id: protectString(rundownId + '_globalAdLib0'),
