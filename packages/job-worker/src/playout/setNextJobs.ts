@@ -6,7 +6,8 @@ import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/erro
 import { SetNextPartProps, MoveNextPartProps, SetNextSegmentProps } from '@sofie-automation/corelib/dist/worker/studio'
 import { JobContext } from '../jobs'
 import { runJobWithPlayoutCache } from './lock'
-import { setNextPartInner, moveNextPartInner, setNextSegment } from './setNext'
+import { setNextPartInner, setNextSegment } from './setNext'
+import { moveNextPart } from './moveNextPart'
 import { updateTimeline } from './timeline/generate'
 
 /**
@@ -68,7 +69,7 @@ export async function handleMoveNextPart(context: JobContext, data: MoveNextPart
 			}
 		},
 		async (cache) => {
-			return moveNextPartInner(context, cache, data.partDelta, data.segmentDelta)
+			return moveNextPart(context, cache, data.partDelta, data.segmentDelta)
 		}
 	)
 }
