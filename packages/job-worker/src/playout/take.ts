@@ -239,7 +239,7 @@ export async function performTakeToNextedPart(context: JobContext, cache: CacheF
 	resetPreviousSegment(cache)
 
 	// Once everything is synced, we can choose the next part
-	await setNextPart(context, cache, nextPart)
+	await setNextPart(context, cache, nextPart, false)
 
 	// Setup the parts for the HOLD we are starting
 	if (

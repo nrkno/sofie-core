@@ -6,7 +6,7 @@ import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/erro
 import { SetNextPartProps, MoveNextPartProps, SetNextSegmentProps } from '@sofie-automation/corelib/dist/worker/studio'
 import { JobContext } from '../jobs'
 import { runJobWithPlayoutCache } from './lock'
-import { setNextPartInner, setNextSegment } from './setNext'
+import { setNextPartFromPart, setNextSegment } from './setNext'
 import { moveNextPart } from './moveNextPart'
 import { updateTimeline } from './timeline/generate'
 
@@ -34,14 +34,9 @@ export async function handleSetNextPart(context: JobContext, data: SetNextPartPr
 				if (!isPartPlayable(nextPart)) throw UserError.create(UserErrorMessage.PartNotPlayable, undefined, 412)
 			}
 
-			await setNextPartInner(
-				context,
-				cache,
-				nextPart ?? null,
-				data.setManually,
-				data.nextTimeOffset,
-				data.clearNextSegment
-			)
+			await setNextPartFromPart(context, cache, nextPart ?? null, data.setManually ?? false, data.nextTimeOffset)
+
+			await updateTimeline(context, cache)
 		}
 	)
 }
@@ -69,7 +64,11 @@ export async function handleMoveNextPart(context: JobContext, data: MoveNextPart
 			}
 		},
 		async (cache) => {
-			return moveNextPart(context, cache, data.partDelta, data.segmentDelta)
+			const newPartId = await moveNextPart(context, cache, data.partDelta, data.segmentDelta)
+
+			if (newPartId) await updateTimeline(context, cache)
+
+			return newPartId
 		}
 	)
 }

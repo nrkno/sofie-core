@@ -260,7 +260,7 @@ export async function innerStartQueuedAdLib(
 		cache.PieceInstances.insert(pieceInstance)
 	}
 
-	await setNextPart(context, cache, newPartInstance)
+	await setNextPart(context, cache, newPartInstance, false)
 
 	if (span) span.end()
 }

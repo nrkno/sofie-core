@@ -70,7 +70,7 @@ export async function activateRundownPlaylist(
 			null,
 			getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 		)
-		await setNextPart(context, cache, firstPart)
+		await setNextPart(context, cache, firstPart, false)
 
 		if (firstPart) {
 			rundown = cache.Rundowns.findOne(firstPart.part.rundownId)
@@ -191,7 +191,7 @@ export async function deactivateRundownPlaylistInner(
 
 		return p
 	})
-	await setNextPart(context, cache, null)
+	await setNextPart(context, cache, null, false)
 
 	if (currentPartInstance) {
 		// Set the current PartInstance as stopped
