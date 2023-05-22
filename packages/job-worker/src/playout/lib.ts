@@ -67,6 +67,9 @@ export async function resetRundownPlaylist(context: JobContext, cache: CacheForP
 	}
 }
 
+/**
+ * This wraps a Part which has been selected to be next, to include some additional data about that choice
+ */
 export interface SelectNextPartResult {
 	/**
 	 * The Part selected to be nexted
@@ -82,7 +85,7 @@ export interface SelectNextPartResult {
 	 * Whether this Part consumes the `nextSegmentId` property on the rundown.
 	 * If true, when this PartInstance is taken, the `nextSegmentId` property on the Playlist will be cleared
 	 */
-	consumesNextSegmentId?: boolean
+	consumesNextSegmentId: boolean
 }
 export interface PartsAndSegments {
 	segments: DBSegment[]
@@ -122,7 +125,7 @@ export function selectNextPart(
 		for (let index = offset; index < (length || parts.length); index++) {
 			const part = parts[index]
 			if ((!ignoreUnplayabale || isPartPlayable(part)) && (!condition || condition(part))) {
-				return { part, index }
+				return { part, index, consumesNextSegmentId: false }
 			}
 		}
 		return undefined

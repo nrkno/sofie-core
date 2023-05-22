@@ -202,7 +202,7 @@ export interface ActivateRundownPlaylistProps extends RundownPlayoutPropsBase {
 }
 export type DeactivateRundownPlaylistProps = RundownPlayoutPropsBase
 export interface SetNextPartProps extends RundownPlayoutPropsBase {
-	nextPartId: PartId | null
+	nextPartId: PartId
 	setManually?: boolean
 	nextTimeOffset?: number
 }

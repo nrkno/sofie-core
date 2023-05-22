@@ -25,6 +25,14 @@ import { resetPartInstancesWithPieceInstances, SelectNextPartResult } from './li
 import { RundownHoldState, SelectedPartInstance } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 
+/**
+ * Set or clear the nexted part, from a given PartInstance, or SelectNextPartResult
+ * @param context Context for the running job
+ * @param cache The playout cache of the playlist
+ * @param rawNextPart The Part to set as next
+ * @param setManually Whether this was manually chosen by the user
+ * @param nextTimeOffset The offset into the Part to start playback
+ */
 export async function setNextPart(
 	context: JobContext,
 	cache: CacheForPlayout,
@@ -338,6 +346,12 @@ async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout)
 	}
 }
 
+/**
+ * Set or clear the nexted-segment.
+ * @param context Context for the running job
+ * @param cache The playout cache of the playlist
+ * @param nextSegment The segment to set as next, or null to clear it
+ */
 export async function setNextSegment(
 	context: JobContext,
 	cache: CacheForPlayout,
@@ -383,31 +397,32 @@ export async function setNextSegment(
 	if (span) span.end()
 }
 
+/**
+ * Set the nexted part, from a given DBPart
+ * @param context Context for the running job
+ * @param cache The playout cache of the playlist
+ * @param nextPart The Part to set as next
+ * @param setManually Whether this was manually chosen by the user
+ * @param nextTimeOffset The offset into the Part to start playback
+ */
 export async function setNextPartFromPart(
 	context: JobContext,
 	cache: CacheForPlayout,
-	nextPart: DBPart | null,
+	nextPart: DBPart,
 	setManually: boolean,
 	nextTimeOffset?: number | undefined
 ): Promise<void> {
 	const consumesNextSegmentId = doesPartConsumeNextSegmentId(cache, nextPart)
 
-	await setNextPart(
-		context,
-		cache,
-		nextPart ? { part: nextPart, consumesNextSegmentId } : null,
-		setManually,
-		nextTimeOffset
-	)
+	await setNextPart(context, cache, { part: nextPart, consumesNextSegmentId }, setManually, nextTimeOffset)
 }
 
-function doesPartConsumeNextSegmentId(cache: CacheForPlayout, nextPart: DBPart | null) {
+function doesPartConsumeNextSegmentId(cache: CacheForPlayout, nextPart: DBPart) {
 	// If we're setting the next point to somewhere other than the current segment, and in the queued segment, clear the queued segment
 	const playlist = cache.Playlist.doc
 	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 	return !!(
 		currentPartInstance &&
-		nextPart &&
 		currentPartInstance.segmentId !== nextPart.segmentId &&
 		playlist.nextSegmentId === nextPart.segmentId
 	)
