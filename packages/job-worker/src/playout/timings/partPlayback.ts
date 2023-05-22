@@ -64,11 +64,7 @@ export async function onPartPlaybackStarted(
 
 			cache.Playlist.update((p) => {
 				p.previousPartInfo = p.currentPartInfo
-				p.currentPartInfo = {
-					partInstanceId: playingPartInstance._id,
-					rundownId: playingPartInstance.rundownId,
-					manuallySelected: false,
-				}
+				p.currentPartInfo = playlist.nextPartInfo
 				p.holdState = RundownHoldState.NONE
 				return p
 			})
@@ -95,7 +91,7 @@ export async function onPartPlaybackStarted(
 				currentPartInstance
 			)
 
-			clearNextSegmentId(cache, currentPartInstance)
+			clearNextSegmentId(cache, playingPartInstance, playlist.nextPartInfo)
 			resetPreviousSegment(cache)
 
 			// Update the next partinstance
