@@ -516,6 +516,7 @@ function fixupImportedSelectedPartInstanceIds(
 		snapshot.playlist.currentPartInfo = {
 			partInstanceId: oldId,
 			rundownId: partInstanceOldRundownIdMap.get(oldId) || protectString(''),
+			manuallySelected: false,
 		}
 	}
 
@@ -526,6 +527,7 @@ function fixupImportedSelectedPartInstanceIds(
 		snapshot.playlist[fullNewKey] = {
 			partInstanceId: partInstanceIdMap.get(snapshotInfo.partInstanceId) || snapshotInfo.partInstanceId,
 			rundownId: rundownIdMap.get(snapshotInfo.rundownId) || snapshotInfo.rundownId,
+			manuallySelected: snapshotInfo.manuallySelected,
 		}
 	}
 }

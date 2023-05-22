@@ -24,7 +24,7 @@ export async function ensureNextPartIsValid(context: JobContext, cache: CacheFor
 		const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 		if (
-			playlist.nextPartManual &&
+			playlist.nextPartInfo?.manuallySelected &&
 			nextPartInstance?.part &&
 			isPartPlayable(nextPartInstance.part) &&
 			nextPartInstance.orphaned !== 'deleted'

@@ -38,12 +38,13 @@ export async function handleDebugRegenerateNextPartInstance(
 
 	await runJobWithPlayoutCache(context, data, null, async (cache) => {
 		const playlist = cache.Playlist.doc
-		if (playlist.nextPartInfo && playlist.activationId) {
+		const originalNextPartInfo = playlist.nextPartInfo
+		if (originalNextPartInfo && playlist.activationId) {
 			const { nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 			const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
 			if (part) {
 				await setNextPart(context, cache, null, false)
-				await setNextPart(context, cache, { part: part }, playlist.nextPartManual ?? false)
+				await setNextPart(context, cache, { part: part }, originalNextPartInfo.manuallySelected)
 
 				await updateTimeline(context, cache)
 			}

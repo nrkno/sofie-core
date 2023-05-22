@@ -115,8 +115,8 @@ export async function setNextPart(
 			p.nextPartInfo = literal<SelectedPartInstance>({
 				partInstanceId: newPartInstance._id,
 				rundownId: newPartInstance.rundownId,
+				manuallySelected: !!(setManually || newPartInstance.orphaned),
 			})
-			p.nextPartManual = !!(setManually || newPartInstance.orphaned)
 			p.nextTimeOffset = nextTimeOffset || null
 			return p
 		})
@@ -125,7 +125,6 @@ export async function setNextPart(
 
 		cache.Playlist.update((p) => {
 			p.nextPartInfo = null
-			p.nextPartManual = !!setManually
 			p.nextTimeOffset = null
 			return p
 		})
