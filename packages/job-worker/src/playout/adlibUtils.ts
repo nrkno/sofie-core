@@ -22,7 +22,7 @@ import { PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { logger } from 'elastic-apm-node'
 import { updatePartInstanceRanksAfterAdlib } from '../rundown'
-import { selectNextPart } from './lib'
+import { selectNextPart } from './selectNextPart'
 import { setNextPart } from './setNext'
 import { calculateNowOffsetLatency } from './timeline/multi-gateway'
 
