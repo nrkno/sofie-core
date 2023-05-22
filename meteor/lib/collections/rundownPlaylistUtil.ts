@@ -364,7 +364,7 @@ export class RundownPlaylistCollectionUtil {
 		playlist: Pick<DBRundownPlaylist, 'rundownIdsInOrder'>,
 		segments: Array<Pick<Segment, '_id' | 'rundownId' | '_rank'>>
 	): Part[] {
-		return sortPartsInSegments(parts, playlist, segments)
+		return sortPartsInSegments(parts, playlist.rundownIdsInOrder, segments)
 	}
 	static _sortPartsInner<P extends Pick<DBPart, '_id' | 'segmentId' | '_rank'>>(
 		parts: P[],

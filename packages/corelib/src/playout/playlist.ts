@@ -6,10 +6,10 @@ import { ReadonlyDeep } from 'type-fest'
 
 export function sortSegmentsInRundowns<TSegment extends Pick<DBSegment, '_id' | 'rundownId' | '_rank'>>(
 	segments: TSegment[],
-	playlist: Pick<ReadonlyDeep<DBRundownPlaylist>, 'rundownIdsInOrder'>
+	rundownIdsInOrder: ReadonlyDeep<RundownId[]>
 ): TSegment[] {
 	const rundownRankLookup = new Map<RundownId, number>()
-	playlist.rundownIdsInOrder?.forEach((id, index) => rundownRankLookup.set(id, index))
+	rundownIdsInOrder.forEach((id, index) => rundownRankLookup.set(id, index))
 
 	return segments.sort((a, b) => {
 		if (a.rundownId === b.rundownId) {
@@ -23,10 +23,10 @@ export function sortSegmentsInRundowns<TSegment extends Pick<DBSegment, '_id' | 
 }
 export function sortPartsInSegments(
 	parts: DBPart[],
-	playlist: Pick<DBRundownPlaylist, 'rundownIdsInOrder'>,
+	rundownIdsInOrder: ReadonlyDeep<RundownId[]>,
 	segments: Array<Pick<DBSegment, '_id' | 'rundownId' | '_rank'>>
 ): DBPart[] {
-	return sortPartsInSortedSegments(parts, sortSegmentsInRundowns(segments, playlist))
+	return sortPartsInSortedSegments(parts, sortSegmentsInRundowns(segments, rundownIdsInOrder))
 }
 export function sortPartsInSortedSegments<P extends Pick<DBPart, '_id' | 'segmentId' | '_rank'>>(
 	parts: P[],
