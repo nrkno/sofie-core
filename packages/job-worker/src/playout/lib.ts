@@ -7,9 +7,7 @@ import { JobContext } from '../jobs'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DbCacheReadCollection } from '../cache/CacheCollection'
 import { ReadonlyDeep } from 'type-fest'
-import { sortPartsInSortedSegments, sortSegmentsInRundowns } from '@sofie-automation/corelib/dist/playout/playlist'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getRundownIDsFromCache } from './cache'
 import { logger } from '../logging'
 import { getCurrentTime } from '../lib'
@@ -456,37 +454,6 @@ export function isTooCloseToAutonext(
 	}
 
 	return false
-}
-
-export function getRundownsSegmentsAndPartsFromCache(
-	partsCache: DbCacheReadCollection<DBPart>,
-	segmentsCache: DbCacheReadCollection<DBSegment>,
-	playlist: Pick<ReadonlyDeep<DBRundownPlaylist>, 'rundownIdsInOrder'>
-): { segments: DBSegment[]; parts: DBPart[] } {
-	const segments = sortSegmentsInRundowns(
-		segmentsCache.findAll(null, {
-			sort: {
-				rundownId: 1,
-				_rank: 1,
-			},
-		}),
-		playlist
-	)
-
-	const parts = sortPartsInSortedSegments(
-		partsCache.findAll(null, {
-			sort: {
-				rundownId: 1,
-				_rank: 1,
-			},
-		}),
-		segments
-	)
-
-	return {
-		segments: segments,
-		parts: parts,
-	}
 }
 
 /**
