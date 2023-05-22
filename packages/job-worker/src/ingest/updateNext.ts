@@ -1,4 +1,5 @@
-import { selectNextPart, isTooCloseToAutonext } from '../playout/lib'
+import { isTooCloseToAutonext } from '../playout/lib'
+import { selectNextPart } from '../playout/selectNextPart'
 import {
 	CacheForPlayout,
 	getOrderedSegmentsAndPartsFromPlayoutCache,

@@ -21,9 +21,10 @@ import { PRESERVE_UNSYNCED_PLAYING_SEGMENT_CONTENTS } from '@sofie-automation/sh
 import { getCurrentTime } from '../lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import _ = require('underscore')
-import { resetPartInstancesWithPieceInstances, SelectNextPartResult } from './lib'
+import { resetPartInstancesWithPieceInstances } from './lib'
 import { RundownHoldState, SelectedPartInstance } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
+import { SelectNextPartResult } from './selectNextPart'
 
 /**
  * Set or clear the nexted part, from a given PartInstance, or SelectNextPartResult

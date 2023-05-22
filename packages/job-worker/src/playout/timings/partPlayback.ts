@@ -7,7 +7,7 @@ import {
 	getOrderedSegmentsAndPartsFromPlayoutCache,
 	getSelectedPartInstancesFromCache,
 } from '../cache'
-import { selectNextPart } from '../lib'
+import { selectNextPart } from '../selectNextPart'
 import { setNextPart } from '../setNext'
 import { updateTimeline } from '../timeline/generate'
 import { getCurrentTime } from '../../lib'

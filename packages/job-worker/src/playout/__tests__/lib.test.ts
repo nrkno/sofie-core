@@ -4,7 +4,7 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
-import { PartsAndSegments, selectNextPart } from '../lib'
+import { selectNextPart, PartsAndSegments } from '../selectNextPart'
 
 class MockPart {
 	constructor(
