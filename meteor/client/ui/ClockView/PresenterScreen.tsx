@@ -172,7 +172,6 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 			fields: {
 				lastIncorrectPartPlaybackReported: 0,
 				modified: 0,
-				nextPartManual: 0,
 				previousPersistentState: 0,
 				rundownRanksAreSetInSofie: 0,
 				trackedAbSessions: 0,

@@ -1,4 +1,3 @@
-import { DBRundownPlaylist } from '../dataModel/RundownPlaylist'
 import { DBSegment } from '../dataModel/Segment'
 import { DBPart } from '../dataModel/Part'
 import { RundownId, SegmentId } from '../dataModel/Ids'

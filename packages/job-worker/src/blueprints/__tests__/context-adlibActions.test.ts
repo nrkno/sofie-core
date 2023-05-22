@@ -231,11 +231,15 @@ describe('Test blueprint api context', () => {
 				return {
 					partInstanceId: info.partInstanceId,
 					rundownId: info.rundownId,
+					manuallySelected: false,
+					consumesNextSegmentId: false,
 				}
 			} else {
 				return {
 					partInstanceId: info._id,
 					rundownId: info.rundownId,
+					manuallySelected: false,
+					consumesNextSegmentId: false,
 				}
 			}
 		}
@@ -1438,6 +1442,8 @@ describe('Test blueprint api context', () => {
 						currentPartInfo: {
 							partInstanceId: protectString('abc'),
 							rundownId: protectString('def'),
+							manuallySelected: false,
+							consumesNextSegmentId: false,
 						},
 					},
 				})
@@ -1515,6 +1521,8 @@ describe('Test blueprint api context', () => {
 						currentPartInfo: {
 							partInstanceId: protectString('abc'),
 							rundownId: protectString('def'),
+							manuallySelected: false,
+							consumesNextSegmentId: false,
 						},
 					},
 				})

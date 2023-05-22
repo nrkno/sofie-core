@@ -25,10 +25,14 @@ describe('Test external message queue static methods', () => {
 			currentPartInfo: {
 				partInstanceId: protectString('part_now'),
 				rundownId: protectString('rundown_1'),
+				manuallySelected: false,
+				consumesNextSegmentId: false,
 			},
 			nextPartInfo: {
 				partInstanceId: protectString('partNext'),
 				rundownId: protectString('rundown_1'),
+				manuallySelected: false,
+				consumesNextSegmentId: false,
 			},
 			previousPartInfo: null,
 			activationId: protectString('active'),
