@@ -367,13 +367,7 @@ export async function setNextSegment(
 			throw new Error('Segment contains no valid parts')
 		}
 
-		const currentPartInstanceId = cache.Playlist.doc.currentPartInfo?.partInstanceId
-		const nextPartInstanceId = cache.Playlist.doc.nextPartInfo?.partInstanceId
-
-		const currentPartInstance = currentPartInstanceId
-			? cache.PartInstances.findOne(currentPartInstanceId)
-			: undefined
-		const nextPartInstance = nextPartInstanceId ? cache.PartInstances.findOne(nextPartInstanceId) : undefined
+		const { nextPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 		// if there is not currentPartInstance or the nextPartInstance is not in the current segment
 		// behave as if user chose SetNextPart on the first playable part of the segment
