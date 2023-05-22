@@ -67,6 +67,7 @@ export async function onPartPlaybackStarted(
 				p.currentPartInfo = {
 					partInstanceId: playingPartInstance._id,
 					rundownId: playingPartInstance.rundownId,
+					manuallySelected: false,
 				}
 				p.holdState = RundownHoldState.NONE
 				return p

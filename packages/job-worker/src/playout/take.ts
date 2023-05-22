@@ -216,6 +216,7 @@ export async function performTakeToNextedPart(context: JobContext, cache: CacheF
 		p.currentPartInfo = {
 			partInstanceId: takePartInstance._id,
 			rundownId: takePartInstance.rundownId,
+			manuallySelected: p.nextPartInfo?.manuallySelected ?? false,
 		}
 
 		if (!p.holdState || p.holdState === RundownHoldState.COMPLETE) {
