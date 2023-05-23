@@ -1,6 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import { PeripheralDevices, Studios } from '../collections'
+import { PeripheralDevices, Rundowns, Studios } from '../collections'
 import { assertNever, clone, literal } from '@sofie-automation/corelib/dist/lib'
 import {
 	MappingExt,
@@ -507,6 +507,34 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 				{
 					$unset: {
 						configManifest: 1,
+					},
+				},
+				{
+					multi: true,
+				}
+			)
+		},
+	},
+
+	{
+		id: `Rundown cleanup unused properties related to breaks`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await Rundowns.countDocuments({
+				endOfRundownIsShowBreak: { $exists: true },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			await PeripheralDevices.updateAsync(
+				{ endOfRundownIsShowBreak: { $exists: true } },
+				{
+					$unset: {
+						endOfRundownIsShowBreak: 1,
 					},
 				},
 				{
