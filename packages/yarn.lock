@@ -3415,30 +3415,35 @@
   resolved "https://registry.yarnpkg.com/@mdx-js/util/-/util-1.6.22.tgz#219dfd89ae5b97a8801f015323ffa4b62f45718b"
   integrity sha512-H1rQc1ZOHANWBvPcW+JpGwr+juXSxM8Q8YCkm3GhZd8REu1fHR3z99CErO1p9pkcfcxZnMdIZdIsXkOHY0NilA==
 
-"@mos-connection/connector@^3.0.1":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@mos-connection/connector/-/connector-3.0.1.tgz#c89b1c80eef39073934308c17e0681772341cdc4"
-  integrity sha512-3GWexq8Xx9OENWXDsLv0hUeJkAAxf0oWQgTV/GwBvXR7a6rs2xgagYPYXqITm5HLwzS6jOrU/gFkHRzoyt7Usw==
+"@mos-connection/connector@3.0.2-nightly-test-buddy-troubleshooting-20230522-141028-5840b00.0":
+  version "3.0.2-nightly-test-buddy-troubleshooting-20230522-141028-5840b00.0"
+  resolved "https://registry.yarnpkg.com/@mos-connection/connector/-/connector-3.0.2-nightly-test-buddy-troubleshooting-20230522-141028-5840b00.0.tgz#d70e0cd76dc1d8dfab7a418202823eee01ec2ace"
+  integrity sha512-mdYitnB7WWqh79Ohbh5seu9pvI6m6TUAssn2o8uBHADI9i/5lPRTeM7LqqO78JOC+EcOtZ6gbvj6AkvoaTHwbA==
   dependencies:
-    "@mos-connection/helper" "3.0.1"
-    "@mos-connection/model" "3.0.1"
+    "@mos-connection/helper" "3.0.2-nightly-test-buddy-troubleshooting-20230522-141028-5840b00.0"
+    "@mos-connection/model" "3.0.2-nightly-test-buddy-troubleshooting-20230522-141028-5840b00.0"
     iconv-lite "^0.6.2"
     tslib "^2.2.0"
     xml-js "^1.6.11"
     xmlbuilder "^15.1.1"
 
-"@mos-connection/helper@3.0.1":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@mos-connection/helper/-/helper-3.0.1.tgz#f18b954e2565410afd7c7f2b6e2094488a5a0e91"
-  integrity sha512-N6mzzcSyVfNNdSN0z5p/bMjuzEGJzlcv4nJRGczA/mRjkkEU8KY247YlDxuz4feXArT/gqZuBIHaCFLyrZunCQ==
+"@mos-connection/helper@3.0.2-nightly-test-buddy-troubleshooting-20230522-141028-5840b00.0":
+  version "3.0.2-nightly-test-buddy-troubleshooting-20230522-141028-5840b00.0"
+  resolved "https://registry.yarnpkg.com/@mos-connection/helper/-/helper-3.0.2-nightly-test-buddy-troubleshooting-20230522-141028-5840b00.0.tgz#e31d975e3a5032f6b8d6c7c0c3d4d5f78fcc6887"
+  integrity sha512-WsuqV2Vv88N7hELYt/nsMXj3NwoBwijcAM3uM3tECOnKpzksZLkZhZSsIrCjeQ6oPFTosP38dDC2fJLUJf9xdQ==
   dependencies:
-    "@mos-connection/model" "3.0.1"
+    "@mos-connection/model" "3.0.2-nightly-test-buddy-troubleshooting-20230522-141028-5840b00.0"
     iconv-lite "^0.6.2"
     tslib "^2.2.0"
     xml-js "^1.6.11"
     xmlbuilder "^15.1.1"
 
-"@mos-connection/model@3.0.1", "@mos-connection/model@^3.0.1":
+"@mos-connection/model@3.0.2-nightly-test-buddy-troubleshooting-20230522-141028-5840b00.0":
+  version "3.0.2-nightly-test-buddy-troubleshooting-20230522-141028-5840b00.0"
+  resolved "https://registry.yarnpkg.com/@mos-connection/model/-/model-3.0.2-nightly-test-buddy-troubleshooting-20230522-141028-5840b00.0.tgz#35e5ed796c9307686bac53d8503c3ad37b78ad10"
+  integrity sha512-28Pvz530URGukDRsU8/rrh7KLXC3hNhk+FuJg8hUYoOOqaUcqqNoqQBsOzg+YmDYw5Q1JLBWzX3ZNn/zAYUE4g==
+
+"@mos-connection/model@^3.0.1":
   version "3.0.1"
   resolved "https://registry.yarnpkg.com/@mos-connection/model/-/model-3.0.1.tgz#38b41d6848e3af58715ce462c5e55ddf1c5c456f"
   integrity sha512-e+vrLaghYayuzq5JZABbouofseMMnGmUk0mJcGzCG4aYK3YZ/9JoTe1mJBMecbEiqFQXld8idOHv/9rO8HRy4g==
