@@ -103,7 +103,6 @@ import { PlaylistStartTiming } from './RundownView/RundownTiming/PlaylistStartTi
 import { RundownName } from './RundownView/RundownTiming/RundownName'
 import { TimeOfDay } from './RundownView/RundownTiming/TimeOfDay'
 import { PlaylistEndTiming } from './RundownView/RundownTiming/PlaylistEndTiming'
-import { NextBreakTiming } from './RundownView/RundownTiming/NextBreakTiming'
 import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 import { BucketAdLibItem } from './Shelf/RundownViewBuckets'
 import { IAdLibListItem } from './Shelf/AdLibListItem'
@@ -264,17 +263,6 @@ const TimingDisplay = withTranslation()(
 				const expectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
 				const expectedEnd = PlaylistTiming.getExpectedEnd(rundownPlaylist.timing)
 				const expectedDuration = PlaylistTiming.getExpectedDuration(rundownPlaylist.timing)
-				const showEndTiming =
-					!this.props.timingDurations.rundownsBeforeNextBreak ||
-					!this.props.layout?.showNextBreakTiming ||
-					(this.props.timingDurations.rundownsBeforeNextBreak.length > 0 &&
-						(!this.props.layout?.hideExpectedEndBeforeBreak ||
-							(this.props.timingDurations.breakIsLastRundown && this.props.layout?.lastRundownIsNotBreak)))
-				const showNextBreakTiming =
-					rundownPlaylist.startedPlayback &&
-					this.props.timingDurations.rundownsBeforeNextBreak?.length &&
-					this.props.layout?.showNextBreakTiming &&
-					!(this.props.timingDurations.breakIsLastRundown && this.props.layout.lastRundownIsNotBreak)
 
 				return (
 					<div className="timing mod">
@@ -297,24 +285,15 @@ const TimingDisplay = withTranslation()(
 								) : null}
 							</span>
 						)}
-						{showEndTiming ? (
-							<PlaylistEndTiming
-								rundownPlaylist={rundownPlaylist}
-								loop={rundownPlaylist.loop}
-								expectedStart={expectedStart}
-								expectedEnd={expectedEnd}
-								expectedDuration={expectedDuration}
-								endLabel={this.props.layout?.plannedEndText}
-								rundownCount={this.props.rundownCount}
-							/>
-						) : null}
-						{showNextBreakTiming ? (
-							<NextBreakTiming
-								rundownsBeforeBreak={this.props.timingDurations.rundownsBeforeNextBreak!}
-								breakText={this.props.layout?.nextBreakText}
-								lastChild={!showEndTiming}
-							/>
-						) : null}
+						<PlaylistEndTiming
+							rundownPlaylist={rundownPlaylist}
+							loop={rundownPlaylist.loop}
+							expectedStart={expectedStart}
+							expectedEnd={expectedEnd}
+							expectedDuration={expectedDuration}
+							endLabel={this.props.layout?.plannedEndText}
+							rundownCount={this.props.rundownCount}
+						/>
 					</div>
 				)
 			}

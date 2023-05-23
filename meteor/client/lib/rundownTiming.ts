@@ -34,11 +34,6 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 // Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
 const MINIMAL_NONZERO_DURATION = 1
 
-interface BreakProps {
-	rundownsBeforeNextBreak: Rundown[]
-	breakIsLastRundown: boolean
-}
-
 /**
  * This is a class for calculating timings in a Rundown playlist used by RundownTimingProvider.
  *
@@ -68,10 +63,6 @@ export class RundownTimingCalculator {
 	private segmentBudgetDurations: Record<string, number> = {}
 	private segmentStartedPlayback: Record<string, number> = {}
 	private segmentAsPlayedDurations: Record<string, number> = {}
-	private breakProps: {
-		props: BreakProps | undefined
-		state: string | undefined
-	} = { props: undefined, state: undefined }
 	/**
 	 * Segment is untimed if all of it's Parts are set to `untimed`
 	 */
@@ -125,8 +116,6 @@ export class RundownTimingCalculator {
 		const rundownExpectedDurations: Record<string, number> = {}
 		const rundownAsPlayedDurations: Record<string, number> = {}
 
-		let rundownsBeforeNextBreak: Rundown[] | undefined
-		let breakIsLastRundown: boolean | undefined
 		let liveSegmentId: SegmentId | undefined
 
 		Object.keys(this.displayDurationGroups).forEach((key) => delete this.displayDurationGroups[key])
@@ -142,13 +131,6 @@ export class RundownTimingCalculator {
 		let lastSegmentId: SegmentId | undefined = undefined
 
 		if (playlist) {
-			const breakProps = currentRundown ? this.getRundownsBeforeNextBreak(rundowns, currentRundown) : undefined
-
-			if (breakProps) {
-				rundownsBeforeNextBreak = breakProps.rundownsBeforeNextBreak
-				breakIsLastRundown = breakProps.breakIsLastRundown
-			}
-
 			if (!playlist.nextPartInfo) {
 				this.nextSegmentId = undefined
 			}
@@ -611,8 +593,6 @@ export class RundownTimingCalculator {
 			currentTime: now,
 			remainingTimeOnCurrentPart,
 			currentPartWillAutoNext,
-			rundownsBeforeNextBreak,
-			breakIsLastRundown,
 			isLowResolution,
 		})
 	}
@@ -635,46 +615,6 @@ export class RundownTimingCalculator {
 				this.temporaryPartInstances.set(origPartId, tempPartInstance)
 				return tempPartInstance
 			}
-		}
-	}
-
-	private getRundownsBeforeNextBreak(
-		orderedRundowns: Rundown[],
-		currentRundown: Rundown | undefined
-	): BreakProps | undefined {
-		const currentState = orderedRundowns.map((r) => r.endOfRundownIsShowBreak ?? '_').join('')
-		if (this.breakProps.state !== currentState) {
-			this.recalculateBreaks(orderedRundowns, currentRundown)
-		}
-
-		this.breakProps.state = currentState
-		return this.breakProps.props
-	}
-
-	private recalculateBreaks(orderedRundowns: Rundown[], currentRundown: Rundown | undefined) {
-		if (!currentRundown) {
-			this.breakProps.props = undefined
-			return
-		}
-
-		const currentRundownIndex = orderedRundowns.findIndex((r) => r._id === currentRundown._id)
-
-		if (currentRundownIndex === -1) {
-			this.breakProps.props = undefined
-			return
-		}
-
-		const nextBreakIndex = orderedRundowns.findIndex((rundown, index) => {
-			if (index < currentRundownIndex) {
-				return false
-			}
-
-			return rundown.endOfRundownIsShowBreak === true
-		})
-
-		this.breakProps.props = {
-			rundownsBeforeNextBreak: orderedRundowns.slice(currentRundownIndex, nextBreakIndex + 1),
-			breakIsLastRundown: nextBreakIndex === orderedRundowns.length - 1,
 		}
 	}
 }
@@ -726,10 +666,6 @@ export interface RundownTimingContext {
 	currentPartWillAutoNext?: boolean
 	/** Current time of this calculation */
 	currentTime?: number
-	/** Rundowns between current rundown and rundown with next break (inclusive of both). Undefined if there's no break in the future. */
-	rundownsBeforeNextBreak?: Rundown[]
-	/** Whether the next break is also the last */
-	breakIsLastRundown?: boolean
 	/** Was this time context calculated during a high-resolution tick */
 	isLowResolution: boolean
 }

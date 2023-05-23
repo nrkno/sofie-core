@@ -390,13 +390,6 @@ export interface RundownLayout extends RundownLayoutShelfBase {
 export interface RundownLayoutRundownHeader extends RundownLayoutBase {
 	type: RundownLayoutType.RUNDOWN_HEADER_LAYOUT
 	plannedEndText: string
-	nextBreakText: string
-	/** When true, hide the Planned End timer when there is a rundown marked as a break in the future */
-	hideExpectedEndBeforeBreak: boolean
-	/** When a rundown is marked as a break, show the Next Break timing */
-	showNextBreakTiming: boolean
-	/** If true, don't treat the last rundown as a break even if it's marked as one */
-	lastRundownIsNotBreak: boolean
 }
 
 export interface RundownLayoutPresenterView extends RundownLayoutBase {
