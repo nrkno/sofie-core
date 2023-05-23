@@ -64,7 +64,7 @@ export interface PieceUi extends PieceExtended {
 	messages?: ITranslatableMessage[]
 }
 
-export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'>
+export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId'>
 
 export const FREEZE_FRAME_FLASH = 5000
 

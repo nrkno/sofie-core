@@ -87,16 +87,7 @@ export class RundownPlaylistCollectionUtil {
 		selector?: MongoQuery<Segment>,
 		options?: FindOptions<Segment>
 	): Array<{
-		rundown: Pick<
-			Rundown,
-			| '_id'
-			| 'name'
-			| 'playlistId'
-			| 'timing'
-			| 'showStyleBaseId'
-			| 'showStyleVariantId'
-			| 'endOfRundownIsShowBreak'
-		>
+		rundown: Pick<Rundown, '_id' | 'name' | 'playlistId' | 'timing' | 'showStyleBaseId' | 'showStyleVariantId'>
 		segments: Segment[]
 	}> {
 		const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist, undefined, {
@@ -106,7 +97,6 @@ export class RundownPlaylistCollectionUtil {
 				timing: 1,
 				showStyleBaseId: 1,
 				showStyleVariantId: 1,
-				endOfRundownIsShowBreak: 1,
 			},
 		})
 		const segments = Segments.find(

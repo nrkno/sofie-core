@@ -28,7 +28,6 @@ import { Part } from '../../lib/collections/Parts'
 import { DBRundownPlaylist, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { getCurrentTime, objectFromEntries } from '../../lib/lib'
 import { Settings } from '../../lib/Settings'
-import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 // Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
@@ -86,8 +85,6 @@ export class RundownTimingCalculator {
 		now: number,
 		isLowResolution: boolean,
 		playlist: RundownPlaylist | undefined,
-		rundowns: Rundown[],
-		currentRundown: Rundown | undefined,
 		parts: Part[],
 		partInstancesMap: Map<PartId, PartInstance>,
 		pieces: Map<PartId, CalculateTimingsPiece[]>,

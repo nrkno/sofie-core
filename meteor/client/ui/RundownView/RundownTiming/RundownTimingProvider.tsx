@@ -45,8 +45,6 @@ interface IRundownTimingProviderChildContext {
 }
 interface IRundownTimingProviderState {}
 interface IRundownTimingProviderTrackedProps {
-	rundowns: Array<Rundown>
-	currentRundown: Rundown | undefined
 	parts: Array<Part>
 	partInstancesMap: Map<PartId, PartInstance>
 	pieces: Map<PartId, CalculateTimingsPiece[]>
@@ -294,22 +292,11 @@ export const RundownTimingProvider = withTracker<
 		}
 
 		updateDurations(now: number, isSynced: boolean) {
-			const {
-				playlist,
-				rundowns,
-				currentRundown,
-				parts,
-				partInstancesMap,
-				pieces,
-				segments,
-				segmentEntryPartInstances,
-			} = this.props
+			const { playlist, parts, partInstancesMap, pieces, segments, segmentEntryPartInstances } = this.props
 			const updatedDurations = this.timingCalculator.updateDurations(
 				now,
 				isSynced,
 				playlist,
-				rundowns,
-				currentRundown,
 				parts,
 				partInstancesMap,
 				pieces,

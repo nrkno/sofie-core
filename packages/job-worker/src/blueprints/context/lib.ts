@@ -328,7 +328,6 @@ export function convertRundownToBlueprints(rundown: ReadonlyDeep<DBRundown>): IB
 		timing: clone<RundownPlaylistTiming>(rundown.timing),
 		metaData: clone(rundown.metaData),
 		playlistExternalId: rundown.playlistExternalId,
-		endOfRundownIsShowBreak: rundown.endOfRundownIsShowBreak,
 		_id: unprotectString(rundown._id),
 		showStyleVariantId: unprotectString(rundown.showStyleVariantId),
 		playlistId: unprotectString(rundown.playlistId),

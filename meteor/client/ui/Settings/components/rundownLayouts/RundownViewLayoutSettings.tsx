@@ -173,19 +173,6 @@ export default function RundownViewLayoutSettings({ sourceLayers, item, layouts 
 				</label>
 			</div>
 			<div className="mod mvs mhs">
-				<label className="field">
-					{t('Show Breaks as Segments')}
-					<EditAttribute
-						modifiedClassName="bghl"
-						attribute={'showBreaksAsSegments'}
-						obj={item}
-						type="checkbox"
-						collection={RundownLayouts}
-						className="mod mas"
-					></EditAttribute>
-				</label>
-			</div>
-			<div className="mod mvs mhs">
 				<label className="field">{t('Segment countdown requires source layer')}</label>
 				<EditAttribute
 					modifiedClassName="bghl"

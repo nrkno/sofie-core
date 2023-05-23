@@ -1628,27 +1628,6 @@ export default withTranslation()(
 			)
 		}
 
-		renderNextBreakTiming(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
-			const { t } = this.props
-			return (
-				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Name')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.name`}
-								obj={item}
-								type="text"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
-						</label>
-					</div>
-					{isDashboardLayout && this.renderDashboardLayoutSettings(item, index)}
-				</React.Fragment>
-			)
-		}
 		renderMiniRundown(item: RundownLayoutBase, index: number, isDashboardLayout: boolean) {
 			const { t } = this.props
 			return (

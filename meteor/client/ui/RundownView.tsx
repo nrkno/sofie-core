@@ -82,7 +82,6 @@ import { Settings } from '../../lib/Settings'
 import { PointerLockCursor } from '../lib/PointerLockCursor'
 import { documentTitle } from '../lib/DocumentTitleProvider'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { RundownDividerHeader } from './RundownView/RundownDividerHeader'
 import { PlaylistLoopingHeader } from './RundownView/PlaylistLoopingHeader'
 import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
 import RundownViewEventBus, {
@@ -98,7 +97,6 @@ import { TriggersHandler } from '../lib/triggers/TriggersHandler'
 import { SorensenContext } from '../lib/SorensenContext'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { DEFAULT_TSR_ACTION_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
-import { BreakSegment } from './SegmentTimeline/BreakSegment'
 import { PlaylistStartTiming } from './RundownView/RundownTiming/PlaylistStartTiming'
 import { RundownName } from './RundownView/RundownTiming/RundownName'
 import { TimeOfDay } from './RundownView/RundownTiming/TimeOfDay'
@@ -1114,7 +1112,7 @@ interface IState {
 	miniShelfFilter: RundownLayoutFilterBase | undefined
 }
 
-export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'>
+export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId'>
 
 type MatchedSegment = {
 	rundown: MinimalRundown
@@ -2366,13 +2364,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				const rundownIdsBefore = rundowns.slice(0, rundownIndex)
 				return (
 					<React.Fragment key={unprotectString(rundownAndSegments.rundown._id)}>
-						{this.props.matchedSegments.length > 1 && !this.state.rundownViewLayout?.hideRundownDivider && (
-							<RundownDividerHeader
-								key={`rundown_${rundownAndSegments.rundown._id}`}
-								rundown={rundownAndSegments.rundown}
-								playlist={this.props.playlist!}
-							/>
-						)}
 						{rundownAndSegments.segments.map((segment, segmentIndex, segmentArray) => {
 							if (this.props.studio && this.props.playlist && this.props.showStyleBase) {
 								const ownCurrentPartInstance =
@@ -2433,10 +2424,6 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 								)
 							}
 						})}
-						{this.state.rundownViewLayout?.showBreaksAsSegments &&
-							rundownAndSegments.rundown.endOfRundownIsShowBreak && (
-								<BreakSegment breakTime={PlaylistTiming.getExpectedEnd(rundownAndSegments.rundown.timing)} />
-							)}
 					</React.Fragment>
 				)
 			})
