@@ -52,7 +52,7 @@ interface PieceTimelineMetadataExt extends PieceTimelineMetadata {
 }
 
 export namespace RundownUtils {
-	function padZeros(input: number, places?: number): string {
+	export function padZeros(input: number, places?: number): string {
 		places = places ?? 2
 		return input.toString(10).padStart(places, '0')
 	}

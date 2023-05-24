@@ -140,6 +140,7 @@ export class RundownTimingCalculator {
 		let currentAIndex = -1
 
 		let lastSegmentId: SegmentId | undefined = undefined
+		let nextMilestoneBackTime: number | undefined = undefined
 
 		if (playlist) {
 			const breakProps = currentRundown ? this.getRundownsBeforeNextBreak(rundowns, currentRundown) : undefined
@@ -508,6 +509,12 @@ export class RundownTimingCalculator {
 					// this is a calculation for the next line, which is basically how much there is left of the current line
 					localAccum = this.linearParts[i][1] || 0 // if there is no current line, rebase following lines to the next line
 					this.linearParts[i][1] = currentRemaining
+					if (nextMilestoneBackTime === undefined) {
+						const backTime = getMilestoneBackTime(partInstancesMap, segments, this.linearParts[i][0])
+						if (backTime) {
+							nextMilestoneBackTime = backTime
+						}
+					}
 				} else {
 					// these are lines after next line
 					// we take whatever value this line has, subtract the value as set on the Next Part
@@ -515,6 +522,12 @@ export class RundownTimingCalculator {
 					// and add the currentRemaining countdown, since we are currentRemaining + diff between next and
 					// this away from this line.
 					this.linearParts[i][1] = (this.linearParts[i][1] || 0) - localAccum + currentRemaining
+					if (nextMilestoneBackTime === undefined) {
+						const backTime = getMilestoneBackTime(partInstancesMap, segments, this.linearParts[i][0])
+						if (backTime) {
+							nextMilestoneBackTime = backTime
+						}
+					}
 				}
 			}
 			// contiunation of linearParts calculations for looping playlists
@@ -523,6 +536,12 @@ export class RundownTimingCalculator {
 					// offset the parts before the on air line by the countdown for the end of the rundown
 					this.linearParts[i][1] =
 						(this.linearParts[i][1] || 0) + waitAccumulator - localAccum + currentRemaining
+					if (nextMilestoneBackTime === undefined) {
+						const backTime = getMilestoneBackTime(partInstancesMap, segments, this.linearParts[i][0])
+						if (backTime) {
+							nextMilestoneBackTime = backTime
+						}
+					}
 				}
 			}
 
@@ -614,6 +633,7 @@ export class RundownTimingCalculator {
 			rundownsBeforeNextBreak,
 			breakIsLastRundown,
 			isLowResolution,
+			nextMilestoneBackTime,
 		})
 	}
 
@@ -732,6 +752,8 @@ export interface RundownTimingContext {
 	breakIsLastRundown?: boolean
 	/** Was this time context calculated during a high-resolution tick */
 	isLowResolution: boolean
+	/** The absolute back time of the next milestone, if any. */
+	nextMilestoneBackTime?: number
 }
 
 /**
@@ -780,6 +802,8 @@ export function getPlaylistTimingDiff(
 		frontAnchor = Math.max(currentTime, playlist.startedPlayback ?? Math.max(timing.expectedStart, currentTime))
 	} else if (PlaylistTiming.isPlaylistTimingBackTime(timing)) {
 		backAnchor = timing.expectedEnd
+	} else if (PlaylistTiming.isPlaylistTimingMilestone(timing)) {
+		backAnchor = timingContext.nextMilestoneBackTime ?? timing.expectedEnd
 	}
 
 	let diff = PlaylistTiming.isPlaylistTimingNone(timing)
@@ -824,4 +848,18 @@ function ensureMinimumDefaultDurationIfNotAuto(
 	if (partInstance.part.autoNext) return incomingDuration
 
 	return Math.max(incomingDuration, defaultDuration)
+}
+
+function getMilestoneBackTime(
+	partInstancesMap: Map<PartId, PartInstance>,
+	segments: DBSegment[],
+	partId: PartId
+): number | null {
+	const part = partInstancesMap.get(partId)
+	const segment = segments.find((s) => s._id === part?.segmentId)
+	if (segment?.isMilestone) {
+		return segment.milestoneBackTime ?? null
+	}
+
+	return null
 }

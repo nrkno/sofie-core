@@ -17,6 +17,7 @@ import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { UIStudio } from '../../../lib/api/studios'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
+import { MilestoneWallTime } from '../RundownView/RundownTiming/MilestoneWallTime'
 
 export function SegmentListHeader({
 	isDetached,
@@ -102,15 +103,23 @@ export function SegmentListHeader({
 					})}
 					tabIndex={0}
 				>
-					{playlist && parts && parts.length > 0 && (
-						<SegmentDuration
-							segmentId={segment._id}
-							parts={parts}
-							pieces={pieces}
-							label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
-							fixed={fixedSegmentDuration}
-						/>
-					)}
+					{playlist &&
+						parts &&
+						parts.length > 0 &&
+						(segment.isMilestone ? (
+							<MilestoneWallTime
+								segment={segment}
+								label={<span className="segment-timeline__duration__label">{t('Wall Time')}</span>}
+							/>
+						) : (
+							<SegmentDuration
+								segmentId={segment._id}
+								parts={parts}
+								pieces={pieces}
+								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
+								fixed={fixedSegmentDuration}
+							/>
+						))}
 				</div>
 			</div>
 			<h2

@@ -24,6 +24,7 @@ import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { PartId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
+import { MilestoneWallTime } from '../RundownView/RundownTiming/MilestoneWallTime'
 
 interface ISegmentTimingPanelProps {
 	visible?: boolean
@@ -68,15 +69,24 @@ class SegmentTimingPanelInner extends MeteorReactComponent<
 							{panel.timingType === 'count_down' ? t('Segment Count Down') : t('Segment Count Up')}
 						</span>
 					)}
-					{this.props.active && this.props.liveSegment && this.props.parts && this.props.pieces && (
-						<SegmentDuration
-							segmentId={this.props.liveSegment._id}
-							parts={this.props.parts}
-							pieces={this.props.pieces}
-							countUp={panel.timingType === 'count_up'}
-							className="segment-duration"
-						/>
-					)}
+					{this.props.active &&
+						this.props.liveSegment &&
+						this.props.parts &&
+						this.props.pieces &&
+						(this.props.liveSegment.isMilestone ? (
+							<MilestoneWallTime
+								segment={this.props.liveSegment}
+								label={<span className="segment-timeline__duration__label">{t('Wall Time')}</span>}
+							/>
+						) : (
+							<SegmentDuration
+								segmentId={this.props.liveSegment._id}
+								parts={this.props.parts}
+								pieces={this.props.pieces}
+								countUp={panel.timingType === 'count_up'}
+								className="segment-duration"
+							/>
+						))}
 				</span>
 			</div>
 		)

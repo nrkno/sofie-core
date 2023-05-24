@@ -16,6 +16,7 @@ import {
 	PlaylistTimingForwardTime,
 	PlaylistTimingNone,
 	PlaylistTimingType,
+	PlaylistTimingMilestone,
 	RundownPlaylistTiming,
 } from '@sofie-automation/blueprints-integration'
 import { ReadonlyDeep } from 'type-fest'
@@ -34,10 +35,19 @@ export namespace PlaylistTiming {
 		return timing.type === PlaylistTimingType.BackTime
 	}
 
+	export function isPlaylistTimingMilestone(timing: RundownPlaylistTiming): timing is PlaylistTimingMilestone {
+		return timing.type === PlaylistTimingType.Milestone
+	}
+
 	export function getExpectedStart(timing: RundownPlaylistTiming): number | undefined {
 		if (PlaylistTiming.isPlaylistTimingForwardTime(timing)) {
 			return timing.expectedStart
 		} else if (PlaylistTiming.isPlaylistTimingBackTime(timing)) {
+			return (
+				timing.expectedStart ||
+				(timing.expectedDuration ? timing.expectedEnd - timing.expectedDuration : undefined)
+			)
+		} else if (PlaylistTiming.isPlaylistTimingMilestone(timing)) {
 			return (
 				timing.expectedStart ||
 				(timing.expectedDuration ? timing.expectedEnd - timing.expectedDuration : undefined)
@@ -49,6 +59,8 @@ export namespace PlaylistTiming {
 
 	export function getExpectedEnd(timing: RundownPlaylistTiming): number | undefined {
 		if (PlaylistTiming.isPlaylistTimingBackTime(timing)) {
+			return timing.expectedEnd
+		} else if (PlaylistTiming.isPlaylistTimingMilestone(timing)) {
 			return timing.expectedEnd
 		} else if (PlaylistTiming.isPlaylistTimingForwardTime(timing)) {
 			return (
@@ -64,6 +76,8 @@ export namespace PlaylistTiming {
 		if (PlaylistTiming.isPlaylistTimingForwardTime(timing)) {
 			return timing.expectedDuration
 		} else if (PlaylistTiming.isPlaylistTimingBackTime(timing)) {
+			return timing.expectedDuration
+		} else if (PlaylistTiming.isPlaylistTimingMilestone(timing)) {
 			return timing.expectedDuration
 		} else {
 			return undefined
@@ -88,6 +102,12 @@ export namespace PlaylistTiming {
 			return a.timing.expectedEnd - b.timing.expectedEnd
 		if (PlaylistTiming.isPlaylistTimingBackTime(a.timing)) return -1
 		if (PlaylistTiming.isPlaylistTimingBackTime(b.timing)) return 1
+
+		// Compare end times, then allow rundowns with end time to be first
+		if (PlaylistTiming.isPlaylistTimingMilestone(a.timing) && PlaylistTiming.isPlaylistTimingMilestone(b.timing))
+			return a.timing.expectedEnd - b.timing.expectedEnd
+		if (PlaylistTiming.isPlaylistTimingMilestone(a.timing)) return -1
+		if (PlaylistTiming.isPlaylistTimingMilestone(b.timing)) return 1
 
 		// No timing
 		return 0

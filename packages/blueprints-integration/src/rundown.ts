@@ -47,6 +47,7 @@ export enum PlaylistTimingType {
 	None = 'none',
 	ForwardTime = 'forward-time',
 	BackTime = 'back-time',
+	Milestone = 'milestone',
 }
 
 export interface PlaylistTimingBase {
@@ -92,7 +93,26 @@ export interface PlaylistTimingBackTime extends PlaylistTimingBase {
 	expectedEnd: Time
 }
 
-export type RundownPlaylistTiming = PlaylistTimingNone | PlaylistTimingForwardTime | PlaylistTimingBackTime
+export interface PlaylistTimingMilestone extends PlaylistTimingBase {
+	type: PlaylistTimingType.Milestone
+	/** Expected start should be set to the expected time this rundown playlist should run on air
+	 *  In this timing mode this is only for display before the show starts as an "expected" start time,
+	 *  during the show this display will be set to when the show actually started.
+	 */
+	expectedStart?: Time
+	/** Expected duration of the rundown playlist
+	 *  If set, the over/under diff will be calculated based on this value. Otherwise it will be planned content duration - played out duration.
+	 */
+	expectedDuration?: number
+	/** Expected end time of the rundown playlist */
+	expectedEnd: Time
+}
+
+export type RundownPlaylistTiming =
+	| PlaylistTimingNone
+	| PlaylistTimingForwardTime
+	| PlaylistTimingBackTime
+	| PlaylistTimingMilestone
 
 /** The Rundown generated from Blueprint */
 export interface IBlueprintRundown<TMetadata = unknown> {
@@ -166,6 +186,12 @@ export interface IBlueprintSegment<TMetadata = unknown> {
 	showShelf?: boolean
 	/** Segment display mode. Default mode is *SegmentDisplayMode.Timeline* */
 	displayAs?: SegmentDisplayMode
+
+	/** Used to alter the behavior of the Diff timer to make it relative to this segment's hard backtime. If true, `milestoneBackTime` must also be set. */
+	isMilestone?: boolean
+
+	/** Does nothing without `isMilestone`. */
+	milestoneBackTime?: number
 }
 /** The Segment sent from Core */
 export interface IBlueprintSegmentDB<TMetadata = unknown> extends IBlueprintSegment<TMetadata> {

@@ -35,6 +35,7 @@ import { UIStudio } from '../../../lib/api/studios'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
+import { MilestoneWallTime } from '../RundownView/RundownTiming/MilestoneWallTime'
 
 interface IProps {
 	id: string
@@ -610,7 +611,13 @@ export const SegmentStoryboard = React.memo(
 					{props.playlist &&
 						props.parts &&
 						props.parts.length > 0 &&
-						(!props.hasAlreadyPlayed || props.isNextSegment || props.isLiveSegment) && (
+						(!props.hasAlreadyPlayed || props.isNextSegment || props.isLiveSegment) &&
+						(props.segment.isMilestone ? (
+							<MilestoneWallTime
+								segment={props.segment}
+								label={<span className="segment-timeline__duration__label">{t('Wall Time')}</span>}
+							/>
+						) : (
 							<SegmentDuration
 								segmentId={props.segment._id}
 								parts={props.parts}
@@ -618,7 +625,7 @@ export const SegmentStoryboard = React.memo(
 								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
 								fixed={props.fixedSegmentDuration}
 							/>
-						)}
+						))}
 				</div>
 				<div className="segment-timeline__timeUntil" onClick={onTimeUntilClick}>
 					{props.playlist && props.parts && props.parts.length > 0 && props.showCountdownToSegment && (
