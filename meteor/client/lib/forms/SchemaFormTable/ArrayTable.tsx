@@ -109,9 +109,9 @@ export const SchemaFormArrayTable = ({
 	const title = schema[SchemaFormUIField.Title]
 
 	return (
-		<>
+		<div className="settings-config-table">
 			{title && <h2 className="mhn">{translateStringIfHasNamespaces(title, translationNamespaces)}</h2>}
-			<table className={'expando setings-config-table table'}>
+			<table className={'expando table'}>
 				<thead>
 					<tr className="hl">
 						{summaryFields.map((col) => {
@@ -156,6 +156,6 @@ export const SchemaFormArrayTable = ({
 					</button>
 				)}
 			</div>
-		</>
+		</div>
 	)
 }
