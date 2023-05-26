@@ -8,6 +8,7 @@ import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../MeteorReactComponent'
 import { meteorSubscribe, PubSubTypes } from '../../../lib/api/pubsub'
 import { stringifyObjects } from '../../../lib/lib'
+import { Session } from 'meteor/session'
 
 const globalTrackerQueue: Array<Function> = []
 let globalTrackerTimestamp: number | undefined = undefined
@@ -353,4 +354,30 @@ export function useSubscription<K extends keyof PubSubTypes>(sub: K, ...args: Pa
 	}, [stringifyObjects(args)])
 
 	return ready
+}
+/**
+ * A Meteor Session hook that works like useState, except that values are retained when hot-reloading the page.
+ * This is useful for example when you want to retain the state of a modal when hot-reloading.
+ * @param key Globally unique key for the session variable
+ * @param initial Initial value
+ * @returns
+ */
+export function useSession<T>(key: string, initial: T): [T, (newValue: T | ((oldValue: T) => T)) => void] {
+	const [value, setValue] = useState<T>(() => {
+		return Session.get(key) ?? initial
+	})
+
+	return [
+		value,
+		(newValue) => {
+			let v: T
+			if (typeof newValue === 'function') {
+				v = (newValue as any)(value)
+			} else {
+				v = newValue
+			}
+			Session.set(key, v)
+			setValue(v)
+		},
+	]
 }

@@ -105,8 +105,8 @@ export default function StudioSettings(): JSX.Element {
 				<div className="col c12 r1-c12">
 					<ErrorBoundary>
 						<Switch>
-							<Route path={`${match.path}/all-settings`}>
-								<StudioAllSettings studioId={studio._id} availableShowStyleBases={availableShowStyleBases} />
+							<Route path={`${match.path}/all-settings/:settingsUrl*`}>
+								<StudioAllSettings studioId={studio._id} />
 							</Route>
 							{/* Legacy: */}
 							<Route path={`${match.path}/generic`}>

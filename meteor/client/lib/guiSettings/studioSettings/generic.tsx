@@ -1,81 +1,18 @@
 import React from 'react'
 import { TFunction } from 'react-i18next'
-import { GUISetting, GUISettings, GUISettingsType } from './guiSettings'
-import { Studio } from '../../../lib/collections/Studios'
-import { EditAttribute, IEditAttribute } from '../EditAttribute'
-import { ShowStyleBases, Studios } from '../../collections'
-import { RedirectToShowStyleButton, defaultEditAttributeProps } from './lib'
-import { literal } from '@sofie-automation/corelib/dist/lib'
-import { useTracker } from '../ReactMeteorData/ReactMeteorData'
+import { GUISetting, GUISettingsType, guiSettingId } from '../guiSettings'
+import { Studio } from '../../../../lib/collections/Studios'
+import { EditAttribute } from '../../EditAttribute'
+import { ShowStyleBases } from '../../../collections'
+import { RedirectToShowStyleButton } from '../lib'
+import { useTracker } from '../../ReactMeteorData/ReactMeteorData'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { StudioBaselineStatus } from '../../ui/Settings/Studio/Baseline'
+import { StudioBaselineStatus } from '../../../ui/Settings/Studio/Baseline'
 import { useHistory } from 'react-router-dom'
-import { MeteorCall } from '../../../lib/api/methods'
+import { MeteorCall } from '../../../../lib/api/methods'
+import { getDefaultEditAttributeProps } from './lib'
 
-export function generateStudioSettings(t: TFunction, studio: Studio): GUISettings {
-	const settings: GUISettings = { list: [] }
-
-	settings.list.push({
-		type: GUISettingsType.SECTION,
-		name: 'Generic Properties',
-		id: 'generic',
-
-		getList: () => genericProperties(t, studio, 'generic'),
-		getSearchString: '',
-		// renderSummary?: () => JSX.Element
-	})
-
-	// settings.list.push({
-	// 	type: GUISettingsType.SECTION,
-	// 	name: 'Attached Devices',
-
-	// 	getList: () => (GUISetting | GUISettingSection)[]
-	// 	// renderSummary?: () => JSX.Element
-	// })
-
-	// settings.list.push({
-	// 	type: GUISettingsType.SECTION,
-	// 	name: 'Blueprint Configuration',
-
-	// 	getList: () => (GUISetting | GUISettingSection)[]
-	// 	// renderSummary?: () => JSX.Element
-	// })
-
-	// settings.list.push({
-	// 	type: GUISettingsType.SECTION,
-	// 	name: 'Layer mappings',
-
-	// 	getList: () => (GUISetting | GUISettingSection)[]
-	// 	// renderSummary?: () => JSX.Element
-	// })
-	// settings.list.push({
-	// 	type: GUISettingsType.SECTION,
-	// 	name: 'Route sets',
-
-	// 	getList: () => (GUISetting | GUISettingSection)[]
-	// 	// renderSummary?: () => JSX.Element
-	// })
-
-	// settings.list.push({
-	// 	type: GUISettingsType.SECTION,
-	// 	name: 'Package Manager',
-
-	// 	getList: () => (GUISetting | GUISettingSection)[]
-	// 	// renderSummary?: () => JSX.Element
-	// })
-
-	return settings
-}
-
-function getDefaultEditAttributeProps(studio: Studio) {
-	return literal<Partial<IEditAttribute>>({
-		...defaultEditAttributeProps,
-		obj: studio,
-		collection: Studios,
-	})
-}
-
-function genericProperties(t: TFunction, studio: Studio, urlBase: string) {
+export function genericProperties(t: TFunction, studio: Studio, urlBase: string): GUISetting[] {
 	const settings: GUISetting[] = []
 
 	const editAttributeProps = getDefaultEditAttributeProps(studio)
@@ -84,7 +21,7 @@ function genericProperties(t: TFunction, studio: Studio, urlBase: string) {
 		type: GUISettingsType.SETTING,
 		name: t('Studio Name'),
 		description: t('Name of the studio'),
-		id: `${urlBase}/name`,
+		id: guiSettingId(urlBase, 'name'),
 		getWarning: () => {
 			return !studio.name && t('No name set')
 		}, // json {requires: []}, minLength: 1, maxLength: 255
@@ -117,7 +54,7 @@ function genericProperties(t: TFunction, studio: Studio, urlBase: string) {
 		type: GUISettingsType.SETTING,
 		name: t('Compatible Show Styles'),
 		description: t('Which Show Styles are compatible with this studio'),
-		id: `${urlBase}/blueprint`,
+		id: guiSettingId(urlBase, 'blueprint'),
 		getWarning: () => {
 			return studio.supportedShowStyleBase.length === 0 && t('Show style not set')
 		},
@@ -146,7 +83,7 @@ function genericProperties(t: TFunction, studio: Studio, urlBase: string) {
 		type: GUISettingsType.SETTING,
 		name: t('Frame rate'),
 		description: t('What frame rate (fps) the studio is running at.'),
-		id: `${urlBase}/settings.frameRate`,
+		id: guiSettingId(urlBase, 'settings.frameRate'),
 		// getWarning: () => undefined,
 		render: () => {
 			return <EditAttribute {...editAttributeProps} type="int" attribute="settings.frameRate" />
@@ -157,7 +94,7 @@ function genericProperties(t: TFunction, studio: Studio, urlBase: string) {
 		type: GUISettingsType.SETTING,
 		name: t('Enable "Play from Anywhere"'),
 		description: t('When enabled, the "play from anywhere" option is available to the users in rundown-GUI'),
-		id: `${urlBase}/settings.enablePlayFromAnywhere`,
+		id: guiSettingId(urlBase, 'settings.enablePlayFromAnywhere'),
 		// getWarning: () => undefined,
 		render: () => {
 			return <EditAttribute {...editAttributeProps} type="checkbox" attribute="settings.enablePlayFromAnywhere" />
@@ -168,7 +105,7 @@ function genericProperties(t: TFunction, studio: Studio, urlBase: string) {
 		type: GUISettingsType.SETTING,
 		name: t('Media Preview URL'),
 		description: t('URL to endpoint where media preview are exposed'),
-		id: `${urlBase}/settings.mediaPreviewsUrl`,
+		id: guiSettingId(urlBase, 'settings.mediaPreviewsUrl'),
 		// getWarning: () => undefined,
 		render: () => {
 			return <EditAttribute {...editAttributeProps} type="text" attribute="settings.mediaPreviewsUrl" />
@@ -179,7 +116,7 @@ function genericProperties(t: TFunction, studio: Studio, urlBase: string) {
 		type: GUISettingsType.SETTING,
 		name: t('Slack Webhook URLs'),
 		description: t('URLs for slack webhook to send evaluations'),
-		id: `${urlBase}/settings.slackEvaluationUrls`,
+		id: guiSettingId(urlBase, 'settings.slackEvaluationUrls'),
 		// getWarning: () => undefined,
 		render: () => {
 			return <EditAttribute {...editAttributeProps} type="text" attribute="settings.slackEvaluationUrls" />
@@ -192,7 +129,7 @@ function genericProperties(t: TFunction, studio: Studio, urlBase: string) {
 		description: t(
 			'Media Resolutions supported by the studio for media playback. Example: "1920x1080i5000,1920x1080i2500,1920x1080p2500,1920x1080p5000"'
 		),
-		id: `${urlBase}/settings.supportedMediaFormats`,
+		id: guiSettingId(urlBase, 'settings.supportedMediaFormats'),
 		// getWarning: () => undefined,
 		render: () => {
 			return <EditAttribute {...editAttributeProps} type="text" attribute="settings.supportedMediaFormats" />
@@ -205,7 +142,7 @@ function genericProperties(t: TFunction, studio: Studio, urlBase: string) {
 		description: t(
 			'Media Resolutions supported by the studio for media playback. Example: "1920x1080i5000,1920x1080i2500,1920x1080p2500,1920x1080p5000"'
 		),
-		id: `${urlBase}/settings.supportedAudioStreams`,
+		id: guiSettingId(urlBase, 'settings.supportedAudioStreams'),
 		// getWarning: () => undefined,
 		render: () => {
 			return <EditAttribute {...editAttributeProps} type="text" attribute="settings.supportedAudioStreams" />
@@ -222,7 +159,7 @@ function genericProperties(t: TFunction, studio: Studio, urlBase: string) {
 		type: GUISettingsType.SETTING,
 		name: t('Studio Baseline needs update'),
 		// description: t(''),
-		id: `${urlBase}/studio-baseline-needs-update`,
+		id: guiSettingId(urlBase, 'studio-baseline-needs-update'),
 		getWarning: () => undefined,
 		render: () => {
 			return (

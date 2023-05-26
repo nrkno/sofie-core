@@ -1,0 +1,101 @@
+$item-padding-left: 1em;
+$item-padding-top: 1em;
+$item-padding-bottom: 1em;
+
+$section-border-width: 0.5em;
+$section-border-margin: 0.25em;
+
+.gui-settings {
+	// background-color: red;
+
+	> .gui-settings-filter {
+		display: block;
+
+		padding: 0.5em;
+
+		> input {
+			width: 100%;
+		}
+	}
+
+	> .gui-settings-verify-warning {
+		background-color: rgba(255, 255, 0, 0.5);
+		padding: 0.5em;
+	}
+
+	> .gui-settings-warnings {
+		background-color: rgba(255, 255, 0, 0.5);
+		padding: 0.5em;
+
+		> h3 {
+			margin: 0;
+			padding: 0;
+		}
+	}
+
+	.gui-settings-list {
+		> .gui-settings-list__item {
+			padding-left: $item-padding-left;
+			padding-top: $item-padding-top;
+			padding-bottom: $item-padding-bottom;
+
+			&:hover:not(:has(.gui-settings-list__item:hover)):hover {
+				background-color: rgba(127, 127, 127, 0.05);
+			}
+		}
+		&.outer {
+			> .gui-settings-list__item {
+				padding: 0;
+				&:hover {
+					background-color: transparent;
+				}
+			}
+		}
+	}
+	.gui-settings-section {
+		border-left: $section-border-width solid rgba(127, 127, 127, 0.25);
+		transition: border-color 0.2s;
+		&:hover {
+			border-color: rgba(127, 127, 127, 0.25);
+		}
+		> .content {
+			padding-left: $item-padding-left;
+
+			> .name {
+				margin: 0;
+				font-size: 125%;
+				> a {
+					color: inherit;
+				}
+			}
+			> .description {
+			}
+			> .collapse-section {
+				float: right;
+			}
+		}
+		> .gui-settings-list {
+			> .gui-settings-list__item {
+				// padding-left: $item-padding-left-inner;
+				> .gui-settings-section {
+					margin-left: $section-border-margin - $item-padding-left;
+				}
+			}
+		}
+	}
+	.gui-settings-setting {
+		> .name {
+			margin: 0;
+			font-size: 100%;
+			font-weight: bold;
+		}
+		> .description {
+		}
+		> .warning {
+			background-color: rgba(255, 255, 0, 0.5);
+			padding: 0.5em;
+		}
+		> .content {
+		}
+	}
+}
