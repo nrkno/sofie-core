@@ -187,11 +187,14 @@ export interface IBlueprintSegment<TMetadata = unknown> {
 	/** Segment display mode. Default mode is *SegmentDisplayMode.Timeline* */
 	displayAs?: SegmentDisplayMode
 
-	/** Used to alter the behavior of the Diff timer to make it relative to this segment's hard backtime. If true, `milestoneBackTime` must also be set. */
+	/** Used to alter the behavior of the Diff timer to make it relative to this segment's hard backtime. If true, `milestoneBackTime` or `milestoneCumeTime` must also be set. */
 	isMilestone?: boolean
 
-	/** Does nothing without `isMilestone`. */
+	/** Does nothing without `isMilestone`. Mirrors the "back time" concept from iNews. */
 	milestoneBackTime?: number
+
+	/** Does nothing without `isMilestone`. Mirrors the "cume time" concept from iNews. */
+	milestoneCumeTime?: number
 }
 /** The Segment sent from Core */
 export interface IBlueprintSegmentDB<TMetadata = unknown> extends IBlueprintSegment<TMetadata> {

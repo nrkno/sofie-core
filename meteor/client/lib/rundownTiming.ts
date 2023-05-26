@@ -141,6 +141,7 @@ export class RundownTimingCalculator {
 
 		let lastSegmentId: SegmentId | undefined = undefined
 		let nextMilestoneBackTime: number | undefined = undefined
+		let nextMilestoneCumeTime: number | undefined = undefined
 
 		if (playlist) {
 			const breakProps = currentRundown ? this.getRundownsBeforeNextBreak(rundowns, currentRundown) : undefined
@@ -514,6 +515,11 @@ export class RundownTimingCalculator {
 						if (backTime) {
 							nextMilestoneBackTime = backTime
 						}
+
+						const cumeTime = getMilestoneCumeTime(partInstancesMap, segments, this.linearParts[i][0])
+						if (cumeTime) {
+							nextMilestoneCumeTime = cumeTime
+						}
 					}
 				} else {
 					// these are lines after next line
@@ -526,6 +532,11 @@ export class RundownTimingCalculator {
 						const backTime = getMilestoneBackTime(partInstancesMap, segments, this.linearParts[i][0])
 						if (backTime) {
 							nextMilestoneBackTime = backTime
+						}
+
+						const cumeTime = getMilestoneCumeTime(partInstancesMap, segments, this.linearParts[i][0])
+						if (cumeTime) {
+							nextMilestoneCumeTime = cumeTime
 						}
 					}
 				}
@@ -540,6 +551,11 @@ export class RundownTimingCalculator {
 						const backTime = getMilestoneBackTime(partInstancesMap, segments, this.linearParts[i][0])
 						if (backTime) {
 							nextMilestoneBackTime = backTime
+						}
+
+						const cumeTime = getMilestoneCumeTime(partInstancesMap, segments, this.linearParts[i][0])
+						if (cumeTime) {
+							nextMilestoneCumeTime = cumeTime
 						}
 					}
 				}
@@ -634,6 +650,7 @@ export class RundownTimingCalculator {
 			breakIsLastRundown,
 			isLowResolution,
 			nextMilestoneBackTime,
+			nextMilestoneCumeTime,
 		})
 	}
 
@@ -754,6 +771,8 @@ export interface RundownTimingContext {
 	isLowResolution: boolean
 	/** The absolute back time of the next milestone, if any. */
 	nextMilestoneBackTime?: number
+	/** The absolute cume time of the next milestone, if any. */
+	nextMilestoneCumeTime?: number
 }
 
 /**
@@ -803,7 +822,7 @@ export function getPlaylistTimingDiff(
 	} else if (PlaylistTiming.isPlaylistTimingBackTime(timing)) {
 		backAnchor = timing.expectedEnd
 	} else if (PlaylistTiming.isPlaylistTimingMilestone(timing)) {
-		backAnchor = timingContext.nextMilestoneBackTime ?? timing.expectedEnd
+		backAnchor = timingContext.nextMilestoneBackTime ?? timingContext.nextMilestoneCumeTime ?? timing.expectedEnd
 	}
 
 	let diff = PlaylistTiming.isPlaylistTimingNone(timing)
@@ -859,6 +878,20 @@ function getMilestoneBackTime(
 	const segment = segments.find((s) => s._id === part?.segmentId)
 	if (segment?.isMilestone) {
 		return segment.milestoneBackTime ?? null
+	}
+
+	return null
+}
+
+function getMilestoneCumeTime(
+	partInstancesMap: Map<PartId, PartInstance>,
+	segments: DBSegment[],
+	partId: PartId
+): number | null {
+	const part = partInstancesMap.get(partId)
+	const segment = segments.find((s) => s._id === part?.segmentId)
+	if (segment?.isMilestone) {
+		return segment.milestoneCumeTime ?? null
 	}
 
 	return null

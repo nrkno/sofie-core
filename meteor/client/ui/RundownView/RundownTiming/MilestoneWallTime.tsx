@@ -17,7 +17,7 @@ interface IMilestoneWallTimeProps {
  * @extends React.Component<IMilestoneWallTimeProps>
  */
 export const MilestoneWallTime = function MilestoneWallTime(props: IMilestoneWallTimeProps): JSX.Element | null {
-	const value = props.segment.milestoneBackTime
+	const value = props.segment.milestoneBackTime ?? props.segment.milestoneCumeTime
 
 	if (value === null || value === undefined) {
 		return null
