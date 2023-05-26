@@ -1,6 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import { PeripheralDevices, Studios } from '../collections'
+import { PeripheralDevices, RundownPlaylists, Studios } from '../collections'
 import { assertNever, clone, literal } from '@sofie-automation/corelib/dist/lib'
 import {
 	MappingExt,
@@ -513,6 +513,40 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					multi: true,
 				}
 			)
+		},
+	},
+
+	{
+		id: `RundownPlaylist move nextPartManual to nextPartInfo.manuallySelected`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await RundownPlaylists.countDocuments({
+				nextPartManual: { $exists: true },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const playlists = await RundownPlaylists.findFetchAsync({
+				nextPartManual: { $exists: true },
+			})
+
+			for (const playlist of playlists) {
+				const nextPartManual = !!(playlist as any).nextPartManual
+				await RundownPlaylists.mutableCollection.updateAsync(playlist._id, {
+					$set: playlist.nextPartInfo
+						? {
+								'nextPartInfo.manuallySelected': nextPartManual,
+						  }
+						: undefined,
+					$unset: {
+						nextPartManual: 1,
+					},
+				})
+			}
 		},
 	},
 ])
