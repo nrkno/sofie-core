@@ -8,6 +8,7 @@ import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { Link } from 'react-router-dom'
 import { Studio } from '../../../../lib/collections/Studios'
 import { ShowStyleBases } from '../../../collections'
+import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 
 interface IShowStyleGenericPropertiesProps {
 	showStyleBase: ShowStyleBase
@@ -23,7 +24,7 @@ export function ShowStyleGenericProperties({
 		<div>
 			<div>
 				<label className="field">
-					{t('Show Style Base Name')}
+					<LabelActual label={t('Show Style Base Name')} />
 					{!(showStyleBase && showStyleBase.name) ? (
 						<div className="error-notice inline">
 							<FontAwesomeIcon icon={faExclamationTriangle} /> {t('No name set')}

@@ -7,6 +7,7 @@ import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { EditAttribute } from '../../../../lib/EditAttribute'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
+import { LabelActual } from '../../../../lib/Components/LabelAndOverrides'
 
 interface SelectConfigPresetProps {
 	showStyleBase: ShowStyleBase
@@ -44,7 +45,7 @@ export function SelectConfigPreset({ showStyleBase }: SelectConfigPresetProps): 
 	return (
 		<div className="mod mvs mhs">
 			<label className="field">
-				{t('Blueprint config preset')}
+				<LabelActual label={t('Blueprint config preset')} />
 				{!showStyleBase.blueprintConfigPresetId && (
 					<div className="error-notice inline">
 						{t('Blueprint config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />

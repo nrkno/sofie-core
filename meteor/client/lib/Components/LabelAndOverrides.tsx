@@ -16,11 +16,13 @@ export interface LabelAndOverridesProps<T extends object, TValue> {
 	opPrefix: string
 	overrideHelper: OverrideOpHelperForItemContents
 
-	/** Move the label to after the input */
-	labelAfter?: boolean
 	formatDefaultValue?: (value: any) => string
 
 	children: (value: TValue, setValue: (value: TValue) => void) => React.ReactNode
+}
+
+export interface LabelActualProps {
+	label: string
 }
 
 export function LabelAndOverrides<T extends object, TValue = any>({
@@ -31,7 +33,6 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 	itemKey,
 	opPrefix,
 	overrideHelper,
-	labelAfter,
 	formatDefaultValue,
 }: LabelAndOverridesProps<T, TValue>): JSX.Element {
 	const { t } = useTranslation()
@@ -72,13 +73,9 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 
 	return (
 		<label className="field">
-			{!labelAfter && label}
+			<LabelActual label={label} />
 
 			{children(value, setValue)}
-
-			{labelAfter && label}
-
-			{hint && <span className="text-s dimmed">{hint}</span>}
 
 			{item.defaults && (
 				<>
@@ -92,18 +89,20 @@ export function LabelAndOverrides<T extends object, TValue = any>({
 					</button>
 				</>
 			)}
+
+			{hint && <span className="text-s dimmed field-hint">{hint}</span>}
 		</label>
 	)
 }
 
 export function LabelAndOverridesForCheckbox<T extends object>(
-	props: Omit<LabelAndOverridesProps<T, boolean>, 'labelAfter' | 'formatDefaultValue'>
+	props: Omit<LabelAndOverridesProps<T, boolean>, 'formatDefaultValue'>
 ): JSX.Element {
-	return <LabelAndOverrides<T, boolean> {...props} labelAfter={true} />
+	return <LabelAndOverrides<T, boolean> {...props} />
 }
 
 export function LabelAndOverridesForDropdown<T extends object, TValue = any>(
-	props: Omit<LabelAndOverridesProps<T, TValue>, 'labelAfter' | 'formatDefaultValue' | 'children'> & {
+	props: Omit<LabelAndOverridesProps<T, TValue>, 'formatDefaultValue' | 'children'> & {
 		options: DropdownInputOption<TValue>[]
 		children: (
 			value: TValue,
@@ -148,13 +147,13 @@ function formatDefaultMultilineTextValue(value: any) {
 }
 
 export function LabelAndOverridesForMultiLineText<T extends object>(
-	props: Omit<LabelAndOverridesProps<T, string[]>, 'labelAfter' | 'formatDefaultValue'>
+	props: Omit<LabelAndOverridesProps<T, string[]>, 'formatDefaultValue'>
 ): JSX.Element {
 	return <LabelAndOverrides<T, string[]> {...props} formatDefaultValue={formatDefaultMultilineTextValue} />
 }
 
 export function LabelAndOverridesForInt<T extends object>(
-	props: Omit<LabelAndOverridesProps<T, number>, 'labelAfter' | 'formatDefaultValue'> & {
+	props: Omit<LabelAndOverridesProps<T, number>, 'formatDefaultValue'> & {
 		zeroBased?: boolean
 	}
 ): JSX.Element {
@@ -170,4 +169,8 @@ export function LabelAndOverridesForInt<T extends object>(
 	)
 
 	return <LabelAndOverrides<T, number> {...props} formatDefaultValue={formatter} />
+}
+
+export function LabelActual(props: LabelActualProps): JSX.Element {
+	return <div className="label-actual">{props.label}</div>
 }

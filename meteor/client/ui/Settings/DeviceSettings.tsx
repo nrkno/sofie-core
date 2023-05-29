@@ -22,6 +22,7 @@ import { getExpectedLatency } from '@sofie-automation/corelib/dist/studio/playou
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices } from '../../collections'
 import { useTranslation } from 'react-i18next'
+import { LabelActual } from '../../lib/Components/LabelAndOverrides'
 
 interface IDeviceSettingsProps {
 	match: {
@@ -146,7 +147,7 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 						<div className="col c12 rl-c6">
 							<h2 className="mhn mtn">{t('Generic Properties')}</h2>
 							<label className="field">
-								{t('Device Name')}
+								<LabelActual label={t('Device Name')} />
 								{!(this.props.device && this.props.device.name) ? (
 									<div className="error-notice inline">
 										{t('No name set')} <FontAwesomeIcon icon={faExclamationTriangle} />
@@ -205,9 +206,10 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 							</div>
 						</div>
 					</div>
-					<div className="mod mhv mhs">
+
+					<div className="properties-grid">
 						<label className="field">
-							{t('Disable version check')}
+							<LabelActual label={t('Disable version check')} />
 							<EditAttribute
 								modifiedClassName="bghl"
 								attribute="disableVersionChecks"
@@ -217,11 +219,11 @@ export default translateWithTracker<IDeviceSettingsProps, IDeviceSettingsState, 
 								className="input"
 							/>
 						</label>
+
+						{device.category === PeripheralDeviceCategory.INGEST && <IngestDeviceCoreConfig device={device} />}
+
+						{this.renderSpecifics()}
 					</div>
-
-					{device.category === PeripheralDeviceCategory.INGEST && <IngestDeviceCoreConfig device={device} />}
-
-					{this.renderSpecifics()}
 
 					{this.props.device &&
 					this.props.device.type === PeripheralDeviceType.PACKAGE_MANAGER &&
@@ -255,19 +257,17 @@ function IngestDeviceCoreConfig({ device }: IngestDeviceCoreConfigProps) {
 
 	return (
 		<>
-			<div className="mod mhv mhs">
-				<label className="field">
-					{t('NRCS Name')}
-					<EditAttribute
-						modifiedClassName="bghl"
-						attribute="nrcsName"
-						obj={device}
-						type="text"
-						collection={PeripheralDevices}
-						className="form-control input text-input input-l"
-					/>
-				</label>
-			</div>
+			<label className="field">
+				<LabelActual label={t('NRCS Name')} />
+				<EditAttribute
+					modifiedClassName="bghl"
+					attribute="nrcsName"
+					obj={device}
+					type="text"
+					collection={PeripheralDevices}
+					className="form-control input text-input input-l"
+				/>
+			</label>
 		</>
 	)
 }

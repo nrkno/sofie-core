@@ -10,6 +10,7 @@ import { RedirectToBlueprintButton } from '../../../../lib/SettingsNavigation'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
+import { LabelActual } from '../../../../lib/Components/LabelAndOverrides'
 
 interface SelectBlueprintProps {
 	showStyleBase: ShowStyleBase
@@ -39,7 +40,7 @@ export function SelectBlueprint({ showStyleBase }: SelectBlueprintProps): JSX.El
 	return (
 		<div className="mod mvs mhs">
 			<label className="field">
-				{t('Blueprint')}
+				<LabelActual label={t('Blueprint')} />
 				{!showStyleBase.blueprintId ? (
 					<div className="error-notice inline">
 						{t('Blueprint not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
