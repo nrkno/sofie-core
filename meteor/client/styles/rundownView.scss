@@ -40,6 +40,10 @@ $segment-timeline-padding: $segment-header-height 0 1.5em;
 $segment-layer-height: 1.5em;
 $segment-layer-separator-color: transparentize(#000, 0.5);
 
+:root {
+	--popdown: 2rem;
+}
+
 // A utility mix-in, to add an interactive collapse triangle on an item
 @mixin collapse-triangle {
 	&::before {
@@ -2711,12 +2715,15 @@ svg.icon {
 	max-width: 26em;
 	font-weight: 400;
 
-	--popdown: 2em;
-
 	&.segment-timeline__mini-inspector--sub-inspector {
 		transform: none;
 		bottom: 100%;
 		width: 26em;
+	}
+
+	&.segment-timeline__mini-inspector--sub-inspector.segment-timeline__mini-inspector--sub-inspector-flipped {
+		bottom: auto;
+		top: 100%;
 	}
 
 	&.segment-timeline__mini-inspector--small-parts {
@@ -2864,10 +2871,6 @@ svg.icon {
 		> .segment-timeline__mini-inspector__notice-header {
 			background-color: $color-status-fatal;
 		}
-	}
-
-	&.segment-timeline__mini-inspector--pop-down {
-		transform: translate(-50%, var(--popdown));
 	}
 
 	&.segment-timeline__mini-inspector--graphics {

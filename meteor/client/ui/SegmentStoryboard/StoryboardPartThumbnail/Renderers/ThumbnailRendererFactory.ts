@@ -19,6 +19,7 @@ export interface IProps {
 	studio: UIStudio
 	pieceInstance: PieceUi
 	hoverScrubTimePosition: number
+	height: number
 	hovering: boolean
 	originPosition: OffsetPosition
 	layer: ISourceLayer | undefined

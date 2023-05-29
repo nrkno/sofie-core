@@ -1,38 +1,35 @@
 import Tooltip from 'rc-tooltip'
 import * as React from 'react'
-import {
-	DragElementWrapper,
-	DropTarget,
-	DropTargetCollector,
-	DropTargetConnector,
-	DropTargetMonitor,
-	DropTargetSpec,
-} from 'react-dnd'
-import { MeteorCall } from '../../lib/api/methods'
 import { PubSub } from '../../lib/api/pubsub'
-import { GENESIS_SYSTEM_VERSION, ICoreSystem } from '../../lib/collections/CoreSystem'
-import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
+import { GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../lib/collections/Rundowns'
 import { getAllowConfigure, getHelpMode } from '../lib/localStorage'
 import { extendMandadory, unprotectString } from '../../lib/lib'
-import { MeteorReactComponent } from '../lib/MeteorReactComponent'
-import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
+import { useSubscription, useTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../lib/Spinner'
-import { isRundownDragObject, RundownListDragDropTypes } from './RundownList/DragAndDropTypes'
 import { GettingStarted } from './RundownList/GettingStarted'
 import { RegisterHelp } from './RundownList/RegisterHelp'
 import { RundownDropZone } from './RundownList/RundownDropZone'
 import { RundownListFooter } from './RundownList/RundownListFooter'
 import RundownPlaylistDragLayer from './RundownList/RundownPlaylistDragLayer'
 import { RundownPlaylistUi } from './RundownList/RundownPlaylistUi'
-import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
-import { UIShowStyleBases, UIStudios } from './Collections'
-import { RundownId, RundownPlaylistId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { getCoreSystem, RundownLayouts, RundownPlaylists, Rundowns, ShowStyleVariants } from '../collections'
+import { UIStudios } from './Collections'
+import {
+	getCoreSystem,
+	RundownLayouts,
+	RundownPlaylists,
+	Rundowns,
+	ShowStyleBases,
+	ShowStyleVariants,
+} from '../collections'
 import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
+import { useEffect, useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -40,70 +37,71 @@ export enum ToolTipStep {
 	TOOLTIP_EXTRAS = 'TOOLTIP_EXTRAS',
 }
 
-interface IRundownsListProps {
-	coreSystem: ICoreSystem | undefined
-	rundownPlaylists: Array<RundownPlaylistUi>
-	rundownLayouts: Array<RundownLayoutBase>
-}
+export function RundownList(): JSX.Element {
+	const { t } = useTranslation()
 
-interface IRundownsListState {
-	subsReady: boolean
-}
+	const playlistIds = useTracker(
+		() =>
+			RundownPlaylists.find(undefined, {
+				projection: {
+					_id: 1,
+				},
+			}).map((doc) => doc._id),
+		[],
+		[]
+	)
 
-interface IRundownsListDropTargetProps {
-	connectDropTarget: DragElementWrapper<RundownPlaylistUi>
-	activateDropZone: boolean
-}
+	const showStyleBaseIds = useTracker(
+		() =>
+			Rundowns.find({ playlistId: { $in: playlistIds } }, { projection: { _id: 1 } }).map((doc) => doc.showStyleBaseId),
+		[playlistIds],
+		[]
+	)
 
-const dropTargetSpec: DropTargetSpec<IRundownsListProps> = {
-	canDrop: (props: IRundownsListProps, monitor: DropTargetMonitor) => {
-		/* We only accept rundowns from playlists with more than one rundown,
-			since there's no point in replacing a single rundown playlist with a new
-			single rundown playlist
-			*/
-		const item = monitor.getItem()
-		if (isRundownDragObject(item)) {
-			const { id } = item
-			const playlist = props.rundownPlaylists.find(
-				(playlist) => playlist.rundowns.findIndex((rundown) => rundown._id === id) > -1
-			)
-			return playlist?.rundowns !== undefined && playlist.rundowns.length > 1
-		}
+	const showStyleVariantIds = useTracker(
+		() =>
+			Rundowns.find({ playlistId: { $in: playlistIds } }, { projection: { _id: 1 } }).map(
+				(doc) => doc.showStyleVariantId
+			),
+		[playlistIds],
+		[]
+	)
 
-		console.debug('RundownList Not accepting drop of ', item)
-		return false
-	},
-	// hover: (props, monitor) => {
-	// 	console.debug('Rundown list hover', monitor.getItem())
-	// }
-}
+	const baseSubsReady = [
+		useSubscription(PubSub.rundownPlaylists, {}),
+		useSubscription(PubSub.uiStudio, null),
+		useSubscription(PubSub.rundownLayouts, {}),
 
-const dropTargetCollector: DropTargetCollector<IRundownsListDropTargetProps, IRundownsListProps> = function (
-	connect: DropTargetConnector,
-	monitor: DropTargetMonitor,
-	_props: IRundownsListProps
-): IRundownsListDropTargetProps {
-	const activateDropZone = monitor.canDrop() && monitor.isOver()
+		useSubscription(PubSub.rundowns, playlistIds, null),
 
-	return {
-		connectDropTarget: connect.dropTarget(),
-		activateDropZone,
-	}
-}
+		useSubscription(PubSub.showStyleBases, {
+			_id: { $in: showStyleBaseIds },
+		}),
 
-export const RundownList = translateWithTracker((): IRundownsListProps => {
-	const studios = UIStudios.find().fetch()
-	const showStyleBases = UIShowStyleBases.find().fetch()
-	const showStyleVariants = ShowStyleVariants.find().fetch()
-	const rundownLayouts = RundownLayouts.find({
-		$or: [{ exposeAsSelectableLayout: true }, { exposeAsStandalone: true }],
-	}).fetch()
+		useSubscription(PubSub.showStyleVariants, {
+			_id: { $in: showStyleVariantIds },
+		}),
+	].reduce((prev, current) => prev && current, true)
 
-	return {
-		coreSystem: getCoreSystem(),
-		rundownPlaylists: RundownPlaylists.find({}, { sort: { created: -1 } })
-			.fetch()
-			.map((playlist: RundownPlaylist) => {
+	const [subsReady, setSubsReady] = useState(false)
+
+	useEffect(() => {
+		if (baseSubsReady) setSubsReady(true)
+	}, [baseSubsReady])
+
+	const coreSystem = useTracker(() => getCoreSystem(), [])
+	const studios = useTracker(() => UIStudios.find().fetch(), [], [])
+	const rundownLayouts = useTracker(
+		() =>
+			RundownLayouts.find({
+				$or: [{ exposeAsSelectableLayout: true }, { exposeAsStandalone: true }],
+			}).fetch(),
+		[],
+		[]
+	)
+	const rundownPlaylists = useTracker(
+		() =>
+			RundownPlaylists.find({}, { sort: { created: -1 } }).map((playlist: RundownPlaylist) => {
 				const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
 
 				const airStatuses: string[] = []
@@ -119,14 +117,18 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 						unsyncedRundowns.push(rundown)
 					}
 
-					const showStyleBase = showStyleBases.find((style) => style._id === rundown.showStyleBaseId)
+					const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId, {
+						projection: { _id: 1, name: 1 },
+					}) as Pick<ShowStyleBase, '_id' | 'name'>
 					if (showStyleBase) {
-						const showStyleVariant = showStyleVariants.find((variant) => variant._id === rundown.showStyleVariantId)
+						const showStyleVariant = ShowStyleVariants.findOne(rundown.showStyleVariantId, {
+							projection: { _id: 1, name: 1 },
+						}) as Pick<ShowStyleVariant, '_id' | 'name'>
 
 						showStyles.push({
 							id: showStyleBase._id,
 							baseName: showStyleBase.name || undefined,
-							variantName: (showStyleVariant && showStyleVariant.name) || undefined,
+							variantName: (showStyleVariant && showStyleVariant.name) ?? undefined,
 						})
 					}
 				}
@@ -140,175 +142,94 @@ export const RundownList = translateWithTracker((): IRundownsListProps => {
 					studioName: studios.find((s) => s._id === playlist.studioId)?.name || '',
 				})
 			}),
-		rundownLayouts,
-	}
-})(
-	DropTarget(
-		RundownListDragDropTypes.RUNDOWN,
-		dropTargetSpec,
-		dropTargetCollector
-	)(
-		class RundownList extends MeteorReactComponent<
-			Translated<IRundownsListProps> & IRundownsListDropTargetProps,
-			IRundownsListState
-		> {
-			// private _subscriptions: Array<Meteor.SubscriptionHandle> = []
-			constructor(props: Translated<IRundownsListProps> & IRundownsListDropTargetProps) {
-				super(props)
+		[studios],
+		[]
+	)
 
-				this.state = {
-					subsReady: false,
-				}
-			}
+	const step = useMemo(() => {
+		let gotPlaylists = false
 
-			tooltipStep() {
-				let gotPlaylists = false
-
-				for (const playlist of this.props.rundownPlaylists) {
-					if (playlist.unsyncedRundowns.length > -1) {
-						gotPlaylists = true
-						break
-					}
-				}
-
-				if (this.props.coreSystem?.version === GENESIS_SYSTEM_VERSION && gotPlaylists === true) {
-					return getAllowConfigure() ? ToolTipStep.TOOLTIP_RUN_MIGRATIONS : ToolTipStep.TOOLTIP_START_HERE
-				} else {
-					return ToolTipStep.TOOLTIP_EXTRAS
-				}
-			}
-
-			componentDidMount(): void {
-				// Subscribe to data:
-				this.subscribe(PubSub.rundownPlaylists, {})
-				this.subscribe(PubSub.uiStudio, null)
-				this.subscribe(PubSub.rundownLayouts, {})
-
-				this.autorun(() => {
-					const showStyleVariantIds: Set<ShowStyleVariantId> = new Set()
-					const playlistIds: Set<RundownPlaylistId> = new Set(
-						RundownPlaylists.find()
-							.fetch()
-							.map((i) => i._id)
-					)
-
-					for (const rundown of Rundowns.find().fetch()) {
-						showStyleVariantIds.add(rundown.showStyleVariantId)
-
-						this.subscribe(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
-					}
-
-					this.subscribe(PubSub.showStyleVariants, {
-						_id: { $in: Array.from(showStyleVariantIds) },
-					})
-					this.subscribe(PubSub.rundowns, Array.from(playlistIds), null)
-				})
-
-				this.autorun(() => {
-					const subsReady = this.subscriptionsReady()
-					if (subsReady !== this.state.subsReady && !this.state.subsReady) {
-						this.setState({
-							subsReady: subsReady,
-						})
-					}
-				})
-			}
-
-			private handleRundownDrop(rundownId: RundownId) {
-				const { t } = this.props
-				doUserAction(t, 'drag&drop in dropzone', UserAction.RUNDOWN_ORDER_MOVE, (e, ts) =>
-					MeteorCall.userAction.moveRundown(e, ts, rundownId, null, [rundownId])
-				)
-			}
-
-			renderRundownPlaylists(list: RundownPlaylistUi[]) {
-				const { t, rundownLayouts } = this.props
-
-				if (list.length < 1) {
-					return <p>{t('There are no rundowns ingested into Sofie.')}</p>
-				}
-
-				return (
-					<ul className="rundown-playlists">
-						{list.map((playlist) => (
-							<RundownPlaylistUi
-								key={unprotectString(playlist._id)}
-								playlist={playlist}
-								rundownLayouts={rundownLayouts}
-							/>
-						))}
-					</ul>
-				)
-			}
-
-			render(): JSX.Element {
-				const { t, rundownPlaylists, activateDropZone, connectDropTarget } = this.props
-
-				const step = this.tooltipStep()
-
-				const showGettingStarted =
-					this.props.coreSystem?.version === GENESIS_SYSTEM_VERSION && rundownPlaylists.length === 0
-
-				const handleDropZoneDrop = (id: RundownId) => {
-					this.handleRundownDrop(id)
-				}
-
-				return (
-					<React.Fragment>
-						{this.props.coreSystem ? <RegisterHelp step={step} /> : null}
-
-						{showGettingStarted === true ? <GettingStarted step={step} /> : null}
-
-						{connectDropTarget(
-							<section className="mtl gutter has-statusbar">
-								<header className="mvs">
-									<h1>{t('Rundowns')}</h1>
-								</header>
-								{this.state.subsReady ? (
-									<section className="mod mvl rundown-list">
-										<header className="rundown-list__header">
-											<span className="rundown-list-item__name">
-												<Tooltip
-													overlay={t('Click on a rundown to control your studio')}
-													visible={getHelpMode()}
-													placement="top"
-												>
-													<span>{t('Rundown')}</span>
-												</Tooltip>
-											</span>
-											{/* <span className="rundown-list-item__problems">{t('Problems')}</span> */}
-											<span>{t('Show Style')}</span>
-											<span>{t('On Air Start Time')}</span>
-											<span>{t('Duration')}</span>
-											{this.props.rundownPlaylists.some(
-												(p) =>
-													!!PlaylistTiming.getExpectedEnd(p.timing) ||
-													p.rundowns.some((r) => PlaylistTiming.getExpectedEnd(r.timing))
-											) && <span>{t('Expected End Time')}</span>}
-											<span>{t('Last updated')}</span>
-											{this.props.rundownLayouts.some(
-												(l) =>
-													(RundownLayoutsAPI.isLayoutForShelf(l) && l.exposeAsStandalone) ||
-													(RundownLayoutsAPI.isLayoutForRundownView(l) && l.exposeAsSelectableLayout)
-											) && <span>{t('View Layout')}</span>}
-											<span>&nbsp;</span>
-										</header>
-										{this.renderRundownPlaylists(rundownPlaylists)}
-										<footer>
-											{<RundownDropZone activated={activateDropZone} rundownDropHandler={handleDropZoneDrop} />}
-										</footer>
-										<RundownPlaylistDragLayer />
-									</section>
-								) : (
-									<Spinner />
-								)}
-							</section>
-						)}
-
-						<RundownListFooter />
-					</React.Fragment>
-				)
+		for (const playlist of rundownPlaylists) {
+			if (playlist.unsyncedRundowns.length > -1) {
+				gotPlaylists = true
+				break
 			}
 		}
+
+		if (coreSystem?.version === GENESIS_SYSTEM_VERSION && gotPlaylists === true) {
+			return getAllowConfigure() ? ToolTipStep.TOOLTIP_RUN_MIGRATIONS : ToolTipStep.TOOLTIP_START_HERE
+		} else {
+			return ToolTipStep.TOOLTIP_EXTRAS
+		}
+	}, [coreSystem, rundownPlaylists])
+
+	const showGettingStarted = coreSystem?.version === GENESIS_SYSTEM_VERSION && rundownPlaylists.length === 0
+
+	function renderRundownPlaylists() {
+		if (rundownPlaylists.length < 1) {
+			return <p>{t('There are no rundowns ingested into Sofie.')}</p>
+		}
+
+		return (
+			<ul className="rundown-playlists">
+				{rundownPlaylists.map((playlist) => (
+					<RundownPlaylistUi key={unprotectString(playlist._id)} playlist={playlist} rundownLayouts={rundownLayouts} />
+				))}
+			</ul>
+		)
+	}
+
+	return (
+		<>
+			{coreSystem ? <RegisterHelp step={step} /> : null}
+
+			{showGettingStarted === true ? <GettingStarted step={step} /> : null}
+
+			<section className="mtl gutter has-statusbar">
+				<header className="mvs">
+					<h1>{t('Rundowns')}</h1>
+				</header>
+				{subsReady ? (
+					<section className="mod mvl rundown-list">
+						<header className="rundown-list__header">
+							<span className="rundown-list-item__name">
+								<Tooltip
+									overlay={t('Click on a rundown to control your studio')}
+									visible={getHelpMode()}
+									placement="top"
+								>
+									<span>{t('Rundown')}</span>
+								</Tooltip>
+							</span>
+							{/* <span className="rundown-list-item__problems">{t('Problems')}</span> */}
+							<span>{t('Show Style')}</span>
+							<span>{t('On Air Start Time')}</span>
+							<span>{t('Duration')}</span>
+							{rundownPlaylists.some(
+								(p) =>
+									!!PlaylistTiming.getExpectedEnd(p.timing) ||
+									p.rundowns.some((r) => PlaylistTiming.getExpectedEnd(r.timing))
+							) && <span>{t('Expected End Time')}</span>}
+							<span>{t('Last updated')}</span>
+							{rundownLayouts.some(
+								(l) =>
+									(RundownLayoutsAPI.isLayoutForShelf(l) && l.exposeAsStandalone) ||
+									(RundownLayoutsAPI.isLayoutForRundownView(l) && l.exposeAsSelectableLayout)
+							) && <span>{t('View Layout')}</span>}
+							<span>&nbsp;</span>
+						</header>
+						{renderRundownPlaylists()}
+						<footer>
+							<RundownDropZone />
+						</footer>
+						<RundownPlaylistDragLayer />
+					</section>
+				) : (
+					<Spinner />
+				)}
+			</section>
+
+			<RundownListFooter />
+		</>
 	)
-)
+}

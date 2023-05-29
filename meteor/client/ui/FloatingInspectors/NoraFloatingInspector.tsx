@@ -1,60 +1,59 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useImperativeHandle } from 'react'
 import { NoraContent } from '@sofie-automation/blueprints-integration'
 import Escape from './../../lib/Escape'
 
 interface IPropsHeader {
 	noraContent: NoraContent | undefined
 	style: React.CSSProperties
-	displayOn?: 'document' | 'viewport'
 }
 
 interface IStateHeader extends IPropsHeader {
 	show: boolean
-	flip: {
-		x: boolean
-		y: boolean
-	}
-	displayOn: 'document' | 'viewport'
 }
 
-export const NoraFloatingInspector: React.FunctionComponent<IPropsHeader> = (props: IPropsHeader) => {
+export const NoraFloatingInspector = React.forwardRef<HTMLDivElement, IPropsHeader>(function NoraFloatinInspector(
+	props: IPropsHeader,
+	ref
+) {
+	useImperativeHandle(
+		ref,
+		() => {
+			return NoraPreviewRenderer._singletonRef.rootElement
+		},
+		[]
+	)
+
 	useEffect(() => {
 		if (props.noraContent) {
-			NoraPreviewRenderer.show(props.noraContent, props.style, props.displayOn || 'document')
+			NoraPreviewRenderer.show()
 		}
 
 		return () => {
 			NoraPreviewRenderer.hide()
 		}
-	})
+	}, [])
+
+	useEffect(() => {
+		if (props.noraContent) {
+			NoraPreviewRenderer.update(props.noraContent, props.style)
+		}
+	}, [props.noraContent, props.style])
+
 	return null
-}
+})
 
 export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 	static _singletonRef: NoraPreviewRenderer
 
 	iframeElement: HTMLIFrameElement
+	rootElement: HTMLDivElement
 
-	private _intersections:
-		| {
-				boundingClientRect: {
-					top: number
-					right: number
-					bottom: number
-					left: number
-				}
-				intersectionRect: {
-					top: number
-					right: number
-					bottom: number
-					left: number
-				}
-		  }
-		| undefined
-	private _observer: IntersectionObserver | undefined
+	static update(noraContent: NoraContent, style: React.CSSProperties): void {
+		NoraPreviewRenderer._singletonRef._update(noraContent, style)
+	}
 
-	static show(noraContent: NoraContent, style: React.CSSProperties, displayOn: 'document' | 'viewport'): void {
-		NoraPreviewRenderer._singletonRef._show(noraContent, style, displayOn)
+	static show(): void {
+		NoraPreviewRenderer._singletonRef._show()
 	}
 
 	static hide(): void {
@@ -68,11 +67,6 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 			show: false,
 			noraContent: undefined,
 			style: {},
-			flip: {
-				x: false,
-				y: false,
-			},
-			displayOn: 'document',
 		}
 		NoraPreviewRenderer._singletonRef = this
 	}
@@ -107,42 +101,22 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		)
 	}
 
-	private _show(noraContent: NoraContent, style: React.CSSProperties, displayOn?: 'document' | 'viewport') {
+	private _show() {
+		this.setState({
+			show: true,
+		})
+	}
+
+	private _update(noraContent: NoraContent, style: React.CSSProperties) {
 		if (JSON.stringify(this.state.noraContent) !== JSON.stringify(noraContent)) {
 			if (this.iframeElement && this.iframeElement.contentWindow) {
 				this.postNoraEvent(this.iframeElement.contentWindow, noraContent)
 			}
 		}
 
-		let x = this.state.flip.x
-		let y = this.state.flip.y
-
-		if (this._intersections) {
-			if (y && this._intersections.intersectionRect.bottom < this._intersections.boundingClientRect.bottom) {
-				// flip to bottom
-				y = false
-			} else if (!y && this._intersections.intersectionRect.top > this._intersections.boundingClientRect.top) {
-				// flip to top
-				y = true
-			}
-			if (x && this._intersections.intersectionRect.right < this._intersections.boundingClientRect.right) {
-				// flip to bottom
-				x = false
-			} else if (!x && this._intersections.intersectionRect.left > this._intersections.boundingClientRect.left) {
-				// flip to top
-				x = true
-			}
-		}
-
 		this.setState({
-			show: true,
 			noraContent,
 			style,
-			flip: {
-				x,
-				y,
-			},
-			displayOn: displayOn || 'document',
 		})
 	}
 
@@ -172,36 +146,15 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 		for (let i = 0; i < 50; i++) {
 			options.threshold.push(i / 50)
 		}
-
-		this._observer = new IntersectionObserver((entries) => {
-			entries.forEach((entry) => {
-				if (entry.target === e) {
-					this._intersections = {
-						boundingClientRect: entry.boundingClientRect,
-						intersectionRect: entry.intersectionRect,
-					}
-				}
-			})
-		}, options)
-		this._observer.observe(e)
 	}
 
-	componentWillUnmount(): void {
-		if (this._observer) this._observer.disconnect()
+	private _setRootElement = (e: HTMLDivElement) => {
+		this.rootElement = e
 	}
 
 	private getElStyle() {
 		const style = { ...this.state.style }
 		style.visibility = this.state.show ? 'visible' : 'hidden'
-
-		if (this.state.flip.x && this.state.flip.y) {
-			style.transform = 'translate(0, var(--popdown))'
-		} else if (this.state.flip.x) {
-			style.transform = 'translate(0, -100%)'
-		} else if (this.state.flip.y) {
-			style.transform = 'translate(-100%, var(--popdown))'
-		}
-
 		return style
 	}
 
@@ -211,10 +164,11 @@ export class NoraPreviewRenderer extends React.Component<{}, IStateHeader> {
 
 		return (
 			<React.Fragment>
-				<Escape to={this.state.displayOn}>
+				<Escape to="document">
 					<div
 						className="segment-timeline__mini-inspector segment-timeline__mini-inspector--graphics segment-timeline__mini-inspector--graphics--preview"
 						style={this.getElStyle()}
+						ref={this._setRootElement}
 					>
 						<div className="preview">
 							<img width="100%" src="/images/previewBG.jpg" alt="" />

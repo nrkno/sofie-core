@@ -123,7 +123,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 				)}
 				{this.props.piece.instance.piece.content ? (
 					<SplitsFloatingInspector
-						floatingInspectorStyle={this.getFloatingInspectorStyle()}
+						position={this.getFloatingInspectorStyle()}
 						content={this.props.piece.instance.piece.content as Partial<SplitsContent>}
 						itemElement={this.props.itemElement}
 						showMiniInspector={this.props.showMiniInspector}
