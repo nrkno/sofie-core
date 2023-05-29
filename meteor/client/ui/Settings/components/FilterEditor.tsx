@@ -193,140 +193,150 @@ export default withTranslation()(
 
 					<label className="field">
 						<LabelActual label={t('Source Layers')} />
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`filters.${index}.sourceLayerIds`}
-							obj={item}
-							type="checkbox"
-							collection={RundownLayouts}
-							className="mod mas"
-							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={() => undefined}
-						/>
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`filters.${index}.sourceLayerIds`}
-							obj={item}
-							options={Object.values<ISourceLayer | undefined>(this.props.sourceLayers)
-								.filter((s): s is ISourceLayer => !!s)
-								.sort((a, b) => a._rank - b._rank)
-								.map((l) => ({ name: l.name, value: l._id }))}
-							type="multiselect"
-							label={t('Filter Disabled')}
-							collection={RundownLayouts}
-							className="input text-input input-l dropdown"
-							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
-						/>
+						<div>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.sourceLayerIds`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mls mvxs"
+								mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+								mutateUpdateValue={() => undefined}
+							/>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.sourceLayerIds`}
+								obj={item}
+								options={Object.values<ISourceLayer | undefined>(this.props.sourceLayers)
+									.filter((s): s is ISourceLayer => !!s)
+									.sort((a, b) => a._rank - b._rank)
+									.map((l) => ({ name: l.name, value: l._id }))}
+								type="multiselect"
+								label={t('Filter Disabled')}
+								collection={RundownLayouts}
+								className="input text-input input-l dropdown"
+								mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
+							/>
+						</div>
 					</label>
 
 					<label className="field">
 						<LabelActual label={t('Source Layer Types')} />
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`filters.${index}.sourceLayerTypes`}
-							obj={item}
-							type="checkbox"
-							collection={RundownLayouts}
-							className="mod mas"
-							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={() => undefined}
-						/>
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`filters.${index}.sourceLayerTypes`}
-							obj={item}
-							options={SourceLayerType}
-							type="multiselect"
-							optionsAreNumbers={true}
-							label={t('Filter disabled')}
-							collection={RundownLayouts}
-							className="input text-input input-l dropdown"
-							mutateUpdateValue={(v: string[] | undefined) =>
-								v && v.length > 0 ? v.map((a) => parseInt(a, 10)) : undefined
-							}
-						/>
+						<div>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.sourceLayerTypes`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mls mvxs"
+								mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+								mutateUpdateValue={() => undefined}
+							/>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.sourceLayerTypes`}
+								obj={item}
+								options={SourceLayerType}
+								type="multiselect"
+								optionsAreNumbers={true}
+								label={t('Filter disabled')}
+								collection={RundownLayouts}
+								className="input text-input input-l dropdown"
+								mutateUpdateValue={(v: string[] | undefined) =>
+									v && v.length > 0 ? v.map((a) => parseInt(a, 10)) : undefined
+								}
+							/>
+						</div>
 					</label>
 
 					<label className="field">
 						<LabelActual label={t('Output Channels')} />
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`filters.${index}.outputLayerIds`}
-							obj={item}
-							type="checkbox"
-							collection={RundownLayouts}
-							className="mod mas"
-							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={() => undefined}
-						/>
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`filters.${index}.outputLayerIds`}
-							obj={item}
-							options={Object.values<IOutputLayer | undefined>(this.props.outputLayers)
-								.filter((s): s is IOutputLayer => !!s)
-								.sort((a, b) => a._rank - b._rank)
-								.map((l) => ({ name: l.name, value: l._id }))}
-							type="multiselect"
-							label={t('Filter Disabled')}
-							collection={RundownLayouts}
-							className="input text-input input-l dropdown"
-							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
-						/>
+						<div>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.outputLayerIds`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mls mvxs"
+								mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+								mutateUpdateValue={() => undefined}
+							/>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.outputLayerIds`}
+								obj={item}
+								options={Object.values<IOutputLayer | undefined>(this.props.outputLayers)
+									.filter((s): s is IOutputLayer => !!s)
+									.sort((a, b) => a._rank - b._rank)
+									.map((l) => ({ name: l.name, value: l._id }))}
+								type="multiselect"
+								label={t('Filter Disabled')}
+								collection={RundownLayouts}
+								className="input text-input input-l dropdown"
+								mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
+							/>
+						</div>
 					</label>
 
 					<label className="field">
 						<LabelActual label={t('Label contains')} />
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`filters.${index}.label`}
-							obj={item}
-							type="checkbox"
-							collection={RundownLayouts}
-							className="mod mas"
-							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={() => undefined}
-						/>
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`filters.${index}.label`}
-							obj={item}
-							type="text"
-							collection={RundownLayouts}
-							className="input text-input input-l"
-							label={t('Filter Disabled')}
-							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? undefined : v.join(', '))}
-							mutateUpdateValue={(v) =>
-								v === undefined || v.length === 0 ? undefined : v.split(',').map((i) => i.trim())
-							}
-						/>
+						<div>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.label`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mls mvxs"
+								mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+								mutateUpdateValue={() => undefined}
+							/>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.label`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+								label={t('Filter Disabled')}
+								mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? undefined : v.join(', '))}
+								mutateUpdateValue={(v) =>
+									v === undefined || v.length === 0 ? undefined : v.split(',').map((i) => i.trim())
+								}
+							/>
+						</div>
 					</label>
 
 					<label className="field">
 						<LabelActual label={t('Tags must contain')} />
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`filters.${index}.tags`}
-							obj={item}
-							type="checkbox"
-							collection={RundownLayouts}
-							className="mod mas"
-							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={() => undefined}
-						/>
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`filters.${index}.tags`}
-							obj={item}
-							type="text"
-							collection={RundownLayouts}
-							className="input text-input input-l"
-							label={t('Filter Disabled')}
-							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? undefined : v.join(', '))}
-							mutateUpdateValue={(v) =>
-								v === undefined || v.length === 0 ? undefined : v.split(',').map((i) => i.trim())
-							}
-						/>
+						<div>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.tags`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mls mvxs"
+								mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+								mutateUpdateValue={() => undefined}
+							/>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.tags`}
+								obj={item}
+								type="text"
+								collection={RundownLayouts}
+								className="input text-input input-l"
+								label={t('Filter Disabled')}
+								mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? undefined : v.join(', '))}
+								mutateUpdateValue={(v) =>
+									v === undefined || v.length === 0 ? undefined : v.split(',').map((i) => i.trim())
+								}
+							/>
+						</div>
 					</label>
 
 					{isDashboardLayout && (
@@ -1303,59 +1313,63 @@ export default withTranslation()(
 				<React.Fragment>
 					<label className="field">
 						{activeLayerTitle}
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`filters.${index}.requiredLayerIds`}
-							obj={item}
-							type="checkbox"
-							collection={RundownLayouts}
-							className="mod mas"
-							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={() => undefined}
-						/>
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`filters.${index}.requiredLayerIds`}
-							obj={item}
-							options={Object.values<ISourceLayer | undefined>(this.props.sourceLayers)
-								.filter((s): s is ISourceLayer => !!s)
-								.sort((a, b) => a._rank - b._rank)
-								.map((l) => ({ name: l.name, value: l._id }))}
-							type="multiselect"
-							label={t('Disabled')}
-							collection={RundownLayouts}
-							className="input text-input input-l dropdown"
-							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
-						/>
+						<div>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.requiredLayerIds`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+								mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+								mutateUpdateValue={() => undefined}
+							/>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.requiredLayerIds`}
+								obj={item}
+								options={Object.values<ISourceLayer | undefined>(this.props.sourceLayers)
+									.filter((s): s is ISourceLayer => !!s)
+									.sort((a, b) => a._rank - b._rank)
+									.map((l) => ({ name: l.name, value: l._id }))}
+								type="multiselect"
+								label={t('Disabled')}
+								collection={RundownLayouts}
+								className="input text-input input-l dropdown"
+								mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
+							/>
+						</div>
 						<span className="text-s dimmed field-hint">{activeLayersLabel}</span>
 					</label>
 
 					<label className="field">
 						<LabelActual label={t('Also Require Source Layers')} />
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`filters.${index}.additionalLayers`}
-							obj={item}
-							type="checkbox"
-							collection={RundownLayouts}
-							className="mod mas"
-							mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
-							mutateUpdateValue={() => undefined}
-						/>
-						<EditAttribute
-							modifiedClassName="bghl"
-							attribute={`filters.${index}.additionalLayers`}
-							obj={item}
-							options={Object.values<ISourceLayer | undefined>(this.props.sourceLayers)
-								.filter((s): s is ISourceLayer => !!s)
-								.sort((a, b) => a._rank - b._rank)
-								.map((l) => ({ name: l.name, value: l._id }))}
-							type="multiselect"
-							label={t('Disabled')}
-							collection={RundownLayouts}
-							className="input text-input input-l dropdown"
-							mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
-						/>
+						<div>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.additionalLayers`}
+								obj={item}
+								type="checkbox"
+								collection={RundownLayouts}
+								className="mod mas"
+								mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? false : true)}
+								mutateUpdateValue={() => undefined}
+							/>
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute={`filters.${index}.additionalLayers`}
+								obj={item}
+								options={Object.values<ISourceLayer | undefined>(this.props.sourceLayers)
+									.filter((s): s is ISourceLayer => !!s)
+									.sort((a, b) => a._rank - b._rank)
+									.map((l) => ({ name: l.name, value: l._id }))}
+								type="multiselect"
+								label={t('Disabled')}
+								collection={RundownLayouts}
+								className="input text-input input-l dropdown"
+								mutateUpdateValue={(v) => (v && v.length > 0 ? v : undefined)}
+							/>
+						</div>
 						<span className="text-s dimmed field-hint">
 							{t('Specify additional layers where at least one layer must have an active piece')}
 						</span>
@@ -1393,93 +1407,101 @@ export default withTranslation()(
 					{!options?.x && (
 						<label className="field">
 							<LabelActual label={t('X')} />
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.x`}
-								obj={item}
-								type="float"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.xUnit`}
-								obj={item}
-								options={Object.values<DashboardPanelUnit>(DashboardPanelUnit as any)}
-								type="dropdown"
-								collection={RundownLayouts}
-								className="input text-input"
-								mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
-							/>
+							<div>
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.x`}
+									obj={item}
+									type="float"
+									collection={RundownLayouts}
+									className="input text-input input-l"
+								/>
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.xUnit`}
+									obj={item}
+									options={Object.values<DashboardPanelUnit>(DashboardPanelUnit as any)}
+									type="dropdown"
+									collection={RundownLayouts}
+									className="input text-input"
+									mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
+								/>
+							</div>
 						</label>
 					)}
 					{!options?.y && (
 						<label className="field">
 							<LabelActual label={t('Y')} />
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.y`}
-								obj={item}
-								type="float"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.yUnit`}
-								obj={item}
-								options={Object.values<DashboardPanelUnit>(DashboardPanelUnit as any)}
-								type="dropdown"
-								collection={RundownLayouts}
-								className="input text-input"
-								mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
-							/>
+							<div>
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.y`}
+									obj={item}
+									type="float"
+									collection={RundownLayouts}
+									className="input text-input input-l"
+								/>
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.yUnit`}
+									obj={item}
+									options={Object.values<DashboardPanelUnit>(DashboardPanelUnit as any)}
+									type="dropdown"
+									collection={RundownLayouts}
+									className="input text-input"
+									mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
+								/>
+							</div>
 						</label>
 					)}
 					{!options?.width && (
 						<label className="field">
 							<LabelActual label={t('Width')} />
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.width`}
-								obj={item}
-								type="float"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.widthUnit`}
-								obj={item}
-								options={Object.values<DashboardPanelUnit>(DashboardPanelUnit as any)}
-								type="dropdown"
-								collection={RundownLayouts}
-								className="input text-input"
-								mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
-							/>
+							<div>
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.width`}
+									obj={item}
+									type="float"
+									collection={RundownLayouts}
+									className="input text-input input-l"
+								/>
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.widthUnit`}
+									obj={item}
+									options={Object.values<DashboardPanelUnit>(DashboardPanelUnit as any)}
+									type="dropdown"
+									collection={RundownLayouts}
+									className="input text-input"
+									mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
+								/>
+							</div>
 						</label>
 					)}
 					{!options?.height && (
 						<label className="field">
 							<LabelActual label={t('Height')} />
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.height`}
-								obj={item}
-								type="float"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							/>
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={`filters.${index}.heightUnit`}
-								obj={item}
-								options={Object.values<DashboardPanelUnit>(DashboardPanelUnit as any)}
-								type="dropdown"
-								collection={RundownLayouts}
-								className="input text-input"
-								mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
-							/>
+							<div>
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.height`}
+									obj={item}
+									type="float"
+									collection={RundownLayouts}
+									className="input text-input input-l"
+								/>
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute={`filters.${index}.heightUnit`}
+									obj={item}
+									options={Object.values<DashboardPanelUnit>(DashboardPanelUnit as any)}
+									type="dropdown"
+									collection={RundownLayouts}
+									className="input text-input"
+									mutateDisplayValue={(v) => (v === undefined ? DashboardPanelUnit.EM : v)}
+								/>
+							</div>
 						</label>
 					)}
 					{!options?.scale && (

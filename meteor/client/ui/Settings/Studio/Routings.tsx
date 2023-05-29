@@ -400,24 +400,26 @@ export const StudioRoutings = withTranslation()(
 										<>
 											<label className="field">
 												<LabelActual label={t('Device ID')} />
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={`routeSets.${routeSetId}.routes.${index}.remapping.deviceId`}
-													obj={this.props.studio}
-													type="checkbox"
-													collection={Studios}
-													className="mod mvn mhs"
-													mutateDisplayValue={(v) => (v === undefined ? false : true)}
-													mutateUpdateValue={() => undefined}
-												/>
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={`routeSets.${routeSetId}.routes.${index}.remapping.deviceId`}
-													obj={this.props.studio}
-													type="text"
-													collection={Studios}
-													className="input text-input input-l"
-												></EditAttribute>
+												<div>
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`routeSets.${routeSetId}.routes.${index}.remapping.deviceId`}
+														obj={this.props.studio}
+														type="checkbox"
+														collection={Studios}
+														className="mrs mvxs"
+														mutateDisplayValue={(v) => (v === undefined ? false : true)}
+														mutateUpdateValue={() => undefined}
+													/>
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`routeSets.${routeSetId}.routes.${index}.remapping.deviceId`}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+												</div>
 											</label>
 
 											<DeviceMappingSettings
@@ -627,26 +629,28 @@ export const StudioRoutings = withTranslation()(
 
 										<label className="field">
 											<LabelActual label={t('Exclusivity group')} />
-											<EditAttribute
-												modifiedClassName="bghl"
-												attribute={`routeSets.${routeId}.exclusivityGroup`}
-												obj={this.props.studio}
-												type="checkbox"
-												collection={Studios}
-												className="mod mas"
-												mutateDisplayValue={(v) => (v === undefined ? false : true)}
-												mutateUpdateValue={() => undefined}
-											/>
-											<EditAttribute
-												modifiedClassName="bghl"
-												attribute={`routeSets.${routeId}.exclusivityGroup`}
-												obj={this.props.studio}
-												type="dropdown"
-												options={Object.keys(this.props.studio.routeSetExclusivityGroups)}
-												mutateDisplayValue={(v) => (v === undefined ? 'None' : v)}
-												collection={Studios}
-												className="input text-input input-l"
-											></EditAttribute>
+											<div>
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={`routeSets.${routeId}.exclusivityGroup`}
+													obj={this.props.studio}
+													type="checkbox"
+													className="mrs mvxs"
+													collection={Studios}
+													mutateDisplayValue={(v) => (v === undefined ? false : true)}
+													mutateUpdateValue={() => undefined}
+												/>
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={`routeSets.${routeId}.exclusivityGroup`}
+													obj={this.props.studio}
+													type="dropdown"
+													options={Object.keys(this.props.studio.routeSetExclusivityGroups)}
+													mutateDisplayValue={(v) => (v === undefined ? 'None' : v)}
+													collection={Studios}
+													className="input text-input input-l"
+												></EditAttribute>
+											</div>
 											<span className="text-s dimmed field-hint">
 												{t('If set, only one Route Set will be active per exclusivity group')}
 											</span>
