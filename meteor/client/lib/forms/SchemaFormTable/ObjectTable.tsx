@@ -150,9 +150,9 @@ export const SchemaFormObjectTable = ({
 		)
 	} else {
 		return (
-			<>
+			<div className="settings-config-table">
 				{titleElement}
-				<table className={'expando setings-config-table table'}>
+				<table className={'expando table'}>
 					<thead>
 						<tr className="hl">
 							{summaryFields.map((col) => {
@@ -204,7 +204,7 @@ export const SchemaFormObjectTable = ({
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 				</div>
-			</>
+			</div>
 		)
 	}
 }
