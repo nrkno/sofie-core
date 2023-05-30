@@ -19,6 +19,7 @@ import { getSchemaDefaultValues, SchemaFormUIField } from '@sofie-automation/sha
 import { hasOpWithPath } from '../../Components/util'
 import { ArrayTableRow } from './ArrayTableRow'
 import { OverrideOpHelperArrayTable } from './ArrayTableOpHelper'
+import { SchemaFormSectionHeader } from '../SchemaFormSectionHeader'
 
 interface SchemaFormArrayTableProps {
 	/** Schema for each row in the table */
@@ -107,10 +108,15 @@ export const SchemaFormArrayTable = ({
 	)
 
 	const title = schema[SchemaFormUIField.Title]
+	const description = schema[SchemaFormUIField.Description]
+
+	const titleElement = title && (
+		<SchemaFormSectionHeader title={title} description={description} translationNamespaces={translationNamespaces} />
+	)
 
 	return (
 		<div className="settings-config-table">
-			{title && <h2 className="mhn">{translateStringIfHasNamespaces(title, translationNamespaces)}</h2>}
+			{titleElement}
 			<table className={'expando table'}>
 				<thead>
 					<tr className="hl">

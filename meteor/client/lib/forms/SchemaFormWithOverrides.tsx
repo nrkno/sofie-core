@@ -21,6 +21,7 @@ import { SchemaFormCommonProps, SchemaFormSofieEnumDefinition, translateStringIf
 import { MultiSelectInputControl } from '../Components/MultiSelectInput'
 import { SchemaFormObjectTable } from './SchemaFormTable/ObjectTable'
 import { SchemaFormUIField } from '@sofie-automation/blueprints-integration'
+import { SchemaFormSectionHeader } from './SchemaFormSectionHeader'
 
 interface SchemaFormWithOverridesProps extends SchemaFormCommonProps {
 	/** Base path of the schema within the document */
@@ -147,9 +148,16 @@ const ArrayFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 }
 
 const ObjectFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
+	const title = props.schema[SchemaFormUIField.Title]
+	const description = props.schema[SchemaFormUIField.Description]
+
 	return (
 		<>
-			{' '}
+			<SchemaFormSectionHeader
+				title={title}
+				description={description}
+				translationNamespaces={props.translationNamespaces}
+			/>{' '}
 			{Object.entries<JSONSchema>(props.schema.properties || {}).map(([index, schema]) => {
 				const path = joinObjectPathFragments(props.attr, index)
 				return (
