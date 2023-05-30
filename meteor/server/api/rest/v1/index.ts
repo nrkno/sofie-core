@@ -2,12 +2,12 @@ import Koa from 'koa'
 import cors from '@koa/cors'
 import KoaRouter from '@koa/router'
 import bodyParser from 'koa-bodyparser'
-import { logger } from '../../logging'
+import { logger } from '../../../logging'
 import { WebApp } from 'meteor/webapp'
-import { check, Match } from '../../../lib/check'
+import { check, Match } from '../../../../lib/check'
 import { Meteor } from 'meteor/meteor'
-import { ClientAPI } from '../../../lib/api/client'
-import { getCurrentTime, getRandomString, protectString, unprotectString } from '../../../lib/lib'
+import { ClientAPI } from '../../../../lib/api/client'
+import { getCurrentTime, getRandomString, protectString, unprotectString } from '../../../../lib/lib'
 import {
 	APIPeripheralDevice,
 	PeripheralDeviceActionRestart,
@@ -24,13 +24,13 @@ import {
 	MigrationData,
 	PendingMigrations,
 	PeripheralDeviceAction,
-} from '../../../lib/api/rest'
-import { MeteorCall, MethodContextAPI } from '../../../lib/api/methods'
-import { ServerClientAPI } from '../client'
-import { ServerRundownAPI } from '../rundown'
-import { triggerWriteAccess } from '../../security/lib/securityVerify'
+} from '../../../../lib/api/rest'
+import { MeteorCall, MethodContextAPI } from '../../../../lib/api/methods'
+import { ServerClientAPI } from '../../client'
+import { ServerRundownAPI } from '../../rundown'
+import { triggerWriteAccess } from '../../../security/lib/securityVerify'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
-import { CURRENT_SYSTEM_VERSION } from '../../migration/currentSystemVersion'
+import { CURRENT_SYSTEM_VERSION } from '../../../migration/currentSystemVersion'
 import {
 	AdLibActionId,
 	BlueprintId,
@@ -47,11 +47,11 @@ import {
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import { StudioContentWriteAccess } from '../../security/studio'
-import { ServerPlayoutAPI } from '../playout/playout'
-import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
+import { StudioContentWriteAccess } from '../../../security/studio'
+import { ServerPlayoutAPI } from '../../playout/playout'
+import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
 import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { Credentials } from '../../security/lib/credentials'
+import { Credentials } from '../../../security/lib/credentials'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
 import {
 	AdLibActions,
@@ -66,7 +66,7 @@ import {
 	ShowStyleBases,
 	ShowStyleVariants,
 	Studios,
-} from '../../collections'
+} from '../../../collections'
 import {
 	APIBlueprintFrom,
 	APIPeripheralDeviceFrom,
@@ -82,16 +82,16 @@ import {
 	runUpgradeForStudio,
 	validateConfigForShowStyleBase,
 	validateConfigForStudio,
-} from '../../migration/upgrades'
+} from '../../../migration/upgrades'
 import { MigrationStepInputResult, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
-import { Studio } from '../../../lib/collections/Studios'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
+import { Studio } from '../../../../lib/collections/Studios'
+import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { executePeripheralDeviceFunction } from '../peripheralDevice/executeFunction'
+import { executePeripheralDeviceFunction } from '../../peripheralDevice/executeFunction'
 
 function restAPIUserEvent(
 	ctx: Koa.ParameterizedContext<
