@@ -20,6 +20,7 @@ import {
 	ObjectOverrideSetOp,
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { JSONBlobStringify, JSONSchema } from '@sofie-automation/blueprints-integration'
 
 /*
  * **************************************************************************************
@@ -547,6 +548,63 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					},
 				})
 			}
+		},
+	},
+
+	{
+		id: `PeripheralDevice ensure deviceConfigSchema and subdeviceManifest exists`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await PeripheralDevices.countDocuments({
+				parentDeviceId: { $exists: false },
+				$or: [
+					{
+						'configManifest.deviceConfigSchema': {
+							$exists: false,
+						},
+					},
+					{
+						'configManifest.subdeviceManifest': {
+							$exists: false,
+						},
+					},
+				],
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			await PeripheralDevices.updateAsync(
+				{
+					parentDeviceId: { $exists: false },
+					$or: [
+						{
+							'configManifest.deviceConfigSchema': {
+								$exists: false,
+							},
+						},
+						{
+							'configManifest.subdeviceManifest': {
+								$exists: false,
+							},
+						},
+					],
+				},
+				{
+					$set: {
+						configManifest: {
+							deviceConfigSchema: JSONBlobStringify<JSONSchema>({}),
+							subdeviceManifest: {},
+						},
+					},
+				},
+				{
+					multi: true,
+				}
+			)
 		},
 	},
 ])
