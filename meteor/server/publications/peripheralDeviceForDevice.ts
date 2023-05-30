@@ -109,9 +109,9 @@ async function setupPeripheralDevicePublicationObservers(
 	triggerUpdate: TriggerUpdate<PeripheralDeviceForDeviceUpdateProps>
 ): Promise<Meteor.LiveQueryHandle[]> {
 	const studioObserver = await ReactiveMongoObserverGroup(async () => {
-		const peripheralDeviceCompact = PeripheralDevices.findOneAsync(args.deviceId, { fields: { studioId: 1 } }) as
-			| Pick<PeripheralDevice, 'studioId'>
-			| undefined
+		const peripheralDeviceCompact = (await PeripheralDevices.findOneAsync(args.deviceId, {
+			fields: { studioId: 1 },
+		})) as Pick<PeripheralDevice, 'studioId'> | undefined
 
 		if (peripheralDeviceCompact?.studioId) {
 			return [
