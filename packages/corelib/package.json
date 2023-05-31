@@ -16,18 +16,18 @@
 	},
 	"homepage": "https://github.com/nrkno/tv-automation-server-core/blob/master/packages/corelib#readme",
 	"scripts": {
-		"build": "rimraf dist && yarn build:main",
-		"build:main": "tsc -p tsconfig.build.json",
-		"lint:raw": "eslint --ext .ts --ext .js --ignore-pattern dist",
-		"lint": "yarn lint:raw .",
-		"unit": "jest",
-		"test": "yarn lint && yarn unit",
-		"watch": "jest --watch",
-		"cov": "jest --coverage; open-cli coverage/lcov-report/index.html",
+		"build": "run -T rimraf dist && run build:main",
+		"build:main": "run -T tsc -p tsconfig.build.json",
+		"lint:raw": "run -T eslint --ext .ts --ext .js --ignore-pattern dist",
+		"lint": "run lint:raw .",
+		"unit": "run -T jest",
+		"test": "run lint && run unit",
+		"watch": "run -T jest --watch",
+		"cov": "run -T jest --coverage; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
-		"validate:dependencies": "yarn audit --groups dependencies && yarn license-validate",
-		"validate:dev-dependencies": "yarn audit --groups devDependencies",
-		"license-validate": "yarn sofie-licensecheck"
+		"validate:dependencies": "yarn npm audit --environment production && run license-validate",
+		"validate:dev-dependencies": "yarn npm audit --environment development",
+		"license-validate": "run -T sofie-licensecheck"
 	},
 	"engines": {
 		"node": "^14.19 || ^16.14 || ^18.12"
@@ -39,13 +39,14 @@
 		"/LICENSE"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "link:../blueprints-integration",
-		"@sofie-automation/shared-lib": "link:../shared-lib",
+		"@sofie-automation/blueprints-integration": "1.50.0-in-development",
+		"@sofie-automation/shared-lib": "1.50.0-in-development",
 		"fast-clone": "^1.5.13",
 		"i18next": "^21.9.1",
 		"influx": "^5.9.3",
 		"nanoid": "^3.3.4",
 		"object-path": "^0.11.8",
+		"prom-client": "^14.2.0",
 		"timecode": "0.0.4",
 		"tslib": "^2.4.0",
 		"type-fest": "^2.19.0",
@@ -57,10 +58,11 @@
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {
 		"*.{js,css,json,md,scss}": [
-			"prettier"
+			"yarn run -T prettier"
 		],
 		"*.{ts,tsx}": [
 			"yarn lint:raw"
 		]
-	}
+	},
+	"packageManager": "yarn@3.5.0"
 }

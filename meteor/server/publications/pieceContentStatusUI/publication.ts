@@ -25,7 +25,7 @@ import {
 	Studios,
 } from '../../collections'
 import { Studio } from '../../../lib/collections/Studios'
-import { literal, protectString } from '../../../lib/lib'
+import { literal, protectString, waitForPromise } from '../../../lib/lib'
 import { checkPieceContentStatus, PieceContentStatusObj } from '../../../lib/mediaObjects'
 import {
 	CustomPublishCollection,
@@ -160,33 +160,45 @@ async function setupUIPieceContentStatusesPublicationObservers(
 	return [
 		rundownsObserver,
 
-		Studios.find({ _id: playlist.studioId }).observeChanges({
-			added: (id) => triggerUpdate({ invalidateStudio: id }),
-			changed: (id) => triggerUpdate({ invalidateStudio: id }),
-			removed: (id) => triggerUpdate({ invalidateStudio: id }),
-		}),
+		Studios.observeChanges(
+			{ _id: playlist.studioId },
+			{
+				added: (id) => triggerUpdate({ invalidateStudio: id }),
+				changed: (id) => triggerUpdate({ invalidateStudio: id }),
+				removed: (id) => triggerUpdate({ invalidateStudio: id }),
+			}
+		),
 
 		// Watch for affecting objects
-		MediaObjects.find({ studioId: playlist.studioId }).observe({
-			added: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
-			changed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
-			removed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
-		}),
-		PackageInfos.find({
-			studioId: playlist.studioId,
-			type: {
-				$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
+		MediaObjects.observe(
+			{ studioId: playlist.studioId },
+			{
+				added: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
+				changed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
+				removed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
+			}
+		),
+		PackageInfos.observe(
+			{
+				studioId: playlist.studioId,
+				type: {
+					$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
+				},
 			},
-		}).observe({
-			added: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
-			changed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
-			removed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
-		}),
-		PackageContainerPackageStatuses.find({ studioId: playlist.studioId }).observeChanges({
-			added: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
-			changed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
-			removed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
-		}),
+			{
+				added: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
+				changed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
+				removed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
+			}
+		),
+		PackageContainerPackageStatuses.observeChanges(
+			{ studioId: playlist.studioId },
+			{
+				added: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
+				changed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
+				removed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
+			}
+		),
 	]
 }
 
@@ -408,30 +420,36 @@ function checkPieceContentStatusAndDependencies(
 
 	const getMediaObject = (mediaId: string) => {
 		pieceDependencies.mediaObjects.push(mediaId)
-		return MediaObjects.findOne({
-			studioId: uiStudio._id,
-			mediaId,
-		})
+		return waitForPromise(
+			MediaObjects.findOneAsync({
+				studioId: uiStudio._id,
+				mediaId,
+			})
+		)
 	}
 
 	const getPackageInfos = (packageId: ExpectedPackageId) => {
 		pieceDependencies.packageInfos.push(packageId)
-		return PackageInfos.find({
-			studioId: uiStudio._id,
-			packageId: packageId,
-			type: {
-				$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
-			},
-		}).fetch()
+		return waitForPromise(
+			PackageInfos.findFetchAsync({
+				studioId: uiStudio._id,
+				packageId: packageId,
+				type: {
+					$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
+				},
+			})
+		)
 	}
 
 	const getPackageContainerPackageStatus2 = (packageContainerId: string, expectedPackageId: ExpectedPackageId) => {
 		const id = getPackageContainerPackageId(uiStudio._id, packageContainerId, expectedPackageId)
 		pieceDependencies.packageContainerPackageStatuses.push(id)
-		return PackageContainerPackageStatuses.findOne({
-			_id: id,
-			studioId: uiStudio._id,
-		})
+		return waitForPromise(
+			PackageContainerPackageStatuses.findOneAsync({
+				_id: id,
+				studioId: uiStudio._id,
+			})
+		)
 	}
 
 	const status = checkPieceContentStatus(

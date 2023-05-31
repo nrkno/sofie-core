@@ -266,7 +266,7 @@ async function checkTimingsRaw(
 	}
 }
 
-/** Perform a take and check the the selected part ids are as expected */
+/** Perform a take and check the selected part ids are as expected */
 async function doTakePart(
 	context: MockJobContext,
 	playlistId: RundownPlaylistId,
@@ -667,7 +667,7 @@ describe('Timeline', () => {
 		) => Promise<void>
 	) {
 		const rundownId0: RundownId = getRandomId()
-		const playlistId0 = await context.directCollections.RundownPlaylists.insertOne(
+		const playlistId0 = await context.mockCollections.RundownPlaylists.insertOne(
 			defaultRundownPlaylist(protectString('playlist_' + rundownId0), context.studioId)
 		)
 
@@ -1229,7 +1229,7 @@ describe('Timeline', () => {
 						})
 					)
 
-					const adlibbedPieceId = 'randomId9007'
+					const adlibbedPieceId = 'randomId9010'
 
 					// The adlib should be starting at 'now'
 					await checkTimings({
@@ -1395,7 +1395,7 @@ describe('Timeline', () => {
 						})
 					)
 
-					const adlibbedPieceId = 'randomId9007'
+					const adlibbedPieceId = 'randomId9010'
 
 					// The adlib should be starting at 'now'
 					await checkTimings({

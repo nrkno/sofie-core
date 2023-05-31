@@ -69,20 +69,18 @@ export interface DBRundownPlaylist {
 	metaData?: unknown
 
 	/** the id of the Live Part - if empty, no part in this rundown is live */
-	// currentPartInstanceId: PartInstanceId | null
 	currentPartInfo: SelectedPartInstance | null
 	/** the id of the Next Part - if empty, no segment will follow Live Part */
-	// nextPartInstanceId: PartInstanceId | null
 	nextPartInfo: SelectedPartInstance | null
 	/** The time offset of the next line */
 	nextTimeOffset?: number | null
-	/** if nextPartId was set manually (ie from a user action) */
-	nextPartManual?: boolean
 	/** the id of the Previous Part */
-	// previousPartInstanceId: PartInstanceId | null
 	previousPartInfo: SelectedPartInstance | null
 
-	/** The id of the Next Segment. If set, the Next point will jump to that segment when moving out of currently playing segment. */
+	/**
+	 * The id of the Next Segment. If set, the Next point will jump to that segment when moving out of currently playing segment.
+	 * In general this should only be set/cleared by a useraction, or during the take logic. This ensures that it isnt lost when doing manual set-next actions
+	 */
 	nextSegmentId?: SegmentId
 
 	/** Actual time of playback starting */
@@ -109,4 +107,10 @@ export interface DBRundownPlaylist {
 export type SelectedPartInstance = Readonly<{
 	partInstanceId: PartInstanceId
 	rundownId: RundownId
+
+	/** if nextPartId was set manually (ie from a user action) */
+	manuallySelected: boolean
+
+	/** Whether this instance was selected because of RundownPlaylist.nextSegmentId. This will cause it to clear that property as part of the take operation */
+	consumesNextSegmentId: boolean
 }>

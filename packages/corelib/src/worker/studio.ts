@@ -202,16 +202,15 @@ export interface ActivateRundownPlaylistProps extends RundownPlayoutPropsBase {
 }
 export type DeactivateRundownPlaylistProps = RundownPlayoutPropsBase
 export interface SetNextPartProps extends RundownPlayoutPropsBase {
-	nextPartId: PartId | null
+	nextPartId: PartId
 	setManually?: boolean
 	nextTimeOffset?: number
-	clearNextSegment?: boolean
 }
 export interface SetNextSegmentProps extends RundownPlayoutPropsBase {
 	nextSegmentId: SegmentId | null
 }
 export interface ExecuteActionProps extends RundownPlayoutPropsBase {
-	actionDocId: AdLibActionId | RundownBaselineAdLibActionId
+	actionDocId: AdLibActionId | RundownBaselineAdLibActionId | null
 	actionId: string
 	userData: any
 	triggerMode?: string

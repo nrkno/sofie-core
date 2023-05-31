@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { MongoModifier, MongoQuery } from '../typings/meteor'
 import { ProtectedString, protectString } from '../lib'
-import type { Collection as RawCollection, Db as RawDb, CreateIndexesOptions } from 'mongodb'
+import type { Collection as RawCollection, Db as RawDb } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { MongoFieldSpecifier, SortSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { CustomCollectionName, CustomCollectionType } from '../api/pubsub'
@@ -208,29 +208,6 @@ export class WrappedMongoCollection<DBInterface extends { _id: ProtectedString<a
 			this.wrapMongoError(e)
 		}
 	}
-
-	createIndex(index: IndexSpecifier<DBInterface> | string, options?: CreateIndexesOptions): void {
-		try {
-			return this._collection.createIndex(index as any, options)
-		} catch (e) {
-			this.wrapMongoError(e)
-		}
-	}
-
-	_ensureIndex(keys: IndexSpecifier<DBInterface> | string, options?: CreateIndexesOptions): void {
-		try {
-			return this._collection._ensureIndex(keys as any, options)
-		} catch (e) {
-			this.wrapMongoError(e)
-		}
-	}
-	_dropIndex(...args: Parameters<MongoCollection<DBInterface>['_dropIndex']>): void {
-		try {
-			return this._collection._dropIndex(...args)
-		} catch (e) {
-			this.wrapMongoError(e)
-		}
-	}
 }
 
 export interface MongoReadOnlyCollection<DBInterface extends { _id: ProtectedString<any> }> {
@@ -307,19 +284,6 @@ export interface MongoCollection<DBInterface extends { _id: ProtectedString<any>
 		numberAffected?: number
 		insertedId?: DBInterface['_id']
 	}
-
-	/**
-	 * Creates the specified index on the collection.
-	 * @param index A document that contains the field and value pairs where the field is the index key and the value describes the type of index for that field.
-	 * For an ascending index on a field, specify a value of 1; for descending index, specify a value of -1. Use text for text indexes.
-	 * @param options
-	 */
-	createIndex(index: IndexSpecifier<DBInterface> | string, options?: CreateIndexesOptions): void
-
-	/** @deprecated - use createIndex */
-	_ensureIndex(keys: IndexSpecifier<DBInterface> | string, options?: CreateIndexesOptions): void
-
-	_dropIndex(indexName: string): void
 }
 
 export interface UpdateOptions {

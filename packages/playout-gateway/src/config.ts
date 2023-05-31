@@ -64,7 +64,7 @@ process.argv.forEach((val) => {
 })
 
 const config: Config = {
-	process: {
+	certificates: {
 		unsafeSSL: unsafeSSL,
 		certificates: _.compact(certs),
 	},

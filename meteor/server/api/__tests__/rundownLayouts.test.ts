@@ -29,20 +29,20 @@ describe('Rundown Layouts', () => {
 		expect(typeof res).toBe('string') // this should contain the ID for the rundown layout
 		rundownLayoutId = res
 
-		const item = RundownLayouts.findOne(rundownLayoutId)
+		const item = await RundownLayouts.findOneAsync(rundownLayoutId)
 		expect(item).toMatchObject({
 			_id: rundownLayoutId,
 		})
 	})
 	testInFiber('Remove rundown layout', async () => {
-		const item0 = RundownLayouts.findOne(rundownLayoutId)
+		const item0 = await RundownLayouts.findOneAsync(rundownLayoutId)
 		expect(item0).toMatchObject({
 			_id: rundownLayoutId,
 		})
 
 		await MeteorCall.rundownLayout.removeRundownLayout(rundownLayoutId)
 
-		const item1 = RundownLayouts.findOne(rundownLayoutId)
+		const item1 = await RundownLayouts.findOneAsync(rundownLayoutId)
 		expect(item1).toBeUndefined()
 	})
 
@@ -70,7 +70,7 @@ describe('Rundown Layouts', () => {
 
 		testInFiber('download shelf layout', async () => {
 			const { rundownLayout: mockLayout, rundownLayoutId } = makeMockLayout(env)
-			RundownLayouts.insert(mockLayout)
+			await RundownLayouts.insertAsync(mockLayout)
 
 			const routeName = '/shelfLayouts/download/:id'
 			const route = PickerMock.mockRoutes[routeName]
@@ -240,7 +240,7 @@ describe('Rundown Layouts', () => {
 					})
 				)
 
-				expect(RundownLayouts.findOne(mockLayout._id)).toBeTruthy()
+				expect(await RundownLayouts.findOneAsync(mockLayout._id)).toBeTruthy()
 			}
 		})
 	})

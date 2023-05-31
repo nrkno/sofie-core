@@ -1,8 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../../logging'
-import { waitForPromise, waitForPromiseAll } from '../../../lib/lib'
 import { PartInstances, PieceInstances, RundownPlaylists } from '../../collections'
-import { Settings } from '../../../lib/Settings'
 import { check } from 'meteor/check'
 import { profiler } from '../profiler'
 import { QueueForceClearAllCaches, QueueStudioJob } from '../../worker/worker'
@@ -10,144 +8,139 @@ import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { fetchStudioIds } from '../../optimizations'
 import { PeripheralDeviceId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { insertInputDeviceTriggerIntoPreview } from '../../publications/deviceTriggersPreview'
+import { MeteorDebugMethods } from '../../methods'
 
-if (!Settings.enableUserAccounts) {
-	// These are temporary method to fill the rundown database with some sample data
-	// for development
+// These are temporary method to fill the rundown database with some sample data
+// for development
 
-	Meteor.methods({
-		/**
-		 * Remove a playlist from the system.
-		 * This can be done in the ui too, but this will bypass any checks that are usually performed
-		 */
-		debug_removePlaylist(id: RundownPlaylistId) {
-			logger.debug('Remove rundown "' + id + '"')
+MeteorDebugMethods({
+	/**
+	 * Remove a playlist from the system.
+	 * This can be done in the ui too, but this will bypass any checks that are usually performed
+	 */
+	async debug_removePlaylist(id: RundownPlaylistId) {
+		logger.debug('Remove rundown "' + id + '"')
 
-			const playlist = RundownPlaylists.findOne(id)
-			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${id}" not found`)
+		const playlist = await RundownPlaylists.findOneAsync(id)
+		if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${id}" not found`)
 
-			const job = waitForPromise(
-				QueueStudioJob(StudioJobs.RemovePlaylist, playlist.studioId, {
+		const job = await QueueStudioJob(StudioJobs.RemovePlaylist, playlist.studioId, {
+			playlistId: playlist._id,
+		})
+		await job.complete
+	},
+
+	/**
+	 * Remove ALL playlists from the system.
+	 * Be careful with this, it doesn't care that they might be active
+	 */
+	async debug_removeAllPlaylists() {
+		logger.debug('Remove all rundowns')
+
+		const playlists = await RundownPlaylists.findFetchAsync({})
+
+		await Promise.all(
+			playlists.map(async (playlist) => {
+				const job = await QueueStudioJob(StudioJobs.RemovePlaylist, playlist.studioId, {
 					playlistId: playlist._id,
 				})
-			)
-			waitForPromise(job.complete)
-		},
+				await job.complete
+			})
+		)
+	},
 
-		/**
-		 * Remove ALL playlists from the system.
-		 * Be careful with this, it doesn't care that they might be active
-		 */
-		debug_removeAllPlaylists() {
-			logger.debug('Remove all rundowns')
+	/**
+	 * Regenerate the timeline for the specified studio
+	 * This will rerun the onTimelineGenerate for your showstyle blueprints, and is particularly useful for debugging that
+	 */
+	debug_updateTimeline: async (studioId: StudioId) => {
+		try {
+			check(studioId, String)
+			logger.info(`debug_updateTimeline: "${studioId}"`)
 
-			waitForPromiseAll(
-				RundownPlaylists.find({}).map(async (playlist) => {
-					const job = await QueueStudioJob(StudioJobs.RemovePlaylist, playlist.studioId, {
-						playlistId: playlist._id,
-					})
-					await job.complete
-				})
-			)
-		},
+			const transaction = profiler.startTransaction('updateTimeline', 'meteor-debug')
 
-		/**
-		 * Regenerate the timeline for the specified studio
-		 * This will rerun the onTimelineGenerate for your showstyle blueprints, and is particularly useful for debugging that
-		 */
-		debug_updateTimeline: (studioId: StudioId) => {
-			try {
-				check(studioId, String)
-				logger.info(`debug_updateTimeline: "${studioId}"`)
+			const job = await QueueStudioJob(StudioJobs.UpdateTimeline, studioId, undefined)
 
-				const transaction = profiler.startTransaction('updateTimeline', 'meteor-debug')
+			const span = transaction?.startSpan('queued-job')
+			await job.complete
+			span?.end()
 
-				const job = waitForPromise(QueueStudioJob(StudioJobs.UpdateTimeline, studioId, undefined))
+			console.log(await job.getTimings)
 
-				const span = transaction?.startSpan('queued-job')
-				waitForPromise(job.complete)
-				span?.end()
+			if (transaction) transaction.end()
 
-				console.log(waitForPromise(job.getTimings))
+			logger.info(`debug_updateTimeline: "${studioId}" - done`)
+		} catch (e) {
+			logger.error(e)
+			throw e
+		}
+	},
 
-				if (transaction) transaction.end()
+	/**
+	 * Ensure that the infinite pieces on the nexted-part are correct
+	 * Added to debug some issues with infinites not updating
+	 */
+	async debug_syncPlayheadInfinitesForNextPartInstance(id: RundownPlaylistId) {
+		logger.info(`syncPlayheadInfinitesForNextPartInstance ${id}`)
 
-				logger.info(`debug_updateTimeline: "${studioId}" - done`)
-			} catch (e) {
-				logger.error(e)
-				throw e
-			}
-		},
+		const playlist = await RundownPlaylists.findOneAsync(id)
+		if (!playlist) throw new Error(`RundownPlaylist "${id}" not found`)
 
-		/**
-		 * Ensure that the infinite pieces on the nexted-part are correct
-		 * Added to debug some issues with infinites not updating
-		 */
-		debug_syncPlayheadInfinitesForNextPartInstance(id: RundownPlaylistId) {
-			logger.info(`syncPlayheadInfinitesForNextPartInstance ${id}`)
+		const job = await QueueStudioJob(StudioJobs.DebugSyncInfinitesForNextPartInstance, playlist.studioId, {
+			playlistId: id,
+		})
 
-			const playlist = RundownPlaylists.findOne(id)
-			if (!playlist) throw new Error(`RundownPlaylist "${id}" not found`)
+		await job.complete
+	},
 
-			const job = waitForPromise(
-				QueueStudioJob(StudioJobs.DebugSyncInfinitesForNextPartInstance, playlist.studioId, {
-					playlistId: id,
-				})
-			)
+	/**
+	 * Clear various caches in the system
+	 * Good to run if you suspect a cache is stuck with some stale data
+	 */
+	async debug_forceClearAllCaches() {
+		logger.info('forceClearAllCaches')
 
-			waitForPromise(job.complete)
-		},
+		const studioIds = await fetchStudioIds({})
+		await QueueForceClearAllCaches(studioIds)
+	},
 
-		/**
-		 * Clear various caches in the system
-		 * Good to run if you suspect a cache is stuck with some stale data
-		 */
-		debug_forceClearAllCaches() {
-			logger.info('forceClearAllCaches')
+	/**
+	 * Remove all 'reset' partisntances and pieceinstances
+	 * I don't know when this would be useful
+	 */
+	async debug_clearAllResetInstances() {
+		logger.info('clearAllResetInstances')
 
-			const studioIds = waitForPromise(fetchStudioIds({}))
-			waitForPromise(QueueForceClearAllCaches(studioIds))
-		},
+		await PartInstances.mutableCollection.removeAsync({ reset: true })
+		await PieceInstances.mutableCollection.removeAsync({ reset: true })
+	},
 
-		/**
-		 * Remove all 'reset' partisntances and pieceinstances
-		 * I don't know when this would be useful
-		 */
-		debug_clearAllResetInstances() {
-			logger.info('clearAllResetInstances')
+	/**
+	 * Regenerate the nexted-partinstance from its part.
+	 * This can be useful to get ingest updates across when the blueprint syncIngestUpdateToPartInstance method is not implemented, or to bypass that method when it is defined
+	 */
+	async debug_regenerateNextPartInstance(id: RundownPlaylistId) {
+		logger.info('regenerateNextPartInstance')
 
-			PartInstances.remove({ reset: true })
-			PieceInstances.remove({ reset: true })
-		},
+		const playlist = await RundownPlaylists.findOneAsync(id)
+		if (!playlist) throw new Error(`RundownPlaylist "${id}" not found`)
 
-		/**
-		 * Regenerate the nexted-partinstance from its part.
-		 * This can be useful to get ingest updates across when the blueprint syncIngestUpdateToPartInstance method is not implemented, or to bypass that method when it is defined
-		 */
-		debug_regenerateNextPartInstance(id: RundownPlaylistId) {
-			logger.info('regenerateNextPartInstance')
+		const job = await QueueStudioJob(StudioJobs.DebugRegenerateNextPartInstance, playlist.studioId, {
+			playlistId: id,
+		})
 
-			const playlist = RundownPlaylists.findOne(id)
-			if (!playlist) throw new Error(`RundownPlaylist "${id}" not found`)
+		await job.complete
+	},
 
-			const job = waitForPromise(
-				QueueStudioJob(StudioJobs.DebugRegenerateNextPartInstance, playlist.studioId, {
-					playlistId: id,
-				})
-			)
+	async debug_previewTrigger(
+		peripheralDeviceId: PeripheralDeviceId,
+		triggerDeviceId: string,
+		triggerId: string,
+		values?: Record<string, string | number | boolean>
+	) {
+		logger.info('previewTrigger')
 
-			waitForPromise(job.complete)
-		},
-
-		debug_previewTrigger(
-			peripheralDeviceId: PeripheralDeviceId,
-			triggerDeviceId: string,
-			triggerId: string,
-			values?: Record<string, string | number | boolean>
-		) {
-			logger.info('previewTrigger')
-
-			waitForPromise(insertInputDeviceTriggerIntoPreview(peripheralDeviceId, triggerDeviceId, triggerId, values))
-		},
-	})
-}
+		await insertInputDeviceTriggerIntoPreview(peripheralDeviceId, triggerDeviceId, triggerId, values)
+	},
+})

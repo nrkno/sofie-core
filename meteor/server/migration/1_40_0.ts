@@ -49,17 +49,17 @@ export const addSteps = addMigrationSteps('1.40.0', [
 	{
 		id: `Studio.settings.frameRate`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const count = Studios.find({
+		validate: async () => {
+			const count = await Studios.countDocuments({
 				'settings.frameRate': {
 					$exists: false,
 				},
-			}).count()
+			})
 			if (count > 0) return `${count} studios need to be updated`
 			return false
 		},
-		migrate: () => {
-			Studios.update(
+		migrate: async () => {
+			await Studios.updateAsync(
 				{
 					'settings.frameRate': {
 						$exists: false,
@@ -76,20 +76,20 @@ export const addSteps = addMigrationSteps('1.40.0', [
 	{
 		id: `Studio.settings.preserveUnsyncedPlayingSegmentContents`,
 		canBeRunAutomatically: true,
-		validate: () => {
+		validate: async () => {
 			if (OldSettings.preserveUnsyncedPlayingSegmentContents !== undefined) {
-				const count = Studios.find({
+				const count = await Studios.countDocuments({
 					'settings.preserveUnsyncedPlayingSegmentContents': {
 						$exists: false,
 					},
-				}).count()
+				})
 				if (count > 0) return `${count} studios need to be updated`
 			}
 			return false
 		},
-		migrate: () => {
+		migrate: async () => {
 			if (OldSettings.preserveUnsyncedPlayingSegmentContents !== undefined) {
-				Studios.update(
+				await Studios.updateAsync(
 					{
 						'settings.preserveUnsyncedPlayingSegmentContents': {
 							$exists: false,
@@ -108,20 +108,20 @@ export const addSteps = addMigrationSteps('1.40.0', [
 	{
 		id: `Studio.settings.allowRundownResetOnAir`,
 		canBeRunAutomatically: true,
-		validate: () => {
+		validate: async () => {
 			if (OldSettings.allowRundownResetOnAir !== undefined) {
-				const count = Studios.find({
+				const count = await Studios.countDocuments({
 					'settings.allowRundownResetOnAir': {
 						$exists: false,
 					},
-				}).count()
+				})
 				if (count > 0) return `${count} studios need to be updated`
 			}
 			return false
 		},
-		migrate: () => {
+		migrate: async () => {
 			if (OldSettings.allowRundownResetOnAir !== undefined) {
-				Studios.update(
+				await Studios.updateAsync(
 					{
 						'settings.allowRundownResetOnAir': {
 							$exists: false,

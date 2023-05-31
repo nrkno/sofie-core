@@ -5,7 +5,8 @@ import _ = require('underscore')
 import { JobContext } from '../jobs'
 import { logger } from '../logging'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
-import { resetRundownPlaylist, selectNextPart } from './lib'
+import { resetRundownPlaylist } from './lib'
+import { selectNextPart } from './selectNextPart'
 import { setNextPart } from './setNext'
 import { updateStudioTimeline, updateTimeline } from './timeline/generate'
 import { getCurrentTime } from '../lib'
@@ -70,7 +71,7 @@ export async function activateRundownPlaylist(
 			null,
 			getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 		)
-		await setNextPart(context, cache, firstPart)
+		await setNextPart(context, cache, firstPart, false)
 
 		if (firstPart) {
 			rundown = cache.Rundowns.findOne(firstPart.part.rundownId)
@@ -112,7 +113,7 @@ export async function activateRundownPlaylist(
 
 	await updateTimeline(context, cache)
 
-	cache.defer(async () => {
+	cache.deferBeforeSave(async () => {
 		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
 		const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 		const blueprint = await context.getShowStyleBlueprint(showStyle._id)
@@ -133,17 +134,19 @@ export async function deactivateRundownPlaylist(context: JobContext, cache: Cach
 
 	await updateStudioTimeline(context, cache)
 
-	await cleanTimelineDatastore(context, cache)
+	cache.deferDuringSaveTransaction(async (transaction) => {
+		await cleanTimelineDatastore(context, cache, transaction)
+	})
 
-	cache.defer(async () => {
+	cache.deferBeforeSave(async () => {
 		if (rundown) {
 			const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 
 			try {
 				if (blueprint.blueprint.onRundownDeActivate) {
-					const context2 = new RundownActivationContext(context, cache, showStyle, rundown)
-					await blueprint.blueprint.onRundownDeActivate(context2)
+					const blueprintContext = new RundownActivationContext(context, cache, showStyle, rundown)
+					await blueprint.blueprint.onRundownDeActivate(blueprintContext)
 				}
 			} catch (err) {
 				logger.error(`Error in showStyleBlueprint.onRundownDeActivate: ${stringifyError(err)}`)
@@ -189,7 +192,7 @@ export async function deactivateRundownPlaylistInner(
 
 		return p
 	})
-	await setNextPart(context, cache, null)
+	await setNextPart(context, cache, null, false)
 
 	if (currentPartInstance) {
 		// Set the current PartInstance as stopped

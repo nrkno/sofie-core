@@ -1,5 +1,5 @@
 import Tooltip from 'rc-tooltip'
-import React, { ReactElement } from 'react'
+import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router-dom'
 import { Rundown } from '../../../lib/collections/Rundowns'
@@ -19,9 +19,10 @@ import { RundownPlaylists } from '../../collections'
 
 interface IRundownListItemViewProps {
 	isActive: boolean
-	classNames: string[]
+	className: string
 	htmlElementId: string
-	connectDragSource: (content: ReactElement) => ReactElement | null
+	connectDragSource: (content: HTMLElement | null) => void
+	connectDropTarget: (content: HTMLElement | null) => void
 	rundownViewUrl?: string
 	rundown: Rundown
 	rundownLayouts: Array<RundownLayoutBase>
@@ -30,91 +31,90 @@ interface IRundownListItemViewProps {
 	confirmReSyncRundownHandler?: () => void
 	confirmDeleteRundownHandler?: () => void
 	isDragLayer: boolean
-	connectDropTarget: (content: ReactElement) => ReactElement | null
 	renderTooltips: boolean
 	isOnlyRundownInPlaylist?: boolean
 }
 
-export default function RundownListItemView(props: IRundownListItemViewProps): JSX.Element | null {
-	const {
-		isActive,
-		connectDragSource,
-		connectDropTarget,
-		htmlElementId,
-		rundownViewUrl,
-		showStyleBaseURL,
-		showStyleName,
-		rundown,
-		rundownLayouts,
-		confirmReSyncRundownHandler,
-		confirmDeleteRundownHandler,
-		isOnlyRundownInPlaylist,
-	} = props
+export default React.memo(function RundownListItemView({
+	isActive,
+	className,
+	connectDragSource,
+	connectDropTarget,
+	htmlElementId,
+	rundownViewUrl,
+	showStyleBaseURL,
+	showStyleName,
+	rundown,
+	rundownLayouts,
+	confirmReSyncRundownHandler,
+	confirmDeleteRundownHandler,
+	isOnlyRundownInPlaylist,
+	isDragLayer,
+	renderTooltips,
+}: IRundownListItemViewProps): JSX.Element | null {
 	const { t } = useTranslation()
 
 	if (!rundown.playlistId) throw new Meteor.Error(500, 'Rundown is not a part of a rundown playlist!')
 	const playlist = RundownPlaylists.findOne(rundown.playlistId)
 	if (!playlist) throw new Meteor.Error(404, `Rundown Playlist "${rundown.playlistId}" not found!`)
 
-	const classNames = props.classNames.slice()
-	classNames.push('rundown-list-item')
-	if (props.isDragLayer) {
-		classNames.push('dragging')
-	}
-
 	const rundownNameContent = rundownViewUrl ? (
 		<Link to={rundownViewUrl}>
 			{isOnlyRundownInPlaylist && playlist.loop && <LoopingIcon />}
-			{props.rundown.name}
+			{rundown.name}
 		</Link>
 	) : (
-		props.rundown.name
+		rundown.name
 	)
 
 	const expectedStart = PlaylistTiming.getExpectedStart(rundown.timing)
 	const expectedDuration = PlaylistTiming.getExpectedDuration(rundown.timing)
 	const expectedEnd = PlaylistTiming.getExpectedEnd(rundown.timing)
 
-	return connectDropTarget(
-		<li id={htmlElementId} className={classNames.join(' ')}>
+	return (
+		<li
+			id={htmlElementId}
+			className={`${className} rundown-list-item ${isDragLayer ? 'dragging' : ''}`}
+			ref={connectDropTarget}
+		>
 			<span className="rundown-list-item__name">
-				{getAllowStudio()
-					? connectDragSource(
-							<span className="draghandle">
-								<Tooltip
-									overlay={t('Drag to reorder or move out of playlist')}
-									placement="top"
-									mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
-									overlayStyle={{ display: props.renderTooltips ? undefined : 'none' }}
-								>
-									<button className="rundown-list-item__action">{iconDragHandle()}</button>
-								</Tooltip>
-							</span>
-					  )
-					: null}
-				<b className="rundown-name">{rundownNameContent}</b>
-				{props.rundown.description ? (
-					<Tooltip overlay={props.rundown.description} trigger={['hover']} placement="right">
-						<span className="rundown-list-description__icon">
-							<PathIcon />
+				<>
+					{getAllowStudio() ? (
+						<span className="draghandle" ref={connectDragSource}>
+							<Tooltip
+								overlay={t('Drag to reorder or move out of playlist')}
+								placement="top"
+								mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
+								overlayStyle={{ display: renderTooltips ? undefined : 'none' }}
+							>
+								<button className="rundown-list-item__action">{iconDragHandle()}</button>
+							</Tooltip>
 						</span>
-					</Tooltip>
-				) : null}
+					) : null}
+					<b className="rundown-name">{rundownNameContent}</b>
+					{rundown.description ? (
+						<Tooltip overlay={rundown.description} trigger={['hover']} placement="right">
+							<span className="rundown-list-description__icon">
+								<PathIcon />
+							</span>
+						</Tooltip>
+					) : null}
 
-				{isActive === true ? (
-					<Tooltip
-						overlay={t('This rundown is currently active')}
-						mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
-						placement="bottom"
-					>
-						<div className="origo-pulse small right mrs">
-							<div className="pulse-marker">
-								<div className="pulse-rays"></div>
-								<div className="pulse-rays delay"></div>
+					{isActive === true ? (
+						<Tooltip
+							overlay={t('This rundown is currently active')}
+							mouseEnterDelay={TOOLTIP_DEFAULT_DELAY}
+							placement="bottom"
+						>
+							<div className="origo-pulse small right mrs">
+								<div className="pulse-marker">
+									<div className="pulse-rays"></div>
+									<div className="pulse-rays delay"></div>
+								</div>
 							</div>
-						</div>
-					</Tooltip>
-				) : null}
+						</Tooltip>
+					) : null}
+				</>
 			</span>
 			{/* <RundownListItemProblems warnings={warnings} errors={errors} /> */}
 			<span className="rundown-list-item__text">
@@ -213,4 +213,4 @@ export default function RundownListItemView(props: IRundownListItemViewProps): J
 			</span>
 		</li>
 	)
-}
+})

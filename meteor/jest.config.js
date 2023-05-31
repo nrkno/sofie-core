@@ -10,10 +10,10 @@ const commonConfig = {
 		'^.+\\.(ts|tsx)$': [
 			'ts-jest',
 			{
+				isolatedModules: true, // Skip type check to reduce memory impact, as we are already do a yarn check-types
 				tsconfig: 'tsconfig.json',
 				babelConfig: {
 					plugins: [
-						'@babel/plugin-transform-modules-commonjs',
 						// Fibers and await do not work well together. This transpiles await calls to something that works
 						'./__mocks__/plugins/meteor-async-await.js',
 					],

@@ -129,15 +129,15 @@ describe('Security', () => {
 	beforeAllInFiber(async () => {
 		env = await setupDefaultStudioEnvironment(org0._id)
 
-		Organizations.insert(org0)
-		Organizations.insert(org1)
-		Organizations.insert(org2)
+		await Organizations.insertAsync(org0)
+		await Organizations.insertAsync(org1)
+		await Organizations.insertAsync(org2)
 
-		Users.insert(getUser(idCreator, org0._id))
-		Users.insert(getUser(idUserB, org0._id))
-		Users.insert(getUser(idInWrongOrg, org1._id))
-		Users.insert({ ...getUser(idSuperAdmin, org0._id), superAdmin: true })
-		Users.insert({ ...getUser(idSuperAdminInOtherOrg, org2._id), superAdmin: true })
+		await Users.insertAsync(getUser(idCreator, org0._id))
+		await Users.insertAsync(getUser(idUserB, org0._id))
+		await Users.insertAsync(getUser(idInWrongOrg, org1._id))
+		await Users.insertAsync({ ...getUser(idSuperAdmin, org0._id), superAdmin: true })
+		await Users.insertAsync({ ...getUser(idSuperAdminInOtherOrg, org2._id), superAdmin: true })
 	})
 
 	testInFiber('Buckets', async () => {

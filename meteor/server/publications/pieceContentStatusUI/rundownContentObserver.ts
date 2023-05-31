@@ -54,80 +54,83 @@ export class RundownContentObserver {
 				cache.ShowStyleSourceLayers.remove({})
 
 				return [
-					ShowStyleBases.find(
+					ShowStyleBases.observe(
 						{
 							// We can use the `this.#showStyleBaseIds` here, as this is restarted every time that property changes
 							_id: { $in: this.#showStyleBaseIds },
 						},
 						{
+							added: (doc) => {
+								const newDoc = convertShowStyleBase(doc)
+								cache.ShowStyleSourceLayers.upsert(doc._id, { $set: newDoc as Partial<Document> })
+							},
+							changed: (doc) => {
+								const newDoc = convertShowStyleBase(doc)
+								cache.ShowStyleSourceLayers.upsert(doc._id, { $set: newDoc as Partial<Document> })
+							},
+							removed: (doc) => {
+								cache.ShowStyleSourceLayers.remove(doc._id)
+							},
+						},
+						{
 							projection: showStyleBaseFieldSpecifier,
 						}
-					).observe({
-						added: (doc) => {
-							const newDoc = convertShowStyleBase(doc)
-							cache.ShowStyleSourceLayers.upsert(doc._id, { $set: newDoc as Partial<Document> })
-						},
-						changed: (doc) => {
-							const newDoc = convertShowStyleBase(doc)
-							cache.ShowStyleSourceLayers.upsert(doc._id, { $set: newDoc as Partial<Document> })
-						},
-						removed: (doc) => {
-							cache.ShowStyleSourceLayers.remove(doc._id)
-						},
-					}),
+					),
 				]
 			})
 		)
 
 		// Subscribe to the database, and pipe any updates into the ReactiveCacheCollections
 		this.#observers = [
-			Rundowns.find(
+			Rundowns.observe(
 				{
 					_id: {
 						$in: rundownIds,
 					},
 				},
-				{
-					projection: rundownFieldSpecifier,
-				}
-			).observe(
 				cache.Rundowns.link(() => {
 					// Check if the ShowStyleBaseIds needs updating
 					this.updateShowStyleBaseIds()
-				})
+				}),
+				{
+					projection: rundownFieldSpecifier,
+				}
 			),
 			this.#showStyleBaseIdObserver,
 
-			Segments.find(
+			Segments.observe(
 				{
 					rundownId: {
 						$in: rundownIds,
 					},
 				},
+				cache.Segments.link(),
 				{
 					projection: segmentFieldSpecifier,
 				}
-			).observe(cache.Segments.link()),
-			Parts.find(
+			),
+			Parts.observe(
 				{
 					rundownId: {
 						$in: rundownIds,
 					},
 				},
+				cache.Parts.link(),
 				{
 					projection: partFieldSpecifier,
 				}
-			).observe(cache.Parts.link()),
-			Pieces.find(
+			),
+			Pieces.observe(
 				{
 					startRundownId: {
 						$in: rundownIds,
 					},
 				},
+				cache.Pieces.link(),
 				{
 					projection: pieceFieldSpecifier,
 				}
-			).observe(cache.Pieces.link()),
+			),
 		]
 	}
 

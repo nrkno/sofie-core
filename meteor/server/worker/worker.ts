@@ -26,6 +26,7 @@ import { LogEntry } from 'winston'
 import { initializeWorkerStatus, setWorkerStatus } from './workerStatus'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { UserActionsLog } from '../collections'
+import { MetricsCounter } from '@sofie-automation/corelib/dist/prometheus'
 
 const FREEZE_LIMIT = 1000 // how long to wait for a response to a Ping
 const RESTART_TIMEOUT = 30000 // how long to wait for a restart to complete before throwing an error
@@ -37,17 +38,42 @@ interface JobEntry {
 	completionHandler: JobCompletionHandler | null
 }
 
+const metricsQueueTotalCounter = new MetricsCounter({
+	name: 'sofie_meteor_jobqueue_queue_total',
+	help: 'Number of jobs put into each worker job queues',
+	labelNames: ['threadName'],
+})
+const metricsQueueSuccessCounter = new MetricsCounter({
+	name: 'sofie_meteor_jobqueue_success',
+	help: 'Number of successful jobs from each worker',
+	labelNames: ['threadName'],
+})
+const metricsQueueErrorsCounter = new MetricsCounter({
+	name: 'sofie_meteor_jobqueue_queue_errors',
+	help: 'Number of failed jobs from each worker',
+	labelNames: ['threadName'],
+})
+
 interface JobQueue {
 	jobs: Array<JobEntry | null>
 	/** Notify that there is a job waiting (aka worker is long-polling) */
 	notifyWorker: ManualPromise<void> | null
+
+	metricsTotal: MetricsCounter.Internal
+	metricsSuccess: MetricsCounter.Internal
+	metricsErrors: MetricsCounter.Internal
 }
 
 type JobCompletionHandler = (startedTime: number, finishedTime: number, err: any, result: any) => void
 
+interface RunningJob {
+	queueName: string
+	completionHandler: JobCompletionHandler | null
+}
+
 const queues = new Map<string, JobQueue>()
 /** Contains all jobs that are currently being executed by a Worker. */
-const runningJobs = new Map<string, JobCompletionHandler>()
+const runningJobs = new Map<string, RunningJob>()
 
 function getOrCreateQueue(queueName: string): JobQueue {
 	let queue = queues.get(queueName)
@@ -55,6 +81,9 @@ function getOrCreateQueue(queueName: string): JobQueue {
 		queue = {
 			jobs: [],
 			notifyWorker: null,
+			metricsTotal: metricsQueueTotalCounter.labels(queueName),
+			metricsSuccess: metricsQueueSuccessCounter.labels(queueName),
+			metricsErrors: metricsQueueErrorsCounter.labels(queueName),
 		}
 		queues.set(queueName, queue)
 	}
@@ -71,7 +100,20 @@ async function jobFinished(
 	const job = runningJobs.get(id)
 	if (job) {
 		runningJobs.delete(id)
-		job(startedTime, finishedTime, err, result)
+
+		// Update metrics
+		const queue = queues.get(job.queueName)
+		if (queue) {
+			if (err) {
+				queue.metricsErrors.inc()
+			} else {
+				queue.metricsSuccess.inc()
+			}
+		}
+
+		if (job.completionHandler) {
+			job.completionHandler(startedTime, finishedTime, err, result)
+		}
 	}
 }
 /** This is called by each Worker Thread, when it is idle and wants another job */
@@ -108,7 +150,11 @@ async function getNextJob(queueName: string): Promise<JobSpec | null> {
 	const job = queue.jobs.shift()
 	if (job) {
 		// If there is a completion handler, register it for execution
-		if (job.completionHandler) runningJobs.set(job.spec.id, job.completionHandler)
+		runningJobs.set(job.spec.id, {
+			queueName,
+			completionHandler: job.completionHandler,
+		})
+
 		// Pass the job to the worker
 		return job.spec
 	}
@@ -151,6 +197,7 @@ function queueJobInner(queueName: string, jobToQueue: JobEntry): void {
 	// Put the job at the end of the queue:
 	const queue = getOrCreateQueue(queueName)
 	queue.jobs.push(jobToQueue)
+	queue.metricsTotal.inc()
 
 	// If there is a worker waiting to pick up a job
 	if (queue.notifyWorker) {
@@ -204,7 +251,7 @@ async function fastTrackTimeline(newTimeline: TimelineComplete): Promise<void> {
 		selector.organizationId = studio.organizationId
 	}
 
-	UserActionsLog.update(
+	await UserActionsLog.updateAsync(
 		selector,
 		{
 			$set: {
@@ -301,7 +348,12 @@ MeteorStartupAsync(async () => {
 			// Thread closed, reject all jobs
 			const now = getCurrentTime()
 			for (const job of runningJobs.values()) {
-				job(now, now, new Error('Thread closed'), null)
+				const queue = queues.get(job.queueName)
+				if (queue) queue.metricsErrors.inc()
+
+				if (job.completionHandler) {
+					job.completionHandler(now, now, new Error('Thread closed'), null)
+				}
 			}
 			runningJobs.clear()
 
@@ -332,6 +384,15 @@ export interface WorkerJob<TRes> {
 	/** Promise returning the timings of an execution */
 	getTimings: Promise<JobTimings>
 	// abort: () => Promise<boolean> // Attempt to abort the job. Returns whether it was successful
+}
+
+/**
+ * Collect all the prometheus metrics across all the worker threads
+ */
+export async function collectWorkerPrometheusMetrics(): Promise<string[]> {
+	if (!worker) return []
+
+	return worker.collectMetrics()
 }
 
 /**

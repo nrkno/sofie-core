@@ -11,6 +11,7 @@ import { MethodContext } from '../../../lib/api/methods'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { PeripheralDeviceId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 
 export namespace RundownInput {
 	export async function dataPlaylistGet(
@@ -361,10 +362,14 @@ async function listIngestRundowns(peripheralDevice: PeripheralDevice): Promise<s
 // hackGetMediaObjectDuration stuff
 Meteor.startup(() => {
 	if (Meteor.isServer) {
-		MediaObjects.find({}, { fields: { _id: 1, mediaId: 1, mediainfo: 1, studioId: 1 } }).observe({
-			added: onMediaObjectChanged,
-			changed: onMediaObjectChanged,
-		})
+		MediaObjects.observe(
+			{},
+			{
+				added: onMediaObjectChanged,
+				changed: onMediaObjectChanged,
+			},
+			{ fields: { _id: 1, mediaId: 1, mediainfo: 1, studioId: 1 } }
+		)
 	}
 })
 
@@ -373,27 +378,56 @@ interface MediaObjectUpdatedIds {
 	segmentId: SegmentId
 }
 
-function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: MediaObject) {
+async function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: MediaObject): Promise<void> {
 	if (
 		!oldDocument ||
 		(newDocument.mediainfo?.format?.duration &&
 			oldDocument.mediainfo?.format?.duration !== newDocument.mediainfo.format.duration)
 	) {
-		const rundownIdsInStudio = Rundowns.find({ studioId: newDocument.studioId }, { fields: { _id: 1 } })
-			.fetch()
-			.map((rundown) => rundown._id)
-		Parts.find({
-			rundownId: { $in: rundownIdsInStudio },
-			'hackListenToMediaObjectUpdates.mediaId': newDocument.mediaId,
-		})
-			.map<MediaObjectUpdatedIds>((part) => {
-				return {
-					rundownId: part.rundownId,
-					segmentId: part.segmentId,
+		const rundownIdsInStudio = (
+			await Rundowns.findFetchAsync({ studioId: newDocument.studioId }, { fields: { _id: 1 } })
+		).map((rundown) => rundown._id)
+
+		const updateIds: MediaObjectUpdatedIds[] = (
+			await Parts.findFetchAsync(
+				{
+					rundownId: { $in: rundownIdsInStudio },
+					'hackListenToMediaObjectUpdates.mediaId': newDocument.mediaId,
+				},
+				{
+					fields: {
+						rundownId: 1,
+						segmentId: 1,
+					},
 				}
-			})
-			.filter(doesSegmentExistsInCache)
-			.forEach((mediaObjectUpdatedIds: MediaObjectUpdatedIds) => {
+			)
+		).map<MediaObjectUpdatedIds>((part) => {
+			return {
+				rundownId: part.rundownId,
+				segmentId: part.segmentId,
+			}
+		})
+
+		if (updateIds.length == 0) return
+
+		const validSegmentIds = new Set(
+			(
+				await IngestDataCache.findFetchAsync(
+					{
+						type: IngestCacheType.SEGMENT,
+						rundownId: { $in: updateIds.map((obj) => obj.rundownId) },
+					},
+					{
+						fields: {
+							segmentId: 1,
+						},
+					}
+				)
+			).map((obj) => obj.segmentId)
+		)
+
+		for (const mediaObjectUpdatedIds of updateIds) {
+			if (validSegmentIds.has(mediaObjectUpdatedIds.segmentId)) {
 				try {
 					lazyIgnore(
 						`updateSegmentFromMediaObject_${mediaObjectUpdatedIds.segmentId}`,
@@ -403,21 +437,16 @@ function onMediaObjectChanged(newDocument: MediaObject, oldDocument?: MediaObjec
 				} catch (exception) {
 					logger.error('Error thrown while updating Segment from cache after MediaObject changed', exception)
 				}
-			})
+			}
+		}
 	}
 }
 
-function doesSegmentExistsInCache(mediaObjectUpdatedIds: MediaObjectUpdatedIds): boolean {
-	return !!IngestDataCache.findOne({
-		segmentId: mediaObjectUpdatedIds.segmentId,
-	})
-}
-
 async function updateSegmentFromCache(studioId: StudioId, mediaObjectUpdatedIds: MediaObjectUpdatedIds) {
-	const rundown = Rundowns.findOne(mediaObjectUpdatedIds.rundownId)
+	const rundown = await Rundowns.findOneAsync(mediaObjectUpdatedIds.rundownId)
 	if (!rundown)
 		throw new Meteor.Error(`Could not find rundown ${mediaObjectUpdatedIds.rundownId} in updateSegmentFromCache`)
-	const segment = Segments.findOne(mediaObjectUpdatedIds.segmentId)
+	const segment = await Segments.findOneAsync(mediaObjectUpdatedIds.segmentId)
 	if (!segment)
 		throw new Meteor.Error(`Could not find segment ${mediaObjectUpdatedIds.segmentId} in updateSegmentFromCache`)
 

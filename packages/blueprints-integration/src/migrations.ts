@@ -23,7 +23,7 @@ export interface MigrationStepInputFilteredResult {
 	[attribute: string]: any
 }
 
-export type ValidateFunctionCore = (afterMigration: boolean) => boolean | string
+export type ValidateFunctionCore = (afterMigration: boolean) => Promise<boolean | string>
 export type ValidateFunctionSystem = (context: MigrationContextSystem, afterMigration: boolean) => boolean | string
 export type ValidateFunctionStudio = (context: MigrationContextStudio, afterMigration: boolean) => boolean | string
 export type ValidateFunctionShowStyle = (
@@ -36,7 +36,7 @@ export type ValidateFunction =
 	| ValidateFunctionSystem
 	| ValidateFunctionCore
 
-export type MigrateFunctionCore = (input: MigrationStepInputFilteredResult) => void
+export type MigrateFunctionCore = (input: MigrationStepInputFilteredResult) => Promise<void>
 export type MigrateFunctionSystem = (context: MigrationContextSystem, input: MigrationStepInputFilteredResult) => void
 export type MigrateFunctionStudio = (context: MigrationContextStudio, input: MigrationStepInputFilteredResult) => void
 export type MigrateFunctionShowStyle = (
@@ -113,7 +113,11 @@ export interface MigrationContextShowStyle extends MigrationContextWithTriggered
 
 export type MigrationContextSystem = MigrationContextWithTriggeredActions
 
-export interface MigrationStepBase {
+export interface MigrationStepBase<
+	TValidate extends ValidateFunction,
+	TMigrate extends MigrateFunction,
+	TInput extends InputFunction
+> {
 	/** Unique id for this step */
 	id: string
 	/** If this step overrides another step. Note: It's only possible to override steps in previous versions */
@@ -125,7 +129,7 @@ export interface MigrationStepBase {
 	 * The function should return falsy if step is fullfilled (ie truthy if migrate function should be applied, return value could then be a string describing why)
 	 * The function is also run after the migration-script has been applied (and should therefore return false if all is good)
 	 */
-	validate: ValidateFunction
+	validate: TValidate
 
 	/** If true, this step can be run automatically, without prompting for user input */
 	canBeRunAutomatically: boolean
@@ -135,35 +139,27 @@ export interface MigrationStepBase {
 	 * The miggration script is optional, and may be omitted if the user is expected to perform the update manually
 	 * @param result Input from the user query
 	 */
-	migrate?: MigrateFunction
+	migrate?: TMigrate
 	/** Query user for input, used in manual steps */
-	input?: MigrationStepInput[] | InputFunction
+	input?: MigrationStepInput[] | TInput
 
 	/** If this step depend on the result of another step. Will pause the migration before this step in that case. */
 	dependOnResultFrom?: string
 }
-export interface MigrationStep extends MigrationStepBase {
+export interface MigrationStep<
+	TValidate extends ValidateFunction,
+	TMigrate extends MigrateFunction,
+	TInput extends InputFunction
+> extends MigrationStepBase<TValidate, TMigrate, TInput> {
 	/** The version this Step applies to */
 	version: string
 }
 
-export interface MigrationStepCore extends MigrationStep {
-	validate: ValidateFunctionCore
-	migrate?: MigrateFunctionCore
-	input?: MigrationStepInput[] | InputFunctionCore
-}
-export interface MigrationStepSystem extends MigrationStep {
-	validate: ValidateFunctionSystem
-	migrate?: MigrateFunctionSystem
-	input?: MigrationStepInput[] | InputFunctionSystem
-}
-export interface MigrationStepStudio extends MigrationStep {
-	validate: ValidateFunctionStudio
-	migrate?: MigrateFunctionStudio
-	input?: MigrationStepInput[] | InputFunctionStudio
-}
-export interface MigrationStepShowStyle extends MigrationStep {
-	validate: ValidateFunctionShowStyle
-	migrate?: MigrateFunctionShowStyle
-	input?: MigrationStepInput[] | InputFunctionShowStyle
-}
+export type MigrationStepCore = MigrationStep<ValidateFunctionCore, MigrateFunctionCore, InputFunctionCore>
+export type MigrationStepSystem = MigrationStep<ValidateFunctionSystem, MigrateFunctionSystem, InputFunctionSystem>
+export type MigrationStepStudio = MigrationStep<ValidateFunctionStudio, MigrateFunctionStudio, InputFunctionStudio>
+export type MigrationStepShowStyle = MigrationStep<
+	ValidateFunctionShowStyle,
+	MigrateFunctionShowStyle,
+	InputFunctionShowStyle
+>

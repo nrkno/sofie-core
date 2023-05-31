@@ -90,7 +90,7 @@ describe('systemStatus', () => {
 	})
 	testInFiber('getSystemStatus: a component has a fault', async () => {
 		// simulate device failure
-		PeripheralDevices.update(env.ingestDevice._id, {
+		await PeripheralDevices.updateAsync(env.ingestDevice._id, {
 			$set: {
 				status: literal<PeripheralDeviceStatusObject>({
 					statusCode: StatusCode.WARNING_MAJOR,
@@ -101,7 +101,7 @@ describe('systemStatus', () => {
 
 		const result0: StatusResponse = await MeteorCall.systemStatus.getSystemStatus()
 
-		// Expected status is WARNING_MAJOR, because the the device has a warning status
+		// Expected status is WARNING_MAJOR, because the device has a warning status
 		const expectedStatus0 = StatusCode.WARNING_MAJOR
 		expect(result0).toMatchObject({
 			status: status2ExternalStatus(expectedStatus0),
@@ -116,7 +116,7 @@ describe('systemStatus', () => {
 	})
 	testInFiber('getSystemStatus: a component has a library version mismatch', async () => {
 		// simulate device failure
-		PeripheralDevices.update(env.ingestDevice._id, {
+		await PeripheralDevices.updateAsync(env.ingestDevice._id, {
 			$set: {
 				status: literal<PeripheralDeviceStatusObject>({
 					statusCode: StatusCode.GOOD,
@@ -146,7 +146,7 @@ describe('systemStatus', () => {
 			coreVersion.major = 99
 
 			// Change integration lib versions, simulate a major version mismatch
-			PeripheralDevices.update(env.ingestDevice._id, {
+			await PeripheralDevices.updateAsync(env.ingestDevice._id, {
 				$set: {
 					versions: {
 						'@sofie-automation/server-core-integration': coreVersion.format(),
@@ -169,7 +169,7 @@ describe('systemStatus', () => {
 			coreVersion.minor = 999
 
 			// Change integration lib versions, simulate a minor version mismatch
-			PeripheralDevices.update(env.ingestDevice._id, {
+			await PeripheralDevices.updateAsync(env.ingestDevice._id, {
 				$set: {
 					versions: {
 						'@sofie-automation/server-core-integration': coreVersion.format(),
@@ -192,7 +192,7 @@ describe('systemStatus', () => {
 			coreVersion.patch = 999
 
 			// Change integration lib versions, simulate a patch version mismatch
-			PeripheralDevices.update(env.ingestDevice._id, {
+			await PeripheralDevices.updateAsync(env.ingestDevice._id, {
 				$set: {
 					versions: {
 						'@sofie-automation/server-core-integration': coreVersion.format(),
@@ -210,7 +210,7 @@ describe('systemStatus', () => {
 		}
 
 		// Try some silly version
-		PeripheralDevices.update(env.ingestDevice._id, {
+		await PeripheralDevices.updateAsync(env.ingestDevice._id, {
 			$set: {
 				versions: {
 					test: '0.1.2',
@@ -227,7 +227,7 @@ describe('systemStatus', () => {
 		})
 
 		// disableVersion check
-		PeripheralDevices.update(env.ingestDevice._id, {
+		await PeripheralDevices.updateAsync(env.ingestDevice._id, {
 			$set: {
 				disableVersionChecks: true,
 			},

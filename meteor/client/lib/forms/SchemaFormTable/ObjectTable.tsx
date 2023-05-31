@@ -22,6 +22,7 @@ import { SchemaFormTableEditRow } from './TableEditRow'
 import { SchemaTableSummaryRow } from '../SchemaTableSummaryRow'
 import { OverrideOpHelperObjectTable } from './ObjectTableOpHelper'
 import { ObjectTableDeletedRow } from './ObjectTableDeletedRow'
+import { SchemaFormSectionHeader } from '../SchemaFormSectionHeader'
 
 interface SchemaFormObjectTableProps {
 	/** Schema for each row in the table */
@@ -129,7 +130,10 @@ export const SchemaFormObjectTable = ({
 	)
 
 	const title = schema[SchemaFormUIField.Title]
-	const titleElement = title && <h2 className="mhn">{translateStringIfHasNamespaces(title, translationNamespaces)}</h2>
+	const description = schema[SchemaFormUIField.Description]
+	const titleElement = title && (
+		<SchemaFormSectionHeader title={title} description={description} translationNamespaces={translationNamespaces} />
+	)
 
 	if (Object.keys(schema.properties || {}).length > 0) {
 		return (
@@ -150,9 +154,9 @@ export const SchemaFormObjectTable = ({
 		)
 	} else {
 		return (
-			<>
+			<div className="settings-config-table">
 				{titleElement}
-				<table className={'expando setings-config-table table'}>
+				<table className={'expando table'}>
 					<thead>
 						<tr className="hl">
 							{summaryFields.map((col) => {
@@ -204,7 +208,7 @@ export const SchemaFormObjectTable = ({
 						<FontAwesomeIcon icon={faPlus} />
 					</button>
 				</div>
-			</>
+			</div>
 		)
 	}
 }

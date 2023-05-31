@@ -60,14 +60,8 @@ $timeline-layer-height: 1em;
 		right: 0;
 		bottom: 0;
 
-		display: flex;
 		width: 100%;
-		flex-flow: row nowrap;
-		align-items: flex-start;
-		align-content: flex-start;
-		justify-content: flex-start;
 
-		will-change: transform;
 		contain: layout style;
 	}
 }
@@ -93,9 +87,12 @@ $timeline-layer-height: 1em;
 	}
 }
 .segment-timeline__small-parts-flag-hoist {
-	position: relative;
+	position: absolute;
 	flex: 0 0;
 	max-width: 0;
+	z-index: 1001;
+	top: var(--segment-timeline-padding-top);
+	bottom: 0;
 }
 .segment-timeline__small-parts-flag {
 	position: absolute;
@@ -112,8 +109,14 @@ $timeline-layer-height: 1em;
 	pointer-events: none;
 	contain: layout;
 
-	&.segment-timeline__part--end-of-segment {
-		// this is end of segment
+	.segment-timeline__part__end-of-segment {
+		position: absolute;
+		top: 0;
+		height: 100%;
+
+		&.is-live {
+			will-change: transform
+		}
 	}
 
 	.segment-timeline__output-group {

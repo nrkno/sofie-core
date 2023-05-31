@@ -160,10 +160,11 @@ export const L3rdListItemRenderer: React.FunctionComponent<ILayerItemRendererPro
 				<L3rdFloatingInspector
 					showMiniInspector={showMiniInspector}
 					content={noraContent}
-					floatingInspectorStyle={{
-						top: itemIconPosition?.top + 'px',
-						left: itemIconPosition?.left + 'px',
-						transform: 'translate(0, -100%)',
+					position={{
+						top: itemIconPosition?.top ?? 0,
+						left: itemIconPosition?.left ?? 0,
+						anchor: 'start',
+						position: 'top-start',
 					}}
 					typeClass={props.layer && RundownUtils.getSourceLayerClassName(props.layer.type)}
 					itemElement={itemIcon.current}

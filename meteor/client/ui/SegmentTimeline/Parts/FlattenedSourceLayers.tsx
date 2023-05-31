@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import * as _ from 'underscore'
 import { unprotectString } from '../../../../lib/lib'
 import { ISourceLayerUi } from '../SegmentTimelineContainer'
@@ -6,6 +6,7 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { SourceLayerItemContainer } from '../SourceLayerItemContainer'
 import { ISourceLayerPropsBase, useMouseContext } from './SourceLayer'
 import { ISourceLayerExtended } from '../../../../lib/Rundown'
+import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 
 interface IFlattenedSourceLayerProps extends ISourceLayerPropsBase {
 	layers: ISourceLayerUi[]
@@ -14,6 +15,17 @@ interface IFlattenedSourceLayerProps extends ISourceLayerPropsBase {
 
 export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.Element {
 	const { getPartContext, onMouseUp } = useMouseContext(props)
+
+	const piecesForLayers = useMemo(() => {
+		const piecesForLayers: Map<string, PieceInstancePiece[]> = new Map()
+		for (const layer of props.layers) {
+			piecesForLayers.set(
+				layer._id,
+				layer.pieces.map((p) => p.instance.piece)
+			)
+		}
+		return piecesForLayers
+	}, [props.layers])
 
 	return (
 		<ContextMenuTrigger
@@ -34,7 +46,7 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.El
 							// filter only pieces belonging to this part
 							return piece.instance.partInstanceId === props.part.instance._id
 								? // filter only pieces, that have not been hidden from the UI
-								  piece.instance.hidden !== true && piece.instance.piece.virtual !== true
+								  piece.instance.piece.virtual !== true
 								: false
 						})
 					)
@@ -58,6 +70,7 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.El
 									onDoubleClick={props.onPieceDoubleClick}
 									mediaPreviewUrl={props.mediaPreviewUrl}
 									piece={piece}
+									pieces={piecesForLayers.get(layer._id) ?? []}
 									layer={layer}
 									outputLayer={props.outputLayer}
 									part={props.part}
@@ -65,7 +78,6 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.El
 									partDuration={props.duration}
 									partExpectedDuration={props.expectedDuration}
 									timeScale={props.timeScale}
-									relative={props.relative}
 									autoNextPart={props.autoNextPart}
 									liveLinePadding={props.liveLinePadding}
 									scrollLeft={props.scrollLeft}

@@ -1,0 +1,29 @@
+.settings-config-table input {
+	background-color: white;
+}
+
+.settings-config-table .settings-config-table {
+	margin-left: 10px;
+}
+
+.settings-config-table .settings-config-table,
+.settings-config-table .settings-config-table td,
+.settings-config-table .settings-config-table th {
+	background-color: #f0f0f0 !important;
+}
+
+.settings-config-table .settings-config-table .settings-config-table,
+.settings-config-table .settings-config-table .settings-config-table td,
+.settings-config-table .settings-config-table .settings-config-table tr {
+	background-color: white !important;
+}
+
+.settings-config-table .settings-config-table .settings-config-table .settings-config-table,
+.settings-config-table .settings-config-table .settings-config-table .settings-config-table td,
+.settings-config-table .settings-config-table .settings-config-table .settings-config-table tr {
+	background-color: #f0f0f0 !important;
+
+	input: {
+		background-color: white;
+	}
+}

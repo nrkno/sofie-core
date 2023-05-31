@@ -5,22 +5,24 @@ import {
 	PeripheralDeviceAPI,
 	PeripheralDeviceCommand,
 	PeripheralDeviceId,
-	PeripheralDevicePublic,
+	PeripheralDeviceForDevice,
 	protectString,
 	StatusCode,
 	StudioId,
 	unprotectString,
 } from '@sofie-automation/server-core-integration'
-import { DeviceType, MediaObject, DeviceOptionsAny, ActionExecutionResult } from 'timeline-state-resolver'
+import { MediaObject, DeviceOptionsAny, ActionExecutionResult } from 'timeline-state-resolver'
 import * as _ from 'underscore'
 import { DeviceConfig } from './connector'
 import { TSRHandler } from './tsrHandler'
 import { Logger } from 'winston'
 // eslint-disable-next-line node/no-extraneous-import
 import { MemUsageReport as ThreadMemUsageReport } from 'threadedclass'
-import { Process } from './process'
 import { PLAYOUT_DEVICE_CONFIG } from './configManifest'
 import { BaseRemoteDeviceIntegration } from 'timeline-state-resolver/dist/service/remoteDeviceInstance'
+import { getVersions } from './versions'
+import { CoreConnectionChild } from '@sofie-automation/server-core-integration/dist/lib/CoreConnectionChild'
+import { PlayoutGatewayConfig } from './generated/options'
 
 export interface CoreConfig {
 	host: string
@@ -40,9 +42,8 @@ export class CoreHandler {
 	core!: CoreConnection
 	logger: Logger
 	public _observers: Array<any> = []
-	public deviceSettings: { [key: string]: any } = {}
+	public deviceSettings: PlayoutGatewayConfig = {}
 
-	public errorReporting = false
 	public multithreading = false
 	public reportAllCommands = false
 
@@ -51,7 +52,7 @@ export class CoreHandler {
 	private _executedFunctions: { [id: string]: boolean } = {}
 	private _tsrHandler?: TSRHandler
 	private _coreConfig?: CoreConfig
-	private _process?: Process
+	private _certificates?: Buffer[]
 
 	private _studioId: StudioId | undefined
 	private _timelineSubscription: string | null = null
@@ -65,18 +66,12 @@ export class CoreHandler {
 		this._deviceOptions = deviceOptions
 	}
 
-	async init(config: CoreConfig, process: Process): Promise<void> {
+	async init(config: CoreConfig, certificates: Buffer[]): Promise<void> {
 		this._statusInitialized = false
 		this._coreConfig = config
-		this._process = process
+		this._certificates = certificates
 
-		this.core = new CoreConnection(
-			this.getCoreConnectionOptions(
-				'Playout gateway',
-				'PlayoutCoreParent',
-				PeripheralDeviceAPI.PERIPHERAL_SUBTYPE_PROCESS
-			)
-		)
+		this.core = new CoreConnection(this.getCoreConnectionOptions())
 
 		this.core.onConnected(() => {
 			this.logger.info('Core Connected!')
@@ -96,9 +91,9 @@ export class CoreHandler {
 			host: config.host,
 			port: config.port,
 		}
-		if (this._process && this._process.certificates.length) {
+		if (this._certificates.length) {
 			ddpConfig.tlsOpts = {
-				ca: this._process.certificates,
+				ca: this._certificates,
 			}
 		}
 
@@ -118,9 +113,7 @@ export class CoreHandler {
 		this.logger.info('Core: Setting up subscriptions..')
 		this.logger.info('DeviceId: ' + this.core.deviceId)
 		await Promise.all([
-			this.core.autoSubscribe('peripheralDevices', {
-				_id: this.core.deviceId,
-			}),
+			this.core.autoSubscribe('peripheralDeviceForDevice', this.core.deviceId),
 			this.core.autoSubscribe('mappingsForDevice', this.core.deviceId),
 			this.core.autoSubscribe('timelineForDevice', this.core.deviceId),
 			this.core.autoSubscribe('timelineDatastoreForDevice', this.core.deviceId),
@@ -137,7 +130,7 @@ export class CoreHandler {
 			this._observers = []
 		}
 		// setup observers
-		const observer = this.core.observe('peripheralDevices')
+		const observer = this.core.observe('peripheralDeviceForDevice')
 		observer.added = (id: string) => this.onDeviceChanged(protectString(id))
 		observer.changed = (id: string) => this.onDeviceChanged(protectString(id))
 		this.setupObserverForPeripheralDeviceCommands(this)
@@ -147,28 +140,27 @@ export class CoreHandler {
 		await this.updateCoreStatus()
 		await this.core.destroy()
 	}
-	getCoreConnectionOptions(
-		name: string,
-		subDeviceId: string,
-		subDeviceType: DeviceType | PeripheralDeviceAPI.PERIPHERAL_SUBTYPE_PROCESS
-	): CoreOptions {
+	private getCoreConnectionOptions(): CoreOptions {
 		if (!this._deviceOptions.deviceId) {
 			// this.logger.warn('DeviceId not set, using a temporary random id!')
 			throw new Error('DeviceId is not set!')
 		}
 
 		const options: CoreOptions = {
-			deviceId: protectString(this._deviceOptions.deviceId + subDeviceId),
+			deviceId: protectString(this._deviceOptions.deviceId + 'PlayoutCoreParent'),
 			deviceToken: this._deviceOptions.deviceToken,
 
 			deviceCategory: PeripheralDeviceAPI.PeripheralDeviceCategory.PLAYOUT,
 			deviceType: PeripheralDeviceAPI.PeripheralDeviceType.PLAYOUT,
-			deviceSubType: subDeviceType,
 
-			deviceName: name,
+			deviceName: 'Playout gateway',
 			watchDog: this._coreConfig ? this._coreConfig.watchdog : true,
 
 			configManifest: PLAYOUT_DEVICE_CONFIG,
+
+			versions: getVersions(this.logger),
+
+			documentationUrl: 'https://github.com/nrkno/sofie-core',
 		}
 
 		if (!options.deviceToken) {
@@ -176,7 +168,6 @@ export class CoreHandler {
 			options.deviceToken = 'unsecureToken'
 		}
 
-		if (subDeviceType === PeripheralDeviceAPI.PERIPHERAL_SUBTYPE_PROCESS) options.versions = this._getVersions()
 		return options
 	}
 	onConnected(fcn: () => any): void {
@@ -184,17 +175,13 @@ export class CoreHandler {
 	}
 	onDeviceChanged(id: PeripheralDeviceId): void {
 		if (id === this.core.deviceId) {
-			const col = this.core.getCollection<PeripheralDevicePublic>('peripheralDevices')
+			const col = this.core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
 			if (!col) throw new Error('collection "peripheralDevices" not found!')
 
 			const device = col.findOne(id)
-			if (device) {
-				this.deviceSettings = device.settings || {}
-			} else {
-				this.deviceSettings = {}
-			}
+			this.deviceSettings = device?.deviceSettings ?? {}
 
-			const logLevel = this.deviceSettings['debugLogging'] ? 'debug' : 'info'
+			const logLevel = this.deviceSettings.debugLogging ? 'debug' : 'info'
 			if (logLevel !== this.logger.level) {
 				this.logger.level = logLevel
 
@@ -205,17 +192,14 @@ export class CoreHandler {
 				this.logger.info('Loglevel: ' + this.logger.level)
 			}
 
-			if (this.deviceSettings['errorReporting'] !== this.errorReporting) {
-				this.errorReporting = this.deviceSettings['errorReporting']
+			if (this.deviceSettings.multiThreading !== this.multithreading) {
+				this.multithreading = this.deviceSettings.multiThreading || false
 			}
-			if (this.deviceSettings['multiThreading'] !== this.multithreading) {
-				this.multithreading = this.deviceSettings['multiThreading']
-			}
-			if (this.deviceSettings['reportAllCommands'] !== this.reportAllCommands) {
-				this.reportAllCommands = this.deviceSettings['reportAllCommands']
+			if (this.deviceSettings.reportAllCommands !== this.reportAllCommands) {
+				this.reportAllCommands = this.deviceSettings.reportAllCommands || false
 			}
 
-			const studioId = device.studioId
+			const studioId = device?.studioId
 			if (!studioId) throw new Error('PeripheralDevice has no studio!')
 
 			if (studioId !== this._studioId) {
@@ -267,8 +251,8 @@ export class CoreHandler {
 		return !!this.deviceSettings['debugState']
 	}
 	get estimateResolveTimeMultiplier(): number {
-		if (!isNaN(Number(this.deviceSettings['estimateResolveTimeMultiplier']))) {
-			return this.deviceSettings['estimateResolveTimeMultiplier'] || 1
+		if (!isNaN(Number(this.deviceSettings.estimateResolveTimeMultiplier))) {
+			return this.deviceSettings.estimateResolveTimeMultiplier || 1
 		} else return 1
 	}
 
@@ -332,7 +316,6 @@ export class CoreHandler {
 	}
 	setupObserverForPeripheralDeviceCommands(functionObject: CoreTSRDeviceHandler | CoreHandler): void {
 		const observer = functionObject.core.observe('peripheralDeviceCommands')
-		functionObject.killProcess(0)
 		functionObject._observers.push(observer)
 		const addedChangedCommand = (id: string) => {
 			const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
@@ -363,16 +346,12 @@ export class CoreHandler {
 			}
 		})
 	}
-	killProcess(actually: number): boolean {
-		if (actually === 1) {
-			this.logger.info('KillProcess command received, shutting down in 1000ms!')
-			setTimeout(() => {
-				// eslint-disable-next-line no-process-exit
-				process.exit(0)
-			}, 1000)
-			return true
-		}
-		return false
+	killProcess(): void {
+		this.logger.info('KillProcess command received, shutting down in 1000ms!')
+		setTimeout(() => {
+			// eslint-disable-next-line no-process-exit
+			process.exit(0)
+		}, 1000)
 	}
 	async devicesMakeReady(okToDestroyStuff?: boolean, activeRundownId?: string): Promise<any> {
 		if (this._tsrHandler) {
@@ -466,41 +445,10 @@ export class CoreHandler {
 			messages: messages,
 		})
 	}
-	private _getVersions() {
-		const versions: { [packageName: string]: string } = {}
-
-		if (process.env.npm_package_version) {
-			versions['_process'] = process.env.npm_package_version
-		}
-
-		const pkgNames = [
-			'timeline-state-resolver',
-			'atem-connection',
-			'atem-state',
-			'casparcg-connection',
-			'casparcg-state',
-			'emberplus-connection',
-			'superfly-timeline',
-		]
-		try {
-			for (const pkgName of pkgNames) {
-				try {
-					// eslint-disable-next-line @typescript-eslint/no-var-requires
-					const pkgInfo = require(`${pkgName}/package.json`)
-					versions[pkgName] = pkgInfo.version || 'N/A'
-				} catch (e) {
-					this.logger.error(`Failed to load package.json for lib "${pkgName}": ${e}`)
-				}
-			}
-		} catch (e) {
-			this.logger.error(e)
-		}
-		return versions
-	}
 }
 
 export class CoreTSRDeviceHandler {
-	core!: CoreConnection
+	core!: CoreConnectionChild
 	public _observers: Array<any> = []
 	public _devicePr: Promise<BaseRemoteDeviceIntegration<DeviceOptionsAny>>
 	public _deviceId: string
@@ -530,19 +478,18 @@ export class CoreTSRDeviceHandler {
 		const deviceId = this._device.deviceId
 		const deviceName = `${deviceId} (${this._device.deviceName})`
 
-		this.core = new CoreConnection(
-			this._coreParentHandler.getCoreConnectionOptions(
-				deviceName,
-				'Playout' + deviceId,
-				this._device.deviceOptions.type
-			)
-		)
-		this.core.onError((err: any) => {
+		this.core = await this._coreParentHandler.core.createChild({
+			deviceId: protectString(this._coreParentHandler.core.deviceId + 'Playout' + deviceId),
+
+			deviceName,
+
+			deviceSubType: this._device.deviceOptions.type,
+		})
+		this.core.on('error', (err: any) => {
 			this._coreParentHandler.logger.error(
 				'Core Error: ' + ((_.isObject(err) && err.message) || err.toString() || err)
 			)
 		})
-		await this.core.init(this._coreParentHandler.core)
 
 		if (!this._hasGottenStatusChange) {
 			this._deviceStatus = await this._device.device.getStatus()
@@ -647,8 +594,8 @@ export class CoreTSRDeviceHandler {
 			messages: ['Uninitialized'],
 		})
 	}
-	killProcess(actually: number): boolean {
-		return this._coreParentHandler.killProcess(actually)
+	killProcess(): void {
+		this._coreParentHandler.killProcess()
 	}
 	async executeAction(actionId: string, payload?: Record<string, any>): Promise<ActionExecutionResult> {
 		this._coreParentHandler.logger.info(`Exec ${actionId} on ${this._deviceId}`)

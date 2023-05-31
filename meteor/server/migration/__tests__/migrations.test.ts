@@ -21,7 +21,7 @@ import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
-import { getCoreSystem } from '../../coreSystem/collection'
+import { getCoreSystemAsync } from '../../coreSystem/collection'
 
 require('../../api/peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../api') // include in order to create the Meteor methods needed
@@ -41,11 +41,11 @@ require('fs')
 	})
 
 describe('Migrations', () => {
-	beforeAll(() => {
-		setupEmptyEnvironment()
+	beforeAll(async () => {
+		await setupEmptyEnvironment()
 	})
-	function getSystem() {
-		return getCoreSystem() as ICoreSystem
+	async function getSystem() {
+		return (await getCoreSystemAsync()) as ICoreSystem
 	}
 	function userInput(
 		migrationStatus: GetMigrationStatusResult,
@@ -64,7 +64,7 @@ describe('Migrations', () => {
 		)
 	}
 	testInFiber('System migrations, initial setup', async () => {
-		expect(getSystem().version).toEqual(GENESIS_SYSTEM_VERSION)
+		expect((await getSystem()).version).toEqual(GENESIS_SYSTEM_VERSION)
 
 		const migrationStatus0: GetMigrationStatusResult = await MeteorCall.migration.getMigrationStatus()
 
@@ -98,13 +98,13 @@ describe('Migrations', () => {
 			snapshot: expect.any(String),
 		})
 
-		expect(getSystem().version).toEqual(CURRENT_SYSTEM_VERSION)
+		expect((await getSystem()).version).toEqual(CURRENT_SYSTEM_VERSION)
 	})
 
 	testInFiber('Ensure migrations run in correct order', async () => {
 		await MeteorCall.migration.resetDatabaseVersions()
 
-		expect(getSystem().version).toEqual(GENESIS_SYSTEM_VERSION)
+		expect((await getSystem()).version).toEqual(GENESIS_SYSTEM_VERSION)
 
 		clearMigrationSteps()
 
@@ -112,12 +112,12 @@ describe('Migrations', () => {
 			{
 				id: 'myCoreMockStep2',
 				canBeRunAutomatically: true,
-				validate: () => {
-					if (!Studios.findOne(protectString('studioMock2'))) return 'No Studio found'
+				validate: async () => {
+					if (!(await Studios.findOneAsync(protectString('studioMock2')))) return 'No Studio found'
 					return false
 				},
-				migrate: () => {
-					Studios.insert({
+				migrate: async () => {
+					await Studios.insertAsync({
 						_id: protectString('studioMock2'),
 						name: 'Default studio',
 						organizationId: null,
@@ -134,6 +134,11 @@ describe('Migrations', () => {
 						packageContainers: {},
 						previewContainerIds: [],
 						thumbnailContainerIds: [],
+						peripheralDeviceSettings: {
+							playoutDevices: wrapDefaultObject({}),
+							ingestDevices: wrapDefaultObject({}),
+							inputDevices: wrapDefaultObject({}),
+						},
 						lastBlueprintConfig: undefined,
 					})
 				},
@@ -143,12 +148,12 @@ describe('Migrations', () => {
 			{
 				id: 'myCoreMockStep3',
 				canBeRunAutomatically: true,
-				validate: () => {
-					if (!Studios.findOne(protectString('studioMock3'))) return 'No Studio found'
+				validate: async () => {
+					if (!(await Studios.findOneAsync(protectString('studioMock3')))) return 'No Studio found'
 					return false
 				},
-				migrate: () => {
-					Studios.insert({
+				migrate: async () => {
+					await Studios.insertAsync({
 						_id: protectString('studioMock3'),
 						name: 'Default studio',
 						organizationId: null,
@@ -165,6 +170,11 @@ describe('Migrations', () => {
 						packageContainers: {},
 						previewContainerIds: [],
 						thumbnailContainerIds: [],
+						peripheralDeviceSettings: {
+							playoutDevices: wrapDefaultObject({}),
+							ingestDevices: wrapDefaultObject({}),
+							inputDevices: wrapDefaultObject({}),
+						},
 						lastBlueprintConfig: undefined,
 					})
 				},
@@ -174,12 +184,12 @@ describe('Migrations', () => {
 			{
 				id: 'myCoreMockStep1',
 				canBeRunAutomatically: true,
-				validate: () => {
-					if (!Studios.findOne(protectString('studioMock1'))) return 'No Studio found'
+				validate: async () => {
+					if (!(await Studios.findOneAsync(protectString('studioMock1')))) return 'No Studio found'
 					return false
 				},
-				migrate: () => {
-					Studios.insert({
+				migrate: async () => {
+					await Studios.insertAsync({
 						_id: protectString('studioMock1'),
 						name: 'Default studio',
 						organizationId: null,
@@ -196,6 +206,11 @@ describe('Migrations', () => {
 						packageContainers: {},
 						previewContainerIds: [],
 						thumbnailContainerIds: [],
+						peripheralDeviceSettings: {
+							playoutDevices: wrapDefaultObject({}),
+							ingestDevices: wrapDefaultObject({}),
+							inputDevices: wrapDefaultObject({}),
+						},
 						lastBlueprintConfig: undefined,
 					})
 				},
@@ -207,7 +222,7 @@ describe('Migrations', () => {
 
 		let migration: PreparedMigration
 
-		migration = prepareMigration(true)
+		migration = await prepareMigration(true)
 		expect(migration.migrationNeeded).toEqual(true)
 		expect(migration.automaticStepCount).toEqual(3)
 
@@ -215,7 +230,7 @@ describe('Migrations', () => {
 		expect(_.find(migration.steps, (s) => !!s.id.match(/myCoreMockStep2/))).toBeTruthy()
 		expect(_.find(migration.steps, (s) => !!s.id.match(/myCoreMockStep3/))).toBeTruthy()
 
-		const studio = Studios.findOne() as Studio
+		const studio = (await Studios.findOneAsync({})) as Studio
 		expect(studio).toBeTruthy()
 
 		const studioManifest = (): StudioBlueprintManifest => ({
@@ -368,9 +383,11 @@ describe('Migrations', () => {
 			}),
 		})
 
-		Blueprints.insert(generateFakeBlueprint('showStyle0', BlueprintManifestType.SHOWSTYLE, showStyleManifest))
+		await Blueprints.insertAsync(
+			generateFakeBlueprint('showStyle0', BlueprintManifestType.SHOWSTYLE, showStyleManifest)
+		)
 
-		ShowStyleBases.insert({
+		await ShowStyleBases.insertAsync({
 			_id: protectString('showStyle0'),
 			name: '',
 			organizationId: null,
@@ -383,7 +400,7 @@ describe('Migrations', () => {
 			lastBlueprintConfig: undefined,
 		})
 
-		ShowStyleVariants.insert({
+		await ShowStyleVariants.insertAsync({
 			_id: protectString('variant0'),
 			name: '',
 			showStyleBaseId: protectString('showStyle0'),
@@ -392,15 +409,15 @@ describe('Migrations', () => {
 			_rank: 0,
 		})
 
-		Blueprints.insert(generateFakeBlueprint('studio0', BlueprintManifestType.STUDIO, studioManifest))
-		Studios.update(studio._id, {
+		await Blueprints.insertAsync(generateFakeBlueprint('studio0', BlueprintManifestType.STUDIO, studioManifest))
+		await Studios.updateAsync(studio._id, {
 			$set: {
 				blueprintId: protectString('studio0'),
 			},
 		})
 
 		// migrationStatus = Meteor.call(MigrationMethods.getMigrationStatus)
-		migration = prepareMigration(true)
+		migration = await prepareMigration(true)
 
 		expect(migration.migrationNeeded).toEqual(true)
 

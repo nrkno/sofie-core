@@ -48,28 +48,28 @@ export const addSteps = addMigrationSteps('1.47.0', [
 	{
 		id: `Studios generate *withOverrides`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = Studios.find({
+		validate: async () => {
+			const objects = await Studios.countDocuments({
 				$or: [
 					{ blueprintConfigWithOverrides: { $exists: false } },
 					{ mappingsWithOverrides: { $exists: false } },
 				],
-			}).count()
+			})
 			if (objects > 0) {
 				return `object needs to be converted`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = Studios.find({
+		migrate: async () => {
+			const objects = await Studios.findFetchAsync({
 				$or: [
 					{ blueprintConfigWithOverrides: { $exists: false } },
 					{ mappingsWithOverrides: { $exists: false } },
 				],
-			}).fetch()
+			})
 			for (const obj0 of objects) {
 				const obj = obj0 as unknown as DBStudio & StudioOld
-				Studios.update(obj._id, {
+				await Studios.updateAsync(obj._id, {
 					$set: {
 						blueprintConfigWithOverrides:
 							obj.blueprintConfigWithOverrides ??
@@ -85,22 +85,22 @@ export const addSteps = addMigrationSteps('1.47.0', [
 	{
 		id: `ShowStyleVariants generate *withOverrides`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = ShowStyleVariants.find({
+		validate: async () => {
+			const objects = await ShowStyleVariants.countDocuments({
 				blueprintConfigWithOverrides: { $exists: false },
-			}).count()
+			})
 			if (objects > 0) {
 				return `object needs to be converted`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = ShowStyleVariants.find({
+		migrate: async () => {
+			const objects = await ShowStyleVariants.findFetchAsync({
 				blueprintConfigWithOverrides: { $exists: false },
-			}).fetch()
+			})
 			for (const obj0 of objects) {
 				const obj = obj0 as unknown as DBShowStyleVariant & ShowStyleVariantOld
-				ShowStyleVariants.update(obj._id, {
+				await ShowStyleVariants.updateAsync(obj._id, {
 					$set: {
 						blueprintConfigWithOverrides:
 							obj.blueprintConfigWithOverrides ??
@@ -114,30 +114,30 @@ export const addSteps = addMigrationSteps('1.47.0', [
 	{
 		id: `ShowStyleBases generate *withOverrides`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = ShowStyleBases.find({
+		validate: async () => {
+			const objects = await ShowStyleBases.countDocuments({
 				$or: [
 					{ blueprintConfigWithOverrides: { $exists: false } },
 					{ sourceLayersWithOverrides: { $exists: false } },
 					{ outputLayersWithOverrides: { $exists: false } },
 				],
-			}).count()
+			})
 			if (objects > 0) {
 				return `object needs to be converted`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = ShowStyleBases.find({
+		migrate: async () => {
+			const objects = await ShowStyleBases.findFetchAsync({
 				$or: [
 					{ blueprintConfigWithOverrides: { $exists: false } },
 					{ sourceLayersWithOverrides: { $exists: false } },
 					{ outputLayersWithOverrides: { $exists: false } },
 				],
-			}).fetch()
+			})
 			for (const obj0 of objects) {
 				const obj = obj0 as unknown as DBShowStyleBase & ShowStyleBaseOld
-				ShowStyleBases.update(obj._id, {
+				await ShowStyleBases.updateAsync(obj._id, {
 					$set: {
 						blueprintConfigWithOverrides:
 							obj.blueprintConfigWithOverrides ??
@@ -157,23 +157,23 @@ export const addSteps = addMigrationSteps('1.47.0', [
 	{
 		id: `TriggeredActions generate *withOverrides`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = TriggeredActions.find({
+		validate: async () => {
+			const objects = await TriggeredActions.countDocuments({
 				$or: [{ triggersWithOverrides: { $exists: false } }, { actionsWithOverrides: { $exists: false } }],
-			}).count()
+			})
 			if (objects > 0) {
 				return `object needs to be converted`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = TriggeredActions.find({
+		migrate: async () => {
+			const objects = await TriggeredActions.findFetchAsync({
 				$or: [{ triggersWithOverrides: { $exists: false } }, { actionsWithOverrides: { $exists: false } }],
-			}).fetch()
+			})
 			for (const obj0 of objects) {
 				const obj = obj0 as unknown as TriggeredActionsObj & TriggeredActionsOld
 
-				TriggeredActions.update(obj._id, {
+				await TriggeredActions.updateAsync(obj._id, {
 					$set: {
 						triggersWithOverrides:
 							obj.triggersWithOverrides ??
@@ -191,22 +191,22 @@ export const addSteps = addMigrationSteps('1.47.0', [
 	{
 		id: `Studios remove pre *WithOverrides properties`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = Studios.find({
+		validate: async () => {
+			const objects = await Studios.countDocuments({
 				$or: [{ blueprintConfig: { $exists: true } }, { mappings: { $exists: true } }],
-			}).count()
+			})
 			if (objects > 0) {
 				return `object needs to be converted`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = Studios.find({
+		migrate: async () => {
+			const objects = await Studios.findFetchAsync({
 				$or: [{ blueprintConfig: { $exists: true } }, { mappings: { $exists: true } }],
-			}).fetch()
+			})
 			for (const obj0 of objects) {
 				const obj = obj0 as unknown as DBStudio & StudioOld
-				Studios.update(obj._id, {
+				await Studios.updateAsync(obj._id, {
 					$unset: {
 						blueprintConfig: 1,
 						mappings: 1,
@@ -218,22 +218,22 @@ export const addSteps = addMigrationSteps('1.47.0', [
 	{
 		id: `ShowStyleVariants remove pre *withOverrides properties`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = ShowStyleVariants.find({
+		validate: async () => {
+			const objects = await ShowStyleVariants.countDocuments({
 				blueprintConfig: { $exists: true },
-			}).count()
+			})
 			if (objects > 0) {
 				return `object needs to be converted`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = ShowStyleVariants.find({
+		migrate: async () => {
+			const objects = await ShowStyleVariants.findFetchAsync({
 				blueprintConfig: { $exists: true },
-			}).fetch()
+			})
 			for (const obj0 of objects) {
 				const obj = obj0 as unknown as DBShowStyleVariant & ShowStyleVariantOld
-				ShowStyleVariants.update(obj._id, {
+				await ShowStyleVariants.updateAsync(obj._id, {
 					$unset: {
 						blueprintConfig: 1,
 					},
@@ -244,30 +244,30 @@ export const addSteps = addMigrationSteps('1.47.0', [
 	{
 		id: `ShowStyleBases remove pre *withOverrides properties`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = ShowStyleBases.find({
+		validate: async () => {
+			const objects = await ShowStyleBases.countDocuments({
 				$or: [
 					{ blueprintConfig: { $exists: true } },
 					{ sourceLayers: { $exists: true } },
 					{ outputLayers: { $exists: true } },
 				],
-			}).count()
+			})
 			if (objects > 0) {
 				return `object needs to be converted`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = ShowStyleBases.find({
+		migrate: async () => {
+			const objects = await ShowStyleBases.findFetchAsync({
 				$or: [
 					{ blueprintConfig: { $exists: true } },
 					{ sourceLayers: { $exists: true } },
 					{ outputLayers: { $exists: true } },
 				],
-			}).fetch()
+			})
 			for (const obj0 of objects) {
 				const obj = obj0 as unknown as DBShowStyleBase & ShowStyleBaseOld
-				ShowStyleBases.update(obj._id, {
+				await ShowStyleBases.updateAsync(obj._id, {
 					$unset: {
 						blueprintConfig: 1,
 						sourceLayers: 1,
@@ -280,23 +280,23 @@ export const addSteps = addMigrationSteps('1.47.0', [
 	{
 		id: `TriggeredActions remove pre *withOverrides properties`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = TriggeredActions.find({
+		validate: async () => {
+			const objects = await TriggeredActions.countDocuments({
 				$or: [{ triggers: { $exists: true } }, { actions: { $exists: true } }],
-			}).count()
+			})
 			if (objects > 0) {
 				return `object needs to be converted`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = TriggeredActions.find({
+		migrate: async () => {
+			const objects = await TriggeredActions.findFetchAsync({
 				$or: [{ triggers: { $exists: true } }, { actions: { $exists: true } }],
-			}).fetch()
+			})
 			for (const obj0 of objects) {
 				const obj = obj0 as unknown as TriggeredActionsObj & TriggeredActionsOld
 
-				TriggeredActions.update(obj._id, {
+				await TriggeredActions.updateAsync(obj._id, {
 					$unset: {
 						triggers: 1,
 						actions: 1,

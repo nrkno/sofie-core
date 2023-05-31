@@ -135,19 +135,14 @@ jobs:
         id: publish-npm
         if: ${{ steps.do-publish.outputs.publish }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+          yarn config set npmAuthToken $NPM_AUTH_TOKEN
+
           cd packages/${{ matrix.package-name }}
           NEW_VERSION=$(node -p "require('./package.json').version")
-          yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag nightly
+          yarn npm publish --access=public --tag nightly
+
           echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "**Published:** $NEW_VERSION" >> $GITHUB_STEP_SUMMARY
         env:
-          CI: true
-      - name: Post published prerelease lib version comment in PR
-        if: ${{ steps.do-publish.outputs.publish }}
-        uses: mshick/add-pr-comment@v2
-        with:
-          message: |
-            ⚡ Published prerelease version **${{ matrix.package-name }}@${{ steps.publish-npm.outputs.version }}** to NPM
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           CI: true

@@ -423,14 +423,15 @@ export const addSteps = addMigrationSteps('0.1.0', [
 	{
 		id: 'studio exists',
 		canBeRunAutomatically: true,
-		validate: () => {
-			if (!Studios.findOne()) return 'No Studio found'
+		validate: async () => {
+			const count = await Studios.countDocuments()
+			if (count === 0) return 'No Studio found'
 			return false
 		},
-		migrate: () => {
+		migrate: async () => {
 			// create default studio
 			logger.info(`Migration: Add default studio`)
-			Studios.insert({
+			await Studios.insertAsync({
 				_id: protectString('studio0'),
 				name: 'Default studio',
 				organizationId: null,
@@ -447,6 +448,11 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				packageContainers: {},
 				thumbnailContainerIds: [],
 				previewContainerIds: [],
+				peripheralDeviceSettings: {
+					playoutDevices: wrapDefaultObject({}),
+					ingestDevices: wrapDefaultObject({}),
+					inputDevices: wrapDefaultObject({}),
+				},
 				lastBlueprintConfig: undefined,
 			})
 		},
@@ -457,18 +463,19 @@ export const addSteps = addMigrationSteps('0.1.0', [
 		id: 'showStyleBase exists',
 		canBeRunAutomatically: true,
 		dependOnResultFrom: 'studio exists',
-		validate: () => {
-			if (!ShowStyleBases.findOne()) return 'No ShowStyleBase found'
+		validate: async () => {
+			const count = await ShowStyleBases.countDocuments()
+			if (count === 0) return 'No ShowStyleBase found'
 			return false
 		},
-		migrate: () => {
+		migrate: async () => {
 			// maybe copy from studio?
-			const studios = Studios.find().fetch()
+			const studios = await Studios.findFetchAsync({})
 			if (studios.length === 1) {
 				const studio = studios[0]
 
 				const id = protectString('show0')
-				ShowStyleBases.insert({
+				await ShowStyleBases.insertAsync({
 					_id: id,
 					name: 'Default ShowStyle',
 					organizationId: null,
@@ -482,7 +489,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				})
 
 				const variantId: ShowStyleVariantId = getRandomId()
-				ShowStyleVariants.insert({
+				await ShowStyleVariants.insertAsync({
 					_id: variantId,
 					name: 'Default Variant',
 					showStyleBaseId: id,
@@ -492,7 +499,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				})
 
 				if (!studio.supportedShowStyleBase || studio.supportedShowStyleBase.length === 0) {
-					Studios.update(studio._id, {
+					await Studios.updateAsync(studio._id, {
 						$set: {
 							supportedShowStyleBase: [id],
 						},
@@ -503,7 +510,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				logger.info(`Migration: Add default ShowStyleBase`)
 
 				const id = protectString('show0')
-				ShowStyleBases.insert({
+				await ShowStyleBases.insertAsync({
 					_id: id,
 					name: 'Default ShowStyle',
 					organizationId: null,
@@ -515,7 +522,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					lastBlueprintConfig: undefined,
 				})
 
-				ShowStyleVariants.insert({
+				await ShowStyleVariants.insertAsync({
 					_id: getRandomId(),
 					name: 'Default Variant',
 					showStyleBaseId: id,
@@ -529,10 +536,10 @@ export const addSteps = addMigrationSteps('0.1.0', [
 	{
 		id: 'TriggeredActions.core',
 		canBeRunAutomatically: true,
-		validate: () => {
-			const coreTriggeredActionsCount = TriggeredActions.find({
+		validate: async () => {
+			const coreTriggeredActionsCount = await TriggeredActions.countDocuments({
 				showStyleBaseId: null,
-			}).count()
+			})
 
 			if (coreTriggeredActionsCount === 0) {
 				return `No system-wide triggered actions set up.`
@@ -540,9 +547,9 @@ export const addSteps = addMigrationSteps('0.1.0', [
 
 			return false
 		},
-		migrate: () => {
-			DEFAULT_CORE_TRIGGERS.forEach((triggeredAction) => {
-				TriggeredActions.insert({
+		migrate: async () => {
+			for (const triggeredAction of DEFAULT_CORE_TRIGGERS) {
+				await TriggeredActions.insertAsync({
 					_id: protectString(getHash(triggeredAction._id)),
 					_rank: triggeredAction._rank,
 					name: triggeredAction.name,
@@ -551,7 +558,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					actionsWithOverrides: wrapDefaultObject(triggeredAction.actions),
 					triggersWithOverrides: wrapDefaultObject(triggeredAction.triggers),
 				})
-			})
+			}
 		},
 	},
 ])

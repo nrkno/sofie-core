@@ -12,6 +12,9 @@ const core = new CoreConnection({
 	deviceCategory: PeripheralDeviceCategory.PLAYOUT,
 	deviceType: PeripheralDeviceType.PLAYOUT,
 	deviceName: 'Jest test framework',
+	documentationUrl: 'http://example.com',
+	versions: {},
+	configManifest: {} as any,
 })
 
 core.onConnectionChanged((connected) => {
@@ -36,17 +39,13 @@ core.onFailed((err) => {
 
 const setupSubscription = async () => {
 	console.log('Setup subscription')
-	return core
-		.subscribe('peripheralDevices', {
-			_id: core.deviceId,
-		})
-		.then(() => {
-			console.log('sub OK!')
-		})
+	return core.subscribe('peripheralDeviceForDevice', core.deviceId).then(() => {
+		console.log('sub OK!')
+	})
 }
 const setupObserver = () => {
 	console.log('Setup observer')
-	const observer = core.observe('peripheralDevices')
+	const observer = core.observe('peripheralDeviceForDevice')
 	observer.added = (id) => {
 		console.log('added', id)
 	}

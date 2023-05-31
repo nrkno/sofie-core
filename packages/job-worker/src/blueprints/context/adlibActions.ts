@@ -14,6 +14,7 @@ import {
 	Time,
 	WithTimeline,
 	TSR,
+	IBlueprintPlayoutDevice,
 } from '@sofie-automation/blueprints-integration'
 import {
 	PartInstanceId,
@@ -38,7 +39,7 @@ import {
 } from '@sofie-automation/corelib/dist/protectedString'
 import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
-import { MongoQuery } from '../../db'
+import { IMongoTransaction, MongoQuery } from '../../db'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	innerFindLastPieceOnLayer,
@@ -65,13 +66,12 @@ import {
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { moveNextPartInner } from '../../playout/setNext'
+import { moveNextPart } from '../../playout/moveNextPart'
 import _ = require('underscore')
 import { ProcessedShowStyleConfig } from '../config'
 import { DatastorePersistenceMode } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
 import { getDatastoreId } from '../../playout/datastore'
-import { executePeripheralDeviceAction, listPeripheralDevices } from '../../peripheralDevice'
-import { PeripheralDevicePublicWithActions } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import { executePeripheralDeviceAction, listPlayoutDevices } from '../../peripheralDevice'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -83,15 +83,18 @@ export class DatastoreActionExecutionContext
 	implements IDataStoreActionExecutionContext, IEventContext
 {
 	protected readonly _context: JobContext
+	protected readonly _transaction: IMongoTransaction | null
 
 	constructor(
 		contextInfo: UserContextInfo,
 		context: JobContext,
+		transaction: IMongoTransaction | null,
 		showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 		watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, context, showStyle, watchedPackages)
 		this._context = context
+		this._transaction = transaction
 	}
 
 	async setTimelineDatastoreValue(key: string, value: unknown, mode: DatastorePersistenceMode): Promise<void> {
@@ -99,16 +102,19 @@ export class DatastoreActionExecutionContext
 		const id = protectString(`${studioId}_${key}`)
 		const collection = this._context.directCollections.TimelineDatastores
 
-		await collection.replace({
-			_id: id,
-			studioId: studioId,
+		await collection.replace(
+			{
+				_id: id,
+				studioId: studioId,
 
-			key,
-			value,
+				key,
+				value,
 
-			modified: Date.now(),
-			mode,
-		})
+				modified: Date.now(),
+				mode,
+			},
+			this._transaction
+		)
 	}
 
 	async removeTimelineDatastoreValue(key: string): Promise<void> {
@@ -116,7 +122,7 @@ export class DatastoreActionExecutionContext
 		const id = getDatastoreId(studioId, key)
 		const collection = this._context.directCollections.TimelineDatastores
 
-		await collection.remove({ _id: id })
+		await collection.remove({ _id: id }, this._transaction)
 	}
 
 	getCurrentTime(): number {
@@ -125,11 +131,8 @@ export class DatastoreActionExecutionContext
 }
 
 /** Actions */
-export class ActionExecutionContext
-	extends DatastoreActionExecutionContext
-	implements IActionExecutionContext, IEventContext
-{
-	// private readonly _context: JobContext
+export class ActionExecutionContext extends ShowStyleUserContext implements IActionExecutionContext, IEventContext {
+	private readonly _context: JobContext
 	private readonly _cache: CacheForPlayout
 	private readonly rundown: DBRundown
 	private readonly playlistActivationId: RundownPlaylistActivationId
@@ -151,7 +154,7 @@ export class ActionExecutionContext
 		watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, context, showStyle, watchedPackages)
-		// this._context = context
+		this._context = context
 		this._cache = cache
 		this.rundown = rundown
 		this.takeAfterExecute = false
@@ -437,7 +440,7 @@ export class ActionExecutionContext
 		if (this.nextPartState !== ActionPartChange.NONE) {
 			// Ensure we dont insert a piece into a part before replacing it with a queued part, as this will cause some data integrity issues
 			// This could be changed if we have a way to abort the pending changes in the nextPart.
-			// TODO-PartInstances - perhaps this could be dropped as only the instance will have changed, and that will be trashed by the setAsNext?
+			// Future: perhaps this could be dropped as only the instance will have changed, and that will be trashed by the setAsNext?
 			throw new Error('Cannot queue part when next part has already been modified')
 		}
 
@@ -504,7 +507,7 @@ export class ActionExecutionContext
 		return convertPartInstanceToBlueprints(newPartInstance)
 	}
 	async moveNextPart(partDelta: number, segmentDelta: number): Promise<void> {
-		await moveNextPartInner(this._context, this._cache, partDelta, segmentDelta)
+		await moveNextPart(this._context, this._cache, partDelta, segmentDelta)
 	}
 	async updatePartInstance(
 		part: 'current' | 'next',
@@ -646,8 +649,8 @@ export class ActionExecutionContext
 		return getMediaObjectDuration(this._context, mediaId)
 	}
 
-	async listPeripheralDevices(): Promise<PeripheralDevicePublicWithActions[]> {
-		return listPeripheralDevices(this._context, this._cache)
+	async listPlayoutDevices(): Promise<IBlueprintPlayoutDevice[]> {
+		return listPlayoutDevices(this._context, this._cache)
 	}
 
 	async executeTSRAction(
@@ -656,5 +659,41 @@ export class ActionExecutionContext
 		payload: Record<string, any>
 	): Promise<TSR.ActionExecutionResult> {
 		return executePeripheralDeviceAction(this._context, deviceId, null, actionId, payload)
+	}
+
+	async setTimelineDatastoreValue(key: string, value: unknown, mode: DatastorePersistenceMode): Promise<void> {
+		const studioId = this._context.studioId
+		const id = protectString(`${studioId}_${key}`)
+		const collection = this._context.directCollections.TimelineDatastores
+
+		this._cache.deferDuringSaveTransaction(async (transaction) => {
+			await collection.replace(
+				{
+					_id: id,
+					studioId: studioId,
+
+					key,
+					value,
+
+					modified: Date.now(),
+					mode,
+				},
+				transaction
+			)
+		})
+	}
+
+	async removeTimelineDatastoreValue(key: string): Promise<void> {
+		const studioId = this._context.studioId
+		const id = getDatastoreId(studioId, key)
+		const collection = this._context.directCollections.TimelineDatastores
+
+		this._cache.deferDuringSaveTransaction(async (transaction) => {
+			await collection.remove({ _id: id }, transaction)
+		})
+	}
+
+	getCurrentTime(): number {
+		return getCurrentTime()
 	}
 }

@@ -1,9 +1,8 @@
-import { IRundownActivationContext, TSR } from '@sofie-automation/blueprints-integration'
+import { IBlueprintPlayoutDevice, IRundownActivationContext, TSR } from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
-import { PeripheralDevicePublicWithActions } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { ReadonlyDeep } from 'type-fest'
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
-import { executePeripheralDeviceAction, listPeripheralDevices } from '../../peripheralDevice'
+import { executePeripheralDeviceAction, listPlayoutDevices } from '../../peripheralDevice'
 import { CacheForPlayout } from '../../playout/cache'
 import { RundownEventContext } from './RundownEventContext'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
@@ -30,8 +29,8 @@ export class RundownActivationContext extends RundownEventContext implements IRu
 		this._cache = cache
 	}
 
-	async listPeripheralDevices(): Promise<PeripheralDevicePublicWithActions[]> {
-		return listPeripheralDevices(this._context, this._cache)
+	async listPlayoutDevices(): Promise<IBlueprintPlayoutDevice[]> {
+		return listPlayoutDevices(this._context, this._cache)
 	}
 
 	async executeTSRAction(

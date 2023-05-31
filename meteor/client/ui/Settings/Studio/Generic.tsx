@@ -11,6 +11,7 @@ import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { Studios } from '../../../collections'
 import { useHistory } from 'react-router-dom'
 import { MeteorCall } from '../../../../lib/api/methods'
+import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 
 interface IStudioGenericPropertiesProps {
 	studio: Studio
@@ -55,10 +56,10 @@ export const StudioGenericProperties = withTranslation()(
 		render(): JSX.Element {
 			const { t } = this.props
 			return (
-				<div>
+				<div className="properties-grid">
 					<h2 className="mhn mtn">{t('Generic Properties')}</h2>
 					<label className="field">
-						{t('Studio Name')}
+						<LabelActual label={t('Studio Name')} />
 						{!this.props.studio.name ? (
 							<div className="error-notice inline">
 								{t('No name set')} <FontAwesomeIcon icon={faExclamationTriangle} />
@@ -76,7 +77,7 @@ export const StudioGenericProperties = withTranslation()(
 							<span className="mdfx"></span>
 						</div>
 					</label>
-					<div className="field">
+					<label className="field">
 						{t('Select Compatible Show Styles')}
 						{!this.props.studio.supportedShowStyleBase.length ? (
 							<div className="error-notice inline">
@@ -95,9 +96,9 @@ export const StudioGenericProperties = withTranslation()(
 							{this.renderShowStyleEditButtons()}
 							<NewShowStyleButton />
 						</div>
-					</div>
+					</label>
 					<label className="field">
-						{t('Frame Rate')}
+						<LabelActual label={t('Frame Rate')} />
 						<div className="mdi">
 							<EditAttribute
 								modifiedClassName="bghl"
@@ -110,20 +111,18 @@ export const StudioGenericProperties = withTranslation()(
 							<span className="mdfx"></span>
 						</div>
 					</label>
-					<div className="mod mtn mbm mhn">
-						<label className="field">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="settings.enablePlayFromAnywhere"
-								obj={this.props.studio}
-								type="checkbox"
-								collection={Studios}
-							/>
-							{t('Enable "Play from Anywhere"')}
-						</label>
-					</div>
 					<label className="field">
-						{t('Media Preview URL')}
+						<LabelActual label={t('Enable "Play from Anywhere"')} />
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute="settings.enablePlayFromAnywhere"
+							obj={this.props.studio}
+							type="checkbox"
+							collection={Studios}
+						/>
+					</label>
+					<label className="field">
+						<LabelActual label={t('Media Preview URL')} />
 						<div className="mdi">
 							<EditAttribute
 								modifiedClassName="bghl"
@@ -137,7 +136,7 @@ export const StudioGenericProperties = withTranslation()(
 						</div>
 					</label>
 					<label className="field">
-						{t('Slack Webhook URLs')}
+						<LabelActual label={t('Slack Webhook URLs')} />
 						<div className="mdi">
 							<EditAttribute
 								modifiedClassName="bghl"
@@ -151,7 +150,7 @@ export const StudioGenericProperties = withTranslation()(
 						</div>
 					</label>
 					<label className="field">
-						{t('Supported Media Formats')}
+						<LabelActual label={t('Supported Media Formats')} />
 						<div className="mdi">
 							<EditAttribute
 								modifiedClassName="bghl"
@@ -165,7 +164,7 @@ export const StudioGenericProperties = withTranslation()(
 						</div>
 					</label>
 					<label className="field">
-						{t('Supported Audio Formats')}
+						<LabelActual label={t('Supported Audio Formats')} />
 						<div className="mdi">
 							<EditAttribute
 								modifiedClassName="bghl"
@@ -178,69 +177,61 @@ export const StudioGenericProperties = withTranslation()(
 							<span className="mdfx"></span>
 						</div>
 					</label>
-					<div className="mod mtn mbm mhn">
-						<label className="field">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="settings.forceMultiGatewayMode"
-								obj={this.props.studio}
-								type="checkbox"
-								collection={Studios}
-							/>
-							{t('Force the Multi-gateway-mode')}
-						</label>
-					</div>
-					<div className="mod mtn mbm mhn">
-						{t('Multi-gateway-mode delay time')}
-						<label className="field">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="settings.multiGatewayNowSafeLatency"
-								obj={this.props.studio}
-								type="int"
-								collection={Studios}
-								className="mdinput"
-							/>
-						</label>
-					</div>
-					<div className="mod mtn mbm mhn">
-						<label className="field">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="settings.preserveUnsyncedPlayingSegmentContents"
-								obj={this.props.studio}
-								type="checkbox"
-								collection={Studios}
-							/>
-							{t('Preserve contents of playing segment when unsynced')}
-						</label>
-					</div>
-					<div className="mod mtn mbm mhn">
-						<label className="field">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="settings.allowRundownResetOnAir"
-								obj={this.props.studio}
-								type="checkbox"
-								collection={Studios}
-							/>
-							{t('Allow Rundowns to be reset while on-air')}
-						</label>
-					</div>
-					<div className="mod mtn mbm mhn">
-						<label className="field">
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute="settings.preserveOrphanedSegmentPositionInRundown"
-								obj={this.props.studio}
-								type="checkbox"
-								collection={Studios}
-							/>
-							{t(
+					<label className="field">
+						<LabelActual label={t('Force the Multi-gateway-mode')} />
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute="settings.forceMultiGatewayMode"
+							obj={this.props.studio}
+							type="checkbox"
+							collection={Studios}
+						/>
+					</label>
+					<label className="field">
+						<LabelActual label={t('Multi-gateway-mode delay time')} />
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute="settings.multiGatewayNowSafeLatency"
+							obj={this.props.studio}
+							type="int"
+							collection={Studios}
+							className="mdinput"
+						/>
+					</label>
+					<label className="field">
+						<LabelActual label={t('Preserve contents of playing segment when unsynced')} />
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute="settings.preserveUnsyncedPlayingSegmentContents"
+							obj={this.props.studio}
+							type="checkbox"
+							collection={Studios}
+						/>
+					</label>
+					<label className="field">
+						<LabelActual label={t('Allow Rundowns to be reset while on-air')} />
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute="settings.allowRundownResetOnAir"
+							obj={this.props.studio}
+							type="checkbox"
+							collection={Studios}
+						/>
+					</label>
+					<label className="field">
+						<LabelActual
+							label={t(
 								'Preserve position of segments when unsynced relative to other segments. Note: this has only been tested for the iNews gateway'
 							)}
-						</label>
-					</div>
+						/>
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute="settings.preserveOrphanedSegmentPositionInRundown"
+							obj={this.props.studio}
+							type="checkbox"
+							collection={Studios}
+						/>
+					</label>
 
 					<div className="col c12 r1-c12">
 						<StudioBaselineStatus studioId={this.props.studio._id} />

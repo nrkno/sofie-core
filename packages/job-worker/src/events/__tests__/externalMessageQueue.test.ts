@@ -31,7 +31,7 @@ describe('Test external message queue static methods', () => {
 		const showStyle = await setupMockShowStyleCompound(context)
 
 		const now = getCurrentTime()
-		await context.directCollections.RundownPlaylists.insertOne({
+		await context.mockCollections.RundownPlaylists.insertOne({
 			_id: protectString('playlist_1'),
 			externalId: 'mock_rpl',
 			name: 'Mock',
@@ -41,10 +41,14 @@ describe('Test external message queue static methods', () => {
 			currentPartInfo: {
 				partInstanceId: protectString('part_now'),
 				rundownId: protectString('rundown_1'),
+				manuallySelected: false,
+				consumesNextSegmentId: false,
 			},
 			nextPartInfo: {
 				partInstanceId: protectString('partNext'),
 				rundownId: protectString('rundown_1'),
+				manuallySelected: false,
+				consumesNextSegmentId: false,
 			},
 			previousPartInfo: null,
 			activationId: protectString('active'),
@@ -53,7 +57,7 @@ describe('Test external message queue static methods', () => {
 			},
 			rundownIdsInOrder: [protectString('rundown_1')],
 		})
-		await context.directCollections.Rundowns.insertOne({
+		await context.mockCollections.Rundowns.insertOne({
 			_id: protectString('rundown_1'),
 			name: 'Mockito 1',
 			externalId: 'mockito',
@@ -78,14 +82,14 @@ describe('Test external message queue static methods', () => {
 				type: PlaylistTimingType.None,
 			},
 		})
-		rundown = (await context.directCollections.Rundowns.findOne()) as Rundown
-		playlist = (await context.directCollections.RundownPlaylists.findOne(rundown.playlistId)) as DBRundownPlaylist
+		rundown = (await context.mockCollections.Rundowns.findOne()) as Rundown
+		playlist = (await context.mockCollections.RundownPlaylists.findOne(rundown.playlistId)) as DBRundownPlaylist
 	})
 
 	test('add a slack-type message', async () => {
 		// setLogLevel(LogLevel.DEBUG)
 
-		await expect(context.directCollections.ExternalMessageQueue.findOne()).resolves.toBeFalsy()
+		await expect(context.mockCollections.ExternalMessageQueue.findOne()).resolves.toBeFalsy()
 
 		const slackMessage: ExternalMessageQueueObjSlack = {
 			type: IBlueprintExternalMessageQueueType.SLACK,
@@ -93,9 +97,9 @@ describe('Test external message queue static methods', () => {
 			message: 'whats up doc?',
 		}
 		expect(rundown).toBeTruthy()
-		await queueExternalMessages(context.directCollections.ExternalMessageQueue, rundown, playlist, [slackMessage])
+		await queueExternalMessages(context.mockCollections.ExternalMessageQueue, rundown, playlist, [slackMessage])
 
-		const messages = await context.directCollections.ExternalMessageQueue.findFetch()
+		const messages = await context.mockCollections.ExternalMessageQueue.findFetch()
 		expect(messages).toHaveLength(1)
 		const message = messages[0]
 		expect(message).toBeTruthy()
@@ -139,13 +143,13 @@ describe('Test sending messages to mocked endpoints', () => {
 		const context = setupDefaultJobEnvironment()
 
 		// // This isn't written to the db by default
-		// await context.directCollections.Studios.insertOne(context.studio)
+		// await context.mockCollections.Studios.insertOne(context.studio)
 
 		const showStyle = await setupMockShowStyleCompound(context)
 
 		const now = getCurrentTime()
 
-		const rundownId = await context.directCollections.Rundowns.insertOne({
+		const rundownId = await context.mockCollections.Rundowns.insertOne({
 			_id: protectString('rundown_1'),
 			name: 'Mockito 1',
 			externalId: 'mockito',
@@ -170,7 +174,7 @@ describe('Test sending messages to mocked endpoints', () => {
 				type: PlaylistTimingType.None,
 			},
 		})
-		await context.directCollections.RundownPlaylists.insertOne({
+		await context.mockCollections.RundownPlaylists.insertOne({
 			_id: protectString('playlist_1'),
 			externalId: 'mock_rpl',
 			name: 'Mock',
@@ -180,10 +184,14 @@ describe('Test sending messages to mocked endpoints', () => {
 			currentPartInfo: {
 				partInstanceId: protectString('part_now'),
 				rundownId: rundownId,
+				manuallySelected: false,
+				consumesNextSegmentId: false,
 			},
 			nextPartInfo: {
 				partInstanceId: protectString('partNext'),
 				rundownId: rundownId,
+				manuallySelected: false,
+				consumesNextSegmentId: false,
 			},
 			previousPartInfo: null,
 			activationId: protectString('active'),
@@ -193,12 +201,12 @@ describe('Test sending messages to mocked endpoints', () => {
 			rundownIdsInOrder: [protectString('rundown_1')],
 		})
 
-		const rundown = (await context.directCollections.Rundowns.findOne(rundownId)) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne(rundownId)) as DBRundown
 		expect(rundown).toBeTruthy()
 
 		// Allow watchers on the collection
 		const mockMessageCollection = MockMongoCollection.fromReal<ExternalMessageQueueObj>(
-			context.directCollections.ExternalMessageQueue
+			context.mockCollections.ExternalMessageQueue
 		)
 		mockMessageCollection.allowWatchers = true
 
@@ -227,7 +235,7 @@ describe('Test sending messages to mocked endpoints', () => {
 
 		try {
 			// setLogLevel(LogLevel.DEBUG)
-			await expect(context.directCollections.ExternalMessageQueue.findOne()).resolves.toBeFalsy()
+			await expect(context.mockCollections.ExternalMessageQueue.findOne()).resolves.toBeFalsy()
 
 			const slackMessage: ExternalMessageQueueObjSlack = {
 				type: IBlueprintExternalMessageQueueType.SLACK,
@@ -244,9 +252,9 @@ describe('Test sending messages to mocked endpoints', () => {
 				tryCount: 0,
 				...omit(slackMessage, '_id'),
 			}
-			await context.directCollections.ExternalMessageQueue.insertOne(msg)
+			await context.mockCollections.ExternalMessageQueue.insertOne(msg)
 
-			await expect(context.directCollections.ExternalMessageQueue.findOne()).resolves.toBeTruthy()
+			await expect(context.mockCollections.ExternalMessageQueue.findOne()).resolves.toBeTruthy()
 			mockMessageCollection.clearOpLog()
 
 			// It shouldn't fire by itself just yet

@@ -47,7 +47,7 @@ export const StatusCodePill: React.FC<{
 				<span className="pill device-status__label">{statusCodeString()}</span>
 			</div>
 			<div className="device-item__device-status-message">
-				<span className="text-s dimmed">{statusMessages()}</span>
+				<span className="text-s dimmed field-hint">{statusMessages()}</span>
 			</div>
 		</div>
 	)

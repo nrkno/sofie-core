@@ -31,7 +31,6 @@ import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '../../lib/collecti
 import { logger } from '../logging'
 import { TimelineComplete } from '../../lib/collections/Timeline'
 import { PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
 import { ICoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
@@ -94,6 +93,7 @@ import {
 	UserActionsLog,
 } from '../collections'
 import { getCoreSystemAsync } from '../coreSystem/collection'
+import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction'
 
 interface RundownPlaylistSnapshot extends CoreRundownPlaylistSnapshot {
 	versionExtended: string | undefined
@@ -281,7 +281,7 @@ async function createDebugSnapshot(studioId: StudioId, organizationId: Organizat
 					const startTime = getCurrentTime()
 
 					// defer to another fiber
-					const deviceSnapshot = await PeripheralDeviceAPI.executeFunction(device._id, 'getSnapshot')
+					const deviceSnapshot = await executePeripheralDeviceFunction(device._id, 'getSnapshot')
 
 					logger.info('Got snapshot from device "' + device._id + '"')
 					return {
@@ -478,7 +478,7 @@ async function storeSnaphot(
 	return id
 }
 async function retreiveSnapshot(snapshotId: SnapshotId, cred0: Credentials): Promise<AnySnapshot> {
-	const snapshot = Snapshots.findOne(snapshotId)
+	const snapshot = await Snapshots.findOneAsync(snapshotId)
 	if (!snapshot) throw new Meteor.Error(404, `Snapshot not found!`)
 
 	if (Settings.enableUserAccounts) {
@@ -721,7 +721,7 @@ if (!Settings.enableUserAccounts) {
 
 			const cred0: Credentials = { userId: null, token: params.token }
 			const { cred } = await OrganizationContentWriteAccess.snapshot(cred0)
-			const playlist = RundownPlaylists.findOne(protectString(params.playlistId))
+			const playlist = await RundownPlaylists.findOneAsync(protectString(params.playlistId))
 			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${params.playlistId}" not found`)
 			await StudioReadAccess.studioContent(playlist.studioId, cred)
 

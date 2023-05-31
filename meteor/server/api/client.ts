@@ -3,7 +3,6 @@ import { literal, getCurrentTime, Time, getRandomId, stringifyError } from '../.
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
 import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { Settings } from '../../lib/Settings'
@@ -34,6 +33,7 @@ import {
 import { BasicAccessContext } from '../security/organization'
 import { NoticeLevel } from '../../lib/notifications/notifications'
 import { UserActionsLog } from '../collections'
+import { executePeripheralDeviceFunctionWithCustomTimeout } from './peripheralDevice/executeFunction'
 
 function rewrapError(methodName: string, e: any): ClientAPI.ClientResponseError {
 	let userError: UserError
@@ -42,13 +42,13 @@ function rewrapError(methodName: string, e: any): ClientAPI.ClientResponseError 
 	} else {
 		// Rewrap errors as a UserError
 		const err = e instanceof Error ? e : new Error(stringifyError(e))
-		userError = UserError.from(err, UserErrorMessage.InternalError)
+		userError = UserError.from(err, UserErrorMessage.InternalError, undefined, e.error)
 	}
 
 	logger.info(`UserAction "${methodName}" failed: ${stringifyError(userError)}`)
 
 	// Forward the error to the caller
-	return ClientAPI.responseError(userError)
+	return ClientAPI.responseError(userError, userError.errorCode)
 }
 
 export namespace ServerClientAPI {
@@ -324,14 +324,12 @@ export namespace ServerClientAPI {
 			// In this case, it was called internally from server-side.
 			// Just run and return right away:
 			triggerWriteAccessBecauseNoCheckNecessary()
-			return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, action).catch(
-				async (e) => {
-					const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
-					logger.error(errMsg)
-					// allow the exception to be handled by the Client code
-					return Promise.reject(e)
-				}
-			)
+			return executePeripheralDeviceFunctionWithCustomTimeout(deviceId, timeoutTime, action).catch(async (e) => {
+				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
+				logger.error(errMsg)
+				// allow the exception to be handled by the Client code
+				return Promise.reject(e)
+			})
 		}
 
 		const access = await PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
@@ -349,7 +347,7 @@ export namespace ServerClientAPI {
 			})
 		)
 
-		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, action)
+		return executePeripheralDeviceFunctionWithCustomTimeout(deviceId, timeoutTime, action)
 			.then(async (result) => {
 				await UserActionsLog.updateAsync(actionId, {
 					$set: {
@@ -394,7 +392,7 @@ export namespace ServerClientAPI {
 			// In this case, it was called internally from server-side.
 			// Just run and return right away:
 			triggerWriteAccessBecauseNoCheckNecessary()
-			return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, {
+			return executePeripheralDeviceFunctionWithCustomTimeout(deviceId, timeoutTime, {
 				functionName,
 				args,
 			}).catch(async (e) => {
@@ -405,9 +403,9 @@ export namespace ServerClientAPI {
 			})
 		}
 
-		void PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
+		await PeripheralDeviceContentWriteAccess.executeFunction(methodContext, deviceId)
 
-		return PeripheralDeviceAPI.executeFunctionWithCustomTimeout(deviceId, timeoutTime, {
+		return executePeripheralDeviceFunctionWithCustomTimeout(deviceId, timeoutTime, {
 			functionName,
 			args,
 		}).catch(async (err) => {

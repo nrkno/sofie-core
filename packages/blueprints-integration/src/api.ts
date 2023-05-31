@@ -18,7 +18,7 @@ import {
 } from './context'
 import { IngestAdlib, ExtendedIngestRundown, IngestSegment } from './ingest'
 import { IBlueprintExternalMessageQueueObj } from './message'
-import { MigrationStep } from './migrations'
+import { MigrationStepShowStyle, MigrationStepStudio, MigrationStepSystem } from './migrations'
 import {
 	IBlueprintAdLibPiece,
 	IBlueprintPart,
@@ -80,7 +80,7 @@ export interface SystemBlueprintManifest extends BlueprintManifestBase {
 	blueprintType: BlueprintManifestType.SYSTEM
 
 	/** A list of Migration steps related to the Core system */
-	coreMigrations: MigrationStep[]
+	coreMigrations: MigrationStepSystem[]
 
 	/** Translations connected to the studio (as stringified JSON) */
 	translations?: string
@@ -93,7 +93,7 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 	/** A list of config items this blueprint expects to be available on the Studio */
 	studioConfigSchema: JSONBlob<JSONSchema>
 	/** A list of Migration steps related to a Studio */
-	studioMigrations: MigrationStep[]
+	studioMigrations: MigrationStepStudio[]
 
 	/** The config presets exposed by this blueprint */
 	configPresets: Record<string, IStudioConfigPreset<TRawConfig>>
@@ -150,7 +150,7 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	/** A list of config items this blueprint expects to be available on the ShowStyle */
 	showStyleConfigSchema: JSONBlob<JSONSchema>
 	/** A list of Migration steps related to a ShowStyle */
-	showStyleMigrations: MigrationStep[]
+	showStyleMigrations: MigrationStepShowStyle[]
 
 	/** The config presets exposed by this blueprint */
 	configPresets: Record<string, IShowStyleConfigPreset<TRawConfig>>
@@ -364,8 +364,20 @@ export interface IConfigMessage {
 	message: ITranslatableMessage
 }
 
+/**
+ * Blueprint defined default values for various Studio configuration.
+ * Note: The user is able to override values from these in the UI, as well as add their own entries and disable ones which are defined here
+ */
 export interface BlueprintResultApplyStudioConfig {
+	/** Playout Mappings */
 	mappings: BlueprintMappings
+
+	/** Playout-gateway subdevices */
+	playoutDevices: Record<string, TSR.DeviceOptionsAny>
+	/** Ingest-gateway subdevices, the types here depend on the gateway you use */
+	ingestDevices: Record<string, unknown>
+	/** Input-gateway subdevices */
+	inputDevices: Record<string, unknown>
 }
 
 export interface BlueprintResultApplyShowStyleConfig {

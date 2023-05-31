@@ -7,10 +7,10 @@ import { runIngestOperation } from './lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { ExpectedPackageId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-export function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: PackageInfoDB | null): void {
+export async function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: PackageInfoDB | null): Promise<void> {
 	logger.info(`PackageInfo updated "${packageId}"`)
 
-	const pkg = ExpectedPackages.findOne(packageId)
+	const pkg = await ExpectedPackages.findOneAsync(packageId)
 	if (!pkg) {
 		logger.warn(`onUpdatedPackageInfo: Received update for missing package: "${packageId}"`)
 		return
@@ -70,7 +70,7 @@ async function onUpdatedPackageInfoForRundown(
 		return
 	}
 
-	const tmpRundown = Rundowns.findOne(rundownId)
+	const tmpRundown = await Rundowns.findOneAsync(rundownId)
 	if (!tmpRundown) {
 		logger.error(
 			`onUpdatedPackageInfoForRundown: Missing rundown "${rundownId}" for packages "${packageIds.join(', ')}"`

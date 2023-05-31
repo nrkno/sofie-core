@@ -10,6 +10,7 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { SourceLayerItemContainer } from '../SourceLayerItemContainer'
 import { contextMenuHoldToDisplayTime } from '../../../lib/lib'
 import { UIStudio } from '../../../../lib/api/studios'
+import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 
 export interface ISourceLayerPropsBase {
 	key: string
@@ -18,6 +19,7 @@ export interface ISourceLayerPropsBase {
 	studio: UIStudio
 	segment: SegmentUi
 	part: PartUi
+	pieces: CalculateTimingsPiece[]
 	mediaPreviewUrl: string
 	startsAt: number
 	duration: number
@@ -30,7 +32,6 @@ export interface ISourceLayerPropsBase {
 	onFollowLiveLine?: (state: boolean, event: any) => void
 	onPieceClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
-	relative: boolean
 	followLiveLine: boolean
 	liveLineHistorySize: number
 	livePosition: number | null
@@ -103,7 +104,7 @@ export function SourceLayer(props: ISourceLayerProps): JSX.Element {
 							// filter only pieces belonging to this part
 							return piece.instance.partInstanceId === props.part.instance._id
 								? // filter only pieces, that have not been hidden from the UI
-								  piece.instance.hidden !== true && piece.instance.piece.virtual !== true
+								  piece.instance.piece.virtual !== true
 								: false
 						})
 				  )
@@ -120,11 +121,11 @@ export function SourceLayer(props: ISourceLayerProps): JSX.Element {
 									layer={props.layer}
 									outputLayer={props.outputLayer}
 									part={props.part}
+									pieces={props.pieces}
 									partStartsAt={props.startsAt}
 									partDuration={props.duration}
 									partExpectedDuration={props.expectedDuration}
 									timeScale={props.timeScale}
-									relative={props.relative}
 									autoNextPart={props.autoNextPart}
 									liveLinePadding={props.liveLinePadding}
 									scrollLeft={props.scrollLeft}

@@ -234,13 +234,17 @@ export class ExternalMessageQueueRunner {
 			msg.manualRetry = false
 
 			// Mark it as started
-			await this.#collections.ExternalMessageQueue.update(msg._id, {
-				$set: {
-					tryCount: (msg.tryCount || 0) + 1,
-					lastTry: now,
-					manualRetry: false,
+			await this.#collections.ExternalMessageQueue.update(
+				msg._id,
+				{
+					$set: {
+						tryCount: (msg.tryCount || 0) + 1,
+						lastTry: now,
+						manualRetry: false,
+					},
 				},
-			})
+				null // Isolated operation
+			)
 
 			let result: string | undefined
 			try {
@@ -257,12 +261,16 @@ export class ExternalMessageQueueRunner {
 				return this.#logMessageError(msg, e)
 			}
 
-			await this.#collections.ExternalMessageQueue.update(msg._id, {
-				$set: {
-					sent: getCurrentTime(),
-					sentReply: result,
+			await this.#collections.ExternalMessageQueue.update(
+				msg._id,
+				{
+					$set: {
+						sent: getCurrentTime(),
+						sentReply: result,
+					},
 				},
-			})
+				null // Isolated operation
+			)
 
 			logger.debug(`ExternalMessage sucessfully sent, id: ${msg._id}, type: "${msg.type}"`)
 
@@ -276,13 +284,17 @@ export class ExternalMessageQueueRunner {
 		try {
 			// errorOnLastRunCount++
 			logger.warn(stringifyError(e))
-			await this.#collections.ExternalMessageQueue.update(msg._id, {
-				$set: {
-					errorMessage: e['reason'] || e['message'] || e.toString(),
-					errorMessageTime: getCurrentTime(),
-					errorFatal: e instanceof FatalExternalMessageError,
+			await this.#collections.ExternalMessageQueue.update(
+				msg._id,
+				{
+					$set: {
+						errorMessage: e['reason'] || e['message'] || e.toString(),
+						errorMessageTime: getCurrentTime(),
+						errorFatal: e instanceof FatalExternalMessageError,
+					},
 				},
-			})
+				null // Isolated operation
+			)
 		} catch (e2: unknown) {
 			logger.error(stringifyError(e2))
 		}

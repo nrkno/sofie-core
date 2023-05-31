@@ -1,11 +1,26 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import { PeripheralDevices, Studios } from '../collections'
-import { clone } from '@sofie-automation/corelib/dist/lib'
-import { MappingExt, StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { PeripheralDeviceType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
+import { PeripheralDevices, RundownPlaylists, Studios } from '../collections'
+import { assertNever, clone, literal } from '@sofie-automation/corelib/dist/lib'
+import {
+	MappingExt,
+	StudioIngestDevice,
+	StudioInputDevice,
+	StudioPlayoutDevice,
+	StudioRouteSet,
+} from '@sofie-automation/corelib/dist/dataModel/Studio'
+import {
+	PeripheralDeviceCategory,
+	PeripheralDeviceType,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import _ from 'underscore'
 import { Studio } from '../../lib/collections/Studios'
+import {
+	wrapDefaultObject,
+	ObjectOverrideSetOp,
+	SomeObjectOverrideOp,
+} from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { JSONBlobStringify, JSONSchema } from '@sofie-automation/blueprints-integration'
 
 /*
  * **************************************************************************************
@@ -84,8 +99,11 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	{
 		id: `Mos gateway fix up config`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = PeripheralDevices.find({ type: PeripheralDeviceType.MOS }).fetch()
+		validate: async () => {
+			const objects = await PeripheralDevices.findFetchAsync({
+				type: PeripheralDeviceType.MOS,
+				'settings.device': { $exists: true },
+			})
 			const badObject = objects.find(
 				(device) =>
 					!!Object.values<unknown>(device.settings?.['devices'] ?? {}).find(
@@ -98,8 +116,11 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = PeripheralDevices.find({ type: PeripheralDeviceType.MOS }).fetch()
+		migrate: async () => {
+			const objects = await PeripheralDevices.findFetchAsync({
+				type: PeripheralDeviceType.MOS,
+				'settings.device': { $exists: true },
+			})
 			for (const obj of objects) {
 				const newDevices: any = clone(obj.settings['devices'] || {})
 
@@ -113,7 +134,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					newDevices[id] = newdev
 				}
 
-				PeripheralDevices.update(obj._id, {
+				await PeripheralDevices.updateAsync(obj._id, {
 					$set: {
 						'settings.devices': newDevices,
 					},
@@ -125,8 +146,8 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	{
 		id: `Fix up studio mappings`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const studios = Studios.find({ mappingsWithOverrides: { $exists: true } }).fetch()
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({ mappingsWithOverrides: { $exists: true } })
 
 			for (const studio of studios) {
 				const newOverrides = convertMappingsOverrideOps(studio)
@@ -137,8 +158,8 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 
 			return false
 		},
-		migrate: () => {
-			const studios = Studios.find({ mappingsWithOverrides: { $exists: true } }).fetch()
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({ mappingsWithOverrides: { $exists: true } })
 
 			for (const studio of studios) {
 				// Note: we can ignore the defaults of the mappings, as they will be replaced by an updated blueprint
@@ -146,7 +167,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 				const newOverrides = convertMappingsOverrideOps(studio)
 
 				if (newOverrides) {
-					Studios.update(studio._id, {
+					await Studios.updateAsync(studio._id, {
 						$set: {
 							'mappingsWithOverrides.overrides': newOverrides,
 						},
@@ -159,8 +180,8 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	{
 		id: `Fix up studio routesets`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const studios = Studios.find({ routeSets: { $exists: true } }).fetch()
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({ routeSets: { $exists: true } })
 
 			for (const studio of studios) {
 				const newOverrides = convertRouteSetMappings(studio)
@@ -171,20 +192,419 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 
 			return false
 		},
-		migrate: () => {
-			const studios = Studios.find({ routeSets: { $exists: true } }).fetch()
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({ routeSets: { $exists: true } })
 
 			for (const studio of studios) {
 				const newRouteSets = convertRouteSetMappings(studio)
 
 				if (newRouteSets) {
-					Studios.update(studio._id, {
+					await Studios.updateAsync(studio._id, {
 						$set: {
 							routeSets: newRouteSets,
 						},
 					})
 				}
 			}
+		},
+	},
+
+	{
+		id: `Ingest gateway populate nrcsName`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await PeripheralDevices.countDocuments({
+				category: PeripheralDeviceCategory.INGEST,
+				nrcsName: { $exists: false },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const objects = await PeripheralDevices.findFetchAsync({
+				category: PeripheralDeviceCategory.INGEST,
+				nrcsName: { $exists: false },
+			})
+			for (const device of objects) {
+				let nrcsName = ''
+
+				if (device.type === PeripheralDeviceType.MOS) {
+					nrcsName = 'ENPS'
+				} else if (device.type === PeripheralDeviceType.INEWS) {
+					nrcsName = 'iNews'
+				} else if (device.type === PeripheralDeviceType.SPREADSHEET) {
+					nrcsName = 'Google Sheet'
+				}
+
+				await PeripheralDevices.updateAsync(device._id, {
+					$set: {
+						nrcsName: nrcsName,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `PeripheralDevice populate documentationUrl`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await PeripheralDevices.countDocuments({
+				documentationUrl: { $exists: false },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const objects = await PeripheralDevices.findFetchAsync({
+				documentationUrl: { $exists: false },
+			})
+			for (const device of objects) {
+				let documentationUrl = ''
+
+				if (device.type === PeripheralDeviceType.MOS) {
+					documentationUrl = 'https://github.com/nrkno/sofie-core'
+				} else if (device.type === PeripheralDeviceType.SPREADSHEET) {
+					documentationUrl = 'https://github.com/SuperFlyTV/spreadsheet-gateway'
+				} else if (device.type === PeripheralDeviceType.PLAYOUT) {
+					documentationUrl = 'https://github.com/nrkno/sofie-core'
+				} else if (device.type === PeripheralDeviceType.MEDIA_MANAGER) {
+					documentationUrl = 'https://github.com/nrkno/sofie-media-management'
+				} else if (device.type === PeripheralDeviceType.INEWS) {
+					documentationUrl = 'https://github.com/olzzon/tv2-inews-ftp-gateway'
+				} else if (device.type === PeripheralDeviceType.PACKAGE_MANAGER) {
+					documentationUrl = 'https://github.com/nrkno/sofie-package-manager'
+				} else if (device.type === PeripheralDeviceType.INPUT) {
+					documentationUrl = 'https://github.com/nrkno/sofie-input-gateway'
+				} else if (device.type === PeripheralDeviceType.LIVE_STATUS) {
+					documentationUrl = 'https://nrkno.github.io/sofie-core/'
+				} else {
+					assertNever(device.type)
+				}
+
+				await PeripheralDevices.updateAsync(device._id, {
+					$set: {
+						documentationUrl: documentationUrl,
+					},
+				})
+			}
+		},
+	},
+
+	{
+		id: `Studio ensure peripheralDeviceSettings field`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await Studios.countDocuments({
+				peripheralDeviceSettings: { $exists: false },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const objects = await Studios.findFetchAsync({
+				peripheralDeviceSettings: { $exists: false },
+			})
+			for (const studio of objects) {
+				await Studios.updateAsync(studio._id, {
+					$set: {
+						peripheralDeviceSettings: {
+							playoutDevices: wrapDefaultObject({}),
+							ingestDevices: wrapDefaultObject({}),
+							inputDevices: wrapDefaultObject({}),
+						},
+					},
+				})
+			}
+		},
+	},
+
+	{
+		id: `Studio move playout-gateway subdevices`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await PeripheralDevices.countDocuments({
+				category: PeripheralDeviceCategory.PLAYOUT,
+				studioId: { $exists: true },
+				'settings.devices': { $exists: true },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const objects = await PeripheralDevices.findFetchAsync({
+				category: PeripheralDeviceCategory.PLAYOUT,
+				studioId: { $exists: true },
+				'settings.devices': { $exists: true },
+			})
+			for (const device of objects) {
+				if (!device.studioId) continue
+
+				const newOverrides: SomeObjectOverrideOp[] = []
+
+				for (const [id, subDevice] of Object.entries<unknown>(device.settings?.['devices'] || {})) {
+					newOverrides.push(
+						literal<ObjectOverrideSetOp>({
+							op: 'set',
+							path: id,
+							value: literal<StudioPlayoutDevice>({
+								peripheralDeviceId: device._id,
+								options: subDevice as any,
+							}),
+						})
+					)
+				}
+
+				await Studios.updateAsync(device.studioId, {
+					$set: {
+						[`peripheralDeviceSettings.playoutDevices.overrides`]: newOverrides,
+					},
+				})
+
+				await PeripheralDevices.updateAsync(device._id, {
+					$unset: {
+						'settings.devices': 1,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `Studio move ingest subdevices`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await PeripheralDevices.countDocuments({
+				category: PeripheralDeviceCategory.INGEST,
+				studioId: { $exists: true },
+				'settings.devices': { $exists: true },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const objects = await PeripheralDevices.findFetchAsync({
+				category: PeripheralDeviceCategory.INGEST,
+				studioId: { $exists: true },
+				'settings.devices': { $exists: true },
+			})
+			for (const device of objects) {
+				if (!device.studioId) continue
+
+				const newOverrides: SomeObjectOverrideOp[] = []
+
+				for (const [id, subDevice] of Object.entries<unknown>(device.settings?.['devices'] || {})) {
+					newOverrides.push(
+						literal<ObjectOverrideSetOp>({
+							op: 'set',
+							path: id,
+							value: literal<StudioIngestDevice>({
+								peripheralDeviceId: device._id,
+								options: subDevice as any,
+							}),
+						})
+					)
+				}
+
+				await Studios.updateAsync(device.studioId, {
+					$set: {
+						[`peripheralDeviceSettings.ingestDevices.overrides`]: newOverrides,
+					},
+				})
+
+				await PeripheralDevices.updateAsync(device._id, {
+					$unset: {
+						'settings.devices': 1,
+					},
+				})
+			}
+		},
+	},
+	{
+		id: `Studio move input subdevices`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await PeripheralDevices.countDocuments({
+				category: PeripheralDeviceCategory.TRIGGER_INPUT,
+				studioId: { $exists: true },
+				'settings.devices': { $exists: true },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const objects = await PeripheralDevices.findFetchAsync({
+				category: PeripheralDeviceCategory.TRIGGER_INPUT,
+				studioId: { $exists: true },
+				'settings.devices': { $exists: true },
+			})
+			for (const device of objects) {
+				if (!device.studioId) continue
+
+				const newOverrides: SomeObjectOverrideOp[] = []
+
+				for (const [id, subDevice] of Object.entries<unknown>(device.settings?.['devices'] || {})) {
+					newOverrides.push(
+						literal<ObjectOverrideSetOp>({
+							op: 'set',
+							path: id,
+							value: literal<StudioInputDevice>({
+								peripheralDeviceId: device._id,
+								options: subDevice as any,
+							}),
+						})
+					)
+				}
+
+				await Studios.updateAsync(device.studioId, {
+					$set: {
+						[`peripheralDeviceSettings.inputDevices.overrides`]: newOverrides,
+					},
+				})
+
+				await PeripheralDevices.updateAsync(device._id, {
+					$unset: {
+						'settings.devices': 1,
+					},
+				})
+			}
+		},
+	},
+
+	{
+		id: `PeripheralDevice cleanup unused properties on child devices`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await PeripheralDevices.countDocuments({
+				parentDeviceId: { $exists: true },
+				// One of:
+				configManifest: { $exists: true },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			await PeripheralDevices.updateAsync(
+				{ parentDeviceId: { $exists: true } },
+				{
+					$unset: {
+						configManifest: 1,
+					},
+				},
+				{
+					multi: true,
+				}
+			)
+		},
+	},
+
+	{
+		id: `RundownPlaylist move nextPartManual to nextPartInfo.manuallySelected`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await RundownPlaylists.countDocuments({
+				nextPartManual: { $exists: true },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const playlists = await RundownPlaylists.findFetchAsync({
+				nextPartManual: { $exists: true },
+			})
+
+			for (const playlist of playlists) {
+				const nextPartManual = !!(playlist as any).nextPartManual
+				await RundownPlaylists.mutableCollection.updateAsync(playlist._id, {
+					$set: playlist.nextPartInfo
+						? {
+								'nextPartInfo.manuallySelected': nextPartManual,
+						  }
+						: undefined,
+					$unset: {
+						nextPartManual: 1,
+					},
+				})
+			}
+		},
+	},
+
+	{
+		id: `PeripheralDevice ensure deviceConfigSchema and subdeviceManifest exists`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await PeripheralDevices.countDocuments({
+				parentDeviceId: { $exists: false },
+				$or: [
+					{
+						'configManifest.deviceConfigSchema': {
+							$exists: false,
+						},
+					},
+					{
+						'configManifest.subdeviceManifest': {
+							$exists: false,
+						},
+					},
+				],
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			await PeripheralDevices.updateAsync(
+				{
+					parentDeviceId: { $exists: false },
+					$or: [
+						{
+							'configManifest.deviceConfigSchema': {
+								$exists: false,
+							},
+						},
+						{
+							'configManifest.subdeviceManifest': {
+								$exists: false,
+							},
+						},
+					],
+				},
+				{
+					$set: {
+						configManifest: {
+							deviceConfigSchema: JSONBlobStringify<JSONSchema>({}),
+							subdeviceManifest: {},
+						},
+					},
+				},
+				{
+					multi: true,
+				}
+			)
 		},
 	},
 ])

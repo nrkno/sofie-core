@@ -7,6 +7,7 @@ import {
 	UpdateFilter,
 	Collection as MongoCollection,
 	ChangeStreamDocument,
+	MongoError,
 } from 'mongodb'
 import { wrapMongoCollection } from './collection'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
@@ -37,31 +38,32 @@ import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataMod
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
-import { literal } from '@sofie-automation/corelib/dist/lib'
+import { getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { MediaObjects } from '@sofie-automation/corelib/dist/dataModel/MediaObjects'
 import EventEmitter = require('eventemitter3')
+import { MongoTransaction } from './transaction'
+import { logger } from '../logging'
 
 export type MongoQuery<TDoc> = Filter<TDoc>
 export type MongoModifier<TDoc> = UpdateFilter<TDoc>
 
-export interface ICollection<TDoc extends { _id: ProtectedString<any> }> {
+export interface IReadOnlyCollection<TDoc extends { _id: ProtectedString<any> }> {
 	readonly name: string
 
 	readonly rawCollection: MongoCollection<TDoc>
 
-	findFetch(selector?: MongoQuery<TDoc>, options?: FindOptions<TDoc>): Promise<Array<TDoc>>
-	findOne(selector?: MongoQuery<TDoc> | TDoc['_id'], options?: FindOptions<TDoc>): Promise<TDoc | undefined>
-	insertOne(doc: TDoc | ReadonlyDeep<TDoc>): Promise<TDoc['_id']>
-	// insertMany(docs: Array<TDoc | ReadonlyDeep<TDoc>>): Promise<Array<TDoc['_id']>>
-	remove(selector: MongoQuery<TDoc> | TDoc['_id']): Promise<number>
-	update(selector: MongoQuery<TDoc> | TDoc['_id'], modifier: MongoModifier<TDoc>): Promise<number>
-
-	/** Returns true if a doc was replaced, false if inserted */
-	replace(doc: TDoc | ReadonlyDeep<TDoc>): Promise<boolean>
-
-	bulkWrite(ops: Array<AnyBulkWriteOperation<TDoc>>): Promise<unknown>
+	findFetch(
+		selector?: MongoQuery<TDoc>,
+		options?: FindOptions<TDoc>,
+		transaction?: IMongoTransaction | null
+	): Promise<Array<TDoc>>
+	findOne(
+		selector?: MongoQuery<TDoc> | TDoc['_id'],
+		options?: FindOptions<TDoc>,
+		transaction?: IMongoTransaction | null
+	): Promise<TDoc | undefined>
 
 	/**
 	 * Watch the collection for changes
@@ -69,6 +71,22 @@ export interface ICollection<TDoc extends { _id: ProtectedString<any> }> {
 	 * Note: This is an artificial limitation that could be changed with some thought on how to make sure it doesnt block for too long or leak
 	 */
 	watch(pipeline: any[]): IChangeStream<TDoc>
+}
+
+export interface ICollection<TDoc extends { _id: ProtectedString<any> }> extends IReadOnlyCollection<TDoc> {
+	insertOne(doc: TDoc | ReadonlyDeep<TDoc>, transaction: IMongoTransaction | null): Promise<TDoc['_id']>
+	// insertMany(docs: Array<TDoc | ReadonlyDeep<TDoc>>): Promise<Array<TDoc['_id']>>
+	remove(selector: MongoQuery<TDoc> | TDoc['_id'], transaction: IMongoTransaction | null): Promise<number>
+	update(
+		selector: MongoQuery<TDoc> | TDoc['_id'],
+		modifier: MongoModifier<TDoc>,
+		transaction: IMongoTransaction | null
+	): Promise<number>
+
+	/** Returns true if a doc was replaced, false if inserted */
+	replace(doc: TDoc | ReadonlyDeep<TDoc>, transaction: IMongoTransaction | null): Promise<boolean>
+
+	bulkWrite(ops: Array<AnyBulkWriteOperation<TDoc>>, transaction: IMongoTransaction | null): Promise<unknown>
 }
 
 export type IChangeStreamEvents<TDoc extends { _id: ProtectedString<any> }> = {
@@ -85,6 +103,8 @@ export interface IChangeStream<TDoc extends { _id: ProtectedString<any> }>
 }
 
 export interface IDirectCollections {
+	runInTransaction<T>(func: (transaction: IMongoTransaction) => Promise<T>): Promise<T>
+
 	AdLibActions: ICollection<AdLibAction>
 	AdLibPieces: ICollection<AdLibPiece>
 	Blueprints: ICollection<Blueprint>
@@ -95,7 +115,7 @@ export interface IDirectCollections {
 	IngestDataCache: ICollection<IngestDataCacheObj>
 	Parts: ICollection<DBPart>
 	PartInstances: ICollection<DBPartInstance>
-	PeripheralDevices: ICollection<PeripheralDevice>
+	PeripheralDevices: IReadOnlyCollection<PeripheralDevice>
 	PeripheralDeviceCommands: ICollection<PeripheralDeviceCommand>
 	Pieces: ICollection<Piece>
 	PieceInstances: ICollection<PieceInstance>
@@ -105,18 +125,28 @@ export interface IDirectCollections {
 	RundownBaselineObjects: ICollection<RundownBaselineObj>
 	RundownPlaylists: ICollection<DBRundownPlaylist>
 	Segments: ICollection<DBSegment>
-	ShowStyleBases: ICollection<DBShowStyleBase>
-	ShowStyleVariants: ICollection<DBShowStyleVariant>
+	ShowStyleBases: IReadOnlyCollection<DBShowStyleBase>
+	ShowStyleVariants: IReadOnlyCollection<DBShowStyleVariant>
 	Studios: ICollection<DBStudio>
 	Timelines: ICollection<TimelineComplete>
 	TimelineDatastores: ICollection<DBTimelineDatastoreEntry>
 
 	ExpectedPackages: ICollection<ExpectedPackageDB>
-	PackageInfos: ICollection<PackageInfoDB>
+	PackageInfos: IReadOnlyCollection<PackageInfoDB>
 
 	ExternalMessageQueue: ICollection<ExternalMessageQueueObj>
 
-	MediaObjects: ICollection<MediaObjects>
+	MediaObjects: IReadOnlyCollection<MediaObjects>
+}
+
+/**
+ * Represents a MongoDB session and transaction
+ */
+export interface IMongoTransaction {
+	/**
+	 * A random id for this transaction
+	 */
+	readonly id: string
 }
 
 /**
@@ -131,8 +161,47 @@ export function getMongoCollections(
 	allowWatchers: boolean
 ): Readonly<IDirectCollections> {
 	const database = client.db(dbName)
+
+	const runInTransaction = async <T>(func: (transaction: IMongoTransaction) => Promise<T>): Promise<T> => {
+		const session = client.startSession()
+		const id = getRandomString()
+		try {
+			session.startTransaction({
+				// TODO - review/refine
+				readConcern: { level: 'snapshot' },
+				writeConcern: { w: 'majority' },
+				readPreference: 'primary',
+			})
+
+			const transaction = new MongoTransaction(session, id)
+			logger.silly(`Starting MongoDB Transaction: ${id}`)
+
+			const res = await func(transaction)
+
+			await session.commitTransaction()
+
+			return res
+		} catch (error) {
+			if (error instanceof MongoError && error.hasErrorLabel('UnknownTransactionCommitResult')) {
+				// Future: Some retry logic
+			} else if (error instanceof MongoError && error.hasErrorLabel('TransientTransactionError')) {
+				// Future: Some retry logic
+			}
+
+			logger.silly(`Aborted MongoDB Transaction: ${id}`)
+			await session.abortTransaction()
+
+			throw error
+		} finally {
+			await session.endSession()
+			logger.silly(`Completed MongoDB Transaction: ${id}`)
+		}
+	}
+
 	return Object.freeze(
 		literal<IDirectCollections>({
+			runInTransaction,
+
 			AdLibActions: wrapMongoCollection(database.collection(CollectionName.AdLibActions), allowWatchers),
 			AdLibPieces: wrapMongoCollection(database.collection(CollectionName.AdLibPieces), allowWatchers),
 			Blueprints: wrapMongoCollection(database.collection(CollectionName.Blueprints), allowWatchers),

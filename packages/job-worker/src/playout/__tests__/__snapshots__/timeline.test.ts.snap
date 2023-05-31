@@ -12,7 +12,7 @@ exports[`Timeline Adlib pieces Current part with preroll 1`] = `
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9013",
+    "timelineHash": "randomId9021",
   },
 ]
 `;
@@ -29,7 +29,7 @@ exports[`Timeline Adlib pieces Current part with preroll and adlib preroll 1`] =
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9013",
+    "timelineHash": "randomId9021",
   },
 ]
 `;
@@ -46,7 +46,7 @@ exports[`Timeline Basic rundown 1`] = `
       "studio": "asdf",
     },
     "timelineBlob": "[{"id":"playlist_randomId9000_status","objectType":"rundown","enable":{"while":1},"layer":"rundown_status","content":{"deviceType":0},"classes":["rundown_active"]},{"id":"part_group_randomId9000_part0_0_randomId9002","objectType":"rundown","enable":{"start":"now"},"priority":5,"layer":"","content":{"deviceType":0,"type":"group"},"children":[],"isGroup":true,"metaData":{"isPieceTimeline":true}},{"id":"part_group_firstobject_randomId9000_part0_0_randomId9002","objectType":"rundown","enable":{"start":0},"layer":"group_first_object","content":{"deviceType":0,"type":"callback","callBack":"partPlaybackStarted","callBackData":{"rundownPlaylistId":"playlist_randomId9000","partInstanceId":"randomId9000_part0_0_randomId9002"},"callBackStopped":"partPlaybackStopped"},"inGroup":"part_group_randomId9000_part0_0_randomId9002","classes":[]},{"id":"piece_group_control_randomId9000_part0_0_randomId9002_randomId9000_piece001","objectType":"rundown","enable":{"start":0},"layer":"vt0","priority":5,"content":{"deviceType":0,"type":"callback","callBack":"piecePlaybackStarted","callBackData":{"rundownPlaylistId":"playlist_randomId9000","partInstanceId":"randomId9000_part0_0_randomId9002","pieceInstanceId":"randomId9000_part0_0_randomId9002_randomId9000_piece001","dynamicallyInserted":false},"callBackStopped":"piecePlaybackStopped"},"classes":["current_part"],"inGroup":"part_group_randomId9000_part0_0_randomId9002","metaData":{"isPieceTimeline":true,"triggerPieceInstanceId":"randomId9000_part0_0_randomId9002_randomId9000_piece001"}},{"id":"piece_group_randomId9000_part0_0_randomId9002_randomId9000_piece001","content":{"deviceType":0,"type":"group"},"children":[],"inGroup":"part_group_randomId9000_part0_0_randomId9002","isGroup":true,"objectType":"rundown","enable":{"start":"#piece_group_control_randomId9000_part0_0_randomId9002_randomId9000_piece001.start - 0","end":"#piece_group_control_randomId9000_part0_0_randomId9002_randomId9000_piece001.end + 0"},"layer":"","metaData":{"isPieceTimeline":true,"pieceInstanceGroupId":"randomId9000_part0_0_randomId9002_randomId9000_piece001"}}]",
-    "timelineHash": "randomId9007",
+    "timelineHash": "randomId9009",
   },
 ]
 `;
@@ -63,7 +63,7 @@ exports[`Timeline Basic rundown 2`] = `
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9008",
+    "timelineHash": "randomId9011",
   },
 ]
 `;
@@ -80,7 +80,7 @@ exports[`Timeline In transitions Basic inTransition 1`] = `
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9009",
+    "timelineHash": "randomId9015",
   },
 ]
 `;
@@ -97,7 +97,7 @@ exports[`Timeline In transitions Basic inTransition with contentDelay + preroll 
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9009",
+    "timelineHash": "randomId9015",
   },
 ]
 `;
@@ -114,7 +114,7 @@ exports[`Timeline In transitions Basic inTransition with contentDelay 1`] = `
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9009",
+    "timelineHash": "randomId9015",
   },
 ]
 `;
@@ -131,7 +131,7 @@ exports[`Timeline In transitions Basic inTransition with planned pieces 1`] = `
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9009",
+    "timelineHash": "randomId9015",
   },
 ]
 `;
@@ -148,7 +148,7 @@ exports[`Timeline In transitions Preroll 1`] = `
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9009",
+    "timelineHash": "randomId9015",
   },
 ]
 `;
@@ -165,7 +165,7 @@ exports[`Timeline In transitions inTransition disabled 1`] = `
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9009",
+    "timelineHash": "randomId9015",
   },
 ]
 `;
@@ -182,7 +182,7 @@ exports[`Timeline In transitions inTransition is disabled during hold 1`] = `
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9010",
+    "timelineHash": "randomId9015",
   },
 ]
 `;
@@ -199,7 +199,7 @@ exports[`Timeline In transitions inTransition with existing infinites 1`] = `
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9010",
+    "timelineHash": "randomId9016",
   },
 ]
 `;
@@ -216,7 +216,7 @@ exports[`Timeline In transitions inTransition with new infinite 1`] = `
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9010",
+    "timelineHash": "randomId9016",
   },
 ]
 `;
@@ -233,7 +233,7 @@ exports[`Timeline Infinite Pieces Infinite Piece has stable timing across timeli
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9010",
+    "timelineHash": "randomId9016",
   },
 ]
 `;
@@ -250,7 +250,7 @@ exports[`Timeline Out transitions Basic outTransition 1`] = `
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9009",
+    "timelineHash": "randomId9015",
   },
 ]
 `;
@@ -267,7 +267,7 @@ exports[`Timeline Out transitions outTransition + inTransition 1`] = `
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9009",
+    "timelineHash": "randomId9015",
   },
 ]
 `;
@@ -284,7 +284,7 @@ exports[`Timeline Out transitions outTransition + preroll (2) 1`] = `
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9009",
+    "timelineHash": "randomId9015",
   },
 ]
 `;
@@ -301,7 +301,7 @@ exports[`Timeline Out transitions outTransition + preroll 1`] = `
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9009",
+    "timelineHash": "randomId9015",
   },
 ]
 `;
@@ -318,7 +318,7 @@ exports[`Timeline Out transitions outTransition is disabled during hold 1`] = `
       "studio": "asdf",
     },
     "timelineBlob": "[]",
-    "timelineHash": "randomId9010",
+    "timelineHash": "randomId9015",
   },
 ]
 `;

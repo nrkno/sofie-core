@@ -4,7 +4,6 @@ import {
 	MosFullStoryProps,
 	MosInsertStoryProps,
 	MosMoveStoryProps,
-	MosStoryStatusProps,
 	MosSwapStoryProps,
 } from '@sofie-automation/corelib/dist/worker/ingest'
 import { logger } from '../../logging'
@@ -12,10 +11,10 @@ import _ = require('underscore')
 import { JobContext } from '../../jobs'
 import { updateSegmentFromIngestData } from '../generationSegment'
 import { LocalIngestRundown } from '../ingestCache'
-import { canRundownBeUpdated, getRundownId } from '../lib'
-import { runIngestJob, runWithRundownLock } from '../lock'
+import { getRundownId } from '../lib'
+import { runIngestJob } from '../lock'
 import { diffAndApplyChanges } from './diff'
-import { fixIllegalObject, getPartIdFromMosStory, parseMosString } from './lib'
+import { fixIllegalObject, parseMosString } from './lib'
 import { AnnotatedIngestPart, makeChangeToIngestParts, storiesToIngestParts } from './mosToIngest'
 
 function getAnnotatedIngestParts(context: JobContext, ingestRundown: LocalIngestRundown): AnnotatedIngestPart[] {
@@ -34,49 +33,6 @@ function getAnnotatedIngestParts(context: JobContext, ingestRundown: LocalIngest
 
 	span?.end()
 	return ingestParts
-}
-
-/**
- * Update the status of a mos story
- */
-export async function handleMosStoryStatus(context: JobContext, data: MosStoryStatusProps): Promise<void> {
-	const rundownId = getRundownId(context.studioId, data.rundownExternalId)
-
-	return runWithRundownLock(context, rundownId, async (rundown) => {
-		if (!rundown) throw new Error(`Rundown "${rundownId}" not found!`)
-
-		if (!canRundownBeUpdated(rundown, false)) return
-		// TODO ORPHAN include segment in check
-
-		// Save Stories (aka Part ) status into database:
-		const part = await context.directCollections.Parts.findOne({
-			_id: getPartIdFromMosStory(rundown._id, data.partExternalId),
-			rundownId: rundown._id,
-		})
-		if (part) {
-			await Promise.all([
-				context.directCollections.Parts.update(part._id, {
-					$set: {
-						status: data.status,
-					},
-				}),
-				// TODO-PartInstance - pending new data flow
-				context.directCollections.PartInstances.update(
-					{
-						'part._id': part._id,
-						reset: { $ne: true },
-					},
-					{
-						$set: {
-							'part.status': data.status,
-						},
-					}
-				),
-			])
-		} else {
-			throw new Error(`Part ${data.partExternalId} in rundown ${rundown._id} not found`)
-		}
-	})
 }
 
 /**

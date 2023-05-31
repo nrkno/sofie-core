@@ -19,7 +19,7 @@ import {
 	SourceLayerType,
 	StatusCode,
 } from '@sofie-automation/blueprints-integration'
-import { JobContext, ProcessedShowStyleCompound } from '../jobs'
+import { ProcessedShowStyleCompound } from '../jobs'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { getRandomId, literal, normalizeArray } from '@sofie-automation/corelib/dist/lib'
@@ -37,6 +37,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { processShowStyleBase, processShowStyleVariant } from '../jobs/showStyle'
 import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { MockJobContext } from './context'
 
 export enum LAYER_IDS {
 	SOURCE_CAM0 = 'cam0',
@@ -47,7 +48,7 @@ export enum LAYER_IDS {
 }
 
 export async function setupMockShowStyleCompound(
-	context: JobContext,
+	context: MockJobContext,
 	blueprintId?: BlueprintId,
 	doc?: Partial<DBShowStyleBase>,
 	doc2?: Partial<DBShowStyleVariant>
@@ -60,13 +61,13 @@ export async function setupMockShowStyleCompound(
 }
 
 export async function setupMockShowStyleBase(
-	context: JobContext,
+	context: MockJobContext,
 	blueprintId?: BlueprintId,
 	doc?: Partial<DBShowStyleBase>
 ): Promise<DBShowStyleBase> {
 	doc = doc || {}
 
-	const dbI = (await context.directCollections.ShowStyleBases.findFetch()).length
+	const dbI = (await context.mockCollections.ShowStyleBases.findFetch()).length
 
 	const defaultShowStyleBase: DBShowStyleBase = {
 		_id: protectString('mockShowStyleBase' + dbI),
@@ -125,17 +126,17 @@ export async function setupMockShowStyleBase(
 		lastBlueprintConfig: undefined,
 	}
 	const showStyleBase = _.extend(defaultShowStyleBase, doc)
-	await context.directCollections.ShowStyleBases.insertOne(showStyleBase)
+	await context.mockCollections.ShowStyleBases.insertOne(showStyleBase)
 	return showStyleBase
 }
 export async function setupMockShowStyleVariant(
-	context: JobContext,
+	context: MockJobContext,
 	showStyleBaseId: ShowStyleBaseId,
 	doc?: Partial<DBShowStyleVariant>
 ): Promise<DBShowStyleVariant> {
 	doc = doc || {}
 
-	const dbI = (await context.directCollections.ShowStyleVariants.findFetch()).length
+	const dbI = (await context.mockCollections.ShowStyleVariants.findFetch()).length
 
 	const defaultShowStyleVariant: DBShowStyleVariant = {
 		_id: protectString('mockShowStyleVariant' + dbI),
@@ -146,13 +147,13 @@ export async function setupMockShowStyleVariant(
 		_rank: 0,
 	}
 	const showStyleVariant = _.extend(defaultShowStyleVariant, doc)
-	await context.directCollections.ShowStyleVariants.insertOne(showStyleVariant)
+	await context.mockCollections.ShowStyleVariants.insertOne(showStyleVariant)
 
 	return showStyleVariant
 }
 
 export async function setupDefaultRundownPlaylist(
-	context: JobContext,
+	context: MockJobContext,
 	showStyleCompound0?: ReadonlyDeep<ProcessedShowStyleCompound>,
 	rundownId0?: RundownId
 ): Promise<{ rundownId: RundownId; playlistId: RundownPlaylistId }> {
@@ -160,12 +161,12 @@ export async function setupDefaultRundownPlaylist(
 
 	const showStyleCompound =
 		showStyleCompound0 ||
-		(await context.directCollections.ShowStyleVariants.findOne().then(
+		(await context.mockCollections.ShowStyleVariants.findOne().then(
 			async (v) => v && context.getShowStyleCompound(v._id)
 		))
 	if (!showStyleCompound) throw new Error('No ShowStyle compound exists in the database yet')
 
-	const playlistId = await context.directCollections.RundownPlaylists.insertOne(
+	const playlistId = await context.mockCollections.RundownPlaylists.insertOne(
 		defaultRundownPlaylist(protectString('playlist_' + rundownId), context.studioId)
 	)
 	await setupDefaultRundown(context, showStyleCompound, playlistId, rundownId)
@@ -177,7 +178,7 @@ export async function setupDefaultRundownPlaylist(
 }
 
 export async function setupDefaultRundown(
-	context: JobContext,
+	context: MockJobContext,
 	showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId
@@ -185,7 +186,7 @@ export async function setupDefaultRundown(
 	const outputLayerIds = Object.keys(showStyleCompound.outputLayers)
 	const sourceLayerIds = Object.keys(showStyleCompound.sourceLayers)
 
-	await context.directCollections.Rundowns.insertOne({
+	await context.mockCollections.Rundowns.insertOne({
 		peripheralDeviceId: undefined,
 		organizationId: null,
 		studioId: context.studioId,
@@ -215,7 +216,7 @@ export async function setupDefaultRundown(
 		},
 	})
 
-	const segment0Id = await context.directCollections.Segments.insertOne({
+	const segment0Id = await context.mockCollections.Segments.insertOne({
 		_id: protectString(rundownId + '_segment0'),
 		_rank: 0,
 		externalId: 'MOCK_SEGMENT_0',
@@ -233,7 +234,7 @@ export async function setupDefaultRundown(
 		title: 'Part 0 0',
 		expectedDurationWithPreroll: undefined,
 	}
-	await context.directCollections.Parts.insertOne(part00)
+	await context.mockCollections.Parts.insertOne(part00)
 
 	const piece000: Piece = {
 		_id: protectString(rundownId + '_piece000'),
@@ -254,7 +255,7 @@ export async function setupDefaultRundown(
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	await context.directCollections.Pieces.insertOne(piece000)
+	await context.mockCollections.Pieces.insertOne(piece000)
 
 	const piece001: Piece = {
 		_id: protectString(rundownId + '_piece001'),
@@ -275,7 +276,7 @@ export async function setupDefaultRundown(
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	await context.directCollections.Pieces.insertOne(piece001)
+	await context.mockCollections.Pieces.insertOne(piece001)
 
 	const adLibPiece000: AdLibPiece = {
 		_id: protectString(rundownId + '_adLib000'),
@@ -293,7 +294,7 @@ export async function setupDefaultRundown(
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
-	await context.directCollections.AdLibPieces.insertOne(adLibPiece000)
+	await context.mockCollections.AdLibPieces.insertOne(adLibPiece000)
 
 	const part01: DBPart = {
 		_id: protectString(rundownId + '_part0_1'),
@@ -304,7 +305,7 @@ export async function setupDefaultRundown(
 		title: 'Part 0 1',
 		expectedDurationWithPreroll: undefined,
 	}
-	await context.directCollections.Parts.insertOne(part01)
+	await context.mockCollections.Parts.insertOne(part01)
 
 	const piece010: Piece = {
 		_id: protectString(rundownId + '_piece010'),
@@ -325,9 +326,9 @@ export async function setupDefaultRundown(
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	await context.directCollections.Pieces.insertOne(piece010)
+	await context.mockCollections.Pieces.insertOne(piece010)
 
-	const segment1Id = await context.directCollections.Segments.insertOne({
+	const segment1Id = await context.mockCollections.Segments.insertOne({
 		_id: protectString(rundownId + '_segment1'),
 		_rank: 1,
 		externalId: 'MOCK_SEGMENT_2',
@@ -345,7 +346,7 @@ export async function setupDefaultRundown(
 		title: 'Part 1 0',
 		expectedDurationWithPreroll: undefined,
 	}
-	await context.directCollections.Parts.insertOne(part10)
+	await context.mockCollections.Parts.insertOne(part10)
 
 	const part11: DBPart = {
 		_id: protectString(rundownId + '_part1_1'),
@@ -356,7 +357,7 @@ export async function setupDefaultRundown(
 		title: 'Part 1 1',
 		expectedDurationWithPreroll: undefined,
 	}
-	await context.directCollections.Parts.insertOne(part11)
+	await context.mockCollections.Parts.insertOne(part11)
 
 	const part12: DBPart = {
 		_id: protectString(rundownId + '_part1_2'),
@@ -367,9 +368,9 @@ export async function setupDefaultRundown(
 		title: 'Part 1 2',
 		expectedDurationWithPreroll: undefined,
 	}
-	await context.directCollections.Parts.insertOne(part12)
+	await context.mockCollections.Parts.insertOne(part12)
 
-	await context.directCollections.Segments.insertOne({
+	await context.mockCollections.Segments.insertOne({
 		_id: protectString(rundownId + '_segment2'),
 		_rank: 2,
 		externalId: 'MOCK_SEGMENT_2',
@@ -406,12 +407,12 @@ export async function setupDefaultRundown(
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
 
-	await context.directCollections.RundownBaselineAdLibPieces.insertOne(globalAdLib0)
-	await context.directCollections.RundownBaselineAdLibPieces.insertOne(globalAdLib1)
+	await context.mockCollections.RundownBaselineAdLibPieces.insertOne(globalAdLib0)
+	await context.mockCollections.RundownBaselineAdLibPieces.insertOne(globalAdLib1)
 }
 
 export async function setupMockPeripheralDevice(
-	context: JobContext,
+	context: MockJobContext,
 	category: PeripheralDeviceCategory,
 	type: PeripheralDeviceType,
 	subType: PeripheralDeviceSubType,
@@ -419,14 +420,16 @@ export async function setupMockPeripheralDevice(
 ): Promise<PeripheralDevice> {
 	doc = doc || {}
 
-	const dbI = (await context.directCollections.PeripheralDevices.findFetch()).length
+	const dbI = (await context.mockCollections.PeripheralDevices.findFetch()).length
 
 	const defaultDevice: PeripheralDevice = {
 		_id: protectString('mockDevice' + dbI),
 		name: 'mockDevice',
+		deviceName: 'Mock Gateway',
 		organizationId: null,
 		studioId: context.studioId,
 		settings: {},
+		nrcsName: category === PeripheralDeviceCategory.INGEST ? 'JEST-NRCS' : undefined,
 
 		category: category,
 		type: type,
@@ -450,11 +453,11 @@ export async function setupMockPeripheralDevice(
 		},
 	}
 	const device = _.extend(defaultDevice, doc) as PeripheralDevice
-	await context.directCollections.PeripheralDevices.insertOne(device)
+	await context.mockCollections.PeripheralDevices.insertOne(device)
 	return device
 }
 
-export async function setupMockIngestDevice(context: JobContext): Promise<PeripheralDevice> {
+export async function setupMockIngestDevice(context: MockJobContext): Promise<PeripheralDevice> {
 	return setupMockPeripheralDevice(
 		context,
 		PeripheralDeviceCategory.INGEST,

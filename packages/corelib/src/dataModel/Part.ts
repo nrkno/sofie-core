@@ -20,8 +20,6 @@ export interface DBPart extends ProtectedStringProperties<IBlueprintPartDB, '_id
 	rundownId: RundownId
 	segmentId: SegmentId
 
-	status?: string
-
 	/** Holds notes (warnings / errors) thrown by the blueprints during creation */
 	notes?: Array<PartNote>
 

@@ -28,7 +28,7 @@ describe('client/lib/rundown', () => {
 	let playlistId: RundownPlaylistId
 	beforeEach(async () => {
 		env = await setupDefaultStudioEnvironment()
-		playlistId = setupDefaultRundownPlaylist(env).playlistId
+		playlistId = (await setupDefaultRundownPlaylist(env)).playlistId
 	})
 	describe('RundownUtils.getResolvedSegment', () => {
 		testInFiber('Basic Segment resolution', () => {
@@ -53,6 +53,7 @@ describe('client/lib/rundown', () => {
 				[],
 				new Map(),
 				parts.map((part) => part._id),
+				new Map(),
 				currentPartInstance,
 				nextPartInstance
 			)
@@ -114,6 +115,7 @@ describe('client/lib/rundown', () => {
 				[],
 				new Map(),
 				parts.map((part) => part._id),
+				new Map(),
 				currentPartInstance,
 				nextPartInstance
 			)
@@ -199,6 +201,7 @@ describe('client/lib/rundown', () => {
 				[],
 				new Map(),
 				parts.map((part) => part._id),
+				new Map(),
 				currentPartInstance,
 				nextPartInstance
 			)
@@ -341,6 +344,8 @@ describe('client/lib/rundown', () => {
 						currentPartInfo: {
 							partInstanceId: mockCurrentPartInstance._id,
 							rundownId: mockCurrentPartInstance.rundownId,
+							manuallySelected: false,
+							consumesNextSegmentId: false,
 						},
 					},
 				})
@@ -359,6 +364,7 @@ describe('client/lib/rundown', () => {
 					[],
 					new Map(),
 					parts.map((part) => part._id),
+					new Map(),
 					currentPartInstance,
 					nextPartInstance
 				)

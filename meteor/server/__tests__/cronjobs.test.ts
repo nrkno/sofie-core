@@ -71,10 +71,10 @@ describe('cronjobs', () => {
 	beforeAllInFiber(async () => {
 		env = await setupDefaultStudioEnvironment()
 
-		const o = setupDefaultRundownPlaylist(env)
+		const o = await setupDefaultRundownPlaylist(env)
 		rundownId = o.rundownId
 
-		CoreSystem.update(
+		await CoreSystem.updateAsync(
 			{},
 			{
 				$set: {
@@ -93,10 +93,10 @@ describe('cronjobs', () => {
 			return mockCurrentTime
 		})
 	})
-	afterAll(() => {
+	afterAll(async () => {
 		//@ts-ignore Return getCurrentTime to orig
 		lib.getCurrentTime = origGetCurrentTime
-		CoreSystem.remove(SYSTEM_ID)
+		await CoreSystem.removeAsync(SYSTEM_ID)
 	})
 	describe('Runs at the appropriate time', () => {
 		testInFiber("Doesn't run during the day", async () => {
@@ -152,10 +152,9 @@ describe('cronjobs', () => {
 
 		testInFiber('Remove IngestDataCache objects that are not connected to any Rundown', async () => {
 			// Set up a mock rundown, a detached IngestDataCache object and an object attached to the mock rundown
-
 			// Detached IngestDataCache object 0
 			const dataCache0Id = protectString<IngestDataCacheObjId>(getRandomString())
-			IngestDataCache.insert({
+			await IngestDataCache.mutableCollection.insertAsync({
 				_id: dataCache0Id,
 				data: {
 					externalId: '',
@@ -170,7 +169,7 @@ describe('cronjobs', () => {
 			})
 			// Attached IngestDataCache object 1
 			const dataCache1Id = protectString<IngestDataCacheObjId>(getRandomString())
-			IngestDataCache.insert({
+			await IngestDataCache.mutableCollection.insertAsync({
 				_id: dataCache1Id,
 				data: {
 					externalId: '',
@@ -186,10 +185,10 @@ describe('cronjobs', () => {
 
 			await runCronjobs()
 
-			expect(IngestDataCache.findOne(dataCache1Id)).toMatchObject({
+			expect(await IngestDataCache.findOneAsync(dataCache1Id)).toMatchObject({
 				_id: dataCache1Id,
 			})
-			expect(IngestDataCache.findOne(dataCache0Id)).toBeUndefined()
+			expect(await IngestDataCache.findOneAsync(dataCache0Id)).toBeUndefined()
 		})
 		testInFiber('Removes old PartInstances and PieceInstances', async () => {
 			// nightlyCronjobInner()
@@ -202,7 +201,7 @@ describe('cronjobs', () => {
 				rundownId,
 				name: 'mock segment',
 			}
-			Segments.insert(segment0)
+			await Segments.mutableCollection.insertAsync(segment0)
 
 			const part0: DBPart = {
 				_id: getRandomId<PartId>(),
@@ -213,7 +212,7 @@ describe('cronjobs', () => {
 				title: '',
 				expectedDurationWithPreroll: undefined,
 			}
-			Parts.insert(part0)
+			await Parts.mutableCollection.insertAsync(part0)
 			const part1: DBPart = {
 				_id: getRandomId<PartId>(),
 				_rank: 1,
@@ -223,7 +222,7 @@ describe('cronjobs', () => {
 				title: '',
 				expectedDurationWithPreroll: undefined,
 			}
-			Parts.insert(part1)
+			await Parts.mutableCollection.insertAsync(part1)
 
 			const partInstance0: PartInstance = {
 				_id: protectString(`${part0._id}_${getRandomId()}`),
@@ -240,7 +239,7 @@ describe('cronjobs', () => {
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),
 			}
-			PartInstances.insert(partInstance0)
+			await PartInstances.mutableCollection.insertAsync(partInstance0)
 
 			const partInstance1: PartInstance = {
 				_id: protectString(`${part0._id}_${getRandomId()}`),
@@ -253,7 +252,7 @@ describe('cronjobs', () => {
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),
 			}
-			PartInstances.insert(partInstance1)
+			await PartInstances.mutableCollection.insertAsync(partInstance1)
 
 			const partInstance2: PartInstance = {
 				_id: protectString(`${part0._id}_${getRandomId()}`),
@@ -270,7 +269,7 @@ describe('cronjobs', () => {
 				playlistActivationId: protectString(''),
 				segmentPlayoutId: protectString(''),
 			}
-			PartInstances.insert(partInstance2)
+			await PartInstances.mutableCollection.insertAsync(partInstance2)
 
 			const pieceInstance0: PieceInstance = {
 				_id: protectString(`${partInstance0._id}_piece0`),
@@ -314,23 +313,23 @@ describe('cronjobs', () => {
 				},
 				playlistActivationId: protectString(''),
 			}
-			PieceInstances.insert(pieceInstance0)
-			PieceInstances.insert(pieceInstance1)
+			await PieceInstances.mutableCollection.insertAsync(pieceInstance0)
+			await PieceInstances.mutableCollection.insertAsync(pieceInstance1)
 			await runCronjobs()
 
-			expect(Parts.findOne(part0._id)).toBeDefined()
-			expect(Parts.findOne(part1._id)).toBeUndefined() // Removed, since owned by non-existent rundown
+			expect(await Parts.findOneAsync(part0._id)).toBeDefined()
+			expect(await Parts.findOneAsync(part1._id)).toBeUndefined() // Removed, since owned by non-existent rundown
 
-			expect(PartInstances.findOne(partInstance0._id)).toBeDefined()
-			expect(PartInstances.findOne(partInstance1._id)).toBeDefined()
-			expect(PartInstances.findOne(partInstance2._id)).toBeUndefined() // Removed, since owned by non-existent part1
-			expect(PieceInstances.findOne(pieceInstance0._id)).toBeDefined()
-			expect(PieceInstances.findOne(pieceInstance1._id)).toBeUndefined() // Removed, since owned by non-existent partInstance2
+			expect(await PartInstances.findOneAsync(partInstance0._id)).toBeDefined()
+			expect(await PartInstances.findOneAsync(partInstance1._id)).toBeDefined()
+			expect(await PartInstances.findOneAsync(partInstance2._id)).toBeUndefined() // Removed, since owned by non-existent part1
+			expect(await PieceInstances.findOneAsync(pieceInstance0._id)).toBeDefined()
+			expect(await PieceInstances.findOneAsync(pieceInstance1._id)).toBeUndefined() // Removed, since owned by non-existent partInstance2
 		})
 		testInFiber('Removes old entries in UserActionsLog', async () => {
 			// reasonably fresh entry
 			const userAction0 = protectString<UserActionsLogItemId>(getRandomString())
-			UserActionsLog.insert({
+			await UserActionsLog.insertAsync({
 				_id: userAction0,
 				organizationId: null,
 				userId: null,
@@ -343,7 +342,7 @@ describe('cronjobs', () => {
 			})
 			// stale entry
 			const userAction1 = protectString<UserActionsLogItemId>(getRandomString())
-			UserActionsLog.insert({
+			await UserActionsLog.insertAsync({
 				_id: userAction1,
 				organizationId: null,
 				userId: null,
@@ -356,15 +355,15 @@ describe('cronjobs', () => {
 
 			await runCronjobs()
 
-			expect(UserActionsLog.findOne(userAction0)).toMatchObject({
+			expect(await UserActionsLog.findOneAsync(userAction0)).toMatchObject({
 				_id: userAction0,
 			})
-			expect(UserActionsLog.findOne(userAction1)).toBeUndefined()
+			expect(await UserActionsLog.findOneAsync(userAction1)).toBeUndefined()
 		})
 		testInFiber('Removes old entries in Snapshots', async () => {
 			// reasonably fresh entry
 			const snapshot0 = protectString<SnapshotId>(getRandomString())
-			Snapshots.insert({
+			await Snapshots.insertAsync({
 				_id: snapshot0,
 				organizationId: null,
 				comment: '',
@@ -377,7 +376,7 @@ describe('cronjobs', () => {
 			})
 			// stale entry
 			const snapshot1 = protectString<SnapshotId>(getRandomString())
-			Snapshots.insert({
+			await Snapshots.insertAsync({
 				_id: snapshot1,
 				organizationId: null,
 				comment: '',
@@ -391,18 +390,19 @@ describe('cronjobs', () => {
 
 			await runCronjobs()
 
-			expect(Snapshots.findOne(snapshot0)).toMatchObject({
+			expect(await Snapshots.findOneAsync(snapshot0)).toMatchObject({
 				_id: snapshot0,
 			})
-			expect(Snapshots.findOne(snapshot1)).toBeUndefined()
+			expect(await Snapshots.findOneAsync(snapshot1)).toBeUndefined()
 		})
 		testInFiber('Attempts to restart CasparCG when job is enabled', async () => {
 			const mockPlayoutGw = protectString<PeripheralDeviceId>(getRandomString())
-			PeripheralDevices.insert({
+			await PeripheralDevices.insertAsync({
 				_id: mockPlayoutGw,
 				organizationId: null,
 				type: PeripheralDeviceType.PLAYOUT,
 				category: PeripheralDeviceCategory.PLAYOUT,
+				deviceName: 'Playout Gateway',
 				configManifest: {
 					deviceConfigSchema: JSONBlobStringify({}),
 					subdeviceManifest: {},
@@ -421,13 +421,14 @@ describe('cronjobs', () => {
 				settings: {},
 			})
 			const mockCasparCg = protectString<PeripheralDeviceId>(getRandomString())
-			PeripheralDevices.insert({
+			await PeripheralDevices.insertAsync({
 				_id: mockCasparCg,
 				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
 				type: PeripheralDeviceType.PLAYOUT,
 				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.CASPARCG,
+				deviceName: 'CasparCG',
 				configManifest: {
 					deviceConfigSchema: JSONBlobStringify({}),
 					subdeviceManifest: {},
@@ -445,13 +446,14 @@ describe('cronjobs', () => {
 				settings: {},
 			})
 			const mockATEM = protectString<PeripheralDeviceId>(getRandomString())
-			PeripheralDevices.insert({
+			await PeripheralDevices.insertAsync({
 				_id: mockATEM,
 				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
 				type: PeripheralDeviceType.PLAYOUT,
 				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.ATEM,
+				deviceName: 'ATEM',
 				configManifest: {
 					deviceConfigSchema: JSONBlobStringify({}),
 					subdeviceManifest: {},
@@ -476,7 +478,7 @@ describe('cronjobs', () => {
 			await waitForCronjobDone()
 
 			// check if the correct PeripheralDevice command has been issued, and only for CasparCG devices
-			const pendingCommands = PeripheralDeviceCommands.find({}).fetch()
+			const pendingCommands = await PeripheralDeviceCommands.findFetchAsync({})
 			expect(pendingCommands).toHaveLength(1)
 			expect(pendingCommands[0]).toMatchObject({
 				deviceId: mockCasparCg,
@@ -501,11 +503,12 @@ describe('cronjobs', () => {
 		})
 		testInFiber('Does not attempt to restart CasparCG when job is disabled', async () => {
 			const mockPlayoutGw = protectString<PeripheralDeviceId>(getRandomString())
-			PeripheralDevices.insert({
+			await PeripheralDevices.insertAsync({
 				_id: mockPlayoutGw,
 				organizationId: null,
 				type: PeripheralDeviceType.PLAYOUT,
 				category: PeripheralDeviceCategory.PLAYOUT,
+				deviceName: 'Playout Gateway',
 				configManifest: {
 					deviceConfigSchema: JSONBlobStringify({}),
 					subdeviceManifest: {},
@@ -524,13 +527,14 @@ describe('cronjobs', () => {
 				settings: {},
 			})
 			const mockCasparCg = protectString<PeripheralDeviceId>(getRandomString())
-			PeripheralDevices.insert({
+			await PeripheralDevices.insertAsync({
 				_id: mockCasparCg,
 				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
 				type: PeripheralDeviceType.PLAYOUT,
 				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.CASPARCG,
+				deviceName: 'CasparCG',
 				configManifest: {
 					deviceConfigSchema: JSONBlobStringify({}),
 					subdeviceManifest: {},
@@ -548,13 +552,14 @@ describe('cronjobs', () => {
 				settings: {},
 			})
 			const mockATEM = protectString<PeripheralDeviceId>(getRandomString())
-			PeripheralDevices.insert({
+			await PeripheralDevices.insertAsync({
 				_id: mockATEM,
 				organizationId: null,
 				parentDeviceId: mockPlayoutGw,
 				type: PeripheralDeviceType.PLAYOUT,
 				category: PeripheralDeviceCategory.PLAYOUT,
 				subType: TSR.DeviceType.ATEM,
+				deviceName: 'ATEM',
 				configManifest: {
 					deviceConfigSchema: JSONBlobStringify({}),
 					subdeviceManifest: {},
@@ -571,7 +576,7 @@ describe('cronjobs', () => {
 				token: '',
 				settings: {},
 			})
-			CoreSystem.update(
+			await CoreSystem.updateAsync(
 				{},
 				{
 					$set: {
@@ -587,7 +592,7 @@ describe('cronjobs', () => {
 			jest.runOnlyPendingTimers()
 
 			// check if the no PeripheralDevice command have been issued
-			const pendingCommands = PeripheralDeviceCommands.find({}).fetch()
+			const pendingCommands = await PeripheralDeviceCommands.findFetchAsync({})
 			expect(pendingCommands).toHaveLength(0)
 
 			await waitForCronjobDone()

@@ -72,7 +72,7 @@ describe('Expected Media Items', () => {
 	}
 
 	async function setupRundown(rdId: string, rplId: RundownPlaylistId): Promise<RundownId> {
-		await context.directCollections.RundownPlaylists.insertOne({
+		await context.mockCollections.RundownPlaylists.insertOne({
 			...defaultRundownPlaylist(rplId, context.studioId),
 			externalId: 'mock_rpl',
 			name: 'Mock Playlist',
@@ -93,21 +93,21 @@ describe('Expected Media Items', () => {
 				showStyleCompound.showStyleVariantId
 			),
 		})
-		await context.directCollections.Rundowns.insertOne(rd)
-		await context.directCollections.Segments.insertOne(
+		await context.mockCollections.Rundowns.insertOne(rd)
+		await context.mockCollections.Segments.insertOne(
 			literal<DBSegment>({
 				...defaultSegment(getRandomId(), rd._id),
 				_rank: 1,
 			})
 		)
-		await context.directCollections.Parts.insertOne(
+		await context.mockCollections.Parts.insertOne(
 			literal<DBPart>({
 				...defaultPart(protectString(rdId + '_' + mockPart0), rd._id, protectString('segment1')),
 				_rank: 1,
 				title: '',
 			})
 		)
-		await context.directCollections.Pieces.insertOne(
+		await context.mockCollections.Pieces.insertOne(
 			literal<Piece>({
 				...defaultPiece(
 					protectString(rdId + '_' + mockPiece0),
@@ -129,7 +129,7 @@ describe('Expected Media Items', () => {
 				expectedPackages: [getExpectedPackage('id0', mockPath0), getExpectedPackage('id1', mockPath0)],
 			})
 		)
-		await context.directCollections.Parts.insertOne(
+		await context.mockCollections.Parts.insertOne(
 			literal<DBPart>({
 				...defaultPart(protectString(rdId + '_' + mockPart1), rd._id, protectString('segment1')),
 				_rank: 1,
@@ -137,7 +137,7 @@ describe('Expected Media Items', () => {
 				title: '',
 			})
 		)
-		await context.directCollections.Pieces.insertOne(
+		await context.mockCollections.Pieces.insertOne(
 			literal<Piece>({
 				...defaultPiece(
 					protectString(rdId + '_' + mockPiece1),
@@ -159,7 +159,7 @@ describe('Expected Media Items', () => {
 				expectedPackages: [getExpectedPackage('id0', mockPath1)],
 			})
 		)
-		await context.directCollections.AdLibPieces.insertOne(
+		await context.mockCollections.AdLibPieces.insertOne(
 			literal<AdLibPiece>({
 				...defaultAdLibPiece(
 					protectString(rdId + '_' + mockAdLibPiece0),
@@ -192,7 +192,7 @@ describe('Expected Media Items', () => {
 
 	describe('Based on a Rundown', () => {
 		test('Generates ExpectedPackages(/ExpectedMediaItems) based on a Rundown', async () => {
-			const rundown = (await context.directCollections.Rundowns.findOne(rdId0)) as DBRundown
+			const rundown = (await context.mockCollections.Rundowns.findOne(rdId0)) as DBRundown
 			expect(rundown).toBeTruthy()
 
 			await runIngestJob(
@@ -211,14 +211,14 @@ describe('Expected Media Items', () => {
 				}
 			)
 
-			const packages = await context.directCollections.ExpectedPackages.findFetch({
+			const packages = await context.mockCollections.ExpectedPackages.findFetch({
 				rundownId: rdId0,
 				studioId: context.studioId,
 			})
 			expect(packages).toHaveLength(4)
 
 			// to be deprecated:
-			const items = await context.directCollections.ExpectedMediaItems.findFetch({
+			const items = await context.mockCollections.ExpectedMediaItems.findFetch({
 				rundownId: rdId0,
 				studioId: context.studioId,
 			})

@@ -32,6 +32,7 @@ import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/Buck
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
+import { IMongoTransaction } from '../db'
 
 export enum PieceType {
 	PIECE = 'piece',
@@ -140,14 +141,18 @@ function generateExpectedMediaItemsFull(
  */
 export async function cleanUpExpectedMediaItemForBucketAdLibPiece(
 	context: JobContext,
+	transaction: IMongoTransaction,
 	adLibIds: PieceId[]
 ): Promise<void> {
 	if (adLibIds.length > 0) {
-		const removedItems = await context.directCollections.ExpectedMediaItems.remove({
-			bucketAdLibPieceId: {
-				$in: adLibIds,
+		const removedItems = await context.directCollections.ExpectedMediaItems.remove(
+			{
+				bucketAdLibPieceId: {
+					$in: adLibIds,
+				},
 			},
-		})
+			transaction
+		)
 
 		logger.info(`Removed ${removedItems} expected media items for deleted bucket adLib items`)
 	}
@@ -160,14 +165,18 @@ export async function cleanUpExpectedMediaItemForBucketAdLibPiece(
  */
 export async function cleanUpExpectedMediaItemForBucketAdLibActions(
 	context: JobContext,
+	transaction: IMongoTransaction,
 	actionIds: AdLibActionId[]
 ): Promise<void> {
 	if (actionIds.length > 0) {
-		const removedItems = await context.directCollections.ExpectedMediaItems.remove({
-			bucketAdLibActionId: {
-				$in: actionIds,
+		const removedItems = await context.directCollections.ExpectedMediaItems.remove(
+			{
+				bucketAdLibActionId: {
+					$in: actionIds,
+				},
 			},
-		})
+			transaction
+		)
 
 		logger.info(`Removed ${removedItems} expected media items for deleted bucket adLib actions`)
 	}
@@ -181,6 +190,7 @@ export async function cleanUpExpectedMediaItemForBucketAdLibActions(
  */
 export async function updateExpectedMediaItemForBucketAdLibPiece(
 	context: JobContext,
+	transaction: IMongoTransaction,
 	piece: BucketAdLib
 ): Promise<void> {
 	const result = generateExpectedMediaItems<ExpectedMediaItemBucketPiece>(
@@ -198,6 +208,7 @@ export async function updateExpectedMediaItemForBucketAdLibPiece(
 	await saveIntoDb(
 		context,
 		context.directCollections.ExpectedMediaItems,
+		transaction,
 		{
 			bucketAdLibPieceId: piece._id,
 		},
@@ -213,6 +224,7 @@ export async function updateExpectedMediaItemForBucketAdLibPiece(
  */
 export async function updateExpectedMediaItemForBucketAdLibAction(
 	context: JobContext,
+	transaction: IMongoTransaction,
 	action: BucketAdLibAction
 ): Promise<void> {
 	const result = generateExpectedMediaItems<ExpectedMediaItemBucketAction>(
@@ -230,6 +242,7 @@ export async function updateExpectedMediaItemForBucketAdLibAction(
 	await saveIntoDb(
 		context,
 		context.directCollections.ExpectedMediaItems,
+		transaction,
 		{
 			bucketAdLibActionId: action._id,
 		},

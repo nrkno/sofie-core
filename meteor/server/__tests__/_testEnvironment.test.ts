@@ -109,8 +109,8 @@ describe('Basic test of test environment', () => {
 		// @ts-ignore
 		expect(UserActionsLog._isMock).toBeTruthy()
 	})
-	test('Mock collection data', () => {
-		expect(Studios.find().fetch()).toHaveLength(0)
+	test('Mock collection data', async () => {
+		expect(await Studios.findFetchAsync({})).toHaveLength(0)
 
 		MongoMock.mockSetData<DBStudio>(Studios, [
 			{
@@ -125,47 +125,47 @@ describe('Basic test of test environment', () => {
 			},
 		])
 
-		expect(Studios.find().fetch()).toHaveLength(2)
+		expect(await Studios.findFetchAsync({})).toHaveLength(2)
 
 		expect(
-			Studios.findOne({
+			await Studios.findOneAsync({
 				_id: protectString('def'),
 			})
 		).toMatchObject({
 			_id: 'def',
 		})
-		Studios.update(protectString('abc'), {
+		await Studios.updateAsync(protectString('abc'), {
 			$set: {
 				_rundownVersionHash: 'myHash',
 			},
 		})
 
 		expect(
-			Studios.findOne({
+			await Studios.findOneAsync({
 				name: 'abc',
 			})
 		).toMatchObject({
 			_rundownVersionHash: 'myHash',
 		})
 
-		Studios.remove(protectString('def'))
-		const studios = Studios.find().fetch()
+		await Studios.removeAsync(protectString('def'))
+		const studios = await Studios.findFetchAsync({})
 		expect(studios).toHaveLength(1)
 
-		const observer = Studios.find({ _id: protectString('abc') }).observeChanges({})
+		const observer = Studios.observeChanges({ _id: protectString('abc') }, {})
 		expect(observer).toBeTruthy()
 
-		Studios.insert({
+		await Studios.insertAsync({
 			...defaultStudio(protectString('xyz')),
 			name: 'xyz',
 			_rundownVersionHash: 'xyz',
 		})
-		expect(Studios.find().fetch()).toHaveLength(2)
+		expect(await Studios.findFetchAsync({})).toHaveLength(2)
 
 		observer.stop()
 
 		MongoMock.mockSetData(Studios, null)
-		expect(Studios.find().fetch()).toHaveLength(0)
+		expect(await Studios.findFetchAsync({})).toHaveLength(0)
 	})
 	testInFiber('Promises in fibers', () => {
 		const p = new Promise((resolve) => {

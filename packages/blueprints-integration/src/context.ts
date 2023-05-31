@@ -15,8 +15,8 @@ import {
 } from './rundown'
 import { BlueprintMappings } from './studio'
 import { TSR, OnGenerateTimelineObj } from './timeline'
-import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { IBlueprintPlayoutDevice } from './lib'
 
 /** Common */
 
@@ -149,7 +149,7 @@ export interface IRundownActivationContext extends IRundownContext {
 		payload: Record<string, any>
 	): Promise<TSR.ActionExecutionResult>
 	/** Returns a list of the PeripheralDevices */
-	listPeripheralDevices(): Promise<PeripheralDevicePublic[]>
+	listPlayoutDevices(): Promise<IBlueprintPlayoutDevice[]>
 }
 
 export interface ISegmentUserContext extends IUserNotesContext, IRundownContext, IPackageInfoContext {
@@ -243,7 +243,7 @@ export interface IActionExecutionContext
 	// executePeripheralDeviceAction(deviceId: string, functionName: string, args: any[]): Promise<any>
 	// openUIDialogue(message: string) // ?????
 	/** Returns a list of the PeripheralDevices */
-	listPeripheralDevices(): Promise<PeripheralDevicePublic[]>
+	listPlayoutDevices(): Promise<IBlueprintPlayoutDevice[]>
 	/** Execute an action on a certain PeripheralDevice */
 	executeTSRAction(
 		deviceId: PeripheralDeviceId,

@@ -254,7 +254,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 								{this.props.studios.length > 1 ? (
 									<div>
 										<h3 className="mhn">{t('Studio Snapshot')}</h3>
-										<p className="mhn text-s dimmed">
+										<p className="mhn text-s dimmed field-hint">
 											{t('A Studio Snapshot contains all system settings related to that studio')}
 										</p>
 										{_.map(this.props.studios, (studio) => {

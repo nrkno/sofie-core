@@ -79,10 +79,6 @@ export enum IngestJobs {
 	 */
 	MosRundownReadyToAir = 'mosRundownReadyToAir',
 	/**
-	 * Update the status of a mos story
-	 */
-	MosStoryStatus = 'mosStoryStatus',
-	/**
 	 * Update the payload of a mos story
 	 */
 	MosFullStory = 'mosFullStory',
@@ -191,10 +187,6 @@ export interface MosRundownStatusProps extends IngestPropsBase {
 export interface MosRundownReadyToAirProps extends IngestPropsBase {
 	status: string
 }
-export interface MosStoryStatusProps extends IngestPropsBase {
-	partExternalId: string
-	status: string
-}
 export interface MosFullStoryProps extends IngestPropsBase {
 	story: MOS.IMOSROFullStory
 }
@@ -279,7 +271,6 @@ export type IngestJobFunc = {
 	[IngestJobs.MosRundownMetadata]: (data: MosRundownMetadataProps) => void
 	[IngestJobs.MosRundownStatus]: (data: MosRundownStatusProps) => void
 	[IngestJobs.MosRundownReadyToAir]: (data: MosRundownReadyToAirProps) => void
-	[IngestJobs.MosStoryStatus]: (data: MosStoryStatusProps) => void
 	[IngestJobs.MosFullStory]: (data: MosFullStoryProps) => void
 	[IngestJobs.MosDeleteStory]: (data: MosDeleteStoryProps) => void
 	[IngestJobs.MosInsertStory]: (data: MosInsertStoryProps) => void

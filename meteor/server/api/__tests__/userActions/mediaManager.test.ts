@@ -13,7 +13,7 @@ const MAX_WAIT_TIME = 300
 
 describe('User Actions - Media Manager', () => {
 	let env: DefaultEnvironment
-	function setupMockWorkFlow() {
+	async function setupMockWorkFlow() {
 		const workFlowId: MediaWorkFlowId = getRandomId()
 		const workFlow = {
 			_id: workFlowId,
@@ -26,18 +26,18 @@ describe('User Actions - Media Manager', () => {
 			studioId: env.studio._id,
 			success: false,
 		}
-		MediaWorkFlows.insert(workFlow)
+		await MediaWorkFlows.insertAsync(workFlow)
 
 		return { workFlow, workFlowId }
 	}
 	beforeEach(async () => {
 		// clean up old peripheral devices and MediaWorkFlows
-		PeripheralDevices.remove({
+		await PeripheralDevices.removeAsync({
 			_id: {
 				$exists: true,
 			},
 		})
-		MediaWorkFlows.remove({
+		await MediaWorkFlows.removeAsync({
 			_id: {
 				$exists: true,
 			},
@@ -46,7 +46,7 @@ describe('User Actions - Media Manager', () => {
 		jest.resetAllMocks()
 	})
 	testInFiber('Restart workflow', async () => {
-		const { workFlowId } = setupMockWorkFlow()
+		const { workFlowId } = await setupMockWorkFlow()
 
 		// should fail if the workflow doesn't exist
 		await expect(
@@ -55,13 +55,15 @@ describe('User Actions - Media Manager', () => {
 
 		{
 			// should execute function on the target device
-			const p = waitUntil(() => {
-				const functionCall = PeripheralDeviceCommands.find({
-					deviceId: env.ingestDevice._id,
-					functionName: 'restartWorkflow',
-				}).fetch()[0]
+			const p = waitUntil(async () => {
+				const functionCall = (
+					await PeripheralDeviceCommands.findFetchAsync({
+						deviceId: env.ingestDevice._id,
+						functionName: 'restartWorkflow',
+					})
+				)[0]
 				expect(functionCall).toBeTruthy()
-				PeripheralDeviceCommands.update(functionCall._id, {
+				await PeripheralDeviceCommands.updateAsync(functionCall._id, {
 					$set: {
 						hasReply: true,
 						reply: 'done',
@@ -74,7 +76,7 @@ describe('User Actions - Media Manager', () => {
 		}
 	})
 	testInFiber('Abort worfklow', async () => {
-		const { workFlowId } = setupMockWorkFlow()
+		const { workFlowId } = await setupMockWorkFlow()
 
 		// should fail if the workflow doesn't exist
 		await expect(
@@ -84,13 +86,15 @@ describe('User Actions - Media Manager', () => {
 		{
 			// should execute function on the target device
 
-			const p = waitUntil(() => {
-				const functionCall = PeripheralDeviceCommands.find({
-					deviceId: env.ingestDevice._id,
-					functionName: 'abortWorkflow',
-				}).fetch()[0]
+			const p = waitUntil(async () => {
+				const functionCall = (
+					await PeripheralDeviceCommands.findFetchAsync({
+						deviceId: env.ingestDevice._id,
+						functionName: 'abortWorkflow',
+					})
+				)[0]
 				expect(functionCall).toBeTruthy()
-				PeripheralDeviceCommands.update(functionCall._id, {
+				await PeripheralDeviceCommands.updateAsync(functionCall._id, {
 					$set: {
 						hasReply: true,
 						reply: 'done',
@@ -103,7 +107,7 @@ describe('User Actions - Media Manager', () => {
 		}
 	})
 	testInFiber('Prioritize workflow', async () => {
-		const { workFlowId } = setupMockWorkFlow()
+		const { workFlowId } = await setupMockWorkFlow()
 
 		// should fail if the workflow doesn't exist
 		await expect(
@@ -112,13 +116,16 @@ describe('User Actions - Media Manager', () => {
 
 		{
 			// should execute function on the target device
-			const p = waitUntil(() => {
-				const functionCall = PeripheralDeviceCommands.find({
-					deviceId: env.ingestDevice._id,
-					functionName: 'prioritizeWorkflow',
-				}).fetch()[0]
+			const p = waitUntil(async () => {
+				const functionCall = (
+					await PeripheralDeviceCommands.findFetchAsync({
+						deviceId: env.ingestDevice._id,
+						functionName: 'prioritizeWorkflow',
+					})
+				)[0]
+
 				expect(functionCall).toBeTruthy()
-				PeripheralDeviceCommands.update(functionCall._id, {
+				await PeripheralDeviceCommands.updateAsync(functionCall._id, {
 					$set: {
 						hasReply: true,
 						reply: 'done',
@@ -131,16 +138,16 @@ describe('User Actions - Media Manager', () => {
 		}
 	})
 	testInFiber('Restart all workflows', async () => {
-		setupMockWorkFlow()
+		await setupMockWorkFlow()
 
 		{
 			// should execute function on all the target devices
-			const p = waitUntil(() => {
-				const functionCalls = PeripheralDeviceCommands.find({
+			const p = waitUntil(async () => {
+				const functionCalls = await PeripheralDeviceCommands.findFetchAsync({
 					functionName: 'restartAllWorkflows',
-				}).fetch()
+				})
 				expect(functionCalls).toHaveLength(1)
-				PeripheralDeviceCommands.update(functionCalls[0]._id, {
+				await PeripheralDeviceCommands.updateAsync(functionCalls[0]._id, {
 					$set: {
 						hasReply: true,
 						reply: 'done',
@@ -153,16 +160,16 @@ describe('User Actions - Media Manager', () => {
 		}
 	})
 	testInFiber('Abort all workflows', async () => {
-		setupMockWorkFlow()
+		await setupMockWorkFlow()
 
 		{
 			// should execute function on all the target devices
-			const p = waitUntil(() => {
-				const functionCalls = PeripheralDeviceCommands.find({
+			const p = waitUntil(async () => {
+				const functionCalls = await PeripheralDeviceCommands.findFetchAsync({
 					functionName: 'abortAllWorkflows',
-				}).fetch()
+				})
 				expect(functionCalls).toHaveLength(1)
-				PeripheralDeviceCommands.update(functionCalls[0]._id, {
+				await PeripheralDeviceCommands.updateAsync(functionCalls[0]._id, {
 					$set: {
 						hasReply: true,
 						reply: 'done',

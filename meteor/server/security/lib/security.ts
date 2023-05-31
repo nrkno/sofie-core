@@ -90,7 +90,7 @@ export async function allowAccessToOrganization(
 	if (!isProtectedString(organizationId)) return noAccess('organizationId is not a string')
 	const cred = await resolveCredentials(cred0)
 
-	const organization = Organizations.findOne(organizationId)
+	const organization = await Organizations.findOneAsync(organizationId)
 	if (!organization) return noAccess('Organization not found')
 
 	return {

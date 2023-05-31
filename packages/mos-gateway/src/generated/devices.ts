@@ -12,6 +12,11 @@ export interface MosDeviceConfig {
 		dontUseQueryPort?: boolean
 		timeout?: number
 		heartbeatInterval?: number
+		ports?: {
+			lower: number
+			upper: number
+			query: number
+		}
 	}
 	secondary?: {
 		id: string
@@ -19,5 +24,10 @@ export interface MosDeviceConfig {
 		dontUseQueryPort?: boolean
 		timeout?: number
 		heartbeatInterval?: number
+		ports?: {
+			lower: number
+			upper: number
+			query: number
+		}
 	}
 }

@@ -40,7 +40,7 @@ jest.mock('../../api/deviceTriggers/observer')
 import '../peripheralDevice'
 import { OnTimelineTriggerTimeProps, StudioJobFunc, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { MeteorCall } from '../../../lib/api/methods'
-import { PeripheralDevicePublic } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
 import {
 	PeripheralDeviceInitOptions,
 	PlayoutChangedType,
@@ -62,6 +62,7 @@ import {
 } from '../../collections'
 import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
 import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
 
 const DEBUG = false
 
@@ -76,7 +77,7 @@ describe('test peripheralDevice general API methods', () => {
 		rundownID = protectString('rundown0')
 		rundownPlaylistID = protectString('rundownPlaylist0')
 		const rundownExternalID: string = 'rundown0'
-		RundownPlaylists.insert({
+		await RundownPlaylists.mutableCollection.insertAsync({
 			_id: rundownPlaylistID,
 			externalId: 'mock_rpl',
 			name: 'Mock',
@@ -92,7 +93,7 @@ describe('test peripheralDevice general API methods', () => {
 			},
 			rundownIdsInOrder: [rundownID],
 		})
-		Rundowns.insert({
+		await Rundowns.mutableCollection.insertAsync({
 			_id: rundownID,
 			externalId: rundownExternalID,
 			studioId: env.studio._id,
@@ -118,7 +119,7 @@ describe('test peripheralDevice general API methods', () => {
 		})
 		const segmentID: SegmentId = protectString('segment0')
 		const segmentExternalID = 'segment0'
-		Segments.insert({
+		await Segments.mutableCollection.insertAsync({
 			_id: segmentID,
 			externalId: segmentExternalID,
 			_rank: 0,
@@ -126,7 +127,7 @@ describe('test peripheralDevice general API methods', () => {
 			name: 'Fire',
 			externalModified: 1,
 		})
-		Parts.insert({
+		await Parts.mutableCollection.insertAsync({
 			_id: protectString('part000'),
 			_rank: 0,
 			externalId: 'part000',
@@ -135,7 +136,7 @@ describe('test peripheralDevice general API methods', () => {
 			title: 'Part 000',
 			expectedDurationWithPreroll: undefined,
 		})
-		Pieces.insert({
+		await Pieces.mutableCollection.insertAsync({
 			_id: protectString('piece0001'),
 			enable: {
 				start: 0,
@@ -154,7 +155,7 @@ describe('test peripheralDevice general API methods', () => {
 			content: {},
 			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		})
-		Parts.insert({
+		await Parts.mutableCollection.insertAsync({
 			_id: protectString('part001'),
 			_rank: 1,
 			externalId: 'part001',
@@ -163,7 +164,7 @@ describe('test peripheralDevice general API methods', () => {
 			title: 'Part 001',
 			expectedDurationWithPreroll: undefined,
 		})
-		Segments.insert({
+		await Segments.mutableCollection.insertAsync({
 			_id: protectString('segment1'),
 			_rank: 1,
 			externalId: 'segment01',
@@ -171,7 +172,7 @@ describe('test peripheralDevice general API methods', () => {
 			name: 'Water',
 			externalModified: 1,
 		})
-		Segments.insert({
+		await Segments.mutableCollection.insertAsync({
 			_id: protectString('segment2'),
 			_rank: 2,
 			externalId: 'segment02',
@@ -188,7 +189,7 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('initialize', async () => {
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 
-		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
+		expect(await PeripheralDevices.findOneAsync(device._id)).toBeTruthy()
 
 		const options: PeripheralDeviceInitOptions = {
 			category: PeripheralDeviceCategory.INGEST,
@@ -200,9 +201,10 @@ describe('test peripheralDevice general API methods', () => {
 				deviceConfigSchema: JSONBlobStringify({}),
 				subdeviceManifest: {},
 			},
+			documentationUrl: 'http://example.com',
 		}
 		await MeteorCall.peripheralDevice.initialize(device._id, device.token, options)
-		const initDevice = PeripheralDevices.findOne(device._id) as PeripheralDevice
+		const initDevice = (await PeripheralDevices.findOneAsync(device._id)) as PeripheralDevice
 		expect(initDevice).toBeTruthy()
 		expect(initDevice.lastSeen).toBeGreaterThan(getCurrentTime() - 100)
 		expect(initDevice.lastConnected).toBeGreaterThan(getCurrentTime() - 100)
@@ -210,22 +212,22 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('setStatus', async () => {
-		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
-		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).status).toMatchObject({
+		expect(await PeripheralDevices.findOneAsync(device._id)).toBeTruthy()
+		expect(((await PeripheralDevices.findOneAsync(device._id)) as PeripheralDevice).status).toMatchObject({
 			statusCode: StatusCode.GOOD,
 		})
 		await MeteorCall.peripheralDevice.setStatus(device._id, device.token, {
 			statusCode: StatusCode.WARNING_MINOR,
 			messages: ["Something's not right"],
 		})
-		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).status).toMatchObject({
+		expect(((await PeripheralDevices.findOneAsync(device._id)) as PeripheralDevice).status).toMatchObject({
 			statusCode: StatusCode.WARNING_MINOR,
 			messages: ["Something's not right"],
 		})
 	})
 
 	testInFiber('getPeripheralDevice', async () => {
-		const gotDevice: PeripheralDevicePublic = await MeteorCall.peripheralDevice.getPeripheralDevice(
+		const gotDevice: PeripheralDeviceForDevice = await MeteorCall.peripheralDevice.getPeripheralDevice(
 			device._id,
 			device.token
 		)
@@ -234,10 +236,12 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('ping', async () => {
-		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
-		const lastSeen = (PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen
+		expect(await PeripheralDevices.findOneAsync(device._id)).toBeTruthy()
+		const lastSeen = ((await PeripheralDevices.findOneAsync(device._id)) as PeripheralDevice).lastSeen
 		await MeteorCall.peripheralDevice.ping(device._id, device.token)
-		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen).toBeGreaterThan(lastSeen)
+		expect(((await PeripheralDevices.findOneAsync(device._id)) as PeripheralDevice).lastSeen).toBeGreaterThan(
+			lastSeen
+		)
 	})
 
 	testInFiber('determineDiffTime', async () => {
@@ -278,17 +282,21 @@ describe('test peripheralDevice general API methods', () => {
 		}
 
 		// This is very odd. Ping command is sent and lastSeen updated before response
-		const device2 = PeripheralDevices.findOne(device._id) as PeripheralDevice
+		const device2 = (await PeripheralDevices.findOneAsync(device._id)) as PeripheralDevice
 		expect(device2).toBeTruthy()
 		// Decrease lastSeen to ensure that the call below updates it
 		const lastSeen = device2.lastSeen - 100
-		PeripheralDevices.update(device._id, { $set: { lastSeen: lastSeen } })
+		await PeripheralDevices.updateAsync(device._id, { $set: { lastSeen: lastSeen } })
 
 		const message = 'Waving!'
 		// Note: the null is so that Metor doesnt try to use pingCompleted  as a callback instead of blocking
 		await MeteorCall.peripheralDevice.pingWithCommand(device._id, device.token, message, pingCompleted)
-		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen).toBeGreaterThan(lastSeen)
-		const command = PeripheralDeviceCommands.find({ deviceId: device._id }).fetch()[0]
+		expect(((await PeripheralDevices.findOneAsync(device._id)) as PeripheralDevice).lastSeen).toBeGreaterThan(
+			lastSeen
+		)
+		const command = (await PeripheralDeviceCommands.findOneAsync({
+			deviceId: device._id,
+		})) as PeripheralDeviceCommand
 		expect(command).toBeTruthy()
 		expect(command.hasReply).toBeFalsy()
 		expect(command.functionName).toBe('pingResponse')
@@ -307,7 +315,7 @@ describe('test peripheralDevice general API methods', () => {
 			replyMessage
 		)
 		await sleep(10)
-		expect(PeripheralDeviceCommands.findOne()).toBeFalsy()
+		expect(await PeripheralDeviceCommands.findOneAsync({})).toBeFalsy()
 
 		expect(resultErr).toBeNull()
 		expect(resultMessage).toEqual(replyMessage)
@@ -474,17 +482,17 @@ describe('test peripheralDevice general API methods', () => {
 			MeteorCall.peripheralDevice.requestUserAuthToken(device._id, device.token, 'https://auth.url/')
 		).rejects.toThrowMeteor(400, 'can only request user auth token for peripheral device of spreadsheet type')
 
-		PeripheralDevices.update(device._id, {
+		await PeripheralDevices.updateAsync(device._id, {
 			$set: {
 				type: PeripheralDeviceType.SPREADSHEET,
 			},
 		})
 		await MeteorCall.peripheralDevice.requestUserAuthToken(device._id, device.token, 'https://auth.url/')
-		const deviceWithAccessToken = PeripheralDevices.findOne(device._id) as PeripheralDevice
+		const deviceWithAccessToken = (await PeripheralDevices.findOneAsync(device._id)) as PeripheralDevice
 		expect(deviceWithAccessToken).toBeTruthy()
 		expect(deviceWithAccessToken.accessTokenUrl).toBe('https://auth.url/')
 
-		PeripheralDevices.update(device._id, {
+		await PeripheralDevices.updateAsync(device._id, {
 			$set: {
 				type: PeripheralDeviceType.MOS,
 			},
@@ -499,14 +507,14 @@ describe('test peripheralDevice general API methods', () => {
 			MeteorCall.peripheralDevice.storeAccessToken(device._id, device.token, 'https://auth.url/')
 		).rejects.toThrowMeteor(400, 'can only store access token for peripheral device of spreadsheet type')
 
-		PeripheralDevices.update(device._id, {
+		await PeripheralDevices.updateAsync(device._id, {
 			$set: {
 				type: PeripheralDeviceType.SPREADSHEET,
 			},
 		})
 
 		await MeteorCall.peripheralDevice.storeAccessToken(device._id, device.token, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ')
-		const deviceWithSecretToken = PeripheralDevices.findOne(device._id) as PeripheralDevice
+		const deviceWithSecretToken = (await PeripheralDevices.findOneAsync(device._id)) as PeripheralDevice
 		expect(deviceWithSecretToken).toBeTruthy()
 		expect(deviceWithSecretToken.accessTokenUrl).toBe('')
 		expect((deviceWithSecretToken.secretSettings as IngestDeviceSecretSettings).accessToken).toBe(
@@ -518,10 +526,10 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('uninitialize', async () => {
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
 		await MeteorCall.peripheralDevice.unInitialize(device._id, device.token)
-		expect(PeripheralDevices.findOne()).toBeFalsy()
+		expect(await PeripheralDevices.findOneAsync({})).toBeFalsy()
 
 		device = (await setupDefaultStudioEnvironment()).ingestDevice
-		expect(PeripheralDevices.findOne()).toBeTruthy()
+		expect(await PeripheralDevices.findOneAsync({})).toBeTruthy()
 	})
 
 	// Note: this test fails, due to a backwards-compatibility hack in #c579c8f0
@@ -571,14 +579,14 @@ describe('test peripheralDevice general API methods', () => {
 
 	testInFiber('removePeripheralDevice', async () => {
 		{
-			const deviceObj = PeripheralDevices.findOne(device?._id)
+			const deviceObj = await PeripheralDevices.findOneAsync(device?._id)
 			expect(deviceObj).toBeDefined()
 
 			await MeteorCall.peripheralDevice.removePeripheralDevice(device?._id)
 		}
 
 		{
-			const deviceObj = PeripheralDevices.findOne(device?._id)
+			const deviceObj = await PeripheralDevices.findOneAsync(device?._id)
 			expect(deviceObj).toBeUndefined()
 		}
 	})
@@ -594,10 +602,11 @@ describe('test peripheralDevice general API methods', () => {
 			workStepIds = [getRandomId(), getRandomId()]
 			deviceId = getRandomId()
 			env = await setupDefaultStudioEnvironment()
-			PeripheralDevices.insert({
+			await PeripheralDevices.insertAsync({
 				_id: deviceId,
 				organizationId: null,
 				name: 'Mock Media Manager',
+				deviceName: 'Media Manager',
 				studioId: env.studio._id,
 				settings: {},
 				category: PeripheralDeviceCategory.MEDIA_MANAGER,
@@ -617,8 +626,8 @@ describe('test peripheralDevice general API methods', () => {
 				token: 'MockToken',
 				type: PeripheralDeviceType.MEDIA_MANAGER,
 			})
-			device = PeripheralDevices.findOne(deviceId)!
-			MediaWorkFlows.insert({
+			device = (await PeripheralDevices.findOneAsync(deviceId))!
+			await MediaWorkFlows.insertAsync({
 				_id: workFlowId,
 				_rev: '1',
 				created: 0,
@@ -629,7 +638,7 @@ describe('test peripheralDevice general API methods', () => {
 				finished: false,
 				success: false,
 			})
-			MediaWorkFlowSteps.insert({
+			await MediaWorkFlowSteps.insertAsync({
 				_id: workStepIds[0],
 				_rev: '1',
 				criticalStep: false,
@@ -640,7 +649,7 @@ describe('test peripheralDevice general API methods', () => {
 				studioId: device.studioId!,
 				workFlowId: workFlowId,
 			})
-			MediaWorkFlowSteps.insert({
+			await MediaWorkFlowSteps.insertAsync({
 				_id: workStepIds[1],
 				_rev: '1',
 				criticalStep: false,
@@ -653,28 +662,28 @@ describe('test peripheralDevice general API methods', () => {
 			})
 		})
 		testInFiber('getMediaWorkFlowRevisions', async () => {
-			const workFlows = MediaWorkFlows.find({
-				studioId: device.studioId,
-			})
-				.fetch()
-				.map((wf) => ({
-					_id: wf._id,
-					_rev: wf._rev,
-				}))
+			const workFlows = (
+				await MediaWorkFlows.findFetchAsync({
+					studioId: device.studioId,
+				})
+			).map((wf) => ({
+				_id: wf._id,
+				_rev: wf._rev,
+			}))
 			expect(workFlows.length).toBeGreaterThan(0)
 			const res = await MeteorCall.peripheralDevice.getMediaWorkFlowRevisions(device._id, device.token)
 			expect(res).toHaveLength(workFlows.length)
 			expect(res).toMatchObject(workFlows)
 		})
 		testInFiber('getMediaWorkFlowStepRevisions', async () => {
-			const workFlowSteps = MediaWorkFlowSteps.find({
-				studioId: device.studioId,
-			})
-				.fetch()
-				.map((wf) => ({
-					_id: wf._id,
-					_rev: wf._rev,
-				}))
+			const workFlowSteps = (
+				await MediaWorkFlowSteps.findFetchAsync({
+					studioId: device.studioId,
+				})
+			).map((wf) => ({
+				_id: wf._id,
+				_rev: wf._rev,
+			}))
 			expect(workFlowSteps.length).toBeGreaterThan(0)
 			const res = await MeteorCall.peripheralDevice.getMediaWorkFlowStepRevisions(device._id, device.token)
 			expect(res).toHaveLength(workFlowSteps.length)
@@ -682,7 +691,7 @@ describe('test peripheralDevice general API methods', () => {
 		})
 		describe('updateMediaWorkFlow', () => {
 			testInFiber('update', async () => {
-				const workFlow = MediaWorkFlows.findOne(workFlowId)
+				const workFlow = await MediaWorkFlows.findOneAsync(workFlowId)
 
 				expect(workFlow).toBeTruthy()
 				const newWorkFlow = Object.assign({}, workFlow)
@@ -696,22 +705,22 @@ describe('test peripheralDevice general API methods', () => {
 					newWorkFlow
 				)
 
-				const updatedWorkFlow = MediaWorkFlows.findOne(workFlowId)
+				const updatedWorkFlow = await MediaWorkFlows.findOneAsync(workFlowId)
 				expect(updatedWorkFlow).toMatchObject(newWorkFlow)
 			})
 			testInFiber('remove', async () => {
-				const workFlow = MediaWorkFlows.findOne(workFlowId) as MediaWorkFlow
+				const workFlow = (await MediaWorkFlows.findOneAsync(workFlowId)) as MediaWorkFlow
 				expect(workFlow).toBeTruthy()
 
 				await MeteorCall.peripheralDevice.updateMediaWorkFlow(device._id, device.token, workFlow._id, null)
 
-				const updatedWorkFlow = MediaWorkFlows.findOne(workFlowId)
+				const updatedWorkFlow = await MediaWorkFlows.findOneAsync(workFlowId)
 				expect(updatedWorkFlow).toBeFalsy()
 			})
 		})
 		describe('updateMediaWorkFlowStep', () => {
 			testInFiber('update', async () => {
-				const workStep = MediaWorkFlowSteps.findOne(workStepIds[0])
+				const workStep = await MediaWorkFlowSteps.findOneAsync(workStepIds[0])
 
 				expect(workStep).toBeTruthy()
 				const newWorkStep = Object.assign({}, workStep)
@@ -725,16 +734,16 @@ describe('test peripheralDevice general API methods', () => {
 					newWorkStep
 				)
 
-				const updatedWorkFlow = MediaWorkFlowSteps.findOne(workStepIds[0])
+				const updatedWorkFlow = await MediaWorkFlowSteps.findOneAsync(workStepIds[0])
 				expect(updatedWorkFlow).toMatchObject(newWorkStep)
 			})
 			testInFiber('remove', async () => {
-				const workStep = MediaWorkFlowSteps.findOne(workStepIds[0]) as MediaWorkFlowStep
+				const workStep = (await MediaWorkFlowSteps.findOneAsync(workStepIds[0])) as MediaWorkFlowStep
 				expect(workStep).toBeTruthy()
 
 				await MeteorCall.peripheralDevice.updateMediaWorkFlowStep(device._id, device.token, workStep._id, null)
 
-				const updatedWorkFlow = MediaWorkFlowSteps.findOne(workStepIds[0])
+				const updatedWorkFlow = await MediaWorkFlowSteps.findOneAsync(workStepIds[0])
 				expect(updatedWorkFlow).toBeFalsy()
 			})
 		})
@@ -749,10 +758,11 @@ describe('test peripheralDevice general API methods', () => {
 		beforeEach(async () => {
 			deviceId = getRandomId()
 			env = await setupDefaultStudioEnvironment()
-			PeripheralDevices.insert({
+			await PeripheralDevices.insertAsync({
 				_id: deviceId,
 				organizationId: null,
 				name: 'Mock Media Manager',
+				deviceName: 'Media Manager',
 				studioId: env.studio._id,
 				settings: {},
 				category: PeripheralDeviceCategory.MEDIA_MANAGER,
@@ -772,12 +782,12 @@ describe('test peripheralDevice general API methods', () => {
 				token: 'MockToken',
 				type: PeripheralDeviceType.MEDIA_MANAGER,
 			})
-			device = PeripheralDevices.findOne(deviceId)!
+			device = (await PeripheralDevices.findOneAsync(deviceId))!
 
-			MediaObjects.remove({
+			await MediaObjects.removeAsync({
 				collectionId: MOCK_COLLECTION,
 			})
-			MediaObjects.insert({
+			await MediaObjects.insertAsync({
 				_id: protectString(MOCK_COLLECTION + '_' + MOCK_OBJID),
 				_rev: '1',
 				_attachments: {},
@@ -795,14 +805,14 @@ describe('test peripheralDevice general API methods', () => {
 			})
 		})
 		testInFiber('getMediaObjectRevisions', async () => {
-			const mobjects = MediaObjects.find({
-				studioId: device.studioId,
-			})
-				.fetch()
-				.map((mo) => ({
-					_id: mo._id,
-					_rev: mo._rev,
-				}))
+			const mobjects = (
+				await MediaObjects.findFetchAsync({
+					studioId: device.studioId,
+				})
+			).map((mo) => ({
+				_id: mo._id,
+				_rev: mo._rev,
+			}))
 			expect(mobjects.length).toBeGreaterThan(0)
 
 			const revs = await MeteorCall.peripheralDevice.getMediaObjectRevisions(
@@ -816,10 +826,10 @@ describe('test peripheralDevice general API methods', () => {
 		})
 		describe('updateMediaObject', () => {
 			testInFiber('update', async () => {
-				const mo = MediaObjects.findOne({
+				const mo = (await MediaObjects.findOneAsync({
 					collectionId: MOCK_COLLECTION,
 					studioId: device.studioId!,
-				}) as MediaObject
+				})) as MediaObject
 				expect(mo).toBeTruthy()
 
 				const newMo = Object.assign({}, mo)
@@ -834,17 +844,17 @@ describe('test peripheralDevice general API methods', () => {
 					newMo
 				)
 
-				const updateMo = MediaObjects.findOne({
+				const updateMo = await MediaObjects.findOneAsync({
 					collectionId: MOCK_COLLECTION,
 					studioId: device.studioId!,
 				})
 				expect(updateMo).toMatchObject(newMo)
 			})
 			testInFiber('remove', async () => {
-				const mo = MediaObjects.findOne({
+				const mo = (await MediaObjects.findOneAsync({
 					collectionId: MOCK_COLLECTION,
 					studioId: device.studioId!,
-				}) as MediaObject
+				})) as MediaObject
 				expect(mo).toBeTruthy()
 
 				await MeteorCall.peripheralDevice.updateMediaObject(
@@ -855,7 +865,7 @@ describe('test peripheralDevice general API methods', () => {
 					null
 				)
 
-				const updateMo = MediaObjects.findOne({
+				const updateMo = await MediaObjects.findOneAsync({
 					collectionId: MOCK_COLLECTION,
 					studioId: device.studioId!,
 				})

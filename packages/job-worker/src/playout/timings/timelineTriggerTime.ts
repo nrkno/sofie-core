@@ -55,7 +55,7 @@ export async function handleTimelineTriggerTime(context: JobContext, data: OnTim
 					// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
 					timelineTriggerTimeInner(context, studioCache, data.results, pieceInstanceCache, activePlaylist)
 
-					await pieceInstanceCache.updateDatabaseWithData()
+					await pieceInstanceCache.updateDatabaseWithData(null) // Single operation
 				})
 			} else {
 				// No playlist is active. no extra lock needed
@@ -134,12 +134,8 @@ function timelineTriggerTimeInner(
 			for (const piece of remainingNowPieces) {
 				const pieceTakeTime = piece.dynamicallyInserted
 				if (pieceTakeTime && pieceTakeTime <= lastTakeTime && piece.piece.enable.start === 'now') {
-					// Disable and hide the instance
-					pieceInstanceCache.updateOne(piece._id, (p) => {
-						p.disabled = true
-						p.hidden = true
-						return p
-					})
+					// Delete the instance which has no duration
+					pieceInstanceCache.remove(piece._id)
 				}
 			}
 		}

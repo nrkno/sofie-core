@@ -70,4 +70,7 @@ export class IngestWorkerParent extends WorkerParentBase {
 	public async workerLockChange(lockId: string, locked: boolean): Promise<void> {
 		return this.#thread.lockChange(lockId, locked)
 	}
+	public async collectMetrics(): Promise<string> {
+		return this.#thread.collectMetrics()
+	}
 }

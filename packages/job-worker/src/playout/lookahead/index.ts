@@ -70,8 +70,7 @@ export async function getLookeaheadObjects(
 			metaData: 0,
 
 			// these are known to be chunky when they exist
-			'content.externalPayload': 0,
-			'content.payload': 0,
+			content: 0,
 		},
 	})
 

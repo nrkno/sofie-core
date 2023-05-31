@@ -40,6 +40,10 @@ $segment-timeline-padding: $segment-header-height 0 1.5em;
 $segment-layer-height: 1.5em;
 $segment-layer-separator-color: transparentize(#000, 0.5);
 
+:root {
+	--popdown: 2rem;
+}
+
 // A utility mix-in, to add an interactive collapse triangle on an item
 @mixin collapse-triangle {
 	&::before {
@@ -1277,17 +1281,9 @@ svg.icon {
 
 		// Part is an element containing all output groups, with all the source layers, which in turn contain pieces
 		.segment-timeline__part {
-			position: relative;
+			position: absolute;
 			--invalid-reason-color-opaque: rgba(0, 0, 0, 1);
 			--invalid-reason-color-transparent: rgba(0, 0, 0, 0);
-
-			&.segment-timeline__part--end-of-segment {
-				background: $segment-background-color;
-				height: 100%;
-				top: 0;
-				min-width: 100vw;
-				z-index: 0;
-			}
 
 			&.segment-timeline__part--shaded {
 				&::after {
@@ -1539,7 +1535,6 @@ svg.icon {
 				padding-left: 0.5em;
 				text-transform: uppercase;
 				font-size: 0.9em;
-
 				.segment-timeline__part__segment-end__label {
 					position: absolute;
 					top: 50%;
@@ -2668,7 +2663,7 @@ svg.icon {
 		text-align: center;
 		border-radius: 1em;
 		font-size: 0.9em;
-		letter-spacing:	-0.05em;
+		letter-spacing: -0.05em;
 		position: relative;
 		top: -0.3em;
 		left: -0.3em;
@@ -2720,22 +2715,25 @@ svg.icon {
 	max-width: 26em;
 	font-weight: 400;
 
-	--popdown: 2em;
-
 	&.segment-timeline__mini-inspector--sub-inspector {
 		transform: none;
 		bottom: 100%;
 		width: 26em;
 	}
 
+	&.segment-timeline__mini-inspector--sub-inspector.segment-timeline__mini-inspector--sub-inspector-flipped {
+		bottom: auto;
+		top: 100%;
+	}
+
 	&.segment-timeline__mini-inspector--small-parts {
 		top: 0;
-		z-index: 1001;
+		bottom: 0;
 		width: 350px;
 		max-width: 30vw;
 		transform: translate(0, 0);
 		border-radius: 0;
-		margin-left: 0;
+		margin-left: -1px;
 		box-shadow: 1px -1.5px 30px 15px rgba(0, 0, 0, 0.9);
 		animation: 0.2s inspector-wipeRight;
 		animation-timing-function: ease-out;
@@ -2784,12 +2782,6 @@ svg.icon {
 			> .segment-timeline__part {
 				display: inline-block;
 				vertical-align: top;
-
-				&.segment-timeline__part--end-of-segment {
-					position: absolute;
-					min-width: 14%;
-					background: $segment-mini-inspector-timeline-background;
-				}
 			}
 		}
 	}
@@ -2840,7 +2832,7 @@ svg.icon {
 
 	&.segment-timeline__mini-inspector--notice {
 		padding-left: 2.7em;
-		padding-bottom:	0.4em;
+		padding-bottom: 0.4em;
 	}
 
 	> .segment-timeline__mini-inspector__notice-header {
@@ -2863,7 +2855,7 @@ svg.icon {
 	}
 
 	> .segment-timeline__mini-inspector__notice + .segment-timeline__mini-inspector__properties {
-		color:#999999;
+		color: #999999;
 		margin-top: 0.5em;
 		padding-top: 0.2em;
 		border-top: 1px solid #333;
@@ -2879,10 +2871,6 @@ svg.icon {
 		> .segment-timeline__mini-inspector__notice-header {
 			background-color: $color-status-fatal;
 		}
-	}
-
-	&.segment-timeline__mini-inspector--pop-down {
-		transform: translate(-50%, var(--popdown));
 	}
 
 	&.segment-timeline__mini-inspector--graphics {
@@ -3029,14 +3017,14 @@ svg.icon {
 	.mini-inspector__label {
 		font-weight: 200;
 		font-size: 0.8em;
-		letter-spacing:	0.05em;
+		letter-spacing: 0.05em;
 		text-transform: capitalize;
 		padding-right: 0.5em;
 	}
 	.mini-inspector__value {
 		font-weight: 200;
 		font-size: 0.8em;
-		letter-spacing:	0em;
+		letter-spacing: 0em;
 		line-height: 80%;
 		max-width: 60vw;
 		overflow: hidden;
@@ -3179,7 +3167,8 @@ svg.icon {
 
 /** Multi-step Graphics chevron */
 
-.segment-storyboard__piece__step-chevron, .segment-opl__main-piece__label__step-chevron {
+.segment-storyboard__piece__step-chevron,
+.segment-opl__main-piece__label__step-chevron {
 	margin-right: 0.2em;
 	background: rgba(0, 0, 0, 0.4);
 	display: inline-block;

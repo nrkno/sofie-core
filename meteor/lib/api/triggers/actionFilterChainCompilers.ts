@@ -531,7 +531,7 @@ export function compileAdLibFilter(
 		// Figure out the intersection of the segment current/next filter
 		// and the part current/next filter.
 		// It is possible to say "only from current segment" & "only from next part"
-		// with the result being empty, if the the next part is in another segment
+		// with the result being empty, if the next part is in another segment
 		if (segmentPartIds === undefined && singlePartId !== undefined) {
 			if (singlePartId !== null) {
 				partFilter = [singlePartId]

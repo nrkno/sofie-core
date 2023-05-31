@@ -17,7 +17,7 @@ import {
 } from '../lib/collections/lib'
 import { mongoWhere, mongoFindOptions, mongoModify } from '@sofie-automation/corelib/dist/mongo'
 import { Mongo } from 'meteor/mongo'
-import { AsyncMongoCollection } from '../server/collections/collection'
+import { AsyncOnlyMongoCollection } from '../server/collections/collection'
 const clone = require('fast-clone')
 
 export namespace MongoMock {
@@ -288,7 +288,7 @@ export namespace MongoMock {
 	}
 	// Mock functions:
 	export function mockSetData<T extends CollectionObject>(
-		collection: AsyncMongoCollection<T>,
+		collection: AsyncOnlyMongoCollection<T>,
 		data: MockCollection<T> | Array<T> | null
 	) {
 		const collectionName = collection.name
@@ -320,7 +320,7 @@ export namespace MongoMock {
 	 * This simulates the async nature of writes to mongo, and aims to detect race conditions in our code.
 	 * This method will change the duration of the sleep, and returns the old delay value
 	 */
-	export function setCollectionAsyncBulkWriteDelay(collection: AsyncMongoCollection<any>, delay: number): number {
+	export function setCollectionAsyncBulkWriteDelay(collection: AsyncOnlyMongoCollection<any>, delay: number): number {
 		const collection2 = collection as any
 		if (typeof collection2.asyncWriteDelay !== 'number') {
 			throw new Error(

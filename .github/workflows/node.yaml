@@ -26,11 +26,13 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
+            node_modules
             meteor/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('meteor/yarn.lock') }}-${{ hashFiles('meteor/.meteor/release') }}
+            packages/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('yarn.lock', 'meteor/yarn.lock', 'meteor/.meteor/release', 'packages/yarn.lock') }}
       - name: Prepare Environment
         run: |
-          yarn config set cache-folder /home/runner/lint-core-cache
+          yarn config set cacheFolder /home/runner/lint-core-cache
           yarn
           yarn build:packages
         env:
@@ -38,7 +40,7 @@ jobs:
       - name: Run typecheck and linter
         run: |
           cd meteor
-          meteor npm run ci:lint
+          meteor yarn ci:lint
         env:
           CI: true
 
@@ -57,11 +59,13 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
+            node_modules
             meteor/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('meteor/yarn.lock') }}-${{ hashFiles('meteor/.meteor/release') }}
+            packages/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('yarn.lock', 'meteor/yarn.lock', 'meteor/.meteor/release', 'packages/yarn.lock') }}
       - name: Prepare Environment
         run: |
-          yarn config set cache-folder /home/runner/test-core-cache
+          yarn config set cacheFolder /home/runner/test-core-cache
           yarn
           yarn build:packages
         env:
@@ -69,7 +73,7 @@ jobs:
       - name: Run Tests
         run: |
           cd meteor
-          meteor yarn unitci
+          NODE_OPTIONS="--max-old-space-size=6144" meteor yarn unitci --force-exit
         env:
           CI: true
       - name: Send coverage
@@ -141,6 +145,15 @@ jobs:
           node-version-file: ".node-version"
       - uses: ./.github/actions/setup-meteor
         if: steps.check-build-and-push.outputs.enable == 'true'
+      - name: restore node_modules
+        uses: actions/cache@v3
+        if: steps.check-build-and-push.outputs.enable == 'true'
+        with:
+          path: |
+            node_modules
+            meteor/node_modules
+            packages/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('yarn.lock', 'meteor/yarn.lock', 'meteor/.meteor/release', 'packages/yarn.lock') }}
       - name: Prepare Environment
         if: steps.check-build-and-push.outputs.enable == 'true'
         run: |
@@ -210,7 +223,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        gateway-name: [playout-gateway, mos-gateway]
+        gateway-name: [playout-gateway, mos-gateway, "live-status-gateway"]
 
     steps:
       - uses: actions/checkout@v3
@@ -271,13 +284,21 @@ jobs:
         if: steps.check-build-and-push.outputs.enable == 'true'
         with:
           node-version-file: ".node-version"
+      - name: restore node_modules
+        if: steps.check-build-and-push.outputs.enable == 'true'
+        uses: actions/cache@v3
+        with:
+          path: |
+            packages/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('packages/yarn.lock') }}
       - name: Build
         if: steps.check-build-and-push.outputs.enable == 'true'
         run: |
           cd packages
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.gateway-name }} --include-dependencies --stream build
-          yarn install --prod --ignore-scripts
+          yarn run pinst --disable
+          yarn workspaces focus --all --production
       - name: Set up Docker Buildx
         if: steps.check-build-and-push.outputs.enable == 'true'
         uses: docker/setup-buildx-action@v2
@@ -332,6 +353,8 @@ jobs:
           - corelib
           - shared-lib
           - job-worker
+          - openapi
+          - live-status-gateway
 
     steps:
       - uses: actions/checkout@v3
@@ -339,10 +362,16 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: ".node-version"
+      - name: restore node_modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            packages/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('packages/yarn.lock') }}
       - name: Prepare Environment
         run: |
           cd packages
-          yarn config set cache-folder /home/runner/${{ matrix.package-name }}-cache
+          yarn config set cacheFolder /home/runner/${{ matrix.package-name }}-cache
           yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
@@ -366,7 +395,7 @@ jobs:
           - blueprints-integration
           - server-core-integration
           - shared-lib
-        node-version: [14.x, 16.x]
+        node-version: [14.x, 16.x, 18.x]
         include:
           # include additional configs, to run certain packages only for a certain version of node
           - node-version: 14.x
@@ -375,11 +404,18 @@ jobs:
           - node-version: 14.x
             package-name: job-worker
             send-coverage: true
+          # manual openapi to avoid testing for 14.x
+          - node-version: 16.x
+            package-name: openapi
+          - node-version: 18.x
+            package-name: openapi
           # No tests for the gateways yet
-          # - node-version: 12.x
+          # - node-version: 16.x
           #   package-name: playout-gateway
-          # - node-version: 12.x
+          # - node-version: 16.x
           #   package-name: mos-gateway
+          # - node-version: 16.x
+          #   package-name: live-status-gateway
 
     steps:
       - uses: actions/checkout@v3
@@ -387,11 +423,17 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
+      - name: restore node_modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            packages/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('packages/yarn.lock') }}
       - name: Prepare Environment
         run: |
           cd packages
-          yarn config set cache-folder /home/runner/test-packages-cache
-          yarn install
+          yarn config set cacheFolder /home/runner/test-packages-cache
+          node is_node_14.js && yarn lerna run --ignore openapi install || yarn install
           yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
         env:
           CI: true
@@ -417,10 +459,16 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: ".node-version"
+      - name: restore node_modules
+        uses: actions/cache@v3
+        with:
+          path: |
+            packages/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('packages/yarn.lock') }}
       - name: Prepare Environment
         run: |
           cd packages
-          yarn config set cache-folder /home/runner/publish-docs-cache
+          yarn config set cacheFolder /home/runner/publish-docs-cache
           yarn install
           yarn build
         env:
@@ -475,7 +523,7 @@ jobs:
       - name: Prepare Environment # have to run this first to make sure the semver lib is available
         run: |
           cd packages
-          yarn config set cache-folder /home/runner/release-libs-cache
+          yarn config set cacheFolder /home/runner/release-libs-cache
           yarn install
         env:
           CI: true
@@ -510,11 +558,13 @@ jobs:
       - name: Publish to NPM
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
-          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
+          yarn config set npmAuthToken $NPM_AUTH_TOKEN
+
           cd packages/${{ matrix.package-name }}
           NEW_VERSION=$(node -p "require('./package.json').version")
-          yarn publish --access=public --new-version=$NEW_VERSION --network-timeout 100000 --tag ${{ steps.do-publish.outputs.tag }}
+          yarn npm publish --access=public --tag ${{ steps.do-publish.outputs.tag }}
         env:
+          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           CI: true
 
   check-for-multiple-library-versions:
@@ -533,11 +583,13 @@ jobs:
         uses: actions/cache@v3
         with:
           path: |
+            node_modules
             meteor/node_modules
-          key: ${{ runner.os }}-${{ hashFiles('meteor/yarn.lock') }}-${{ hashFiles('meteor/.meteor/release') }}
+            packages/node_modules
+          key: ${{ runner.os }}-${{ hashFiles('yarn.lock', 'meteor/yarn.lock', 'meteor/.meteor/release', 'packages/yarn.lock') }}
       - name: Prepare Environment
         run: |
-          yarn config set cache-folder /home/runner/check-for-multiple-library-versions-cache
+          yarn config set cacheFolder /home/runner/check-for-multiple-library-versions-cache
           yarn
         env:
           CI: true

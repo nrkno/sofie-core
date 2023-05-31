@@ -5,7 +5,7 @@ import { InvalidFloatingInspector } from '../../FloatingInspectors/InvalidFloati
 interface IProps {
 	className?: string
 	part: DBPart
-	align?: 'left' | 'center' | 'right'
+	align?: 'start' | 'center' | 'end'
 }
 
 export function InvalidPartCover({ className, part, align }: IProps): JSX.Element {
@@ -32,22 +32,18 @@ export function InvalidPartCover({ className, part, align }: IProps): JSX.Elemen
 		setHover(false)
 	}
 
-	function getInspectorStyle(): React.CSSProperties {
-		if (align === 'left') {
-			return { top: `${position.top}px`, left: `${position.left}px` }
-		} else if (align === 'right') {
-			return { top: `${position.top}px`, left: 'auto', right: `${position.right}px` }
-		}
-		return { top: `${position.top}px`, left: `${position.left + position.width / 2}px` }
-	}
-
 	return (
 		<div className={className} ref={element} onMouseEnter={onMouseEnter} onMouseLeave={onMouseLeave}>
 			<InvalidFloatingInspector
 				part={part}
 				showMiniInspector={hover}
 				itemElement={element.current}
-				floatingInspectorStyle={getInspectorStyle()}
+				position={{
+					top: position.top,
+					left: position.left,
+					anchor: align ?? 'start',
+					position: 'top',
+				}}
 			/>
 		</div>
 	)
