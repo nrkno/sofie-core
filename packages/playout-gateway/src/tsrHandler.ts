@@ -489,7 +489,7 @@ export class TSRHandler {
 		const deviceOptions = new Map<string, DeviceOptionsAny>()
 
 		if (peripheralDevice) {
-			const devices = peripheralDevice.playoutDevices as Record<string, DeviceOptionsAny>
+			const devices = peripheralDevice.playoutDevices
 
 			for (const [deviceId, device0] of Object.entries<DeviceOptionsAny>(devices)) {
 				const device = device0
