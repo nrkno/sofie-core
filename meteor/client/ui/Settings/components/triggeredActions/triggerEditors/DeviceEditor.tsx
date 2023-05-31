@@ -19,7 +19,7 @@ interface IProps {
 
 export const DeviceEditor = function DeviceEditor({ trigger, modified, readonly, onChange }: IProps): JSX.Element {
 	const opened = useMemo(() => getCurrentTime(), [])
-	const deviceTriggersPreview = useTracker<UIDeviceTriggerPreview[], UIDeviceTriggerPreview[]>(
+	const deviceTriggersPreview = useTracker<UIDeviceTriggerPreview[]>(
 		() =>
 			DeviceTriggersPreviews.find({
 				timestamp: {

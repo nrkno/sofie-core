@@ -314,6 +314,8 @@ export type Translated<T> = T & WithTranslation
  * @param {K} [initial] An optional, initial state of the tracker. If not provided, the tracker may return undefined.
  * @return {*}  {(T | K)}
  */
+export function useTracker<T>(autorun: () => T, deps: React.DependencyList): T | undefined
+export function useTracker<T>(autorun: () => T, deps: React.DependencyList, initial: T): T
 export function useTracker<T, K extends undefined | T = undefined>(
 	autorun: () => T,
 	deps: React.DependencyList,
