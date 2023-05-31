@@ -11,6 +11,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ProtectedString } from '../lib'
 import { PieceContentStatusObj } from '../mediaObjects'
+import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export type UISegmentPartNoteId = ProtectedString<'UISegmentPartNote'>
 export interface UISegmentPartNote {
@@ -53,7 +54,7 @@ export interface UIBucketContentStatus {
 	bucketId: BucketId
 	docId: BucketAdLibActionId | BucketAdLibId
 
-	name: string
+	name: string | ITranslatableMessage
 
 	status: PieceContentStatusObj
 }

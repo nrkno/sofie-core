@@ -158,7 +158,7 @@ export interface PieceContentStatusObj {
 	contentDuration: undefined // TODO - why is this never set?
 }
 
-export type PieceContentStatusPiece = Pick<PieceGeneric, '_id' | 'name' | 'content' | 'expectedPackages'>
+export type PieceContentStatusPiece = Pick<PieceGeneric, '_id' | 'content' | 'expectedPackages'>
 export type PieceContentStatusStudio = ReadonlyDeep<
 	Pick<UIStudio, '_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'>
 >
@@ -216,7 +216,6 @@ function checkPieceContentMediaObjectStatus(
 	const messages: Array<ContentMessage> = []
 	let contentSeemsOK = false
 	const fileName = getMediaObjectMediaId(piece, sourceLayer)
-	const displayName = piece.name
 	switch (sourceLayer.type) {
 		case SourceLayerType.VT:
 		case SourceLayerType.LIVE_SPEAK:
@@ -315,7 +314,7 @@ function checkPieceContentMediaObjectStatus(
 				if (!mediaObject) {
 					messages.push({
 						status: PieceStatusCode.SOURCE_MISSING,
-						message: generateTranslation('Source is missing', { fileName: displayName }),
+						message: generateTranslation('{{sourceLayer}} is missing', { sourceLayer: sourceLayer.name }),
 					})
 				} else {
 					contentSeemsOK = true

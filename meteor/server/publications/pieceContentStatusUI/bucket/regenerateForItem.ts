@@ -6,7 +6,7 @@ import { CustomPublishCollection } from '../../../lib/customPublication'
 import { BucketContentCache } from './bucketContentCache'
 import { checkPieceContentStatusAndDependencies, PieceDependencies, StudioMini } from '../common'
 import { PieceContentStatusPiece } from '../../../../lib/mediaObjects'
-import { interpollateTranslation, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { wrapTranslatableMessageFromBlueprintsIfNotString } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 /**
  * Regenerating the status for the provided AdLibActionId
@@ -92,20 +92,17 @@ export async function regenerateForBucketActionIds(
 		} else {
 			// Regenerate piece
 
+			const showStyleBase = contentCache.ShowStyleSourceLayers.findOne(actionDoc.showStyleBaseId)
+
 			const sourceLayer =
 				'sourceLayerId' in actionDoc.display
-					? contentCache.ShowStyleSourceLayers.findOne(actionDoc.showStyleBaseId)?.sourceLayers?.[
-							actionDoc.display.sourceLayerId
-					  ]
+					? showStyleBase?.sourceLayers?.[actionDoc.display.sourceLayerId]
 					: undefined
 
 			// Only if this piece is valid
 			if (sourceLayer) {
-				const pieceName = translateMessage(actionDoc.display.label, interpollateTranslation) // TODO-HACK
-
 				const fakedPiece = literal<PieceContentStatusPiece>({
 					_id: protectString(`${actionDoc._id}`),
-					name: pieceName,
 					content: 'content' in actionDoc.display ? actionDoc.display.content : {},
 					expectedPackages: actionDoc.expectedPackages,
 				})
@@ -124,7 +121,10 @@ export async function regenerateForBucketActionIds(
 					bucketId: actionDoc.bucketId,
 					docId: actionId,
 
-					name: pieceName,
+					name: wrapTranslatableMessageFromBlueprintsIfNotString(
+						actionDoc.display.label,
+						showStyleBase ? [showStyleBase.blueprintId] : []
+					),
 
 					status: status,
 				})

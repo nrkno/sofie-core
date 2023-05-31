@@ -23,6 +23,7 @@ type ChangedHandler = (cache: BucketContentCache) => () => void
 
 function convertShowStyleBase(doc: Pick<ShowStyleBase, ShowStyleBaseFields>): Omit<SourceLayersDoc, '_id'> {
 	return {
+		blueprintId: doc.blueprintId,
 		sourceLayers: applyAndValidateOverrides(doc.sourceLayersWithOverrides).obj,
 	}
 }

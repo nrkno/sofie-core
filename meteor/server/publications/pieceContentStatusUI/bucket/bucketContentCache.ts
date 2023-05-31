@@ -7,10 +7,12 @@ import { literal } from '@sofie-automation/corelib/dist/lib'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
+import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export type SourceLayersDocId = ProtectedString<'SourceLayersDocId'>
 export interface SourceLayersDoc {
 	_id: SourceLayersDocId
+	blueprintId: BlueprintId
 	sourceLayers: SourceLayers
 }
 
@@ -45,9 +47,10 @@ export const bucketActionFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<
 	expectedPackages: 1,
 })
 
-export type ShowStyleBaseFields = '_id' | 'sourceLayersWithOverrides'
+export type ShowStyleBaseFields = '_id' | 'blueprintId' | 'sourceLayersWithOverrides'
 export const showStyleBaseFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<ShowStyleBaseFields>>({
 	_id: 1,
+	blueprintId: 1,
 	sourceLayersWithOverrides: 1,
 })
 
