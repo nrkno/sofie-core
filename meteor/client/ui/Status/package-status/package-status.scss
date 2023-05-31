@@ -180,6 +180,12 @@
 					width: 0.5em;
 				}
 			}
+			&.offline {
+				> td {
+					color: #666;
+					background-color: #fbb;
+				}
+			}
 		}
 		.packageContainer-monitor {
 			> td {

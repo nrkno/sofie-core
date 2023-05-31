@@ -1,6 +1,7 @@
 import React from 'react'
 import Tooltip from 'rc-tooltip'
 import { useTranslation } from 'react-i18next'
+import ClassNames from 'classnames'
 import { PackageContainerStatusDB } from '../../../../lib/collections/PackageContainerStatus'
 import { StatusCodePill } from '../StatusCodePill'
 import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
@@ -34,7 +35,11 @@ export const PackageContainerStatus: React.FC<{
 
 	return (
 		<>
-			<tr className="packageContainer">
+			<tr
+				className={ClassNames('packageContainer', {
+					offline: statusMessages.length > 0,
+				})}
+			>
 				<td className="indent"></td>
 				<td>{packageContainerStatus.containerId}</td>
 				<td>
