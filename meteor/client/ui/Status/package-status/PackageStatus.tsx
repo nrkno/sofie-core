@@ -11,10 +11,12 @@ import { useTranslation } from 'react-i18next'
 import { DisplayFormattedTime } from '../../RundownList/DisplayFormattedTime'
 import { PackageWorkStatus } from './PackageWorkStatus'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 export const PackageStatus: React.FC<{
 	package: ExpectedPackageDB
 	statuses: ExpectedPackageWorkStatus[]
+	device: PeripheralDevice | undefined
 }> = function PackageStatus(props) {
 	const { t } = useTranslation()
 
@@ -140,10 +142,19 @@ export const PackageStatus: React.FC<{
 		)
 	}, [requiredProgress, allProgress, requiredWorking, allWorking])
 
+	let statusMessage: string | null = null
+	if (!props.device) {
+		statusMessage = t('Device not found')
+	} else if (!props.device.connected) {
+		statusMessage = t('Package Manager is offline')
+	}
+
 	return (
 		<React.Fragment>
 			<tr
-				className={ClassNames('package')}
+				className={ClassNames('package', {
+					offline: !!statusMessage,
+				})}
 				onClick={(e) => {
 					e.preventDefault()
 					setIsOpen((isOpen) => !isOpen)
@@ -155,7 +166,10 @@ export const PackageStatus: React.FC<{
 					<span className="package__chevron">
 						{isOpen ? <FontAwesomeIcon icon={faChevronDown} /> : <FontAwesomeIcon icon={faChevronRight} />}
 					</span>
-					<span>{getPackageName()}</span>
+					<span>
+						{statusMessage ? <b>{`${statusMessage}: `}</b> : ''}
+						{getPackageName()}
+					</span>
 				</td>
 				<td>
 					<DisplayFormattedTime displayTimestamp={props.package.created} t={t} />

@@ -6,14 +6,12 @@ import { StatusCodePill } from '../StatusCodePill'
 import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { ExpectedPackageStatusAPI } from '@sofie-automation/blueprints-integration'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
-interface IPackageContainerStatusProps {
+export const PackageContainerStatus: React.FC<{
 	packageContainerStatus: PackageContainerStatusDB
-}
-
-export const PackageContainerStatus: React.FC<IPackageContainerStatusProps> = function PackageContainerStatus({
-	packageContainerStatus,
-}: IPackageContainerStatusProps) {
+	device: PeripheralDevice | undefined
+}> = function PackageContainerStatus({ packageContainerStatus, device }) {
 	const { t } = useTranslation()
 
 	function restartPackageContainer(e: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
@@ -27,13 +25,24 @@ export const PackageContainerStatus: React.FC<IPackageContainerStatusProps> = fu
 		)
 	}
 
+	const statusMessages: string[] = []
+	if (!device) {
+		statusMessages.push(t('Device not found'))
+	} else if (!device.connected) {
+		statusMessages.push(t('Package Manager is offline'))
+	}
+
 	return (
 		<>
 			<tr className="packageContainer">
 				<td className="indent"></td>
 				<td>{packageContainerStatus.containerId}</td>
 				<td>
-					<StatusCodePill connected={true} statusCode={packageContainerStatus.status.status} />
+					<StatusCodePill
+						connected={device?.connected || false}
+						statusCode={packageContainerStatus.status.status}
+						messages={statusMessages}
+					/>
 				</td>
 				<td>
 					<Tooltip overlay={packageContainerStatus.status.statusReason.tech} placement="top">

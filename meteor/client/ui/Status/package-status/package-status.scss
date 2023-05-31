@@ -32,6 +32,13 @@
 				}
 			}
 
+			&.offline {
+				> td {
+					color: #666;
+					background-color: #fbb;
+				}
+			}
+
 			.package-progress {
 				display: inline-block;
 				margin-left: 0.25em;
