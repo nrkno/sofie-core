@@ -7,7 +7,6 @@ import {
 	RundownPlaylistId,
 	SegmentId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../../../lib/api/pubsub'
@@ -31,7 +30,7 @@ import { logger } from '../../../logging'
 import { resolveCredentials } from '../../../security/lib/credentials'
 import { NoSecurityReadAccess } from '../../../security/noSecurity'
 import { RundownPlaylistReadAccess } from '../../../security/rundownPlaylist'
-import { ContentCache, PieceFields } from './reactiveContentCache'
+import { ContentCache } from './reactiveContentCache'
 import { RundownContentObserver } from './rundownContentObserver'
 import { RundownsObserver } from '../../lib/rundownsObserver'
 import { LiveQueryHandle } from '../../../lib/lib'
@@ -43,7 +42,11 @@ import {
 	studioFieldSpecifier,
 	StudioMini,
 } from '../common'
-import { regenerateForPieceIds } from './regenerateItems'
+import {
+	regenerateForAdLibPieceIds,
+	regenerateForBaselineAdLibPieceIds,
+	regenerateForPieceIds,
+} from './regenerateItems'
 
 interface UIPieceContentStatusesArgs {
 	readonly rundownPlaylistId: RundownPlaylistId
@@ -55,11 +58,11 @@ interface UIPieceContentStatusesState {
 	studio: ReadonlyDeep<StudioMini>
 
 	pieceDependencies: Map<PieceId, PieceDependencies>
+	adlibPieceDependencies: Map<PieceId, PieceDependencies>
+	baselineAdlibDependencies: Map<PieceId, PieceDependencies>
 	// TODO:
 	// pieceInstance?
-	// adlibPiece
 	// adlibAction
-	// baselineAdlibPiece
 	// baselineAdlibAction
 }
 
@@ -71,7 +74,9 @@ interface UIPieceContentStatusesUpdateProps extends IContentStatusesUpdatePropsB
 	updatedPartIds: PartId[]
 
 	updatedPieceIds: PieceId[]
-	removedPieces: Pick<Piece, PieceFields>[]
+
+	updatedAdlibPieceIds: PieceId[]
+	updatedBaselineAdlibPieceIds: PieceId[]
 }
 
 type RundownPlaylistFields = '_id' | 'studioId'
@@ -118,10 +123,20 @@ async function setupUIPieceContentStatusesPublicationObservers(
 					changed: (id) => triggerUpdate({ updatedPartIds: [protectString(id)] }),
 					removed: (id) => triggerUpdate({ updatedSegmentIds: [protectString(id)] }),
 				}),
-				cache.Pieces.find({}).observe({
-					added: (doc) => triggerUpdate({ updatedPieceIds: [doc._id] }),
-					changed: (doc) => triggerUpdate({ updatedPieceIds: [doc._id] }),
-					removed: (doc) => triggerUpdate({ removedPieces: [doc] }),
+				cache.Pieces.find({}).observeChanges({
+					added: (id) => triggerUpdate({ updatedPieceIds: [protectString(id)] }),
+					changed: (id) => triggerUpdate({ updatedPieceIds: [protectString(id)] }),
+					removed: (id) => triggerUpdate({ updatedPieceIds: [protectString(id)] }),
+				}),
+				cache.AdLibPieces.find({}).observeChanges({
+					added: (id) => triggerUpdate({ updatedAdlibPieceIds: [protectString(id)] }),
+					changed: (id) => triggerUpdate({ updatedAdlibPieceIds: [protectString(id)] }),
+					removed: (id) => triggerUpdate({ updatedAdlibPieceIds: [protectString(id)] }),
+				}),
+				cache.BaselineAdLibPieces.find({}).observeChanges({
+					added: (id) => triggerUpdate({ updatedBaselineAdlibPieceIds: [protectString(id)] }),
+					changed: (id) => triggerUpdate({ updatedBaselineAdlibPieceIds: [protectString(id)] }),
+					removed: (id) => triggerUpdate({ updatedBaselineAdlibPieceIds: [protectString(id)] }),
 				}),
 				cache.Rundowns.find({}).observeChanges({
 					added: () => triggerUpdate({ invalidateAll: true }),
@@ -239,22 +254,40 @@ async function manipulateUIPieceContentStatusesPublicationData(
 	)
 
 	let regeneratePieceIds: Set<PieceId>
-	if (!state.pieceDependencies || invalidateAllPieces) {
+	let regenerateAdlibPieceIds: Set<PieceId>
+	let regenerateBaselineAdlibPieceIds: Set<PieceId>
+	if (
+		!state.pieceDependencies ||
+		!state.adlibPieceDependencies ||
+		!state.baselineAdlibDependencies ||
+		invalidateAllPieces
+	) {
 		state.pieceDependencies = new Map()
+		state.adlibPieceDependencies = new Map()
+		state.baselineAdlibDependencies = new Map()
 
 		// force every piece to be regenerated
 		collection.remove(null)
 		regeneratePieceIds = new Set(state.contentCache.Pieces.find({}).map((p) => p._id))
+		regenerateAdlibPieceIds = new Set(state.contentCache.AdLibPieces.find({}).map((p) => p._id))
+		regenerateBaselineAdlibPieceIds = new Set(state.contentCache.BaselineAdLibPieces.find({}).map((p) => p._id))
 	} else {
 		regeneratePieceIds = new Set(updateProps.updatedPieceIds)
-		// Remove any docs where the piece has been deleted
-		if (updateProps.removedPieces && updateProps.removedPieces.length > 0) {
-			const removePieceIds = new Set(updateProps.removedPieces.map((p) => p._id))
-			collection.remove((doc) => removePieceIds.has(doc.pieceId))
-		}
+		regenerateAdlibPieceIds = new Set(updateProps.updatedAdlibPieceIds)
+		regenerateBaselineAdlibPieceIds = new Set(updateProps.updatedBaselineAdlibPieceIds)
 
 		// Look for which docs should be updated based on the media objects/packages
 		addItemsWithDependenciesChangesToChangedSet<PieceId>(updateProps, regeneratePieceIds, state.pieceDependencies)
+		addItemsWithDependenciesChangesToChangedSet<PieceId>(
+			updateProps,
+			regenerateAdlibPieceIds,
+			state.adlibPieceDependencies
+		)
+		addItemsWithDependenciesChangesToChangedSet<PieceId>(
+			updateProps,
+			regenerateBaselineAdlibPieceIds,
+			state.baselineAdlibDependencies
+		)
 	}
 
 	await regenerateForPieceIds(
@@ -263,6 +296,20 @@ async function manipulateUIPieceContentStatusesPublicationData(
 		state.pieceDependencies,
 		collection,
 		regeneratePieceIds
+	)
+	await regenerateForAdLibPieceIds(
+		state.contentCache,
+		state.studio,
+		state.adlibPieceDependencies,
+		collection,
+		regenerateAdlibPieceIds
+	)
+	await regenerateForBaselineAdLibPieceIds(
+		state.contentCache,
+		state.studio,
+		state.baselineAdlibDependencies,
+		collection,
+		regenerateBaselineAdlibPieceIds
 	)
 }
 
@@ -281,7 +328,7 @@ function updatePartAndSegmentInfoForExistingDocs(
 
 		// If the part for this doc changed, update its part.
 		// Note: if the segment of the doc's part changes that will only be noticed here
-		if (updatedPartIds.has(doc.partId)) {
+		if (doc.partId && updatedPartIds.has(doc.partId)) {
 			const part = contentCache.Parts.findOne(doc.partId)
 			if (part && (part.segmentId !== doc.segmentId || part._rank !== doc.partRank)) {
 				doc.segmentId = part.segmentId
@@ -291,7 +338,7 @@ function updatePartAndSegmentInfoForExistingDocs(
 		}
 
 		// If the segment for this doc changed, update its rank
-		if (updatedSegmentIds.has(doc.segmentId)) {
+		if (doc.segmentId && updatedSegmentIds.has(doc.segmentId)) {
 			const segment = contentCache.Segments.findOne(doc.segmentId)
 			if (segment && (doc.segmentRank !== segment._rank || doc.segmentName !== segment.name)) {
 				doc.segmentRank = segment._rank

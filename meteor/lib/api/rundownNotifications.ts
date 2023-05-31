@@ -36,10 +36,11 @@ export interface UIPieceContentStatus {
 	segmentRank: number
 	partRank: number
 
-	partId: PartId
 	rundownId: RundownId
-	segmentId: SegmentId
-	pieceId: PieceId
+	partId?: PartId
+	segmentId?: SegmentId
+
+	pieceId?: PieceId
 
 	name: string
 	segmentName: string

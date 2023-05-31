@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { RundownId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { logger } from '../../../logging'
 import {
+	adLibPieceFieldSpecifier,
 	ContentCache,
 	createReactiveContentCache,
 	partFieldSpecifier,
@@ -12,7 +13,15 @@ import {
 	showStyleBaseFieldSpecifier,
 	SourceLayersDoc,
 } from './reactiveContentCache'
-import { Parts, Pieces, Rundowns, Segments, ShowStyleBases } from '../../../collections'
+import {
+	AdLibPieces,
+	Parts,
+	Pieces,
+	RundownBaselineAdLibPieces,
+	Rundowns,
+	Segments,
+	ShowStyleBases,
+} from '../../../collections'
 import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
 import { equivalentArrays, waitForPromise } from '../../../../lib/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
@@ -129,6 +138,28 @@ export class RundownContentObserver {
 				cache.Pieces.link(),
 				{
 					projection: pieceFieldSpecifier,
+				}
+			),
+			AdLibPieces.observe(
+				{
+					rundownId: {
+						$in: rundownIds,
+					},
+				},
+				cache.AdLibPieces.link(),
+				{
+					projection: adLibPieceFieldSpecifier,
+				}
+			),
+			RundownBaselineAdLibPieces.observe(
+				{
+					rundownId: {
+						$in: rundownIds,
+					},
+				},
+				cache.BaselineAdLibPieces.link(),
+				{
+					projection: adLibPieceFieldSpecifier,
 				}
 			),
 		]

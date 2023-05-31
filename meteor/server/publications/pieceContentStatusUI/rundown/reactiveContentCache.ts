@@ -9,6 +9,9 @@ import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
+import { AdLibPieceFields } from '../../../api/deviceTriggers/reactiveContentCache'
+import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 
 export type SourceLayersDocId = ProtectedString<'SourceLayersDocId'>
 export interface SourceLayersDoc {
@@ -49,6 +52,24 @@ export const pieceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PieceFi
 	expectedPackages: 1,
 })
 
+export type AdLibPiecePieceFields =
+	| '_id'
+	| 'startPartId'
+	| 'startRundownId'
+	| 'name'
+	| 'sourceLayerId'
+	| 'content'
+	| 'expectedPackages'
+export const adLibPieceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<AdLibPiecePieceFields>>({
+	_id: 1,
+	startPartId: 1,
+	startRundownId: 1,
+	name: 1,
+	sourceLayerId: 1,
+	content: 1,
+	expectedPackages: 1,
+})
+
 export type RundownFields = '_id' | 'showStyleBaseId'
 export const rundownFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownFields>>({
 	_id: 1,
@@ -66,6 +87,8 @@ export interface ContentCache {
 	Segments: ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>
 	Parts: ReactiveCacheCollection<Pick<DBPart, PartFields>>
 	Pieces: ReactiveCacheCollection<Pick<Piece, PieceFields>>
+	AdLibPieces: ReactiveCacheCollection<Pick<AdLibPiece, AdLibPieceFields>>
+	BaselineAdLibPieces: ReactiveCacheCollection<Pick<RundownBaselineAdLibItem, AdLibPieceFields>>
 	ShowStyleSourceLayers: ReactiveCacheCollection<SourceLayersDoc>
 }
 
@@ -92,6 +115,11 @@ export function createReactiveContentCache(
 		Segments: new ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>('segments', innerReaction),
 		Parts: new ReactiveCacheCollection<Pick<DBPart, PartFields>>('parts', innerReaction),
 		Pieces: new ReactiveCacheCollection<Pick<Piece, PieceFields>>('pieces', innerReaction),
+		AdLibPieces: new ReactiveCacheCollection<Pick<AdLibPiece, AdLibPieceFields>>('adlibPieces', innerReaction),
+		BaselineAdLibPieces: new ReactiveCacheCollection<Pick<AdLibPiece, AdLibPieceFields>>(
+			'baselineAdlibPieces',
+			innerReaction
+		),
 		ShowStyleSourceLayers: new ReactiveCacheCollection<SourceLayersDoc>('sourceLayers', innerReaction),
 	}
 
