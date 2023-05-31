@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { RundownId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { logger } from '../../../logging'
 import {
+	adLibActionFieldSpecifier,
 	adLibPieceFieldSpecifier,
 	ContentCache,
 	createReactiveContentCache,
@@ -14,9 +15,11 @@ import {
 	SourceLayersDoc,
 } from './reactiveContentCache'
 import {
+	AdLibActions,
 	AdLibPieces,
 	Parts,
 	Pieces,
+	RundownBaselineAdLibActions,
 	RundownBaselineAdLibPieces,
 	Rundowns,
 	Segments,
@@ -34,6 +37,7 @@ type ChangedHandler = (cache: ContentCache) => () => void
 
 function convertShowStyleBase(doc: Pick<ShowStyleBase, ShowStyleBaseFields>): Omit<SourceLayersDoc, '_id'> {
 	return {
+		blueprintId: doc.blueprintId,
 		sourceLayers: applyAndValidateOverrides(doc.sourceLayersWithOverrides).obj,
 	}
 }
@@ -151,6 +155,17 @@ export class RundownContentObserver {
 					projection: adLibPieceFieldSpecifier,
 				}
 			),
+			AdLibActions.observe(
+				{
+					rundownId: {
+						$in: rundownIds,
+					},
+				},
+				cache.AdLibActions.link(),
+				{
+					projection: adLibActionFieldSpecifier,
+				}
+			),
 			RundownBaselineAdLibPieces.observe(
 				{
 					rundownId: {
@@ -160,6 +175,17 @@ export class RundownContentObserver {
 				cache.BaselineAdLibPieces.link(),
 				{
 					projection: adLibPieceFieldSpecifier,
+				}
+			),
+			RundownBaselineAdLibActions.observe(
+				{
+					rundownId: {
+						$in: rundownIds,
+					},
+				},
+				cache.BaselineAdLibActions.link(),
+				{
+					projection: adLibActionFieldSpecifier,
 				}
 			),
 		]

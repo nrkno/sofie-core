@@ -1,9 +1,11 @@
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
 import {
+	AdLibActionId,
 	ExpectedPackageId,
 	PackageContainerPackageId,
 	PartId,
 	PieceId,
+	RundownBaselineAdLibActionId,
 	RundownPlaylistId,
 	SegmentId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -43,7 +45,9 @@ import {
 	StudioMini,
 } from '../common'
 import {
+	regenerateForAdLibActionIds,
 	regenerateForAdLibPieceIds,
+	regenerateForBaselineAdLibActionIds,
 	regenerateForBaselineAdLibPieceIds,
 	regenerateForPieceIds,
 } from './regenerateItems'
@@ -59,11 +63,11 @@ interface UIPieceContentStatusesState {
 
 	pieceDependencies: Map<PieceId, PieceDependencies>
 	adlibPieceDependencies: Map<PieceId, PieceDependencies>
+	adlibActionDependencies: Map<AdLibActionId, PieceDependencies>
 	baselineAdlibDependencies: Map<PieceId, PieceDependencies>
+	baselineActionDependencies: Map<RundownBaselineAdLibActionId, PieceDependencies>
 	// TODO:
 	// pieceInstance?
-	// adlibAction
-	// baselineAdlibAction
 }
 
 interface UIPieceContentStatusesUpdateProps extends IContentStatusesUpdatePropsBase {
@@ -76,7 +80,9 @@ interface UIPieceContentStatusesUpdateProps extends IContentStatusesUpdatePropsB
 	updatedPieceIds: PieceId[]
 
 	updatedAdlibPieceIds: PieceId[]
+	updatedAdlibActionIds: AdLibActionId[]
 	updatedBaselineAdlibPieceIds: PieceId[]
+	updatedBaselineAdlibActionIds: RundownBaselineAdLibActionId[]
 }
 
 type RundownPlaylistFields = '_id' | 'studioId'
@@ -133,10 +139,20 @@ async function setupUIPieceContentStatusesPublicationObservers(
 					changed: (id) => triggerUpdate({ updatedAdlibPieceIds: [protectString(id)] }),
 					removed: (id) => triggerUpdate({ updatedAdlibPieceIds: [protectString(id)] }),
 				}),
+				cache.AdLibActions.find({}).observeChanges({
+					added: (id) => triggerUpdate({ updatedAdlibActionIds: [protectString(id)] }),
+					changed: (id) => triggerUpdate({ updatedAdlibActionIds: [protectString(id)] }),
+					removed: (id) => triggerUpdate({ updatedAdlibActionIds: [protectString(id)] }),
+				}),
 				cache.BaselineAdLibPieces.find({}).observeChanges({
 					added: (id) => triggerUpdate({ updatedBaselineAdlibPieceIds: [protectString(id)] }),
 					changed: (id) => triggerUpdate({ updatedBaselineAdlibPieceIds: [protectString(id)] }),
 					removed: (id) => triggerUpdate({ updatedBaselineAdlibPieceIds: [protectString(id)] }),
+				}),
+				cache.BaselineAdLibActions.find({}).observeChanges({
+					added: (id) => triggerUpdate({ updatedBaselineAdlibActionIds: [protectString(id)] }),
+					changed: (id) => triggerUpdate({ updatedBaselineAdlibActionIds: [protectString(id)] }),
+					removed: (id) => triggerUpdate({ updatedBaselineAdlibActionIds: [protectString(id)] }),
 				}),
 				cache.Rundowns.find({}).observeChanges({
 					added: () => triggerUpdate({ invalidateAll: true }),
@@ -255,26 +271,36 @@ async function manipulateUIPieceContentStatusesPublicationData(
 
 	let regeneratePieceIds: Set<PieceId>
 	let regenerateAdlibPieceIds: Set<PieceId>
+	let regenerateAdlibActionIds: Set<AdLibActionId>
 	let regenerateBaselineAdlibPieceIds: Set<PieceId>
+	let regenerateBaselineAdlibActionIds: Set<RundownBaselineAdLibActionId>
 	if (
 		!state.pieceDependencies ||
 		!state.adlibPieceDependencies ||
+		!state.adlibActionDependencies ||
 		!state.baselineAdlibDependencies ||
+		!state.baselineActionDependencies ||
 		invalidateAllPieces
 	) {
 		state.pieceDependencies = new Map()
 		state.adlibPieceDependencies = new Map()
+		state.adlibActionDependencies = new Map()
 		state.baselineAdlibDependencies = new Map()
+		state.baselineActionDependencies = new Map()
 
 		// force every piece to be regenerated
 		collection.remove(null)
 		regeneratePieceIds = new Set(state.contentCache.Pieces.find({}).map((p) => p._id))
 		regenerateAdlibPieceIds = new Set(state.contentCache.AdLibPieces.find({}).map((p) => p._id))
+		regenerateAdlibActionIds = new Set(state.contentCache.AdLibActions.find({}).map((p) => p._id))
 		regenerateBaselineAdlibPieceIds = new Set(state.contentCache.BaselineAdLibPieces.find({}).map((p) => p._id))
+		regenerateBaselineAdlibActionIds = new Set(state.contentCache.BaselineAdLibActions.find({}).map((p) => p._id))
 	} else {
 		regeneratePieceIds = new Set(updateProps.updatedPieceIds)
 		regenerateAdlibPieceIds = new Set(updateProps.updatedAdlibPieceIds)
+		regenerateAdlibActionIds = new Set(updateProps.updatedAdlibActionIds)
 		regenerateBaselineAdlibPieceIds = new Set(updateProps.updatedBaselineAdlibPieceIds)
+		regenerateBaselineAdlibActionIds = new Set(updateProps.updatedBaselineAdlibActionIds)
 
 		// Look for which docs should be updated based on the media objects/packages
 		addItemsWithDependenciesChangesToChangedSet<PieceId>(updateProps, regeneratePieceIds, state.pieceDependencies)
@@ -283,10 +309,20 @@ async function manipulateUIPieceContentStatusesPublicationData(
 			regenerateAdlibPieceIds,
 			state.adlibPieceDependencies
 		)
+		addItemsWithDependenciesChangesToChangedSet<AdLibActionId>(
+			updateProps,
+			regenerateAdlibActionIds,
+			state.adlibActionDependencies
+		)
 		addItemsWithDependenciesChangesToChangedSet<PieceId>(
 			updateProps,
 			regenerateBaselineAdlibPieceIds,
 			state.baselineAdlibDependencies
+		)
+		addItemsWithDependenciesChangesToChangedSet<RundownBaselineAdLibActionId>(
+			updateProps,
+			regenerateBaselineAdlibActionIds,
+			state.baselineActionDependencies
 		)
 	}
 
@@ -304,12 +340,26 @@ async function manipulateUIPieceContentStatusesPublicationData(
 		collection,
 		regenerateAdlibPieceIds
 	)
+	await regenerateForAdLibActionIds(
+		state.contentCache,
+		state.studio,
+		state.adlibActionDependencies,
+		collection,
+		regenerateAdlibActionIds
+	)
 	await regenerateForBaselineAdLibPieceIds(
 		state.contentCache,
 		state.studio,
 		state.baselineAdlibDependencies,
 		collection,
 		regenerateBaselineAdlibPieceIds
+	)
+	await regenerateForBaselineAdLibActionIds(
+		state.contentCache,
+		state.studio,
+		state.baselineActionDependencies,
+		collection,
+		regenerateBaselineAdlibActionIds
 	)
 }
 

@@ -10,12 +10,15 @@ import { literal } from '@sofie-automation/corelib/dist/lib'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
-import { AdLibPieceFields } from '../../../api/deviceTriggers/reactiveContentCache'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
+import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
+import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
+import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export type SourceLayersDocId = ProtectedString<'SourceLayersDocId'>
 export interface SourceLayersDoc {
 	_id: SourceLayersDocId
+	blueprintId: BlueprintId
 	sourceLayers: SourceLayers
 }
 
@@ -52,21 +55,30 @@ export const pieceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PieceFi
 	expectedPackages: 1,
 })
 
-export type AdLibPiecePieceFields =
+export type AdLibPieceFields =
 	| '_id'
-	| 'startPartId'
-	| 'startRundownId'
+	| 'partId'
+	| 'rundownId'
 	| 'name'
 	| 'sourceLayerId'
 	| 'content'
 	| 'expectedPackages'
-export const adLibPieceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<AdLibPiecePieceFields>>({
+export const adLibPieceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<AdLibPieceFields>>({
 	_id: 1,
-	startPartId: 1,
-	startRundownId: 1,
+	partId: 1,
+	rundownId: 1,
 	name: 1,
 	sourceLayerId: 1,
 	content: 1,
+	expectedPackages: 1,
+})
+
+export type AdLibActionFields = '_id' | 'partId' | 'rundownId' | 'display' | 'expectedPackages'
+export const adLibActionFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<AdLibActionFields>>({
+	_id: 1,
+	partId: 1,
+	rundownId: 1,
+	display: 1, // TODO - more specific?
 	expectedPackages: 1,
 })
 
@@ -76,9 +88,10 @@ export const rundownFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<Rundo
 	showStyleBaseId: 1,
 })
 
-export type ShowStyleBaseFields = '_id' | 'sourceLayersWithOverrides'
+export type ShowStyleBaseFields = '_id' | 'blueprintId' | 'sourceLayersWithOverrides'
 export const showStyleBaseFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<ShowStyleBaseFields>>({
 	_id: 1,
+	blueprintId: 1,
 	sourceLayersWithOverrides: 1,
 })
 
@@ -88,7 +101,9 @@ export interface ContentCache {
 	Parts: ReactiveCacheCollection<Pick<DBPart, PartFields>>
 	Pieces: ReactiveCacheCollection<Pick<Piece, PieceFields>>
 	AdLibPieces: ReactiveCacheCollection<Pick<AdLibPiece, AdLibPieceFields>>
+	AdLibActions: ReactiveCacheCollection<Pick<AdLibAction, AdLibActionFields>>
 	BaselineAdLibPieces: ReactiveCacheCollection<Pick<RundownBaselineAdLibItem, AdLibPieceFields>>
+	BaselineAdLibActions: ReactiveCacheCollection<Pick<RundownBaselineAdLibAction, AdLibActionFields>>
 	ShowStyleSourceLayers: ReactiveCacheCollection<SourceLayersDoc>
 }
 
@@ -116,8 +131,13 @@ export function createReactiveContentCache(
 		Parts: new ReactiveCacheCollection<Pick<DBPart, PartFields>>('parts', innerReaction),
 		Pieces: new ReactiveCacheCollection<Pick<Piece, PieceFields>>('pieces', innerReaction),
 		AdLibPieces: new ReactiveCacheCollection<Pick<AdLibPiece, AdLibPieceFields>>('adlibPieces', innerReaction),
+		AdLibActions: new ReactiveCacheCollection<Pick<AdLibAction, AdLibActionFields>>('adlibActions', innerReaction),
 		BaselineAdLibPieces: new ReactiveCacheCollection<Pick<AdLibPiece, AdLibPieceFields>>(
 			'baselineAdlibPieces',
+			innerReaction
+		),
+		BaselineAdLibActions: new ReactiveCacheCollection<Pick<RundownBaselineAdLibAction, AdLibActionFields>>(
+			'baselineAdlibActions',
 			innerReaction
 		),
 		ShowStyleSourceLayers: new ReactiveCacheCollection<SourceLayersDoc>('sourceLayers', innerReaction),

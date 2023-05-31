@@ -1,10 +1,12 @@
 import { TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import {
+	AdLibActionId,
 	BucketAdLibActionId,
 	BucketAdLibId,
 	BucketId,
 	PartId,
 	PieceId,
+	RundownBaselineAdLibActionId,
 	RundownId,
 	RundownPlaylistId,
 	SegmentId,
@@ -40,9 +42,9 @@ export interface UIPieceContentStatus {
 	partId?: PartId
 	segmentId?: SegmentId
 
-	pieceId?: PieceId
+	pieceId: PieceId | AdLibActionId | RundownBaselineAdLibActionId
 
-	name: string
+	name: string | ITranslatableMessage
 	segmentName: string
 
 	status: PieceContentStatusObj

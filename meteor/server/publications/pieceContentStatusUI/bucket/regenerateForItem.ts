@@ -95,9 +95,7 @@ export async function regenerateForBucketActionIds(
 			const showStyleBase = contentCache.ShowStyleSourceLayers.findOne(actionDoc.showStyleBaseId)
 
 			const sourceLayer =
-				'sourceLayerId' in actionDoc.display
-					? showStyleBase?.sourceLayers?.[actionDoc.display.sourceLayerId]
-					: undefined
+				'sourceLayerId' in actionDoc.display && showStyleBase?.sourceLayers?.[actionDoc.display.sourceLayerId]
 
 			// Only if this piece is valid
 			if (sourceLayer) {
