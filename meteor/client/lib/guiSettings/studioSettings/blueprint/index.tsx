@@ -1,6 +1,6 @@
 import React from 'react'
 import { TFunction } from 'react-i18next'
-import { GUISetting, GUISettingsType, guiSettingId } from '../../guiSettings'
+import { GUISetting, GUISettingSection, GUISettingsType, guiSettingId } from '../../guiSettings'
 import { Studio } from '../../../../../lib/collections/Studios'
 import { Blueprints, Studios } from '../../../../collections'
 import { SelectBlueprint } from './SelectBlueprint'
@@ -13,8 +13,8 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 
-export function blueprintProperties(t: TFunction, studio: Studio, urlBase: string): GUISetting[] {
-	const settings: GUISetting[] = []
+export function blueprintProperties(t: TFunction, studio: Studio, urlBase: string): (GUISetting | GUISettingSection)[] {
+	const settings: (GUISetting | GUISettingSection)[] = []
 
 	// const editAttributeProps = getDefaultEditAttributeProps(studio)
 
@@ -51,9 +51,20 @@ export function blueprintProperties(t: TFunction, studio: Studio, urlBase: strin
 			getSearchString: '',
 		})
 
-		// for (const setting of getBueprintSettings(t, studio, urlBase, selectedBlueprint)) {
-		// 	settings.push(setting)
-		// }
+		settings.push({
+			type: GUISettingsType.SECTION,
+			name: t('Blueprint settings'),
+			// description: t('Name of the studio'),
+			id: guiSettingId(urlBase, 'blueprint-settings'),
+			// getWarning: () => {
+			// 	if (!studio.blueprintConfigPresetId) return t('Blueprint config preset not set')
+			// 	if (studio.blueprintConfigPresetIdUnlinked) return t('Blueprint config preset is missing')
+			// 	return undefined
+			// },
+			getList: () => getBlueprintSettings(t, studio, urlBase, selectedBlueprint),
+			getSearchString: '',
+			renderSummary: () => null,
+		})
 		// settings.push({
 		// 	type: GUISettingsType.SETTING,
 		// 	name: t('Blueprint settings'),
@@ -69,7 +80,12 @@ export function blueprintProperties(t: TFunction, studio: Studio, urlBase: strin
 
 	return settings
 }
-function getBueprintSettings(t: TFunction, studio: Studio, urlBase: string, blueprint: Blueprint) {
+function getBlueprintSettings(
+	t: TFunction,
+	studio: Studio,
+	urlBase: string,
+	blueprint: Blueprint
+): (GUISetting | GUISettingSection)[] {
 	const configSchema = blueprint.studioConfigSchema ? JSONBlobParse(blueprint.studioConfigSchema) : undefined
 	const translationNamespaces = ['blueprint_' + studio.blueprintId]
 	const layerMappings = {

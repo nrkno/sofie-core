@@ -1,16 +1,17 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useHistory } from 'react-router-dom'
-import { verifyGUISettings } from './verifyGUISettings'
+import { RenderVerifyGUISettings } from './RenderVerifyGUISettings'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { mapAndFilter, unprotectString } from '../../../lib/lib'
 import { defaultEditAttributeProps } from './lib'
 import {
+	GUIRenderContext,
 	GUISetting,
 	GUISettingId,
 	GUISettingSection,
 	GUISettings,
 	GUISettingsType,
-	getWarnings,
+	getDeepLink,
 	guiSettingIdIncludes,
 } from './guiSettings'
 import { TextInputControl } from '../Components/TextInput'
@@ -18,11 +19,12 @@ import classNames from 'classnames'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons'
 import { useSession } from '../ReactMeteorData/ReactMeteorData'
-import { useTranslation } from 'react-i18next'
+import { RenderWarnings } from './RenderWarnings'
 
 export const RenderGUISettings: React.FC<{ context: GUIRenderContext; settings: GUISettings }> =
 	function RenderGUISettings({ settings, context }) {
-		const { t } = useTranslation()
+		console.log('=======================================')
+		console.log('RenderGUISettings')
 		const history = useHistory()
 		const [filterString, setFilterString] = useSession(`gui-settings_${context.baseURL}_filter`, '')
 		useEffect(() => {
@@ -30,10 +32,13 @@ export const RenderGUISettings: React.FC<{ context: GUIRenderContext; settings: 
 			setFilterString(context.filterString ?? '')
 		}, [context.filterString])
 
-		const verifyWarning = verifyGUISettings(settings)
-		const warnings = getWarnings(settings.list)
+		// const [verifyWarning, setVerifyWarning] = useState<string | undefined>(undefined)
 
-		const filteredSettings = filterSettings(settings, filterString)
+		// verifyGUISettings(settings)
+		// getWarnings(settings.list)
+		// const [warnings, setWarnings] = useState<{ settingId: GUISettingId; breadcrumbs: string[]; message: string }[]>([])
+
+		// const filteredSettings = filterSettings(settings, filterString)
 
 		const innerContext = literal<GUIInnerRenderContext>({
 			...context,
@@ -42,9 +47,20 @@ export const RenderGUISettings: React.FC<{ context: GUIRenderContext; settings: 
 
 		return (
 			<div className="gui-settings">
-				{verifyWarning && <div className="gui-settings-verify-warning">{verifyWarning}</div>}
+				<RenderVerifyGUISettings getSettings={() => settings.list} />
 
-				{warnings.length > 0 && (
+				<RenderWarnings
+					context={innerContext}
+					getSettings={() => settings.list}
+					breadcrumbs={[]}
+					onClick={(settingId: GUISettingId) => {
+						history.push(getDeepLink(settingId, context))
+						// Also set the filter string, in case we're already at that url:
+						setFilterString(unprotectString(settingId))
+					}}
+				/>
+
+				{/* {warnings.length > 0 && (
 					<div className="gui-settings-warnings">
 						<h3>{t('Warnings')}</h3>
 						{warnings.map((warning) => {
@@ -66,7 +82,7 @@ export const RenderGUISettings: React.FC<{ context: GUIRenderContext; settings: 
 							)
 						})}
 					</div>
-				)}
+				)} */}
 
 				<div className="gui-settings-filter">
 					<TextInputControl
@@ -81,45 +97,88 @@ export const RenderGUISettings: React.FC<{ context: GUIRenderContext; settings: 
 					/>
 				</div>
 
-				<RenderListItemList context={innerContext} settings={filteredSettings.list} isOuter={true} />
+				<RenderListItemList
+					context={innerContext}
+					getSettings={() => settings.list}
+					isOuter={true}
+					callbackFilterDisplay={() => {
+						// nothing
+					}}
+				/>
 			</div>
 		)
 	}
 
 const RenderListItemList: React.FC<{
 	context: GUIInnerRenderContext
-	settings: (GUISetting | GUISettingSection)[]
+	getSettings: () => (GUISetting | GUISettingSection)[]
 	isOuter?: boolean
-}> = function RenderListItemList({ context, settings, isOuter }) {
+	callbackFilterDisplay: (settingId: GUISettingId, isDisplayed: boolean) => void
+}> = function RenderListItemList({ context, getSettings, isOuter, callbackFilterDisplay }) {
+	const settings = getSettings()
 	return (
 		<div className={classNames('gui-settings-list', isOuter && 'outer')}>
-			{settings.map((setting) => (
-				<div className="gui-settings-list__item" key={unprotectString(setting.id)}>
-					<RenderListItem context={context} setting={setting} />
-				</div>
-			))}
+			{settings.map((setting) => {
+				return (
+					<RenderListItem
+						key={unprotectString(setting.id)}
+						context={context}
+						setting={setting}
+						callbackFilterDisplay={callbackFilterDisplay}
+					/>
+				)
+			})}
 		</div>
 	)
 }
-const RenderListItem: React.FC<{ context: GUIInnerRenderContext; setting: GUISetting | GUISettingSection }> =
-	function RenderListItem({ context, setting }) {
-		const [sectionCollapsed, setSectionCollapsed] = useSession(
-			`guiSettings_${context.baseURL}_${setting.id}_collapsed`,
-			false
-		)
-		useEffect(() => {
-			if (sectionCollapsed) {
-				if (guiSettingIdIncludes(setting.id, context.filterString)) {
-					setSectionCollapsed(false)
-				}
+const RenderListItem: React.FC<{
+	context: GUIInnerRenderContext
+	setting: GUISetting | GUISettingSection
+	callbackFilterDisplay: (settingId: GUISettingId, isDisplayed: boolean) => void
+}> = function RenderListItem({ context, setting, callbackFilterDisplay }) {
+	// console.log('item', setting.id)
+	const [sectionCollapsed, setSectionCollapsed] = useSession(
+		`guiSettings_${context.baseURL}_${setting.id}_collapsed`,
+		false
+	)
+
+	const displayChildIds = useRef<Set<GUISettingId>>(new Set())
+	const [_displayChildIdsUpdate, setDisplayChildIdsUpdate] = useState<number>(0)
+
+	useEffect(() => {
+		// When the filter changes, clear displayChildIds
+		displayChildIds.current.clear()
+		setDisplayChildIdsUpdate(Date.now())
+	}, [context.filterString])
+
+	const display = filterDisplaySetting(setting, context) || displayChildIds.current.size > 0
+	// console.log('    ', filterDisplaySetting(setting, context), Array.from(displayChildIds.current.values()))
+
+	useEffect(() => {
+		if (sectionCollapsed && context.filterString) {
+			if (guiSettingIdIncludes(setting.id, context.filterString) || displayChildIds.current.size > 0) {
+				setSectionCollapsed(false)
 			}
-		}, [setting.id, sectionCollapsed, context.filterString])
+		}
+	}, [setting.id, sectionCollapsed, context.filterString])
 
-		if (setting.type === GUISettingsType.SECTION) {
-			// Note if setting.renderSummary is set, the section can be collapsed
+	callbackFilterDisplay(setting.id, display)
 
-			return (
-				<div className="gui-settings-section">
+	if (setting.type === GUISettingsType.SECTION) {
+		// Note: if setting.renderSummary is set, the section can be collapsed
+		const isCollapsed = Boolean(setting.renderSummary && sectionCollapsed)
+
+		return (
+			<div
+				className={classNames('gui-settings-list__item', {
+					'filter-hidden': !display,
+				})}
+			>
+				<div
+					className={classNames('gui-settings-section', {
+						collapsed: isCollapsed,
+					})}
+				>
 					<div className="content">
 						{setting.renderSummary && (
 							<button
@@ -134,16 +193,39 @@ const RenderListItem: React.FC<{ context: GUIInnerRenderContext; setting: GUISet
 						</h2>
 						<div className="description">{setting.description}</div>
 					</div>
-					{setting.renderSummary && sectionCollapsed ? (
-						<setting.renderSummary />
-					) : (
-						<RenderListItemList context={context} settings={setting.getList()} />
-					)}
+					<RenderListItemList
+						context={context}
+						getSettings={setting.getList}
+						callbackFilterDisplay={(settingId, isDisplayed) => {
+							let hasUpdated = false
+							if (isDisplayed) {
+								if (!displayChildIds.current.has(settingId)) {
+									displayChildIds.current.add(settingId)
+									hasUpdated = true
+								}
+							} else {
+								if (displayChildIds.current.has(settingId)) {
+									displayChildIds.current.delete(settingId)
+									hasUpdated = true
+								}
+							}
+							if (hasUpdated) {
+								setTimeout(() => {
+									setDisplayChildIdsUpdate(Date.now())
+								}, 1)
+							}
+						}}
+					/>
+					{setting.renderSummary && isCollapsed && <setting.renderSummary />}
 				</div>
-			)
-		} else {
-			const warning = setting.getWarning?.()
-			return (
+			</div>
+		)
+	} else {
+		if (!display) return null
+
+		const warning = setting.getWarning?.()
+		return (
+			<div className="gui-settings-list__item">
 				<div className="gui-settings-setting">
 					<h2 className="name">{setting.name}</h2>
 					<div className="description">{setting.description}</div>
@@ -152,69 +234,39 @@ const RenderListItem: React.FC<{ context: GUIInnerRenderContext; setting: GUISet
 						<setting.render />
 					</div>
 				</div>
-			)
-		}
+			</div>
+		)
 	}
-function filterSettings(settings: GUISettings, filterString: string): GUISettings {
-	if (filterString === '') return settings
-
-	const filteredSettings: GUISettings = {
-		list: mapAndFilter(settings.list, (setting) => filterSetting(setting, filterString)),
-	}
-
-	return filteredSettings
 }
-function filterSetting(
-	setting: GUISetting | GUISettingSection,
-	filterString: string
-): GUISetting | GUISettingSection | undefined {
+function filterDisplaySetting(setting: GUISetting | GUISettingSection, context: GUIInnerRenderContext): boolean {
 	let useSetting = false
 
-	if (scatterMatchString(setting.name, filterString) !== null) {
+	// Match name:
+	if (scatterMatchString(setting.name, context.filterString) !== null) {
 		useSetting = true
 	}
-	if (!useSetting && setting.description && scatterMatchString(setting.description, filterString) !== null) {
+	// Match description:
+	if (!useSetting && setting.description && scatterMatchString(setting.description, context.filterString) !== null) {
 		useSetting = true
 	}
-	if (!useSetting && scatterMatchString(setting.id, filterString) !== null) {
+	// Match id:
+	if (!useSetting && scatterMatchString(setting.id, context.filterString) !== null) {
 		useSetting = true
 	}
+	// Match getSearchString:
 	if (!useSetting) {
 		const searchString: string =
 			typeof setting.getSearchString === 'string' ? setting.getSearchString : setting.getSearchString()
-		if (scatterMatchString(searchString, filterString) !== null) {
+		if (scatterMatchString(searchString, context.filterString) !== null) {
 			useSetting = true
 		}
 	}
 
-	if (setting.type === GUISettingsType.SECTION) {
-		const settingsList = mapAndFilter(setting.getList(), (listSetting) => filterSetting(listSetting, filterString))
-
-		if (settingsList.length > 0) useSetting = true
-		if (!useSetting) return undefined
-
-		return literal<GUISettingSection>({
-			...setting,
-			getList: () => {
-				return settingsList
-			},
-		})
-	} else {
-		if (!useSetting) return undefined
-		return setting
-	}
-
-	return setting
+	return useSetting
 }
-export interface GUIRenderContext {
-	baseURL: string
-	filterString?: string
-}
+
 interface GUIInnerRenderContext extends GUIRenderContext {
 	filterString: string
-}
-function getDeepLink(settingId: GUISettingId, context: GUIRenderContext): string {
-	return `${context.baseURL}/${settingId}`
 }
 
 /** Returns a number it the search is somewhere in source, for example "johny" matches "Johan Nyman", or null if it's not found */

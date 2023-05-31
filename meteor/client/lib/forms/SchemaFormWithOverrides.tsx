@@ -1,4 +1,4 @@
-import { joinObjectPathFragments, literal } from '@sofie-automation/corelib/dist/lib'
+import { assertNever, joinObjectPathFragments, literal } from '@sofie-automation/corelib/dist/lib'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { WrappedOverridableItemNormal, OverrideOpHelperForItemContents } from '../../ui/Settings/util/OverrideOpHelper'

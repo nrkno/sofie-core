@@ -42,6 +42,9 @@ $section-border-margin: 0.25em;
 			&:hover:not(:has(.gui-settings-list__item:hover)):hover {
 				background-color: rgba(127, 127, 127, 0.05);
 			}
+			&.filter-hidden {
+				display: none;
+			}
 		}
 		&.outer {
 			> .gui-settings-list__item {
@@ -57,6 +60,12 @@ $section-border-margin: 0.25em;
 		transition: border-color 0.2s;
 		&:hover {
 			border-color: rgba(127, 127, 127, 0.25);
+		}
+
+		&.collapsed {
+			> .gui-settings-list {
+				display: none;
+			}
 		}
 		> .content {
 			padding-left: $item-padding-left;

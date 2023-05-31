@@ -1,4 +1,3 @@
-import { assertNever } from '@sofie-automation/corelib/dist/lib'
 import { ProtectedString, protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 export interface GUISettings {
@@ -51,41 +50,10 @@ export function guiSettingIdIncludes(settingId: GUISettingId, search: string): b
 	return false
 }
 
-/**
- * Iterates deep through the settings, and returns a list of warnings.
- */
-export function getWarnings(
-	settings: (GUISetting | GUISettingSection)[],
-	breadcrumbs: string[] = []
-): {
-	settingId: GUISettingId
-	breadcrumbs: string[]
-	message: string
-}[] {
-	const warnings: {
-		settingId: GUISettingId
-		breadcrumbs: string[]
-		message: string
-	}[] = []
-
-	for (const setting of settings) {
-		const innerBreadcrumbs = [...breadcrumbs, setting.name]
-		if (setting.type === GUISettingsType.SECTION) {
-			for (const warning of getWarnings(setting.getList(), innerBreadcrumbs)) {
-				warnings.push(warning)
-			}
-		} else if (setting.type === GUISettingsType.SETTING) {
-			const warningMessage = setting.getWarning && setting.getWarning()
-			if (warningMessage) {
-				warnings.push({
-					settingId: setting.id,
-					breadcrumbs: innerBreadcrumbs,
-					message: warningMessage,
-				})
-			}
-		} else {
-			assertNever(setting)
-		}
-	}
-	return warnings
+export function getDeepLink(settingId: GUISettingId, context: GUIRenderContext): string {
+	return `${context.baseURL}/${settingId}`
+}
+export interface GUIRenderContext {
+	baseURL: string
+	filterString?: string
 }
