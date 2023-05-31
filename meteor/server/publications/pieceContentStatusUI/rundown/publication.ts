@@ -1,4 +1,4 @@
-import { ISourceLayer, PackageInfo } from '@sofie-automation/blueprints-integration'
+import { PackageInfo } from '@sofie-automation/blueprints-integration'
 import {
 	ExpectedPackageId,
 	PackageContainerPackageId,
@@ -6,47 +6,48 @@ import {
 	PieceId,
 	RundownPlaylistId,
 	SegmentId,
-	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { getPackageContainerPackageId } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyDeep } from 'type-fest'
-import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
-import { UIPieceContentStatus } from '../../../lib/api/rundownNotifications'
-import { UIStudio } from '../../../lib/api/studios'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { CustomCollectionName, PubSub } from '../../../../lib/api/pubsub'
+import { UIPieceContentStatus } from '../../../../lib/api/rundownNotifications'
+import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import {
 	MediaObjects,
 	PackageContainerPackageStatuses,
 	PackageInfos,
 	RundownPlaylists,
 	Studios,
-} from '../../collections'
-import { Studio } from '../../../lib/collections/Studios'
-import { literal, protectString, waitForPromise } from '../../../lib/lib'
-import { checkPieceContentStatus, PieceContentStatusObj } from '../../../lib/mediaObjects'
+} from '../../../collections'
+import { literal, protectString } from '../../../../lib/lib'
 import {
 	CustomPublishCollection,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
 	TriggerUpdate,
-} from '../../lib/customPublication'
-import { logger } from '../../logging'
-import { resolveCredentials } from '../../security/lib/credentials'
-import { NoSecurityReadAccess } from '../../security/noSecurity'
-import { RundownPlaylistReadAccess } from '../../security/rundownPlaylist'
+} from '../../../lib/customPublication'
+import { logger } from '../../../logging'
+import { resolveCredentials } from '../../../security/lib/credentials'
+import { NoSecurityReadAccess } from '../../../security/noSecurity'
+import { RundownPlaylistReadAccess } from '../../../security/rundownPlaylist'
 import { ContentCache, PieceFields } from './reactiveContentCache'
 import { RundownContentObserver } from './rundownContentObserver'
-import { RundownsObserver } from '../lib/rundownsObserver'
-import { LiveQueryHandle } from '../../lib/lib'
+import { RundownsObserver } from '../../lib/rundownsObserver'
+import { LiveQueryHandle } from '../../../lib/lib'
+import {
+	addItemsWithDependenciesChangesToChangedSet,
+	checkPieceContentStatusAndDependencies,
+	fetchStudio,
+	IContentStatusesUpdatePropsBase,
+	PieceDependencies,
+	studioFieldSpecifier,
+	StudioMini,
+} from '../common'
 
 interface UIPieceContentStatusesArgs {
 	readonly rundownPlaylistId: RundownPlaylistId
 }
-
-type StudioMini = Pick<UIStudio, '_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'>
 
 interface UIPieceContentStatusesState {
 	contentCache: ReadonlyDeep<ContentCache>
@@ -56,11 +57,8 @@ interface UIPieceContentStatusesState {
 	pieceDependencies: Map<PieceId, PieceDependencies>
 }
 
-interface UIPieceContentStatusesUpdateProps {
+interface UIPieceContentStatusesUpdateProps extends IContentStatusesUpdatePropsBase {
 	newCache: ContentCache
-
-	invalidateAll: boolean
-	invalidateStudio: StudioId
 
 	updatedSegmentIds: SegmentId[]
 
@@ -68,25 +66,12 @@ interface UIPieceContentStatusesUpdateProps {
 
 	updatedPieceIds: PieceId[]
 	removedPieces: Pick<Piece, PieceFields>[]
-
-	invalidateMediaObjectMediaId: string[]
-	invalidateExpectedPackageId: ExpectedPackageId[]
-	invalidatePackageContainerPackageStatusesId: PackageContainerPackageId[]
 }
 
 type RundownPlaylistFields = '_id' | 'studioId'
 const rundownPlaylistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownPlaylistFields>>({
 	_id: 1,
 	studioId: 1,
-})
-
-type StudioFields = '_id' | 'settings' | 'packageContainers' | 'mappingsWithOverrides' | 'routeSets'
-const studioFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
-	_id: 1,
-	settings: 1,
-	packageContainers: 1,
-	mappingsWithOverrides: 1,
-	routeSets: 1,
 })
 
 async function setupUIPieceContentStatusesPublicationObservers(
@@ -166,7 +151,8 @@ async function setupUIPieceContentStatusesPublicationObservers(
 				added: (id) => triggerUpdate({ invalidateStudio: id }),
 				changed: (id) => triggerUpdate({ invalidateStudio: id }),
 				removed: (id) => triggerUpdate({ invalidateStudio: id }),
-			}
+			},
+			{ projection: studioFieldSpecifier }
 		),
 
 		// Watch for affecting objects
@@ -262,40 +248,16 @@ async function manipulateUIPieceContentStatusesPublicationData(
 		}
 
 		// Look for which docs should be updated based on the media objects/packages
-		addPiecesWithDependenciesChangesToChangedSet(updateProps, regeneratePieceIds, state.pieceDependencies)
+		addItemsWithDependenciesChangesToChangedSet<PieceId>(updateProps, regeneratePieceIds, state.pieceDependencies)
 	}
 
-	regenerateForPieceIds(state.contentCache, state.studio, state.pieceDependencies, collection, regeneratePieceIds)
-}
-
-function addPiecesWithDependenciesChangesToChangedSet(
-	updateProps: Partial<ReadonlyDeep<UIPieceContentStatusesUpdateProps>> | undefined,
-	regeneratePieceIds: Set<PieceId>,
-	pieceDependenciesMap: UIPieceContentStatusesState['pieceDependencies']
-) {
-	if (
-		updateProps &&
-		(updateProps.invalidateExpectedPackageId?.length ||
-			updateProps.invalidateMediaObjectMediaId?.length ||
-			updateProps.invalidatePackageContainerPackageStatusesId?.length)
-	) {
-		const changedMediaObjects = new Set(updateProps.invalidateMediaObjectMediaId)
-		const changedExpectedPackages = new Set(updateProps.invalidateExpectedPackageId)
-		const changedPackageContainerPackages = new Set(updateProps.invalidatePackageContainerPackageStatusesId)
-
-		for (const [pieceId, pieceDependencies] of pieceDependenciesMap.entries()) {
-			if (regeneratePieceIds.has(pieceId)) continue // skip if we already know the piece has changed
-
-			const pieceChanged =
-				pieceDependencies.mediaObjects.find((mediaId) => changedMediaObjects.has(mediaId)) ||
-				pieceDependencies.packageInfos.find((pkgId) => changedExpectedPackages.has(pkgId)) ||
-				pieceDependencies.packageContainerPackageStatuses.find((pkgId) =>
-					changedPackageContainerPackages.has(pkgId)
-				)
-
-			if (pieceChanged) regeneratePieceIds.add(pieceId)
-		}
-	}
+	await regenerateForPieceIds(
+		state.contentCache,
+		state.studio,
+		state.pieceDependencies,
+		collection,
+		regeneratePieceIds
+	)
 }
 
 /**
@@ -340,7 +302,7 @@ function updatePartAndSegmentInfoForExistingDocs(
  * Regenerating the status for the provided PieceIds
  * Note: This will do many calls to the database
  */
-function regenerateForPieceIds(
+async function regenerateForPieceIds(
 	contentCache: ReadonlyDeep<ContentCache>,
 	uiStudio: ReadonlyDeep<StudioMini>,
 	pieceDependenciesState: Map<PieceId, PieceDependencies>,
@@ -372,7 +334,7 @@ function regenerateForPieceIds(
 
 			// Only if this piece is valid
 			if (part && segment && sourceLayer) {
-				const [status, pieceDependencies] = checkPieceContentStatusAndDependencies(
+				const [status, pieceDependencies] = await checkPieceContentStatusAndDependencies(
 					uiStudio,
 					pieceDoc,
 					sourceLayer
@@ -404,88 +366,6 @@ function regenerateForPieceIds(
 
 	// Process any piece deletions
 	collection.remove((doc) => deletedPieceIds.has(doc.pieceId))
-}
-
-function checkPieceContentStatusAndDependencies(
-	uiStudio: UIPieceContentStatusesState['studio'],
-	pieceDoc: Pick<Piece, PieceFields>,
-	sourceLayer: ISourceLayer
-): [status: PieceContentStatusObj, pieceDependencies: PieceDependencies] {
-	// Track the media documents that this Piece searched for, so we can invalidate it whenever one of these changes
-	const pieceDependencies: PieceDependencies = {
-		mediaObjects: [],
-		packageInfos: [],
-		packageContainerPackageStatuses: [],
-	}
-
-	const getMediaObject = (mediaId: string) => {
-		pieceDependencies.mediaObjects.push(mediaId)
-		return waitForPromise(
-			MediaObjects.findOneAsync({
-				studioId: uiStudio._id,
-				mediaId,
-			})
-		)
-	}
-
-	const getPackageInfos = (packageId: ExpectedPackageId) => {
-		pieceDependencies.packageInfos.push(packageId)
-		return waitForPromise(
-			PackageInfos.findFetchAsync({
-				studioId: uiStudio._id,
-				packageId: packageId,
-				type: {
-					$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
-				},
-			})
-		)
-	}
-
-	const getPackageContainerPackageStatus2 = (packageContainerId: string, expectedPackageId: ExpectedPackageId) => {
-		const id = getPackageContainerPackageId(uiStudio._id, packageContainerId, expectedPackageId)
-		pieceDependencies.packageContainerPackageStatuses.push(id)
-		return waitForPromise(
-			PackageContainerPackageStatuses.findOneAsync({
-				_id: id,
-				studioId: uiStudio._id,
-			})
-		)
-	}
-
-	const status = checkPieceContentStatus(
-		pieceDoc,
-		sourceLayer,
-		uiStudio,
-		getMediaObject,
-		getPackageInfos,
-		getPackageContainerPackageStatus2
-	)
-
-	return [status, pieceDependencies]
-}
-
-interface PieceDependencies {
-	mediaObjects: string[]
-	packageInfos: ExpectedPackageId[]
-	packageContainerPackageStatuses: PackageContainerPackageId[]
-}
-
-async function fetchStudio(studioId: StudioId): Promise<UIPieceContentStatusesState['studio'] | undefined> {
-	const studio = (await Studios.findOneAsync(studioId, {
-		projection: studioFieldSpecifier,
-	})) as Pick<Studio, StudioFields> | undefined
-
-	if (!studio) {
-		return undefined
-	}
-
-	return {
-		_id: studio._id,
-		settings: studio.settings,
-		packageContainers: studio.packageContainers,
-		mappings: applyAndValidateOverrides(studio.mappingsWithOverrides).obj,
-		routeSets: studio.routeSets,
-	}
 }
 
 meteorCustomPublish(

@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { RundownId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { logger } from '../../logging'
+import { logger } from '../../../logging'
 import {
 	ContentCache,
 	createReactiveContentCache,
@@ -12,11 +12,11 @@ import {
 	showStyleBaseFieldSpecifier,
 	SourceLayersDoc,
 } from './reactiveContentCache'
-import { Parts, Pieces, Rundowns, Segments, ShowStyleBases } from '../../collections'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { equivalentArrays, waitForPromise } from '../../../lib/lib'
+import { Parts, Pieces, Rundowns, Segments, ShowStyleBases } from '../../../collections'
+import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import { equivalentArrays, waitForPromise } from '../../../../lib/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { ReactiveMongoObserverGroup, ReactiveMongoObserverGroupHandle } from '../lib/observerGroup'
+import { ReactiveMongoObserverGroup, ReactiveMongoObserverGroupHandle } from '../../lib/observerGroup'
 import _ from 'underscore'
 
 const REACTIVITY_DEBOUNCE = 20

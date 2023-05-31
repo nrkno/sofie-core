@@ -1,5 +1,14 @@
 import { TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
-import { PartId, PieceId, RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	BucketAdLibActionId,
+	BucketAdLibId,
+	BucketId,
+	PartId,
+	PieceId,
+	RundownId,
+	RundownPlaylistId,
+	SegmentId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ProtectedString } from '../lib'
 import { PieceContentStatusObj } from '../mediaObjects'
 
@@ -12,6 +21,12 @@ export interface UISegmentPartNote {
 
 	note: TrackedNote
 }
+
+// export enum UIPieceContentStatusSource {
+// 	Piece = 'piece',
+// 	BucketAdlib = 'bucket-adlib',
+// 	BucketAction = 'bucket-action',
+// }
 
 export type UIPieceContentStatusId = ProtectedString<'UIPieceContentStatus'>
 export interface UIPieceContentStatus {
@@ -27,6 +42,18 @@ export interface UIPieceContentStatus {
 
 	name: string
 	segmentName: string
+
+	status: PieceContentStatusObj
+}
+
+export type UIBucketContentStatusId = ProtectedString<'UIBucketContentStatus'>
+export interface UIBucketContentStatus {
+	_id: UIBucketContentStatusId
+
+	bucketId: BucketId
+	docId: BucketAdLibActionId | BucketAdLibId
+
+	name: string
 
 	status: PieceContentStatusObj
 }

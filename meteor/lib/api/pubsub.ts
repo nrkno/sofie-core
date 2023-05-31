@@ -1,5 +1,6 @@
 import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import {
+	BucketId,
 	ExpectedPackageId,
 	PeripheralDeviceId,
 	RundownId,
@@ -53,7 +54,7 @@ import { UserActionsLogItem } from '../collections/UserActionsLog'
 import { DBUser } from '../collections/Users'
 import { DBObj } from '../lib'
 import { MongoQuery } from '../typings/meteor'
-import { UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications'
+import { UIBucketContentStatus, UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications'
 import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'
 import { UIDeviceTriggerPreview } from '../../server/publications/deviceTriggersPreview'
@@ -138,6 +139,7 @@ export enum PubSub {
 
 	uiSegmentPartNotes = 'uiSegmentPartNotes',
 	uiPieceContentStatuses = 'uiPieceContentStatuses',
+	uiBucketContentStatuses = 'uiBucketContentStatuses',
 }
 
 /**
@@ -260,6 +262,7 @@ export interface PubSubTypes {
 
 	[PubSub.uiSegmentPartNotes]: (playlistId: RundownPlaylistId | null) => UISegmentPartNote
 	[PubSub.uiPieceContentStatuses]: (rundownPlaylistId: RundownPlaylistId | null) => UIPieceContentStatus
+	[PubSub.uiBucketContentStatuses]: (studioId: StudioId, bucketId: BucketId) => UIBucketContentStatus
 }
 
 /**
@@ -278,6 +281,7 @@ export enum CustomCollectionName {
 	MountedTriggersPreviews = 'mountedTriggersPreviews',
 	UISegmentPartNotes = 'uiSegmentPartNotes',
 	UIPieceContentStatuses = 'uiPieceContentStatuses',
+	UIBucketContentStatuses = 'uiBucketContentStatuses',
 }
 
 /**
