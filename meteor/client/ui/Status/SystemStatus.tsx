@@ -26,7 +26,7 @@ import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { StatusResponse } from '../../../lib/api/systemStatus'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
-import { RESTART_SALT } from '../../../lib/api/userActions'
+import { SINGLE_USE_TOKEN_SALT } from '../../../lib/api/userActions'
 import { DEFAULT_TSR_ACTION_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { SubdeviceAction } from '@sofie-automation/shared-lib/dist/core/deviceConfigManifest'
 import { StatusCodePill } from './StatusCodePill'
@@ -436,7 +436,7 @@ export const CoreItem = reacti18next.withTranslation()(
 													t,
 													e,
 													UserAction.GENERATE_RESTART_TOKEN,
-													(e, ts) => MeteorCall.userAction.generateRestartToken(e, ts),
+													(e, ts) => MeteorCall.userAction.generateSingleUseToken(e, ts),
 													(err, token) => {
 														if (err || !token) {
 															NotificationCenter.push(
@@ -449,7 +449,7 @@ export const CoreItem = reacti18next.withTranslation()(
 															)
 															return
 														}
-														const restartToken = getHash(RESTART_SALT + token)
+														const restartToken = getHash(SINGLE_USE_TOKEN_SALT + token)
 														doUserAction(
 															t,
 															{},

@@ -879,7 +879,20 @@ const RundownHeader = withTranslation()(
 					t,
 					e,
 					UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
-					(e, ts) => MeteorCall.userAction.storeRundownSnapshot(e, ts, this.props.playlist._id, 'Taken by user', false),
+					(e, ts) =>
+						MeteorCall.userAction.generateSingleUseToken(e, ts).then((tokenResponse) => {
+							if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
+								throw tokenResponse
+							}
+							return MeteorCall.userAction.storeRundownSnapshot(
+								e,
+								ts,
+								tokenResponse.result,
+								this.props.playlist._id,
+								'Taken by user',
+								false
+							)
+						}),
 					() => {
 						NotificationCenter.push(
 							new Notification(
@@ -2715,13 +2728,19 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				e,
 				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
 				(e, ts) =>
-					MeteorCall.userAction.storeRundownSnapshot(
-						e,
-						ts,
-						playlistId,
-						'User requested log at' + getCurrentTime(),
-						false
-					),
+					MeteorCall.userAction.generateSingleUseToken(e, ts).then((tokenResponse) => {
+						if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
+							throw tokenResponse
+						}
+						return MeteorCall.userAction.storeRundownSnapshot(
+							e,
+							ts,
+							tokenResponse.result,
+							playlistId,
+							'User requested log at' + getCurrentTime(),
+							false
+						)
+					}),
 				() => {
 					NotificationCenter.push(
 						new Notification(

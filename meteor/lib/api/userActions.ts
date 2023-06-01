@@ -175,6 +175,7 @@ export interface NewUserActionAPI extends MethodContext {
 	storeRundownSnapshot(
 		userEvent: string,
 		eventTime: Time,
+		token: string,
 		playlistId: RundownPlaylistId,
 		reason: string,
 		full: boolean
@@ -246,7 +247,7 @@ export interface NewUserActionAPI extends MethodContext {
 		eventTime: Time,
 		playlistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>>
-	generateRestartToken(userEvent: string, eventTime: Time): Promise<ClientAPI.ClientResponse<string>>
+	generateSingleUseToken(userEvent: string, eventTime: Time): Promise<ClientAPI.ClientResponse<string>>
 	restartCore(userEvent: string, eventTime: Time, token: string): Promise<ClientAPI.ClientResponse<string>>
 	guiFocused(userEvent: string, eventTime: Time, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
 	guiBlurred(userEvent: string, eventTime: Time, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
@@ -385,7 +386,7 @@ export enum UserActionAPIMethods {
 
 	'regenerateRundownPlaylist' = 'userAction.ingest.regenerateRundownPlaylist',
 
-	'generateRestartToken' = 'userAction.system.generateRestartToken',
+	'generateSingleUseToken' = 'userAction.system.generateSingleUseToken',
 	'restartCore' = 'userAction.system.restartCore',
 
 	'guiFocused' = 'userAction.focused',
@@ -412,4 +413,4 @@ export enum TriggerReloadDataResponse {
 	MISSING = 'missing',
 }
 
-export const RESTART_SALT = 'clientRestart_'
+export const SINGLE_USE_TOKEN_SALT = 'token_'

@@ -1,7 +1,7 @@
 import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
-import { RESTART_SALT } from '../../../../lib/api/userActions'
+import { SINGLE_USE_TOKEN_SALT } from '../../../../lib/api/userActions'
 import { getCurrentTime, getHash } from '../../../../lib/lib'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { ClientAPI } from '../../../../lib/api/client'
@@ -19,7 +19,7 @@ describe('User Actions - General', () => {
 		jest.useFakeTimers()
 
 		// Generate restart token
-		const res = (await MeteorCall.userAction.generateRestartToken(
+		const res = (await MeteorCall.userAction.generateSingleUseToken(
 			'e',
 			getCurrentTime()
 		)) as ClientAPI.ClientResponseSuccess<string>
@@ -34,7 +34,7 @@ describe('User Actions - General', () => {
 		).resolves.toMatchUserRawError(/Restart token is invalid/)
 
 		await expect(
-			MeteorCall.userAction.restartCore('e', getCurrentTime(), getHash(RESTART_SALT + res.result))
+			MeteorCall.userAction.restartCore('e', getCurrentTime(), getHash(SINGLE_USE_TOKEN_SALT + res.result))
 		).resolves.toMatchObject({
 			success: 200,
 		})
