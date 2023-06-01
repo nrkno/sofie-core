@@ -301,6 +301,7 @@ export type CustomCollectionType = {
 	[CustomCollectionName.MountedTriggersPreviews]: PreviewWrappedAdLib
 	[CustomCollectionName.UISegmentPartNotes]: UISegmentPartNote
 	[CustomCollectionName.UIPieceContentStatuses]: UIPieceContentStatus
+	[CustomCollectionName.UIBucketContentStatuses]: UIBucketContentStatus
 }
 
 /**
