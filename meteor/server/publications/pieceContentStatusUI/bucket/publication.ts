@@ -32,10 +32,10 @@ import {
 	IContentStatusesUpdatePropsBase,
 	PieceDependencies,
 	studioFieldSpecifier,
-	StudioMini,
 } from '../common'
 import { BucketContentObserver } from './bucketContentObserver'
 import { regenerateForBucketActionIds, regenerateForBucketAdLibIds } from './regenerateForItem'
+import { PieceContentStatusStudio } from '../checkPieceContentStatus'
 
 interface UIBucketContentStatusesArgs {
 	readonly studioId: StudioId
@@ -45,7 +45,7 @@ interface UIBucketContentStatusesArgs {
 interface UIBucketContentStatusesState {
 	contentCache: ReadonlyDeep<BucketContentCache>
 
-	studio: ReadonlyDeep<StudioMini>
+	studio: PieceContentStatusStudio
 
 	adlibDependencies: Map<BucketAdLibId, PieceDependencies>
 	actionDependencies: Map<BucketAdLibActionId, PieceDependencies>

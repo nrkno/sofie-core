@@ -43,7 +43,6 @@ import {
 	IContentStatusesUpdatePropsBase,
 	PieceDependencies,
 	studioFieldSpecifier,
-	StudioMini,
 } from '../common'
 import {
 	regenerateForAdLibActionIds,
@@ -53,6 +52,7 @@ import {
 	regenerateForPieceIds,
 	regenerateForPieceInstanceIds,
 } from './regenerateItems'
+import { PieceContentStatusStudio } from '../checkPieceContentStatus'
 
 interface UIPieceContentStatusesArgs {
 	readonly rundownPlaylistId: RundownPlaylistId
@@ -61,7 +61,7 @@ interface UIPieceContentStatusesArgs {
 interface UIPieceContentStatusesState {
 	contentCache: ReadonlyDeep<ContentCache>
 
-	studio: ReadonlyDeep<StudioMini>
+	studio: PieceContentStatusStudio
 
 	pieceDependencies: Map<PieceId, PieceDependencies>
 	pieceInstanceDependencies: Map<PieceInstanceId, PieceDependencies>

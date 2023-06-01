@@ -10,7 +10,10 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { getExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { ExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PackageContainerPackageStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
+import {
+	getPackageContainerPackageId,
+	PackageContainerPackageStatusDB,
+} from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { PieceGeneric, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { IStudioSettings, StudioPackageContainer } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -22,6 +25,8 @@ import { UIStudio } from '../../../lib/api/studios'
 import { routeExpectedPackages, MappingExtWithPackage } from '../../../lib/collections/Studios'
 import { generateTranslation, unprotectString } from '../../../lib/lib'
 import { PieceContentStatusObj, ScanInfoForPackage, ScanInfoForPackages } from '../../../lib/mediaObjects'
+import { MediaObjects, PackageContainerPackageStatuses, PackageInfos } from '../../collections'
+import type { PieceDependencies } from './common'
 
 /**
  * Take properties from the mediainfo / medistream and transform into a
@@ -138,46 +143,82 @@ export function getMediaObjectMediaId(
 }
 
 export type PieceContentStatusPiece = Pick<PieceGeneric, '_id' | 'content' | 'expectedPackages'>
-export type PieceContentStatusStudio = ReadonlyDeep<
-	Pick<UIStudio, '_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'>
+export type PieceContentStatusStudio = Pick<
+	UIStudio,
+	'_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'
 >
 
-export async function checkPieceContentStatus(
+export async function checkPieceContentStatusAndDependencies(
+	studio: PieceContentStatusStudio,
 	piece: PieceContentStatusPiece,
-	sourceLayer: ISourceLayer | undefined,
-	studio: PieceContentStatusStudio | undefined,
-	getMediaObject: (mediaId: string) => Promise<MediaObject | undefined>,
-	getPackageInfos: (packageId: ExpectedPackageId) => Promise<PackageInfoDB[]>,
-	getPackageContainerPackageStatus: (
-		packageContainerId: string,
-		expectedPackageId: ExpectedPackageId
-	) => Promise<Pick<PackageContainerPackageStatusDB, 'status'> | undefined>
-): Promise<PieceContentStatusObj> {
+	sourceLayer: ISourceLayer
+): Promise<[status: PieceContentStatusObj, pieceDependencies: PieceDependencies]> {
+	const pieceDependencies: PieceDependencies = {
+		mediaObjects: [],
+		packageInfos: [],
+		packageContainerPackageStatuses: [],
+	}
+
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
-	if (!ignoreMediaStatus && sourceLayer && studio) {
+	if (!ignoreMediaStatus) {
 		if (piece.expectedPackages) {
+			const getPackageInfos = async (packageId: ExpectedPackageId) => {
+				pieceDependencies.packageInfos.push(packageId)
+				return PackageInfos.findFetchAsync({
+					studioId: studio._id,
+					packageId: packageId,
+					type: {
+						$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
+					},
+				})
+			}
+
+			const getPackageContainerPackageStatus = async (
+				packageContainerId: string,
+				expectedPackageId: ExpectedPackageId
+			) => {
+				const id = getPackageContainerPackageId(studio._id, packageContainerId, expectedPackageId)
+				pieceDependencies.packageContainerPackageStatuses.push(id)
+				return PackageContainerPackageStatuses.findOneAsync({
+					_id: id,
+					studioId: studio._id,
+				})
+			}
+
 			// Using Expected Packages:
-			return checkPieceContentExpectedPackageStatus(
+			const status = await checkPieceContentExpectedPackageStatus(
 				piece,
 				sourceLayer,
 				studio,
 				getPackageInfos,
 				getPackageContainerPackageStatus
 			)
+			return [status, pieceDependencies]
 		} else {
 			// Fallback to MediaObject statuses:
+			const getMediaObject = async (mediaId: string) => {
+				pieceDependencies.mediaObjects.push(mediaId)
+				return MediaObjects.findOneAsync({
+					studioId: studio._id,
+					mediaId,
+				})
+			}
 
-			return checkPieceContentMediaObjectStatus(piece, sourceLayer, studio, getMediaObject)
+			const status = await checkPieceContentMediaObjectStatus(piece, sourceLayer, studio, getMediaObject)
+			return [status, pieceDependencies]
 		}
 	}
 
-	return {
-		status: PieceStatusCode.UNKNOWN,
-		metadata: null,
-		packageInfos: undefined,
-		messages: [],
-		contentDuration: undefined,
-	}
+	return [
+		{
+			status: PieceStatusCode.UNKNOWN,
+			metadata: null,
+			packageInfos: undefined,
+			messages: [],
+			contentDuration: undefined,
+		},
+		pieceDependencies,
+	]
 }
 
 async function checkPieceContentMediaObjectStatus(

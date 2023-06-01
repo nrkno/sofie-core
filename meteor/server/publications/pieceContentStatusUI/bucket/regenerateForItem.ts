@@ -4,9 +4,13 @@ import { UIBucketContentStatus } from '../../../../lib/api/rundownNotifications'
 import { literal, protectString } from '../../../../lib/lib'
 import { CustomPublishCollection } from '../../../lib/customPublication'
 import { BucketContentCache } from './bucketContentCache'
-import { checkPieceContentStatusAndDependencies, PieceDependencies, StudioMini } from '../common'
+import { PieceDependencies } from '../common'
 import { wrapTranslatableMessageFromBlueprintsIfNotString } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { PieceContentStatusPiece } from '../checkPieceContentStatus'
+import {
+	checkPieceContentStatusAndDependencies,
+	PieceContentStatusPiece,
+	PieceContentStatusStudio,
+} from '../checkPieceContentStatus'
 
 /**
  * Regenerating the status for the provided AdLibActionId
@@ -14,7 +18,7 @@ import { PieceContentStatusPiece } from '../checkPieceContentStatus'
  */
 export async function regenerateForBucketAdLibIds(
 	contentCache: ReadonlyDeep<BucketContentCache>,
-	uiStudio: ReadonlyDeep<StudioMini>,
+	uiStudio: PieceContentStatusStudio,
 	dependenciesState: Map<BucketAdLibId, PieceDependencies>,
 	collection: CustomPublishCollection<UIBucketContentStatus>,
 	regenerateIds: Set<BucketAdLibId>
@@ -73,7 +77,7 @@ export async function regenerateForBucketAdLibIds(
  */
 export async function regenerateForBucketActionIds(
 	contentCache: ReadonlyDeep<BucketContentCache>,
-	uiStudio: ReadonlyDeep<StudioMini>,
+	uiStudio: PieceContentStatusStudio,
 	dependenciesState: Map<BucketAdLibActionId, PieceDependencies>,
 	collection: CustomPublishCollection<UIBucketContentStatus>,
 	regenerateIds: Set<BucketAdLibActionId>

@@ -10,13 +10,17 @@ import { UIPieceContentStatus } from '../../../../lib/api/rundownNotifications'
 import { literal, protectString } from '../../../../lib/lib'
 import { CustomPublishCollection } from '../../../lib/customPublication'
 import { ContentCache } from './reactiveContentCache'
-import { checkPieceContentStatusAndDependencies, PieceDependencies, StudioMini } from '../common'
 import { wrapTranslatableMessageFromBlueprintsIfNotString } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { PieceContentStatusPiece } from '../checkPieceContentStatus'
+import {
+	checkPieceContentStatusAndDependencies,
+	PieceContentStatusPiece,
+	PieceContentStatusStudio,
+} from '../checkPieceContentStatus'
+import { PieceDependencies } from '../common'
 
 async function regenerateGenericPiece(
 	contentCache: ReadonlyDeep<ContentCache>,
-	uiStudio: ReadonlyDeep<StudioMini>,
+	uiStudio: PieceContentStatusStudio,
 	pieceDoc: PieceContentStatusPiece,
 	sourceLayerId: string | undefined,
 	doc: Pick<Required<UIPieceContentStatus>, '_id' | 'partId' | 'pieceId' | 'rundownId' | 'name'>
@@ -64,7 +68,7 @@ async function regenerateGenericPiece(
  */
 export async function regenerateForPieceIds(
 	contentCache: ReadonlyDeep<ContentCache>,
-	uiStudio: ReadonlyDeep<StudioMini>,
+	uiStudio: PieceContentStatusStudio,
 	dependenciesState: Map<PieceId, PieceDependencies>,
 	collection: CustomPublishCollection<UIPieceContentStatus>,
 	regeneratePieceIds: Set<PieceId>
@@ -111,7 +115,7 @@ export async function regenerateForPieceIds(
  */
 export async function regenerateForPieceInstanceIds(
 	contentCache: ReadonlyDeep<ContentCache>,
-	uiStudio: ReadonlyDeep<StudioMini>,
+	uiStudio: PieceContentStatusStudio,
 	dependenciesState: Map<PieceInstanceId, PieceDependencies>,
 	collection: CustomPublishCollection<UIPieceContentStatus>,
 	regeneratePieceIds: Set<PieceInstanceId>
@@ -164,7 +168,7 @@ export async function regenerateForPieceInstanceIds(
  */
 export async function regenerateForAdLibPieceIds(
 	contentCache: ReadonlyDeep<ContentCache>,
-	uiStudio: ReadonlyDeep<StudioMini>,
+	uiStudio: PieceContentStatusStudio,
 	dependenciesState: Map<PieceId, PieceDependencies>,
 	collection: CustomPublishCollection<UIPieceContentStatus>,
 	regenerateAdLibPieceIds: Set<PieceId>
@@ -211,7 +215,7 @@ export async function regenerateForAdLibPieceIds(
  */
 export async function regenerateForAdLibActionIds(
 	contentCache: ReadonlyDeep<ContentCache>,
-	uiStudio: ReadonlyDeep<StudioMini>,
+	uiStudio: PieceContentStatusStudio,
 	dependenciesState: Map<AdLibActionId, PieceDependencies>,
 	collection: CustomPublishCollection<UIPieceContentStatus>,
 	regenerateActionIds: Set<AdLibActionId>
@@ -266,7 +270,7 @@ export async function regenerateForAdLibActionIds(
  */
 export async function regenerateForBaselineAdLibPieceIds(
 	contentCache: ReadonlyDeep<ContentCache>,
-	uiStudio: ReadonlyDeep<StudioMini>,
+	uiStudio: PieceContentStatusStudio,
 	dependenciesState: Map<PieceId, PieceDependencies>,
 	collection: CustomPublishCollection<UIPieceContentStatus>,
 	regenerateAdLibPieceIds: Set<PieceId>
@@ -331,7 +335,7 @@ export async function regenerateForBaselineAdLibPieceIds(
  */
 export async function regenerateForBaselineAdLibActionIds(
 	contentCache: ReadonlyDeep<ContentCache>,
-	uiStudio: ReadonlyDeep<StudioMini>,
+	uiStudio: PieceContentStatusStudio,
 	dependenciesState: Map<RundownBaselineAdLibActionId, PieceDependencies>,
 	collection: CustomPublishCollection<UIPieceContentStatus>,
 	regenerateActionIds: Set<RundownBaselineAdLibActionId>

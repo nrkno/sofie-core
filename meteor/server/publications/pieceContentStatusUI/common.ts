@@ -1,18 +1,12 @@
-import { ISourceLayer, PackageInfo } from '@sofie-automation/blueprints-integration'
 import { ExpectedPackageId, PackageContainerPackageId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { getPackageContainerPackageId } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyDeep } from 'type-fest'
-import { UIStudio } from '../../../lib/api/studios'
 import { Studio } from '../../../lib/collections/Studios'
 import { literal } from '../../../lib/lib'
-import { PieceContentStatusObj } from '../../../lib/mediaObjects'
-import { MediaObjects, PackageContainerPackageStatuses, PackageInfos, Studios } from '../../collections'
-import { checkPieceContentStatus, PieceContentStatusPiece } from './checkPieceContentStatus'
-
-export type StudioMini = Pick<UIStudio, '_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'>
+import { Studios } from '../../collections'
+import { PieceContentStatusStudio } from './checkPieceContentStatus'
 
 export type StudioFields = '_id' | 'settings' | 'packageContainers' | 'mappingsWithOverrides' | 'routeSets'
 export const studioFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
@@ -68,64 +62,7 @@ export function addItemsWithDependenciesChangesToChangedSet<T extends ProtectedS
 	}
 }
 
-export async function checkPieceContentStatusAndDependencies(
-	uiStudio: ReadonlyDeep<StudioMini>,
-	pieceDoc: PieceContentStatusPiece,
-	sourceLayer: ISourceLayer
-): Promise<[status: PieceContentStatusObj, pieceDependencies: PieceDependencies]> {
-	// Track the media documents that this Piece searched for, so we can invalidate it whenever one of these changes
-	const pieceDependencies: PieceDependencies = {
-		mediaObjects: [],
-		packageInfos: [],
-		packageContainerPackageStatuses: [],
-	}
-
-	// Future: refactor this method to not have the queries injected like this.
-
-	const getMediaObject = async (mediaId: string) => {
-		pieceDependencies.mediaObjects.push(mediaId)
-		return MediaObjects.findOneAsync({
-			studioId: uiStudio._id,
-			mediaId,
-		})
-	}
-
-	const getPackageInfos = async (packageId: ExpectedPackageId) => {
-		pieceDependencies.packageInfos.push(packageId)
-		return PackageInfos.findFetchAsync({
-			studioId: uiStudio._id,
-			packageId: packageId,
-			type: {
-				$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
-			},
-		})
-	}
-
-	const getPackageContainerPackageStatus2 = async (
-		packageContainerId: string,
-		expectedPackageId: ExpectedPackageId
-	) => {
-		const id = getPackageContainerPackageId(uiStudio._id, packageContainerId, expectedPackageId)
-		pieceDependencies.packageContainerPackageStatuses.push(id)
-		return PackageContainerPackageStatuses.findOneAsync({
-			_id: id,
-			studioId: uiStudio._id,
-		})
-	}
-
-	const status = await checkPieceContentStatus(
-		pieceDoc,
-		sourceLayer,
-		uiStudio,
-		getMediaObject,
-		getPackageInfos,
-		getPackageContainerPackageStatus2
-	)
-
-	return [status, pieceDependencies]
-}
-
-export async function fetchStudio(studioId: StudioId): Promise<ReadonlyDeep<StudioMini> | undefined> {
+export async function fetchStudio(studioId: StudioId): Promise<PieceContentStatusStudio | undefined> {
 	const studio = (await Studios.findOneAsync(studioId, {
 		projection: studioFieldSpecifier,
 	})) as Pick<Studio, StudioFields> | undefined
