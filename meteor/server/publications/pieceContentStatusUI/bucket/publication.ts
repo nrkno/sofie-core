@@ -36,6 +36,7 @@ import {
 import { BucketContentObserver } from './bucketContentObserver'
 import { regenerateForBucketActionIds, regenerateForBucketAdLibIds } from './regenerateForItem'
 import { PieceContentStatusStudio } from '../checkPieceContentStatus'
+import { BucketSecurity } from '../../../security/buckets'
 
 interface UIBucketContentStatusesArgs {
 	readonly studioId: StudioId
@@ -252,9 +253,11 @@ meteorCustomPublish(
 		const cred = await resolveCredentials({ userId: this.userId, token: undefined })
 
 		if (
-			studioId &&
-			(!cred || NoSecurityReadAccess.any() || (await StudioReadAccess.studioContent(studioId, cred)))
-			// TODO - bucket access?
+			NoSecurityReadAccess.any() ||
+			(studioId &&
+				bucketId &&
+				(await StudioReadAccess.studioContent(studioId, cred)) &&
+				(await BucketSecurity.allowReadAccess(cred, bucketId)))
 		) {
 			await setUpCollectionOptimizedObserver<
 				UIBucketContentStatus,
