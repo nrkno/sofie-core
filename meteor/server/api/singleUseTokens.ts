@@ -54,10 +54,12 @@ export function verifyHashedToken(token: string, secret: string = TOKEN_SECRET, 
  */
 const usedTokensShortTermMemory = new Map<string, Time>()
 
+const TOKEN_SECRET_LENGTH = 64
+
 /**
  * An automatically generated secret, regenerated on every restart, so that tokens can't be re-used between restarts
  */
-const TOKEN_SECRET = randomBytes(length)
+const TOKEN_SECRET = randomBytes(TOKEN_SECRET_LENGTH)
 	.map((value) => CHARSET.charCodeAt(Math.floor((value * CHARSET.length) / 256)))
 	.toString()
 
