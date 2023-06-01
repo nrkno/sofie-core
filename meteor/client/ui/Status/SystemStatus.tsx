@@ -8,7 +8,7 @@ import {
 import * as reacti18next from 'react-i18next'
 import * as i18next from 'i18next'
 import Moment from 'react-moment'
-import { assertNever, getCurrentTime, getHash, protectString, unprotectString } from '../../../lib/lib'
+import { assertNever, getCurrentTime, protectString, unprotectString } from '../../../lib/lib'
 import { Link } from 'react-router-dom'
 import Tooltip from 'rc-tooltip'
 import { faTrash, faEye } from '@fortawesome/free-solid-svg-icons'
@@ -26,7 +26,7 @@ import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { StatusResponse } from '../../../lib/api/systemStatus'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
-import { SINGLE_USE_TOKEN_SALT } from '../../../lib/api/userActions'
+import { hashSingleUseToken } from '../../../lib/api/userActions'
 import { DEFAULT_TSR_ACTION_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { SubdeviceAction } from '@sofie-automation/shared-lib/dist/core/deviceConfigManifest'
 import { StatusCodePill } from './StatusCodePill'
@@ -449,12 +449,11 @@ export const CoreItem = reacti18next.withTranslation()(
 															)
 															return
 														}
-														const restartToken = getHash(SINGLE_USE_TOKEN_SALT + token)
 														doUserAction(
 															t,
 															{},
 															UserAction.RESTART_CORE,
-															(e, ts) => MeteorCall.userAction.restartCore(e, ts, restartToken),
+															(e, ts) => MeteorCall.userAction.restartCore(e, ts, hashSingleUseToken(token)),
 															(err, token: string | undefined) => {
 																if (err || !token) {
 																	NotificationCenter.push(

@@ -18,6 +18,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { SnapshotId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Snapshots, Studios } from '../../collections'
 import { ClientAPI } from '../../../lib/api/client'
+import { hashSingleUseToken } from '../../../lib/api/userActions'
 
 interface IProps {
 	match: {
@@ -168,7 +169,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 					if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
 						throw tokenResponse
 					}
-					return MeteorCall.snapshot.storeSystemSnapshot(tokenResponse.result, studioId, `Requested by user`)
+					return MeteorCall.snapshot.storeSystemSnapshot(
+						hashSingleUseToken(tokenResponse.result),
+						studioId,
+						`Requested by user`
+					)
 				})
 				.catch((err) => {
 					logger.error(err)
@@ -189,7 +194,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 					if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
 						throw tokenResponse
 					}
-					return MeteorCall.snapshot.storeDebugSnapshot(tokenResponse.result, studioId, `Requested by user`)
+					return MeteorCall.snapshot.storeDebugSnapshot(
+						hashSingleUseToken(tokenResponse.result),
+						studioId,
+						`Requested by user`
+					)
 				})
 				.catch((err) => {
 					logger.error(err)

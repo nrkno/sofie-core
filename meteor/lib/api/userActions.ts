@@ -6,7 +6,7 @@ import { IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integr
 import { BucketAdLib } from '../collections/BucketAdlibs'
 import { AdLibActionCommon } from '../collections/AdLibActions'
 import { BucketAdLibAction } from '../collections/BucketAdlibActions'
-import { Time } from '../lib'
+import { getHash, Time } from '../lib'
 import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studio'
 import {
 	AdLibActionId,
@@ -414,3 +414,7 @@ export enum TriggerReloadDataResponse {
 }
 
 export const SINGLE_USE_TOKEN_SALT = 'token_'
+
+export function hashSingleUseToken(token: string): string {
+	return getHash(SINGLE_USE_TOKEN_SALT + token)
+}

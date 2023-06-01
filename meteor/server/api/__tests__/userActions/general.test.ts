@@ -1,8 +1,8 @@
 import '../../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment } from '../../../../__mocks__/helpers/database'
-import { SINGLE_USE_TOKEN_SALT } from '../../../../lib/api/userActions'
-import { getCurrentTime, getHash } from '../../../../lib/lib'
+import { hashSingleUseToken } from '../../../../lib/api/userActions'
+import { getCurrentTime } from '../../../../lib/lib'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { ClientAPI } from '../../../../lib/api/client'
 import { UserActionsLog } from '../../../collections'
@@ -33,8 +33,10 @@ describe('User Actions - General', () => {
 			MeteorCall.userAction.restartCore('e', getCurrentTime(), 'invalidToken')
 		).resolves.toMatchUserRawError(/Restart token is invalid/)
 
+		if (!res.result) throw new Error('Token must not be falsy!')
+
 		await expect(
-			MeteorCall.userAction.restartCore('e', getCurrentTime(), getHash(SINGLE_USE_TOKEN_SALT + res.result))
+			MeteorCall.userAction.restartCore('e', getCurrentTime(), hashSingleUseToken(res.result))
 		).resolves.toMatchObject({
 			success: 200,
 		})
