@@ -40,13 +40,13 @@ export interface UIPieceContentStatus {
 	partRank: number
 
 	rundownId: RundownId
-	partId?: PartId
-	segmentId?: SegmentId
+	partId: PartId | undefined
+	segmentId: SegmentId | undefined
 
 	pieceId: PieceId | AdLibActionId | RundownBaselineAdLibActionId | PieceInstanceId
 
 	name: string | ITranslatableMessage
-	segmentName: string
+	segmentName: string | undefined
 
 	status: PieceContentStatusObj
 }

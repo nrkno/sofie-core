@@ -48,6 +48,8 @@ async function regenerateGenericPiece(
 			doc: {
 				...doc,
 
+				segmentId: segment._id,
+
 				segmentRank: segment._rank,
 				partRank: part._rank,
 
@@ -308,11 +310,12 @@ export async function regenerateForBaselineAdLibPieceIds(
 					_id: protectString(`baseline_adlib_${pieceId}`),
 
 					partId: undefined,
+					segmentId: undefined,
 					rundownId: pieceDoc.rundownId,
 					pieceId: pieceId,
 
 					name: pieceDoc.name,
-					segmentName: '', // TODO?
+					segmentName: undefined,
 
 					segmentRank: -1,
 					partRank: -1,
@@ -381,13 +384,14 @@ export async function regenerateForBaselineAdLibActionIds(
 					_id: protectString(`baseline_adlib_${pieceId}`),
 
 					partId: undefined,
+					segmentId: undefined,
 					rundownId: actionDoc.rundownId,
 					pieceId: pieceId,
 
 					name: wrapTranslatableMessageFromBlueprintsIfNotString(actionDoc.display.label, [
 						sourceLayersForRundown.blueprintId,
 					]),
-					segmentName: '', // TODO?
+					segmentName: undefined,
 
 					segmentRank: -1,
 					partRank: -1,
