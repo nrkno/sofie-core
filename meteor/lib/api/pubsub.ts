@@ -30,7 +30,6 @@ import { MediaWorkFlowStep } from '../collections/MediaWorkFlowSteps'
 import { DBOrganization } from '../collections/Organization'
 import { PackageContainerPackageStatusDB } from '../collections/PackageContainerPackageStatus'
 import { PackageContainerStatusDB } from '../collections/PackageContainerStatus'
-import { PackageInfoDB } from '../collections/PackageInfos'
 import { PartInstance } from '../collections/PartInstances'
 import { DBPart } from '../collections/Parts'
 import { PeripheralDeviceCommand } from '../collections/PeripheralDeviceCommands'
@@ -230,7 +229,6 @@ export interface PubSubTypes {
 		selector: MongoQuery<PackageContainerStatusDB>,
 		token?: string
 	) => PackageContainerStatusDB
-	[PubSub.packageInfos]: (selector: MongoQuery<PackageInfoDB>, token?: string) => PackageInfoDB
 
 	// For a PeripheralDevice
 	[PubSub.rundownsForDevice]: (deviceId: PeripheralDeviceId, token: string) => DBRundown

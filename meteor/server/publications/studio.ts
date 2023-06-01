@@ -32,7 +32,6 @@ import {
 	MediaObjects,
 	PackageContainerPackageStatuses,
 	PackageContainerStatuses,
-	PackageInfos,
 	PeripheralDevices,
 	Studios,
 } from '../collections'
@@ -106,16 +105,6 @@ meteorPublish(PubSub.packageContainerStatuses, async function (selector, token) 
 	}
 	if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId, token })) {
 		return PackageContainerStatuses.findWithCursor(selector, modifier)
-	}
-	return null
-})
-meteorPublish(PubSub.packageInfos, async function (selector, token) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<ExpectedPackageWorkStatus> = {
-		fields: {},
-	}
-	if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId, token })) {
-		return PackageInfos.findWithCursor(selector, modifier)
 	}
 	return null
 })
