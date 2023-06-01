@@ -8,8 +8,9 @@ import { ReadonlyDeep } from 'type-fest'
 import { UIStudio } from '../../../lib/api/studios'
 import { Studio } from '../../../lib/collections/Studios'
 import { literal, waitForPromise } from '../../../lib/lib'
-import { checkPieceContentStatus, PieceContentStatusObj, PieceContentStatusPiece } from '../../../lib/mediaObjects'
+import { PieceContentStatusObj } from '../../../lib/mediaObjects'
 import { MediaObjects, PackageContainerPackageStatuses, PackageInfos, Studios } from '../../collections'
+import { checkPieceContentStatus, PieceContentStatusPiece } from './checkPieceContentStatus'
 
 export type StudioMini = Pick<UIStudio, '_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'>
 

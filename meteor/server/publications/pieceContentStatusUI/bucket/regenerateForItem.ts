@@ -5,8 +5,8 @@ import { literal, protectString } from '../../../../lib/lib'
 import { CustomPublishCollection } from '../../../lib/customPublication'
 import { BucketContentCache } from './bucketContentCache'
 import { checkPieceContentStatusAndDependencies, PieceDependencies, StudioMini } from '../common'
-import { PieceContentStatusPiece } from '../../../../lib/mediaObjects'
 import { wrapTranslatableMessageFromBlueprintsIfNotString } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { PieceContentStatusPiece } from '../checkPieceContentStatus'
 
 /**
  * Regenerating the status for the provided AdLibActionId
