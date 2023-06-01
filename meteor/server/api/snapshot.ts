@@ -619,7 +619,7 @@ export async function storeSystemSnapshot(
 ): Promise<SnapshotId> {
 	check(hashedToken, String)
 	if (!_.isNull(studioId)) check(studioId, String)
-	if (verifyHashedToken(hashedToken)) {
+	if (!verifyHashedToken(hashedToken)) {
 		throw new Meteor.Error(401, `Restart token is invalid or has expired`)
 	}
 
@@ -647,7 +647,7 @@ export async function storeRundownPlaylistSnapshot(
 	full?: boolean
 ): Promise<SnapshotId> {
 	check(hashedToken, String)
-	if (verifyHashedToken(hashedToken)) {
+	if (!verifyHashedToken(hashedToken)) {
 		throw new Meteor.Error(401, `Restart token is invalid or has expired`)
 	}
 
@@ -670,7 +670,7 @@ export async function storeDebugSnapshot(
 ): Promise<SnapshotId> {
 	check(studioId, String)
 	check(hashedToken, String)
-	if (verifyHashedToken(hashedToken)) {
+	if (!verifyHashedToken(hashedToken)) {
 		throw new Meteor.Error(401, `Restart token is invalid or has expired`)
 	}
 
