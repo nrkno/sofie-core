@@ -28,17 +28,30 @@ export function verifyHashedToken(token: string, secret: string = TOKEN_SECRET, 
 		return false
 	}
 
+	let valid = false
 	if (token === getHash(SINGLE_USE_TOKEN_SALT + generateToken(secret, timestamp))) {
+		valid = true
+	}
+	// accept a token generated before this validity period
+	if (
+		!valid &&
+		token === getHash(SINGLE_USE_TOKEN_SALT + generateToken(secret, timestamp - 1000 * VALIDITY_PERIOD))
+	) {
+		valid = true
+	}
+	if (valid) {
 		usedTokensShortTermMemory.set(token, timestamp)
 		// we can forget that the token has been used after the validity window has passed, because it will be invalid anyway
 		setTimeout(() => {
 			usedTokensShortTermMemory.delete(token)
-		}, 3 * VALIDITY_PERIOD)
-		return true
+		}, 3 * 1000 * VALIDITY_PERIOD)
 	}
-	return false
+	return valid
 }
 
+/**
+ * A store to quickly reject valid tokens that have already been used, without verifying their validity
+ */
 const usedTokensShortTermMemory = new Map<string, Time>()
 
 /**
