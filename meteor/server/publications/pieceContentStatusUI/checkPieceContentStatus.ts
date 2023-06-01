@@ -142,17 +142,17 @@ export type PieceContentStatusStudio = ReadonlyDeep<
 	Pick<UIStudio, '_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'>
 >
 
-export function checkPieceContentStatus(
+export async function checkPieceContentStatus(
 	piece: PieceContentStatusPiece,
 	sourceLayer: ISourceLayer | undefined,
 	studio: PieceContentStatusStudio | undefined,
-	getMediaObject: (mediaId: string) => MediaObject | undefined,
-	getPackageInfos: (packageId: ExpectedPackageId) => PackageInfoDB[],
-	getPackageContainerPackageStatus2: (
+	getMediaObject: (mediaId: string) => Promise<MediaObject | undefined>,
+	getPackageInfos: (packageId: ExpectedPackageId) => Promise<PackageInfoDB[]>,
+	getPackageContainerPackageStatus: (
 		packageContainerId: string,
 		expectedPackageId: ExpectedPackageId
-	) => Pick<PackageContainerPackageStatusDB, 'status'> | undefined
-): PieceContentStatusObj {
+	) => Promise<Pick<PackageContainerPackageStatusDB, 'status'> | undefined>
+): Promise<PieceContentStatusObj> {
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
 	if (!ignoreMediaStatus && sourceLayer && studio) {
 		if (piece.expectedPackages) {
@@ -162,7 +162,7 @@ export function checkPieceContentStatus(
 				sourceLayer,
 				studio,
 				getPackageInfos,
-				getPackageContainerPackageStatus2
+				getPackageContainerPackageStatus
 			)
 		} else {
 			// Fallback to MediaObject statuses:
@@ -180,12 +180,12 @@ export function checkPieceContentStatus(
 	}
 }
 
-function checkPieceContentMediaObjectStatus(
+async function checkPieceContentMediaObjectStatus(
 	piece: PieceContentStatusPiece,
 	sourceLayer: ISourceLayer,
 	studio: PieceContentStatusStudio,
-	getMediaObject: (mediaId: string) => MediaObject | undefined
-): PieceContentStatusObj {
+	getMediaObject: (mediaId: string) => Promise<MediaObject | undefined>
+): Promise<PieceContentStatusObj> {
 	let metadata: MediaObject | null = null
 	const settings: IStudioSettings | undefined = studio?.settings
 	let pieceStatus: PieceStatusCode = PieceStatusCode.UNKNOWN
@@ -208,7 +208,7 @@ function checkPieceContentMediaObjectStatus(
 					}),
 				})
 			} else {
-				const mediaObject = getMediaObject(fileName)
+				const mediaObject = await getMediaObject(fileName)
 				// If media object not found, then...
 				if (!mediaObject) {
 					messages.push({
@@ -289,7 +289,7 @@ function checkPieceContentMediaObjectStatus(
 			break
 		case SourceLayerType.GRAPHICS:
 			if (fileName) {
-				const mediaObject = getMediaObject(fileName)
+				const mediaObject = await getMediaObject(fileName)
 				if (!mediaObject) {
 					messages.push({
 						status: PieceStatusCode.SOURCE_MISSING,
@@ -328,16 +328,16 @@ interface ContentMessage {
 	message: ITranslatableMessage
 }
 
-function checkPieceContentExpectedPackageStatus(
+async function checkPieceContentExpectedPackageStatus(
 	piece: PieceContentStatusPiece,
 	sourceLayer: ISourceLayer,
 	studio: PieceContentStatusStudio,
-	getPackageInfos: (packageId: ExpectedPackageId) => PackageInfoDB[],
-	getPackageContainerPackageStatus2: (
+	getPackageInfos: (packageId: ExpectedPackageId) => Promise<PackageInfoDB[]>,
+	getPackageContainerPackageStatus: (
 		packageContainerId: string,
 		expectedPackageId: ExpectedPackageId
-	) => Pick<PackageContainerPackageStatusDB, 'status'> | undefined
-): PieceContentStatusObj {
+	) => Promise<Pick<PackageContainerPackageStatusDB, 'status'> | undefined>
+): Promise<PieceContentStatusObj> {
 	let packageInfoToForward: ScanInfoForPackages | undefined = undefined
 	const settings: IStudioSettings | undefined = studio?.settings
 	let pieceStatus: PieceStatusCode = PieceStatusCode.UNKNOWN
@@ -379,7 +379,7 @@ function checkPieceContentExpectedPackageStatus(
 
 			for (const expectedPackage of mapping.expectedPackages) {
 				const expectedPackageId = getExpectedPackageId(piece._id, expectedPackage._id)
-				const packageOnPackageContainer = getPackageContainerPackageStatus2(
+				const packageOnPackageContainer = await getPackageContainerPackageStatus(
 					packageContainerId,
 					expectedPackageId
 				)
@@ -401,7 +401,7 @@ function checkPieceContentExpectedPackageStatus(
 						packageName,
 					}
 					// Fetch scan-info about the package:
-					const dbPackageInfos = getPackageInfos(expectedPackageId)
+					const dbPackageInfos = await getPackageInfos(expectedPackageId)
 					for (const packageInfo of dbPackageInfos) {
 						if (packageInfo.type === PackageInfo.Type.SCAN) {
 							packageInfos[expectedPackage._id].scan = packageInfo.payload

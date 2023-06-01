@@ -7,7 +7,7 @@ import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settin
 import { ReadonlyDeep } from 'type-fest'
 import { UIStudio } from '../../../lib/api/studios'
 import { Studio } from '../../../lib/collections/Studios'
-import { literal, waitForPromise } from '../../../lib/lib'
+import { literal } from '../../../lib/lib'
 import { PieceContentStatusObj } from '../../../lib/mediaObjects'
 import { MediaObjects, PackageContainerPackageStatuses, PackageInfos, Studios } from '../../collections'
 import { checkPieceContentStatus, PieceContentStatusPiece } from './checkPieceContentStatus'
@@ -80,41 +80,40 @@ export async function checkPieceContentStatusAndDependencies(
 		packageContainerPackageStatuses: [],
 	}
 
-	const getMediaObject = (mediaId: string) => {
+	// Future: refactor this method to not have the queries injected like this.
+
+	const getMediaObject = async (mediaId: string) => {
 		pieceDependencies.mediaObjects.push(mediaId)
-		return waitForPromise(
-			MediaObjects.findOneAsync({
-				studioId: uiStudio._id,
-				mediaId,
-			})
-		)
+		return MediaObjects.findOneAsync({
+			studioId: uiStudio._id,
+			mediaId,
+		})
 	}
 
-	const getPackageInfos = (packageId: ExpectedPackageId) => {
+	const getPackageInfos = async (packageId: ExpectedPackageId) => {
 		pieceDependencies.packageInfos.push(packageId)
-		return waitForPromise(
-			PackageInfos.findFetchAsync({
-				studioId: uiStudio._id,
-				packageId: packageId,
-				type: {
-					$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
-				},
-			})
-		)
+		return PackageInfos.findFetchAsync({
+			studioId: uiStudio._id,
+			packageId: packageId,
+			type: {
+				$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
+			},
+		})
 	}
 
-	const getPackageContainerPackageStatus2 = (packageContainerId: string, expectedPackageId: ExpectedPackageId) => {
+	const getPackageContainerPackageStatus2 = async (
+		packageContainerId: string,
+		expectedPackageId: ExpectedPackageId
+	) => {
 		const id = getPackageContainerPackageId(uiStudio._id, packageContainerId, expectedPackageId)
 		pieceDependencies.packageContainerPackageStatuses.push(id)
-		return waitForPromise(
-			PackageContainerPackageStatuses.findOneAsync({
-				_id: id,
-				studioId: uiStudio._id,
-			})
-		)
+		return PackageContainerPackageStatuses.findOneAsync({
+			_id: id,
+			studioId: uiStudio._id,
+		})
 	}
 
-	const status = checkPieceContentStatus(
+	const status = await checkPieceContentStatus(
 		pieceDoc,
 		sourceLayer,
 		uiStudio,
