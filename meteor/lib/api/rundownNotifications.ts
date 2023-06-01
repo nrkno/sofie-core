@@ -6,6 +6,7 @@ import {
 	BucketId,
 	PartId,
 	PieceId,
+	PieceInstanceId,
 	RundownBaselineAdLibActionId,
 	RundownId,
 	RundownPlaylistId,
@@ -42,7 +43,7 @@ export interface UIPieceContentStatus {
 	partId?: PartId
 	segmentId?: SegmentId
 
-	pieceId: PieceId | AdLibActionId | RundownBaselineAdLibActionId
+	pieceId: PieceId | AdLibActionId | RundownBaselineAdLibActionId | PieceInstanceId
 
 	name: string | ITranslatableMessage
 	segmentName: string

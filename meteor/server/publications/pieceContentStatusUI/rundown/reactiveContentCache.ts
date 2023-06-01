@@ -14,6 +14,7 @@ import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataMod
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 
 export type SourceLayersDocId = ProtectedString<'SourceLayersDocId'>
 export interface SourceLayersDoc {
@@ -53,6 +54,13 @@ export const pieceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PieceFi
 	sourceLayerId: 1,
 	content: 1,
 	expectedPackages: 1,
+})
+
+export type PieceInstanceFields = '_id' | 'rundownId' | 'piece'
+export const pieceInstanceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PieceInstanceFields>>({
+	_id: 1,
+	rundownId: 1,
+	piece: 1, // This could be stricter, but this is unlikely to be changed once the PieceInstance is created
 })
 
 export type AdLibPieceFields =
@@ -100,6 +108,7 @@ export interface ContentCache {
 	Segments: ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>
 	Parts: ReactiveCacheCollection<Pick<DBPart, PartFields>>
 	Pieces: ReactiveCacheCollection<Pick<Piece, PieceFields>>
+	PieceInstances: ReactiveCacheCollection<Pick<PieceInstance, PieceInstanceFields>>
 	AdLibPieces: ReactiveCacheCollection<Pick<AdLibPiece, AdLibPieceFields>>
 	AdLibActions: ReactiveCacheCollection<Pick<AdLibAction, AdLibActionFields>>
 	BaselineAdLibPieces: ReactiveCacheCollection<Pick<RundownBaselineAdLibItem, AdLibPieceFields>>
@@ -130,6 +139,10 @@ export function createReactiveContentCache(
 		Segments: new ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>('segments', innerReaction),
 		Parts: new ReactiveCacheCollection<Pick<DBPart, PartFields>>('parts', innerReaction),
 		Pieces: new ReactiveCacheCollection<Pick<Piece, PieceFields>>('pieces', innerReaction),
+		PieceInstances: new ReactiveCacheCollection<Pick<PieceInstance, PieceInstanceFields>>(
+			'pieceInstances',
+			innerReaction
+		),
 		AdLibPieces: new ReactiveCacheCollection<Pick<AdLibPiece, AdLibPieceFields>>('adlibPieces', innerReaction),
 		AdLibActions: new ReactiveCacheCollection<Pick<AdLibAction, AdLibActionFields>>('adlibActions', innerReaction),
 		BaselineAdLibPieces: new ReactiveCacheCollection<Pick<AdLibPiece, AdLibPieceFields>>(

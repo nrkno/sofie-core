@@ -8,6 +8,7 @@ import {
 	createReactiveContentCache,
 	partFieldSpecifier,
 	pieceFieldSpecifier,
+	pieceInstanceFieldSpecifier,
 	rundownFieldSpecifier,
 	segmentFieldSpecifier,
 	ShowStyleBaseFields,
@@ -18,6 +19,7 @@ import {
 	AdLibActions,
 	AdLibPieces,
 	Parts,
+	PieceInstances,
 	Pieces,
 	RundownBaselineAdLibActions,
 	RundownBaselineAdLibPieces,
@@ -142,6 +144,18 @@ export class RundownContentObserver {
 				cache.Pieces.link(),
 				{
 					projection: pieceFieldSpecifier,
+				}
+			),
+			PieceInstances.observe(
+				{
+					rundownId: {
+						$in: rundownIds,
+					},
+					reset: { $ne: true },
+				},
+				cache.PieceInstances.link(),
+				{
+					projection: pieceInstanceFieldSpecifier,
 				}
 			),
 			AdLibPieces.observe(

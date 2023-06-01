@@ -2,6 +2,7 @@ import {
 	AdLibActionId,
 	BlueprintId,
 	PieceId,
+	PieceInstanceId,
 	RundownBaselineAdLibActionId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
@@ -102,6 +103,59 @@ export async function regenerateForPieceIds(
 
 	// Process any piece deletions
 	collection.remove((doc) => deletedPieceIds.has(doc.pieceId as PieceId))
+}
+
+/**
+ * Regenerating the status for the provided PieceIds
+ * Note: This will do many calls to the database
+ */
+export async function regenerateForPieceInstanceIds(
+	contentCache: ReadonlyDeep<ContentCache>,
+	uiStudio: ReadonlyDeep<StudioMini>,
+	dependenciesState: Map<PieceInstanceId, PieceDependencies>,
+	collection: CustomPublishCollection<UIPieceContentStatus>,
+	regeneratePieceIds: Set<PieceInstanceId>
+): Promise<void> {
+	const deletedPieceIds = new Set<PieceInstanceId>()
+
+	// Apply the updates to the Pieces
+	// Future: this could be done with some limited concurrency. It will need to balance performance of the updates and not interfering with other tasks
+	for (const pieceId of regeneratePieceIds) {
+		dependenciesState.delete(pieceId)
+
+		const pieceDoc = contentCache.PieceInstances.findOne(pieceId)
+		if (!pieceDoc) {
+			// Piece has been deleted, queue it for batching
+			deletedPieceIds.add(pieceId)
+		} else {
+			const res = await regenerateGenericPiece(
+				contentCache,
+				uiStudio,
+				pieceDoc.piece,
+				pieceDoc.piece.sourceLayerId,
+				{
+					_id: protectString(`piece_${pieceId}`),
+
+					partId: pieceDoc.piece.startPartId,
+					rundownId: pieceDoc.rundownId,
+					pieceId: pieceId,
+
+					name: pieceDoc.piece.name,
+				}
+			)
+
+			if (res) {
+				dependenciesState.set(pieceId, res.dependencies)
+
+				collection.replace(res.doc)
+			} else {
+				deletedPieceIds.add(pieceId)
+			}
+		}
+	}
+
+	// Process any piece deletions
+	collection.remove((doc) => deletedPieceIds.has(doc.pieceId as PieceInstanceId))
 }
 
 /**
