@@ -12,14 +12,13 @@ import { JSONSchema, TypeName } from '@sofie-automation/shared-lib/dist/lib/JSON
 import deepmerge from 'deepmerge'
 import { SchemaFormSofieEnumDefinition, translateStringIfHasNamespaces } from '../../forms/schemaFormUtil'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { ConfigCategoryEntry } from './CategoryEntry'
 import {
 	OverrideOpHelper,
 	WrappedOverridableItemNormal,
 	useOverrideOpHelper,
 } from '../../../ui/Settings/util/OverrideOpHelper'
-import { GUISetting, GUISettingSection, GUISettingsType, guiSettingId } from '../guiSettings'
-import { SchemaFormWithOverrides } from '../../forms/SchemaFormWithOverrides'
+import { GUISetting, GUISettingSection, GUISettingsType, guiSetting, guiSettingId } from '../guiSettings'
+import { ArrayFormWithOverrides, SchemaFormWithOverrides } from '../../forms/SchemaFormWithOverrides'
 import { GUISettingId } from '../guiSettings'
 
 export function getBlueprintConfigSchemaGuiSettings(props: {
@@ -37,7 +36,7 @@ export function getBlueprintConfigSchemaGuiSettings(props: {
 
 	configObject: ObjectWithOverrides<IBlueprintConfig>
 	saveOverrides: (newOps: SomeObjectOverrideOp[]) => void
-}): (GUISetting | GUISettingSection)[] {
+}): (GUISetting<any> | GUISettingSection)[] {
 	const { t } = useTranslation()
 	const {
 		urlBase,
@@ -155,7 +154,7 @@ export function getBlueprintConfigSchemaGuiSettings(props: {
 	// 	(categoryName: string | null, force?: boolean) => toggleExpanded(categoryName ?? '__OTHER__', force),
 	// 	[toggleExpanded]
 	// )
-	const settings: (GUISetting | GUISettingSection)[] = []
+	const settings: (GUISetting<any> | GUISettingSection)[] = []
 
 	for (const [categoryName, schema] of groupedSchema) {
 		if (categoryName) {
@@ -207,7 +206,7 @@ function getSettingFromSchema(
 		overrideHelper: OverrideOpHelper
 		sofieEnumDefinitons: Record<string, SchemaFormSofieEnumDefinition>
 	}
-): GUISetting | GUISettingSection {
+): GUISetting<any> | GUISettingSection {
 	const t = context.t
 	const settingId = guiSettingId(urlBase, categoryName)
 	// const { t } = useTranslation()
@@ -215,14 +214,43 @@ function getSettingFromSchema(
 	// const childProps = useChildPropsForFormComponent(props)
 
 	switch (schema.type) {
-		// case TypeName.Array:
-		// 	return <ArrayFormWithOverrides {...props} />
+		case TypeName.Array:
+			return literal<GUISettingSection>({
+				type: GUISettingsType.SECTION,
+				name: categoryName,
+				description: schema.description,
+				id: settingId,
+				getList: () => {
+					return [
+						guiSetting({
+							type: GUISettingsType.SETTING,
+							name: '',
+							description: '',
+							transparent: true,
+							id: guiSettingId(settingId, 'items'),
+							render: ArrayFormWithOverrides,
+							renderProps: {
+								schema: schema,
+								translationNamespaces: context.translationNamespaces,
+								allowTables: true,
+								attr: attr,
+								item: context.wrappedItem,
+								overrideHelper: context.overrideHelper,
+								sofieEnumDefinitons: context.sofieEnumDefinitons,
+							},
+							getSearchString: '',
+						}),
+					]
+				},
+				getSearchString: '',
+				renderSummary: () => null, // TODO
+			})
 		case TypeName.Object:
 			return literal<GUISettingSection>({
 				type: GUISettingsType.SECTION,
 				name: categoryName,
 				description: schema.description,
-				id: settingId, // TODO: what to use for id?
+				id: settingId,
 				getList: () => {
 					return Object.entries<JSONSchema>(schema.properties || {}).map(([property, innerSchema]) => {
 						const path = joinObjectPathFragments(attr, property)
@@ -260,39 +288,26 @@ function getSettingFromSchema(
 		case TypeName.Number:
 		case TypeName.Boolean:
 		case TypeName.String:
-			return literal<GUISetting>({
+			return guiSetting({
 				type: GUISettingsType.SETTING,
 				name: categoryName,
 				description: schema.description,
-				id: settingId, // TODO: what to use for id?
-				render: () => {
-					return (
-						// <ConfigCategoryEntry
-						// 	// key={categoryName ?? '__OTHER__'}
-						// 	translationNamespaces={context.translationNamespaces}
-						// 	wrappedItem={context.wrappedItem}
-						// 	categorySchema={schema}
-						// 	// isExpanded={isExpanded(categoryName ?? '__OTHER__')}
-						// 	// toggleExpanded={toggleExpanded2}
-						// 	overrideHelper={context.overrideHelper}
-						// 	sofieEnumDefinitons={context.sofieEnumDefinitons}
-						// />
-						<SchemaFormWithOverrides
-							schema={schema}
-							translationNamespaces={context.translationNamespaces}
-							allowTables
-							attr={''}
-							item={context.wrappedItem}
-							overrideHelper={context.overrideHelper}
-							sofieEnumDefinitons={context.sofieEnumDefinitons}
-						/>
-					)
+				id: settingId,
+				render: SchemaFormWithOverrides,
+				renderProps: {
+					schema: schema,
+					translationNamespaces: context.translationNamespaces,
+					allowTables: true,
+					attr: attr,
+					item: context.wrappedItem,
+					overrideHelper: context.overrideHelper,
+					sofieEnumDefinitons: context.sofieEnumDefinitons,
 				},
 				getSearchString: '',
 			})
 
 		default:
-			return literal<GUISetting>({
+			return guiSetting({
 				type: GUISettingsType.SETTING,
 				name: categoryName,
 				description: schema.description,
@@ -301,6 +316,7 @@ function getSettingFromSchema(
 				render: () => {
 					return <>{t('Unsupported field type "{{ type }}"', { type: schema.type })}</>
 				},
+				renderProps: {},
 				getSearchString: '',
 			})
 		// return <>{t('Unsupported field type "{{ type }}"', { type: schema.type })}</>

@@ -1,7 +1,8 @@
 import { ProtectedString, protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import React from 'react'
 
 export interface GUISettings {
-	list: (GUISetting | GUISettingSection)[]
+	list: (GUISetting<any> | GUISettingSection)[]
 }
 export enum GUISettingsType {
 	SECTION = 'section',
@@ -12,6 +13,7 @@ export interface GUISettingBase {
 	type: GUISettingsType
 	name: string
 	description?: string
+
 	/**
 	 * Globally unique identifier, used to deep-link to a certain setting.
 	 * Must be on the form: "my/deep/link"
@@ -25,15 +27,19 @@ export interface GUISettingBase {
 }
 export interface GUISettingSection extends GUISettingBase {
 	type: GUISettingsType.SECTION
-	getList: () => (GUISetting | GUISettingSection)[]
+	getList: () => (GUISetting<any> | GUISettingSection)[]
 	/** @returns component to display when section is folded/closed in GUI */
 	renderSummary?: React.FC<{}>
 }
 
-export interface GUISetting extends GUISettingBase {
+export interface GUISetting<PROPS> extends GUISettingBase {
 	type: GUISettingsType.SETTING
+	/** When true, don't display name & description, just the content */
+	transparent?: boolean
 	/** @returns the component to use to render the setting */
-	render: React.FC<{}>
+	render: ((props: PROPS) => JSX.Element) | React.Component<PROPS> | React.FC<PROPS>
+	/** properties that will be fed into the render function */
+	renderProps: PROPS
 	/** @returns a warning if there is an issue with the setting, otherwise falsy */
 	getWarning?: () => string | undefined | null | false
 }
@@ -50,10 +56,15 @@ export function guiSettingIdIncludes(settingId: GUISettingId, search: string): b
 	return false
 }
 
-export function getDeepLink(settingId: GUISettingId, context: GUIRenderContext): string {
-	return `${context.baseURL}/${settingId}`
+export function getDeepLink(settingId: GUISettingId, contextBaseUrl: string): string {
+	return `${contextBaseUrl}/${settingId}`
 }
 export interface GUIRenderContext {
 	baseURL: string
 	filterString?: string
+}
+
+/** Convenience method to create a settings object and get strict typings in renderProps */
+export function guiSetting<PROPS>(settingObj: GUISetting<PROPS>): GUISetting<PROPS> {
+	return settingObj
 }

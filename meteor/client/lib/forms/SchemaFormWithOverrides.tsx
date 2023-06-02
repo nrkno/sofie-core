@@ -1,4 +1,4 @@
-import { assertNever, joinObjectPathFragments, literal } from '@sofie-automation/corelib/dist/lib'
+import { joinObjectPathFragments, literal } from '@sofie-automation/corelib/dist/lib'
 import React, { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { WrappedOverridableItemNormal, OverrideOpHelperForItemContents } from '../../ui/Settings/util/OverrideOpHelper'
@@ -116,7 +116,7 @@ export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps): JS
 	}
 }
 
-const ArrayFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
+export const ArrayFormWithOverrides: React.FC<SchemaFormWithOverridesProps> = (props) => {
 	const { t } = useTranslation()
 
 	const childProps = useChildPropsForFormComponent(props)
@@ -332,7 +332,7 @@ const StringFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) =>
 	)
 }
 
-const StringArrayFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
+export const StringArrayFormWithOverrides: React.FC<FormComponentProps> = ({ schema, commonAttrs }) => {
 	return (
 		<>
 			<LabelAndOverrides {...commonAttrs}>
@@ -350,7 +350,7 @@ const StringArrayFormWithOverrides = ({ schema, commonAttrs }: FormComponentProp
 	)
 }
 
-const JsonFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
+export const JsonFormWithOverrides: React.FC<FormComponentProps> = ({ schema, commonAttrs }: FormComponentProps) => {
 	return (
 		<>
 			<LabelAndOverrides {...commonAttrs}>

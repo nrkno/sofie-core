@@ -41,14 +41,14 @@ interface SchemaFormArrayTableProps {
  * An array based table using JSONSchema. This only allows editing the table as a single 'value', not for granular overrides.
  * This should not be used directly, and should instead be used via SchemaFormWithOverrides or one of the alternative wrappers
  */
-export const SchemaFormArrayTable = ({
+export const SchemaFormArrayTable: React.FC<SchemaFormArrayTableProps> = ({
 	schema,
 	translationNamespaces,
 	sofieEnumDefinitons,
 	attr,
 	item,
 	overrideHelper,
-}: SchemaFormArrayTableProps): JSX.Element => {
+}) => {
 	const { t } = useTranslation()
 
 	const rowsArray: any[] = useMemo(

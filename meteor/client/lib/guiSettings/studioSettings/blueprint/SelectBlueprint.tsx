@@ -8,6 +8,32 @@ import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { RedirectToBlueprintButton } from '../../../SettingsNavigation'
+import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
+import { GUISetting, GUISettingsType, guiSetting, guiSettingId } from '../../guiSettings'
+
+export function getSettingSelectBlueprint(props: {
+	t: TFunction
+	studio: Studio
+	urlBase: string
+	selectedBlueprint: Blueprint | undefined
+}): GUISetting<any> {
+	const { t, studio, urlBase, selectedBlueprint } = props
+
+	return guiSetting({
+		type: GUISettingsType.SETTING,
+		name: t('Select blueprint'),
+		// description: t('Name of the studio'),
+		id: guiSettingId(urlBase, 'blueprintId'),
+		getWarning: () => {
+			if (!studio.blueprintId) return t('No Blueprint assigned to studio')
+			if (!selectedBlueprint) return t('Assigned Blueprint not found')
+			return undefined
+		},
+		render: SelectBlueprint,
+		renderProps: { t, studio },
+		getSearchString: '',
+	})
+}
 
 export const SelectBlueprint: React.FC<{ t: TFunction; studio: Studio }> = ({ t, studio }) => {
 	const allStudioBlueprints = useTracker(() => {

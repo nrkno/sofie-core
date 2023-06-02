@@ -3,7 +3,7 @@ import { GUISetting, GUISettingId, GUISettingSection, GUISettingsType } from './
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 export const RenderVerifyGUISettings: React.FC<{
-	getSettings: () => (GUISetting | GUISettingSection)[]
+	getSettings: () => (GUISetting<any> | GUISettingSection)[]
 }> = ({ getSettings }) => {
 	const uniqueIds = new Set<GUISettingId>()
 
@@ -12,7 +12,7 @@ export const RenderVerifyGUISettings: React.FC<{
 
 const VerifyGUISettings: React.FC<{
 	uniqueIds: Set<GUISettingId>
-	getSettings: () => (GUISetting | GUISettingSection)[]
+	getSettings: () => (GUISetting<any> | GUISettingSection)[]
 }> = ({ uniqueIds, getSettings }) => {
 	const settings = getSettings()
 	return (

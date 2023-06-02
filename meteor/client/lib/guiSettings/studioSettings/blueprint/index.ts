@@ -1,10 +1,9 @@
-import React from 'react'
 import { TFunction } from 'react-i18next'
 import { GUISetting, GUISettingSection, GUISettingsType, guiSettingId } from '../../guiSettings'
 import { Studio } from '../../../../../lib/collections/Studios'
 import { Blueprints, Studios } from '../../../../collections'
-import { SelectBlueprint } from './SelectBlueprint'
-import { SelectConfigPreset } from './SelectConfigPreset'
+import { getSettingSelectBlueprint } from './SelectBlueprint'
+import { getSelectConfigPreset as getSettingSelectConfigPreset } from './SelectConfigPreset'
 import { getBlueprintConfigSchemaGuiSettings } from '../../BlueprintConfigSchema'
 import { JSONBlobParse } from '@sofie-automation/blueprints-integration'
 import {
@@ -13,8 +12,14 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 
-export function blueprintProperties(t: TFunction, studio: Studio, urlBase: string): (GUISetting | GUISettingSection)[] {
-	const settings: (GUISetting | GUISettingSection)[] = []
+export function blueprintProperties(props: {
+	t: TFunction
+	studio: Studio
+	urlBase: string
+}): (GUISetting<any> | GUISettingSection)[] {
+	const settings: (GUISetting<any> | GUISettingSection)[] = []
+
+	const { t, studio, urlBase } = props
 
 	// const editAttributeProps = getDefaultEditAttributeProps(studio)
 
@@ -22,39 +27,14 @@ export function blueprintProperties(t: TFunction, studio: Studio, urlBase: strin
 		_id: studio.blueprintId,
 	})
 
-	settings.push({
-		type: GUISettingsType.SETTING,
-		name: t('Select blueprint'),
-		// description: t('Name of the studio'),
-		id: guiSettingId(urlBase, 'blueprintId'),
-		getWarning: () => {
-			if (!studio.blueprintId) return t('No Blueprint assigned to studio')
-			if (!selectedBlueprint) return t('Assigned Blueprint not found')
-			return undefined
-		},
-		render: () => <SelectBlueprint t={t} studio={studio} />,
-		getSearchString: '',
-	})
+	settings.push(getSettingSelectBlueprint({ ...props, selectedBlueprint }))
 
 	if (selectedBlueprint) {
-		settings.push({
-			type: GUISettingsType.SETTING,
-			name: t('Blueprint config preset'),
-			// description: t('Name of the studio'),
-			id: guiSettingId(urlBase, 'blueprint-config-preset'),
-			getWarning: () => {
-				if (!studio.blueprintConfigPresetId) return t('Blueprint config preset not set')
-				if (studio.blueprintConfigPresetIdUnlinked) return t('Blueprint config preset is missing')
-				return undefined
-			},
-			render: () => <SelectConfigPreset t={t} studio={studio} blueprint={selectedBlueprint} />,
-			getSearchString: '',
-		})
+		settings.push(getSettingSelectConfigPreset({ ...props, selectedBlueprint }))
 
 		settings.push({
 			type: GUISettingsType.SECTION,
 			name: t('Blueprint settings'),
-			// description: t('Name of the studio'),
 			id: guiSettingId(urlBase, 'blueprint-settings'),
 			// getWarning: () => {
 			// 	if (!studio.blueprintConfigPresetId) return t('Blueprint config preset not set')
@@ -65,17 +45,6 @@ export function blueprintProperties(t: TFunction, studio: Studio, urlBase: strin
 			getSearchString: '',
 			renderSummary: () => null,
 		})
-		// settings.push({
-		// 	type: GUISettingsType.SETTING,
-		// 	name: t('Blueprint settings'),
-		// 	// description: t('Name of the studio'),
-		// 	id: guiSettingId(urlBase, 'blueprint-settings'),
-		// 	// getWarning: () => {
-		// 	// 	return undefined
-		// 	// },
-		// 	render: () => <BlueprintSettings t={t} studio={studio}/>,
-		// 	getSearchString: '',
-		// })
 	}
 
 	return settings
@@ -85,7 +54,7 @@ function getBlueprintSettings(
 	studio: Studio,
 	urlBase: string,
 	blueprint: Blueprint
-): (GUISetting | GUISettingSection)[] {
+): (GUISetting<any> | GUISettingSection)[] {
 	const configSchema = blueprint.studioConfigSchema ? JSONBlobParse(blueprint.studioConfigSchema) : undefined
 	const translationNamespaces = ['blueprint_' + studio.blueprintId]
 	const layerMappings = {

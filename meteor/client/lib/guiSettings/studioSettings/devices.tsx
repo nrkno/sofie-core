@@ -14,8 +14,13 @@ import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dat
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MomentFromNow } from '../../Moment'
 
-export function devicesProperties(t: TFunction, studio: Studio, urlBase: string): (GUISetting | GUISettingSection)[] {
-	const settings: (GUISetting | GUISettingSection)[] = []
+export function devicesProperties(props: {
+	t: TFunction
+	studio: Studio
+	urlBase: string
+}): (GUISetting<any> | GUISettingSection)[] {
+	const { t, studio, urlBase } = props
+	const settings: (GUISetting<any> | GUISettingSection)[] = []
 
 	// Note: Non-reactive when called directly:
 	const getStudioDevices = () => {
@@ -51,13 +56,8 @@ export function devicesProperties(t: TFunction, studio: Studio, urlBase: string)
 		getWarning: () => {
 			return getStudioDevices().length === 0 && t('No devices attached')
 		},
-		render: () => {
-			return (
-				<>
-					<AddDeviceToStudio t={t} studioId={studio._id} />
-				</>
-			)
-		},
+		render: AddDeviceToStudio,
+		renderProps: { t, studioId: studio._id },
 		getSearchString: getStudioDevices()
 			.map((s) => s.name)
 			.join(' '),
@@ -148,8 +148,8 @@ function deviceProperties(
 	t: TFunction,
 	baseSettingId: GUISettingId,
 	device: PeripheralDevice
-): (GUISetting | GUISettingSection)[] {
-	const settings: (GUISetting | GUISettingSection)[] = []
+): (GUISetting<any> | GUISettingSection)[] {
+	const settings: (GUISetting<any> | GUISettingSection)[] = []
 
 	const editAttributeProps = literal<Partial<IEditAttribute>>({
 		...defaultEditAttributeProps,
@@ -157,23 +157,25 @@ function deviceProperties(
 		collection: PeripheralDevices,
 	})
 
-	settings.push({
-		type: GUISettingsType.SETTING,
-		name: t('Name'),
-		description: t('Name of the device'),
-		id: guiSettingId(baseSettingId, 'name'),
-		getWarning: () => {
-			return !device.name && t('Missing device name')
-		},
-		render: () => {
-			return (
-				<>
-					<EditAttribute {...editAttributeProps} type="text" attribute="name" />
-				</>
-			)
-		},
-		getSearchString: device.name,
-	})
+	settings.push(
+		literal<GUISetting<IEditAttribute>>({
+			type: GUISettingsType.SETTING,
+			name: t('Name'),
+			description: t('Name of the device'),
+			id: guiSettingId(baseSettingId, 'name'),
+			getWarning: () => {
+				return !device.name && t('Missing device name')
+			},
+			render: (props) => <EditAttribute {...props} />,
+			renderProps: {
+				...editAttributeProps,
+				type: 'text',
+				attribute: 'name',
+			},
+
+			getSearchString: device.name,
+		})
+	)
 
 	// TODO: Add device options here
 

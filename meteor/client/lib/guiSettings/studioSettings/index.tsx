@@ -9,7 +9,7 @@ export function generateStudioSettings(t: TFunction, studio: Studio): GUISetting
 	const settings: GUISettings = { list: [] }
 
 	{
-		const list = genericProperties(t, studio, 'generic')
+		const list = genericProperties({ t, studio, urlBase: 'generic' })
 		settings.list.push({
 			type: GUISettingsType.SECTION,
 			name: 'Generic Properties',
@@ -26,7 +26,7 @@ export function generateStudioSettings(t: TFunction, studio: Studio): GUISetting
 		name: 'Devices',
 		id: guiSettingId('devices'),
 
-		getList: () => devicesProperties(t, studio, 'devices'),
+		getList: () => devicesProperties({ t, studio, urlBase: 'devices' }),
 		getSearchString: '',
 		renderSummary: () => null,
 	})
@@ -36,7 +36,7 @@ export function generateStudioSettings(t: TFunction, studio: Studio): GUISetting
 		name: 'Blueprint Configuration',
 		id: guiSettingId('blueprint'),
 
-		getList: () => blueprintProperties(t, studio, 'blueprint'),
+		getList: () => blueprintProperties({ t, studio, urlBase: 'blueprint' }),
 		getSearchString: '',
 		renderSummary: () => null,
 		// renderSummary?: () => JSX.Element
@@ -46,14 +46,14 @@ export function generateStudioSettings(t: TFunction, studio: Studio): GUISetting
 	// 	type: GUISettingsType.SECTION,
 	// 	name: 'Layer mappings',
 
-	// 	getList: () => (GUISetting | GUISettingSection)[]
+	// 	getList: () => (GUISetting<any> | GUISettingSection)[]
 	// 	// renderSummary?: () => JSX.Element
 	// })
 	// settings.list.push({
 	// 	type: GUISettingsType.SECTION,
 	// 	name: 'Route sets',
 
-	// 	getList: () => (GUISetting | GUISettingSection)[]
+	// 	getList: () => (GUISetting<any> | GUISettingSection)[]
 	// 	// renderSummary?: () => JSX.Element
 	// })
 
@@ -61,7 +61,7 @@ export function generateStudioSettings(t: TFunction, studio: Studio): GUISetting
 	// 	type: GUISettingsType.SECTION,
 	// 	name: 'Package Manager',
 
-	// 	getList: () => (GUISetting | GUISettingSection)[]
+	// 	getList: () => (GUISetting<any> | GUISettingSection)[]
 	// 	// renderSummary?: () => JSX.Element
 	// })
 

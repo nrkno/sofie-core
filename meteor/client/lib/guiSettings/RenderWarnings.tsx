@@ -15,7 +15,7 @@ import {
  */
 export const RenderWarnings: React.FC<{
 	context: GUIRenderContext
-	getSettings: () => (GUISetting | GUISettingSection)[]
+	getSettings: () => (GUISetting<any> | GUISettingSection)[]
 	breadcrumbs: string[]
 	onClick: (settingId: GUISettingId) => void
 }> = ({ context, getSettings, breadcrumbs, onClick }) => {
@@ -42,7 +42,7 @@ export const RenderWarnings: React.FC<{
 							<a
 								key={unprotectString(setting.id)}
 								className="gui-settings-warnings"
-								href={getDeepLink(setting.id, context)}
+								href={getDeepLink(setting.id, context.baseURL)}
 								onClick={(e) => {
 									e.preventDefault()
 									onClick(setting.id)

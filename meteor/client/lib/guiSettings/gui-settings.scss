@@ -8,13 +8,26 @@ $section-border-margin: 0.25em;
 .gui-settings {
 	// background-color: red;
 
+	margin-bottom: 90vh;
+
 	> .gui-settings-filter {
 		display: block;
+
+		position: relative;
 
 		padding: 0.5em;
 
 		> input {
 			width: 100%;
+		}
+		> .clear-button {
+			// Place over the input, to the right:
+			position: absolute;
+			right: 0.6em;
+			top: 0.6em;
+			z-index: 1;
+			padding: 0.5em;
+			background: transparent;
 		}
 	}
 
@@ -70,13 +83,18 @@ $section-border-margin: 0.25em;
 		> .content {
 			padding-left: $item-padding-left;
 
-			> .name {
+			> .gui-settings__name {
 				margin: 0;
 				font-size: 125%;
-				> a {
-					color: inherit;
+				> a.link-icon {
+					// (Link icon)
+					font-size: 80%;
 				}
 			}
+			&:hover > .gui-settings__name > a.link-icon {
+				opacity: 0.5;
+			}
+
 			> .description {
 			}
 			> .collapse-section {
@@ -93,11 +111,15 @@ $section-border-margin: 0.25em;
 		}
 	}
 	.gui-settings-setting {
-		> .name {
+		> .gui-settings__name {
 			margin: 0;
 			font-size: 100%;
 			font-weight: bold;
 		}
+		&:hover > .gui-settings__name > a.link-icon {
+			opacity: 0.5;
+		}
+
 		> .description {
 		}
 		> .warning {
@@ -105,6 +127,18 @@ $section-border-margin: 0.25em;
 			padding: 0.5em;
 		}
 		> .content {
+		}
+	}
+
+	// (Link icon):
+	.gui-settings__name > a.link-icon {
+		color: inherit;
+		margin-left: -$item-padding-left;
+		width: $item-padding-left;
+		opacity: 0; // only visible on hover
+		transition: opacity 0.5s;
+		&:hover {
+			opacity: 1 !important;
 		}
 	}
 }

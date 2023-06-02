@@ -5,8 +5,9 @@ import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { Studios } from '../../../collections'
 import { useTranslation } from 'react-i18next'
-import { GUIRenderContext, RenderGUISettings } from '../../../lib/guiSettings/RenderGUISettings'
+import { RenderGUISettings } from '../../../lib/guiSettings/RenderGUISettings'
 import { literal } from '@sofie-automation/corelib/dist/lib'
+import { GUIRenderContext } from '../../../lib/guiSettings/guiSettings'
 
 export const StudioAllSettings: React.FC<{ studioId: StudioId }> = ({ studioId }) => {
 	const { t } = useTranslation()
@@ -15,12 +16,10 @@ export const StudioAllSettings: React.FC<{ studioId: StudioId }> = ({ studioId }
 	const settingsURL = params['settingsUrl'] as string | undefined
 
 	// Generate settings
-	const studio = useTracker(() => Studios.findOne(studioId), [studioId])
-
-	// const studioMappings = useMemo(
-	// 	() => (studio ? applyAndValidateOverrides(studio.mappingsWithOverrides).obj : {}),
-	// 	[studio?.mappingsWithOverrides]
-	// )
+	const studio = useTracker(() => {
+		console.log('studio updated')
+		return Studios.findOne(studioId)
+	}, [studioId])
 
 	if (!studio) return <>{t('No Studio found')}</>
 	const studioSettings = generateStudioSettings(t, studio)
