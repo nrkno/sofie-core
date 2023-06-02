@@ -11,6 +11,8 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { NoticeLevel, Notification, NotificationCenter } from '../../../lib/notifications/notifications'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { ClientAPI } from '../../../lib/api/client'
+import { hashSingleUseToken } from '../../../lib/api/userActions'
 
 export interface IDashboardButtonGroupProps {
 	buttons: DashboardLayoutActionButton[]
@@ -105,7 +107,18 @@ export const DashboardActionButtonGroup = withTranslation()(
 				t,
 				e,
 				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
-				(e, ts) => MeteorCall.userAction.storeRundownSnapshot(e, ts, playlistId, reason, false),
+				(e, ts) =>
+					MeteorCall.system.generateSingleUseToken().then((tokenResult) => {
+						if (ClientAPI.isClientResponseError(tokenResult) || !tokenResult.result) throw tokenResult
+						return MeteorCall.userAction.storeRundownSnapshot(
+							e,
+							ts,
+							hashSingleUseToken(tokenResult.result),
+							playlistId,
+							reason,
+							false
+						)
+					}),
 				(err, snapshotId) => {
 					if (!err && snapshotId) {
 						const noticeLevel: NoticeLevel = NoticeLevel.NOTIFICATION
