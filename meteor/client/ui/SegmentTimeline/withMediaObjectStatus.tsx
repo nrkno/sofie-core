@@ -35,12 +35,16 @@ const DEFAULT_STATUS = deepFreeze<PieceContentStatusObj>({
 	contentDuration: undefined,
 })
 
+/**
+ * The collection is providing some types as `ReadonlyDeep`, but the consumers of this HOC are not expecting that.
+ * This is a quick hack to remove the `ReadonlyDeep` wrapping, to satisfy the consumers until this HOC can be removed.
+ */
 function hackStripReadonly<T extends object>(val: ReadonlyDeep<T> | ReadonlyObjectDeep<T> | undefined): T | undefined {
 	return val as T
 }
 
 /**
- * @deprecated This can now be achieved by a simple minimongo query against
+ * @deprecated This can now be achieved by a simple minimongo query against either UIPieceContentStatuses or UIBucketContentStatuses
  */
 export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 	WrappedComponent: IWrappedComponent<IProps, IState> | React.FC<IProps>
@@ -81,11 +85,11 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 						const pieceUnwrapped = WithMediaObjectStatusHOCComponent.unwrapPieceInstance(piece)
 						const statusDoc = RundownUtils.isBucketAdLibItem(piece)
 							? UIBucketContentStatuses.findOne({
-									// TODO - can this be any stricter?
+									bucketId: piece.bucketId,
 									docId: pieceUnwrapped._id,
 							  })
 							: UIPieceContentStatuses.findOne({
-									// TODO - can this be any stricter?
+									// Future: It would be good for this to be stricter.
 									pieceId: pieceUnwrapped._id,
 							  })
 

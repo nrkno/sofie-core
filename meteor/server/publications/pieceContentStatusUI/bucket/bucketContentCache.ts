@@ -21,7 +21,6 @@ export type BucketAdLibFields =
 	| 'bucketId'
 	| 'studioId'
 	| 'showStyleBaseId'
-	// | 'showStyleVariantId' // TODO?
 	| 'name'
 	| 'sourceLayerId'
 	| 'content'
@@ -43,7 +42,7 @@ export const bucketActionFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<
 	bucketId: 1,
 	studioId: 1,
 	showStyleBaseId: 1,
-	display: 1, // TODO - more specific?
+	display: 1,
 	expectedPackages: 1,
 })
 

@@ -26,12 +26,6 @@ export interface UISegmentPartNote {
 	note: TrackedNote
 }
 
-// export enum UIPieceContentStatusSource {
-// 	Piece = 'piece',
-// 	BucketAdlib = 'bucket-adlib',
-// 	BucketAction = 'bucket-action',
-// }
-
 export type UIPieceContentStatusId = ProtectedString<'UIPieceContentStatus'>
 export interface UIPieceContentStatus {
 	_id: UIPieceContentStatusId
