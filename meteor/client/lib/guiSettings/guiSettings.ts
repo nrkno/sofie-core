@@ -27,9 +27,14 @@ export interface GUISettingBase {
 }
 export interface GUISettingSection extends GUISettingBase {
 	type: GUISettingsType.SECTION
-	getList: () => (GUISetting<any> | GUISettingSection)[]
+	getList: () => GUISettingSectionList
 	/** @returns component to display when section is folded/closed in GUI */
 	renderSummary?: React.FC<{}>
+}
+export interface GUISettingSectionList {
+	/** @returns a warning if there is an issue with the list, otherwise falsy */
+	warning?: string | undefined | null | false
+	list: (GUISetting<any> | GUISettingSection)[]
 }
 
 export interface GUISetting<PROPS> extends GUISettingBase {
@@ -60,8 +65,11 @@ export function getDeepLink(settingId: GUISettingId, contextBaseUrl: string): st
 	return `${contextBaseUrl}/${settingId}`
 }
 export interface GUIRenderContext {
+	/** URL to base deep links on */
 	baseURL: string
-	filterString?: string
+	/** URL for the "homepage */
+	startURL: string
+	gotoUrl: string | undefined
 }
 
 /** Convenience method to create a settings object and get strict typings in renderProps */

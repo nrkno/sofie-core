@@ -105,27 +105,27 @@ export default function StudioSettings(): JSX.Element {
 				<div className="col c12 r1-c12">
 					<ErrorBoundary>
 						<Switch>
-							<Route path={`${match.path}/all-settings/:settingsUrl*`}>
+							<Route path={`${match.path}/:settingsUrl*`}>
 								<StudioAllSettings studioId={studio._id} />
 							</Route>
 							{/* Legacy: */}
-							<Route path={`${match.path}/generic`}>
+							<Route path={`${match.path}/OLD/generic`}>
 								<StudioGenericProperties studio={studio} availableShowStyleBases={availableShowStyleBases} />
 							</Route>
-							<Route path={`${match.path}/devices`}>
+							<Route path={`${match.path}/OLD/devices`}>
 								<StudioDevices studioId={studio._id} />
 							</Route>
-							<Route path={`${match.path}/blueprint-config`}>
+							<Route path={`${match.path}/OLD/blueprint-config`}>
 								<StudioBlueprintConfigurationSettings studio={studio} />
 							</Route>
-							<Route path={`${match.path}/mappings`}>
+							<Route path={`${match.path}/OLD/mappings`}>
 								<StudioMappings
 									translationNamespaces={translationNamespaces}
 									studio={studio}
 									manifest={layerMappingsSchema}
 								/>
 							</Route>
-							<Route path={`${match.path}/route-sets`}>
+							<Route path={`${match.path}/OLD/route-sets`}>
 								<StudioRoutings
 									translationNamespaces={translationNamespaces}
 									studio={studio}
@@ -133,10 +133,10 @@ export default function StudioSettings(): JSX.Element {
 									manifest={layerMappingsSchema}
 								/>
 							</Route>
-							<Route path={`${match.path}/package-manager`}>
+							<Route path={`${match.path}/OLD/package-manager`}>
 								<StudioPackageManagerSettings studio={studio} />
 							</Route>
-							<Redirect to={`${match.path}/all-settings`} />
+							<Redirect to={`${match.path}/`} />
 						</Switch>
 					</ErrorBoundary>
 				</div>

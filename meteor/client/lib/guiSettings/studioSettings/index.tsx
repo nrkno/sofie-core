@@ -4,18 +4,18 @@ import { Studio } from '../../../../lib/collections/Studios'
 import { genericProperties } from './generic'
 import { devicesProperties } from './devices'
 import { blueprintProperties } from './blueprint'
+import { layerMappingsProperties } from './layerMappings'
 
 export function generateStudioSettings(t: TFunction, studio: Studio): GUISettings {
 	const settings: GUISettings = { list: [] }
 
 	{
-		const list = genericProperties({ t, studio, urlBase: 'generic' })
 		settings.list.push({
 			type: GUISettingsType.SECTION,
 			name: 'Generic Properties',
 			id: guiSettingId('generic'),
 
-			getList: () => list,
+			getList: () => genericProperties({ t, studio, urlBase: 'generic' }),
 			getSearchString: '',
 			renderSummary: () => null,
 		})
@@ -37,6 +37,17 @@ export function generateStudioSettings(t: TFunction, studio: Studio): GUISetting
 		id: guiSettingId('blueprint'),
 
 		getList: () => blueprintProperties({ t, studio, urlBase: 'blueprint' }),
+		getSearchString: '',
+		renderSummary: () => null,
+		// renderSummary?: () => JSX.Element
+	})
+
+	settings.list.push({
+		type: GUISettingsType.SECTION,
+		name: 'Layer mappings',
+		id: guiSettingId('mappings'),
+
+		getList: () => layerMappingsProperties({ t, studio, urlBase: 'mappings' }),
 		getSearchString: '',
 		renderSummary: () => null,
 		// renderSummary?: () => JSX.Element

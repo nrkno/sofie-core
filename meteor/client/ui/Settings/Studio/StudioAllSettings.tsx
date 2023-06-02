@@ -6,32 +6,33 @@ import { useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { Studios } from '../../../collections'
 import { useTranslation } from 'react-i18next'
 import { RenderGUISettings } from '../../../lib/guiSettings/RenderGUISettings'
-import { literal } from '@sofie-automation/corelib/dist/lib'
 import { GUIRenderContext } from '../../../lib/guiSettings/guiSettings'
 
 export const StudioAllSettings: React.FC<{ studioId: StudioId }> = ({ studioId }) => {
 	const { t } = useTranslation()
 
 	const params = useParams()
-	const settingsURL = params['settingsUrl'] as string | undefined
+	let settingsURL = params['settingsUrl'] as string | undefined
+	if (settingsURL === 'all') settingsURL = undefined
 
 	// Generate settings
-	const studio = useTracker(() => {
-		console.log('studio updated')
-		return Studios.findOne(studioId)
-	}, [studioId])
+	const studio = useTracker(() => Studios.findOne(studioId), [studioId])
 
 	if (!studio) return <>{t('No Studio found')}</>
 	const studioSettings = generateStudioSettings(t, studio)
-
-	const renderContext = literal<GUIRenderContext>({
-		baseURL: `/settings/studio/${studio._id}/all-settings`,
-		filterString: settingsURL,
-	})
+	const renderContext = getStudioSettingsContext(studio._id, settingsURL)
 
 	return (
 		<>
 			<RenderGUISettings settings={studioSettings} context={renderContext} />
 		</>
 	)
+}
+
+export function getStudioSettingsContext(studioId: StudioId, gotoUrl: string | undefined): GUIRenderContext {
+	return {
+		baseURL: `/settings/studio/${studioId}`,
+		startURL: `/settings/studio/${studioId}/all`,
+		gotoUrl,
+	}
 }

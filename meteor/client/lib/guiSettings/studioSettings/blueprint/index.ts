@@ -1,5 +1,5 @@
 import { TFunction } from 'react-i18next'
-import { GUISetting, GUISettingSection, GUISettingsType, guiSettingId } from '../../guiSettings'
+import { GUISetting, GUISettingSection, GUISettingSectionList, GUISettingsType, guiSettingId } from '../../guiSettings'
 import { Studio } from '../../../../../lib/collections/Studios'
 import { Blueprints, Studios } from '../../../../collections'
 import { getSettingSelectBlueprint } from './SelectBlueprint'
@@ -12,11 +12,7 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 
-export function blueprintProperties(props: {
-	t: TFunction
-	studio: Studio
-	urlBase: string
-}): (GUISetting<any> | GUISettingSection)[] {
+export function blueprintProperties(props: { t: TFunction; studio: Studio; urlBase: string }): GUISettingSectionList {
 	const settings: (GUISetting<any> | GUISettingSection)[] = []
 
 	const { t, studio, urlBase } = props
@@ -47,14 +43,14 @@ export function blueprintProperties(props: {
 		})
 	}
 
-	return settings
+	return { warning: undefined, list: settings }
 }
 function getBlueprintSettings(
 	t: TFunction,
 	studio: Studio,
 	urlBase: string,
 	blueprint: Blueprint
-): (GUISetting<any> | GUISettingSection)[] {
+): GUISettingSectionList {
 	const configSchema = blueprint.studioConfigSchema ? JSONBlobParse(blueprint.studioConfigSchema) : undefined
 	const translationNamespaces = ['blueprint_' + studio.blueprintId]
 	const layerMappings = {

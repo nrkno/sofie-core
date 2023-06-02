@@ -17,7 +17,14 @@ import {
 	WrappedOverridableItemNormal,
 	useOverrideOpHelper,
 } from '../../../ui/Settings/util/OverrideOpHelper'
-import { GUISetting, GUISettingSection, GUISettingsType, guiSetting, guiSettingId } from '../guiSettings'
+import {
+	GUISetting,
+	GUISettingSection,
+	GUISettingSectionList,
+	GUISettingsType,
+	guiSetting,
+	guiSettingId,
+} from '../guiSettings'
 import { ArrayFormWithOverrides, SchemaFormWithOverrides } from '../../forms/SchemaFormWithOverrides'
 import { GUISettingId } from '../guiSettings'
 
@@ -36,7 +43,7 @@ export function getBlueprintConfigSchemaGuiSettings(props: {
 
 	configObject: ObjectWithOverrides<IBlueprintConfig>
 	saveOverrides: (newOps: SomeObjectOverrideOp[]) => void
-}): (GUISetting<any> | GUISettingSection)[] {
+}): GUISettingSectionList {
 	const { t } = useTranslation()
 	const {
 		urlBase,
@@ -191,7 +198,7 @@ export function getBlueprintConfigSchemaGuiSettings(props: {
 			// })
 		}
 	}
-	return settings
+	return { warning: undefined, list: settings }
 }
 
 function getSettingFromSchema(
@@ -221,26 +228,28 @@ function getSettingFromSchema(
 				description: schema.description,
 				id: settingId,
 				getList: () => {
-					return [
-						guiSetting({
-							type: GUISettingsType.SETTING,
-							name: '',
-							description: '',
-							transparent: true,
-							id: guiSettingId(settingId, 'items'),
-							render: ArrayFormWithOverrides,
-							renderProps: {
-								schema: schema,
-								translationNamespaces: context.translationNamespaces,
-								allowTables: true,
-								attr: attr,
-								item: context.wrappedItem,
-								overrideHelper: context.overrideHelper,
-								sofieEnumDefinitons: context.sofieEnumDefinitons,
-							},
-							getSearchString: '',
-						}),
-					]
+					return {
+						list: [
+							guiSetting({
+								type: GUISettingsType.SETTING,
+								name: '',
+								description: '',
+								transparent: true,
+								id: guiSettingId(settingId, 'items'),
+								render: ArrayFormWithOverrides,
+								renderProps: {
+									schema: schema,
+									translationNamespaces: context.translationNamespaces,
+									allowTables: true,
+									attr: attr,
+									item: context.wrappedItem,
+									overrideHelper: context.overrideHelper,
+									sofieEnumDefinitons: context.sofieEnumDefinitons,
+								},
+								getSearchString: '',
+							}),
+						],
+					}
 				},
 				getSearchString: '',
 				renderSummary: () => null, // TODO
@@ -252,23 +261,25 @@ function getSettingFromSchema(
 				description: schema.description,
 				id: settingId,
 				getList: () => {
-					return Object.entries<JSONSchema>(schema.properties || {}).map(([property, innerSchema]) => {
-						const path = joinObjectPathFragments(attr, property)
+					return {
+						list: Object.entries<JSONSchema>(schema.properties || {}).map(([property, innerSchema]) => {
+							const path = joinObjectPathFragments(attr, property)
 
-						return getSettingFromSchema(settingId, property, innerSchema, path, context)
-						// getSettingFromSchema()
+							return getSettingFromSchema(settingId, property, innerSchema, path, context)
+							// getSettingFromSchema()
 
-						// <SchemaFormWithOverrides
-						// 	key={index}
-						// 	attr={path}
-						// 	schema={innerSchema}
-						// 	item={props.item}
-						// 	overrideHelper={props.overrideHelper}
-						// 	translationNamespaces={props.translationNamespaces}
-						// 	sofieEnumDefinitons={props.sofieEnumDefinitons}
-						// 	allowTables={props.allowTables}
-						// />
-					})
+							// <SchemaFormWithOverrides
+							// 	key={index}
+							// 	attr={path}
+							// 	schema={innerSchema}
+							// 	item={props.item}
+							// 	overrideHelper={props.overrideHelper}
+							// 	translationNamespaces={props.translationNamespaces}
+							// 	sofieEnumDefinitons={props.sofieEnumDefinitons}
+							// 	allowTables={props.allowTables}
+							// />
+						}),
+					}
 				},
 				getSearchString: '',
 				renderSummary: () => null, // TODO

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { TFunction } from 'react-i18next'
-import { GUISetting, GUISettingsType, guiSettingId, guiSetting } from '../guiSettings'
+import { GUISetting, GUISettingsType, guiSettingId, guiSetting, GUISettingSectionList } from '../guiSettings'
 import { Studio } from '../../../../lib/collections/Studios'
 import { EditAttribute } from '../../EditAttribute'
 import { ShowStyleBases } from '../../../collections'
@@ -15,7 +15,7 @@ import { Meteor } from 'meteor/meteor'
 import Tooltip from 'rc-tooltip'
 import { getHelpMode } from '../../localStorage'
 
-export function genericProperties(props: { t: TFunction; studio: Studio; urlBase: string }): GUISetting<any>[] {
+export function genericProperties(props: { t: TFunction; studio: Studio; urlBase: string }): GUISettingSectionList {
 	const { t, studio, urlBase } = props
 	const settings: GUISetting<any>[] = []
 
@@ -221,7 +221,7 @@ export function genericProperties(props: { t: TFunction; studio: Studio; urlBase
 
 	settings.push(settingStudioBaselineStatus({ t, studio, urlBase }))
 
-	return settings
+	return { warning: undefined, list: settings }
 }
 function renderShowStyleEditButtons(studio: Studio, availableShowStyleBases: Pick<DBShowStyleBase, '_id' | 'name'>[]) {
 	const buttons: JSX.Element[] = []

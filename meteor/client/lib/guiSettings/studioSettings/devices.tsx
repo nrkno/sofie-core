@@ -1,7 +1,14 @@
 import React, { useCallback, useState } from 'react'
 import { TFunction } from 'react-i18next'
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { GUISetting, GUISettingId, GUISettingSection, GUISettingsType, guiSettingId } from '../guiSettings'
+import {
+	GUISetting,
+	GUISettingId,
+	GUISettingSection,
+	GUISettingSectionList,
+	GUISettingsType,
+	guiSettingId,
+} from '../guiSettings'
 import { Studio } from '../../../../lib/collections/Studios'
 import { EditAttribute, IEditAttribute } from '../../EditAttribute'
 import { PeripheralDevices } from '../../../collections'
@@ -14,11 +21,7 @@ import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dat
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MomentFromNow } from '../../Moment'
 
-export function devicesProperties(props: {
-	t: TFunction
-	studio: Studio
-	urlBase: string
-}): (GUISetting<any> | GUISettingSection)[] {
+export function devicesProperties(props: { t: TFunction; studio: Studio; urlBase: string }): GUISettingSectionList {
 	const { t, studio, urlBase } = props
 	const settings: (GUISetting<any> | GUISettingSection)[] = []
 
@@ -63,7 +66,7 @@ export function devicesProperties(props: {
 			.join(' '),
 	})
 
-	return settings
+	return { warning: undefined, list: settings }
 }
 
 const AddDeviceToStudio: React.FC<{ t: TFunction; studioId: StudioId }> = ({ t, studioId }) => {
@@ -144,11 +147,7 @@ const AddDeviceToStudio: React.FC<{ t: TFunction; studioId: StudioId }> = ({ t, 
 	)
 }
 
-function deviceProperties(
-	t: TFunction,
-	baseSettingId: GUISettingId,
-	device: PeripheralDevice
-): (GUISetting<any> | GUISettingSection)[] {
+function deviceProperties(t: TFunction, baseSettingId: GUISettingId, device: PeripheralDevice): GUISettingSectionList {
 	const settings: (GUISetting<any> | GUISettingSection)[] = []
 
 	const editAttributeProps = literal<Partial<IEditAttribute>>({
@@ -179,5 +178,5 @@ function deviceProperties(
 
 	// TODO: Add device options here
 
-	return settings
+	return { warning: undefined, list: settings }
 }

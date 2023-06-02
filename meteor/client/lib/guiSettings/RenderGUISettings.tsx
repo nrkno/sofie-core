@@ -9,6 +9,7 @@ import {
 	GUISetting,
 	GUISettingId,
 	GUISettingSection,
+	GUISettingSectionList,
 	GUISettings,
 	GUISettingsType,
 	getDeepLink,
@@ -34,7 +35,7 @@ export const RenderGUISettings: React.FC<{ context: GUIRenderContext; settings: 
 		const goToLink = useCallback(
 			(settingId: GUISettingId | null) => {
 				if (settingId === null) {
-					history.push(context.baseURL)
+					history.push(context.startURL)
 					setFilterString('')
 				} else {
 					history.push(getDeepLink(settingId, context.baseURL))
@@ -45,16 +46,13 @@ export const RenderGUISettings: React.FC<{ context: GUIRenderContext; settings: 
 			[history]
 		)
 		useEffect(() => {
-			// Set the filterString to what we got in the context (from a URL parameter):
-			setFilterString(context.filterString ?? '')
-		}, [context.filterString])
-		useEffect(() => {
-			// When user clears the filterString, clear the deep-link url
-			// (quality-of-life improvement)
-			if (filterString === '' && context.filterString !== '') {
-				goToLink(null)
+			// Set the filterString to the url we got in the context:
+			if (context.gotoUrl) {
+				setFilterString('/' + context.gotoUrl) // beginning with "/" means that it is a url
+			} else {
+				setFilterString('')
 			}
-		}, [filterString, context.filterString])
+		}, [context.gotoUrl])
 
 		const innerContext = literal<GUIInnerRenderContext>({
 			...context,
@@ -63,8 +61,14 @@ export const RenderGUISettings: React.FC<{ context: GUIRenderContext; settings: 
 
 		return (
 			<div className="gui-settings">
-				<RenderVerifyGUISettings getSettings={() => settings.list} />
-				<RenderWarnings context={innerContext} getSettings={() => settings.list} breadcrumbs={[]} onClick={goToLink} />
+				<RenderVerifyGUISettings getList={() => ({ list: settings.list })} />
+				<RenderWarnings
+					context={innerContext}
+					settingId={null}
+					getList={() => ({ list: settings.list })}
+					breadcrumbs={[]}
+					onClick={goToLink}
+				/>
 
 				<div className="gui-settings-filter">
 					<TextInputControl
@@ -73,11 +77,26 @@ export const RenderGUISettings: React.FC<{ context: GUIRenderContext; settings: 
 						placeholder="Filter settings..."
 						value={filterString}
 						handleUpdate={(newValue) => {
-							setFilterString(newValue)
+							// When user clears the filterString, clear the deep-link url as well (if it is set)
+							if (newValue === '' && context.gotoUrl !== '') {
+								goToLink(null)
+							} else {
+								setFilterString(newValue)
+							}
 						}}
 						updateOnKey={true}
 					/>
-					<button className="btn btn-default clear-button" onClick={() => setFilterString('')}>
+					<button
+						className="btn btn-default clear-button"
+						onClick={() => {
+							// When user clears the filterString, clear the deep-link url as well (if it is set)
+							if (context.gotoUrl !== '') {
+								goToLink(null)
+							} else {
+								setFilterString('')
+							}
+						}}
+					>
 						<FontAwesomeIcon icon={faXmark} />
 					</button>
 				</div>
@@ -85,7 +104,7 @@ export const RenderGUISettings: React.FC<{ context: GUIRenderContext; settings: 
 				<RenderListItemList
 					t={t}
 					context={innerContext}
-					getSettings={() => settings.list}
+					getList={() => ({ list: settings.list })}
 					isOuter={true}
 					callbackFilterDisplay={() => {
 						// nothing
@@ -99,12 +118,12 @@ export const RenderGUISettings: React.FC<{ context: GUIRenderContext; settings: 
 const RenderListItemList: React.FC<{
 	t: TFunction
 	context: GUIInnerRenderContext
-	getSettings: () => (GUISetting<any> | GUISettingSection)[]
+	getList: () => GUISettingSectionList
 	isOuter?: boolean
 	callbackFilterDisplay: (settingId: GUISettingId, isDisplayed: boolean) => void
 	onClickLink: (settingId: GUISettingId) => void
-}> = function RenderListItemList({ t, context, getSettings, isOuter, callbackFilterDisplay, onClickLink }) {
-	const settings = getSettings()
+}> = function RenderListItemList({ t, context, getList, isOuter, callbackFilterDisplay, onClickLink }) {
+	const settings = getList()
 
 	const [expandCollapse, triggerExpandCollapse] = useTrigger(false)
 
@@ -114,7 +133,7 @@ const RenderListItemList: React.FC<{
 
 	return (
 		<div className={classNames('gui-settings-list', isOuter && 'outer')}>
-			{settings.map((setting) => {
+			{settings.list.map((setting) => {
 				return (
 					<RenderListItem
 						key={unprotectString(setting.id)}
@@ -231,7 +250,7 @@ const RenderListItem: React.FC<{
 					<RenderListItemList
 						t={t}
 						context={context}
-						getSettings={setting.getList}
+						getList={setting.getList}
 						callbackFilterDisplay={(settingId, isDisplayed) => {
 							let hasUpdated = false
 							if (isDisplayed) {
@@ -285,23 +304,39 @@ const RenderListItem: React.FC<{
 function filterDisplaySetting(setting: GUISetting<any> | GUISettingSection, context: GUIInnerRenderContext): boolean {
 	let useSetting = false
 
-	// Match name:
-	if (scatterMatchString(setting.name, context.filterString) !== null) {
-		useSetting = true
-	}
-	// Match description:
-	if (!useSetting && setting.description && scatterMatchString(setting.description, context.filterString) !== null) {
-		useSetting = true
-	}
-	// Match id:
-	if (!useSetting && scatterMatchString(setting.id, context.filterString) !== null) {
-		useSetting = true
-	}
-	// Match getSearchString:
-	if (!useSetting) {
-		const searchString: string =
-			typeof setting.getSearchString === 'string' ? setting.getSearchString : setting.getSearchString()
-		if (scatterMatchString(searchString, context.filterString) !== null) {
+	if (!context.filterString) return true
+
+	const filterStringIsAURL = context.filterString.startsWith('/')
+
+	if (!filterStringIsAURL) {
+		// Match name:
+		if (scatterMatchString(setting.name, context.filterString) !== null) {
+			useSetting = true
+		}
+		// Match description:
+		if (!useSetting && setting.description && scatterMatchString(setting.description, context.filterString) !== null) {
+			useSetting = true
+		}
+		// Match id:
+		if (!useSetting && scatterMatchString(setting.id, context.filterString) !== null) {
+			useSetting = true
+		}
+		// Match getSearchString:
+		if (!useSetting) {
+			const searchString: string =
+				typeof setting.getSearchString === 'string' ? setting.getSearchString : setting.getSearchString()
+			if (scatterMatchString(searchString, context.filterString) !== null) {
+				useSetting = true
+			}
+		}
+	} else {
+		// Match
+		if (
+			guiSettingIdIncludes(
+				setting.id,
+				context.filterString.slice(1) // Remove initial '/'
+			)
+		) {
 			useSetting = true
 		}
 	}

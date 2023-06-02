@@ -1,36 +1,40 @@
 import React from 'react'
 import { assertNever } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import {
-	GUIRenderContext,
-	GUISetting,
-	GUISettingId,
-	GUISettingSection,
-	GUISettingsType,
-	getDeepLink,
-} from './guiSettings'
+import { GUIRenderContext, GUISettingId, GUISettingSectionList, GUISettingsType, getDeepLink } from './guiSettings'
 
 /**
  * Iterates deep through the settings and renders the warnings therein
  */
 export const RenderWarnings: React.FC<{
 	context: GUIRenderContext
-	getSettings: () => (GUISetting<any> | GUISettingSection)[]
+	settingId: GUISettingId | null
+	getList: () => GUISettingSectionList
 	breadcrumbs: string[]
 	onClick: (settingId: GUISettingId) => void
-}> = ({ context, getSettings, breadcrumbs, onClick }) => {
-	const settings = getSettings()
+}> = ({ context, settingId, getList, breadcrumbs, onClick }) => {
+	const settings = getList()
 
 	return (
 		<>
-			{settings.map((setting) => {
+			{settingId && settings.warning && (
+				<Warning
+					context={context}
+					settingId={settingId}
+					breadcrumbs={breadcrumbs}
+					warningMessage={settings.warning}
+					onClick={onClick}
+				/>
+			)}
+			{settings.list.map((setting) => {
 				const innerBreadcrumbs = [...breadcrumbs, setting.name]
 				if (setting.type === GUISettingsType.SECTION) {
 					return (
 						<RenderWarnings
 							key={unprotectString(setting.id)}
 							context={context}
-							getSettings={setting.getList}
+							settingId={setting.id}
+							getList={setting.getList}
 							breadcrumbs={innerBreadcrumbs}
 							onClick={onClick}
 						/>
@@ -39,18 +43,14 @@ export const RenderWarnings: React.FC<{
 					const warningMessage = setting.getWarning && setting.getWarning()
 					if (warningMessage) {
 						return (
-							<a
+							<Warning
 								key={unprotectString(setting.id)}
-								className="gui-settings-warnings"
-								href={getDeepLink(setting.id, context.baseURL)}
-								onClick={(e) => {
-									e.preventDefault()
-									onClick(setting.id)
-								}}
-							>
-								<span className="label">{innerBreadcrumbs.join('>')}</span>:&nbsp;
-								<span className="message">{warningMessage}</span>
-							</a>
+								context={context}
+								settingId={setting.id}
+								breadcrumbs={innerBreadcrumbs}
+								warningMessage={warningMessage}
+								onClick={onClick}
+							/>
 						)
 					}
 				} else {
@@ -59,5 +59,27 @@ export const RenderWarnings: React.FC<{
 				}
 			})}
 		</>
+	)
+}
+
+const Warning: React.FC<{
+	context: GUIRenderContext
+	settingId: GUISettingId
+	breadcrumbs: string[]
+	warningMessage: string
+	onClick: (settingId: GUISettingId) => void
+}> = ({ context, settingId, breadcrumbs, warningMessage, onClick }) => {
+	return (
+		<a
+			className="gui-settings-warnings"
+			href={getDeepLink(settingId, context.baseURL)}
+			onClick={(e) => {
+				e.preventDefault()
+				onClick(settingId)
+			}}
+		>
+			<span className="label">{breadcrumbs.join('>')}</span>:&nbsp;
+			<span className="message">{warningMessage}</span>
+		</a>
 	)
 }

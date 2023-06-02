@@ -1,23 +1,23 @@
 import React from 'react'
-import { GUISetting, GUISettingId, GUISettingSection, GUISettingsType } from './guiSettings'
+import { GUISettingId, GUISettingSectionList, GUISettingsType } from './guiSettings'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 export const RenderVerifyGUISettings: React.FC<{
-	getSettings: () => (GUISetting<any> | GUISettingSection)[]
-}> = ({ getSettings }) => {
+	getList: () => GUISettingSectionList
+}> = ({ getList }) => {
 	const uniqueIds = new Set<GUISettingId>()
 
-	return <VerifyGUISettings getSettings={getSettings} uniqueIds={uniqueIds} />
+	return <VerifyGUISettings getList={getList} uniqueIds={uniqueIds} />
 }
 
 const VerifyGUISettings: React.FC<{
 	uniqueIds: Set<GUISettingId>
-	getSettings: () => (GUISetting<any> | GUISettingSection)[]
-}> = ({ uniqueIds, getSettings }) => {
-	const settings = getSettings()
+	getList: () => GUISettingSectionList
+}> = ({ uniqueIds, getList }) => {
+	const settings = getList()
 	return (
 		<>
-			{settings.map((setting) => {
+			{settings.list.map((setting) => {
 				// Check that IDs are unique:
 				if (uniqueIds.has(setting.id)) {
 					return (
@@ -31,9 +31,7 @@ const VerifyGUISettings: React.FC<{
 
 				// Check children:
 				if (setting.type === GUISettingsType.SECTION) {
-					return (
-						<VerifyGUISettings key={unprotectString(setting.id)} getSettings={setting.getList} uniqueIds={uniqueIds} />
-					)
+					return <VerifyGUISettings key={unprotectString(setting.id)} getList={setting.getList} uniqueIds={uniqueIds} />
 				} else return null
 			})}
 		</>
