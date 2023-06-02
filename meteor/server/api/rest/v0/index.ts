@@ -1,19 +1,25 @@
+/**
+ * NOTE: This is a legacy, deprecated REST API, exposing internal Sofie Publications and Methods as HTTP endpoints
+ *
+ * You should generally use the latest REST API for integrating with Sofie.
+ */
+
 import { ServerResponse, IncomingMessage } from 'http'
 import { Params } from 'meteor/meteorhacks:picker'
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
-import { MeteorMethodSignatures } from '../../methods'
-import { PubSub } from '../../../lib/api/pubsub'
-import { MeteorPublications, MeteorPublicationSignatures } from '../../publications/lib'
-import { UserActionAPIMethods } from '../../../lib/api/userActions'
-import { PickerPOST, PickerGET, AsyncRouter } from '../http'
-import { logger } from '../../../lib/logging'
-import { ClientAPI } from '../../../lib/api/client'
+import { MeteorMethodSignatures } from '../../../methods'
+import { PubSub } from '../../../../lib/api/pubsub'
+import { MeteorPublications, MeteorPublicationSignatures } from '../../../publications/lib'
+import { UserActionAPIMethods } from '../../../../lib/api/userActions'
+import { PickerPOST, PickerGET, AsyncRouter } from '../../http'
+import { logger } from '../../../../lib/logging'
+import { ClientAPI } from '../../../../lib/api/client'
 
-const apiVersion = 0
+const LEGACY_API_VERSION = 0
 
 const index = {
-	version: `${apiVersion}`,
+	version: `${LEGACY_API_VERSION}`,
 	GET: [] as string[],
 	POST: [] as string[],
 }
@@ -60,7 +66,7 @@ Meteor.startup(() => {
 		const methodValue = UserActionAPIMethods[methodName]
 		const signature = MeteorMethodSignatures[methodValue]
 
-		let resource = `/api/${apiVersion}/action/${methodName}`
+		let resource = `/api/${LEGACY_API_VERSION}/action/${methodName}`
 		let docString = resource
 		_.each(signature || [], (paramName, i) => {
 			resource += `/:param${i}`
@@ -81,7 +87,7 @@ Meteor.startup(() => {
 		const f = MeteorPublications[pubValue]
 
 		if (f) {
-			let resource = `/api/${apiVersion}/publication/${pubName}`
+			let resource = `/api/${LEGACY_API_VERSION}/publication/${pubName}`
 			let docString = resource
 			_.each(signature || [], (paramName, i) => {
 				resource += `/:param${i}`
@@ -177,11 +183,6 @@ function assignRoute(routeType: 'POST' | 'GET', resource: string, indexResource:
 	})
 }
 
-PickerGET.route('/api', async (_params, _req: IncomingMessage, res: ServerResponse) => {
-	res.statusCode = 301
-	res.setHeader('Location', '/api/0') // redirect to latest API version
-	res.end()
-})
 PickerGET.route('/api/0', async (_params, _req: IncomingMessage, res: ServerResponse) => {
 	res.setHeader('Content-Type', 'application/json')
 	res.statusCode = 200

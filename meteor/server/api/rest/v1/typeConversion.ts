@@ -27,11 +27,11 @@ import {
 	APISourceLayer,
 	APIStudio,
 	APIStudioSettings,
-} from '../../../lib/api/rest'
-import { DBShowStyleBase, ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
-import { Studio } from '../../../lib/collections/Studios'
-import { Blueprints, ShowStyleBases, Studios } from '../../collections'
+} from '../../../../lib/api/rest'
+import { DBShowStyleBase, ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import { ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
+import { Studio } from '../../../../lib/collections/Studios'
+import { Blueprints, ShowStyleBases, Studios } from '../../../collections'
 
 /*
 This file contains functions that convert between the internal Sofie-Core types and types exposed to the external API.
