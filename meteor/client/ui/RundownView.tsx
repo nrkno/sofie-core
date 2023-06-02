@@ -880,7 +880,7 @@ const RundownHeader = withTranslation()(
 					e,
 					UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
 					(e, ts) =>
-						MeteorCall.userAction.generateSingleUseToken(e, ts).then((tokenResponse) => {
+						MeteorCall.system.generateSingleUseToken().then((tokenResponse) => {
 							if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
 								throw tokenResponse
 							}
@@ -2728,7 +2728,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				e,
 				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
 				(e, ts) =>
-					MeteorCall.userAction.generateSingleUseToken(e, ts).then((tokenResponse) => {
+					MeteorCall.system.generateSingleUseToken().then((tokenResponse) => {
 						if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
 							throw tokenResponse
 						}

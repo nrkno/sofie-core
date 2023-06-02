@@ -163,8 +163,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 			}
 		}
 		takeSystemSnapshot = (studioId: StudioId | null) => {
-			MeteorCall.userAction
-				.generateSingleUseToken('Settings: takeSystemSnapshot', getCurrentTime())
+			MeteorCall.system
+				.generateSingleUseToken()
 				.then((tokenResponse) => {
 					if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
 						throw tokenResponse
@@ -188,8 +188,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 				})
 		}
 		takeDebugSnapshot = (studioId: StudioId) => {
-			MeteorCall.userAction
-				.generateSingleUseToken('Settings: takeDebugSnapshot', getCurrentTime())
+			MeteorCall.system
+				.generateSingleUseToken()
 				.then((tokenResponse) => {
 					if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
 						throw tokenResponse

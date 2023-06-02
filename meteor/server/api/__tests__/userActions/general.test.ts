@@ -19,10 +19,7 @@ describe('User Actions - General', () => {
 		jest.useFakeTimers()
 
 		// Generate restart token
-		const res = (await MeteorCall.userAction.generateSingleUseToken(
-			'e',
-			getCurrentTime()
-		)) as ClientAPI.ClientResponseSuccess<string>
+		const res = (await MeteorCall.system.generateSingleUseToken()) as ClientAPI.ClientResponseSuccess<string>
 		expect(res).toMatchObject({ success: 200 })
 		expect(typeof res.result).toBe('string')
 

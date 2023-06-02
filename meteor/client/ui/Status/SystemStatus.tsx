@@ -37,6 +37,7 @@ import { CoreSystem, PeripheralDevices } from '../../collections'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { DebugStateTable } from './DebugState'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { ClientAPI } from '../../../lib/api/client'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -435,51 +436,37 @@ export const CoreItem = reacti18next.withTranslation()(
 												doUserAction(
 													t,
 													e,
-													UserAction.GENERATE_RESTART_TOKEN,
-													(e, ts) => MeteorCall.userAction.generateSingleUseToken(e, ts),
-													(err, token) => {
-														if (err || !token) {
+													UserAction.RESTART_CORE,
+													(e, ts) =>
+														MeteorCall.system.generateSingleUseToken().then((tokenResponse) => {
+															if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result)
+																throw tokenResponse
+															return MeteorCall.userAction.restartCore(e, ts, hashSingleUseToken(tokenResponse.result))
+														}),
+													(err, restartMessage) => {
+														if (err || !restartMessage) {
 															NotificationCenter.push(
 																new Notification(
 																	undefined,
 																	NoticeLevel.CRITICAL,
-																	t('Could not generate restart token!'),
+																	t('Could not restart core: {{err}}', { err }),
 																	'SystemStatus'
 																)
 															)
 															return
 														}
-														doUserAction(
-															t,
-															{},
-															UserAction.RESTART_CORE,
-															(e, ts) => MeteorCall.userAction.restartCore(e, ts, hashSingleUseToken(token)),
-															(err, token: string | undefined) => {
-																if (err || !token) {
-																	NotificationCenter.push(
-																		new Notification(
-																			undefined,
-																			NoticeLevel.CRITICAL,
-																			t('Could not generate restart core: {{err}}', { err }),
-																			'SystemStatus'
-																		)
-																	)
-																	return
-																}
-																let time = 'unknown'
-																const match = token.match(/([\d\.]+)s/)
-																if (match) {
-																	time = match[1]
-																}
-																NotificationCenter.push(
-																	new Notification(
-																		undefined,
-																		NoticeLevel.WARNING,
-																		t('Sofie Automation Server Core will restart in {{time}}s...', { time }),
-																		'SystemStatus'
-																	)
-																)
-															}
+														let time = 'unknown'
+														const match = restartMessage.match(/([\d\.]+)s/)
+														if (match) {
+															time = match[1]
+														}
+														NotificationCenter.push(
+															new Notification(
+																undefined,
+																NoticeLevel.WARNING,
+																t('Sofie Automation Server Core will restart in {{time}}s...', { time }),
+																'SystemStatus'
+															)
 														)
 													}
 												)

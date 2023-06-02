@@ -247,7 +247,6 @@ export interface NewUserActionAPI extends MethodContext {
 		eventTime: Time,
 		playlistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>>
-	generateSingleUseToken(userEvent: string, eventTime: Time): Promise<ClientAPI.ClientResponse<string>>
 	restartCore(userEvent: string, eventTime: Time, token: string): Promise<ClientAPI.ClientResponse<string>>
 	guiFocused(userEvent: string, eventTime: Time, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
 	guiBlurred(userEvent: string, eventTime: Time, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
@@ -385,8 +384,6 @@ export enum UserActionAPIMethods {
 	'packageManagerRestartPackageContainer' = 'userAction.packagemanager.restartPackageContainer',
 
 	'regenerateRundownPlaylist' = 'userAction.ingest.regenerateRundownPlaylist',
-
-	'generateSingleUseToken' = 'userAction.system.generateSingleUseToken',
 	'restartCore' = 'userAction.system.restartCore',
 
 	'guiFocused' = 'userAction.focused',

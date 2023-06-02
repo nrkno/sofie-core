@@ -1,7 +1,7 @@
 import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
-import { getCurrentTime, Time } from '../../lib/lib'
+import { Time } from '../../lib/lib'
 import { ServerPlayoutAPI } from './playout/playout'
 import { NewUserActionAPI, UserActionAPIMethods } from '../../lib/api/userActions'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
@@ -47,7 +47,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IngestDataCache, Parts, Pieces, Rundowns } from '../collections'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
-import { generateToken, verifyHashedToken } from './singleUseTokens'
+import { verifyHashedToken } from './singleUseTokens'
 
 async function pieceSetInOutPoints(
 	access: VerifiedRundownPlaylistContentAccess,
@@ -84,8 +84,6 @@ async function pieceSetInOutPoints(
 		duration / 1000
 	) // MOS data is in seconds
 }
-
-let lastTokenTimestamp: Time | undefined = undefined
 
 class ServerUserActionAPI
 	extends MethodContextAPI
@@ -884,26 +882,6 @@ class ServerUserActionAPI
 			StudioJobs.RegeneratePlaylist,
 			{
 				playlistId: rundownPlaylistId,
-			}
-		)
-	}
-	async generateSingleUseToken(userEvent: string, eventTime: Time) {
-		return ServerClientAPI.runUserActionInLog(
-			this,
-			userEvent,
-			eventTime,
-			'generateSingleUseToken',
-			[],
-			async () => {
-				await SystemWriteAccess.systemActions(this)
-
-				if (lastTokenTimestamp !== undefined && eventTime <= lastTokenTimestamp) {
-					throw new Meteor.Error(503, `Event times for single-use tokens need to be monotonic`)
-				}
-
-				lastTokenTimestamp = getCurrentTime()
-				const newToken = generateToken()
-				return newToken
 			}
 		)
 	}

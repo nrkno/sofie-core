@@ -528,7 +528,7 @@ export function createAction(action: SomeAction, sourceLayers: SourceLayers): Ex
 				return createTakeRundownSnapshotAction(action.filterChain as IGUIContextFilterLink[])
 			} else {
 				return createUserActionWithCtx(action, UserAction.CREATE_SNAPSHOT_FOR_DEBUG, async (e, ts, ctx) =>
-					MeteorCall.userAction.generateSingleUseToken(e, ts).then(async (tokenResult) => {
+					MeteorCall.system.generateSingleUseToken().then(async (tokenResult) => {
 						if (ClientAPI.isClientResponseError(tokenResult) || !tokenResult.result) throw tokenResult
 						return MeteorCall.userAction.storeRundownSnapshot(
 							e,

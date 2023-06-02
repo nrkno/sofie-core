@@ -55,7 +55,7 @@ export function AfterBroadcastForm(props: IProps): JSX.Element {
 				e,
 				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
 				(e, ts) =>
-					MeteorCall.userAction.generateSingleUseToken(e, ts).then((tokenResult) => {
+					MeteorCall.system.generateSingleUseToken().then((tokenResult) => {
 						if (ClientAPI.isClientResponseError(tokenResult) || !tokenResult.result) throw tokenResult
 						return MeteorCall.userAction.storeRundownSnapshot(
 							e,
