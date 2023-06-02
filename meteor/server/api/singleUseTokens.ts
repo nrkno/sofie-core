@@ -54,6 +54,8 @@ export function verifyHashedToken(token: string, secret: string = TOKEN_SECRET, 
  */
 const usedTokensShortTermMemory = new Map<string, Time>()
 
+const CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
+
 const TOKEN_SECRET_LENGTH = 64
 
 /**
@@ -62,8 +64,6 @@ const TOKEN_SECRET_LENGTH = 64
 const TOKEN_SECRET = randomBytes(TOKEN_SECRET_LENGTH)
 	.map((value) => CHARSET.charCodeAt(Math.floor((value * CHARSET.length) / 256)))
 	.toString()
-
-const CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
 
 function base32ToHex(base32: string): string {
 	let bits = ''
