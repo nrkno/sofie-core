@@ -65,7 +65,10 @@ const CHARSET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567'
 const TOKEN_SECRET_LENGTH = 64
 
 /**
- * An automatically generated secret, regenerated on every restart, so that tokens can't be re-used between restarts
+ * An automatically generated secret, regenerated on every restart, so that tokens can't be re-used between restarts.
+ *
+ * TODO: For horizontal scaling of Core, this would have to be stored in the database or provided as an environment
+ * variable
  */
 const TOKEN_SECRET = randomBytes(TOKEN_SECRET_LENGTH)
 	.map((value) => CHARSET.charCodeAt(Math.floor((value * CHARSET.length) / 256)))
