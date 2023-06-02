@@ -21,6 +21,9 @@ import { TFunction, useTranslation } from 'react-i18next'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Blueprints, PeripheralDevices, ShowStyleBases, Studios } from '../../collections'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { generateStudioSettings } from '../../lib/guiSettings/studioSettings'
+import { getDeepLink } from '../../lib/guiSettings/guiSettings'
+import { getStudioSettingsContext } from './Studio/StudioAllSettings'
 
 export const SettingsMenu: React.FC<{
 	superAdmin?: boolean
@@ -220,7 +223,7 @@ function SettingsCollapsibleGroup({
 							key={i}
 							activeClassName="selectable-selected"
 							className="settings-menu__settings-menu-item selectable clickable menu-item-child"
-							to={`${basePath}/${link.subPath}`}
+							to={`${basePath ? basePath + '/' : ''}${link.subPath}`}
 						>
 							<h4>{link.label}</h4>
 						</NavLink>
@@ -260,25 +263,30 @@ function SettingsMenuStudio({ studio }: SettingsMenuStudioProps) {
 		[t, studio.name, studio._id]
 	)
 
+	// Generate settings, to use to display the top-level pages:
+	const studioSettings = generateStudioSettings(t, studio)
+	const renderContext = getStudioSettingsContext(studio._id, undefined)
+
 	const childLinks = React.useMemo(
 		() => [
-			{ label: t('All settings'), subPath: `all-settings` },
-			// { label: t('Generic Properties'), subPath: `generic` },
-			// { label: t('Peripheral Devices'), subPath: `devices` },
-			// { label: t('Blueprint Configuration'), subPath: `blueprint-config` },
-			// { label: t('Layer Mappings'), subPath: `mappings` },
-			// { label: t('Route Sets'), subPath: `route-sets` },
-			// { label: t('Package Manager'), subPath: `package-manager` },
+			{ label: t('All settings'), subPath: renderContext.startURL },
+			...studioSettings.list.map((setting) => ({
+				label: setting.name,
+				subPath: getDeepLink(setting.id, renderContext.baseURL),
+			})),
+
+			// { label: 'OLD: ' + t('Generic Properties'), subPath: `${renderContext.baseURL}/generic` },
+			// { label: 'OLD: ' + t('Peripheral Devices'), subPath: `${renderContext.baseURL}/devices` },
+			// { label: 'OLD: ' + t('Blueprint Configuration'), subPath: `${renderContext.baseURL}/blueprint-config` },
+			// { label: 'OLD: ' + t('Layer Mappings'), subPath: `${renderContext.baseURL}/mappings` },
+			// { label: 'OLD: ' + t('Route Sets'), subPath: `${renderContext.baseURL}/route-sets` },
+			// { label: 'OLD: ' + t('Package Manager'), subPath: `${renderContext.baseURL}/package-manager` },
 		],
 		[studio._id]
 	)
 
 	return (
-		<SettingsCollapsibleGroup
-			basePath={`/settings/studio/${studio._id}`}
-			links={childLinks}
-			title={studio.name || t('Unnamed Studio')}
-		>
+		<SettingsCollapsibleGroup basePath={``} links={childLinks} title={studio.name || t('Unnamed Studio')}>
 			<button className="action-btn right" onClick={onDeleteStudio}>
 				<FontAwesomeIcon icon={faTrash} />
 			</button>
