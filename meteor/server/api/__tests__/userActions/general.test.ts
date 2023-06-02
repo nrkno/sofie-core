@@ -7,6 +7,7 @@ import { MeteorCall } from '../../../../lib/api/methods'
 import { ClientAPI } from '../../../../lib/api/client'
 import { UserActionsLog } from '../../../collections'
 
+require('../../system') // include so that we can call generateSingleUseToken()
 require('../../client') // include in order to create the Meteor methods needed
 require('../../userActions') // include in order to create the Meteor methods needed
 
