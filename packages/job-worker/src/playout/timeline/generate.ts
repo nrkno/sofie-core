@@ -458,7 +458,7 @@ function flattenAndProcessTimelineObjects(context: JobContext, timelineObjs: Arr
 
 				fixObjectChildren(childFixed)
 			}
-			delete o.children
+			o.children = []
 		}
 	}
 
