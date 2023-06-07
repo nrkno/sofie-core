@@ -140,8 +140,7 @@ export class RundownTimingCalculator {
 		let currentAIndex = -1
 
 		let lastSegmentId: SegmentId | undefined = undefined
-		let nextBreakStartTime: number | undefined = undefined
-		let nextBreakEndTime: number | undefined = undefined
+		let nextRundownAnchor: number | undefined = undefined
 
 		if (playlist) {
 			const breakProps = currentRundown ? this.getRundownsBeforeNextBreak(rundowns, currentRundown) : undefined
@@ -510,15 +509,15 @@ export class RundownTimingCalculator {
 					// this is a calculation for the next line, which is basically how much there is left of the current line
 					localAccum = this.linearParts[i][1] || 0 // if there is no current line, rebase following lines to the next line
 					this.linearParts[i][1] = currentRemaining
-					if (nextBreakStartTime === undefined) {
+					if (nextRundownAnchor === undefined) {
 						const startTime = getBreakStartTime(partInstancesMap, segments, this.linearParts[i][0])
 						if (startTime) {
-							nextBreakStartTime = startTime
+							nextRundownAnchor = startTime
 						}
 
 						const endTime = getBreakEndTime(partInstancesMap, segments, this.linearParts[i][0])
 						if (endTime) {
-							nextBreakEndTime = endTime
+							nextRundownAnchor = endTime
 						}
 					}
 				} else {
@@ -528,15 +527,15 @@ export class RundownTimingCalculator {
 					// and add the currentRemaining countdown, since we are currentRemaining + diff between next and
 					// this away from this line.
 					this.linearParts[i][1] = (this.linearParts[i][1] || 0) - localAccum + currentRemaining
-					if (nextBreakStartTime === undefined) {
+					if (nextRundownAnchor === undefined) {
 						const backTime = getBreakStartTime(partInstancesMap, segments, this.linearParts[i][0])
 						if (backTime) {
-							nextBreakStartTime = backTime
+							nextRundownAnchor = backTime
 						}
 
-						const cumeTime = getBreakEndTime(partInstancesMap, segments, this.linearParts[i][0])
-						if (cumeTime) {
-							nextBreakEndTime = cumeTime
+						const endTime = getBreakEndTime(partInstancesMap, segments, this.linearParts[i][0])
+						if (endTime) {
+							nextRundownAnchor = endTime
 						}
 					}
 				}
@@ -547,15 +546,15 @@ export class RundownTimingCalculator {
 					// offset the parts before the on air line by the countdown for the end of the rundown
 					this.linearParts[i][1] =
 						(this.linearParts[i][1] || 0) + waitAccumulator - localAccum + currentRemaining
-					if (nextBreakStartTime === undefined) {
+					if (nextRundownAnchor === undefined) {
 						const backTime = getBreakStartTime(partInstancesMap, segments, this.linearParts[i][0])
 						if (backTime) {
-							nextBreakStartTime = backTime
+							nextRundownAnchor = backTime
 						}
 
-						const cumeTime = getBreakEndTime(partInstancesMap, segments, this.linearParts[i][0])
-						if (cumeTime) {
-							nextBreakEndTime = cumeTime
+						const endTime = getBreakEndTime(partInstancesMap, segments, this.linearParts[i][0])
+						if (endTime) {
+							nextRundownAnchor = endTime
 						}
 					}
 				}
@@ -649,8 +648,7 @@ export class RundownTimingCalculator {
 			rundownsBeforeNextBreak,
 			breakIsLastRundown,
 			isLowResolution,
-			nextBreakStartTime,
-			nextBreakEndTime,
+			nextRundownAnchor,
 		})
 	}
 
@@ -769,10 +767,8 @@ export interface RundownTimingContext {
 	breakIsLastRundown?: boolean
 	/** Was this time context calculated during a high-resolution tick */
 	isLowResolution: boolean
-	/** The absolute start time of the next break, if any. */
-	nextBreakStartTime?: number
-	/** The absolute end time of the next break, if any. */
-	nextBreakEndTime?: number
+	/** The next (absolute) anchor time in the rundown, if any. */
+	nextRundownAnchor?: number
 }
 
 /**
@@ -818,21 +814,10 @@ export function getPlaylistTimingDiff(
 			timing.expectedEnd ??
 			(startedPlayback ?? Math.max(timing.expectedStart, currentTime)) +
 				(timing.expectedDuration ?? timingContext.totalPlaylistDuration ?? 0)
-
-		if (timingContext.nextBreakStartTime || timingContext.nextBreakEndTime) {
-			backAnchor =
-				timingContext.nextBreakStartTime ?? timingContext.nextBreakEndTime ?? backAnchorTimeWithoutBreaks
-		} else {
-			backAnchor = backAnchorTimeWithoutBreaks
-		}
-
+		backAnchor = timingContext.nextRundownAnchor ?? backAnchorTimeWithoutBreaks
 		frontAnchor = Math.max(currentTime, playlist.startedPlayback ?? Math.max(timing.expectedStart, currentTime))
 	} else if (PlaylistTiming.isPlaylistTimingBackTime(timing)) {
-		if (timingContext.nextBreakStartTime || timingContext.nextBreakEndTime) {
-			backAnchor = timingContext.nextBreakStartTime ?? timingContext.nextBreakEndTime ?? timing.expectedEnd
-		} else {
-			backAnchor = timing.expectedEnd
-		}
+		backAnchor = timingContext.nextRundownAnchor ?? timing.expectedEnd
 	}
 
 	let diff = PlaylistTiming.isPlaylistTimingNone(timing)

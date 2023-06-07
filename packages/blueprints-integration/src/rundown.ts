@@ -167,14 +167,11 @@ export interface IBlueprintSegment<TMetadata = unknown> {
 	/** Segment display mode. Default mode is *SegmentDisplayMode.Timeline* */
 	displayAs?: SegmentDisplayMode
 
-	/** Used to alter the behavior of the Diff timer to make it relative to this segment's hard backtime. If true, `breakStartTime` and/or `breakEndTime` must also be set. */
-	isBreak?: boolean
+	/** A unix timestamp of when the segment is expected to begin. Affects rundown timing. */
+	expectedStart?: number
 
-	/** Does nothing without `isBreak`. */
-	breakStartTime?: number
-
-	/** Does nothing without `isBreak`. */
-	breakEndTime?: number
+	/** A unix timestamp of when the segment is expected to end. Affects rundown timing. */
+	expectedEnd?: number
 }
 /** The Segment sent from Core */
 export interface IBlueprintSegmentDB<TMetadata = unknown> extends IBlueprintSegment<TMetadata> {
