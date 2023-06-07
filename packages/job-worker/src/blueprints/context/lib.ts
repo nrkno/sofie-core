@@ -73,6 +73,7 @@ export const IBlueprintPieceObjectsSampleKeys = allKeysOfObject<IBlueprintPiece>
 	hasSideEffects: true,
 	allowDirectPlay: true,
 	notInVision: true,
+	abSessions: true,
 })
 
 // Compile a list of the keys which are allowed to be set
@@ -210,6 +211,7 @@ export function convertPieceToBlueprints(piece: PieceInstancePiece): IBlueprintP
 		pieceType: piece.pieceType,
 		extendOnHold: piece.extendOnHold,
 		notInVision: piece.notInVision,
+		abSessions: clone(piece.abSessions),
 	}
 
 	return obj

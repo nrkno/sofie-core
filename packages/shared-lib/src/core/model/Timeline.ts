@@ -2,6 +2,18 @@ import { unprotectString, protectString } from '../../lib/protectedString'
 import { TSR } from '../../tsr'
 import { MappingsHash, PeripheralDeviceId, StudioId, TimelineBlob, TimelineHash } from './Ids'
 
+export interface TimelineObjectAbSessionInfo {
+	/**
+	 * Name for this session
+	 * TODO - document uniqueness rules
+	 */
+	name: string
+	/**
+	 * Which AB Pool this session is for
+	 */
+	pool: string
+}
+
 export enum TimelineObjHoldMode {
 	/** Default: The object is played as usual (behaviour is not affected by Hold)  */
 	NORMAL = 0,
@@ -16,6 +28,11 @@ export interface TimelineObjectCoreExt<
 	TMetadata = unknown,
 	TKeyframeMetadata = unknown
 > extends TSR.TSRTimelineObj<TContent> {
+	/**
+	 * AB playback sessions needed for this Object
+	 */
+	abSessions?: Array<TimelineObjectAbSessionInfo>
+
 	/** Restrict object usage according to whether we are currently in a hold */
 	holdMode?: TimelineObjHoldMode
 	/** Arbitrary data storage for plugins */
