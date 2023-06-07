@@ -1,5 +1,5 @@
-import { ActionUserData, IBlueprintActionManifest } from './action'
-import {
+import type { ActionUserData, IBlueprintActionManifest } from './action'
+import type {
 	IActionExecutionContext,
 	ISyncIngestUpdateToPartInstanceContext,
 	IPartEventContext,
@@ -16,35 +16,36 @@ import {
 	IDataStoreActionExecutionContext,
 	IRundownActivationContext,
 } from './context'
-import { IngestAdlib, ExtendedIngestRundown, IngestSegment } from './ingest'
-import { IBlueprintExternalMessageQueueObj } from './message'
-import { MigrationStepShowStyle, MigrationStepStudio, MigrationStepSystem } from './migrations'
-import {
+import type { IngestAdlib, ExtendedIngestRundown, IngestSegment } from './ingest'
+import type { IBlueprintExternalMessageQueueObj } from './message'
+import type { MigrationStepShowStyle, MigrationStepStudio, MigrationStepSystem } from './migrations'
+import type {
 	IBlueprintAdLibPiece,
 	IBlueprintPart,
 	IBlueprintPiece,
 	IBlueprintResolvedPieceInstance,
-	IBlueprintRundown,
-	IBlueprintResultRundownPlaylist,
 	IBlueprintSegment,
-	IBlueprintRundownDB,
 	IBlueprintPieceInstance,
 	IBlueprintPartInstance,
 	IBlueprintAdLibPieceDB,
 	IBlueprintPartDB,
 	ExpectedPlayoutItemGeneric,
-} from './rundown'
-import { IBlueprintShowStyleBase, IBlueprintShowStyleVariant, IOutputLayer, ISourceLayer } from './showStyle'
-import { TSR, OnGenerateTimelineObj } from './timeline'
-import { IBlueprintConfig } from './common'
-import { ExpectedPackage } from './package'
-import { ReadonlyDeep } from 'type-fest'
-import { ITranslatableMessage } from './translations'
-import { NoteSeverity } from './lib'
-import { BlueprintMappings } from './studio'
-import { IBlueprintTriggeredActions } from './triggers'
-import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
-import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+	IBlueprintRundownDB,
+	IBlueprintRundown,
+	IBlueprintResultRundownPlaylist,
+	PartEndState,
+} from './documents'
+import type { IBlueprintShowStyleBase, IBlueprintShowStyleVariant, IOutputLayer, ISourceLayer } from './showStyle'
+import type { TSR, OnGenerateTimelineObj } from './timeline'
+import type { IBlueprintConfig } from './common'
+import type { ExpectedPackage } from './package'
+import type { ReadonlyDeep } from 'type-fest'
+import type { ITranslatableMessage } from './translations'
+import type { NoteSeverity } from './lib'
+import type { BlueprintMappings } from './studio'
+import type { IBlueprintTriggeredActions } from './triggers'
+import type { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
+import type { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 export enum BlueprintManifestType {
 	SYSTEM = 'system',
@@ -279,7 +280,6 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	onRundownTimingEvent?: (context: IRundownTimingEventContext) => Promise<IBlueprintExternalMessageQueueObj[]>
 }
 
-export type PartEndState = unknown
 export type TimelinePersistentState = unknown
 
 export interface BlueprintResultTimeline {
