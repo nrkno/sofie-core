@@ -310,7 +310,8 @@ export function convertSegmentToBlueprints(segment: ReadonlyDeep<DBSegment>): IB
 		identifier: segment.identifier,
 		displayAs: segment.displayAs,
 		showShelf: segment.showShelf,
-		isBreak: segment.isBreak,
+		expectedStart: segment.expectedStart,
+		expectedEnd: segment.expectedEnd,
 	}
 
 	return obj

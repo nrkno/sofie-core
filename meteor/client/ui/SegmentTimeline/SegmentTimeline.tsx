@@ -1097,13 +1097,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 					{this.props.playlist &&
 						this.props.parts &&
 						this.props.parts.length > 0 &&
-						(!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) &&
-						(this.props.segment.isBreak ? (
-							<BreakWallTime
-								segment={this.props.segment}
-								label={<span className="segment-timeline__duration__label">{t('Wall Time')}</span>}
-							/>
-						) : (
+						(!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) && (
 							<SegmentDuration
 								segmentId={this.props.segment._id}
 								parts={this.props.parts}
@@ -1111,33 +1105,40 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 								label={<span className="segment-timeline__duration__label">{t('Duration')}</span>}
 								fixed={this.props.fixedSegmentDuration}
 							/>
-						))}
+						)}
 				</div>
 
 				<div className="segment-timeline__identifier">{this.props.segment.identifier}</div>
-				<div className="segment-timeline__timeUntil" onClick={this.onTimeUntilClick}>
-					{this.props.playlist &&
-						this.props.parts &&
-						this.props.parts.length > 0 &&
-						this.props.showCountdownToSegment && (
-							<PartCountdown
-								partId={countdownToPartId}
-								hideOnZero={!useTimeOfDayCountdowns}
-								useWallClock={useTimeOfDayCountdowns}
-								playlist={this.props.playlist}
-								label={
-									useTimeOfDayCountdowns ? (
-										<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
-									) : (
-										<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
-									)
-								}
-							/>
+				{this.props.segment.expectedStart || this.props.segment.expectedEnd ? (
+					<div className="segment-timeline__expectedTime">
+						<BreakWallTime segment={this.props.segment} labelClassName="segment-timeline__expectedTime__label" />
+					</div>
+				) : (
+					<div className="segment-timeline__timeUntil" onClick={this.onTimeUntilClick}>
+						{this.props.playlist &&
+							this.props.parts &&
+							this.props.parts.length > 0 &&
+							this.props.showCountdownToSegment && (
+								<PartCountdown
+									partId={countdownToPartId}
+									hideOnZero={!useTimeOfDayCountdowns}
+									useWallClock={useTimeOfDayCountdowns}
+									playlist={this.props.playlist}
+									label={
+										useTimeOfDayCountdowns ? (
+											<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
+										) : (
+											<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
+										)
+									}
+								/>
+							)}
+						{this.props.studio.settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
+							<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
 						)}
-					{this.props.studio.settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
-						<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
-					)}
-				</div>
+					</div>
+				)}
+
 				<div className="segment-timeline__mos-id">{this.props.segment.externalId}</div>
 				<div className="segment-timeline__output-layers" role="tree" aria-label={t('Sources')}>
 					{this.renderOutputLayerControls(activeOutputGroups)}

@@ -525,7 +525,8 @@ $identifier-area-width: 3em;
 	}
 
 	.segment-opl__duration,
-	.segment-opl__timeUntil {
+	.segment-opl__timeUntil,
+	.segment-opl__expectedTime {
 		box-sizing: border-box;
 		text-align: left;
 		padding: 0.45em $duration-area-margin 0 $duration-area-margin;
@@ -535,7 +536,8 @@ $identifier-area-width: 3em;
 		letter-spacing: 0;
 
 		> .segment-timeline__duration__label,
-		> .segment-timeline__timeUntil__label {
+		> .segment-timeline__timeUntil__label,
+		> .segment-timeline__expectedTime__label {
 			display: block;
 			font-size: 0.5em;
 			text-transform: uppercase;
@@ -543,7 +545,8 @@ $identifier-area-width: 3em;
 			color: #888;
 		}
 
-		> .segment-timeline__timeUntil__label {
+		> .segment-timeline__timeUntil__label,
+		> .segment-timeline__expectedTime__label {
 			text-align: right;
 		}
 

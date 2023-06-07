@@ -510,12 +510,12 @@ export class RundownTimingCalculator {
 					localAccum = this.linearParts[i][1] || 0 // if there is no current line, rebase following lines to the next line
 					this.linearParts[i][1] = currentRemaining
 					if (nextRundownAnchor === undefined) {
-						const startTime = getBreakStartTime(partInstancesMap, segments, this.linearParts[i][0])
+						const startTime = getSegmentStartTime(partInstancesMap, segments, this.linearParts[i][0])
 						if (startTime) {
 							nextRundownAnchor = startTime
 						}
 
-						const endTime = getBreakEndTime(partInstancesMap, segments, this.linearParts[i][0])
+						const endTime = getSegmentEndTime(partInstancesMap, segments, this.linearParts[i][0])
 						if (endTime) {
 							nextRundownAnchor = endTime
 						}
@@ -528,12 +528,12 @@ export class RundownTimingCalculator {
 					// this away from this line.
 					this.linearParts[i][1] = (this.linearParts[i][1] || 0) - localAccum + currentRemaining
 					if (nextRundownAnchor === undefined) {
-						const backTime = getBreakStartTime(partInstancesMap, segments, this.linearParts[i][0])
+						const backTime = getSegmentStartTime(partInstancesMap, segments, this.linearParts[i][0])
 						if (backTime) {
 							nextRundownAnchor = backTime
 						}
 
-						const endTime = getBreakEndTime(partInstancesMap, segments, this.linearParts[i][0])
+						const endTime = getSegmentEndTime(partInstancesMap, segments, this.linearParts[i][0])
 						if (endTime) {
 							nextRundownAnchor = endTime
 						}
@@ -547,12 +547,12 @@ export class RundownTimingCalculator {
 					this.linearParts[i][1] =
 						(this.linearParts[i][1] || 0) + waitAccumulator - localAccum + currentRemaining
 					if (nextRundownAnchor === undefined) {
-						const backTime = getBreakStartTime(partInstancesMap, segments, this.linearParts[i][0])
+						const backTime = getSegmentStartTime(partInstancesMap, segments, this.linearParts[i][0])
 						if (backTime) {
 							nextRundownAnchor = backTime
 						}
 
-						const endTime = getBreakEndTime(partInstancesMap, segments, this.linearParts[i][0])
+						const endTime = getSegmentEndTime(partInstancesMap, segments, this.linearParts[i][0])
 						if (endTime) {
 							nextRundownAnchor = endTime
 						}
@@ -864,30 +864,22 @@ function ensureMinimumDefaultDurationIfNotAuto(
 	return Math.max(incomingDuration, defaultDuration)
 }
 
-function getBreakStartTime(
+function getSegmentStartTime(
 	partInstancesMap: Map<PartId, PartInstance>,
 	segments: DBSegment[],
 	partId: PartId
 ): number | null {
 	const part = partInstancesMap.get(partId)
 	const segment = segments.find((s) => s._id === part?.segmentId)
-	if (segment?.isBreak) {
-		return segment.breakStartTime ?? null
-	}
-
-	return null
+	return segment?.expectedStart ?? null
 }
 
-function getBreakEndTime(
+function getSegmentEndTime(
 	partInstancesMap: Map<PartId, PartInstance>,
 	segments: DBSegment[],
 	partId: PartId
 ): number | null {
 	const part = partInstancesMap.get(partId)
 	const segment = segments.find((s) => s._id === part?.segmentId)
-	if (segment?.isBreak) {
-		return segment.breakEndTime ?? null
-	}
-
-	return null
+	return segment?.expectedEnd ?? null
 }

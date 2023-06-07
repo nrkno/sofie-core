@@ -1,13 +1,13 @@
 import classNames from 'classnames'
-import React, { ReactNode } from 'react'
+import React from 'react'
 import { SegmentUi } from '../../SegmentTimeline/SegmentTimelineContainer'
-import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { RundownUtils } from '../../../lib/rundown'
+import { useTranslation } from 'react-i18next'
 
 interface IBreakWallTimeProps {
-	segment: SegmentUi | DBSegment
-	label?: ReactNode
+	segment: SegmentUi
 	className?: string
+	labelClassName?: string
 }
 
 /**
@@ -17,7 +17,9 @@ interface IBreakWallTimeProps {
  * @extends React.Component<IBreakWallTimeProps>
  */
 export const BreakWallTime = function BreakWallTime(props: IBreakWallTimeProps): JSX.Element | null {
-	const value = props.segment.breakStartTime ?? props.segment.breakEndTime
+	const { t } = useTranslation()
+	const value = props.segment.expectedStart ?? props.segment.expectedEnd
+	const passedExpectedStart = props.segment.expectedStart && Date.now() > props.segment.expectedStart
 
 	if (value === null || value === undefined) {
 		return null
@@ -27,7 +29,7 @@ export const BreakWallTime = function BreakWallTime(props: IBreakWallTimeProps):
 
 	return (
 		<>
-			{props.label}
+			<span className={props.labelClassName}>{t(passedExpectedStart ? 'Expected End' : 'Expected Start')}</span>
 			<span className={classNames(props.className)} role="timer">
 				{RundownUtils.padZeros(date.getHours(), 2)}:{RundownUtils.padZeros(date.getMinutes(), 2)}:
 				{RundownUtils.padZeros(date.getSeconds(), 2)}

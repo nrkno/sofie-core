@@ -597,7 +597,9 @@ svg.icon {
 
 		// Add a tiny bit of padding so the break text doesn't look squashed against the side of the segment container
 		.segment-timeline__timeUntil,
-		.segment-timeline__timeUntil__label {
+		.segment-timeline__timeUntil__label,
+		.segment-timeline__expectedTime,
+		.segment-timeline__expectedTime__label {
 			padding-right: 0.3vw;
 		}
 	}
@@ -651,7 +653,8 @@ svg.icon {
 
 	// This is the display in the top-left corner of the segment
 	.segment-timeline__timeUntil,
-	.segment-timeline__duration {
+	.segment-timeline__duration,
+	.segment-timeline__expectedTime {
 		position: relative;
 		display: block;
 		margin: 0;
@@ -677,7 +680,8 @@ svg.icon {
 		}
 
 		> .segment-timeline__timeUntil__label,
-		> .segment-timeline__duration__label {
+		> .segment-timeline__duration__label,
+		> .segment-timeline__expectedTime__label {
 			text-transform: uppercase;
 			display: block;
 			position: absolute;
@@ -711,6 +715,10 @@ svg.icon {
 			color: #fff;
 			font-weight: 500;
 		}
+	}
+
+	.segment-timeline__expectedTime {
+		grid-column: duration-onAirIn-split / segment-group-controls;
 	}
 
 	.segment-timeline__unsynced {
