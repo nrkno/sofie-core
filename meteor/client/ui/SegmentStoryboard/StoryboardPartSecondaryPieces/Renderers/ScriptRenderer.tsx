@@ -19,14 +19,12 @@ export function ScriptRenderer(props: IDefaultRendererProps): JSX.Element | stri
 				{content && (
 					<MicFloatingInspector
 						content={content}
-						floatingInspectorStyle={
-							props.elementOffset
-								? {
-										top: `${props.elementOffset.top}px`,
-										left: `${props.elementOffset.left + props.elementOffset.width / 2}px`,
-								  }
-								: {}
-						}
+						position={{
+							top: props.elementOffset?.top ?? 0,
+							left: props.elementOffset?.left ?? 0,
+							anchor: 'start',
+							position: 'bottom-start',
+						}}
 						itemElement={null}
 						showMiniInspector={!!props.hovering}
 						typeClass={props.typeClass}

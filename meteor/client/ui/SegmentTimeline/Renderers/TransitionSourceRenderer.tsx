@@ -1,10 +1,11 @@
-import * as React from 'react'
+import React, { useRef } from 'react'
 import { getElementWidth } from '../../../utils/dimensions'
 
 import { TransitionContent } from '@sofie-automation/blueprints-integration'
 
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 import { FloatingInspector } from '../../FloatingInspector'
+import { IFloatingInspectorPosition, useInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
 
 // type KeyValue = { key: string, value: string }
 
@@ -78,19 +79,34 @@ export class TransitionSourceRenderer extends CustomLayerItemRenderer<IProps, IS
 						)}
 					</span>
 				) : null}
-				<FloatingInspector
-					shown={this.props.showMiniInspector && !this.state.iconFailed && this.props.itemElement !== null}
-				>
-					{content && content.preview && (
-						<div
-							className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
-							style={this.getFloatingInspectorStyle()}
-						>
-							<img src={'/blueprints/assets/' + content.preview} className="thumbnail" />
-						</div>
-					)}
-				</FloatingInspector>
+				{this.props.showMiniInspector && !this.state.iconFailed && this.props.itemElement !== null && content && (
+					<TransitionFloatingInspector position={this.getFloatingInspectorStyle()} content={content} />
+				)}
 			</>
 		)
 	}
+}
+
+function TransitionFloatingInspector({
+	content,
+	position,
+}: {
+	content: TransitionContent
+	position: IFloatingInspectorPosition
+}) {
+	const ref = useRef<HTMLDivElement>(null)
+	const { style: floatingInspectorStyle } = useInspectorPosition(position, ref)
+
+	return (
+		<FloatingInspector shown={true}>
+			{content.preview && (
+				<div
+					className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
+					style={floatingInspectorStyle}
+				>
+					<img src={`/blueprints/assets/${content.preview}`} className="thumbnail" />
+				</div>
+			)}
+		</FloatingInspector>
+	)
 }

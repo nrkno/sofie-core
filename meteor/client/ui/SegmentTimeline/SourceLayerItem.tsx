@@ -412,7 +412,10 @@ export const SourceLayerItem = withTranslation()(
 		private highlightTimeout: NodeJS.Timer
 
 		private onHighlight = (e: HighlightEvent) => {
-			if (e.partId === this.props.part.partId && e.pieceId === this.props.piece.instance.piece._id) {
+			if (
+				e.partId === this.props.part.partId &&
+				(e.pieceId === this.props.piece.instance.piece._id || e.pieceId === this.props.piece.instance._id)
+			) {
 				this.setState({
 					highlight: true,
 				})

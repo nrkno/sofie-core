@@ -1,7 +1,20 @@
 import { TrackedNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
-import { PartId, PieceId, RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	AdLibActionId,
+	BucketAdLibActionId,
+	BucketAdLibId,
+	BucketId,
+	PartId,
+	PieceId,
+	PieceInstanceId,
+	RundownBaselineAdLibActionId,
+	RundownId,
+	RundownPlaylistId,
+	SegmentId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ProtectedString } from '../lib'
 import { PieceContentStatusObj } from '../mediaObjects'
+import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export type UISegmentPartNoteId = ProtectedString<'UISegmentPartNote'>
 export interface UISegmentPartNote {
@@ -20,13 +33,26 @@ export interface UIPieceContentStatus {
 	segmentRank: number
 	partRank: number
 
-	partId: PartId
 	rundownId: RundownId
-	segmentId: SegmentId
-	pieceId: PieceId
+	partId: PartId | undefined
+	segmentId: SegmentId | undefined
 
-	name: string
-	segmentName: string
+	pieceId: PieceId | AdLibActionId | RundownBaselineAdLibActionId | PieceInstanceId
+
+	name: string | ITranslatableMessage
+	segmentName: string | undefined
+
+	status: PieceContentStatusObj
+}
+
+export type UIBucketContentStatusId = ProtectedString<'UIBucketContentStatus'>
+export interface UIBucketContentStatus {
+	_id: UIBucketContentStatusId
+
+	bucketId: BucketId
+	docId: BucketAdLibActionId | BucketAdLibId
+
+	name: string | ITranslatableMessage
 
 	status: PieceContentStatusObj
 }

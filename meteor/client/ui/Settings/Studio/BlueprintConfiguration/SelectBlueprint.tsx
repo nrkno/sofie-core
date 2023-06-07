@@ -10,6 +10,7 @@ import { RedirectToBlueprintButton } from '../../../../lib/SettingsNavigation'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { LabelActual } from '../../../../lib/Components/LabelAndOverrides'
 
 interface SelectBlueprintProps {
 	studio: DBStudio
@@ -48,7 +49,7 @@ export function SelectBlueprint({ studio }: SelectBlueprintProps): JSX.Element {
 	return (
 		<div className="mod mvs mhs">
 			<label className="field">
-				{t('Blueprint')}
+				<LabelActual label={t('Blueprint')} />
 				{!studio.blueprintId ? (
 					<div className="error-notice inline">
 						{t('Blueprint not set')} <FontAwesomeIcon icon={faExclamationTriangle} />

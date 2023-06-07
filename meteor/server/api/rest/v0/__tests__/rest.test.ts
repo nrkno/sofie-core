@@ -1,19 +1,19 @@
 import * as _ from 'underscore'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { MeteorMock } from '../../../../__mocks__/meteor'
+import { testInFiber } from '../../../../../__mocks__/helpers/jest'
+import { MeteorMock } from '../../../../../__mocks__/meteor'
 import { Meteor } from 'meteor/meteor'
-import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../../__mocks__/meteorhacks-picker'
+import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../../../__mocks__/meteorhacks-picker'
 import { Response as MockResponse, Request as MockRequest } from 'mock-http'
 
-import { UserActionAPIMethods } from '../../../../lib/api/userActions'
-import { MeteorMethodSignatures } from '../../../methods'
-import { ClientAPI } from '../../../../lib/api/client'
-import '../../userActions.ts' // required to get the UserActionsAPI methods populated
+import { UserActionAPIMethods } from '../../../../../lib/api/userActions'
+import { MeteorMethodSignatures } from '../../../../methods'
+import { ClientAPI } from '../../../../../lib/api/client'
+import '../../../userActions.ts' // required to get the UserActionsAPI methods populated
 
 // we don't want the deviceTriggers observer to start up at this time
-jest.mock('../../deviceTriggers/observer')
+jest.mock('../../../deviceTriggers/observer')
 
-import '../rest.ts'
+import '../index.ts'
 
 describe('REST API', () => {
 	describe('UNSTABLE v0', () => {

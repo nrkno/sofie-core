@@ -132,7 +132,7 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 				</StudioContext.Consumer>
 			)}
 			{part.instance.part.invalid && !part.instance.part.gap && (
-				<InvalidPartCover className="segment-opl__main-piece invalid" part={part.instance.part} align="left" />
+				<InvalidPartCover className="segment-opl__main-piece invalid" part={part.instance.part} align="start" />
 			)}
 			{!isLive && !isInvalid && <TakeLine isNext={isNext} autoNext={willAutoNextIntoThisPart} />}
 			{transitionPiece && <LinePartTransitionPiece piece={transitionPiece} />}

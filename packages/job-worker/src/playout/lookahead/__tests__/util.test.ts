@@ -156,6 +156,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				nextPartInfo: {
 					partInstanceId: firstInstanceId,
 					rundownId: firstPart.rundownId,
+					manuallySelected: false,
+					consumesNextSegmentId: false,
 				},
 			},
 		})
@@ -187,6 +189,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				nextPartInfo: {
 					partInstanceId: firstInstanceId,
 					rundownId: firstPart.rundownId,
+					manuallySelected: false,
+					consumesNextSegmentId: false,
 				},
 			},
 		})
@@ -218,6 +222,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				nextPartInfo: {
 					partInstanceId: lastInstanceId,
 					rundownId: lastPart.rundownId,
+					manuallySelected: false,
+					consumesNextSegmentId: false,
 				},
 			},
 		})
@@ -274,6 +280,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				nextPartInfo: {
 					partInstanceId: nextInstanceId,
 					rundownId: nextPart.rundownId,
+					manuallySelected: false,
+					consumesNextSegmentId: false,
 				},
 			},
 		})
@@ -298,6 +306,8 @@ describe('getOrderedPartsAfterPlayhead', () => {
 				currentPartInfo: {
 					partInstanceId: nextInstanceId,
 					rundownId: firstPart.rundownId,
+					manuallySelected: false,
+					consumesNextSegmentId: false,
 				},
 			},
 		})

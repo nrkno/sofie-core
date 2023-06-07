@@ -1,92 +1,95 @@
-import { ISourceLayer, PackageInfo } from '@sofie-automation/blueprints-integration'
+import { PackageInfo } from '@sofie-automation/blueprints-integration'
 import {
+	AdLibActionId,
 	ExpectedPackageId,
 	PackageContainerPackageId,
 	PartId,
 	PieceId,
+	PieceInstanceId,
+	RundownBaselineAdLibActionId,
 	RundownPlaylistId,
 	SegmentId,
-	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { getPackageContainerPackageId } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
-import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyDeep } from 'type-fest'
-import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
-import { UIPieceContentStatus } from '../../../lib/api/rundownNotifications'
-import { UIStudio } from '../../../lib/api/studios'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { CustomCollectionName, PubSub } from '../../../../lib/api/pubsub'
+import { UIPieceContentStatus } from '../../../../lib/api/rundownNotifications'
+import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import {
 	MediaObjects,
 	PackageContainerPackageStatuses,
 	PackageInfos,
 	RundownPlaylists,
 	Studios,
-} from '../../collections'
-import { Studio } from '../../../lib/collections/Studios'
-import { literal, protectString, waitForPromise } from '../../../lib/lib'
-import { checkPieceContentStatus, PieceContentStatusObj } from '../../../lib/mediaObjects'
+} from '../../../collections'
+import { literal, protectString } from '../../../../lib/lib'
 import {
 	CustomPublishCollection,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
 	TriggerUpdate,
-} from '../../lib/customPublication'
-import { logger } from '../../logging'
-import { resolveCredentials } from '../../security/lib/credentials'
-import { NoSecurityReadAccess } from '../../security/noSecurity'
-import { RundownPlaylistReadAccess } from '../../security/rundownPlaylist'
-import { ContentCache, PieceFields } from './reactiveContentCache'
+} from '../../../lib/customPublication'
+import { logger } from '../../../logging'
+import { resolveCredentials } from '../../../security/lib/credentials'
+import { NoSecurityReadAccess } from '../../../security/noSecurity'
+import { RundownPlaylistReadAccess } from '../../../security/rundownPlaylist'
+import { ContentCache } from './reactiveContentCache'
 import { RundownContentObserver } from './rundownContentObserver'
-import { RundownsObserver } from '../lib/rundownsObserver'
-import { LiveQueryHandle } from '../../lib/lib'
+import { RundownsObserver } from '../../lib/rundownsObserver'
+import { LiveQueryHandle } from '../../../lib/lib'
+import {
+	addItemsWithDependenciesChangesToChangedSet,
+	fetchStudio,
+	IContentStatusesUpdatePropsBase,
+	PieceDependencies,
+	studioFieldSpecifier,
+} from '../common'
+import {
+	regenerateForAdLibActionIds,
+	regenerateForAdLibPieceIds,
+	regenerateForBaselineAdLibActionIds,
+	regenerateForBaselineAdLibPieceIds,
+	regenerateForPieceIds,
+	regenerateForPieceInstanceIds,
+} from './regenerateItems'
+import { PieceContentStatusStudio } from '../checkPieceContentStatus'
 
 interface UIPieceContentStatusesArgs {
 	readonly rundownPlaylistId: RundownPlaylistId
 }
 
-type StudioMini = Pick<UIStudio, '_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'>
-
 interface UIPieceContentStatusesState {
 	contentCache: ReadonlyDeep<ContentCache>
 
-	studio: ReadonlyDeep<StudioMini>
+	studio: PieceContentStatusStudio
 
 	pieceDependencies: Map<PieceId, PieceDependencies>
+	pieceInstanceDependencies: Map<PieceInstanceId, PieceDependencies>
+	adlibPieceDependencies: Map<PieceId, PieceDependencies>
+	adlibActionDependencies: Map<AdLibActionId, PieceDependencies>
+	baselineAdlibDependencies: Map<PieceId, PieceDependencies>
+	baselineActionDependencies: Map<RundownBaselineAdLibActionId, PieceDependencies>
 }
 
-interface UIPieceContentStatusesUpdateProps {
+interface UIPieceContentStatusesUpdateProps extends IContentStatusesUpdatePropsBase {
 	newCache: ContentCache
 
-	invalidateAll: boolean
-	invalidateStudio: StudioId
-
 	updatedSegmentIds: SegmentId[]
-
 	updatedPartIds: PartId[]
 
 	updatedPieceIds: PieceId[]
-	removedPieces: Pick<Piece, PieceFields>[]
+	updatedPieceInstanceIds: PieceInstanceId[]
 
-	invalidateMediaObjectMediaId: string[]
-	invalidateExpectedPackageId: ExpectedPackageId[]
-	invalidatePackageContainerPackageStatusesId: PackageContainerPackageId[]
+	updatedAdlibPieceIds: PieceId[]
+	updatedAdlibActionIds: AdLibActionId[]
+	updatedBaselineAdlibPieceIds: PieceId[]
+	updatedBaselineAdlibActionIds: RundownBaselineAdLibActionId[]
 }
 
 type RundownPlaylistFields = '_id' | 'studioId'
 const rundownPlaylistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownPlaylistFields>>({
 	_id: 1,
 	studioId: 1,
-})
-
-type StudioFields = '_id' | 'settings' | 'packageContainers' | 'mappingsWithOverrides' | 'routeSets'
-const studioFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
-	_id: 1,
-	settings: 1,
-	packageContainers: 1,
-	mappingsWithOverrides: 1,
-	routeSets: 1,
 })
 
 async function setupUIPieceContentStatusesPublicationObservers(
@@ -127,10 +130,35 @@ async function setupUIPieceContentStatusesPublicationObservers(
 					changed: (id) => triggerUpdate({ updatedPartIds: [protectString(id)] }),
 					removed: (id) => triggerUpdate({ updatedSegmentIds: [protectString(id)] }),
 				}),
-				cache.Pieces.find({}).observe({
-					added: (doc) => triggerUpdate({ updatedPieceIds: [doc._id] }),
-					changed: (doc) => triggerUpdate({ updatedPieceIds: [doc._id] }),
-					removed: (doc) => triggerUpdate({ removedPieces: [doc] }),
+				cache.Pieces.find({}).observeChanges({
+					added: (id) => triggerUpdate({ updatedPieceIds: [protectString(id)] }),
+					changed: (id) => triggerUpdate({ updatedPieceIds: [protectString(id)] }),
+					removed: (id) => triggerUpdate({ updatedPieceIds: [protectString(id)] }),
+				}),
+				cache.PieceInstances.find({}).observeChanges({
+					added: (id) => triggerUpdate({ updatedPieceInstanceIds: [protectString(id)] }),
+					changed: (id) => triggerUpdate({ updatedPieceInstanceIds: [protectString(id)] }),
+					removed: (id) => triggerUpdate({ updatedPieceInstanceIds: [protectString(id)] }),
+				}),
+				cache.AdLibPieces.find({}).observeChanges({
+					added: (id) => triggerUpdate({ updatedAdlibPieceIds: [protectString(id)] }),
+					changed: (id) => triggerUpdate({ updatedAdlibPieceIds: [protectString(id)] }),
+					removed: (id) => triggerUpdate({ updatedAdlibPieceIds: [protectString(id)] }),
+				}),
+				cache.AdLibActions.find({}).observeChanges({
+					added: (id) => triggerUpdate({ updatedAdlibActionIds: [protectString(id)] }),
+					changed: (id) => triggerUpdate({ updatedAdlibActionIds: [protectString(id)] }),
+					removed: (id) => triggerUpdate({ updatedAdlibActionIds: [protectString(id)] }),
+				}),
+				cache.BaselineAdLibPieces.find({}).observeChanges({
+					added: (id) => triggerUpdate({ updatedBaselineAdlibPieceIds: [protectString(id)] }),
+					changed: (id) => triggerUpdate({ updatedBaselineAdlibPieceIds: [protectString(id)] }),
+					removed: (id) => triggerUpdate({ updatedBaselineAdlibPieceIds: [protectString(id)] }),
+				}),
+				cache.BaselineAdLibActions.find({}).observeChanges({
+					added: (id) => triggerUpdate({ updatedBaselineAdlibActionIds: [protectString(id)] }),
+					changed: (id) => triggerUpdate({ updatedBaselineAdlibActionIds: [protectString(id)] }),
+					removed: (id) => triggerUpdate({ updatedBaselineAdlibActionIds: [protectString(id)] }),
 				}),
 				cache.Rundowns.find({}).observeChanges({
 					added: () => triggerUpdate({ invalidateAll: true }),
@@ -166,7 +194,8 @@ async function setupUIPieceContentStatusesPublicationObservers(
 				added: (id) => triggerUpdate({ invalidateStudio: id }),
 				changed: (id) => triggerUpdate({ invalidateStudio: id }),
 				removed: (id) => triggerUpdate({ invalidateStudio: id }),
-			}
+			},
+			{ projection: studioFieldSpecifier }
 		),
 
 		// Watch for affecting objects
@@ -211,12 +240,18 @@ async function manipulateUIPieceContentStatusesPublicationData(
 	// Prepare data for publication:
 
 	// Ensure the cached studio/showstyle id are updated
-	const invalidateAllPieces =
+	const invalidateAllStatuses =
 		!updateProps || updateProps.newCache || updateProps.invalidateStudio || updateProps.invalidateAll
 
-	if (invalidateAllPieces) {
+	if (invalidateAllStatuses) {
 		// Everything is invalid, reset everything
 		delete state.pieceDependencies
+		delete state.pieceInstanceDependencies
+		delete state.adlibPieceDependencies
+		delete state.adlibActionDependencies
+		delete state.baselineAdlibDependencies
+		delete state.baselineActionDependencies
+
 		collection.remove(null)
 	}
 
@@ -231,6 +266,11 @@ async function manipulateUIPieceContentStatusesPublicationData(
 	// If there is no studio, then none of the objects should have been found, so delete anything that is known
 	if (!state.studio || !state.contentCache) {
 		delete state.pieceDependencies
+		delete state.pieceInstanceDependencies
+		delete state.adlibPieceDependencies
+		delete state.adlibActionDependencies
+		delete state.baselineAdlibDependencies
+		delete state.baselineActionDependencies
 
 		// None are valid anymore
 		collection.remove(null)
@@ -247,55 +287,114 @@ async function manipulateUIPieceContentStatusesPublicationData(
 	)
 
 	let regeneratePieceIds: Set<PieceId>
-	if (!state.pieceDependencies || invalidateAllPieces) {
+	let regeneratePieceInstanceIds: Set<PieceInstanceId>
+	let regenerateAdlibPieceIds: Set<PieceId>
+	let regenerateAdlibActionIds: Set<AdLibActionId>
+	let regenerateBaselineAdlibPieceIds: Set<PieceId>
+	let regenerateBaselineAdlibActionIds: Set<RundownBaselineAdLibActionId>
+	if (
+		!state.pieceDependencies ||
+		!state.pieceInstanceDependencies ||
+		!state.adlibPieceDependencies ||
+		!state.adlibActionDependencies ||
+		!state.baselineAdlibDependencies ||
+		!state.baselineActionDependencies ||
+		invalidateAllStatuses
+	) {
 		state.pieceDependencies = new Map()
+		state.pieceInstanceDependencies = new Map()
+		state.adlibPieceDependencies = new Map()
+		state.adlibActionDependencies = new Map()
+		state.baselineAdlibDependencies = new Map()
+		state.baselineActionDependencies = new Map()
 
 		// force every piece to be regenerated
 		collection.remove(null)
 		regeneratePieceIds = new Set(state.contentCache.Pieces.find({}).map((p) => p._id))
+		regeneratePieceInstanceIds = new Set(state.contentCache.PieceInstances.find({}).map((p) => p._id))
+		regenerateAdlibPieceIds = new Set(state.contentCache.AdLibPieces.find({}).map((p) => p._id))
+		regenerateAdlibActionIds = new Set(state.contentCache.AdLibActions.find({}).map((p) => p._id))
+		regenerateBaselineAdlibPieceIds = new Set(state.contentCache.BaselineAdLibPieces.find({}).map((p) => p._id))
+		regenerateBaselineAdlibActionIds = new Set(state.contentCache.BaselineAdLibActions.find({}).map((p) => p._id))
 	} else {
 		regeneratePieceIds = new Set(updateProps.updatedPieceIds)
-		// Remove any docs where the piece has been deleted
-		if (updateProps.removedPieces && updateProps.removedPieces.length > 0) {
-			const removePieceIds = new Set(updateProps.removedPieces.map((p) => p._id))
-			collection.remove((doc) => removePieceIds.has(doc.pieceId))
-		}
+		regeneratePieceInstanceIds = new Set(updateProps.updatedPieceInstanceIds)
+		regenerateAdlibPieceIds = new Set(updateProps.updatedAdlibPieceIds)
+		regenerateAdlibActionIds = new Set(updateProps.updatedAdlibActionIds)
+		regenerateBaselineAdlibPieceIds = new Set(updateProps.updatedBaselineAdlibPieceIds)
+		regenerateBaselineAdlibActionIds = new Set(updateProps.updatedBaselineAdlibActionIds)
 
 		// Look for which docs should be updated based on the media objects/packages
-		addPiecesWithDependenciesChangesToChangedSet(updateProps, regeneratePieceIds, state.pieceDependencies)
+		addItemsWithDependenciesChangesToChangedSet<PieceId>(updateProps, regeneratePieceIds, state.pieceDependencies)
+		addItemsWithDependenciesChangesToChangedSet<PieceInstanceId>(
+			updateProps,
+			regeneratePieceInstanceIds,
+			state.pieceInstanceDependencies
+		)
+		addItemsWithDependenciesChangesToChangedSet<PieceId>(
+			updateProps,
+			regenerateAdlibPieceIds,
+			state.adlibPieceDependencies
+		)
+		addItemsWithDependenciesChangesToChangedSet<AdLibActionId>(
+			updateProps,
+			regenerateAdlibActionIds,
+			state.adlibActionDependencies
+		)
+		addItemsWithDependenciesChangesToChangedSet<PieceId>(
+			updateProps,
+			regenerateBaselineAdlibPieceIds,
+			state.baselineAdlibDependencies
+		)
+		addItemsWithDependenciesChangesToChangedSet<RundownBaselineAdLibActionId>(
+			updateProps,
+			regenerateBaselineAdlibActionIds,
+			state.baselineActionDependencies
+		)
 	}
 
-	regenerateForPieceIds(state.contentCache, state.studio, state.pieceDependencies, collection, regeneratePieceIds)
-}
-
-function addPiecesWithDependenciesChangesToChangedSet(
-	updateProps: Partial<ReadonlyDeep<UIPieceContentStatusesUpdateProps>> | undefined,
-	regeneratePieceIds: Set<PieceId>,
-	pieceDependenciesMap: UIPieceContentStatusesState['pieceDependencies']
-) {
-	if (
-		updateProps &&
-		(updateProps.invalidateExpectedPackageId?.length ||
-			updateProps.invalidateMediaObjectMediaId?.length ||
-			updateProps.invalidatePackageContainerPackageStatusesId?.length)
-	) {
-		const changedMediaObjects = new Set(updateProps.invalidateMediaObjectMediaId)
-		const changedExpectedPackages = new Set(updateProps.invalidateExpectedPackageId)
-		const changedPackageContainerPackages = new Set(updateProps.invalidatePackageContainerPackageStatusesId)
-
-		for (const [pieceId, pieceDependencies] of pieceDependenciesMap.entries()) {
-			if (regeneratePieceIds.has(pieceId)) continue // skip if we already know the piece has changed
-
-			const pieceChanged =
-				pieceDependencies.mediaObjects.find((mediaId) => changedMediaObjects.has(mediaId)) ||
-				pieceDependencies.packageInfos.find((pkgId) => changedExpectedPackages.has(pkgId)) ||
-				pieceDependencies.packageContainerPackageStatuses.find((pkgId) =>
-					changedPackageContainerPackages.has(pkgId)
-				)
-
-			if (pieceChanged) regeneratePieceIds.add(pieceId)
-		}
-	}
+	await regenerateForPieceIds(
+		state.contentCache,
+		state.studio,
+		state.pieceDependencies,
+		collection,
+		regeneratePieceIds
+	)
+	await regenerateForPieceInstanceIds(
+		state.contentCache,
+		state.studio,
+		state.pieceInstanceDependencies,
+		collection,
+		regeneratePieceInstanceIds
+	)
+	await regenerateForAdLibPieceIds(
+		state.contentCache,
+		state.studio,
+		state.adlibPieceDependencies,
+		collection,
+		regenerateAdlibPieceIds
+	)
+	await regenerateForAdLibActionIds(
+		state.contentCache,
+		state.studio,
+		state.adlibActionDependencies,
+		collection,
+		regenerateAdlibActionIds
+	)
+	await regenerateForBaselineAdLibPieceIds(
+		state.contentCache,
+		state.studio,
+		state.baselineAdlibDependencies,
+		collection,
+		regenerateBaselineAdlibPieceIds
+	)
+	await regenerateForBaselineAdLibActionIds(
+		state.contentCache,
+		state.studio,
+		state.baselineActionDependencies,
+		collection,
+		regenerateBaselineAdlibActionIds
+	)
 }
 
 /**
@@ -313,7 +412,7 @@ function updatePartAndSegmentInfoForExistingDocs(
 
 		// If the part for this doc changed, update its part.
 		// Note: if the segment of the doc's part changes that will only be noticed here
-		if (updatedPartIds.has(doc.partId)) {
+		if (doc.partId && updatedPartIds.has(doc.partId)) {
 			const part = contentCache.Parts.findOne(doc.partId)
 			if (part && (part.segmentId !== doc.segmentId || part._rank !== doc.partRank)) {
 				doc.segmentId = part.segmentId
@@ -323,7 +422,7 @@ function updatePartAndSegmentInfoForExistingDocs(
 		}
 
 		// If the segment for this doc changed, update its rank
-		if (updatedSegmentIds.has(doc.segmentId)) {
+		if (doc.segmentId && updatedSegmentIds.has(doc.segmentId)) {
 			const segment = contentCache.Segments.findOne(doc.segmentId)
 			if (segment && (doc.segmentRank !== segment._rank || doc.segmentName !== segment.name)) {
 				doc.segmentRank = segment._rank
@@ -334,158 +433,6 @@ function updatePartAndSegmentInfoForExistingDocs(
 
 		return changed ? doc : false
 	})
-}
-
-/**
- * Regenerating the status for the provided PieceIds
- * Note: This will do many calls to the database
- */
-function regenerateForPieceIds(
-	contentCache: ReadonlyDeep<ContentCache>,
-	uiStudio: ReadonlyDeep<StudioMini>,
-	pieceDependenciesState: Map<PieceId, PieceDependencies>,
-	collection: CustomPublishCollection<UIPieceContentStatus>,
-	regeneratePieceIds: Set<PieceId>
-) {
-	const deletedPieceIds = new Set<PieceId>()
-
-	// Apply the updates to the Pieces
-	// Future: this could be done with some limited concurrency. It will need to balance performance of the updates and not interfering with other tasks
-	for (const pieceId of regeneratePieceIds) {
-		pieceDependenciesState.delete(pieceId)
-
-		const pieceDoc = contentCache.Pieces.findOne(pieceId)
-		if (!pieceDoc) {
-			// Piece has been deleted, queue it for batching
-			deletedPieceIds.add(pieceId)
-		} else {
-			// Regenerate piece
-
-			const rundown = contentCache.Rundowns.findOne(pieceDoc.startRundownId)
-			const sourceLayersForRundown = rundown
-				? contentCache.ShowStyleSourceLayers.findOne(rundown.showStyleBaseId)
-				: undefined
-
-			const part = contentCache.Parts.findOne(pieceDoc.startPartId)
-			const segment = part ? contentCache.Segments.findOne(part.segmentId) : undefined
-			const sourceLayer = sourceLayersForRundown?.sourceLayers?.[pieceDoc.sourceLayerId]
-
-			// Only if this piece is valid
-			if (part && segment && sourceLayer) {
-				const [status, pieceDependencies] = checkPieceContentStatusAndDependencies(
-					uiStudio,
-					pieceDoc,
-					sourceLayer
-				)
-
-				pieceDependenciesState.set(pieceId, pieceDependencies)
-
-				collection.replace({
-					_id: protectString(`piece_${pieceId}`),
-
-					segmentRank: segment._rank,
-					partRank: part._rank,
-
-					partId: pieceDoc.startPartId,
-					rundownId: pieceDoc.startRundownId,
-					segmentId: part.segmentId,
-					pieceId: pieceId,
-
-					name: pieceDoc.name,
-					segmentName: segment.name,
-
-					status: status,
-				})
-			} else {
-				deletedPieceIds.add(pieceId)
-			}
-		}
-	}
-
-	// Process any piece deletions
-	collection.remove((doc) => deletedPieceIds.has(doc.pieceId))
-}
-
-function checkPieceContentStatusAndDependencies(
-	uiStudio: UIPieceContentStatusesState['studio'],
-	pieceDoc: Pick<Piece, PieceFields>,
-	sourceLayer: ISourceLayer
-): [status: PieceContentStatusObj, pieceDependencies: PieceDependencies] {
-	// Track the media documents that this Piece searched for, so we can invalidate it whenever one of these changes
-	const pieceDependencies: PieceDependencies = {
-		mediaObjects: [],
-		packageInfos: [],
-		packageContainerPackageStatuses: [],
-	}
-
-	const getMediaObject = (mediaId: string) => {
-		pieceDependencies.mediaObjects.push(mediaId)
-		return waitForPromise(
-			MediaObjects.findOneAsync({
-				studioId: uiStudio._id,
-				mediaId,
-			})
-		)
-	}
-
-	const getPackageInfos = (packageId: ExpectedPackageId) => {
-		pieceDependencies.packageInfos.push(packageId)
-		return waitForPromise(
-			PackageInfos.findFetchAsync({
-				studioId: uiStudio._id,
-				packageId: packageId,
-				type: {
-					$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
-				},
-			})
-		)
-	}
-
-	const getPackageContainerPackageStatus2 = (packageContainerId: string, expectedPackageId: ExpectedPackageId) => {
-		const id = getPackageContainerPackageId(uiStudio._id, packageContainerId, expectedPackageId)
-		pieceDependencies.packageContainerPackageStatuses.push(id)
-		return waitForPromise(
-			PackageContainerPackageStatuses.findOneAsync({
-				_id: id,
-				studioId: uiStudio._id,
-			})
-		)
-	}
-
-	const status = checkPieceContentStatus(
-		pieceDoc,
-		sourceLayer,
-		uiStudio,
-		getMediaObject,
-		getPackageInfos,
-		getPackageContainerPackageStatus2
-	)
-
-	return [status, pieceDependencies]
-}
-
-interface PieceDependencies {
-	mediaObjects: string[]
-	packageInfos: ExpectedPackageId[]
-	packageContainerPackageStatuses: PackageContainerPackageId[]
-}
-
-async function fetchStudio(studioId: StudioId): Promise<UIPieceContentStatusesState['studio'] | undefined> {
-	const studio = (await Studios.findOneAsync(studioId, {
-		projection: studioFieldSpecifier,
-	})) as Pick<Studio, StudioFields> | undefined
-
-	if (!studio) {
-		return undefined
-	}
-
-	return {
-		_id: studio._id,
-		settings: studio.settings,
-		packageContainers: studio.packageContainers,
-		mappings: applyAndValidateOverrides(studio.mappingsWithOverrides).obj,
-		routeSets: studio.routeSets,
-	}
 }
 
 meteorCustomPublish(

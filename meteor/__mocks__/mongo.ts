@@ -17,7 +17,7 @@ import {
 } from '../lib/collections/lib'
 import { mongoWhere, mongoFindOptions, mongoModify } from '@sofie-automation/corelib/dist/mongo'
 import { Mongo } from 'meteor/mongo'
-import { AsyncOnlyMongoCollection } from '../server/collections/collection'
+import { AsyncOnlyMongoCollection, AsyncOnlyReadOnlyMongoCollection } from '../server/collections/collection'
 const clone = require('fast-clone')
 
 export namespace MongoMock {
@@ -333,7 +333,7 @@ export namespace MongoMock {
 	}
 
 	export function getInnerMockCollection<T extends { _id: ProtectedString<any> }>(
-		collection: MongoReadOnlyCollection<T>
+		collection: MongoReadOnlyCollection<T> | AsyncOnlyReadOnlyMongoCollection<T>
 	): Mongo.Collection<T> {
 		return (collection as any).mockCollection
 	}

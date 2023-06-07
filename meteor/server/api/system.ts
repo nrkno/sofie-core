@@ -1,5 +1,5 @@
 import * as _ from 'underscore'
-import { sleep } from '../../lib/lib'
+import { getCurrentTime, sleep, Time } from '../../lib/lib'
 import { registerClassToMeteorMethods } from '../methods'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import {
@@ -24,6 +24,8 @@ import { IndexSpecification } from 'mongodb'
 import { nightlyCronjobInner } from '../cronjobs'
 import { TranslationsBundleId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { createAsyncOnlyMongoCollection, AsyncOnlyMongoCollection } from '../collections/collection'
+import { NoSecurityReadAccess } from '../security/noSecurity'
+import { generateToken } from './singleUseTokens'
 
 async function setupIndexes(removeOldIndexes: boolean = false): Promise<Array<IndexSpecification>> {
 	// Note: This function should NOT run on Meteor.startup, due to getCollectionIndexes failing if run before indexes have been created.
@@ -362,6 +364,23 @@ async function getTranslationBundle(context: MethodContext, bundleId: Translatio
 	return ClientAPI.responseSuccess(await getTranslationBundleInner(bundleId))
 }
 
+let lastTokenTimestamp: Time | undefined = undefined
+const TOKEN_ISSUE_TIME_LIMIT = 1000 // ms
+
+async function generateSingleUseToken() {
+	NoSecurityReadAccess.any()
+
+	const eventTime = getCurrentTime()
+
+	if (lastTokenTimestamp !== undefined && eventTime <= lastTokenTimestamp + TOKEN_ISSUE_TIME_LIMIT) {
+		throw new Meteor.Error(503, `Tokens can only be issued every ${TOKEN_ISSUE_TIME_LIMIT / 1000}s.`)
+	}
+
+	lastTokenTimestamp = eventTime
+	const newToken = generateToken()
+	return ClientAPI.responseSuccess(newToken)
+}
+
 class SystemAPIClass extends MethodContextAPI implements SystemAPI {
 	async cleanupIndexes(actuallyRemoveOldIndexes: boolean) {
 		return cleanupIndexes(this, actuallyRemoveOldIndexes)
@@ -377,6 +396,9 @@ class SystemAPIClass extends MethodContextAPI implements SystemAPI {
 	}
 	async getTranslationBundle(bundleId: TranslationsBundleId): Promise<ClientAPI.ClientResponse<TranslationsBundle>> {
 		return getTranslationBundle(this, bundleId)
+	}
+	async generateSingleUseToken(): Promise<ClientAPI.ClientResponse<string>> {
+		return generateSingleUseToken()
 	}
 }
 registerClassToMeteorMethods(SystemAPIMethods, SystemAPIClass, false)

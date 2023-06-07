@@ -94,6 +94,7 @@ import {
 } from '../collections'
 import { getCoreSystemAsync } from '../coreSystem/collection'
 import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction'
+import { verifyHashedToken } from './singleUseTokens'
 
 interface RundownPlaylistSnapshot extends CoreRundownPlaylistSnapshot {
 	versionExtended: string | undefined
@@ -612,10 +613,16 @@ async function restoreFromSystemSnapshot(snapshot: SystemSnapshot): Promise<void
 /** Take and store a system snapshot */
 export async function storeSystemSnapshot(
 	context: MethodContext,
+	hashedToken: string,
 	studioId: StudioId | null,
 	reason: string
 ): Promise<SnapshotId> {
+	check(hashedToken, String)
 	if (!_.isNull(studioId)) check(studioId, String)
+	if (!verifyHashedToken(hashedToken)) {
+		throw new Meteor.Error(401, `Restart token is invalid or has expired`)
+	}
+
 	const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(context)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
@@ -635,9 +642,15 @@ export async function internalStoreSystemSnapshot(
 }
 export async function storeRundownPlaylistSnapshot(
 	access: VerifiedRundownPlaylistContentAccess,
+	hashedToken: string,
 	reason: string,
 	full?: boolean
 ): Promise<SnapshotId> {
+	check(hashedToken, String)
+	if (!verifyHashedToken(hashedToken)) {
+		throw new Meteor.Error(401, `Restart token is invalid or has expired`)
+	}
+
 	const s = await createRundownPlaylistSnapshot(access.playlist, full)
 	return storeSnaphot(s, access.organizationId, reason)
 }
@@ -651,10 +664,16 @@ export async function internalStoreRundownPlaylistSnapshot(
 }
 export async function storeDebugSnapshot(
 	context: MethodContext,
+	hashedToken: string,
 	studioId: StudioId,
 	reason: string
 ): Promise<SnapshotId> {
 	check(studioId, String)
+	check(hashedToken, String)
+	if (!verifyHashedToken(hashedToken)) {
+		throw new Meteor.Error(401, `Restart token is invalid or has expired`)
+	}
+
 	const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(context)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
@@ -799,16 +818,16 @@ PickerGET.route(
 )
 
 class ServerSnapshotAPI extends MethodContextAPI implements NewSnapshotAPI {
-	async storeSystemSnapshot(studioId: StudioId | null, reason: string) {
-		return storeSystemSnapshot(this, studioId, reason)
+	async storeSystemSnapshot(hashedToken: string, studioId: StudioId | null, reason: string) {
+		return storeSystemSnapshot(this, hashedToken, studioId, reason)
 	}
-	async storeRundownPlaylist(playlistId: RundownPlaylistId, reason: string) {
+	async storeRundownPlaylist(hashedToken: string, playlistId: RundownPlaylistId, reason: string) {
 		check(playlistId, String)
 		const access = await checkAccessToPlaylist(this, playlistId)
-		return storeRundownPlaylistSnapshot(access, reason)
+		return storeRundownPlaylistSnapshot(access, hashedToken, reason)
 	}
-	async storeDebugSnapshot(studioId: StudioId, reason: string) {
-		return storeDebugSnapshot(this, studioId, reason)
+	async storeDebugSnapshot(hashedToken: string, studioId: StudioId, reason: string) {
+		return storeDebugSnapshot(this, hashedToken, studioId, reason)
 	}
 	async restoreSnapshot(snapshotId: SnapshotId) {
 		return restoreSnapshot(this, snapshotId)

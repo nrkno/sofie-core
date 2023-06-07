@@ -1,6 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import { PeripheralDevices, Studios } from '../collections'
+import { PeripheralDevices, RundownPlaylists, Studios } from '../collections'
 import { assertNever, clone, literal } from '@sofie-automation/corelib/dist/lib'
 import {
 	MappingExt,
@@ -20,6 +20,7 @@ import {
 	ObjectOverrideSetOp,
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { JSONBlobStringify, JSONSchema } from '@sofie-automation/blueprints-integration'
 
 /*
  * **************************************************************************************
@@ -507,6 +508,97 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 				{
 					$unset: {
 						configManifest: 1,
+					},
+				},
+				{
+					multi: true,
+				}
+			)
+		},
+	},
+
+	{
+		id: `RundownPlaylist move nextPartManual to nextPartInfo.manuallySelected`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await RundownPlaylists.countDocuments({
+				nextPartManual: { $exists: true },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const playlists = await RundownPlaylists.findFetchAsync({
+				nextPartManual: { $exists: true },
+			})
+
+			for (const playlist of playlists) {
+				const nextPartManual = !!(playlist as any).nextPartManual
+				await RundownPlaylists.mutableCollection.updateAsync(playlist._id, {
+					$set: playlist.nextPartInfo
+						? {
+								'nextPartInfo.manuallySelected': nextPartManual,
+						  }
+						: undefined,
+					$unset: {
+						nextPartManual: 1,
+					},
+				})
+			}
+		},
+	},
+
+	{
+		id: `PeripheralDevice ensure deviceConfigSchema and subdeviceManifest exists`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await PeripheralDevices.countDocuments({
+				parentDeviceId: { $exists: false },
+				$or: [
+					{
+						'configManifest.deviceConfigSchema': {
+							$exists: false,
+						},
+					},
+					{
+						'configManifest.subdeviceManifest': {
+							$exists: false,
+						},
+					},
+				],
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			await PeripheralDevices.updateAsync(
+				{
+					parentDeviceId: { $exists: false },
+					$or: [
+						{
+							'configManifest.deviceConfigSchema': {
+								$exists: false,
+							},
+						},
+						{
+							'configManifest.subdeviceManifest': {
+								$exists: false,
+							},
+						},
+					],
+				},
+				{
+					$set: {
+						configManifest: {
+							deviceConfigSchema: JSONBlobStringify<JSONSchema>({}),
+							subdeviceManifest: {},
+						},
 					},
 				},
 				{

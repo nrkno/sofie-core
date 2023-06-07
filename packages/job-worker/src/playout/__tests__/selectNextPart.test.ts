@@ -4,7 +4,7 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
-import { PartsAndSegments, selectNextPart } from '../lib'
+import { selectNextPart, PartsAndSegments } from '../selectNextPart'
 
 class MockPart {
 	constructor(
@@ -73,14 +73,14 @@ describe('selectNextPart', () => {
 		{
 			// default
 			const nextPart = selectNextPart(context, defaultPlaylist, null, null, getSegmentsAndParts())
-			expect(nextPart).toEqual({ index: 0, part: defaultParts[0] })
+			expect(nextPart).toEqual({ index: 0, part: defaultParts[0], consumesNextSegmentId: false })
 		}
 
 		{
 			// first isnt playable
 			defaultParts[0].playable = false
 			const nextPart = selectNextPart(context, defaultPlaylist, null, null, getSegmentsAndParts())
-			expect(nextPart).toEqual({ index: 1, part: defaultParts[1] })
+			expect(nextPart).toEqual({ index: 1, part: defaultParts[1], consumesNextSegmentId: false })
 		}
 
 		{
@@ -102,14 +102,14 @@ describe('selectNextPart', () => {
 		{
 			// default
 			const nextPart = selectNextPart(context, defaultPlaylist, null, null, getSegmentsAndParts(), false)
-			expect(nextPart).toEqual({ index: 0, part: defaultParts[0] })
+			expect(nextPart).toEqual({ index: 0, part: defaultParts[0], consumesNextSegmentId: false })
 		}
 
 		{
 			// first isnt playable
 			defaultParts[0].playable = false
 			const nextPart = selectNextPart(context, defaultPlaylist, null, null, getSegmentsAndParts(), false)
-			expect(nextPart).toEqual({ index: 0, part: defaultParts[0] })
+			expect(nextPart).toEqual({ index: 0, part: defaultParts[0], consumesNextSegmentId: false })
 		}
 
 		{
@@ -132,14 +132,14 @@ describe('selectNextPart', () => {
 		{
 			// default
 			const nextPart = selectNextPart(context, defaultPlaylist, previousPartInstance, null, getSegmentsAndParts())
-			expect(nextPart).toEqual({ index: 5, part: defaultParts[5] })
+			expect(nextPart).toEqual({ index: 5, part: defaultParts[5], consumesNextSegmentId: false })
 		}
 
 		{
 			// next isnt playable
 			defaultParts[5].playable = false
 			const nextPart = selectNextPart(context, defaultPlaylist, previousPartInstance, null, getSegmentsAndParts())
-			expect(nextPart).toEqual({ index: 6, part: defaultParts[6] })
+			expect(nextPart).toEqual({ index: 6, part: defaultParts[6], consumesNextSegmentId: false })
 		}
 
 		{
@@ -166,14 +166,14 @@ describe('selectNextPart', () => {
 		{
 			// single part is orphaned
 			const nextPart = selectNextPart(context, defaultPlaylist, previousPartInstance, null, getSegmentsAndParts())
-			expect(nextPart).toEqual({ index: 4, part: defaultParts[4] })
+			expect(nextPart).toEqual({ index: 4, part: defaultParts[4], consumesNextSegmentId: false })
 		}
 
 		{
 			// whole segment is orphaned/deleted
 			defaultParts = defaultParts.filter((p) => p.segmentId !== previousPartInstance.segmentId)
 			const nextPart = selectNextPart(context, defaultPlaylist, previousPartInstance, null, getSegmentsAndParts())
-			expect(nextPart).toEqual({ index: 3, part: defaultParts[3] })
+			expect(nextPart).toEqual({ index: 3, part: defaultParts[3], consumesNextSegmentId: false })
 		}
 
 		{
@@ -188,7 +188,7 @@ describe('selectNextPart', () => {
 			defaultPlaylist.loop = true
 			defaultParts = defaultParts.filter((p) => p.segmentId !== segment3)
 			const nextPart = selectNextPart(context, defaultPlaylist, previousPartInstance, null, getSegmentsAndParts())
-			expect(nextPart).toEqual({ index: 0, part: defaultParts[0] })
+			expect(nextPart).toEqual({ index: 0, part: defaultParts[0], consumesNextSegmentId: false })
 		}
 	})
 
@@ -204,7 +204,7 @@ describe('selectNextPart', () => {
 				getSegmentsAndParts(),
 				false
 			)
-			expect(nextPart).toEqual({ index: 5, part: defaultParts[5] })
+			expect(nextPart).toEqual({ index: 5, part: defaultParts[5], consumesNextSegmentId: false })
 		}
 
 		{
@@ -218,7 +218,7 @@ describe('selectNextPart', () => {
 				getSegmentsAndParts(),
 				false
 			)
-			expect(nextPart).toEqual({ index: 5, part: defaultParts[5] })
+			expect(nextPart).toEqual({ index: 5, part: defaultParts[5], consumesNextSegmentId: false })
 		}
 	})
 })

@@ -22,7 +22,7 @@ import { PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { logger } from 'elastic-apm-node'
 import { updatePartInstanceRanksAfterAdlib } from '../rundown'
-import { selectNextPart } from './lib'
+import { selectNextPart } from './selectNextPart'
 import { setNextPart } from './setNext'
 import { calculateNowOffsetLatency } from './timeline/multi-gateway'
 
@@ -260,7 +260,7 @@ export async function innerStartQueuedAdLib(
 		cache.PieceInstances.insert(pieceInstance)
 	}
 
-	await setNextPart(context, cache, newPartInstance)
+	await setNextPart(context, cache, newPartInstance, false)
 
 	if (span) span.end()
 }

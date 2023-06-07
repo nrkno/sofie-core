@@ -1,9 +1,9 @@
 import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
-import { getCurrentTime, getHash, Time } from '../../lib/lib'
+import { Time } from '../../lib/lib'
 import { ServerPlayoutAPI } from './playout/playout'
-import { NewUserActionAPI, RESTART_SALT, UserActionAPIMethods } from '../../lib/api/userActions'
+import { NewUserActionAPI, UserActionAPIMethods } from '../../lib/api/userActions'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
 import { IngestPart, IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
@@ -47,6 +47,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IngestDataCache, Parts, Pieces, Rundowns } from '../collections'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
+import { verifyHashedToken } from './singleUseTokens'
 
 async function pieceSetInOutPoints(
 	access: VerifiedRundownPlaylistContentAccess,
@@ -83,8 +84,6 @@ async function pieceSetInOutPoints(
 		duration / 1000
 	) // MOS data is in seconds
 }
-
-let restartToken: string | undefined = undefined
 
 class ServerUserActionAPI
 	extends MethodContextAPI
@@ -604,6 +603,7 @@ class ServerUserActionAPI
 	async storeRundownSnapshot(
 		userEvent: string,
 		eventTime: Time,
+		hashedToken: string,
 		playlistId: RundownPlaylistId,
 		reason: string,
 		full: boolean
@@ -620,7 +620,7 @@ class ServerUserActionAPI
 			'storeRundownSnapshot',
 			[playlistId, reason, full],
 			async (access) => {
-				return storeRundownPlaylistSnapshot(access, reason, full)
+				return storeRundownPlaylistSnapshot(access, hashedToken, reason, full)
 			}
 		)
 	}
@@ -885,28 +885,20 @@ class ServerUserActionAPI
 			}
 		)
 	}
-	async generateRestartToken(userEvent: string, eventTime: Time) {
-		return ServerClientAPI.runUserActionInLog(this, userEvent, eventTime, 'generateRestartToken', [], async () => {
-			await SystemWriteAccess.systemActions(this)
-
-			restartToken = getHash('restart_' + getCurrentTime())
-			return restartToken
-		})
-	}
-	async restartCore(userEvent: string, eventTime: Time, hashedRestartToken: string) {
+	async restartCore(userEvent: string, eventTime: Time, hashedToken: string) {
 		return ServerClientAPI.runUserActionInLog(
 			this,
 			userEvent,
 			eventTime,
 			'restartCore',
-			[hashedRestartToken],
+			[hashedToken],
 			async () => {
-				check(hashedRestartToken, String)
+				check(hashedToken, String)
 
 				await SystemWriteAccess.systemActions(this)
 
-				if (hashedRestartToken !== getHash(RESTART_SALT + restartToken)) {
-					throw new Meteor.Error(401, `Restart token is invalid`)
+				if (!verifyHashedToken(hashedToken)) {
+					throw new Meteor.Error(401, `Restart token is invalid or has expired`)
 				}
 
 				setTimeout(() => {

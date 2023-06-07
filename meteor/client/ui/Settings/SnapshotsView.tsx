@@ -17,6 +17,8 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
 import { SnapshotId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Snapshots, Studios } from '../../collections'
+import { ClientAPI } from '../../../lib/api/client'
+import { hashSingleUseToken } from '../../../lib/api/userActions'
 
 interface IProps {
 	match: {
@@ -161,30 +163,54 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 			}
 		}
 		takeSystemSnapshot = (studioId: StudioId | null) => {
-			MeteorCall.snapshot.storeSystemSnapshot(studioId, `Requested by user`).catch((err) => {
-				logger.error(err)
-				doModalDialog({
-					title: 'Restore Snapshot',
-					message: `Error: ${err.toString()}`,
-					acceptOnly: true,
-					onAccept: () => {
-						// nothing
-					},
+			MeteorCall.system
+				.generateSingleUseToken()
+				.then((tokenResponse) => {
+					if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
+						throw tokenResponse
+					}
+					return MeteorCall.snapshot.storeSystemSnapshot(
+						hashSingleUseToken(tokenResponse.result),
+						studioId,
+						`Requested by user`
+					)
 				})
-			})
+				.catch((err) => {
+					logger.error(err)
+					doModalDialog({
+						title: 'Restore Snapshot',
+						message: `Error: ${err.toString()}`,
+						acceptOnly: true,
+						onAccept: () => {
+							// nothing
+						},
+					})
+				})
 		}
 		takeDebugSnapshot = (studioId: StudioId) => {
-			MeteorCall.snapshot.storeDebugSnapshot(studioId, `Requested by user`).catch((err) => {
-				logger.error(err)
-				doModalDialog({
-					title: 'Restore Snapshot',
-					message: `Error: ${err.toString()}`,
-					acceptOnly: true,
-					onAccept: () => {
-						// nothing
-					},
+			MeteorCall.system
+				.generateSingleUseToken()
+				.then((tokenResponse) => {
+					if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
+						throw tokenResponse
+					}
+					return MeteorCall.snapshot.storeDebugSnapshot(
+						hashSingleUseToken(tokenResponse.result),
+						studioId,
+						`Requested by user`
+					)
 				})
-			})
+				.catch((err) => {
+					logger.error(err)
+					doModalDialog({
+						title: 'Restore Snapshot',
+						message: `Error: ${err.toString()}`,
+						acceptOnly: true,
+						onAccept: () => {
+							// nothing
+						},
+					})
+				})
 		}
 		editSnapshot = (snapshotId) => {
 			if (this.state.editSnapshotId === snapshotId) {
@@ -254,7 +280,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 								{this.props.studios.length > 1 ? (
 									<div>
 										<h3 className="mhn">{t('Studio Snapshot')}</h3>
-										<p className="mhn text-s dimmed">
+										<p className="mhn text-s dimmed field-hint">
 											{t('A Studio Snapshot contains all system settings related to that studio')}
 										</p>
 										{_.map(this.props.studios, (studio) => {

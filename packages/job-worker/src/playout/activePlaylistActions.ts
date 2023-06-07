@@ -5,7 +5,8 @@ import _ = require('underscore')
 import { JobContext } from '../jobs'
 import { logger } from '../logging'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
-import { resetRundownPlaylist, selectNextPart } from './lib'
+import { resetRundownPlaylist } from './lib'
+import { selectNextPart } from './selectNextPart'
 import { setNextPart } from './setNext'
 import { updateStudioTimeline, updateTimeline } from './timeline/generate'
 import { getCurrentTime } from '../lib'
@@ -70,7 +71,7 @@ export async function activateRundownPlaylist(
 			null,
 			getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 		)
-		await setNextPart(context, cache, firstPart)
+		await setNextPart(context, cache, firstPart, false)
 
 		if (firstPart) {
 			rundown = cache.Rundowns.findOne(firstPart.part.rundownId)
@@ -191,7 +192,7 @@ export async function deactivateRundownPlaylistInner(
 
 		return p
 	})
-	await setNextPart(context, cache, null)
+	await setNextPart(context, cache, null, false)
 
 	if (currentPartInstance) {
 		// Set the current PartInstance as stopped

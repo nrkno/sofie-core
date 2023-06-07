@@ -3,7 +3,7 @@ import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { PieceExtended } from '../../../../lib/Rundown'
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
-import { getElementWidth } from '../../../utils/dimensions'
+import { getElementHeight, getElementWidth } from '../../../utils/dimensions'
 import renderThumbnail from './Renderers/ThumbnailRendererFactory'
 import { PieceElement } from '../../SegmentContainer/PieceElement'
 import { UIStudio } from '../../../../lib/api/studios'
@@ -38,6 +38,7 @@ export const StoryboardPartThumbnailInner = withMediaObjectStatus<IProps, {}>()(
 		const [hover, setHover] = useState(false)
 		const [origin, setOrigin] = useState<OffsetPosition>({ left: 0, top: 0 })
 		const [width, setWidth] = useState(0)
+		const [height, setHeight] = useState(0)
 		const [mousePosition, setMousePosition] = useState(0)
 		const thumbnailEl = useRef<HTMLDivElement>(null)
 
@@ -54,6 +55,10 @@ export const StoryboardPartThumbnailInner = withMediaObjectStatus<IProps, {}>()(
 			const newWidth = thumbnailEl.current && getElementWidth(thumbnailEl.current)
 			if (newWidth !== null) {
 				setWidth(newWidth)
+			}
+			const newHeight = thumbnailEl.current && getElementHeight(thumbnailEl.current)
+			if (newHeight !== null) {
+				setHeight(newHeight)
 			}
 		}
 
@@ -93,6 +98,7 @@ export const StoryboardPartThumbnailInner = withMediaObjectStatus<IProps, {}>()(
 						hoverScrubTimePosition: mousePosition * (piece.instance.piece.content.sourceDuration || 0),
 						hovering: hover,
 						layer: layer,
+						height,
 						originPosition: origin,
 						pieceInstance: piece,
 						studio,

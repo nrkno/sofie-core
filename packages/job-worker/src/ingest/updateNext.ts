@@ -1,12 +1,14 @@
-import { selectNextPart, isTooCloseToAutonext } from '../playout/lib'
+import { isTooCloseToAutonext } from '../playout/lib'
+import { selectNextPart } from '../playout/selectNextPart'
 import {
 	CacheForPlayout,
 	getOrderedSegmentsAndPartsFromPlayoutCache,
 	getSelectedPartInstancesFromCache,
 } from '../playout/cache'
 import { JobContext } from '../jobs'
-import { setNextPartInner } from '../playout/setNext'
+import { setNextPart } from '../playout/setNext'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { updateTimeline } from '../playout/timeline/generate'
 
 /**
  * Make sure that the nextPartInstance for the current Playlist is still correct
@@ -23,7 +25,7 @@ export async function ensureNextPartIsValid(context: JobContext, cache: CacheFor
 		const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 		if (
-			playlist.nextPartManual &&
+			playlist.nextPartInfo?.manuallySelected &&
 			nextPartInstance?.part &&
 			isPartPlayable(nextPartInstance.part) &&
 			nextPartInstance.orphaned !== 'deleted'
@@ -60,7 +62,9 @@ export async function ensureNextPartIsValid(context: JobContext, cache: CacheFor
 				!isPartPlayable(nextPartInstance.part)
 			) {
 				// The 'new' next part is before the current next, so move the next point
-				await setNextPartInner(context, cache, newNextPart?.part ?? null)
+				await setNextPart(context, cache, newNextPart ?? null, false)
+
+				await updateTimeline(context, cache)
 			}
 		} else if (!nextPartInstance || nextPartInstance.orphaned === 'deleted') {
 			// Don't have a nextPart or it has been deleted, so autoselect something
@@ -71,7 +75,9 @@ export async function ensureNextPartIsValid(context: JobContext, cache: CacheFor
 				nextPartInstance ?? null,
 				allPartsAndSegments
 			)
-			await setNextPartInner(context, cache, newNextPart?.part ?? null)
+			await setNextPart(context, cache, newNextPart ?? null, false)
+
+			await updateTimeline(context, cache)
 		}
 	}
 

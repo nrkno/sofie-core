@@ -862,4 +862,10 @@ export namespace RundownUtils {
 		}
 		return false
 	}
+
+	export function isBucketAdLibItem(
+		piece: IAdLibListItem | PieceUi | AdLibPieceUi | BucketAdLibItem
+	): piece is BucketAdLibItem {
+		return !!piece['bucketId']
+	}
 }

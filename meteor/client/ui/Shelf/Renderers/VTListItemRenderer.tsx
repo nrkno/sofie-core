@@ -130,10 +130,11 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 					showMiniInspector={showMiniInspector}
 					timePosition={hoverScrubTimePosition}
 					content={vtContent}
-					floatingInspectorStyle={{
-						top: itemIconPosition?.top + 'px',
-						left: itemIconPosition?.left + 'px',
-						transform: 'translate(0, -100%)',
+					position={{
+						top: itemIconPosition?.top ?? 0,
+						left: itemIconPosition?.left ?? 0,
+						anchor: 'start',
+						position: 'top-start',
 					}}
 					typeClass={props.layer && RundownUtils.getSourceLayerClassName(props.layer.type)}
 					itemElement={itemIcon.current}

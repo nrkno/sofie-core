@@ -1,16 +1,12 @@
 import { TimelineObjGeneric } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { applyToArray, clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { JobContext } from '../jobs'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DbCacheReadCollection } from '../cache/CacheCollection'
+import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
-import { sortPartsInSortedSegments, sortSegmentsInRundowns } from '@sofie-automation/corelib/dist/playout/playlist'
-import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache } from './cache'
+import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getRundownIDsFromCache } from './cache'
 import { logger } from '../logging'
 import { getCurrentTime } from '../lib'
 import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
@@ -18,6 +14,7 @@ import { MongoQuery } from '../db'
 import { mongoWhere } from '@sofie-automation/corelib/dist/mongo'
 import _ = require('underscore')
 import { setNextPart } from './setNext'
+import { selectNextPart } from './selectNextPart'
 
 /**
  * Reset the rundownPlaylist (all of the rundowns within the playlist):
@@ -41,6 +38,7 @@ export async function resetRundownPlaylist(context: JobContext, cache: CacheForP
 		delete p.rundownsStartedPlayback
 		delete p.previousPersistentState
 		delete p.trackedAbSessions
+		delete p.nextSegmentId
 
 		return p
 	})
@@ -60,134 +58,10 @@ export async function resetRundownPlaylist(context: JobContext, cache: CacheForP
 			null,
 			getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 		)
-		await setNextPart(context, cache, firstPart)
+		await setNextPart(context, cache, firstPart, false)
 	} else {
-		await setNextPart(context, cache, null)
+		await setNextPart(context, cache, null, false)
 	}
-}
-
-export interface SelectNextPartResult {
-	part: DBPart
-	index: number
-	consumesNextSegmentId?: boolean
-}
-export interface PartsAndSegments {
-	segments: DBSegment[]
-	parts: DBPart[]
-}
-
-export function selectNextPart(
-	context: JobContext,
-	rundownPlaylist: Pick<DBRundownPlaylist, 'nextSegmentId' | 'loop'>,
-	previousPartInstance: DBPartInstance | null,
-	currentlySelectedPartInstance: DBPartInstance | null,
-	{ parts: parts0, segments }: PartsAndSegments,
-	ignoreUnplayabale = true
-): SelectNextPartResult | null {
-	const span = context.startSpan('selectNextPart')
-
-	// In the parts array, insert currentlySelectedPartInstance over its part, as it is already nexted, so wont change unless necessary
-	const parts = currentlySelectedPartInstance
-		? parts0.map((p) => (p._id === currentlySelectedPartInstance.part._id ? currentlySelectedPartInstance.part : p))
-		: parts0
-
-	/**
-	 * Iterates over all the parts and searches for the first one to be playable
-	 * @param offset the index from where to start the search
-	 * @param condition whether the part will be returned
-	 * @param length the maximum index or where to stop the search
-	 */
-	const findFirstPlayablePart = (
-		offset: number,
-		condition?: (part: DBPart) => boolean,
-		length?: number
-	): SelectNextPartResult | undefined => {
-		// Filter to after and find the first playabale
-		for (let index = offset; index < (length || parts.length); index++) {
-			const part = parts[index]
-			if ((!ignoreUnplayabale || isPartPlayable(part)) && (!condition || condition(part))) {
-				return { part, index }
-			}
-		}
-		return undefined
-	}
-
-	let searchFromIndex = 0
-	if (previousPartInstance) {
-		const currentIndex = parts.findIndex((p) => p._id === previousPartInstance.part._id)
-		if (currentIndex !== -1) {
-			// Start looking at the next part
-			searchFromIndex = currentIndex + 1
-		} else {
-			const segmentStarts = new Map<SegmentId, number>()
-			parts.forEach((p, i) => {
-				if (!segmentStarts.has(p.segmentId)) {
-					segmentStarts.set(p.segmentId, i)
-				}
-			})
-
-			// Look for other parts in the segment to reference
-			const segmentStartIndex = segmentStarts.get(previousPartInstance.segmentId)
-			if (segmentStartIndex !== undefined) {
-				let nextInSegmentIndex: number | undefined
-				for (let i = segmentStartIndex; i < parts.length; i++) {
-					const part = parts[i]
-					if (part.segmentId !== previousPartInstance.segmentId) break
-					if (part._rank <= previousPartInstance.part._rank) {
-						nextInSegmentIndex = i + 1
-					}
-				}
-
-				searchFromIndex = nextInSegmentIndex ?? segmentStartIndex
-			} else {
-				// If we didn't find the segment in the list of parts, then look for segments after this one.
-				const segmentIndex = segments.findIndex((s) => s._id === previousPartInstance.segmentId)
-				let followingSegmentStart: number | undefined
-				if (segmentIndex !== -1) {
-					// Find the first segment with parts that lies after this
-					for (let i = segmentIndex + 1; i < segments.length; i++) {
-						const segmentStart = segmentStarts.get(segments[i]._id)
-						if (segmentStart !== undefined) {
-							followingSegmentStart = segmentStart
-							break
-						}
-					}
-
-					// Either there is a segment after, or we are at the end of the rundown
-					searchFromIndex = followingSegmentStart ?? parts.length + 1
-				} else {
-					// Somehow we cannot place the segment, so the start of the playlist is better than nothing
-				}
-			}
-		}
-	}
-
-	// Filter to after and find the first playabale
-	let nextPart = findFirstPlayablePart(searchFromIndex)
-
-	if (rundownPlaylist.nextSegmentId) {
-		// No previous part, or segment has changed
-		if (!previousPartInstance || (nextPart && previousPartInstance.segmentId !== nextPart.part.segmentId)) {
-			// Find first in segment
-			const newSegmentPart = findFirstPlayablePart(0, (part) => part.segmentId === rundownPlaylist.nextSegmentId)
-			if (newSegmentPart) {
-				// If matched matched, otherwise leave on auto
-				nextPart = {
-					...newSegmentPart,
-					consumesNextSegmentId: true,
-				}
-			}
-		}
-	}
-
-	// if playlist should loop, check from 0 to currentPart
-	if (rundownPlaylist.loop && !nextPart && previousPartInstance) {
-		// Search up until the current part
-		nextPart = findFirstPlayablePart(0, undefined, searchFromIndex - 1)
-	}
-
-	if (span) span.end()
-	return nextPart ?? null
 }
 
 /**
@@ -223,6 +97,7 @@ export function resetPartInstancesWithPieceInstances(
 
 	// Defer ones which arent loaded
 	cache.deferDuringSaveTransaction(async (transaction, cache) => {
+		const rundownIds = getRundownIDsFromCache(cache)
 		const partInstanceIdsInCache = cache.PartInstances.findAll(null).map((p) => p._id)
 
 		// Find all the partInstances which are not loaded, but should be reset
@@ -233,6 +108,7 @@ export function resetPartInstancesWithPieceInstances(
 					{
 						// Not any which are in the cache, as they have already been done if needed
 						_id: { $nin: partInstanceIdsInCache },
+						rundownId: { $in: rundownIds },
 						reset: { $ne: true },
 					},
 				],
@@ -248,6 +124,7 @@ export function resetPartInstancesWithPieceInstances(
 				? context.directCollections.PartInstances.update(
 						{
 							_id: { $in: resetInDb },
+							rundownId: { $in: rundownIds },
 							reset: { $ne: true },
 						},
 						{
@@ -262,6 +139,7 @@ export function resetPartInstancesWithPieceInstances(
 				? context.directCollections.PieceInstances.update(
 						{
 							partInstanceId: { $in: allToReset },
+							rundownId: { $in: rundownIds },
 							reset: { $ne: true },
 						},
 						{
@@ -293,6 +171,7 @@ function removePartInstancesWithPieceInstances(
 
 	// Defer ones which arent loaded
 	cache.deferDuringSaveTransaction(async (transaction, cache) => {
+		const rundownIds = getRundownIDsFromCache(cache)
 		// We need to keep any for PartInstances which are still existent in the cache (as they werent removed)
 		const partInstanceIdsInCache = cache.PartInstances.findAll(null).map((p) => p._id)
 
@@ -304,6 +183,7 @@ function removePartInstancesWithPieceInstances(
 					{
 						// Not any which are in the cache, as they have already been done if needed
 						_id: { $nin: partInstanceIdsInCache },
+						rundownId: { $in: rundownIds },
 					},
 				],
 			},
@@ -318,6 +198,7 @@ function removePartInstancesWithPieceInstances(
 				? context.directCollections.PartInstances.remove(
 						{
 							_id: { $in: removeFromDb },
+							rundownId: { $in: rundownIds },
 						},
 						transaction
 				  )
@@ -326,6 +207,7 @@ function removePartInstancesWithPieceInstances(
 				? context.directCollections.PieceInstances.remove(
 						{
 							partInstanceId: { $in: allToRemove },
+							rundownId: { $in: rundownIds },
 						},
 						transaction
 				  )
@@ -429,37 +311,6 @@ export function isTooCloseToAutonext(
 	}
 
 	return false
-}
-
-export function getRundownsSegmentsAndPartsFromCache(
-	partsCache: DbCacheReadCollection<DBPart>,
-	segmentsCache: DbCacheReadCollection<DBSegment>,
-	playlist: Pick<ReadonlyDeep<DBRundownPlaylist>, 'rundownIdsInOrder'>
-): { segments: DBSegment[]; parts: DBPart[] } {
-	const segments = sortSegmentsInRundowns(
-		segmentsCache.findAll(null, {
-			sort: {
-				rundownId: 1,
-				_rank: 1,
-			},
-		}),
-		playlist
-	)
-
-	const parts = sortPartsInSortedSegments(
-		partsCache.findAll(null, {
-			sort: {
-				rundownId: 1,
-				_rank: 1,
-			},
-		}),
-		segments
-	)
-
-	return {
-		segments: segments,
-		parts: parts,
-	}
 }
 
 /**

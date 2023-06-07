@@ -17,15 +17,12 @@ export function GraphicsRenderer({
 			<L3rdFloatingInspector
 				showMiniInspector={!!hovering}
 				content={content}
-				floatingInspectorStyle={
-					elementOffset
-						? {
-								top: elementOffset.top + 'px',
-								left: elementOffset.left + 'px',
-								transform: 'translate(0, -100%)',
-						  }
-						: {}
-				}
+				position={{
+					top: elementOffset?.top ?? 0,
+					left: elementOffset?.left ?? 0,
+					anchor: 'start',
+					position: 'top-start',
+				}}
 				typeClass={typeClass}
 				itemElement={null}
 				piece={pieceInstance.instance.piece}

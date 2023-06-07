@@ -16,15 +16,12 @@ export function SplitsRenderer({
 		<>
 			<div className="segment-storyboard__part__piece__contents">{splitItems}</div>
 			<SplitsFloatingInspector
-				floatingInspectorStyle={
-					elementOffset
-						? {
-								top: elementOffset.top + 'px',
-								left: elementOffset.left + 'px',
-								transform: 'translate(0, -100%)',
-						  }
-						: {}
-				}
+				position={{
+					top: elementOffset?.top ?? 0,
+					left: elementOffset?.left ?? 0,
+					anchor: 'start',
+					position: 'top-start',
+				}}
 				itemElement={null}
 				content={pieceInstance.instance.piece.content as Partial<SplitsContent>}
 				showMiniInspector={!!hovering}

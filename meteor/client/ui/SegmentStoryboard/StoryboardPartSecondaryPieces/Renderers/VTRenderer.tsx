@@ -27,15 +27,12 @@ export function VTRenderer({
 				showMiniInspector={!!hovering}
 				timePosition={timePosition}
 				content={vtContent}
-				floatingInspectorStyle={
-					elementOffset
-						? {
-								top: elementOffset.top + 'px',
-								left: elementOffset.left + 'px',
-								transform: 'translate(0, -100%)',
-						  }
-						: {}
-				}
+				position={{
+					top: elementOffset?.top ?? 0,
+					left: elementOffset?.left ?? 0,
+					anchor: 'start',
+					position: 'top-start',
+				}}
 				typeClass={typeClass}
 				itemElement={null}
 				contentMetaData={pieceInstance.contentMetaData || null}
