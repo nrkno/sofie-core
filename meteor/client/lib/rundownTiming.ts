@@ -814,10 +814,18 @@ export function getPlaylistTimingDiff(
 	let frontAnchor: number = currentTime
 	let backAnchor: number = currentTime
 	if (PlaylistTiming.isPlaylistTimingForwardTime(timing)) {
-		backAnchor =
+		const backAnchorTimeWithoutBreaks =
 			timing.expectedEnd ??
 			(startedPlayback ?? Math.max(timing.expectedStart, currentTime)) +
 				(timing.expectedDuration ?? timingContext.totalPlaylistDuration ?? 0)
+
+		if (timingContext.nextBreakStartTime || timingContext.nextBreakEndTime) {
+			backAnchor =
+				timingContext.nextBreakStartTime ?? timingContext.nextBreakEndTime ?? backAnchorTimeWithoutBreaks
+		} else {
+			backAnchor = backAnchorTimeWithoutBreaks
+		}
+
 		frontAnchor = Math.max(currentTime, playlist.startedPlayback ?? Math.max(timing.expectedStart, currentTime))
 	} else if (PlaylistTiming.isPlaylistTimingBackTime(timing)) {
 		if (timingContext.nextBreakStartTime || timingContext.nextBreakEndTime) {
