@@ -60,7 +60,7 @@ import { SupportPopUp } from './SupportPopUp'
 import { KeyboardFocusIndicator } from '../lib/KeyboardFocusIndicator'
 import { PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
 import { doUserAction, UserAction } from '../../lib/clientUserAction'
-import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
+import { hashSingleUseToken, ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
 import {
@@ -879,7 +879,20 @@ const RundownHeader = withTranslation()(
 					t,
 					e,
 					UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
-					(e, ts) => MeteorCall.userAction.storeRundownSnapshot(e, ts, this.props.playlist._id, 'Taken by user', false),
+					(e, ts) =>
+						MeteorCall.system.generateSingleUseToken().then((tokenResponse) => {
+							if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
+								throw tokenResponse
+							}
+							return MeteorCall.userAction.storeRundownSnapshot(
+								e,
+								ts,
+								hashSingleUseToken(tokenResponse.result),
+								this.props.playlist._id,
+								'Taken by user',
+								false
+							)
+						}),
 					() => {
 						NotificationCenter.push(
 							new Notification(
@@ -2715,13 +2728,19 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				e,
 				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
 				(e, ts) =>
-					MeteorCall.userAction.storeRundownSnapshot(
-						e,
-						ts,
-						playlistId,
-						'User requested log at' + getCurrentTime(),
-						false
-					),
+					MeteorCall.system.generateSingleUseToken().then((tokenResponse) => {
+						if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
+							throw tokenResponse
+						}
+						return MeteorCall.userAction.storeRundownSnapshot(
+							e,
+							ts,
+							hashSingleUseToken(tokenResponse.result),
+							playlistId,
+							'User requested log at' + getCurrentTime(),
+							false
+						)
+					}),
 				() => {
 					NotificationCenter.push(
 						new Notification(

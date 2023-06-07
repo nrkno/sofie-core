@@ -33,6 +33,7 @@ import { ReactiveVar } from 'meteor/reactive-var'
 import { PartId, PartInstanceId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartInstances, Parts } from '../../collections/libCollections'
 import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
+import { hashSingleUseToken } from '../userActions'
 
 // as described in this issue: https://github.com/Microsoft/TypeScript/issues/14094
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
@@ -527,7 +528,17 @@ export function createAction(action: SomeAction, sourceLayers: SourceLayers): Ex
 				return createTakeRundownSnapshotAction(action.filterChain as IGUIContextFilterLink[])
 			} else {
 				return createUserActionWithCtx(action, UserAction.CREATE_SNAPSHOT_FOR_DEBUG, async (e, ts, ctx) =>
-					MeteorCall.userAction.storeRundownSnapshot(e, ts, ctx.rundownPlaylistId.get(), `action`, false)
+					MeteorCall.system.generateSingleUseToken().then(async (tokenResult) => {
+						if (ClientAPI.isClientResponseError(tokenResult) || !tokenResult.result) throw tokenResult
+						return MeteorCall.userAction.storeRundownSnapshot(
+							e,
+							ts,
+							hashSingleUseToken(tokenResult.result),
+							ctx.rundownPlaylistId.get(),
+							`action`,
+							false
+						)
+					})
 				)
 			}
 		case PlayoutActions.moveNext:

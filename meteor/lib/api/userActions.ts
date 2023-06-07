@@ -6,7 +6,7 @@ import { IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integr
 import { BucketAdLib } from '../collections/BucketAdlibs'
 import { AdLibActionCommon } from '../collections/AdLibActions'
 import { BucketAdLibAction } from '../collections/BucketAdlibActions'
-import { Time } from '../lib'
+import { getHash, Time } from '../lib'
 import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studio'
 import {
 	AdLibActionId,
@@ -175,6 +175,7 @@ export interface NewUserActionAPI extends MethodContext {
 	storeRundownSnapshot(
 		userEvent: string,
 		eventTime: Time,
+		token: string,
 		playlistId: RundownPlaylistId,
 		reason: string,
 		full: boolean
@@ -246,7 +247,6 @@ export interface NewUserActionAPI extends MethodContext {
 		eventTime: Time,
 		playlistId: RundownPlaylistId
 	): Promise<ClientAPI.ClientResponse<void>>
-	generateRestartToken(userEvent: string, eventTime: Time): Promise<ClientAPI.ClientResponse<string>>
 	restartCore(userEvent: string, eventTime: Time, token: string): Promise<ClientAPI.ClientResponse<string>>
 	guiFocused(userEvent: string, eventTime: Time, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
 	guiBlurred(userEvent: string, eventTime: Time, viewInfo?: any[]): Promise<ClientAPI.ClientResponse<void>>
@@ -384,8 +384,6 @@ export enum UserActionAPIMethods {
 	'packageManagerRestartPackageContainer' = 'userAction.packagemanager.restartPackageContainer',
 
 	'regenerateRundownPlaylist' = 'userAction.ingest.regenerateRundownPlaylist',
-
-	'generateRestartToken' = 'userAction.system.generateRestartToken',
 	'restartCore' = 'userAction.system.restartCore',
 
 	'guiFocused' = 'userAction.focused',
@@ -412,4 +410,8 @@ export enum TriggerReloadDataResponse {
 	MISSING = 'missing',
 }
 
-export const RESTART_SALT = 'clientRestart_'
+export const SINGLE_USE_TOKEN_SALT = 'token_'
+
+export function hashSingleUseToken(token: string): string {
+	return getHash(SINGLE_USE_TOKEN_SALT + token)
+}
