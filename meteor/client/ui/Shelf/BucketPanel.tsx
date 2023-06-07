@@ -392,9 +392,8 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 				}
 
 				componentDidMount(): void {
-					this.subscribe(PubSub.buckets, {
-						_id: this.props.bucket._id,
-					})
+					this.subscribe(PubSub.buckets, this.props.playlist.studioId, this.props.bucket._id)
+					this.subscribe(PubSub.uiBucketContentStatuses, this.props.playlist.studioId, this.props.bucket._id)
 					this.subscribe(PubSub.uiStudio, this.props.playlist.studioId)
 					this.autorun(() => {
 						const showStyles: Array<[ShowStyleBaseId, ShowStyleVariantId]> =

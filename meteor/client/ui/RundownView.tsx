@@ -1569,9 +1569,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.subscribe(PubSub.uiSegmentPartNotes, playlistId)
 				this.subscribe(PubSub.uiPieceContentStatuses, playlistId)
 				this.subscribe(PubSub.uiStudio, playlist.studioId)
-				this.subscribe(PubSub.buckets, {
-					studioId: playlist.studioId,
-				})
+				this.subscribe(PubSub.buckets, playlist.studioId, null)
 				// TODO: This is a hack, which should be replaced by something more clever, like in withMediaObjectStatus()
 				this.subscribe(PubSub.packageContainerPackageStatusesSimple, playlist.studioId)
 			})

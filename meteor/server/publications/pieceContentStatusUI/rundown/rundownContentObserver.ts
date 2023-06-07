@@ -1,22 +1,36 @@
 import { Meteor } from 'meteor/meteor'
 import { RundownId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { logger } from '../../logging'
+import { logger } from '../../../logging'
 import {
+	adLibActionFieldSpecifier,
+	adLibPieceFieldSpecifier,
 	ContentCache,
 	createReactiveContentCache,
 	partFieldSpecifier,
 	pieceFieldSpecifier,
+	pieceInstanceFieldSpecifier,
 	rundownFieldSpecifier,
 	segmentFieldSpecifier,
 	ShowStyleBaseFields,
 	showStyleBaseFieldSpecifier,
 	SourceLayersDoc,
 } from './reactiveContentCache'
-import { Parts, Pieces, Rundowns, Segments, ShowStyleBases } from '../../collections'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { equivalentArrays, waitForPromise } from '../../../lib/lib'
+import {
+	AdLibActions,
+	AdLibPieces,
+	Parts,
+	PieceInstances,
+	Pieces,
+	RundownBaselineAdLibActions,
+	RundownBaselineAdLibPieces,
+	Rundowns,
+	Segments,
+	ShowStyleBases,
+} from '../../../collections'
+import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import { equivalentArrays, waitForPromise } from '../../../../lib/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { ReactiveMongoObserverGroup, ReactiveMongoObserverGroupHandle } from '../lib/observerGroup'
+import { ReactiveMongoObserverGroup, ReactiveMongoObserverGroupHandle } from '../../lib/observerGroup'
 import _ from 'underscore'
 
 const REACTIVITY_DEBOUNCE = 20
@@ -25,6 +39,7 @@ type ChangedHandler = (cache: ContentCache) => () => void
 
 function convertShowStyleBase(doc: Pick<ShowStyleBase, ShowStyleBaseFields>): Omit<SourceLayersDoc, '_id'> {
 	return {
+		blueprintId: doc.blueprintId,
 		sourceLayers: applyAndValidateOverrides(doc.sourceLayersWithOverrides).obj,
 	}
 }
@@ -129,6 +144,62 @@ export class RundownContentObserver {
 				cache.Pieces.link(),
 				{
 					projection: pieceFieldSpecifier,
+				}
+			),
+			PieceInstances.observe(
+				{
+					rundownId: {
+						$in: rundownIds,
+					},
+					reset: { $ne: true },
+				},
+				cache.PieceInstances.link(),
+				{
+					projection: pieceInstanceFieldSpecifier,
+				}
+			),
+			AdLibPieces.observe(
+				{
+					rundownId: {
+						$in: rundownIds,
+					},
+				},
+				cache.AdLibPieces.link(),
+				{
+					projection: adLibPieceFieldSpecifier,
+				}
+			),
+			AdLibActions.observe(
+				{
+					rundownId: {
+						$in: rundownIds,
+					},
+				},
+				cache.AdLibActions.link(),
+				{
+					projection: adLibActionFieldSpecifier,
+				}
+			),
+			RundownBaselineAdLibPieces.observe(
+				{
+					rundownId: {
+						$in: rundownIds,
+					},
+				},
+				cache.BaselineAdLibPieces.link(),
+				{
+					projection: adLibPieceFieldSpecifier,
+				}
+			),
+			RundownBaselineAdLibActions.observe(
+				{
+					rundownId: {
+						$in: rundownIds,
+					},
+				},
+				cache.BaselineAdLibActions.link(),
+				{
+					projection: adLibActionFieldSpecifier,
 				}
 			),
 		]
