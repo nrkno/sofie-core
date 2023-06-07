@@ -4,20 +4,20 @@ import { SegmentUi } from '../../SegmentTimeline/SegmentTimelineContainer'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { RundownUtils } from '../../../lib/rundown'
 
-interface IMilestoneWallTimeProps {
+interface IBreakWallTimeProps {
 	segment: SegmentUi | DBSegment
 	label?: ReactNode
 	className?: string
 }
 
 /**
- * A presentational component that will render a counter that will show how much content
- * is left in a segment consisting of given parts
- * @function MilestoneWallTime
- * @extends React.Component<IMilestoneWallTimeProps>
+ * A presentational component that will render a counter that will show the wall time that a break starts at.
+ * (Or ends at, if there's no start time but an end time is provided.)
+ * @function BreakWallTime
+ * @extends React.Component<IBreakWallTimeProps>
  */
-export const MilestoneWallTime = function MilestoneWallTime(props: IMilestoneWallTimeProps): JSX.Element | null {
-	const value = props.segment.milestoneBackTime ?? props.segment.milestoneCumeTime
+export const BreakWallTime = function BreakWallTime(props: IBreakWallTimeProps): JSX.Element | null {
+	const value = props.segment.breakStartTime ?? props.segment.breakEndTime
 
 	if (value === null || value === undefined) {
 		return null

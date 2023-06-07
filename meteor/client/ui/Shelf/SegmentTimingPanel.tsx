@@ -24,7 +24,7 @@ import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { PartId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
-import { MilestoneWallTime } from '../RundownView/RundownTiming/MilestoneWallTime'
+import { BreakWallTime } from '../RundownView/RundownTiming/BreakWallTime'
 
 interface ISegmentTimingPanelProps {
 	visible?: boolean
@@ -73,8 +73,8 @@ class SegmentTimingPanelInner extends MeteorReactComponent<
 						this.props.liveSegment &&
 						this.props.parts &&
 						this.props.pieces &&
-						(this.props.liveSegment.isMilestone ? (
-							<MilestoneWallTime
+						(this.props.liveSegment.isBreak ? (
+							<BreakWallTime
 								segment={this.props.liveSegment}
 								label={<span className="segment-timeline__duration__label">{t('Wall Time')}</span>}
 							/>

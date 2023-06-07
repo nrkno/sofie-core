@@ -140,8 +140,8 @@ export class RundownTimingCalculator {
 		let currentAIndex = -1
 
 		let lastSegmentId: SegmentId | undefined = undefined
-		let nextMilestoneBackTime: number | undefined = undefined
-		let nextMilestoneCumeTime: number | undefined = undefined
+		let nextBreakStartTime: number | undefined = undefined
+		let nextBreakEndTime: number | undefined = undefined
 
 		if (playlist) {
 			const breakProps = currentRundown ? this.getRundownsBeforeNextBreak(rundowns, currentRundown) : undefined
@@ -510,15 +510,15 @@ export class RundownTimingCalculator {
 					// this is a calculation for the next line, which is basically how much there is left of the current line
 					localAccum = this.linearParts[i][1] || 0 // if there is no current line, rebase following lines to the next line
 					this.linearParts[i][1] = currentRemaining
-					if (nextMilestoneBackTime === undefined) {
-						const backTime = getMilestoneBackTime(partInstancesMap, segments, this.linearParts[i][0])
-						if (backTime) {
-							nextMilestoneBackTime = backTime
+					if (nextBreakStartTime === undefined) {
+						const startTime = getBreakStartTime(partInstancesMap, segments, this.linearParts[i][0])
+						if (startTime) {
+							nextBreakStartTime = startTime
 						}
 
-						const cumeTime = getMilestoneCumeTime(partInstancesMap, segments, this.linearParts[i][0])
-						if (cumeTime) {
-							nextMilestoneCumeTime = cumeTime
+						const endTime = getBreakEndTime(partInstancesMap, segments, this.linearParts[i][0])
+						if (endTime) {
+							nextBreakEndTime = endTime
 						}
 					}
 				} else {
@@ -528,15 +528,15 @@ export class RundownTimingCalculator {
 					// and add the currentRemaining countdown, since we are currentRemaining + diff between next and
 					// this away from this line.
 					this.linearParts[i][1] = (this.linearParts[i][1] || 0) - localAccum + currentRemaining
-					if (nextMilestoneBackTime === undefined) {
-						const backTime = getMilestoneBackTime(partInstancesMap, segments, this.linearParts[i][0])
+					if (nextBreakStartTime === undefined) {
+						const backTime = getBreakStartTime(partInstancesMap, segments, this.linearParts[i][0])
 						if (backTime) {
-							nextMilestoneBackTime = backTime
+							nextBreakStartTime = backTime
 						}
 
-						const cumeTime = getMilestoneCumeTime(partInstancesMap, segments, this.linearParts[i][0])
+						const cumeTime = getBreakEndTime(partInstancesMap, segments, this.linearParts[i][0])
 						if (cumeTime) {
-							nextMilestoneCumeTime = cumeTime
+							nextBreakEndTime = cumeTime
 						}
 					}
 				}
@@ -547,15 +547,15 @@ export class RundownTimingCalculator {
 					// offset the parts before the on air line by the countdown for the end of the rundown
 					this.linearParts[i][1] =
 						(this.linearParts[i][1] || 0) + waitAccumulator - localAccum + currentRemaining
-					if (nextMilestoneBackTime === undefined) {
-						const backTime = getMilestoneBackTime(partInstancesMap, segments, this.linearParts[i][0])
+					if (nextBreakStartTime === undefined) {
+						const backTime = getBreakStartTime(partInstancesMap, segments, this.linearParts[i][0])
 						if (backTime) {
-							nextMilestoneBackTime = backTime
+							nextBreakStartTime = backTime
 						}
 
-						const cumeTime = getMilestoneCumeTime(partInstancesMap, segments, this.linearParts[i][0])
+						const cumeTime = getBreakEndTime(partInstancesMap, segments, this.linearParts[i][0])
 						if (cumeTime) {
-							nextMilestoneCumeTime = cumeTime
+							nextBreakEndTime = cumeTime
 						}
 					}
 				}
@@ -649,8 +649,8 @@ export class RundownTimingCalculator {
 			rundownsBeforeNextBreak,
 			breakIsLastRundown,
 			isLowResolution,
-			nextMilestoneBackTime,
-			nextMilestoneCumeTime,
+			nextBreakStartTime,
+			nextBreakEndTime,
 		})
 	}
 
@@ -769,10 +769,10 @@ export interface RundownTimingContext {
 	breakIsLastRundown?: boolean
 	/** Was this time context calculated during a high-resolution tick */
 	isLowResolution: boolean
-	/** The absolute back time of the next milestone, if any. */
-	nextMilestoneBackTime?: number
-	/** The absolute cume time of the next milestone, if any. */
-	nextMilestoneCumeTime?: number
+	/** The absolute start time of the next break, if any. */
+	nextBreakStartTime?: number
+	/** The absolute end time of the next break, if any. */
+	nextBreakEndTime?: number
 }
 
 /**
@@ -820,9 +820,11 @@ export function getPlaylistTimingDiff(
 				(timing.expectedDuration ?? timingContext.totalPlaylistDuration ?? 0)
 		frontAnchor = Math.max(currentTime, playlist.startedPlayback ?? Math.max(timing.expectedStart, currentTime))
 	} else if (PlaylistTiming.isPlaylistTimingBackTime(timing)) {
-		backAnchor = timing.expectedEnd
-	} else if (PlaylistTiming.isPlaylistTimingMilestone(timing)) {
-		backAnchor = timingContext.nextMilestoneBackTime ?? timingContext.nextMilestoneCumeTime ?? timing.expectedEnd
+		if (timingContext.nextBreakStartTime || timingContext.nextBreakEndTime) {
+			backAnchor = timingContext.nextBreakStartTime ?? timingContext.nextBreakEndTime ?? timing.expectedEnd
+		} else {
+			backAnchor = timing.expectedEnd
+		}
 	}
 
 	let diff = PlaylistTiming.isPlaylistTimingNone(timing)
@@ -869,29 +871,29 @@ function ensureMinimumDefaultDurationIfNotAuto(
 	return Math.max(incomingDuration, defaultDuration)
 }
 
-function getMilestoneBackTime(
+function getBreakStartTime(
 	partInstancesMap: Map<PartId, PartInstance>,
 	segments: DBSegment[],
 	partId: PartId
 ): number | null {
 	const part = partInstancesMap.get(partId)
 	const segment = segments.find((s) => s._id === part?.segmentId)
-	if (segment?.isMilestone) {
-		return segment.milestoneBackTime ?? null
+	if (segment?.isBreak) {
+		return segment.breakStartTime ?? null
 	}
 
 	return null
 }
 
-function getMilestoneCumeTime(
+function getBreakEndTime(
 	partInstancesMap: Map<PartId, PartInstance>,
 	segments: DBSegment[],
 	partId: PartId
 ): number | null {
 	const part = partInstancesMap.get(partId)
 	const segment = segments.find((s) => s._id === part?.segmentId)
-	if (segment?.isMilestone) {
-		return segment.milestoneCumeTime ?? null
+	if (segment?.isBreak) {
+		return segment.breakEndTime ?? null
 	}
 
 	return null

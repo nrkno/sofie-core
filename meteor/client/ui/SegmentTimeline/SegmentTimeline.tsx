@@ -50,7 +50,7 @@ import {
 	TimingDataResolution,
 	WithTiming,
 } from '../RundownView/RundownTiming/withTiming'
-import { MilestoneWallTime } from '../RundownView/RundownTiming/MilestoneWallTime'
+import { BreakWallTime } from '../RundownView/RundownTiming/BreakWallTime'
 
 interface IProps {
 	id: string
@@ -1098,8 +1098,8 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 						this.props.parts &&
 						this.props.parts.length > 0 &&
 						(!this.props.hasAlreadyPlayed || this.props.isNextSegment || this.props.isLiveSegment) &&
-						(this.props.segment.isMilestone ? (
-							<MilestoneWallTime
+						(this.props.segment.isBreak ? (
+							<BreakWallTime
 								segment={this.props.segment}
 								label={<span className="segment-timeline__duration__label">{t('Wall Time')}</span>}
 							/>

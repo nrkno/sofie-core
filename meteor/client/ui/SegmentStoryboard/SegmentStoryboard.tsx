@@ -35,7 +35,7 @@ import { UIStudio } from '../../../lib/api/studios'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
-import { MilestoneWallTime } from '../RundownView/RundownTiming/MilestoneWallTime'
+import { BreakWallTime } from '../RundownView/RundownTiming/BreakWallTime'
 
 interface IProps {
 	id: string
@@ -612,8 +612,8 @@ export const SegmentStoryboard = React.memo(
 						props.parts &&
 						props.parts.length > 0 &&
 						(!props.hasAlreadyPlayed || props.isNextSegment || props.isLiveSegment) &&
-						(props.segment.isMilestone ? (
-							<MilestoneWallTime
+						(props.segment.isBreak ? (
+							<BreakWallTime
 								segment={props.segment}
 								label={<span className="segment-timeline__duration__label">{t('Wall Time')}</span>}
 							/>

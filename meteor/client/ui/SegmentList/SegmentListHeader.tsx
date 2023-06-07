@@ -17,7 +17,7 @@ import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { UIStudio } from '../../../lib/api/studios'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
-import { MilestoneWallTime } from '../RundownView/RundownTiming/MilestoneWallTime'
+import { BreakWallTime } from '../RundownView/RundownTiming/BreakWallTime'
 
 export function SegmentListHeader({
 	isDetached,
@@ -106,8 +106,8 @@ export function SegmentListHeader({
 					{playlist &&
 						parts &&
 						parts.length > 0 &&
-						(segment.isMilestone ? (
-							<MilestoneWallTime
+						(segment.isBreak ? (
+							<BreakWallTime
 								segment={segment}
 								label={<span className="segment-timeline__duration__label">{t('Wall Time')}</span>}
 							/>
