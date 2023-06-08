@@ -1,9 +1,9 @@
 import classNames from 'classnames'
 import React from 'react'
 import { SegmentUi } from '../../SegmentTimeline/SegmentTimelineContainer'
-import { RundownUtils } from '../../../lib/rundown'
 import { useTranslation } from 'react-i18next'
 import { useCurrentTime } from '../../../lib/lib'
+import Moment from 'react-moment'
 
 interface ISegmentExpectedTimingProps {
 	segment: SegmentUi
@@ -36,14 +36,11 @@ export const SegmentExpectedTiming = function SegmentExpectedTiming(
 		return null
 	}
 
-	const date = new Date(value)
-
 	return (
 		<>
 			<span className={props.labelClassName}>{t(usingEnd ? 'Planned End' : 'Planned Start')}</span>
 			<span className={classNames(props.className)} role="timer">
-				{RundownUtils.padZeros(date.getHours(), 2)}:{RundownUtils.padZeros(date.getMinutes(), 2)}:
-				{RundownUtils.padZeros(date.getSeconds(), 2)}
+				<Moment interval={0} format="HH:mm:ss" date={value} />
 			</span>
 		</>
 	)
