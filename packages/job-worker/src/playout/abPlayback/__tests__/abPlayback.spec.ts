@@ -1,11 +1,21 @@
 import {
-	IBlueprintPieceDB,
-	IBlueprintResolvedPieceInstance,
+	ABResolverConfiguration,
+	ABResolverOptions,
+	IBlueprintPieceType,
 	PieceLifespan,
+	TSR,
 } from '@sofie-automation/blueprints-integration'
+import { EmptyPieceTimelineObjectsBlob, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { PieceInstancePiece, ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { ABSessionAssignments } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { ABResolverOptions } from '../abPlaybackResolver'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { CommonContext } from '../../../blueprints/context'
+import { AssignmentResult, resolveAbAssignmentsFromRequests, SessionRequest } from '../abPlaybackResolver'
+import { calculateSessionTimeRanges } from '../abPlaybackSessions'
 import { AbSessionHelper } from '../abSessionHelper'
+import { applyAbPlayerObjectAssignments } from '../applyAssignments'
 
 const POOL_NAME = 'clip'
 
@@ -20,9 +30,9 @@ function createBasicResolvedPieceInstance(
 	duration: number | undefined,
 	reqId: string | undefined,
 	optional?: boolean
-): IBlueprintResolvedPieceInstance {
-	const piece = literal<IBlueprintPieceDB>({
-		_id: id,
+): ResolvedPieceInstance {
+	const piece = literal<PieceInstancePiece>({
+		_id: protectString(id),
 		externalId: id,
 		name: id,
 		enable: {
@@ -32,9 +42,12 @@ function createBasicResolvedPieceInstance(
 		outputLayerId: '',
 		metaData: {},
 		lifespan: PieceLifespan.WithinPart,
-		content: {
-			timelineObjects: [],
-		},
+		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
+		content: {},
+		invalid: false,
+		startPartId: protectString(''),
+		status: PieceStatusCode.UNKNOWN,
+		pieceType: IBlueprintPieceType.Normal,
 	})
 
 	if (reqId !== undefined) {
@@ -47,24 +60,47 @@ function createBasicResolvedPieceInstance(
 		]
 	}
 
-	return literal<IBlueprintResolvedPieceInstance>({
-		_id: `inst_${id}`,
-		partInstanceId: '',
+	return literal<ResolvedPieceInstance>({
+		_id: protectString(`inst_${id}`),
+		partInstanceId: protectString(''),
+		rundownId: protectString(''),
+		playlistActivationId: protectString(''),
 		piece,
 		resolvedStart: start,
 		resolvedDuration: duration,
 	})
 }
 
+function resolveAbSessions(
+	abSessionHelper: AbSessionHelper,
+	resolverOptions: ABResolverOptions,
+	resolvedPieces: ResolvedPieceInstance[],
+	timelineObjs: OnGenerateTimelineObjExt[],
+	previousAssignmentMap: ABSessionAssignments,
+	sessionPool: string,
+	playerIds: number[],
+	now: number
+): AssignmentResult {
+	const sessionRequests = calculateSessionTimeRanges(
+		abSessionHelper,
+		resolvedPieces,
+		timelineObjs,
+		previousAssignmentMap,
+		sessionPool
+	)
+
+	return resolveAbAssignmentsFromRequests(resolverOptions, playerIds, sessionRequests, now)
+}
+
 describe('resolveMediaPlayers', () => {
 	// TODO - rework this to use an interface instead of mocking the methods
-	const context = new AbSessionHelper([], [], [])
+	const abSessionHelper = new AbSessionHelper([], [])
 
-	const mockGetPieceSessionId: jest.MockedFunction<typeof context.getPieceABSessionId> = jest.fn()
-	const mockGetObjectSessionId: jest.MockedFunction<typeof context.getTimelineObjectAbSessionId> = jest.fn()
+	const mockGetPieceSessionId: jest.MockedFunction<typeof abSessionHelper.getPieceABSessionId> = jest.fn()
+	const mockGetObjectSessionId: jest.MockedFunction<typeof abSessionHelper.getTimelineObjectAbSessionId> = jest.fn()
 
-	context.getPieceABSessionId = mockGetPieceSessionId
-	context.getTimelineObjectAbSessionId = mockGetObjectSessionId
+	abSessionHelper.getPieceABSessionId = mockGetPieceSessionId
+	abSessionHelper.getTimelineObjectAbSessionId = mockGetObjectSessionId
 
 	beforeEach(() => {
 		mockGetPieceSessionId.mockReset().mockImplementation(() => {
@@ -76,7 +112,7 @@ describe('resolveMediaPlayers', () => {
 	})
 
 	test('no pieces', () => {
-		const assignments = resolveAbSessions(context, resolverOptions, [], [], {}, POOL_NAME, [1, 2], 5000)
+		const assignments = resolveAbSessions(abSessionHelper, resolverOptions, [], [], {}, POOL_NAME, [1, 2], 5000)
 		expect(assignments.failedRequired).toHaveLength(0)
 		expect(assignments.failedOptional).toHaveLength(0)
 		expect(assignments.requests).toHaveLength(0)
@@ -93,7 +129,7 @@ describe('resolveMediaPlayers', () => {
 		mockGetPieceSessionId.mockImplementation((piece, name) => `${piece._id}_${name}`)
 
 		const assignments = resolveAbSessions(
-			context,
+			abSessionHelper,
 			resolverOptions,
 			pieces,
 			[],
@@ -106,9 +142,9 @@ describe('resolveMediaPlayers', () => {
 		expect(assignments.failedOptional).toHaveLength(0)
 		expect(assignments.requests).toHaveLength(3)
 		expect(assignments.requests).toEqual([
-			{ end: 5400, id: 'inst_0_clip_abc', player: 1, start: 400, optional: false },
-			{ end: 5400, id: 'inst_1_clip_def', player: 2, start: 400, optional: false },
-			{ end: 4800, id: 'inst_2_clip_ghi', player: undefined, start: 800, optional: false }, // Massive overlap
+			{ end: 5400, id: 'inst_0_clip_abc', playerId: 1, start: 400, optional: false },
+			{ end: 5400, id: 'inst_1_clip_def', playerId: 2, start: 400, optional: false },
+			{ end: 4800, id: 'inst_2_clip_ghi', playerId: undefined, start: 800, optional: false }, // Massive overlap
 		])
 
 		expect(mockGetPieceSessionId).toHaveBeenCalledTimes(3)
@@ -130,7 +166,7 @@ describe('resolveMediaPlayers', () => {
 		mockGetPieceSessionId.mockImplementation((_piece, name) => `tmp_${name}`)
 
 		const assignments = resolveAbSessions(
-			context,
+			abSessionHelper,
 			resolverOptions,
 			pieces,
 			[],
@@ -143,7 +179,7 @@ describe('resolveMediaPlayers', () => {
 		expect(assignments.failedOptional).toHaveLength(0)
 		expect(assignments.requests).toHaveLength(1)
 		expect(assignments.requests).toEqual([
-			{ end: 7400, id: 'tmp_clip_abc', player: 1, start: 400, optional: false },
+			{ end: 7400, id: 'tmp_clip_abc', playerId: 1, start: 400, optional: false },
 		])
 
 		expect(mockGetPieceSessionId).toHaveBeenCalledTimes(4)
@@ -165,7 +201,7 @@ describe('resolveMediaPlayers', () => {
 		mockGetPieceSessionId.mockImplementation((piece, name) => `${piece._id}_${name}`)
 
 		const assignments = resolveAbSessions(
-			context,
+			abSessionHelper,
 			resolverOptions,
 			pieces,
 			[],
@@ -178,9 +214,9 @@ describe('resolveMediaPlayers', () => {
 		expect(assignments.failedOptional).toHaveLength(0)
 		expect(assignments.requests).toHaveLength(3)
 		expect(assignments.requests).toEqual([
-			{ end: 5400, id: 'inst_0_clip_abc', player: 1, start: 400, optional: false },
-			{ end: 4800, id: 'inst_1_clip_def', player: 2, start: 800, optional: false },
-			{ end: 7400, id: 'inst_3_clip_ghi', player: 2, start: 6400, optional: false },
+			{ end: 5400, id: 'inst_0_clip_abc', playerId: 1, start: 400, optional: false },
+			{ end: 4800, id: 'inst_1_clip_def', playerId: 2, start: 800, optional: false },
+			{ end: 7400, id: 'inst_3_clip_ghi', playerId: 2, start: 6400, optional: false },
 		])
 
 		expect(mockGetPieceSessionId).toHaveBeenCalledTimes(3)
@@ -201,7 +237,7 @@ describe('resolveMediaPlayers', () => {
 		mockGetPieceSessionId.mockImplementation((piece, name) => `${piece._id}_${name}`)
 
 		const assignments = resolveAbSessions(
-			context,
+			abSessionHelper,
 			resolverOptions,
 			pieces,
 			[],
@@ -214,9 +250,9 @@ describe('resolveMediaPlayers', () => {
 		expect(assignments.failedOptional).toHaveLength(0)
 		expect(assignments.requests).toHaveLength(3)
 		expect(assignments.requests).toEqual([
-			{ end: 5400, id: 'inst_0_clip_abc', player: 1, start: 400, optional: false },
-			{ end: 6800, id: 'inst_1_clip_def', player: 2, start: 800, optional: false },
-			{ end: 6400, id: 'inst_3_clip_ghi', player: 1, start: 5400, optional: false },
+			{ end: 5400, id: 'inst_0_clip_abc', playerId: 1, start: 400, optional: false },
+			{ end: 6800, id: 'inst_1_clip_def', playerId: 2, start: 800, optional: false },
+			{ end: 6400, id: 'inst_3_clip_ghi', playerId: 1, start: 5400, optional: false },
 		])
 
 		expect(mockGetPieceSessionId).toHaveBeenCalledTimes(3)
@@ -237,7 +273,7 @@ describe('resolveMediaPlayers', () => {
 		mockGetPieceSessionId.mockImplementation((piece, name) => `${piece._id}_${name}`)
 
 		const assignments = resolveAbSessions(
-			context,
+			abSessionHelper,
 			resolverOptions,
 			pieces,
 			[],
@@ -250,9 +286,9 @@ describe('resolveMediaPlayers', () => {
 		expect(assignments.failedOptional).toHaveLength(0)
 		expect(assignments.requests).toHaveLength(3)
 		expect(assignments.requests).toEqual([
-			{ end: 5400, id: 'inst_0_clip_abc', player: 1, start: 400, optional: false },
-			{ end: 6800, id: 'inst_1_clip_def', player: 2, start: 800, optional: false },
-			{ end: 6400, id: 'inst_3_clip_ghi', player: 1, start: 5400, optional: false },
+			{ end: 5400, id: 'inst_0_clip_abc', playerId: 1, start: 400, optional: false },
+			{ end: 6800, id: 'inst_1_clip_def', playerId: 2, start: 800, optional: false },
+			{ end: 6400, id: 'inst_3_clip_ghi', playerId: 1, start: 5400, optional: false },
 		])
 
 		expect(mockGetPieceSessionId).toHaveBeenCalledTimes(3)
@@ -286,7 +322,7 @@ describe('resolveMediaPlayers', () => {
 		mockGetPieceSessionId.mockImplementation((piece, name) => `${piece._id}_${name}`)
 
 		const assignments = resolveAbSessions(
-			context,
+			abSessionHelper,
 			resolverOptions,
 			pieces,
 			[],
@@ -299,9 +335,9 @@ describe('resolveMediaPlayers', () => {
 		expect(assignments.failedOptional).toHaveLength(0)
 		expect(assignments.requests).toHaveLength(3)
 		expect(assignments.requests).toEqual([
-			{ end: 7400, id: 'inst_0_clip_abc', player: 5, start: 2400, optional: false },
-			{ end: 7400, id: 'inst_1_clip_def', player: 3, start: 2400, optional: false },
-			{ end: 6800, id: 'inst_2_clip_ghi', player: 1, start: 2800, optional: false },
+			{ end: 7400, id: 'inst_0_clip_abc', playerId: 5, start: 2400, optional: false },
+			{ end: 7400, id: 'inst_1_clip_def', playerId: 3, start: 2400, optional: false },
+			{ end: 6800, id: 'inst_2_clip_ghi', playerId: 1, start: 2800, optional: false },
 		])
 
 		expect(mockGetPieceSessionId).toHaveBeenCalledTimes(3)
@@ -335,7 +371,7 @@ describe('resolveMediaPlayers', () => {
 		mockGetPieceSessionId.mockImplementation((piece, name) => `${piece._id}_${name}`)
 
 		const assignments = resolveAbSessions(
-			context,
+			abSessionHelper,
 			resolverOptions,
 			pieces,
 			[],
@@ -348,9 +384,9 @@ describe('resolveMediaPlayers', () => {
 		expect(assignments.failedOptional).toEqual(['inst_1_clip_def'])
 		expect(assignments.requests).toHaveLength(3)
 		expect(assignments.requests).toEqual([
-			{ end: 7400, id: 'inst_0_clip_abc', player: 2, start: 2400, optional: false },
-			{ end: 7400, id: 'inst_1_clip_def', player: undefined, start: 2400, optional: true },
-			{ end: 6800, id: 'inst_2_clip_ghi', player: 1, start: 2800, optional: false },
+			{ end: 7400, id: 'inst_0_clip_abc', playerId: 2, start: 2400, optional: false },
+			{ end: 7400, id: 'inst_1_clip_def', playerId: undefined, start: 2400, optional: true },
+			{ end: 6800, id: 'inst_2_clip_ghi', playerId: 1, start: 2800, optional: false },
 		])
 
 		expect(mockGetPieceSessionId).toHaveBeenCalledTimes(3)
@@ -363,16 +399,152 @@ describe('resolveMediaPlayers', () => {
 	// TODO add some tests which check lookahead
 })
 
-describe('resolveAbAssignmentsFromRequests', () => {
-	const NOW_WINDOW = 2000
+describe('applyMediaPlayersAssignments', () => {
+	const abSessionHelper = new AbSessionHelper([], [])
 
+	const mockGetPieceSessionId: jest.MockedFunction<typeof abSessionHelper.getPieceABSessionId> = jest.fn()
+	const mockGetObjectSessionId: jest.MockedFunction<typeof abSessionHelper.getTimelineObjectAbSessionId> = jest.fn()
+
+	const context = new CommonContext({
+		name: 'test',
+		identifier: 'test',
+	})
+
+	const abConfiguration: Pick<ABResolverConfiguration, 'timelineObjectLayerChangeRules' | 'customApplyToObject'> = {}
+
+	abSessionHelper.getPieceABSessionId = mockGetPieceSessionId
+	abSessionHelper.getTimelineObjectAbSessionId = mockGetObjectSessionId
+	beforeEach(() => {
+		mockGetPieceSessionId.mockReset().mockImplementation(() => {
+			throw new Error('Method not implemented.')
+		})
+		mockGetObjectSessionId.mockReset().mockImplementation(() => {
+			throw new Error('Method not implemented.')
+		})
+	})
+
+	test('no assignments', () => {
+		const res = applyAbPlayerObjectAssignments(abSessionHelper, context, abConfiguration, [], {}, [], POOL_NAME)
+		expect(res).toEqual({})
+	})
+
+	test('only previous assignments', () => {
+		const previousAssignments: ABSessionAssignments = {
+			abc: {
+				sessionId: 'abc',
+				playerId: 5,
+				lookahead: false,
+				_rank: 1,
+			},
+			def: {
+				sessionId: 'def',
+				playerId: 3,
+				lookahead: true,
+				_rank: 2,
+			},
+		}
+
+		const res = applyAbPlayerObjectAssignments(
+			abSessionHelper,
+			context,
+			abConfiguration,
+			[],
+			previousAssignments,
+			[],
+			POOL_NAME
+		)
+		expect(res).toEqual({})
+	})
+
+	test('object with unmatched assignments', () => {
+		const previousAssignments: ABSessionAssignments = {
+			piece0_clip_def: {
+				sessionId: 'piece0_clip_def',
+				playerId: 3,
+				lookahead: false,
+				_rank: 1,
+			},
+		}
+		const pieceInstanceId = 'piece0'
+		const partInstanceId = protectString('part0')
+
+		mockGetObjectSessionId.mockImplementation((obj, name) => `${obj.pieceInstanceId}_${name}`)
+
+		const objects = [
+			literal<OnGenerateTimelineObjExt>({
+				// This should not get assigned, as it is truely unknown, and could cause all kinds of chaos
+				id: '0',
+				layer: '0',
+				enable: {
+					start: 900,
+					duration: 1000,
+				},
+				content: {
+					deviceType: TSR.DeviceType.ABSTRACT,
+				},
+				abSessions: [
+					{
+						name: 'abc',
+						pool: POOL_NAME,
+					},
+				],
+				metaData: null,
+				pieceInstanceId: pieceInstanceId,
+				partInstanceId: partInstanceId,
+			}),
+			literal<OnGenerateTimelineObjExt>({
+				// This should get assigned, as it was previously known
+				id: '1',
+				layer: '1',
+				enable: {
+					start: 3000,
+					duration: 1000,
+				},
+				content: {
+					deviceType: TSR.DeviceType.ABSTRACT,
+				},
+				abSessions: [
+					{
+						name: 'def',
+						pool: POOL_NAME,
+					},
+				],
+				metaData: null,
+				pieceInstanceId: pieceInstanceId,
+				partInstanceId: partInstanceId,
+			}),
+		]
+
+		const res = applyAbPlayerObjectAssignments(
+			abSessionHelper,
+			context,
+			abConfiguration,
+			objects,
+			previousAssignments,
+			[],
+			POOL_NAME
+		)
+		// expect(context._getNotes()).toHaveLength(0)
+		expect(res).toMatchObject({
+			piece0_clip_def: {
+				sessionId: 'piece0_clip_def',
+				playerId: 3,
+				lookahead: false,
+			},
+		})
+	})
+
+	// TODO - more tests
+})
+
+describe('resolveAbAssignmentsFromRequests', () => {
 	const TWO_SLOTS = [1, 2]
 	const THREE_SLOTS = [1, 2, 3]
 
-	function expectGotPlayer(res: AssignmentResult, id: string, player: number | undefined): void {
+	function expectGotPlayer(res: AssignmentResult, id: string, playerId: number | undefined): void {
 		const req = res.requests.find((r) => r.id === id)
 		expect(req).toBeTruthy()
-		expect(req?.player).toEqual(player)
+		expect(req?.playerId).toEqual(playerId)
 	}
 
 	test('No pending should do nothing', () => {
@@ -382,23 +554,23 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'a',
 				start: 1000,
 				end: undefined,
-				player: 1,
+				playerId: 1,
 			},
 			{
 				id: 'b',
 				start: 1000,
 				end: undefined,
-				player: 1,
+				playerId: 1,
 			},
 			{
 				id: 'c',
 				start: 1000,
 				end: undefined,
-				player: 1,
+				playerId: 1,
 			},
 		]
 
-		const res = resolveAbAssignmentsFromRequests(TWO_SLOTS, requests, 10000, 1000, NOW_WINDOW)
+		const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 10000)
 		expect(res).toBeTruthy()
 		expect(res.failedOptional).toEqual([])
 		expect(res.failedRequired).toEqual([])
@@ -419,7 +591,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 			},
 		]
 
-		const res = resolveAbAssignmentsFromRequests(TWO_SLOTS, requests, 10000, 1000, NOW_WINDOW)
+		const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 10000)
 		expect(res).toBeTruthy()
 		expect(res.failedOptional).toEqual([])
 		expect(res.failedRequired).toEqual([])
@@ -433,7 +605,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'a',
 				start: 1000,
 				end: undefined,
-				player: 2,
+				playerId: 2,
 			},
 			{
 				id: 'b',
@@ -442,7 +614,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 			},
 		]
 
-		const res = resolveAbAssignmentsFromRequests(TWO_SLOTS, requests, 10000, 1000, NOW_WINDOW)
+		const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 10000)
 		expect(res).toBeTruthy()
 		expect(res.failedOptional).toEqual([])
 		expect(res.failedRequired).toEqual([])
@@ -469,7 +641,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 			},
 		]
 
-		const res = resolveAbAssignmentsFromRequests(TWO_SLOTS, requests, 10000, 1000, NOW_WINDOW)
+		const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 10000)
 		expect(res).toBeTruthy()
 		expect(res.failedOptional).toEqual([])
 		expect(res.failedRequired).toEqual(['c'])
@@ -484,7 +656,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'a',
 				start: 1000,
 				end: undefined,
-				player: 2,
+				playerId: 2,
 			},
 			{
 				id: 'b',
@@ -495,11 +667,11 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'c',
 				start: 3000,
 				end: undefined,
-				player: 1,
+				playerId: 1,
 			},
 		]
 
-		const res = resolveAbAssignmentsFromRequests(TWO_SLOTS, requests, 10000, 1000, NOW_WINDOW)
+		const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 10000)
 		expect(res).toBeTruthy()
 		expect(res.failedOptional).toEqual([])
 		expect(res.failedRequired).toEqual(['b'])
@@ -514,13 +686,13 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'a',
 				start: 1000,
 				end: 10000,
-				player: 2,
+				playerId: 2,
 			},
 			{
 				id: 'b',
 				start: 2000,
 				end: 10500,
-				player: 1,
+				playerId: 1,
 			},
 			{
 				id: 'c',
@@ -534,7 +706,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 			},
 		]
 
-		const res = resolveAbAssignmentsFromRequests(TWO_SLOTS, requests, 10000, 1000, NOW_WINDOW)
+		const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 10000)
 		expect(res).toBeTruthy()
 		expect(res.failedOptional).toEqual([])
 		expect(res.failedRequired).toEqual([])
@@ -550,13 +722,13 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'a',
 				start: 1000,
 				end: 9000,
-				player: 2,
+				playerId: 2,
 			},
 			{
 				id: 'b',
 				start: 2000,
 				end: 8500,
-				player: 1,
+				playerId: 1,
 			},
 			{
 				id: 'c',
@@ -570,7 +742,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 			},
 		]
 
-		const res = resolveAbAssignmentsFromRequests(TWO_SLOTS, requests, 10000, 1000, NOW_WINDOW)
+		const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 10000)
 		expect(res).toBeTruthy()
 		expect(res.failedOptional).toEqual([])
 		expect(res.failedRequired).toEqual([])
@@ -586,13 +758,13 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'a',
 				start: 1000,
 				end: 15000,
-				player: 3,
+				playerId: 3,
 			},
 			{
 				id: 'b',
 				start: 2000,
 				end: 16000,
-				player: 1,
+				playerId: 1,
 			},
 			{
 				id: 'c',
@@ -603,7 +775,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'd',
 				start: 30000,
 				end: undefined,
-				player: 1,
+				playerId: 1,
 			},
 			{
 				id: 'e',
@@ -612,7 +784,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 			},
 		]
 
-		const res = resolveAbAssignmentsFromRequests(THREE_SLOTS, requests, 10000, 1000, NOW_WINDOW)
+		const res = resolveAbAssignmentsFromRequests(resolverOptions, THREE_SLOTS, requests, 10000)
 		expect(res).toBeTruthy()
 		expect(res.failedOptional).toEqual([])
 		expect(res.failedRequired).toEqual([])
@@ -630,7 +802,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'a',
 				start: 1000,
 				end: undefined,
-				player: 2,
+				playerId: 2,
 			},
 			// adlib
 			{
@@ -643,7 +815,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'c',
 				start: Number.POSITIVE_INFINITY,
 				end: undefined,
-				player: 1,
+				playerId: 1,
 				lookaheadRank: 1,
 			},
 			{
@@ -654,7 +826,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 			},
 		]
 
-		const res = resolveAbAssignmentsFromRequests(TWO_SLOTS, requests, 10000, 1000, NOW_WINDOW)
+		const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 10000)
 		expect(res).toBeTruthy()
 		expect(res.failedOptional).toEqual([])
 		expect(res.failedRequired).toEqual([])
@@ -671,7 +843,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'a',
 				start: 1000,
 				end: 10500,
-				player: 2,
+				playerId: 2,
 			},
 			// adlib
 			{
@@ -684,19 +856,19 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'c',
 				start: Number.POSITIVE_INFINITY,
 				end: undefined,
-				player: 1,
+				playerId: 1,
 				lookaheadRank: 1,
 			},
 			{
 				id: 'd',
 				start: Number.POSITIVE_INFINITY,
 				end: undefined,
-				player: 2,
+				playerId: 2,
 				lookaheadRank: 2,
 			},
 		]
 
-		const res = resolveAbAssignmentsFromRequests(TWO_SLOTS, requests, 10000, 1000, NOW_WINDOW)
+		const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 10000)
 		expect(res).toBeTruthy()
 		expect(res.failedOptional).toEqual([])
 		expect(res.failedRequired).toEqual([])
@@ -712,7 +884,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'a',
 				start: 1000,
 				end: 9500,
-				player: 2,
+				playerId: 2,
 			},
 			// adlib
 			{
@@ -731,19 +903,19 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'c',
 				start: Number.POSITIVE_INFINITY,
 				end: undefined,
-				player: 1,
+				playerId: 1,
 				lookaheadRank: 1,
 			},
 			{
 				id: 'd',
 				start: Number.POSITIVE_INFINITY,
 				end: undefined,
-				player: 2,
+				playerId: 2,
 				lookaheadRank: 2,
 			},
 		]
 
-		const res = resolveAbAssignmentsFromRequests(TWO_SLOTS, requests, 10000, 1000, NOW_WINDOW)
+		const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 10000)
 		expect(res).toBeTruthy()
 		expect(res.failedOptional).toEqual([])
 		expect(res.failedRequired).toEqual([])
@@ -761,7 +933,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'a',
 				start: 1000,
 				end: 10500,
-				player: 2,
+				playerId: 2,
 			},
 			// adlib
 			{
@@ -774,14 +946,14 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'a',
 				start: 20000,
 				end: undefined,
-				player: 1,
+				playerId: 1,
 			},
 			// lookaheads (in order of future use)
 			{
 				id: 'c',
 				start: Number.POSITIVE_INFINITY,
 				end: undefined,
-				player: 2,
+				playerId: 2,
 				lookaheadRank: 1,
 			},
 			{
@@ -792,7 +964,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 			},
 		]
 
-		const res = resolveAbAssignmentsFromRequests(TWO_SLOTS, requests, 10000, 1000, NOW_WINDOW)
+		const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 10000)
 		expect(res).toBeTruthy()
 		expect(res.failedOptional).toEqual([])
 		expect(res.failedRequired).toEqual([])
@@ -809,7 +981,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'a',
 				start: 1000,
 				end: 10500,
-				player: 2,
+				playerId: 2,
 			},
 			// adlib
 			{
@@ -822,14 +994,14 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'e',
 				start: 20000,
 				end: undefined,
-				player: 1,
+				playerId: 1,
 			},
 			// lookaheads (in order of future use)
 			{
 				id: 'c',
 				start: Number.POSITIVE_INFINITY,
 				end: undefined,
-				player: 2,
+				playerId: 2,
 				lookaheadRank: 1,
 			},
 			{
@@ -840,7 +1012,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 			},
 		]
 
-		const res = resolveAbAssignmentsFromRequests(TWO_SLOTS, requests, 5000, 1000, NOW_WINDOW)
+		const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 5000)
 		expect(res).toBeTruthy()
 		expect(res.failedOptional).toEqual([])
 		expect(res.failedRequired).toEqual([])
@@ -858,14 +1030,14 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'a',
 				start: 1000,
 				end: undefined,
-				player: 2,
+				playerId: 2,
 			},
 			// bak
 			{
 				id: 'b',
 				start: 5000,
 				optional: true,
-				player: 1,
+				playerId: 1,
 				end: undefined,
 			},
 			// adlib
@@ -889,7 +1061,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 			},
 		]
 
-		const res = resolveAbAssignmentsFromRequests(TWO_SLOTS, requests, 10000, 1000, NOW_WINDOW)
+		const res = resolveAbAssignmentsFromRequests(resolverOptions, TWO_SLOTS, requests, 10000)
 		expect(res).toBeTruthy()
 		expect(res.failedOptional).toEqual([])
 		expect(res.failedRequired).toEqual(['c'])
@@ -905,13 +1077,13 @@ describe('resolveAbAssignmentsFromRequests', () => {
 				id: 'a',
 				start: 1000,
 				end: undefined,
-				player: 2,
+				playerId: 2,
 			},
 			// previous clip
 			{
 				id: 'b',
 				start: 0,
-				player: 1,
+				playerId: 1,
 				end: 5000,
 			},
 			// lookaheads
@@ -924,7 +1096,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 			{
 				id: 'e',
 				start: Number.POSITIVE_INFINITY,
-				player: 3, // From before
+				playerId: 3, // From before
 				end: undefined,
 				lookaheadRank: 2,
 			},
@@ -936,7 +1108,7 @@ describe('resolveAbAssignmentsFromRequests', () => {
 			},
 		]
 
-		const res = resolveAbAssignmentsFromRequests(THREE_SLOTS, requests, 10000, 1000, NOW_WINDOW)
+		const res = resolveAbAssignmentsFromRequests(resolverOptions, THREE_SLOTS, requests, 10000)
 		expect(res).toBeTruthy()
 		expect(res.failedOptional).toEqual([])
 		expect(res.failedRequired).toEqual([])

@@ -37,10 +37,10 @@ export function applyAbPlayerObjectAssignments(
 	let nextRank = 1
 	const persistAssignment = (sessionId: string, playerId: number, lookahead: boolean): void => {
 		// Track the assignment, so that the next onTimelineGenerate can try to reuse the same session
-		if (newAssignments[playerId]) {
+		if (newAssignments[sessionId]) {
 			// TODO - warn?
 		}
-		newAssignments[playerId] = { sessionId, playerId, lookahead, _rank: nextRank++ }
+		newAssignments[sessionId] = { sessionId, playerId, lookahead, _rank: nextRank++ }
 	}
 
 	// collect objects by their sessionId
