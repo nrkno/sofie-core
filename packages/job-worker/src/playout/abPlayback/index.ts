@@ -2,7 +2,6 @@ import { ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/
 import { ABSessionAssignments, DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { endTrace, sendTrace, startTrace } from '@sofie-automation/corelib/dist/influxdb'
-import { logger } from 'elastic-apm-node'
 import { WrappedShowStyleBlueprint } from '../../blueprints/cache'
 import { ReadonlyDeep } from 'type-fest'
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
@@ -12,6 +11,7 @@ import { calculateSessionTimeRanges } from './abPlaybackSessions'
 import { applyAbPlayerObjectAssignments } from './applyAssignments'
 import { AbSessionHelper } from './abSessionHelper'
 import { ShowStyleContext } from '../../blueprints/context'
+import { logger } from '../../logging'
 
 /**
  * Resolve and apply AB-playback for the given timeline
@@ -34,6 +34,8 @@ export function applyAbPlaybackForTimeline(
 	timelineObjects: OnGenerateTimelineObjExt[]
 ): Record<string, ABSessionAssignments> {
 	if (!blueprint.blueprint.getAbResolverConfiguration) return {}
+
+	console.log('running ab')
 
 	const blueprintContext = new ShowStyleContext(
 		{
@@ -72,7 +74,7 @@ export function applyAbPlaybackForTimeline(
 			now
 		)
 
-		logger.silly(`ABPlayback resolved sessions for "${poolName}": ${JSON.stringify(assignments)}`)
+		logger.info(`ABPlayback resolved sessions for "${poolName}": ${JSON.stringify(assignments)}`)
 		if (assignments.failedRequired.length > 0) {
 			logger.warn(
 				`ABPlayback failed to assign sessions for "${poolName}": ${JSON.stringify(assignments.failedRequired)}`

@@ -3,7 +3,6 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { getRandomId, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { ExecuteActionProps, ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studio'
-import { logger } from 'elastic-apm-node'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { DatastoreActionExecutionContext, ActionExecutionContext, ActionPartChange } from '../blueprints/context'
 import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
@@ -18,6 +17,7 @@ import { updateTimeline } from './timeline/generate'
 import { performTakeToNextedPart } from './take'
 import { ActionUserData } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { logger } from '../logging'
 
 /**
  * Execute an AdLib Action

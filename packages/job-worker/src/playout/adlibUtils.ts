@@ -20,11 +20,11 @@ import { convertAdLibToPieceInstance, getResolvedPieces, setupPieceInstanceInfin
 import { updateTimeline } from './timeline/generate'
 import { PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { logger } from 'elastic-apm-node'
 import { updatePartInstanceRanksAfterAdlib } from '../rundown'
 import { selectNextPart } from './selectNextPart'
 import { setNextPart } from './setNext'
 import { calculateNowOffsetLatency } from './timeline/multi-gateway'
+import { logger } from '../logging'
 
 export async function innerStartOrQueueAdLibPiece(
 	context: JobContext,
