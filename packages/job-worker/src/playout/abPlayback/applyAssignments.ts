@@ -11,7 +11,6 @@ import { logger } from '../../logging'
 import * as _ from 'underscore'
 import { SessionRequest } from './abPlaybackResolver'
 import { AbSessionHelper } from './abSessionHelper'
-import { validateSessionName } from './util'
 
 /**
  * Apply the ab assignments for a pool to the timeline
@@ -25,7 +24,7 @@ import { validateSessionName } from './util'
  * @returns Assignments that were applied to the timeline
  */
 export function applyAbPlayerObjectAssignments(
-	sessionHelper: AbSessionHelper,
+	abSessionHelper: AbSessionHelper,
 	blueprintContext: ICommonContext,
 	abConfiguration: Pick<ABResolverConfiguration, 'timelineObjectLayerChangeRules' | 'customApplyToObject'>,
 	timelineObjs: OnGenerateTimelineObjExt[],
@@ -49,9 +48,9 @@ export function applyAbPlayerObjectAssignments(
 		if (obj.abSessions && obj.pieceInstanceId) {
 			for (const session of obj.abSessions) {
 				if (session.poolName === poolName) {
-					const sessionId = sessionHelper.getTimelineObjectAbSessionId(
+					const sessionId = abSessionHelper.getTimelineObjectAbSessionId(
 						obj,
-						validateSessionName(obj.pieceInstanceId, session)
+						abSessionHelper.validateSessionName(obj.pieceInstanceId, session)
 					)
 					if (sessionId) {
 						const existing = groupedObjectsMap.get(sessionId)

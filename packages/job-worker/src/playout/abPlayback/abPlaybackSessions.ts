@@ -5,7 +5,6 @@ import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataMod
 import * as _ from 'underscore'
 import { SessionRequest } from './abPlaybackResolver'
 import { AbSessionHelper } from './abSessionHelper'
-import { validateSessionName } from './util'
 
 /**
  * Calculate all of the AB-playback sessions currently on the timeline
@@ -36,7 +35,10 @@ export function calculateSessionTimeRanges(
 		for (const session of abSessions) {
 			if (session.poolName !== poolName) continue
 
-			const sessionId = abSessionHelper.getPieceABSessionId(p, validateSessionName(p._id, session))
+			const sessionId = abSessionHelper.getPieceABSessionId(
+				p,
+				abSessionHelper.validateSessionName(p._id, session)
+			)
 
 			// Note: multiple generated sessionIds for a single piece will not work as there will not be enough info to assign objects to different players. TODO is this still true?
 			const val = sessionRequests[sessionId] || undefined
@@ -81,7 +83,7 @@ export function calculateSessionTimeRanges(
 				if (session.poolName === poolName) {
 					const sessionId = abSessionHelper.getTimelineObjectAbSessionId(
 						obj,
-						validateSessionName(obj.pieceInstanceId, session)
+						abSessionHelper.validateSessionName(obj.pieceInstanceId, session)
 					)
 					if (sessionId) {
 						const existing = groupedLookaheadMap.get(sessionId)

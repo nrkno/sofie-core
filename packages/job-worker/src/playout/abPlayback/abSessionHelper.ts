@@ -1,10 +1,12 @@
-import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { AB_MEDIA_PLAYER_AUTO } from '@sofie-automation/blueprints-integration'
+import { PartId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ABSessionInfo } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 import { protectString, unpartialString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { TimelineObjectAbSessionInfo } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 import { ReadonlyDeep } from 'type-fest'
 import { omit } from 'underscore'
 import _ = require('underscore')
@@ -176,5 +178,13 @@ export class AbSessionHelper {
 		}
 
 		return undefined
+	}
+
+	/**
+	 * Make the sessionName unique for the pool, and ensure it isn't set to AUTO
+	 */
+	validateSessionName(pieceInstanceId: PieceInstanceId | string, session: TimelineObjectAbSessionInfo): string {
+		const newName = session.sessionName === AB_MEDIA_PLAYER_AUTO ? pieceInstanceId : session.sessionName
+		return `${session.poolName}_${newName}`
 	}
 }
