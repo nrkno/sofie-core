@@ -74,7 +74,7 @@ export function applyAbPlaybackForTimeline(
 			now
 		)
 
-		logger.info(`ABPlayback resolved sessions for "${poolName}": ${JSON.stringify(assignments)}`)
+		logger.silly(`ABPlayback resolved sessions for "${poolName}": ${JSON.stringify(assignments)}`)
 		if (assignments.failedRequired.length > 0) {
 			logger.warn(
 				`ABPlayback failed to assign sessions for "${poolName}": ${JSON.stringify(assignments.failedRequired)}`

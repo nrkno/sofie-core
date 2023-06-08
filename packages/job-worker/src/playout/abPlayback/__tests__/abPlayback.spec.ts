@@ -296,13 +296,11 @@ describe('resolveMediaPlayers', () => {
 				sessionId: 'inst_0_clip_abc',
 				playerId: 5,
 				lookahead: false,
-				_rank: 1,
 			},
 			inst_1_clip_def: {
 				sessionId: 'inst_1_clip_def',
 				playerId: 3,
 				lookahead: true,
-				_rank: 2,
 			},
 		}
 		const pieces = [
@@ -345,13 +343,11 @@ describe('resolveMediaPlayers', () => {
 				sessionId: 'inst_0_clip_abc',
 				playerId: 2,
 				lookahead: false,
-				_rank: 1,
 			},
 			inst_1_clip_def: {
 				sessionId: 'inst_1_clip_def',
 				playerId: 1,
 				lookahead: false,
-				_rank: 2,
 			},
 		}
 		const pieces = [

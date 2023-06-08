@@ -44,13 +44,11 @@ describe('applyMediaPlayersAssignments', () => {
 				sessionId: 'abc',
 				playerId: 5,
 				lookahead: false,
-				_rank: 1,
 			},
 			def: {
 				sessionId: 'def',
 				playerId: 3,
 				lookahead: true,
-				_rank: 2,
 			},
 		}
 
@@ -72,7 +70,6 @@ describe('applyMediaPlayersAssignments', () => {
 				sessionId: 'piece0_clip_def',
 				playerId: 3,
 				lookahead: false,
-				_rank: 1,
 			},
 		}
 		const pieceInstanceId = 'piece0'

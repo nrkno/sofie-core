@@ -29,8 +29,6 @@ export interface ABSessionAssignment {
 	sessionId: string
 	playerId: number
 	lookahead: boolean // purely informational for debugging
-
-	_rank: number // HACK: For countdown overlay to know which is THE 'next' clip
 }
 
 export interface ABSessionAssignments {
