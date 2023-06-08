@@ -621,7 +621,7 @@ export const SegmentStoryboard = React.memo(
 							/>
 						)}
 				</div>
-				{props.segment.expectedStart || props.segment.expectedEnd ? (
+				{props.segment.segmentTiming?.expectedStart || props.segment.segmentTiming?.expectedEnd ? (
 					<div className="segment-timeline__expectedTime">
 						<BreakWallTime segment={props.segment} labelClassName="segment-timeline__duration__label" />
 					</div>

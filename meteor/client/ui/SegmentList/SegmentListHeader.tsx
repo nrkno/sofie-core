@@ -122,7 +122,7 @@ export function SegmentListHeader({
 				{segment.name}
 			</h2>
 			<div className="segment-opl__counters">
-				{segment.expectedStart || segment.expectedEnd ? (
+				{segment.segmentTiming?.expectedStart || segment.segmentTiming?.expectedEnd ? (
 					<div className={classNames('segment-opl__expectedTime')} onClick={onTimeUntilClick}>
 						<BreakWallTime segment={segment} labelClassName="segment-timeline__expectedTime__label" />
 					</div>

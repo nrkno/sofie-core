@@ -18,8 +18,9 @@ interface IBreakWallTimeProps {
  */
 export const BreakWallTime = function BreakWallTime(props: IBreakWallTimeProps): JSX.Element | null {
 	const { t } = useTranslation()
-	const value = props.segment.expectedStart ?? props.segment.expectedEnd
-	const passedExpectedStart = props.segment.expectedStart && Date.now() > props.segment.expectedStart
+	const value = props.segment.segmentTiming?.expectedStart ?? props.segment.segmentTiming?.expectedEnd
+	const passedExpectedStart =
+		props.segment.segmentTiming?.expectedStart && Date.now() > props.segment.segmentTiming?.expectedStart
 
 	if (value === null || value === undefined) {
 		return null

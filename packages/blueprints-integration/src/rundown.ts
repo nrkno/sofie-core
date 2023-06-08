@@ -151,6 +151,14 @@ export enum SegmentDisplayMode {
 	List = 'list',
 }
 
+export interface SegmentTimingInfo {
+	/** A unix timestamp of when the segment is expected to begin. Affects rundown timing. */
+	expectedStart?: number
+
+	/** A unix timestamp of when the segment is expected to end. Affects rundown timing. */
+	expectedEnd?: number
+}
+
 /** The Segment generated from Blueprint */
 export interface IBlueprintSegment<TMetadata = unknown> {
 	/** User-presentable name (Slug) for the Title */
@@ -167,11 +175,8 @@ export interface IBlueprintSegment<TMetadata = unknown> {
 	/** Segment display mode. Default mode is *SegmentDisplayMode.Timeline* */
 	displayAs?: SegmentDisplayMode
 
-	/** A unix timestamp of when the segment is expected to begin. Affects rundown timing. */
-	expectedStart?: number
-
-	/** A unix timestamp of when the segment is expected to end. Affects rundown timing. */
-	expectedEnd?: number
+	/** Contains properties related to the timing of the segment */
+	segmentTiming?: SegmentTimingInfo
 }
 /** The Segment sent from Core */
 export interface IBlueprintSegmentDB<TMetadata = unknown> extends IBlueprintSegment<TMetadata> {

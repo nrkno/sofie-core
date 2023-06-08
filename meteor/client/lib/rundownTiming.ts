@@ -871,7 +871,7 @@ function getSegmentStartTime(
 ): number | null {
 	const part = partInstancesMap.get(partId)
 	const segment = segments.find((s) => s._id === part?.segmentId)
-	return segment?.expectedStart ?? null
+	return segment?.segmentTiming?.expectedStart ?? null
 }
 
 function getSegmentEndTime(
@@ -881,5 +881,5 @@ function getSegmentEndTime(
 ): number | null {
 	const part = partInstancesMap.get(partId)
 	const segment = segments.find((s) => s._id === part?.segmentId)
-	return segment?.expectedEnd ?? null
+	return segment?.segmentTiming?.expectedEnd ?? null
 }
