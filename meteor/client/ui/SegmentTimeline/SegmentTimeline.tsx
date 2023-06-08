@@ -50,7 +50,7 @@ import {
 	TimingDataResolution,
 	WithTiming,
 } from '../RundownView/RundownTiming/withTiming'
-import { SegmentExpectedTiming } from '../RundownView/RundownTiming/SegmentExpectedTiming'
+import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
 
 interface IProps {
 	id: string
@@ -1111,7 +1111,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 				<div className="segment-timeline__identifier">{this.props.segment.identifier}</div>
 				{this.props.segment.segmentTiming?.expectedStart || this.props.segment.segmentTiming?.expectedEnd ? (
 					<div className="segment-timeline__expectedTime">
-						<SegmentExpectedTiming
+						<SegmentTimeAnchorTime
 							segment={this.props.segment}
 							labelClassName="segment-timeline__expectedTime__label"
 						/>

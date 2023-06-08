@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useCurrentTime } from '../../../lib/lib'
 import Moment from 'react-moment'
 
-interface ISegmentExpectedTimingProps {
+interface ISegmentTimeAnchorTimeProps {
 	segment: SegmentUi
 	className?: string
 	labelClassName?: string
@@ -15,11 +15,11 @@ interface ISegmentExpectedTimingProps {
 /**
  * A presentational component that will render a counter that will show the wall time that a break starts at.
  * (Or ends at, if there's no start time but an end time is provided.)
- * @function SegmentExpectedTiming
- * @extends React.Component<ISegmentExpectedTimingProps>
+ * @function SegmentTimeAnchorTime
+ * @extends React.Component<ISegmentTimeAnchorTimeProps>
  */
-export const SegmentExpectedTiming = function SegmentExpectedTiming(
-	props: ISegmentExpectedTimingProps
+export const SegmentTimeAnchorTime = function SegmentTimeAnchorTime(
+	props: ISegmentTimeAnchorTimeProps
 ): JSX.Element | null {
 	const { t } = useTranslation()
 	const currentTime = useCurrentTime()
