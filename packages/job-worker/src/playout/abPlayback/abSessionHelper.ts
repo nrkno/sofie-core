@@ -27,6 +27,10 @@ export class AbSessionHelper {
 		this.#knownSessions = knownSessions
 	}
 
+	public get allKnownSessions(): ABSessionInfo[] {
+		return this.#knownSessions.map((s) => omit(s, 'keep'))
+	}
+
 	public get knownSessions(): ABSessionInfo[] {
 		return this.#knownSessions.filter((s) => s.keep).map((s) => omit(s, 'keep'))
 	}
