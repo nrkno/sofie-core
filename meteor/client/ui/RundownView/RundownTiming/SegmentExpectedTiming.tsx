@@ -8,6 +8,7 @@ interface ISegmentExpectedTimingProps {
 	segment: SegmentUi
 	className?: string
 	labelClassName?: string
+	isLiveSegment: boolean
 }
 
 /**
@@ -20,9 +21,14 @@ export const SegmentExpectedTiming = function SegmentExpectedTiming(
 	props: ISegmentExpectedTimingProps
 ): JSX.Element | null {
 	const { t } = useTranslation()
-	const value = props.segment.segmentTiming?.expectedStart ?? props.segment.segmentTiming?.expectedEnd
 	const passedExpectedStart =
 		props.segment.segmentTiming?.expectedStart && Date.now() > props.segment.segmentTiming?.expectedStart
+	let value = props.segment.segmentTiming?.expectedStart
+	let usingEnd = false
+	if (props.isLiveSegment || passedExpectedStart) {
+		usingEnd = true
+		value = props.segment.segmentTiming?.expectedEnd
+	}
 
 	if (value === null || value === undefined) {
 		return null
@@ -32,7 +38,7 @@ export const SegmentExpectedTiming = function SegmentExpectedTiming(
 
 	return (
 		<>
-			<span className={props.labelClassName}>{t(passedExpectedStart ? 'Planned End' : 'Planned Start')}</span>
+			<span className={props.labelClassName}>{t(usingEnd ? 'Planned End' : 'Planned Start')}</span>
 			<span className={classNames(props.className)} role="timer">
 				{RundownUtils.padZeros(date.getHours(), 2)}:{RundownUtils.padZeros(date.getMinutes(), 2)}:
 				{RundownUtils.padZeros(date.getSeconds(), 2)}
