@@ -17,7 +17,7 @@ import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { UIStudio } from '../../../lib/api/studios'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
-import { BreakWallTime } from '../RundownView/RundownTiming/BreakWallTime'
+import { SegmentExpectedTiming } from '../RundownView/RundownTiming/SegmentExpectedTiming'
 
 export function SegmentListHeader({
 	isDetached,
@@ -124,7 +124,7 @@ export function SegmentListHeader({
 			<div className="segment-opl__counters">
 				{segment.segmentTiming?.expectedStart || segment.segmentTiming?.expectedEnd ? (
 					<div className={classNames('segment-opl__expectedTime')} onClick={onTimeUntilClick}>
-						<BreakWallTime segment={segment} labelClassName="segment-timeline__expectedTime__label" />
+						<SegmentExpectedTiming segment={segment} labelClassName="segment-timeline__expectedTime__label" />
 					</div>
 				) : (
 					<div

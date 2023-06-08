@@ -4,7 +4,7 @@ import { SegmentUi } from '../../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../../lib/rundown'
 import { useTranslation } from 'react-i18next'
 
-interface IBreakWallTimeProps {
+interface ISegmentExpectedTimingProps {
 	segment: SegmentUi
 	className?: string
 	labelClassName?: string
@@ -13,10 +13,12 @@ interface IBreakWallTimeProps {
 /**
  * A presentational component that will render a counter that will show the wall time that a break starts at.
  * (Or ends at, if there's no start time but an end time is provided.)
- * @function BreakWallTime
- * @extends React.Component<IBreakWallTimeProps>
+ * @function SegmentExpectedTiming
+ * @extends React.Component<ISegmentExpectedTimingProps>
  */
-export const BreakWallTime = function BreakWallTime(props: IBreakWallTimeProps): JSX.Element | null {
+export const SegmentExpectedTiming = function SegmentExpectedTiming(
+	props: ISegmentExpectedTimingProps
+): JSX.Element | null {
 	const { t } = useTranslation()
 	const value = props.segment.segmentTiming?.expectedStart ?? props.segment.segmentTiming?.expectedEnd
 	const passedExpectedStart =
