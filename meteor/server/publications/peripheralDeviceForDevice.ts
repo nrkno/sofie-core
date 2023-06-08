@@ -30,12 +30,13 @@ const studioFieldsSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields
 	peripheralDeviceSettings: 1,
 })
 
-type PeripheralDeviceFields = '_id' | 'category' | 'studioId' | 'settings'
+type PeripheralDeviceFields = '_id' | 'category' | 'studioId' | 'settings' | 'secretSettings'
 const peripheralDeviceFieldsSpecifier = literal<IncludeAllMongoFieldSpecifier<PeripheralDeviceFields>>({
 	_id: 1,
 	category: 1,
 	studioId: 1,
 	settings: 1,
+	secretSettings: 1,
 })
 
 export function convertPeripheralDeviceForGateway(
@@ -97,6 +98,7 @@ export function convertPeripheralDeviceForGateway(
 		studioId: peripheralDevice.studioId,
 
 		deviceSettings: peripheralDevice.settings,
+		secretSettings: peripheralDevice.secretSettings,
 
 		playoutDevices,
 		ingestDevices,
