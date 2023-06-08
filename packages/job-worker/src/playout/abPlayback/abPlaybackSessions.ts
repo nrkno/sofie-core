@@ -34,7 +34,7 @@ export function calculateSessionTimeRanges(
 
 		// Track the range of each session
 		for (const session of abSessions) {
-			if (session.pool !== poolName) continue
+			if (session.poolName !== poolName) continue
 
 			const sessionId = abSessionHelper.getPieceABSessionId(p, validateSessionName(p._id, session))
 
@@ -73,19 +73,19 @@ export function calculateSessionTimeRanges(
 			!!obj.isLookahead &&
 			!Array.isArray(obj.enable) &&
 			obj.enable.duration === undefined &&
-			obj.enable.end === undefined
+			obj.enable.end === undefined &&
+			obj.abSessions &&
+			obj.pieceInstanceId
 		) {
-			if (obj.abSessions && obj.pieceInstanceId) {
-				for (const session of obj.abSessions) {
-					if (session.pool === poolName) {
-						const sessionId = abSessionHelper.getTimelineObjectAbSessionId(
-							obj,
-							validateSessionName(obj.pieceInstanceId, session)
-						)
-						if (sessionId) {
-							const existing = groupedLookaheadMap.get(sessionId)
-							groupedLookaheadMap.set(sessionId, existing ? [...existing, obj] : [obj])
-						}
+			for (const session of obj.abSessions) {
+				if (session.poolName === poolName) {
+					const sessionId = abSessionHelper.getTimelineObjectAbSessionId(
+						obj,
+						validateSessionName(obj.pieceInstanceId, session)
+					)
+					if (sessionId) {
+						const existing = groupedLookaheadMap.get(sessionId)
+						groupedLookaheadMap.set(sessionId, existing ? [...existing, obj] : [obj])
 					}
 				}
 			}

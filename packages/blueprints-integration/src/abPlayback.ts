@@ -1,16 +1,8 @@
+import type { TimelineObjectAbSessionInfo } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 import type { ICommonContext } from './context'
 import type { OnGenerateTimelineObj, TSR } from './timeline'
 
-export interface PieceAbSessionInfo {
-	/**
-	 * Name for this session
-	 * TODO - document uniqueness rules
-	 */
-	name: string
-	/**
-	 * Which AB Pool this session is for
-	 */
-	pool: string
+export interface PieceAbSessionInfo extends TimelineObjectAbSessionInfo {
 	/**
 	 * If true, this assignment will be given low priority
 	 */
@@ -24,19 +16,40 @@ export interface PieceAbSessionInfo {
  */
 export const AB_MEDIA_PLAYER_AUTO = '__auto__'
 
+/**
+ * A rule describing how to update the `layer` of a TimelineObject for AB playback
+ */
 export interface ABTimelineLayerChangeRule {
+	/** What AB pools can this rule be used for */
 	acceptedPoolNames: string[]
+	/** A function to generate the new layer name for a chosen playerId */
 	newLayerName: (playerId: number) => string
+	/** Whether this rule can be used for lookaheadObjects */
 	allowsLookahead: boolean
 }
+
+/**
+ * A set of rules describing how to update the `layer` of a TimelineObject for AB playback
+ */
 export type ABTimelineLayerChangeRules = {
 	[fromLayer: string]: ABTimelineLayerChangeRule | undefined
 }
 
+/**
+ * Configuration of the AB playback functionality provided by Sofie
+ */
 export interface ABResolverConfiguration {
+	/** Options for the resolver */
 	resolverOptions: ABResolverOptions
+	/** The AB pools that should be processed, and the playerIds in each pool */
 	pools: Record<string, number[]>
+	/** A set of rules describing how to update the `layer` of a TimelineObject for AB playback */
 	timelineObjectLayerChangeRules?: ABTimelineLayerChangeRules
+	/**
+	 * A callback for blueprints to be able to apply the assignment to an object in blueprint specific ways.
+	 * This is run after both the keyframe and `timelineObjectLayerChangeRules` strategies have been run.
+	 * Return true to indicate that a change was successfully made to the object
+	 */
 	customApplyToObject?: (
 		context: ICommonContext,
 		poolName: string,

@@ -48,7 +48,7 @@ export function applyAbPlayerObjectAssignments(
 	for (const obj of timelineObjs) {
 		if (obj.abSessions && obj.pieceInstanceId) {
 			for (const session of obj.abSessions) {
-				if (session.pool === poolName) {
+				if (session.poolName === poolName) {
 					const sessionId = sessionHelper.getTimelineObjectAbSessionId(
 						obj,
 						validateSessionName(obj.pieceInstanceId, session)

@@ -9,6 +9,6 @@ export function validateSessionName(
 	pieceInstanceId: PieceInstanceId | string,
 	session: PieceAbSessionInfo | TimelineObjectAbSessionInfo
 ): string {
-	const newName = session.name === AB_MEDIA_PLAYER_AUTO ? pieceInstanceId : session.name
-	return `${session.pool}_${newName}`
+	const newName = session.sessionName === AB_MEDIA_PLAYER_AUTO ? pieceInstanceId : session.sessionName
+	return `${session.poolName}_${newName}`
 }

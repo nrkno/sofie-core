@@ -5,13 +5,14 @@ import { MappingsHash, PeripheralDeviceId, StudioId, TimelineBlob, TimelineHash 
 export interface TimelineObjectAbSessionInfo {
 	/**
 	 * Name for this session
-	 * TODO - document uniqueness rules
+	 * This should be the same for other pieces/objects which should share this session
+	 * This name is scoped to the Segment, any unrelated sessions in the segment must use different names
 	 */
-	name: string
+	sessionName: string
 	/**
-	 * Which AB Pool this session is for
+	 * The name of the AB Pool this session is for
 	 */
-	pool: string
+	poolName: string
 }
 
 export enum TimelineObjHoldMode {
