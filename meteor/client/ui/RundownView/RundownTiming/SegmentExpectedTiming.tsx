@@ -3,6 +3,7 @@ import React from 'react'
 import { SegmentUi } from '../../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../../lib/rundown'
 import { useTranslation } from 'react-i18next'
+import { useCurrentTime } from '../../../lib/lib'
 
 interface ISegmentExpectedTimingProps {
 	segment: SegmentUi
@@ -21,8 +22,9 @@ export const SegmentExpectedTiming = function SegmentExpectedTiming(
 	props: ISegmentExpectedTimingProps
 ): JSX.Element | null {
 	const { t } = useTranslation()
+	const currentTime = useCurrentTime()
 	const passedExpectedStart =
-		props.segment.segmentTiming?.expectedStart && Date.now() > props.segment.segmentTiming?.expectedStart
+		props.segment.segmentTiming?.expectedStart && currentTime > props.segment.segmentTiming?.expectedStart
 	let value = props.segment.segmentTiming?.expectedStart
 	let usingEnd = false
 	if (props.isLiveSegment || passedExpectedStart) {
