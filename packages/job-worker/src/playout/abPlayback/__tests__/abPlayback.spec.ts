@@ -45,8 +45,8 @@ function createBasicResolvedPieceInstance(
 	if (reqId !== undefined) {
 		piece.abSessions = [
 			{
-				name: reqId,
-				pool: POOL_NAME,
+				sessionName: reqId,
+				poolName: POOL_NAME,
 				optional: optional,
 			},
 		]

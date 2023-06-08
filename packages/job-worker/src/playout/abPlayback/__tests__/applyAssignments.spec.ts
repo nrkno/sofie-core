@@ -94,8 +94,8 @@ describe('applyMediaPlayersAssignments', () => {
 				},
 				abSessions: [
 					{
-						name: 'abc',
-						pool: POOL_NAME,
+						sessionName: 'abc',
+						poolName: POOL_NAME,
 					},
 				],
 				metaData: null,
@@ -115,8 +115,8 @@ describe('applyMediaPlayersAssignments', () => {
 				},
 				abSessions: [
 					{
-						name: 'def',
-						pool: POOL_NAME,
+						sessionName: 'def',
+						poolName: POOL_NAME,
 					},
 				],
 				metaData: null,
