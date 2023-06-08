@@ -29,7 +29,7 @@ export const BreakWallTime = function BreakWallTime(props: IBreakWallTimeProps):
 
 	return (
 		<>
-			<span className={props.labelClassName}>{t(passedExpectedStart ? 'Expected End' : 'Expected Start')}</span>
+			<span className={props.labelClassName}>{t(passedExpectedStart ? 'Planned End' : 'Planned Start')}</span>
 			<span className={classNames(props.className)} role="timer">
 				{RundownUtils.padZeros(date.getHours(), 2)}:{RundownUtils.padZeros(date.getMinutes(), 2)}:
 				{RundownUtils.padZeros(date.getSeconds(), 2)}
