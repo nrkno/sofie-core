@@ -17,7 +17,7 @@ import _ = require('underscore')
 import { ProcessedShowStyleCompound } from '../../jobs'
 import { convertPartInstanceToBlueprints } from './lib'
 import { RundownContext } from './RundownContext'
-import { AbSessionHelper } from '../abPlayback/helper'
+import { AbSessionHelper } from '../../playout/abPlayback/abSessionHelper'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 
 export class OnTimelineGenerateContext extends RundownContext implements ITimelineEventContext {

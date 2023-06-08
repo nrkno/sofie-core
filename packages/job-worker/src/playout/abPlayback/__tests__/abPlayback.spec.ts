@@ -4,9 +4,8 @@ import {
 	PieceLifespan,
 } from '@sofie-automation/blueprints-integration'
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { resolveAbSessions, ABSessionAssignments } from '../abPlayback'
 import { ABResolverOptions } from '../abPlaybackResolver'
-import { AbSessionHelper } from '../helper'
+import { AbSessionHelper } from '../abSessionHelper'
 
 const POOL_NAME = 'clip'
 

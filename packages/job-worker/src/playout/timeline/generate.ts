@@ -58,13 +58,11 @@ import {
 	getPartTimingsOrDefaults,
 	PartCalculatedTimings,
 } from '@sofie-automation/corelib/dist/playout/timings'
-import { applyAbPlayerObjectAssignments, calculateSessionTimeRanges } from '../../blueprints/abPlayback/abPlayback'
-import { resolveAbAssignmentsFromRequests } from '../../blueprints/abPlayback/abPlaybackResolver'
-import { ABSessionAssignments } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { applyAbPlaybackForTimeline } from '../abPlayback'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
-	const cache2 = cache as CacheForStudio
-	return !!cache2.isStudio
+	const tmp = cache as CacheForStudio
+	return !!tmp.isStudio
 }
 
 function generateTimelineVersions(
@@ -385,69 +383,16 @@ async function getTimelineRundown(
 					resolvedPieces.pieces
 				)
 				try {
-					const newAbSessionsResult: Record<string, ABSessionAssignments> = {}
-					if (blueprint.blueprint.getAbResolverConfiguration) {
-						const span = context.startSpan('blueprint.abPlaybackResolver')
-						const influxTrace = startTrace('blueprints:abPlaybackResolver')
-
-						// Future: for now we should share this helper with `onTimelineGenerate`, in case some is also run there
-						const abHelper = blueprintContext.abSessionsHelper
-
-						const previousAbSessionAssignments = cache.Playlist.doc.assignedAbSessions || {}
-
-						const now = getCurrentTime()
-
-						const abConfiguration = blueprint.blueprint.getAbResolverConfiguration(blueprintContext)
-						for (const [poolName, playerIds] of Object.entries<number[]>(abConfiguration.pools)) {
-							const previousAssignmentMap: ABSessionAssignments =
-								previousAbSessionAssignments[poolName] || {}
-							const sessionRequests = calculateSessionTimeRanges(
-								abHelper,
-								resolvedPieces.pieces,
-								timelineObjs,
-								previousAssignmentMap,
-								poolName
-							)
-
-							const assignments = resolveAbAssignmentsFromRequests(
-								abConfiguration.resolverOptions,
-								playerIds,
-								sessionRequests,
-								now
-							)
-
-							// 	const debugLog = config.studio.ABPlaybackDebugLogging
-							// 	if (debugLog) {
-							// 		context.logInfo(`AB: Resolved sessions for "${poolName}": ${JSON.stringify(resolvedAssignments)}`)
-							// 	}
-
-							// 	if (resolvedAssignments.failedRequired.length > 0) {
-							// 		context.logWarning(
-							// 			`AB: Failed to assign sessions for "${poolName}": ${JSON.stringify(resolvedAssignments.failedRequired)}`
-							// 		)
-							// 	}
-							// 	if (resolvedAssignments.failedOptional.length > 0) {
-							// 		context.logInfo(
-							// 			`AB: Failed to assign optional sessions for "${poolName}": ${JSON.stringify(
-							// 				resolvedAssignments.failedOptional
-							// 			)}`
-							// 		)
-							// 	}
-
-							newAbSessionsResult[poolName] = applyAbPlayerObjectAssignments(
-								abHelper,
-								blueprintContext, // TODO - use different
-								abConfiguration,
-								timelineObjs,
-								previousAssignmentMap,
-								assignments.requests,
-								poolName
-							)
-						}
-
-						sendTrace(endTrace(influxTrace))
-						if (span) span.end()
-					}
+					const abHelper = blueprintContext.abSessionsHelper // Future: this should be removed from OnTimelineGenerateContext once the methods are removed from the api
+					const newAbSessionsResult = applyAbPlaybackForTimeline(
+						context,
+						abHelper,
+						blueprint,
+						showStyle,
+						cache.Playlist.doc,
+						resolvedPieces.pieces,
+						timelineObjs
+					)
 
 					let tlGenRes: BlueprintResultTimeline | undefined
 					if (blueprint.blueprint.onTimelineGenerate) {

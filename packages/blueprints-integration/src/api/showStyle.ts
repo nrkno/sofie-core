@@ -14,6 +14,7 @@ import type {
 	IGetRundownContext,
 	IDataStoreActionExecutionContext,
 	IRundownActivationContext,
+	IShowStyleContext,
 } from '../context'
 import type { IngestAdlib, ExtendedIngestRundown, IngestSegment } from '../ingest'
 import type { IBlueprintExternalMessageQueueObj } from '../message'
@@ -161,9 +162,7 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	) => Promise<BlueprintResultTimeline>
 
 	/** Called just before `onTimelineGenerate` to perform AB-playback for the timeline */
-	getAbResolverConfiguration?: (
-		context: ITimelineEventContext // TODO - is this type appropriate
-	) => ABResolverConfiguration
+	getAbResolverConfiguration?: (context: IShowStyleContext) => ABResolverConfiguration
 
 	/** Called just before taking the next part. This generates some persisted data used by onTimelineGenerate to modify the timeline based on the previous part (eg, persist audio levels) */
 	getEndStateForPart?: (
