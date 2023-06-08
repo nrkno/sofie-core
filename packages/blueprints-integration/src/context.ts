@@ -12,7 +12,7 @@ import {
 	IBlueprintRundownPlaylist,
 	IBlueprintSegmentDB,
 	IBlueprintSegmentRundown,
-} from './rundown'
+} from './documents'
 import { BlueprintMappings } from './studio'
 import { TSR, OnGenerateTimelineObj } from './timeline'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'

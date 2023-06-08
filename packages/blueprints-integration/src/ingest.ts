@@ -1,5 +1,5 @@
 import { IngestRundown } from '@sofie-automation/shared-lib/dist/peripheralDevice/ingest'
-import { IBlueprintRundownDBData } from './rundown'
+import { IBlueprintRundownDBData } from './documents'
 
 export {
 	IngestPart,

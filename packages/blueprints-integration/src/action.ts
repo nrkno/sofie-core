@@ -2,7 +2,7 @@ import { ExpectedPackage } from './package'
 import { ConfigManifestEntry } from './config'
 import { SomeContent } from './content'
 import { ITranslatableMessage } from './translations'
-import { ExpectedPlayoutItemGeneric } from './rundown'
+import { ExpectedPlayoutItemGeneric } from './documents'
 
 export interface ActionUserData {
 	[key: string]: any
