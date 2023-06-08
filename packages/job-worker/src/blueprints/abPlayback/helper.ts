@@ -1,4 +1,3 @@
-import { IBlueprintPieceInstance } from '@sofie-automation/blueprints-integration'
 import { PieceInstanceId, PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -43,8 +42,8 @@ export class AbSessionHelper {
 		return getRandomString()
 	}
 
-	getPieceABSessionId(pieceInstance0: Pick<IBlueprintPieceInstance, '_id'>, sessionName: string): string {
-		const pieceInstance = this.#pieceInstanceCache.get(protectString(pieceInstance0._id))
+	getPieceABSessionId(pieceInstanceId: PieceInstanceId, sessionName: string): string {
+		const pieceInstance = this.#pieceInstanceCache.get(pieceInstanceId)
 		const partInstanceId = pieceInstance?.partInstanceId
 		if (!partInstanceId) throw new Error('Missing partInstanceId in call to getPieceABSessionId')
 

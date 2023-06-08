@@ -1,19 +1,18 @@
 import {
-	IBlueprintResolvedPieceInstance,
 	OnGenerateTimelineObj,
 	PieceAbSessionInfo,
 	TSR,
 	AB_MEDIA_PLAYER_AUTO,
+	ABResolverConfiguration,
+	ICommonContext,
+	ITimelineEventContext,
 } from '@sofie-automation/blueprints-integration'
-import { literal } from '@sofie-automation/corelib/dist/lib'
+import { PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { TimelineObjectAbSessionInfo } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 import * as _ from 'underscore'
-import {
-	ABResolverOptions,
-	AssignmentResult,
-	resolveAbAssignmentsFromRequests,
-	SessionRequest,
-} from './abPlaybackResolver'
+import { SessionRequest } from './abPlaybackResolver'
 import { AbSessionHelper } from './helper'
 
 export interface AbPoolClaim {
@@ -38,7 +37,7 @@ export interface SessionToPlayerMap {
 // }
 
 function validateSessionName(
-	pieceInstanceId: string,
+	pieceInstanceId: PieceInstanceId | string,
 	session: PieceAbSessionInfo | TimelineObjectAbSessionInfo
 ): string {
 	const newName = session.name === AB_MEDIA_PLAYER_AUTO ? pieceInstanceId : session.name
@@ -47,32 +46,25 @@ function validateSessionName(
 
 export function calculateSessionTimeRanges(
 	context: AbSessionHelper,
-	resolvedPieces: IBlueprintResolvedPieceInstance[],
-	timelineObjs: OnGenerateTimelineObj<TSR.TSRTimelineContent>[],
+	resolvedPieces: ResolvedPieceInstance[],
+	timelineObjs: OnGenerateTimelineObjExt[],
 	previousAssignmentMap: SessionToPlayerMap,
-	sessionPool: string
+	poolName: string
 ): SessionRequest[] {
-	const piecesWantingAbSession = _.compact(
-		resolvedPieces.map((piece) => {
-			if (piece.piece?.abSessions) {
-				const validSessions = piece.piece.abSessions.filter((s) => s.pool === sessionPool)
-				if (validSessions.length > 0) {
-					return literal<[IBlueprintResolvedPieceInstance, PieceAbSessionInfo[]]>([piece, validSessions])
-				}
-			}
-			return undefined
-		})
-	)
-
 	const sessionRequests: { [sessionId: string]: SessionRequest | undefined } = {}
-	for (const [p, sessions] of piecesWantingAbSession) {
+	for (const p of resolvedPieces) {
+		const abSessions = p.piece.abSessions
+		if (!abSessions) continue
+
 		const start = p.resolvedStart
 		const duration = p.resolvedDuration
 		const end = duration !== undefined ? start + duration : undefined
 
 		// Track the range of each session
-		for (const session of sessions) {
-			const sessionId = context.getPieceABSessionId(p, validateSessionName(p._id, session))
+		for (const session of abSessions) {
+			if (session.pool !== poolName) continue
+
+			const sessionId = context.getPieceABSessionId(p._id, validateSessionName(p._id, session))
 
 			// Note: multiple generated sessionIds for a single piece will not work as there will not be enough info to assign objects to different players. TODO is this still true?
 			const val = sessionRequests[sessionId] || undefined
@@ -113,7 +105,7 @@ export function calculateSessionTimeRanges(
 		) {
 			if (obj.abSessions && obj.pieceInstanceId) {
 				for (const session of obj.abSessions) {
-					if (session.pool === sessionPool) {
+					if (session.pool === poolName) {
 						const sessionId = context.getTimelineObjectAbSessionId(
 							obj,
 							validateSessionName(obj.pieceInstanceId, session)
@@ -150,65 +142,131 @@ export function calculateSessionTimeRanges(
 	return result
 }
 
-export function resolveAbSessions(
-	context: AbSessionHelper,
-	options: ABResolverOptions,
-	resolvedPieces: IBlueprintResolvedPieceInstance[],
-	timelineObjs: OnGenerateTimelineObj<TSR.TSRTimelineContent>[],
-	previousAssignmentMap: SessionToPlayerMap,
-	sessionPool: string,
-	slotIds: number[],
-	now: number
-): AssignmentResult {
-	const sessionRequests = calculateSessionTimeRanges(
-		context,
-		resolvedPieces,
-		timelineObjs,
-		previousAssignmentMap,
-		sessionPool
-	)
+function updateObjectsToAbPlayer(
+	context: ICommonContext,
+	abConfiguration: Pick<ABResolverConfiguration, 'timelineObjectLayerChangeRules' | 'customApplyToObject'>,
+	poolName: string,
+	poolIndex: number,
+	objs: OnGenerateTimelineObj<TSR.TSRTimelineContent>[]
+): void {
+	for (const obj of objs) {
+		// The experiment: Do it via keyframes
+		let updated = false
 
-	return resolveAbAssignmentsFromRequests(options, slotIds, sessionRequests, now)
+		// TODO - rewrite this to do more cleanup!
+		obj.keyframes?.forEach((kf) => {
+			if (kf.abSession && kf.abSession.poolName === poolName && kf.abSession.playerIndex === poolIndex) {
+				kf.disabled = false
+				updated = true
+			}
+		})
+
+		const ruleId = obj.isLookahead ? obj.lookaheadForLayer || obj.layer : obj.layer
+		if (ruleId) {
+			const moveRule = abConfiguration.timelineObjectLayerChangeRules?.[ruleId]
+			if (moveRule && moveRule.acceptedPoolNames.includes(poolName)) {
+				if (obj.isLookahead && moveRule.allowsLookahead && obj.lookaheadForLayer) {
+					// This works on the assumption that layer will contain lookaheadForLayer, but not the exact syntax.
+					// Hopefully this will be durable to any potential future core changes
+					const newLayer = moveRule.newLayerName(poolIndex)
+					obj.layer = (obj.layer + '').replace(obj.lookaheadForLayer + '', newLayer)
+					obj.lookaheadForLayer = newLayer
+
+					updated = true
+				} else if (!obj.isLookahead || (obj.isLookahead && !obj.lookaheadForLayer)) {
+					obj.layer = moveRule.newLayerName(poolIndex)
+					updated = true
+				}
+			}
+		}
+
+		if (abConfiguration.customApplyToObject) {
+			const updated2 = abConfiguration.customApplyToObject(context, poolName, poolIndex, obj)
+
+			updated = updated || updated2
+		}
+
+		if (!updated) {
+			context.logWarning(`AB: Failed to move object to abPlayer ("${obj.id}" from layer: "${obj.layer}")`)
+		}
+	}
 }
 
-// export function resolveAbPlayers(
-// 	context: ITimelineEventContext,
-// 	config: BlueprintConfig,
-// 	resolvedPieces: IBlueprintResolvedPieceInstance[],
-// 	timelineObjs: OnGenerateTimelineObj<TSR.TSRTimelineContent>[],
-// 	previousAssignment: AbPoolClaim[],
-// 	sessionPool: string,
-// 	slotIds: number[]
-// ): AbPoolClaim[] {
-// 	const previousAssignmentMap = reversePreviousAssignment(previousAssignment)
-// 	const resolvedAssignments = resolveAbSessions(
-// 		context,
-// 		config,
-// 		resolvedPieces,
-// 		timelineObjs,
-// 		previousAssignmentMap,
-// 		sessionPool,
-// 		slotIds,
-// 		context.getCurrentTime()
-// 	)
+export function applyAbPlayerObjectAssignments(
+	context: ITimelineEventContext,
+	abConfiguration: Pick<ABResolverConfiguration, 'timelineObjectLayerChangeRules' | 'customApplyToObject'>,
+	debugLog: boolean, // TODO - replace
+	timelineObjs: OnGenerateTimelineObj<TSR.TSRTimelineContent>[],
+	previousAssignmentMap: SessionToPlayerMap,
+	resolvedAssignments: Readonly<SessionRequest[]>,
+	poolName: string
+): SessionToPlayerMap {
+	const newAssignments: SessionToPlayerMap = {}
+	let nextRank = 1
+	const persistAssignment = (sessionId: string, playerId: number, lookahead: boolean): void => {
+		// Track the assignment, so that the next onTimelineGenerate can try to reuse the same session
+		if (newAssignments[playerId]) {
+			// TODO - warn?
+		}
+		newAssignments[playerId] = { sessionId, slotId: playerId, lookahead, _rank: nextRank++ }
+	}
 
-// 	const debugLog = config.studio.ABPlaybackDebugLogging
-// 	if (debugLog) {
-// 		context.logInfo(`AB: Resolved sessions for "${sessionPool}": ${JSON.stringify(resolvedAssignments)}`)
-// 	}
+	// collect objects by their sessionId
+	const groupedObjectsMap = new Map<string, Array<OnGenerateTimelineObj<TSR.TSRTimelineContent>>>()
+	for (const obj of timelineObjs) {
+		if (obj.abSessions && obj.pieceInstanceId) {
+			for (const session of obj.abSessions) {
+				if (session.pool === poolName) {
+					const sessionId = context.getTimelineObjectAbSessionId(
+						obj,
+						validateSessionName(obj.pieceInstanceId, session)
+					)
+					if (sessionId) {
+						const existing = groupedObjectsMap.get(sessionId)
+						groupedObjectsMap.set(sessionId, existing ? [...existing, obj] : [obj])
+					}
+				}
+			}
+		}
+	}
 
-// 	if (resolvedAssignments.failedRequired.length > 0) {
-// 		context.logWarning(
-// 			`AB: Failed to assign sessions for "${sessionPool}": ${JSON.stringify(resolvedAssignments.failedRequired)}`
-// 		)
-// 	}
-// 	if (resolvedAssignments.failedOptional.length > 0) {
-// 		context.logInfo(
-// 			`AB: Failed to assign optional sessions for "${sessionPool}": ${JSON.stringify(
-// 				resolvedAssignments.failedOptional
-// 			)}`
-// 		)
-// 	}
+	// Apply the known assignments
+	for (const [sessionId, objs] of groupedObjectsMap.entries()) {
+		if (sessionId !== 'undefined') {
+			const request = resolvedAssignments.find((req) => req.id === sessionId)
 
-// 	return reso
-// }
+			if (request) {
+				if (request.player !== undefined) {
+					updateObjectsToAbPlayer(context, abConfiguration, poolName, request.player, objs)
+					persistAssignment(sessionId, request.player, !!request.lookaheadRank)
+				} else {
+					// A warning will already have been raised about this having no player
+				}
+			} else {
+				// This is a group that shouldn't exist, so are likely a bug. There isnt a lot we can do beyond warn about the issue
+				const objIds = _.pluck(objs, 'id')
+				const prev = previousAssignmentMap[sessionId]
+				if (prev) {
+					updateObjectsToAbPlayer(context, abConfiguration, poolName, prev.slotId, objs)
+					persistAssignment(sessionId, prev.slotId, false)
+					context.logWarning(
+						`AB: Found unexpected session remaining on the timeline: "${sessionId}" belonging to ${objIds.join(
+							','
+						)}. This may cause playback glitches`
+					)
+				} else {
+					context.logWarning(
+						`AB: Found unexpected session remaining on the timeline: "${sessionId}" belonging to ${objIds.join(
+							','
+						)}. This could result in black playback`
+					)
+				}
+			}
+		}
+	}
+
+	if (debugLog) {
+		context.logInfo(`AB: new assignments for "${poolName}": ${JSON.stringify(newAssignments)}`)
+	}
+	return newAssignments
+}

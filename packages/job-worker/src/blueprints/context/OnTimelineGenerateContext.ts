@@ -18,6 +18,7 @@ import { ProcessedShowStyleCompound } from '../../jobs'
 import { convertPartInstanceToBlueprints } from './lib'
 import { RundownContext } from './RundownContext'
 import { AbSessionHelper } from '../abPlayback/helper'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 
 export class OnTimelineGenerateContext extends RundownContext implements ITimelineEventContext {
 	readonly currentPartInstance: Readonly<IBlueprintPartInstance> | undefined
@@ -70,8 +71,10 @@ export class OnTimelineGenerateContext extends RundownContext implements ITimeli
 	/**
 	 * @deprecated Use core provided AB resolving
 	 */
-	getPieceABSessionId(pieceInstance0: Pick<IBlueprintPieceInstance, '_id'>, sessionName: string): string {
-		return this.abSessionsHelper.getPieceABSessionId(pieceInstance0, sessionName)
+	getPieceABSessionId(pieceInstance: Pick<IBlueprintPieceInstance, '_id'>, sessionName: string): string {
+		const pieceInstanceId = protectString(pieceInstance._id)
+		if (!pieceInstanceId) throw new Error('Invalid PieceInstance passed to getPieceABSessionId')
+		return this.abSessionsHelper.getPieceABSessionId(pieceInstanceId, sessionName)
 	}
 
 	/**

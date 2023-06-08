@@ -191,6 +191,7 @@ function convertPieceGenericToBlueprintsInner(piece: PieceGeneric): Complete<IBl
 			...clone(piece.content),
 			timelineObjects: deserializePieceTimelineObjectsBlob(piece.timelineObjectsString),
 		},
+		abSessions: clone(piece.abSessions),
 	}
 
 	return obj
@@ -211,7 +212,6 @@ export function convertPieceToBlueprints(piece: PieceInstancePiece): IBlueprintP
 		pieceType: piece.pieceType,
 		extendOnHold: piece.extendOnHold,
 		notInVision: piece.notInVision,
-		abSessions: clone(piece.abSessions),
 	}
 
 	return obj

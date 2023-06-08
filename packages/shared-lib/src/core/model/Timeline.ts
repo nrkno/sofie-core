@@ -46,6 +46,11 @@ export interface TimelineKeyframeCoreExt<TContent extends { deviceType: TSR.Devi
 	metaData?: TKeyframeMetadata
 	/** Whether to keep this keyframe when the object is copied for lookahead. By default all keyframes are removed */
 	preserveForLookahead?: boolean
+
+	abSession?: {
+		poolName: string
+		playerIndex: number
+	}
 }
 
 export type TimelineEnableExt = TSR.Timeline.TimelineEnable & { setFromNow?: boolean }

@@ -41,6 +41,7 @@ import type { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import type { BlueprintConfigCoreConfig, BlueprintManifestBase, BlueprintManifestType, IConfigMessage } from './base'
 import type { IBlueprintTriggeredActions } from '../triggers'
 import type { ExpectedPackage } from '../package'
+import type { ABResolverConfiguration } from '../abPlayback'
 
 export type TimelinePersistentState = unknown
 
@@ -162,7 +163,7 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	/** Called just before `onTimelineGenerate` to perform AB-playback for the timeline */
 	getAbResolverConfiguration?: (
 		context: ITimelineEventContext // TODO - is this type appropriate
-	) => ABResolverConfigration
+	) => ABResolverConfiguration
 
 	/** Called just before taking the next part. This generates some persisted data used by onTimelineGenerate to modify the timeline based on the previous part (eg, persist audio levels) */
 	getEndStateForPart?: (
@@ -264,35 +265,4 @@ export interface IShowStyleVariantConfigPreset<TConfig = IBlueprintConfig> {
 	name: string
 
 	config: Partial<TConfig>
-}
-
-export interface AbLayerMoveRule {
-	pools: string[]
-	newLayer: (playerId: number) => string
-	allowsLookahead: boolean
-}
-
-export interface ABResolverConfigration {
-	options: ABResolverOptions
-	runForPools: string[]
-	timelineObjectLayerChangeRules?: {
-		[fromLayer: string]: AbLayerMoveRule | undefined
-	}
-	customApplyToObject?: (
-		context: ICommonContext,
-		poolName: string,
-		playerId: number,
-		obj: OnGenerateTimelineObj<TSR.TSRTimelineContent>
-	) => boolean
-}
-
-export interface ABResolverOptions {
-	/**
-	 * Ideal gap between playbacks for the player to be considered a good match
-	 */
-	idealGapBefore: number
-	/**
-	 * Duration to consider as now, to ensure playout-gateway has enough time to receive and re-resolve
-	 */
-	nowWindow: number
 }

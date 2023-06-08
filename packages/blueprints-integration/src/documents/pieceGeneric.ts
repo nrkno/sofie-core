@@ -1,4 +1,5 @@
 import { PieceLifespan } from '@sofie-automation/shared-lib/dist/core/model/Rundown'
+import type { PieceAbSessionInfo } from '../abPlayback'
 import type { ActionUserData } from '../action'
 import type { SomeContent, WithTimeline } from '../content'
 import type { ExpectedPackage } from '../package'
@@ -96,4 +97,9 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 
 	/** HACK: Some pieces have side effects on other pieces, and pruning them when they have finished playback will cause playout glitches. This will tell core to not always preserve it */
 	hasSideEffects?: boolean
+
+	/**
+	 * AB playback sessions needed for this Piece
+	 */
+	abSessions?: PieceAbSessionInfo[]
 }

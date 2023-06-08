@@ -58,6 +58,12 @@ import {
 	getPartTimingsOrDefaults,
 	PartCalculatedTimings,
 } from '@sofie-automation/corelib/dist/playout/timings'
+import {
+	applyAbPlayerObjectAssignments,
+	calculateSessionTimeRanges,
+	SessionToPlayerMap,
+} from '../../blueprints/abPlayback/abPlayback'
+import { resolveAbAssignmentsFromRequests } from '../../blueprints/abPlayback/abPlaybackResolver'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
@@ -386,9 +392,60 @@ async function getTimelineRundown(
 						const span = context.startSpan('blueprint.abPlaybackResolver')
 						const influxTrace = startTrace('blueprints:abPlaybackResolver')
 
+						// Future: for now we should share this helper with `onTimelineGenerate`, in case some is also run there
+						const abHelper = blueprintContext.abSessionsHelper
+
+						const previousAbSessionAssignments: Record<string, SessionToPlayerMap> = {}
+						const newAbSessionsResult: Record<string, SessionToPlayerMap> = {}
+
+						const now = getCurrentTime()
+
 						const abConfiguration = blueprint.blueprint.getAbResolverConfiguration(blueprintContext)
-						if (abConfiguration.runForPools.length > 0) {
-							// TODO
+						for (const [poolName, playerIds] of Object.entries<number[]>(abConfiguration.pools)) {
+							const previousAssignmentMap: SessionToPlayerMap =
+								previousAbSessionAssignments[poolName] || {}
+							const sessionRequests = calculateSessionTimeRanges(
+								abHelper,
+								resolvedPieces.pieces,
+								timelineObjs,
+								previousAssignmentMap,
+								poolName
+							)
+
+							const assignments = resolveAbAssignmentsFromRequests(
+								abConfiguration.resolverOptions,
+								playerIds,
+								sessionRequests,
+								now
+							)
+
+							// 	const debugLog = config.studio.ABPlaybackDebugLogging
+							// 	if (debugLog) {
+							// 		context.logInfo(`AB: Resolved sessions for "${poolName}": ${JSON.stringify(resolvedAssignments)}`)
+							// 	}
+
+							// 	if (resolvedAssignments.failedRequired.length > 0) {
+							// 		context.logWarning(
+							// 			`AB: Failed to assign sessions for "${poolName}": ${JSON.stringify(resolvedAssignments.failedRequired)}`
+							// 		)
+							// 	}
+							// 	if (resolvedAssignments.failedOptional.length > 0) {
+							// 		context.logInfo(
+							// 			`AB: Failed to assign optional sessions for "${poolName}": ${JSON.stringify(
+							// 				resolvedAssignments.failedOptional
+							// 			)}`
+							// 		)
+							// 	}
+
+							newAbSessionsResult[poolName] = applyAbPlayerObjectAssignments(
+								blueprintContext,
+								abConfiguration,
+								true,
+								timelineObjs,
+								previousAssignmentMap,
+								assignments.requests,
+								poolName
+							)
 						}
 
 						sendTrace(endTrace(influxTrace))
