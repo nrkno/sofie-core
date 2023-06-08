@@ -510,15 +510,12 @@ export class RundownTimingCalculator {
 					localAccum = this.linearParts[i][1] || 0 // if there is no current line, rebase following lines to the next line
 					this.linearParts[i][1] = currentRemaining
 					if (nextRundownAnchor === undefined) {
-						const startTime = getSegmentStartTime(partInstancesMap, segments, this.linearParts[i][0])
-						if (startTime) {
-							nextRundownAnchor = startTime
-						}
-
-						const endTime = getSegmentEndTime(partInstancesMap, segments, this.linearParts[i][0])
-						if (endTime) {
-							nextRundownAnchor = endTime
-						}
+						nextRundownAnchor = getNextRundownAnchor(
+							now,
+							partInstancesMap,
+							segments,
+							this.linearParts[i][0]
+						)
 					}
 				} else {
 					// these are lines after next line
@@ -528,15 +525,12 @@ export class RundownTimingCalculator {
 					// this away from this line.
 					this.linearParts[i][1] = (this.linearParts[i][1] || 0) - localAccum + currentRemaining
 					if (nextRundownAnchor === undefined) {
-						const backTime = getSegmentStartTime(partInstancesMap, segments, this.linearParts[i][0])
-						if (backTime) {
-							nextRundownAnchor = backTime
-						}
-
-						const endTime = getSegmentEndTime(partInstancesMap, segments, this.linearParts[i][0])
-						if (endTime) {
-							nextRundownAnchor = endTime
-						}
+						nextRundownAnchor = getNextRundownAnchor(
+							now,
+							partInstancesMap,
+							segments,
+							this.linearParts[i][0]
+						)
 					}
 				}
 			}
@@ -547,15 +541,12 @@ export class RundownTimingCalculator {
 					this.linearParts[i][1] =
 						(this.linearParts[i][1] || 0) + waitAccumulator - localAccum + currentRemaining
 					if (nextRundownAnchor === undefined) {
-						const backTime = getSegmentStartTime(partInstancesMap, segments, this.linearParts[i][0])
-						if (backTime) {
-							nextRundownAnchor = backTime
-						}
-
-						const endTime = getSegmentEndTime(partInstancesMap, segments, this.linearParts[i][0])
-						if (endTime) {
-							nextRundownAnchor = endTime
-						}
+						nextRundownAnchor = getNextRundownAnchor(
+							now,
+							partInstancesMap,
+							segments,
+							this.linearParts[i][0]
+						)
 					}
 				}
 			}
@@ -882,4 +873,23 @@ function getSegmentEndTime(
 	const part = partInstancesMap.get(partId)
 	const segment = segments.find((s) => s._id === part?.segmentId)
 	return segment?.segmentTiming?.expectedEnd ?? null
+}
+
+function getNextRundownAnchor(
+	now: number,
+	partInstancesMap: Map<PartId, PartInstance>,
+	segments: DBSegment[],
+	partId: PartId
+): number | undefined {
+	let nextRundownAnchor: number | undefined = undefined
+	const startTime = getSegmentStartTime(partInstancesMap, segments, partId)
+	if (startTime && startTime < now) {
+		nextRundownAnchor = startTime
+	} else {
+		const endTime = getSegmentEndTime(partInstancesMap, segments, partId)
+		if (endTime) {
+			nextRundownAnchor = endTime
+		}
+	}
+	return nextRundownAnchor
 }
