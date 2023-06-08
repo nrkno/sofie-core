@@ -100,7 +100,7 @@ export class RundownTimingCalculator {
 		parts: Part[],
 		partInstancesMap: Map<PartId, PartInstance>,
 		pieces: Map<PartId, CalculateTimingsPiece[]>,
-		segments: DBSegment[],
+		segmentsMap: Map<SegmentId, DBSegment>,
 		/** Fallback duration for Parts that have no as-played duration of their own. */
 		defaultDuration: number = Settings.defaultDisplayDuration,
 		/** The first played-out PartInstance in the current playing segment and
@@ -513,7 +513,7 @@ export class RundownTimingCalculator {
 						nextRundownAnchor = getNextRundownAnchor(
 							now,
 							partInstancesMap,
-							segments,
+							segmentsMap,
 							this.linearParts[i][0]
 						)
 					}
@@ -528,7 +528,7 @@ export class RundownTimingCalculator {
 						nextRundownAnchor = getNextRundownAnchor(
 							now,
 							partInstancesMap,
-							segments,
+							segmentsMap,
 							this.linearParts[i][0]
 						)
 					}
@@ -544,7 +544,7 @@ export class RundownTimingCalculator {
 						nextRundownAnchor = getNextRundownAnchor(
 							now,
 							partInstancesMap,
-							segments,
+							segmentsMap,
 							this.linearParts[i][0]
 						)
 					}
@@ -553,7 +553,9 @@ export class RundownTimingCalculator {
 
 			// For the sake of Segment Budget Durations, we need to now iterate over all Segments
 			let nextSegmentIndex = -1
-			segments.forEach((segment, itIndex) => {
+			let itIndex = -1
+			for (const segment of segmentsMap.values()) {
+				itIndex++
 				if (segment._id === this.nextSegmentId) {
 					nextSegmentIndex = itIndex
 				}
@@ -561,7 +563,7 @@ export class RundownTimingCalculator {
 
 				// If all of the Parts in a Segment are untimed, do not consider the Segment for
 				// Playlist Remaining and As-Played durations.
-				if (segmentBudgetDuration === undefined || this.untimedSegments.has(segment._id)) return
+				if (segmentBudgetDuration === undefined || this.untimedSegments.has(segment._id)) continue
 
 				totalRundownDuration += segmentBudgetDuration
 
@@ -588,7 +590,7 @@ export class RundownTimingCalculator {
 				rundownAsPlayedDurations[unprotectString(segment.rundownId)] =
 					(rundownAsPlayedDurations[unprotectString(segment.rundownId)] ?? 0) +
 					valToAddToRundownAsPlayedDuration
-			})
+			}
 		}
 
 		let remainingTimeOnCurrentPart: number | undefined = undefined
@@ -857,36 +859,44 @@ function ensureMinimumDefaultDurationIfNotAuto(
 
 function getSegmentStartTime(
 	partInstancesMap: Map<PartId, PartInstance>,
-	segments: DBSegment[],
+	segmentsMap: Map<SegmentId, DBSegment>,
 	partId: PartId
 ): number | null {
 	const part = partInstancesMap.get(partId)
-	const segment = segments.find((s) => s._id === part?.segmentId)
-	return segment?.segmentTiming?.expectedStart ?? null
+	if (part?.segmentId) {
+		const segment = segmentsMap.get(part?.segmentId)
+		return segment?.segmentTiming?.expectedStart ?? null
+	}
+
+	return null
 }
 
 function getSegmentEndTime(
 	partInstancesMap: Map<PartId, PartInstance>,
-	segments: DBSegment[],
+	segmentsMap: Map<SegmentId, DBSegment>,
 	partId: PartId
 ): number | null {
 	const part = partInstancesMap.get(partId)
-	const segment = segments.find((s) => s._id === part?.segmentId)
-	return segment?.segmentTiming?.expectedEnd ?? null
+	if (part?.segmentId) {
+		const segment = segmentsMap.get(part?.segmentId)
+		return segment?.segmentTiming?.expectedEnd ?? null
+	}
+
+	return null
 }
 
 function getNextRundownAnchor(
 	now: number,
 	partInstancesMap: Map<PartId, PartInstance>,
-	segments: DBSegment[],
+	segmentsMap: Map<SegmentId, DBSegment>,
 	partId: PartId
 ): number | undefined {
 	let nextRundownAnchor: number | undefined = undefined
-	const startTime = getSegmentStartTime(partInstancesMap, segments, partId)
+	const startTime = getSegmentStartTime(partInstancesMap, segmentsMap, partId)
 	if (startTime && startTime < now) {
 		nextRundownAnchor = startTime
 	} else {
-		const endTime = getSegmentEndTime(partInstancesMap, segments, partId)
+		const endTime = getSegmentEndTime(partInstancesMap, segmentsMap, partId)
 		if (endTime) {
 			nextRundownAnchor = endTime
 		}
