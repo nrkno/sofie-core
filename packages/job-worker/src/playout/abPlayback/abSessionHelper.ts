@@ -1,4 +1,4 @@
-import { PieceInstanceId, PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ABSessionInfo } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -14,23 +14,17 @@ interface ABSessionInfoExt extends ABSessionInfo {
 	keep?: boolean
 }
 
+/**
+ * A helper class for generating unique and persistent AB-playback sessionIds
+ */
 export class AbSessionHelper {
 	readonly #partInstances: ReadonlyDeep<Array<DBPartInstance>>
-	readonly #pieceInstanceCache = new Map<PieceInstanceId, PieceInstance>()
 
 	readonly #knownSessions: ABSessionInfoExt[]
 
-	constructor(
-		partInstances: ReadonlyDeep<Array<DBPartInstance>>,
-		pieceInstances: PieceInstance[],
-		knownSessions: ABSessionInfo[]
-	) {
+	constructor(partInstances: ReadonlyDeep<Array<DBPartInstance>>, knownSessions: ABSessionInfo[]) {
 		this.#partInstances = partInstances
 		this.#knownSessions = knownSessions
-
-		for (const pieceInstance of pieceInstances) {
-			this.#pieceInstanceCache.set(pieceInstance._id, pieceInstance)
-		}
 	}
 
 	public get knownSessions(): ABSessionInfo[] {
@@ -42,12 +36,12 @@ export class AbSessionHelper {
 		return getRandomString()
 	}
 
-	getPieceABSessionId(pieceInstanceId: PieceInstanceId, sessionName: string): string {
-		const pieceInstance = this.#pieceInstanceCache.get(pieceInstanceId)
-		const partInstanceId = pieceInstance?.partInstanceId
-		if (!partInstanceId) throw new Error('Missing partInstanceId in call to getPieceABSessionId')
-
-		const partInstanceIndex = this.#partInstances.findIndex((p) => p._id === partInstanceId)
+	/**
+	 * Get the full session id for an ab playback session.
+	 * Note: sessionName should be unique within the segment unless pieces want to share a session
+	 */
+	getPieceABSessionId(pieceInstance: PieceInstance, sessionName: string): string {
+		const partInstanceIndex = this.#partInstances.findIndex((p) => p._id === pieceInstance.partInstanceId)
 		const partInstance = partInstanceIndex >= 0 ? this.#partInstances[partInstanceIndex] : undefined
 		if (!partInstance) throw new Error('Unknown partInstanceId in call to getPieceABSessionId')
 
@@ -71,7 +65,7 @@ export class AbSessionHelper {
 
 		// We only want to consider sessions already tagged to this partInstance
 		const existingSession = this.#knownSessions.find(
-			(s) => s.partInstanceIds?.includes(unpartialString(partInstanceId)) && s.name === sessionName
+			(s) => s.partInstanceIds?.includes(pieceInstance.partInstanceId) && s.name === sessionName
 		)
 		if (existingSession) {
 			return preserveSession(existingSession)
@@ -90,7 +84,7 @@ export class AbSessionHelper {
 			if (continuedSession) {
 				continuedSession.partInstanceIds = [
 					...(continuedSession.partInstanceIds || []),
-					unpartialString(partInstanceId),
+					pieceInstance.partInstanceId,
 				]
 				return preserveSession(continuedSession)
 			}
@@ -102,7 +96,7 @@ export class AbSessionHelper {
 			(s) => s.name === sessionName && s.lookaheadForPartId === partId
 		)
 		if (lookaheadSession) {
-			lookaheadSession.partInstanceIds = [unpartialString(partInstanceId)]
+			lookaheadSession.partInstanceIds = [pieceInstance.partInstanceId]
 			return preserveSession(lookaheadSession)
 		}
 
@@ -112,13 +106,17 @@ export class AbSessionHelper {
 			id: sessionId,
 			name: sessionName,
 			infiniteInstanceId: unpartialString(infiniteId),
-			partInstanceIds: _.compact([!infiniteId ? unpartialString(partInstanceId) : undefined]),
+			partInstanceIds: _.compact([!infiniteId ? pieceInstance.partInstanceId : undefined]),
 			keep: true,
 		}
 		this.#knownSessions.push(newSession)
 		return sessionId
 	}
 
+	/**
+	 * Get the full session id for a timelineobject that belongs to an ab playback session
+	 * sessionName should also be used in calls to getPieceABSessionId for the owning piece
+	 */
 	getTimelineObjectAbSessionId(tlObj: OnGenerateTimelineObjExt, sessionName: string): string | undefined {
 		// Find an infinite
 		const searchId = tlObj.infinitePieceInstanceId

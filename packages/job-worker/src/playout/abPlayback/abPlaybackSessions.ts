@@ -7,10 +7,19 @@ import { SessionRequest } from './abPlaybackResolver'
 import { AbSessionHelper } from './abSessionHelper'
 import { validateSessionName } from './util'
 
+/**
+ * Calculate all of the AB-playback sessions currently on the timeline
+ * @param abSessionHelper Helper for generation sessionId
+ * @param resolvedPieces All the PieceInstances on the timeline, resolved to have 'accurate' playback timings
+ * @param timelineObjects The timeline to check for lookahead sessions
+ * @param previousAssignmentMap Assignments from the previous run
+ * @param poolName Name of the pool being processed
+ * @returns All the requested sessions with time windows
+ */
 export function calculateSessionTimeRanges(
-	sessionHelper: AbSessionHelper,
+	abSessionHelper: AbSessionHelper,
 	resolvedPieces: ResolvedPieceInstance[],
-	timelineObjs: OnGenerateTimelineObjExt[],
+	timelineObjects: OnGenerateTimelineObjExt[],
 	previousAssignmentMap: ABSessionAssignments,
 	poolName: string
 ): SessionRequest[] {
@@ -27,7 +36,7 @@ export function calculateSessionTimeRanges(
 		for (const session of abSessions) {
 			if (session.pool !== poolName) continue
 
-			const sessionId = sessionHelper.getPieceABSessionId(p._id, validateSessionName(p._id, session))
+			const sessionId = abSessionHelper.getPieceABSessionId(p, validateSessionName(p._id, session))
 
 			// Note: multiple generated sessionIds for a single piece will not work as there will not be enough info to assign objects to different players. TODO is this still true?
 			const val = sessionRequests[sessionId] || undefined
@@ -59,7 +68,7 @@ export function calculateSessionTimeRanges(
 
 	// Include lookaheads, as they dont have pieces
 	const groupedLookaheadMap = new Map<string, Array<OnGenerateTimelineObj<TSR.TSRTimelineContent>>>()
-	for (const obj of timelineObjs) {
+	for (const obj of timelineObjects) {
 		if (
 			!!obj.isLookahead &&
 			!Array.isArray(obj.enable) &&
@@ -69,7 +78,7 @@ export function calculateSessionTimeRanges(
 			if (obj.abSessions && obj.pieceInstanceId) {
 				for (const session of obj.abSessions) {
 					if (session.pool === poolName) {
-						const sessionId = sessionHelper.getTimelineObjectAbSessionId(
+						const sessionId = abSessionHelper.getTimelineObjectAbSessionId(
 							obj,
 							validateSessionName(obj.pieceInstanceId, session)
 						)

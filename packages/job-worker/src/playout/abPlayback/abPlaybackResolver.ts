@@ -1,16 +1,6 @@
+import { ABResolverOptions } from '@sofie-automation/blueprints-integration'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import * as _ from 'underscore'
-
-export interface ABResolverOptions {
-	/**
-	 * Ideal gap between playbacks for the player to be considered a good match
-	 */
-	idealGapBefore: number
-	/**
-	 * Duration to consider as now, to ensure playout-gateway has enough time to receive and re-resolve
-	 */
-	nowWindow: number
-}
 
 export interface SessionRequest {
 	readonly id: string
@@ -22,8 +12,11 @@ export interface SessionRequest {
 }
 
 export interface AssignmentResult {
+	/** Any non-optional sessions which were not assigned a player */
 	failedRequired: string[]
+	/** Any optional sessions which were not assigned a player */
 	failedOptional: string[]
+	/** All of the requests with their player assignments set */
 	requests: Readonly<SessionRequest[]>
 }
 
@@ -52,8 +45,16 @@ function safeMin<T>(arr: T[], func: (val: T) => number): T | undefined {
 	}
 }
 
+/**
+ * Calculate all of the AB-playback sessions currently on the timeline
+ * @param resolverOptions Options for the resolver
+ * @param playerIds Ids of players in the current AB pool
+ * @param rawRequests The session requests to be resolved
+ * @param now The approximate current time
+ * @returns The calculated assignments
+ */
 export function resolveAbAssignmentsFromRequests(
-	options: ABResolverOptions,
+	resolverOptions: ABResolverOptions,
 	playerIds: number[],
 	rawRequests: SessionRequest[],
 	now: number // Current time
@@ -87,7 +88,7 @@ export function resolveAbAssignmentsFromRequests(
 		}
 	}
 
-	const safeNow = now + options.nowWindow // Treat now + nowWindow as now, as it is likely that anything changed within that window will be late to air
+	const safeNow = now + resolverOptions.nowWindow // Treat now + nowWindow as now, as it is likely that anything changed within that window will be late to air
 
 	// Clear assignments for anything which has no chance of being preloaded yet
 	_.each(grouped, (grp) => {
@@ -107,7 +108,7 @@ export function resolveAbAssignmentsFromRequests(
 	_.each(playerIds, (id) => slots.set(id, grouped[id] || []))
 
 	const beforeHasGap = (p: SlotAvailability, req: SessionRequest): boolean =>
-		!p.before || p.before.end < req.start - options.idealGapBefore
+		!p.before || p.before.end < req.start - resolverOptions.idealGapBefore
 	const maxGapAfter = (sl: SlotAvailability[]): SlotAvailability | undefined => {
 		if (sl.length) {
 			return safeMax(sl, (p) => p.after?.start ?? Number.POSITIVE_INFINITY)
@@ -213,7 +214,7 @@ export function resolveAbAssignmentsFromRequests(
 			if (!candidate && nothingAfter.length) {
 				// Find the player with nothing coming up that gives us the best preload time
 				candidate = safeMin(nothingAfter, (p) => {
-					const minClearance = req.start - options.idealGapBefore
+					const minClearance = req.start - resolverOptions.idealGapBefore
 					const availableAfter = p.before?.end ?? Number.NEGATIVE_INFINITY
 					// Return in range of before.end <-> (req.start - gap)
 					// We want the slot which has the earliest before.end

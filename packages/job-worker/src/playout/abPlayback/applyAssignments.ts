@@ -13,97 +13,20 @@ import { SessionRequest } from './abPlaybackResolver'
 import { AbSessionHelper } from './abSessionHelper'
 import { validateSessionName } from './util'
 
-function updateObjectsToAbPlayer(
-	context: ICommonContext,
-	abConfiguration: Pick<ABResolverConfiguration, 'timelineObjectLayerChangeRules' | 'customApplyToObject'>,
-	poolName: string,
-	poolIndex: number,
-	objs: OnGenerateTimelineObj<TSR.TSRTimelineContent>[]
-): OnGenerateTimelineObj<TSR.TSRTimelineContent>[] {
-	const failedObjects: OnGenerateTimelineObj<TSR.TSRTimelineContent>[] = []
-
-	for (const obj of objs) {
-		const updatedKeyframes = applyUpdateToKeyframes(poolName, poolIndex, obj)
-
-		const updatedLayer = applylayerMoveRule(
-			abConfiguration.timelineObjectLayerChangeRules,
-			poolName,
-			poolIndex,
-			obj
-		)
-
-		const updatedCustom =
-			abConfiguration.customApplyToObject &&
-			abConfiguration.customApplyToObject(context, poolName, poolIndex, obj)
-
-		if (!updatedKeyframes && !updatedLayer && !updatedCustom) {
-			failedObjects.push(obj)
-		}
-	}
-
-	return failedObjects
-}
-function applyUpdateToKeyframes(
-	poolName: string,
-	poolIndex: number,
-	obj: OnGenerateTimelineObj<TSR.TSRTimelineContent>
-): boolean {
-	if (!obj.keyframes) return false
-
-	let updated = false
-
-	obj.keyframes = _.compact(
-		obj.keyframes.map((kf) => {
-			// Preserve all non-ab keyframes
-			if (!kf.abSession) return kf
-			// Preserve from other ab pools
-			if (kf.abSession.poolName !== poolName) return kf
-
-			if (kf.abSession.playerIndex === poolIndex) {
-				// Make sure any ab keyframe is active
-				kf.disabled = false
-				updated = true
-				return kf
-			} else {
-				// Remove the keyframes for other players in the pool
-				return undefined
-			}
-		})
-	)
-
-	return updated
-}
-function applylayerMoveRule(
-	timelineObjectLayerChangeRules: ABTimelineLayerChangeRules | undefined,
-	poolName: string,
-	poolIndex: number,
-	obj: OnGenerateTimelineObj<TSR.TSRTimelineContent>
-): boolean {
-	const ruleId = obj.isLookahead ? obj.lookaheadForLayer || obj.layer : obj.layer
-	if (!ruleId) return false
-
-	const moveRule = timelineObjectLayerChangeRules?.[ruleId]
-	if (!moveRule || !moveRule.acceptedPoolNames.includes(poolName)) return false
-
-	if (obj.isLookahead && moveRule.allowsLookahead && obj.lookaheadForLayer) {
-		// This works on the assumption that layer will contain lookaheadForLayer, but not the exact syntax.
-		// Hopefully this will be durable to any potential future core changes
-		const newLayer = moveRule.newLayerName(poolIndex)
-		obj.layer = (obj.layer + '').replace(obj.lookaheadForLayer + '', newLayer)
-		obj.lookaheadForLayer = newLayer
-
-		return true
-	} else if (!obj.isLookahead || (obj.isLookahead && !obj.lookaheadForLayer)) {
-		obj.layer = moveRule.newLayerName(poolIndex)
-		return true
-	}
-
-	return false
-}
-
+/**
+ * Apply the ab assignments for a pool to the timeline
+ * @param abSessionHelper Helper for generation sessionId
+ * @param blueprintContext Context for blueprint functions
+ * @param abConfiguration Configuration of the ab resolver
+ * @param timelineObjects The current timeline to update
+ * @param previousAssignmentMap Assignments from the previous run
+ * @param resolvedAssignments Assignments to apply
+ * @param poolName Name of the pool being processed
+ * @returns Assignments that were applied to the timeline
+ */
 export function applyAbPlayerObjectAssignments(
 	sessionHelper: AbSessionHelper,
-	context: ICommonContext,
+	blueprintContext: ICommonContext,
 	abConfiguration: Pick<ABResolverConfiguration, 'timelineObjectLayerChangeRules' | 'customApplyToObject'>,
 	timelineObjs: OnGenerateTimelineObjExt[],
 	previousAssignmentMap: ABSessionAssignments,
@@ -151,7 +74,13 @@ export function applyAbPlayerObjectAssignments(
 		if (matchingAssignment) {
 			if (matchingAssignment.playerId !== undefined) {
 				failedObjects.push(
-					...updateObjectsToAbPlayer(context, abConfiguration, poolName, matchingAssignment.playerId, objs)
+					...updateObjectsToAbPlayer(
+						blueprintContext,
+						abConfiguration,
+						poolName,
+						matchingAssignment.playerId,
+						objs
+					)
 				)
 				persistAssignment(sessionId, matchingAssignment.playerId, !!matchingAssignment.lookaheadRank)
 			} else {
@@ -164,7 +93,9 @@ export function applyAbPlayerObjectAssignments(
 			// If there was a previous assignment, hopefully that is better than nothing
 			const prev = previousAssignmentMap[sessionId]
 			if (prev) {
-				failedObjects.push(...updateObjectsToAbPlayer(context, abConfiguration, poolName, prev.playerId, objs))
+				failedObjects.push(
+					...updateObjectsToAbPlayer(blueprintContext, abConfiguration, poolName, prev.playerId, objs)
+				)
 				persistAssignment(sessionId, prev.playerId, false)
 			}
 		}
@@ -182,4 +113,94 @@ export function applyAbPlayerObjectAssignments(
 	logger.silly(`ABPlayback calculated assignments for "${poolName}": ${JSON.stringify(newAssignments)}`)
 
 	return newAssignments
+}
+
+function updateObjectsToAbPlayer(
+	context: ICommonContext,
+	abConfiguration: Pick<ABResolverConfiguration, 'timelineObjectLayerChangeRules' | 'customApplyToObject'>,
+	poolName: string,
+	poolIndex: number,
+	objs: OnGenerateTimelineObj<TSR.TSRTimelineContent>[]
+): OnGenerateTimelineObj<TSR.TSRTimelineContent>[] {
+	const failedObjects: OnGenerateTimelineObj<TSR.TSRTimelineContent>[] = []
+
+	for (const obj of objs) {
+		const updatedKeyframes = applyUpdateToKeyframes(poolName, poolIndex, obj)
+
+		const updatedLayer = applylayerMoveRule(
+			abConfiguration.timelineObjectLayerChangeRules,
+			poolName,
+			poolIndex,
+			obj
+		)
+
+		const updatedCustom =
+			abConfiguration.customApplyToObject &&
+			abConfiguration.customApplyToObject(context, poolName, poolIndex, obj)
+
+		if (!updatedKeyframes && !updatedLayer && !updatedCustom) {
+			failedObjects.push(obj)
+		}
+	}
+
+	return failedObjects
+}
+
+function applyUpdateToKeyframes(
+	poolName: string,
+	poolIndex: number,
+	obj: OnGenerateTimelineObj<TSR.TSRTimelineContent>
+): boolean {
+	if (!obj.keyframes) return false
+
+	let updated = false
+
+	obj.keyframes = _.compact(
+		obj.keyframes.map((kf) => {
+			// Preserve all non-ab keyframes
+			if (!kf.abSession) return kf
+			// Preserve from other ab pools
+			if (kf.abSession.poolName !== poolName) return kf
+
+			if (kf.abSession.playerIndex === poolIndex) {
+				// Make sure any ab keyframe is active
+				kf.disabled = false
+				updated = true
+				return kf
+			} else {
+				// Remove the keyframes for other players in the pool
+				return undefined
+			}
+		})
+	)
+
+	return updated
+}
+
+function applylayerMoveRule(
+	timelineObjectLayerChangeRules: ABTimelineLayerChangeRules | undefined,
+	poolName: string,
+	poolIndex: number,
+	obj: OnGenerateTimelineObj<TSR.TSRTimelineContent>
+): boolean {
+	const ruleId = obj.isLookahead ? obj.lookaheadForLayer || obj.layer : obj.layer
+	if (!ruleId) return false
+
+	const moveRule = timelineObjectLayerChangeRules?.[ruleId]
+	if (!moveRule || !moveRule.acceptedPoolNames.includes(poolName)) return false
+
+	if (obj.isLookahead && moveRule.allowsLookahead && obj.lookaheadForLayer) {
+		// This works on the assumption that layer will contain lookaheadForLayer, but not the exact syntax.
+		// Hopefully this will be durable to any potential future core changes
+		const newLayer = moveRule.newLayerName(poolIndex)
+		obj.layer = (obj.layer + '').replace(obj.lookaheadForLayer + '', newLayer)
+		obj.lookaheadForLayer = newLayer
+
+		return true
+	} else if (!obj.isLookahead || (obj.isLookahead && !obj.lookaheadForLayer)) {
+		obj.layer = moveRule.newLayerName(poolIndex)
+		return true
+	}
+
+	return false
 }

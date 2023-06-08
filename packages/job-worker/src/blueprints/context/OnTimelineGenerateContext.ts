@@ -19,6 +19,7 @@ import { convertPartInstanceToBlueprints } from './lib'
 import { RundownContext } from './RundownContext'
 import { AbSessionHelper } from '../../playout/abPlayback/abSessionHelper'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export class OnTimelineGenerateContext extends RundownContext implements ITimelineEventContext {
 	readonly currentPartInstance: Readonly<IBlueprintPartInstance> | undefined
@@ -26,6 +27,7 @@ export class OnTimelineGenerateContext extends RundownContext implements ITimeli
 	readonly previousPartInstance: Readonly<IBlueprintPartInstance> | undefined
 
 	readonly abSessionsHelper: AbSessionHelper
+	readonly #pieceInstanceCache = new Map<PieceInstanceId, PieceInstance>()
 
 	constructor(
 		studio: ReadonlyDeep<DBStudio>,
@@ -41,8 +43,8 @@ export class OnTimelineGenerateContext extends RundownContext implements ITimeli
 	) {
 		super(
 			{
-				name: rundown.name,
-				identifier: `rundownId=${rundown._id},previousPartInstance=${previousPartInstance?._id},currentPartInstance=${currentPartInstance?._id},nextPartInstance=${nextPartInstance?._id}`,
+				name: playlist.name,
+				identifier: `playlistId=${playlist._id},previousPartInstance=${previousPartInstance?._id},currentPartInstance=${currentPartInstance?._id},nextPartInstance=${nextPartInstance?._id}`,
 			},
 			studio,
 			studioBlueprintConfig,
@@ -57,9 +59,12 @@ export class OnTimelineGenerateContext extends RundownContext implements ITimeli
 
 		const partInstances = _.compact([previousPartInstance, currentPartInstance, nextPartInstance])
 
+		for (const pieceInstance of pieceInstances) {
+			this.#pieceInstanceCache.set(pieceInstance._id, pieceInstance)
+		}
+
 		this.abSessionsHelper = new AbSessionHelper(
 			partInstances,
-			pieceInstances,
 			clone<ABSessionInfo[]>(playlist.trackedAbSessions ?? [])
 		)
 	}
@@ -71,10 +76,16 @@ export class OnTimelineGenerateContext extends RundownContext implements ITimeli
 	/**
 	 * @deprecated Use core provided AB resolving
 	 */
-	getPieceABSessionId(pieceInstance: Pick<IBlueprintPieceInstance, '_id'>, sessionName: string): string {
-		const pieceInstanceId = protectString(pieceInstance._id)
+	getPieceABSessionId(pieceInstance0: Pick<IBlueprintPieceInstance, '_id'>, sessionName: string): string {
+		const pieceInstanceId = protectString(pieceInstance0._id)
 		if (!pieceInstanceId) throw new Error('Invalid PieceInstance passed to getPieceABSessionId')
-		return this.abSessionsHelper.getPieceABSessionId(pieceInstanceId, sessionName)
+
+		// Fetch the cached PieceInstance, to ensure it hasn't been mangled by the blueprints
+		const pieceInstance = this.#pieceInstanceCache.get(pieceInstanceId)
+		const partInstanceId = pieceInstance?.partInstanceId
+		if (!partInstanceId) throw new Error('Missing partInstanceId in call to getPieceABSessionId')
+
+		return this.abSessionsHelper.getPieceABSessionId(pieceInstance, sessionName)
 	}
 
 	/**

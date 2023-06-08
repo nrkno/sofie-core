@@ -2,6 +2,9 @@ import { PieceAbSessionInfo, AB_MEDIA_PLAYER_AUTO } from '@sofie-automation/blue
 import { PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { TimelineObjectAbSessionInfo } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 
+/**
+ * Make the sessionName unique for the pool, and ensure it isn't set to AUTO
+ */
 export function validateSessionName(
 	pieceInstanceId: PieceInstanceId | string,
 	session: PieceAbSessionInfo | TimelineObjectAbSessionInfo

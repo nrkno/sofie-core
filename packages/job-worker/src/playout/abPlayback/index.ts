@@ -13,9 +13,20 @@ import { applyAbPlayerObjectAssignments } from './applyAssignments'
 import { AbSessionHelper } from './abSessionHelper'
 import { ShowStyleContext } from '../../blueprints/context'
 
+/**
+ * Resolve and apply AB-playback for the given timeline
+ * @param context Context of the job
+ * @param abSessionHelper Helper for generation sessionId
+ * @param blueprint Blueprint of the currently playing ShowStyle
+ * @param showStyle The currently playing ShowStyle
+ * @param playlist The currently playing Playlist
+ * @param resolvedPieces All the PieceInstances on the timeline, resolved to have 'accurate' playback timings
+ * @param timelineObjects The current timeline
+ * @returns New AB assignments to be persisted on the playlist for the next call
+ */
 export function applyAbPlaybackForTimeline(
 	context: JobContext,
-	abHelper: AbSessionHelper,
+	abSessionHelper: AbSessionHelper,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 	playlist: ReadonlyDeep<DBRundownPlaylist>,
@@ -47,7 +58,7 @@ export function applyAbPlaybackForTimeline(
 	for (const [poolName, playerIds] of Object.entries<number[]>(abConfiguration.pools)) {
 		const previousAssignmentMap: ABSessionAssignments = previousAbSessionAssignments[poolName] || {}
 		const sessionRequests = calculateSessionTimeRanges(
-			abHelper,
+			abSessionHelper,
 			resolvedPieces,
 			timelineObjects,
 			previousAssignmentMap,
@@ -76,7 +87,7 @@ export function applyAbPlaybackForTimeline(
 		}
 
 		newAbSessionsResult[poolName] = applyAbPlayerObjectAssignments(
-			abHelper,
+			abSessionHelper,
 			blueprintContext,
 			abConfiguration,
 			timelineObjects,
