@@ -9,32 +9,12 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { ABSessionAssignments } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { TimelineObjectAbSessionInfo } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 import * as _ from 'underscore'
 import { SessionRequest } from './abPlaybackResolver'
 import { AbSessionHelper } from './helper'
-
-export interface AbPoolClaim {
-	sessionId: string
-	slotId: number
-	lookahead: boolean // purely informational for debugging
-
-	_rank: number // HACK: For countdown overlay to know which is THE 'next' clip
-}
-
-export interface SessionToPlayerMap {
-	[sessionId: string]: AbPoolClaim | undefined
-}
-// function reversePreviousAssignment(previousAssignment: AbPoolClaim[]): SessionToPlayerMap {
-// 	const previousAssignmentRev: { [sessionId: string]: AbPoolClaim | undefined } = {}
-
-// 	for (const prev of previousAssignment) {
-// 		previousAssignmentRev[prev.sessionId] = prev
-// 	}
-
-// 	return previousAssignmentRev
-// }
 
 function validateSessionName(
 	pieceInstanceId: PieceInstanceId | string,
@@ -48,7 +28,7 @@ export function calculateSessionTimeRanges(
 	context: AbSessionHelper,
 	resolvedPieces: ResolvedPieceInstance[],
 	timelineObjs: OnGenerateTimelineObjExt[],
-	previousAssignmentMap: SessionToPlayerMap,
+	previousAssignmentMap: ABSessionAssignments,
 	poolName: string
 ): SessionRequest[] {
 	const sessionRequests: { [sessionId: string]: SessionRequest | undefined } = {}
@@ -197,11 +177,11 @@ export function applyAbPlayerObjectAssignments(
 	abConfiguration: Pick<ABResolverConfiguration, 'timelineObjectLayerChangeRules' | 'customApplyToObject'>,
 	debugLog: boolean, // TODO - replace
 	timelineObjs: OnGenerateTimelineObj<TSR.TSRTimelineContent>[],
-	previousAssignmentMap: SessionToPlayerMap,
+	previousAssignmentMap: ABSessionAssignments,
 	resolvedAssignments: Readonly<SessionRequest[]>,
 	poolName: string
-): SessionToPlayerMap {
-	const newAssignments: SessionToPlayerMap = {}
+): ABSessionAssignments {
+	const newAssignments: ABSessionAssignments = {}
 	let nextRank = 1
 	const persistAssignment = (sessionId: string, playerId: number, lookahead: boolean): void => {
 		// Track the assignment, so that the next onTimelineGenerate can try to reuse the same session

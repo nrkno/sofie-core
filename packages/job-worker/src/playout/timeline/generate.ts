@@ -58,12 +58,9 @@ import {
 	getPartTimingsOrDefaults,
 	PartCalculatedTimings,
 } from '@sofie-automation/corelib/dist/playout/timings'
-import {
-	applyAbPlayerObjectAssignments,
-	calculateSessionTimeRanges,
-	SessionToPlayerMap,
-} from '../../blueprints/abPlayback/abPlayback'
+import { applyAbPlayerObjectAssignments, calculateSessionTimeRanges } from '../../blueprints/abPlayback/abPlayback'
 import { resolveAbAssignmentsFromRequests } from '../../blueprints/abPlayback/abPlaybackResolver'
+import { ABSessionAssignments } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
 	const cache2 = cache as CacheForStudio
@@ -388,6 +385,7 @@ async function getTimelineRundown(
 					resolvedPieces.pieces
 				)
 				try {
+					const newAbSessionsResult: Record<string, ABSessionAssignments> = {}
 					if (blueprint.blueprint.getAbResolverConfiguration) {
 						const span = context.startSpan('blueprint.abPlaybackResolver')
 						const influxTrace = startTrace('blueprints:abPlaybackResolver')
@@ -395,14 +393,13 @@ async function getTimelineRundown(
 						// Future: for now we should share this helper with `onTimelineGenerate`, in case some is also run there
 						const abHelper = blueprintContext.abSessionsHelper
 
-						const previousAbSessionAssignments: Record<string, SessionToPlayerMap> = {}
-						const newAbSessionsResult: Record<string, SessionToPlayerMap> = {}
+						const previousAbSessionAssignments = cache.Playlist.doc.assignedAbSessions || {}
 
 						const now = getCurrentTime()
 
 						const abConfiguration = blueprint.blueprint.getAbResolverConfiguration(blueprintContext)
 						for (const [poolName, playerIds] of Object.entries<number[]>(abConfiguration.pools)) {
-							const previousAssignmentMap: SessionToPlayerMap =
+							const previousAssignmentMap: ABSessionAssignments =
 								previousAbSessionAssignments[poolName] || {}
 							const sessionRequests = calculateSessionTimeRanges(
 								abHelper,
@@ -475,13 +472,13 @@ async function getTimelineRundown(
 					}
 
 					cache.Playlist.update((p) => {
-						if (tlGenRes) {
-							p.previousPersistentState = tlGenRes.persistentState
-						}
+						p.previousPersistentState = tlGenRes?.persistentState
+						p.assignedAbSessions = newAbSessionsResult
 						p.trackedAbSessions = blueprintContext.abSessionsHelper.knownSessions
 						return p
 					})
 				} catch (err) {
+					// TODO - this may not be sufficient?
 					logger.error(`Error in showStyleBlueprint.onTimelineGenerate: ${stringifyError(err)}`)
 				}
 			}

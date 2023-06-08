@@ -4,7 +4,7 @@ import {
 	PieceLifespan,
 } from '@sofie-automation/blueprints-integration'
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { resolveAbSessions, SessionToPlayerMap } from '../abPlayback'
+import { resolveAbSessions, ABSessionAssignments } from '../abPlayback'
 import { ABResolverOptions } from '../abPlaybackResolver'
 import { AbSessionHelper } from '../helper'
 
@@ -264,7 +264,7 @@ describe('resolveMediaPlayers', () => {
 	})
 
 	test('basic reassignment', () => {
-		const previousAssignments: SessionToPlayerMap = {
+		const previousAssignments: ABSessionAssignments = {
 			inst_0_clip_abc: {
 				sessionId: 'inst_0_clip_abc',
 				slotId: 5,
@@ -313,7 +313,7 @@ describe('resolveMediaPlayers', () => {
 	})
 
 	test('optional gets discarded', () => {
-		const previousAssignments: SessionToPlayerMap = {
+		const previousAssignments: ABSessionAssignments = {
 			inst_0_clip_abc: {
 				sessionId: 'inst_0_clip_abc',
 				slotId: 2,
