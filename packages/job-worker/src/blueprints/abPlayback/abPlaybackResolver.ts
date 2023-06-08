@@ -18,7 +18,7 @@ export interface SessionRequest {
 	readonly end: number | undefined
 	readonly optional?: boolean
 	readonly lookaheadRank?: number
-	player?: number
+	playerId?: number
 }
 
 export interface AssignmentResult {
@@ -54,7 +54,7 @@ function safeMin<T>(arr: T[], func: (val: T) => number): T | undefined {
 
 export function resolveAbAssignmentsFromRequests(
 	options: ABResolverOptions,
-	slotIds: number[],
+	playerIds: number[],
 	rawRequests: SessionRequest[],
 	now: number // Current time
 ): AssignmentResult {
@@ -64,15 +64,15 @@ export function resolveAbAssignmentsFromRequests(
 		failedOptional: [],
 	}
 
-	if (slotIds.length === 1) {
+	if (playerIds.length === 1) {
 		// If only a single player, lets hope it works out forcing them all into the one..
 		for (const request of res.requests) {
-			request.player = slotIds[0]
+			request.playerId = playerIds[0]
 		}
 		return res
 	}
 
-	let grouped = _.groupBy(res.requests, (r) => r.player ?? 'undefined')
+	let grouped = _.groupBy(res.requests, (r) => r.playerId ?? 'undefined')
 	let pendingRequests = grouped[undefined as any]
 	if (!pendingRequests) {
 		// Nothing pending, result must be ok
@@ -81,9 +81,9 @@ export function resolveAbAssignmentsFromRequests(
 
 	const originalLookaheadAssignments: Record<string, number> = {}
 	for (const req of rawRequests) {
-		if (req.lookaheadRank !== undefined && req.player !== undefined) {
-			originalLookaheadAssignments[req.id] = req.player
-			delete req.player
+		if (req.lookaheadRank !== undefined && req.playerId !== undefined) {
+			originalLookaheadAssignments[req.id] = req.playerId
+			delete req.playerId
 		}
 	}
 
@@ -95,16 +95,16 @@ export function resolveAbAssignmentsFromRequests(
 			const prev = grp[i - 1]
 			const next = grp[i]
 			if (next.start >= safeNow && prev.end && prev.end < safeNow) {
-				delete next.player
+				delete next.playerId
 			}
 		}
 	})
-	grouped = _.groupBy(res.requests, (r) => r.player ?? 'undefined') // Recalculate the groups based on the new data
+	grouped = _.groupBy(res.requests, (r) => r.playerId ?? 'undefined') // Recalculate the groups based on the new data
 	pendingRequests = grouped[undefined as any]
 
 	// build map of slots and what they already have assigned
 	const slots: Map<number, SessionRequest[]> = new Map()
-	_.each(slotIds, (id) => slots.set(id, grouped[id] || []))
+	_.each(playerIds, (id) => slots.set(id, grouped[id] || []))
 
 	const beforeHasGap = (p: SlotAvailability, req: SessionRequest): boolean =>
 		!p.before || p.before.end < req.start - options.idealGapBefore
@@ -131,7 +131,7 @@ export function resolveAbAssignmentsFromRequests(
 				slots.set(pl[0], startEarlier)
 				invalidated.push(
 					...startNowOrLater.map((p) => {
-						delete p.player
+						delete p.playerId
 						return p
 					})
 				)
@@ -142,7 +142,7 @@ export function resolveAbAssignmentsFromRequests(
 			const slot = slots.get(candidate.id)
 			if (slot) {
 				candidate.clashes?.forEach((cl) => {
-					delete cl.player
+					delete cl.playerId
 					invalidated.push(cl)
 
 					// They no longer are assigned to the slot, so pull them off
@@ -282,14 +282,14 @@ export function resolveAbAssignmentsFromRequests(
 					req.lookaheadRank === undefined) || // If a lookahead follows
 				(req.end && candidate.after?.start && candidate.after?.start < req.end) // If the after clashes
 			) {
-				delete candidate.after.player
+				delete candidate.after.playerId
 				dropId = candidate.after.id
 
 				// Push back to the queue for allocation
 				pendingRequests.push(candidate.after)
 			}
 
-			req.player = candidate.id
+			req.playerId = candidate.id
 			let slotRequests = slots.get(candidate.id)
 			if (slotRequests) {
 				slotRequests.push(req)
@@ -312,14 +312,14 @@ export function resolveAbAssignmentsFromRequests(
 
 	// Ensure lookahead gets assigned based on priority not some randomness
 	// Includes slots which have either no sessions, or the last has a known end time
-	const lastSessionPerSlot: Record<number, number | undefined> = {} // slotId, end
-	for (const [slotId, sessions] of slots) {
+	const lastSessionPerSlot: Record<number, number | undefined> = {} // playerId, end
+	for (const [playerId, sessions] of slots) {
 		const last = _.last(sessions.filter((s) => s.lookaheadRank === undefined))
 		if (!last) {
-			lastSessionPerSlot[slotId] = Number.NEGATIVE_INFINITY
+			lastSessionPerSlot[playerId] = Number.NEGATIVE_INFINITY
 		} else if (last.end !== undefined) {
 			// If there is a defined end, then it can be useful after that point of time
-			lastSessionPerSlot[slotId] = last.end
+			lastSessionPerSlot[playerId] = last.end
 		}
 	}
 
@@ -332,7 +332,7 @@ export function resolveAbAssignmentsFromRequests(
 	// Persist previous players if possible
 	const remainingLookaheads: SessionRequest[] = []
 	for (const req of lookaheadsToAssign) {
-		delete req.player
+		delete req.playerId
 
 		const prevPlayer = originalLookaheadAssignments[req.id]
 		if (prevPlayer === undefined) {
@@ -345,8 +345,8 @@ export function resolveAbAssignmentsFromRequests(
 				remainingLookaheads.push(req)
 			} else {
 				// It is ours, so remove the player from the pool
-				req.player = prevPlayer
-				delete lastSessionPerSlot[req.player]
+				req.playerId = prevPlayer
+				delete lastSessionPerSlot[req.playerId]
 			}
 		}
 	}
@@ -358,9 +358,9 @@ export function resolveAbAssignmentsFromRequests(
 		const req = remainingLookaheads[i]
 
 		if (slot) {
-			req.player = Number(slot[0])
+			req.playerId = Number(slot[0])
 		} else {
-			delete req.player
+			delete req.playerId
 		}
 	}
 

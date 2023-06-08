@@ -27,7 +27,7 @@ export interface ABSessionInfo {
 
 export interface ABSessionAssignment {
 	sessionId: string
-	slotId: number
+	playerId: number
 	lookahead: boolean // purely informational for debugging
 
 	_rank: number // HACK: For countdown overlay to know which is THE 'next' clip
@@ -111,10 +111,9 @@ export interface DBRundownPlaylist {
 
 	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
 	previousPersistentState?: TimelinePersistentState
-	/** AB playback sessions calculated in the last call to ShowStyleBlueprint.onTimelineGenerate */
-	/** @deprecated */
+	/** AB playback sessions calculated in the last timeline genertaion */
 	trackedAbSessions?: ABSessionInfo[]
-
+	/** AB playback sessions assigned in the last timeline generation */
 	assignedAbSessions?: Record<string, ABSessionAssignments>
 }
 

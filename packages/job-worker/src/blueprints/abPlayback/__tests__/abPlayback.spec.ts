@@ -267,13 +267,13 @@ describe('resolveMediaPlayers', () => {
 		const previousAssignments: ABSessionAssignments = {
 			inst_0_clip_abc: {
 				sessionId: 'inst_0_clip_abc',
-				slotId: 5,
+				playerId: 5,
 				lookahead: false,
 				_rank: 1,
 			},
 			inst_1_clip_def: {
 				sessionId: 'inst_1_clip_def',
-				slotId: 3,
+				playerId: 3,
 				lookahead: true,
 				_rank: 2,
 			},
@@ -316,13 +316,13 @@ describe('resolveMediaPlayers', () => {
 		const previousAssignments: ABSessionAssignments = {
 			inst_0_clip_abc: {
 				sessionId: 'inst_0_clip_abc',
-				slotId: 2,
+				playerId: 2,
 				lookahead: false,
 				_rank: 1,
 			},
 			inst_1_clip_def: {
 				sessionId: 'inst_1_clip_def',
-				slotId: 1,
+				playerId: 1,
 				lookahead: false,
 				_rank: 2,
 			},

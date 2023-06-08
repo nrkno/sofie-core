@@ -435,9 +435,9 @@ async function getTimelineRundown(
 							// 	}
 
 							newAbSessionsResult[poolName] = applyAbPlayerObjectAssignments(
-								blueprintContext,
+								abHelper,
+								blueprintContext, // TODO - use different
 								abConfiguration,
-								true,
 								timelineObjs,
 								previousAssignmentMap,
 								assignments.requests,
