@@ -534,7 +534,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								method: 'POST',
 								body: uploadFileContents,
 								headers: {
-									'content-type': 'text/javascript',
+									'content-type': 'application/json',
 								},
 							})
 								.then(() => {

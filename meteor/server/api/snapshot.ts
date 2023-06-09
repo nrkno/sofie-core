@@ -735,6 +735,9 @@ if (!Settings.enableUserAccounts) {
 			try {
 				ctx.response.type = 'text/plain'
 
+				if (ctx.request.type !== 'application/json')
+					throw new Meteor.Error(400, 'Restore Snapshot: Invalid content-type')
+
 				const snapshot = ctx.request.body as any
 				if (!snapshot) throw new Meteor.Error(400, 'Restore Snapshot: Missing request body')
 

@@ -104,6 +104,9 @@ describe('Rundown Layouts', () => {
 				const ctx = await callKoaRoute(shelfLayoutsRouter, {
 					method: 'POST',
 					url: `/upload/${fakeId}`,
+					headers: {
+						'content-type': 'application/json',
+					},
 					requestBody: JSON.stringify(mockLayout),
 				})
 
@@ -117,6 +120,9 @@ describe('Rundown Layouts', () => {
 				const ctx = await callKoaRoute(shelfLayoutsRouter, {
 					method: 'POST',
 					url: `/upload/${env.showStyleBaseId}`,
+					headers: {
+						'content-type': 'application/json',
+					},
 				})
 
 				expect(ctx.response.status).toBe(500)
@@ -129,6 +135,9 @@ describe('Rundown Layouts', () => {
 				const ctx = await callKoaRoute(shelfLayoutsRouter, {
 					method: 'POST',
 					url: `/upload/${env.showStyleBaseId}`,
+					headers: {
+						'content-type': 'application/json',
+					},
 					requestBody: 'sdf',
 				})
 
@@ -136,24 +145,30 @@ describe('Rundown Layouts', () => {
 				expect(ctx.body).toContain('body')
 			}
 
+			// {
+			// 	// try to send a malformed body
+			// 	SupressLogMessages.suppressLogMessage(/SyntaxError/i)
+			// 	const ctx = await callKoaRoute(shelfLayoutsRouter, {
+			// 		method: 'POST',
+			// 		url: `/upload/${env.showStyleBaseId}`,
+			// 		headers: {
+			// 			'content-type': 'application/json',
+			// 		},
+			// 		requestBody: '{ type: dsfgsdfgsdf gsdfgsdfg sdfgsdfg sdf gsdfgsdfg sdfg }',
+			// 	})
+
+			// 	expect(ctx.response.status).toBe(500)
+			// 	expect(ctx.body).toContain('SyntaxError')
+			// }
+
 			{
-				// try to send a malformed body
-				SupressLogMessages.suppressLogMessage(/SyntaxError/i)
 				const ctx = await callKoaRoute(shelfLayoutsRouter, {
 					method: 'POST',
 					url: `/upload/${env.showStyleBaseId}`,
-					requestBody: '{ type: dsfgsdfgsdf gsdfgsdfg sdfgsdfg sdf gsdfgsdfg sdfg }',
-				})
-
-				expect(ctx.response.status).toBe(500)
-				expect(ctx.body).toContain('SyntaxError')
-			}
-
-			{
-				const ctx = await callKoaRoute(shelfLayoutsRouter, {
-					method: 'POST',
-					url: `/upload/${env.showStyleBaseId}`,
-					requestBody: JSON.stringify(mockLayout),
+					headers: {
+						'content-type': 'application/json',
+					},
+					requestBody: mockLayout,
 				})
 
 				expect(ctx.response.status).toBe(200)

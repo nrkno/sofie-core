@@ -24,12 +24,12 @@ ingestRouter.post(
 		ctx.response.type = 'text/plain'
 
 		try {
-			let ingestRundown: any = ctx.request.body
+			if (ctx.request.type !== 'application/json')
+				throw new Meteor.Error(400, 'Upload rundown: Invalid content-type')
+
+			const ingestRundown = ctx.request.body as IngestRundown
 			if (!ingestRundown) throw new Meteor.Error(400, 'Upload rundown: Missing request body')
-			if (typeof ingestRundown !== 'object') {
-				// sometimes, the browser can send the JSON with wrong mimetype, resulting in it not being parsed
-				ingestRundown = JSON.parse(ingestRundown)
-			}
+			if (typeof ingestRundown !== 'object') throw new Meteor.Error(400, 'Upload rundown: Invalid request body')
 
 			await importIngestRundown(protectString<StudioId>(ctx.params.studioId), ingestRundown)
 

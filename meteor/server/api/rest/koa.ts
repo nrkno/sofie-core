@@ -14,7 +14,11 @@ export function bindKoaRouter(koaRouter: KoaRouter, bindPath: string): void {
 		// Strange - sometimes a JSON body gets parsed by Koa before here (eg for a POST call?).
 		if (typeof ctx.req.body === 'object') {
 			ctx.disableBodyParser = true
-			ctx.request.body = { ...ctx.req.body }
+			if (Array.isArray(ctx.req.body)) {
+				ctx.request.body = [...ctx.req.body]
+			} else {
+				ctx.request.body = { ...ctx.req.body }
+			}
 		}
 		await next()
 	})

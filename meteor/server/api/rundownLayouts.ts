@@ -57,18 +57,19 @@ shelfLayoutsRouter.post(
 
 		check(showStyleBaseId, String)
 
-		const showStyleBase = await fetchShowStyleBaseLight(showStyleBaseId)
-
 		try {
+			const showStyleBase = await fetchShowStyleBaseLight(showStyleBaseId)
 			if (!showStyleBase) throw new Meteor.Error(404, `ShowStylebase "${showStyleBaseId}" not found`)
+
+			if (ctx.request.type !== 'application/json')
+				throw new Meteor.Error(400, 'Restore Shelf Layout: Invalid content-type')
 
 			const body = ctx.request.body
 			if (!body) throw new Meteor.Error(400, 'Restore Shelf Layout: Missing request body')
-
-			if (typeof body !== 'string' || body.length < 10)
+			if (typeof body !== 'object' || Object.keys(body as any).length === 0)
 				throw new Meteor.Error(400, 'Restore Shelf Layout: Invalid request body')
 
-			const layout = JSON.parse(body) as RundownLayoutBase
+			const layout = body as RundownLayoutBase
 			check(layout._id, Match.Optional(String))
 			check(layout.name, String)
 			check(layout.type, String)

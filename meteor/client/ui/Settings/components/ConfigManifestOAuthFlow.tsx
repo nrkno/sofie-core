@@ -41,7 +41,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 					method: 'POST',
 					body: uploadFileContents,
 					headers: {
-						'content-type': 'text/javascript',
+						'content-type': 'application/json',
 					},
 				})
 					.then(() => {
