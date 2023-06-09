@@ -148,6 +148,7 @@ export async function takeNextPartInnerSync(context: JobContext, cache: CacheFor
 	cache.Playlist.update((p) => {
 		p.previousPartInstanceId = p.currentPartInstanceId
 		p.currentPartInstanceId = takePartInstance._id
+		p.lastTakeTime = getCurrentTime()
 
 		if (!p.holdState || p.holdState === RundownHoldState.COMPLETE) {
 			p.holdState = RundownHoldState.NONE
