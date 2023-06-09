@@ -7,6 +7,7 @@ import { koaRouter as apiV1Router } from './v1/index'
 import './v0/index'
 import { snapshotPrivateApiRouter } from '../snapshot'
 import { shelfLayoutsRouter } from '../rundownLayouts'
+import { ingestRouter } from '../ingest/http'
 
 const LATEST_REST_API = 'v1.0'
 
@@ -17,6 +18,7 @@ apiRouter.get('/latest', redirectToLatest)
 
 apiRouter.use('/v1.0', apiV1Router.routes(), apiV1Router.allowedMethods())
 
+apiRouter.use('/private/ingest', ingestRouter.routes(), ingestRouter.allowedMethods())
 apiRouter.use('/private/snapshot', snapshotPrivateApiRouter.routes(), snapshotPrivateApiRouter.allowedMethods())
 apiRouter.use('/private/shelfLayouts', shelfLayoutsRouter.routes(), shelfLayoutsRouter.allowedMethods())
 
