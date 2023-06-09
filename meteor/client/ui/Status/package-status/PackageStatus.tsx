@@ -1,5 +1,4 @@
 import * as React from 'react'
-import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { ExpectedPackageWorkStatus } from '../../../../lib/collections/ExpectedPackageWorkStatuses'
 import { assertNever, unprotectString } from '../../../../lib/lib'
 import { ExpectedPackageDB } from '../../../../lib/collections/ExpectedPackages'
@@ -8,230 +7,155 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faChevronDown, faChevronRight } from '@fortawesome/free-solid-svg-icons'
 import ClassNames from 'classnames'
 import { ExpectedPackage } from '@sofie-automation/blueprints-integration'
-import { withTranslation } from 'react-i18next'
+import { useTranslation } from 'react-i18next'
 import { DisplayFormattedTime } from '../../RundownList/DisplayFormattedTime'
 import { PackageWorkStatus } from './PackageWorkStatus'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
-interface IPackageStatusProps {
+/** How long to wait before considering an unchanged package to not be "working" annymore */
+const WORKING_TIMEOUT = 2000
+
+export const PackageStatus: React.FC<{
 	package: ExpectedPackageDB
 	statuses: ExpectedPackageWorkStatus[]
-}
-interface PackageStatusState {
-	isOpen: boolean
-	requiredWorking: boolean
-	allWorking: boolean
-}
+	device: PeripheralDevice | undefined
+}> = function PackageStatus(props) {
+	const { t } = useTranslation()
 
-export const PackageStatus = withTranslation()(
-	class PackageStatus extends React.Component<Translated<IPackageStatusProps>, PackageStatusState> {
-		private requiredProgress: number
-		private allProgress: number
-		private requiredProgressLastChanged: number
-		private allProgressLastChanged: number
-		private requiredModifiedHash: number
-		private allModifiedHash: number
-
-		/** How long to wait before considering an unchanged package to not be "working" annymore */
-		private WORKING_TIMEOUT = 2000
-
-		private updateWorkingStateTimeout: NodeJS.Timeout | null = null
-
-		constructor(props) {
-			super(props)
-
-			this.state = {
-				isOpen: false,
-				// requiredProgress: this.getProgress(true),
-				// allProgress: this.getProgress(false),
-				requiredWorking: false,
-				allWorking: false,
-			}
-
-			this.requiredProgress = this.getProgress(true)
-			this.allProgress = this.getProgress(false)
-			this.requiredModifiedHash = this.getModifiedHash(true)
-			this.allModifiedHash = this.getModifiedHash(false)
-			this.requiredProgressLastChanged = 0
-			this.allProgressLastChanged = 0
+	const getPackageName = useCallback((): string => {
+		const p2: ExpectedPackage.Any = props.package as any
+		if (p2.type === ExpectedPackage.PackageType.MEDIA_FILE) {
+			return p2.content.filePath || unprotectString(props.package._id)
+		} else if (p2.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
+			return p2.content.title || p2.content.guid || unprotectString(props.package._id)
+		} else if (p2.type === ExpectedPackage.PackageType.JSON_DATA) {
+			return p2.content.path || unprotectString(props.package._id)
+		} else {
+			assertNever(p2)
+			return unprotectString(props.package._id)
 		}
-		toggleOpen(): void {
-			this.setState({
-				isOpen: !this.state.isOpen,
-			})
-		}
-		componentDidUpdate(): void {
-			this.updateWorkingState()
-		}
-		componentWillUnmount(): void {
-			if (this.updateWorkingStateTimeout) {
-				clearTimeout(this.updateWorkingStateTimeout)
-				this.updateWorkingStateTimeout = null
-			}
-		}
-		updateWorkingState(): void {
-			const requiredProgress = this.getProgress(true)
-			const allProgress = this.getProgress(false)
+	}, [props.package])
 
-			const requiredModifiedHash = this.getModifiedHash(true)
-			const allModifiedHash = this.getModifiedHash(false)
+	const [isOpen, setIsOpen] = useState(false)
+	// const [requiredWorking, setRequiredWorking] = useState(false)
+	// const [allWorking, setAllWorking] = useState(false)
 
-			if (requiredProgress !== this.requiredProgress || requiredModifiedHash !== this.requiredModifiedHash) {
-				this.requiredProgress = requiredProgress
-				this.requiredModifiedHash = requiredModifiedHash
-				this.requiredProgressLastChanged = Date.now()
-			}
-			if (allProgress !== this.allProgress || allModifiedHash !== this.allModifiedHash) {
-				this.allProgress = allProgress
-				this.allModifiedHash = allModifiedHash
-				this.allProgressLastChanged = Date.now()
-			}
+	const requiredProgress = useMemo(() => getProgress(props.statuses, true), [props.statuses])
+	const allProgress = useMemo(() => getProgress(props.statuses, false), [props.statuses])
 
-			const requiredWorking = Date.now() - this.requiredProgressLastChanged < this.WORKING_TIMEOUT // 1 second
-			const allWorking = Date.now() - this.allProgressLastChanged < this.WORKING_TIMEOUT // 1 second
+	const requiredModifiedHash = useMemo(() => getModifiedHash(props.statuses, true), [props.statuses])
+	const allModifiedHash = useMemo(() => getModifiedHash(props.statuses, false), [props.statuses])
 
-			if (requiredWorking !== this.state.requiredWorking || allWorking !== this.state.allWorking) {
-				this.setState({
-					requiredWorking,
-					allWorking,
-				})
-			}
-			if (requiredWorking || allWorking) {
-				// If we're working, make a chack again later to see if it has stopped:
-				if (this.updateWorkingStateTimeout) {
-					clearTimeout(this.updateWorkingStateTimeout)
-					this.updateWorkingStateTimeout = null
-				}
-				this.updateWorkingStateTimeout = setTimeout(() => {
-					this.updateWorkingStateTimeout = null
-					this.updateWorkingState()
-				}, this.WORKING_TIMEOUT)
-			}
+	const requiredProgressLastChanged = useMemo(() => Date.now(), [requiredProgress, requiredModifiedHash])
+	const allProgressLastChanged = useMemo(() => Date.now(), [allProgress, allModifiedHash])
+
+	const [updateTime, setUpdateTime] = useState(Date.now())
+
+	const requiredWorking = useMemo(
+		() => Date.now() - requiredProgressLastChanged < WORKING_TIMEOUT,
+		[requiredProgressLastChanged, updateTime]
+	)
+	const allWorking = useMemo(
+		() => Date.now() - allProgressLastChanged < WORKING_TIMEOUT,
+		[allProgressLastChanged, updateTime]
+	)
+
+	const timeout = useRef<NodeJS.Timeout | null>(null)
+	useEffect(() => {
+		return () => {
+			if (timeout.current) clearTimeout(timeout.current)
 		}
-		getProgress(onlyRequired: boolean): number {
-			let count = 0
-			let progress = 0
-			for (const status of this.props.statuses) {
-				if (onlyRequired && !status.requiredForPlayout) {
-					continue
-				}
-				count++
-				if (status.status === 'fulfilled') {
-					progress += 1
-				} else if (status.status === 'working') {
-					progress += status.progress || 0.1
-				} else {
-					progress += 0
-				}
-			}
-			if (count) {
-				return progress / count
-			} else {
-				return 1
-			}
-		}
-		getModifiedHash(onlyRequired: boolean): number {
-			let modifiedHash = 0
-			for (const status of this.props.statuses) {
-				if (onlyRequired && !status.requiredForPlayout) {
-					continue
-				}
-				modifiedHash += status.statusChanged // it's dirty, but it's quick and it works well enough
-			}
-			return modifiedHash
-		}
-		getPackageStatus() {
-			const { t } = this.props
-
-			const labelRequiredProgress =
-				this.requiredProgress < 1 ? `${Math.floor(this.requiredProgress * 100)}%` : t('Ready')
-			const labelAllProgress = this.allProgress < 1 ? `${Math.floor(this.allProgress * 100)}%` : t('Done')
-
-			return (
-				<>
-					<Tooltip overlay={t('The progress of steps required for playout')} placement="top">
-						<span>
-							<PackageStatusIcon
-								progress={this.requiredProgress}
-								label={labelRequiredProgress}
-								isWorking={this.state.requiredWorking}
-							/>
-						</span>
-					</Tooltip>
-					<Tooltip overlay={t('The progress of all steps')} placement="top">
-						<span>
-							<PackageStatusIcon
-								progress={this.allProgress}
-								label={labelAllProgress}
-								isWorking={this.state.allWorking}
-							/>
-						</span>
-					</Tooltip>
-				</>
-			)
-		}
-
-		getPackageName(): string {
-			const p2: ExpectedPackage.Any = this.props.package as any
-			if (p2.type === ExpectedPackage.PackageType.MEDIA_FILE) {
-				return p2.content.filePath || unprotectString(this.props.package._id)
-			} else if (p2.type === ExpectedPackage.PackageType.QUANTEL_CLIP) {
-				return p2.content.title || p2.content.guid || unprotectString(this.props.package._id)
-			} else if (p2.type === ExpectedPackage.PackageType.JSON_DATA) {
-				return p2.content.path || unprotectString(this.props.package._id)
-			} else {
-				assertNever(p2)
-				return unprotectString(this.props.package._id)
-			}
-		}
-		render(): JSX.Element {
-			const { t } = this.props
-			const statuses = this.props.statuses.sort((a, b) => {
-				if ((a.displayRank ?? 999) > (b.displayRank ?? 999)) return 1
-				if ((a.displayRank ?? 999) < (b.displayRank ?? 999)) return -1
-
-				return 0
-			})
-
-			return (
-				<React.Fragment>
-					<tr
-						className={ClassNames('package')}
-						onClick={(e) => {
-							e.preventDefault()
-							this.toggleOpen()
-						}}
-					>
-						<td className="indent"></td>
-						<td className="status">{this.getPackageStatus()}</td>
-						<td>
-							<span className="package__chevron">
-								{this.state.isOpen ? (
-									<FontAwesomeIcon icon={faChevronDown} />
-								) : (
-									<FontAwesomeIcon icon={faChevronRight} />
-								)}
-							</span>
-							<span>{this.getPackageName()}</span>
-						</td>
-						<td>
-							<DisplayFormattedTime displayTimestamp={this.props.package.created} t={t} />
-						</td>
-						<td></td>
-					</tr>
-					{this.state.isOpen
-						? statuses.map((status) => {
-								return (
-									<PackageWorkStatus key={unprotectString(status._id)} status={status} package={this.props.package} />
-								)
-						  })
-						: null}
-				</React.Fragment>
-			)
-		}
+	}, [])
+	if (!timeout.current && (requiredWorking || allWorking)) {
+		// If we're working, make a check again later to see if it has stopped:
+		timeout.current = setTimeout(() => {
+			timeout.current = null
+			setUpdateTime(Date.now())
+		}, WORKING_TIMEOUT)
 	}
-)
 
-function PackageStatusIcon(props: { progress: number; label: string; isWorking: boolean }): JSX.Element {
+	const statuses = useMemo(() => {
+		return props.statuses.sort((a, b) => {
+			if ((a.displayRank ?? 999) > (b.displayRank ?? 999)) return 1
+			if ((a.displayRank ?? 999) < (b.displayRank ?? 999)) return -1
+
+			return 0
+		})
+	}, props.statuses)
+
+	let offlineReasonMessage: string | undefined = undefined
+	let connected = true
+	if (!props.device) {
+		offlineReasonMessage = t('Device not found')
+		connected = false
+	} else if (!props.device.connected) {
+		offlineReasonMessage = t('Package Manager is offline')
+		connected = false
+	}
+
+	const getPackageStatus = useCallback(() => {
+		const labelRequiredProgress = connected
+			? requiredProgress < 1
+				? `${Math.floor(requiredProgress * 100)}%`
+				: t('Ready')
+			: '?'
+		const labelAllProgress = connected ? (allProgress < 1 ? `${Math.floor(allProgress * 100)}%` : t('Done')) : '?'
+		const requiredProgress2 = connected ? requiredProgress : undefined
+		const allProgress2 = connected ? allProgress : undefined
+		return (
+			<>
+				<Tooltip overlay={offlineReasonMessage || t('The progress of steps required for playout')} placement="top">
+					<span>
+						<PackageStatusIcon progress={requiredProgress2} label={labelRequiredProgress} isWorking={requiredWorking} />
+					</span>
+				</Tooltip>
+				<Tooltip overlay={offlineReasonMessage || t('The progress of all steps')} placement="top">
+					<span>
+						<PackageStatusIcon progress={allProgress2} label={labelAllProgress} isWorking={allWorking} />
+					</span>
+				</Tooltip>
+			</>
+		)
+	}, [requiredProgress, allProgress, requiredWorking, allWorking, connected])
+
+	return (
+		<React.Fragment>
+			<tr
+				className={ClassNames('package', {
+					offline: !!offlineReasonMessage,
+				})}
+				onClick={(e) => {
+					e.preventDefault()
+					setIsOpen((isOpen) => !isOpen)
+				}}
+			>
+				<td className="indent"></td>
+				<td className="status">{getPackageStatus()}</td>
+				<td>
+					<span className="package__chevron">
+						{isOpen ? <FontAwesomeIcon icon={faChevronDown} /> : <FontAwesomeIcon icon={faChevronRight} />}
+					</span>
+					<span>
+						{/* {statusMessage ? <b>{`${statusMessage}: `}</b> : ''} */}
+						{getPackageName()}
+					</span>
+				</td>
+				<td>
+					<DisplayFormattedTime displayTimestamp={props.package.created} t={t} />
+				</td>
+				<td></td>
+			</tr>
+			{isOpen
+				? statuses.map((status) => {
+						return <PackageWorkStatus key={unprotectString(status._id)} status={status} connected={connected} />
+				  })
+				: null}
+		</React.Fragment>
+	)
+}
+
+function PackageStatusIcon(props: { progress: number | undefined; label: string; isWorking: boolean }): JSX.Element {
 	const svgCircleSector = (x: number, y: number, radius: number, v: number, color: string) => {
 		if (v >= 1) {
 			return <circle cx={x} cy={y} r={radius} fill={color}></circle>
@@ -290,19 +214,18 @@ function PackageStatusIcon(props: { progress: number; label: string; isWorking: 
 		// return <div className="package-progress__segments">{elements}</div>
 		return elements
 	}
-
 	return (
 		<div className="package-progress">
 			<svg width="100%" viewBox="-50 -50 100 100">
-				{props.progress < 1 ? (
+				{props.progress === undefined || props.progress < 1 ? (
 					<>
-						<circle cx="0" cy="0" r="45" fill="#A2F8B0"></circle>
-						{svgCircleSector(0, 0, 45, props.progress, '#00BA1E')}
+						<circle cx="0" cy="0" r="45" fill="#CCC"></circle>
+						{svgCircleSector(0, 0, 45, props.progress ?? 0, '#00BA1E')}
 						<circle cx="0" cy="0" r="30" fill="#fff"></circle>
 					</>
 				) : (
 					<>
-						<circle cx="0" cy="0" r="50" fill="#A2F8B0"></circle>
+						<circle cx="0" cy="0" r="50" fill="#ccc"></circle>
 						<circle cx="0" cy="0" r="45" fill="#00BA1E"></circle>
 					</>
 				)}
@@ -321,7 +244,39 @@ function PackageStatusIcon(props: { progress: number; label: string; isWorking: 
 					</g>
 				) : null}
 			</svg>
-			<div className={ClassNames('label', props.progress >= 1 ? 'label-done' : null)}>{props.label}</div>
+			<div className={ClassNames('label', (props.progress ?? 0) >= 1 ? 'label-done' : null)}>{props.label}</div>
 		</div>
 	)
+}
+function getProgress(statuses: ExpectedPackageWorkStatus[], onlyRequired: boolean): number {
+	let count = 0
+	let progress = 0
+	for (const status of statuses) {
+		if (onlyRequired && !status.requiredForPlayout) {
+			continue
+		}
+		count++
+		if (status.status === 'fulfilled') {
+			progress += 1
+		} else if (status.status === 'working') {
+			progress += status.progress || 0.1
+		} else {
+			progress += 0
+		}
+	}
+	if (count) {
+		return progress / count
+	} else {
+		return 1
+	}
+}
+function getModifiedHash(statuses: ExpectedPackageWorkStatus[], onlyRequired: boolean): number {
+	let modifiedHash = 0
+	for (const status of statuses) {
+		if (onlyRequired && !status.requiredForPlayout) {
+			continue
+		}
+		modifiedHash += status.statusChanged // it's dirty, but it's quick and it works well enough
+	}
+	return modifiedHash
 }

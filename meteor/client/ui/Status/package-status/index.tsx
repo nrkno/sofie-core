@@ -1,8 +1,8 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { PubSub } from '../../../../lib/api/pubsub'
 import { ExpectedPackageWorkStatus } from '../../../../lib/collections/ExpectedPackageWorkStatuses'
-import { unprotectString } from '../../../../lib/lib'
+import { normalizeArrayToMap, unprotectString } from '../../../../lib/lib'
 import { ExpectedPackageDB } from '../../../../lib/collections/ExpectedPackages'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { doUserAction, UserAction } from '../../../../lib/clientUserAction'
@@ -12,7 +12,14 @@ import { PackageContainerStatus } from './PackageContainerStatus'
 import { Spinner } from '../../../lib/Spinner'
 import { useTranslation } from 'react-i18next'
 import { UIStudios } from '../../Collections'
-import { ExpectedPackages, ExpectedPackageWorkStatuses, PackageContainerStatuses } from '../../../collections'
+import {
+	ExpectedPackages,
+	ExpectedPackageWorkStatuses,
+	PackageContainerStatuses,
+	PeripheralDevices,
+} from '../../../collections'
+import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 
 export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesStatus(_props: {}) {
 	const { t } = useTranslation()
@@ -43,6 +50,18 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 	const expectedPackages = useTracker(() => ExpectedPackages.find({}).fetch(), [], [])
 	const packageContainerStatuses = useTracker(() => PackageContainerStatuses.find().fetch(), [], [])
 
+	const deviceIds = useMemo(() => {
+		const devices = new Set<PeripheralDeviceId>()
+		packageContainerStatuses.forEach((pcs) => devices.add(pcs.deviceId))
+		expectedPackageWorkStatuses.forEach((epws) => devices.add(epws.deviceId))
+		return Array.from(devices)
+	}, [packageContainerStatuses, expectedPackageWorkStatuses])
+	const peripheralDeviceSubReady = useSubscription(PubSub.peripheralDevices, {
+		_id: { $in: deviceIds },
+	})
+	const peripheralDevices = useTracker(() => PeripheralDevices.find().fetch(), [], [])
+	const peripheralDevicesMap = normalizeArrayToMap(peripheralDevices, '_id')
+
 	function restartAllExpectations(e: React.MouseEvent<HTMLButtonElement, MouseEvent>): void {
 		const studio = UIStudios.findOne()
 		if (!studio) throw new Meteor.Error(404, `No studio found!`)
@@ -61,9 +80,11 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 			[packageId: string]: {
 				package: ExpectedPackageDB | undefined
 				statuses: ExpectedPackageWorkStatus[]
+				device: PeripheralDevice | undefined
 			}
 		} = {}
 		for (const work of expectedPackageWorkStatuses) {
+			const device = peripheralDevicesMap.get(work.deviceId)
 			// todo: make this better:
 			const key = unprotectString(work.fromPackages[0]?.id) || 'unknown_work_' + work._id
 			// const referencedPackage = packageRef[packageId]
@@ -72,6 +93,7 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 				packagesWithWorkStatuses[key] = packageWithWorkStatus = {
 					package: packageRef[key] || undefined,
 					statuses: [],
+					device,
 				}
 			}
 			packageWithWorkStatus.statuses.push(work)
@@ -120,7 +142,7 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 			const p = packagesWithWorkStatuses[packageId]
 
 			return p.package ? (
-				<PackageStatus key={packageId} package={p.package} statuses={p.statuses} />
+				<PackageStatus key={packageId} package={p.package} statuses={p.statuses} device={p.device} />
 			) : (
 				<tr className="package" key={packageId}>
 					<td colSpan={99}>{t('Unknown Package "{{packageId}}"', { packageId })}</td>
@@ -130,10 +152,12 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 	}
 	function renderPackageContainerStatuses() {
 		return packageContainerStatuses.map((packageContainerStatus) => {
+			const device = peripheralDevicesMap.get(packageContainerStatus.deviceId)
 			return (
 				<PackageContainerStatus
 					key={unprotectString(packageContainerStatus._id)}
 					packageContainerStatus={packageContainerStatus}
+					device={device}
 				/>
 			)
 		})
@@ -145,16 +169,16 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 				<h1>{t('Package Status')}</h1>
 			</header>
 
-			{allSubsReady ? (
+			{allSubsReady && peripheralDeviceSubReady ? (
 				<>
-					<div className="row">
+					<div className="mod row">
 						<div className="col c12 rl-c6">
 							<header className="mbs">
-								<h2>{t('Package container status')}</h2>
+								<b>{t('Container Status')}</b>
 							</header>
 						</div>
 					</div>
-					<table className="mod mvl packageContainer-status-list">
+					<table className="mod packageContainer-status-list">
 						<tbody>
 							<tr className="packageContainer-status__header">
 								<th className="indent"></th>
@@ -166,20 +190,20 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 						</tbody>
 					</table>
 
-					<div className="row">
+					<div className="mod row mtl">
 						<div className="col c12 rl-c6">
 							<header className="mbs">
-								<h2>{t('Work status')}</h2>
+								<b>{t('Job Status')}</b>
 							</header>
 						</div>
 						<div className="col c12 rl-c6 alright">
 							<button className="btn btn-secondary mls" onClick={(e) => restartAllExpectations(e)}>
-								{t('Restart All jobs')}
+								{t('Restart All Jobs')}
 							</button>
 						</div>
 					</div>
 
-					<table className="mod mvl package-status-list">
+					<table className="mod package-status-list">
 						<tbody>
 							<tr className="package-status__header">
 								<th className="indent"></th>
