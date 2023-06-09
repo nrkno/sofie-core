@@ -1,16 +1,25 @@
-import { IncomingMessage, ServerResponse } from 'http'
-import { PickerGET } from '../http'
+import KoaRouter from '@koa/router'
+import { bindKoaRouter } from './koa'
+import { Meteor } from 'meteor/meteor'
+import koa from 'koa'
+import { koaRouter as apiV1Router } from './v1/index'
 
 import './v0/index'
-import './v1/index'
 
 const LATEST_REST_API = 'v1.0'
 
-PickerGET.route('/api', redirectToLatest)
-PickerGET.route('/api/latest', redirectToLatest)
+const apiRouter = new KoaRouter()
 
-async function redirectToLatest(_params, _req: IncomingMessage, res: ServerResponse): Promise<void> {
-	res.statusCode = 307
-	res.setHeader('Location', `/api/${LATEST_REST_API}`) // redirect to latest API version
-	res.end()
+apiRouter.use('/v1.0', apiV1Router.routes(), apiV1Router.allowedMethods())
+
+apiRouter.get('/', redirectToLatest)
+apiRouter.get('/latest', redirectToLatest)
+
+async function redirectToLatest(ctx: koa.ParameterizedContext, _next: koa.Next): Promise<void> {
+	ctx.redirect(`/api/${LATEST_REST_API}`)
+	ctx.status = 307
 }
+
+Meteor.startup(() => {
+	bindKoaRouter(apiRouter, '/api')
+})

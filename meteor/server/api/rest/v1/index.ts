@@ -1,13 +1,10 @@
 import Koa from 'koa'
-import cors from '@koa/cors'
 import KoaRouter from '@koa/router'
-import bodyParser from 'koa-bodyparser'
 import { logger } from '../../../logging'
-import { WebApp } from 'meteor/webapp'
 import { check, Match } from '../../../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../../../lib/api/client'
-import { getCurrentTime, getRandomString, protectString, unprotectString } from '../../../../lib/lib'
+import { getCurrentTime, protectString, unprotectString } from '../../../../lib/lib'
 import {
 	APIPeripheralDevice,
 	PeripheralDeviceActionRestart,
@@ -92,6 +89,8 @@ import { Studio } from '../../../../lib/collections/Studios'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { executePeripheralDeviceFunction } from '../../peripheralDevice/executeFunction'
+import { makeMeteorConnectionFromKoa } from '../koa'
+import bodyParser from 'koa-bodyparser'
 
 function restAPIUserEvent(
 	ctx: Koa.ParameterizedContext<
@@ -1127,7 +1126,8 @@ class ServerRestAPI implements RestAPI {
 	}
 }
 
-const koaRouter = new KoaRouter()
+export const koaRouter = new KoaRouter()
+koaRouter.use(bodyParser())
 
 function extractErrorCode(e: unknown): number {
 	if (ClientAPI.isClientResponseError(e)) {
@@ -1170,7 +1170,7 @@ function sofieAPIRequest<Params, Body, Response>(
 			const serverAPI = new ServerRestAPI()
 			const response = await handler(
 				serverAPI,
-				makeConnection(ctx),
+				makeMeteorConnectionFromKoa(ctx),
 				restAPIUserEvent(ctx),
 				ctx.params as unknown as Params,
 				ctx.request.body as unknown as Body
@@ -1819,41 +1819,3 @@ sofieAPIRequest<never, { inputs: MigrationData }, void>(
 		return await serverAPI.applyPendingMigrations(connection, event, inputs)
 	}
 )
-
-const makeConnection = (
-	ctx: Koa.ParameterizedContext<
-		Koa.DefaultState,
-		Koa.DefaultContext & KoaRouter.RouterParamContext<Koa.DefaultState, Koa.DefaultContext>,
-		unknown
-	>
-): Meteor.Connection => {
-	return {
-		id: getRandomString(),
-		close: () => {
-			/* no-op */
-		},
-		onClose: () => {
-			/* no-op */
-		},
-		clientAddress: ctx.req.headers.host || 'unknown',
-		httpHeaders: ctx.req.headers as Record<string, string>,
-	}
-}
-
-Meteor.startup(() => {
-	const app = new Koa()
-	if (!Meteor.isAppTest) {
-		// Expose the API at the url /api/v1.0
-		WebApp.connectHandlers.use('/api/v1.0', Meteor.bindEnvironment(app.callback()))
-	}
-	app.use(async (ctx, next) => {
-		// Strange - sometimes a JSON body gets parsed by Koa before here (eg for a POST call?).
-		if (typeof ctx.req.body === 'object') {
-			ctx.disableBodyParser = true
-			ctx.request.body = { ...ctx.req.body }
-		}
-		await next()
-	})
-	app.use(cors())
-	app.use(bodyParser()).use(koaRouter.routes()).use(koaRouter.allowedMethods())
-})
