@@ -3,10 +3,11 @@ import { deleteMessage, readAllMessages } from './serviceMessagesApi'
 import KoaRouter from '@koa/router'
 import { Meteor } from 'meteor/meteor'
 import { bindKoaRouter } from '../rest/koa'
+import bodyParser from 'koa-bodyparser'
 
 const serviceMessagesRouter = new KoaRouter()
 
-serviceMessagesRouter.post('/', postHandler)
+serviceMessagesRouter.post('/', bodyParser(), postHandler)
 
 /**
  * List all current messages stored on this instance
