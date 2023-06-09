@@ -4227,9 +4227,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mos-connection/connector@npm:^3.0.2":
-  version: 3.0.2
-  resolution: "@mos-connection/connector@npm:3.0.2"
+"@mos-connection/connector@npm:^3.0.3":
+  version: 3.0.3
+  resolution: "@mos-connection/connector@npm:3.0.3"
   dependencies:
     "@mos-connection/helper": 3.0.2
     "@mos-connection/model": 3.0.2
@@ -4237,7 +4237,7 @@ __metadata:
     tslib: ^2.2.0
     xml-js: ^1.6.11
     xmlbuilder: ^15.1.1
-  checksum: 32a57aaf6fb4b82e868cd23ebec52624dfe2fe89cf5d560d88a3af6544a359283e572e422d6a7619c375577670a7a317eb87f9e1dbeba0fa9ec71be1a522a5fe
+  checksum: 64dc3a4c131eb01ae6a553f25d7d3c69abf94d6cc94450a450515ea9c68cdb380dcd9b4942c1bda01f8d35607f55d94cf29e95b8001ff12db9d8d63a561a0f07
   languageName: node
   linkType: hard
 
@@ -16616,7 +16616,7 @@ asn1@evs-broadcast/node-asn1:
   version: 0.0.0-use.local
   resolution: "mos-gateway@workspace:mos-gateway"
   dependencies:
-    "@mos-connection/connector": ^3.0.2
+    "@mos-connection/connector": ^3.0.3
     "@sofie-automation/server-core-integration": 1.50.0-in-development
     "@sofie-automation/shared-lib": 1.50.0-in-development
     tslib: ^2.4.0
