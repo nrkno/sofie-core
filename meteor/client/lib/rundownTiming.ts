@@ -510,11 +510,11 @@ export class RundownTimingCalculator {
 					localAccum = this.linearParts[i][1] || 0 // if there is no current line, rebase following lines to the next line
 					this.linearParts[i][1] = currentRemaining
 					if (nextRundownAnchor === undefined) {
-						nextRundownAnchor = getNextRundownAnchor(
-							now,
+						nextRundownAnchor = getSegmentRundownAnchorFromPart(
+							this.linearParts[i][0],
 							partInstancesMap,
 							segmentsMap,
-							this.linearParts[i][0]
+							now
 						)
 					}
 				} else {
@@ -525,11 +525,11 @@ export class RundownTimingCalculator {
 					// this away from this line.
 					this.linearParts[i][1] = (this.linearParts[i][1] || 0) - localAccum + currentRemaining
 					if (nextRundownAnchor === undefined) {
-						nextRundownAnchor = getNextRundownAnchor(
-							now,
+						nextRundownAnchor = getSegmentRundownAnchorFromPart(
+							this.linearParts[i][0],
 							partInstancesMap,
 							segmentsMap,
-							this.linearParts[i][0]
+							now
 						)
 					}
 				}
@@ -541,11 +541,11 @@ export class RundownTimingCalculator {
 					this.linearParts[i][1] =
 						(this.linearParts[i][1] || 0) + waitAccumulator - localAccum + currentRemaining
 					if (nextRundownAnchor === undefined) {
-						nextRundownAnchor = getNextRundownAnchor(
-							now,
+						nextRundownAnchor = getSegmentRundownAnchorFromPart(
+							this.linearParts[i][0],
 							partInstancesMap,
 							segmentsMap,
-							this.linearParts[i][0]
+							now
 						)
 					}
 				}
@@ -857,49 +857,27 @@ function ensureMinimumDefaultDurationIfNotAuto(
 	return Math.max(incomingDuration, defaultDuration)
 }
 
-function getSegmentStartTime(
+function getSegmentRundownAnchorFromPart(
+	partId: PartId,
 	partInstancesMap: Map<PartId, PartInstance>,
 	segmentsMap: Map<SegmentId, DBSegment>,
-	partId: PartId
-): number | null {
-	const part = partInstancesMap.get(partId)
-	if (part?.segmentId) {
-		const segment = segmentsMap.get(part?.segmentId)
-		return segment?.segmentTiming?.expectedStart ?? null
-	}
-
-	return null
-}
-
-function getSegmentEndTime(
-	partInstancesMap: Map<PartId, PartInstance>,
-	segmentsMap: Map<SegmentId, DBSegment>,
-	partId: PartId
-): number | null {
-	const part = partInstancesMap.get(partId)
-	if (part?.segmentId) {
-		const segment = segmentsMap.get(part?.segmentId)
-		return segment?.segmentTiming?.expectedEnd ?? null
-	}
-
-	return null
-}
-
-function getNextRundownAnchor(
-	now: number,
-	partInstancesMap: Map<PartId, PartInstance>,
-	segmentsMap: Map<SegmentId, DBSegment>,
-	partId: PartId
+	now: number
 ): number | undefined {
 	let nextRundownAnchor: number | undefined = undefined
-	const startTime = getSegmentStartTime(partInstancesMap, segmentsMap, partId)
+
+	const part = partInstancesMap.get(partId)
+	const segment = part?.segmentId ? segmentsMap.get(part.segmentId) : null
+	if (!segment) return nextRundownAnchor
+
+	const startTime = segment.segmentTiming?.expectedStart ?? null
 	if (startTime && startTime < now) {
 		nextRundownAnchor = startTime
 	} else {
-		const endTime = getSegmentEndTime(partInstancesMap, segmentsMap, partId)
+		const endTime = segment.segmentTiming?.expectedEnd ?? null
 		if (endTime) {
 			nextRundownAnchor = endTime
 		}
 	}
+
 	return nextRundownAnchor
 }
