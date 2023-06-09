@@ -1,15 +1,10 @@
-import { IncomingMessage, ServerResponse } from 'http'
 import { logger } from '../../logging'
 import { ServiceMessage, Criticality } from '../../../lib/collections/CoreSystem'
 import { writeMessage } from './serviceMessagesApi'
 import moment from 'moment'
-import { Params } from 'meteor/meteorhacks:picker'
+import Koa from 'koa'
 
-export { BodyParsingIncomingMessage, postHandler }
-
-interface BodyParsingIncomingMessage extends IncomingMessage {
-	body?: any
-}
+export { postHandler }
 
 const INPUT_MISSING_PARTIAL = 'Missing data in input: '
 
@@ -22,42 +17,42 @@ const validCriticalities = Object.keys(Criticality)
  *
  * Picker route handler, see Picker documentation for interface details.
  */
-async function postHandler(_params: Params, req: BodyParsingIncomingMessage, res: ServerResponse): Promise<void> {
-	const { body } = req
+async function postHandler(ctx: Koa.ParameterizedContext): Promise<void> {
+	const { body } = ctx.request
 	if (!body) {
-		res.statusCode = 400
-		res.end('No input data')
+		ctx.response.status = 400
+		ctx.body = 'No input data'
 		return
 	}
 
-	const { id, criticality, message, sender, timestamp } = body
+	const { id, criticality, message, sender, timestamp } = body as any
 
 	if (!id || id.trim().length < 1) {
-		res.statusCode = 400
-		res.end(`${INPUT_MISSING_PARTIAL}id`)
+		ctx.response.status = 400
+		ctx.body = `${INPUT_MISSING_PARTIAL}id`
 		return
 	}
 
 	if (!criticality || (typeof criticality === 'string' && criticality.trim().length < 1)) {
-		res.statusCode = 400
-		res.end(`${INPUT_MISSING_PARTIAL}criticality`)
+		ctx.response.status = 400
+		ctx.body = `${INPUT_MISSING_PARTIAL}criticality`
 		return
 	}
 	if (isNaN(criticality) || validCriticalities.indexOf(Number(criticality)) < 0) {
-		res.statusCode = 400
-		res.end(`Invalid value for criticality: ${criticality}, wanted one of ${validCriticalities.join(',')}`)
+		ctx.response.status = 400
+		ctx.body = `Invalid value for criticality: ${criticality}, wanted one of ${validCriticalities.join(',')}`
 		return
 	}
 
 	if (!message || message.trim().length < 1) {
-		res.statusCode = 400
-		res.end(`${INPUT_MISSING_PARTIAL}message`)
+		ctx.response.status = 400
+		ctx.body = `${INPUT_MISSING_PARTIAL}message`
 		return
 	}
 
 	if (!timestamp || !moment(new Date(timestamp)).isValid()) {
-		res.statusCode = 400
-		res.end(`${INPUT_MISSING_PARTIAL}timestamp`)
+		ctx.response.status = 400
+		ctx.body = `${INPUT_MISSING_PARTIAL}timestamp`
 		return
 	}
 
@@ -71,12 +66,12 @@ async function postHandler(_params: Params, req: BodyParsingIncomingMessage, res
 
 	try {
 		const status = await writeMessage(serviceMessage)
-		res.statusCode = status.isUpdate === true ? 200 : 201
-		res.setHeader('Content-Type', 'application/json; charset-utf8')
-		res.end(JSON.stringify(serviceMessage))
+		ctx.response.status = status.isUpdate === true ? 200 : 201
+		ctx.response.type = 'application/json;charset=utf8'
+		ctx.body = JSON.stringify(serviceMessage)
 	} catch (error) {
 		logger.error(`Unable to store message`, { serviceMessage, error })
-		res.statusCode = 500
-		res.end('System error, unable to store message')
+		ctx.response.status = 500
+		ctx.body = 'System error, unable to store message'
 	}
 }

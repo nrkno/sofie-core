@@ -47,5 +47,3 @@ PickerPOSTInner.middleware(
 export const PickerPOST = new AsyncRouter(PickerPOSTInner)
 
 export const PickerGET = new AsyncRouter(Picker.filter((req, _res) => req.method === 'GET'))
-
-export const PickerDELETE = new AsyncRouter(Picker.filter((req, _res) => req.method === 'DELETE'))
