@@ -1,12 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../methods'
-import { literal, getRandomId, protectString, unprotectString, Complete } from '../../lib/lib'
-import { ServerResponse, IncomingMessage } from 'http'
+import { literal, getRandomId, protectString, Complete } from '../../lib/lib'
 import { logger } from '../logging'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
-import { PickerPOST, PickerGET } from './http'
 import { DBTriggeredActions, TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
 import {
 	CreateTriggeredActionsContent,
@@ -21,6 +19,8 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { TriggeredActions } from '../collections'
+import KoaRouter from '@koa/router'
+import bodyParser from 'koa-bodyparser'
 
 export async function createTriggeredActions(
 	showStyleBaseId: ShowStyleBaseId | null,
@@ -46,19 +46,21 @@ export async function removeTriggeredActions(triggeredActionId: TriggeredActionI
 	await TriggeredActions.removeAsync(triggeredActionId)
 }
 
-PickerPOST.route(
-	'/actionTriggers/upload/:showStyleBaseId?',
-	async (params, req: IncomingMessage, res: ServerResponse) => {
-		res.setHeader('Content-Type', 'text/plain')
+export const actionTriggersRouter = new KoaRouter()
 
-		const showStyleBaseId: ShowStyleBaseId | undefined = protectString(params.showStyleBaseId) as
-			| ShowStyleBaseId
-			| undefined
+actionTriggersRouter.post(
+	'/upload/:showStyleBaseId',
+	bodyParser({
+		jsonLimit: '50mb', // Arbitrary limit
+	}),
+	async (ctx) => {
+		ctx.response.type = 'text/plain'
+
+		const showStyleBaseId: ShowStyleBaseId | undefined = protectString<ShowStyleBaseId>(ctx.params.showStyleBaseId)
 
 		check(showStyleBaseId, Match.Optional(String))
-		let content = ''
 
-		const replace: boolean = params.query === 'replace'
+		const replace: boolean = !!ctx.query['replace']
 
 		try {
 			if (showStyleBaseId !== undefined) {
@@ -71,13 +73,15 @@ PickerPOST.route(
 				}
 			}
 
-			const body = req.body
-			if (!body) throw new Meteor.Error(400, 'Restore Action Triggers: Missing request body')
+			if (ctx.request.type !== 'application/json')
+				throw new Meteor.Error(400, 'Restore Action Triggers: Invalid content-type')
 
-			if (typeof body !== 'string' || body.length < 10)
+			const body = ctx.request.body
+			if (!body) throw new Meteor.Error(400, 'Restore Action Triggers: Missing request body')
+			if (typeof body !== 'object' || Object.keys(body as any).length === 0)
 				throw new Meteor.Error(400, 'Restore Action Triggers: Invalid request body')
 
-			const triggeredActions = JSON.parse(body) as DBTriggeredActions[]
+			const triggeredActions = body as DBTriggeredActions[]
 			check(triggeredActions, Array)
 
 			// set new showStyleBaseId
@@ -109,54 +113,42 @@ PickerPOST.route(
 
 			await TriggeredActions.upsertManyAsync(triggeredActions)
 
-			res.statusCode = 200
+			ctx.response.status = 200
+			ctx.body = ''
 		} catch (e) {
-			res.statusCode = 500
-			content = e + ''
+			ctx.response.status = 500
+			ctx.body = e + ''
 			logger.error('Triggered Actions restore failed: ' + e)
 		}
-
-		res.end(content)
 	}
 )
 
-PickerGET.route(
-	'/actionTriggers/download/:showStyleBaseId?',
-	async (params, _req: IncomingMessage, res: ServerResponse) => {
-		const showStyleBaseId: ShowStyleBaseId | undefined = protectString(params.showStyleBaseId)
+actionTriggersRouter.get('/download/:showStyleBaseId', async (ctx) => {
+	const showStyleBaseId: ShowStyleBaseId | undefined = protectString(ctx.params.showStyleBaseId)
 
-		check(showStyleBaseId, Match.Maybe(String))
+	check(showStyleBaseId, Match.Maybe(String))
 
-		let content = ''
-		const triggeredActions = await TriggeredActions.findFetchAsync({
-			showStyleBaseId: showStyleBaseId === undefined ? null : showStyleBaseId,
-		})
-		if (triggeredActions.length === 0) {
-			res.statusCode = 404
-			content = `Action Triggers not found for showstyle "${showStyleBaseId}"`
-			res.end(content)
-			return
-		}
-
-		try {
-			content = JSON.stringify(triggeredActions, undefined, 2)
-			res.setHeader(
-				'Content-Disposition',
-				`attachment; filename*=UTF-8''${encodeURIComponent(
-					unprotectString(showStyleBaseId) ?? 'system-wide'
-				)}.json`
-			)
-			res.setHeader('Content-Type', 'application/json')
-			res.statusCode = 200
-		} catch (e) {
-			res.statusCode = 500
-			content = e + ''
-			logger.error('Action Triggers export failed: ' + e)
-		}
-
-		res.end(content)
+	const triggeredActions = await TriggeredActions.findFetchAsync({
+		showStyleBaseId: showStyleBaseId === undefined ? null : showStyleBaseId,
+	})
+	if (triggeredActions.length === 0) {
+		ctx.response.status = 404
+		ctx.body = `Action Triggers not found for showstyle "${showStyleBaseId}"`
+		return
 	}
-)
+
+	try {
+		ctx.response.type = 'application/json'
+		ctx.attachment(`${showStyleBaseId ?? 'system-wide'}.json`)
+		ctx.body = JSON.stringify(triggeredActions, undefined, 2)
+
+		ctx.response.status = 200
+	} catch (e) {
+		ctx.response.status = 500
+		ctx.body = e + ''
+		logger.error('Action Triggers export failed: ' + e)
+	}
+})
 
 /** Add RundownLayout into showStyleBase */
 async function apiCreateTriggeredActions(
