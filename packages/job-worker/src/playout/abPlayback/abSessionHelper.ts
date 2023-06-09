@@ -4,12 +4,10 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ABSessionInfo } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { getRandomString } from '@sofie-automation/corelib/dist/lib'
+import { getRandomString, omit } from '@sofie-automation/corelib/dist/lib'
 import { protectString, unpartialString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { TimelineObjectAbSessionInfo } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 import { ReadonlyDeep } from 'type-fest'
-import { omit } from 'underscore'
-import _ = require('underscore')
 
 interface ABSessionInfoExt extends ABSessionInfo {
 	/** Whether to store this session on the playlist (ie, whether it is still valid) */
@@ -112,7 +110,7 @@ export class AbSessionHelper {
 			id: sessionId,
 			name: sessionName,
 			infiniteInstanceId: unpartialString(infiniteId),
-			partInstanceIds: _.compact([!infiniteId ? pieceInstance.partInstanceId : undefined]),
+			partInstanceIds: !infiniteId ? [pieceInstance.partInstanceId] : [],
 			keep: true,
 		}
 		this.#knownSessions.push(newSession)
