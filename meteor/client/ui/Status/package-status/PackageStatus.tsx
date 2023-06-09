@@ -122,32 +122,40 @@ export const PackageStatus: React.FC<{
 		})
 	}, props.statuses)
 
-	const getPackageStatus = useCallback(() => {
-		const labelRequiredProgress = requiredProgress < 1 ? `${Math.floor(requiredProgress * 100)}%` : t('Ready')
-		const labelAllProgress = allProgress < 1 ? `${Math.floor(allProgress * 100)}%` : t('Done')
+	let statusMessage: string | null = null
+	let connected = true
+	if (!props.device) {
+		statusMessage = t('Device not found')
+		connected = false
+	} else if (!props.device.connected) {
+		statusMessage = t('Package Manager is offline')
+		connected = false
+	}
 
+	const getPackageStatus = useCallback(() => {
+		const labelRequiredProgress = connected
+			? requiredProgress < 1
+				? `${Math.floor(requiredProgress * 100)}%`
+				: t('Ready')
+			: '?'
+		const labelAllProgress = connected ? (allProgress < 1 ? `${Math.floor(allProgress * 100)}%` : t('Done')) : '?'
+		const requiredProgress2 = connected ? requiredProgress : undefined
+		const allProgress2 = connected ? allProgress : undefined
 		return (
 			<>
-				<Tooltip overlay={t('The progress of steps required for playout')} placement="top">
+				<Tooltip overlay={statusMessage || t('The progress of steps required for playout')} placement="top">
 					<span>
-						<PackageStatusIcon progress={requiredProgress} label={labelRequiredProgress} isWorking={requiredWorking} />
+						<PackageStatusIcon progress={requiredProgress2} label={labelRequiredProgress} isWorking={requiredWorking} />
 					</span>
 				</Tooltip>
-				<Tooltip overlay={t('The progress of all steps')} placement="top">
+				<Tooltip overlay={statusMessage || t('The progress of all steps')} placement="top">
 					<span>
-						<PackageStatusIcon progress={allProgress} label={labelAllProgress} isWorking={allWorking} />
+						<PackageStatusIcon progress={allProgress2} label={labelAllProgress} isWorking={allWorking} />
 					</span>
 				</Tooltip>
 			</>
 		)
-	}, [requiredProgress, allProgress, requiredWorking, allWorking])
-
-	let statusMessage: string | null = null
-	if (!props.device) {
-		statusMessage = t('Device not found')
-	} else if (!props.device.connected) {
-		statusMessage = t('Package Manager is offline')
-	}
+	}, [requiredProgress, allProgress, requiredWorking, allWorking, connected])
 
 	return (
 		<React.Fragment>
@@ -167,7 +175,7 @@ export const PackageStatus: React.FC<{
 						{isOpen ? <FontAwesomeIcon icon={faChevronDown} /> : <FontAwesomeIcon icon={faChevronRight} />}
 					</span>
 					<span>
-						{statusMessage ? <b>{`${statusMessage}: `}</b> : ''}
+						{/* {statusMessage ? <b>{`${statusMessage}: `}</b> : ''} */}
 						{getPackageName()}
 					</span>
 				</td>
@@ -178,14 +186,14 @@ export const PackageStatus: React.FC<{
 			</tr>
 			{isOpen
 				? statuses.map((status) => {
-						return <PackageWorkStatus key={unprotectString(status._id)} status={status} />
+						return <PackageWorkStatus key={unprotectString(status._id)} status={status} connected={connected} />
 				  })
 				: null}
 		</React.Fragment>
 	)
 }
 
-function PackageStatusIcon(props: { progress: number; label: string; isWorking: boolean }): JSX.Element {
+function PackageStatusIcon(props: { progress: number | undefined; label: string; isWorking: boolean }): JSX.Element {
 	const svgCircleSector = (x: number, y: number, radius: number, v: number, color: string) => {
 		if (v >= 1) {
 			return <circle cx={x} cy={y} r={radius} fill={color}></circle>
@@ -244,19 +252,18 @@ function PackageStatusIcon(props: { progress: number; label: string; isWorking: 
 		// return <div className="package-progress__segments">{elements}</div>
 		return elements
 	}
-
 	return (
 		<div className="package-progress">
 			<svg width="100%" viewBox="-50 -50 100 100">
-				{props.progress < 1 ? (
+				{props.progress === undefined || props.progress < 1 ? (
 					<>
-						<circle cx="0" cy="0" r="45" fill="#A2F8B0"></circle>
-						{svgCircleSector(0, 0, 45, props.progress, '#00BA1E')}
+						<circle cx="0" cy="0" r="45" fill="#CCC"></circle>
+						{svgCircleSector(0, 0, 45, props.progress ?? 0, '#00BA1E')}
 						<circle cx="0" cy="0" r="30" fill="#fff"></circle>
 					</>
 				) : (
 					<>
-						<circle cx="0" cy="0" r="50" fill="#A2F8B0"></circle>
+						<circle cx="0" cy="0" r="50" fill="#ccc"></circle>
 						<circle cx="0" cy="0" r="45" fill="#00BA1E"></circle>
 					</>
 				)}
@@ -275,7 +282,7 @@ function PackageStatusIcon(props: { progress: number; label: string; isWorking: 
 					</g>
 				) : null}
 			</svg>
-			<div className={ClassNames('label', props.progress >= 1 ? 'label-done' : null)}>{props.label}</div>
+			<div className={ClassNames('label', (props.progress ?? 0) >= 1 ? 'label-done' : null)}>{props.label}</div>
 		</div>
 	)
 }

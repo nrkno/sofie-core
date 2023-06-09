@@ -169,14 +169,14 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 
 			{allSubsReady && peripheralDeviceSubReady ? (
 				<>
-					<div className="row">
+					<div className="mod row">
 						<div className="col c12 rl-c6">
 							<header className="mbs">
-								<h2>{t('Package container status')}</h2>
+								<b>{t('Container Status')}</b>
 							</header>
 						</div>
 					</div>
-					<table className="mod mvl packageContainer-status-list">
+					<table className="mod packageContainer-status-list">
 						<tbody>
 							<tr className="packageContainer-status__header">
 								<th className="indent"></th>
@@ -188,20 +188,20 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 						</tbody>
 					</table>
 
-					<div className="row">
+					<div className="mod row mtl">
 						<div className="col c12 rl-c6">
 							<header className="mbs">
-								<h2>{t('Work status')}</h2>
+								<b>{t('Job Status')}</b>
 							</header>
 						</div>
 						<div className="col c12 rl-c6 alright">
 							<button className="btn btn-secondary mls" onClick={(e) => restartAllExpectations(e)}>
-								{t('Restart All jobs')}
+								{t('Restart All Jobs')}
 							</button>
 						</div>
 					</div>
 
-					<table className="mod mvl package-status-list">
+					<table className="mod package-status-list">
 						<tbody>
 							<tr className="package-status__header">
 								<th className="indent"></th>

@@ -35,7 +35,6 @@
 			&.offline {
 				> td {
 					color: #666;
-					background-color: #fbb;
 				}
 			}
 
@@ -132,7 +131,6 @@
 				tbody {
 					> tr {
 						> td {
-							// border-bottom: 1px solid rgba(0, 0, 0, 0.15);
 							padding-bottom: 0.25em;
 
 							&:first-child {
@@ -183,7 +181,6 @@
 			&.offline {
 				> td {
 					color: #666;
-					background-color: #fbb;
 				}
 			}
 		}

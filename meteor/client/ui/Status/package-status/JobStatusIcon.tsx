@@ -2,7 +2,10 @@ import * as React from 'react'
 import { ExpectedPackageWorkStatus } from '../../../../lib/collections/ExpectedPackageWorkStatuses'
 import { useTranslation } from 'react-i18next'
 
-export const JobStatusIcon: React.FC<{ status: ExpectedPackageWorkStatus }> = ({ status }) => {
+export const JobStatusIcon: React.FC<{ status: ExpectedPackageWorkStatus; connected: boolean }> = ({
+	status,
+	connected,
+}) => {
 	const { t } = useTranslation()
 
 	let progress: number
@@ -17,7 +20,11 @@ export const JobStatusIcon: React.FC<{ status: ExpectedPackageWorkStatus }> = ({
 		progress = 0
 		label = status.status
 	}
-
+	console.log('connected', connected)
+	if (!connected) {
+		progress = 0
+		label = '?'
+	}
 	return (
 		<div
 			className="job-status-icon"

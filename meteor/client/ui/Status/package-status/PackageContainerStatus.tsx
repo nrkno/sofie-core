@@ -43,21 +43,21 @@ export const PackageContainerStatus: React.FC<{
 				<td className="indent"></td>
 				<td>{packageContainerStatus.containerId}</td>
 				<td>
-					<StatusCodePill
-						connected={device?.connected || false}
-						statusCode={packageContainerStatus.status.status}
-						messages={statusMessages}
-					/>
+					<StatusCodePill connected={device?.connected || false} statusCode={packageContainerStatus.status.status} />
 				</td>
 				<td>
-					<Tooltip overlay={packageContainerStatus.status.statusReason.tech} placement="top">
-						<span>{packageContainerStatus.status.statusReason.user}</span>
+					<Tooltip overlay={statusMessages || packageContainerStatus.status.statusReason.tech} placement="top">
+						<span>{statusMessages || packageContainerStatus.status.statusReason.user}</span>
 					</Tooltip>
 				</td>
 				<td>
-					<button className="btn btn-secondary mls" onClick={(e) => restartPackageContainer(e)}>
-						{t('Restart')}
-					</button>
+					{device?.connected && (
+						<>
+							<button className="btn btn-secondary mls" onClick={(e) => restartPackageContainer(e)}>
+								{t('Restart Container')}
+							</button>
+						</>
+					)}
 				</td>
 			</tr>
 			{Object.entries<ExpectedPackageStatusAPI.PackageContainerMonitorStatus>(
