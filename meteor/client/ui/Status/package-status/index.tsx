@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { PubSub } from '../../../../lib/api/pubsub'
 import { ExpectedPackageWorkStatus } from '../../../../lib/collections/ExpectedPackageWorkStatuses'
@@ -50,10 +50,12 @@ export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesSta
 	const expectedPackages = useTracker(() => ExpectedPackages.find({}).fetch(), [], [])
 	const packageContainerStatuses = useTracker(() => PackageContainerStatuses.find().fetch(), [], [])
 
-	const devices = new Set<PeripheralDeviceId>()
-	packageContainerStatuses.forEach((pcs) => devices.add(pcs.deviceId))
-	expectedPackageWorkStatuses.forEach((epws) => devices.add(epws.deviceId))
-	const deviceIds = Array.from(devices)
+	const deviceIds = useMemo(() => {
+		const devices = new Set<PeripheralDeviceId>()
+		packageContainerStatuses.forEach((pcs) => devices.add(pcs.deviceId))
+		expectedPackageWorkStatuses.forEach((epws) => devices.add(epws.deviceId))
+		return Array.from(devices)
+	}, [packageContainerStatuses, expectedPackageWorkStatuses])
 	const peripheralDeviceSubReady = useSubscription(PubSub.peripheralDevices, {
 		_id: { $in: deviceIds },
 	})

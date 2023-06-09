@@ -13,6 +13,9 @@ import { PackageWorkStatus } from './PackageWorkStatus'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
+/** How long to wait before considering an unchanged package to not be "working" annymore */
+const WORKING_TIMEOUT = 2000
+
 export const PackageStatus: React.FC<{
 	package: ExpectedPackageDB
 	statuses: ExpectedPackageWorkStatus[]
@@ -34,56 +37,15 @@ export const PackageStatus: React.FC<{
 		}
 	}, [props.package])
 
-	/** How long to wait before considering an unchanged package to not be "working" annymore */
-	const WORKING_TIMEOUT = 2000
-
 	const [isOpen, setIsOpen] = useState(false)
 	// const [requiredWorking, setRequiredWorking] = useState(false)
 	// const [allWorking, setAllWorking] = useState(false)
 
-	const getProgress = useCallback(
-		(onlyRequired: boolean): number => {
-			let count = 0
-			let progress = 0
-			for (const status of props.statuses) {
-				if (onlyRequired && !status.requiredForPlayout) {
-					continue
-				}
-				count++
-				if (status.status === 'fulfilled') {
-					progress += 1
-				} else if (status.status === 'working') {
-					progress += status.progress || 0.1
-				} else {
-					progress += 0
-				}
-			}
-			if (count) {
-				return progress / count
-			} else {
-				return 1
-			}
-		},
-		[props.statuses]
-	)
-	const requiredProgress = useMemo(() => getProgress(true), [props.statuses])
-	const allProgress = useMemo(() => getProgress(false), [props.statuses])
+	const requiredProgress = useMemo(() => getProgress(props.statuses, true), [props.statuses])
+	const allProgress = useMemo(() => getProgress(props.statuses, false), [props.statuses])
 
-	const getModifiedHash = useCallback(
-		(onlyRequired: boolean): number => {
-			let modifiedHash = 0
-			for (const status of props.statuses) {
-				if (onlyRequired && !status.requiredForPlayout) {
-					continue
-				}
-				modifiedHash += status.statusChanged // it's dirty, but it's quick and it works well enough
-			}
-			return modifiedHash
-		},
-		[props.statuses]
-	)
-	const requiredModifiedHash = useMemo(() => getModifiedHash(true), [props.statuses])
-	const allModifiedHash = useMemo(() => getModifiedHash(false), [props.statuses])
+	const requiredModifiedHash = useMemo(() => getModifiedHash(props.statuses, true), [props.statuses])
+	const allModifiedHash = useMemo(() => getModifiedHash(props.statuses, false), [props.statuses])
 
 	const requiredProgressLastChanged = useMemo(() => Date.now(), [requiredProgress, requiredModifiedHash])
 	const allProgressLastChanged = useMemo(() => Date.now(), [allProgress, allModifiedHash])
@@ -122,13 +84,13 @@ export const PackageStatus: React.FC<{
 		})
 	}, props.statuses)
 
-	let statusMessage: string | null = null
+	let offlineReasonMessage: string | undefined = undefined
 	let connected = true
 	if (!props.device) {
-		statusMessage = t('Device not found')
+		offlineReasonMessage = t('Device not found')
 		connected = false
 	} else if (!props.device.connected) {
-		statusMessage = t('Package Manager is offline')
+		offlineReasonMessage = t('Package Manager is offline')
 		connected = false
 	}
 
@@ -143,12 +105,12 @@ export const PackageStatus: React.FC<{
 		const allProgress2 = connected ? allProgress : undefined
 		return (
 			<>
-				<Tooltip overlay={statusMessage || t('The progress of steps required for playout')} placement="top">
+				<Tooltip overlay={offlineReasonMessage || t('The progress of steps required for playout')} placement="top">
 					<span>
 						<PackageStatusIcon progress={requiredProgress2} label={labelRequiredProgress} isWorking={requiredWorking} />
 					</span>
 				</Tooltip>
-				<Tooltip overlay={statusMessage || t('The progress of all steps')} placement="top">
+				<Tooltip overlay={offlineReasonMessage || t('The progress of all steps')} placement="top">
 					<span>
 						<PackageStatusIcon progress={allProgress2} label={labelAllProgress} isWorking={allWorking} />
 					</span>
@@ -161,7 +123,7 @@ export const PackageStatus: React.FC<{
 		<React.Fragment>
 			<tr
 				className={ClassNames('package', {
-					offline: !!statusMessage,
+					offline: !!offlineReasonMessage,
 				})}
 				onClick={(e) => {
 					e.preventDefault()
@@ -285,4 +247,36 @@ function PackageStatusIcon(props: { progress: number | undefined; label: string;
 			<div className={ClassNames('label', (props.progress ?? 0) >= 1 ? 'label-done' : null)}>{props.label}</div>
 		</div>
 	)
+}
+function getProgress(statuses: ExpectedPackageWorkStatus[], onlyRequired: boolean): number {
+	let count = 0
+	let progress = 0
+	for (const status of statuses) {
+		if (onlyRequired && !status.requiredForPlayout) {
+			continue
+		}
+		count++
+		if (status.status === 'fulfilled') {
+			progress += 1
+		} else if (status.status === 'working') {
+			progress += status.progress || 0.1
+		} else {
+			progress += 0
+		}
+	}
+	if (count) {
+		return progress / count
+	} else {
+		return 1
+	}
+}
+function getModifiedHash(statuses: ExpectedPackageWorkStatus[], onlyRequired: boolean): number {
+	let modifiedHash = 0
+	for (const status of statuses) {
+		if (onlyRequired && !status.requiredForPlayout) {
+			continue
+		}
+		modifiedHash += status.statusChanged // it's dirty, but it's quick and it works well enough
+	}
+	return modifiedHash
 }

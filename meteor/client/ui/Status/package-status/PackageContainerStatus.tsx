@@ -26,18 +26,18 @@ export const PackageContainerStatus: React.FC<{
 		)
 	}
 
-	const statusMessages: string[] = []
+	const offlineReasonMessages: string[] = []
 	if (!device) {
-		statusMessages.push(t('Device not found'))
+		offlineReasonMessages.push(t('Device not found'))
 	} else if (!device.connected) {
-		statusMessages.push(t('Package Manager is offline'))
+		offlineReasonMessages.push(t('Package Manager is offline'))
 	}
 
 	return (
 		<>
 			<tr
 				className={ClassNames('packageContainer', {
-					offline: statusMessages.length > 0,
+					offline: offlineReasonMessages.length > 0,
 				})}
 			>
 				<td className="indent"></td>
@@ -46,8 +46,8 @@ export const PackageContainerStatus: React.FC<{
 					<StatusCodePill connected={device?.connected || false} statusCode={packageContainerStatus.status.status} />
 				</td>
 				<td>
-					<Tooltip overlay={statusMessages || packageContainerStatus.status.statusReason.tech} placement="top">
-						<span>{statusMessages || packageContainerStatus.status.statusReason.user}</span>
+					<Tooltip overlay={offlineReasonMessages || packageContainerStatus.status.statusReason.tech} placement="top">
+						<span>{offlineReasonMessages || packageContainerStatus.status.statusReason.user}</span>
 					</Tooltip>
 				</td>
 				<td>
