@@ -7,10 +7,9 @@ import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 
 export function bindKoaRouter(koaRouter: KoaRouter, bindPath: string): void {
 	const app = new Koa()
-	if (!Meteor.isAppTest) {
-		// Expose the API at the url
-		WebApp.connectHandlers.use(bindPath, Meteor.bindEnvironment(app.callback()))
-	}
+	// Expose the API at the url
+	WebApp.connectHandlers.use(bindPath, Meteor.bindEnvironment(app.callback()))
+
 	app.use(async (ctx, next) => {
 		// Strange - sometimes a JSON body gets parsed by Koa before here (eg for a POST call?).
 		if (typeof ctx.req.body === 'object') {

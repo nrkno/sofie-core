@@ -4,14 +4,14 @@ import { registerClassToMeteorMethods } from '../methods'
 import { NewRundownLayoutsAPI, RundownLayoutsAPIMethods } from '../../lib/api/rundownLayouts'
 import { RundownLayoutType, RundownLayoutBase, CustomizableRegions } from '../../lib/collections/RundownLayouts'
 import { literal, getRandomId, protectString } from '../../lib/lib'
-import { ServerResponse, IncomingMessage } from 'http'
 import { logger } from '../logging'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { ShowStyleContentWriteAccess } from '../security/showStyle'
-import { PickerPOST, PickerGET } from './http'
 import { fetchShowStyleBaseLight } from '../optimizations'
 import { BlueprintId, RundownLayoutId, ShowStyleBaseId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownLayouts } from '../collections'
+import KoaRouter from '@koa/router'
+import bodyParser from 'koa-bodyparser'
 
 export async function createRundownLayout(
 	name: string,
@@ -43,70 +43,72 @@ export async function removeRundownLayout(layoutId: RundownLayoutId): Promise<vo
 	await RundownLayouts.removeAsync(layoutId)
 }
 
-PickerPOST.route('/shelfLayouts/upload/:showStyleBaseId', async (params, req: IncomingMessage, res: ServerResponse) => {
-	res.setHeader('Content-Type', 'text/plain')
+export const shelfLayoutsRouter = new KoaRouter()
 
-	const showStyleBaseId: ShowStyleBaseId = protectString(params.showStyleBaseId)
+shelfLayoutsRouter.post(
+	'/upload/:showStyleBaseId',
+	bodyParser({
+		jsonLimit: '50mb', // Arbitrary limit
+	}),
+	async (ctx) => {
+		ctx.response.type = 'text/plain'
 
-	check(showStyleBaseId, String)
+		const showStyleBaseId: ShowStyleBaseId = protectString(ctx.params.showStyleBaseId)
 
-	const showStyleBase = await fetchShowStyleBaseLight(showStyleBaseId)
+		check(showStyleBaseId, String)
 
-	let content = ''
-	try {
-		if (!showStyleBase) throw new Meteor.Error(404, `ShowStylebase "${showStyleBaseId}" not found`)
+		const showStyleBase = await fetchShowStyleBaseLight(showStyleBaseId)
 
-		const body = req.body
-		if (!body) throw new Meteor.Error(400, 'Restore Shelf Layout: Missing request body')
+		try {
+			if (!showStyleBase) throw new Meteor.Error(404, `ShowStylebase "${showStyleBaseId}" not found`)
 
-		if (typeof body !== 'string' || body.length < 10)
-			throw new Meteor.Error(400, 'Restore Shelf Layout: Invalid request body')
+			const body = ctx.request.body
+			if (!body) throw new Meteor.Error(400, 'Restore Shelf Layout: Missing request body')
 
-		const layout = JSON.parse(body) as RundownLayoutBase
-		check(layout._id, Match.Optional(String))
-		check(layout.name, String)
-		check(layout.type, String)
+			if (typeof body !== 'string' || body.length < 10)
+				throw new Meteor.Error(400, 'Restore Shelf Layout: Invalid request body')
 
-		layout.showStyleBaseId = showStyleBase._id
+			const layout = JSON.parse(body) as RundownLayoutBase
+			check(layout._id, Match.Optional(String))
+			check(layout.name, String)
+			check(layout.type, String)
 
-		await RundownLayouts.upsertAsync(layout._id, layout)
+			layout.showStyleBaseId = showStyleBase._id
 
-		res.statusCode = 200
-	} catch (e) {
-		res.statusCode = 500
-		content = e + ''
-		logger.error('Shelf Layout restore failed: ' + e)
+			await RundownLayouts.upsertAsync(layout._id, layout)
+
+			ctx.response.status = 200
+			ctx.body = ''
+		} catch (e) {
+			ctx.response.status = 500
+			ctx.body = e + ''
+			logger.error('Shelf Layout restore failed: ' + e)
+		}
 	}
+)
 
-	res.end(content)
-})
-
-PickerGET.route('/shelfLayouts/download/:id', async (params, _req: IncomingMessage, res: ServerResponse) => {
-	const layoutId: RundownLayoutId = protectString(params.id)
+shelfLayoutsRouter.get('/download/:id', async (ctx) => {
+	const layoutId: RundownLayoutId = protectString(ctx.params.id)
 
 	check(layoutId, String)
 
-	let content = ''
 	const layout = await RundownLayouts.findOneAsync(layoutId)
 	if (!layout) {
-		res.statusCode = 404
-		content = 'Shelf Layout not found'
-		res.end(content)
+		ctx.response.status = 404
+		ctx.body = 'Shelf Layout not found'
 		return
 	}
 
 	try {
-		content = JSON.stringify(layout, undefined, 2)
-		res.setHeader('Content-Disposition', `attachment; filename*=UTF-8''${encodeURIComponent(layout.name)}.json`)
-		res.setHeader('Content-Type', 'application/json')
-		res.statusCode = 200
+		ctx.response.type = 'application/json'
+		ctx.attachment(`${encodeURIComponent(layout.name)}.json`)
+		ctx.response.status = 200
+		ctx.body = JSON.stringify(layout, undefined, 2)
 	} catch (e) {
-		res.statusCode = 500
-		content = e + ''
+		ctx.response.status = 500
+		ctx.body = e + ''
 		logger.error('Shelf layout restore failed: ' + e)
 	}
-
-	res.end(content)
 })
 
 /** Add RundownLayout into showStyleBase */

@@ -1,17 +1,14 @@
 import '../../../__mocks__/_extendJest'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
-import { protectString, literal, unprotectString, getRandomString } from '../../../lib/lib'
-import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../__mocks__/meteorhacks-picker'
-import { Response as MockResponse, Request as MockRequest } from 'mock-http'
+import { protectString, literal, getRandomString } from '../../../lib/lib'
 import { RundownLayoutType, RundownLayout, CustomizableRegions } from '../../../lib/collections/RundownLayouts'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownLayoutId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownLayouts } from '../../collections'
 import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
-
-require('../client') // include in order to create the Meteor methods needed
-require('../rundownLayouts') // include in order to create the Meteor methods needed
+import { shelfLayoutsRouter } from '../rundownLayouts'
+import { callKoaRoute } from '../../../__mocks__/koa-util'
 
 describe('Rundown Layouts', () => {
 	let env: DefaultEnvironment
@@ -68,177 +65,99 @@ describe('Rundown Layouts', () => {
 			return { rundownLayout: mockLayout, rundownLayoutId }
 		}
 
-		testInFiber('download shelf layout', async () => {
+		test('download shelf layout', async () => {
 			const { rundownLayout: mockLayout, rundownLayoutId } = makeMockLayout(env)
 			await RundownLayouts.insertAsync(mockLayout)
 
-			const routeName = '/shelfLayouts/download/:id'
-			const route = PickerMock.mockRoutes[routeName]
-			expect(route).toBeTruthy()
-
 			{
 				const fakeId = 'FAKE_ID'
-				const res = new MockResponse()
-				const req = new MockRequest({
+				const ctx = await callKoaRoute(shelfLayoutsRouter, {
 					method: 'GET',
-					url: `/shelfLayouts/download/${fakeId}`,
+					url: `/download/${fakeId}`,
 				})
 
-				await route.handler({ id: fakeId }, req, res, jest.fn())
-
-				const resStr = parseResponseBuffer(res)
-				expect(resStr).toMatchObject(
-					literal<Partial<MockResponseDataString>>({
-						statusCode: 404,
-						timedout: false,
-						ended: true,
-					})
-				)
-				expect(resStr.bufferStr).toContain('not found')
+				expect(ctx.response.status).toBe(404)
+				expect(ctx.body).toContain('not found')
 			}
 
 			{
-				const res = new MockResponse()
-				const req = new MockRequest({
+				const ctx = await callKoaRoute(shelfLayoutsRouter, {
 					method: 'GET',
-					url: `/shelfLayouts/download/${rundownLayoutId}`,
+					url: `/download/${rundownLayoutId}`,
 				})
 
-				await route.handler({ id: rundownLayoutId }, req, res, jest.fn())
+				expect(ctx.response.status).toBe(200)
+				expect(ctx.response.type).toBe('application/json')
 
-				const resStr = parseResponseBuffer(res)
-				expect(resStr).toMatchObject(
-					literal<Partial<MockResponseDataString>>({
-						statusCode: 200,
-						headers: {
-							'content-type': 'application/json',
-						},
-						timedout: false,
-						ended: true,
-					})
-				)
-
-				const layout = JSON.parse(resStr.bufferStr)
+				const layout = JSON.parse(ctx.body as string)
 				expect(layout).toMatchObject(mockLayout)
 			}
 		})
 
-		testInFiber('upload shelf layout', async () => {
+		test('upload shelf layout', async () => {
 			const { rundownLayout: mockLayout } = makeMockLayout(env)
-			const routeName = '/shelfLayouts/upload/:showStyleBaseId'
-			const route = PickerMock.mockRoutes[routeName]
-			expect(route).toBeTruthy()
 
 			{
 				// try to upload to a non-existent showStyleBase
-				const fakeId = 'FAKE_ID'
-				const res = new MockResponse()
-				const req = new MockRequest({
-					method: 'POST',
-					url: `/shelfLayouts/upload/${fakeId}`,
-				})
-				req.body = JSON.stringify(mockLayout)
-
 				SupressLogMessages.suppressLogMessage(/"FAKE_ID" not found/i)
-				await route.handler({ showStyleBaseId: fakeId }, req, res, jest.fn())
+				const fakeId = 'FAKE_ID'
+				const ctx = await callKoaRoute(shelfLayoutsRouter, {
+					method: 'POST',
+					url: `/upload/${fakeId}`,
+					requestBody: JSON.stringify(mockLayout),
+				})
 
-				const resStr = parseResponseBuffer(res)
-				expect(resStr).toMatchObject(
-					literal<Partial<MockResponseDataString>>({
-						statusCode: 500,
-						timedout: false,
-						ended: true,
-					})
-				)
-				expect(resStr.bufferStr).toContain('not found')
+				expect(ctx.response.status).toBe(500)
+				expect(ctx.body).toContain('not found')
 			}
 
 			{
 				// try not to send a request body
-				const res = new MockResponse()
-				const req = new MockRequest({
+				SupressLogMessages.suppressLogMessage(/Invalid request body/i)
+				const ctx = await callKoaRoute(shelfLayoutsRouter, {
 					method: 'POST',
-					url: `/shelfLayouts/upload/${env.showStyleBaseId}`,
+					url: `/upload/${env.showStyleBaseId}`,
 				})
 
-				SupressLogMessages.suppressLogMessage(/Missing request body/i)
-				await route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
-
-				const resStr = parseResponseBuffer(res)
-				expect(resStr).toMatchObject(
-					literal<Partial<MockResponseDataString>>({
-						statusCode: 500,
-						timedout: false,
-						ended: true,
-					})
-				)
-				expect(resStr.bufferStr).toContain('body')
+				expect(ctx.response.status).toBe(500)
+				expect(ctx.body).toContain('body')
 			}
 
 			{
 				// try to send too short a body
-				const res = new MockResponse()
-				const req = new MockRequest({
-					method: 'POST',
-					url: `/shelfLayouts/upload/${env.showStyleBaseId}`,
-				})
-				req.body = 'sdf'
-
 				SupressLogMessages.suppressLogMessage(/Invalid request body/i)
-				await route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
+				const ctx = await callKoaRoute(shelfLayoutsRouter, {
+					method: 'POST',
+					url: `/upload/${env.showStyleBaseId}`,
+					requestBody: 'sdf',
+				})
 
-				const resStr = parseResponseBuffer(res)
-				expect(resStr).toMatchObject(
-					literal<Partial<MockResponseDataString>>({
-						statusCode: 500,
-						timedout: false,
-						ended: true,
-					})
-				)
-				expect(resStr.bufferStr).toContain('body')
+				expect(ctx.response.status).toBe(500)
+				expect(ctx.body).toContain('body')
 			}
 
 			{
 				// try to send a malformed body
-				const res = new MockResponse()
-				const req = new MockRequest({
-					method: 'POST',
-					url: `/shelfLayouts/upload/${env.showStyleBaseId}`,
-				})
-				req.body = '{ type: dsfgsdfgsdf gsdfgsdfg sdfgsdfg sdf gsdfgsdfg sdfg }'
-
 				SupressLogMessages.suppressLogMessage(/SyntaxError/i)
-				await route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
+				const ctx = await callKoaRoute(shelfLayoutsRouter, {
+					method: 'POST',
+					url: `/upload/${env.showStyleBaseId}`,
+					requestBody: '{ type: dsfgsdfgsdf gsdfgsdfg sdfgsdfg sdf gsdfgsdfg sdfg }',
+				})
 
-				const resStr = parseResponseBuffer(res)
-				expect(resStr).toMatchObject(
-					literal<Partial<MockResponseDataString>>({
-						statusCode: 500,
-						timedout: false,
-						ended: true,
-					})
-				)
-				expect(resStr.bufferStr).toContain('SyntaxError')
+				expect(ctx.response.status).toBe(500)
+				expect(ctx.body).toContain('SyntaxError')
 			}
 
 			{
-				const res = new MockResponse()
-				const req = new MockRequest({
+				const ctx = await callKoaRoute(shelfLayoutsRouter, {
 					method: 'POST',
-					url: `/shelfLayouts/upload/${env.showStyleBaseId}`,
+					url: `/upload/${env.showStyleBaseId}`,
+					requestBody: JSON.stringify(mockLayout),
 				})
-				req.body = JSON.stringify(mockLayout)
 
-				await route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
-
-				const resStr = parseResponseBuffer(res)
-				expect(resStr).toMatchObject(
-					literal<Partial<MockResponseDataString>>({
-						statusCode: 200,
-						timedout: false,
-						ended: true,
-					})
-				)
+				expect(ctx.response.status).toBe(200)
+				expect(ctx.body).toBe('')
 
 				expect(await RundownLayouts.findOneAsync(mockLayout._id)).toBeTruthy()
 			}

@@ -30,6 +30,7 @@ jest.mock('meteor/julusian:meteor-elastic-apm', (...args) => require('./meteor-e
 })
 
 jest.mock('meteor/mongo', (...args) => require('./mongo').setup(args), { virtual: true })
+jest.mock('meteor/webapp', (...args) => require('./webapp').setup(args), { virtual: true })
 
 jest.mock('../server/api/integration/slack', (...args) => require('./slack').setup(args), { virtual: true })
 jest.mock('../server/worker/worker', (...args) => require('./worker').setup(args), { virtual: true })
