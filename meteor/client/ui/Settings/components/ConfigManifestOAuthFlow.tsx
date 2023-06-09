@@ -37,7 +37,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 
 				const uploadFileContents = (e2.target as any).result
 
-				fetchFrom(`/devices/${this.props.device._id}/uploadCredentials`, {
+				fetchFrom(`/api/private/peripheralDevices/${this.props.device._id}/uploadCredentials`, {
 					method: 'POST',
 					body: uploadFileContents,
 					headers: {
@@ -71,7 +71,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 		resetAppCredentials() {
 			const { t } = this.props
 
-			fetchFrom(`/devices/${this.props.device._id}/resetAppCredentials`, {
+			fetchFrom(`/api/private/peripheralDevices/${this.props.device._id}/resetAppCredentials`, {
 				method: 'POST',
 			})
 				.then(() => {
@@ -99,7 +99,7 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 		resetAuth() {
 			const { t } = this.props
 
-			fetchFrom(`/devices/${this.props.device._id}/resetAuth`, {
+			fetchFrom(`/api/private/peripheralDevices/${this.props.device._id}/resetAuth`, {
 				method: 'POST',
 			})
 				.then(() => {
