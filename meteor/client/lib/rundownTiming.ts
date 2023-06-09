@@ -857,6 +857,13 @@ function ensureMinimumDefaultDurationIfNotAuto(
 	return Math.max(incomingDuration, defaultDuration)
 }
 
+/**
+ * Gets the next soonest valid rundown anchor from a Part's Segment.
+ *
+ * Specifically, it returns the start anchor if present and if the start anchor's time has not already passed.
+ * Else, it returns the end anchor if present.
+ * Else, returns undefined.
+ */
 function getSegmentRundownAnchorFromPart(
 	partId: PartId,
 	partInstancesMap: Map<PartId, PartInstance>,
