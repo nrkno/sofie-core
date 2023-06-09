@@ -32,7 +32,7 @@ export function isTouchDevice(): boolean {
 }
 
 /**
- * Wrapper around fetch(), which doesn't rejects the promise if the result is an error
+ * Wrapper around fetch(), which rejects the promise if the result is an error
  */
 export function fetchFrom(input: RequestInfo, init?: RequestInit): Promise<Response & { bodyText: string }> {
 	return fetch(input, init).then((response) => {

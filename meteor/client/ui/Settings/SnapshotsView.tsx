@@ -88,7 +88,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 						fileName: file.name,
 					}),
 					onAccept: () => {
-						fetchFrom('/snapshot/restore', {
+						fetchFrom('/api/private/snapshot/restore', {
 							method: 'POST',
 							body: uploadFileContents,
 							headers: {
@@ -339,7 +339,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 												</td>
 												<td>{snapshot.type}</td>
 												<td>
-													<a href={`/snapshot/retrieve/${snapshot._id}`} target="_blank" rel="noreferrer">
+													<a href={`/api/private/snapshot/retrieve/${snapshot._id}`} target="_blank" rel="noreferrer">
 														{snapshot.name}
 													</a>
 												</td>
