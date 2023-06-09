@@ -149,7 +149,7 @@ const getSettingAddNewLayer = (props: { t: TFunction; studio: Studio; urlBase: s
 		type: GUISettingsType.SETTING,
 		name: t('Add Mapping'),
 		description: t('Add a Layer Mapping to the studio'),
-		id: guiSettingId(urlBase, 'add-device'),
+		id: guiSettingId(urlBase, 'add-layer-mapping'),
 		getWarning: () => undefined,
 		render: (renderProps: { t: TFunction; studio: Studio }) => {
 			const addNewLayer = useCallback(() => {
