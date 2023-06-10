@@ -249,7 +249,7 @@ function renderTimelineState(state: TimelineState, filter: RegExp | string | und
 			<td>{o.layer}</td>
 			<td style={{ maxWidth: '25vw', minWidth: '10vw', overflowWrap: 'anywhere' }}>{o.id}</td>
 			<td style={{ whiteSpace: 'pre', maxWidth: '15vw', overflowX: 'auto' }}>
-				{JSON.stringify(o.enable, undefined, '\t')}
+				<pre>{JSON.stringify(o.enable, undefined, '\t')}</pre>
 			</td>
 			<td>
 				Start: {o.instance.start}
@@ -258,7 +258,9 @@ function renderTimelineState(state: TimelineState, filter: RegExp | string | und
 			</td>
 			<td>{o.content.type}</td>
 			<td>{(o.classes || []).join('<br />')}</td>
-			<td style={{ whiteSpace: 'pre' }}>{JSON.stringify(o.content, undefined, '\t')}</td>
+			<td style={{ whiteSpace: 'pre' }}>
+				<pre>{JSON.stringify(o.content, undefined, '\t')}</pre>
+			</td>
 		</tr>
 	))
 }
