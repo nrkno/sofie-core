@@ -505,6 +505,15 @@ export class RundownTimingCalculator {
 					if (!playlist.loop) {
 						this.linearParts[i][1] = null // we use null to express 'will not probably be played out, if played in order'
 					}
+				} else if (i === currentAIndex) {
+					if (nextRundownAnchor === undefined) {
+						nextRundownAnchor = getSegmentRundownAnchorFromPart(
+							this.linearParts[i][0],
+							partInstancesMap,
+							segmentsMap,
+							now
+						)
+					}
 				} else if (i === nextAIndex) {
 					// this is a calculation for the next line, which is basically how much there is left of the current line
 					localAccum = this.linearParts[i][1] || 0 // if there is no current line, rebase following lines to the next line
