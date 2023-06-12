@@ -38,6 +38,8 @@ export class SupressLogMessages {
 		SupressLogMessages.suppressMessages.push(regexp)
 	}
 	static expectAllMessagesToHaveBeenHandled(): void {
-		expect(SupressLogMessages.suppressMessages).toHaveLength(0)
+		const unhandledSuppressMessages = [...SupressLogMessages.suppressMessages]
+		SupressLogMessages.suppressMessages.length = 0
+		expect(unhandledSuppressMessages).toHaveLength(0)
 	}
 }

@@ -39,18 +39,18 @@ describe('Test blueprint http api', () => {
 		})
 
 		test('missing body', async () => {
-			SupressLogMessages.suppressLogMessage(/Missing request body/i)
+			SupressLogMessages.suppressLogMessage(/Invalid request body/i)
 			const res = await callRoute('id1', undefined)
 			expect(res.response.status).toEqual(500)
-			expect(res.body).toEqual('[400] Restore Blueprint: Missing request body')
+			expect(res.body).toEqual('[400] Restore Blueprint: Invalid request body')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
 		test('empty body', async () => {
-			SupressLogMessages.suppressLogMessage(/Missing request body/i)
+			SupressLogMessages.suppressLogMessage(/Invalid request body/i)
 			const res = await callRoute('id1', '')
 			expect(res.response.status).toEqual(500)
-			expect(res.body).toEqual('[400] Restore Blueprint: Missing request body')
+			expect(res.body).toEqual('[400] Restore Blueprint: Invalid request body')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
