@@ -9,8 +9,7 @@ import { ingestRouter } from '../ingest/http'
 import { actionTriggersRouter } from '../triggeredActions'
 import { peripheralDeviceRouter } from '../peripheralDevice'
 import { blueprintsRouter } from '../blueprints/http'
-
-import './v0/index'
+import { createLegacyApiRouter } from './v0/index'
 
 const LATEST_REST_API = 'v1.0'
 
@@ -34,5 +33,9 @@ async function redirectToLatest(ctx: koa.ParameterizedContext, _next: koa.Next):
 }
 
 Meteor.startup(() => {
+	// Needs to be lazily generated
+	const legacyApiRouter = createLegacyApiRouter()
+	apiRouter.use('/0', legacyApiRouter.routes(), legacyApiRouter.allowedMethods())
+
 	bindKoaRouter(apiRouter, '/api')
 })

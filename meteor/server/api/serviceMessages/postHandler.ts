@@ -14,8 +14,6 @@ const validCriticalities = Object.keys(Criticality)
 
 /**
  * Create new or update existing service message.
- *
- * Picker route handler, see Picker documentation for interface details.
  */
 async function postHandler(ctx: Koa.ParameterizedContext): Promise<void> {
 	const { body } = ctx.request

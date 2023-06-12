@@ -4,25 +4,18 @@
  * You should generally use the latest REST API for integrating with Sofie.
  */
 
-import { ServerResponse, IncomingMessage } from 'http'
-import { Params } from 'meteor/meteorhacks:picker'
 import * as _ from 'underscore'
 import { Meteor } from 'meteor/meteor'
 import { MeteorMethodSignatures } from '../../../methods'
 import { PubSub } from '../../../../lib/api/pubsub'
 import { MeteorPublications, MeteorPublicationSignatures } from '../../../publications/lib'
 import { UserActionAPIMethods } from '../../../../lib/api/userActions'
-import { PickerPOST, PickerGET, AsyncRouter } from '../../http'
 import { logger } from '../../../../lib/logging'
 import { ClientAPI } from '../../../../lib/api/client'
+import Koa from 'koa'
+import KoaRouter from '@koa/router'
 
 const LEGACY_API_VERSION = 0
-
-const index = {
-	version: `${LEGACY_API_VERSION}`,
-	GET: [] as string[],
-	POST: [] as string[],
-}
 
 /**
  * Takes an array of strings and converts them to Null, Boolean, Number, String primitives or Objects, if the string
@@ -40,7 +33,7 @@ function typeConvertUrlParameters(args: any[]) {
 		else {
 			val = decodeURIComponent(val)
 
-			if (!_.isNaN(Number(val))) {
+			if (!isNaN(Number(val))) {
 				val = Number(val)
 			} else {
 				let json: any = null
@@ -59,42 +52,53 @@ function typeConvertUrlParameters(args: any[]) {
 	return convertedArgs
 }
 
-Meteor.startup(() => {
+export function createLegacyApiRouter(): KoaRouter {
+	const router = new KoaRouter()
+
+	const index = {
+		version: `${LEGACY_API_VERSION}`,
+		GET: [] as string[],
+		POST: [] as string[],
+	}
+
 	// Expose all user actions:
 
-	_.each(_.keys(UserActionAPIMethods), (methodName) => {
-		const methodValue = UserActionAPIMethods[methodName]
-		const signature = MeteorMethodSignatures[methodValue]
+	for (const [methodName, methodValue] of Object.entries<any>(UserActionAPIMethods)) {
+		const signature = MeteorMethodSignatures[methodValue] || []
 
-		let resource = `/api/${LEGACY_API_VERSION}/action/${methodName}`
-		let docString = resource
-		_.each(signature || [], (paramName, i) => {
+		let resource = `/action/${methodName}`
+		let docString = `/api/${LEGACY_API_VERSION}${resource}`
+
+		signature.forEach((paramName, i) => {
 			resource += `/:param${i}`
 			docString += `/:${paramName}`
 		})
 
-		assignRoute('POST', resource, docString, (args) => {
+		index.POST.push(docString)
+
+		assignRoute(router, 'POST', resource, signature.length, (args) => {
 			const convArgs = typeConvertUrlParameters(args)
 			return Meteor.call(methodValue, ...convArgs)
 		})
-	})
+	}
 
 	// Expose publications:
-	_.each(_.keys(PubSub), (pubName) => {
-		const pubValue = PubSub[pubName]
-		const signature = MeteorPublicationSignatures[pubValue]
+	for (const [pubName, pubValue] of Object.entries<any>(PubSub)) {
+		const signature = MeteorPublicationSignatures[pubValue] || []
 
 		const f = MeteorPublications[pubValue]
 
 		if (f) {
-			let resource = `/api/${LEGACY_API_VERSION}/publication/${pubName}`
-			let docString = resource
-			_.each(signature || [], (paramName, i) => {
+			let resource = `/publication/${pubName}`
+			let docString = `/api/${LEGACY_API_VERSION}${resource}`
+			signature.forEach((paramName, i) => {
 				resource += `/:param${i}`
 				docString += `/:${paramName}`
 			})
 
-			assignRoute('GET', resource, docString, async (args) => {
+			index.GET.push(docString)
+
+			assignRoute(router, 'GET', resource, signature.length, async (args) => {
 				const convArgs = typeConvertUrlParameters(args)
 				const cursor = await f.apply(
 					{
@@ -107,64 +111,60 @@ Meteor.startup(() => {
 				return []
 			})
 		}
+	}
+
+	router.get('/', async (ctx) => {
+		ctx.response.type = 'application/json'
+		ctx.response.status = 200
+		ctx.body = JSON.stringify(index, undefined, 2)
 	})
-})
+
+	return router
+}
 
 /**
  * Send a resulting payload back to the HTTP client. If the payload is an Object, it will be sent as JSON, otherwise
  * will be sent as Plain Text.
  *
- * @param {ServerResponse} res
- * @param {number} statusCode
- * @param {*} payload
+ * @param res
+ * @param statusCode
+ * @param payload
  */
-function sendResult(res: ServerResponse, statusCode: number, payload: any) {
-	res.statusCode = statusCode
-	res.setHeader('Content-Type', typeof payload === 'object' ? 'application/json' : 'text/plain')
-	res.end(typeof payload === 'object' ? JSON.stringify(payload) : String(payload))
-}
+function sendResult(ctx: Koa.ParameterizedContext, statusCode: number, payload: any) {
+	ctx.response.status = statusCode
 
-/**
- * Send an error back to the HTTP client. If the error object is a Meteor.Error, use the Error.error value as
- * HTTP error code. Otherwise, send generic 500 error.
- *
- * @param {ServerResponse} res
- * @param {*} e
- */
-function sendError(res: ServerResponse, e: any) {
-	if (e.error && e.reason) {
-		// is Meteor.Error
-		sendResult(res, e.error, String(e.reason))
+	if (typeof payload === 'object') {
+		ctx.response.type = 'application/json'
+		ctx.body = payload
 	} else {
-		sendResult(res, 500, String(e))
+		ctx.response.type = 'text/plain'
+		ctx.body = String(payload)
 	}
 }
 
-function assignRoute(routeType: 'POST' | 'GET', resource: string, indexResource: string, fcn: (p: any[]) => any) {
-	const route: AsyncRouter = routeType === 'POST' ? PickerPOST : PickerGET
+function assignRoute(
+	router: KoaRouter,
+	routeType: 'POST' | 'GET',
+	resource: string,
+	paramCount: number,
+	fcn: (p: any[]) => any
+) {
+	const route = routeType === 'POST' ? router.post.bind(router) : router.get.bind(router)
 
-	index[routeType].push(indexResource)
-	route.route(resource, async (params: Params, req: IncomingMessage, res: ServerResponse) => {
-		logger.info(`REST APIv0: ${req.connection.remoteAddress} ${routeType} "${req.url}"`, {
-			url: req.url,
+	route(resource, async (ctx) => {
+		logger.info(`REST APIv0: ${ctx.socket.remoteAddress} ${routeType} "${ctx.url}"`, {
+			url: ctx.url,
 			method: routeType,
-			remoteAddress: req.connection.remoteAddress,
-			remotePort: req.connection.remotePort,
-			headers: req.headers,
+			remoteAddress: ctx.socket.remoteAddress,
+			remotePort: ctx.socket.remotePort,
+			headers: ctx.headers,
 		})
-		const p: any[] = []
-		for (let i = 0; i < 20; i++) {
-			if (_.has(params, 'param' + i)) {
-				p.push(params['param' + i])
-			} else {
-				break
-			}
-		}
+
 		try {
 			const p: any[] = []
-			for (let i = 0; i < 20; i++) {
-				if (_.has(params, 'param' + i)) {
-					p.push(params['param' + i])
+			for (let i = 0; i < paramCount; i++) {
+				if (_.has(ctx.params, 'param' + i)) {
+					p.push(ctx.params['param' + i])
 				} else {
 					break
 				}
@@ -172,19 +172,15 @@ function assignRoute(routeType: 'POST' | 'GET', resource: string, indexResource:
 
 			const result = await fcn(p)
 
-			let code = 200
-			if (ClientAPI.isClientResponseError(result)) {
-				code = 500
+			const code = ClientAPI.isClientResponseError(result) ? 500 : 200
+			sendResult(ctx, code, result)
+		} catch (e: any) {
+			if (e.error && e.reason) {
+				// is Meteor.Error
+				sendResult(ctx, e.error, String(e.reason))
+			} else {
+				sendResult(ctx, 500, String(e))
 			}
-			sendResult(res, code, result)
-		} catch (e) {
-			sendError(res, e)
 		}
 	})
 }
-
-PickerGET.route('/api/0', async (_params, _req: IncomingMessage, res: ServerResponse) => {
-	res.setHeader('Content-Type', 'application/json')
-	res.statusCode = 200
-	res.end(JSON.stringify(index, undefined, 2))
-})

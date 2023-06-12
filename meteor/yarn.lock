@@ -3610,7 +3610,6 @@ __metadata:
     lottie-web: ^5.10.2
     meteor-node-stubs: ^1.2.5
     meteor-promise: 0.9.0
-    mock-http: ^1.1.0
     moment: ^2.29.2
     nanoid: ^3.3.4
     node-gyp: ^9.3.1
@@ -9087,13 +9086,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mergee@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "mergee@npm:1.0.0"
-  checksum: 1d2b1600bc492cbad8d9529ab0dae0a93070e1abef5f93407766c0bb692679bbffbc881f270abb50aa0ba96a3c5269317f00bbe9a48f82b98014471471f14dca
-  languageName: node
-  linkType: hard
-
 "meteor-node-stubs@npm:^1.2.5":
   version: 1.2.5
   resolution: "meteor-node-stubs@npm:1.2.5"
@@ -9352,15 +9344,6 @@ __metadata:
   bin:
     mkdirp: bin/cmd.js
   checksum: a96865108c6c3b1b8e1d5e9f11843de1e077e57737602de1b82030815f311be11f96f09cce59bd5b903d0b29834733e5313f9301e3ed6d6f6fba2eae0df4298f
-  languageName: node
-  linkType: hard
-
-"mock-http@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "mock-http@npm:1.1.0"
-  dependencies:
-    mergee: ^1.0.0
-  checksum: daba6bd54f0f3d76b6e8c84fbfc926eeb13896a65836bba608848a40774665ef1f072681f39d7b189e07549b59baed51143dd562bd0fc4457747c4c0dc436f27
   languageName: node
   linkType: hard
 

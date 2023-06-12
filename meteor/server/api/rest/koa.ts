@@ -5,6 +5,13 @@ import { WebApp } from 'meteor/webapp'
 import { Meteor } from 'meteor/meteor'
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 
+declare module 'http' {
+	interface IncomingMessage {
+		// Meteor http routing performs this addition
+		body?: object | string
+	}
+}
+
 export function bindKoaRouter(koaRouter: KoaRouter, bindPath: string): void {
 	const app = new Koa()
 	// Expose the API at the url

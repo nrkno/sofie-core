@@ -23,7 +23,6 @@ jest.mock('meteor/accounts-base', (...args) => require('./accounts-base').setup(
 jest.mock('meteor/ejson', (...args) => require('./ejson').setup(args), { virtual: true })
 jest.mock('meteor/reactive-var', (...args) => require('./reactive-var').setup(args), { virtual: true })
 
-jest.mock('meteor/meteorhacks:picker', (...args) => require('./meteorhacks-picker').setup(args), { virtual: true })
 jest.mock('meteor/mdg:validated-method', (...args) => require('./validated-method').setup(args), { virtual: true })
 jest.mock('meteor/julusian:meteor-elastic-apm', (...args) => require('./meteor-elastic-apm').setup(args), {
 	virtual: true,
