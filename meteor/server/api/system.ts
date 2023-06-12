@@ -24,8 +24,8 @@ import { IndexSpecification } from 'mongodb'
 import { nightlyCronjobInner } from '../cronjobs'
 import { TranslationsBundleId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { createAsyncOnlyMongoCollection, AsyncOnlyMongoCollection } from '../collections/collection'
-import { NoSecurityReadAccess } from '../security/noSecurity'
 import { generateToken } from './singleUseTokens'
+import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 
 async function setupIndexes(removeOldIndexes: boolean = false): Promise<Array<IndexSpecification>> {
 	// Note: This function should NOT run on Meteor.startup, due to getCollectionIndexes failing if run before indexes have been created.
@@ -368,7 +368,7 @@ let lastTokenTimestamp: Time | undefined = undefined
 const TOKEN_ISSUE_TIME_LIMIT = 1000 // ms
 
 async function generateSingleUseToken() {
-	NoSecurityReadAccess.any()
+	triggerWriteAccessBecauseNoCheckNecessary()
 
 	const eventTime = getCurrentTime()
 
