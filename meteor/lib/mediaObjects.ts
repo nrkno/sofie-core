@@ -16,7 +16,6 @@ export interface ScanInfoForPackage {
 export interface PieceContentStatusObj {
 	status: PieceStatusCode
 	messages: ITranslatableMessage[]
-	contentDuration: undefined // TODO - why is this never set?
 
 	freezes: Array<PackageInfo.Anomaly>
 	blacks: Array<PackageInfo.Anomaly>

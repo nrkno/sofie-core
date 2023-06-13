@@ -218,7 +218,6 @@ export async function checkPieceContentStatusAndDependencies(
 		{
 			status: PieceStatusCode.UNKNOWN,
 			messages: [],
-			contentDuration: undefined,
 
 			freezes: [],
 			blacks: [],
@@ -390,7 +389,6 @@ async function checkPieceContentMediaObjectStatus(
 	return {
 		status: pieceStatus,
 		messages: messages.map((msg) => msg.message),
-		contentDuration: undefined,
 
 		freezes,
 		blacks,
@@ -622,7 +620,6 @@ async function checkPieceContentExpectedPackageStatus(
 	return {
 		status: pieceStatus,
 		messages: messages.map((msg) => msg.message),
-		contentDuration: undefined,
 
 		freezes,
 		blacks,

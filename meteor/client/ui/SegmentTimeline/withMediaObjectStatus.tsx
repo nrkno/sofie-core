@@ -29,7 +29,6 @@ type IWrappedComponent<IProps extends AnyPiece, IState> = new (props: IProps, st
 const DEFAULT_STATUS = deepFreeze<PieceContentStatusObj>({
 	status: PieceStatusCode.UNKNOWN,
 	messages: [],
-	contentDuration: undefined,
 
 	blacks: [],
 	freezes: [],
@@ -104,14 +103,6 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 									contentStatus: statusObj,
 								}
 
-								if (
-									pieceCopy.content &&
-									pieceCopy.content.sourceDuration === undefined &&
-									statusObj.contentDuration !== undefined
-								) {
-									pieceCopy.content.sourceDuration = statusObj.contentDuration
-								}
-
 								overrides.piece = {
 									...pieceCopy,
 								}
@@ -123,14 +114,6 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 									...((overrides.piece || piece) as PieceUi),
 
 									contentStatus: statusObj,
-								}
-
-								if (
-									pieceCopy.instance.piece.content &&
-									pieceCopy.instance.piece.content.sourceDuration === undefined &&
-									statusObj.contentDuration !== undefined
-								) {
-									pieceCopy.instance.piece.content.sourceDuration = statusObj.contentDuration
 								}
 
 								overrides.piece = {
