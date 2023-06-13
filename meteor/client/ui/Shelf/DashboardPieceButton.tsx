@@ -35,7 +35,6 @@ export interface IDashboardButtonProps {
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: React.SyntheticEvent) => void
 	onSelectAdLib: (aSLine: IAdLibListItem, context: React.SyntheticEvent) => void
 	playlist: RundownPlaylist
-	mediaPreviewUrl?: string
 	isOnAir?: boolean
 	isNext?: boolean
 	widthScale?: number

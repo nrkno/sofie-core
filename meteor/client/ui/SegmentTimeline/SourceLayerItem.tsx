@@ -29,8 +29,6 @@ export interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
 	/** Output layer the source layer belongs to */
 	outputLayer: IOutputLayerUi
-	/** URL where media previews / thumbnails are available (e.g. media manager)  */
-	mediaPreviewUrl: string
 	/** Part containing this item */
 	part: PartUi
 	/** When the part starts (unix timestamp)  */

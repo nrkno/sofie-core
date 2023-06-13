@@ -20,7 +20,6 @@ interface IOutputGroupProps {
 	segment: SegmentUi
 	part: PartUi
 	pieces: CalculateTimingsPiece[]
-	mediaPreviewUrl: string
 	startsAt: number
 	duration: number
 	expectedDuration: number
@@ -79,7 +78,6 @@ export function OutputGroup(props: IOutputGroupProps): JSX.Element {
 							autoNextPart={props.autoNextPart}
 							liveLinePadding={props.liveLinePadding}
 							layerIndex={props.indexOffset + (isOutputGroupCollapsed ? 0 : index)}
-							mediaPreviewUrl={props.mediaPreviewUrl}
 							followLiveLine={props.followLiveLine}
 							isLiveLine={props.isLiveLine}
 							isNextLine={props.isLiveLine}
@@ -116,7 +114,6 @@ export function OutputGroup(props: IOutputGroupProps): JSX.Element {
 						autoNextPart={props.autoNextPart}
 						liveLinePadding={props.liveLinePadding}
 						layerIndex={props.indexOffset}
-						mediaPreviewUrl={props.mediaPreviewUrl}
 						followLiveLine={props.followLiveLine}
 						isLiveLine={props.isLiveLine}
 						isNextLine={props.isLiveLine}

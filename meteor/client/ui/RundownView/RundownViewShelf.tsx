@@ -8,12 +8,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { OutputLayers, SourceLayers } from '../../../lib/collections/ShowStyleBases'
 import { DashboardPieceButton } from '../Shelf/DashboardPieceButton'
 import { IBlueprintActionTriggerMode, ISourceLayer } from '@sofie-automation/blueprints-integration'
-import {
-	contextMenuHoldToDisplayTime,
-	ensureHasTrailingSlash,
-	UserAgentPointer,
-	USER_AGENT_POINTER_PROPERTY,
-} from '../../lib/lib'
+import { contextMenuHoldToDisplayTime, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
 import {
 	DashboardLayoutFilter,
 	PieceDisplayStyle,
@@ -246,11 +241,6 @@ class RundownViewShelfInner extends MeteorReactComponent<
 									playlist={this.props.playlist}
 									isOnAir={this.isAdLibOnAir(adLibPiece)}
 									isNext={this.isAdLibNext(adLibPiece)}
-									mediaPreviewUrl={
-										this.props.studio
-											? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
-											: ''
-									}
 									displayStyle={PieceDisplayStyle.BUTTONS}
 									widthScale={3.27} // @todo: css
 									isSelected={false}

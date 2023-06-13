@@ -13,7 +13,6 @@ import { IFloatingInspectorPosition } from '../../FloatingInspectors/IFloatingIn
 export type SourceDurationLabelAlignment = 'left' | 'right'
 
 export interface ICustomLayerItemProps {
-	mediaPreviewUrl?: string
 	typeClass?: string
 	layer: ISourceLayerUi
 	outputLayer: IOutputLayerUi

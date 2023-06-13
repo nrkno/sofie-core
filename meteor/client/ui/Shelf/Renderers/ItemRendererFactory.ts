@@ -18,7 +18,6 @@ export interface ILayerItemRendererProps {
 	status?: PieceStatusCode | null
 	messages?: ITranslatableMessage[] | null
 	metadata?: MediaObject | null
-	mediaPreviewUrl: string | undefined
 	packageInfos: ScanInfoForPackages | undefined
 	studio: UIStudio | undefined
 }

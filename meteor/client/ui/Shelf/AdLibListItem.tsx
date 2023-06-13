@@ -8,7 +8,7 @@ import { unprotectString } from '../../../lib/lib'
 import renderItem from './Renderers/ItemRendererFactory'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
-import { contextMenuHoldToDisplayTime, ensureHasTrailingSlash } from '../../lib/lib'
+import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { AdLibPieceUi } from '../../lib/shelf'
@@ -84,7 +84,6 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 						status: this.props.piece.status,
 						messages: this.props.piece.messages,
 						metadata: this.props.piece.contentMetaData,
-						mediaPreviewUrl: ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl)!,
 						packageInfos: this.props.piece.contentPackageInfos,
 						studio: this.props.studio,
 					})}

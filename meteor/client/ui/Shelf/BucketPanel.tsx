@@ -27,12 +27,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, getEventTimestamp, UserAction } from '../../../lib/clientUserAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { literal, unprotectString, partial, protectString } from '../../../lib/lib'
-import {
-	ensureHasTrailingSlash,
-	contextMenuHoldToDisplayTime,
-	UserAgentPointer,
-	USER_AGENT_POINTER_PROPERTY,
-} from '../../lib/lib'
+import { contextMenuHoldToDisplayTime, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
 import { IDashboardPanelTrackedProps } from './DashboardPanel'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { Bucket } from '../../../lib/collections/Buckets'
@@ -896,11 +891,6 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 													onSelectAdLib={this.props.onSelectAdlib}
 													playlist={this.props.playlist}
 													isOnAir={this.isAdLibOnAir(adlib as any as AdLibPieceUi)}
-													mediaPreviewUrl={
-														this.props.studio
-															? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
-															: ''
-													}
 													disabled={this.adLibIsDisabled(adlib)}
 													findAdLib={this.findAdLib}
 													moveAdLib={this.moveAdLib}

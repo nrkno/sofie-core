@@ -15,7 +15,6 @@ import { RundownTiming } from '../../RundownView/RundownTiming/RundownTiming'
 
 import { RundownUtils } from '../../../lib/rundown'
 import { getCurrentTime, unprotectString } from '../../../../lib/lib'
-import { ensureHasTrailingSlash } from '../../../lib/lib'
 
 import { DEBUG_MODE } from '../SegmentTimelineDebugMode'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
@@ -469,7 +468,6 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								onPieceDoubleClick={this.props.onPieceDoubleClick}
 								scrollLeft={this.props.scrollLeft}
 								scrollWidth={this.props.scrollWidth}
-								mediaPreviewUrl={ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''}
 								layer={layer}
 								sourceLayers={sourceLayers}
 								segment={this.props.segment}
