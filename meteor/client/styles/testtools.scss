@@ -48,8 +48,33 @@
 	& > tbody > tr {
 		border-bottom: 1px solid #000;
 
+		& > th {
+			padding-right: 1em;
+		}
+
 		& > td {
 			padding: 0 5px;
+
+			> pre {
+				margin: 0;
+				tab-size: 4;
+			}
+		}
+
+		&:nth-child(odd) {
+			& > td {
+				&:nth-child(odd) {
+					background-color: #f0f0f0;
+				}
+			}
+		}
+
+		&:nth-child(even) {
+			& > td {
+				&:nth-child(odd) {
+					background-color: #dedede;
+				}
+			}
 		}
 	}
 }
