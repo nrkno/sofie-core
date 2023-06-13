@@ -304,11 +304,13 @@ export interface ITimelineEventContext extends IEventContext, IRundownContext {
 	/**
 	 * Get the full session id for an ab playback session.
 	 * Note: sessionName should be unique within the segment unless pieces want to share a session
+	 * @deprecated use the core provided AB implementation instead
 	 */
 	getPieceABSessionId(piece: IBlueprintPieceInstance, sessionName: string): string
 	/**
 	 * Get the full session id for a timelineobject that belongs to an ab playback session
 	 * sessionName should also be used in calls to getPieceABSessionId for the owning piece
+	 * @deprecated use the core provided AB implementation instead
 	 */
 	getTimelineObjectAbSessionId(
 		obj: OnGenerateTimelineObj<TSR.TSRTimelineContent, any, any>,

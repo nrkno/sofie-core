@@ -59,7 +59,9 @@ function ComponentDatastoreControls({ studioId }: IDatastoreControlsProps) {
 								<td>{entry.key}</td>
 								<td>{entry.modified}</td>
 								<td>{entry.mode}</td>
-								<td>{entry.value}</td>
+								<td>
+									<pre>{entry.value}</pre>
+								</td>
 							</tr>
 						))}
 					</tbody>

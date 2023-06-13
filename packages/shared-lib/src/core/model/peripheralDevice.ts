@@ -45,6 +45,11 @@ export interface PeripheralDeviceForDevice {
 	deviceSettings: unknown
 
 	/**
+	 * Contains, for example, OAuth access tokens.
+	 */
+	secretSettings?: IngestDeviceSecretSettings | { [key: string]: any }
+
+	/**
 	 * Settings for any playout subdevices
 	 */
 	playoutDevices: Record<string, TSR.DeviceOptionsAny>

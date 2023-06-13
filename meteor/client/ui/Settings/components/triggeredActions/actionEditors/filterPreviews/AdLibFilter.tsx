@@ -303,7 +303,7 @@ export const AdLibFilter: React.FC<IProps> = function AdLibFilter({
 		'type',
 	]
 
-	const availableOptions = useTracker<Record<string, any> | string[], Record<string, any> | string[]>(
+	const availableOptions = useTracker<Record<string, any> | string[]>(
 		() => {
 			// tags are a special case because we need to search the database for available options
 			// we should have the data subscribed already

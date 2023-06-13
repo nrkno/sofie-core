@@ -32,6 +32,12 @@
 				}
 			}
 
+			&.offline {
+				> td {
+					color: #666;
+				}
+			}
+
 			.package-progress {
 				display: inline-block;
 				margin-left: 0.25em;
@@ -125,7 +131,6 @@
 				tbody {
 					> tr {
 						> td {
-							// border-bottom: 1px solid rgba(0, 0, 0, 0.15);
 							padding-bottom: 0.25em;
 
 							&:first-child {
@@ -171,6 +176,11 @@
 				&.indent {
 					padding: 0;
 					width: 0.5em;
+				}
+			}
+			&.offline {
+				> td {
+					color: #666;
 				}
 			}
 		}

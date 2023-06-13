@@ -4,8 +4,8 @@ import { JobContext } from '../jobs'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
 import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
-import { logger } from 'elastic-apm-node'
 import { setNextPartFromPart } from './setNext'
+import { logger } from '../logging'
 
 export async function moveNextPart(
 	context: JobContext,

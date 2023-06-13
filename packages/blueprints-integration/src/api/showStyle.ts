@@ -14,6 +14,7 @@ import type {
 	IGetRundownContext,
 	IDataStoreActionExecutionContext,
 	IRundownActivationContext,
+	IShowStyleContext,
 } from '../context'
 import type { IngestAdlib, ExtendedIngestRundown, IngestSegment } from '../ingest'
 import type { IBlueprintExternalMessageQueueObj } from '../message'
@@ -41,6 +42,7 @@ import type { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import type { BlueprintConfigCoreConfig, BlueprintManifestBase, BlueprintManifestType, IConfigMessage } from './base'
 import type { IBlueprintTriggeredActions } from '../triggers'
 import type { ExpectedPackage } from '../package'
+import type { ABResolverConfiguration } from '../abPlayback'
 
 export type TimelinePersistentState = unknown
 
@@ -158,6 +160,9 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 		previousPartEndState: PartEndState | undefined,
 		resolvedPieces: IBlueprintResolvedPieceInstance[]
 	) => Promise<BlueprintResultTimeline>
+
+	/** Called just before `onTimelineGenerate` to perform AB-playback for the timeline */
+	getAbResolverConfiguration?: (context: IShowStyleContext) => ABResolverConfiguration
 
 	/** Called just before taking the next part. This generates some persisted data used by onTimelineGenerate to modify the timeline based on the previous part (eg, persist audio levels) */
 	getEndStateForPart?: (
