@@ -20,4 +20,7 @@ export interface PieceContentStatusObj {
 	packageInfos: ScanInfoForPackages | undefined
 	messages: ITranslatableMessage[]
 	contentDuration: undefined // TODO - why is this never set?
+
+	thumbnailUrl: string | undefined
+	previewUrl: string | undefined
 }

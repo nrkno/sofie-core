@@ -1,4 +1,5 @@
 import {
+	Accessor,
 	ExpectedPackageStatusAPI,
 	GraphicsContent,
 	ISourceLayer,
@@ -22,6 +23,7 @@ import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaO
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
 import { UIStudio } from '../../../lib/api/studios'
+import { getSideEffect } from '../../../lib/collections/ExpectedPackages'
 import { routeExpectedPackages, MappingExtWithPackage } from '../../../lib/collections/Studios'
 import { generateTranslation, unprotectString } from '../../../lib/lib'
 import { PieceContentStatusObj, ScanInfoForPackage, ScanInfoForPackages } from '../../../lib/mediaObjects'
@@ -145,7 +147,13 @@ export function getMediaObjectMediaId(
 export type PieceContentStatusPiece = Pick<PieceGeneric, '_id' | 'content' | 'expectedPackages'>
 export type PieceContentStatusStudio = Pick<
 	UIStudio,
-	'_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'
+	| '_id'
+	| 'settings'
+	| 'packageContainers'
+	| 'previewContainerIds'
+	| 'thumbnailContainerIds'
+	| 'mappings'
+	| 'routeSets'
 >
 
 export async function checkPieceContentStatusAndDependencies(
@@ -216,6 +224,8 @@ export async function checkPieceContentStatusAndDependencies(
 			packageInfos: undefined,
 			messages: [],
 			contentDuration: undefined,
+			thumbnailUrl: undefined,
+			previewUrl: undefined,
 		},
 		pieceDependencies,
 	]
@@ -361,7 +371,26 @@ async function checkPieceContentMediaObjectStatus(
 		packageInfos: undefined,
 		messages: messages.map((msg) => msg.message),
 		contentDuration: undefined,
+		thumbnailUrl: metadata
+			? getAssetUrlFromContentMetaData(metadata, 'thumbnail', studio.settings.mediaPreviewsUrl)
+			: undefined,
+		previewUrl: metadata
+			? getAssetUrlFromContentMetaData(metadata, 'preview', studio.settings.mediaPreviewsUrl)
+			: undefined,
 	}
+}
+
+function getAssetUrlFromContentMetaData(
+	contentMetaData: MediaObject,
+	assetType: 'thumbnail' | 'preview',
+	mediaPreviewUrl: string
+): string | undefined {
+	if (!contentMetaData || !contentMetaData.previewPath) return
+	return (
+		ensureHasTrailingSlash(mediaPreviewUrl ?? null) +
+		`media/${assetType}/` +
+		encodeURIComponent(contentMetaData.mediaId)
+	)
 }
 
 interface ContentMessage {
@@ -388,6 +417,9 @@ async function checkPieceContentExpectedPackageStatus(
 	const messages: Array<ContentMessage> = []
 	const packageInfos: ScanInfoForPackages = {}
 	let readyCount = 0
+
+	let thumbnailUrl: string | undefined
+	let previewUrl: string | undefined
 
 	if (piece.expectedPackages && piece.expectedPackages.length) {
 		// Route the mappings
@@ -430,6 +462,36 @@ async function checkPieceContentExpectedPackageStatus(
 					// @ts-expect-error hack
 					expectedPackage.content.guid ||
 					expectedPackage._id
+
+				if (!thumbnailUrl && packageOnPackageContainer) {
+					const sideEffect = getSideEffect(expectedPackage, studio)
+
+					const packageThumbnailPath = sideEffect.thumbnailPackageSettings?.path
+					const thumbnailContainerId = sideEffect.thumbnailContainerId
+					if (packageThumbnailPath && thumbnailContainerId) {
+						thumbnailUrl = getAssetUrlFromExpectedPackages(
+							packageThumbnailPath,
+							thumbnailContainerId,
+							studio,
+							packageOnPackageContainer
+						)
+					}
+				}
+
+				if (!previewUrl && packageOnPackageContainer) {
+					const sideEffect = getSideEffect(expectedPackage, studio)
+
+					const packagePreviewPath = sideEffect.previewPackageSettings?.path
+					const previewContainerId = sideEffect.previewContainerId
+					if (packagePreviewPath && previewContainerId) {
+						previewUrl = getAssetUrlFromExpectedPackages(
+							packagePreviewPath,
+							previewContainerId,
+							studio,
+							packageOnPackageContainer
+						)
+					}
+				}
 
 				const warningMessage = getPackageWarningMessage(packageOnPackageContainer, sourceLayer)
 				if (warningMessage) {
@@ -514,6 +576,39 @@ async function checkPieceContentExpectedPackageStatus(
 		packageInfos: packageInfoToForward,
 		messages: messages.map((msg) => msg.message),
 		contentDuration: undefined,
+		thumbnailUrl,
+		previewUrl,
+	}
+}
+
+function getAssetUrlFromExpectedPackages(
+	assetPath: string,
+	assetContainerId: string,
+	studio: PieceContentStatusStudio,
+	packageOnPackageContainer: Pick<PackageContainerPackageStatusDB, 'status'>
+): string | undefined {
+	const packageContainer = studio.packageContainers[assetContainerId]
+	if (!packageContainer) return
+
+	if (packageOnPackageContainer.status.status !== ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.READY)
+		return
+
+	// Look up an accessor we can use:
+	for (const accessor of Object.values<Accessor.Any>(packageContainer.container.accessors)) {
+		if (
+			(accessor.type === Accessor.AccessType.HTTP || accessor.type === Accessor.AccessType.HTTP_PROXY) &&
+			accessor.baseUrl
+		) {
+			// Currently we only support public accessors (ie has no networkId set)
+			if (!accessor.networkId) {
+				return [
+					accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
+					encodeURIComponent(
+						assetPath.replace(/^\//, '') // trim leading slash
+					),
+				].join('/')
+			}
+		}
 	}
 }
 
