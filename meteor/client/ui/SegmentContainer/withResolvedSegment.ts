@@ -62,6 +62,9 @@ export interface PieceUi extends PieceExtended {
 	contentMetaData?: any
 	contentPackageInfos?: ScanInfoForPackages
 	messages?: ITranslatableMessage[]
+
+	thumbnailUrl?: string | undefined
+	previewUrl?: string | undefined
 }
 
 export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'>

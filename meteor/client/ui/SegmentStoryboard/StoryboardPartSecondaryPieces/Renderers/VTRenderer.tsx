@@ -12,8 +12,6 @@ export function VTRenderer({
 	studio,
 	typeClass,
 }: IDefaultRendererProps): JSX.Element {
-	const mediaPreviewUrl = studio?.settings.mediaPreviewsUrl
-
 	const status = pieceInstance.instance.piece.status
 
 	const vtContent = pieceInstance.instance.piece.content as VTContent
@@ -35,14 +33,11 @@ export function VTRenderer({
 				}}
 				typeClass={typeClass}
 				itemElement={null}
-				contentMetaData={pieceInstance.contentMetaData || null}
 				noticeMessages={pieceInstance.messages || null}
 				noticeLevel={status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null}
-				mediaPreviewUrl={mediaPreviewUrl}
 				contentPackageInfos={pieceInstance.contentPackageInfos}
-				pieceId={pieceInstance.instance.piece._id}
-				expectedPackages={pieceInstance.instance.piece.expectedPackages}
 				studio={studio}
+				previewUrl={pieceInstance.previewUrl}
 			/>
 			{pieceInstance.instance.piece.name}
 		</>

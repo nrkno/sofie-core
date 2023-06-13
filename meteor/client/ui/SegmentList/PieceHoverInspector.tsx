@@ -33,8 +33,6 @@ export function PieceHoverInspector({
 	mousePosition: number
 	layer: ISourceLayer | undefined
 }): JSX.Element | null {
-	const mediaPreviewUrl = studio.settings.mediaPreviewsUrl
-
 	const status = pieceInstance.instance.piece.status
 
 	const vtContent = pieceInstance.instance.piece.content as VTContent
@@ -98,14 +96,11 @@ export function PieceHoverInspector({
 					}}
 					typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 					itemElement={null}
-					contentMetaData={pieceInstance.contentMetaData || null}
 					noticeMessages={pieceInstance.messages || null}
 					noticeLevel={noticeLevel}
-					mediaPreviewUrl={mediaPreviewUrl}
 					contentPackageInfos={pieceInstance.contentPackageInfos}
-					pieceId={pieceInstance.instance.piece._id}
-					expectedPackages={pieceInstance.instance.piece.expectedPackages}
 					studio={studio}
+					previewUrl={pieceInstance.previewUrl}
 				/>
 			)
 	}

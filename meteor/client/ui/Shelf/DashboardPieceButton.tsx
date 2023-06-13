@@ -21,7 +21,6 @@ import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
 import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
-import { getThumbnailUrlForAdLibPieceUi } from '../../lib/ui/clipPreview'
 
 import { isTouchDevice } from '../../lib/lib'
 import { AdLibPieceUi } from '../../lib/shelf'
@@ -139,14 +138,10 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	}
 
 	private renderVTLiveSpeak(renderThumbnail?: boolean) {
-		let thumbnailUrl: string | undefined
-		let sourceDuration: number | undefined
-		const adLib = this.props.piece as any as AdLibPieceUi
-		if (this.props.piece.content && this.props.studio) {
-			thumbnailUrl = getThumbnailUrlForAdLibPieceUi(this.props.piece, this.props.studio!, this.props.mediaPreviewUrl)
-			const vtContent = adLib.content as VTContent | undefined
-			sourceDuration = vtContent?.sourceDuration
-		}
+		const thumbnailUrl = this.props.piece.thumbnailUrl
+		const vtContent = this.props.piece.content as VTContent | undefined
+		const sourceDuration = vtContent?.sourceDuration
+
 		return (
 			<>
 				{sourceDuration && (
@@ -160,7 +155,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					status={this.props.piece.status}
 					showMiniInspector={this.state.isHovered}
 					timePosition={this.state.timePosition}
-					content={adLib.content as VTContent | undefined}
+					content={vtContent}
 					position={{
 						top: this.positionAndSize?.top ?? 0,
 						left: this.positionAndSize?.left ?? 0,
@@ -169,19 +164,16 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					}}
 					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
 					itemElement={null}
-					contentMetaData={this.props.piece.contentMetaData || null}
 					noticeMessages={this.props.piece.messages || null}
 					noticeLevel={
 						this.props.piece.status !== null && this.props.piece.status !== undefined
 							? getNoticeLevelForPieceStatus(this.props.piece.status)
 							: null
 					}
-					mediaPreviewUrl={this.props.mediaPreviewUrl}
 					contentPackageInfos={this.props.piece.contentPackageInfos}
-					pieceId={this.props.piece._id}
-					expectedPackages={this.props.piece.expectedPackages}
 					studio={this.props.studio}
 					displayOn="viewport"
+					previewUrl={this.props.piece.previewUrl}
 				/>
 				{thumbnailUrl && renderThumbnail && (
 					<div className="dashboard-panel__panel__button__thumbnail">

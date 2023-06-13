@@ -36,6 +36,9 @@ export interface AdLibPieceUi extends Omit<AdLibPiece, 'timelineObjectsString'> 
 	contentPackageInfos?: ScanInfoForPackages
 	messages?: ITranslatableMessage[]
 	segmentId?: SegmentId
+
+	thumbnailUrl?: string | undefined
+	previewUrl?: string | undefined
 }
 
 export interface AdlibSegmentUi extends DBSegment {

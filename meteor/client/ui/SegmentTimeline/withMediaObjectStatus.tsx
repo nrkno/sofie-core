@@ -33,6 +33,8 @@ const DEFAULT_STATUS = deepFreeze<PieceContentStatusObj>({
 	packageInfos: undefined,
 	messages: [],
 	contentDuration: undefined,
+	thumbnailUrl: undefined,
+	previewUrl: undefined,
 })
 
 /**
@@ -106,6 +108,8 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 									contentMetaData: statusObj.metadata,
 									contentPackageInfos: hackStripReadonly<ScanInfoForPackages>(statusObj.packageInfos),
 									messages: hackStripReadonly<ITranslatableMessage[]>(statusObj.messages),
+									thumbnailUrl: statusObj.thumbnailUrl,
+									previewUrl: statusObj.previewUrl,
 								}
 
 								if (
@@ -136,6 +140,8 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 									contentMetaData: statusObj.metadata,
 									contentPackageInfos: hackStripReadonly<ScanInfoForPackages>(statusObj.packageInfos),
 									messages: hackStripReadonly<ITranslatableMessage[]>(statusObj.messages),
+									thumbnailUrl: statusObj.thumbnailUrl,
+									previewUrl: statusObj.previewUrl,
 								}
 
 								if (

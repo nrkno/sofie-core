@@ -138,15 +138,12 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 					}}
 					typeClass={props.layer && RundownUtils.getSourceLayerClassName(props.layer.type)}
 					itemElement={itemIcon.current}
-					contentMetaData={props.metadata || null}
 					noticeMessages={props.messages || null}
 					noticeLevel={
 						props.status !== null && props.status !== undefined ? getNoticeLevelForPieceStatus(props.status) : null
 					}
-					mediaPreviewUrl={props.mediaPreviewUrl}
+					previewUrl={props.adLibListItem.previewUrl}
 					contentPackageInfos={props.packageInfos}
-					pieceId={props.adLibListItem._id}
-					expectedPackages={props.adLibListItem.expectedPackages}
 					studio={props.studio}
 				/>
 			</td>

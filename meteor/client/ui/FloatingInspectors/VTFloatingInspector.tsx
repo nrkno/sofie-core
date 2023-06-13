@@ -4,22 +4,18 @@ import { TFunction, useTranslation } from 'react-i18next'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { FloatingInspector } from '../FloatingInspector'
 import { NoticeLevel } from '../../../lib/notifications/notifications'
-import { ExpectedPackage, VTContent } from '@sofie-automation/blueprints-integration'
-import { MediaObject } from '../../../lib/collections/MediaObjects'
+import { VTContent } from '@sofie-automation/blueprints-integration'
 import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { IStudioSettings } from '../../../lib/collections/Studios'
 import { PieceStatusCode } from '../../../lib/collections/Pieces'
-import { getPreviewUrlForExpectedPackagesAndContentMetaData } from '../../lib/ui/clipPreview'
 import { VideoPreviewPlayer } from '../../lib/VideoPreviewPlayer'
 import classNames from 'classnames'
 import { UIStudio } from '../../../lib/api/studios'
-import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ITranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
 
 interface IProps {
 	status: PieceStatusCode
-	mediaPreviewUrl?: string
 	typeClass?: string
 	showMiniInspector: boolean
 	itemElement: HTMLDivElement | null
@@ -28,16 +24,14 @@ interface IProps {
 	content: VTContent | undefined
 	noticeLevel: NoticeLevel | null
 	noticeMessages: ITranslatableMessage[] | null
-	contentMetaData: MediaObject | null
 	renderedDuration?: number | undefined
 
 	contentPackageInfos: ScanInfoForPackages | undefined
-	pieceId: PieceId
-	expectedPackages: ExpectedPackage.Any[] | undefined
 	studio: UIStudio | undefined
 	displayOn?: 'document' | 'viewport'
 
 	hideHoverscrubPreview?: boolean
+	previewUrl: string | undefined
 }
 
 function renderNotice(
@@ -102,10 +96,7 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 	timePosition,
 	content,
 	renderedDuration,
-	pieceId,
 	studio,
-	expectedPackages,
-	contentMetaData,
 	hideHoverscrubPreview,
 	noticeLevel,
 	noticeMessages,
@@ -114,6 +105,7 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 	position,
 	typeClass,
 	status,
+	previewUrl,
 }: IProps) => {
 	const { t } = useTranslation()
 	const inspectorRef = useRef<HTMLDivElement>(null)
@@ -123,14 +115,6 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 	const loop = content?.loop ?? false
 
 	const offsetTimePosition = timePosition + seek
-
-	const previewUrl: string | undefined = getPreviewUrlForExpectedPackagesAndContentMetaData(
-		pieceId,
-		studio,
-		studio?.settings.mediaPreviewsUrl,
-		expectedPackages,
-		contentMetaData
-	)
 
 	const showVideoPlayerInspector = !hideHoverscrubPreview && previewUrl
 	const showMiniInspectorClipData = shouldShowFloatingInspectorContent(status, content)

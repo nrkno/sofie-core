@@ -627,15 +627,12 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					noticeLevel={this.state.noticeLevel}
 					showMiniInspector={this.props.showMiniInspector}
 					timePosition={realCursorTimePosition}
-					mediaPreviewUrl={this.props.mediaPreviewUrl}
 					typeClass={this.props.typeClass}
-					contentMetaData={this.props.piece.contentMetaData}
 					noticeMessages={this.props.piece.messages || []}
 					renderedDuration={this.props.piece.renderedDuration || undefined}
 					contentPackageInfos={this.props.piece.contentPackageInfos}
-					pieceId={this.props.piece.instance.piece._id}
-					expectedPackages={this.props.piece.instance.piece.expectedPackages}
 					studio={this.props.studio}
+					previewUrl={this.props.piece.previewUrl}
 				/>
 			</React.Fragment>
 		)
