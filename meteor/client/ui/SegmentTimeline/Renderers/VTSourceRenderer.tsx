@@ -360,7 +360,9 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			let endOfContentAt: number = vtContent.sourceDuration + (vtContent.postrollDuration || 0)
 
 			if (Settings.useCountdownToFreezeFrame) {
-				const lastFreeze = this.props.piece.freezes && this.props.piece.freezes[this.props.piece.freezes.length - 1]
+				const lastFreeze =
+					this.props.piece.contentStatus?.freezes &&
+					this.props.piece.contentStatus?.freezes[this.props.piece.contentStatus?.freezes.length - 1]
 				const endingFreezeStart =
 					lastFreeze &&
 					lastFreeze.start >= vtContent.sourceDuration &&
@@ -420,8 +422,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					<>
 						{this.renderInfiniteItemContentEnded()}
 						{this.renderContentEndCountdown()}
-						{this.props.piece.scenes &&
-							this.props.piece.scenes.map(
+						{this.props.piece.contentStatus?.scenes &&
+							this.props.piece.contentStatus?.scenes.map(
 								(i) =>
 									i < itemDuration &&
 									i - seek >= 0 && (
@@ -432,8 +434,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 										></span>
 									)
 							)}
-						{this.props.piece.freezes &&
-							this.props.piece.freezes.map(
+						{this.props.piece.contentStatus?.freezes &&
+							this.props.piece.contentStatus?.freezes.map(
 								(i) =>
 									i.start < itemDuration &&
 									i.start - seek >= 0 && (
@@ -450,8 +452,8 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 										></span>
 									)
 							)}
-						{this.props.piece.blacks &&
-							this.props.piece.blacks.map(
+						{this.props.piece.contentStatus?.blacks &&
+							this.props.piece.contentStatus?.blacks.map(
 								(i) =>
 									i.start < itemDuration &&
 									i.start - seek >= 0 && (
@@ -480,10 +482,10 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					showMiniInspector={this.props.showMiniInspector}
 					timePosition={realCursorTimePosition}
 					typeClass={this.props.typeClass}
-					noticeMessages={this.props.piece.messages || []}
+					noticeMessages={this.props.piece.contentStatus?.messages || []}
 					renderedDuration={this.props.piece.renderedDuration || undefined}
 					studio={this.props.studio}
-					previewUrl={this.props.piece.previewUrl}
+					previewUrl={this.props.piece.contentStatus?.previewUrl}
 				/>
 			</React.Fragment>
 		)

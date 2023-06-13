@@ -79,7 +79,7 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 						outputLayer: this.props.piece.outputLayer,
 						selected: this.props.selected,
 						status: this.props.piece.status,
-						messages: this.props.piece.messages,
+						messages: this.props.piece.contentStatus?.messages,
 						studio: this.props.studio,
 					})}
 				</ContextMenuTrigger>

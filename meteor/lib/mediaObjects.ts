@@ -1,5 +1,4 @@
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
-import { MediaObject } from './collections/MediaObjects'
 import { PieceStatusCode } from './collections/Pieces'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
@@ -16,8 +15,6 @@ export interface ScanInfoForPackage {
 
 export interface PieceContentStatusObj {
 	status: PieceStatusCode
-	metadata: MediaObject | null
-	packageInfos: ScanInfoForPackages | undefined
 	messages: ITranslatableMessage[]
 	contentDuration: undefined // TODO - why is this never set?
 

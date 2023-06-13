@@ -33,10 +33,10 @@ export function VTRenderer({
 				}}
 				typeClass={typeClass}
 				itemElement={null}
-				noticeMessages={pieceInstance.messages || null}
+				noticeMessages={pieceInstance.contentStatus?.messages || null}
 				noticeLevel={status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null}
 				studio={studio}
-				previewUrl={pieceInstance.previewUrl}
+				previewUrl={pieceInstance.contentStatus?.previewUrl}
 			/>
 			{pieceInstance.instance.piece.name}
 		</>

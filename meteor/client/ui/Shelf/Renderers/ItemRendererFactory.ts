@@ -7,6 +7,7 @@ import { L3rdListItemRenderer } from './L3rdListItemRenderer'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { UIStudio } from '../../../../lib/api/studios'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { ReadonlyDeep } from 'type-fest'
 
 export interface ILayerItemRendererProps {
 	adLibListItem: IAdLibListItem
@@ -14,7 +15,7 @@ export interface ILayerItemRendererProps {
 	layer: ISourceLayer | undefined
 	outputLayer: IOutputLayer | undefined
 	status?: PieceStatusCode | null
-	messages?: ITranslatableMessage[] | null
+	messages?: ReadonlyDeep<ITranslatableMessage[]> | null
 	studio: UIStudio | undefined
 }
 

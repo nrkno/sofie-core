@@ -1,4 +1,4 @@
-import { IOutputLayer, ISourceLayer, PackageInfo } from '@sofie-automation/blueprints-integration'
+import { IOutputLayer, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import _ from 'underscore'
 import { AdLibAction } from '../../lib/collections/AdLibActions'
 import { AdLibPiece } from '../../lib/collections/AdLibPieces'
@@ -11,9 +11,9 @@ import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/d
 import { getUnfinishedPieceInstancesReactive } from './rundownLayouts'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { PieceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { PieceInstances } from '../collections'
 import { ReadonlyDeep } from 'type-fest'
+import { PieceContentStatusObj } from '../../lib/mediaObjects'
 
 export interface ShelfDisplayOptions {
 	enableBuckets: boolean
@@ -32,16 +32,9 @@ export interface AdLibPieceUi extends Omit<AdLibPiece, 'timelineObjectsString'> 
 	isClearSourceLayer?: boolean
 	disabled?: boolean
 	adlibAction?: AdLibAction | RundownBaselineAdLibAction
-	messages?: ITranslatableMessage[]
 	segmentId?: SegmentId
 
-	thumbnailUrl?: string | undefined
-	previewUrl?: string | undefined
-	packageName?: string | null
-
-	freezes?: ReadonlyDeep<Array<PackageInfo.Anomaly>>
-	blacks?: ReadonlyDeep<Array<PackageInfo.Anomaly>>
-	scenes?: ReadonlyDeep<Array<number>>
+	contentStatus?: ReadonlyDeep<PieceContentStatusObj>
 }
 
 export interface AdlibSegmentUi extends DBSegment {

@@ -96,10 +96,10 @@ export function PieceHoverInspector({
 					}}
 					typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 					itemElement={null}
-					noticeMessages={pieceInstance.messages || null}
+					noticeMessages={pieceInstance.contentStatus?.messages || null}
 					noticeLevel={noticeLevel}
 					studio={studio}
-					previewUrl={pieceInstance.previewUrl}
+					previewUrl={pieceInstance.contentStatus?.previewUrl}
 				/>
 			)
 	}

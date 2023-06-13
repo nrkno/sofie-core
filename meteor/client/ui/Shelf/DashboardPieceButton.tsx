@@ -137,7 +137,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	}
 
 	private renderVTLiveSpeak(renderThumbnail?: boolean) {
-		const thumbnailUrl = this.props.piece.thumbnailUrl
+		const thumbnailUrl = this.props.piece.contentStatus?.thumbnailUrl
 		const vtContent = this.props.piece.content as VTContent | undefined
 		const sourceDuration = vtContent?.sourceDuration
 
@@ -163,7 +163,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					}}
 					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
 					itemElement={null}
-					noticeMessages={this.props.piece.messages || null}
+					noticeMessages={this.props.piece.contentStatus?.messages || null}
 					noticeLevel={
 						this.props.piece.status !== null && this.props.piece.status !== undefined
 							? getNoticeLevelForPieceStatus(this.props.piece.status)
@@ -171,7 +171,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					}
 					studio={this.props.studio}
 					displayOn="viewport"
-					previewUrl={this.props.piece.previewUrl}
+					previewUrl={this.props.piece.contentStatus?.previewUrl}
 				/>
 				{thumbnailUrl && renderThumbnail && (
 					<div className="dashboard-panel__panel__button__thumbnail">

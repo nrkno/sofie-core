@@ -172,7 +172,7 @@ class AdLibRegionPanelBase extends MeteorReactComponent<
 	}
 
 	private renderPreview() {
-		const thumbnailUrl = this.props.piece?.thumbnailUrl
+		const thumbnailUrl = this.props.piece?.contentStatus?.thumbnailUrl
 		if (thumbnailUrl) {
 			return <img src={thumbnailUrl} className="adlib-region-panel__image" />
 		}

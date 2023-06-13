@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { ISourceLayer, NoteSeverity, PackageInfo, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import {
@@ -33,11 +33,11 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { PieceInstances, Segments } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { ReadonlyDeep } from 'type-fest'
+import { PieceContentStatusObj } from '../../../lib/mediaObjects'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -58,16 +58,8 @@ export type ISourceLayerUi = ISourceLayerExtended
 export interface PieceUi extends PieceExtended {
 	/** This item has already been linked to the parent item of the spanning item group */
 	linked?: boolean
-	/** Metadata object */
-	messages?: ITranslatableMessage[]
 
-	freezes?: ReadonlyDeep<Array<PackageInfo.Anomaly>>
-	blacks?: ReadonlyDeep<Array<PackageInfo.Anomaly>>
-	scenes?: ReadonlyDeep<Array<number>>
-
-	thumbnailUrl?: string | undefined
-	previewUrl?: string | undefined
-	packageName?: string | null
+	contentStatus?: ReadonlyDeep<PieceContentStatusObj>
 }
 
 export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'>

@@ -12,6 +12,7 @@ import classNames from 'classnames'
 import { UIStudio } from '../../../lib/api/studios'
 import { ITranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
+import { ReadonlyDeep } from 'type-fest'
 
 interface IProps {
 	status: PieceStatusCode
@@ -22,7 +23,7 @@ interface IProps {
 	timePosition: number
 	content: VTContent | undefined
 	noticeLevel: NoticeLevel | null
-	noticeMessages: ITranslatableMessage[] | null
+	noticeMessages: ReadonlyDeep<ITranslatableMessage[]> | null
 	renderedDuration?: number | undefined
 
 	studio: UIStudio | undefined
@@ -35,7 +36,7 @@ interface IProps {
 function renderNotice(
 	t: TFunction,
 	noticeLevel: NoticeLevel,
-	noticeMessages: ITranslatableMessage[] | null
+	noticeMessages: ReadonlyDeep<ITranslatableMessage[]> | null
 ): JSX.Element {
 	const messagesStr = noticeMessages ? noticeMessages.map((msg) => translateMessage(msg, t)).join('; ') : ''
 	return (

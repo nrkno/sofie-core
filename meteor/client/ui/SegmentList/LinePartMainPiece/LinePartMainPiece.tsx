@@ -80,8 +80,8 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 	const anomalies = useMemo(
 		() => (
 			<>
-				{pieceUi.scenes &&
-					pieceUi.scenes.map(
+				{pieceUi.contentStatus?.scenes &&
+					pieceUi.contentStatus?.scenes.map(
 						(i) =>
 							i < pieceMaxDuration &&
 							i - seek >= 0 && (
@@ -92,8 +92,8 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 								></span>
 							)
 					)}
-				{pieceUi.freezes &&
-					pieceUi.freezes.map(
+				{pieceUi.contentStatus?.freezes &&
+					pieceUi.contentStatus?.freezes.map(
 						(i) =>
 							i.start < pieceMaxDuration &&
 							i.start - seek >= 0 && (
@@ -107,8 +107,8 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 								></span>
 							)
 					)}
-				{pieceUi.blacks &&
-					pieceUi.blacks.map(
+				{pieceUi.contentStatus?.blacks &&
+					pieceUi.contentStatus?.blacks.map(
 						(i) =>
 							i.start < pieceMaxDuration &&
 							i.start - seek >= 0 && (
@@ -124,7 +124,7 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 					)}
 			</>
 		),
-		[pieceUi.blacks, pieceUi.freezes, pieceUi.scenes]
+		[pieceUi.contentStatus?.blacks, pieceUi.contentStatus?.freezes, pieceUi.contentStatus?.scenes]
 	)
 
 	const onPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {

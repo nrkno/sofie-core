@@ -29,8 +29,8 @@ export function VTThumbnailRenderer({
 
 	const vtContent = pieceInstance.instance.piece.content as VTContent
 
-	const previewUrl: string | undefined = pieceInstance.previewUrl
-	const thumbnailUrl: string | undefined = pieceInstance.thumbnailUrl
+	const previewUrl: string | undefined = pieceInstance.contentStatus?.previewUrl
+	const thumbnailUrl: string | undefined = pieceInstance.contentStatus?.thumbnailUrl
 
 	const noticeLevel = status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null
 
@@ -50,10 +50,10 @@ export function VTThumbnailRenderer({
 				}}
 				typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 				itemElement={null}
-				noticeMessages={pieceInstance.messages || null}
+				noticeMessages={pieceInstance.contentStatus?.messages || null}
 				noticeLevel={noticeLevel}
 				studio={studio}
-				previewUrl={pieceInstance.previewUrl}
+				previewUrl={pieceInstance.contentStatus?.previewUrl}
 			/>
 			<RundownTimingConsumer
 				filter={(timingContext) => ({

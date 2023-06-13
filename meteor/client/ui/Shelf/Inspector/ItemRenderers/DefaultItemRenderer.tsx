@@ -18,7 +18,7 @@ export default function DefaultItemRenderer(props: {
 	if (RundownUtils.isAdLibPiece(props.piece)) {
 		const piece = props.piece as IAdLibListItem
 
-		const packageName = piece.packageName ?? null
+		const packageName = piece.contentStatus?.packageName ?? null
 
 		return (
 			<>
@@ -47,7 +47,7 @@ export default function DefaultItemRenderer(props: {
 	} else {
 		const piece = props.piece.instance.piece as Piece
 
-		const packageName = props.piece.packageName ?? null
+		const packageName = props.piece.contentStatus?.packageName ?? null
 
 		return (
 			<>

@@ -2,7 +2,7 @@ import * as React from 'react'
 import { Tracker } from 'meteor/tracker'
 import { PieceUi } from './SegmentTimelineContainer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ISourceLayer, ITranslatableMessage } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
@@ -12,8 +12,7 @@ import { UIBucketContentStatuses, UIPieceContentStatuses } from '../Collections'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceContentStatusObj } from '../../../lib/mediaObjects'
 import { deepFreeze } from '@sofie-automation/corelib/dist/lib'
-import { ReadonlyDeep } from 'type-fest'
-import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
+import _ from 'underscore'
 
 type AnyPiece = {
 	piece?: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi | undefined
@@ -29,8 +28,6 @@ type IWrappedComponent<IProps extends AnyPiece, IState> = new (props: IProps, st
 
 const DEFAULT_STATUS = deepFreeze<PieceContentStatusObj>({
 	status: PieceStatusCode.UNKNOWN,
-	metadata: null,
-	packageInfos: undefined,
 	messages: [],
 	contentDuration: undefined,
 
@@ -43,14 +40,6 @@ const DEFAULT_STATUS = deepFreeze<PieceContentStatusObj>({
 
 	packageName: null,
 })
-
-/**
- * The collection is providing some types as `ReadonlyDeep`, but the consumers of this HOC are not expecting that.
- * This is a quick hack to remove the `ReadonlyDeep` wrapping, to satisfy the consumers until this HOC can be removed.
- */
-function hackStripReadonly<T extends object>(val: ReadonlyDeep<T> | ReadonlyObjectDeep<T> | undefined): T | undefined {
-	return val as T
-}
 
 /**
  * @deprecated This can now be achieved by a simple minimongo query against either UIPieceContentStatuses or UIBucketContentStatuses
@@ -106,20 +95,18 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 						const statusObj = statusDoc?.status ?? DEFAULT_STATUS
 
 						if (RundownUtils.isAdLibPieceOrAdLibListItem(piece)) {
-							if (statusObj.status !== piece.status || statusObj.metadata || statusObj.packageInfos) {
+							if (
+								statusObj.status !== piece.status ||
+								!overrides.piece ||
+								!_.isEqual(statusObj, (overrides.piece as AdLibPieceUi).contentStatus)
+							) {
 								// Deep clone the required bits
 								const origPiece = (overrides.piece || this.props.piece) as AdLibPieceUi
 								const pieceCopy: AdLibPieceUi = {
 									...(origPiece as AdLibPieceUi),
 									status: statusObj.status,
-									messages: hackStripReadonly<ITranslatableMessage[]>(statusObj.messages),
-									thumbnailUrl: statusObj.thumbnailUrl,
-									previewUrl: statusObj.previewUrl,
-									packageName: statusObj.packageName,
 
-									blacks: statusObj.blacks,
-									freezes: statusObj.freezes,
-									scenes: statusObj.scenes,
+									contentStatus: statusObj,
 								}
 
 								if (
@@ -135,7 +122,11 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 								}
 							}
 						} else {
-							if (statusObj.status !== piece.instance.piece.status || statusObj.metadata || statusObj.packageInfos) {
+							if (
+								statusObj.status !== piece.instance.piece.status ||
+								!overrides.piece ||
+								!_.isEqual(statusObj, (overrides.piece as PieceUi).contentStatus)
+							) {
 								// Deep clone the required bits
 								const origPiece = (overrides.piece || piece) as PieceUi
 								const pieceCopy: PieceUi = {
@@ -147,14 +138,8 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 											status: statusObj.status,
 										},
 									},
-									messages: hackStripReadonly<ITranslatableMessage[]>(statusObj.messages),
-									thumbnailUrl: statusObj.thumbnailUrl,
-									previewUrl: statusObj.previewUrl,
-									packageName: statusObj.packageName,
 
-									blacks: statusObj.blacks,
-									freezes: statusObj.freezes,
-									scenes: statusObj.scenes,
+									contentStatus: statusObj,
 								}
 
 								if (

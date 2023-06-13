@@ -217,8 +217,6 @@ export async function checkPieceContentStatusAndDependencies(
 	return [
 		{
 			status: PieceStatusCode.UNKNOWN,
-			metadata: null,
-			packageInfos: undefined,
 			messages: [],
 			contentDuration: undefined,
 
@@ -391,8 +389,6 @@ async function checkPieceContentMediaObjectStatus(
 
 	return {
 		status: pieceStatus,
-		metadata: metadata,
-		packageInfos: undefined,
 		messages: messages.map((msg) => msg.message),
 		contentDuration: undefined,
 
@@ -439,7 +435,6 @@ async function checkPieceContentExpectedPackageStatus(
 		expectedPackageId: ExpectedPackageId
 	) => Promise<Pick<PackageContainerPackageStatusDB, 'status'> | undefined>
 ): Promise<PieceContentStatusObj> {
-	let packageInfoToForward: ScanInfoForPackages | undefined = undefined
 	const settings: IStudioSettings | undefined = studio?.settings
 	let pieceStatus: PieceStatusCode = PieceStatusCode.UNKNOWN
 
@@ -552,72 +547,70 @@ async function checkPieceContentExpectedPackageStatus(
 			}
 		}
 	}
-	if (Object.keys(packageInfos).length) {
-		for (const [_packageId, packageInfo] of Object.entries<ScanInfoForPackage>(packageInfos)) {
-			const { scan, deepScan } = packageInfo
 
-			if (scan && scan.streams) {
-				const timebase = checkStreamFormatsAndCounts(
-					messages,
-					scan.streams,
-					(stream) => (deepScan ? buildFormatString(deepScan.field_order, stream) : null),
-					settings,
-					sourceLayer,
-					ignoreMediaAudioStatus
-				)
-				if (timebase) {
-					packageInfo.timebase = timebase // what todo?
+	for (const [_packageId, packageInfo] of Object.entries<ScanInfoForPackage>(packageInfos)) {
+		const { scan, deepScan } = packageInfo
 
-					// check for black/freeze frames
+		if (scan && scan.streams) {
+			const timebase = checkStreamFormatsAndCounts(
+				messages,
+				scan.streams,
+				(stream) => (deepScan ? buildFormatString(deepScan.field_order, stream) : null),
+				settings,
+				sourceLayer,
+				ignoreMediaAudioStatus
+			)
+			if (timebase) {
+				packageInfo.timebase = timebase // what todo?
 
-					const sourceDuration = piece.content.sourceDuration
+				// check for black/freeze frames
 
-					if (!piece.content.ignoreBlackFrames && deepScan?.blacks?.length) {
-						addFrameWarning(
-							messages,
-							timebase,
-							sourceDuration,
-							scan.format?.duration,
-							deepScan.blacks,
-							BlackFrameWarnings
-						)
-					}
-					if (!piece.content.ignoreFreezeFrame && deepScan?.freezes?.length) {
-						addFrameWarning(
-							messages,
-							timebase,
-							sourceDuration,
-							scan.format?.duration,
-							deepScan.freezes,
-							FreezeFrameWarnings
-						)
-					}
+				const sourceDuration = piece.content.sourceDuration
+
+				if (!piece.content.ignoreBlackFrames && deepScan?.blacks?.length) {
+					addFrameWarning(
+						messages,
+						timebase,
+						sourceDuration,
+						scan.format?.duration,
+						deepScan.blacks,
+						BlackFrameWarnings
+					)
+				}
+				if (!piece.content.ignoreFreezeFrame && deepScan?.freezes?.length) {
+					addFrameWarning(
+						messages,
+						timebase,
+						sourceDuration,
+						scan.format?.duration,
+						deepScan.freezes,
+						FreezeFrameWarnings
+					)
 				}
 			}
 		}
+	}
 
-		const firstPackage = Object.values<ScanInfoForPackage>(packageInfos)[0]
-		if (firstPackage) {
-			// TODO: support multiple packages:
-			if (firstPackage.deepScan?.freezes?.length) {
-				freezes = firstPackage.deepScan.freezes.map((i): PackageInfo.Anomaly => {
-					return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-				})
-			}
-			if (firstPackage.deepScan?.blacks?.length) {
-				blacks = firstPackage.deepScan.blacks.map((i): PackageInfo.Anomaly => {
-					return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-				})
-			}
-			if (firstPackage.deepScan?.scenes) {
-				scenes = _.compact(firstPackage.deepScan.scenes.map((i) => i * 1000)) // convert into milliseconds
-			}
-
-			packageName = firstPackage.packageName
+	const firstPackage = Object.values<ScanInfoForPackage>(packageInfos)[0]
+	if (firstPackage) {
+		// TODO: support multiple packages:
+		if (firstPackage.deepScan?.freezes?.length) {
+			freezes = firstPackage.deepScan.freezes.map((i): PackageInfo.Anomaly => {
+				return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+			})
+		}
+		if (firstPackage.deepScan?.blacks?.length) {
+			blacks = firstPackage.deepScan.blacks.map((i): PackageInfo.Anomaly => {
+				return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+			})
+		}
+		if (firstPackage.deepScan?.scenes) {
+			scenes = _.compact(firstPackage.deepScan.scenes.map((i) => i * 1000)) // convert into milliseconds
 		}
 
-		packageInfoToForward = packageInfos
+		packageName = firstPackage.packageName
 	}
+
 	if (messages.length) {
 		pieceStatus = messages.reduce((prev, msg) => Math.max(prev, msg.status), PieceStatusCode.UNKNOWN)
 	} else {
@@ -628,8 +621,6 @@ async function checkPieceContentExpectedPackageStatus(
 
 	return {
 		status: pieceStatus,
-		metadata: null,
-		packageInfos: packageInfoToForward,
 		messages: messages.map((msg) => msg.message),
 		contentDuration: undefined,
 
