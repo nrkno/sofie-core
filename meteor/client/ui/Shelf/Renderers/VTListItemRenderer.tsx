@@ -143,7 +143,6 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 						props.status !== null && props.status !== undefined ? getNoticeLevelForPieceStatus(props.status) : null
 					}
 					previewUrl={props.adLibListItem.previewUrl}
-					contentPackageInfos={props.packageInfos}
 					studio={props.studio}
 				/>
 			</td>

@@ -5,7 +5,6 @@ import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifica
 import { FloatingInspector } from '../FloatingInspector'
 import { NoticeLevel } from '../../../lib/notifications/notifications'
 import { VTContent } from '@sofie-automation/blueprints-integration'
-import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { IStudioSettings } from '../../../lib/collections/Studios'
 import { PieceStatusCode } from '../../../lib/collections/Pieces'
 import { VideoPreviewPlayer } from '../../lib/VideoPreviewPlayer'
@@ -26,7 +25,6 @@ interface IProps {
 	noticeMessages: ITranslatableMessage[] | null
 	renderedDuration?: number | undefined
 
-	contentPackageInfos: ScanInfoForPackages | undefined
 	studio: UIStudio | undefined
 	displayOn?: 'document' | 'viewport'
 

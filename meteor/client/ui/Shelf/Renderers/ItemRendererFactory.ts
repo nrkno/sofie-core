@@ -1,11 +1,9 @@
 import * as React from 'react'
 import { IAdLibListItem } from '../AdLibListItem'
 import { ISourceLayer, IOutputLayer, SourceLayerType } from '@sofie-automation/blueprints-integration'
-import { MediaObject } from '../../../../lib/collections/MediaObjects'
 import { DefaultListItemRenderer } from './DefaultListItemRenderer'
 import { VTListItemRenderer } from './VTListItemRenderer'
 import { L3rdListItemRenderer } from './L3rdListItemRenderer'
-import { ScanInfoForPackages } from '../../../../lib/mediaObjects'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { UIStudio } from '../../../../lib/api/studios'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
@@ -17,8 +15,6 @@ export interface ILayerItemRendererProps {
 	outputLayer: IOutputLayer | undefined
 	status?: PieceStatusCode | null
 	messages?: ITranslatableMessage[] | null
-	metadata?: MediaObject | null
-	packageInfos: ScanInfoForPackages | undefined
 	studio: UIStudio | undefined
 }
 

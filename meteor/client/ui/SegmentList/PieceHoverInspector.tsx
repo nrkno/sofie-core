@@ -98,7 +98,6 @@ export function PieceHoverInspector({
 					itemElement={null}
 					noticeMessages={pieceInstance.messages || null}
 					noticeLevel={noticeLevel}
-					contentPackageInfos={pieceInstance.contentPackageInfos}
 					studio={studio}
 					previewUrl={pieceInstance.previewUrl}
 				/>

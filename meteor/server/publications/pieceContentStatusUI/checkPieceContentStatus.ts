@@ -221,8 +221,15 @@ export async function checkPieceContentStatusAndDependencies(
 			packageInfos: undefined,
 			messages: [],
 			contentDuration: undefined,
+
+			freezes: [],
+			blacks: [],
+			scenes: [],
+
 			thumbnailUrl: undefined,
 			previewUrl: undefined,
+
+			packageName: null,
 		},
 		pieceDependencies,
 	]
@@ -239,6 +246,10 @@ async function checkPieceContentMediaObjectStatus(
 	let pieceStatus: PieceStatusCode = PieceStatusCode.UNKNOWN
 
 	const ignoreMediaAudioStatus = piece.content && piece.content.ignoreAudioFormat
+
+	let freezes: Array<PackageInfo.Anomaly> = []
+	let blacks: Array<PackageInfo.Anomaly> = []
+	let scenes: Array<number> = []
 
 	const messages: Array<ContentMessage> = []
 	let contentSeemsOK = false
@@ -299,25 +310,41 @@ async function checkPieceContentMediaObjectStatus(
 								// check for black/freeze frames
 								const sourceDuration = piece.content.sourceDuration
 
-								if (!piece.content.ignoreBlackFrames && mediaObject.mediainfo.blacks?.length) {
-									addFrameWarning(
-										messages,
-										timebase,
-										sourceDuration,
-										mediaObject.mediainfo.format?.duration,
-										mediaObject.mediainfo.blacks,
-										BlackFrameWarnings
-									)
+								if (mediaObject.mediainfo.blacks?.length) {
+									if (!piece.content.ignoreBlackFrames) {
+										addFrameWarning(
+											messages,
+											timebase,
+											sourceDuration,
+											mediaObject.mediainfo.format?.duration,
+											mediaObject.mediainfo.blacks,
+											BlackFrameWarnings
+										)
+									}
+
+									blacks = mediaObject.mediainfo.blacks.map((i): PackageInfo.Anomaly => {
+										return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+									})
 								}
-								if (!piece.content.ignoreFreezeFrame && mediaObject.mediainfo.freezes?.length) {
-									addFrameWarning(
-										messages,
-										timebase,
-										sourceDuration,
-										mediaObject.mediainfo.format?.duration,
-										mediaObject.mediainfo.freezes,
-										FreezeFrameWarnings
-									)
+								if (mediaObject.mediainfo.freezes?.length) {
+									if (!piece.content.ignoreFreezeFrame) {
+										addFrameWarning(
+											messages,
+											timebase,
+											sourceDuration,
+											mediaObject.mediainfo.format?.duration,
+											mediaObject.mediainfo.freezes,
+											FreezeFrameWarnings
+										)
+									}
+
+									freezes = mediaObject.mediainfo.freezes.map((i): PackageInfo.Anomaly => {
+										return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+									})
+								}
+
+								if (mediaObject.mediainfo.scenes) {
+									scenes = _.compact(mediaObject.mediainfo.scenes.map((i) => i * 1000)) // convert into milliseconds
 								}
 							}
 						}
@@ -368,12 +395,19 @@ async function checkPieceContentMediaObjectStatus(
 		packageInfos: undefined,
 		messages: messages.map((msg) => msg.message),
 		contentDuration: undefined,
+
+		freezes,
+		blacks,
+		scenes,
+
 		thumbnailUrl: metadata
 			? getAssetUrlFromContentMetaData(metadata, 'thumbnail', studio.settings.mediaPreviewsUrl)
 			: undefined,
 		previewUrl: metadata
 			? getAssetUrlFromContentMetaData(metadata, 'preview', studio.settings.mediaPreviewsUrl)
 			: undefined,
+
+		packageName: metadata?.mediaId || null,
 	}
 }
 
@@ -414,6 +448,11 @@ async function checkPieceContentExpectedPackageStatus(
 	const messages: Array<ContentMessage> = []
 	const packageInfos: ScanInfoForPackages = {}
 	let readyCount = 0
+
+	let freezes: Array<PackageInfo.Anomaly> = []
+	let blacks: Array<PackageInfo.Anomaly> = []
+	let scenes: Array<number> = []
+	let packageName: string | null = null
 
 	let thumbnailUrl: string | undefined
 	let previewUrl: string | undefined
@@ -557,6 +596,26 @@ async function checkPieceContentExpectedPackageStatus(
 			}
 		}
 
+		const firstPackage = Object.values<ScanInfoForPackage>(packageInfos)[0]
+		if (firstPackage) {
+			// TODO: support multiple packages:
+			if (firstPackage.deepScan?.freezes?.length) {
+				freezes = firstPackage.deepScan.freezes.map((i): PackageInfo.Anomaly => {
+					return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+				})
+			}
+			if (firstPackage.deepScan?.blacks?.length) {
+				blacks = firstPackage.deepScan.blacks.map((i): PackageInfo.Anomaly => {
+					return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+				})
+			}
+			if (firstPackage.deepScan?.scenes) {
+				scenes = _.compact(firstPackage.deepScan.scenes.map((i) => i * 1000)) // convert into milliseconds
+			}
+
+			packageName = firstPackage.packageName
+		}
+
 		packageInfoToForward = packageInfos
 	}
 	if (messages.length) {
@@ -573,8 +632,15 @@ async function checkPieceContentExpectedPackageStatus(
 		packageInfos: packageInfoToForward,
 		messages: messages.map((msg) => msg.message),
 		contentDuration: undefined,
+
+		freezes,
+		blacks,
+		scenes,
+
 		thumbnailUrl,
 		previewUrl,
+
+		packageName,
 	}
 }
 

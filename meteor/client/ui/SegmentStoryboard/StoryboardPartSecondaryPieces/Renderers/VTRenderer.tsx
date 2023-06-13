@@ -35,7 +35,6 @@ export function VTRenderer({
 				itemElement={null}
 				noticeMessages={pieceInstance.messages || null}
 				noticeLevel={status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null}
-				contentPackageInfos={pieceInstance.contentPackageInfos}
 				studio={studio}
 				previewUrl={pieceInstance.previewUrl}
 			/>

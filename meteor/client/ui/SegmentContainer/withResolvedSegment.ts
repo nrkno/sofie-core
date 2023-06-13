@@ -1,6 +1,6 @@
 import * as React from 'react'
 import * as _ from 'underscore'
-import { ISourceLayer, NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
+import { ISourceLayer, NoteSeverity, PackageInfo, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import {
@@ -18,7 +18,6 @@ import { PartInstance } from '../../../lib/collections/PartInstances'
 import { Part } from '../../../lib/collections/Parts'
 import { slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
-import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { RundownLayoutFilterBase, RundownViewLayout } from '../../../lib/collections/RundownLayouts'
 import { getReactivePieceNoteCountsForSegment } from './getReactivePieceNoteCountsForSegment'
@@ -38,6 +37,7 @@ import { ITranslatableMessage } from '@sofie-automation/corelib/dist/Translatabl
 import { PieceInstances, Segments } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
+import { ReadonlyDeep } from 'type-fest'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -59,12 +59,15 @@ export interface PieceUi extends PieceExtended {
 	/** This item has already been linked to the parent item of the spanning item group */
 	linked?: boolean
 	/** Metadata object */
-	contentMetaData?: any
-	contentPackageInfos?: ScanInfoForPackages
 	messages?: ITranslatableMessage[]
+
+	freezes?: ReadonlyDeep<Array<PackageInfo.Anomaly>>
+	blacks?: ReadonlyDeep<Array<PackageInfo.Anomaly>>
+	scenes?: ReadonlyDeep<Array<number>>
 
 	thumbnailUrl?: string | undefined
 	previewUrl?: string | undefined
+	packageName?: string | null
 }
 
 export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'>

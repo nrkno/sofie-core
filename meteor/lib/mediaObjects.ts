@@ -21,6 +21,12 @@ export interface PieceContentStatusObj {
 	messages: ITranslatableMessage[]
 	contentDuration: undefined // TODO - why is this never set?
 
+	freezes: Array<PackageInfo.Anomaly>
+	blacks: Array<PackageInfo.Anomaly>
+	scenes: Array<number>
+
 	thumbnailUrl: string | undefined
 	previewUrl: string | undefined
+
+	packageName: string | null
 }

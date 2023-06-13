@@ -169,7 +169,6 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 							? getNoticeLevelForPieceStatus(this.props.piece.status)
 							: null
 					}
-					contentPackageInfos={this.props.piece.contentPackageInfos}
 					studio={this.props.studio}
 					displayOn="viewport"
 					previewUrl={this.props.piece.previewUrl}

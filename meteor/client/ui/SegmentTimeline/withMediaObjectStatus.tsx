@@ -10,7 +10,7 @@ import { AdLibPieceUi } from '../../lib/shelf'
 import { UIStudio } from '../../../lib/api/studios'
 import { UIBucketContentStatuses, UIPieceContentStatuses } from '../Collections'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { PieceContentStatusObj, ScanInfoForPackages } from '../../../lib/mediaObjects'
+import { PieceContentStatusObj } from '../../../lib/mediaObjects'
 import { deepFreeze } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
@@ -33,8 +33,15 @@ const DEFAULT_STATUS = deepFreeze<PieceContentStatusObj>({
 	packageInfos: undefined,
 	messages: [],
 	contentDuration: undefined,
+
+	blacks: [],
+	freezes: [],
+	scenes: [],
+
 	thumbnailUrl: undefined,
 	previewUrl: undefined,
+
+	packageName: null,
 })
 
 /**
@@ -105,11 +112,14 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 								const pieceCopy: AdLibPieceUi = {
 									...(origPiece as AdLibPieceUi),
 									status: statusObj.status,
-									contentMetaData: statusObj.metadata,
-									contentPackageInfos: hackStripReadonly<ScanInfoForPackages>(statusObj.packageInfos),
 									messages: hackStripReadonly<ITranslatableMessage[]>(statusObj.messages),
 									thumbnailUrl: statusObj.thumbnailUrl,
 									previewUrl: statusObj.previewUrl,
+									packageName: statusObj.packageName,
+
+									blacks: statusObj.blacks,
+									freezes: statusObj.freezes,
+									scenes: statusObj.scenes,
 								}
 
 								if (
@@ -137,11 +147,14 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 											status: statusObj.status,
 										},
 									},
-									contentMetaData: statusObj.metadata,
-									contentPackageInfos: hackStripReadonly<ScanInfoForPackages>(statusObj.packageInfos),
 									messages: hackStripReadonly<ITranslatableMessage[]>(statusObj.messages),
 									thumbnailUrl: statusObj.thumbnailUrl,
 									previewUrl: statusObj.previewUrl,
+									packageName: statusObj.packageName,
+
+									blacks: statusObj.blacks,
+									freezes: statusObj.freezes,
+									scenes: statusObj.scenes,
 								}
 
 								if (

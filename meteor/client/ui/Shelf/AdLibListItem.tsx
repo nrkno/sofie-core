@@ -2,7 +2,6 @@ import * as React from 'react'
 import ClassNames from 'classnames'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ISourceLayer, IOutputLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
-import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { unprotectString } from '../../../lib/lib'
 import renderItem from './Renderers/ItemRendererFactory'
@@ -16,8 +15,6 @@ import { UIStudio } from '../../../lib/api/studios'
 
 export interface IAdLibListItem extends AdLibPieceUi {
 	status: PieceStatusCode
-	contentMetaData?: any
-	contentPackageInfos?: ScanInfoForPackages
 	sourceLayer?: ISourceLayer
 	outputLayer?: IOutputLayer
 	isHidden?: boolean
@@ -83,8 +80,6 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 						selected: this.props.selected,
 						status: this.props.piece.status,
 						messages: this.props.piece.messages,
-						metadata: this.props.piece.contentMetaData,
-						packageInfos: this.props.piece.contentPackageInfos,
 						studio: this.props.studio,
 					})}
 				</ContextMenuTrigger>

@@ -1,9 +1,6 @@
-import _ from 'underscore'
 import { EvsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import React, { useMemo, useState, useRef } from 'react'
 import { PieceExtended } from '../../../../lib/Rundown'
-import { MediaObject } from '../../../../lib/collections/MediaObjects'
-import { PackageInfo, VTContent } from '@sofie-automation/blueprints-integration'
 // TODO: Move to a shared lib file
 import { getSplitItems } from '../../SegmentContainer/getSplitItems'
 import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStatus'
@@ -18,7 +15,6 @@ import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
 import { UIStudio } from '../../../../lib/api/studios'
 import classNames from 'classnames'
 import { PieceMultistepChevron } from '../../SegmentContainer/PieceMultistepChevron'
-import { ScanInfoForPackage } from '../../../../lib/mediaObjects'
 
 interface IProps {
 	partId: PartId
@@ -53,88 +49,6 @@ function widthInBase(pieceMaxDuration: number, timelineBase: number): number {
 	return size * 100
 }
 
-function getScenes(piece: PieceUi): Array<number> | undefined {
-	if (piece.contentPackageInfos) {
-		// TODO: support multiple packages:
-		const contentPackageInfos = Object.values<ScanInfoForPackage>(piece.contentPackageInfos)
-		if (contentPackageInfos[0]?.deepScan?.scenes) {
-			return _.compact(contentPackageInfos[0].deepScan.scenes.map((i) => i * 1000)) // convert into milliseconds
-		}
-	} else {
-		// Fallback to media objects:
-		const metadata = piece.contentMetaData as MediaObject
-		if (metadata && metadata.mediainfo && metadata.mediainfo.scenes) {
-			return _.compact(metadata.mediainfo.scenes.map((i) => i * 1000)) // convert into milliseconds
-		}
-	}
-}
-
-function getFreezes(piece: PieceUi): Array<PackageInfo.Anomaly> | undefined {
-	if ((piece.instance.piece.content as VTContent | undefined)?.ignoreFreezeFrame) {
-		return
-	}
-
-	if (piece.contentPackageInfos) {
-		let items: Array<PackageInfo.Anomaly> = []
-		// add freezes
-		// TODO: support multiple packages:
-		const contentPackageInfos = Object.values<ScanInfoForPackage>(piece.contentPackageInfos)
-		if (contentPackageInfos[0]?.deepScan?.freezes?.length) {
-			items = contentPackageInfos[0].deepScan.freezes.map((i): PackageInfo.Anomaly => {
-				return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-			})
-		}
-		return items
-	} else {
-		// Fallback to media objects:
-		const metadata = piece.contentMetaData as MediaObject
-		let items: Array<PackageInfo.Anomaly> = []
-		// add freezes
-		if (metadata && metadata.mediainfo && metadata.mediainfo.freezes?.length) {
-			items = metadata.mediainfo.freezes.map((i): PackageInfo.Anomaly => {
-				return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-			})
-		}
-		return items
-	}
-}
-
-function getBlacks(piece: PieceUi): Array<PackageInfo.Anomaly> | undefined {
-	if ((piece.instance.piece.content as VTContent | undefined)?.ignoreBlackFrames) {
-		return
-	}
-
-	if (piece.contentPackageInfos) {
-		let items: Array<PackageInfo.Anomaly> = []
-		// add blacks
-		// TODO: support multiple packages:
-		const contentPackageInfos = Object.values<ScanInfoForPackage>(piece.contentPackageInfos)
-		if (contentPackageInfos[0]?.deepScan?.blacks) {
-			items = [
-				...items,
-				...contentPackageInfos[0].deepScan.blacks.map((i): PackageInfo.Anomaly => {
-					return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-				}),
-			]
-		}
-		return items
-	} else {
-		// Fallback to media objects:
-		const metadata = piece.contentMetaData as MediaObject
-		let items: Array<PackageInfo.Anomaly> = []
-		// add blacks
-		if (metadata && metadata.mediainfo && metadata.mediainfo.blacks) {
-			items = [
-				...items,
-				...metadata.mediainfo.blacks.map((i): PackageInfo.Anomaly => {
-					return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
-				}),
-			]
-		}
-		return items
-	}
-}
-
 // TODO: Create useMediaObjectStatus that would set up new subscriptions
 export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function LinePartMainPiece({
 	partId,
@@ -163,15 +77,11 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 
 	const seek = (piece.instance.piece.content as any).seek ?? 0
 
-	const blacks = useMemo(() => getBlacks(pieceUi), [pieceUi.contentPackageInfos?.[0], pieceUi.contentMetaData])
-	const freezes = useMemo(() => getFreezes(pieceUi), [pieceUi.contentPackageInfos?.[0], pieceUi.contentMetaData])
-	const scenes = useMemo(() => getScenes(pieceUi), [pieceUi.contentPackageInfos?.[0], pieceUi.contentMetaData])
-
 	const anomalies = useMemo(
 		() => (
 			<>
-				{scenes &&
-					scenes.map(
+				{pieceUi.scenes &&
+					pieceUi.scenes.map(
 						(i) =>
 							i < pieceMaxDuration &&
 							i - seek >= 0 && (
@@ -182,8 +92,8 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 								></span>
 							)
 					)}
-				{freezes &&
-					freezes.map(
+				{pieceUi.freezes &&
+					pieceUi.freezes.map(
 						(i) =>
 							i.start < pieceMaxDuration &&
 							i.start - seek >= 0 && (
@@ -197,8 +107,8 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 								></span>
 							)
 					)}
-				{blacks &&
-					blacks.map(
+				{pieceUi.blacks &&
+					pieceUi.blacks.map(
 						(i) =>
 							i.start < pieceMaxDuration &&
 							i.start - seek >= 0 && (
@@ -214,7 +124,7 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 					)}
 			</>
 		),
-		[blacks, freezes, scenes]
+		[pieceUi.blacks, pieceUi.freezes, pieceUi.scenes]
 	)
 
 	const onPointerEnter = (e: React.PointerEvent<HTMLDivElement>) => {
