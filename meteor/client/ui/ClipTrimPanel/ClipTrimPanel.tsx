@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ensureHasTrailingSlash } from '../../lib/lib'
+import { ensureHasTrailingSlash } from '../../../lib/lib'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { Piece } from '../../../lib/collections/Pieces'
 import { PubSub } from '../../../lib/api/pubsub'

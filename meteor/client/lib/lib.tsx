@@ -51,14 +51,6 @@ export function fetchFrom(input: RequestInfo, init?: RequestInit): Promise<Respo
 	})
 }
 
-export function ensureHasTrailingSlash(input: string | null): string | undefined {
-	if (input) {
-		return input.endsWith('/') ? input : input + '/'
-	} else {
-		return undefined
-	}
-}
-
 /**
  * This CSS Variable is used to indicate to the UI that it's being run on a Browser without ordinary pointers
  * but one that emulates mouse-clicks using some other input method (like a Stream Deck).
