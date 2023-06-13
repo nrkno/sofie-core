@@ -67,6 +67,7 @@ Object {
   "currentPartInstanceId": null,
   "externalId": "MOCK_RUNDOWNPLAYLIST",
   "holdState": 0,
+  "lastTakeTime": 0,
   "modified": 0,
   "name": "Default RundownPlaylist",
   "nextPartInstanceId": null,

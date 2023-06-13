@@ -59,6 +59,8 @@ export async function activateRundownPlaylist(
 			p.currentPartInstanceId = null
 			p.nextPartInstanceId = null
 			p.previousPartInstanceId = null
+
+			delete p.lastTakeTime
 			return p
 		})
 
