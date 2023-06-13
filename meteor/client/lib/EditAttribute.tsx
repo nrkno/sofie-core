@@ -16,7 +16,7 @@ import { FloatInputControl } from './Components/FloatInput'
 import { joinLines, MultiLineTextInputControl, splitValueIntoLines } from './Components/MultiLineTextInput'
 import { JsonTextInputControl, tryParseJson } from './Components/JsonTextInput'
 
-interface IEditAttribute extends IEditAttributeBaseProps {
+export interface IEditAttribute extends IEditAttributeBaseProps {
 	type: EditAttributeType
 }
 export type EditAttributeType =

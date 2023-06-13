@@ -1,0 +1,144 @@
+$item-padding-left: 1em;
+$item-padding-top: 1em;
+$item-padding-bottom: 1em;
+
+$section-border-width: 0.5em;
+$section-border-margin: 0.25em;
+
+.gui-settings {
+	// background-color: red;
+
+	margin-bottom: 90vh;
+
+	> .gui-settings-filter {
+		display: block;
+
+		position: relative;
+
+		padding: 0.5em;
+
+		> input {
+			width: 100%;
+		}
+		> .clear-button {
+			// Place over the input, to the right:
+			position: absolute;
+			right: 0.6em;
+			top: 0.6em;
+			z-index: 1;
+			padding: 0.5em;
+			background: transparent;
+		}
+	}
+
+	> .gui-settings-verify-warning {
+		background-color: rgba(255, 255, 0, 0.5);
+		padding: 0.5em;
+	}
+
+	> .gui-settings-warnings {
+		background-color: rgba(255, 255, 0, 0.5);
+		padding: 0.5em;
+
+		> h3 {
+			margin: 0;
+			padding: 0;
+		}
+	}
+
+	.gui-settings-list {
+		> .gui-settings-list__item {
+			padding-left: $item-padding-left;
+			padding-top: $item-padding-top;
+			padding-bottom: $item-padding-bottom;
+
+			&:hover:not(:has(.gui-settings-list__item:hover)):hover {
+				background-color: rgba(127, 127, 127, 0.05);
+			}
+			&.filter-hidden {
+				display: none;
+			}
+		}
+		&.outer {
+			> .gui-settings-list__item {
+				padding: 0;
+				&:hover {
+					background-color: transparent;
+				}
+			}
+		}
+	}
+	.gui-settings-section {
+		border-left: $section-border-width solid rgba(127, 127, 127, 0.25);
+		transition: border-color 0.2s;
+		&:hover {
+			border-color: rgba(127, 127, 127, 0.25);
+		}
+
+		&.collapsed {
+			> .gui-settings-list {
+				display: none;
+			}
+		}
+		> .content {
+			padding-left: $item-padding-left;
+
+			> .gui-settings__name {
+				margin: 0;
+				font-size: 125%;
+				> a.link-icon {
+					// (Link icon)
+					font-size: 80%;
+				}
+			}
+			&:hover > .gui-settings__name > a.link-icon {
+				opacity: 0.5;
+			}
+
+			> .description {
+			}
+			> .collapse-section {
+				float: right;
+			}
+		}
+		> .gui-settings-list {
+			> .gui-settings-list__item {
+				// padding-left: $item-padding-left-inner;
+				> .gui-settings-section {
+					margin-left: $section-border-margin - $item-padding-left;
+				}
+			}
+		}
+	}
+	.gui-settings-setting {
+		> .gui-settings__name {
+			margin: 0;
+			font-size: 100%;
+			font-weight: bold;
+		}
+		&:hover > .gui-settings__name > a.link-icon {
+			opacity: 0.5;
+		}
+
+		> .description {
+		}
+		> .warning {
+			background-color: rgba(255, 255, 0, 0.5);
+			padding: 0.5em;
+		}
+		> .content {
+		}
+	}
+
+	// (Link icon):
+	.gui-settings__name > a.link-icon {
+		color: inherit;
+		margin-left: -$item-padding-left;
+		width: $item-padding-left;
+		opacity: 0; // only visible on hover
+		transition: opacity 0.5s;
+		&:hover {
+			opacity: 1 !important;
+		}
+	}
+}

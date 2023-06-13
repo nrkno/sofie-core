@@ -5,7 +5,7 @@ import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 export function RedirectToBlueprintButton(props: { id: BlueprintId | undefined }): JSX.Element {
 	const history = useHistory()
 
-	const redirectToId = useCallback(() => history.push('/settings/showStyleBase/' + props.id), [props.id])
+	const redirectToId = useCallback(() => history.push('/settings/blueprint/' + props.id), [props.id])
 
 	return (
 		<button className="btn btn-primary btn-add-new" onClick={redirectToId} disabled={!props.id}>

@@ -154,6 +154,11 @@ export interface AsyncOnlyMongoCollection<DBInterface extends { _id: ProtectedSt
 	 */
 	insertAsync(doc: DBInterface): Promise<DBInterface['_id']>
 
+	// async insertAsync(doc: DBInterface): Promise<DBInterface['_id']> {
+	// 	return makePromise(() => {
+	// 		return this.insert(doc)
+	// 	})
+	// }
 	/**
 	 * Insert multiple documents
 	 * @param documents The documents to insert

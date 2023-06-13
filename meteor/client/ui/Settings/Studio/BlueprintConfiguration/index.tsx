@@ -17,6 +17,7 @@ interface StudioBlueprintConfigurationSettingsProps {
 	studio: DBStudio
 }
 
+/** @deprecated */
 export function StudioBlueprintConfigurationSettings(props: StudioBlueprintConfigurationSettingsProps): JSX.Element {
 	const { t } = useTranslation()
 

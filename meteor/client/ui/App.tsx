@@ -33,7 +33,8 @@ import {
 	getReportNotifications,
 } from '../lib/localStorage'
 import Status from './Status'
-import { Settings as SettingsView } from './Settings'
+import { Settings as SettingsViewOLD } from './Settings'
+import { SettingsView } from './Settings/SettingsView'
 import TestTools from './TestTools'
 import { RundownList } from './RundownList'
 import { RundownView } from './RundownView'
@@ -325,6 +326,14 @@ export const App: React.FC = function App() {
 									render={() => (
 										<RequireAuth>
 											<Status />
+										</RequireAuth>
+									)}
+								/>
+								<Route
+									path="/settingsOLD"
+									render={() => (
+										<RequireAuth>
+											<SettingsViewOLD />
 										</RequireAuth>
 									)}
 								/>
