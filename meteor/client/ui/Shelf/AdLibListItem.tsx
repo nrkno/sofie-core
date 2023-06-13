@@ -9,12 +9,10 @@ import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { setShelfContextMenuContext, ContextType as MenuContextType } from './ShelfContextMenu'
-import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { AdLibPieceUi } from '../../lib/shelf'
 import { UIStudio } from '../../../lib/api/studios'
 
 export interface IAdLibListItem extends AdLibPieceUi {
-	status: PieceStatusCode
 	sourceLayer?: ISourceLayer
 	outputLayer?: IOutputLayer
 	isHidden?: boolean
@@ -78,7 +76,7 @@ export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(
 						layer: this.props.layer,
 						outputLayer: this.props.piece.outputLayer,
 						selected: this.props.selected,
-						status: this.props.piece.status,
+						status: this.props.piece.contentStatus?.status,
 						messages: this.props.piece.contentStatus?.messages,
 						studio: this.props.studio,
 					})}

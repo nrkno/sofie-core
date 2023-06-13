@@ -40,8 +40,6 @@ export interface PieceGeneric extends Omit<IBlueprintPieceGeneric, 'content'> {
 
 	content: SomeContent
 
-	/** Playback availability status */
-	status: PieceStatusCode
 	/** A flag to signal that a given Piece has no content, and exists only as a marker on the timeline */
 	virtual?: boolean
 	/** The id of the piece this piece is a continuation of. If it is a continuation, the inTranstion must not be set, and enable.start must be 0 */

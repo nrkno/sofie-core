@@ -27,7 +27,6 @@ import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import {
 	EmptyPieceTimelineObjectsBlob,
 	Piece,
-	PieceStatusCode,
 	serializePieceTimelineObjectsBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
@@ -108,7 +107,6 @@ export function postProcessPieces(
 			startRundownId: rundownId,
 			startSegmentId: segmentId,
 			startPartId: partId,
-			status: PieceStatusCode.UNKNOWN,
 			invalid: setInvalid ?? false,
 			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		}
@@ -244,7 +242,6 @@ export function postProcessAdLibPieces(
 			_id: protectString(docId),
 			rundownId: rundownId,
 			partId: partId,
-			status: PieceStatusCode.UNKNOWN,
 			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		}
 

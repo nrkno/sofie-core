@@ -25,14 +25,14 @@ export function VTThumbnailRenderer({
 	layer,
 	height,
 }: IProps): JSX.Element {
-	const status = pieceInstance.instance.piece.status
+	const status = pieceInstance.contentStatus?.status
 
 	const vtContent = pieceInstance.instance.piece.content as VTContent
 
 	const previewUrl: string | undefined = pieceInstance.contentStatus?.previewUrl
 	const thumbnailUrl: string | undefined = pieceInstance.contentStatus?.thumbnailUrl
 
-	const noticeLevel = status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null
+	const noticeLevel = getNoticeLevelForPieceStatus(status)
 
 	return (
 		<>

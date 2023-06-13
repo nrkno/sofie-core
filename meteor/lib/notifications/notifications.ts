@@ -537,10 +537,11 @@ export class Notification extends EventEmitter {
 	}
 }
 
-export function getNoticeLevelForPieceStatus(statusCode: PieceStatusCode): NoticeLevel | null {
+export function getNoticeLevelForPieceStatus(statusCode: PieceStatusCode | undefined): NoticeLevel | null {
 	switch (statusCode) {
 		case PieceStatusCode.OK:
 		case PieceStatusCode.UNKNOWN:
+		case undefined:
 			return null
 		case PieceStatusCode.SOURCE_NOT_SET:
 			return NoticeLevel.CRITICAL

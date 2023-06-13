@@ -105,7 +105,6 @@ export type AdLibPieceFields =
 	| 'floated'
 	| 'rundownId'
 	| 'partId'
-	| 'status'
 	| 'tags'
 	| 'uniquenessId'
 export const adLibPieceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<AdLibPieceFields>>({
@@ -124,7 +123,6 @@ export const adLibPieceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<Ad
 	floated: 1,
 	partId: 1,
 	rundownId: 1,
-	status: 1,
 	tags: 1,
 	uniquenessId: 1,
 })

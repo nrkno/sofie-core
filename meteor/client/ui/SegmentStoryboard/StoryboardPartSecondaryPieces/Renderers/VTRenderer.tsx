@@ -12,7 +12,7 @@ export function VTRenderer({
 	studio,
 	typeClass,
 }: IDefaultRendererProps): JSX.Element {
-	const status = pieceInstance.instance.piece.status
+	const status = pieceInstance.contentStatus?.status
 
 	const vtContent = pieceInstance.instance.piece.content as VTContent
 
@@ -34,7 +34,7 @@ export function VTRenderer({
 				typeClass={typeClass}
 				itemElement={null}
 				noticeMessages={pieceInstance.contentStatus?.messages || null}
-				noticeLevel={status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null}
+				noticeLevel={getNoticeLevelForPieceStatus(status)}
 				studio={studio}
 				previewUrl={pieceInstance.contentStatus?.previewUrl}
 			/>

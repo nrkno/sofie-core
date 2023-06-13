@@ -95,16 +95,11 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 						const statusObj = statusDoc?.status ?? DEFAULT_STATUS
 
 						if (RundownUtils.isAdLibPieceOrAdLibListItem(piece)) {
-							if (
-								statusObj.status !== piece.status ||
-								!overrides.piece ||
-								!_.isEqual(statusObj, (overrides.piece as AdLibPieceUi).contentStatus)
-							) {
+							if (!overrides.piece || !_.isEqual(statusObj, (overrides.piece as AdLibPieceUi).contentStatus)) {
 								// Deep clone the required bits
 								const origPiece = (overrides.piece || this.props.piece) as AdLibPieceUi
 								const pieceCopy: AdLibPieceUi = {
 									...(origPiece as AdLibPieceUi),
-									status: statusObj.status,
 
 									contentStatus: statusObj,
 								}
@@ -122,22 +117,10 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 								}
 							}
 						} else {
-							if (
-								statusObj.status !== piece.instance.piece.status ||
-								!overrides.piece ||
-								!_.isEqual(statusObj, (overrides.piece as PieceUi).contentStatus)
-							) {
+							if (!overrides.piece || !_.isEqual(statusObj, (overrides.piece as PieceUi).contentStatus)) {
 								// Deep clone the required bits
-								const origPiece = (overrides.piece || piece) as PieceUi
 								const pieceCopy: PieceUi = {
 									...((overrides.piece || piece) as PieceUi),
-									instance: {
-										...origPiece.instance,
-										piece: {
-											...origPiece.instance.piece,
-											status: statusObj.status,
-										},
-									},
 
 									contentStatus: statusObj,
 								}

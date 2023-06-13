@@ -253,7 +253,6 @@ describe('lib/mediaObjects', () => {
 
 		const piece1 = literal<PieceGeneric>({
 			_id: protectString('piece1'),
-			status: PieceStatusCode.UNKNOWN,
 			name: 'Test_file',
 			prerollDuration: 0,
 			externalId: '',
@@ -341,7 +340,6 @@ describe('lib/mediaObjects', () => {
 
 		const piece2 = literal<PieceGeneric>({
 			_id: protectString('piece2'),
-			status: PieceStatusCode.UNKNOWN,
 			name: 'Test_file_2',
 			prerollDuration: 0,
 			externalId: '',
@@ -358,7 +356,6 @@ describe('lib/mediaObjects', () => {
 
 		const piece3 = literal<PieceGeneric>({
 			_id: protectString('piece3'),
-			status: PieceStatusCode.UNKNOWN,
 			name: 'Test_file_3',
 			prerollDuration: 0,
 			externalId: '',

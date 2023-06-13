@@ -26,6 +26,7 @@ import { isTouchDevice } from '../../lib/lib'
 import { AdLibPieceUi } from '../../lib/shelf'
 import { protectString } from '../../../lib/lib'
 import { UIStudio } from '../../../lib/api/studios'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export interface IDashboardButtonProps {
 	piece: IAdLibListItem
@@ -151,7 +152,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					</span>
 				)}
 				<VTFloatingInspector
-					status={this.props.piece.status}
+					status={this.props.piece.contentStatus?.status ?? PieceStatusCode.UNKNOWN}
 					showMiniInspector={this.state.isHovered}
 					timePosition={this.state.timePosition}
 					content={vtContent}
@@ -164,11 +165,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
 					itemElement={null}
 					noticeMessages={this.props.piece.contentStatus?.messages || null}
-					noticeLevel={
-						this.props.piece.status !== null && this.props.piece.status !== undefined
-							? getNoticeLevelForPieceStatus(this.props.piece.status)
-							: null
-					}
+					noticeLevel={getNoticeLevelForPieceStatus(this.props.piece.contentStatus?.status)}
 					studio={this.props.studio}
 					displayOn="viewport"
 					previewUrl={this.props.piece.contentStatus?.previewUrl}
@@ -420,7 +417,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						selected: this.props.isNext || this.props.isSelected,
 					},
 					!this.inBucket && this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type),
-					RundownUtils.getPieceStatusClassName(this.props.piece.status),
+					RundownUtils.getPieceStatusClassName(this.props.piece.contentStatus?.status),
 					...(this.props.piece.tags ? this.props.piece.tags.map((tag) => `piece-tag--${tag}`) : [])
 				)}
 				style={{

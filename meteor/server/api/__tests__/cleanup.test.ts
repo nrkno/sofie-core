@@ -189,7 +189,6 @@ async function setDefaultDatatoDB(env: DefaultEnvironment, now: number) {
 		startPartId: partId,
 		startRundownId: rundownId,
 		startSegmentId: segmentId,
-		status: '' as any,
 		timelineObjectsString: '' as any,
 	}
 	const pieceId = await Pieces.mutableCollection.insertAsync(piece)

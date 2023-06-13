@@ -45,7 +45,6 @@ import { i18nTranslator } from '../i18n'
 import { AdLibPieceUi, AdlibSegmentUi } from '../../lib/shelf'
 import { getShelfFollowsOnAir, getShowHiddenSourceLayers } from '../../lib/localStorage'
 import { sortAdlibs } from '../../../lib/Rundown'
-import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { AdLibListView } from './AdLibListView'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
@@ -107,7 +106,6 @@ function actionToAdLibPieceUi(
 	return literal<AdLibPieceUi>({
 		_id: protectString(`${action._id}`),
 		name: translateMessage(action.display.label, i18nTranslator),
-		status: PieceStatusCode.UNKNOWN,
 		isAction: true,
 		expectedDuration: 0,
 		externalId: unprotectString(action._id),
@@ -415,7 +413,6 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 								literal<AdLibPieceUi>({
 									_id: protectString(`sticky_${layer._id}`),
 									name: t('Last {{layerName}}', { layerName: layer.abbreviation || layer.name }),
-									status: PieceStatusCode.UNKNOWN,
 									isSticky: true,
 									isGlobal: true,
 									expectedDuration: 0,
@@ -492,7 +489,6 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 							literal<AdLibPieceUi>({
 								_id: protectString(`clear_${layer._id}`),
 								name: t('Clear {{layerName}}', { layerName: layer.abbreviation || layer.name }),
-								status: PieceStatusCode.UNKNOWN,
 								isSticky: false,
 								isClearSourceLayer: true,
 								isGlobal: true,

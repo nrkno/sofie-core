@@ -15,7 +15,7 @@ import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingIns
 import { ReadonlyDeep } from 'type-fest'
 
 interface IProps {
-	status: PieceStatusCode
+	status: PieceStatusCode | undefined
 	typeClass?: string
 	showMiniInspector: boolean
 	itemElement: HTMLDivElement | null
@@ -116,7 +116,7 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 	const offsetTimePosition = timePosition + seek
 
 	const showVideoPlayerInspector = !hideHoverscrubPreview && previewUrl
-	const showMiniInspectorClipData = shouldShowFloatingInspectorContent(status, content)
+	const showMiniInspectorClipData = shouldShowFloatingInspectorContent(status ?? PieceStatusCode.UNKNOWN, content)
 	const showMiniInspectorNotice = noticeLevel !== null
 	const showMiniInspectorData = showMiniInspectorNotice || showMiniInspectorClipData
 	const showAnyFloatingInspector = Boolean(showVideoPlayerInspector) || showMiniInspectorData

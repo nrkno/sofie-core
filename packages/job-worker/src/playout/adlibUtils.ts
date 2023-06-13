@@ -2,7 +2,7 @@ import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { PartInstanceId, PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { EmptyPieceTimelineObjectsBlob, Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceInstance, rewrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { assertNever, getRandomId, getRank } from '@sofie-automation/corelib/dist/lib'
@@ -358,7 +358,6 @@ export function innerStopPieces(
 								invalid: false,
 								name: '',
 								startPartId: currentPartInstance.part._id,
-								status: PieceStatusCode.UNKNOWN,
 								pieceType: IBlueprintPieceType.Normal,
 								virtual: true,
 								content: {},

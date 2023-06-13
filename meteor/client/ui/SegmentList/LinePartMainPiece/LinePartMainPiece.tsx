@@ -159,8 +159,7 @@ export const LinePartMainPiece = withMediaObjectStatus<IProps, {}>()(function Li
 		setMousePosition(e.pageX - origin.left)
 	}
 
-	const status = piece.instance.piece.status
-	const noticeLevel = status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null
+	const noticeLevel = getNoticeLevelForPieceStatus(piece.contentStatus?.status)
 
 	const multistepChevron = PieceMultistepChevron({
 		className: 'segment-opl__main-piece__label__step-chevron',

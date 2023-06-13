@@ -61,7 +61,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		const labelItems = innerPiece.name.split('||')
 
 		this.state = {
-			noticeLevel: getNoticeLevelForPieceStatus(innerPiece.status),
+			noticeLevel: getNoticeLevelForPieceStatus(props.piece.contentStatus?.status),
 			begin: labelItems[0] || '',
 			end: labelItems[1] || '',
 		}
@@ -208,10 +208,10 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		let newState: Partial<IState> = {}
 		if (
 			innerPiece.name !== prevProps.piece.instance.piece.name ||
-			innerPiece.status !== prevProps.piece.instance.piece.status
+			this.props.piece.contentStatus?.status !== prevProps.piece.contentStatus?.status
 		) {
 			const labelItems = innerPiece.name.split('||')
-			newState.noticeLevel = getNoticeLevelForPieceStatus(innerPiece.status)
+			newState.noticeLevel = getNoticeLevelForPieceStatus(this.props.piece.contentStatus?.status)
 			newState.begin = labelItems[0] || ''
 			newState.end = labelItems[1] || ''
 		}
@@ -262,7 +262,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 		return !this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
 			<span className="segment-timeline__piece__label" ref={this.setLeftLabelRef} style={this.getItemLabelOffsetLeft()}>
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
-				{this.props.piece.instance.piece.status === PieceStatusCode.SOURCE_NOT_READY && (
+				{this.props.piece.contentStatus?.status === PieceStatusCode.SOURCE_NOT_READY && (
 					<div className="piece__status-icon type-hourglass">
 						<HourglassIconSmall />
 					</div>
@@ -474,7 +474,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				{this.leftLabelNodes}
 				{this.rightLabelContainer && ReactDOM.createPortal(this.rightLabelNodes, this.rightLabelContainer)}
 				<VTFloatingInspector
-					status={this.props.piece.instance.piece.status}
+					status={this.props.piece.contentStatus?.status}
 					position={this.getFloatingInspectorStyle()}
 					content={vtContent}
 					itemElement={this.props.itemElement}

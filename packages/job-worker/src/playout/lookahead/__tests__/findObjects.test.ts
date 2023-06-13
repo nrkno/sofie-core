@@ -60,7 +60,6 @@ describe('findLookaheadObjectsForPart', () => {
 			name: '',
 			enable: { start: 0 },
 			invalid: false,
-			status: 0,
 			lifespan: PieceLifespan.WithinPart,
 			pieceType: IBlueprintPieceType.Normal,
 			sourceLayerId: '',

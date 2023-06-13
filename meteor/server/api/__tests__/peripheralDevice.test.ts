@@ -5,7 +5,7 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
-import { EmptyPieceTimelineObjectsBlob, PieceStatusCode } from '../../../lib/collections/Pieces'
+import { EmptyPieceTimelineObjectsBlob } from '../../../lib/collections/Pieces'
 import {
 	getCurrentTime,
 	literal,
@@ -148,7 +148,6 @@ describe('test peripheralDevice general API methods', () => {
 			startPartId: protectString('part000'),
 			startSegmentId: segmentID,
 			startRundownId: rundownID,
-			status: PieceStatusCode.UNKNOWN,
 			lifespan: PieceLifespan.WithinPart,
 			pieceType: IBlueprintPieceType.Normal,
 			invalid: false,

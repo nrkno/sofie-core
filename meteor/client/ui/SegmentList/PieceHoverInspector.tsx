@@ -33,13 +33,13 @@ export function PieceHoverInspector({
 	mousePosition: number
 	layer: ISourceLayer | undefined
 }): JSX.Element | null {
-	const status = pieceInstance.instance.piece.status
+	const status = pieceInstance.contentStatus?.status
 
 	const vtContent = pieceInstance.instance.piece.content as VTContent
 	const graphicsContent = pieceInstance.instance.piece.content as GraphicsContent
 	const transitionContent = pieceInstance.instance.piece.content as TransitionContent
 
-	const noticeLevel = status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null
+	const noticeLevel = getNoticeLevelForPieceStatus(status)
 
 	switch (layer?.type) {
 		case SourceLayerType.TRANSITION:

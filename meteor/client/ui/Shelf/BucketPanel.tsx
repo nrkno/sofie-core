@@ -35,7 +35,6 @@ import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { DragDropItemTypes } from '../DragDropItemTypes'
-import { PieceStatusCode } from '../../../lib/collections/Pieces'
 import { BucketPieceButton, IBucketPieceDropResult } from './BucketPieceButton'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import update from 'immutability-helper'
@@ -206,7 +205,6 @@ export function actionToAdLibPieceUi(
 			typeof action.display.label === 'string'
 				? action.display.label
 				: translateMessage(action.display.label, i18nTranslator),
-		status: PieceStatusCode.UNKNOWN,
 		isAction: true,
 		expectedDuration: 0,
 		externalId: action.externalId || unprotectString(action._id),
