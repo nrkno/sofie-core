@@ -60,6 +60,8 @@ export async function activateRundownPlaylist(
 			p.currentPartInfo = null
 			p.nextPartInfo = null
 			p.previousPartInfo = null
+
+			delete p.lastTakeTime
 			return p
 		})
 

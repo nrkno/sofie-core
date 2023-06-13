@@ -220,6 +220,7 @@ export async function performTakeToNextedPart(context: JobContext, cache: CacheF
 			manuallySelected: p.nextPartInfo?.manuallySelected ?? false,
 			consumesNextSegmentId: p.nextPartInfo?.consumesNextSegmentId ?? false,
 		}
+		p.lastTakeTime = getCurrentTime()
 
 		if (!p.holdState || p.holdState === RundownHoldState.COMPLETE) {
 			p.holdState = RundownHoldState.NONE

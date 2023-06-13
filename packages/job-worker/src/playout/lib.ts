@@ -34,6 +34,7 @@ export async function resetRundownPlaylist(context: JobContext, cache: CacheForP
 		p.holdState = RundownHoldState.NONE
 		p.resetTime = getCurrentTime()
 
+		delete p.lastTakeTime
 		delete p.startedPlayback
 		delete p.rundownsStartedPlayback
 		delete p.previousPersistentState

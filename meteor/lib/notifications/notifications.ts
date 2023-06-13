@@ -65,7 +65,7 @@ export interface NotificationAction {
 	/** Icon shown on the action button. */
 	icon?: any
 	/** The method that will be called when the user takes the aciton. */
-	action?: Function
+	action?: (e: any) => void
 	/** If true, will disable the action (ie the button will show, but not clickable). */
 	disabled?: boolean
 }
