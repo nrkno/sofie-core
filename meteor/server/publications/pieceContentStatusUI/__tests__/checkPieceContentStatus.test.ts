@@ -15,7 +15,7 @@ import {
 	PieceLifespan,
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
-import { literal } from '@sofie-automation/corelib/dist/lib'
+import { Complete, literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoMock } from '../../../../__mocks__/mongo'
 import {
 	PieceGeneric,
@@ -36,6 +36,7 @@ import { defaultStudio } from '../../../../__mocks__/defaultCollectionObjects'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { MediaObjects } from '../../../collections'
 import { PieceDependencies } from '../common'
+import { Studio } from '../../../../lib/collections/Studios'
 
 const mockMediaObjectsCollection = MongoMock.getInnerMockCollection<MediaObject>(MediaObjects)
 
@@ -170,15 +171,12 @@ describe('lib/mediaObjects', () => {
 		}
 
 		const mockDefaultStudio = defaultStudio(protectString('studio0'))
-		const mockStudio: Pick<
-			UIStudio,
-			| '_id'
-			| 'settings'
-			| 'packageContainers'
-			| 'previewContainerIds'
-			| 'thumbnailContainerIds'
-			| 'mappings'
-			| 'routeSets'
+		const mockStudio: Complete<
+			Pick<
+				Studio,
+				'_id' | 'settings' | 'packageContainers' | 'previewContainerIds' | 'thumbnailContainerIds' | 'routeSets'
+			> &
+				Pick<UIStudio, 'mappings'>
 		> = {
 			_id: mockDefaultStudio._id,
 			settings: mockStudioSettings,

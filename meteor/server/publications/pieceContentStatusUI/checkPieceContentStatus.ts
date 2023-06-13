@@ -17,14 +17,13 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { PieceGeneric, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { IStudioSettings, StudioPackageContainer } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { IStudioSettings, MappingsExt, StudioPackageContainer } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { literal, Complete, assertNever } from '@sofie-automation/corelib/dist/lib'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
-import { UIStudio } from '../../../lib/api/studios'
 import { getSideEffect } from '../../../lib/collections/ExpectedPackages'
-import { routeExpectedPackages, MappingExtWithPackage } from '../../../lib/collections/Studios'
+import { routeExpectedPackages, MappingExtWithPackage, Studio } from '../../../lib/collections/Studios'
 import { ensureHasTrailingSlash, generateTranslation, unprotectString } from '../../../lib/lib'
 import { PieceContentStatusObj, ScanInfoForPackage, ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { MediaObjects, PackageContainerPackageStatuses, PackageInfos } from '../../collections'
@@ -145,16 +144,14 @@ export function getMediaObjectMediaId(
 }
 
 export type PieceContentStatusPiece = Pick<PieceGeneric, '_id' | 'content' | 'expectedPackages'>
-export type PieceContentStatusStudio = Pick<
-	UIStudio,
-	| '_id'
-	| 'settings'
-	| 'packageContainers'
-	| 'previewContainerIds'
-	| 'thumbnailContainerIds'
-	| 'mappings'
-	| 'routeSets'
->
+export interface PieceContentStatusStudio
+	extends Pick<
+		Studio,
+		'_id' | 'settings' | 'packageContainers' | 'previewContainerIds' | 'thumbnailContainerIds' | 'routeSets'
+	> {
+	/** Mappings between the physical devices / outputs and logical ones */
+	mappings: MappingsExt
+}
 
 export async function checkPieceContentStatusAndDependencies(
 	studio: PieceContentStatusStudio,
