@@ -2,6 +2,9 @@ import { unprotectString, protectString } from '../../lib/protectedString'
 import { TSR } from '../../tsr'
 import { MappingsHash, PeripheralDeviceId, StudioId, TimelineBlob, TimelineHash } from './Ids'
 
+/**
+ * This defines a session, indicating that this TimelineObject uses an AB player
+ */
 export interface TimelineObjectAbSessionInfo {
 	/**
 	 * Name for this session

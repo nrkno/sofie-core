@@ -19,6 +19,8 @@ There are other challenges to the resolving to think about too, which make this 
 
 ## Defining Piece sessions
 
+An AB-session is a request for an AB player for the lifetime of the object or Piece. The resolver operates on these sessions, to identify when players are needed and to identify which objects and Pieces are linked and should use the same Player.
+
 In order for the AB resolver to know what AB sessions there are on the timeline, and how they all relate to each other, we define `abSessions` properties on various objects when defining Pieces and their content during the `getSegment` blueprint method.
 
 The AB resolving operates by looking at all the Pieces on the timeline, and plotting all the requested abSessions out in time. It will then iterate through each of these sessions in time order and assign them in order to the available players.  
