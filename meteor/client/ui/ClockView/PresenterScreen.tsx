@@ -433,7 +433,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 
 			let currentPartCountdown = 0
 			if (currentPart) {
-				currentPartCountdown = -1 * (this.props.timingDurations.remainingTimeOnCurrentPart || 0)
+				currentPartCountdown = this.props.timingDurations.remainingTimeOnCurrentPart || 0
 			}
 
 			const nextPart = this.props.nextPartInstance
