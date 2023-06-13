@@ -23,7 +23,6 @@ import {
 	ShowStyleBaseActionType,
 	MigrationData,
 	PendingMigrations,
-	PeripheralDeviceAction,
 } from '../../../../lib/api/rest'
 import { MeteorCall, MethodContextAPI } from '../../../../lib/api/methods'
 import { ServerClientAPI } from '../../client'
@@ -249,6 +248,35 @@ class ServerRestAPI implements RestAPI {
 			return ClientAPI.responseSuccess({})
 		} else if (adLibActionDoc) {
 			// This is an AdLib Action
+			const rundownPlaylist = await RundownPlaylists.findOneAsync(rundownPlaylistId, {
+				projection: { currentPartInfo: 1, activationId: 1 },
+			})
+
+			if (!rundownPlaylist)
+				return ClientAPI.responseError(
+					UserError.from(
+						new Error(`Rundown playlist does not exist`),
+						UserErrorMessage.RundownPlaylistNotFound
+					),
+					404
+				)
+			if (!rundownPlaylist.activationId)
+				return ClientAPI.responseError(
+					UserError.from(
+						new Error(`Rundown playlist ${rundownPlaylistId} is not currently active`),
+						UserErrorMessage.InactiveRundown
+					),
+					412
+				)
+			if (!rundownPlaylist.currentPartInfo)
+				return ClientAPI.responseError(
+					UserError.from(
+						new Error(`Rundown playlist ${rundownPlaylistId} must be playing`),
+						UserErrorMessage.NoCurrentPart
+					),
+					412
+				)
+
 			return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 				ServerRestAPI.getMethodContext(connection),
 				event,
@@ -774,10 +802,13 @@ class ServerRestAPI implements RestAPI {
 		const validation = await validateConfigForShowStyleBase(showStyleBaseId)
 		const validateOK = validation.messages.reduce((acc, msg) => acc && msg.level === NoteSeverity.INFO, true)
 		if (!validateOK) {
-			logger.error(
-				`addOrUpdateShowStyleBase failed validation with errors: ${JSON.stringify(validation.messages)}`
+			const details = JSON.stringify(
+				validation.messages.filter((msg) => msg.level < NoteSeverity.INFO).map((msg) => msg.message.key),
+				null,
+				2
 			)
-			throw new Meteor.Error(409, `ShowStyleBase ${showStyleBaseId} has failed validation`)
+			logger.error(`addOrUpdateShowStyleBase failed validation with errors: ${details}`)
+			throw new Meteor.Error(409, `ShowStyleBase ${showStyleBaseId} has failed validation`, details)
 		}
 
 		return ClientAPI.responseSuccess(await runUpgradeForShowStyleBase(showStyleBaseId))
@@ -948,9 +979,21 @@ class ServerRestAPI implements RestAPI {
 		const newStudio = await studioFrom(studio)
 		if (!newStudio) throw new Meteor.Error(400, `Invalid Studio`)
 
-		const newStudioId = newStudio._id
-		await Studios.insertAsync(newStudio)
+		const newStudioId = await Studios.insertAsync(newStudio)
 
+		const validation = await validateConfigForStudio(newStudioId)
+		const validateOK = validation.messages.reduce((acc, msg) => acc && msg.level === NoteSeverity.INFO, true)
+		if (!validateOK) {
+			const details = JSON.stringify(
+				validation.messages.filter((msg) => msg.level < NoteSeverity.INFO).map((msg) => msg.message.key),
+				null,
+				2
+			)
+			logger.error(`addStudio failed validation with errors: ${details}`)
+			throw new Meteor.Error(409, `Studio ${newStudioId} has failed validation`, details)
+		}
+
+		await runUpgradeForStudio(newStudioId)
 		return ClientAPI.responseSuccess(unprotectString(newStudioId), 200)
 	}
 
@@ -994,8 +1037,13 @@ class ServerRestAPI implements RestAPI {
 		const validation = await validateConfigForStudio(studioId)
 		const validateOK = validation.messages.reduce((acc, msg) => acc && msg.level === NoteSeverity.INFO, true)
 		if (!validateOK) {
-			logger.error(`addOrUpdateStudio failed validation with errors: ${JSON.stringify(validation.messages)}`)
-			throw new Meteor.Error(409, `Studio ${studioId} has failed validation`)
+			const details = JSON.stringify(
+				validation.messages.filter((msg) => msg.level < NoteSeverity.INFO).map((msg) => msg.message.key),
+				null,
+				2
+			)
+			logger.error(`addOrUpdateStudio failed validation with errors: ${details}`)
+			throw new Meteor.Error(409, `Studio ${studioId} has failed validation`, details)
 		}
 
 		return ClientAPI.responseSuccess(await runUpgradeForStudio(studioId))
@@ -1153,10 +1201,24 @@ function extractErrorMessage(e: unknown): string {
 	}
 }
 
+function extractErrorDetails(e: unknown): string[] | undefined {
+	if ((e as Meteor.Error).details && typeof (e as Meteor.Error).details === 'string') {
+		try {
+			const details = JSON.parse((e as Meteor.Error).details as string) as string[]
+			return Array.isArray(details) ? details : undefined
+		} catch (e) {
+			logger.error(`Failed to parse details to string array: ${(e as Meteor.Error).details}`)
+			return undefined
+		}
+	} else {
+		return undefined
+	}
+}
+
 function sofieAPIRequest<Params, Body, Response>(
 	method: 'get' | 'post' | 'put' | 'delete',
 	route: string,
-	errMsgs: Map<number, UserErrorMessage>,
+	errMsgs: Map<number, UserErrorMessage[]>,
 	handler: (
 		serverAPI: RestAPI,
 		connection: Meteor.Connection,
@@ -1180,13 +1242,27 @@ function sofieAPIRequest<Params, Body, Response>(
 			ctx.status = response.success
 		} catch (e) {
 			const errCode = extractErrorCode(e)
-			const errMsg = extractErrorMessage(
-				UserError.create(errMsgs.get(errCode) || UserErrorMessage.InternalError, undefined, errCode)
-			)
+			let errMsg = extractErrorMessage(e)
+			const msgs = errMsgs.get(errCode)
+			if (msgs) {
+				const msgConcat = {
+					key: msgs
+						.map((msg) => UserError.create(msg, undefined, errCode).message.key)
+						.reduce((acc, msg) => acc + (acc.length ? ' or ' : '') + msg, ''),
+				}
+				errMsg = translateMessage(msgConcat, interpollateTranslation)
+			} else {
+				logger.error(
+					`${method.toUpperCase()} for route ${route} returned unexpected error code ${errCode} - ${errMsg}`
+				)
+			}
 
 			logger.error(`${method.toUpperCase()} failed for route ${route}: ${errCode} - ${errMsg}`)
 			ctx.type = 'application/json'
-			ctx.body = JSON.stringify({ status: errCode, message: errMsg })
+			const bodyObj = { status: errCode, message: errMsg }
+			const details = extractErrorDetails(e)
+			if (details) bodyObj['details'] = details
+			ctx.body = JSON.stringify(bodyObj)
 			ctx.status = errCode
 		}
 		await next()
@@ -1222,8 +1298,8 @@ sofieAPIRequest<{ playlistId: string }, { rehearsal: boolean }, void>(
 	'put',
 	'/playlists/:playlistId/activate',
 	new Map([
-		[404, UserErrorMessage.RundownPlaylistNotFound],
-		[412, UserErrorMessage.RundownAlreadyActive],
+		[404, [UserErrorMessage.RundownPlaylistNotFound]],
+		[412, [UserErrorMessage.RundownAlreadyActive]],
 	]),
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
@@ -1238,7 +1314,7 @@ sofieAPIRequest<{ playlistId: string }, { rehearsal: boolean }, void>(
 sofieAPIRequest<{ playlistId: string }, never, void>(
 	'put',
 	'/playlists/:playlistId/deactivate',
-	new Map([[404, UserErrorMessage.RundownPlaylistNotFound]]),
+	new Map([[404, [UserErrorMessage.RundownPlaylistNotFound]]]),
 	async (serverAPI, connection, event, params, _) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		logger.info(`API PUT: deactivate ${rundownPlaylistId}`)
@@ -1252,8 +1328,8 @@ sofieAPIRequest<{ playlistId: string }, { adLibId: string; actionType?: string }
 	'post',
 	'/playlists/:playlistId/execute-adlib',
 	new Map([
-		[404, UserErrorMessage.RundownPlaylistNotFound],
-		[412, UserErrorMessage.AdlibNotFound],
+		[404, [UserErrorMessage.RundownPlaylistNotFound]],
+		[412, [UserErrorMessage.InactiveRundown, UserErrorMessage.NoCurrentPart, UserErrorMessage.AdlibNotFound]],
 	]),
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
@@ -1275,8 +1351,8 @@ sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
 	'post',
 	'/playlists/:playlistId/move-next-part',
 	new Map([
-		[404, UserErrorMessage.RundownPlaylistNotFound],
-		[412, UserErrorMessage.PartNotFound],
+		[404, [UserErrorMessage.RundownPlaylistNotFound]],
+		[412, [UserErrorMessage.PartNotFound]],
 	]),
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
@@ -1293,8 +1369,8 @@ sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
 	'post',
 	'/playlists/:playlistId/move-next-segment',
 	new Map([
-		[404, UserErrorMessage.RundownPlaylistNotFound],
-		[412, UserErrorMessage.PartNotFound],
+		[404, [UserErrorMessage.RundownPlaylistNotFound]],
+		[412, [UserErrorMessage.PartNotFound]],
 	]),
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
@@ -1310,7 +1386,7 @@ sofieAPIRequest<{ playlistId: string }, { delta: number }, PartId | null>(
 sofieAPIRequest<{ playlistId: string }, never, object>(
 	'put',
 	'/playlists/:playlistId/reload-playlist',
-	new Map([[404, UserErrorMessage.RundownPlaylistNotFound]]),
+	new Map([[404, [UserErrorMessage.RundownPlaylistNotFound]]]),
 	async (serverAPI, connection, event, params, _) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		logger.info(`API PUT: reload-playlist ${rundownPlaylistId}`)
@@ -1324,8 +1400,8 @@ sofieAPIRequest<{ playlistId: string }, never, void>(
 	'put',
 	'/playlists/:playlistId/reset-playlist',
 	new Map([
-		[404, UserErrorMessage.RundownPlaylistNotFound],
-		[412, UserErrorMessage.RundownResetWhileActive],
+		[404, [UserErrorMessage.RundownPlaylistNotFound]],
+		[412, [UserErrorMessage.RundownResetWhileActive]],
 	]),
 	async (serverAPI, connection, event, params, _) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
@@ -1340,8 +1416,8 @@ sofieAPIRequest<{ playlistId: string }, { partId: string }, void>(
 	'put',
 	'/playlists/:playlistId/set-next-part',
 	new Map([
-		[404, UserErrorMessage.RundownPlaylistNotFound],
-		[412, UserErrorMessage.PartNotFound],
+		[404, [UserErrorMessage.RundownPlaylistNotFound]],
+		[412, [UserErrorMessage.PartNotFound]],
 	]),
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
@@ -1358,8 +1434,8 @@ sofieAPIRequest<{ playlistId: string }, { segmentId: string }, void>(
 	'put',
 	'/playlists/:playlistId/set-next-segment',
 	new Map([
-		[404, UserErrorMessage.RundownPlaylistNotFound],
-		[412, UserErrorMessage.PartNotFound],
+		[404, [UserErrorMessage.RundownPlaylistNotFound]],
+		[412, [UserErrorMessage.PartNotFound]],
 	]),
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
@@ -1376,8 +1452,8 @@ sofieAPIRequest<{ playlistId: string }, { fromPartInstanceId?: string }, void>(
 	'post',
 	'/playlists/:playlistId/take',
 	new Map([
-		[404, UserErrorMessage.RundownPlaylistNotFound],
-		[412, UserErrorMessage.TakeNoNextPart],
+		[404, [UserErrorMessage.RundownPlaylistNotFound]],
+		[412, [UserErrorMessage.TakeNoNextPart]],
 	]),
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
@@ -1394,8 +1470,8 @@ sofieAPIRequest<{ playlistId: string; sourceLayerId: string }, never, void>(
 	'delete',
 	'/playlists/:playlistId/sourceLayer/:sourceLayerId',
 	new Map([
-		[404, UserErrorMessage.RundownPlaylistNotFound],
-		[412, UserErrorMessage.InactiveRundown],
+		[404, [UserErrorMessage.RundownPlaylistNotFound]],
+		[412, [UserErrorMessage.InactiveRundown]],
 	]),
 	async (serverAPI, connection, event, params, _) => {
 		const playlistId = protectString<RundownPlaylistId>(params.playlistId)
@@ -1412,8 +1488,8 @@ sofieAPIRequest<{ playlistId: string; sourceLayerId: string }, never, void>(
 	'post',
 	'/playlists/:playlistId/sourceLayer/:sourceLayerId/sticky',
 	new Map([
-		[404, UserErrorMessage.RundownPlaylistNotFound],
-		[412, UserErrorMessage.InactiveRundown],
+		[404, [UserErrorMessage.RundownPlaylistNotFound]],
+		[412, [UserErrorMessage.InactiveRundown]],
 	]),
 	async (serverAPI, connection, event, params, _) => {
 		const playlistId = protectString<RundownPlaylistId>(params.playlistId)
@@ -1449,18 +1525,18 @@ sofieAPIRequest<{ deviceId: string }, never, APIPeripheralDevice>(
 	}
 )
 
-sofieAPIRequest<{ deviceId: string }, { action: PeripheralDeviceAction }, void>(
+sofieAPIRequest<{ deviceId: string }, { action: string }, void>(
 	'post',
 	'/devices/:deviceId/action',
 	new Map(),
 	async (serverAPI, connection, event, params, body) => {
 		const deviceId = protectString<PeripheralDeviceId>(params.deviceId)
-		const action = body.action
-		logger.info(`API POST: peripheral device ${deviceId} action ${action.type}`)
+		logger.info(`API POST: peripheral device ${deviceId} action ${body.action}`)
 
 		check(deviceId, String)
-		check(action, Object)
-		return await serverAPI.peripheralDeviceAction(connection, event, deviceId, body.action)
+		check(body.action, String)
+		const peripheralAction = { type: body.action as PeripheralDeviceActionType }
+		return await serverAPI.peripheralDeviceAction(connection, event, deviceId, peripheralAction)
 	}
 )
 
@@ -1487,7 +1563,7 @@ sofieAPIRequest<{ studioId: string }, APIStudio, string>(
 sofieAPIRequest<{ studioId: string }, never, APIStudio>(
 	'get',
 	'/studios/:studioId',
-	new Map([[404, UserErrorMessage.StudioNotFound]]),
+	new Map([[404, [UserErrorMessage.StudioNotFound]]]),
 	async (serverAPI, connection, event, params, _) => {
 		const studioId = protectString<StudioId>(params.studioId)
 		logger.info(`API GET: studio ${studioId}`)
@@ -1500,7 +1576,10 @@ sofieAPIRequest<{ studioId: string }, never, APIStudio>(
 sofieAPIRequest<{ studioId: string }, APIStudio, void>(
 	'put',
 	'/studios/:studioId',
-	new Map([[404, UserErrorMessage.StudioNotFound]]),
+	new Map([
+		[404, [UserErrorMessage.StudioNotFound]],
+		[409, [UserErrorMessage.ValidationFailed]],
+	]),
 	async (serverAPI, connection, event, params, body) => {
 		const studioId = protectString<StudioId>(params.studioId)
 		logger.info(`API PUT: Add or Update studio ${studioId} ${body.name}`)
@@ -1513,7 +1592,7 @@ sofieAPIRequest<{ studioId: string }, APIStudio, void>(
 sofieAPIRequest<{ studioId: string }, never, void>(
 	'delete',
 	'/studios/:studioId',
-	new Map([[404, UserErrorMessage.StudioNotFound]]),
+	new Map([[404, [UserErrorMessage.StudioNotFound]]]),
 	async (serverAPI, connection, event, params, _) => {
 		const studioId = protectString<StudioId>(params.studioId)
 		logger.info(`API DELETE: studio ${studioId}`)
@@ -1526,7 +1605,7 @@ sofieAPIRequest<{ studioId: string }, never, void>(
 sofieAPIRequest<{ studioId: string }, never, Array<{ id: string }>>(
 	'get',
 	'/studios/:studioId/devices',
-	new Map([[404, UserErrorMessage.StudioNotFound]]),
+	new Map([[404, [UserErrorMessage.StudioNotFound]]]),
 	async (serverAPI, connection, event, params, _) => {
 		const studioId = protectString<StudioId>(params.studioId)
 		logger.info(`API GET: peripheral devices for studio ${studioId}`)
@@ -1539,7 +1618,7 @@ sofieAPIRequest<{ studioId: string }, never, Array<{ id: string }>>(
 sofieAPIRequest<{ studioId: string }, { routeSetId: string; active: boolean }, void>(
 	'put',
 	'/studios/:studioId/switch-route-set',
-	new Map([[404, UserErrorMessage.StudioNotFound]]),
+	new Map([[404, [UserErrorMessage.StudioNotFound]]]),
 	async (serverAPI, connection, event, params, body) => {
 		const studioId = protectString<StudioId>(params.studioId)
 		const routeSetId = body.routeSetId
@@ -1557,8 +1636,8 @@ sofieAPIRequest<{ studioId: string }, { deviceId: string }, void>(
 	'put',
 	'/studios/:studioId/devices',
 	new Map([
-		[404, UserErrorMessage.StudioNotFound],
-		[412, UserErrorMessage.DeviceAlreadyAttachedToStudio],
+		[404, [UserErrorMessage.StudioNotFound]],
+		[412, [UserErrorMessage.DeviceAlreadyAttachedToStudio]],
 	]),
 	async (serverAPI, connection, events, params, body) => {
 		const studioId = protectString<StudioId>(params.studioId)
@@ -1572,7 +1651,7 @@ sofieAPIRequest<{ studioId: string }, { deviceId: string }, void>(
 sofieAPIRequest<{ studioId: string; deviceId: string }, never, void>(
 	'delete',
 	'/studios/:studioId/devices/:deviceId',
-	new Map([[404, UserErrorMessage.StudioNotFound]]),
+	new Map([[404, [UserErrorMessage.StudioNotFound]]]),
 	async (serverAPI, connection, events, params, _) => {
 		const studioId = protectString<StudioId>(params.studioId)
 		const deviceId = protectString<PeripheralDeviceId>(params.deviceId)
@@ -1642,7 +1721,7 @@ sofieAPIRequest<never, never, Array<{ id: string }>>(
 sofieAPIRequest<never, APIShowStyleBase, string>(
 	'post',
 	'/showstyles',
-	new Map([[400, UserErrorMessage.BlueprintNotFound]]),
+	new Map([[400, [UserErrorMessage.BlueprintNotFound]]]),
 	async (serverAPI, connection, event, _params, body) => {
 		logger.info(`API POST: Add ShowStyleBase ${body.name}`)
 		return await serverAPI.addShowStyleBase(connection, event, body)
@@ -1652,7 +1731,7 @@ sofieAPIRequest<never, APIShowStyleBase, string>(
 sofieAPIRequest<{ showStyleBaseId: ShowStyleBaseId }, never, APIShowStyleBase>(
 	'get',
 	'/showstyles/:showStyleBaseId',
-	new Map([[404, UserErrorMessage.BlueprintNotFound]]),
+	new Map([[404, [UserErrorMessage.BlueprintNotFound]]]),
 	async (serverAPI, connection, event, params, _body) => {
 		logger.info(`API GET: ShowStyleBase ${params.showStyleBaseId}`)
 		return await serverAPI.getShowStyleBase(connection, event, params.showStyleBaseId)
@@ -1663,8 +1742,9 @@ sofieAPIRequest<{ showStyleBaseId: string }, APIShowStyleBase, void>(
 	'put',
 	'/showstyles/:showStyleBaseId',
 	new Map([
-		[400, UserErrorMessage.BlueprintNotFound],
-		[412, UserErrorMessage.RundownAlreadyActive],
+		[400, [UserErrorMessage.BlueprintNotFound]],
+		[409, [UserErrorMessage.ValidationFailed]],
+		[412, [UserErrorMessage.RundownAlreadyActive]],
 	]),
 	async (serverAPI, connection, event, params, body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
@@ -1678,7 +1758,7 @@ sofieAPIRequest<{ showStyleBaseId: string }, APIShowStyleBase, void>(
 sofieAPIRequest<{ showStyleBaseId: string }, never, void>(
 	'delete',
 	'/showstyles/:showStyleBaseId',
-	new Map([[412, UserErrorMessage.RundownAlreadyActive]]),
+	new Map([[412, [UserErrorMessage.RundownAlreadyActive]]]),
 	async (serverAPI, connection, event, params, _body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
 		logger.info(`API DELETE: ShowStyleBase ${showStyleBaseId}`)
@@ -1691,7 +1771,7 @@ sofieAPIRequest<{ showStyleBaseId: string }, never, void>(
 sofieAPIRequest<{ showStyleBaseId: string }, never, Array<{ id: string }>>(
 	'get',
 	'/showstyles/:showStyleBaseId/variants',
-	new Map([[404, UserErrorMessage.BlueprintNotFound]]),
+	new Map([[404, [UserErrorMessage.BlueprintNotFound]]]),
 	async (serverAPI, connection, event, params, _body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
 		logger.info(`API GET: ShowStyleVariants ${showStyleBaseId}`)
@@ -1704,7 +1784,7 @@ sofieAPIRequest<{ showStyleBaseId: string }, never, Array<{ id: string }>>(
 sofieAPIRequest<{ showStyleBaseId: string }, APIShowStyleVariant, string>(
 	'post',
 	'/showstyles/:showStyleBaseId/variants',
-	new Map([[404, UserErrorMessage.BlueprintNotFound]]),
+	new Map([[404, [UserErrorMessage.BlueprintNotFound]]]),
 	async (serverAPI, connection, event, params, body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
 		logger.info(`API POST: Add ShowStyleVariant ${showStyleBaseId}`)
@@ -1717,7 +1797,7 @@ sofieAPIRequest<{ showStyleBaseId: string }, APIShowStyleVariant, string>(
 sofieAPIRequest<{ showStyleBaseId: string; showStyleVariantId: string }, never, APIShowStyleVariant>(
 	'get',
 	'/showstyles/:showStyleBaseId/variants/:showStyleVariantId',
-	new Map([[404, UserErrorMessage.BlueprintNotFound]]),
+	new Map([[404, [UserErrorMessage.BlueprintNotFound]]]),
 	async (serverAPI, connection, event, params, _body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
 		const showStyleVariantId = protectString<ShowStyleVariantId>(params.showStyleVariantId)
@@ -1733,9 +1813,9 @@ sofieAPIRequest<{ showStyleBaseId: string; showStyleVariantId: string }, APIShow
 	'put',
 	'/showstyles/:showStyleBaseId/variants/:showStyleVariantId',
 	new Map([
-		[400, UserErrorMessage.BlueprintNotFound],
-		[404, UserErrorMessage.BlueprintNotFound],
-		[412, UserErrorMessage.RundownAlreadyActive],
+		[400, [UserErrorMessage.BlueprintNotFound]],
+		[404, [UserErrorMessage.BlueprintNotFound]],
+		[412, [UserErrorMessage.RundownAlreadyActive]],
 	]),
 	async (serverAPI, connection, event, params, body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
@@ -1752,8 +1832,8 @@ sofieAPIRequest<{ showStyleBaseId: string; showStyleVariantId: string }, never, 
 	'delete',
 	'/showstyles/:showStyleBaseId/variants/:showStyleVariantId',
 	new Map([
-		[404, UserErrorMessage.BlueprintNotFound],
-		[412, UserErrorMessage.RundownAlreadyActive],
+		[404, [UserErrorMessage.BlueprintNotFound]],
+		[412, [UserErrorMessage.RundownAlreadyActive]],
 	]),
 	async (serverAPI, connection, event, params, _body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleBaseId)
@@ -1769,7 +1849,7 @@ sofieAPIRequest<{ showStyleBaseId: string; showStyleVariantId: string }, never, 
 sofieAPIRequest<{ studioId: string }, { action: StudioAction }, void>(
 	'post',
 	'/studios/{studioId}/action',
-	new Map([[404, UserErrorMessage.StudioNotFound]]),
+	new Map([[404, [UserErrorMessage.StudioNotFound]]]),
 	async (serverAPI, connection, event, params, body) => {
 		const studioId = protectString<StudioId>(params.studioId)
 		const action = body.action
@@ -1784,7 +1864,7 @@ sofieAPIRequest<{ studioId: string }, { action: StudioAction }, void>(
 sofieAPIRequest<{ showStyleId: string }, { action: ShowStyleBaseAction }, void>(
 	'put',
 	'/studios/{showStyleBaseId}/actions',
-	new Map([[404, UserErrorMessage.ShowStyleBaseNotFound]]),
+	new Map([[404, [UserErrorMessage.ShowStyleBaseNotFound]]]),
 	async (serverAPI, connection, event, params, body) => {
 		const showStyleBaseId = protectString<ShowStyleBaseId>(params.showStyleId)
 		const action = body.action
@@ -1810,7 +1890,7 @@ sofieAPIRequest<never, never, { inputs: PendingMigrations }>(
 sofieAPIRequest<never, { inputs: MigrationData }, void>(
 	'post',
 	'/system/migrations',
-	new Map([[400, UserErrorMessage.NoMigrationsToApply]]),
+	new Map([[400, [UserErrorMessage.NoMigrationsToApply]]]),
 	async (serverAPI, connection, event, _params, body) => {
 		const inputs = body.inputs
 		logger.info(`API POST: System migrations`)

@@ -99,6 +99,9 @@ $defs:
               type: string
           required: [name, label]
           additionalProperties: false
+      editableFields:
+        description: JSON schema definition of the properties that can be modified for the adLib
+        type: string
     required: [id, name, sourceLayer, actionType]
     additionalProperties: false
     examples:
@@ -108,3 +111,4 @@ $defs:
         actionType:
           - name: pvw
             label: Preview
+        editableFields: '{ "$schema": "https://json-schema.org/draft/2020-12/schema", "title": "Play Video Clip", "type": "object", "properties": { "type": "adlib_action_video_clip", "label": { "type": "string" }, "clipId": { "type": "string" } }, "required": ["type", "clipId"], "additionalProperties": false }'

@@ -81,6 +81,7 @@ export class CoreHandler {
 		}
 
 		await this.core.init(ddpConfig)
+		await this.updateCoreStatus()
 
 		this.logger.info('Core id: ' + this.core.deviceId)
 		await this.setupObserversAndSubscriptions()
