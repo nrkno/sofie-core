@@ -12,6 +12,7 @@ import { applyAbPlayerObjectAssignments } from './applyAssignments'
 import { AbSessionHelper } from './abSessionHelper'
 import { ShowStyleContext } from '../../blueprints/context'
 import { logger } from '../../logging'
+import { ABPlayerDefinition } from '@sofie-automation/blueprints-integration'
 
 /**
  * Resolve and apply AB-playback for the given timeline
@@ -57,7 +58,7 @@ export function applyAbPlaybackForTimeline(
 	const now = getCurrentTime()
 
 	const abConfiguration = blueprint.blueprint.getAbResolverConfiguration(blueprintContext)
-	for (const [poolName, playerIds] of Object.entries<number[]>(abConfiguration.pools)) {
+	for (const [poolName, players] of Object.entries<ABPlayerDefinition[]>(abConfiguration.pools)) {
 		const previousAssignmentMap: ABSessionAssignments = previousAbSessionAssignments[poolName] || {}
 		const sessionRequests = calculateSessionTimeRanges(
 			abSessionHelper,
@@ -69,7 +70,7 @@ export function applyAbPlaybackForTimeline(
 
 		const assignments = resolveAbAssignmentsFromRequests(
 			abConfiguration.resolverOptions,
-			playerIds,
+			players.map((player) => player.playerId),
 			sessionRequests,
 			now
 		)

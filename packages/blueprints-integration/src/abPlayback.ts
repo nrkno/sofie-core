@@ -17,6 +17,13 @@ export interface PieceAbSessionInfo extends TimelineObjectAbSessionInfo {
 export const AB_MEDIA_PLAYER_AUTO = '__auto__'
 
 /**
+ * Description of a player in an AB pool
+ */
+export interface ABPlayerDefinition {
+	playerId: number
+}
+
+/**
  * A rule describing how to update the `layer` of a TimelineObject for AB playback
  */
 export interface ABTimelineLayerChangeRule {
@@ -42,7 +49,7 @@ export interface ABResolverConfiguration {
 	/** Options for the resolver */
 	resolverOptions: ABResolverOptions
 	/** The AB pools that should be processed, and the playerIds in each pool */
-	pools: Record<string, number[]>
+	pools: Record<string, ABPlayerDefinition[]>
 	/** A set of rules describing how to update the `layer` of a TimelineObject for AB playback */
 	timelineObjectLayerChangeRules?: ABTimelineLayerChangeRules
 	/**
