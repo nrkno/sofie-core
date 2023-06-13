@@ -470,7 +470,12 @@ export class RundownTimingCalculator {
 				// if false (default), past unplayed parts will not count towards remaining time
 				// If SegmentUsesBudget, these values are set when iterating over all Segments, see below.
 				if (!segmentUsesBudget) {
-					if (!lastStartedPlayback && !partInstance.part.floated && partCounts && !partIsUntimed) {
+					if (
+						typeof lastStartedPlayback !== 'number' &&
+						!partInstance.part.floated &&
+						partCounts &&
+						!partIsUntimed
+					) {
 						// this needs to use partInstance.part.expectedDuration as opposed to partExpectedDuration, because
 						// partExpectedDuration is affected by displayGroups, and if it hasn't played yet then it shouldn't
 						// add any duration to the "remaining" time pool
@@ -620,9 +625,10 @@ export class RundownTimingCalculator {
 					this.partExpectedDurations[unprotectString(currentLivePart._id)] || onAirPartDuration
 			}
 
-			remainingTimeOnCurrentPart = lastStartedPlayback
-				? now - (Math.min(lastStartedPlayback, now) + onAirPartDuration)
-				: onAirPartDuration * -1
+			remainingTimeOnCurrentPart =
+				typeof lastStartedPlayback === 'number'
+					? now - (Math.min(lastStartedPlayback, now) + onAirPartDuration)
+					: onAirPartDuration * -1
 
 			currentPartWillAutoNext = !!(currentLivePart.autoNext && currentLivePart.expectedDuration)
 		}
@@ -635,7 +641,7 @@ export class RundownTimingCalculator {
 			asPlayedPlaylistDuration: asPlayedRundownDuration,
 			rundownExpectedDurations,
 			rundownAsPlayedDurations,
-			partCountdown: objectFromEntries(this.linearParts) as Record<string, number>,
+			partCountdown: objectFromEntries(this.linearParts) as Record<string, number | null>,
 			partDurations: this.partDurations,
 			partPlayed: this.partPlayed,
 			partStartsAt: this.partStartsAt,
@@ -732,7 +738,7 @@ export interface RundownTimingContext {
 	/** This is the complete duration of each rundown: as planned for the unplayed content, and as-run for the played-out, but ignoring unplayed/unplayable parts in order */
 	rundownAsPlayedDurations?: Record<string, number>
 	/** this is the countdown to each of the parts relative to the current on air part. */
-	partCountdown?: Record<string, number>
+	partCountdown?: Record<string, number | null>
 	/** The calculated durations of each of the Parts: as-planned/as-run depending on state. */
 	partDurations?: Record<string, number>
 	/** The offset of each of the Parts from the beginning of the Playlist. */
@@ -886,7 +892,7 @@ function getSegmentRundownAnchorFromPart(
 	if (!segment) return nextRundownAnchor
 
 	const startTime = segment.segmentTiming?.expectedStart ?? null
-	if (startTime && startTime < now) {
+	if (startTime && startTime > now) {
 		nextRundownAnchor = startTime
 	} else {
 		const endTime = segment.segmentTiming?.expectedEnd ?? null
