@@ -103,9 +103,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 									contentStatus: statusObj,
 								}
 
-								overrides.piece = {
-									...pieceCopy,
-								}
+								overrides.piece = pieceCopy
 							}
 						} else {
 							if (!overrides.piece || !_.isEqual(statusObj, (overrides.piece as PieceUi).contentStatus)) {
@@ -116,9 +114,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 									contentStatus: statusObj,
 								}
 
-								overrides.piece = {
-									...pieceCopy,
-								}
+								overrides.piece = pieceCopy
 							}
 						}
 					}
