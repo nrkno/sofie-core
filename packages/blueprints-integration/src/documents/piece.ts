@@ -1,4 +1,4 @@
-import { IBlueprintPieceGeneric } from './pieceGeneric'
+import type { IBlueprintPieceGeneric } from './pieceGeneric'
 
 /** Special types of pieces. Some are not always used in all circumstances */
 export enum IBlueprintPieceType {

@@ -73,6 +73,7 @@ export const IBlueprintPieceObjectsSampleKeys = allKeysOfObject<IBlueprintPiece>
 	hasSideEffects: true,
 	allowDirectPlay: true,
 	notInVision: true,
+	abSessions: true,
 })
 
 // Compile a list of the keys which are allowed to be set
@@ -190,6 +191,7 @@ function convertPieceGenericToBlueprintsInner(piece: PieceGeneric): Complete<IBl
 			...clone(piece.content),
 			timelineObjects: deserializePieceTimelineObjectsBlob(piece.timelineObjectsString),
 		},
+		abSessions: clone(piece.abSessions),
 	}
 
 	return obj

@@ -25,6 +25,16 @@ export interface ABSessionInfo {
 	partInstanceIds?: Array<PartInstanceId>
 }
 
+export interface ABSessionAssignment {
+	sessionId: string
+	playerId: number
+	lookahead: boolean // purely informational for debugging
+}
+
+export interface ABSessionAssignments {
+	[sessionId: string]: ABSessionAssignment | undefined
+}
+
 export enum RundownHoldState {
 	NONE = 0,
 	PENDING = 1, // During STK
@@ -99,8 +109,10 @@ export interface DBRundownPlaylist {
 
 	/** Previous state persisted from ShowStyleBlueprint.onTimelineGenerate */
 	previousPersistentState?: TimelinePersistentState
-	/** AB playback sessions calculated in the last call to ShowStyleBlueprint.onTimelineGenerate */
+	/** AB playback sessions calculated in the last timeline genertaion */
 	trackedAbSessions?: ABSessionInfo[]
+	/** AB playback sessions assigned in the last timeline generation */
+	assignedAbSessions?: Record<string, ABSessionAssignments>
 }
 
 // Information about a 'selected' PartInstance for the Playlist

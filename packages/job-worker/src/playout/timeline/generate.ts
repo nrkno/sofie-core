@@ -1,7 +1,13 @@
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { JobContext } from '../../jobs'
 import { ReadonlyDeep } from 'type-fest'
-import { BlueprintResultBaseline, OnGenerateTimelineObj, Time, TSR } from '@sofie-automation/blueprints-integration'
+import {
+	BlueprintResultBaseline,
+	BlueprintResultTimeline,
+	OnGenerateTimelineObj,
+	Time,
+	TSR,
+} from '@sofie-automation/blueprints-integration'
 import {
 	deserializeTimelineBlob,
 	OnGenerateTimelineObjExt,
@@ -52,10 +58,11 @@ import {
 	getPartTimingsOrDefaults,
 	PartCalculatedTimings,
 } from '@sofie-automation/corelib/dist/playout/timings'
+import { applyAbPlaybackForTimeline } from '../abPlayback'
 
 function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
-	const cache2 = cache as CacheForStudio
-	return !!cache2.isStudio
+	const tmp = cache as CacheForStudio
+	return !!tmp.isStudio
 }
 
 function generateTimelineVersions(
@@ -361,8 +368,9 @@ async function getTimelineRundown(
 				blueprint.blueprint.blueprintVersion
 			)
 
-			if (blueprint.blueprint.onTimelineGenerate) {
-				const context2 = new OnTimelineGenerateContext(
+			if (blueprint.blueprint.onTimelineGenerate || blueprint.blueprint.getAbResolverConfiguration) {
+				const resolvedPieces = getResolvedPiecesFromFullTimeline(context, cache, timelineObjs)
+				const blueprintContext = new OnTimelineGenerateContext(
 					context.studio,
 					context.getStudioBlueprintConfig(),
 					showStyle,
@@ -371,34 +379,51 @@ async function getTimelineRundown(
 					activeRundown,
 					previousPartInstance,
 					currentPartInstance,
-					nextPartInstance
+					nextPartInstance,
+					resolvedPieces.pieces
 				)
-				const resolvedPieces = getResolvedPiecesFromFullTimeline(context, cache, timelineObjs)
-				context2.trackPieceInstances(resolvedPieces.pieces)
 				try {
-					const span = context.startSpan('blueprint.onTimelineGenerate')
-					const influxTrace = startTrace('blueprints:onTimelineGenerate')
-					const tlGenRes = await blueprint.blueprint.onTimelineGenerate(
-						context2,
-						timelineObjs,
-						clone(cache.Playlist.doc.previousPersistentState),
-						clone(currentPartInstance?.previousPartEndState),
-						resolvedPieces.pieces.map(convertResolvedPieceInstanceToBlueprints)
+					const abHelper = blueprintContext.abSessionsHelper // Future: this should be removed from OnTimelineGenerateContext once the methods are removed from the api
+					const newAbSessionsResult = applyAbPlaybackForTimeline(
+						context,
+						abHelper,
+						blueprint,
+						showStyle,
+						cache.Playlist.doc,
+						resolvedPieces.pieces,
+						timelineObjs
 					)
-					sendTrace(endTrace(influxTrace))
-					if (span) span.end()
-					timelineObjs = tlGenRes.timeline.map((object: OnGenerateTimelineObj<any>) => {
-						return literal<TimelineObjGeneric & OnGenerateTimelineObjExt>({
-							...(object as OnGenerateTimelineObjExt),
-							objectType: TimelineObjType.RUNDOWN,
+
+					let tlGenRes: BlueprintResultTimeline | undefined
+					if (blueprint.blueprint.onTimelineGenerate) {
+						const span = context.startSpan('blueprint.onTimelineGenerate')
+						const influxTrace = startTrace('blueprints:onTimelineGenerate')
+						tlGenRes = await blueprint.blueprint.onTimelineGenerate(
+							blueprintContext,
+							timelineObjs,
+							clone(cache.Playlist.doc.previousPersistentState),
+							clone(currentPartInstance?.previousPartEndState),
+							resolvedPieces.pieces.map(convertResolvedPieceInstanceToBlueprints)
+						)
+						sendTrace(endTrace(influxTrace))
+						if (span) span.end()
+
+						timelineObjs = tlGenRes.timeline.map((object: OnGenerateTimelineObj<any>) => {
+							return literal<TimelineObjGeneric & OnGenerateTimelineObjExt>({
+								...(object as OnGenerateTimelineObjExt),
+								objectType: TimelineObjType.RUNDOWN,
+							})
 						})
-					})
+					}
+
 					cache.Playlist.update((p) => {
-						p.previousPersistentState = tlGenRes.persistentState
-						p.trackedAbSessions = context2.knownSessions
+						p.previousPersistentState = tlGenRes?.persistentState
+						p.assignedAbSessions = newAbSessionsResult
+						p.trackedAbSessions = blueprintContext.abSessionsHelper.knownSessions
 						return p
 					})
 				} catch (err) {
+					// TODO - this may not be sufficient?
 					logger.error(`Error in showStyleBlueprint.onTimelineGenerate: ${stringifyError(err)}`)
 				}
 			}
