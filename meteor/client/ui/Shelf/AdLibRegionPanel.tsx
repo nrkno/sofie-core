@@ -27,7 +27,6 @@ import {
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
-import { ensureHasTrailingSlash } from '../../../lib/lib'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { UIStudios } from '../Collections'
 import { Meteor } from 'meteor/meteor'
@@ -49,7 +48,7 @@ interface IAdLibRegionPanelTrackedProps extends IDashboardPanelTrackedProps {
 	isLiveLine: boolean
 }
 
-export class AdLibRegionPanelBase extends MeteorReactComponent<
+class AdLibRegionPanelBase extends MeteorReactComponent<
 	Translated<IAdLibPanelProps & IAdLibRegionPanelProps & AdLibFetchAndFilterProps & IAdLibRegionPanelTrackedProps>,
 	IState
 > {
@@ -172,24 +171,8 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 		}
 	}
 
-	private getThumbnailUrl = (): string | undefined => {
-		const { piece } = this.props
-		const { mediaPreviewsUrl } = this.props.studio.settings
-		if (piece && piece.contentMetaData && piece.contentMetaData.previewPath && mediaPreviewsUrl) {
-			return (
-				ensureHasTrailingSlash(mediaPreviewsUrl) +
-				'media/thumbnail/' +
-				piece.contentMetaData.mediaId
-					.split('/')
-					.map((id) => encodeURIComponent(id))
-					.join('/')
-			)
-		}
-		return undefined
-	}
-
 	private renderPreview() {
-		const thumbnailUrl = this.getThumbnailUrl()
+		const thumbnailUrl = this.props.piece?.thumbnailUrl
 		if (thumbnailUrl) {
 			return <img src={thumbnailUrl} className="adlib-region-panel__image" />
 		}
@@ -219,7 +202,7 @@ export class AdLibRegionPanelBase extends MeteorReactComponent<
 					className={ClassNames('adlib-region-panel__image-container', {
 						next: piece && this.isAdLibNext(piece),
 						'on-air': piece && this.isAdLibDisplayedAsOnAir(piece),
-						blackout: !!this.props.piece || (this.props.panel.showBlackIfNoThumbnailPiece && !this.getThumbnailUrl()),
+						blackout: !!this.props.piece || this.props.panel.showBlackIfNoThumbnailPiece,
 					})}
 				>
 					<div className="adlib-region-panel__button" onClick={(e) => this.onAction(e, piece)}>
