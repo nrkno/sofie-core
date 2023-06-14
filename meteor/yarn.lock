@@ -1451,21 +1451,21 @@
     semver "^7.3.5"
     tar "^6.1.11"
 
-"@mos-connection/helper@^3.0.1":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@mos-connection/helper/-/helper-3.0.1.tgz#f18b954e2565410afd7c7f2b6e2094488a5a0e91"
-  integrity sha512-N6mzzcSyVfNNdSN0z5p/bMjuzEGJzlcv4nJRGczA/mRjkkEU8KY247YlDxuz4feXArT/gqZuBIHaCFLyrZunCQ==
+"@mos-connection/helper@^3.0.3":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@mos-connection/helper/-/helper-3.0.4.tgz#93a998f52d5371c428279ad5a7f35b2d788b3821"
+  integrity sha512-PLfIQGo3uRYe+clYrft6qtNkbjYZWjIkpRRZUCR1XAxJeJCeGRd/Go9tuabsNUc7ejgdDDt4i+yi/qWrA8EBBw==
   dependencies:
-    "@mos-connection/model" "3.0.1"
+    "@mos-connection/model" "3.0.4"
     iconv-lite "^0.6.2"
     tslib "^2.2.0"
     xml-js "^1.6.11"
     xmlbuilder "^15.1.1"
 
-"@mos-connection/model@3.0.1", "@mos-connection/model@^3.0.1":
-  version "3.0.1"
-  resolved "https://registry.yarnpkg.com/@mos-connection/model/-/model-3.0.1.tgz#38b41d6848e3af58715ce462c5e55ddf1c5c456f"
-  integrity sha512-e+vrLaghYayuzq5JZABbouofseMMnGmUk0mJcGzCG4aYK3YZ/9JoTe1mJBMecbEiqFQXld8idOHv/9rO8HRy4g==
+"@mos-connection/model@3.0.4", "@mos-connection/model@^3.0.3":
+  version "3.0.4"
+  resolved "https://registry.yarnpkg.com/@mos-connection/model/-/model-3.0.4.tgz#da2648c141b2cd1e3f8fe0653525d8eca142b2f1"
+  integrity sha512-TPA/Y6r0XnlbMp1it5HfGVreUCuVCQdnO2r8PnSfiipdnsJSP9YiSOkNQ17+8oc1qgb8GVCrFRJhkUV8mKuweg==
 
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
