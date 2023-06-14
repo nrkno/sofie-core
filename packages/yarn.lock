@@ -4227,41 +4227,34 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mos-connection/connector@npm:^3.0.3":
-  version: 3.0.3
-  resolution: "@mos-connection/connector@npm:3.0.3"
+"@mos-connection/connector@npm:^3.0.4":
+  version: 3.0.4
+  resolution: "@mos-connection/connector@npm:3.0.4"
   dependencies:
-    "@mos-connection/helper": 3.0.2
-    "@mos-connection/model": 3.0.2
+    "@mos-connection/helper": 3.0.4
+    "@mos-connection/model": 3.0.4
     iconv-lite: ^0.6.2
     tslib: ^2.2.0
     xml-js: ^1.6.11
     xmlbuilder: ^15.1.1
-  checksum: 64dc3a4c131eb01ae6a553f25d7d3c69abf94d6cc94450a450515ea9c68cdb380dcd9b4942c1bda01f8d35607f55d94cf29e95b8001ff12db9d8d63a561a0f07
+  checksum: 7ec53e26aefac824787fc5cd51a0cd36ab1429d9fb4ca510a89a0d371bfcf5e5b82cc12b483c2faa924993c04a19eead87839304ea5d4c5dcc2c7ac8ceae2cd0
   languageName: node
   linkType: hard
 
-"@mos-connection/helper@npm:3.0.2":
-  version: 3.0.2
-  resolution: "@mos-connection/helper@npm:3.0.2"
+"@mos-connection/helper@npm:3.0.4":
+  version: 3.0.4
+  resolution: "@mos-connection/helper@npm:3.0.4"
   dependencies:
-    "@mos-connection/model": 3.0.2
+    "@mos-connection/model": 3.0.4
     iconv-lite: ^0.6.2
     tslib: ^2.2.0
     xml-js: ^1.6.11
     xmlbuilder: ^15.1.1
-  checksum: 7415c20230945d89b568297123f833b9ea193a79e207a47c14bba611fdfa4fe4ace5647a78b5fc64831e0b8f52ff91f6479cb89f80060936f0c3caf5d0b57f80
+  checksum: 43ade87fd9a7ca7e183377d36f4d3b0ae063180c8760657201e50169c0868647242c83adaf860c475b9959079512d42ceb43d8ed657356d02140d7aa93992d79
   languageName: node
   linkType: hard
 
-"@mos-connection/model@npm:3.0.2":
-  version: 3.0.2
-  resolution: "@mos-connection/model@npm:3.0.2"
-  checksum: c8acb3eff5845e71a33349131547be8ca1c8b041f5119d54253f03ad1ce7a2b21d30dbaa4709a978425237585cc4b7eab2edca8027d81984aefd9cdef9c3efc4
-  languageName: node
-  linkType: hard
-
-"@mos-connection/model@npm:^3.0.3":
+"@mos-connection/model@npm:3.0.4, @mos-connection/model@npm:^3.0.4":
   version: 3.0.4
   resolution: "@mos-connection/model@npm:3.0.4"
   checksum: 7de15fba9a818260fb57847dbc51695036720a7f499d2fe262c691630673e83c01bdc3ea62261529e661f957074a6d92e8d38305485293c5392e073dab33989b
@@ -5474,7 +5467,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
-    "@mos-connection/model": ^3.0.3
+    "@mos-connection/model": ^3.0.4
     timeline-state-resolver-types: 8.0.0-nightly-release50-20230607-104304-36ff5e4a1.0
     tslib: ^2.4.0
     type-fest: ^2.19.0
@@ -16447,7 +16440,7 @@ asn1@evs-broadcast/node-asn1:
   version: 0.0.0-use.local
   resolution: "mos-gateway@workspace:mos-gateway"
   dependencies:
-    "@mos-connection/connector": ^3.0.3
+    "@mos-connection/connector": ^3.0.4
     "@sofie-automation/server-core-integration": 1.50.0-in-development
     "@sofie-automation/shared-lib": 1.50.0-in-development
     tslib: ^2.4.0

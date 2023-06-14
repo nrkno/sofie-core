@@ -1859,7 +1859,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mos-connection/helper@npm:^3.0.3":
+"@mos-connection/helper@npm:^3.0.4":
   version: 3.0.4
   resolution: "@mos-connection/helper@npm:3.0.4"
   dependencies:
@@ -1872,7 +1872,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mos-connection/model@npm:3.0.4, @mos-connection/model@npm:^3.0.3":
+"@mos-connection/model@npm:3.0.4, @mos-connection/model@npm:^3.0.4":
   version: 3.0.4
   resolution: "@mos-connection/model@npm:3.0.4"
   checksum: 7de15fba9a818260fb57847dbc51695036720a7f499d2fe262c691630673e83c01bdc3ea62261529e661f957074a6d92e8d38305485293c5392e073dab33989b
@@ -2179,7 +2179,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sofie-automation/shared-lib@portal:../packages/shared-lib::locator=automation-core%40workspace%3A."
   dependencies:
-    "@mos-connection/model": ^3.0.3
+    "@mos-connection/model": ^3.0.4
     timeline-state-resolver-types: 8.0.0-nightly-release50-20230607-104304-36ff5e4a1.0
     tslib: ^2.4.0
     type-fest: ^2.19.0
@@ -3524,7 +3524,7 @@ __metadata:
     "@jstarpl/react-contextmenu": ^2.15.0
     "@koa/cors": ^4.0.0
     "@koa/router": ^12.0.0
-    "@mos-connection/helper": ^3.0.3
+    "@mos-connection/helper": ^3.0.4
     "@nrk/core-icons": ^9.6.0
     "@popperjs/core": ^2.11.7
     "@slack/webhook": ^6.1.0
