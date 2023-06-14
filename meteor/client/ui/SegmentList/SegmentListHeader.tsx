@@ -17,6 +17,7 @@ import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { UIStudio } from '../../../lib/api/studios'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
+import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
 
 export function SegmentListHeader({
 	isDetached,
@@ -121,31 +122,41 @@ export function SegmentListHeader({
 				{segment.name}
 			</h2>
 			<div className="segment-opl__counters">
-				<div
-					className={classNames('segment-opl__timeUntil', {
-						'segment-opl__timeUntil--time-of-day': useTimeOfDayCountdowns,
-					})}
-					onClick={onTimeUntilClick}
-				>
-					{playlist && parts && parts.length > 0 && showCountdownToSegment && (
-						<PartCountdown
-							partId={countdownToPartId}
-							hideOnZero={!useTimeOfDayCountdowns}
-							useWallClock={useTimeOfDayCountdowns}
-							playlist={playlist}
-							label={
-								useTimeOfDayCountdowns ? (
-									<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
-								) : (
-									<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
-								)
-							}
+				{segment.segmentTiming?.expectedStart || segment.segmentTiming?.expectedEnd ? (
+					<div className={classNames('segment-opl__expectedTime')} onClick={onTimeUntilClick}>
+						<SegmentTimeAnchorTime
+							segment={segment}
+							isLiveSegment={isLiveSegment}
+							labelClassName="segment-timeline__expectedTime__label"
 						/>
-					)}
-					{studio.settings.preserveUnsyncedPlayingSegmentContents && segment.orphaned && (
-						<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
-					)}
-				</div>
+					</div>
+				) : (
+					<div
+						className={classNames('segment-opl__timeUntil', {
+							'segment-opl__timeUntil--time-of-day': useTimeOfDayCountdowns,
+						})}
+						onClick={onTimeUntilClick}
+					>
+						{playlist && parts && parts.length > 0 && showCountdownToSegment && (
+							<PartCountdown
+								partId={countdownToPartId}
+								hideOnZero={!useTimeOfDayCountdowns}
+								useWallClock={useTimeOfDayCountdowns}
+								playlist={playlist}
+								label={
+									useTimeOfDayCountdowns ? (
+										<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
+									) : (
+										<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
+									)
+								}
+							/>
+						)}
+						{studio.settings.preserveUnsyncedPlayingSegmentContents && segment.orphaned && (
+							<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
+						)}
+					</div>
+				)}
 			</div>
 			{(criticalNotes > 0 || warningNotes > 0) && (
 				<div className="segment-opl__notes">
