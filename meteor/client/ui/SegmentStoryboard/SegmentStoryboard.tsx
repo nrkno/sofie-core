@@ -623,7 +623,11 @@ export const SegmentStoryboard = React.memo(
 				</div>
 				{props.segment.segmentTiming?.expectedStart || props.segment.segmentTiming?.expectedEnd ? (
 					<div className="segment-timeline__expectedTime">
-						<SegmentTimeAnchorTime segment={props.segment} labelClassName="segment-timeline__duration__label" />
+						<SegmentTimeAnchorTime
+							segment={props.segment}
+							isLiveSegment={props.isLiveSegment}
+							labelClassName="segment-timeline__duration__label"
+						/>
 					</div>
 				) : (
 					<div className="segment-timeline__timeUntil" onClick={onTimeUntilClick}>

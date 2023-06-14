@@ -1113,6 +1113,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 					<div className="segment-timeline__expectedTime">
 						<SegmentTimeAnchorTime
 							segment={this.props.segment}
+							isLiveSegment={this.props.isLiveSegment}
 							labelClassName="segment-timeline__expectedTime__label"
 						/>
 					</div>

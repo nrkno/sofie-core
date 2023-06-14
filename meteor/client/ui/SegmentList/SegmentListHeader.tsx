@@ -124,7 +124,11 @@ export function SegmentListHeader({
 			<div className="segment-opl__counters">
 				{segment.segmentTiming?.expectedStart || segment.segmentTiming?.expectedEnd ? (
 					<div className={classNames('segment-opl__expectedTime')} onClick={onTimeUntilClick}>
-						<SegmentTimeAnchorTime segment={segment} labelClassName="segment-timeline__expectedTime__label" />
+						<SegmentTimeAnchorTime
+							segment={segment}
+							isLiveSegment={isLiveSegment}
+							labelClassName="segment-timeline__expectedTime__label"
+						/>
 					</div>
 				) : (
 					<div
