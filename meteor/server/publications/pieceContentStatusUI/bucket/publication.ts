@@ -37,6 +37,7 @@ import { BucketContentObserver } from './bucketContentObserver'
 import { regenerateForBucketActionIds, regenerateForBucketAdLibIds } from './regenerateForItem'
 import { PieceContentStatusStudio } from '../checkPieceContentStatus'
 import { BucketSecurity } from '../../../security/buckets'
+import { check } from 'meteor/check'
 
 interface UIBucketContentStatusesArgs {
 	readonly studioId: StudioId
@@ -250,6 +251,9 @@ meteorCustomPublish(
 	PubSub.uiBucketContentStatuses,
 	CustomCollectionName.UIBucketContentStatuses,
 	async function (pub, studioId: StudioId, bucketId: BucketId) {
+		check(studioId, String)
+		check(bucketId, String)
+
 		const cred = await resolveCredentials({ userId: this.userId, token: undefined })
 
 		if (

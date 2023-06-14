@@ -165,6 +165,8 @@ meteorCustomPublish(
 	PubSub.mappingsForDevice,
 	CustomCollectionName.StudioMappings,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
+		check(deviceId, String)
+
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
 			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 
@@ -182,6 +184,8 @@ meteorCustomPublish(
 	PubSub.mappingsForStudio,
 	CustomCollectionName.StudioMappings,
 	async function (pub, studioId: StudioId, token) {
+		check(studioId, String)
+
 		if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
 			await createObserverForMappingsPublication(pub, studioId)
 		}

@@ -12,6 +12,7 @@ import { Complete, assertNever, literal } from '@sofie-automation/corelib/dist/l
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { Studio, StudioIngestDevice, StudioInputDevice, StudioPlayoutDevice } from '../../lib/collections/Studios'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { check } from 'meteor/check'
 
 interface PeripheralDeviceForDeviceArgs {
 	readonly deviceId: PeripheralDeviceId
@@ -189,6 +190,8 @@ meteorCustomPublish(
 	PubSub.peripheralDeviceForDevice,
 	CustomCollectionName.PeripheralDeviceForDevice,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
+		check(deviceId, String)
+
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
 			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 

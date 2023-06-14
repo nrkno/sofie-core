@@ -17,6 +17,7 @@ import { resolveCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { ShowStyleReadAccess } from '../security/showStyle'
 import { TriggeredActions } from '../collections'
+import { check, Match } from 'meteor/check'
 
 interface UITriggeredActionsArgs {
 	readonly showStyleBaseId: ShowStyleBaseId | null
@@ -106,6 +107,8 @@ meteorCustomPublish(
 	PubSub.uiTriggeredActions,
 	CustomCollectionName.UITriggeredActions,
 	async function (pub, showStyleBaseId: ShowStyleBaseId | null) {
+		check(showStyleBaseId, Match.Maybe(String))
+
 		const cred = await resolveCredentials({ userId: this.userId, token: undefined })
 
 		if (

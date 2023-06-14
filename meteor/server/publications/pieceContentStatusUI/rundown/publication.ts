@@ -53,6 +53,7 @@ import {
 	regenerateForPieceInstanceIds,
 } from './regenerateItems'
 import { PieceContentStatusStudio } from '../checkPieceContentStatus'
+import { check, Match } from 'meteor/check'
 
 interface UIPieceContentStatusesArgs {
 	readonly rundownPlaylistId: RundownPlaylistId
@@ -439,6 +440,8 @@ meteorCustomPublish(
 	PubSub.uiPieceContentStatuses,
 	CustomCollectionName.UIPieceContentStatuses,
 	async function (pub, rundownPlaylistId: RundownPlaylistId | null) {
+		check(rundownPlaylistId, Match.Maybe(String))
+
 		const cred = await resolveCredentials({ userId: this.userId, token: undefined })
 
 		if (
