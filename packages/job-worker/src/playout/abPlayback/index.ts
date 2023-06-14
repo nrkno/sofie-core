@@ -36,8 +36,6 @@ export function applyAbPlaybackForTimeline(
 ): Record<string, ABSessionAssignments> {
 	if (!blueprint.blueprint.getAbResolverConfiguration) return {}
 
-	console.log('running ab')
-
 	const blueprintContext = new ShowStyleContext(
 		{
 			name: playlist.name,
