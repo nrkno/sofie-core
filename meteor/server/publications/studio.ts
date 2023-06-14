@@ -5,7 +5,6 @@ import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { DBStudio, getActiveRoutes, getRoutedMappings, RoutedMappings } from '../../lib/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
-import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { NoSecurityReadAccess } from '../security/noSecurity'
@@ -26,7 +25,6 @@ import {
 	ExpectedPackages,
 	ExpectedPackageWorkStatuses,
 	ExternalMessageQueue,
-	MediaObjects,
 	PackageContainerStatuses,
 	PeripheralDevices,
 	Studios,
@@ -59,20 +57,6 @@ meteorPublish(PubSub.externalMessageQueue, async function (selector, token) {
 	return null
 })
 
-meteorPublish(PubSub.mediaObjects, async function (studioId, selector, token) {
-	if (!studioId) throw new Meteor.Error(400, 'studioId argument missing')
-	selector = selector || {}
-	check(studioId, String)
-	check(selector, Object)
-	const modifier: FindOptions<MediaObject> = {
-		fields: {},
-	}
-	selector.studioId = studioId
-	if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId, token })) {
-		return MediaObjects.findWithCursor(selector, modifier)
-	}
-	return null
-})
 meteorPublish(PubSub.expectedPackages, async function (selector, token) {
 	// Note: This differs from the expected packages sent to the Package Manager, instead @see PubSub.expectedPackagesForDevice
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')

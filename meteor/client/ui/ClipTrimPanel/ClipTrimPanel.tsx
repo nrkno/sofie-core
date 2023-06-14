@@ -6,7 +6,6 @@ import { Piece } from '../../../lib/collections/Pieces'
 import { PubSub } from '../../../lib/api/pubsub'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { VideoEditMonitor } from './VideoEditMonitor'
-import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { TimecodeEncoder } from './TimecodeEncoder'
 import { faUndo } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -14,7 +13,7 @@ import Tooltip from 'rc-tooltip'
 import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 import { PartId, PieceId, RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { MediaObjects, Pieces } from '../../collections'
+import { Pieces } from '../../collections'
 
 export interface IProps {
 	pieceId: PieceId
@@ -35,7 +34,6 @@ export interface IProps {
 
 interface ITrackedProps {
 	piece: Piece | undefined
-	mediaObject: MediaObject | undefined
 	studio: UIStudio | undefined
 	maxDuration: number
 	frameRate: number
@@ -57,11 +55,6 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 	const content = piece?.content as VTContent | undefined
 	return {
 		piece: piece,
-		mediaObject: content?.fileName
-			? MediaObjects.findOne({
-					mediaId: content.fileName.toUpperCase(),
-			  })
-			: undefined,
 		studio: studio,
 		maxDuration: content?.sourceDuration || 0,
 		frameRate: studio?.settings?.frameRate ?? 25,
@@ -92,17 +85,6 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 
 		componentDidMount(): void {
 			this.subscribe(PubSub.pieces, { _id: this.props.pieceId, startRundownId: this.props.rundownId })
-			this.autorun(() => {
-				const content = this.props.piece?.content as VTContent | undefined
-				const objId = content?.fileName?.toUpperCase()
-
-				if (objId) {
-					// if (this.mediaObjectSub) this.mediaObjectSub.stop()
-					this.subscribe(PubSub.mediaObjects, this.props.studioId, {
-						mediaId: objId,
-					})
-				}
-			})
 		}
 
 		private checkInOutPoints<T extends StateChange>(change: T): T {
@@ -225,11 +207,13 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 		}
 
 		render(): JSX.Element {
-			const { t } = this.props
+			const { t, piece } = this.props
 			let previewUrl: string | undefined = undefined
-			if (this.props.mediaObject && this.props.studio) {
+			const content = piece?.content as VTContent | undefined
+			if (content?.fileName && this.props.studio) {
+				// TODO - this will need updating to support expectedPackages
 				const mediaPreviewUrl = ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
-				previewUrl = mediaPreviewUrl + 'media/preview/' + encodeURIComponent(this.props.mediaObject.mediaId)
+				previewUrl = mediaPreviewUrl + 'media/preview/' + encodeURIComponent(content.fileName.toUpperCase())
 			}
 
 			return (
