@@ -592,12 +592,12 @@ async function checkPieceContentExpectedPackageStatus(
 	const firstPackage = Object.values<ScanInfoForPackage>(packageInfos)[0]
 	if (firstPackage) {
 		// TODO: support multiple packages:
-		if (firstPackage.deepScan?.freezes?.length) {
+		if (!piece.content.ignoreFreezeFrame && firstPackage.deepScan?.freezes?.length) {
 			freezes = firstPackage.deepScan.freezes.map((i): PackageInfo.Anomaly => {
 				return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
 			})
 		}
-		if (firstPackage.deepScan?.blacks?.length) {
+		if (!piece.content.ignoreBlackFrames && firstPackage.deepScan?.blacks?.length) {
 			blacks = firstPackage.deepScan.blacks.map((i): PackageInfo.Anomaly => {
 				return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
 			})
