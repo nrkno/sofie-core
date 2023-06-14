@@ -1451,7 +1451,7 @@
     semver "^7.3.5"
     tar "^6.1.11"
 
-"@mos-connection/helper@^3.0.3":
+"@mos-connection/helper@^3.0.4":
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/@mos-connection/helper/-/helper-3.0.4.tgz#93a998f52d5371c428279ad5a7f35b2d788b3821"
   integrity sha512-PLfIQGo3uRYe+clYrft6qtNkbjYZWjIkpRRZUCR1XAxJeJCeGRd/Go9tuabsNUc7ejgdDDt4i+yi/qWrA8EBBw==
@@ -1462,7 +1462,7 @@
     xml-js "^1.6.11"
     xmlbuilder "^15.1.1"
 
-"@mos-connection/model@3.0.4", "@mos-connection/model@^3.0.3":
+"@mos-connection/model@3.0.4", "@mos-connection/model@^3.0.4":
   version "3.0.4"
   resolved "https://registry.yarnpkg.com/@mos-connection/model/-/model-3.0.4.tgz#da2648c141b2cd1e3f8fe0653525d8eca142b2f1"
   integrity sha512-TPA/Y6r0XnlbMp1it5HfGVreUCuVCQdnO2r8PnSfiipdnsJSP9YiSOkNQ17+8oc1qgb8GVCrFRJhkUV8mKuweg==
