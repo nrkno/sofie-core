@@ -2837,7 +2837,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						>
 							{this.renderSegmentsList()}
 							<ErrorBoundary>
-								{this.props.matchedSegments && this.props.matchedSegments.length > 0 && (
+								{this.props.matchedSegments && this.props.matchedSegments.length > 0 && getAllowStudio() && (
 									<AfterBroadcastForm playlist={playlist} />
 								)}
 							</ErrorBoundary>

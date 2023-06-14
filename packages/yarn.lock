@@ -4254,10 +4254,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mos-connection/model@npm:3.0.2, @mos-connection/model@npm:^3.0.2":
+"@mos-connection/model@npm:3.0.2":
   version: 3.0.2
   resolution: "@mos-connection/model@npm:3.0.2"
   checksum: c8acb3eff5845e71a33349131547be8ca1c8b041f5119d54253f03ad1ce7a2b21d30dbaa4709a978425237585cc4b7eab2edca8027d81984aefd9cdef9c3efc4
+  languageName: node
+  linkType: hard
+
+"@mos-connection/model@npm:^3.0.3":
+  version: 3.0.4
+  resolution: "@mos-connection/model@npm:3.0.4"
+  checksum: 7de15fba9a818260fb57847dbc51695036720a7f499d2fe262c691630673e83c01bdc3ea62261529e661f957074a6d92e8d38305485293c5392e073dab33989b
   languageName: node
   linkType: hard
 
@@ -5467,7 +5474,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
-    "@mos-connection/model": ^3.0.2
+    "@mos-connection/model": ^3.0.3
     timeline-state-resolver-types: 8.0.0-nightly-release50-20230607-104304-36ff5e4a1.0
     tslib: ^2.4.0
     type-fest: ^2.19.0

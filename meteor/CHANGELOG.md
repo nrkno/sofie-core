@@ -17,6 +17,7 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [1.47.2](https://github.com/nrkno/sofie-core/compare/v1.47.1...v1.47.2) (2023-06-01)
 
+## [1.47.1](https://github.com/nrkno/sofie-core/compare/v1.47.1-1...v1.47.1) (2023-05-11)
 
 
 ### Bug Fixes
