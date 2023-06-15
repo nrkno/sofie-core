@@ -36,7 +36,7 @@ export class EventsWorkerParent extends WorkerParentBase {
 			{
 				instanceName: `Events: ${baseOptions.studioId}`,
 				autoRestart: true,
-				freezeLimit: FREEZE_LIMIT,
+				freezeLimit: baseOptions.enableFreezeLimit ? FREEZE_LIMIT : 0,
 				restartTimeout: RESTART_TIMEOUT,
 				killTimeout: KILL_TIMEOUT,
 			}

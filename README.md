@@ -68,9 +68,17 @@ yarn start
 We provide a `settings.json.default` file in `.vscode` that you should consider using with your IDE. Also consider installing suggested
 extensions, which should help you create PRs consistent with project's code standards.
 
-### Debugging the blueprints in Visual Studio Code:
+### Debugging in Visual Studio Code
 
-The "Attach" config in `launch.json` supports debugging the blueprints.
+Start core in development mode with the `--inspect-meteor` argument, and attach the debugger using the "Attach" launch configuration.
+
+```bash
+yarn dev --inspect-meteor
+```
+
+### Debugging blueprints
+
+The "Attach" configuration in `launch.json` supports debugging blueprints.
 
 Local blueprints repo needs to be added to the Visual Studio Code workspace under the name "Blueprints".
 

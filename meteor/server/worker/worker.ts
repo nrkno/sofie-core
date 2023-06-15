@@ -4,7 +4,7 @@ import { getIngestQueueName, IngestJobFunc } from '@sofie-automation/corelib/dis
 import { getEventsQueueName } from '@sofie-automation/corelib/dist/worker/events'
 import { logger } from '../logging'
 import { Meteor } from 'meteor/meteor'
-import { FORCE_CLEAR_CACHES_JOB } from '@sofie-automation/corelib/dist/worker/shared'
+import { FORCE_CLEAR_CACHES_JOB, IS_INSPECTOR_ENABLED } from '@sofie-automation/corelib/dist/worker/shared'
 import { threadedClass, Promisify, ThreadedClassManager } from 'threadedclass'
 import type { JobSpec } from '@sofie-automation/job-worker/dist/main'
 import type { IpcJobWorker } from '@sofie-automation/job-worker/dist/ipc'
@@ -311,10 +311,11 @@ MeteorStartupAsync(async () => {
 			queueJobWithoutResult,
 			logLine,
 			fastTrackTimeline,
+			!IS_INSPECTOR_ENABLED,
 		],
 		{
 			autoRestart: true,
-			freezeLimit: FREEZE_LIMIT,
+			freezeLimit: IS_INSPECTOR_ENABLED ? 0 : FREEZE_LIMIT,
 			restartTimeout: RESTART_TIMEOUT,
 			killTimeout: KILL_TIMEOUT,
 		}
