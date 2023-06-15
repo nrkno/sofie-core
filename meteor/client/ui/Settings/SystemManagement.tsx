@@ -14,6 +14,7 @@ import { Meteor } from 'meteor/meteor'
 import { LogLevel } from '../../../lib/lib'
 import { CoreSystem } from '../../collections'
 import { CollectionCleanupResult } from '../../../lib/api/system'
+import { LabelActual } from '../../lib/Components/LabelAndOverrides'
 
 interface IProps {}
 
@@ -70,91 +71,102 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 			return this.props.coreSystem ? (
 				<div className="studio-edit mod mhl mvn">
 					<div>
-						<h2 className="mhn mtn">{t('Installation name')}</h2>
-						<label className="field">
-							{t('This name will be shown in the title bar of the window')}
-							<div className="mdi">
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute="name"
-									obj={this.props.coreSystem}
-									type="text"
-									collection={CoreSystem}
-									className="mdinput"
-								/>
-								<span className="mdfx"></span>
-							</div>
-						</label>
-
-						<h2 className="mhn mtn">{t('Logging level')}</h2>
-						<label className="field">
-							{t('This affects how much is logged to the console on the server')}
-							<div className="mdi">
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute="logLevel"
-									obj={this.props.coreSystem}
-									type="dropdown"
-									options={{ ...LogLevel, 'Use fallback': undefined }}
-									collection={CoreSystem}
-									className="mdinput"
-								/>
-								<span className="mdfx"></span>
-							</div>
-						</label>
+						<div className="properties-grid">
+							<label className="field">
+								<LabelActual label={t('Installation name')} />
+								<div className="mdi">
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute="name"
+										obj={this.props.coreSystem}
+										type="text"
+										collection={CoreSystem}
+										className="mdinput"
+									/>
+									<span className="mdfx"></span>
+								</div>
+								<span className="text-s dimmed field-hint">
+									{t('This name will be shown in the title bar of the window')}
+								</span>
+							</label>
+							<label className="field">
+								<LabelActual label={t('Logging level')} />
+								<div className="mdi">
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute="logLevel"
+										obj={this.props.coreSystem}
+										type="dropdown"
+										options={{ ...LogLevel, 'Use fallback': undefined }}
+										collection={CoreSystem}
+										className="mdinput"
+									/>
+									<span className="mdfx"></span>
+								</div>
+								<span className="text-s dimmed field-hint">
+									{t('This affects how much is logged to the console on the server')}
+								</span>
+							</label>
+						</div>
 
 						<h2 className="mhn mtn">{t('System-wide Notification Message')}</h2>
-						<label className="field">
-							{t('Message')}
-							<div className="mdi">
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute="systemInfo.message"
-									obj={this.props.coreSystem}
-									type="text"
-									collection={CoreSystem}
-									className="mdinput"
-								/>
-								<span className="mdfx"></span>
-							</div>
-						</label>
-						<div className="field">
-							{t('Enabled')}
-							<div className="mdi">
-								<EditAttribute
-									attribute="systemInfo.enabled"
-									obj={this.props.coreSystem}
-									type="checkbox"
-									collection={CoreSystem}
-								></EditAttribute>
-							</div>
+						<div className="properties-grid">
+							<label className="field">
+								<LabelActual label={t('Message')} />
+								<div className="mdi">
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute="systemInfo.message"
+										obj={this.props.coreSystem}
+										type="text"
+										collection={CoreSystem}
+										className="mdinput"
+									/>
+									<span className="mdfx"></span>
+								</div>
+							</label>
+							<label className="field">
+								<LabelActual label={t('Enabled')} />
+								<div className="mdi">
+									<EditAttribute
+										attribute="systemInfo.enabled"
+										obj={this.props.coreSystem}
+										type="checkbox"
+										collection={CoreSystem}
+									></EditAttribute>
+								</div>
+							</label>
 						</div>
 
-						<h2 className="mhn">{t('Edit Support Panel')}</h2>
-						<label className="field">
-							{t('HTML that will be shown in the Support Panel')}
-							<div className="mdi">
-								<EditAttribute
-									modifiedClassName="bghl"
-									attribute="support.message"
-									obj={this.props.coreSystem}
-									type="multiline"
-									collection={CoreSystem}
-									className="mdinput"
-								/>
-								<span className="mdfx"></span>
-							</div>
-						</label>
-
-						<div className="row">
-							<div className="col c12 r1-c12">
-								<TriggeredActionsEditor showStyleBaseId={null} sourceLayers={{}} outputLayers={{}} />
-							</div>
+						<div className="properties-grid">
+							<label className="field">
+								<LabelActual label={t('Edit Support Panel')} />
+								<div className="mdi">
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute="support.message"
+										obj={this.props.coreSystem}
+										type="multiline"
+										collection={CoreSystem}
+										className="mdinput"
+									/>
+									<span className="mdfx"></span>
+								</div>
+								<span className="text-s dimmed field-hint">{t('HTML that will be shown in the Support Panel')}</span>
+							</label>
 						</div>
+					</div>
 
-						<h2 className="mhn">{t('Application Performance Monitoring')}</h2>
-						<div className="field">
-							{t('APM Enabled')}
+					<div className="row">
+						<div className="col c12 r1-c12">
+							<TriggeredActionsEditor showStyleBaseId={null} sourceLayers={{}} outputLayers={{}} />
+						</div>
+					</div>
+
+					<h2 className="mhn">{t('Application Performance Monitoring')}</h2>
+					<div className="properties-grid">
+						<label className="field">
+							<LabelActual label={t('APM Enabled')} />
 							<div className="mdi">
 								<EditAttribute
 									attribute="apm.enabled"
@@ -163,9 +175,9 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 									collection={CoreSystem}
 								></EditAttribute>
 							</div>
-						</div>
+						</label>
 						<label className="field">
-							{t('APM Transaction Sample Rate')}
+							<LabelActual label={t('APM Transaction Sample Rate')} />
 							<div className="mdi">
 								<EditAttribute
 									modifiedClassName="bghl"
@@ -177,20 +189,20 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 								/>
 								<span className="mdfx"></span>
 							</div>
-							<div>
-								(
+							<span className="text-s dimmed field-hint">
 								{t(
 									'How many of the transactions to monitor. Set to -1 to log nothing (max performance), 0.5 to log 50% of the transactions, 1 to log all transactions'
 								)}
-								)
-							</div>
-							<div>{t('Note: Core needs to be restarted to apply these settings')}</div>
+							</span>
+							<span className="text-s dimmed field-hint">
+								{t('Note: Core needs to be restarted to apply these settings')}
+							</span>
 						</label>
+					</div>
 
-						<h2 className="mhn">{t('Monitor blocked thread')}</h2>
-
+					<div className="properties-grid">
 						<label className="field">
-							{t('Enable')}
+							<LabelActual label={t('Monitor blocked thread')} />
 							<div className="mdi">
 								<EditAttribute
 									modifiedClassName="bghl"
@@ -202,20 +214,20 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 								/>
 								<span className="mdfx"></span>
 							</div>
-							<div>
-								(
+							<span className="text-s dimmed field-hint">
 								{t(
 									'Enables internal monitoring of blocked main thread. Logs when there is an issue, but (unverified) might cause issues in itself.'
 								)}
-								)
-							</div>
+							</span>
 						</label>
+					</div>
 
-						<div>{t('Note: Core needs to be restarted to apply these settings')}</div>
+					<div>{t('Note: Core needs to be restarted to apply these settings')}</div>
 
-						<h2 className="mhn">{t('Cron jobs')}</h2>
-						<div className="field">
-							{t('Enable CasparCG restart job')}
+					<h2 className="mhn">{t('Cron jobs')}</h2>
+					<div className="properties-grid">
+						<label className="field">
+							<LabelActual label={t('Enable CasparCG restart job')} />
 							<div className="mdi">
 								<EditAttribute
 									attribute="cron.casparCGRestart.enabled"
@@ -224,23 +236,25 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 									collection={CoreSystem}
 								></EditAttribute>
 							</div>
-						</div>
+						</label>
+					</div>
 
-						<h2 className="mhn">{t('Cleanup')}</h2>
-						<div>
-							<button className="btn btn-default" onClick={() => this.cleanUpOldDatabaseIndexes()}>
-								{t('Cleanup old database indexes')}
-							</button>
-						</div>
-						<div>
-							<button className="btn btn-default" onClick={() => checkForOldDataAndCleanUp(t)}>
-								{t('Cleanup old data')}
-							</button>
-						</div>
+					<h2 className="mhn">{t('Cleanup')}</h2>
+					<div>
+						<button className="btn btn-default" onClick={() => this.cleanUpOldDatabaseIndexes()}>
+							{t('Cleanup old database indexes')}
+						</button>
+					</div>
+					<div>
+						<button className="btn btn-default" onClick={() => checkForOldDataAndCleanUp(t)}>
+							{t('Cleanup old data')}
+						</button>
+					</div>
 
-						<h2 className="mhn">{t('Cron jobs')}</h2>
-						<div className="field">
-							{t('Disable CasparCG restart job')}
+					<h2 className="mhn">{t('Cron jobs')}</h2>
+					<div className="properties-grid">
+						<label className="field">
+							<LabelActual label={t('Disable CasparCG restart job')} />
 							<div className="mdi">
 								<EditAttribute
 									attribute="cron.casparCG.disabled"
@@ -249,9 +263,9 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 									collection={CoreSystem}
 								></EditAttribute>
 							</div>
-						</div>
-						<div className="field">
-							{t('Enable automatic storage of Rundown Playlist snapshots periodically')}
+						</label>
+						<label className="field">
+							<LabelActual label={t('Enable automatic storage of Rundown Playlist snapshots periodically')} />
 							<div className="mdi">
 								<EditAttribute
 									attribute="cron.storeRundownSnapshots.enabled"
@@ -260,7 +274,9 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 									collection={CoreSystem}
 								></EditAttribute>
 							</div>
-							{t('Filter: If set, only store snapshots for certain rundowns')}
+						</label>
+						<label className="field">
+							<LabelActual label={t('Filter: If set, only store snapshots for certain rundowns')} />
 							<div className="mdi">
 								<EditAttribute
 									modifiedClassName="bghl"
@@ -276,8 +292,10 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 									}
 								/>
 							</div>
-							<div>{t('(Comma separated list. Empty - will store snapshots of all Rundown Playlists)')}</div>
-						</div>
+							<span className="text-s dimmed field-hint">
+								{t('(Comma separated list. Empty - will store snapshots of all Rundown Playlists)')}
+							</span>
+						</label>
 					</div>
 				</div>
 			) : null

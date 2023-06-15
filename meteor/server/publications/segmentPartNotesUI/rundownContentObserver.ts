@@ -31,40 +31,44 @@ export class RundownContentObserver {
 		this.#cancelCache = cancelCache
 
 		this.#observers = [
-			Rundowns.find(
+			Rundowns.observe(
 				{
 					_id: {
 						$in: rundownIds,
 					},
 				},
+				cache.Rundowns.link(),
 				{
 					projection: rundownFieldSpecifier,
 				}
-			).observe(cache.Rundowns.link()),
-			Segments.find(
+			),
+			Segments.observe(
 				{
 					rundownId: {
 						$in: rundownIds,
 					},
 				},
+				cache.Segments.link(),
 				{
 					projection: segmentFieldSpecifier,
 				}
-			).observe(cache.Segments.link()),
-			Parts.find(
+			),
+			Parts.observe(
 				{
 					rundownId: {
 						$in: rundownIds,
 					},
 				},
+				cache.Parts.link(),
 				{
 					projection: partFieldSpecifier,
 				}
-			).observe(cache.Parts.link()),
-			PartInstances.find(
+			),
+			PartInstances.observe(
 				{ rundownId: { $in: rundownIds }, reset: { $ne: true }, orphaned: 'deleted' },
+				cache.DeletedPartInstances.link(),
 				{ fields: partInstanceFieldSpecifier }
-			).observe(cache.DeletedPartInstances.link()),
+			),
 		]
 	}
 

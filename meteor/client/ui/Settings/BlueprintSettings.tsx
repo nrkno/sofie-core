@@ -20,6 +20,7 @@ import { unprotectString } from '../../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { BlueprintId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Blueprints, CoreSystem, ShowStyleBases, Studios } from '../../collections'
+import { LabelActual } from '../../lib/Components/LabelAndOverrides'
 
 interface IProps {
 	blueprintId: BlueprintId
@@ -259,7 +260,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							{t('Blueprint ID')}: <i>{unprotectString(blueprint._id)}</i>
 						</div>
 						<label className="field">
-							{t('Blueprint Name')}
+							<LabelActual label={t('Blueprint Name')} />
 							{!blueprint.name ? (
 								<div className="error-notice inline">
 									{t('No name set')} <FontAwesomeIcon icon={faExclamationTriangle} />
@@ -307,7 +308,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						) : null}
 						<div className="mod mtn mbm mhn">
 							<label className="field">
-								{t('Disable version check')}
+								<LabelActual label={t('Disable version check')} />
 								<EditAttribute
 									modifiedClassName="bghl"
 									attribute="disableVersionChecks"

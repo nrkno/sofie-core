@@ -1,82 +1,42 @@
-import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import React from 'react'
-import {
-	ConnectDropTarget,
-	DropTarget,
-	DropTargetCollector,
-	DropTargetConnector,
-	DropTargetMonitor,
-	DropTargetSpec,
-} from 'react-dnd'
-import { withTranslation } from 'react-i18next'
-import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import {
-	IRundownPlaylistUiAction,
-	isRundownDragObject,
-	RundownListDragDropTypes,
-	RundownPlaylistUiActionTypes,
-} from './DragAndDropTypes'
+import { useDrop } from 'react-dnd'
+import { useTranslation } from 'react-i18next'
+import { MeteorCall } from '../../../lib/api/methods'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
+import { IRundownDragObject, RundownListDragDropTypes } from './DragAndDropTypes'
 
-interface IRundownDropZoneProps {
-	activated: boolean
-	rundownDropHandler: (id: RundownId) => void
-}
-
-interface IRundownDropZoneDropTargetProps {
-	connectDropTarget: ConnectDropTarget
-	isOverCurrent: boolean
-	itemType: string | symbol | null
-}
-
-const dropTargetSpec: DropTargetSpec<IRundownDropZoneProps> = {
-	drop: (
-		props: IRundownDropZoneProps,
-		monitor: DropTargetMonitor,
-		_component: any
-	): IRundownPlaylistUiAction | undefined => {
-		const dropped = monitor.getItem()
-
-		console.debug('Drop on drop zone:', dropped)
-
-		if (isRundownDragObject(dropped)) {
-			props.rundownDropHandler(dropped.id)
-			return {
-				// the drop method must return an object to signal that the drop has been handled
-				type: RundownPlaylistUiActionTypes.NOOP,
-				rundownId: dropped.id,
-			}
+export function RundownDropZone(): JSX.Element {
+	const { t } = useTranslation()
+	const [dropState, connectDropTarget] = useDrop<
+		IRundownDragObject,
+		void,
+		{
+			activated: boolean
 		}
-	},
-}
+	>({
+		accept: RundownListDragDropTypes.RUNDOWN,
+		collect: (monitor) => {
+			return {
+				activated: !!monitor.getItemType(),
+			}
+		},
+		drop: (item) => {
+			const dropped = item
+			const rundownId = dropped?.id
 
-const dropTargetCollector: DropTargetCollector<IRundownDropZoneDropTargetProps, IRundownDropZoneProps> = function (
-	connect: DropTargetConnector,
-	monitor: DropTargetMonitor,
-	_props: IRundownDropZoneProps
-) {
-	return {
-		connectDropTarget: connect.dropTarget(),
-		isOverCurrent: monitor.isOver({ shallow: true }),
-		itemType: monitor.getItemType(),
-	}
-}
-
-export const RundownDropZone = DropTarget(
-	RundownListDragDropTypes.RUNDOWN,
-	dropTargetSpec,
-	dropTargetCollector
-)(
-	withTranslation()(function RundownDropZone(
-		props: Translated<IRundownDropZoneProps> & IRundownDropZoneDropTargetProps
-	) {
-		const { t, activated, connectDropTarget } = props
-
-		return connectDropTarget(
-			<div className={`rundown-dropzone ${activated ? 'open' : ''}`}>
-				<p>
-					<b>{t('Drop Rundown here to move it out of its current Playlist')}</b>
-				</p>
-			</div>
-		)
+			if (rundownId) {
+				doUserAction(t, 'drag&drop in dropzone', UserAction.RUNDOWN_ORDER_MOVE, (e, ts) =>
+					MeteorCall.userAction.moveRundown(e, ts, rundownId, null, [rundownId])
+				)
+			}
+		},
 	})
-)
+
+	return (
+		<div className={`rundown-dropzone ${dropState.activated ? 'open' : ''}`} ref={connectDropTarget}>
+			<p>
+				<b>{t('Drop Rundown here to move it out of its current Playlist')}</b>
+			</p>
+		</div>
+	)
+}

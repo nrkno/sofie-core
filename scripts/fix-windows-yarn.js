@@ -49,7 +49,7 @@ function copyFolderRecursiveSync(source, target) {
 }
 
 // only run on Windows
-if (process.platform !== 'win32') return
+if (process.platform !== 'win32') process.exit()
 
 const files = ['yarn', 'yarn.cmd', 'yarnpkg', 'yarnpkg.cmd', 'yarn.js']
 

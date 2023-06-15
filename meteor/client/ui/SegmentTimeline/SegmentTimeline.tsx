@@ -50,6 +50,7 @@ import {
 	TimingDataResolution,
 	WithTiming,
 } from '../RundownView/RundownTiming/withTiming'
+import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
 
 interface IProps {
 	id: string
@@ -103,7 +104,13 @@ interface IStateHeader {
 	mouseGrabbed: boolean
 	highlight: boolean
 	/** This map contains a list of parts that are too small to be displayed properly, paired with their durations */
-	smallParts: Map<PartInstanceId, number>
+	smallParts: Map<
+		PartInstanceId,
+		{
+			displayDuration: number
+			actualDuration: number
+		}
+	>
 	useTimeOfDayCountdowns: boolean
 }
 
@@ -255,7 +262,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 			timelineWidth: 1,
 			mouseGrabbed: false,
 			highlight: false,
-			smallParts: new Map<PartInstanceId, number>(),
+			smallParts: new Map(),
 			useTimeOfDayCountdowns: UIStateStorage.getItemBoolean(
 				`rundownView.${props.playlist._id}`,
 				`segment.${props.segment._id}.useTimeOfDayCountdowns`,
@@ -558,17 +565,20 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		})
 	}
 
-	private onPartTooSmallChanged = (part: PartUi, isTooSmall: number | false) => {
+	private onPartTooSmallChanged = (part: PartUi, displayDuration: number | false, actualDuration: number | false) => {
 		const partInstanceId = part.instance._id
 
 		this.setState((state) => {
-			if (isTooSmall !== false && !state.smallParts.has(partInstanceId)) {
+			if (displayDuration !== false && actualDuration !== false && !state.smallParts.has(partInstanceId)) {
 				const smallParts = new Map(state.smallParts)
-				smallParts.set(partInstanceId, isTooSmall)
+				smallParts.set(partInstanceId, {
+					displayDuration,
+					actualDuration,
+				})
 				return {
 					smallParts,
 				}
-			} else if (isTooSmall === false && state.smallParts.has(partInstanceId)) {
+			} else if (displayDuration === false && state.smallParts.has(partInstanceId)) {
 				const smallParts = new Map(state.smallParts)
 				smallParts.delete(partInstanceId)
 				return {
@@ -688,32 +698,27 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 
 	private renderTimeline() {
 		const { smallParts } = this.state
-		const { t } = this.props
 		let livePart: PartExtended | null = null
 		let anyPriorPartWasLive = false
 		let partIsLive = false
-		let smallPartsAccumulator: [PartUi, number][] = []
+		let smallPartsAccumulator: [PartUi, number, number][] = []
 		return this.props.parts.map((part, index) => {
 			const previousPartIsLive = partIsLive
 			if (previousPartIsLive) anyPriorPartWasLive = true
 			partIsLive = part.instance._id === this.props.playlist.currentPartInfo?.partInstanceId
 			if (partIsLive) livePart = part
-			let emitSmallPartsInFlag: [PartUi, number][] | undefined = undefined
+			let emitSmallPartsInFlag: [PartUi, number, number][] | undefined = undefined
 			let emitSmallPartsInFlagAtEnd: boolean = false
 			// if this is not undefined, it means that the part is on the list of small keys
-			const partDuration = smallParts.get(part.instance._id)
-			if (partDuration !== undefined) {
-				smallPartsAccumulator.push([part, partDuration])
+			const durations = smallParts.get(part.instance._id)
+			if (durations !== undefined) {
+				smallPartsAccumulator.push([part, durations.displayDuration, durations.actualDuration])
 			}
 
-			if (partDuration === undefined && smallPartsAccumulator.length > 0) {
+			if (durations === undefined && smallPartsAccumulator.length > 0) {
 				emitSmallPartsInFlag = smallPartsAccumulator
 				smallPartsAccumulator = []
-			} else if (
-				partDuration !== undefined &&
-				smallPartsAccumulator.length > 0 &&
-				this.props.parts.length === index + 1
-			) {
+			} else if (durations !== undefined && smallPartsAccumulator.length > 0 && this.props.parts.length === index + 1) {
 				emitSmallPartsInFlag = smallPartsAccumulator
 				emitSmallPartsInFlagAtEnd = true
 				smallPartsAccumulator = []
@@ -727,12 +732,13 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 				<React.Fragment key={unprotectString(part.instance._id)}>
 					{emitSmallPartsInFlag && !emitSmallPartsInFlagAtEnd && (
 						<SegmentTimelineSmallPartFlag
-							t={t}
 							parts={emitSmallPartsInFlag}
 							pieces={this.props.pieces}
 							followingPart={part}
+							livePosition={this.props.livePosition}
+							firstPartInSegmentId={firstPartInSegment.partId}
 							sourceLayers={this.props.segment.sourceLayers}
-							timeScale={this.props.timeScale}
+							timeToPixelRatio={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
 							collapsedOutputs={this.props.collapsedOutputs}
 							playlist={this.props.playlist}
@@ -743,6 +749,10 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 							isLastInSegment={false}
 							timelineWidth={this.state.timelineWidth}
 							showDurationSourceLayers={this.props.showDurationSourceLayers}
+							isLiveSegment={this.props.isLiveSegment}
+							anyPriorPartWasLive={anyPriorPartWasLive}
+							livePartStartsAt={livePartStartsAt}
+							livePartDisplayDuration={livePartDisplayDuration}
 						/>
 					)}
 					<SegmentTimelinePart
@@ -760,7 +770,6 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 						onCollapseOutputToggle={this.props.onCollapseOutputToggle}
 						onFollowLiveLine={this.props.onFollowLiveLine}
 						onContextMenu={this.props.onContextMenu}
-						relative={false}
 						onPieceClick={this.props.onItemClick}
 						onPieceDoubleClick={this.props.onItemDoubleClick}
 						onPartTooSmallChanged={this.onPartTooSmallChanged}
@@ -781,15 +790,17 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 						anyPriorPartWasLive={anyPriorPartWasLive}
 						livePartStartsAt={livePartStartsAt}
 						livePartDisplayDuration={livePartDisplayDuration}
+						budgetDuration={undefined}
 					/>
 					{emitSmallPartsInFlag && emitSmallPartsInFlagAtEnd && (
 						<SegmentTimelineSmallPartFlag
-							t={t}
 							parts={emitSmallPartsInFlag}
 							pieces={this.props.pieces}
 							followingPart={undefined}
+							livePosition={this.props.livePosition}
+							firstPartInSegmentId={firstPartInSegment.partId}
 							sourceLayers={this.props.segment.sourceLayers}
-							timeScale={this.props.timeScale}
+							timeToPixelRatio={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
 							collapsedOutputs={this.props.collapsedOutputs}
 							playlist={this.props.playlist}
@@ -800,6 +811,10 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 							isLastInSegment={true}
 							timelineWidth={this.state.timelineWidth}
 							showDurationSourceLayers={this.props.showDurationSourceLayers}
+							isLiveSegment={this.props.isLiveSegment}
+							anyPriorPartWasLive={anyPriorPartWasLive}
+							livePartStartsAt={livePartStartsAt}
+							livePartDisplayDuration={livePartDisplayDuration}
 						/>
 					)}
 				</React.Fragment>
@@ -833,7 +848,6 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 				onCollapseOutputToggle={this.props.onCollapseOutputToggle}
 				onFollowLiveLine={this.props.onFollowLiveLine}
 				onContextMenu={this.props.onContextMenu}
-				relative={false}
 				onPieceClick={this.props.onItemClick}
 				onPieceDoubleClick={this.props.onItemDoubleClick}
 				scrollWidth={this.state.timelineWidth / this.props.timeScale}
@@ -850,6 +864,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 				anyPriorPartWasLive={true}
 				livePartStartsAt={livePartStartsAt}
 				livePartDisplayDuration={livePartDisplayDuration}
+				budgetDuration={this.props.budgetDuration}
 			/>
 		)
 	}
@@ -1094,29 +1109,40 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 				</div>
 
 				<div className="segment-timeline__identifier">{this.props.segment.identifier}</div>
-				<div className="segment-timeline__timeUntil" onClick={this.onTimeUntilClick}>
-					{this.props.playlist &&
-						this.props.parts &&
-						this.props.parts.length > 0 &&
-						this.props.showCountdownToSegment && (
-							<PartCountdown
-								partId={countdownToPartId}
-								hideOnZero={!useTimeOfDayCountdowns}
-								useWallClock={useTimeOfDayCountdowns}
-								playlist={this.props.playlist}
-								label={
-									useTimeOfDayCountdowns ? (
-										<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
-									) : (
-										<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
-									)
-								}
-							/>
+				{this.props.segment.segmentTiming?.expectedStart || this.props.segment.segmentTiming?.expectedEnd ? (
+					<div className="segment-timeline__expectedTime">
+						<SegmentTimeAnchorTime
+							segment={this.props.segment}
+							isLiveSegment={this.props.isLiveSegment}
+							labelClassName="segment-timeline__expectedTime__label"
+						/>
+					</div>
+				) : (
+					<div className="segment-timeline__timeUntil" onClick={this.onTimeUntilClick}>
+						{this.props.playlist &&
+							this.props.parts &&
+							this.props.parts.length > 0 &&
+							this.props.showCountdownToSegment && (
+								<PartCountdown
+									partId={countdownToPartId}
+									hideOnZero={!useTimeOfDayCountdowns}
+									useWallClock={useTimeOfDayCountdowns}
+									playlist={this.props.playlist}
+									label={
+										useTimeOfDayCountdowns ? (
+											<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
+										) : (
+											<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
+										)
+									}
+								/>
+							)}
+						{this.props.studio.settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
+							<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
 						)}
-					{this.props.studio.settings.preserveUnsyncedPlayingSegmentContents && this.props.segment.orphaned && (
-						<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
-					)}
-				</div>
+					</div>
+				)}
+
 				<div className="segment-timeline__mos-id">{this.props.segment.externalId}</div>
 				<div className="segment-timeline__output-layers" role="tree" aria-label={t('Sources')}>
 					{this.renderOutputLayerControls(activeOutputGroups)}

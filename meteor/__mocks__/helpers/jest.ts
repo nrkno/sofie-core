@@ -78,7 +78,7 @@ export async function waitTime(ms: number): Promise<void> {
  * }, 500)
  * ```
  */
-export async function waitUntil(expectFcn: () => void, maxWaitTime: number): Promise<void> {
+export async function waitUntil(expectFcn: () => void | Promise<void>, maxWaitTime: number): Promise<void> {
 	/** How often to check expectFcn() */
 	const iterateInterval = maxWaitTime < 100 ? 10 : 100
 
@@ -87,7 +87,7 @@ export async function waitUntil(expectFcn: () => void, maxWaitTime: number): Pro
 	while (true) {
 		await waitTime(iterateInterval)
 		try {
-			expectFcn()
+			await expectFcn()
 			return
 		} catch (err) {
 			const waitedTime = Date.now() - startTime

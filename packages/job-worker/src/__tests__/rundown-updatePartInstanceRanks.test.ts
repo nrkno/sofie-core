@@ -32,21 +32,21 @@ describe('updatePartInstanceRanks', () => {
 			undefined,
 			getRundownId(context.studio._id, rundownExternalId)
 		)
-		await context.directCollections.RundownPlaylists.update(info.playlistId, {
+		await context.mockCollections.RundownPlaylists.update(info.playlistId, {
 			$set: { activationId: protectString('active') },
 		})
 
 		// playlistId = info.playlistId
 		rundownId = info.rundownId
 
-		const segment0 = (await context.directCollections.Segments.findOne({ rundownId })) as DBSegment
+		const segment0 = (await context.mockCollections.Segments.findOne({ rundownId })) as DBSegment
 		// eslint-disable-next-line jest/no-standalone-expect
 		expect(segment0).toBeTruthy()
 		segmentId = segment0._id
 	})
 
 	async function insertPart(id: string, rank: number): Promise<void> {
-		await context.directCollections.Parts.insertOne({
+		await context.mockCollections.Parts.insertOne({
 			_id: protectString(id),
 			_rank: rank,
 			rundownId,
@@ -58,8 +58,8 @@ describe('updatePartInstanceRanks', () => {
 	}
 
 	beforeEach(async () => {
-		await context.directCollections.Parts.remove({ segmentId })
-		await context.directCollections.PartInstances.remove({ segmentId })
+		await context.mockCollections.Parts.remove({ segmentId })
+		await context.mockCollections.PartInstances.remove({ segmentId })
 
 		await insertPart('part01', 1)
 		await insertPart('part02', 2)
@@ -69,10 +69,10 @@ describe('updatePartInstanceRanks', () => {
 	})
 
 	async function getParts(): Promise<DBPart[]> {
-		return context.directCollections.Parts.findFetch({ segmentId })
+		return context.mockCollections.Parts.findFetch({ segmentId })
 	}
 	async function getPartInstances(): Promise<DBPartInstance[]> {
-		return context.directCollections.PartInstances.findFetch({ segmentId })
+		return context.mockCollections.PartInstances.findFetch({ segmentId })
 	}
 
 	async function getPartRanks(): Promise<Array<{ id: PartId; rank: number }>> {
@@ -92,7 +92,7 @@ describe('updatePartInstanceRanks', () => {
 
 	async function insertPartInstance(part: DBPart, orphaned?: DBPartInstance['orphaned']): Promise<PartInstanceId> {
 		const id: PartInstanceId = protectString(`${part._id}_instance`)
-		await context.directCollections.PartInstances.insertOne({
+		await context.mockCollections.PartInstances.insertOne({
 			_id: id,
 			rehearsal: false,
 			takeCount: 0,
@@ -122,7 +122,7 @@ describe('updatePartInstanceRanks', () => {
 
 			const changeMap = new Map<SegmentId, Array<{ id: PartId; rank: number }>>()
 			changeMap.set(segmentId, initialRanks)
-			await updatePartInstanceRanks(context, cache, [segmentId], changeMap)
+			await updatePartInstanceRanks(context, cache, null, [segmentId], changeMap)
 
 			await cache.saveAllToDatabase()
 		})
@@ -145,7 +145,7 @@ describe('updatePartInstanceRanks', () => {
 
 	async function updatePartRank(expectedRanks: InstanceRanks, id: string, newRank: number): Promise<void> {
 		const partId = protectString(id)
-		const updated = await context.directCollections.Parts.update(partId, { $set: { _rank: newRank } })
+		const updated = await context.mockCollections.Parts.update(partId, { $set: { _rank: newRank } })
 
 		for (const e of expectedRanks) {
 			if (e.partId === partId) {
@@ -163,7 +163,7 @@ describe('updatePartInstanceRanks', () => {
 		newRank: number
 	): Promise<void> {
 		const partInstanceId = protectString(`${partId}_instance`)
-		await context.directCollections.PartInstances.update(partInstanceId, { $set: { 'part._rank': newRank } })
+		await context.mockCollections.PartInstances.update(partInstanceId, { $set: { 'part._rank': newRank } })
 
 		for (const e of expectedRanks) {
 			if (e.id === partInstanceId) {
@@ -214,7 +214,7 @@ describe('updatePartInstanceRanks', () => {
 		// remove one and offset the others
 		await updatePartRank(initialInstanceRanks, 'part04', 3)
 		await updatePartRank(initialInstanceRanks, 'part05', 4)
-		await context.directCollections.Parts.remove(protectString('part03'))
+		await context.mockCollections.Parts.remove(protectString('part03'))
 		await updatePartRank(initialInstanceRanks, 'part03', 2.5)
 
 		await updateRanksForSegment(context, segmentId, initialRanks)
@@ -237,7 +237,7 @@ describe('updatePartInstanceRanks', () => {
 		await updatePartRank(initialInstanceRanks, 'part03', 2)
 		await updatePartRank(initialInstanceRanks, 'part04', 3)
 		await updatePartRank(initialInstanceRanks, 'part05', 4)
-		await context.directCollections.Parts.remove(protectString('part01'))
+		await context.mockCollections.Parts.remove(protectString('part01'))
 		await updatePartRank(initialInstanceRanks, 'part01', 0)
 
 		await updateRanksForSegment(context, segmentId, initialRanks)
@@ -273,7 +273,7 @@ describe('updatePartInstanceRanks', () => {
 		// remove one and offset the others
 		await updatePartRank(initialInstanceRanks, 'part04', 3)
 		await updatePartRank(initialInstanceRanks, 'part05', 4)
-		await context.directCollections.Parts.remove(protectString('part03'))
+		await context.mockCollections.Parts.remove(protectString('part03'))
 		await updatePartRank(initialInstanceRanks, 'part03', 2.3333333333333335)
 		initialInstanceRanks.push({
 			id: protectString(`${adlibId}_instance`),
@@ -298,7 +298,7 @@ describe('updatePartInstanceRanks', () => {
 		expect(initialInstanceRanks).toHaveLength(5)
 
 		// Delete the segment
-		await context.directCollections.Parts.remove({ segmentId })
+		await context.mockCollections.Parts.remove({ segmentId })
 		for (const e of initialInstanceRanks) {
 			e.rank-- // Offset to match the generated order
 			e.orphaned = 'deleted'
@@ -339,7 +339,7 @@ describe('updatePartInstanceRanks', () => {
 		expect(initialInstanceRanks).toHaveLength(5)
 
 		// Delete the segment
-		await context.directCollections.Parts.remove({ segmentId })
+		await context.mockCollections.Parts.remove({ segmentId })
 		for (const e of initialInstanceRanks) {
 			e.orphaned = 'deleted'
 		}

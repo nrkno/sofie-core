@@ -1,54 +1,45 @@
-import { assertNever, getRandomId, groupByToMap } from '@sofie-automation/corelib/dist/lib'
+import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { JobContext } from '../jobs'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import {
-	PartId,
 	PartInstanceId,
 	RundownId,
+	RundownPlaylistActivationId,
 	SegmentId,
 	SegmentPlayoutId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import {
-	CacheForPlayout,
-	getOrderedSegmentsAndPartsFromPlayoutCache,
-	getRundownIDsFromCache,
-	getSelectedPartInstancesFromCache,
-} from './cache'
+import { CacheForPlayout, getRundownIDsFromCache, getSelectedPartInstancesFromCache } from './cache'
 import {
 	fetchPiecesThatMayBeActiveForPart,
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { isStringOrProtectedString, protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PRESERVE_UNSYNCED_PLAYING_SEGMENT_CONTENTS } from '@sofie-automation/shared-lib/dist/core/constants'
 import { getCurrentTime } from '../lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import _ = require('underscore')
-import { resetPartInstancesWithPieceInstances, SelectNextPartResult } from './lib'
-import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
-import { logger } from 'elastic-apm-node'
+import { resetPartInstancesWithPieceInstances } from './lib'
 import { RundownHoldState, SelectedPartInstance } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import { updateTimeline } from './timeline/generate'
+import { SelectNextPartResult } from './selectNextPart'
+import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 
-type ParsedNextPart =
-	| {
-			type: 'part'
-			part: DBPart
-			consumesNextSegmentId: boolean | undefined
-	  }
-	| {
-			type: 'partinstance'
-			instance: DBPartInstance
-	  }
-
+/**
+ * Set or clear the nexted part, from a given PartInstance, or SelectNextPartResult
+ * @param context Context for the running job
+ * @param cache The playout cache of the playlist
+ * @param rawNextPart The Part to set as next
+ * @param setManually Whether this was manually chosen by the user
+ * @param nextTimeOffset The offset into the Part to start playback
+ */
 export async function setNextPart(
 	context: JobContext,
 	cache: CacheForPlayout,
 	rawNextPart: Omit<SelectNextPartResult, 'index'> | DBPartInstance | null,
-	setManually?: boolean,
+	setManually: boolean,
 	nextTimeOffset?: number | undefined
 ): Promise<void> {
 	const span = context.startSpan('setNextPart')
@@ -60,123 +51,55 @@ export async function setNextPart(
 		if (!cache.Playlist.doc.activationId)
 			throw new Error(`RundownPlaylist "${cache.Playlist.doc._id}" is not active`)
 
-		let nextPartInfo: ParsedNextPart
-		if ('playlistActivationId' in rawNextPart) {
-			nextPartInfo = {
-				type: 'partinstance',
-				instance: rawNextPart,
-			}
-		} else {
-			nextPartInfo = {
-				type: 'part',
-				part: rawNextPart.part,
-				consumesNextSegmentId: rawNextPart.consumesNextSegmentId,
-			}
-		}
-
-		if (
-			(nextPartInfo.type === 'part' && nextPartInfo.part.invalid) ||
-			(nextPartInfo.type === 'partinstance' && nextPartInfo.instance.part.invalid)
-		) {
-			throw new Error('Part is marked as invalid, cannot set as next.')
-		}
-
-		switch (nextPartInfo.type) {
-			case 'part':
-				if (!rundownIds.includes(nextPartInfo.part.rundownId)) {
-					throw new Error(
-						`Part "${nextPartInfo.part._id}" of rundown "${nextPartInfo.part.rundownId}" not part of RundownPlaylist "${cache.Playlist.doc._id}"`
-					)
-				}
-				break
-			case 'partinstance':
-				if (!rundownIds.includes(nextPartInfo.instance.rundownId)) {
-					throw new Error(
-						`PartInstance "${nextPartInfo.instance._id}" of rundown "${nextPartInfo.instance.rundownId}" not part of RundownPlaylist "${cache.Playlist.doc._id}"`
-					)
-				}
-				break
-			default:
-				assertNever(nextPartInfo)
-				throw new Error('Unhandled ParsedNextPart in setNextPart')
-		}
-
-		const nextPart = nextPartInfo.type === 'partinstance' ? nextPartInfo.instance.part : nextPartInfo.part
-
 		// create new instance
-		let newInstanceInfo: SelectedPartInstance
-		if (nextPartInfo.type === 'partinstance') {
-			newInstanceInfo = {
-				partInstanceId: nextPartInfo.instance._id,
-				rundownId: nextPartInfo.instance.rundownId,
+		let newPartInstance: DBPartInstance
+		let consumesNextSegmentId: boolean
+		if ('playlistActivationId' in rawNextPart) {
+			const inputPartInstance: DBPartInstance = rawNextPart
+			if (inputPartInstance.part.invalid) {
+				throw new Error('Part is marked as invalid, cannot set as next.')
 			}
-			cache.PartInstances.updateOne(newInstanceInfo.partInstanceId, (p) => {
-				delete p.consumesNextSegmentId
-				return p
-			})
-			await syncPlayheadInfinitesForNextPartInstance(context, cache)
-		} else if (nextPartInstance && nextPartInstance.part._id === nextPart._id) {
-			// Re-use existing
-			newInstanceInfo = {
-				partInstanceId: nextPartInstance._id,
-				rundownId: nextPartInstance.rundownId,
+
+			if (!rundownIds.includes(inputPartInstance.rundownId)) {
+				throw new Error(
+					`PartInstance "${inputPartInstance._id}" of rundown "${inputPartInstance.rundownId}" not part of RundownPlaylist "${cache.Playlist.doc._id}"`
+				)
 			}
-			const consumesNextSegmentId = nextPartInfo.consumesNextSegmentId ?? false
-			cache.PartInstances.updateOne(newInstanceInfo.partInstanceId, (p) => {
-				p.consumesNextSegmentId = consumesNextSegmentId
-				return p
-			})
-			await syncPlayheadInfinitesForNextPartInstance(context, cache)
+
+			consumesNextSegmentId = false
+			newPartInstance = await prepareExistingPartInstanceForBeingNexted(context, cache, inputPartInstance)
 		} else {
-			// Create new isntance
-			newInstanceInfo = {
-				partInstanceId: protectString<PartInstanceId>(`${nextPart._id}_${getRandomId()}`),
-				rundownId: nextPart.rundownId,
-			}
-			const newTakeCount = currentPartInstance ? currentPartInstance.takeCount + 1 : 0 // Increment
-			const segmentPlayoutId: SegmentPlayoutId =
-				currentPartInstance && nextPart.segmentId === currentPartInstance.segmentId
-					? currentPartInstance.segmentPlayoutId
-					: getRandomId()
-
-			cache.PartInstances.insert({
-				_id: newInstanceInfo.partInstanceId,
-				takeCount: newTakeCount,
-				playlistActivationId: cache.Playlist.doc.activationId,
-				rundownId: nextPart.rundownId,
-				segmentId: nextPart.segmentId,
-				segmentPlayoutId,
-				part: nextPart,
-				rehearsal: !!cache.Playlist.doc.rehearsal,
-				consumesNextSegmentId: nextPartInfo.consumesNextSegmentId,
-				timings: {
-					setAsNext: getCurrentTime(),
-				},
-			})
-
-			const rundown = cache.Rundowns.findOne(nextPart.rundownId)
-
-			if (!rundown) {
-				throw new Error(`Could not find rundown ${nextPart.rundownId}`)
+			const selectedPart: Omit<SelectNextPartResult, 'index'> = rawNextPart
+			if (selectedPart.part.invalid) {
+				throw new Error('Part is marked as invalid, cannot set as next.')
 			}
 
-			const possiblePieces = await fetchPiecesThatMayBeActiveForPart(context, cache, undefined, nextPart)
-			const newPieceInstances = getPieceInstancesForPart(
-				context,
-				cache,
-				currentPartInstance,
-				rundown,
-				nextPart,
-				possiblePieces,
-				newInstanceInfo.partInstanceId
-			)
-			for (const pieceInstance of newPieceInstances) {
-				cache.PieceInstances.insert(pieceInstance)
+			if (!rundownIds.includes(selectedPart.part.rundownId)) {
+				throw new Error(
+					`Part "${selectedPart.part._id}" of rundown "${selectedPart.part.rundownId}" not part of RundownPlaylist "${cache.Playlist.doc._id}"`
+				)
+			}
+
+			consumesNextSegmentId = selectedPart.consumesNextSegmentId ?? false
+
+			if (nextPartInstance && nextPartInstance.part._id === selectedPart.part._id) {
+				// Re-use existing
+
+				newPartInstance = await prepareExistingPartInstanceForBeingNexted(context, cache, nextPartInstance)
+			} else {
+				// Create new instance
+				newPartInstance = await preparePartInstanceForPartBeingNexted(
+					context,
+					cache,
+					cache.Playlist.doc.activationId,
+					currentPartInstance,
+					selectedPart.part
+				)
 			}
 		}
 
 		const selectedPartInstanceIds = _.compact([
-			newInstanceInfo.partInstanceId,
+			newPartInstance._id,
 			cache.Playlist.doc.currentPartInfo?.partInstanceId,
 			cache.Playlist.doc.previousPartInfo?.partInstanceId,
 		])
@@ -184,14 +107,17 @@ export async function setNextPart(
 		// reset any previous instances of this part
 		resetPartInstancesWithPieceInstances(context, cache, {
 			_id: { $nin: selectedPartInstanceIds },
-			rundownId: nextPart.rundownId,
-			'part._id': nextPart._id,
+			rundownId: newPartInstance.rundownId,
+			'part._id': newPartInstance.part._id,
 		})
 
-		const nextPartInstanceTmp = nextPartInfo.type === 'partinstance' ? nextPartInfo.instance : null
 		cache.Playlist.update((p) => {
-			p.nextPartInfo = newInstanceInfo
-			p.nextPartManual = !!(setManually || nextPartInstanceTmp?.orphaned)
+			p.nextPartInfo = literal<SelectedPartInstance>({
+				partInstanceId: newPartInstance._id,
+				rundownId: newPartInstance.rundownId,
+				manuallySelected: !!(setManually || newPartInstance.orphaned),
+				consumesNextSegmentId,
+			})
 			p.nextTimeOffset = nextTimeOffset || null
 			return p
 		})
@@ -200,13 +126,81 @@ export async function setNextPart(
 
 		cache.Playlist.update((p) => {
 			p.nextPartInfo = null
-			p.nextPartManual = !!setManually
 			p.nextTimeOffset = null
 			return p
 		})
 	}
 
-	// Remove any instances which havent been taken
+	discardUntakenPartInstances(cache)
+
+	resetPartInstancesWhenChangingSegment(context, cache)
+
+	await cleanupOrphanedItems(context, cache)
+
+	if (span) span.end()
+}
+
+async function prepareExistingPartInstanceForBeingNexted(
+	context: JobContext,
+	cache: CacheForPlayout,
+	instance: DBPartInstance
+): Promise<DBPartInstance> {
+	await syncPlayheadInfinitesForNextPartInstance(context, cache)
+
+	return instance
+}
+
+async function preparePartInstanceForPartBeingNexted(
+	context: JobContext,
+	cache: CacheForPlayout,
+	playlistActivationId: RundownPlaylistActivationId,
+	currentPartInstance: DBPartInstance | undefined,
+	nextPart: DBPart
+): Promise<DBPartInstance> {
+	const partInstanceId = protectString<PartInstanceId>(`${nextPart._id}_${getRandomId()}`)
+
+	const newTakeCount = currentPartInstance ? currentPartInstance.takeCount + 1 : 0 // Increment
+	const segmentPlayoutId: SegmentPlayoutId =
+		currentPartInstance && nextPart.segmentId === currentPartInstance.segmentId
+			? currentPartInstance.segmentPlayoutId
+			: getRandomId()
+
+	const instance: DBPartInstance = {
+		_id: partInstanceId,
+		takeCount: newTakeCount,
+		playlistActivationId: playlistActivationId,
+		rundownId: nextPart.rundownId,
+		segmentId: nextPart.segmentId,
+		segmentPlayoutId,
+		part: nextPart,
+		rehearsal: !!cache.Playlist.doc.rehearsal,
+		timings: {
+			setAsNext: getCurrentTime(),
+		},
+	}
+	cache.PartInstances.insert(instance)
+
+	const rundown = cache.Rundowns.findOne(nextPart.rundownId)
+	if (!rundown) throw new Error(`Could not find rundown ${nextPart.rundownId}`)
+
+	const possiblePieces = await fetchPiecesThatMayBeActiveForPart(context, cache, undefined, nextPart)
+	const newPieceInstances = getPieceInstancesForPart(
+		context,
+		cache,
+		currentPartInstance,
+		rundown,
+		nextPart,
+		possiblePieces,
+		partInstanceId
+	)
+	for (const pieceInstance of newPieceInstances) {
+		cache.PieceInstances.insert(pieceInstance)
+	}
+
+	return instance
+}
+
+function discardUntakenPartInstances(cache: CacheForPlayout) {
 	const instancesIdsToRemove = cache.PartInstances.remove(
 		(p) =>
 			!p.isTaken &&
@@ -214,59 +208,57 @@ export async function setNextPart(
 			p._id !== cache.Playlist.doc.currentPartInfo?.partInstanceId
 	)
 	cache.PieceInstances.remove((p) => instancesIdsToRemove.includes(p.partInstanceId))
+}
 
-	{
-		const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
-		// When entering a segment, or moving backwards in a segment, reset any partInstances in that window
-		// In theory the new segment should already be reset, as we do that upon leaving, but it wont be if jumping to earlier in the same segment or maybe if the rundown wasnt reset
-		if (nextPartInstance) {
-			const resetPartInstanceIds = new Set<PartInstanceId>()
-			if (currentPartInstance) {
-				// Always clean the current segment, anything after the current part (except the next part)
-				const trailingInOldSegment = cache.PartInstances.findAll(
-					(p) =>
-						!p.reset &&
-						p._id !== currentPartInstance._id &&
-						p._id !== nextPartInstance._id &&
-						p.segmentId === currentPartInstance.segmentId &&
-						p.part._rank > currentPartInstance.part._rank
-				)
+/**
+ * When entering a segment, or moving backwards in a segment, reset any partInstances in that window
+ * In theory the new segment should already be reset, as we do that upon leaving, but it wont be if jumping to earlier in the same segment or maybe if the rundown wasnt reset
+ */
+function resetPartInstancesWhenChangingSegment(context: JobContext, cache: CacheForPlayout) {
+	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+	if (nextPartInstance) {
+		const resetPartInstanceIds = new Set<PartInstanceId>()
+		if (currentPartInstance) {
+			// Always clean the current segment, anything after the current part (except the next part)
+			const trailingInOldSegment = cache.PartInstances.findAll(
+				(p) =>
+					!p.reset &&
+					p._id !== currentPartInstance._id &&
+					p._id !== nextPartInstance._id &&
+					p.segmentId === currentPartInstance.segmentId &&
+					p.part._rank > currentPartInstance.part._rank
+			)
 
-				for (const part of trailingInOldSegment) {
-					resetPartInstanceIds.add(part._id)
-				}
-			}
-
-			if (
-				!currentPartInstance ||
-				nextPartInstance.segmentId !== currentPartInstance.segmentId ||
-				(nextPartInstance.segmentId === currentPartInstance.segmentId &&
-					nextPartInstance.part._rank < currentPartInstance.part._rank)
-			) {
-				// clean the whole segment if new, or jumping backwards
-				const newSegmentParts = cache.PartInstances.findAll(
-					(p) =>
-						!p.reset &&
-						p._id !== nextPartInstance._id &&
-						p._id !== currentPartInstance?._id &&
-						p.segmentId === nextPartInstance.segmentId
-				)
-				for (const part of newSegmentParts) {
-					resetPartInstanceIds.add(part._id)
-				}
-			}
-
-			if (resetPartInstanceIds.size > 0) {
-				resetPartInstancesWithPieceInstances(context, cache, {
-					_id: { $in: Array.from(resetPartInstanceIds) },
-				})
+			for (const part of trailingInOldSegment) {
+				resetPartInstanceIds.add(part._id)
 			}
 		}
+
+		if (
+			!currentPartInstance ||
+			nextPartInstance.segmentId !== currentPartInstance.segmentId ||
+			(nextPartInstance.segmentId === currentPartInstance.segmentId &&
+				nextPartInstance.part._rank < currentPartInstance.part._rank)
+		) {
+			// clean the whole segment if new, or jumping backwards
+			const newSegmentParts = cache.PartInstances.findAll(
+				(p) =>
+					!p.reset &&
+					p._id !== nextPartInstance._id &&
+					p._id !== currentPartInstance?._id &&
+					p.segmentId === nextPartInstance.segmentId
+			)
+			for (const part of newSegmentParts) {
+				resetPartInstanceIds.add(part._id)
+			}
+		}
+
+		if (resetPartInstanceIds.size > 0) {
+			resetPartInstancesWithPieceInstances(context, cache, {
+				_id: { $in: Array.from(resetPartInstanceIds) },
+			})
+		}
 	}
-
-	await cleanupOrphanedItems(context, cache)
-
-	if (span) span.end()
 }
 
 /**
@@ -350,13 +342,49 @@ async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout)
 	}
 }
 
-export function setNextSegment(context: JobContext, cache: CacheForPlayout, nextSegment: DBSegment | null): void {
+/**
+ * Set or clear the nexted-segment.
+ * @param context Context for the running job
+ * @param cache The playout cache of the playlist
+ * @param nextSegment The segment to set as next, or null to clear it
+ */
+export async function setNextSegment(
+	context: JobContext,
+	cache: CacheForPlayout,
+	nextSegment: DBSegment | null
+): Promise<void> {
 	const span = context.startSpan('setNextSegment')
 	if (nextSegment) {
 		// Just run so that errors will be thrown if something wrong:
-		const partsInSegment = cache.Parts.findAll((p) => p.segmentId === nextSegment._id)
-		if (!partsInSegment.find((p) => isPartPlayable(p))) {
+		const partsInSegment = sortPartsInSortedSegments(
+			cache.Parts.findAll((p) => p.segmentId === nextSegment._id),
+			[nextSegment]
+		)
+		const firstPlayablePart = partsInSegment.find((p) => isPartPlayable(p))
+		if (!firstPlayablePart) {
 			throw new Error('Segment contains no valid parts')
+		}
+
+		const { nextPartInstance, currentPartInstance } = getSelectedPartInstancesFromCache(cache)
+
+		// if there is not currentPartInstance or the nextPartInstance is not in the current segment
+		// behave as if user chose SetNextPart on the first playable part of the segment
+		if (currentPartInstance === undefined || currentPartInstance.segmentId !== nextPartInstance?.segmentId) {
+			// Clear any existing nextSegment, as this call 'replaces' it
+			cache.Playlist.update((p) => {
+				delete p.nextSegmentId
+				return p
+			})
+
+			return setNextPart(
+				context,
+				cache,
+				{
+					part: firstPlayablePart,
+					consumesNextSegmentId: false,
+				},
+				true
+			)
 		}
 
 		cache.Playlist.update((p) => {
@@ -372,13 +400,20 @@ export function setNextSegment(context: JobContext, cache: CacheForPlayout, next
 	if (span) span.end()
 }
 
-export async function setNextPartInner(
+/**
+ * Set the nexted part, from a given DBPart
+ * @param context Context for the running job
+ * @param cache The playout cache of the playlist
+ * @param nextPart The Part to set as next
+ * @param setManually Whether this was manually chosen by the user
+ * @param nextTimeOffset The offset into the Part to start playback
+ */
+export async function setNextPartFromPart(
 	context: JobContext,
 	cache: CacheForPlayout,
-	nextPartId: PartId | DBPart | null,
-	setManually?: boolean,
-	nextTimeOffset?: number | undefined,
-	clearNextSegment?: boolean
+	nextPart: DBPart,
+	setManually: boolean,
+	nextTimeOffset?: number | undefined
 ): Promise<void> {
 	const playlist = cache.Playlist.doc
 	if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
@@ -386,130 +421,18 @@ export async function setNextPartInner(
 		throw UserError.create(UserErrorMessage.DuringHold)
 	}
 
-	let nextPart: DBPart | null = null
-	if (nextPartId) {
-		if (isStringOrProtectedString(nextPartId)) {
-			nextPart = cache.Parts.findOne(nextPartId) || null
-		} else if (_.isObject(nextPartId)) {
-			nextPart = nextPartId
-		}
-		if (!nextPart) throw UserError.create(UserErrorMessage.PartNotFound)
-	}
+	const consumesNextSegmentId = doesPartConsumeNextSegmentId(cache, nextPart)
 
-	// If we're setting the next point to somewhere other than the current segment, and in the queued segment, clear the queued segment
-	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
-	if (
-		currentPartInstance &&
-		nextPart &&
-		currentPartInstance.segmentId !== nextPart.segmentId &&
-		playlist.nextSegmentId === nextPart.segmentId
-	) {
-		clearNextSegment = true
-	}
-
-	if (clearNextSegment) {
-		setNextSegment(context, cache, null)
-	}
-
-	await setNextPart(context, cache, nextPart ? { part: nextPart } : null, setManually, nextTimeOffset)
-
-	// update lookahead and the next part when we have an auto-next
-	await updateTimeline(context, cache)
+	await setNextPart(context, cache, { part: nextPart, consumesNextSegmentId }, setManually, nextTimeOffset)
 }
 
-export async function moveNextPartInner(
-	context: JobContext,
-	cache: CacheForPlayout,
-	partDelta: number,
-	segmentDelta: number
-): Promise<PartId | null> {
+function doesPartConsumeNextSegmentId(cache: CacheForPlayout, nextPart: DBPart) {
+	// If we're setting the next point to somewhere other than the current segment, and in the queued segment, clear the queued segment
 	const playlist = cache.Playlist.doc
-
-	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
-
-	const refPartInstance = nextPartInstance ?? currentPartInstance
-	const refPart = refPartInstance?.part
-	if (!refPart || !refPartInstance)
-		throw new Error(`RundownPlaylist "${playlist._id}" has no next and no current part!`)
-
-	const { segments: rawSegments, parts: rawParts } = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
-
-	if (segmentDelta) {
-		// Ignores horizontalDelta
-
-		const considerSegments = rawSegments.filter((s) => s._id === refPart.segmentId || !s.isHidden)
-		const refSegmentIndex = considerSegments.findIndex((s) => s._id === refPart.segmentId)
-		if (refSegmentIndex === -1) throw new Error(`Segment "${refPart.segmentId}" not found!`)
-
-		const targetSegmentIndex = refSegmentIndex + segmentDelta
-		const targetSegment = considerSegments[targetSegmentIndex]
-		if (!targetSegment) return null
-
-		// find the allowable segment ids
-		const allowedSegments =
-			segmentDelta > 0
-				? considerSegments.slice(targetSegmentIndex)
-				: considerSegments.slice(0, targetSegmentIndex + 1).reverse()
-
-		const playablePartsBySegment = groupByToMap(
-			rawParts.filter((p) => isPartPlayable(p)),
-			'segmentId'
-		)
-
-		// Iterate through segments and find the first part
-		let selectedPart: DBPart | undefined
-		for (const segment of allowedSegments) {
-			const parts = playablePartsBySegment.get(segment._id) ?? []
-			// Cant go to the current part (yet)
-			const filteredParts = parts.filter((p) => p._id !== currentPartInstance?.part._id)
-			if (filteredParts.length > 0) {
-				selectedPart = filteredParts[0]
-				break
-			}
-		}
-
-		// TODO - looping playlists
-
-		if (selectedPart) {
-			// Switch to that part
-			await setNextPartInner(context, cache, selectedPart, true)
-			return selectedPart._id
-		} else {
-			// Nothing looked valid so do nothing
-			// Note: we should try and a smaller delta if it is not -1/1
-			logger.info(`moveNextPart: Found no new part (verticalDelta=${segmentDelta})`)
-			return null
-		}
-	} else if (partDelta) {
-		let playabaleParts: DBPart[] = rawParts.filter((p) => refPart._id === p._id || isPartPlayable(p))
-		let refPartIndex = playabaleParts.findIndex((p) => p._id === refPart._id)
-		if (refPartIndex === -1) {
-			const tmpRefPart = { ...refPart, invalid: true } // make sure it won't be found as playable
-			playabaleParts = sortPartsInSortedSegments([...playabaleParts, tmpRefPart], rawSegments)
-			refPartIndex = playabaleParts.findIndex((p) => p._id === refPart._id)
-			if (refPartIndex === -1) throw new Error(`Part "${refPart._id}" not found after insert!`)
-		}
-
-		// Get the past we are after
-		const targetPartIndex = refPartIndex + partDelta
-		let targetPart = playabaleParts[targetPartIndex]
-		if (targetPart && targetPart._id === currentPartInstance?.part._id) {
-			// Cant go to the current part (yet)
-			const newIndex = targetPartIndex + (partDelta > 0 ? 1 : -1)
-			targetPart = playabaleParts[newIndex]
-		}
-
-		if (targetPart) {
-			// Switch to that part
-			await setNextPartInner(context, cache, targetPart, true)
-			return targetPart._id
-		} else {
-			// Nothing looked valid so do nothing
-			// Note: we should try and a smaller delta if it is not -1/1
-			logger.info(`moveNextPart: Found no new part (horizontalDelta=${partDelta})`)
-			return null
-		}
-	} else {
-		throw new Error(`Missing delta to move by!`)
-	}
+	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
+	return !!(
+		currentPartInstance &&
+		currentPartInstance.segmentId !== nextPart.segmentId &&
+		playlist.nextSegmentId === nextPart.segmentId
+	)
 }

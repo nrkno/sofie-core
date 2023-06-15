@@ -63,19 +63,22 @@ export async function handleUserRemoveRundown(context: JobContext, data: UserRem
 		// Its from a snapshot, so we need to use a lighter locking flow
 		return runWithRundownLock(context, data.rundownId, async (rundown, lock) => {
 			if (rundown) {
-				// It's from a snapshot, so should be removed directly, as that means it cannot run ingest operations
-				// Note: this bypasses activation checks, but that probably doesnt matter
-				await removeRundownFromDb(context, lock)
+				await context.directCollections.runInTransaction(async (transaction) => {
+					// It's from a snapshot, so should be removed directly, as that means it cannot run ingest operations
+					// Note: this bypasses activation checks, but that probably doesnt matter
+					await removeRundownFromDb(context, lock, transaction)
 
-				// check if the playlist is now empty
-				const rundownCount: Pick<DBRundown, '_id'>[] = await context.directCollections.Rundowns.findFetch(
-					{ playlistId: rundown.playlistId },
-					{ projection: { _id: 1 } }
-				)
-				if (rundownCount.length === 0) {
-					// A lazy approach, but good enough for snapshots
-					await context.directCollections.RundownPlaylists.remove(rundown.playlistId)
-				}
+					// check if the playlist is now empty
+					const rundownCount: Pick<DBRundown, '_id'>[] = await context.directCollections.Rundowns.findFetch(
+						{ playlistId: rundown.playlistId },
+						{ projection: { _id: 1 } },
+						transaction
+					)
+					if (rundownCount.length === 0) {
+						// A lazy approach, but good enough for snapshots
+						await context.directCollections.RundownPlaylists.remove(rundown.playlistId, transaction)
+					}
+				})
 			}
 		})
 	} else {
@@ -181,11 +184,15 @@ export async function handleUserUnsyncRundown(context: JobContext, data: UserUns
 	return runWithRundownLock(context, data.rundownId, async (rundown) => {
 		if (rundown) {
 			if (!rundown.orphaned) {
-				await context.directCollections.Rundowns.update(rundown._id, {
-					$set: {
-						orphaned: 'manual',
+				await context.directCollections.Rundowns.update(
+					rundown._id,
+					{
+						$set: {
+							orphaned: 'manual',
+						},
 					},
-				})
+					null // Single operation of this job
+				)
 			} else {
 				logger.info(`Rundown "${rundown._id}" was already unsynced`)
 			}

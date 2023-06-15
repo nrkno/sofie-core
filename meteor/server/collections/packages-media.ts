@@ -9,11 +9,13 @@ import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageI
 import { MediaObject } from '../../lib/collections/MediaObjects'
 import { MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
-import { createAsyncMongoCollection } from './collection'
+import { createAsyncOnlyMongoCollection, createAsyncOnlyReadOnlyMongoCollection } from './collection'
 import { registerIndex } from './indices'
 
 /** @deprecated */
-export const ExpectedMediaItems = createAsyncMongoCollection<ExpectedMediaItem>(CollectionName.ExpectedMediaItems)
+export const ExpectedMediaItems = createAsyncOnlyReadOnlyMongoCollection<ExpectedMediaItem>(
+	CollectionName.ExpectedMediaItems
+)
 registerIndex(ExpectedMediaItems, {
 	path: 1,
 })
@@ -25,7 +27,9 @@ registerIndex(ExpectedMediaItems, {
 	rundownId: 1,
 })
 
-export const ExpectedPackages = createAsyncMongoCollection<ExpectedPackageDB>(CollectionName.ExpectedPackages)
+export const ExpectedPackages = createAsyncOnlyReadOnlyMongoCollection<ExpectedPackageDB>(
+	CollectionName.ExpectedPackages
+)
 registerIndex(ExpectedPackages, {
 	studioId: 1,
 	fromPieceType: 1,
@@ -39,8 +43,9 @@ registerIndex(ExpectedPackages, {
 	pieceId: 1,
 })
 
-export const ExpectedPackageWorkStatuses = createAsyncMongoCollection<ExpectedPackageWorkStatus>(
-	CollectionName.ExpectedPackageWorkStatuses
+export const ExpectedPackageWorkStatuses = createAsyncOnlyMongoCollection<ExpectedPackageWorkStatus>(
+	CollectionName.ExpectedPackageWorkStatuses,
+	false
 )
 registerIndex(ExpectedPackageWorkStatuses, {
 	studioId: 1,
@@ -51,7 +56,9 @@ registerIndex(ExpectedPackageWorkStatuses, {
 // })
 
 /** @deprecated */
-export const ExpectedPlayoutItems = createAsyncMongoCollection<ExpectedPlayoutItem>(CollectionName.ExpectedPlayoutItems)
+export const ExpectedPlayoutItems = createAsyncOnlyReadOnlyMongoCollection<ExpectedPlayoutItem>(
+	CollectionName.ExpectedPlayoutItems
+)
 registerIndex(ExpectedPlayoutItems, {
 	studioId: 1,
 })
@@ -63,7 +70,7 @@ registerIndex(ExpectedPlayoutItems, {
 	baseline: 1,
 })
 
-export const MediaObjects = createAsyncMongoCollection<MediaObject>(CollectionName.MediaObjects)
+export const MediaObjects = createAsyncOnlyMongoCollection<MediaObject>(CollectionName.MediaObjects, false)
 registerIndex(MediaObjects, {
 	studioId: 1,
 	collectionId: 1,
@@ -75,7 +82,7 @@ registerIndex(MediaObjects, {
 	mediaId: 1,
 })
 
-export const MediaWorkFlows = createAsyncMongoCollection<MediaWorkFlow>(CollectionName.MediaWorkFlows)
+export const MediaWorkFlows = createAsyncOnlyMongoCollection<MediaWorkFlow>(CollectionName.MediaWorkFlows, false)
 registerIndex(MediaWorkFlows, {
 	// TODO: add deviceId: 1,
 	mediaObjectId: 1,
@@ -86,7 +93,10 @@ registerIndex(MediaWorkFlows, {
 	priority: 1,
 })
 
-export const MediaWorkFlowSteps = createAsyncMongoCollection<MediaWorkFlowStep>(CollectionName.MediaWorkFlowSteps)
+export const MediaWorkFlowSteps = createAsyncOnlyMongoCollection<MediaWorkFlowStep>(
+	CollectionName.MediaWorkFlowSteps,
+	false
+)
 registerIndex(MediaWorkFlowSteps, {
 	deviceId: 1,
 })
@@ -98,8 +108,9 @@ registerIndex(MediaWorkFlowSteps, {
 	priority: 1,
 })
 
-export const PackageContainerPackageStatuses = createAsyncMongoCollection<PackageContainerPackageStatusDB>(
-	CollectionName.PackageContainerPackageStatuses
+export const PackageContainerPackageStatuses = createAsyncOnlyMongoCollection<PackageContainerPackageStatusDB>(
+	CollectionName.PackageContainerPackageStatuses,
+	false
 )
 registerIndex(PackageContainerPackageStatuses, {
 	studioId: 1,
@@ -110,8 +121,9 @@ registerIndex(PackageContainerPackageStatuses, {
 	deviceId: 1,
 })
 
-export const PackageContainerStatuses = createAsyncMongoCollection<PackageContainerStatusDB>(
-	CollectionName.PackageContainerStatuses
+export const PackageContainerStatuses = createAsyncOnlyMongoCollection<PackageContainerStatusDB>(
+	CollectionName.PackageContainerStatuses,
+	false
 )
 registerIndex(PackageContainerStatuses, {
 	studioId: 1,
@@ -121,7 +133,7 @@ registerIndex(PackageContainerStatuses, {
 	deviceId: 1,
 })
 
-export const PackageInfos = createAsyncMongoCollection<PackageInfoDB>(CollectionName.PackageInfos)
+export const PackageInfos = createAsyncOnlyMongoCollection<PackageInfoDB>(CollectionName.PackageInfos, false)
 registerIndex(PackageInfos, {
 	studioId: 1,
 	packageId: 1,

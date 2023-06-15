@@ -18,13 +18,13 @@ Follow these instructions to start up Sofie Core in development mode. (For produ
 - If on Windows: `npm install --global windows-build-tools`
 - Install [Meteor](https://www.meteor.com/install) (`npm install --global meteor`)
 - Install [Yarn](https://yarnpkg.com) (`npm install --global corepack && corepack enable`)
-- Install [Java](https://www.java.com/en/download/)
 
 ### Quick-start:
 
 ```bash
 git clone -b master https://github.com/nrkno/sofie-core.git
 cd sofie-core
+yarn install-and-build
 yarn start
 ```
 
@@ -63,14 +63,22 @@ yarn start
    yarn buildstart
    ```
 
+### Lowering memory, CPU footprint in development
+
+If you find yourself in a situation where running Sofie in development mode is too heavy, but you're not planning on modifying any of the low-level packages in the `packages` directory, you may want to run Sofie in the _UI-only mode_, in which only meteor will be rebuilt and type-checked on modification:
+
+```bash
+yarn dev --ui-only
+```
+
 ### When using the Visual Studio Code IDE
 
 We provide a `settings.json.default` file in `.vscode` that you should consider using with your IDE. Also consider installing suggested
 extensions, which should help you create PRs consistent with project's code standards.
 
-### Debugging in Visual Studio Code
+### Attaching a NodeJS debugger to the Meteor process
 
-Start core in development mode with the `--inspect-meteor` argument, and attach the debugger using the "Attach" launch configuration.
+You can connect a debugging client to Meteor's Node process on port `9229`. In order for that to be possible, enable the `--inspect-meteor` mode:
 
 ```bash
 yarn dev --inspect-meteor
@@ -90,10 +98,11 @@ If you get any strange errors (such as the application crashing, "Unable to reso
 
 ```bash
 yarn reset # Removes all installed dependencies and build artifacts
+yarn install # Install main dependencies
 yarn start # Set up, install and run in dev mode
 ```
 
-## Translating Sofie, add a new language
+## Translating Sofie, adding a new language
 
 For support of various languages in the GUI, Sofie uses the i18next framework. It uses JSON-based translation files to store UI strings. In order to build a new translation file, first extract a PO template file from Sofie UI source code:
 

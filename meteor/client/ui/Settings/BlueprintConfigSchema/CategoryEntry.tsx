@@ -51,7 +51,7 @@ export function ConfigCategoryEntry({
 			{isExpanded && (
 				<tr className="expando-details hl">
 					<td colSpan={4}>
-						<div>
+						<div className="properties-grid">
 							<SchemaFormWithOverrides
 								schema={categorySchema}
 								translationNamespaces={translationNamespaces}

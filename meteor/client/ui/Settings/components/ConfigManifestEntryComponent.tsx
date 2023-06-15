@@ -7,6 +7,8 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { MongoCollection } from '../../../../lib/collections/lib'
 import { PeripheralDevices } from '../../../collections'
+import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
+import classNames from 'classnames'
 
 const renderEditAttribute = (
 	collection: MongoCollection<any>,
@@ -84,14 +86,10 @@ export function ConfigManifestEntryComponent({
 	const { t } = useTranslation() // TODO - should this use a namespace?
 
 	return (
-		<div>
-			<div className={className ?? 'mod mvs mhs'}>
-				<label className="field">
-					{t(configField.name)}
-					{renderEditAttribute(collection || PeripheralDevices, configField, obj, prefix)}
-					{configField.hint && <span className="text-s dimmed">{t(configField.hint)}</span>}
-				</label>
-			</div>
-		</div>
+		<label className={classNames('field', className)}>
+			<LabelActual label={t(configField.name)} />
+			{renderEditAttribute(collection || PeripheralDevices, configField, obj, prefix)}
+			{configField.hint && <span className="text-s dimmed field-hint">{t(configField.hint)}</span>}
+		</label>
 	)
 }

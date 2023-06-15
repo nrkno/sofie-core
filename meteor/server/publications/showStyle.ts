@@ -21,7 +21,7 @@ meteorPublish(PubSub.showStyleBases, async function (selector0, token) {
 			(await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) ||
 		(selector._id && (await ShowStyleReadAccess.showStyleBase(selector, cred)))
 	) {
-		return ShowStyleBases.find(selector, modifier)
+		return ShowStyleBases.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -38,7 +38,7 @@ meteorPublish(PubSub.showStyleVariants, async function (selector0, token) {
 		(selector.showStyleBaseId && (await ShowStyleReadAccess.showStyleBaseContent(selector, cred))) ||
 		(selector._id && (await ShowStyleReadAccess.showStyleVariant(selector._id, cred)))
 	) {
-		return ShowStyleVariants.find(selector, modifier)
+		return ShowStyleVariants.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -50,7 +50,7 @@ meteorPublish(PubSub.rundownLayouts, async function (selector0, token) {
 		fields: {},
 	}
 	if (!cred || (await ShowStyleReadAccess.showStyleBaseContent(selector, cred))) {
-		return RundownLayouts.find(selector, modifier)
+		return RundownLayouts.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -67,7 +67,7 @@ meteorPublish(PubSub.triggeredActions, async function (selector0, token) {
 		NoSecurityReadAccess.any() ||
 		(selector.showStyleBaseId && (await ShowStyleReadAccess.showStyleBaseContent(selector, cred)))
 	) {
-		return TriggeredActions.find(selector, modifier)
+		return TriggeredActions.findWithCursor(selector, modifier)
 	}
 	return null
 })

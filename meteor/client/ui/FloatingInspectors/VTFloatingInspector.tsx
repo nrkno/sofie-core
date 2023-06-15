@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { MutableRefObject, useRef } from 'react'
 import { TFunction, useTranslation } from 'react-i18next'
 
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
@@ -15,6 +15,7 @@ import classNames from 'classnames'
 import { UIStudio } from '../../../lib/api/studios'
 import { PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ITranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
 
 interface IProps {
 	status: PieceStatusCode
@@ -22,7 +23,7 @@ interface IProps {
 	typeClass?: string
 	showMiniInspector: boolean
 	itemElement: HTMLDivElement | null
-	floatingInspectorStyle: React.CSSProperties
+	position: IFloatingInspectorPosition
 	timePosition: number
 	content: VTContent | undefined
 	noticeLevel: NoticeLevel | null
@@ -63,7 +64,8 @@ function shouldShowFloatingInspectorContent(status: PieceStatusCode, content: VT
 	return status !== PieceStatusCode.SOURCE_NOT_SET && !!content?.fileName
 }
 
-const VideoPreviewPlayerInspector: React.FC<
+const VideoPreviewPlayerInspector = React.forwardRef<
+	HTMLDivElement,
 	React.PropsWithChildren<{
 		itemDuration: number
 		loop: boolean
@@ -73,11 +75,15 @@ const VideoPreviewPlayerInspector: React.FC<
 		studioSettings: IStudioSettings | undefined
 		floatingInspectorStyle: React.CSSProperties
 	}>
-> = ({ itemDuration, loop, seek, previewUrl, timePosition, studioSettings, floatingInspectorStyle, children }) => {
+>(function VideoPreviewPlayerInspector(
+	{ itemDuration, loop, seek, previewUrl, timePosition, studioSettings, floatingInspectorStyle, children },
+	ref
+) {
 	return (
 		<div
 			className="segment-timeline__mini-inspector segment-timeline__mini-inspector--video"
 			style={floatingInspectorStyle}
+			ref={ref as MutableRefObject<HTMLDivElement>}
 		>
 			<VideoPreviewPlayer
 				itemDuration={itemDuration}
@@ -90,7 +96,7 @@ const VideoPreviewPlayerInspector: React.FC<
 			{children}
 		</div>
 	)
-}
+})
 
 export const VTFloatingInspector: React.FC<IProps> = ({
 	timePosition,
@@ -105,12 +111,12 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 	noticeMessages,
 	showMiniInspector,
 	itemElement,
-	displayOn,
-	floatingInspectorStyle,
+	position,
 	typeClass,
 	status,
 }: IProps) => {
 	const { t } = useTranslation()
+	const inspectorRef = useRef<HTMLDivElement>(null)
 
 	const itemDuration = content?.sourceDuration || renderedDuration || 0
 	const seek = content?.seek ?? 0
@@ -130,9 +136,13 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 	const showMiniInspectorClipData = shouldShowFloatingInspectorContent(status, content)
 	const showMiniInspectorNotice = noticeLevel !== null
 	const showMiniInspectorData = showMiniInspectorNotice || showMiniInspectorClipData
-	const showAnyFloatingInspector = showVideoPlayerInspector || showMiniInspectorData
+	const showAnyFloatingInspector = Boolean(showVideoPlayerInspector) || showMiniInspectorData
 
-	if (!showAnyFloatingInspector) {
+	const shown = showMiniInspector && itemElement !== undefined && showAnyFloatingInspector
+
+	const { style: floatingInspectorStyle, isFlipped } = useInspectorPosition(position, inspectorRef, shown)
+
+	if (!showAnyFloatingInspector || !floatingInspectorStyle) {
 		return null
 	}
 
@@ -140,10 +150,12 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 		<div
 			className={classNames('segment-timeline__mini-inspector', typeClass, {
 				'segment-timeline__mini-inspector--sub-inspector': showVideoPlayerInspector,
+				'segment-timeline__mini-inspector--sub-inspector-flipped': showVideoPlayerInspector && isFlipped,
 				'segment-timeline__mini-inspector--notice notice-critical': noticeLevel === NoticeLevel.CRITICAL,
 				'segment-timeline__mini-inspector--notice notice-warning': noticeLevel === NoticeLevel.WARNING,
 			})}
 			style={!showVideoPlayerInspector ? floatingInspectorStyle : undefined}
+			ref={!showVideoPlayerInspector ? inspectorRef : undefined}
 		>
 			{showMiniInspectorNotice && noticeLevel && renderNotice(t, noticeLevel, noticeMessages)}
 			{showMiniInspectorClipData && (
@@ -155,10 +167,11 @@ export const VTFloatingInspector: React.FC<IProps> = ({
 	)
 
 	return (
-		<FloatingInspector shown={showMiniInspector && itemElement !== undefined} displayOn={displayOn}>
-			{showVideoPlayerInspector && previewUrl ? (
+		<FloatingInspector shown={shown} displayOn="viewport">
+			{showVideoPlayerInspector ? (
 				<VideoPreviewPlayerInspector
 					itemDuration={itemDuration}
+					ref={inspectorRef}
 					loop={loop}
 					seek={seek}
 					previewUrl={previewUrl}

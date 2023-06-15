@@ -23,7 +23,7 @@ describe('Playout Actions', () => {
 		const rundowns = await context.directCollections.Rundowns.findFetch()
 		for (const rundown of rundowns) {
 			await runWithRundownLock(context, rundown._id, async (_rd, lock) => {
-				await removeRundownFromDb(context, lock)
+				await removeRundownFromDb(context, lock, null)
 			})
 		}
 

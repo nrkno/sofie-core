@@ -36,7 +36,7 @@ interface IPopUpProps {
 class NotificationPopUp extends React.Component<IPopUpProps> {
 	triggerEvent = (action: NotificationAction, e: React.SyntheticEvent) => {
 		if (action.action) {
-			action.action()
+			action.action(e)
 		} else {
 			if (this.props.item.actions && this.props.item.actions.find((i) => i.type === action.type)) {
 				this.props.item.action(action.type, e)

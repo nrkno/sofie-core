@@ -90,7 +90,10 @@ async function executePeripheralDeviceGenericFunction(
 					Promise.resolve(watcher.close()).catch((e) => {
 						logger.error(`Cleanup PeripheralDeviceCommand "${commandId}" watcher failed: ${e}`)
 					})
-					context.directCollections.PeripheralDeviceCommands.remove(cmdId).catch((e) => {
+					context.directCollections.PeripheralDeviceCommands.remove(
+						cmdId,
+						null // Single operation, no need to group
+					).catch((e) => {
 						logger.error(`Cleanup PeripheralDeviceCommand "${commandId}" document failed: ${e}`)
 					})
 				}
@@ -163,13 +166,23 @@ async function executePeripheralDeviceGenericFunction(
 
 	timeoutCheck = setTimeout(doCheckReply, timeoutTime)
 
-	await context.directCollections.PeripheralDeviceCommands.insertOne({
-		_id: commandId,
-		deviceId: deviceId,
-		time: getCurrentTime(),
-		...action,
-		hasReply: false,
-	})
+	try {
+		await context.directCollections.PeripheralDeviceCommands.insertOne(
+			{
+				_id: commandId,
+				deviceId: deviceId,
+				time: getCurrentTime(),
+				...action,
+				hasReply: false,
+			},
+			null
+		)
+	} catch (e) {
+		Promise.resolve(watcher.close()).catch((e) => {
+			logger.error(`Cleanup PeripheralDeviceCommand "${commandId}" watcher failed: ${e}`)
+		})
+		throw e
+	}
 
 	return result
 }
@@ -202,6 +215,7 @@ export async function listPlayoutDevices(
 		// Only expose a subset of the PeripheralDevice to the blueprints
 		return literal<Complete<IBlueprintPlayoutDevice>>({
 			deviceId: d._id,
+			deviceType: d.subType as TSR.DeviceType,
 			actions: parentDevice?.configManifest?.subdeviceManifest?.[d.subType]?.actions,
 		})
 	})

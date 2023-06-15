@@ -37,3 +37,10 @@ export const UISegmentPartNotes = createSyncCustomPublicationMongoCollection(Cus
 export const UIPieceContentStatuses = createSyncCustomPublicationMongoCollection(
 	CustomCollectionName.UIPieceContentStatuses
 )
+
+/**
+ * Pre-processed MediaObjectIssue for Adlibbs in a Bucket
+ */
+export const UIBucketContentStatuses = createSyncCustomPublicationMongoCollection(
+	CustomCollectionName.UIBucketContentStatuses
+)

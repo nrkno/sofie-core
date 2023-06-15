@@ -15,9 +15,9 @@ import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objec
 import { ShowStyleBases, Studios } from '../../../collections'
 
 describe('getUpgradeStatus', () => {
-	afterEach(() => {
-		Studios.remove({})
-		ShowStyleBases.remove({})
+	afterEach(async () => {
+		await Studios.removeAsync({})
+		await ShowStyleBases.removeAsync({})
 	})
 
 	testInFiber('no studios or showstyles', async () => {
@@ -31,10 +31,10 @@ describe('getUpgradeStatus', () => {
 	})
 
 	testInFiber('Studios and showStyles missing blueprints', async () => {
-		const studio0 = setupMockStudio()
-		const studio1 = setupMockStudio()
-		const showStyle0 = setupMockShowStyleBase(protectString(''))
-		const showStyle1 = setupMockShowStyleBase(protectString(''))
+		const studio0 = await setupMockStudio()
+		const studio1 = await setupMockStudio()
+		const showStyle0 = await setupMockShowStyleBase(protectString(''))
+		const showStyle1 = await setupMockShowStyleBase(protectString(''))
 
 		const result = await getUpgradeStatus()
 		expect(result).toEqual(
@@ -81,7 +81,7 @@ describe('getUpgradeStatus', () => {
 
 	testInFiber('Invalid config preset', async () => {
 		const showStyleBlueprint = await setupMockShowStyleBlueprint(protectString(''))
-		const showStyle0 = setupMockShowStyleBase(showStyleBlueprint._id)
+		const showStyle0 = await setupMockShowStyleBase(showStyleBlueprint._id)
 
 		const result = await getUpgradeStatus()
 		expect(result).toEqual(
@@ -107,7 +107,7 @@ describe('getUpgradeStatus', () => {
 
 	testInFiber('Not run before', async () => {
 		const showStyleBlueprint = await setupMockShowStyleBlueprint(protectString(''))
-		const showStyle0 = setupMockShowStyleBase(showStyleBlueprint._id, { blueprintConfigPresetId: 'main' })
+		const showStyle0 = await setupMockShowStyleBase(showStyleBlueprint._id, { blueprintConfigPresetId: 'main' })
 
 		const result = await getUpgradeStatus()
 		expect(result).toEqual(
@@ -126,7 +126,7 @@ describe('getUpgradeStatus', () => {
 
 	testInFiber('Blueprint id has changed', async () => {
 		const showStyleBlueprint = await setupMockShowStyleBlueprint(protectString(''))
-		const showStyle0 = setupMockShowStyleBase(showStyleBlueprint._id, {
+		const showStyle0 = await setupMockShowStyleBase(showStyleBlueprint._id, {
 			blueprintConfigPresetId: 'main',
 			lastBlueprintConfig: {
 				blueprintHash: showStyleBlueprint.blueprintHash,
@@ -161,7 +161,7 @@ describe('getUpgradeStatus', () => {
 
 	testInFiber('Config preset has changed', async () => {
 		const showStyleBlueprint = await setupMockShowStyleBlueprint(protectString(''))
-		const showStyle0 = setupMockShowStyleBase(showStyleBlueprint._id, {
+		const showStyle0 = await setupMockShowStyleBase(showStyleBlueprint._id, {
 			blueprintConfigPresetId: 'main',
 			lastBlueprintConfig: {
 				blueprintHash: showStyleBlueprint.blueprintHash,
@@ -196,7 +196,7 @@ describe('getUpgradeStatus', () => {
 
 	testInFiber('Blueprint hash has changed', async () => {
 		const showStyleBlueprint = await setupMockShowStyleBlueprint(protectString(''))
-		const showStyle0 = setupMockShowStyleBase(showStyleBlueprint._id, {
+		const showStyle0 = await setupMockShowStyleBase(showStyleBlueprint._id, {
 			blueprintConfigPresetId: 'main',
 			lastBlueprintConfig: {
 				blueprintHash: protectString('old-hash'),
@@ -223,7 +223,7 @@ describe('getUpgradeStatus', () => {
 
 	testInFiber('Conifg has changed', async () => {
 		const showStyleBlueprint = await setupMockShowStyleBlueprint(protectString(''))
-		const showStyle0 = setupMockShowStyleBase(showStyleBlueprint._id, {
+		const showStyle0 = await setupMockShowStyleBase(showStyleBlueprint._id, {
 			blueprintConfigPresetId: 'main',
 			blueprintConfigWithOverrides: wrapDefaultObject({
 				prop1: 'new-value',
@@ -269,7 +269,7 @@ describe('getUpgradeStatus', () => {
 		const showStyleBlueprint = await setupMockShowStyleBlueprint(protectString(''))
 		const studioBlueprint = await setupMockStudioBlueprint(protectString(''))
 
-		const studio0 = setupMockStudio({
+		const studio0 = await setupMockStudio({
 			blueprintId: studioBlueprint._id,
 			blueprintConfigPresetId: 'main',
 			lastBlueprintConfig: {
@@ -279,7 +279,7 @@ describe('getUpgradeStatus', () => {
 				config: {},
 			},
 		})
-		const studio1 = setupMockStudio({
+		const studio1 = await setupMockStudio({
 			blueprintId: studioBlueprint._id,
 			blueprintConfigPresetId: 'main',
 			lastBlueprintConfig: {
@@ -289,7 +289,7 @@ describe('getUpgradeStatus', () => {
 				config: {},
 			},
 		})
-		const showStyle0 = setupMockShowStyleBase(showStyleBlueprint._id, {
+		const showStyle0 = await setupMockShowStyleBase(showStyleBlueprint._id, {
 			blueprintConfigPresetId: 'main',
 			lastBlueprintConfig: {
 				blueprintHash: showStyleBlueprint.blueprintHash,
@@ -298,7 +298,7 @@ describe('getUpgradeStatus', () => {
 				config: {},
 			},
 		})
-		const showStyle1 = setupMockShowStyleBase(showStyleBlueprint._id, {
+		const showStyle1 = await setupMockShowStyleBase(showStyleBlueprint._id, {
 			blueprintConfigPresetId: 'main',
 			lastBlueprintConfig: {
 				blueprintHash: showStyleBlueprint.blueprintHash,

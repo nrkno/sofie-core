@@ -65,11 +65,9 @@ describe('Playout API', () => {
 				},
 			})
 
-			// await supressLogging(async () => {
 			await expect(
 				handleExecuteAdlibAction(context, { playlistId, actionDocId, actionId, userData })
-			).rejects.toThrow('action execution threw')
-			// })
+			).rejects.toMatchUserError(UserErrorMessage.InternalError)
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
 			expect(updateTimelineMock).toHaveBeenCalledTimes(0)

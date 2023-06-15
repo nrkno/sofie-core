@@ -1,4 +1,4 @@
-name: Publish prerelease libraries for ${{ github.ref_name }}
+name: Publish prerelease libraries
 
 on:
   # Allows you to run this workflow manually from the Actions tab

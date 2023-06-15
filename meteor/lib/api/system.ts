@@ -30,6 +30,7 @@ export interface SystemAPI {
 	doSystemBenchmark(): Promise<SystemBenchmarkResults>
 
 	getTranslationBundle(bundleId: TranslationsBundleId): Promise<ClientAPI.ClientResponse<TranslationsBundle>>
+	generateSingleUseToken(): Promise<ClientAPI.ClientResponse<string>>
 }
 
 export enum SystemAPIMethods {
@@ -38,4 +39,5 @@ export enum SystemAPIMethods {
 	'runCronjob' = 'system.runCronjob',
 	'doSystemBenchmark' = 'system.doSystemBenchmark',
 	'getTranslationBundle' = 'system.getTranslationBundle',
+	'generateSingleUseToken' = 'system.generateSingleUseToken',
 }

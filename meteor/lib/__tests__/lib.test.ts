@@ -5,7 +5,6 @@ import { Mongo } from 'meteor/mongo'
 import { afterEachInFiber, testInFiber } from '../../__mocks__/helpers/jest'
 import { setLogLevel } from '../../server/logging'
 import {
-	waitForPromise,
 	getCurrentTime,
 	systemTime,
 	formatDateTime,
@@ -19,6 +18,8 @@ import {
 	MeteorPromiseApply,
 } from '../lib'
 import { MeteorMock } from '../../__mocks__/meteor'
+import { MeteorDebugMethods } from '../../server/methods'
+import { Settings } from '../Settings'
 
 // require('../../../../../server/api/ingest/mosDevice/api.ts') // include in order to create the Meteor methods needed
 
@@ -27,18 +28,17 @@ describe('lib/lib', () => {
 		MeteorMock.mockSetServerEnvironment()
 	})
 
-	testInFiber('MeteorPromiseApply', () => {
+	testInFiber('MeteorPromiseApply', async () => {
 		// set up method:
-		Meteor.methods({
-			myMethod: (value1: string, value2: string) => {
+		Settings.enableUserAccounts = false
+		MeteorDebugMethods({
+			myMethod: async (value1: string, value2: string) => {
 				// Do an async operation, to ensure that asynchronous operations work:
-				const v = waitForPromise(
-					new Promise((resolve) => {
-						setTimeout(() => {
-							resolve(value1 + value2)
-						}, 10)
-					})
-				)
+				const v = await new Promise((resolve) => {
+					setTimeout(() => {
+						resolve(value1 + value2)
+					}, 10)
+				})
 				return v
 			},
 		})
@@ -46,7 +46,7 @@ describe('lib/lib', () => {
 			throw e
 		})
 		expect(pValue).toHaveProperty('then') // be a promise
-		const value = waitForPromise(pValue)
+		const value = await pValue
 		expect(value).toEqual('myValueAAA')
 	})
 	testInFiber('getCurrentTime', () => {

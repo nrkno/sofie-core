@@ -3,7 +3,10 @@ import { Meteor } from 'meteor/meteor'
 import { logger } from '../../logging'
 import { MediaWorkFlow } from '../../../lib/collections/MediaWorkFlows'
 import { MediaWorkFlowStep } from '../../../lib/collections/MediaWorkFlowSteps'
-import { MediaWorkFlowRevision, MediaWorkFlowStepRevision } from '../../../lib/api/peripheralDevice'
+import {
+	MediaWorkFlowRevision,
+	MediaWorkFlowStepRevision,
+} from '@sofie-automation/shared-lib/dist/peripheralDevice/mediaManager'
 import { PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 import { MethodContext } from '../../../lib/api/methods'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'

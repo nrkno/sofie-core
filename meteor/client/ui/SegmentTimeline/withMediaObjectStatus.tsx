@@ -1,23 +1,19 @@
 import * as React from 'react'
-import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { PieceUi } from './SegmentTimelineContainer'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { PubSub } from '../../../lib/api/pubsub'
+import { ISourceLayer, ITranslatableMessage } from '@sofie-automation/blueprints-integration'
 import { RundownUtils } from '../../lib/rundown'
-import { getMediaObjectMediaId } from '../../../lib/mediaObjects'
 import { IAdLibListItem } from '../Shelf/AdLibListItem'
 import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
-import { literal } from '../../../lib/lib'
-import { getExpectedPackageId } from '../../../lib/collections/ExpectedPackages'
-import * as _ from 'underscore'
-import { MongoQuery } from '../../../lib/typings/meteor'
-import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
 import { AdLibPieceUi } from '../../lib/shelf'
 import { UIStudio } from '../../../lib/api/studios'
-import { ExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { checkPieceContentStatus } from '../../lib/mediaObjects'
+import { UIBucketContentStatuses, UIPieceContentStatuses } from '../Collections'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { PieceContentStatusObj, ScanInfoForPackages } from '../../../lib/mediaObjects'
+import { deepFreeze } from '@sofie-automation/corelib/dist/lib'
+import { ReadonlyDeep } from 'type-fest'
+import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 
 type AnyPiece = {
 	piece?: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi | undefined
@@ -31,74 +27,33 @@ type IWrappedComponent<IProps extends AnyPiece, IState> = new (props: IProps, st
 	IState
 >
 
+const DEFAULT_STATUS = deepFreeze<PieceContentStatusObj>({
+	status: PieceStatusCode.UNKNOWN,
+	metadata: null,
+	packageInfos: undefined,
+	messages: [],
+	contentDuration: undefined,
+})
+
+/**
+ * The collection is providing some types as `ReadonlyDeep`, but the consumers of this HOC are not expecting that.
+ * This is a quick hack to remove the `ReadonlyDeep` wrapping, to satisfy the consumers until this HOC can be removed.
+ */
+function hackStripReadonly<T extends object>(val: ReadonlyDeep<T> | ReadonlyObjectDeep<T> | undefined): T | undefined {
+	return val as T
+}
+
+/**
+ * @deprecated This can now be achieved by a simple minimongo query against either UIPieceContentStatuses or UIBucketContentStatuses
+ */
 export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 	WrappedComponent: IWrappedComponent<IProps, IState> | React.FC<IProps>
 ) => new (props: IProps, context: any) => React.Component<IProps, IState> {
 	return (WrappedComponent) => {
 		return class WithMediaObjectStatusHOCComponent extends MeteorReactComponent<IProps, IState> {
 			private statusComp: Tracker.Computation
-			private objId: string
 			private overrides: Partial<IProps>
 			private destroyed: boolean
-			private subscription: Meteor.SubscriptionHandle | undefined
-
-			private expectedPackageIds: ExpectedPackageId[] = []
-			private subPackageInfos: Meteor.SubscriptionHandle | undefined
-
-			private updateMediaObjectSubscription() {
-				if (this.destroyed) return
-
-				const layer = this.props.piece?.sourceLayer || (this.props.layer as ISourceLayer | undefined)
-
-				if (this.props.piece && layer) {
-					const piece = WithMediaObjectStatusHOCComponent.unwrapPieceInstance(this.props.piece!)
-					const objId: string | undefined = getMediaObjectMediaId(piece, layer)
-
-					if (objId && objId !== this.objId && this.props.studio) {
-						if (this.subscription) this.subscription.stop()
-						this.objId = objId
-						this.subscription = this.subscribe(PubSub.mediaObjects, this.props.studio._id, {
-							mediaId: this.objId,
-						})
-					} else if (!objId && objId !== this.objId) {
-						if (this.subscription) this.subscription.stop()
-						this.subscription = undefined
-					}
-				}
-
-				if (this.props.piece) {
-					const piece = WithMediaObjectStatusHOCComponent.unwrapPieceInstance(this.props.piece!)
-
-					const expectedPackageIds: ExpectedPackageId[] = []
-					if (piece.expectedPackages) {
-						for (let i = 0; i < piece.expectedPackages.length; i++) {
-							const expectedPackage = piece.expectedPackages[i]
-							const id = expectedPackage._id || '__unnamed' + i
-
-							expectedPackageIds.push(getExpectedPackageId(piece._id, id))
-						}
-					}
-					if (this.props.studio) {
-						if (!_.isEqual(this.expectedPackageIds, expectedPackageIds)) {
-							this.expectedPackageIds = expectedPackageIds
-
-							if (this.subPackageInfos) {
-								this.subPackageInfos.stop()
-								delete this.subPackageInfos
-							}
-							if (this.expectedPackageIds.length) {
-								this.subPackageInfos = this.subscribe(
-									PubSub.packageInfos,
-									literal<MongoQuery<PackageInfoDB>>({
-										studioId: this.props.studio._id,
-										packageId: { $in: this.expectedPackageIds },
-									})
-								)
-							}
-						}
-					}
-				}
-			}
 
 			private shouldDataTrackerUpdate(prevProps: IProps): boolean {
 				if (this.props.piece !== prevProps.piece) return true
@@ -127,29 +82,38 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 
 					// Check item status
 					if (piece && (piece.sourceLayer || layer) && studio) {
-						const { metadata, packageInfos, status, contentDuration, messages } = checkPieceContentStatus(
-							WithMediaObjectStatusHOCComponent.unwrapPieceInstance(piece!),
-							piece.sourceLayer || layer,
-							studio
-						)
-						if (RundownUtils.isAdLibPieceOrAdLibListItem(piece!)) {
-							if (status !== piece.status || metadata || packageInfos) {
+						const pieceUnwrapped = WithMediaObjectStatusHOCComponent.unwrapPieceInstance(piece)
+						const statusDoc = RundownUtils.isBucketAdLibItem(piece)
+							? UIBucketContentStatuses.findOne({
+									bucketId: piece.bucketId,
+									docId: pieceUnwrapped._id,
+							  })
+							: UIPieceContentStatuses.findOne({
+									// Future: It would be good for this to be stricter.
+									pieceId: pieceUnwrapped._id,
+							  })
+
+						// Extract the status or populate some default values
+						const statusObj = statusDoc?.status ?? DEFAULT_STATUS
+
+						if (RundownUtils.isAdLibPieceOrAdLibListItem(piece)) {
+							if (statusObj.status !== piece.status || statusObj.metadata || statusObj.packageInfos) {
 								// Deep clone the required bits
 								const origPiece = (overrides.piece || this.props.piece) as AdLibPieceUi
 								const pieceCopy: AdLibPieceUi = {
 									...(origPiece as AdLibPieceUi),
-									status: status,
-									contentMetaData: metadata,
-									contentPackageInfos: packageInfos,
-									messages,
+									status: statusObj.status,
+									contentMetaData: statusObj.metadata,
+									contentPackageInfos: hackStripReadonly<ScanInfoForPackages>(statusObj.packageInfos),
+									messages: hackStripReadonly<ITranslatableMessage[]>(statusObj.messages),
 								}
 
 								if (
 									pieceCopy.content &&
 									pieceCopy.content.sourceDuration === undefined &&
-									contentDuration !== undefined
+									statusObj.contentDuration !== undefined
 								) {
-									pieceCopy.content.sourceDuration = contentDuration
+									pieceCopy.content.sourceDuration = statusObj.contentDuration
 								}
 
 								overrides.piece = {
@@ -157,7 +121,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 								}
 							}
 						} else {
-							if (status !== piece.instance.piece.status || metadata || packageInfos) {
+							if (statusObj.status !== piece.instance.piece.status || statusObj.metadata || statusObj.packageInfos) {
 								// Deep clone the required bits
 								const origPiece = (overrides.piece || piece) as PieceUi
 								const pieceCopy: PieceUi = {
@@ -166,20 +130,20 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 										...origPiece.instance,
 										piece: {
 											...origPiece.instance.piece,
-											status: status,
+											status: statusObj.status,
 										},
 									},
-									contentMetaData: metadata,
-									contentPackageInfos: packageInfos,
-									messages,
+									contentMetaData: statusObj.metadata,
+									contentPackageInfos: hackStripReadonly<ScanInfoForPackages>(statusObj.packageInfos),
+									messages: hackStripReadonly<ITranslatableMessage[]>(statusObj.messages),
 								}
 
 								if (
 									pieceCopy.instance.piece.content &&
 									pieceCopy.instance.piece.content.sourceDuration === undefined &&
-									contentDuration !== undefined
+									statusObj.contentDuration !== undefined
 								) {
-									pieceCopy.instance.piece.content.sourceDuration = contentDuration
+									pieceCopy.instance.piece.content.sourceDuration = statusObj.contentDuration
 								}
 
 								overrides.piece = {
@@ -196,7 +160,6 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 			componentDidMount(): void {
 				window.requestIdleCallback(
 					() => {
-						this.updateMediaObjectSubscription()
 						this.updateDataTracker()
 					},
 					{
@@ -206,9 +169,6 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 			}
 
 			componentDidUpdate(prevProps: IProps) {
-				Meteor.defer(() => {
-					this.updateMediaObjectSubscription()
-				})
 				if (this.shouldDataTrackerUpdate(prevProps)) {
 					if (this.statusComp) this.statusComp.invalidate()
 				}
@@ -216,14 +176,7 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 
 			componentWillUnmount(): void {
 				this.destroyed = true
-				if (this.subscription) {
-					this.subscription.stop()
-					delete this.subscription
-				}
-				if (this.subPackageInfos) {
-					this.subPackageInfos.stop()
-					delete this.subPackageInfos
-				}
+
 				super.componentWillUnmount()
 			}
 

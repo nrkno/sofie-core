@@ -168,12 +168,12 @@ describe('Test blueprint config', () => {
 
 			const showStyle = await setupMockShowStyleCompound(jobContext)
 
-			await jobContext.directCollections.ShowStyleBases.update(showStyle._id, {
+			await jobContext.mockCollections.ShowStyleBases.update(showStyle._id, {
 				$set: {
 					blueprintConfigWithOverrides: wrapDefaultObject({ number: 56, bool: true }),
 				},
 			})
-			await jobContext.directCollections.ShowStyleVariants.update(showStyle.showStyleVariantId, {
+			await jobContext.mockCollections.ShowStyleVariants.update(showStyle.showStyleVariantId, {
 				$set: {
 					blueprintConfigWithOverrides: wrapDefaultObject({
 						two: 'abc',

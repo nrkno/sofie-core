@@ -648,13 +648,8 @@ export function AdLibPanel({
 				)
 				return
 			}
-
-			if (
-				queue &&
-				sourceLayerLookup &&
-				sourceLayerLookup[adlibPiece.sourceLayerId] &&
-				!sourceLayerLookup[adlibPiece.sourceLayerId].isQueueable
-			) {
+			const lookup = sourceLayerLookup[adlibPiece.sourceLayerId]
+			if (queue && sourceLayerLookup && lookup && !lookup.isQueueable) {
 				console.log(`Item "${adlibPiece._id}" is on sourceLayer "${adlibPiece.sourceLayerId}" that is not queueable.`)
 				return
 			}

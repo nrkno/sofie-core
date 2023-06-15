@@ -1,5 +1,6 @@
 import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import {
+	BucketId,
 	ExpectedPackageId,
 	PeripheralDeviceId,
 	RundownId,
@@ -29,7 +30,6 @@ import { MediaWorkFlowStep } from '../collections/MediaWorkFlowSteps'
 import { DBOrganization } from '../collections/Organization'
 import { PackageContainerPackageStatusDB } from '../collections/PackageContainerPackageStatus'
 import { PackageContainerStatusDB } from '../collections/PackageContainerStatus'
-import { PackageInfoDB } from '../collections/PackageInfos'
 import { PartInstance } from '../collections/PartInstances'
 import { DBPart } from '../collections/Parts'
 import { PeripheralDeviceCommand } from '../collections/PeripheralDeviceCommands'
@@ -53,7 +53,7 @@ import { UserActionsLogItem } from '../collections/UserActionsLog'
 import { DBUser } from '../collections/Users'
 import { DBObj } from '../lib'
 import { MongoQuery } from '../typings/meteor'
-import { UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications'
+import { UIBucketContentStatus, UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications'
 import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'
 import { UIDeviceTriggerPreview } from '../../server/publications/deviceTriggersPreview'
@@ -138,6 +138,7 @@ export enum PubSub {
 
 	uiSegmentPartNotes = 'uiSegmentPartNotes',
 	uiPieceContentStatuses = 'uiPieceContentStatuses',
+	uiBucketContentStatuses = 'uiBucketContentStatuses',
 }
 
 /**
@@ -205,7 +206,7 @@ export interface PubSubTypes {
 	[PubSub.loggedInUser]: (token?: string) => DBUser
 	[PubSub.usersInOrganization]: (selector: MongoQuery<DBUser>, token?: string) => DBUser
 	[PubSub.organization]: (selector: MongoQuery<DBOrganization>, token?: string) => DBOrganization
-	[PubSub.buckets]: (selector: MongoQuery<Bucket>, token?: string) => Bucket
+	[PubSub.buckets]: (studioId: StudioId, bucketId: BucketId | null, token?: string) => Bucket
 	[PubSub.bucketAdLibPieces]: (selector: MongoQuery<BucketAdLib>, token?: string) => BucketAdLib
 	[PubSub.bucketAdLibActions]: (selector: MongoQuery<BucketAdLibAction>, token?: string) => BucketAdLibAction
 	[PubSub.translationsBundles]: (selector: MongoQuery<TranslationsBundle>, token?: string) => TranslationsBundle
@@ -228,7 +229,6 @@ export interface PubSubTypes {
 		selector: MongoQuery<PackageContainerStatusDB>,
 		token?: string
 	) => PackageContainerStatusDB
-	[PubSub.packageInfos]: (selector: MongoQuery<PackageInfoDB>, token?: string) => PackageInfoDB
 
 	// For a PeripheralDevice
 	[PubSub.rundownsForDevice]: (deviceId: PeripheralDeviceId, token: string) => DBRundown
@@ -260,6 +260,7 @@ export interface PubSubTypes {
 
 	[PubSub.uiSegmentPartNotes]: (playlistId: RundownPlaylistId | null) => UISegmentPartNote
 	[PubSub.uiPieceContentStatuses]: (rundownPlaylistId: RundownPlaylistId | null) => UIPieceContentStatus
+	[PubSub.uiBucketContentStatuses]: (studioId: StudioId, bucketId: BucketId) => UIBucketContentStatus
 }
 
 /**
@@ -278,6 +279,7 @@ export enum CustomCollectionName {
 	MountedTriggersPreviews = 'mountedTriggersPreviews',
 	UISegmentPartNotes = 'uiSegmentPartNotes',
 	UIPieceContentStatuses = 'uiPieceContentStatuses',
+	UIBucketContentStatuses = 'uiBucketContentStatuses',
 }
 
 /**
@@ -297,6 +299,7 @@ export type CustomCollectionType = {
 	[CustomCollectionName.MountedTriggersPreviews]: PreviewWrappedAdLib
 	[CustomCollectionName.UISegmentPartNotes]: UISegmentPartNote
 	[CustomCollectionName.UIPieceContentStatuses]: UIPieceContentStatus
+	[CustomCollectionName.UIBucketContentStatuses]: UIBucketContentStatus
 }
 
 /**

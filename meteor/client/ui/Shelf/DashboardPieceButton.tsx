@@ -115,10 +115,11 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 				<L3rdFloatingInspector
 					showMiniInspector={this.state.isHovered}
 					content={noraContent}
-					floatingInspectorStyle={{
-						top: this.positionAndSize?.top + 'px',
-						left: this.positionAndSize?.left + 'px',
-						transform: 'translate(0, -100%)',
+					position={{
+						top: this.positionAndSize?.top ?? 0,
+						left: this.positionAndSize?.left ?? 0,
+						anchor: 'start',
+						position: 'top',
 					}}
 					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
 					itemElement={this.element}
@@ -160,10 +161,11 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					showMiniInspector={this.state.isHovered}
 					timePosition={this.state.timePosition}
 					content={adLib.content as VTContent | undefined}
-					floatingInspectorStyle={{
-						top: this.positionAndSize?.top + 'px',
-						left: this.positionAndSize?.left + 'px',
-						transform: 'translate(0, -100%)',
+					position={{
+						top: this.positionAndSize?.top ?? 0,
+						left: this.positionAndSize?.left ?? 0,
+						anchor: 'start',
+						position: 'top',
 					}}
 					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
 					itemElement={null}

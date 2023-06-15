@@ -3,7 +3,8 @@ import * as _ from 'underscore'
 import { logger } from './logging'
 import { extractFunctionSignature } from './lib'
 import { MethodContext, MethodContextAPI } from '../lib/api/methods'
-import { isPromise, stringifyError } from '../lib/lib'
+import { isPromise, stringifyError, waitForPromise } from '../lib/lib'
+import { Settings } from '../lib/Settings'
 
 type MeteorMethod = (this: MethodContext, ...args: any[]) => any
 
@@ -140,6 +141,24 @@ function setMeteorMethods(orgMethods: MethodsInner, secret?: boolean): void {
 	// @ts-expect-error: incompatible due to userId
 	Meteor.methods(methods)
 }
+
+export type MeteorDebugMethod = (this: Meteor.MethodThisType, ...args: any[]) => Promise<any> | any
+export function MeteorDebugMethods(methods: { [key: string]: MeteorDebugMethod }): void {
+	if (!Settings.enableUserAccounts) {
+		const fiberMethods: { [key: string]: (this: Meteor.MethodThisType, ...args: any[]) => any } = {}
+
+		for (const [key, fn] of Object.entries<MeteorDebugMethod>(methods)) {
+			if (key && !!fn) {
+				fiberMethods[key] = function (this: Meteor.MethodThisType, ...args: any[]) {
+					return waitForPromise(fn.call(this, ...args))
+				}
+			}
+		}
+
+		Meteor.methods(fiberMethods)
+	}
+}
+
 export function getRunningMethods(): RunningMethods {
 	return runningMethods
 }

@@ -3,7 +3,7 @@ import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLi
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { assertNever, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { assertNever } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
 import { ProcessedShowStyleBase, JobContext } from '../jobs'
 import {
@@ -105,37 +105,10 @@ export async function handleTakePieceAsAdlibNow(context: JobContext, data: TakeP
 						const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 						const watchedPackages = WatchedPackagesHelper.empty(context) // TODO: should this be able to retrieve any watched packages?
 
-						await executeActionInner(
-							context,
-							cache,
-							rundown,
-							showStyle,
-							blueprint,
-							partInstance,
-							watchedPackages,
-							async (actionContext, _rundown, _currentPartInstance, blueprint) => {
-								if (!blueprint.blueprint.executeAction)
-									throw UserError.create(UserErrorMessage.ActionsNotSupported)
-
-								logger.info(
-									`Executing AdlibAction "${executeProps.actionId}": ${JSON.stringify(
-										executeProps.userData
-									)}`
-								)
-
-								try {
-									await blueprint.blueprint.executeAction(
-										actionContext,
-										executeProps.actionId,
-										executeProps.userData
-									)
-								} catch (err) {
-									logger.error(`Error in showStyleBlueprint.executeAction: ${stringifyError(err)}`)
-									// TODO: should we throw here?
-									throw UserError.fromUnknown(err, UserErrorMessage.InternalError)
-								}
-							}
-						)
+						await executeActionInner(context, cache, rundown, showStyle, blueprint, watchedPackages, {
+							...executeProps,
+							triggerMode: undefined,
+						})
 						break
 					}
 					default:

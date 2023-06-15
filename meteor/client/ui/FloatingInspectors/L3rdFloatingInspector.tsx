@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import * as _ from 'underscore'
 
 import { GraphicsContent, NoraContent } from '@sofie-automation/blueprints-integration'
@@ -8,6 +8,7 @@ import { FloatingInspector } from '../FloatingInspector'
 import { Time } from '../../../lib/lib'
 import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
 import { FloatingInspectorTimeInformationRow } from './FloatingInspectorHelpers/FloatingInspectorTimeInformationRow'
+import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
 
 interface IProps {
 	piece: Omit<PieceInstancePiece, 'timelineObjectsString'>
@@ -16,7 +17,7 @@ interface IProps {
 	showMiniInspector: boolean
 	itemElement: HTMLDivElement | null
 	content: GraphicsContent | NoraContent | undefined
-	floatingInspectorStyle: React.CSSProperties
+	position: IFloatingInspectorPosition
 	typeClass?: string
 	displayOn?: 'document' | 'viewport'
 }
@@ -25,13 +26,12 @@ type KeyValue = { key: string; value: string }
 
 export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 	content,
-	floatingInspectorStyle,
+	position,
 	showMiniInspector,
 	piece,
 	pieceRenderedIn,
 	pieceRenderedDuration,
 	typeClass,
-	displayOn,
 }) => {
 	const noraContent = (content as NoraContent)?.payload?.content ? (content as NoraContent | undefined) : undefined
 
@@ -77,13 +77,17 @@ export const L3rdFloatingInspector: React.FunctionComponent<IProps> = ({
 		noraContent?.payload?.metadata?.templateVariant ??
 		(piece.name !== graphicContent?.fileName ? graphicContent?.fileName : undefined)
 
+	const ref = useRef<HTMLDivElement>(null)
+
+	const { style: floatingInspectorStyle } = useInspectorPosition(position, ref, showMiniInspector)
+
 	return noraContent && noraContent.payload && noraContent.previewRenderer ? (
 		showMiniInspector ? (
-			<NoraFloatingInspector noraContent={noraContent} style={floatingInspectorStyle} displayOn={displayOn} />
+			<NoraFloatingInspector ref={ref} noraContent={noraContent} style={floatingInspectorStyle ?? {}} />
 		) : null
 	) : (
-		<FloatingInspector shown={showMiniInspector} displayOn={displayOn}>
-			<div className={'segment-timeline__mini-inspector ' + typeClass} style={floatingInspectorStyle}>
+		<FloatingInspector shown={showMiniInspector} displayOn="viewport">
+			<div className={'segment-timeline__mini-inspector ' + typeClass} style={floatingInspectorStyle} ref={ref}>
 				{templateName && (
 					<div className="mini-inspector__header">
 						<span>{templateName}</span>

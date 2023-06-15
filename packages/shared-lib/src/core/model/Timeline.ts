@@ -2,6 +2,22 @@ import { unprotectString, protectString } from '../../lib/protectedString'
 import { TSR } from '../../tsr'
 import { MappingsHash, PeripheralDeviceId, StudioId, TimelineBlob, TimelineHash } from './Ids'
 
+/**
+ * This defines a session, indicating that this TimelineObject uses an AB player
+ */
+export interface TimelineObjectAbSessionInfo {
+	/**
+	 * Name for this session
+	 * This should be the same for other pieces/objects which should share this session
+	 * This name is scoped to the Segment, any unrelated sessions in the segment must use different names
+	 */
+	sessionName: string
+	/**
+	 * The name of the AB Pool this session is for
+	 */
+	poolName: string
+}
+
 export enum TimelineObjHoldMode {
 	/** Default: The object is played as usual (behaviour is not affected by Hold)  */
 	NORMAL = 0,
@@ -16,6 +32,11 @@ export interface TimelineObjectCoreExt<
 	TMetadata = unknown,
 	TKeyframeMetadata = unknown
 > extends TSR.TSRTimelineObj<TContent> {
+	/**
+	 * AB playback sessions needed for this Object
+	 */
+	abSessions?: Array<TimelineObjectAbSessionInfo>
+
 	/** Restrict object usage according to whether we are currently in a hold */
 	holdMode?: TimelineObjHoldMode
 	/** Arbitrary data storage for plugins */
@@ -29,6 +50,11 @@ export interface TimelineKeyframeCoreExt<TContent extends { deviceType: TSR.Devi
 	metaData?: TKeyframeMetadata
 	/** Whether to keep this keyframe when the object is copied for lookahead. By default all keyframes are removed */
 	preserveForLookahead?: boolean
+
+	abSession?: {
+		poolName: string
+		playerIndex: number
+	}
 }
 
 export type TimelineEnableExt = TSR.Timeline.TimelineEnable & { setFromNow?: boolean }

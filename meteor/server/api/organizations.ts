@@ -70,7 +70,7 @@ async function removeOrganization(context: MethodContext, organizationId: Organi
 	users.forEach((user) => {
 		resetCredentials({ userId: user._id })
 	})
-	Organizations.remove(organizationId)
+	await Organizations.removeAsync(organizationId)
 }
 
 class ServerOrganizationAPI extends MethodContextAPI implements NewOrganizationAPI {

@@ -1,5 +1,3 @@
-import { TranslationsBundles } from '../collections'
-
 export namespace TranslationsBundlesSecurity {
 	export function allowReadAccess(_selector: object, _token: string | undefined, _context: unknown): boolean {
 		return true
@@ -8,15 +6,3 @@ export namespace TranslationsBundlesSecurity {
 		return false
 	}
 }
-
-TranslationsBundles.allow({
-	insert(): boolean {
-		return false
-	},
-	update(): boolean {
-		return false
-	},
-	remove(): boolean {
-		return false
-	},
-})

@@ -44,7 +44,7 @@ function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps)
 	useSubscription(PubSub.mountedTriggersForDevice, peripheralDeviceId, deviceIds)
 	useSubscription(PubSub.mountedTriggersForDevicePreview, peripheralDeviceId)
 
-	const mountedTriggers = useTracker<DeviceTriggerMountedAction[], DeviceTriggerMountedAction[]>(
+	const mountedTriggers = useTracker<DeviceTriggerMountedAction[]>(
 		() =>
 			MountedTriggers.find({
 				deviceId: {
@@ -55,7 +55,7 @@ function DeviceTriggersControls({ peripheralDeviceId }: IDatastoreControlsProps)
 		[]
 	)
 
-	const mountedTriggersPreviews = useTracker<PreviewWrappedAdLib[], PreviewWrappedAdLib[]>(
+	const mountedTriggersPreviews = useTracker<PreviewWrappedAdLib[]>(
 		() =>
 			MountedTriggersPreviews.find({
 				actionId: {

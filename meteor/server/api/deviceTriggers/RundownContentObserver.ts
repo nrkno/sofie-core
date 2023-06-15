@@ -55,86 +55,96 @@ export class RundownContentObserver {
 		this.#cancelCache = cancelCache
 
 		this.#observers = [
-			RundownPlaylists.find(rundownPlaylistId, {
+			RundownPlaylists.observeChanges(rundownPlaylistId, cache.RundownPlaylists.link(), {
 				projection: rundownPlaylistFieldSpecifier,
-			}).observeChanges(cache.RundownPlaylists.link()),
-			ShowStyleBases.find(showStyleBaseId).observeChanges(cache.ShowStyleBases.link()),
-			TriggeredActions.find({
-				showStyleBaseId: {
-					$in: [showStyleBaseId, null],
+			}),
+			ShowStyleBases.observeChanges(showStyleBaseId, cache.ShowStyleBases.link()),
+			TriggeredActions.observeChanges(
+				{
+					showStyleBaseId: {
+						$in: [showStyleBaseId, null],
+					},
 				},
-			}).observeChanges(cache.TriggeredActions.link()),
-			Segments.find(
+				cache.TriggeredActions.link()
+			),
+			Segments.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
 					},
 				},
+				cache.Segments.link(),
 				{
 					projection: segmentFieldSpecifier,
 				}
-			).observeChanges(cache.Segments.link()),
-			Parts.find(
+			),
+			Parts.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
 					},
 				},
+				cache.Parts.link(),
 				{
 					projection: partFieldSpecifier,
 				}
-			).observeChanges(cache.Parts.link()),
-			PartInstances.find(
+			),
+			PartInstances.observeChanges(
 				{
 					playlistActivationId: activationId,
 					reset: {
 						$ne: true,
 					},
 				},
+				cache.PartInstances.link(),
 				{
 					projection: partInstanceFieldSpecifier,
 				}
-			).observeChanges(cache.PartInstances.link()),
-			RundownBaselineAdLibActions.find(
+			),
+			RundownBaselineAdLibActions.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
 					},
 				},
+				cache.RundownBaselineAdLibActions.link(),
 				{
 					projection: adLibActionFieldSpecifier,
 				}
-			).observeChanges(cache.RundownBaselineAdLibActions.link()),
-			RundownBaselineAdLibPieces.find(
+			),
+			RundownBaselineAdLibPieces.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
 					},
 				},
+				cache.RundownBaselineAdLibPieces.link(),
 				{
 					projection: adLibPieceFieldSpecifier,
 				}
-			).observeChanges(cache.RundownBaselineAdLibPieces.link()),
-			AdLibActions.find(
+			),
+			AdLibActions.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
 					},
 				},
+				cache.AdLibActions.link(),
 				{
 					projection: adLibActionFieldSpecifier,
 				}
-			).observeChanges(cache.AdLibActions.link()),
-			AdLibPieces.find(
+			),
+			AdLibPieces.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
 					},
 				},
+				cache.AdLibPieces.link(),
 				{
 					projection: adLibPieceFieldSpecifier,
 				}
-			).observeChanges(cache.AdLibPieces.link()),
+			),
 		]
 	}
 

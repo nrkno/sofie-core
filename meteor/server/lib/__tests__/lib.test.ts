@@ -34,7 +34,7 @@ describe('server/lib', () => {
 				objectType: TimelineObjType.RUNDOWN,
 			},
 		]
-		Timeline.insert({
+		await Timeline.mutableCollection.insertAsync({
 			_id: protectString('myStudio'),
 			timelineHash: protectString('abc'),
 			generated: 1234,
@@ -53,7 +53,7 @@ describe('server/lib', () => {
 				objectType: TimelineObjType.RUNDOWN,
 			},
 		]
-		Timeline.insert({
+		await Timeline.mutableCollection.insertAsync({
 			_id: protectString('myStudio2'),
 			timelineHash: protectString('abc'),
 			generated: 1234,
@@ -81,7 +81,7 @@ describe('server/lib', () => {
 		}
 
 		const changes = await saveIntoDb(
-			Timeline,
+			Timeline.mutableCollection,
 			{
 				_id: protectString('myStudio'),
 			},
@@ -115,11 +115,11 @@ describe('server/lib', () => {
 		)
 
 		expect(
-			Timeline.find({
+			await Timeline.countDocuments({
 				_id: protectString('myStudio'),
-			}).count()
+			})
 		).toEqual(1)
-		const abc = Timeline.findOne(protectString('myStudio')) as TimelineComplete
+		const abc = (await Timeline.findOneAsync(protectString('myStudio'))) as TimelineComplete
 		expect(abc).toBeTruthy()
 		const timeline = deserializeTimelineBlob(abc.timelineBlob)
 		expect(timeline).toHaveLength(2)
@@ -127,9 +127,9 @@ describe('server/lib', () => {
 		expect(timeline[0].layer).toEqual('L2')
 
 		expect(
-			Timeline.find({
+			await Timeline.countDocuments({
 				_id: protectString('myStudio2'),
-			}).count()
+			})
 		).toEqual(1)
 
 		expect(options.beforeInsert).toHaveBeenCalledTimes(0) //- overwrites with single timeline object

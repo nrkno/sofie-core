@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { Accounts } from 'meteor/accounts-base'
-import { unprotectString, protectString, waitTime, waitForPromise } from '../../lib/lib'
+import { unprotectString, protectString, deferAsync, sleep } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { NewUserAPI, UserAPIMethods, createUser } from '../../lib/api/user'
 import { registerClassToMeteorMethods } from '../methods'
@@ -31,16 +31,16 @@ async function enrollUser(email: string, name: string): Promise<UserId> {
 	return id
 }
 
-function afterCreateNewUser(userId: UserId, organization: DBOrganizationBase): OrganizationId {
+async function afterCreateNewUser(userId: UserId, organization: DBOrganizationBase): Promise<OrganizationId> {
 	triggerWriteAccessBecauseNoCheckNecessary()
 
-	sendVerificationEmail(userId)
+	await sendVerificationEmail(userId)
 
 	// Create an organization for the user:
-	const orgId = waitForPromise(createOrganization(organization))
+	const orgId = await createOrganization(organization)
 	// Add user to organization:
-	Users.update(userId, { $set: { organizationId: orgId } })
-	Organizations.update(orgId, {
+	await Users.updateAsync(userId, { $set: { organizationId: orgId } })
+	await Organizations.updateAsync(orgId, {
 		$set: {
 			userRoles: {
 				[unprotectString(userId)]: {
@@ -56,8 +56,8 @@ function afterCreateNewUser(userId: UserId, organization: DBOrganizationBase): O
 
 	return orgId
 }
-function sendVerificationEmail(userId: UserId) {
-	const user = Users.findOne(userId)
+async function sendVerificationEmail(userId: UserId) {
+	const user = await Users.findOneAsync(userId)
 	if (!user) throw new Meteor.Error(404, `User "${userId}" not found!`)
 	try {
 		_.each(user.emails, (email) => {
@@ -108,16 +108,16 @@ Accounts.onCreateUser((options, user) => {
 	// @ts-expect-error hack, add the property "createOrganization" to trigger creation of an org
 	const createOrganization = options.createOrganization
 	if (createOrganization) {
-		Meteor.defer(() => {
+		deferAsync(async () => {
 			// To be run after the user has been inserted:
 			for (let t = 10; t < 200; t *= 1.5) {
-				const dbUser = Users.findOne(protectString(user._id))
+				const dbUser = await Users.findOneAsync(protectString(user._id))
 				if (dbUser) {
-					afterCreateNewUser(dbUser._id, createOrganization)
+					await afterCreateNewUser(dbUser._id, createOrganization)
 					return
 				} else {
 					// User has not been inserted into db (yet), wait
-					waitTime(t)
+					await sleep(t)
 				}
 			}
 		})

@@ -1,7 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import * as _ from 'underscore'
-import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import { PeripheralDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceCommands, PeripheralDevices, Rundowns, Studios, UserActionsLog } from '../collections'
 import { getCurrentTime, protectString, stringifyObjects, literal, unprotectString } from '../../lib/lib'
@@ -68,6 +67,7 @@ import {
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { convertPeripheralDeviceForGateway } from '../publications/peripheralDeviceForDevice'
+import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -79,7 +79,7 @@ export namespace ServerPeripheralDeviceAPI {
 	): Promise<PeripheralDeviceId> {
 		triggerWriteAccess() // This is somewhat of a hack, since we want to check if it exists at all, before checking access
 		check(deviceId, String)
-		const existingDevice = PeripheralDevices.findOne(deviceId)
+		const existingDevice = await PeripheralDevices.findOneAsync(deviceId)
 		if (existingDevice) {
 			await PeripheralDeviceContentWriteAccess.peripheralDevice({ userId: context.userId, token }, deviceId)
 		}
@@ -144,7 +144,6 @@ export namespace ServerPeripheralDeviceAPI {
 				status: {
 					statusCode: StatusCode.UNKNOWN,
 				},
-				studioId: protectString(''),
 				settings: {},
 				connected: true,
 				connectionId: options.connectionId,
@@ -317,7 +316,7 @@ export namespace ServerPeripheralDeviceAPI {
 	): Promise<void> {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
-		PeripheralDeviceAPI.executeFunction(peripheralDevice._id, 'pingResponse', message)
+		executePeripheralDeviceFunction(peripheralDevice._id, 'pingResponse', message)
 			.then((res) => {
 				if (cb) cb(null, res)
 			})
@@ -339,7 +338,8 @@ export namespace ServerPeripheralDeviceAPI {
 		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
 
 		// Make sure this never runs if this server isn't empty:
-		if (Rundowns.find().count()) throw new Meteor.Error(400, 'Unable to run killProcess: Rundowns not empty!')
+		if (await Rundowns.countDocuments())
+			throw new Meteor.Error(400, 'Unable to run killProcess: Rundowns not empty!')
 
 		if (really) {
 			logger.info('KillProcess command received from ' + peripheralDevice._id + ', shutting down in 1000ms!')
@@ -351,11 +351,11 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 		return false
 	}
-	export function disableSubDevice(
+	export async function disableSubDevice(
 		access: PeripheralDeviceContentWriteAccess.ContentAccess,
 		subDeviceId: string,
 		disable: boolean
-	): void {
+	): Promise<void> {
 		const peripheralDevice = access.device
 		const deviceId = access.deviceId
 
@@ -367,7 +367,7 @@ export namespace ServerPeripheralDeviceAPI {
 		if (!peripheralDevice.studioId)
 			throw new Meteor.Error(405, `PeripheralDevice "${deviceId}" does not belong to a Studio`)
 
-		const studio = Studios.findOne(peripheralDevice.studioId)
+		const studio = await Studios.findOneAsync(peripheralDevice.studioId)
 		if (!studio) throw new Meteor.Error(405, `PeripheralDevice "${deviceId}" does not belong to a Studio`)
 
 		const playoutDevices = applyAndValidateOverrides(studio.peripheralDeviceSettings.playoutDevices).obj
@@ -415,13 +415,13 @@ export namespace ServerPeripheralDeviceAPI {
 			(o) => o.path === propPath
 		)
 		if (existingIndex !== -1) {
-			Studios.update(peripheralDevice.studioId, {
+			await Studios.updateAsync(peripheralDevice.studioId, {
 				$set: {
 					[`${overridesPath}.${existingIndex}`]: newOverrideOp,
 				},
 			})
 		} else {
-			Studios.update(peripheralDevice.studioId, {
+			await Studios.updateAsync(peripheralDevice.studioId, {
 				$push: {
 					[overridesPath]: newOverrideOp,
 				},
@@ -441,7 +441,7 @@ export namespace ServerPeripheralDeviceAPI {
 		}
 
 		try {
-			return await PeripheralDeviceAPI.executeFunction(access.deviceId, 'getDebugStates')
+			return await executePeripheralDeviceFunction(access.deviceId, 'getDebugStates')
 		} catch (e) {
 			logger.error(e)
 			return {}
@@ -607,7 +607,7 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', async (params, req: Inc
 
 		const credentials = JSON.parse(body)
 
-		PeripheralDevices.update(peripheralDevice._id, {
+		await PeripheralDevices.updateAsync(peripheralDevice._id, {
 			$set: {
 				'secretSettings.credentials': credentials,
 				'settings.secretCredentials': true,
@@ -655,7 +655,7 @@ PickerGET.route('/devices/:deviceId/oauthResponse', async (params, req: Incoming
 		if (accessToken && accessToken.length > 5) {
 			// If this fails, there's not much we can do except kick the user back to the
 			//  device config screen to try again.
-			PeripheralDeviceAPI.executeFunction(deviceId, 'receiveAuthToken', accessToken)
+			executePeripheralDeviceFunction(deviceId, 'receiveAuthToken', accessToken)
 				.then(() => {
 					logger.info(`Sent auth token to device "${deviceId}"`)
 				})
@@ -688,7 +688,7 @@ PickerPOST.route('/devices/:deviceId/resetAuth', async (params, _req: IncomingMe
 		const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
-		PeripheralDevices.update(peripheralDevice._id, {
+		await PeripheralDevices.updateAsync(peripheralDevice._id, {
 			$unset: {
 				// User credentials
 				'secretSettings.accessToken': true,
@@ -722,7 +722,7 @@ PickerPOST.route(
 			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 			if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
-			PeripheralDevices.update(peripheralDevice._id, {
+			await PeripheralDevices.updateAsync(peripheralDevice._id, {
 				$unset: {
 					// App credentials
 					'secretSettings.credentials': true,
@@ -734,7 +734,7 @@ PickerPOST.route(
 				},
 			})
 
-			// PeripheralDeviceAPI.executeFunction(deviceId, 'killProcess', 1).catch(logger.error)
+			// executePeripheralDeviceFunction(deviceId, 'killProcess', 1).catch(logger.error)
 
 			res.statusCode = 200
 		} catch (e) {

@@ -1,11 +1,11 @@
 import { Mongo } from 'meteor/mongo'
 import * as _ from 'underscore'
-import { MigrationStepBase, MigrationStepCore } from '@sofie-automation/blueprints-integration'
+import { MigrationStepCore } from '@sofie-automation/blueprints-integration'
 import { objectPathGet, ProtectedString } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../logging'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import { AsyncMongoCollection } from '../collections/collection'
+import { AsyncOnlyMongoCollection } from '../collections/collection'
 import { Collections } from '../collections/lib'
 
 /**
@@ -18,37 +18,37 @@ export function ensureCollectionProperty<T = any>(
 	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 	defaultValue: any,
 	dependOnResultFrom?: string
-): MigrationStepBase {
+): Omit<MigrationStepCore, 'version'> {
 	const collection = Collections.get(collectionName)
 	if (!collection) throw new Meteor.Error(404, `Collection ${collectionName} not found`)
 
 	return {
 		id: `${collectionName}.${property}`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = collection.find(selector).fetch()
-			let propertyMissing: string | boolean = false
-			_.each(objects, (obj: any) => {
+		validate: async () => {
+			const objects = await collection.findFetchAsync(selector)
+
+			for (const obj of objects) {
 				const objValue = objectPathGet(obj, property)
 				if (!objValue && objValue !== defaultValue) {
-					propertyMissing = `${property} is missing on ${obj._id}`
+					return `${property} is missing on ${obj._id}`
 				}
-			})
-			// logger.info('')
-			return propertyMissing
+			}
+
+			return false
 		},
-		migrate: () => {
-			const objects = collection.find(selector).fetch()
-			_.each(objects, (obj: any) => {
+		migrate: async () => {
+			const objects = await collection.findFetchAsync(selector)
+			for (const obj of objects) {
 				if (obj && objectPathGet(obj, property) !== defaultValue) {
 					const m = {}
 					m[property] = defaultValue
 					logger.info(
 						`Migration: Setting ${collectionName} object "${obj._id}".${property} to ${defaultValue}`
 					)
-					collection.update(obj._id, { $set: m })
+					await collection.mutableCollection.updateAsync(obj._id, { $set: m })
 				}
-			})
+			}
 		},
 		dependOnResultFrom: dependOnResultFrom,
 	}
@@ -59,35 +59,35 @@ export function removeCollectionProperty<T = any>(
 	selector: Mongo.Selector<T>,
 	property: string,
 	dependOnResultFrom?: string
-): MigrationStepBase {
+): Omit<MigrationStepCore, 'version'> {
 	const collection = Collections.get(collectionName)
 	if (!collection) throw new Meteor.Error(404, `Collection ${collectionName} not found`)
 
 	return {
 		id: `${collectionName}.${property}`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = collection.find(selector).fetch()
-			let propertySet: string | boolean = false
-			_.each(objects, (obj: any) => {
+		validate: async () => {
+			const objects = await collection.findFetchAsync(selector)
+
+			for (const obj of objects) {
 				const objValue = objectPathGet(obj, property)
 				if (objValue !== undefined) {
-					propertySet = `${property} is set ${obj._id}`
+					return `${property} is set ${obj._id}`
 				}
-			})
+			}
 
-			return propertySet
+			return false
 		},
-		migrate: () => {
-			const objects = collection.find(selector).fetch()
-			_.each(objects, (obj: any) => {
+		migrate: async () => {
+			const objects = await collection.findFetchAsync(selector)
+			for (const obj of objects) {
 				if (obj && objectPathGet(obj, property) !== undefined) {
 					const m = {}
 					m[property] = 1
 					logger.info(`Migration: Removing property ${collectionName}."${obj._id}".${property}`)
-					collection.update(obj._id, { $unset: m })
+					await collection.mutableCollection.updateAsync(obj._id, { $unset: m })
 				}
-			})
+			}
 		},
 		dependOnResultFrom: dependOnResultFrom,
 	}
@@ -98,7 +98,7 @@ interface RenameContent {
 }
 export function renamePropertiesInCollection<DBInterface extends { _id: ProtectedString<any> }>(
 	id: string,
-	collection: AsyncMongoCollection<DBInterface>,
+	collection: AsyncOnlyMongoCollection<DBInterface>,
 	collectionName: string,
 	renames: Partial<{ [newAttr in keyof DBInterface]: string | RenameContent }>,
 	dependOnResultFrom?: string
@@ -128,7 +128,7 @@ export function renamePropertiesInCollection<DBInterface extends { _id: Protecte
 
 				// Select where a value is of the old, to-be-replaced value:
 				const o = {}
-				o[oldAttrActual] = { $in: _.values(oldAttrRenameContent.content) }
+				o[oldAttrActual] = { $in: Object.values<string>(oldAttrRenameContent.content) }
 				m.$or.push(o)
 			}
 		}
@@ -137,13 +137,15 @@ export function renamePropertiesInCollection<DBInterface extends { _id: Protecte
 		id: id,
 		canBeRunAutomatically: true,
 		dependOnResultFrom: dependOnResultFrom,
-		validate: () => {
-			const objCount = collection.find(m).count()
+		validate: async () => {
+			const objCount = await collection.countDocuments(m)
 			if (objCount > 0) return `${objCount} documents in ${collectionName} needs to be updated`
 			return false
 		},
-		migrate: () => {
-			collection.find(m).forEach((doc) => {
+		migrate: async () => {
+			const docs = await collection.findFetchAsync(m)
+
+			for (const doc of docs) {
 				// Rename properties:
 				_.each(_.keys(renames), (newAttr) => {
 					const oldAttr: string | RenameContent | undefined = renames[newAttr]
@@ -171,9 +173,8 @@ export function renamePropertiesInCollection<DBInterface extends { _id: Protecte
 						}
 					}
 				})
-				collection.update(doc._id, doc)
-			})
-			//
+				await collection.updateAsync(doc._id, doc)
+			}
 		},
 	}
 }

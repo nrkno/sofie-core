@@ -7,6 +7,7 @@ import { EditAttribute } from '../../../../lib/EditAttribute'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { IStudioConfigPreset } from '@sofie-automation/blueprints-integration'
+import { LabelActual } from '../../../../lib/Components/LabelAndOverrides'
 
 interface SelectConfigPresetProps {
 	studio: DBStudio
@@ -36,7 +37,7 @@ export function SelectConfigPreset({ studio, blueprint }: SelectConfigPresetProp
 	return (
 		<div className="mod mvs mhs">
 			<label className="field">
-				{t('Blueprint config preset')}
+				<LabelActual label={t('Blueprint config preset')} />
 				{!studio.blueprintConfigPresetId && (
 					<div className="error-notice inline">
 						{t('Blueprint config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />

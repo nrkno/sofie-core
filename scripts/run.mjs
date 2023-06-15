@@ -1,20 +1,15 @@
 import process from "process";
 import concurrently from "concurrently";
-
-/** These are extra packages in the mono-repo, not neccessary for Sofie Core development */
-const EXTRA_PACKAGES = ['@sofie-automation/openapi', 'live-status-gateway', 'mos-gateway']
-
-const args = process.argv.slice(2);
-
-const config = {
-	uiOnly: args.indexOf("--ui-only") >= 0 || false,
-	inspectMeteor: args.indexOf("--inspect-meteor") >= 0 || false,
-};
+import { EXTRA_PACKAGES, config } from "./lib.js";
 
 function watchPackages() {
 	return [
 		{
-			command: config.uiOnly ? `yarn watch ${EXTRA_PACKAGES.map((pkg) => `--ignore ${pkg}`).join(' ')}` : "yarn watch",
+			command: config.uiOnly
+				? `yarn watch ${EXTRA_PACKAGES.map((pkg) => `--ignore ${pkg}`).join(
+						" "
+				  )}`
+				: "yarn watch",
 			cwd: "packages",
 			name: "PACKAGES-TSC",
 			prefixColor: "red",
@@ -42,7 +37,9 @@ function watchMeteor() {
 			prefixColor: "blue",
 		},
 		{
-			command: "meteor yarn debug" + (config.inspectMeteor ? " --inspect" : ""),
+			command: `meteor yarn debug${config.inspectMeteor ? " --inspect" : ""}${
+				config.verbose ? " --verbose" : ""
+			}`,
 			cwd: "meteor",
 			name: "METEOR",
 			prefixColor: "cyan",
@@ -50,25 +47,22 @@ function watchMeteor() {
 	];
 }
 
+function hr() {
+	// write regular dashes if this is a "simple" output stream ()
+	if (!process.stdout.hasColors || !process.stdout.hasColors())
+		return "-".repeat(process.stdout.columns ?? 40);
+	return '─'.repeat(process.stdout.columns ?? 40)
+}
+
 try {
-	// Pre-steps
-	await concurrently(
-		[
-			{
-				command: config.uiOnly ? `yarn build:try ${EXTRA_PACKAGES.map((pkg) => `--ignore ${pkg}`).join(' ')} || true` : "yarn build:try || true",
-				cwd: "packages",
-				name: "PACKAGES-BUILD",
-				prefixColor: "yellow",
-			},
-		],
-		{
-			prefix: "name",
-			killOthers: ["failure", "success"],
-			restartTries: 1,
-		}
-	).result;
+	// Note: This scricpt assumes that install-and-build.mjs has been run before
+
+	
 
 	// The main watching execution
+	console.log(hr());
+	console.log(" ⚙️  Starting up in development mode...         ");
+	console.log(hr());
 	await concurrently(
 		[
 			...(config.uiOnly ? [] : watchPackages()),

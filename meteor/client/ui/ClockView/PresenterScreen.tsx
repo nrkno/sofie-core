@@ -172,7 +172,6 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 			fields: {
 				lastIncorrectPartPlaybackReported: 0,
 				modified: 0,
-				nextPartManual: 0,
 				previousPersistentState: 0,
 				rundownRanksAreSetInSofie: 0,
 				trackedAbSessions: 0,
@@ -434,7 +433,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 
 			let currentPartCountdown = 0
 			if (currentPart) {
-				currentPartCountdown = -1 * (this.props.timingDurations.remainingTimeOnCurrentPart || 0)
+				currentPartCountdown = this.props.timingDurations.remainingTimeOnCurrentPart || 0
 			}
 
 			const nextPart = this.props.nextPartInstance

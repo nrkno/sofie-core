@@ -1,7 +1,6 @@
 import { PeripheralDevices, RundownPlaylists } from './collections'
-import { PeripheralDeviceAPI } from '../lib/api/peripheralDevice'
 import { PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
-import { getCurrentTime, stringifyError, waitForPromise, waitForPromiseAll } from '../lib/lib'
+import { getCurrentTime, stringifyError } from '../lib/lib'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { TSR } from '@sofie-automation/blueprints-integration'
@@ -11,9 +10,11 @@ import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { fetchStudioIds } from './optimizations'
 import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
 import { deferAsync } from '@sofie-automation/corelib/dist/lib'
-import { getCoreSystem } from './coreSystem/collection'
+import { getCoreSystemAsync } from './coreSystem/collection'
 import { cleanupOldDataInner } from './api/cleanup'
 import { CollectionCleanupResult } from '../lib/api/system'
+import { ICoreSystem } from '../lib/collections/CoreSystem'
+import { executePeripheralDeviceFunctionWithCustomTimeout } from './api/peripheralDevice/executeFunction'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -32,47 +33,66 @@ function isLowSeason() {
 let lastNightlyCronjob = 0
 let failedRetries = 0
 
-export function nightlyCronjobInner(): void {
+export async function nightlyCronjobInner(): Promise<void> {
 	const previousLastNightlyCronjob = lastNightlyCronjob
 	lastNightlyCronjob = getCurrentTime()
 	logger.info('Nightly cronjob: starting...')
-	const system = getCoreSystem()
+	const system = await getCoreSystemAsync()
 
-	// Clean up old data:
-	try {
-		const cleanupResults = waitForPromise(cleanupOldDataInner(true))
-		if (typeof cleanupResults === 'string') {
-			logger.warn(`Cronjob: Could not clean up old data due to: ${cleanupResults}`)
-		} else {
-			for (const result of Object.values<CollectionCleanupResult[0]>(cleanupResults)) {
-				if (result.docsToRemove > 0) {
-					logger.info(`Cronjob: Removed ${result.docsToRemove} documents from "${result.collectionName}"`)
-				}
+	await Promise.allSettled([
+		cleanupOldDataCronjob().catch((error) => {
+			logger.error(`Cronjob: Error when cleaning up old data: ${error}`)
+			logger.error(error)
+		}),
+		restartCasparCG(system, previousLastNightlyCronjob).catch((e) => {
+			logger.error(`Cron: Restart CasparCG error: ${e}`)
+		}),
+		storeSnapshots(system).catch((e) => {
+			logger.error(`Cron: Rundown Snapshots error: ${e}`)
+		}),
+	])
+
+	// last:
+	logger.info('Nightly cronjob: done')
+}
+
+async function cleanupOldDataCronjob() {
+	const cleanupResults = await cleanupOldDataInner(true)
+	if (typeof cleanupResults === 'string') {
+		logger.warn(`Cronjob: Could not clean up old data due to: ${cleanupResults}`)
+	} else {
+		for (const result of Object.values<CollectionCleanupResult[0]>(cleanupResults)) {
+			if (result.docsToRemove > 0) {
+				logger.info(`Cronjob: Removed ${result.docsToRemove} documents from "${result.collectionName}"`)
 			}
 		}
-	} catch (error) {
-		logger.error(`Cronjob: Error when cleaning up old data: ${error}`)
-		logger.error(error)
 	}
+}
 
+async function restartCasparCG(system: ICoreSystem | undefined, previousLastNightlyCronjob: number) {
 	const ps: Array<Promise<any>> = []
 	// Restart casparcg
 	if (system?.cron?.casparCGRestart?.enabled) {
-		PeripheralDevices.find({
+		const peripheralDevices = await PeripheralDevices.findFetchAsync({
 			type: PeripheralDeviceType.PLAYOUT,
-		}).forEach((device) => {
-			PeripheralDevices.find({
+		})
+
+		for (const device of peripheralDevices) {
+			const subDevices = await PeripheralDevices.findFetchAsync({
 				parentDeviceId: device._id,
-			}).forEach((subDevice) => {
+			})
+
+			for (const subDevice of subDevices) {
 				if (subDevice.type === PeripheralDeviceType.PLAYOUT && subDevice.subType === TSR.DeviceType.CASPARCG) {
 					logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')
 
 					ps.push(
-						PeripheralDeviceAPI.executeFunctionWithCustomTimeout(
+						executePeripheralDeviceFunctionWithCustomTimeout(
 							subDevice._id,
 							DEFAULT_TSR_ACTION_TIMEOUT_TIME,
 							{
 								actionId: TSR.CasparCGActions.RestartServer,
+								payload: {},
 							}
 						)
 							.then(() => {
@@ -96,38 +116,30 @@ export function nightlyCronjobInner(): void {
 							})
 					)
 				}
-			})
-		})
-	}
-	try {
-		waitForPromiseAll(ps)
-		failedRetries = 0
-	} catch (err) {
-		logger.error(err)
+			}
+		}
 	}
 
+	await Promise.all(ps)
+	failedRetries = 0
+}
+
+async function storeSnapshots(system: ICoreSystem | undefined) {
 	if (system?.cron?.storeRundownSnapshots?.enabled) {
 		const filter = system.cron.storeRundownSnapshots.rundownNames?.length
 			? { name: { $in: system.cron.storeRundownSnapshots.rundownNames } }
 			: {}
 
-		RundownPlaylists.find(filter).forEach((playlist) => {
+		const playlists = await RundownPlaylists.findFetchAsync(filter)
+		for (const playlist of playlists) {
 			lowPrioFcn(() => {
 				logger.info(`Cronjob: Will store snapshot for rundown playlist "${playlist._id}"`)
-				ps.push(internalStoreRundownPlaylistSnapshot(playlist, 'Automatic, taken by cron job'))
+				internalStoreRundownPlaylistSnapshot(playlist, 'Automatic, taken by cron job').catch((err) => {
+					logger.error(err)
+				})
 			})
-		})
+		}
 	}
-	Promise.all(ps)
-		.then(() => {
-			failedRetries = 0
-		})
-		.catch((err) => {
-			logger.error(err)
-		})
-
-	// last:
-	logger.info('Nightly cronjob: done')
 }
 
 Meteor.startup(() => {
@@ -137,7 +149,9 @@ Meteor.startup(() => {
 			isLowSeason() &&
 			timeSinceLast > 20 * 3600 * 1000 // was last run yesterday
 		) {
-			nightlyCronjobInner()
+			nightlyCronjobInner().catch((e) => {
+				logger.error(`Nightly cronjob: error: ${e}`)
+			})
 		}
 	}
 

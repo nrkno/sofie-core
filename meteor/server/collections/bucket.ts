@@ -2,22 +2,25 @@ import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/Buck
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { Bucket } from '../../lib/collections/Buckets'
-import { createAsyncMongoCollection } from './collection'
+import { createAsyncOnlyMongoCollection } from './collection'
 import { registerIndex } from './indices'
 
-export const BucketAdLibActions = createAsyncMongoCollection<BucketAdLibAction>(CollectionName.BucketAdLibActions)
+export const BucketAdLibActions = createAsyncOnlyMongoCollection<BucketAdLibAction>(
+	CollectionName.BucketAdLibActions,
+	false
+)
 registerIndex(BucketAdLibActions, {
 	bucketId: 1,
 	studioId: 1,
 })
 
-export const BucketAdLibs = createAsyncMongoCollection<BucketAdLib>(CollectionName.BucketAdLibPieces)
+export const BucketAdLibs = createAsyncOnlyMongoCollection<BucketAdLib>(CollectionName.BucketAdLibPieces, false)
 registerIndex(BucketAdLibs, {
 	bucketId: 1,
 	studioId: 1,
 })
 
-export const Buckets = createAsyncMongoCollection<Bucket>(CollectionName.Buckets)
+export const Buckets = createAsyncOnlyMongoCollection<Bucket>(CollectionName.Buckets, false)
 registerIndex(Buckets, {
 	studioId: 1,
 })

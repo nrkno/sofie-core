@@ -1,4 +1,4 @@
-import { ICollection, MongoQuery } from '../db'
+import { ICollection, IMongoTransaction, IReadOnlyCollection, MongoQuery } from '../db'
 import { ReadonlyDeep } from 'type-fest'
 import { isProtectedString, ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import _ = require('underscore')
@@ -23,10 +23,15 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 	documents = new Map<TDoc['_id'], DbCacheCollectionDocument<TDoc>>()
 	protected originalDocuments: ReadonlyDeep<Array<TDoc>> = []
 
-	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
-	protected isToBeRemoved = false
+	/**
+	 * Whether this cache has been disposed of and is no longer valid for use
+	 */
+	protected _disposed = false
 
-	protected constructor(protected readonly context: JobContext, protected readonly _collection: ICollection<TDoc>) {}
+	protected constructor(
+		protected readonly context: JobContext,
+		protected readonly _collection: IReadOnlyCollection<TDoc>
+	) {}
 
 	/**
 	 * Create a DbCacheReadCollection for existing documents
@@ -37,7 +42,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 	 */
 	public static createFromArray<TDoc extends { _id: ProtectedString<any> }>(
 		context: JobContext,
-		collection: ICollection<TDoc>,
+		collection: IReadOnlyCollection<TDoc>,
 		docs: TDoc[] | ReadonlyDeep<Array<TDoc>>
 	): DbCacheReadCollection<TDoc> {
 		const col = new DbCacheReadCollection(context, collection)
@@ -55,7 +60,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 	 */
 	public static async createFromDatabase<TDoc extends { _id: ProtectedString<any> }>(
 		context: JobContext,
-		collection: ICollection<TDoc>,
+		collection: IReadOnlyCollection<TDoc>,
 		selector: MongoQuery<TDoc>
 	): Promise<DbCacheReadCollection<TDoc>> {
 		const span = context.startSpan('DbCacheReadCollection.createFromDatabase')
@@ -66,7 +71,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 			})
 		}
 
-		const docs = await collection.findFetch(selector)
+		const docs = await collection.findFetch(selector, undefined, null)
 
 		const res = DbCacheReadCollection.createFromArray(context, collection, docs)
 		if (span) span.end()
@@ -84,6 +89,8 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 	 * @returns The matched documents
 	 */
 	findAll(selector: SelectorFunction<TDoc> | null, options?: FindOptions<TDoc>): TDoc[] {
+		this.assertNotDisposed()
+
 		const span = this.context.startSpan(`DBCache.findAll.${this.name}`)
 
 		const results: TDoc[] = []
@@ -109,6 +116,8 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 	 * @returns The first matched document, if any
 	 */
 	findOne(selector: TDoc['_id'] | SelectorFunction<TDoc>, options?: FindOneOptions<TDoc>): TDoc | undefined {
+		this.assertNotDisposed()
+
 		if (isProtectedString(selector)) {
 			const span = this.context.startSpan(`DBCache.findOne.${this.name}`)
 			const doc = this.documents.get(selector)
@@ -125,8 +134,10 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 	}
 
 	async fillWithDataFromDatabase(selector: MongoQuery<TDoc>): Promise<number> {
+		this.assertNotDisposed()
+
 		const span = this.context.startSpan(`DBCache.fillWithDataFromDatabase.${this.name}`)
-		const docs = await this._collection.findFetch(selector)
+		const docs = await this._collection.findFetch(selector, undefined, null)
 
 		span?.addLabels({ count: docs.length })
 
@@ -140,6 +151,8 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 	 * @param documents The documents to store
 	 */
 	fillWithDataFromArray(documents: ReadonlyDeep<Array<TDoc>>, append = false): void {
+		this.assertNotDisposed()
+
 		if (append) {
 			this.originalDocuments = this.originalDocuments.concat(documents)
 		} else {
@@ -158,18 +171,30 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 		})
 	}
 
+	protected assertNotDisposed(): void {
+		if (this._disposed) throw new Error(`CacheObject from "${this._collection.name}" has been disposed`)
+	}
+
 	/**
-	 * Called to mark all the objects in this collection as pending deletion from mongo. This will cause it to reject any future updates
-	 * Note: The actual deletion must be handled elsewhere
+	 * Discards all documents in this cache, and marks it as unusable
 	 */
-	markForRemoval(): void {
-		this.isToBeRemoved = true
+	dispose(): void {
+		this._disposed = false
+
+		// Force delete the documents
 		this.documents = new Map()
 		this.originalDocuments = []
 	}
 }
 /** Caches data, allowing writes that will later be committed to mongo */
 export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> extends DbCacheReadCollection<TDoc> {
+	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
+	protected isToBeRemoved = false
+
+	protected constructor(context: JobContext, protected readonly _collection: ICollection<TDoc>) {
+		super(context, _collection)
+	}
+
 	protected assertNotToBeRemoved(methodName: string): void {
 		if (this.isToBeRemoved) {
 			const msg = `DbCacheWriteCollection: got call to "${methodName} when cache has been flagged for removal"`
@@ -219,7 +244,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 			})
 		}
 
-		const docs = await collection.findFetch(selector)
+		const docs = await collection.findFetch(selector, undefined, null)
 
 		const res = DbCacheWriteCollection.createFromArray(context, collection, docs)
 		if (span) span.end()
@@ -232,6 +257,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	 * @returns The id of the inserted document
 	 */
 	insert(doc: TDoc): TDoc['_id'] {
+		this.assertNotDisposed()
 		this.assertNotToBeRemoved('insert')
 
 		const span = this.context.startSpan(`DBCache.insert.${this.name}`)
@@ -261,6 +287,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	 * @returns The ids of the removed documents
 	 */
 	remove(selector: TDoc['_id'] | SelectorFunction<TDoc> | null): Array<TDoc['_id']> {
+		this.assertNotDisposed()
 		this.assertNotToBeRemoved('remove')
 
 		const span = this.context.startSpan(`DBCache.remove.${this.name}`)
@@ -295,6 +322,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		modifier: (doc: TDoc) => TDoc | false,
 		forceUpdate?: boolean
 	): TDoc['_id'] | undefined {
+		this.assertNotDisposed()
 		this.assertNotToBeRemoved('updateOne')
 
 		const span = this.context.startSpan(`DBCache.update.${this.name}`)
@@ -345,6 +373,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	 * @returns All the ids that were changed
 	 */
 	updateAll(modifier: (doc: TDoc) => TDoc | false, forceUpdate?: boolean): Array<TDoc['_id']> {
+		this.assertNotDisposed()
 		this.assertNotToBeRemoved('updateAll')
 
 		const span = this.context.startSpan(`DBCache.updateAll.${this.name}`)
@@ -393,6 +422,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	 * @returns True if the document was replaced, false if it was inserted
 	 */
 	replace(doc: TDoc | ReadonlyDeep<TDoc>): boolean {
+		this.assertNotDisposed()
 		this.assertNotToBeRemoved('replace')
 
 		const span = this.context.startSpan(`DBCache.replace.${this.name}`)
@@ -425,7 +455,9 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	 * Write the changed documents to mongo
 	 * @returns Changes object describing the saved changes
 	 */
-	async updateDatabaseWithData(): Promise<Changes> {
+	async updateDatabaseWithData(transaction: IMongoTransaction | null): Promise<Changes> {
+		this.assertNotDisposed()
+
 		const span = this.context.startSpan(`DBCache.updateDatabaseWithData.${this.name}`)
 		const changes: {
 			added: number
@@ -485,7 +517,8 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 			})
 		}
 
-		const pBulkWriteResult = updates.length > 0 ? this._collection.bulkWrite(updates) : Promise.resolve()
+		const pBulkWriteResult =
+			updates.length > 0 ? this._collection.bulkWrite(updates, transaction) : Promise.resolve()
 
 		_.each(removedDocs, (_id) => {
 			this.documents.delete(_id)
@@ -496,6 +529,16 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		if (span) span.addLabels(changes)
 		if (span) span.end()
 		return changes
+	}
+
+	/**
+	 * Called to mark all the objects in this collection as pending deletion from mongo. This will cause it to reject any future updates
+	 * Note: The actual deletion must be handled elsewhere
+	 */
+	markForRemoval(): void {
+		this.isToBeRemoved = true
+		this.documents = new Map()
+		this.originalDocuments = []
 	}
 
 	/**
@@ -513,6 +556,8 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	 * @param otherCache The cache to update
 	 */
 	updateOtherCacheWithData(otherCache: DbCacheWriteCollection<TDoc>): ChangedIds<TDoc['_id']> {
+		this.assertNotDisposed()
+
 		const changes: ChangedIds<TDoc['_id']> = {
 			added: [],
 			updated: [],

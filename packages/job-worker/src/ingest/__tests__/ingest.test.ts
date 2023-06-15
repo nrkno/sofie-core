@@ -101,17 +101,17 @@ describe('Test ingest actions for rundowns and segments', () => {
 		})
 	})
 	async function getRundownData(query?: MongoQuery<DBRundown>) {
-		const rundown = (await context.directCollections.Rundowns.findOne(query)) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne(query)) as DBRundown
 		expect(rundown).toBeTruthy()
-		const rundownPlaylist = (await context.directCollections.RundownPlaylists.findOne(
+		const rundownPlaylist = (await context.mockCollections.RundownPlaylists.findOne(
 			rundown.playlistId
 		)) as DBRundownPlaylist
 		expect(rundownPlaylist).toBeTruthy()
 
-		const rawSegments = await context.directCollections.Segments.findFetch({ rundownId: rundown._id })
-		const rawParts = await context.directCollections.Parts.findFetch({ rundownId: rundown._id })
+		const rawSegments = await context.mockCollections.Segments.findFetch({ rundownId: rundown._id })
+		const rawParts = await context.mockCollections.Parts.findFetch({ rundownId: rundown._id })
 
-		const segments = sortSegmentsInRundowns(rawSegments, { rundownIdsInOrder: [rundown._id] })
+		const segments = sortSegmentsInRundowns(rawSegments, [rundown._id])
 		const parts = sortPartsInSortedSegments(rawParts, segments)
 
 		return {
@@ -125,7 +125,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	test('dataRundownCreate', async () => {
 		// setLogLevel(LogLevel.DEBUG)
 
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeFalsy()
 
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -192,7 +192,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	test('dataRundownUpdate change name', async () => {
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeTruthy()
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeTruthy()
 
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -238,8 +238,8 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: false,
 		})
 
-		await expect(context.directCollections.RundownPlaylists.findFetch()).resolves.toHaveLength(1)
-		await expect(context.directCollections.Rundowns.findFetch()).resolves.toHaveLength(1)
+		await expect(context.mockCollections.RundownPlaylists.findFetch()).resolves.toHaveLength(1)
+		await expect(context.mockCollections.Rundowns.findFetch()).resolves.toHaveLength(1)
 
 		const savedRundownData = await getRundownData()
 
@@ -264,7 +264,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	test('dataRundownUpdate add a segment', async () => {
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeTruthy()
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeTruthy()
 		const rundownData: IngestRundown = {
 			externalId: externalId,
 			name: 'MyMockRundown',
@@ -321,7 +321,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: false,
 		})
 
-		await expect(context.directCollections.Rundowns.findFetch()).resolves.toHaveLength(1)
+		await expect(context.mockCollections.Rundowns.findFetch()).resolves.toHaveLength(1)
 
 		const savedRundownData = await getRundownData()
 
@@ -342,7 +342,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	test('dataRundownUpdate add a part', async () => {
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeTruthy()
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeTruthy()
 		const rundownData: IngestRundown = {
 			externalId: externalId,
 			name: 'MyMockRundown',
@@ -403,8 +403,8 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: false,
 		})
 
-		await expect(context.directCollections.RundownPlaylists.findFetch()).resolves.toHaveLength(1)
-		await expect(context.directCollections.Rundowns.findFetch()).resolves.toHaveLength(1)
+		await expect(context.mockCollections.RundownPlaylists.findFetch()).resolves.toHaveLength(1)
+		await expect(context.mockCollections.Rundowns.findFetch()).resolves.toHaveLength(1)
 
 		const savedRundownData = await getRundownData()
 
@@ -429,7 +429,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	test('dataRundownUpdate remove a segment', async () => {
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeTruthy()
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeTruthy()
 		const rundownData: IngestRundown = {
 			externalId: externalId,
 			name: 'MyMockRundown',
@@ -473,8 +473,8 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: false,
 		})
 
-		await expect(context.directCollections.RundownPlaylists.findFetch()).resolves.toHaveLength(1)
-		await expect(context.directCollections.Rundowns.findFetch()).resolves.toHaveLength(1)
+		await expect(context.mockCollections.RundownPlaylists.findFetch()).resolves.toHaveLength(1)
+		await expect(context.mockCollections.Rundowns.findFetch()).resolves.toHaveLength(1)
 
 		const savedRundownData = await getRundownData()
 
@@ -495,7 +495,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	test('dataRundownUpdate remove a part', async () => {
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeTruthy()
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeTruthy()
 		const rundownData: IngestRundown = {
 			externalId: externalId,
 			name: 'MyMockRundown',
@@ -535,7 +535,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: false,
 		})
 
-		await expect(context.directCollections.Rundowns.findFetch()).resolves.toHaveLength(1)
+		await expect(context.mockCollections.Rundowns.findFetch()).resolves.toHaveLength(1)
 
 		const savedRundownData = await getRundownData()
 
@@ -557,7 +557,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	test('dataRundownMetaDataUpdate change name, does not remove segments', async () => {
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeTruthy()
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeTruthy()
 		const rundownData: Omit<IngestRundown, 'segments'> = {
 			externalId: externalId,
 			name: 'MyMockRundownRenamed',
@@ -570,8 +570,8 @@ describe('Test ingest actions for rundowns and segments', () => {
 			ingestRundown: rundownData,
 		})
 
-		await expect(context.directCollections.RundownPlaylists.findFetch()).resolves.toHaveLength(1)
-		await expect(context.directCollections.Rundowns.findFetch()).resolves.toHaveLength(1)
+		await expect(context.mockCollections.RundownPlaylists.findFetch()).resolves.toHaveLength(1)
+		await expect(context.mockCollections.Rundowns.findFetch()).resolves.toHaveLength(1)
 
 		const savedRundownData = await getRundownData()
 
@@ -595,20 +595,20 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	test('dataRundownDelete', async () => {
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeTruthy()
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeTruthy()
 
 		await handleRemovedRundown(context, {
 			peripheralDeviceId: device._id,
 			rundownExternalId: externalId,
 		})
 
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
-		await expect(context.directCollections.Segments.findFetch()).resolves.toHaveLength(0)
-		await expect(context.directCollections.Parts.findFetch()).resolves.toHaveLength(0)
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeFalsy()
+		await expect(context.mockCollections.Segments.findFetch()).resolves.toHaveLength(0)
+		await expect(context.mockCollections.Parts.findFetch()).resolves.toHaveLength(0)
 	})
 
 	test('dataRundownDelete for a second time', async () => {
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeFalsy()
 
 		await expect(
 			handleRemovedRundown(context, {
@@ -621,7 +621,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	// Note: this test fails, due to a backwards-compatibility hack in #c579c8f0
 	// eslint-disable-next-line jest/no-commented-out-tests
 	// test('dataRundownDelete bad device', () => {
-	// 	await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
+	// 	await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeFalsy()
 	// 	try {
 	// 		Meteor.call(
 	// 			PeripheralDeviceAPIMethods.dataRundownDelete,
@@ -643,7 +643,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 	// Reject update when no preceeding create
 	test('dataRundownUpdate when not yet created', async () => {
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeFalsy()
 		const rundownData: IngestRundown = {
 			externalId: externalId,
 			name: 'MyMockRundown',
@@ -685,11 +685,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 			})
 		).rejects.toThrow(/Rundown.*not found/)
 
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeFalsy()
 	})
 
 	test('dataRundownUpdate fail when rundown is orphaned', async () => {
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeFalsy()
 
 		const rundownData0: IngestRundown = {
 			externalId: externalId,
@@ -730,13 +730,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: true,
 		})
 
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeTruthy()
-		await context.directCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeTruthy()
+		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
 
-		const rundown0 = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown0 = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown0).toBeTruthy()
 		expect(rundown0.orphaned).toEqual('deleted')
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown0._id })).resolves.toHaveLength(2)
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown0._id })).resolves.toHaveLength(2)
 
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -767,14 +767,14 @@ describe('Test ingest actions for rundowns and segments', () => {
 		})
 
 		// Segment count should not have changed
-		const rundown1 = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown1 = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown1).toBeTruthy()
 		expect(rundown1.orphaned).toEqual('deleted')
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown1._id })).resolves.toHaveLength(2)
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown1._id })).resolves.toHaveLength(2)
 	})
 
 	test('dataRundownCreate replace orphaned rundown', async () => {
-		await expect(context.directCollections.Rundowns.findFetch({ orphaned: 'deleted' })).resolves.toHaveLength(1)
+		await expect(context.mockCollections.Rundowns.findFetch({ orphaned: 'deleted' })).resolves.toHaveLength(1)
 
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -815,17 +815,17 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: true,
 		})
 
-		await expect(context.directCollections.Rundowns.findFetch({ orphaned: 'deleted' })).resolves.toHaveLength(0)
+		await expect(context.mockCollections.Rundowns.findFetch({ orphaned: 'deleted' })).resolves.toHaveLength(0)
 	})
 
 	test('dataSegmentCreate in deleted rundown', async () => {
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeTruthy()
-		await context.directCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeTruthy()
+		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
 
-		const rundown0 = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown0 = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown0).toBeTruthy()
 		expect(rundown0.orphaned).toEqual('deleted')
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown0._id })).resolves.toHaveLength(2)
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown0._id })).resolves.toHaveLength(2)
 
 		const ingestSegment: IngestSegment = {
 			externalId: segExternalId,
@@ -841,18 +841,18 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: true,
 		})
 
-		await expect(context.directCollections.Segments.findOne({ externalId: segExternalId })).resolves.toBeFalsy()
+		await expect(context.mockCollections.Segments.findOne({ externalId: segExternalId })).resolves.toBeFalsy()
 
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown0._id })).resolves.toHaveLength(2)
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown0._id })).resolves.toHaveLength(2)
 	})
 
 	test('dataSegmentCreate', async () => {
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeTruthy()
-		await context.directCollections.Rundowns.update({}, { $unset: { orphaned: 1 } })
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeTruthy()
+		await context.mockCollections.Rundowns.update({}, { $unset: { orphaned: 1 } })
 
-		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(2)
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(2)
 
 		const ingestSegment: IngestSegment = {
 			externalId: segExternalId,
@@ -868,29 +868,29 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: true,
 		})
 
-		const segment = await context.directCollections.Segments.findOne({ externalId: segExternalId })
+		const segment = await context.mockCollections.Segments.findOne({ externalId: segExternalId })
 		expect(segment).toBeTruthy()
 		expect(segment).toMatchObject({
 			externalId: ingestSegment.externalId,
 			name: 'MyMockSegment',
 		})
 
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
 	})
 
 	test('dataSegmentCreate replace deleted segment', async () => {
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeTruthy()
-		await context.directCollections.Rundowns.update({}, { $unset: { orphaned: 1 } })
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeTruthy()
+		await context.mockCollections.Rundowns.update({}, { $unset: { orphaned: 1 } })
 
-		const segment0 = (await context.directCollections.Segments.findOne({ externalId: segExternalId })) as DBSegment
+		const segment0 = (await context.mockCollections.Segments.findOne({ externalId: segExternalId })) as DBSegment
 		expect(segment0).toBeTruthy()
-		await context.directCollections.Segments.update(segment0._id, {
+		await context.mockCollections.Segments.update(segment0._id, {
 			$set: { orphaned: SegmentOrphanedReason.DELETED },
 		})
 
-		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
 
 		const ingestSegment: IngestSegment = {
 			externalId: segExternalId,
@@ -906,7 +906,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: true,
 		})
 
-		const segment = await context.directCollections.Segments.findOne({ externalId: segExternalId })
+		const segment = await context.mockCollections.Segments.findOne({ externalId: segExternalId })
 		expect(segment).toBeTruthy()
 		expect(segment).toMatchObject({
 			name: 'MyMockSegment2',
@@ -914,10 +914,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	test('dataSegmentUpdate add a part', async () => {
-		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
-		await context.directCollections.Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
+		await context.mockCollections.Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
 
 		const ingestSegment: IngestSegment = {
 			externalId: segExternalId,
@@ -939,10 +939,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: false,
 		})
 
-		const segments = await context.directCollections.Segments.findFetch({ rundownId: rundown._id })
+		const segments = await context.mockCollections.Segments.findFetch({ rundownId: rundown._id })
 		expect(segments).toHaveLength(3)
 
-		const parts3 = await context.directCollections.Parts.findFetch({
+		const parts3 = await context.mockCollections.Parts.findFetch({
 			rundownId: rundown._id,
 			segmentId: segments[2]._id,
 		})
@@ -954,15 +954,15 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	test('dataSegmentUpdate deleted segment', async () => {
-		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
-		await context.directCollections.Segments.update(
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
+		await context.mockCollections.Segments.update(
 			{ rundownId: rundown._id },
 			{ $set: { orphaned: SegmentOrphanedReason.DELETED } }
 		)
 
-		const segmentBefore = (await context.directCollections.Segments.findOne({
+		const segmentBefore = (await context.mockCollections.Segments.findOne({
 			externalId: segExternalId,
 		})) as DBSegment
 		expect(segmentBefore).toBeTruthy()
@@ -987,23 +987,23 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: false,
 		})
 
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
 
 		// Ensure no changes
-		const segmentAfter = (await context.directCollections.Segments.findOne({
+		const segmentAfter = (await context.mockCollections.Segments.findOne({
 			externalId: segExternalId,
 		})) as DBSegment
 		expect(segmentAfter).toStrictEqual(segmentBefore)
 	})
 
 	test('dataSegmentUpdate deleted rundown', async () => {
-		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
-		await context.directCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
-		await context.directCollections.Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
+		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		await context.mockCollections.Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
 
-		const segmentBefore = (await context.directCollections.Segments.findOne({
+		const segmentBefore = (await context.mockCollections.Segments.findOne({
 			externalId: segExternalId,
 		})) as DBSegment
 		expect(segmentBefore).toBeTruthy()
@@ -1028,10 +1028,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: false,
 		})
 
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
 
 		// Ensure no changes
-		const segmentAfter = (await context.directCollections.Segments.findOne({
+		const segmentAfter = (await context.mockCollections.Segments.findOne({
 			externalId: segExternalId,
 		})) as DBSegment
 		expect(segmentAfter).toStrictEqual(segmentBefore)
@@ -1046,7 +1046,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			parts: [],
 		}
 
-		await expect(context.directCollections.Segments.findOne({ externalId: segExternalId2 })).resolves.toBeFalsy()
+		await expect(context.mockCollections.Segments.findOne({ externalId: segExternalId2 })).resolves.toBeFalsy()
 
 		await expect(
 			handleUpdatedSegment(context, {
@@ -1057,15 +1057,15 @@ describe('Test ingest actions for rundowns and segments', () => {
 			})
 		).rejects.toThrow(/Rundown.*not found/)
 
-		await expect(context.directCollections.Segments.findOne({ externalId: segExternalId2 })).resolves.toBeFalsy()
+		await expect(context.mockCollections.Segments.findOne({ externalId: segExternalId2 })).resolves.toBeFalsy()
 	})
 
 	test('dataSegmentUpdate no change', async () => {
-		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
-		await context.directCollections.Rundowns.update({}, { $unset: { orphaned: 1 } })
-		await context.directCollections.Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
+		await context.mockCollections.Rundowns.update({}, { $unset: { orphaned: 1 } })
+		await context.mockCollections.Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
 
 		const ingestSegment: IngestSegment = {
 			externalId: segExternalId,
@@ -1087,10 +1087,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: false,
 		})
 
-		const segments = await context.directCollections.Segments.findFetch({ rundownId: rundown._id })
+		const segments = await context.mockCollections.Segments.findFetch({ rundownId: rundown._id })
 		expect(segments).toHaveLength(3)
 
-		const parts3 = await context.directCollections.Parts.findFetch({
+		const parts3 = await context.mockCollections.Parts.findFetch({
 			rundownId: rundown._id,
 			segmentId: segments[2]._id,
 		})
@@ -1102,9 +1102,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	test('dataSegmentUpdate remove a part', async () => {
-		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
 
 		const ingestSegment: IngestSegment = {
 			externalId: segExternalId,
@@ -1120,10 +1120,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: false,
 		})
 
-		const segments = await context.directCollections.Segments.findFetch({ rundownId: rundown._id })
+		const segments = await context.mockCollections.Segments.findFetch({ rundownId: rundown._id })
 		expect(segments).toHaveLength(3)
 
-		const parts3 = await context.directCollections.Parts.findFetch({
+		const parts3 = await context.mockCollections.Parts.findFetch({
 			rundownId: rundown._id,
 			segmentId: segments[2]._id,
 		})
@@ -1131,9 +1131,9 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	test('dataSegmentUpdate no external id', async () => {
-		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
 
 		const ingestSegment: IngestSegment = {
 			externalId: '',
@@ -1153,19 +1153,19 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	test('dataSegmentDelete already orphaned segment', async () => {
-		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
 		await expect(
-			context.directCollections.Segments.findFetch({ rundownId: rundown._id, externalId: segExternalId })
+			context.mockCollections.Segments.findFetch({ rundownId: rundown._id, externalId: segExternalId })
 		).resolves.toHaveLength(1)
 
-		await context.directCollections.Rundowns.update({}, { $unset: { orphaned: 1 } })
-		await context.directCollections.Segments.update(
+		await context.mockCollections.Rundowns.update({}, { $unset: { orphaned: 1 } })
+		await context.mockCollections.Segments.update(
 			{ rundownId: rundown._id, externalId: segExternalId },
 			{ $set: { orphaned: SegmentOrphanedReason.DELETED } }
 		)
 
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
 
 		await handleRemovedSegment(context, {
 			peripheralDeviceId: device._id,
@@ -1173,8 +1173,8 @@ describe('Test ingest actions for rundowns and segments', () => {
 			segmentExternalId: segExternalId,
 		})
 
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
-		await expect(context.directCollections.Segments.findOne({ externalId: segExternalId })).resolves.toBeTruthy()
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
+		await expect(context.mockCollections.Segments.findOne({ externalId: segExternalId })).resolves.toBeTruthy()
 	})
 
 	test('dataSegmentDelete in deleted rundown', async () => {
@@ -1230,16 +1230,16 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: true,
 		})
 
-		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
 		await expect(
-			context.directCollections.Segments.findFetch({ rundownId: rundown._id, externalId: segExternalId })
+			context.mockCollections.Segments.findFetch({ rundownId: rundown._id, externalId: segExternalId })
 		).resolves.toHaveLength(1)
 
-		await context.directCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
-		await context.directCollections.Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
+		await context.mockCollections.Rundowns.update({}, { $set: { orphaned: 'deleted' } })
+		await context.mockCollections.Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
 
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
 
 		await handleRemovedSegment(context, {
 			peripheralDeviceId: device._id,
@@ -1247,8 +1247,8 @@ describe('Test ingest actions for rundowns and segments', () => {
 			segmentExternalId: segExternalId,
 		})
 
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
-		await expect(context.directCollections.Segments.findOne({ externalId: segExternalId })).resolves.toBeTruthy()
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
+		await expect(context.mockCollections.Segments.findOne({ externalId: segExternalId })).resolves.toBeTruthy()
 	})
 
 	test('dataSegmentDelete', async () => {
@@ -1304,12 +1304,12 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: true,
 		})
 
-		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(3)
 
-		await context.directCollections.Rundowns.update({}, { $unset: { orphaned: 1 } })
-		await context.directCollections.Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
+		await context.mockCollections.Rundowns.update({}, { $unset: { orphaned: 1 } })
+		await context.mockCollections.Segments.update({ rundownId: rundown._id }, { $unset: { orphaned: 1 } })
 
 		await handleRemovedSegment(context, {
 			peripheralDeviceId: device._id,
@@ -1317,15 +1317,15 @@ describe('Test ingest actions for rundowns and segments', () => {
 			segmentExternalId: segExternalId,
 		})
 
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(2)
-		await expect(context.directCollections.Segments.findOne({ externalId: segExternalId })).resolves.toBeFalsy()
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(2)
+		await expect(context.mockCollections.Segments.findOne({ externalId: segExternalId })).resolves.toBeFalsy()
 	})
 
 	test('dataSegmentDelete for a second time', async () => {
-		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
 		await expect(
-			context.directCollections.Segments.findFetch({ rundownId: rundown._id, externalId: segExternalId })
+			context.mockCollections.Segments.findFetch({ rundownId: rundown._id, externalId: segExternalId })
 		).resolves.toHaveLength(0)
 
 		await expect(
@@ -1336,13 +1336,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 			})
 		).rejects.toThrow(`Rundown "${externalId}" does not have a Segment "${segExternalId}" to remove`)
 
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(2)
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(2)
 	})
 
 	test('dataSegmentDelete from non-existant rundown', async () => {
-		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
-		await expect(context.directCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(2)
+		await expect(context.mockCollections.Segments.findFetch({ rundownId: rundown._id })).resolves.toHaveLength(2)
 
 		await expect(
 			handleRemovedSegment(context, {
@@ -1354,7 +1354,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	test('dataSegmentCreate non-existant rundown', async () => {
-		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
 
 		const ingestSegment: IngestSegment = {
@@ -1374,11 +1374,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	test('dataPartCreate', async () => {
-		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
-		const segment = (await context.directCollections.Segments.findOne({ externalId: 'segment0' })) as DBSegment
+		const segment = (await context.mockCollections.Segments.findOne({ externalId: 'segment0' })) as DBSegment
 		await expect(
-			context.directCollections.Parts.findFetch({ rundownId: rundown._id, segmentId: segment._id })
+			context.mockCollections.Parts.findFetch({ rundownId: rundown._id, segmentId: segment._id })
 		).resolves.toHaveLength(1)
 
 		const ingestPart: IngestPart = {
@@ -1396,10 +1396,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 		})
 
 		await expect(
-			context.directCollections.Parts.findFetch({ rundownId: rundown._id, segmentId: segment._id })
+			context.mockCollections.Parts.findFetch({ rundownId: rundown._id, segmentId: segment._id })
 		).resolves.toHaveLength(2)
 
-		const part = (await context.directCollections.Parts.findOne({ externalId: 'party' })) as DBPart
+		const part = (await context.mockCollections.Parts.findOne({ externalId: 'party' })) as DBPart
 		expect(part).toMatchObject({
 			externalId: ingestPart.externalId,
 			title: ingestPart.name,
@@ -1407,11 +1407,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	test('dataPartUpdate', async () => {
-		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
-		const segment = (await context.directCollections.Segments.findOne({ externalId: 'segment0' })) as DBSegment
+		const segment = (await context.mockCollections.Segments.findOne({ externalId: 'segment0' })) as DBSegment
 		await expect(
-			context.directCollections.Parts.findFetch({ rundownId: rundown._id, segmentId: segment._id })
+			context.mockCollections.Parts.findFetch({ rundownId: rundown._id, segmentId: segment._id })
 		).resolves.toHaveLength(2)
 
 		const ingestPart: IngestPart = {
@@ -1429,10 +1429,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 		})
 
 		await expect(
-			context.directCollections.Parts.findFetch({ rundownId: rundown._id, segmentId: segment._id })
+			context.mockCollections.Parts.findFetch({ rundownId: rundown._id, segmentId: segment._id })
 		).resolves.toHaveLength(2)
 
-		const part = (await context.directCollections.Parts.findOne({ externalId: 'party' })) as DBPart
+		const part = (await context.mockCollections.Parts.findOne({ externalId: 'party' })) as DBPart
 		expect(part).toMatchObject({
 			externalId: ingestPart.externalId,
 			title: ingestPart.name,
@@ -1440,11 +1440,11 @@ describe('Test ingest actions for rundowns and segments', () => {
 	})
 
 	test('dataPartDelete', async () => {
-		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
-		const segment = (await context.directCollections.Segments.findOne({ externalId: 'segment0' })) as DBSegment
+		const segment = (await context.mockCollections.Segments.findOne({ externalId: 'segment0' })) as DBSegment
 		await expect(
-			context.directCollections.Parts.findFetch({ rundownId: rundown._id, segmentId: segment._id })
+			context.mockCollections.Parts.findFetch({ rundownId: rundown._id, segmentId: segment._id })
 		).resolves.toHaveLength(2)
 
 		await handleRemovedPart(context, {
@@ -1455,16 +1455,16 @@ describe('Test ingest actions for rundowns and segments', () => {
 		})
 
 		await expect(
-			context.directCollections.Parts.findFetch({ rundownId: rundown._id, segmentId: segment._id })
+			context.mockCollections.Parts.findFetch({ rundownId: rundown._id, segmentId: segment._id })
 		).resolves.toHaveLength(1)
-		await expect(context.directCollections.Parts.findOne({ externalId: 'party' })).resolves.toBeFalsy()
+		await expect(context.mockCollections.Parts.findOne({ externalId: 'party' })).resolves.toBeFalsy()
 	})
 
 	// TODO Part tests are minimal/happy path only on the assumption the API gets little use
 
 	test('dataSegmentRanksUpdate', async () => {
-		await context.directCollections.Rundowns.remove({})
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
+		await context.mockCollections.Rundowns.remove({})
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeFalsy()
 
 		const rundownData: IngestRundown = {
 			externalId: externalId,
@@ -1522,7 +1522,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			isCreateAction: true,
 		})
 
-		const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+		const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 		expect(rundown).toBeTruthy()
 
 		await handleUpdatedSegmentRanks(context, {
@@ -1535,7 +1535,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			},
 		})
 
-		const segments = await context.directCollections.Segments.findFetch({ rundownId: rundown._id })
+		const segments = await context.mockCollections.Segments.findFetch({ rundownId: rundown._id })
 		expect(segments).toHaveLength(6)
 
 		expect(segments.find((s) => s.externalId === 'segment0')?._rank).toBe(6)
@@ -1550,7 +1550,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		try {
 			{
 				// Cleanup any rundowns / playlists
-				const playlists = await context.directCollections.RundownPlaylists.findFetch({})
+				const playlists = await context.mockCollections.RundownPlaylists.findFetch({})
 				await removeRundownPlaylistFromDb(
 					context,
 					playlists.map((p) => p._id)
@@ -1595,7 +1595,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			}
 
 			// Preparation: set up rundown
-			await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
+			await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeFalsy()
 
 			await handleUpdatedRundown(context, {
 				peripheralDeviceId: device2._id,
@@ -1604,20 +1604,20 @@ describe('Test ingest actions for rundowns and segments', () => {
 				isCreateAction: true,
 			})
 
-			const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+			const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 			expect(rundown).toBeTruthy()
 			expect(rundown).toMatchObject({
 				externalId: rundownData.externalId,
 			})
 
 			const getRundownOrphaned = async () => {
-				const rd = (await context.directCollections.Rundowns.findOne(rundown._id)) as DBRundown
+				const rd = (await context.mockCollections.Rundowns.findOne(rundown._id)) as DBRundown
 				return rd.orphaned
 			}
 			const getPlaylist = async () =>
-				(await context.directCollections.RundownPlaylists.findOne(rundown.playlistId)) as DBRundownPlaylist
+				(await context.mockCollections.RundownPlaylists.findOne(rundown.playlistId)) as DBRundownPlaylist
 			const getSegmentOrphaned = async (id: SegmentId) => {
-				const segment = (await context.directCollections.Segments.findOne(id)) as DBSegment
+				const segment = (await context.mockCollections.Segments.findOne(id)) as DBSegment
 				return segment.orphaned
 			}
 
@@ -1631,8 +1631,8 @@ describe('Test ingest actions for rundowns and segments', () => {
 				})
 			}
 
-			const segments = await context.directCollections.Segments.findFetch({ rundownId: rundown._id })
-			const parts = await context.directCollections.Parts.findFetch({ rundownId: rundown._id })
+			const segments = await context.mockCollections.Segments.findFetch({ rundownId: rundown._id })
+			const parts = await context.mockCollections.Parts.findFetch({ rundownId: rundown._id })
 
 			expect(segments).toHaveLength(2)
 			expect(parts).toHaveLength(3)
@@ -1656,7 +1656,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			await expect(getRundownOrphaned()).resolves.toBeUndefined()
 
 			await handleTakeNextPart(context, { playlistId: rundown.playlistId, fromPartInstanceId: null })
-			const partInstance = await context.directCollections.PartInstances.findFetch({ 'part._id': parts[0]._id })
+			const partInstance = await context.mockCollections.PartInstances.findFetch({ 'part._id': parts[0]._id })
 			expect(partInstance).toHaveLength(1)
 			await expect(getPlaylist()).resolves.toMatchObject({
 				currentPartInfo: { partInstanceId: partInstance[0]._id },
@@ -1689,7 +1689,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			await expect(getSegmentOrphaned(segments[0]._id)).resolves.toBeUndefined()
 		} finally {
 			// forcefully 'deactivate' the playlist to allow for cleanup to happen
-			await context.directCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
+			await context.mockCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
 		}
 	})
 
@@ -1697,7 +1697,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		try {
 			{
 				// Cleanup any rundowns / playlists
-				const playlists = await context.directCollections.RundownPlaylists.findFetch({})
+				const playlists = await context.mockCollections.RundownPlaylists.findFetch({})
 				await removeRundownPlaylistFromDb(
 					context,
 					playlists.map((p) => p._id)
@@ -1772,7 +1772,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			}
 
 			// Preparation: set up rundown
-			await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
+			await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeFalsy()
 
 			await handleUpdatedRundown(context, {
 				peripheralDeviceId: device2._id,
@@ -1781,7 +1781,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				isCreateAction: true,
 			})
 
-			const rundown = (await context.directCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
+			const rundown = (await context.mockCollections.Rundowns.findOne({ externalId: externalId })) as DBRundown
 			expect(rundown).toBeTruthy()
 			expect(rundown).toMatchObject({
 				externalId: rundownData.externalId,
@@ -1789,15 +1789,15 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 			// const getRundown = () => Rundowns.findOne(rundown._id) as Rundown
 			const getPlaylist = async () =>
-				(await context.directCollections.RundownPlaylists.findOne(rundown.playlistId)) as DBRundownPlaylist
+				(await context.mockCollections.RundownPlaylists.findOne(rundown.playlistId)) as DBRundownPlaylist
 
-			const segments = await context.directCollections.Segments.findFetch({ rundownId: rundown._id })
-			const parts = await context.directCollections.Parts.findFetch({ rundownId: rundown._id })
+			const segments = await context.mockCollections.Segments.findFetch({ rundownId: rundown._id })
+			const parts = await context.mockCollections.Parts.findFetch({ rundownId: rundown._id })
 
 			expect(segments).toHaveLength(2)
 			expect(parts).toHaveLength(3)
 			await expect(
-				context.directCollections.Pieces.findFetch({ startRundownId: rundown._id })
+				context.mockCollections.Pieces.findFetch({ startRundownId: rundown._id })
 			).resolves.toHaveLength(2)
 
 			// Activate the rundown, make data updates and verify that it gets unsynced properly
@@ -1828,7 +1828,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 				// we should have some pieces
 				await expect(
-					context.directCollections.PieceInstances.findFetch({ partInstanceId: nextPartInstance._id })
+					context.mockCollections.PieceInstances.findFetch({ partInstanceId: nextPartInstance._id })
 				).resolves.not.toHaveLength(0)
 			}
 
@@ -1844,8 +1844,8 @@ describe('Test ingest actions for rundowns and segments', () => {
 			})
 
 			{
-				const segments2 = await context.directCollections.Segments.findFetch({ rundownId: rundown._id })
-				const parts2 = await context.directCollections.Parts.findFetch({ rundownId: rundown._id })
+				const segments2 = await context.mockCollections.Segments.findFetch({ rundownId: rundown._id })
+				const parts2 = await context.mockCollections.Parts.findFetch({ rundownId: rundown._id })
 
 				expect(segments2).toHaveLength(2)
 				expect(parts2).toHaveLength(3)
@@ -1855,12 +1855,12 @@ describe('Test ingest actions for rundowns and segments', () => {
 				expect(newPart).toBeTruthy()
 
 				await expect(
-					context.directCollections.Pieces.findFetch({ startRundownId: rundown._id })
+					context.mockCollections.Pieces.findFetch({ startRundownId: rundown._id })
 				).resolves.toHaveLength(2)
 
 				// we need some pieces for the test to work
 				await expect(
-					context.directCollections.Pieces.findFetch({ startPartId: newPart._id })
+					context.mockCollections.Pieces.findFetch({ startPartId: newPart._id })
 				).resolves.not.toHaveLength(0)
 			}
 
@@ -1877,12 +1877,12 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 				// the pieces should have been copied
 				await expect(
-					context.directCollections.PieceInstances.findFetch({ partInstanceId: nextPartInstance._id })
+					context.mockCollections.PieceInstances.findFetch({ partInstanceId: nextPartInstance._id })
 				).resolves.not.toHaveLength(0)
 			}
 		} finally {
 			// forcefully 'deactivate' the playlist to allow for cleanup to happen
-			await context.directCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
+			await context.mockCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
 		}
 	})
 
@@ -1890,7 +1890,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		try {
 			{
 				// Cleanup any rundowns / playlists
-				const playlists = await context.directCollections.RundownPlaylists.findFetch({})
+				const playlists = await context.mockCollections.RundownPlaylists.findFetch({})
 				await removeRundownPlaylistFromDb(
 					context,
 					playlists.map((p) => p._id)
@@ -1983,7 +1983,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				isCreateAction: true,
 			})
 
-			const rundown = (await context.directCollections.Rundowns.findOne()) as DBRundown
+			const rundown = (await context.mockCollections.Rundowns.findOne()) as DBRundown
 			expect(rundown).toBeTruthy()
 
 			// Take into first part
@@ -2039,7 +2039,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			const partInstanceId0: PartInstanceId = getRandomId()
 			await doQueuePart(partInstanceId0)
 			{
-				const playlist = (await context.directCollections.RundownPlaylists.findOne(
+				const playlist = (await context.mockCollections.RundownPlaylists.findOne(
 					rundown.playlistId
 				)) as DBRundownPlaylist
 				expect(playlist).toBeTruthy()
@@ -2052,7 +2052,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 			{
 				// Verify it was taken properly
-				const playlist = (await context.directCollections.RundownPlaylists.findOne(
+				const playlist = (await context.mockCollections.RundownPlaylists.findOne(
 					rundown.playlistId
 				)) as DBRundownPlaylist
 				expect(playlist).toBeTruthy()
@@ -2080,7 +2080,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 			{
 				// Check props before
-				const segment2 = (await context.directCollections.Segments.findOne({
+				const segment2 = (await context.mockCollections.Segments.findOne({
 					externalId: ingestSegment.externalId,
 					rundownId: rundown._id,
 				})) as DBSegment
@@ -2097,7 +2097,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 			{
 				// Check props after
-				const segment2 = (await context.directCollections.Segments.findOne({
+				const segment2 = (await context.mockCollections.Segments.findOne({
 					externalId: ingestSegment.externalId,
 					rundownId: rundown._id,
 				})) as DBSegment
@@ -2107,7 +2107,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 			{
 				// Verify the adlibbed part-instance didnt change
-				const playlist = (await context.directCollections.RundownPlaylists.findOne(
+				const playlist = (await context.mockCollections.RundownPlaylists.findOne(
 					rundown.playlistId
 				)) as DBRundownPlaylist
 				expect(playlist).toBeTruthy()
@@ -2123,7 +2123,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			const partInstanceId1: PartInstanceId = getRandomId()
 			await doQueuePart(partInstanceId1)
 			{
-				const playlist = (await context.directCollections.RundownPlaylists.findOne(
+				const playlist = (await context.mockCollections.RundownPlaylists.findOne(
 					rundown.playlistId
 				)) as DBRundownPlaylist
 				expect(playlist).toBeTruthy()
@@ -2136,7 +2136,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 			{
 				// Verify the take was correct
-				const playlist = (await context.directCollections.RundownPlaylists.findOne(
+				const playlist = (await context.mockCollections.RundownPlaylists.findOne(
 					rundown.playlistId
 				)) as DBRundownPlaylist
 				expect(playlist).toBeTruthy()
@@ -2159,7 +2159,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 			{
 				// Check props before
-				const segment2 = (await context.directCollections.Segments.findOne({
+				const segment2 = (await context.mockCollections.Segments.findOne({
 					externalId: ingestSegment.externalId,
 					rundownId: rundown._id,
 				})) as DBSegment
@@ -2176,7 +2176,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 			{
 				// Check props after
-				const segment2 = (await context.directCollections.Segments.findOne({
+				const segment2 = (await context.mockCollections.Segments.findOne({
 					externalId: ingestSegment.externalId,
 					rundownId: rundown._id,
 				})) as DBSegment
@@ -2186,7 +2186,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 			{
 				// Verify the part-instances havent changed
-				const playlist = (await context.directCollections.RundownPlaylists.findOne(
+				const playlist = (await context.mockCollections.RundownPlaylists.findOne(
 					rundown.playlistId
 				)) as DBRundownPlaylist
 				expect(playlist).toBeTruthy()
@@ -2205,7 +2205,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			}
 		} finally {
 			// forcefully 'deactivate' the playlist to allow for cleanup to happen
-			await context.directCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
+			await context.mockCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
 		}
 	})
 	test('prevent hiding current segment when preserveUnsyncedPlayingSegmentContents: true', async () => {
@@ -2213,7 +2213,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			// Cleanup any rundowns / playlists
 			{
 				// Cleanup any rundowns / playlists
-				const playlists = await context.directCollections.RundownPlaylists.findFetch({})
+				const playlists = await context.mockCollections.RundownPlaylists.findFetch({})
 				await removeRundownPlaylistFromDb(
 					context,
 					playlists.map((p) => p._id)
@@ -2298,20 +2298,20 @@ describe('Test ingest actions for rundowns and segments', () => {
 			}
 
 			// Preparation: set up rundown
-			await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
+			await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeFalsy()
 			await handleUpdatedRundown(context, {
 				peripheralDeviceId: device2._id,
 				rundownExternalId: rundownData.externalId,
 				ingestRundown: rundownData,
 				isCreateAction: true,
 			})
-			const rundown = (await context.directCollections.Rundowns.findOne()) as Rundown
+			const rundown = (await context.mockCollections.Rundowns.findOne()) as Rundown
 			expect(rundown).toMatchObject({
 				externalId: rundownData.externalId,
 			})
 
 			const getPlaylist = async () =>
-				(await context.directCollections.RundownPlaylists.findOne(rundown.playlistId)) as DBRundownPlaylist
+				(await context.mockCollections.RundownPlaylists.findOne(rundown.playlistId)) as DBRundownPlaylist
 			const getCurrentPartInstanceId = async () => {
 				const playlist = await getPlaylist()
 				return playlist.currentPartInfo?.partInstanceId ?? null
@@ -2320,13 +2320,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 			const playlist = await getPlaylist()
 			expect(playlist).toBeTruthy()
 
-			// const getRundown = async () => (await context.directCollections.Rundowns.findOne(rundown._id)) as Rundown
+			// const getRundown = async () => (await context.mockCollections.Rundowns.findOne(rundown._id)) as Rundown
 
 			const { segments, parts } = await getRundownData({ _id: rundown._id })
 			expect(segments).toHaveLength(2)
 			expect(parts).toHaveLength(3)
 			await expect(
-				context.directCollections.Pieces.findFetch({ startRundownId: rundown._id })
+				context.mockCollections.Pieces.findFetch({ startRundownId: rundown._id })
 			).resolves.toHaveLength(2)
 
 			// Activate the rundown
@@ -2413,7 +2413,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				expect(parts2.find((p) => p.externalId === 'part1')).toBeTruthy()
 
 				await expect(
-					context.directCollections.Pieces.findFetch({ startRundownId: rundown._id })
+					context.mockCollections.Pieces.findFetch({ startRundownId: rundown._id })
 				).resolves.toHaveLength(2)
 			}
 
@@ -2448,7 +2448,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 				expect(parts2.find((p) => p.externalId === 'part1')).toBeTruthy()
 
 				await expect(
-					context.directCollections.Pieces.findFetch({ startRundownId: rundown._id })
+					context.mockCollections.Pieces.findFetch({ startRundownId: rundown._id })
 				).resolves.toHaveLength(2)
 			}
 			{
@@ -2525,7 +2525,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			}
 		} finally {
 			// forcefully 'deactivate' the playlist to allow for cleanup to happen
-			await context.directCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
+			await context.mockCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
 		}
 	})
 	test('prevent hiding current segment when deleting segment onAir', async () => {
@@ -2533,7 +2533,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			// Cleanup any rundowns / playlists
 			{
 				// Cleanup any rundowns / playlists
-				const playlists = await context.directCollections.RundownPlaylists.findFetch({})
+				const playlists = await context.mockCollections.RundownPlaylists.findFetch({})
 				await removeRundownPlaylistFromDb(
 					context,
 					playlists.map((p) => p._id)
@@ -2606,20 +2606,20 @@ describe('Test ingest actions for rundowns and segments', () => {
 			}
 
 			// Preparation: set up rundown
-			await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
+			await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeFalsy()
 			await handleUpdatedRundown(context, {
 				peripheralDeviceId: device2._id,
 				rundownExternalId: rundownData.externalId,
 				ingestRundown: rundownData,
 				isCreateAction: true,
 			})
-			const rundown = (await context.directCollections.Rundowns.findOne()) as Rundown
+			const rundown = (await context.mockCollections.Rundowns.findOne()) as Rundown
 			expect(rundown).toMatchObject({
 				externalId: rundownData.externalId,
 			})
 
 			const getPlaylist = async () =>
-				(await context.directCollections.RundownPlaylists.findOne(rundown.playlistId)) as DBRundownPlaylist
+				(await context.mockCollections.RundownPlaylists.findOne(rundown.playlistId)) as DBRundownPlaylist
 			const getCurrentPartInstanceId = async () => {
 				const playlist = await getPlaylist()
 				return playlist.currentPartInfo?.partInstanceId ?? null
@@ -2628,13 +2628,13 @@ describe('Test ingest actions for rundowns and segments', () => {
 			const playlist = await getPlaylist()
 			expect(playlist).toBeTruthy()
 
-			// const getRundown = async () => (await context.directCollections.Rundowns.findOne(rundown._id)) as Rundown
+			// const getRundown = async () => (await context.mockCollections.Rundowns.findOne(rundown._id)) as Rundown
 
 			const { segments, parts } = await getRundownData({ _id: rundown._id })
 			expect(segments).toHaveLength(2)
 			expect(parts).toHaveLength(3)
 			await expect(
-				context.directCollections.Pieces.findFetch({ startRundownId: rundown._id })
+				context.mockCollections.Pieces.findFetch({ startRundownId: rundown._id })
 			).resolves.toHaveLength(2)
 
 			// Activate the rundown
@@ -2709,14 +2709,14 @@ describe('Test ingest actions for rundowns and segments', () => {
 			}
 		} finally {
 			// forcefully 'deactivate' the playlist to allow for cleanup to happen
-			await context.directCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
+			await context.mockCollections.RundownPlaylists.update({}, { $unset: { activationId: 1 } })
 		}
 	})
 	test('ensure rundown can be deleted if it has bad showstyle ids', async () => {
 		// Cleanup any rundowns / playlists
 		{
 			// Cleanup any rundowns / playlists
-			const playlists = await context.directCollections.RundownPlaylists.findFetch({})
+			const playlists = await context.mockCollections.RundownPlaylists.findFetch({})
 			await removeRundownPlaylistFromDb(
 				context,
 				playlists.map((p) => p._id)
@@ -2789,19 +2789,19 @@ describe('Test ingest actions for rundowns and segments', () => {
 		}
 
 		// Preparation: set up rundown
-		await expect(context.directCollections.Rundowns.findOne()).resolves.toBeFalsy()
+		await expect(context.mockCollections.Rundowns.findOne()).resolves.toBeFalsy()
 		await handleUpdatedRundown(context, {
 			peripheralDeviceId: device2._id,
 			rundownExternalId: rundownData.externalId,
 			ingestRundown: rundownData,
 			isCreateAction: true,
 		})
-		const rundown = (await context.directCollections.Rundowns.findOne()) as Rundown
+		const rundown = (await context.mockCollections.Rundowns.findOne()) as Rundown
 		expect(rundown).toMatchObject({
 			externalId: rundownData.externalId,
 		})
 
-		await context.directCollections.Rundowns.update(rundown._id, {
+		await context.mockCollections.Rundowns.update(rundown._id, {
 			$set: {
 				showStyleVariantId: protectString('this-is-not-a-real-id'),
 			},
@@ -2811,7 +2811,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			rundownId: rundown._id,
 		})
 
-		const rundownAfter = await context.directCollections.Rundowns.findOne(rundown._id)
+		const rundownAfter = await context.mockCollections.Rundowns.findOne(rundown._id)
 		expect(rundownAfter).toBeUndefined()
 	})
 })

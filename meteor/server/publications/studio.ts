@@ -32,7 +32,6 @@ import {
 	MediaObjects,
 	PackageContainerPackageStatuses,
 	PackageContainerStatuses,
-	PackageInfos,
 	PeripheralDevices,
 	Studios,
 } from '../collections'
@@ -48,7 +47,7 @@ meteorPublish(PubSub.studios, async function (selector0, token) {
 		(selector._id && (await StudioReadAccess.studio(selector._id, cred))) ||
 		(selector.organizationId && (await OrganizationReadAccess.organizationContent(selector.organizationId, cred)))
 	) {
-		return Studios.find(selector, modifier)
+		return Studios.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -59,7 +58,7 @@ meteorPublish(PubSub.externalMessageQueue, async function (selector, token) {
 		fields: {},
 	}
 	if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId, token })) {
-		return ExternalMessageQueue.find(selector, modifier)
+		return ExternalMessageQueue.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -74,7 +73,7 @@ meteorPublish(PubSub.mediaObjects, async function (studioId, selector, token) {
 	}
 	selector.studioId = studioId
 	if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId, token })) {
-		return MediaObjects.find(selector, modifier)
+		return MediaObjects.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -85,7 +84,7 @@ meteorPublish(PubSub.expectedPackages, async function (selector, token) {
 		fields: {},
 	}
 	if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId, token })) {
-		return ExpectedPackages.find(selector, modifier)
+		return ExpectedPackages.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -95,7 +94,7 @@ meteorPublish(PubSub.expectedPackageWorkStatuses, async function (selector, toke
 		fields: {},
 	}
 	if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId, token })) {
-		return ExpectedPackageWorkStatuses.find(selector, modifier)
+		return ExpectedPackageWorkStatuses.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -105,17 +104,7 @@ meteorPublish(PubSub.packageContainerStatuses, async function (selector, token) 
 		fields: {},
 	}
 	if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId, token })) {
-		return PackageContainerStatuses.find(selector, modifier)
-	}
-	return null
-})
-meteorPublish(PubSub.packageInfos, async function (selector, token) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<ExpectedPackageWorkStatus> = {
-		fields: {},
-	}
-	if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId, token })) {
-		return PackageInfos.find(selector, modifier)
+		return PackageContainerStatuses.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -138,7 +127,7 @@ meteorPublish(
 		if (packageId) selector.packageId = packageId
 
 		if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId })) {
-			return PackageContainerPackageStatuses.find(selector, modifier)
+			return PackageContainerPackageStatuses.findWithCursor(selector, modifier)
 		}
 		return null
 	}
@@ -164,8 +153,8 @@ meteorPublish(
 		if (packageId) selector.packageId = packageId
 
 		if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId })) {
-			return PackageContainerPackageStatuses.find(selector, modifier) as MongoCursor<
-				Omit<PackageContainerPackageStatusDB, 'modified'>
+			return PackageContainerPackageStatuses.findWithCursor(selector, modifier) as Promise<
+				MongoCursor<Omit<PackageContainerPackageStatusDB, 'modified'>>
 			>
 		}
 		return null
@@ -176,8 +165,10 @@ meteorCustomPublish(
 	PubSub.mappingsForDevice,
 	CustomCollectionName.StudioMappings,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
+		check(deviceId, String)
+
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
-			const peripheralDevice = PeripheralDevices.findOne(deviceId)
+			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 
@@ -193,6 +184,8 @@ meteorCustomPublish(
 	PubSub.mappingsForStudio,
 	CustomCollectionName.StudioMappings,
 	async function (pub, studioId: StudioId, token) {
+		check(studioId, String)
+
 		if (await StudioReadAccess.studio(studioId, { userId: this.userId, token })) {
 			await createObserverForMappingsPublication(pub, studioId)
 		}
@@ -215,17 +208,21 @@ async function setupMappingsPublicationObservers(
 ): Promise<Meteor.LiveQueryHandle[]> {
 	// Set up observers:
 	return [
-		Studios.find(args.studioId, {
-			fields: {
-				// It should be enough to watch the mappingsHash, since that should change whenever there is a
-				// change to the mappings or the routes
-				mappingsHash: 1,
+		Studios.observeChanges(
+			args.studioId,
+			{
+				added: () => triggerUpdate({ invalidateStudio: true }),
+				changed: () => triggerUpdate({ invalidateStudio: true }),
+				removed: () => triggerUpdate({ invalidateStudio: true }),
 			},
-		}).observeChanges({
-			added: () => triggerUpdate({ invalidateStudio: true }),
-			changed: () => triggerUpdate({ invalidateStudio: true }),
-			removed: () => triggerUpdate({ invalidateStudio: true }),
-		}),
+			{
+				fields: {
+					// It should be enough to watch the mappingsHash, since that should change whenever there is a
+					// change to the mappings or the routes
+					mappingsHash: 1,
+				},
+			}
+		),
 	]
 }
 async function manipulateMappingsPublicationData(

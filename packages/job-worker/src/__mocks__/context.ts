@@ -27,7 +27,7 @@ import {
 	ProcessedShowStyleVariant,
 } from '../jobs'
 import { createShowStyleCompound } from '../showStyles'
-import { getMockCollections } from './collection'
+import { IMockCollections, getMockCollections } from './collection'
 import { clone } from '@sofie-automation/corelib/dist/lib'
 import { IDirectCollections } from '../db'
 import {
@@ -57,7 +57,7 @@ import { processShowStyleBase, processShowStyleVariant } from '../jobs/showStyle
 import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
 export function setupDefaultJobEnvironment(studioId?: StudioId): MockJobContext {
-	const collections = getMockCollections()
+	const { mockCollections, jobCollections } = getMockCollections()
 
 	// We don't bother 'saving' this to the db, as usually nothing will load it
 	const studio: DBStudio = {
@@ -67,18 +67,24 @@ export function setupDefaultJobEnvironment(studioId?: StudioId): MockJobContext 
 		blueprintId: protectString('studioBlueprint0'),
 	}
 
-	return new MockJobContext(collections, studio)
+	return new MockJobContext(jobCollections, mockCollections, studio)
 }
 
 export class MockJobContext implements JobContext {
-	#collections: Readonly<IDirectCollections>
+	#jobCollections: Readonly<IDirectCollections>
+	#mockCollections: Readonly<IMockCollections>
 	#studio: ReadonlyDeep<DBStudio>
 
 	#studioBlueprint: StudioBlueprintManifest
 	#showStyleBlueprint: ShowStyleBlueprintManifest
 
-	constructor(collections: Readonly<IDirectCollections>, studio: ReadonlyDeep<DBStudio>) {
-		this.#collections = collections
+	constructor(
+		jobCollections: Readonly<IDirectCollections>,
+		mockCollections: Readonly<IMockCollections>,
+		studio: ReadonlyDeep<DBStudio>
+	) {
+		this.#jobCollections = jobCollections
+		this.#mockCollections = mockCollections
 		this.#studio = studio
 
 		this.#studioBlueprint = MockStudioBlueprint()
@@ -86,7 +92,11 @@ export class MockJobContext implements JobContext {
 	}
 
 	get directCollections(): Readonly<IDirectCollections> {
-		return this.#collections
+		return this.#jobCollections
+	}
+
+	get mockCollections(): Readonly<IMockCollections> {
+		return this.#mockCollections
 	}
 
 	get studioId(): StudioId {
@@ -143,12 +153,12 @@ export class MockJobContext implements JobContext {
 		return preprocessStudioConfig(this.studio, this.#studioBlueprint)
 	}
 	async getShowStyleBases(): Promise<ReadonlyDeep<Array<ProcessedShowStyleBase>>> {
-		const docs = await this.directCollections.ShowStyleBases.findFetch()
+		const docs = await this.directCollections.ShowStyleBases.findFetch(undefined, undefined, null)
 
 		return docs.map(processShowStyleBase)
 	}
 	async getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<ProcessedShowStyleBase>> {
-		const doc = await this.directCollections.ShowStyleBases.findOne(id)
+		const doc = await this.directCollections.ShowStyleBases.findOne(id, undefined, null)
 		if (!doc) throw new Error(`ShowStyleBase "${id}" Not found!`)
 		return processShowStyleBase(doc)
 	}
@@ -162,13 +172,14 @@ export class MockJobContext implements JobContext {
 					_rank: 1,
 					_id: 1,
 				},
-			}
+			},
+			null
 		)
 
 		return docs.map(processShowStyleVariant)
 	}
 	async getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<ProcessedShowStyleVariant>> {
-		const doc = await this.directCollections.ShowStyleVariants.findOne(id)
+		const doc = await this.directCollections.ShowStyleVariants.findOne(id, undefined, null)
 		if (!doc) throw new Error(`ShowStyleVariant "${id}" Not found!`)
 		return processShowStyleVariant(doc)
 	}

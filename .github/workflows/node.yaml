@@ -90,7 +90,7 @@ jobs:
         id: dockerhub
         run: |
           # check if a release branch, or master, or a tag
-          if [[ "${{ github.ref }}" =~ ^refs/heads/release([0-9]+)$ || "${{ github.ref }}" == "refs/heads/master" || "${{ github.ref }}" == "refs/tags/*" ]]
+          if [[ "${{ github.ref }}" =~ ^refs/heads/release([0-9]+)$ || "${{ github.ref }}" == "refs/heads/master" || "${{ github.ref }}" == refs/tags/* ]]
           then
             DOCKERHUB_PUBLISH="1"
           else

@@ -40,7 +40,7 @@ export const OverlayScreen = withTranslation()(
 
 						let currentPartCountdown: number | null = null
 						if (currentPart) {
-							currentPartCountdown = -1 * (this.props.timingDurations.remainingTimeOnCurrentPart || 0)
+							currentPartCountdown = this.props.timingDurations.remainingTimeOnCurrentPart || 0
 						}
 
 						const nextPart = nextPartInstance

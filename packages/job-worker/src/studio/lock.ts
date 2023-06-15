@@ -18,7 +18,7 @@ export async function runJobWithStudioCache<TRes>(
 
 		return res
 	} catch (err) {
-		cache.discardChanges()
+		cache.dispose()
 		throw err
 	}
 }

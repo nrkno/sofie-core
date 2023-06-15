@@ -8,12 +8,13 @@ import { PeripheralDevice } from '../../../../../lib/collections/PeripheralDevic
 import { MOSDeviceActions } from '../actions'
 import { PeripheralDeviceCommand } from '../../../../../lib/collections/PeripheralDeviceCommands'
 import { TriggerReloadDataResponse } from '../../../../../lib/api/userActions'
-import { getRandomId, getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
+import { deferAsync, getRandomId, getRandomString, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { PeripheralDeviceCommandId, RundownId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CreateFakeResult, QueueIngestJobSpy } from '../../../../../__mocks__/worker'
 import { IngestJobs, MosRundownProps } from '@sofie-automation/corelib/dist/worker/ingest'
 import { PeripheralDeviceCommands } from '../../../../collections'
 import { SupressLogMessages } from '../../../../../__mocks__/suppressLogging'
+import { logger } from '../../../../logging'
 
 const mosTypes = MOS.getMosTypes(true)
 
@@ -51,22 +52,30 @@ describe('Test sending mos actions', () => {
 		const fakeRundown = { _id: rundownId, externalId: getRandomString(), studioId: studioId }
 
 		// Listen for changes
-		observer = PeripheralDeviceCommands.find({ deviceId: device._id }).observeChanges({
-			added: (id: PeripheralDeviceCommandId) => {
-				const cmd = PeripheralDeviceCommands.findOne(id) as PeripheralDeviceCommand
-				expect(cmd).toBeTruthy()
-				expect(cmd.functionName).toEqual('triggerGetRunningOrder')
-				expect(cmd.args).toEqual([fakeRundown.externalId])
+		observer = PeripheralDeviceCommands.observeChanges(
+			{ deviceId: device._id },
+			{
+				added: (id: PeripheralDeviceCommandId) => {
+					deferAsync(
+						async () => {
+							const cmd = (await PeripheralDeviceCommands.findOneAsync(id)) as PeripheralDeviceCommand
+							expect(cmd).toBeTruthy()
+							expect(cmd.functionName).toEqual('triggerGetRunningOrder')
+							expect(cmd.args).toEqual([fakeRundown.externalId])
 
-				SupressLogMessages.suppressLogMessage(/unknown annoying error/i)
-				PeripheralDeviceCommands.update(cmd._id, {
-					$set: {
-						replyError: 'unknown annoying error',
-						hasReply: true,
-					},
-				})
-			},
-		})
+							SupressLogMessages.suppressLogMessage(/unknown annoying error/i)
+							await PeripheralDeviceCommands.updateAsync(cmd._id, {
+								$set: {
+									replyError: 'unknown annoying error',
+									hasReply: true,
+								},
+							})
+						},
+						(e) => logger.error(stringifyError(e))
+					)
+				},
+			}
+		)
 
 		await expect(MOSDeviceActions.reloadRundown(device, fakeRundown)).rejects.toMatch(`unknown annoying error`)
 	})
@@ -85,21 +94,29 @@ describe('Test sending mos actions', () => {
 		}
 
 		// Listen for changes
-		observer = PeripheralDeviceCommands.find({ deviceId: device._id }).observeChanges({
-			added: (id: PeripheralDeviceCommandId) => {
-				const cmd = PeripheralDeviceCommands.findOne(id) as PeripheralDeviceCommand
-				expect(cmd).toBeTruthy()
-				expect(cmd.functionName).toEqual('triggerGetRunningOrder')
-				expect(cmd.args).toEqual([fakeRundown.externalId])
+		observer = PeripheralDeviceCommands.observeChanges(
+			{ deviceId: device._id },
+			{
+				added: (id: PeripheralDeviceCommandId) => {
+					deferAsync(
+						async () => {
+							const cmd = (await PeripheralDeviceCommands.findOneAsync(id)) as PeripheralDeviceCommand
+							expect(cmd).toBeTruthy()
+							expect(cmd.functionName).toEqual('triggerGetRunningOrder')
+							expect(cmd.args).toEqual([fakeRundown.externalId])
 
-				PeripheralDeviceCommands.update(cmd._id, {
-					$set: {
-						reply: roData,
-						hasReply: true,
-					},
-				})
-			},
-		})
+							await PeripheralDeviceCommands.updateAsync(cmd._id, {
+								$set: {
+									reply: roData,
+									hasReply: true,
+								},
+							})
+						},
+						(e) => logger.error(stringifyError(e))
+					)
+				},
+			}
+		)
 
 		QueueIngestJobSpy.mockImplementation(async () => CreateFakeResult(Promise.resolve()))
 		expect(QueueIngestJobSpy).toHaveBeenCalledTimes(0)
@@ -134,23 +151,31 @@ describe('Test sending mos actions', () => {
 		}
 
 		// Listen for changes
-		observer = PeripheralDeviceCommands.find({ deviceId: device._id }).observeChanges({
-			added: (id: PeripheralDeviceCommandId) => {
-				const cmd = PeripheralDeviceCommands.findOne(id) as PeripheralDeviceCommand
-				expect(cmd).toBeTruthy()
-				expect(cmd.functionName).toEqual('triggerGetRunningOrder')
-				expect(cmd.args).toEqual([fakeRundown.externalId])
+		observer = PeripheralDeviceCommands.observeChanges(
+			{ deviceId: device._id },
+			{
+				added: (id: PeripheralDeviceCommandId) => {
+					deferAsync(
+						async () => {
+							const cmd = (await PeripheralDeviceCommands.findOneAsync(id)) as PeripheralDeviceCommand
+							expect(cmd).toBeTruthy()
+							expect(cmd.functionName).toEqual('triggerGetRunningOrder')
+							expect(cmd.args).toEqual([fakeRundown.externalId])
 
-				roData.ID = mosTypes.mosString128.create('newId')
+							roData.ID = mosTypes.mosString128.create('newId')
 
-				PeripheralDeviceCommands.update(cmd._id, {
-					$set: {
-						reply: roData,
-						hasReply: true,
-					},
-				})
-			},
-		})
+							await PeripheralDeviceCommands.updateAsync(cmd._id, {
+								$set: {
+									reply: roData,
+									hasReply: true,
+								},
+							})
+						},
+						(e) => logger.error(stringifyError(e))
+					)
+				},
+			}
+		)
 
 		SupressLogMessages.suppressLogMessage(/Error in MOSDeviceActions\.reloadRundown/i)
 		await expect(MOSDeviceActions.reloadRundown(device, fakeRundown)).rejects.toThrowMeteor(

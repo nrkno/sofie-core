@@ -18,6 +18,7 @@ import { resolveCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { StudioReadAccess } from '../security/studio'
 import { Studios } from '../collections'
+import { check, Match } from 'meteor/check'
 
 interface UIStudioArgs {
 	readonly studioId: StudioId | null
@@ -77,11 +78,15 @@ async function setupUIStudioPublicationObservers(
 
 	// Set up observers:
 	return [
-		Studios.find(args.studioId ? args.studioId : {}, { fields: fieldSpecifier }).observeChanges({
-			added: (id) => triggerUpdate(trackChange(id)),
-			changed: (id) => triggerUpdate(trackChange(id)),
-			removed: (id) => triggerUpdate(trackChange(id)),
-		}),
+		Studios.observeChanges(
+			args.studioId ? args.studioId : {},
+			{
+				added: (id) => triggerUpdate(trackChange(id)),
+				changed: (id) => triggerUpdate(trackChange(id)),
+				removed: (id) => triggerUpdate(trackChange(id)),
+			},
+			{ fields: fieldSpecifier }
+		),
 	]
 }
 async function manipulateUIStudioPublicationData(
@@ -130,6 +135,8 @@ async function manipulateUIStudioPublicationData(
 }
 
 meteorCustomPublish(PubSub.uiStudio, CustomCollectionName.UIStudio, async function (pub, studioId: StudioId | null) {
+	check(studioId, Match.Maybe(String))
+
 	const cred = await resolveCredentials({ userId: this.userId, token: undefined })
 
 	if (!cred || NoSecurityReadAccess.any() || (studioId && (await StudioReadAccess.studio(studioId, cred)))) {

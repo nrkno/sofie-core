@@ -16,7 +16,6 @@ import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspect
 import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
 import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 
-// TODO: Clean up upper-level component props
 export function PieceHoverInspector({
 	studio,
 	pieceInstance,
@@ -69,10 +68,11 @@ export function PieceHoverInspector({
 				<L3rdFloatingInspector
 					showMiniInspector={hovering}
 					content={graphicsContent}
-					floatingInspectorStyle={{
-						top: originPosition.top + 'px',
-						left: originPosition.left + mousePosition + 'px',
-						transform: 'translate(0, -100%)',
+					position={{
+						top: originPosition.top,
+						left: originPosition.left + mousePosition,
+						anchor: 'start',
+						position: 'top-start',
 					}}
 					typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 					itemElement={null}
@@ -90,10 +90,11 @@ export function PieceHoverInspector({
 					showMiniInspector={hovering}
 					timePosition={hoverScrubTimePosition}
 					content={vtContent}
-					floatingInspectorStyle={{
-						top: originPosition.top + 'px',
-						left: originPosition.left + mousePosition + 'px',
-						transform: 'translate(0, -100%)',
+					position={{
+						top: originPosition.top,
+						left: originPosition.left + mousePosition,
+						anchor: 'start',
+						position: 'top-start',
 					}}
 					typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 					itemElement={null}

@@ -12,6 +12,7 @@ import { withTranslation } from 'react-i18next'
 import { Accessor } from '@sofie-automation/blueprints-integration'
 import { Studios } from '../../../collections'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 
 interface IStudioPackageManagerSettingsProps {
 	studio: Studio
@@ -183,52 +184,50 @@ export const StudioPackageManagerSettings = withTranslation()(
 							{this.isPackageContainerEdited(containerId) && (
 								<tr className="expando-details hl">
 									<td colSpan={6}>
-										<div>
-											<div className="mod mvs mhs">
-												<label className="field">
-													{t('Package Container ID')}
-													<EditAttribute
-														modifiedClassName="bghl"
-														attribute={'packageContainers'}
-														overrideDisplayValue={containerId}
-														obj={this.props.studio}
-														type="text"
-														collection={Studios}
-														updateFunction={this.containerId}
-														className="input text-input input-l"
-													></EditAttribute>
-												</label>
-											</div>
-											<div className="mod mvs mhs">
-												<label className="field">
-													{t('Label')}
-													<EditAttribute
-														modifiedClassName="bghl"
-														attribute={`packageContainers.${containerId}.container.label`}
-														obj={this.props.studio}
-														type="text"
-														collection={Studios}
-														className="input text-input input-l"
-													></EditAttribute>
-													<span className="text-s dimmed">{t('Display name/label of the Package Container')}</span>
-												</label>
-											</div>
-											<div className="mod mvs mhs">
-												<div className="field">
-													<label>{t('Playout devices which uses this package container')}</label>
-													<EditAttribute
-														attribute={`packageContainers.${containerId}.deviceIds`}
-														obj={this.props.studio}
-														options={this.getPlayoutDeviceIds()}
-														label={t('Select playout devices')}
-														type="multiselect"
-														collection={Studios}
-													></EditAttribute>
-													<span className="text-s dimmed">
-														{t('Select which playout devices are using this package container')}
-													</span>
-												</div>
-											</div>
+										<div className="properties-grid">
+											<label className="field">
+												<LabelActual label={t('Package Container ID')} />
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={'packageContainers'}
+													overrideDisplayValue={containerId}
+													obj={this.props.studio}
+													type="text"
+													collection={Studios}
+													updateFunction={this.containerId}
+													className="input text-input input-l"
+												></EditAttribute>
+											</label>
+
+											<label className="field">
+												<LabelActual label={t('Label')} />
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={`packageContainers.${containerId}.container.label`}
+													obj={this.props.studio}
+													type="text"
+													collection={Studios}
+													className="input text-input input-l"
+												></EditAttribute>
+												<span className="text-s dimmed field-hint">
+													{t('Display name/label of the Package Container')}
+												</span>
+											</label>
+
+											<label className="field">
+												<LabelActual label={t('Playout devices which uses this package container')} />
+												<EditAttribute
+													attribute={`packageContainers.${containerId}.deviceIds`}
+													obj={this.props.studio}
+													options={this.getPlayoutDeviceIds()}
+													label={t('Select playout devices')}
+													type="multiselect"
+													collection={Studios}
+												></EditAttribute>
+												<span className="text-s dimmed field-hint">
+													{t('Select which playout devices are using this package container')}
+												</span>
+											</label>
 
 											<div className="mdi"></div>
 										</div>
@@ -403,359 +402,323 @@ export const StudioPackageManagerSettings = withTranslation()(
 						{this.isAccessorEdited(containerId, accessorId) && (
 							<tr className="expando-details hl">
 								<td colSpan={6}>
-									<div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Accessor ID')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={containerId}
-													overrideDisplayValue={accessorId}
-													obj={this.props.studio}
-													type="text"
-													collection={Studios}
-													updateFunction={this.updateAccessorId}
-													className="input text-input input-l"
-												></EditAttribute>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Label')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.label`}
-													obj={this.props.studio}
-													type="text"
-													collection={Studios}
-													className="input text-input input-l"
-												></EditAttribute>
-												<span className="text-s dimmed">{t('Display name of the Package Container')}</span>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Accessor Type')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.type`}
-													obj={this.props.studio}
-													type="dropdown"
-													options={Accessor.AccessType}
-													collection={Studios}
-													className="input text-input input-l"
-												></EditAttribute>
-											</label>
-										</div>
+									<div className="properties-grid">
+										<label className="field">
+											<LabelActual label={t('Accessor ID')} />
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={containerId}
+												overrideDisplayValue={accessorId}
+												obj={this.props.studio}
+												type="text"
+												collection={Studios}
+												updateFunction={this.updateAccessorId}
+												className="input text-input input-l"
+											></EditAttribute>
+										</label>
+										<label className="field">
+											<LabelActual label={t('Label')} />
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.label`}
+												obj={this.props.studio}
+												type="text"
+												collection={Studios}
+												className="input text-input input-l"
+											></EditAttribute>
+											<span className="text-s dimmed field-hint">{t('Display name of the Package Container')}</span>
+										</label>
+										<label className="field">
+											<LabelActual label={t('Accessor Type')} />
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.type`}
+												obj={this.props.studio}
+												type="dropdown"
+												options={Accessor.AccessType}
+												collection={Studios}
+												className="input text-input input-l"
+											></EditAttribute>
+										</label>
 										{accessor.type === Accessor.AccessType.LOCAL_FOLDER ? (
 											<>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Folder path')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.folderPath`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">{t('File path to the folder of the local folder')}</span>
-													</label>
-												</div>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Resource Id')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.resourceId`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">
-															{t('(Optional) This could be the name of the computer on which the local folder is on')}
-														</span>
-													</label>
-												</div>
+												<label className="field">
+													<LabelActual label={t('Folder path')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.folderPath`}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">
+														{t('File path to the folder of the local folder')}
+													</span>
+												</label>
+
+												<label className="field">
+													<LabelActual label={t('Resource Id')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.resourceId`}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">
+														{t('(Optional) This could be the name of the computer on which the local folder is on')}
+													</span>
+												</label>
 											</>
 										) : accessor.type === Accessor.AccessType.HTTP ? (
 											<>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Base URL')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.baseUrl`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">
-															{t('Base url to the resource (example: http://myserver/folder)')}
-														</span>
-													</label>
-												</div>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Network Id')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.networkId`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">
-															{t(
-																'(Optional) A name/identifier of the local network where the share is located, leave empty if globally accessible'
-															)}
-														</span>
-													</label>
-												</div>
+												<label className="field">
+													<LabelActual label={t('Base URL')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.baseUrl`}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">
+														{t('Base url to the resource (example: http://myserver/folder)')}
+													</span>
+												</label>
+
+												<label className="field">
+													<LabelActual label={t('Network Id')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.networkId`}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">
+														{t(
+															'(Optional) A name/identifier of the local network where the share is located, leave empty if globally accessible'
+														)}
+													</span>
+												</label>
 											</>
 										) : accessor.type === Accessor.AccessType.HTTP_PROXY ? (
 											<>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Base URL')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.baseUrl`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">
-															{t('Base url to the resource (example: http://myserver/folder)')}
-														</span>
-													</label>
-												</div>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Network Id')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.networkId`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">
-															{t(
-																'(Optional) A name/identifier of the local network where the share is located, leave empty if globally accessible'
-															)}
-														</span>
-													</label>
-												</div>
+												<label className="field">
+													<LabelActual label={t('Base URL')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.baseUrl`}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">
+														{t('Base url to the resource (example: http://myserver/folder)')}
+													</span>
+												</label>
+
+												<label className="field">
+													<LabelActual label={t('Network Id')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.networkId`}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">
+														{t(
+															'(Optional) A name/identifier of the local network where the share is located, leave empty if globally accessible'
+														)}
+													</span>
+												</label>
 											</>
 										) : accessor.type === Accessor.AccessType.FILE_SHARE ? (
 											<>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Base URL')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.folderPath`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">{t('Folder path to shared folder')}</span>
-													</label>
-												</div>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('UserName')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.userName`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">{t('Username for athuentication')}</span>
-													</label>
-												</div>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Password')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.password`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">{t('Password for authentication')}</span>
-													</label>
-												</div>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Network Id')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.networkId`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">
-															{t('(Optional) A name/identifier of the local network where the share is located')}
-														</span>
-													</label>
-												</div>
+												<label className="field">
+													<LabelActual label={t('Base URL')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.folderPath`}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">{t('Folder path to shared folder')}</span>
+												</label>
+												<label className="field">
+													<LabelActual label={t('UserName')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.userName`}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">{t('Username for athuentication')}</span>
+												</label>
+												<label className="field">
+													<LabelActual label={t('Password')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.password`}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">{t('Password for authentication')}</span>
+												</label>
+												<label className="field">
+													<LabelActual label={t('Network Id')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.networkId`}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">
+														{t('(Optional) A name/identifier of the local network where the share is located')}
+													</span>
+												</label>
 											</>
 										) : accessor.type === Accessor.AccessType.QUANTEL ? (
 											<>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Quantel gateway URL')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.quantelGatewayUrl`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">{t('URL to the Quantel Gateway')}</span>
-													</label>
-												</div>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('ISA URLs')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.ISAUrls`}
-															obj={this.props.studio}
-															type="array"
-															arrayType="string"
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">
-															{t('URLs to the ISAs, in order of importance (comma separated)')}
-														</span>
-													</label>
-												</div>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Zone ID')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.zoneId`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">{t('Zone ID (default value: "default")')}</span>
-													</label>
-												</div>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Server ID')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.serverId`}
-															obj={this.props.studio}
-															type="int"
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">
-															{t(
-																'Server ID. For sources, this should generally be omitted (or set to 0) so clip-searches are zone-wide. If set, clip-searches are limited to that server.'
-															)}
-														</span>
-													</label>
-												</div>
+												<label className="field">
+													<LabelActual label={t('Quantel gateway URL')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.quantelGatewayUrl`}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">{t('URL to the Quantel Gateway')}</span>
+												</label>
+												<label className="field">
+													<LabelActual label={t('ISA URLs')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.ISAUrls`}
+														obj={this.props.studio}
+														type="array"
+														arrayType="string"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">
+														{t('URLs to the ISAs, in order of importance (comma separated)')}
+													</span>
+												</label>
+												<label className="field">
+													<LabelActual label={t('Zone ID')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.zoneId`}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">{t('Zone ID (default value: "default")')}</span>
+												</label>
+												<label className="field">
+													<LabelActual label={t('Server ID')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.serverId`}
+														obj={this.props.studio}
+														type="int"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">
+														{t(
+															'Server ID. For sources, this should generally be omitted (or set to 0) so clip-searches are zone-wide. If set, clip-searches are limited to that server.'
+														)}
+													</span>
+												</label>
 
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Quantel transformer URL')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.transformerURL`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">{t('URL to the Quantel HTTP transformer')}</span>
-													</label>
-												</div>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Quantel FileFlow URL')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.fileflowURL`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">{t('URL to the Quantel FileFlow Manager')}</span>
-													</label>
-												</div>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Quantel FileFlow Profile name')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.fileflowProfile`}
-															obj={this.props.studio}
-															type="text"
-															collection={Studios}
-															className="input text-input input-l"
-														></EditAttribute>
-														<span className="text-s dimmed">
-															{t('Profile name to be used by FileFlow when exporting the clips')}
-														</span>
-													</label>
-												</div>
+												<label className="field">
+													<LabelActual label={t('Quantel transformer URL')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.transformerURL`}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">{t('URL to the Quantel HTTP transformer')}</span>
+												</label>
+
+												<label className="field">
+													<LabelActual label={t('Quantel FileFlow URL')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.fileflowURL`}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">{t('URL to the Quantel FileFlow Manager')}</span>
+												</label>
+
+												<label className="field">
+													<LabelActual label={t('Quantel FileFlow Profile name')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.fileflowProfile`}
+														obj={this.props.studio}
+														type="text"
+														collection={Studios}
+														className="input text-input input-l"
+													></EditAttribute>
+													<span className="text-s dimmed field-hint">
+														{t('Profile name to be used by FileFlow when exporting the clips')}
+													</span>
+												</label>
 											</>
 										) : null}
 
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Allow Read access')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.allowRead`}
-													obj={this.props.studio}
-													type="checkbox"
-													collection={Studios}
-													className="input"
-												></EditAttribute>
-												<span className="text-s dimmed">{t('')}</span>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Allow Write access')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.allowWrite`}
-													obj={this.props.studio}
-													type="checkbox"
-													collection={Studios}
-													className="input"
-												></EditAttribute>
-												<span className="text-s dimmed">{t('')}</span>
-											</label>
-										</div>
+										<label className="field">
+											<LabelActual label={t('Allow Read access')} />
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.allowRead`}
+												obj={this.props.studio}
+												type="checkbox"
+												collection={Studios}
+												className="input"
+											></EditAttribute>
+											<span className="text-s dimmed field-hint">{t('')}</span>
+										</label>
+
+										<label className="field">
+											<LabelActual label={t('Allow Write access')} />
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`packageContainers.${containerId}.container.accessors.${accessorId}.allowWrite`}
+												obj={this.props.studio}
+												type="checkbox"
+												collection={Studios}
+												className="input"
+											></EditAttribute>
+											<span className="text-s dimmed field-hint">{t('')}</span>
+										</label>
 									</div>
 									<div className="mod">
 										<button

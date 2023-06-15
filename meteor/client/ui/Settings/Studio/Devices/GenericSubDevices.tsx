@@ -18,7 +18,7 @@ import { SubdeviceManifest } from '@sofie-automation/corelib/dist/deviceConfig'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { TextInputControl } from '../../../../lib/Components/TextInput'
 import { SchemaFormWithOverrides } from '../../../../lib/forms/SchemaFormWithOverrides'
-import { LabelAndOverridesForDropdown } from '../../../../lib/Components/LabelAndOverrides'
+import { LabelActual, LabelAndOverridesForDropdown } from '../../../../lib/Components/LabelAndOverrides'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
@@ -271,38 +271,34 @@ function SubDeviceEditRow({
 	return (
 		<tr className="expando-details hl" key={item.id + '-details'}>
 			<td colSpan={99}>
-				<div>
-					<div className="mod mvs mhs">
-						<LabelAndOverridesForDropdown
-							label={t('Peripheral Device ID')}
-							item={item}
-							overrideHelper={overrideHelper}
-							opPrefix={item.id}
-							itemKey={'peripheralDeviceId'}
-							options={peripheralDeviceOptions}
-						>
-							{(value, handleUpdate, options) => (
-								<DropdownInputControl
-									classNames="input text-input input-l"
-									options={options}
-									value={value}
-									handleUpdate={handleUpdate}
-								/>
-							)}
-						</LabelAndOverridesForDropdown>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Device ID')}
-							<TextInputControl
+				<div className="properties-grid">
+					<LabelAndOverridesForDropdown
+						label={t('Peripheral Device ID')}
+						item={item}
+						overrideHelper={overrideHelper}
+						opPrefix={item.id}
+						itemKey={'peripheralDeviceId'}
+						options={peripheralDeviceOptions}
+					>
+						{(value, handleUpdate, options) => (
+							<DropdownInputControl
 								classNames="input text-input input-l"
-								modifiedClassName="bghl"
-								value={item.id}
-								handleUpdate={updateObjectId}
-								disabled={!!item.defaults}
+								options={options}
+								value={value}
+								handleUpdate={handleUpdate}
 							/>
-						</label>
-					</div>
+						)}
+					</LabelAndOverridesForDropdown>
+					<label className="field">
+						<LabelActual label={t('Device ID')} />
+						<TextInputControl
+							classNames="input text-input input-l"
+							modifiedClassName="bghl"
+							value={item.id}
+							handleUpdate={updateObjectId}
+							disabled={!!item.defaults}
+						/>
+					</label>
 
 					{!item.computed.peripheralDeviceId && (
 						<p>{t('This must be assigned to a device to be able to edit the settings')}</p>
@@ -370,25 +366,23 @@ function SubDeviceEditForm({ peripheralDevice, item, overrideHelper }: SubDevice
 	return (
 		<>
 			{(subdeviceTypeOptions.length > 1 || !parsedSchema) && (
-				<div className="mod mvs mhs">
-					<LabelAndOverridesForDropdown
-						label={t('Device Type')}
-						item={item}
-						overrideHelper={overrideHelper}
-						opPrefix={item.id}
-						itemKey={'options.type'}
-						options={subdeviceTypeOptions}
-					>
-						{(value, handleUpdate, options) => (
-							<DropdownInputControl
-								classNames="input text-input input-l"
-								options={options}
-								value={value + ''}
-								handleUpdate={handleUpdate}
-							/>
-						)}
-					</LabelAndOverridesForDropdown>
-				</div>
+				<LabelAndOverridesForDropdown
+					label={t('Device Type')}
+					item={item}
+					overrideHelper={overrideHelper}
+					opPrefix={item.id}
+					itemKey={'options.type'}
+					options={subdeviceTypeOptions}
+				>
+					{(value, handleUpdate, options) => (
+						<DropdownInputControl
+							classNames="input text-input input-l"
+							options={options}
+							value={value + ''}
+							handleUpdate={handleUpdate}
+						/>
+					)}
+				</LabelAndOverridesForDropdown>
 			)}
 
 			{parsedCommonSchema && (

@@ -25,7 +25,7 @@ import { PieceStatusCode } from '../../../lib/collections/Pieces'
 import { PeripheralDevicesAPI } from '../../lib/clientAPI'
 import { handleRundownReloadResponse } from '../RundownView'
 import { MeteorCall } from '../../../lib/api/methods'
-import { UISegmentPartNote } from '../../../lib/api/rundownNotifications'
+import { UIPieceContentStatus, UISegmentPartNote } from '../../../lib/api/rundownNotifications'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { NoteSeverity, StatusCode } from '@sofie-automation/blueprints-integration'
 import { getAllowStudio, getIgnorePieceContentStatus } from '../../lib/localStorage'
@@ -35,6 +35,7 @@ import {
 	PartId,
 	PeripheralDeviceId,
 	PieceId,
+	PieceInstanceId,
 	RundownId,
 	RundownPlaylistId,
 	SegmentId,
@@ -52,7 +53,7 @@ export interface RONotificationEvent {
 		rundownId?: RundownId
 		segmentId?: SegmentId
 		partId?: PartId
-		pieceId?: PieceId
+		pieceId?: PieceId | PieceInstanceId
 	}
 }
 
@@ -475,7 +476,7 @@ class RundownViewNotifier extends WithManagedTracker {
 			},
 		})
 
-		let oldPieceIds: PieceId[] = []
+		let oldPieceIds: UIPieceContentStatus['pieceId'][] = []
 
 		if (getIgnorePieceContentStatus()) return
 
@@ -493,12 +494,18 @@ class RundownViewNotifier extends WithManagedTracker {
 						? messages.map((msg) => translateMessage(msg, t)).join('; ')
 						: t('There is an unspecified problem with the source.')
 
+					const issueName = typeof issue.name === 'string' ? issue.name : translateMessage(issue.name, t)
+					let messageName = issue.segmentName || issueName
+					if (issue.segmentName && issueName) {
+						messageName += `${SEGMENT_DELIMITER}${issueName}`
+					}
+
 					newNotification = new Notification(
 						issue.pieceId,
 						getNoticeLevelForPieceStatus(status) || NoticeLevel.WARNING,
 						(
 							<>
-								<h5>{`${issue.segmentName}${issue.name ? SEGMENT_DELIMITER + issue.name : ''}`}</h5>
+								<h5>{messageName}</h5>
 								<div>{messagesStr}</div>
 							</>
 						),
@@ -519,9 +526,9 @@ class RundownViewNotifier extends WithManagedTracker {
 							if (handler && typeof handler === 'function') {
 								handler({
 									sourceLocator: {
-										name: issue.name,
+										name: issueName,
 										rundownId: issue.rundownId,
-										pieceId: issue.pieceId,
+										pieceId: issue.pieceId as PieceId | PieceInstanceId,
 										partId: issue.partId,
 									},
 								})

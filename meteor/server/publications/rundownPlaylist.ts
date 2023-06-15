@@ -21,7 +21,7 @@ meteorPublish(PubSub.rundownPlaylists, async function (selector0, token) {
 		(selector.studioId && (await StudioReadAccess.studioContent(selector.studioId, cred))) ||
 		(isProtectedString(selector._id) && (await RundownPlaylistReadAccess.rundownPlaylist(selector._id, cred)))
 	) {
-		return RundownPlaylists.find(selector, modifier)
+		return RundownPlaylists.findWithCursor(selector, modifier)
 	}
 	return null
 })

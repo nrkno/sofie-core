@@ -4,7 +4,7 @@ import _ from 'underscore'
 import { DBObj, normalizeArrayToMap, ProtectedString, deleteAllUndefinedProperties } from '../../lib/lib'
 import { MongoQuery } from '../../lib/typings/meteor'
 import { profiler } from '../api/profiler'
-import { AsyncMongoCollection } from '../collections/collection'
+import { AsyncOnlyMongoCollection } from '../collections/collection'
 
 export interface Changes {
 	added: number
@@ -45,12 +45,12 @@ export function anythingChanged(changes: Changes): boolean {
  * @param newData The new data
  */
 export async function saveIntoDb<DBInterface extends DBObj>(
-	collection: AsyncMongoCollection<DBInterface>,
+	collection: AsyncOnlyMongoCollection<DBInterface>,
 	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
 	options?: SaveIntoDbHooks<DBInterface>
 ): Promise<Changes> {
-	const preparedChanges = prepareSaveIntoDb(collection, filter, newData, options)
+	const preparedChanges = await prepareSaveIntoDb(collection, filter, newData, options)
 
 	return savePreparedChanges(preparedChanges, collection, options ?? {})
 }
@@ -62,12 +62,12 @@ export interface PreparedChanges<T> {
 	unchanged: T[]
 }
 
-function prepareSaveIntoDb<DBInterface extends DBObj>(
-	collection: AsyncMongoCollection<DBInterface>,
+async function prepareSaveIntoDb<DBInterface extends DBObj>(
+	collection: AsyncOnlyMongoCollection<DBInterface>,
 	filter: MongoQuery<DBInterface>,
 	newData: Array<DBInterface>,
 	optionsOrg?: SaveIntoDbHooks<DBInterface>
-): PreparedChanges<DBInterface> {
+): Promise<PreparedChanges<DBInterface>> {
 	const preparedChanges: PreparedChanges<DBInterface> = {
 		inserted: [],
 		changed: [],
@@ -75,7 +75,8 @@ function prepareSaveIntoDb<DBInterface extends DBObj>(
 		unchanged: [],
 	}
 
-	saveIntoBase((collection as any)._name, collection.find(filter).fetch(), newData, {
+	const oldData = await collection.findFetchAsync(filter)
+	saveIntoBase((collection as any)._name, oldData, newData, {
 		...optionsOrg,
 		insert: (doc) => preparedChanges.inserted.push(doc),
 		update: (doc) => preparedChanges.changed.push(doc),
@@ -92,7 +93,7 @@ function prepareSaveIntoDb<DBInterface extends DBObj>(
 }
 async function savePreparedChanges<DBInterface extends DBObj>(
 	preparedChanges: PreparedChanges<DBInterface>,
-	collection: AsyncMongoCollection<DBInterface>,
+	collection: AsyncOnlyMongoCollection<DBInterface>,
 	options: SaveIntoDbHooks<DBInterface>
 ): Promise<Changes> {
 	const change: Changes = {

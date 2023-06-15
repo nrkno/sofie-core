@@ -1859,23 +1859,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mos-connection/helper@npm:^3.0.2":
-  version: 3.0.2
-  resolution: "@mos-connection/helper@npm:3.0.2"
+"@mos-connection/helper@npm:^3.0.4":
+  version: 3.0.4
+  resolution: "@mos-connection/helper@npm:3.0.4"
   dependencies:
-    "@mos-connection/model": 3.0.2
+    "@mos-connection/model": 3.0.4
     iconv-lite: ^0.6.2
     tslib: ^2.2.0
     xml-js: ^1.6.11
     xmlbuilder: ^15.1.1
-  checksum: 7415c20230945d89b568297123f833b9ea193a79e207a47c14bba611fdfa4fe4ace5647a78b5fc64831e0b8f52ff91f6479cb89f80060936f0c3caf5d0b57f80
+  checksum: 43ade87fd9a7ca7e183377d36f4d3b0ae063180c8760657201e50169c0868647242c83adaf860c475b9959079512d42ceb43d8ed657356d02140d7aa93992d79
   languageName: node
   linkType: hard
 
-"@mos-connection/model@npm:3.0.2, @mos-connection/model@npm:^3.0.2":
-  version: 3.0.2
-  resolution: "@mos-connection/model@npm:3.0.2"
-  checksum: c8acb3eff5845e71a33349131547be8ca1c8b041f5119d54253f03ad1ce7a2b21d30dbaa4709a978425237585cc4b7eab2edca8027d81984aefd9cdef9c3efc4
+"@mos-connection/model@npm:3.0.4, @mos-connection/model@npm:^3.0.4":
+  version: 3.0.4
+  resolution: "@mos-connection/model@npm:3.0.4"
+  checksum: 7de15fba9a818260fb57847dbc51695036720a7f499d2fe262c691630673e83c01bdc3ea62261529e661f957074a6d92e8d38305485293c5392e073dab33989b
   languageName: node
   linkType: hard
 
@@ -2179,8 +2179,8 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sofie-automation/shared-lib@portal:../packages/shared-lib::locator=automation-core%40workspace%3A."
   dependencies:
-    "@mos-connection/model": ^3.0.2
-    timeline-state-resolver-types: 8.0.0-nightly-release50-20230510-114847-e6b95db66.0
+    "@mos-connection/model": ^3.0.4
+    timeline-state-resolver-types: 8.0.0-nightly-release50-20230615-051635-c51460271.0
     tslib: ^2.4.0
     type-fest: ^2.19.0
   languageName: node
@@ -3524,7 +3524,7 @@ __metadata:
     "@jstarpl/react-contextmenu": ^2.15.0
     "@koa/cors": ^4.0.0
     "@koa/router": ^12.0.0
-    "@mos-connection/helper": ^3.0.2
+    "@mos-connection/helper": ^3.0.4
     "@nrk/core-icons": ^9.6.0
     "@popperjs/core": ^2.11.7
     "@slack/webhook": ^6.1.0
@@ -3576,7 +3576,7 @@ __metadata:
     ejson: ^2.2.3
     eslint: ^8.39.0
     eslint-config-prettier: ^8.8.0
-    eslint-plugin-custom-rules: "file:eslint-rules"
+    eslint-plugin-custom-rules: "link:eslint-rules"
     eslint-plugin-jest: ^27.2.1
     eslint-plugin-node: ^11.1.0
     eslint-plugin-prettier: ^4.2.1
@@ -5714,12 +5714,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-custom-rules@file:eslint-rules::locator=automation-core%40workspace%3A.":
-  version: 0.0.1
-  resolution: "eslint-plugin-custom-rules@file:eslint-rules#eslint-rules::hash=94db49&locator=automation-core%40workspace%3A."
-  checksum: 2e1bf2957c9484bdde478b8b196f9d932412934eaab7f37950685220638f3653fedaff3185fd5fa3cb2b773777cdfd59e4b864f985b57fab48709b4600c92d18
+"eslint-plugin-custom-rules@link:eslint-rules::locator=automation-core%40workspace%3A.":
+  version: 0.0.0-use.local
+  resolution: "eslint-plugin-custom-rules@link:eslint-rules::locator=automation-core%40workspace%3A."
   languageName: node
-  linkType: hard
+  linkType: soft
 
 "eslint-plugin-es@npm:^3.0.0":
   version: 3.0.1
@@ -12535,12 +12534,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230510-114847-e6b95db66.0":
-  version: 8.0.0-nightly-release50-20230510-114847-e6b95db66.0
-  resolution: "timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230510-114847-e6b95db66.0"
+"timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230615-051635-c51460271.0":
+  version: 8.0.0-nightly-release50-20230615-051635-c51460271.0
+  resolution: "timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230615-051635-c51460271.0"
   dependencies:
-    tslib: ^2.5.0
-  checksum: b2d0a450178135a55f7a0e440dcbbcc0f51a334f4da384d64f3ac8909c8167fefb99e06e38532c5a7855c89a647c44e575bd979efcd25c893fcc994c0a9bd8c5
+    tslib: ^2.5.1
+  checksum: a8f23345e8f40778da03799801b997027f768676e55fce6785e5fdfcb09939fb26d52b1b09dfc026e5dbc827bc53264fceb809d5d32493acf243190c0352db7f
   languageName: node
   linkType: hard
 
@@ -12758,6 +12757,13 @@ __metadata:
   version: 2.5.0
   resolution: "tslib@npm:2.5.0"
   checksum: ae3ed5f9ce29932d049908ebfdf21b3a003a85653a9a140d614da6b767a93ef94f460e52c3d787f0e4f383546981713f165037dc2274df212ea9f8a4541004e1
+  languageName: node
+  linkType: hard
+
+"tslib@npm:^2.5.1":
+  version: 2.5.1
+  resolution: "tslib@npm:2.5.1"
+  checksum: 535e41e956b32d21aeff007a2c74989d1a6bf3fecb2b0141d80e5b9920bf90e23b4f0cd3772704bc03637c762dbdc1a314d75a407dd7189afbe3e83d80df9392
   languageName: node
   linkType: hard
 

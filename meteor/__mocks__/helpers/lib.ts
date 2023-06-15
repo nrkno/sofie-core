@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import { LogLevel, ProtectedString } from '../../lib/lib'
-import { AsyncMongoCollection } from '../../server/collections/collection'
+import { AsyncOnlyMongoCollection } from '../../server/collections/collection'
 import { getLogLevel, setLogLevel } from '../../server/logging'
 
 /*
@@ -25,12 +25,10 @@ const METHOD_NAMES = [
 	'update',
 	'upsert',
 	'_ensureIndex',
-	'_dropIndex',
 	'findFetchAsync',
 	'findOneAsync',
 	'insertAsync',
 	'insertManyAsync',
-	'insertIgnoreAsync',
 	'updateAsync',
 	'upsertAsync',
 	'removeAsync',
@@ -42,9 +40,9 @@ const METHOD_NAMES = [
  * Important: This Remember to run resetMockupCollection() after the test
  */
 export function mockupCollection<DBInterface extends { _id: ProtectedString<any> }>(
-	collection0: AsyncMongoCollection<DBInterface>
-): AsyncMongoCollection<DBInterface> & MockedCollection {
-	const collection = collection0 as AsyncMongoCollection<DBInterface> & MockedCollection
+	collection0: AsyncOnlyMongoCollection<DBInterface>
+): AsyncOnlyMongoCollection<DBInterface> & MockedCollection {
+	const collection = collection0 as AsyncOnlyMongoCollection<DBInterface> & MockedCollection
 
 	_.each(METHOD_NAMES, (methodName) => {
 		collection['__original' + methodName] = collection[methodName]
@@ -61,7 +59,7 @@ export function mockupCollection<DBInterface extends { _id: ProtectedString<any>
 	return collection
 }
 export function resetMockupCollection<DBInterface extends { _id: ProtectedString<any> }>(
-	collection: AsyncMongoCollection<DBInterface>
+	collection: AsyncOnlyMongoCollection<DBInterface>
 ): void {
 	_.each(METHOD_NAMES, (methodName) => {
 		collection[methodName] = collection['__original' + methodName]

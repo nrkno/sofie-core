@@ -7,6 +7,8 @@ import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { MeteorCall } from '../../lib/api/methods'
 import { SnapshotId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DropdownInputOption } from '../lib/Components/DropdownInput'
+import { ClientAPI } from '../../lib/api/client'
+import { hashSingleUseToken } from '../../lib/api/userActions'
 
 interface IProps {
 	playlist: RundownPlaylist
@@ -52,7 +54,18 @@ export function AfterBroadcastForm(props: IProps): JSX.Element {
 				t,
 				e,
 				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
-				(e, ts) => MeteorCall.userAction.storeRundownSnapshot(e, ts, props.playlist._id, 'Evaluation form', false),
+				(e, ts) =>
+					MeteorCall.system.generateSingleUseToken().then((tokenResult) => {
+						if (ClientAPI.isClientResponseError(tokenResult) || !tokenResult.result) throw tokenResult
+						return MeteorCall.userAction.storeRundownSnapshot(
+							e,
+							ts,
+							hashSingleUseToken(tokenResult.result),
+							props.playlist._id,
+							'Evaluation form',
+							false
+						)
+					}),
 				(err, snapshotId) => {
 					if (!err && snapshotId) {
 						saveEvaluation(snapshotId)

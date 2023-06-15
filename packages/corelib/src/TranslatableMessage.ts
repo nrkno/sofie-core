@@ -104,6 +104,18 @@ export function wrapTranslatableMessageFromBlueprints(
 	}
 }
 
+export function wrapTranslatableMessageFromBlueprintsIfNotString(
+	message: IBlueprintTranslatableMessage | string,
+	blueprintIds: BlueprintId[]
+): ITranslatableMessage | string {
+	return typeof message === 'string'
+		? message
+		: {
+				...message,
+				namespaces: blueprintIds.map((id) => `blueprint_${id}`),
+		  }
+}
+
 function checkArgs(args: any): args is { [key: string]: any } {
 	if (args === undefined || args === null) {
 		return false

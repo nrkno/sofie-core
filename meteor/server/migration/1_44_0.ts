@@ -5,18 +5,20 @@ export const addSteps = addMigrationSteps('1.44.0', [
 	{
 		id: 'Add new rundownIdsInOrder property to playlists where missing',
 		canBeRunAutomatically: true,
-		validate: () => {
+		validate: async () => {
 			return (
-				RundownPlaylists.find({
+				(await RundownPlaylists.countDocuments({
 					rundownIdsInOrder: { $exists: false },
-				}).count() > 0
+				})) > 0
 			)
 		},
-		migrate: () => {
-			RundownPlaylists.find({
+		migrate: async () => {
+			const playlists = await RundownPlaylists.findFetchAsync({
 				rundownIdsInOrder: { $exists: false },
-			}).forEach((playlist) => {
-				const rundowns = Rundowns.find(
+			})
+
+			for (const playlist of playlists) {
+				const rundowns = await Rundowns.findFetchAsync(
 					{
 						playlistId: playlist._id,
 					},
@@ -27,14 +29,14 @@ export const addSteps = addMigrationSteps('1.44.0', [
 							_id: 1,
 						},
 					}
-				).fetch()
+				)
 
-				RundownPlaylists.update(playlist._id, {
+				await RundownPlaylists.mutableCollection.updateAsync(playlist._id, {
 					$set: {
 						rundownIdsInOrder: rundowns.map((rd) => rd._id),
 					},
 				})
-			})
+			}
 		},
 	},
 ])

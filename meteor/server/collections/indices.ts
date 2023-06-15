@@ -1,13 +1,13 @@
 import { ProtectedString } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { IndexSpecifier } from '../../lib/collections/lib'
-import { ServerAsyncOnlyMongoCollection } from './collection'
+import { AsyncOnlyReadOnlyMongoCollection } from './collection'
 
 interface CollectionsIndexes {
 	[collectionName: string]: CollectionIndexes<any>
 }
 export interface CollectionIndexes<DBInterface extends { _id: ProtectedString<any> }> {
-	collection: ServerAsyncOnlyMongoCollection<DBInterface>
+	collection: AsyncOnlyReadOnlyMongoCollection<DBInterface>
 	indexes: IndexSpecifier<DBInterface>[]
 }
 
@@ -18,7 +18,7 @@ const registeredIndexes: CollectionsIndexes = {}
  * @param index
  */
 export function registerIndex<DBInterface extends { _id: ProtectedString<any> }>(
-	collection: ServerAsyncOnlyMongoCollection<DBInterface>,
+	collection: AsyncOnlyReadOnlyMongoCollection<DBInterface>,
 	index: IndexSpecifier<DBInterface>
 ): void {
 	if (!Meteor.isServer) return // only used server-side

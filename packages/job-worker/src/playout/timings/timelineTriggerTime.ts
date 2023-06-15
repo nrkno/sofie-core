@@ -55,7 +55,7 @@ export async function handleTimelineTriggerTime(context: JobContext, data: OnTim
 					// Take ownership of the playlist in the db, so that we can mutate the timeline and piece instances
 					timelineTriggerTimeInner(context, studioCache, data.results, pieceInstanceCache, activePlaylist)
 
-					await pieceInstanceCache.updateDatabaseWithData()
+					await pieceInstanceCache.updateDatabaseWithData(null) // Single operation
 				})
 			} else {
 				// No playlist is active. no extra lock needed

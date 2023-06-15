@@ -37,6 +37,7 @@ import RundownViewLayoutSettings from './components/rundownLayouts/RundownViewLa
 import { RundownLayoutId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { RundownLayouts } from '../../collections'
+import { LabelActual } from '../../lib/Components/LabelAndOverrides'
 
 export interface IProps {
 	showStyleBaseId: ShowStyleBaseId
@@ -213,9 +214,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								<button className="action-btn right mod man pas" onClick={() => this.onRemoveButton(item, button)}>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
-								<div className="mod mvs mhs">
+								<div className="properties-grid">
 									<label className="field">
-										{t('Label')}
+										<LabelActual label={t('Label')} />
 										<EditAttribute
 											modifiedClassName="bghl"
 											attribute={`actionButtons.${index}.label`}
@@ -225,10 +226,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											className="input text-input input-l"
 										/>
 									</label>
-								</div>
-								<div className="mod mvs mhs">
+
 									<label className="field">
-										{t('Toggled Label')}
+										<LabelActual label={t('Toggled Label')} />
 										<EditAttribute
 											modifiedClassName="bghl"
 											attribute={`actionButtons.${index}.labelToggled`}
@@ -238,10 +238,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											className="input text-input input-l"
 										/>
 									</label>
-								</div>
-								<div className="mod mvs mhs">
+
 									<label className="field">
-										{t('Type')}
+										<LabelActual label={t('Type')} />
 										<EditAttribute
 											modifiedClassName="bghl"
 											attribute={`actionButtons.${index}.type`}
@@ -252,10 +251,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											className="input text-input input-l"
 										/>
 									</label>
-								</div>
-								<div className="mod mvs mhs">
+
 									<label className="field">
-										{t('X')}
+										<LabelActual label={t('X')} />
 										<EditAttribute
 											modifiedClassName="bghl"
 											attribute={`actionButtons.${index}.x`}
@@ -265,10 +263,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											className="input text-input input-l"
 										/>
 									</label>
-								</div>
-								<div className="mod mvs mhs">
+
 									<label className="field">
-										{t('Y')}
+										<LabelActual label={t('Y')} />
 										<EditAttribute
 											modifiedClassName="bghl"
 											attribute={`actionButtons.${index}.y`}
@@ -278,10 +275,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											className="input text-input input-l"
 										/>
 									</label>
-								</div>
-								<div className="mod mvs mhs">
+
 									<label className="field">
-										{t('Width')}
+										<LabelActual label={t('Width')} />
 										<EditAttribute
 											modifiedClassName="bghl"
 											attribute={`actionButtons.${index}.width`}
@@ -291,10 +287,9 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											className="input text-input input-l"
 										/>
 									</label>
-								</div>
-								<div className="mod mvs mhs">
+
 									<label className="field">
-										{t('Height')}
+										<LabelActual label={t('Height')} />
 										<EditAttribute
 											modifiedClassName="bghl"
 											attribute={`actionButtons.${index}.height`}
@@ -320,46 +315,42 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 
 			return (
 				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Icon')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'icon'}
-								obj={item}
-								type="iconpicker"
-								collection={RundownLayouts}
-								className="input text-input input-s"
-							></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Icon color')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'iconColor'}
-								obj={item}
-								options={defaultColorPickerPalette}
-								type="colorpicker"
-								collection={RundownLayouts}
-								className="input text-input input-s"
-							></EditAttribute>
-						</label>
-					</div>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Use as default')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'isDefaultLayout'}
-								obj={item}
-								type="checkbox"
-								collection={RundownLayouts}
-								className="mod mas"
-							></EditAttribute>
-						</label>
-					</div>
+					<label className="field">
+						<LabelActual label={t('Icon')} />
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute={'icon'}
+							obj={item}
+							type="iconpicker"
+							collection={RundownLayouts}
+							className="input text-input input-s"
+						></EditAttribute>
+					</label>
+
+					<label className="field">
+						<LabelActual label={t('Icon color')} />
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute={'iconColor'}
+							obj={item}
+							options={defaultColorPickerPalette}
+							type="colorpicker"
+							collection={RundownLayouts}
+							className="input text-input input-s"
+						></EditAttribute>
+					</label>
+
+					<label className="field">
+						<LabelActual label={t('Use as default')} />
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute={'isDefaultLayout'}
+							obj={item}
+							type="checkbox"
+							collection={RundownLayouts}
+							className="mod mas"
+						></EditAttribute>
+					</label>
 					{isShelfLayout && <ShelfLayoutSettings item={item} />}
 					{isRundownHeaderLayout && <RundownHeaderLayoutSettings item={item} />}
 					{isRundownViewLayout && (
@@ -373,7 +364,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						<React.Fragment>
 							<h4 className="mod mhs">{layout?.filtersTitle ?? t('Filters')}</h4>
 							{item.filters.length === 0 ? (
-								<p className="text-s dimmed mhs">{t('There are no filters set up yet')}</p>
+								<p className="text-s dimmed field-hint mhs">{t('There are no filters set up yet')}</p>
 							) : null}
 						</React.Fragment>
 					) : null}
@@ -436,36 +427,33 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 							{this.isItemEdited(item) && (
 								<tr className="expando-details hl">
 									<td colSpan={4}>
-										<div>
-											<div className="mod mvs mhs">
-												<label className="field">
-													{t('Name')}
-													<EditAttribute
-														modifiedClassName="bghl"
-														attribute={'name'}
-														obj={item}
-														type="text"
-														collection={RundownLayouts}
-														className="input text-input input-l"
-													></EditAttribute>
-												</label>
-											</div>
-											<div className="mod mvs mhs">
-												<label className="field">
-													{t('Type')}
-													<EditAttribute
-														modifiedClassName="bghl"
-														attribute={'type'}
-														obj={item}
-														options={this.props.layoutTypes}
-														type="dropdown"
-														collection={RundownLayouts}
-														className="input text-input input-l"
-													></EditAttribute>
-												</label>
-											</div>
+										<div className="properties-grid">
+											<label className="field">
+												<LabelActual label={t('Name')} />
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={'name'}
+													obj={item}
+													type="text"
+													collection={RundownLayouts}
+													className="input text-input input-l"
+												></EditAttribute>
+											</label>
+											<label className="field">
+												<LabelActual label={t('Type')} />
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={'type'}
+													obj={item}
+													options={this.props.layoutTypes}
+													type="dropdown"
+													collection={RundownLayouts}
+													className="input text-input input-l"
+												></EditAttribute>
+											</label>
+											{this.renderElements(item, layout)}
 										</div>
-										<div>{this.renderElements(item, layout)}</div>
+
 										{layout?.supportedFilters.length ? (
 											<div className="mod mls">
 												<button className="btn btn-secondary" onClick={() => this.onAddElement(item)}>

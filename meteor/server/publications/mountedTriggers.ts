@@ -9,6 +9,7 @@ import { Mongo } from 'meteor/mongo'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import _ from 'underscore'
 import { PeripheralDevices } from '../collections'
+import { check } from 'meteor/check'
 
 const PUBLICATION_DEBOUNCE = 20
 
@@ -16,8 +17,11 @@ meteorCustomPublish(
 	PubSub.mountedTriggersForDevice,
 	CustomCollectionName.MountedTriggers,
 	async function (pub, deviceId: PeripheralDeviceId, deviceIds: string[], token) {
+		check(deviceId, String)
+		check(deviceIds, [String])
+
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
-			const peripheralDevice = PeripheralDevices.findOne(deviceId)
+			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
 
@@ -43,8 +47,10 @@ meteorCustomPublish(
 	PubSub.mountedTriggersForDevicePreview,
 	CustomCollectionName.MountedTriggersPreviews,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
+		check(deviceId, String)
+
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
-			const peripheralDevice = PeripheralDevices.findOne(deviceId)
+			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
 

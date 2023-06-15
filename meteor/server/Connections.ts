@@ -1,5 +1,4 @@
-import { PeripheralDevice } from '../lib/collections/PeripheralDevices'
-import { getCurrentTime } from '../lib/lib'
+import { deferAsync, getCurrentTime } from '../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { logger } from './logging'
 import { sendTrace } from './api/integration/influx'
@@ -27,30 +26,34 @@ Meteor.onConnection((conn: Meteor.Connection) => {
 		traceConnections()
 
 		if (connectionId) {
-			PeripheralDevices.find({
-				connectionId: connectionId,
-			}).forEach((p) => {
-				// set the status of the machine to offline:
-
-				PeripheralDevices.update(p._id, {
-					$set: {
-						lastSeen: getCurrentTime(),
-						connected: false,
-						// connectionId: ''
-					},
+			deferAsync(async () => {
+				const devices = await PeripheralDevices.findFetchAsync({
+					connectionId: connectionId,
 				})
-				PeripheralDevices.update(
-					{
-						parentDeviceId: p._id,
-					},
-					{
+
+				for (const device of devices) {
+					// set the status of the machine to offline:
+
+					await PeripheralDevices.updateAsync(device._id, {
 						$set: {
 							lastSeen: getCurrentTime(),
 							connected: false,
 							// connectionId: ''
 						},
-					}
-				)
+					})
+					await PeripheralDevices.updateAsync(
+						{
+							parentDeviceId: device._id,
+						},
+						{
+							$set: {
+								lastSeen: getCurrentTime(),
+								connected: false,
+								// connectionId: ''
+							},
+						}
+					)
+				}
 			})
 		}
 	})
@@ -79,14 +82,17 @@ function traceConnections() {
 
 Meteor.startup(() => {
 	// Reset the connection status of the devices
-	PeripheralDevices.find({
-		connected: true,
-		lastSeen: { $lt: getCurrentTime() - 60 * 1000 },
-	}).forEach((device: PeripheralDevice) => {
-		PeripheralDevices.update(device._id, {
-			$set: {
-				connected: false,
+	deferAsync(async () => {
+		await PeripheralDevices.updateAsync(
+			{
+				connected: true,
+				lastSeen: { $lt: getCurrentTime() - 60 * 1000 },
 			},
-		})
+			{
+				$set: {
+					connected: false,
+				},
+			}
+		)
 	})
 })

@@ -30,6 +30,7 @@ import {
 	getDropdownInputOptions,
 } from '../../../lib/Components/DropdownInput'
 import {
+	LabelActual,
 	LabelAndOverrides,
 	LabelAndOverridesForDropdown,
 	LabelAndOverridesForInt,
@@ -403,157 +404,149 @@ function StudioMappingsEntry({
 			{isExpanded && (
 				<tr className="expando-details hl">
 					<td colSpan={5}>
-						<div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Layer ID')}
+						<div className="properties-grid">
+							<label className="field">
+								<LabelActual label={t('Layer ID')} />
+								<TextInputControl
+									modifiedClassName="bghl"
+									classNames="input text-input input-l"
+									value={item.id}
+									handleUpdate={doChangeItemId}
+									disabled={!!item.defaults}
+								/>
+								<span className="text-s dimmed field-hint">{t('ID of the timeline-layer to map to some output')}</span>
+							</label>
+
+							<LabelAndOverrides
+								label={t('Layer Name')}
+								hint={t('Human-readable name of the layer')}
+								item={item}
+								itemKey={'layerName'}
+								opPrefix={item.id}
+								overrideHelper={overrideHelper}
+							>
+								{(value, handleUpdate) => (
 									<TextInputControl
 										modifiedClassName="bghl"
 										classNames="input text-input input-l"
-										value={item.id}
-										handleUpdate={doChangeItemId}
-										disabled={!!item.defaults}
+										value={value}
+										handleUpdate={handleUpdate}
 									/>
-									<span className="text-s dimmed">{t('ID of the timeline-layer to map to some output')}</span>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<LabelAndOverrides
-									label={t('Layer Name')}
-									hint={t('Human-readable name of the layer')}
-									item={item}
-									itemKey={'layerName'}
-									opPrefix={item.id}
-									overrideHelper={overrideHelper}
-								>
-									{(value, handleUpdate) => (
-										<TextInputControl
-											modifiedClassName="bghl"
-											classNames="input text-input input-l"
-											value={value}
-											handleUpdate={handleUpdate}
-										/>
-									)}
-								</LabelAndOverrides>
-							</div>
-							<div className="mod mvs mhs">
-								<LabelAndOverridesForDropdown
-									label={t('Device Type')}
-									hint={t('The type of device to use for the output')}
-									item={item}
-									itemKey={'device'}
-									opPrefix={item.id}
-									overrideHelper={overrideHelper}
-									options={deviceTypeOptions}
-								>
-									{(value, handleUpdate, options) => (
-										<DropdownInputControl
-											classNames="input text-input input-l"
-											options={options}
-											value={value + ''}
-											handleUpdate={handleUpdate}
-										/>
-									)}
-								</LabelAndOverridesForDropdown>
-							</div>
-							<div className="mod mvs mhs">
-								<LabelAndOverrides
-									label={t('Device ID')}
-									hint={t('ID of the device (corresponds to the device ID in the peripheralDevice settings)')}
-									item={item}
-									itemKey={'deviceId'}
-									opPrefix={item.id}
-									overrideHelper={overrideHelper}
-								>
-									{(value, handleUpdate) => (
-										<TextInputControl
-											modifiedClassName="bghl"
-											classNames="input text-input input-l"
-											value={value}
-											handleUpdate={handleUpdate}
-										/>
-									)}
-								</LabelAndOverrides>
-							</div>
-							<div className="mod mvs mhs">
-								<LabelAndOverridesForDropdown
-									label={t('Lookahead Mode')}
-									item={item}
-									itemKey={'lookahead'}
-									opPrefix={item.id}
-									overrideHelper={overrideHelper}
-									options={getDropdownInputOptions(LookaheadMode)}
-								>
-									{(value, handleUpdate, options) => (
-										<DropdownInputControl
-											classNames="input text-input input-l"
-											options={options}
-											value={value}
-											handleUpdate={handleUpdate}
-										/>
-									)}
-								</LabelAndOverridesForDropdown>
-							</div>
-							<div className="mod mvs mhs">
-								<LabelAndOverridesForInt
-									label={t('Lookahead Target Objects (Undefined = 1)')}
-									item={item}
-									itemKey={'lookaheadDepth'}
-									opPrefix={item.id}
-									overrideHelper={overrideHelper}
-								>
-									{(value, handleUpdate) => (
-										<IntInputControl
-											modifiedClassName="bghl"
-											classNames="input text-input input-l"
-											value={value}
-											handleUpdate={handleUpdate}
-										/>
-									)}
-								</LabelAndOverridesForInt>
-							</div>
-							<div className="mod mvs mhs">
-								<LabelAndOverridesForInt
-									label={t('Lookahead Maximum Search Distance (Undefined = {{limit}})', {
-										limit: LOOKAHEAD_DEFAULT_SEARCH_DISTANCE,
-									})}
-									item={item}
-									itemKey={'lookaheadMaxSearchDistance'}
-									opPrefix={item.id}
-									overrideHelper={overrideHelper}
-								>
-									{(value, handleUpdate) => (
-										<IntInputControl
-											modifiedClassName="bghl"
-											classNames="input text-input input-l"
-											value={value}
-											handleUpdate={handleUpdate}
-										/>
-									)}
-								</LabelAndOverridesForInt>
-							</div>
+								)}
+							</LabelAndOverrides>
+
+							<LabelAndOverridesForDropdown
+								label={t('Device Type')}
+								hint={t('The type of device to use for the output')}
+								item={item}
+								itemKey={'device'}
+								opPrefix={item.id}
+								overrideHelper={overrideHelper}
+								options={deviceTypeOptions}
+							>
+								{(value, handleUpdate, options) => (
+									<DropdownInputControl
+										classNames="input text-input input-l"
+										options={options}
+										value={value + ''}
+										handleUpdate={handleUpdate}
+									/>
+								)}
+							</LabelAndOverridesForDropdown>
+
+							<LabelAndOverrides
+								label={t('Device ID')}
+								hint={t('ID of the device (corresponds to the device ID in the peripheralDevice settings)')}
+								item={item}
+								itemKey={'deviceId'}
+								opPrefix={item.id}
+								overrideHelper={overrideHelper}
+							>
+								{(value, handleUpdate) => (
+									<TextInputControl
+										modifiedClassName="bghl"
+										classNames="input text-input input-l"
+										value={value}
+										handleUpdate={handleUpdate}
+									/>
+								)}
+							</LabelAndOverrides>
+
+							<LabelAndOverridesForDropdown
+								label={t('Lookahead Mode')}
+								item={item}
+								itemKey={'lookahead'}
+								opPrefix={item.id}
+								overrideHelper={overrideHelper}
+								options={getDropdownInputOptions(LookaheadMode)}
+							>
+								{(value, handleUpdate, options) => (
+									<DropdownInputControl
+										classNames="input text-input input-l"
+										options={options}
+										value={value}
+										handleUpdate={handleUpdate}
+									/>
+								)}
+							</LabelAndOverridesForDropdown>
+
+							<LabelAndOverridesForInt
+								label={t('Lookahead Target Objects (Undefined = 1)')}
+								item={item}
+								itemKey={'lookaheadDepth'}
+								opPrefix={item.id}
+								overrideHelper={overrideHelper}
+							>
+								{(value, handleUpdate) => (
+									<IntInputControl
+										modifiedClassName="bghl"
+										classNames="input text-input input-l"
+										value={value}
+										handleUpdate={handleUpdate}
+									/>
+								)}
+							</LabelAndOverridesForInt>
+
+							<LabelAndOverridesForInt
+								label={t('Lookahead Maximum Search Distance (Undefined = {{limit}})', {
+									limit: LOOKAHEAD_DEFAULT_SEARCH_DISTANCE,
+								})}
+								item={item}
+								itemKey={'lookaheadMaxSearchDistance'}
+								opPrefix={item.id}
+								overrideHelper={overrideHelper}
+							>
+								{(value, handleUpdate) => (
+									<IntInputControl
+										modifiedClassName="bghl"
+										classNames="input text-input input-l"
+										value={value}
+										handleUpdate={handleUpdate}
+									/>
+								)}
+							</LabelAndOverridesForInt>
+
 							{mappingTypeOptions.length > 0 && (
 								<>
-									<div className="mod mvs mhs">
-										<LabelAndOverridesForDropdown<any>
-											label={t('Mapping Type')}
-											hint={t('The type of mapping to use')}
-											item={item}
-											itemKey={'options.mappingType'}
-											opPrefix={item.id}
-											overrideHelper={overrideHelper}
-											options={mappingTypeOptions}
-										>
-											{(value, handleUpdate, options) => (
-												<DropdownInputControl
-													classNames="input text-input input-l"
-													options={options}
-													value={value + ''}
-													handleUpdate={handleUpdate}
-												/>
-											)}
-										</LabelAndOverridesForDropdown>
-									</div>
+									<LabelAndOverridesForDropdown<any>
+										label={t('Mapping Type')}
+										hint={t('The type of mapping to use')}
+										item={item}
+										itemKey={'options.mappingType'}
+										opPrefix={item.id}
+										overrideHelper={overrideHelper}
+										options={mappingTypeOptions}
+									>
+										{(value, handleUpdate, options) => (
+											<DropdownInputControl
+												classNames="input text-input input-l"
+												options={options}
+												value={value + ''}
+												handleUpdate={handleUpdate}
+											/>
+										)}
+									</LabelAndOverridesForDropdown>
+
 									{mappingSchema ? (
 										<SchemaFormWithOverrides
 											schema={mappingSchema}

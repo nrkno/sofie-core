@@ -5,7 +5,13 @@ import { L3rdFloatingInspector } from '../../../FloatingInspectors/L3rdFloatingI
 import { PieceMultistepChevron } from '../../../SegmentContainer/PieceMultistepChevron'
 import { IProps } from './ThumbnailRendererFactory'
 
-export function GraphicsThumbnailRenderer({ pieceInstance, hovering, layer, originPosition }: IProps): JSX.Element {
+export function GraphicsThumbnailRenderer({
+	pieceInstance,
+	hovering,
+	layer,
+	originPosition,
+	height,
+}: IProps): JSX.Element {
 	const content = pieceInstance.instance.piece.content as NoraContent | GraphicsContent | undefined
 
 	return (
@@ -13,10 +19,12 @@ export function GraphicsThumbnailRenderer({ pieceInstance, hovering, layer, orig
 			<L3rdFloatingInspector
 				showMiniInspector={hovering}
 				content={content}
-				floatingInspectorStyle={{
-					top: originPosition.top + 'px',
-					left: originPosition.left + 'px',
-					transform: 'translate(0, -100%)',
+				position={{
+					top: originPosition.top,
+					left: originPosition.left,
+					height,
+					anchor: 'start',
+					position: 'top-start',
 				}}
 				typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 				itemElement={null}

@@ -29,6 +29,7 @@ import { literal, objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import { DropdownInputOption } from '../../../lib/Components/DropdownInput'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { Studios } from '../../../collections'
+import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 
 interface IStudioRoutingsProps {
 	translationNamespaces: string[]
@@ -282,7 +283,7 @@ export const StudioRoutings = withTranslation()(
 				<React.Fragment>
 					<h4 className="mod mhs">{t('Routes')}</h4>
 					{routeSet.routes.length === 0 ? (
-						<p className="text-s dimmed mhs">{t('There are no routes set up yet')}</p>
+						<p className="text-s dimmed field-hint mhs">{t('There are no routes set up yet')}</p>
 					) : null}
 					{routeSet.routes.map((route, index) => {
 						const mappedLayer = route.mappedLayer ? this.props.studioMappings[route.mappedLayer] : undefined
@@ -314,56 +315,52 @@ export const StudioRoutings = withTranslation()(
 								>
 									<FontAwesomeIcon icon={faTrash} />
 								</button>
-								<div>
-									<div className="mod mvs mhs">
-										<label className="field">
-											{t('Original Layer')}
+								<div className="properties-grid">
+									<label className="field">
+										<LabelActual label={t('Original Layer')} />
+										<EditAttribute
+											modifiedClassName="bghl"
+											attribute={`routeSets.${routeSetId}.routes.${index}.mappedLayer`}
+											obj={this.props.studio}
+											type="dropdowntext"
+											options={Object.keys(this.props.studioMappings)}
+											label={t('None')}
+											collection={Studios}
+											className="input text-input input-l"
+										></EditAttribute>
+									</label>
+									<label className="field">
+										<LabelActual label={t('New Layer')} />
+										<EditAttribute
+											modifiedClassName="bghl"
+											attribute={`routeSets.${routeSetId}.routes.${index}.outputMappedLayer`}
+											obj={this.props.studio}
+											type="text"
+											collection={Studios}
+											className="input text-input input-l"
+										></EditAttribute>
+									</label>
+
+									<label className="field">
+										<LabelActual label={t('Route Type')} />
+										{!route.mappedLayer ? (
+											<span className="mls">REMAP</span>
+										) : (
 											<EditAttribute
 												modifiedClassName="bghl"
-												attribute={`routeSets.${routeSetId}.routes.${index}.mappedLayer`}
+												attribute={`routeSets.${routeSetId}.routes.${index}.routeType`}
 												obj={this.props.studio}
-												type="dropdowntext"
-												options={Object.keys(this.props.studioMappings)}
-												label={t('None')}
+												type="dropdown"
+												options={StudioRouteType}
+												optionsAreNumbers={true}
 												collection={Studios}
 												className="input text-input input-l"
 											></EditAttribute>
-										</label>
-									</div>
-									<div className="mod mvs mhs">
-										<label className="field">
-											{t('New Layer')}
-											<EditAttribute
-												modifiedClassName="bghl"
-												attribute={`routeSets.${routeSetId}.routes.${index}.outputMappedLayer`}
-												obj={this.props.studio}
-												type="text"
-												collection={Studios}
-												className="input text-input input-l"
-											></EditAttribute>
-										</label>
-									</div>
-									<div className="mod mvs mhs">
-										<label className="field">
-											{t('Route Type')}
-											{!route.mappedLayer ? (
-												<span className="mls">REMAP</span>
-											) : (
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={`routeSets.${routeSetId}.routes.${index}.routeType`}
-													obj={this.props.studio}
-													type="dropdown"
-													options={StudioRouteType}
-													optionsAreNumbers={true}
-													collection={Studios}
-													className="input text-input input-l"
-												></EditAttribute>
-											)}
-										</label>
-									</div>
-									<div className="mod mvs mhs">
-										{t('Device Type')}
+										)}
+									</label>
+
+									<label className="field">
+										<LabelActual label={t('Device Type')} />
 										{route.routeType === StudioRouteType.REROUTE && route.mappedLayer ? (
 											deviceTypeFromMappedLayer !== undefined ? (
 												<span className="mls">{TSR.DeviceType[deviceTypeFromMappedLayer]}</span>
@@ -382,36 +379,35 @@ export const StudioRoutings = withTranslation()(
 												className="input text-input input-l"
 											></EditAttribute>
 										)}
-									</div>
+									</label>
+
 									{mappingTypeOptions.length > 0 && (
-										<>
-											<div className="mod mvs mhs">
-												{t('Mapping Type')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={`routeSets.${routeSetId}.routes.${index}.remapping.options.mappingType`}
-													obj={this.props.studio}
-													type="dropdown"
-													options={mappingTypeOptions}
-													collection={Studios}
-													className="input text-input input-l"
-												></EditAttribute>
-											</div>
-										</>
+										<label className="field">
+											<LabelActual label={t('Mapping Type')} />
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`routeSets.${routeSetId}.routes.${index}.remapping.options.mappingType`}
+												obj={this.props.studio}
+												type="dropdown"
+												options={mappingTypeOptions}
+												collection={Studios}
+												className="input text-input input-l"
+											></EditAttribute>
+										</label>
 									)}
 									{route.routeType === StudioRouteType.REMAP ||
 									(routeDeviceType !== undefined && route.remapping !== undefined) ? (
 										<>
-											<div className="mod mvs mhs">
-												<label className="field">
-													{t('Device ID')}
+											<label className="field">
+												<LabelActual label={t('Device ID')} />
+												<div>
 													<EditAttribute
 														modifiedClassName="bghl"
 														attribute={`routeSets.${routeSetId}.routes.${index}.remapping.deviceId`}
 														obj={this.props.studio}
 														type="checkbox"
 														collection={Studios}
-														className="mod mvn mhs"
+														className="mrs mvxs"
 														mutateDisplayValue={(v) => (v === undefined ? false : true)}
 														mutateUpdateValue={() => undefined}
 													/>
@@ -423,8 +419,9 @@ export const StudioRoutings = withTranslation()(
 														collection={Studios}
 														className="input text-input input-l"
 													></EditAttribute>
-												</label>
-											</div>
+												</div>
+											</label>
+
 											<DeviceMappingSettings
 												translationNamespaces={this.props.translationNamespaces}
 												studio={this.props.studio}
@@ -489,36 +486,32 @@ export const StudioRoutings = withTranslation()(
 							{this.isItemEdited(exclusivityGroupId) && (
 								<tr className="expando-details hl">
 									<td colSpan={6}>
-										<div>
-											<div className="mod mvs mhs">
-												<label className="field">
-													{t('Exclusivity Group ID')}
-													<EditAttribute
-														modifiedClassName="bghl"
-														attribute={'routeSetExclusivityGroups'}
-														overrideDisplayValue={exclusivityGroupId}
-														obj={this.props.studio}
-														type="text"
-														collection={Studios}
-														updateFunction={this.updateExclusivityGroupId}
-														className="input text-input input-l"
-													></EditAttribute>
-												</label>
-											</div>
-											<div className="mod mvs mhs">
-												<label className="field">
-													{t('Exclusivity Group Name')}
-													<EditAttribute
-														modifiedClassName="bghl"
-														attribute={'routeSetExclusivityGroups.' + exclusivityGroupId + '.name'}
-														obj={this.props.studio}
-														type="text"
-														collection={Studios}
-														className="input text-input input-l"
-													></EditAttribute>
-													<span className="text-s dimmed">{t('Display name of the Exclusivity Group')}</span>
-												</label>
-											</div>
+										<div className="properties-grid">
+											<label className="field">
+												<LabelActual label={t('Exclusivity Group ID')} />
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={'routeSetExclusivityGroups'}
+													overrideDisplayValue={exclusivityGroupId}
+													obj={this.props.studio}
+													type="text"
+													collection={Studios}
+													updateFunction={this.updateExclusivityGroupId}
+													className="input text-input input-l"
+												></EditAttribute>
+											</label>
+											<label className="field">
+												<LabelActual label={t('Exclusivity Group Name')} />
+												<EditAttribute
+													modifiedClassName="bghl"
+													attribute={'routeSetExclusivityGroups.' + exclusivityGroupId + '.name'}
+													obj={this.props.studio}
+													type="text"
+													collection={Studios}
+													className="input text-input input-l"
+												></EditAttribute>
+												<span className="text-s dimmed field-hint">{t('Display name of the Exclusivity Group')}</span>
+											</label>
 										</div>
 										<div className="mod alright">
 											<button className="btn btn-primary" onClick={() => this.finishEditItem(exclusivityGroupId)}>
@@ -579,77 +572,71 @@ export const StudioRoutings = withTranslation()(
 						{this.isItemEdited(routeId) && (
 							<tr className="expando-details hl">
 								<td colSpan={6}>
-									<div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Route Set ID')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'routeSets'}
-													overrideDisplayValue={routeId}
-													obj={this.props.studio}
-													type="text"
-													collection={Studios}
-													updateFunction={this.updateRouteSetId}
-													className="input text-input input-l"
-												></EditAttribute>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={`routeSets.${routeId}.active`}
-													obj={this.props.studio}
-													type="checkbox"
-													collection={Studios}
-													updateFunction={(_ctx, value) => this.updateRouteSetActive(routeId, value)}
-													disabled={routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY && routeSet.active}
-													className=""
-												></EditAttribute>
-												{t('Active')}
-												<span className="mlm text-s dimmed">{t('Is this Route Set currently active')}</span>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Default State')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={`routeSets.${routeId}.defaultActive`}
-													obj={this.props.studio}
-													type="dropdown"
-													collection={Studios}
-													options={DEFAULT_ACTIVE_OPTIONS}
-													className="input text-input input-l"
-												></EditAttribute>
-												<span className="mlm text-s dimmed">{t('The default state of this Route Set')}</span>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Route Set Name')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={`routeSets.${routeId}.name`}
-													obj={this.props.studio}
-													type="text"
-													collection={Studios}
-													className="input text-input input-l"
-												></EditAttribute>
-												<span className="text-s dimmed">{t('Display name of the Route Set')}</span>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Exclusivity group')}
+									<div className="properties-grid">
+										<label className="field">
+											<LabelActual label={t('Route Set ID')} />
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={'routeSets'}
+												overrideDisplayValue={routeId}
+												obj={this.props.studio}
+												type="text"
+												collection={Studios}
+												updateFunction={this.updateRouteSetId}
+												className="input text-input input-l"
+											></EditAttribute>
+										</label>
+										<label className="field">
+											<LabelActual label={t('Active')} />
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`routeSets.${routeId}.active`}
+												obj={this.props.studio}
+												type="checkbox"
+												collection={Studios}
+												updateFunction={(_ctx, value) => this.updateRouteSetActive(routeId, value)}
+												disabled={routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY && routeSet.active}
+												className=""
+											></EditAttribute>
+											<span className="mlm text-s dimmed field-hint">{t('Is this Route Set currently active')}</span>
+										</label>
+										<label className="field">
+											<LabelActual label={t('Default State')} />
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`routeSets.${routeId}.defaultActive`}
+												obj={this.props.studio}
+												type="dropdown"
+												collection={Studios}
+												options={DEFAULT_ACTIVE_OPTIONS}
+												className="input text-input input-l"
+											></EditAttribute>
+											<span className="mlm text-s dimmed field-hint">{t('The default state of this Route Set')}</span>
+										</label>
+
+										<label className="field">
+											<LabelActual label={t('Route Set Name')} />
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`routeSets.${routeId}.name`}
+												obj={this.props.studio}
+												type="text"
+												collection={Studios}
+												className="input text-input input-l"
+											></EditAttribute>
+											<span className="text-s dimmed field-hint">{t('Display name of the Route Set')}</span>
+										</label>
+
+										<label className="field">
+											<LabelActual label={t('Exclusivity group')} />
+											<div>
 												<EditAttribute
 													modifiedClassName="bghl"
 													attribute={`routeSets.${routeId}.exclusivityGroup`}
 													obj={this.props.studio}
 													type="checkbox"
+													className="mrs mvxs"
 													collection={Studios}
-													className="mod mas"
 													mutateDisplayValue={(v) => (v === undefined ? false : true)}
 													mutateUpdateValue={() => undefined}
 												/>
@@ -663,29 +650,28 @@ export const StudioRoutings = withTranslation()(
 													collection={Studios}
 													className="input text-input input-l"
 												></EditAttribute>
-												<span className="text-s dimmed">
-													{t('If set, only one Route Set will be active per exclusivity group')}
-												</span>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Behavior')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={`routeSets.${routeId}.behavior`}
-													obj={this.props.studio}
-													type="dropdown"
-													options={StudioRouteBehavior}
-													optionsAreNumbers={true}
-													collection={Studios}
-													className="input text-input input-l"
-												></EditAttribute>
-												<span className="text-s dimmed">
-													{t('The way this Route Set should behave towards the user')}
-												</span>
-											</label>
-										</div>
+											</div>
+											<span className="text-s dimmed field-hint">
+												{t('If set, only one Route Set will be active per exclusivity group')}
+											</span>
+										</label>
+
+										<label className="field">
+											<LabelActual label={t('Behavior')} />
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={`routeSets.${routeId}.behavior`}
+												obj={this.props.studio}
+												type="dropdown"
+												options={StudioRouteBehavior}
+												optionsAreNumbers={true}
+												collection={Studios}
+												className="input text-input input-l"
+											></EditAttribute>
+											<span className="text-s dimmed field-hint">
+												{t('The way this Route Set should behave towards the user')}
+											</span>
+										</label>
 									</div>
 									{this.renderRoutes(routeSet, routeId, manifest)}
 									<div className="mod">
@@ -714,7 +700,7 @@ export const StudioRoutings = withTranslation()(
 					)}
 					{this.props.manifest && (
 						<React.Fragment>
-							<p className="mhn mvs text-s dimmed">
+							<p className="mhn mvs text-s dimmed field-hint">
 								{t(
 									'Controls for exposed Route Sets will be displayed to the producer within the Rundown View in the Switchboard.'
 								)}

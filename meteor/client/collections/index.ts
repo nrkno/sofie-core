@@ -15,7 +15,6 @@ import { ExpectedPackageWorkStatus } from '@sofie-automation/corelib/dist/dataMo
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { PackageContainerPackageStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 import { PackageContainerStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerStatus'
-import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
@@ -82,8 +81,6 @@ export const PackageContainerPackageStatuses = createSyncReadOnlyMongoCollection
 export const PackageContainerStatuses = createSyncReadOnlyMongoCollection<PackageContainerStatusDB>(
 	CollectionName.PackageContainerStatuses
 )
-
-export const PackageInfos = createSyncReadOnlyMongoCollection<PackageInfoDB>(CollectionName.PackageInfos)
 
 export const PeripheralDevices = createSyncMongoCollection<PeripheralDevice>(CollectionName.PeripheralDevices)
 

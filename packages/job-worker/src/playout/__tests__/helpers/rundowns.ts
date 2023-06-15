@@ -6,11 +6,12 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
-import { JobContext, ProcessedShowStyleCompound } from '../../../jobs'
+import { ProcessedShowStyleCompound } from '../../../jobs'
 import { getCurrentTime } from '../../../lib'
+import { MockJobContext } from '../../../__mocks__/context'
 
 export async function setupRundownBase(
-	context: JobContext,
+	context: MockJobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
@@ -48,7 +49,7 @@ export async function setupRundownBase(
 
 		externalNRCSName: 'mock',
 	}
-	await context.directCollections.Rundowns.insertOne(rundown)
+	await context.mockCollections.Rundowns.insertOne(rundown)
 
 	const segment0: DBSegment = {
 		_id: protectString(rundownId + '_segment0'),
@@ -58,7 +59,7 @@ export async function setupRundownBase(
 		name: 'Segment 0',
 		externalModified: 1,
 	}
-	await context.directCollections.Segments.insertOne(segment0)
+	await context.mockCollections.Segments.insertOne(segment0)
 	/* tslint:disable:ter-indent*/
 	//
 	const part00: DBPart = {
@@ -72,7 +73,7 @@ export async function setupRundownBase(
 
 		...partPropsOverride,
 	}
-	await context.directCollections.Parts.insertOne(part00)
+	await context.mockCollections.Parts.insertOne(part00)
 
 	const piece000: Piece = {
 		_id: protectString(rundownId + '_piece000'),
@@ -94,7 +95,7 @@ export async function setupRundownBase(
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		...piecePropsOverride.piece0,
 	}
-	await context.directCollections.Pieces.insertOne(piece000)
+	await context.mockCollections.Pieces.insertOne(piece000)
 
 	const piece001: Piece = {
 		_id: protectString(rundownId + '_piece001'),
@@ -116,13 +117,13 @@ export async function setupRundownBase(
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		...piecePropsOverride.piece1,
 	}
-	await context.directCollections.Pieces.insertOne(piece001)
+	await context.mockCollections.Pieces.insertOne(piece001)
 
 	return { rundown, segment0, part00 }
 }
 
 export async function setupPart2(
-	context: JobContext,
+	context: MockJobContext,
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 	rundown: DBRundown,
@@ -144,7 +145,7 @@ export async function setupPart2(
 
 		...partPropsOverride,
 	}
-	await context.directCollections.Parts.insertOne(part01)
+	await context.mockCollections.Parts.insertOne(part01)
 
 	const piece010: Piece = {
 		_id: protectString(rundownId + '_piece010'),
@@ -167,13 +168,13 @@ export async function setupPart2(
 
 		...piece0PropsOverride,
 	}
-	await context.directCollections.Pieces.insertOne(piece010)
+	await context.mockCollections.Pieces.insertOne(piece010)
 
 	return { part01 }
 }
 
 export async function setupRundownWithPreroll(
-	context: JobContext,
+	context: MockJobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
@@ -186,7 +187,7 @@ export async function setupRundownWithPreroll(
 }
 
 export async function setupRundownWithInTransition(
-	context: JobContext,
+	context: MockJobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
@@ -205,7 +206,7 @@ export async function setupRundownWithInTransition(
 }
 
 export async function setupRundownWithInTransitionPlannedPiece(
-	context: JobContext,
+	context: MockJobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
@@ -242,7 +243,7 @@ export async function setupRundownWithInTransitionPlannedPiece(
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		pieceType: IBlueprintPieceType.InTransition,
 	}
-	await context.directCollections.Pieces.insertOne(piece011)
+	await context.mockCollections.Pieces.insertOne(piece011)
 
 	// delayed piece
 	const piece012: Piece = {
@@ -265,13 +266,13 @@ export async function setupRundownWithInTransitionPlannedPiece(
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	await context.directCollections.Pieces.insertOne(piece012)
+	await context.mockCollections.Pieces.insertOne(piece012)
 
 	return rundownId
 }
 
 export async function setupRundownWithInTransitionContentDelay(
-	context: JobContext,
+	context: MockJobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
@@ -308,13 +309,13 @@ export async function setupRundownWithInTransitionContentDelay(
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		pieceType: IBlueprintPieceType.InTransition,
 	}
-	await context.directCollections.Pieces.insertOne(piece011)
+	await context.mockCollections.Pieces.insertOne(piece011)
 
 	return rundownId
 }
 
 export async function setupRundownWithInTransitionContentDelayAndPreroll(
-	context: JobContext,
+	context: MockJobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
@@ -361,13 +362,13 @@ export async function setupRundownWithInTransitionContentDelayAndPreroll(
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		pieceType: IBlueprintPieceType.InTransition,
 	}
-	await context.directCollections.Pieces.insertOne(piece011)
+	await context.mockCollections.Pieces.insertOne(piece011)
 
 	return rundownId
 }
 
 export async function setupRundownWithInTransitionExistingInfinite(
-	context: JobContext,
+	context: MockJobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
@@ -396,7 +397,7 @@ export async function setupRundownWithInTransitionExistingInfinite(
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	await context.directCollections.Pieces.insertOne(piece002)
+	await context.mockCollections.Pieces.insertOne(piece002)
 
 	const { part01 } = await setupPart2(context, rundownId, showStyle, rundown, segment0, {
 		inTransition: {
@@ -425,13 +426,13 @@ export async function setupRundownWithInTransitionExistingInfinite(
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		pieceType: IBlueprintPieceType.InTransition,
 	}
-	await context.directCollections.Pieces.insertOne(piece011)
+	await context.mockCollections.Pieces.insertOne(piece011)
 
 	return rundownId
 }
 
 export async function setupRundownWithInTransitionNewInfinite(
-	context: JobContext,
+	context: MockJobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
@@ -468,7 +469,7 @@ export async function setupRundownWithInTransitionNewInfinite(
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		pieceType: IBlueprintPieceType.InTransition,
 	}
-	await context.directCollections.Pieces.insertOne(piece011)
+	await context.mockCollections.Pieces.insertOne(piece011)
 
 	const piece012: Piece = {
 		_id: protectString(rundownId + '_piece012'),
@@ -489,13 +490,13 @@ export async function setupRundownWithInTransitionNewInfinite(
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	await context.directCollections.Pieces.insertOne(piece012)
+	await context.mockCollections.Pieces.insertOne(piece012)
 
 	return rundownId
 }
 
 export async function setupRundownWithInTransitionEnableHold(
-	context: JobContext,
+	context: MockJobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
@@ -536,13 +537,13 @@ export async function setupRundownWithInTransitionEnableHold(
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		pieceType: IBlueprintPieceType.InTransition,
 	}
-	await context.directCollections.Pieces.insertOne(piece011)
+	await context.mockCollections.Pieces.insertOne(piece011)
 
 	return rundownId
 }
 
 export async function setupRundownWithInTransitionDisabled(
-	context: JobContext,
+	context: MockJobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
@@ -581,13 +582,13 @@ export async function setupRundownWithInTransitionDisabled(
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		pieceType: IBlueprintPieceType.InTransition,
 	}
-	await context.directCollections.Pieces.insertOne(piece011)
+	await context.mockCollections.Pieces.insertOne(piece011)
 
 	return rundownId
 }
 
 export async function setupRundownWithOutTransition(
-	context: JobContext,
+	context: MockJobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
@@ -619,7 +620,7 @@ export async function setupRundownWithOutTransition(
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	await context.directCollections.Pieces.insertOne(piece002)
+	await context.mockCollections.Pieces.insertOne(piece002)
 
 	await setupPart2(context, rundownId, showStyle, rundown, segment0)
 
@@ -627,7 +628,7 @@ export async function setupRundownWithOutTransition(
 }
 
 export async function setupRundownWithOutTransitionAndPreroll(
-	context: JobContext,
+	context: MockJobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
@@ -659,7 +660,7 @@ export async function setupRundownWithOutTransitionAndPreroll(
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	await context.directCollections.Pieces.insertOne(piece002)
+	await context.mockCollections.Pieces.insertOne(piece002)
 
 	await setupPart2(context, rundownId, showStyle, rundown, segment0, {}, { prerollDuration: 250 })
 
@@ -667,7 +668,7 @@ export async function setupRundownWithOutTransitionAndPreroll(
 }
 
 export async function setupRundownWithOutTransitionAndPreroll2(
-	context: JobContext,
+	context: MockJobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
@@ -699,7 +700,7 @@ export async function setupRundownWithOutTransitionAndPreroll2(
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	await context.directCollections.Pieces.insertOne(piece002)
+	await context.mockCollections.Pieces.insertOne(piece002)
 
 	await setupPart2(context, rundownId, showStyle, rundown, segment0, {}, { prerollDuration: 1000 })
 
@@ -707,7 +708,7 @@ export async function setupRundownWithOutTransitionAndPreroll2(
 }
 
 export async function setupRundownWithOutTransitionAndInTransition(
-	context: JobContext,
+	context: MockJobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>
@@ -739,7 +740,7 @@ export async function setupRundownWithOutTransitionAndInTransition(
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	await context.directCollections.Pieces.insertOne(piece002)
+	await context.mockCollections.Pieces.insertOne(piece002)
 
 	const { part01 } = await setupPart2(context, rundownId, showStyle, rundown, segment0, {
 		inTransition: {
@@ -769,13 +770,13 @@ export async function setupRundownWithOutTransitionAndInTransition(
 		content: {},
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
-	await context.directCollections.Pieces.insertOne(piece011)
+	await context.mockCollections.Pieces.insertOne(piece011)
 
 	return rundownId
 }
 
 export async function setupRundownWithOutTransitionEnableHold(
-	context: JobContext,
+	context: MockJobContext,
 	playlistId: RundownPlaylistId,
 	rundownId: RundownId,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>

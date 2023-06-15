@@ -17,6 +17,8 @@ import { StudioContentWriteAccess } from '../studio'
 import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Organizations, Users } from '../../collections'
 import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
+import { generateToken } from '../../api/singleUseTokens'
+import { hashSingleUseToken } from '../../../lib/api/userActions'
 
 describe('Security', () => {
 	function getContext(cred: Credentials): MethodContext {
@@ -129,15 +131,15 @@ describe('Security', () => {
 	beforeAllInFiber(async () => {
 		env = await setupDefaultStudioEnvironment(org0._id)
 
-		Organizations.insert(org0)
-		Organizations.insert(org1)
-		Organizations.insert(org2)
+		await Organizations.insertAsync(org0)
+		await Organizations.insertAsync(org1)
+		await Organizations.insertAsync(org2)
 
-		Users.insert(getUser(idCreator, org0._id))
-		Users.insert(getUser(idUserB, org0._id))
-		Users.insert(getUser(idInWrongOrg, org1._id))
-		Users.insert({ ...getUser(idSuperAdmin, org0._id), superAdmin: true })
-		Users.insert({ ...getUser(idSuperAdminInOtherOrg, org2._id), superAdmin: true })
+		await Users.insertAsync(getUser(idCreator, org0._id))
+		await Users.insertAsync(getUser(idUserB, org0._id))
+		await Users.insertAsync(getUser(idInWrongOrg, org1._id))
+		await Users.insertAsync({ ...getUser(idSuperAdmin, org0._id), superAdmin: true })
+		await Users.insertAsync({ ...getUser(idSuperAdminInOtherOrg, org2._id), superAdmin: true })
 	})
 
 	testInFiber('Buckets', async () => {
@@ -191,7 +193,8 @@ describe('Security', () => {
 		})
 	})
 	testInFiber('Organization', async () => {
-		const snapshotId = await storeSystemSnapshot(superAdmin, env.studio._id, 'for test')
+		const token = generateToken()
+		const snapshotId = await storeSystemSnapshot(superAdmin, hashSingleUseToken(token), env.studio._id, 'for test')
 
 		await changeEnableUserAccounts(async () => {
 			const selectorId = org0._id

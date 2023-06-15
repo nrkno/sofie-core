@@ -41,7 +41,6 @@ interface IOutputGroupProps {
 	scrollWidth: number
 	liveLinePadding: number
 	autoNextPart: boolean
-	relative: boolean
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	indexOffset: number
 	isPreview: boolean
@@ -87,7 +86,6 @@ export function OutputGroup(props: IOutputGroupProps): JSX.Element {
 							isTooSmallForText={props.isTooSmallForText}
 							liveLineHistorySize={props.liveLineHistorySize}
 							livePosition={props.livePosition}
-							relative={props.relative}
 							scrollLeft={props.scrollLeft}
 							scrollWidth={props.scrollWidth}
 							onContextMenu={props.onContextMenu}
@@ -125,7 +123,6 @@ export function OutputGroup(props: IOutputGroupProps): JSX.Element {
 						isTooSmallForText={props.isTooSmallForText}
 						liveLineHistorySize={props.liveLineHistorySize}
 						livePosition={props.livePosition}
-						relative={props.relative}
 						scrollLeft={props.scrollLeft}
 						scrollWidth={props.scrollWidth}
 						onContextMenu={props.onContextMenu}

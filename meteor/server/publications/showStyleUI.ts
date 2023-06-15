@@ -14,6 +14,7 @@ import { OrganizationReadAccess } from '../security/organization'
 import { ShowStyleReadAccess } from '../security/showStyle'
 import { ShowStyleBases } from '../collections'
 import { AutoFillSelector } from './lib'
+import { check } from 'meteor/check'
 
 interface UIShowStyleBaseArgs {
 	readonly showStyleBaseId: ShowStyleBaseId
@@ -40,13 +41,17 @@ async function setupUIShowStyleBasePublicationObservers(
 ): Promise<Meteor.LiveQueryHandle[]> {
 	// Set up observers:
 	return [
-		ShowStyleBases.find(args.showStyleBaseId, {
-			fields: fieldSpecifier,
-		}).observeChanges({
-			added: () => triggerUpdate({ invalidateShowStyle: true }),
-			changed: () => triggerUpdate({ invalidateShowStyle: true }),
-			removed: () => triggerUpdate({ invalidateShowStyle: true }),
-		}),
+		ShowStyleBases.observeChanges(
+			args.showStyleBaseId,
+			{
+				added: () => triggerUpdate({ invalidateShowStyle: true }),
+				changed: () => triggerUpdate({ invalidateShowStyle: true }),
+				removed: () => triggerUpdate({ invalidateShowStyle: true }),
+			},
+			{
+				fields: fieldSpecifier,
+			}
+		),
 	]
 }
 async function manipulateUIShowStyleBasePublicationData(
@@ -81,6 +86,8 @@ meteorCustomPublish(
 	PubSub.uiShowStyleBase,
 	CustomCollectionName.UIShowStyleBase,
 	async function (pub, showStyleBaseId: ShowStyleBaseId) {
+		check(showStyleBaseId, String)
+
 		const { cred, selector } = await AutoFillSelector.organizationId<ShowStyleBase>(
 			this.userId,
 			{ _id: showStyleBaseId },

@@ -59,7 +59,7 @@ meteorPublish(PubSub.rundownsForDevice, async function (deviceId, token) {
 	}
 
 	if (NoSecurityReadAccess.any() || (await StudioReadAccess.studioContent(selector.studioId, cred))) {
-		return Rundowns.find(selector, modifier)
+		return Rundowns.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -95,7 +95,7 @@ meteorPublish(PubSub.rundowns, async function (playlistIds, showStyleBaseIds, to
 		(selector.studioId && (await StudioReadAccess.studioContent(selector.studioId, cred))) ||
 		(selector._id && (await RundownReadAccess.rundown(selector._id, cred)))
 	) {
-		return Rundowns.find(selector, modifier)
+		return Rundowns.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -112,7 +112,7 @@ meteorPublish(PubSub.segments, async function (selector, token) {
 			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))) ||
 		(selector._id && (await RundownReadAccess.segments(selector._id, { userId: this.userId, token })))
 	) {
-		return Segments.find(selector, modifier)
+		return Segments.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -139,7 +139,7 @@ meteorPublish(PubSub.parts, async function (rundownIds, token) {
 			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))) // ||
 		// (selector._id && await RundownReadAccess.pieces(selector._id, { userId: this.userId, token })) // TODO - the types for this did not match
 	) {
-		return Parts.find(selector, modifier)
+		return Parts.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -166,7 +166,7 @@ meteorPublish(PubSub.partInstances, async function (rundownIds, playlistActivati
 		NoSecurityReadAccess.any() ||
 		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
 	) {
-		return PartInstances.find(selector, modifier)
+		return PartInstances.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -188,7 +188,7 @@ meteorPublish(PubSub.partInstancesSimple, async function (selector, token) {
 		NoSecurityReadAccess.any() ||
 		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
 	) {
-		return PartInstances.find(selector, modifier)
+		return PartInstances.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -210,7 +210,7 @@ meteorPublish(PubSub.partInstancesForSegmentPlayout, async function (selector, t
 		(selector.segmentPlayoutId &&
 			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token })))
 	) {
-		return PartInstances.find(selector, modifier)
+		return PartInstances.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -227,7 +227,7 @@ meteorPublish(PubSub.pieces, async function (selector: MongoQuery<Piece>, token?
 		NoSecurityReadAccess.any() ||
 		(await RundownReadAccess.rundownContent(selector.startRundownId, { userId: this.userId, token }))
 	) {
-		return Pieces.find(selector, modifier)
+		return Pieces.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -244,7 +244,7 @@ meteorPublish(PubSub.adLibPieces, async function (selector, token) {
 		NoSecurityReadAccess.any() ||
 		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
 	) {
-		return AdLibPieces.find(selector, modifier)
+		return AdLibPieces.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -265,7 +265,7 @@ meteorPublish(PubSub.pieceInstances, async function (selector, token) {
 		NoSecurityReadAccess.any() ||
 		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
 	) {
-		return PieceInstances.find(selector, modifier)
+		return PieceInstances.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -289,7 +289,7 @@ meteorPublish(PubSub.pieceInstancesSimple, async function (selector, token) {
 		NoSecurityReadAccess.any() ||
 		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
 	) {
-		return PieceInstances.find(selector, modifier)
+		return PieceInstances.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -300,9 +300,9 @@ meteorPublish(PubSub.expectedMediaItems, async function (selector, token) {
 	if (!allowed) {
 		return null
 	} else if (allowed === true) {
-		return ExpectedMediaItems.find(selector)
+		return ExpectedMediaItems.findWithCursor(selector)
 	} else if (typeof allowed === 'object') {
-		return ExpectedMediaItems.find(
+		return ExpectedMediaItems.findWithCursor(
 			_.extend(selector, {
 				studioId: allowed.studioId,
 			})
@@ -317,9 +317,9 @@ meteorPublish(PubSub.expectedPlayoutItems, async function (selector, token) {
 	if (!allowed) {
 		return null
 	} else if (allowed === true) {
-		return ExpectedPlayoutItems.find(selector)
+		return ExpectedPlayoutItems.findWithCursor(selector)
 	} else if (typeof allowed === 'object') {
-		return ExpectedPlayoutItems.find(
+		return ExpectedPlayoutItems.findWithCursor(
 			_.extend(selector, {
 				studioId: allowed.studioId,
 			})
@@ -337,7 +337,7 @@ meteorPublish(PubSub.ingestDataCache, async function (selector, token) {
 		NoSecurityReadAccess.any() ||
 		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
 	) {
-		return IngestDataCache.find(selector, modifier)
+		return IngestDataCache.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -354,7 +354,7 @@ meteorPublish(
 			NoSecurityReadAccess.any() ||
 			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
 		) {
-			return RundownBaselineAdLibPieces.find(selector, modifier)
+			return RundownBaselineAdLibPieces.findWithCursor(selector, modifier)
 		}
 		return null
 	}
@@ -368,7 +368,7 @@ meteorPublish(PubSub.adLibActions, async function (selector, token) {
 		NoSecurityReadAccess.any() ||
 		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
 	) {
-		return AdLibActions.find(selector, modifier)
+		return AdLibActions.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -381,7 +381,7 @@ meteorPublish(PubSub.rundownBaselineAdLibActions, async function (selector, toke
 		NoSecurityReadAccess.any() ||
 		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
 	) {
-		return RundownBaselineAdLibActions.find(selector, modifier)
+		return RundownBaselineAdLibActions.findWithCursor(selector, modifier)
 	}
 	return null
 })

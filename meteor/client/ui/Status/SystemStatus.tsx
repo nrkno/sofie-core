@@ -8,7 +8,7 @@ import {
 import * as reacti18next from 'react-i18next'
 import * as i18next from 'i18next'
 import Moment from 'react-moment'
-import { assertNever, getCurrentTime, getHash, protectString, unprotectString } from '../../../lib/lib'
+import { assertNever, getCurrentTime, protectString, unprotectString } from '../../../lib/lib'
 import { Link } from 'react-router-dom'
 import Tooltip from 'rc-tooltip'
 import { faTrash, faEye } from '@fortawesome/free-solid-svg-icons'
@@ -26,7 +26,7 @@ import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { StatusResponse } from '../../../lib/api/systemStatus'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
-import { RESTART_SALT } from '../../../lib/api/userActions'
+import { hashSingleUseToken } from '../../../lib/api/userActions'
 import { DEFAULT_TSR_ACTION_TIMEOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 import { SubdeviceAction } from '@sofie-automation/shared-lib/dist/core/deviceConfigManifest'
 import { StatusCodePill } from './StatusCodePill'
@@ -37,6 +37,7 @@ import { CoreSystem, PeripheralDevices } from '../../collections'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { DebugStateTable } from './DebugState'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { ClientAPI } from '../../../lib/api/client'
 
 interface IDeviceItemProps {
 	// key: string,
@@ -435,52 +436,37 @@ export const CoreItem = reacti18next.withTranslation()(
 												doUserAction(
 													t,
 													e,
-													UserAction.GENERATE_RESTART_TOKEN,
-													(e, ts) => MeteorCall.userAction.generateRestartToken(e, ts),
-													(err, token) => {
-														if (err || !token) {
+													UserAction.RESTART_CORE,
+													(e, ts) =>
+														MeteorCall.system.generateSingleUseToken().then((tokenResponse) => {
+															if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result)
+																throw tokenResponse
+															return MeteorCall.userAction.restartCore(e, ts, hashSingleUseToken(tokenResponse.result))
+														}),
+													(err, restartMessage) => {
+														if (err || !restartMessage) {
 															NotificationCenter.push(
 																new Notification(
 																	undefined,
 																	NoticeLevel.CRITICAL,
-																	t('Could not generate restart token!'),
+																	t('Could not restart core: {{err}}', { err }),
 																	'SystemStatus'
 																)
 															)
 															return
 														}
-														const restartToken = getHash(RESTART_SALT + token)
-														doUserAction(
-															t,
-															{},
-															UserAction.RESTART_CORE,
-															(e, ts) => MeteorCall.userAction.restartCore(e, ts, restartToken),
-															(err, token: string | undefined) => {
-																if (err || !token) {
-																	NotificationCenter.push(
-																		new Notification(
-																			undefined,
-																			NoticeLevel.CRITICAL,
-																			t('Could not generate restart core: {{err}}', { err }),
-																			'SystemStatus'
-																		)
-																	)
-																	return
-																}
-																let time = 'unknown'
-																const match = token.match(/([\d\.]+)s/)
-																if (match) {
-																	time = match[1]
-																}
-																NotificationCenter.push(
-																	new Notification(
-																		undefined,
-																		NoticeLevel.WARNING,
-																		t('Sofie Automation Server Core will restart in {{time}}s...', { time }),
-																		'SystemStatus'
-																	)
-																)
-															}
+														let time = 'unknown'
+														const match = restartMessage.match(/([\d\.]+)s/)
+														if (match) {
+															time = match[1]
+														}
+														NotificationCenter.push(
+															new Notification(
+																undefined,
+																NoticeLevel.WARNING,
+																t('Sofie Automation Server Core will restart in {{time}}s...', { time }),
+																'SystemStatus'
+															)
 														)
 													}
 												)

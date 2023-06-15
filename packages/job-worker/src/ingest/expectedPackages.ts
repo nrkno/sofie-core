@@ -46,6 +46,7 @@ import {
 import { JobContext } from '../jobs'
 import { CacheForIngest } from './cache'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { IMongoTransaction } from '../db'
 
 export async function updateExpectedPackagesOnRundown(context: JobContext, cache: CacheForIngest): Promise<void> {
 	// @todo: this call is for backwards compatibility and soon to be removed
@@ -326,40 +327,59 @@ function generateExpectedPackageBases(
 
 export async function updateExpectedPackagesForBucketAdLibPiece(
 	context: JobContext,
+	transaction: IMongoTransaction,
 	adlib: BucketAdLib
 ): Promise<void> {
 	const packages = generateExpectedPackagesForBucketAdlib(context.studio, [adlib])
 
-	await saveIntoDb(context, context.directCollections.ExpectedPackages, { pieceId: adlib._id }, packages)
+	await saveIntoDb(context, context.directCollections.ExpectedPackages, transaction, { pieceId: adlib._id }, packages)
 }
 
 export async function updateExpectedPackagesForBucketAdLibAction(
 	context: JobContext,
+	transaction: IMongoTransaction,
 	action: BucketAdLibAction
 ): Promise<void> {
 	const packages = generateExpectedPackagesForBucketAdlibAction(context.studio, [action])
 
-	await saveIntoDb(context, context.directCollections.ExpectedPackages, { pieceId: action._id }, packages)
+	await saveIntoDb(
+		context,
+		context.directCollections.ExpectedPackages,
+		transaction,
+		{ pieceId: action._id },
+		packages
+	)
 }
-export async function cleanUpExpectedPackagesForBucketAdLibs(context: JobContext, adLibIds: PieceId[]): Promise<void> {
+export async function cleanUpExpectedPackagesForBucketAdLibs(
+	context: JobContext,
+	transaction: IMongoTransaction,
+	adLibIds: PieceId[]
+): Promise<void> {
 	if (adLibIds.length > 0) {
-		await context.directCollections.ExpectedPackages.remove({
-			pieceId: {
-				$in: adLibIds,
+		await context.directCollections.ExpectedPackages.remove(
+			{
+				pieceId: {
+					$in: adLibIds,
+				},
 			},
-		})
+			transaction
+		)
 	}
 }
 export async function cleanUpExpectedPackagesForBucketAdLibsActions(
 	context: JobContext,
+	transaction: IMongoTransaction,
 	adLibIds: AdLibActionId[]
 ): Promise<void> {
 	if (adLibIds.length > 0) {
-		await context.directCollections.ExpectedPackages.remove({
-			pieceId: {
-				$in: adLibIds,
+		await context.directCollections.ExpectedPackages.remove(
+			{
+				pieceId: {
+					$in: adLibIds,
+				},
 			},
-		})
+			transaction
+		)
 	}
 }
 
@@ -408,10 +428,11 @@ export function updateBaselineExpectedPackagesOnStudio(
 	setDefaultIdOnExpectedPackages(baseline.expectedPackages)
 
 	const bases = generateExpectedPackageBases(context.studio, context.studio._id, baseline.expectedPackages ?? [])
-	cache.deferAfterSave(async () => {
+	cache.deferDuringSaveTransaction(async (transaction) => {
 		await saveIntoDb<ExpectedPackageDB>(
 			context,
 			context.directCollections.ExpectedPackages,
+			transaction,
 			{
 				studioId: context.studio._id,
 				fromPieceType: ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS,

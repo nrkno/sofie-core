@@ -10,6 +10,7 @@ import { getElementWidth } from '../../../utils/dimensions'
 import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspector'
 import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { unprotectString } from '../../../../lib/lib'
+import { IFloatingInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
 
 type IProps = ICustomLayerItemProps
 interface IState {}
@@ -185,6 +186,15 @@ export const MicSourceRenderer = withTranslation()(
 			}
 		}
 
+		protected getFloatingInspectorStyle(): IFloatingInspectorPosition {
+			return {
+				left: this.props.elementPosition.left + this.props.cursorPosition.left,
+				top: this.props.elementPosition.top,
+				anchor: 'start',
+				position: 'bottom',
+			}
+		}
+
 		render(): JSX.Element {
 			const labelItems = (this.props.piece.instance.piece.name || '').split('||')
 			const begin = labelItems[0] || ''
@@ -226,7 +236,7 @@ export const MicSourceRenderer = withTranslation()(
 					{content && (
 						<MicFloatingInspector
 							content={content}
-							floatingInspectorStyle={this.getFloatingInspectorStyle()}
+							position={this.getFloatingInspectorStyle()}
 							itemElement={this.props.itemElement}
 							showMiniInspector={this.props.showMiniInspector}
 							typeClass={this.props.typeClass}

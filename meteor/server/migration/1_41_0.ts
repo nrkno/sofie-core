@@ -15,21 +15,21 @@ export const addSteps = addMigrationSteps('1.41.0', [
 	{
 		id: `RundownBaselineObj.timelineObjectsString from objects`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = RundownBaselineObjs.find({
+		validate: async () => {
+			const objects = await RundownBaselineObjs.countDocuments({
 				objects: { $exists: true },
-			}).count()
+			})
 			if (objects > 0) {
 				return `timelineObjects needs to be converted`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = RundownBaselineObjs.find({
+		migrate: async () => {
+			const objects = await RundownBaselineObjs.findFetchAsync({
 				objects: { $exists: true },
-			}).fetch()
+			})
 			for (const obj of objects) {
-				RundownBaselineObjs.update(obj._id, {
+				await RundownBaselineObjs.mutableCollection.updateAsync(obj._id, {
 					$set: {
 						timelineObjectsString: serializePieceTimelineObjectsBlob(
 							(obj as any).objects as TimelineObjGeneric[]
@@ -45,21 +45,21 @@ export const addSteps = addMigrationSteps('1.41.0', [
 	{
 		id: `Pieces.timelineObjectsString`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = Pieces.find({
+		validate: async () => {
+			const objects = await Pieces.countDocuments({
 				'content.timelineObjects': { $exists: true },
-			}).count()
+			})
 			if (objects > 0) {
 				return `timelineObjects needs to be converted`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = Pieces.find({
+		migrate: async () => {
+			const objects = await Pieces.findFetchAsync({
 				'content.timelineObjects': { $exists: true },
-			}).fetch()
+			})
 			for (const obj of objects) {
-				Pieces.update(obj._id, {
+				await Pieces.mutableCollection.updateAsync(obj._id, {
 					$set: {
 						timelineObjectsString: serializePieceTimelineObjectsBlob((obj as any).content.timelineObjects),
 					},
@@ -73,21 +73,21 @@ export const addSteps = addMigrationSteps('1.41.0', [
 	{
 		id: `AdLibPieces.timelineObjectsString`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = AdLibPieces.find({
+		validate: async () => {
+			const objects = await AdLibPieces.countDocuments({
 				'content.timelineObjects': { $exists: true },
-			}).count()
+			})
 			if (objects > 0) {
 				return `timelineObjects needs to be converted`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = AdLibPieces.find({
+		migrate: async () => {
+			const objects = await AdLibPieces.findFetchAsync({
 				'content.timelineObjects': { $exists: true },
-			}).fetch()
+			})
 			for (const obj of objects) {
-				AdLibPieces.update(obj._id, {
+				await AdLibPieces.mutableCollection.updateAsync(obj._id, {
 					$set: {
 						timelineObjectsString: serializePieceTimelineObjectsBlob((obj as any).content.timelineObjects),
 					},
@@ -101,21 +101,21 @@ export const addSteps = addMigrationSteps('1.41.0', [
 	{
 		id: `RundownBaselineAdLibPieces.timelineObjectsString`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = RundownBaselineAdLibPieces.find({
+		validate: async () => {
+			const objects = await RundownBaselineAdLibPieces.countDocuments({
 				'content.timelineObjects': { $exists: true },
-			}).count()
+			})
 			if (objects > 0) {
 				return `timelineObjects needs to be converted`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = RundownBaselineAdLibPieces.find({
+		migrate: async () => {
+			const objects = await RundownBaselineAdLibPieces.findFetchAsync({
 				'content.timelineObjects': { $exists: true },
-			}).fetch()
+			})
 			for (const obj of objects) {
-				RundownBaselineAdLibPieces.update(obj._id, {
+				await RundownBaselineAdLibPieces.mutableCollection.updateAsync(obj._id, {
 					$set: {
 						timelineObjectsString: serializePieceTimelineObjectsBlob((obj as any).content.timelineObjects),
 					},
@@ -129,21 +129,21 @@ export const addSteps = addMigrationSteps('1.41.0', [
 	{
 		id: `BucketAdLibs.timelineObjectsString`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = BucketAdLibs.find({
+		validate: async () => {
+			const objects = await BucketAdLibs.countDocuments({
 				'content.timelineObjects': { $exists: true },
-			}).count()
+			})
 			if (objects > 0) {
 				return `timelineObjects needs to be converted`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = BucketAdLibs.find({
+		migrate: async () => {
+			const objects = await BucketAdLibs.findFetchAsync({
 				'content.timelineObjects': { $exists: true },
-			}).fetch()
+			})
 			for (const obj of objects) {
-				BucketAdLibs.update(obj._id, {
+				await BucketAdLibs.updateAsync(obj._id, {
 					$set: {
 						timelineObjectsString: serializePieceTimelineObjectsBlob((obj as any).content.timelineObjects),
 					},
@@ -157,21 +157,21 @@ export const addSteps = addMigrationSteps('1.41.0', [
 	{
 		id: `PieceInstances.timelineObjectsString`,
 		canBeRunAutomatically: true,
-		validate: () => {
-			const objects = PieceInstances.find({
+		validate: async () => {
+			const objects = await PieceInstances.countDocuments({
 				'piece.content.timelineObjects': { $exists: true },
-			}).count()
+			})
 			if (objects > 0) {
 				return `timelineObjects needs to be converted`
 			}
 			return false
 		},
-		migrate: () => {
-			const objects = PieceInstances.find({
+		migrate: async () => {
+			const objects = await PieceInstances.findFetchAsync({
 				'piece.content.timelineObjects': { $exists: true },
-			}).fetch()
+			})
 			for (const obj of objects) {
-				PieceInstances.update(obj._id, {
+				await PieceInstances.mutableCollection.updateAsync(obj._id, {
 					$set: {
 						timelineObjectsString: serializePieceTimelineObjectsBlob(
 							(obj as any).piece.content.timelineObjects

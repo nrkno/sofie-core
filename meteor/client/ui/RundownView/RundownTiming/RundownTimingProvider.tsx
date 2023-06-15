@@ -11,7 +11,7 @@ import { RundownTiming, TimeEventArgs } from './RundownTiming'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { RundownTimingCalculator, RundownTimingContext } from '../../../lib/rundownTiming'
-import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartInstances } from '../../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../../lib/collections/rundownPlaylistUtil'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
@@ -52,6 +52,7 @@ interface IRundownTimingProviderTrackedProps {
 	pieces: Map<PartId, CalculateTimingsPiece[]>
 	segmentEntryPartInstances: PartInstance[]
 	segments: DBSegment[]
+	segmentsMap: Map<SegmentId, DBSegment>
 }
 
 /**
@@ -153,6 +154,9 @@ export const RundownTimingProvider = withTracker<
 
 		pieces = RundownPlaylistCollectionUtil.getPiecesForParts(parts.map((p) => p._id))
 	}
+
+	const segmentsMap = new Map<SegmentId, DBSegment>(segments.map((segment) => [segment._id, segment]))
+
 	return {
 		rundowns,
 		currentRundown,
@@ -161,6 +165,7 @@ export const RundownTimingProvider = withTracker<
 		pieces,
 		segmentEntryPartInstances,
 		segments,
+		segmentsMap,
 	}
 })(
 	class RundownTimingProvider
@@ -301,7 +306,7 @@ export const RundownTimingProvider = withTracker<
 				parts,
 				partInstancesMap,
 				pieces,
-				segments,
+				segmentsMap,
 				segmentEntryPartInstances,
 			} = this.props
 			const updatedDurations = this.timingCalculator.updateDurations(
@@ -313,7 +318,7 @@ export const RundownTimingProvider = withTracker<
 				parts,
 				partInstancesMap,
 				pieces,
-				segments,
+				segmentsMap,
 				this.props.defaultDuration,
 				segmentEntryPartInstances
 			)

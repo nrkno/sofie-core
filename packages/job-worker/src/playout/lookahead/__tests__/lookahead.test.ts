@@ -59,12 +59,12 @@ describe('Lookahead', () => {
 		rundownId = protectString(`rundown0`)
 		playlistId = protectString(`playlist0`)
 
-		await context.directCollections.RundownPlaylists.insertOne({
+		await context.mockCollections.RundownPlaylists.insertOne({
 			...defaultRundownPlaylist(playlistId, context.studioId),
 			activationId: protectString('active'),
 		})
 
-		await context.directCollections.Rundowns.insertOne({
+		await context.mockCollections.Rundowns.insertOne({
 			peripheralDeviceId: undefined,
 			organizationId: null,
 			studioId: context.studioId,
@@ -106,19 +106,19 @@ describe('Lookahead', () => {
 		const segmentId2: SegmentId = getRandomId()
 
 		partIds = await Promise.all([
-			context.directCollections.Parts.insertOne(createMockPart(0, segmentId0)),
-			context.directCollections.Parts.insertOne(createMockPart(1, segmentId0)),
-			context.directCollections.Parts.insertOne(createMockPart(2, segmentId0)),
-			context.directCollections.Parts.insertOne(createMockPart(3, segmentId0)),
-			context.directCollections.Parts.insertOne(createMockPart(4, segmentId0)),
+			context.mockCollections.Parts.insertOne(createMockPart(0, segmentId0)),
+			context.mockCollections.Parts.insertOne(createMockPart(1, segmentId0)),
+			context.mockCollections.Parts.insertOne(createMockPart(2, segmentId0)),
+			context.mockCollections.Parts.insertOne(createMockPart(3, segmentId0)),
+			context.mockCollections.Parts.insertOne(createMockPart(4, segmentId0)),
 
-			context.directCollections.Parts.insertOne(createMockPart(10, segmentId1)),
-			context.directCollections.Parts.insertOne(createMockPart(11, segmentId1)),
-			context.directCollections.Parts.insertOne(createMockPart(12, segmentId1)),
+			context.mockCollections.Parts.insertOne(createMockPart(10, segmentId1)),
+			context.mockCollections.Parts.insertOne(createMockPart(11, segmentId1)),
+			context.mockCollections.Parts.insertOne(createMockPart(12, segmentId1)),
 
-			context.directCollections.Parts.insertOne(createMockPart(20, segmentId2)),
-			context.directCollections.Parts.insertOne(createMockPart(21, segmentId2)),
-			context.directCollections.Parts.insertOne(createMockPart(22, segmentId2)),
+			context.mockCollections.Parts.insertOne(createMockPart(20, segmentId2)),
+			context.mockCollections.Parts.insertOne(createMockPart(21, segmentId2)),
+			context.mockCollections.Parts.insertOne(createMockPart(22, segmentId2)),
 		])
 	})
 
@@ -128,7 +128,7 @@ describe('Lookahead', () => {
 		previous: PartInstanceAndPieceInstances | undefined,
 		orderedPartsFollowingPlayhead: PartAndPieces[]
 	) {
-		const playlist = (await context.directCollections.RundownPlaylists.findOne(playlistId0)) as DBRundownPlaylist
+		const playlist = (await context.mockCollections.RundownPlaylists.findOne(playlistId0)) as DBRundownPlaylist
 		expect(playlist).toBeTruthy()
 
 		expect(findLookaheadForLayerMock).toHaveBeenCalledTimes(2)

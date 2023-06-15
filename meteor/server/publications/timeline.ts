@@ -29,6 +29,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { TimelineDatastoreEntry } from '../../lib/collections/TimelineDatastore'
 import { PeripheralDevices, Studios, Timeline, TimelineDatastore } from '../collections'
+import { check } from 'meteor/check'
 
 meteorPublish(PubSub.timeline, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -36,7 +37,7 @@ meteorPublish(PubSub.timeline, async function (selector, token) {
 		fields: {},
 	}
 	if (await StudioReadAccess.studioContent(selector._id, { userId: this.userId, token })) {
-		return Timeline.find(selector, modifier)
+		return Timeline.findWithCursor(selector, modifier)
 	}
 	return null
 })
@@ -46,7 +47,7 @@ meteorPublish(PubSub.timelineDatastore, async function (studioId, token) {
 		fields: {},
 	}
 	if (await StudioReadAccess.studioContent(studioId, { userId: this.userId, token })) {
-		return TimelineDatastore.find({ studioId }, modifier)
+		return TimelineDatastore.findWithCursor({ studioId }, modifier)
 	}
 	return null
 })
@@ -55,8 +56,10 @@ meteorCustomPublish(
 	PubSub.timelineForDevice,
 	CustomCollectionName.StudioTimeline,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
+		check(deviceId, String)
+
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
-			const peripheralDevice = PeripheralDevices.findOne(deviceId)
+			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 
 			if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 
@@ -68,8 +71,10 @@ meteorCustomPublish(
 	}
 )
 meteorPublish(PubSub.timelineDatastoreForDevice, async function (deviceId, token) {
+	check(deviceId, String)
+
 	if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
-		const peripheralDevice = PeripheralDevices.findOne(deviceId)
+		const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 
 		if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
 
@@ -79,7 +84,7 @@ meteorPublish(PubSub.timelineDatastoreForDevice, async function (deviceId, token
 			fields: {},
 		}
 
-		return TimelineDatastore.find({ studioId }, modifier)
+		return TimelineDatastore.findWithCursor({ studioId }, modifier)
 	}
 	return null
 })
@@ -122,18 +127,22 @@ async function setupTimelinePublicationObservers(
 ): Promise<Meteor.LiveQueryHandle[]> {
 	// Set up observers:
 	return [
-		Studios.find(args.studioId, {
-			fields: {
-				// It should be enough to watch the mappingsHash, since that should change whenever there is a
-				// change to the mappings or the routes
-				mappingsHash: 1,
+		Studios.observeChanges(
+			args.studioId,
+			{
+				added: () => triggerUpdate({ invalidateStudio: true }),
+				changed: () => triggerUpdate({ invalidateStudio: true }),
+				removed: () => triggerUpdate({ invalidateStudio: true }),
 			},
-		}).observeChanges({
-			added: () => triggerUpdate({ invalidateStudio: true }),
-			changed: () => triggerUpdate({ invalidateStudio: true }),
-			removed: () => triggerUpdate({ invalidateStudio: true }),
-		}),
-		Timeline.find(args.studioId).observe({
+			{
+				fields: {
+					// It should be enough to watch the mappingsHash, since that should change whenever there is a
+					// change to the mappings or the routes
+					mappingsHash: 1,
+				},
+			}
+		),
+		Timeline.observe(args.studioId, {
 			added: (timeline) => triggerUpdate({ timeline }),
 			changed: (timeline) => triggerUpdate({ timeline }),
 			removed: () => triggerUpdate({ timeline: null }),
