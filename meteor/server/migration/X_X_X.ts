@@ -20,7 +20,7 @@ import {
 	ObjectOverrideSetOp,
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { JSONBlobStringify, JSONSchema } from '@sofie-automation/blueprints-integration'
+import { JSONBlobStringify, JSONSchema, TSR } from '@sofie-automation/blueprints-integration'
 
 /*
  * **************************************************************************************
@@ -93,6 +93,56 @@ function convertRouteSetMappings(studio: Studio) {
 	}
 
 	return changed && newRouteSets
+}
+
+enum OldDeviceType {
+	ABSTRACT = 0,
+	CASPARCG = 1,
+	ATEM = 2,
+	LAWO = 3,
+	HTTPSEND = 4,
+	PANASONIC_PTZ = 5,
+	TCPSEND = 6,
+	HYPERDECK = 7,
+	PHAROS = 8,
+	OSC = 9,
+	HTTPWATCHER = 10,
+	SISYFOS = 11,
+	QUANTEL = 12,
+	VIZMSE = 13,
+	SINGULAR_LIVE = 14,
+	SHOTOKU = 15,
+	VMIX = 20,
+	OBS = 21,
+	SOFIE_CHEF = 22,
+	TELEMETRICS = 23,
+	TRICASTER = 24,
+	MULTI_OSC = 25,
+}
+
+const oldDeviceTypeToNewMapping = {
+	[OldDeviceType.ABSTRACT]: TSR.DeviceType.ABSTRACT,
+	[OldDeviceType.CASPARCG]: TSR.DeviceType.CASPARCG,
+	[OldDeviceType.ATEM]: TSR.DeviceType.ATEM,
+	[OldDeviceType.LAWO]: TSR.DeviceType.LAWO,
+	[OldDeviceType.HTTPSEND]: TSR.DeviceType.HTTPSEND,
+	[OldDeviceType.PANASONIC_PTZ]: TSR.DeviceType.PANASONIC_PTZ,
+	[OldDeviceType.TCPSEND]: TSR.DeviceType.TCPSEND,
+	[OldDeviceType.HYPERDECK]: TSR.DeviceType.HYPERDECK,
+	[OldDeviceType.PHAROS]: TSR.DeviceType.PHAROS,
+	[OldDeviceType.OSC]: TSR.DeviceType.OSC,
+	[OldDeviceType.HTTPWATCHER]: TSR.DeviceType.HTTPWATCHER,
+	[OldDeviceType.SISYFOS]: TSR.DeviceType.SISYFOS,
+	[OldDeviceType.QUANTEL]: TSR.DeviceType.QUANTEL,
+	[OldDeviceType.VIZMSE]: TSR.DeviceType.VIZMSE,
+	[OldDeviceType.SINGULAR_LIVE]: TSR.DeviceType.SINGULAR_LIVE,
+	[OldDeviceType.SHOTOKU]: TSR.DeviceType.SHOTOKU,
+	[OldDeviceType.VMIX]: TSR.DeviceType.VMIX,
+	[OldDeviceType.OBS]: TSR.DeviceType.OBS,
+	[OldDeviceType.SOFIE_CHEF]: TSR.DeviceType.SOFIE_CHEF,
+	[OldDeviceType.TELEMETRICS]: TSR.DeviceType.TELEMETRICS,
+	[OldDeviceType.TRICASTER]: TSR.DeviceType.TRICASTER,
+	[OldDeviceType.MULTI_OSC]: TSR.DeviceType.MULTI_OSC,
 }
 
 export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
@@ -605,6 +655,111 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 					multi: true,
 				}
 			)
+		},
+	},
+
+	{
+		id: `Studio playoutDevices ensure new DeviceType values`,
+		canBeRunAutomatically: true,
+		dependOnResultFrom: 'Studio move playout-gateway subdevices',
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({})
+			const objectCount = studios.filter(
+				(studio) =>
+					studio.peripheralDeviceSettings.playoutDevices.overrides.filter(
+						(override) =>
+							override.op === 'set' &&
+							(typeof (override.value as StudioPlayoutDevice).options.type as any) === 'number'
+					).length
+			).length
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({})
+			for (const studio of studios) {
+				const newOverrides: SomeObjectOverrideOp[] = []
+				for (const override of studio.peripheralDeviceSettings.playoutDevices.overrides) {
+					if (
+						override.op === 'set' &&
+						typeof (override.value as StudioPlayoutDevice).options.type === 'number'
+					) {
+						const value = override.value as StudioPlayoutDevice
+						newOverrides.push(
+							literal<ObjectOverrideSetOp>({
+								op: 'set',
+								path: override.path,
+								value: literal<StudioIngestDevice>({
+									...value,
+									options: {
+										...value.options,
+										type: oldDeviceTypeToNewMapping[value.options.type] ?? TSR.DeviceType.ABSTRACT,
+									},
+								}),
+							})
+						)
+					} else {
+						newOverrides.push(override)
+					}
+				}
+
+				await Studios.updateAsync(studio._id, {
+					$set: {
+						[`peripheralDeviceSettings.playoutDevices.overrides`]: newOverrides,
+					},
+				})
+			}
+		},
+	},
+
+	{
+		id: `Studio mappings ensure new DeviceType values`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({})
+			const objectCount = studios.filter(
+				(studio) =>
+					studio.mappingsWithOverrides.overrides.filter(
+						(override) => override.op === 'set' && typeof override.value.device === 'number'
+					).length > 0
+			).length
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({})
+			for (const studio of studios) {
+				const newOverrides: SomeObjectOverrideOp[] = []
+				for (const override of studio.mappingsWithOverrides.overrides) {
+					if (override.op === 'set' && typeof (override.value as TSR.Mapping<any, any>).device === 'number') {
+						const value = override.value as TSR.Mapping<any, any>
+						newOverrides.push(
+							literal<ObjectOverrideSetOp>({
+								op: 'set',
+								path: override.path,
+								value: literal<TSR.Mapping<any, any>>({
+									...value,
+									device: oldDeviceTypeToNewMapping[value.device] ?? TSR.DeviceType.ABSTRACT,
+								}),
+							})
+						)
+					} else {
+						newOverrides.push(override)
+					}
+				}
+
+				await Studios.updateAsync(studio._id, {
+					$set: {
+						[`mappingsWithOverrides.overrides`]: newOverrides,
+					},
+				})
+			}
 		},
 	},
 ])

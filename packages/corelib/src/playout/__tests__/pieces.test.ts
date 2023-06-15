@@ -41,7 +41,7 @@ describe('Pieces', () => {
 		const simplePieceGroup = literal<TimelineObjGroupRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>>({
 			children: [],
 			content: {
-				deviceType: 0,
+				deviceType: 'ABSTRACT' as TSR.DeviceType.ABSTRACT,
 				type: TimelineContentTypeOther.GROUP,
 			},
 			enable: {
@@ -63,7 +63,7 @@ describe('Pieces', () => {
 		})
 		const simplePieceControl = literal<TimelineObjPieceAbstract & OnGenerateTimelineObjExt<PieceTimelineMetadata>>({
 			content: {
-				deviceType: 0,
+				deviceType: 'ABSTRACT' as TSR.DeviceType.ABSTRACT,
 				type: 'callback',
 				callBack: PlayoutChangedType.PIECE_PLAYBACK_STARTED,
 				callBackData: {
@@ -223,7 +223,7 @@ describe('Pieces', () => {
 				expect(res.capObjs).toStrictEqual([
 					{
 						children: [],
-						content: { deviceType: 0, type: 'group' },
+						content: { deviceType: 'ABSTRACT', type: 'group' },
 						enable: { end: 800, start: 0 },
 						id: 'piece_group_control_randomId9000_cap',
 						inGroup: 'randomId9003',
@@ -284,7 +284,7 @@ describe('Pieces', () => {
 
 			expect(res.capObjs).toStrictEqual([
 				{
-					content: { deviceType: 0 },
+					content: { deviceType: 'ABSTRACT' },
 					enable: { start: 'now' },
 					id: 'piece_group_control_randomId9000_cap_now',
 					layer: '',
@@ -296,7 +296,7 @@ describe('Pieces', () => {
 				},
 				{
 					children: [],
-					content: { deviceType: 0, type: 'group' },
+					content: { deviceType: 'ABSTRACT', type: 'group' },
 					enable: { end: '#piece_group_control_randomId9000_cap_now.start', start: 0 },
 					id: 'piece_group_control_randomId9000_cap',
 					inGroup: partGroup.id,
@@ -332,7 +332,7 @@ describe('Pieces', () => {
 
 			expect(res.capObjs).toStrictEqual([
 				{
-					content: { deviceType: 0 },
+					content: { deviceType: 'ABSTRACT' },
 					enable: { start: 'now' },
 					id: 'piece_group_control_randomId9000_cap_now',
 					layer: '',
@@ -369,7 +369,7 @@ describe('Pieces', () => {
 
 			expect(res.capObjs).toStrictEqual([
 				{
-					content: { deviceType: 0 },
+					content: { deviceType: 'ABSTRACT' },
 					enable: { start: 'now' },
 					id: 'piece_group_control_randomId9000_cap_now',
 					layer: '',
@@ -381,7 +381,7 @@ describe('Pieces', () => {
 				},
 				{
 					children: [],
-					content: { deviceType: 0, type: 'group' },
+					content: { deviceType: 'ABSTRACT', type: 'group' },
 					enable: { end: '#piece_group_control_randomId9000_cap_now.start', start: 0 },
 					id: 'piece_group_control_randomId9000_cap',
 					inGroup: partGroup.id,
@@ -418,7 +418,7 @@ describe('Pieces', () => {
 			expect(res.capObjs).toStrictEqual([
 				{
 					children: [],
-					content: { deviceType: 0, type: 'group' },
+					content: { deviceType: 'ABSTRACT', type: 'group' },
 					enable: { end: pieceInstance.resolvedEndCap, start: 0 },
 					id: 'piece_group_control_randomId9000_cap',
 					inGroup: partGroup.id,
