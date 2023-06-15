@@ -255,7 +255,7 @@ describe('findLookaheadObjectsForPart', () => {
 				infinitePieceInstanceId: undefined,
 				partInstanceId: partInstanceId,
 				content: {
-					deviceType: 0,
+					deviceType: 'ABSTRACT',
 				},
 			},
 		])
@@ -298,7 +298,7 @@ describe('findLookaheadObjectsForPart', () => {
 				infinitePieceInstanceId: undefined,
 				partInstanceId: partInstanceId,
 				content: {
-					deviceType: 0,
+					deviceType: 'ABSTRACT',
 					kf2: true,
 				},
 			},
@@ -557,7 +557,7 @@ describe('findLookaheadObjectsForPart', () => {
 				partInstanceId: partInstanceId,
 				infinitePieceInstanceId: undefined,
 				content: {
-					deviceType: 0,
+					deviceType: 'ABSTRACT',
 				},
 			},
 			{
@@ -567,7 +567,7 @@ describe('findLookaheadObjectsForPart', () => {
 				partInstanceId: partInstanceId,
 				infinitePieceInstanceId: undefined,
 				content: {
-					deviceType: 0,
+					deviceType: 'ABSTRACT',
 				},
 			},
 		])
@@ -620,7 +620,7 @@ describe('findLookaheadObjectsForPart', () => {
 				partInstanceId: partInstanceId,
 				infinitePieceInstanceId: undefined,
 				content: {
-					deviceType: 0,
+					deviceType: 'ABSTRACT',
 					kf2: true,
 				},
 			},
@@ -631,7 +631,7 @@ describe('findLookaheadObjectsForPart', () => {
 				partInstanceId: partInstanceId,
 				infinitePieceInstanceId: undefined,
 				content: {
-					deviceType: 0,
+					deviceType: 'ABSTRACT',
 					kf0: true,
 				},
 			},
@@ -775,7 +775,7 @@ describe('findLookaheadObjectsForPart', () => {
 				partInstanceId: partInstanceId,
 				infinitePieceInstanceId: undefined,
 				content: {
-					deviceType: 0,
+					deviceType: 'ABSTRACT',
 				},
 			},
 			{
@@ -785,7 +785,7 @@ describe('findLookaheadObjectsForPart', () => {
 				partInstanceId: partInstanceId,
 				infinitePieceInstanceId: undefined,
 				content: {
-					deviceType: 0,
+					deviceType: 'ABSTRACT',
 					kf0: true,
 				},
 			},
@@ -809,7 +809,7 @@ describe('findLookaheadObjectsForPart', () => {
 				partInstanceId: partInstanceId,
 				infinitePieceInstanceId: undefined,
 				content: {
-					deviceType: 0,
+					deviceType: 'ABSTRACT',
 				},
 			},
 			{
@@ -819,7 +819,7 @@ describe('findLookaheadObjectsForPart', () => {
 				partInstanceId: partInstanceId,
 				infinitePieceInstanceId: undefined,
 				content: {
-					deviceType: 0,
+					deviceType: 'ABSTRACT',
 				},
 			},
 		])
