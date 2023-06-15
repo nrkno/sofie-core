@@ -6,12 +6,19 @@
 $part-left-padding: 6px;
 $part-right-padding: 5px;
 
+$break-width: 35rem;
+
 .segment-storyboard {
 	> .segment-storyboard__part-list__container {
 		position: relative;
 		overflow: hidden;
+
 		grid-column: timeline / end;
 		grid-row: header / end;
+		@media screen and (max-width: $break-width) {
+			grid-column: timeline / end;
+			grid-row: timeline-header / zoom-area;
+		}
 
 		contain: content style;
 		touch-action: pan-y;
@@ -127,6 +134,11 @@ $part-right-padding: 5px;
 	> .segment-timeline__source-layers {
 		grid-column: segment-group-controls / timeline;
 		grid-row: main-view / zoom-area;
+		@media screen and (max-width: $break-width) {
+			grid-column: start / timeline;
+			grid-row: output-layers / zoom-area;
+		}
+
 		margin: $segment-storyboard-thumbnail-height 0.3em 0;
 
 		> .segment-timeline__output-group {
@@ -205,7 +217,9 @@ $part-right-padding: 5px;
 			right: -2px;
 		}
 
-		&:not(.segment-storyboard__part__next-line--autonext):not(.segment-storyboard__part__next-line--live):not(.segment-storyboard__part__next-line--invalid) {
+		&:not(.segment-storyboard__part__next-line--autonext):not(.segment-storyboard__part__next-line--live):not(
+				.segment-storyboard__part__next-line--invalid
+			) {
 			&::before {
 				@include take-arrow();
 				top: -3px;
@@ -307,7 +321,9 @@ $part-right-padding: 5px;
 			}
 		}
 
-		&:not(.segment-storyboard__part__next-line-label--next):not(.segment-storyboard__part__next-line-label--live).segment-storyboard__part__next-line-label--autonext,
+		&:not(.segment-storyboard__part__next-line-label--next):not(
+				.segment-storyboard__part__next-line-label--live
+			).segment-storyboard__part__next-line-label--autonext,
 		&.segment-storyboard__part__next-line-label--opposite {
 			font-weight: 400;
 			top: 5px;
