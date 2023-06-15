@@ -496,6 +496,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 			livePositionInPart < (uiPiece.renderedInPoint || 0) + (uiPiece.renderedDuration || Number.POSITIVE_INFINITY) &&
 			vtContent &&
 			vtContent.sourceDuration !== undefined &&
+			!vtContent.loop &&
 			((part.instance.part.autoNext &&
 				(uiPiece.renderedInPoint || 0) + (vtContent.sourceDuration - seek) < (this.props.partDuration || 0)) ||
 				(!part.instance.part.autoNext &&

@@ -150,6 +150,7 @@ export class CustomLayerItemRenderer<
 		const postrollDuration = vtContent && vtContent.postrollDuration ? vtContent.postrollDuration : 0
 		if (
 			vtContent &&
+			!vtContent.loop &&
 			vtContent.sourceDuration !== undefined &&
 			vtContent.sourceDuration !== 0 &&
 			(this.props.piece.renderedInPoint || 0) + (vtContent.sourceDuration - seek) < (this.props.partDuration || 0)

@@ -1,4 +1,4 @@
-import { PieceLifespan, SourceLayerType } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan, SourceLayerType, VTContent } from '@sofie-automation/blueprints-integration'
 import React, { useMemo } from 'react'
 import { PartExtended, PieceExtended } from '../../../lib/Rundown'
 import { findPieceExtendedToShowFromOrderedResolvedInstances } from '../PieceIcons/utils'
@@ -94,7 +94,8 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 
 	const isInvalid = !!part.instance.part.invalid
 
-	const endsInFreeze = !part.instance.part.autoNext && !!mainPiece?.instance.piece.content.sourceDuration
+	const loop = !(mainPiece?.instance.piece.content as VTContent).loop
+	const endsInFreeze = !part.instance.part.autoNext && !loop && !!mainPiece?.instance.piece.content.sourceDuration
 	const mainSourceEnd = mainPiece?.instance.piece.content.sourceDuration
 		? (mainPieceInPoint ?? 0) + mainPiece?.instance.piece.content.sourceDuration
 		: null
