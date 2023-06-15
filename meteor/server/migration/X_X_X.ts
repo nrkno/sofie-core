@@ -661,6 +661,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	{
 		id: `Studio playoutDevices ensure new DeviceType values`,
 		canBeRunAutomatically: true,
+		dependOnResultFrom: 'Studio move playout-gateway subdevices',
 		validate: async () => {
 			const studios = await Studios.findFetchAsync({})
 			const objectCount = studios.filter(

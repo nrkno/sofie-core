@@ -2179,7 +2179,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@sofie-automation/shared-lib@portal:../packages/shared-lib::locator=automation-core%40workspace%3A."
   dependencies:
-    "@mos-connection/model": ^3.0.2
+    "@mos-connection/model": ^3.0.4
     timeline-state-resolver-types: 8.0.0-nightly-release50-20230614-110352-b4fa3c9f6.0
     tslib: ^2.4.0
     type-fest: ^2.19.0
