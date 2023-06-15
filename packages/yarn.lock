@@ -5468,7 +5468,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
     "@mos-connection/model": ^3.0.4
-    timeline-state-resolver-types: 8.0.0-nightly-release50-20230607-104304-36ff5e4a1.0
+    timeline-state-resolver-types: 8.0.0-nightly-release50-20230615-051635-c51460271.0
     tslib: ^2.4.0
     type-fest: ^2.19.0
   languageName: unknown
@@ -15070,7 +15070,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"klona@npm:^2.0.5":
+"klona@npm:^2.0.5, klona@npm:^2.0.6":
   version: 2.0.6
   resolution: "klona@npm:2.0.6"
   checksum: ac9ee3732e42b96feb67faae4d27cf49494e8a3bf3fa7115ce242fe04786788e0aff4741a07a45a2462e2079aa983d73d38519c85d65b70ef11447bbc3c58ce7
@@ -18421,7 +18421,7 @@ asn1@evs-broadcast/node-asn1:
     "@sofie-automation/shared-lib": 1.50.0-in-development
     debug: ^4.3.3
     influx: ^5.9.3
-    timeline-state-resolver: 8.0.0-nightly-release50-20230607-104304-36ff5e4a1.0
+    timeline-state-resolver: 8.0.0-nightly-release50-20230615-051635-c51460271.0
     tslib: ^2.4.0
     underscore: ^1.13.4
     winston: ^3.8.2
@@ -22105,18 +22105,18 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230607-104304-36ff5e4a1.0":
-  version: 8.0.0-nightly-release50-20230607-104304-36ff5e4a1.0
-  resolution: "timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230607-104304-36ff5e4a1.0"
+"timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230615-051635-c51460271.0":
+  version: 8.0.0-nightly-release50-20230615-051635-c51460271.0
+  resolution: "timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230615-051635-c51460271.0"
   dependencies:
     tslib: ^2.5.1
-  checksum: 46c83cf3e73c7056f91745809bf4dc93be4febdae95e8e22363c8435ce94219c8ce2b5811e1dd89b0186a4e2cc57c13be322d4865cca1d2b98767f66bca15080
+  checksum: a8f23345e8f40778da03799801b997027f768676e55fce6785e5fdfcb09939fb26d52b1b09dfc026e5dbc827bc53264fceb809d5d32493acf243190c0352db7f
   languageName: node
   linkType: hard
 
-"timeline-state-resolver@npm:8.0.0-nightly-release50-20230607-104304-36ff5e4a1.0":
-  version: 8.0.0-nightly-release50-20230607-104304-36ff5e4a1.0
-  resolution: "timeline-state-resolver@npm:8.0.0-nightly-release50-20230607-104304-36ff5e4a1.0"
+"timeline-state-resolver@npm:8.0.0-nightly-release50-20230615-051635-c51460271.0":
+  version: 8.0.0-nightly-release50-20230615-051635-c51460271.0
+  resolution: "timeline-state-resolver@npm:8.0.0-nightly-release50-20230615-051635-c51460271.0"
   dependencies:
     "@tv2media/v-connection": ^7.3.0
     atem-connection: 2.4.0
@@ -22129,6 +22129,7 @@ asn1@evs-broadcast/node-asn1:
     eventemitter3: ^4.0.7
     got: ^11.8.6
     hyperdeck-connection: ^0.5.0
+    klona: ^2.0.6
     obs-websocket-js: ^4.0.3
     osc: ^2.4.4
     p-all: ^3.0.0
@@ -22137,7 +22138,7 @@ asn1@evs-broadcast/node-asn1:
     sprintf-js: ^1.1.2
     superfly-timeline: ^8.3.1
     threadedclass: ^1.2.1
-    timeline-state-resolver-types: 8.0.0-nightly-release50-20230607-104304-36ff5e4a1.0
+    timeline-state-resolver-types: 8.0.0-nightly-release50-20230615-051635-c51460271.0
     tslib: ^2.5.1
     tv-automation-quantel-gateway-client: ^3.1.11-agent-debug-20230117-160455-c2c4ee4.0
     underscore: ^1.13.6
@@ -22145,7 +22146,7 @@ asn1@evs-broadcast/node-asn1:
     utf-8-validate: ^5.0.10
     ws: ^7.5.9
     xml-js: ^1.6.11
-  checksum: 1e751df3a349ef1ce62899a680aaf2d7c7ac8a7897fbd66bf40ae04dd19dda2976149640e1b43524ec7a11b2b936504bf2da10204ea7d528304b930ae1d3eb82
+  checksum: 898a1f1a02d33bb6e0c764b9c29df2544eb50b99782ec2d8c43cb714ab32980af2dec3d22d943aa420f29129d415d20fdf7767e5c91c931b70fc4955896c1eb5
   languageName: node
   linkType: hard
 
