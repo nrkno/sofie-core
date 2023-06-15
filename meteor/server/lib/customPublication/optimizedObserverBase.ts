@@ -76,6 +76,9 @@ export async function setUpOptimizedObserverInner<
 			const i2 = thisObserverWrapper.newSubscribers.indexOf(receiver)
 			if (i2 !== -1) thisObserverWrapper.newSubscribers.splice(i2, 1)
 
+			const subCount = thisObserverWrapper.activeSubscribers.length + thisObserverWrapper.newSubscribers.length
+			logger.debug(`Remove subscriber from ${identifier} ${subCount} are left`)
+
 			// clean up if empty:
 			if (
 				!thisObserverWrapper.activeSubscribers.length &&
@@ -94,6 +97,9 @@ export async function setUpOptimizedObserverInner<
 		thisObserverWrapper.newSubscribers.push(receiver)
 		receiver.onStop(() => removeReceiver())
 
+		const subCount = thisObserverWrapper.activeSubscribers.length + thisObserverWrapper.newSubscribers.length
+		logger.debug(`Adding subscriber to ${identifier} ${subCount} are joined`)
+
 		// If the optimizedObserver is setup, we can notify it that we need data
 		if (thisObserverWrapper.subscribersChanged) thisObserverWrapper.subscribersChanged()
 
@@ -110,6 +116,8 @@ export async function setUpOptimizedObserverInner<
 			worker: resultingOptimizedObserver,
 		}
 		receiver.onStop(() => removeReceiver())
+
+		logger.debug(`Starting publication ${identifier}`)
 
 		// Start the optimizedObserver
 		try {
