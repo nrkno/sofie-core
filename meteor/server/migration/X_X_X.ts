@@ -666,11 +666,8 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			const studios = await Studios.findFetchAsync({})
 			const objectCount = studios.filter(
 				(studio) =>
-					studio.peripheralDeviceSettings.playoutDevices.overrides.filter(
-						(override) =>
-							override.op === 'set' &&
-							(typeof (override.value as StudioPlayoutDevice).options.type as any) === 'number'
-					).length
+					studio.peripheralDeviceSettings.playoutDevices.overrides.filter(updatePlayoutDeviceTypeInOverride)
+						.length
 			).length
 
 			if (objectCount) {
@@ -681,30 +678,9 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 		migrate: async () => {
 			const studios = await Studios.findFetchAsync({})
 			for (const studio of studios) {
-				const newOverrides: SomeObjectOverrideOp[] = []
-				for (const override of studio.peripheralDeviceSettings.playoutDevices.overrides) {
-					if (
-						override.op === 'set' &&
-						typeof (override.value as StudioPlayoutDevice).options.type === 'number'
-					) {
-						const value = override.value as StudioPlayoutDevice
-						newOverrides.push(
-							literal<ObjectOverrideSetOp>({
-								op: 'set',
-								path: override.path,
-								value: literal<StudioIngestDevice>({
-									...value,
-									options: {
-										...value.options,
-										type: oldDeviceTypeToNewMapping[value.options.type] ?? TSR.DeviceType.ABSTRACT,
-									},
-								}),
-							})
-						)
-					} else {
-						newOverrides.push(override)
-					}
-				}
+				const newOverrides = studio.peripheralDeviceSettings.playoutDevices.overrides.map(
+					(override) => updatePlayoutDeviceTypeInOverride(override) || override
+				)
 
 				await Studios.updateAsync(studio._id, {
 					$set: {
@@ -721,10 +697,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 		validate: async () => {
 			const studios = await Studios.findFetchAsync({})
 			const objectCount = studios.filter(
-				(studio) =>
-					studio.mappingsWithOverrides.overrides.filter(
-						(override) => override.op === 'set' && typeof override.value.device === 'number'
-					).length > 0
+				(studio) => studio.mappingsWithOverrides.overrides.filter(updateMappingDeviceTypeInOverride).length > 0
 			).length
 
 			if (objectCount) {
@@ -735,24 +708,9 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 		migrate: async () => {
 			const studios = await Studios.findFetchAsync({})
 			for (const studio of studios) {
-				const newOverrides: SomeObjectOverrideOp[] = []
-				for (const override of studio.mappingsWithOverrides.overrides) {
-					if (override.op === 'set' && typeof (override.value as TSR.Mapping<any, any>).device === 'number') {
-						const value = override.value as TSR.Mapping<any, any>
-						newOverrides.push(
-							literal<ObjectOverrideSetOp>({
-								op: 'set',
-								path: override.path,
-								value: literal<TSR.Mapping<any, any>>({
-									...value,
-									device: oldDeviceTypeToNewMapping[value.device] ?? TSR.DeviceType.ABSTRACT,
-								}),
-							})
-						)
-					} else {
-						newOverrides.push(override)
-					}
-				}
+				const newOverrides = studio.mappingsWithOverrides.overrides.map(
+					(override) => updateMappingDeviceTypeInOverride(override) || override
+				)
 
 				await Studios.updateAsync(studio._id, {
 					$set: {
@@ -763,3 +721,43 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 		},
 	},
 ])
+
+function updatePlayoutDeviceTypeInOverride(op: SomeObjectOverrideOp): ObjectOverrideSetOp | undefined {
+	if (op.op !== 'set') return undefined
+	if (!op.path.includes('.')) {
+		// Root level
+		const value = op.value as Partial<StudioPlayoutDevice>
+		if (typeof value.options?.type === 'number') {
+			value.options.type = oldDeviceTypeToNewMapping[value.options.type] ?? TSR.DeviceType.ABSTRACT
+			return op
+		}
+	} else if (op.path.endsWith('.options.type')) {
+		// Single property override
+		if (typeof op.value === 'number') {
+			op.value = oldDeviceTypeToNewMapping[op.value] ?? TSR.DeviceType.ABSTRACT
+			return op
+		}
+	}
+
+	return undefined
+}
+
+function updateMappingDeviceTypeInOverride(op: SomeObjectOverrideOp): ObjectOverrideSetOp | undefined {
+	if (op.op !== 'set') return undefined
+	if (!op.path.includes('.')) {
+		// Root level
+		const value = op.value as Partial<TSR.Mapping<any, any>>
+		if (typeof value.device === 'number') {
+			value.device = oldDeviceTypeToNewMapping[value.device] ?? TSR.DeviceType.ABSTRACT
+			return op
+		}
+	} else if (op.path.endsWith('.device')) {
+		// Single property override
+		if (typeof op.value === 'number') {
+			op.value = oldDeviceTypeToNewMapping[op.value] ?? TSR.DeviceType.ABSTRACT
+			return op
+		}
+	}
+
+	return undefined
+}
