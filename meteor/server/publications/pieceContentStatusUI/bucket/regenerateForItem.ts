@@ -45,7 +45,10 @@ export async function regenerateForBucketAdLibIds(
 			if (sourceLayer) {
 				const [status, itemDependencies] = await checkPieceContentStatusAndDependencies(
 					uiStudio,
-					actionDoc,
+					{
+						...actionDoc,
+						partId: undefined,
+					},
 					sourceLayer
 				)
 
@@ -107,6 +110,7 @@ export async function regenerateForBucketActionIds(
 					_id: protectString(`${actionDoc._id}`),
 					content: 'content' in actionDoc.display ? actionDoc.display.content : {},
 					expectedPackages: actionDoc.expectedPackages,
+					partId: undefined,
 				})
 
 				const [status, itemDependencies] = await checkPieceContentStatusAndDependencies(

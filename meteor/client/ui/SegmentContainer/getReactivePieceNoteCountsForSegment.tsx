@@ -53,6 +53,7 @@ export function getReactivePieceNoteCountsForSegment(segment: SegmentUi): Segmen
 				case PieceStatusCode.SOURCE_HAS_ISSUES:
 				case PieceStatusCode.SOURCE_BROKEN:
 				case PieceStatusCode.SOURCE_MISSING:
+				case PieceStatusCode.TRANSITION_NOT_SET:
 					segmentNoteCounts.warning++
 					break
 				default:

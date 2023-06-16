@@ -248,6 +248,7 @@ export namespace RundownUtils {
 			case PieceStatusCode.OK:
 			case PieceStatusCode.SOURCE_HAS_ISSUES:
 			case PieceStatusCode.SOURCE_NOT_SET:
+			case PieceStatusCode.TRANSITION_NOT_SET:
 				return
 			case PieceStatusCode.SOURCE_BROKEN:
 				return 'source-broken'

@@ -9,7 +9,7 @@ import {
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
 import { getExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { ExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExpectedPackageId, PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	getPackageContainerPackageId,
 	PackageContainerPackageStatusDB,
@@ -25,8 +25,9 @@ import { UIStudio } from '../../../lib/api/studios'
 import { routeExpectedPackages, MappingExtWithPackage } from '../../../lib/collections/Studios'
 import { generateTranslation, unprotectString } from '../../../lib/lib'
 import { PieceContentStatusObj, ScanInfoForPackage, ScanInfoForPackages } from '../../../lib/mediaObjects'
-import { MediaObjects, PackageContainerPackageStatuses, PackageInfos } from '../../collections'
+import { MediaObjects, PackageContainerPackageStatuses, PackageInfos, Parts } from '../../collections'
 import type { PieceDependencies } from './common'
+import { DBPart } from '../../../lib/collections/Parts'
 
 /**
  * Take properties from the mediainfo / medistream and transform into a
@@ -142,7 +143,17 @@ export function getMediaObjectMediaId(
 	return undefined
 }
 
-export type PieceContentStatusPiece = Pick<PieceGeneric, '_id' | 'content' | 'expectedPackages'>
+export type PieceContentStatusPiece = Pick<PieceGeneric, '_id' | 'content' | 'expectedPackages'> &
+	(
+		| {
+				/** If provided, extra checks that involve analyzing the Part will be opted into. Set to an explicit undefined value to disable. */
+				partId: PartId | undefined
+		  }
+		| {
+				/** If provided, extra checks that involve analyzing the Part will be opted into. Set to an explicit undefined value to disable.  */
+				startPartId: PartId | undefined
+		  }
+	)
 export type PieceContentStatusStudio = Pick<
 	UIStudio,
 	'_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'
@@ -158,6 +169,18 @@ export async function checkPieceContentStatusAndDependencies(
 		packageInfos: [],
 		packageContainerPackageStatuses: [],
 	}
+
+	const status: PieceContentStatusObj = {
+		status: PieceStatusCode.UNKNOWN,
+		metadata: null,
+		packageInfos: undefined,
+		messages: [],
+		contentDuration: undefined,
+	}
+
+	const transitionStatus = await checkPieceContentTransitionStatus(piece, sourceLayer)
+	status.status = Math.max(status.status, transitionStatus.status)
+	status.messages.push(...transitionStatus.messages)
 
 	const ignoreMediaStatus = piece.content && piece.content.ignoreMediaObjectStatus
 	if (!ignoreMediaStatus) {
@@ -186,13 +209,17 @@ export async function checkPieceContentStatusAndDependencies(
 			}
 
 			// Using Expected Packages:
-			const status = await checkPieceContentExpectedPackageStatus(
+			const expectedPackageStatus = await checkPieceContentExpectedPackageStatus(
 				piece,
 				sourceLayer,
 				studio,
 				getPackageInfos,
 				getPackageContainerPackageStatus
 			)
+
+			status.status = Math.max(status.status, expectedPackageStatus.status)
+			status.messages.push(...expectedPackageStatus.messages)
+
 			return [status, pieceDependencies]
 		} else {
 			// Fallback to MediaObject statuses:
@@ -204,21 +231,20 @@ export async function checkPieceContentStatusAndDependencies(
 				})
 			}
 
-			const status = await checkPieceContentMediaObjectStatus(piece, sourceLayer, studio, getMediaObject)
+			const mediaObjectStatus = await checkPieceContentMediaObjectStatus(
+				piece,
+				sourceLayer,
+				studio,
+				getMediaObject
+			)
+			status.status = Math.max(status.status, mediaObjectStatus.status)
+			status.messages.push(...mediaObjectStatus.messages)
+
 			return [status, pieceDependencies]
 		}
 	}
 
-	return [
-		{
-			status: PieceStatusCode.UNKNOWN,
-			metadata: null,
-			packageInfos: undefined,
-			messages: [],
-			contentDuration: undefined,
-		},
-		pieceDependencies,
-	]
+	return [status, pieceDependencies]
 }
 
 async function checkPieceContentMediaObjectStatus(
@@ -367,6 +393,39 @@ async function checkPieceContentMediaObjectStatus(
 interface ContentMessage {
 	status: PieceStatusCode
 	message: ITranslatableMessage
+}
+
+async function checkPieceContentTransitionStatus(
+	piece: PieceContentStatusPiece,
+	sourceLayer: ISourceLayer
+): Promise<Pick<PieceContentStatusObj, 'messages' | 'status'>> {
+	const messages: PieceContentStatusObj['messages'] = []
+	let status: PieceContentStatusObj['status'] = PieceStatusCode.OK
+
+	if (sourceLayer.type !== SourceLayerType.TRANSITION) {
+		return { status, messages }
+	}
+
+	let part: DBPart | undefined = undefined
+	if ('partId' in piece && piece.partId) {
+		part = await Parts.findOneAsync(piece.partId)
+	} else if ('startPartId' in piece && piece.startPartId) {
+		part = await Parts.findOneAsync(piece.startPartId)
+	}
+
+	if (part && !part.inTransition && !part.outTransition) {
+		status = PieceStatusCode.TRANSITION_NOT_SET
+		messages.push(
+			generateTranslation('{{sourceLayer}} is missing a transition declaration (inTransition or outTransition)', {
+				sourceLayer: sourceLayer.name,
+			})
+		)
+	}
+
+	return {
+		status,
+		messages,
+	}
 }
 
 async function checkPieceContentExpectedPackageStatus(

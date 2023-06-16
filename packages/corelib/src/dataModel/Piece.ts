@@ -18,6 +18,9 @@ export enum PieceStatusCode {
 	/** No fault with piece, can be played */
 	OK = 0,
 
+	/** Transition not set - the piece is on a TRANSITION type Source Layer but its Part hasn't set inTransition nor outTransition */
+	TRANSITION_NOT_SET = 4,
+
 	/** The source exists but can't be played for a non-technical reason. E.G. A placeholder clip with no content. */
 	SOURCE_NOT_READY = 5,
 

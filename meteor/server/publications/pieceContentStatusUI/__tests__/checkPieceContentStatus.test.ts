@@ -364,7 +364,14 @@ describe('lib/mediaObjects', () => {
 			timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 		})
 
-		const status1 = await checkPieceContentStatusAndDependencies(mockStudio, piece1, sourcelayer1)
+		const status1 = await checkPieceContentStatusAndDependencies(
+			mockStudio,
+			{
+				...piece1,
+				partId: undefined,
+			},
+			sourcelayer1
+		)
 		expect(status1[0].status).toEqual(PieceStatusCode.OK)
 		expect(status1[0].messages).toHaveLength(0)
 		expect(status1[1]).toMatchObject(
@@ -375,7 +382,14 @@ describe('lib/mediaObjects', () => {
 			})
 		)
 
-		const status2 = await checkPieceContentStatusAndDependencies(mockStudio, piece2, sourcelayer1)
+		const status2 = await checkPieceContentStatusAndDependencies(
+			mockStudio,
+			{
+				...piece2,
+				partId: undefined,
+			},
+			sourcelayer1
+		)
 		expect(status2[0].status).toEqual(PieceStatusCode.SOURCE_BROKEN)
 		expect(status2[0].messages).toHaveLength(1)
 		expect(status2[0].messages[0]).toMatchObject({
@@ -389,7 +403,14 @@ describe('lib/mediaObjects', () => {
 			})
 		)
 
-		const status3 = await checkPieceContentStatusAndDependencies(mockStudio, piece3, sourcelayer1)
+		const status3 = await checkPieceContentStatusAndDependencies(
+			mockStudio,
+			{
+				...piece3,
+				partId: undefined,
+			},
+			sourcelayer1
+		)
 		expect(status3[0].status).toEqual(PieceStatusCode.SOURCE_MISSING)
 		expect(status3[0].messages).toHaveLength(1)
 		expect(status3[0].messages[0]).toMatchObject({

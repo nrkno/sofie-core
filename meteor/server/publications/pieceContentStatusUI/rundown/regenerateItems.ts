@@ -7,7 +7,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { UIPieceContentStatus } from '../../../../lib/api/rundownNotifications'
-import { literal, protectString } from '../../../../lib/lib'
+import { literal, propertyIsTruthy, protectString } from '../../../../lib/lib'
 import { CustomPublishCollection } from '../../../lib/customPublication'
 import { ContentCache } from './reactiveContentCache'
 import { wrapTranslatableMessageFromBlueprintsIfNotString } from '@sofie-automation/corelib/dist/TranslatableMessage'
@@ -183,7 +183,7 @@ export async function regenerateForAdLibPieceIds(
 		dependenciesState.delete(pieceId)
 
 		const pieceDoc = contentCache.AdLibPieces.findOne(pieceId)
-		if (!pieceDoc || !pieceDoc.partId) {
+		if (!pieceDoc || !propertyIsTruthy(pieceDoc, 'partId')) {
 			// Piece has been deleted, queue it for batching
 			deletedPieceIds.add(pieceId)
 		} else {
@@ -238,6 +238,7 @@ export async function regenerateForAdLibActionIds(
 				_id: protectString(`${actionDoc._id}`),
 				content: 'content' in actionDoc.display ? actionDoc.display.content : {},
 				expectedPackages: actionDoc.expectedPackages,
+				partId: actionDoc.partId,
 			})
 
 			const sourceLayerId = 'sourceLayerId' in actionDoc.display ? actionDoc.display.sourceLayerId : undefined
@@ -300,7 +301,10 @@ export async function regenerateForBaselineAdLibPieceIds(
 			if (sourceLayer) {
 				const [status, dependencies] = await checkPieceContentStatusAndDependencies(
 					uiStudio,
-					pieceDoc,
+					{
+						...pieceDoc,
+						partId: pieceDoc.partId,
+					},
 					sourceLayer
 				)
 
@@ -359,6 +363,7 @@ export async function regenerateForBaselineAdLibActionIds(
 				_id: protectString(`${actionDoc._id}`),
 				content: 'content' in actionDoc.display ? actionDoc.display.content : {},
 				expectedPackages: actionDoc.expectedPackages,
+				partId: actionDoc.partId,
 			})
 
 			const sourceLayerId = 'sourceLayerId' in actionDoc.display ? actionDoc.display.sourceLayerId : undefined

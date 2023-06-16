@@ -548,6 +548,8 @@ export function getNoticeLevelForPieceStatus(statusCode: PieceStatusCode): Notic
 			return NoticeLevel.WARNING
 		case PieceStatusCode.SOURCE_BROKEN:
 			return NoticeLevel.WARNING
+		case PieceStatusCode.TRANSITION_NOT_SET:
+			return NoticeLevel.WARNING
 		case PieceStatusCode.SOURCE_HAS_ISSUES:
 		case PieceStatusCode.SOURCE_NOT_READY:
 			return NoticeLevel.NOTIFICATION

@@ -511,3 +511,16 @@ export class DummyReactiveVar<T> implements ReactiveVar<T> {
 		this.value = newValue
 	}
 }
+
+/**
+ * TypeScript type guard function for confirming that an arbitrary property
+ * of a record is truthy. Useful in scenarios where TypeScript's narrowing won't do the trick.
+ *
+ * https://stackoverflow.com/questions/57928920/typescript-narrowing-of-keys-in-objects-when-passed-to-function
+ */
+export function propertyIsTruthy<T extends Record<any, any>, K extends keyof T>(
+	input: T,
+	key: K
+): input is T & Required<Pick<T, K>> {
+	return Boolean(input[key])
+}
