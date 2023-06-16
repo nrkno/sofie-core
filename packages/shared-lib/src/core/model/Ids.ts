@@ -17,6 +17,9 @@ export type PieceInstanceId = ProtectedString<'PieceInstanceId'>
 /** A string, identifying a PartInstance */
 export type PartInstanceId = ProtectedString<'PartInstanceId'>
 
+/** A string, identifying a Rundown */
+export type RundownId = ProtectedString<'RundownId'>
+
 /** A string, identifying a RundownPlaylist */
 export type RundownPlaylistId = ProtectedString<'RundownPlaylistId'>
 

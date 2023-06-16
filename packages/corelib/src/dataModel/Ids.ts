@@ -67,9 +67,6 @@ export type RundownBaselineObjId = ProtectedString<'RundownBaselineObjId'>
 /** A string, identifying a RundownLayout */
 export type RundownLayoutId = ProtectedString<'RundownLayoutId'>
 
-/** A string, identifying a Rundown */
-export type RundownId = ProtectedString<'RundownId'>
-
 /** A string, identifying a Segment */
 export type SegmentId = ProtectedString<'SegmentId'>
 

@@ -48,7 +48,6 @@ import { TranslationsBundle } from '../collections/TranslationsBundles'
 import { DBTriggeredActions, UITriggeredActionsObj } from '../collections/TriggeredActions'
 import { UserActionsLogItem } from '../collections/UserActionsLog'
 import { DBUser } from '../collections/Users'
-import { DBObj } from '../lib'
 import { MongoQuery } from '../typings/meteor'
 import { UIBucketContentStatus, UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications'
 import { UIShowStyleBase } from './showStyles'
@@ -56,6 +55,11 @@ import { UIStudio } from './studios'
 import { UIDeviceTriggerPreview } from '../../server/publications/deviceTriggersPreview'
 import { DeviceTriggerMountedAction, PreviewWrappedAdLib } from './triggers/MountedTriggers'
 import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import {
+	PackageManagerExpectedPackage,
+	PackageManagerPackageContainers,
+	PackageManagerPlayoutContext,
+} from '@sofie-automation/shared-lib/dist/package-manager/publications'
 
 /**
  * Ids of possible DDP subscriptions
@@ -120,7 +124,6 @@ export enum PubSub {
 	timelineDatastoreForDevice = 'timelineDatastoreForDevice',
 	mappingsForStudio = 'mappingsForStudio',
 	timelineForStudio = 'timelineForStudio',
-	expectedPackagesForDevice = 'expectedPackagesForDevice',
 
 	uiShowStyleBase = 'uiShowStyleBase',
 	uiStudio = 'uiStudio',
@@ -133,6 +136,10 @@ export enum PubSub {
 	uiSegmentPartNotes = 'uiSegmentPartNotes',
 	uiPieceContentStatuses = 'uiPieceContentStatuses',
 	uiBucketContentStatuses = 'uiBucketContentStatuses',
+
+	packageManagerPlayoutContext = 'packageManagerPlayoutContext',
+	packageManagerPackageContainers = 'packageManagerPackageContainers',
+	packageManagerExpectedPackages = 'packageManagerExpectedPackages',
 }
 
 /**
@@ -223,11 +230,6 @@ export interface PubSubTypes {
 	[PubSub.timelineDatastoreForDevice]: (deviceId: PeripheralDeviceId, token?: string) => DBTimelineDatastoreEntry
 	[PubSub.mappingsForStudio]: (studioId: StudioId, token?: string) => RoutedMappings
 	[PubSub.timelineForStudio]: (studioId: StudioId, token?: string) => RoutedTimeline
-	[PubSub.expectedPackagesForDevice]: (
-		deviceId: PeripheralDeviceId,
-		filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
-		token?: string
-	) => DBObj
 	[PubSub.uiShowStyleBase]: (showStyleBaseId: ShowStyleBaseId) => UIShowStyleBase
 	/** Subscribe to one or all studios */
 	[PubSub.uiStudio]: (studioId: StudioId | null) => UIStudio
@@ -241,9 +243,25 @@ export interface PubSubTypes {
 	[PubSub.mountedTriggersForDevicePreview]: (deviceId: PeripheralDeviceId, token?: string) => PreviewWrappedAdLib
 	[PubSub.deviceTriggersPreview]: (studioId: StudioId, token?: string) => UIDeviceTriggerPreview
 
+	/** Custom publications for the UI */
 	[PubSub.uiSegmentPartNotes]: (playlistId: RundownPlaylistId | null) => UISegmentPartNote
 	[PubSub.uiPieceContentStatuses]: (rundownPlaylistId: RundownPlaylistId | null) => UIPieceContentStatus
 	[PubSub.uiBucketContentStatuses]: (studioId: StudioId, bucketId: BucketId) => UIBucketContentStatus
+
+	/** Custom publications for package-manager */
+	[PubSub.packageManagerPlayoutContext]: (
+		deviceId: PeripheralDeviceId,
+		token: string | undefined
+	) => PackageManagerPlayoutContext
+	[PubSub.packageManagerPackageContainers]: (
+		deviceId: PeripheralDeviceId,
+		token: string | undefined
+	) => PackageManagerPackageContainers
+	[PubSub.packageManagerExpectedPackages]: (
+		deviceId: PeripheralDeviceId,
+		filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
+		token: string | undefined
+	) => PackageManagerExpectedPackage
 }
 
 /**
@@ -253,7 +271,6 @@ export enum CustomCollectionName {
 	PeripheralDeviceForDevice = 'peripheralDeviceForDevice',
 	StudioMappings = 'studioMappings',
 	StudioTimeline = 'studioTimeline',
-	ExpectedPackagesForDevice = 'deviceExpectedPackages',
 	UIShowStyleBase = 'uiShowStyleBase',
 	UIStudio = 'uiStudio',
 	UITriggeredActions = 'uiTriggeredActions',
@@ -263,6 +280,10 @@ export enum CustomCollectionName {
 	UISegmentPartNotes = 'uiSegmentPartNotes',
 	UIPieceContentStatuses = 'uiPieceContentStatuses',
 	UIBucketContentStatuses = 'uiBucketContentStatuses',
+
+	PackageManagerPlayoutContext = 'packageManagerPlayoutContext',
+	PackageManagerPackageContainers = 'packageManagerPackageContainers',
+	PackageManagerExpectedPackages = 'packageManagerExpectedPackages',
 }
 
 /**
@@ -273,7 +294,6 @@ export type CustomCollectionType = {
 	[CustomCollectionName.PeripheralDeviceForDevice]: PeripheralDeviceForDevice
 	[CustomCollectionName.StudioMappings]: RoutedMappings
 	[CustomCollectionName.StudioTimeline]: RoutedTimeline
-	[CustomCollectionName.ExpectedPackagesForDevice]: DBObj
 	[CustomCollectionName.UIShowStyleBase]: UIShowStyleBase
 	[CustomCollectionName.UIStudio]: UIStudio
 	[CustomCollectionName.UITriggeredActions]: UITriggeredActionsObj
@@ -283,6 +303,9 @@ export type CustomCollectionType = {
 	[CustomCollectionName.UISegmentPartNotes]: UISegmentPartNote
 	[CustomCollectionName.UIPieceContentStatuses]: UIPieceContentStatus
 	[CustomCollectionName.UIBucketContentStatuses]: UIBucketContentStatus
+	[CustomCollectionName.PackageManagerPlayoutContext]: PackageManagerPlayoutContext
+	[CustomCollectionName.PackageManagerPackageContainers]: PackageManagerPackageContainers
+	[CustomCollectionName.PackageManagerExpectedPackages]: PackageManagerExpectedPackage
 }
 
 /**
