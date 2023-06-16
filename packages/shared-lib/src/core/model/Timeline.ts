@@ -43,6 +43,16 @@ export interface TimelineObjectCoreExt<
 	metaData?: TMetadata
 	/** Keyframes: Arbitrary data storage for plugins */
 	keyframes?: Array<TimelineKeyframeCoreExt<TContent, TKeyframeMetadata>>
+	/**
+	 * In the underyling timeline library, these are optional. However,
+	 * because of the way that the lookahead system must set a priority,
+	 * and the way in which this can trip up blueprints authors and clobber their intended objects,
+	 * we make them mandatory here.
+	 *
+	 * As of June 16th, 2023, lookaheads have a priority of 0.1. Therefore, to avoid your objects
+	 * being clobbered by lookaheads, you should set a priority higher than this, such as 1.
+	 */
+	priority: number
 }
 
 export interface TimelineKeyframeCoreExt<TContent extends { deviceType: TSR.DeviceType }, TKeyframeMetadata = unknown>

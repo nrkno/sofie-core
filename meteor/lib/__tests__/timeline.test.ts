@@ -16,6 +16,7 @@ describe('lib/timeline', () => {
 					deviceType: TSR.DeviceType.ABSTRACT,
 				},
 				layer: 'L1',
+				priority: 0,
 			},
 			{
 				id: 'child0',
@@ -28,6 +29,7 @@ describe('lib/timeline', () => {
 				},
 				layer: 'L1',
 				inGroup: 'group0',
+				priority: 0,
 			},
 			{
 				id: 'child1',
@@ -40,6 +42,7 @@ describe('lib/timeline', () => {
 				},
 				layer: 'L1',
 				inGroup: 'group0',
+				priority: 0,
 			},
 			{
 				id: 'group0',
@@ -52,6 +55,7 @@ describe('lib/timeline', () => {
 				},
 				layer: 'L1',
 				isGroup: true,
+				priority: 0,
 			},
 			{
 				id: '2',
@@ -70,6 +74,7 @@ describe('lib/timeline', () => {
 				},
 				layer: 'L1',
 				partId: 'myPart0',
+				priority: 0,
 			},
 			{
 				id: '3',
@@ -89,6 +94,7 @@ describe('lib/timeline', () => {
 				layer: 'L1',
 				// @ts-ignore
 				pieceId: 'myPiece0',
+				priority: 0,
 			},
 		]
 		const transformedTimeline = transformTimeline(timeline)
