@@ -174,7 +174,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		}
 
 		downloadItem = (item: RundownLayoutBase) => {
-			window.location.replace(`/shelfLayouts/download/${item._id}`)
+			window.location.replace(`/api/private/shelfLayouts/download/${item._id}`)
 		}
 
 		finishEditItem = (item: RundownLayoutBase) => {
@@ -530,11 +530,11 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					),
 					onAccept: () => {
 						if (uploadFileContents) {
-							fetchFrom(`/shelfLayouts/upload/${this.props.showStyleBaseId}`, {
+							fetchFrom(`/api/private/shelfLayouts/upload/${this.props.showStyleBaseId}`, {
 								method: 'POST',
 								body: uploadFileContents,
 								headers: {
-									'content-type': 'text/javascript',
+									'content-type': 'application/json',
 								},
 							})
 								.then(() => {

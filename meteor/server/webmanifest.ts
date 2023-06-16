@@ -1,6 +1,4 @@
 import os from 'os'
-import { PickerGET } from './api/http'
-import { ServerResponse } from 'http'
 import type {
 	JSONSchemaForWebApplicationManifestFiles,
 	ManifestImageResource,
@@ -17,6 +15,10 @@ import { interpollateTranslation } from '@sofie-automation/corelib/dist/Translat
 import { DBRundownPlaylist } from '../lib/collections/RundownPlaylists'
 import { Studios } from './collections'
 import { getCoreSystemAsync } from './coreSystem/collection'
+import Koa from 'koa'
+import KoaRouter from '@koa/router'
+import { Meteor } from 'meteor/meteor'
+import { bindKoaRouter } from './api/rest/koa'
 
 const appShortName = 'Sofie'
 const SOFIE_DEFAULT_ICONS: ManifestImageResource[] = [
@@ -172,34 +174,36 @@ async function getRundownPlaylistFromExternalId(externalId: string): Promise<DBR
 	return RundownPlaylists.findOneAsync(rundownPlaylistSelector)
 }
 
+const webManifestRouter = new KoaRouter()
+
 /**
  * Serve a localized version of the WebManifest. It will return an English version by default, one can specify a
  * supported locale using ?lng=XX URL query parameter. Uses the same localisation files as the Frontend app.
  */
-PickerGET.route('/site.webmanifest', async (_, req, res) => {
-	logger.debug(`WebManifest: ${req.socket.remoteAddress} GET "${req.url}"`, {
-		url: req.url,
+webManifestRouter.get('/', async (ctx) => {
+	logger.debug(`WebManifest: ${ctx.socket.remoteAddress} GET "${ctx.url}"`, {
+		url: ctx.url,
 		method: 'GET',
-		remoteAddress: req.socket.remoteAddress,
-		remotePort: req.socket.remotePort,
-		headers: req.headers,
+		remoteAddress: ctx.socket.remoteAddress,
+		remotePort: ctx.socket.remotePort,
+		headers: ctx.headers,
 	})
 
-	let lngCode = 'en' // EN is the default locale
-	if (req.url) {
-		const url = new URL(req.url, 'http://s/') // the second part needs to be a dummy url, we just want to parse the URL query
-		lngCode = url.searchParams.get('lng') || lngCode
-	}
+	let lngCode = ctx.query['lng'] || 'en' // EN is the default locale
+	lngCode = Array.isArray(lngCode) ? lngCode[0] : lngCode
+
+	console.log('lng', lngCode)
 
 	try {
 		const manifest = await getWebManifest(lngCode)
 
-		res.statusCode = 200
-		res.setHeader('Content-Type', 'application/manifest+json;charset=utf-8')
-		res.end(JSON.stringify(manifest))
+		ctx.response.status = 200
+		ctx.response.type = 'application/manifest+json;charset=utf-8'
+		ctx.body = JSON.stringify(manifest)
 	} catch (e) {
 		logger.error(`Could not produce PWA WebManifest`, e)
-		sendResponseCode(res, 500, 'Internal Server Error')
+		ctx.response.status = 500
+		ctx.body = 'Internal Server Error'
 	}
 })
 
@@ -207,58 +211,49 @@ PickerGET.route('/site.webmanifest', async (_, req, res) => {
  * Handle the web+nrcs://rundown/<NRCS-EXTERNAL-ID> URL scheme. This allows for external integrations to direct the User
  * to a Sofie Rundown View of a given Rundown or Rundown Playlist.
  */
-PickerGET.route('/url/nrcs', async (_, req, res) => {
-	logger.debug(`NRCS URL: ${req.socket.remoteAddress} GET "${req.url}"`, {
-		url: req.url,
+const nrcsUrlRouter = new KoaRouter()
+nrcsUrlRouter.get('/', async (ctx) => {
+	logger.debug(`NRCS URL: ${ctx.socket.remoteAddress} GET "${ctx.url}"`, {
+		url: ctx.url,
 		method: 'GET',
-		remoteAddress: req.socket.remoteAddress,
-		remotePort: req.socket.remotePort,
-		headers: req.headers,
+		remoteAddress: ctx.socket.remoteAddress,
+		remotePort: ctx.socket.remotePort,
+		headers: ctx.headers,
 	})
 
-	if (!req.url) {
-		sendResponseCode(res, 400, 'Needs query parameter "q"')
+	const webNrcsUrl = ctx.query['q']
+	if (!ctx.query['q'] || typeof webNrcsUrl !== 'string') {
+		ctx.response.status = 400
+		ctx.body = 'Needs query parameter "q"'
 		return
 	}
 
 	try {
-		const url = new URL(req.url, 'http://s/') // the second part needs to be a dummy url, we just want to parse the URL query
-		const webNrcsUrl = url.searchParams.get('q')
-		if (webNrcsUrl === null) {
-			sendResponseCode(res, 400, 'Needs query parameter "q"')
-			return
-		}
-
 		// Unfortunately, URL interface can't handle custom URL schemes like web+something, so we need to use the
 		// URL interface and trick it into parsing the URL-encoded externalId
 		const parsedWebNrcsUrl = new URL(webNrcsUrl.replace(/^web\+nrcs:\/\//, 'http://'))
 		if (parsedWebNrcsUrl.host === 'rundown') {
-			await webNrcsRundownRoute(res, parsedWebNrcsUrl)
+			await webNrcsRundownRoute(ctx, parsedWebNrcsUrl)
 			return
 		}
 
-		sendResponseCode(res, 400, `Unsupported namespace: "${parsedWebNrcsUrl.host}"`)
+		ctx.response.status = 400
+		ctx.body = `Unsupported namespace: "${parsedWebNrcsUrl.host}"`
 		return
 	} catch (e) {
 		logger.error(`Unknown error in /url/nrcs`, e)
 	}
 
-	sendResponseCode(res, 500, 'Internal Server Error')
+	ctx.response.status = 500
+	ctx.body = 'Internal Server Error'
 })
 
-function sendResponseCode(res: ServerResponse, code: number, description: string, redirect?: string): void {
-	res.statusCode = code
-	if (redirect) {
-		res.setHeader('Location', redirect)
-	}
-	res.end(description)
-}
-
-async function webNrcsRundownRoute(res: ServerResponse, parsedUrl: URL) {
+async function webNrcsRundownRoute(ctx: Koa.ParameterizedContext, parsedUrl: URL) {
 	// the "path" will contain the initial forward slash, so we need to strip that out
 	const externalId = decodeURIComponent(parsedUrl.pathname.substring(1))
 	if (externalId === null) {
-		sendResponseCode(res, 400, 'Needs an External ID to be provided')
+		ctx.response.status = 400
+		ctx.body = 'Needs an External ID to be provided'
 		return
 	}
 
@@ -267,15 +262,18 @@ async function webNrcsRundownRoute(res: ServerResponse, parsedUrl: URL) {
 	if (!rundownPlaylist) {
 		// we couldn't find the External ID for Rundown/Rundown Playlist
 		logger.debug(`NRCS URL: External ID not found "${externalId}"`)
-		sendResponseCode(res, 303, `Could not find requested object: "${externalId}", see the full list`, '/')
+		ctx.body = `Could not find requested object: "${externalId}", see the full list`
+		ctx.redirect('/')
+		ctx.response.status = 303
 		return
 	}
 
 	logger.debug(`NRCS URL: External ID found "${externalId}" in "${rundownPlaylist._id}"`)
-	sendResponseCode(
-		res,
-		302,
-		`Requested object found in Rundown Playlist "${rundownPlaylist._id}"`,
-		`/rundown/${rundownPlaylist._id}`
-	)
+	ctx.body = `Requested object found in Rundown Playlist "${rundownPlaylist._id}"`
+	ctx.redirect(`/rundown/${rundownPlaylist._id}`)
 }
+
+Meteor.startup(() => {
+	bindKoaRouter(webManifestRouter, '/site.webmanifest')
+	bindKoaRouter(nrcsUrlRouter, '/url/nrcs')
+})

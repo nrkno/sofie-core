@@ -89,7 +89,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					),
 					onAccept: () => {
 						if (uploadFileContents && blueprint) {
-							fetchFrom(`/blueprints/restore/${blueprint._id}`, {
+							fetchFrom(`/api/private/blueprints/restore/${blueprint._id}`, {
 								method: 'POST',
 								body: uploadFileContents,
 								headers: {
@@ -129,7 +129,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											),
 											onAccept: () => {
 												if (uploadFileContents && blueprint) {
-													fetchFrom(`/blueprints/restore/${blueprint._id}?force=1`, {
+													fetchFrom(`/api/private/blueprints/restore/${blueprint._id}?force=1`, {
 														method: 'POST',
 														body: uploadFileContents,
 														headers: {

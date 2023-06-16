@@ -1,13 +1,11 @@
-import * as _ from 'underscore'
-import { testInFiber } from '../../../../../__mocks__/helpers/jest'
+import { beforeEachInFiber } from '../../../../../__mocks__/helpers/jest'
 import { MeteorMock } from '../../../../../__mocks__/meteor'
 import { Meteor } from 'meteor/meteor'
-import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../../../__mocks__/meteorhacks-picker'
-import { Response as MockResponse, Request as MockRequest } from 'mock-http'
-
 import { UserActionAPIMethods } from '../../../../../lib/api/userActions'
 import { MeteorMethodSignatures } from '../../../../methods'
 import { ClientAPI } from '../../../../../lib/api/client'
+import { callKoaRoute } from '../../../../../__mocks__/koa-util'
+import { createLegacyApiRouter } from '..'
 import '../../../userActions.ts' // required to get the UserActionsAPI methods populated
 
 // we don't want the deviceTriggers observer to start up at this time
@@ -17,157 +15,120 @@ import '../index.ts'
 
 describe('REST API', () => {
 	describe('UNSTABLE v0', () => {
-		async function callRoute(
-			routeName: string,
-			url: string,
-			params: Record<string, any>
-		): Promise<MockResponseDataString> {
-			const route = PickerMock.mockRoutes[routeName]
-			expect(route).toBeTruthy()
-			const res = new MockResponse()
-			const req = new MockRequest({
-				method: 'POST',
-				url,
-			})
-
-			await route.handler(params, req, res, jest.fn())
-
-			return parseResponseBuffer(res)
-		}
-
-		testInFiber('registers endpoints for all UserActionAPI methods', () => {
+		beforeEachInFiber(() => {
 			MeteorMock.mockRunMeteorStartup()
+		})
 
-			Object.keys(UserActionAPIMethods).forEach((methodName) => {
-				const methodValue = UserActionAPIMethods[methodName]
+		const legacyApiRouter = createLegacyApiRouter()
+
+		test('registers endpoints for all UserActionAPI methods', async () => {
+			for (const [methodName, methodValue] of Object.entries<any>(UserActionAPIMethods)) {
 				const signature = MeteorMethodSignatures[methodValue]
 
-				let resource = `/api/0/action/${methodName}`
-				const params: Record<string, any> = {}
-				_.each(signature || [], (paramName, i) => {
-					resource += `/:param${i}`
-					params[paramName] = ''
-				})
+				let resource = `/action/${methodName}`
+				for (const paramName of signature || []) {
+					resource += `/${paramName}`
+				}
 
-				const route = PickerMock.mockRoutes[resource]
-				expect(route).toBeTruthy()
-			})
+				const ctx = await callKoaRoute(legacyApiRouter, {
+					method: 'POST',
+					url: resource,
+				})
+				expect(ctx.response.status).not.toBe(404)
+			}
 		})
 
-		testInFiber('calls the UserActionAPI methods, when doing a POST to the endpoint', async () => {
-			MeteorMock.mockRunMeteorStartup()
+		test('calls the UserActionAPI methods, when doing a POST to the endpoint', async () => {
+			for (const [methodName, methodValue] of Object.entries<any>(UserActionAPIMethods)) {
+				const signature = MeteorMethodSignatures[methodValue]
 
-			await Promise.all(
-				Object.keys(UserActionAPIMethods).map(async (methodName) => {
-					const methodValue = UserActionAPIMethods[methodName]
-					const signature = MeteorMethodSignatures[methodValue]
+				let docString = `/action/${methodName}`
+				for (const paramName of signature || []) {
+					docString += `/${paramName}`
+				}
 
-					let resource = `/api/0/action/${methodName}`
-					let docString = resource
-					const params: Record<string, any> = {}
-					_.each(signature || [], (paramName, i) => {
-						resource += `/:param${i}`
-						docString += `/${paramName}`
-						params[paramName] = ''
-					})
+				jest.spyOn(MeteorMock.mockMethods as any, methodValue).mockReturnValue(
+					ClientAPI.responseSuccess(undefined)
+				)
 
-					jest.spyOn(MeteorMock.mockMethods as any, methodValue).mockReturnValue(
-						ClientAPI.responseSuccess(undefined)
-					)
-
-					const result = await callRoute(resource, docString, params)
-					expect(result.statusCode).toBe(200)
-					expect(result.headers).toMatchObject({
-						'content-type': 'application/json',
-					})
-					expect(JSON.parse(result.bufferStr)).toMatchObject({
-						success: 200,
-					})
+				const ctx = await callKoaRoute(legacyApiRouter, {
+					method: 'POST',
+					url: docString,
 				})
-			)
+				expect(ctx.response.status).toBe(200)
+				expect(ctx.response.headers).toMatchObject({
+					'content-type': 'application/json; charset=utf-8',
+				})
+				expect(ctx.body).toMatchObject({
+					success: 200,
+				})
+			}
 		})
 
-		testInFiber('returns a matching HTTP error code when method throws a Meteor.Error', async () => {
-			MeteorMock.mockRunMeteorStartup()
-
+		test('returns a matching HTTP error code when method throws a Meteor.Error', async () => {
 			const methodName = Object.keys(UserActionAPIMethods)[0]
 
 			const methodValue = UserActionAPIMethods[methodName]
 			const signature = MeteorMethodSignatures[methodValue]
 
-			let resource = `/api/0/action/${methodName}`
-			let docString = resource
-			const params: Record<string, any> = {}
-			_.each(signature || [], (paramName, i) => {
-				resource += `/:param${i}`
+			let docString = `/action/${methodName}`
+			for (const paramName of signature || []) {
 				docString += `/${paramName}`
-				params[paramName] = ''
-			})
+			}
 
 			jest.spyOn(MeteorMock.mockMethods as any, methodValue).mockImplementation(() => {
 				throw new Meteor.Error(401, 'Mock error')
 			})
 
-			const result = await callRoute(resource, docString, params)
-			expect(result.statusCode).toBe(401)
-			expect(result.headers).toMatchObject({
-				'content-type': 'text/plain',
+			const ctx = await callKoaRoute(legacyApiRouter, {
+				method: 'POST',
+				url: docString,
 			})
-			expect(result.bufferStr).toMatch('Mock error')
+			expect(ctx.response.status).toBe(401)
+			expect(ctx.response.headers).toMatchObject({
+				'content-type': 'text/plain; charset=utf-8',
+			})
+			expect(ctx.body).toMatch('Mock error')
 		})
 
-		testInFiber('returns a 500 HTTP error code when method throws a Node Exception', async () => {
-			MeteorMock.mockRunMeteorStartup()
-
+		test('returns a 500 HTTP error code when method throws a Node Exception', async () => {
 			const methodName = Object.keys(UserActionAPIMethods)[0]
 
 			const methodValue = UserActionAPIMethods[methodName]
 			const signature = MeteorMethodSignatures[methodValue]
 
-			let resource = `/api/0/action/${methodName}`
-			let docString = resource
-			const params: Record<string, any> = {}
-			_.each(signature || [], (paramName, i) => {
-				resource += `/:param${i}`
+			let docString = `/action/${methodName}`
+			for (const paramName of signature || []) {
 				docString += `/${paramName}`
-				params[paramName] = ''
-			})
+			}
 
 			jest.spyOn(MeteorMock.mockMethods as any, methodValue).mockImplementation(() => {
 				throw new Error('Mock error')
 			})
 
-			const result = await callRoute(resource, docString, params)
-			expect(result.statusCode).toBe(500)
-			expect(result.headers).toMatchObject({
-				'content-type': 'text/plain',
+			const ctx = await callKoaRoute(legacyApiRouter, {
+				method: 'POST',
+				url: docString,
 			})
-			expect(result.bufferStr).toMatch('Mock error')
+			expect(ctx.response.status).toBe(500)
+			expect(ctx.response.headers).toMatchObject({
+				'content-type': 'text/plain; charset=utf-8',
+			})
+			expect(ctx.body).toMatch('Mock error')
 		})
 
-		testInFiber('converts URL arguments from string to correct native types', async () => {
-			MeteorMock.mockRunMeteorStartup()
-
+		test('converts URL arguments from string to correct native types', async () => {
 			const methodName = Object.keys(UserActionAPIMethods)[0]
 
 			const methodValue = UserActionAPIMethods[methodName]
-			const signature = MeteorMethodSignatures[methodValue]
+			const signature = MeteorMethodSignatures[methodValue] || []
 
-			let resource = `/api/0/action/${methodName}`
-			let docString = resource
-			_.each(signature || [], (paramName, i) => {
-				resource += `/:param${i}`
-				docString += `/${paramName}`
-			})
+			const params: any[] = ['one', true, false, { one: 'two' }, null, 1.323, 30]
 
-			const params: Record<string, any> = {
-				param0: 'one',
-				param1: true,
-				param2: false,
-				param3: { one: 'two' },
-				param4: null,
-				param5: 1.323,
-				param6: 30,
+			let docString = `/action/${methodName}`
+			for (let i = 0; i < signature.length; i++) {
+				const val = params[i]
+				docString += `/${typeof val === 'object' ? JSON.stringify(val) : val}`
 			}
 
 			const stringified: Record<string, string> = {}
@@ -186,43 +147,42 @@ describe('REST API', () => {
 				return ClientAPI.responseSuccess(undefined)
 			})
 
-			const result = await callRoute(resource, docString, stringified)
-			expect(result.statusCode).toBe(200)
-			expect(resultingArgs).toMatchObject(Object.values<any>(params))
+			const ctx = await callKoaRoute(legacyApiRouter, {
+				method: 'POST',
+				url: docString,
+			})
+			expect(ctx.response.status).toBe(200)
+			expect(resultingArgs).toMatchObject(params.slice(0, signature.length))
 		})
 
-		testInFiber('lists available endpoints on /api/0', async () => {
-			MeteorMock.mockRunMeteorStartup()
+		test('lists available endpoints on /api/0', async () => {
+			const rootDocString = `/`
 
-			const rootResource = `/api/0`
-			const rootDocString = rootResource
-
-			const result = await callRoute(rootResource, rootDocString, {})
-			expect(result.statusCode).toBe(200)
-			expect(result.headers).toMatchObject({
-				'content-type': 'application/json',
+			const ctx = await callKoaRoute(legacyApiRouter, {
+				method: 'GET',
+				url: rootDocString,
+			})
+			expect(ctx.response.status).toBe(200)
+			expect(ctx.response.headers).toMatchObject({
+				'content-type': 'application/json; charset=utf-8',
 			})
 
-			const index = JSON.parse(result.bufferStr)
-			Object.keys(UserActionAPIMethods).forEach((methodName) => {
-				const methodValue = UserActionAPIMethods[methodName]
+			const index = JSON.parse(ctx.response.body as string)
+
+			for (const [methodName, methodValue] of Object.entries<any>(UserActionAPIMethods)) {
 				const signature = MeteorMethodSignatures[methodValue]
 
-				let resource = `/api/0/action/${methodName}`
-				let docString = resource
-				const params: Record<string, any> = {}
-				_.each(signature || [], (paramName, i) => {
-					resource += `/:param${i}`
+				let docString = `/api/0/action/${methodName}`
+				for (const paramName of signature || []) {
 					docString += `/:${paramName}`
-					params[paramName] = ''
-				})
+				}
 
 				const found = index.POST.indexOf(docString)
 				if (found < 0) {
 					console.error(docString, 'not found in REST index')
 				}
 				expect(found).toBeGreaterThanOrEqual(0)
-			})
+			}
 		})
 	})
 })

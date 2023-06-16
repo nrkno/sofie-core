@@ -1,16 +1,41 @@
-import { IncomingMessage, ServerResponse } from 'http'
-import { PickerGET } from '../http'
-
-import './v0/index'
-import './v1/index'
+import KoaRouter from '@koa/router'
+import { bindKoaRouter } from './koa'
+import { Meteor } from 'meteor/meteor'
+import koa from 'koa'
+import { koaRouter as apiV1Router } from './v1/index'
+import { snapshotPrivateApiRouter } from '../snapshot'
+import { shelfLayoutsRouter } from '../rundownLayouts'
+import { ingestRouter } from '../ingest/http'
+import { actionTriggersRouter } from '../triggeredActions'
+import { peripheralDeviceRouter } from '../peripheralDevice'
+import { blueprintsRouter } from '../blueprints/http'
+import { createLegacyApiRouter } from './v0/index'
 
 const LATEST_REST_API = 'v1.0'
 
-PickerGET.route('/api', redirectToLatest)
-PickerGET.route('/api/latest', redirectToLatest)
+const apiRouter = new KoaRouter()
 
-async function redirectToLatest(_params, _req: IncomingMessage, res: ServerResponse): Promise<void> {
-	res.statusCode = 307
-	res.setHeader('Location', `/api/${LATEST_REST_API}`) // redirect to latest API version
-	res.end()
+apiRouter.get('/', redirectToLatest)
+apiRouter.get('/latest', redirectToLatest)
+
+apiRouter.use('/v1.0', apiV1Router.routes(), apiV1Router.allowedMethods())
+
+apiRouter.use('/private/ingest', ingestRouter.routes(), ingestRouter.allowedMethods())
+apiRouter.use('/private/snapshot', snapshotPrivateApiRouter.routes(), snapshotPrivateApiRouter.allowedMethods())
+apiRouter.use('/private/shelfLayouts', shelfLayoutsRouter.routes(), shelfLayoutsRouter.allowedMethods())
+apiRouter.use('/private/actionTriggers', actionTriggersRouter.routes(), actionTriggersRouter.allowedMethods())
+apiRouter.use('/private/peripheralDevices', peripheralDeviceRouter.routes(), peripheralDeviceRouter.allowedMethods())
+apiRouter.use('/private/blueprints', blueprintsRouter.routes(), blueprintsRouter.allowedMethods())
+
+async function redirectToLatest(ctx: koa.ParameterizedContext, _next: koa.Next): Promise<void> {
+	ctx.redirect(`/api/${LATEST_REST_API}`)
+	ctx.status = 307
 }
+
+Meteor.startup(() => {
+	// Needs to be lazily generated
+	const legacyApiRouter = createLegacyApiRouter()
+	apiRouter.use('/0', legacyApiRouter.routes(), legacyApiRouter.allowedMethods())
+
+	bindKoaRouter(apiRouter, '/api')
+})

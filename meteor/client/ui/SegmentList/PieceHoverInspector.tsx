@@ -57,7 +57,7 @@ export function PieceHoverInspector({
 								transform: 'translate(0, -100%)',
 							}}
 						>
-							<img src={'/blueprints/assets/' + transitionContent.preview} className="thumbnail" />
+							<img src={'/api/private/blueprints/assets/' + transitionContent.preview} className="thumbnail" />
 						</div>
 					)}
 				</FloatingInspector>

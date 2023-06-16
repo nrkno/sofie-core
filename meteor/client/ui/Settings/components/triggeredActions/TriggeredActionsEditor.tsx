@@ -328,7 +328,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 	)
 
 	const onDownloadActions = useCallback(() => {
-		window.location.replace(`/actionTriggers/download/${showStyleBaseId ?? ''}`)
+		window.location.replace(`/api/private/actionTriggers/download/${showStyleBaseId ?? ''}`)
 	}, [showStyleBaseId])
 
 	const onUploadActions = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -347,11 +347,11 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 
 			if (uploadFileContents) {
 				function uploadStoredTriggeredActions(replace?: boolean) {
-					fetchFrom(`/actionTriggers/upload/${showStyleBaseId ?? ''}${replace ? '?replace' : ''}`, {
+					fetchFrom(`/api/private/actionTriggers/upload/${showStyleBaseId ?? ''}${replace ? '?replace' : ''}`, {
 						method: 'POST',
 						body: uploadFileContents,
 						headers: {
-							'content-type': 'text/javascript',
+							'content-type': 'application/json',
 							authorization: 'id ' + Meteor.userId(),
 						},
 					})

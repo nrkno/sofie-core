@@ -1,13 +1,11 @@
 import * as _ from 'underscore'
-import { testInFiber } from '../../../../__mocks__/helpers/jest'
-import { literal } from '../../../../lib/lib'
 import { Meteor } from 'meteor/meteor'
-import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../../__mocks__/meteorhacks-picker'
-import { Response as MockResponse, Request as MockRequest } from 'mock-http'
+import { SupressLogMessages } from '../../../../__mocks__/suppressLogging'
+import { callKoaRoute } from '../../../../__mocks__/koa-util'
+import { blueprintsRouter } from '../http'
 
 jest.mock('../../deviceTriggers/observer')
 import * as api from '../api'
-import { SupressLogMessages } from '../../../../__mocks__/suppressLogging'
 jest.mock('../api.ts')
 
 const DEFAULT_CONTEXT = { userId: '' }
@@ -16,38 +14,18 @@ require('../http.ts') // include in order to create the Meteor methods needed
 
 describe('Test blueprint http api', () => {
 	describe('router restore single', () => {
-		async function callRoute(
-			blueprintId: string,
-			body: any,
-			name?: string,
-			force?: boolean
-		): Promise<MockResponseDataString> {
-			const routeName = '/blueprints/restore/:blueprintId'
-			const route = PickerMock.mockRoutes[routeName]
-			expect(route).toBeTruthy()
-
+		async function callRoute(blueprintId: string, body: any, name?: string, force?: boolean) {
 			const queryParams = _.compact([name ? `name=${name}` : undefined, force ? 'force=1' : undefined])
 
-			const res = new MockResponse()
-			const req = new MockRequest({
+			const ctx = await callKoaRoute(blueprintsRouter, {
 				method: 'POST',
-				url: `/blueprints/restore/${blueprintId}?` + queryParams.join('&'),
+				url: `/restore/${blueprintId}?${queryParams.join('&')}`,
+
+				requestBody: body,
 			})
-			req.body = body
 
-			await route.handler({ blueprintId }, req, res, jest.fn())
-
-			const resStr = parseResponseBuffer(res)
-			expect(resStr).toMatchObject(
-				literal<Partial<MockResponseDataString>>({
-					headers: {
-						'content-type': 'text/plain',
-					},
-					timedout: false,
-					ended: true,
-				})
-			)
-			return resStr
+			expect(ctx.response.type).toBe('text/plain')
+			return ctx
 		}
 
 		function resetUploadMock() {
@@ -60,56 +38,56 @@ describe('Test blueprint http api', () => {
 			resetUploadMock()
 		})
 
-		testInFiber('missing body', async () => {
-			SupressLogMessages.suppressLogMessage(/Missing request body/i)
+		test('missing body', async () => {
+			SupressLogMessages.suppressLogMessage(/Invalid request body/i)
 			const res = await callRoute('id1', undefined)
-			expect(res.statusCode).toEqual(500)
-			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Missing request body')
+			expect(res.response.status).toEqual(500)
+			expect(res.body).toEqual('[400] Restore Blueprint: Invalid request body')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
-		testInFiber('empty body', async () => {
-			SupressLogMessages.suppressLogMessage(/Missing request body/i)
+		test('empty body', async () => {
+			SupressLogMessages.suppressLogMessage(/Invalid request body/i)
 			const res = await callRoute('id1', '')
-			expect(res.statusCode).toEqual(500)
-			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Missing request body')
+			expect(res.response.status).toEqual(500)
+			expect(res.body).toEqual('[400] Restore Blueprint: Invalid request body')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
-		testInFiber('non-string body', async () => {
+		test('non-string body', async () => {
 			const id = 'id1'
 			const body = 99
 
 			SupressLogMessages.suppressLogMessage(/Invalid request body/i)
 			const res = await callRoute(id, body)
-			expect(res.statusCode).toEqual(500)
-			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Invalid request body')
+			expect(res.response.status).toEqual(500)
+			expect(res.body).toEqual('[400] Restore Blueprint: Invalid request body')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
-		testInFiber('with body', async () => {
+		test('with body', async () => {
 			const id = 'id1'
 			const body = '0123456789'
 
 			const res = await callRoute(id, body)
-			expect(res.statusCode).toEqual(200)
-			expect(res.bufferStr).toEqual('')
+			expect(res.response.status).toEqual(200)
+			expect(res.body).toEqual('')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
 			expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, id, body, undefined, false)
 		})
-		testInFiber('with body & force', async () => {
+		test('with body & force', async () => {
 			const id = 'id1'
 			const body = '0123456789'
 
 			const res = await callRoute(id, body, undefined, true)
-			expect(res.statusCode).toEqual(200)
-			expect(res.bufferStr).toEqual('')
+			expect(res.response.status).toEqual(200)
+			expect(res.body).toEqual('')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
 			expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, id, body, undefined, true)
 		})
-		testInFiber('internal error', async () => {
+		test('internal error', async () => {
 			const id = 'id1'
 			const body = '0123456789'
 
@@ -122,8 +100,8 @@ describe('Test blueprint http api', () => {
 				SupressLogMessages.suppressLogMessage(/Some thrown error/i)
 				const res = await callRoute(id, body)
 
-				expect(res.statusCode).toEqual(500)
-				expect(res.bufferStr).toEqual('[505] Some thrown error')
+				expect(res.response.status).toEqual(500)
+				expect(res.body).toEqual('[505] Some thrown error')
 
 				expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
 				expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, id, body, undefined, false)
@@ -131,14 +109,14 @@ describe('Test blueprint http api', () => {
 				uploadBlueprint.mockRestore()
 			}
 		})
-		testInFiber('with name', async () => {
+		test('with name', async () => {
 			const id = 'id1'
 			const body = '0123456789'
 			const name = 'custom_name'
 
 			const res = await callRoute(id, body, name)
-			// expect(res.statusCode).toEqual(200)
-			expect(res.bufferStr).toEqual('')
+			// expect(res.response.status).toEqual(200)
+			expect(res.body).toEqual('')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
 			expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, id, body, name, false)
@@ -146,31 +124,16 @@ describe('Test blueprint http api', () => {
 	})
 
 	describe('router restore bulk', () => {
-		async function callRoute(body: any): Promise<MockResponseDataString> {
-			const routeName = '/blueprints/restore'
-			const route = PickerMock.mockRoutes[routeName]
-			expect(route).toBeTruthy()
-
-			const res = new MockResponse()
-			const req = new MockRequest({
+		async function callRoute(body: any) {
+			const ctx = await callKoaRoute(blueprintsRouter, {
 				method: 'POST',
-				url: `${routeName}?force=1`,
+				url: `/restore?force=1`,
+
+				requestBody: body,
 			})
-			req.body = body
 
-			await route.handler({}, req, res, jest.fn())
-
-			const resStr = parseResponseBuffer(res)
-			expect(resStr).toMatchObject(
-				literal<Partial<MockResponseDataString>>({
-					headers: {
-						'content-type': 'text/plain',
-					},
-					timedout: false,
-					ended: true,
-				})
-			)
-			return resStr
+			expect(ctx.response.type).toBe('text/plain')
+			return ctx
 		}
 
 		function resetUploadMock() {
@@ -183,85 +146,87 @@ describe('Test blueprint http api', () => {
 			resetUploadMock()
 		})
 
-		testInFiber('missing body', async () => {
-			SupressLogMessages.suppressLogMessage(/Missing request body/i)
+		test('missing body', async () => {
+			SupressLogMessages.suppressLogMessage(/Invalid request body/i)
 			const res = await callRoute(undefined)
-			expect(res.statusCode).toEqual(500)
-			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Missing request body')
+			expect(res.response.status).toEqual(500)
+			expect(res.body).toEqual('[400] Restore Blueprint: Invalid request body')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
-		testInFiber('empty body', async () => {
+		test('empty body', async () => {
 			SupressLogMessages.suppressLogMessage(/Missing request body/i)
 			const res = await callRoute('')
-			expect(res.statusCode).toEqual(500)
-			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Missing request body')
+			expect(res.response.status).toEqual(500)
+			expect(res.body).toEqual('[400] Restore Blueprint: Missing request body')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
-		testInFiber('non-string body', async () => {
+		test('non-string body', async () => {
 			const body = 99
 
 			SupressLogMessages.suppressLogMessage(/Invalid request body/i)
 			const res = await callRoute(body)
-			expect(res.statusCode).toEqual(500)
-			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Invalid request body')
+			expect(res.response.status).toEqual(500)
+			expect(res.body).toEqual('[400] Restore Blueprint: Invalid request body')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
-		testInFiber('invalid body', async () => {
+		test('invalid body', async () => {
 			const body = '99'
 
 			SupressLogMessages.suppressLogMessage(/Invalid request body/i)
 			const res = await callRoute(body)
-			expect(res.statusCode).toEqual(500)
-			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Invalid request body')
+			expect(res.response.status).toEqual(500)
+			expect(res.body).toEqual('[400] Restore Blueprint: Invalid request body')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
-		testInFiber('non-json body', async () => {
+		test('non-json body', async () => {
 			const body = '0123456789012'
 
-			SupressLogMessages.suppressLogMessage(/Failed to parse request body/i)
+			SupressLogMessages.suppressLogMessage(/Invalid request body/i)
 			const res = await callRoute(body)
-			expect(res.statusCode).toEqual(500)
-			expect(res.bufferStr).toEqual('[400] Restore Blueprint: Failed to parse request body')
+			expect(res.response.status).toEqual(500)
+			expect(res.body).toEqual('[400] Restore Blueprint: Invalid request body')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(0)
 		})
-		testInFiber('with json body', async () => {
+		test('with json body', async () => {
 			const id = 'id1'
 			const body = 'bodyStr1'
 
 			const payload: any = {
-				blueprints: {},
+				blueprints: {
+					[id]: body,
+				},
 			}
-			payload.blueprints[id] = body
-
-			const res = await callRoute(JSON.stringify(payload))
-			expect(res.statusCode).toEqual(200)
-			expect(res.bufferStr).toEqual('')
-
-			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
-			expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, id, body, id)
-		})
-		testInFiber('with json body as object', async () => {
-			const id = 'id1'
-			const body = 'bodyStr1'
-
-			const payload: any = {
-				blueprints: {},
-			}
-			payload.blueprints[id] = body
 
 			const res = await callRoute(payload)
-			expect(res.statusCode).toEqual(200)
-			expect(res.bufferStr).toEqual('')
+			expect(res.response.status).toEqual(200)
+			expect(res.body).toEqual('')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
 			expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, id, body, id)
 		})
-		testInFiber('with json body - multiple', async () => {
+		test('with json body as object', async () => {
+			const id = 'id1'
+			const body = { val: 'bodyStr1' }
+
+			const payload: any = {
+				blueprints: {
+					[id]: body,
+				},
+			}
+
+			const res = await callRoute(payload)
+			expect(res.response.status).toEqual(200)
+			expect(res.body).toEqual('')
+
+			expect(api.uploadBlueprint).toHaveBeenCalledTimes(1)
+			expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, id, body, id)
+		})
+		test('with json body - multiple', async () => {
 			const count = 10
 
 			const payload: any = {
@@ -271,16 +236,16 @@ describe('Test blueprint http api', () => {
 				payload.blueprints[`id${i}`] = `body${i}`
 			}
 
-			const res = await callRoute(JSON.stringify(payload))
-			expect(res.statusCode).toEqual(200)
-			expect(res.bufferStr).toEqual('')
+			const res = await callRoute(payload)
+			expect(res.response.status).toEqual(200)
+			expect(res.body).toEqual('')
 
 			expect(api.uploadBlueprint).toHaveBeenCalledTimes(count)
 			for (let i = 0; i < count; i++) {
 				expect(api.uploadBlueprint).toHaveBeenCalledWith(DEFAULT_CONTEXT, `id${i}`, `body${i}`, `id${i}`)
 			}
 		})
-		testInFiber('with errors', async () => {
+		test('with errors', async () => {
 			const count = 10
 
 			const payload: any = {
@@ -302,9 +267,9 @@ describe('Test blueprint http api', () => {
 			try {
 				SupressLogMessages.suppressLogMessage(/Some thrown error/i)
 				SupressLogMessages.suppressLogMessage(/Some thrown error/i)
-				const res = await callRoute(JSON.stringify(payload))
-				expect(res.statusCode).toEqual(500)
-				expect(res.bufferStr).toEqual(
+				const res = await callRoute(payload)
+				expect(res.response.status).toEqual(500)
+				expect(res.body).toEqual(
 					'Errors were encountered: \n[505] Some thrown error\n[505] Some thrown error\n'
 				)
 

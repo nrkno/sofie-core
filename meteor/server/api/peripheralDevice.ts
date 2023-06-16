@@ -7,8 +7,6 @@ import { getCurrentTime, protectString, stringifyObjects, literal, unprotectStri
 import { logger } from '../logging'
 import { TimelineHash } from '../../lib/collections/Timeline'
 import { registerClassToMeteorMethods } from '../methods'
-import { IncomingMessage, ServerResponse } from 'http'
-import { URL } from 'url'
 import { RundownInput } from './ingest/rundownInput'
 import {
 	IngestRundown,
@@ -31,7 +29,6 @@ import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { triggerWriteAccess, triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 import { checkAccessAndGetPeripheralDevice } from './ingest/lib'
-import { PickerGET, PickerPOST } from './http'
 import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PackageManagerIntegration } from './integration/expectedPackages'
 import { profiler } from './profiler'
@@ -68,6 +65,8 @@ import {
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { convertPeripheralDeviceForGateway } from '../publications/peripheralDeviceForDevice'
 import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction'
+import KoaRouter from '@koa/router'
+import bodyParser from 'koa-bodyparser'
 
 const apmNamespace = 'peripheralDevice'
 export namespace ServerPeripheralDeviceAPI {
@@ -577,12 +576,13 @@ export namespace ServerPeripheralDeviceAPI {
 	}
 }
 
-PickerPOST.route('/devices/:deviceId/uploadCredentials', async (params, req: IncomingMessage, res: ServerResponse) => {
-	res.setHeader('Content-Type', 'text/plain')
+export const peripheralDeviceRouter = new KoaRouter()
 
-	let content = ''
+peripheralDeviceRouter.post('/:deviceId/uploadCredentials', bodyParser(), async (ctx) => {
+	ctx.response.type = 'text/plain'
+
 	try {
-		const deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
+		const deviceId: PeripheralDeviceId = protectString(ctx.params.deviceId)
 		check(deviceId, String)
 
 		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
@@ -590,46 +590,35 @@ PickerPOST.route('/devices/:deviceId/uploadCredentials', async (params, req: Inc
 		const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
-		const url = new URL(req.url || '', 'http://localhost')
+		if (ctx.request.type !== 'application/json')
+			throw new Meteor.Error(400, 'Upload credentials: Invalid content-type')
 
-		const fileNames = url.searchParams.get('name') || undefined
-		const fileName: string = (_.isArray(fileNames) ? fileNames[0] : fileNames) || ''
-
-		check(fileName, String)
-
-		const body = (req as any).body
+		const body = ctx.request.body
 		if (!body) throw new Meteor.Error(400, 'Upload credentials: Missing request body')
-
-		if (typeof body !== 'string' || body.length < 10)
+		if (typeof body !== 'object' || Object.keys(body as any).length === 0)
 			throw new Meteor.Error(400, 'Upload credentials: Invalid request body')
 
-		logger.info('Upload credentails, ' + body.length + ' bytes')
-
-		const credentials = JSON.parse(body)
+		logger.info(`Upload credentails, ${JSON.stringify(body).length} bytes`)
 
 		await PeripheralDevices.updateAsync(peripheralDevice._id, {
 			$set: {
-				'secretSettings.credentials': credentials,
+				'secretSettings.credentials': body,
 				'settings.secretCredentials': true,
 			},
 		})
 
-		res.statusCode = 200
+		ctx.response.status = 200
+		ctx.body = ''
 	} catch (e) {
-		res.statusCode = 500
-		content = e + ''
+		ctx.response.status = 500
+		ctx.body = e + ''
 		logger.error('Upload credentials failed: ' + e)
 	}
-
-	res.end(content)
 })
 
-PickerGET.route('/devices/:deviceId/oauthResponse', async (params, req: IncomingMessage, res: ServerResponse) => {
-	res.setHeader('Content-Type', 'text/plain')
-
-	let content = ''
+peripheralDeviceRouter.get('/:deviceId/oauthResponse', async (ctx) => {
 	try {
-		const deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
+		const deviceId: PeripheralDeviceId = protectString(ctx.params.deviceId)
 		check(deviceId, String)
 
 		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
@@ -643,10 +632,8 @@ PickerGET.route('/devices/:deviceId/oauthResponse', async (params, req: Incoming
 		if (!(await checkStudioExists(peripheralDevice.studioId)))
 			throw new Meteor.Error(404, `Studio "${peripheralDevice.studioId}" not found`)
 
-		const url = new URL(req.url || '', 'http://localhost')
-
-		let accessToken = url.searchParams.get('code') || undefined
-		const scopes = url.searchParams.get('scope') || undefined
+		let accessToken = ctx.query['code'] || undefined
+		const scopes = ctx.query['scope'] || undefined
 
 		check(accessToken, String)
 		check(scopes, String)
@@ -662,25 +649,20 @@ PickerGET.route('/devices/:deviceId/oauthResponse', async (params, req: Incoming
 				.catch(logger.error)
 		}
 
-		res.statusCode = 302
-		res.writeHead(302, {
-			Location: `/settings/peripheralDevice/${deviceId}`,
-		})
+		ctx.redirect(`/settings/peripheralDevice/${deviceId}`)
 	} catch (e) {
-		res.statusCode = 500
-		content = e + ''
+		ctx.response.type = 'text/plain'
+		ctx.response.status = 500
+		ctx.body = e + ''
 		logger.error('Upload credentials failed: ' + e)
 	}
-
-	res.end(content)
 })
 
-PickerPOST.route('/devices/:deviceId/resetAuth', async (params, _req: IncomingMessage, res: ServerResponse) => {
-	res.setHeader('Content-Type', 'text/plain')
+peripheralDeviceRouter.post('/:deviceId/resetAuth', async (ctx) => {
+	ctx.response.type = 'text/plain'
 
-	let content = ''
 	try {
-		const deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
+		const deviceId: PeripheralDeviceId = protectString(ctx.params.deviceId)
 		check(deviceId, String)
 
 		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
@@ -697,55 +679,49 @@ PickerPOST.route('/devices/:deviceId/resetAuth', async (params, _req: IncomingMe
 			},
 		})
 
-		res.statusCode = 200
+		ctx.response.status = 200
+		ctx.body = ''
 	} catch (e) {
-		res.statusCode = 500
-		content = e + ''
+		ctx.response.status = 500
+		ctx.body = e + ''
 		logger.error('Reset credentials failed: ' + e)
 	}
-
-	res.end(content)
 })
 
-PickerPOST.route(
-	'/devices/:deviceId/resetAppCredentials',
-	async (params, _req: IncomingMessage, res: ServerResponse) => {
-		res.setHeader('Content-Type', 'text/plain')
+peripheralDeviceRouter.post('/:deviceId/resetAppCredentials', async (ctx) => {
+	ctx.response.type = 'text/plain'
 
-		let content = ''
-		try {
-			const deviceId: PeripheralDeviceId = protectString(decodeURIComponent(params.deviceId))
-			check(deviceId, String)
+	try {
+		const deviceId: PeripheralDeviceId = protectString(ctx.params.deviceId)
+		check(deviceId, String)
 
-			if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
+		if (!deviceId) throw new Meteor.Error(400, `parameter deviceId is missing`)
 
-			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
-			if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
+		const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
+		if (!peripheralDevice) throw new Meteor.Error(404, `Peripheral device "${deviceId}" not found`)
 
-			await PeripheralDevices.updateAsync(peripheralDevice._id, {
-				$unset: {
-					// App credentials
-					'secretSettings.credentials': true,
-					'settings.secretCredentials': true,
-					// User credentials
-					'secretSettings.accessToken': true,
-					'settings.secretAccessToken': true,
-					accessTokenUrl: true,
-				},
-			})
+		await PeripheralDevices.updateAsync(peripheralDevice._id, {
+			$unset: {
+				// App credentials
+				'secretSettings.credentials': true,
+				'settings.secretCredentials': true,
+				// User credentials
+				'secretSettings.accessToken': true,
+				'settings.secretAccessToken': true,
+				accessTokenUrl: true,
+			},
+		})
 
-			// executePeripheralDeviceFunction(deviceId, 'killProcess', 1).catch(logger.error)
+		// executePeripheralDeviceFunction(deviceId, 'killProcess', 1).catch(logger.error)
 
-			res.statusCode = 200
-		} catch (e) {
-			res.statusCode = 500
-			content = e + ''
-			logger.error('Reset credentials failed: ' + e)
-		}
-
-		res.end(content)
+		ctx.response.status = 200
+		ctx.body = ''
+	} catch (e) {
+		ctx.response.status = 500
+		ctx.body = e + ''
+		logger.error('Reset credentials failed: ' + e)
 	}
-)
+})
 
 async function updatePeripheralDeviceLatency(totalLatency: number, peripheralDevice: PeripheralDevice) {
 	/** How many latencies we store for statistics */
