@@ -120,7 +120,7 @@ export async function setUpOptimizedObserverInner<
 		}
 		receiver.onStop(() => removeReceiver())
 
-		logger.debug(`Starting publication ${identifier} `)
+		logger.debug(`Starting publication ${identifier}`)
 
 		// Start the optimizedObserver
 		try {

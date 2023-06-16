@@ -1,4 +1,4 @@
-import { CoreConnection, CoreOptions, DDPConnectorOptions } from '@sofie-automation/server-core-integration'
+import { CoreConnection, CoreOptions, DDPConnectorOptions, Observer } from '@sofie-automation/server-core-integration'
 import * as Winston from 'winston'
 import { Process } from './process'
 
@@ -72,11 +72,11 @@ export interface IStoryItemChange {
  */
 export class CoreMosDeviceHandler {
 	core: CoreConnection
-	public _observers: Array<any> = []
+	public _observers: Array<Observer> = []
 	public _mosDevice: IMOSDevice
 	private _coreParentHandler: CoreHandler
 	private _mosHandler: MosHandler
-	private _subscriptions: Array<any> = []
+	private _subscriptions: Array<string> = []
 
 	private _pendingStoryItemChanges: Array<IStoryItemChange> = []
 	private _pendingChangeTimeout: number = 60 * 1000
@@ -98,14 +98,8 @@ export class CoreMosDeviceHandler {
 		this.mosTypes = getMosTypes(this._mosHandler.strict)
 	}
 	async init(): Promise<void> {
-		return this.core
-			.init(this._coreParentHandler.core)
-			.then(() => {
-				return this.setupSubscriptionsAndObservers()
-			})
-			.then(() => {
-				return
-			})
+		await this.core.init(this._coreParentHandler.core)
+		this.setupSubscriptionsAndObservers()
 	}
 	setupSubscriptionsAndObservers(): void {
 		// console.log('setupObservers', this.core.deviceId)
@@ -127,9 +121,6 @@ export class CoreMosDeviceHandler {
 		Promise.all([this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId)])
 			.then((subs) => {
 				this._subscriptions = this._subscriptions.concat(subs)
-			})
-			.then(() => {
-				return
 			})
 			.catch((e) => {
 				this._coreParentHandler.logger.error(e)
@@ -458,6 +449,10 @@ export class CoreMosDeviceHandler {
 			obs.stop()
 		})
 
+		for (const subId of this._subscriptions) {
+			this.core.unsubscribe(subId)
+		}
+
 		return this.core
 			.setStatus({
 				statusCode: StatusCode.BAD,
@@ -530,11 +525,11 @@ export interface CoreConfig {
 export class CoreHandler {
 	core: CoreConnection | undefined
 	logger: Winston.Logger
-	public _observers: Array<any> = []
+	public _observers: Array<Observer> = []
 	private _deviceOptions: DeviceConfig
 	private _coreMosHandlers: Array<CoreMosDeviceHandler> = []
 	private _onConnected?: () => any
-	private _subscriptions: Array<any> = []
+	private _subscriptions: Array<string> = []
 	private _isInitialized = false
 	private _executedFunctions: { [id: string]: boolean } = {}
 	private _coreConfig?: CoreConfig
@@ -596,6 +591,10 @@ export class CoreHandler {
 	async dispose(): Promise<void> {
 		if (!this.core) {
 			throw Error('core is undefined!')
+		}
+
+		for (const subId of this._subscriptions) {
+			this.core.unsubscribe(subId)
 		}
 
 		return this.core
@@ -662,28 +661,22 @@ export class CoreHandler {
 		let foundI = -1
 		for (let i = 0; i < this._coreMosHandlers.length; i++) {
 			const cmh = this._coreMosHandlers[i]
-			if (cmh._mosDevice.idPrimary === mosDevice.idSecondary) {
+			if (
+				cmh._mosDevice.idPrimary === mosDevice.idPrimary ||
+				cmh._mosDevice.idSecondary === mosDevice.idSecondary
+			) {
 				foundI = i
 				break
 			}
 		}
 		const coreMosHandler = this._coreMosHandlers[foundI]
 		if (coreMosHandler) {
-			return coreMosHandler.dispose().then(() => {
-				this._coreMosHandlers.splice(foundI, 1)
-				return
-			})
+			this._coreMosHandlers.splice(foundI, 1)
+			await coreMosHandler.dispose()
 		}
-		return Promise.resolve()
 	}
 	onConnectionRestored(): void {
-		this.setupSubscriptionsAndObservers().catch((e) => {
-			this.logger.error(e)
-		})
 		if (this._onConnected) this._onConnected()
-		this._coreMosHandlers.forEach((cmh: CoreMosDeviceHandler) => {
-			cmh.setupSubscriptionsAndObservers()
-		})
 	}
 	onConnected(fcn: () => any): void {
 		this._onConnected = fcn
@@ -697,7 +690,6 @@ export class CoreHandler {
 			})
 			this._observers = []
 		}
-		this._subscriptions = []
 
 		if (!this.core) {
 			throw Error('core is undefined!')
@@ -711,7 +703,7 @@ export class CoreHandler {
 			this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId),
 		])
 			.then((subs) => {
-				this._subscriptions = this._subscriptions.concat(subs)
+				this._subscriptions.push(...subs)
 			})
 			.then(() => {
 				this.setupObserverForPeripheralDeviceCommands(this)
