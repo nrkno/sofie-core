@@ -1,13 +1,10 @@
-import { omit, protectString, unprotectObject } from '../lib'
-import { LookaheadMode, ExpectedPackage } from '@sofie-automation/blueprints-integration'
-import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-
+import { omit, protectString } from '../lib'
+import { LookaheadMode } from '@sofie-automation/blueprints-integration'
 import {
 	ResultingMappingRoutes,
 	DBStudio,
 	MappingExt,
 	StudioRouteType,
-	MappingsExt,
 	StudioRouteSet,
 	RouteMapping,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -101,39 +98,6 @@ export function getRoutedMappings<M extends MappingExt>(
 		}
 	}
 	return outputMappings
-}
-
-export type MappingExtWithPackage = MappingExt & { expectedPackages: (ExpectedPackage.Base & { rundownId?: string })[] }
-export type MappingsExtWithPackage = {
-	[layerName: string]: MappingExtWithPackage
-}
-/** @deprecated */
-export function routeExpectedPackages(
-	studio: ReadonlyDeep<Pick<Studio, 'routeSets'>>,
-	studioMappings: ReadonlyDeep<MappingsExt>,
-	expectedPackages: (ExpectedPackageDB | ExpectedPackage.Base)[]
-): MappingsExtWithPackage {
-	// Map the expectedPackages onto their specified layer:
-	const mappingsWithPackages: MappingsExtWithPackage = {}
-	for (const expectedPackage of expectedPackages) {
-		for (const layerName of expectedPackage.layers) {
-			const mapping = studioMappings[layerName]
-
-			if (mapping) {
-				if (!mappingsWithPackages[layerName]) {
-					mappingsWithPackages[layerName] = {
-						...mapping,
-						expectedPackages: [],
-					}
-				}
-				mappingsWithPackages[layerName].expectedPackages.push(unprotectObject(expectedPackage))
-			}
-		}
-	}
-
-	// Route the mappings
-	const routes = getActiveRoutes(studio.routeSets)
-	return getRoutedMappings(mappingsWithPackages, routes)
 }
 
 export type Studio = DBStudio
