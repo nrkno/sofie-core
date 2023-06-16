@@ -60,6 +60,7 @@ describe('Pieces', () => {
 			objectType: TimelineObjType.RUNDOWN,
 			pieceInstanceId: 'randomId9000',
 			partInstanceId: protectString('randomId9002'),
+			priority: 0,
 		})
 		const simplePieceControl = literal<TimelineObjPieceAbstract & OnGenerateTimelineObjExt<PieceTimelineMetadata>>({
 			content: {

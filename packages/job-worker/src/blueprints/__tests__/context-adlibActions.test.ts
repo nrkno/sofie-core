@@ -1237,6 +1237,7 @@ describe('Test blueprint api context', () => {
 									content: {} as any,
 									layer: 1,
 									objectType: TimelineObjType.RUNDOWN,
+									priority: 0,
 								}),
 							],
 						},

@@ -28,6 +28,7 @@ describe('Lib', () => {
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
 			objectType: TimelineObjType.RUNDOWN,
+			priority: 0,
 		})
 		expect(obj).toEqual({
 			id: 'abc',

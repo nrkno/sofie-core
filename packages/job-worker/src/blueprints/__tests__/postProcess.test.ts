@@ -235,6 +235,7 @@ describe('Test blueprint post-process', () => {
 				enable: { while: 1 },
 				content: {} as any,
 				objectType: TimelineObjType.RUNDOWN,
+				priority: 0,
 			})
 			ensureAllKeysDefined(tmpObj, res)
 		})
@@ -400,6 +401,7 @@ describe('Test blueprint post-process', () => {
 							content: {
 								deviceType: TSR.DeviceType.HYPERDECK,
 							},
+							priority: 0,
 						}),
 					],
 				},
@@ -536,6 +538,7 @@ describe('Test blueprint post-process', () => {
 							content: {
 								deviceType: TSR.DeviceType.HYPERDECK,
 							},
+							priority: 0,
 						}),
 					],
 				},
@@ -581,6 +584,7 @@ describe('Test blueprint post-process', () => {
 							content: {
 								deviceType: TSR.DeviceType.HYPERDECK,
 							},
+							priority: 0,
 						}),
 					],
 				},
