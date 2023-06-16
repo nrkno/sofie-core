@@ -145,22 +145,6 @@ describe('Rundown Layouts', () => {
 				expect(ctx.body).toContain('body')
 			}
 
-			// {
-			// 	// try to send a malformed body
-			// 	SupressLogMessages.suppressLogMessage(/SyntaxError/i)
-			// 	const ctx = await callKoaRoute(shelfLayoutsRouter, {
-			// 		method: 'POST',
-			// 		url: `/upload/${env.showStyleBaseId}`,
-			// 		headers: {
-			// 			'content-type': 'application/json',
-			// 		},
-			// 		requestBody: '{ type: dsfgsdfgsdf gsdfgsdfg sdfgsdfg sdf gsdfgsdfg sdfg }',
-			// 	})
-
-			// 	expect(ctx.response.status).toBe(500)
-			// 	expect(ctx.body).toContain('SyntaxError')
-			// }
-
 			{
 				const ctx = await callKoaRoute(shelfLayoutsRouter, {
 					method: 'POST',

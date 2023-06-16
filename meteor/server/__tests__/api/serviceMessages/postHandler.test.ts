@@ -45,17 +45,7 @@ expect.extend({
 })
 
 describe('ServiceMessages API POST endpoint', () => {
-	// let mockRequest: BodyParsingIncomingMessage
-	// let mockResponse: ServerResponse
-	// let mockResponseEnd: jest.Mock<Function>
 	const mockedWriteMessage: jest.Mock<typeof serviceMessagesApi.writeMessage> = serviceMessagesApi.writeMessage as any
-
-	// beforeEach(() => {
-	// 	mockRequest = new IncomingMessage(new Socket())
-	// 	mockResponse = new ServerResponse(mockRequest)
-	// 	mockResponseEnd = jest.fn()
-	// 	Object.defineProperty(mockResponse, 'end', { value: mockResponseEnd })
-	// })
 
 	describe('input validation', () => {
 		it('should accept valid input', async () => {
