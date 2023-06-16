@@ -79,6 +79,7 @@ export function buildTimelineObjsForRundown(
 			].filter((v): v is TimelineObjClassesCore => v !== undefined),
 			partInstanceId: null,
 			metaData: undefined,
+			priority: 0,
 		})
 	)
 

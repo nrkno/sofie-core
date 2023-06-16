@@ -477,6 +477,7 @@ function flattenAndProcessTimelineObjects(context: JobContext, timelineObjs: Arr
 					...child,
 					objectType: o.objectType,
 					inGroup: o.id,
+					priority: o.priority ?? 0,
 				}
 				if (!childFixed.id) logger.error(`TimelineObj missing id attribute (child of ${o.id})`, childFixed)
 				timelineObjs.push(childFixed)
