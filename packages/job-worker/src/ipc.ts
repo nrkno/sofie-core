@@ -48,14 +48,15 @@ export class IpcJobWorker extends JobWorkerBase {
 		getNextJob: (queueName: string) => Promise<JobSpec | null>,
 		queueJob: (queueName: string, jobName: string, jobData: unknown) => Promise<void>,
 		logLine: (msg: LogEntry) => Promise<void>,
-		fastTrackTimeline: FastTrackTimelineFunc
+		fastTrackTimeline: FastTrackTimelineFunc,
+		enableFreezeLimit: boolean
 	) {
 		// Intercept logging to pipe back over ipc
 		interceptLogging('worker-parent', async (msg) => logLine(msg))
 		setupPrometheusMetrics('worker-parent')
 
 		const jobManager = new IpcJobManager(jobFinished, queueJob, interruptJobStream, waitForNextJob, getNextJob)
-		super(workerId, jobManager, logLine, fastTrackTimeline)
+		super(workerId, jobManager, logLine, fastTrackTimeline, enableFreezeLimit)
 	}
 
 	public async collectMetrics(): Promise<string[]> {

@@ -51,7 +51,8 @@ export class StudioWorkerSet {
 		studioId: StudioId,
 		jobManager: JobManager,
 		logLine: LogLineWithSourceFunc,
-		fastTrackTimeline: FastTrackTimelineFunc | null
+		fastTrackTimeline: FastTrackTimelineFunc | null,
+		enableFreezeLimit: boolean
 	): Promise<StudioWorkerSet> {
 		const result = new StudioWorkerSet(studioId, mongoClient)
 
@@ -78,6 +79,7 @@ export class StudioWorkerSet {
 			locksManager: result.#locksManager,
 			studioId,
 			jobManager,
+			enableFreezeLimit,
 		}
 
 		tryAddThread(StudioWorkerParent.start(baseOptions, mongoUri, logLine, fastTrackTimeline))

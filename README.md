@@ -84,6 +84,14 @@ You can connect a debugging client to Meteor's Node process on port `9229`. In o
 yarn dev --inspect-meteor
 ```
 
+### Debugging blueprints
+
+The "Attach" configuration in `launch.json` supports debugging blueprints.
+
+Local blueprints repo needs to be added to the Visual Studio Code workspace under the name "Blueprints".
+
+It is required to set `devtool` to  `'inline-source-map'` and `output.devtoolModuleFilenameTemplate` to `'blueprint:///[resource-path]'` in webpack config of the blueprints.
+
 ### Dealing with strange errors
 
 If you get any strange errors (such as the application crashing, "Unable to resolve some modules" or errors during installation of dependencies), the last resort is to reset and restart:

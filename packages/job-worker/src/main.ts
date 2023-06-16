@@ -38,6 +38,7 @@ export abstract class JobWorkerBase {
 
 	readonly #logLine: LogLineWithSourceFunc
 	readonly #fastTrackTimeline: FastTrackTimelineFunc | null
+	readonly #enableFreezeLimit: boolean
 
 	#client: MongoClient | undefined
 
@@ -47,7 +48,8 @@ export abstract class JobWorkerBase {
 		workerId: WorkerId,
 		jobManager: JobManager,
 		logLine: LogLineWithSourceFunc | null,
-		fastTrackTimeline: FastTrackTimelineFunc | null
+		fastTrackTimeline: FastTrackTimelineFunc | null,
+		enableFreezeLimit: boolean
 	) {
 		this.#workerId = workerId
 		this.#jobManager = jobManager
@@ -58,6 +60,8 @@ export abstract class JobWorkerBase {
 		if (!this.#fastTrackTimeline) {
 			logger.info(`Fast-track of timeline updates disabled`)
 		}
+
+		this.#enableFreezeLimit = enableFreezeLimit
 	}
 
 	public async run(mongoUri: string, mongoDbName: string): Promise<void> {
@@ -90,7 +94,8 @@ export abstract class JobWorkerBase {
 					studioId,
 					this.#jobManager,
 					this.#logLine,
-					this.#fastTrackTimeline
+					this.#fastTrackTimeline,
+					this.#enableFreezeLimit
 				)
 			)
 		}
