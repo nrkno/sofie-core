@@ -63,11 +63,14 @@ export namespace ExpectedPackage {
 		sideEffect: {
 			/** Which container previews are to be put into */
 			previewContainerId?: string | null // null is used to disable the sideEffect
-			previewPackageSettings?: SideEffectPreviewSettings
+			previewPackageSettings?: SideEffectPreviewSettings | null
 
 			/** Which container thumbnails are to be put into */
 			thumbnailContainerId?: string | null // null is used to disable the sideEffect
-			thumbnailPackageSettings?: SideEffectThumbnailSettings
+			thumbnailPackageSettings?: SideEffectThumbnailSettings | null
+
+			/** Should the package be scanned for loudness */
+			loudnessPackageSettings?: SideEffectLoudnessSettings
 
 			/** Other custom configuration */
 			[key: string]: any
@@ -83,6 +86,26 @@ export namespace ExpectedPackage {
 		/** What time to pick the thumbnail from [ms] */
 		seekTime?: number
 	}
+
+	export interface SideEffectLoudnessSettings {
+		/** Which channels should be scanned. Use a single 0-indexed number, or two numbers with a plus sign ("0+1") for stereo pairs.
+		 * You can specify multiple channels and channel pairs to be scanned, as separate entries in the array. This can be useful
+		 * when the streams contain different language versions or audio that will be played jointly, but processed separately
+		 * in the production chain (f.g. a stereo mix of a speaker and a stereo ambient sound mix)
+		 *
+		 * When expecting varied channel arrangements within the clip, it can be useful to specify multiple combinations,
+		 * f.g. ["0", "0+1"] (for single stream stereo and discreet channel stereo) and then select the correct measurement in the
+		 * blueprints based on the context */
+		channelSpec: SideEffectLoudnessSettingsChannelSpec[]
+
+		/** Calculate phase difference between stereo channels in the tracks */
+		inPhaseDifference?: boolean
+
+		/** Calculate balance difference between stereo channels in the tracks */
+		balanceDifference?: boolean
+	}
+
+	export type SideEffectLoudnessSettingsChannelSpec = `${number}` | `${number}+${number}`
 
 	export interface ExpectedPackageMediaFile extends Base {
 		type: PackageType.MEDIA_FILE
@@ -170,7 +193,7 @@ export interface PackageContainer {
  */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Accessor {
-	export type Any = LocalFolder | FileShare | HTTP | HTTPProxy | Quantel | CorePackageCollection
+	export type Any = LocalFolder | FileShare | HTTP | HTTPProxy | Quantel | CorePackageCollection | AtemMediaStore
 
 	export enum AccessType {
 		LOCAL_FOLDER = 'local_folder',
@@ -179,6 +202,7 @@ export namespace Accessor {
 		HTTP_PROXY = 'http_proxy',
 		QUANTEL = 'quantel',
 		CORE_PACKAGE_INFO = 'core_package_info',
+		ATEM_MEDIA_STORE = 'atem_media_store',
 	}
 
 	/** Generic (used in extends) */
@@ -247,7 +271,7 @@ export namespace Accessor {
 
 		/** Zone id, defaults to 'default' */
 		zoneId?: string
-		/** Server id. Should be omitted for sources, as clip-searches are zone-wide. */
+		/** Server id. Should be omitted for sources, as clip-searches are zone-wide */
 		serverId?: number
 
 		/** Name/Id of the network the share exists on. Used to differ between different networks. Leave empty if globally accessible. */
@@ -267,6 +291,19 @@ export namespace Accessor {
 		type: Accessor.AccessType.CORE_PACKAGE_INFO
 		// empty
 	}
+	export interface AtemMediaStore extends Base {
+		type: AccessType.ATEM_MEDIA_STORE
+		/** Name/id of the resource, this could for example be the computer name. */
+		resourceId?: string
+		/** Name/Id of the network the ATEM exists on. Used to differ between different networks. Leave empty if globally accessible. */
+		networkId?: string
+		/** Ip-address of the Atem */
+		atemHost: string
+		/** The index of the Atem media/clip banks */
+		bankIndex: number
+		/** What type of bank */
+		mediaType: 'clip' | 'still'
+	}
 }
 /**
  * AccessorOnPackage contains interfaces for Accessor definitions that are put ON the Package.
@@ -274,7 +311,7 @@ export namespace Accessor {
  */
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AccessorOnPackage {
-	export type Any = LocalFolder | FileShare | HTTP | HTTPProxy | Quantel | CorePackageCollection
+	export type Any = LocalFolder | FileShare | HTTP | HTTPProxy | Quantel | CorePackageCollection | AtemMediaStore
 
 	export interface LocalFolder extends Partial<Accessor.LocalFolder> {
 		/** Path to the file (starting from .folderPath). If not set, the filePath of the ExpectedPackage will be used */
@@ -299,6 +336,9 @@ export namespace AccessorOnPackage {
 	// eslint-disable-next-line @typescript-eslint/no-empty-interface
 	export interface CorePackageCollection extends Partial<Accessor.CorePackageCollection> {
 		// empty
+	}
+	export interface AtemMediaStore extends Partial<Accessor.AtemMediaStore> {
+		filePath?: string
 	}
 }
 

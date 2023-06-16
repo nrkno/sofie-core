@@ -1,5 +1,4 @@
 import { omit, protectString, unprotectObject } from '../lib'
-import * as _ from 'underscore'
 import { LookaheadMode, ExpectedPackage } from '@sofie-automation/blueprints-integration'
 import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
@@ -10,6 +9,7 @@ import {
 	StudioRouteType,
 	MappingsExt,
 	StudioRouteSet,
+	RouteMapping,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { ReadonlyDeep } from 'type-fest'
 export * from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -22,7 +22,7 @@ export function getActiveRoutes(routeSets: ReadonlyDeep<Record<string, StudioRou
 	}
 
 	const exclusivityGroups: { [groupId: string]: true } = {}
-	_.each(routeSets, (routeSet) => {
+	for (const routeSet of Object.values<ReadonlyDeep<StudioRouteSet>>(routeSets)) {
 		if (routeSet.active) {
 			let useRoute = true
 			if (routeSet.exclusivityGroup) {
@@ -33,7 +33,7 @@ export function getActiveRoutes(routeSets: ReadonlyDeep<Record<string, StudioRou
 				exclusivityGroups[routeSet.exclusivityGroup] = true
 			}
 			if (useRoute) {
-				_.each(routeSet.routes, (routeMapping) => {
+				for (const routeMapping of Object.values<ReadonlyDeep<RouteMapping>>(routeSet.routes)) {
 					if (routeMapping.outputMappedLayer) {
 						if (routeMapping.mappedLayer) {
 							// Route an existing layer
@@ -46,10 +46,10 @@ export function getActiveRoutes(routeSets: ReadonlyDeep<Record<string, StudioRou
 							routes.inserted.push(omit(routeMapping, 'mappedLayer'))
 						}
 					}
-				})
+				}
 			}
 		}
-	})
+	}
 
 	return routes
 }
@@ -60,9 +60,7 @@ export function getRoutedMappings<M extends MappingExt>(
 	const outputMappings: { [layerName: string]: M } = {}
 
 	// Re-route existing layers:
-	for (const inputLayer of Object.keys(inputMappings)) {
-		const inputMapping: M = inputMappings[inputLayer]
-
+	for (const [inputLayer, inputMapping] of Object.entries<M>(inputMappings)) {
 		const routes = mappingRoutes.existing[inputLayer]
 		if (routes) {
 			for (const route of routes) {
@@ -88,6 +86,7 @@ export function getRoutedMappings<M extends MappingExt>(
 			outputMappings[inputLayer] = inputMapping
 		}
 	}
+
 	// also insert new routed layers:
 	for (const route of mappingRoutes.inserted) {
 		if (route.remapping && route.deviceType && route.remapping.deviceId) {
@@ -108,6 +107,7 @@ export type MappingExtWithPackage = MappingExt & { expectedPackages: (ExpectedPa
 export type MappingsExtWithPackage = {
 	[layerName: string]: MappingExtWithPackage
 }
+/** @deprecated */
 export function routeExpectedPackages(
 	studio: ReadonlyDeep<Pick<Studio, 'routeSets'>>,
 	studioMappings: ReadonlyDeep<MappingsExt>,
