@@ -13,6 +13,9 @@ import { SegmentStoryboard } from './SegmentStoryboard'
 import { unprotectString } from '../../../lib/lib'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/SegmentTimelineContainer'
 import { PartInstances, Parts, Segments } from '../../collections'
+import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
+import { MongoFieldSpecifierOnes } from '@sofie-automation/corelib/dist/mongo'
+import { PartInstance } from '../../../lib/collections/PartInstances'
 
 export const LIVELINE_HISTORY_SIZE = TIMELINE_LIVELINE_HISTORY_SIZE
 
@@ -134,11 +137,11 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 			}
 
 			const partInstance = PartInstances.findOne(props.playlist.nextPartInfo.partInstanceId, {
-				fields: {
-					//@ts-expect-error typescript doesnt like it
+				fields: literal<MongoFieldSpecifierOnes<PartInstance>>({
 					segmentId: 1,
+					//@ts-expect-error typescript doesnt like it
 					'part._id': 1,
-				},
+				}),
 			})
 			if (!partInstance) {
 				return false

@@ -1,5 +1,5 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
@@ -44,7 +44,7 @@ function convertDocument(studio: Pick<DBStudio, StudioFields>): UIStudio {
 }
 
 type StudioFields = '_id' | 'name' | 'mappingsWithOverrides' | 'settings' | 'routeSets' | 'routeSetExclusivityGroups'
-const fieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
+const fieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
 	_id: 1,
 	name: 1,
 	mappingsWithOverrides: 1,

@@ -1,5 +1,5 @@
 import { ExpectedPackageId, PackageContainerPackageId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReadonlyDeep } from 'type-fest'
@@ -16,7 +16,7 @@ export type StudioFields =
 	| 'thumbnailContainerIds'
 	| 'mappingsWithOverrides'
 	| 'routeSets'
-export const studioFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
+export const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<Studio, StudioFields>>>({
 	_id: 1,
 	settings: 1,
 	packageContainers: 1,

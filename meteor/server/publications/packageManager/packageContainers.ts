@@ -1,7 +1,7 @@
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { StudioPackageContainer } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { DBStudio, StudioPackageContainer } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { PackageContainer } from '@sofie-automation/shared-lib/dist/package-manager/package'
 import { PackageManagerPackageContainers } from '@sofie-automation/shared-lib/dist/package-manager/publications'
 import { check } from 'meteor/check'
@@ -15,8 +15,7 @@ import { logger } from '../../logging'
 import { PeripheralDeviceReadAccess } from '../../security/peripheralDevice'
 
 type StudioFields = '_id' | 'packageContainers'
-const studioFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
-	// It should be enough to watch these fields for changes
+const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
 	_id: 1,
 	packageContainers: 1,
 })

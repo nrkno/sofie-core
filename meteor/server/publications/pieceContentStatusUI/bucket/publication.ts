@@ -7,7 +7,7 @@ import {
 	PackageContainerPackageId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../../../lib/api/pubsub'
 import { UIBucketContentStatus } from '../../../../lib/api/rundownNotifications'
@@ -61,7 +61,7 @@ interface UIBucketContentStatusesUpdateProps extends IContentStatusesUpdateProps
 }
 
 type BucketFields = '_id' | 'studioId'
-const bucketFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<BucketFields>>({
+const bucketFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<Bucket, BucketFields>>>({
 	_id: 1,
 	studioId: 1,
 })

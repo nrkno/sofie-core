@@ -1,20 +1,19 @@
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { PackageManagerPlayoutContext } from '@sofie-automation/shared-lib/dist/package-manager/publications'
 import { check } from 'meteor/check'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { PubSub, CustomCollectionName } from '../../../lib/api/pubsub'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PeripheralDevices, RundownPlaylists, Rundowns } from '../../collections'
 import { meteorCustomPublish, setUpOptimizedObserverArray, TriggerUpdate } from '../../lib/customPublication'
 import { logger } from '../../logging'
 import { PeripheralDeviceReadAccess } from '../../security/peripheralDevice'
 
-type RundownPlaylistFields = '_id' | 'activationId' | 'rehearsal' | 'rundownIdsInOrder'
-const rundownPlaylistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownPlaylistFields>>({
-	// It should be enough to watch these fields for changes
+export type RundownPlaylistCompact = Pick<DBRundownPlaylist, '_id' | 'activationId' | 'rehearsal' | 'rundownIdsInOrder'>
+const rundownPlaylistFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<RundownPlaylistCompact>>({
 	_id: 1,
 	activationId: 1,
 	rehearsal: 1,
@@ -67,7 +66,7 @@ async function manipulateExpectedPackagesPublicationData(
 			activationId: { $exists: true },
 		},
 		{ fields: rundownPlaylistFieldSpecifier }
-	)) as Pick<RundownPlaylist, RundownPlaylistFields> | undefined
+	)) as RundownPlaylistCompact | undefined
 
 	const activeRundowns = activePlaylist
 		? await Rundowns.findFetchAsync({

@@ -6,7 +6,7 @@ import {
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import EventEmitter from 'events'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
@@ -28,7 +28,9 @@ type ChangedHandler = (showStyleBaseId: ShowStyleBaseId, cache: ContentCache) =>
 const REACTIVITY_DEBOUNCE = 20
 
 type RundownPlaylistFields = '_id' | 'nextPartInfo' | 'currentPartInfo' | 'activationId'
-const rundownPlaylistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownPlaylistFields>>({
+const rundownPlaylistFieldSpecifier = literal<
+	MongoFieldSpecifierOnesStrict<Pick<DBRundownPlaylist, RundownPlaylistFields>>
+>({
 	_id: 1,
 	activationId: 1,
 	currentPartInfo: 1,
@@ -36,19 +38,19 @@ const rundownPlaylistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<Rund
 })
 
 type PartInstanceFields = '_id' | 'rundownId'
-const partInstanceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PartInstanceFields>>({
+const partInstanceFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBPartInstance, PartInstanceFields>>>({
 	_id: 1,
 	rundownId: 1,
 })
 
 type RundownFields = '_id' | 'showStyleBaseId'
-const rundownFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownFields>>({
+const rundownFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBRundown, RundownFields>>>({
 	_id: 1,
 	showStyleBaseId: 1,
 })
 
 type ShowStyleBaseFields = '_id' | 'sourceLayersWithOverrides' | 'outputLayersWithOverrides' | 'hotkeyLegend'
-const showStyleBaseFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<ShowStyleBaseFields>>({
+const showStyleBaseFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBShowStyleBase, ShowStyleBaseFields>>>({
 	_id: 1,
 	sourceLayersWithOverrides: 1,
 	outputLayersWithOverrides: 1,

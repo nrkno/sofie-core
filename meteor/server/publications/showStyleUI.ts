@@ -1,5 +1,5 @@
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
@@ -27,7 +27,7 @@ interface UIShowStyleBaseUpdateProps {
 }
 
 type ShowStyleBaseFields = '_id' | 'name' | 'outputLayersWithOverrides' | 'sourceLayersWithOverrides' | 'hotkeyLegend'
-const fieldSpecifier = literal<IncludeAllMongoFieldSpecifier<ShowStyleBaseFields>>({
+const fieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBShowStyleBase, ShowStyleBaseFields>>>({
 	_id: 1,
 	name: 1,
 	outputLayersWithOverrides: 1,
