@@ -9,10 +9,11 @@ import { BucketAdLibUi, BucketAdLibActionUi } from '../Shelf/RundownViewBuckets'
 import { AdLibPieceUi } from '../../lib/shelf'
 import { UIStudio } from '../../../lib/api/studios'
 import { UIBucketContentStatuses, UIPieceContentStatuses } from '../Collections'
-import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceContentStatusObj } from '../../../lib/mediaObjects'
 import { deepFreeze } from '@sofie-automation/corelib/dist/lib'
 import _ from 'underscore'
+import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 
 type AnyPiece = {
 	piece?: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi | undefined
@@ -151,4 +152,20 @@ export function withMediaObjectStatus<IProps extends AnyPiece, IState>(): (
 			}
 		}
 	}
+}
+
+export function useContentStatusForPiece(
+	piece: Pick<Piece, '_id' | 'startRundownId' | 'startSegmentId'> | undefined
+): PieceContentStatusObj | undefined {
+	return useTracker(
+		() =>
+			piece
+				? UIPieceContentStatuses.findOne({
+						pieceId: piece._id,
+						rundownId: piece.startRundownId || { $exists: false },
+						segmentId: piece.startSegmentId || { $exists: false },
+				  })?.status
+				: undefined,
+		[piece?._id, piece?.startRundownId, piece?.startSegmentId]
+	)
 }
