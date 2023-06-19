@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { Piece } from './collections/Pieces'
 import { IOutputLayer, ISourceLayer, ITranslatableMessage } from '@sofie-automation/blueprints-integration'
-import { DBSegment, Segment } from './collections/Segments'
+import { DBSegment, Segment, SegmentOrphanedReason } from './collections/Segments'
 import { DBPart } from './collections/Parts'
 import { PartInstance, wrapPartToTemporaryInstance } from './collections/PartInstances'
 import { PieceInstance } from './collections/PieceInstances'
@@ -90,11 +90,11 @@ export interface PieceExtended {
 	contentStatus?: ReadonlyDeep<PieceContentStatusObj>
 }
 
-export function fetchPiecesThatMayBeActiveForPart(
+function fetchPiecesThatMayBeActiveForPart(
 	part: DBPart,
-	partsBeforeThisInSegmentSet: Set<PartId>,
-	segmentsBeforeThisInRundownSet: Set<SegmentId>,
-	rundownsBeforeThisInPlaylist: RundownId[],
+	partsToReceiveOnSegmentEndFromSet: Set<PartId>,
+	segmentsToReceiveOnRundownEndFromSet: Set<SegmentId>,
+	rundownsToReceiveOnShowStyleEndFrom: RundownId[],
 	/** Map of Pieces on Parts, passed through for performance */
 	allPiecesCache?: Map<PartId, Piece[]>
 ): Piece[] {
@@ -108,14 +108,14 @@ export function fetchPiecesThatMayBeActiveForPart(
 		piecesStartingInPart = Pieces.find(convertCorelibToMeteorMongoQuery(selector)).fetch()
 	}
 
-	const partsBeforeThisInSegment = Array.from(partsBeforeThisInSegmentSet.values())
-	const segmentsBeforeThisInRundown = Array.from(segmentsBeforeThisInRundownSet.values())
+	const partsToReceiveOnSegmentEndFrom = Array.from(partsToReceiveOnSegmentEndFromSet.values())
+	const segmentsToReceiveOnRundownEndFrom = Array.from(segmentsToReceiveOnRundownEndFromSet.values())
 
 	const infinitePieceQuery = buildPastInfinitePiecesForThisPartQuery(
 		part,
-		partsBeforeThisInSegment,
-		segmentsBeforeThisInRundown,
-		rundownsBeforeThisInPlaylist
+		partsToReceiveOnSegmentEndFrom,
+		segmentsToReceiveOnRundownEndFrom,
+		rundownsToReceiveOnShowStyleEndFrom
 	)
 	let infinitePieces: Piece[]
 	if (allPieces) {
@@ -138,8 +138,8 @@ const SIMULATION_INVALIDATION = 3000
  *
  * @export
  * @param {PartInstanceLimited} partInstance
- * @param {Set<PartId>} partsBeforeThisInSegmentSet
- * @param {Set<SegmentId>} segmentsBeforeThisInRundownSet
+ * @param {Set<PartId>} partsToReceiveOnSegmentEndFromSet
+ * @param {Set<SegmentId>} segmentsToReceiveOnRundownEndFromSet
  * @param {PartId[]} orderedAllParts
  * @param {boolean} nextPartIsAfterCurrentPart
  * @param {(PartInstance | undefined)} currentPartInstance
@@ -153,36 +153,46 @@ const SIMULATION_INVALIDATION = 3000
 export function getPieceInstancesForPartInstance(
 	playlistActivationId: RundownPlaylistActivationId | undefined,
 	rundown: Pick<Rundown, '_id' | 'showStyleBaseId'>,
+	segment: Pick<Segment, '_id' | 'orphaned'>,
 	partInstance: PartInstanceLimited,
-	partsBeforeThisInSegmentSet: Set<PartId>,
-	segmentsBeforeThisInRundownSet: Set<SegmentId>,
-	rundownsBeforeThisInPlaylist: RundownId[],
+	partsToReceiveOnSegmentEndFromSet: Set<PartId>,
+	segmentsToReceiveOnRundownEndFromSet: Set<SegmentId>,
+	rundownsToReceiveOnShowStyleEndFrom: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	orderedAllParts: PartId[],
 	nextPartIsAfterCurrentPart: boolean,
 	currentPartInstance: PartInstance | undefined,
+	currentSegment: Pick<Segment, '_id' | 'orphaned'> | undefined,
 	currentPartInstancePieceInstances: PieceInstance[] | undefined,
 	/** Map of Pieces on Parts, passed through for performance */
 	allPiecesCache?: Map<PartId, Piece[]>,
 	options?: FindOptions<PieceInstance>,
 	pieceInstanceSimulation?: boolean
 ): PieceInstance[] {
+	if (segment.orphaned === SegmentOrphanedReason.SCRATCHPAD) {
+		// When in the scratchpad, don't allow searching other segments/rundowns for infinites to continue
+		segmentsToReceiveOnRundownEndFromSet = new Set()
+		rundownsToReceiveOnShowStyleEndFrom = []
+	}
+
 	if (partInstance.isTemporary) {
 		return getPieceInstancesForPart(
 			playlistActivationId || protectString(''),
 			currentPartInstance,
+			currentSegment,
 			currentPartInstancePieceInstances,
 			rundown,
+			segment,
 			partInstance.part,
-			partsBeforeThisInSegmentSet,
-			segmentsBeforeThisInRundownSet,
-			rundownsBeforeThisInPlaylist,
+			partsToReceiveOnSegmentEndFromSet,
+			segmentsToReceiveOnRundownEndFromSet,
+			rundownsToReceiveOnShowStyleEndFrom,
 			rundownsToShowstyles,
 			fetchPiecesThatMayBeActiveForPart(
 				partInstance.part,
-				partsBeforeThisInSegmentSet,
-				segmentsBeforeThisInRundownSet,
-				rundownsBeforeThisInPlaylist,
+				partsToReceiveOnSegmentEndFromSet,
+				segmentsToReceiveOnRundownEndFromSet,
+				rundownsToReceiveOnShowStyleEndFrom,
 				allPiecesCache
 			),
 			orderedAllParts,
@@ -212,21 +222,24 @@ export function getPieceInstancesForPartInstance(
 		) {
 			// make sure to invalidate the current computation after SIMULATION_INVALIDATION has passed
 			invalidateAfter(SIMULATION_INVALIDATION)
+
 			return getPieceInstancesForPart(
 				playlistActivationId || protectString(''),
 				currentPartInstance,
+				currentSegment,
 				currentPartInstancePieceInstances,
 				rundown,
+				segment,
 				partInstance.part,
-				partsBeforeThisInSegmentSet,
-				segmentsBeforeThisInRundownSet,
-				rundownsBeforeThisInPlaylist,
+				partsToReceiveOnSegmentEndFromSet,
+				segmentsToReceiveOnRundownEndFromSet,
+				rundownsToReceiveOnShowStyleEndFrom,
 				rundownsToShowstyles,
 				fetchPiecesThatMayBeActiveForPart(
 					partInstance.part,
-					partsBeforeThisInSegmentSet,
-					segmentsBeforeThisInRundownSet,
-					rundownsBeforeThisInPlaylist,
+					partsToReceiveOnSegmentEndFromSet,
+					segmentsToReceiveOnRundownEndFromSet,
+					rundownsToReceiveOnShowStyleEndFrom,
 					allPiecesCache
 				),
 				orderedAllParts,

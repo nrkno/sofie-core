@@ -53,6 +53,8 @@ export enum UserErrorMessage {
 	DeviceAlreadyAttachedToStudio = 38,
 	ShowStyleBaseNotFound = 39,
 	NoMigrationsToApply = 40,
+	ScratchpadNotAllowed = 41,
+	ScratchpadAlreadyActive = 42,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -105,6 +107,8 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.DeviceAlreadyAttachedToStudio]: t(`Device is already attached to another studio.`),
 	[UserErrorMessage.ShowStyleBaseNotFound]: t(`ShowStyleBase not found!`),
 	[UserErrorMessage.NoMigrationsToApply]: t(`No migrations to apply`),
+	[UserErrorMessage.ScratchpadNotAllowed]: t(`Scratchpad mode is not allowed`),
+	[UserErrorMessage.ScratchpadAlreadyActive]: t(`Scratchpad mode is already active`),
 }
 
 export class UserError {

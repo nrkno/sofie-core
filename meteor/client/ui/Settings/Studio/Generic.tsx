@@ -232,14 +232,22 @@ export const StudioGenericProperties = withTranslation()(
 						/>
 					</label>
 					<label className="field">
-						<LabelActual
-							label={t(
-								'Preserve position of segments when unsynced relative to other segments. Note: this has only been tested for the iNews gateway'
-							)}
-						/>
+						<LabelActual label={t('Preserve position of segments when unsynced relative to other segments')} />
 						<EditAttribute
 							modifiedClassName="bghl"
 							attribute="settings.preserveOrphanedSegmentPositionInRundown"
+							obj={this.props.studio}
+							type="checkbox"
+							collection={Studios}
+						/>
+						<span className="text-s dimmed field-hint">{t('This has only been tested for the iNews gateway')}</span>
+					</label>
+
+					<label className="field">
+						<LabelActual label={t('Enable Scratchpad mode, for testing adlibs before taking the first Part')} />
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute="settings.allowScratchpad"
 							obj={this.props.studio}
 							type="checkbox"
 							collection={Studios}

@@ -8,7 +8,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
 import { JobContext } from '../jobs'
 import { CacheForStudioBase } from '../studio/cache'
-import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -126,7 +126,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 	public readonly Timeline: DbCacheWriteOptionalObject<TimelineComplete>
 
-	public readonly Segments: DbCacheReadCollection<DBSegment>
+	public readonly Segments: DbCacheWriteCollection<DBSegment>
 	public readonly Parts: DbCacheReadCollection<DBPart>
 	public readonly PartInstances: DbCacheWriteCollection<DBPartInstance>
 	public readonly PieceInstances: DbCacheWriteCollection<PieceInstance>
@@ -142,7 +142,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		peripheralDevices: DbCacheReadCollection<PeripheralDevice>,
 		playlist: DbCacheWriteObject<DBRundownPlaylist>,
 		rundowns: DbCacheReadCollection<DBRundown>,
-		segments: DbCacheReadCollection<DBSegment>,
+		segments: DbCacheWriteCollection<DBSegment>,
 		parts: DbCacheReadCollection<DBPart>,
 		partInstances: DbCacheWriteCollection<DBPartInstance>,
 		pieceInstances: DbCacheWriteCollection<PieceInstance>,
@@ -245,7 +245,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 		rundownIds: RundownId[]
 	): Promise<
 		[
-			DbCacheReadCollection<DBSegment>,
+			DbCacheWriteCollection<DBSegment>,
 			DbCacheReadCollection<DBPart>,
 			DbCacheWriteCollection<DBPartInstance>,
 			DbCacheWriteCollection<PieceInstance>,
@@ -289,8 +289,8 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 					},
 				],
 			}
-			// TODO - is this correct? If the playlist isnt active do we want any of these?
-			if (playlist.activationId) partInstancesSelector.playlistActivationId = playlist.activationId
+			// Filter the PieceInstances to the activationId, if possible
+			pieceInstancesSelector.playlistActivationId = playlist.activationId || { $exists: false }
 
 			return DbCacheWriteCollection.createFromDatabase(
 				context,
@@ -308,12 +308,22 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 			rundownId: { $in: rundownIds },
 			partInstanceId: { $in: selectedPartInstanceIds },
 		}
-		// TODO - is this correct? If the playlist isnt active do we want any of these?
-		if (playlist.activationId) pieceInstancesSelector.playlistActivationId = playlist.activationId
+		// Filter the PieceInstances to the activationId, if possible
+		pieceInstancesSelector.playlistActivationId = playlist.activationId || { $exists: false }
 
 		const [segments, parts, baselineObjects, ...collections] = await Promise.all([
-			DbCacheReadCollection.createFromDatabase(context, context.directCollections.Segments, {
-				rundownId: { $in: loadRundownIds },
+			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.Segments, {
+				$or: [
+					{
+						// In a different rundown
+						rundownId: { $in: loadRundownIds },
+					},
+					{
+						// Is the scratchpad
+						rundownId: { $in: rundownIds },
+						orphaned: SegmentOrphanedReason.SCRATCHPAD,
+					},
+				],
 			}),
 			DbCacheReadCollection.createFromDatabase(context, context.directCollections.Parts, {
 				rundownId: { $in: loadRundownIds },

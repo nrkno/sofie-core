@@ -18,9 +18,10 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownPlaylists, PieceInstances, Pieces } from '../../collections'
+import { RundownPlaylists, PieceInstances, Pieces, Segments } from '../../collections'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 // export interface NewPrompterAPI {
 // 	getPrompterData (playlistId: RundownPlaylistId): Promise<PrompterData>
@@ -73,6 +74,15 @@ export namespace PrompterAPI {
 
 		const { currentPartInstance, nextPartInstance } =
 			RundownPlaylistCollectionUtil.getSelectedPartInstances(playlist)
+
+		const currentSegment = currentPartInstance
+			? (Segments.findOne(currentPartInstance?.segmentId, {
+					projection: {
+						_id: 1,
+						orphaned: 1,
+					},
+			  }) as Pick<DBSegment, '_id' | 'orphaned'>)
+			: undefined
 
 		const groupedParts = getSegmentsWithPartInstances(
 			playlist,
@@ -191,6 +201,7 @@ export namespace PrompterAPI {
 				const rawPieceInstances = getPieceInstancesForPartInstance(
 					playlist.activationId,
 					rundown,
+					segment,
 					partInstance,
 					new Set(partIds.slice(0, partIndex)),
 					new Set(segmentIds.slice(0, segmentIndex)),
@@ -199,6 +210,7 @@ export namespace PrompterAPI {
 					orderedAllPartIds,
 					nextPartIsAfterCurrentPart,
 					currentPartInstance,
+					currentSegment,
 					currentPartInstancePieceInstances,
 					allPiecesCache,
 					pieceInstanceFieldOptions,

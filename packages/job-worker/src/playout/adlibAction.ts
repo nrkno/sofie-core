@@ -18,6 +18,7 @@ import { performTakeToNextedPart } from './take'
 import { ActionUserData } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { logger } from '../logging'
+import { validateScratchpartPartInstanceProperties } from './scratchpad'
 
 /**
  * Execute an AdLib Action
@@ -188,6 +189,15 @@ async function applyAnyExecutionSideEffects(
 		const nextPartInstanceId = cache.Playlist.doc.nextPartInfo?.partInstanceId
 		if (nextPartInstanceId) {
 			updateExpectedDurationWithPrerollForPartInstance(cache, nextPartInstanceId)
+
+			validateScratchpartPartInstanceProperties(context, cache, nextPartInstanceId)
+		}
+	}
+
+	if (actionContext.currentPartState !== ActionPartChange.NONE) {
+		const currentPartInstanceId = cache.Playlist.doc.currentPartInfo?.partInstanceId
+		if (currentPartInstanceId) {
+			validateScratchpartPartInstanceProperties(context, cache, currentPartInstanceId)
 		}
 	}
 

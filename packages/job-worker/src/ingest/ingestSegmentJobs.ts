@@ -187,6 +187,8 @@ export async function handleRemoveOrphanedSegemnts(
 			// We flag them for deletion again, and they will either be kept if they are somehow playing, or purged if they are not
 			const stillOrphanedSegments = ingestCache.Segments.findAll((s) => !!s.orphaned)
 
+			// Note: scratchpad segments are ignored here, as they will never be in the ingestCache
+
 			const stillHiddenSegments = stillOrphanedSegments
 				.filter(
 					(s) => s.orphaned === SegmentOrphanedReason.HIDDEN && data.orphanedHiddenSegmentIds.includes(s._id)

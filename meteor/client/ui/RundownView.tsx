@@ -811,6 +811,22 @@ const RundownHeader = withTranslation()(
 				}
 			}
 		}
+		private activateScratchpad = (e: any) => {
+			const { t } = this.props
+			if (e.persist) e.persist()
+
+			if (
+				this.props.studioMode &&
+				this.props.studio.settings.allowScratchpad &&
+				this.props.playlist.activationId &&
+				this.props.currentRundown
+			) {
+				const rundownId = this.props.currentRundown._id
+				doUserAction(t, e, UserAction.ACTIVATE_SCRATCHPAD, (e, ts) =>
+					MeteorCall.userAction.activateScratchpadMode(e, ts, this.props.playlist._id, rundownId)
+				)
+			}
+		}
 
 		resetRundown = (e: any) => {
 			const { t } = this.props
@@ -986,6 +1002,9 @@ const RundownHeader = withTranslation()(
 									)}
 									{this.props.playlist.activationId ? (
 										<MenuItem onClick={(e) => this.deactivate(e)}>{t('Deactivate')}</MenuItem>
+									) : null}
+									{this.props.studio.settings.allowScratchpad && this.props.playlist.activationId ? (
+										<MenuItem onClick={(e) => this.activateScratchpad(e)}>{t('Activate Scratchpad')}</MenuItem>
 									) : null}
 									{this.props.playlist.activationId ? (
 										<MenuItem onClick={(e) => this.take(e)}>{t('Take')}</MenuItem>

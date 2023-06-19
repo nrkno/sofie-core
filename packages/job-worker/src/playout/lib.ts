@@ -15,6 +15,7 @@ import { mongoWhere } from '@sofie-automation/corelib/dist/mongo'
 import _ = require('underscore')
 import { setNextPart } from './setNext'
 import { selectNextPart } from './selectNextPart'
+import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 /**
  * Reset the rundownPlaylist (all of the rundowns within the playlist):
@@ -27,6 +28,9 @@ export async function resetRundownPlaylist(context: JobContext, cache: CacheForP
 
 	removePartInstancesWithPieceInstances(context, cache, { rehearsal: true })
 	resetPartInstancesWithPieceInstances(context, cache)
+
+	// Remove the scratchpad
+	cache.Segments.remove((segment) => segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
 
 	cache.Playlist.update((p) => {
 		p.previousPartInfo = null

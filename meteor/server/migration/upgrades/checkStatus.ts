@@ -289,8 +289,9 @@ function diffJsonSchemaObjects(
 						'Config value "{{ name }}" has changed. From "{{ oldValue }}", to "{{ newValue }}"',
 						{
 							name: propSchema['ui:title'] || propPath,
-							oldValue: valueA ?? '',
-							newValue: valueB ?? '',
+							// Future: this is not pretty when it is an object
+							oldValue: JSON.stringify(valueA) ?? '',
+							newValue: JSON.stringify(valueB) ?? '',
 						},
 						translationNamespaces
 					)

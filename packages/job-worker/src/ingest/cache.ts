@@ -10,7 +10,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
-import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { JobContext } from '../jobs'
 import { LazyInitialise } from '../lib/lazy'
 import { CacheBase } from '../cache/CacheBase'
@@ -168,6 +168,7 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 		return Promise.all([
 			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.Segments, {
 				rundownId: rundownId,
+				orphaned: { $ne: SegmentOrphanedReason.SCRATCHPAD },
 			}),
 			DbCacheWriteCollection.createFromDatabase(context, context.directCollections.Parts, {
 				rundownId: rundownId,

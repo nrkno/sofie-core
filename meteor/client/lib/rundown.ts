@@ -24,7 +24,7 @@ import {
 	getSegmentsWithPartInstances,
 } from '../../lib/Rundown'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { Segment } from '../../lib/collections/Segments'
+import { DBSegment, Segment } from '../../lib/collections/Segments'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { literal, getCurrentTime, applyToArray } from '../../lib/lib'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
@@ -275,7 +275,7 @@ export namespace RundownUtils {
 	 * @param {ShowStyleBase} showStyleBase
 	 * @param {RundownPlaylist} playlist
 	 * @param {DBSegment} segment
-	 * @param {Set<SegmentId>} segmentsBeforeThisInRundownSet
+	 * @param {Set<SegmentId>} segmentsToReceiveOnRundownEndFromSet
 	 * @param {PartId[]} orderedAllPartIds
 	 * @param {PartInstance | undefined } currentPartInstance
 	 * @param {PartInstance | undefined } nextPartInstance
@@ -292,8 +292,8 @@ export namespace RundownUtils {
 		playlist: RundownPlaylist,
 		rundown: Pick<Rundown, '_id' | 'showStyleBaseId'>,
 		segment: Segment,
-		segmentsBeforeThisInRundownSet: Set<SegmentId>,
-		rundownsBeforeThisInPlaylist: RundownId[],
+		segmentsToReceiveOnRundownEndFromSet: Set<SegmentId>,
+		rundownsToReceiveOnShowStyleEndFrom: RundownId[],
 		rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 		orderedAllPartIds: PartId[],
 		pieces: Map<PartId, CalculateTimingsPiece[]>,
@@ -474,14 +474,23 @@ export namespace RundownUtils {
 				const rawPieceInstances = getPieceInstancesForPartInstance(
 					playlist.activationId,
 					rundown,
+					segment,
 					partInstance,
 					new Set(partIds.slice(0, itIndex)),
-					segmentsBeforeThisInRundownSet,
-					rundownsBeforeThisInPlaylist,
+					segmentsToReceiveOnRundownEndFromSet,
+					rundownsToReceiveOnShowStyleEndFrom,
 					rundownsToShowstyles,
 					orderedAllPartIds,
 					nextPartIsAfterCurrentPart,
 					currentPartInstance,
+					currentPartInstance
+						? (Segments.findOne(currentPartInstance.segmentId, {
+								projection: {
+									_id: 1,
+									orphaned: 1,
+								},
+						  }) as Pick<DBSegment, '_id' | 'orphaned'> | undefined)
+						: undefined,
 					currentPartInstance
 						? PieceInstances.find(
 								{

@@ -14,6 +14,7 @@ import { literal } from '../../lib'
 import { protectString } from '../../protectedString'
 import { getPlayheadTrackingInfinitesForPart } from '../infinites'
 import { processAndPrunePieceInstanceTimings } from '../processAndPrune'
+import { DBSegment, SegmentOrphanedReason } from '../../dataModel/Segment'
 
 describe('Infinites', () => {
 	function createPieceInstance(
@@ -442,8 +443,10 @@ describe('Infinites', () => {
 	describe('getPlayheadTrackingInfinitesForPart', () => {
 		function runAndTidyResult(
 			previousPartInstance: Pick<DBPartInstance, 'rundownId' | 'segmentId'> & { partId: PartId },
+			previousSegment: Pick<DBSegment, '_id' | 'orphaned'>,
 			previousPartPieces: PieceInstance[],
 			rundown: Rundown,
+			segment: Pick<DBSegment, '_id' | 'orphaned'>,
 			part: Pick<DBPart, 'rundownId' | 'segmentId'>,
 			newInstanceId: PartInstanceId
 		) {
@@ -454,9 +457,11 @@ describe('Infinites', () => {
 				[],
 				new Map(),
 				previousPartInstance as any,
+				previousSegment,
 				previousPartPieces,
 				rundown,
 				part as any,
+				segment,
 				newInstanceId,
 				true,
 				false
@@ -543,6 +548,7 @@ describe('Infinites', () => {
 			const segmentId = protectString('segment0')
 			const partId = protectString('part0')
 			const previousPartInstance = { rundownId, segmentId, partId }
+			const previousSegment = { _id: previousPartInstance.segmentId }
 			const previousPartPieces: PieceInstance[] = [
 				createPieceInstanceAsInfinite(
 					'one',
@@ -573,14 +579,17 @@ describe('Infinites', () => {
 					dynamicallyInserted: Date.now() + 5000,
 				},
 			]
+			const segment = { _id: segmentId }
 			const part = { rundownId, segmentId }
 			const instanceId = protectString('newInstance0')
 			const rundown = createRundown(rundownId, playlistId, 'Test Rundown', 'rundown0')
 
 			const continuedInstances = runAndTidyResult(
 				previousPartInstance,
+				previousSegment,
 				previousPartPieces,
 				rundown,
+				segment,
 				part,
 				instanceId
 			)
@@ -601,6 +610,7 @@ describe('Infinites', () => {
 			const segmentId = protectString('segment0')
 			const partId = protectString('part0')
 			const previousPartInstance = { rundownId, segmentId, partId }
+			const previousSegment = { _id: previousPartInstance.segmentId }
 			const previousPartPieces: PieceInstance[] = [
 				createPieceInstanceAsInfinite(
 					'one',
@@ -634,14 +644,17 @@ describe('Infinites', () => {
 					plannedStoppedPlayback: 5000,
 				},
 			]
+			const segment = { _id: segmentId }
 			const part = { rundownId, segmentId }
 			const instanceId = protectString('newInstance0')
 			const rundown = createRundown(rundownId, playlistId, 'Test Rundown', 'rundown0')
 
 			const continuedInstances = runAndTidyResult(
 				previousPartInstance,
+				previousSegment,
 				previousPartPieces,
 				rundown,
+				segment,
 				part,
 				instanceId
 			)
@@ -651,6 +664,95 @@ describe('Infinites', () => {
 					start: 0,
 				},
 			])
+		})
+
+		describe('scratchpad', () => {
+			const playlistId = protectString('playlist0')
+			const rundownId = protectString('rundown0')
+			const segmentId = protectString('segment0')
+			const partId = protectString('part0')
+			const previousPartInstance = { rundownId, segmentId, partId }
+			const previousPartPieces: PieceInstance[] = [
+				createPieceInstanceAsInfinite(
+					'one',
+					rundownId,
+					partId,
+					{ start: 0 },
+					'one',
+					PieceLifespan.OutOnRundownEnd,
+					true
+				),
+			]
+			const part = { rundownId, segmentId }
+			const instanceId = protectString('newInstance0')
+			const rundown = createRundown(rundownId, playlistId, 'Test Rundown', 'rundown0')
+
+			test('normal rundown', () => {
+				const continuedInstances = runAndTidyResult(
+					previousPartInstance,
+					{ _id: previousPartInstance.segmentId },
+					previousPartPieces,
+					rundown,
+					{ _id: previousPartInstance.segmentId },
+					part,
+					instanceId
+				)
+				expect(continuedInstances).toHaveLength(1)
+			})
+
+			test('into scratchpad', () => {
+				const previousSegment: Pick<DBSegment, '_id' | 'orphaned'> = { _id: previousPartInstance.segmentId }
+				const scratchpadSegment: Pick<DBSegment, '_id' | 'orphaned'> = {
+					_id: protectString('segment1'),
+					orphaned: SegmentOrphanedReason.SCRATCHPAD,
+				}
+				const continuedInstances = runAndTidyResult(
+					previousPartInstance,
+					previousSegment,
+					previousPartPieces,
+					rundown,
+					scratchpadSegment,
+					part,
+					instanceId
+				)
+				expect(continuedInstances).toHaveLength(0)
+			})
+
+			test('out of scratchpad', () => {
+				const segment: Pick<DBSegment, '_id' | 'orphaned'> = { _id: protectString('segment1') }
+				const scratchpadSegment: Pick<DBSegment, '_id' | 'orphaned'> = {
+					_id: previousPartInstance.segmentId,
+					orphaned: SegmentOrphanedReason.SCRATCHPAD,
+				}
+				const continuedInstances = runAndTidyResult(
+					previousPartInstance,
+					scratchpadSegment,
+					previousPartPieces,
+					rundown,
+					segment,
+					part,
+					instanceId
+				)
+				expect(continuedInstances).toHaveLength(0)
+			})
+
+			test('within scratchpad', () => {
+				const segment: Pick<DBSegment, '_id' | 'orphaned'> = { _id: previousPartInstance.segmentId }
+				const scratchpadSegment: Pick<DBSegment, '_id' | 'orphaned'> = {
+					_id: previousPartInstance.segmentId,
+					orphaned: SegmentOrphanedReason.SCRATCHPAD,
+				}
+				const continuedInstances = runAndTidyResult(
+					previousPartInstance,
+					scratchpadSegment,
+					previousPartPieces,
+					rundown,
+					segment,
+					part,
+					instanceId
+				)
+				expect(continuedInstances).toHaveLength(1)
+			})
 		})
 	})
 })
