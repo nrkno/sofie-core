@@ -9,12 +9,7 @@ import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter } from './Ad
 import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { matchFilter } from './AdLibListView'
 import { DashboardPieceButton } from './DashboardPieceButton'
-import {
-	contextMenuHoldToDisplayTime,
-	ensureHasTrailingSlash,
-	UserAgentPointer,
-	USER_AGENT_POINTER_PROPERTY,
-} from '../../lib/lib'
+import { contextMenuHoldToDisplayTime, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
 import {
 	DashboardPanelInner,
 	dashboardElementStyle,
@@ -148,11 +143,6 @@ export const TimelineDashboardPanel = translateWithTracker<
 													}
 													playlist={this.props.playlist}
 													isOnAir={this.isAdLibOnAir(adLibListItem)}
-													mediaPreviewUrl={
-														this.props.studio
-															? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
-															: ''
-													}
 													widthScale={filter.buttonWidthScale}
 													heightScale={filter.buttonHeightScale}
 													displayStyle={PieceDisplayStyle.BUTTONS}
@@ -178,11 +168,6 @@ export const TimelineDashboardPanel = translateWithTracker<
 														}
 														playlist={this.props.playlist}
 														isOnAir={this.isAdLibOnAir(adLibListItem)}
-														mediaPreviewUrl={
-															this.props.studio
-																? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
-																: ''
-														}
 														widthScale={filter.buttonWidthScale}
 														heightScale={filter.buttonHeightScale}
 														displayStyle={PieceDisplayStyle.BUTTONS}
@@ -240,11 +225,6 @@ export const TimelineDashboardPanel = translateWithTracker<
 														playlist={this.props.playlist}
 														studio={this.props.studio}
 														isOnAir={this.isAdLibOnAir(adLibListItem)}
-														mediaPreviewUrl={
-															this.props.studio
-																? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
-																: ''
-														}
 														widthScale={filter.buttonWidthScale}
 														heightScale={filter.buttonHeightScale}
 														showThumbnailsInList={filter.showThumbnailsInList}
@@ -271,11 +251,6 @@ export const TimelineDashboardPanel = translateWithTracker<
 															playlist={this.props.playlist}
 															studio={this.props.studio}
 															isOnAir={this.isAdLibOnAir(adLibListItem)}
-															mediaPreviewUrl={
-																this.props.studio
-																	? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
-																	: ''
-															}
 															widthScale={filter.buttonWidthScale}
 															heightScale={filter.buttonHeightScale}
 															showThumbnailsInList={filter.showThumbnailsInList}

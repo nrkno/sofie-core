@@ -8,11 +8,20 @@ import { literal } from '../../../lib/lib'
 import { Studios } from '../../collections'
 import { PieceContentStatusStudio } from './checkPieceContentStatus'
 
-export type StudioFields = '_id' | 'settings' | 'packageContainers' | 'mappingsWithOverrides' | 'routeSets'
+export type StudioFields =
+	| '_id'
+	| 'settings'
+	| 'packageContainers'
+	| 'previewContainerIds'
+	| 'thumbnailContainerIds'
+	| 'mappingsWithOverrides'
+	| 'routeSets'
 export const studioFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
 	_id: 1,
 	settings: 1,
 	packageContainers: 1,
+	previewContainerIds: 1,
+	thumbnailContainerIds: 1,
 	mappingsWithOverrides: 1,
 	routeSets: 1,
 })
@@ -75,6 +84,8 @@ export async function fetchStudio(studioId: StudioId): Promise<PieceContentStatu
 		_id: studio._id,
 		settings: studio.settings,
 		packageContainers: studio.packageContainers,
+		previewContainerIds: studio.previewContainerIds,
+		thumbnailContainerIds: studio.thumbnailContainerIds,
 		mappings: applyAndValidateOverrides(studio.mappingsWithOverrides).obj,
 		routeSets: studio.routeSets,
 	}

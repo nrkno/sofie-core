@@ -1,5 +1,5 @@
 import { ABResolverOptions, IBlueprintPieceType, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { EmptyPieceTimelineObjectsBlob, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceInstancePiece, ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { ABSessionAssignments } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { OnGenerateTimelineObjExt } from '@sofie-automation/corelib/dist/dataModel/Timeline'
@@ -38,7 +38,6 @@ function createBasicResolvedPieceInstance(
 		content: {},
 		invalid: false,
 		startPartId: protectString(''),
-		status: PieceStatusCode.UNKNOWN,
 		pieceType: IBlueprintPieceType.Normal,
 	})
 

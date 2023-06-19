@@ -243,7 +243,7 @@ export namespace RundownUtils {
 			.replace(/_/g, '-')
 	}
 
-	export function getPieceStatusClassName(status: PieceStatusCode): string | undefined {
+	export function getPieceStatusClassName(status: PieceStatusCode | undefined): string | undefined {
 		switch (status) {
 			case PieceStatusCode.OK:
 			case PieceStatusCode.SOURCE_HAS_ISSUES:
@@ -255,6 +255,7 @@ export namespace RundownUtils {
 				return 'source-missing'
 			case PieceStatusCode.SOURCE_NOT_READY:
 				return 'source-not-ready'
+			case undefined:
 			case PieceStatusCode.UNKNOWN:
 				return 'unknown-state'
 			default:

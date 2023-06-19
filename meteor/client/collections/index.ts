@@ -13,7 +13,6 @@ import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLi
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { ExpectedPackageWorkStatus } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackageWorkStatuses'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
-import { PackageContainerPackageStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 import { PackageContainerStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerStatus'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
@@ -72,10 +71,6 @@ export const MediaWorkFlows = createSyncReadOnlyMongoCollection<MediaWorkFlow>(C
 
 export const MediaWorkFlowSteps = createSyncReadOnlyMongoCollection<MediaWorkFlowStep>(
 	CollectionName.MediaWorkFlowSteps
-)
-
-export const PackageContainerPackageStatuses = createSyncReadOnlyMongoCollection<PackageContainerPackageStatusDB>(
-	CollectionName.PackageContainerPackageStatuses
 )
 
 export const PackageContainerStatuses = createSyncReadOnlyMongoCollection<PackageContainerStatusDB>(

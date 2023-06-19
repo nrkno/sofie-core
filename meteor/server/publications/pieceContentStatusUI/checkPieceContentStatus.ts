@@ -1,4 +1,5 @@
 import {
+	Accessor,
 	ExpectedPackageStatusAPI,
 	GraphicsContent,
 	ISourceLayer,
@@ -16,14 +17,14 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { PieceGeneric, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { IStudioSettings, StudioPackageContainer } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { IStudioSettings, MappingsExt, StudioPackageContainer } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { literal, Complete, assertNever } from '@sofie-automation/corelib/dist/lib'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
-import { UIStudio } from '../../../lib/api/studios'
-import { routeExpectedPackages, MappingExtWithPackage } from '../../../lib/collections/Studios'
-import { generateTranslation, unprotectString } from '../../../lib/lib'
+import { getSideEffect } from '../../../lib/collections/ExpectedPackages'
+import { routeExpectedPackages, MappingExtWithPackage, Studio } from '../../../lib/collections/Studios'
+import { ensureHasTrailingSlash, generateTranslation, unprotectString } from '../../../lib/lib'
 import { PieceContentStatusObj, ScanInfoForPackage, ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { MediaObjects, PackageContainerPackageStatuses, PackageInfos } from '../../collections'
 import type { PieceDependencies } from './common'
@@ -143,10 +144,14 @@ export function getMediaObjectMediaId(
 }
 
 export type PieceContentStatusPiece = Pick<PieceGeneric, '_id' | 'content' | 'expectedPackages'>
-export type PieceContentStatusStudio = Pick<
-	UIStudio,
-	'_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'
->
+export interface PieceContentStatusStudio
+	extends Pick<
+		Studio,
+		'_id' | 'settings' | 'packageContainers' | 'previewContainerIds' | 'thumbnailContainerIds' | 'routeSets'
+	> {
+	/** Mappings between the physical devices / outputs and logical ones */
+	mappings: MappingsExt
+}
 
 export async function checkPieceContentStatusAndDependencies(
 	studio: PieceContentStatusStudio,
@@ -212,10 +217,16 @@ export async function checkPieceContentStatusAndDependencies(
 	return [
 		{
 			status: PieceStatusCode.UNKNOWN,
-			metadata: null,
-			packageInfos: undefined,
 			messages: [],
-			contentDuration: undefined,
+
+			freezes: [],
+			blacks: [],
+			scenes: [],
+
+			thumbnailUrl: undefined,
+			previewUrl: undefined,
+
+			packageName: null,
 		},
 		pieceDependencies,
 	]
@@ -232,6 +243,10 @@ async function checkPieceContentMediaObjectStatus(
 	let pieceStatus: PieceStatusCode = PieceStatusCode.UNKNOWN
 
 	const ignoreMediaAudioStatus = piece.content && piece.content.ignoreAudioFormat
+
+	let freezes: Array<PackageInfo.Anomaly> = []
+	let blacks: Array<PackageInfo.Anomaly> = []
+	let scenes: Array<number> = []
 
 	const messages: Array<ContentMessage> = []
 	let contentSeemsOK = false
@@ -292,25 +307,41 @@ async function checkPieceContentMediaObjectStatus(
 								// check for black/freeze frames
 								const sourceDuration = piece.content.sourceDuration
 
-								if (!piece.content.ignoreBlackFrames && mediaObject.mediainfo.blacks?.length) {
-									addFrameWarning(
-										messages,
-										timebase,
-										sourceDuration,
-										mediaObject.mediainfo.format?.duration,
-										mediaObject.mediainfo.blacks,
-										BlackFrameWarnings
-									)
+								if (mediaObject.mediainfo.blacks?.length) {
+									if (!piece.content.ignoreBlackFrames) {
+										addFrameWarning(
+											messages,
+											timebase,
+											sourceDuration,
+											mediaObject.mediainfo.format?.duration,
+											mediaObject.mediainfo.blacks,
+											BlackFrameWarnings
+										)
+									}
+
+									blacks = mediaObject.mediainfo.blacks.map((i): PackageInfo.Anomaly => {
+										return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+									})
 								}
-								if (!piece.content.ignoreFreezeFrame && mediaObject.mediainfo.freezes?.length) {
-									addFrameWarning(
-										messages,
-										timebase,
-										sourceDuration,
-										mediaObject.mediainfo.format?.duration,
-										mediaObject.mediainfo.freezes,
-										FreezeFrameWarnings
-									)
+								if (mediaObject.mediainfo.freezes?.length) {
+									if (!piece.content.ignoreFreezeFrame) {
+										addFrameWarning(
+											messages,
+											timebase,
+											sourceDuration,
+											mediaObject.mediainfo.format?.duration,
+											mediaObject.mediainfo.freezes,
+											FreezeFrameWarnings
+										)
+									}
+
+									freezes = mediaObject.mediainfo.freezes.map((i): PackageInfo.Anomaly => {
+										return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+									})
+								}
+
+								if (mediaObject.mediainfo.scenes) {
+									scenes = _.compact(mediaObject.mediainfo.scenes.map((i) => i * 1000)) // convert into milliseconds
 								}
 							}
 						}
@@ -357,11 +388,34 @@ async function checkPieceContentMediaObjectStatus(
 
 	return {
 		status: pieceStatus,
-		metadata: metadata,
-		packageInfos: undefined,
 		messages: messages.map((msg) => msg.message),
-		contentDuration: undefined,
+
+		freezes,
+		blacks,
+		scenes,
+
+		thumbnailUrl: metadata
+			? getAssetUrlFromContentMetaData(metadata, 'thumbnail', studio.settings.mediaPreviewsUrl)
+			: undefined,
+		previewUrl: metadata
+			? getAssetUrlFromContentMetaData(metadata, 'preview', studio.settings.mediaPreviewsUrl)
+			: undefined,
+
+		packageName: metadata?.mediaId || null,
 	}
+}
+
+function getAssetUrlFromContentMetaData(
+	contentMetaData: MediaObject,
+	assetType: 'thumbnail' | 'preview',
+	mediaPreviewUrl: string
+): string | undefined {
+	if (!contentMetaData || !contentMetaData.previewPath) return
+	return (
+		ensureHasTrailingSlash(mediaPreviewUrl ?? null) +
+		`media/${assetType}/` +
+		encodeURIComponent(contentMetaData.mediaId)
+	)
 }
 
 interface ContentMessage {
@@ -379,7 +433,6 @@ async function checkPieceContentExpectedPackageStatus(
 		expectedPackageId: ExpectedPackageId
 	) => Promise<Pick<PackageContainerPackageStatusDB, 'status'> | undefined>
 ): Promise<PieceContentStatusObj> {
-	let packageInfoToForward: ScanInfoForPackages | undefined = undefined
 	const settings: IStudioSettings | undefined = studio?.settings
 	let pieceStatus: PieceStatusCode = PieceStatusCode.UNKNOWN
 
@@ -388,6 +441,14 @@ async function checkPieceContentExpectedPackageStatus(
 	const messages: Array<ContentMessage> = []
 	const packageInfos: ScanInfoForPackages = {}
 	let readyCount = 0
+
+	let freezes: Array<PackageInfo.Anomaly> = []
+	let blacks: Array<PackageInfo.Anomaly> = []
+	let scenes: Array<number> = []
+	let packageName: string | null = null
+
+	let thumbnailUrl: string | undefined
+	let previewUrl: string | undefined
 
 	if (piece.expectedPackages && piece.expectedPackages.length) {
 		// Route the mappings
@@ -431,6 +492,36 @@ async function checkPieceContentExpectedPackageStatus(
 					expectedPackage.content.guid ||
 					expectedPackage._id
 
+				if (!thumbnailUrl && packageOnPackageContainer) {
+					const sideEffect = getSideEffect(expectedPackage, studio)
+
+					const packageThumbnailPath = sideEffect.thumbnailPackageSettings?.path
+					const thumbnailContainerId = sideEffect.thumbnailContainerId
+					if (packageThumbnailPath && thumbnailContainerId) {
+						thumbnailUrl = getAssetUrlFromExpectedPackages(
+							packageThumbnailPath,
+							thumbnailContainerId,
+							studio,
+							packageOnPackageContainer
+						)
+					}
+				}
+
+				if (!previewUrl && packageOnPackageContainer) {
+					const sideEffect = getSideEffect(expectedPackage, studio)
+
+					const packagePreviewPath = sideEffect.previewPackageSettings?.path
+					const previewContainerId = sideEffect.previewContainerId
+					if (packagePreviewPath && previewContainerId) {
+						previewUrl = getAssetUrlFromExpectedPackages(
+							packagePreviewPath,
+							previewContainerId,
+							studio,
+							packageOnPackageContainer
+						)
+					}
+				}
+
 				const warningMessage = getPackageWarningMessage(packageOnPackageContainer, sourceLayer)
 				if (warningMessage) {
 					messages.push(warningMessage)
@@ -454,52 +545,70 @@ async function checkPieceContentExpectedPackageStatus(
 			}
 		}
 	}
-	if (Object.keys(packageInfos).length) {
-		for (const [_packageId, packageInfo] of Object.entries<ScanInfoForPackage>(packageInfos)) {
-			const { scan, deepScan } = packageInfo
 
-			if (scan && scan.streams) {
-				const timebase = checkStreamFormatsAndCounts(
-					messages,
-					scan.streams,
-					(stream) => (deepScan ? buildFormatString(deepScan.field_order, stream) : null),
-					settings,
-					sourceLayer,
-					ignoreMediaAudioStatus
-				)
-				if (timebase) {
-					packageInfo.timebase = timebase // what todo?
+	for (const [_packageId, packageInfo] of Object.entries<ScanInfoForPackage>(packageInfos)) {
+		const { scan, deepScan } = packageInfo
 
-					// check for black/freeze frames
+		if (scan && scan.streams) {
+			const timebase = checkStreamFormatsAndCounts(
+				messages,
+				scan.streams,
+				(stream) => (deepScan ? buildFormatString(deepScan.field_order, stream) : null),
+				settings,
+				sourceLayer,
+				ignoreMediaAudioStatus
+			)
+			if (timebase) {
+				packageInfo.timebase = timebase // what todo?
 
-					const sourceDuration = piece.content.sourceDuration
+				// check for black/freeze frames
 
-					if (!piece.content.ignoreBlackFrames && deepScan?.blacks?.length) {
-						addFrameWarning(
-							messages,
-							timebase,
-							sourceDuration,
-							scan.format?.duration,
-							deepScan.blacks,
-							BlackFrameWarnings
-						)
-					}
-					if (!piece.content.ignoreFreezeFrame && deepScan?.freezes?.length) {
-						addFrameWarning(
-							messages,
-							timebase,
-							sourceDuration,
-							scan.format?.duration,
-							deepScan.freezes,
-							FreezeFrameWarnings
-						)
-					}
+				const sourceDuration = piece.content.sourceDuration
+
+				if (!piece.content.ignoreBlackFrames && deepScan?.blacks?.length) {
+					addFrameWarning(
+						messages,
+						timebase,
+						sourceDuration,
+						scan.format?.duration,
+						deepScan.blacks,
+						BlackFrameWarnings
+					)
+				}
+				if (!piece.content.ignoreFreezeFrame && deepScan?.freezes?.length) {
+					addFrameWarning(
+						messages,
+						timebase,
+						sourceDuration,
+						scan.format?.duration,
+						deepScan.freezes,
+						FreezeFrameWarnings
+					)
 				}
 			}
 		}
-
-		packageInfoToForward = packageInfos
 	}
+
+	const firstPackage = Object.values<ScanInfoForPackage>(packageInfos)[0]
+	if (firstPackage) {
+		// TODO: support multiple packages:
+		if (!piece.content.ignoreFreezeFrame && firstPackage.deepScan?.freezes?.length) {
+			freezes = firstPackage.deepScan.freezes.map((i): PackageInfo.Anomaly => {
+				return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+			})
+		}
+		if (!piece.content.ignoreBlackFrames && firstPackage.deepScan?.blacks?.length) {
+			blacks = firstPackage.deepScan.blacks.map((i): PackageInfo.Anomaly => {
+				return { start: i.start * 1000, end: i.end * 1000, duration: i.duration * 1000 }
+			})
+		}
+		if (firstPackage.deepScan?.scenes) {
+			scenes = _.compact(firstPackage.deepScan.scenes.map((i) => i * 1000)) // convert into milliseconds
+		}
+
+		packageName = firstPackage.packageName
+	}
+
 	if (messages.length) {
 		pieceStatus = messages.reduce((prev, msg) => Math.max(prev, msg.status), PieceStatusCode.UNKNOWN)
 	} else {
@@ -510,10 +619,47 @@ async function checkPieceContentExpectedPackageStatus(
 
 	return {
 		status: pieceStatus,
-		metadata: null,
-		packageInfos: packageInfoToForward,
 		messages: messages.map((msg) => msg.message),
-		contentDuration: undefined,
+
+		freezes,
+		blacks,
+		scenes,
+
+		thumbnailUrl,
+		previewUrl,
+
+		packageName,
+	}
+}
+
+function getAssetUrlFromExpectedPackages(
+	assetPath: string,
+	assetContainerId: string,
+	studio: PieceContentStatusStudio,
+	packageOnPackageContainer: Pick<PackageContainerPackageStatusDB, 'status'>
+): string | undefined {
+	const packageContainer = studio.packageContainers[assetContainerId]
+	if (!packageContainer) return
+
+	if (packageOnPackageContainer.status.status !== ExpectedPackageStatusAPI.PackageContainerPackageStatusStatus.READY)
+		return
+
+	// Look up an accessor we can use:
+	for (const accessor of Object.values<Accessor.Any>(packageContainer.container.accessors)) {
+		if (
+			(accessor.type === Accessor.AccessType.HTTP || accessor.type === Accessor.AccessType.HTTP_PROXY) &&
+			accessor.baseUrl
+		) {
+			// Currently we only support public accessors (ie has no networkId set)
+			if (!accessor.networkId) {
+				return [
+					accessor.baseUrl.replace(/\/$/, ''), // trim trailing slash
+					encodeURIComponent(
+						assetPath.replace(/^\//, '') // trim leading slash
+					),
+				].join('/')
+			}
+		}
 	}
 }
 

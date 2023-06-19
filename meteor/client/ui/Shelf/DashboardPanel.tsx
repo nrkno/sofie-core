@@ -15,12 +15,7 @@ import { IAdLibPanelProps, AdLibFetchAndFilterProps, fetchAndFilter } from './Ad
 import { AdLibPanelToolbar } from './AdLibPanelToolbar'
 import { matchFilter } from './AdLibListView'
 import { DashboardPieceButton } from './DashboardPieceButton'
-import {
-	ensureHasTrailingSlash,
-	contextMenuHoldToDisplayTime,
-	UserAgentPointer,
-	USER_AGENT_POINTER_PROPERTY,
-} from '../../lib/lib'
+import { contextMenuHoldToDisplayTime, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { setShelfContextMenuContext, ContextType } from './ShelfContextMenu'
@@ -50,7 +45,6 @@ interface IState {
 
 export interface IDashboardPanelProps {
 	searchFilter?: string | undefined
-	mediaPreviewUrl?: string
 	shouldQueue: boolean
 }
 
@@ -557,11 +551,6 @@ export class DashboardPanelInner extends MeteorReactComponent<
 											playlist={this.props.playlist}
 											isOnAir={this.isAdLibDisplayedAsOnAir(adLibPiece)}
 											isNext={adLibPiece.isNext}
-											mediaPreviewUrl={
-												this.props.studio
-													? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
-													: ''
-											}
 											widthScale={filter.buttonWidthScale}
 											heightScale={filter.buttonHeightScale}
 											displayStyle={filter.displayStyle}

@@ -1,7 +1,7 @@
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { RundownPlaylistId, RundownId, PartId, PieceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { literal, getRandomId } from '@sofie-automation/corelib/dist/lib'
@@ -118,7 +118,6 @@ describe('Expected Media Items', () => {
 				name: '',
 				outputLayerId: LAYER_IDS.OUTPUT_PGM,
 				sourceLayerId: LAYER_IDS.SOURCE_VT0,
-				status: PieceStatusCode.UNKNOWN,
 				lifespan: PieceLifespan.OutOnSegmentChange,
 				content: literal<VTContent>({
 					fileName: mockFileName0,
@@ -148,7 +147,6 @@ describe('Expected Media Items', () => {
 				name: '',
 				outputLayerId: LAYER_IDS.OUTPUT_PGM,
 				sourceLayerId: LAYER_IDS.SOURCE_VT0,
-				status: PieceStatusCode.UNKNOWN,
 				lifespan: PieceLifespan.OutOnSegmentChange,
 				content: literal<VTContent>({
 					fileName: mockFileName1,
@@ -172,7 +170,6 @@ describe('Expected Media Items', () => {
 				lifespan: PieceLifespan.WithinPart,
 				outputLayerId: LAYER_IDS.OUTPUT_PGM,
 				sourceLayerId: LAYER_IDS.SOURCE_VT0,
-				status: PieceStatusCode.UNKNOWN,
 				content: literal<VTContent>({
 					fileName: mockFileName1,
 					path: mockPath1,

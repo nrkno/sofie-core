@@ -4,7 +4,6 @@ import { IAdLibListItem } from '../../AdLibListItem'
 import { RundownUtils } from '../../../../lib/rundown'
 import { Piece } from '../../../../../lib/collections/Pieces'
 import InspectorTitle from './InspectorTitle'
-import { MediaObject } from '../../../../../lib/collections/MediaObjects'
 import { BucketAdLibUi } from '../../RundownViewBuckets'
 import { AdLibPieceUi } from '../../../../lib/shelf'
 import { UIShowStyleBase } from '../../../../../lib/api/showStyles'
@@ -19,14 +18,7 @@ export default function DefaultItemRenderer(props: {
 	if (RundownUtils.isAdLibPiece(props.piece)) {
 		const piece = props.piece as IAdLibListItem
 
-		let packageName: string | null = null
-		if (piece.contentPackageInfos) {
-			packageName = piece.contentPackageInfos[0]?.packageName
-		} else {
-			// Fallback to media objects
-			const metadata = piece.contentMetaData as MediaObject
-			packageName = metadata && metadata.mediaId ? metadata.mediaId : null
-		}
+		const packageName = piece.contentStatus?.packageName ?? null
 
 		return (
 			<>
@@ -55,14 +47,7 @@ export default function DefaultItemRenderer(props: {
 	} else {
 		const piece = props.piece.instance.piece as Piece
 
-		let packageName: string | null = null
-		if (props.piece.contentPackageInfos) {
-			packageName = props.piece.contentPackageInfos[0]?.packageName
-		} else {
-			// Fallback to media objects
-			const metadata = props.piece.contentMetaData as MediaObject
-			packageName = metadata && metadata.mediaId ? metadata.mediaId : null
-		}
+		const packageName = props.piece.contentStatus?.packageName ?? null
 
 		return (
 			<>

@@ -51,7 +51,7 @@ import {
 import { DBRundown } from '../../lib/collections/Rundowns'
 import { DBSegment } from '../../lib/collections/Segments'
 import { DBPart } from '../../lib/collections/Parts'
-import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '../../lib/collections/Pieces'
+import { EmptyPieceTimelineObjectsBlob, Piece } from '../../lib/collections/Pieces'
 import { DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { RundownBaselineAdLibItem } from '../../lib/collections/RundownBaselineAdLibPieces'
 import { AdLibPiece } from '../../lib/collections/AdLibPieces'
@@ -673,7 +673,6 @@ export async function setupDefaultRundown(
 		startSegmentId: part00.segmentId,
 		startPartId: part00._id,
 		name: 'Piece 000',
-		status: PieceStatusCode.OK,
 		enable: {
 			start: 0,
 		},
@@ -694,7 +693,6 @@ export async function setupDefaultRundown(
 		startSegmentId: part00.segmentId,
 		startPartId: part00._id,
 		name: 'Piece 001',
-		status: PieceStatusCode.OK,
 		enable: {
 			start: 0,
 		},
@@ -716,7 +714,6 @@ export async function setupDefaultRundown(
 		externalId: 'MOCK_ADLIB_000',
 		partId: part00._id,
 		rundownId: segment0.rundownId,
-		status: PieceStatusCode.UNKNOWN,
 		name: 'AdLib 0',
 		sourceLayerId: sourceLayerIds[1],
 		outputLayerId: outputLayerIds[0],
@@ -744,7 +741,6 @@ export async function setupDefaultRundown(
 		startSegmentId: part01.segmentId,
 		startPartId: part01._id,
 		name: 'Piece 010',
-		status: PieceStatusCode.OK,
 		enable: {
 			start: 0,
 		},
@@ -817,7 +813,6 @@ export async function setupDefaultRundown(
 		externalId: 'MOCK_GLOBAL_ADLIB_0',
 		lifespan: PieceLifespan.OutOnRundownEnd,
 		rundownId: segment0.rundownId,
-		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 0',
 		sourceLayerId: sourceLayerIds[0],
 		outputLayerId: outputLayerIds[0],
@@ -831,7 +826,6 @@ export async function setupDefaultRundown(
 		externalId: 'MOCK_GLOBAL_ADLIB_1',
 		lifespan: PieceLifespan.OutOnRundownEnd,
 		rundownId: segment0.rundownId,
-		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 1',
 		sourceLayerId: sourceLayerIds[1],
 		outputLayerId: outputLayerIds[0],

@@ -1,7 +1,6 @@
 import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import {
 	BucketId,
-	ExpectedPackageId,
 	PeripheralDeviceId,
 	RundownId,
 	RundownPlaylistActivationId,
@@ -28,7 +27,6 @@ import { MediaObject } from '../collections/MediaObjects'
 import { MediaWorkFlow } from '../collections/MediaWorkFlows'
 import { MediaWorkFlowStep } from '../collections/MediaWorkFlowSteps'
 import { DBOrganization } from '../collections/Organization'
-import { PackageContainerPackageStatusDB } from '../collections/PackageContainerPackageStatus'
 import { PackageContainerStatusDB } from '../collections/PackageContainerStatus'
 import { PartInstance } from '../collections/PartInstances'
 import { DBPart } from '../collections/Parts'
@@ -111,8 +109,6 @@ export enum PubSub {
 	bucketAdLibActions = 'bucketAdLibActions',
 	expectedPackages = 'expectedPackages',
 	expectedPackageWorkStatuses = 'expectedPackageWorkStatuses',
-	packageContainerPackageStatuses = 'packageContainerPackageStatuses',
-	packageContainerPackageStatusesSimple = 'packageContainerPackageStatusesSimple',
 	packageContainerStatuses = 'packageContainerStatuses',
 	packageInfos = 'packageInfos',
 
@@ -215,16 +211,6 @@ export interface PubSubTypes {
 		selector: MongoQuery<ExpectedPackageWorkStatus>,
 		token?: string
 	) => ExpectedPackageWorkStatus
-	[PubSub.packageContainerPackageStatuses]: (
-		studioId: StudioId,
-		containerId?: string | null,
-		packageId?: ExpectedPackageId | null
-	) => PackageContainerPackageStatusDB
-	[PubSub.packageContainerPackageStatusesSimple]: (
-		studioId: StudioId,
-		containerId?: string | null,
-		packageId?: ExpectedPackageId | null
-	) => Omit<PackageContainerPackageStatusDB, 'modified'>
 	[PubSub.packageContainerStatuses]: (
 		selector: MongoQuery<PackageContainerStatusDB>,
 		token?: string

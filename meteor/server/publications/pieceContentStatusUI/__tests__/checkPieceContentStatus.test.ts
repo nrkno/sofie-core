@@ -15,7 +15,7 @@ import {
 	PieceLifespan,
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
-import { literal } from '@sofie-automation/corelib/dist/lib'
+import { Complete, literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoMock } from '../../../../__mocks__/mongo'
 import {
 	PieceGeneric,
@@ -36,6 +36,7 @@ import { defaultStudio } from '../../../../__mocks__/defaultCollectionObjects'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { MediaObjects } from '../../../collections'
 import { PieceDependencies } from '../common'
+import { Studio } from '../../../../lib/collections/Studios'
 
 const mockMediaObjectsCollection = MongoMock.getInnerMockCollection<MediaObject>(MediaObjects)
 
@@ -170,10 +171,18 @@ describe('lib/mediaObjects', () => {
 		}
 
 		const mockDefaultStudio = defaultStudio(protectString('studio0'))
-		const mockStudio: Pick<UIStudio, '_id' | 'settings' | 'packageContainers' | 'mappings' | 'routeSets'> = {
+		const mockStudio: Complete<
+			Pick<
+				Studio,
+				'_id' | 'settings' | 'packageContainers' | 'previewContainerIds' | 'thumbnailContainerIds' | 'routeSets'
+			> &
+				Pick<UIStudio, 'mappings'>
+		> = {
 			_id: mockDefaultStudio._id,
 			settings: mockStudioSettings,
 			packageContainers: mockDefaultStudio.packageContainers,
+			previewContainerIds: ['previews0'],
+			thumbnailContainerIds: ['thumbnails0'],
 			routeSets: mockDefaultStudio.routeSets,
 			mappings: applyAndValidateOverrides(mockDefaultStudio.mappingsWithOverrides).obj,
 		}
@@ -244,7 +253,6 @@ describe('lib/mediaObjects', () => {
 
 		const piece1 = literal<PieceGeneric>({
 			_id: protectString('piece1'),
-			status: PieceStatusCode.UNKNOWN,
 			name: 'Test_file',
 			prerollDuration: 0,
 			externalId: '',
@@ -332,7 +340,6 @@ describe('lib/mediaObjects', () => {
 
 		const piece2 = literal<PieceGeneric>({
 			_id: protectString('piece2'),
-			status: PieceStatusCode.UNKNOWN,
 			name: 'Test_file_2',
 			prerollDuration: 0,
 			externalId: '',
@@ -349,7 +356,6 @@ describe('lib/mediaObjects', () => {
 
 		const piece3 = literal<PieceGeneric>({
 			_id: protectString('piece3'),
-			status: PieceStatusCode.UNKNOWN,
 			name: 'Test_file_3',
 			prerollDuration: 0,
 			externalId: '',

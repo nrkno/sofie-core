@@ -52,7 +52,7 @@ import {
 import { defaultRundownPlaylist } from '../../__mocks__/defaultCollectionObjects'
 import { ReadonlyDeep } from 'type-fest'
 import { innerStartOrQueueAdLibPiece } from '../adlibUtils'
-import { EmptyPieceTimelineObjectsBlob, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { adjustFakeTime, useFakeCurrentTime, useRealCurrentTime } from '../../__mocks__/time'
 import { restartRandomId } from '../../__mocks__/nanoid'
 import { ProcessedShowStyleCompound } from '../../jobs'
@@ -1217,7 +1217,6 @@ describe('Timeline', () => {
 						literal<AdLibPiece>({
 							_id: protectString('adlib1'),
 							rundownId: currentPartInstance!.rundownId,
-							status: PieceStatusCode.OK,
 							externalId: 'fake',
 							name: 'Adlibbed piece',
 							lifespan: PieceLifespan.WithinPart,
@@ -1382,7 +1381,6 @@ describe('Timeline', () => {
 						literal<AdLibPiece>({
 							_id: protectString('adlib1'),
 							rundownId: currentPartInstance!.rundownId,
-							status: PieceStatusCode.OK,
 							externalId: 'fake',
 							name: 'Adlibbed piece',
 							lifespan: PieceLifespan.WithinPart,

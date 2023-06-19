@@ -27,12 +27,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { doUserAction, getEventTimestamp, UserAction } from '../../../lib/clientUserAction'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { literal, unprotectString, partial, protectString } from '../../../lib/lib'
-import {
-	ensureHasTrailingSlash,
-	contextMenuHoldToDisplayTime,
-	UserAgentPointer,
-	USER_AGENT_POINTER_PROPERTY,
-} from '../../lib/lib'
+import { contextMenuHoldToDisplayTime, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
 import { IDashboardPanelTrackedProps } from './DashboardPanel'
 import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
 import { Bucket } from '../../../lib/collections/Buckets'
@@ -40,7 +35,6 @@ import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { MeteorCall } from '../../../lib/api/methods'
 import { DragDropItemTypes } from '../DragDropItemTypes'
-import { PieceStatusCode } from '../../../lib/collections/Pieces'
 import { BucketPieceButton, IBucketPieceDropResult } from './BucketPieceButton'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import update from 'immutability-helper'
@@ -211,7 +205,6 @@ export function actionToAdLibPieceUi(
 			typeof action.display.label === 'string'
 				? action.display.label
 				: translateMessage(action.display.label, i18nTranslator),
-		status: PieceStatusCode.UNKNOWN,
 		isAction: true,
 		expectedDuration: 0,
 		externalId: action.externalId || unprotectString(action._id),
@@ -896,11 +889,6 @@ export const BucketPanel = translateWithTracker<Translated<IBucketPanelProps>, I
 													onSelectAdLib={this.props.onSelectAdlib}
 													playlist={this.props.playlist}
 													isOnAir={this.isAdLibOnAir(adlib as any as AdLibPieceUi)}
-													mediaPreviewUrl={
-														this.props.studio
-															? ensureHasTrailingSlash(this.props.studio.settings.mediaPreviewsUrl + '' || '') || ''
-															: ''
-													}
 													disabled={this.adLibIsDisabled(adlib)}
 													findAdLib={this.findAdLib}
 													moveAdLib={this.moveAdLib}

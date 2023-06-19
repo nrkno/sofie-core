@@ -511,3 +511,11 @@ export class DummyReactiveVar<T> implements ReactiveVar<T> {
 		this.value = newValue
 	}
 }
+
+export function ensureHasTrailingSlash(input: string | null): string | undefined {
+	if (input) {
+		return input.endsWith('/') ? input : input + '/'
+	} else {
+		return undefined
+	}
+}

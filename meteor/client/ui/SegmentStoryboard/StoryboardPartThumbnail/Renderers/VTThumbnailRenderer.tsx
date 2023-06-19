@@ -5,7 +5,6 @@ import { VTFloatingInspector } from '../../../FloatingInspectors/VTFloatingInspe
 import { getNoticeLevelForPieceStatus } from '../../../../../lib/notifications/notifications'
 import { RundownUtils } from '../../../../lib/rundown'
 import { IProps } from './ThumbnailRendererFactory'
-import { getPreviewUrlForPieceUi, getThumbnailUrlForPieceUi } from '../../../../lib/ui/clipPreview'
 import { RundownTimingConsumer } from '../../../RundownView/RundownTiming/RundownTimingConsumer'
 import { unprotectString } from '../../../../../lib/lib'
 import { FreezeFrameIcon } from '../../../../lib/ui/icons/freezeFrame'
@@ -26,16 +25,14 @@ export function VTThumbnailRenderer({
 	layer,
 	height,
 }: IProps): JSX.Element {
-	const mediaPreviewUrl = studio.settings.mediaPreviewsUrl
-
-	const status = pieceInstance.instance.piece.status
+	const status = pieceInstance.contentStatus?.status
 
 	const vtContent = pieceInstance.instance.piece.content as VTContent
 
-	const previewUrl: string | undefined = getPreviewUrlForPieceUi(pieceInstance, studio, mediaPreviewUrl)
-	const thumbnailUrl: string | undefined = getThumbnailUrlForPieceUi(pieceInstance, studio, mediaPreviewUrl)
+	const previewUrl: string | undefined = pieceInstance.contentStatus?.previewUrl
+	const thumbnailUrl: string | undefined = pieceInstance.contentStatus?.thumbnailUrl
 
-	const noticeLevel = status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null
+	const noticeLevel = getNoticeLevelForPieceStatus(status)
 
 	return (
 		<>
@@ -53,14 +50,10 @@ export function VTThumbnailRenderer({
 				}}
 				typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
 				itemElement={null}
-				contentMetaData={pieceInstance.contentMetaData || null}
-				noticeMessages={pieceInstance.messages || null}
+				noticeMessages={pieceInstance.contentStatus?.messages || null}
 				noticeLevel={noticeLevel}
-				mediaPreviewUrl={mediaPreviewUrl}
-				contentPackageInfos={pieceInstance.contentPackageInfos}
-				pieceId={pieceInstance.instance.piece._id}
-				expectedPackages={pieceInstance.instance.piece.expectedPackages}
 				studio={studio}
+				previewUrl={pieceInstance.contentStatus?.previewUrl}
 			/>
 			<RundownTimingConsumer
 				filter={(timingContext) => ({

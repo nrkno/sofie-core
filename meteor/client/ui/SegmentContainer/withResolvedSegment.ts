@@ -18,7 +18,6 @@ import { PartInstance } from '../../../lib/collections/PartInstances'
 import { Part } from '../../../lib/collections/Parts'
 import { slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
-import { ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
 import { RundownLayoutFilterBase, RundownViewLayout } from '../../../lib/collections/RundownLayouts'
 import { getReactivePieceNoteCountsForSegment } from './getReactivePieceNoteCountsForSegment'
@@ -34,10 +33,11 @@ import {
 	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { PieceInstances, Segments } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
+import { ReadonlyDeep } from 'type-fest'
+import { PieceContentStatusObj } from '../../../lib/mediaObjects'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -58,10 +58,8 @@ export type ISourceLayerUi = ISourceLayerExtended
 export interface PieceUi extends PieceExtended {
 	/** This item has already been linked to the parent item of the spanning item group */
 	linked?: boolean
-	/** Metadata object */
-	contentMetaData?: any
-	contentPackageInfos?: ScanInfoForPackages
-	messages?: ITranslatableMessage[]
+
+	contentStatus?: ReadonlyDeep<PieceContentStatusObj>
 }
 
 export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyleBaseId' | 'endOfRundownIsShowBreak'>
