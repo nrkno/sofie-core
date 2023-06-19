@@ -8,6 +8,7 @@ import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/collections/lib'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { RundownLayouts, ShowStyleBases, ShowStyleVariants, TriggeredActions } from '../collections'
+import { TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
 
 meteorPublish(PubSub.showStyleBases, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<DBShowStyleBase>(this.userId, selector0, token)
@@ -58,7 +59,7 @@ meteorPublish(PubSub.rundownLayouts, async function (selector0, token) {
 meteorPublish(PubSub.triggeredActions, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 
-	const modifier: FindOptions<RundownLayoutBase> = {
+	const modifier: FindOptions<TriggeredActionsObj> = {
 		fields: {},
 	}
 

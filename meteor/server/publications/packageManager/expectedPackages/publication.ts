@@ -12,7 +12,7 @@ import { literal, omit, protectString } from '../../../../lib/lib'
 import { logger } from '../../../logging'
 import { ReadonlyDeep } from 'type-fest'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import {
 	ExpectedPackageId,
 	PeripheralDeviceId,
@@ -57,7 +57,7 @@ export type StudioFields =
 	| 'packageContainers'
 	| 'previewContainerIds'
 	| 'thumbnailContainerIds'
-const studioFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
+const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<Studio, StudioFields>>>({
 	_id: 1,
 	routeSets: 1,
 	mappingsWithOverrides: 1,

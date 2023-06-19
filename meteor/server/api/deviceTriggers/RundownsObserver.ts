@@ -3,14 +3,15 @@ import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dat
 import _ from 'underscore'
 import { Rundowns } from '../../collections'
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 const REACTIVITY_DEBOUNCE = 20
 
 type ChangedHandler = (rundownIds: RundownId[]) => () => void
 
 type RundownFields = '_id'
-const rundownFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownFields>>({
+const rundownFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBRundown, RundownFields>>>({
 	_id: 1,
 })
 

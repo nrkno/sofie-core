@@ -9,7 +9,7 @@ import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/cor
 import { ReadonlyDeep } from 'type-fest'
 import { ReactiveMongoObserverGroup } from './lib/observerGroup'
 import { Complete, assertNever, literal } from '@sofie-automation/corelib/dist/lib'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { Studio, StudioIngestDevice, StudioInputDevice, StudioPlayoutDevice } from '../../lib/collections/Studios'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { check } from 'meteor/check'
@@ -26,13 +26,15 @@ interface PeripheralDeviceForDeviceUpdateProps {
 }
 
 type StudioFields = '_id' | 'peripheralDeviceSettings'
-const studioFieldsSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
+const studioFieldsSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<Studio, StudioFields>>>({
 	_id: 1,
 	peripheralDeviceSettings: 1,
 })
 
 type PeripheralDeviceFields = '_id' | 'category' | 'studioId' | 'settings' | 'secretSettings'
-const peripheralDeviceFieldsSpecifier = literal<IncludeAllMongoFieldSpecifier<PeripheralDeviceFields>>({
+const peripheralDeviceFieldsSpecifier = literal<
+	MongoFieldSpecifierOnesStrict<Pick<PeripheralDevice, PeripheralDeviceFields>>
+>({
 	_id: 1,
 	category: 1,
 	studioId: 1,
