@@ -759,7 +759,7 @@ export interface APIStudioSettings {
 	preserveUnsyncedPlayingSegmentContents?: boolean
 	allowRundownResetOnAir?: boolean
 	preserveOrphanedSegmentPositionInRundown?: boolean
-	minimumTakeSpan: number
+	minimumTakeSpan?: number
 }
 
 export interface PendingMigrationStep {

@@ -23,6 +23,7 @@ import { Credentials } from '../../security/lib/credentials'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { OrganizationId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { logger } from '../../logging'
+import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 
 async function insertStudio(context: MethodContext | Credentials, newId?: StudioId): Promise<StudioId> {
 	if (newId) check(newId, String)
@@ -44,7 +45,7 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 			settings: {
 				frameRate: 25,
 				mediaPreviewsUrl: '',
-				minimumTakeSpan: 1000,
+				minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 			},
 			_rundownVersionHash: '',
 			routeSets: {},

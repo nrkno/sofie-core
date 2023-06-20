@@ -21,6 +21,7 @@ import {
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { JSONBlobStringify, JSONSchema, TSR } from '@sofie-automation/blueprints-integration'
+import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 
 /*
  * **************************************************************************************
@@ -742,7 +743,7 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 				},
 				{
 					$set: {
-						'settings.minimumTakeSpan': 1000,
+						'settings.minimumTakeSpan': DEFAULT_MINIMUM_TAKE_SPAN,
 					},
 				}
 			)
