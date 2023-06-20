@@ -303,6 +303,7 @@ export function studioSettingsFrom(apiStudioSettings: APIStudioSettings): IStudi
 		preserveUnsyncedPlayingSegmentContents: apiStudioSettings.preserveUnsyncedPlayingSegmentContents,
 		allowRundownResetOnAir: apiStudioSettings.allowRundownResetOnAir,
 		preserveOrphanedSegmentPositionInRundown: apiStudioSettings.preserveOrphanedSegmentPositionInRundown,
+		minimumTakeSpan: apiStudioSettings.minimumTakeSpan,
 	}
 }
 
@@ -319,6 +320,7 @@ export function APIStudioSettingsFrom(settings: IStudioSettings): APIStudioSetti
 		preserveUnsyncedPlayingSegmentContents: settings.preserveUnsyncedPlayingSegmentContents,
 		allowRundownResetOnAir: settings.allowRundownResetOnAir,
 		preserveOrphanedSegmentPositionInRundown: settings.preserveOrphanedSegmentPositionInRundown,
+		minimumTakeSpan: settings.minimumTakeSpan,
 	}
 }
 

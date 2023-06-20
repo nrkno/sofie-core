@@ -87,6 +87,7 @@ describe('lib/mediaObjects', () => {
 			supportedMediaFormats: '1920x1080i5000, 1280x720, i5000, i5000tff',
 			mediaPreviewsUrl: '',
 			frameRate: 25,
+			minimumTakeSpan: 1000,
 		})
 		expect(acceptedFormats).toEqual([
 			['1920', '1080', 'i', '5000', undefined],
@@ -168,6 +169,7 @@ describe('lib/mediaObjects', () => {
 			mediaPreviewsUrl: '',
 			supportedAudioStreams: '4',
 			frameRate: 25,
+			minimumTakeSpan: 1000,
 		}
 
 		const mockDefaultStudio = defaultStudio(protectString('studio0'))

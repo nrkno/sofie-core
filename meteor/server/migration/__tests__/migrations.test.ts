@@ -125,6 +125,7 @@ describe('Migrations', () => {
 						settings: {
 							mediaPreviewsUrl: '',
 							frameRate: 25,
+							minimumTakeSpan: 1000,
 						},
 						mappingsWithOverrides: wrapDefaultObject({}),
 						blueprintConfigWithOverrides: wrapDefaultObject({}),
@@ -161,6 +162,7 @@ describe('Migrations', () => {
 						settings: {
 							mediaPreviewsUrl: '',
 							frameRate: 25,
+							minimumTakeSpan: 1000,
 						},
 						mappingsWithOverrides: wrapDefaultObject({}),
 						blueprintConfigWithOverrides: wrapDefaultObject({}),
@@ -197,6 +199,7 @@ describe('Migrations', () => {
 						settings: {
 							mediaPreviewsUrl: '',
 							frameRate: 25,
+							minimumTakeSpan: 1000,
 						},
 						mappingsWithOverrides: wrapDefaultObject({}),
 						blueprintConfigWithOverrides: wrapDefaultObject({}),

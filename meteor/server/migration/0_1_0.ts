@@ -439,6 +439,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				settings: {
 					frameRate: 25,
 					mediaPreviewsUrl: '',
+					minimumTakeSpan: 1000,
 				},
 				mappingsWithOverrides: wrapDefaultObject({}),
 				blueprintConfigWithOverrides: wrapDefaultObject({}),
