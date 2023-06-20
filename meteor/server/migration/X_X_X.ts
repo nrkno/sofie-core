@@ -720,6 +720,34 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 			}
 		},
 	},
+
+	{
+		id: `Studio.settings.minimumTakeSpan`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const count = await Studios.countDocuments({
+				'settings.minimumTakeSpan': {
+					$exists: false,
+				},
+			})
+			if (count > 0) return `${count} studios need to be updated`
+			return false
+		},
+		migrate: async () => {
+			await Studios.updateAsync(
+				{
+					'settings.minimumTakeSpan': {
+						$exists: false,
+					},
+				},
+				{
+					$set: {
+						'settings.minimumTakeSpan': 1000,
+					},
+				}
+			)
+		},
+	},
 ])
 
 function updatePlayoutDeviceTypeInOverride(op: SomeObjectOverrideOp): ObjectOverrideSetOp | undefined {

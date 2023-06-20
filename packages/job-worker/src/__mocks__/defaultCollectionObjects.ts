@@ -98,6 +98,7 @@ export function defaultStudio(_id: StudioId): DBStudio {
 		settings: {
 			frameRate: 25,
 			mediaPreviewsUrl: '',
+			minimumTakeSpan: 1000,
 		},
 		routeSets: {},
 		routeSetExclusivityGroups: {},

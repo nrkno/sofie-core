@@ -111,6 +111,20 @@ export const StudioGenericProperties = withTranslation()(
 						</div>
 					</label>
 					<label className="field">
+						<LabelActual label={t('Minimum Take Span')} />
+						<div className="mdi">
+							<EditAttribute
+								modifiedClassName="bghl"
+								attribute="settings.minimumTakeSpan"
+								obj={this.props.studio}
+								type="int"
+								collection={Studios}
+								className="mdinput"
+							/>
+							<span className="mdfx"></span>
+						</div>
+					</label>
+					<label className="field">
 						<LabelActual label={t('Enable "Play from Anywhere"')} />
 						<EditAttribute
 							modifiedClassName="bghl"

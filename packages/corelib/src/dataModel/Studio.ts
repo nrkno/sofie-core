@@ -43,6 +43,12 @@ export interface IStudioSettings {
 
 	/** Preserve unsynced segments psoition in the rundown, relative to the other segments */
 	preserveOrphanedSegmentPositionInRundown?: boolean
+
+	/**
+	 * The minimum amount of time, in milliseconds, that must pass after a take before another take may be performed.
+	 * Default: 1000
+	 */
+	minimumTakeSpan: number
 }
 
 export type StudioLight = Omit<DBStudio, 'mappingsWithOverrides' | 'blueprintConfigWithOverrides'>

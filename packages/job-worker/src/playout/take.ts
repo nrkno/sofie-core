@@ -33,12 +33,6 @@ import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/d
 import { TakeNextPartProps } from '@sofie-automation/corelib/dist/worker/studio'
 import { runJobWithPlayoutCache } from './lock'
 
-let MINIMUM_TAKE_SPAN = 1000
-export function setMinimumTakeSpan(span: number): void {
-	// Used in tests
-	MINIMUM_TAKE_SPAN = span
-}
-
 /**
  * Take the currently Next:ed Part (start playing it)
  */
@@ -76,13 +70,15 @@ export async function handleTakeNextPart(context: JobContext, data: TakeNextPart
 				}
 			}
 
-			if (lastTakeTime && now - lastTakeTime < MINIMUM_TAKE_SPAN) {
+			if (lastTakeTime && now - lastTakeTime < context.studio.settings.minimumTakeSpan) {
 				logger.debug(
-					`Time since last take is shorter than ${MINIMUM_TAKE_SPAN} for ${
+					`Time since last take is shorter than ${context.studio.settings.minimumTakeSpan} for ${
 						playlist.currentPartInfo?.partInstanceId
 					}: ${now - lastTakeTime}`
 				)
-				throw UserError.create(UserErrorMessage.TakeRateLimit, { duration: MINIMUM_TAKE_SPAN })
+				throw UserError.create(UserErrorMessage.TakeRateLimit, {
+					duration: context.studio.settings.minimumTakeSpan,
+				})
 			}
 
 			return performTakeToNextedPart(context, cache, now)
