@@ -14,43 +14,54 @@ const BLUEPRINT_ASSET_MAX_AGE = 15 * 24 * 3600 // 15 days, in seconds
 
 export const blueprintsRouter = new KoaRouter()
 
-blueprintsRouter.post('/restore/:blueprintId', async (ctx) => {
-	ctx.response.type = 'text/plain'
-	logger.debug(`Blueprint Upload: ${ctx.socket.remoteAddress} POST "${ctx.url}"`)
+blueprintsRouter.post(
+	'/restore/:blueprintId',
+	bodyParser({
+		enableTypes: ['text'],
+		textLimit: '200mb',
+		extendTypes: {
+			// interpret as text
+			text: ['text/javascript'],
+		},
+	}),
+	async (ctx) => {
+		ctx.response.type = 'text/plain'
+		logger.debug(`Blueprint Upload: ${ctx.socket.remoteAddress} POST "${ctx.url}"`)
 
-	try {
-		const blueprintId = ctx.params.blueprintId
-		const force = ctx.query['force'] === '1' || ctx.query['force'] === 'true'
+		try {
+			const blueprintId = ctx.params.blueprintId
+			const force = ctx.query['force'] === '1' || ctx.query['force'] === 'true'
 
-		const blueprintNames = ctx.query['name']
-		const blueprintName: string | undefined = Array.isArray(blueprintNames) ? blueprintNames[0] : blueprintNames
+			const blueprintNames = ctx.query['name']
+			const blueprintName: string | undefined = Array.isArray(blueprintNames) ? blueprintNames[0] : blueprintNames
 
-		check(blueprintId, String)
-		check(blueprintName, Match.Maybe(String))
+			check(blueprintId, String)
+			check(blueprintName, Match.Maybe(String))
 
-		const userId = ctx.headers.authorization ? ctx.headers.authorization.split(' ')[1] : ''
+			const userId = ctx.headers.authorization ? ctx.headers.authorization.split(' ')[1] : ''
 
-		const body = ctx.request.body || ctx.req.body
-		if (!body) throw new Meteor.Error(400, 'Restore Blueprint: Missing request body')
-		if (typeof body !== 'string' || body.length < 10)
-			throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
+			const body = ctx.request.body || ctx.req.body
+			if (!body) throw new Meteor.Error(400, 'Restore Blueprint: Missing request body')
+			if (typeof body !== 'string' || body.length < 10)
+				throw new Meteor.Error(400, 'Restore Blueprint: Invalid request body')
 
-		await uploadBlueprint(
-			{ userId: protectString(userId) },
-			protectString<BlueprintId>(blueprintId),
-			body,
-			blueprintName,
-			force
-		)
+			await uploadBlueprint(
+				{ userId: protectString(userId) },
+				protectString<BlueprintId>(blueprintId),
+				body,
+				blueprintName,
+				force
+			)
 
-		ctx.response.status = 200
-		ctx.body = ''
-	} catch (e) {
-		ctx.response.status = 500
-		ctx.body = e + ''
-		logger.error('Blueprint restore failed: ' + e)
+			ctx.response.status = 200
+			ctx.body = ''
+		} catch (e) {
+			ctx.response.status = 500
+			ctx.body = e + ''
+			logger.error('Blueprint restore failed: ' + e)
+		}
 	}
-})
+)
 blueprintsRouter.post(
 	'/restore',
 	bodyParser({
