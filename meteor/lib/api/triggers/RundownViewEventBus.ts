@@ -8,6 +8,7 @@ import {
 	PartId,
 	PartInstanceId,
 	PieceId,
+	PieceInstanceId,
 	RundownId,
 	SegmentId,
 	TriggeredActionId,
@@ -93,7 +94,7 @@ export interface HighlightEvent extends IEventContext {
 	rundownId?: RundownId
 	segmentId?: SegmentId
 	partId?: PartId
-	pieceId?: PieceId
+	pieceId?: PieceId | PieceInstanceId
 }
 
 export interface BucketAdLibEvent extends IEventContext {

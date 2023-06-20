@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
-import { getCurrentTime } from '../../lib/lib'
+import { getCurrentTime, systemTime, Time } from '../../lib/lib'
 
 export { multilineText, isEventInInputField }
 
@@ -32,7 +32,7 @@ export function isTouchDevice(): boolean {
 }
 
 /**
- * Wrapper around fetch(), which doesn't rejects the promise if the result is an error
+ * Wrapper around fetch(), which rejects the promise if the result is an error
  */
 export function fetchFrom(input: RequestInfo, init?: RequestInit): Promise<Response & { bodyText: string }> {
 	return fetch(input, init).then((response) => {
@@ -49,14 +49,6 @@ export function fetchFrom(input: RequestInfo, init?: RequestInit): Promise<Respo
 			}
 		})
 	})
-}
-
-export function ensureHasTrailingSlash(input: string | null): string | undefined {
-	if (input) {
-		return input.endsWith('/') ? input : input + '/'
-	} else {
-		return undefined
-	}
 }
 
 /**
@@ -183,6 +175,10 @@ export function isRunningInPWA(): boolean {
 		return false
 	}
 	return true
+}
+
+export function getEventTimestamp(e: Event): Time {
+	return e?.timeStamp ? performance.timeOrigin + e.timeStamp + systemTime.timeOriginDiff : getCurrentTime()
 }
 
 export const TOOLTIP_DEFAULT_DELAY = 0.5

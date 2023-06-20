@@ -2,6 +2,7 @@ import {
 	CoreConnection,
 	CoreOptions,
 	DDPConnectorOptions,
+	Observer,
 	PeripheralDeviceAPI,
 	PeripheralDeviceCommand,
 	protectString,
@@ -28,11 +29,11 @@ export interface CoreConfig {
 export class CoreHandler {
 	core: CoreConnection | undefined
 	logger: Winston.Logger
-	public _observers: Array<any> = []
+	public _observers: Array<Observer> = []
 	private _deviceOptions: DeviceConfig
 	private _coreMosHandlers: Array<CoreMosDeviceHandler> = []
 	private _onConnected?: () => any
-	private _subscriptions: Array<any> = []
+	private _subscriptions: Array<string> = []
 	private _isInitialized = false
 	private _executedFunctions: { [id: string]: boolean } = {}
 	private _coreConfig?: CoreConfig
@@ -90,6 +91,10 @@ export class CoreHandler {
 	async dispose(): Promise<void> {
 		if (!this.core) {
 			throw Error('core is undefined!')
+		}
+
+		for (const subId of this._subscriptions) {
+			this.core.unsubscribe(subId)
 		}
 
 		await this.core.setStatus({
@@ -153,26 +158,22 @@ export class CoreHandler {
 		let foundI = -1
 		for (let i = 0; i < this._coreMosHandlers.length; i++) {
 			const cmh = this._coreMosHandlers[i]
-			if (cmh._mosDevice.idPrimary === mosDevice.idSecondary) {
+			if (
+				cmh._mosDevice.idPrimary === mosDevice.idPrimary ||
+				cmh._mosDevice.idSecondary === mosDevice.idSecondary
+			) {
 				foundI = i
 				break
 			}
 		}
 		const coreMosHandler = this._coreMosHandlers[foundI]
 		if (coreMosHandler) {
-			return coreMosHandler.dispose().then(() => {
-				this._coreMosHandlers.splice(foundI, 1)
-			})
+			this._coreMosHandlers.splice(foundI, 1)
+			await coreMosHandler.dispose()
 		}
 	}
 	onConnectionRestored(): void {
-		this.setupSubscriptionsAndObservers().catch((e) => {
-			this.logger.error(e)
-		})
 		if (this._onConnected) this._onConnected()
-		this._coreMosHandlers.forEach((cmh: CoreMosDeviceHandler) => {
-			cmh.setupSubscriptionsAndObservers()
-		})
 	}
 	onConnected(fcn: () => any): void {
 		this._onConnected = fcn
@@ -186,7 +187,6 @@ export class CoreHandler {
 			})
 			this._observers = []
 		}
-		this._subscriptions = []
 
 		if (!this.core) {
 			throw Error('core is undefined!')

@@ -56,7 +56,7 @@ export function GenericDeviceSettingsComponent({
 	)
 
 	return (
-		<div>
+		<>
 			{device.configManifest.deviceOAuthFlow && (
 				<ConfigManifestOAuthFlowComponent device={device}></ConfigManifestOAuthFlowComponent>
 			)}
@@ -96,6 +96,6 @@ export function GenericDeviceSettingsComponent({
 						))}
 				</>
 			)}
-		</div>
+		</>
 	)
 }

@@ -16,12 +16,12 @@ import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timel
 import _ = require('underscore')
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { cleanupRundownsForRemovedPlaylist } from '../rundownPlaylists'
-import { getRundownsSegmentsAndPartsFromCache } from './lib'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PlaylistLock } from '../jobs/lock'
 import { CacheForIngest } from '../ingest/cache'
 import { IMongoTransaction, MongoQuery } from '../db'
 import { logger } from '../logging'
+import { getOrderedSegmentsAndPartsFromCacheCollections } from '../cache/utils'
 
 /**
  * This is a cache used for playout operations.
@@ -418,8 +418,13 @@ export function getOrderedSegmentsAndPartsFromPlayoutCache(cache: ReadOnlyCache<
 	segments: DBSegment[]
 	parts: DBPart[]
 } {
-	return getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, cache.Playlist.doc)
+	return getOrderedSegmentsAndPartsFromCacheCollections(
+		cache.Parts,
+		cache.Segments,
+		cache.Playlist.doc.rundownIdsInOrder
+	)
 }
+
 export function getRundownIDsFromCache(cache: ReadOnlyCache<CacheForPlayout>): RundownId[] {
 	return cache.Rundowns.findAll(null).map((r) => r._id)
 }

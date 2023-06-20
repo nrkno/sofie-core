@@ -60,7 +60,7 @@ import { SupportPopUp } from './SupportPopUp'
 import { KeyboardFocusIndicator } from '../lib/KeyboardFocusIndicator'
 import { PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
 import { doUserAction, UserAction } from '../../lib/clientUserAction'
-import { ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
+import { hashSingleUseToken, ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'
 import { meteorSubscribe, PubSub } from '../../lib/api/pubsub'
 import {
@@ -856,7 +856,20 @@ const RundownHeader = withTranslation()(
 					t,
 					e,
 					UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
-					(e, ts) => MeteorCall.userAction.storeRundownSnapshot(e, ts, this.props.playlist._id, 'Taken by user', false),
+					(e, ts) =>
+						MeteorCall.system.generateSingleUseToken().then((tokenResponse) => {
+							if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
+								throw tokenResponse
+							}
+							return MeteorCall.userAction.storeRundownSnapshot(
+								e,
+								ts,
+								hashSingleUseToken(tokenResponse.result),
+								this.props.playlist._id,
+								'Taken by user',
+								false
+							)
+						}),
 					() => {
 						NotificationCenter.push(
 							new Notification(
@@ -1533,11 +1546,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				this.subscribe(PubSub.uiSegmentPartNotes, playlistId)
 				this.subscribe(PubSub.uiPieceContentStatuses, playlistId)
 				this.subscribe(PubSub.uiStudio, playlist.studioId)
-				this.subscribe(PubSub.buckets, {
-					studioId: playlist.studioId,
-				})
-				// TODO: This is a hack, which should be replaced by something more clever, like in withMediaObjectStatus()
-				this.subscribe(PubSub.packageContainerPackageStatusesSimple, playlist.studioId)
+				this.subscribe(PubSub.buckets, playlist.studioId, null)
 			})
 
 			this.autorun(() => {
@@ -1689,7 +1698,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					this.props.playlist &&
 					prevProps.playlist &&
 					prevProps.playlist.currentPartInfo?.partInstanceId !== this.props.playlist.currentPartInfo?.partInstanceId &&
-					prevProps.playlist.nextPartManual
+					prevProps.playlist.nextPartInfo?.manuallySelected
 				) {
 					// reset followLiveSegments after a manual set as next
 					this.setState({
@@ -1739,7 +1748,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					this.props.playlist.nextPartInfo?.partInstanceId !== prevProps.playlist.nextPartInfo?.partInstanceId &&
 					this.props.playlist.currentPartInfo?.partInstanceId === prevProps.playlist.currentPartInfo?.partInstanceId &&
 					this.props.playlist.nextPartInfo &&
-					this.props.playlist.nextPartManual
+					this.props.playlist.nextPartInfo.manuallySelected
 				) {
 					scrollToPartInstance(this.props.playlist.nextPartInfo.partInstanceId, false).catch((error) => {
 						if (!error.toString().match(/another scroll/)) console.warn(error)
@@ -2681,13 +2690,19 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				e,
 				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
 				(e, ts) =>
-					MeteorCall.userAction.storeRundownSnapshot(
-						e,
-						ts,
-						playlistId,
-						'User requested log at' + getCurrentTime(),
-						false
-					),
+					MeteorCall.system.generateSingleUseToken().then((tokenResponse) => {
+						if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
+							throw tokenResponse
+						}
+						return MeteorCall.userAction.storeRundownSnapshot(
+							e,
+							ts,
+							hashSingleUseToken(tokenResponse.result),
+							playlistId,
+							'User requested log at' + getCurrentTime(),
+							false
+						)
+					}),
 				() => {
 					NotificationCenter.push(
 						new Notification(
@@ -2786,7 +2801,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						>
 							{this.renderSegmentsList()}
 							<ErrorBoundary>
-								{this.props.matchedSegments && this.props.matchedSegments.length > 0 && (
+								{this.props.matchedSegments && this.props.matchedSegments.length > 0 && getAllowStudio() && (
 									<AfterBroadcastForm playlist={playlist} />
 								)}
 							</ErrorBoundary>

@@ -20,7 +20,6 @@ export interface ISourceLayerPropsBase {
 	segment: SegmentUi
 	part: PartUi
 	pieces: CalculateTimingsPiece[]
-	mediaPreviewUrl: string
 	startsAt: number
 	duration: number
 	expectedDuration: number
@@ -116,7 +115,6 @@ export function SourceLayer(props: ISourceLayerProps): JSX.Element {
 									key={unprotectString(piece.instance._id)}
 									onClick={props.onPieceClick}
 									onDoubleClick={props.onPieceDoubleClick}
-									mediaPreviewUrl={props.mediaPreviewUrl}
 									piece={piece}
 									layer={props.layer}
 									outputLayer={props.outputLayer}

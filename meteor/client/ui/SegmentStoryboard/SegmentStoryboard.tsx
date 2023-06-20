@@ -35,6 +35,7 @@ import { UIStudio } from '../../../lib/api/studios'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
+import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
 
 interface IProps {
 	id: string
@@ -620,26 +621,37 @@ export const SegmentStoryboard = React.memo(
 							/>
 						)}
 				</div>
-				<div className="segment-timeline__timeUntil" onClick={onTimeUntilClick}>
-					{props.playlist && props.parts && props.parts.length > 0 && props.showCountdownToSegment && (
-						<PartCountdown
-							partId={countdownToPartId}
-							hideOnZero={!useTimeOfDayCountdowns}
-							useWallClock={useTimeOfDayCountdowns}
-							playlist={props.playlist}
-							label={
-								useTimeOfDayCountdowns ? (
-									<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
-								) : (
-									<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
-								)
-							}
+				{props.segment.segmentTiming?.expectedStart || props.segment.segmentTiming?.expectedEnd ? (
+					<div className="segment-timeline__expectedTime">
+						<SegmentTimeAnchorTime
+							segment={props.segment}
+							isLiveSegment={props.isLiveSegment}
+							labelClassName="segment-timeline__duration__label"
 						/>
-					)}
-					{props.studio.settings.preserveUnsyncedPlayingSegmentContents && props.segment.orphaned && (
-						<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
-					)}
-				</div>
+					</div>
+				) : (
+					<div className="segment-timeline__timeUntil" onClick={onTimeUntilClick}>
+						{props.playlist && props.parts && props.parts.length > 0 && props.showCountdownToSegment && (
+							<PartCountdown
+								partId={countdownToPartId}
+								hideOnZero={!useTimeOfDayCountdowns}
+								useWallClock={useTimeOfDayCountdowns}
+								playlist={props.playlist}
+								label={
+									useTimeOfDayCountdowns ? (
+										<span className="segment-timeline__timeUntil__label">{t('On Air At')}</span>
+									) : (
+										<span className="segment-timeline__timeUntil__label">{t('On Air In')}</span>
+									)
+								}
+							/>
+						)}
+						{props.studio.settings.preserveUnsyncedPlayingSegmentContents && props.segment.orphaned && (
+							<span className="segment-timeline__unsynced">{t('Unsynced')}</span>
+						)}
+					</div>
+				)}
+
 				<div className="segment-timeline__mos-id">{props.segment.externalId}</div>
 				<div className="segment-timeline__source-layers" role="tree" aria-label={t('Sources')}>
 					{Object.values<IOutputLayerUi>(props.segment.outputLayers)

@@ -1,9 +1,8 @@
-import { postHandler, BodyParsingIncomingMessage } from '../../../api/serviceMessages/postHandler'
+import { postHandler } from '../../../api/serviceMessages/postHandler'
 import { Criticality, ExternalServiceMessage } from '../../../../lib/collections/CoreSystem'
-import { IncomingMessage, ServerResponse } from 'http'
-import { Socket } from 'net'
 import * as serviceMessagesApi from '../../../api/serviceMessages/serviceMessagesApi'
 import { SupressLogMessages } from '../../../../__mocks__/suppressLogging'
+import { createMockContext } from '@shopify/jest-koa-mocks'
 
 jest.mock('../../../api/serviceMessages/serviceMessagesApi', () => {
 	return {
@@ -46,26 +45,16 @@ expect.extend({
 })
 
 describe('ServiceMessages API POST endpoint', () => {
-	let mockRequest: BodyParsingIncomingMessage
-	let mockResponse: ServerResponse
-	let mockResponseEnd: jest.Mock<Function>
 	const mockedWriteMessage: jest.Mock<typeof serviceMessagesApi.writeMessage> = serviceMessagesApi.writeMessage as any
-
-	beforeEach(() => {
-		mockRequest = new IncomingMessage(new Socket())
-		mockResponse = new ServerResponse(mockRequest)
-		mockResponseEnd = jest.fn()
-		Object.defineProperty(mockResponse, 'end', { value: mockResponseEnd })
-	})
 
 	describe('input validation', () => {
 		it('should accept valid input', async () => {
-			mockRequest.body = JSON.parse(JSON.stringify(validInput))
+			const ctx = createMockContext({})
+			ctx.request.body = JSON.parse(JSON.stringify(validInput))
+			await postHandler(ctx)
 
-			await postHandler({}, mockRequest, mockResponse)
-
-			expect(mockResponse.statusCode).toBeHttpOkStatusCode()
-			expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+			expect(ctx.response.status).toBeHttpOkStatusCode()
+			expect(ctx.body).toBeTruthy()
 		})
 
 		describe('id field', () => {
@@ -74,34 +63,37 @@ describe('ServiceMessages API POST endpoint', () => {
 				const invalidInput = { ...validInput }
 				// @ts-expect-error
 				delete invalidInput.id
-				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
 
-				await postHandler({}, mockRequest, mockResponse)
+				const ctx = createMockContext({})
+				ctx.request.body = JSON.parse(JSON.stringify(invalidInput))
+				await postHandler(ctx)
 
-				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+				expect(ctx.response.status).toEqual(400)
+				expect(ctx.body).toBeTruthy()
 			})
 
 			it('should reject empty string', async () => {
 				const invalidInput = { ...validInput }
 				invalidInput.id = ''
-				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
 
-				await postHandler({}, mockRequest, mockResponse)
+				const ctx = createMockContext({})
+				ctx.request.body = JSON.parse(JSON.stringify(invalidInput))
+				await postHandler(ctx)
 
-				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+				expect(ctx.response.status).toEqual(400)
+				expect(ctx.body).toBeTruthy()
 			})
 
 			it('should reject blank string', async () => {
 				const invalidInput = { ...validInput }
 				invalidInput.id = ' \t'
-				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
 
-				await postHandler({}, mockRequest, mockResponse)
+				const ctx = createMockContext({})
+				ctx.request.body = JSON.parse(JSON.stringify(invalidInput))
+				await postHandler(ctx)
 
-				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+				expect(ctx.response.status).toEqual(400)
+				expect(ctx.body).toBeTruthy()
 			})
 		})
 
@@ -111,34 +103,37 @@ describe('ServiceMessages API POST endpoint', () => {
 				const invalidInput = { ...validInput }
 				// @ts-expect-error
 				delete invalidInput.criticality
-				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
 
-				await postHandler({}, mockRequest, mockResponse)
+				const ctx = createMockContext({})
+				ctx.request.body = JSON.parse(JSON.stringify(invalidInput))
+				await postHandler(ctx)
 
-				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+				expect(ctx.response.status).toEqual(400)
+				expect(ctx.body).toBeTruthy()
 			})
 
 			it('should reject non numeric value', async () => {
 				const invalidInput: any = { ...validInput }
 				invalidInput.criticality = 'lol'
-				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
 
-				await postHandler({}, mockRequest, mockResponse)
+				const ctx = createMockContext({})
+				ctx.request.body = JSON.parse(JSON.stringify(invalidInput))
+				await postHandler(ctx)
 
-				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+				expect(ctx.response.status).toEqual(400)
+				expect(ctx.body).toBeTruthy()
 			})
 
 			it('should reject negative number', async () => {
 				const invalidInput: any = { ...validInput }
 				invalidInput.criticality = -1
-				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
 
-				await postHandler({}, mockRequest, mockResponse)
+				const ctx = createMockContext({})
+				ctx.request.body = JSON.parse(JSON.stringify(invalidInput))
+				await postHandler(ctx)
 
-				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+				expect(ctx.response.status).toEqual(400)
+				expect(ctx.body).toBeTruthy()
 			})
 
 			it('should reject non-criticality positive number', async () => {
@@ -148,34 +143,37 @@ describe('ServiceMessages API POST endpoint', () => {
 						.sort((a, b) => b - a)[0] + 1
 				const invalidInput: any = { ...validInput }
 				invalidInput.criticality = tooHigh
-				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
 
-				await postHandler({}, mockRequest, mockResponse)
+				const ctx = createMockContext({})
+				ctx.request.body = JSON.parse(JSON.stringify(invalidInput))
+				await postHandler(ctx)
 
-				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+				expect(ctx.response.status).toEqual(400)
+				expect(ctx.body).toBeTruthy()
 			})
 
 			it('should accept a valid value as a string', async () => {
 				const alsoValid: any = { ...validInput }
 				alsoValid.criticality = `${validInput.criticality}`
-				mockRequest.body = JSON.parse(JSON.stringify(alsoValid))
 
-				await postHandler({}, mockRequest, mockResponse)
+				const ctx = createMockContext({})
+				ctx.request.body = JSON.parse(JSON.stringify(alsoValid))
+				await postHandler(ctx)
 
-				expect(mockResponse.statusCode).toBeHttpOkStatusCode()
-				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+				expect(ctx.response.status).toBeHttpOkStatusCode()
+				expect(ctx.body).toBeTruthy()
 			})
 
 			it('should reject empty string value', async () => {
 				const invalidInput: any = { ...validInput }
 				invalidInput.criticality = ''
-				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
 
-				await postHandler({}, mockRequest, mockResponse)
+				const ctx = createMockContext({})
+				ctx.request.body = JSON.parse(JSON.stringify(invalidInput))
+				await postHandler(ctx)
 
-				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+				expect(ctx.response.status).toEqual(400)
+				expect(ctx.body).toBeTruthy()
 			})
 		})
 
@@ -185,34 +183,37 @@ describe('ServiceMessages API POST endpoint', () => {
 				const invalidInput = { ...validInput }
 				// @ts-expect-error
 				delete invalidInput.message
-				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
 
-				await postHandler({}, mockRequest, mockResponse)
+				const ctx = createMockContext({})
+				ctx.request.body = JSON.parse(JSON.stringify(invalidInput))
+				await postHandler(ctx)
 
-				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+				expect(ctx.response.status).toEqual(400)
+				expect(ctx.body).toBeTruthy()
 			})
 
 			it('should reject empty string', async () => {
 				const invalidInput = { ...validInput }
 				invalidInput.message = ''
-				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
 
-				await postHandler({}, mockRequest, mockResponse)
+				const ctx = createMockContext({})
+				ctx.request.body = JSON.parse(JSON.stringify(invalidInput))
+				await postHandler(ctx)
 
-				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+				expect(ctx.response.status).toEqual(400)
+				expect(ctx.body).toBeTruthy()
 			})
 
 			it('should reject blank string', async () => {
 				const invalidInput = { ...validInput }
 				invalidInput.message = ' \t'
-				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
 
-				await postHandler({}, mockRequest, mockResponse)
+				const ctx = createMockContext({})
+				ctx.request.body = JSON.parse(JSON.stringify(invalidInput))
+				await postHandler(ctx)
 
-				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+				expect(ctx.response.status).toEqual(400)
+				expect(ctx.body).toBeTruthy()
 			})
 		})
 
@@ -221,23 +222,25 @@ describe('ServiceMessages API POST endpoint', () => {
 			it('should accept missing value', async () => {
 				const alsoValid = { ...validInput }
 				delete alsoValid.sender
-				mockRequest.body = JSON.parse(JSON.stringify(alsoValid))
 
-				await postHandler({}, mockRequest, mockResponse)
+				const ctx = createMockContext({})
+				ctx.request.body = JSON.parse(JSON.stringify(alsoValid))
+				await postHandler(ctx)
 
-				expect(mockResponse.statusCode).toBeHttpOkStatusCode()
-				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+				expect(ctx.response.status).toBeHttpOkStatusCode()
+				expect(ctx.body).toBeTruthy()
 			})
 
 			it('should accept empty value', async () => {
 				const alsoValid = { ...validInput }
 				alsoValid.sender = ''
-				mockRequest.body = JSON.parse(JSON.stringify(alsoValid))
 
-				await postHandler({}, mockRequest, mockResponse)
+				const ctx = createMockContext({})
+				ctx.request.body = JSON.parse(JSON.stringify(alsoValid))
+				await postHandler(ctx)
 
-				expect(mockResponse.statusCode).toBeHttpOkStatusCode()
-				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+				expect(ctx.response.status).toBeHttpOkStatusCode()
+				expect(ctx.body).toBeTruthy()
 			})
 		})
 
@@ -247,23 +250,25 @@ describe('ServiceMessages API POST endpoint', () => {
 				const invalidInput = { ...validInput }
 				// @ts-expect-error
 				delete invalidInput.timestamp
-				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
 
-				await postHandler({}, mockRequest, mockResponse)
+				const ctx = createMockContext({})
+				ctx.request.body = JSON.parse(JSON.stringify(invalidInput))
+				await postHandler(ctx)
 
-				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+				expect(ctx.response.status).toEqual(400)
+				expect(ctx.body).toBeTruthy()
 			})
 
 			it('should reject non date value', async () => {
 				const invalidInput = { ...validInput } as any
 				invalidInput.timestamp = 'this is not a date'
-				mockRequest.body = JSON.parse(JSON.stringify(invalidInput))
 
-				await postHandler({}, mockRequest, mockResponse)
+				const ctx = createMockContext({})
+				ctx.request.body = JSON.parse(JSON.stringify(invalidInput))
+				await postHandler(ctx)
 
-				expect(mockResponse.statusCode).toEqual(400)
-				expect(mockResponseEnd).toHaveBeenCalledTimes(1)
+				expect(ctx.response.status).toEqual(400)
+				expect(ctx.body).toBeTruthy()
 			})
 		})
 	})
@@ -271,18 +276,20 @@ describe('ServiceMessages API POST endpoint', () => {
 	describe('data storage', () => {
 		it('should call API writeMessage with the given id', async () => {
 			const expected = validInput.id
-			mockRequest.body = JSON.parse(JSON.stringify(validInput))
 
-			await postHandler({}, mockRequest, mockResponse)
+			const ctx = createMockContext({})
+			ctx.request.body = JSON.parse(JSON.stringify(validInput))
+			await postHandler(ctx)
 
 			expect(mockedWriteMessage.mock.calls[0][0]).toHaveProperty('id', expected)
 		})
 
 		it('should call API writeMessage with the given criticality', async () => {
 			const expected = Number(validInput.criticality)
-			mockRequest.body = JSON.parse(JSON.stringify(validInput))
 
-			await postHandler({}, mockRequest, mockResponse)
+			const ctx = createMockContext({})
+			ctx.request.body = JSON.parse(JSON.stringify(validInput))
+			await postHandler(ctx)
 
 			expect(mockedWriteMessage.mock.calls[0][0]).toHaveProperty('criticality', expected)
 		})
@@ -291,35 +298,39 @@ describe('ServiceMessages API POST endpoint', () => {
 			const expected = Number(validInput.criticality)
 			const alsoValid: any = { ...validInput }
 			alsoValid.criticality = `${validInput.criticality}`
-			mockRequest.body = JSON.parse(JSON.stringify(alsoValid))
 
-			await postHandler({}, mockRequest, mockResponse)
+			const ctx = createMockContext({})
+			ctx.request.body = JSON.parse(JSON.stringify(alsoValid))
+			await postHandler(ctx)
 
 			expect(mockedWriteMessage.mock.calls[0][0]).toHaveProperty('criticality', expected)
 		})
 
 		it('should call API writeMessage with the given message', async () => {
 			const expected = validInput.message
-			mockRequest.body = JSON.parse(JSON.stringify(validInput))
 
-			await postHandler({}, mockRequest, mockResponse)
+			const ctx = createMockContext({})
+			ctx.request.body = JSON.parse(JSON.stringify(validInput))
+			await postHandler(ctx)
 
 			expect(mockedWriteMessage.mock.calls[0][0]).toHaveProperty('message', expected)
 		})
 		it('should call API writeMessage with the given sender', async () => {
 			const expected = validInput.sender
-			mockRequest.body = JSON.parse(JSON.stringify(validInput))
 
-			await postHandler({}, mockRequest, mockResponse)
+			const ctx = createMockContext({})
+			ctx.request.body = JSON.parse(JSON.stringify(validInput))
+			await postHandler(ctx)
 
 			expect(mockedWriteMessage.mock.calls[0][0]).toHaveProperty('sender', expected)
 		})
 
 		it('should call API writeMessage with the given timestamp', async () => {
 			const expected = new Date(validInput.timestamp).getTime()
-			mockRequest.body = JSON.parse(JSON.stringify(validInput))
 
-			await postHandler({}, mockRequest, mockResponse)
+			const ctx = createMockContext({})
+			ctx.request.body = JSON.parse(JSON.stringify(validInput))
+			await postHandler(ctx)
 
 			expect(mockedWriteMessage.mock.calls[0][0]).toHaveProperty('timestamp', expected)
 		})
@@ -330,11 +341,12 @@ describe('ServiceMessages API POST endpoint', () => {
 			const spy = jest.spyOn(serviceMessagesApi, 'writeMessage').mockImplementation(async () => ({
 				isUpdate: false,
 			}))
-			mockRequest.body = JSON.parse(JSON.stringify(validInput))
 
-			await postHandler({}, mockRequest, mockResponse)
+			const ctx = createMockContext({})
+			ctx.request.body = JSON.parse(JSON.stringify(validInput))
+			await postHandler(ctx)
 
-			expect(mockResponse.statusCode).toBe(201)
+			expect(ctx.response.status).toBe(201)
 			spy.mockRestore()
 		})
 
@@ -342,9 +354,11 @@ describe('ServiceMessages API POST endpoint', () => {
 			const spy = jest.spyOn(serviceMessagesApi, 'writeMessage').mockImplementation(async () => ({
 				isUpdate: false,
 			}))
-			mockRequest.body = JSON.parse(JSON.stringify(validInput))
 
-			await postHandler({}, mockRequest, mockResponse)
+			const ctx = createMockContext({})
+			ctx.request.body = JSON.parse(JSON.stringify(validInput))
+			await postHandler(ctx)
+
 			const writtenMessage = mockedWriteMessage.mock.calls[0][0]
 			const expected = JSON.stringify(writtenMessage)
 
@@ -352,7 +366,7 @@ describe('ServiceMessages API POST endpoint', () => {
 			 * implementing unit to write the body with response#write.
 			 * But, I'm not implementing a full mock of ServerResponse at this stage :S
 			 */
-			expect(mockResponseEnd).toHaveBeenCalledWith(expected)
+			expect(ctx.body).toBe(expected)
 			spy.mockRestore()
 		})
 
@@ -360,20 +374,23 @@ describe('ServiceMessages API POST endpoint', () => {
 			const spy = jest.spyOn(serviceMessagesApi, 'writeMessage').mockImplementation(async () => ({
 				isUpdate: true,
 			}))
-			mockRequest.body = JSON.parse(JSON.stringify(validInput))
 
-			await postHandler({}, mockRequest, mockResponse)
+			const ctx = createMockContext({})
+			ctx.request.body = JSON.parse(JSON.stringify(validInput))
+			await postHandler(ctx)
 
-			expect(mockResponse.statusCode).toBe(200)
+			expect(ctx.response.status).toBe(200)
 			spy.mockRestore()
 		})
 		it('should put the updated message in the response body', async () => {
 			const spy = jest.spyOn(serviceMessagesApi, 'writeMessage').mockImplementation(async () => ({
 				isUpdate: true,
 			}))
-			mockRequest.body = JSON.parse(JSON.stringify(validInput))
 
-			await postHandler({}, mockRequest, mockResponse)
+			const ctx = createMockContext({})
+			ctx.request.body = JSON.parse(JSON.stringify(validInput))
+			await postHandler(ctx)
+
 			const writtenMessage = mockedWriteMessage.mock.calls[0][0]
 			const expected = JSON.stringify(writtenMessage)
 
@@ -382,7 +399,7 @@ describe('ServiceMessages API POST endpoint', () => {
 			 * But, I'm not implementing a full mock of ServerResponse at this stage :S
 			 */
 			// expect(mockResponseEnd.mock.calls[0][0]).toEqual(expected)
-			expect(mockResponseEnd).toHaveBeenCalledWith(expected)
+			expect(ctx.body).toBe(expected)
 			spy.mockRestore()
 		})
 
@@ -390,12 +407,13 @@ describe('ServiceMessages API POST endpoint', () => {
 			const spy = jest.spyOn(serviceMessagesApi, 'writeMessage').mockImplementation(async () => {
 				throw new Error('lol')
 			})
-			mockRequest.body = JSON.parse(JSON.stringify(validInput))
 
 			SupressLogMessages.suppressLogMessage(/Unable to store message/i)
-			await postHandler({}, mockRequest, mockResponse)
+			const ctx = createMockContext({})
+			ctx.request.body = JSON.parse(JSON.stringify(validInput))
+			await postHandler(ctx)
 
-			expect(mockResponse.statusCode).toBe(500)
+			expect(ctx.response.status).toBe(500)
 			spy.mockRestore()
 		})
 	})

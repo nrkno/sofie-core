@@ -1,6 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from './currentSystemVersion'
-import { PeripheralDevices, Rundowns, Studios } from '../collections'
+import { PeripheralDevices, Rundowns, RundownPlaylists, Studios } from '../collections'
 import { assertNever, clone, literal } from '@sofie-automation/corelib/dist/lib'
 import {
 	MappingExt,
@@ -20,6 +20,7 @@ import {
 	ObjectOverrideSetOp,
 	SomeObjectOverrideOp,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { JSONBlobStringify, JSONSchema, TSR } from '@sofie-automation/blueprints-integration'
 
 /*
  * **************************************************************************************
@@ -92,6 +93,56 @@ function convertRouteSetMappings(studio: Studio) {
 	}
 
 	return changed && newRouteSets
+}
+
+enum OldDeviceType {
+	ABSTRACT = 0,
+	CASPARCG = 1,
+	ATEM = 2,
+	LAWO = 3,
+	HTTPSEND = 4,
+	PANASONIC_PTZ = 5,
+	TCPSEND = 6,
+	HYPERDECK = 7,
+	PHAROS = 8,
+	OSC = 9,
+	HTTPWATCHER = 10,
+	SISYFOS = 11,
+	QUANTEL = 12,
+	VIZMSE = 13,
+	SINGULAR_LIVE = 14,
+	SHOTOKU = 15,
+	VMIX = 20,
+	OBS = 21,
+	SOFIE_CHEF = 22,
+	TELEMETRICS = 23,
+	TRICASTER = 24,
+	MULTI_OSC = 25,
+}
+
+const oldDeviceTypeToNewMapping = {
+	[OldDeviceType.ABSTRACT]: TSR.DeviceType.ABSTRACT,
+	[OldDeviceType.CASPARCG]: TSR.DeviceType.CASPARCG,
+	[OldDeviceType.ATEM]: TSR.DeviceType.ATEM,
+	[OldDeviceType.LAWO]: TSR.DeviceType.LAWO,
+	[OldDeviceType.HTTPSEND]: TSR.DeviceType.HTTPSEND,
+	[OldDeviceType.PANASONIC_PTZ]: TSR.DeviceType.PANASONIC_PTZ,
+	[OldDeviceType.TCPSEND]: TSR.DeviceType.TCPSEND,
+	[OldDeviceType.HYPERDECK]: TSR.DeviceType.HYPERDECK,
+	[OldDeviceType.PHAROS]: TSR.DeviceType.PHAROS,
+	[OldDeviceType.OSC]: TSR.DeviceType.OSC,
+	[OldDeviceType.HTTPWATCHER]: TSR.DeviceType.HTTPWATCHER,
+	[OldDeviceType.SISYFOS]: TSR.DeviceType.SISYFOS,
+	[OldDeviceType.QUANTEL]: TSR.DeviceType.QUANTEL,
+	[OldDeviceType.VIZMSE]: TSR.DeviceType.VIZMSE,
+	[OldDeviceType.SINGULAR_LIVE]: TSR.DeviceType.SINGULAR_LIVE,
+	[OldDeviceType.SHOTOKU]: TSR.DeviceType.SHOTOKU,
+	[OldDeviceType.VMIX]: TSR.DeviceType.VMIX,
+	[OldDeviceType.OBS]: TSR.DeviceType.OBS,
+	[OldDeviceType.SOFIE_CHEF]: TSR.DeviceType.SOFIE_CHEF,
+	[OldDeviceType.TELEMETRICS]: TSR.DeviceType.TELEMETRICS,
+	[OldDeviceType.TRICASTER]: TSR.DeviceType.TRICASTER,
+	[OldDeviceType.MULTI_OSC]: TSR.DeviceType.MULTI_OSC,
 }
 
 export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
@@ -517,6 +568,160 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 	},
 
 	{
+		id: `RundownPlaylist move nextPartManual to nextPartInfo.manuallySelected`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await RundownPlaylists.countDocuments({
+				nextPartManual: { $exists: true },
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const playlists = await RundownPlaylists.findFetchAsync({
+				nextPartManual: { $exists: true },
+			})
+
+			for (const playlist of playlists) {
+				const nextPartManual = !!(playlist as any).nextPartManual
+				await RundownPlaylists.mutableCollection.updateAsync(playlist._id, {
+					$set: playlist.nextPartInfo
+						? {
+								'nextPartInfo.manuallySelected': nextPartManual,
+						  }
+						: undefined,
+					$unset: {
+						nextPartManual: 1,
+					},
+				})
+			}
+		},
+	},
+
+	{
+		id: `PeripheralDevice ensure deviceConfigSchema and subdeviceManifest exists`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const objectCount = await PeripheralDevices.countDocuments({
+				parentDeviceId: { $exists: false },
+				$or: [
+					{
+						'configManifest.deviceConfigSchema': {
+							$exists: false,
+						},
+					},
+					{
+						'configManifest.subdeviceManifest': {
+							$exists: false,
+						},
+					},
+				],
+			})
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			await PeripheralDevices.updateAsync(
+				{
+					parentDeviceId: { $exists: false },
+					$or: [
+						{
+							'configManifest.deviceConfigSchema': {
+								$exists: false,
+							},
+						},
+						{
+							'configManifest.subdeviceManifest': {
+								$exists: false,
+							},
+						},
+					],
+				},
+				{
+					$set: {
+						configManifest: {
+							deviceConfigSchema: JSONBlobStringify<JSONSchema>({}),
+							subdeviceManifest: {},
+						},
+					},
+				},
+				{
+					multi: true,
+				}
+			)
+		},
+	},
+
+	{
+		id: `Studio playoutDevices ensure new DeviceType values`,
+		canBeRunAutomatically: true,
+		dependOnResultFrom: 'Studio move playout-gateway subdevices',
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({})
+			const objectCount = studios.filter(
+				(studio) =>
+					studio.peripheralDeviceSettings.playoutDevices.overrides.filter(updatePlayoutDeviceTypeInOverride)
+						.length
+			).length
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({})
+			for (const studio of studios) {
+				const newOverrides = studio.peripheralDeviceSettings.playoutDevices.overrides.map(
+					(override) => updatePlayoutDeviceTypeInOverride(override) || override
+				)
+
+				await Studios.updateAsync(studio._id, {
+					$set: {
+						[`peripheralDeviceSettings.playoutDevices.overrides`]: newOverrides,
+					},
+				})
+			}
+		},
+	},
+
+	{
+		id: `Studio mappings ensure new DeviceType values`,
+		canBeRunAutomatically: true,
+		validate: async () => {
+			const studios = await Studios.findFetchAsync({})
+			const objectCount = studios.filter(
+				(studio) => studio.mappingsWithOverrides.overrides.filter(updateMappingDeviceTypeInOverride).length > 0
+			).length
+
+			if (objectCount) {
+				return `object needs to be updated`
+			}
+			return false
+		},
+		migrate: async () => {
+			const studios = await Studios.findFetchAsync({})
+			for (const studio of studios) {
+				const newOverrides = studio.mappingsWithOverrides.overrides.map(
+					(override) => updateMappingDeviceTypeInOverride(override) || override
+				)
+
+				await Studios.updateAsync(studio._id, {
+					$set: {
+						[`mappingsWithOverrides.overrides`]: newOverrides,
+					},
+				})
+			}
+		},
+	},
+
+	{
 		id: `Rundown cleanup unused properties related to breaks`,
 		canBeRunAutomatically: true,
 		validate: async () => {
@@ -544,3 +749,43 @@ export const addSteps = addMigrationSteps(CURRENT_SYSTEM_VERSION, [
 		},
 	},
 ])
+
+function updatePlayoutDeviceTypeInOverride(op: SomeObjectOverrideOp): ObjectOverrideSetOp | undefined {
+	if (op.op !== 'set') return undefined
+	if (!op.path.includes('.')) {
+		// Root level
+		const value = op.value as Partial<StudioPlayoutDevice>
+		if (typeof value.options?.type === 'number') {
+			value.options.type = oldDeviceTypeToNewMapping[value.options.type] ?? TSR.DeviceType.ABSTRACT
+			return op
+		}
+	} else if (op.path.endsWith('.options.type')) {
+		// Single property override
+		if (typeof op.value === 'number') {
+			op.value = oldDeviceTypeToNewMapping[op.value] ?? TSR.DeviceType.ABSTRACT
+			return op
+		}
+	}
+
+	return undefined
+}
+
+function updateMappingDeviceTypeInOverride(op: SomeObjectOverrideOp): ObjectOverrideSetOp | undefined {
+	if (op.op !== 'set') return undefined
+	if (!op.path.includes('.')) {
+		// Root level
+		const value = op.value as Partial<TSR.Mapping<any, any>>
+		if (typeof value.device === 'number') {
+			value.device = oldDeviceTypeToNewMapping[value.device] ?? TSR.DeviceType.ABSTRACT
+			return op
+		}
+	} else if (op.path.endsWith('.device')) {
+		// Single property override
+		if (typeof op.value === 'number') {
+			op.value = oldDeviceTypeToNewMapping[op.value] ?? TSR.DeviceType.ABSTRACT
+			return op
+		}
+	}
+
+	return undefined
+}

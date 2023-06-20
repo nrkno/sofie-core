@@ -29,7 +29,7 @@ import { sleep } from '@sofie-automation/corelib/dist/lib'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { EmptyPieceTimelineObjectsBlob, Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import {
@@ -61,7 +61,7 @@ describe('Playout API', () => {
 	async function getAllRundownData(rundown: DBRundown) {
 		const segments = await context.mockCollections.Segments.findFetch({ rundownId: rundown._id })
 		const parts = await context.mockCollections.Parts.findFetch({ rundownId: rundown._id })
-		const sortedSegments = sortSegmentsInRundowns(segments, { rundownIdsInOrder: [rundown._id] })
+		const sortedSegments = sortSegmentsInRundowns(segments, [rundown._id])
 		return {
 			parts: sortPartsInSortedSegments(parts, sortedSegments),
 			segments: sortedSegments,
@@ -927,7 +927,6 @@ async function setupRundownWithAutoplayPart0(
 		...defaultAdLibPiece(protectString(rundownId + '_adLib000'), segment0.rundownId, part00._id),
 		expectedDuration: 1000,
 		externalId: 'MOCK_ADLIB_000',
-		status: PieceStatusCode.UNKNOWN,
 		name: 'AdLib 0',
 		sourceLayerId: sourceLayerIds[1],
 		outputLayerId: outputLayerIds[0],
@@ -1047,7 +1046,6 @@ async function setupRundownWithAutoplayPart0(
 		externalId: 'MOCK_GLOBAL_ADLIB_0',
 		lifespan: PieceLifespan.OutOnRundownChange,
 		rundownId: segment0.rundownId,
-		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 0',
 		sourceLayerId: sourceLayerIds[0],
 		outputLayerId: outputLayerIds[0],
@@ -1061,7 +1059,6 @@ async function setupRundownWithAutoplayPart0(
 		externalId: 'MOCK_GLOBAL_ADLIB_1',
 		lifespan: PieceLifespan.OutOnRundownChange,
 		rundownId: segment0.rundownId,
-		status: PieceStatusCode.UNKNOWN,
 		name: 'Global AdLib 1',
 		sourceLayerId: sourceLayerIds[1],
 		outputLayerId: outputLayerIds[0],

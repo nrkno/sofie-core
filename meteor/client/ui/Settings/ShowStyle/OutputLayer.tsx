@@ -22,6 +22,7 @@ import { TextInputControl } from '../../../lib/Components/TextInput'
 import { IntInputControl } from '../../../lib/Components/IntInput'
 import { useToggleExpandHelper } from '../util/ToggleExpandedHelper'
 import {
+	LabelActual,
 	LabelAndOverrides,
 	LabelAndOverridesForCheckbox,
 	LabelAndOverridesForInt,
@@ -266,88 +267,76 @@ function OutputLayerEntry({ item, isExpanded, toggleExpanded, overrideHelper }: 
 			{isExpanded && (
 				<tr className="expando-details hl">
 					<td colSpan={4}>
-						<div>
-							<div className="mod mvs mhs">
-								<LabelAndOverrides
-									label={t('Channel Name')}
-									item={item}
-									itemKey={'name'}
-									opPrefix={item.id}
-									overrideHelper={overrideHelper}
-								>
-									{(value, handleUpdate) => (
-										<TextInputControl
-											modifiedClassName="bghl"
-											classNames="input text-input input-l"
-											value={value}
-											handleUpdate={handleUpdate}
-										/>
-									)}
-								</LabelAndOverrides>
-							</div>
-							<div className="mod mvs mhs">
-								<label className="field">
-									{t('Internal ID')}
+						<div className="properties-grid">
+							<LabelAndOverrides
+								label={t('Channel Name')}
+								item={item}
+								itemKey={'name'}
+								opPrefix={item.id}
+								overrideHelper={overrideHelper}
+							>
+								{(value, handleUpdate) => (
 									<TextInputControl
 										modifiedClassName="bghl"
 										classNames="input text-input input-l"
-										value={item.id}
-										handleUpdate={doChangeItemId}
-										disabled={!!item.defaults}
+										value={value}
+										handleUpdate={handleUpdate}
 									/>
-								</label>
-							</div>
-							<div className="mod mvs mhs">
-								<LabelAndOverridesForCheckbox
-									label={t('Is PGM Output')}
-									item={item}
-									itemKey={'isPGM'}
-									opPrefix={item.id}
-									overrideHelper={overrideHelper}
-								>
-									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
-								</LabelAndOverridesForCheckbox>
-							</div>
-							<div className="mod mvs mhs">
-								<LabelAndOverridesForInt
-									label={t('Display Rank')}
-									item={item}
-									itemKey={'_rank'}
-									opPrefix={item.id}
-									overrideHelper={overrideHelper}
-								>
-									{(value, handleUpdate) => (
-										<IntInputControl
-											modifiedClassName="bghl"
-											classNames="input text-input input-l"
-											value={value}
-											handleUpdate={handleUpdate}
-										/>
-									)}
-								</LabelAndOverridesForInt>
-							</div>
-							<div className="mod mvs mhs">
-								<LabelAndOverridesForCheckbox
-									label={t('Is collapsed by default')}
-									item={item}
-									itemKey={'isDefaultCollapsed'}
-									opPrefix={item.id}
-									overrideHelper={overrideHelper}
-								>
-									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
-								</LabelAndOverridesForCheckbox>
-							</div>
-							<div className="mod mvs mhs">
-								<LabelAndOverridesForCheckbox
-									label={t('Is flattened')}
-									item={item}
-									itemKey={'isFlattened'}
-									opPrefix={item.id}
-									overrideHelper={overrideHelper}
-								>
-									{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
-								</LabelAndOverridesForCheckbox>
-							</div>
+								)}
+							</LabelAndOverrides>
+							<label className="field">
+								<LabelActual label={t('Internal ID')} />
+								<TextInputControl
+									modifiedClassName="bghl"
+									classNames="input text-input input-l"
+									value={item.id}
+									handleUpdate={doChangeItemId}
+									disabled={!!item.defaults}
+								/>
+							</label>
+							<LabelAndOverridesForCheckbox
+								label={t('Is PGM Output')}
+								item={item}
+								itemKey={'isPGM'}
+								opPrefix={item.id}
+								overrideHelper={overrideHelper}
+							>
+								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+							</LabelAndOverridesForCheckbox>
+							<LabelAndOverridesForInt
+								label={t('Display Rank')}
+								item={item}
+								itemKey={'_rank'}
+								opPrefix={item.id}
+								overrideHelper={overrideHelper}
+							>
+								{(value, handleUpdate) => (
+									<IntInputControl
+										modifiedClassName="bghl"
+										classNames="input text-input input-l"
+										value={value}
+										handleUpdate={handleUpdate}
+									/>
+								)}
+							</LabelAndOverridesForInt>
+							<LabelAndOverridesForCheckbox
+								label={t('Is collapsed by default')}
+								item={item}
+								itemKey={'isDefaultCollapsed'}
+								opPrefix={item.id}
+								overrideHelper={overrideHelper}
+							>
+								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+							</LabelAndOverridesForCheckbox>
+							<LabelAndOverridesForCheckbox
+								label={t('Is flattened')}
+								item={item}
+								itemKey={'isFlattened'}
+								opPrefix={item.id}
+								overrideHelper={overrideHelper}
+							>
+								{(value, handleUpdate) => <CheckboxControl value={!!value} handleUpdate={handleUpdate} />}
+							</LabelAndOverridesForCheckbox>
 						</div>
 						<div className="mod alright">
 							{item.defaults && (

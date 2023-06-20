@@ -99,7 +99,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 					itemElement={this.props.itemElement}
 					piece={this.props.piece.instance.piece}
 					showMiniInspector={this.props.showMiniInspector}
-					floatingInspectorStyle={this.getFloatingInspectorStyle()}
+					position={this.getFloatingInspectorStyle()}
 					pieceRenderedDuration={this.props.piece.renderedDuration}
 					pieceRenderedIn={this.props.piece.renderedInPoint}
 				/>

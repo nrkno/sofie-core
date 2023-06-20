@@ -30,6 +30,7 @@ import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settin
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ExpectedPackages, RundownPlaylists, Rundowns, PeripheralDevices, Studios, PartInstances } from '../collections'
+import { check, Match } from 'meteor/check'
 
 interface ExpectedPackagesPublicationArgs {
 	readonly studioId: StudioId
@@ -384,6 +385,9 @@ meteorCustomPublish(
 		filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
 		token: string | undefined
 	) {
+		check(deviceId, String)
+		check(filterPlayoutDeviceIds, Match.Maybe([String]))
+
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
 			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 

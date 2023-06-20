@@ -1,4 +1,9 @@
-import { ExternalPeripheralDeviceAPI, StatusCode, protectString } from '@sofie-automation/server-core-integration'
+import {
+	ExternalPeripheralDeviceAPI,
+	StatusCode,
+	protectString,
+	Observer,
+} from '@sofie-automation/server-core-integration'
 import {
 	IMOSConnectionStatus,
 	IMOSDevice,
@@ -61,11 +66,11 @@ interface IStoryItemChange {
 
 export class CoreMosDeviceHandler {
 	core!: CoreConnectionChild
-	public _observers: Array<any> = []
+	public _observers: Array<Observer> = []
 	public _mosDevice: IMOSDevice
 	private _coreParentHandler: CoreHandler
 	private _mosHandler: MosHandler
-	private _subscriptions: Array<any> = []
+	private _subscriptions: Array<string> = []
 
 	private _pendingStoryItemChanges: Array<IStoryItemChange> = []
 	private _pendingChangeTimeout: number = 60 * 1000
@@ -427,6 +432,10 @@ export class CoreMosDeviceHandler {
 	}
 	async dispose(): Promise<void> {
 		this._observers.forEach((obs) => obs.stop())
+
+		for (const subId of this._subscriptions) {
+			this.core.unsubscribe(subId)
+		}
 
 		await this.core.setStatus({
 			statusCode: StatusCode.BAD,

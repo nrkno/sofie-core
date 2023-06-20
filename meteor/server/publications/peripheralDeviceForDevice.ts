@@ -12,6 +12,7 @@ import { Complete, assertNever, literal } from '@sofie-automation/corelib/dist/l
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { Studio, StudioIngestDevice, StudioInputDevice, StudioPlayoutDevice } from '../../lib/collections/Studios'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { check } from 'meteor/check'
 
 interface PeripheralDeviceForDeviceArgs {
 	readonly deviceId: PeripheralDeviceId
@@ -30,12 +31,13 @@ const studioFieldsSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields
 	peripheralDeviceSettings: 1,
 })
 
-type PeripheralDeviceFields = '_id' | 'category' | 'studioId' | 'settings'
+type PeripheralDeviceFields = '_id' | 'category' | 'studioId' | 'settings' | 'secretSettings'
 const peripheralDeviceFieldsSpecifier = literal<IncludeAllMongoFieldSpecifier<PeripheralDeviceFields>>({
 	_id: 1,
 	category: 1,
 	studioId: 1,
 	settings: 1,
+	secretSettings: 1,
 })
 
 export function convertPeripheralDeviceForGateway(
@@ -97,6 +99,7 @@ export function convertPeripheralDeviceForGateway(
 		studioId: peripheralDevice.studioId,
 
 		deviceSettings: peripheralDevice.settings,
+		secretSettings: peripheralDevice.secretSettings,
 
 		playoutDevices,
 		ingestDevices,
@@ -109,9 +112,9 @@ async function setupPeripheralDevicePublicationObservers(
 	triggerUpdate: TriggerUpdate<PeripheralDeviceForDeviceUpdateProps>
 ): Promise<Meteor.LiveQueryHandle[]> {
 	const studioObserver = await ReactiveMongoObserverGroup(async () => {
-		const peripheralDeviceCompact = PeripheralDevices.findOneAsync(args.deviceId, { fields: { studioId: 1 } }) as
-			| Pick<PeripheralDevice, 'studioId'>
-			| undefined
+		const peripheralDeviceCompact = (await PeripheralDevices.findOneAsync(args.deviceId, {
+			fields: { studioId: 1 },
+		})) as Pick<PeripheralDevice, 'studioId'> | undefined
 
 		if (peripheralDeviceCompact?.studioId) {
 			return [
@@ -187,6 +190,8 @@ meteorCustomPublish(
 	PubSub.peripheralDeviceForDevice,
 	CustomCollectionName.PeripheralDeviceForDevice,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
+		check(deviceId, String)
+
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
 			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 

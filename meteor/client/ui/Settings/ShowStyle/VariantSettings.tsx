@@ -52,10 +52,7 @@ export const ShowStyleVariantsSettings = ({
 		setLocalVariants(showStyleVariants.slice())
 	}, [showStyleVariants])
 
-	const blueprintPresetConfigOptions = useTracker<
-		{ name: string; value: string | null }[],
-		{ name: string; value: string | null }[]
-	>(
+	const blueprintPresetConfigOptions = useTracker<{ name: string; value: string | null }[]>(
 		() => {
 			const options: { name: string; value: string | null }[] = []
 

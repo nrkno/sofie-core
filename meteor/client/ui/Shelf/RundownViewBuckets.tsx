@@ -53,7 +53,6 @@ export interface BucketAdLibActionUi extends Omit<AdLibPiece, 'timelineObjectsSt
 	isAction: true
 	isClearSourceLayer?: boolean
 	adlibAction: BucketAdLibAction
-	contentMetaData?: any
 	message?: string | null
 	showStyleBaseId: ShowStyleBaseId
 	showStyleVariantId: ShowStyleVariantId | null

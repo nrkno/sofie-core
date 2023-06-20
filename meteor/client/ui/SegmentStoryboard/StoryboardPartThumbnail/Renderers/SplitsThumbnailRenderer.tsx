@@ -5,7 +5,13 @@ import { RundownUtils } from '../../../../lib/rundown'
 import { SplitsFloatingInspector } from '../../../FloatingInspectors/SplitsFloatingInspector'
 import { getSplitItems } from '../../../SegmentContainer/getSplitItems'
 
-export function SplitsThumbnailRenderer({ pieceInstance, originPosition, hovering, layer }: IProps): JSX.Element {
+export function SplitsThumbnailRenderer({
+	pieceInstance,
+	originPosition,
+	hovering,
+	layer,
+	height,
+}: IProps): JSX.Element {
 	const splitItems = getSplitItems(pieceInstance, 'segment-storyboard__thumbnail__item')
 
 	return (
@@ -15,10 +21,12 @@ export function SplitsThumbnailRenderer({ pieceInstance, originPosition, hoverin
 				{pieceInstance.instance.piece.name}
 			</div>
 			<SplitsFloatingInspector
-				floatingInspectorStyle={{
-					top: originPosition.top + 'px',
-					left: originPosition.left + 'px',
-					transform: 'translate(0, -100%)',
+				position={{
+					top: originPosition.top,
+					left: originPosition.left,
+					height,
+					anchor: 'start',
+					position: 'top-start',
 				}}
 				content={pieceInstance.instance.piece.content as Partial<SplitsContent>}
 				itemElement={null}

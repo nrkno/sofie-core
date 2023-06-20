@@ -1,6 +1,5 @@
 import { SegmentId, PartId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadOnlyCache } from '../cache/CacheBase'
-import { getRundownsSegmentsAndPartsFromCache } from '../playout/lib'
 import { clone } from 'underscore'
 import { CacheForIngest } from './cache'
 import { BeforePartMap, CommitIngestOperation } from './commit'
@@ -12,6 +11,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownLock } from '../jobs/lock'
 import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
 import { UserError } from '@sofie-automation/corelib/dist/error'
+import { getOrderedSegmentsAndPartsFromCacheCollections } from '../cache/utils'
 
 /**
  * The result of the initial stage of an Ingest operation
@@ -182,10 +182,9 @@ function generatePartMap(cache: ReadOnlyCache<CacheForIngest>): BeforePartMap {
 	const rundown = cache.Rundown.doc
 	if (!rundown) return new Map()
 
-	const segmentsAndParts = getRundownsSegmentsAndPartsFromCache(cache.Parts, cache.Segments, {
-		// Feed fake data because we only care about the single rundown
-		rundownIdsInOrder: [cache.RundownId],
-	})
+	const segmentsAndParts = getOrderedSegmentsAndPartsFromCacheCollections(cache.Parts, cache.Segments, [
+		cache.RundownId,
+	])
 	const existingRundownParts = groupByToMap(segmentsAndParts.parts, 'segmentId')
 
 	const res = new Map<SegmentId, Array<{ id: PartId; rank: number }>>()

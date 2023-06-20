@@ -29,6 +29,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { TimelineDatastoreEntry } from '../../lib/collections/TimelineDatastore'
 import { PeripheralDevices, Studios, Timeline, TimelineDatastore } from '../collections'
+import { check } from 'meteor/check'
 
 meteorPublish(PubSub.timeline, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
@@ -55,6 +56,8 @@ meteorCustomPublish(
 	PubSub.timelineForDevice,
 	CustomCollectionName.StudioTimeline,
 	async function (pub, deviceId: PeripheralDeviceId, token) {
+		check(deviceId, String)
+
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
 			const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 
@@ -68,6 +71,8 @@ meteorCustomPublish(
 	}
 )
 meteorPublish(PubSub.timelineDatastoreForDevice, async function (deviceId, token) {
+	check(deviceId, String)
+
 	if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {
 		const peripheralDevice = await PeripheralDevices.findOneAsync(deviceId)
 

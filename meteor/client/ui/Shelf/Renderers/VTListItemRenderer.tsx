@@ -130,22 +130,17 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 					showMiniInspector={showMiniInspector}
 					timePosition={hoverScrubTimePosition}
 					content={vtContent}
-					floatingInspectorStyle={{
-						top: itemIconPosition?.top + 'px',
-						left: itemIconPosition?.left + 'px',
-						transform: 'translate(0, -100%)',
+					position={{
+						top: itemIconPosition?.top ?? 0,
+						left: itemIconPosition?.left ?? 0,
+						anchor: 'start',
+						position: 'top-start',
 					}}
 					typeClass={props.layer && RundownUtils.getSourceLayerClassName(props.layer.type)}
 					itemElement={itemIcon.current}
-					contentMetaData={props.metadata || null}
 					noticeMessages={props.messages || null}
-					noticeLevel={
-						props.status !== null && props.status !== undefined ? getNoticeLevelForPieceStatus(props.status) : null
-					}
-					mediaPreviewUrl={props.mediaPreviewUrl}
-					contentPackageInfos={props.packageInfos}
-					pieceId={props.adLibListItem._id}
-					expectedPackages={props.adLibListItem.expectedPackages}
+					noticeLevel={getNoticeLevelForPieceStatus(props.status ?? undefined)}
+					previewUrl={props.adLibListItem.contentStatus?.previewUrl}
 					studio={props.studio}
 				/>
 			</td>

@@ -143,14 +143,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 										/>
 									</Route>
 									<Route path={`${this.props.match.path}/layers`}>
-										<div className="row">
-											<div className="col c12 rl-c6">
-												<SourceLayerSettings showStyleBase={showStyleBase} />
-											</div>
-											<div className="col c12 rl-c6">
-												<OutputLayerSettings showStyleBase={showStyleBase} />
-											</div>
-										</div>
+										<>
+											<SourceLayerSettings showStyleBase={showStyleBase} />
+											<OutputLayerSettings showStyleBase={showStyleBase} />
+										</>
 									</Route>
 									<Route path={`${this.props.match.path}/action-triggers`}>
 										<TriggeredActionsEditor

@@ -114,7 +114,6 @@ describe('Test blueprint api context', () => {
 						externalId: '-',
 						enable: { start: 0 },
 						name: 'mock',
-						status: -1,
 						sourceLayerId: '',
 						outputLayerId: '',
 						startPartId: part._id,
@@ -231,11 +230,15 @@ describe('Test blueprint api context', () => {
 				return {
 					partInstanceId: info.partInstanceId,
 					rundownId: info.rundownId,
+					manuallySelected: false,
+					consumesNextSegmentId: false,
 				}
 			} else {
 				return {
 					partInstanceId: info._id,
 					rundownId: info.rundownId,
+					manuallySelected: false,
+					consumesNextSegmentId: false,
 				}
 			}
 		}
@@ -517,7 +520,6 @@ describe('Test blueprint api context', () => {
 							name: 'abc',
 							sourceLayerId: sourceLayerIds[0],
 							outputLayerId: '',
-							status: -1,
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							pieceType: IBlueprintPieceType.Normal,
@@ -552,7 +554,6 @@ describe('Test blueprint api context', () => {
 							name: 'abc',
 							sourceLayerId: sourceLayerIds[0],
 							outputLayerId: '',
-							status: -1,
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							pieceType: IBlueprintPieceType.Normal,
@@ -609,7 +610,6 @@ describe('Test blueprint api context', () => {
 							name: 'abc',
 							sourceLayerId: sourceLayerIds[0],
 							outputLayerId: '',
-							status: -1,
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							pieceType: IBlueprintPieceType.Normal,
@@ -633,7 +633,6 @@ describe('Test blueprint api context', () => {
 							name: 'abc',
 							sourceLayerId: sourceLayerIds[0],
 							outputLayerId: '',
-							status: -1,
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							pieceType: IBlueprintPieceType.Normal,
@@ -692,7 +691,6 @@ describe('Test blueprint api context', () => {
 							name: 'abc',
 							sourceLayerId: sourceLayerIds[0],
 							outputLayerId: '',
-							status: -1,
 							enable: { start: 0 },
 							lifespan: PieceLifespan.OutOnSegmentChange,
 							pieceType: IBlueprintPieceType.Normal,
@@ -715,7 +713,6 @@ describe('Test blueprint api context', () => {
 							name: 'abc',
 							sourceLayerId: sourceLayerIds[0],
 							outputLayerId: '',
-							status: -1,
 							enable: { start: 0 },
 							metaData: {
 								prop1: 'hello',
@@ -1438,6 +1435,8 @@ describe('Test blueprint api context', () => {
 						currentPartInfo: {
 							partInstanceId: protectString('abc'),
 							rundownId: protectString('def'),
+							manuallySelected: false,
+							consumesNextSegmentId: false,
 						},
 					},
 				})
@@ -1515,6 +1514,8 @@ describe('Test blueprint api context', () => {
 						currentPartInfo: {
 							partInstanceId: protectString('abc'),
 							rundownId: protectString('def'),
+							manuallySelected: false,
+							consumesNextSegmentId: false,
 						},
 					},
 				})

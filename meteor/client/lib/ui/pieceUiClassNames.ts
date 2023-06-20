@@ -51,11 +51,11 @@ export function pieceUiClassNames(
 		'next-is-touching': pieceInstance.cropped,
 
 		'source-missing':
-			innerPiece.status === PieceStatusCode.SOURCE_MISSING ||
-			innerPiece.status === PieceStatusCode.SOURCE_NOT_SET,
-		'source-broken': innerPiece.status === PieceStatusCode.SOURCE_BROKEN,
-		'source-not-ready': innerPiece.status === PieceStatusCode.SOURCE_NOT_READY,
-		'unknown-state': innerPiece.status === PieceStatusCode.UNKNOWN,
+			pieceInstance.contentStatus?.status === PieceStatusCode.SOURCE_MISSING ||
+			pieceInstance.contentStatus?.status === PieceStatusCode.SOURCE_NOT_SET,
+		'source-broken': pieceInstance.contentStatus?.status === PieceStatusCode.SOURCE_BROKEN,
+		'source-not-ready': pieceInstance.contentStatus?.status === PieceStatusCode.SOURCE_NOT_READY,
+		'unknown-state': pieceInstance.contentStatus?.status === PieceStatusCode.UNKNOWN,
 		disabled: pieceInstance.instance.disabled,
 
 		'invert-flash': highlight,

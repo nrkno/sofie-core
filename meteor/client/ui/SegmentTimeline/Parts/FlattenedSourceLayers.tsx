@@ -68,7 +68,6 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.El
 									onFollowLiveLine={props.onFollowLiveLine}
 									onClick={props.onPieceClick}
 									onDoubleClick={props.onPieceDoubleClick}
-									mediaPreviewUrl={props.mediaPreviewUrl}
 									piece={piece}
 									pieces={piecesForLayers.get(layer._id) ?? []}
 									layer={layer}

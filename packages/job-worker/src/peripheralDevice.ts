@@ -215,6 +215,7 @@ export async function listPlayoutDevices(
 		// Only expose a subset of the PeripheralDevice to the blueprints
 		return literal<Complete<IBlueprintPlayoutDevice>>({
 			deviceId: d._id,
+			deviceType: d.subType as TSR.DeviceType,
 			actions: parentDevice?.configManifest?.subdeviceManifest?.[d.subType]?.actions,
 		})
 	})

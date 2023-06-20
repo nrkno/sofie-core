@@ -27,6 +27,7 @@ import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids
 import { iconDragHandle } from '../../RundownList/icons'
 import { ShowStyleVariants } from '../../../collections'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 
 interface DraggableVariant {
 	id: ShowStyleVariantId
@@ -154,9 +155,9 @@ export const VariantListItem = ({
 				{isEdited && (
 					<tr className="expando-details hl">
 						<td colSpan={5}>
-							<div className="mod mvs mhs">
+							<div className="properties-grid">
 								<label className="field">
-									{t('Name')}
+									<LabelActual label={t('Name')} />
 									<EditAttribute
 										modifiedClassName="bghl"
 										attribute={'name'}
@@ -172,9 +173,9 @@ export const VariantListItem = ({
 								<div className="col c12 r1-c12 phs">
 									<h3 className="mhn">{t('Blueprint Configuration')}</h3>
 
-									<div className="mod mvs mhs">
+									<div className="properties-grid">
 										<label className="field">
-											{t('Config preset')}
+											<LabelActual label={t('Config preset')} />
 											{!showStyleVariant.blueprintConfigPresetId && (
 												<div className="error-notice inline">
 													{t('Config preset not set')} <FontAwesomeIcon icon={faExclamationTriangle} />

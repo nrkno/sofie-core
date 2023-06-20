@@ -19,6 +19,7 @@ import { UploadButton } from '../../../lib/uploadButton'
 import _ from 'underscore'
 import { Settings } from '../../../../lib/Settings'
 import { ShowStyleBases } from '../../../collections'
+import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 
 interface IHotkeyLegendSettingsProps {
 	showStyleBase: ShowStyleBase
@@ -240,50 +241,45 @@ export const HotkeyLegendSettings = withTranslation()(
 						{this.isItemEdited(item) && (
 							<tr className="expando-details hl">
 								<td colSpan={4}>
-									<div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Key')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'hotkeyLegend.' + index + '.key'}
-													obj={this.props.showStyleBase}
-													type="text"
-													collection={ShowStyleBases}
-													className="input text-input input-l"
-												></EditAttribute>
-											</label>
-										</div>
-										<div className="mod mvs mhs">
-											<label className="field">
-												{t('Value')}
-												<EditAttribute
-													modifiedClassName="bghl"
-													attribute={'hotkeyLegend.' + index + '.label'}
-													obj={this.props.showStyleBase}
-													type="text"
-													collection={ShowStyleBases}
-													className="input text-input input-l"
-												></EditAttribute>
-											</label>
-										</div>
+									<div className="properties-grid">
+										<label className="field">
+											<LabelActual label={t('Key')} />
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={'hotkeyLegend.' + index + '.key'}
+												obj={this.props.showStyleBase}
+												type="text"
+												collection={ShowStyleBases}
+												className="input text-input input-l"
+											></EditAttribute>
+										</label>
+										<label className="field">
+											<LabelActual label={t('Value')} />
+											<EditAttribute
+												modifiedClassName="bghl"
+												attribute={'hotkeyLegend.' + index + '.label'}
+												obj={this.props.showStyleBase}
+												type="text"
+												collection={ShowStyleBases}
+												className="input text-input input-l"
+											></EditAttribute>
+										</label>
 										{Settings.enableKeyboardPreview && (
 											<>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Host Key')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={'hotkeyLegend.' + index + '.platformKey'}
-															obj={this.props.showStyleBase}
-															type="text"
-															collection={ShowStyleBases}
-															className="input text-input input-l"
-														></EditAttribute>
-													</label>
-												</div>
-												<div className="mod mvs mhs">
-													<label className="field">{t('Source Layer type')}</label>
+												<label className="field">
+													<LabelActual label={t('Host Key')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={'hotkeyLegend.' + index + '.platformKey'}
+														obj={this.props.showStyleBase}
+														type="text"
+														collection={ShowStyleBases}
+														className="input text-input input-l"
+													></EditAttribute>
+												</label>
+
+												<label className="field">
+													<LabelActual label={t('Source Layer type')} />
 													<EditAttribute
 														modifiedClassName="bghl"
 														attribute={'hotkeyLegend.' + index + '.sourceLayerType'}
@@ -295,21 +291,20 @@ export const HotkeyLegendSettings = withTranslation()(
 														className="input text-input input-l dropdown"
 														mutateUpdateValue={(v) => (v ? v : undefined)}
 													/>
-												</div>
-												<div className="mod mvs mhs">
-													<label className="field">
-														{t('Key color')}
-														<EditAttribute
-															modifiedClassName="bghl"
-															attribute={'hotkeyLegend.' + index + '.buttonColor'}
-															obj={this.props.showStyleBase}
-															options={defaultColorPickerPalette}
-															type="colorpicker"
-															collection={ShowStyleBases}
-															className="input text-input input-s"
-														></EditAttribute>
-													</label>
-												</div>
+												</label>
+
+												<label className="field">
+													<LabelActual label={t('Key color')} />
+													<EditAttribute
+														modifiedClassName="bghl"
+														attribute={'hotkeyLegend.' + index + '.buttonColor'}
+														obj={this.props.showStyleBase}
+														options={defaultColorPickerPalette}
+														type="colorpicker"
+														collection={ShowStyleBases}
+														className="input text-input input-s"
+													></EditAttribute>
+												</label>
 											</>
 										)}
 									</div>

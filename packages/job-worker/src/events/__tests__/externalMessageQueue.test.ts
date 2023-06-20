@@ -41,10 +41,14 @@ describe('Test external message queue static methods', () => {
 			currentPartInfo: {
 				partInstanceId: protectString('part_now'),
 				rundownId: protectString('rundown_1'),
+				manuallySelected: false,
+				consumesNextSegmentId: false,
 			},
 			nextPartInfo: {
 				partInstanceId: protectString('partNext'),
 				rundownId: protectString('rundown_1'),
+				manuallySelected: false,
+				consumesNextSegmentId: false,
 			},
 			previousPartInfo: null,
 			activationId: protectString('active'),
@@ -180,10 +184,14 @@ describe('Test sending messages to mocked endpoints', () => {
 			currentPartInfo: {
 				partInstanceId: protectString('part_now'),
 				rundownId: rundownId,
+				manuallySelected: false,
+				consumesNextSegmentId: false,
 			},
 			nextPartInfo: {
 				partInstanceId: protectString('partNext'),
 				rundownId: rundownId,
+				manuallySelected: false,
+				consumesNextSegmentId: false,
 			},
 			previousPartInfo: null,
 			activationId: protectString('active'),

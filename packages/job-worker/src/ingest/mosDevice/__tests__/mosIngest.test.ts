@@ -100,7 +100,7 @@ describe('Test recieved mos ingest payloads', () => {
 		const rawSegments = await context.mockCollections.Segments.findFetch({ rundownId: rundown._id })
 		const rawParts = await context.mockCollections.Parts.findFetch({ rundownId: rundown._id })
 
-		const segments = sortSegmentsInRundowns(rawSegments, { rundownIdsInOrder: [rundown._id] })
+		const segments = sortSegmentsInRundowns(rawSegments, [rundown._id])
 		const parts = sortPartsInSortedSegments(rawParts, segments)
 
 		return {
@@ -1237,6 +1237,9 @@ describe('Test recieved mos ingest payloads', () => {
 			expect(fixSnapshot(segments)).toMatchObject(fixSnapshot(segments0) || [])
 			expect(fixSnapshot(parts)).toMatchObject(fixSnapshot(parts0) || [])
 			expect(fixSnapshot(partInstances)).toMatchObject(fixSnapshot(partInstances0) || [])
+		} catch (e) {
+			console.error(e)
+			throw e
 		} finally {
 			// cleanup
 			await handleDeactivateRundownPlaylist(context, {

@@ -25,6 +25,7 @@ import { RundownContentObserver } from './rundownContentObserver'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { generateNotesForSegment } from './generateNotesForSegment'
 import { RundownPlaylists } from '../../collections'
+import { check, Match } from 'meteor/check'
 
 interface UISegmentPartNotesArgs {
 	readonly playlistId: RundownPlaylistId
@@ -203,6 +204,8 @@ meteorCustomPublish(
 	PubSub.uiSegmentPartNotes,
 	CustomCollectionName.UISegmentPartNotes,
 	async function (pub, playlistId: RundownPlaylistId | null) {
+		check(playlistId, Match.Maybe(String))
+
 		const cred = await resolveCredentials({ userId: this.userId, token: undefined })
 
 		if (

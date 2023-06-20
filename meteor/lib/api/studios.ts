@@ -1,11 +1,5 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import {
-	IStudioSettings,
-	MappingsExt,
-	StudioPackageContainer,
-	StudioRouteSet,
-	StudioRouteSetExclusivityGroup,
-} from '../collections/Studios'
+import { IStudioSettings, MappingsExt, StudioRouteSet, StudioRouteSetExclusivityGroup } from '../collections/Studios'
 
 export interface NewStudiosAPI {
 	insertStudio(): Promise<StudioId>
@@ -35,12 +29,4 @@ export interface UIStudio {
 
 	routeSets: Record<string, StudioRouteSet>
 	routeSetExclusivityGroups: Record<string, StudioRouteSetExclusivityGroup>
-
-	/** Contains settings for which Package Containers are present in the studio.
-	 * (These are used by the Package Manager and the Expected Packages)
-	 */
-	packageContainers: Record<string, StudioPackageContainer>
-	/** Which package containers is used for media previews in GUI */
-	previewContainerIds: string[]
-	thumbnailContainerIds: string[]
 }

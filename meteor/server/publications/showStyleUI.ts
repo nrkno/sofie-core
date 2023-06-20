@@ -14,6 +14,7 @@ import { OrganizationReadAccess } from '../security/organization'
 import { ShowStyleReadAccess } from '../security/showStyle'
 import { ShowStyleBases } from '../collections'
 import { AutoFillSelector } from './lib'
+import { check } from 'meteor/check'
 
 interface UIShowStyleBaseArgs {
 	readonly showStyleBaseId: ShowStyleBaseId
@@ -85,6 +86,8 @@ meteorCustomPublish(
 	PubSub.uiShowStyleBase,
 	CustomCollectionName.UIShowStyleBase,
 	async function (pub, showStyleBaseId: ShowStyleBaseId) {
+		check(showStyleBaseId, String)
+
 		const { cred, selector } = await AutoFillSelector.organizationId<ShowStyleBase>(
 			this.userId,
 			{ _id: showStyleBaseId },

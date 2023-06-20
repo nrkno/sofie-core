@@ -18,6 +18,7 @@ import { resolveCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { StudioReadAccess } from '../security/studio'
 import { Studios } from '../collections'
+import { check, Match } from 'meteor/check'
 
 interface UIStudioArgs {
 	readonly studioId: StudioId | null
@@ -39,22 +40,10 @@ function convertDocument(studio: Pick<DBStudio, StudioFields>): UIStudio {
 
 		routeSets: studio.routeSets,
 		routeSetExclusivityGroups: studio.routeSetExclusivityGroups,
-		packageContainers: studio.packageContainers,
-		previewContainerIds: studio.previewContainerIds,
-		thumbnailContainerIds: studio.thumbnailContainerIds,
 	})
 }
 
-type StudioFields =
-	| '_id'
-	| 'name'
-	| 'mappingsWithOverrides'
-	| 'settings'
-	| 'routeSets'
-	| 'routeSetExclusivityGroups'
-	| 'packageContainers'
-	| 'previewContainerIds'
-	| 'thumbnailContainerIds'
+type StudioFields = '_id' | 'name' | 'mappingsWithOverrides' | 'settings' | 'routeSets' | 'routeSetExclusivityGroups'
 const fieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
 	_id: 1,
 	name: 1,
@@ -62,9 +51,6 @@ const fieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
 	settings: 1,
 	routeSets: 1,
 	routeSetExclusivityGroups: 1,
-	packageContainers: 1,
-	previewContainerIds: 1,
-	thumbnailContainerIds: 1,
 })
 
 async function setupUIStudioPublicationObservers(
@@ -134,6 +120,8 @@ async function manipulateUIStudioPublicationData(
 }
 
 meteorCustomPublish(PubSub.uiStudio, CustomCollectionName.UIStudio, async function (pub, studioId: StudioId | null) {
+	check(studioId, Match.Maybe(String))
+
 	const cred = await resolveCredentials({ userId: this.userId, token: undefined })
 
 	if (!cred || NoSecurityReadAccess.any() || (studioId && (await StudioReadAccess.studio(studioId, cred)))) {

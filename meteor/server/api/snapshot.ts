@@ -1,8 +1,10 @@
 import * as Path from 'path'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { ServerResponse, IncomingMessage } from 'http'
-import { check, Match } from '../../lib/check'
+import Koa from 'koa'
+import KoaRouter from '@koa/router'
+import bodyParser from 'koa-bodyparser'
+import { check } from '../../lib/check'
 import { Studio } from '../../lib/collections/Studios'
 import {
 	SnapshotType,
@@ -48,9 +50,8 @@ import { Settings } from '../../lib/Settings'
 import { MethodContext, MethodContextAPI } from '../../lib/api/methods'
 import { Credentials, isResolvedCredentials } from '../security/lib/credentials'
 import { OrganizationContentWriteAccess } from '../security/organization'
-import { StudioContentWriteAccess, StudioReadAccess } from '../security/studio'
+import { StudioContentWriteAccess } from '../security/studio'
 import { SystemWriteAccess } from '../security/system'
-import { PickerPOST, PickerGET } from './http'
 import { saveIntoDb, sumChanges } from '../lib/database'
 import * as fs from 'fs'
 import { ExpectedPackageWorkStatus } from '../../lib/collections/ExpectedPackageWorkStatuses'
@@ -94,6 +95,7 @@ import {
 } from '../collections'
 import { getCoreSystemAsync } from '../coreSystem/collection'
 import { executePeripheralDeviceFunction } from './peripheralDevice/executeFunction'
+import { verifyHashedToken } from './singleUseTokens'
 
 interface RundownPlaylistSnapshot extends CoreRundownPlaylistSnapshot {
 	versionExtended: string | undefined
@@ -422,29 +424,6 @@ async function createRundownPlaylistSnapshot(
 	}
 }
 
-// Setup endpoints:
-async function handleResponse(response: ServerResponse, snapshotFcn: () => Promise<{ snapshot: SnapshotBase }>) {
-	try {
-		const s: any = await snapshotFcn()
-		response.setHeader('Content-Type', 'application/json')
-		response.setHeader(
-			'Content-Disposition',
-			`attachment; filename*=UTF-8''${encodeURIComponent(s.snapshot.name)}.json`
-		)
-
-		const content = _.isString(s) ? s : JSON.stringify(s, null, 4)
-		response.statusCode = 200
-		response.end(content)
-	} catch (e) {
-		response.setHeader('Content-Type', 'text/plain')
-		response.statusCode = e instanceof Meteor.Error && typeof e.error === 'number' ? e.error : 500
-		response.end('Error: ' + stringifyError(e))
-
-		if (response.statusCode !== 404) {
-			logger.error(stringifyError(e))
-		}
-	}
-}
 async function storeSnaphot(
 	snapshot: { snapshot: SnapshotBase },
 	organizationId: OrganizationId | null,
@@ -612,10 +591,16 @@ async function restoreFromSystemSnapshot(snapshot: SystemSnapshot): Promise<void
 /** Take and store a system snapshot */
 export async function storeSystemSnapshot(
 	context: MethodContext,
+	hashedToken: string,
 	studioId: StudioId | null,
 	reason: string
 ): Promise<SnapshotId> {
+	check(hashedToken, String)
 	if (!_.isNull(studioId)) check(studioId, String)
+	if (!verifyHashedToken(hashedToken)) {
+		throw new Meteor.Error(401, `Restart token is invalid or has expired`)
+	}
+
 	const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(context)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
@@ -635,9 +620,15 @@ export async function internalStoreSystemSnapshot(
 }
 export async function storeRundownPlaylistSnapshot(
 	access: VerifiedRundownPlaylistContentAccess,
+	hashedToken: string,
 	reason: string,
 	full?: boolean
 ): Promise<SnapshotId> {
+	check(hashedToken, String)
+	if (!verifyHashedToken(hashedToken)) {
+		throw new Meteor.Error(401, `Restart token is invalid or has expired`)
+	}
+
 	const s = await createRundownPlaylistSnapshot(access.playlist, full)
 	return storeSnaphot(s, access.organizationId, reason)
 }
@@ -651,10 +642,16 @@ export async function internalStoreRundownPlaylistSnapshot(
 }
 export async function storeDebugSnapshot(
 	context: MethodContext,
+	hashedToken: string,
 	studioId: StudioId,
 	reason: string
 ): Promise<SnapshotId> {
 	check(studioId, String)
+	check(hashedToken, String)
+	if (!verifyHashedToken(hashedToken)) {
+		throw new Meteor.Error(401, `Restart token is invalid or has expired`)
+	}
+
 	const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(context)
 	if (Settings.enableUserAccounts && isResolvedCredentials(cred)) {
 		if (cred.user && !cred.user.superAdmin) throw new Meteor.Error(401, 'Only Super Admins can store Snapshots')
@@ -700,115 +697,96 @@ export async function removeSnapshot(context: MethodContext, snapshotId: Snapsho
 	}
 	await Snapshots.removeAsync(snapshot._id)
 }
-if (!Settings.enableUserAccounts) {
-	// For backwards compatibility:
 
-	PickerGET.route('/snapshot/system/:studioId', async (params, _req: IncomingMessage, response: ServerResponse) => {
-		return handleResponse(response, async () => {
-			check(params.studioId, Match.Optional(String))
+export const snapshotPrivateApiRouter = new KoaRouter()
 
-			const cred0: Credentials = { userId: null, token: params.token }
-			const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(cred0)
-			await StudioReadAccess.studio(protectString(params.studioId), cred)
-
-			return createSystemSnapshot(protectString(params.studioId), organizationId)
-		})
-	})
-	async function createRundownSnapshot(response: ServerResponse, params) {
-		return handleResponse(response, async () => {
-			check(params.playlistId, String)
-			check(params.full, Match.Optional(String))
-
-			const cred0: Credentials = { userId: null, token: params.token }
-			const { cred } = await OrganizationContentWriteAccess.snapshot(cred0)
-			const playlist = await RundownPlaylists.findOneAsync(protectString(params.playlistId))
-			if (!playlist) throw new Meteor.Error(404, `RundownPlaylist "${params.playlistId}" not found`)
-			await StudioReadAccess.studioContent(playlist.studioId, cred)
-
-			return createRundownPlaylistSnapshot(playlist, params.full === 'true')
-		})
-	}
-	PickerGET.route('/snapshot/rundown/:playlistId', async (params, _req: IncomingMessage, response: ServerResponse) =>
-		createRundownSnapshot(response, params)
-	)
-	PickerGET.route(
-		'/snapshot/rundown/:playlistId/:full',
-		async (params, _req: IncomingMessage, response: ServerResponse) => createRundownSnapshot(response, params)
-	)
-	PickerGET.route('/snapshot/debug/:studioId', async (params, _req: IncomingMessage, response: ServerResponse) => {
-		return handleResponse(response, async () => {
-			check(params.studioId, String)
-
-			const cred0: Credentials = { userId: null, token: params.token }
-			const { organizationId, cred } = await OrganizationContentWriteAccess.snapshot(cred0)
-			await StudioReadAccess.studio(protectString(params.studioId), cred)
-
-			return createDebugSnapshot(protectString(params.studioId), organizationId)
-		})
-	})
-}
-PickerPOST.route('/snapshot/restore', async (_params, req: IncomingMessage, response: ServerResponse) => {
-	const content = 'ok'
+// Setup endpoints:
+async function handleKoaResponse(
+	ctx: Koa.ParameterizedContext,
+	snapshotFcn: () => Promise<{ snapshot: SnapshotBase }>
+) {
 	try {
-		response.setHeader('Content-Type', 'text/plain')
-		let snapshot = req.body as any
-		if (!snapshot) throw new Meteor.Error(400, 'Restore Snapshot: Missing request body')
+		const snapshot = await snapshotFcn()
 
-		if (typeof snapshot !== 'object') {
-			// sometimes, the browser can send the JSON with wrong mimetype, resulting in it not being parsed
-			snapshot = JSON.parse(snapshot)
-		}
-
-		await restoreFromSnapshot(snapshot)
-
-		response.statusCode = 200
-		response.end(content)
+		ctx.response.type = 'application/json'
+		ctx.response.attachment(`${snapshot.snapshot.name}.json`)
+		ctx.response.status = 200
+		ctx.response.body = JSON.stringify(snapshot, null, 4)
 	} catch (e) {
-		response.setHeader('Content-Type', 'text/plain')
-		response.statusCode = e instanceof Meteor.Error && typeof e.error === 'number' ? e.error : 500
-		response.end('Error: ' + stringifyError(e))
+		ctx.response.type = 'text/plain'
+		ctx.response.status = e instanceof Meteor.Error && typeof e.error === 'number' ? e.error : 500
+		ctx.response.body = 'Error: ' + stringifyError(e)
 
-		if (response.statusCode !== 404) {
+		if (ctx.response.status !== 404) {
 			logger.error(stringifyError(e))
 		}
 	}
-})
-if (!Settings.enableUserAccounts) {
-	// For backwards compatibility:
+}
 
-	// Retrieve snapshot:
-	PickerGET.route(
-		'/snapshot/retrieve/:snapshotId',
-		async (params, _req: IncomingMessage, response: ServerResponse) => {
-			return handleResponse(response, async () => {
-				check(params.snapshotId, String)
-				return retreiveSnapshot(protectString(params.snapshotId), { userId: null })
-			})
+// For backwards compatibility:
+if (!Settings.enableUserAccounts) {
+	snapshotPrivateApiRouter.post(
+		'/restore',
+		bodyParser({
+			jsonLimit: '200mb', // Arbitrary limit
+		}),
+		async (ctx) => {
+			const content = 'ok'
+			try {
+				ctx.response.type = 'text/plain'
+
+				if (ctx.request.type !== 'application/json')
+					throw new Meteor.Error(400, 'Restore Snapshot: Invalid content-type')
+
+				const snapshot = ctx.request.body as any
+				if (!snapshot) throw new Meteor.Error(400, 'Restore Snapshot: Missing request body')
+
+				await restoreFromSnapshot(snapshot)
+
+				ctx.response.status = 200
+				ctx.response.body = content
+			} catch (e) {
+				ctx.response.type = 'text/plain'
+				ctx.response.status = e instanceof Meteor.Error && typeof e.error === 'number' ? e.error : 500
+				ctx.response.body = 'Error: ' + stringifyError(e)
+
+				if (ctx.response.status !== 404) {
+					logger.error(stringifyError(e))
+				}
+			}
 		}
 	)
-}
-// Retrieve snapshot:
-PickerGET.route(
-	'/snapshot/:token/retrieve/:snapshotId',
-	async (params, _req: IncomingMessage, response: ServerResponse) => {
-		return handleResponse(response, async () => {
-			check(params.snapshotId, String)
-			return retreiveSnapshot(protectString(params.snapshotId), { userId: null, token: params.token })
+
+	// Retrieve snapshot:
+	snapshotPrivateApiRouter.get('/retrieve/:snapshotId', async (ctx) => {
+		return handleKoaResponse(ctx, async () => {
+			const snapshotId = ctx.params.snapshotId
+			check(snapshotId, String)
+			return retreiveSnapshot(protectString(snapshotId), { userId: null })
 		})
-	}
-)
+	})
+}
+
+// Retrieve snapshot:
+snapshotPrivateApiRouter.get('/:token/retrieve/:snapshotId', async (ctx) => {
+	return handleKoaResponse(ctx, async () => {
+		const snapshotId = ctx.params.snapshotId
+		check(snapshotId, String)
+		return retreiveSnapshot(protectString(snapshotId), { userId: null, token: ctx.params.token })
+	})
+})
 
 class ServerSnapshotAPI extends MethodContextAPI implements NewSnapshotAPI {
-	async storeSystemSnapshot(studioId: StudioId | null, reason: string) {
-		return storeSystemSnapshot(this, studioId, reason)
+	async storeSystemSnapshot(hashedToken: string, studioId: StudioId | null, reason: string) {
+		return storeSystemSnapshot(this, hashedToken, studioId, reason)
 	}
-	async storeRundownPlaylist(playlistId: RundownPlaylistId, reason: string) {
+	async storeRundownPlaylist(hashedToken: string, playlistId: RundownPlaylistId, reason: string) {
 		check(playlistId, String)
 		const access = await checkAccessToPlaylist(this, playlistId)
-		return storeRundownPlaylistSnapshot(access, reason)
+		return storeRundownPlaylistSnapshot(access, hashedToken, reason)
 	}
-	async storeDebugSnapshot(studioId: StudioId, reason: string) {
-		return storeDebugSnapshot(this, studioId, reason)
+	async storeDebugSnapshot(hashedToken: string, studioId: StudioId, reason: string) {
+		return storeDebugSnapshot(this, hashedToken, studioId, reason)
 	}
 	async restoreSnapshot(snapshotId: SnapshotId) {
 		return restoreSnapshot(this, snapshotId)

@@ -23,6 +23,7 @@ import * as crypto from 'crypto'
 import * as cp from 'child_process'
 
 import * as _ from 'underscore'
+import { Observer } from '@sofie-automation/server-core-integration'
 import { Logger } from 'winston'
 import { disableAtemUpload } from './config'
 import Debug from 'debug'
@@ -98,7 +99,7 @@ export class TSRHandler {
 	private _coreHandler!: CoreHandler
 	private _triggerupdateExpectedPlayoutItemsTimeout: any = null
 	private _coreTsrHandlers: { [deviceId: string]: CoreTSRDeviceHandler } = {}
-	private _observers: Array<any> = []
+	private _observers: Array<Observer> = []
 	private _cachedStudioId: StudioId | null = null
 
 	private _initialized = false
@@ -321,6 +322,14 @@ export class TSRHandler {
 		})
 	}
 	async destroy(): Promise<void> {
+		if (this._observers.length) {
+			this.logger.debug('Clearing observers..')
+			this._observers.forEach((obs) => {
+				obs.stop()
+			})
+			this._observers = []
+		}
+
 		return this.tsr.destroy()
 	}
 	getTimeline(): RoutedTimeline | undefined {

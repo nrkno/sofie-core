@@ -2,7 +2,7 @@ import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { PartInstanceId, PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { EmptyPieceTimelineObjectsBlob, Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { EmptyPieceTimelineObjectsBlob, Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceInstance, rewrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { assertNever, getRandomId, getRank } from '@sofie-automation/corelib/dist/lib'
@@ -20,11 +20,11 @@ import { convertAdLibToPieceInstance, getResolvedPieces, setupPieceInstanceInfin
 import { updateTimeline } from './timeline/generate'
 import { PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { logger } from 'elastic-apm-node'
 import { updatePartInstanceRanksAfterAdlib } from '../rundown'
-import { selectNextPart } from './lib'
+import { selectNextPart } from './selectNextPart'
 import { setNextPart } from './setNext'
 import { calculateNowOffsetLatency } from './timeline/multi-gateway'
+import { logger } from '../logging'
 
 export async function innerStartOrQueueAdLibPiece(
 	context: JobContext,
@@ -260,7 +260,7 @@ export async function innerStartQueuedAdLib(
 		cache.PieceInstances.insert(pieceInstance)
 	}
 
-	await setNextPart(context, cache, newPartInstance)
+	await setNextPart(context, cache, newPartInstance, false)
 
 	if (span) span.end()
 }
@@ -358,7 +358,6 @@ export function innerStopPieces(
 								invalid: false,
 								name: '',
 								startPartId: currentPartInstance.part._id,
-								status: PieceStatusCode.UNKNOWN,
 								pieceType: IBlueprintPieceType.Normal,
 								virtual: true,
 								content: {},

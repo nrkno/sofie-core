@@ -1,68 +1,70 @@
-import { IncomingMessage, ServerResponse } from 'http'
 import { postHandler } from './postHandler'
 import { deleteMessage, readAllMessages } from './serviceMessagesApi'
-import { PickerPOST, PickerGET, PickerDELETE } from '../http'
+import KoaRouter from '@koa/router'
+import { Meteor } from 'meteor/meteor'
+import { bindKoaRouter } from '../rest/koa'
+import bodyParser from 'koa-bodyparser'
 
-PickerPOST.route('/serviceMessages', postHandler)
+const serviceMessagesRouter = new KoaRouter()
 
-PickerGET.route('/serviceMessages', getHandler)
-PickerGET.route('/serviceMessages/:id', getMessageHandler)
-
-PickerDELETE.route('/serviceMessages/:id', deleteHandler)
+serviceMessagesRouter.post('/', bodyParser(), postHandler)
 
 /**
  * List all current messages stored on this instance
  */
-async function getHandler(_params, _req: IncomingMessage, res: ServerResponse) {
+serviceMessagesRouter.get('/', async function getHandler(ctx) {
 	try {
 		const valuesArray = await readAllMessages()
-		res.setHeader('Content-Type', 'application/json; charset-utf8')
-		res.end(JSON.stringify(valuesArray), 'utf-8')
+		ctx.response.type = 'application/json;charset=utf8'
+		ctx.body = JSON.stringify(valuesArray)
 	} catch (error) {
-		res.statusCode = 500
-		res.end('Unable to list service messages')
-		return
+		ctx.response.status = 500
+		ctx.body = 'Unable to list service messages'
 	}
-}
+})
 
 /**
  * Delete a message
  */
-async function deleteHandler(params, _req: IncomingMessage, res: ServerResponse) {
-	const { id } = params
+serviceMessagesRouter.delete('/:id', async function deleteHandler(ctx) {
+	const { id } = ctx.params
 	try {
 		const allMessages = await readAllMessages()
 		if (allMessages.find((m) => m.id === id)) {
 			const deleted = await deleteMessage(id)
-			res.setHeader('Content-Type', 'application/json; charset-utf8')
-			res.end(JSON.stringify(deleted), 'utf-8')
+			ctx.response.type = 'application/json;charset=utf8'
+			ctx.body = JSON.stringify(deleted)
 		} else {
-			res.statusCode = 404
-			res.end(`Message with id ${id} can not be found`)
+			ctx.response.status = 404
+			ctx.body = `Message with id ${id} can not be found`
 		}
 	} catch (error) {
-		res.statusCode = 500
-		res.end(`Unable to delete service message ${id}`)
+		ctx.response.status = 500
+		ctx.body = `Unable to delete service message ${id}`
 	}
-}
+})
 
 /**
  * Retrieves a single message based on a given id
  */
-async function getMessageHandler(params, _req: IncomingMessage, res: ServerResponse) {
-	const { id } = params
+serviceMessagesRouter.delete('/:id', async function getMessageHandler(ctx) {
+	const { id } = ctx.params
 	try {
 		const allMessages = await readAllMessages()
 		const message = allMessages.find((m) => m.id === id)
 		if (message) {
-			res.setHeader('Content-Type', 'application/json; charset-utf8')
-			res.end(JSON.stringify(message), 'utf-8')
+			ctx.response.type = 'application/json;charset=utf8'
+			ctx.body = JSON.stringify(message)
 		} else {
-			res.statusCode = 404
-			res.end(`Message with id ${id} can not be found`)
+			ctx.response.status = 404
+			ctx.body = `Message with id ${id} can not be found`
 		}
 	} catch (error) {
-		res.statusCode = 500
-		res.end(`Unable to retrieve service message ${id}`)
+		ctx.response.status = 500
+		ctx.body = `Unable to retrieve service message ${id}`
 	}
-}
+})
+
+Meteor.startup(() => {
+	bindKoaRouter(serviceMessagesRouter, '/serviceMessages')
+})

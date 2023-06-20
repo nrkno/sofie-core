@@ -7,13 +7,13 @@ import { PieceInstance } from '../../lib/collections/PieceInstances'
 import { RundownBaselineAdLibAction } from '../../lib/collections/RundownBaselineAdLibActions'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { DBSegment } from '../../lib/collections/Segments'
-import { ScanInfoForPackages } from '../../lib/mediaObjects'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 import { getUnfinishedPieceInstancesReactive } from './rundownLayouts'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { PieceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { PieceInstances } from '../collections'
+import { ReadonlyDeep } from 'type-fest'
+import { PieceContentStatusObj } from '../../lib/mediaObjects'
 
 export interface ShelfDisplayOptions {
 	enableBuckets: boolean
@@ -32,10 +32,9 @@ export interface AdLibPieceUi extends Omit<AdLibPiece, 'timelineObjectsString'> 
 	isClearSourceLayer?: boolean
 	disabled?: boolean
 	adlibAction?: AdLibAction | RundownBaselineAdLibAction
-	contentMetaData?: any
-	contentPackageInfos?: ScanInfoForPackages
-	messages?: ITranslatableMessage[]
 	segmentId?: SegmentId
+
+	contentStatus?: ReadonlyDeep<PieceContentStatusObj>
 }
 
 export interface AdlibSegmentUi extends DBSegment {

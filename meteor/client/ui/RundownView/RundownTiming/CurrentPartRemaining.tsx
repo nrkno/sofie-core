@@ -32,8 +32,9 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 		render(): JSX.Element | null {
 			if (!this.props.timingDurations || !this.props.timingDurations.currentTime) return null
 			if (this.props.timingDurations.currentPartInstanceId !== this.props.currentPartInstanceId) return null
-			const displayTimecode = this.props.timingDurations.remainingTimeOnCurrentPart
+			let displayTimecode = this.props.timingDurations.remainingTimeOnCurrentPart
 			if (displayTimecode === undefined) return null
+			displayTimecode *= -1
 			return (
 				<span
 					className={ClassNames(
@@ -108,7 +109,7 @@ export const CurrentPartRemaining = withTiming<IPartRemainingProps, {}>({
 
 		act() {
 			// Note that the displayTime is negative when counting down to 0.
-			let displayTime = this.props.timingDurations.remainingTimeOnCurrentPart || 0
+			let displayTime = (this.props.timingDurations.remainingTimeOnCurrentPart || 0) * -1
 
 			if (displayTime === 0) {
 				// do nothing

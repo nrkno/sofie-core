@@ -21,6 +21,7 @@ import { SchemaFormCommonProps, SchemaFormSofieEnumDefinition, translateStringIf
 import { MultiSelectInputControl } from '../Components/MultiSelectInput'
 import { SchemaFormObjectTable } from './SchemaFormTable/ObjectTable'
 import { SchemaFormUIField } from '@sofie-automation/blueprints-integration'
+import { SchemaFormSectionHeader } from './SchemaFormSectionHeader'
 
 interface SchemaFormWithOverridesProps extends SchemaFormCommonProps {
 	/** Base path of the schema within the document */
@@ -147,9 +148,16 @@ const ArrayFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 }
 
 const ObjectFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
+	const title = props.schema[SchemaFormUIField.Title]
+	const description = props.schema[SchemaFormUIField.Description]
+
 	return (
 		<>
-			{' '}
+			<SchemaFormSectionHeader
+				title={title}
+				description={description}
+				translationNamespaces={props.translationNamespaces}
+			/>{' '}
 			{Object.entries<JSONSchema>(props.schema.properties || {}).map(([index, schema]) => {
 				const path = joinObjectPathFragments(props.attr, index)
 				return (
@@ -223,7 +231,7 @@ interface EnumFormControlWrapperProps extends FormComponentProps {
 }
 const EnumFormControlWrapper = ({ commonAttrs, multiple, options }: EnumFormControlWrapperProps) => {
 	return (
-		<div className="mod mvs mhs">
+		<>
 			<LabelAndOverridesForDropdown {...commonAttrs} options={options}>
 				{(value, handleUpdate, options) => {
 					if (multiple) {
@@ -247,7 +255,7 @@ const EnumFormControlWrapper = ({ commonAttrs, multiple, options }: EnumFormCont
 					}
 				}}
 			</LabelAndOverridesForDropdown>
-		</div>
+		</>
 	)
 }
 
@@ -255,7 +263,7 @@ const IntegerFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) =
 	const zeroBased = !!schema[SchemaFormUIField.ZeroBased]
 
 	return (
-		<div className="mod mvs mhs">
+		<>
 			<LabelAndOverridesForInt {...commonAttrs} zeroBased={zeroBased}>
 				{(value, handleUpdate) => (
 					<IntInputControl
@@ -270,13 +278,13 @@ const IntegerFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) =
 					/>
 				)}
 			</LabelAndOverridesForInt>
-		</div>
+		</>
 	)
 }
 
 const NumberFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
 	return (
-		<div className="mod mvs mhs">
+		<>
 			<LabelAndOverrides {...commonAttrs}>
 				{(value, handleUpdate) => (
 					<FloatInputControl
@@ -290,25 +298,25 @@ const NumberFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) =>
 					/>
 				)}
 			</LabelAndOverrides>
-		</div>
+		</>
 	)
 }
 
 const BooleanFormWithOverrides = ({ commonAttrs }: FormComponentProps) => {
 	return (
-		<div className="mod mvs mhs">
+		<>
 			<LabelAndOverridesForCheckbox {...commonAttrs}>
 				{(value, handleUpdate) => (
 					<CheckboxControl classNames="input" value={value ?? false} handleUpdate={handleUpdate} />
 				)}
 			</LabelAndOverridesForCheckbox>
-		</div>
+		</>
 	)
 }
 
 const StringFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
 	return (
-		<div className="mod mvs mhs">
+		<>
 			<LabelAndOverrides {...commonAttrs}>
 				{(value, handleUpdate) => (
 					<TextInputControl
@@ -320,13 +328,13 @@ const StringFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) =>
 					/>
 				)}
 			</LabelAndOverrides>
-		</div>
+		</>
 	)
 }
 
 const StringArrayFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
 	return (
-		<div className="mod mvs mhs">
+		<>
 			<LabelAndOverrides {...commonAttrs}>
 				{(value, handleUpdate) => (
 					<MultiLineTextInputControl
@@ -338,13 +346,13 @@ const StringArrayFormWithOverrides = ({ schema, commonAttrs }: FormComponentProp
 					/>
 				)}
 			</LabelAndOverrides>
-		</div>
+		</>
 	)
 }
 
 const JsonFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
 	return (
-		<div className="mod mvs mhs">
+		<>
 			<LabelAndOverrides {...commonAttrs}>
 				{(value, handleUpdate) => (
 					<JsonTextInputControl
@@ -356,6 +364,6 @@ const JsonFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
 					/>
 				)}
 			</LabelAndOverrides>
-		</div>
+		</>
 	)
 }

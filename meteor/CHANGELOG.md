@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file. See [standa
 ## [1.49.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.2...v1.49.0-in-testing.3) (2023-04-18)
 
 
+## [1.47.4](https://github.com/nrkno/sofie-core/compare/v1.47.3...v1.47.4) (2023-06-13)
+
+
+### Bug Fixes
+
+* `Reload NRCS Data` in warning notification broken ([8cb1fca](https://github.com/nrkno/sofie-core/commit/8cb1fcac573a083d1d0f4e78fec1254766fb3eb7))
+* `RundownPlaylist.lastTakeTime` property not be set during a take SOFIE-2272 ([85c43b7](https://github.com/nrkno/sofie-core/commit/85c43b7c93e52f81a92d6173f2ec1c944e9c1519))
+
+## [1.47.3](https://github.com/nrkno/sofie-core/compare/v1.47.1...v1.47.3) (2023-06-01)
+
+## [1.47.2](https://github.com/nrkno/sofie-core/compare/v1.47.1...v1.47.2) (2023-06-01)
+
+## [1.47.1](https://github.com/nrkno/sofie-core/compare/v1.47.1-1...v1.47.1) (2023-05-11)
+
+
 ### Bug Fixes
 
 * Failing tests ([ea09e77](https://github.com/nrkno/sofie-core/commit/ea09e7751bcce79b82d9e2f85bb6ebc2d8558c45))

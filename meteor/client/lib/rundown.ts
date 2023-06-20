@@ -52,7 +52,7 @@ interface PieceTimelineMetadataExt extends PieceTimelineMetadata {
 }
 
 export namespace RundownUtils {
-	function padZeros(input: number, places?: number): string {
+	export function padZeros(input: number, places?: number): string {
 		places = places ?? 2
 		return input.toString(10).padStart(places, '0')
 	}
@@ -243,7 +243,7 @@ export namespace RundownUtils {
 			.replace(/_/g, '-')
 	}
 
-	export function getPieceStatusClassName(status: PieceStatusCode): string | undefined {
+	export function getPieceStatusClassName(status: PieceStatusCode | undefined): string | undefined {
 		switch (status) {
 			case PieceStatusCode.OK:
 			case PieceStatusCode.SOURCE_HAS_ISSUES:
@@ -255,6 +255,7 @@ export namespace RundownUtils {
 				return 'source-missing'
 			case PieceStatusCode.SOURCE_NOT_READY:
 				return 'source-not-ready'
+			case undefined:
 			case PieceStatusCode.UNKNOWN:
 				return 'unknown-state'
 			default:
@@ -861,5 +862,11 @@ export namespace RundownUtils {
 			return true
 		}
 		return false
+	}
+
+	export function isBucketAdLibItem(
+		piece: IAdLibListItem | PieceUi | AdLibPieceUi | BucketAdLibItem
+	): piece is BucketAdLibItem {
+		return !!piece['bucketId']
 	}
 }

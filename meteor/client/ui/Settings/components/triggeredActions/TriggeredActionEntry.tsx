@@ -540,7 +540,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 								typeof triggeredAction.name === 'object' ? t('Multilingual description, editing will overwrite') : ''
 							}
 						/>
-						<span className="mls text-s dimmed">{t('Optional description of the action')}</span>
+						<span className="mls text-s dimmed field-hint">{t('Optional description of the action')}</span>
 					</label>
 				</>
 			) : null}

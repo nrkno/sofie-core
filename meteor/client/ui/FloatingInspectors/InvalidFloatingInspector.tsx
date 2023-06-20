@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 
 import { FloatingInspector } from '../FloatingInspector'
@@ -6,11 +6,12 @@ import { DBPart } from '../../../lib/collections/Parts'
 import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
 
 interface IProps {
 	itemElement: HTMLDivElement | null
 	showMiniInspector: boolean
-	floatingInspectorStyle: React.CSSProperties
+	position: IFloatingInspectorPosition
 	part: DBPart
 
 	displayOn?: 'document' | 'viewport'
@@ -33,6 +34,11 @@ function renderReason(noticeLevel: NoteSeverity, noticeMessage: string | null): 
 
 export const InvalidFloatingInspector: React.FunctionComponent<IProps> = (props: IProps) => {
 	const { t } = useTranslation()
+	const ref = useRef<HTMLDivElement>(null)
+
+	const shown = props.showMiniInspector && props.itemElement !== undefined
+
+	const { style: floatingInspectorStyle } = useInspectorPosition(props.position, ref, shown)
 
 	if (!props.part.invalidReason) {
 		return null
@@ -41,7 +47,7 @@ export const InvalidFloatingInspector: React.FunctionComponent<IProps> = (props:
 	const noteSeverity = props.part.invalidReason.severity || NoteSeverity.INFO
 
 	return (
-		<FloatingInspector shown={props.showMiniInspector && props.itemElement !== undefined} displayOn={props.displayOn}>
+		<FloatingInspector shown={shown} displayOn="viewport">
 			<div
 				className={
 					'segment-timeline__mini-inspector ' +
@@ -53,7 +59,8 @@ export const InvalidFloatingInspector: React.FunctionComponent<IProps> = (props:
 						? 'segment-timeline__mini-inspector--notice notice-warning'
 						: '')
 				}
-				style={props.floatingInspectorStyle}
+				style={floatingInspectorStyle}
+				ref={ref}
 			>
 				{renderReason(noteSeverity, translateMessage(props.part.invalidReason.message, t))}
 			</div>

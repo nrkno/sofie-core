@@ -111,7 +111,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 		const rawSegments = await context.mockCollections.Segments.findFetch({ rundownId: rundown._id })
 		const rawParts = await context.mockCollections.Parts.findFetch({ rundownId: rundown._id })
 
-		const segments = sortSegmentsInRundowns(rawSegments, { rundownIdsInOrder: [rundown._id] })
+		const segments = sortSegmentsInRundowns(rawSegments, [rundown._id])
 		const parts = sortPartsInSortedSegments(rawParts, segments)
 
 		return {

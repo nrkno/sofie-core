@@ -10,7 +10,7 @@ import {
 	getOrderedSegmentsAndPartsFromPlayoutCache,
 	getSelectedPartInstancesFromCache,
 } from '../cache'
-import { selectNextPart } from '../lib'
+import { selectNextPart } from '../selectNextPart'
 
 export interface PartInstanceAndPieceInstances {
 	part: DBPartInstance

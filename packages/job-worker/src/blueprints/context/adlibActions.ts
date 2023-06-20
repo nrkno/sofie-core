@@ -66,7 +66,7 @@ import {
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import { isTooCloseToAutonext } from '../../playout/lib'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { moveNextPartInner } from '../../playout/setNext'
+import { moveNextPart } from '../../playout/moveNextPart'
 import _ = require('underscore')
 import { ProcessedShowStyleConfig } from '../config'
 import { DatastorePersistenceMode } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
@@ -507,7 +507,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		return convertPartInstanceToBlueprints(newPartInstance)
 	}
 	async moveNextPart(partDelta: number, segmentDelta: number): Promise<void> {
-		await moveNextPartInner(this._context, this._cache, partDelta, segmentDelta)
+		await moveNextPart(this._context, this._cache, partDelta, segmentDelta)
 	}
 	async updatePartInstance(
 		part: 'current' | 'next',

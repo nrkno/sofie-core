@@ -29,8 +29,6 @@ export interface ISourceLayerItemProps {
 	layer: ISourceLayerUi
 	/** Output layer the source layer belongs to */
 	outputLayer: IOutputLayerUi
-	/** URL where media previews / thumbnails are available (e.g. media manager)  */
-	mediaPreviewUrl: string
 	/** Part containing this item */
 	part: PartUi
 	/** When the part starts (unix timestamp)  */
@@ -412,7 +410,10 @@ export const SourceLayerItem = withTranslation()(
 		private highlightTimeout: NodeJS.Timer
 
 		private onHighlight = (e: HighlightEvent) => {
-			if (e.partId === this.props.part.partId && e.pieceId === this.props.piece.instance.piece._id) {
+			if (
+				e.partId === this.props.part.partId &&
+				(e.pieceId === this.props.piece.instance.piece._id || e.pieceId === this.props.piece.instance._id)
+			) {
 				this.setState({
 					highlight: true,
 				})

@@ -43,6 +43,7 @@ export interface WorkerParentOptions {
 	mongoDbName: string
 	locksManager: LocksManager
 	jobManager: JobManager
+	enableFreezeLimit: boolean
 }
 export interface WorkerParentBaseOptions extends WorkerParentOptions {
 	/** The internal job-queue */

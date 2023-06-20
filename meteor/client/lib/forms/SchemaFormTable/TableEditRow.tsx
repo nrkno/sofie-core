@@ -32,7 +32,7 @@ export function SchemaFormTableEditRow({
 	return (
 		<tr className="expando-details hl" key={rowId + '-details'}>
 			<td colSpan={99}>
-				<div>
+				<div className="properties-grid">
 					{Object.entries<JSONSchema | undefined>(columns || {}).map(([id, schema]) =>
 						schema ? (
 							<SchemaFormWithOverrides
@@ -43,7 +43,7 @@ export function SchemaFormTableEditRow({
 								attr={id}
 								overrideHelper={overrideHelper}
 								translationNamespaces={translationNamespaces}
-								allowTables={false}
+								allowTables
 							/>
 						) : (
 							''

@@ -21,6 +21,10 @@ const InspectorTitle = withMediaObjectStatus<IProps, {}>()(function InspectorTit
 		? (props.piece.instance.piece as Piece)
 		: (props.piece as AdLibPieceUi)
 
+	const status = RundownUtils.isPieceInstance(props.piece)
+		? props.piece.contentStatus?.status
+		: (props.piece as AdLibPieceUi).contentStatus?.status
+
 	const layer = props.showStyleBase.sourceLayers[piece.sourceLayerId]
 
 	return (
@@ -29,7 +33,7 @@ const InspectorTitle = withMediaObjectStatus<IProps, {}>()(function InspectorTit
 				className={ClassNames(
 					'shelf-inspector__title__icon',
 					layer && RundownUtils.getSourceLayerClassName(layer.type),
-					RundownUtils.getPieceStatusClassName(piece.status)
+					RundownUtils.getPieceStatusClassName(status)
 				)}
 			>
 				<div className="shelf-inspector__title__layer">{layer && (layer.abbreviation || layer.name)}</div>

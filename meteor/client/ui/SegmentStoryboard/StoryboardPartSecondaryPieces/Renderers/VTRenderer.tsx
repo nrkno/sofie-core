@@ -12,9 +12,7 @@ export function VTRenderer({
 	studio,
 	typeClass,
 }: IDefaultRendererProps): JSX.Element {
-	const mediaPreviewUrl = studio?.settings.mediaPreviewsUrl
-
-	const status = pieceInstance.instance.piece.status
+	const status = pieceInstance.contentStatus?.status
 
 	const vtContent = pieceInstance.instance.piece.content as VTContent
 
@@ -27,25 +25,18 @@ export function VTRenderer({
 				showMiniInspector={!!hovering}
 				timePosition={timePosition}
 				content={vtContent}
-				floatingInspectorStyle={
-					elementOffset
-						? {
-								top: elementOffset.top + 'px',
-								left: elementOffset.left + 'px',
-								transform: 'translate(0, -100%)',
-						  }
-						: {}
-				}
+				position={{
+					top: elementOffset?.top ?? 0,
+					left: elementOffset?.left ?? 0,
+					anchor: 'start',
+					position: 'top-start',
+				}}
 				typeClass={typeClass}
 				itemElement={null}
-				contentMetaData={pieceInstance.contentMetaData || null}
-				noticeMessages={pieceInstance.messages || null}
-				noticeLevel={status !== null && status !== undefined ? getNoticeLevelForPieceStatus(status) : null}
-				mediaPreviewUrl={mediaPreviewUrl}
-				contentPackageInfos={pieceInstance.contentPackageInfos}
-				pieceId={pieceInstance.instance.piece._id}
-				expectedPackages={pieceInstance.instance.piece.expectedPackages}
+				noticeMessages={pieceInstance.contentStatus?.messages || null}
+				noticeLevel={getNoticeLevelForPieceStatus(status)}
 				studio={studio}
+				previewUrl={pieceInstance.contentStatus?.previewUrl}
 			/>
 			{pieceInstance.instance.piece.name}
 		</>

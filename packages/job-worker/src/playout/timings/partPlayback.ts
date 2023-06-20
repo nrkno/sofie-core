@@ -7,7 +7,7 @@ import {
 	getOrderedSegmentsAndPartsFromPlayoutCache,
 	getSelectedPartInstancesFromCache,
 } from '../cache'
-import { selectNextPart } from '../lib'
+import { selectNextPart } from '../selectNextPart'
 import { setNextPart } from '../setNext'
 import { updateTimeline } from '../timeline/generate'
 import { getCurrentTime } from '../../lib'
@@ -64,10 +64,7 @@ export async function onPartPlaybackStarted(
 
 			cache.Playlist.update((p) => {
 				p.previousPartInfo = p.currentPartInfo
-				p.currentPartInfo = {
-					partInstanceId: playingPartInstance._id,
-					rundownId: playingPartInstance.rundownId,
-				}
+				p.currentPartInfo = playlist.nextPartInfo
 				p.holdState = RundownHoldState.NONE
 				return p
 			})
@@ -94,7 +91,7 @@ export async function onPartPlaybackStarted(
 				currentPartInstance
 			)
 
-			clearNextSegmentId(cache, currentPartInstance)
+			clearNextSegmentId(cache, playingPartInstance, playlist.nextPartInfo)
 			resetPreviousSegment(cache)
 
 			// Update the next partinstance
@@ -105,7 +102,7 @@ export async function onPartPlaybackStarted(
 				null,
 				getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 			)
-			await setNextPart(context, cache, nextPart)
+			await setNextPart(context, cache, nextPart, false)
 
 			// complete the take
 			await afterTake(context, cache, playingPartInstance)
