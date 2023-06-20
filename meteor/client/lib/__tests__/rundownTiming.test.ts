@@ -1054,14 +1054,10 @@ describe('rundown Timing Calculator', () => {
 			manuallySelected: false,
 			consumesNextSegmentId: false,
 		}
-		const rundown = makeMockRundown(rundownId1, playlist)
-		const rundowns = [rundown]
 		const result = timing.updateDurations(
 			1500,
 			false,
 			playlist,
-			rundowns,
-			rundown,
 			parts,
 			partInstancesMap,
 			new Map(),
@@ -1127,9 +1123,7 @@ describe('rundown Timing Calculator', () => {
 				},
 				remainingPlaylistDuration: 2500,
 				totalPlaylistDuration: 4000,
-				breakIsLastRundown: false,
 				remainingTimeOnCurrentPart: 500,
-				rundownsBeforeNextBreak: [],
 				segmentBudgetDurations: {},
 				segmentStartedPlayback: {},
 				nextRundownAnchor: 2000,
@@ -1203,14 +1197,10 @@ describe('rundown Timing Calculator', () => {
 			manuallySelected: false,
 			consumesNextSegmentId: false,
 		}
-		const rundown = makeMockRundown(rundownId1, playlist)
-		const rundowns = [rundown]
 		const result = timing.updateDurations(
 			3500,
 			false,
 			playlist,
-			rundowns,
-			rundown,
 			parts,
 			partInstancesMap,
 			new Map(),
@@ -1276,9 +1266,7 @@ describe('rundown Timing Calculator', () => {
 				},
 				remainingPlaylistDuration: 2000,
 				totalPlaylistDuration: 4000,
-				breakIsLastRundown: false,
 				remainingTimeOnCurrentPart: -1500,
-				rundownsBeforeNextBreak: [],
 				segmentBudgetDurations: {},
 				segmentStartedPlayback: {},
 				nextRundownAnchor: 4000,
@@ -1358,14 +1346,10 @@ describe('rundown Timing Calculator', () => {
 			manuallySelected: false,
 			consumesNextSegmentId: false,
 		}
-		const rundown = makeMockRundown(rundownId1, playlist)
-		const rundowns = [rundown]
 		const result = timing.updateDurations(
 			2500,
 			false,
 			playlist,
-			rundowns,
-			rundown,
 			parts,
 			partInstancesMap,
 			new Map(),
@@ -1431,9 +1415,7 @@ describe('rundown Timing Calculator', () => {
 				},
 				remainingPlaylistDuration: 1500,
 				totalPlaylistDuration: 4000,
-				breakIsLastRundown: false,
 				remainingTimeOnCurrentPart: 500,
-				rundownsBeforeNextBreak: [],
 				segmentBudgetDurations: {},
 				segmentStartedPlayback: {},
 				nextRundownAnchor: 3000,
@@ -1507,14 +1489,10 @@ describe('rundown Timing Calculator', () => {
 			manuallySelected: false,
 			consumesNextSegmentId: false,
 		}
-		const rundown = makeMockRundown(rundownId1, playlist)
-		const rundowns = [rundown]
 		const result = timing.updateDurations(
 			1500,
 			false,
 			playlist,
-			rundowns,
-			rundown,
 			parts,
 			partInstancesMap,
 			new Map(),
@@ -1580,9 +1558,7 @@ describe('rundown Timing Calculator', () => {
 				},
 				remainingPlaylistDuration: 2500,
 				totalPlaylistDuration: 4000,
-				breakIsLastRundown: false,
 				remainingTimeOnCurrentPart: 500,
-				rundownsBeforeNextBreak: [],
 				segmentBudgetDurations: {},
 				segmentStartedPlayback: {},
 				nextRundownAnchor: 2000,
@@ -1656,14 +1632,10 @@ describe('rundown Timing Calculator', () => {
 			manuallySelected: false,
 			consumesNextSegmentId: false,
 		}
-		const rundown = makeMockRundown(rundownId1, playlist)
-		const rundowns = [rundown]
 		const result = timing.updateDurations(
 			3500,
 			false,
 			playlist,
-			rundowns,
-			rundown,
 			parts,
 			partInstancesMap,
 			new Map(),
@@ -1729,9 +1701,7 @@ describe('rundown Timing Calculator', () => {
 				},
 				remainingPlaylistDuration: 2000,
 				totalPlaylistDuration: 4000,
-				breakIsLastRundown: false,
 				remainingTimeOnCurrentPart: -1500,
-				rundownsBeforeNextBreak: [],
 				segmentBudgetDurations: {},
 				segmentStartedPlayback: {},
 				nextRundownAnchor: 4000,
@@ -1811,14 +1781,10 @@ describe('rundown Timing Calculator', () => {
 			manuallySelected: false,
 			consumesNextSegmentId: false,
 		}
-		const rundown = makeMockRundown(rundownId1, playlist)
-		const rundowns = [rundown]
 		const result = timing.updateDurations(
 			2500,
 			false,
 			playlist,
-			rundowns,
-			rundown,
 			parts,
 			partInstancesMap,
 			new Map(),
@@ -1884,9 +1850,7 @@ describe('rundown Timing Calculator', () => {
 				},
 				remainingPlaylistDuration: 1500,
 				totalPlaylistDuration: 4000,
-				breakIsLastRundown: false,
 				remainingTimeOnCurrentPart: 500,
-				rundownsBeforeNextBreak: [],
 				segmentBudgetDurations: {},
 				segmentStartedPlayback: {},
 				nextRundownAnchor: 3000,
