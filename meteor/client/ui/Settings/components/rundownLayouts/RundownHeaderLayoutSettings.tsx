@@ -5,6 +5,7 @@ import { RundownLayoutBase, RundownLayoutType } from '../../../../../lib/collect
 import { EditAttribute } from '../../../../lib/EditAttribute'
 import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
 import { Translated } from '../../../../lib/ReactMeteorData/ReactMeteorData'
+import { LabelActual } from '../../../../lib/Components/LabelAndOverrides'
 
 interface IProps {
 	item: RundownLayoutBase
@@ -19,20 +20,18 @@ export default withTranslation()(
 
 			return this.props.item.type === RundownLayoutType.RUNDOWN_HEADER_LAYOUT ? (
 				<React.Fragment>
-					<div className="mod mvs mhs">
-						<label className="field">
-							{t('Expected End text')}
-							<EditAttribute
-								modifiedClassName="bghl"
-								attribute={'plannedEndText'}
-								obj={this.props.item}
-								type="text"
-								collection={RundownLayouts}
-								className="input text-input input-l"
-							></EditAttribute>
-							<span className="text-s dimmed">{t('Text to show above countdown to end of show')}</span>
-						</label>
-					</div>
+					<label className="field">
+						<LabelActual label={t('Expected End text')} />
+						<EditAttribute
+							modifiedClassName="bghl"
+							attribute={'plannedEndText'}
+							obj={this.props.item}
+							type="text"
+							collection={RundownLayouts}
+							className="input text-input input-l"
+						></EditAttribute>
+						<span className="text-s dimmed field-hint">{t('Text to show above countdown to end of show')}</span>
+					</label>
 				</React.Fragment>
 			) : null
 		}
