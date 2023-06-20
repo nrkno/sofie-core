@@ -199,7 +199,26 @@ jobs:
           push: true
           provenance: false
           labels: ${{ steps.dockerhub-tag.outputs.labels }}
-          tags: "${{ steps.dockerhub-tag.outputs.tags }}"
+          tags: ${{ steps.dockerhub-tag.outputs.tags }}
+      - name: Trivy scanning
+        if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
+        uses: aquasecurity/trivy-action@0.11.2
+        with:
+          image-ref: '${{ steps.ghcr-tag.outputs.tags }}'
+          format: 'table'
+          output: trivy-scan-result.txt
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+      - name: Post all Trivy scan results to Github Summary as a table
+        env:
+          CODE_BLOCK: "```"
+        run: |
+          echo "# Trivy scan results ~ core" >> $GITHUB_STEP_SUMMARY
+
+          echo $CODE_BLOCK >> $GITHUB_STEP_SUMMARY
+          cat trivy-scan-result.txt >> $GITHUB_STEP_SUMMARY
+          echo $CODE_BLOCK >> $GITHUB_STEP_SUMMARY
+
 
   build-gateways:
     # TODO - should this be dependant on tests or something passing if we are on a tag?
@@ -314,6 +333,24 @@ jobs:
           provenance: false
           labels: ${{ steps.dockerhub-tag.outputs.labels }}
           tags: "${{ steps.dockerhub-tag.outputs.tags }}"
+      - name: Trivy scanning
+        if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
+        uses: aquasecurity/trivy-action@0.11.2
+        with:
+          image-ref: '${{ steps.ghcr-tag.outputs.tags }}'
+          format: 'table'
+          output: ${{ matrix.gateway-name }}-trivy-scan-result.txt
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+      - name: Post all Trivy scan results to Github Summary as a table
+        env:
+          CODE_BLOCK: "```"
+        run: |
+          echo "# Trivy scan results ~ ${{ matrix.gateway-name }}" >> $GITHUB_STEP_SUMMARY
+
+          echo $CODE_BLOCK >> $GITHUB_STEP_SUMMARY
+          cat ${{ matrix.gateway-name }}-trivy-scan-result.txt >> $GITHUB_STEP_SUMMARY
+          echo $CODE_BLOCK >> $GITHUB_STEP_SUMMARY
 
   lint-packages:
     name: Lint Package
