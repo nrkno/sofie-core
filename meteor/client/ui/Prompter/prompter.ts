@@ -7,7 +7,7 @@ import { getPieceInstancesForPartInstance, getSegmentsWithPartInstances } from '
 import { FindOptions } from '../../../lib/collections/lib'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
+import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { UIShowStyleBases } from '../Collections'
 import {
 	PartId,

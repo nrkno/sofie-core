@@ -12,7 +12,8 @@ import { PieceInstance, PieceInstancePiece } from '../../dataModel/PieceInstance
 import { Rundown, DBRundown } from '../../dataModel/Rundown'
 import { literal } from '../../lib'
 import { protectString } from '../../protectedString'
-import { getPlayheadTrackingInfinitesForPart, processAndPrunePieceInstanceTimings } from '../infinites'
+import { getPlayheadTrackingInfinitesForPart } from '../infinites'
+import { processAndPrunePieceInstanceTimings } from '../processAndPrune'
 
 describe('Infinites', () => {
 	function createPieceInstance(

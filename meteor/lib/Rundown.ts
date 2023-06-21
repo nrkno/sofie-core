@@ -9,8 +9,8 @@ import {
 	getPieceInstancesForPart,
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
-	PieceInstanceWithTimings,
 } from '@sofie-automation/corelib/dist/playout/infinites'
+import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { MongoQuery } from './typings/meteor'
 import { invalidateAfter } from '../lib/invalidatingTime'
 import { convertCorelibToMeteorMongoQuery, getCurrentTime, groupByToMap, ProtectedString, protectString } from './lib'

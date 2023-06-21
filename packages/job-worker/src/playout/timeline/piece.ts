@@ -8,7 +8,7 @@ import {
 	TimelineObjGroupPart,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { assertNever, clone } from '@sofie-automation/corelib/dist/lib'
-import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/infinites'
+import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { createPieceGroupAndCap } from '@sofie-automation/corelib/dist/playout/pieces'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'

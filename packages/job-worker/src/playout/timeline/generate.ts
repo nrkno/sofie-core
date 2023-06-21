@@ -37,7 +37,7 @@ import { getResolvedPiecesFromFullTimeline } from '../pieces'
 import {
 	processAndPrunePieceInstanceTimings,
 	PieceInstanceWithTimings,
-} from '@sofie-automation/corelib/dist/playout/infinites'
+} from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { CacheForStudio, CacheForStudioBase } from '../../studio/cache'
 import { getLookeaheadObjects } from '../lookahead'
 import { StudioBaselineContext, OnTimelineGenerateContext } from '../../blueprints/context'

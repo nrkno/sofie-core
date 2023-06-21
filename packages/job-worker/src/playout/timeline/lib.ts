@@ -1,5 +1,5 @@
 import { IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
-import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/infinites'
+import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { ReadonlyDeep } from 'type-fest'
 import { DEFINITELY_ENDED_FUTURE_DURATION } from '../infinites'
 

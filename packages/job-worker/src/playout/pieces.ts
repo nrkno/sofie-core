@@ -24,7 +24,7 @@ import { transformTimeline, TimelineContentObject } from '@sofie-automation/core
 import {
 	PieceInstanceWithTimings,
 	processAndPrunePieceInstanceTimings,
-} from '@sofie-automation/corelib/dist/playout/infinites'
+} from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { ReadOnlyCache } from '../cache/CacheBase'
 

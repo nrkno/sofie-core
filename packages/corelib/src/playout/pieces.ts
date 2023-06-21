@@ -12,7 +12,7 @@ import { PieceInstanceId, RundownPlaylistId } from '../dataModel/Ids'
 import { clone, literal } from '../lib'
 import { getPieceControlObjectId, getPieceGroupId } from './ids'
 import { unprotectString } from '../protectedString'
-import { PieceInstanceWithTimings } from './infinites'
+import { PieceInstanceWithTimings } from './processAndPrune'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 export interface PieceTimelineMetadata {
