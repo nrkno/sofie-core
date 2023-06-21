@@ -44,13 +44,8 @@ export interface TimelineObjectCoreExt<
 	/** Keyframes: Arbitrary data storage for plugins */
 	keyframes?: Array<TimelineKeyframeCoreExt<TContent, TKeyframeMetadata>>
 	/**
-	 * In the underyling timeline library, these are optional. However,
-	 * because of the way that the lookahead system must set a priority,
-	 * and the way in which this can trip up blueprints authors and clobber their intended objects,
-	 * we make them mandatory here.
-	 *
-	 * As of June 16th, 2023, lookaheads have a priority of 0.1. Therefore, to avoid your objects
-	 * being clobbered by lookaheads, you should set a priority higher than this, such as 1.
+	 * Priority of the object. When multiple overlap in the resolved timeline, highest priority wins.
+	 * Lookahead objects have a value of 0.1 (or slightly lower). Your baseline should be using a priority of 0, with other objects using 1 or higher.
 	 */
 	priority: number
 }
