@@ -235,6 +235,7 @@ describe('Pieces', () => {
 						metaData: {
 							isPieceTimeline: true,
 						},
+						priority: 0,
 					},
 				])
 				expect(res.childGroup).toStrictEqual({
@@ -294,6 +295,7 @@ describe('Pieces', () => {
 					metaData: {
 						isPieceTimeline: true,
 					},
+					priority: 0,
 				},
 				{
 					children: [],
@@ -308,6 +310,7 @@ describe('Pieces', () => {
 					metaData: {
 						isPieceTimeline: true,
 					},
+					priority: 0,
 				},
 			])
 			expect(res.childGroup).toStrictEqual({
@@ -342,6 +345,7 @@ describe('Pieces', () => {
 					metaData: {
 						isPieceTimeline: true,
 					},
+					priority: 0,
 				},
 			])
 			expect(res.childGroup).toStrictEqual({
@@ -379,6 +383,7 @@ describe('Pieces', () => {
 					metaData: {
 						isPieceTimeline: true,
 					},
+					priority: 0,
 				},
 				{
 					children: [],
@@ -393,6 +398,7 @@ describe('Pieces', () => {
 					metaData: {
 						isPieceTimeline: true,
 					},
+					priority: 0,
 				},
 			])
 			expect(res.childGroup).toStrictEqual({
@@ -430,6 +436,7 @@ describe('Pieces', () => {
 					metaData: {
 						isPieceTimeline: true,
 					},
+					priority: 0,
 				},
 			])
 			expect(res.childGroup).toStrictEqual({

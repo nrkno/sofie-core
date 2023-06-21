@@ -23,7 +23,14 @@ function stripObjectProperties(
 	objs: Array<TimelineObjRundown & OnGenerateTimelineObj<TSR.TSRTimelineContent>>,
 	keepContent?: boolean
 ): any[] {
-	const keys = _.compact([keepContent ? undefined : 'content', 'enable', 'objectType', 'keyframes', 'metaData'])
+	const keys = _.compact([
+		keepContent ? undefined : 'content',
+		'enable',
+		'objectType',
+		'keyframes',
+		'metaData',
+		'priority',
+	])
 	return objs.map((o) => _.omit(o, ...keys))
 }
 

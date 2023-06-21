@@ -38,6 +38,7 @@ describe('Lib', () => {
 			layer: 'L1',
 			content: { deviceType: TSR.DeviceType.ABSTRACT },
 			objectType: TimelineObjType.RUNDOWN,
+			priority: 0,
 		})
 		const layer: string | number = obj.layer // just to check typings
 		expect(layer).toBeTruthy()
