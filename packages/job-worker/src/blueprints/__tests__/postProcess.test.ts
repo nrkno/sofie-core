@@ -173,6 +173,7 @@ describe('Test blueprint post-process', () => {
 					content: {
 						deviceType: TSR.DeviceType.ABSTRACT,
 					},
+					priority: 0,
 				},
 				{
 					id: '',
@@ -181,6 +182,7 @@ describe('Test blueprint post-process', () => {
 					content: {
 						deviceType: TSR.DeviceType.CASPARCG,
 					},
+					priority: 0,
 				},
 				{
 					id: 'finalObj',
@@ -189,6 +191,7 @@ describe('Test blueprint post-process', () => {
 					content: {
 						deviceType: TSR.DeviceType.ATEM,
 					},
+					priority: 0,
 				},
 				{
 					id: '',
@@ -197,6 +200,7 @@ describe('Test blueprint post-process', () => {
 					content: {
 						deviceType: TSR.DeviceType.HYPERDECK,
 					},
+					priority: 0,
 				},
 			])
 
@@ -235,6 +239,7 @@ describe('Test blueprint post-process', () => {
 				enable: { while: 1 },
 				content: {} as any,
 				objectType: TimelineObjType.RUNDOWN,
+				priority: 0,
 			})
 			ensureAllKeysDefined(tmpObj, res)
 		})
@@ -399,6 +404,7 @@ describe('Test blueprint post-process', () => {
 							content: {
 								deviceType: TSR.DeviceType.HYPERDECK,
 							},
+							priority: 0,
 						}),
 					],
 				},
@@ -534,6 +540,7 @@ describe('Test blueprint post-process', () => {
 							content: {
 								deviceType: TSR.DeviceType.HYPERDECK,
 							},
+							priority: 0,
 						}),
 					],
 				},
@@ -579,6 +586,7 @@ describe('Test blueprint post-process', () => {
 							content: {
 								deviceType: TSR.DeviceType.HYPERDECK,
 							},
+							priority: 0,
 						}),
 					],
 				},

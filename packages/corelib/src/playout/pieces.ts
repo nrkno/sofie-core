@@ -97,6 +97,7 @@ export function createPieceGroupAndCap(
 			isPieceTimeline: true,
 			pieceInstanceGroupId: pieceInstance._id,
 		},
+		priority: 0,
 	})
 
 	const capObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>> = []
@@ -119,6 +120,7 @@ export function createPieceGroupAndCap(
 				isPieceTimeline: true,
 				triggerPieceInstanceId: pieceInstance._id,
 			},
+			priority: 0,
 		})
 		capObjs.push(startNowObj)
 
@@ -146,6 +148,7 @@ export function createPieceGroupAndCap(
 			metaData: literal<PieceTimelineMetadata>({
 				isPieceTimeline: true,
 			}),
+			priority: 0,
 		})
 		capObjs.push(nowObj)
 		resolvedEndCap = `#${nowObj.id}.start`
@@ -194,6 +197,7 @@ export function createPieceGroupAndCap(
 					metaData: literal<PieceTimelineMetadata>({
 						isPieceTimeline: true,
 					}),
+					priority: 0,
 				}
 			)
 			capObjs.push(pieceEndCapGroup)

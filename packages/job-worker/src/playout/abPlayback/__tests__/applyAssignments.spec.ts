@@ -98,6 +98,7 @@ describe('applyMediaPlayersAssignments', () => {
 				metaData: null,
 				pieceInstanceId: pieceInstanceId,
 				partInstanceId: partInstanceId,
+				priority: 0,
 			}),
 			literal<OnGenerateTimelineObjExt>({
 				// This should get assigned, as it was previously known
@@ -119,6 +120,7 @@ describe('applyMediaPlayersAssignments', () => {
 				metaData: null,
 				pieceInstanceId: pieceInstanceId,
 				partInstanceId: partInstanceId,
+				priority: 0,
 			}),
 		]
 

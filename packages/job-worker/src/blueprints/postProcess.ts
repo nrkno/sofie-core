@@ -164,7 +164,7 @@ export function postProcessTimelineObjects(
 	timelineObjects: TSR.TSRTimeline,
 	timelineUniqueIds: Set<string> = new Set<string>()
 ): TimelineObjRundown[] {
-	const postProcessedTimeline = timelineObjects.map((o: TimelineObjectCoreExt<any>, i) => {
+	const postProcessedTimeline = (timelineObjects as TimelineObjectCoreExt<any>[]).map((o, i) => {
 		const obj: TimelineObjRundown = {
 			...o,
 			id: o.id,

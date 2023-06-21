@@ -23,6 +23,7 @@ describe('server/lib', () => {
 				content: { deviceType: TSR.DeviceType.ABSTRACT },
 				objectType: TimelineObjType.RUNDOWN,
 				classes: ['abc'], // to be removed
+				priority: 0,
 			},
 			{
 				id: 'abc2',
@@ -32,6 +33,7 @@ describe('server/lib', () => {
 				layer: 'L1',
 				content: { deviceType: TSR.DeviceType.ABSTRACT },
 				objectType: TimelineObjType.RUNDOWN,
+				priority: 0,
 			},
 		]
 		await Timeline.mutableCollection.insertAsync({
@@ -51,6 +53,7 @@ describe('server/lib', () => {
 				layer: 'L1',
 				content: { deviceType: TSR.DeviceType.ABSTRACT },
 				objectType: TimelineObjType.RUNDOWN,
+				priority: 0,
 			},
 		]
 		await Timeline.mutableCollection.insertAsync({
