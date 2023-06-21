@@ -32,6 +32,7 @@ import { DBShowStyleBase, ShowStyleBase } from '../../../../lib/collections/Show
 import { ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
 import { Studio } from '../../../../lib/collections/Studios'
 import { Blueprints, ShowStyleBases, Studios } from '../../../collections'
+import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 
 /*
 This file contains functions that convert between the internal Sofie-Core types and types exposed to the external API.
@@ -303,6 +304,7 @@ export function studioSettingsFrom(apiStudioSettings: APIStudioSettings): IStudi
 		preserveUnsyncedPlayingSegmentContents: apiStudioSettings.preserveUnsyncedPlayingSegmentContents,
 		allowRundownResetOnAir: apiStudioSettings.allowRundownResetOnAir,
 		preserveOrphanedSegmentPositionInRundown: apiStudioSettings.preserveOrphanedSegmentPositionInRundown,
+		minimumTakeSpan: apiStudioSettings.minimumTakeSpan ?? DEFAULT_MINIMUM_TAKE_SPAN,
 	}
 }
 
@@ -319,6 +321,7 @@ export function APIStudioSettingsFrom(settings: IStudioSettings): APIStudioSetti
 		preserveUnsyncedPlayingSegmentContents: settings.preserveUnsyncedPlayingSegmentContents,
 		allowRundownResetOnAir: settings.allowRundownResetOnAir,
 		preserveOrphanedSegmentPositionInRundown: settings.preserveOrphanedSegmentPositionInRundown,
+		minimumTakeSpan: settings.minimumTakeSpan,
 	}
 }
 

@@ -35,7 +35,7 @@ import {
 	handleUpdatedSegment,
 	handleUpdatedSegmentRanks,
 } from '../../ingest/ingestSegmentJobs'
-import { setMinimumTakeSpan, handleTakeNextPart } from '../../playout/take'
+import { handleTakeNextPart } from '../../playout/take'
 import { handleActivateRundownPlaylist } from '../../playout/activePlaylistJobs'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getSelectedPartInstances } from '../../playout/__tests__/lib'
@@ -64,6 +64,10 @@ describe('Test ingest actions for rundowns and segments', () => {
 
 		context.setStudio({
 			...context.studio,
+			settings: {
+				...context.studio.settings,
+				minimumTakeSpan: 0,
+			},
 			supportedShowStyleBase: [showStyleCompound._id],
 		})
 
@@ -82,8 +86,6 @@ describe('Test ingest actions for rundowns and segments', () => {
 		)
 
 		jest.clearAllMocks()
-
-		setMinimumTakeSpan(0)
 	})
 
 	beforeEach(async () => {

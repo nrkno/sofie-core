@@ -22,6 +22,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
 import { getCoreSystemAsync } from '../../coreSystem/collection'
+import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 
 require('../../api/peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../api') // include in order to create the Meteor methods needed
@@ -125,6 +126,7 @@ describe('Migrations', () => {
 						settings: {
 							mediaPreviewsUrl: '',
 							frameRate: 25,
+							minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 						},
 						mappingsWithOverrides: wrapDefaultObject({}),
 						blueprintConfigWithOverrides: wrapDefaultObject({}),
@@ -161,6 +163,7 @@ describe('Migrations', () => {
 						settings: {
 							mediaPreviewsUrl: '',
 							frameRate: 25,
+							minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 						},
 						mappingsWithOverrides: wrapDefaultObject({}),
 						blueprintConfigWithOverrides: wrapDefaultObject({}),
@@ -197,6 +200,7 @@ describe('Migrations', () => {
 						settings: {
 							mediaPreviewsUrl: '',
 							frameRate: 25,
+							minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 						},
 						mappingsWithOverrides: wrapDefaultObject({}),
 						blueprintConfigWithOverrides: wrapDefaultObject({}),

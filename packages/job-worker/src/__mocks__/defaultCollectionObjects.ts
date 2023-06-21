@@ -21,6 +21,7 @@ import { getRundownId } from '../ingest/lib'
 import { getCurrentTime } from '../lib'
 import { IBlueprintPieceType, PieceLifespan, PlaylistTimingType } from '@sofie-automation/blueprints-integration'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 
 export function defaultRundownPlaylist(_id: RundownPlaylistId, studioId: StudioId): DBRundownPlaylist {
 	return {
@@ -98,6 +99,7 @@ export function defaultStudio(_id: StudioId): DBStudio {
 		settings: {
 			frameRate: 25,
 			mediaPreviewsUrl: '',
+			minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 		},
 		routeSets: {},
 		routeSetExclusivityGroups: {},

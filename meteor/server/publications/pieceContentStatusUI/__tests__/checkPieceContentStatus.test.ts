@@ -37,6 +37,7 @@ import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { MediaObjects } from '../../../collections'
 import { PieceDependencies } from '../common'
 import { Studio } from '../../../../lib/collections/Studios'
+import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 
 const mockMediaObjectsCollection = MongoMock.getInnerMockCollection<MediaObject>(MediaObjects)
 
@@ -87,6 +88,7 @@ describe('lib/mediaObjects', () => {
 			supportedMediaFormats: '1920x1080i5000, 1280x720, i5000, i5000tff',
 			mediaPreviewsUrl: '',
 			frameRate: 25,
+			minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 		})
 		expect(acceptedFormats).toEqual([
 			['1920', '1080', 'i', '5000', undefined],
@@ -168,6 +170,7 @@ describe('lib/mediaObjects', () => {
 			mediaPreviewsUrl: '',
 			supportedAudioStreams: '4',
 			frameRate: 25,
+			minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 		}
 
 		const mockDefaultStudio = defaultStudio(protectString('studio0'))

@@ -10,6 +10,7 @@ import {
 	TriggerType,
 	PlayoutActions,
 } from '@sofie-automation/blueprints-integration'
+import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 
 /**
  * This file contains system specific migration steps.
@@ -439,6 +440,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				settings: {
 					frameRate: 25,
 					mediaPreviewsUrl: '',
+					minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 				},
 				mappingsWithOverrides: wrapDefaultObject({}),
 				blueprintConfigWithOverrides: wrapDefaultObject({}),

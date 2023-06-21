@@ -14,7 +14,7 @@ import { PartInstanceId, RundownId, RundownPlaylistId } from '@sofie-automation/
 import { fixSnapshot } from '../../__mocks__/helpers/snapshot'
 import { sortPartsInSortedSegments, sortSegmentsInRundowns } from '@sofie-automation/corelib/dist/playout/playlist'
 import { handleSetNextPart, handleMoveNextPart, handleSetNextSegment } from '../setNextJobs'
-import { setMinimumTakeSpan, handleTakeNextPart } from '../take'
+import { handleTakeNextPart } from '../take'
 import {
 	handleActivateRundownPlaylist,
 	handleDeactivateRundownPlaylist,
@@ -97,6 +97,14 @@ describe('Playout API', () => {
 	beforeEach(async () => {
 		context = setupDefaultJobEnvironment()
 
+		context.setStudio({
+			...context.studio,
+			settings: {
+				...context.studio.settings,
+				minimumTakeSpan: 0,
+			},
+		})
+
 		// Ignore event jobs
 		jest.spyOn(context, 'queueEventJob').mockImplementation(async () => Promise.resolve())
 
@@ -110,8 +118,6 @@ describe('Playout API', () => {
 		)
 
 		jest.clearAllMocks()
-
-		setMinimumTakeSpan(0)
 	})
 	afterEach(() => {
 		// mockGetCurrentTime.mockClear()

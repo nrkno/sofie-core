@@ -8,6 +8,7 @@ import {
 	retrieveBlueprintConfigRefs,
 } from '../config'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 
 describe('Test blueprint config', () => {
 	test('compileStudioConfig', () => {
@@ -17,6 +18,7 @@ describe('Test blueprint config', () => {
 			settings: {
 				mediaPreviewsUrl: '',
 				frameRate: 25,
+				minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 			},
 			blueprintConfigWithOverrides: wrapDefaultObject({ sdfsdf: 'one', another: 5 }),
 		})
@@ -39,6 +41,7 @@ describe('Test blueprint config', () => {
 			settings: {
 				mediaPreviewsUrl: '',
 				frameRate: 25,
+				minimumTakeSpan: DEFAULT_MINIMUM_TAKE_SPAN,
 			},
 			blueprintConfigWithOverrides: wrapDefaultObject({ sdfsdf: 'one', another: 5 }),
 		})
@@ -57,6 +60,7 @@ describe('Test blueprint config', () => {
 			core: {
 				hostUrl: 'https://sofie-in-jest:3000',
 				frameRate: 25,
+				// Some settings are omitted here because we currently don't bother exposing them to blueprints.
 			},
 			studio: {
 				sdfsdf: 'one',

@@ -67,7 +67,7 @@ _Prerequisites: rundown playlist is active and there is no current hold_
 
 ### How does Sofie execute a take?
 
-_Prerequisites: previous take must be over 1000ms (MINIMUM_TAKE_SPAN) ago, playlist must be active, there must be a next part instance, any transitions in the current part must be finished, any autonext must be over 1000ms ahead, current time is after blockTakeUntil from the current part_
+_Prerequisites: previous take must be over 1000ms (configurable on a per-studio basis) ago, playlist must be active, there must be a next part instance, any transitions in the current part must be finished, any autonext must be over 1000ms ahead, current time is after blockTakeUntil from the current part_
 
 *   Load the showstyle blueprints
 *   If hold state is COMPLETE, then clear the hold state (set to NONE)
