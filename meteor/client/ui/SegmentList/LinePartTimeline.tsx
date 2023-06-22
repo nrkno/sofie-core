@@ -83,10 +83,12 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 	const transitionPiece = useMemo(() => findTransitionPiece(part.pieces), [part.pieces])
 	const timedGraphics = useMemo(() => findTimedGraphics(part.pieces), [part.pieces])
 
-	const partDuration = part.renderedDuration
+	const timings = part.instance.partPlayoutTimings
+	const toPartDelay = (timings?.toPartDelay ?? 0) - ((timings?.fromPartRemaining ?? 0) - (timings?.toPartDelay ?? 0))
+	const renderedPartDuration = part.renderedDuration + toPartDelay
 	const mainPieceSourceDuration = mainPiece?.instance.piece.content.sourceDuration
 	const mainPieceInPoint = mainPiece?.renderedInPoint
-	const maxDuration = Math.max((mainPieceInPoint ?? 0) + (mainPieceSourceDuration ?? 0), partDuration)
+	const maxDuration = Math.max((mainPieceInPoint ?? 0) + (mainPieceSourceDuration ?? 0), renderedPartDuration)
 	const timelineBase = Math.max(TIMELINE_DEFAULT_BASE, maxDuration)
 
 	const willAutoNextIntoThisPart = isNext ? currentPartWillAutonext : part.willProbablyAutoNext
@@ -110,7 +112,7 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 					key={unprotectString(piece.instance._id)}
 					piece={piece}
 					timelineBase={timelineBase}
-					partDuration={partDuration}
+					partDuration={renderedPartDuration}
 					onClick={onPieceClick}
 					onDoubleClick={onPieceDoubleClick}
 				/>
@@ -124,7 +126,7 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 							partInstanceId={part.instance._id}
 							studio={studio}
 							timelineBase={timelineBase}
-							partDuration={partDuration}
+							partDuration={renderedPartDuration}
 							capToPartDuration={part.instance.part.autoNext ?? false}
 							isLive={isLive}
 						/>
@@ -141,16 +143,16 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 					partId={part.instance.part._id}
 					timelineBase={timelineBase}
 					maxDuration={maxDuration}
-					mainSourceEnd={mainSourceEnd ?? partDuration}
+					mainSourceEnd={mainSourceEnd ?? renderedPartDuration}
 					endsInFreeze={endsInFreeze}
 					isPartZeroBudget={isPartZeroBudget}
-					partRenderedDuration={partDuration}
+					partRenderedDuration={renderedPartDuration}
 					partActualDuration={part.instance.timings?.duration}
 					isLive={isLive}
 					hasAlreadyPlayed={hasAlreadyPlayed}
 				/>
 			)}
-			{willAutoNextOut && <PartAutoNextMarker partDuration={partDuration} timelineBase={timelineBase} />}
+			{willAutoNextOut && <PartAutoNextMarker partDuration={renderedPartDuration} timelineBase={timelineBase} />}
 			{isLive && (
 				<OnAirLine
 					partInstance={part.instance}
