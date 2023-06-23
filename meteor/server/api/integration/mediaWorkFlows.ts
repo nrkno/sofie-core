@@ -1,8 +1,8 @@
 import { check, Match } from '../../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { logger } from '../../logging'
-import { MediaWorkFlow } from '../../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowStep } from '../../../lib/collections/MediaWorkFlowSteps'
+import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
+import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import {
 	MediaWorkFlowRevision,
 	MediaWorkFlowStepRevision,

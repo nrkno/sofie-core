@@ -1,5 +1,5 @@
-import { ExpectedPackageDBType } from '../../../lib/collections/ExpectedPackages'
-import { PackageInfoDB } from '../../../lib/collections/PackageInfos'
+import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { ExpectedPackages, Rundowns } from '../../collections'
 import { assertNever, lazyIgnore } from '../../../lib/lib'
 import { logger } from '../../logging'

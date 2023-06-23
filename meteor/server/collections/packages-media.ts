@@ -6,9 +6,9 @@ import { ExpectedPlayoutItem } from '@sofie-automation/corelib/dist/dataModel/Ex
 import { PackageContainerPackageStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 import { PackageContainerStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerStatus'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
-import { MediaObject } from '../../lib/collections/MediaObjects'
-import { MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
+import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
+import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
+import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { createAsyncOnlyMongoCollection, createAsyncOnlyReadOnlyMongoCollection } from './collection'
 import { registerIndex } from './indices'
 

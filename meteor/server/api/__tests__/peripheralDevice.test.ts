@@ -23,10 +23,10 @@ import {
 	IngestDeviceSettings,
 	IngestDeviceSecretSettings,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
-import { MediaWorkFlow } from '../../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowStep } from '../../../lib/collections/MediaWorkFlowSteps'
+import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
+import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
-import { MediaObject } from '../../../lib/collections/MediaObjects'
+import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import {
 	IBlueprintPieceType,
 	PieceLifespan,

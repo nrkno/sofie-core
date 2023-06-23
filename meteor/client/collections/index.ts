@@ -21,7 +21,7 @@ import { Meteor } from 'meteor/meteor'
 import { Bucket } from '../../lib/collections/Buckets'
 import { ICoreSystem, SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import { Evaluation } from '../../lib/collections/Evaluations'
-import { ExpectedPackageDB } from '../../lib/collections/ExpectedPackages'
+import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import {
 	createSyncMongoCollection,
 	createSyncReadOnlyMongoCollection,

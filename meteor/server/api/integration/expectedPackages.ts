@@ -3,16 +3,19 @@ import { Meteor } from 'meteor/meteor'
 import { MethodContext } from '../../../lib/api/methods'
 import { checkAccessAndGetPeripheralDevice } from '../ingest/lib'
 import { ExpectedPackageStatusAPI, PackageInfo } from '@sofie-automation/blueprints-integration'
-import { ExpectedPackageWorkStatus } from '../../../lib/collections/ExpectedPackageWorkStatuses'
+import { ExpectedPackageWorkStatus } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackageWorkStatuses'
 import { assertNever, getCurrentTime, literal, protectString } from '../../../lib/lib'
 import {
 	getPackageContainerPackageId,
 	PackageContainerPackageStatusDB,
-} from '../../../lib/collections/PackageContainerPackageStatus'
-import { getPackageInfoId, PackageInfoDB } from '../../../lib/collections/PackageInfos'
+} from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
+import { getPackageInfoId, PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import { onUpdatedPackageInfo } from '../ingest/packageInfo'
-import { getPackageContainerId, PackageContainerStatusDB } from '../../../lib/collections/PackageContainerStatus'
+import {
+	getPackageContainerId,
+	PackageContainerStatusDB,
+} from '@sofie-automation/corelib/dist/dataModel/PackageContainerStatus'
 import {
 	ExpectedPackageId,
 	ExpectedPackageWorkStatusId,

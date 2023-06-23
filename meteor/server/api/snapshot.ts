@@ -15,7 +15,7 @@ import {
 } from '../../lib/collections/Snapshots'
 import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { PieceGeneric } from '../../lib/collections/Pieces'
-import { MediaObject } from '../../lib/collections/MediaObjects'
+import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import {
 	getCurrentTime,
 	Time,
@@ -54,9 +54,9 @@ import { StudioContentWriteAccess } from '../security/studio'
 import { SystemWriteAccess } from '../security/system'
 import { saveIntoDb, sumChanges } from '../lib/database'
 import * as fs from 'fs'
-import { ExpectedPackageWorkStatus } from '../../lib/collections/ExpectedPackageWorkStatuses'
-import { PackageContainerPackageStatusDB } from '../../lib/collections/PackageContainerPackageStatus'
-import { PackageInfoDB } from '../../lib/collections/PackageInfos'
+import { ExpectedPackageWorkStatus } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackageWorkStatuses'
+import { PackageContainerPackageStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
+import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { checkStudioExists } from '../optimizations'
 import { CoreRundownPlaylistSnapshot } from '@sofie-automation/corelib/dist/snapshots'
 import { QueueStudioJob } from '../worker/worker'

@@ -3,8 +3,6 @@ import { assertNever, literal } from '../lib'
 import { StudioLight } from './Studios'
 import deepExtend from 'deep-extend'
 
-export * from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-
 export function getPreviewPackageSettings(
 	expectedPackage: ExpectedPackage.Any
 ): ExpectedPackage.SideEffectPreviewSettings | undefined {

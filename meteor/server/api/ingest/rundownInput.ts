@@ -9,7 +9,7 @@ import { RundownIngestDataCache } from './ingestCache'
 import { checkAccessAndGetPeripheralDevice, fetchStudioIdFromDevice, runIngestOperation } from './lib'
 import { MethodContext } from '../../../lib/api/methods'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
-import { MediaObject } from '../../../lib/collections/MediaObjects'
+import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { PeripheralDeviceId, RundownId, SegmentId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 
