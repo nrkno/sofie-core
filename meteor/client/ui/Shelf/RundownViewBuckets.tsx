@@ -1,10 +1,10 @@
 import * as React from 'react'
 import { Bucket } from '../../../lib/collections/Buckets'
-import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
+import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { BucketPanel } from './BucketPanel'
-import { AdLibPiece } from '../../../lib/collections/AdLibPieces'
+import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { ISourceLayer, IOutputLayer } from '@sofie-automation/blueprints-integration'
-import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
+import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { ClientAPI } from '../../../lib/api/client'
 

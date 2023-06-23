@@ -9,7 +9,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../../../../lib/ReactMeteorData/ReactMeteorData'
-import { AdLibActionCommon } from '../../../../../lib/collections/AdLibActions'
+import { AdLibActionCommon } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { createInMemorySyncMongoCollection } from '../../../../../lib/collections/lib'
 import { ConfigManifestEntryComponent } from '../../../Settings/components/ConfigManifestEntryComponent'
 import { Spinner } from '../../../../lib/Spinner'

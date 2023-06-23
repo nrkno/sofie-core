@@ -2,11 +2,7 @@
  * This file is the entry-point for both server side and client side code
  */
 
-import './collections/AdLibActions'
-import './collections/AdLibPieces'
 import './collections/Blueprints'
-import './collections/BucketAdlibActions'
-import './collections/BucketAdlibs'
 import './collections/Buckets'
 import './collections/CoreSystem'
 import './collections/Evaluations'
@@ -27,8 +23,6 @@ import './collections/PeripheralDeviceCommands'
 import './collections/PeripheralDevices'
 import './collections/PieceInstances'
 import './collections/Pieces'
-import './collections/RundownBaselineAdLibActions'
-import './collections/RundownBaselineAdLibPieces'
 import './collections/RundownLayouts'
 import './collections/RundownPlaylists'
 import './collections/Rundowns'
