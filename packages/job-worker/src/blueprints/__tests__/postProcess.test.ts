@@ -37,8 +37,8 @@ describe('Test blueprint post-process', () => {
 
 	function ensureAllKeysDefined<T>(template: T, objects: T[]) {
 		const errs: string[] = []
-		_.each(objects, (obj, i) => {
-			for (const key of _.keys(template)) {
+		objects.forEach((obj, i) => {
+			for (const key of Object.keys(template)) {
 				const key2 = key as keyof T
 				if (obj[key2] === undefined) {
 					errs.push(`${i}.${String(key2)}`)
@@ -98,19 +98,19 @@ describe('Test blueprint post-process', () => {
 			const res = postProcessStudioBaselineObjects(context.studio.blueprintId, clone(rawObjects))
 
 			// Nothing should have been overridden (yet)
-			_.each(rawObjects, (obj) => {
+			for (const obj of rawObjects) {
 				// 'Hack' off the invalid fields to make the MatchObject pass
 				// @ts-expect-error
 				if (obj.id === '') delete obj.id
-			})
+			}
 			expect(res).toMatchObject(rawObjects)
 
 			// Certain fields should be defined by simple rules
-			expect(_.filter(res, (r) => r.id === '')).toHaveLength(0)
-			expect(_.filter(res, (r) => r.objectType !== 'rundown')).toHaveLength(0)
+			expect(res.filter((r) => r.id === '')).toHaveLength(0)
+			expect(res.filter((r) => r.objectType !== 'rundown')).toHaveLength(0)
 
 			// Ensure no ids were duplicates
-			const ids = _.map(res, (obj) => obj.id)
+			const ids = res.map((obj) => obj.id)
 			expect(ids).toHaveLength(_.uniq(ids).length)
 		})
 		test('duplicate ids', () => {
@@ -206,22 +206,22 @@ describe('Test blueprint post-process', () => {
 
 			// mock getHash, to track the returned ids
 			const mockedIds = ['mocked1', 'mocked2']
-			const expectedIds = _.compact(_.map(rawObjects, (obj) => obj.id)).concat(mockedIds)
-			getHashMock.mockImplementation(() => mockedIds.shift() || '')
+			const expectedIds = _.compact(rawObjects.map((obj) => obj.id)).concat(mockedIds)
+			getHashMock.mockImplementation(() => mockedIds.shift() ?? '')
 
-			const res = postProcessRundownBaselineItems(protectString('some-blueprints'), _.clone(rawObjects))
+			const res = postProcessRundownBaselineItems(protectString('some-blueprints'), clone(rawObjects))
 
 			// Nothing should have been overridden (yet)
-			_.each(rawObjects, (obj) => {
+			for (const obj of rawObjects) {
 				// 'Hack' off the invalid fields to make the MatchObject pass
 				// @ts-expect-error
 				if (obj.id === '') delete obj.id
-			})
+			}
 			expect(res).toMatchObject(rawObjects)
 
 			// Certain fields should be defined by simple rules
-			expect(_.filter(res, (r) => r.id === '')).toHaveLength(0)
-			expect(_.filter(res, (r) => r.objectType !== 'rundown')).toHaveLength(0)
+			expect(res.filter((r) => r.id === '')).toHaveLength(0)
+			expect(res.filter((r) => r.objectType !== 'rundown')).toHaveLength(0)
 
 			// Ensure getHash was called as expected
 			expect(getHashMock).toHaveBeenCalledTimes(2)
@@ -229,8 +229,8 @@ describe('Test blueprint post-process', () => {
 			expect(getHashMock).toHaveBeenNthCalledWith(2, 'baseline_3')
 
 			// Ensure no ids were duplicates
-			const ids = _.map(res, (obj) => obj.id).sort()
-			expect(ids).toEqual(expectedIds.sort())
+			const ids = res.map((obj) => obj.id).sort((a, b) => a.localeCompare(b))
+			expect(ids).toEqual(expectedIds.sort((a, b) => a.localeCompare(b)))
 
 			// Ensure all required keys are defined
 			const tmpObj = literal<TimelineObjGeneric>({
@@ -281,7 +281,7 @@ describe('Test blueprint post-process', () => {
 			])
 
 			const blueprintId = 'some-blueprints'
-			expect(() => postProcessRundownBaselineItems(protectString(blueprintId), _.clone(rawObjects))).toThrow(
+			expect(() => postProcessRundownBaselineItems(protectString(blueprintId), clone(rawObjects))).toThrow(
 				`Error in blueprint "${blueprintId}": ids of timelineObjs must be unique! ("testObj")`
 			)
 		})
@@ -343,7 +343,7 @@ describe('Test blueprint post-process', () => {
 
 			// mock getHash, to track the returned ids
 			const mockedIds = ['mocked1', 'mocked2', 'mocked3']
-			const expectedIds = _.clone(mockedIds)
+			const expectedIds = clone(mockedIds)
 			getHashMock.mockImplementation(() => mockedIds.shift() || '')
 
 			const res = postProcessAdLibPieces(jobContext, blueprintId, rundownId, undefined, pieces)
@@ -379,8 +379,8 @@ describe('Test blueprint post-process', () => {
 			expect(getHashMock).toHaveBeenNthCalledWith(3, 'rundown1_blueprint9_undefined_adlib_piece_sl0_eid2_0')
 
 			// Ensure no ids were duplicates
-			const ids = _.map(res, (obj) => obj._id).sort()
-			expect(ids).toEqual(expectedIds.sort())
+			const ids = res.map((obj) => obj._id).sort((a, b) => a.toString().localeCompare(b.toString()))
+			expect(ids).toEqual(expectedIds.sort((a, b) => a.localeCompare(b)))
 		})
 
 		test('piece with content', () => {
@@ -518,8 +518,8 @@ describe('Test blueprint post-process', () => {
 			expect(getHashMock).toHaveBeenNthCalledWith(2, 'fakeRo_blueprint9_part8_piece_sl0_eid2')
 
 			// Ensure no ids were duplicates
-			const ids = _.map(res, (obj) => obj._id).sort()
-			expect(ids).toEqual(expectedIds.sort())
+			const ids = res.map((obj) => obj._id).sort((a, b) => a.toString().localeCompare(b.toString()))
+			expect(ids).toEqual(expectedIds.sort((a, b) => a.localeCompare(b)))
 		})
 
 		test('piece with content', () => {

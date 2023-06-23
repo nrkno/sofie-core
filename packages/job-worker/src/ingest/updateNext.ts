@@ -21,7 +21,7 @@ export async function ensureNextPartIsValid(context: JobContext, cache: CacheFor
 
 	// Ensure the next-id is still valid
 	const playlist = cache.Playlist.doc
-	if (playlist && playlist.activationId) {
+	if (playlist?.activationId) {
 		const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 		if (

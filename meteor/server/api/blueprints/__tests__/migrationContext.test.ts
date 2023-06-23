@@ -514,21 +514,6 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('')).toBeFalsy()
 				expect((await getStudio(ctx)).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 			})
-			// testInFiber('insertDevice: no parent', () => { TODO
-			// 	const ctx = await getContext()
-			// 	const studio = getStudio(ctx)
-			// 	const initialSettings = studio.peripheralDeviceSettings.playoutDevices
-
-			// 	try {
-			// 		ctx.insertDevice('', { type: TSR.DeviceType.ABSTRACT })
-			// 		fail('expected to throw')
-			// 	} catch (e) {
-			// 		expect(e.message).toBe(`[500] Device id "" is invalid`)
-			// 	}
-
-			// 	expect(ctx.getDevice('')).toBeFalsy()
-			// 	expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
-			// })
 			testInFiber('insertDevice: already exists', async () => {
 				const ctx = await getContext()
 				const studio = await getStudio(ctx)
@@ -574,21 +559,6 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('')).toBeFalsy()
 				expect((await getStudio(ctx)).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 			})
-			// testInFiber('updateDevice: no parent', () => { TODO
-			// 	const ctx = await getContext()
-			// 	const studio = getStudio(ctx)
-			// 	const initialSettings = studio.peripheralDeviceSettings.playoutDevices
-
-			// 	try {
-			// 		ctx.updateDevice('', { type: TSR.DeviceType.ABSTRACT })
-			// 		fail('expected to throw')
-			// 	} catch (e) {
-			// 		expect(e.message).toBe(`[500] Device id "" is invalid`)
-			// 	}
-
-			// 	expect(ctx.getDevice('')).toBeFalsy()
-			// 	expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
-			// })
 			testInFiber('updateDevice: missing', async () => {
 				const ctx = await getContext()
 				const studio = await getStudio(ctx)
@@ -634,21 +604,6 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getDevice('')).toBeFalsy()
 				expect((await getStudio(ctx)).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
 			})
-			// testInFiber('removeDevice: no parent', () => { TODO
-			// 	const ctx = await getContext()
-			// 	const studio = getStudio(ctx)
-			// 	const initialSettings = studio.peripheralDeviceSettings.playoutDevices
-
-			// 	try {
-			// 		ctx.removeDevice('', { type: TSR.DeviceType.ABSTRACT })
-			// 		fail('expected to throw')
-			// 	} catch (e) {
-			// 		expect(e.message).toBe(`[500] Device id "" is invalid`)
-			// 	}
-
-			// 	expect(ctx.getDevice('')).toBeFalsy()
-			// 	expect(getStudio(ctx).peripheralDeviceSettings.playoutDevices).toEqual(initialSettings)
-			// })
 			testInFiber('removeDevice: missing', async () => {
 				const ctx = await getContext()
 				const studio = await getStudio(ctx)
@@ -1289,7 +1244,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getBaseConfig('confUndef')).toBeFalsy()
 
 				expect(() => ctx.setBaseConfig('confUndef', undefined as any)).toThrow(
-					`[400] setBaseConfig \"confUndef\": value is undefined`
+					`[400] setBaseConfig "confUndef": value is undefined`
 				)
 
 				// BaseConfig should not have changed
@@ -1323,7 +1278,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getBaseConfig('conf1')).toBeTruthy()
 
 				expect(() => ctx.setBaseConfig('conf1', undefined as any)).toThrow(
-					`[400] setBaseConfig \"conf1\": value is undefined`
+					`[400] setBaseConfig "conf1": value is undefined`
 				)
 
 				// BaseConfig should not have changed
@@ -1389,13 +1344,13 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('getVariantConfig: no variant id', async () => {
 				const ctx = await getContext()
 
-				expect(() => ctx.getVariantConfig('', 'conf1')).toThrow(`[404] ShowStyleVariant \"\" not found`)
+				expect(() => ctx.getVariantConfig('', 'conf1')).toThrow(`[404] ShowStyleVariant "" not found`)
 			})
 			testInFiber('getVariantConfig: missing variant', async () => {
 				const ctx = await getContext()
 
 				expect(() => ctx.getVariantConfig('fake_variant', 'conf1')).toThrow(
-					`[404] ShowStyleVariant \"fake_variant\" not found`
+					`[404] ShowStyleVariant "fake_variant" not found`
 				)
 			})
 			testInFiber('getVariantConfig: missing', async () => {
@@ -1415,13 +1370,13 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('setVariantConfig: no variant id', async () => {
 				const ctx = await getContext()
 
-				expect(() => ctx.setVariantConfig('', 'conf1', 5)).toThrow(`[404] ShowStyleVariant \"\" not found`)
+				expect(() => ctx.setVariantConfig('', 'conf1', 5)).toThrow(`[404] ShowStyleVariant "" not found`)
 			})
 			testInFiber('setVariantConfig: missing variant', async () => {
 				const ctx = await getContext()
 
 				expect(() => ctx.setVariantConfig('fake_variant', 'conf1', 5)).toThrow(
-					`[404] ShowStyleVariant \"fake_variant\" not found`
+					`[404] ShowStyleVariant "fake_variant" not found`
 				)
 			})
 			testInFiber('setVariantConfig: no id', async () => {
@@ -1457,7 +1412,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getVariantConfig('configVariant', 'confUndef')).toBeFalsy()
 
 				expect(() => ctx.setVariantConfig('configVariant', 'confUndef', undefined as any)).toThrow(
-					`[400] setVariantConfig \"configVariant\", \"confUndef\": value is undefined`
+					`[400] setVariantConfig "configVariant", "confUndef": value is undefined`
 				)
 
 				// VariantConfig should not have changed
@@ -1487,7 +1442,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(ctx.getVariantConfig('configVariant', 'conf1')).toBeTruthy()
 
 				expect(() => ctx.setVariantConfig('configVariant', 'conf1', undefined as any)).toThrow(
-					`[400] setVariantConfig \"configVariant\", \"conf1\": value is undefined`
+					`[400] setVariantConfig "configVariant", "conf1": value is undefined`
 				)
 
 				// VariantConfig should not have changed
@@ -1497,13 +1452,13 @@ describe('Test blueprint migrationContext', () => {
 			testInFiber('removeVariantConfig: no variant id', async () => {
 				const ctx = await getContext()
 
-				expect(() => ctx.removeVariantConfig('', 'conf1')).toThrow(`[404] ShowStyleVariant \"\" not found`)
+				expect(() => ctx.removeVariantConfig('', 'conf1')).toThrow(`[404] ShowStyleVariant "" not found`)
 			})
 			testInFiber('removeVariantConfig: missing variant', async () => {
 				const ctx = await getContext()
 
 				expect(() => ctx.removeVariantConfig('fake_variant', 'conf1')).toThrow(
-					`[404] ShowStyleVariant \"fake_variant\" not found`
+					`[404] ShowStyleVariant "fake_variant" not found`
 				)
 			})
 			testInFiber('removeVariantConfig: no id', async () => {

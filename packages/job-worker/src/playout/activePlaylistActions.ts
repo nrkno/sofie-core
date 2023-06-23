@@ -199,11 +199,7 @@ export async function deactivateRundownPlaylistInner(
 	if (currentPartInstance) {
 		// Set the current PartInstance as stopped
 		cache.PartInstances.updateOne(currentPartInstance._id, (instance) => {
-			if (
-				instance.timings &&
-				instance.timings.plannedStartedPlayback &&
-				!instance.timings.plannedStoppedPlayback
-			) {
+			if (instance.timings?.plannedStartedPlayback && !instance.timings.plannedStoppedPlayback) {
 				instance.timings.plannedStoppedPlayback = getCurrentTime()
 				instance.timings.duration = getCurrentTime() - instance.timings.plannedStartedPlayback
 				return instance

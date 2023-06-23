@@ -222,9 +222,9 @@ export function substituteObjectIds(
 	idMap: { [oldId: string]: string | undefined }
 ): TSR.Timeline.TimelineEnable | TSR.Timeline.TimelineEnable[] {
 	const replaceIds = (str: string) => {
-		return str.replace(/#([a-zA-Z0-9_]+)/g, (m) => {
-			const id = m.substr(1, m.length - 1)
-			return `#${idMap[id] || id}`
+		return str.replace(/#([\w]+)/g, (m) => {
+			const id = m.slice(1)
+			return `#${idMap[id] ?? id}`
 		})
 	}
 
@@ -296,7 +296,7 @@ export function isTooCloseToAutonext(
 	currentPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
 	isTake?: boolean
 ): boolean {
-	if (!currentPartInstance || !currentPartInstance.part.autoNext) return false
+	if (!currentPartInstance?.part?.autoNext) return false
 
 	const debounce = isTake ? AUTOTAKE_TAKE_DEBOUNCE : AUTOTAKE_UPDATE_DEBOUNCE
 

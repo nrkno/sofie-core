@@ -556,7 +556,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// Compare the timelineHash with the one we have in the timeline.
 
-		if (userAction && userAction.timelineGenerated) {
+		if (userAction?.timelineGenerated) {
 			/** Time when timeline was generated in Core */
 			const startTime = userAction.timelineGenerated
 			const endTime = getCurrentTime()

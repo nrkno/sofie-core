@@ -154,8 +154,7 @@ async function pieceTakeNowAsAdlib(
 			const resolvedPieceBeingCopied = resolvedPieces.find((p) => p._id === pieceInstanceToCopy._id)
 
 			if (
-				resolvedPieceBeingCopied &&
-				resolvedPieceBeingCopied.resolvedDuration !== undefined &&
+				resolvedPieceBeingCopied?.resolvedDuration !== undefined &&
 				(resolvedPieceBeingCopied.infinite ||
 					resolvedPieceBeingCopied.resolvedStart + resolvedPieceBeingCopied.resolvedDuration >=
 						getCurrentTime())
@@ -399,8 +398,7 @@ export async function handleDisableNextPiece(context: JobContext, data: DisableN
 				const filteredPieces = pieceInstances.filter((piece: PieceInstance) => {
 					const sourceLayer = allowedSourceLayers[piece.piece.sourceLayerId]
 					if (
-						sourceLayer &&
-						sourceLayer.allowDisable &&
+						sourceLayer?.allowDisable &&
 						!piece.piece.virtual &&
 						piece.piece.pieceType === IBlueprintPieceType.Normal
 					)

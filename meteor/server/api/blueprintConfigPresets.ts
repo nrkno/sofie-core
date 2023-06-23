@@ -38,7 +38,7 @@ MeteorStartupAsync(async () => {
 			{ fields: { _id: 1, studioConfigPresets: 1 } }
 		)) as Pick<Blueprint, '_id' | 'studioConfigPresets'> | undefined
 
-		if (!blueprint || !blueprint.studioConfigPresets) {
+		if (!blueprint?.studioConfigPresets) {
 			await markUnlinked()
 			return
 		}
@@ -102,7 +102,7 @@ MeteorStartupAsync(async () => {
 			{ fields: { _id: 1, showStyleConfigPresets: 1 } }
 		)) as Pick<Blueprint, '_id' | 'showStyleConfigPresets'> | undefined
 
-		if (!blueprint || !blueprint.showStyleConfigPresets) {
+		if (!blueprint?.showStyleConfigPresets) {
 			await markUnlinked()
 			return
 		}
@@ -181,7 +181,7 @@ MeteorStartupAsync(async () => {
 		}
 
 		const showStyleBase = await ShowStyleBases.findOneAsync(doc.showStyleBaseId)
-		if (!showStyleBase || !showStyleBase.blueprintId || !showStyleBase.blueprintConfigPresetId) {
+		if (!showStyleBase?.blueprintId || !showStyleBase.blueprintConfigPresetId) {
 			return markUnlinked()
 		}
 
@@ -190,7 +190,7 @@ MeteorStartupAsync(async () => {
 			{ fields: { _id: 1, showStyleConfigPresets: 1 } }
 		)) as Pick<Blueprint, '_id' | 'showStyleConfigPresets'> | undefined
 
-		if (!blueprint || !blueprint.showStyleConfigPresets) {
+		if (!blueprint?.showStyleConfigPresets) {
 			return markUnlinked()
 		}
 
