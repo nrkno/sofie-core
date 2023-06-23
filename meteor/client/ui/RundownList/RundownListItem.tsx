@@ -10,10 +10,11 @@ import { getEmptyImage } from 'react-dnd-html5-backend'
 import { unprotectString } from '../../../lib/lib'
 import RundownListItemView from './RundownListItemView'
 import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
-import { UIShowStyleBases } from '../Collections'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ShowStyleVariants } from '../../collections'
+import { ShowStyleBases, ShowStyleVariants } from '../../collections'
 import { useTranslation } from 'react-i18next'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 
 export const HTML_ID_PREFIX = 'rundown-'
 
@@ -36,10 +37,18 @@ export function RundownListItem({
 }): JSX.Element | null {
 	const { t } = useTranslation()
 
-	// const studio = useTracker(() => UIStudios.findOne(rundown.studioId), [rundown.studioId])
-	const showStyleBase = useTracker(() => UIShowStyleBases.findOne(rundown.showStyleBaseId), [rundown.showStyleBaseId])
+	const showStyleBase = useTracker(
+		() =>
+			ShowStyleBases.findOne(rundown.showStyleBaseId, { projection: { name: 1 } }) as
+				| Pick<DBShowStyleBase, 'name'>
+				| undefined,
+		[rundown.showStyleBaseId]
+	)
 	const showStyleVariant = useTracker(
-		() => ShowStyleVariants.findOne(rundown.showStyleVariantId),
+		() =>
+			ShowStyleVariants.findOne(rundown.showStyleVariantId, { projection: { name: 1 } }) as
+				| Pick<DBShowStyleVariant, 'name'>
+				| undefined,
 		[rundown.showStyleVariantId]
 	)
 
