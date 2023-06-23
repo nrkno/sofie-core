@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { TFunction } from 'i18next'
 import { assertNever } from '../../../../../../../lib/lib'
 import { FilterEditor } from './FilterEditor'
-import { OutputLayers, SourceLayers } from '../../../../../../../lib/collections/ShowStyleBases'
+import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { EditAttributeType } from '../../../../../../lib/EditAttribute'
 import { useTracker } from '../../../../../../lib/ReactMeteorData/ReactMeteorData'
 import {

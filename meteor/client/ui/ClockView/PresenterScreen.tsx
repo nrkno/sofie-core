@@ -29,7 +29,7 @@ import {
 	ShowStyleVariantId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { ShelfDashboardLayout } from '../Shelf/ShelfDashboardLayout'
 import { parse as queryStringParse } from 'query-string'
@@ -71,7 +71,7 @@ export interface RundownOverviewTrackedProps {
 	currentShowStyleBaseId: ShowStyleBaseId | undefined
 	currentShowStyleBase: UIShowStyleBase | undefined
 	currentShowStyleVariantId: ShowStyleVariantId | undefined
-	currentShowStyleVariant: ShowStyleVariant | undefined
+	currentShowStyleVariant: DBShowStyleVariant | undefined
 	nextShowStyleBaseId: ShowStyleBaseId | undefined
 	showStyleBaseIds: ShowStyleBaseId[]
 	rundownIds: RundownId[]
@@ -94,14 +94,14 @@ function getShowStyleBaseIdSegmentPartUi(
 	showStyleBaseId: ShowStyleBaseId | undefined
 	showStyleBase: UIShowStyleBase | undefined
 	showStyleVariantId: ShowStyleVariantId | undefined
-	showStyleVariant: ShowStyleVariant | undefined
+	showStyleVariant: DBShowStyleVariant | undefined
 	segment: SegmentUi | undefined
 	partInstance: PartUi | undefined
 } {
 	let showStyleBaseId: ShowStyleBaseId | undefined = undefined
 	let showStyleBase: UIShowStyleBase | undefined = undefined
 	let showStyleVariantId: ShowStyleVariantId | undefined = undefined
-	let showStyleVariant: ShowStyleVariant | undefined = undefined
+	let showStyleVariant: DBShowStyleVariant | undefined = undefined
 	let segment: SegmentUi | undefined = undefined
 	let partInstanceUi: PartUi | undefined = undefined
 
@@ -189,7 +189,7 @@ export const getPresenterScreenReactive = (props: RundownOverviewProps): Rundown
 	let currentShowStyleBaseId: ShowStyleBaseId | undefined = undefined
 	let currentShowStyleBase: UIShowStyleBase | undefined = undefined
 	let currentShowStyleVariantId: ShowStyleVariantId | undefined = undefined
-	let currentShowStyleVariant: ShowStyleVariant | undefined = undefined
+	let currentShowStyleVariant: DBShowStyleVariant | undefined = undefined
 
 	let nextSegment: SegmentUi | undefined = undefined
 	let nextPartInstanceUi: PartUi | undefined = undefined

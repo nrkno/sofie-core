@@ -5,7 +5,7 @@ import { PeripheralDeviceType, PeripheralDevice } from '../../lib/collections/Pe
 import { PeripheralDeviceCommands, PeripheralDevices, Rundowns, Studios, UserActionsLog } from '../collections'
 import { getCurrentTime, protectString, stringifyObjects, literal, unprotectString } from '../../lib/lib'
 import { logger } from '../logging'
-import { TimelineHash } from '../../lib/collections/Timeline'
+import { TimelineHash } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { registerClassToMeteorMethods } from '../methods'
 import { RundownInput } from './ingest/rundownInput'
 import {

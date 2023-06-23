@@ -4,14 +4,14 @@ import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { useTranslation } from 'react-i18next'
 import { unprotectString } from '../../../../lib/lib'
 import { EditAttribute } from '../../../lib/EditAttribute'
-import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Link } from 'react-router-dom'
 import { Studio } from '../../../../lib/collections/Studios'
 import { ShowStyleBases } from '../../../collections'
 import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 
 interface IShowStyleGenericPropertiesProps {
-	showStyleBase: ShowStyleBase
+	showStyleBase: DBShowStyleBase
 	compatibleStudios: Array<Studio>
 }
 export function ShowStyleGenericProperties({

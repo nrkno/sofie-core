@@ -6,11 +6,11 @@ import { useTranslation } from 'react-i18next'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { EditAttribute } from '../../../../lib/EditAttribute'
-import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { LabelActual } from '../../../../lib/Components/LabelAndOverrides'
 
 interface SelectConfigPresetProps {
-	showStyleBase: ShowStyleBase
+	showStyleBase: DBShowStyleBase
 }
 
 export function SelectConfigPreset({ showStyleBase }: SelectConfigPresetProps): JSX.Element {

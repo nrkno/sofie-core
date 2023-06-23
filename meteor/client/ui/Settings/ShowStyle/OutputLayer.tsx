@@ -6,7 +6,7 @@ import { IOutputLayer } from '@sofie-automation/blueprints-integration'
 import { getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import Tooltip from 'rc-tooltip'
 import { useTranslation } from 'react-i18next'
-import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { getHelpMode } from '../../../lib/localStorage'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { findHighestRank } from '../StudioSettings'
@@ -30,7 +30,7 @@ import {
 import { ShowStyleBases } from '../../../collections'
 
 interface IOutputSettingsProps {
-	showStyleBase: ShowStyleBase
+	showStyleBase: DBShowStyleBase
 }
 
 export function OutputLayerSettings({ showStyleBase }: IOutputSettingsProps): JSX.Element {

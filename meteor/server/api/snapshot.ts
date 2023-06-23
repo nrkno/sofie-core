@@ -28,17 +28,17 @@ import {
 	unprotectStringArray,
 	unprotectString,
 } from '../../lib/lib'
-import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '../../lib/collections/PeripheralDevices'
 import { logger } from '../logging'
-import { TimelineComplete } from '../../lib/collections/Timeline'
+import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
 import { ICoreSystem, parseVersion } from '../../lib/collections/CoreSystem'
 import { CURRENT_SYSTEM_VERSION } from '../migration/currentSystemVersion'
 import { isVersionSupported } from '../migration/databaseMigration'
-import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { Blueprint } from '../../lib/collections/Blueprints'
 import { IngestRundown, VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '../../lib/typings/meteor'
@@ -114,8 +114,8 @@ interface SystemSnapshot {
 	studioId: StudioId | null
 	snapshot: SnapshotSystem
 	studios: Array<Studio>
-	showStyleBases: Array<ShowStyleBase>
-	showStyleVariants: Array<ShowStyleVariant>
+	showStyleBases: Array<DBShowStyleBase>
+	showStyleVariants: Array<DBShowStyleVariant>
 	blueprints?: Array<Blueprint> // optional, to be backwards compatible
 	rundownLayouts?: Array<RundownLayoutBase> // optional, to be backwards compatible
 	triggeredActions?: Array<DBTriggeredActions> // optional, to be backwards compatible
@@ -162,8 +162,8 @@ async function createSystemSnapshot(
 		throw new Meteor.Error(500, 'Not able to create a systemSnaphost without organizationId')
 
 	let queryStudio: MongoQuery<Studio> = {}
-	let queryShowStyleBases: MongoQuery<ShowStyleBase> = {}
-	let queryShowStyleVariants: MongoQuery<ShowStyleVariant> = {}
+	let queryShowStyleBases: MongoQuery<DBShowStyleBase> = {}
+	let queryShowStyleVariants: MongoQuery<DBShowStyleVariant> = {}
 	let queryRundownLayouts: MongoQuery<RundownLayoutBase> = {}
 	let queryTriggeredActions: MongoQuery<DBTriggeredActions> = {}
 	let queryDevices: MongoQuery<PeripheralDevice> = {}

@@ -18,7 +18,7 @@ import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/coreli
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 import * as blueprintCache from '../../../api/blueprints/cache'
-import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { ShowStyleBases, TriggeredActions } from '../../../collections'
 import { JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
@@ -291,7 +291,7 @@ describe('ShowStyleBase upgrades', () => {
 			await runUpgradeForShowStyleBase(showStyleBase._id)
 
 			// Check the result matches as expected
-			const showStyleBase2 = (await ShowStyleBases.findOneAsync(showStyleBase._id)) as ShowStyleBase
+			const showStyleBase2 = (await ShowStyleBases.findOneAsync(showStyleBase._id)) as DBShowStyleBase
 			expect(showStyleBase2).toBeTruthy()
 
 			expect(showStyleBase2.sourceLayersWithOverrides.defaults).not.toEqual(

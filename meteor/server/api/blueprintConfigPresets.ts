@@ -1,8 +1,8 @@
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../collections'
-import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { Studio } from '../../lib/collections/Studios'
 import { ObserveChangesHelper } from '../collections/lib'
 import { MeteorStartupAsync } from '../../lib/lib'
@@ -70,7 +70,7 @@ MeteorStartupAsync(async () => {
  * We want it synced across, so that if the config-preset is removed, then there is some config that can be used
  */
 MeteorStartupAsync(async () => {
-	const doUpdate = async (doc: ShowStyleBase): Promise<void> => {
+	const doUpdate = async (doc: DBShowStyleBase): Promise<void> => {
 		const markUnlinked = async () => {
 			await Promise.all([
 				ShowStyleBases.updateAsync(doc._id, {
@@ -116,7 +116,7 @@ MeteorStartupAsync(async () => {
 		const variants = (await ShowStyleVariants.findFetchAsync(
 			{ showStyleBaseId: doc._id },
 			{ fields: { blueprintConfigPresetId: 1 } }
-		)) as Pick<ShowStyleVariant, '_id' | 'blueprintConfigPresetId'>[]
+		)) as Pick<DBShowStyleVariant, '_id' | 'blueprintConfigPresetId'>[]
 
 		const ps: Promise<unknown>[] = [
 			ShowStyleBases.updateAsync(doc._id, {
@@ -168,7 +168,7 @@ MeteorStartupAsync(async () => {
  * We want it synced across, so that if the config-preset is removed, then there is some config that can be used
  */
 MeteorStartupAsync(async () => {
-	const doUpdate = async (doc: ShowStyleVariant): Promise<void> => {
+	const doUpdate = async (doc: DBShowStyleVariant): Promise<void> => {
 		const markUnlinked = async () => {
 			await ShowStyleVariants.updateAsync(doc._id, {
 				$set: {

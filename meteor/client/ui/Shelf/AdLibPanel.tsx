@@ -11,7 +11,7 @@ import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
-import { OutputLayers, SourceLayers } from '../../../lib/collections/ShowStyleBases'
+import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import {
 	ISourceLayer,
 	PieceLifespan,

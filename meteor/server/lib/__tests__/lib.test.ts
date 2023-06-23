@@ -5,7 +5,7 @@ import {
 	TimelineComplete,
 	deserializeTimelineBlob,
 	serializeTimelineBlob,
-} from '../../../lib/collections/Timeline'
+} from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { protectString } from '../../../lib/lib'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
 import { Timeline } from '../../collections'

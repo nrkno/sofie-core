@@ -8,7 +8,7 @@ import { Rundown } from '../../../lib/collections/Rundowns'
 import { isProtectedString } from '../../../lib/lib'
 import { DBOrganization } from '../../../lib/collections/Organization'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
-import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { profiler } from '../../api/profiler'
 import { fetchShowStyleBasesLight, fetchStudioLight, ShowStyleBaseLight, StudioLight } from '../../optimizations'
 import { Organizations, PeripheralDevices, RundownPlaylists, Rundowns, ShowStyleVariants } from '../../collections'
@@ -123,7 +123,7 @@ export async function allowAccessToShowStyleBase(
 export async function allowAccessToShowStyleVariant(
 	cred0: Credentials | ResolvedCredentials,
 	showStyleVariantId: MongoQueryKey<ShowStyleVariantId>
-): Promise<Access<ShowStyleVariant | null>> {
+): Promise<Access<DBShowStyleVariant | null>> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!showStyleVariantId) return noAccess('showStyleVariantId not set')
 	const cred = await resolveCredentials(cred0)

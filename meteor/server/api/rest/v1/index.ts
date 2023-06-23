@@ -83,8 +83,8 @@ import {
 import { MigrationStepInputResult, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
-import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { Studio } from '../../../../lib/collections/Studios'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
@@ -708,7 +708,7 @@ class ServerRestAPI implements RestAPI {
 		_event: string
 	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>> {
 		const showStyleBases = (await ShowStyleBases.findFetchAsync({}, { projection: { _id: 1 } })) as Array<
-			Pick<ShowStyleBase, '_id'>
+			Pick<DBShowStyleBase, '_id'>
 		>
 		return ClientAPI.responseSuccess(showStyleBases.map((base) => ({ id: unprotectString(base._id) })))
 	}
@@ -821,7 +821,7 @@ class ServerRestAPI implements RestAPI {
 		const showStyleVariants = (await ShowStyleVariants.findFetchAsync(
 			{ showStyleBaseId },
 			{ projection: { _id: 1 } }
-		)) as Array<Pick<ShowStyleVariant, '_id'>>
+		)) as Array<Pick<DBShowStyleVariant, '_id'>>
 
 		return ClientAPI.responseSuccess(showStyleVariants.map((variant) => ({ id: unprotectString(variant._id) })))
 	}

@@ -1,6 +1,10 @@
 import { testInFiber } from '../../__mocks__/helpers/jest'
 import { transformTimeline } from '@sofie-automation/corelib/dist/playout/timeline'
-import { TimelineObjGeneric, TimelineObjType, TimelineObjRundown } from '../collections/Timeline'
+import {
+	TimelineObjGeneric,
+	TimelineObjType,
+	TimelineObjRundown,
+} from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { TSR } from '@sofie-automation/blueprints-integration'
 
 describe('lib/timeline', () => {

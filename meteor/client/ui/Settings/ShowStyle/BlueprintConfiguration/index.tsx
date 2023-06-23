@@ -5,12 +5,12 @@ import { SomeObjectOverrideOp } from '@sofie-automation/corelib/dist/settings/ob
 import { ShowStyleBases } from '../../../../collections'
 import { useTranslation } from 'react-i18next'
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { ShowStyleBase, SourceLayers } from '../../../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { SelectConfigPreset } from './SelectConfigPreset'
 import { SelectBlueprint } from './SelectBlueprint'
 
 interface ShowStyleBaseBlueprintConfigurationSettingsProps {
-	showStyleBase: ShowStyleBase
+	showStyleBase: DBShowStyleBase
 
 	schema: JSONSchema | undefined
 

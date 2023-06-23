@@ -12,7 +12,7 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/noti
 import { faPlus, faTrash, faExclamationTriangle, faCaretRight, faCaretDown } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Blueprint } from '../../../lib/collections/Blueprints'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -29,7 +29,7 @@ interface ISettingsMenuProps {
 interface ISettingsMenuState {}
 interface ISettingsMenuTrackedProps {
 	studios: Array<Studio>
-	showStyleBases: Array<ShowStyleBase>
+	showStyleBases: Array<DBShowStyleBase>
 	blueprints: Array<Blueprint>
 	peripheralDevices: Array<PeripheralDevice>
 }
@@ -292,7 +292,7 @@ function studioHasError(studio: Studio): boolean {
 }
 
 interface SettingsMenuShowStyleProps {
-	showStyleBase: ShowStyleBase
+	showStyleBase: DBShowStyleBase
 }
 function SettingsMenuShowStyle({ showStyleBase }: SettingsMenuShowStyleProps) {
 	const { t } = useTranslation()

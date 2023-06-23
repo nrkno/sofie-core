@@ -28,8 +28,8 @@ import {
 	APIStudio,
 	APIStudioSettings,
 } from '../../../../lib/api/rest'
-import { DBShowStyleBase, ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { Studio } from '../../../../lib/collections/Studios'
 import { Blueprints, ShowStyleBases, Studios } from '../../../collections'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
@@ -42,7 +42,7 @@ When making changes to this file, be wary of breaking changes to the API.
 export async function showStyleBaseFrom(
 	apiShowStyleBase: APIShowStyleBase,
 	existingId?: ShowStyleBaseId
-): Promise<ShowStyleBase | undefined> {
+): Promise<DBShowStyleBase | undefined> {
 	const blueprint = await Blueprints.findOneAsync(protectString(apiShowStyleBase.blueprintId))
 	if (!blueprint) return undefined
 	if (blueprint.blueprintType !== BlueprintManifestType.SHOWSTYLE) return undefined
@@ -84,7 +84,7 @@ export async function showStyleBaseFrom(
 	}
 }
 
-export function APIShowStyleBaseFrom(showStyleBase: ShowStyleBase): APIShowStyleBase {
+export function APIShowStyleBaseFrom(showStyleBase: DBShowStyleBase): APIShowStyleBase {
 	return {
 		name: showStyleBase.name,
 		blueprintId: unprotectString(showStyleBase.blueprintId),
@@ -102,7 +102,7 @@ export function APIShowStyleBaseFrom(showStyleBase: ShowStyleBase): APIShowStyle
 export function showStyleVariantFrom(
 	apiShowStyleVariant: APIShowStyleVariant,
 	existingId?: ShowStyleVariantId
-): ShowStyleVariant | undefined {
+): DBShowStyleVariant | undefined {
 	const blueprintConfig = wrapDefaultObject({})
 	blueprintConfig.overrides = Object.entries<any>(apiShowStyleVariant.config).map(([key, value]) =>
 		literal<ObjectOverrideSetOp>({
@@ -121,7 +121,7 @@ export function showStyleVariantFrom(
 	}
 }
 
-export function APIShowStyleVariantFrom(showStyleVariant: ShowStyleVariant): APIShowStyleVariant {
+export function APIShowStyleVariantFrom(showStyleVariant: DBShowStyleVariant): APIShowStyleVariant {
 	return {
 		name: showStyleVariant.name,
 		rank: showStyleVariant._rank,

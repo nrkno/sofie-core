@@ -1,6 +1,6 @@
 import { Time, TimeDuration } from '../lib'
 import { UserActionsLogItemId, OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { TimelineHash } from './Timeline'
+import { TimelineHash } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
 export interface UserActionsLogItem {
 	_id: UserActionsLogItemId

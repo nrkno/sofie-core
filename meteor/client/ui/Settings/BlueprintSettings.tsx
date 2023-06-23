@@ -8,7 +8,7 @@ import { Blueprint } from '../../../lib/collections/Blueprints'
 import Moment from 'react-moment'
 import { Link } from 'react-router-dom'
 import { Studio } from '../../../lib/collections/Studios'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
@@ -32,7 +32,7 @@ interface IState {
 interface ITrackedProps {
 	blueprint?: Blueprint
 	assignedStudios: Studio[]
-	assignedShowStyles: ShowStyleBase[]
+	assignedShowStyles: DBShowStyleBase[]
 	assignedSystem: ICoreSystem | undefined
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProps) => {

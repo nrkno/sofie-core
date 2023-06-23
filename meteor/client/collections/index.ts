@@ -29,8 +29,8 @@ import {
 } from '../../lib/collections/lib'
 import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { SnapshotItem } from '../../lib/collections/Snapshots'
 import { Studio } from '../../lib/collections/Studios'
 import { TranslationsBundle } from '../../lib/collections/TranslationsBundles'
@@ -81,9 +81,9 @@ export const PeripheralDevices = createSyncMongoCollection<PeripheralDevice>(Col
 
 export const RundownLayouts = createSyncMongoCollection<RundownLayoutBase>(CollectionName.RundownLayouts)
 
-export const ShowStyleBases = createSyncMongoCollection<ShowStyleBase>(CollectionName.ShowStyleBases)
+export const ShowStyleBases = createSyncMongoCollection<DBShowStyleBase>(CollectionName.ShowStyleBases)
 
-export const ShowStyleVariants = createSyncMongoCollection<ShowStyleVariant>(CollectionName.ShowStyleVariants)
+export const ShowStyleVariants = createSyncMongoCollection<DBShowStyleVariant>(CollectionName.ShowStyleVariants)
 
 export const Snapshots = createSyncMongoCollection<SnapshotItem>(CollectionName.Snapshots)
 

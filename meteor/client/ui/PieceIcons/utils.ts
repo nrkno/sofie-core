@@ -1,6 +1,6 @@
 import { SourceLayerType, ISourceLayer } from '@sofie-automation/blueprints-integration'
-import { SourceLayers } from '../../../lib/collections/ShowStyleBases'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { IPropsHeader } from './PieceIcon'
 import { PieceExtended } from '../../../lib/Rundown'
 import { UIShowStyleBases } from '../Collections'

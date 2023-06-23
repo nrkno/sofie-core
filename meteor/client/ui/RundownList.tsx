@@ -28,8 +28,8 @@ import {
 import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -119,11 +119,11 @@ export function RundownList(): JSX.Element {
 
 					const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId, {
 						projection: { _id: 1, name: 1 },
-					}) as Pick<ShowStyleBase, '_id' | 'name'>
+					}) as Pick<DBShowStyleBase, '_id' | 'name'>
 					if (showStyleBase) {
 						const showStyleVariant = ShowStyleVariants.findOne(rundown.showStyleVariantId, {
 							projection: { _id: 1, name: 1 },
-						}) as Pick<ShowStyleVariant, '_id' | 'name'>
+						}) as Pick<DBShowStyleVariant, '_id' | 'name'>
 
 						showStyles.push({
 							id: showStyleBase._id,

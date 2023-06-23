@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
-import { deserializeTimelineBlob, TimelineHash } from '../../../lib/collections/Timeline'
+import { deserializeTimelineBlob, TimelineHash } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { applyToArray, clone, normalizeArray, protectString } from '../../../lib/lib'
 import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
 import {

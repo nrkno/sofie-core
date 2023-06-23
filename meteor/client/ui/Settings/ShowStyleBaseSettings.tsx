@@ -2,8 +2,8 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { OutputLayers, ShowStyleBase, SourceLayers } from '../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { OutputLayers, DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import RundownLayoutEditor from './RundownLayoutEditor'
 import { Studio, MappingsExt } from '../../../lib/collections/Studios'
 import { BlueprintManifestType, IShowStyleConfigPreset } from '@sofie-automation/blueprints-integration'
@@ -39,8 +39,8 @@ interface IState {
 	uploadFileContents?: string
 }
 interface ITrackedProps {
-	showStyleBase?: ShowStyleBase
-	showStyleVariants: Array<ShowStyleVariant>
+	showStyleBase?: DBShowStyleBase
+	showStyleVariants: Array<DBShowStyleVariant>
 	compatibleStudios: Array<Studio>
 	blueprintConfigSchema: JSONSchema | undefined
 	blueprintConfigPreset: IShowStyleConfigPreset | undefined
@@ -128,7 +128,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			reader.readAsText(file)
 		}
 
-		renderEditForm(showStyleBase: ShowStyleBase) {
+		renderEditForm(showStyleBase: DBShowStyleBase) {
 			const { t } = this.props
 			return (
 				<div className="studio-edit mod mhl mvn">

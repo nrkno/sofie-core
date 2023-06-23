@@ -24,8 +24,8 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { Studio, MappingExt } from '../../../../lib/collections/Studios'
 import { MigrationContextStudio, MigrationContextShowStyle, MigrationContextSystem } from '../migrationContext'
-import { ShowStyleBase, SourceLayers } from '../../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
+import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import {
 	applyAndValidateOverrides,
 	wrapDefaultObject,
@@ -633,11 +633,11 @@ describe('Test blueprint migrationContext', () => {
 
 	describe('MigrationContextShowStyle', () => {
 		async function getContext() {
-			const showStyle = (await ShowStyleBases.findOneAsync({})) as ShowStyleBase
+			const showStyle = (await ShowStyleBases.findOneAsync({})) as DBShowStyleBase
 			expect(showStyle).toBeTruthy()
 			return new MigrationContextShowStyle(showStyle)
 		}
-		function getShowStyle(context: MigrationContextShowStyle): ShowStyleBase {
+		function getShowStyle(context: MigrationContextShowStyle): DBShowStyleBase {
 			const showStyleBase = (context as any).showStyleBase
 			expect(showStyleBase).toBeTruthy()
 			return showStyleBase
@@ -645,7 +645,7 @@ describe('Test blueprint migrationContext', () => {
 		async function createVariant(ctx: MigrationContextShowStyle, id: string, config?: IBlueprintConfig) {
 			const showStyle = getShowStyle(ctx)
 
-			const rawVariant = literal<ShowStyleVariant>({
+			const rawVariant = literal<DBShowStyleVariant>({
 				_id: protectString(ctx.getVariantId(id)),
 				name: 'test',
 				showStyleBaseId: showStyle._id,
@@ -746,7 +746,7 @@ describe('Test blueprint migrationContext', () => {
 				expect(variantId).toEqual(ctx.getVariantId('variant2'))
 
 				initialVariants.push(
-					literal<ShowStyleVariant>({
+					literal<DBShowStyleVariant>({
 						_id: protectString(variantId),
 						showStyleBaseId: getShowStyle(ctx)._id,
 						name: 'test2',
@@ -836,8 +836,8 @@ describe('Test blueprint migrationContext', () => {
 		})
 
 		describe('sourcelayer', () => {
-			async function getAllSourceLayersFromDb(showStyle: ShowStyleBase): Promise<SourceLayers> {
-				const showStyle2 = (await ShowStyleBases.findOneAsync(showStyle._id)) as ShowStyleBase
+			async function getAllSourceLayersFromDb(showStyle: DBShowStyleBase): Promise<SourceLayers> {
+				const showStyle2 = (await ShowStyleBases.findOneAsync(showStyle._id)) as DBShowStyleBase
 				expect(showStyle2).toBeTruthy()
 				return showStyle2.sourceLayersWithOverrides.defaults
 			}
@@ -1010,9 +1010,9 @@ describe('Test blueprint migrationContext', () => {
 
 		describe('outputlayer', () => {
 			async function getAllOutputLayersFromDb(
-				showStyle: ShowStyleBase
+				showStyle: DBShowStyleBase
 			): Promise<Record<string, IOutputLayer | undefined>> {
-				const showStyle2 = (await ShowStyleBases.findOneAsync(showStyle._id)) as ShowStyleBase
+				const showStyle2 = (await ShowStyleBases.findOneAsync(showStyle._id)) as DBShowStyleBase
 				expect(showStyle2).toBeTruthy()
 				return showStyle2.outputLayersWithOverrides.defaults
 			}
@@ -1180,8 +1180,8 @@ describe('Test blueprint migrationContext', () => {
 		})
 
 		describe('base-config', () => {
-			async function getAllBaseConfigFromDb(showStyle: ShowStyleBase): Promise<IBlueprintConfig> {
-				const showStyle2 = (await ShowStyleBases.findOneAsync(showStyle._id)) as ShowStyleBase
+			async function getAllBaseConfigFromDb(showStyle: DBShowStyleBase): Promise<IBlueprintConfig> {
+				const showStyle2 = (await ShowStyleBases.findOneAsync(showStyle._id)) as DBShowStyleBase
 				expect(showStyle2).toBeTruthy()
 				return showStyle2.blueprintConfigWithOverrides.defaults
 			}
@@ -1336,7 +1336,7 @@ describe('Test blueprint migrationContext', () => {
 			): Promise<IBlueprintConfig> {
 				const variant = (await ShowStyleVariants.findOneAsync(
 					protectString(ctx.getVariantId(variantId))
-				)) as ShowStyleVariant
+				)) as DBShowStyleVariant
 				expect(variant).toBeTruthy()
 				return variant.blueprintConfigWithOverrides.defaults
 			}

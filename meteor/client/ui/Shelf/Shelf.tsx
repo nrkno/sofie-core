@@ -33,7 +33,7 @@ import ShelfContextMenu from './ShelfContextMenu'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { ShelfDisplayOptions } from '../../lib/shelf'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIStudio } from '../../../lib/api/studios'
@@ -51,7 +51,7 @@ export interface IShelfProps extends React.ComponentPropsWithRef<any> {
 	currentRundown: Rundown
 	studio: UIStudio
 	showStyleBase: UIShowStyleBase
-	showStyleVariant: ShowStyleVariant
+	showStyleVariant: DBShowStyleVariant
 	studioMode: boolean
 	hotkeys: Array<{
 		key: string

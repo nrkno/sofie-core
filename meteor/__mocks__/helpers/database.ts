@@ -33,8 +33,8 @@ import {
 	IBlueprintPieceType,
 	IBlueprintActionManifest,
 } from '@sofie-automation/blueprints-integration'
-import { ShowStyleBase, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant, DBShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { Blueprint } from '../../lib/collections/Blueprints'
 import { ICoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
@@ -234,8 +234,8 @@ export async function setupMockStudio(doc?: Partial<DBStudio>): Promise<Studio> 
 }
 export async function setupMockShowStyleBase(
 	blueprintId: BlueprintId,
-	doc?: Partial<ShowStyleBase>
-): Promise<ShowStyleBase> {
+	doc?: Partial<DBShowStyleBase>
+): Promise<DBShowStyleBase> {
 	doc = doc || {}
 
 	const defaultShowStyleBase: DBShowStyleBase = {
@@ -300,8 +300,8 @@ export async function setupMockShowStyleBase(
 }
 export async function setupMockShowStyleVariant(
 	showStyleBaseId: ShowStyleBaseId,
-	doc?: Partial<ShowStyleVariant>
-): Promise<ShowStyleVariant> {
+	doc?: Partial<DBShowStyleVariant>
+): Promise<DBShowStyleVariant> {
 	doc = doc || {}
 
 	const defaultShowStyleVariant: DBShowStyleVariant = {
@@ -516,9 +516,9 @@ export interface DefaultEnvironment {
 	showStyleVariantId: ShowStyleVariantId
 	studioBlueprint: Blueprint
 	showStyleBlueprint: Blueprint
-	showStyleBase: ShowStyleBase
+	showStyleBase: DBShowStyleBase
 	triggeredActions: DBTriggeredActions[]
-	showStyleVariant: ShowStyleVariant
+	showStyleVariant: DBShowStyleVariant
 	studio: Studio
 	core: ICoreSystem
 	systemTriggeredActions: DBTriggeredActions[]
@@ -885,7 +885,7 @@ export async function setupMockWorker(doc?: Partial<WorkerStatus>): Promise<{
 // const showStyleBlueprint
 // const showStyleVariant
 
-export function convertToUIShowStyleBase(showStyleBase: ShowStyleBase): UIShowStyleBase {
+export function convertToUIShowStyleBase(showStyleBase: DBShowStyleBase): UIShowStyleBase {
 	return literal<Complete<UIShowStyleBase>>({
 		_id: showStyleBase._id,
 		name: showStyleBase.name,
