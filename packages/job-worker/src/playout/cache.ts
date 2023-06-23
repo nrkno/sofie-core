@@ -301,7 +301,7 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 		// If there is an ingestCache, then avoid loading some bits from the db for that rundown
 		const loadRundownIds = ingestCache ? rundownIds.filter((id) => id !== ingestCache.RundownId) : rundownIds
-		const baselineFromIngest = ingestCache && ingestCache.RundownBaselineObjs.getIfLoaded()
+		const baselineFromIngest = ingestCache?.RundownBaselineObjs.getIfLoaded()
 		const loadBaselineIds = baselineFromIngest ? loadRundownIds : rundownIds
 
 		const pieceInstancesSelector: MongoQuery<PieceInstance> = {

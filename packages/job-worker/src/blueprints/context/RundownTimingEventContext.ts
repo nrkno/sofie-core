@@ -80,7 +80,7 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 	): Promise<Array<IBlueprintPartInstance<unknown>>> {
 		// Pull the PartInstance from the cached list, so that we can access 'secret' values
 		const refPartInstance2 = this.partInstanceCache.get(protectString(refPartInstance._id))
-		if (!refPartInstance2 || !refPartInstance2.segmentId || !refPartInstance2.segmentPlayoutId)
+		if (!refPartInstance2?.segmentId || !refPartInstance2.segmentPlayoutId)
 			throw new Error('Missing partInstance to use a reference for the segment')
 
 		const partInstances = await this.context.directCollections.PartInstances.findFetch(
