@@ -301,7 +301,7 @@ export class ShelfBase extends React.Component<Translated<IShelfProps>, IState> 
 			overrideHeight: undefined,
 		}
 
-		let shouldBeExpanded: boolean = false
+		let shouldBeExpanded = false
 
 		if (Date.now() - this._mouseDown > 350) {
 			if (this.state.overrideHeight && window.innerHeight - this.state.overrideHeight > CLOSE_MARGIN) {

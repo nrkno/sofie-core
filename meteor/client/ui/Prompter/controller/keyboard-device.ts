@@ -11,21 +11,21 @@ const LOCALSTORAGE_MODE = 'prompter-controller-arrowkeys'
  */
 export class KeyboardController extends ControllerAbstract {
 	private _mode: Mode = Mode.NORMAL
-	private _destroyed: boolean = false
+	private _destroyed = false
 
 	private _keyDown: { [button: string]: number } = {}
 
 	private _prompterView: PrompterViewInner
 
 	/** Scroll speed, in pixels per frame */
-	private _maxSpeed: number = 100
+	private _maxSpeed = 100
 	/** Scroll acceleration in pixels/frame^2 */
-	private _acceleration: number = 5
+	private _acceleration = 5
 
-	private _targetPosition: number = 0
-	private _currentSpeed: number = 0
-	private _currentPosition: number = 0
-	private _continousScrolling: number = 0
+	private _targetPosition = 0
+	private _currentSpeed = 0
+	private _currentPosition = 0
+	private _continousScrolling = 0
 
 	private _updateSpeedHandle: number | null = null
 

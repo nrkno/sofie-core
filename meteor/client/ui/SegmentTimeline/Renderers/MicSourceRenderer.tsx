@@ -28,7 +28,7 @@ export const MicSourceRenderer = withTranslation()(
 		readTime: number
 		lastPartDuration: number
 
-		private _lineAtEnd: boolean = false
+		private _lineAtEnd = false
 
 		constructor(props: IProps & WithTranslation) {
 			super(props)

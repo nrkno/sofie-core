@@ -36,7 +36,7 @@ export async function setUpOptimizedObserverArray<
 		newProps: ReadonlyDeep<Partial<UpdateProps> | undefined>
 	) => Promise<PublicationDoc[] | null>,
 	receiver: CustomPublish<PublicationDoc>,
-	lazynessDuration: number = 3 // ms
+	lazynessDuration = 3 // ms
 ): Promise<void> {
 	const converter = new OptimisedObserverGenericArray<PublicationDoc>()
 	return setUpOptimizedObserverInner<PublicationDoc, Args, State, UpdateProps>(

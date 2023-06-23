@@ -1,4 +1,4 @@
-let DEBUG_MODE: boolean = false
+let DEBUG_MODE = false
 window['setDebugMode'] = (d) => {
 	DEBUG_MODE = d
 }

@@ -1,6 +1,6 @@
 export class RandomMock {
 	static mockIds: Array<string> = []
-	static mockI: number = 9000
+	static mockI = 9000
 
 	static id(): string {
 		let id = this.mockIds.shift()

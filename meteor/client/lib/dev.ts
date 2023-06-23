@@ -38,7 +38,7 @@ if (debugData) {
 window['MeteorCall'] = MeteorCall
 
 const expectToRunWithinCache: any = {}
-export function expectToRunWithin(name: string, time: number = 1000): void {
+export function expectToRunWithin(name: string, time = 1000): void {
 	if (expectToRunWithinCache[name]) {
 		if (expectToRunWithinCache[name] !== true) {
 			Meteor.clearTimeout(expectToRunWithinCache[name])

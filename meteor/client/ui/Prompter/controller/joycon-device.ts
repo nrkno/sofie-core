@@ -24,7 +24,7 @@ export class JoyConController extends ControllerAbstract {
 	private reverseSpeedSpline: Spline
 
 	private updateSpeedHandle: number | null = null
-	private timestampOfLastUsedJoyconInput: number = 0
+	private timestampOfLastUsedJoyconInput = 0
 	private currentPosition = 0
 	private lastInputValue = ''
 	private lastButtonInputs: { [index: number]: { mode: JoyconMode; buttons: number[] } } = {}

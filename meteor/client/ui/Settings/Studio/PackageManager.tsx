@@ -88,7 +88,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 		addNewPackageContainer = () => {
 			// find free key name
 			const newKeyName = 'newContainer'
-			let iter: number = 0
+			let iter = 0
 			while ((this.props.studio.packageContainers || {})[newKeyName + iter]) {
 				iter++
 			}
@@ -305,7 +305,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 		addNewAccessor = (containerId: string) => {
 			// find free key name
 			const newKeyName = 'local'
-			let iter: number = 0
+			let iter = 0
 			const packageContainer = this.props.studio.packageContainers[containerId]
 			if (!packageContainer) throw new Error(`Can't add an accessor to nonexistant Package Container "${containerId}"`)
 

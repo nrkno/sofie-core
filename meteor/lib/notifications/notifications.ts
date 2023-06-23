@@ -151,10 +151,10 @@ class NotificationCenter0 {
 	/** The highlighted level of highlighted level */
 	private highlightedLevel: ReactiveVar<NoticeLevel>
 
-	private _isOpen: boolean = false
+	private _isOpen = false
 
 	/** In concentration mode, non-Critical notifications will be snoozed automatically */
-	private _isConcentrationMode: boolean = false
+	private _isConcentrationMode = false
 
 	constructor() {
 		this.highlightedSource = new ReactiveVar<NotificationsSource>(undefined)
@@ -564,7 +564,7 @@ Meteor.startup(() => {
 	window['testNotification'] = function (
 		delay: number,
 		level: NoticeLevel = NoticeLevel.CRITICAL,
-		fakePersistent: boolean = false
+		fakePersistent = false
 	) {
 		NotificationCenter.push(
 			new Notification(

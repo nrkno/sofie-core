@@ -21,28 +21,28 @@ const LOCALSTORAGE_MODE = 'prompter-controller-mouseish'
  */
 export class MouseIshController extends ControllerAbstract {
 	private _mode: Mode = Mode.NORMAL
-	private _destroyed: boolean = false
+	private _destroyed = false
 
 	private _mouseKeyDown: { [button: string]: number } = {}
 
 	private _prompterView: PrompterViewInner
 
 	/** scroll speed, in pixels per frame */
-	private _scrollSpeedTarget: number = 4
-	private _scrollSpeedCurrent: number = 0
-	private _scrollingDown: boolean = false
-	private _scrollingDownHold: boolean = false
-	private _scrollingUp: boolean = false
+	private _scrollSpeedTarget = 4
+	private _scrollSpeedCurrent = 0
+	private _scrollingDown = false
+	private _scrollingDownHold = false
+	private _scrollingUp = false
 	private _updateSpeedHandle: number | null = null
-	private _scrollPosition: number = 0
-	private _scrollRest: number = 0
-	private _noMovement: number = 0
+	private _scrollPosition = 0
+	private _scrollRest = 0
+	private _noMovement = 0
 
-	private _scrollDownDelta: number = 0
-	private _scrollDownDeltaTracker: number = 0
+	private _scrollDownDelta = 0
+	private _scrollDownDeltaTracker = 0
 
 	private _nextPausePosition: number | null = null
-	private _lastWheelTime: number = 0
+	private _lastWheelTime = 0
 
 	constructor(view: PrompterViewInner) {
 		super()

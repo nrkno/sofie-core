@@ -787,9 +787,9 @@ function checkStreamFormatsAndCounts(
 		? new Set<string>(audioConfig.split(',').map((v) => v.trim()))
 		: new Set<string>()
 
-	let timebase: number = 0
-	let audioStreams: number = 0
-	let isStereo: boolean = false
+	let timebase = 0
+	let audioStreams = 0
+	let isStereo = false
 
 	// check the streams for resolution info
 	for (const stream of streams) {

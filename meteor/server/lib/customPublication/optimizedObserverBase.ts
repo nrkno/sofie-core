@@ -68,7 +68,7 @@ export async function setUpOptimizedObserverInner<
 		newProps: ReadonlyDeep<Partial<UpdateProps> | undefined>
 	) => Promise<[PublicationDoc[], CustomPublishChanges<PublicationDoc>]>,
 	receiver: CustomPublish<PublicationDoc>,
-	lazynessDuration: number = 3 // ms
+	lazynessDuration = 3 // ms
 ): Promise<void> {
 	let thisObserverWrapper = optimizedObservers[identifier] as
 		| OptimizedObserverWrapper<PublicationDoc, Args, State>

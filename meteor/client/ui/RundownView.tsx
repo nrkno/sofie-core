@@ -1317,8 +1317,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		/** MiniShelf data */
 		private keyboardQueuedPiece: AdLibPieceUi | undefined = undefined
 		private keyboardQueuedPartInstanceId: PartInstanceId | undefined = undefined
-		private shouldKeyboardRequeue: boolean = false
-		private isKeyboardQueuePending: boolean = false
+		private shouldKeyboardRequeue = false
+		private isKeyboardQueuePending = false
 
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)

@@ -113,7 +113,7 @@ function getBlueprintDependencyVersions(): { TSR_VERSION: string; INTEGRATION_VE
 	}
 }
 
-let dbI: number = 0
+let dbI = 0
 export async function setupMockPeripheralDevice(
 	category: PeripheralDeviceCategory,
 	type: PeripheralDeviceType,
@@ -179,7 +179,7 @@ export async function setupMockCore(doc?: Partial<ICoreSystem>): Promise<ICoreSy
 }
 export async function setupMockTriggeredActions(
 	showStyleBaseId: ShowStyleBaseId | null = null,
-	num: number = 3,
+	num = 3,
 	doc?: Partial<DBTriggeredActions>
 ): Promise<DBTriggeredActions[]> {
 	doc = doc || {}

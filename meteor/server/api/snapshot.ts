@@ -325,7 +325,7 @@ function getPiecesMediaObjects(pieces: PieceGeneric[]): string[] {
 
 async function createRundownPlaylistSnapshot(
 	playlist: ReadonlyDeep<RundownPlaylist>,
-	full: boolean = false
+	full = false
 ): Promise<RundownPlaylistSnapshot> {
 	/** Max count of one type of items to include in the snapshot */
 	const LIMIT_COUNT = 500

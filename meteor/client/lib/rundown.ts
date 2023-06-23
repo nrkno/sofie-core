@@ -299,8 +299,8 @@ export namespace RundownUtils {
 		pieces: Map<PartId, CalculateTimingsPiece[]>,
 		currentPartInstance: PartInstance | undefined,
 		nextPartInstance: PartInstance | undefined,
-		pieceInstanceSimulation: boolean = false,
-		includeDisabledPieces: boolean = false
+		pieceInstanceSimulation = false,
+		includeDisabledPieces = false
 	): {
 		/** A Segment with some additional information */
 		segmentExtended: SegmentExtended

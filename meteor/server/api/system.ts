@@ -27,7 +27,7 @@ import { createAsyncOnlyMongoCollection, AsyncOnlyMongoCollection } from '../col
 import { generateToken } from './singleUseTokens'
 import { triggerWriteAccessBecauseNoCheckNecessary } from '../security/lib/securityVerify'
 
-async function setupIndexes(removeOldIndexes: boolean = false): Promise<Array<IndexSpecification>> {
+async function setupIndexes(removeOldIndexes = false): Promise<Array<IndexSpecification>> {
 	// Note: This function should NOT run on Meteor.startup, due to getCollectionIndexes failing if run before indexes have been created.
 	const registeredIndexes = getTargetRegisteredIndexes()
 	if (!Meteor.isServer) throw new Meteor.Error(500, `setupIndexes() can only be run server-side`)
@@ -288,7 +288,7 @@ async function doSystemBenchmarkInner() {
 
 	return result
 }
-async function doSystemBenchmark(context: MethodContext, runCount: number = 1): Promise<SystemBenchmarkResults> {
+async function doSystemBenchmark(context: MethodContext, runCount = 1): Promise<SystemBenchmarkResults> {
 	await SystemWriteAccess.coreSystem(context)
 
 	if (runCount < 1) throw new Error(`runCount must be >= 1`)
@@ -391,7 +391,7 @@ class SystemAPIClass extends MethodContextAPI implements SystemAPI {
 	async runCronjob() {
 		return runCronjob(this)
 	}
-	async doSystemBenchmark(runCount: number = 1) {
+	async doSystemBenchmark(runCount = 1) {
 		return doSystemBenchmark(this, runCount)
 	}
 	async getTranslationBundle(bundleId: TranslationsBundleId): Promise<ClientAPI.ClientResponse<TranslationsBundle>> {

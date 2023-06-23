@@ -515,7 +515,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 	> {
 		private refreshInterval: NodeJS.Timer | undefined = undefined
 		private refreshDebugStatesInterval: NodeJS.Timer | undefined = undefined
-		private destroyed: boolean = false
+		private destroyed = false
 
 		constructor(props) {
 			super(props)

@@ -36,7 +36,7 @@ export async function setUpCollectionOptimizedObserver<
 		newProps: ReadonlyDeep<Partial<UpdateProps> | undefined>
 	) => Promise<void>,
 	receiver: CustomPublish<PublicationDoc>,
-	lazynessDuration: number = 3 // ms
+	lazynessDuration = 3 // ms
 ): Promise<void> {
 	const collection = new CustomPublishCollection<PublicationDoc>(identifier)
 	return setUpOptimizedObserverInner<PublicationDoc, Args, State, UpdateProps>(

@@ -18,8 +18,8 @@ interface IState {
 export const VideoEditMonitor = withTranslation()(
 	class VideoEditMonitor extends React.Component<Translated<IProps>, IState> {
 		private videoEl: HTMLVideoElement
-		private retryCount: number = 0
-		private internalTime: number = 0
+		private retryCount = 0
+		private internalTime = 0
 		private lastPosition: number
 
 		constructor(props: Translated<IProps>) {

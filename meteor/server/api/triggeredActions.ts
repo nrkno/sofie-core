@@ -60,7 +60,7 @@ actionTriggersRouter.post(
 
 		check(showStyleBaseId, Match.Optional(String))
 
-		const replace: boolean = !!ctx.query['replace']
+		const replace = !!ctx.query['replace']
 
 		try {
 			if (showStyleBaseId !== undefined) {

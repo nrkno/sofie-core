@@ -76,7 +76,7 @@ describe('test peripheralDevice general API methods', () => {
 		device = env.ingestDevice
 		rundownID = protectString('rundown0')
 		rundownPlaylistID = protectString('rundownPlaylist0')
-		const rundownExternalID: string = 'rundown0'
+		const rundownExternalID = 'rundown0'
 		await RundownPlaylists.mutableCollection.insertAsync({
 			_id: rundownPlaylistID,
 			externalId: 'mock_rpl',

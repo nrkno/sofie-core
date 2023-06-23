@@ -373,7 +373,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 			easing: 'ease-out',
 		})
 	}
-	listAnchorPositions(startY: number, endY: number, sortDirection: number = 1): [number, Element][] {
+	listAnchorPositions(startY: number, endY: number, sortDirection = 1): [number, Element][] {
 		let foundPositions: [number, Element][] = []
 		// const anchors = document.querySelectorAll('.prompter .scroll-anchor')
 
@@ -388,7 +388,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 
 		return foundPositions
 	}
-	findAnchorPosition(startY: number, endY: number, sortDirection: number = 1): number | null {
+	findAnchorPosition(startY: number, endY: number, sortDirection = 1): number | null {
 		return (this.listAnchorPositions(startY, endY, sortDirection)[0] || [])[0] || null
 	}
 	private onWindowScroll = () => {

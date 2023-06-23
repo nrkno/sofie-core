@@ -22,7 +22,7 @@ export const DevicePackageManagerSettings: React.FC<IDevicePackageManagerSetting
 		const reloadingNow = useRef(false)
 		const [status, setStatus] = useState<Status | undefined>(undefined)
 
-		const reloadStatus = useCallback((silent: boolean = false) => {
+		const reloadStatus = useCallback((silent = false) => {
 			if (reloadingNow.current) return // if there is a method currently being executed, skip
 
 			reloadingNow.current = true

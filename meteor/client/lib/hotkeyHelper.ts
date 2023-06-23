@@ -1,5 +1,5 @@
 export namespace hotkeyHelper {
-	export function shortcutLabel(hotkey: string, isMacLike: boolean = false): string {
+	export function shortcutLabel(hotkey: string, isMacLike = false): string {
 		if (isMacLike) {
 			hotkey = hotkey.replace(/Accel/, '\u2318')
 		} else {
