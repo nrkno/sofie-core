@@ -209,7 +209,7 @@ function fieldValueMutate(link: IAdLibFilterLink, newValue: any) {
 			return Boolean(newValue)
 		case 'label':
 		case 'tag':
-			return String(newValue).split(/\,\s*/)
+			return String(newValue).split(/,\s*/)
 		case 'limit':
 			return Number(newValue)
 		case 'pick':

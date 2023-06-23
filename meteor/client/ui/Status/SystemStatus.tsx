@@ -456,7 +456,7 @@ export const CoreItem = reacti18next.withTranslation()(
 															return
 														}
 														let time = 'unknown'
-														const match = restartMessage.match(/([\d\.]+)s/)
+														const match = restartMessage.match(/([\d.]+)s/)
 														if (match) {
 															time = match[1]
 														}
