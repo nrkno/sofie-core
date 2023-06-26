@@ -88,7 +88,7 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 			})
 		}
 
-		const doc = await collection.findOne(id, undefined, null)
+		const doc = await collection.findOne(id)
 		if (!doc && !optional) {
 			throw new Error(
 				`DbCacheReadObject population for "${collection['name']}" failed. Document "${id}" was not found`
@@ -188,7 +188,7 @@ export class DbCacheWriteObject<
 			})
 		}
 
-		const doc = await collection.findOne(id, undefined, null)
+		const doc = await collection.findOne(id)
 		if (!doc && !optional) {
 			throw new Error(
 				`DbCacheWriteObject population for "${collection['name']}" failed. Document "${id}" was not found`
@@ -368,7 +368,7 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 			})
 		}
 
-		const doc = await collection.findOne(id, undefined, null)
+		const doc = await collection.findOne(id)
 
 		const res = DbCacheWriteOptionalObject.createOptionalFromDoc<TDoc>(
 			context,
