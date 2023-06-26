@@ -1228,7 +1228,7 @@ describe('Timeline', () => {
 						})
 					)
 
-					const adlibbedPieceId = 'randomId9010'
+					const adlibbedPieceId = 'randomId9007'
 
 					// The adlib should be starting at 'now'
 					await checkTimings({
@@ -1393,7 +1393,7 @@ describe('Timeline', () => {
 						})
 					)
 
-					const adlibbedPieceId = 'randomId9010'
+					const adlibbedPieceId = 'randomId9007'
 
 					// The adlib should be starting at 'now'
 					await checkTimings({

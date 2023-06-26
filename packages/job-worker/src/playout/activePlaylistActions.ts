@@ -115,16 +115,16 @@ export async function activateRundownPlaylist(
 
 	await updateTimeline(context, cache)
 
-	cache.defer(async () => {
+	cache.deferBeforeSave(async () => {
 		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
 		const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 		const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 
 		try {
 			if (blueprint.blueprint.onRundownActivate) {
-				const context2 = new RundownActivationContext(context, cache, showStyle, rundown)
+				const blueprintContext = new RundownActivationContext(context, cache, showStyle, rundown)
 
-				await blueprint.blueprint.onRundownActivate(context2, wasActive)
+				await blueprint.blueprint.onRundownActivate(blueprintContext, wasActive)
 			}
 		} catch (err) {
 			logger.error(`Error in showStyleBlueprint.onRundownActivate: ${stringifyError(err)}`)
@@ -138,15 +138,15 @@ export async function deactivateRundownPlaylist(context: JobContext, cache: Cach
 
 	await cleanTimelineDatastore(context, cache)
 
-	cache.defer(async () => {
+	cache.deferBeforeSave(async () => {
 		if (rundown) {
 			const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 
 			try {
 				if (blueprint.blueprint.onRundownDeActivate) {
-					const context2 = new RundownActivationContext(context, cache, showStyle, rundown)
-					await blueprint.blueprint.onRundownDeActivate(context2)
+					const blueprintContext = new RundownActivationContext(context, cache, showStyle, rundown)
+					await blueprint.blueprint.onRundownDeActivate(blueprintContext)
 				}
 			} catch (err) {
 				logger.error(`Error in showStyleBlueprint.onRundownDeActivate: ${stringifyError(err)}`)

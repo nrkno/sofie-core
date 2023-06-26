@@ -229,16 +229,12 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 
 		// Discard any hooks too
 		this._deferredAfterSaveFunctions.length = 0
-		this._deferredFunctions.length = 0
+		this._deferredBeforeSaveFunctions.length = 0
 	}
 
 	discardChanges(): void {
 		this.toBeRemoved = false
 		super.discardChanges()
-
-		// Discard any hooks too
-		this._deferredAfterSaveFunctions.length = 0
-		this._deferredFunctions.length = 0
 
 		this.assertNoChanges()
 	}
@@ -253,7 +249,6 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 
 			// Ignoring any deferred functions
 			this._deferredAfterSaveFunctions.length = 0
-			this._deferredDuringSaveTransactionFunctions.length = 0
 			this._deferredBeforeSaveFunctions.length = 0
 
 			if (this.Rundown.doc) {

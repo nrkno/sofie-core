@@ -23,7 +23,7 @@ import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/Sho
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { clone, getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
+import { clone, literal } from '@sofie-automation/corelib/dist/lib'
 import {
 	FindOptions as CacheFindOptions,
 	mongoFindOptions,
@@ -34,15 +34,7 @@ import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import EventEmitter = require('eventemitter3')
 import { AnyBulkWriteOperation, Collection, FindOptions } from 'mongodb'
 import { ReadonlyDeep } from 'type-fest'
-import {
-	IChangeStream,
-	IChangeStreamEvents,
-	ICollection,
-	IDirectCollections,
-	IMongoTransaction,
-	MongoModifier,
-	MongoQuery,
-} from '../db'
+import { IChangeStream, IChangeStreamEvents, ICollection, IDirectCollections, MongoModifier, MongoQuery } from '../db'
 import _ = require('underscore')
 import { ExpectedMediaItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
@@ -277,29 +269,10 @@ export async function defer(): Promise<void> {
 	return new Promise((resolve) => jest.requireActual('timers').setImmediate(resolve))
 }
 
-export class MockMongoTransaction implements IMongoTransaction {
-	#id: string
-
-	get id(): string {
-		return this.#id
-	}
-
-	constructor() {
-		this.#id = getRandomString()
-	}
-}
-
 export function getMockCollections(): {
 	jobCollections: Readonly<IDirectCollections>
 	mockCollections: Readonly<IMockCollections>
 } {
-	const runInTransaction = async <T>(func: (transaction: IMongoTransaction) => Promise<T>): Promise<T> => {
-		// We just need enough to satisfy the transaction types
-		const transaction = new MockMongoTransaction()
-
-		return func(transaction)
-	}
-
 	const mockCollections: IMockCollections = Object.freeze(
 		literal<IMockCollections>({
 			AdLibActions: new MockMongoCollection<AdLibAction>(CollectionName.AdLibActions),
@@ -343,7 +316,6 @@ export function getMockCollections(): {
 
 	const jobCollections = Object.freeze(
 		literal<IDirectCollections>({
-			runInTransaction,
 			...mockCollections,
 		})
 	)
