@@ -125,11 +125,8 @@ export class DatastoreActionExecutionContext
 }
 
 /** Actions */
-export class ActionExecutionContext
-	extends DatastoreActionExecutionContext
-	implements IActionExecutionContext, IEventContext
-{
-	// private readonly _context: JobContext
+export class ActionExecutionContext extends ShowStyleUserContext implements IActionExecutionContext, IEventContext {
+	private readonly _context: JobContext
 	private readonly _cache: CacheForPlayout
 	private readonly rundown: DBRundown
 	private readonly playlistActivationId: RundownPlaylistActivationId
@@ -151,7 +148,7 @@ export class ActionExecutionContext
 		watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, context, showStyle, watchedPackages)
-		// this._context = context
+		this._context = context
 		this._cache = cache
 		this.rundown = rundown
 		this.takeAfterExecute = false
@@ -656,5 +653,38 @@ export class ActionExecutionContext
 		payload: Record<string, any>
 	): Promise<TSR.ActionExecutionResult> {
 		return executePeripheralDeviceAction(this._context, deviceId, null, actionId, payload)
+	}
+
+	async setTimelineDatastoreValue(key: string, value: unknown, mode: DatastorePersistenceMode): Promise<void> {
+		const studioId = this._context.studioId
+		const id = protectString(`${studioId}_${key}`)
+		const collection = this._context.directCollections.TimelineDatastores
+
+		this._cache.deferAfterSave(async () => {
+			await collection.replace({
+				_id: id,
+				studioId: studioId,
+
+				key,
+				value,
+
+				modified: Date.now(),
+				mode,
+			})
+		})
+	}
+
+	async removeTimelineDatastoreValue(key: string): Promise<void> {
+		const studioId = this._context.studioId
+		const id = getDatastoreId(studioId, key)
+		const collection = this._context.directCollections.TimelineDatastores
+
+		this._cache.deferAfterSave(async () => {
+			await collection.remove({ _id: id })
+		})
+	}
+
+	getCurrentTime(): number {
+		return getCurrentTime()
 	}
 }

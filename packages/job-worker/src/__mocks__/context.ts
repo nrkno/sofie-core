@@ -153,12 +153,12 @@ export class MockJobContext implements JobContext {
 		return preprocessStudioConfig(this.studio, this.#studioBlueprint)
 	}
 	async getShowStyleBases(): Promise<ReadonlyDeep<Array<ProcessedShowStyleBase>>> {
-		const docs = await this.directCollections.ShowStyleBases.findFetch(undefined, undefined, null)
+		const docs = await this.directCollections.ShowStyleBases.findFetch(undefined)
 
 		return docs.map(processShowStyleBase)
 	}
 	async getShowStyleBase(id: ShowStyleBaseId): Promise<ReadonlyDeep<ProcessedShowStyleBase>> {
-		const doc = await this.directCollections.ShowStyleBases.findOne(id, undefined, null)
+		const doc = await this.directCollections.ShowStyleBases.findOne(id)
 		if (!doc) throw new Error(`ShowStyleBase "${id}" Not found!`)
 		return processShowStyleBase(doc)
 	}
@@ -172,14 +172,13 @@ export class MockJobContext implements JobContext {
 					_rank: 1,
 					_id: 1,
 				},
-			},
-			null
+			}
 		)
 
 		return docs.map(processShowStyleVariant)
 	}
 	async getShowStyleVariant(id: ShowStyleVariantId): Promise<ReadonlyDeep<ProcessedShowStyleVariant>> {
-		const doc = await this.directCollections.ShowStyleVariants.findOne(id, undefined, null)
+		const doc = await this.directCollections.ShowStyleVariants.findOne(id)
 		if (!doc) throw new Error(`ShowStyleVariant "${id}" Not found!`)
 		return processShowStyleVariant(doc)
 	}

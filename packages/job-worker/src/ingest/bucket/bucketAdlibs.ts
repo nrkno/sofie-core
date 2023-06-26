@@ -65,10 +65,8 @@ export async function handleBucketRemoveAdlibAction(
 }
 
 export async function handleBucketEmpty(context: JobContext, data: BucketEmptyProps): Promise<void> {
-	await emptyBucketInner(context, data.bucketId)
-}
+	const id = data.bucketId
 
-async function emptyBucketInner(context: JobContext, id: BucketId): Promise<void> {
 	await Promise.all([
 		context.directCollections.BucketAdLibPieces.remove({ bucketId: id, studioId: context.studioId }),
 		context.directCollections.BucketAdLibActions.remove({ bucketId: id, studioId: context.studioId }),

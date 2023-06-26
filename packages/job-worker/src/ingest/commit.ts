@@ -568,30 +568,26 @@ export async function removeRundownFromPlaylistAndUpdatePlaylist(
 ): Promise<void> {
 	// Quickly move the rundown out of the playlist, so we an free the old playlist lock sooner
 
-	await context.directCollections.Rundowns.update(
-		rundownId,
-		{
-			$set: {
-				playlistId: protectString('__TMP__'),
-				...(updatePlaylistIdIsSetInSofieTo !== undefined
-					? {
-							playlistIdIsSetInSofie: updatePlaylistIdIsSetInSofieTo,
-					  }
-					: {}),
-			},
+	await context.directCollections.Rundowns.update(rundownId, {
+		$set: {
+			playlistId: protectString('__TMP__'),
+			...(updatePlaylistIdIsSetInSofieTo !== undefined
+				? {
+						playlistIdIsSetInSofie: updatePlaylistIdIsSetInSofieTo,
+				  }
+				: {}),
 		},
-		transaction
-	)
+	})
 
 	// If no playlist, then there is nothing to regenerate
 	if (!playlist) return
 
 	// Ensure playlist is regenerated
-	const updatedPlaylist = await regeneratePlaylistAndRundownOrder(context, playlistLock, transaction, playlist)
+	const updatedPlaylist = await regeneratePlaylistAndRundownOrder(context, playlistLock, playlist)
 
 	if (updatedPlaylist) {
 		// ensure the 'old' playout is updated to remove any references to the rundown
-		await updatePlayoutAfterChangingRundownInPlaylist(context, updatedPlaylist, playlistLock, transaction, null)
+		await updatePlayoutAfterChangingRundownInPlaylist(context, updatedPlaylist, playlistLock, null)
 	}
 }
 

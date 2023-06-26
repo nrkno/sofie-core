@@ -377,7 +377,6 @@ export class CacheForPlayout extends CacheForPlayoutPreInit implements CacheForS
 
 			// Ignoring any deferred functions
 			this._deferredAfterSaveFunctions.length = 0
-			this._deferredDuringSaveTransactionFunctions.length = 0
 			this._deferredBeforeSaveFunctions.length = 0
 
 			// Remove the playlist doc
