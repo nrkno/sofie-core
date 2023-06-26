@@ -97,7 +97,7 @@ export function resetPartInstancesWithPieceInstances(
 	}
 
 	// Defer ones which arent loaded
-	cache.deferDuringSaveTransaction(async (transaction, cache) => {
+	cache.deferAfterSave(async (cache) => {
 		const rundownIds = getRundownIDsFromCache(cache)
 		const partInstanceIdsInCache = cache.PartInstances.findAll(null).map((p) => p._id)
 
@@ -131,8 +131,7 @@ export function resetPartInstancesWithPieceInstances(
 							$set: {
 								reset: true,
 							},
-						},
-						transaction
+						}
 				  )
 				: undefined,
 			allToReset.length
@@ -146,8 +145,7 @@ export function resetPartInstancesWithPieceInstances(
 							$set: {
 								reset: true,
 							},
-						},
-						transaction
+						}
 				  )
 				: undefined,
 		])
@@ -170,7 +168,7 @@ function removePartInstancesWithPieceInstances(
 	}
 
 	// Defer ones which arent loaded
-	cache.deferDuringSaveTransaction(async (transaction, cache) => {
+	cache.deferAfterSave(async (cache) => {
 		const rundownIds = getRundownIDsFromCache(cache)
 		// We need to keep any for PartInstances which are still existent in the cache (as they werent removed)
 		const partInstanceIdsInCache = cache.PartInstances.findAll(null).map((p) => p._id)
@@ -194,22 +192,16 @@ function removePartInstancesWithPieceInstances(
 		const allToRemove = [...removeFromDb, ...partInstancesToRemove]
 		await Promise.all([
 			removeFromDb.length > 0
-				? context.directCollections.PartInstances.remove(
-						{
-							_id: { $in: removeFromDb },
-							rundownId: { $in: rundownIds },
-						},
-						transaction
-				  )
+				? context.directCollections.PartInstances.remove({
+						_id: { $in: removeFromDb },
+						rundownId: { $in: rundownIds },
+				  })
 				: undefined,
 			allToRemove.length > 0
-				? context.directCollections.PieceInstances.remove(
-						{
-							partInstanceId: { $in: allToRemove },
-							rundownId: { $in: rundownIds },
-						},
-						transaction
-				  )
+				? context.directCollections.PieceInstances.remove({
+						partInstanceId: { $in: allToRemove },
+						rundownId: { $in: rundownIds },
+				  })
 				: undefined,
 		])
 	})

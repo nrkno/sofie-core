@@ -153,7 +153,7 @@ describe('DatabaseCaches', () => {
 				const deferAfterSaveFcn0 = jest.fn(async () => {
 					await expect(context.directCollections.Parts.findOne(id)).resolves.toBeTruthy()
 				})
-				cache.deferBeforeSave(deferFcn0)
+				cache.defer(deferFcn0)
 				cache.deferAfterSave(deferAfterSaveFcn0)
 
 				await expect(context.directCollections.Parts.findOne(id)).resolves.toBeFalsy()
@@ -206,7 +206,7 @@ describe('DatabaseCaches', () => {
 						title: 'updated',
 					})
 				})
-				cache.deferBeforeSave(deferFcn1)
+				cache.defer(deferFcn1)
 				cache.deferAfterSave(deferAfterSaveFcn1)
 
 				await cache.saveAllToDatabase()
@@ -296,7 +296,7 @@ describe('DatabaseCaches', () => {
 					const cache = await CacheForStudio.create(context)
 
 					// Insert a document:
-					cache.deferBeforeSave(() => {
+					cache.defer(() => {
 						//
 					})
 

@@ -157,11 +157,7 @@ export async function queueExternalMessages(
 								queueForLaterReason: 1,
 							}
 						}
-						await collection.update(
-							existingMessage._id,
-							m,
-							null // Isolated operation
-						)
+						await collection.update(existingMessage._id, m)
 						// trigger sending message handled by watching the collection
 					}
 				} else {
@@ -182,10 +178,7 @@ export async function queueExternalMessages(
 					message2 = removeNullyProperties(message2)
 					if (!playlist.rehearsal) {
 						// Don't save the message when running rehearsals
-						await collection.insertOne(
-							message2,
-							null // Isolated operation
-						)
+						await collection.insertOne(message2)
 						// trigger sending message handled by watching the collection
 					}
 				}
@@ -280,25 +273,17 @@ export async function handleNotifyCurrentlyPlayingPart(
 	await runWithRundownLock(context, rundown._id, async (rundown0) => {
 		if (rundown0) {
 			if (currentPlayingPartExternalId) {
-				await context.directCollections.Rundowns.update(
-					rundown._id,
-					{
-						$set: {
-							notifiedCurrentPlayingPartExternalId: currentPlayingPartExternalId,
-						},
+				await context.directCollections.Rundowns.update(rundown._id, {
+					$set: {
+						notifiedCurrentPlayingPartExternalId: currentPlayingPartExternalId,
 					},
-					null // Isolated operation
-				)
+				})
 			} else {
-				await context.directCollections.Rundowns.update(
-					rundown._id,
-					{
-						$unset: {
-							notifiedCurrentPlayingPartExternalId: 1,
-						},
+				await context.directCollections.Rundowns.update(rundown._id, {
+					$unset: {
+						notifiedCurrentPlayingPartExternalId: 1,
 					},
-					null // Isolated operation
-				)
+				})
 			}
 		}
 	})
