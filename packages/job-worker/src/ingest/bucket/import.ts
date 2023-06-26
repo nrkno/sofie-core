@@ -26,7 +26,6 @@ import { createShowStyleCompound } from '../../showStyles'
 import { isAdlibAction } from './util'
 import { WrappedShowStyleBlueprint } from '../../blueprints/cache'
 import { ReadonlyDeep } from 'type-fest'
-import { IMongoTransaction } from '../../db'
 import { BucketId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export async function handleBucketItemImport(context: JobContext, data: BucketItemImportProps): Promise<void> {
@@ -91,7 +90,7 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 
 				// Cache the newRank, so we only have to calculate it once:
 				if (newRank === undefined) {
-					newRank = (await calculateHighestRankInBucket(context, transaction, data.bucketId)) + 1
+					newRank = (await calculateHighestRankInBucket(context, data.bucketId)) + 1
 				} else {
 					newRank++
 				}
@@ -209,11 +208,7 @@ function generateBucketAdlibForVariant(
 	return null
 }
 
-async function calculateHighestRankInBucket(
-	context: JobContext,
-	transaction: IMongoTransaction,
-	bucketId: BucketId
-): Promise<number> {
+async function calculateHighestRankInBucket(context: JobContext, bucketId: BucketId): Promise<number> {
 	const [highestAdlib, highestAction] = await Promise.all([
 		context.directCollections.BucketAdLibPieces.findFetch(
 			{
@@ -227,8 +222,7 @@ async function calculateHighestRankInBucket(
 					_rank: 1,
 				},
 				limit: 1,
-			},
-			transaction
+			}
 		) as Promise<Array<Pick<BucketAdLib, '_rank'>>>,
 		context.directCollections.BucketAdLibActions.findFetch(
 			{
@@ -242,8 +236,7 @@ async function calculateHighestRankInBucket(
 					'display._rank': 1,
 				},
 				limit: 1,
-			},
-			transaction
+			}
 		) as Promise<Array<{ display: Pick<BucketAdLibAction['display'], '_rank'> }>>,
 	])
 

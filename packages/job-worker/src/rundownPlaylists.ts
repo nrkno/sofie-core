@@ -361,13 +361,9 @@ export async function handleMoveRundownIntoPlaylist(
 						)
 
 					await context.directCollections.runInTransaction(async (transaction) => {
-						const allRundowns = await context.directCollections.Rundowns.findFetch(
-							{
-								playlistId: intoPlaylist._id,
-							},
-							undefined,
-							transaction
-						)
+						const allRundowns = await context.directCollections.Rundowns.findFetch({
+							playlistId: intoPlaylist._id,
+						})
 
 						// Make sure the playlist is set to manual ordering
 						if (!intoPlaylist.rundownRanksAreSetInSofie) {
