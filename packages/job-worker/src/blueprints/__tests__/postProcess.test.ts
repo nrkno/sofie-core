@@ -38,7 +38,7 @@ describe('Test blueprint post-process', () => {
 	function ensureAllKeysDefined<T>(template: T, objects: T[]) {
 		const errs: string[] = []
 		objects.forEach((obj, i) => {
-			for (const key of Object.keys(template)) {
+			for (const key of Object.keys(template as any)) {
 				const key2 = key as keyof T
 				if (obj[key2] === undefined) {
 					errs.push(`${i}.${String(key2)}`)
