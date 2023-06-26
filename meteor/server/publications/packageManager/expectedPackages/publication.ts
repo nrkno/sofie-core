@@ -25,7 +25,7 @@ import { PackageManagerExpectedPackage } from '@sofie-automation/shared-lib/dist
 import { ExpectedPackagesContentObserver } from './contentObserver'
 import { ExpectedPackagesContentCache } from './contentCache'
 import { buildMappingsToDeviceIdMap } from './util'
-import { regenerateForExpectedPackages, regenerateForPieceInstances } from './generate'
+import { updateCollectionForExpectedPackageIds, updateCollectionForPieceInstanceIds } from './generate'
 
 interface ExpectedPackagesPublicationArgs {
 	readonly studioId: StudioId
@@ -38,7 +38,6 @@ interface ExpectedPackagesPublicationUpdateProps {
 
 	newCache: ExpectedPackagesContentCache
 
-	// invalidatePeripheralDevices?: boolean
 	invalidateExpectedPackageIds?: ExpectedPackageId[]
 	invalidatePieceInstanceIds?: PieceInstanceId[]
 }
@@ -74,6 +73,7 @@ async function setupExpectedPackagesPublicationObservers(
 		// Push update
 		triggerUpdate({ newCache: cache })
 
+		// Setup watchers for changes to the caches, to trigger an invalidation of the publication upon cache changes
 		const innerQueries = [
 			cache.ExpectedPackages.find({}).observeChanges({
 				added: (id) => triggerUpdate({ invalidateExpectedPackageIds: [protectString<ExpectedPackageId>(id)] }),
@@ -135,10 +135,12 @@ async function manipulateExpectedPackagesPublicationData(
 		collection.remove(null)
 	}
 
+	// Received a new cache object from the tracker
 	if (updateProps?.newCache !== undefined) {
 		state.contentCache = updateProps.newCache
 	}
 
+	// Reload the studio, and the layerNameToDeviceIds lookup
 	if (!updateProps || updateProps.invalidateStudio) {
 		state.studio = (await Studios.findOneAsync(args.studioId, { fields: studioFieldSpecifier })) as
 			| Pick<Studio, StudioFields>
@@ -152,6 +154,7 @@ async function manipulateExpectedPackagesPublicationData(
 		}
 	}
 
+	// If we are missing either of these, the publication can't run so clear everything
 	if (!state.studio || !state.contentCache) {
 		collection.remove(null)
 		return
@@ -165,11 +168,12 @@ async function manipulateExpectedPackagesPublicationData(
 		regenerateExpectedPackageIds = new Set(state.contentCache.ExpectedPackages.find({}).map((p) => p._id))
 		regeneratePieceInstanceIds = new Set(state.contentCache.PieceInstances.find({}).map((p) => p._id))
 	} else {
+		// only regenerate the reported changes
 		regenerateExpectedPackageIds = new Set(updateProps.invalidateExpectedPackageIds)
 		regeneratePieceInstanceIds = new Set(updateProps.invalidatePieceInstanceIds)
 	}
 
-	await regenerateForExpectedPackages(
+	await updateCollectionForExpectedPackageIds(
 		state.contentCache,
 		state.studio,
 		state.layerNameToDeviceIds,
@@ -177,7 +181,7 @@ async function manipulateExpectedPackagesPublicationData(
 		args.filterPlayoutDeviceIds,
 		regenerateExpectedPackageIds
 	)
-	await regenerateForPieceInstances(
+	await updateCollectionForPieceInstanceIds(
 		state.contentCache,
 		state.studio,
 		state.layerNameToDeviceIds,
