@@ -18,7 +18,16 @@ import { logger } from '../../../logging'
 import { ExpectedPackagesContentCache } from './contentCache'
 import type { StudioFields } from './publication'
 
-export async function regenerateForExpectedPackages(
+/**
+ * Regenerate the output for the provided ExpectedPackage `regenerateIds`, updating the data in `collection` as needed
+ * @param contentCache Cache of the database documents used
+ * @param studio Minimal studio document
+ * @param layerNameToDeviceIds Lookup table of package layers, to PeripheralDeviceIds the layer could be used with
+ * @param collection Output collection of the publication
+ * @param filterPlayoutDeviceIds PeripheralDeviceId filter applied to this publication
+ * @param regenerateIds Ids of ExpectedPackage documents to be recalculated
+ */
+export async function updateCollectionForExpectedPackageIds(
 	contentCache: ReadonlyDeep<ExpectedPackagesContentCache>,
 	studio: Pick<Studio, StudioFields>,
 	layerNameToDeviceIds: Map<string, PeripheralDeviceId[]>,
@@ -30,10 +39,75 @@ export async function regenerateForExpectedPackages(
 
 	for (const packageId of regenerateIds) {
 		const packageDoc = contentCache.ExpectedPackages.findOne(packageId)
-		if (packageDoc) {
+		if (!packageDoc) continue
+
+		// Map the expectedPackages onto their specified layer:
+		const allDeviceIds = new Set<PeripheralDeviceId>()
+		for (const layerName of packageDoc.layers) {
+			const layerDeviceIds = layerNameToDeviceIds.get(layerName)
+			for (const deviceId of layerDeviceIds || []) {
+				allDeviceIds.add(deviceId)
+			}
+		}
+
+		for (const deviceId of allDeviceIds) {
+			// Filter, keep only the routed mappings for this device:
+			if (filterPlayoutDeviceIds && !filterPlayoutDeviceIds.includes(deviceId)) continue
+
+			const routedPackage = generateExpectedPackageForDevice(
+				studio,
+				{
+					...packageDoc,
+					_id: unprotectString(packageDoc._id),
+				},
+				deviceId,
+				null,
+				Priorities.OTHER // low priority
+			)
+
+			updatedDocIds.add(routedPackage._id)
+			collection.insert(routedPackage)
+		}
+	}
+
+	// Remove all documents for an ExpectedPackage that was regenerated, and no update was issues
+	collection.remove(
+		(doc) =>
+			!doc.pieceInstanceId &&
+			updatedDocIds.has(doc._id) &&
+			!regenerateIds.has(protectString(doc.expectedPackage._id))
+	)
+}
+
+/**
+ * Regenerate the output for the provided PieceInstance `regenerateIds`, updating the data in `collection` as needed
+ * @param contentCache Cache of the database documents used
+ * @param studio Minimal studio document
+ * @param layerNameToDeviceIds Lookup table of package layers, to PeripheralDeviceIds the layer could be used with
+ * @param collection Output collection of the publication
+ * @param filterPlayoutDeviceIds PeripheralDeviceId filter applied to this publication
+ * @param regenerateIds Ids of PieceInstance documents to be recalculated
+ */
+export async function updateCollectionForPieceInstanceIds(
+	contentCache: ReadonlyDeep<ExpectedPackagesContentCache>,
+	studio: Pick<Studio, StudioFields>,
+	layerNameToDeviceIds: Map<string, PeripheralDeviceId[]>,
+	collection: CustomPublishCollection<PackageManagerExpectedPackage>,
+	filterPlayoutDeviceIds: ReadonlyDeep<PeripheralDeviceId[]> | undefined,
+	regenerateIds: Set<PieceInstanceId>
+): Promise<void> {
+	const updatedDocIds = new Set<PackageManagerExpectedPackageId>()
+
+	for (const pieceInstanceId of regenerateIds) {
+		const pieceInstanceDoc = contentCache.PieceInstances.findOne(pieceInstanceId)
+		if (!pieceInstanceDoc?.piece?.expectedPackages) continue
+
+		pieceInstanceDoc.piece.expectedPackages.forEach((expectedPackage, i) => {
+			const sanitisedPackageId = expectedPackage._id || '__unnamed' + i
+
 			// Map the expectedPackages onto their specified layer:
 			const allDeviceIds = new Set<PeripheralDeviceId>()
-			for (const layerName of packageDoc.layers) {
+			for (const layerName of expectedPackage.layers) {
 				const layerDeviceIds = layerNameToDeviceIds.get(layerName)
 				for (const deviceId of layerDeviceIds || []) {
 					allDeviceIds.add(deviceId)
@@ -47,76 +121,20 @@ export async function regenerateForExpectedPackages(
 				const routedPackage = generateExpectedPackageForDevice(
 					studio,
 					{
-						...packageDoc,
-						_id: unprotectString(packageDoc._id),
+						...expectedPackage,
+						_id: `${pieceInstanceId}_${sanitisedPackageId}`,
+						rundownId: pieceInstanceDoc.rundownId,
+						contentVersionHash: getContentVersionHash(expectedPackage),
 					},
 					deviceId,
-					null,
+					pieceInstanceId,
 					Priorities.OTHER // low priority
 				)
 
 				updatedDocIds.add(routedPackage._id)
 				collection.insert(routedPackage)
 			}
-		}
-	}
-
-	// Remove all documents for an ExpectedPackage that was regenerated, and no update was issues
-	collection.remove(
-		(doc) =>
-			!doc.pieceInstanceId &&
-			updatedDocIds.has(doc._id) &&
-			!regenerateIds.has(protectString(doc.expectedPackage._id))
-	)
-}
-
-export async function regenerateForPieceInstances(
-	contentCache: ReadonlyDeep<ExpectedPackagesContentCache>,
-	studio: Pick<Studio, StudioFields>,
-	layerNameToDeviceIds: Map<string, PeripheralDeviceId[]>,
-	collection: CustomPublishCollection<PackageManagerExpectedPackage>,
-	filterPlayoutDeviceIds: ReadonlyDeep<PeripheralDeviceId[]> | undefined,
-	regenerateIds: Set<PieceInstanceId>
-): Promise<void> {
-	const updatedDocIds = new Set<PackageManagerExpectedPackageId>()
-
-	for (const pieceInstanceId of regenerateIds) {
-		const pieceInstanceDoc = contentCache.PieceInstances.findOne(pieceInstanceId)
-		if (pieceInstanceDoc?.piece?.expectedPackages) {
-			pieceInstanceDoc.piece.expectedPackages.forEach((expectedPackage, i) => {
-				const sanitisedPackageId = expectedPackage._id || '__unnamed' + i
-
-				// Map the expectedPackages onto their specified layer:
-				const allDeviceIds = new Set<PeripheralDeviceId>()
-				for (const layerName of expectedPackage.layers) {
-					const layerDeviceIds = layerNameToDeviceIds.get(layerName)
-					for (const deviceId of layerDeviceIds || []) {
-						allDeviceIds.add(deviceId)
-					}
-				}
-
-				for (const deviceId of allDeviceIds) {
-					// Filter, keep only the routed mappings for this device:
-					if (filterPlayoutDeviceIds && !filterPlayoutDeviceIds.includes(deviceId)) continue
-
-					const routedPackage = generateExpectedPackageForDevice(
-						studio,
-						{
-							...expectedPackage,
-							_id: `${pieceInstanceId}_${sanitisedPackageId}`,
-							rundownId: pieceInstanceDoc.rundownId,
-							contentVersionHash: getContentVersionHash(expectedPackage),
-						},
-						deviceId,
-						pieceInstanceId,
-						Priorities.OTHER // low priority
-					)
-
-					updatedDocIds.add(routedPackage._id)
-					collection.insert(routedPackage)
-				}
-			})
-		}
+		})
 	}
 
 	// Remove all documents for an ExpectedPackage that was regenerated, and no update was issues
@@ -148,32 +166,7 @@ function generateExpectedPackageForDevice(
 	for (const packageSource of expectedPackage.sources) {
 		const lookedUpSource = studio.packageContainers[packageSource.containerId]
 		if (lookedUpSource) {
-			// We're going to combine the accessor attributes set on the Package with the ones defined on the source
-			const combinedSource: PackageContainerOnPackage = {
-				...omit(clone(lookedUpSource.container), 'accessors'),
-				accessors: {},
-				containerId: packageSource.containerId,
-			}
-
-			/** Array of both the accessors of the expected package and the source */
-			const accessorIds = _.uniq(
-				Object.keys(lookedUpSource.container.accessors).concat(Object.keys(packageSource.accessors || {}))
-			)
-
-			for (const accessorId of accessorIds) {
-				const sourceAccessor: Accessor.Any | undefined = lookedUpSource.container.accessors[accessorId]
-
-				const packageAccessor: AccessorOnPackage.Any | undefined = packageSource.accessors?.[accessorId]
-
-				if (packageAccessor && sourceAccessor && packageAccessor.type === sourceAccessor.type) {
-					combinedSource.accessors[accessorId] = deepExtend({}, sourceAccessor, packageAccessor)
-				} else if (packageAccessor) {
-					combinedSource.accessors[accessorId] = clone<AccessorOnPackage.Any>(packageAccessor)
-				} else if (sourceAccessor) {
-					combinedSource.accessors[accessorId] = clone<Accessor.Any>(sourceAccessor) as AccessorOnPackage.Any
-				}
-			}
-			combinedSources.push(combinedSource)
+			combinedSources.push(calculateCombinedSource(packageSource, lookedUpSource))
 		} else {
 			logger.warn(
 				`Pub.expectedPackagesForDevice: Source package container "${packageSource.containerId}" not found`
@@ -188,7 +181,64 @@ function generateExpectedPackageForDevice(
 	}
 
 	// Lookup Package targets:
+	const combinedTargets = calculateCombinedTargets(studio, expectedPackage, deviceId)
 
+	if (!combinedSources.length && expectedPackage.sources.length !== 0) {
+		logger.warn(`Pub.expectedPackagesForDevice: No sources found for "${expectedPackage._id}"`)
+	}
+	if (!combinedTargets.length) {
+		logger.warn(`Pub.expectedPackagesForDevice: No targets found for "${expectedPackage._id}"`)
+	}
+	expectedPackage.sideEffect = getSideEffect(expectedPackage, studio)
+
+	return {
+		_id: protectString(`${expectedPackage._id}_${deviceId}_${pieceInstanceId}`),
+		expectedPackage: expectedPackage,
+		sources: combinedSources,
+		targets: combinedTargets,
+		priority: priority,
+		playoutDeviceId: deviceId,
+		pieceInstanceId,
+	}
+}
+
+function calculateCombinedSource(
+	packageSource: PackageManagerExpectedPackageBase['sources'][0],
+	lookedUpSource: StudioPackageContainer
+) {
+	// We're going to combine the accessor attributes set on the Package with the ones defined on the source
+	const combinedSource: PackageContainerOnPackage = {
+		...omit(clone(lookedUpSource.container), 'accessors'),
+		accessors: {},
+		containerId: packageSource.containerId,
+	}
+
+	/** Array of both the accessors of the expected package and the source */
+	const accessorIds = _.uniq(
+		Object.keys(lookedUpSource.container.accessors).concat(Object.keys(packageSource.accessors || {}))
+	)
+
+	for (const accessorId of accessorIds) {
+		const sourceAccessor: Accessor.Any | undefined = lookedUpSource.container.accessors[accessorId]
+
+		const packageAccessor: AccessorOnPackage.Any | undefined = packageSource.accessors?.[accessorId]
+
+		if (packageAccessor && sourceAccessor && packageAccessor.type === sourceAccessor.type) {
+			combinedSource.accessors[accessorId] = deepExtend({}, sourceAccessor, packageAccessor)
+		} else if (packageAccessor) {
+			combinedSource.accessors[accessorId] = clone<AccessorOnPackage.Any>(packageAccessor)
+		} else if (sourceAccessor) {
+			combinedSource.accessors[accessorId] = clone<Accessor.Any>(sourceAccessor) as AccessorOnPackage.Any
+		}
+	}
+
+	return combinedSource
+}
+function calculateCombinedTargets(
+	studio: Pick<StudioLight, '_id' | 'packageContainers'>,
+	expectedPackage: PackageManagerExpectedPackageBase,
+	deviceId: PeripheralDeviceId
+): PackageContainerOnPackage[] {
 	const mappingDeviceId = unprotectString(deviceId)
 
 	let packageContainerId: string | undefined
@@ -228,23 +278,5 @@ function generateExpectedPackageForDevice(
 		})
 	}
 
-	if (!combinedSources.length) {
-		if (expectedPackage.sources.length !== 0) {
-			logger.warn(`Pub.expectedPackagesForDevice: No sources found for "${expectedPackage._id}"`)
-		}
-	}
-	if (!combinedTargets.length) {
-		logger.warn(`Pub.expectedPackagesForDevice: No targets found for "${expectedPackage._id}"`)
-	}
-	expectedPackage.sideEffect = getSideEffect(expectedPackage, studio)
-
-	return {
-		_id: protectString(`${expectedPackage._id}_${deviceId}_${pieceInstanceId}`),
-		expectedPackage: expectedPackage,
-		sources: combinedSources,
-		targets: combinedTargets,
-		priority: priority,
-		playoutDeviceId: deviceId,
-		pieceInstanceId,
-	}
+	return combinedTargets
 }

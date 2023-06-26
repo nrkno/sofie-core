@@ -1,4 +1,5 @@
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
@@ -69,9 +70,14 @@ async function manipulateExpectedPackagesPublicationData(
 	)) as RundownPlaylistCompact | undefined
 
 	const activeRundowns = activePlaylist
-		? await Rundowns.findFetchAsync({
-				playlistId: activePlaylist._id,
-		  })
+		? ((await Rundowns.findFetchAsync(
+				{
+					playlistId: activePlaylist._id,
+				},
+				{
+					fields: { _id: 1 },
+				}
+		  )) as Pick<DBRundown, '_id'>[])
 		: []
 
 	return literal<PackageManagerPlayoutContext[]>([
