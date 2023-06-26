@@ -265,6 +265,11 @@ export const DeviceItem = reacti18next.withTranslation()(
 										e.stopPropagation()
 										this.onToggleIgnore(this.props.device)
 									}}
+									title={
+										this.props.device.ignore
+											? 'Click to show device status to users'
+											: 'Click to hide device status from users'
+									}
 								>
 									<FontAwesomeIcon icon={faEye} />
 								</button>
