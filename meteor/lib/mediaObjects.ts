@@ -320,6 +320,15 @@ export function checkPieceContentStatus(
 							})
 						} else {
 							assertNever(packageOnPackageContainer.status.status)
+							// NOTE: This is a temporary workaround for a bug that meant that an unknown status would
+							// produce a "no-zebra" state
+							messages.push({
+								status: PieceStatusCode.SOURCE_MISSING,
+								message: t('{{sourceLayer}} has an unknown state "{{status}}", may not be playable', {
+									sourceLayer: sourceLayer.name,
+									status: packageOnPackageContainer.status.status,
+								}),
+							})
 						}
 					}
 				}
