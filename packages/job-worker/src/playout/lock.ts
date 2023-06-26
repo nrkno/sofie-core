@@ -7,7 +7,6 @@ import { ReadOnlyCache } from '../cache/CacheBase'
 import { JobContext } from '../jobs'
 import { PlaylistLock } from '../jobs/lock'
 import { CacheForPlayoutPreInit, CacheForPlayout } from './cache'
-import { IMongoTransaction } from '../db'
 
 /**
  * Run a typical playout job
@@ -81,8 +80,7 @@ export async function runWithPlaylistCache<TRes>(
 	playlist: ReadonlyDeep<DBRundownPlaylist>,
 	lock: PlaylistLock,
 	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
-	fcn: (cache: CacheForPlayout) => Promise<TRes> | TRes,
-	existingTransaction?: IMongoTransaction | null
+	fcn: (cache: CacheForPlayout) => Promise<TRes> | TRes
 ): Promise<TRes> {
 	const initCache = await CacheForPlayoutPreInit.createPreInit(context, lock, playlist, false)
 
@@ -95,7 +93,7 @@ export async function runWithPlaylistCache<TRes>(
 	try {
 		const res = await fcn(fullCache)
 		logger.silly('runWithPlaylistCache: saveAllToDatabase')
-		await fullCache.saveAllToDatabase(existingTransaction)
+		await fullCache.saveAllToDatabase()
 
 		return res
 	} catch (err) {

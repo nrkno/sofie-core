@@ -71,7 +71,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 			})
 		}
 
-		const docs = await collection.findFetch(selector, undefined, null)
+		const docs = await collection.findFetch(selector)
 
 		const res = DbCacheReadCollection.createFromArray(context, collection, docs)
 		if (span) span.end()
@@ -137,7 +137,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 		this.assertNotDisposed()
 
 		const span = this.context.startSpan(`DBCache.fillWithDataFromDatabase.${this.name}`)
-		const docs = await this._collection.findFetch(selector, undefined, null)
+		const docs = await this._collection.findFetch(selector)
 
 		span?.addLabels({ count: docs.length })
 
@@ -244,7 +244,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 			})
 		}
 
-		const docs = await collection.findFetch(selector, undefined, null)
+		const docs = await collection.findFetch(selector)
 
 		const res = DbCacheWriteCollection.createFromArray(context, collection, docs)
 		if (span) span.end()
