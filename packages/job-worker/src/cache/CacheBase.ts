@@ -1,4 +1,5 @@
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
+import * as _ from 'underscore'
 import { DbCacheReadCollection, DbCacheWriteCollection } from './CacheCollection'
 import { DbCacheReadObject, DbCacheWriteObject, DbCacheWriteOptionalObject } from './CacheObject'
 import { isDbCacheWritable } from './lib'
@@ -7,15 +8,9 @@ import { IS_PRODUCTION } from '../environment'
 import { logger } from '../logging'
 import { sleep } from '@sofie-automation/corelib/dist/lib'
 import { JobContext } from '../jobs'
-import { IMongoTransaction } from '../db'
 
 type DeferredFunction<Cache> = (cache: Cache) => void | Promise<void>
 type DeferredAfterSaveFunction<Cache extends CacheBase<any>> = (cache: ReadOnlyCache<Cache>) => void | Promise<void>
-
-type DeferredDuringSaveTransactionFunction<Cache extends CacheBase<any>> = (
-	transaction: IMongoTransaction,
-	cache: ReadOnlyCache<Cache>
-) => void | Promise<void>
 
 type DbCacheWritable<TDoc extends { _id: ProtectedString<any> }> =
 	| DbCacheWriteCollection<TDoc>
@@ -37,9 +32,8 @@ export type ReadOnlyCache<T extends CacheBase<any>> = Omit<
 
 /** This cache contains data relevant in a studio */
 export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
-	protected _deferredBeforeSaveFunctions: DeferredFunction<T>[] = []
+	protected _deferredFunctions: DeferredFunction<T>[] = []
 	protected _deferredAfterSaveFunctions: DeferredAfterSaveFunction<any>[] = []
-	protected _deferredDuringSaveTransactionFunctions: DeferredDuringSaveTransactionFunction<any>[] = []
 
 	constructor(protected readonly context: JobContext) {
 		context.trackCache(this)
@@ -76,39 +70,29 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 	async saveAllToDatabase(): Promise<void> {
 		const span = this.context.startSpan('Cache.saveAllToDatabase')
 
-		// Execute cache.deferBeforeSave()'s
-		for (const fn of this._deferredBeforeSaveFunctions) {
+		// Execute cache.defer()'s
+		for (const fn of this._deferredFunctions) {
 			await fn(this as any)
 		}
-		this._deferredBeforeSaveFunctions.length = 0 // clear the array
+		this._deferredFunctions.length = 0 // clear the array
 
 		const { highPrioDBs, lowPrioDBs } = this.getAllCollections()
 
-		await this.context.directCollections.runInTransaction(async (transaction) => {
-			if (highPrioDBs.length) {
-				const anyThingChanged = anythingChanged(
-					sumChanges(
-						...(await Promise.all(highPrioDBs.map(async (db) => db.updateDatabaseWithData(transaction))))
-					)
-				)
-				if (anyThingChanged && !process.env.JEST_WORKER_ID) {
-					// Wait a little bit before saving the rest.
-					// The idea is that this allows for the high priority publications to update (such as the Timeline),
-					// sending the updated timeline to Playout-gateway
-					await sleep(2)
-				}
+		if (highPrioDBs.length) {
+			const anyThingChanged = anythingChanged(
+				sumChanges(...(await Promise.all(highPrioDBs.map(async (db) => db.updateDatabaseWithData()))))
+			)
+			if (anyThingChanged && !process.env.JEST_WORKER_ID) {
+				// Wait a little bit before saving the rest.
+				// The idea is that this allows for the high priority publications to update (such as the Timeline),
+				// sending the updated timeline to Playout-gateway
+				await sleep(2)
 			}
+		}
 
-			if (lowPrioDBs.length) {
-				await Promise.all(lowPrioDBs.map(async (db) => db.updateDatabaseWithData(transaction)))
-			}
-
-			// Execute cache.deferDuringSaveTransaction()'s
-			for (const fn of this._deferredDuringSaveTransactionFunctions) {
-				await fn(transaction, this as any)
-			}
-			this._deferredDuringSaveTransactionFunctions.length = 0 // clear the array
-		})
+		if (lowPrioDBs.length) {
+			await Promise.all(lowPrioDBs.map(async (db) => db.updateDatabaseWithData()))
+		}
 
 		// Execute cache.deferAfterSave()'s
 		for (const fn of this._deferredAfterSaveFunctions) {
@@ -131,8 +115,7 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 
 		// Discard any hooks too
 		this._deferredAfterSaveFunctions.length = 0
-		this._deferredDuringSaveTransactionFunctions.length = 0
-		this._deferredBeforeSaveFunctions.length = 0
+		this._deferredFunctions.length = 0
 	}
 
 	/**
@@ -176,17 +159,10 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 
 		const { allDBs } = this.getAllCollections()
 
-		if (this._deferredBeforeSaveFunctions.length > 0)
+		if (this._deferredFunctions.length > 0)
 			logOrThrowError(
 				new Error(
-					`Failed no changes in cache assertion, there were ${this._deferredBeforeSaveFunctions.length} deferred functions`
-				)
-			)
-
-		if (this._deferredDuringSaveTransactionFunctions.length > 0)
-			logOrThrowError(
-				new Error(
-					`Failed no changes in cache assertion, there were ${this._deferredDuringSaveTransactionFunctions.length} during save transaction deferred functions`
+					`Failed no changes in cache assertion, there were ${this._deferredFunctions.length} deferred functions`
 				)
 			)
 
@@ -197,13 +173,13 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 				)
 			)
 
-		for (const db of allDBs) {
+		_.map(allDBs, (db) => {
 			if (db.isModified()) {
 				logOrThrowError(
 					new Error(`Failed no changes in cache assertion, cache was modified: collection: ${db.name}`)
 				)
 			}
-		}
+		})
 
 		if (span) span.end()
 	}
@@ -211,15 +187,8 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 	hasChanges(): boolean {
 		const { allDBs } = this.getAllCollections()
 
-		if (this._deferredBeforeSaveFunctions.length > 0) {
-			logger.silly(`hasChanges: _deferredFunctions.length=${this._deferredBeforeSaveFunctions.length}`)
-			return true
-		}
-
-		if (this._deferredDuringSaveTransactionFunctions.length > 0) {
-			logger.silly(
-				`hasChanges: _deferredDuringSaveTransactionFunctions.length=${this._deferredDuringSaveTransactionFunctions.length}`
-			)
+		if (this._deferredFunctions.length > 0) {
+			logger.silly(`hasChanges: _deferredFunctions.length=${this._deferredFunctions.length}`)
 			return true
 		}
 
@@ -238,26 +207,18 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		return false
 	}
 }
-
-export abstract class CacheBase<T extends CacheBase<any>> extends ReadOnlyCacheBase<T> {
-	/**
-	 * Defer provided function to be run just before cache.saveAllToDatabase()
-	 */
-	deferBeforeSave(fcn: DeferredFunction<T>): void {
-		this._deferredBeforeSaveFunctions.push(fcn)
-	}
-
-	/**
-	 * Defer provided function to be run during cache.saveAllToDatabase(), as part of the save transaction
-	 */
-	deferDuringSaveTransaction(fcn: DeferredDuringSaveTransactionFunction<T>): void {
-		this._deferredDuringSaveTransactionFunctions.push(fcn)
-	}
-
-	/**
-	 * Defer provided function to after cache.saveAllToDatabase().
+export interface ICacheBase<T> {
+	/** Defer provided function (it will be run just before cache.saveAllToDatabase() ) */
+	defer: (fcn: DeferredFunction<T>) => void
+	/** Defer provided function to after cache.saveAllToDatabase().
 	 * Note that at the time of execution, the cache is not mutable.
-	 */
+	 * */
+	deferAfterSave: (fcn: () => void | Promise<void>) => void
+}
+export abstract class CacheBase<T extends CacheBase<any>> extends ReadOnlyCacheBase<T> implements ICacheBase<T> {
+	defer(fcn: DeferredFunction<T>): void {
+		this._deferredFunctions.push(fcn)
+	}
 	deferAfterSave(fcn: DeferredAfterSaveFunction<T>): void {
 		this._deferredAfterSaveFunctions.push(fcn)
 	}

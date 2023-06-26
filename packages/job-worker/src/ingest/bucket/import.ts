@@ -64,119 +64,112 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 	const adlibIdsToRemove = new Set(allOldAdLibPieces.map((p) => p._id))
 	const actionIdsToRemove = new Set(allOldAdLibActions.map((p) => p._id))
 
-	await context.directCollections.runInTransaction(async (transaction) => {
-		let isFirstShowStyleVariant = true
-		let newRank: number | undefined = undefined
-		let onlyGenerateOneItem = false
+	let isFirstShowStyleVariant = true
+	let newRank: number | undefined = undefined
+	let onlyGenerateOneItem = false
 
-		const ps: Promise<any>[] = []
-		for (const showStyleVariant of showStyleVariants) {
-			const showStyleCompound = createShowStyleCompound(showStyleBase, showStyleVariant)
-			if (!showStyleCompound)
-				throw new Error(
-					`Unable to create a ShowStyleCompound for ${showStyleBase._id}, ${showStyleVariant._id} `
-				)
+	const ps: Promise<any>[] = []
+	for (const showStyleVariant of showStyleVariants) {
+		const showStyleCompound = createShowStyleCompound(showStyleBase, showStyleVariant)
+		if (!showStyleCompound)
+			throw new Error(`Unable to create a ShowStyleCompound for ${showStyleBase._id}, ${showStyleVariant._id} `)
 
-			const rawAdlib = generateBucketAdlibForVariant(context, blueprint, showStyleCompound, data.payload)
+		const rawAdlib = generateBucketAdlibForVariant(context, blueprint, showStyleCompound, data.payload)
 
-			if (rawAdlib) {
-				const importVersions: RundownImportVersions = {
-					studio: context.studio._rundownVersionHash,
-					showStyleBase: showStyleCompound._rundownVersionHash,
-					showStyleVariant: showStyleCompound._rundownVersionHashVariant,
-					blueprint: blueprint.blueprint.blueprintVersion,
-					core: getSystemVersion(),
-				}
-
-				// Cache the newRank, so we only have to calculate it once:
-				if (newRank === undefined) {
-					newRank = (await calculateHighestRankInBucket(context, data.bucketId)) + 1
-				} else {
-					newRank++
-				}
-
-				if (isAdlibAction(rawAdlib)) {
-					if (isFirstShowStyleVariant) {
-						if (rawAdlib.allVariants) {
-							// If the adlib can be used by all variants, we only should only generate it once.
-							onlyGenerateOneItem = true
-						}
-					} else {
-						delete rawAdlib.allVariants
-					}
-					const action: BucketAdLibAction = postProcessBucketAction(
-						context,
-						showStyleCompound,
-						rawAdlib,
-						data.payload.externalId,
-						blueprint.blueprintId,
-						data.bucketId,
-						newRank,
-						importVersions
-					)
-
-					ps.push(
-						context.directCollections.BucketAdLibActions.replace(action, transaction),
-						updateExpectedMediaItemForBucketAdLibAction(context, transaction, action),
-						updateExpectedPackagesForBucketAdLibAction(context, transaction, action)
-					)
-
-					// Preserve this one
-					actionIdsToRemove.delete(action._id)
-				} else {
-					const adlib = postProcessBucketAdLib(
-						context,
-						showStyleCompound,
-						rawAdlib,
-						data.payload.externalId,
-						blueprint.blueprintId,
-						data.bucketId,
-						newRank,
-						importVersions
-					)
-
-					ps.push(
-						context.directCollections.BucketAdLibPieces.replace(adlib, transaction),
-						updateExpectedMediaItemForBucketAdLibPiece(context, transaction, adlib),
-						updateExpectedPackagesForBucketAdLibPiece(context, transaction, adlib)
-					)
-
-					// Preserve this one
-					adlibIdsToRemove.delete(adlib._id)
-				}
-
-				if (onlyGenerateOneItem) {
-					// We only need to generate one variant, so we can stop here
-					break
-				}
+		if (rawAdlib) {
+			const importVersions: RundownImportVersions = {
+				studio: context.studio._rundownVersionHash,
+				showStyleBase: showStyleCompound._rundownVersionHash,
+				showStyleVariant: showStyleCompound._rundownVersionHashVariant,
+				blueprint: blueprint.blueprint.blueprintVersion,
+				core: getSystemVersion(),
 			}
-			isFirstShowStyleVariant = false
-		}
 
-		// Cleanup old items:
-		if (adlibIdsToRemove.size > 0) {
-			const adlibIdsToRemoveArray = Array.from(adlibIdsToRemove)
+			// Cache the newRank, so we only have to calculate it once:
+			if (newRank === undefined) {
+				newRank = (await calculateHighestRankInBucket(context, data.bucketId)) + 1
+			} else {
+				newRank++
+			}
 
-			ps.push(
-				cleanUpExpectedMediaItemForBucketAdLibPiece(context, transaction, adlibIdsToRemoveArray),
-				cleanUpExpectedPackagesForBucketAdLibs(context, transaction, adlibIdsToRemoveArray),
-				context.directCollections.BucketAdLibPieces.remove({ _id: { $in: adlibIdsToRemoveArray } }, transaction)
-			)
-		}
-		if (actionIdsToRemove.size > 0) {
-			const actionIdsToRemoveArray = Array.from(actionIdsToRemove)
-
-			ps.push(
-				cleanUpExpectedMediaItemForBucketAdLibActions(context, transaction, actionIdsToRemoveArray),
-				cleanUpExpectedPackagesForBucketAdLibsActions(context, transaction, actionIdsToRemoveArray),
-				context.directCollections.BucketAdLibActions.remove(
-					{ _id: { $in: actionIdsToRemoveArray } },
-					transaction
+			if (isAdlibAction(rawAdlib)) {
+				if (isFirstShowStyleVariant) {
+					if (rawAdlib.allVariants) {
+						// If the adlib can be used by all variants, we only should only generate it once.
+						onlyGenerateOneItem = true
+					}
+				} else {
+					delete rawAdlib.allVariants
+				}
+				const action: BucketAdLibAction = postProcessBucketAction(
+					context,
+					showStyleCompound,
+					rawAdlib,
+					data.payload.externalId,
+					blueprint.blueprintId,
+					data.bucketId,
+					newRank,
+					importVersions
 				)
-			)
+
+				ps.push(
+					context.directCollections.BucketAdLibActions.replace(action),
+					updateExpectedMediaItemForBucketAdLibAction(context, action),
+					updateExpectedPackagesForBucketAdLibAction(context, action)
+				)
+
+				// Preserve this one
+				actionIdsToRemove.delete(action._id)
+			} else {
+				const adlib = postProcessBucketAdLib(
+					context,
+					showStyleCompound,
+					rawAdlib,
+					data.payload.externalId,
+					blueprint.blueprintId,
+					data.bucketId,
+					newRank,
+					importVersions
+				)
+
+				ps.push(
+					context.directCollections.BucketAdLibPieces.replace(adlib),
+					updateExpectedMediaItemForBucketAdLibPiece(context, adlib),
+					updateExpectedPackagesForBucketAdLibPiece(context, adlib)
+				)
+
+				// Preserve this one
+				adlibIdsToRemove.delete(adlib._id)
+			}
+
+			if (onlyGenerateOneItem) {
+				// We only need to generate one variant, so we can stop here
+				break
+			}
 		}
-		await Promise.all(ps)
-	})
+		isFirstShowStyleVariant = false
+	}
+
+	// Cleanup old items:
+	if (adlibIdsToRemove.size > 0) {
+		const adlibIdsToRemoveArray = Array.from(adlibIdsToRemove)
+
+		ps.push(
+			cleanUpExpectedMediaItemForBucketAdLibPiece(context, adlibIdsToRemoveArray),
+			cleanUpExpectedPackagesForBucketAdLibs(context, adlibIdsToRemoveArray),
+			context.directCollections.BucketAdLibPieces.remove({ _id: { $in: adlibIdsToRemoveArray } })
+		)
+	}
+	if (actionIdsToRemove.size > 0) {
+		const actionIdsToRemoveArray = Array.from(actionIdsToRemove)
+
+		ps.push(
+			cleanUpExpectedMediaItemForBucketAdLibActions(context, actionIdsToRemoveArray),
+			cleanUpExpectedPackagesForBucketAdLibsActions(context, actionIdsToRemoveArray),
+			context.directCollections.BucketAdLibActions.remove({ _id: { $in: actionIdsToRemoveArray } })
+		)
+	}
+	await Promise.all(ps)
 }
 
 function generateBucketAdlibForVariant(

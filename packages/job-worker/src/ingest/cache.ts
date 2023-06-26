@@ -229,13 +229,16 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 
 		// Discard any hooks too
 		this._deferredAfterSaveFunctions.length = 0
-		this._deferredDuringSaveTransactionFunctions.length = 0
-		this._deferredBeforeSaveFunctions.length = 0
+		this._deferredFunctions.length = 0
 	}
 
 	discardChanges(): void {
 		this.toBeRemoved = false
 		super.discardChanges()
+
+		// Discard any hooks too
+		this._deferredAfterSaveFunctions.length = 0
+		this._deferredFunctions.length = 0
 
 		this.assertNoChanges()
 	}
@@ -254,9 +257,7 @@ export class CacheForIngest extends CacheBase<CacheForIngest> {
 			this._deferredBeforeSaveFunctions.length = 0
 
 			if (this.Rundown.doc) {
-				await this.context.directCollections.runInTransaction(async (transaction) => {
-					await removeRundownFromDb(this.context, this.RundownLock, transaction)
-				})
+				await removeRundownFromDb(this.context, this.RundownLock)
 			}
 
 			super.assertNoChanges()

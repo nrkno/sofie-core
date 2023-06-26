@@ -115,7 +115,7 @@ export async function activateRundownPlaylist(
 
 	await updateTimeline(context, cache)
 
-	cache.deferBeforeSave(async () => {
+	cache.defer(async () => {
 		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
 		const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 		const blueprint = await context.getShowStyleBlueprint(showStyle._id)
@@ -136,19 +136,17 @@ export async function deactivateRundownPlaylist(context: JobContext, cache: Cach
 
 	await updateStudioTimeline(context, cache)
 
-	cache.deferDuringSaveTransaction(async (transaction) => {
-		await cleanTimelineDatastore(context, cache, transaction)
-	})
+	await cleanTimelineDatastore(context, cache)
 
-	cache.deferBeforeSave(async () => {
+	cache.defer(async () => {
 		if (rundown) {
 			const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 
 			try {
 				if (blueprint.blueprint.onRundownDeActivate) {
-					const blueprintContext = new RundownActivationContext(context, cache, showStyle, rundown)
-					await blueprint.blueprint.onRundownDeActivate(blueprintContext)
+					const context2 = new RundownActivationContext(context, cache, showStyle, rundown)
+					await blueprint.blueprint.onRundownDeActivate(context2)
 				}
 			} catch (err) {
 				logger.error(`Error in showStyleBlueprint.onRundownDeActivate: ${stringifyError(err)}`)
