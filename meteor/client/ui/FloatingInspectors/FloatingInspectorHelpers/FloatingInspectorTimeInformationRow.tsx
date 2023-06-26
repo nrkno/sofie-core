@@ -50,7 +50,7 @@ function getLifeSpanText(t: TFunction, piece: Omit<PieceInstancePiece, 'timeline
 		case PieceLifespan.OutOnRundownChange:
 			return t('Until next rundown')
 		case PieceLifespan.OutOnRundownEnd:
-			return t('Until next rundown')
+			return t('Until end of rundown')
 		case PieceLifespan.OutOnShowStyleEnd:
 			return t('Until end of showstyle')
 		default:
