@@ -245,6 +245,7 @@ async function createOptimizedObserverWorker<
 							delete optimizedObservers[identifier]
 							await thisObserverWorker.stopObservers()
 							thisObserverWorker = undefined
+							pendingUpdate = {}
 							logger.silly(`Cancelling update for optimized observer ${identifier}`)
 							return
 						}
