@@ -1,7 +1,7 @@
 import Agent from 'meteor/julusian:meteor-elastic-apm'
 
 class Profiler {
-	private active: boolean = false
+	private active = false
 
 	startSpan(_name: string) {
 		if (!this.active) return

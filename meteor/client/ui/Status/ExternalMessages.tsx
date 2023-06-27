@@ -132,7 +132,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 		Translated<IExternalMessagesInStudioProps & IExternalMessagesInStudioTrackedProps>,
 		IExternalMessagesInStudioState
 	> {
-		private _currentsub: string = ''
+		private _currentsub = ''
 		private _sub?: Meteor.SubscriptionHandle
 
 		constructor(props) {

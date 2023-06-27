@@ -2,8 +2,8 @@ import { check } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewShowStylesAPI, ShowStylesAPIMethods } from '../../lib/api/showStyles'
 import { Meteor } from 'meteor/meteor'
-import { ShowStyleBase, DBShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { protectString, getRandomId, omit } from '../../lib/lib'
 import { MethodContextAPI, MethodContext } from '../../lib/api/methods'
 import { OrganizationContentWriteAccess } from '../security/organization'
@@ -49,8 +49,8 @@ export function createBlueprintConfigCompound(
 }
 
 export function createShowStyleCompound(
-	showStyleBase: ShowStyleBase,
-	showStyleVariant: ShowStyleVariant
+	showStyleBase: DBShowStyleBase,
+	showStyleVariant: DBShowStyleVariant
 ): ShowStyleCompound | undefined {
 	if (showStyleBase._id !== showStyleVariant.showStyleBaseId) return undefined
 
@@ -75,7 +75,7 @@ export async function insertShowStyleBase(context: MethodContext | Credentials):
 }
 
 export async function insertShowStyleBaseInner(organizationId: OrganizationId | null): Promise<ShowStyleBaseId> {
-	const showStyleBase: ShowStyleBase = {
+	const showStyleBase: DBShowStyleBase = {
 		_id: getRandomId(),
 		name: 'New Show Style',
 		organizationId: organizationId,
@@ -131,7 +131,7 @@ async function insertShowStyleVariantInner(
 		)?._rank ?? -1
 	const rank = highestRank + 1
 
-	const showStyleVariant: ShowStyleVariant = {
+	const showStyleVariant: DBShowStyleVariant = {
 		_id: getRandomId(),
 		name: name || 'New Variant',
 		blueprintConfigWithOverrides: wrapDefaultObject({}),
@@ -145,7 +145,7 @@ async function insertShowStyleVariantInner(
 
 export async function importShowStyleVariant(
 	context: MethodContext | Credentials,
-	showStyleVariant: ShowStyleVariant
+	showStyleVariant: DBShowStyleVariant
 ): Promise<ShowStyleVariantId> {
 	await assertShowStyleBaseAccess(context, showStyleVariant.showStyleBaseId)
 
@@ -154,11 +154,11 @@ export async function importShowStyleVariant(
 
 export async function importShowStyleVariantAsNew(
 	context: MethodContext | Credentials,
-	showStyleVariant: Omit<ShowStyleVariant, '_id'>
+	showStyleVariant: Omit<DBShowStyleVariant, '_id'>
 ): Promise<ShowStyleVariantId> {
 	await assertShowStyleBaseAccess(context, showStyleVariant.showStyleBaseId)
 
-	const newShowStyleVariant: ShowStyleVariant = {
+	const newShowStyleVariant: DBShowStyleVariant = {
 		...showStyleVariant,
 		_id: getRandomId(),
 	}
@@ -219,10 +219,10 @@ class ServerShowStylesAPI extends MethodContextAPI implements NewShowStylesAPI {
 	async insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId) {
 		return insertShowStyleVariant(this, showStyleBaseId)
 	}
-	async importShowStyleVariant(showStyleVariant: ShowStyleVariant) {
+	async importShowStyleVariant(showStyleVariant: DBShowStyleVariant) {
 		return importShowStyleVariant(this, showStyleVariant)
 	}
-	async importShowStyleVariantAsNew(showStyleVariant: Omit<ShowStyleVariant, '_id'>) {
+	async importShowStyleVariantAsNew(showStyleVariant: Omit<DBShowStyleVariant, '_id'>) {
 		return importShowStyleVariantAsNew(this, showStyleVariant)
 	}
 	async removeShowStyleBase(showStyleBaseId: ShowStyleBaseId) {

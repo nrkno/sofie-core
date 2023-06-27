@@ -74,7 +74,7 @@ export async function saveEvaluation(
 					'rundown ' +
 					(hostUrl && playlist
 						? '*<' + hostUrl + '/rundown/' + playlist._id + '|' + playlist.name + '>*'
-						: (playlist && playlist.name) || 'N/A') +
+						: playlist?.name || 'N/A') +
 					(hostUrl ? ' in ' + hostUrl.replace(/http:\/\/|https:\/\//, '') : '') +
 					'\n' +
 					evaluationMessage +

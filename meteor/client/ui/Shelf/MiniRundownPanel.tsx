@@ -44,11 +44,11 @@ interface MiniRundownSegment {
 export class MiniRundownPanelInner extends MeteorReactComponent<
 	IMiniRundownPanelProps & IMiniRundownPanelTrackedProps
 > {
-	static currentSegmentCssClass: string = 'current-segment'
-	static nextSegmentCssClass: string = 'next-segment'
-	static panelContainerId: string = 'mini-rundown-panel__container'
-	static nextSegmentId: string = 'mini-rundown__next-segment'
-	static currentSegmentId: string = 'mini-rundown__current-segment'
+	static currentSegmentCssClass = 'current-segment'
+	static nextSegmentCssClass = 'next-segment'
+	static panelContainerId = 'mini-rundown-panel__container'
+	static nextSegmentId = 'mini-rundown__next-segment'
+	static currentSegmentId = 'mini-rundown__current-segment'
 
 	componentDidMount(): void {
 		this.scrollIntoView()

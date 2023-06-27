@@ -1,12 +1,12 @@
 import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { HotkeyDefinition, OutputLayers, SourceLayers } from '../collections/ShowStyleBases'
-import { ShowStyleVariant } from '../collections/ShowStyleVariants'
+import { HotkeyDefinition, OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 
 export interface NewShowStylesAPI {
 	insertShowStyleBase(): Promise<ShowStyleBaseId>
 	insertShowStyleVariant(showStyleBaseId: ShowStyleBaseId): Promise<ShowStyleVariantId>
-	importShowStyleVariant(showStyleVariant: Omit<ShowStyleVariant, '_id'>): Promise<ShowStyleVariantId>
-	importShowStyleVariantAsNew(showStyleVariant: ShowStyleVariant): Promise<ShowStyleVariantId>
+	importShowStyleVariant(showStyleVariant: Omit<DBShowStyleVariant, '_id'>): Promise<ShowStyleVariantId>
+	importShowStyleVariantAsNew(showStyleVariant: DBShowStyleVariant): Promise<ShowStyleVariantId>
 	removeShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void>
 	removeShowStyleVariant(showStyleVariantId: ShowStyleVariantId): Promise<void>
 	reorderShowStyleVariant(showStyleVariantId: ShowStyleVariantId, newRank: number): Promise<void>

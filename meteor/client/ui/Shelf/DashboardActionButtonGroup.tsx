@@ -102,7 +102,7 @@ export const DashboardActionButtonGroup = withTranslation()(
 		storeSnapshot = (e: React.SyntheticEvent<HTMLElement>) => {
 			const { t } = this.props
 			const playlistId: RundownPlaylistId = this.props.playlist._id
-			const reason: string = 'Taken by user'
+			const reason = 'Taken by user'
 			doUserAction(
 				t,
 				e,

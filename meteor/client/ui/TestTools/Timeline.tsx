@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import * as _ from 'underscore'
-import { deserializeTimelineBlob, TimelineHash } from '../../../lib/collections/Timeline'
+import { deserializeTimelineBlob, TimelineHash } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { applyToArray, clone, normalizeArray, protectString } from '../../../lib/lib'
 import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
 import {
@@ -357,7 +357,7 @@ function TimelineChangesLog({ resolvedTl, timelineHash }: TimelineChangesLogProp
 		if (resolvedTl && lastResolvedTl) {
 			const keys = Array.from(
 				new Set([...Object.keys(lastResolvedTl.objects), ...Object.keys(resolvedTl.objects)])
-			).sort()
+			).sort((a, b) => a.localeCompare(b))
 
 			for (const objectId of keys) {
 				const oldObj = lastResolvedTl.objects[objectId] as ResolvedTimelineObject | undefined
@@ -378,7 +378,7 @@ function TimelineChangesLog({ resolvedTl, timelineHash }: TimelineChangesLogProp
 
 					const instanceKeys = Array.from(
 						new Set([...Object.keys(oldInstancesMap), ...Object.keys(newInstancesMap)])
-					).sort()
+					).sort((a, b) => a.localeCompare(b))
 
 					for (const instanceId of instanceKeys) {
 						const oldInstance = oldInstancesMap[instanceId] as TimelineObjectInstance | undefined

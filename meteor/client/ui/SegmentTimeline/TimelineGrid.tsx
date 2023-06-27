@@ -47,7 +47,7 @@ interface ITimelineGridProps {
 }
 
 let gridFont: any | undefined = undefined
-let gridFontAvailable: boolean = false
+let gridFontAvailable = false
 
 export class TimelineGrid extends React.Component<ITimelineGridProps> {
 	static contextTypes = {

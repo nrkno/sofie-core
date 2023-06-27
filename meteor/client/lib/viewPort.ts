@@ -9,7 +9,7 @@ const HEADER_MARGIN = 24 // TODOSYNC: TV2 uses 15. If it's needed to be differen
 const FALLBACK_HEADER_HEIGHT = 65
 
 let focusInterval: NodeJS.Timer | undefined
-let _dontClearInterval: boolean = false
+let _dontClearInterval = false
 
 export function maintainFocusOnPartInstance(
 	partInstanceId: PartInstanceId,

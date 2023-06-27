@@ -223,7 +223,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 	): Promise<IBlueprintPieceInstance | undefined> {
 		const query: MongoQuery<PieceInstance> = {}
-		if (options && options.pieceMetaDataFilter) {
+		if (options?.pieceMetaDataFilter) {
 			for (const [key, value] of Object.entries<unknown>(options.pieceMetaDataFilter)) {
 				// TODO do we need better validation here?
 				// It should be pretty safe as we are working with the cache version (for now)
@@ -232,7 +232,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			}
 		}
 
-		if (options && options.excludeCurrentPart && this._cache.Playlist.doc.currentPartInfo) {
+		if (options?.excludeCurrentPart && this._cache.Playlist.doc.currentPartInfo) {
 			query['partInstanceId'] = { $ne: this._cache.Playlist.doc.currentPartInfo.partInstanceId }
 		}
 
@@ -242,7 +242,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			this._context,
 			this._cache,
 			sourceLayerId,
-			(options && options.originalOnly) || false,
+			options?.originalOnly || false,
 			query
 		)
 
@@ -257,7 +257,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 	): Promise<IBlueprintPieceDB | undefined> {
 		const query: MongoQuery<Piece> = {}
-		if (options && options.pieceMetaDataFilter) {
+		if (options?.pieceMetaDataFilter) {
 			for (const [key, value] of Object.entries<unknown>(options.pieceMetaDataFilter)) {
 				// TODO do we need better validation here?
 				// It should be pretty safe as we are working with the cache version (for now)
@@ -266,7 +266,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			}
 		}
 
-		if (options && options.excludeCurrentPart && this._cache.Playlist.doc.currentPartInfo) {
+		if (options?.excludeCurrentPart && this._cache.Playlist.doc.currentPartInfo) {
 			const currentPartInstance = this._cache.PartInstances.findOne(
 				this._cache.Playlist.doc.currentPartInfo.partInstanceId
 			)

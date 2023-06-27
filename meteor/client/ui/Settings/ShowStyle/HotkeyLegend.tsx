@@ -7,7 +7,7 @@ import { HotkeyDefinition } from '@sofie-automation/corelib/dist/dataModel/ShowS
 import { literal, getRandomString } from '@sofie-automation/corelib/dist/lib'
 import { Random } from 'meteor/random'
 import { withTranslation } from 'react-i18next'
-import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { AHKBaseHeader, AHKModifierMap, AHKKeyboardMap, useAHKComboTemplate } from '../../../../lib/tv2/AHKkeyboardMap'
 import { defaultColorPickerPalette } from '../../../lib/colorPicker'
 import { downloadBlob } from '../../../lib/downloadBlob'
@@ -22,7 +22,7 @@ import { ShowStyleBases } from '../../../collections'
 import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 
 interface IHotkeyLegendSettingsProps {
-	showStyleBase: ShowStyleBase
+	showStyleBase: DBShowStyleBase
 }
 interface IHotkeyLegendSettingsState {
 	editedItems: Array<string>

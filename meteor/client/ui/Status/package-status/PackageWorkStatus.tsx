@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ExpectedPackageWorkStatus } from '../../../../lib/collections/ExpectedPackageWorkStatuses'
+import { ExpectedPackageWorkStatus } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackageWorkStatuses'
 import { unprotectString } from '../../../../lib/lib'
 import Tooltip from 'rc-tooltip'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'

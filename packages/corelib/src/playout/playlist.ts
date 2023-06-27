@@ -59,7 +59,9 @@ export function sortRundownIDsInPlaylist(
 	const sortedVerifiedExisting = sortedPossibleIds.filter((id) => unsortedRundownIds.includes(id))
 
 	// Find the ids which are missing from the playlist (just in case)
-	const missingIds = unsortedRundownIds.filter((id) => !sortedVerifiedExisting.includes(id)).sort()
+	const missingIds = unsortedRundownIds
+		.filter((id) => !sortedVerifiedExisting.includes(id))
+		.sort((a, b) => a.toString().localeCompare(b.toString()))
 
 	return [...sortedVerifiedExisting, ...missingIds]
 }

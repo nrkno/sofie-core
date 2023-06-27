@@ -60,7 +60,7 @@ actionTriggersRouter.post(
 
 		check(showStyleBaseId, Match.Optional(String))
 
-		const replace: boolean = !!ctx.query['replace']
+		const replace = !!ctx.query['replace']
 
 		try {
 			if (showStyleBaseId !== undefined) {
@@ -85,22 +85,22 @@ actionTriggersRouter.post(
 			check(triggeredActions, Array)
 
 			// set new showStyleBaseId
-			for (let i = 0; i < triggeredActions.length; i++) {
-				const compatObj = triggeredActions[i] as any
+			for (const triggeredActionsObj of triggeredActions) {
+				const compatObj = triggeredActionsObj as any
 				if ('triggers' in compatObj) {
-					triggeredActions[i].triggersWithOverrides = wrapDefaultObject(compatObj.triggers)
+					triggeredActionsObj.triggersWithOverrides = wrapDefaultObject(compatObj.triggers)
 					delete compatObj.triggers
 				}
 				if ('actions' in compatObj) {
-					triggeredActions[i].actionsWithOverrides = wrapDefaultObject(compatObj.actions)
+					triggeredActionsObj.actionsWithOverrides = wrapDefaultObject(compatObj.actions)
 					delete compatObj.actions
 				}
 
-				check(triggeredActions[i]._id, String)
-				check(triggeredActions[i].name, Match.Optional(Match.OneOf(String, Object)))
-				check(triggeredActions[i].triggersWithOverrides, Object)
-				check(triggeredActions[i].actionsWithOverrides, Object)
-				triggeredActions[i].showStyleBaseId = showStyleBaseId ?? null
+				check(triggeredActionsObj._id, String)
+				check(triggeredActionsObj.name, Match.Optional(Match.OneOf(String, Object)))
+				check(triggeredActionsObj.triggersWithOverrides, Object)
+				check(triggeredActionsObj.actionsWithOverrides, Object)
+				triggeredActionsObj.showStyleBaseId = showStyleBaseId ?? null
 			}
 
 			if (replace) {

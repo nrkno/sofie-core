@@ -154,7 +154,7 @@ export function useDebounce<K>(value: K, delay: number): K {
 	return debouncedValue
 }
 
-export function useCurrentTime(refreshPeriod: number = 1000): number {
+export function useCurrentTime(refreshPeriod = 1000): number {
 	const [time, setTime] = useState(getCurrentTime())
 
 	useEffect(() => {

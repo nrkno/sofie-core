@@ -21,7 +21,7 @@ import {
 	GetUpgradeStatusResultShowStyleBase,
 } from '../../../lib/api/migration'
 import { Blueprints, ShowStyleBases, Studios } from '../../collections'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Studio } from '../../../lib/collections/Studios'
 import { generateTranslation } from '../../../lib/lib'
 import { JSONBlob, JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
@@ -153,7 +153,7 @@ type StudioForUpgradeCheck = Pick<
 	'_id' | 'blueprintId' | 'blueprintConfigPresetId' | 'lastBlueprintConfig' | 'blueprintConfigWithOverrides' | 'name'
 >
 type ShowStyleBaseForUpgradeCheck = Pick<
-	ShowStyleBase,
+	DBShowStyleBase,
 	'_id' | 'blueprintId' | 'blueprintConfigPresetId' | 'lastBlueprintConfig' | 'blueprintConfigWithOverrides' | 'name'
 >
 type StudioBlueprintForUpgradeCheck = Pick<

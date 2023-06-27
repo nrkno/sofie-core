@@ -60,7 +60,7 @@ export async function handleTakeNextPart(context: JobContext, data: TakeNextPart
 
 			if (playlist.currentPartInfo) {
 				const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInfo.partInstanceId)
-				if (currentPartInstance && currentPartInstance.timings?.plannedStartedPlayback) {
+				if (currentPartInstance?.timings?.plannedStartedPlayback) {
 					lastTakeTime = Math.max(lastTakeTime, currentPartInstance.timings.plannedStartedPlayback)
 				} else {
 					// Don't throw an error here. It's bad, but it's more important to be able to continue with the take.
@@ -107,10 +107,7 @@ export async function performTakeToNextedPart(context: JobContext, cache: CacheF
 	const currentRundown = currentOrNextPartInstance
 		? cache.Rundowns.findOne(currentOrNextPartInstance.rundownId)
 		: undefined
-	if (!currentRundown)
-		throw new Error(
-			`Rundown "${(currentOrNextPartInstance && currentOrNextPartInstance.rundownId) || ''}" could not be found!`
-		)
+	if (!currentRundown) throw new Error(`Rundown "${currentOrNextPartInstance?.rundownId ?? ''}" could not be found!`)
 
 	const pShowStyle = context.getShowStyleCompound(currentRundown.showStyleVariantId, currentRundown.showStyleBaseId)
 
@@ -161,7 +158,7 @@ export async function performTakeToNextedPart(context: JobContext, cache: CacheF
 
 	// Autonext may have setup the plannedStartedPlayback. Clear it so that a new value is generated
 	cache.PartInstances.updateOne(takePartInstance._id, (p) => {
-		if (p.timings && p.timings.plannedStartedPlayback) {
+		if (p.timings?.plannedStartedPlayback) {
 			delete p.timings.plannedStartedPlayback
 			delete p.timings.plannedStoppedPlayback
 			return p
@@ -561,7 +558,7 @@ function startHold(
 				plannedStoppedPlayback: instance.plannedStoppedPlayback,
 			})
 			const content = newInstance.piece.content as VTContent | undefined
-			if (content && content.fileName && content.sourceDuration && instance.plannedStartedPlayback) {
+			if (content?.fileName && content.sourceDuration && instance.plannedStartedPlayback) {
 				content.seek = Math.min(content.sourceDuration, getCurrentTime() - instance.plannedStartedPlayback)
 			}
 

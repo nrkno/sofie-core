@@ -5,7 +5,7 @@ import { PeripheralDeviceType, PeripheralDevice } from '../../lib/collections/Pe
 import { PeripheralDeviceCommands, PeripheralDevices, Rundowns, Studios, UserActionsLog } from '../collections'
 import { getCurrentTime, protectString, stringifyObjects, literal, unprotectString } from '../../lib/lib'
 import { logger } from '../logging'
-import { TimelineHash } from '../../lib/collections/Timeline'
+import { TimelineHash } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { registerClassToMeteorMethods } from '../methods'
 import { RundownInput } from './ingest/rundownInput'
 import {
@@ -18,10 +18,10 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { MosIntegration } from './ingest/mosDevice/mosIntegration'
 import { MediaScannerIntegration } from './integration/media-scanner'
-import { MediaObject } from '../../lib/collections/MediaObjects'
+import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { MediaManagerIntegration } from './integration/mediaWorkFlows'
-import { MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowStep } from '../../lib/collections/MediaWorkFlowSteps'
+import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
+import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { MOS } from '@sofie-automation/corelib'
 import { determineDiffTime } from './systemTime/systemTime'
 import { getTimeDiff } from './systemTime/api'
@@ -556,7 +556,7 @@ export namespace ServerPeripheralDeviceAPI {
 
 		// Compare the timelineHash with the one we have in the timeline.
 
-		if (userAction && userAction.timelineGenerated) {
+		if (userAction?.timelineGenerated) {
 			/** Time when timeline was generated in Core */
 			const startTime = userAction.timelineGenerated
 			const endTime = getCurrentTime()

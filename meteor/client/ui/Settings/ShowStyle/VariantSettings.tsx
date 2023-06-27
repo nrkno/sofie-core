@@ -11,8 +11,8 @@ import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { useTranslation } from 'react-i18next'
 import { MeteorCall } from '../../../../lib/api/methods'
-import { ShowStyleBase, SourceLayers } from '../../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant } from '../../../../lib/collections/ShowStyleVariants'
+import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { NoticeLevel, NotificationCenter, Notification } from '../../../../lib/notifications/notifications'
@@ -25,8 +25,8 @@ import { useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { Blueprints, ShowStyleVariants } from '../../../collections'
 
 interface IShowStyleVariantsProps {
-	showStyleBase: ShowStyleBase
-	showStyleVariants: ShowStyleVariant[]
+	showStyleBase: DBShowStyleBase
+	showStyleVariants: DBShowStyleVariant[]
 	blueprintConfigSchema: JSONSchema | undefined
 	blueprintTranslationNamespaces: string[]
 	blueprintConfigPreset: IShowStyleConfigPreset | undefined // TODO - use this
@@ -43,7 +43,7 @@ export const ShowStyleVariantsSettings = ({
 	layerMappings,
 	sourceLayers,
 }: IShowStyleVariantsProps): JSX.Element => {
-	const [localVariants, setLocalVariants] = useState<ShowStyleVariant[]>([])
+	const [localVariants, setLocalVariants] = useState<DBShowStyleVariant[]>([])
 	const [editedVariants, setEditedVariants] = useState<ShowStyleVariantId[]>([])
 	const [timestampedFileKey, setTimestampedFileKey] = useState(0)
 	const { t } = useTranslation()
@@ -82,8 +82,8 @@ export const ShowStyleVariantsSettings = ({
 	)
 
 	const importShowStyleVariantsFromArray = useCallback(
-		(showStyleVariants: ShowStyleVariant[]): void => {
-			showStyleVariants.forEach((showStyleVariant: ShowStyleVariant, index: number) => {
+		(showStyleVariants: DBShowStyleVariant[]): void => {
+			showStyleVariants.forEach((showStyleVariant: DBShowStyleVariant, index: number) => {
 				const rank = localVariants.length
 				showStyleVariant._rank = rank + index
 				MeteorCall.showstyles.importShowStyleVariant(showStyleVariant).catch(() => {
@@ -117,9 +117,9 @@ export const ShowStyleVariantsSettings = ({
 
 				const fileContents = reader.result as string
 
-				const newShowStyleVariants: ShowStyleVariant[] = []
+				const newShowStyleVariants: DBShowStyleVariant[] = []
 				try {
-					JSON.parse(fileContents).map((showStyleVariant: ShowStyleVariant) =>
+					JSON.parse(fileContents).map((showStyleVariant: DBShowStyleVariant) =>
 						newShowStyleVariants.push(showStyleVariant)
 					)
 					if (!Array.isArray(newShowStyleVariants)) {
@@ -145,7 +145,7 @@ export const ShowStyleVariantsSettings = ({
 	)
 
 	const onCopyShowStyleVariant = useCallback(
-		(showStyleVariant: ShowStyleVariant): void => {
+		(showStyleVariant: DBShowStyleVariant): void => {
 			showStyleVariant.name = `Copy of ${showStyleVariant.name}`
 			showStyleVariant._rank = localVariants.length
 			MeteorCall.showstyles.importShowStyleVariantAsNew(showStyleVariant).catch((error) => {
@@ -162,7 +162,7 @@ export const ShowStyleVariantsSettings = ({
 		[localVariants]
 	)
 
-	const onDownloadShowStyleVariant = useCallback((showStyleVariant: ShowStyleVariant): void => {
+	const onDownloadShowStyleVariant = useCallback((showStyleVariant: DBShowStyleVariant): void => {
 		const showStyleVariants = [showStyleVariant]
 		const jsonStr = JSON.stringify(showStyleVariants)
 		const fileName = `${showStyleVariant.name}_ShowStyleVariant_${showStyleVariant._id}.json`
@@ -190,7 +190,7 @@ export const ShowStyleVariantsSettings = ({
 		})
 	}, [showStyleBase._id])
 
-	const onDeleteShowStyleVariant = (showStyleVariant: ShowStyleVariant): void => {
+	const onDeleteShowStyleVariant = (showStyleVariant: DBShowStyleVariant): void => {
 		doModalDialog({
 			title: t('Remove this Show Style Variant?'),
 			no: t('Cancel'),
@@ -332,7 +332,7 @@ export const ShowStyleVariantsSettings = ({
 			<h2 className="mhn">{t('Show Style Variants')}</h2>
 			<div>
 				<table className="table expando settings-studio-showStyleVariants-table">
-					{localVariants.map((variant: ShowStyleVariant) => (
+					{localVariants.map((variant: DBShowStyleVariant) => (
 						<VariantListItem
 							key={unprotectString(variant._id)}
 							isEdited={editedVariants.includes(variant._id)}

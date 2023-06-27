@@ -70,7 +70,7 @@ export function withTiming<IProps, IState>(
 
 			filterGetter: (o: any) => any
 			previousValue: any = undefined
-			isDirty: boolean = false
+			isDirty = false
 
 			constructor(props, context) {
 				super(props, context)

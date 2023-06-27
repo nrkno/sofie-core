@@ -144,7 +144,7 @@ const cacheResultCache: {
 	}
 } = {}
 /** Cache the result of function for a limited time */
-export function cacheResult<T>(name: string, fcn: () => T, limitTime: number = 1000): T {
+export function cacheResult<T>(name: string, fcn: () => T, limitTime = 1000): T {
 	if (Math.random() < 0.01) {
 		Meteor.setTimeout(cleanOldCacheResult, 10000)
 	}
@@ -161,7 +161,7 @@ export function cacheResult<T>(name: string, fcn: () => T, limitTime: number = 1
 	}
 }
 /** Cache the result of function for a limited time */
-export async function cacheResultAsync<T>(name: string, fcn: () => Promise<T>, limitTime: number = 1000): Promise<T> {
+export async function cacheResultAsync<T>(name: string, fcn: () => Promise<T>, limitTime = 1000): Promise<T> {
 	if (Math.random() < 0.01) {
 		Meteor.setTimeout(cleanOldCacheResult, 10000)
 	}
@@ -210,10 +210,10 @@ const ticCache = {}
  * Performance debugging. tic() starts a timer, toc() traces the time since tic()
  * @param name
  */
-export function tic(name: string = 'default'): void {
+export function tic(name = 'default'): void {
 	ticCache[name] = Date.now()
 }
-export function toc(name: string = 'default', logStr?: string | Promise<any>[]): number | undefined {
+export function toc(name = 'default', logStr?: string | Promise<any>[]): number | undefined {
 	if (_.isArray(logStr)) {
 		_.each(logStr, (promise, i) => {
 			promise

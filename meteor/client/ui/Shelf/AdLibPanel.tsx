@@ -11,7 +11,7 @@ import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
 
 import { Spinner } from '../../lib/Spinner'
-import { OutputLayers, SourceLayers } from '../../../lib/collections/ShowStyleBases'
+import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import {
 	ISourceLayer,
 	PieceLifespan,
@@ -25,16 +25,16 @@ import {
 	RundownLayoutFilterBase,
 	DashboardLayoutFilter,
 } from '../../../lib/collections/RundownLayouts'
-import { RundownBaselineAdLibItem } from '../../../lib/collections/RundownBaselineAdLibPieces'
+import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { literal, unprotectString, protectString } from '../../../lib/lib'
 import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
 import { findPartInstanceOrWrapToTemporary, PartInstance } from '../../../lib/collections/PartInstances'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { AdLibAction } from '../../../lib/collections/AdLibActions'
+import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { RundownUtils } from '../../lib/rundown'
 import { ShelfTabs } from './Shelf'
-import { RundownBaselineAdLibAction } from '../../../lib/collections/RundownBaselineAdLibActions'
+import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { BucketAdLibActionUi, BucketAdLibUi } from './RundownViewBuckets'
 import RundownViewEventBus, {
 	RundownViewEvents,

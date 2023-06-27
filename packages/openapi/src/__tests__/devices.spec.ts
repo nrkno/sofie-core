@@ -25,6 +25,7 @@ describe('Network client', () => {
 		expect(devices).toHaveProperty('result')
 		devices.result.forEach((device) => {
 			expect(typeof device).toBe('object')
+			expect(device).toHaveProperty('id')
 			expect(typeof device.id).toBe('string')
 			deviceIds.push(device.id)
 		})

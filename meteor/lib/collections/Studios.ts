@@ -1,7 +1,7 @@
 import { omit, protectString, unprotectObject } from '../lib'
 import * as _ from 'underscore'
 import { LookaheadMode, ExpectedPackage } from '@sofie-automation/blueprints-integration'
-import { ExpectedPackageDB } from './ExpectedPackages'
+import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 import {
 	ResultingMappingRoutes,
@@ -24,7 +24,7 @@ export function getActiveRoutes(routeSets: ReadonlyDeep<Record<string, StudioRou
 	const exclusivityGroups: { [groupId: string]: true } = {}
 	_.each(routeSets, (routeSet) => {
 		if (routeSet.active) {
-			let useRoute: boolean = true
+			let useRoute = true
 			if (routeSet.exclusivityGroup) {
 				// Fail-safe: To really make sure we're not using more than one route in the same exclusivity group:
 				if (exclusivityGroups[routeSet.exclusivityGroup]) {

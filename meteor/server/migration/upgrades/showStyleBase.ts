@@ -9,7 +9,7 @@ import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib
 import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
 import { Meteor } from 'meteor/meteor'
 import { Blueprints, ShowStyleBases, TriggeredActions } from '../../collections'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBTriggeredActions } from '../../../lib/collections/TriggeredActions'
 import { evalBlueprint } from '../../api/blueprints/cache'
 import { logger } from '../../logging'
@@ -27,7 +27,7 @@ export async function validateConfigForShowStyleBase(
 			blueprintConfigWithOverrides: 1,
 		},
 	})) as
-		| Pick<ShowStyleBase, '_id' | 'blueprintId' | 'blueprintConfigPresetId' | 'blueprintConfigWithOverrides'>
+		| Pick<DBShowStyleBase, '_id' | 'blueprintId' | 'blueprintConfigPresetId' | 'blueprintConfigWithOverrides'>
 		| undefined
 	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found!`)
 
@@ -75,7 +75,7 @@ export async function runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseI
 			blueprintConfigWithOverrides: 1,
 		},
 	})) as
-		| Pick<ShowStyleBase, '_id' | 'blueprintId' | 'blueprintConfigPresetId' | 'blueprintConfigWithOverrides'>
+		| Pick<DBShowStyleBase, '_id' | 'blueprintId' | 'blueprintConfigPresetId' | 'blueprintConfigWithOverrides'>
 		| undefined
 	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found!`)
 

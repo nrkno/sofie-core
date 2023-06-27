@@ -15,12 +15,12 @@ import { Evaluation } from '../../lib/collections/Evaluations'
 import { DBOrganization } from '../../lib/collections/Organization'
 import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
-import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { SnapshotItem } from '../../lib/collections/Snapshots'
 import { Studio } from '../../lib/collections/Studios'
-import { TimelineComplete } from '../../lib/collections/Timeline'
-import { TimelineDatastoreEntry } from '../../lib/collections/TimelineDatastore'
+import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
 import { TranslationsBundle } from '../../lib/collections/TranslationsBundles'
 import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
 import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
@@ -151,7 +151,7 @@ registerIndex(RundownLayouts, {
 	showStyleBaseId: 1,
 })
 
-export const ShowStyleBases = createAsyncOnlyMongoCollection<ShowStyleBase>(CollectionName.ShowStyleBases, {
+export const ShowStyleBases = createAsyncOnlyMongoCollection<DBShowStyleBase>(CollectionName.ShowStyleBases, {
 	async update(userId, doc, fields) {
 		const access = await allowAccessToShowStyleBase({ userId: userId }, doc._id)
 		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
@@ -162,7 +162,7 @@ registerIndex(ShowStyleBases, {
 	organizationId: 1,
 })
 
-export const ShowStyleVariants = createAsyncOnlyMongoCollection<ShowStyleVariant>(CollectionName.ShowStyleVariants, {
+export const ShowStyleVariants = createAsyncOnlyMongoCollection<DBShowStyleVariant>(CollectionName.ShowStyleVariants, {
 	async update(userId, doc, fields) {
 		const access = await allowAccessToShowStyleBase({ userId: userId }, doc.showStyleBaseId)
 		if (!access.update) return logNotAllowed('ShowStyleBase', access.reason)
@@ -204,7 +204,7 @@ export const Timeline = createAsyncOnlyReadOnlyMongoCollection<TimelineComplete>
 // 	_id: 1,
 // })
 
-export const TimelineDatastore = createAsyncOnlyReadOnlyMongoCollection<TimelineDatastoreEntry>(
+export const TimelineDatastore = createAsyncOnlyReadOnlyMongoCollection<DBTimelineDatastoreEntry>(
 	CollectionName.TimelineDatastore
 )
 registerIndex(TimelineDatastore, {

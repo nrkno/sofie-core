@@ -6,7 +6,7 @@ import { getHeaderHeight } from '../../lib/viewPort'
 export function useInspectorPosition(
 	position: IFloatingInspectorPosition,
 	inspectorEl: RefObject<HTMLElement>,
-	shown: boolean = true
+	shown = true
 ): {
 	style: React.CSSProperties | undefined
 	isFlipped: boolean

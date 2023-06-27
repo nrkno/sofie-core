@@ -11,7 +11,7 @@ import {
 	ConnectableElement,
 } from 'react-dnd'
 import { DragDropItemTypes } from '../DragDropItemTypes'
-import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
+import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { BucketAdLibActionUi, BucketAdLibItem } from './RundownViewBuckets'
 import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'

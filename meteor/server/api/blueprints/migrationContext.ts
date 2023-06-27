@@ -13,7 +13,7 @@ import {
 	waitForPromise,
 } from '../../../lib/lib'
 import { Studio, DBStudio, StudioPlayoutDevice } from '../../../lib/collections/Studios'
-import { ShowStyleBase, DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Meteor } from 'meteor/meteor'
 import {
 	ConfigItemValue,
@@ -30,7 +30,7 @@ import {
 	IBlueprintTriggeredActions,
 } from '@sofie-automation/blueprints-integration'
 
-import { ShowStyleVariant, DBShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { check } from '../../../lib/check'
 import { PERIPHERAL_SUBTYPE_PROCESS, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
 import { TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
@@ -383,8 +383,8 @@ export class MigrationContextShowStyle
 	extends AbstractMigrationContextWithTriggeredActions
 	implements IMigrationContextShowStyle
 {
-	private showStyleBase: ShowStyleBase
-	constructor(showStyleBase: ShowStyleBase) {
+	private showStyleBase: DBShowStyleBase
+	constructor(showStyleBase: DBShowStyleBase) {
 		super()
 		this.showStyleBaseId = showStyleBase._id
 		this.showStyleBase = showStyleBase
@@ -403,7 +403,7 @@ export class MigrationContextShowStyle
 	private getProtectedVariantId(variantId: string): ShowStyleVariantId {
 		return protectString<ShowStyleVariantId>(this.getVariantId(variantId))
 	}
-	private getVariantFromDb(variantId: string): ShowStyleVariant | undefined {
+	private getVariantFromDb(variantId: string): DBShowStyleVariant | undefined {
 		const variant = waitForPromise(
 			ShowStyleVariants.findOneAsync({
 				showStyleBaseId: this.showStyleBase._id,

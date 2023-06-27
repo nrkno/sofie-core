@@ -96,8 +96,8 @@ interface CurrentNextPartChangedSofieExternalMessage extends SofieExternalMessag
 export const ExternalFramePanel = withTranslation()(
 	class ExternalFramePanel extends React.Component<Translated<IProps>> {
 		frame: HTMLIFrameElement
-		mounted: boolean = false
-		initialized: boolean = false
+		mounted = false
+		initialized = false
 		failedDragTimeout: number | undefined
 
 		awaitingReply: {

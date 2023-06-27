@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { logNotAllowed } from './lib/lib'
-import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { MongoQuery, MongoQueryKey } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
@@ -75,8 +75,8 @@ export namespace ShowStyleContentWriteAccess {
 	/** Check permissions for write access to a showStyleVariant */
 	export async function showStyleVariant(
 		cred0: Credentials,
-		existingVariant: ShowStyleVariant | ShowStyleVariantId
-	): Promise<ShowStyleContentAccess & { showStyleVariant: ShowStyleVariant }> {
+		existingVariant: DBShowStyleVariant | ShowStyleVariantId
+	): Promise<ShowStyleContentAccess & { showStyleVariant: DBShowStyleVariant }> {
 		triggerWriteAccess()
 		if (existingVariant && isProtectedString(existingVariant)) {
 			const variantId = existingVariant

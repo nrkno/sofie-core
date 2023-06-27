@@ -16,7 +16,7 @@ import {
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { OutputLayers, SourceLayers } from '../../../lib/collections/ShowStyleBases'
+import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import {
 	ISourceLayer,
 	PieceLifespan,
@@ -29,7 +29,7 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/noti
 import { literal, unprotectString, partial, protectString } from '../../../lib/lib'
 import { contextMenuHoldToDisplayTime, UserAgentPointer, USER_AGENT_POINTER_PROPERTY } from '../../lib/lib'
 import { IDashboardPanelTrackedProps } from './DashboardPanel'
-import { BucketAdLib } from '../../../lib/collections/BucketAdlibs'
+import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { Bucket } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
@@ -39,7 +39,7 @@ import { BucketPieceButton, IBucketPieceDropResult } from './BucketPieceButton'
 import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import update from 'immutability-helper'
 import { PartInstance, DBPartInstance } from '../../../lib/collections/PartInstances'
-import { BucketAdLibAction } from '../../../lib/collections/BucketAdlibActions'
+import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { RundownUtils } from '../../lib/rundown'
 import { BucketAdLibItem, BucketAdLibActionUi, isAdLibAction, isAdLib, BucketAdLibUi } from './RundownViewBuckets'
 import { PieceUi } from '../SegmentTimeline/SegmentTimelineContainer'

@@ -16,7 +16,7 @@ interface TextCommand {
 	category: string
 }
 class SpeechSynthesisClass {
-	private _isInitialized: boolean = false
+	private _isInitialized = false
 	private _voice: SpeechSynthesisVoice | undefined
 
 	private _queue: Array<TextCommand> = []

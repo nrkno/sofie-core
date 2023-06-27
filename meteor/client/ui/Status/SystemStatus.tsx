@@ -265,6 +265,11 @@ export const DeviceItem = reacti18next.withTranslation()(
 										e.stopPropagation()
 										this.onToggleIgnore(this.props.device)
 									}}
+									title={
+										this.props.device.ignore
+											? 'Click to show device status to users'
+											: 'Click to hide device status from users'
+									}
 								>
 									<FontAwesomeIcon icon={faEye} />
 								</button>
@@ -456,7 +461,7 @@ export const CoreItem = reacti18next.withTranslation()(
 															return
 														}
 														let time = 'unknown'
-														const match = restartMessage.match(/([\d\.]+)s/)
+														const match = restartMessage.match(/([\d.]+)s/)
 														if (match) {
 															time = match[1]
 														}
@@ -515,7 +520,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 	> {
 		private refreshInterval: NodeJS.Timer | undefined = undefined
 		private refreshDebugStatesInterval: NodeJS.Timer | undefined = undefined
-		private destroyed: boolean = false
+		private destroyed = false
 
 		constructor(props) {
 			super(props)

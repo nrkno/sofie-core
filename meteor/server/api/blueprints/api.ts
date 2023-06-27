@@ -27,8 +27,8 @@ import { BlueprintId, OrganizationId, ShowStyleBaseId } from '@sofie-automation/
 import { Blueprints, CoreSystem, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
 import { fetchBlueprintLight, BlueprintLight } from '../../serverOptimisations'
 import { getSystemStorePath } from '../../coreSystem'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { Studio } from '../../../lib/collections/Studios'
 
 export async function insertBlueprint(
@@ -264,7 +264,7 @@ async function syncConfigPresetsToShowStyles(blueprint: Blueprint): Promise<void
 				blueprintConfigPresetId: 1,
 			},
 		}
-	)) as Pick<ShowStyleBase, '_id' | 'blueprintConfigPresetId'>[]
+	)) as Pick<DBShowStyleBase, '_id' | 'blueprintConfigPresetId'>[]
 
 	const configPresets = blueprint.showStyleConfigPresets || {}
 
@@ -299,7 +299,7 @@ async function syncConfigPresetsToShowStyles(blueprint: Blueprint): Promise<void
 				blueprintConfigPresetId: 1,
 			},
 		}
-	)) as Pick<ShowStyleVariant, '_id' | 'blueprintConfigPresetId' | 'showStyleBaseId'>[]
+	)) as Pick<DBShowStyleVariant, '_id' | 'blueprintConfigPresetId' | 'showStyleBaseId'>[]
 
 	await Promise.all(
 		variants.map(async (variant) => {

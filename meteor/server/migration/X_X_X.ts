@@ -51,7 +51,7 @@ function convertMappingsOverrideOps(studio: Studio) {
 	// Note: we can ignore the defaults of the mappings, as they will be replaced by an updated blueprint
 
 	for (const overrideOp of newOverrides) {
-		const parsedOp = overrideOp.path.match(/^([^\.]+).(.+)$/i)
+		const parsedOp = overrideOp.path.match(/^([^.]+).(.+)$/i)
 		// eg `casparcg_cg_effects.lookahead`, `casparcg_cg_effects.channel`, `casparcg_cg_effects.options.channel`
 
 		if (!parsedOp && overrideOp.op === 'set' && !overrideOp.value.options) {

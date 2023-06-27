@@ -35,7 +35,7 @@ export const SegmentTimelineZoomControls = class SegmentTimelineZoomControls ext
 	clickOffsetX: number
 	clickOffsetY: number
 
-	private _isTouch: boolean = false
+	private _isTouch = false
 	private resizeObserver: ResizeObserver
 
 	SMALL_WIDTH_BREAKPOINT = 25

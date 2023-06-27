@@ -282,7 +282,7 @@ describe('Test blueprint management api', () => {
 
 			await expect(uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)).rejects.toThrowMeteor(
 				400,
-				`Cannot replace old blueprint (of type \"showstyle\") with new blueprint of type \"studio\"`
+				`Cannot replace old blueprint (of type "showstyle") with new blueprint of type "studio"`
 			)
 		})
 		testInFiber('success - showstyle', async () => {
@@ -524,7 +524,7 @@ describe('Test blueprint management api', () => {
 
 			await expect(uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)).rejects.toThrowMeteor(
 				422,
-				`Cannot replace old blueprint \"${existingBlueprint._id}\" (\"ss1\") with new blueprint \"show2\"`
+				`Cannot replace old blueprint "${existingBlueprint._id}" ("ss1") with new blueprint "show2"`
 			)
 		})
 		testInFiber('update - drop blueprintId', async () => {
@@ -554,7 +554,7 @@ describe('Test blueprint management api', () => {
 
 			await expect(uploadBlueprint(DEFAULT_CONTEXT, existingBlueprint._id, blueprintStr)).rejects.toThrowMeteor(
 				422,
-				`Cannot replace old blueprint \"${existingBlueprint._id}\" (\"ss1\") with new blueprint \"\"`
+				`Cannot replace old blueprint "${existingBlueprint._id}" ("ss1") with new blueprint ""`
 			)
 		})
 	})

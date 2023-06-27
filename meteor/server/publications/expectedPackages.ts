@@ -8,7 +8,8 @@ import {
 	StudioPackageContainer,
 } from '../../lib/collections/Studios'
 import { setUpOptimizedObserverArray, TriggerUpdate, meteorCustomPublish } from '../lib/customPublication'
-import { ExpectedPackageDB, getSideEffect } from '../../lib/collections/ExpectedPackages'
+import { getSideEffect } from '../../lib/collections/ExpectedPackages'
+import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import _ from 'underscore'
 import {
 	ExpectedPackage,

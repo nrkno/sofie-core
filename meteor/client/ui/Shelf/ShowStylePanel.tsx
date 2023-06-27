@@ -9,8 +9,8 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { withTranslation } from 'react-i18next'
 
 interface IShowStylePanelProps {
@@ -18,8 +18,8 @@ interface IShowStylePanelProps {
 	layout: RundownLayoutBase
 	panel: RundownLayoutShowStyleDisplay
 	playlist: RundownPlaylist
-	showStyleBase: ShowStyleBase
-	showStyleVariant: ShowStyleVariant
+	showStyleBase: DBShowStyleBase
+	showStyleVariant: DBShowStyleVariant
 }
 
 interface IState {}

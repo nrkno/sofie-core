@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { ExpectedPackageWorkStatus } from '../../../../lib/collections/ExpectedPackageWorkStatuses'
+import { ExpectedPackageWorkStatus } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackageWorkStatuses'
 import { useTranslation } from 'react-i18next'
 
 export const JobStatusIcon: React.FC<{ status: ExpectedPackageWorkStatus; connected: boolean }> = ({

@@ -1,8 +1,6 @@
 import { ResultingMappingRoutes } from './Studios'
 
 import { TimelineObjGeneric, updateLookaheadLayer } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-export * from '@sofie-automation/corelib/dist/dataModel/Timeline'
-export { RoutedTimeline } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 
 export function getRoutedTimeline(
 	inputTimelineObjs: TimelineObjGeneric[],

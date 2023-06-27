@@ -40,10 +40,6 @@ async function createDefaultEnvironmentForOrg(orgId: OrganizationId) {
 		})
 	if (showStyleId && showStyleBlueprintId)
 		await ShowStyleBases.updateAsync(showStyleId, { $set: { blueprintId: showStyleBlueprintId } })
-	// const migration = prepareMigration(true)
-	// if (migration.migrationNeeded && migration.manualStepCount === 0) {
-	// 	runMigration(migration.chunks, migration.hash, [])
-	// }
 }
 
 export async function createOrganization(organization: DBOrganizationBase): Promise<OrganizationId> {

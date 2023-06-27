@@ -39,7 +39,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 		Translated<IEvaluationProps & IEvaluationTrackedProps>,
 		IEvaluationState
 	> {
-		private _currentsub: string = ''
+		private _currentsub = ''
 		private _sub?: Meteor.SubscriptionHandle
 		constructor(props) {
 			super(props)

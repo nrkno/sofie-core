@@ -276,15 +276,6 @@ export class RundownTimingCalculator {
 						(partInstance.timings?.plannedStoppedPlayback
 							? lastStartedPlayback - partInstance.timings?.plannedStoppedPlayback
 							: undefined)
-					currentRemaining = Math.max(
-						0,
-						(duration ||
-							(memberOfDisplayDurationGroup
-								? displayDurationFromGroup
-								: calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart)) ||
-							0) -
-							(now - lastStartedPlayback)
-					)
 					partDuration =
 						Math.max(
 							duration ||
@@ -318,7 +309,7 @@ export class RundownTimingCalculator {
 					} else {
 						currentRemaining = Math.max(
 							0,
-							(partInstance.timings?.duration ||
+							(duration ||
 								(memberOfDisplayDurationGroup
 									? displayDurationFromGroup
 									: calculatePartInstanceExpectedDurationWithPreroll(partInstance, piecesForPart)) ||
@@ -620,9 +611,12 @@ export class RundownTimingCalculator {
 				currentLivePartInstance.timings?.duration ||
 				calculatePartInstanceExpectedDurationWithPreroll(currentLivePartInstance, piecesForPart) ||
 				0
-			if (currentLivePart.displayDurationGroup) {
+			if (
+				currentLivePart.displayDurationGroup &&
+				(currentLivePart.expectedDuration === undefined || currentLivePart.expectedDuration === 0)
+			) {
 				onAirPartDuration =
-					this.partExpectedDurations[unprotectString(currentLivePart._id)] || onAirPartDuration
+					this.partDisplayDurationsNoPlayback[unprotectString(currentLivePart._id)] || onAirPartDuration
 			}
 
 			remainingTimeOnCurrentPart =
