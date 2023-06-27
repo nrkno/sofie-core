@@ -385,9 +385,6 @@ export function firstIfArray<T>(value: unknown): T {
  * Wait for specified time
  * @param time
  */
-export function waitTime(time: number): void {
-	waitForPromise(sleep(time))
-}
 export async function sleep(ms: number): Promise<void> {
 	return new Promise((resolve) => Meteor.setTimeout(resolve, ms))
 }

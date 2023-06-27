@@ -21,7 +21,6 @@ import { ContentCache } from './reactiveContentCache'
 import { RundownContentObserver } from './RundownContentObserver'
 import { RundownsObserver } from './RundownsObserver'
 import { PartInstances, RundownPlaylists, Rundowns, ShowStyleBases } from '../../collections'
-import { waitForPromise } from '../../../lib/lib'
 
 type ChangedHandler = (showStyleBaseId: ShowStyleBaseId, cache: ContentCache) => () => void
 
@@ -74,30 +73,26 @@ export class StudioObserver extends EventEmitter {
 		this.#playlistInStudioLiveQuery = observerChain()
 			.next(
 				'activePlaylist',
-				() =>
-					waitForPromise(
-						RundownPlaylists.findWithCursor(
-							{
-								studioId: studioId,
-								activationId: { $exists: true },
-							},
-							{
-								projection: rundownPlaylistFieldSpecifier,
-							}
-						)
-					) as MongoCursor<Pick<DBRundownPlaylist, RundownPlaylistFields>>
+				async () =>
+					RundownPlaylists.findWithCursor(
+						{
+							studioId: studioId,
+							activationId: { $exists: true },
+						},
+						{
+							projection: rundownPlaylistFieldSpecifier,
+						}
+					) as Promise<MongoCursor<Pick<DBRundownPlaylist, RundownPlaylistFields>>>
 			)
-			.next('activePartInstance', (chain) => {
+			.next('activePartInstance', async (chain) => {
 				const activePartInstanceId =
 					chain.activePlaylist.currentPartInfo?.partInstanceId ??
 					chain.activePlaylist.nextPartInfo?.partInstanceId
 				if (!activePartInstanceId) return null
-				return waitForPromise(
-					PartInstances.findWithCursor(
-						{ _id: activePartInstanceId },
-						{ projection: partInstanceFieldSpecifier, limit: 1 }
-					)
-				) as MongoCursor<Pick<DBPartInstance, PartInstanceFields>>
+				return PartInstances.findWithCursor(
+					{ _id: activePartInstanceId },
+					{ projection: partInstanceFieldSpecifier, limit: 1 }
+				) as Promise<MongoCursor<Pick<DBPartInstance, PartInstanceFields>>>
 			})
 			.end(this.updatePlaylistInStudio)
 	}
@@ -146,22 +141,20 @@ export class StudioObserver extends EventEmitter {
 		return observerChain()
 			.next(
 				'currentRundown',
-				() =>
-					waitForPromise(
-						Rundowns.findWithCursor({ _id: rundownId }, { fields: rundownFieldSpecifier, limit: 1 })
-					) as MongoCursor<Pick<DBRundown, RundownFields>>
+				async () =>
+					Rundowns.findWithCursor({ _id: rundownId }, { fields: rundownFieldSpecifier, limit: 1 }) as Promise<
+						MongoCursor<Pick<DBRundown, RundownFields>>
+					>
 			)
-			.next('showStyleBase', (chain) =>
+			.next('showStyleBase', async (chain) =>
 				chain.currentRundown
-					? (waitForPromise(
-							ShowStyleBases.findWithCursor(
-								{ _id: chain.currentRundown.showStyleBaseId },
-								{
-									fields: showStyleBaseFieldSpecifier,
-									limit: 1,
-								}
-							)
-					  ) as MongoCursor<Pick<DBShowStyleBase, ShowStyleBaseFields>>)
+					? (ShowStyleBases.findWithCursor(
+							{ _id: chain.currentRundown.showStyleBaseId },
+							{
+								fields: showStyleBaseFieldSpecifier,
+								limit: 1,
+							}
+					  ) as Promise<MongoCursor<Pick<DBShowStyleBase, ShowStyleBaseFields>>>)
 					: null
 			)
 			.end(this.updateShowStyle)
