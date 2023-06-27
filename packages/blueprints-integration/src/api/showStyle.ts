@@ -34,7 +34,7 @@ import type {
 	IBlueprintPart,
 } from '../documents'
 import type { IBlueprintShowStyleVariant, IOutputLayer, ISourceLayer } from '../showStyle'
-import type { TSR, OnGenerateTimelineObj } from '../timeline'
+import type { TSR, OnGenerateTimelineObj, TimelineObjectCoreExt } from '../timeline'
 import type { IBlueprintConfig } from '../common'
 import type { ReadonlyDeep } from 'type-fest'
 import type { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
@@ -190,7 +190,7 @@ export interface BlueprintResultTimeline {
 	persistentState: TimelinePersistentState
 }
 export interface BlueprintResultBaseline {
-	timelineObjects: TSR.TSRTimelineObj<TSR.TSRTimelineContent>[]
+	timelineObjects: TimelineObjectCoreExt<TSR.TSRTimelineContent>[]
 	/** @deprecated */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	expectedPackages?: ExpectedPackage.Any[]

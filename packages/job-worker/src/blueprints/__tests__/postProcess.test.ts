@@ -58,11 +58,12 @@ describe('Test blueprint post-process', () => {
 		})
 
 		test('some no ids', () => {
-			const rawObjects = literal<TSR.TSRTimelineObj<any>[]>([
+			const rawObjects = literal<TimelineObjectCoreExt<any>[]>([
 				{
 					id: 'testObj',
 					enable: { while: 1 },
 					layer: 'one',
+					priority: 0,
 					content: {
 						deviceType: TSR.DeviceType.ABSTRACT,
 					},
@@ -71,6 +72,7 @@ describe('Test blueprint post-process', () => {
 					id: '',
 					enable: { while: 1 },
 					layer: 'two',
+					priority: 0,
 					content: {
 						deviceType: TSR.DeviceType.CASPARCG,
 					},
@@ -79,6 +81,7 @@ describe('Test blueprint post-process', () => {
 					id: 'finalObj',
 					enable: { while: 1 },
 					layer: 'three',
+					priority: 0,
 					content: {
 						deviceType: TSR.DeviceType.ATEM,
 					},
@@ -87,6 +90,7 @@ describe('Test blueprint post-process', () => {
 					id: '',
 					enable: { while: 1 },
 					layer: 'four',
+					priority: 0,
 					content: {
 						deviceType: TSR.DeviceType.HYPERDECK,
 					},
@@ -116,11 +120,12 @@ describe('Test blueprint post-process', () => {
 		test('duplicate ids', () => {
 			const blueprintId = context.studio.blueprintId
 
-			const rawObjects = literal<TSR.TSRTimelineObj<any>[]>([
+			const rawObjects = literal<TimelineObjectCoreExt<any>[]>([
 				{
 					id: 'testObj',
 					enable: { while: 1 },
 					layer: 'one',
+					priority: 0,
 					content: {
 						deviceType: TSR.DeviceType.ABSTRACT,
 					},
@@ -129,6 +134,7 @@ describe('Test blueprint post-process', () => {
 					id: '',
 					enable: { while: 1 },
 					layer: 'two',
+					priority: 0,
 					content: {
 						deviceType: TSR.DeviceType.CASPARCG,
 					},
@@ -137,6 +143,7 @@ describe('Test blueprint post-process', () => {
 					id: 'testObj',
 					enable: { while: 1 },
 					layer: 'three',
+					priority: 0,
 					content: {
 						deviceType: TSR.DeviceType.ATEM,
 					},
@@ -145,6 +152,7 @@ describe('Test blueprint post-process', () => {
 					id: '',
 					enable: { while: 1 },
 					layer: 'four',
+					priority: 0,
 					content: {
 						deviceType: TSR.DeviceType.HYPERDECK,
 					},
@@ -165,7 +173,7 @@ describe('Test blueprint post-process', () => {
 		})
 
 		test('some no ids', () => {
-			const rawObjects = literal<TSR.TSRTimelineObj<any>[]>([
+			const rawObjects = literal<TimelineObjectCoreExt<any>[]>([
 				{
 					id: 'testObj',
 					enable: { while: 1 },
@@ -245,11 +253,12 @@ describe('Test blueprint post-process', () => {
 		})
 
 		test('duplicate ids', () => {
-			const rawObjects = literal<TSR.TSRTimelineObj<any>[]>([
+			const rawObjects = literal<TimelineObjectCoreExt<any>[]>([
 				{
 					id: 'testObj',
 					enable: { while: 1 },
 					layer: 'one',
+					priority: 0,
 					content: {
 						deviceType: TSR.DeviceType.ABSTRACT,
 					},
@@ -258,6 +267,7 @@ describe('Test blueprint post-process', () => {
 					id: '',
 					enable: { while: 1 },
 					layer: 'two',
+					priority: 0,
 					content: {
 						deviceType: TSR.DeviceType.CASPARCG,
 					},
@@ -266,6 +276,7 @@ describe('Test blueprint post-process', () => {
 					id: 'testObj',
 					enable: { while: 1 },
 					layer: 'three',
+					priority: 0,
 					content: {
 						deviceType: TSR.DeviceType.ATEM,
 					},
@@ -274,6 +285,7 @@ describe('Test blueprint post-process', () => {
 					id: '',
 					enable: { while: 1 },
 					layer: 'four',
+					priority: 0,
 					content: {
 						deviceType: TSR.DeviceType.HYPERDECK,
 					},

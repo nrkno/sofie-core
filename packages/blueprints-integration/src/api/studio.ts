@@ -9,7 +9,7 @@ import type { IBlueprintShowStyleBase } from '../showStyle'
 import type { ExtendedIngestRundown } from '../ingest'
 import type { ExpectedPlayoutItemGeneric, IBlueprintResultRundownPlaylist, IBlueprintRundownDB } from '../documents'
 import type { BlueprintMappings } from '../studio'
-import type { TSR } from '../timeline'
+import type { TimelineObjectCoreExt, TSR } from '../timeline'
 import type { ExpectedPackage } from '../package'
 
 export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcessedConfig = unknown>
@@ -70,7 +70,7 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 }
 
 export interface BlueprintResultStudioBaseline {
-	timelineObjects: TSR.TSRTimelineObj<TSR.TSRTimelineContent>[]
+	timelineObjects: TimelineObjectCoreExt<TSR.TSRTimelineContent>[]
 	/** @deprecated */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	expectedPackages?: ExpectedPackage.Any[]
