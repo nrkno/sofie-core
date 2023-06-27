@@ -581,7 +581,7 @@ function getPackageWarningMessage(
 	} else {
 		assertNever(packageOnPackageContainer.status.status)
 		return {
-			status: PieceStatusCode.UNKNOWN,
+			status: PieceStatusCode.S,
 			message: generateTranslation('{{sourceLayer}} is in an unknown state', {
 				sourceLayer: sourceLayer.name,
 			}),

@@ -240,12 +240,15 @@ export namespace RundownUtils {
 				return 'source-broken'
 			case PieceStatusCode.SOURCE_MISSING:
 				return 'source-missing'
+			case PieceStatusCode.SOURCE_UNKNOWN_STATE:
+				return 'source-unknown-state'
 			case PieceStatusCode.SOURCE_NOT_READY:
 				return 'source-not-ready'
 			case PieceStatusCode.UNKNOWN:
 				return 'unknown-state'
 			default:
 				assertNever(status)
+				return 'source-unknown-state'
 		}
 	}
 

@@ -30,6 +30,9 @@ export enum PieceStatusCode {
 	/** The source (file, live input) is missing and cannot be played, as it would result in BTA */
 	SOURCE_MISSING = 30,
 
+	/** The source is in a reported, but unrecognized state */
+	SOURCE_UNKNOWN_STATE = 35,
+
 	/** Source not set - the source object is not set to an actual source */
 	SOURCE_NOT_SET = 40,
 }

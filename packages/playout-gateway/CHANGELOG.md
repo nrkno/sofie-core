@@ -6,7 +6,27 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 # [1.49.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.2...v1.49.0-in-testing.3) (2023-04-18)
 
 
-# [1.47.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.3...v1.47.4) (2023-06-13)
+
+## [1.47.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.5-0...v1.47.5) (2023-06-27)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+## [1.47.5-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.4...v1.47.5-0) (2023-06-26)
+
+
+### Bug Fixes
+
+* playout-gateway subscriptions to meteor collections leaking upon reconnecting to core ([f29d677](https://github.com/nrkno/tv-automation-server-core/commit/f29d6771e09e0885b9bd65c216f7645cc5b7d17d))
+
+
+
+
+
+## [1.47.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.3...v1.47.4) (2023-06-13)
 
 **Note:** Version bump only for package playout-gateway
 
