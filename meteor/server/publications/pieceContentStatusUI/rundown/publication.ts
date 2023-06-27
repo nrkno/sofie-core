@@ -41,6 +41,9 @@ import {
 	addItemsWithDependenciesChangesToChangedSet,
 	fetchStudio,
 	IContentStatusesUpdatePropsBase,
+	mediaObjectFieldSpecifier,
+	packageContainerPackageStatusesFieldSpecifier,
+	packageInfoFieldSpecifier,
 	PieceDependencies,
 	studioFieldSpecifier,
 } from '../common'
@@ -208,7 +211,8 @@ async function setupUIPieceContentStatusesPublicationObservers(
 				added: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
 				changed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
 				removed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
-			}
+			},
+			{ projection: mediaObjectFieldSpecifier }
 		),
 		PackageInfos.observe(
 			{
@@ -221,7 +225,8 @@ async function setupUIPieceContentStatusesPublicationObservers(
 				added: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
 				changed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
 				removed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
-			}
+			},
+			{ projection: packageInfoFieldSpecifier }
 		),
 		PackageContainerPackageStatuses.observeChanges(
 			{ studioId: playlist.studioId },
@@ -229,7 +234,8 @@ async function setupUIPieceContentStatusesPublicationObservers(
 				added: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
 				changed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
 				removed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
-			}
+			},
+			{ projection: packageContainerPackageStatusesFieldSpecifier }
 		),
 	]
 }

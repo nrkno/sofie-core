@@ -16,7 +16,6 @@ import {
 	getPackageContainerPackageId,
 	PackageContainerPackageStatusDB,
 } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
-import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { PieceGeneric, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import {
 	IStudioSettings,
@@ -26,7 +25,6 @@ import {
 	StudioPackageContainer,
 } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { literal, Complete, assertNever } from '@sofie-automation/corelib/dist/lib'
-import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
 import { getSideEffect } from '../../../lib/collections/ExpectedPackages'
@@ -34,7 +32,15 @@ import { getActiveRoutes, getRoutedMappings, Studio } from '../../../lib/collect
 import { ensureHasTrailingSlash, generateTranslation, unprotectString } from '../../../lib/lib'
 import { PieceContentStatusObj, ScanInfoForPackage, ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { MediaObjects, PackageContainerPackageStatuses, PackageInfos } from '../../collections'
-import type { PieceDependencies } from './common'
+import {
+	mediaObjectFieldSpecifier,
+	MediaObjectLight,
+	packageContainerPackageStatusesFieldSpecifier,
+	PackageContainerPackageStatusLight,
+	packageInfoFieldSpecifier,
+	PackageInfoLight,
+	PieceDependencies,
+} from './common'
 
 /**
  * Take properties from the mediainfo / medistream and transform into a
@@ -176,13 +182,18 @@ export async function checkPieceContentStatusAndDependencies(
 		if (piece.expectedPackages) {
 			const getPackageInfos = async (packageId: ExpectedPackageId) => {
 				pieceDependencies.packageInfos.push(packageId)
-				return PackageInfos.findFetchAsync({
-					studioId: studio._id,
-					packageId: packageId,
-					type: {
-						$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
+				return PackageInfos.findFetchAsync(
+					{
+						studioId: studio._id,
+						packageId: packageId,
+						type: {
+							$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
+						},
 					},
-				})
+					{
+						projection: packageInfoFieldSpecifier,
+					}
+				) as Promise<PackageInfoLight[]>
 			}
 
 			const getPackageContainerPackageStatus = async (
@@ -191,10 +202,13 @@ export async function checkPieceContentStatusAndDependencies(
 			) => {
 				const id = getPackageContainerPackageId(studio._id, packageContainerId, expectedPackageId)
 				pieceDependencies.packageContainerPackageStatuses.push(id)
-				return PackageContainerPackageStatuses.findOneAsync({
-					_id: id,
-					studioId: studio._id,
-				})
+				return PackageContainerPackageStatuses.findOneAsync(
+					{
+						_id: id,
+						studioId: studio._id,
+					},
+					{ projection: packageContainerPackageStatusesFieldSpecifier }
+				) as Promise<PackageContainerPackageStatusLight | undefined>
 			}
 
 			// Using Expected Packages:
@@ -210,10 +224,13 @@ export async function checkPieceContentStatusAndDependencies(
 			// Fallback to MediaObject statuses:
 			const getMediaObject = async (mediaId: string) => {
 				pieceDependencies.mediaObjects.push(mediaId)
-				return MediaObjects.findOneAsync({
-					studioId: studio._id,
-					mediaId,
-				})
+				return MediaObjects.findOneAsync(
+					{
+						studioId: studio._id,
+						mediaId,
+					},
+					{ projection: mediaObjectFieldSpecifier }
+				) as Promise<MediaObjectLight | undefined>
 			}
 
 			const status = await checkPieceContentMediaObjectStatus(piece, sourceLayer, studio, getMediaObject)
@@ -243,9 +260,9 @@ async function checkPieceContentMediaObjectStatus(
 	piece: PieceContentStatusPiece,
 	sourceLayer: ISourceLayer,
 	studio: PieceContentStatusStudio,
-	getMediaObject: (mediaId: string) => Promise<MediaObject | undefined>
+	getMediaObject: (mediaId: string) => Promise<MediaObjectLight | undefined>
 ): Promise<PieceContentStatusObj> {
-	let metadata: MediaObject | null = null
+	let metadata: MediaObjectLight | null = null
 	const settings: IStudioSettings | undefined = studio?.settings
 	let pieceStatus: PieceStatusCode = PieceStatusCode.UNKNOWN
 
@@ -413,7 +430,7 @@ async function checkPieceContentMediaObjectStatus(
 }
 
 function getAssetUrlFromContentMetaData(
-	contentMetaData: MediaObject,
+	contentMetaData: MediaObjectLight,
 	assetType: 'thumbnail' | 'preview',
 	mediaPreviewUrl: string
 ): string | undefined {
@@ -434,11 +451,11 @@ async function checkPieceContentExpectedPackageStatus(
 	piece: PieceContentStatusPiece,
 	sourceLayer: ISourceLayer,
 	studio: PieceContentStatusStudio,
-	getPackageInfos: (packageId: ExpectedPackageId) => Promise<PackageInfoDB[]>,
+	getPackageInfos: (packageId: ExpectedPackageId) => Promise<PackageInfoLight[]>,
 	getPackageContainerPackageStatus: (
 		packageContainerId: string,
 		expectedPackageId: ExpectedPackageId
-	) => Promise<Pick<PackageContainerPackageStatusDB, 'status'> | undefined>
+	) => Promise<PackageContainerPackageStatusLight | undefined>
 ): Promise<PieceContentStatusObj> {
 	const settings: IStudioSettings | undefined = studio?.settings
 	let pieceStatus: PieceStatusCode = PieceStatusCode.UNKNOWN

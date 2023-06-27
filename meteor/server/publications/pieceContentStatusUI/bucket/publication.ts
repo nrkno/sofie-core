@@ -30,6 +30,9 @@ import {
 	addItemsWithDependenciesChangesToChangedSet,
 	fetchStudio,
 	IContentStatusesUpdatePropsBase,
+	mediaObjectFieldSpecifier,
+	packageContainerPackageStatusesFieldSpecifier,
+	packageInfoFieldSpecifier,
 	PieceDependencies,
 	studioFieldSpecifier,
 } from '../common'
@@ -140,7 +143,8 @@ async function setupUIBucketContentStatusesPublicationObservers(
 				added: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
 				changed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
 				removed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
-			}
+			},
+			{ projection: mediaObjectFieldSpecifier }
 		),
 		PackageInfos.observe(
 			{
@@ -153,7 +157,8 @@ async function setupUIBucketContentStatusesPublicationObservers(
 				added: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
 				changed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
 				removed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
-			}
+			},
+			{ projection: packageInfoFieldSpecifier }
 		),
 		PackageContainerPackageStatuses.observeChanges(
 			{ studioId: bucket.studioId },
@@ -161,7 +166,8 @@ async function setupUIBucketContentStatusesPublicationObservers(
 				added: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
 				changed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
 				removed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
-			}
+			},
+			{ projection: packageContainerPackageStatusesFieldSpecifier }
 		),
 	]
 }
