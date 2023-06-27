@@ -8,4 +8,4 @@ fi
 
 # Start meteor
 cd /opt/core
-node main.js
+node --inspect main.js
