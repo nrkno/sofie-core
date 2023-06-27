@@ -107,7 +107,7 @@ describe('Network client', () => {
 			expect(setNext.status).toBe(200)
 		})
 	} else {
-		test.todo('todo - set next segment in a playlist - need to read a segmentId')
+		test.todo('set next segment in a playlist - need to read a segmentId')
 	}
 
 	test('can send take action to the Sofie application', async () => {
@@ -124,7 +124,7 @@ describe('Network client', () => {
 			expect(execute.status).toBe(200)
 		})
 	} else {
-		test.todo('Setup mocks for Sofie')
+		test.todo('execute adlib - need to have an adlib to run')
 	}
 
 	test('can deactivate a playlist', async () => {

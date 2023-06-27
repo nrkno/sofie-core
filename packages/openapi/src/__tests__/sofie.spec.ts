@@ -41,6 +41,6 @@ describe('Network client', () => {
 			expect(sofieVersion.status).toBe(200)
 		})
 	} else {
-		test.todo('Setup mocks for Sofie')
+		test.todo('assign/unassign system blueprint - need a test system blueprint')
 	}
 })

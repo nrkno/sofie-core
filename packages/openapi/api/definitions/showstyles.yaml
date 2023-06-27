@@ -156,6 +156,11 @@ resources:
                     example: 409
                   message:
                     type: string
+                  details:
+                    type: array
+                    items:
+                      type: string
+                      example: 'Invalid Union'
                 required:
                   - status
                   - message
