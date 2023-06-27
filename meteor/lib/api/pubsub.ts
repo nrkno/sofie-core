@@ -23,7 +23,6 @@ import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/Expe
 import { ExpectedPackageWorkStatus } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackageWorkStatuses'
 import { ExpectedPlayoutItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 import { ExternalMessageQueueObj } from '../collections/ExternalMessageQueue'
-import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { DBOrganization } from '../collections/Organization'
@@ -68,7 +67,6 @@ export enum PubSub {
 	expectedPlayoutItems = 'expectedPlayoutItems',
 	expectedMediaItems = 'expectedMediaItems',
 	externalMessageQueue = 'externalMessageQueue',
-	mediaObjects = 'mediaObjects',
 	peripheralDeviceCommands = 'peripheralDeviceCommands',
 	peripheralDevices = 'peripheralDevices',
 	peripheralDevicesAndSubDevices = ' peripheralDevicesAndSubDevices',
@@ -151,7 +149,6 @@ export interface PubSubTypes {
 		selector: MongoQuery<ExternalMessageQueueObj>,
 		token?: string
 	) => ExternalMessageQueueObj
-	[PubSub.mediaObjects]: (studioId: StudioId, selector: MongoQuery<MediaObject>, token?: string) => MediaObject
 	[PubSub.peripheralDeviceCommands]: (deviceId: PeripheralDeviceId, token?: string) => PeripheralDeviceCommand
 	[PubSub.peripheralDevices]: (selector: MongoQuery<PeripheralDevice>, token?: string) => PeripheralDevice
 	[PubSub.peripheralDevicesAndSubDevices]: (selector: MongoQuery<PeripheralDevice>) => PeripheralDevice
