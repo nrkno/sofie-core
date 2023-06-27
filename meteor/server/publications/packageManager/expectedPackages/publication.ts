@@ -23,7 +23,7 @@ import { PeripheralDevices, Studios } from '../../../collections'
 import { check, Match } from 'meteor/check'
 import { PackageManagerExpectedPackage } from '@sofie-automation/shared-lib/dist/package-manager/publications'
 import { ExpectedPackagesContentObserver } from './contentObserver'
-import { ExpectedPackagesContentCache } from './contentCache'
+import { createReactiveContentCache, ExpectedPackagesContentCache } from './contentCache'
 import { buildMappingsToDeviceIdMap } from './util'
 import { updateCollectionForExpectedPackageIds, updateCollectionForPieceInstanceIds } from './generate'
 
@@ -69,35 +69,25 @@ async function setupExpectedPackagesPublicationObservers(
 	args: ReadonlyDeep<ExpectedPackagesPublicationArgs>,
 	triggerUpdate: TriggerUpdate<ExpectedPackagesPublicationUpdateProps>
 ): Promise<Meteor.LiveQueryHandle[]> {
-	const packagesCache = new ExpectedPackagesContentObserver(args.studioId, (cache) => {
-		// Push update
-		triggerUpdate({ newCache: cache })
+	const contentCache = createReactiveContentCache()
 
-		// Setup watchers for changes to the caches, to trigger an invalidation of the publication upon cache changes
-		const innerQueries = [
-			cache.ExpectedPackages.find({}).observeChanges({
-				added: (id) => triggerUpdate({ invalidateExpectedPackageIds: [protectString<ExpectedPackageId>(id)] }),
-				changed: (id) =>
-					triggerUpdate({ invalidateExpectedPackageIds: [protectString<ExpectedPackageId>(id)] }),
-				removed: (id) =>
-					triggerUpdate({ invalidateExpectedPackageIds: [protectString<ExpectedPackageId>(id)] }),
-			}),
-			cache.PieceInstances.find({}).observeChanges({
-				added: (id) => triggerUpdate({ invalidatePieceInstanceIds: [protectString<PieceInstanceId>(id)] }),
-				changed: (id) => triggerUpdate({ invalidatePieceInstanceIds: [protectString<PieceInstanceId>(id)] }),
-				removed: (id) => triggerUpdate({ invalidatePieceInstanceIds: [protectString<PieceInstanceId>(id)] }),
-			}),
-		]
+	// Push update
+	triggerUpdate({ newCache: contentCache })
 
-		return () => {
-			for (const query of innerQueries) {
-				query.stop()
-			}
-		}
-	})
 	// Set up observers:
 	return [
-		packagesCache,
+		new ExpectedPackagesContentObserver(args.studioId, contentCache),
+
+		contentCache.ExpectedPackages.find({}).observeChanges({
+			added: (id) => triggerUpdate({ invalidateExpectedPackageIds: [protectString<ExpectedPackageId>(id)] }),
+			changed: (id) => triggerUpdate({ invalidateExpectedPackageIds: [protectString<ExpectedPackageId>(id)] }),
+			removed: (id) => triggerUpdate({ invalidateExpectedPackageIds: [protectString<ExpectedPackageId>(id)] }),
+		}),
+		contentCache.PieceInstances.find({}).observeChanges({
+			added: (id) => triggerUpdate({ invalidatePieceInstanceIds: [protectString<PieceInstanceId>(id)] }),
+			changed: (id) => triggerUpdate({ invalidatePieceInstanceIds: [protectString<PieceInstanceId>(id)] }),
+			removed: (id) => triggerUpdate({ invalidatePieceInstanceIds: [protectString<PieceInstanceId>(id)] }),
+		}),
 
 		Studios.observeChanges(
 			args.studioId,

@@ -1,5 +1,3 @@
-import { Meteor } from 'meteor/meteor'
-import _ from 'underscore'
 import { ReactiveCacheCollection } from '../../lib/ReactiveCacheCollection'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
@@ -36,31 +34,12 @@ export interface ExpectedPackagesContentCache {
 	PieceInstances: ReactiveCacheCollection<PieceInstanceCompact>
 }
 
-type ReactionWithCache = (cache: ExpectedPackagesContentCache) => void
-
-export function createReactiveContentCache(
-	reaction: ReactionWithCache,
-	reactivityDebounce: number
-): { cache: ExpectedPackagesContentCache; cancel: () => void } {
-	let isCancelled = false
-	const innerReaction = _.debounce(
-		Meteor.bindEnvironment(() => {
-			if (!isCancelled) reaction(cache)
-		}),
-		reactivityDebounce
-	)
-	const cancel = () => {
-		isCancelled = true
-		innerReaction.cancel()
-	}
-
+export function createReactiveContentCache(): ExpectedPackagesContentCache {
 	const cache: ExpectedPackagesContentCache = {
-		ExpectedPackages: new ReactiveCacheCollection<ExpectedPackageDB>('expectedPackages', innerReaction),
-		RundownPlaylists: new ReactiveCacheCollection<RundownPlaylistCompact>('rundownPlaylists', innerReaction),
-		PieceInstances: new ReactiveCacheCollection<PieceInstanceCompact>('pieceInstances', innerReaction),
+		ExpectedPackages: new ReactiveCacheCollection<ExpectedPackageDB>('expectedPackages'),
+		RundownPlaylists: new ReactiveCacheCollection<RundownPlaylistCompact>('rundownPlaylists'),
+		PieceInstances: new ReactiveCacheCollection<PieceInstanceCompact>('pieceInstances'),
 	}
 
-	innerReaction()
-
-	return { cache, cancel }
+	return cache
 }
