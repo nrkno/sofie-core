@@ -3,6 +3,7 @@ import {
 	CoreOptions,
 	DDPConnectorOptions,
 	CollectionObj,
+	Observer,
 } from '@sofie-automation/server-core-integration'
 
 import {
@@ -65,7 +66,7 @@ export interface MemoryUsageReport {
 export class CoreHandler {
 	core!: CoreConnection
 	logger: Logger
-	public _observers: Array<any> = []
+	public _observers: Array<Observer> = []
 	public deviceSettings: { [key: string]: any } = {}
 
 	public errorReporting = false
@@ -102,9 +103,7 @@ export class CoreHandler {
 
 		this.core.onConnected(() => {
 			this.logger.info('Core Connected!')
-			this.setupObserversAndSubscriptions().catch((e: any) => {
-				this.logger.error(`Core Error during setupObserversAndSubscriptions: ${e}`, { error: e })
-			})
+
 			if (this._onConnected) this._onConnected()
 		})
 		this.core.onDisconnected(() => {
@@ -136,7 +135,7 @@ export class CoreHandler {
 	setTSR(tsr: TSRHandler): void {
 		this._tsrHandler = tsr
 	}
-	async setupObserversAndSubscriptions(): Promise<void> {
+	private async setupObserversAndSubscriptions(): Promise<void> {
 		this.logger.info('Core: Setting up subscriptions..')
 		this.logger.info('DeviceId: ' + this.core.deviceId)
 		await Promise.all([
@@ -153,7 +152,7 @@ export class CoreHandler {
 
 		this.logger.info('Core: Subscriptions are set up!')
 		if (this._observers.length) {
-			this.logger.info('CoreMos: Clearing observers..')
+			this.logger.info('CorePlayout: Clearing observers..')
 			this._observers.forEach((obs) => {
 				obs.stop()
 			})
@@ -529,7 +528,7 @@ export class CoreHandler {
 
 export class CoreTSRDeviceHandler {
 	core!: CoreConnection
-	public _observers: Array<any> = []
+	public _observers: Array<Observer> = []
 	public _devicePr: Promise<DeviceContainer<DeviceOptionsAny>>
 	public _deviceId: string
 	public _device!: DeviceContainer<DeviceOptionsAny>
@@ -585,7 +584,7 @@ export class CoreTSRDeviceHandler {
 		await this.setupSubscriptionsAndObservers()
 		this._coreParentHandler.logger.debug('setupSubscriptionsAndObservers done')
 	}
-	async setupSubscriptionsAndObservers(): Promise<void> {
+	private async setupSubscriptionsAndObservers(): Promise<void> {
 		// console.log('setupObservers', this.core.deviceId)
 		if (this._observers.length) {
 			this._coreParentHandler.logger.info('CoreTSRDevice: Clearing observers..')
@@ -676,6 +675,10 @@ export class CoreTSRDeviceHandler {
 		this._observers.forEach((obs) => {
 			obs.stop()
 		})
+
+		for (const subId of this._subscriptions) {
+			this.core.unsubscribe(subId)
+		}
 
 		await this._tsrHandler.tsr.removeDevice(this._deviceId)
 		await this.core.setStatus({

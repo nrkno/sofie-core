@@ -3,6 +3,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.47.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.5-0...v1.47.5) (2023-06-27)
+
+**Note:** Version bump only for package mos-gateway
+
+
+
+
+
+## [1.47.5-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.4...v1.47.5-0) (2023-06-26)
+
+
+### Bug Fixes
+
+* mos-gateway subscriptions to meteor collections leaking upon reconnecting to core ([7867895](https://github.com/nrkno/tv-automation-server-core/commit/786789506499c2bb168b67cb14c0dcfdf391329a))
+
+
+
+
+
 ## [1.47.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.3...v1.47.4) (2023-06-13)
 
 **Note:** Version bump only for package mos-gateway

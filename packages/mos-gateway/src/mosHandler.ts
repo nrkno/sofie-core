@@ -23,7 +23,7 @@ import {
 } from 'mos-connection'
 import * as Winston from 'winston'
 import { CoreHandler, CoreMosDeviceHandler } from './coreHandler'
-import { CollectionObj } from '@sofie-automation/server-core-integration'
+import { CollectionObj, Observer } from '@sofie-automation/server-core-integration'
 import {
 	DEFAULT_MOS_TIMEOUT_TIME,
 	DEFAULT_MOS_HEARTBEAT_INTERVAL,
@@ -62,7 +62,7 @@ export class MosHandler {
 	private _disposed = false
 	private _settings?: MosDeviceSettings
 	private _coreHandler: CoreHandler | undefined
-	private _observers: Array<any> = []
+	private _observers: Array<Observer> = []
 	private _triggerupdateDevicesTimeout: any = null
 
 	constructor(logger: Winston.Logger) {
@@ -531,23 +531,21 @@ export class MosHandler {
 
 		delete this._ownMosDevices[deviceId]
 		if (mosDevice) {
+			if (!this._coreHandler) throw Error('_coreHandler is undefined!')
+			await this._coreHandler.unRegisterMosDevice(mosDevice)
+
 			if (!this.mos) {
 				throw Error('mos is undefined!')
 			}
 
+			// TODO - why are we finding `mosDevice0`, and not using `mosDevice`?
 			const mosDevice0 =
 				this.mos.getDevice(mosDevice.idPrimary) ||
 				(mosDevice.idSecondary && this.mos.getDevice(mosDevice.idSecondary))
 
 			if (mosDevice0) {
+				// TODO - does this need running for both primary and secondary?
 				await this.mos.disposeMosDevice(mosDevice)
-				if (!this._coreHandler) throw Error('_coreHandler is undefined!')
-				await this._coreHandler.unRegisterMosDevice(mosDevice)
-
-				delete this._ownMosDevices[mosDevice.idPrimary]
-				if (mosDevice.idSecondary) delete this._ownMosDevices[mosDevice.idSecondary]
-			} else {
-				// device not found in mosConnection
 			}
 		} else {
 			// no device found
