@@ -94,7 +94,7 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 
 	const isInvalid = !!part.instance.part.invalid
 
-	const loop = !(mainPiece?.instance.piece.content as VTContent).loop
+	const loop = !(mainPiece?.instance.piece.content as VTContent)?.loop
 	const endsInFreeze = !part.instance.part.autoNext && !loop && !!mainPiece?.instance.piece.content.sourceDuration
 	const mainSourceEnd = mainPiece?.instance.piece.content.sourceDuration
 		? (mainPieceInPoint ?? 0) + mainPiece?.instance.piece.content.sourceDuration
