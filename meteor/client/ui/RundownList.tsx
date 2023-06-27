@@ -3,9 +3,8 @@ import * as React from 'react'
 import { PubSub } from '../../lib/api/pubsub'
 import { GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../lib/collections/Rundowns'
 import { getAllowConfigure, getHelpMode } from '../lib/localStorage'
-import { extendMandadory, unprotectString } from '../../lib/lib'
+import { literal, unprotectString } from '../../lib/lib'
 import { useSubscription, useTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../lib/Spinner'
 import { GettingStarted } from './RundownList/GettingStarted'
@@ -16,20 +15,10 @@ import RundownPlaylistDragLayer from './RundownList/RundownPlaylistDragLayer'
 import { RundownPlaylistUi } from './RundownList/RundownPlaylistUi'
 import { RundownLayoutsAPI } from '../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
-import { UIStudios } from './Collections'
-import {
-	getCoreSystem,
-	RundownLayouts,
-	RundownPlaylists,
-	Rundowns,
-	ShowStyleBases,
-	ShowStyleVariants,
-} from '../collections'
+import { getCoreSystem, RundownLayouts, RundownPlaylists, Rundowns } from '../collections'
 import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
 import { useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 
 export enum ToolTipStep {
 	TOOLTIP_START_HERE = 'TOOLTIP_START_HERE',
@@ -53,14 +42,16 @@ export function RundownList(): JSX.Element {
 
 	const showStyleBaseIds = useTracker(
 		() =>
-			Rundowns.find({ playlistId: { $in: playlistIds } }, { projection: { _id: 1 } }).map((doc) => doc.showStyleBaseId),
+			Rundowns.find({ playlistId: { $in: playlistIds } }, { projection: { _id: 1, showStyleBaseId: 1 } }).map(
+				(doc) => doc.showStyleBaseId
+			),
 		[playlistIds],
 		[]
 	)
 
 	const showStyleVariantIds = useTracker(
 		() =>
-			Rundowns.find({ playlistId: { $in: playlistIds } }, { projection: { _id: 1 } }).map(
+			Rundowns.find({ playlistId: { $in: playlistIds } }, { projection: { _id: 1, showStyleVariantId: 1 } }).map(
 				(doc) => doc.showStyleVariantId
 			),
 		[playlistIds],
@@ -90,7 +81,6 @@ export function RundownList(): JSX.Element {
 	}, [baseSubsReady])
 
 	const coreSystem = useTracker(() => getCoreSystem(), [])
-	const studios = useTracker(() => UIStudios.find().fetch(), [], [])
 	const rundownLayouts = useTracker(
 		() =>
 			RundownLayouts.find({
@@ -104,45 +94,15 @@ export function RundownList(): JSX.Element {
 			RundownPlaylists.find({}, { sort: { created: -1 } }).map((playlist: RundownPlaylist) => {
 				const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
 
-				const airStatuses: string[] = []
-				const statuses: string[] = []
-				const unsyncedRundowns: Rundown[] = []
-				const showStyles: RundownPlaylistUi['showStyles'] = []
+				const unsyncedRundowns = rundowns.filter((rundown) => !!rundown.orphaned)
 
-				for (const rundown of rundowns) {
-					airStatuses.push(String(rundown.airStatus))
-					statuses.push(String(rundown.status))
-
-					if (rundown.orphaned) {
-						unsyncedRundowns.push(rundown)
-					}
-
-					const showStyleBase = ShowStyleBases.findOne(rundown.showStyleBaseId, {
-						projection: { _id: 1, name: 1 },
-					}) as Pick<DBShowStyleBase, '_id' | 'name'>
-					if (showStyleBase) {
-						const showStyleVariant = ShowStyleVariants.findOne(rundown.showStyleVariantId, {
-							projection: { _id: 1, name: 1 },
-						}) as Pick<DBShowStyleVariant, '_id' | 'name'>
-
-						showStyles.push({
-							id: showStyleBase._id,
-							baseName: showStyleBase.name || undefined,
-							variantName: (showStyleVariant && showStyleVariant.name) ?? undefined,
-						})
-					}
-				}
-
-				return extendMandadory<RundownPlaylist, RundownPlaylistUi>(playlist, {
+				return literal<RundownPlaylistUi>({
+					...playlist,
 					rundowns,
 					unsyncedRundowns,
-					showStyles,
-					rundownAirStatus: airStatuses.join(', '),
-					rundownStatus: statuses.join(', '),
-					studioName: studios.find((s) => s._id === playlist.studioId)?.name || '',
 				})
 			}),
-		[studios],
+		[],
 		[]
 	)
 

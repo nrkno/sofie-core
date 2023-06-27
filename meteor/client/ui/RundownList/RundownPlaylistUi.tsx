@@ -25,15 +25,11 @@ import { RundownViewLayoutSelection } from './RundownViewLayoutSelection'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
-import { RundownId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface RundownPlaylistUi extends RundownPlaylist {
 	rundowns: Rundown[]
-	rundownStatus: string
-	rundownAirStatus: string
 	unsyncedRundowns: Rundown[]
-	studioName: string
-	showStyles: Array<{ id: ShowStyleBaseId; baseName?: string; variantName?: string }>
 }
 
 export function RundownPlaylistUi({
