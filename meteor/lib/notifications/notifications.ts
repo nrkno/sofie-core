@@ -546,8 +546,8 @@ export function getNoticeLevelForPieceStatus(statusCode: PieceStatusCode | undef
 		case PieceStatusCode.SOURCE_NOT_SET:
 			return NoticeLevel.CRITICAL
 		case PieceStatusCode.SOURCE_MISSING:
-			return NoticeLevel.WARNING
 		case PieceStatusCode.SOURCE_BROKEN:
+		case PieceStatusCode.SOURCE_UNKNOWN_STATE:
 			return NoticeLevel.WARNING
 		case PieceStatusCode.SOURCE_HAS_ISSUES:
 		case PieceStatusCode.SOURCE_NOT_READY:

@@ -344,6 +344,7 @@ $layer-types: join($layer-types-solid, $layer-types-gradient);
 @mixin missing-overlay {
 	&.source-broken,
 	&.source-missing,
+	&.source-unknown-state,
 	&.source-not-ready {
 		&::before {
 			@keyframes animated-zebra {
@@ -396,6 +397,7 @@ $layer-types: join($layer-types-solid, $layer-types-gradient);
 
 	&.vt.source-broken,
 	&.vt.source-missing,
+	&.vt.source-unknown-state,
 	&.vt.source-not-ready {
 		&::before {
 			opacity: 0.6;
