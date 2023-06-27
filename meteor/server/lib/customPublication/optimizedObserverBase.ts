@@ -215,6 +215,8 @@ async function createOptimizedObserverWorker<
 			clone: false,
 		})
 
+		logger.silly(`Trigger optimized observer ${identifier} ${updateIsRunning} ${hasPendingUpdate}`)
+
 		// If already running, set it as pending to be done afterwards
 		if (updateIsRunning) {
 			hasPendingUpdate = true
