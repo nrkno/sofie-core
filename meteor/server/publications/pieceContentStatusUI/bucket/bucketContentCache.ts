@@ -1,5 +1,3 @@
-import { Meteor } from 'meteor/meteor'
-import _ from 'underscore'
 import { ReactiveCacheCollection } from '../../lib/ReactiveCacheCollection'
 import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
@@ -63,34 +61,14 @@ export interface BucketContentCache {
 	ShowStyleSourceLayers: ReactiveCacheCollection<SourceLayersDoc>
 }
 
-type ReactionWithCache = (cache: BucketContentCache) => void
-
-export function createReactiveContentCache(
-	reaction: ReactionWithCache,
-	reactivityDebounce: number
-): { cache: BucketContentCache; cancel: () => void } {
-	let isCancelled = false
-	const innerReaction = _.debounce(
-		Meteor.bindEnvironment(() => {
-			if (!isCancelled) reaction(cache)
-		}),
-		reactivityDebounce
-	)
-	const cancel = () => {
-		isCancelled = true
-		innerReaction.cancel()
-	}
-
+export function createReactiveContentCache(): BucketContentCache {
 	const cache: BucketContentCache = {
-		BucketAdLibs: new ReactiveCacheCollection<Pick<BucketAdLib, BucketAdLibFields>>('bucketAdlibs', innerReaction),
+		BucketAdLibs: new ReactiveCacheCollection<Pick<BucketAdLib, BucketAdLibFields>>('bucketAdlibs'),
 		BucketAdLibActions: new ReactiveCacheCollection<Pick<BucketAdLibAction, BucketActionFields>>(
-			'bucketAdlibActions',
-			innerReaction
+			'bucketAdlibActions'
 		),
-		ShowStyleSourceLayers: new ReactiveCacheCollection<SourceLayersDoc>('sourceLayers', innerReaction),
+		ShowStyleSourceLayers: new ReactiveCacheCollection<SourceLayersDoc>('sourceLayers'),
 	}
 
-	innerReaction()
-
-	return { cache, cancel }
+	return cache
 }

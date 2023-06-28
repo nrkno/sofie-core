@@ -1,5 +1,3 @@
-import { Meteor } from 'meteor/meteor'
-import _ from 'underscore'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { ReactiveCacheCollection } from '../lib/ReactiveCacheCollection'
@@ -57,35 +55,15 @@ export interface ContentCache {
 	DeletedPartInstances: ReactiveCacheCollection<Pick<PartInstance, PartInstanceFields>>
 }
 
-type ReactionWithCache = (cache: ContentCache) => void
-
-export function createReactiveContentCache(
-	reaction: ReactionWithCache,
-	reactivityDebounce: number
-): { cache: ContentCache; cancel: () => void } {
-	let isCancelled = false
-	const innerReaction = _.debounce(
-		Meteor.bindEnvironment(() => {
-			if (!isCancelled) reaction(cache)
-		}),
-		reactivityDebounce
-	)
-	const cancel = () => {
-		isCancelled = true
-		innerReaction.cancel()
-	}
-
+export function createReactiveContentCache(): ContentCache {
 	const cache: ContentCache = {
-		Rundowns: new ReactiveCacheCollection<Pick<Rundown, RundownFields>>('rundowns', innerReaction),
-		Segments: new ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>('segments', innerReaction),
-		Parts: new ReactiveCacheCollection<Pick<DBPart, PartFields>>('parts', innerReaction),
+		Rundowns: new ReactiveCacheCollection<Pick<Rundown, RundownFields>>('rundowns'),
+		Segments: new ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>('segments'),
+		Parts: new ReactiveCacheCollection<Pick<DBPart, PartFields>>('parts'),
 		DeletedPartInstances: new ReactiveCacheCollection<Pick<PartInstance, PartInstanceFields>>(
-			'deletedPartInstances',
-			innerReaction
+			'deletedPartInstances'
 		),
 	}
 
-	innerReaction()
-
-	return { cache, cancel }
+	return cache
 }

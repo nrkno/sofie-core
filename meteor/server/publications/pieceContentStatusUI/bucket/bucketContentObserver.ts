@@ -5,7 +5,6 @@ import {
 	bucketActionFieldSpecifier,
 	bucketAdlibFieldSpecifier,
 	BucketContentCache,
-	createReactiveContentCache,
 	ShowStyleBaseFields,
 	showStyleBaseFieldSpecifier,
 	SourceLayersDoc,
@@ -19,8 +18,6 @@ import _ from 'underscore'
 
 const REACTIVITY_DEBOUNCE = 20
 
-type ChangedHandler = (cache: BucketContentCache) => () => void
-
 function convertShowStyleBase(doc: Pick<DBShowStyleBase, ShowStyleBaseFields>): Omit<SourceLayersDoc, '_id'> {
 	return {
 		blueprintId: doc.blueprintId,
@@ -31,20 +28,13 @@ function convertShowStyleBase(doc: Pick<DBShowStyleBase, ShowStyleBaseFields>): 
 export class BucketContentObserver implements Meteor.LiveQueryHandle {
 	#observers: Meteor.LiveQueryHandle[] = []
 	#cache: BucketContentCache
-	#cancelCache: () => void
-	#cleanup: () => void
 
 	#showStyleBaseIds: ShowStyleBaseId[] = []
 	#showStyleBaseIdObserver: ReactiveMongoObserverGroupHandle
 
-	constructor(bucketId: BucketId, onChanged: ChangedHandler) {
+	constructor(bucketId: BucketId, cache: BucketContentCache) {
 		logger.silly(`Creating BucketContentObserver for "${bucketId}"`)
-		const { cache, cancel: cancelCache } = createReactiveContentCache((cache) => {
-			this.#cleanup = onChanged(cache)
-		}, REACTIVITY_DEBOUNCE)
-
 		this.#cache = cache
-		this.#cancelCache = cancelCache
 
 		// Run the ShowStyleBase query in a ReactiveMongoObserverGroup, so that it can be restarted whenever
 		this.#showStyleBaseIdObserver = waitForPromise(
@@ -136,8 +126,6 @@ export class BucketContentObserver implements Meteor.LiveQueryHandle {
 	}
 
 	public stop = (): void => {
-		this.#cancelCache()
 		this.#observers.forEach((observer) => observer.stop())
-		this.#cleanup()
 	}
 }

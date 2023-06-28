@@ -3,7 +3,6 @@ import { PartInstanceId, StudioId } from '@sofie-automation/corelib/dist/dataMod
 import { logger } from '../../../logging'
 import {
 	ExpectedPackagesContentCache,
-	createReactiveContentCache,
 	rundownPlaylistFieldSpecifier,
 	pieceInstanceFieldsSpecifier,
 } from './contentCache'
@@ -14,25 +13,16 @@ import _ from 'underscore'
 
 const REACTIVITY_DEBOUNCE = 20
 
-type ChangedHandler = (cache: ExpectedPackagesContentCache) => () => void
-
 export class ExpectedPackagesContentObserver implements Meteor.LiveQueryHandle {
 	#observers: Meteor.LiveQueryHandle[] = []
 	#cache: ExpectedPackagesContentCache
-	#cancelCache: () => void
-	#cleanup: () => void
 
 	#partInstanceIds: PartInstanceId[] = []
 	#partInstanceIdObserver: ReactiveMongoObserverGroupHandle
 
-	constructor(studioId: StudioId, onChanged: ChangedHandler) {
+	constructor(studioId: StudioId, cache: ExpectedPackagesContentCache) {
 		logger.silly(`Creating ExpectedPackagesContentObserver for "${studioId}"`)
-		const { cache, cancel: cancelCache } = createReactiveContentCache((cache) => {
-			this.#cleanup = onChanged(cache)
-		}, REACTIVITY_DEBOUNCE)
-
 		this.#cache = cache
-		this.#cancelCache = cancelCache
 
 		// Run the ShowStyleBase query in a ReactiveMongoObserverGroup, so that it can be restarted whenever
 		this.#partInstanceIdObserver = waitForPromise(
@@ -111,8 +101,6 @@ export class ExpectedPackagesContentObserver implements Meteor.LiveQueryHandle {
 	}
 
 	public stop = (): void => {
-		this.#cancelCache()
 		this.#observers.forEach((observer) => observer.stop())
-		this.#cleanup()
 	}
 }
