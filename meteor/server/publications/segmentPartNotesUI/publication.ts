@@ -69,6 +69,7 @@ async function setupUISegmentPartNotesPublicationObservers(
 	const rundownsObserver = new RundownsObserver(playlist.studioId, playlist._id, (rundownIds) => {
 		logger.silly(`Creating new RundownContentObserver`)
 
+		// TODO - can this be done cheaper?
 		const cache = createReactiveContentCache()
 
 		// Push update
@@ -100,11 +101,11 @@ async function setupUISegmentPartNotesPublicationObservers(
 		]
 
 		return () => {
+			obs1.dispose()
+
 			for (const query of innerQueries) {
 				query.stop()
 			}
-
-			obs1.dispose()
 		}
 	})
 
