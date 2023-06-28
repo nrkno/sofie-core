@@ -55,11 +55,11 @@ export class RundownContentObserver {
 		this.#cancelCache = cancelCache
 
 		this.#observers = [
-			RundownPlaylists.observeChanges(rundownPlaylistId, cache.RundownPlaylists.link(), {
+			RundownPlaylists.observe(rundownPlaylistId, cache.RundownPlaylists.link(), {
 				projection: rundownPlaylistFieldSpecifier,
 			}),
-			ShowStyleBases.observeChanges(showStyleBaseId, cache.ShowStyleBases.link()),
-			TriggeredActions.observeChanges(
+			ShowStyleBases.observe(showStyleBaseId, cache.ShowStyleBases.link()),
+			TriggeredActions.observe(
 				{
 					showStyleBaseId: {
 						$in: [showStyleBaseId, null],
@@ -67,7 +67,7 @@ export class RundownContentObserver {
 				},
 				cache.TriggeredActions.link()
 			),
-			Segments.observeChanges(
+			Segments.observe(
 				{
 					rundownId: {
 						$in: rundownIds,
@@ -78,7 +78,7 @@ export class RundownContentObserver {
 					projection: segmentFieldSpecifier,
 				}
 			),
-			Parts.observeChanges(
+			Parts.observe(
 				{
 					rundownId: {
 						$in: rundownIds,
@@ -89,7 +89,7 @@ export class RundownContentObserver {
 					projection: partFieldSpecifier,
 				}
 			),
-			PartInstances.observeChanges(
+			PartInstances.observe(
 				{
 					playlistActivationId: activationId,
 					reset: {
@@ -101,7 +101,7 @@ export class RundownContentObserver {
 					projection: partInstanceFieldSpecifier,
 				}
 			),
-			RundownBaselineAdLibActions.observeChanges(
+			RundownBaselineAdLibActions.observe(
 				{
 					rundownId: {
 						$in: rundownIds,
@@ -112,7 +112,7 @@ export class RundownContentObserver {
 					projection: adLibActionFieldSpecifier,
 				}
 			),
-			RundownBaselineAdLibPieces.observeChanges(
+			RundownBaselineAdLibPieces.observe(
 				{
 					rundownId: {
 						$in: rundownIds,
@@ -123,7 +123,7 @@ export class RundownContentObserver {
 					projection: adLibPieceFieldSpecifier,
 				}
 			),
-			AdLibActions.observeChanges(
+			AdLibActions.observe(
 				{
 					rundownId: {
 						$in: rundownIds,
@@ -134,7 +134,7 @@ export class RundownContentObserver {
 					projection: adLibActionFieldSpecifier,
 				}
 			),
-			AdLibPieces.observeChanges(
+			AdLibPieces.observe(
 				{
 					rundownId: {
 						$in: rundownIds,

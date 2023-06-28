@@ -10,7 +10,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBTriggeredActions } from '../../../lib/collections/TriggeredActions'
-import { ReactiveCacheCollection } from './ReactiveCacheCollection'
+import { ReactiveCacheCollection } from '../../publications/lib/ReactiveCacheCollection'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 
