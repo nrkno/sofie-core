@@ -165,7 +165,7 @@ export const StudioRoutings = withTranslation()(
 		}
 		addNewRouteInSet = (routeId: string) => {
 			const newRouteKeyName = 'newRouteSet'
-			let iter: number = 0
+			let iter = 0
 			while ((this.props.studio.routeSets || {})[newRouteKeyName + iter]) {
 				iter++
 			}
@@ -186,7 +186,7 @@ export const StudioRoutings = withTranslation()(
 		addNewRouteSet = () => {
 			// find free key name
 			const newRouteKeyName = 'newRouteSet'
-			let iter: number = 0
+			let iter = 0
 			while ((this.props.studio.routeSets || {})[newRouteKeyName + iter]) {
 				iter++
 			}
@@ -206,7 +206,7 @@ export const StudioRoutings = withTranslation()(
 		}
 		addNewExclusivityGroup = () => {
 			const newEGroupKeyName = 'exclusivityGroup'
-			let iter: number = 0
+			let iter = 0
 			while ((this.props.studio.routeSetExclusivityGroups || {})[newEGroupKeyName + iter]) {
 				iter++
 			}

@@ -249,7 +249,7 @@ export function doUserAction<Result>(
 export function eventContextForLog(e: any): [string, Time] {
 	const timeStamp = getEventTimestamp(e)
 	if (!e) return ['', timeStamp]
-	let str: string = ''
+	let str = ''
 	if (_.isString(e)) {
 		return [e, timeStamp]
 	} else if (e.currentTarget && e.currentTarget.localName && !e.key && !e.code) {

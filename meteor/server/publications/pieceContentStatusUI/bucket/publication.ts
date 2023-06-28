@@ -7,7 +7,7 @@ import {
 	PackageContainerPackageId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../../../lib/api/pubsub'
 import { UIBucketContentStatus } from '../../../../lib/api/rundownNotifications'
@@ -30,6 +30,9 @@ import {
 	addItemsWithDependenciesChangesToChangedSet,
 	fetchStudio,
 	IContentStatusesUpdatePropsBase,
+	mediaObjectFieldSpecifier,
+	packageContainerPackageStatusesFieldSpecifier,
+	packageInfoFieldSpecifier,
 	PieceDependencies,
 	studioFieldSpecifier,
 } from '../common'
@@ -61,7 +64,7 @@ interface UIBucketContentStatusesUpdateProps extends IContentStatusesUpdateProps
 }
 
 type BucketFields = '_id' | 'studioId'
-const bucketFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<BucketFields>>({
+const bucketFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<Bucket, BucketFields>>>({
 	_id: 1,
 	studioId: 1,
 })
@@ -140,7 +143,8 @@ async function setupUIBucketContentStatusesPublicationObservers(
 				added: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
 				changed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
 				removed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
-			}
+			},
+			{ projection: mediaObjectFieldSpecifier }
 		),
 		PackageInfos.observe(
 			{
@@ -153,7 +157,8 @@ async function setupUIBucketContentStatusesPublicationObservers(
 				added: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
 				changed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
 				removed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
-			}
+			},
+			{ projection: packageInfoFieldSpecifier }
 		),
 		PackageContainerPackageStatuses.observeChanges(
 			{ studioId: bucket.studioId },
@@ -161,7 +166,8 @@ async function setupUIBucketContentStatusesPublicationObservers(
 				added: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
 				changed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
 				removed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
-			}
+			},
+			{ projection: packageContainerPackageStatusesFieldSpecifier }
 		),
 	]
 }

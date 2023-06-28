@@ -1,17 +1,18 @@
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
-import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
-import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { ShowStyleReadAccess } from '../security/showStyle'
 import { OrganizationReadAccess } from '../security/organization'
 import { FindOptions } from '../../lib/collections/lib'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { RundownLayouts, ShowStyleBases, ShowStyleVariants, TriggeredActions } from '../collections'
+import { TriggeredActionsObj } from '../../lib/collections/TriggeredActions'
 
 meteorPublish(PubSub.showStyleBases, async function (selector0, token) {
-	const { cred, selector } = await AutoFillSelector.organizationId<ShowStyleBase>(this.userId, selector0, token)
-	const modifier: FindOptions<ShowStyleBase> = {
+	const { cred, selector } = await AutoFillSelector.organizationId<DBShowStyleBase>(this.userId, selector0, token)
+	const modifier: FindOptions<DBShowStyleBase> = {
 		fields: {},
 	}
 	if (
@@ -29,7 +30,7 @@ meteorPublish(PubSub.showStyleBases, async function (selector0, token) {
 meteorPublish(PubSub.showStyleVariants, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 
-	const modifier: FindOptions<ShowStyleVariant> = {
+	const modifier: FindOptions<DBShowStyleVariant> = {
 		fields: {},
 	}
 	if (
@@ -58,7 +59,7 @@ meteorPublish(PubSub.rundownLayouts, async function (selector0, token) {
 meteorPublish(PubSub.triggeredActions, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.showStyleBaseId(this.userId, selector0, token)
 
-	const modifier: FindOptions<RundownLayoutBase> = {
+	const modifier: FindOptions<TriggeredActionsObj> = {
 		fields: {},
 	}
 

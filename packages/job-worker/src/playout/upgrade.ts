@@ -21,7 +21,7 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 	const blueprint = context.studioBlueprint
 	if (typeof blueprint.blueprint.applyConfig !== 'function')
 		throw new Error('Blueprint does not support this config flow')
-	if (!blueprint.blueprintDoc || !blueprint.blueprintDoc.blueprintHash) throw new Error('Blueprint is not valid')
+	if (!blueprint.blueprintDoc?.blueprintHash) throw new Error('Blueprint is not valid')
 	if (!context.studio.blueprintConfigPresetId) throw new Error('Studio is missing config preset')
 
 	const blueprintContext = new CommonContext({
@@ -64,24 +64,20 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 		])
 	)
 
-	await context.directCollections.Studios.update(
-		context.studioId,
-		{
-			$set: {
-				'mappingsWithOverrides.defaults': translateMappings(result.mappings),
-				'peripheralDeviceSettings.playoutDevices.defaults': playoutDevices,
-				'peripheralDeviceSettings.ingestDevices.defaults': ingestDevices,
-				'peripheralDeviceSettings.inputDevices.defaults': inputDevices,
-				lastBlueprintConfig: {
-					blueprintHash: blueprint.blueprintDoc.blueprintHash,
-					blueprintId: blueprint.blueprintId,
-					blueprintConfigPresetId: context.studio.blueprintConfigPresetId,
-					config: rawBlueprintConfig,
-				},
+	await context.directCollections.Studios.update(context.studioId, {
+		$set: {
+			'mappingsWithOverrides.defaults': translateMappings(result.mappings),
+			'peripheralDeviceSettings.playoutDevices.defaults': playoutDevices,
+			'peripheralDeviceSettings.ingestDevices.defaults': ingestDevices,
+			'peripheralDeviceSettings.inputDevices.defaults': inputDevices,
+			lastBlueprintConfig: {
+				blueprintHash: blueprint.blueprintDoc.blueprintHash,
+				blueprintId: blueprint.blueprintId,
+				blueprintConfigPresetId: context.studio.blueprintConfigPresetId,
+				config: rawBlueprintConfig,
 			},
 		},
-		null // Single operation
-	)
+	})
 }
 
 function translateMappings(rawMappings: BlueprintMappings): MappingsExt {
@@ -107,7 +103,7 @@ export async function handleBlueprintValidateConfigForStudio(
 	const blueprint = context.studioBlueprint
 	if (typeof blueprint.blueprint.validateConfig !== 'function')
 		throw new Error('Blueprint does not support this config flow')
-	if (!blueprint.blueprintDoc || !blueprint.blueprintDoc.blueprintHash) throw new Error('Blueprint is not valid')
+	if (!blueprint.blueprintDoc?.blueprintHash) throw new Error('Blueprint is not valid')
 	if (!context.studio.blueprintConfigPresetId) throw new Error('Studio is missing config preset')
 
 	const blueprintContext = new CommonContext({

@@ -24,7 +24,7 @@ import { PlaylistNamePanel } from './PlaylistNamePanel'
 import { TimeOfDayPanel } from './TimeOfDayPanel'
 import { SystemStatusPanel } from './SystemStatusPanel'
 import { ShowStylePanel } from './ShowStylePanel'
-import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { StudioNamePanel } from './StudioNamePanel'
 import { SegmentNamePanel } from './SegmentNamePanel'
 import { PartNamePanel } from './PartNamePanel'
@@ -37,7 +37,7 @@ export interface IShelfDashboardLayoutProps {
 	playlist: RundownPlaylist
 	// buckets: Bucket[] | undefined
 	showStyleBase: UIShowStyleBase
-	showStyleVariant: ShowStyleVariant
+	showStyleVariant: DBShowStyleVariant
 	studioMode: boolean
 	shouldQueue: boolean
 	studio: UIStudio

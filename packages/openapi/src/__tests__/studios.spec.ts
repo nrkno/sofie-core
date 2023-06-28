@@ -125,6 +125,6 @@ describe('Network client', () => {
 			expect(routeSet.status).toBe(200)
 		})
 	} else {
-		test.todo('Setup mocks for Sofie')
+		test.todo('add/remove studio, activate/deactivate routes in a studio')
 	}
 })

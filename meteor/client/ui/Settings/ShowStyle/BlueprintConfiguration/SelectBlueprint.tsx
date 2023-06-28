@@ -9,11 +9,11 @@ import { EditAttribute } from '../../../../lib/EditAttribute'
 import { RedirectToBlueprintButton } from '../../../../lib/SettingsNavigation'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ShowStyleBase } from '../../../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { LabelActual } from '../../../../lib/Components/LabelAndOverrides'
 
 interface SelectBlueprintProps {
-	showStyleBase: ShowStyleBase
+	showStyleBase: DBShowStyleBase
 }
 
 export function SelectBlueprint({ showStyleBase }: SelectBlueprintProps): JSX.Element {

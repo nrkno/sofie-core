@@ -39,7 +39,7 @@ import {
 } from '@sofie-automation/corelib/dist/protectedString'
 import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
-import { IMongoTransaction, MongoQuery } from '../../db'
+import { MongoQuery } from '../../db'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	innerFindLastPieceOnLayer,
@@ -83,18 +83,15 @@ export class DatastoreActionExecutionContext
 	implements IDataStoreActionExecutionContext, IEventContext
 {
 	protected readonly _context: JobContext
-	protected readonly _transaction: IMongoTransaction | null
 
 	constructor(
 		contextInfo: UserContextInfo,
 		context: JobContext,
-		transaction: IMongoTransaction | null,
 		showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 		watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, context, showStyle, watchedPackages)
 		this._context = context
-		this._transaction = transaction
 	}
 
 	async setTimelineDatastoreValue(key: string, value: unknown, mode: DatastorePersistenceMode): Promise<void> {
@@ -102,19 +99,16 @@ export class DatastoreActionExecutionContext
 		const id = protectString(`${studioId}_${key}`)
 		const collection = this._context.directCollections.TimelineDatastores
 
-		await collection.replace(
-			{
-				_id: id,
-				studioId: studioId,
+		await collection.replace({
+			_id: id,
+			studioId: studioId,
 
-				key,
-				value,
+			key,
+			value,
 
-				modified: Date.now(),
-				mode,
-			},
-			this._transaction
-		)
+			modified: Date.now(),
+			mode,
+		})
 	}
 
 	async removeTimelineDatastoreValue(key: string): Promise<void> {
@@ -122,7 +116,7 @@ export class DatastoreActionExecutionContext
 		const id = getDatastoreId(studioId, key)
 		const collection = this._context.directCollections.TimelineDatastores
 
-		await collection.remove({ _id: id }, this._transaction)
+		await collection.remove({ _id: id })
 	}
 
 	getCurrentTime(): number {
@@ -223,7 +217,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 	): Promise<IBlueprintPieceInstance | undefined> {
 		const query: MongoQuery<PieceInstance> = {}
-		if (options && options.pieceMetaDataFilter) {
+		if (options?.pieceMetaDataFilter) {
 			for (const [key, value] of Object.entries<unknown>(options.pieceMetaDataFilter)) {
 				// TODO do we need better validation here?
 				// It should be pretty safe as we are working with the cache version (for now)
@@ -232,7 +226,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			}
 		}
 
-		if (options && options.excludeCurrentPart && this._cache.Playlist.doc.currentPartInfo) {
+		if (options?.excludeCurrentPart && this._cache.Playlist.doc.currentPartInfo) {
 			query['partInstanceId'] = { $ne: this._cache.Playlist.doc.currentPartInfo.partInstanceId }
 		}
 
@@ -242,7 +236,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			this._context,
 			this._cache,
 			sourceLayerId,
-			(options && options.originalOnly) || false,
+			options?.originalOnly || false,
 			query
 		)
 
@@ -257,7 +251,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 	): Promise<IBlueprintPieceDB | undefined> {
 		const query: MongoQuery<Piece> = {}
-		if (options && options.pieceMetaDataFilter) {
+		if (options?.pieceMetaDataFilter) {
 			for (const [key, value] of Object.entries<unknown>(options.pieceMetaDataFilter)) {
 				// TODO do we need better validation here?
 				// It should be pretty safe as we are working with the cache version (for now)
@@ -266,7 +260,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			}
 		}
 
-		if (options && options.excludeCurrentPart && this._cache.Playlist.doc.currentPartInfo) {
+		if (options?.excludeCurrentPart && this._cache.Playlist.doc.currentPartInfo) {
 			const currentPartInstance = this._cache.PartInstances.findOne(
 				this._cache.Playlist.doc.currentPartInfo.partInstanceId
 			)
@@ -666,20 +660,17 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		const id = protectString(`${studioId}_${key}`)
 		const collection = this._context.directCollections.TimelineDatastores
 
-		this._cache.deferDuringSaveTransaction(async (transaction) => {
-			await collection.replace(
-				{
-					_id: id,
-					studioId: studioId,
+		this._cache.deferAfterSave(async () => {
+			await collection.replace({
+				_id: id,
+				studioId: studioId,
 
-					key,
-					value,
+				key,
+				value,
 
-					modified: Date.now(),
-					mode,
-				},
-				transaction
-			)
+				modified: Date.now(),
+				mode,
+			})
 		})
 	}
 
@@ -688,8 +679,8 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		const id = getDatastoreId(studioId, key)
 		const collection = this._context.directCollections.TimelineDatastores
 
-		this._cache.deferDuringSaveTransaction(async (transaction) => {
-			await collection.remove({ _id: id }, transaction)
+		this._cache.deferAfterSave(async () => {
+			await collection.remove({ _id: id })
 		})
 	}
 

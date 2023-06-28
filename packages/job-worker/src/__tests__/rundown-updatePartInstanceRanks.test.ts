@@ -122,7 +122,7 @@ describe('updatePartInstanceRanks', () => {
 
 			const changeMap = new Map<SegmentId, Array<{ id: PartId; rank: number }>>()
 			changeMap.set(segmentId, initialRanks)
-			await updatePartInstanceRanks(context, cache, null, [segmentId], changeMap)
+			await updatePartInstanceRanks(context, cache, [segmentId], changeMap)
 
 			await cache.saveAllToDatabase()
 		})

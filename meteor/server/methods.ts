@@ -27,7 +27,7 @@ export interface RunningMethods {
 	}
 }
 let runningMethods: RunningMethods = {}
-let runningMethodsId: number = 0
+let runningMethodsId = 0
 
 function getAllClassMethods(myClass: any): string[] {
 	const objectProtProps = Object.getOwnPropertyNames(Object.prototype)
@@ -165,7 +165,7 @@ export function getRunningMethods(): RunningMethods {
 export function resetRunningMethods(): void {
 	runningMethods = {}
 }
-let _suppressExtraErrorLogging: boolean = false
+let _suppressExtraErrorLogging = false
 export function suppressExtraErrorLogging(value: boolean): void {
 	_suppressExtraErrorLogging = value
 }

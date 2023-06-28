@@ -53,6 +53,7 @@ export function pieceUiClassNames(
 		'source-missing':
 			pieceInstance.contentStatus?.status === PieceStatusCode.SOURCE_MISSING ||
 			pieceInstance.contentStatus?.status === PieceStatusCode.SOURCE_NOT_SET,
+		'source-unknown-state': pieceInstance.contentStatus?.status === PieceStatusCode.SOURCE_UNKNOWN_STATE,
 		'source-broken': pieceInstance.contentStatus?.status === PieceStatusCode.SOURCE_BROKEN,
 		'source-not-ready': pieceInstance.contentStatus?.status === PieceStatusCode.SOURCE_NOT_READY,
 		'unknown-state': pieceInstance.contentStatus?.status === PieceStatusCode.UNKNOWN,

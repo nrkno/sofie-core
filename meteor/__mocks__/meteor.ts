@@ -3,7 +3,7 @@ import * as _ from 'underscore'
 import { Fiber } from './Fibers'
 import { MongoMock } from './mongo'
 
-let controllableDefer: boolean = false
+let controllableDefer = false
 
 export function useControllableDefer(): void {
 	controllableDefer = true
@@ -96,12 +96,12 @@ export class MeteorMock {
 }
 
 export namespace MeteorMock {
-	export const isTest: boolean = true
+	export const isTest = true
 
-	export const isCordova: boolean = false
+	export const isCordova = false
 
-	export const isProduction: boolean = false
-	export const release: string = ''
+	export const isProduction = false
+	export const release = ''
 
 	export const settings: any = {}
 

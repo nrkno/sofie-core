@@ -10,7 +10,7 @@ import {
 	isPrerelease,
 	parseCoreIntegrationCompatabilityRange,
 } from '../../lib/collections/CoreSystem'
-import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Studio } from '../../lib/collections/Studios'
 import { lazyIgnore } from '../../lib/lib'
 import { logger } from '../logging'
@@ -108,7 +108,7 @@ export function checkDatabaseVersions(): void {
 							{
 								fields: { _id: 1 },
 							}
-						)) as Array<Pick<ShowStyleBase, '_id'>>
+						)) as Array<Pick<DBShowStyleBase, '_id'>>
 						for (const showStyleBase of showStylesForBlueprint) {
 							if (o.statusCode === StatusCode.GOOD) {
 								o = compareSemverVersions(

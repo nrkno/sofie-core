@@ -3,19 +3,19 @@ import * as _ from 'underscore'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
 import { MongoQuery } from '../../lib/typings/meteor'
-import { AdLibPiece } from '../../lib/collections/AdLibPieces'
+import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { RundownReadAccess } from '../security/rundown'
 import { DBSegment } from '../../lib/collections/Segments'
 import { DBPart } from '../../lib/collections/Parts'
 import { Piece } from '../../lib/collections/Pieces'
 import { PieceInstance } from '../../lib/collections/PieceInstances'
 import { DBPartInstance } from '../../lib/collections/PartInstances'
-import { RundownBaselineAdLibItem } from '../../lib/collections/RundownBaselineAdLibPieces'
+import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { OrganizationReadAccess } from '../security/organization'
 import { StudioReadAccess } from '../security/studio'
-import { AdLibAction } from '../../lib/collections/AdLibActions'
-import { RundownBaselineAdLibAction } from '../../lib/collections/RundownBaselineAdLibActions'
+import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
+import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { check, Match } from 'meteor/check'
 import { FindOptions } from '../../lib/collections/lib'
 import {
@@ -35,6 +35,8 @@ import {
 } from '../collections'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
+import { literal } from '@sofie-automation/corelib/dist/lib'
+import { MongoFieldSpecifierZeroes } from '@sofie-automation/corelib/dist/mongo'
 
 meteorPublish(PubSub.rundownsForDevice, async function (deviceId, token) {
 	check(deviceId, String)
@@ -173,12 +175,12 @@ meteorPublish(PubSub.partInstances, async function (rundownIds, playlistActivati
 meteorPublish(PubSub.partInstancesSimple, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBPartInstance> = {
-		fields: {
+		fields: literal<MongoFieldSpecifierZeroes<DBPartInstance>>({
 			// @ts-expect-error Mongo typings aren't clever enough yet
 			'part.metaData': 0,
 			isTaken: 0,
 			timings: 0,
-		},
+		}),
 	}
 
 	// Enforce only not-reset
@@ -273,13 +275,13 @@ meteorPublish(PubSub.pieceInstances, async function (selector, token) {
 meteorPublish(PubSub.pieceInstancesSimple, async function (selector, token) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<PieceInstance> = {
-		fields: {
+		fields: literal<MongoFieldSpecifierZeroes<PieceInstance>>({
 			// @ts-expect-error Mongo typings aren't clever enough yet
 			'piece.metaData': 0,
 			'piece.timelineObjectsString': 0,
 			plannedStartedPlayback: 0,
 			plannedStoppedPlayback: 0,
-		},
+		}),
 	}
 
 	// Enforce only not-reset

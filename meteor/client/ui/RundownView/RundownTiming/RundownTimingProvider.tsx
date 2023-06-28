@@ -192,7 +192,7 @@ export const RundownTimingProvider = withTracker<
 
 		private timingCalculator: RundownTimingCalculator = new RundownTimingCalculator()
 		/** last time (ms rounded down to full seconds) for which the timeupdateSynced event was dispatched */
-		private lastSyncedTime: number = 0
+		private lastSyncedTime = 0
 
 		constructor(props: IRundownTimingProviderProps & IRundownTimingProviderTrackedProps) {
 			super(props)

@@ -1,5 +1,6 @@
 import {
 	Accessor,
+	ExpectedPackage,
 	ExpectedPackageStatusAPI,
 	GraphicsContent,
 	ISourceLayer,
@@ -10,24 +11,36 @@ import {
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
 import { getExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
-import { ExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExpectedPackageId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
 	getPackageContainerPackageId,
 	PackageContainerPackageStatusDB,
 } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
-import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { PieceGeneric, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { IStudioSettings, MappingsExt, StudioPackageContainer } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import {
+	IStudioSettings,
+	MappingExt,
+	MappingsExt,
+	ResultingMappingRoutes,
+	StudioPackageContainer,
+} from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { literal, Complete, assertNever } from '@sofie-automation/corelib/dist/lib'
-import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
 import { getSideEffect } from '../../../lib/collections/ExpectedPackages'
-import { routeExpectedPackages, MappingExtWithPackage, Studio } from '../../../lib/collections/Studios'
+import { getActiveRoutes, getRoutedMappings, Studio } from '../../../lib/collections/Studios'
 import { ensureHasTrailingSlash, generateTranslation, unprotectString } from '../../../lib/lib'
 import { PieceContentStatusObj, ScanInfoForPackage, ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { MediaObjects, PackageContainerPackageStatuses, PackageInfos } from '../../collections'
-import type { PieceDependencies } from './common'
+import {
+	mediaObjectFieldSpecifier,
+	MediaObjectLight,
+	packageContainerPackageStatusesFieldSpecifier,
+	PackageContainerPackageStatusLight,
+	packageInfoFieldSpecifier,
+	PackageInfoLight,
+	PieceDependencies,
+} from './common'
 
 /**
  * Take properties from the mediainfo / medistream and transform into a
@@ -169,13 +182,18 @@ export async function checkPieceContentStatusAndDependencies(
 		if (piece.expectedPackages) {
 			const getPackageInfos = async (packageId: ExpectedPackageId) => {
 				pieceDependencies.packageInfos.push(packageId)
-				return PackageInfos.findFetchAsync({
-					studioId: studio._id,
-					packageId: packageId,
-					type: {
-						$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
+				return PackageInfos.findFetchAsync(
+					{
+						studioId: studio._id,
+						packageId: packageId,
+						type: {
+							$in: [PackageInfo.Type.SCAN, PackageInfo.Type.DEEPSCAN],
+						},
 					},
-				})
+					{
+						projection: packageInfoFieldSpecifier,
+					}
+				) as Promise<PackageInfoLight[]>
 			}
 
 			const getPackageContainerPackageStatus = async (
@@ -184,10 +202,13 @@ export async function checkPieceContentStatusAndDependencies(
 			) => {
 				const id = getPackageContainerPackageId(studio._id, packageContainerId, expectedPackageId)
 				pieceDependencies.packageContainerPackageStatuses.push(id)
-				return PackageContainerPackageStatuses.findOneAsync({
-					_id: id,
-					studioId: studio._id,
-				})
+				return PackageContainerPackageStatuses.findOneAsync(
+					{
+						_id: id,
+						studioId: studio._id,
+					},
+					{ projection: packageContainerPackageStatusesFieldSpecifier }
+				) as Promise<PackageContainerPackageStatusLight | undefined>
 			}
 
 			// Using Expected Packages:
@@ -203,10 +224,13 @@ export async function checkPieceContentStatusAndDependencies(
 			// Fallback to MediaObject statuses:
 			const getMediaObject = async (mediaId: string) => {
 				pieceDependencies.mediaObjects.push(mediaId)
-				return MediaObjects.findOneAsync({
-					studioId: studio._id,
-					mediaId,
-				})
+				return MediaObjects.findOneAsync(
+					{
+						studioId: studio._id,
+						mediaId,
+					},
+					{ projection: mediaObjectFieldSpecifier }
+				) as Promise<MediaObjectLight | undefined>
 			}
 
 			const status = await checkPieceContentMediaObjectStatus(piece, sourceLayer, studio, getMediaObject)
@@ -236,9 +260,9 @@ async function checkPieceContentMediaObjectStatus(
 	piece: PieceContentStatusPiece,
 	sourceLayer: ISourceLayer,
 	studio: PieceContentStatusStudio,
-	getMediaObject: (mediaId: string) => Promise<MediaObject | undefined>
+	getMediaObject: (mediaId: string) => Promise<MediaObjectLight | undefined>
 ): Promise<PieceContentStatusObj> {
-	let metadata: MediaObject | null = null
+	let metadata: MediaObjectLight | null = null
 	const settings: IStudioSettings | undefined = studio?.settings
 	let pieceStatus: PieceStatusCode = PieceStatusCode.UNKNOWN
 
@@ -406,7 +430,7 @@ async function checkPieceContentMediaObjectStatus(
 }
 
 function getAssetUrlFromContentMetaData(
-	contentMetaData: MediaObject,
+	contentMetaData: MediaObjectLight,
 	assetType: 'thumbnail' | 'preview',
 	mediaPreviewUrl: string
 ): string | undefined {
@@ -427,11 +451,11 @@ async function checkPieceContentExpectedPackageStatus(
 	piece: PieceContentStatusPiece,
 	sourceLayer: ISourceLayer,
 	studio: PieceContentStatusStudio,
-	getPackageInfos: (packageId: ExpectedPackageId) => Promise<PackageInfoDB[]>,
+	getPackageInfos: (packageId: ExpectedPackageId) => Promise<PackageInfoLight[]>,
 	getPackageContainerPackageStatus: (
 		packageContainerId: string,
 		expectedPackageId: ExpectedPackageId
-	) => Promise<Pick<PackageContainerPackageStatusDB, 'status'> | undefined>
+	) => Promise<PackageContainerPackageStatusLight | undefined>
 ): Promise<PieceContentStatusObj> {
 	const settings: IStudioSettings | undefined = studio?.settings
 	let pieceStatus: PieceStatusCode = PieceStatusCode.UNKNOWN
@@ -451,35 +475,37 @@ async function checkPieceContentExpectedPackageStatus(
 	let previewUrl: string | undefined
 
 	if (piece.expectedPackages && piece.expectedPackages.length) {
-		// Route the mappings
-		const routedMappingsWithPackages = routeExpectedPackages(studio, studio.mappings, piece.expectedPackages)
+		const routes = getActiveRoutes(studio.routeSets)
 
-		const checkedPackageContainers: { [containerId: string]: true } = {}
+		for (const expectedPackage of piece.expectedPackages) {
+			// Route the mappings
+			const routedDeviceIds = routeExpectedPackage(routes, studio.mappings, expectedPackage)
 
-		for (const mapping of Object.values<MappingExtWithPackage>(routedMappingsWithPackages)) {
-			const mappingDeviceId = unprotectString(mapping.deviceId)
-			let packageContainerId: string | undefined
-			for (const [containerId, packageContainer] of Object.entries<ReadonlyDeep<StudioPackageContainer>>(
-				studio.packageContainers
-			)) {
-				if (packageContainer.deviceIds.includes(mappingDeviceId)) {
-					// TODO: how to handle if a device has multiple containers?
-					packageContainerId = containerId
-					break // just picking the first one found, for now
+			const checkedPackageContainers = new Set<string>()
+
+			for (const routedDeviceId of routedDeviceIds) {
+				let packageContainerId: string | undefined
+				for (const [containerId, packageContainer] of Object.entries<ReadonlyDeep<StudioPackageContainer>>(
+					studio.packageContainers
+				)) {
+					if (packageContainer.deviceIds.includes(unprotectString(routedDeviceId))) {
+						// TODO: how to handle if a device has multiple containers?
+						packageContainerId = containerId
+						break // just picking the first one found, for now
+					}
 				}
-			}
 
-			if (!packageContainerId) {
-				continue
-			}
-			if (checkedPackageContainers[packageContainerId]) {
-				// we have already checked this package container for this expected package
-				continue
-			}
+				if (!packageContainerId) {
+					continue
+				}
 
-			checkedPackageContainers[packageContainerId] = true
+				if (checkedPackageContainers.has(packageContainerId)) {
+					// we have already checked this package container for this expected package
+					continue
+				}
 
-			for (const expectedPackage of mapping.expectedPackages) {
+				checkedPackageContainers.add(packageContainerId)
+
 				const expectedPackageId = getExpectedPackageId(piece._id, expectedPackage._id)
 				const packageOnPackageContainer = await getPackageContainerPackageStatus(
 					packageContainerId,
@@ -753,9 +779,10 @@ function getPackageWarningMessage(
 	} else {
 		assertNever(packageOnPackageContainer.status.status)
 		return {
-			status: PieceStatusCode.UNKNOWN,
-			message: generateTranslation('{{sourceLayer}} is in an unknown state', {
+			status: PieceStatusCode.SOURCE_UNKNOWN_STATE,
+			message: generateTranslation('{{sourceLayer}} is in an unknown state: "{{status}}"', {
 				sourceLayer: sourceLayer.name,
+				status: packageOnPackageContainer.status.status,
 			}),
 		}
 	}
@@ -787,9 +814,9 @@ function checkStreamFormatsAndCounts(
 		? new Set<string>(audioConfig.split(',').map((v) => v.trim()))
 		: new Set<string>()
 
-	let timebase: number = 0
-	let audioStreams: number = 0
-	let isStereo: boolean = false
+	let timebase = 0
+	let audioStreams = 0
+	let isStereo = false
 
 	// check the streams for resolution info
 	for (const stream of streams) {
@@ -915,4 +942,28 @@ const FreezeFrameWarnings: FrameWarningStrings = {
 	clipEndsWithAfter: t('This clip ends with freeze frames after {{seconds}} seconds'),
 	countDetectedWithinClip: t('{{frames}} freeze frames detected within the clip'),
 	countDetectedInClip: t('{{frames}} freeze frames detected in the clip'),
+}
+
+function routeExpectedPackage(
+	routes: ResultingMappingRoutes,
+	studioMappings: ReadonlyDeep<MappingsExt>,
+	expectedPackage: ExpectedPackage.Base
+): Set<PeripheralDeviceId> {
+	// Collect the relevant mappings
+	const mappingsWithPackages: MappingsExt = {}
+	for (const layerName of expectedPackage.layers) {
+		const mapping = studioMappings[layerName]
+
+		if (mapping) {
+			if (!mappingsWithPackages[layerName]) {
+				mappingsWithPackages[layerName] = mapping
+			}
+		}
+	}
+
+	// Route the mappings
+	const routedMappings = getRoutedMappings(mappingsWithPackages, routes)
+
+	// Find the referenced deviceIds
+	return new Set(Object.values<MappingExt>(routedMappings).map((mapping) => mapping.deviceId))
 }

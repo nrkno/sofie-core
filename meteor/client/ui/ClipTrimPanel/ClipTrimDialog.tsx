@@ -1,8 +1,8 @@
-import * as React from 'react'
-import { withTranslation, WithTranslation } from 'react-i18next'
+import React, { useCallback, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ClipTrimPanel } from './ClipTrimPanel'
-import { VTContent, VTEditableParameters } from '@sofie-automation/blueprints-integration'
-import { ModalDialog } from '../../lib/ModalDialog'
+import { VTContent } from '@sofie-automation/blueprints-integration'
+import { ModalDialog, SomeEvent } from '../../lib/ModalDialog'
 import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
@@ -27,143 +27,145 @@ interface IState {
 	duration: number
 }
 
-export const ClipTrimDialog = withTranslation()(
-	class ClipTrimDialog extends React.Component<IProps & WithTranslation, IState> {
-		constructor(props: IProps & WithTranslation) {
-			super(props)
+export function ClipTrimDialog({
+	playlistId,
+	rundown,
+	studio,
+	selectedPiece,
 
-			this.state = {
-				inPoint: ((this.props.selectedPiece.content as VTContent).editable as VTEditableParameters).editorialStart,
-				duration: ((this.props.selectedPiece.content as VTContent).editable as VTEditableParameters).editorialDuration,
-			}
-		}
-		handleChange = (inPoint: number, duration: number) => {
-			this.setState({
-				inPoint,
-				duration,
-			})
-		}
-		handleAccept = (e) => {
-			const { t, selectedPiece } = this.props
+	onClose,
+}: IProps): JSX.Element {
+	const { t } = useTranslation()
 
-			this.props.onClose && this.props.onClose()
-			doUserAction(
-				this.props.t,
-				e,
-				UserAction.SET_IN_OUT_POINTS,
-				(e, ts) =>
-					MeteorCall.userAction.setInOutPoints(
-						e,
-						ts,
-						this.props.playlistId,
-						selectedPiece.startPartId,
-						selectedPiece._id,
-						this.state.inPoint,
-						this.state.duration
-					),
-				(err) => {
-					clearTimeout(pendingInOutPoints)
+	const vtContent = selectedPiece.content as VTContent | undefined
 
-					if (
-						ClientAPI.isClientResponseError(err) &&
-						err.error.rawError &&
-						stringifyError(err.error.rawError).match(/timed out/)
-					) {
-						NotificationCenter.push(
-							new Notification(
-								undefined,
-								NoticeLevel.CRITICAL,
-								(
-									<>
-										<strong>{selectedPiece.name}</strong>:&ensp;
-										{t(
-											"Trimming this clip has timed out. It's possible that the story is currently locked for writing in {{nrcsName}} and will eventually be updated. Make sure that the story is not being edited by other users.",
-											{ nrcsName: (this.props.rundown && this.props.rundown.externalNRCSName) || 'NRCS' }
-										)}
-									</>
-								),
-								protectString('ClipTrimDialog')
-							)
+	const [state, setState] = useState<IState>(() => ({
+		inPoint: vtContent?.editable?.editorialStart ?? 0,
+		duration: vtContent?.editable?.editorialDuration ?? 0,
+	}))
+
+	const handleChange = useCallback((inPoint: number, duration: number) => {
+		setState({
+			inPoint,
+			duration,
+		})
+	}, [])
+
+	const handleAccept = useCallback((e: SomeEvent) => {
+		onClose && onClose()
+
+		doUserAction(
+			t,
+			e,
+			UserAction.SET_IN_OUT_POINTS,
+			(e, ts) =>
+				MeteorCall.userAction.setInOutPoints(
+					e,
+					ts,
+					playlistId,
+					selectedPiece.startPartId,
+					selectedPiece._id,
+					state.inPoint,
+					state.duration
+				),
+			(err) => {
+				clearTimeout(pendingInOutPoints)
+
+				if (
+					ClientAPI.isClientResponseError(err) &&
+					err.error.rawError &&
+					stringifyError(err.error.rawError).match(/timed out/)
+				) {
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.CRITICAL,
+							(
+								<>
+									<strong>{selectedPiece.name}</strong>:&ensp;
+									{t(
+										"Trimming this clip has timed out. It's possible that the story is currently locked for writing in {{nrcsName}} and will eventually be updated. Make sure that the story is not being edited by other users.",
+										{ nrcsName: rundown?.externalNRCSName || 'NRCS' }
+									)}
+								</>
+							),
+							protectString('ClipTrimDialog')
 						)
-					} else if (ClientAPI.isClientResponseError(err) || err) {
-						NotificationCenter.push(
-							new Notification(
-								undefined,
-								NoticeLevel.CRITICAL,
-								(
-									<>
-										<strong>{selectedPiece.name}</strong>:&ensp;
-										{t('Trimming this clip has failed due to an error: {{error}}.', {
-											error: err.message || err.error || err,
-										})}
-									</>
-								),
-								protectString('ClipTrimDialog')
-							)
-						)
-					} else {
-						NotificationCenter.push(
-							new Notification(
-								undefined,
-								NoticeLevel.NOTIFICATION,
-								(
-									<>
-										<strong>{selectedPiece.name}</strong>:&ensp;
-										{t('Trimmed succesfully.')}
-									</>
-								),
-								protectString('ClipTrimDialog')
-							)
-						)
-					}
-
-					return false // do not use default doUserAction failure handler
-				}
-			)
-			const pendingInOutPoints = setTimeout(() => {
-				NotificationCenter.push(
-					new Notification(
-						undefined,
-						NoticeLevel.WARNING,
-						(
-							<>
-								<strong>{selectedPiece.name}</strong>:&ensp;
-								{t(
-									"Trimming this clip is taking longer than expected. It's possible that the story is locked for writing in {{nrcsName}}.",
-									{ nrcsName: (this.props.rundown && this.props.rundown.externalNRCSName) || 'NRCS' }
-								)}
-							</>
-						),
-						protectString('ClipTrimDialog')
 					)
+				} else if (ClientAPI.isClientResponseError(err) || err) {
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.CRITICAL,
+							(
+								<>
+									<strong>{selectedPiece.name}</strong>:&ensp;
+									{t('Trimming this clip has failed due to an error: {{error}}.', {
+										error: err.message || err.error || err,
+									})}
+								</>
+							),
+							protectString('ClipTrimDialog')
+						)
+					)
+				} else {
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.NOTIFICATION,
+							(
+								<>
+									<strong>{selectedPiece.name}</strong>:&ensp;
+									{t('Trimmed succesfully.')}
+								</>
+							),
+							protectString('ClipTrimDialog')
+						)
+					)
+				}
+
+				return false // do not use default doUserAction failure handler
+			}
+		)
+		const pendingInOutPoints = setTimeout(() => {
+			NotificationCenter.push(
+				new Notification(
+					undefined,
+					NoticeLevel.WARNING,
+					(
+						<>
+							<strong>{selectedPiece.name}</strong>:&ensp;
+							{t(
+								"Trimming this clip is taking longer than expected. It's possible that the story is locked for writing in {{nrcsName}}.",
+								{ nrcsName: rundown?.externalNRCSName || 'NRCS' }
+							)}
+						</>
+					),
+					protectString('ClipTrimDialog')
 				)
-			}, 5 * 1000)
-		}
-		render(): JSX.Element {
-			const { t } = this.props
-			return (
-				<ModalDialog
-					title={t('Trim "{{name}}"', { name: this.props.selectedPiece.name })}
-					show={true}
-					acceptText={t('OK')}
-					secondaryText={t('Cancel')}
-					onAccept={this.handleAccept}
-					onDiscard={() => this.props.onClose && this.props.onClose()}
-					onSecondary={() => this.props.onClose && this.props.onClose()}
-					className="big"
-				>
-					<ClipTrimPanel
-						studioId={this.props.studio._id}
-						playlistId={this.props.playlistId}
-						rundownId={this.props.rundown._id}
-						pieceId={this.props.selectedPiece._id}
-						partId={this.props.selectedPiece.startPartId}
-						inPoint={this.state.inPoint}
-						duration={this.state.duration}
-						onChange={this.handleChange}
-					/>
-				</ModalDialog>
 			)
-		}
-	}
-)
+		}, 5 * 1000)
+	}, [])
+
+	return (
+		<ModalDialog
+			title={t('Trim "{{name}}"', { name: selectedPiece.name })}
+			show={true}
+			acceptText={t('OK')}
+			secondaryText={t('Cancel')}
+			onAccept={handleAccept}
+			onDiscard={onClose}
+			onSecondary={onClose}
+			className="big"
+		>
+			<ClipTrimPanel
+				studio={studio}
+				rundownId={rundown._id}
+				pieceId={selectedPiece._id}
+				inPoint={state.inPoint}
+				duration={state.duration}
+				onChange={handleChange}
+			/>
+		</ModalDialog>
+	)
+}

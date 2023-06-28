@@ -1,7 +1,10 @@
 import { ExpectedPackageId, PackageContainerPackageId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { PackageContainerPackageStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
+import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { ReadonlyDeep } from 'type-fest'
 import { Studio } from '../../../lib/collections/Studios'
 import { literal } from '../../../lib/lib'
@@ -16,7 +19,7 @@ export type StudioFields =
 	| 'thumbnailContainerIds'
 	| 'mappingsWithOverrides'
 	| 'routeSets'
-export const studioFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<StudioFields>>({
+export const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<Studio, StudioFields>>>({
 	_id: 1,
 	settings: 1,
 	packageContainers: 1,
@@ -24,6 +27,33 @@ export const studioFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<Studio
 	thumbnailContainerIds: 1,
 	mappingsWithOverrides: 1,
 	routeSets: 1,
+})
+
+export type PackageContainerPackageStatusLight = Pick<PackageContainerPackageStatusDB, '_id' | 'studioId' | 'status'>
+export const packageContainerPackageStatusesFieldSpecifier = literal<
+	MongoFieldSpecifierOnesStrict<PackageContainerPackageStatusLight>
+>({
+	_id: 1,
+	studioId: 1,
+	status: 1,
+})
+
+export type PackageInfoLight = Pick<PackageInfoDB, '_id' | 'studioId' | 'packageId' | 'type' | 'payload'>
+export const packageInfoFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<PackageInfoLight>>({
+	_id: 1,
+	studioId: 1,
+	packageId: 1,
+	type: 1,
+	payload: 1,
+})
+
+export type MediaObjectLight = Pick<MediaObject, '_id' | 'studioId' | 'mediaId' | 'mediainfo' | 'previewPath'>
+export const mediaObjectFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<MediaObjectLight>>({
+	_id: 1,
+	studioId: 1,
+	mediaId: 1,
+	mediainfo: 1,
+	previewPath: 1,
 })
 
 export interface IContentStatusesUpdatePropsBase {

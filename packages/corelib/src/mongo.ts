@@ -17,13 +17,22 @@ export type MongoFieldSpecifierOnes<T> = {
 export type MongoFieldSpecifierZeroes<T> = {
 	[P in keyof T]?: 0
 }
-export type MongoFieldSpecifier<T> = MongoFieldSpecifierOnes<T> | MongoFieldSpecifierZeroes<T>
+export type MongoFieldSpecifier<T> =
+	| MongoFieldSpecifierOnes<T>
+	| MongoFieldSpecifierZeroes<T>
+	| MongoFieldSpecifierOnesStrict<Partial<T>>
 
 /**
  * Type helper to construct a field specifier to include all the keys mentioned in a type union.
  * This ensures with Typescript that the fields specified in the query, match what we cast to afterwards
  */
-export type IncludeAllMongoFieldSpecifier<T extends string> = { [key in T]: 1 }
+export type MongoFieldSpecifierOnesStrict<T extends Record<string, any>> = {
+	[key in keyof T]?: T[key] extends ProtectedString<any>
+		? 1
+		: T[key] extends object | undefined
+		? MongoFieldSpecifierOnesStrict<T[key]> | 1
+		: 1
+}
 
 export interface FindOneOptions<TDoc> {
 	sort?: SortSpecifier<TDoc>

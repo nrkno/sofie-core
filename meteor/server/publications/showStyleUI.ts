@@ -1,11 +1,11 @@
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
-import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Complete, literal } from '../../lib/lib'
 import { meteorCustomPublish, setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication'
 import { logger } from '../logging'
@@ -27,7 +27,7 @@ interface UIShowStyleBaseUpdateProps {
 }
 
 type ShowStyleBaseFields = '_id' | 'name' | 'outputLayersWithOverrides' | 'sourceLayersWithOverrides' | 'hotkeyLegend'
-const fieldSpecifier = literal<IncludeAllMongoFieldSpecifier<ShowStyleBaseFields>>({
+const fieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBShowStyleBase, ShowStyleBaseFields>>>({
 	_id: 1,
 	name: 1,
 	outputLayersWithOverrides: 1,
@@ -64,7 +64,7 @@ async function manipulateUIShowStyleBasePublicationData(
 	// Ignore _updateProps, as we arent caching anything so we have to rerun from scratch no matter what
 
 	const showStyleBase = (await ShowStyleBases.findOneAsync(args.showStyleBaseId, { projection: fieldSpecifier })) as
-		| Pick<ShowStyleBase, ShowStyleBaseFields>
+		| Pick<DBShowStyleBase, ShowStyleBaseFields>
 		| undefined
 	if (!showStyleBase) return []
 
@@ -88,7 +88,7 @@ meteorCustomPublish(
 	async function (pub, showStyleBaseId: ShowStyleBaseId) {
 		check(showStyleBaseId, String)
 
-		const { cred, selector } = await AutoFillSelector.organizationId<ShowStyleBase>(
+		const { cred, selector } = await AutoFillSelector.organizationId<DBShowStyleBase>(
 			this.userId,
 			{ _id: showStyleBaseId },
 			undefined

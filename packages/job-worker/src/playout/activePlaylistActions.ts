@@ -122,9 +122,9 @@ export async function activateRundownPlaylist(
 
 		try {
 			if (blueprint.blueprint.onRundownActivate) {
-				const context2 = new RundownActivationContext(context, cache, showStyle, rundown)
+				const blueprintContext = new RundownActivationContext(context, cache, showStyle, rundown)
 
-				await blueprint.blueprint.onRundownActivate(context2, wasActive)
+				await blueprint.blueprint.onRundownActivate(blueprintContext, wasActive)
 			}
 		} catch (err) {
 			logger.error(`Error in showStyleBlueprint.onRundownActivate: ${stringifyError(err)}`)
@@ -136,9 +136,7 @@ export async function deactivateRundownPlaylist(context: JobContext, cache: Cach
 
 	await updateStudioTimeline(context, cache)
 
-	cache.deferDuringSaveTransaction(async (transaction) => {
-		await cleanTimelineDatastore(context, cache, transaction)
-	})
+	await cleanTimelineDatastore(context, cache)
 
 	cache.deferBeforeSave(async () => {
 		if (rundown) {
@@ -199,11 +197,7 @@ export async function deactivateRundownPlaylistInner(
 	if (currentPartInstance) {
 		// Set the current PartInstance as stopped
 		cache.PartInstances.updateOne(currentPartInstance._id, (instance) => {
-			if (
-				instance.timings &&
-				instance.timings.plannedStartedPlayback &&
-				!instance.timings.plannedStoppedPlayback
-			) {
+			if (instance.timings?.plannedStartedPlayback && !instance.timings.plannedStoppedPlayback) {
 				instance.timings.plannedStoppedPlayback = getCurrentTime()
 				instance.timings.duration = getCurrentTime() - instance.timings.plannedStartedPlayback
 				return instance

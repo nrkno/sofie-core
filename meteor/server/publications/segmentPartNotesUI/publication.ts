@@ -1,5 +1,5 @@
 import { RundownId, RundownPlaylistId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
 import { UISegmentPartNote } from '../../../lib/api/rundownNotifications'
@@ -43,7 +43,9 @@ interface UISegmentPartNotesUpdateProps {
 }
 
 type RundownPlaylistFields = '_id' | 'studioId'
-const rundownPlaylistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownPlaylistFields>>({
+const rundownPlaylistFieldSpecifier = literal<
+	MongoFieldSpecifierOnesStrict<Pick<RundownPlaylist, RundownPlaylistFields>>
+>({
 	_id: 1,
 	studioId: 1,
 })

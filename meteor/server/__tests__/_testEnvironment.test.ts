@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { RandomMock } from '../../__mocks__/random'
 import { MongoMock } from '../../__mocks__/mongo'
-import { waitForPromise, protectString, waitTime, getRandomString } from '../../lib/lib'
+import { waitForPromise, protectString, getRandomString, sleep } from '../../lib/lib'
 import { testInFiber } from '../../__mocks__/helpers/jest'
 import {
 	AdLibPieces,
@@ -178,7 +178,7 @@ describe('Basic test of test environment', () => {
 
 		expect(result).toEqual('yup')
 	})
-	testInFiber('Mongo mock', () => {
+	testInFiber('Mongo mock', async () => {
 		const mockAdded = jest.fn()
 		const mockChanged = jest.fn()
 		const mockRemoved = jest.fn()
@@ -211,21 +211,21 @@ describe('Basic test of test environment', () => {
 		expect(mockRemoved).toHaveBeenCalledTimes(0)
 
 		const id2 = collection.insert({ prop: 'b' })
-		waitTime(10)
+		await sleep(10)
 		expect(mockAdded).toHaveBeenCalledTimes(1)
 		expect(mockChanged).toHaveBeenCalledTimes(0)
 		expect(mockRemoved).toHaveBeenCalledTimes(0)
 		mockAdded.mockClear()
 
 		collection.update(id2, { $set: { name: 'test' } })
-		waitTime(10)
+		await sleep(10)
 		expect(mockAdded).toHaveBeenCalledTimes(0)
 		expect(mockChanged).toHaveBeenCalledTimes(1)
 		expect(mockRemoved).toHaveBeenCalledTimes(0)
 		mockChanged.mockClear()
 
 		collection.remove(id2)
-		waitTime(10)
+		await sleep(10)
 		expect(mockAdded).toHaveBeenCalledTimes(0)
 		expect(mockChanged).toHaveBeenCalledTimes(0)
 		expect(mockRemoved).toHaveBeenCalledTimes(1)

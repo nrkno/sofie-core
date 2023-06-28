@@ -38,13 +38,11 @@ export async function handleBucketRemoveAdlibPiece(
 	// Also remove adlibs that are grouped together with this adlib in the GUI:
 	;(await getGroupedAdlibs(context, piece)).forEach(({ _id }) => idsToUpdate.push(_id))
 
-	await context.directCollections.runInTransaction(async (transaction) => {
-		await Promise.all([
-			context.directCollections.BucketAdLibPieces.remove({ _id: { $in: idsToUpdate } }, transaction),
-			cleanUpExpectedMediaItemForBucketAdLibPiece(context, transaction, idsToUpdate),
-			cleanUpExpectedPackagesForBucketAdLibs(context, transaction, idsToUpdate),
-		])
-	})
+	await Promise.all([
+		context.directCollections.BucketAdLibPieces.remove({ _id: { $in: idsToUpdate } }),
+		cleanUpExpectedMediaItemForBucketAdLibPiece(context, idsToUpdate),
+		cleanUpExpectedPackagesForBucketAdLibs(context, idsToUpdate),
+	])
 }
 
 export async function handleBucketRemoveAdlibAction(
@@ -59,50 +57,31 @@ export async function handleBucketRemoveAdlibAction(
 	// Also remove adlibs that are grouped together with this adlib in the GUI:
 	;(await getGroupedAdlibActions(context, action)).forEach(({ _id }) => idsToUpdate.push(_id))
 
-	await context.directCollections.runInTransaction(async (transaction) => {
-		await Promise.all([
-			context.directCollections.BucketAdLibActions.remove({ _id: { $in: idsToUpdate } }, transaction),
-			cleanUpExpectedMediaItemForBucketAdLibActions(context, transaction, idsToUpdate),
-			cleanUpExpectedPackagesForBucketAdLibsActions(context, transaction, idsToUpdate),
-		])
-	})
+	await Promise.all([
+		context.directCollections.BucketAdLibActions.remove({ _id: { $in: idsToUpdate } }),
+		cleanUpExpectedMediaItemForBucketAdLibActions(context, idsToUpdate),
+		cleanUpExpectedPackagesForBucketAdLibsActions(context, idsToUpdate),
+	])
 }
 
 export async function handleBucketEmpty(context: JobContext, data: BucketEmptyProps): Promise<void> {
 	const id = data.bucketId
 
-	await context.directCollections.runInTransaction(async (transaction) => {
-		await Promise.all([
-			context.directCollections.BucketAdLibPieces.remove(
-				{ bucketId: id, studioId: context.studioId },
-				transaction
-			),
-			context.directCollections.BucketAdLibActions.remove(
-				{ bucketId: id, studioId: context.studioId },
-				transaction
-			),
-			context.directCollections.ExpectedMediaItems.remove(
-				{ bucketId: id, studioId: context.studioId },
-				transaction
-			),
-			context.directCollections.ExpectedPackages.remove(
-				{
-					studioId: context.studioId,
-					fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB,
-					bucketId: id,
-				},
-				transaction
-			),
-			context.directCollections.ExpectedPackages.remove(
-				{
-					studioId: context.studioId,
-					fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB_ACTION,
-					bucketId: id,
-				},
-				transaction
-			),
-		])
-	})
+	await Promise.all([
+		context.directCollections.BucketAdLibPieces.remove({ bucketId: id, studioId: context.studioId }),
+		context.directCollections.BucketAdLibActions.remove({ bucketId: id, studioId: context.studioId }),
+		context.directCollections.ExpectedMediaItems.remove({ bucketId: id, studioId: context.studioId }),
+		context.directCollections.ExpectedPackages.remove({
+			studioId: context.studioId,
+			fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB,
+			bucketId: id,
+		}),
+		context.directCollections.ExpectedPackages.remove({
+			studioId: context.studioId,
+			fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB_ACTION,
+			bucketId: id,
+		}),
+	])
 }
 
 export async function handleBucketActionRegenerateExpectedPackages(
@@ -113,12 +92,10 @@ export async function handleBucketActionRegenerateExpectedPackages(
 	if (!action || action.studioId !== context.studioId)
 		throw new Error(`Bucket Action "${data.actionId}" not found in this studio`)
 
-	await context.directCollections.runInTransaction(async (transaction) => {
-		await Promise.all([
-			updateExpectedMediaItemForBucketAdLibAction(context, transaction, action),
-			updateExpectedPackagesForBucketAdLibAction(context, transaction, action),
-		])
-	})
+	await Promise.all([
+		updateExpectedMediaItemForBucketAdLibAction(context, action),
+		updateExpectedPackagesForBucketAdLibAction(context, action),
+	])
 }
 
 export async function handleBucketActionModify(context: JobContext, data: BucketActionModifyProps): Promise<void> {
@@ -137,26 +114,19 @@ export async function handleBucketActionModify(context: JobContext, data: Bucket
 	// Also update adlibs that are grouped together with this adlib in the GUI:
 	const actionsToUpdate = await getGroupedAdlibActions(context, orgAction)
 
-	await context.directCollections.runInTransaction(async (transaction) => {
-		for (const action of actionsToUpdate) {
-			const newAction = {
-				...action,
-				...newProps,
-			}
-
-			await Promise.all([
-				context.directCollections.BucketAdLibActions.update(
-					action._id,
-					{
-						$set: newProps,
-					},
-					transaction
-				),
-				updateExpectedMediaItemForBucketAdLibAction(context, transaction, newAction),
-				updateExpectedPackagesForBucketAdLibAction(context, transaction, newAction),
-			])
+	for (const action of actionsToUpdate) {
+		const newAction = {
+			...action,
+			...newProps,
 		}
-	})
+		await Promise.all([
+			context.directCollections.BucketAdLibActions.update(action._id, {
+				$set: newProps,
+			}),
+			updateExpectedMediaItemForBucketAdLibAction(context, newAction),
+			updateExpectedPackagesForBucketAdLibAction(context, newAction),
+		])
+	}
 }
 
 export async function handleBucketPieceModify(context: JobContext, data: BucketPieceModifyProps): Promise<void> {
@@ -169,27 +139,21 @@ export async function handleBucketPieceModify(context: JobContext, data: BucketP
 	// Also update adlibs that are grouped together with this adlib in the GUI:
 	const piecesToUpdate = await getGroupedAdlibs(context, orgPiece)
 
-	await context.directCollections.runInTransaction(async (transaction) => {
-		for (const piece of piecesToUpdate) {
-			await context.directCollections.BucketAdLibPieces.update(
-				piece._id,
-				{
-					$set: newProps,
-				},
-				transaction
-			)
+	for (const piece of piecesToUpdate) {
+		await context.directCollections.BucketAdLibPieces.update(piece._id, {
+			$set: newProps,
+		})
 
-			const newPiece = {
-				...piece,
-				...newProps,
-			}
-
-			await Promise.all([
-				updateExpectedMediaItemForBucketAdLibPiece(context, transaction, newPiece),
-				updateExpectedPackagesForBucketAdLibPiece(context, transaction, newPiece),
-			])
+		const newPiece = {
+			...piece,
+			...newProps,
 		}
-	})
+
+		await Promise.all([
+			updateExpectedMediaItemForBucketAdLibPiece(context, newPiece),
+			updateExpectedPackagesForBucketAdLibPiece(context, newPiece),
+		])
+	}
 }
 /** Returns BucketAdlibActions that are grouped together with this adlib in the GUI */
 async function getGroupedAdlibActions(context: JobContext, oldAdLib: BucketAdLibAction): Promise<BucketAdLibAction[]> {

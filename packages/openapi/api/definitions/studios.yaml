@@ -66,6 +66,8 @@ resources:
                   - status
                   - message
                 additionalProperties: false
+        409:
+          $ref: '#/components/responses/studioNotValid'
         500:
           $ref: '#/components/responses/internalServerError'
   studio:
@@ -534,6 +536,11 @@ components:
                 example: 409
               message:
                 type: string
+              details:
+                type: array
+                items:
+                  type: string
+                  example: 'Invalid Union'
             required:
               - status
               - message

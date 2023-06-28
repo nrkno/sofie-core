@@ -6,7 +6,7 @@ import {
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import EventEmitter from 'events'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
@@ -14,21 +14,22 @@ import { MongoCursor } from '../../../lib/collections/lib'
 import { DBPartInstance } from '../../../lib/collections/PartInstances'
 import { DBRundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { DBRundown } from '../../../lib/collections/Rundowns'
-import { DBShowStyleBase } from '../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { logger } from '../../logging'
 import { observerChain } from '../../publications/lib/observerChain'
 import { ContentCache } from './reactiveContentCache'
 import { RundownContentObserver } from './RundownContentObserver'
 import { RundownsObserver } from './RundownsObserver'
 import { PartInstances, RundownPlaylists, Rundowns, ShowStyleBases } from '../../collections'
-import { waitForPromise } from '../../../lib/lib'
 
 type ChangedHandler = (showStyleBaseId: ShowStyleBaseId, cache: ContentCache) => () => void
 
 const REACTIVITY_DEBOUNCE = 20
 
 type RundownPlaylistFields = '_id' | 'nextPartInfo' | 'currentPartInfo' | 'activationId'
-const rundownPlaylistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownPlaylistFields>>({
+const rundownPlaylistFieldSpecifier = literal<
+	MongoFieldSpecifierOnesStrict<Pick<DBRundownPlaylist, RundownPlaylistFields>>
+>({
 	_id: 1,
 	activationId: 1,
 	currentPartInfo: 1,
@@ -36,19 +37,19 @@ const rundownPlaylistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<Rund
 })
 
 type PartInstanceFields = '_id' | 'rundownId'
-const partInstanceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PartInstanceFields>>({
+const partInstanceFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBPartInstance, PartInstanceFields>>>({
 	_id: 1,
 	rundownId: 1,
 })
 
 type RundownFields = '_id' | 'showStyleBaseId'
-const rundownFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownFields>>({
+const rundownFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBRundown, RundownFields>>>({
 	_id: 1,
 	showStyleBaseId: 1,
 })
 
 type ShowStyleBaseFields = '_id' | 'sourceLayersWithOverrides' | 'outputLayersWithOverrides' | 'hotkeyLegend'
-const showStyleBaseFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<ShowStyleBaseFields>>({
+const showStyleBaseFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBShowStyleBase, ShowStyleBaseFields>>>({
 	_id: 1,
 	sourceLayersWithOverrides: 1,
 	outputLayersWithOverrides: 1,
@@ -72,30 +73,26 @@ export class StudioObserver extends EventEmitter {
 		this.#playlistInStudioLiveQuery = observerChain()
 			.next(
 				'activePlaylist',
-				() =>
-					waitForPromise(
-						RundownPlaylists.findWithCursor(
-							{
-								studioId: studioId,
-								activationId: { $exists: true },
-							},
-							{
-								projection: rundownPlaylistFieldSpecifier,
-							}
-						)
-					) as MongoCursor<Pick<DBRundownPlaylist, RundownPlaylistFields>>
+				async () =>
+					RundownPlaylists.findWithCursor(
+						{
+							studioId: studioId,
+							activationId: { $exists: true },
+						},
+						{
+							projection: rundownPlaylistFieldSpecifier,
+						}
+					) as Promise<MongoCursor<Pick<DBRundownPlaylist, RundownPlaylistFields>>>
 			)
-			.next('activePartInstance', (chain) => {
+			.next('activePartInstance', async (chain) => {
 				const activePartInstanceId =
 					chain.activePlaylist.currentPartInfo?.partInstanceId ??
 					chain.activePlaylist.nextPartInfo?.partInstanceId
 				if (!activePartInstanceId) return null
-				return waitForPromise(
-					PartInstances.findWithCursor(
-						{ _id: activePartInstanceId },
-						{ projection: partInstanceFieldSpecifier, limit: 1 }
-					)
-				) as MongoCursor<Pick<DBPartInstance, PartInstanceFields>>
+				return PartInstances.findWithCursor(
+					{ _id: activePartInstanceId },
+					{ projection: partInstanceFieldSpecifier, limit: 1 }
+				) as Promise<MongoCursor<Pick<DBPartInstance, PartInstanceFields>>>
 			})
 			.end(this.updatePlaylistInStudio)
 	}
@@ -144,22 +141,20 @@ export class StudioObserver extends EventEmitter {
 		return observerChain()
 			.next(
 				'currentRundown',
-				() =>
-					waitForPromise(
-						Rundowns.findWithCursor({ _id: rundownId }, { fields: rundownFieldSpecifier, limit: 1 })
-					) as MongoCursor<Pick<DBRundown, RundownFields>>
+				async () =>
+					Rundowns.findWithCursor({ _id: rundownId }, { fields: rundownFieldSpecifier, limit: 1 }) as Promise<
+						MongoCursor<Pick<DBRundown, RundownFields>>
+					>
 			)
-			.next('showStyleBase', (chain) =>
+			.next('showStyleBase', async (chain) =>
 				chain.currentRundown
-					? (waitForPromise(
-							ShowStyleBases.findWithCursor(
-								{ _id: chain.currentRundown.showStyleBaseId },
-								{
-									fields: showStyleBaseFieldSpecifier,
-									limit: 1,
-								}
-							)
-					  ) as MongoCursor<Pick<DBShowStyleBase, ShowStyleBaseFields>>)
+					? (ShowStyleBases.findWithCursor(
+							{ _id: chain.currentRundown.showStyleBaseId },
+							{
+								fields: showStyleBaseFieldSpecifier,
+								limit: 1,
+							}
+					  ) as Promise<MongoCursor<Pick<DBShowStyleBase, ShowStyleBaseFields>>>)
 					: null
 			)
 			.end(this.updateShowStyle)

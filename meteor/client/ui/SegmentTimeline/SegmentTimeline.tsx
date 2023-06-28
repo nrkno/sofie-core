@@ -242,11 +242,11 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 	timeline: HTMLDivElement
 	segmentBlock: HTMLDivElement
 
-	private _touchSize: number = 0
-	private _touchAttached: boolean = false
-	private _mouseAttached: boolean = false
-	private _lastClick: number = 0
-	private _mouseMoved: boolean = false
+	private _touchSize = 0
+	private _touchAttached = false
+	private _mouseAttached = false
+	private _lastClick = 0
+	private _mouseMoved = false
 	private _lastPointer:
 		| {
 				clientX: number
@@ -708,7 +708,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 			partIsLive = part.instance._id === this.props.playlist.currentPartInfo?.partInstanceId
 			if (partIsLive) livePart = part
 			let emitSmallPartsInFlag: [PartUi, number, number][] | undefined = undefined
-			let emitSmallPartsInFlagAtEnd: boolean = false
+			let emitSmallPartsInFlagAtEnd = false
 			// if this is not undefined, it means that the part is on the list of small keys
 			const durations = smallParts.get(part.instance._id)
 			if (durations !== undefined) {

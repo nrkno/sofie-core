@@ -5,7 +5,19 @@ All notable changes to this project will be documented in this file. See [standa
 ## [1.49.0-in-testing.3](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.2...v1.49.0-in-testing.3) (2023-04-18)
 
 
-## [1.47.4](https://github.com/nrkno/sofie-core/compare/v1.47.3...v1.47.4) (2023-06-13)
+
+### [1.47.5](///compare/v1.47.5-0...v1.47.5) (2023-06-27)
+
+### [1.47.5-0](///compare/v1.47.4...v1.47.5-0) (2023-06-26)
+
+
+### Bug Fixes
+
+* add fallback for unknown package statues b6662a2
+* mos-gateway subscriptions to meteor collections leaking upon reconnecting to core 7867895
+* playout-gateway subscriptions to meteor collections leaking upon reconnecting to core f29d677
+
+### [1.47.4](https://github.com/nrkno/sofie-core/compare/v1.47.3...v1.47.4) (2023-06-13)
 
 
 ### Bug Fixes

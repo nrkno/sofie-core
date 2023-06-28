@@ -1,7 +1,7 @@
 import { clone, deleteAllUndefinedProperties, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
-import { ICollection, IMongoTransaction, IReadOnlyCollection } from '../db'
+import { ICollection, IReadOnlyCollection } from '../db'
 import { logger } from '../logging'
 import { Changes } from '../db/changes'
 import { IS_PRODUCTION } from '../environment'
@@ -88,7 +88,7 @@ export class DbCacheReadObject<TDoc extends { _id: ProtectedString<any> }, DocOp
 			})
 		}
 
-		const doc = await collection.findOne(id, undefined, null)
+		const doc = await collection.findOne(id)
 		if (!doc && !optional) {
 			throw new Error(
 				`DbCacheReadObject population for "${collection['name']}" failed. Document "${id}" was not found`
@@ -188,7 +188,7 @@ export class DbCacheWriteObject<
 			})
 		}
 
-		const doc = await collection.findOne(id, undefined, null)
+		const doc = await collection.findOne(id)
 		if (!doc && !optional) {
 			throw new Error(
 				`DbCacheWriteObject population for "${collection['name']}" failed. Document "${id}" was not found`
@@ -252,13 +252,13 @@ export class DbCacheWriteObject<
 	 * Write the document to mongo if it has any changes
 	 * @returns Changes object describing the saved changes
 	 */
-	async updateDatabaseWithData(transaction: IMongoTransaction): Promise<Changes> {
+	async updateDatabaseWithData(): Promise<Changes> {
 		this.assertNotDisposed()
 
 		if (this._updated && !this.isToBeRemoved) {
 			const span = this.context.startSpan(`DbCacheWriteObject.updateDatabaseWithData.${this.name}`)
 
-			const pUpdate = await this._collection.replace(this._document, transaction)
+			const pUpdate = await this._collection.replace(this._document)
 			if (!pUpdate) {
 				throw new Error(`Failed to update`)
 			}
@@ -368,7 +368,7 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 			})
 		}
 
-		const doc = await collection.findOne(id, undefined, null)
+		const doc = await collection.findOne(id)
 
 		const res = DbCacheWriteOptionalObject.createOptionalFromDoc<TDoc>(
 			context,
@@ -406,13 +406,13 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 	 * Write the document to mongo if it has any changes
 	 * @returns Changes object describing the saved changes
 	 */
-	async updateDatabaseWithData(transaction: IMongoTransaction): Promise<Changes> {
+	async updateDatabaseWithData(): Promise<Changes> {
 		this.assertNotDisposed()
 
 		if (this._inserted && !this.isToBeRemoved) {
 			const span = this.context.startSpan(`DbCacheWriteOptionalObject.updateDatabaseWithData.${this.name}`)
 
-			await this._collection.replace(this._document, transaction)
+			await this._collection.replace(this._document)
 
 			if (span) span.end()
 
@@ -422,7 +422,7 @@ export class DbCacheWriteOptionalObject<TDoc extends { _id: ProtectedString<any>
 				removed: 0,
 			}
 		} else {
-			return super.updateDatabaseWithData(transaction)
+			return super.updateDatabaseWithData()
 		}
 	}
 

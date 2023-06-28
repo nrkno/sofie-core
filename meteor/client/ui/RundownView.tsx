@@ -46,7 +46,7 @@ import {
 import { AfterBroadcastForm } from './AfterBroadcastForm'
 import { Tracker } from 'meteor/tracker'
 import { RundownRightHandControls } from './RundownView/RundownRightHandControls'
-import { SourceLayers } from '../../lib/collections/ShowStyleBases'
+import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { PeripheralDevicesAPI, callPeripheralDeviceAction } from '../lib/clientAPI'
 import {
 	RONotificationEvent,
@@ -104,7 +104,7 @@ import { RundownName } from './RundownView/RundownTiming/RundownName'
 import { TimeOfDay } from './RundownView/RundownTiming/TimeOfDay'
 import { PlaylistEndTiming } from './RundownView/RundownTiming/PlaylistEndTiming'
 import { NextBreakTiming } from './RundownView/RundownTiming/NextBreakTiming'
-import { ShowStyleVariant } from '../../lib/collections/ShowStyleVariants'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { BucketAdLibItem } from './Shelf/RundownViewBuckets'
 import { IAdLibListItem } from './Shelf/AdLibListItem'
 import { ShelfDashboardLayout } from './Shelf/ShelfDashboardLayout'
@@ -325,7 +325,7 @@ const TimingDisplay = withTranslation()(
 interface IRundownHeaderProps {
 	playlist: RundownPlaylist
 	showStyleBase: UIShowStyleBase
-	showStyleVariant: ShowStyleVariant
+	showStyleVariant: DBShowStyleVariant
 	currentRundown: Rundown | undefined
 	studio: UIStudio
 	rundownIds: RundownId[]
@@ -1184,7 +1184,7 @@ interface ITrackedProps {
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
 	studio?: UIStudio
 	showStyleBase?: UIShowStyleBase
-	showStyleVariant?: ShowStyleVariant
+	showStyleVariant?: DBShowStyleVariant
 	rundownLayouts?: Array<RundownLayoutBase>
 	buckets: Bucket[]
 	casparCGPlayoutDevices?: PeripheralDevice[]
@@ -1336,8 +1336,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 		/** MiniShelf data */
 		private keyboardQueuedPiece: AdLibPieceUi | undefined = undefined
 		private keyboardQueuedPartInstanceId: PartInstanceId | undefined = undefined
-		private shouldKeyboardRequeue: boolean = false
-		private isKeyboardQueuePending: boolean = false
+		private shouldKeyboardRequeue = false
+		private isKeyboardQueuePending = false
 
 		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
@@ -2829,7 +2829,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			studio: UIStudio,
 			playlist: RundownPlaylist,
 			showStyleBase: UIShowStyleBase,
-			showStyleVariant: ShowStyleVariant
+			showStyleVariant: DBShowStyleVariant
 		) {
 			const { t } = this.props
 

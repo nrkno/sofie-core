@@ -9,7 +9,7 @@ import { logger } from '../../logging'
  */
 export function allowOnlyFields<T>(_doc: T, fieldNames: FieldNames<T>, allowFields: FieldNames<T>): boolean {
 	// Note: _doc is only included to set the type T in this generic function
-	let allow: boolean = true
+	let allow = true
 	_.find(fieldNames, (field) => {
 		if (allowFields.indexOf(field) === -1) {
 			allow = false
@@ -27,7 +27,7 @@ export function allowOnlyFields<T>(_doc: T, fieldNames: FieldNames<T>, allowFiel
  */
 export function rejectFields<T>(_doc: T, fieldNames: FieldNames<T>, rejectFields: FieldNames<T>): boolean {
 	// Note: _doc is only included to set the type T in this generic function
-	let allow: boolean = true
+	let allow = true
 	_.find(fieldNames, (field) => {
 		if (rejectFields.indexOf(field) !== -1) {
 			allow = false

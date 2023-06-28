@@ -143,7 +143,7 @@ export function postProcessPieces(
 	return processedPieces
 }
 
-function isNow(enable: TSR.TSRTimelineObj<any>['enable']): boolean {
+function isNow(enable: TimelineObjectCoreExt<any>['enable']): boolean {
 	if (Array.isArray(enable)) {
 		return !!enable.find((e) => e.start === 'now')
 	} else {
@@ -161,7 +161,7 @@ function isNow(enable: TSR.TSRTimelineObj<any>['enable']): boolean {
 export function postProcessTimelineObjects(
 	pieceId: PieceId,
 	blueprintId: BlueprintId,
-	timelineObjects: TSR.TSRTimeline,
+	timelineObjects: TimelineObjectCoreExt<TSR.TSRTimelineContent>[],
 	timelineUniqueIds: Set<string> = new Set<string>()
 ): TimelineObjRundown[] {
 	const postProcessedTimeline = (timelineObjects as TimelineObjectCoreExt<any>[]).map((o, i) => {
@@ -175,6 +175,11 @@ export function postProcessTimelineObjects(
 		if (isNow(obj.enable))
 			throw new Error(
 				`Error in blueprint "${blueprintId}" timelineObjs cannot have a start of 'now'! ("${obj.id}")`
+			)
+
+		if (typeof obj.priority !== 'number')
+			throw new Error(
+				`Error in blueprint "${blueprintId}" timelineObjs must have a numeric priority! ("${obj.id}")`
 			)
 
 		if (timelineUniqueIds.has(obj.id))
@@ -357,7 +362,7 @@ export function postProcessAdLibActions(
  */
 export function postProcessStudioBaselineObjects(
 	blueprintId: BlueprintId | undefined,
-	objs: TSR.TSRTimeline
+	objs: TimelineObjectCoreExt<TSR.TSRTimelineContent>[]
 ): TimelineObjRundown[] {
 	return postProcessTimelineObjects(protectString('studio'), blueprintId ?? protectString(''), objs)
 }
@@ -369,7 +374,7 @@ export function postProcessStudioBaselineObjects(
  */
 export function postProcessRundownBaselineItems(
 	blueprintId: BlueprintId,
-	baselineItems: TSR.TSRTimeline
+	baselineItems: TimelineObjectCoreExt<TSR.TSRTimelineContent>[]
 ): TimelineObjGeneric[] {
 	return postProcessTimelineObjects(protectString('baseline'), blueprintId, baselineItems)
 }

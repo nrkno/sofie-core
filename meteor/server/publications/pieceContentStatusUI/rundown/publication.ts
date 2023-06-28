@@ -10,7 +10,7 @@ import {
 	RundownPlaylistId,
 	SegmentId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../../../lib/api/pubsub'
 import { UIPieceContentStatus } from '../../../../lib/api/rundownNotifications'
@@ -41,6 +41,9 @@ import {
 	addItemsWithDependenciesChangesToChangedSet,
 	fetchStudio,
 	IContentStatusesUpdatePropsBase,
+	mediaObjectFieldSpecifier,
+	packageContainerPackageStatusesFieldSpecifier,
+	packageInfoFieldSpecifier,
 	PieceDependencies,
 	studioFieldSpecifier,
 } from '../common'
@@ -88,7 +91,9 @@ interface UIPieceContentStatusesUpdateProps extends IContentStatusesUpdatePropsB
 }
 
 type RundownPlaylistFields = '_id' | 'studioId'
-const rundownPlaylistFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownPlaylistFields>>({
+const rundownPlaylistFieldSpecifier = literal<
+	MongoFieldSpecifierOnesStrict<Pick<RundownPlaylist, RundownPlaylistFields>>
+>({
 	_id: 1,
 	studioId: 1,
 })
@@ -206,7 +211,8 @@ async function setupUIPieceContentStatusesPublicationObservers(
 				added: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
 				changed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
 				removed: (obj) => triggerUpdate(trackMediaObjectChange(obj.mediaId)),
-			}
+			},
+			{ projection: mediaObjectFieldSpecifier }
 		),
 		PackageInfos.observe(
 			{
@@ -219,7 +225,8 @@ async function setupUIPieceContentStatusesPublicationObservers(
 				added: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
 				changed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
 				removed: (obj) => triggerUpdate(trackPackageInfoChange(obj.packageId)),
-			}
+			},
+			{ projection: packageInfoFieldSpecifier }
 		),
 		PackageContainerPackageStatuses.observeChanges(
 			{ studioId: playlist.studioId },
@@ -227,7 +234,8 @@ async function setupUIPieceContentStatusesPublicationObservers(
 				added: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
 				changed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
 				removed: (id) => triggerUpdate(trackPackageContainerPackageStatusChange(id)),
-			}
+			},
+			{ projection: packageContainerPackageStatusesFieldSpecifier }
 		),
 	]
 }

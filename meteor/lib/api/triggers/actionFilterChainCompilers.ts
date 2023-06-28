@@ -8,13 +8,13 @@ import {
 	ITranslatableMessage,
 	PieceLifespan,
 } from '@sofie-automation/blueprints-integration'
-import { AdLibAction } from '../../collections/AdLibActions'
-import { AdLibPiece } from '../../collections/AdLibPieces'
+import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
+import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { DBPart } from '../../collections/Parts'
-import { RundownBaselineAdLibAction } from '../../collections/RundownBaselineAdLibActions'
-import { RundownBaselineAdLibItem } from '../../collections/RundownBaselineAdLibPieces'
+import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
+import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { DBRundownPlaylist, RundownPlaylist } from '../../collections/RundownPlaylists'
-import { SourceLayers } from '../../collections/ShowStyleBases'
+import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { assertNever, generateTranslation } from '../../lib'
 import { MongoQuery } from '../../typings/meteor'
 import { DBRundown } from '../../collections/Rundowns'

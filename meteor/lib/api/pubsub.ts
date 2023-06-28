@@ -10,46 +10,44 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
 import { Meteor } from 'meteor/meteor'
-import { AdLibAction } from '../collections/AdLibActions'
-import { AdLibPiece } from '../collections/AdLibPieces'
+import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
+import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { Blueprint } from '../collections/Blueprints'
-import { BucketAdLibAction } from '../collections/BucketAdlibActions'
-import { BucketAdLib } from '../collections/BucketAdlibs'
+import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
+import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { Bucket } from '../collections/Buckets'
 import { ICoreSystem } from '../collections/CoreSystem'
 import { Evaluation } from '../collections/Evaluations'
-import { ExpectedMediaItem } from '../collections/ExpectedMediaItems'
-import { ExpectedPackageDB } from '../collections/ExpectedPackages'
-import { ExpectedPackageWorkStatus } from '../collections/ExpectedPackageWorkStatuses'
-import { ExpectedPlayoutItem } from '../collections/ExpectedPlayoutItems'
+import { ExpectedMediaItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
+import { ExpectedPackageDB } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { ExpectedPackageWorkStatus } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackageWorkStatuses'
+import { ExpectedPlayoutItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 import { ExternalMessageQueueObj } from '../collections/ExternalMessageQueue'
-import { MediaObject } from '../collections/MediaObjects'
-import { MediaWorkFlow } from '../collections/MediaWorkFlows'
-import { MediaWorkFlowStep } from '../collections/MediaWorkFlowSteps'
+import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
+import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { DBOrganization } from '../collections/Organization'
-import { PackageContainerStatusDB } from '../collections/PackageContainerStatus'
+import { PackageContainerStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerStatus'
 import { PartInstance } from '../collections/PartInstances'
 import { DBPart } from '../collections/Parts'
 import { PeripheralDeviceCommand } from '../collections/PeripheralDeviceCommands'
 import { PeripheralDevice } from '../collections/PeripheralDevices'
 import { PieceInstance } from '../collections/PieceInstances'
 import { Piece } from '../collections/Pieces'
-import { RundownBaselineAdLibAction } from '../collections/RundownBaselineAdLibActions'
-import { RundownBaselineAdLibItem } from '../collections/RundownBaselineAdLibPieces'
+import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
+import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { RundownLayoutBase } from '../collections/RundownLayouts'
 import { DBRundownPlaylist } from '../collections/RundownPlaylists'
 import { DBRundown } from '../collections/Rundowns'
 import { DBSegment } from '../collections/Segments'
-import { DBShowStyleBase } from '../collections/ShowStyleBases'
-import { DBShowStyleVariant } from '../collections/ShowStyleVariants'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { SnapshotItem } from '../collections/Snapshots'
 import { DBStudio, RoutedMappings } from '../collections/Studios'
-import { RoutedTimeline, TimelineComplete } from '../collections/Timeline'
+import { RoutedTimeline, TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { TranslationsBundle } from '../collections/TranslationsBundles'
 import { DBTriggeredActions, UITriggeredActionsObj } from '../collections/TriggeredActions'
 import { UserActionsLogItem } from '../collections/UserActionsLog'
 import { DBUser } from '../collections/Users'
-import { DBObj } from '../lib'
 import { MongoQuery } from '../typings/meteor'
 import { UIBucketContentStatus, UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications'
 import { UIShowStyleBase } from './showStyles'
@@ -57,6 +55,11 @@ import { UIStudio } from './studios'
 import { UIDeviceTriggerPreview } from '../../server/publications/deviceTriggersPreview'
 import { DeviceTriggerMountedAction, PreviewWrappedAdLib } from './triggers/MountedTriggers'
 import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/core/model/peripheralDevice'
+import {
+	PackageManagerExpectedPackage,
+	PackageManagerPackageContainers,
+	PackageManagerPlayoutContext,
+} from '@sofie-automation/shared-lib/dist/package-manager/publications'
 
 /**
  * Ids of possible DDP subscriptions
@@ -68,7 +71,6 @@ export enum PubSub {
 	expectedPlayoutItems = 'expectedPlayoutItems',
 	expectedMediaItems = 'expectedMediaItems',
 	externalMessageQueue = 'externalMessageQueue',
-	mediaObjects = 'mediaObjects',
 	peripheralDeviceCommands = 'peripheralDeviceCommands',
 	peripheralDevices = 'peripheralDevices',
 	peripheralDevicesAndSubDevices = ' peripheralDevicesAndSubDevices',
@@ -122,7 +124,6 @@ export enum PubSub {
 	timelineDatastoreForDevice = 'timelineDatastoreForDevice',
 	mappingsForStudio = 'mappingsForStudio',
 	timelineForStudio = 'timelineForStudio',
-	expectedPackagesForDevice = 'expectedPackagesForDevice',
 
 	uiShowStyleBase = 'uiShowStyleBase',
 	uiStudio = 'uiStudio',
@@ -135,6 +136,10 @@ export enum PubSub {
 	uiSegmentPartNotes = 'uiSegmentPartNotes',
 	uiPieceContentStatuses = 'uiPieceContentStatuses',
 	uiBucketContentStatuses = 'uiBucketContentStatuses',
+
+	packageManagerPlayoutContext = 'packageManagerPlayoutContext',
+	packageManagerPackageContainers = 'packageManagerPackageContainers',
+	packageManagerExpectedPackages = 'packageManagerExpectedPackages',
 }
 
 /**
@@ -151,7 +156,6 @@ export interface PubSubTypes {
 		selector: MongoQuery<ExternalMessageQueueObj>,
 		token?: string
 	) => ExternalMessageQueueObj
-	[PubSub.mediaObjects]: (studioId: StudioId, selector: MongoQuery<MediaObject>, token?: string) => MediaObject
 	[PubSub.peripheralDeviceCommands]: (deviceId: PeripheralDeviceId, token?: string) => PeripheralDeviceCommand
 	[PubSub.peripheralDevices]: (selector: MongoQuery<PeripheralDevice>, token?: string) => PeripheralDevice
 	[PubSub.peripheralDevicesAndSubDevices]: (selector: MongoQuery<PeripheralDevice>) => PeripheralDevice
@@ -226,11 +230,6 @@ export interface PubSubTypes {
 	[PubSub.timelineDatastoreForDevice]: (deviceId: PeripheralDeviceId, token?: string) => DBTimelineDatastoreEntry
 	[PubSub.mappingsForStudio]: (studioId: StudioId, token?: string) => RoutedMappings
 	[PubSub.timelineForStudio]: (studioId: StudioId, token?: string) => RoutedTimeline
-	[PubSub.expectedPackagesForDevice]: (
-		deviceId: PeripheralDeviceId,
-		filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
-		token?: string
-	) => DBObj
 	[PubSub.uiShowStyleBase]: (showStyleBaseId: ShowStyleBaseId) => UIShowStyleBase
 	/** Subscribe to one or all studios */
 	[PubSub.uiStudio]: (studioId: StudioId | null) => UIStudio
@@ -244,9 +243,25 @@ export interface PubSubTypes {
 	[PubSub.mountedTriggersForDevicePreview]: (deviceId: PeripheralDeviceId, token?: string) => PreviewWrappedAdLib
 	[PubSub.deviceTriggersPreview]: (studioId: StudioId, token?: string) => UIDeviceTriggerPreview
 
+	/** Custom publications for the UI */
 	[PubSub.uiSegmentPartNotes]: (playlistId: RundownPlaylistId | null) => UISegmentPartNote
 	[PubSub.uiPieceContentStatuses]: (rundownPlaylistId: RundownPlaylistId | null) => UIPieceContentStatus
 	[PubSub.uiBucketContentStatuses]: (studioId: StudioId, bucketId: BucketId) => UIBucketContentStatus
+
+	/** Custom publications for package-manager */
+	[PubSub.packageManagerPlayoutContext]: (
+		deviceId: PeripheralDeviceId,
+		token: string | undefined
+	) => PackageManagerPlayoutContext
+	[PubSub.packageManagerPackageContainers]: (
+		deviceId: PeripheralDeviceId,
+		token: string | undefined
+	) => PackageManagerPackageContainers
+	[PubSub.packageManagerExpectedPackages]: (
+		deviceId: PeripheralDeviceId,
+		filterPlayoutDeviceIds: PeripheralDeviceId[] | undefined,
+		token: string | undefined
+	) => PackageManagerExpectedPackage
 }
 
 /**
@@ -256,7 +271,6 @@ export enum CustomCollectionName {
 	PeripheralDeviceForDevice = 'peripheralDeviceForDevice',
 	StudioMappings = 'studioMappings',
 	StudioTimeline = 'studioTimeline',
-	ExpectedPackagesForDevice = 'deviceExpectedPackages',
 	UIShowStyleBase = 'uiShowStyleBase',
 	UIStudio = 'uiStudio',
 	UITriggeredActions = 'uiTriggeredActions',
@@ -266,6 +280,10 @@ export enum CustomCollectionName {
 	UISegmentPartNotes = 'uiSegmentPartNotes',
 	UIPieceContentStatuses = 'uiPieceContentStatuses',
 	UIBucketContentStatuses = 'uiBucketContentStatuses',
+
+	PackageManagerPlayoutContext = 'packageManagerPlayoutContext',
+	PackageManagerPackageContainers = 'packageManagerPackageContainers',
+	PackageManagerExpectedPackages = 'packageManagerExpectedPackages',
 }
 
 /**
@@ -276,7 +294,6 @@ export type CustomCollectionType = {
 	[CustomCollectionName.PeripheralDeviceForDevice]: PeripheralDeviceForDevice
 	[CustomCollectionName.StudioMappings]: RoutedMappings
 	[CustomCollectionName.StudioTimeline]: RoutedTimeline
-	[CustomCollectionName.ExpectedPackagesForDevice]: DBObj
 	[CustomCollectionName.UIShowStyleBase]: UIShowStyleBase
 	[CustomCollectionName.UIStudio]: UIStudio
 	[CustomCollectionName.UITriggeredActions]: UITriggeredActionsObj
@@ -286,6 +303,9 @@ export type CustomCollectionType = {
 	[CustomCollectionName.UISegmentPartNotes]: UISegmentPartNote
 	[CustomCollectionName.UIPieceContentStatuses]: UIPieceContentStatus
 	[CustomCollectionName.UIBucketContentStatuses]: UIBucketContentStatus
+	[CustomCollectionName.PackageManagerPlayoutContext]: PackageManagerPlayoutContext
+	[CustomCollectionName.PackageManagerPackageContainers]: PackageManagerPackageContainers
+	[CustomCollectionName.PackageManagerExpectedPackages]: PackageManagerExpectedPackage
 }
 
 /**

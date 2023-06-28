@@ -1,10 +1,10 @@
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
 import { ReactiveCacheCollection } from '../../lib/ReactiveCacheCollection'
-import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -25,7 +25,7 @@ export type BucketAdLibFields =
 	| 'sourceLayerId'
 	| 'content'
 	| 'expectedPackages'
-export const bucketAdlibFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<BucketAdLibFields>>({
+export const bucketAdlibFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<BucketAdLib, BucketAdLibFields>>>({
 	_id: 1,
 	bucketId: 1,
 	studioId: 1,
@@ -37,7 +37,9 @@ export const bucketAdlibFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<B
 })
 
 export type BucketActionFields = '_id' | 'bucketId' | 'studioId' | 'showStyleBaseId' | 'display' | 'expectedPackages'
-export const bucketActionFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<BucketActionFields>>({
+export const bucketActionFieldSpecifier = literal<
+	MongoFieldSpecifierOnesStrict<Pick<BucketAdLibAction, BucketActionFields>>
+>({
 	_id: 1,
 	bucketId: 1,
 	studioId: 1,
@@ -47,7 +49,9 @@ export const bucketActionFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<
 })
 
 export type ShowStyleBaseFields = '_id' | 'blueprintId' | 'sourceLayersWithOverrides'
-export const showStyleBaseFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<ShowStyleBaseFields>>({
+export const showStyleBaseFieldSpecifier = literal<
+	MongoFieldSpecifierOnesStrict<Pick<DBShowStyleBase, ShowStyleBaseFields>>
+>({
 	_id: 1,
 	blueprintId: 1,
 	sourceLayersWithOverrides: 1,

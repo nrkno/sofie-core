@@ -273,7 +273,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				}
 			}
 
-			let displayLiveLineCounter: boolean = true
+			let displayLiveLineCounter = true
 			if (props.rundownViewLayout && props.rundownViewLayout.liveLineProps?.requiredLayerIds) {
 				const { active } = getIsFilterActive(
 					props.playlist,

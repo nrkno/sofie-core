@@ -13,8 +13,6 @@ const tmpRules = {
 	'@typescript-eslint/ban-types': 'off',
 	'@typescript-eslint/no-namespace': 'off',
 	'@typescript-eslint/no-var-requires': 'off',
-	'@typescript-eslint/no-inferrable-types': 'off',
-	'no-useless-escape': 'off',
 	'@typescript-eslint/no-non-null-assertion': 'off',
 	'@typescript-eslint/unbound-method': 'off',
 	'@typescript-eslint/no-misused-promises': 'off',

@@ -58,7 +58,6 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 	await saveIntoDb(
 		context,
 		context.directCollections.Segments,
-		null,
 		{
 			rundownId: rundownId,
 		},
@@ -291,7 +290,6 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 	await saveIntoDb(
 		context,
 		context.directCollections.PartInstances,
-		null,
 		{
 			rundownId: rundownId,
 		},
@@ -300,7 +298,6 @@ async function createMockRO(context: MockJobContext): Promise<RundownId> {
 	await saveIntoDb(
 		context,
 		context.directCollections.Parts,
-		null,
 		{
 			rundownId: rundownId,
 		},

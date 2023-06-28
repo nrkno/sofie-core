@@ -101,7 +101,7 @@ export function resetPartInstancesWithPieceInstances(
 	}
 
 	// Defer ones which arent loaded
-	cache.deferDuringSaveTransaction(async (transaction, cache) => {
+	cache.deferAfterSave(async (cache) => {
 		const rundownIds = getRundownIDsFromCache(cache)
 		const partInstanceIdsInCache = cache.PartInstances.findAll(null).map((p) => p._id)
 
@@ -118,8 +118,7 @@ export function resetPartInstancesWithPieceInstances(
 					},
 				],
 			},
-			{ projection: { _id: 1 } },
-			transaction
+			{ projection: { _id: 1 } }
 		).then((ps) => ps.map((p) => p._id))
 
 		// Do the reset
@@ -136,8 +135,7 @@ export function resetPartInstancesWithPieceInstances(
 							$set: {
 								reset: true,
 							},
-						},
-						transaction
+						}
 				  )
 				: undefined,
 			allToReset.length
@@ -151,8 +149,7 @@ export function resetPartInstancesWithPieceInstances(
 							$set: {
 								reset: true,
 							},
-						},
-						transaction
+						}
 				  )
 				: undefined,
 		])
@@ -175,7 +172,7 @@ function removePartInstancesWithPieceInstances(
 	}
 
 	// Defer ones which arent loaded
-	cache.deferDuringSaveTransaction(async (transaction, cache) => {
+	cache.deferAfterSave(async (cache) => {
 		const rundownIds = getRundownIDsFromCache(cache)
 		// We need to keep any for PartInstances which are still existent in the cache (as they werent removed)
 		const partInstanceIdsInCache = cache.PartInstances.findAll(null).map((p) => p._id)
@@ -192,30 +189,23 @@ function removePartInstancesWithPieceInstances(
 					},
 				],
 			},
-			{ projection: { _id: 1 } },
-			transaction
+			{ projection: { _id: 1 } }
 		).then((ps) => ps.map((p) => p._id))
 
 		// Do the remove
 		const allToRemove = [...removeFromDb, ...partInstancesToRemove]
 		await Promise.all([
 			removeFromDb.length > 0
-				? context.directCollections.PartInstances.remove(
-						{
-							_id: { $in: removeFromDb },
-							rundownId: { $in: rundownIds },
-						},
-						transaction
-				  )
+				? context.directCollections.PartInstances.remove({
+						_id: { $in: removeFromDb },
+						rundownId: { $in: rundownIds },
+				  })
 				: undefined,
 			allToRemove.length > 0
-				? context.directCollections.PieceInstances.remove(
-						{
-							partInstanceId: { $in: allToRemove },
-							rundownId: { $in: rundownIds },
-						},
-						transaction
-				  )
+				? context.directCollections.PieceInstances.remove({
+						partInstanceId: { $in: allToRemove },
+						rundownId: { $in: rundownIds },
+				  })
 				: undefined,
 		])
 	})
@@ -226,9 +216,9 @@ export function substituteObjectIds(
 	idMap: { [oldId: string]: string | undefined }
 ): TSR.Timeline.TimelineEnable | TSR.Timeline.TimelineEnable[] {
 	const replaceIds = (str: string) => {
-		return str.replace(/#([a-zA-Z0-9_]+)/g, (m) => {
-			const id = m.substr(1, m.length - 1)
-			return `#${idMap[id] || id}`
+		return str.replace(/#([\w]+)/g, (m) => {
+			const id = m.slice(1)
+			return `#${idMap[id] ?? id}`
 		})
 	}
 
@@ -300,7 +290,7 @@ export function isTooCloseToAutonext(
 	currentPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
 	isTake?: boolean
 ): boolean {
-	if (!currentPartInstance || !currentPartInstance.part.autoNext) return false
+	if (!currentPartInstance?.part?.autoNext) return false
 
 	const debounce = isTake ? AUTOTAKE_TAKE_DEBOUNCE : AUTOTAKE_UPDATE_DEBOUNCE
 

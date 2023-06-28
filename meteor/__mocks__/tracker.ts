@@ -10,7 +10,7 @@ export namespace TrackerMock {
 	// eslint-disable-next-line prefer-const
 	export let currentComputation: Computation | null = null
 	// eslint-disable-next-line prefer-const
-	export let active: boolean = false
+	export let active = false
 
 	export class Dependency {
 		private dependents: Computation[] = []
@@ -38,9 +38,9 @@ export namespace TrackerMock {
 		private onStopClbs: Array<ComputationCallback> = []
 		private func: AutorunCallback
 		private parentComputation: Computation | null = null
-		stopped: boolean = false
-		invalidated: boolean = false
-		firstRun: boolean = true
+		stopped = false
+		invalidated = false
+		firstRun = true
 
 		constructor(computedFunc: AutorunCallback, parentComputation: Computation | null, _onError?: (e: any) => void) {
 			this.parentComputation = parentComputation

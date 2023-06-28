@@ -27,7 +27,7 @@ import {
 	Segments,
 	ShowStyleBases,
 } from '../../../collections'
-import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { equivalentArrays, waitForPromise } from '../../../../lib/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ReactiveMongoObserverGroup, ReactiveMongoObserverGroupHandle } from '../../lib/observerGroup'
@@ -37,7 +37,7 @@ const REACTIVITY_DEBOUNCE = 20
 
 type ChangedHandler = (cache: ContentCache) => () => void
 
-function convertShowStyleBase(doc: Pick<ShowStyleBase, ShowStyleBaseFields>): Omit<SourceLayersDoc, '_id'> {
+function convertShowStyleBase(doc: Pick<DBShowStyleBase, ShowStyleBaseFields>): Omit<SourceLayersDoc, '_id'> {
 	return {
 		blueprintId: doc.blueprintId,
 		sourceLayers: applyAndValidateOverrides(doc.sourceLayersWithOverrides).obj,

@@ -6,7 +6,7 @@ import { ISourceLayer, SourceLayerType } from '@sofie-automation/blueprints-inte
 import { assertNever, literal, getRandomString } from '@sofie-automation/corelib/dist/lib'
 import Tooltip from 'rc-tooltip'
 import { TFunction, useTranslation } from 'react-i18next'
-import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { getHelpMode } from '../../../lib/localStorage'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { findHighestRank } from '../StudioSettings'
@@ -68,7 +68,7 @@ function sourceLayerString(t: TFunction<'translation', undefined>, type: SourceL
 }
 
 interface IStudioSourcesSettingsProps {
-	showStyleBase: ShowStyleBase
+	showStyleBase: DBShowStyleBase
 }
 
 export function SourceLayerSettings({ showStyleBase }: IStudioSourcesSettingsProps): JSX.Element {

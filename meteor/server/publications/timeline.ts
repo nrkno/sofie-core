@@ -1,13 +1,13 @@
 import { Meteor } from 'meteor/meteor'
+import { getRoutedTimeline } from '../../lib/collections/Timeline'
 import {
-	getRoutedTimeline,
 	RoutedTimeline,
 	TimelineComplete,
 	TimelineHash,
 	deserializeTimelineBlob,
 	serializeTimelineBlob,
 	TimelineBlob,
-} from '../../lib/collections/Timeline'
+} from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { meteorPublish } from './lib'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { FindOptions } from '../../lib/collections/lib'
@@ -27,7 +27,7 @@ import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { Time } from '../../lib/lib'
 import { ReadonlyDeep } from 'type-fest'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { TimelineDatastoreEntry } from '../../lib/collections/TimelineDatastore'
+import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
 import { PeripheralDevices, Studios, Timeline, TimelineDatastore } from '../collections'
 import { check } from 'meteor/check'
 
@@ -43,7 +43,7 @@ meteorPublish(PubSub.timeline, async function (selector, token) {
 })
 meteorPublish(PubSub.timelineDatastore, async function (studioId, token) {
 	if (!studioId) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<TimelineDatastoreEntry> = {
+	const modifier: FindOptions<DBTimelineDatastoreEntry> = {
 		fields: {},
 	}
 	if (await StudioReadAccess.studioContent(studioId, { userId: this.userId, token })) {
@@ -80,7 +80,7 @@ meteorPublish(PubSub.timelineDatastoreForDevice, async function (deviceId, token
 
 		const studioId = peripheralDevice.studioId
 		if (!studioId) return null
-		const modifier: FindOptions<TimelineDatastoreEntry> = {
+		const modifier: FindOptions<DBTimelineDatastoreEntry> = {
 			fields: {},
 		}
 

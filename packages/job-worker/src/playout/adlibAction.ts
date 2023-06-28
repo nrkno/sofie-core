@@ -224,39 +224,36 @@ async function executeDataStoreAction(
 ) {
 	const executeDataStoreAction = blueprint.blueprint.executeDataStoreAction
 	if (executeDataStoreAction) {
-		await context.directCollections.runInTransaction(async (transaction) => {
-			// now we can execute any datastore actions
-			const actionContext = new DatastoreActionExecutionContext(
-				{
-					name: `${rundown.name}(${playlist.name})`,
-					identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
-						playlist.currentPartInfo?.partInstanceId
-					},execution=${getRandomId()}`,
-					tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
-				},
-				context,
-				transaction,
-				showStyle,
-				watchedPackages
-			)
+		// now we can execute any datastore actions
+		const actionContext = new DatastoreActionExecutionContext(
+			{
+				name: `${rundown.name}(${playlist.name})`,
+				identifier: `playlist=${playlist._id},rundown=${rundown._id},currentPartInstance=${
+					playlist.currentPartInfo?.partInstanceId
+				},execution=${getRandomId()}`,
+				tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
+			},
+			context,
+			showStyle,
+			watchedPackages
+		)
 
-			logger.info(
-				`Executing Datastore AdlibAction "${actionParameters.actionId}": ${JSON.stringify(
-					actionParameters.userData
-				)}`
-			)
+		logger.info(
+			`Executing Datastore AdlibAction "${actionParameters.actionId}": ${JSON.stringify(
+				actionParameters.userData
+			)}`
+		)
 
-			try {
-				await executeDataStoreAction(
-					actionContext,
-					actionParameters.actionId,
-					actionParameters.userData,
-					actionParameters.triggerMode
-				)
-			} catch (err) {
-				logger.error(`Error in showStyleBlueprint.executeDatastoreAction: ${stringifyError(err)}`)
-				throw err
-			}
-		})
+		try {
+			await executeDataStoreAction(
+				actionContext,
+				actionParameters.actionId,
+				actionParameters.userData,
+				actionParameters.triggerMode
+			)
+		} catch (err) {
+			logger.error(`Error in showStyleBlueprint.executeDatastoreAction: ${stringifyError(err)}`)
+			throw err
+		}
 	}
 }

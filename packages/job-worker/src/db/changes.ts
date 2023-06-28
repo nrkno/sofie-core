@@ -1,6 +1,6 @@
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { AnyBulkWriteOperation } from 'mongodb'
-import { ICollection, IMongoTransaction, MongoQuery } from './collections'
+import { ICollection, MongoQuery } from './collections'
 import _ = require('underscore')
 import { deleteAllUndefinedProperties, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { JobContext } from '../jobs'
@@ -56,14 +56,13 @@ export function anythingChanged(changes: Changes): boolean {
 export async function saveIntoDb<TDoc extends { _id: ProtectedString<any> }>(
 	context: JobContext,
 	collection: ICollection<TDoc>,
-	transaction: IMongoTransaction | null,
 	filter: MongoQuery<TDoc>,
 	newDocs: Array<TDoc>,
 	options?: SaveIntoDbHooks<TDoc>
 ): Promise<Changes> {
-	const preparedChanges = await prepareSaveIntoDb(context, collection, transaction, filter, newDocs, options)
+	const preparedChanges = await prepareSaveIntoDb(context, collection, filter, newDocs, options)
 
-	return savePreparedChanges(preparedChanges, collection, transaction, options ?? {})
+	return savePreparedChanges(preparedChanges, collection, options ?? {})
 }
 
 export interface PreparedChanges<T> {
@@ -76,7 +75,6 @@ export interface PreparedChanges<T> {
 async function prepareSaveIntoDb<TDoc extends { _id: ProtectedString<any> }>(
 	context: JobContext,
 	collection: ICollection<TDoc>,
-	transaction: IMongoTransaction | null,
 	filter: MongoQuery<TDoc>,
 	newData: Array<TDoc>,
 	optionsOrg?: SaveIntoDbHooks<TDoc>
@@ -88,7 +86,7 @@ async function prepareSaveIntoDb<TDoc extends { _id: ProtectedString<any> }>(
 		unchanged: [],
 	}
 
-	const existing = await collection.findFetch(filter, undefined, transaction)
+	const existing = await collection.findFetch(filter)
 
 	saveIntoBase(context, collection.name, existing, newData, {
 		...optionsOrg,
@@ -108,7 +106,6 @@ async function prepareSaveIntoDb<TDoc extends { _id: ProtectedString<any> }>(
 async function savePreparedChanges<TDoc extends { _id: ProtectedString<any> }>(
 	preparedChanges: PreparedChanges<TDoc>,
 	collection: ICollection<TDoc>,
-	transaction: IMongoTransaction | null,
 	options: SaveIntoDbHooks<TDoc>
 ): Promise<Changes> {
 	const change: Changes = {
@@ -173,7 +170,7 @@ async function savePreparedChanges<TDoc extends { _id: ProtectedString<any> }>(
 		})
 	}
 
-	const pBulkWriteResult = updates.length > 0 ? collection.bulkWrite(updates, transaction) : Promise.resolve()
+	const pBulkWriteResult = updates.length > 0 ? collection.bulkWrite(updates) : Promise.resolve()
 
 	await pBulkWriteResult
 

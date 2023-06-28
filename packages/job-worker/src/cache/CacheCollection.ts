@@ -1,4 +1,4 @@
-import { ICollection, IMongoTransaction, IReadOnlyCollection, MongoQuery } from '../db'
+import { ICollection, IReadOnlyCollection, MongoQuery } from '../db'
 import { ReadonlyDeep } from 'type-fest'
 import { isProtectedString, ProtectedString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import _ = require('underscore')
@@ -71,7 +71,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 			})
 		}
 
-		const docs = await collection.findFetch(selector, undefined, null)
+		const docs = await collection.findFetch(selector)
 
 		const res = DbCacheReadCollection.createFromArray(context, collection, docs)
 		if (span) span.end()
@@ -137,7 +137,7 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 		this.assertNotDisposed()
 
 		const span = this.context.startSpan(`DBCache.fillWithDataFromDatabase.${this.name}`)
-		const docs = await this._collection.findFetch(selector, undefined, null)
+		const docs = await this._collection.findFetch(selector)
 
 		span?.addLabels({ count: docs.length })
 
@@ -244,7 +244,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 			})
 		}
 
-		const docs = await collection.findFetch(selector, undefined, null)
+		const docs = await collection.findFetch(selector)
 
 		const res = DbCacheWriteCollection.createFromArray(context, collection, docs)
 		if (span) span.end()
@@ -455,7 +455,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 	 * Write the changed documents to mongo
 	 * @returns Changes object describing the saved changes
 	 */
-	async updateDatabaseWithData(transaction: IMongoTransaction | null): Promise<Changes> {
+	async updateDatabaseWithData(): Promise<Changes> {
 		this.assertNotDisposed()
 
 		const span = this.context.startSpan(`DBCache.updateDatabaseWithData.${this.name}`)
@@ -517,8 +517,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 			})
 		}
 
-		const pBulkWriteResult =
-			updates.length > 0 ? this._collection.bulkWrite(updates, transaction) : Promise.resolve()
+		const pBulkWriteResult = updates.length > 0 ? this._collection.bulkWrite(updates) : Promise.resolve()
 
 		_.each(removedDocs, (_id) => {
 			this.documents.delete(_id)

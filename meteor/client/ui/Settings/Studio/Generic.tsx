@@ -7,7 +7,7 @@ import { withTranslation } from 'react-i18next'
 import { EditAttribute } from '../../../lib/EditAttribute'
 import { StudioBaselineStatus } from './Baseline'
 import { ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ShowStyleBase } from '../../../../lib/collections/ShowStyleBases'
+import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Studios } from '../../../collections'
 import { useHistory } from 'react-router-dom'
 import { MeteorCall } from '../../../../lib/api/methods'
@@ -18,7 +18,7 @@ interface IStudioGenericPropertiesProps {
 	availableShowStyleBases: Array<{
 		name: string
 		value: ShowStyleBaseId
-		showStyleBase: ShowStyleBase
+		showStyleBase: DBShowStyleBase
 	}>
 }
 interface IStudioGenericPropertiesState {}

@@ -12,7 +12,7 @@ import { ExternalMessageQueue } from '../collections'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { MongoQuery } from '../../lib/typings/meteor'
 
-let updateExternalMessageQueueStatusTimeout: number = 0
+let updateExternalMessageQueueStatusTimeout = 0
 function updateExternalMessageQueueStatus(): void {
 	if (!updateExternalMessageQueueStatusTimeout) {
 		updateExternalMessageQueueStatusTimeout = Meteor.setTimeout(() => {

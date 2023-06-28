@@ -23,10 +23,10 @@ import {
 	IngestDeviceSettings,
 	IngestDeviceSecretSettings,
 } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
-import { MediaWorkFlow } from '../../../lib/collections/MediaWorkFlows'
-import { MediaWorkFlowStep } from '../../../lib/collections/MediaWorkFlowSteps'
+import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'
+import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlowSteps'
 import { MediaManagerAPI } from '../../../lib/api/mediaManager'
-import { MediaObject } from '../../../lib/collections/MediaObjects'
+import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import {
 	IBlueprintPieceType,
 	PieceLifespan,
@@ -76,7 +76,7 @@ describe('test peripheralDevice general API methods', () => {
 		device = env.ingestDevice
 		rundownID = protectString('rundown0')
 		rundownPlaylistID = protectString('rundownPlaylist0')
-		const rundownExternalID: string = 'rundown0'
+		const rundownExternalID = 'rundown0'
 		await RundownPlaylists.mutableCollection.insertAsync({
 			_id: rundownPlaylistID,
 			externalId: 'mock_rpl',

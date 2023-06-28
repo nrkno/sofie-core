@@ -303,7 +303,7 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 	}
 )
 
-export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft: number = 0): void {
+export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft = 0): void {
 	MeteorCall.system
 		.cleanupOldData(false)
 		.then((results) => {

@@ -15,7 +15,7 @@ import { Tracker } from 'meteor/tracker'
 import { MeteorCall } from '../methods'
 import { PartInstance } from '../../collections/PartInstances'
 import { RundownPlaylist } from '../../collections/RundownPlaylists'
-import { ShowStyleBase, SourceLayers } from '../../collections/ShowStyleBases'
+import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Studio } from '../../collections/Studios'
 import { assertNever, DummyReactiveVar } from '../../lib'
 import { logger } from '../../logging'
@@ -66,7 +66,7 @@ interface PlainPlaylistContext {
 
 interface PlainStudioContext {
 	studio: Studio
-	showStyleBase: ShowStyleBase
+	showStyleBase: DBShowStyleBase
 }
 
 type PlainActionContext = XOR<PlainPlaylistContext, PlainStudioContext>

@@ -1,7 +1,9 @@
 import './lib'
 
 import './buckets'
-import './expectedPackages'
+import './packageManager/expectedPackages/publication'
+import './packageManager/packageContainers'
+import './packageManager/playoutContext'
 import './pieceContentStatusUI/bucket/publication'
 import './pieceContentStatusUI/rundown/publication'
 import './organization'

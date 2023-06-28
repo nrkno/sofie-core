@@ -4,19 +4,19 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { ReactiveCacheCollection } from '../lib/ReactiveCacheCollection'
 import { literal } from '@sofie-automation/corelib/dist/lib'
-import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
+import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 
 export type RundownFields = '_id' | 'playlistId' | 'externalNRCSName'
-export const rundownFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<RundownFields>>({
+export const rundownFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<Rundown, RundownFields>>>({
 	_id: 1,
 	playlistId: 1,
 	externalNRCSName: 1,
 })
 
 export type SegmentFields = '_id' | '_rank' | 'rundownId' | 'name' | 'notes' | 'orphaned'
-export const segmentFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<SegmentFields>>({
+export const segmentFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBSegment, SegmentFields>>>({
 	_id: 1,
 	_rank: 1,
 	rundownId: 1,
@@ -26,7 +26,7 @@ export const segmentFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<Segme
 })
 
 export type PartFields = '_id' | '_rank' | 'segmentId' | 'rundownId' | 'notes' | 'title' | 'invalid' | 'invalidReason'
-export const partFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PartFields>>({
+export const partFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBPart, PartFields>>>({
 	_id: 1,
 	_rank: 1,
 	segmentId: 1,
@@ -38,7 +38,9 @@ export const partFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PartFiel
 })
 
 export type PartInstanceFields = '_id' | 'segmentId' | 'rundownId' | 'orphaned' | 'reset' | 'part'
-export const partInstanceFieldSpecifier = literal<IncludeAllMongoFieldSpecifier<PartInstanceFields>>({
+export const partInstanceFieldSpecifier = literal<
+	MongoFieldSpecifierOnesStrict<Pick<PartInstance, PartInstanceFields>>
+>({
 	_id: 1,
 	segmentId: 1,
 	rundownId: 1,
