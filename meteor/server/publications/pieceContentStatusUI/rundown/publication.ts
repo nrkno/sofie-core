@@ -469,7 +469,7 @@ meteorCustomPublish(
 				setupUIPieceContentStatusesPublicationObservers,
 				manipulateUIPieceContentStatusesPublicationData,
 				pub,
-				500
+				100
 			)
 		} else {
 			logger.warn(`Pub.${CustomCollectionName.UIPieceContentStatuses}: Not allowed: "${rundownPlaylistId}"`)
