@@ -1,5 +1,3 @@
-import { Meteor } from 'meteor/meteor'
-import _ from 'underscore'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
@@ -69,33 +67,14 @@ export interface ContentCache {
 	ShowStyleSourceLayers: ReactiveCacheCollection<SourceLayersDoc>
 }
 
-type ReactionWithCache = (cache: ContentCache) => void
-
-export function createReactiveContentCache(
-	reaction: ReactionWithCache,
-	reactivityDebounce: number
-): { cache: ContentCache; cancel: () => void } {
-	let isCancelled = false
-	const innerReaction = _.debounce(
-		Meteor.bindEnvironment(() => {
-			if (!isCancelled) reaction(cache)
-		}),
-		reactivityDebounce
-	)
-	const cancel = () => {
-		isCancelled = true
-		innerReaction.cancel()
-	}
-
+export function createReactiveContentCache(): ContentCache {
 	const cache: ContentCache = {
-		Rundowns: new ReactiveCacheCollection<Pick<Rundown, RundownFields>>('rundowns', innerReaction),
-		Segments: new ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>('segments', innerReaction),
-		Parts: new ReactiveCacheCollection<Pick<DBPart, PartFields>>('parts', innerReaction),
-		Pieces: new ReactiveCacheCollection<Pick<Piece, PieceFields>>('pieces', innerReaction),
-		ShowStyleSourceLayers: new ReactiveCacheCollection<SourceLayersDoc>('sourceLayers', innerReaction),
+		Rundowns: new ReactiveCacheCollection<Pick<Rundown, RundownFields>>('rundowns'),
+		Segments: new ReactiveCacheCollection<Pick<DBSegment, SegmentFields>>('segments'),
+		Parts: new ReactiveCacheCollection<Pick<DBPart, PartFields>>('parts'),
+		Pieces: new ReactiveCacheCollection<Pick<Piece, PieceFields>>('pieces'),
+		ShowStyleSourceLayers: new ReactiveCacheCollection<SourceLayersDoc>('sourceLayers'),
 	}
 
-	innerReaction()
-
-	return { cache, cancel }
+	return cache
 }

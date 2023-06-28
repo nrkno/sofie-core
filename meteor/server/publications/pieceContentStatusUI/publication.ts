@@ -37,7 +37,7 @@ import { logger } from '../../logging'
 import { resolveCredentials } from '../../security/lib/credentials'
 import { NoSecurityReadAccess } from '../../security/noSecurity'
 import { RundownPlaylistReadAccess } from '../../security/rundownPlaylist'
-import { ContentCache, PieceFields } from './reactiveContentCache'
+import { ContentCache, PieceFields, createReactiveContentCache } from './reactiveContentCache'
 import { RundownContentObserver } from './rundownContentObserver'
 import { RundownsObserver } from '../lib/rundownsObserver'
 import { LiveQueryHandle } from '../../lib/lib'
@@ -112,47 +112,47 @@ async function setupUIPieceContentStatusesPublicationObservers(
 
 	const rundownsObserver = new RundownsObserver(playlist.studioId, playlist._id, (rundownIds) => {
 		logger.silly(`Creating new RundownContentObserver`)
-		const obs1 = new RundownContentObserver(rundownIds, (cache) => {
-			// Push update
-			triggerUpdate({ newCache: cache })
 
-			const innerQueries = [
-				cache.Segments.find({}).observeChanges({
-					added: (id) => triggerUpdate({ updatedSegmentIds: [protectString(id)] }),
-					changed: (id) => triggerUpdate({ updatedSegmentIds: [protectString(id)] }),
-					removed: (id) => triggerUpdate({ updatedSegmentIds: [protectString(id)] }),
-				}),
-				cache.Parts.find({}).observeChanges({
-					added: (id) => triggerUpdate({ updatedPartIds: [protectString(id)] }),
-					changed: (id) => triggerUpdate({ updatedPartIds: [protectString(id)] }),
-					removed: (id) => triggerUpdate({ updatedSegmentIds: [protectString(id)] }),
-				}),
-				cache.Pieces.find({}).observe({
-					added: (doc) => triggerUpdate({ updatedPieceIds: [doc._id] }),
-					changed: (doc) => triggerUpdate({ updatedPieceIds: [doc._id] }),
-					removed: (doc) => triggerUpdate({ removedPieces: [doc] }),
-				}),
-				cache.Rundowns.find({}).observeChanges({
-					added: () => triggerUpdate({ invalidateAll: true }),
-					changed: () => triggerUpdate({ invalidateAll: true }),
-					removed: () => triggerUpdate({ invalidateAll: true }),
-				}),
-				cache.ShowStyleSourceLayers.find({}).observeChanges({
-					added: () => triggerUpdate({ invalidateAll: true }),
-					changed: () => triggerUpdate({ invalidateAll: true }),
-					removed: () => triggerUpdate({ invalidateAll: true }),
-				}),
-			]
+		// TODO - can this be done cheaper?
+		const contentCache = createReactiveContentCache()
+		triggerUpdate({ newCache: contentCache })
 
-			return () => {
-				for (const query of innerQueries) {
-					query.stop()
-				}
-			}
-		})
+		const obs1 = new RundownContentObserver(rundownIds, contentCache)
+
+		const innerQueries = [
+			contentCache.Segments.find({}).observeChanges({
+				added: (id) => triggerUpdate({ updatedSegmentIds: [protectString(id)] }),
+				changed: (id) => triggerUpdate({ updatedSegmentIds: [protectString(id)] }),
+				removed: (id) => triggerUpdate({ updatedSegmentIds: [protectString(id)] }),
+			}),
+			contentCache.Parts.find({}).observeChanges({
+				added: (id) => triggerUpdate({ updatedPartIds: [protectString(id)] }),
+				changed: (id) => triggerUpdate({ updatedPartIds: [protectString(id)] }),
+				removed: (id) => triggerUpdate({ updatedSegmentIds: [protectString(id)] }),
+			}),
+			contentCache.Pieces.find({}).observe({
+				added: (doc) => triggerUpdate({ updatedPieceIds: [doc._id] }),
+				changed: (doc) => triggerUpdate({ updatedPieceIds: [doc._id] }),
+				removed: (doc) => triggerUpdate({ removedPieces: [doc] }),
+			}),
+			contentCache.Rundowns.find({}).observeChanges({
+				added: () => triggerUpdate({ invalidateAll: true }),
+				changed: () => triggerUpdate({ invalidateAll: true }),
+				removed: () => triggerUpdate({ invalidateAll: true }),
+			}),
+			contentCache.ShowStyleSourceLayers.find({}).observeChanges({
+				added: () => triggerUpdate({ invalidateAll: true }),
+				changed: () => triggerUpdate({ invalidateAll: true }),
+				removed: () => triggerUpdate({ invalidateAll: true }),
+			}),
+		]
 
 		return () => {
 			obs1.dispose()
+
+			for (const query of innerQueries) {
+				query.stop()
+			}
 		}
 	})
 
