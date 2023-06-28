@@ -66,7 +66,7 @@ export async function updateCollectionForExpectedPackageIds(
 			)
 
 			updatedDocIds.add(routedPackage._id)
-			collection.insert(routedPackage)
+			collection.replace(routedPackage)
 		}
 	}
 
@@ -132,7 +132,7 @@ export async function updateCollectionForPieceInstanceIds(
 				)
 
 				updatedDocIds.add(routedPackage._id)
-				collection.insert(routedPackage)
+				collection.replace(routedPackage)
 			}
 		})
 	}
