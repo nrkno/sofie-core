@@ -26,6 +26,12 @@ export enum PartHoldMode {
 export interface IBlueprintMutatablePart<TMetadata = unknown> {
 	/** The story title */
 	title: string
+	/**
+	 * The story title to show in the prompter
+	 * If unset, `title` is used instead
+	 */
+	prompterTitle?: string
+
 	/** Arbitrary data storage for plugins */
 	metaData?: TMetadata
 

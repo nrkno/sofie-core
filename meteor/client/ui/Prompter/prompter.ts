@@ -184,7 +184,7 @@ export namespace PrompterAPI {
 				const partInstance = partInstances[partIndex]
 				const partData: PrompterDataPart = {
 					id: partInstance._id,
-					title: partInstance.part.title,
+					title: partInstance.part.prompterTitle || partInstance.part.title,
 					pieces: [],
 				}
 

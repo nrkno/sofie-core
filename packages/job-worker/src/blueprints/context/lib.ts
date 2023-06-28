@@ -79,6 +79,7 @@ export const IBlueprintPieceObjectsSampleKeys = allKeysOfObject<IBlueprintPiece>
 // Compile a list of the keys which are allowed to be set
 export const IBlueprintMutatablePartSampleKeys = allKeysOfObject<IBlueprintMutatablePart>({
 	title: true,
+	prompterTitle: true,
 	metaData: true,
 	autoNext: true,
 	autoNextOverlap: true,
@@ -233,6 +234,7 @@ export function convertPartToBlueprints(part: DBPart): IBlueprintPartDB {
 		floated: part.floated,
 		gap: part.gap,
 		title: part.title,
+		prompterTitle: part.prompterTitle,
 		metaData: clone(part.metaData),
 		autoNext: part.autoNext,
 		autoNextOverlap: part.autoNextOverlap,
