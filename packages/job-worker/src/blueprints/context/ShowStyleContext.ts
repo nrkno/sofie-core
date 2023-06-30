@@ -1,4 +1,4 @@
-import { IShowStyleContext } from '@sofie-automation/blueprints-integration'
+import { IOutputLayer, IShowStyleContext, ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { ReadonlyDeep } from 'type-fest'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { getShowStyleConfigRef, ProcessedStudioConfig, ProcessedShowStyleConfig } from '../config'
@@ -24,5 +24,11 @@ export class ShowStyleContext extends StudioContext implements IShowStyleContext
 	}
 	getShowStyleConfigRef(configKey: string): string {
 		return getShowStyleConfigRef(this.showStyleCompound.showStyleVariantId, configKey)
+	}
+	getShowStyleSourceLayers(): Record<string, ISourceLayer | undefined> {
+		return this.showStyleCompound.sourceLayers
+	}
+	getShowStyleOutputLayers(): Record<string, IOutputLayer | undefined> {
+		return this.showStyleCompound.outputLayers
 	}
 }
