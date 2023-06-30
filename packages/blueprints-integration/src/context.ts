@@ -17,6 +17,7 @@ import { BlueprintMappings } from './studio'
 import { TSR, OnGenerateTimelineObj } from './timeline'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 import { IBlueprintPlayoutDevice } from './lib'
+import { ISourceLayer, IOutputLayer } from './showStyle'
 
 /** Common */
 
@@ -118,6 +119,10 @@ export interface IShowStyleContext extends ICommonContext, IStudioContext {
 	getShowStyleConfig: () => unknown
 	/** Returns a reference to a showStyle config value, that can later be resolved in Core */
 	getShowStyleConfigRef(configKey: string): string
+	/** Get source layers for the ShowStyle  */
+	getShowStyleSourceLayers(): Record<string, ISourceLayer | undefined>
+	/** Get output layers for the ShowStyle  */
+	getShowStyleOutputLayers(): Record<string, IOutputLayer | undefined>
 }
 
 export interface IShowStyleUserContext extends IUserNotesContext, IShowStyleContext, IPackageInfoContext {}
