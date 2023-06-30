@@ -35,6 +35,7 @@ import {
 	PieceTimelineObjectsBlob,
 	serializePieceTimelineObjectsBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { EXPECTED_INGEST_TO_PLAYOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
 
 export class SyncIngestUpdateToPartInstanceContext
 	extends RundownUserContext
@@ -220,6 +221,15 @@ export class SyncIngestUpdateToPartInstanceContext
 		}
 
 		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
+
+		// for autoNext, the new expectedDuration cannot be shorter than the time a part has been on-air for
+		if (trimmedProps.expectedDuration && (trimmedProps.autoNext ?? this.partInstance.part.autoNext)) {
+			const onAir = this.partInstance.timings?.reportedStartedPlayback
+			const minTime = Date.now() - (onAir ?? 0) + EXPECTED_INGEST_TO_PLAYOUT_TIME
+			if (onAir && minTime > trimmedProps.expectedDuration) {
+				trimmedProps.expectedDuration = minTime
+			}
+		}
 
 		this._partInstanceCache.updateOne(this.partInstance._id, (p) => {
 			return {
