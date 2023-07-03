@@ -31,7 +31,7 @@
 		"i18n-compile-json": "node ./scripts/i18n-compile-json.mjs",
 		"visualize": "meteor --production --extra-packages bundle-visualizer",
 		"release": "standard-version --commit-all",
-		"prepareChangelog": "run release --prerelease",
+		"prepareChangelog": "run release --prerelease --release-as patch",
 		"validate:all-dependencies": "run validate:prod-dependencies && run validate:dev-dependencies && run license-validate",
 		"validate:prod-dependencies": "yarn npm audit --environment production",
 		"validate:dev-dependencies": "yarn npm audit --environment development --severity moderate",
