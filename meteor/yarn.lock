@@ -11659,13 +11659,13 @@ __metadata:
   linkType: hard
 
 "semver@npm:7.x, semver@npm:^7.1.1, semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.3.7":
-  version: 7.3.8
-  resolution: "semver@npm:7.3.8"
+  version: 7.5.3
+  resolution: "semver@npm:7.5.3"
   dependencies:
     lru-cache: ^6.0.0
   bin:
     semver: bin/semver.js
-  checksum: ba9c7cbbf2b7884696523450a61fee1a09930d888b7a8d7579025ad93d459b2d1949ee5bbfeb188b2be5f4ac163544c5e98491ad6152df34154feebc2cc337c1
+  checksum: 9d58db16525e9f749ad0a696a1f27deabaa51f66e91d2fa2b0db3de3e9644e8677de3b7d7a03f4c15bc81521e0c3916d7369e0572dbde250d9bedf5194e2a8a7
   languageName: node
   linkType: hard
 
@@ -13278,14 +13278,14 @@ __metadata:
   linkType: hard
 
 "vm2@npm:^3.9.14":
-  version: 3.9.14
-  resolution: "vm2@npm:3.9.14"
+  version: 3.9.19
+  resolution: "vm2@npm:3.9.19"
   dependencies:
     acorn: ^8.7.0
     acorn-walk: ^8.2.0
   bin:
     vm2: bin/vm2
-  checksum: 1ed7481e07ce8e03055101b382bfbf0d725a5c9b9bbe8bf75f71501cb43a6bd22f6a0a151975ff7cea8cad136d47e66d64f0a3248913f6d3ca3c405db12bacc0
+  checksum: fc6cf553134145cd7bb5246985bf242b056e3fb5ea71e2eef6710b2a5d6c6119cc6bc960435ff62480ee82efb43369be8f4db07b6690916ae7d3b2e714f395d8
   languageName: node
   linkType: hard
 
