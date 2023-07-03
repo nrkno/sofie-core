@@ -22,7 +22,7 @@ import {
 import { logger } from '../../../logging'
 import { resolveCredentials } from '../../../security/lib/credentials'
 import { NoSecurityReadAccess } from '../../../security/noSecurity'
-import { BucketContentCache } from './bucketContentCache'
+import { BucketContentCache, createReactiveContentCache } from './bucketContentCache'
 import { LiveQueryHandle } from '../../../lib/lib'
 import { StudioReadAccess } from '../../../security/studio'
 import { Bucket } from '../../../../lib/collections/Buckets'
@@ -98,33 +98,22 @@ async function setupUIBucketContentStatusesPublicationObservers(
 	})) as Pick<Bucket, BucketFields> | undefined
 	if (!bucket || bucket.studioId !== args.studioId) throw new Error(`Bucket "${args.bucketId}" not found!`)
 
-	const bucketContents = new BucketContentObserver(args.bucketId, (cache) => {
-		// Push update
-		triggerUpdate({ newCache: cache })
-
-		const innerQueries = [
-			cache.BucketAdLibs.find({}).observeChanges({
-				added: (id) => triggerUpdate(trackAdlibChange(protectString(id))),
-				changed: (id) => triggerUpdate(trackAdlibChange(protectString(id))),
-				removed: (id) => triggerUpdate(trackAdlibChange(protectString(id))),
-			}),
-			cache.BucketAdLibActions.find({}).observeChanges({
-				added: (id) => triggerUpdate(trackActionChange(protectString(id))),
-				changed: (id) => triggerUpdate(trackActionChange(protectString(id))),
-				removed: (id) => triggerUpdate(trackActionChange(protectString(id))),
-			}),
-		]
-
-		return () => {
-			for (const query of innerQueries) {
-				query.stop()
-			}
-		}
-	})
+	const contentCache = createReactiveContentCache()
 
 	// Set up observers:
 	return [
-		bucketContents,
+		new BucketContentObserver(args.bucketId, contentCache),
+
+		contentCache.BucketAdLibs.find({}).observeChanges({
+			added: (id) => triggerUpdate(trackAdlibChange(protectString(id))),
+			changed: (id) => triggerUpdate(trackAdlibChange(protectString(id))),
+			removed: (id) => triggerUpdate(trackAdlibChange(protectString(id))),
+		}),
+		contentCache.BucketAdLibActions.find({}).observeChanges({
+			added: (id) => triggerUpdate(trackActionChange(protectString(id))),
+			changed: (id) => triggerUpdate(trackActionChange(protectString(id))),
+			removed: (id) => triggerUpdate(trackActionChange(protectString(id))),
+		}),
 
 		Studios.observeChanges(
 			{ _id: bucket.studioId },

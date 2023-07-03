@@ -80,9 +80,14 @@ export class StudioDeviceTriggerManager {
 			const addedPreviewIds: PreviewWrappedAdLibId[] = []
 
 			Object.entries<SomeAction>(triggeredAction.actions).forEach(([key, action]) => {
-				const actionId = protectString<DeviceActionId>(`${studioId}_${triggeredAction._id}_${key}`)
+				// Since the compiled aciton is cached using this actionId as a key, having the action
+				// and the filterChain length allows for a quicker invalidation without doing a deepEquals
+				const actionId = protectString<DeviceActionId>(
+					`${studioId}_${triggeredAction._id}_${key}_${action.action}_${action.filterChain.length}`
+				)
 				const existingAction = actionManager.getAction(actionId)
 				let thisAction: ExecutableAction
+				// Use the cached action or put a new one in the cache
 				if (existingAction) {
 					thisAction = existingAction
 				} else {

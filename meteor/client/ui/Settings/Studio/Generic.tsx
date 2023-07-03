@@ -76,7 +76,7 @@ export const StudioGenericProperties = withTranslation()(
 							<span className="mdfx"></span>
 						</div>
 					</label>
-					<label className="field">
+					<div className="field">
 						{t('Select Compatible Show Styles')}
 						{!this.props.studio.supportedShowStyleBase.length ? (
 							<div className="error-notice inline">
@@ -95,7 +95,7 @@ export const StudioGenericProperties = withTranslation()(
 							{this.renderShowStyleEditButtons()}
 							<NewShowStyleButton />
 						</div>
-					</label>
+					</div>
 					<label className="field">
 						<LabelActual label={t('Frame Rate')} />
 						<div className="mdi">

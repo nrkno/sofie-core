@@ -35,7 +35,7 @@ async function regenerateGenericPiece(
 		? contentCache.ShowStyleSourceLayers.findOne(rundown.showStyleBaseId)
 		: undefined
 
-	const part = contentCache.Parts.findOne(doc.partId)
+	const part = doc.partId ? contentCache.Parts.findOne(doc.partId) : undefined
 	const segment = part ? contentCache.Segments.findOne(part.segmentId) : undefined
 	const sourceLayer = sourceLayerId && sourceLayersForRundown?.sourceLayers?.[sourceLayerId]
 

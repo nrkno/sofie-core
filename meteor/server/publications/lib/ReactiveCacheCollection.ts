@@ -5,24 +5,35 @@ import { ObserveCallbacks } from '../../../lib/collections/lib'
 
 type Reaction = () => void
 
-export class ReactiveCacheCollection<
-	Document extends { _id: ProtectedString<any> }
-> extends Mongo.Collection<Document> {
+export class ReactiveCacheCollection<Document extends { _id: ProtectedString<any> }> {
+	readonly #collection: Mongo.Collection<Document>
+
 	constructor(public collectionName: string, private reaction?: Reaction) {
-		super(null)
+		this.#collection = new Mongo.Collection<Document>(null)
 	}
 
-	insert(doc: Mongo.OptionalId<Document>, callback?: Function): string {
-		const id = super.insert(doc, callback)
+	find(
+		selector: Document['_id'] | Mongo.Selector<Document>,
+		options?: Mongo.Options<Document>
+	): Mongo.Cursor<Document, Document> {
+		return this.#collection.find(isProtectedString(selector) ? unprotectString(selector) : selector, options)
+	}
+
+	findOne(
+		selector: Document['_id'] | Mongo.Selector<Document>,
+		options?: Omit<Mongo.Options<Document>, 'limit'>
+	): Document | undefined {
+		return this.#collection.findOne(isProtectedString(selector) ? unprotectString(selector) : selector, options)
+	}
+
+	insert(doc: Mongo.OptionalId<Document>): string {
+		const id = this.#collection.insert(doc)
 		this.runReaction()
 		return id
 	}
 
-	remove(
-		selector: Document['_id'] | string | Mongo.ObjectID | Mongo.Selector<Document>,
-		callback?: Function
-	): number {
-		const num = super.remove(isProtectedString(selector) ? unprotectString(selector) : selector, callback)
+	remove(selector: Document['_id'] | Mongo.Selector<Document>): number {
+		const num = this.#collection.remove(isProtectedString(selector) ? unprotectString(selector) : selector)
 		if (num > 0) {
 			this.runReaction()
 		}
@@ -30,20 +41,18 @@ export class ReactiveCacheCollection<
 	}
 
 	update(
-		selector: Document['_id'] | string | Mongo.ObjectID | Mongo.Selector<Document>,
+		selector: Document['_id'] | Mongo.Selector<Document>,
 		modifier: Mongo.Modifier<Document>,
 		options?: {
-			multi?: boolean | undefined
-			upsert?: boolean | undefined
-			arrayFilters?: { [identifier: string]: any }[] | undefined
-		},
-		callback?: Function
+			multi?: boolean
+			upsert?: boolean
+			arrayFilters?: { [identifier: string]: any }[]
+		}
 	): number {
-		const num = super.update(
+		const num = this.#collection.update(
 			isProtectedString(selector) ? unprotectString(selector) : selector,
 			modifier,
-			options,
-			callback
+			options
 		)
 		if (num > 0) {
 			this.runReaction()
@@ -52,16 +61,14 @@ export class ReactiveCacheCollection<
 	}
 
 	upsert(
-		selector: Document['_id'] | string | Mongo.ObjectID | Mongo.Selector<Document>,
+		selector: Document['_id'] | Mongo.Selector<Document>,
 		modifier: Mongo.Modifier<Document>,
-		options?: { multi?: boolean | undefined },
-		callback?: Function
-	): { numberAffected?: number | undefined; insertedId?: string | undefined } {
-		const res = super.upsert(
+		options?: { multi?: boolean }
+	): { numberAffected?: number; insertedId?: string } {
+		const res = this.#collection.upsert(
 			isProtectedString(selector) ? unprotectString(selector) : selector,
 			modifier,
-			options,
-			callback
+			options
 		)
 		if (res.numberAffected || res.insertedId) {
 			this.runReaction()
@@ -69,20 +76,15 @@ export class ReactiveCacheCollection<
 		return res
 	}
 
-	async insertAsync(doc: Mongo.OptionalId<Document>, callback?: Function): Promise<string> {
-		const result = await super.insertAsync(doc)
+	async insertAsync(doc: Mongo.OptionalId<Document>): Promise<string> {
+		const result = await this.#collection.insertAsync(doc)
 		this.runReaction()
-		callback?.()
 		return result
 	}
 
-	async removeAsync(
-		selector: Document['_id'] | string | Mongo.ObjectID | Mongo.Selector<Document>,
-		callback?: Function
-	): Promise<number> {
-		const result = await super.removeAsync(
-			isProtectedString(selector) ? unprotectString(selector) : selector,
-			callback
+	async removeAsync(selector: Document['_id'] | Mongo.Selector<Document>): Promise<number> {
+		const result = await this.#collection.removeAsync(
+			isProtectedString(selector) ? unprotectString(selector) : selector
 		)
 		if (result > 0) {
 			this.runReaction()
@@ -91,20 +93,18 @@ export class ReactiveCacheCollection<
 	}
 
 	async updateAsync(
-		selector: Document['_id'] | string | Mongo.ObjectID | Mongo.Selector<Document>,
+		selector: Document['_id'] | Mongo.Selector<Document>,
 		modifier: Mongo.Modifier<Document>,
 		options?: {
-			multi?: boolean | undefined
-			upsert?: boolean | undefined
-			arrayFilters?: { [identifier: string]: any }[] | undefined
-		},
-		callback?: Function
+			multi?: boolean
+			upsert?: boolean
+			arrayFilters?: { [identifier: string]: any }[]
+		}
 	): Promise<number> {
-		const result = await super.updateAsync(
+		const result = await this.#collection.updateAsync(
 			isProtectedString(selector) ? unprotectString(selector) : selector,
 			modifier,
-			options,
-			callback
+			options
 		)
 		if (result > 0) {
 			this.runReaction()
@@ -113,16 +113,14 @@ export class ReactiveCacheCollection<
 	}
 
 	async upsertAsync(
-		selector: Document['_id'] | string | Mongo.ObjectID | Mongo.Selector<Document>,
+		selector: Document['_id'] | Mongo.Selector<Document>,
 		modifier: Mongo.Modifier<Document>,
-		options?: { multi?: boolean | undefined },
-		callback?: Function
-	): Promise<{ numberAffected?: number | undefined; insertedId?: string | undefined }> {
-		const result = await super.upsertAsync(
+		options?: { multi?: boolean }
+	): Promise<{ numberAffected?: number; insertedId?: string }> {
+		const result = await this.#collection.upsertAsync(
 			isProtectedString(selector) ? unprotectString(selector) : selector,
 			modifier,
-			options,
-			callback
+			options
 		)
 		if (result.numberAffected || result.insertedId) {
 			this.runReaction()

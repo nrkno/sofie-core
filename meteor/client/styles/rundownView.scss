@@ -83,6 +83,9 @@ $break-width: 35rem;
 	border-radius: $segment-border-radius;
 	overflow: hidden;
 
+	margin: $segment-margin-y $segment-margin-x;
+	width: auto;
+
 	&::before {
 		content: ' ';
 		display: block;
@@ -433,11 +436,6 @@ body.no-overflow {
 // }
 .header.rundown.active.rehearsal .first-row {
 	background-color: #660;
-}
-
-.segment-timeline-placeholder {
-	margin: 1.5em;
-	width: auto;
 }
 
 svg.icon {
