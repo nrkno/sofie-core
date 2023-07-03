@@ -9,7 +9,7 @@ import { DBSegment } from '../../lib/collections/Segments'
 import { DBPart } from '../../lib/collections/Parts'
 import { Piece } from '../../lib/collections/Pieces'
 import { PieceInstance } from '../../lib/collections/PieceInstances'
-import { DBPartInstance } from '../../lib/collections/PartInstances'
+import { DBPartInstance, PartInstance } from '../../lib/collections/PartInstances'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { OrganizationReadAccess } from '../security/organization'
@@ -196,7 +196,7 @@ meteorPublish(
 )
 meteorPublish(
 	PubSub.partInstancesSimple,
-	async function (selector: MongoQuery<DBPartInstance>, token: string | undefined) {
+	async function (selector: MongoQuery<PartInstance>, token: string | undefined) {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 		const modifier: FindOptions<DBPartInstance> = {
 			fields: literal<MongoFieldSpecifierZeroes<DBPartInstance>>({
@@ -221,7 +221,7 @@ meteorPublish(
 )
 meteorPublish(
 	PubSub.partInstancesForSegmentPlayout,
-	async function (selector: MongoQuery<DBPartInstance>, token: string | undefined) {
+	async function (selector: MongoQuery<PartInstance>, token: string | undefined) {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 		const modifier: FindOptions<DBPartInstance> = {
 			fields: {

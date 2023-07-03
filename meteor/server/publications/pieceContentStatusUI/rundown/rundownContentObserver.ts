@@ -138,7 +138,7 @@ export class RundownContentObserver {
 					projection: pieceFieldSpecifier,
 				}
 			),
-			PieceInstances.observe(
+			PieceInstances.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
@@ -150,7 +150,7 @@ export class RundownContentObserver {
 					projection: pieceInstanceFieldSpecifier,
 				}
 			),
-			AdLibPieces.observe(
+			AdLibPieces.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
@@ -161,7 +161,7 @@ export class RundownContentObserver {
 					projection: adLibPieceFieldSpecifier,
 				}
 			),
-			AdLibActions.observe(
+			AdLibActions.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
@@ -172,7 +172,7 @@ export class RundownContentObserver {
 					projection: adLibActionFieldSpecifier,
 				}
 			),
-			RundownBaselineAdLibPieces.observe(
+			RundownBaselineAdLibPieces.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,
@@ -183,7 +183,7 @@ export class RundownContentObserver {
 					projection: adLibPieceFieldSpecifier,
 				}
 			),
-			RundownBaselineAdLibActions.observe(
+			RundownBaselineAdLibActions.observeChanges(
 				{
 					rundownId: {
 						$in: rundownIds,

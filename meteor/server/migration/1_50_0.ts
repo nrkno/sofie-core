@@ -754,7 +754,7 @@ function updatePlayoutDeviceTypeInOverride(op: SomeObjectOverrideOp): ObjectOver
 	if (op.op !== 'set') return undefined
 	if (!op.path.includes('.')) {
 		// Root level
-		const value = op.value as Partial<StudioPlayoutDevice>
+		const value = op.value as any
 		if (typeof value.options?.type === 'number') {
 			value.options.type = oldDeviceTypeToNewMapping[value.options.type] ?? TSR.DeviceType.ABSTRACT
 			return op

@@ -443,6 +443,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@asyncapi/specs@npm:^5.1.0":
+  version: 5.1.0
+  resolution: "@asyncapi/specs@npm:5.1.0"
+  dependencies:
+    "@types/json-schema": ^7.0.11
+  checksum: a4ca804d028c8ecb4d6484de84633854e64ba32fb995caa413cb1388da1e4f2bce3b8c635cd3a9217f6f0c202b566498d09301cd825d6485014a7b510a5d3faf
+  languageName: node
+  linkType: hard
+
 "@babel/code-frame@npm:^7.0.0, @babel/code-frame@npm:^7.10.4, @babel/code-frame@npm:^7.12.13, @babel/code-frame@npm:^7.16.0, @babel/code-frame@npm:^7.18.6, @babel/code-frame@npm:^7.8.3":
   version: 7.18.6
   resolution: "@babel/code-frame@npm:7.18.6"
@@ -4822,7 +4831,7 @@ __metadata:
   dependencies:
     "@sofie-automation/shared-lib": 1.51.0-in-development
     tslib: ^2.6.0
-    type-fest: ^2.19.0
+    type-fest: ^3.10.0
   languageName: unknown
   linkType: soft
 
@@ -4871,7 +4880,7 @@ __metadata:
     prom-client: ^14.2.0
     timecode: 0.0.4
     tslib: ^2.6.0
-    type-fest: ^2.19.0
+    type-fest: ^3.10.0
     underscore: ^1.13.6
   peerDependencies:
     mongodb: ^5.5.0
@@ -4906,7 +4915,7 @@ __metadata:
     superfly-timeline: ^8.3.1
     threadedclass: ^1.2.1
     tslib: ^2.6.0
-    type-fest: ^2.19.0
+    type-fest: ^3.10.0
     underscore: ^1.13.6
     vm2: ^3.9.19
   languageName: unknown
@@ -4945,7 +4954,7 @@ __metadata:
     "@mos-connection/model": ^3.0.4
     timeline-state-resolver-types: 9.0.0-release50.5
     tslib: ^2.6.0
-    type-fest: ^2.19.0
+    type-fest: ^3.10.0
   languageName: unknown
   linkType: soft
 
@@ -16313,7 +16322,7 @@ asn1@evs-broadcast/node-asn1:
     "@sofie-automation/server-core-integration": 1.51.0-in-development
     "@sofie-automation/shared-lib": 1.51.0-in-development
     tslib: ^2.6.0
-    type-fest: ^2.19.0
+    type-fest: ^3.10.0
     underscore: ^1.13.6
     winston: ^3.9.0
   languageName: unknown
@@ -22359,7 +22368,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"tslib@npm:^1.13.0, tslib@npm:^1.8.1, tslib@npm:^1.9.0":
+"tslib@npm:^1.13.0, tslib@npm:^1.14.1, tslib@npm:^1.8.1, tslib@npm:^1.9.0":
   version: 1.14.1
   resolution: "tslib@npm:1.14.1"
   checksum: dbe628ef87f66691d5d2959b3e41b9ca0045c3ee3c7c7b906cc1e328b39f199bb1ad9e671c39025bd56122ac57dfbf7385a94843b1cc07c60a4db74795829acd

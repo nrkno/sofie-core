@@ -30,7 +30,7 @@ import {
 	Studios,
 } from '../collections'
 import { PackageContainerStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerStatus'
-import { MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 meteorPublish(PubSub.studios, async function (selector0: MongoQuery<DBStudio>, token: string | undefined) {
 	const { cred, selector } = await AutoFillSelector.organizationId<DBStudio>(this.userId, selector0, token)

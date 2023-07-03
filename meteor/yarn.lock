@@ -1590,7 +1590,7 @@ __metadata:
   dependencies:
     "@sofie-automation/shared-lib": 1.51.0-in-development
     tslib: ^2.6.0
-    type-fest: ^2.19.0
+    type-fest: ^3.10.0
   languageName: node
   linkType: soft
 
@@ -1639,7 +1639,7 @@ __metadata:
     prom-client: ^14.2.0
     timecode: 0.0.4
     tslib: ^2.6.0
-    type-fest: ^2.19.0
+    type-fest: ^3.10.0
     underscore: ^1.13.6
   peerDependencies:
     mongodb: ^5.5.0
@@ -1674,7 +1674,7 @@ __metadata:
     superfly-timeline: ^8.3.1
     threadedclass: ^1.2.1
     tslib: ^2.6.0
-    type-fest: ^2.19.0
+    type-fest: ^3.10.0
     underscore: ^1.13.6
     vm2: ^3.9.19
   languageName: node
@@ -1687,7 +1687,7 @@ __metadata:
     "@mos-connection/model": ^3.0.4
     timeline-state-resolver-types: 9.0.0-release50.5
     tslib: ^2.6.0
-    type-fest: ^2.19.0
+    type-fest: ^3.10.0
   languageName: node
   linkType: soft
 
@@ -2232,13 +2232,6 @@ __metadata:
   version: 1.3.2
   resolution: "@types/triple-beam@npm:1.3.2"
   checksum: dd7b4a563fb710abc992e5d59eac481bed9e303fada2e276e37b00be31c392e03300ee468e57761e616512872e77935f92472877d0704a19688d15a726cee17b
-  languageName: node
-  linkType: hard
-
-"@types/underscore@npm:*":
-  version: 1.11.4
-  resolution: "@types/underscore@npm:1.11.4"
-  checksum: db9f8486bc851b732259e51f42d62aad1ae2158be5724612dc125ece5f5d61c51447f9dea28284c2a0f79cb95e788d01cb5ce97709880019213e69fab0dd1696
   languageName: node
   linkType: hard
 
@@ -3167,7 +3160,6 @@ __metadata:
     "@types/koa-bodyparser": ^4.3.10
     "@types/koa__cors": ^3.3.1
     "@types/koa__router": ^12.0.0
-    "@types/meteor": ^2.9.2
     "@types/node": ^14.18.53
     "@types/prop-types": ^15.7.5
     "@types/react": ^18.2.14
@@ -3254,8 +3246,8 @@ __metadata:
     threadedclass: ^1.2.1
     timecode: 0.0.4
     ts-jest: ^29.1.1
-    type-fest: ^2.19.0
-    typescript: ~4.5
+    type-fest: ^3.10.0
+    typescript: ~4.9
     underscore: ^1.13.6
     velocity-animate: ^1.5.2
     velocity-react: ^1.4.3
@@ -12796,6 +12788,13 @@ __metadata:
   version: 3.7.2
   resolution: "type-fest@npm:3.7.2"
   checksum: 28f5c6eca67f01825308e19792425d1643d6f7589aa278d3a8e34caa07d9502aa54016df6b9f65bd3d51a3f2d9c002d3a739bb391d11ef2505df73e374a10b79
+  languageName: node
+  linkType: hard
+
+"type-fest@npm:^3.10.0":
+  version: 3.12.0
+  resolution: "type-fest@npm:3.12.0"
+  checksum: 11cb6f40e42f92c462a13677eafedf5c48353eaefa8e489a146e55fe0ae5cecd59a2ba03cd6b294345b5ea304361891a6313c23ed959fa0117f63fb71ee6cbab
   languageName: node
   linkType: hard
 
