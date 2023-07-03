@@ -56,17 +56,17 @@
 		"@sofie-automation/corelib": "1.51.0-in-development",
 		"@sofie-automation/server-core-integration": "1.51.0-in-development",
 		"@sofie-automation/shared-lib": "1.51.0-in-development",
-		"debug": "^4.3.2",
+		"debug": "^4.3.4",
 		"fast-clone": "^1.5.13",
-		"influx": "^5.9.2",
-		"tslib": "^2.4.0",
-		"winston": "^3.8.1",
-		"ws": "^8.10.0"
+		"influx": "^5.9.3",
+		"tslib": "^2.6.0",
+		"winston": "^3.9.0",
+		"ws": "^8.13.0"
 	},
 	"devDependencies": {
-		"@asyncapi/generator": "1.9.13",
+		"@asyncapi/generator": "1.10.9",
 		"@asyncapi/html-template": "0.26.0",
-		"@asyncapi/nodejs-ws-template": "0.9.25"
+		"@asyncapi/nodejs-ws-template": "0.9.33"
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [

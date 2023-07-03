@@ -68,10 +68,10 @@
 		"@mos-connection/connector": "^3.0.4",
 		"@sofie-automation/server-core-integration": "1.51.0-in-development",
 		"@sofie-automation/shared-lib": "1.51.0-in-development",
-		"tslib": "^2.4.0",
+		"tslib": "^2.6.0",
 		"type-fest": "^2.19.0",
-		"underscore": "^1.13.4",
-		"winston": "^3.8.2"
+		"underscore": "^1.13.6",
+		"winston": "^3.9.0"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {
