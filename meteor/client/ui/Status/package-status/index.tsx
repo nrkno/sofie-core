@@ -19,7 +19,7 @@ import {
 	PeripheralDevices,
 } from '../../../collections'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 export const ExpectedPackagesStatus: React.FC<{}> = function ExpectedPackagesStatus(_props: {}) {
 	const { t } = useTranslation()

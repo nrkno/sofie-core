@@ -7,7 +7,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { isProtectedString } from '../../../lib/lib'
 import { DBOrganization } from '../../../lib/collections/Organization'
-import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { profiler } from '../../api/profiler'
 import { fetchShowStyleBasesLight, fetchStudioLight, ShowStyleBaseLight } from '../../optimizations'

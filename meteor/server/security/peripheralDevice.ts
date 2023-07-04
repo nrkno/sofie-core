@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
-import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { isProtectedString } from '../../lib/lib'
 import { logNotAllowed } from './lib/lib'
 import { MediaWorkFlow } from '@sofie-automation/shared-lib/dist/core/model/MediaWorkFlows'

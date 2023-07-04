@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { check, Match } from '../../lib/check'
 import * as _ from 'underscore'
-import { PeripheralDeviceType, PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDeviceType, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { PeripheralDeviceCommands, PeripheralDevices, Rundowns, Studios, UserActionsLog } from '../collections'
 import { getCurrentTime, protectString, stringifyObjects, literal, unprotectString } from '../../lib/lib'
 import { logger } from '../logging'

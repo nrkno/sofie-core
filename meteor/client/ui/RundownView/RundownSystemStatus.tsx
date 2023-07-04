@@ -7,7 +7,7 @@ import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
-} from '../../../lib/collections/PeripheralDevices'
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Time, getCurrentTime, unprotectString } from '../../../lib/lib'
 import { withTranslation, WithTranslation } from 'react-i18next'

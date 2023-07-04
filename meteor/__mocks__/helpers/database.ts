@@ -5,7 +5,7 @@ import {
 	PeripheralDeviceCategory,
 	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDeviceSubType,
-} from '../../lib/collections/PeripheralDevices'
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	PieceLifespan,

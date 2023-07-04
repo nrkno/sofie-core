@@ -4,7 +4,7 @@ import {
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDeviceCategory,
-} from '../../../lib/collections/PeripheralDevices'
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'

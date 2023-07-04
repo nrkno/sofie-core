@@ -4,7 +4,7 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
-} from '../../../../lib/collections/PeripheralDevices'
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { getCurrentTime, protectString } from '../../../../lib/lib'
 import {
 	DefaultEnvironment,

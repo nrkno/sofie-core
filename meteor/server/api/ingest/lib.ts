@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { getHash, getCurrentTime, protectString, stringifyError } from '../../../lib/lib'
-import { PeripheralDevice, PeripheralDeviceCategory } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceCategory } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { logger } from '../../logging'
 import { PeripheralDeviceContentWriteAccess } from '../../security/peripheralDevice'

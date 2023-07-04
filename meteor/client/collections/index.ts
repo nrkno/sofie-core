@@ -26,7 +26,7 @@ import {
 	createSyncReadOnlyMongoCollection,
 	wrapMongoCollection,
 } from '../../lib/collections/lib'
-import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'

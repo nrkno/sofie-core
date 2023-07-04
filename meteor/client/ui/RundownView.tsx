@@ -58,7 +58,7 @@ import { NotificationCenterPanel } from '../lib/notifications/NotificationCenter
 import { NotificationCenter, NoticeLevel, Notification } from '../../lib/notifications/notifications'
 import { SupportPopUp } from './SupportPopUp'
 import { KeyboardFocusIndicator } from '../lib/KeyboardFocusIndicator'
-import { PeripheralDevice, PeripheralDeviceType } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { hashSingleUseToken, ReloadRundownPlaylistResponse, TriggerReloadDataResponse } from '../../lib/api/userActions'
 import { ClipTrimDialog } from './ClipTrimPanel/ClipTrimDialog'

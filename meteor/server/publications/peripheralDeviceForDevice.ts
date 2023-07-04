@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
-import { PeripheralDevice, PeripheralDeviceCategory } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PeripheralDeviceCategory } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices, Studios } from '../collections'
 import { TriggerUpdate, meteorCustomPublish, setUpOptimizedObserverArray } from '../lib/customPublication'

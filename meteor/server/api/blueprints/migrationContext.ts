@@ -32,7 +32,10 @@ import {
 
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { check } from '../../../lib/check'
-import { PERIPHERAL_SUBTYPE_PROCESS, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
+import {
+	PERIPHERAL_SUBTYPE_PROCESS,
+	PeripheralDeviceType,
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
 import { Match } from 'meteor/check'
 import { MongoModifier } from '@sofie-automation/corelib/dist/mongo'

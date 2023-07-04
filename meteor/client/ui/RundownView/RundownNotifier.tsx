@@ -12,7 +12,7 @@ import {
 } from '../../../lib/notifications/notifications'
 import { WithManagedTracker } from '../../lib/reactiveData/reactiveDataHelper'
 import { reactiveData } from '../../lib/reactiveData/reactiveData'
-import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { getCurrentTime, unprotectString } from '../../../lib/lib'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { ReactiveVar } from 'meteor/reactive-var'

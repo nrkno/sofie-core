@@ -4,7 +4,7 @@ import {
 	PeripheralDevice,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
-} from '../../../lib/collections/PeripheralDevices'
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import * as reacti18next from 'react-i18next'
 import * as i18next from 'i18next'
 import Moment from 'react-moment'

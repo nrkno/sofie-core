@@ -29,10 +29,10 @@ import {
 	unprotectString,
 } from '../../lib/lib'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { logger } from '../logging'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { PeripheralDeviceCommand } from '../../lib/collections/PeripheralDeviceCommands'
+import { PeripheralDeviceCommand } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceCommand'
 import { registerClassToMeteorMethods } from '../methods'
 import { NewSnapshotAPI, SnapshotAPIMethods } from '../../lib/api/shapshot'
 import { ICoreSystem, parseVersion } from '../../lib/collections/CoreSystem'

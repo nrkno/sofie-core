@@ -5,7 +5,7 @@ import { doModalDialog } from '../../lib/ModalDialog'
 import { NavLink, useLocation } from 'react-router-dom'
 
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 

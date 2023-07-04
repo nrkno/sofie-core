@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
 import { stringifyError } from '../../../../lib/lib'
