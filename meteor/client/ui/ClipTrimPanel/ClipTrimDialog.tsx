@@ -9,7 +9,7 @@ import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/noti
 import { protectString, stringifyError } from '../../../lib/lib'
 import { ClientAPI } from '../../../lib/api/client'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
+import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { UIStudio } from '../../../lib/api/studios'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 

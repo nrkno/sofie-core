@@ -10,7 +10,7 @@ import { createSyncMongoCollection, createSyncReadOnlyMongoCollection } from './
 import { DBOrganization } from './Organization'
 import { PartInstance } from './PartInstances'
 import { Part } from './Parts'
-import { PieceInstance } from './PieceInstances'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'

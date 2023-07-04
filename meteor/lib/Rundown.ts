@@ -4,7 +4,7 @@ import { IOutputLayer, ISourceLayer, ITranslatableMessage } from '@sofie-automat
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from './collections/Parts'
 import { PartInstance, wrapPartToTemporaryInstance } from './collections/PartInstances'
-import { PieceInstance } from './collections/PieceInstances'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	getPieceInstancesForPart,
 	buildPiecesStartingInThisPartQuery,

@@ -10,7 +10,7 @@ import { SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import * as lib from '../../lib/lib'
 import { DBPart } from '../../lib/collections/Parts'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { PieceInstance } from '../../lib/collections/PieceInstances'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { Meteor } from 'meteor/meteor'
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import {
