@@ -3,7 +3,6 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PartId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-export * from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 
 export interface PartInstance extends DBPartInstance {
 	isTemporary: boolean

@@ -24,7 +24,7 @@ import {
 	PartInstance,
 	wrapPartToTemporaryInstance,
 } from '../../lib/collections/PartInstances'
-import { Part } from '../../lib/collections/Parts'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime, objectFromEntries } from '../../lib/lib'
 import { Settings } from '../../lib/Settings'
@@ -85,7 +85,7 @@ export class RundownTimingCalculator {
 	 * @param {(DBRundownPlaylist | undefined)} playlist
 	 * @param {Rundown[]} rundowns
 	 * @param {(Rundown | undefined)} currentRundown
-	 * @param {Part[]} parts
+	 * @param {DBPart[]} parts
 	 * @param {Map<PartId, PartInstance>} partInstancesMap
 	 * @param {number} [defaultDuration]
 	 * @return {*}  {RundownTimingContext}
@@ -97,7 +97,7 @@ export class RundownTimingCalculator {
 		playlist: DBRundownPlaylist | undefined,
 		rundowns: Rundown[],
 		currentRundown: Rundown | undefined,
-		parts: Part[],
+		parts: DBPart[],
 		partInstancesMap: Map<PartId, PartInstance>,
 		pieces: Map<PartId, CalculateTimingsPiece[]>,
 		segmentsMap: Map<SegmentId, DBSegment>,
@@ -658,7 +658,7 @@ export class RundownTimingCalculator {
 		this.temporaryPartInstances.clear()
 	}
 
-	private getPartInstanceOrGetCachedTemp(partInstancesMap: Map<PartId, PartInstance>, part: Part): PartInstance {
+	private getPartInstanceOrGetCachedTemp(partInstancesMap: Map<PartId, PartInstance>, part: DBPart): PartInstance {
 		const origPartId = part._id
 		const partInstance = partInstancesMap.get(origPartId)
 		if (partInstance !== undefined) {
