@@ -15,7 +15,6 @@ import _ from 'underscore'
 import { Rundowns, Segments, Parts, PartInstances, Pieces } from './libCollections'
 import { FindOptions } from './lib'
 import { PartInstance } from './PartInstances'
-import { Part } from './Parts'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
@@ -150,9 +149,9 @@ export class RundownPlaylistCollectionUtil {
 	}
 	static getUnorderedParts(
 		playlist: Pick<DBRundownPlaylist, '_id'>,
-		selector?: MongoQuery<Part>,
-		options?: FindOptions<Part>
-	): Part[] {
+		selector?: MongoQuery<DBPart>,
+		options?: FindOptions<DBPart>
+	): DBPart[] {
 		const rundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 		const parts = Parts.find(
 			{
@@ -178,7 +177,7 @@ export class RundownPlaylistCollectionUtil {
 		partsQuery?: MongoQuery<DBPart>,
 		segmentsOptions?: Omit<FindOptions<DBSegment>, 'projection'>, // We are mangling fields, so block projection
 		partsOptions?: Omit<FindOptions<DBPart>, 'projection'> // We are mangling fields, so block projection
-	): { segments: DBSegment[]; parts: Part[] } {
+	): { segments: DBSegment[]; parts: DBPart[] } {
 		const rundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 		const segments = Segments.find(
 			{
@@ -358,10 +357,10 @@ export class RundownPlaylistCollectionUtil {
 		return Array.from(rundownsMap.values())
 	}
 	static _sortParts(
-		parts: Part[],
+		parts: DBPart[],
 		playlist: Pick<DBRundownPlaylist, 'rundownIdsInOrder'>,
 		segments: Array<Pick<DBSegment, '_id' | 'rundownId' | '_rank'>>
-	): Part[] {
+	): DBPart[] {
 		return sortPartsInSegments(parts, playlist.rundownIdsInOrder, segments)
 	}
 	static _sortPartsInner<P extends Pick<DBPart, '_id' | 'segmentId' | '_rank'>>(

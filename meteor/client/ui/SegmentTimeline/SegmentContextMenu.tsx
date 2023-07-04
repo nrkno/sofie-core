@@ -2,7 +2,7 @@ import * as React from 'react'
 import Escape from './../../lib/Escape'
 import { withTranslation } from 'react-i18next'
 import { ContextMenu, MenuItem } from '@jstarpl/react-contextmenu'
-import { Part } from '../../../lib/collections/Parts'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownUtils } from '../../lib/rundown'
@@ -11,7 +11,7 @@ import { PartUi, SegmentUi } from './SegmentTimelineContainer'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
-	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void
+	onSetNext: (part: DBPart | undefined, e: any, offset?: number, take?: boolean) => void
 	onSetNextSegment: (segmentId: SegmentId | null, e: any) => void
 	playlist?: DBRundownPlaylist
 	studioMode: boolean
@@ -116,12 +116,12 @@ export const SegmentContextMenu = withTranslation()(
 			}
 		}
 
-		onSetAsNextFromHere = (part: Part, e) => {
+		onSetAsNextFromHere = (part: DBPart, e) => {
 			const offset = this.getTimePosition()
 			this.props.onSetNext(part, e, offset || 0)
 		}
 
-		onPlayFromHere = (part: Part, e) => {
+		onPlayFromHere = (part: DBPart, e) => {
 			const offset = this.getTimePosition()
 			this.props.onSetNext(part, e, offset || 0, true)
 		}

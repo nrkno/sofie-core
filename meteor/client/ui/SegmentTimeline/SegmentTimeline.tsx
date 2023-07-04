@@ -25,7 +25,7 @@ import { showPointerLockCursor, hidePointerLockCursor } from '../../lib/PointerL
 import { Settings } from '../../../lib/Settings'
 import { IContextMenuContext } from '../RundownView'
 import { literal, protectString, unprotectString } from '../../../lib/lib'
-import { isPartPlayable } from '../../../lib/collections/Parts'
+import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { contextMenuHoldToDisplayTime } from '../../lib/lib'
 import { WarningIconSmall, CriticalIconSmall } from '../../lib/ui/icons/notifications'
 import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../../../lib/api/triggers/RundownViewEventBus'

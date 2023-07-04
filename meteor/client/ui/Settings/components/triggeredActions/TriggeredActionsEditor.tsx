@@ -10,7 +10,7 @@ import { literal, unprotectString } from '../../../../../lib/lib'
 import { TriggersHandler } from '../../../../lib/triggers/TriggersHandler'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { Part } from '../../../../../lib/collections/Parts'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { UploadButton } from '../../../../lib/uploadButton'
 import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
@@ -210,8 +210,8 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 
 	const previewContext = useTracker(
 		() => {
-			let thisCurrentPart: Part | null = null
-			let thisNextPart: Part | null = null
+			let thisCurrentPart: DBPart | null = null
+			let thisNextPart: DBPart | null = null
 			let thisCurrentSegmentPartIds: PartId[] = []
 			let thisNextSegmentPartIds: PartId[] = []
 			if (rundownPlaylist) {

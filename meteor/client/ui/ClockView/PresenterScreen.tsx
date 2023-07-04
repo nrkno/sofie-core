@@ -16,7 +16,7 @@ import { PieceNameContainer } from '../PieceIcons/PieceName'
 import { Timediff } from './Timediff'
 import { RundownUtils } from '../../lib/rundown'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { Part } from '../../../lib/collections/Parts'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PieceCountdownContainer } from '../PieceIcons/PieceCountdown'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { DashboardLayout, RundownLayoutBase, RundownLayoutPresenterView } from '../../../lib/collections/RundownLayouts'
@@ -84,7 +84,7 @@ function getShowStyleBaseIdSegmentPartUi(
 	playlist: DBRundownPlaylist,
 	orderedSegmentsAndParts: {
 		segments: DBSegment[]
-		parts: Part[]
+		parts: DBPart[]
 	},
 	pieces: Map<PartId, Piece[]>,
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,

@@ -15,7 +15,7 @@ import { equalSets } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { Part } from '../../../lib/collections/Parts'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
@@ -180,7 +180,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 										{
 											fields: { _id: 1 },
 										}
-									).parts as Pick<Part, '_id' | 'segmentId' | '_rank'>[]
+									).parts as Pick<DBPart, '_id' | 'segmentId' | '_rank'>[]
 								).map((part) => part._id),
 							'playlist.getAllOrderedParts',
 							props.playlist._id

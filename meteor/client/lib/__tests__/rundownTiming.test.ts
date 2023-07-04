@@ -1,6 +1,6 @@
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstance, wrapPartToTemporaryInstance } from '../../../lib/collections/PartInstances'
-import { DBPart, Part } from '../../../lib/collections/Parts'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { literal, protectString } from '../../../lib/lib'
@@ -42,7 +42,7 @@ function makeMockPart(
 		displayDurationGroup?: string
 		expectedDuration?: number
 	}
-): Part {
+): DBPart {
 	return literal<DBPart>({
 		_id: protectString(id),
 		externalId: id,
@@ -101,7 +101,7 @@ describe('rundown Timing Calculator', () => {
 	it('Provides output for empty playlist', () => {
 		const timing = new RundownTimingCalculator()
 		const playlist: DBRundownPlaylist = makeMockPlaylist()
-		const parts: Part[] = []
+		const parts: DBPart[] = []
 		const segmentsMap: Map<SegmentId, DBSegment> = new Map()
 		const partInstancesMap: Map<PartId, PartInstance> = new Map()
 		const result = timing.updateDurations(
@@ -159,7 +159,7 @@ describe('rundown Timing Calculator', () => {
 		const segmentsMap: Map<SegmentId, DBSegment> = new Map()
 		segmentsMap.set(protectString<SegmentId>(segmentId1), makeMockSegment(segmentId1, 0, rundownId))
 		segmentsMap.set(protectString<SegmentId>(segmentId2), makeMockSegment(segmentId2, 0, rundownId))
-		const parts: Part[] = []
+		const parts: DBPart[] = []
 		parts.push(makeMockPart('part1', 0, rundownId, segmentId1, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part2', 0, rundownId, segmentId1, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part3', 0, rundownId, segmentId2, { expectedDuration: 1000 }))
@@ -261,7 +261,7 @@ describe('rundown Timing Calculator', () => {
 		const segmentsMap: Map<SegmentId, DBSegment> = new Map()
 		segmentsMap.set(protectString<SegmentId>(segmentId1), makeMockSegment(segmentId1, 0, rundownId))
 		segmentsMap.set(protectString<SegmentId>(segmentId2), makeMockSegment(segmentId2, 0, rundownId))
-		const parts: Part[] = []
+		const parts: DBPart[] = []
 		parts.push(makeMockPart('part1', 0, rundownId, segmentId1, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part2', 0, rundownId, segmentId1, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part3', 0, rundownId, segmentId2, { expectedDuration: 1000 }))
@@ -364,7 +364,7 @@ describe('rundown Timing Calculator', () => {
 		const segmentsMap: Map<SegmentId, DBSegment> = new Map()
 		segmentsMap.set(protectString<SegmentId>(segmentId1), makeMockSegment(segmentId1, 0, rundownId1))
 		segmentsMap.set(protectString<SegmentId>(segmentId2), makeMockSegment(segmentId2, 0, rundownId2))
-		const parts: Part[] = []
+		const parts: DBPart[] = []
 		parts.push(makeMockPart('part1', 0, rundownId1, segmentId1, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part2', 0, rundownId1, segmentId1, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part3', 0, rundownId2, segmentId2, { expectedDuration: 1000 }))
@@ -469,7 +469,7 @@ describe('rundown Timing Calculator', () => {
 		const segmentsMap: Map<SegmentId, DBSegment> = new Map()
 		segmentsMap.set(protectString<SegmentId>(segmentId1), makeMockSegment(segmentId1, 0, rundownId1))
 		segmentsMap.set(protectString<SegmentId>(segmentId2), makeMockSegment(segmentId2, 0, rundownId1))
-		const parts: Part[] = []
+		const parts: DBPart[] = []
 		parts.push(
 			makeMockPart('part1', 0, rundownId1, segmentId1, {
 				expectedDuration: 1000,
@@ -596,7 +596,7 @@ describe('rundown Timing Calculator', () => {
 			const segmentsMap: Map<SegmentId, DBSegment> = new Map()
 			segmentsMap.set(protectString<SegmentId>(segmentId1), makeMockSegment(segmentId1, 0, rundownId))
 			segmentsMap.set(protectString<SegmentId>(segmentId2), makeMockSegment(segmentId2, 0, rundownId))
-			const parts: Part[] = []
+			const parts: DBPart[] = []
 			parts.push(makeMockPart('part1', 0, rundownId, segmentId1, { expectedDuration: 1000 }))
 			parts.push(makeMockPart('part2', 0, rundownId, segmentId1, { expectedDuration: 1000 }))
 			parts.push(makeMockPart('part3', 0, rundownId, segmentId2, { expectedDuration: 1000 }))
@@ -698,7 +698,7 @@ describe('rundown Timing Calculator', () => {
 			const segmentsMap: Map<SegmentId, DBSegment> = new Map()
 			segmentsMap.set(protectString<SegmentId>(segmentId1), makeMockSegment(segmentId1, 0, rundownId1))
 			segmentsMap.set(protectString<SegmentId>(segmentId2), makeMockSegment(segmentId2, 0, rundownId1))
-			const parts: Part[] = []
+			const parts: DBPart[] = []
 			parts.push(
 				makeMockPart('part1', 0, rundownId1, segmentId1, {
 					expectedDuration: 1000,
@@ -837,7 +837,7 @@ describe('rundown Timing Calculator', () => {
 		const segmentsMap: Map<SegmentId, DBSegment> = new Map()
 		segmentsMap.set(protectString<SegmentId>(segmentId1), makeMockSegment(segmentId1, 0, rundownId1))
 		segmentsMap.set(protectString<SegmentId>(segmentId2), makeMockSegment(segmentId2, 0, rundownId1))
-		const parts: Part[] = []
+		const parts: DBPart[] = []
 		parts.push(
 			makeMockPart('part1', 0, rundownId1, segmentId1, {
 				budgetDuration: 2000,
@@ -957,7 +957,7 @@ describe('rundown Timing Calculator', () => {
 		const segmentsMap: Map<SegmentId, DBSegment> = new Map()
 		segmentsMap.set(protectString<SegmentId>(segmentId1), makeMockSegment(segmentId1, 0, rundownId))
 		segmentsMap.set(protectString<SegmentId>(segmentId2), makeMockSegment(segmentId2, 0, rundownId))
-		const parts: Part[] = []
+		const parts: DBPart[] = []
 		parts.push(makeMockPart('part1', 0, rundownId, segmentId1, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part2', 0, rundownId, segmentId1, { expectedDuration: 1000 }))
 		parts.push(makeMockPart('part3', 0, rundownId, segmentId2, { expectedDuration: 1000 }))
@@ -1084,7 +1084,7 @@ describe('rundown Timing Calculator', () => {
 			protectString<SegmentId>(segmentId2),
 			makeMockSegment(segmentId2, 0, rundownId1, { expectedStart: 2000, expectedEnd: 4000 })
 		)
-		const parts: Part[] = []
+		const parts: DBPart[] = []
 		parts.push(
 			makeMockPart('part1', 0, rundownId1, segmentId1, {
 				expectedDuration: 1000,
@@ -1233,7 +1233,7 @@ describe('rundown Timing Calculator', () => {
 			protectString<SegmentId>(segmentId2),
 			makeMockSegment(segmentId2, 0, rundownId1, { expectedStart: 2000, expectedEnd: 4000 })
 		)
-		const parts: Part[] = []
+		const parts: DBPart[] = []
 		parts.push(
 			makeMockPart('part1', 0, rundownId1, segmentId1, {
 				expectedDuration: 1000,
@@ -1382,7 +1382,7 @@ describe('rundown Timing Calculator', () => {
 			protectString<SegmentId>(segmentId2),
 			makeMockSegment(segmentId2, 0, rundownId1, { expectedStart: 2000, expectedEnd: 3000 })
 		)
-		const parts: Part[] = []
+		const parts: DBPart[] = []
 		parts.push(
 			makeMockPart('part1', 0, rundownId1, segmentId1, {
 				expectedDuration: 1000,
@@ -1537,7 +1537,7 @@ describe('rundown Timing Calculator', () => {
 			protectString<SegmentId>(segmentId2),
 			makeMockSegment(segmentId2, 0, rundownId1, { expectedStart: 2000, expectedEnd: 4000 })
 		)
-		const parts: Part[] = []
+		const parts: DBPart[] = []
 		parts.push(
 			makeMockPart('part1', 0, rundownId1, segmentId1, {
 				expectedDuration: 1000,
@@ -1686,7 +1686,7 @@ describe('rundown Timing Calculator', () => {
 			protectString<SegmentId>(segmentId2),
 			makeMockSegment(segmentId2, 0, rundownId1, { expectedStart: 2000, expectedEnd: 4000 })
 		)
-		const parts: Part[] = []
+		const parts: DBPart[] = []
 		parts.push(
 			makeMockPart('part1', 0, rundownId1, segmentId1, {
 				expectedDuration: 1000,
@@ -1835,7 +1835,7 @@ describe('rundown Timing Calculator', () => {
 			protectString<SegmentId>(segmentId2),
 			makeMockSegment(segmentId2, 0, rundownId1, { expectedStart: 2000, expectedEnd: 3000 })
 		)
-		const parts: Part[] = []
+		const parts: DBPart[] = []
 		parts.push(
 			makeMockPart('part1', 0, rundownId1, segmentId1, {
 				expectedDuration: 1000,

@@ -9,7 +9,7 @@ import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { createSyncMongoCollection, createSyncReadOnlyMongoCollection } from './lib'
 import { DBOrganization } from './Organization'
 import { PartInstance } from './PartInstances'
-import { Part } from './Parts'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
@@ -30,7 +30,7 @@ export const Pieces = createSyncReadOnlyMongoCollection<Piece>(CollectionName.Pi
 
 export const PartInstances = createSyncReadOnlyMongoCollection<PartInstance>(CollectionName.PartInstances)
 
-export const Parts = createSyncReadOnlyMongoCollection<Part>(CollectionName.Parts)
+export const Parts = createSyncReadOnlyMongoCollection<DBPart>(CollectionName.Parts)
 
 export const RundownBaselineAdLibActions = createSyncReadOnlyMongoCollection<RundownBaselineAdLibAction>(
 	CollectionName.RundownBaselineAdLibActions

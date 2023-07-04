@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { DBPart } from '../../../../lib/collections/Parts'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { InvalidFloatingInspector } from '../../FloatingInspectors/InvalidFloatingInspector'
 
 interface IProps {

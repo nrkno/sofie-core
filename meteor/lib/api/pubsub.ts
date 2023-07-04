@@ -29,7 +29,7 @@ import { MediaWorkFlowStep } from '@sofie-automation/shared-lib/dist/core/model/
 import { DBOrganization } from '../collections/Organization'
 import { PackageContainerStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerStatus'
 import { PartInstance } from '../collections/PartInstances'
-import { DBPart } from '../collections/Parts'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PeripheralDeviceCommand } from '../collections/PeripheralDeviceCommands'
 import { PeripheralDevice } from '../collections/PeripheralDevices'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'

@@ -8,7 +8,7 @@ import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifica
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
 import { contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib'
-import { isPartPlayable } from '../../../lib/collections/Parts'
+import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { useTranslation } from 'react-i18next'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { literal, unprotectString } from '../../../lib/lib'

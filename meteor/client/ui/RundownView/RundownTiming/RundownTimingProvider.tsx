@@ -2,7 +2,7 @@ import React, { PropsWithChildren } from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as PropTypes from 'prop-types'
 import { withTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
-import { Part } from '../../../../lib/collections/Parts'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { getCurrentTime } from '../../../../lib/lib'
 import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -47,7 +47,7 @@ interface IRundownTimingProviderState {}
 interface IRundownTimingProviderTrackedProps {
 	rundowns: Array<Rundown>
 	currentRundown: Rundown | undefined
-	parts: Array<Part>
+	parts: Array<DBPart>
 	partInstancesMap: Map<PartId, PartInstance>
 	pieces: Map<PartId, CalculateTimingsPiece[]>
 	segmentEntryPartInstances: PartInstance[]
@@ -67,7 +67,7 @@ export const RundownTimingProvider = withTracker<
 	IRundownTimingProviderTrackedProps
 >((props) => {
 	let rundowns: Array<Rundown> = []
-	let parts: Array<Part> = []
+	let parts: Array<DBPart> = []
 	let segments: Array<DBSegment> = []
 	const partInstancesMap = new Map<PartId, PartInstance>()
 	let pieces: Map<PartId, Piece[]> = new Map()

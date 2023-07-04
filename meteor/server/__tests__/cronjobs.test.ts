@@ -8,7 +8,7 @@ import { IBlueprintPieceType, PieceLifespan, StatusCode, TSR } from '@sofie-auto
 import { PeripheralDeviceType, PeripheralDeviceCategory } from '../../lib/collections/PeripheralDevices'
 import { SYSTEM_ID } from '../../lib/collections/CoreSystem'
 import * as lib from '../../lib/lib'
-import { DBPart } from '../../lib/collections/Parts'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { Meteor } from 'meteor/meteor'
