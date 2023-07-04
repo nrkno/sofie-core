@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { PieceGeneric } from '../../../../lib/collections/Pieces'
+import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { SplitsContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { RundownUtils } from '../../../lib/rundown'
 import classNames from 'classnames'

@@ -17,7 +17,7 @@ import { FindOptions } from './lib'
 import { PartInstance } from './PartInstances'
 import { Part } from './Parts'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import { Piece } from './Pieces'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 /**
  * Direct database accessors for the RundownPlaylist

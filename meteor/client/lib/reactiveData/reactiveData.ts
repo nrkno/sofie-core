@@ -1,6 +1,6 @@
 import { Tracker } from 'meteor/tracker'
 import { ReactiveVar } from 'meteor/reactive-var'
-import { Piece } from '../../../lib/collections/Pieces'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { getCurrentTime } from '../../../lib/lib'
 import { FindOptions } from '../../../lib/collections/lib'

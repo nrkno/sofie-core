@@ -7,7 +7,7 @@ import {
 	convertToUIShowStyleBase,
 } from '../../../__mocks__/helpers/database'
 import { RundownUtils } from '../rundown'
-import { Piece } from '../../../lib/collections/Pieces'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { defaultPartInstance, defaultPiece, defaultPieceInstance } from '../../../__mocks__/defaultCollectionObjects'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'

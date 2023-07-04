@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../../../lib/rundown'
-import { Piece } from '../../../../../lib/collections/Pieces'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import {
 	ConfigManifestEntry as BlueprintConfigManifestEntry,
 	IBlueprintActionTriggerMode,

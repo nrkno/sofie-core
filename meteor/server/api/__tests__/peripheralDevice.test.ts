@@ -5,7 +5,7 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
-import { EmptyPieceTimelineObjectsBlob } from '../../../lib/collections/Pieces'
+import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import {
 	getCurrentTime,
 	literal,

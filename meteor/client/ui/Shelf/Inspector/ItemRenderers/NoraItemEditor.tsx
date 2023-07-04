@@ -1,7 +1,7 @@
 import * as React from 'react'
 import { createMosObjectXmlStringNoraBluePrintPiece } from '../../../../lib/data/nora/browser-plugin-data'
 import { parseMosPluginMessageXml, MosPluginMessage } from '../../../../lib/parsers/mos/mosXml2Js'
-import { PieceGeneric } from '../../../../../lib/collections/Pieces'
+import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { createMosAppInfoXmlString } from '../../../../lib/data/mos/plugin-support'
 
 //TODO: figure out what the origin should be

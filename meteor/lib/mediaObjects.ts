@@ -1,5 +1,5 @@
 import { PackageInfo } from '@sofie-automation/blueprints-integration'
-import { PieceStatusCode } from './collections/Pieces'
+import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 export interface ScanInfoForPackages {

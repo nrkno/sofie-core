@@ -14,7 +14,7 @@ import {
 	SnapshotRundownPlaylist,
 } from '../../lib/collections/Snapshots'
 import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
-import { PieceGeneric } from '../../lib/collections/Pieces'
+import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import {
 	getCurrentTime,
