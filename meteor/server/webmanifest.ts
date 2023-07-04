@@ -6,7 +6,7 @@ import type {
 } from '../lib/typings/webmanifest'
 import { logger } from '../lib/logging'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import { DBStudio } from '../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { RundownPlaylists, Rundowns, Studios } from './collections'
 import { getLocale, Translations } from './lib'
 import { generateTranslation } from '../lib/lib'

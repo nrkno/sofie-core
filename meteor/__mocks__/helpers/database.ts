@@ -6,7 +6,7 @@ import {
 	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDeviceSubType,
 } from '../../lib/collections/PeripheralDevices'
-import { Studio, DBStudio } from '../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	PieceLifespan,
 	IOutputLayer,
@@ -118,7 +118,7 @@ export async function setupMockPeripheralDevice(
 	category: PeripheralDeviceCategory,
 	type: PeripheralDeviceType,
 	subType: PeripheralDeviceSubType,
-	studio?: Pick<Studio, '_id'>,
+	studio?: Pick<DBStudio, '_id'>,
 	doc?: Partial<PeripheralDevice>
 ): Promise<PeripheralDevice> {
 	doc = doc || {}
@@ -220,7 +220,7 @@ export async function setupMockTriggeredActions(
 	}
 	return mocks
 }
-export async function setupMockStudio(doc?: Partial<DBStudio>): Promise<Studio> {
+export async function setupMockStudio(doc?: Partial<DBStudio>): Promise<DBStudio> {
 	doc = doc || {}
 
 	const studio: DBStudio = {
@@ -519,7 +519,7 @@ export interface DefaultEnvironment {
 	showStyleBase: DBShowStyleBase
 	triggeredActions: DBTriggeredActions[]
 	showStyleVariant: DBShowStyleVariant
-	studio: Studio
+	studio: DBStudio
 	core: ICoreSystem
 	systemTriggeredActions: DBTriggeredActions[]
 

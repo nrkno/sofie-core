@@ -6,10 +6,11 @@ import { omit, Time, unprotectString } from '../../../lib/lib'
 import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
 import { makeTableOfObject } from '../../lib/utilComponents'
 import { StudioSelect } from './StudioSelect'
-import { MappingExt, RoutedMappings } from '../../../lib/collections/Studios'
+import { MappingExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { LookaheadMode, TSR } from '@sofie-automation/blueprints-integration'
 import { createSyncCustomPublicationMongoCollection } from '../../../lib/collections/lib'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RoutedMappings } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 
 const StudioMappings = createSyncCustomPublicationMongoCollection(CustomCollectionName.StudioMappings)
 

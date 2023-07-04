@@ -5,7 +5,7 @@ import Koa from 'koa'
 import KoaRouter from '@koa/router'
 import bodyParser from 'koa-bodyparser'
 import { check } from '../../lib/check'
-import { Studio } from '../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	SnapshotType,
 	SnapshotSystem,
@@ -113,7 +113,7 @@ interface SystemSnapshot {
 	versionExtended?: string
 	studioId: StudioId | null
 	snapshot: SnapshotSystem
-	studios: Array<Studio>
+	studios: Array<DBStudio>
 	showStyleBases: Array<DBShowStyleBase>
 	showStyleVariants: Array<DBShowStyleVariant>
 	blueprints?: Array<Blueprint> // optional, to be backwards compatible
@@ -161,7 +161,7 @@ async function createSystemSnapshot(
 	if (Settings.enableUserAccounts && !organizationId)
 		throw new Meteor.Error(500, 'Not able to create a systemSnaphost without organizationId')
 
-	let queryStudio: MongoQuery<Studio> = {}
+	let queryStudio: MongoQuery<DBStudio> = {}
 	let queryShowStyleBases: MongoQuery<DBShowStyleBase> = {}
 	let queryShowStyleVariants: MongoQuery<DBShowStyleVariant> = {}
 	let queryRundownLayouts: MongoQuery<RundownLayoutBase> = {}

@@ -31,7 +31,7 @@ import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { SnapshotItem } from '../../lib/collections/Snapshots'
-import { Studio } from '../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { TranslationsBundle } from '../../lib/collections/TranslationsBundles'
 import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
 import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
@@ -84,7 +84,7 @@ export const ShowStyleVariants = createSyncMongoCollection<DBShowStyleVariant>(C
 
 export const Snapshots = createSyncMongoCollection<SnapshotItem>(CollectionName.Snapshots)
 
-export const Studios = createSyncMongoCollection<Studio>(CollectionName.Studios)
+export const Studios = createSyncMongoCollection<DBStudio>(CollectionName.Studios)
 
 export const TranslationsBundles = createSyncReadOnlyMongoCollection<TranslationsBundle>(
 	CollectionName.TranslationsBundles

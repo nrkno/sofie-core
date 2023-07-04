@@ -5,7 +5,7 @@ import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { UIStudio } from '../../lib/api/studios'
-import { DBStudio } from '../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { Complete, literal } from '../../lib/lib'
 import {
 	CustomPublishCollection,

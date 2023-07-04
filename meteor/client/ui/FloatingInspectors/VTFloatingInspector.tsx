@@ -5,7 +5,7 @@ import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifica
 import { FloatingInspector } from '../FloatingInspector'
 import { NoticeLevel } from '../../../lib/notifications/notifications'
 import { VTContent } from '@sofie-automation/blueprints-integration'
-import { IStudioSettings } from '../../../lib/collections/Studios'
+import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { PieceStatusCode } from '../../../lib/collections/Pieces'
 import { VideoPreviewPlayer } from '../../lib/VideoPreviewPlayer'
 import classNames from 'classnames'

@@ -30,7 +30,6 @@ import {
 } from '../../../../lib/api/rest'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { Studio } from '../../../../lib/collections/Studios'
 import { Blueprints, ShowStyleBases, Studios } from '../../../collections'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 
@@ -238,7 +237,7 @@ export function APISourceLayerFrom(sourceLayer: ISourceLayer): APISourceLayer {
 	}
 }
 
-export async function studioFrom(apiStudio: APIStudio, existingId?: StudioId): Promise<Studio | undefined> {
+export async function studioFrom(apiStudio: APIStudio, existingId?: StudioId): Promise<DBStudio | undefined> {
 	let blueprint: Blueprint | undefined
 	if (apiStudio.blueprintId) {
 		blueprint = await Blueprints.findOneAsync(protectString(apiStudio.blueprintId))
@@ -278,7 +277,7 @@ export async function studioFrom(apiStudio: APIStudio, existingId?: StudioId): P
 	}
 }
 
-export function APIStudioFrom(studio: Studio): APIStudio {
+export function APIStudioFrom(studio: DBStudio): APIStudio {
 	const studioSettings = APIStudioSettingsFrom(studio.settings)
 
 	return {

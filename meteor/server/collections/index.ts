@@ -18,7 +18,7 @@ import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { SnapshotItem } from '../../lib/collections/Snapshots'
-import { Studio } from '../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataModel/TimelineDatastore'
 import { TranslationsBundle } from '../../lib/collections/TranslationsBundles'
@@ -187,7 +187,7 @@ registerIndex(Snapshots, {
 	created: 1,
 })
 
-export const Studios = createAsyncOnlyMongoCollection<Studio>(CollectionName.Studios, {
+export const Studios = createAsyncOnlyMongoCollection<DBStudio>(CollectionName.Studios, {
 	async update(userId, doc, fields, _modifier) {
 		const access = await allowAccessToStudio({ userId: userId }, doc._id)
 		if (!access.update) return logNotAllowed('Studio', access.reason)

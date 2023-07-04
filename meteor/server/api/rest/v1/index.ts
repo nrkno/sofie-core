@@ -84,7 +84,7 @@ import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/Perip
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { Studio } from '../../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { executePeripheralDeviceFunction } from '../../peripheralDevice/executeFunction'
@@ -965,7 +965,7 @@ class ServerRestAPI implements RestAPI {
 		_connection: Meteor.Connection,
 		_event: string
 	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>> {
-		const studios = (await Studios.findFetchAsync({}, { projection: { _id: 1 } })) as Array<Pick<Studio, '_id'>>
+		const studios = (await Studios.findFetchAsync({}, { projection: { _id: 1 } })) as Array<Pick<DBStudio, '_id'>>
 
 		return ClientAPI.responseSuccess(studios.map((studio) => ({ id: unprotectString(studio._id) })))
 	}

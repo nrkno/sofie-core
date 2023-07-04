@@ -4,7 +4,7 @@ import { unprotectString } from '../../../lib/lib'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { NavLink, useLocation } from 'react-router-dom'
 
-import { DBStudio, Studio } from '../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '../../../lib/collections/PeripheralDevices'
 
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
@@ -28,7 +28,7 @@ interface ISettingsMenuProps {
 }
 interface ISettingsMenuState {}
 interface ISettingsMenuTrackedProps {
-	studios: Array<Studio>
+	studios: Array<DBStudio>
 	showStyleBases: Array<DBShowStyleBase>
 	blueprints: Array<Blueprint>
 	peripheralDevices: Array<PeripheralDevice>
@@ -280,7 +280,7 @@ function SettingsMenuStudio({ studio }: SettingsMenuStudioProps) {
 	)
 }
 
-function studioHasError(studio: Studio): boolean {
+function studioHasError(studio: DBStudio): boolean {
 	if (!studio.name) return true
 	if (!studio.supportedShowStyleBase.length) return true
 	if (!studio.blueprintId) return true

@@ -10,7 +10,7 @@ import { DBOrganization } from '../../../lib/collections/Organization'
 import { PeripheralDevice } from '../../../lib/collections/PeripheralDevices'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { profiler } from '../../api/profiler'
-import { fetchShowStyleBasesLight, fetchStudioLight, ShowStyleBaseLight, StudioLight } from '../../optimizations'
+import { fetchShowStyleBasesLight, fetchStudioLight, ShowStyleBaseLight } from '../../optimizations'
 import { Organizations, PeripheralDevices, RundownPlaylists, Rundowns, ShowStyleVariants } from '../../collections'
 import {
 	OrganizationId,
@@ -22,6 +22,7 @@ import {
 	StudioId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 export const LIMIT_CACHE_TIME = 1000 * 60 * 15 // 15 minutes
 

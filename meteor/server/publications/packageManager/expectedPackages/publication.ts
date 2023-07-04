@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import { CustomCollectionName, PubSub } from '../../../../lib/api/pubsub'
 import { PeripheralDeviceReadAccess } from '../../../security/peripheralDevice'
-import { Studio } from '../../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	TriggerUpdate,
 	meteorCustomPublish,
@@ -43,7 +43,7 @@ interface ExpectedPackagesPublicationUpdateProps {
 }
 
 interface ExpectedPackagesPublicationState {
-	studio: Pick<Studio, StudioFields> | undefined
+	studio: Pick<DBStudio, StudioFields> | undefined
 	layerNameToDeviceIds: Map<string, PeripheralDeviceId[]>
 
 	contentCache: ReadonlyDeep<ExpectedPackagesContentCache>
@@ -56,7 +56,7 @@ export type StudioFields =
 	| 'packageContainers'
 	| 'previewContainerIds'
 	| 'thumbnailContainerIds'
-const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<Studio, StudioFields>>>({
+const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
 	_id: 1,
 	routeSets: 1,
 	mappingsWithOverrides: 1,
@@ -133,7 +133,7 @@ async function manipulateExpectedPackagesPublicationData(
 	// Reload the studio, and the layerNameToDeviceIds lookup
 	if (!updateProps || updateProps.invalidateStudio) {
 		state.studio = (await Studios.findOneAsync(args.studioId, { fields: studioFieldSpecifier })) as
-			| Pick<Studio, StudioFields>
+			| Pick<DBStudio, StudioFields>
 			| undefined
 		if (!state.studio) {
 			logger.warn(`Pub.expectedPackagesForDevice: studio "${args.studioId}" not found!`)

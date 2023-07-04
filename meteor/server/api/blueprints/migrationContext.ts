@@ -12,7 +12,7 @@ import {
 	Complete,
 	waitForPromise,
 } from '../../../lib/lib'
-import { Studio, DBStudio, StudioPlayoutDevice } from '../../../lib/collections/Studios'
+import { DBStudio, StudioPlayoutDevice } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Meteor } from 'meteor/meteor'
 import {
@@ -160,9 +160,9 @@ export class MigrationContextSystem
 	implements IMigrationContextSystem {}
 
 export class MigrationContextStudio implements IMigrationContextStudio {
-	private studio: Studio
+	private studio: DBStudio
 
-	constructor(studio: Studio) {
+	constructor(studio: DBStudio) {
 		this.studio = studio
 	}
 

@@ -43,7 +43,7 @@ import { DBSegment } from '../collections/Segments'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { SnapshotItem } from '../collections/Snapshots'
-import { DBStudio, RoutedMappings } from '../collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { RoutedTimeline, TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { TranslationsBundle } from '../collections/TranslationsBundles'
 import { DBTriggeredActions, UITriggeredActionsObj } from '../collections/TriggeredActions'
@@ -61,6 +61,7 @@ import {
 	PackageManagerPlayoutContext,
 } from '@sofie-automation/shared-lib/dist/package-manager/publications'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+import { RoutedMappings } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 
 /**
  * Ids of possible DDP subscriptions

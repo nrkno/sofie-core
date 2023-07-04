@@ -16,7 +16,7 @@ import { MeteorCall } from '../methods'
 import { PartInstance } from '../../collections/PartInstances'
 import { RundownPlaylist } from '../../collections/RundownPlaylists'
 import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { Studio } from '../../collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { assertNever, DummyReactiveVar } from '../../lib'
 import { logger } from '../../logging'
 import RundownViewEventBus, { RundownViewEvents } from './RundownViewEventBus'
@@ -64,7 +64,7 @@ interface PlainPlaylistContext {
 }
 
 interface PlainStudioContext {
-	studio: Studio
+	studio: DBStudio
 	showStyleBase: DBShowStyleBase
 }
 

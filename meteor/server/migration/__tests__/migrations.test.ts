@@ -16,7 +16,7 @@ import {
 	ShowStyleBlueprintManifest,
 	StudioBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
-import { Studio } from '../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
@@ -234,7 +234,7 @@ describe('Migrations', () => {
 		expect(_.find(migration.steps, (s) => !!s.id.match(/myCoreMockStep2/))).toBeTruthy()
 		expect(_.find(migration.steps, (s) => !!s.id.match(/myCoreMockStep3/))).toBeTruthy()
 
-		const studio = (await Studios.findOneAsync({})) as Studio
+		const studio = (await Studios.findOneAsync({})) as DBStudio
 		expect(studio).toBeTruthy()
 
 		const studioManifest = (): StudioBlueprintManifest => ({

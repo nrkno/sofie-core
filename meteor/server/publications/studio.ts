@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
-import { DBStudio, getActiveRoutes, getRoutedMappings, RoutedMappings } from '../../lib/collections/Studios'
+import { getActiveRoutes, getRoutedMappings } from '../../lib/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
 import { StudioReadAccess } from '../security/studio'
@@ -31,6 +31,8 @@ import {
 } from '../collections'
 import { PackageContainerStatusDB } from '@sofie-automation/corelib/dist/dataModel/PackageContainerStatus'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+import { RoutedMappings } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 meteorPublish(PubSub.studios, async function (selector0: MongoQuery<DBStudio>, token: string | undefined) {
 	const { cred, selector } = await AutoFillSelector.organizationId<DBStudio>(this.userId, selector0, token)

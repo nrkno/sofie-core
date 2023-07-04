@@ -17,10 +17,10 @@ import {
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
 } from '../lib/customPublication'
-import { getActiveRoutes, ResultingMappingRoutes } from '../../lib/collections/Studios'
+import { getActiveRoutes } from '../../lib/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
 import { StudioReadAccess } from '../security/studio'
-import { fetchStudioLight, StudioLight } from '../optimizations'
+import { fetchStudioLight } from '../optimizations'
 import { FastTrackObservers, setupFastTrackObserver } from './fastTrack'
 import { logger } from '../logging'
 import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
@@ -31,6 +31,7 @@ import { DBTimelineDatastoreEntry } from '@sofie-automation/corelib/dist/dataMod
 import { PeripheralDevices, Studios, Timeline, TimelineDatastore } from '../collections'
 import { check } from 'meteor/check'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+import { ResultingMappingRoutes, StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 meteorPublish(PubSub.timeline, async function (selector: MongoQuery<TimelineComplete>, token: string | undefined) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')

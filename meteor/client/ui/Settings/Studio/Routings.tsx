@@ -3,7 +3,6 @@ import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import {
-	Studio,
 	DBStudio,
 	StudioRouteSet,
 	StudioRouteBehavior,
@@ -12,7 +11,7 @@ import {
 	StudioRouteType,
 	MappingsExt,
 	MappingExt,
-} from '../../../../lib/collections/Studios'
+} from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -33,7 +32,7 @@ import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 
 interface IStudioRoutingsProps {
 	translationNamespaces: string[]
-	studio: Studio
+	studio: DBStudio
 	studioMappings: ReadonlyDeep<MappingsExt>
 	manifest: MappingsSettingsManifests | undefined
 }
@@ -733,7 +732,7 @@ export const StudioRoutings = withTranslation()(
 
 interface IDeviceMappingSettingsProps {
 	translationNamespaces: string[]
-	studio: Studio
+	studio: DBStudio
 	attribute: string
 	manifest: MappingsSettingsManifest | undefined
 	mappedLayer: ReadonlyDeep<MappingExt> | undefined

@@ -9,7 +9,7 @@ import { logger } from '../../../lib/logging'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { faWindowClose, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { Studio } from '../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { multilineText, fetchFrom } from '../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { UploadButton } from '../../lib/uploadButton'
@@ -34,7 +34,7 @@ interface IState {
 }
 interface ITrackedProps {
 	snapshots: Array<SnapshotItem>
-	studios: Array<Studio>
+	studios: Array<DBStudio>
 }
 export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 	return {

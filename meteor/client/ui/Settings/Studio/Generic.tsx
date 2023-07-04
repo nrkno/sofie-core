@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Studio } from '../../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
@@ -14,7 +14,7 @@ import { MeteorCall } from '../../../../lib/api/methods'
 import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 
 interface IStudioGenericPropertiesProps {
-	studio: Studio
+	studio: DBStudio
 	availableShowStyleBases: Array<{
 		name: string
 		value: ShowStyleBaseId

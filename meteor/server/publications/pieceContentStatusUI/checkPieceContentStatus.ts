@@ -18,6 +18,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PackageContainerPackageStatus'
 import { PieceGeneric, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import {
+	DBStudio,
 	IStudioSettings,
 	MappingExt,
 	MappingsExt,
@@ -28,7 +29,7 @@ import { literal, Complete, assertNever } from '@sofie-automation/corelib/dist/l
 import { ReadonlyDeep } from 'type-fest'
 import _ from 'underscore'
 import { getSideEffect } from '../../../lib/collections/ExpectedPackages'
-import { getActiveRoutes, getRoutedMappings, Studio } from '../../../lib/collections/Studios'
+import { getActiveRoutes, getRoutedMappings } from '../../../lib/collections/Studios'
 import { ensureHasTrailingSlash, generateTranslation, unprotectString } from '../../../lib/lib'
 import { PieceContentStatusObj, ScanInfoForPackage, ScanInfoForPackages } from '../../../lib/mediaObjects'
 import { MediaObjects, PackageContainerPackageStatuses, PackageInfos } from '../../collections'
@@ -159,7 +160,7 @@ export function getMediaObjectMediaId(
 export type PieceContentStatusPiece = Pick<PieceGeneric, '_id' | 'content' | 'expectedPackages'>
 export interface PieceContentStatusStudio
 	extends Pick<
-		Studio,
+		DBStudio,
 		'_id' | 'settings' | 'packageContainers' | 'previewContainerIds' | 'thumbnailContainerIds' | 'routeSets'
 	> {
 	/** Mappings between the physical devices / outputs and logical ones */

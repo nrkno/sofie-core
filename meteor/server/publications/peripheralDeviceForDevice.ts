@@ -10,7 +10,12 @@ import { ReadonlyDeep } from 'type-fest'
 import { ReactiveMongoObserverGroup } from './lib/observerGroup'
 import { Complete, assertNever, literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mongo'
-import { Studio, StudioIngestDevice, StudioInputDevice, StudioPlayoutDevice } from '../../lib/collections/Studios'
+import {
+	DBStudio,
+	StudioIngestDevice,
+	StudioInputDevice,
+	StudioPlayoutDevice,
+} from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { check } from 'meteor/check'
 
@@ -26,7 +31,7 @@ interface PeripheralDeviceForDeviceUpdateProps {
 }
 
 type StudioFields = '_id' | 'peripheralDeviceSettings'
-const studioFieldsSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<Studio, StudioFields>>>({
+const studioFieldsSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
 	_id: 1,
 	peripheralDeviceSettings: 1,
 })
@@ -44,7 +49,7 @@ const peripheralDeviceFieldsSpecifier = literal<
 
 export function convertPeripheralDeviceForGateway(
 	peripheralDevice: Pick<PeripheralDevice, PeripheralDeviceFields>,
-	studio: Pick<Studio, StudioFields> | undefined
+	studio: Pick<DBStudio, StudioFields> | undefined
 ): PeripheralDeviceForDevice {
 	const playoutDevices: PeripheralDeviceForDevice['playoutDevices'] = {}
 	const ingestDevices: PeripheralDeviceForDevice['ingestDevices'] = {}
@@ -182,7 +187,7 @@ async function manipulatePeripheralDevicePublicationData(
 	const studio =
 		peripheralDevice.studioId &&
 		((await Studios.findOneAsync(peripheralDevice.studioId, { projection: studioFieldsSpecifier })) as
-			| Pick<Studio, StudioFields>
+			| Pick<DBStudio, StudioFields>
 			| undefined)
 
 	return [convertPeripheralDeviceForGateway(peripheralDevice, studio)]

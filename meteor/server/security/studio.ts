@@ -8,7 +8,7 @@ import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Settings } from '../../lib/Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
-import { fetchStudioLight, StudioLight } from '../optimizations'
+import { fetchStudioLight } from '../optimizations'
 import {
 	ExternalMessageQueueObjId,
 	OrganizationId,
@@ -17,6 +17,7 @@ import {
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ExternalMessageQueue, RundownPlaylists } from '../collections'
+import { StudioLight } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 export namespace StudioReadAccess {
 	/** Handles read access for all studio document */

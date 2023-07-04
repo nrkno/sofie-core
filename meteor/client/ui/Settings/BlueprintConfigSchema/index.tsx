@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
-import { MappingExt, MappingsExt } from '../../../../lib/collections/Studios'
+import { MappingExt, MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { IBlueprintConfig, ISourceLayer, SchemaFormUIField } from '@sofie-automation/blueprints-integration'
 import { groupByToMapFunc, literal } from '../../../../lib/lib'
 import { useTranslation } from 'react-i18next'
