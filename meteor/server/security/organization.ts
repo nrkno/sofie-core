@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor'
 import { SnapshotItem } from '../../lib/collections/Snapshots'
-import { Blueprint } from '../../lib/collections/Blueprints'
+import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { logNotAllowed } from './lib/lib'
 import { MongoQueryKey } from '@sofie-automation/corelib/dist/mongo'
 import { allowAccessToOrganization } from './lib/security'

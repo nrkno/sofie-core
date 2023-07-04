@@ -2,7 +2,6 @@
  * This file is the entry-point for both server side and client side code
  */
 
-import './collections/Blueprints'
 import './collections/Buckets'
 import './collections/CoreSystem'
 import './collections/Evaluations'

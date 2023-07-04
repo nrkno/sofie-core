@@ -1,7 +1,7 @@
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { BlueprintId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { Blueprint } from '../../lib/collections/Blueprints'
+import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { Blueprints, ShowStyleBases, Studios } from '../collections'
 import {
 	parseVersion,

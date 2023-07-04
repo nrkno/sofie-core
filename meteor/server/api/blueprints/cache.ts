@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { VM, VMScript } from 'vm2'
 import { logger } from '../../logging'
-import { Blueprint } from '../../../lib/collections/Blueprints'
+import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { SomeBlueprintManifest } from '@sofie-automation/blueprints-integration'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 
