@@ -48,7 +48,7 @@ import {
 	Complete,
 	normalizeArray,
 } from '../../lib/lib'
-import { DBRundown } from '../../lib/collections/Rundowns'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '../../lib/collections/Parts'
 import { EmptyPieceTimelineObjectsBlob, Piece } from '../../lib/collections/Pieces'

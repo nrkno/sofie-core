@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import classNames from 'classnames'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { getAllowConfigure, getAllowService, getAllowStudio } from '../../lib/localStorage'
 import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { confirmDeleteRundown, confirmReSyncRundown, getShowStyleBaseLink } from './util'

@@ -2,7 +2,7 @@ import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/coreli
 import { Meteor } from 'meteor/meteor'
 import { MethodContext } from '../../lib/api/methods'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import {
 	RundownContentAccess,
 	RundownPlaylistContentAccess,

@@ -6,7 +6,7 @@ import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
-import { Rundown } from '../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Settings } from '../../lib/Settings'
 import {
 	OrganizationId,

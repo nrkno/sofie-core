@@ -34,7 +34,7 @@ import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
 import { FindOptions } from '../../lib/collections/lib'
 import { getShowHiddenSourceLayers } from './localStorage'
-import { Rundown } from '../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { IStudioSettings } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	calculatePartInstanceExpectedDurationWithPreroll,

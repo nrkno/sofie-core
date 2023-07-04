@@ -17,7 +17,7 @@ import { DBRundownPlaylist, RundownPlaylist } from '../../collections/RundownPla
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { assertNever, generateTranslation } from '../../lib'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import { DBRundown } from '../../collections/Rundowns'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { sortAdlibs } from '../../Rundown'
 import { ReactivePlaylistActionContext } from './actionFactory'

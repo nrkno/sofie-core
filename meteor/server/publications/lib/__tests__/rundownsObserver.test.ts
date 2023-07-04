@@ -1,6 +1,6 @@
 import { RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { Rundown } from '../../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Rundowns } from '../../../collections'
 import { runAllTimers, runTimersUntilNow, testInFiber } from '../../../../__mocks__/helpers/jest'
 import { MongoMock } from '../../../../__mocks__/mongo'

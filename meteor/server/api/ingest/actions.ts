@@ -1,7 +1,7 @@
 import { getPeripheralDeviceFromRundown } from './lib'
 import { MOSDeviceActions } from './mosDevice/actions'
 import { Meteor } from 'meteor/meteor'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { TriggerReloadDataResponse } from '../../../lib/api/userActions'
 import { GenericDeviceActions } from './genericDevice/actions'
 import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'

@@ -14,7 +14,7 @@ import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout
 import { invalidateAfter } from '../lib/invalidatingTime'
 import { getCurrentTime, groupByToMap, ProtectedString, protectString } from './lib'
 import { RundownPlaylist } from './collections/RundownPlaylists'
-import { Rundown } from './collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { mongoWhereFilter, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { FindOptions } from './collections/lib'

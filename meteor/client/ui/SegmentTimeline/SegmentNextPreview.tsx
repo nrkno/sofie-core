@@ -5,7 +5,7 @@
 // import { withTranslation } from 'react-i18next'
 
 // import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-// import { Rundown } from '../../../lib/collections/Rundowns'
+// import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 // import { PartUi, IOutputLayerUi, ISourceLayerUi, PieceUi } from './SegmentTimelineContainer'
 // import { SourceLayerItemContainer } from './SourceLayerItemContainer'

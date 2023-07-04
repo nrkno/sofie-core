@@ -9,7 +9,7 @@ import { TriggeredActionEntry, TRIGGERED_ACTION_ENTRY_DRAG_TYPE } from './Trigge
 import { literal, unprotectString } from '../../../../../lib/lib'
 import { TriggersHandler } from '../../../../lib/triggers/TriggersHandler'
 import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Part } from '../../../../../lib/collections/Parts'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { UploadButton } from '../../../../lib/uploadButton'

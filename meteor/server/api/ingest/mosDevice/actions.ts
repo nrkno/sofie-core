@@ -1,6 +1,6 @@
 import { MOS } from '@sofie-automation/corelib'
 import { logger } from '../../../logging'
-import { Rundown } from '../../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Meteor } from 'meteor/meteor'
 import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
 import { Piece } from '../../../../lib/collections/Pieces'

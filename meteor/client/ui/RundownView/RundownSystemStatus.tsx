@@ -8,7 +8,7 @@ import {
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
 } from '../../../lib/collections/PeripheralDevices'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Time, getCurrentTime, unprotectString } from '../../../lib/lib'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'

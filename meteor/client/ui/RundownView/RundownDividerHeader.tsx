@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import Moment from 'react-moment'
 import { TimingDataResolution, TimingTickResolution, withTiming, WithTiming } from './RundownTiming/withTiming'
