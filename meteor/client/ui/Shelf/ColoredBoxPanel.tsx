@@ -5,7 +5,7 @@ import {
 	RundownLayoutColoredBox,
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -15,7 +15,7 @@ interface IColoredBoxPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutColoredBox
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 }
 
 interface IState {}

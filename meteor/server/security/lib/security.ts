@@ -3,7 +3,7 @@ import { MongoQueryKey } from '@sofie-automation/corelib/dist/mongo'
 import { Settings } from '../../../lib/Settings'
 import { resolveCredentials, ResolvedCredentials, Credentials, isResolvedCredentials } from './credentials'
 import { allAccess, noAccess, combineAccess, Access } from './access'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { isProtectedString } from '../../../lib/lib'
 import { DBOrganization } from '../../../lib/collections/Organization'
@@ -163,7 +163,7 @@ export async function allowAccessToStudio(
 export async function allowAccessToRundownPlaylist(
 	cred0: Credentials | ResolvedCredentials,
 	playlistId: RundownPlaylistId
-): Promise<Access<RundownPlaylist | null>> {
+): Promise<Access<DBRundownPlaylist | null>> {
 	if (!Settings.enableUserAccounts) return allAccess(null, 'No security')
 	if (!playlistId) return noAccess('playlistId not set')
 	const cred = await resolveCredentials(cred0)
@@ -324,9 +324,9 @@ namespace AccessRules {
 		} else return noAccess(`User is not in the same organization as the studio ${studio._id}`)
 	}
 	export async function accessRundownPlaylist(
-		playlist: RundownPlaylist,
+		playlist: DBRundownPlaylist,
 		cred: ResolvedCredentials
-	): Promise<Access<RundownPlaylist>> {
+	): Promise<Access<DBRundownPlaylist>> {
 		const studio = await fetchStudioLight(playlist.studioId)
 		if (!studio) return noAccess(`Studio of playlist "${playlist._id}" not found`)
 		return { ...accessStudio(studio, cred), document: playlist }

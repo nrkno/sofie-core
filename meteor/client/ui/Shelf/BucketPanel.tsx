@@ -32,7 +32,7 @@ import { IDashboardPanelTrackedProps } from './DashboardPanel'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { Bucket } from '../../../lib/collections/Buckets'
 import { Events as MOSEvents } from '../../lib/data/mos/plugin-support'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { MeteorCall } from '../../../lib/api/methods'
 import { DragDropItemTypes } from '../DragDropItemTypes'
 import { BucketPieceButton, IBucketPieceDropResult } from './BucketPieceButton'
@@ -231,7 +231,7 @@ export function actionToAdLibPieceUi(
 
 export interface IBucketPanelProps {
 	bucket: Bucket
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	showStyleBase: UIShowStyleBase
 	shouldQueue: boolean
 	editableName?: boolean

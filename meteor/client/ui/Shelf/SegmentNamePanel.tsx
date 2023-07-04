@@ -6,7 +6,7 @@ import {
 	RundownLayoutSegmentName,
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -18,7 +18,7 @@ interface ISegmentNamePanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutSegmentName
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 }
 
 interface IState {}
@@ -58,7 +58,7 @@ class SegmentNamePanelInner extends MeteorReactComponent<
 	}
 }
 
-function getSegmentName(selectedSegment: 'current' | 'next', playlist: RundownPlaylist): string | undefined {
+function getSegmentName(selectedSegment: 'current' | 'next', playlist: DBRundownPlaylist): string | undefined {
 	const currentPartInstance = playlist.currentPartInfo
 		? (RundownPlaylistCollectionUtil.getActivePartInstances(playlist, {
 				_id: playlist.currentPartInfo.partInstanceId,

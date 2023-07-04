@@ -14,7 +14,7 @@ import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { MeteorCall } from '../methods'
 import { PartInstance } from '../../collections/PartInstances'
-import { RundownPlaylist } from '../../collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { assertNever, DummyReactiveVar } from '../../lib'
@@ -43,7 +43,7 @@ type XOR<T, U> = T | U extends object ? (Without<T, U> & U) | (Without<U, T> & T
 export interface ReactivePlaylistActionContext {
 	rundownPlaylistId: ReactiveVar<RundownPlaylistId>
 	rundownPlaylist: ReactiveVar<
-		Pick<RundownPlaylist, '_id' | 'name' | 'activationId' | 'nextPartInfo' | 'currentPartInfo'>
+		Pick<DBRundownPlaylist, '_id' | 'name' | 'activationId' | 'nextPartInfo' | 'currentPartInfo'>
 	>
 
 	currentRundownId: ReactiveVar<RundownId | null>
@@ -55,7 +55,7 @@ export interface ReactivePlaylistActionContext {
 }
 
 interface PlainPlaylistContext {
-	rundownPlaylist: RundownPlaylist
+	rundownPlaylist: DBRundownPlaylist
 	currentRundownId: RundownId | null
 	currentSegmentPartIds: PartId[]
 	nextSegmentPartIds: PartId[]

@@ -1,7 +1,7 @@
 import { ProtectedString, getCurrentTime } from '../../lib/lib'
 import { CollectionCleanupResult } from '../../lib/api/system'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import {
 	getActiveRundownPlaylistsInStudioFromDb,
 	getExpiredRemovedPackageInfos,
@@ -454,7 +454,9 @@ async function isAllowedToRunCleanup(): Promise<string | void> {
 
 	const studios = await Studios.findFetchAsync({}, { fields: { _id: 1 } })
 	for (const studio of studios) {
-		const activePlaylist: RundownPlaylist | undefined = await getActiveRundownPlaylistsInStudioFromDb(studio._id)[0]
+		const activePlaylist: DBRundownPlaylist | undefined = await getActiveRundownPlaylistsInStudioFromDb(
+			studio._id
+		)[0]
 		if (activePlaylist) {
 			return `There is an active RundownPlaylist: "${activePlaylist.name}" in studio "${studio.name}" (${activePlaylist._id}, ${studio._id})`
 		}

@@ -4,7 +4,7 @@ import { MongoQueryKey } from '@sofie-automation/corelib/dist/mongo'
 import { logNotAllowed } from './lib/lib'
 import { ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Settings } from '../../lib/Settings'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
@@ -63,8 +63,8 @@ export namespace StudioContentWriteAccess {
 
 	export async function rundownPlaylist(
 		cred0: Credentials,
-		existingPlaylist: RundownPlaylist | RundownPlaylistId
-	): Promise<StudioContentAccess & { playlist: RundownPlaylist }> {
+		existingPlaylist: DBRundownPlaylist | RundownPlaylistId
+	): Promise<StudioContentAccess & { playlist: DBRundownPlaylist }> {
 		triggerWriteAccess()
 		if (existingPlaylist && isProtectedString(existingPlaylist)) {
 			const playlistId = existingPlaylist

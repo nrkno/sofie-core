@@ -25,7 +25,7 @@ import {
 	wrapPartToTemporaryInstance,
 } from '../../lib/collections/PartInstances'
 import { Part } from '../../lib/collections/Parts'
-import { DBRundownPlaylist, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime, objectFromEntries } from '../../lib/lib'
 import { Settings } from '../../lib/Settings'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
@@ -82,7 +82,7 @@ export class RundownTimingCalculator {
 	 *
 	 * @param {number} now
 	 * @param {boolean} isLowResolution
-	 * @param {(RundownPlaylist | undefined)} playlist
+	 * @param {(DBRundownPlaylist | undefined)} playlist
 	 * @param {Rundown[]} rundowns
 	 * @param {(Rundown | undefined)} currentRundown
 	 * @param {Part[]} parts
@@ -94,7 +94,7 @@ export class RundownTimingCalculator {
 	updateDurations(
 		now: number,
 		isLowResolution: boolean,
-		playlist: RundownPlaylist | undefined,
+		playlist: DBRundownPlaylist | undefined,
 		rundowns: Rundown[],
 		currentRundown: Rundown | undefined,
 		parts: Part[],

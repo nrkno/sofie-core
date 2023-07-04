@@ -14,7 +14,7 @@ import { MongoFieldSpecifierOnesStrict } from '@sofie-automation/corelib/dist/mo
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../../../lib/api/pubsub'
 import { UIPieceContentStatus } from '../../../../lib/api/rundownNotifications'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import {
 	MediaObjects,
 	PackageContainerPackageStatuses,
@@ -92,7 +92,7 @@ interface UIPieceContentStatusesUpdateProps extends IContentStatusesUpdatePropsB
 
 type RundownPlaylistFields = '_id' | 'studioId'
 const rundownPlaylistFieldSpecifier = literal<
-	MongoFieldSpecifierOnesStrict<Pick<RundownPlaylist, RundownPlaylistFields>>
+	MongoFieldSpecifierOnesStrict<Pick<DBRundownPlaylist, RundownPlaylistFields>>
 >({
 	_id: 1,
 	studioId: 1,
@@ -116,7 +116,7 @@ async function setupUIPieceContentStatusesPublicationObservers(
 
 	const playlist = (await RundownPlaylists.findOneAsync(args.rundownPlaylistId, {
 		projection: rundownPlaylistFieldSpecifier,
-	})) as Pick<RundownPlaylist, RundownPlaylistFields> | undefined
+	})) as Pick<DBRundownPlaylist, RundownPlaylistFields> | undefined
 	if (!playlist) throw new Error(`RundownPlaylist "${args.rundownPlaylistId}" not found!`)
 
 	const rundownsObserver = new RundownsObserver(playlist.studioId, playlist._id, (rundownIds) => {

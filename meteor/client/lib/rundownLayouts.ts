@@ -3,7 +3,7 @@ import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/d
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { PieceInstance } from '../../lib/collections/PieceInstances'
 import { RequiresActiveLayers } from '../../lib/collections/RundownLayouts'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime } from '../../lib/lib'
 import { invalidateAt } from './../../lib/invalidatingTime'
 import { memoizedIsolatedAutorun } from '../../lib/memoizedIsolatedAutorun'
@@ -13,7 +13,7 @@ import { PartInstances, PieceInstances } from '../collections'
  * If the conditions of the filter are met, activePieceInstance will include the first piece instance found that matches the filter, otherwise it will be undefined.
  */
 export function getIsFilterActive(
-	playlist: RundownPlaylist,
+	playlist: DBRundownPlaylist,
 	showStyleBase: UIShowStyleBase,
 	panel: RequiresActiveLayers
 ): { active: boolean; activePieceInstance: PieceInstance | undefined } {
@@ -51,7 +51,7 @@ export function getIsFilterActive(
 }
 
 export function getUnfinishedPieceInstancesReactive(
-	playlist: RundownPlaylist,
+	playlist: DBRundownPlaylist,
 	showStyleBase: UIShowStyleBase
 ): PieceInstance[] {
 	if (playlist.activationId && playlist.currentPartInfo) {

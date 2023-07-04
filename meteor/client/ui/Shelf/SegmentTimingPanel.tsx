@@ -9,7 +9,7 @@ import {
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartExtended } from '../../../lib/Rundown'
@@ -29,7 +29,7 @@ interface ISegmentTimingPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutSegmentTiming
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	showStyleBase: UIShowStyleBase
 }
 

@@ -25,7 +25,7 @@ import {
 } from '../../lib/Rundown'
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { literal, getCurrentTime, applyToArray } from '../../lib/lib'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
@@ -276,7 +276,7 @@ export namespace RundownUtils {
 	 *
 	 * @export
 	 * @param {ShowStyleBase} showStyleBase
-	 * @param {RundownPlaylist} playlist
+	 * @param {DBRundownPlaylist} playlist
 	 * @param {DBSegment} segment
 	 * @param {Set<SegmentId>} segmentsBeforeThisInRundownSet
 	 * @param {PartId[]} orderedAllPartIds
@@ -292,7 +292,7 @@ export namespace RundownUtils {
 	 */
 	export function getResolvedSegment(
 		showStyleBase: UIShowStyleBase,
-		playlist: RundownPlaylist,
+		playlist: DBRundownPlaylist,
 		rundown: Pick<Rundown, '_id' | 'showStyleBaseId'>,
 		segment: DBSegment,
 		segmentsBeforeThisInRundownSet: Set<SegmentId>,

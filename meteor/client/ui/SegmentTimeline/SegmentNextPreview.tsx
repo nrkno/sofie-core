@@ -4,7 +4,7 @@
 // import * as _ from 'underscore'
 // import { withTranslation } from 'react-i18next'
 
-// import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+// import { RundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 // import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 // import { PartUi, IOutputLayerUi, ISourceLayerUi, PieceUi } from './SegmentTimelineContainer'

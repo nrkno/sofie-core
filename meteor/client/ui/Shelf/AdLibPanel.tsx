@@ -4,7 +4,7 @@ import { Meteor } from 'meteor/meteor'
 import { useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { useTranslation } from 'react-i18next'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '../../../lib/collections/Parts'
 import { IAdLibListItem } from './AdLibListItem'
@@ -63,7 +63,7 @@ import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownP
 export interface IAdLibPanelProps {
 	// liveSegment: Segment | undefined
 	visible: boolean
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	studio: UIStudio
 	showStyleBase: UIShowStyleBase
 	studioMode: boolean
@@ -128,7 +128,10 @@ function actionToAdLibPieceUi(
 }
 
 interface IFetchAndFilterProps {
-	playlist: Pick<RundownPlaylist, '_id' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo' | 'rundownIdsInOrder'>
+	playlist: Pick<
+		DBRundownPlaylist,
+		'_id' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo' | 'rundownIdsInOrder'
+	>
 	showStyleBase: Pick<UIShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>
 	filter?: RundownLayoutFilterBase
 	includeGlobalAdLibs?: boolean
@@ -541,7 +544,7 @@ export function AdLibPanel({
 		() =>
 			fetchAndFilter({
 				playlist: playlist as Pick<
-					RundownPlaylist,
+					DBRundownPlaylist,
 					'_id' | 'studioId' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo' | 'rundownIdsInOrder'
 				>,
 				showStyleBase: showStyleBase as Pick<UIShowStyleBase, '_id' | 'sourceLayers' | 'outputLayers'>,

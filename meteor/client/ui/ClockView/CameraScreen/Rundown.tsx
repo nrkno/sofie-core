@@ -6,13 +6,13 @@ import { Segments } from '../../../collections'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { Segment as SegmentComponent } from './Segment'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { UIShowStyleBases } from '../../Collections'
 import { RundownToShowStyleContext, StudioContext } from '.'
 import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	rundown: RundownObj
 	rundownIdsBefore: RundownId[]
 }

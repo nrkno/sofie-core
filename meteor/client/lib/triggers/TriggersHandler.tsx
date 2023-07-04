@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'
 import Sorensen from '@sofie-automation/sorensen'
 import { PubSub } from '../../../lib/api/pubsub'
 import { useSubscription, useTracker } from '../ReactMeteorData/ReactMeteorData'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PlayoutActions, SomeAction, SomeBlueprintTrigger, TriggerType } from '@sofie-automation/blueprints-integration'
 import {
 	isPreviewableAction,
@@ -334,7 +334,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					nextPartInfo: 1,
 					currentPartInfo: 1,
 				},
-			}) as Pick<RundownPlaylist, '_id' | 'name' | 'activationId' | 'nextPartInfo' | 'currentPartInfo'> | undefined
+			}) as Pick<DBRundownPlaylist, '_id' | 'name' | 'activationId' | 'nextPartInfo' | 'currentPartInfo'> | undefined
 			if (playlist) {
 				let context = rundownPlaylistContext.get()
 				if (context === null) {

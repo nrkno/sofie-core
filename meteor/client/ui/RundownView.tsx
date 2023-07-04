@@ -15,7 +15,7 @@ import Escape from './../lib/Escape'
 import * as i18next from 'i18next'
 import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
@@ -151,7 +151,7 @@ const HIDE_NOTIFICATIONS_AFTER_MOUNT: number | undefined = 5000
 const DEFAULT_SEGMENT_VIEW_MODE = SegmentViewMode.Timeline
 
 interface ITimingWarningProps {
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	inActiveRundownView?: boolean
 	studioMode: boolean
 	oneMinuteBeforeAction: (e: Event) => void
@@ -247,7 +247,7 @@ const WarningDisplay = withTranslation()(
 	)
 )
 interface ITimingDisplayProps {
-	rundownPlaylist: RundownPlaylist
+	rundownPlaylist: DBRundownPlaylist
 	currentRundown: Rundown | undefined
 	rundownCount: number
 	layout: RundownLayoutRundownHeader | undefined
@@ -323,7 +323,7 @@ const TimingDisplay = withTranslation()(
 )
 
 interface IRundownHeaderProps {
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	showStyleBase: UIShowStyleBase
 	showStyleVariant: DBShowStyleVariant
 	currentRundown: Rundown | undefined
@@ -1159,7 +1159,7 @@ type MatchedSegment = {
 interface ITrackedProps {
 	rundownPlaylistId: RundownPlaylistId
 	rundowns: Rundown[]
-	playlist?: RundownPlaylist
+	playlist?: DBRundownPlaylist
 	currentRundown?: Rundown
 	matchedSegments: MatchedSegment[]
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
@@ -1563,7 +1563,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						_id: 1,
 						studioId: 1,
 					},
-				}) as Pick<RundownPlaylist, '_id' | 'studioId'> | undefined
+				}) as Pick<DBRundownPlaylist, '_id' | 'studioId'> | undefined
 				if (!playlist) return
 
 				this.subscribe(PubSub.uiSegmentPartNotes, playlistId)
@@ -1578,7 +1578,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						_id: 1,
 						activationId: 1,
 					},
-				}) as Pick<RundownPlaylist, '_id' | 'activationId'> | undefined
+				}) as Pick<DBRundownPlaylist, '_id' | 'activationId'> | undefined
 				if (!playlist) return
 
 				const rundowns = RundownPlaylistCollectionUtil.getRundownsUnordered(playlist, undefined, {
@@ -1639,7 +1639,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 						nextPartInfo: 1,
 						previousPartInfo: 1,
 					},
-				}) as Pick<RundownPlaylist, '_id' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo'> | undefined
+				}) as Pick<DBRundownPlaylist, '_id' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo'> | undefined
 				if (playlist) {
 					const rundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 					// Use Meteor.subscribe so that this subscription doesn't mess with this.subscriptionsReady()
@@ -2476,7 +2476,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			segment: DBSegment,
 			_index: number,
 			rundownAndSegments: MatchedSegment,
-			rundownPlaylist: RundownPlaylist,
+			rundownPlaylist: DBRundownPlaylist,
 			studio: UIStudio,
 			showStyleBase: UIShowStyleBase,
 			isLastSegment: boolean,
@@ -2808,7 +2808,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 		renderRundownView(
 			studio: UIStudio,
-			playlist: RundownPlaylist,
+			playlist: DBRundownPlaylist,
 			showStyleBase: UIShowStyleBase,
 			showStyleVariant: DBShowStyleVariant
 		) {

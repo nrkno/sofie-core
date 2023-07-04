@@ -2,7 +2,7 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import classNames from 'classnames'
 import React, { useContext } from 'react'
 import { AreaZoom } from '.'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PieceExtended } from '../../../../lib/Rundown'
 import { getAllowSpeaking, getAllowVibrating } from '../../../lib/localStorage'
 import { AutoNextStatus } from '../../RundownView/RundownTiming/AutoNextStatus'
@@ -16,7 +16,7 @@ import { Piece } from './Piece'
 interface IProps {
 	part: PartUi
 	piece: PieceExtended
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	isLive: boolean
 	isNext: boolean
 }

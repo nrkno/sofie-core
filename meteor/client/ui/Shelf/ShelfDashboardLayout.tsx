@@ -5,7 +5,7 @@ import { TimelineDashboardPanel } from './TimelineDashboardPanel'
 import { DashboardPanel } from './DashboardPanel'
 import { ExternalFramePanel } from './ExternalFramePanel'
 import { DashboardActionButtonGroup } from './DashboardActionButtonGroup'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { AdLibRegionPanel } from './AdLibRegionPanel'
 import { PieceCountdownPanel } from './PieceCountdownPanel'
 import { BucketAdLibItem } from './RundownViewBuckets'
@@ -34,7 +34,7 @@ import { UIStudio } from '../../../lib/api/studios'
 
 export interface IShelfDashboardLayoutProps {
 	rundownLayout: DashboardLayout
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	// buckets: Bucket[] | undefined
 	showStyleBase: UIShowStyleBase
 	showStyleVariant: DBShowStyleVariant

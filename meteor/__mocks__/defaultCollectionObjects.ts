@@ -1,6 +1,6 @@
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { clone, getCurrentTime, unprotectString } from '../lib/lib'
-import { DBRundownPlaylist } from '../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '../lib/collections/Parts'

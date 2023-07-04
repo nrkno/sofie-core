@@ -13,7 +13,7 @@ import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { DBPart } from '../../collections/Parts'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
-import { DBRundownPlaylist, RundownPlaylist } from '../../collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { assertNever, generateTranslation } from '../../lib'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
@@ -764,7 +764,7 @@ export function compileAdLibFilter(
 export function rundownPlaylistFilter(
 	studioId: StudioId,
 	filterChain: IRundownPlaylistFilterLink[]
-): RundownPlaylist | undefined {
+): DBRundownPlaylist | undefined {
 	const selector: MongoQuery<DBRundownPlaylist> = {
 		$and: [
 			{

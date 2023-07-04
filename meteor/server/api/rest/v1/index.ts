@@ -85,7 +85,7 @@ import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { executePeripheralDeviceFunction } from '../../peripheralDevice/executeFunction'
 import { makeMeteorConnectionFromKoa } from '../koa'
@@ -131,7 +131,7 @@ class ServerRestAPI implements RestAPI {
 		_event: string
 	): Promise<ClientAPI.ClientResponse<Array<{ id: string }>>> {
 		const rundownPlaylists = (await RundownPlaylists.findFetchAsync({}, { projection: { _id: 1 } })) as Array<
-			Pick<RundownPlaylist, '_id'>
+			Pick<DBRundownPlaylist, '_id'>
 		>
 		return ClientAPI.responseSuccess(
 			rundownPlaylists.map((rundownPlaylist) => ({ id: unprotectString(rundownPlaylist._id) }))
@@ -787,7 +787,7 @@ class ServerRestAPI implements RestAPI {
 						activationId: 1,
 					},
 				}
-			)) as Array<Pick<RundownPlaylist, 'activationId'>>
+			)) as Array<Pick<DBRundownPlaylist, 'activationId'>>
 			if (playlists.some((playlist) => playlist.activationId !== undefined)) {
 				throw new Meteor.Error(
 					412,
@@ -829,7 +829,7 @@ class ServerRestAPI implements RestAPI {
 					activationId: 1,
 				},
 			}
-		)) as Array<Pick<RundownPlaylist, 'activationId'>>
+		)) as Array<Pick<DBRundownPlaylist, 'activationId'>>
 		if (playlists.some((playlist) => playlist.activationId !== undefined)) {
 			throw new Meteor.Error(
 				412,
@@ -916,7 +916,7 @@ class ServerRestAPI implements RestAPI {
 						activationId: 1,
 					},
 				}
-			)) as Array<Pick<RundownPlaylist, 'activationId'>>
+			)) as Array<Pick<DBRundownPlaylist, 'activationId'>>
 			if (playlists.some((playlist) => playlist.activationId !== undefined)) {
 				throw new Meteor.Error(
 					412,
@@ -949,7 +949,7 @@ class ServerRestAPI implements RestAPI {
 					activationId: 1,
 				},
 			}
-		)) as Array<Pick<RundownPlaylist, 'activationId'>>
+		)) as Array<Pick<DBRundownPlaylist, 'activationId'>>
 		if (playlists.some((playlist) => playlist.activationId !== undefined)) {
 			throw new Meteor.Error(
 				412,
@@ -1025,7 +1025,7 @@ class ServerRestAPI implements RestAPI {
 						activationId: 1,
 					},
 				}
-			)) as Array<Pick<RundownPlaylist, 'activationId'>>
+			)) as Array<Pick<DBRundownPlaylist, 'activationId'>>
 			if (playlists.some((p) => p.activationId !== undefined)) {
 				throw new Meteor.Error(412, `Studio ${studioId} cannot be updated, it is in use in an active Playlist`)
 			}
@@ -1062,7 +1062,7 @@ class ServerRestAPI implements RestAPI {
 						activationId: 1,
 					},
 				}
-			)) as Array<Pick<RundownPlaylist, 'activationId'>>
+			)) as Array<Pick<DBRundownPlaylist, 'activationId'>>
 			if (playlists.some((p) => p.activationId !== undefined)) {
 				throw new Meteor.Error(412, `Studio ${studioId} cannot be deleted, it is in use in an active Playlist`)
 			}
@@ -1077,7 +1077,7 @@ class ServerRestAPI implements RestAPI {
 					_id: 1,
 				},
 			}
-		)) as Array<Pick<RundownPlaylist, '_id'>>
+		)) as Array<Pick<DBRundownPlaylist, '_id'>>
 
 		const promises = rundownPlaylists.map(async (rundownPlaylist) =>
 			ServerClientAPI.runUserActionInLogForPlaylistOnWorker(

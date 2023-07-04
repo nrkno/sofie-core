@@ -2,7 +2,7 @@ import * as React from 'react'
 import ClassNames from 'classnames'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ISourceLayer, IOutputLayer, IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { unprotectString } from '../../../lib/lib'
 import renderItem from './Renderers/ItemRendererFactory'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
@@ -28,7 +28,7 @@ interface IListViewItemProps {
 	disabled?: boolean
 	onSelectAdLib?: (aSLine: IAdLibListItem) => void
 	onToggleAdLib?: (aSLine: IAdLibListItem, queue: boolean, context: any, mode?: IBlueprintActionTriggerMode) => void
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 }
 
 export const AdLibListItem = withMediaObjectStatus<IListViewItemProps, {}>()(

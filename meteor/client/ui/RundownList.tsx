@@ -2,7 +2,7 @@ import Tooltip from 'rc-tooltip'
 import * as React from 'react'
 import { PubSub } from '../../lib/api/pubsub'
 import { GENESIS_SYSTEM_VERSION } from '../../lib/collections/CoreSystem'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getAllowConfigure, getHelpMode } from '../lib/localStorage'
 import { literal, unprotectString } from '../../lib/lib'
 import { useSubscription, useTracker } from '../lib/ReactMeteorData/react-meteor-data'
@@ -91,7 +91,7 @@ export function RundownList(): JSX.Element {
 	)
 	const rundownPlaylists = useTracker(
 		() =>
-			RundownPlaylists.find({}, { sort: { created: -1 } }).map((playlist: RundownPlaylist) => {
+			RundownPlaylists.find({}, { sort: { created: -1 } }).map((playlist: DBRundownPlaylist) => {
 				const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist)
 
 				const unsyncedRundowns = rundowns.filter((rundown) => !!rundown.orphaned)

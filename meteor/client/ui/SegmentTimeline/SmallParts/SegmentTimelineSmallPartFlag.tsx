@@ -4,7 +4,7 @@ import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { SegmentTimelineSmallPartFlagIcon } from './SegmentTimelineSmallPartFlagIcon'
 import { protectString, unprotectString } from '../../../../lib/lib'
 import { PartUi, SegmentUi } from '../SegmentTimelineContainer'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentTimelinePartHoverPreview } from './SegmentTimelinePartHoverPreview'
 import RundownViewEventBus, { RundownViewEvents } from '../../../../lib/api/triggers/RundownViewEventBus'
 import { UIStudio } from '../../../../lib/api/studios'
@@ -25,7 +25,7 @@ export const SegmentTimelineSmallPartFlag = withTiming<
 		timeToPixelRatio: number
 
 		segment: SegmentUi
-		playlist: RundownPlaylist
+		playlist: DBRundownPlaylist
 		studio: UIStudio
 		collapsedOutputs: {
 			[key: string]: boolean

@@ -10,7 +10,7 @@ import {
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { dashboardElementStyle } from './DashboardPanel'
@@ -24,7 +24,7 @@ interface IMiniRundownPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutMiniRundown
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 }
 
 interface IMiniRundownPanelTrackedProps {

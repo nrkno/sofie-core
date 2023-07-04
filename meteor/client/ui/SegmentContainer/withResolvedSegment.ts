@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { ISourceLayer, NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import {
 	IOutputLayerExtended,
@@ -75,7 +75,7 @@ export interface IProps {
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
 	studio: UIStudio
 	showStyleBase: UIShowStyleBase
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	rundown: MinimalRundown
 	timeScale: number
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void

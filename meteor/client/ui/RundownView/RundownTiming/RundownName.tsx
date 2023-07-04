@@ -3,7 +3,7 @@ import { WithTranslation, withTranslation } from 'react-i18next'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { withTiming, WithTiming } from './withTiming'
 import ClassNames from 'classnames'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { LoopingIcon } from '../../../lib/ui/icons/looping'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { RundownUtils } from '../../../lib/rundown'
@@ -11,7 +11,7 @@ import { getCurrentTime } from '../../../../lib/lib'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 
 interface IRundownNameProps {
-	rundownPlaylist: RundownPlaylist
+	rundownPlaylist: DBRundownPlaylist
 	currentRundown?: Rundown
 	rundownCount: number
 	hideDiff?: boolean

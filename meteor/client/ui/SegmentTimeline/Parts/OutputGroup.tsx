@@ -1,5 +1,5 @@
 import React from 'react'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { ISourceLayerExtended } from '../../../../lib/Rundown'
 import { IContextMenuContext } from '../../RundownView'
 import { IOutputLayerUi, PartUi, PieceUi, SegmentUi } from '../SegmentTimelineContainer'
@@ -15,7 +15,7 @@ import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/ti
 interface IOutputGroupProps {
 	layer: IOutputLayerUi
 	sourceLayers: ISourceLayerExtended[]
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	studio: UIStudio
 	segment: SegmentUi
 	part: PartUi

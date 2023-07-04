@@ -10,7 +10,7 @@ import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PieceInstance } from '../../../lib/collections/PieceInstances'
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
 import { getUnfinishedPieceInstancesReactive } from '../../lib/rundownLayouts'
@@ -22,7 +22,7 @@ interface IEndsWordsPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutEndWords
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	showStyleBase: UIShowStyleBase
 }
 

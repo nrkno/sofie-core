@@ -5,7 +5,7 @@ import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { PieceInstance } from '../../lib/collections/PieceInstances'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { getUnfinishedPieceInstancesReactive } from './rundownLayouts'
@@ -46,7 +46,7 @@ export interface AdlibSegmentUi extends DBSegment {
 	isCompatibleShowStyle: boolean
 }
 
-export function getNextPiecesReactive(playlist: RundownPlaylist, showsStyleBase: UIShowStyleBase): PieceInstance[] {
+export function getNextPiecesReactive(playlist: DBRundownPlaylist, showsStyleBase: UIShowStyleBase): PieceInstance[] {
 	let prospectivePieceInstances: PieceInstance[] = []
 	if (playlist.activationId && playlist.nextPartInfo) {
 		prospectivePieceInstances = PieceInstances.find({
@@ -86,7 +86,7 @@ export function getNextPiecesReactive(playlist: RundownPlaylist, showsStyleBase:
 }
 
 export function getUnfinishedPieceInstancesGrouped(
-	playlist: RundownPlaylist,
+	playlist: DBRundownPlaylist,
 	showStyleBase: UIShowStyleBase
 ): { unfinishedPieceInstances: PieceInstance[]; unfinishedAdLibIds: PieceId[]; unfinishedTags: string[] } {
 	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist, showStyleBase)
@@ -109,7 +109,7 @@ export function getUnfinishedPieceInstancesGrouped(
 }
 
 export function getNextPieceInstancesGrouped(
-	playlist: RundownPlaylist,
+	playlist: DBRundownPlaylist,
 	showsStyleBase: UIShowStyleBase
 ): { nextAdLibIds: PieceId[]; nextTags: string[]; nextPieceInstances: PieceInstance[] } {
 	const nextPieceInstances = getNextPiecesReactive(playlist, showsStyleBase)

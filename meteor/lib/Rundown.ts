@@ -13,7 +13,7 @@ import {
 import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { invalidateAfter } from '../lib/invalidatingTime'
 import { getCurrentTime, groupByToMap, ProtectedString, protectString } from './lib'
-import { RundownPlaylist } from './collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { mongoWhereFilter, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
@@ -243,7 +243,7 @@ export function getPieceInstancesForPartInstance(
  * to limit the data, in correct order.
  *
  * @export
- * @param {RundownPlaylist} playlist
+ * @param {DBRundownPlaylist} playlist
  * @param {(MongoQuery<DBSegment>)} [segmentsQuery]
  * @param {(MongoQuery<DBPart>)} [partsQuery]
  * @param {MongoQuery<PartInstance>} [partInstancesQuery]
@@ -253,7 +253,7 @@ export function getPieceInstancesForPartInstance(
  * @return {*}  {Array<{ segment: Segment; partInstances: PartInstance[] }>}
  */
 export function getSegmentsWithPartInstances(
-	playlist: RundownPlaylist,
+	playlist: DBRundownPlaylist,
 	segmentsQuery?: MongoQuery<DBSegment>,
 	partsQuery?: MongoQuery<DBPart>,
 	partInstancesQuery?: MongoQuery<PartInstance>,

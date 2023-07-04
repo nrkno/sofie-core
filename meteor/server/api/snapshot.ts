@@ -43,7 +43,7 @@ import { Blueprint } from '../../lib/collections/Blueprints'
 import { IngestRundown, VTContent } from '@sofie-automation/blueprints-integration'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { importIngestRundown } from './ingest/http'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { RundownLayoutBase } from '../../lib/collections/RundownLayouts'
 import { DBTriggeredActions } from '../../lib/collections/TriggeredActions'
 import { Settings } from '../../lib/Settings'
@@ -324,7 +324,7 @@ function getPiecesMediaObjects(pieces: PieceGeneric[]): string[] {
 }
 
 async function createRundownPlaylistSnapshot(
-	playlist: ReadonlyDeep<RundownPlaylist>,
+	playlist: ReadonlyDeep<DBRundownPlaylist>,
 	full = false
 ): Promise<RundownPlaylistSnapshot> {
 	/** Max count of one type of items to include in the snapshot */
@@ -633,7 +633,7 @@ export async function storeRundownPlaylistSnapshot(
 	return storeSnaphot(s, access.organizationId, reason)
 }
 export async function internalStoreRundownPlaylistSnapshot(
-	playlist: RundownPlaylist,
+	playlist: DBRundownPlaylist,
 	reason: string,
 	full?: boolean
 ): Promise<SnapshotId> {

@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { TriggeredActionEntry, TRIGGERED_ACTION_ENTRY_DRAG_TYPE } from './TriggeredActionEntry'
 import { literal, unprotectString } from '../../../../../lib/lib'
 import { TriggersHandler } from '../../../../lib/triggers/TriggersHandler'
-import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Part } from '../../../../../lib/collections/Parts'
 import { MeteorCall } from '../../../../../lib/api/methods'
@@ -33,7 +33,7 @@ import { SourceLayers, OutputLayers } from '@sofie-automation/corelib/dist/dataM
 import { RundownPlaylistCollectionUtil } from '../../../../../lib/collections/rundownPlaylistUtil'
 
 export interface PreviewContext {
-	rundownPlaylist: RundownPlaylist | null
+	rundownPlaylist: DBRundownPlaylist | null
 	currentRundownId: RundownId | null
 	currentSegmentPartIds: PartId[]
 	nextSegmentPartIds: PartId[]

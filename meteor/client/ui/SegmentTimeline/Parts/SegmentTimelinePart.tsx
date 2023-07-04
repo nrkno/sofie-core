@@ -3,7 +3,7 @@ import _ from 'underscore'
 import { withTranslation, WithTranslation, TFunction } from 'react-i18next'
 
 import ClassNames from 'classnames'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentUi, PartUi, IOutputLayerUi, PieceUi, LIVE_LINE_TIME_PADDING } from '../SegmentTimelineContainer'
 import {
 	TimingDataResolution,
@@ -47,7 +47,7 @@ export const BREAKPOINT_TOO_SMALL_FOR_DISPLAY = 6
 
 interface IProps {
 	segment: SegmentUi
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	studio: UIStudio
 	part: PartUi
 	pieces: CalculateTimingsPiece[]

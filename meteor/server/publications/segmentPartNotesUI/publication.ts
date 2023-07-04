@@ -29,7 +29,7 @@ import {
 } from './reactiveContentCache'
 import { RundownsObserver } from '../lib/rundownsObserver'
 import { RundownContentObserver } from './rundownContentObserver'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { generateNotesForSegment } from './generateNotesForSegment'
 import { RundownPlaylists } from '../../collections'
 import { check, Match } from 'meteor/check'
@@ -51,7 +51,7 @@ interface UISegmentPartNotesUpdateProps {
 
 type RundownPlaylistFields = '_id' | 'studioId'
 const rundownPlaylistFieldSpecifier = literal<
-	MongoFieldSpecifierOnesStrict<Pick<RundownPlaylist, RundownPlaylistFields>>
+	MongoFieldSpecifierOnesStrict<Pick<DBRundownPlaylist, RundownPlaylistFields>>
 >({
 	_id: 1,
 	studioId: 1,
@@ -63,7 +63,7 @@ async function setupUISegmentPartNotesPublicationObservers(
 ): Promise<LiveQueryHandle[]> {
 	const playlist = (await RundownPlaylists.findOneAsync(args.playlistId, {
 		projection: rundownPlaylistFieldSpecifier,
-	})) as Pick<RundownPlaylist, RundownPlaylistFields> | undefined
+	})) as Pick<DBRundownPlaylist, RundownPlaylistFields> | undefined
 	if (!playlist) throw new Error(`RundownPlaylist "${args.playlistId}" not found!`)
 
 	const rundownsObserver = new RundownsObserver(playlist.studioId, playlist._id, (rundownIds) => {
