@@ -85,15 +85,15 @@ export function GenericDeviceSettingsComponent({
 
 					{(!subDevices || subDevices.length === 0) && <p>{t('There are no sub-devices for this gateway')}</p>}
 
-					{subDevices &&
-						subDevices.map((device) => (
-							<DeviceItem
-								key={unprotectString(device._id)}
-								device={device}
-								showRemoveButtons={true}
-								debugState={debugStates.get(device._id)}
-							/>
-						))}
+					{subDevices?.map((subDevice) => (
+						<DeviceItem
+							key={unprotectString(subDevice._id)}
+							parentDevice={device}
+							device={subDevice}
+							showRemoveButtons={true}
+							debugState={debugStates.get(subDevice._id)}
+						/>
+					))}
 				</>
 			)}
 		</>

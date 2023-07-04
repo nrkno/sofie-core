@@ -43,7 +43,7 @@ interface IDeviceItemProps {
 	parentDevice: PeripheralDevice | null
 	device: PeripheralDevice
 	showRemoveButtons?: boolean
-	hasChildren: boolean
+	hasChildren?: boolean
 
 	debugState: object | undefined
 }
