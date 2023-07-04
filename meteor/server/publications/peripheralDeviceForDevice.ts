@@ -191,7 +191,7 @@ async function manipulatePeripheralDevicePublicationData(
 meteorCustomPublish(
 	PubSub.peripheralDeviceForDevice,
 	CustomCollectionName.PeripheralDeviceForDevice,
-	async function (pub, deviceId: PeripheralDeviceId, token) {
+	async function (pub, deviceId: PeripheralDeviceId, token: string | undefined) {
 		check(deviceId, String)
 
 		if (await PeripheralDeviceReadAccess.peripheralDeviceContent(deviceId, { userId: this.userId, token })) {

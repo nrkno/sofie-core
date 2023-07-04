@@ -2,14 +2,14 @@ import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
-import { MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { RundownReadAccess } from '../security/rundown'
 import { DBSegment } from '../../lib/collections/Segments'
 import { DBPart } from '../../lib/collections/Parts'
 import { Piece } from '../../lib/collections/Pieces'
 import { PieceInstance } from '../../lib/collections/PieceInstances'
-import { DBPartInstance } from '../../lib/collections/PartInstances'
+import { DBPartInstance, PartInstance } from '../../lib/collections/PartInstances'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { OrganizationReadAccess } from '../security/organization'
@@ -37,8 +37,16 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 import { MongoFieldSpecifierZeroes } from '@sofie-automation/corelib/dist/mongo'
+import {
+	RundownId,
+	RundownPlaylistActivationId,
+	RundownPlaylistId,
+	ShowStyleBaseId,
+} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExpectedMediaItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedMediaItem'
+import { ExpectedPlayoutItem } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
 
-meteorPublish(PubSub.rundownsForDevice, async function (deviceId, token) {
+meteorPublish(PubSub.rundownsForDevice, async function (deviceId, token: string | undefined) {
 	check(deviceId, String)
 	check(token, String)
 
@@ -66,42 +74,49 @@ meteorPublish(PubSub.rundownsForDevice, async function (deviceId, token) {
 	return null
 })
 
-meteorPublish(PubSub.rundowns, async function (playlistIds, showStyleBaseIds, token) {
-	check(playlistIds, Match.Maybe(Array))
-	check(showStyleBaseIds, Match.Maybe(Array))
-
-	if (!playlistIds && !showStyleBaseIds)
-		throw new Meteor.Error(400, 'One of playlistIds and showStyleBaseIds must be provided')
-
-	// If values were provided, they must have values
-	if (playlistIds && playlistIds.length === 0) return null
-	if (showStyleBaseIds && showStyleBaseIds.length === 0) return null
-
-	const { cred, selector } = await AutoFillSelector.organizationId<DBRundown>(this.userId, {}, token)
-
-	// Add the requested filter
-	if (playlistIds) selector.playlistId = { $in: playlistIds }
-	if (showStyleBaseIds) selector.showStyleBaseId = { $in: showStyleBaseIds }
-
-	const modifier: FindOptions<DBRundown> = {
-		fields: {
-			metaData: 0,
-		},
-	}
-
-	if (
-		!cred ||
-		NoSecurityReadAccess.any() ||
-		(selector.organizationId &&
-			(await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) ||
-		(selector.studioId && (await StudioReadAccess.studioContent(selector.studioId, cred))) ||
-		(selector._id && (await RundownReadAccess.rundown(selector._id, cred)))
+meteorPublish(
+	PubSub.rundowns,
+	async function (
+		playlistIds: RundownPlaylistId[] | null,
+		showStyleBaseIds: ShowStyleBaseId[] | null,
+		token: string | undefined
 	) {
-		return Rundowns.findWithCursor(selector, modifier)
+		check(playlistIds, Match.Maybe(Array))
+		check(showStyleBaseIds, Match.Maybe(Array))
+
+		if (!playlistIds && !showStyleBaseIds)
+			throw new Meteor.Error(400, 'One of playlistIds and showStyleBaseIds must be provided')
+
+		// If values were provided, they must have values
+		if (playlistIds && playlistIds.length === 0) return null
+		if (showStyleBaseIds && showStyleBaseIds.length === 0) return null
+
+		const { cred, selector } = await AutoFillSelector.organizationId<DBRundown>(this.userId, {}, token)
+
+		// Add the requested filter
+		if (playlistIds) selector.playlistId = { $in: playlistIds }
+		if (showStyleBaseIds) selector.showStyleBaseId = { $in: showStyleBaseIds }
+
+		const modifier: FindOptions<DBRundown> = {
+			fields: {
+				metaData: 0,
+			},
+		}
+
+		if (
+			!cred ||
+			NoSecurityReadAccess.any() ||
+			(selector.organizationId &&
+				(await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) ||
+			(selector.studioId && (await StudioReadAccess.studioContent(selector.studioId, cred))) ||
+			(selector._id && (await RundownReadAccess.rundown(selector._id, cred)))
+		) {
+			return Rundowns.findWithCursor(selector, modifier)
+		}
+		return null
 	}
-	return null
-})
-meteorPublish(PubSub.segments, async function (selector, token) {
+)
+meteorPublish(PubSub.segments, async function (selector: MongoQuery<DBSegment>, token: string | undefined) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<DBSegment> = {
 		fields: {
@@ -119,7 +134,7 @@ meteorPublish(PubSub.segments, async function (selector, token) {
 	return null
 })
 
-meteorPublish(PubSub.parts, async function (rundownIds, token) {
+meteorPublish(PubSub.parts, async function (rundownIds: RundownId[], token: string | undefined) {
 	check(rundownIds, Array)
 
 	if (rundownIds.length === 0) return null
@@ -145,79 +160,92 @@ meteorPublish(PubSub.parts, async function (rundownIds, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.partInstances, async function (rundownIds, playlistActivationId, token?: string) {
-	check(rundownIds, Array)
-	check(playlistActivationId, Match.Maybe(String))
-
-	if (rundownIds.length === 0 || !playlistActivationId) return null
-
-	const modifier: FindOptions<DBPartInstance> = {
-		fields: {
-			// @ts-expect-error Mongo typings aren't clever enough yet
-			'part.metaData': 0,
-		},
-	}
-
-	const selector: MongoQuery<DBPartInstance> = {
-		rundownId: { $in: rundownIds },
-		playlistActivationId: playlistActivationId,
-		reset: { $ne: true },
-	}
-
-	if (
-		NoSecurityReadAccess.any() ||
-		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+meteorPublish(
+	PubSub.partInstances,
+	async function (
+		rundownIds: RundownId[],
+		playlistActivationId: RundownPlaylistActivationId | undefined,
+		token: string | undefined
 	) {
-		return PartInstances.findWithCursor(selector, modifier)
-	}
-	return null
-})
-meteorPublish(PubSub.partInstancesSimple, async function (selector, token) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<DBPartInstance> = {
-		fields: literal<MongoFieldSpecifierZeroes<DBPartInstance>>({
-			// @ts-expect-error Mongo typings aren't clever enough yet
-			'part.metaData': 0,
-			isTaken: 0,
-			timings: 0,
-		}),
-	}
+		check(rundownIds, Array)
+		check(playlistActivationId, Match.Maybe(String))
 
-	// Enforce only not-reset
-	selector.reset = { $ne: true }
+		if (rundownIds.length === 0 || !playlistActivationId) return null
 
-	if (
-		NoSecurityReadAccess.any() ||
-		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
-	) {
-		return PartInstances.findWithCursor(selector, modifier)
-	}
-	return null
-})
-meteorPublish(PubSub.partInstancesForSegmentPlayout, async function (selector, token) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<DBPartInstance> = {
-		fields: {
-			// @ts-expect-error Mongo typings aren't clever enough yet
-			'part.metaData': 0,
-		},
-		sort: {
-			takeCount: 1,
-		},
-		limit: 1,
-	}
+		const modifier: FindOptions<DBPartInstance> = {
+			fields: {
+				// @ts-expect-error Mongo typings aren't clever enough yet
+				'part.metaData': 0,
+			},
+		}
 
-	if (
-		NoSecurityReadAccess.any() ||
-		(selector.segmentPlayoutId &&
-			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token })))
-	) {
-		return PartInstances.findWithCursor(selector, modifier)
-	}
-	return null
-})
+		const selector: MongoQuery<DBPartInstance> = {
+			rundownId: { $in: rundownIds },
+			playlistActivationId: playlistActivationId,
+			reset: { $ne: true },
+		}
 
-meteorPublish(PubSub.pieces, async function (selector: MongoQuery<Piece>, token?: string) {
+		if (
+			NoSecurityReadAccess.any() ||
+			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+		) {
+			return PartInstances.findWithCursor(selector, modifier)
+		}
+		return null
+	}
+)
+meteorPublish(
+	PubSub.partInstancesSimple,
+	async function (selector: MongoQuery<PartInstance>, token: string | undefined) {
+		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+		const modifier: FindOptions<DBPartInstance> = {
+			fields: literal<MongoFieldSpecifierZeroes<DBPartInstance>>({
+				// @ts-expect-error Mongo typings aren't clever enough yet
+				'part.metaData': 0,
+				isTaken: 0,
+				timings: 0,
+			}),
+		}
+
+		// Enforce only not-reset
+		selector.reset = { $ne: true }
+
+		if (
+			NoSecurityReadAccess.any() ||
+			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+		) {
+			return PartInstances.findWithCursor(selector, modifier)
+		}
+		return null
+	}
+)
+meteorPublish(
+	PubSub.partInstancesForSegmentPlayout,
+	async function (selector: MongoQuery<PartInstance>, token: string | undefined) {
+		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+		const modifier: FindOptions<DBPartInstance> = {
+			fields: {
+				// @ts-expect-error Mongo typings aren't clever enough yet
+				'part.metaData': 0,
+			},
+			sort: {
+				takeCount: 1,
+			},
+			limit: 1,
+		}
+
+		if (
+			NoSecurityReadAccess.any() ||
+			(selector.segmentPlayoutId &&
+				(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token })))
+		) {
+			return PartInstances.findWithCursor(selector, modifier)
+		}
+		return null
+	}
+)
+
+meteorPublish(PubSub.pieces, async function (selector: MongoQuery<Piece>, token: string | undefined) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<Piece> = {
 		fields: {
@@ -234,7 +262,7 @@ meteorPublish(PubSub.pieces, async function (selector: MongoQuery<Piece>, token?
 	return null
 })
 
-meteorPublish(PubSub.adLibPieces, async function (selector, token) {
+meteorPublish(PubSub.adLibPieces, async function (selector: MongoQuery<AdLibPiece>, token: string | undefined) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<AdLibPiece> = {
 		fields: {
@@ -250,7 +278,7 @@ meteorPublish(PubSub.adLibPieces, async function (selector, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.pieceInstances, async function (selector, token) {
+meteorPublish(PubSub.pieceInstances, async function (selector: MongoQuery<PieceInstance>, token: string | undefined) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<PieceInstance> = {
 		fields: {
@@ -272,80 +300,92 @@ meteorPublish(PubSub.pieceInstances, async function (selector, token) {
 	return null
 })
 
-meteorPublish(PubSub.pieceInstancesSimple, async function (selector, token) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<PieceInstance> = {
-		fields: literal<MongoFieldSpecifierZeroes<PieceInstance>>({
-			// @ts-expect-error Mongo typings aren't clever enough yet
-			'piece.metaData': 0,
-			'piece.timelineObjectsString': 0,
-			plannedStartedPlayback: 0,
-			plannedStoppedPlayback: 0,
-		}),
-	}
+meteorPublish(
+	PubSub.pieceInstancesSimple,
+	async function (selector: MongoQuery<PieceInstance>, token: string | undefined) {
+		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+		const modifier: FindOptions<PieceInstance> = {
+			fields: literal<MongoFieldSpecifierZeroes<PieceInstance>>({
+				// @ts-expect-error Mongo typings aren't clever enough yet
+				'piece.metaData': 0,
+				'piece.timelineObjectsString': 0,
+				plannedStartedPlayback: 0,
+				plannedStoppedPlayback: 0,
+			}),
+		}
 
-	// Enforce only not-reset
-	selector.reset = { $ne: true }
+		// Enforce only not-reset
+		selector.reset = { $ne: true }
 
-	if (
-		NoSecurityReadAccess.any() ||
-		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
-	) {
-		return PieceInstances.findWithCursor(selector, modifier)
-	}
-	return null
-})
-meteorPublish(PubSub.expectedMediaItems, async function (selector, token) {
-	const allowed =
-		NoSecurityReadAccess.any() ||
-		(await RundownReadAccess.expectedMediaItems(selector, { userId: this.userId, token }))
-	if (!allowed) {
+		if (
+			NoSecurityReadAccess.any() ||
+			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+		) {
+			return PieceInstances.findWithCursor(selector, modifier)
+		}
 		return null
-	} else if (allowed === true) {
-		return ExpectedMediaItems.findWithCursor(selector)
-	} else if (typeof allowed === 'object') {
-		return ExpectedMediaItems.findWithCursor(
-			_.extend(selector, {
-				studioId: allowed.studioId,
-			})
-		)
 	}
-	return null
-})
-meteorPublish(PubSub.expectedPlayoutItems, async function (selector, token) {
-	const allowed =
-		NoSecurityReadAccess.any() ||
-		(await RundownReadAccess.expectedPlayoutItems(selector, { userId: this.userId, token }))
-	if (!allowed) {
+)
+meteorPublish(
+	PubSub.expectedMediaItems,
+	async function (selector: MongoQuery<ExpectedMediaItem>, token: string | undefined) {
+		const allowed =
+			NoSecurityReadAccess.any() ||
+			(await RundownReadAccess.expectedMediaItems(selector, { userId: this.userId, token }))
+		if (!allowed) {
+			return null
+		} else if (allowed === true) {
+			return ExpectedMediaItems.findWithCursor(selector)
+		} else if (typeof allowed === 'object') {
+			return ExpectedMediaItems.findWithCursor(
+				_.extend(selector, {
+					studioId: allowed.studioId,
+				})
+			)
+		}
 		return null
-	} else if (allowed === true) {
-		return ExpectedPlayoutItems.findWithCursor(selector)
-	} else if (typeof allowed === 'object') {
-		return ExpectedPlayoutItems.findWithCursor(
-			_.extend(selector, {
-				studioId: allowed.studioId,
-			})
-		)
 	}
-	return null
-})
+)
+meteorPublish(
+	PubSub.expectedPlayoutItems,
+	async function (selector: MongoQuery<ExpectedPlayoutItem>, token: string | undefined) {
+		const allowed =
+			NoSecurityReadAccess.any() ||
+			(await RundownReadAccess.expectedPlayoutItems(selector, { userId: this.userId, token }))
+		if (!allowed) {
+			return null
+		} else if (allowed === true) {
+			return ExpectedPlayoutItems.findWithCursor(selector)
+		} else if (typeof allowed === 'object') {
+			return ExpectedPlayoutItems.findWithCursor(
+				_.extend(selector, {
+					studioId: allowed.studioId,
+				})
+			)
+		}
+		return null
+	}
+)
 // Note: this publication is for dev purposes only:
-meteorPublish(PubSub.ingestDataCache, async function (selector, token) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<IngestDataCacheObj> = {
-		fields: {},
+meteorPublish(
+	PubSub.ingestDataCache,
+	async function (selector: MongoQuery<IngestDataCacheObj>, token: string | undefined) {
+		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+		const modifier: FindOptions<IngestDataCacheObj> = {
+			fields: {},
+		}
+		if (
+			NoSecurityReadAccess.any() ||
+			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+		) {
+			return IngestDataCache.findWithCursor(selector, modifier)
+		}
+		return null
 	}
-	if (
-		NoSecurityReadAccess.any() ||
-		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
-	) {
-		return IngestDataCache.findWithCursor(selector, modifier)
-	}
-	return null
-})
+)
 meteorPublish(
 	PubSub.rundownBaselineAdLibPieces,
-	async function (selector: MongoQuery<RundownBaselineAdLibItem>, token?: string) {
+	async function (selector: MongoQuery<RundownBaselineAdLibItem>, token: string | undefined) {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 		const modifier: FindOptions<RundownBaselineAdLibItem> = {
 			fields: {
@@ -361,7 +401,7 @@ meteorPublish(
 		return null
 	}
 )
-meteorPublish(PubSub.adLibActions, async function (selector, token) {
+meteorPublish(PubSub.adLibActions, async function (selector: MongoQuery<AdLibAction>, token: string | undefined) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<AdLibAction> = {
 		fields: {},
@@ -374,16 +414,19 @@ meteorPublish(PubSub.adLibActions, async function (selector, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.rundownBaselineAdLibActions, async function (selector, token) {
-	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
-	const modifier: FindOptions<RundownBaselineAdLibAction> = {
-		fields: {},
+meteorPublish(
+	PubSub.rundownBaselineAdLibActions,
+	async function (selector: MongoQuery<RundownBaselineAdLibAction>, token: string | undefined) {
+		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
+		const modifier: FindOptions<RundownBaselineAdLibAction> = {
+			fields: {},
+		}
+		if (
+			NoSecurityReadAccess.any() ||
+			(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
+		) {
+			return RundownBaselineAdLibActions.findWithCursor(selector, modifier)
+		}
+		return null
 	}
-	if (
-		NoSecurityReadAccess.any() ||
-		(await RundownReadAccess.rundownContent(selector.rundownId, { userId: this.userId, token }))
-	) {
-		return RundownBaselineAdLibActions.findWithCursor(selector, modifier)
-	}
-	return null
-})
+)

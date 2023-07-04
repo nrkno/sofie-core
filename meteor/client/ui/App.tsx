@@ -83,7 +83,7 @@ export const App: React.FC = function App() {
 	const [requestedRoute, setRequestedRoute] = useState<undefined | string>()
 
 	const userReady = useSubscription(PubSub.loggedInUser)
-	const orgReady = useSubscription(PubSub.organization, { _id: user?.organizationId ?? protectString('__never') })
+	const orgReady = useSubscription(PubSub.organization, user?.organizationId ?? null)
 
 	const subsReady = userReady && orgReady
 

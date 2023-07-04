@@ -1,11 +1,12 @@
-import { MongoModifier, MongoQuery } from '../../../lib/typings/meteor'
+import { MongoModifier, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { ProtectedString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { UpdateOptions, UpsertOptions, FindOptions, IndexSpecifier, MongoCursor } from '../../../lib/collections/lib'
-import type { Collection as RawCollection, Db as RawDb, CreateIndexesOptions } from 'mongodb'
+import type { Collection as RawCollection, Db as RawDb } from 'mongodb'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { PromisifyCallbacks, waitForPromise } from '../../../lib/lib'
+import { NpmModuleMongodb } from 'meteor/npm-mongo'
 
 export class WrappedMongoCollectionBase<DBInterface extends { _id: ProtectedString<any> }> {
 	protected readonly _collection: Mongo.Collection<DBInterface>
@@ -95,7 +96,7 @@ export class WrappedMongoCollectionBase<DBInterface extends { _id: ProtectedStri
 		}
 	}
 
-	_ensureIndex(keys: IndexSpecifier<DBInterface> | string, options?: CreateIndexesOptions): void {
+	_ensureIndex(keys: IndexSpecifier<DBInterface> | string, options?: NpmModuleMongodb.CreateIndexesOptions): void {
 		try {
 			return this._collection._ensureIndex(keys as any, options)
 		} catch (e) {

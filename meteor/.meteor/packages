@@ -33,3 +33,4 @@ ostrio:meteor-root
 accounts-password@2.3.1
 
 julusian:meteor-elastic-apm@2.5.2
+zodern:types

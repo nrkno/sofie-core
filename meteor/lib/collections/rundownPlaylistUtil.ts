@@ -18,7 +18,7 @@ import { PartInstance } from './PartInstances'
 import { Part } from './Parts'
 import { RundownPlaylist } from './RundownPlaylists'
 import { Segment } from './Segments'
-import { MongoQuery } from '../typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { Piece } from './Pieces'
 
 /**

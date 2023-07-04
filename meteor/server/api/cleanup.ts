@@ -1,6 +1,6 @@
 import { ProtectedString, getCurrentTime } from '../../lib/lib'
 import { CollectionCleanupResult } from '../../lib/api/system'
-import { MongoQuery } from '../../lib/typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import {
 	getActiveRundownPlaylistsInStudioFromDb,

@@ -1,6 +1,7 @@
 import { IngestDataCacheObj } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 import {
 	BucketId,
+	OrganizationId,
 	PeripheralDeviceId,
 	RundownId,
 	RundownPlaylistActivationId,
@@ -48,7 +49,6 @@ import { TranslationsBundle } from '../collections/TranslationsBundles'
 import { DBTriggeredActions, UITriggeredActionsObj } from '../collections/TriggeredActions'
 import { UserActionsLogItem } from '../collections/UserActionsLog'
 import { DBUser } from '../collections/Users'
-import { MongoQuery } from '../typings/meteor'
 import { UIBucketContentStatus, UIPieceContentStatus, UISegmentPartNote } from './rundownNotifications'
 import { UIShowStyleBase } from './showStyles'
 import { UIStudio } from './studios'
@@ -60,6 +60,7 @@ import {
 	PackageManagerPackageContainers,
 	PackageManagerPlayoutContext,
 } from '@sofie-automation/shared-lib/dist/package-manager/publications'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 /**
  * Ids of possible DDP subscriptions
@@ -205,7 +206,7 @@ export interface PubSubTypes {
 	[PubSub.rundownLayouts]: (selector: MongoQuery<RundownLayoutBase>, token?: string) => RundownLayoutBase
 	[PubSub.loggedInUser]: (token?: string) => DBUser
 	[PubSub.usersInOrganization]: (selector: MongoQuery<DBUser>, token?: string) => DBUser
-	[PubSub.organization]: (selector: MongoQuery<DBOrganization>, token?: string) => DBOrganization
+	[PubSub.organization]: (organizationId: OrganizationId | null, token?: string) => DBOrganization
 	[PubSub.buckets]: (studioId: StudioId, bucketId: BucketId | null, token?: string) => Bucket
 	[PubSub.bucketAdLibPieces]: (selector: MongoQuery<BucketAdLib>, token?: string) => BucketAdLib
 	[PubSub.bucketAdLibActions]: (selector: MongoQuery<BucketAdLibAction>, token?: string) => BucketAdLibAction

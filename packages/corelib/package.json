@@ -49,11 +49,11 @@
 		"prom-client": "^14.2.0",
 		"timecode": "0.0.4",
 		"tslib": "^2.6.0",
-		"type-fest": "^2.19.0",
+		"type-fest": "^3.10.0",
 		"underscore": "^1.13.6"
 	},
 	"peerDependencies": {
-		"mongodb": "^4.13.0"
+		"mongodb": "^5.5.0"
 	},
 	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"lint-staged": {

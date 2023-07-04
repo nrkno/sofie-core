@@ -155,12 +155,8 @@ class WrappedCollection<TDoc extends { _id: ProtectedString<any> }> implements I
 			const bulkWriteResult = await this.#collection.bulkWrite(ops, {
 				ordered: false,
 			})
-			if (
-				bulkWriteResult &&
-				Array.isArray(bulkWriteResult.result?.writeErrors) &&
-				bulkWriteResult.result.writeErrors.length
-			) {
-				throw new Error(`Errors in rawCollection.bulkWrite: ${bulkWriteResult.result.writeErrors.join(',')}`)
+			if (bulkWriteResult && bulkWriteResult.hasWriteErrors()) {
+				throw new Error(`Errors in rawCollection.bulkWrite: ${bulkWriteResult.getWriteErrors().join(',')}`)
 			}
 		}
 

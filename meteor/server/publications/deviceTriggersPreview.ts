@@ -30,7 +30,7 @@ export interface UIDeviceTriggerPreview {
 meteorCustomPublish(
 	PubSub.deviceTriggersPreview,
 	CustomCollectionName.UIDeviceTriggerPreviews,
-	async function (pub, studioId: StudioId, token) {
+	async function (pub, studioId: StudioId, token: string | undefined) {
 		check(studioId, String)
 
 		if (!studioId) throw new Meteor.Error(400, 'One of studioId must be provided')

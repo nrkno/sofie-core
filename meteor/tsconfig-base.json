@@ -9,7 +9,14 @@
 		"skipLibCheck": true,
 		"sourceMap": true,
 		"allowJs": false,
-		"lib": ["dom", "es6", "dom.iterable", "scripthost", "es2017", "es2018", "es2019", "ES2020.Promise"]
+		"lib": ["dom", "es6", "dom.iterable", "scripthost", "es2017", "es2018", "es2019", "ES2020.Promise"],
+
+		"paths": {
+			"meteor/*": [
+			//   "./node_modules/@types/meteor/*",
+			  "./.meteor/local/types/packages.d.ts"
+			]
+		  }
 	},
 	"include": ["client/**/*", "server/**/*", "lib/**/*", "__mocks__/**/*", "tslint-rules/**/*"],
 	"exclude": ["node_modules", "**/.coverage/**/*"]

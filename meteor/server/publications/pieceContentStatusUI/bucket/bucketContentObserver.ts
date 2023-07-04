@@ -71,7 +71,7 @@ export class BucketContentObserver implements Meteor.LiveQueryHandle {
 
 		// Subscribe to the database, and pipe any updates into the ReactiveCacheCollections
 		this.#observers = [
-			BucketAdLibs.observe(
+			BucketAdLibs.observeChanges(
 				{
 					bucketId: bucketId,
 				},
@@ -84,7 +84,7 @@ export class BucketContentObserver implements Meteor.LiveQueryHandle {
 					projection: bucketAdlibFieldSpecifier,
 				}
 			),
-			BucketAdLibActions.observe(
+			BucketAdLibActions.observeChanges(
 				{
 					bucketId: bucketId,
 				},

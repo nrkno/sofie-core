@@ -3,8 +3,6 @@ import { ITranslatableMessage } from '@sofie-automation/corelib/dist/Translatabl
 import { Meteor } from 'meteor/meteor'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from './logging'
-import { MongoQuery } from './typings/meteor'
-import { MongoQuery as CoreLibMongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 import { Time, TimeDuration } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
@@ -21,26 +19,6 @@ export type PromisifyCallbacks<T> = {
 type PromisifyFunction<T> = T extends (...args: any) => any
 	? (...args: Parameters<T>) => Promise<ReturnType<T>> | ReturnType<T>
 	: T
-
-/**
- * Convenience method to convert a Meteor.apply() into a Promise
- * @param callName {string} Method name
- * @param args {Array<any>} An array of arguments for the method call
- * @param options (Optional) An object with options for the call. See Meteor documentation.
- * @returns {Promise<any>} A promise containing the result of the called method.
- */
-export async function MeteorPromiseApply(
-	callName: Parameters<typeof Meteor.apply>[0],
-	args: Parameters<typeof Meteor.apply>[1],
-	options?: Parameters<typeof Meteor.apply>[2]
-): Promise<any> {
-	return new Promise((resolve, reject) => {
-		Meteor.apply(callName, args, options, (err, res) => {
-			if (err) reject(err)
-			else resolve(res)
-		})
-	})
-}
 
 // The diff is currently only used client-side
 const systemTime = {
@@ -482,17 +460,6 @@ export enum LocalStorageProperty {
 	HELP_MODE = 'helpMode',
 	LOG_NOTIFICATIONS = 'logNotifications',
 	PROTO_ONE_PART_PER_LINE = 'proto:onePartPerLine',
-}
-
-/**
- * Convert a MongoQuery from @sofie-automation/corelib typings to Meteor typings.
- * They aren't compatible yet because Meteor is using some 'loose' custom typings, rather than corelib which uses the strong typings given by the mongodb library
- * Note: This assumes the queries are compatible. Due to how meteor uses the query they should be, but this has not been verified
- * @param query MongoQuery as written in @sofie-automation/corelib syntax
- * @returns MongoQuery as written in Meteor syntax
- */
-export function convertCorelibToMeteorMongoQuery<T>(query: CoreLibMongoQuery<T>): MongoQuery<T> {
-	return query as any
 }
 
 /**
