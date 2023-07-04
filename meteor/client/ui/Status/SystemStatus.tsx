@@ -40,11 +40,10 @@ import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { ClientAPI } from '../../../lib/api/client'
 
 interface IDeviceItemProps {
-	// key: string,
+	parentDevice: PeripheralDevice | null
 	device: PeripheralDevice
 	showRemoveButtons?: boolean
-	toplevel?: boolean
-	hasChildren?: boolean
+	hasChildren: boolean
 
 	debugState: object | undefined
 }
@@ -187,6 +186,10 @@ export const DeviceItem = reacti18next.withTranslation()(
 
 			const namespaces = ['peripheralDevice_' + this.props.device._id]
 
+			const configManifest = (this.props.parentDevice ?? this.props.device)?.configManifest?.subdeviceManifest?.[
+				this.props.device.subType
+			]
+
 			return (
 				<div key={unprotectString(this.props.device._id)} className="device-item">
 					<div className="status-container">
@@ -209,7 +212,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 							visible={
 								getHelpMode() &&
 								this.props.device.type === PeripheralDeviceType.PLAYOUT &&
-								this.props.toplevel === true &&
+								!this.props.parentDevice &&
 								!this.props.hasChildren &&
 								this.props.hasChildren !== undefined
 							}
@@ -239,21 +242,20 @@ export const DeviceItem = reacti18next.withTranslation()(
 
 					<div className="actions-container">
 						<div className="device-item__actions">
-							{this.props.device.configManifest?.subdeviceManifest?.[this.props.device.subType] &&
-								this.props.device.configManifest.subdeviceManifest[this.props.device.subType].actions?.map((action) => (
-									<React.Fragment key={action.id}>
-										<button
-											className="btn btn-secondary"
-											onClick={(e) => {
-												e.preventDefault()
-												e.stopPropagation()
-												this.onExecuteAction(e, this.props.device, action)
-											}}
-										>
-											{translateMessage({ key: action.name, namespaces }, i18nTranslator)}
-										</button>
-									</React.Fragment>
-								))}
+							{configManifest?.actions?.map((action) => (
+								<React.Fragment key={action.id}>
+									<button
+										className="btn btn-secondary"
+										onClick={(e) => {
+											e.preventDefault()
+											e.stopPropagation()
+											this.onExecuteAction(e, this.props.device, action)
+										}}
+									>
+										{translateMessage({ key: action.name, namespaces }, i18nTranslator)}
+									</button>
+								</React.Fragment>
+							))}
 							{getAllowDeveloper() ? (
 								<button
 									key="button-ignore"
@@ -619,12 +621,12 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 				}
 			})
 
-			const getDeviceContent = (d: DeviceInHierarchy, toplevel: boolean): JSX.Element => {
+			const getDeviceContent = (parentDevice: DeviceInHierarchy | null, d: DeviceInHierarchy): JSX.Element => {
 				const content: JSX.Element[] = [
 					<DeviceItem
 						key={'device' + d.device._id}
+						parentDevice={parentDevice?.device ?? null}
 						device={d.device}
-						toplevel={toplevel}
 						hasChildren={d.children.length !== 0}
 						debugState={this.state.deviceDebugState.get(d.device._id)}
 					/>,
@@ -634,7 +636,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 					_.each(d.children, (child: DeviceInHierarchy) =>
 						children.push(
 							<li key={'childdevice' + child.device._id} className="child-device-li">
-								{getDeviceContent(child, false)}
+								{getDeviceContent(d, child)}
 							</li>
 						)
 					)
@@ -656,7 +658,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 					{this.props.coreSystem && (
 						<CoreItem coreSystem={this.props.coreSystem} systemStatus={this.state.systemStatus} />
 					)}
-					{_.map(devices, (d) => getDeviceContent(d, true))}
+					{_.map(devices, (d) => getDeviceContent(null, d))}
 				</React.Fragment>
 			)
 		}
