@@ -3,6 +3,7 @@ import * as _ from 'underscore'
 import fs from 'fs'
 import path from 'path'
 import { logger } from './logging'
+import { stringifyError } from '../lib/lib'
 
 export function getAbsolutePath(): string {
 	// @ts-expect-error Meteor.absolutePath is injected by the package ostrio:meteor-root
@@ -37,10 +38,27 @@ const public_dir = path.join(process.cwd(), '../web.browser/app')
  * @return {*}  {Promise<Translations>}
  */
 export async function getLocale(languageCode: string): Promise<Translations> {
+	// Try the full language code
+	const file = await getLocaleFile(languageCode)
+	if (file) return file
+
+	// Try just the part before the `-`
+	const index = languageCode.indexOf('-')
+	if (index > 0) {
+		const languageShort = languageCode.slice(0, index)
+		const file = await getLocaleFile(languageShort.toLowerCase())
+		if (file) return file
+	}
+
+	logger.warn(`getLocale: Failed to find suitable locale file for "${languageCode}"`)
+	return {}
+}
+
+async function getLocaleFile(languageCode: string): Promise<Translations | null> {
 	const localePath = path.join(public_dir, 'locales', languageCode, 'translations.json')
-	if (localePath.indexOf(path.join(public_dir, 'locales')) !== 0) {
-		logger.error(localePath)
-		return {}
+	if (!localePath.startsWith(path.join(public_dir, 'locales'))) {
+		logger.error(`getLocale: Attempted to escape the directory: ${localePath}`)
+		return null
 	}
 
 	try {
@@ -48,9 +66,11 @@ export async function getLocale(languageCode: string): Promise<Translations> {
 			encoding: 'utf-8',
 		})
 		return JSON.parse(file)
-	} catch (e) {
-		logger.error(`getLocale: Error when trying to read file "${localePath}": ${e}`)
-	}
+	} catch (e: any) {
+		if (e?.code !== 'ENOENT') {
+			logger.warn(`getLocale: Error when trying to read file "${localePath}": ${stringifyError(e)}`)
+		}
 
-	return {}
+		return null
+	}
 }

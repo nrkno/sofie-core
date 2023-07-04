@@ -7,13 +7,12 @@ import type {
 import { logger } from '../lib/logging'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBStudio } from '../lib/collections/Studios'
-import { RundownPlaylists, Rundowns } from './collections'
+import { RundownPlaylists, Rundowns, Studios } from './collections'
 import { getLocale, Translations } from './lib'
 import { generateTranslation } from '../lib/lib'
 import { ITranslatableMessage } from '@sofie-automation/blueprints-integration'
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { DBRundownPlaylist } from '../lib/collections/RundownPlaylists'
-import { Studios } from './collections'
 import { getCoreSystemAsync } from './coreSystem/collection'
 import Koa from 'koa'
 import KoaRouter from '@koa/router'
@@ -191,8 +190,6 @@ webManifestRouter.get('/', async (ctx) => {
 
 	let lngCode = ctx.query['lng'] || 'en' // EN is the default locale
 	lngCode = Array.isArray(lngCode) ? lngCode[0] : lngCode
-
-	console.log('lng', lngCode)
 
 	try {
 		const manifest = await getWebManifest(lngCode)
