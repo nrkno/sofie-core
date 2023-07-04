@@ -16,7 +16,7 @@ import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataM
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { DBRundownPlaylist } from './RundownPlaylists'
 import { DBRundown } from './Rundowns'
-import { Segment } from './Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 export const AdLibActions = createSyncReadOnlyMongoCollection<AdLibAction>(CollectionName.AdLibActions)
 
@@ -44,4 +44,4 @@ export const RundownPlaylists = createSyncReadOnlyMongoCollection<DBRundownPlayl
 
 export const Rundowns = createSyncReadOnlyMongoCollection<DBRundown>(CollectionName.Rundowns)
 
-export const Segments = createSyncReadOnlyMongoCollection<Segment>(CollectionName.Segments)
+export const Segments = createSyncReadOnlyMongoCollection<DBSegment>(CollectionName.Segments)

@@ -3,7 +3,7 @@ import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/ReactM
 import { Rundown as RundownObj } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PubSub } from '../../../../lib/api/pubsub'
 import { Segments } from '../../../collections'
-import { Segment } from '../../../../lib/collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { Segment as SegmentComponent } from './Segment'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
@@ -22,7 +22,7 @@ export function Rundown({ playlist, rundown, rundownIdsBefore }: IProps): JSX.El
 
 	useSubscription(PubSub.uiShowStyleBase, rundown.showStyleBaseId)
 
-	const segments = useTracker(() => Segments.find({ rundownId }).fetch(), [rundownId], [] as Segment[])
+	const segments = useTracker(() => Segments.find({ rundownId }).fetch(), [rundownId], [] as DBSegment[])
 
 	const showStyleBase = useTracker(
 		() => UIShowStyleBases.findOne(rundown.showStyleBaseId),

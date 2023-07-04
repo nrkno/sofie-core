@@ -1,7 +1,7 @@
 import { RundownPlaylist, DBRundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance, wrapPartToTemporaryInstance } from '../../../lib/collections/PartInstances'
 import { DBPart, Part } from '../../../lib/collections/Parts'
-import { DBSegment } from '../../../lib/collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBRundown } from '../../../lib/collections/Rundowns'
 import { literal, protectString } from '../../../lib/lib'
 import { RundownTimingCalculator, RundownTimingContext } from '../rundownTiming'

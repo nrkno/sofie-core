@@ -11,7 +11,7 @@ import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { Segment } from '../../../lib/collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { dashboardElementStyle } from './DashboardPanel'
 import { PartInstances, Segments } from '../../collections'
 
@@ -24,7 +24,7 @@ interface INextInfoPanelProps {
 
 interface INextInfoPanelTrackedProps {
 	nextPartInstance?: PartInstance
-	nextSegment?: Segment
+	nextSegment?: DBSegment
 }
 
 export class NextInfoPanelInner extends MeteorReactComponent<INextInfoPanelProps & INextInfoPanelTrackedProps> {
@@ -62,7 +62,7 @@ export class NextInfoPanelInner extends MeteorReactComponent<INextInfoPanelProps
 export const NextInfoPanel = withTracker<INextInfoPanelProps, {}, INextInfoPanelTrackedProps>(
 	(props: INextInfoPanelProps & INextInfoPanelTrackedProps) => {
 		let nextPartInstance: PartInstance | undefined = undefined
-		let nextSegment: Segment | undefined = undefined
+		let nextSegment: DBSegment | undefined = undefined
 
 		if (props.playlist.nextPartInfo) {
 			nextPartInstance = PartInstances.findOne(props.playlist.nextPartInfo.partInstanceId)

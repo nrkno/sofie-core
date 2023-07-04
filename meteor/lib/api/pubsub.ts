@@ -39,7 +39,7 @@ import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataMod
 import { RundownLayoutBase } from '../collections/RundownLayouts'
 import { DBRundownPlaylist } from '../collections/RundownPlaylists'
 import { DBRundown } from '../collections/Rundowns'
-import { DBSegment } from '../collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { SnapshotItem } from '../collections/Snapshots'

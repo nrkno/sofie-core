@@ -18,7 +18,7 @@ import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyle
 import { assertNever, generateTranslation } from '../../lib'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { DBRundown } from '../../collections/Rundowns'
-import { DBSegment } from '../../collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { sortAdlibs } from '../../Rundown'
 import { ReactivePlaylistActionContext } from './actionFactory'
 import { FindOptions } from '../../collections/lib'

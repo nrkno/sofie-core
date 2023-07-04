@@ -10,7 +10,7 @@ import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Segment } from '../../../lib/collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
@@ -70,7 +70,7 @@ function getSegmentName(selectedSegment: 'current' | 'next', playlist: RundownPl
 	if (selectedSegment === 'current') {
 		if (currentPartInstance) {
 			const segment = RundownPlaylistCollectionUtil.getSegments(playlist, { _id: currentPartInstance.segmentId })[0] as
-				| Segment
+				| DBSegment
 				| undefined
 			return segment?.name
 		}
@@ -81,7 +81,7 @@ function getSegmentName(selectedSegment: 'current' | 'next', playlist: RundownPl
 			})[0] as PartInstance | undefined
 			if (nextPartInstance && nextPartInstance.segmentId !== currentPartInstance.segmentId) {
 				const segment = RundownPlaylistCollectionUtil.getSegments(playlist, { _id: nextPartInstance.segmentId })[0] as
-					| Segment
+					| DBSegment
 					| undefined
 				return segment?.name
 			}
@@ -93,7 +93,7 @@ function getSegmentName(selectedSegment: 'current' | 'next', playlist: RundownPl
 		const segmentIndex = orderedSegmentsAndParts.segments.findIndex((s) => s._id === currentPartInstance.segmentId)
 		if (segmentIndex === -1) return
 
-		const nextSegment = orderedSegmentsAndParts.segments.slice(segmentIndex + 1)[0] as Segment | undefined
+		const nextSegment = orderedSegmentsAndParts.segments.slice(segmentIndex + 1)[0] as DBSegment | undefined
 		return nextSegment?.name
 	}
 }

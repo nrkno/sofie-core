@@ -1,6 +1,6 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
-import { DBSegment, Segment } from '../../../lib/collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../../lib/collections/Rundowns'
@@ -83,7 +83,7 @@ function getShowStyleBaseIdSegmentPartUi(
 	partInstance: PartInstance,
 	playlist: RundownPlaylist,
 	orderedSegmentsAndParts: {
-		segments: Segment[]
+		segments: DBSegment[]
 		parts: Part[]
 	},
 	pieces: Map<PartId, Piece[]>,

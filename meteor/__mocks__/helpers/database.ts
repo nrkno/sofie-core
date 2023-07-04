@@ -49,7 +49,7 @@ import {
 	normalizeArray,
 } from '../../lib/lib'
 import { DBRundown } from '../../lib/collections/Rundowns'
-import { DBSegment } from '../../lib/collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '../../lib/collections/Parts'
 import { EmptyPieceTimelineObjectsBlob, Piece } from '../../lib/collections/Pieces'
 import { DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'

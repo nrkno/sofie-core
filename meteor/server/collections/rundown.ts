@@ -11,7 +11,7 @@ import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/Run
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstance } from '../../lib/collections/PartInstances'
 import { Part } from '../../lib/collections/Parts'
-import { Segment } from '../../lib/collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { createAsyncOnlyReadOnlyMongoCollection } from './collection'
 import { registerIndex } from './indices'
 
@@ -132,7 +132,7 @@ registerIndex(RundownPlaylists, {
 	activationId: 1,
 })
 
-export const Segments = createAsyncOnlyReadOnlyMongoCollection<Segment>(CollectionName.Segments)
+export const Segments = createAsyncOnlyReadOnlyMongoCollection<DBSegment>(CollectionName.Segments)
 registerIndex(Segments, {
 	rundownId: 1,
 	_rank: 1,

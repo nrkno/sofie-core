@@ -17,7 +17,7 @@ import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../lib/collections/Rundowns'
-import { DBSegment, Segment } from '../../lib/collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { Part } from '../../lib/collections/Parts'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
@@ -1152,7 +1152,7 @@ export type MinimalRundown = Pick<Rundown, '_id' | 'name' | 'timing' | 'showStyl
 
 type MatchedSegment = {
 	rundown: MinimalRundown
-	segments: Segment[]
+	segments: DBSegment[]
 	segmentIdsBeforeEachSegment: Set<SegmentId>[]
 }
 

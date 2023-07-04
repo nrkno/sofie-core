@@ -5,7 +5,7 @@ import { useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { useTranslation } from 'react-i18next'
 import { Rundown } from '../../../lib/collections/Rundowns'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { DBSegment, Segment } from '../../../lib/collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '../../../lib/collections/Parts'
 import { IAdLibListItem } from './AdLibListItem'
 import ClassNames from 'classnames'
@@ -171,7 +171,7 @@ export function fetchAndFilter(props: IFetchAndFilterProps): AdLibFetchAndFilter
 		(
 			currentPartInstanceId: PartInstanceId | null,
 			nextPartInstanceId: PartInstanceId | null,
-			segments: Segment[],
+			segments: DBSegment[],
 			rundowns: Record<string, MinimalRundown>
 		) => {
 			const currentPartInstance =

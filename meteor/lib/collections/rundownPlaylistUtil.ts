@@ -17,7 +17,6 @@ import { FindOptions } from './lib'
 import { PartInstance } from './PartInstances'
 import { Part } from './Parts'
 import { RundownPlaylist } from './RundownPlaylists'
-import { Segment } from './Segments'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { Piece } from './Pieces'
 
@@ -84,8 +83,8 @@ export class RundownPlaylistCollectionUtil {
 	/** Returns all segments joined with their rundowns in their correct oreder for this RundownPlaylist */
 	static getRundownsAndSegments(
 		playlist: Pick<RundownPlaylist, '_id' | 'rundownIdsInOrder'>,
-		selector?: MongoQuery<Segment>,
-		options?: FindOptions<Segment>
+		selector?: MongoQuery<DBSegment>,
+		options?: FindOptions<DBSegment>
 	): Array<{
 		rundown: Pick<
 			Rundown,
@@ -97,7 +96,7 @@ export class RundownPlaylistCollectionUtil {
 			| 'showStyleVariantId'
 			| 'endOfRundownIsShowBreak'
 		>
-		segments: Segment[]
+		segments: DBSegment[]
 	}> {
 		const rundowns = RundownPlaylistCollectionUtil.getRundownsOrdered(playlist, undefined, {
 			fields: {
@@ -129,9 +128,9 @@ export class RundownPlaylistCollectionUtil {
 	/** Returns all segments in their correct order for this RundownPlaylist */
 	static getSegments(
 		playlist: Pick<RundownPlaylist, '_id' | 'rundownIdsInOrder'>,
-		selector?: MongoQuery<Segment>,
-		options?: FindOptions<Segment>
-	): Segment[] {
+		selector?: MongoQuery<DBSegment>,
+		options?: FindOptions<DBSegment>
+	): DBSegment[] {
 		const rundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 		const segments = Segments.find(
 			{
@@ -176,11 +175,11 @@ export class RundownPlaylistCollectionUtil {
 	/** Synchronous version of getSegmentsAndParts, to be used client-side */
 	static getSegmentsAndPartsSync(
 		playlist: Pick<RundownPlaylist, '_id' | 'rundownIdsInOrder'>,
-		segmentsQuery?: MongoQuery<Segment>,
+		segmentsQuery?: MongoQuery<DBSegment>,
 		partsQuery?: MongoQuery<DBPart>,
 		segmentsOptions?: Omit<FindOptions<DBSegment>, 'projection'>, // We are mangling fields, so block projection
 		partsOptions?: Omit<FindOptions<DBPart>, 'projection'> // We are mangling fields, so block projection
-	): { segments: Segment[]; parts: Part[] } {
+	): { segments: DBSegment[]; parts: Part[] } {
 		const rundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 		const segments = Segments.find(
 			{
@@ -362,13 +361,13 @@ export class RundownPlaylistCollectionUtil {
 	static _sortParts(
 		parts: Part[],
 		playlist: Pick<DBRundownPlaylist, 'rundownIdsInOrder'>,
-		segments: Array<Pick<Segment, '_id' | 'rundownId' | '_rank'>>
+		segments: Array<Pick<DBSegment, '_id' | 'rundownId' | '_rank'>>
 	): Part[] {
 		return sortPartsInSegments(parts, playlist.rundownIdsInOrder, segments)
 	}
 	static _sortPartsInner<P extends Pick<DBPart, '_id' | 'segmentId' | '_rank'>>(
 		parts: P[],
-		sortedSegments: Array<Pick<Segment, '_id'>>
+		sortedSegments: Array<Pick<DBSegment, '_id'>>
 	): P[] {
 		return sortPartsInSortedSegments(parts, sortedSegments)
 	}

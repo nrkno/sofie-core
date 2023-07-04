@@ -24,7 +24,7 @@ import {
 	getSegmentsWithPartInstances,
 } from '../../lib/Rundown'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { Segment } from '../../lib/collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { literal, getCurrentTime, applyToArray } from '../../lib/lib'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
@@ -294,7 +294,7 @@ export namespace RundownUtils {
 		showStyleBase: UIShowStyleBase,
 		playlist: RundownPlaylist,
 		rundown: Pick<Rundown, '_id' | 'showStyleBaseId'>,
-		segment: Segment,
+		segment: DBSegment,
 		segmentsBeforeThisInRundownSet: Set<SegmentId>,
 		rundownsBeforeThisInPlaylist: RundownId[],
 		rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
@@ -366,7 +366,7 @@ export namespace RundownUtils {
 					takeCount: 0,
 				},
 			}
-		)[0] as { segment: Segment; partInstances: PartInstanceLimited[] } | undefined
+		)[0] as { segment: DBSegment; partInstances: PartInstanceLimited[] } | undefined
 
 		if (segmentInfo && segmentInfo.partInstances.length > 0) {
 			// create local deep copies of the studio outputLayers and sourceLayers so that we can store

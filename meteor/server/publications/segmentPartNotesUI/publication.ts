@@ -6,7 +6,7 @@ import { UISegmentPartNote } from '../../../lib/api/rundownNotifications'
 import { DBPartInstance } from '../../../lib/collections/PartInstances'
 import { DBPart } from '../../../lib/collections/Parts'
 import { Rundown } from '../../../lib/collections/Rundowns'
-import { DBSegment } from '../../../lib/collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { groupByToMap, literal, normalizeArrayToMap, protectString } from '../../../lib/lib'
 import {
 	CustomPublishCollection,

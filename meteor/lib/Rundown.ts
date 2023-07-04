@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
 import { Piece } from './collections/Pieces'
 import { IOutputLayer, ISourceLayer, ITranslatableMessage } from '@sofie-automation/blueprints-integration'
-import { DBSegment, Segment } from './collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from './collections/Parts'
 import { PartInstance, wrapPartToTemporaryInstance } from './collections/PartInstances'
 import { PieceInstance } from './collections/PieceInstances'
@@ -260,7 +260,7 @@ export function getSegmentsWithPartInstances(
 	segmentsOptions?: FindOptions<DBSegment>,
 	partsOptions?: FindOptions<DBPart>,
 	partInstancesOptions?: FindOptions<PartInstance>
-): Array<{ segment: Segment; partInstances: PartInstance[] }> {
+): Array<{ segment: DBSegment; partInstances: PartInstance[] }> {
 	const { segments, parts: rawParts } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(
 		playlist,
 		segmentsQuery,

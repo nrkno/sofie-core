@@ -10,7 +10,7 @@ import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/Reac
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Segment } from '../../../lib/collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartExtended } from '../../../lib/Rundown'
 import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
@@ -34,7 +34,7 @@ interface ISegmentTimingPanelProps {
 }
 
 interface ISegmentTimingPanelTrackedProps {
-	liveSegment?: Segment
+	liveSegment?: DBSegment
 	parts?: PartExtended[]
 	pieces?: Map<PartId, CalculateTimingsPiece[]>
 	active: boolean
