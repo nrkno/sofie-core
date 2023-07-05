@@ -3,7 +3,7 @@ import { PieceInstance, ResolvedPieceInstance } from '@sofie-automation/corelib/
 import { TimelineObjGeneric, TimelineObjRundown } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { IBlueprintPieceType, TSR } from '@sofie-automation/blueprints-integration/dist'
-import { clone, literal, normalizeArray, applyToArray } from '@sofie-automation/corelib/dist/lib'
+import { clone, literal, normalizeArray, applyToArray, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { Resolver, TimelineEnable } from 'superfly-timeline'
 import { logger } from '../logging'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
@@ -13,7 +13,10 @@ import { JobContext } from '../jobs'
 import _ = require('underscore')
 import { getCurrentTime } from '../lib'
 import { transformTimeline, TimelineContentObject } from '@sofie-automation/corelib/dist/playout/timeline'
-import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
+import {
+	PieceInstanceWithTimings,
+	processAndPrunePieceInstanceTimings,
+} from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { ReadOnlyCache } from '../cache/CacheBase'
 
@@ -107,6 +110,62 @@ function resolvePieceTimeline(
 	})
 
 	return resolvedPieces
+}
+
+/**
+ * Resolve an array of PieceInstanceWithTimings to approximated numbers within the PartInstance
+ * @param nowInPart Approximate time of the playhead within the PartInstance
+ * @param pieceInstances The PieceInstances to resolve
+ */
+export function resolvePrunedPieceInstances(
+	nowInPart: number,
+	pieceInstances: PieceInstanceWithTimings[]
+): ResolvedPieceInstance[] {
+	const pieceInstancesMap = normalizeArrayToMap(pieceInstances, '_id')
+
+	const resolveStartOfInstance = (instance: PieceInstanceWithTimings): number => {
+		return instance.piece.enable.start === 'now' ? nowInPart : instance.piece.enable.start
+	}
+
+	return pieceInstances.map((instance) => {
+		const resolvedStart = resolveStartOfInstance(instance)
+
+		// Interpret the `resolvedEndCap` property into a number
+		let resolvedEnd: number | undefined
+		if (typeof instance.resolvedEndCap === 'number') {
+			resolvedEnd = instance.resolvedEndCap
+			// } else if (instance.resolvedEndCap === 'now') {
+			// 	// TODO - something should test this route?
+			// 	// resolvedEnd = nowInPart
+		} else if (instance.resolvedEndCap) {
+			const otherInstance = pieceInstancesMap.get(instance.resolvedEndCap.relativeToStartOf)
+			if (otherInstance) {
+				resolvedEnd = resolveStartOfInstance(otherInstance)
+			}
+		}
+
+		// There are multiple potential durations of this Piece
+		const caps: number[] = []
+		if (resolvedEnd !== undefined) caps.push(resolvedEnd - resolvedStart)
+
+		// If the piece has a duration set, that may be the needed duration
+		if (instance.piece.enable.duration !== undefined) caps.push(instance.piece.enable.duration)
+
+		// If the piece has a userDuration set, that may be the needed duration
+		if (instance.userDuration) {
+			if ('endRelativeToPart' in instance.userDuration) {
+				caps.push(instance.userDuration.endRelativeToPart - resolvedStart)
+			} else if ('endRelativeToNow' in instance.userDuration) {
+				caps.push(nowInPart + instance.userDuration.endRelativeToNow - resolvedStart)
+			}
+		}
+
+		return {
+			...instance,
+			resolvedStart,
+			resolvedDuration: caps.length ? Math.min(...caps) : undefined,
+		}
+	})
 }
 
 /**
