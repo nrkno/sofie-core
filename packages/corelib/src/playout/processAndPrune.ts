@@ -55,6 +55,7 @@ export interface PieceInstanceWithTimings extends PieceInstance {
  * Process the infinite pieces to determine the start time and a maximum end time for each.
  * Any pieces which have no chance of being shown (duplicate start times) are pruned
  * The stacking order of infinites is considered, to define the stop times
+ * Note: `nowInPart` is only needed to order the PieceInstances. The result of this can be cached until that order changes
  */
 export function processAndPrunePieceInstanceTimings(
 	sourceLayers: SourceLayers,

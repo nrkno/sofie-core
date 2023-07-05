@@ -1,8 +1,7 @@
-import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstance, ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { TimelineObjGeneric, TimelineObjRundown } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { ReadonlyDeep } from 'type-fest'
 import { IBlueprintPieceType, TSR } from '@sofie-automation/blueprints-integration/dist'
 import { clone, literal, normalizeArray, applyToArray } from '@sofie-automation/corelib/dist/lib'
 import { Resolver, TimelineEnable } from 'superfly-timeline'
@@ -14,10 +13,7 @@ import { JobContext } from '../jobs'
 import _ = require('underscore')
 import { getCurrentTime } from '../lib'
 import { transformTimeline, TimelineContentObject } from '@sofie-automation/corelib/dist/playout/timeline'
-import {
-	PieceInstanceWithTimings,
-	processAndPrunePieceInstanceTimings,
-} from '@sofie-automation/corelib/dist/playout/processAndPrune'
+import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { ReadOnlyCache } from '../cache/CacheBase'
 
@@ -126,26 +122,34 @@ export function getResolvedPieces(
 	context: JobContext,
 	cache: ReadOnlyCache<CacheForPlayout>,
 	sourceLayers: SourceLayers,
-	partInstance: DBPartInstance
+	partInstance: Pick<DBPartInstance, '_id' | 'timings'>
 ): ResolvedPieceInstance[] {
-	const span = context.startSpan('getResolvedPieces')
 	const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === partInstance._id)
-
-	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
 
 	const now = getCurrentTime()
 	const partStarted = partInstance.timings?.plannedStartedPlayback
-	const nowInPart = now - (partStarted ?? 0)
+	const nowInPart = partStarted ? now - partStarted : null
 
-	const preprocessedPieces: ReadonlyDeep<PieceInstanceWithTimings[]> = processAndPrunePieceInstanceTimings(
-		sourceLayers,
-		pieceInstances,
-		nowInPart
-	)
+	return getResolvedPiecesInner(context, sourceLayers, cache.PlaylistId, partInstance._id, nowInPart, pieceInstances)
+}
+
+export function getResolvedPiecesInner(
+	context: JobContext,
+	sourceLayers: SourceLayers,
+	playlistId: RundownPlaylistId,
+	partInstanceId: PartInstanceId,
+	nowInPart: number | null,
+	pieceInstances: PieceInstance[]
+): ResolvedPieceInstance[] {
+	const span = context.startSpan('getResolvedPieces')
+
+	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
+
+	const preprocessedPieces = processAndPrunePieceInstanceTimings(sourceLayers, pieceInstances, nowInPart ?? 0)
 
 	const deNowify = (o: TimelineObjRundown) => {
 		applyToArray(o.enable, (enable) => {
-			if (enable.start === 'now' && partStarted) {
+			if (enable.start === 'now' && nowInPart !== null) {
 				// Emulate playout starting now. TODO - ensure didnt break other uses
 				enable.start = nowInPart
 			} else if (enable.start === 0 || enable.start === 'now') {
@@ -166,11 +170,11 @@ export function getResolvedPieces(
 			if ('endRelativeToPart' in piece.userDuration) {
 				controlObjEnable.end = piece.userDuration.endRelativeToPart
 			} else {
-				controlObjEnable.end = nowInPart + piece.userDuration.endRelativeToNow
+				controlObjEnable.end = nowInPart ?? 0 + piece.userDuration.endRelativeToNow
 			}
 		}
 
-		const { controlObj, childGroup, capObjs } = createPieceGroupAndCap(cache.PlaylistId, piece, controlObjEnable)
+		const { controlObj, childGroup, capObjs } = createPieceGroupAndCap(playlistId, piece, controlObjEnable)
 		objs.push(deNowify(controlObj), ...capObjs.map(deNowify), deNowify(childGroup))
 	}
 
@@ -178,7 +182,7 @@ export function getResolvedPieces(
 		transformTimeline(objs),
 		0,
 		pieceInststanceMap,
-		`PartInstance #${partInstance._id}`
+		`PartInstance #${partInstanceId}`
 	)
 
 	if (span) span.end()
