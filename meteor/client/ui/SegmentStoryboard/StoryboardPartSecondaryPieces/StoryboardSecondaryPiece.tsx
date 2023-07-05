@@ -13,6 +13,7 @@ import { SplitsRenderer } from './Renderers/SplitsRenderer'
 import { PieceElement } from '../../SegmentContainer/PieceElement'
 import { UIStudio } from '../../../../lib/api/studios'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { AudioRenderer } from './Renderers/AudioRenderer'
 
 interface IProps {
 	layer: ISourceLayer
@@ -44,6 +45,7 @@ function renderPieceInside(
 		case SourceLayerType.SPLITS:
 			return SplitsRenderer({ ...props, elementOffset, hovering, typeClass })
 		case SourceLayerType.AUDIO:
+			return AudioRenderer({ ...props, elementOffset, hovering, typeClass })
 		case SourceLayerType.CAMERA:
 		case SourceLayerType.LIVE_SPEAK:
 		case SourceLayerType.VT:

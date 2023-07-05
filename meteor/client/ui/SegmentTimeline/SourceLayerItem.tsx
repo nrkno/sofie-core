@@ -20,6 +20,7 @@ import { SourceDurationLabelAlignment } from './Renderers/CustomLayerItemRendere
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
 import { UIStudio } from '../../../lib/api/studios'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
+import { AudioSourceRenderer } from './Renderers/AudioSourceRenderer'
 const LEFT_RIGHT_ANCHOR_SPACER = 15
 const MARGINAL_ANCHORED_WIDTH = 5
 
@@ -553,6 +554,20 @@ export const SourceLayerItem = withTranslation()(
 				case SourceLayerType.VT:
 					return (
 						<VTSourceRenderer
+							key={unprotectString(this.props.piece.instance._id)}
+							typeClass={typeClass}
+							getItemDuration={this.getItemDuration}
+							getSourceDurationLabelAlignment={this.getSourceDurationLabelAlignment}
+							getItemLabelOffsetLeft={this.getItemLabelOffsetLeft}
+							getItemLabelOffsetRight={this.getItemLabelOffsetRight}
+							setAnchoredElsWidths={this.setAnchoredElsWidths}
+							{...this.props}
+							{...this.state}
+						/>
+					)
+				case SourceLayerType.AUDIO:
+					return (
+						<AudioSourceRenderer
 							key={unprotectString(this.props.piece.instance._id)}
 							typeClass={typeClass}
 							getItemDuration={this.getItemDuration}

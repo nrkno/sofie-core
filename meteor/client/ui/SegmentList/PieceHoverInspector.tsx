@@ -15,6 +15,7 @@ import { FloatingInspector } from '../FloatingInspector'
 import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'
 import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
 import { PieceUi } from '../SegmentContainer/withResolvedSegment'
+import { AudioFloatingInspector } from '../FloatingInspectors/AudioFloatingInspector'
 
 export function PieceHoverInspector({
 	studio,
@@ -100,6 +101,25 @@ export function PieceHoverInspector({
 					noticeLevel={noticeLevel}
 					studio={studio}
 					previewUrl={pieceInstance.contentStatus?.previewUrl}
+				/>
+			)
+		case SourceLayerType.AUDIO:
+			return (
+				<AudioFloatingInspector
+					status={status || PieceStatusCode.UNKNOWN}
+					showMiniInspector={hovering}
+					content={vtContent}
+					position={{
+						top: originPosition.top,
+						left: originPosition.left + mousePosition,
+						anchor: 'start',
+						position: 'top-start',
+					}}
+					typeClass={layer && RundownUtils.getSourceLayerClassName(layer.type)}
+					itemElement={null}
+					noticeMessages={pieceInstance.contentStatus?.messages || null}
+					noticeLevel={noticeLevel}
+					thumbnailUrl={pieceInstance.contentStatus?.thumbnailUrl}
 				/>
 			)
 	}

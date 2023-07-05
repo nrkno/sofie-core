@@ -10,6 +10,7 @@ import { GraphicsThumbnailRenderer } from './GraphicsThumbnailRenderer'
 import { LocalThumbnailRenderer } from './LocalThumbnailRenderer'
 import { SplitsThumbnailRenderer } from './SplitsThumbnailRenderer'
 import { VTThumbnailRenderer } from './VTThumbnailRenderer'
+import { AudioThumbnailRenderer } from './AudioThumbnailRenderer'
 
 export interface IProps {
 	partId: PartId
@@ -44,6 +45,7 @@ export default function renderThumbnail(props: IProps): JSX.Element {
 		case SourceLayerType.LOCAL:
 			return LocalThumbnailRenderer(props)
 		case SourceLayerType.AUDIO:
+			return AudioThumbnailRenderer(props)
 		case SourceLayerType.SCRIPT:
 		case SourceLayerType.TRANSITION:
 		case SourceLayerType.UNKNOWN:

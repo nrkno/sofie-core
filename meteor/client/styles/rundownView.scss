@@ -2963,7 +2963,8 @@ svg.icon {
 		}
 	}
 
-	&.segment-timeline__mini-inspector--video {
+	&.segment-timeline__mini-inspector--video,
+	&.segment-timeline__mini-inspector--audio {
 		padding: 0;
 		border: 1px solid #1f1f1f;
 		border-radius: 0px;
