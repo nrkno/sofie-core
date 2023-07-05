@@ -5,13 +5,13 @@ import { SourceLayers } from '../dataModel/ShowStyleBase'
 import { assertNever, groupByToMapFunc } from '../lib'
 import _ = require('underscore')
 import { isCandidateBetterToBeContinued, isCandidateMoreImportant } from './infinites'
-import { getPieceControlObjectId } from './ids'
+import { PieceInstanceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 
 /**
  * Get the `enable: { start: ?? }` for the new piece in terms that can be used as an `end` for another object
  */
-function getPieceStartTime(newPieceStart: number | 'now', newPiece: PieceInstance): number | string {
-	return typeof newPieceStart === 'number' ? newPieceStart : `#${getPieceControlObjectId(newPiece)}.start`
+function getPieceStartTime(newPieceStart: number | 'now', newPiece: PieceInstance): number | RelativeResolvedEndCap {
+	return typeof newPieceStart === 'number' ? newPieceStart : { relativeToStartOf: newPiece._id }
 }
 
 function isClear(piece?: PieceInstance): boolean {
@@ -38,6 +38,11 @@ function isCappedByAVirtual(
 	return false
 }
 
+export interface RelativeResolvedEndCap {
+	relativeToStartOf: PieceInstanceId
+	// offset: number
+}
+
 export interface PieceInstanceWithTimings extends PieceInstance {
 	/**
 	 * This is a maximum end point of the pieceInstance.
@@ -47,7 +52,7 @@ export interface PieceInstanceWithTimings extends PieceInstance {
 	 *  - '#something.start + 100', if it was stopped by something that needs a preroll
 	 *  - '100', if not relative to now at all
 	 */
-	resolvedEndCap?: number | string
+	resolvedEndCap?: number | RelativeResolvedEndCap
 	priority: number
 }
 

@@ -130,34 +130,37 @@ export function createPieceGroupAndCap(
 		controlObj.metaData.triggerPieceInstanceId = pieceInstance._id
 	}
 
-	let resolvedEndCap = pieceInstance.resolvedEndCap
-	if (resolvedEndCap === 'now') {
-		// TODO - there could already be a piece with a cap of 'now' that we could use as our end time
-		// As the cap is for 'now', rather than try to get tsr to understand `end: 'now'`, we can create a 'now' object to tranlate it
-		const nowObj = literal<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>>({
-			objectType: TimelineObjType.RUNDOWN,
-			id: `${controlObj.id}_cap_now`,
-			enable: {
-				start: 'now',
-			},
-			layer: '',
-			content: {
-				deviceType: TSR.DeviceType.ABSTRACT,
-			},
-			partInstanceId: controlObj.partInstanceId,
-			metaData: literal<PieceTimelineMetadata>({
-				isPieceTimeline: true,
-			}),
-			priority: 0,
-		})
-		capObjs.push(nowObj)
-		resolvedEndCap = `#${nowObj.id}.start`
-	} else if (pieceStartOffset && resolvedEndCap !== undefined) {
+	let resolvedEndCap: number | string | undefined
+	// if (pieceInstance.resolvedEndCap === 'now') {
+	// 	// TODO - there could already be a piece with a cap of 'now' that we could use as our end time
+	// 	// As the cap is for 'now', rather than try to get tsr to understand `end: 'now'`, we can create a 'now' object to tranlate it
+	// 	const nowObj = literal<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>>({
+	// 		objectType: TimelineObjType.RUNDOWN,
+	// 		id: `${controlObj.id}_cap_now`,
+	// 		enable: {
+	// 			start: 'now',
+	// 		},
+	// 		layer: '',
+	// 		content: {
+	// 			deviceType: TSR.DeviceType.ABSTRACT,
+	// 		},
+	// 		partInstanceId: controlObj.partInstanceId,
+	// 		metaData: literal<PieceTimelineMetadata>({
+	// 			isPieceTimeline: true,
+	// 		}),
+	// 		priority: 0,
+	// 	})
+	// 	capObjs.push(nowObj)
+	// 	resolvedEndCap = `#${nowObj.id}.start`
+	// } else
+	if (pieceStartOffset && pieceInstance.resolvedEndCap !== undefined) {
 		// If the start has been adjusted, the end needs to be updated to compensate
-		if (typeof resolvedEndCap === 'number') {
-			resolvedEndCap -= pieceStartOffset
+		if (typeof pieceInstance.resolvedEndCap === 'number') {
+			resolvedEndCap = pieceInstance.resolvedEndCap - pieceStartOffset
+		} else if (typeof pieceInstance.resolvedEndCap === 'string') {
+			resolvedEndCap = `${pieceInstance.resolvedEndCap} - ${pieceStartOffset}`
 		} else {
-			resolvedEndCap = `${resolvedEndCap} - ${pieceStartOffset}`
+			resolvedEndCap = `${pieceInstance.resolvedEndCap.relativeToStartOf} - ${pieceStartOffset}`
 		}
 	}
 

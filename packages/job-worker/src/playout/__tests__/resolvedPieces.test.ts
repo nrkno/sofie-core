@@ -1,11 +1,11 @@
-import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { setupMockShowStyleCompound, setupDefaultRundownPlaylist } from '../../__mocks__/presetCollections'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
-import { getResolvedPiecesInner } from '../resolvedPieces'
+// import { getResolvedPiecesInner } from '../resolvedPieces'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { ReadonlyDeep } from 'type-fest'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { getRandomId, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { IBlueprintPieceType, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import {
 	PieceInstance,
@@ -14,6 +14,11 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import _ = require('underscore')
+import { JobContext } from '../../jobs'
+import {
+	PieceInstanceWithTimings,
+	processAndPrunePieceInstanceTimings,
+} from '@sofie-automation/corelib/dist/playout/processAndPrune'
 
 describe('Resolved Pieces', () => {
 	let context: MockJobContext
@@ -70,6 +75,65 @@ describe('Resolved Pieces', () => {
 		}
 	}
 
+	function resolveStartOfInstance(nowInPart: number, instance: PieceInstanceWithTimings): number {
+		return instance.piece.enable.start === 'now' ? nowInPart ?? 0 : instance.piece.enable.start
+	}
+
+	function resolvePrunedPieceInstances(
+		nowInPart: number,
+		pieceInstances: PieceInstanceWithTimings[]
+	): ResolvedPieceInstance[] {
+		const pieceInstancesMap = normalizeArrayToMap(pieceInstances, '_id')
+
+		// Calculate the durations
+		return pieceInstances.map((instance) => {
+			const resolvedStart = resolveStartOfInstance(nowInPart, instance)
+
+			let resolvedEnd: number | undefined
+			if (typeof instance.resolvedEndCap === 'number') {
+				resolvedEnd = instance.resolvedEndCap
+				// } else if (instance.resolvedEndCap === 'now') {
+				// 	// TODO - something should test this route?
+				// 	// resolvedEnd = nowInPart
+			} else if (instance.resolvedEndCap) {
+				const otherInstance = pieceInstancesMap.get(instance.resolvedEndCap.relativeToStartOf)
+				if (otherInstance) {
+					resolvedEnd = resolveStartOfInstance(nowInPart, otherInstance)
+				}
+			}
+
+			const caps: number[] = []
+			if (resolvedEnd !== undefined) caps.push(resolvedEnd - resolvedStart)
+			if (instance.piece.enable.duration !== undefined) caps.push(instance.piece.enable.duration)
+
+			if (instance.userDuration) {
+				if ('endRelativeToPart' in instance.userDuration) {
+					caps.push(instance.userDuration.endRelativeToPart - resolvedStart)
+				} else if ('endRelativeToNow' in instance.userDuration) {
+					caps.push(nowInPart + instance.userDuration.endRelativeToNow - resolvedStart)
+				}
+			}
+
+			return {
+				...instance,
+				resolvedStart,
+				resolvedDuration: caps.length ? Math.min(...caps) : undefined,
+			}
+		})
+	}
+
+	function getResolvedPiecesInner(
+		_context: JobContext,
+		sourceLayers: SourceLayers,
+		_playlistId: RundownPlaylistId,
+		_partInstanceId: PartInstanceId,
+		nowInPart: number | null,
+		pieceInstances: PieceInstance[]
+	): ResolvedPieceInstance[] {
+		const preprocessedPieces = processAndPrunePieceInstanceTimings(sourceLayers, pieceInstances, nowInPart ?? 0)
+		return resolvePrunedPieceInstances(nowInPart ?? 0, preprocessedPieces)
+	}
+
 	test('simple single piece', async () => {
 		const sourceLayerId = Object.keys(sourceLayers)[0]
 		expect(sourceLayerId).toBeTruthy()
@@ -113,12 +177,12 @@ describe('Resolved Pieces', () => {
 		expect(stripResult(resolvedPieces)).toEqual([
 			{
 				_id: piece0._id,
-				resolvedStart: 1000 - 1,
+				resolvedStart: 1000,
 				resolvedDuration: 2000,
 			},
 			{
 				_id: piece1._id,
-				resolvedStart: 4000 - 1,
+				resolvedStart: 4000,
 				resolvedDuration: undefined,
 			},
 		] satisfies StrippedResult)
@@ -143,12 +207,12 @@ describe('Resolved Pieces', () => {
 		expect(stripResult(resolvedPieces)).toEqual([
 			{
 				_id: piece0._id,
-				resolvedStart: 1000 - 1,
+				resolvedStart: 1000,
 				resolvedDuration: 3000,
 			},
 			{
 				_id: piece1._id,
-				resolvedStart: 4000 - 1,
+				resolvedStart: 4000,
 				resolvedDuration: undefined,
 			},
 		] satisfies StrippedResult)
@@ -174,17 +238,17 @@ describe('Resolved Pieces', () => {
 		expect(stripResult(resolvedPieces)).toEqual([
 			{
 				_id: piece0._id,
-				resolvedStart: 1000 - 1,
+				resolvedStart: 1000,
 				resolvedDuration: undefined,
 			},
 			{
 				_id: piece1._id,
-				resolvedStart: 4000 - 1,
+				resolvedStart: 4000,
 				resolvedDuration: undefined,
 			},
 			{
 				_id: piece2._id,
-				resolvedStart: 8000 - 1,
+				resolvedStart: 8000,
 				resolvedDuration: 2000,
 			},
 		] satisfies StrippedResult)
@@ -213,7 +277,7 @@ describe('Resolved Pieces', () => {
 		expect(stripResult(resolvedPieces)).toEqual([
 			{
 				_id: piece0._id,
-				resolvedStart: 1000 - 1,
+				resolvedStart: 1000,
 				resolvedDuration: 3000,
 			},
 		] satisfies StrippedResult)
@@ -243,11 +307,11 @@ describe('Resolved Pieces', () => {
 			{
 				_id: piece1._id,
 				resolvedStart: 0,
-				resolvedDuration: 1000 - 1,
+				resolvedDuration: 1000,
 			},
 			{
 				_id: piece0._id,
-				resolvedStart: 1000 - 1,
+				resolvedStart: 1000,
 				resolvedDuration: undefined,
 			},
 		] satisfies StrippedResult)
@@ -276,12 +340,12 @@ describe('Resolved Pieces', () => {
 		expect(stripResult(resolvedPieces)).toEqual([
 			{
 				_id: piece0._id,
-				resolvedStart: 1000 - 1,
+				resolvedStart: 1000,
 				resolvedDuration: 1500,
 			},
 			{
 				_id: piece1._id,
-				resolvedStart: 2500 - 1,
+				resolvedStart: 2500,
 				resolvedDuration: undefined,
 			},
 		] satisfies StrippedResult)
@@ -314,7 +378,7 @@ describe('Resolved Pieces', () => {
 		expect(stripResult(resolvedPieces)).toEqual([
 			{
 				_id: piece0._id,
-				resolvedStart: 1000 - 1,
+				resolvedStart: 1000,
 				resolvedDuration: 1000,
 			},
 		] satisfies StrippedResult)
@@ -347,8 +411,8 @@ describe('Resolved Pieces', () => {
 		expect(stripResult(resolvedPieces)).toEqual([
 			{
 				_id: piece0._id,
-				resolvedStart: 1000 - 1,
-				resolvedDuration: 1500, // TODO - this should be 3500?
+				resolvedStart: 1000,
+				resolvedDuration: 3500,
 			},
 		] satisfies StrippedResult)
 	})
@@ -377,7 +441,7 @@ describe('Resolved Pieces', () => {
 		expect(stripResult(resolvedPieces)).toEqual([
 			{
 				_id: piece0._id,
-				resolvedStart: 1000 - 1,
+				resolvedStart: 1000,
 				resolvedDuration: undefined,
 			},
 		] satisfies StrippedResult)
@@ -407,7 +471,7 @@ describe('Resolved Pieces', () => {
 		expect(stripResult(resolvedPieces)).toEqual([
 			{
 				_id: piece0._id,
-				resolvedStart: 1000 - 1,
+				resolvedStart: 1000,
 				resolvedDuration: 1000,
 			},
 		] satisfies StrippedResult)
