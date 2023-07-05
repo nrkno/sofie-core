@@ -37,7 +37,8 @@ import {
 	unprotectString,
 	unprotectStringArray,
 } from '@sofie-automation/corelib/dist/protectedString'
-import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
+import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
+import { getResolvedPieces } from '../../playout/resolvedPieces'
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { MongoQuery } from '../../db'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'

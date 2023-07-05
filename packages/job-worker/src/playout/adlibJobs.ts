@@ -17,12 +17,8 @@ import { CacheForPlayout, getRundownIDsFromCache, getSelectedPartInstancesFromCa
 import { runJobWithPlayoutCache } from './lock'
 import { updateTimeline } from './timeline/generate'
 import { getCurrentTime } from '../lib'
-import {
-	convertAdLibToPieceInstance,
-	convertPieceToAdLibPiece,
-	getResolvedPieces,
-	sortPieceInstancesByStart,
-} from './pieces'
+import { convertAdLibToPieceInstance, convertPieceToAdLibPiece, sortPieceInstancesByStart } from './pieces'
+import { getResolvedPieces } from './resolvedPieces'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'

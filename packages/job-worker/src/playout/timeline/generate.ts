@@ -33,7 +33,7 @@ import {
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../cache'
 import { logger } from '../../logging'
 import { getCurrentTime, getSystemVersion } from '../../lib'
-import { getResolvedPiecesFromFullTimeline } from '../pieces'
+import { getResolvedPiecesFromFullTimeline } from '../resolvedPieces'
 import {
 	processAndPrunePieceInstanceTimings,
 	PieceInstanceWithTimings,

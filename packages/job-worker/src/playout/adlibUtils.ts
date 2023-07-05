@@ -16,7 +16,8 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { convertAdLibToPieceInstance, getResolvedPieces, setupPieceInstanceInfiniteProperties } from './pieces'
+import { convertAdLibToPieceInstance, setupPieceInstanceInfiniteProperties } from './pieces'
+import { getResolvedPieces } from './resolvedPieces'
 import { updateTimeline } from './timeline/generate'
 import { PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
