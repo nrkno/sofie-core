@@ -21,7 +21,10 @@ export function hasPieceInstanceDefinitelyEnded(
 	let relativeEnd: number | undefined
 	if (typeof pieceInstance.resolvedEndCap === 'number') {
 		relativeEnd = pieceInstance.resolvedEndCap
+	} else if (pieceInstance.resolvedEndCap) {
+		relativeEnd = nowInPart + pieceInstance.resolvedEndCap.offsetFromNow
 	}
+
 	if (pieceInstance.userDuration) {
 		const userDurationEnd =
 			'endRelativeToPart' in pieceInstance.userDuration

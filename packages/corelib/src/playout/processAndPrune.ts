@@ -5,13 +5,12 @@ import { SourceLayers } from '../dataModel/ShowStyleBase'
 import { assertNever, groupByToMapFunc } from '../lib'
 import _ = require('underscore')
 import { isCandidateBetterToBeContinued, isCandidateMoreImportant } from './infinites'
-import { PieceInstanceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
 
 /**
  * Get the `enable: { start: ?? }` for the new piece in terms that can be used as an `end` for another object
  */
-function getPieceStartTime(newPieceStart: number | 'now', newPiece: PieceInstance): number | RelativeResolvedEndCap {
-	return typeof newPieceStart === 'number' ? newPieceStart : { relativeToStartOf: newPiece._id }
+function getPieceStartTime(newPieceStart: number | 'now'): number | RelativeResolvedEndCap {
+	return typeof newPieceStart === 'number' ? newPieceStart : { offsetFromNow: 0 }
 }
 
 function isClear(piece?: PieceInstance): boolean {
@@ -39,8 +38,7 @@ function isCappedByAVirtual(
 }
 
 export interface RelativeResolvedEndCap {
-	relativeToStartOf: PieceInstanceId
-	// offset: number
+	offsetFromNow: number
 }
 
 export interface PieceInstanceWithTimings extends PieceInstance {
@@ -126,7 +124,7 @@ function updateWithNewPieces(
 	if (newPiece) {
 		const activePiece = activePieces[key]
 		if (activePiece) {
-			activePiece.resolvedEndCap = getPieceStartTime(newPiecesStart, newPiece)
+			activePiece.resolvedEndCap = getPieceStartTime(newPiecesStart)
 		}
 		// track the new piece
 		activePieces[key] = newPiece
@@ -151,7 +149,7 @@ function updateWithNewPieces(
 					(newPiecesStart !== 0 || isCandidateBetterToBeContinued(activePieces.other, newPiece))
 				) {
 					// These modes should stop the 'other' when they start if not hidden behind a higher priority onEnd
-					activePieces.other.resolvedEndCap = getPieceStartTime(newPiecesStart, newPiece)
+					activePieces.other.resolvedEndCap = getPieceStartTime(newPiecesStart)
 					activePieces.other = undefined
 				}
 			}

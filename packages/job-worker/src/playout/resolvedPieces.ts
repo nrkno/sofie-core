@@ -3,7 +3,7 @@ import { PieceInstance, ResolvedPieceInstance } from '@sofie-automation/corelib/
 import { TimelineObjGeneric, TimelineObjRundown } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { IBlueprintPieceType } from '@sofie-automation/blueprints-integration/dist'
-import { clone, literal, normalizeArray, applyToArray, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
+import { clone, literal, normalizeArray, applyToArray } from '@sofie-automation/corelib/dist/lib'
 import { Resolver, TimelineEnable } from 'superfly-timeline'
 import { logger } from '../logging'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from './cache'
@@ -126,8 +126,6 @@ export function resolvePrunedPieceInstances(
 	nowInPart: number,
 	pieceInstances: PieceInstanceWithTimings[]
 ): ResolvedPieceInstance[] {
-	const pieceInstancesMap = normalizeArrayToMap(pieceInstances, '_id')
-
 	const resolveStartOfInstance = (instance: PieceInstanceWithTimings): number => {
 		return instance.piece.enable.start === 'now' ? nowInPart : instance.piece.enable.start
 	}
@@ -139,14 +137,8 @@ export function resolvePrunedPieceInstances(
 		let resolvedEnd: number | undefined
 		if (typeof instance.resolvedEndCap === 'number') {
 			resolvedEnd = instance.resolvedEndCap
-			// } else if (instance.resolvedEndCap === 'now') {
-			// 	// TODO - something should test this route?
-			// 	// resolvedEnd = nowInPart
 		} else if (instance.resolvedEndCap) {
-			const otherInstance = pieceInstancesMap.get(instance.resolvedEndCap.relativeToStartOf)
-			if (otherInstance) {
-				resolvedEnd = resolveStartOfInstance(otherInstance)
-			}
+			resolvedEnd = nowInPart + instance.resolvedEndCap.offsetFromNow
 		}
 
 		// Find any possible durations this piece may have
@@ -206,18 +198,10 @@ export function getResolvedPiecesForCurrentPartInstance(
 export function getResolvedPiecesForPartInstancesOnTimeline(
 	_context: JobContext,
 	partInstancesInfo: SelectedPartInstancesTimelineInfo,
-	now?: number
+	now: number
 ): ResolvedPieceInstance[] {
-	if (now === undefined) now = getCurrentTime()
-
+	// With no current part, there are no timings to consider
 	if (!partInstancesInfo.current) return []
-
-	// TODO - this needs to set/update resolvedDuration on the pieces from the predecessor part
-	// TODO - this needs to do the infinites 'merging' just like we do for actual playout
-
-	let previousResolvedPieces: ResolvedPieceInstance[] = []
-	let currentResolvedPieces: ResolvedPieceInstance[] = []
-	let nextResolvedPieces: ResolvedPieceInstance[] = []
 
 	const currentPartStarted = partInstancesInfo.current.partStarted ?? now
 	const nextPartStarted =
@@ -225,12 +209,8 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 			? currentPartStarted + partInstancesInfo.current.partInstance.part.expectedDuration
 			: null
 
-	// Map<sourceLayerId, Map<priority, resolvedStart>>
-	// const currentPartPieceTimesMap = new Map<string, Map<number, number>>()
-
-	// TODO - does this handle onChange infinites fully?
-
 	// Calculate the next part if needed
+	let nextResolvedPieces: ResolvedPieceInstance[] = []
 	if (partInstancesInfo.next && partInstancesInfo.current.partInstance.part.autoNext && nextPartStarted != null) {
 		nextResolvedPieces = resolvePrunedPieceInstances(
 			partInstancesInfo.next.nowInPart,
@@ -241,38 +221,17 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 		offsetResolvedStartAndCapDuration(nextResolvedPieces, nextPartStarted, null)
 	}
 
-	currentResolvedPieces = resolvePrunedPieceInstances(
+	// Calculate the current part
+	const currentResolvedPieces = resolvePrunedPieceInstances(
 		partInstancesInfo.current.nowInPart,
 		partInstancesInfo.current.pieceInstances
 	)
 
 	// Translate start to absolute times
 	offsetResolvedStartAndCapDuration(currentResolvedPieces, currentPartStarted, nextPartStarted)
-	// for (const piece of currentResolvedPieces) {
-	// 	piece.resolvedStart += currentPartStarted
-
-	// 	if (nextPartStarted !== null) {
-	// 		// Cap it to the end of the Part. If it is supposed to be longer, there will be a continuing infinite
-	// 		const partEndCap = nextPartStarted - piece.resolvedStart
-
-	// 		piece.resolvedDuration =
-	// 			piece.resolvedDuration !== undefined ? Math.min(piece.resolvedDuration, partEndCap) : partEndCap
-	// 	}
-
-	// 	// 		// Track the start times
-	// 	// let layerMap = currentPartPieceTimesMap.get(piece.piece.sourceLayerId)
-	// 	// if (!layerMap) {
-	// 	// 	layerMap = new Map()
-	// 	// 	currentPartPieceTimesMap.set(piece.piece.sourceLayerId, layerMap)
-	// 	// }
-
-	// 	// const entry = layerMap.get(piece.timelinePriority)
-	// 	// if (entry === undefined || piece.resolvedStart < entry) {
-	// 	// 	layerMap.set(piece.timelinePriority, piece.resolvedStart)
-	// 	// }
-	// }
 
 	// Calculate the previous part
+	let previousResolvedPieces: ResolvedPieceInstance[] = []
 	if (partInstancesInfo.previous?.partStarted) {
 		previousResolvedPieces = resolvePrunedPieceInstances(
 			partInstancesInfo.previous.nowInPart,
@@ -286,6 +245,8 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 			currentPartStarted
 		)
 	}
+
+	// TODO - this needs to do the infinites 'merging' just like we do for actual playout
 
 	return [...previousResolvedPieces, ...currentResolvedPieces, ...nextResolvedPieces]
 }
