@@ -55,6 +55,8 @@ function resolvePieceTimeline(
 					resolvedDuration: firstInstance.end
 						? firstInstance.end - (firstInstance.start || baseTime)
 						: undefined,
+
+					timelinePriority: 0, // Unused
 				})
 			)
 		} else {
@@ -63,6 +65,8 @@ function resolvePieceTimeline(
 					...pieceInstance,
 					resolvedStart: baseTime,
 					resolvedDuration: undefined,
+
+					timelinePriority: 0, // Unused
 				})
 			)
 			unresolvedIds.push(pieceInstanceId)
@@ -163,8 +167,11 @@ export function resolvePrunedPieceInstances(
 
 		return {
 			...instance,
+
 			resolvedStart,
 			resolvedDuration: caps.length ? Math.min(...caps) : undefined,
+
+			timelinePriority: instance.priority,
 		}
 	})
 }
@@ -203,10 +210,11 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 ): ResolvedPieceInstance[] {
 	if (now === undefined) now = getCurrentTime()
 
+	// TODO - this needs to set/update resolvedDuration on the pieces from the predecessor part
+	// TODO - this needs to do the infinites 'merging' just like we do for actual playout
+
 	let previousResolvedPieces: ResolvedPieceInstance[] = []
 	if (partInstancesInfo.previous?.partStarted) {
-		// TODO - should this only be when partInstancesInfo.previous?.partStarted?
-
 		previousResolvedPieces = resolvePrunedPieceInstances(
 			partInstancesInfo.previous.nowInPart,
 			partInstancesInfo.previous.pieceInstances
@@ -219,8 +227,9 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 	}
 
 	let currentResolvedPieces: ResolvedPieceInstance[] = []
+	let nextResolvedPieces: ResolvedPieceInstance[] = []
 	if (partInstancesInfo.current) {
-		const partStarted = partInstancesInfo.current.partStarted ?? now
+		const currentPartStarted = partInstancesInfo.current.partStarted ?? now
 
 		currentResolvedPieces = resolvePrunedPieceInstances(
 			partInstancesInfo.current.nowInPart,
@@ -229,26 +238,26 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 
 		// Translate start to absolute times
 		for (const piece of currentResolvedPieces) {
-			piece.resolvedStart += partStarted
+			piece.resolvedStart += currentPartStarted
 		}
-	}
 
-	let nextResolvedPieces: ResolvedPieceInstance[] = []
-	if (
-		partInstancesInfo.next &&
-		// TODO - is this autonext check reliable? what if playout decides to not use it?
-		(!partInstancesInfo.current || partInstancesInfo.current.partInstance.part.autoNext)
-	) {
-		const partStarted = now + 99999999 // TODO - what should this be?
+		// Calculate the next part if needed
+		if (
+			partInstancesInfo.next &&
+			partInstancesInfo.current.partInstance.part.autoNext &&
+			partInstancesInfo.current.partInstance.part.expectedDuration !== undefined
+		) {
+			const nextPartStarted = currentPartStarted + partInstancesInfo.current.partInstance.part.expectedDuration
 
-		nextResolvedPieces = resolvePrunedPieceInstances(
-			partInstancesInfo.next.nowInPart,
-			partInstancesInfo.next.pieceInstances
-		)
+			nextResolvedPieces = resolvePrunedPieceInstances(
+				partInstancesInfo.next.nowInPart,
+				partInstancesInfo.next.pieceInstances
+			)
 
-		// Translate start to absolute times
-		for (const piece of nextResolvedPieces) {
-			piece.resolvedStart += partStarted
+			// Translate start to absolute times
+			for (const piece of nextResolvedPieces) {
+				piece.resolvedStart += nextPartStarted
+			}
 		}
 	}
 

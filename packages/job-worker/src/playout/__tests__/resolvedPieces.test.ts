@@ -940,25 +940,6 @@ describe('Resolved Pieces', () => {
 				const piece001Id = protectString(`${parts.previousPartInstance?._id}_${rundownId}_piece001`)
 				const piece010Id = protectString(`${parts.currentPartInstance._id}_${rundownId}_piece010`)
 
-				// // Remove any unwanted pieceInstances
-				// cache.PieceInstances.remove(
-				// 	(p) => p.partInstanceId === parts.currentPartInstance._id && p._id !== piece001Id
-				// )
-
-				// // Change the start of piece001
-				// const piece001 = cache.PieceInstances.findOne(piece001Id) as PieceInstance
-				// expect(piece001).toBeTruthy()
-				// expect(piece001.partInstanceId).toBe(parts.currentPartInstance._id)
-				// expect(piece001.piece.lifespan).toBe(PieceLifespan.WithinPart)
-
-				// cache.PieceInstances.updateOne(piece001Id, (p) => {
-				// 	p.piece.enable = { start: 4000 }
-				// 	p.userDuration = {
-				// 		endRelativeToNow: 1300,
-				// 	}
-				// 	return p
-				// })
-
 				// rebuild the timeline
 				await updateTimeline(context, cache)
 
@@ -1001,12 +982,486 @@ describe('Resolved Pieces', () => {
 			})
 		})
 
+		test('previousPart never started playback', async () => {
+			await loadCacheAndPerformTakes(2, async (cache, parts, now) => {
+				// Make sure the input looks sane
+				const previousPartInstance = parts.previousPartInstance as DBPartInstance
+				expect(parts.currentPartInstance).toBeTruthy()
+				expect(previousPartInstance).toBeTruthy()
+				// Both should have started times
+				expect(previousPartInstance.timings?.plannedStartedPlayback).toBeTruthy()
+				expect(parts.currentPartInstance.timings?.plannedStartedPlayback).toBeTruthy()
+
+				cache.PartInstances.updateOne(previousPartInstance._id, (p) => {
+					delete p.timings?.plannedStoppedPlayback
+					delete p.timings?.plannedStartedPlayback
+					delete p.timings?.reportedStartedPlayback
+					delete p.timings?.reportedStoppedPlayback
+
+					return p
+				})
+
+				const piece010Id = protectString(`${parts.currentPartInstance._id}_${rundownId}_piece010`)
+
+				// rebuild the timeline
+				await updateTimeline(context, cache)
+
+				// Check the result
+				const laterNow = now + 2000
+				const resolvedPieces = doResolvePieces(cache, laterNow)
+
+				expect(stripResult(resolvedPieces)).toEqual([
+					{
+						_id: piece010Id,
+						resolvedStart: now - 1,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+
+				// Check the 'simple' route result
+				const partInstancesInfo = loadSelectedPartInstancesTimelineInfo(cache, laterNow)
+				const simpleResolvedPieces = getResolvedPiecesForPartInstancesOnTimeline(
+					context,
+					partInstancesInfo,
+					laterNow
+				)
+				expect(stripResult(simpleResolvedPieces)).toEqual([
+					{
+						_id: piece010Id,
+						resolvedStart: now,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+			})
+		})
+
+		test('previousPart with ending infinite', async () => {
+			await loadCacheAndPerformTakes(2, async (cache, parts, now) => {
+				// Make sure the input looks sane
+				const previousPartInstance = parts.previousPartInstance as DBPartInstance
+				expect(parts.currentPartInstance).toBeTruthy()
+				expect(previousPartInstance).toBeTruthy()
+				// Both should have started times
+				expect(previousPartInstance.timings?.plannedStartedPlayback).toBeTruthy()
+				expect(parts.currentPartInstance.timings?.plannedStartedPlayback).toBeTruthy()
+
+				const piece001Id = protectString(`${parts.previousPartInstance?._id}_${rundownId}_piece001`)
+				const piece010Id = protectString(`${parts.currentPartInstance._id}_${rundownId}_piece010`)
+
+				const piece001 = cache.PieceInstances.findOne(piece001Id) as PieceInstance
+				expect(piece001).toBeTruthy()
+				expect(piece001.partInstanceId).toBe(previousPartInstance._id)
+				expect(piece001.piece.lifespan).toBe(PieceLifespan.WithinPart)
+
+				const cappedInfinitePiece = createInfinitePiece(previousPartInstance, {
+					lifespan: PieceLifespan.OutOnSegmentEnd,
+					enable: { start: 1000 },
+					sourceLayerId: piece001.piece.sourceLayerId,
+				})
+				cache.PieceInstances.insert(cappedInfinitePiece)
+
+				// rebuild the timeline
+				await updateTimeline(context, cache)
+
+				// Check the result
+				const laterNow = now + 2000
+				const resolvedPieces = doResolvePieces(cache, laterNow)
+
+				expect(stripResult(resolvedPieces)).toEqual([
+					{
+						_id: piece001Id,
+						resolvedStart: now - 5000 - 1,
+						resolvedDuration: 5000, // TODO - this is wrong
+					},
+					{
+						_id: cappedInfinitePiece._id,
+						resolvedStart: now - 5000 + 1000 - 1,
+						resolvedDuration: 4000,
+					},
+					{
+						_id: piece010Id,
+						resolvedStart: now - 1,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+
+				// Check the 'simple' route result
+				const partInstancesInfo = loadSelectedPartInstancesTimelineInfo(cache, laterNow)
+				const simpleResolvedPieces = getResolvedPiecesForPartInstancesOnTimeline(
+					context,
+					partInstancesInfo,
+					laterNow
+				)
+				expect(stripResult(simpleResolvedPieces)).toEqual([
+					{
+						_id: piece001Id,
+						resolvedStart: now - 5000,
+						resolvedDuration: 1000,
+					},
+					{
+						_id: cappedInfinitePiece._id,
+						resolvedStart: now - 5000 + 1000,
+						resolvedDuration: undefined, // TODO - this NEEDS a value
+					},
+					{
+						_id: piece010Id,
+						resolvedStart: now,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+			})
+		})
+
+		test('previousPart with continuing infinite', async () => {
+			await loadCacheAndPerformTakes(2, async (cache, parts, now) => {
+				// Make sure the input looks sane
+				const previousPartInstance = parts.previousPartInstance as DBPartInstance
+				expect(parts.currentPartInstance).toBeTruthy()
+				expect(previousPartInstance).toBeTruthy()
+				// Both should have started times
+				expect(previousPartInstance.timings?.plannedStartedPlayback).toBeTruthy()
+				expect(parts.currentPartInstance.timings?.plannedStartedPlayback).toBeTruthy()
+
+				const piece001Id = protectString(`${parts.previousPartInstance?._id}_${rundownId}_piece001`)
+				const piece010Id = protectString(`${parts.currentPartInstance._id}_${rundownId}_piece010`)
+
+				const piece001 = cache.PieceInstances.findOne(piece001Id) as PieceInstance
+				expect(piece001).toBeTruthy()
+				expect(piece001.partInstanceId).toBe(previousPartInstance._id)
+				expect(piece001.piece.lifespan).toBe(PieceLifespan.WithinPart)
+
+				// Start an infinite
+				const startingInfinitePiece = createInfinitePiece(previousPartInstance, {
+					lifespan: PieceLifespan.OutOnSegmentEnd,
+					enable: { start: 1000 },
+					sourceLayerId: piece001.piece.sourceLayerId,
+				})
+				cache.PieceInstances.insert(startingInfinitePiece)
+				const continuingInfinitePiece = createInfinitePiece(parts.currentPartInstance, {
+					lifespan: PieceLifespan.OutOnSegmentEnd,
+					enable: { start: 0 },
+					sourceLayerId: piece001.piece.sourceLayerId,
+				})
+				continuingInfinitePiece.infinite = {
+					...startingInfinitePiece.infinite!,
+					fromPreviousPart: true,
+					infiniteInstanceIndex: 1,
+				}
+				cache.PieceInstances.insert(continuingInfinitePiece)
+
+				// rebuild the timeline
+				await updateTimeline(context, cache)
+
+				// Check the result
+				const laterNow = now + 2000
+				const resolvedPieces = doResolvePieces(cache, laterNow)
+
+				expect(stripResult(resolvedPieces)).toEqual([
+					{
+						_id: piece001Id,
+						resolvedStart: now - 5000 - 1,
+						resolvedDuration: 5000, // TODO - this is wrong
+					},
+					{
+						_id: continuingInfinitePiece._id,
+						resolvedStart: now - 1, // TODO - this is wrong considering it is an infinite and spans startingInfinitePiece
+						resolvedDuration: undefined,
+					},
+					{
+						_id: piece010Id,
+						resolvedStart: now - 1,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+
+				// Check the 'simple' route result
+				const partInstancesInfo = loadSelectedPartInstancesTimelineInfo(cache, laterNow)
+				const simpleResolvedPieces = getResolvedPiecesForPartInstancesOnTimeline(
+					context,
+					partInstancesInfo,
+					laterNow
+				)
+				expect(stripResult(simpleResolvedPieces)).toEqual([
+					{
+						_id: piece001Id,
+						resolvedStart: now - 5000,
+						resolvedDuration: 1000,
+					},
+					{
+						// todo - should this be merged with continuingInfinitePiece?
+						_id: startingInfinitePiece._id,
+						resolvedStart: now - 5000 + 1000,
+						resolvedDuration: undefined, // TODO - this is wrong?
+					},
+					{
+						_id: piece010Id,
+						resolvedStart: now,
+						resolvedDuration: undefined,
+					},
+					{
+						_id: continuingInfinitePiece._id,
+						resolvedStart: now,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+			})
+		})
+
+		test('basic nextPart', async () => {
+			await loadCacheAndPerformTakes(1, async (cache, parts, now) => {
+				// Make sure the input looks sane
+				expect(parts.currentPartInstance).toBeTruthy()
+				expect(parts.nextPartInstance).toBeTruthy()
+				// Both should have started times
+				expect(parts.currentPartInstance.timings?.plannedStartedPlayback).toBeTruthy()
+				expect(parts.nextPartInstance.timings?.plannedStartedPlayback).toBeFalsy()
+
+				const piece001Id = protectString(`${parts.currentPartInstance?._id}_${rundownId}_piece001`)
+				const piece010Id = protectString(`${parts.nextPartInstance._id}_${rundownId}_piece010`)
+
+				cache.PartInstances.updateOne(parts.currentPartInstance._id, (p) => {
+					p.part.autoNext = true
+
+					p.part.expectedDuration = 13000
+					p.part.expectedDurationWithPreroll = 13500
+
+					return p
+				})
+
+				// rebuild the timeline
+				await updateTimeline(context, cache)
+
+				// Check the result
+				const laterNow = now + 2000
+				const resolvedPieces = doResolvePieces(cache, laterNow)
+
+				expect(stripResult(resolvedPieces)).toEqual([
+					{
+						_id: piece001Id,
+						resolvedStart: now - 1,
+						resolvedDuration: 13000,
+					},
+					{
+						_id: piece010Id,
+						resolvedStart: now + 13000 - 1,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+
+				// Check the 'simple' route result
+				const partInstancesInfo = loadSelectedPartInstancesTimelineInfo(cache, laterNow)
+				const simpleResolvedPieces = getResolvedPiecesForPartInstancesOnTimeline(
+					context,
+					partInstancesInfo,
+					laterNow
+				)
+				expect(stripResult(simpleResolvedPieces)).toEqual([
+					{
+						_id: piece001Id,
+						resolvedStart: now,
+						resolvedDuration: undefined, // TODO - this NEEDS a value
+					},
+					{
+						_id: piece010Id,
+						resolvedStart: now + 13000,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+			})
+		})
+
+		test('nextPart with ending infinite', async () => {
+			await loadCacheAndPerformTakes(1, async (cache, parts, now) => {
+				// Make sure the input looks sane
+				expect(parts.currentPartInstance).toBeTruthy()
+				expect(parts.nextPartInstance).toBeTruthy()
+				// Both should have started times
+				expect(parts.currentPartInstance.timings?.plannedStartedPlayback).toBeTruthy()
+				expect(parts.nextPartInstance.timings?.plannedStartedPlayback).toBeFalsy()
+
+				cache.PartInstances.updateOne(parts.currentPartInstance._id, (p) => {
+					p.part.autoNext = true
+
+					p.part.expectedDuration = 13000
+					p.part.expectedDurationWithPreroll = 13500
+
+					return p
+				})
+
+				const piece001Id = protectString(`${parts.currentPartInstance._id}_${rundownId}_piece001`)
+				const piece010Id = protectString(`${parts.nextPartInstance._id}_${rundownId}_piece010`)
+
+				const piece001 = cache.PieceInstances.findOne(piece001Id) as PieceInstance
+				expect(piece001).toBeTruthy()
+				expect(piece001.partInstanceId).toBe(parts.currentPartInstance._id)
+				expect(piece001.piece.lifespan).toBe(PieceLifespan.WithinPart)
+
+				const cappedInfinitePiece = createInfinitePiece(parts.currentPartInstance, {
+					lifespan: PieceLifespan.OutOnSegmentEnd,
+					enable: { start: 1000 },
+					sourceLayerId: piece001.piece.sourceLayerId,
+				})
+				cache.PieceInstances.insert(cappedInfinitePiece)
+
+				// rebuild the timeline
+				await updateTimeline(context, cache)
+
+				// Check the result
+				const laterNow = now + 2000
+				const resolvedPieces = doResolvePieces(cache, laterNow)
+
+				expect(stripResult(resolvedPieces)).toEqual([
+					{
+						_id: piece001Id,
+						resolvedStart: now - 1,
+						resolvedDuration: 13000, // TODO - this is wrong
+					},
+					{
+						_id: cappedInfinitePiece._id,
+						resolvedStart: now + 1000 - 1,
+						resolvedDuration: 12000,
+					},
+					{
+						_id: piece010Id,
+						resolvedStart: now + 13000 - 1,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+
+				// Check the 'simple' route result
+				const partInstancesInfo = loadSelectedPartInstancesTimelineInfo(cache, laterNow)
+				const simpleResolvedPieces = getResolvedPiecesForPartInstancesOnTimeline(
+					context,
+					partInstancesInfo,
+					laterNow
+				)
+				expect(stripResult(simpleResolvedPieces)).toEqual([
+					{
+						_id: piece001Id,
+						resolvedStart: now,
+						resolvedDuration: 1000,
+					},
+					{
+						_id: cappedInfinitePiece._id,
+						resolvedStart: now + 1000,
+						resolvedDuration: undefined, // TODO - this NEEDS a value
+					},
+					{
+						_id: piece010Id,
+						resolvedStart: now + 13000,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+			})
+		})
+
+		test('nextPart with continuing infinite', async () => {
+			await loadCacheAndPerformTakes(1, async (cache, parts, now) => {
+				// Make sure the input looks sane
+				expect(parts.currentPartInstance).toBeTruthy()
+				expect(parts.nextPartInstance).toBeTruthy()
+				// Both should have started times
+				expect(parts.currentPartInstance.timings?.plannedStartedPlayback).toBeTruthy()
+				expect(parts.nextPartInstance.timings?.plannedStartedPlayback).toBeFalsy()
+
+				cache.PartInstances.updateOne(parts.currentPartInstance._id, (p) => {
+					p.part.autoNext = true
+
+					p.part.expectedDuration = 13000
+					p.part.expectedDurationWithPreroll = 13500
+
+					return p
+				})
+
+				const piece001Id = protectString(`${parts.currentPartInstance._id}_${rundownId}_piece001`)
+				const piece010Id = protectString(`${parts.nextPartInstance._id}_${rundownId}_piece010`)
+
+				const piece001 = cache.PieceInstances.findOne(piece001Id) as PieceInstance
+				expect(piece001).toBeTruthy()
+				expect(piece001.partInstanceId).toBe(parts.currentPartInstance._id)
+				expect(piece001.piece.lifespan).toBe(PieceLifespan.WithinPart)
+
+				// Start an infinite
+				const startingInfinitePiece = createInfinitePiece(parts.currentPartInstance, {
+					lifespan: PieceLifespan.OutOnSegmentEnd,
+					enable: { start: 1000 },
+					sourceLayerId: piece001.piece.sourceLayerId,
+				})
+				cache.PieceInstances.insert(startingInfinitePiece)
+				const continuingInfinitePiece = createInfinitePiece(parts.nextPartInstance, {
+					lifespan: PieceLifespan.OutOnSegmentEnd,
+					enable: { start: 0 },
+					sourceLayerId: piece001.piece.sourceLayerId,
+				})
+				continuingInfinitePiece.infinite = {
+					...startingInfinitePiece.infinite!,
+					fromPreviousPart: true,
+					infiniteInstanceIndex: 1,
+				}
+				cache.PieceInstances.insert(continuingInfinitePiece)
+
+				// rebuild the timeline
+				await updateTimeline(context, cache)
+
+				// Check the result
+				const laterNow = now + 2000
+				const resolvedPieces = doResolvePieces(cache, laterNow)
+
+				expect(stripResult(resolvedPieces)).toEqual([
+					{
+						_id: piece001Id,
+						resolvedStart: now - 1,
+						resolvedDuration: 13000, // TODO - this is wrong
+					},
+					{
+						_id: startingInfinitePiece._id,
+						resolvedStart: now + 1000 - 1,
+						resolvedDuration: undefined,
+					},
+					{
+						_id: piece010Id,
+						resolvedStart: now + 13000 - 1,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+
+				// Check the 'simple' route result
+				const partInstancesInfo = loadSelectedPartInstancesTimelineInfo(cache, laterNow)
+				const simpleResolvedPieces = getResolvedPiecesForPartInstancesOnTimeline(
+					context,
+					partInstancesInfo,
+					laterNow
+				)
+				expect(stripResult(simpleResolvedPieces)).toEqual([
+					{
+						_id: piece001Id,
+						resolvedStart: now,
+						resolvedDuration: 1000, // TODO - this is wrong
+					},
+					{
+						_id: startingInfinitePiece._id,
+						resolvedStart: now + 1000,
+						resolvedDuration: undefined, // TODO - this is wrong considering it is an infinite and has continuingInfinitePiece
+					},
+					{
+						_id: piece010Id,
+						resolvedStart: now + 13000,
+						resolvedDuration: undefined,
+					},
+					{
+						// todo - should this be merged with startingInfinitePiece?
+						_id: continuingInfinitePiece._id,
+						resolvedStart: now + 13000,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+			})
+		})
+
 		/**
 		 * TODO: also throw in the concept of having a previous or next part on the timeline
-		 * and make sure to 'stress' the logic for whether to include the next/previous matches in playout.
 		 * finally, switch it across to the new implementation and debug
+		 * impact of part/piece playback timings? on both the simple and complex methods?
 		 */
-
-		// TODO - more scenarios
 	})
 })
