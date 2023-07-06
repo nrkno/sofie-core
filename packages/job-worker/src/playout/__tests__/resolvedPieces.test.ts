@@ -471,12 +471,23 @@ describe('Resolved Pieces', () => {
 					// Confirm playback as starting
 					reportPartInstanceHasStarted(context, cache, currentPartInstance, now)
 
-					now += 5000
+					if (i < takeCount - 1) now += 5000
 				}
 
+				// Ensure the timeline is accurate
+				await updateTimeline(context, cache)
+
 				const partInstances = getSelectedPartInstancesFromCache(cache)
-				expect(partInstances.previousPartInstance).toBeFalsy()
-				expect(partInstances.currentPartInstance).toBeTruthy()
+				if (takeCount > 1) {
+					expect(partInstances.previousPartInstance).toBeTruthy()
+				} else {
+					expect(partInstances.previousPartInstance).toBeFalsy()
+				}
+				if (takeCount > 0) {
+					expect(partInstances.currentPartInstance).toBeTruthy()
+				} else {
+					expect(partInstances.currentPartInstance).toBeFalsy()
+				}
 				expect(partInstances.nextPartInstance).toBeTruthy()
 
 				await fn(cache, partInstances as any, now)
@@ -579,7 +590,7 @@ describe('Resolved Pieces', () => {
 				expect(stripResult(resolvedPieces)).toEqual([
 					{
 						_id: piece001Id,
-						resolvedStart: now - 5000 - 1,
+						resolvedStart: now - 1,
 						resolvedDuration: undefined, // TODO - this should havea  value?
 					},
 					{
@@ -600,8 +611,8 @@ describe('Resolved Pieces', () => {
 				expect(stripResult(simpleResolvedPieces)).toEqual([
 					{
 						_id: piece001Id,
-						resolvedStart: now - 5000,
-						resolvedDuration: laterNow - (now - 5000),
+						resolvedStart: now,
+						resolvedDuration: laterNow - now,
 					},
 					{
 						// TODO - this object should not be present?
@@ -657,13 +668,13 @@ describe('Resolved Pieces', () => {
 				expect(stripResult(resolvedPieces)).toEqual([
 					{
 						_id: piece001Id,
-						resolvedStart: now - 5000 - 1,
+						resolvedStart: now - 1,
 						resolvedDuration: undefined, // TODO - this should have a value?
 					},
 					{
 						// TODO - this object should not be present?
 						_id: virtualId,
-						resolvedStart: laterNow - 1,
+						resolvedStart: now + 7000 - 1,
 						resolvedDuration: undefined,
 					},
 				] satisfies StrippedResult)
@@ -678,18 +689,45 @@ describe('Resolved Pieces', () => {
 				expect(stripResult(simpleResolvedPieces)).toEqual([
 					{
 						_id: piece001Id,
-						resolvedStart: now - 5000,
-						resolvedDuration: laterNow - (now - 5000),
+						resolvedStart: now,
+						resolvedDuration: 7000,
 					},
 					{
 						// TODO - this object should not be present?
 						_id: virtualId,
-						resolvedStart: laterNow,
+						resolvedStart: now + 7000,
 						resolvedDuration: undefined,
 					},
 				] satisfies StrippedResult)
 			})
 		})
+
+		function createInfinitePiece(
+			partInstance: DBPartInstance,
+			pieceProps: Pick<PieceInstancePiece, 'sourceLayerId' | 'enable' | 'lifespan'>
+		) {
+			const infinitePiece = rewrapPieceToInstance(
+				{
+					...pieceProps,
+					_id: getRandomId(),
+					externalId: '-',
+					outputLayerId: '',
+					invalid: false,
+					name: '',
+					startPartId: partInstance.part._id,
+					pieceType: IBlueprintPieceType.Normal,
+					content: {},
+					timelineObjectsString: EmptyPieceTimelineObjectsBlob,
+				},
+				partInstance.playlistActivationId,
+				partInstance.rundownId,
+				partInstance._id
+			)
+			infinitePiece.dynamicallyInserted = getCurrentTime()
+			setupPieceInstanceInfiniteProperties(infinitePiece)
+
+			return infinitePiece
+		}
 
 		test('within part overriding infinite for period', async () => {
 			await loadCacheAndPerformTakes(1, async (cache, parts, now) => {
@@ -712,28 +750,20 @@ describe('Resolved Pieces', () => {
 				})
 
 				// Manually insert an infinite piece on the same layer
-				const infinitePiece = rewrapPieceToInstance(
-					{
-						_id: getRandomId(),
-						externalId: '-',
+				const infiniteId = cache.PieceInstances.insert(
+					createInfinitePiece(parts.currentPartInstance, {
 						enable: { start: 1000 },
 						lifespan: PieceLifespan.OutOnSegmentEnd,
 						sourceLayerId: piece001.piece.sourceLayerId,
-						outputLayerId: piece001.piece.outputLayerId,
-						invalid: false,
-						name: '',
-						startPartId: parts.currentPartInstance.part._id,
-						pieceType: IBlueprintPieceType.Normal,
-						content: {},
-						timelineObjectsString: EmptyPieceTimelineObjectsBlob,
-					},
-					parts.currentPartInstance.playlistActivationId,
-					parts.currentPartInstance.rundownId,
-					parts.currentPartInstance._id
+					})
 				)
-				infinitePiece.dynamicallyInserted = getCurrentTime()
-				setupPieceInstanceInfiniteProperties(infinitePiece)
-				const infiniteId = cache.PieceInstances.insert(infinitePiece)
+				const infiniteId2 = cache.PieceInstances.insert(
+					createInfinitePiece(parts.currentPartInstance, {
+						enable: { start: 5000 },
+						lifespan: PieceLifespan.OutOnSegmentEnd,
+						sourceLayerId: piece001.piece.sourceLayerId,
+					})
+				)
 
 				// rebuild the timeline
 				await updateTimeline(context, cache)
@@ -745,13 +775,18 @@ describe('Resolved Pieces', () => {
 				expect(stripResult(resolvedPieces)).toEqual([
 					{
 						_id: infiniteId,
-						resolvedStart: now - 5000 + 1000 - 1,
-						resolvedDuration: undefined,
+						resolvedStart: now + 1000 - 1,
+						resolvedDuration: undefined, // TODO - this should have a duration
 					},
 					{
 						_id: piece001Id,
-						resolvedStart: now - 5000 + 3000 - 1,
-						resolvedDuration: 2500,
+						resolvedStart: now + 3000 - 1,
+						resolvedDuration: 2500, // TODO this should be 2000
+					},
+					{
+						_id: infiniteId2,
+						resolvedStart: now + 5000 - 1,
+						resolvedDuration: undefined,
 					},
 				] satisfies StrippedResult)
 
@@ -765,21 +800,209 @@ describe('Resolved Pieces', () => {
 				expect(stripResult(simpleResolvedPieces)).toEqual([
 					{
 						_id: infiniteId,
-						resolvedStart: now - 5000 + 1000,
-						resolvedDuration: undefined,
+						resolvedStart: now + 1000,
+						resolvedDuration: 4000,
 					},
 					{
 						_id: piece001Id,
-						resolvedStart: now - 5000 + 3000,
-						resolvedDuration: 2500,
+						resolvedStart: now + 3000,
+						resolvedDuration: 2000,
+					},
+					{
+						_id: infiniteId2,
+						resolvedStart: now + 5000,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+			})
+		})
+
+		test('userDuration.endRelativeToPart', async () => {
+			await loadCacheAndPerformTakes(1, async (cache, parts, now) => {
+				const piece001Id = protectString(`${parts.currentPartInstance?._id}_${rundownId}_piece001`)
+
+				// Remove any unwanted pieceInstances
+				cache.PieceInstances.remove(
+					(p) => p.partInstanceId === parts.currentPartInstance._id && p._id !== piece001Id
+				)
+
+				// Change the start of piece001
+				const piece001 = cache.PieceInstances.findOne(piece001Id) as PieceInstance
+				expect(piece001).toBeTruthy()
+				expect(piece001.partInstanceId).toBe(parts.currentPartInstance._id)
+				expect(piece001.piece.lifespan).toBe(PieceLifespan.WithinPart)
+
+				cache.PieceInstances.updateOne(piece001Id, (p) => {
+					p.piece.enable = { start: 3000 }
+					p.userDuration = {
+						endRelativeToPart: 4200,
+					}
+					return p
+				})
+
+				// rebuild the timeline
+				await updateTimeline(context, cache)
+
+				// Check the result
+				const laterNow = now + 2000
+				const resolvedPieces = doResolvePieces(cache, laterNow)
+
+				expect(stripResult(resolvedPieces)).toEqual([
+					{
+						_id: piece001Id,
+						resolvedStart: now + 3000 - 1,
+						resolvedDuration: 1200,
+					},
+				] satisfies StrippedResult)
+
+				// Check the 'simple' route result
+				const partInstancesInfo = loadSelectedPartInstancesTimelineInfo(cache, laterNow)
+				const simpleResolvedPieces = getResolvedPiecesForPartInstancesOnTimeline(
+					context,
+					partInstancesInfo,
+					laterNow
+				)
+				expect(stripResult(simpleResolvedPieces)).toEqual([
+					{
+						_id: piece001Id,
+						resolvedStart: now + 3000,
+						resolvedDuration: 1200,
+					},
+				] satisfies StrippedResult)
+			})
+		})
+
+		test('userDuration.endRelativeToNow', async () => {
+			await loadCacheAndPerformTakes(1, async (cache, parts, now) => {
+				const piece001Id = protectString(`${parts.currentPartInstance?._id}_${rundownId}_piece001`)
+
+				// Remove any unwanted pieceInstances
+				cache.PieceInstances.remove(
+					(p) => p.partInstanceId === parts.currentPartInstance._id && p._id !== piece001Id
+				)
+
+				// Change the start of piece001
+				const piece001 = cache.PieceInstances.findOne(piece001Id) as PieceInstance
+				expect(piece001).toBeTruthy()
+				expect(piece001.partInstanceId).toBe(parts.currentPartInstance._id)
+				expect(piece001.piece.lifespan).toBe(PieceLifespan.WithinPart)
+
+				cache.PieceInstances.updateOne(piece001Id, (p) => {
+					p.piece.enable = { start: 4000 }
+					p.userDuration = {
+						endRelativeToNow: 1300,
+					}
+					return p
+				})
+
+				// rebuild the timeline
+				await updateTimeline(context, cache)
+
+				// Check the result
+				const laterNow = now + 7000
+				const resolvedPieces = doResolvePieces(cache, laterNow)
+
+				expect(stripResult(resolvedPieces)).toEqual([
+					{
+						_id: piece001Id,
+						resolvedStart: now + 4000 - 1,
+						resolvedDuration: undefined, // TODO - this should have a duration
+					},
+				] satisfies StrippedResult)
+
+				// Check the 'simple' route result
+				const partInstancesInfo = loadSelectedPartInstancesTimelineInfo(cache, laterNow)
+				const simpleResolvedPieces = getResolvedPiecesForPartInstancesOnTimeline(
+					context,
+					partInstancesInfo,
+					laterNow
+				)
+				expect(stripResult(simpleResolvedPieces)).toEqual([
+					{
+						_id: piece001Id,
+						resolvedStart: now + 4000,
+						resolvedDuration: -4000 + 7000 + 1300,
+					},
+				] satisfies StrippedResult)
+			})
+		})
+
+		test('basic previousPart', async () => {
+			await loadCacheAndPerformTakes(2, async (cache, parts, now) => {
+				// Make sure the input looks sane
+				const previousPartInstance = parts.previousPartInstance as DBPartInstance
+				expect(parts.currentPartInstance).toBeTruthy()
+				expect(previousPartInstance).toBeTruthy()
+				// Both should have started times
+				expect(previousPartInstance.timings?.plannedStartedPlayback).toBeTruthy()
+				expect(parts.currentPartInstance.timings?.plannedStartedPlayback).toBeTruthy()
+
+				const piece001Id = protectString(`${parts.previousPartInstance?._id}_${rundownId}_piece001`)
+				const piece010Id = protectString(`${parts.currentPartInstance._id}_${rundownId}_piece010`)
+
+				// // Remove any unwanted pieceInstances
+				// cache.PieceInstances.remove(
+				// 	(p) => p.partInstanceId === parts.currentPartInstance._id && p._id !== piece001Id
+				// )
+
+				// // Change the start of piece001
+				// const piece001 = cache.PieceInstances.findOne(piece001Id) as PieceInstance
+				// expect(piece001).toBeTruthy()
+				// expect(piece001.partInstanceId).toBe(parts.currentPartInstance._id)
+				// expect(piece001.piece.lifespan).toBe(PieceLifespan.WithinPart)
+
+				// cache.PieceInstances.updateOne(piece001Id, (p) => {
+				// 	p.piece.enable = { start: 4000 }
+				// 	p.userDuration = {
+				// 		endRelativeToNow: 1300,
+				// 	}
+				// 	return p
+				// })
+
+				// rebuild the timeline
+				await updateTimeline(context, cache)
+
+				// Check the result
+				const laterNow = now + 2000
+				const resolvedPieces = doResolvePieces(cache, laterNow)
+
+				expect(stripResult(resolvedPieces)).toEqual([
+					{
+						_id: piece001Id,
+						resolvedStart: now - 5000 - 1,
+						resolvedDuration: 5000,
+					},
+					{
+						_id: piece010Id,
+						resolvedStart: now - 1,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+
+				// Check the 'simple' route result
+				const partInstancesInfo = loadSelectedPartInstancesTimelineInfo(cache, laterNow)
+				const simpleResolvedPieces = getResolvedPiecesForPartInstancesOnTimeline(
+					context,
+					partInstancesInfo,
+					laterNow
+				)
+				expect(stripResult(simpleResolvedPieces)).toEqual([
+					{
+						_id: piece001Id,
+						resolvedStart: now - 5000,
+						resolvedDuration: undefined, // TODO - this NEEDS a value
+					},
+					{
+						_id: piece010Id,
+						resolvedStart: now,
+						resolvedDuration: undefined,
 					},
 				] satisfies StrippedResult)
 			})
 		})
 
 		/**
-		 * TODO: stress doResolvePieces in some more 'complex' scenarios of mixing infinites, exclusive groups, and non infinites
-		 * also throw in the concept of having a previous or next part on the timeline
+		 * TODO: also throw in the concept of having a previous or next part on the timeline
 		 * and make sure to 'stress' the logic for whether to include the next/previous matches in playout.
 		 * finally, switch it across to the new implementation and debug
 		 */

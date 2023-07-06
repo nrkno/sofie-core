@@ -145,14 +145,14 @@ export function resolvePrunedPieceInstances(
 			}
 		}
 
-		// There are multiple potential durations of this Piece
+		// Find any possible durations this piece may have
 		const caps: number[] = []
 		if (resolvedEnd !== undefined) caps.push(resolvedEnd - resolvedStart)
 
-		// If the piece has a duration set, that may be the needed duration
+		// Consider the blueprint defined duration
 		if (instance.piece.enable.duration !== undefined) caps.push(instance.piece.enable.duration)
 
-		// If the piece has a userDuration set, that may be the needed duration
+		// Consider the playout userDuration
 		if (instance.userDuration) {
 			if ('endRelativeToPart' in instance.userDuration) {
 				caps.push(instance.userDuration.endRelativeToPart - resolvedStart)
