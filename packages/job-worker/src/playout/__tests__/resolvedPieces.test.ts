@@ -52,7 +52,9 @@ describe('Resolved Pieces', () => {
 
 	type StrippedResult = Pick<ResolvedPieceInstance, '_id' | 'resolvedStart' | 'resolvedDuration'>[]
 	function stripResult(result: ResolvedPieceInstance[]): StrippedResult {
-		return result.map((piece) => _.pick(piece, '_id', 'resolvedStart', 'resolvedDuration'))
+		return result
+			.map((piece) => _.pick(piece, '_id', 'resolvedStart', 'resolvedDuration'))
+			.sort((a, b) => a.resolvedStart - b.resolvedStart)
 	}
 
 	function createPieceInstance(
@@ -1133,6 +1135,9 @@ describe('Resolved Pieces', () => {
 					fromPreviousPart: true,
 					infiniteInstanceIndex: 1,
 				}
+				continuingInfinitePiece.userDuration = {
+					endRelativeToNow: 3400,
+				}
 				cache.PieceInstances.insert(continuingInfinitePiece)
 
 				// rebuild the timeline
@@ -1151,7 +1156,7 @@ describe('Resolved Pieces', () => {
 					{
 						_id: continuingInfinitePiece._id,
 						resolvedStart: now - 1, // TODO - this is wrong considering it is an infinite and spans startingInfinitePiece
-						resolvedDuration: undefined,
+						resolvedDuration: undefined, // TODO - this should be something
 					},
 					{
 						_id: piece010Id,
@@ -1174,18 +1179,12 @@ describe('Resolved Pieces', () => {
 						resolvedDuration: 1000,
 					},
 					{
-						// todo - should this be merged with continuingInfinitePiece?
-						_id: startingInfinitePiece._id,
+						_id: continuingInfinitePiece._id,
 						resolvedStart: now - 5000 + 1000,
-						resolvedDuration: 4000,
+						resolvedDuration: 9400,
 					},
 					{
 						_id: piece010Id,
-						resolvedStart: now,
-						resolvedDuration: undefined,
-					},
-					{
-						_id: continuingInfinitePiece._id,
 						resolvedStart: now,
 						resolvedDuration: undefined,
 					},
@@ -1384,6 +1383,9 @@ describe('Resolved Pieces', () => {
 					fromPreviousPart: true,
 					infiniteInstanceIndex: 1,
 				}
+				continuingInfinitePiece.userDuration = {
+					endRelativeToPart: 3400,
+				}
 				cache.PieceInstances.insert(continuingInfinitePiece)
 
 				// rebuild the timeline
@@ -1427,16 +1429,10 @@ describe('Resolved Pieces', () => {
 					{
 						_id: startingInfinitePiece._id,
 						resolvedStart: now + 1000,
-						resolvedDuration: 12000,
+						resolvedDuration: 12000 + 3400,
 					},
 					{
 						_id: piece010Id,
-						resolvedStart: now + 13000,
-						resolvedDuration: undefined,
-					},
-					{
-						// todo - should this be merged with startingInfinitePiece?
-						_id: continuingInfinitePiece._id,
 						resolvedStart: now + 13000,
 						resolvedDuration: undefined,
 					},

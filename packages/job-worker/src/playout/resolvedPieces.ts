@@ -1,4 +1,4 @@
-import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, PieceInstanceInfiniteId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstance, ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { TimelineObjGeneric, TimelineObjRundown } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
@@ -246,9 +246,56 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 		)
 	}
 
-	// TODO - this needs to do the infinites 'merging' just like we do for actual playout
+	const currentInfinitePieces = new Map<PieceInstanceInfiniteId, ResolvedPieceInstance>()
+	for (const piece of currentResolvedPieces) {
+		if (piece.infinite) {
+			currentInfinitePieces.set(piece.infinite.infiniteInstanceId, piece)
+		}
+	}
 
-	return [...previousResolvedPieces, ...currentResolvedPieces, ...nextResolvedPieces]
+	const resultingPieces: ResolvedPieceInstance[] = [...currentResolvedPieces]
+
+	// Merge any infinite chains between the previous and current parts
+	for (const piece of previousResolvedPieces) {
+		if (piece.infinite) {
+			const continuingInfinite = currentInfinitePieces.get(piece.infinite.infiniteInstanceId)
+			if (continuingInfinite) {
+				// Extend the duration to compensate for the moved start
+				if (continuingInfinite.resolvedDuration !== undefined) {
+					continuingInfinite.resolvedDuration += continuingInfinite.resolvedStart - piece.resolvedStart
+				}
+
+				// Move the start time to be for the previous Piece
+				continuingInfinite.resolvedStart = piece.resolvedStart
+
+				continue
+			}
+		}
+
+		resultingPieces.push(piece)
+	}
+
+	// Merge any infinite chains between the current and next parts
+	for (const piece of nextResolvedPieces) {
+		if (piece.infinite) {
+			const continuingInfinite = currentInfinitePieces.get(piece.infinite.infiniteInstanceId)
+			if (continuingInfinite) {
+				// Update the duration to be based upon the copy from the next part
+				if (piece.resolvedDuration !== undefined) {
+					continuingInfinite.resolvedDuration =
+						piece.resolvedDuration + piece.resolvedStart - continuingInfinite.resolvedStart
+				} else {
+					delete continuingInfinite.resolvedDuration
+				}
+
+				continue
+			}
+		}
+
+		resultingPieces.push(piece)
+	}
+
+	return resultingPieces
 }
 
 function offsetResolvedStartAndCapDuration(
