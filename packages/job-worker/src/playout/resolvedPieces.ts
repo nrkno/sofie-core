@@ -210,10 +210,69 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 ): ResolvedPieceInstance[] {
 	if (now === undefined) now = getCurrentTime()
 
+	if (!partInstancesInfo.current) return []
+
 	// TODO - this needs to set/update resolvedDuration on the pieces from the predecessor part
 	// TODO - this needs to do the infinites 'merging' just like we do for actual playout
 
 	let previousResolvedPieces: ResolvedPieceInstance[] = []
+	let currentResolvedPieces: ResolvedPieceInstance[] = []
+	let nextResolvedPieces: ResolvedPieceInstance[] = []
+
+	const currentPartStarted = partInstancesInfo.current.partStarted ?? now
+	const nextPartStarted =
+		partInstancesInfo.current.partInstance.part.expectedDuration !== undefined
+			? currentPartStarted + partInstancesInfo.current.partInstance.part.expectedDuration
+			: null
+
+	// Map<sourceLayerId, Map<priority, resolvedStart>>
+	// const currentPartPieceTimesMap = new Map<string, Map<number, number>>()
+
+	// TODO - does this handle onChange infinites fully?
+
+	// Calculate the next part if needed
+	if (partInstancesInfo.next && partInstancesInfo.current.partInstance.part.autoNext && nextPartStarted != null) {
+		nextResolvedPieces = resolvePrunedPieceInstances(
+			partInstancesInfo.next.nowInPart,
+			partInstancesInfo.next.pieceInstances
+		)
+
+		// Translate start to absolute times
+		offsetResolvedStartAndCapDuration(nextResolvedPieces, nextPartStarted, null)
+	}
+
+	currentResolvedPieces = resolvePrunedPieceInstances(
+		partInstancesInfo.current.nowInPart,
+		partInstancesInfo.current.pieceInstances
+	)
+
+	// Translate start to absolute times
+	offsetResolvedStartAndCapDuration(currentResolvedPieces, currentPartStarted, nextPartStarted)
+	// for (const piece of currentResolvedPieces) {
+	// 	piece.resolvedStart += currentPartStarted
+
+	// 	if (nextPartStarted !== null) {
+	// 		// Cap it to the end of the Part. If it is supposed to be longer, there will be a continuing infinite
+	// 		const partEndCap = nextPartStarted - piece.resolvedStart
+
+	// 		piece.resolvedDuration =
+	// 			piece.resolvedDuration !== undefined ? Math.min(piece.resolvedDuration, partEndCap) : partEndCap
+	// 	}
+
+	// 	// 		// Track the start times
+	// 	// let layerMap = currentPartPieceTimesMap.get(piece.piece.sourceLayerId)
+	// 	// if (!layerMap) {
+	// 	// 	layerMap = new Map()
+	// 	// 	currentPartPieceTimesMap.set(piece.piece.sourceLayerId, layerMap)
+	// 	// }
+
+	// 	// const entry = layerMap.get(piece.timelinePriority)
+	// 	// if (entry === undefined || piece.resolvedStart < entry) {
+	// 	// 	layerMap.set(piece.timelinePriority, piece.resolvedStart)
+	// 	// }
+	// }
+
+	// Calculate the previous part
 	if (partInstancesInfo.previous?.partStarted) {
 		previousResolvedPieces = resolvePrunedPieceInstances(
 			partInstancesInfo.previous.nowInPart,
@@ -221,47 +280,32 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 		)
 
 		// Translate start to absolute times
-		for (const piece of previousResolvedPieces) {
-			piece.resolvedStart += partInstancesInfo.previous.partStarted
-		}
-	}
-
-	let currentResolvedPieces: ResolvedPieceInstance[] = []
-	let nextResolvedPieces: ResolvedPieceInstance[] = []
-	if (partInstancesInfo.current) {
-		const currentPartStarted = partInstancesInfo.current.partStarted ?? now
-
-		currentResolvedPieces = resolvePrunedPieceInstances(
-			partInstancesInfo.current.nowInPart,
-			partInstancesInfo.current.pieceInstances
+		offsetResolvedStartAndCapDuration(
+			previousResolvedPieces,
+			partInstancesInfo.previous.partStarted,
+			currentPartStarted
 		)
-
-		// Translate start to absolute times
-		for (const piece of currentResolvedPieces) {
-			piece.resolvedStart += currentPartStarted
-		}
-
-		// Calculate the next part if needed
-		if (
-			partInstancesInfo.next &&
-			partInstancesInfo.current.partInstance.part.autoNext &&
-			partInstancesInfo.current.partInstance.part.expectedDuration !== undefined
-		) {
-			const nextPartStarted = currentPartStarted + partInstancesInfo.current.partInstance.part.expectedDuration
-
-			nextResolvedPieces = resolvePrunedPieceInstances(
-				partInstancesInfo.next.nowInPart,
-				partInstancesInfo.next.pieceInstances
-			)
-
-			// Translate start to absolute times
-			for (const piece of nextResolvedPieces) {
-				piece.resolvedStart += nextPartStarted
-			}
-		}
 	}
 
 	return [...previousResolvedPieces, ...currentResolvedPieces, ...nextResolvedPieces]
+}
+
+function offsetResolvedStartAndCapDuration(
+	pieces: ResolvedPieceInstance[],
+	partStarted: number,
+	endCap: number | null
+) {
+	for (const piece of pieces) {
+		piece.resolvedStart += partStarted
+
+		if (endCap !== null) {
+			// Cap it to the end of the Part. If it is supposed to be longer, there will be a continuing infinite
+			const partEndCap = endCap - piece.resolvedStart
+
+			piece.resolvedDuration =
+				piece.resolvedDuration !== undefined ? Math.min(piece.resolvedDuration, partEndCap) : partEndCap
+		}
+	}
 }
 
 /** @deprecated */

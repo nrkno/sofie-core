@@ -536,20 +536,6 @@ describe('Resolved Pieces', () => {
 
 		test('single piece stopped by virtual now', async () => {
 			await loadCacheAndPerformTakes(1, async (cache, parts, now) => {
-				// Add some extra pieceInstances
-
-				// const getPieceInstances = () =>
-				// 	cache.PieceInstances.findAll((p) => p.partInstanceId === parts.currentPartInstance._id)
-
-				// console.log(getPieceInstances())
-				// // cache.PieceInstances.insert()
-				// const pieceInstanceCount = getPieceInstances().length
-				// // expect(
-				// // 	innerStopPieces(context, cache, sourceLayers, parts.currentPartInstance, () => true, undefined)
-				// // ).toHaveLength(1)
-				// expect(getPieceInstances().length).toBe(pieceInstanceCount + 1)
-				// // innerStartAdLibPiece()
-
 				const piece001Id = protectString(`${parts.currentPartInstance?._id}_${rundownId}_piece001`)
 				const piece001 = cache.PieceInstances.findOne(piece001Id) as PieceInstance
 				expect(piece001).toBeTruthy()
@@ -971,7 +957,7 @@ describe('Resolved Pieces', () => {
 					{
 						_id: piece001Id,
 						resolvedStart: now - 5000,
-						resolvedDuration: undefined, // TODO - this NEEDS a value
+						resolvedDuration: 5000,
 					},
 					{
 						_id: piece010Id,
@@ -1101,7 +1087,7 @@ describe('Resolved Pieces', () => {
 					{
 						_id: cappedInfinitePiece._id,
 						resolvedStart: now - 5000 + 1000,
-						resolvedDuration: undefined, // TODO - this NEEDS a value
+						resolvedDuration: 4000,
 					},
 					{
 						_id: piece010Id,
@@ -1191,7 +1177,7 @@ describe('Resolved Pieces', () => {
 						// todo - should this be merged with continuingInfinitePiece?
 						_id: startingInfinitePiece._id,
 						resolvedStart: now - 5000 + 1000,
-						resolvedDuration: undefined, // TODO - this is wrong?
+						resolvedDuration: 4000,
 					},
 					{
 						_id: piece010Id,
@@ -1259,7 +1245,7 @@ describe('Resolved Pieces', () => {
 					{
 						_id: piece001Id,
 						resolvedStart: now,
-						resolvedDuration: undefined, // TODO - this NEEDS a value
+						resolvedDuration: 13000,
 					},
 					{
 						_id: piece010Id,
@@ -1344,7 +1330,7 @@ describe('Resolved Pieces', () => {
 					{
 						_id: cappedInfinitePiece._id,
 						resolvedStart: now + 1000,
-						resolvedDuration: undefined, // TODO - this NEEDS a value
+						resolvedDuration: 12000,
 					},
 					{
 						_id: piece010Id,
@@ -1436,12 +1422,12 @@ describe('Resolved Pieces', () => {
 					{
 						_id: piece001Id,
 						resolvedStart: now,
-						resolvedDuration: 1000, // TODO - this is wrong
+						resolvedDuration: 1000,
 					},
 					{
 						_id: startingInfinitePiece._id,
 						resolvedStart: now + 1000,
-						resolvedDuration: undefined, // TODO - this is wrong considering it is an infinite and has continuingInfinitePiece
+						resolvedDuration: 12000,
 					},
 					{
 						_id: piece010Id,
@@ -1459,9 +1445,9 @@ describe('Resolved Pieces', () => {
 		})
 
 		/**
-		 * TODO: also throw in the concept of having a previous or next part on the timeline
+		 * TODO:
+		 * impact of piece playback timings? on both the simple and complex methods? should only impact infinite pieces?
 		 * finally, switch it across to the new implementation and debug
-		 * impact of part/piece playback timings? on both the simple and complex methods?
 		 */
 	})
 })
