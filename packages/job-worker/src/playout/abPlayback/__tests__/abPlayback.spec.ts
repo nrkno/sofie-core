@@ -59,6 +59,7 @@ function createBasicResolvedPieceInstance(
 		piece,
 		resolvedStart: start,
 		resolvedDuration: duration,
+		timelinePriority: 0,
 	})
 }
 
