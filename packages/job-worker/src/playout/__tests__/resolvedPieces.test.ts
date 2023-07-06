@@ -1,4 +1,4 @@
-import { PartInstanceId, PieceId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { setupMockShowStyleCompound, setupDefaultRundownPlaylist } from '../../__mocks__/presetCollections'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 // import { getResolvedPiecesInner } from '../resolvedPieces'
@@ -18,11 +18,11 @@ import _ = require('underscore')
 import { JobContext } from '../../jobs'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import {
-	getResolvedPiecesForCurrentPartInstance,
+	getResolvedPiecesForPartInstancesOnTimeline,
 	getResolvedPiecesFromFullTimeline,
 	resolvePrunedPieceInstances,
 } from '../resolvedPieces'
-import { updateTimeline } from '../timeline/generate'
+import { getPartInstanceTimelineInfo, SelectedPartInstancesTimelineInfo, updateTimeline } from '../timeline/generate'
 import { runJobWithPlayoutCache } from '../lock'
 import { activateRundownPlaylist } from '../activePlaylistActions'
 import { deserializeTimelineBlob, TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
@@ -494,6 +494,20 @@ describe('Resolved Pieces', () => {
 			return getResolvedPiecesFromFullTimeline(context, cache, timelineObjs, now)
 		}
 
+		function loadSelectedPartInstancesTimelineInfo(
+			cache: CacheForPlayout,
+			currentTime: number
+		): SelectedPartInstancesTimelineInfo {
+			const { currentPartInstance, nextPartInstance, previousPartInstance } =
+				getSelectedPartInstancesFromCache(cache)
+			const partInstancesInfo: SelectedPartInstancesTimelineInfo = {
+				current: getPartInstanceTimelineInfo(cache, currentTime, sourceLayers, currentPartInstance),
+				next: getPartInstanceTimelineInfo(cache, currentTime, sourceLayers, nextPartInstance),
+				previous: getPartInstanceTimelineInfo(cache, currentTime, sourceLayers, previousPartInstance),
+			}
+			return partInstancesInfo
+		}
+
 		test('simple part scenario', async () => {
 			await loadCacheAndPerformTakes(1, async (cache, parts, now) => {
 				const resolvedPieces = doResolvePieces(cache, now)
@@ -524,11 +538,8 @@ describe('Resolved Pieces', () => {
 				// expect(getPieceInstances().length).toBe(pieceInstanceCount + 1)
 				// // innerStartAdLibPiece()
 
-				const piece001 = cache.PieceInstances.findOne(
-					(p) =>
-						p.partInstanceId === parts.currentPartInstance._id &&
-						p.piece._id.toString().endsWith('piece001')
-				) as PieceInstance
+				const piece001Id = protectString(`${parts.currentPartInstance?._id}_${rundownId}_piece001`)
+				const piece001 = cache.PieceInstances.findOne(piece001Id) as PieceInstance
 				expect(piece001).toBeTruthy()
 				expect(piece001.piece.lifespan).toBe(PieceLifespan.WithinPart)
 
@@ -566,7 +577,7 @@ describe('Resolved Pieces', () => {
 
 				expect(stripResult(resolvedPieces)).toEqual([
 					{
-						_id: protectString(`${parts.currentPartInstance?._id}_${rundownId}_piece001`),
+						_id: piece001Id,
 						resolvedStart: now - 5000 - 1,
 						resolvedDuration: undefined, // TODO - this should havea  value?
 					},
@@ -579,23 +590,22 @@ describe('Resolved Pieces', () => {
 				] satisfies StrippedResult)
 
 				// Check the 'simple' route result
-				const simpleResolvedPieces = getResolvedPiecesForCurrentPartInstance(
+				const partInstancesInfo = loadSelectedPartInstancesTimelineInfo(cache, laterNow)
+				const simpleResolvedPieces = getResolvedPiecesForPartInstancesOnTimeline(
 					context,
-					cache,
-					sourceLayers,
-					parts.currentPartInstance,
+					partInstancesInfo,
 					laterNow
 				)
 				expect(stripResult(simpleResolvedPieces)).toEqual([
 					{
-						_id: protectString(`${parts.currentPartInstance?._id}_${rundownId}_piece001`),
-						resolvedStart: 0,
-						resolvedDuration: undefined, // TODO - this should havea  value?
+						_id: piece001Id,
+						resolvedStart: now - 5000,
+						resolvedDuration: laterNow - (now - 5000),
 					},
 					{
 						// TODO - this object should not be present?
 						_id: virtualId,
-						resolvedStart: 5000 + 2000 - 1,
+						resolvedStart: laterNow,
 						resolvedDuration: undefined,
 					},
 				] satisfies StrippedResult)
@@ -645,7 +655,7 @@ describe('Resolved Pieces', () => {
 
 				expect(stripResult(resolvedPieces)).toEqual([
 					{
-						_id: protectString(`${parts.currentPartInstance?._id}_${rundownId}_piece001`),
+						_id: piece001Id,
 						resolvedStart: now - 5000 - 1,
 						resolvedDuration: undefined, // TODO - this should have a value?
 					},
@@ -658,23 +668,22 @@ describe('Resolved Pieces', () => {
 				] satisfies StrippedResult)
 
 				// Check the 'simple' route result
-				const simpleResolvedPieces = getResolvedPiecesForCurrentPartInstance(
+				const partInstancesInfo = loadSelectedPartInstancesTimelineInfo(cache, laterNow)
+				const simpleResolvedPieces = getResolvedPiecesForPartInstancesOnTimeline(
 					context,
-					cache,
-					sourceLayers,
-					parts.currentPartInstance,
+					partInstancesInfo,
 					laterNow
 				)
 				expect(stripResult(simpleResolvedPieces)).toEqual([
 					{
 						_id: piece001Id,
-						resolvedStart: 0,
-						resolvedDuration: undefined, // TODO - this should have a value?
+						resolvedStart: now - 5000,
+						resolvedDuration: laterNow - (now - 5000),
 					},
 					{
 						// TODO - this object should not be present?
 						_id: virtualId,
-						resolvedStart: 5000 + 2000 - 1,
+						resolvedStart: laterNow,
 						resolvedDuration: undefined,
 					},
 				] satisfies StrippedResult)
@@ -746,22 +755,21 @@ describe('Resolved Pieces', () => {
 				] satisfies StrippedResult)
 
 				// Check the 'simple' route result
-				const simpleResolvedPieces = getResolvedPiecesForCurrentPartInstance(
+				const partInstancesInfo = loadSelectedPartInstancesTimelineInfo(cache, laterNow)
+				const simpleResolvedPieces = getResolvedPiecesForPartInstancesOnTimeline(
 					context,
-					cache,
-					sourceLayers,
-					parts.currentPartInstance,
+					partInstancesInfo,
 					laterNow
 				)
 				expect(stripResult(simpleResolvedPieces)).toEqual([
 					{
 						_id: infiniteId,
-						resolvedStart: 1000 - 1,
+						resolvedStart: now - 5000 + 1000,
 						resolvedDuration: undefined,
 					},
 					{
 						_id: piece001Id,
-						resolvedStart: 3000 - 1,
+						resolvedStart: now - 5000 + 3000,
 						resolvedDuration: 2500,
 					},
 				] satisfies StrippedResult)

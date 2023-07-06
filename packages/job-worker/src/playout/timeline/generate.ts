@@ -272,7 +272,7 @@ export interface SelectedPartInstanceTimelineInfo {
 	calculatedTimings: PartCalculatedTimings
 }
 
-function getPartInstanceTimelineInfo(
+export function getPartInstanceTimelineInfo(
 	cache: CacheForPlayout,
 	currentTime: Time,
 	sourceLayers: SourceLayers,
