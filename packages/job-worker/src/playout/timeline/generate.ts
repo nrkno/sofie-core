@@ -266,6 +266,7 @@ export interface SelectedPartInstancesTimelineInfo {
 }
 export interface SelectedPartInstanceTimelineInfo {
 	nowInPart: number
+	partStarted: number | undefined
 	partInstance: DBPartInstance
 	pieceInstances: PieceInstanceWithTimings[]
 	calculatedTimings: PartCalculatedTimings
@@ -287,6 +288,7 @@ function getPartInstanceTimelineInfo(
 			partInstance,
 			pieceInstances,
 			nowInPart,
+			partStarted,
 			// Approximate `calculatedTimings`, for the partInstances which already have it cached
 			calculatedTimings: getPartTimingsOrDefaults(partInstance, pieceInstances),
 		}
@@ -369,7 +371,7 @@ async function getTimelineRundown(
 			)
 
 			if (blueprint.blueprint.onTimelineGenerate || blueprint.blueprint.getAbResolverConfiguration) {
-				const resolvedPieces = getResolvedPiecesFromFullTimeline(context, cache, timelineObjs)
+				const resolvedPieces = getResolvedPiecesFromFullTimeline(context, cache, timelineObjs, getCurrentTime())
 				const blueprintContext = new OnTimelineGenerateContext(
 					context.studio,
 					context.getStudioBlueprintConfig(),
@@ -380,7 +382,7 @@ async function getTimelineRundown(
 					previousPartInstance,
 					currentPartInstance,
 					nextPartInstance,
-					resolvedPieces.pieces
+					resolvedPieces
 				)
 				try {
 					const abHelper = blueprintContext.abSessionsHelper // Future: this should be removed from OnTimelineGenerateContext once the methods are removed from the api
@@ -390,7 +392,7 @@ async function getTimelineRundown(
 						blueprint,
 						showStyle,
 						cache.Playlist.doc,
-						resolvedPieces.pieces,
+						resolvedPieces,
 						timelineObjs
 					)
 
@@ -403,7 +405,7 @@ async function getTimelineRundown(
 							timelineObjs,
 							clone(cache.Playlist.doc.previousPersistentState),
 							clone(currentPartInstance?.previousPartEndState),
-							resolvedPieces.pieces.map(convertResolvedPieceInstanceToBlueprints)
+							resolvedPieces.map(convertResolvedPieceInstanceToBlueprints)
 						)
 						sendTrace(endTrace(influxTrace))
 						if (span) span.end()

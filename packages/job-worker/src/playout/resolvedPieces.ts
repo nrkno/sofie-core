@@ -19,6 +19,7 @@ import {
 } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { ReadOnlyCache } from '../cache/CacheBase'
+import { SelectedPartInstancesTimelineInfo } from './timeline/generate'
 
 function resolvePieceTimeline(
 	objs: TimelineContentObject[],
@@ -177,22 +178,25 @@ export function resolvePrunedPieceInstances(
  * @param partInstance PartInstance to resolve
  * @returns ResolvedPieceInstances sorted by startTime
  */
-export function getResolvedPieces(
+export function getResolvedPiecesForCurrentPartInstance(
 	context: JobContext,
 	cache: ReadOnlyCache<CacheForPlayout>,
 	sourceLayers: SourceLayers,
-	partInstance: Pick<DBPartInstance, '_id' | 'timings'>
+	partInstance: Pick<DBPartInstance, '_id' | 'timings'>,
+	now?: number
 ): ResolvedPieceInstance[] {
 	const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === partInstance._id)
 
-	const now = getCurrentTime()
+	if (now === undefined) now = getCurrentTime()
+
 	const partStarted = partInstance.timings?.plannedStartedPlayback
 	const nowInPart = partStarted ? now - partStarted : null
 
-	return getResolvedPiecesInner(context, sourceLayers, cache.PlaylistId, partInstance._id, nowInPart, pieceInstances)
+	return getResolvedPiecesOLD(context, sourceLayers, cache.PlaylistId, partInstance._id, nowInPart, pieceInstances)
 }
 
-export function getResolvedPiecesInner(
+/** @deprecated */
+export function getResolvedPiecesOLD(
 	context: JobContext,
 	sourceLayers: SourceLayers,
 	playlistId: RundownPlaylistId,
@@ -248,6 +252,65 @@ export function getResolvedPiecesInner(
 	return resolvedPieces
 }
 
+export function getResolvedPiecesForPartInstancesOnTimeline(
+	_context: JobContext,
+	partInstancesInfo: SelectedPartInstancesTimelineInfo,
+	now?: number
+): ResolvedPieceInstance[] {
+	if (now === undefined) now = getCurrentTime()
+
+	let previousResolvedPieces: ResolvedPieceInstance[] = []
+	if (partInstancesInfo.previous?.partStarted) {
+		// TODO - should this only be when partInstancesInfo.previous?.partStarted?
+
+		previousResolvedPieces = resolvePrunedPieceInstances(
+			partInstancesInfo.previous.nowInPart,
+			partInstancesInfo.previous.pieceInstances
+		)
+
+		// Translate start to absolute times
+		for (const piece of previousResolvedPieces) {
+			piece.resolvedStart += partInstancesInfo.previous.partStarted
+		}
+	}
+
+	let currentResolvedPieces: ResolvedPieceInstance[] = []
+	if (partInstancesInfo.current) {
+		const partStarted = partInstancesInfo.current.partStarted ?? now
+
+		currentResolvedPieces = resolvePrunedPieceInstances(
+			partInstancesInfo.current.nowInPart,
+			partInstancesInfo.current.pieceInstances
+		)
+
+		// Translate start to absolute times
+		for (const piece of currentResolvedPieces) {
+			piece.resolvedStart += partStarted
+		}
+	}
+
+	let nextResolvedPieces: ResolvedPieceInstance[] = []
+	if (
+		partInstancesInfo.next &&
+		// TODO - is this autonext check reliable? what if playout decides to not use it?
+		(!partInstancesInfo.current || partInstancesInfo.current.partInstance.part.autoNext)
+	) {
+		const partStarted = now + 99999999 // TODO - what should this be?
+
+		nextResolvedPieces = resolvePrunedPieceInstances(
+			partInstancesInfo.next.nowInPart,
+			partInstancesInfo.next.pieceInstances
+		)
+
+		// Translate start to absolute times
+		for (const piece of nextResolvedPieces) {
+			piece.resolvedStart += partStarted
+		}
+	}
+
+	return [...previousResolvedPieces, ...currentResolvedPieces, ...nextResolvedPieces]
+}
+
 /**
  * Parse the timeline, to compile the resolved PieceInstances on the timeline
  * Uses the getCurrentTime() as approximation for 'now'
@@ -259,14 +322,13 @@ export function getResolvedPiecesInner(
 export function getResolvedPiecesFromFullTimeline(
 	context: JobContext,
 	cache: ReadOnlyCache<CacheForPlayout>,
-	allObjs: TimelineObjGeneric[]
-): { pieces: ResolvedPieceInstance[]; time: number } {
+	allObjs: TimelineObjGeneric[],
+	now: number
+): ResolvedPieceInstance[] {
 	const span = context.startSpan('getResolvedPiecesFromFullTimeline')
 	const objs = clone(
 		allObjs.filter((o) => (o.metaData as Partial<PieceTimelineMetadata> | undefined)?.isPieceTimeline)
 	)
-
-	const now = getCurrentTime()
 
 	const playlist = cache.Playlist.doc
 	const partInstanceIds = new Set(
@@ -289,10 +351,7 @@ export function getResolvedPiecesFromFullTimeline(
 	const resolvedPieces = resolvePieceTimeline(transformedObjs, now, pieceInstanceMap, 'timeline')
 
 	if (span) span.end()
-	return {
-		pieces: resolvedPieces,
-		time: now,
-	}
+	return resolvedPieces
 }
 
 /**

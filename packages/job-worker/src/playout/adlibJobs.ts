@@ -18,7 +18,7 @@ import { runJobWithPlayoutCache } from './lock'
 import { updateTimeline } from './timeline/generate'
 import { getCurrentTime } from '../lib'
 import { convertAdLibToPieceInstance, convertPieceToAdLibPiece, sortPieceInstancesByStart } from './pieces'
-import { getResolvedPieces } from './resolvedPieces'
+import { getResolvedPiecesForCurrentPartInstance } from './resolvedPieces'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -146,7 +146,12 @@ async function pieceTakeNowAsAdlib(
 			pieceInstanceToCopy.plannedStartedPlayback &&
 			pieceInstanceToCopy.plannedStartedPlayback <= getCurrentTime()
 		) {
-			const resolvedPieces = getResolvedPieces(context, cache, showStyleBase.sourceLayers, partInstance)
+			const resolvedPieces = getResolvedPiecesForCurrentPartInstance(
+				context,
+				cache,
+				showStyleBase.sourceLayers,
+				partInstance
+			)
 			const resolvedPieceBeingCopied = resolvedPieces.find((p) => p._id === pieceInstanceToCopy._id)
 
 			if (

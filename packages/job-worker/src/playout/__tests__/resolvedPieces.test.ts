@@ -1,9 +1,9 @@
-import { PartInstanceId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, PieceId, RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { setupMockShowStyleCompound, setupDefaultRundownPlaylist } from '../../__mocks__/presetCollections'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 // import { getResolvedPiecesInner } from '../resolvedPieces'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { ReadonlyDeep } from 'type-fest'
+import { ReadonlyDeep, SetNonNullable } from 'type-fest'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { IBlueprintPieceType, PieceLifespan } from '@sofie-automation/blueprints-integration'
@@ -11,12 +11,26 @@ import {
 	PieceInstance,
 	PieceInstancePiece,
 	ResolvedPieceInstance,
+	rewrapPieceToInstance,
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import _ = require('underscore')
 import { JobContext } from '../../jobs'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
-import { resolvePrunedPieceInstances } from '../resolvedPieces'
+import {
+	getResolvedPiecesForCurrentPartInstance,
+	getResolvedPiecesFromFullTimeline,
+	resolvePrunedPieceInstances,
+} from '../resolvedPieces'
+import { updateTimeline } from '../timeline/generate'
+import { runJobWithPlayoutCache } from '../lock'
+import { activateRundownPlaylist } from '../activePlaylistActions'
+import { deserializeTimelineBlob, TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { performTakeToNextedPart } from '../take'
+import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../cache'
+import { reportPartInstanceHasStarted } from '../timings/partPlayback'
+import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+import { getCurrentTime } from '../../lib'
 
 describe('Resolved Pieces', () => {
 	let context: MockJobContext
@@ -426,5 +440,341 @@ describe('Resolved Pieces', () => {
 				resolvedDuration: 1000,
 			},
 		] satisfies StrippedResult)
+	})
+
+	describe('From Timeline', () => {
+		async function loadCacheAndPerformTakes(
+			takeCount: number,
+			fn: (
+				cache: CacheForPlayout,
+				partInstances: SetNonNullable<
+					ReturnType<typeof getSelectedPartInstancesFromCache>,
+					'currentPartInstance' | 'nextPartInstance'
+				>,
+				now: number
+			) => Promise<void>
+		) {
+			await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) => {
+				let now = Date.now()
+
+				await activateRundownPlaylist(context, cache, false)
+
+				for (let i = 0; i < takeCount; i++) {
+					// Do the take
+					await performTakeToNextedPart(context, cache, now)
+
+					const currentPartInstance = getSelectedPartInstancesFromCache(cache)
+						.currentPartInstance as DBPartInstance
+					expect(currentPartInstance).toBeTruthy()
+
+					// Confirm playback as starting
+					reportPartInstanceHasStarted(context, cache, currentPartInstance, now)
+
+					now += 5000
+				}
+
+				const partInstances = getSelectedPartInstancesFromCache(cache)
+				expect(partInstances.previousPartInstance).toBeFalsy()
+				expect(partInstances.currentPartInstance).toBeTruthy()
+				expect(partInstances.nextPartInstance).toBeTruthy()
+
+				await fn(cache, partInstances as any, now)
+			})
+		}
+
+		function fetchTimelineObjs(cache: CacheForPlayout) {
+			const timelineDoc = cache.Timeline.doc as TimelineComplete
+			expect(timelineDoc).toBeTruthy()
+			return deserializeTimelineBlob(timelineDoc.timelineBlob)
+		}
+
+		function doResolvePieces(cache: CacheForPlayout, now: number) {
+			const timelineObjs = fetchTimelineObjs(cache)
+
+			return getResolvedPiecesFromFullTimeline(context, cache, timelineObjs, now)
+		}
+
+		test('simple part scenario', async () => {
+			await loadCacheAndPerformTakes(1, async (cache, parts, now) => {
+				const resolvedPieces = doResolvePieces(cache, now)
+
+				expect(stripResult(resolvedPieces)).toEqual([
+					{
+						_id: protectString(`${parts.currentPartInstance?._id}_${rundownId}_piece001`),
+						resolvedStart: now - 1,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+			})
+		})
+
+		test('single piece stopped by virtual now', async () => {
+			await loadCacheAndPerformTakes(1, async (cache, parts, now) => {
+				// Add some extra pieceInstances
+
+				// const getPieceInstances = () =>
+				// 	cache.PieceInstances.findAll((p) => p.partInstanceId === parts.currentPartInstance._id)
+
+				// console.log(getPieceInstances())
+				// // cache.PieceInstances.insert()
+				// const pieceInstanceCount = getPieceInstances().length
+				// // expect(
+				// // 	innerStopPieces(context, cache, sourceLayers, parts.currentPartInstance, () => true, undefined)
+				// // ).toHaveLength(1)
+				// expect(getPieceInstances().length).toBe(pieceInstanceCount + 1)
+				// // innerStartAdLibPiece()
+
+				const piece001 = cache.PieceInstances.findOne(
+					(p) =>
+						p.partInstanceId === parts.currentPartInstance._id &&
+						p.piece._id.toString().endsWith('piece001')
+				) as PieceInstance
+				expect(piece001).toBeTruthy()
+				expect(piece001.piece.lifespan).toBe(PieceLifespan.WithinPart)
+
+				// Manually insert a virtual piece on the same layer
+				const virtualId = cache.PieceInstances.insert({
+					...rewrapPieceToInstance(
+						{
+							_id: getRandomId(),
+							externalId: '-',
+							enable: { start: 'now' },
+							lifespan: piece001.piece.lifespan,
+							sourceLayerId: piece001.piece.sourceLayerId,
+							outputLayerId: piece001.piece.outputLayerId,
+							invalid: false,
+							name: '',
+							startPartId: parts.currentPartInstance.part._id,
+							pieceType: IBlueprintPieceType.Normal,
+							virtual: true,
+							content: {},
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
+						},
+						parts.currentPartInstance.playlistActivationId,
+						parts.currentPartInstance.rundownId,
+						parts.currentPartInstance._id
+					),
+					dynamicallyInserted: getCurrentTime(),
+				})
+
+				// rebuild the timeline
+				await updateTimeline(context, cache)
+
+				// Check the result
+				const laterNow = now + 2000
+				const resolvedPieces = doResolvePieces(cache, laterNow)
+
+				expect(stripResult(resolvedPieces)).toEqual([
+					{
+						_id: protectString(`${parts.currentPartInstance?._id}_${rundownId}_piece001`),
+						resolvedStart: now - 5000 - 1,
+						resolvedDuration: undefined, // TODO - this should havea  value?
+					},
+					{
+						// TODO - this object should not be present?
+						_id: virtualId,
+						resolvedStart: laterNow - 1,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+
+				// Check the 'simple' route result
+				const simpleResolvedPieces = getResolvedPiecesForCurrentPartInstance(
+					context,
+					cache,
+					sourceLayers,
+					parts.currentPartInstance,
+					laterNow
+				)
+				expect(stripResult(simpleResolvedPieces)).toEqual([
+					{
+						_id: protectString(`${parts.currentPartInstance?._id}_${rundownId}_piece001`),
+						resolvedStart: 0,
+						resolvedDuration: undefined, // TODO - this should havea  value?
+					},
+					{
+						// TODO - this object should not be present?
+						_id: virtualId,
+						resolvedStart: 5000 + 2000 - 1,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+			})
+		})
+
+		test('single piece stopped by timed now', async () => {
+			await loadCacheAndPerformTakes(1, async (cache, parts, now) => {
+				// Add an extra pieceInstances
+				const piece001Id = protectString(`${parts.currentPartInstance?._id}_${rundownId}_piece001`)
+				const piece001 = cache.PieceInstances.findOne(piece001Id) as PieceInstance
+				expect(piece001).toBeTruthy()
+				expect(piece001.partInstanceId).toBe(parts.currentPartInstance._id)
+				expect(piece001.piece.lifespan).toBe(PieceLifespan.WithinPart)
+
+				// Manually insert a virtual piece on the same layer
+				const virtualId = cache.PieceInstances.insert({
+					...rewrapPieceToInstance(
+						{
+							_id: getRandomId(),
+							externalId: '-',
+							enable: { start: 7000 },
+							lifespan: piece001.piece.lifespan,
+							sourceLayerId: piece001.piece.sourceLayerId,
+							outputLayerId: piece001.piece.outputLayerId,
+							invalid: false,
+							name: '',
+							startPartId: parts.currentPartInstance.part._id,
+							pieceType: IBlueprintPieceType.Normal,
+							virtual: true,
+							content: {},
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
+						},
+						parts.currentPartInstance.playlistActivationId,
+						parts.currentPartInstance.rundownId,
+						parts.currentPartInstance._id
+					),
+					dynamicallyInserted: getCurrentTime(),
+				})
+
+				// rebuild the timeline
+				await updateTimeline(context, cache)
+
+				// Check the result
+				const laterNow = now + 2000
+				const resolvedPieces = doResolvePieces(cache, laterNow)
+
+				expect(stripResult(resolvedPieces)).toEqual([
+					{
+						_id: protectString(`${parts.currentPartInstance?._id}_${rundownId}_piece001`),
+						resolvedStart: now - 5000 - 1,
+						resolvedDuration: undefined, // TODO - this should have a value?
+					},
+					{
+						// TODO - this object should not be present?
+						_id: virtualId,
+						resolvedStart: laterNow - 1,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+
+				// Check the 'simple' route result
+				const simpleResolvedPieces = getResolvedPiecesForCurrentPartInstance(
+					context,
+					cache,
+					sourceLayers,
+					parts.currentPartInstance,
+					laterNow
+				)
+				expect(stripResult(simpleResolvedPieces)).toEqual([
+					{
+						_id: piece001Id,
+						resolvedStart: 0,
+						resolvedDuration: undefined, // TODO - this should have a value?
+					},
+					{
+						// TODO - this object should not be present?
+						_id: virtualId,
+						resolvedStart: 5000 + 2000 - 1,
+						resolvedDuration: undefined,
+					},
+				] satisfies StrippedResult)
+			})
+		})
+
+		test('within part overriding infinite for period', async () => {
+			await loadCacheAndPerformTakes(1, async (cache, parts, now) => {
+				const piece001Id = protectString(`${parts.currentPartInstance?._id}_${rundownId}_piece001`)
+
+				// Remove any unwanted pieceInstances
+				cache.PieceInstances.remove(
+					(p) => p.partInstanceId === parts.currentPartInstance._id && p._id !== piece001Id
+				)
+
+				// Change the start of piece001
+				const piece001 = cache.PieceInstances.findOne(piece001Id) as PieceInstance
+				expect(piece001).toBeTruthy()
+				expect(piece001.partInstanceId).toBe(parts.currentPartInstance._id)
+				expect(piece001.piece.lifespan).toBe(PieceLifespan.WithinPart)
+
+				cache.PieceInstances.updateOne(piece001Id, (p) => {
+					p.piece.enable = { start: 3000, duration: 2500 }
+					return p
+				})
+
+				// Manually insert an infinite piece on the same layer
+				const infiniteId = cache.PieceInstances.insert({
+					...rewrapPieceToInstance(
+						{
+							_id: getRandomId(),
+							externalId: '-',
+							enable: { start: 1000 },
+							lifespan: PieceLifespan.OutOnSegmentEnd,
+							sourceLayerId: piece001.piece.sourceLayerId,
+							outputLayerId: piece001.piece.outputLayerId,
+							invalid: false,
+							name: '',
+							startPartId: parts.currentPartInstance.part._id,
+							pieceType: IBlueprintPieceType.Normal,
+							content: {},
+							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
+						},
+						parts.currentPartInstance.playlistActivationId,
+						parts.currentPartInstance.rundownId,
+						parts.currentPartInstance._id
+					),
+					dynamicallyInserted: getCurrentTime(),
+				})
+
+				// rebuild the timeline
+				await updateTimeline(context, cache)
+
+				// Check the result
+				const laterNow = now + 2000
+				const resolvedPieces = doResolvePieces(cache, laterNow)
+
+				expect(stripResult(resolvedPieces)).toEqual([
+					{
+						_id: infiniteId,
+						resolvedStart: now - 5000 + 1000 - 1,
+						resolvedDuration: undefined,
+					},
+					{
+						_id: piece001Id,
+						resolvedStart: now - 5000 + 3000 - 1,
+						resolvedDuration: 2500,
+					},
+				] satisfies StrippedResult)
+
+				// Check the 'simple' route result
+				const simpleResolvedPieces = getResolvedPiecesForCurrentPartInstance(
+					context,
+					cache,
+					sourceLayers,
+					parts.currentPartInstance,
+					laterNow
+				)
+				expect(stripResult(simpleResolvedPieces)).toEqual([
+					{
+						_id: infiniteId,
+						resolvedStart: 1000 - 1,
+						resolvedDuration: undefined,
+					},
+					{
+						_id: piece001Id,
+						resolvedStart: 3000 - 1,
+						resolvedDuration: 2500,
+					},
+				] satisfies StrippedResult)
+			})
+		})
+
+		/**
+		 * TODO: stress doResolvePieces in some more 'complex' scenarios of mixing infinites, exclusive groups, and non infinites
+		 * also throw in the concept of having a previous or next part on the timeline
+		 * and make sure to 'stress' the logic for whether to include the next/previous matches in playout.
+		 * finally, switch it across to the new implementation and debug
+		 */
+
+		// TODO - more scenarios
 	})
 })
