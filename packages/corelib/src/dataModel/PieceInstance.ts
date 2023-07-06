@@ -1,4 +1,4 @@
-import { IBlueprintResolvedPieceInstance, Time } from '@sofie-automation/blueprints-integration'
+import { Time } from '@sofie-automation/blueprints-integration'
 import { protectString } from '../protectedString'
 import {
 	PieceInstanceInfiniteId,
@@ -80,10 +80,14 @@ export interface PieceInstance {
 	plannedStoppedPlayback?: Time
 }
 
-export interface ResolvedPieceInstance
-	extends PieceInstance,
-		Omit<IBlueprintResolvedPieceInstance, '_id' | 'adLibSourceId' | 'partInstanceId' | 'piece' | 'infinite'> {
-	piece: PieceInstancePiece
+export interface ResolvedPieceInstance extends PieceInstance {
+	/** Calculated start point within the PartInstance */
+	resolvedStart: number
+	/** Calculated duration within the PartInstance */
+	resolvedDuration?: number
+
+	/** Timeline priority of the PieceInstance */
+	timelinePriority: number
 }
 
 export function omitPiecePropertiesForInstance(piece: Piece): PieceInstancePiece {
