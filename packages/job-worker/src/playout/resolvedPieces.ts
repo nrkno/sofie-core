@@ -1,8 +1,8 @@
-import { PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstance, ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { TimelineObjGeneric, TimelineObjRundown } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { IBlueprintPieceType, TSR } from '@sofie-automation/blueprints-integration/dist'
+import { IBlueprintPieceType } from '@sofie-automation/blueprints-integration/dist'
 import { clone, literal, normalizeArray, applyToArray, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { Resolver, TimelineEnable } from 'superfly-timeline'
 import { logger } from '../logging'
@@ -17,7 +17,7 @@ import {
 	PieceInstanceWithTimings,
 	processAndPrunePieceInstanceTimings,
 } from '@sofie-automation/corelib/dist/playout/processAndPrune'
-import { createPieceGroupAndCap, PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
+import { PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
 import { ReadOnlyCache } from '../cache/CacheBase'
 import { SelectedPartInstancesTimelineInfo } from './timeline/generate'
 
@@ -179,7 +179,7 @@ export function resolvePrunedPieceInstances(
  * @returns ResolvedPieceInstances sorted by startTime
  */
 export function getResolvedPiecesForCurrentPartInstance(
-	context: JobContext,
+	_context: JobContext,
 	cache: ReadOnlyCache<CacheForPlayout>,
 	sourceLayers: SourceLayers,
 	partInstance: Pick<DBPartInstance, '_id' | 'timings'>,
@@ -190,66 +190,10 @@ export function getResolvedPiecesForCurrentPartInstance(
 	if (now === undefined) now = getCurrentTime()
 
 	const partStarted = partInstance.timings?.plannedStartedPlayback
-	const nowInPart = partStarted ? now - partStarted : null
+	const nowInPart = partStarted ? now - partStarted : 0
 
-	return getResolvedPiecesOLD(context, sourceLayers, cache.PlaylistId, partInstance._id, nowInPart, pieceInstances)
-}
-
-/** @deprecated */
-export function getResolvedPiecesOLD(
-	context: JobContext,
-	sourceLayers: SourceLayers,
-	playlistId: RundownPlaylistId,
-	partInstanceId: PartInstanceId,
-	nowInPart: number | null,
-	pieceInstances: PieceInstance[]
-): ResolvedPieceInstance[] {
-	const span = context.startSpan('getResolvedPieces')
-
-	const pieceInststanceMap = normalizeArray(pieceInstances, '_id')
-
-	const preprocessedPieces = processAndPrunePieceInstanceTimings(sourceLayers, pieceInstances, nowInPart ?? 0)
-
-	const deNowify = (o: TimelineObjRundown) => {
-		applyToArray(o.enable, (enable) => {
-			if (enable.start === 'now' && nowInPart !== null) {
-				// Emulate playout starting now. TODO - ensure didnt break other uses
-				enable.start = nowInPart
-			} else if (enable.start === 0 || enable.start === 'now') {
-				enable.start = 1
-			}
-		})
-		return o
-	}
-
-	const objs: TimelineObjGeneric[] = []
-	for (const piece of preprocessedPieces) {
-		let controlObjEnable: TSR.Timeline.TimelineEnable = piece.piece.enable
-		if (piece.userDuration) {
-			controlObjEnable = {
-				start: piece.piece.enable.start,
-			}
-
-			if ('endRelativeToPart' in piece.userDuration) {
-				controlObjEnable.end = piece.userDuration.endRelativeToPart
-			} else {
-				controlObjEnable.end = nowInPart ?? 0 + piece.userDuration.endRelativeToNow
-			}
-		}
-
-		const { controlObj, childGroup, capObjs } = createPieceGroupAndCap(playlistId, piece, controlObjEnable)
-		objs.push(deNowify(controlObj), ...capObjs.map(deNowify), deNowify(childGroup))
-	}
-
-	const resolvedPieces = resolvePieceTimeline(
-		transformTimeline(objs),
-		0,
-		pieceInststanceMap,
-		`PartInstance #${partInstanceId}`
-	)
-
-	if (span) span.end()
-	return resolvedPieces
+	const preprocessedPieces = processAndPrunePieceInstanceTimings(sourceLayers, pieceInstances, nowInPart)
+	return resolvePrunedPieceInstances(nowInPart, preprocessedPieces)
 }
 
 export function getResolvedPiecesForPartInstancesOnTimeline(
@@ -311,14 +255,7 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 	return [...previousResolvedPieces, ...currentResolvedPieces, ...nextResolvedPieces]
 }
 
-/**
- * Parse the timeline, to compile the resolved PieceInstances on the timeline
- * Uses the getCurrentTime() as approximation for 'now'
- * @param context Context for current job
- * @param cache Cache for the active Playlist
- * @param allObjs TimelineObjects to consider
- * @returns ResolvedPieceInstances sorted by startTime
- */
+/** @deprecated */
 export function getResolvedPiecesFromFullTimeline(
 	context: JobContext,
 	cache: ReadOnlyCache<CacheForPlayout>,

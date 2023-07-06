@@ -31,6 +31,7 @@ import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../cache'
 import { reportPartInstanceHasStarted } from '../timings/partPlayback'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { getCurrentTime } from '../../lib'
+import { setupPieceInstanceInfiniteProperties } from '../pieces'
 
 describe('Resolved Pieces', () => {
 	let context: MockJobContext
@@ -711,28 +712,28 @@ describe('Resolved Pieces', () => {
 				})
 
 				// Manually insert an infinite piece on the same layer
-				const infiniteId = cache.PieceInstances.insert({
-					...rewrapPieceToInstance(
-						{
-							_id: getRandomId(),
-							externalId: '-',
-							enable: { start: 1000 },
-							lifespan: PieceLifespan.OutOnSegmentEnd,
-							sourceLayerId: piece001.piece.sourceLayerId,
-							outputLayerId: piece001.piece.outputLayerId,
-							invalid: false,
-							name: '',
-							startPartId: parts.currentPartInstance.part._id,
-							pieceType: IBlueprintPieceType.Normal,
-							content: {},
-							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
-						},
-						parts.currentPartInstance.playlistActivationId,
-						parts.currentPartInstance.rundownId,
-						parts.currentPartInstance._id
-					),
-					dynamicallyInserted: getCurrentTime(),
-				})
+				const infinitePiece = rewrapPieceToInstance(
+					{
+						_id: getRandomId(),
+						externalId: '-',
+						enable: { start: 1000 },
+						lifespan: PieceLifespan.OutOnSegmentEnd,
+						sourceLayerId: piece001.piece.sourceLayerId,
+						outputLayerId: piece001.piece.outputLayerId,
+						invalid: false,
+						name: '',
+						startPartId: parts.currentPartInstance.part._id,
+						pieceType: IBlueprintPieceType.Normal,
+						content: {},
+						timelineObjectsString: EmptyPieceTimelineObjectsBlob,
+					},
+					parts.currentPartInstance.playlistActivationId,
+					parts.currentPartInstance.rundownId,
+					parts.currentPartInstance._id
+				)
+				infinitePiece.dynamicallyInserted = getCurrentTime()
+				setupPieceInstanceInfiniteProperties(infinitePiece)
+				const infiniteId = cache.PieceInstances.insert(infinitePiece)
 
 				// rebuild the timeline
 				await updateTimeline(context, cache)

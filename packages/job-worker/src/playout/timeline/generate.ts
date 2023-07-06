@@ -33,7 +33,7 @@ import {
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../cache'
 import { logger } from '../../logging'
 import { getCurrentTime, getSystemVersion } from '../../lib'
-import { getResolvedPiecesFromFullTimeline } from '../resolvedPieces'
+import { getResolvedPiecesForPartInstancesOnTimeline } from '../resolvedPieces'
 import {
 	processAndPrunePieceInstanceTimings,
 	PieceInstanceWithTimings,
@@ -371,7 +371,11 @@ async function getTimelineRundown(
 			)
 
 			if (blueprint.blueprint.onTimelineGenerate || blueprint.blueprint.getAbResolverConfiguration) {
-				const resolvedPieces = getResolvedPiecesFromFullTimeline(context, cache, timelineObjs, getCurrentTime())
+				const resolvedPieces = getResolvedPiecesForPartInstancesOnTimeline(
+					context,
+					partInstancesInfo,
+					getCurrentTime()
+				)
 				const blueprintContext = new OnTimelineGenerateContext(
 					context.studio,
 					context.getStudioBlueprintConfig(),
