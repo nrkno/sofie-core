@@ -94,7 +94,7 @@ export interface IStudioContext extends ICommonContext {
 	getStudioConfigRef(configKey: string): string
 
 	/** Get the mappings for the studio */
-	getStudioMappings: () => Readonly<BlueprintMappings>
+	getStudioMappings: () => Promise<Readonly<BlueprintMappings>>
 }
 
 export interface IPackageInfoContext {
@@ -104,7 +104,7 @@ export interface IPackageInfoContext {
 	 * The possible packageIds are scoped based on the ownership of the package.
 	 * eg, baseline packages can be accessed when generating the baseline objects, piece/adlib packages can be access when regenerating the segment they are from
 	 */
-	getPackageInfo: (packageId: string) => Readonly<PackageInfo.Any[]>
+	getPackageInfo: (packageId: string) => Promise<Readonly<PackageInfo.Any[]>>
 	hackGetMediaObjectDuration: (mediaId: string) => Promise<number | undefined>
 }
 

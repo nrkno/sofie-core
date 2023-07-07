@@ -36,6 +36,8 @@ export function listenToEvents<T extends object>(socket: any, handlers: EventHan
 				return // Ignore messages without correct structure
 			}
 
+			console.log('running', event, functionId)
+
 			try {
 				// Run it
 				const handler2 = handler as HandlerFunction<(msg: any) => any>

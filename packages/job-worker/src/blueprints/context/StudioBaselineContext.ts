@@ -17,7 +17,7 @@ export class StudioBaselineContext extends StudioContext implements IStudioBasel
 		this.jobContext = context
 	}
 
-	getPackageInfo(packageId: string): readonly PackageInfo.Any[] {
+	async getPackageInfo(packageId: string): Promise<Readonly<Array<PackageInfo.Any>>> {
 		return this.watchedPackages.getPackageInfo(packageId)
 	}
 

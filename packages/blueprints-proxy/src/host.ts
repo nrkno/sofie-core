@@ -6,6 +6,7 @@ import { ClientToServerEvents, ServerToClientEvents } from './index'
 import { Server } from 'socket.io'
 import { listenToEvents } from './helper'
 import { studio_applyConfig, studio_validateConfig } from './routers/studio/config'
+import { studio_getBaseline } from './routers/studio/baseline'
 
 export function runForBlueprints(
 	studioBlueprint: StudioBlueprintManifest<any, any>,
@@ -52,6 +53,7 @@ export function runForBlueprints(
 			// learnAction: this._handleLearnAction.bind(this),
 			// learnFeedback: this._handleLearnFeedback.bind(this),
 			// startStopRecordActions: this._handleStartStopRecordActions.bind(this),
+			studio_getBaseline: async (...args) => studio_getBaseline(studioBlueprint, socket, ...args),
 			studio_validateConfig: async (...args) => studio_validateConfig(studioBlueprint, socket, ...args),
 			studio_applyConfig: async (...args) => studio_applyConfig(studioBlueprint, socket, ...args),
 		})

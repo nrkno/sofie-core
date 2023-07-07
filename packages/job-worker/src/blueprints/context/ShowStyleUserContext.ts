@@ -71,7 +71,7 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 		}
 	}
 
-	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
+	async getPackageInfo(packageId: string): Promise<Readonly<Array<PackageInfo.Any>>> {
 		return this.watchedPackages.getPackageInfo(packageId)
 	}
 

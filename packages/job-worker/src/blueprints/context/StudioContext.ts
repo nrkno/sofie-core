@@ -34,7 +34,7 @@ export class StudioContext extends CommonContext implements IStudioContext {
 	getStudioConfigRef(configKey: string): string {
 		return getStudioConfigRef(this.studio._id, configKey)
 	}
-	getStudioMappings(): Readonly<BlueprintMappings> {
+	async getStudioMappings(): Promise<Readonly<BlueprintMappings>> {
 		if (!this.#processedMappings) {
 			this.#processedMappings = applyAndValidateOverrides(this.studio.mappingsWithOverrides).obj
 		}

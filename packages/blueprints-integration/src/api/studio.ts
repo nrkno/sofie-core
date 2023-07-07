@@ -28,7 +28,9 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 	translations?: string
 
 	/** Returns the items used to build the baseline (default state) of a studio, this is the baseline used when there's no active rundown */
-	getBaseline: (context: IStudioBaselineContext) => BlueprintResultStudioBaseline
+	getBaseline: (
+		context: IStudioBaselineContext
+	) => BlueprintResultStudioBaseline | Promise<BlueprintResultStudioBaseline>
 
 	/** Returns the id of the show style to use for a rundown, return null to ignore that rundown */
 	getShowStyleId: (

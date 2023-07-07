@@ -1,6 +1,7 @@
 import {
 	BlueprintConfigCoreConfig,
 	BlueprintResultApplyStudioConfig,
+	BlueprintResultStudioBaseline,
 	IBlueprintConfig,
 	IConfigMessage,
 } from '@sofie-automation/blueprints-integration'
@@ -14,9 +15,15 @@ export interface ServerToClientEvents {
 }
 
 export interface ClientToServerEvents {
-	// hello: () => void
+	studio_getBaseline: (msg: StudioGetBaselineArgs) => BlueprintResultStudioBaseline
 	studio_validateConfig: (msg: StudioValidateConfigArgs) => IConfigMessage[]
 	studio_applyConfig: (msg: StudioApplyConfigArgs) => BlueprintResultApplyStudioConfig
+}
+
+export interface StudioGetBaselineArgs {
+	identifier: string
+	studioId: string
+	studioConfig: IBlueprintConfig
 }
 
 export interface StudioValidateConfigArgs {

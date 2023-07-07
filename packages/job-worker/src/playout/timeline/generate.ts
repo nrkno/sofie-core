@@ -108,7 +108,7 @@ export async function updateStudioTimeline(
 
 		const blueprint = studioBlueprint.blueprint
 		try {
-			studioBaseline = blueprint.getBaseline(
+			studioBaseline = await blueprint.getBaseline(
 				new StudioBaselineContext(
 					{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
 					context,

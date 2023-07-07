@@ -22,7 +22,7 @@ import { logger } from '../logging'
 import * as SocketIOClient from 'socket.io-client'
 import type { ClientToServerEvents, ResultCallback, ServerToClientEvents } from '@sofie-automation/blueprints-proxy'
 import { ReadonlyDeep } from 'type-fest'
-import { CommonContext } from './context'
+import { CommonContext, StudioBaselineContext } from './context'
 
 type ParamsIfReturnIsValid<T extends (...args: any[]) => any> = ReturnType<T> extends never ? never : Parameters<T>
 
@@ -107,9 +107,31 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 		})
 	}
 
+	#listenToEventsForMethod(functionId: string, handlers: any): () => void {
+		// TODO
+
+		return () => {
+			// TODO -cleanup
+		}
+	}
+
 	/** Returns the items used to build the baseline (default state) of a studio, this is the baseline used when there's no active rundown */
-	getBaseline(_context: IStudioBaselineContext): BlueprintResultStudioBaseline {
-		throw new Error('not implemented')
+	async getBaseline(context0: IStudioBaselineContext): Promise<BlueprintResultStudioBaseline> {
+		const context = context0 as StudioBaselineContext
+
+		const id = getRandomString() // TODO - use this properly
+
+		const stop = this.#listenToEventsForMethod(id, {})
+
+		try {
+			return this.#runProxied('studio_getBaseline', id, {
+				identifier: context._contextIdentifier,
+				studioId: context.studioId,
+				studioConfig: context.getStudioConfig() as IBlueprintConfig,
+			})
+		} finally {
+			stop()
+		}
 	}
 
 	/** Returns the id of the show style to use for a rundown, return null to ignore that rundown */

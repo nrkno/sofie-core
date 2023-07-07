@@ -67,7 +67,7 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 		})
 	}
 
-	getPackageInfo(packageId: string): Readonly<Array<PackageInfo.Any>> {
+	async getPackageInfo(packageId: string): Promise<Readonly<Array<PackageInfo.Any>>> {
 		return this.watchedPackages.getPackageInfo(packageId)
 	}
 

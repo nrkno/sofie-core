@@ -28,7 +28,7 @@ export async function studio_applyConfig(
 ): Promise<BlueprintResultApplyStudioConfig> {
 	if (!studioBlueprint.applyConfig) throw new Error('Not supported') // TODO - this will have broken our ability to know if it is implemented or not..
 
-	const context = new CommonContext(`validateConfig ${msg.identifier}`)
+	const context = new CommonContext(`applyConfig ${msg.identifier}`)
 
 	return studioBlueprint.applyConfig(context, msg.config, msg.coreConfig)
 }
