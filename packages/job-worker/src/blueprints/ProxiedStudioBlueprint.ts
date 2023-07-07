@@ -18,7 +18,7 @@ import {
 import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
 import * as SocketIOClient from 'socket.io-client'
-import { ClientToServerEvents, ResultCallback, ServerToClientEvents } from '@sofie-automation/blueprints-proxy'
+import type { ClientToServerEvents, ResultCallback, ServerToClientEvents } from '@sofie-automation/blueprints-proxy'
 import { ReadonlyDeep } from 'type-fest'
 import { CommonContext } from './context'
 
@@ -29,11 +29,9 @@ type MyClient = SocketIOClient.Socket<ServerToClientEvents, ClientToServerEvents
 export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 	readonly blueprintType = BlueprintManifestType.STUDIO
 
-	readonly #client: MyClient = SocketIOClient.io({
-		host: '127.0.0.1',
-		port: 2345,
+	readonly #client: MyClient = SocketIOClient.io('http://localhost:2345', {
 		reconnection: true,
-		timeout: 5000,
+		// timeout: 5000,
 		autoConnect: true,
 		// transports: ['websocket'],
 	}) as MyClient
@@ -69,7 +67,7 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 		})
 
 		this.#client.on('connect_error', (err) => {
-			console.log('conencted failed', err)
+			console.log('conencted failed', err, err?.message, err?.toString())
 			// TODO - load constants from blueprints
 		})
 
@@ -81,9 +79,12 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 
 	async #runProxied<T extends keyof ClientToServerEvents>(
 		name: T,
+		functionId: string,
 		...args: ParamsIfReturnIsValid<ClientToServerEvents[T]>
 	): Promise<ReturnType<ClientToServerEvents[T]>> {
 		if (!this.#client.connected) throw new Error('Blueprints are unavailable')
+
+		// TODO - timeouts?
 
 		return new Promise<ReturnType<ClientToServerEvents[T]>>((resolve, reject) => {
 			const handleDisconnect = () => {
@@ -100,7 +101,7 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 				if (err) reject(err)
 				else resolve(res)
 			}
-			this.#client.emit(name as any, ...args, innerCb)
+			this.#client.emit(name as any, functionId, ...args, innerCb)
 		})
 	}
 
@@ -132,7 +133,10 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 
 		// TODO - handle this method being optional
 
-		return this.#runProxied('studio_validateConfig', id, context._contextIdentifier, config)
+		return this.#runProxied('studio_validateConfig', id, {
+			identifier: context._contextIdentifier,
+			config,
+		})
 	}
 
 	// /**

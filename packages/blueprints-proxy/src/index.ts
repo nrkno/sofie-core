@@ -10,5 +10,11 @@ export interface ServerToClientEvents {
 
 export interface ClientToServerEvents {
 	// hello: () => void
-	studio_validateConfig: (functionId: string, identifier: string, config: IBlueprintConfig) => IConfigMessage[]
+	studio_validateConfig: (msg: StudioValidateConfigArgs) => StudioValidateConfigResult
 }
+
+export interface StudioValidateConfigArgs {
+	identifier: string
+	config: IBlueprintConfig
+}
+export type StudioValidateConfigResult = IConfigMessage[]
