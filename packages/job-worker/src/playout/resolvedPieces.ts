@@ -90,6 +90,33 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 		)
 	}
 
+	return mergeInfinitesIntoCurrentPart(previousResolvedPieces, currentResolvedPieces, nextResolvedPieces)
+}
+
+function offsetResolvedStartAndCapDuration(
+	pieces: ResolvedPieceInstance[],
+	partStarted: number,
+	endCap: number | null
+) {
+	for (const piece of pieces) {
+		piece.resolvedStart += partStarted
+
+		if (endCap !== null) {
+			// Cap it to the end of the Part. If it is supposed to be longer, there will be a continuing infinite
+			const partEndCap = endCap - piece.resolvedStart
+
+			piece.resolvedDuration =
+				piece.resolvedDuration !== undefined ? Math.min(piece.resolvedDuration, partEndCap) : partEndCap
+		}
+	}
+}
+
+function mergeInfinitesIntoCurrentPart(
+	previousResolvedPieces: ResolvedPieceInstance[],
+	currentResolvedPieces: ResolvedPieceInstance[],
+	nextResolvedPieces: ResolvedPieceInstance[]
+): ResolvedPieceInstance[] {
+	// Build a map of the infinite pieces from the current Part
 	const currentInfinitePieces = new Map<PieceInstanceInfiniteId, ResolvedPieceInstance>()
 	for (const resolvedPiece of currentResolvedPieces) {
 		if (resolvedPiece.instance.infinite) {
@@ -141,22 +168,4 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 	}
 
 	return resultingPieces
-}
-
-function offsetResolvedStartAndCapDuration(
-	pieces: ResolvedPieceInstance[],
-	partStarted: number,
-	endCap: number | null
-) {
-	for (const piece of pieces) {
-		piece.resolvedStart += partStarted
-
-		if (endCap !== null) {
-			// Cap it to the end of the Part. If it is supposed to be longer, there will be a continuing infinite
-			const partEndCap = endCap - piece.resolvedStart
-
-			piece.resolvedDuration =
-				piece.resolvedDuration !== undefined ? Math.min(piece.resolvedDuration, partEndCap) : partEndCap
-		}
-	}
 }

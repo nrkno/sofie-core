@@ -223,11 +223,7 @@ export function resolvePrunedPieceInstance(
 	nowInPart: number,
 	pieceInstance: PieceInstanceWithTimings
 ): ResolvedPieceInstance {
-	const resolveStartOfInstance = (instance: PieceInstance): number => {
-		return instance.piece.enable.start === 'now' ? nowInPart : instance.piece.enable.start
-	}
-
-	const resolvedStart = resolveStartOfInstance(pieceInstance)
+	const resolvedStart = pieceInstance.piece.enable.start === 'now' ? nowInPart : pieceInstance.piece.enable.start
 
 	// Interpret the `resolvedEndCap` property into a number
 	let resolvedEnd: number | undefined
