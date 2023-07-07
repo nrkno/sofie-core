@@ -6,62 +6,11 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { JobContext } from '../jobs'
 import { getCurrentTime } from '../lib'
 import {
-	PieceInstanceWithTimings,
 	processAndPrunePieceInstanceTimings,
+	resolvePrunedPieceInstances,
 } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { ReadOnlyCache } from '../cache/CacheBase'
 import { SelectedPartInstancesTimelineInfo } from './timeline/generate'
-
-/**
- * Resolve an array of PieceInstanceWithTimings to approximated numbers within the PartInstance
- * @param nowInPart Approximate time of the playhead within the PartInstance
- * @param pieceInstances The PieceInstances to resolve
- */
-export function resolvePrunedPieceInstances(
-	nowInPart: number,
-	pieceInstances: PieceInstanceWithTimings[]
-): ResolvedPieceInstance[] {
-	const resolveStartOfInstance = (instance: PieceInstanceWithTimings): number => {
-		return instance.piece.enable.start === 'now' ? nowInPart : instance.piece.enable.start
-	}
-
-	return pieceInstances.map((instance) => {
-		const resolvedStart = resolveStartOfInstance(instance)
-
-		// Interpret the `resolvedEndCap` property into a number
-		let resolvedEnd: number | undefined
-		if (typeof instance.resolvedEndCap === 'number') {
-			resolvedEnd = instance.resolvedEndCap
-		} else if (instance.resolvedEndCap) {
-			resolvedEnd = nowInPart + instance.resolvedEndCap.offsetFromNow
-		}
-
-		// Find any possible durations this piece may have
-		const caps: number[] = []
-		if (resolvedEnd !== undefined) caps.push(resolvedEnd - resolvedStart)
-
-		// Consider the blueprint defined duration
-		if (instance.piece.enable.duration !== undefined) caps.push(instance.piece.enable.duration)
-
-		// Consider the playout userDuration
-		if (instance.userDuration) {
-			if ('endRelativeToPart' in instance.userDuration) {
-				caps.push(instance.userDuration.endRelativeToPart - resolvedStart)
-			} else if ('endRelativeToNow' in instance.userDuration) {
-				caps.push(nowInPart + instance.userDuration.endRelativeToNow - resolvedStart)
-			}
-		}
-
-		return {
-			...instance,
-
-			resolvedStart,
-			resolvedDuration: caps.length ? Math.min(...caps) : undefined,
-
-			timelinePriority: instance.priority,
-		}
-	})
-}
 
 /**
  * Resolve the PieceInstances for a PartInstance
