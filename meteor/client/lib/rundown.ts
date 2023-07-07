@@ -503,6 +503,7 @@ export namespace RundownUtils {
 
 				const resolvedPieces = resolvePrunedPieceInstances(nowInPart, preprocessedPieces)
 
+				// furthestDuration is used to figure out how much content (in terms of time) is there in the Part
 				let furthestDuration = 0
 
 				// insert items into the timeline for resolution

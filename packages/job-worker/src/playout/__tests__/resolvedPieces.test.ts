@@ -12,8 +12,11 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import _ = require('underscore')
-import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
-import { getResolvedPiecesForPartInstancesOnTimeline, resolvePrunedPieceInstances } from '../resolvedPieces'
+import {
+	processAndPrunePieceInstanceTimings,
+	resolvePrunedPieceInstances,
+} from '@sofie-automation/corelib/dist/playout/processAndPrune'
+import { getResolvedPiecesForPartInstancesOnTimeline } from '../resolvedPieces'
 import { SelectedPartInstanceTimelineInfo } from '../timeline/generate'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { setupPieceInstanceInfiniteProperties } from '../pieces'
