@@ -4,13 +4,12 @@ import { IOutputLayer, ISourceLayer, ITranslatableMessage } from '@sofie-automat
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PartInstance, wrapPartToTemporaryInstance } from './collections/PartInstances'
-import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { PieceInstance, ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	getPieceInstancesForPart,
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
 } from '@sofie-automation/corelib/dist/playout/infinites'
-import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { invalidateAfter } from '../lib/invalidatingTime'
 import { getCurrentTime, groupByToMap, ProtectedString, protectString } from './lib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -65,7 +64,7 @@ export interface ISourceLayerExtended extends ISourceLayer {
 	followingItems: Array<PieceExtended>
 }
 export interface PieceExtended {
-	instance: PieceInstanceWithTimings
+	instance: ResolvedPieceInstance
 
 	/** Source layer that this piece belongs to */
 	sourceLayer?: ISourceLayerExtended
