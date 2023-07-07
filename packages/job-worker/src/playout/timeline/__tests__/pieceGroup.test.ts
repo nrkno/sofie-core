@@ -1,6 +1,6 @@
-import { getRandomId, literal } from '../../lib'
-import { Piece } from '../../dataModel/Piece'
-import { createPieceGroupAndCap, PieceTimelineMetadata } from '../pieces'
+import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { createPieceGroupAndCap, PieceTimelineMetadata } from '../pieceGroup'
 import {
 	OnGenerateTimelineObjExt,
 	TimelineContentTypeOther,
@@ -8,10 +8,10 @@ import {
 	TimelineObjPieceAbstract,
 	TimelineObjRundown,
 	TimelineObjType,
-} from '../../dataModel/Timeline'
+} from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { protectString } from '../../protectedString'
-import { RundownPlaylistId } from '../../dataModel/Ids'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 type PieceInstanceParam = Parameters<typeof createPieceGroupAndCap>[1]

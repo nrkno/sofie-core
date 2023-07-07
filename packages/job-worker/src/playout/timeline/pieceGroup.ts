@@ -5,14 +5,14 @@ import {
 	TimelineObjPieceAbstract,
 	TimelineObjRundown,
 	TimelineObjType,
-} from '../dataModel/Timeline'
+} from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { ReadonlyDeep } from 'type-fest'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { PieceInstanceId, RundownPlaylistId } from '../dataModel/Ids'
-import { clone, literal } from '../lib'
-import { getPieceControlObjectId, getPieceGroupId } from './ids'
-import { unprotectString } from '../protectedString'
-import { PieceInstanceWithTimings } from './processAndPrune'
+import { PieceInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { clone, literal } from '@sofie-automation/corelib/dist/lib'
+import { getPieceControlObjectId, getPieceGroupId } from '@sofie-automation/corelib/dist/playout/ids'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 export interface PieceTimelineMetadata {

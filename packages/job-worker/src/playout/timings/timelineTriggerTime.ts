@@ -11,7 +11,7 @@ import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceIns
 import { runJobWithStudioCache } from '../../studio/lock'
 import { CacheForStudio } from '../../studio/cache'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
-import { PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
+import { PieceTimelineMetadata } from '../timeline/pieceGroup'
 import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 
 /**
