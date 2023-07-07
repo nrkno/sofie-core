@@ -62,7 +62,7 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 		context: ICommonContext,
 		config: TRawConfig,
 		coreConfig: BlueprintConfigCoreConfig
-	) => BlueprintResultApplyStudioConfig
+	) => BlueprintResultApplyStudioConfig | Promise<BlueprintResultApplyStudioConfig>
 
 	/** Preprocess config before storing it by core to later be returned by context's getStudioConfig. If not provided, getStudioConfig will return unprocessed blueprint config */
 	preprocessConfig?: (

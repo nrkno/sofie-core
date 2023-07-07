@@ -30,7 +30,7 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 	})
 	const rawBlueprintConfig = applyAndValidateOverrides(context.studio.blueprintConfigWithOverrides).obj
 
-	const result = blueprint.blueprint.applyConfig(
+	const result = await blueprint.blueprint.applyConfig(
 		blueprintContext,
 		clone(rawBlueprintConfig),
 		compileCoreConfigValues(context.studio.settings)

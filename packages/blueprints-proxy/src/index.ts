@@ -1,4 +1,9 @@
-import { IBlueprintConfig, IConfigMessage } from '@sofie-automation/blueprints-integration'
+import {
+	BlueprintConfigCoreConfig,
+	BlueprintResultApplyStudioConfig,
+	IBlueprintConfig,
+	IConfigMessage,
+} from '@sofie-automation/blueprints-integration'
 
 export type ResultCallback<T> = (err: any, res: T) => void
 
@@ -10,11 +15,17 @@ export interface ServerToClientEvents {
 
 export interface ClientToServerEvents {
 	// hello: () => void
-	studio_validateConfig: (msg: StudioValidateConfigArgs) => StudioValidateConfigResult
+	studio_validateConfig: (msg: StudioValidateConfigArgs) => IConfigMessage[]
+	studio_applyConfig: (msg: StudioApplyConfigArgs) => BlueprintResultApplyStudioConfig
 }
 
 export interface StudioValidateConfigArgs {
 	identifier: string
 	config: IBlueprintConfig
 }
-export type StudioValidateConfigResult = IConfigMessage[]
+
+export interface StudioApplyConfigArgs {
+	identifier: string
+	config: IBlueprintConfig
+	coreConfig: BlueprintConfigCoreConfig
+}

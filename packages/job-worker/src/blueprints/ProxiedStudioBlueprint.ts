@@ -1,5 +1,7 @@
 import {
+	BlueprintConfigCoreConfig,
 	BlueprintManifestType,
+	BlueprintResultApplyStudioConfig,
 	BlueprintResultStudioBaseline,
 	ExtendedIngestRundown,
 	IBlueprintConfig,
@@ -139,15 +141,27 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 		})
 	}
 
-	// /**
-	//  * Apply the config by generating the data to be saved into the db.
-	//  * This should be written to give a predictable and stable result, it can be called with the same config multiple times
-	//  */
-	// applyConfig?: (
-	// 	context: ICommonContext,
-	// 	config: TRawConfig,
-	// 	coreConfig: BlueprintConfigCoreConfig
-	// ) => BlueprintResultApplyStudioConfig
+	/**
+	 * Apply the config by generating the data to be saved into the db.
+	 * This should be written to give a predictable and stable result, it can be called with the same config multiple times
+	 */
+	async applyConfig(
+		context0: ICommonContext,
+		config: IBlueprintConfig,
+		coreConfig: BlueprintConfigCoreConfig
+	): Promise<BlueprintResultApplyStudioConfig> {
+		const context = context0 as CommonContext
+
+		const id = getRandomString() // TODO - use this properly
+
+		// TODO - handle this method being optional
+
+		return this.#runProxied('studio_applyConfig', id, {
+			identifier: context._contextIdentifier,
+			config,
+			coreConfig,
+		})
+	}
 
 	// /** Preprocess config before storing it by core to later be returned by context's getStudioConfig. If not provided, getStudioConfig will return unprocessed blueprint config */
 	// preprocessConfig?: (

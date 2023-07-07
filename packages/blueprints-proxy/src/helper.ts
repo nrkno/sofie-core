@@ -21,6 +21,8 @@ export function listenToEvents<T extends object>(socket: any, handlers: EventHan
 
 	for (const [event, handler] of Object.entries(handlers)) {
 		socket.on(event as any, async (functionId: string, msg: any, cb: ResultCallback<any>) => {
+			// TODO - find/reject callback?
+
 			if (!functionId || typeof functionId !== 'string') {
 				console.warn(`Received malformed functionId "${event}"`)
 				return // Ignore messages without correct structure

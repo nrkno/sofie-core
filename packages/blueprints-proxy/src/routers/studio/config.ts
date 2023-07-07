@@ -1,6 +1,10 @@
-import type { IConfigMessage, StudioBlueprintManifest } from '@sofie-automation/blueprints-integration'
+import type {
+	BlueprintResultApplyStudioConfig,
+	IConfigMessage,
+	StudioBlueprintManifest,
+} from '@sofie-automation/blueprints-integration'
 import { CommonContext } from '../../context/common'
-import type { StudioValidateConfigArgs } from '../../index'
+import type { StudioApplyConfigArgs, StudioValidateConfigArgs } from '../../index'
 import { MySocket } from '../util'
 
 export async function studio_validateConfig(
@@ -14,4 +18,17 @@ export async function studio_validateConfig(
 	const context = new CommonContext(`validateConfig ${msg.identifier}`)
 
 	return studioBlueprint.validateConfig(context, msg.config)
+}
+
+export async function studio_applyConfig(
+	studioBlueprint: StudioBlueprintManifest,
+	_socket: MySocket,
+	_id: string,
+	msg: StudioApplyConfigArgs
+): Promise<BlueprintResultApplyStudioConfig> {
+	if (!studioBlueprint.applyConfig) throw new Error('Not supported') // TODO - this will have broken our ability to know if it is implemented or not..
+
+	const context = new CommonContext(`validateConfig ${msg.identifier}`)
+
+	return studioBlueprint.applyConfig(context, msg.config, msg.coreConfig)
 }
