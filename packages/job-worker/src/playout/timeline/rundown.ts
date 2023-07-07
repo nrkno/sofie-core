@@ -5,7 +5,7 @@ import {
 	TimelineObjClassesCore,
 	TSR,
 } from '@sofie-automation/blueprints-integration'
-import { PartInstanceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, PieceInstanceId, PieceInstanceInfiniteId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstanceInfinite } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBRundownPlaylist, RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import {
@@ -355,7 +355,7 @@ function generatePreviousPartInstanceObjects(
 	context: JobContext,
 	activePlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	previousPartInfo: SelectedPartInstanceTimelineInfo,
-	currentInfinitePieceIds: Set<PieceInstanceInfinite['infinitePieceId']>,
+	currentInfinitePieceIds: Set<PieceInstanceInfiniteId>,
 	timingContext: RundownTimelineTimingContext,
 	currentPartInstanceTimings: PartCalculatedTimings
 ): Array<TimelineObjRundown & OnGenerateTimelineObjExt> {
