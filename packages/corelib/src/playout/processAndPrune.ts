@@ -223,7 +223,7 @@ export function resolvePrunedPieceInstance(
 	nowInPart: number,
 	pieceInstance: PieceInstanceWithTimings
 ): ResolvedPieceInstance {
-	const resolveStartOfInstance = (instance: PieceInstanceWithTimings): number => {
+	const resolveStartOfInstance = (instance: PieceInstance): number => {
 		return instance.piece.enable.start === 'now' ? nowInPart : instance.piece.enable.start
 	}
 
