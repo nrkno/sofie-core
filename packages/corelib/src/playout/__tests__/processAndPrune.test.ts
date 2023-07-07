@@ -428,3 +428,9 @@ describe('processAndPrunePieceInstanceTimings', () => {
 		expect(resolvedInstances).toEqual([])
 	})
 })
+
+describe('resolvePrunedPieceInstances', () => {
+	test('one', async () => {
+		expect(1).toBeTruthy()
+	})
+})

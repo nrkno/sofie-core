@@ -259,7 +259,7 @@ export const AdLibRegionPanel = translateWithTracker<
 
 		const pieceUi: PieceUi | undefined = thumbnailPiece
 			? {
-					instance: { ...thumbnailPiece, timelinePriority: 1, resolvedStart: 0 },
+					instance: { ...thumbnailPiece, priority: 1 },
 					renderedInPoint: null,
 					renderedDuration: null,
 			  }

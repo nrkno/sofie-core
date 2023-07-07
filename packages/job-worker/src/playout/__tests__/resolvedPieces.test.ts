@@ -14,7 +14,7 @@ import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/da
 import _ = require('underscore')
 import {
 	processAndPrunePieceInstanceTimings,
-	resolvePrunedPieceInstances,
+	resolvePrunedPieceInstance,
 } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { getResolvedPiecesForPartInstancesOnTimeline } from '../resolvedPieces'
 import { SelectedPartInstanceTimelineInfo } from '../timeline/generate'
@@ -87,7 +87,7 @@ describe('Resolved Pieces', () => {
 			pieceInstances: PieceInstance[]
 		): ResolvedPieceInstance[] {
 			const preprocessedPieces = processAndPrunePieceInstanceTimings(sourceLayers, pieceInstances, nowInPart ?? 0)
-			return resolvePrunedPieceInstances(nowInPart ?? 0, preprocessedPieces)
+			return resolvePrunedPieceInstance(nowInPart ?? 0, preprocessedPieces)
 		}
 
 		test('simple single piece', async () => {

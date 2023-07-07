@@ -80,7 +80,9 @@ export interface PieceInstance {
 	plannedStoppedPlayback?: Time
 }
 
-export interface ResolvedPieceInstance extends PieceInstance {
+export interface ResolvedPieceInstance {
+	instance: PieceInstance
+
 	/** Calculated start point within the PartInstance */
 	resolvedStart: number
 	/** Calculated duration within the PartInstance */

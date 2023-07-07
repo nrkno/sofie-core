@@ -7,7 +7,7 @@ import { JobContext } from '../jobs'
 import { getCurrentTime } from '../lib'
 import {
 	processAndPrunePieceInstanceTimings,
-	resolvePrunedPieceInstances,
+	resolvePrunedPieceInstance,
 } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { ReadOnlyCache } from '../cache/CacheBase'
 import { SelectedPartInstancesTimelineInfo } from './timeline/generate'
@@ -36,7 +36,7 @@ export function getResolvedPiecesForCurrentPartInstance(
 	const nowInPart = partStarted ? now - partStarted : 0
 
 	const preprocessedPieces = processAndPrunePieceInstanceTimings(sourceLayers, pieceInstances, nowInPart)
-	return resolvePrunedPieceInstances(nowInPart, preprocessedPieces)
+	return preprocessedPieces.map((instance) => resolvePrunedPieceInstance(nowInPart, instance))
 }
 
 export function getResolvedPiecesForPartInstancesOnTimeline(
@@ -56,9 +56,9 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 	// Calculate the next part if needed
 	let nextResolvedPieces: ResolvedPieceInstance[] = []
 	if (partInstancesInfo.next && partInstancesInfo.current.partInstance.part.autoNext && nextPartStarted != null) {
-		nextResolvedPieces = resolvePrunedPieceInstances(
-			partInstancesInfo.next.nowInPart,
-			partInstancesInfo.next.pieceInstances
+		const nowInPart = partInstancesInfo.next.nowInPart
+		nextResolvedPieces = partInstancesInfo.next.pieceInstances.map((instance) =>
+			resolvePrunedPieceInstance(nowInPart, instance)
 		)
 
 		// Translate start to absolute times
@@ -66,9 +66,9 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 	}
 
 	// Calculate the current part
-	const currentResolvedPieces = resolvePrunedPieceInstances(
-		partInstancesInfo.current.nowInPart,
-		partInstancesInfo.current.pieceInstances
+	const nowInCurrentPart = partInstancesInfo.current.nowInPart
+	const currentResolvedPieces = partInstancesInfo.current.pieceInstances.map((instance) =>
+		resolvePrunedPieceInstance(nowInCurrentPart, instance)
 	)
 
 	// Translate start to absolute times
@@ -77,9 +77,9 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 	// Calculate the previous part
 	let previousResolvedPieces: ResolvedPieceInstance[] = []
 	if (partInstancesInfo.previous?.partStarted) {
-		previousResolvedPieces = resolvePrunedPieceInstances(
-			partInstancesInfo.previous.nowInPart,
-			partInstancesInfo.previous.pieceInstances
+		const nowInPart = partInstancesInfo.previous.nowInPart
+		previousResolvedPieces = partInstancesInfo.previous.pieceInstances.map((instance) =>
+			resolvePrunedPieceInstance(nowInPart, instance)
 		)
 
 		// Translate start to absolute times
@@ -91,43 +91,44 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 	}
 
 	const currentInfinitePieces = new Map<PieceInstanceInfiniteId, ResolvedPieceInstance>()
-	for (const piece of currentResolvedPieces) {
-		if (piece.infinite) {
-			currentInfinitePieces.set(piece.infinite.infiniteInstanceId, piece)
+	for (const resolvedPiece of currentResolvedPieces) {
+		if (resolvedPiece.instance.infinite) {
+			currentInfinitePieces.set(resolvedPiece.instance.infinite.infiniteInstanceId, resolvedPiece)
 		}
 	}
 
 	const resultingPieces: ResolvedPieceInstance[] = [...currentResolvedPieces]
 
 	// Merge any infinite chains between the previous and current parts
-	for (const piece of previousResolvedPieces) {
-		if (piece.infinite) {
-			const continuingInfinite = currentInfinitePieces.get(piece.infinite.infiniteInstanceId)
+	for (const resolvedPiece of previousResolvedPieces) {
+		if (resolvedPiece.instance.infinite) {
+			const continuingInfinite = currentInfinitePieces.get(resolvedPiece.instance.infinite.infiniteInstanceId)
 			if (continuingInfinite) {
 				// Extend the duration to compensate for the moved start
 				if (continuingInfinite.resolvedDuration !== undefined) {
-					continuingInfinite.resolvedDuration += continuingInfinite.resolvedStart - piece.resolvedStart
+					continuingInfinite.resolvedDuration +=
+						continuingInfinite.resolvedStart - resolvedPiece.resolvedStart
 				}
 
 				// Move the start time to be for the previous Piece
-				continuingInfinite.resolvedStart = piece.resolvedStart
+				continuingInfinite.resolvedStart = resolvedPiece.resolvedStart
 
 				continue
 			}
 		}
 
-		resultingPieces.push(piece)
+		resultingPieces.push(resolvedPiece)
 	}
 
 	// Merge any infinite chains between the current and next parts
-	for (const piece of nextResolvedPieces) {
-		if (piece.infinite) {
-			const continuingInfinite = currentInfinitePieces.get(piece.infinite.infiniteInstanceId)
+	for (const resolvedPiece of nextResolvedPieces) {
+		if (resolvedPiece.instance.infinite) {
+			const continuingInfinite = currentInfinitePieces.get(resolvedPiece.instance.infinite.infiniteInstanceId)
 			if (continuingInfinite) {
 				// Update the duration to be based upon the copy from the next part
-				if (piece.resolvedDuration !== undefined) {
+				if (resolvedPiece.resolvedDuration !== undefined) {
 					continuingInfinite.resolvedDuration =
-						piece.resolvedDuration + piece.resolvedStart - continuingInfinite.resolvedStart
+						resolvedPiece.resolvedDuration + resolvedPiece.resolvedStart - continuingInfinite.resolvedStart
 				} else {
 					delete continuingInfinite.resolvedDuration
 				}
@@ -136,7 +137,7 @@ export function getResolvedPiecesForPartInstancesOnTimeline(
 			}
 		}
 
-		resultingPieces.push(piece)
+		resultingPieces.push(resolvedPiece)
 	}
 
 	return resultingPieces

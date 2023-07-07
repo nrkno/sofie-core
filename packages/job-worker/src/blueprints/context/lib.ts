@@ -143,7 +143,7 @@ export function convertResolvedPieceInstanceToBlueprints(
 	pieceInstance: ResolvedPieceInstance
 ): IBlueprintResolvedPieceInstance {
 	const obj: Complete<IBlueprintResolvedPieceInstance> = {
-		...convertPieceInstanceToBlueprintsInner(pieceInstance),
+		...convertPieceInstanceToBlueprintsInner(pieceInstance.instance),
 		resolvedStart: pieceInstance.resolvedStart,
 		resolvedDuration: pieceInstance.resolvedDuration,
 	}

@@ -152,11 +152,11 @@ async function pieceTakeNowAsAdlib(
 				showStyleBase.sourceLayers,
 				partInstance
 			)
-			const resolvedPieceBeingCopied = resolvedPieces.find((p) => p._id === pieceInstanceToCopy._id)
+			const resolvedPieceBeingCopied = resolvedPieces.find((p) => p.instance._id === pieceInstanceToCopy._id)
 
 			if (
 				resolvedPieceBeingCopied?.resolvedDuration !== undefined &&
-				(resolvedPieceBeingCopied.infinite ||
+				(resolvedPieceBeingCopied.instance.infinite ||
 					resolvedPieceBeingCopied.resolvedStart + resolvedPieceBeingCopied.resolvedDuration >=
 						getCurrentTime())
 			) {

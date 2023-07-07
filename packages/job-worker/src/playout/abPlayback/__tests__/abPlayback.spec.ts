@@ -56,7 +56,7 @@ function createBasicResolvedPieceInstance(
 		partInstanceId: protectString(''),
 		rundownId: protectString(''),
 		playlistActivationId: protectString(''),
-		piece,
+		instance: piece,
 		resolvedStart: start,
 		resolvedDuration: duration,
 		timelinePriority: 0,

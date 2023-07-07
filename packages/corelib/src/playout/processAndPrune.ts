@@ -215,52 +215,50 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 }
 
 /**
- * Resolve an array of PieceInstanceWithTimings to approximated numbers within the PartInstance
+ * Resolve a PieceInstanceWithTimings to approximated numbers within the PartInstance
  * @param nowInPart Approximate time of the playhead within the PartInstance
- * @param pieceInstances The PieceInstances to resolve
+ * @param pieceInstance The PieceInstance to resolve
  */
-export function resolvePrunedPieceInstances(
+export function resolvePrunedPieceInstance(
 	nowInPart: number,
-	pieceInstances: PieceInstanceWithTimings[]
-): ResolvedPieceInstance[] {
+	pieceInstance: PieceInstanceWithTimings
+): ResolvedPieceInstance {
 	const resolveStartOfInstance = (instance: PieceInstanceWithTimings): number => {
 		return instance.piece.enable.start === 'now' ? nowInPart : instance.piece.enable.start
 	}
 
-	return pieceInstances.map((instance) => {
-		const resolvedStart = resolveStartOfInstance(instance)
+	const resolvedStart = resolveStartOfInstance(pieceInstance)
 
-		// Interpret the `resolvedEndCap` property into a number
-		let resolvedEnd: number | undefined
-		if (typeof instance.resolvedEndCap === 'number') {
-			resolvedEnd = instance.resolvedEndCap
-		} else if (instance.resolvedEndCap) {
-			resolvedEnd = nowInPart + instance.resolvedEndCap.offsetFromNow
+	// Interpret the `resolvedEndCap` property into a number
+	let resolvedEnd: number | undefined
+	if (typeof pieceInstance.resolvedEndCap === 'number') {
+		resolvedEnd = pieceInstance.resolvedEndCap
+	} else if (pieceInstance.resolvedEndCap) {
+		resolvedEnd = nowInPart + pieceInstance.resolvedEndCap.offsetFromNow
+	}
+
+	// Find any possible durations this piece may have
+	const caps: number[] = []
+	if (resolvedEnd !== undefined) caps.push(resolvedEnd - resolvedStart)
+
+	// Consider the blueprint defined duration
+	if (pieceInstance.piece.enable.duration !== undefined) caps.push(pieceInstance.piece.enable.duration)
+
+	// Consider the playout userDuration
+	if (pieceInstance.userDuration) {
+		if ('endRelativeToPart' in pieceInstance.userDuration) {
+			caps.push(pieceInstance.userDuration.endRelativeToPart - resolvedStart)
+		} else if ('endRelativeToNow' in pieceInstance.userDuration) {
+			caps.push(nowInPart + pieceInstance.userDuration.endRelativeToNow - resolvedStart)
 		}
+	}
 
-		// Find any possible durations this piece may have
-		const caps: number[] = []
-		if (resolvedEnd !== undefined) caps.push(resolvedEnd - resolvedStart)
+	return {
+		instance: pieceInstance,
 
-		// Consider the blueprint defined duration
-		if (instance.piece.enable.duration !== undefined) caps.push(instance.piece.enable.duration)
+		resolvedStart,
+		resolvedDuration: caps.length ? Math.min(...caps) : undefined,
 
-		// Consider the playout userDuration
-		if (instance.userDuration) {
-			if ('endRelativeToPart' in instance.userDuration) {
-				caps.push(instance.userDuration.endRelativeToPart - resolvedStart)
-			} else if ('endRelativeToNow' in instance.userDuration) {
-				caps.push(nowInPart + instance.userDuration.endRelativeToNow - resolvedStart)
-			}
-		}
-
-		return {
-			...instance,
-
-			resolvedStart,
-			resolvedDuration: caps.length ? Math.min(...caps) : undefined,
-
-			timelinePriority: instance.priority,
-		}
-	})
+		timelinePriority: pieceInstance.priority,
+	}
 }

@@ -26,7 +26,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { literal, getCurrentTime } from '../../lib/lib'
 import {
 	processAndPrunePieceInstanceTimings,
-	resolvePrunedPieceInstances,
+	resolvePrunedPieceInstance,
 } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
@@ -501,17 +501,16 @@ export namespace RundownUtils {
 					includeDisabledPieces
 				)
 
-				const resolvedPieces = resolvePrunedPieceInstances(nowInPart, preprocessedPieces)
-
 				// furthestDuration is used to figure out how much content (in terms of time) is there in the Part
 				let furthestDuration = 0
 
 				// insert items into the timeline for resolution
-				partE.pieces = resolvedPieces.map((piece) => {
+				partE.pieces = preprocessedPieces.map((piece) => {
+					const resolvedPiece = resolvePrunedPieceInstance(nowInPart, piece)
 					const resPiece: PieceExtended = {
 						instance: piece,
-						renderedDuration: piece.resolvedDuration ?? null,
-						renderedInPoint: piece.resolvedStart,
+						renderedDuration: resolvedPiece.resolvedDuration ?? null,
+						renderedInPoint: resolvedPiece.resolvedStart,
 					}
 
 					// if the duration is finite, set the furthestDuration as the inPoint+Duration to know how much content there is
@@ -673,7 +672,7 @@ export namespace RundownUtils {
 						const sortedItems = layerItems.sort(
 							(a, b) =>
 								(a.renderedInPoint || 0) - (b.renderedInPoint || 0) ||
-								a.instance.timelinePriority - b.instance.timelinePriority ||
+								a.instance.priority - b.instance.priority ||
 								(a.sourceLayer?._rank || 0) - (b.sourceLayer?._rank || 0)
 						)
 						for (let i = 0; i < sortedItems.length; i++) {

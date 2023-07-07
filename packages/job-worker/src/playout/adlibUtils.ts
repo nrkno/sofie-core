@@ -308,13 +308,14 @@ export function innerStopPieces(
 	const stopAt = getCurrentTime() + offsetRelativeToNow
 	const relativeStopAt = stopAt - lastStartedPlayback
 
-	for (const pieceInstance of resolvedPieces) {
+	for (const resolvedPieceInstance of resolvedPieces) {
+		const pieceInstance = resolvedPieceInstance.instance
 		if (
 			!pieceInstance.userDuration &&
 			!pieceInstance.piece.virtual &&
 			filter(pieceInstance) &&
-			pieceInstance.resolvedStart !== undefined &&
-			pieceInstance.resolvedStart <= relativeStopAt &&
+			resolvedPieceInstance.resolvedStart !== undefined &&
+			resolvedPieceInstance.resolvedStart <= relativeStopAt &&
 			!pieceInstance.plannedStoppedPlayback
 		) {
 			switch (pieceInstance.piece.lifespan) {
