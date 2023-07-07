@@ -201,6 +201,7 @@
 	},
 	"resolutions": {
 		"@sofie-automation/blueprints-integration": "portal:../packages/blueprints-integration",
+		"@sofie-automation/blueprints-proxy": "portal:../packages/blueprints-proxy",
 		"@sofie-automation/corelib": "portal:../packages/corelib",
 		"@sofie-automation/job-worker": "portal:../packages/job-worker",
 		"@sofie-automation/shared-lib": "portal:../packages/shared-lib"

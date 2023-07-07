@@ -50,6 +50,13 @@ export async function parseBlueprintDocument(
 ): Promise<ReadonlyDeep<SomeBlueprintManifest> | undefined> {
 	if (!blueprint) return undefined
 
+	// // nocommit - do this based on a config
+	// if (blueprint.blueprintType === BlueprintManifestType.SHOWSTYLE) {
+	// 	throw new Error(`not implemented`)
+	// } else if (blueprint.blueprintType === BlueprintManifestType.STUDIO) {
+	// 	throw new Error(`not implemented`)
+	// }
+
 	if (blueprint.code) {
 		let manifest: SomeBlueprintManifest
 		try {

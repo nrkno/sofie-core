@@ -49,7 +49,10 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 	 * In this you should do various sanity checks of the config and return a list of messages to display to the user.
 	 * These messages do not stop `applyConfig` from being called.
 	 */
-	validateConfig?: (context: ICommonContext, config: TRawConfig) => Array<IConfigMessage>
+	validateConfig?: (
+		context: ICommonContext,
+		config: TRawConfig
+	) => Array<IConfigMessage> | Promise<Array<IConfigMessage>>
 
 	/**
 	 * Apply the config by generating the data to be saved into the db.

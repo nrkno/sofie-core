@@ -15,7 +15,7 @@ export interface UserContextInfo extends ContextInfo {
 /** Common */
 
 export class CommonContext implements ICommonContext {
-	private readonly _contextIdentifier: string
+	public readonly _contextIdentifier: string
 	private readonly _contextName: string
 
 	private hashI = 0

@@ -1,5 +1,5 @@
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { parseBlueprintDocument, WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
+import { WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
 import { ReadonlyDeep } from 'type-fest'
 import { IDirectCollections } from '../db'
 import {
@@ -17,6 +17,7 @@ import { logger } from '../logging'
 import deepmerge = require('deepmerge')
 import { ProcessedShowStyleBase, ProcessedShowStyleVariant, StudioCacheContext } from '../jobs'
 import { StudioCacheContextImpl } from './context'
+import { ProxiedStudioBlueprint } from '../blueprints/ProxiedStudioBlueprint'
 
 /**
  * A Wrapper to maintain a cache and provide a context using the cache when appropriate
@@ -301,10 +302,11 @@ async function loadStudioBlueprintOrPlaceholder(
 	}
 
 	const blueprintDoc = await collections.Blueprints.findOne(studio.blueprintId)
-	const blueprintManifest = await parseBlueprintDocument(blueprintDoc)
-	if (!blueprintManifest) {
-		throw new Error(`Blueprint "${studio.blueprintId}" not found! (referenced by Studio "${studio._id}")`)
-	}
+	const blueprintManifest = new ProxiedStudioBlueprint()
+	// const blueprintManifest = await parseBlueprintDocument(blueprintDoc)
+	// if (!blueprintManifest) {
+	// 	throw new Error(`Blueprint "${studio.blueprintId}" not found! (referenced by Studio "${studio._id}")`)
+	// }
 
 	if (blueprintManifest.blueprintType !== BlueprintManifestType.STUDIO) {
 		throw new Error(
