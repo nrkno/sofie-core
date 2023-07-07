@@ -11,7 +11,6 @@ import {
 	ResolvedPieceInstance,
 } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import _ = require('underscore')
 import {
 	processAndPrunePieceInstanceTimings,
 	resolvePrunedPieceInstance,
@@ -22,6 +21,7 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { setupPieceInstanceInfiniteProperties } from '../pieces'
 import { getPartTimingsOrDefaults } from '@sofie-automation/corelib/dist/playout/timings'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 describe('Resolved Pieces', () => {
 	let context: MockJobContext
@@ -34,10 +34,16 @@ describe('Resolved Pieces', () => {
 		sourceLayers = showStyle.sourceLayers
 	})
 
-	type StrippedResult = Pick<ResolvedPieceInstance, '_id' | 'resolvedStart' | 'resolvedDuration'>[]
+	type StrippedResult = (Pick<ResolvedPieceInstance, 'resolvedStart' | 'resolvedDuration'> & {
+		_id: PieceInstanceId
+	})[]
 	function stripResult(result: ResolvedPieceInstance[]): StrippedResult {
 		return result
-			.map((piece) => _.pick(piece, '_id', 'resolvedStart', 'resolvedDuration'))
+			.map((resolvedPiece) => ({
+				_id: resolvedPiece.instance._id,
+				resolvedStart: resolvedPiece.resolvedStart,
+				resolvedDuration: resolvedPiece.resolvedDuration,
+			}))
 			.sort((a, b) => a.resolvedStart - b.resolvedStart)
 	}
 
@@ -87,7 +93,7 @@ describe('Resolved Pieces', () => {
 			pieceInstances: PieceInstance[]
 		): ResolvedPieceInstance[] {
 			const preprocessedPieces = processAndPrunePieceInstanceTimings(sourceLayers, pieceInstances, nowInPart ?? 0)
-			return resolvePrunedPieceInstance(nowInPart ?? 0, preprocessedPieces)
+			return preprocessedPieces.map((instance) => resolvePrunedPieceInstance(nowInPart ?? 0, instance))
 		}
 
 		test('simple single piece', async () => {

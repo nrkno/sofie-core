@@ -25,7 +25,7 @@ import { setupDefaultRundown, setupMockShowStyleCompound } from '../../__mocks__
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { JobContext } from '../../jobs'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { PieceInstance, ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { getCurrentTime } from '../../lib'
 import {
@@ -431,12 +431,16 @@ describe('Test blueprint api context', () => {
 						mockCalledIds.push(partInstance._id)
 						return [
 							{
-								_id: 'abc',
-								piece: {
-									timelineObjectsString: EmptyPieceTimelineObjectsBlob,
-								},
+								instance: {
+									_id: 'abc',
+									piece: {
+										timelineObjectsString: EmptyPieceTimelineObjectsBlob,
+									},
+								} as any as PieceInstance,
+								resolvedStart: 0,
+								timelinePriority: 0,
 							},
-						] as any as ResolvedPieceInstance[]
+						]
 					}
 				)
 
