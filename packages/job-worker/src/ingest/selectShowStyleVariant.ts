@@ -49,7 +49,7 @@ export async function selectShowStyleVariant(
 	let showStyleId: ShowStyleBaseId | null = null
 	try {
 		showStyleId = protectString(
-			studioBlueprint.blueprint.getShowStyleId(
+			await studioBlueprint.blueprint.getShowStyleId(
 				blueprintContext,
 				showStyleBases.map(convertShowStyleBaseToBlueprints),
 				ingestRundown

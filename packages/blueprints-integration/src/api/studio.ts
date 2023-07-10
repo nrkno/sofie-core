@@ -37,14 +37,14 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 		context: IStudioUserContext,
 		showStyles: ReadonlyDeep<Array<IBlueprintShowStyleBase>>,
 		ingestRundown: ExtendedIngestRundown
-	) => string | null
+	) => string | null | Promise<string | null>
 
 	/** Returns information about the playlist this rundown is a part of, return null to not make it a part of a playlist */
 	getRundownPlaylistInfo?: (
 		context: IStudioUserContext,
 		rundowns: IBlueprintRundownDB[],
 		playlistExternalId: string
-	) => BlueprintResultRundownPlaylist | null
+	) => BlueprintResultRundownPlaylist | null | Promise<BlueprintResultRundownPlaylist | null>
 
 	/**
 	 * Validate the config passed to this blueprint

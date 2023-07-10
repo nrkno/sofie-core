@@ -2,15 +2,20 @@ import {
 	BlueprintConfigCoreConfig,
 	BlueprintManifestType,
 	BlueprintResultApplyStudioConfig,
+	BlueprintResultRundownPlaylist,
 	BlueprintResultStudioBaseline,
 	ExtendedIngestRundown,
 	IBlueprintConfig,
+	IBlueprintRundownDB,
 	IBlueprintShowStyleBase,
 	ICommonContext,
 	IConfigMessage,
+	IPackageInfoContext,
 	IShowStyleConfigPreset,
 	IStudioBaselineContext,
+	IStudioContext,
 	IStudioUserContext,
+	IUserNotesContext,
 	JSONBlob,
 	JSONBlobStringify,
 	JSONSchema,
@@ -22,7 +27,7 @@ import { logger } from '../logging'
 import * as SocketIOClient from 'socket.io-client'
 import type { ClientToServerEvents, ResultCallback, ServerToClientEvents } from '@sofie-automation/blueprints-proxy'
 import { ReadonlyDeep } from 'type-fest'
-import { CommonContext, StudioBaselineContext } from './context'
+import { CommonContext, StudioBaselineContext, StudioUserContext } from './context'
 import { EventHandlers, listenToEvents, ParamsIfReturnIsValid } from '@sofie-automation/blueprints-proxy/dist/helper'
 
 type MyClient = SocketIOClient.Socket<ServerToClientEvents, ClientToServerEvents>
@@ -98,6 +103,10 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 
 	#generateListenerRouter(): EventHandlers<ServerToClientEvents> {
 		return {
+			common_notifyUserError: async (...args) => this.#handleListen('common_notifyUserError', ...args),
+			common_notifyUserWarning: async (...args) => this.#handleListen('common_notifyUserWarning', ...args),
+			common_notifyUserInfo: async (...args) => this.#handleListen('common_notifyUserInfo', ...args),
+
 			packageInfo_getPackageInfo: async (...args) => this.#handleListen('packageInfo_getPackageInfo', ...args),
 			packageInfo_hackGetMediaObjectDuration: async (...args) =>
 				this.#handleListen('packageInfo_hackGetMediaObjectDuration', ...args),
@@ -143,17 +152,43 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 		this.#callHandlers.set(functionId, handlers)
 	}
 
+	#packageInfoContextMethods(context: IPackageInfoContext): EventHandlers<Partial<ServerToClientEvents>> {
+		return {
+			packageInfo_getPackageInfo: async (_id, data) => context.getPackageInfo(data.packageId),
+			packageInfo_hackGetMediaObjectDuration: async (_id, data) =>
+				context.hackGetMediaObjectDuration(data.mediaId),
+		}
+	}
+
+	#studioContextMethods(context: IStudioContext): EventHandlers<Partial<ServerToClientEvents>> {
+		return {
+			studio_getStudioMappings: async (_id) => context.getStudioMappings(),
+		}
+	}
+
+	#userNotesContextMethods(context: IUserNotesContext): EventHandlers<Partial<ServerToClientEvents>> {
+		return {
+			common_notifyUserError: (_id, msg) => context.notifyUserError(msg.message, msg.params),
+			common_notifyUserWarning: (_id, msg) => context.notifyUserWarning(msg.message, msg.params),
+			common_notifyUserInfo: (_id, msg) => context.notifyUserInfo(msg.message, msg.params),
+		}
+	}
+
+	#studioUserContextMethods(context: IStudioUserContext): EventHandlers<Partial<ServerToClientEvents>> {
+		return {
+			...this.#studioContextMethods(context),
+			...this.#userNotesContextMethods(context),
+		}
+	}
+
 	/** Returns the items used to build the baseline (default state) of a studio, this is the baseline used when there's no active rundown */
 	async getBaseline(context0: IStudioBaselineContext): Promise<BlueprintResultStudioBaseline> {
 		const context = context0 as StudioBaselineContext
 
 		const id = getRandomString()
 		this.#listenToEventsForMethod(id, {
-			// TODO - refactor this to be less error prone
-			packageInfo_getPackageInfo: async (_id, data) => context.getPackageInfo(data.packageId),
-			packageInfo_hackGetMediaObjectDuration: async (_id, data) =>
-				context.hackGetMediaObjectDuration(data.mediaId),
-			studio_getStudioMappings: async (_id) => context.getStudioMappings(),
+			...this.#studioContextMethods(context),
+			...this.#packageInfoContextMethods(context),
 		})
 
 		return this.#runProxied('studio_getBaseline', id, {
@@ -164,25 +199,57 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 	}
 
 	/** Returns the id of the show style to use for a rundown, return null to ignore that rundown */
-	getShowStyleId(
-		_context: IStudioUserContext,
-		_showStyles: ReadonlyDeep<Array<IBlueprintShowStyleBase>>,
-		_ingestRundown: ExtendedIngestRundown
-	): string | null {
-		return null
+	async getShowStyleId(
+		context0: IStudioUserContext,
+		showStyles: ReadonlyDeep<Array<IBlueprintShowStyleBase>>,
+		ingestRundown: ExtendedIngestRundown
+	): Promise<string | null> {
+		const context = context0 as StudioUserContext
+
+		const id = getRandomString()
+		this.#listenToEventsForMethod(id, {
+			...this.#studioUserContextMethods(context),
+		})
+
+		return this.#runProxied('studio_getShowStyleId', id, {
+			identifier: context._contextIdentifier,
+			studioId: context.studioId,
+			studioConfig: context.getStudioConfig() as IBlueprintConfig,
+
+			showStyles,
+			ingestRundown,
+		})
 	}
 
-	// /** Returns information about the playlist this rundown is a part of, return null to not make it a part of a playlist */
-	// getRundownPlaylistInfo?: (
-	// 	context: IStudioUserContext,
-	// 	rundowns: IBlueprintRundownDB[],
-	// 	playlistExternalId: string
-	// ) => BlueprintResultRundownPlaylist | null
+	/** Returns information about the playlist this rundown is a part of, return null to not make it a part of a playlist */
+	async getRundownPlaylistInfo(
+		context0: IStudioUserContext,
+		rundowns: IBlueprintRundownDB[],
+		playlistExternalId: string
+	): Promise<BlueprintResultRundownPlaylist | null> {
+		const context = context0 as StudioUserContext
+
+		// TODO - handle this method being optional
+
+		const id = getRandomString()
+		this.#listenToEventsForMethod(id, {
+			...this.#studioUserContextMethods(context),
+		})
+
+		return this.#runProxied('studio_getRundownPlaylistInfo', id, {
+			identifier: context._contextIdentifier,
+			studioId: context.studioId,
+			studioConfig: context.getStudioConfig() as IBlueprintConfig,
+
+			rundowns,
+			playlistExternalId,
+		})
+	}
 
 	async validateConfig(context0: ICommonContext, config: IBlueprintConfig): Promise<Array<IConfigMessage>> {
 		const context = context0 as CommonContext
 
-		const id = getRandomString() // TODO - use this properly
+		const id = getRandomString()
 
 		// TODO - handle this method being optional
 
@@ -203,7 +270,7 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 	): Promise<BlueprintResultApplyStudioConfig> {
 		const context = context0 as CommonContext
 
-		const id = getRandomString() // TODO - use this properly
+		const id = getRandomString()
 
 		// TODO - handle this method being optional
 
@@ -222,7 +289,7 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 	): Promise<unknown> {
 		const context = context0 as CommonContext
 
-		const id = getRandomString() // TODO - use this properly
+		const id = getRandomString()
 
 		// TODO - handle this method being optional
 

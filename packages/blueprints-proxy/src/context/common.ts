@@ -1,5 +1,8 @@
 import { ICommonContext, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import * as crypto from 'crypto'
+import { ParamsIfReturnIsNever, ParamsIfReturnIsValid } from '../helper'
+import { callHelper, emitHelper, MySocket } from '../routers/util'
+import { ServerToClientEvents } from '..'
 
 function getHash(str: string): string {
 	const hash = crypto.createHash('sha1')
@@ -9,12 +12,32 @@ function getHash(str: string): string {
 export class CommonContext implements ICommonContext {
 	private readonly _contextName: string
 
+	readonly #socket: MySocket
+	readonly #functionId: string
+
 	private hashI = 0
 	private hashed: { [hash: string]: string } = {}
 
-	constructor(identifier: string) {
+	constructor(identifier: string, socket: MySocket, functionId: string) {
 		this._contextName = identifier
+
+		this.#socket = socket
+		this.#functionId = functionId
 	}
+
+	protected emitMessage<T extends keyof ServerToClientEvents>(
+		name: T,
+		data: ParamsIfReturnIsNever<ServerToClientEvents[T]>[0]
+	): void {
+		return emitHelper(this.#socket, this.#functionId, name, data)
+	}
+	protected emitCall<T extends keyof ServerToClientEvents>(
+		name: T,
+		data: ParamsIfReturnIsValid<ServerToClientEvents[T]>[0]
+	): Promise<ReturnType<ServerToClientEvents[T]>> {
+		return callHelper(this.#socket, this.#functionId, name, data)
+	}
+
 	getHashId(str: string, isNotUnique?: boolean): string {
 		if (!str) str = 'hash' + this.hashI++
 

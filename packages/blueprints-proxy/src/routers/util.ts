@@ -1,5 +1,5 @@
 import { Socket } from 'socket.io'
-import { ParamsIfReturnIsValid, ResultCallback } from '../helper'
+import { ParamsIfReturnIsNever, ParamsIfReturnIsValid, ResultCallback } from '../helper'
 import { ClientToServerEvents, ServerToClientEvents } from '..'
 
 export type MySocket = Socket<ClientToServerEvents, ServerToClientEvents>
@@ -32,4 +32,15 @@ export async function callHelper<T extends keyof ServerToClientEvents>(
 		}
 		socket.emit(name as any, functionId, data, innerCb)
 	})
+}
+
+export function emitHelper<T extends keyof ServerToClientEvents>(
+	socket: MySocket,
+	functionId: string,
+	name: T,
+	data: ParamsIfReturnIsNever<ServerToClientEvents[T]>[0]
+): void {
+	if (!socket.connected) throw new Error('Blueprints are unavailable')
+
+	socket.emit(name as any, functionId, data)
 }

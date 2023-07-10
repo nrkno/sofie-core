@@ -175,7 +175,7 @@ export async function produceRundownPlaylistInfoFromRundown(
 	let playlistInfo: BlueprintResultRundownPlaylist | null = null
 	try {
 		if (studioBlueprint?.blueprint?.getRundownPlaylistInfo) {
-			playlistInfo = studioBlueprint.blueprint.getRundownPlaylistInfo(
+			playlistInfo = await studioBlueprint.blueprint.getRundownPlaylistInfo(
 				new StudioUserContext(
 					{
 						name: 'produceRundownPlaylistInfoFromRundown',

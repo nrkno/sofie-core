@@ -1,12 +1,11 @@
 import { ShowStyleBlueprintManifest, StudioBlueprintManifest } from '@sofie-automation/blueprints-integration'
-// import { proxyStudioBlueprint } from './blueprint/studio'
-// import { klona } from 'klona/full'
 import { createServer } from 'http'
 import { ClientToServerEvents, ServerToClientEvents } from './index'
 import { Server } from 'socket.io'
 import { listenToEvents } from './helper'
 import { studio_applyConfig, studio_preprocessConfig, studio_validateConfig } from './routers/studio/config'
 import { studio_getBaseline } from './routers/studio/baseline'
+import { studio_getRundownPlaylistInfo, studio_getShowStyleId } from './routers/studio/rundown'
 
 export function runForBlueprints(
 	studioBlueprint: StudioBlueprintManifest<any, any>,
@@ -33,7 +32,6 @@ export function runForBlueprints(
 			origin: (o, cb) => cb(null, o),
 			credentials: true,
 		},
-		// options
 	})
 
 	io.on('connection', (socket) => {
@@ -42,18 +40,10 @@ export function runForBlueprints(
 
 		// subscribe to socket events from host
 		listenToEvents<ClientToServerEvents>(socket, {
-			// init: this._handleInit.bind(this),
-			// destroy: this._handleDestroy.bind(this),
-			// updateConfig: this._handleConfigUpdate.bind(this),
-			// executeAction: this._handleExecuteAction.bind(this),
-			// updateFeedbacks: this._handleUpdateFeedbacks.bind(this),
-			// updateActions: this._handleUpdateActions.bind(this),
-			// getConfigFields: this._handleGetConfigFields.bind(this),
-			// handleHttpRequest: this._handleHttpRequest.bind(this),
-			// learnAction: this._handleLearnAction.bind(this),
-			// learnFeedback: this._handleLearnFeedback.bind(this),
-			// startStopRecordActions: this._handleStartStopRecordActions.bind(this),
 			studio_getBaseline: async (...args) => studio_getBaseline(studioBlueprint, socket, ...args),
+			studio_getShowStyleId: async (...args) => studio_getShowStyleId(studioBlueprint, socket, ...args),
+			studio_getRundownPlaylistInfo: async (...args) =>
+				studio_getRundownPlaylistInfo(studioBlueprint, socket, ...args),
 			studio_validateConfig: async (...args) => studio_validateConfig(studioBlueprint, socket, ...args),
 			studio_applyConfig: async (...args) => studio_applyConfig(studioBlueprint, socket, ...args),
 			studio_preprocessConfig: async (...args) => studio_preprocessConfig(studioBlueprint, socket, ...args),
