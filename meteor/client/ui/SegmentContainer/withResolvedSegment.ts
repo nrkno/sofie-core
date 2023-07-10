@@ -38,6 +38,7 @@ import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownP
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { ReadonlyDeep } from 'type-fest'
 import { PieceContentStatusObj } from '../../../lib/mediaObjects'
+import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 export interface SegmentUi extends SegmentExtended {
 	/** Output layers available in the installation used by this segment */
@@ -112,6 +113,7 @@ export interface ITrackedProps {
 	hasRemoteItems: boolean
 	hasGuestItems: boolean
 	hasAlreadyPlayed: boolean
+	isScratchpad: boolean
 	lastValidPartIndex: number | undefined
 	budgetDuration: number | undefined
 	displayLiveLineCounter: boolean
@@ -143,6 +145,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 					budgetDuration: undefined,
 					displayLiveLineCounter: true,
 					showCountdownToSegment: true,
+					isScratchpad: false,
 				}
 			}
 
@@ -294,6 +297,8 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				)
 			}
 
+			const isScratchpad = segment.orphaned === SegmentOrphanedReason.SCRATCHPAD
+
 			return {
 				segmentui: o.segmentExtended,
 				parts: o.parts,
@@ -306,6 +311,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 				budgetDuration,
 				displayLiveLineCounter,
 				showCountdownToSegment,
+				isScratchpad,
 			}
 		},
 		(data: ITrackedProps, props: IProps, nextProps: IProps): boolean => {

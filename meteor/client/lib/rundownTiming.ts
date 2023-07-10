@@ -18,13 +18,8 @@ import {
 	calculatePartInstanceExpectedDurationWithPreroll,
 	CalculateTimingsPiece,
 } from '@sofie-automation/corelib/dist/playout/timings'
-import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import {
-	findPartInstanceInMapOrWrapToTemporary,
-	PartInstance,
-	wrapPartToTemporaryInstance,
-} from '../../lib/collections/PartInstances'
-import { Part } from '../../lib/collections/Parts'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { PartInstance } from '../../lib/collections/PartInstances'
 import { DBRundownPlaylist, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { getCurrentTime, objectFromEntries } from '../../lib/lib'
 import { Settings } from '../../lib/Settings'
@@ -39,6 +34,8 @@ interface BreakProps {
 	breakIsLastRundown: boolean
 }
 
+type CalculateTimingsPartInstance = Pick<PartInstance, '_id' | 'segmentId' | 'orphaned' | 'timings' | 'part'>
+
 /**
  * This is a class for calculating timings in a Rundown playlist used by RundownTimingProvider.
  *
@@ -46,8 +43,6 @@ interface BreakProps {
  * @class RundownTimingCalculator
  */
 export class RundownTimingCalculator {
-	private temporaryPartInstances: Map<PartId, PartInstance> = new Map<PartId, PartInstance>()
-
 	private linearParts: Array<[PartId, number | null]> = []
 
 	// we need to keep the nextSegmentId here for the brief moment when the next partinstance can't be found
@@ -85,9 +80,10 @@ export class RundownTimingCalculator {
 	 * @param {(RundownPlaylist | undefined)} playlist
 	 * @param {Rundown[]} rundowns
 	 * @param {(Rundown | undefined)} currentRundown
-	 * @param {Part[]} parts
-	 * @param {Map<PartId, PartInstance>} partInstancesMap
+	 * @param {CalculateTimingsPartInstance[]} partInstances
+	 * @param {Map<PartId, CalculateTimingsPartInstance>} partInstancesMap
 	 * @param {number} [defaultDuration]
+	 * @param {CalculateTimingsPartInstance[]} segmentEntryPartInstances
 	 * @return {*}  {RundownTimingContext}
 	 * @memberof RundownTimingCalculator
 	 */
@@ -97,8 +93,8 @@ export class RundownTimingCalculator {
 		playlist: RundownPlaylist | undefined,
 		rundowns: Rundown[],
 		currentRundown: Rundown | undefined,
-		parts: Part[],
-		partInstancesMap: Map<PartId, PartInstance>,
+		partInstances: CalculateTimingsPartInstance[],
+		partInstancesMap: Map<PartId, CalculateTimingsPartInstance>,
 		pieces: Map<PartId, CalculateTimingsPiece[]>,
 		segmentsMap: Map<SegmentId, DBSegment>,
 		/** Fallback duration for Parts that have no as-played duration of their own. */
@@ -109,7 +105,7 @@ export class RundownTimingCalculator {
 		 * the currentPartInstance.
 		 *
 		 * This is being used for calculating Segment Duration Budget */
-		segmentEntryPartInstances: PartInstance[]
+		segmentEntryPartInstances: CalculateTimingsPartInstance[]
 	): RundownTimingContext {
 		let totalRundownDuration = 0
 		let remainingRundownDuration = 0
@@ -154,7 +150,8 @@ export class RundownTimingCalculator {
 				this.nextSegmentId = undefined
 			}
 
-			parts.forEach((origPart) => {
+			partInstances.forEach((partInstance) => {
+				const origPart = partInstance.part
 				if (origPart.budgetDuration !== undefined) {
 					const segmentId = unprotectString(origPart.segmentId)
 					if (this.segmentBudgetDurations[segmentId] !== undefined) {
@@ -171,8 +168,7 @@ export class RundownTimingCalculator {
 						partInstance.timings?.reportedStartedPlayback
 			})
 
-			parts.forEach((origPart, itIndex) => {
-				const partInstance = this.getPartInstanceOrGetCachedTemp(partInstancesMap, origPart)
+			partInstances.forEach((partInstance, itIndex) => {
 				const piecesForPart = pieces.get(partInstance.part._id) ?? []
 
 				if (partInstance.segmentId !== lastSegmentId) {
@@ -247,8 +243,9 @@ export class RundownTimingCalculator {
 					// either this is not the first element of the displayDurationGroup
 					(this.displayDurationGroups[partInstance.part.displayDurationGroup] !== undefined ||
 						// or there is a following member of this displayDurationGroup
-						(parts[itIndex + 1] &&
-							parts[itIndex + 1].displayDurationGroup === partInstance.part.displayDurationGroup)) &&
+						(partInstances[itIndex + 1] &&
+							partInstances[itIndex + 1].part.displayDurationGroup ===
+								partInstance.part.displayDurationGroup)) &&
 					!partInstance.part.floated &&
 					!partIsUntimed
 				) {
@@ -601,8 +598,8 @@ export class RundownTimingCalculator {
 		let remainingTimeOnCurrentPart: number | undefined = undefined
 		let currentPartWillAutoNext = false
 		if (currentAIndex >= 0) {
-			const currentLivePart = parts[currentAIndex]
-			const currentLivePartInstance = findPartInstanceInMapOrWrapToTemporary(partInstancesMap, currentLivePart)
+			const currentLivePartInstance = partInstances[currentAIndex]
+			const currentLivePart = currentLivePartInstance.part
 			const piecesForPart = pieces.get(currentLivePartInstance.part._id) ?? []
 
 			const lastStartedPlayback = currentLivePartInstance.timings?.plannedStartedPlayback
@@ -652,27 +649,6 @@ export class RundownTimingCalculator {
 			isLowResolution,
 			nextRundownAnchor,
 		})
-	}
-
-	clearTempPartInstances(): void {
-		this.temporaryPartInstances.clear()
-	}
-
-	private getPartInstanceOrGetCachedTemp(partInstancesMap: Map<PartId, PartInstance>, part: Part): PartInstance {
-		const origPartId = part._id
-		const partInstance = partInstancesMap.get(origPartId)
-		if (partInstance !== undefined) {
-			return partInstance
-		} else {
-			let tempPartInstance = this.temporaryPartInstances.get(origPartId)
-			if (tempPartInstance !== undefined) {
-				return tempPartInstance
-			} else {
-				tempPartInstance = wrapPartToTemporaryInstance(protectString(''), part)
-				this.temporaryPartInstances.set(origPartId, tempPartInstance)
-				return tempPartInstance
-			}
-		}
 	}
 
 	private getRundownsBeforeNextBreak(
@@ -855,7 +831,7 @@ export function getPlaylistTimingDiff(
 }
 
 function ensureMinimumDefaultDurationIfNotAuto(
-	partInstance: PartInstance,
+	partInstance: CalculateTimingsPartInstance,
 	incomingDuration: number | undefined,
 	defaultDuration: number
 ): number {
@@ -875,7 +851,7 @@ function ensureMinimumDefaultDurationIfNotAuto(
  */
 function getSegmentRundownAnchorFromPart(
 	partId: PartId,
-	partInstancesMap: Map<PartId, PartInstance>,
+	partInstancesMap: Map<PartId, CalculateTimingsPartInstance>,
 	segmentsMap: Map<SegmentId, DBSegment>,
 	now: number
 ): number | undefined {

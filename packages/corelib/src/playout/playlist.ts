@@ -1,5 +1,6 @@
 import { DBSegment } from '../dataModel/Segment'
 import { DBPart } from '../dataModel/Part'
+import { DBPartInstance } from '../dataModel/PartInstance'
 import { RundownId, SegmentId } from '../dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 
@@ -39,6 +40,29 @@ export function sortPartsInSortedSegments<P extends Pick<DBPart, '_id' | 'segmen
 	return parts.sort((a, b) => {
 		if (a.segmentId === b.segmentId) {
 			return a._rank - b._rank
+		} else {
+			const segA = segmentRanks.get(a.segmentId) ?? Number.POSITIVE_INFINITY
+			const segB = segmentRanks.get(b.segmentId) ?? Number.POSITIVE_INFINITY
+			return segA - segB
+		}
+	})
+}
+
+type SortableDBPartInstance = Pick<DBPartInstance, '_id' | 'segmentId'> & {
+	part: Pick<DBPart, '_id' | '_rank'>
+}
+export function sortPartInstancesInSortedSegments<P extends SortableDBPartInstance>(
+	partInstances: P[],
+	sortedSegments: Array<Pick<DBSegment, '_id'>>
+): P[] {
+	const segmentRanks = new Map<SegmentId, number>()
+	for (let i = 0; i < sortedSegments.length; i++) {
+		segmentRanks.set(sortedSegments[i]._id, i)
+	}
+
+	return partInstances.sort((a, b) => {
+		if (a.segmentId === b.segmentId) {
+			return a.part._rank - b.part._rank
 		} else {
 			const segA = segmentRanks.get(a.segmentId) ?? Number.POSITIVE_INFINITY
 			const segB = segmentRanks.get(b.segmentId) ?? Number.POSITIVE_INFINITY

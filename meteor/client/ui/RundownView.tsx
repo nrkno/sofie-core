@@ -17,7 +17,7 @@ import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Rundown } from '../../lib/collections/Rundowns'
-import { DBSegment, Segment } from '../../lib/collections/Segments'
+import { DBSegment, Segment, SegmentOrphanedReason } from '../../lib/collections/Segments'
 import { StudioRouteSet } from '../../lib/collections/Studios'
 import { Part } from '../../lib/collections/Parts'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
@@ -142,6 +142,7 @@ import {
 } from '../collections'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
+import { SegmentScratchpadContainer } from './SegmentScratchpad/SegmentScratchpadContainer'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -2546,6 +2547,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				studioMode: this.state.studioMode,
 				adLibSegmentUi: this.state.uiSegmentMap.get(segment._id),
 				showDurationSourceLayers: showDurationSourceLayers,
+			}
+
+			if (segment.orphaned === SegmentOrphanedReason.SCRATCHPAD) {
+				return <SegmentScratchpadContainer {...resolvedSegmentProps} />
 			}
 
 			switch (displayMode) {
