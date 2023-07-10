@@ -1,7 +1,5 @@
-import { getRandomString, stringifyError } from '@sofie-automation/corelib/dist/lib'
-import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import * as _ from 'underscore'
-import type { MethodContext } from '../lib/api/methods'
 import { Fiber } from './Fibers'
 import { MongoMock } from './mongo'
 
@@ -119,26 +117,11 @@ export namespace MeteorMock {
 	export function userId(): string | undefined {
 		return mockUser ? mockUser._id : undefined
 	}
-	function getMethodContext(): MethodContext {
+	function getMethodContext() {
 		return {
-			userId: protectString(mockUser?._id) ?? null,
+			userId: mockUser ? mockUser._id : undefined,
 			connection: {
-				id: getRandomString(),
 				clientAddress: '1.1.1.1',
-				close: () => {
-					/* no-op */
-				},
-				onClose: () => {
-					/* no-op */
-				},
-				httpHeaders: {},
-			},
-			isSimulation: false,
-			setUserId: () => {
-				/* no-op */
-			},
-			unblock: () => {
-				/* no-op */
 			},
 		}
 	}
@@ -211,17 +194,6 @@ export namespace MeteorMock {
 			return waitForPromiseLocal(Promise.resolve(fcn.call(getMethodContext(), ...args)))
 		}
 	}
-	export async function callAsync(methodName: string, ...args: any[]): Promise<any> {
-		const fcn: Function = mockMethods[methodName]
-		if (!fcn) {
-			console.log(methodName)
-			console.log(mockMethods)
-			console.log(new Error(1).stack)
-			throw new Error(404, `Method '${methodName}' not found`)
-		}
-
-		return waitForPromiseLocal(Promise.resolve(fcn.call(getMethodContext(), ...args)))
-	}
 	export function apply(
 		methodName: string,
 		args: any[],
@@ -237,21 +209,6 @@ export namespace MeteorMock {
 		// This is a bad mock, since it doesn't support any of the options..
 		// but it'll do for now:
 		call(methodName, ...args, asyncCallback)
-	}
-	export function applyAsync(
-		methodName: string,
-		args: any[],
-		_options?: {
-			wait?: boolean
-			onResultReceived?: Function
-			returnStubValue?: boolean
-			throwStubExceptions?: boolean
-		}
-	): any {
-		// ?
-		// This is a bad mock, since it doesn't support any of the options..
-		// but it'll do for now:
-		return callAsync(methodName, ...args)
 	}
 	export function absoluteUrl(path?: string): string {
 		return path + '' // todo
