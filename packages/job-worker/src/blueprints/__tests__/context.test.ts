@@ -70,9 +70,9 @@ describe('Test blueprint api context', () => {
 	})
 
 	describe('StudioContext', () => {
-		test('getStudio', () => {
+		test('getStudio', async () => {
 			const studio = jobContext.studio
-			const studioConfig = jobContext.getStudioBlueprintConfig()
+			const studioConfig = await jobContext.getStudioBlueprintConfig()
 			const context = new StudioContext(
 				{ name: 'studio', identifier: unprotectString(jobContext.studioId) },
 				studio,
@@ -83,11 +83,11 @@ describe('Test blueprint api context', () => {
 			expect(context.getStudioConfig()).toBe(studioConfig)
 			expect(context.getStudioMappings()).toEqual(applyAndValidateOverrides(studio.mappingsWithOverrides).obj)
 		})
-		test('getStudioConfigRef', () => {
+		test('getStudioConfigRef', async () => {
 			const context = new StudioContext(
 				{ name: 'studio', identifier: unprotectString(jobContext.studioId) },
 				jobContext.studio,
-				jobContext.getStudioBlueprintConfig()
+				await jobContext.getStudioBlueprintConfig()
 			)
 
 			expect(context.getStudioConfigRef('conf1')).toEqual(getStudioConfigRef(jobContext.studioId, 'conf1'))
@@ -105,7 +105,7 @@ describe('Test blueprint api context', () => {
 					identifier: `fake context`,
 				},
 				jobContext.studio,
-				jobContext.getStudioBlueprintConfig(),
+				await jobContext.getStudioBlueprintConfig(),
 				showStyleCompound,
 				showStyleConfig
 			)
@@ -114,14 +114,14 @@ describe('Test blueprint api context', () => {
 			expect(context.showStyleCompound).toBe(showStyleCompound)
 		})
 
-		test('getShowStyleConfigRef', () => {
+		test('getShowStyleConfigRef', async () => {
 			const context = new ShowStyleContext(
 				{
 					name: 'N/A',
 					identifier: `fake context`,
 				},
 				jobContext.studio,
-				jobContext.getStudioBlueprintConfig(),
+				await jobContext.getStudioBlueprintConfig(),
 				'1' as any,
 				'2' as any
 			)

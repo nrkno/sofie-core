@@ -36,6 +36,7 @@ import {
 	serializePieceTimelineObjectsBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { EXPECTED_INGEST_TO_PLAYOUT_TIME } from '@sofie-automation/shared-lib/dist/core/constants'
+import { ProcessedStudioConfig } from '../config'
 
 export class SyncIngestUpdateToPartInstanceContext
 	extends RundownUserContext
@@ -52,6 +53,7 @@ export class SyncIngestUpdateToPartInstanceContext
 		contextInfo: ContextInfo,
 		private readonly playlistActivationId: RundownPlaylistActivationId,
 		studio: ReadonlyDeep<DBStudio>,
+		studioConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>,
 		partInstance: DBPartInstance,
@@ -62,7 +64,7 @@ export class SyncIngestUpdateToPartInstanceContext
 		super(
 			contextInfo,
 			studio,
-			_context.getStudioBlueprintConfig(),
+			studioConfig,
 			showStyleCompound,
 			_context.getShowStyleBlueprintConfig(showStyleCompound),
 			rundown

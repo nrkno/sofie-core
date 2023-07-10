@@ -11,7 +11,7 @@ import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objec
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 
 describe('Test blueprint config', () => {
-	test('compileStudioConfig', () => {
+	test('compileStudioConfig', async () => {
 		const jobContext = setupDefaultJobEnvironment()
 		jobContext.setStudio({
 			...jobContext.studio,
@@ -26,7 +26,7 @@ describe('Test blueprint config', () => {
 			studioConfigSchema: undefined,
 		})
 
-		const res = preprocessStudioConfig(jobContext.studio, jobContext.studioBlueprint.blueprint)
+		const res = await preprocessStudioConfig(jobContext.studio, jobContext.studioBlueprint.blueprint)
 		expect(res).toEqual({
 			// SofieHostURL: 'host url',
 			sdfsdf: 'one',
@@ -34,7 +34,7 @@ describe('Test blueprint config', () => {
 		})
 	})
 
-	test('compileStudioConfig with function', () => {
+	test('compileStudioConfig with function', async () => {
 		const jobContext = setupDefaultJobEnvironment()
 		jobContext.setStudio({
 			...jobContext.studio,
@@ -55,7 +55,7 @@ describe('Test blueprint config', () => {
 			},
 		})
 
-		const res = preprocessStudioConfig(jobContext.studio, jobContext.studioBlueprint.blueprint)
+		const res = await preprocessStudioConfig(jobContext.studio, jobContext.studioBlueprint.blueprint)
 		expect(res).toEqual({
 			core: {
 				hostUrl: 'https://sofie-in-jest:3000',

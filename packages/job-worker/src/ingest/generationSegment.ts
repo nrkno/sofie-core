@@ -107,6 +107,7 @@ export async function calculateSegmentsFromIngestData(
 					identifier: `rundownId=${rundown._id}`,
 				},
 				context,
+				await context.getStudioBlueprintConfig(),
 				showStyle,
 				rundown,
 				watchedPackages

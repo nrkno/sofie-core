@@ -215,18 +215,18 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 	}
 
 	/** Preprocess config before storing it by core to later be returned by context's getStudioConfig. If not provided, getStudioConfig will return unprocessed blueprint config */
-	preprocessConfig(
+	async preprocessConfig(
 		context0: ICommonContext,
 		config: IBlueprintConfig,
 		coreConfig: BlueprintConfigCoreConfig
-	): IBlueprintConfig {
+	): Promise<unknown> {
 		const context = context0 as CommonContext
 
 		const id = getRandomString() // TODO - use this properly
 
 		// TODO - handle this method being optional
 
-		return this.#runProxied('studio_applyConfig', id, {
+		return this.#runProxied('studio_preprocessConfig', id, {
 			identifier: context._contextIdentifier,
 			config,
 			coreConfig,

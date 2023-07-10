@@ -6,6 +6,7 @@ import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { UserContextInfo } from './CommonContext'
 import { ShowStyleContext } from './ShowStyleContext'
 import { getMediaObjectDuration } from './lib'
+import { ProcessedStudioConfig } from '../config'
 
 export class ShowStyleUserContext extends ShowStyleContext implements IShowStyleUserContext {
 	public readonly notes: INoteBase[] = []
@@ -16,13 +17,14 @@ export class ShowStyleUserContext extends ShowStyleContext implements IShowStyle
 	constructor(
 		contextInfo: UserContextInfo,
 		context: JobContext,
+		studioConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		private readonly watchedPackages: WatchedPackagesHelper
 	) {
 		super(
 			contextInfo,
 			context.studio,
-			context.getStudioBlueprintConfig(),
+			studioConfig,
 			showStyleCompound,
 			context.getShowStyleBlueprintConfig(showStyleCompound)
 		)

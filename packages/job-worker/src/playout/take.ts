@@ -190,7 +190,7 @@ export async function performTakeToNextedPart(context: JobContext, cache: CacheF
 				new PartEventContext(
 					'onPreTake',
 					context.studio,
-					context.getStudioBlueprintConfig(),
+					await context.getStudioBlueprintConfig(),
 					showStyle,
 					context.getShowStyleBlueprintConfig(showStyle),
 					takeRundown,
@@ -203,7 +203,15 @@ export async function performTakeToNextedPart(context: JobContext, cache: CacheF
 		if (span) span.end()
 	}
 
-	updatePartInstanceOnTake(context, cache, showStyle, blueprint, takeRundown, takePartInstance, currentPartInstance)
+	await updatePartInstanceOnTake(
+		context,
+		cache,
+		showStyle,
+		blueprint,
+		takeRundown,
+		takePartInstance,
+		currentPartInstance
+	)
 
 	cache.Playlist.update((p) => {
 		p.previousPartInfo = p.currentPartInfo
@@ -359,7 +367,7 @@ async function afterTakeUpdateTimingsAndEvents(
 						new PartEventContext(
 							'onRundownFirstTake',
 							context.studio,
-							context.getStudioBlueprintConfig(),
+							await context.getStudioBlueprintConfig(),
 							showStyle,
 							context.getShowStyleBlueprintConfig(showStyle),
 							takeRundown,
@@ -380,7 +388,7 @@ async function afterTakeUpdateTimingsAndEvents(
 					new PartEventContext(
 						'onPostTake',
 						context.studio,
-						context.getStudioBlueprintConfig(),
+						await context.getStudioBlueprintConfig(),
 						showStyle,
 						context.getShowStyleBlueprintConfig(showStyle),
 						takeRundown,
@@ -395,7 +403,7 @@ async function afterTakeUpdateTimingsAndEvents(
 	}
 }
 
-export function updatePartInstanceOnTake(
+export async function updatePartInstanceOnTake(
 	context: JobContext,
 	cache: CacheForPlayout,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
@@ -403,7 +411,7 @@ export function updatePartInstanceOnTake(
 	takeRundown: DBRundown,
 	takePartInstance: DBPartInstance,
 	currentPartInstance: DBPartInstance | undefined
-): void {
+): Promise<void> {
 	const playlist = cache.Playlist.doc
 
 	// TODO - the state could change after this sampling point. This should be handled properly
@@ -423,7 +431,7 @@ export function updatePartInstanceOnTake(
 					},execution=${getRandomId()}`,
 				},
 				context.studio,
-				context.getStudioBlueprintConfig(),
+				await context.getStudioBlueprintConfig(),
 				showStyle,
 				context.getShowStyleBlueprintConfig(showStyle),
 				takeRundown

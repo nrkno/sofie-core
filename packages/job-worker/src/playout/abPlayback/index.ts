@@ -25,7 +25,7 @@ import { ABPlayerDefinition } from '@sofie-automation/blueprints-integration'
  * @param timelineObjects The current timeline
  * @returns New AB assignments to be persisted on the playlist for the next call
  */
-export function applyAbPlaybackForTimeline(
+export async function applyAbPlaybackForTimeline(
 	context: JobContext,
 	abSessionHelper: AbSessionHelper,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
@@ -33,7 +33,7 @@ export function applyAbPlaybackForTimeline(
 	playlist: ReadonlyDeep<DBRundownPlaylist>,
 	resolvedPieces: ResolvedPieceInstance[],
 	timelineObjects: OnGenerateTimelineObjExt[]
-): Record<string, ABSessionAssignments> {
+): Promise<Record<string, ABSessionAssignments>> {
 	if (!blueprint.blueprint.getAbResolverConfiguration) return {}
 
 	const blueprintContext = new ShowStyleContext(
@@ -42,7 +42,7 @@ export function applyAbPlaybackForTimeline(
 			identifier: `playlistId=${playlist._id},previousPartInstance=${playlist.previousPartInfo?.partInstanceId},currentPartInstance=${playlist.currentPartInfo?.partInstanceId},nextPartInstance=${playlist.nextPartInfo?.partInstanceId}`,
 		},
 		context.studio,
-		context.getStudioBlueprintConfig(),
+		await context.getStudioBlueprintConfig(),
 		showStyle,
 		context.getShowStyleBlueprintConfig(showStyle)
 	)

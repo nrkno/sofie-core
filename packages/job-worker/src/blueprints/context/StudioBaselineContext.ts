@@ -4,6 +4,7 @@ import { JobContext } from '../../jobs'
 import { UserContextInfo } from './CommonContext'
 import { StudioContext } from './StudioContext'
 import { getMediaObjectDuration } from './lib'
+import { ProcessedStudioConfig } from '../config'
 
 export class StudioBaselineContext extends StudioContext implements IStudioBaselineContext {
 	private readonly jobContext: JobContext
@@ -11,9 +12,10 @@ export class StudioBaselineContext extends StudioContext implements IStudioBasel
 	constructor(
 		contextInfo: UserContextInfo,
 		context: JobContext,
+		studioConfig: ProcessedStudioConfig,
 		private readonly watchedPackages: WatchedPackagesHelper
 	) {
-		super(contextInfo, context.studio, context.getStudioBlueprintConfig())
+		super(contextInfo, context.studio, studioConfig)
 		this.jobContext = context
 	}
 

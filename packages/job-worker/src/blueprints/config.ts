@@ -110,10 +110,10 @@ export function compileCoreConfigValues(studioSettings: ReadonlyDeep<IStudioSett
  * Compile the complete Studio config
  * Resolves any overrides defined by the user, and run the result through the `preprocessConfig` blueprint method
  */
-export function preprocessStudioConfig(
+export async function preprocessStudioConfig(
 	studio: ReadonlyDeep<DBStudio>,
 	blueprint: ReadonlyDeep<StudioBlueprintManifest>
-): ProcessedStudioConfig {
+): Promise<ProcessedStudioConfig> {
 	let res: any = applyAndValidateOverrides(studio.blueprintConfigWithOverrides).obj
 
 	try {
@@ -122,7 +122,7 @@ export function preprocessStudioConfig(
 				name: `preprocessStudioConfig`,
 				identifier: `studioId=${studio._id}`,
 			})
-			res = blueprint.preprocessConfig(context, res, compileCoreConfigValues(studio.settings))
+			res = await blueprint.preprocessConfig(context, res, compileCoreConfigValues(studio.settings))
 		}
 	} catch (err) {
 		logger.error(`Error in studioBlueprint.preprocessConfig: ${stringifyError(err)}`)

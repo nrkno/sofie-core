@@ -5,7 +5,7 @@ import { createServer } from 'http'
 import { ClientToServerEvents, ServerToClientEvents } from './index'
 import { Server } from 'socket.io'
 import { listenToEvents } from './helper'
-import { studio_applyConfig, studio_validateConfig } from './routers/studio/config'
+import { studio_applyConfig, studio_preprocessConfig, studio_validateConfig } from './routers/studio/config'
 import { studio_getBaseline } from './routers/studio/baseline'
 
 export function runForBlueprints(
@@ -56,6 +56,7 @@ export function runForBlueprints(
 			studio_getBaseline: async (...args) => studio_getBaseline(studioBlueprint, socket, ...args),
 			studio_validateConfig: async (...args) => studio_validateConfig(studioBlueprint, socket, ...args),
 			studio_applyConfig: async (...args) => studio_applyConfig(studioBlueprint, socket, ...args),
+			studio_preprocessConfig: async (...args) => studio_preprocessConfig(studioBlueprint, socket, ...args),
 		})
 	})
 

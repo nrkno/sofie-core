@@ -164,14 +164,14 @@ export async function removeRundownFromDb(context: JobContext, lock: RundownLock
 	])
 }
 
-export function produceRundownPlaylistInfoFromRundown(
+export async function produceRundownPlaylistInfoFromRundown(
 	context: JobContext,
 	studioBlueprint: ReadonlyDeep<WrappedStudioBlueprint> | undefined,
 	existingPlaylist: ReadonlyDeep<DBRundownPlaylist> | undefined,
 	playlistId: RundownPlaylistId,
 	playlistExternalId: string,
 	rundowns: ReadonlyDeep<Array<DBRundown>>
-): DBRundownPlaylist {
+): Promise<DBRundownPlaylist> {
 	let playlistInfo: BlueprintResultRundownPlaylist | null = null
 	try {
 		if (studioBlueprint?.blueprint?.getRundownPlaylistInfo) {
@@ -185,7 +185,7 @@ export function produceRundownPlaylistInfoFromRundown(
 						tempSendUserNotesIntoBlackHole: true,
 					},
 					context.studio,
-					context.getStudioBlueprintConfig()
+					await context.getStudioBlueprintConfig()
 				),
 				rundowns.map(convertRundownToBlueprints),
 				playlistExternalId

@@ -136,6 +136,7 @@ export async function executeActionInner(
 		},
 		context,
 		cache,
+		await context.getStudioBlueprintConfig(),
 		showStyle,
 		context.getShowStyleBlueprintConfig(showStyle),
 		rundown,
@@ -224,6 +225,7 @@ async function executeDataStoreAction(
 				tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT store these notes
 			},
 			context,
+			await context.getStudioBlueprintConfig(),
 			showStyle,
 			watchedPackages
 		)

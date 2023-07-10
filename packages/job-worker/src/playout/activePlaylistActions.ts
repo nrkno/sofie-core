@@ -119,10 +119,11 @@ export async function activateRundownPlaylist(
 		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
 		const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 		const blueprint = await context.getShowStyleBlueprint(showStyle._id)
+		const studioConfig = await context.getStudioBlueprintConfig()
 
 		try {
 			if (blueprint.blueprint.onRundownActivate) {
-				const blueprintContext = new RundownActivationContext(context, cache, showStyle, rundown)
+				const blueprintContext = new RundownActivationContext(context, cache, studioConfig, showStyle, rundown)
 
 				await blueprint.blueprint.onRundownActivate(blueprintContext, wasActive)
 			}
@@ -142,10 +143,17 @@ export async function deactivateRundownPlaylist(context: JobContext, cache: Cach
 		if (rundown) {
 			const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
+			const studioConfig = await context.getStudioBlueprintConfig()
 
 			try {
 				if (blueprint.blueprint.onRundownDeActivate) {
-					const blueprintContext = new RundownActivationContext(context, cache, showStyle, rundown)
+					const blueprintContext = new RundownActivationContext(
+						context,
+						cache,
+						studioConfig,
+						showStyle,
+						rundown
+					)
 					await blueprint.blueprint.onRundownDeActivate(blueprintContext)
 				}
 			} catch (err) {

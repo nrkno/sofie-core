@@ -78,7 +78,7 @@ export async function updateRundownFromIngestData(
 			tempSendUserNotesIntoBlackHole: true,
 		},
 		context.studio,
-		context.getStudioBlueprintConfig()
+		await context.getStudioBlueprintConfig()
 	)
 	// TODO-CONTEXT save any user notes from selectShowStyleContext
 	const showStyle = await selectShowStyleVariant(context, selectShowStyleContext, extendedIngestRundown)
@@ -175,7 +175,7 @@ export async function updateRundownMetadataFromIngestData(
 			tempSendUserNotesIntoBlackHole: true,
 		},
 		context.studio,
-		context.getStudioBlueprintConfig()
+		await context.getStudioBlueprintConfig()
 	)
 
 	// TODO-CONTEXT save any user notes from selectShowStyleContext
@@ -282,6 +282,7 @@ export async function getRundownFromIngestData(
 			identifier: `showStyleBaseId=${showStyle.base._id},showStyleVariantId=${showStyle.variant._id}`,
 		},
 		context,
+		await context.getStudioBlueprintConfig(),
 		showStyle.compound,
 		rundownBaselinePackages,
 		async () => {

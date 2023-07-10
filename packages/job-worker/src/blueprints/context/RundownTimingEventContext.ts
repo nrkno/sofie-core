@@ -14,6 +14,7 @@ import { MongoQuery } from '../../db'
 import { convertPartInstanceToBlueprints, convertPieceInstanceToBlueprints, convertSegmentToBlueprints } from './lib'
 import { ContextInfo } from './CommonContext'
 import { RundownDataChangedEventContext } from './RundownDataChangedEventContext'
+import { ProcessedStudioConfig } from '../config'
 
 export class RundownTimingEventContext extends RundownDataChangedEventContext implements IRundownTimingEventContext {
 	readonly previousPart: Readonly<IBlueprintPartInstance<unknown>> | undefined
@@ -29,13 +30,14 @@ export class RundownTimingEventContext extends RundownDataChangedEventContext im
 	constructor(
 		context: JobContext,
 		contextInfo: ContextInfo,
+		studioConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>,
 		previousPartInstance: DBPartInstance | undefined,
 		partInstance: DBPartInstance,
 		nextPartInstance: DBPartInstance | undefined
 	) {
-		super(context, contextInfo, showStyleCompound, rundown)
+		super(context, contextInfo, studioConfig, showStyleCompound, rundown)
 
 		if (previousPartInstance) this.partInstanceCache.set(previousPartInstance._id, previousPartInstance)
 		if (partInstance) this.partInstanceCache.set(partInstance._id, partInstance)

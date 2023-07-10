@@ -7,6 +7,7 @@ import { ContextInfo } from './CommonContext'
 import { RundownContext } from './RundownContext'
 import { INoteBase } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { getMediaObjectDuration } from './lib'
+import { ProcessedStudioConfig } from '../config'
 
 export interface RawPartNote extends INoteBase {
 	partExternalId: string | undefined
@@ -20,6 +21,7 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 	constructor(
 		contextInfo: ContextInfo,
 		context: JobContext,
+		studioConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>,
 		private readonly watchedPackages: WatchedPackagesHelper
@@ -27,7 +29,7 @@ export class SegmentUserContext extends RundownContext implements ISegmentUserCo
 		super(
 			contextInfo,
 			context.studio,
-			context.getStudioBlueprintConfig(),
+			studioConfig,
 			showStyleCompound,
 			context.getShowStyleBlueprintConfig(showStyleCompound),
 			rundown

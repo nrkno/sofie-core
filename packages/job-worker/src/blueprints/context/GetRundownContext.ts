@@ -10,6 +10,7 @@ import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { UserContextInfo } from './CommonContext'
 import { ShowStyleUserContext } from './ShowStyleUserContext'
 import { convertRundownPlaylistToBlueprints } from './lib'
+import { ProcessedStudioConfig } from '../config'
 
 export class GetRundownContext extends ShowStyleUserContext implements IGetRundownContext {
 	private cachedPlaylistsInStudio: Promise<Readonly<IBlueprintRundownPlaylist>[]> | undefined
@@ -17,13 +18,14 @@ export class GetRundownContext extends ShowStyleUserContext implements IGetRundo
 	constructor(
 		contextInfo: UserContextInfo,
 		context: JobContext,
+		studioConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		watchedPackages: WatchedPackagesHelper,
 		private getPlaylistsInStudio: () => Promise<DBRundownPlaylist[]>,
 		private getRundownsInStudio: () => Promise<Pick<Rundown, '_id' | 'playlistId'>[]>,
 		private getExistingRundown: () => Promise<ReadonlyObjectDeep<Rundown> | undefined>
 	) {
-		super(contextInfo, context, showStyleCompound, watchedPackages)
+		super(contextInfo, context, studioConfig, showStyleCompound, watchedPackages)
 	}
 	private async _getPlaylistsInStudio() {
 		if (!this.cachedPlaylistsInStudio) {

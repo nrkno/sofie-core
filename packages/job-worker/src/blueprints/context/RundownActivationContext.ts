@@ -6,6 +6,7 @@ import { executePeripheralDeviceAction, listPlayoutDevices } from '../../periphe
 import { CacheForPlayout } from '../../playout/cache'
 import { RundownEventContext } from './RundownEventContext'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { ProcessedStudioConfig } from '../config'
 
 export class RundownActivationContext extends RundownEventContext implements IRundownActivationContext {
 	private readonly _cache: CacheForPlayout
@@ -14,12 +15,13 @@ export class RundownActivationContext extends RundownEventContext implements IRu
 	constructor(
 		context: JobContext,
 		cache: CacheForPlayout,
+		studioConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>
 	) {
 		super(
 			context.studio,
-			context.getStudioBlueprintConfig(),
+			studioConfig,
 			showStyleCompound,
 			context.getShowStyleBlueprintConfig(showStyleCompound),
 			rundown

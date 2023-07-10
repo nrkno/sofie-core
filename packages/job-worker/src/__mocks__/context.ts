@@ -149,7 +149,7 @@ export class MockJobContext implements JobContext {
 		throw new Error('Method not implemented.')
 	}
 
-	getStudioBlueprintConfig(): ProcessedStudioConfig {
+	async getStudioBlueprintConfig(): Promise<ProcessedStudioConfig> {
 		return preprocessStudioConfig(this.studio, this.#studioBlueprint)
 	}
 	async getShowStyleBases(): Promise<ReadonlyDeep<Array<ProcessedShowStyleBase>>> {

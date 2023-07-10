@@ -100,6 +100,7 @@ export async function handlePartInstanceTimings(context: JobContext, data: PartI
 					name: rundown.name,
 					identifier: `rundownId=${rundown._id},timestamp=${timestamp}`,
 				},
+				await context.getStudioBlueprintConfig(),
 				showStyle,
 				rundown,
 				previousPartInstance,
@@ -213,6 +214,7 @@ export async function handleRundownDataHasChanged(context: JobContext, data: Run
 						name: rundown.name,
 						identifier: `rundownId=${rundown._id},timestamp=${timestamp}`,
 					},
+					await context.getStudioBlueprintConfig(),
 					showStyle,
 					rundown
 				)

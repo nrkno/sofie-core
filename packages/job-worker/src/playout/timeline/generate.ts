@@ -112,6 +112,7 @@ export async function updateStudioTimeline(
 				new StudioBaselineContext(
 					{ name: 'studioBaseline', identifier: `studioId=${studio._id}` },
 					context,
+					await context.getStudioBlueprintConfig(),
 					watchedPackages
 				)
 			)
@@ -372,7 +373,7 @@ async function getTimelineRundown(
 				const resolvedPieces = getResolvedPiecesFromFullTimeline(context, cache, timelineObjs)
 				const blueprintContext = new OnTimelineGenerateContext(
 					context.studio,
-					context.getStudioBlueprintConfig(),
+					await context.getStudioBlueprintConfig(),
 					showStyle,
 					context.getShowStyleBlueprintConfig(showStyle),
 					cache.Playlist.doc,
@@ -384,7 +385,7 @@ async function getTimelineRundown(
 				)
 				try {
 					const abHelper = blueprintContext.abSessionsHelper // Future: this should be removed from OnTimelineGenerateContext once the methods are removed from the api
-					const newAbSessionsResult = applyAbPlaybackForTimeline(
+					const newAbSessionsResult = await applyAbPlaybackForTimeline(
 						context,
 						abHelper,
 						blueprint,

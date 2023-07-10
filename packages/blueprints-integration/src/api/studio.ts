@@ -71,7 +71,7 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 		context: ICommonContext,
 		config: TRawConfig,
 		coreConfig: BlueprintConfigCoreConfig
-	) => TProcessedConfig
+	) => TProcessedConfig | Promise<TProcessedConfig>
 }
 
 export interface BlueprintResultStudioBaseline {

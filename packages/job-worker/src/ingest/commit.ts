@@ -168,7 +168,7 @@ export async function CommitIngestOperation(
 
 			// Skip the update, if there are no rundowns left
 			// Generate the new playlist, and ranks for the rundowns
-			const newPlaylist = produceRundownPlaylistInfoFromRundown(
+			const newPlaylist = await produceRundownPlaylistInfoFromRundown(
 				context,
 				context.studioBlueprint,
 				oldPlaylist,
@@ -439,7 +439,7 @@ export async function regeneratePlaylistAndRundownOrder(
 	if (allRundowns.length > 0) {
 		// Skip the update, if there are no rundowns left
 		// Generate the new playlist, and ranks for the rundowns
-		const newPlaylist = produceRundownPlaylistInfoFromRundown(
+		const newPlaylist = await produceRundownPlaylistInfoFromRundown(
 			context,
 			context.studioBlueprint,
 			oldPlaylist,
