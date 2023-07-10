@@ -15,6 +15,10 @@ export type EventHandlers<T extends object> = {
 
 export type ResultCallback<T> = (err: any, res: T) => void
 
+export type ParamsIfReturnIsValid<T extends (...args: any[]) => any> = ReturnType<T> extends never
+	? never
+	: Parameters<T>
+
 /** Subscribe to all the events defined in the handlers, and wrap with safety and logging */
 export function listenToEvents<T extends object>(socket: any, handlers: EventHandlers<T>): void {
 	// const logger = createChildLogger(`module/${connectionId}`);
@@ -22,6 +26,8 @@ export function listenToEvents<T extends object>(socket: any, handlers: EventHan
 	for (const [event, handler] of Object.entries(handlers)) {
 		socket.on(event as any, async (functionId: string, msg: any, cb: ResultCallback<any>) => {
 			// TODO - find/reject callback?
+
+			console.log('running', event, functionId, JSON.stringify(msg))
 
 			if (!functionId || typeof functionId !== 'string') {
 				console.warn(`Received malformed functionId "${event}"`)
@@ -35,8 +41,6 @@ export function listenToEvents<T extends object>(socket: any, handlers: EventHan
 				console.warn(`Received malformed callback "${event}"`)
 				return // Ignore messages without correct structure
 			}
-
-			console.log('running', event, functionId)
 
 			try {
 				// Run it

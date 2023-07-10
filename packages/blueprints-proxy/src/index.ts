@@ -1,17 +1,26 @@
-import {
+import type {
 	BlueprintConfigCoreConfig,
+	BlueprintMappings,
 	BlueprintResultApplyStudioConfig,
 	BlueprintResultStudioBaseline,
 	IBlueprintConfig,
 	IConfigMessage,
+	PackageInfo,
 } from '@sofie-automation/blueprints-integration'
 
 export type ResultCallback<T> = (err: any, res: T) => void
 
 export interface ServerToClientEvents {
-	noArg: () => void
-	// basicEmit: (a: number, b: string, c: Buffer) => void
-	// withAck: (d: string, callback: (e: number) => void) => void
+	packageInfo_getPackageInfo: (msg: PackageInfoGetPackageInfoArgs) => Readonly<PackageInfo.Any[]>
+	packageInfo_hackGetMediaObjectDuration: (msg: PackageInfoHackGetMediaObjectDuration) => number | undefined
+	studio_getStudioMappings: () => Readonly<BlueprintMappings>
+}
+
+export interface PackageInfoGetPackageInfoArgs {
+	packageId: string
+}
+export interface PackageInfoHackGetMediaObjectDuration {
+	mediaId: string
 }
 
 export interface ClientToServerEvents {
