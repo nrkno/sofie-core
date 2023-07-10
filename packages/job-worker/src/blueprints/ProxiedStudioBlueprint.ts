@@ -22,7 +22,7 @@ import {
 	MigrationStepStudio,
 	StudioBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
-import { getRandomString } from '@sofie-automation/corelib/dist/lib'
+import { getRandomString, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
 import * as SocketIOClient from 'socket.io-client'
 import type { ClientToServerEvents, ResultCallback, ServerToClientEvents } from '@sofie-automation/blueprints-proxy'
@@ -100,12 +100,27 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 
 		return handler(functionId, ...args)
 	}
+	#handleListen2<T extends keyof ServerToClientEvents>(
+		name: T,
+		functionId: string,
+		...args: Parameters<ServerToClientEvents[T]>
+	): void {
+		const handlers = this.#callHandlers.get(functionId)
+		const handler = handlers?.[name] as any
+		if (!handler) throw new Error(`Method "${name}" is not supported`)
+
+		try {
+			handler(functionId, ...args)
+		} catch (e) {
+			logger.error(stringifyError(e))
+		}
+	}
 
 	#generateListenerRouter(): EventHandlers<ServerToClientEvents> {
 		return {
-			common_notifyUserError: async (...args) => this.#handleListen('common_notifyUserError', ...args),
-			common_notifyUserWarning: async (...args) => this.#handleListen('common_notifyUserWarning', ...args),
-			common_notifyUserInfo: async (...args) => this.#handleListen('common_notifyUserInfo', ...args),
+			common_notifyUserError: (...args) => this.#handleListen2('common_notifyUserError', ...args),
+			common_notifyUserWarning: (...args) => this.#handleListen2('common_notifyUserWarning', ...args),
+			common_notifyUserInfo: (...args) => this.#handleListen2('common_notifyUserInfo', ...args),
 
 			packageInfo_getPackageInfo: async (...args) => this.#handleListen('packageInfo_getPackageInfo', ...args),
 			packageInfo_hackGetMediaObjectDuration: async (...args) =>

@@ -28,33 +28,28 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 	translations?: string
 
 	/** Returns the items used to build the baseline (default state) of a studio, this is the baseline used when there's no active rundown */
-	getBaseline: (
-		context: IStudioBaselineContext
-	) => BlueprintResultStudioBaseline | Promise<BlueprintResultStudioBaseline>
+	getBaseline: (context: IStudioBaselineContext) => Promise<BlueprintResultStudioBaseline>
 
 	/** Returns the id of the show style to use for a rundown, return null to ignore that rundown */
 	getShowStyleId: (
 		context: IStudioUserContext,
 		showStyles: ReadonlyDeep<Array<IBlueprintShowStyleBase>>,
 		ingestRundown: ExtendedIngestRundown
-	) => string | null | Promise<string | null>
+	) => Promise<string | null>
 
 	/** Returns information about the playlist this rundown is a part of, return null to not make it a part of a playlist */
 	getRundownPlaylistInfo?: (
 		context: IStudioUserContext,
 		rundowns: IBlueprintRundownDB[],
 		playlistExternalId: string
-	) => BlueprintResultRundownPlaylist | null | Promise<BlueprintResultRundownPlaylist | null>
+	) => Promise<BlueprintResultRundownPlaylist | null>
 
 	/**
 	 * Validate the config passed to this blueprint
 	 * In this you should do various sanity checks of the config and return a list of messages to display to the user.
 	 * These messages do not stop `applyConfig` from being called.
 	 */
-	validateConfig?: (
-		context: ICommonContext,
-		config: TRawConfig
-	) => Array<IConfigMessage> | Promise<Array<IConfigMessage>>
+	validateConfig?: (context: ICommonContext, config: TRawConfig) => Promise<Array<IConfigMessage>>
 
 	/**
 	 * Apply the config by generating the data to be saved into the db.
@@ -64,14 +59,14 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 		context: ICommonContext,
 		config: TRawConfig,
 		coreConfig: BlueprintConfigCoreConfig
-	) => BlueprintResultApplyStudioConfig | Promise<BlueprintResultApplyStudioConfig>
+	) => Promise<BlueprintResultApplyStudioConfig>
 
 	/** Preprocess config before storing it by core to later be returned by context's getStudioConfig. If not provided, getStudioConfig will return unprocessed blueprint config */
 	preprocessConfig?: (
 		context: ICommonContext,
 		config: TRawConfig,
 		coreConfig: BlueprintConfigCoreConfig
-	) => TProcessedConfig | Promise<TProcessedConfig>
+	) => Promise<TProcessedConfig>
 }
 
 export interface BlueprintResultStudioBaseline {
