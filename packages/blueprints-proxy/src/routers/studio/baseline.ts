@@ -10,8 +10,8 @@ import { StudioContext } from '../../context/studioContext'
 import { MySocket } from '../util'
 
 class StudioBaselineContext extends StudioContext implements IStudioBaselineContext {
-	constructor(msg: StudioGetBaselineArgs, socket: MySocket, functionId: string) {
-		super('getBaseline', socket, functionId, msg)
+	constructor(msg: StudioGetBaselineArgs, socket: MySocket, invocationId: string) {
+		super('getBaseline', socket, invocationId, msg)
 	}
 
 	async getStudioMappings(): Promise<Readonly<BlueprintMappings>> {
@@ -28,10 +28,10 @@ class StudioBaselineContext extends StudioContext implements IStudioBaselineCont
 export async function studio_getBaseline(
 	studioBlueprint: StudioBlueprintManifest,
 	socket: MySocket,
-	id: string,
+	invocationId: string,
 	msg: StudioGetBaselineArgs
 ): Promise<BlueprintResultStudioBaseline> {
-	const context = new StudioBaselineContext(msg, socket, id)
+	const context = new StudioBaselineContext(msg, socket, invocationId)
 
 	return studioBlueprint.getBaseline(context)
 }

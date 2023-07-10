@@ -3,7 +3,7 @@
  */
 type HandlerReturnType<T extends (...args: any) => any> = ReturnType<T> extends never ? void : Promise<ReturnType<T>>
 type HandlerFunction<T extends (...args: any) => any> = (
-	functionId: string,
+	invocationId: string,
 	...args: Parameters<T>
 ) => HandlerReturnType<T>
 
@@ -29,7 +29,7 @@ export function listenToEvents<T extends object>(socket: any, handlers: EventHan
 	// const logger = createChildLogger(`module/${connectionId}`);
 
 	for (const [event, handler] of Object.entries(handlers)) {
-		socket.on(event as any, async (functionId: string, msg: any, cb: ResultCallback<any>) => {
+		socket.on(event as any, async (invocationId: string, msg: any, cb: ResultCallback<any>) => {
 			const doError = (msg: string) => {
 				console.warn(msg)
 				if (cb && typeof cb === 'function') {
@@ -40,10 +40,10 @@ export function listenToEvents<T extends object>(socket: any, handlers: EventHan
 			}
 			// TODO - find/reject callback?
 
-			console.log('running', event, functionId, JSON.stringify(msg))
+			console.log('running', event, invocationId, JSON.stringify(msg))
 
-			if (!functionId || typeof functionId !== 'string') {
-				doError(`Received malformed functionId "${event}"`)
+			if (!invocationId || typeof invocationId !== 'string') {
+				doError(`Received malformed invocationId "${event}"`)
 				return // Ignore messages without correct structure
 			}
 			if (!msg || typeof msg !== 'object') {
@@ -58,7 +58,7 @@ export function listenToEvents<T extends object>(socket: any, handlers: EventHan
 			try {
 				// Run it
 				const handler2 = handler as HandlerFunction<(msg: any) => any>
-				const result = await handler2(functionId, msg)
+				const result = await handler2(invocationId, msg)
 
 				if (cb) cb(null, result)
 			} catch (e: any) {

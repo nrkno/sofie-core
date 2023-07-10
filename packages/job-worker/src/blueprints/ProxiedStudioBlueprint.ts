@@ -25,12 +25,16 @@ import {
 import { getRandomString, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
 import * as SocketIOClient from 'socket.io-client'
-import type { ClientToServerEvents, ResultCallback, ServerToClientEvents } from '@sofie-automation/blueprints-proxy'
+import type {
+	SofieToBlueprintMethods,
+	ResultCallback,
+	BlueprintToSofieMethods,
+} from '@sofie-automation/blueprints-proxy'
 import { ReadonlyDeep } from 'type-fest'
 import { CommonContext, StudioBaselineContext, StudioUserContext } from './context'
 import { EventHandlers, listenToEvents, ParamsIfReturnIsValid } from '@sofie-automation/blueprints-proxy/dist/helper'
 
-type MyClient = SocketIOClient.Socket<ServerToClientEvents, ClientToServerEvents>
+type MyClient = SocketIOClient.Socket<BlueprintToSofieMethods, SofieToBlueprintMethods>
 
 export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 	readonly blueprintType = BlueprintManifestType.STUDIO // s
@@ -41,7 +45,7 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 		autoConnect: true,
 		// transports: ['websocket'],
 	}) as MyClient
-	readonly #callHandlers = new Map<string, Partial<EventHandlers<ServerToClientEvents>>>()
+	readonly #callHandlers = new Map<string, Partial<EventHandlers<BlueprintToSofieMethods>>>()
 
 	/** Unique id of the blueprint. This is used by core to check if blueprints are the same blueprint, but differing versions */
 	blueprintId?: string
@@ -86,37 +90,37 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 			// TODO - abort any in-progress?
 		})
 
-		listenToEvents<ServerToClientEvents>(this.#client, this.#generateListenerRouter())
+		listenToEvents<BlueprintToSofieMethods>(this.#client, this.#generateListenerRouter())
 	}
 
-	async #handleListen<T extends keyof ServerToClientEvents>(
+	async #handleListen<T extends keyof BlueprintToSofieMethods>(
 		name: T,
-		functionId: string,
-		...args: Parameters<ServerToClientEvents[T]>
+		invocationId: string,
+		...args: Parameters<BlueprintToSofieMethods[T]>
 	): Promise<any> {
-		const handlers = this.#callHandlers.get(functionId)
+		const handlers = this.#callHandlers.get(invocationId)
 		const handler = handlers?.[name] as any
 		if (!handler) throw new Error(`Method "${name}" is not supported`)
 
-		return handler(functionId, ...args)
+		return handler(invocationId, ...args)
 	}
-	#handleListen2<T extends keyof ServerToClientEvents>(
+	#handleListen2<T extends keyof BlueprintToSofieMethods>(
 		name: T,
-		functionId: string,
-		...args: Parameters<ServerToClientEvents[T]>
+		invocationId: string,
+		...args: Parameters<BlueprintToSofieMethods[T]>
 	): void {
-		const handlers = this.#callHandlers.get(functionId)
+		const handlers = this.#callHandlers.get(invocationId)
 		const handler = handlers?.[name] as any
 		if (!handler) throw new Error(`Method "${name}" is not supported`)
 
 		try {
-			handler(functionId, ...args)
+			handler(invocationId, ...args)
 		} catch (e) {
 			logger.error(stringifyError(e))
 		}
 	}
 
-	#generateListenerRouter(): EventHandlers<ServerToClientEvents> {
+	#generateListenerRouter(): EventHandlers<BlueprintToSofieMethods> {
 		return {
 			common_notifyUserError: (...args) => this.#handleListen2('common_notifyUserError', ...args),
 			common_notifyUserWarning: (...args) => this.#handleListen2('common_notifyUserWarning', ...args),
@@ -129,67 +133,67 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 		}
 	}
 
-	async #runProxied<T extends keyof ClientToServerEvents>(
+	async #runProxied<T extends keyof SofieToBlueprintMethods>(
 		name: T,
-		functionId: string,
-		data: ParamsIfReturnIsValid<ClientToServerEvents[T]>[0]
-	): Promise<ReturnType<ClientToServerEvents[T]>> {
+		invocationId: string,
+		data: ParamsIfReturnIsValid<SofieToBlueprintMethods[T]>[0]
+	): Promise<ReturnType<SofieToBlueprintMethods[T]>> {
 		if (!this.#client.connected) throw new Error('Blueprints are unavailable')
 
 		// TODO - ensure #callHandlers is cleaned up
 
 		// TODO - timeouts?
-		return new Promise<ReturnType<ClientToServerEvents[T]>>((resolve, reject) => {
+		return new Promise<ReturnType<SofieToBlueprintMethods[T]>>((resolve, reject) => {
 			const handleDisconnect = () => {
 				reject('Client disconnected')
 			}
 			this.#client.once('disconnect', handleDisconnect)
 
-			const innerCb: ResultCallback<ReturnType<ClientToServerEvents[T]>> = (
+			const innerCb: ResultCallback<ReturnType<SofieToBlueprintMethods[T]>> = (
 				err: any,
-				res: ReturnType<ClientToServerEvents[T]>
+				res: ReturnType<SofieToBlueprintMethods[T]>
 			): void => {
 				this.#client.off('disconnect', handleDisconnect)
-				this.#callHandlers.delete(functionId)
+				this.#callHandlers.delete(invocationId)
 
 				if (err) reject(err)
 				else resolve(res)
 			}
-			this.#client.emit(name as any, functionId, data, innerCb)
+			this.#client.emit(name as any, invocationId, data, innerCb)
 		})
 	}
 
-	#listenToEventsForMethod(functionId: string, handlers: EventHandlers<Partial<ServerToClientEvents>>): void {
-		if (this.#callHandlers.has(functionId)) {
-			logger.warn(`Methods already registered for call ${functionId}`)
+	#listenToEventsForMethod(invocationId: string, handlers: EventHandlers<Partial<BlueprintToSofieMethods>>): void {
+		if (this.#callHandlers.has(invocationId)) {
+			logger.warn(`Methods already registered for call ${invocationId}`)
 		}
 
-		this.#callHandlers.set(functionId, handlers)
+		this.#callHandlers.set(invocationId, handlers)
 	}
 
-	#packageInfoContextMethods(context: IPackageInfoContext): EventHandlers<Partial<ServerToClientEvents>> {
+	#packageInfoContextMethods(context: IPackageInfoContext): EventHandlers<Partial<BlueprintToSofieMethods>> {
 		return {
-			packageInfo_getPackageInfo: async (_id, data) => context.getPackageInfo(data.packageId),
-			packageInfo_hackGetMediaObjectDuration: async (_id, data) =>
+			packageInfo_getPackageInfo: async (_invocationId, data) => context.getPackageInfo(data.packageId),
+			packageInfo_hackGetMediaObjectDuration: async (_invocationId, data) =>
 				context.hackGetMediaObjectDuration(data.mediaId),
 		}
 	}
 
-	#studioContextMethods(context: IStudioContext): EventHandlers<Partial<ServerToClientEvents>> {
+	#studioContextMethods(context: IStudioContext): EventHandlers<Partial<BlueprintToSofieMethods>> {
 		return {
-			studio_getStudioMappings: async (_id) => context.getStudioMappings(),
+			studio_getStudioMappings: async (_invocationId) => context.getStudioMappings(),
 		}
 	}
 
-	#userNotesContextMethods(context: IUserNotesContext): EventHandlers<Partial<ServerToClientEvents>> {
+	#userNotesContextMethods(context: IUserNotesContext): EventHandlers<Partial<BlueprintToSofieMethods>> {
 		return {
-			common_notifyUserError: (_id, msg) => context.notifyUserError(msg.message, msg.params),
-			common_notifyUserWarning: (_id, msg) => context.notifyUserWarning(msg.message, msg.params),
-			common_notifyUserInfo: (_id, msg) => context.notifyUserInfo(msg.message, msg.params),
+			common_notifyUserError: (_invocationId, msg) => context.notifyUserError(msg.message, msg.params),
+			common_notifyUserWarning: (_invocationId, msg) => context.notifyUserWarning(msg.message, msg.params),
+			common_notifyUserInfo: (_invocationId, msg) => context.notifyUserInfo(msg.message, msg.params),
 		}
 	}
 
-	#studioUserContextMethods(context: IStudioUserContext): EventHandlers<Partial<ServerToClientEvents>> {
+	#studioUserContextMethods(context: IStudioUserContext): EventHandlers<Partial<BlueprintToSofieMethods>> {
 		return {
 			...this.#studioContextMethods(context),
 			...this.#userNotesContextMethods(context),
@@ -200,13 +204,13 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 	async getBaseline(context0: IStudioBaselineContext): Promise<BlueprintResultStudioBaseline> {
 		const context = context0 as StudioBaselineContext
 
-		const id = getRandomString()
-		this.#listenToEventsForMethod(id, {
+		const invocationId = getRandomString()
+		this.#listenToEventsForMethod(invocationId, {
 			...this.#studioContextMethods(context),
 			...this.#packageInfoContextMethods(context),
 		})
 
-		return this.#runProxied('studio_getBaseline', id, {
+		return this.#runProxied('studio_getBaseline', invocationId, {
 			identifier: context._contextIdentifier,
 			studioId: context.studioId,
 			studioConfig: context.getStudioConfig() as IBlueprintConfig,
@@ -221,12 +225,12 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 	): Promise<string | null> {
 		const context = context0 as StudioUserContext
 
-		const id = getRandomString()
-		this.#listenToEventsForMethod(id, {
+		const invocationId = getRandomString()
+		this.#listenToEventsForMethod(invocationId, {
 			...this.#studioUserContextMethods(context),
 		})
 
-		return this.#runProxied('studio_getShowStyleId', id, {
+		return this.#runProxied('studio_getShowStyleId', invocationId, {
 			identifier: context._contextIdentifier,
 			studioId: context.studioId,
 			studioConfig: context.getStudioConfig() as IBlueprintConfig,
@@ -246,12 +250,12 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 
 		// TODO - handle this method being optional
 
-		const id = getRandomString()
-		this.#listenToEventsForMethod(id, {
+		const invocationId = getRandomString()
+		this.#listenToEventsForMethod(invocationId, {
 			...this.#studioUserContextMethods(context),
 		})
 
-		return this.#runProxied('studio_getRundownPlaylistInfo', id, {
+		return this.#runProxied('studio_getRundownPlaylistInfo', invocationId, {
 			identifier: context._contextIdentifier,
 			studioId: context.studioId,
 			studioConfig: context.getStudioConfig() as IBlueprintConfig,
@@ -264,11 +268,11 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 	async validateConfig(context0: ICommonContext, config: IBlueprintConfig): Promise<Array<IConfigMessage>> {
 		const context = context0 as CommonContext
 
-		const id = getRandomString()
+		const invocationId = getRandomString()
 
 		// TODO - handle this method being optional
 
-		return this.#runProxied('studio_validateConfig', id, {
+		return this.#runProxied('studio_validateConfig', invocationId, {
 			identifier: context._contextIdentifier,
 			config,
 		})
@@ -285,11 +289,11 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 	): Promise<BlueprintResultApplyStudioConfig> {
 		const context = context0 as CommonContext
 
-		const id = getRandomString()
+		const invocationId = getRandomString()
 
 		// TODO - handle this method being optional
 
-		return this.#runProxied('studio_applyConfig', id, {
+		return this.#runProxied('studio_applyConfig', invocationId, {
 			identifier: context._contextIdentifier,
 			config,
 			coreConfig,
@@ -304,11 +308,11 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 	): Promise<unknown> {
 		const context = context0 as CommonContext
 
-		const id = getRandomString()
+		const invocationId = getRandomString()
 
 		// TODO - handle this method being optional
 
-		return this.#runProxied('studio_preprocessConfig', id, {
+		return this.#runProxied('studio_preprocessConfig', invocationId, {
 			identifier: context._contextIdentifier,
 			config,
 			coreConfig,

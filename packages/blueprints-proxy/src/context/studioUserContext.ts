@@ -4,8 +4,8 @@ import { StudioContextArgs } from '..'
 import { StudioContext } from './studioContext'
 
 export class StudioUserContext extends StudioContext implements IStudioUserContext {
-	constructor(functionName: string, socket: MySocket, functionId: string, msg: StudioContextArgs) {
-		super(functionName, socket, functionId, msg)
+	constructor(functionName: string, socket: MySocket, invocationId: string, msg: StudioContextArgs) {
+		super(functionName, socket, invocationId, msg)
 	}
 
 	notifyUserError(message: string, params?: { [key: string]: any } | undefined): void {

@@ -2,7 +2,7 @@ import { ICommonContext, NoteSeverity } from '@sofie-automation/blueprints-integ
 import * as crypto from 'crypto'
 import { ParamsIfReturnIsNever, ParamsIfReturnIsValid } from '../helper'
 import { callHelper, emitHelper, MySocket } from '../routers/util'
-import { ServerToClientEvents } from '..'
+import { BlueprintToSofieMethods } from '..'
 
 function getHash(str: string): string {
 	const hash = crypto.createHash('sha1')
@@ -13,29 +13,29 @@ export class CommonContext implements ICommonContext {
 	private readonly _contextName: string
 
 	readonly #socket: MySocket
-	readonly #functionId: string
+	readonly #invocationId: string
 
 	private hashI = 0
 	private hashed: { [hash: string]: string } = {}
 
-	constructor(identifier: string, socket: MySocket, functionId: string) {
+	constructor(identifier: string, socket: MySocket, invocationId: string) {
 		this._contextName = identifier
 
 		this.#socket = socket
-		this.#functionId = functionId
+		this.#invocationId = invocationId
 	}
 
-	protected emitMessage<T extends keyof ServerToClientEvents>(
+	protected emitMessage<T extends keyof BlueprintToSofieMethods>(
 		name: T,
-		data: ParamsIfReturnIsNever<ServerToClientEvents[T]>[0]
+		data: ParamsIfReturnIsNever<BlueprintToSofieMethods[T]>[0]
 	): void {
-		return emitHelper(this.#socket, this.#functionId, name, data)
+		return emitHelper(this.#socket, this.#invocationId, name, data)
 	}
-	protected emitCall<T extends keyof ServerToClientEvents>(
+	protected async emitCall<T extends keyof BlueprintToSofieMethods>(
 		name: T,
-		data: ParamsIfReturnIsValid<ServerToClientEvents[T]>[0]
-	): Promise<ReturnType<ServerToClientEvents[T]>> {
-		return callHelper(this.#socket, this.#functionId, name, data)
+		data: ParamsIfReturnIsValid<BlueprintToSofieMethods[T]>[0]
+	): Promise<ReturnType<BlueprintToSofieMethods[T]>> {
+		return callHelper(this.#socket, this.#invocationId, name, data)
 	}
 
 	getHashId(str: string, isNotUnique?: boolean): string {

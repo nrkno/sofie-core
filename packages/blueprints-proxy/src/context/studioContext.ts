@@ -10,8 +10,8 @@ export class StudioContext extends CommonContext implements IStudioContext {
 		return this.#data.studioId
 	}
 
-	constructor(functionName: string, socket: MySocket, functionId: string, msg: StudioContextArgs) {
-		super(`${functionName} ${msg.identifier}`, socket, functionId)
+	constructor(functionName: string, socket: MySocket, invocationId: string, msg: StudioContextArgs) {
+		super(`${functionName} ${msg.identifier}`, socket, invocationId)
 
 		this.#data = msg
 	}

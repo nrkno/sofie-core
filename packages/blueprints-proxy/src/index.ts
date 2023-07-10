@@ -17,10 +17,11 @@ export type ResultCallback<T> = (err: any, res: T) => void
 
 export type EmptyArgs = Record<string, never>
 
-export interface ServerToClientEvents {
+export interface BlueprintToSofieMethods {
 	common_notifyUserError: (msg: NotifyUserArgs) => never
 	common_notifyUserWarning: (msg: NotifyUserArgs) => never
 	common_notifyUserInfo: (msg: NotifyUserArgs) => never
+
 	packageInfo_getPackageInfo: (msg: PackageInfoGetPackageInfoArgs) => Readonly<PackageInfo.Any[]>
 	packageInfo_hackGetMediaObjectDuration: (msg: PackageInfoHackGetMediaObjectDurationArgs) => number | undefined
 	studio_getStudioMappings: (msg: EmptyArgs) => Readonly<BlueprintMappings>
@@ -37,7 +38,7 @@ export interface PackageInfoHackGetMediaObjectDurationArgs {
 	mediaId: string
 }
 
-export interface ClientToServerEvents {
+export interface SofieToBlueprintMethods {
 	studio_getBaseline: (msg: StudioGetBaselineArgs) => BlueprintResultStudioBaseline
 	studio_getShowStyleId: (msg: StudioGetShowStyleIdArgs) => string | null
 	studio_getRundownPlaylistInfo: (msg: StudioGetRundownPlaylistInfo) => BlueprintResultRundownPlaylist | null

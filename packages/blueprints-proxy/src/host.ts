@@ -1,6 +1,6 @@
 import { ShowStyleBlueprintManifest, StudioBlueprintManifest } from '@sofie-automation/blueprints-integration'
 import { createServer } from 'http'
-import { ClientToServerEvents, ServerToClientEvents } from './index'
+import { SofieToBlueprintMethods, BlueprintToSofieMethods } from './index'
 import { Server } from 'socket.io'
 import { listenToEvents } from './helper'
 import { studio_applyConfig, studio_preprocessConfig, studio_validateConfig } from './routers/studio/config'
@@ -26,7 +26,7 @@ export function runForBlueprints(
 	// }
 
 	const httpServer = createServer()
-	const io = new Server<ClientToServerEvents, ServerToClientEvents>(httpServer, {
+	const io = new Server<SofieToBlueprintMethods, BlueprintToSofieMethods>(httpServer, {
 		cors: {
 			// Allow everything
 			origin: (o, cb) => cb(null, o),
@@ -39,7 +39,7 @@ export function runForBlueprints(
 		console.log(`connection from ${socket.id}`)
 
 		// subscribe to socket events from host
-		listenToEvents<ClientToServerEvents>(socket, {
+		listenToEvents<SofieToBlueprintMethods>(socket, {
 			studio_getBaseline: async (...args) => studio_getBaseline(studioBlueprint, socket, ...args),
 			studio_getShowStyleId: async (...args) => studio_getShowStyleId(studioBlueprint, socket, ...args),
 			studio_getRundownPlaylistInfo: async (...args) =>
