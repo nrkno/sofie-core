@@ -48,7 +48,7 @@ export function sortPartsInSortedSegments<P extends Pick<DBPart, '_id' | 'segmen
 	})
 }
 
-type SortableDBPartInstance = Pick<DBPartInstance, '_id' | 'segmentId'> & {
+type SortableDBPartInstance = Pick<DBPartInstance, '_id' | 'segmentId' | 'takeCount'> & {
 	part: Pick<DBPart, '_id' | '_rank'>
 }
 export function sortPartInstancesInSortedSegments<P extends SortableDBPartInstance>(
@@ -62,7 +62,7 @@ export function sortPartInstancesInSortedSegments<P extends SortableDBPartInstan
 
 	return partInstances.sort((a, b) => {
 		if (a.segmentId === b.segmentId) {
-			return a.part._rank - b.part._rank
+			return a.part._rank - b.part._rank || a.takeCount - b.takeCount
 		} else {
 			const segA = segmentRanks.get(a.segmentId) ?? Number.POSITIVE_INFINITY
 			const segB = segmentRanks.get(b.segmentId) ?? Number.POSITIVE_INFINITY

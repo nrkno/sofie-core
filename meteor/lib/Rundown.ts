@@ -1,4 +1,3 @@
-import * as _ from 'underscore'
 import { Piece } from './collections/Pieces'
 import { IOutputLayer, ISourceLayer, ITranslatableMessage } from '@sofie-automation/blueprints-integration'
 import { DBSegment, Segment, SegmentOrphanedReason } from './collections/Segments'
@@ -42,7 +41,7 @@ export interface SegmentExtended extends DBSegment {
 	}
 }
 
-export type PartInstanceLimited = Omit<PartInstance, 'isTaken' | 'previousPartEndState' | 'takeCount'>
+export type PartInstanceLimited = Omit<PartInstance, 'isTaken' | 'previousPartEndState'>
 
 export interface PartExtended {
 	partId: PartId
@@ -306,21 +305,22 @@ export function getSegmentsWithPartInstances(
 		} else if (segmentParts.length === 0) {
 			return {
 				segment,
-				partInstances: _.sortBy(segmentPartInstances, (p) => p.part._rank),
+				partInstances: segmentPartInstances.sort(
+					(a, b) => a.part._rank - b.part._rank || a.takeCount - b.takeCount
+				),
 			}
 		} else {
-			const partInstanceMap = new Map<PartId, PartInstance>()
-			for (const part of segmentParts)
-				partInstanceMap.set(part._id, wrapPartToTemporaryInstance(playlistActivationId, part))
+			const partIds: Set<PartId> = new Set()
 			for (const partInstance of segmentPartInstances) {
-				// Check what we already have in the map for this PartId. If the map returns the currentPartInstance then we keep that, otherwise replace with this partInstance
-				const currentValue = partInstanceMap.get(partInstance.part._id)
-				if (!currentValue || currentValue._id !== playlist.currentPartInfo?.partInstanceId) {
-					partInstanceMap.set(partInstance.part._id, partInstance)
-				}
+				partIds.add(partInstance.part._id)
 			}
-
-			const allPartInstances = _.sortBy(Array.from(partInstanceMap.values()), (p) => p.part._rank)
+			for (const part of segmentParts) {
+				if (partIds.has(part._id)) continue
+				segmentPartInstances.push(wrapPartToTemporaryInstance(playlistActivationId, part))
+			}
+			const allPartInstances = segmentPartInstances.sort(
+				(a, b) => a.part._rank - b.part._rank || a.takeCount - b.takeCount
+			)
 
 			return {
 				segment,

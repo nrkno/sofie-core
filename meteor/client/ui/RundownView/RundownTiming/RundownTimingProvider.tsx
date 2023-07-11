@@ -55,7 +55,7 @@ interface IRundownTimingProviderTrackedProps {
 
 type MinimalPartInstance = Pick<
 	PartInstance,
-	'_id' | 'rundownId' | 'segmentId' | 'segmentPlayoutId' | 'takeCount' | 'part'
+	'_id' | 'rundownId' | 'segmentId' | 'segmentPlayoutId' | 'takeCount' | 'part' | 'timings' | 'orphaned'
 >
 
 /**
@@ -82,9 +82,6 @@ export const RundownTimingProvider = withTracker<
 		}
 	}
 
-	// TODO: Remove
-	console.time('rundownTiming')
-
 	const partInstancesMap = new Map<PartId, MinimalPartInstance>()
 	const segmentEntryPartInstances: MinimalPartInstance[] = []
 
@@ -100,8 +97,15 @@ export const RundownTimingProvider = withTracker<
 			segmentPlayoutId: 1,
 			takeCount: 1,
 			part: 1,
+			timings: 1,
+			orphaned: 1,
 		},
-	}) as Array<Pick<PartInstance, '_id' | 'rundownId' | 'segmentId' | 'segmentPlayoutId' | 'takeCount' | 'part'>>
+	}) as Array<
+		Pick<
+			PartInstance,
+			'_id' | 'rundownId' | 'segmentId' | 'segmentPlayoutId' | 'takeCount' | 'part' | 'timings' | 'orphaned'
+		>
+	>
 
 	const { currentPartInstance, previousPartInstance } = findCurrentAndPreviousPartInstance(
 		activePartInstances,
@@ -157,9 +161,6 @@ export const RundownTimingProvider = withTracker<
 	if (firstPartInstanceInPreviousSegmentPlay) segmentEntryPartInstances.push(firstPartInstanceInPreviousSegmentPlay)
 
 	const pieces = RundownPlaylistCollectionUtil.getPiecesForParts(Array.from(allPartIds.values()))
-
-	// TODO: Remove
-	console.timeEnd('rundownTiming')
 
 	return {
 		rundowns,

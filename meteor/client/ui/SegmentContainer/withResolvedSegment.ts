@@ -185,7 +185,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 										}
 									).parts as Pick<Part, '_id' | 'segmentId' | '_rank'>[]
 								).map((part) => part._id),
-							'playlist.getAllOrderedParts',
+							'playlist.getSegmentsAndPartsSync',
 							props.playlist._id
 						),
 						memoizedIsolatedAutorun(

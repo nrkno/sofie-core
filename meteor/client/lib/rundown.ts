@@ -363,7 +363,6 @@ export namespace RundownUtils {
 				fields: {
 					isTaken: 0,
 					previousPartEndState: 0,
-					takeCount: 0,
 				},
 			}
 		)[0] as { segment: Segment; partInstances: PartInstanceLimited[] } | undefined
