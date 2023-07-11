@@ -11,6 +11,7 @@ import {
 	StudioId,
 	unprotectString,
 	Observer,
+	SubscriptionId,
 } from '@sofie-automation/server-core-integration'
 import { MediaObject, DeviceOptionsAny, ActionExecutionResult } from 'timeline-state-resolver'
 import * as _ from 'underscore'
@@ -56,8 +57,8 @@ export class CoreHandler {
 	private _certificates?: Buffer[]
 
 	private _studioId: StudioId | undefined
-	private _timelineSubscription: string | null = null
-	private _expectedItemsSubscription: string | null = null
+	private _timelineSubscription: SubscriptionId | null = null
+	private _expectedItemsSubscription: SubscriptionId | null = null
 
 	private _statusInitialized = false
 	private _statusDestroyed = false
@@ -213,7 +214,7 @@ export class CoreHandler {
 					.autoSubscribe('timeline', {
 						studioId: studioId,
 					})
-					.then((subscriptionId: string | null) => {
+					.then((subscriptionId) => {
 						this._timelineSubscription = subscriptionId
 					})
 					.catch((err: any) => {
@@ -229,7 +230,7 @@ export class CoreHandler {
 					.autoSubscribe('expectedPlayoutItems', {
 						studioId: studioId,
 					})
-					.then((subscriptionId: string | null) => {
+					.then((subscriptionId) => {
 						this._expectedItemsSubscription = subscriptionId
 					})
 					.catch((err: any) => {
@@ -454,7 +455,6 @@ export class CoreTSRDeviceHandler {
 	public _device!: BaseRemoteDeviceIntegration<DeviceOptionsAny>
 	private _coreParentHandler: CoreHandler
 	private _tsrHandler: TSRHandler
-	private _subscriptions: Array<string> = []
 	private _hasGottenStatusChange = false
 	private _deviceStatus: PeripheralDeviceAPI.PeripheralDeviceStatusObject = {
 		statusCode: StatusCode.BAD,
@@ -511,10 +511,8 @@ export class CoreTSRDeviceHandler {
 		this._coreParentHandler.logger.info(
 			'CoreTSRDevice: Setting up subscriptions for ' + this.core.deviceId + ' for device ' + deviceId + ' ..'
 		)
-		this._subscriptions = []
 		try {
-			const sub = await this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId)
-			this._subscriptions.push(sub)
+			await this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId)
 		} catch (e) {
 			this._coreParentHandler.logger.error(e)
 		}
@@ -583,19 +581,15 @@ export class CoreTSRDeviceHandler {
 	}
 
 	async dispose(): Promise<void> {
-		this._observers.forEach((obs) => {
-			obs.stop()
-		})
-
-		for (const subId of this._subscriptions) {
-			this.core.unsubscribe(subId)
-		}
+		this._observers.forEach((obs) => obs.stop())
 
 		await this._tsrHandler.tsr.removeDevice(this._deviceId)
 		await this.core.setStatus({
 			statusCode: StatusCode.BAD,
 			messages: ['Uninitialized'],
 		})
+
+		await this.core.destroy()
 	}
 	killProcess(): void {
 		this._coreParentHandler.killProcess()

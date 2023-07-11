@@ -21,6 +21,7 @@ import { PeripheralDeviceForDevice } from '@sofie-automation/shared-lib/dist/cor
 import { ProtectedString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { ChildCoreOptions, CoreConnectionChild } from './CoreConnectionChild'
 import { CorePinger } from './ping'
+import { SubscriptionId, SubscriptionsHelper } from './subscriptions'
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 const PkgInfo = require('../../package.json')
@@ -74,18 +75,13 @@ export type CoreConnectionEvents = {
 export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 	private _ddp: DDPConnector | undefined
 	private _methodQueue: ConnectionMethodsQueue | undefined
+	private _subscriptions: SubscriptionsHelper | undefined
 	private _children: Array<CoreConnectionChild> = []
 	private _coreOptions: CoreOptions
 	private _timeSync: TimeSync | null = null
 	private _watchDog?: WatchDog
 	private _watchDogPingResponse = ''
 	private _connected = false
-	private _autoSubscriptions: {
-		[subscriptionId: string]: {
-			publicationName: string
-			params: Array<any>
-		}
-	} = {}
 	private _sentConnectionId = ''
 	private _pinger: CorePinger
 	private _destroyed = false
@@ -114,7 +110,11 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 	}
 	async init(ddpOptions0?: DDPConnectorOptions): Promise<PeripheralDeviceId> {
 		this._destroyed = false
-		this.on('connected', () => this._renewAutoSubscriptions())
+		this.on('connected', () => {
+			if (this._subscriptions) {
+				this._subscriptions.renewAutoSubscriptions()
+			}
+		})
 
 		const ddpOptions = ddpOptions0 || {
 			host: '127.0.0.1',
@@ -125,6 +125,11 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 		if (!_.has(ddpOptions, 'autoReconnectTimer')) ddpOptions.autoReconnectTimer = 1000
 		this._ddp = new DDPConnector(ddpOptions)
 		this._methodQueue = new ConnectionMethodsQueue(this._ddp, this._coreOptions)
+		this._subscriptions = new SubscriptionsHelper(
+			this._emitError.bind(this),
+			this._ddp,
+			this._coreOptions.deviceToken
+		)
 
 		this._ddp.on('error', (err) => {
 			this._emitError('ddpError: ' + (_.isObject(err) && err.message) || err.toString())
@@ -302,50 +307,39 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 		}
 		return c
 	}
-	async subscribe(publicationName: string, ...params: Array<any>): Promise<string> {
-		return this.resubscribe(undefined, publicationName, ...params)
-	}
-	private async resubscribe(
-		existingSubscriptionId: string | undefined,
-		publicationName: string,
-		...params: Array<any>
-	): Promise<string> {
-		return new Promise((resolve, reject) => {
-			if (!this.ddp.ddpClient) {
-				reject('subscribe: DDP client is not initialized')
-				return
-			}
-			try {
-				const subscriptionId = this.ddp.ddpClient.subscribe(
-					publicationName, // name of Meteor Publish function to subscribe to
-					params.concat([this._coreOptions.deviceToken]), // parameters used by the Publish function
-					() => {
-						// TODO - I think this callback has an error parameter?
+	// /**
+	//  * Subscribe to a DDP publication
+	//  * Upon reconnecting to Sofie, this publication will be terminated
+	//  */
+	// async subscribeOnce(publicationName: string, ...params: Array<any>): Promise<SubscriptionId> {
+	// 	if (!this._subscriptions) throw new Error('Connection is not ready to handle subscriptions')
 
-						// callback when the subscription is complete
-						resolve(subscriptionId)
-					},
-					existingSubscriptionId
-				)
-			} catch (e) {
-				reject(e)
-			}
-		})
+	// 	return this._subscriptions.subscribeOnce(publicationName, ...params)
+	// }
+	/**
+	 * Subscribe to a DDP publication
+	 * Upon reconnecting to Sofie, this publication will be restarted
+	 */
+	async autoSubscribe(publicationName: string, ...params: Array<any>): Promise<SubscriptionId> {
+		if (!this._subscriptions) throw new Error('Connection is not ready to handle subscriptions')
+
+		return this._subscriptions.autoSubscribe(publicationName, ...params)
 	}
 	/**
-	 * Like a subscribe, but automatically renews it upon reconnection
+	 * Unsubscribe from subscroption to a DDP publication
 	 */
-	async autoSubscribe(publicationName: string, ...params: Array<any>): Promise<string> {
-		const subscriptionId = await this.subscribe(publicationName, ...params)
-		this._autoSubscriptions[subscriptionId] = {
-			publicationName: publicationName,
-			params: params,
-		}
-		return subscriptionId
+	unsubscribe(subscriptionId: SubscriptionId): void {
+		if (!this._subscriptions) throw new Error('Connection is not ready to handle subscriptions')
+
+		this._subscriptions.unsubscribe(subscriptionId)
 	}
-	unsubscribe(subscriptionId: string): void {
-		this.ddp.ddpClient?.unsubscribe(subscriptionId)
-		delete this._autoSubscriptions[subscriptionId]
+	/**
+	 * Unsubscribe from all subscriptions to DDP publications
+	 */
+	unsubscribeAll(): void {
+		if (!this._subscriptions) throw new Error('Connection is not ready to handle subscriptions')
+
+		this._subscriptions.unsubscribeAll()
 	}
 	observe(collectionName: string): Observer {
 		if (!this.ddp.ddpClient) {
@@ -445,13 +439,6 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 			checkPingReply()
 		}).then(() => {
 			return
-		})
-	}
-	private _renewAutoSubscriptions() {
-		_.each(this._autoSubscriptions, (sub, subId) => {
-			this.resubscribe(subId, sub.publicationName, ...sub.params).catch((e) =>
-				this._emitError('renewSubscr ' + sub.publicationName + ': ' + e)
-			)
 		})
 	}
 }
