@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.50.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.50.0-in-testing.0...v1.50.0-in-testing.1) (2023-07-05)
+
+
+### Bug Fixes
+
+* tsr actions not showing in peripheral device settings page ([ff85a93](https://github.com/nrkno/sofie-core/commit/ff85a932d721362caaf7a82f357421862e1a1289))
+* tsr actions not showing in system status page ([1c26b0a](https://github.com/nrkno/sofie-core/commit/1c26b0a7bb69a2972f61e150fcb3f8d1086fb979))
+* webmanifest getLocale ([3f98f66](https://github.com/nrkno/sofie-core/commit/3f98f6668789b619349599f8b2deb55fcdd2a859))
+
 ## [1.50.0-in-testing.0](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.4...v1.50.0-in-testing.0) (2023-07-03)
 
 

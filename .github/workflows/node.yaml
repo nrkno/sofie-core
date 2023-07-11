@@ -514,14 +514,6 @@ jobs:
       # core must be published first
       - build-core
 
-    strategy:
-      fail-fast: false
-      matrix:
-        package-name:
-          - blueprints-integration
-          - server-core-integration
-          - shared-lib
-
     steps:
       - uses: actions/checkout@v3
       - name: Use Node.js
@@ -530,8 +522,9 @@ jobs:
           node-version-file: ".node-version"
       - name: Prepare Environment # have to run this first to make sure the semver lib is available
         run: |
-          cd packages
           yarn config set cacheFolder /home/runner/release-libs-cache
+
+          cd packages
           yarn install
         env:
           CI: true
@@ -541,14 +534,14 @@ jobs:
           if [ -z "${{ secrets.NPM_TOKEN }}" ]; then
             echo "No Token"
           else
-
-            yarn --ignore-scripts
-
-            cd packages/${{ matrix.package-name }}
-            PACKAGE_NAME=$(yarn info -s . name)
-            PUBLISHED_VERSION=$(yarn info -s $PACKAGE_NAME version)
-            THIS_VERSION=$(node -p "require('./package.json').version")
-            NPM_TAG=$(node ../../scripts/determine-npm-tag.js $PUBLISHED_VERSION $THIS_VERSION)
+            # make dependencies of `determine-npm-tag` available
+            yarn install --mode=skip-build
+            
+            cd packages
+            PACKAGE_NAME="@sofie-automation/shared-lib"
+            PUBLISHED_VERSION=$(yarn npm info --json $PACKAGE_NAME | jq -c '.version' -r)
+            THIS_VERSION=$(node -p "require('./lerna.json').version")
+            NPM_TAG=$(node ../scripts/determine-npm-tag.js $PUBLISHED_VERSION $THIS_VERSION)
 
             echo "Publishing $NPM_TAG"
             echo "tag=$NPM_TAG" >> $GITHUB_OUTPUT
@@ -558,7 +551,7 @@ jobs:
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
           cd packages
-          yarn lerna run --scope \*\*/${{ matrix.package-name }} --include-dependencies --stream build
+          yarn build
         env:
           CI: true
       - name: Modify dependencies to use npm packages
@@ -566,13 +559,20 @@ jobs:
       - name: Publish to NPM
         if: ${{ steps.do-publish.outputs.tag }}
         run: |
-          yarn config set npmAuthToken $NPM_AUTH_TOKEN
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" >> ~/.npmrc
 
-          cd packages/${{ matrix.package-name }}
+          # hack as it can sometimes have unexpected changes
+          git checkout .yarnrc.yml
+
+          cd packages
+          git checkout .yarnrc.yml
+
+          yarn lerna publish from-package --tag-version-prefix='' --dist-tag ${{ steps.do-publish.outputs.tag }} --yes --no-verify-access
+
           NEW_VERSION=$(node -p "require('./package.json').version")
-          yarn npm publish --access=public --tag ${{ steps.do-publish.outputs.tag }}
+          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "**Published:** $NEW_VERSION" >> $GITHUB_STEP_SUMMARY
         env:
-          NPM_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
           CI: true
 
   check-for-multiple-library-versions:

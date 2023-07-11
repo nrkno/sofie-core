@@ -196,7 +196,7 @@
 	},
 	"standard-version": {
 		"scripts": {
-			"postbump": "yarn libs:syncVersionsAndChangelogs"
+			"postbump": "yarn libs:syncVersionsAndChangelogs && yarn install && git add yarn.lock"
 		}
 	},
 	"resolutions": {
