@@ -45,7 +45,10 @@ export interface PieceGeneric extends Omit<IBlueprintPieceGeneric, 'content'> {
 
 	/** A flag to signal that a given Piece has no content, and exists only as a marker on the timeline */
 	virtual?: boolean
-	/** The id of the piece this piece is a continuation of. If it is a continuation, the inTranstion must not be set, and enable.start must be 0 */
+	/**
+	 * @deprecated This is a remnant of an old infinite piece implementation, and has no purpose now.
+	 * The id of the item this item is a continuation of. If it is a continuation, the inTranstion must not be set, and trigger must be 0
+	 */
 	continuesRefId?: PieceId
 
 	/** Stringified timelineObjects */
