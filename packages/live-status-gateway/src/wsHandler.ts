@@ -55,7 +55,7 @@ export abstract class CollectionBase<T> {
 	protected _publication: string | undefined
 	protected _logger: Logger
 	protected _coreHandler: CoreHandler
-	protected _studioId: StudioId
+	protected _studioId!: StudioId
 	protected _subscribers: Set<WebSocket> = new Set()
 	protected _observers: Set<CollectionObserver<T>> = new Set()
 	protected _collectionData: T | undefined
