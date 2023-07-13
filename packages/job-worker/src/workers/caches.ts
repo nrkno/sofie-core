@@ -1,5 +1,5 @@
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
+import { parseBlueprintDocument, WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
 import { ReadonlyDeep } from 'type-fest'
 import { IDirectCollections } from '../db'
 import {
@@ -136,7 +136,7 @@ export async function loadWorkerDataCache(
 	// Load some 'static' data from the db
 	const studio = deepFreeze(await collections.Studios.findOne(studioId))
 	if (!studio) throw new Error('Missing studio')
-	const studioBlueprint = await loadStudioBlueprintOrPlaceholder(collections, studio)
+	const studioBlueprint = await loadStudioBlueprintOrPlaceholder(collections, studio, null)
 
 	return {
 		studio,
@@ -162,7 +162,7 @@ export async function invalidateWorkerDataCache(
 		if (!newStudio) throw new Error(`Studio is missing during cache invalidation!`)
 		cache.studio = deepFreeze(newStudio)
 
-		cache.studioBlueprint = await loadStudioBlueprintOrPlaceholder(collections, cache.studio)
+		cache.studioBlueprint = await loadStudioBlueprintOrPlaceholder(collections, cache.studio, cache.studioBlueprint)
 		cache.studioBlueprintConfig = undefined
 
 		cache.showStyleBases.clear()
@@ -195,7 +195,7 @@ export async function invalidateWorkerDataCache(
 	// Reload studioBlueprint
 	if (updateStudioBlueprint) {
 		logger.debug('WorkerDataCache: Reloading studioBlueprint')
-		cache.studioBlueprint = await loadStudioBlueprintOrPlaceholder(collections, cache.studio)
+		cache.studioBlueprint = await loadStudioBlueprintOrPlaceholder(collections, cache.studio, cache.studioBlueprint)
 		cache.studioBlueprintConfig = undefined
 	}
 
@@ -291,32 +291,69 @@ export async function invalidateWorkerDataCache(
 
 async function loadStudioBlueprintOrPlaceholder(
 	collections: IDirectCollections,
-	studio: ReadonlyDeep<DBStudio>
+	studio: ReadonlyDeep<DBStudio>,
+	existingBlueprint: ReadonlyDeep<WrappedStudioBlueprint> | null
 ): Promise<ReadonlyDeep<WrappedStudioBlueprint>> {
 	if (!studio.blueprintId) {
 		return Object.freeze({
 			blueprintDoc: undefined,
 			blueprintId: protectString('__placeholder__'),
 			blueprint: DefaultStudioBlueprint,
+			dispose: undefined,
 		})
 	}
 
 	const blueprintDoc = await collections.Blueprints.findOne(studio.blueprintId)
-	const blueprintManifest = new ProxiedStudioBlueprint()
-	// const blueprintManifest = await parseBlueprintDocument(blueprintDoc)
-	// if (!blueprintManifest) {
-	// 	throw new Error(`Blueprint "${studio.blueprintId}" not found! (referenced by Studio "${studio._id}")`)
-	// }
-
-	if (blueprintManifest.blueprintType !== BlueprintManifestType.STUDIO) {
+	if (!blueprintDoc || blueprintDoc.blueprintType !== BlueprintManifestType.STUDIO) {
 		throw new Error(
-			`Blueprint "${studio.blueprintId}" is not valid for a Studio "${studio._id}" (${blueprintManifest.blueprintType})!`
+			`Blueprint "${studio.blueprintId}" is not valid for a Studio "${studio._id}" (${blueprintDoc?.blueprintType})!`
 		)
 	}
 
-	return Object.freeze({
-		blueprintDoc: blueprintDoc,
-		blueprintId: studio.blueprintId,
-		blueprint: blueprintManifest,
-	})
+	const useProxy = true // nocommit this needs to be behind a config flag on the blueprint doc.
+	if (useProxy) {
+		const existingBlueprintProxy =
+			existingBlueprint?.blueprint instanceof ProxiedStudioBlueprint ? existingBlueprint.blueprint : null
+		if (!existingBlueprintProxy || existingBlueprint?.blueprintId !== studio.blueprintId) {
+			if (existingBlueprint?.dispose) existingBlueprint.dispose()
+
+			// Create a new proxy
+
+			const newBlueprintProxy = new ProxiedStudioBlueprint()
+			return Object.freeze({
+				blueprintDoc: blueprintDoc,
+				blueprintId: studio.blueprintId,
+				blueprint: newBlueprintProxy,
+				dispose: newBlueprintProxy.dispose,
+			})
+		} else {
+			// Reuse the proxy
+			return Object.freeze({
+				blueprintDoc: blueprintDoc,
+				blueprintId: studio.blueprintId,
+				blueprint: existingBlueprintProxy,
+				dispose: existingBlueprintProxy.dispose,
+			})
+		}
+	} else {
+		const blueprintManifest = await parseBlueprintDocument(blueprintDoc)
+		if (!blueprintManifest) {
+			throw new Error(`Blueprint "${studio.blueprintId}" not found! (referenced by Studio "${studio._id}")`)
+		}
+
+		if (blueprintManifest.blueprintType !== BlueprintManifestType.STUDIO) {
+			throw new Error(
+				`Blueprint "${studio.blueprintId}" is not valid for a Studio "${studio._id}" (${blueprintManifest.blueprintType})!`
+			)
+		}
+
+		if (existingBlueprint?.dispose) existingBlueprint.dispose()
+
+		return Object.freeze({
+			blueprintDoc: blueprintDoc,
+			blueprintId: studio.blueprintId,
+			blueprint: blueprintManifest,
+			dispose: undefined,
+		})
+	}
 }

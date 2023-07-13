@@ -93,7 +93,15 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 		listenToEvents<BlueprintToSofieMethods>(this.#client, this.#generateListenerRouter())
 	}
 
-	async #handleListen<T extends keyof BlueprintToSofieMethods>(
+	dispose = (): void => {
+		// TODO - more?
+		this.#callHandlers.clear()
+
+		this.#client.disconnect()
+		this.#client.removeAllListeners()
+	}
+
+	async #handleFunctionCall<T extends keyof BlueprintToSofieMethods>(
 		name: T,
 		invocationId: string,
 		...args: Parameters<BlueprintToSofieMethods[T]>
@@ -104,7 +112,7 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 
 		return handler(invocationId, ...args)
 	}
-	#handleListen2<T extends keyof BlueprintToSofieMethods>(
+	#handleVoidFunctionCall<T extends keyof BlueprintToSofieMethods>(
 		name: T,
 		invocationId: string,
 		...args: Parameters<BlueprintToSofieMethods[T]>
@@ -122,18 +130,19 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 
 	#generateListenerRouter(): EventHandlers<BlueprintToSofieMethods> {
 		return {
-			common_notifyUserError: (...args) => this.#handleListen2('common_notifyUserError', ...args),
-			common_notifyUserWarning: (...args) => this.#handleListen2('common_notifyUserWarning', ...args),
-			common_notifyUserInfo: (...args) => this.#handleListen2('common_notifyUserInfo', ...args),
+			common_notifyUserError: (...args) => this.#handleVoidFunctionCall('common_notifyUserError', ...args),
+			common_notifyUserWarning: (...args) => this.#handleVoidFunctionCall('common_notifyUserWarning', ...args),
+			common_notifyUserInfo: (...args) => this.#handleVoidFunctionCall('common_notifyUserInfo', ...args),
 
-			packageInfo_getPackageInfo: async (...args) => this.#handleListen('packageInfo_getPackageInfo', ...args),
+			packageInfo_getPackageInfo: async (...args) =>
+				this.#handleFunctionCall('packageInfo_getPackageInfo', ...args),
 			packageInfo_hackGetMediaObjectDuration: async (...args) =>
-				this.#handleListen('packageInfo_hackGetMediaObjectDuration', ...args),
-			studio_getStudioMappings: async (...args) => this.#handleListen('studio_getStudioMappings', ...args),
+				this.#handleFunctionCall('packageInfo_hackGetMediaObjectDuration', ...args),
+			studio_getStudioMappings: async (...args) => this.#handleFunctionCall('studio_getStudioMappings', ...args),
 		}
 	}
 
-	async #runProxied<T extends keyof SofieToBlueprintMethods>(
+	async #callBlueprintMethod<T extends keyof SofieToBlueprintMethods>(
 		name: T,
 		invocationId: string,
 		data: ParamsIfReturnIsValid<SofieToBlueprintMethods[T]>[0]
@@ -210,7 +219,7 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 			...this.#packageInfoContextMethods(context),
 		})
 
-		return this.#runProxied('studio_getBaseline', invocationId, {
+		return this.#callBlueprintMethod('studio_getBaseline', invocationId, {
 			identifier: context._contextIdentifier,
 			studioId: context.studioId,
 			studioConfig: context.getStudioConfig() as IBlueprintConfig,
@@ -230,7 +239,7 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 			...this.#studioUserContextMethods(context),
 		})
 
-		return this.#runProxied('studio_getShowStyleId', invocationId, {
+		return this.#callBlueprintMethod('studio_getShowStyleId', invocationId, {
 			identifier: context._contextIdentifier,
 			studioId: context.studioId,
 			studioConfig: context.getStudioConfig() as IBlueprintConfig,
@@ -255,7 +264,7 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 			...this.#studioUserContextMethods(context),
 		})
 
-		return this.#runProxied('studio_getRundownPlaylistInfo', invocationId, {
+		return this.#callBlueprintMethod('studio_getRundownPlaylistInfo', invocationId, {
 			identifier: context._contextIdentifier,
 			studioId: context.studioId,
 			studioConfig: context.getStudioConfig() as IBlueprintConfig,
@@ -272,7 +281,7 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 
 		// TODO - handle this method being optional
 
-		return this.#runProxied('studio_validateConfig', invocationId, {
+		return this.#callBlueprintMethod('studio_validateConfig', invocationId, {
 			identifier: context._contextIdentifier,
 			config,
 		})
@@ -293,7 +302,7 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 
 		// TODO - handle this method being optional
 
-		return this.#runProxied('studio_applyConfig', invocationId, {
+		return this.#callBlueprintMethod('studio_applyConfig', invocationId, {
 			identifier: context._contextIdentifier,
 			config,
 			coreConfig,
@@ -312,7 +321,7 @@ export class ProxiedStudioBlueprint implements StudioBlueprintManifest {
 
 		// TODO - handle this method being optional
 
-		return this.#runProxied('studio_preprocessConfig', invocationId, {
+		return this.#callBlueprintMethod('studio_preprocessConfig', invocationId, {
 			identifier: context._contextIdentifier,
 			config,
 			coreConfig,

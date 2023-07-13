@@ -18,6 +18,7 @@ export interface WrappedStudioBlueprint {
 	blueprintDoc: Blueprint | undefined
 	blueprintId: BlueprintId
 	blueprint: StudioBlueprintManifest
+	dispose: (() => void) | undefined
 }
 export interface WrappedShowStyleBlueprint {
 	blueprintId: BlueprintId
