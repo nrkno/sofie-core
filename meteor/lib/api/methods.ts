@@ -65,6 +65,7 @@ export const MeteorCall: IMeteorCall = {
 	organization: makeMethods(OrganizationAPIMethods),
 	system: makeMethods(SystemAPIMethods),
 }
+
 function makeMethods<Enum extends { [key: string]: string }>(
 	methods: Enum,
 	/** (Optional) An array of methodnames. Calls to these methods won't be retried in the case of a loss-of-connection for the client. */

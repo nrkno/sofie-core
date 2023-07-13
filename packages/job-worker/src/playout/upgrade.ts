@@ -30,7 +30,7 @@ export async function handleBlueprintUpgradeForStudio(context: JobContext, _data
 	})
 	const rawBlueprintConfig = applyAndValidateOverrides(context.studio.blueprintConfigWithOverrides).obj
 
-	const result = blueprint.blueprint.applyConfig(
+	const result = await blueprint.blueprint.applyConfig(
 		blueprintContext,
 		clone(rawBlueprintConfig),
 		compileCoreConfigValues(context.studio.settings)
@@ -113,7 +113,7 @@ export async function handleBlueprintValidateConfigForStudio(
 	const rawBlueprintConfig = applyAndValidateOverrides(context.studio.blueprintConfigWithOverrides).obj
 
 	// TODO - why is this clone necessary?
-	const messages = clone(blueprint.blueprint.validateConfig(blueprintContext, rawBlueprintConfig))
+	const messages = clone(await blueprint.blueprint.validateConfig(blueprintContext, rawBlueprintConfig))
 
 	return {
 		messages: messages.map((msg) => ({

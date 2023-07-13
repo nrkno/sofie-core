@@ -86,7 +86,7 @@ describe('Test blueprint api context', () => {
 			const context = new PartEventContext(
 				'fake',
 				jobContext.studio,
-				jobContext.getStudioBlueprintConfig(),
+				await jobContext.getStudioBlueprintConfig(),
 				showStyle,
 				showStyleConfig,
 				rundown,

@@ -4,6 +4,7 @@
 		"packages": [
 			"*-integration",
 			"*-gateway",
+			"blueprints-proxy",
 			"corelib",
 			"openapi",
 			"shared-lib",

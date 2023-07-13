@@ -18,6 +18,7 @@ export interface WrappedStudioBlueprint {
 	blueprintDoc: Blueprint | undefined
 	blueprintId: BlueprintId
 	blueprint: StudioBlueprintManifest
+	dispose: (() => void) | undefined
 }
 export interface WrappedShowStyleBlueprint {
 	blueprintId: BlueprintId
@@ -49,6 +50,13 @@ export async function parseBlueprintDocument(
 	blueprint: Blueprint | undefined
 ): Promise<ReadonlyDeep<SomeBlueprintManifest> | undefined> {
 	if (!blueprint) return undefined
+
+	// // nocommit - do this based on a config
+	// if (blueprint.blueprintType === BlueprintManifestType.SHOWSTYLE) {
+	// 	throw new Error(`not implemented`)
+	// } else if (blueprint.blueprintType === BlueprintManifestType.STUDIO) {
+	// 	throw new Error(`not implemented`)
+	// }
 
 	if (blueprint.code) {
 		let manifest: SomeBlueprintManifest

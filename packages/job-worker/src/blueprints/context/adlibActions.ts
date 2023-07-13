@@ -68,7 +68,7 @@ import { isTooCloseToAutonext } from '../../playout/lib'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { moveNextPart } from '../../playout/moveNextPart'
 import _ = require('underscore')
-import { ProcessedShowStyleConfig } from '../config'
+import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../config'
 import { DatastorePersistenceMode } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
 import { getDatastoreId } from '../../playout/datastore'
 import { executePeripheralDeviceAction, listPlayoutDevices } from '../../peripheralDevice'
@@ -87,10 +87,11 @@ export class DatastoreActionExecutionContext
 	constructor(
 		contextInfo: UserContextInfo,
 		context: JobContext,
+		studioConfig: ProcessedStudioConfig,
 		showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 		watchedPackages: WatchedPackagesHelper
 	) {
-		super(contextInfo, context, showStyle, watchedPackages)
+		super(contextInfo, context, studioConfig, showStyle, watchedPackages)
 		this._context = context
 	}
 
@@ -142,12 +143,13 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		contextInfo: UserContextInfo,
 		context: JobContext,
 		cache: CacheForPlayout,
+		studioConfig: ProcessedStudioConfig,
 		showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 		_showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: DBRundown,
 		watchedPackages: WatchedPackagesHelper
 	) {
-		super(contextInfo, context, showStyle, watchedPackages)
+		super(contextInfo, context, studioConfig, showStyle, watchedPackages)
 		this._context = context
 		this._cache = cache
 		this.rundown = rundown

@@ -95,7 +95,7 @@ export interface StudioCacheContext {
 	 * Processed Blueprint config for the studio the job belongs to
 	 * @returns Processed configuration blob
 	 */
-	getStudioBlueprintConfig(): ProcessedStudioConfig
+	getStudioBlueprintConfig(): Promise<ProcessedStudioConfig>
 
 	/**
 	 * Get the ShowStyleBases that are allowed in the Studio

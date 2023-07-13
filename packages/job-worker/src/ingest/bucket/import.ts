@@ -74,7 +74,7 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 		if (!showStyleCompound)
 			throw new Error(`Unable to create a ShowStyleCompound for ${showStyleBase._id}, ${showStyleVariant._id} `)
 
-		const rawAdlib = generateBucketAdlibForVariant(context, blueprint, showStyleCompound, data.payload)
+		const rawAdlib = await generateBucketAdlibForVariant(context, blueprint, showStyleCompound, data.payload)
 
 		if (rawAdlib) {
 			const importVersions: RundownImportVersions = {
@@ -172,12 +172,12 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 	await Promise.all(ps)
 }
 
-function generateBucketAdlibForVariant(
+async function generateBucketAdlibForVariant(
 	context: JobContext,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 	payload: IngestAdlib
-): IBlueprintAdLibPiece | IBlueprintActionManifest | null {
+): Promise<IBlueprintAdLibPiece | IBlueprintActionManifest | null> {
 	const watchedPackages = WatchedPackagesHelper.empty(context)
 
 	const contextForVariant = new ShowStyleUserContext(
@@ -187,6 +187,7 @@ function generateBucketAdlibForVariant(
 			tempSendUserNotesIntoBlackHole: true, // TODO-CONTEXT
 		},
 		context,
+		await context.getStudioBlueprintConfig(),
 		showStyleCompound,
 		watchedPackages
 	)

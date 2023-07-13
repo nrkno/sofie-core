@@ -64,11 +64,13 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 		return this.cacheData.studioBlueprint
 	}
 
-	getStudioBlueprintConfig(): ProcessedStudioConfig {
+	async getStudioBlueprintConfig(): Promise<ProcessedStudioConfig> {
 		if (!this.cacheData.studioBlueprintConfig) {
-			this.cacheData.studioBlueprintConfig = deepFreeze(
-				clone(preprocessStudioConfig(this.cacheData.studio, this.cacheData.studioBlueprint.blueprint) ?? null)
+			const receivedConfig = await preprocessStudioConfig(
+				this.cacheData.studio,
+				this.cacheData.studioBlueprint.blueprint
 			)
+			this.cacheData.studioBlueprintConfig = deepFreeze(clone(receivedConfig ?? null))
 		}
 
 		return this.cacheData.studioBlueprintConfig

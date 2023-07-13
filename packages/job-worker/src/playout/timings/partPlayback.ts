@@ -81,7 +81,7 @@ export async function onPartPlaybackStarted(
 				showStyleRundown.showStyleBaseId
 			)
 			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
-			updatePartInstanceOnTake(
+			await updatePartInstanceOnTake(
 				context,
 				cache,
 				showStyle,

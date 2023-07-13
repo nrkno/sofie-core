@@ -160,6 +160,7 @@ export async function syncChangesToPartInstances(
 					},
 					cache.Playlist.doc.activationId,
 					context.studio,
+					await context.getStudioBlueprintConfig(),
 					showStyle,
 					rundown,
 					existingPartInstance,

@@ -36,18 +36,18 @@ export const DefaultStudioBlueprint: ReadonlyDeep<StudioBlueprintManifest> = dee
 	},
 
 	/** Returns the items used to build the baseline (default state) of a studio, this is the baseline used when there's no active rundown */
-	getBaseline(_context: IStudioBaselineContext): BlueprintResultStudioBaseline {
+	async getBaseline(_context: IStudioBaselineContext): Promise<BlueprintResultStudioBaseline> {
 		return {
 			timelineObjects: [],
 		}
 	},
 
 	/** Returns the id of the show style to use for a rundown, return null to ignore that rundown */
-	getShowStyleId(
+	async getShowStyleId(
 		_context: IStudioUserContext,
 		_showStyles: ReadonlyDeep<Array<IBlueprintShowStyleBase>>,
 		_ingestRundown: ExtendedIngestRundown
-	): string | null {
+	): Promise<string | null> {
 		return null
 	},
 })

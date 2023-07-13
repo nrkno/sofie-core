@@ -77,7 +77,7 @@ describe('Rundown', () => {
 		const allRundowns = await context.mockCollections.Rundowns.findFetch({
 			playlistId: playlist0._id,
 		})
-		const rundownPlaylist = produceRundownPlaylistInfoFromRundown(
+		const rundownPlaylist = await produceRundownPlaylistInfoFromRundown(
 			context,
 			undefined,
 			playlist0,

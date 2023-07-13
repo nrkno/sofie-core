@@ -10,18 +10,20 @@ import { getCurrentTime } from '../../lib'
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { ContextInfo } from './CommonContext'
 import { RundownContext } from './RundownContext'
+import { ProcessedStudioConfig } from '../config'
 
 export class RundownDataChangedEventContext extends RundownContext implements IRundownDataChangedEventContext {
 	constructor(
 		protected readonly context: JobContext,
 		contextInfo: ContextInfo,
+		studioConfig: ProcessedStudioConfig,
 		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>
 	) {
 		super(
 			contextInfo,
 			context.studio,
-			context.getStudioBlueprintConfig(),
+			studioConfig,
 			showStyleCompound,
 			context.getShowStyleBlueprintConfig(showStyleCompound),
 			rundown

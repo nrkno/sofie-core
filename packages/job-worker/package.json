@@ -42,6 +42,7 @@
 	"dependencies": {
 		"@slack/webhook": "^6.1.0",
 		"@sofie-automation/blueprints-integration": "1.51.0-in-development",
+		"@sofie-automation/blueprints-proxy": "1.51.0-in-development",
 		"@sofie-automation/corelib": "1.51.0-in-development",
 		"@sofie-automation/shared-lib": "1.51.0-in-development",
 		"amqplib": "^0.10.3",
@@ -51,6 +52,7 @@
 		"mongodb": "^5.5.0",
 		"p-lazy": "^3.1.0",
 		"p-timeout": "^4.1.0",
+		"socket.io-client": "^4.7.1",
 		"superfly-timeline": "^8.3.1",
 		"threadedclass": "^1.2.1",
 		"tslib": "^2.6.0",
@@ -67,5 +69,8 @@
 			"yarn lint:raw"
 		]
 	},
-	"packageManager": "yarn@3.5.0"
+	"packageManager": "yarn@3.5.0",
+	"devDependencies": {
+		"@types/socket.io-client": "^3.0.0"
+	}
 }

@@ -9,6 +9,7 @@
 		{ "path": "corelib" },
 		{ "path": "shared-lib" },
 		{ "path": "openapi" },
-		{ "path": "live-status-gateway" }
+		{ "path": "live-status-gateway" },
+		{ "path": "blueprints-proxy" }
 	]
 }
