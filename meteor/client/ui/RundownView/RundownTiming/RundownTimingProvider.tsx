@@ -55,7 +55,7 @@ interface IRundownTimingProviderTrackedProps {
 
 type MinimalPartInstance = Pick<
 	PartInstance,
-	'_id' | 'rundownId' | 'segmentId' | 'segmentPlayoutId' | 'takeCount' | 'part' | 'timings' | 'orphaned'
+	'_id' | 'isTemporary' | 'rundownId' | 'segmentId' | 'segmentPlayoutId' | 'takeCount' | 'part' | 'timings' | 'orphaned'
 >
 
 /**
@@ -94,6 +94,7 @@ export const RundownTimingProvider = withTracker<
 			_id: 1,
 			rundownId: 1,
 			segmentId: 1,
+			isTemporary: 1,
 			segmentPlayoutId: 1,
 			takeCount: 1,
 			part: 1,
@@ -103,7 +104,15 @@ export const RundownTimingProvider = withTracker<
 	}) as Array<
 		Pick<
 			PartInstance,
-			'_id' | 'rundownId' | 'segmentId' | 'segmentPlayoutId' | 'takeCount' | 'part' | 'timings' | 'orphaned'
+			| '_id'
+			| 'rundownId'
+			| 'segmentId'
+			| 'isTemporary'
+			| 'segmentPlayoutId'
+			| 'takeCount'
+			| 'part'
+			| 'timings'
+			| 'orphaned'
 		>
 	>
 

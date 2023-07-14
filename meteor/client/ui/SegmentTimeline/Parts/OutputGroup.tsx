@@ -22,7 +22,7 @@ interface IOutputGroupProps {
 	pieces: CalculateTimingsPiece[]
 	startsAt: number
 	duration: number
-	expectedDuration: number
+	displayDuration: number
 	timeScale: number
 	collapsedOutputs: {
 		[key: string]: boolean
@@ -73,7 +73,7 @@ export function OutputGroup(props: IOutputGroupProps): JSX.Element {
 							pieces={props.pieces}
 							startsAt={props.startsAt}
 							duration={props.duration}
-							expectedDuration={props.expectedDuration}
+							displayDuration={props.displayDuration}
 							timeScale={props.timeScale}
 							autoNextPart={props.autoNextPart}
 							liveLinePadding={props.liveLinePadding}
@@ -109,7 +109,7 @@ export function OutputGroup(props: IOutputGroupProps): JSX.Element {
 						pieces={props.pieces}
 						startsAt={props.startsAt}
 						duration={props.duration}
-						expectedDuration={props.expectedDuration}
+						displayDuration={props.displayDuration}
 						timeScale={props.timeScale}
 						autoNextPart={props.autoNextPart}
 						liveLinePadding={props.liveLinePadding}

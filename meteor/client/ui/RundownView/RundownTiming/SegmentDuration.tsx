@@ -9,6 +9,7 @@ import {
 	CalculateTimingsPiece,
 } from '@sofie-automation/corelib/dist/playout/timings'
 import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { getPartInstanceTimingId } from '../../../lib/rundownTiming'
 
 interface ISegmentDurationProps {
 	segmentId: SegmentId
@@ -53,7 +54,7 @@ export const SegmentDuration = withTiming<ISegmentDurationProps, {}>()(function 
 			})
 		}
 		props.parts.forEach((part) => {
-			playedOut += (!part.instance.part.untimed ? partPlayed[unprotectString(part.instance.part._id)] : 0) || 0
+			playedOut += (!part.instance.part.untimed ? partPlayed[getPartInstanceTimingId(part.instance)] : 0) || 0
 		})
 	}
 

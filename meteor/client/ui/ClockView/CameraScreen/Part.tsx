@@ -5,6 +5,7 @@ import { AreaZoom } from '.'
 import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
 import { PieceExtended } from '../../../../lib/Rundown'
 import { getAllowSpeaking, getAllowVibrating } from '../../../lib/localStorage'
+import { getPartInstanceTimingId } from '../../../lib/rundownTiming'
 import { AutoNextStatus } from '../../RundownView/RundownTiming/AutoNextStatus'
 import { CurrentPartRemaining } from '../../RundownView/RundownTiming/CurrentPartRemaining'
 import { PartCountdown } from '../../RundownView/RundownTiming/PartCountdown'
@@ -29,8 +30,8 @@ export const Part = withTiming<IProps, {}>({
 
 	let left =
 		timingDurations.partCountdown?.[unprotectString(part.partId)] ??
-		0 - (timingDurations.partPlayed?.[unprotectString(part.partId)] ?? 0)
-	let width: number | null = timingDurations.partDisplayDurations?.[unprotectString(part.partId)] ?? 0
+		0 - (timingDurations.partPlayed?.[getPartInstanceTimingId(part.instance)] ?? 0)
+	let width: number | null = timingDurations.partDisplayDurations?.[getPartInstanceTimingId(part.instance)] ?? 0
 
 	if (isLive) {
 		left = 0

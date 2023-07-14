@@ -33,7 +33,7 @@ import { wrapPartToTemporaryInstance } from '../../../lib/collections/PartInstan
 
 import { SegmentTimelineSmallPartFlag } from './SmallParts/SegmentTimelineSmallPartFlag'
 import { UIStateStorage } from '../../lib/UIStateStorage'
-import { RundownTimingContext } from '../../lib/rundownTiming'
+import { getPartInstanceTimingId, RundownTimingContext } from '../../lib/rundownTiming'
 import { IOutputLayer, ISourceLayer, NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { SegmentTimelineZoomButtons } from './SegmentTimelineZoomButtons'
 import { SegmentViewMode } from '../SegmentContainer/SegmentViewModes'
@@ -169,11 +169,12 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 		let total = 0
 		if (this.context && this.context.durations) {
 			const durations = this.context.durations as RundownTimingContext
-			this.props.parts.forEach((item) => {
+			this.props.parts.forEach((partExtended) => {
 				// total += durations.partDurations ? durations.partDurations[item._id] : (item.duration || item.renderedDuration || 1)
+				const partInstanceTimingId = getPartInstanceTimingId(partExtended.instance)
 				const duration = Math.max(
-					item.instance.timings?.duration || item.renderedDuration || 0,
-					(durations.partDisplayDurations && durations.partDisplayDurations[unprotectString(item.instance.part._id)]) ||
+					partExtended.instance.timings?.duration || partExtended.renderedDuration || 0,
+					(durations.partDisplayDurations && durations.partDisplayDurations[partInstanceTimingId]) ||
 						Settings.defaultDisplayDuration
 				)
 				total += duration
@@ -736,7 +737,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 							pieces={this.props.pieces}
 							followingPart={part}
 							livePosition={this.props.livePosition}
-							firstPartInSegmentId={firstPartInSegment.partId}
+							firstPartInSegment={firstPartInSegment}
 							sourceLayers={this.props.segment.sourceLayers}
 							timeToPixelRatio={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
@@ -798,7 +799,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 							pieces={this.props.pieces}
 							followingPart={undefined}
 							livePosition={this.props.livePosition}
-							firstPartInSegmentId={firstPartInSegment.partId}
+							firstPartInSegment={firstPartInSegment}
 							sourceLayers={this.props.segment.sourceLayers}
 							timeToPixelRatio={this.props.timeScale}
 							autoNextPart={this.props.autoNextPart}
@@ -962,8 +963,8 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 					0,
 					(firstPartInSegment &&
 						this.props.timingDurations.partDisplayStartsAt &&
-						this.props.timingDurations.partDisplayStartsAt[unprotectString(livePart.instance.part._id)] -
-							this.props.timingDurations.partDisplayStartsAt[unprotectString(firstPartInSegment.instance.part._id)]) ||
+						this.props.timingDurations.partDisplayStartsAt[getPartInstanceTimingId(livePart.instance)] -
+							this.props.timingDurations.partDisplayStartsAt[getPartInstanceTimingId(firstPartInSegment.instance)]) ||
 						0
 			  )
 			: 0
@@ -1220,7 +1221,7 @@ export const SegmentTimeline = withTranslation()(
 				const livePart = props.parts.find(
 					(part) => part.instance._id === props.playlist.currentPartInfo?.partInstanceId
 				)
-				const livePartId = unprotectString(livePart?.instance.part._id)
+				const livePartId = livePart ? getPartInstanceTimingId(livePart.instance) : undefined
 				return [
 					livePartId ? (durations.partDisplayStartsAt || {})[livePartId] : undefined,
 					livePartId ? (durations.partDisplayDurations || {})[livePartId] : undefined,

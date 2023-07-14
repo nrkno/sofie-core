@@ -74,7 +74,7 @@ export const SegmentContextMenu = withTranslation()(
 							<>
 								<MenuItem
 									onClick={(e) => this.props.onSetNext(part.instance.part, e)}
-									disabled={isCurrentPart || !!part.instance.orphaned || !canSetAsNext}
+									disabled={!!part.instance.orphaned || !canSetAsNext}
 								>
 									<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span>
 									{startsAt !== null &&
