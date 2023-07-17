@@ -7,6 +7,7 @@ import { MeteorCall } from '../../../../lib/api/methods'
 import { getHelpMode } from '../../../lib/localStorage'
 import { useTranslation } from 'react-i18next'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 
 interface IStudioBaselineStatusProps {
 	studioId: StudioId
@@ -51,31 +52,33 @@ export function StudioBaselineStatus({ studioId }: IStudioBaselineStatusProps): 
 	}, [studioId])
 
 	return (
-		<div>
-			<p className="mhn">
-				{t('Studio Baseline needs update: ')}&nbsp;
-				{needsUpdate ? (
-					<Tooltip
-						overlay={t('Baseline needs reload, this studio may not work until reloaded')}
-						visible={getHelpMode()}
-						placement="right"
-					>
-						<span>{t('Yes')}</span>
-					</Tooltip>
-				) : (
-					t('No')
-				)}
-				{needsUpdate ? (
-					<span className="error-notice inline">
-						{t('Reload Baseline')} <FontAwesomeIcon icon={faExclamationTriangle} />
-					</span>
-				) : null}
-			</p>
-			<p className="mhn">
-				<button className="btn btn-primary" onClick={reloadBaseline}>
-					{t('Reload Baseline')}
-				</button>
-			</p>
-		</div>
+		<>
+			<div className="field">
+				<LabelActual label={t('Studio Baseline needs update: ')}></LabelActual>
+				<div className="mhn">
+					<p className="mhn mvn">
+						{needsUpdate ? (
+							<Tooltip
+								overlay={t('Baseline needs reload, this studio may not work until reloaded')}
+								visible={getHelpMode()}
+								placement="right"
+							>
+								<span>{t('Yes')}</span>
+							</Tooltip>
+						) : (
+							t('No')
+						)}
+					</p>
+					<button className="btn btn-primary mts" onClick={reloadBaseline}>
+						{t('Reload Baseline')}
+					</button>
+					{needsUpdate ? (
+						<span className="error-notice inline">
+							{t('Reload Baseline')} <FontAwesomeIcon icon={faExclamationTriangle} />
+						</span>
+					) : null}
+				</div>
+			</div>
+		</>
 	)
 }
