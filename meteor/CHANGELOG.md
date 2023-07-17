@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.50.0-in-testing.2](https://github.com/nrkno/sofie-core/compare/v1.50.0-in-testing.1...v1.50.0-in-testing.2) (2023-07-17)
+
+
+### Bug Fixes
+
+* **RundownList:** vertical line does not line up with horizontal on last Rundown in a Playlist ([d511ff6](https://github.com/nrkno/sofie-core/commit/d511ff6fb1484ec91cbe1703b7e01721087c2f4e))
+* **server-core-integration:** `autosubscribe` will resubscribe to collections using the same subscriptionId as when initially subscribed ([f0f3383](https://github.com/nrkno/sofie-core/commit/f0f33837b07b944abe320ae4a378641bba167a3c))
+* simplify executeFunction triggerWriteAccess() check ([0579716](https://github.com/nrkno/sofie-core/commit/0579716377294e35996511cc92f6a3672535d7d5))
+* some layout problems in the Settings that are only apparent when running in a clean system ([bac963d](https://github.com/nrkno/sofie-core/commit/bac963d2175592dd9a6fed02f8d04297f5ea184b))
+* terminate live-status-gateway if device has no studioId ([3303a99](https://github.com/nrkno/sofie-core/commit/3303a99bb7d703b5e35385a41f1ed0223c39b4ef))
+* typo in live-status-gateway peripheralDeviceForDevice subscription ([b311602](https://github.com/nrkno/sofie-core/commit/b3116021064729e768867921ff97eed01a7f437d))
+
 ## [1.50.0-in-testing.1](https://github.com/nrkno/sofie-core/compare/v1.50.0-in-testing.0...v1.50.0-in-testing.1) (2023-07-05)
 
 
