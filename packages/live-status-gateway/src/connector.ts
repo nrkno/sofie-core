@@ -41,6 +41,8 @@ export class Connector {
 			await this.coreHandler.init(config.core, this._process)
 			this._logger.info('Core initialized')
 
+			if (!this.coreHandler.studioId) throw new Error('Device has no studioId')
+
 			this._liveStatusServer = new LiveStatusServer(this._logger, this.coreHandler)
 			await this._liveStatusServer.init()
 

@@ -308,7 +308,8 @@
 					}
 
 					&:last-child::after {
-						height: 50%;
+						// this should match the `&::before`'s `top` property, to create an angled line
+						height: calc(var(--leftGutterWidth) / 2);
 					}
 				}
 			}

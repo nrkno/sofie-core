@@ -61,6 +61,7 @@ export namespace PeripheralDeviceContentWriteAccess {
 	 * Check if a user is allowed to execute a PeripheralDevice function in a Studio
 	 */
 	export async function executeFunction(cred0: Credentials, deviceId: PeripheralDeviceId): Promise<ContentAccess> {
+		triggerWriteAccess()
 		const device = await PeripheralDevices.findOneAsync(deviceId)
 		if (!device) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
 

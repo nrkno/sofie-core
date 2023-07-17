@@ -111,11 +111,8 @@ export class CoreHandler {
 		this.logger.info('Core: Setting up subscriptions..')
 		this.logger.info('DeviceId: ' + this.core.deviceId)
 
-		await Promise.all([
-			this.core.autoSubscribe('peripheralDeviceForDevice', {
-				_id: this.core.deviceId,
-			}),
-		])
+		await this.core.autoSubscribe('peripheralDeviceForDevice', this.core.deviceId)
+
 		this.logger.info('Core: Subscriptions are set up!')
 		if (this._observers.length) {
 			this.logger.info('CoreMos: Clearing observers..')

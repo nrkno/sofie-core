@@ -5341,11 +5341,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sofie-automation/blueprints-integration@1.50.0-in-development, @sofie-automation/blueprints-integration@workspace:blueprints-integration":
+"@sofie-automation/blueprints-integration@1.50.0-in-testing.2, @sofie-automation/blueprints-integration@workspace:blueprints-integration":
   version: 0.0.0-use.local
   resolution: "@sofie-automation/blueprints-integration@workspace:blueprints-integration"
   dependencies:
-    "@sofie-automation/shared-lib": 1.50.0-in-development
+    "@sofie-automation/shared-lib": 1.50.0-in-testing.2
     tslib: ^2.4.0
     type-fest: ^2.19.0
   languageName: unknown
@@ -5382,12 +5382,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sofie-automation/corelib@1.50.0-in-development, @sofie-automation/corelib@workspace:corelib":
+"@sofie-automation/corelib@1.50.0-in-testing.2, @sofie-automation/corelib@workspace:corelib":
   version: 0.0.0-use.local
   resolution: "@sofie-automation/corelib@workspace:corelib"
   dependencies:
-    "@sofie-automation/blueprints-integration": 1.50.0-in-development
-    "@sofie-automation/shared-lib": 1.50.0-in-development
+    "@sofie-automation/blueprints-integration": 1.50.0-in-testing.2
+    "@sofie-automation/shared-lib": 1.50.0-in-testing.2
     fast-clone: ^1.5.13
     i18next: ^21.9.1
     influx: ^5.9.3
@@ -5418,9 +5418,9 @@ __metadata:
   resolution: "@sofie-automation/job-worker@workspace:job-worker"
   dependencies:
     "@slack/webhook": ^6.1.0
-    "@sofie-automation/blueprints-integration": 1.50.0-in-development
-    "@sofie-automation/corelib": 1.50.0-in-development
-    "@sofie-automation/shared-lib": 1.50.0-in-development
+    "@sofie-automation/blueprints-integration": 1.50.0-in-testing.2
+    "@sofie-automation/corelib": 1.50.0-in-testing.2
+    "@sofie-automation/shared-lib": 1.50.0-in-testing.2
     amqplib: ^0.10.3
     deepmerge: ^4.3.1
     elastic-apm-node: ^3.43.0
@@ -5449,11 +5449,11 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@sofie-automation/server-core-integration@1.50.0-in-development, @sofie-automation/server-core-integration@workspace:server-core-integration":
+"@sofie-automation/server-core-integration@1.50.0-in-testing.2, @sofie-automation/server-core-integration@workspace:server-core-integration":
   version: 0.0.0-use.local
   resolution: "@sofie-automation/server-core-integration@workspace:server-core-integration"
   dependencies:
-    "@sofie-automation/shared-lib": 1.50.0-in-development
+    "@sofie-automation/shared-lib": 1.50.0-in-testing.2
     ejson: ^2.2.3
     eventemitter3: ^4.0.7
     faye-websocket: ^0.11.4
@@ -5463,12 +5463,12 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@sofie-automation/shared-lib@1.50.0-in-development, @sofie-automation/shared-lib@workspace:shared-lib":
+"@sofie-automation/shared-lib@1.50.0-in-testing.2, @sofie-automation/shared-lib@workspace:shared-lib":
   version: 0.0.0-use.local
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
     "@mos-connection/model": ^3.0.4
-    timeline-state-resolver-types: 8.0.0-nightly-release50-20230615-051635-c51460271.0
+    timeline-state-resolver-types: 9.0.0-release50.5
     tslib: ^2.4.0
     type-fest: ^2.19.0
   languageName: unknown
@@ -15360,10 +15360,10 @@ asn1@evs-broadcast/node-asn1:
     "@asyncapi/generator": 1.9.13
     "@asyncapi/html-template": 0.26.0
     "@asyncapi/nodejs-ws-template": 0.9.25
-    "@sofie-automation/blueprints-integration": 1.50.0-in-development
-    "@sofie-automation/corelib": 1.50.0-in-development
-    "@sofie-automation/server-core-integration": 1.50.0-in-development
-    "@sofie-automation/shared-lib": 1.50.0-in-development
+    "@sofie-automation/blueprints-integration": 1.50.0-in-testing.2
+    "@sofie-automation/corelib": 1.50.0-in-testing.2
+    "@sofie-automation/server-core-integration": 1.50.0-in-testing.2
+    "@sofie-automation/shared-lib": 1.50.0-in-testing.2
     debug: ^4.3.2
     fast-clone: ^1.5.13
     influx: ^5.9.2
@@ -16441,8 +16441,8 @@ asn1@evs-broadcast/node-asn1:
   resolution: "mos-gateway@workspace:mos-gateway"
   dependencies:
     "@mos-connection/connector": ^3.0.4
-    "@sofie-automation/server-core-integration": 1.50.0-in-development
-    "@sofie-automation/shared-lib": 1.50.0-in-development
+    "@sofie-automation/server-core-integration": 1.50.0-in-testing.2
+    "@sofie-automation/shared-lib": 1.50.0-in-testing.2
     tslib: ^2.4.0
     type-fest: ^2.19.0
     underscore: ^1.13.4
@@ -18417,11 +18417,11 @@ asn1@evs-broadcast/node-asn1:
   version: 0.0.0-use.local
   resolution: "playout-gateway@workspace:playout-gateway"
   dependencies:
-    "@sofie-automation/server-core-integration": 1.50.0-in-development
-    "@sofie-automation/shared-lib": 1.50.0-in-development
+    "@sofie-automation/server-core-integration": 1.50.0-in-testing.2
+    "@sofie-automation/shared-lib": 1.50.0-in-testing.2
     debug: ^4.3.3
     influx: ^5.9.3
-    timeline-state-resolver: 8.0.0-nightly-release50-20230615-051635-c51460271.0
+    timeline-state-resolver: 9.0.0-release50.5
     tslib: ^2.4.0
     underscore: ^1.13.4
     winston: ^3.8.2
@@ -20617,7 +20617,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"semver@npm:7.3.8, semver@npm:7.x, semver@npm:^7.0.0, semver@npm:^7.1.1, semver@npm:^7.3.2, semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.3.7, semver@npm:^7.3.8":
+"semver@npm:7.3.8":
   version: 7.3.8
   resolution: "semver@npm:7.3.8"
   dependencies:
@@ -20628,23 +20628,23 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
+"semver@npm:7.x, semver@npm:^7.0.0, semver@npm:^7.1.1, semver@npm:^7.3.2, semver@npm:^7.3.4, semver@npm:^7.3.5, semver@npm:^7.3.7, semver@npm:^7.3.8, semver@npm:^7.5.0":
+  version: 7.5.3
+  resolution: "semver@npm:7.5.3"
+  dependencies:
+    lru-cache: ^6.0.0
+  bin:
+    semver: bin/semver.js
+  checksum: 9d58db16525e9f749ad0a696a1f27deabaa51f66e91d2fa2b0db3de3e9644e8677de3b7d7a03f4c15bc81521e0c3916d7369e0572dbde250d9bedf5194e2a8a7
+  languageName: node
+  linkType: hard
+
 "semver@npm:^6.0.0, semver@npm:^6.1.0, semver@npm:^6.1.1, semver@npm:^6.1.2, semver@npm:^6.2.0, semver@npm:^6.3.0":
   version: 6.3.0
   resolution: "semver@npm:6.3.0"
   bin:
     semver: ./bin/semver.js
   checksum: 1b26ecf6db9e8292dd90df4e781d91875c0dcc1b1909e70f5d12959a23c7eebb8f01ea581c00783bbee72ceeaad9505797c381756326073850dc36ed284b21b9
-  languageName: node
-  linkType: hard
-
-"semver@npm:^7.5.0":
-  version: 7.5.0
-  resolution: "semver@npm:7.5.0"
-  dependencies:
-    lru-cache: ^6.0.0
-  bin:
-    semver: bin/semver.js
-  checksum: 2d266937756689a76f124ffb4c1ea3e1bbb2b263219f90ada8a11aebebe1280b13bb76cca2ca96bdee3dbc554cbc0b24752eb895b2a51577aa644427e9229f2b
   languageName: node
   linkType: hard
 
@@ -22105,18 +22105,18 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230615-051635-c51460271.0":
-  version: 8.0.0-nightly-release50-20230615-051635-c51460271.0
-  resolution: "timeline-state-resolver-types@npm:8.0.0-nightly-release50-20230615-051635-c51460271.0"
+"timeline-state-resolver-types@npm:9.0.0-release50.5":
+  version: 9.0.0-release50.5
+  resolution: "timeline-state-resolver-types@npm:9.0.0-release50.5"
   dependencies:
     tslib: ^2.5.1
-  checksum: a8f23345e8f40778da03799801b997027f768676e55fce6785e5fdfcb09939fb26d52b1b09dfc026e5dbc827bc53264fceb809d5d32493acf243190c0352db7f
+  checksum: bb333705c2aaccc70698333e8d13b9b95d58a5767402270b9181fee7da22fc0732d95b950e77f24f1429c5e7c789e9604fd66f0e13ea52d801320f69337ecf1a
   languageName: node
   linkType: hard
 
-"timeline-state-resolver@npm:8.0.0-nightly-release50-20230615-051635-c51460271.0":
-  version: 8.0.0-nightly-release50-20230615-051635-c51460271.0
-  resolution: "timeline-state-resolver@npm:8.0.0-nightly-release50-20230615-051635-c51460271.0"
+"timeline-state-resolver@npm:9.0.0-release50.5":
+  version: 9.0.0-release50.5
+  resolution: "timeline-state-resolver@npm:9.0.0-release50.5"
   dependencies:
     "@tv2media/v-connection": ^7.3.0
     atem-connection: 2.4.0
@@ -22138,7 +22138,7 @@ asn1@evs-broadcast/node-asn1:
     sprintf-js: ^1.1.2
     superfly-timeline: ^8.3.1
     threadedclass: ^1.2.1
-    timeline-state-resolver-types: 8.0.0-nightly-release50-20230615-051635-c51460271.0
+    timeline-state-resolver-types: 9.0.0-release50.5
     tslib: ^2.5.1
     tv-automation-quantel-gateway-client: ^3.1.11-agent-debug-20230117-160455-c2c4ee4.0
     underscore: ^1.13.6
@@ -22146,7 +22146,7 @@ asn1@evs-broadcast/node-asn1:
     utf-8-validate: ^5.0.10
     ws: ^7.5.9
     xml-js: ^1.6.11
-  checksum: 898a1f1a02d33bb6e0c764b9c29df2544eb50b99782ec2d8c43cb714ab32980af2dec3d22d943aa420f29129d415d20fdf7767e5c91c931b70fc4955896c1eb5
+  checksum: 97517f91d36d0ebc3fd9ec4b30fa6c4a5a078702fc0a0161708bfbd91dbb18cd8d9a194366d0118ea4f450eb3b0e74c5325ed284a7a51736e07a11cdbea2aeba
   languageName: node
   linkType: hard
 
@@ -23490,14 +23490,14 @@ asn1@evs-broadcast/node-asn1:
   linkType: hard
 
 "vm2@npm:^3.9.14":
-  version: 3.9.14
-  resolution: "vm2@npm:3.9.14"
+  version: 3.9.19
+  resolution: "vm2@npm:3.9.19"
   dependencies:
     acorn: ^8.7.0
     acorn-walk: ^8.2.0
   bin:
     vm2: bin/vm2
-  checksum: 1ed7481e07ce8e03055101b382bfbf0d725a5c9b9bbe8bf75f71501cb43a6bd22f6a0a151975ff7cea8cad136d47e66d64f0a3248913f6d3ca3c405db12bacc0
+  checksum: fc6cf553134145cd7bb5246985bf242b056e3fb5ea71e2eef6710b2a5d6c6119cc6bc960435ff62480ee82efb43369be8f4db07b6690916ae7d3b2e714f395d8
   languageName: node
   linkType: hard
 

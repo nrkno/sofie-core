@@ -82,7 +82,9 @@ export async function executePeripheralDeviceFunctionWithCustomTimeout(
 						completed = true
 						result.manualReject(
 							new Error(
-								`Timeout after ${timeoutTime} ms when executing the function "${cmd.functionName}" on device "${cmd.deviceId}"`
+								`Timeout after ${timeoutTime} ms when executing the function "${
+									cmd.functionName ?? cmd.actionId
+								}" on device "${cmd.deviceId}"`
 							)
 						)
 					}

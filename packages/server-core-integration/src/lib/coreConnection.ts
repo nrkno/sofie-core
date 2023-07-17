@@ -303,6 +303,13 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 		return c
 	}
 	async subscribe(publicationName: string, ...params: Array<any>): Promise<string> {
+		return this.resubscribe(undefined, publicationName, ...params)
+	}
+	private async resubscribe(
+		existingSubscriptionId: string | undefined,
+		publicationName: string,
+		...params: Array<any>
+	): Promise<string> {
 		return new Promise((resolve, reject) => {
 			if (!this.ddp.ddpClient) {
 				reject('subscribe: DDP client is not initialized')
@@ -313,9 +320,12 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 					publicationName, // name of Meteor Publish function to subscribe to
 					params.concat([this._coreOptions.deviceToken]), // parameters used by the Publish function
 					() => {
+						// TODO - I think this callback has an error parameter?
+
 						// callback when the subscription is complete
 						resolve(subscriptionId)
-					}
+					},
+					existingSubscriptionId
 				)
 			} catch (e) {
 				reject(e)
@@ -438,8 +448,8 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 		})
 	}
 	private _renewAutoSubscriptions() {
-		_.each(this._autoSubscriptions, (sub) => {
-			this.subscribe(sub.publicationName, ...sub.params).catch((e) =>
+		_.each(this._autoSubscriptions, (sub, subId) => {
+			this.resubscribe(subId, sub.publicationName, ...sub.params).catch((e) =>
 				this._emitError('renewSubscr ' + sub.publicationName + ': ' + e)
 			)
 		})
