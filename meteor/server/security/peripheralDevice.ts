@@ -8,7 +8,7 @@ import { MongoQueryKey } from '@sofie-automation/corelib/dist/mongo'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { allowAccessToPeripheralDevice, allowAccessToPeripheralDeviceContent } from './lib/security'
 import { Settings } from '../../lib/Settings'
-import { triggerWriteAccess } from './lib/securityVerify'
+import { isInTestWrite, triggerWriteAccess } from './lib/securityVerify'
 import { profiler } from '../api/profiler'
 import { StudioContentWriteAccess } from './studio'
 import {
@@ -61,6 +61,23 @@ export namespace PeripheralDeviceContentWriteAccess {
 	 * Check if a user is allowed to execute a PeripheralDevice function in a Studio
 	 */
 	export async function executeFunction(cred0: Credentials, deviceId: PeripheralDeviceId): Promise<ContentAccess> {
+		// Check if this is a security check. If it is, trigger the write-access check and return early. We can't
+		// really do a proper security check for this method without actually having a PeripheralDevice configured
+		// anyway
+		if (isInTestWrite()) {
+			triggerWriteAccess()
+			return {
+				userId: null,
+				cred: {
+					organizationId: null,
+					userId: null,
+				},
+				device: {} as any,
+				deviceId: '' as any,
+				organizationId: null,
+			}
+		}
+
 		const device = await PeripheralDevices.findOneAsync(deviceId)
 		if (!device) throw new Meteor.Error(404, `PeripheralDevice "${deviceId}" not found`)
 

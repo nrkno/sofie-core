@@ -41,7 +41,7 @@ export const StudioGenericProperties = withTranslation()(
 					if (showStyleBase) {
 						buttons.push(
 							<RedirectToShowStyleButton
-								key={'settings-nevigation-' + showStyleBase.showStyleBase.name}
+								key={'settings-nevigation-' + showStyleBase.showStyleBase._id}
 								name={showStyleBase.showStyleBase.name}
 								id={showStyleBase.showStyleBase._id}
 							/>
@@ -60,7 +60,7 @@ export const StudioGenericProperties = withTranslation()(
 					<label className="field">
 						<LabelActual label={t('Studio Name')} />
 						{!this.props.studio.name ? (
-							<div className="error-notice inline">
+							<div className="error-notice">
 								{t('No name set')} <FontAwesomeIcon icon={faExclamationTriangle} />
 							</div>
 						) : null}
@@ -78,11 +78,6 @@ export const StudioGenericProperties = withTranslation()(
 					</label>
 					<div className="field">
 						{t('Select Compatible Show Styles')}
-						{!this.props.studio.supportedShowStyleBase.length ? (
-							<div className="error-notice inline">
-								{t('Show style not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
-							</div>
-						) : null}
 						<div className="mdi">
 							<EditAttribute
 								attribute="supportedShowStyleBase"
@@ -95,6 +90,11 @@ export const StudioGenericProperties = withTranslation()(
 							{this.renderShowStyleEditButtons()}
 							<NewShowStyleButton />
 						</div>
+						{!this.props.studio.supportedShowStyleBase.length ? (
+							<div className="error-notice">
+								{t('Show style not set')} <FontAwesomeIcon icon={faExclamationTriangle} />
+							</div>
+						) : null}
 					</div>
 					<label className="field">
 						<LabelActual label={t('Frame Rate')} />
@@ -246,9 +246,7 @@ export const StudioGenericProperties = withTranslation()(
 						/>
 					</label>
 
-					<div className="col c12 r1-c12">
-						<StudioBaselineStatus studioId={this.props.studio._id} />
-					</div>
+					<StudioBaselineStatus studioId={this.props.studio._id} />
 				</div>
 			)
 		}
@@ -268,7 +266,7 @@ const NewShowStyleButton = React.memo(function NewShowStyleButton() {
 	}
 
 	return (
-		<button className="btn btn-primary btn-add-new" onClick={onShowStyleAdd}>
+		<button className="btn btn-primary mts" onClick={onShowStyleAdd}>
 			New Show Style
 		</button>
 	)
@@ -283,7 +281,7 @@ const RedirectToShowStyleButton = React.memo(function RedirectToShowStyleButton(
 	const doRedirect = () => history.push('/settings/showStyleBase/' + props.id)
 
 	return (
-		<button className="btn btn-primary btn-add-new" onClick={doRedirect}>
+		<button className="btn mrs mts" onClick={doRedirect}>
 			Edit {props.name}
 		</button>
 	)
