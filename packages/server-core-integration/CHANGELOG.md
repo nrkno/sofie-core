@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.50.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.1...v1.50.0-in-testing.2) (2023-07-17)
+
+
+### Bug Fixes
+
+* **server-core-integration:** `autosubscribe` will resubscribe to collections using the same subscriptionId as when initially subscribed ([f0f3383](https://github.com/nrkno/tv-automation-server-core/commit/f0f33837b07b944abe320ae4a378641bba167a3c))
+
+
+
+
+
 # [1.50.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.0...v1.50.0-in-testing.1) (2023-07-05)
 
 **Note:** Version bump only for package @sofie-automation/server-core-integration
