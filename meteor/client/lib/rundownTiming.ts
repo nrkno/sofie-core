@@ -791,15 +791,18 @@ export function getPartInstanceTimingId(
 	return !partInstance.isTemporary ? unprotectString(partInstance._id) : unprotectString(partInstance.part._id)
 }
 
+/**
+ * Get a timing value from a timing context map for a given (temporary) PartInstance. Will return `null` if not found.
+ */
 export function getPartInstanceTimingValue(
 	values: Record<string, number> | undefined,
 	partInstance: Pick<PartInstance, '_id' | 'isTemporary'> & { part: Pick<DBPart, '_id'> }
-): number {
-	if (!values) return Number.NaN
+): number | null {
+	if (!values) return null
 	if (partInstance.isTemporary) {
-		return values[unprotectString(partInstance.part._id)] ?? Number.NaN
+		return values[unprotectString(partInstance.part._id)] ?? null
 	}
-	return values[unprotectString(partInstance._id)] ?? values[unprotectString(partInstance.part._id)] ?? Number.NaN
+	return values[unprotectString(partInstance._id)] ?? values[unprotectString(partInstance.part._id)] ?? null
 }
 
 export function getPlaylistTimingDiff(

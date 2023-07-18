@@ -387,17 +387,21 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 				0,
 				(props.lastPartInSegment &&
 					props.firstPartInSegment &&
-					getPartInstanceTimingValue(props.timingDurations.partDisplayStartsAt, props.lastPartInSegment.instance) -
-						getPartInstanceTimingValue(props.timingDurations.partDisplayStartsAt, props.firstPartInSegment.instance) +
-						getPartInstanceTimingValue(props.timingDurations.partDisplayDurations, props.lastPartInSegment.instance)) ||
+					(getPartInstanceTimingValue(props.timingDurations.partDisplayStartsAt, props.lastPartInSegment.instance) ??
+						0) -
+						(getPartInstanceTimingValue(props.timingDurations.partDisplayStartsAt, props.firstPartInSegment.instance) ??
+							0) +
+						(getPartInstanceTimingValue(props.timingDurations.partDisplayDurations, props.lastPartInSegment.instance) ??
+							0)) ||
 					0
 			)
 		}
 		return Math.max(
 			0,
 			(props.firstPartInSegment &&
-				getPartInstanceTimingValue(props.timingDurations.partDisplayStartsAt, props.part.instance) -
-					getPartInstanceTimingValue(props.timingDurations.partDisplayStartsAt, props.firstPartInSegment.instance)) ||
+				(getPartInstanceTimingValue(props.timingDurations.partDisplayStartsAt, props.part.instance) ?? 0) -
+					(getPartInstanceTimingValue(props.timingDurations.partDisplayStartsAt, props.firstPartInSegment.instance) ??
+						0)) ||
 				0
 		)
 	}
