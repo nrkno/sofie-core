@@ -11,6 +11,7 @@ import { EvaluationView } from './Status/Evaluations'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { PubSub } from '../../lib/api/pubsub'
 import { ExpectedPackagesStatus } from './Status/package-status'
+import { MediaStatus } from './Status/MediaStatus'
 
 interface IStatusMenuProps {
 	match?: any
@@ -105,7 +106,8 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 							<Switch>
 								{/* <Route path='/status' exact component={WelcomeToStatus} /> */}
 								<Route path="/status/messages" component={ExternalMessages} />
-								<Route path="/status/media" component={MediaManagerStatus} />
+								<Route path="/status/media" component={MediaStatus} />
+								<Route path="/status/media-legacy" component={MediaManagerStatus} />
 								<Route path="/status/expected-packages" component={ExpectedPackagesStatus} />
 								<Route path="/status/system" component={SystemStatus} />
 								<Route path="/status/userLog" component={UserActivity} />
