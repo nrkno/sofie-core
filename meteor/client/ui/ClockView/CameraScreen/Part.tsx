@@ -37,11 +37,11 @@ export const Part = withTiming<IProps, {}>({
 		left = 0
 		width =
 			timingDurations.remainingTimeOnCurrentPart !== undefined
-				? Math.min(0, timingDurations.remainingTimeOnCurrentPart)
+				? Math.max(0, timingDurations.remainingTimeOnCurrentPart)
 				: null
 	}
 
-	if (!part.instance.part.expectedDuration) {
+	if (!part.instance.part.expectedDuration && !part.instance.part.displayDurationGroup) {
 		width = null
 	}
 
