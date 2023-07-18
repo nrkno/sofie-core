@@ -489,9 +489,11 @@ export class RundownTimingCalculator {
 				}
 
 				if (!rundownExpectedDurations[unprotectString(partInstance.part.rundownId)]) {
-					rundownExpectedDurations[unprotectString(partInstance.part.rundownId)] = partExpectedDuration
+					rundownExpectedDurations[unprotectString(partInstance.part.rundownId)] =
+						partInstance.part.expectedDuration ?? 0
 				} else {
-					rundownExpectedDurations[unprotectString(partInstance.part.rundownId)] += partExpectedDuration
+					rundownExpectedDurations[unprotectString(partInstance.part.rundownId)] +=
+						partInstance.part.expectedDuration ?? 0
 				}
 			})
 
@@ -620,7 +622,8 @@ export class RundownTimingCalculator {
 				(currentLivePart.expectedDuration === undefined || currentLivePart.expectedDuration === 0)
 			) {
 				onAirPartDuration =
-					this.partDisplayDurationsNoPlayback[unprotectString(currentLivePart._id)] || onAirPartDuration
+					getPartInstanceTimingValue(this.partDisplayDurationsNoPlayback, currentLivePartInstance) ??
+					onAirPartDuration
 			}
 
 			remainingTimeOnCurrentPart =
