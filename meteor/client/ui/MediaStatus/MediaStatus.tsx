@@ -67,7 +67,8 @@ export function MediaStatus({
 		<ul className={className}>
 			{combinedList.map((listItem) => (
 				<li key={unprotectString(listItem._id)}>
-					{listItem.name}, {listItem.playlistName}, {listItem.sourceLayerName}, {listItem.sourceLayerType}
+					{listItem.name}, {listItem.playlistName}, {listItem.sourceLayerName}, {listItem.sourceLayerType},{' '}
+					{listItem.status}
 				</li>
 			))}
 		</ul>
@@ -136,7 +137,7 @@ function useRundownPlaylists(playlistIds: RundownPlaylistId[]) {
 						}
 					),
 				})),
-		[],
+		[playlistIds],
 		[]
 	)
 
@@ -255,6 +256,11 @@ function useMediaStatusSubscriptions(
 		},
 	})
 	useSubscription(PubSub.rundowns, playlistIds, null)
+	const uiShowStyleBaseSubArguments = useMemo(
+		() => showStyleBaseIds.map((showStyleBaseId) => [showStyleBaseId] as [ShowStyleBaseId]),
+		[showStyleBaseIds]
+	)
+	useSubscriptions(PubSub.uiShowStyleBase, uiShowStyleBaseSubArguments)
 	useSubscription(PubSub.segments, {
 		rundownId: {
 			$in: rundownIds,
@@ -299,11 +305,6 @@ function useMediaStatusSubscriptions(
 			$in: rundownIds,
 		},
 	})
-	const uiShowStyleBaseSubArguments = useMemo(
-		() => showStyleBaseIds.map((showStyleBaseId) => [showStyleBaseId] as [ShowStyleBaseId]),
-		[showStyleBaseIds]
-	)
-	useSubscriptions(PubSub.uiShowStyleBase, uiShowStyleBaseSubArguments)
 	const uiPieceContentStatusesSubArguments = useMemo(
 		() => playlistIds.map((playlistIds) => [playlistIds] as [RundownPlaylistId]),
 		[playlistIds]
