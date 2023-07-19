@@ -352,7 +352,31 @@ export function useSubscription<K extends keyof PubSubTypes>(sub: K, ...args: Pa
 				subscription.stop()
 			}, 1000)
 		}
-	}, [stringifyObjects(args)])
+	}, [sub, stringifyObjects(args)])
+
+	return ready
+}
+
+export function useSubscriptions<K extends keyof PubSubTypes>(
+	sub: K,
+	argsArray: Parameters<PubSubTypes[K]>[]
+): boolean {
+	const [ready, setReady] = useState<boolean>(false)
+
+	useEffect(() => {
+		const subscriptions = Tracker.nonreactive(() => argsArray.map((args) => meteorSubscribe(sub, ...args)))
+		const isReadyComp = Tracker.nonreactive(() =>
+			Tracker.autorun(() => setReady(subscriptions.reduce((memo, subscription) => memo && subscription.ready(), true)))
+		)
+		return () => {
+			isReadyComp.stop()
+			setTimeout(() => {
+				for (const subscription of subscriptions) {
+					subscription.stop()
+				}
+			}, 1000)
+		}
+	}, [sub, stringifyObjects(argsArray)])
 
 	return ready
 }
