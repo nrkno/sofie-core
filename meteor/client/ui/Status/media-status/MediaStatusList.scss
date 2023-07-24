@@ -1,0 +1,51 @@
+.media-status-table-scrollbox {
+	max-height: calc(100vh - 182px);
+	overflow: auto;
+	margin-bottom: -40px;
+}
+
+.media-status-table {
+	width: 100%;
+	width: -webkit-fill-available;
+}
+
+.media-status-table-search {
+	float: right;
+	margin-top: 0.5em;
+
+	.media-status-table-search__search-input {
+		&::placeholder {
+			color: #333;
+			font-style: italic;
+		}
+
+		border: none;
+		border-radius: 1em;
+		width: 15em;
+		padding: 5px 0.5em;
+
+		background: #f5f5f5;
+	}
+}
+
+.media-status-table {
+	.media-status-item__rundown {
+		width: 17em;
+	}
+
+	.media-status-item__status {
+		width: 3em;
+	}
+
+	.media-status-item__source-layer {
+		width: 4em;
+	}
+
+	.media-status-item__identifiers {
+		width: 4em;
+	}
+
+	.media-status-item__duration {
+		width: 5em;
+	}
+}

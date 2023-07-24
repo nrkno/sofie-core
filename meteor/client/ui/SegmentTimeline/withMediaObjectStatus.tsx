@@ -39,6 +39,8 @@ const DEFAULT_STATUS = deepFreeze<PieceContentStatusObj>({
 	previewUrl: undefined,
 
 	packageName: null,
+
+	contentDuration: undefined,
 })
 
 /**

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import { useMemo } from 'react'
 import { useSubscription, useSubscriptions, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PubSub } from '../../../lib/api/pubsub'
 import { getSegmentsWithPartInstances } from '../../../lib/Rundown'
@@ -36,12 +36,14 @@ import { isTranslatableMessage, translateMessage } from '@sofie-automation/corel
 import { i18nTranslator } from '../i18n'
 
 export function MediaStatus({
-	className,
 	playlistIds,
+	children,
+	fallback,
 }: {
-	className?: string
 	playlistIds: RundownPlaylistId[]
-}): JSX.Element {
+	children: (listItems: MediaStatusListItem[]) => JSX.Element | null
+	fallback?: JSX.Element | null
+}): JSX.Element | null {
 	const { rundownIds, partIds, partInstanceIds, partInstanceMeta, partMeta, rundownMeta, showStyleBaseIds } =
 		useRundownPlaylists(playlistIds)
 
@@ -52,7 +54,7 @@ export function MediaStatus({
 	const rundownAdlibItems = useRundownAdLibItems(rundownIds, rundownMeta)
 	const rundownAdlibActionItems = useRundownAdLibActionItems(rundownIds, rundownMeta)
 
-	useMediaStatusSubscriptions(playlistIds, rundownIds, showStyleBaseIds)
+	const allReady = useMediaStatusSubscriptions(playlistIds, rundownIds, showStyleBaseIds)
 
 	const combinedList = useCombinedItems(
 		pieceInstanceItems,
@@ -63,16 +65,11 @@ export function MediaStatus({
 		rundownAdlibActionItems
 	)
 
-	return (
-		<ul className={className}>
-			{combinedList.map((listItem) => (
-				<li key={unprotectString(listItem._id)}>
-					{listItem.name}, {listItem.playlistName}, {listItem.sourceLayerName}, {listItem.sourceLayerType},{' '}
-					{listItem.status}
-				</li>
-			))}
-		</ul>
-	)
+	if (!allReady && combinedList.length == 0) {
+		return fallback ?? null
+	}
+
+	return children(combinedList)
 }
 
 function useCombinedItems(...items: (MediaStatusListItem | undefined)[][]): MediaStatusListItem[] {
@@ -249,25 +246,27 @@ function useMediaStatusSubscriptions(
 	playlistIds: RundownPlaylistId[],
 	rundownIds: RundownId[],
 	showStyleBaseIds: ShowStyleBaseId[]
-) {
-	useSubscription(PubSub.rundownPlaylists, {
+): boolean {
+	const readyStatus: boolean[] = []
+	let counter = 0
+	readyStatus[counter++] = useSubscription(PubSub.rundownPlaylists, {
 		_id: {
 			$in: playlistIds,
 		},
 	})
-	useSubscription(PubSub.rundowns, playlistIds, null)
+	readyStatus[counter++] = useSubscription(PubSub.rundowns, playlistIds, null)
 	const uiShowStyleBaseSubArguments = useMemo(
 		() => showStyleBaseIds.map((showStyleBaseId) => [showStyleBaseId] as [ShowStyleBaseId]),
 		[showStyleBaseIds]
 	)
-	useSubscriptions(PubSub.uiShowStyleBase, uiShowStyleBaseSubArguments)
-	useSubscription(PubSub.segments, {
+	readyStatus[counter++] = useSubscriptions(PubSub.uiShowStyleBase, uiShowStyleBaseSubArguments)
+	readyStatus[counter++] = useSubscription(PubSub.segments, {
 		rundownId: {
 			$in: rundownIds,
 		},
 	})
-	useSubscription(PubSub.parts, rundownIds)
-	useSubscription(PubSub.partInstancesSimple, {
+	readyStatus[counter++] = useSubscription(PubSub.parts, rundownIds)
+	readyStatus[counter++] = useSubscription(PubSub.partInstancesSimple, {
 		rundownId: {
 			$in: rundownIds,
 		},
@@ -275,32 +274,32 @@ function useMediaStatusSubscriptions(
 			$ne: true,
 		},
 	})
-	useSubscription(PubSub.pieceInstancesSimple, {
+	readyStatus[counter++] = useSubscription(PubSub.pieceInstancesSimple, {
 		rundownId: {
 			$in: rundownIds,
 		},
 	})
-	useSubscription(PubSub.pieces, {
+	readyStatus[counter++] = useSubscription(PubSub.pieces, {
 		startRundownId: {
 			$in: rundownIds,
 		},
 	})
-	useSubscription(PubSub.adLibActions, {
+	readyStatus[counter++] = useSubscription(PubSub.adLibActions, {
 		rundownId: {
 			$in: rundownIds,
 		},
 	})
-	useSubscription(PubSub.adLibPieces, {
+	readyStatus[counter++] = useSubscription(PubSub.adLibPieces, {
 		rundownId: {
 			$in: rundownIds,
 		},
 	})
-	useSubscription(PubSub.rundownBaselineAdLibActions, {
+	readyStatus[counter++] = useSubscription(PubSub.rundownBaselineAdLibActions, {
 		rundownId: {
 			$in: rundownIds,
 		},
 	})
-	useSubscription(PubSub.rundownBaselineAdLibPieces, {
+	readyStatus[counter++] = useSubscription(PubSub.rundownBaselineAdLibPieces, {
 		rundownId: {
 			$in: rundownIds,
 		},
@@ -309,7 +308,9 @@ function useMediaStatusSubscriptions(
 		() => playlistIds.map((playlistIds) => [playlistIds] as [RundownPlaylistId]),
 		[playlistIds]
 	)
-	useSubscriptions(PubSub.uiPieceContentStatuses, uiPieceContentStatusesSubArguments)
+	readyStatus[counter++] = useSubscriptions(PubSub.uiPieceContentStatuses, uiPieceContentStatusesSubArguments)
+
+	return readyStatus.reduce((mem, current) => mem && current, true)
 }
 
 function useAdLibActionItems(partIds: PartId[], partMeta: Map<PartId, PartMeta>) {
@@ -347,7 +348,9 @@ function useAdLibActionItems(partIds: PartId[], partMeta: Map<PartId, PartMeta>)
 							_rank: adlibAction.display._rank,
 							content: adLibActionDisplay?.content,
 						},
-						meta
+						meta,
+						adlibAction.partId,
+						undefined
 					)
 				})
 				.filter(Boolean),
@@ -381,7 +384,7 @@ function useAdLibItems(partIds: PartId[], partMeta: Map<PartId, PartMeta>) {
 				const meta = partMeta.get(adlib.partId)
 
 				if (!meta) return
-				return getListItemFromPieceAndPartMeta(adlib._id, adlib, meta)
+				return getListItemFromPieceAndPartMeta(adlib._id, adlib, meta, adlib.partId, undefined)
 			}),
 		[adlibs, partMeta],
 		[]
@@ -487,7 +490,7 @@ function usePieceItems(partIds: PartId[], partMeta: Map<PartId, PartMeta>) {
 				const meta = partMeta.get(piece.startPartId)
 
 				if (!meta) return
-				return getListItemFromPieceAndPartMeta(piece._id, piece, meta)
+				return getListItemFromPieceAndPartMeta(piece._id, piece, meta, piece.startPartId, undefined)
 			}),
 		[pieces, partMeta],
 		[]
@@ -520,7 +523,13 @@ function usePieceInstanceItems(partInstanceIds: PartInstanceId[], partInstanceMe
 				const meta = partInstanceMeta.get(pieceInstance.partInstanceId)
 
 				if (!meta) return
-				return getListItemFromPieceAndPartMeta(pieceInstance._id, pieceInstance.piece, meta)
+				return getListItemFromPieceAndPartMeta(
+					pieceInstance._id,
+					pieceInstance.piece,
+					meta,
+					undefined,
+					pieceInstance.partInstanceId
+				)
 			}),
 		[pieceInstances, partInstanceMeta],
 		[]
@@ -556,8 +565,11 @@ interface RundownMeta {
 	rank: number
 }
 
-interface MediaStatusListItem {
+export interface MediaStatusListItem {
 	_id: ProtectedString<any>
+	playlistId: RundownPlaylistId
+	partId?: PartId
+	partInstanceId?: PartInstanceId
 	sourceLayerType: SourceLayerType | undefined
 	sourceLayerName: string | undefined
 	partIdentifier: string | undefined
@@ -569,6 +581,7 @@ interface MediaStatusListItem {
 	rundownName: string | undefined
 	segmentRank: number | undefined
 	partRank: number | undefined
+	invalid: boolean
 	rank: number
 	status: PieceStatusCode
 	pieceContentStatus: PieceContentStatusObj | undefined
@@ -580,11 +593,14 @@ function onlyWithExpectedPackages(obj: { expectedPackages?: ExpectedPackage.Any[
 
 function getListItemFromRundownPieceAndRundownMeta(
 	objId: SomePieceId,
-	piece: Pick<Piece, 'name'> & Partial<Pick<Piece, 'sourceLayerId' | 'content'>> & { _rank?: number | undefined },
+	piece: Pick<Piece, 'name'> &
+		Partial<Pick<Piece, 'sourceLayerId' | 'content' | 'invalid'>> & { _rank?: number | undefined },
 	meta: RundownMeta
-): MediaStatusListItem {
+): MediaStatusListItem | undefined {
 	const showStyleBase = meta.showStyleBaseId && UIShowStyleBases.findOne(meta.showStyleBaseId)
 	const sourceLayer = piece.sourceLayerId !== undefined ? showStyleBase?.sourceLayers?.[piece.sourceLayerId] : undefined
+
+	if (sourceLayer && sourceLayer.isHidden) return
 
 	const partIdentifier = undefined
 	const segmentIdentifier = undefined
@@ -593,11 +609,15 @@ function getListItemFromRundownPieceAndRundownMeta(
 	const playlistName = meta.playlistName
 	const playlistRank = meta.playlistRank
 	const rundownName = meta.rundownName
+	const playlistId = meta.playlistId
 
-	const uiPieceContentStatus = UIPieceContentStatuses.findOne(objId)
+	const uiPieceContentStatus = UIPieceContentStatuses.findOne({
+		pieceId: objId,
+	})
 
 	const name = piece.name
 	const rank = piece._rank ?? 0 // if no rank (Pieces), should go to the top when "natural"-order sorting
+	const invalid = piece.invalid ?? false
 	const sourceLayerType = sourceLayer?.type
 	const sourceLayerName = sourceLayer?.name
 	const duration = piece.content?.sourceDuration
@@ -605,6 +625,7 @@ function getListItemFromRundownPieceAndRundownMeta(
 
 	return literal<MediaStatusListItem>({
 		_id: objId,
+		playlistId,
 		name,
 		sourceLayerName,
 		sourceLayerType,
@@ -612,6 +633,7 @@ function getListItemFromRundownPieceAndRundownMeta(
 		segmentIdentifier,
 		segmentRank,
 		partRank,
+		invalid,
 		playlistName,
 		rundownName,
 		duration,
@@ -625,11 +647,16 @@ function getListItemFromRundownPieceAndRundownMeta(
 /** This is a reactive function, depending on UIShowStyleBases and UIPieceContentStatuses */
 function getListItemFromPieceAndPartMeta(
 	objId: SomePieceId,
-	piece: Pick<Piece, 'name'> & Partial<Pick<Piece, 'sourceLayerId' | 'content'>> & { _rank?: number | undefined },
-	meta: PartMeta
-): MediaStatusListItem {
+	piece: Pick<Piece, 'name'> &
+		Partial<Pick<Piece, 'sourceLayerId' | 'content' | 'invalid'>> & { _rank?: number | undefined },
+	meta: PartMeta,
+	sourcePartId: PartId | undefined,
+	sourcePartInstanceId: PartInstanceId | undefined
+): MediaStatusListItem | undefined {
 	const showStyleBase = meta.showStyleBaseId && UIShowStyleBases.findOne(meta.showStyleBaseId)
 	const sourceLayer = piece.sourceLayerId !== undefined ? showStyleBase?.sourceLayers?.[piece.sourceLayerId] : undefined
+
+	if (sourceLayer && sourceLayer.isHidden) return
 
 	const partIdentifier = meta.identifier
 	const segmentIdentifier = meta.segmentIdentifier
@@ -638,22 +665,30 @@ function getListItemFromPieceAndPartMeta(
 	const playlistName = meta.playlistName
 	const playlistRank = meta.playlistRank
 	const rundownName = meta.rundownName
+	const playlistId = meta.playlistId
 
-	const uiPieceContentStatus = UIPieceContentStatuses.findOne(objId)
+	const uiPieceContentStatus = UIPieceContentStatuses.findOne({
+		pieceId: objId,
+	})
 
 	const name = piece.name
 	const rank = piece._rank ?? 0 // if no rank (Pieces), should go to the top when "natural"-order sorting
+	const invalid = piece.invalid ?? false
 	const sourceLayerType = sourceLayer?.type
-	const sourceLayerName = sourceLayer?.name
-	const duration = piece.content?.sourceDuration
+	const sourceLayerName = sourceLayer?.abbreviation || sourceLayer?.name
+	const duration = piece.content?.sourceDuration ?? uiPieceContentStatus?.status.contentDuration ?? undefined
 	const status = uiPieceContentStatus?.status.status ?? PieceStatusCode.UNKNOWN
 
 	return literal<MediaStatusListItem>({
 		_id: objId,
+		playlistId,
+		partId: sourcePartId,
+		partInstanceId: sourcePartInstanceId,
 		name,
 		sourceLayerName,
 		sourceLayerType,
 		partIdentifier,
+		invalid,
 		segmentIdentifier,
 		segmentRank,
 		partRank,

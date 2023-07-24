@@ -93,6 +93,15 @@ export function formatDateTime(time: Time): string {
 
 	return `${yyyy}-${mm}-${dd} ${hh}:${ii}:${ss}`
 }
+
+export function formatTime(time: number): string {
+	const ss = String(Math.ceil(time / 1000) % 60).padStart(2, '0')
+	const mm = String(Math.floor(time / 60000) % 60).padStart(2, '0')
+	const hh = String(Math.floor(time / 3600000)).padStart(2, '0')
+
+	return `${hh}:${mm}:${ss}`
+}
+
 /**
  * Returns a string that can be used to compare objects for equality
  * @param objs

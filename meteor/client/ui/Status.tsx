@@ -11,7 +11,7 @@ import { EvaluationView } from './Status/Evaluations'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { PubSub } from '../../lib/api/pubsub'
 import { ExpectedPackagesStatus } from './Status/package-status'
-import { MediaStatus } from './Status/MediaStatus'
+import { MediaStatus } from './Status/media-status'
 
 interface IStatusMenuProps {
 	match?: any

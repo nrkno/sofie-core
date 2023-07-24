@@ -25,4 +25,6 @@ export interface PieceContentStatusObj {
 	previewUrl: string | undefined
 
 	packageName: string | null
+
+	contentDuration: number | undefined
 }
