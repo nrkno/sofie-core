@@ -13,6 +13,8 @@ import { useTranslation } from 'react-i18next'
 import { MediaStatusListHeader } from './MediaStatusListHeader'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { assertNever } from '@sofie-automation/corelib/dist/lib'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
 export function MediaStatus(): JSX.Element | null {
 	const scrollBox = useRef<HTMLDivElement>(null)
@@ -66,6 +68,11 @@ export function MediaStatus(): JSX.Element | null {
 						placeholder="Filter…"
 						onChange={(e) => setFilter(e.target.value)}
 					/>
+					{filter && (
+						<div className="media-status-table-search__clear-search-input" onClick={() => setFilter('')}>
+							<FontAwesomeIcon icon={faTimes} />
+						</div>
+					)}
 				</div>
 				<h1>{t('Media Status')}</h1>
 			</header>

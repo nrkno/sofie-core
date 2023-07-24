@@ -11,6 +11,8 @@
 
 .media-status-table-search {
 	float: right;
+	position: relative;
+
 	margin-top: 0.5em;
 
 	.media-status-table-search__search-input {
@@ -22,9 +24,20 @@
 		border: none;
 		border-radius: 1em;
 		width: 15em;
-		padding: 5px 0.5em;
+		padding: 5px 2em 5px 0.5em;
 
 		background: #f5f5f5;
+	}
+	.media-status-table-search__clear-search-input {
+		position: absolute;
+		right: 1em;
+		top: 0.35em;
+		opacity: 0.3;
+		cursor: pointer;
+
+		&:hover {
+			opacity: 0.7;
+		}
 	}
 }
 
