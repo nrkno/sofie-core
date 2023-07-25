@@ -350,7 +350,8 @@ function useAdLibActionItems(partIds: PartId[], partMeta: Map<PartId, PartMeta>)
 						},
 						meta,
 						adlibAction.partId,
-						undefined
+						undefined,
+						true
 					)
 				})
 				.filter(Boolean),
@@ -384,7 +385,7 @@ function useAdLibItems(partIds: PartId[], partMeta: Map<PartId, PartMeta>) {
 				const meta = partMeta.get(adlib.partId)
 
 				if (!meta) return
-				return getListItemFromPieceAndPartMeta(adlib._id, adlib, meta, adlib.partId, undefined)
+				return getListItemFromPieceAndPartMeta(adlib._id, adlib, meta, adlib.partId, undefined, true)
 			}),
 		[adlibs, partMeta],
 		[]
@@ -490,7 +491,7 @@ function usePieceItems(partIds: PartId[], partMeta: Map<PartId, PartMeta>) {
 				const meta = partMeta.get(piece.startPartId)
 
 				if (!meta) return
-				return getListItemFromPieceAndPartMeta(piece._id, piece, meta, piece.startPartId, undefined)
+				return getListItemFromPieceAndPartMeta(piece._id, piece, meta, piece.startPartId, undefined, false)
 			}),
 		[pieces, partMeta],
 		[]
@@ -528,7 +529,8 @@ function usePieceInstanceItems(partInstanceIds: PartInstanceId[], partInstanceMe
 					pieceInstance.piece,
 					meta,
 					undefined,
-					pieceInstance.partInstanceId
+					pieceInstance.partInstanceId,
+					false
 				)
 			}),
 		[pieceInstances, partInstanceMeta],
@@ -585,6 +587,7 @@ export interface MediaStatusListItem {
 	rank: number
 	status: PieceStatusCode
 	pieceContentStatus: PieceContentStatusObj | undefined
+	isAdLib: boolean
 }
 
 function onlyWithExpectedPackages(obj: { expectedPackages?: ExpectedPackage.Any[] }) {
@@ -641,6 +644,7 @@ function getListItemFromRundownPieceAndRundownMeta(
 		rank,
 		status,
 		pieceContentStatus: uiPieceContentStatus?.status,
+		isAdLib: true,
 	})
 }
 
@@ -651,7 +655,8 @@ function getListItemFromPieceAndPartMeta(
 		Partial<Pick<Piece, 'sourceLayerId' | 'content' | 'invalid'>> & { _rank?: number | undefined },
 	meta: PartMeta,
 	sourcePartId: PartId | undefined,
-	sourcePartInstanceId: PartInstanceId | undefined
+	sourcePartInstanceId: PartInstanceId | undefined,
+	isAdLib: boolean
 ): MediaStatusListItem | undefined {
 	const showStyleBase = meta.showStyleBaseId && UIShowStyleBases.findOne(meta.showStyleBaseId)
 	const sourceLayer = piece.sourceLayerId !== undefined ? showStyleBase?.sourceLayers?.[piece.sourceLayerId] : undefined
@@ -699,6 +704,7 @@ function getListItemFromPieceAndPartMeta(
 		rank,
 		status,
 		pieceContentStatus: uiPieceContentStatus?.status,
+		isAdLib,
 	})
 }
 

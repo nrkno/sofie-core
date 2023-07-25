@@ -22,8 +22,11 @@ import { SwitchboardIcon, RouteSetOverrideIcon } from '../../lib/ui/icons/switch
 import { SwitchboardPopUp } from './SwitchboardPopUp'
 import { useTranslation } from 'react-i18next'
 import { SegmentViewMode } from '../../lib/ui/icons/listView'
+import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MediaStatusPopUp } from './MediaStatusPopUp'
 
 interface IProps {
+	playlistId: RundownPlaylistId
 	studioRouteSets: {
 		[id: string]: StudioRouteSet
 	}
@@ -70,6 +73,7 @@ export function RundownRightHandControls(props: IProps): JSX.Element {
 	const { t } = useTranslation()
 	const [onAirHover, setOnAirHover] = useState(false)
 	const [switchboardOpen, setSwitchboardOpen] = useState(false)
+	const [mediaStatusOpen, setMediaStatusOpen] = useState(false)
 
 	const {
 		onFollowOnAir: onOnAirClick,
@@ -94,6 +98,12 @@ export function RundownRightHandControls(props: IProps): JSX.Element {
 
 	const onRouteSetsToggle = (_e: React.MouseEvent<HTMLButtonElement>) => {
 		setSwitchboardOpen(!switchboardOpen)
+		setMediaStatusOpen(false)
+	}
+
+	const onMediaStatusToggle = (_e: React.MouseEvent<HTMLButtonElement>) => {
+		setMediaStatusOpen(!mediaStatusOpen)
+		setSwitchboardOpen(false)
 	}
 
 	const availableRouteSets = Object.entries<StudioRouteSet>(props.studioRouteSets).filter(
@@ -180,6 +190,44 @@ export function RundownRightHandControls(props: IProps): JSX.Element {
 						Take
 					</button>
 				)}
+				<>
+					<button
+						className={classNames(
+							'status-bar__controls__button',
+							'status-bar__controls__button--media-status',
+							'notifications-s notifications-text',
+							{
+								'status-bar__controls__button--open': mediaStatusOpen,
+							}
+						)}
+						role="button"
+						onClick={onMediaStatusToggle}
+						tabIndex={0}
+						aria-label={t('Toggle Media Status')}
+						aria-haspopup="dialog"
+						aria-pressed={mediaStatusOpen ? 'true' : 'false'}
+					>
+						<SwitchboardIcon />
+					</button>
+					<VelocityReact.VelocityTransitionGroup
+						enter={{
+							animation: {
+								width: ['28rem', '0rem'],
+							},
+							easing: 'ease-out',
+							duration: 300,
+						}}
+						leave={{
+							animation: {
+								width: ['0rem'],
+							},
+							easing: 'ease-in',
+							duration: 500,
+						}}
+					>
+						{mediaStatusOpen && <MediaStatusPopUp playlistId={props.playlistId} />}
+					</VelocityReact.VelocityTransitionGroup>
+				</>
 				<button
 					className="status-bar__controls__button status-bar__controls__button--segment-view-mode"
 					role="button"

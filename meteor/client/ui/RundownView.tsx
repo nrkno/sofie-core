@@ -2867,6 +2867,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							</ErrorBoundary>
 							<ErrorBoundary>
 								<RundownRightHandControls
+									playlistId={playlist._id}
 									isFollowingOnAir={this.state.followLiveSegments}
 									onFollowOnAir={this.onGoToLiveSegment}
 									onRewindSegments={this.onRewindSegments}

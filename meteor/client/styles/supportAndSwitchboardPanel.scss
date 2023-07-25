@@ -30,7 +30,8 @@
 }
 
 .support-pop-up-panel,
-.switchboard-pop-up-panel {
+.switchboard-pop-up-panel,
+.media-status-pop-up-panel {
 	position: fixed;
 	bottom: rem(8px);
 	right: -1px;
@@ -98,6 +99,21 @@
 	}
 }
 
+.media-status-pop-up-panel {
+	top: auto;
+	z-index: -1;
+	white-space: nowrap;
+	overflow: hidden;
+	text-align: left;
+	box-sizing: content-box;
+	width: 28rem;
+	max-width: 28rem;
+
+	> .media-status-pop-up-panel__inside {
+		width: 28rem;
+	}
+}
+
 #render-target .switchboard-pop-up-panel .switchboard-pop-up-panel__group {
 	width: 28rem;
 	border-top: 1px solid #d7d7d7;
@@ -144,12 +160,13 @@
 }
 
 .rundown-view {
-	.support-pop-up-panel {
+	.support-pop-up-panel{
 		color: #000;
 		background: #eee;
 		z-index: 1900;
 	}
-	.switchboard-pop-up-panel {
+	.switchboard-pop-up-panel,
+	.media-status-pop-up-panel {
 		color: #000;
 		background: #eee;
 		z-index: -1;
