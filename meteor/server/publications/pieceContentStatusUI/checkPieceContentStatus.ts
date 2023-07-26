@@ -800,7 +800,7 @@ function checkStreamFormatsAndCounts(
 	sourceLayer: ISourceLayer,
 	ignoreMediaAudioStatus: boolean | undefined
 ): number {
-	if (!ignoreMediaAudioStatus && streams.length < 2) {
+	if (!ignoreMediaAudioStatus && streams.length < 2 && sourceLayer.type !== SourceLayerType.AUDIO) {
 		messages.push({
 			status: PieceStatusCode.SOURCE_BROKEN,
 			message: generateTranslation("{{sourceLayer}} doesn't have both audio & video", {
