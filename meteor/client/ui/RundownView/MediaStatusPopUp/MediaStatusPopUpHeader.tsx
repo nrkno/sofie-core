@@ -25,6 +25,7 @@ export function MediaStatusPopUpHeader({
 	return (
 		<thead className="media-status-panel-header">
 			<tr>
+				<th className="media-status-popup-item__playout-indicator"></th>
 				<th className="media-status-popup-item__countdown" onClick={() => changeSortOrder('rundown', 'asc')}>
 					<button
 						className={classNames('media-status-popup-item__sort-button', {

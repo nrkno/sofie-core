@@ -4,12 +4,14 @@ import { useTranslation } from 'react-i18next'
 // import Tooltip from 'rc-tooltip'
 // import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MediaStatus, MediaStatusListItem as IMediaStatusListItem } from '../../MediaStatus/MediaStatus'
 import { MediaStatusItem } from './MediaStatusPopUpItem'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { assertNever } from '@sofie-automation/corelib/dist/lib'
 import { MediaStatusPopUpHeader } from './MediaStatusPopUpHeader'
+import { RundownPlaylists } from '../../../collections'
 
 interface IProps {
 	playlistId: RundownPlaylistId
@@ -31,6 +33,28 @@ export function MediaStatusPopUp({ playlistId }: IProps): JSX.Element {
 	}
 
 	const playlistIds = useMemo(() => [playlistId], [playlistId])
+
+	const { currentPartInstanceId, nextPartInstanceId } = useTracker(
+		() => {
+			const playlist = RundownPlaylists.findOne(playlistId, {
+				projection: {
+					nextPartInfo: 1,
+					currentPartInfo: 1,
+				},
+			})
+			return {
+				currentPartInstanceId: playlist?.currentPartInfo?.partInstanceId,
+				nextPartInstanceId: playlist?.nextPartInfo?.partInstanceId,
+			}
+		},
+		[playlistId],
+		{
+			currentPartInstanceId: undefined,
+			nextPartInstanceId: undefined,
+		}
+	)
+
+	console.log(currentPartInstanceId, nextPartInstanceId)
 
 	return (
 		<div className="media-status-pop-up-panel" role="dialog">

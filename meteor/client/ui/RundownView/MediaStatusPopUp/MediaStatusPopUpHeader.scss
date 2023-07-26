@@ -7,11 +7,16 @@
 		font-size: 0.875em;
 		letter-spacing: -0.5px;
 		font-weight: 500;
+		z-index: 10;
 	}
 	.media-status-popup-item__sort-button {
 		border: none;
 		background: none;
 		margin: 0;
 		padding: 0;
+	}
+	.media-status-popup-item__countdown {
+		text-align: right;
+		padding: 0 0.15em;
 	}
 }

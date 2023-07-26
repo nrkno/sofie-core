@@ -48,6 +48,7 @@ export const MediaStatusItem = withTiming<
 
 	return (
 		<tr className="media-status-popup-item">
+			<td className="media-status-popup-item__playout-indicator"></td>
 			<td className="media-status-popup-item__countdown">
 				{!isAdLib && thisPartCountdown ? RundownUtils.formatTimeToShortTime(thisPartCountdown) : null}
 			</td>
