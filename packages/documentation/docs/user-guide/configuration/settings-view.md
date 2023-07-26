@@ -4,10 +4,10 @@ sidebar_position: 2
 # Settings View
 
 :::caution
-The settings views are only visible to users with the correct [access level](../features/access-levels)!
+The settings views are only visible to users with the correct [access level](../features/access-levels.md)!
 :::
 
-Recommended read before diving into the settings: [System, \(Organization\), Studio & Show Style](../concepts-and-architecture#system-organization-studio-and-show-style).
+Recommended read before diving into the settings: [System, \(Organization\), Studio & Show Style](../concepts-and-architecture.md#system-organization-studio-and-show-style).
 
 ## System
 
@@ -34,11 +34,11 @@ This section allows you to add and remove Gateways that are related to this _Stu
 
 ### Blueprint Configuration
 
-Sofie allows the Blueprints to expose custom configuration fields that allow the System Administrator to reconfigure how these Blueprints work through the Sofie UI. Here you can change the configuration of the [Studio Blueprint](../concepts-and-architecture#studio-blueprints).
+Sofie allows the Blueprints to expose custom configuration fields that allow the System Administrator to reconfigure how these Blueprints work through the Sofie UI. Here you can change the configuration of the [Studio Blueprint](../concepts-and-architecture.md#studio-blueprints).
 
 ### Layer Mappings
 
-This section allows you to add, remove and configure how logical device-control will be translated to physical automation control. [Blueprints](../concepts-and-architecture#blueprints) control devices through objects placed on a [Timeline](../concepts-and-architecture#timeline) using logical device identifiers called _Layers_. A layer represents a single aspect of a device that can be controlled at a given time: a video switcher's M/E bus, an audio mixers's fader, an OSC control node, a video server's output channel. Layer Mappings translate these logical identifiers into physical device aspects, for example:
+This section allows you to add, remove and configure how logical device-control will be translated to physical automation control. [Blueprints](../concepts-and-architecture.md#blueprints) control devices through objects placed on a [Timeline](../concepts-and-architecture.md#timeline) using logical device identifiers called _Layers_. A layer represents a single aspect of a device that can be controlled at a given time: a video switcher's M/E bus, an audio mixers's fader, an OSC control node, a video server's output channel. Layer Mappings translate these logical identifiers into physical device aspects, for example:
 
 ![A sample configuration of a Layer Mapping for the M/E1 Bus of an ATEM switcher](/img/docs/main/features/atem-layer-mapping-example.png)
 
@@ -48,7 +48,7 @@ These mappings allow the System Administrator to reconfigure what devices the Bl
 
 #### Route Sets
 
-In order to allow the Producer to reconfigure the automation from the Switchboard in the [Rundown View](../concepts-and-architecture#rundown-view), as well as have some pre-set automation control available for the System Administrator, Sofie has a concept of Route Sets. Route Sets work on top of the Layer Mappings, by configuring sets of [Layer Mappings](settings-view#layer-mappings) that will re-route the control from one device to another, or to disable the automation altogether. These Route Sets are presented to the Producer in the [Switchboard](../concepts-and-architecture#switchboard) panel.
+In order to allow the Producer to reconfigure the automation from the Switchboard in the [Rundown View](../concepts-and-architecture.md#rundown-view), as well as have some pre-set automation control available for the System Administrator, Sofie has a concept of Route Sets. Route Sets work on top of the Layer Mappings, by configuring sets of [Layer Mappings](settings-view.md#layer-mappings) that will re-route the control from one device to another, or to disable the automation altogether. These Route Sets are presented to the Producer in the [Switchboard](../concepts-and-architecture.md#switchboard) panel.
 
 A Route Set is essentially a distinct set of Layer Mappings, which can modify the settings already configured by the Layer Mappings, but can be turned On and Off. Called Routes, these can change:
 
@@ -91,9 +91,9 @@ The Showstyle contains settings like
 :::caution
 Please note the difference between _Source Layers_ and _timeline-layers_:
 
-[Pieces](../concepts-and-architecture#piece) are put onto _Source layers_, to group different types of content \(such as a VT or Camera\), they are therefore intended only as something to indicate to the user what is going to be played, not what is actually going to happen on the technical level.
+[Pieces](../concepts-and-architecture.md#piece) are put onto _Source layers_, to group different types of content \(such as a VT or Camera\), they are therefore intended only as something to indicate to the user what is going to be played, not what is actually going to happen on the technical level.
 
-[Timeline-objects](../concepts-and-architecture#timeline-object) \(inside of the [Pieces](../concepts-and-architecture#piece)\) are put onto timeline-layers, which are \(through the Mappings in the studio\) mapped to physical devices and outputs.  
+[Timeline-objects](../concepts-and-architecture.md#timeline-object) \(inside of the [Pieces](../concepts-and-architecture.md#piece)\) are put onto timeline-layers, which are \(through the Mappings in the studio\) mapped to physical devices and outputs.  
 The exact timeline-layer is never exposed to the user, but instead used on the technical level to control playout.
 
 An example of the difference could be when playing a VT \(that's a Source Layer\), which could involve all of the timeline-layers _video\_player0_, _audio\_fader\_video_, _audio\_fader\_host_ and _mixer\_pgm._

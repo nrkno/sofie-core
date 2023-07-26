@@ -3,9 +3,9 @@ sidebar_position: 1
 ---
 # Getting Started
 
-_Sofie_ can be installed in many different ways, depending on which platforms, needs, and features you desire. The _Sofie_ system consists of several applications that work together to provide complete broadcast automation system. Each of these components' installation will be covered in this guide. Additional information about the products or services mentioned alongside the Sofie Installation can be found on the [Further Reading](../further-reading).
+_Sofie_ can be installed in many different ways, depending on which platforms, needs, and features you desire. The _Sofie_ system consists of several applications that work together to provide complete broadcast automation system. Each of these components' installation will be covered in this guide. Additional information about the products or services mentioned alongside the Sofie Installation can be found on the [Further Reading](../further-reading.md).
 
-There are four minimum required components to get a Sofie system up and running. First you need the [_Sofie Core_](installing-sofie-server-core), which is the brains of the operation. Then a set of [_Blueprints_](installing-blueprints) to handle and interpret incoming and outgoing data. Next, an [_Ingest Gateway_](installing-a-gateway/rundown-or-newsroom-system-connection/intro) to fetch the data for the Blueprints. Then finally, a [_Playout Gateway_](installing-a-gateway/playout-gateway) to send the data to your playout device of choice.
+There are four minimum required components to get a Sofie system up and running. First you need the [_Sofie Core_](installing-sofie-server-core.md), which is the brains of the operation. Then a set of [_Blueprints_](installing-blueprints.md) to handle and interpret incoming and outgoing data. Next, an [_Ingest Gateway_](installing-a-gateway/rundown-or-newsroom-system-connection/intro.md) to fetch the data for the Blueprints. Then finally, a [_Playout Gateway_](installing-a-gateway/playout-gateway.md) to send the data to your playout device of choice.
 
 
 
@@ -19,7 +19,7 @@ The _Status_ views displays the current status for the attached devices and gate
 
 ![Status View &#x2013; Describes the state of _Sofie&nbsp;Core_](/img/docs/getting-started/status-page.jpg)
 
-The _Settings_ views contains various settings for the studio, show styles, blueprints etc.. If the link to the settings view is not visible in your application, check your [Access Levels](../features/access-levels). More info on specific parts of the _Settings_ view can be found in their corresponding guide sections. 
+The _Settings_ views contains various settings for the studio, show styles, blueprints etc.. If the link to the settings view is not visible in your application, check your [Access Levels](../features/access-levels.md). More info on specific parts of the _Settings_ view can be found in their corresponding guide sections. 
 
 ![Settings View &#x2013; Describes how the _Sofie&nbsp;Core_ is configured](/img/docs/getting-started/settings-page.jpg)
 
@@ -29,7 +29,7 @@ The _Sofie&nbsp;Core_ is the primary application for managing the broadcast but,
 
 ### Gateways
 
-Gateways are separate applications that bridge the gap between the _Sofie&nbsp;Core_ and other pieces of hardware or services. At minimum, you will need a _Playout Gateway_ so your timeline can interact with your playout system of choice. To install the _Playout Gateway_, visit the [Installing a Gateway](installing-a-gateway/intro) section of this guide and for a more in-depth look, please see [Gateways](../concepts-and-architecture#gateways). 
+Gateways are separate applications that bridge the gap between the _Sofie&nbsp;Core_ and other pieces of hardware or services. At minimum, you will need a _Playout Gateway_ so your timeline can interact with your playout system of choice. To install the _Playout Gateway_, visit the [Installing a Gateway](installing-a-gateway/intro.md) section of this guide and for a more in-depth look, please see [Gateways](../concepts-and-architecture.md#gateways). 
 
 ### Blueprints
 

@@ -18,12 +18,12 @@ sidebar_position: 0
 ![The prompter view](/img/docs/prompter-view.png)
 
 :::info
-Tip: The different web views \(such as the host view and the prompter\) can easily be transmitted over an SDI signal using the HTML producer in [CasparCG](installation/installing-connections-and-additional-hardware/casparcg-server-installation).
+Tip: The different web views \(such as the host view and the prompter\) can easily be transmitted over an SDI signal using the HTML producer in [CasparCG](installation/installing-connections-and-additional-hardware/casparcg-server-installation.md).
 :::
 
 ### Modular Device Control
 
-Sofie controls playout devices \(such as vision and audio mixers, graphics and video playback\) via the Playout Gateway, using the [Timeline](concepts-and-architecture#timeline).  
+Sofie controls playout devices \(such as vision and audio mixers, graphics and video playback\) via the Playout Gateway, using the [Timeline](concepts-and-architecture.md#timeline).  
 The Playout Gateway controls the devices and keeps track of their state and statuses, and lets the user know via the GUI if something's wrong that can affect the show.
 
 ### _State-based Playout_
@@ -37,5 +37,5 @@ Sofie features a modular ingest data-flow, allowing multiple types of input data
 
 ### Blueprints
 
-The [Blueprints](concepts-and-architecture#blueprints) are plugins to _Sofie_, which allows for customization and tailor-made show designs.
+The [Blueprints](concepts-and-architecture.md#blueprints) are plugins to _Sofie_, which allows for customization and tailor-made show designs.
 The blueprints are made different depending on how the input data \(rundowns\) look like, how the show-design look like, and what devices to control.

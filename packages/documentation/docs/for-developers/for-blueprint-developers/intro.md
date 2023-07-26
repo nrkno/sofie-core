@@ -8,7 +8,7 @@ sidebar_position: 1
 Documentation for this page is yet to be written.
 :::
 
-[Blueprints](../../user-guide/concepts-and-architecture#blueprints) are programs that run inside Sofie Core and interpret
+[Blueprints](../../user-guide/concepts-and-architecture.md#blueprints) are programs that run inside Sofie Core and interpret
 data coming in from the Rundowns and transform that into playable elements. They use an API published in [@sofie-automation/blueprints-integration](https://nrkno.github.io/sofie-core/typedoc/modules/_sofie_automation_blueprints_integration.html) library to expose their functionality and communicate with Sofie Core.
 
 Technically, a Blueprint is a JavaScript object, implementing one of the `BlueprintManifestBase` interfaces.

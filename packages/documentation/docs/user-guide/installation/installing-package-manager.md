@@ -6,11 +6,11 @@ sidebar_position: 7
 
 ### Prerequisites
 
-- [Installed and running Sofie&nbsp;Core](installing-sofie-server-core)
-- [Initial Sofie&nbsp;Core Setup](initial-sofie-core-setup)
+- [Installed and running Sofie&nbsp;Core](installing-sofie-server-core.md)
+- [Initial Sofie&nbsp;Core Setup](initial-sofie-core-setup.md)
 - [Installed and configured Demo Blueprints](https://github.com/SuperFlyTV/sofie-demo-blueprints)
-- [Installed, configured, and running CasparCG&nbsp;Server](installing-connections-and-additional-hardware/casparcg-server-installation)
-- [`FFmpeg` and `FFprobe` available in `PATH`](installing-connections-and-additional-hardware/ffmpeg-installation)
+- [Installed, configured, and running CasparCG&nbsp;Server](installing-connections-and-additional-hardware/casparcg-server-installation.md)
+- [`FFmpeg` and `FFprobe` available in `PATH`](installing-connections-and-additional-hardware/ffmpeg-installation.md)
 
 Package Manager is used by Sofie to copy, analyze, and process media files. It is what powers Sofie's ability to copy media files to playout devices, to know when a media file is ready for playout, and to display details about media files in the rundown view such as scene changes, black frames, freeze frames, and more.
 
@@ -58,7 +58,7 @@ We provide pre-built executables for Windows (x64) systems that can be used in p
 package-manager-single-app.exe --coreHost=<Core Host Name> --corePort=<Core HTTP(S) port> --deviceId=<Peripheral Device Id> --deviceToken=<Peripheral Device Token/Password>
 ```
 
-Package Manager can be launched from [CasparCG Launcher](./installing-connections-and-additional-hardware/casparcg-server-installation#installing-the-casparcg-launcher) alongside Caspar-CG. This will make management and log collection easier on a production Video Server.
+Package Manager can be launched from [CasparCG Launcher](./installing-connections-and-additional-hardware/casparcg-server-installation.md#installing-the-casparcg-launcher) alongside Caspar-CG. This will make management and log collection easier on a production Video Server.
 
 You can see a list of available options by running `package-manager-single-app.exe --help`.
 
@@ -82,7 +82,7 @@ You can see a list of available options by running `package-manager-single-app.e
 
 In this basic configuration, Package Manager won't be copying any packages into your CasparCG&nbsp;Server media folder. Instead, it will simply check that the files in the rundown are present in your CasparCG&nbsp;Server media folder, and you'll have to manually place those files in the correct directory. However, thumbnail and preview generation will still function, as will status reporting.
 
-If you're using the demo rundown provided by the [Rundown Editor](rundown-editor), you should already see work statuses on the Package Status page ([Status > Packages](http://localhost:3000/status/expected-packages)).
+If you're using the demo rundown provided by the [Rundown Editor](rundown-editor.md), you should already see work statuses on the Package Status page ([Status > Packages](http://localhost:3000/status/expected-packages)).
 
 ![Example Package Manager status display](/img/docs/Package_Manager_status_example.jpg)
 
