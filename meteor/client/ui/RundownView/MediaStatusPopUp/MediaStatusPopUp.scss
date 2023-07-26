@@ -1,0 +1,12 @@
+.media-status-panel__scrollbox {
+	height: 700px;
+	max-height: 50vh;
+	overflow-x: hidden;
+	overflow-y: scroll;
+	overscroll-behavior: contain;
+	position: relative;
+}
+
+.media-status-panel__table {
+	width: 100%;
+}

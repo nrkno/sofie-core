@@ -1,0 +1,17 @@
+.media-status-panel-header {
+	tr > th {
+		position: sticky;
+		top: 0;
+		background: var(--panel-background);
+
+		font-size: 0.875em;
+		letter-spacing: -0.5px;
+		font-weight: 500;
+	}
+	.media-status-popup-item__sort-button {
+		border: none;
+		background: none;
+		margin: 0;
+		padding: 0;
+	}
+}
