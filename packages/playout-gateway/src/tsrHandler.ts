@@ -51,6 +51,8 @@ import {
 	unprotectString,
 } from '@sofie-automation/server-core-integration'
 import { BaseRemoteDeviceIntegration } from 'timeline-state-resolver/dist/service/remoteDeviceInstance'
+import { DeviceEvents } from 'timeline-state-resolver/dist/devices/device'
+import EventEmitter = require('eventemitter3')
 
 const debug = Debug('playout-gateway')
 
@@ -886,27 +888,33 @@ export class TSRHandler {
 			// Note for the future:
 			// It is important that the callbacks returns void,
 			// otherwise there might be problems with threadedclass!
+			// Also, it is critical that all of these `.on` calls be `await`ed.
+			// They aren't typed as promises due to limitations of TypeScript,
+			// but due to threadedclass they _are_ promises.
+			/* eslint-disable @typescript-eslint/await-thenable */
 
-			await device.device.on('connectionChanged', onDeviceStatusChanged as () => void)
-			// await device.device.on('slowCommand', onSlowCommand)
-			await device.device.on('slowSentCommand', onSlowSentCommand as () => void)
-			await device.device.on('slowFulfilledCommand', onSlowFulfilledCommand as () => void)
-			await device.device.on('commandError', onCommandError as () => void)
-			await device.device.on('commandReport', onCommandReport as () => void)
-			await device.device.on('updateMediaObject', onUpdateMediaObject as () => void)
-			await device.device.on('clearMediaObjects', onClearMediaObjectCollection as () => void)
+			const emitterHack = device.device as unknown as EventEmitter<DeviceEvents>
 
-			await device.device.on('info', ((e: any, ...args: any[]) => {
-				this.logger.info(fixError(e), fixContext(args))
-			}) as () => void)
-			await device.device.on('warning', ((e: any, ...args: any[]) => {
-				this.logger.warn(fixError(e), fixContext(args))
-			}) as () => void)
-			await device.device.on('error', ((e: any, ...args: any[]) => {
-				this.logger.error(fixError(e), fixContext(args))
-			}) as () => void)
+			await emitterHack.on('connectionChanged', onDeviceStatusChanged)
+			// await emitterHack.on('slowCommand', onSlowCommand)
+			await emitterHack.on('slowSentCommand', onSlowSentCommand)
+			await emitterHack.on('slowFulfilledCommand', onSlowFulfilledCommand)
+			await emitterHack.on('commandError', onCommandError)
+			await emitterHack.on('commandReport', onCommandReport)
+			await emitterHack.on('updateMediaObject', onUpdateMediaObject)
+			await emitterHack.on('clearMediaObjects', onClearMediaObjectCollection)
 
-			await device.device.on('debug', (...args: any[]) => {
+			await emitterHack.on('info', (info) => {
+				this.logger.info(info)
+			})
+			await emitterHack.on('warning', (warning: string) => {
+				this.logger.warn(warning)
+			})
+			await emitterHack.on('error', (context, error) => {
+				this.logger.error(`${fixError(error)}`, fixContext(context))
+			})
+
+			await emitterHack.on('debug', (...args) => {
 				if (!device.debugLogging && !this._coreHandler.logDebug) {
 					return
 				}
@@ -918,7 +926,7 @@ export class TSRHandler {
 				this.logger.debug(`Device "${device.deviceName || deviceId}" (${device.instanceId})`, { data })
 			})
 
-			await device.device.on('debugState', (...args: any[]) => {
+			await emitterHack.on('debugState', (...args) => {
 				if (device.debugState && this._coreHandler.logDebug) {
 					// Fetch the Id that core knows this device by
 					const coreId = this._coreTsrHandlers[device.deviceId].core.deviceId
@@ -926,7 +934,8 @@ export class TSRHandler {
 				}
 			})
 
-			await device.device.on('timeTrace', ((trace: FinishedTrace) => sendTrace(trace)) as () => void)
+			await emitterHack.on('timeTrace', (trace) => sendTrace(trace))
+			/* eslint-enable @typescript-eslint/await-thenable */
 
 			// now initialize it
 			await this.tsr.initDevice(deviceId, options)
