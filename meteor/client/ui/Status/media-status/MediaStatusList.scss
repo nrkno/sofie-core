@@ -41,17 +41,25 @@
 	}
 }
 
+.media-status-list-message {
+	text-align: center;
+	font-style: italic;
+	padding-top: 1em;
+}
+
 .media-status-table {
+	table-layout: fixed;
+
 	.media-status-item__rundown {
 		width: 17em;
 	}
 
 	.media-status-item__status {
-		width: 3em;
+		width: 2em;
 	}
 
 	.media-status-item__source-layer {
-		width: 4em;
+		width: 3em;
 	}
 
 	.media-status-item__identifiers {

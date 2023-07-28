@@ -30,6 +30,21 @@
 		font-weight: 400;
 	}
 
+	> .media-status-item__label {
+		position: relative;
+
+		> .media-status-item__label-container {
+			position: absolute;
+			top: 5px;
+			left: 5px;
+			right: 5px;
+			bottom: 5px;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+	}
+
 	.media-status-item__source-layer-indicator {
 		position: relative;
 		color: #fff;

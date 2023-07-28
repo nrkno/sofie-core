@@ -61,7 +61,9 @@ export function MediaStatusListItem({
 				{segmentIdentifier ? <div className="media-status-item__segment-identifier">{segmentIdentifier}</div> : null}
 				{partIdentifier ? <div className="media-status-item__part-identifier">{partIdentifier}</div> : null}
 			</td>
-			<td className="media-status-item__label">{label}</td>
+			<td className="media-status-item__label">
+				<div className="media-status-item__label-container">{label}</div>
+			</td>
 			<td className="media-status-item__duration">{duration ? formatTime(duration) : null}</td>
 		</tr>
 	)

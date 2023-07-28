@@ -21,6 +21,8 @@ export const MediaStatusItem = withTiming<
 		invalid?: boolean | undefined
 		label: string
 		isAdLib: boolean
+		isLive: boolean
+		isNext: boolean
 	},
 	{}
 >({
@@ -39,6 +41,8 @@ export const MediaStatusItem = withTiming<
 	label,
 	timingDurations,
 	isAdLib,
+	isLive,
+	isNext,
 }): JSX.Element {
 	const timingId = unprotectString(partInstanceId ?? partId)
 	const thisPartCountdown = timingId ? timingDurations.partCountdown?.[timingId] : undefined
@@ -48,7 +52,10 @@ export const MediaStatusItem = withTiming<
 
 	return (
 		<tr className="media-status-popup-item">
-			<td className="media-status-popup-item__playout-indicator"></td>
+			<td className="media-status-popup-item__playout-indicator">
+				{isNext ? <div className="media-status-popup-item__next-indicator"></div> : null}
+				{isLive ? <div className="media-status-popup-item__live-indicator"></div> : null}
+			</td>
 			<td className="media-status-popup-item__countdown">
 				{!isAdLib && thisPartCountdown ? RundownUtils.formatTimeToShortTime(thisPartCountdown) : null}
 			</td>

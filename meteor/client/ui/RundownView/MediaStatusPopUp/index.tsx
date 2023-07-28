@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 // import classNames from 'classnames'
 // import Tooltip from 'rc-tooltip'
@@ -12,6 +12,11 @@ import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMes
 import { assertNever } from '@sofie-automation/corelib/dist/lib'
 import { MediaStatusPopUpHeader } from './MediaStatusPopUpHeader'
 import { RundownPlaylists } from '../../../collections'
+import { MediaStatusPopUpSegmentRule } from './MediaStatusPopUpSegmentRule'
+import { mapOrFallback } from '../../../lib/lib'
+import { Spinner } from '../../../lib/Spinner'
+import { NavLink } from 'react-router-dom'
+import { MediaStatusPopOutIcon } from '../../../lib/ui/icons/mediaStatus'
 
 interface IProps {
 	playlistId: RundownPlaylistId
@@ -25,12 +30,24 @@ export function MediaStatusPopUp({ playlistId }: IProps): JSX.Element {
 
 	const [sortBy, setSortBy] = useState<'rundown' | 'status' | 'sourceLayer' | 'name'>('rundown')
 	const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
+	const [filter, setFilter] = useState<string>('')
 	// const [filter, setFilter] = useState('')
 
 	function onChangeSort(sortBy: SortBy, sortOrder: SortOrder) {
 		setSortOrder(sortOrder === 'inactive' ? 'asc' : sortOrder)
 		setSortBy(sortBy)
 	}
+
+	const emptyFilter = !filter || filter.trim().length === 0
+
+	const filterItems = useCallback(
+		(item: IMediaStatusListItem) => {
+			if (emptyFilter) return true
+			if (item.name.toLowerCase().indexOf(filter.toLowerCase().trim()) >= 0) return true
+			return false
+		},
+		[filter, emptyFilter]
+	)
 
 	const playlistIds = useMemo(() => [playlistId], [playlistId])
 
@@ -54,39 +71,83 @@ export function MediaStatusPopUp({ playlistId }: IProps): JSX.Element {
 		}
 	)
 
-	console.log(currentPartInstanceId, nextPartInstanceId)
-
 	return (
-		<div className="media-status-pop-up-panel" role="dialog">
-			<div className="media-status-pop-up-panel__inside">
+		<div className="media-status-panel" role="dialog">
+			<div className="media-status-panel__inside">
+				<div className="media-status-panel__pop-out">
+					<NavLink to="/status/media" target="_blank">
+						<MediaStatusPopOutIcon />
+					</NavLink>
+				</div>
 				<h2 className="mhm mvn">{t('Media Status')}</h2>
 				<div className="media-status-panel__scrollbox">
 					<table className="media-status-panel__table">
-						<MediaStatusPopUpHeader sortBy={sortBy} sortOrder={sortOrder} onChange={onChangeSort} />
+						<MediaStatusPopUpHeader
+							sortBy={sortBy}
+							sortOrder={sortOrder}
+							onChange={onChangeSort}
+							filter={filter}
+							onFilterChange={setFilter}
+						/>
 						<tbody>
-							<MediaStatus playlistIds={playlistIds}>
+							<MediaStatus
+								playlistIds={playlistIds}
+								fallback={
+									<tr>
+										<td colSpan={6} className="media-status-panel__empty-message">
+											<Spinner />
+										</td>
+									</tr>
+								}
+							>
 								{(items) => (
 									<>
-										{items
-											.sort((a, b) => sortItems(a, b, sortBy, sortOrder))
-											.map((item) => (
-												<MediaStatusItem
-													key={unprotectString(item._id)}
-													label={item.name}
-													partId={item.partId}
-													partInstanceId={item.partInstanceId}
-													partIdentifier={item.partIdentifier}
-													segmentIdentifier={item.segmentIdentifier}
-													sourceLayerName={item.sourceLayerName}
-													sourceLayerType={item.sourceLayerType}
-													invalid={item.invalid}
-													statusOverlay={item.pieceContentStatus?.messages
-														.map((message) => translateMessage(message, t))
-														.join(', ')}
-													status={item.status}
-													isAdLib={item.isAdLib}
-												/>
-											))}
+										{mapOrFallback(
+											items.filter((item) => filterItems(item)).sort((a, b) => sortItems(a, b, sortBy, sortOrder)),
+											(item, index, otherItems) => {
+												let line: JSX.Element | null = null
+												// The Segment separators (rules) only make sense in rundown mode
+												if (sortBy === 'rundown' && index > 0 && emptyFilter) {
+													if (otherItems[index - 1].segmentId !== item.segmentId) {
+														line = <MediaStatusPopUpSegmentRule />
+													}
+												}
+
+												const isLive =
+													currentPartInstanceId !== undefined && item.partInstanceId === currentPartInstanceId
+												const isNext = nextPartInstanceId !== undefined && item.partInstanceId === nextPartInstanceId
+
+												return (
+													<React.Fragment key={unprotectString(item._id)}>
+														{line}
+														<MediaStatusItem
+															label={item.name}
+															partId={item.partId}
+															partInstanceId={item.partInstanceId}
+															partIdentifier={item.partIdentifier}
+															segmentIdentifier={item.segmentIdentifier}
+															sourceLayerName={item.sourceLayerName}
+															sourceLayerType={item.sourceLayerType}
+															invalid={item.invalid}
+															statusOverlay={item.pieceContentStatus?.messages
+																.map((message) => translateMessage(message, t))
+																.join(', ')}
+															status={item.status}
+															isAdLib={item.isAdLib}
+															isLive={isLive}
+															isNext={isNext}
+														/>
+													</React.Fragment>
+												)
+											},
+											() => (
+												<tr>
+													<td colSpan={6} className="media-status-panel__empty-message">
+														{!emptyFilter ? t('No Media matches this filter') : t('No Media required for this Rundown')}
+													</td>
+												</tr>
+											)
+										)}
 									</>
 								)}
 							</MediaStatus>

@@ -1,16 +1,22 @@
-import React from 'react'
+import React, { ChangeEvent, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { SortOrderButton } from '../../MediaStatus/SortOrderButton'
 import classNames from 'classnames'
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faTimes } from '@fortawesome/free-solid-svg-icons'
 
 export function MediaStatusPopUpHeader({
 	sortOrder,
 	sortBy,
 	onChange,
+	filter,
+	onFilterChange,
 }: {
 	sortBy: SortBy
 	sortOrder: SortOrder
 	onChange?: (sortBy: SortBy, sortOrder: SortOrder) => void
+	filter: string
+	onFilterChange?: (filter: string) => void
 }): JSX.Element | null {
 	const { t } = useTranslation()
 
@@ -21,6 +27,22 @@ export function MediaStatusPopUpHeader({
 		}
 		onChange?.(sortBy, newSortOrder)
 	}
+
+	const onFilterChangeCallback = useCallback(
+		(e: ChangeEvent<HTMLInputElement>) => {
+			onFilterChange?.(e.target.value)
+		},
+		[onFilterChange]
+	)
+
+	const onFilterInputKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (e.key === 'Escape' || e.key === 'Enter') {
+			if (!(document.activeElement instanceof HTMLElement)) return
+			document.activeElement.blur()
+		} else if (e.key.match(/^F\d+$/)) {
+			e.preventDefault()
+		}
+	}, [])
 
 	return (
 		<thead className="media-status-panel-header">
@@ -50,7 +72,26 @@ export function MediaStatusPopUpHeader({
 					/>
 				</th>
 				<th className="media-status-item__identifiers"></th>
-				<th></th>
+				<th className="media-status-item__label">
+					<input
+						type="search"
+						className="media-status-panel-header__filter-input"
+						value={filter ?? ''}
+						onChange={onFilterChangeCallback}
+						onKeyDown={onFilterInputKeyDown}
+						placeholder={t('Filter...')}
+					/>
+					{filter && (
+						<div className="media-status-panel-header__clear-search-input" onClick={() => onFilterChange?.('')}>
+							<FontAwesomeIcon icon={faTimes} />
+						</div>
+					)}
+					<SortOrderButton
+						className="media-status-popup-item__sort-button"
+						order={matchSortKey('name', sortBy, sortOrder)}
+						onChange={(order) => changeSortOrder('name', order)}
+					/>
+				</th>
 			</tr>
 		</thead>
 	)

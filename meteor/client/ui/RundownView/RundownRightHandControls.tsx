@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next'
 import { SegmentViewMode } from '../../lib/ui/icons/listView'
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { MediaStatusPopUp } from './MediaStatusPopUp'
+import { MediaStatusIcon } from '../../lib/ui/icons/mediaStatus'
 
 interface IProps {
 	playlistId: RundownPlaylistId
@@ -207,7 +208,7 @@ export function RundownRightHandControls(props: IProps): JSX.Element {
 						aria-haspopup="dialog"
 						aria-pressed={mediaStatusOpen ? 'true' : 'false'}
 					>
-						<SwitchboardIcon />
+						<MediaStatusIcon />
 					</button>
 					<VelocityReact.VelocityTransitionGroup
 						enter={{

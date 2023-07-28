@@ -2,9 +2,29 @@
 @import '../../../styles/itemTypeColors';
 
 .media-status-popup-item {
+	&:first-child {
+		> td {
+			padding-top: 3px;	
+		}
+	}
+
 	.media-status-popup-item__playout-indicator {
 		width: 1.5em;
 		max-width: 1.5em;
+	}
+
+	.media-status-popup-item__live-indicator {
+		background: $general-live-color;
+		width: 0.75em;
+		height: 1.3em;
+		border-radius: 0 1em 1em 0;
+	}
+
+	.media-status-popup-item__next-indicator {
+		background: $general-next-color;
+		width: 0.75em;
+		height: 1.3em;
+		clip-path: polygon(20% 0, 100% 50%, 20% 100%, 0 100%, 0 0);
 	}
 
 	.media-status-popup-item__countdown {
@@ -12,19 +32,19 @@
 		text-align: right;
 		font-weight: 400;
 		width: 5em;
-		padding: 0 0.15em;
+		padding: 0.1em 0.15em 0;
 	}
 
 	.media-status-popup-item__status {
 		max-width: 3em;
 		padding: 0 0.15em;
 
-		> svg {
+		svg {
 			width: auto;
 			height: 1.3em;
 		}
 
-		> svg.hourglass {
+		svg.hourglass {
 			g > path {
 				stroke: #8c8c8c;
 			}

@@ -15,6 +15,7 @@ import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMes
 import { assertNever } from '@sofie-automation/corelib/dist/lib'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
+import { mapOrFallback } from '../../../lib/lib'
 
 export function MediaStatus(): JSX.Element | null {
 	const scrollBox = useRef<HTMLDivElement>(null)
@@ -41,13 +42,15 @@ export function MediaStatus(): JSX.Element | null {
 		setOffsetTop(scrollBox.current.offsetTop)
 	}, [])
 
+	const emptyFilter = !filter || filter.trim().length === 0
+
 	const filterItems = useCallback(
 		(item: IMediaStatusListItem) => {
-			if (!filter || filter.trim().length === 0) return true
+			if (emptyFilter) return true
 			if (item.name.toLowerCase().indexOf(filter.toLowerCase().trim()) >= 0) return true
 			return false
 		},
-		[filter]
+		[filter, emptyFilter]
 	)
 
 	const scrollBoxStyle = useMemo<CSSProperties>(
@@ -83,8 +86,8 @@ export function MediaStatus(): JSX.Element | null {
 						<MediaStatusComponent
 							playlistIds={playlistIds}
 							fallback={
-								<tr className="media-status-list-loading">
-									<td colSpan={6}>
+								<tr>
+									<td colSpan={6} className="media-status-list-message">
 										<Spinner />
 									</td>
 								</tr>
@@ -92,10 +95,9 @@ export function MediaStatus(): JSX.Element | null {
 						>
 							{(items) => (
 								<>
-									{items
-										.filter((item) => filterItems(item))
-										.sort((a, b) => sortItems(a, b, sortBy, sortOrder))
-										.map((item) => (
+									{mapOrFallback(
+										items.filter((item) => filterItems(item)).sort((a, b) => sortItems(a, b, sortBy, sortOrder)),
+										(item) => (
 											<MediaStatusListItem
 												rundownName={item.playlistName}
 												rundownTo={`/rundown/${item.playlistId}`}
@@ -112,7 +114,15 @@ export function MediaStatus(): JSX.Element | null {
 												label={item.name}
 												duration={item.duration}
 											/>
-										))}
+										),
+										() => (
+											<tr>
+												<td colSpan={6} className="media-status-list-message">
+													{emptyFilter ? t('No Media required by this system') : t('No Media matches this filter')}
+												</td>
+											</tr>
+										)
+									)}
 								</>
 							)}
 						</MediaStatusComponent>

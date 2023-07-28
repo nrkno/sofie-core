@@ -11,6 +11,7 @@ import {
 	RundownBaselineAdLibActionId,
 	RundownId,
 	RundownPlaylistId,
+	SegmentId,
 	ShowStyleBaseId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import {
@@ -168,6 +169,7 @@ function useRundownPlaylists(playlistIds: RundownPlaylistId[]) {
 							playlistRank,
 							segmentRank,
 							segmentIdentifier: segment.identifier,
+							segmentId: segment._id,
 							invalid: partInstance.part.invalid,
 							invalidReason: partInstance.part.invalidReason,
 							identifier: partInstance.part.identifier,
@@ -185,6 +187,7 @@ function useRundownPlaylists(playlistIds: RundownPlaylistId[]) {
 						playlistRank,
 						segmentRank,
 						segmentIdentifier: segment.identifier,
+						segmentId: segment._id,
 						invalid: partInstance.part.invalid,
 						invalidReason: partInstance.part.invalidReason,
 						identifier: partInstance.part.identifier,
@@ -351,6 +354,7 @@ function useAdLibActionItems(partIds: PartId[], partMeta: Map<PartId, PartMeta>)
 						meta,
 						adlibAction.partId,
 						undefined,
+						meta.segmentId,
 						true
 					)
 				})
@@ -385,7 +389,7 @@ function useAdLibItems(partIds: PartId[], partMeta: Map<PartId, PartMeta>) {
 				const meta = partMeta.get(adlib.partId)
 
 				if (!meta) return
-				return getListItemFromPieceAndPartMeta(adlib._id, adlib, meta, adlib.partId, undefined, true)
+				return getListItemFromPieceAndPartMeta(adlib._id, adlib, meta, adlib.partId, undefined, meta.segmentId, true)
 			}),
 		[adlibs, partMeta],
 		[]
@@ -491,7 +495,15 @@ function usePieceItems(partIds: PartId[], partMeta: Map<PartId, PartMeta>) {
 				const meta = partMeta.get(piece.startPartId)
 
 				if (!meta) return
-				return getListItemFromPieceAndPartMeta(piece._id, piece, meta, piece.startPartId, undefined, false)
+				return getListItemFromPieceAndPartMeta(
+					piece._id,
+					piece,
+					meta,
+					piece.startPartId,
+					undefined,
+					meta.segmentId,
+					false
+				)
 			}),
 		[pieces, partMeta],
 		[]
@@ -530,6 +542,7 @@ function usePieceInstanceItems(partInstanceIds: PartInstanceId[], partInstanceMe
 					meta,
 					undefined,
 					pieceInstance.partInstanceId,
+					meta.segmentId,
 					false
 				)
 			}),
@@ -552,6 +565,7 @@ interface PartMeta {
 	showStyleBaseId: ShowStyleBaseId | undefined
 	segmentRank: number
 	segmentIdentifier: string | undefined
+	segmentId: SegmentId
 	invalid: boolean | undefined
 	invalidReason: PartInvalidReason | undefined
 	rank: number
@@ -572,6 +586,7 @@ export interface MediaStatusListItem {
 	playlistId: RundownPlaylistId
 	partId?: PartId
 	partInstanceId?: PartInstanceId
+	segmentId?: SegmentId
 	sourceLayerType: SourceLayerType | undefined
 	sourceLayerName: string | undefined
 	partIdentifier: string | undefined
@@ -656,6 +671,7 @@ function getListItemFromPieceAndPartMeta(
 	meta: PartMeta,
 	sourcePartId: PartId | undefined,
 	sourcePartInstanceId: PartInstanceId | undefined,
+	sourceSegmentId: SegmentId,
 	isAdLib: boolean
 ): MediaStatusListItem | undefined {
 	const showStyleBase = meta.showStyleBaseId && UIShowStyleBases.findOne(meta.showStyleBaseId)
@@ -689,6 +705,7 @@ function getListItemFromPieceAndPartMeta(
 		playlistId,
 		partId: sourcePartId,
 		partInstanceId: sourcePartInstanceId,
+		segmentId: sourceSegmentId,
 		name,
 		sourceLayerName,
 		sourceLayerType,

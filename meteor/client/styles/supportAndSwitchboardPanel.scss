@@ -31,7 +31,7 @@
 
 .support-pop-up-panel,
 .switchboard-pop-up-panel,
-.media-status-pop-up-panel {
+.media-status-panel {
 	position: fixed;
 	bottom: rem(8px);
 	right: -1px;
@@ -101,7 +101,7 @@
 	}
 }
 
-.media-status-pop-up-panel {
+.media-status-panel {
 	top: auto;
 	z-index: -1;
 	white-space: nowrap;
@@ -114,7 +114,7 @@
 	padding-top: rem(15px);
 
 
-	> .media-status-pop-up-panel__inside {
+	> .media-status-panel__inside {
 		width: 28rem;
 	}
 }
@@ -173,7 +173,7 @@
 		z-index: 1900;
 	}
 	.switchboard-pop-up-panel,
-	.media-status-pop-up-panel {
+	.media-status-panel {
 		color: #000;
 		--panel-background: #eee;
 		background: var(--panel-background);

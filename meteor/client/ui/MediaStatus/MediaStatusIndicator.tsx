@@ -1,19 +1,24 @@
 import React from 'react'
+import Tooltip from 'rc-tooltip'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { assertNever } from '@sofie-automation/corelib/dist/lib'
 import { WarningIconSmall, HourglassIconSmall, OKIconSmall } from '../../lib/ui/icons/notifications'
 
-export function MediaStatusIndicator({
+export const MediaStatusIndicator = React.memo(function MediaStatusIndicator({
 	status,
+	overlay,
 }: {
 	status: PieceStatusCode | undefined
 	overlay: string | undefined
 }): JSX.Element | null {
+	let icon: JSX.Element | null = null
 	switch (status) {
 		case PieceStatusCode.OK:
-			return <OKIconSmall />
+			icon = <OKIconSmall />
+			break
 		case PieceStatusCode.SOURCE_NOT_READY:
-			return <HourglassIconSmall />
+			icon = <HourglassIconSmall />
+			break
 		case PieceStatusCode.SOURCE_BROKEN:
 		case PieceStatusCode.SOURCE_HAS_ISSUES:
 		case PieceStatusCode.SOURCE_MISSING:
@@ -21,9 +26,17 @@ export function MediaStatusIndicator({
 		case PieceStatusCode.UNKNOWN:
 		case undefined:
 		case PieceStatusCode.SOURCE_UNKNOWN_STATE:
-			return <WarningIconSmall />
+			icon = <WarningIconSmall />
+			break
 		default:
 			assertNever(status)
-			return <>Unknown: {status}</>
+			icon = <>Unknown: {status}</>
+			break
 	}
-}
+
+	return (
+		<Tooltip overlay={overlay} trigger={['hover']} placement="top">
+			<span data-overlay={overlay}>{icon}</span>
+		</Tooltip>
+	)
+})
