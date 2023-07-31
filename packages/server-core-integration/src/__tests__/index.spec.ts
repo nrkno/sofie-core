@@ -118,7 +118,7 @@ describe('coreConnection', () => {
 		// Subscribe to data:
 		const coll0 = core.getCollection<any>('peripheralDeviceForDevice')
 		expect(coll0.findOne(id)).toBeFalsy()
-		const subId = await core.subscribe('peripheralDeviceForDevice', id)
+		const subId = await core.autoSubscribe('peripheralDeviceForDevice', id)
 		const coll1 = core.getCollection<any>('peripheralDeviceForDevice')
 		expect(coll1.findOne(id)).toMatchObject({
 			_id: id,
