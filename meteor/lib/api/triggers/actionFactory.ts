@@ -34,6 +34,7 @@ import { PartId, PartInstanceId, RundownId, RundownPlaylistId } from '@sofie-aut
 import { PartInstances, Parts } from '../../collections/libCollections'
 import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { hashSingleUseToken } from '../userActions'
+import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 
 // as described in this issue: https://github.com/Microsoft/TypeScript/issues/14094
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
@@ -577,6 +578,13 @@ export function createAction(action: SomeAction, sourceLayers: SourceLayers): Ex
 			return createShowEntireCurrentSegmentAction(action.filterChain, action.on)
 		case ClientActions.miniShelfQueueAdLib:
 			return createMiniShelfQueueAdLibAction(action.filterChain, action.forward)
+		case DeviceActions.modifyShiftRegister:
+			return {
+				action: action.action,
+				execute: () => {
+					// do nothing
+				},
+			}
 		default:
 			assertNever(action)
 			break

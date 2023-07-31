@@ -102,4 +102,8 @@ export enum ClientActions {
 	'miniShelfQueueAdLib' = 'miniShelfQueueAdLib',
 }
 
-export type SomeActionIdentifier = PlayoutActions | ClientActions
+export enum DeviceActions {
+	'modifyShiftRegister' = 'modifyShiftRegister',
+}
+
+export type SomeActionIdentifier = PlayoutActions | ClientActions | DeviceActions
