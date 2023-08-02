@@ -406,7 +406,7 @@ function getActionParametersEditor(
 						updateFunction={(_e, newVal) => {
 							onChange({
 								...action,
-								register: newVal,
+								register: Math.max(0, Number(newVal)),
 							})
 						}}
 					/>
