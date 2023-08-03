@@ -163,6 +163,12 @@ The Switchboard panel can be accessed from the Rundown View's right-hand Toolbar
 Technically, the switchboard activates and deactivates Route Sets. The Route Sets are grouped by Exclusivity Group. If an Exclusivity Group contains exactly two elements with the `ACTIVATE_ONLY` mode, the Route Sets will be displayed on either side of the switch. Otherwise, they will be displayed separately in a list next to an _Off_ position. See also [Settings ● Route sets](../configuration/settings-view#route-sets).
 :::
 
+#### Media Status panel
+
+![Media Status panel](/img/docs/main/features/media-status-rundown-view-panel.png)
+
+This provides an overview of the status of the various Media assets required by this Rundown for playback. You can sort these assets according to their playout order, status, Source Layer Name and Piece Name.
+
 ## Prompter View
 
 `/prompter/:studioId`
@@ -251,11 +257,14 @@ An API endpoint for the system status is also available under the URL `/health`
 
 ## Media Status View
 
-:::caution
-Documentation for this feature is yet to be written.
-:::
+This view is a summary of all the media required for playback for Rundowns 
+present in this System. This view allows you to see if clips are ready for 
+playback or if they are still waiting to become available to be transferred 
+onto a playout system.
 
-This page displays media transfer statuses.
+![Media Status page](/img/docs/main/features/media-status.png)
+
+Rundown View also has a panel that presents this information in the [context of the current Rundown](#media-status-panel).
 
 ## Message Queue View
 
