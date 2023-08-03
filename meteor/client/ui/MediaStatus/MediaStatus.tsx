@@ -554,7 +554,7 @@ function usePieceInstanceItems(partInstanceIds: PartInstanceId[], partInstanceMe
 }
 
 function sortRundownPlaylists(a: DBRundownPlaylist, b: DBRundownPlaylist): number {
-	return unprotectString(a._id).localeCompare(unprotectString(b._id))
+	return b.created - a.created || unprotectString(a._id).localeCompare(unprotectString(b._id))
 }
 
 interface PartMeta {

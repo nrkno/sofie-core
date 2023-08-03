@@ -25,7 +25,7 @@ export function MediaStatus(): JSX.Element | null {
 	const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 	const [filter, setFilter] = useState('')
 
-	const playlistIds = useTracker(() => RundownPlaylists.find().map((playlist) => playlist._id), [], [])
+	const playlistIds = useTracker(() => RundownPlaylists.find({}).map((playlist) => playlist._id), [], [])
 
 	function onChangeSort(sortBy: SortBy, sortOrder: SortOrder) {
 		setSortOrder(sortOrder === 'inactive' ? 'asc' : sortOrder)
@@ -173,6 +173,7 @@ function sortBySourceLayer(a: IMediaStatusListItem, b: IMediaStatusListItem) {
 }
 
 function sortByRundown(a: IMediaStatusListItem, b: IMediaStatusListItem) {
+	if (a.playlistRank !== b.playlistRank) return a.playlistRank - b.playlistRank
 	if (a.rundownName === b.rundownName) return sortBySegmentRank(a, b)
 	if (a.rundownName === undefined) return 1
 	if (b.rundownName === undefined) return -1
