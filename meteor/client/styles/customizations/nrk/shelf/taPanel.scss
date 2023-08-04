@@ -14,5 +14,20 @@
 			align-items: center;
 			justify-content: center;
 		}
+
+		/**
+		 * leftmost list of screen content
+		 */
+		&.skjermgrafikk .dashboard-panel__panel__button {
+			border: 1px var(--segment-layer-background-graphics) solid;
+			border-left-width: 10px;
+		}
+
+		/** 
+		* lists of manual supers and other adlibs
+		*/
+		&.supring .dashboard-panel__panel__button {
+			border: 1px var(--segment-layer-background-graphics) solid;
+		}
 	}
 }
