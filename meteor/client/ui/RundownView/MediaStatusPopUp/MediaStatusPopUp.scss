@@ -10,6 +10,8 @@
 .media-status-panel__table {
 	width: 100%;
 	table-layout: fixed;
+	letter-spacing: 0;
+	user-select: none;
 }
 
 .media-status-panel__empty-message {
