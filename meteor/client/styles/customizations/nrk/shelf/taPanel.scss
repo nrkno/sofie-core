@@ -1,0 +1,18 @@
+.dashboard-panel {
+	&.nrk_ta {
+		.dashboard-panel__panel__button.lower-third,
+		.dashboard-panel__panel__button.graphics {
+			background-color: #343434;
+		}
+
+		/**
+		 * persistent buttons bottom row - for screen operations
+	 	 */
+		&.buttons .dashboard-panel__panel__button__label-container {
+			height: 100%;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+		}
+	}
+}
