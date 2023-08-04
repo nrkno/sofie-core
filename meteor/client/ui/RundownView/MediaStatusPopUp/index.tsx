@@ -44,6 +44,8 @@ export function MediaStatusPopUp({ playlistId }: IProps): JSX.Element {
 		(item: IMediaStatusListItem) => {
 			if (emptyFilter) return true
 			if (item.name.toLowerCase().indexOf(filter.toLowerCase().trim()) >= 0) return true
+			if ((item.partIdentifier?.toLocaleLowerCase() ?? '').indexOf(filter.toLowerCase().trim()) === 0) return true
+			if ((item.segmentIdentifier?.toLocaleLowerCase() ?? '').indexOf(filter.toLowerCase().trim()) === 0) return true
 			return false
 		},
 		[filter, emptyFilter]
