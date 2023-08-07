@@ -123,6 +123,9 @@ export namespace MeteorMock {
 			connection: {
 				clientAddress: '1.1.1.1',
 			},
+			unblock: () => {
+				// noop
+			},
 		}
 	}
 	export class Error {
