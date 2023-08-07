@@ -11,6 +11,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleRight, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { AdLibActionEditor } from './actionEditors/AdLibActionEditor'
 import { catchError } from '../../../../../../lib/lib'
+import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
 
 interface IProps {
 	action: SomeAction
@@ -93,6 +94,9 @@ function getArguments(t: TFunction, action: SomeAction): string[] {
 		case ClientActions.miniShelfQueueAdLib:
 			result.push(t('Forward: {{forward}}', { forward: action.forward }))
 			break
+		case DeviceActions.modifyShiftRegister:
+			result.push(`${action.register ?? '?'}: ${action.operation ?? '?'}${action.value ?? '?'}`)
+			break
 		default:
 			assertNever(action)
 			return action
@@ -134,6 +138,8 @@ function hasArguments(action: SomeAction): boolean {
 			return true
 		case ClientActions.miniShelfQueueAdLib:
 			return true
+		case DeviceActions.modifyShiftRegister:
+			return true
 		default:
 			assertNever(action)
 			return action
@@ -174,6 +180,8 @@ function actionToLabel(t: TFunction, action: SomeAction['action']): string {
 			return t('Show entire On Air Segment')
 		case ClientActions.miniShelfQueueAdLib:
 			return t('Queue AdLib from Minishelf')
+		case DeviceActions.modifyShiftRegister:
+			return t('Modify Shift register')
 		default:
 			assertNever(action)
 			return action
@@ -181,7 +189,7 @@ function actionToLabel(t: TFunction, action: SomeAction['action']): string {
 }
 
 function getAvailableActions(t: TFunction): Record<string, string> {
-	const actionEnums = [PlayoutActions, ClientActions]
+	const actionEnums = [PlayoutActions, ClientActions, DeviceActions]
 
 	const result: Record<string, string> = {}
 
@@ -382,6 +390,85 @@ function getActionParametersEditor(
 							onChange({
 								...action,
 								forward: newVal,
+							})
+						}}
+					/>
+				</div>
+			)
+		case DeviceActions.modifyShiftRegister:
+			return (
+				<div className="mts">
+					<label className="block">{t('Register ID')}</label>
+					<EditAttribute
+						className="form-control input text-input input-m"
+						modifiedClassName="bghl"
+						type="int"
+						overrideDisplayValue={action.register}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								register: Math.max(0, Number(newVal)),
+							})
+						}}
+					/>
+					<label className="block">{t('Operation')}</label>
+					<EditAttribute
+						className="form-control input text-input input-m"
+						modifiedClassName="bghl"
+						type="dropdown"
+						overrideDisplayValue={action.operation}
+						attribute={''}
+						options={{
+							[t('Set')]: '=',
+							[t('Add')]: '+',
+							[t('Subtract')]: '-',
+						}}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								operation: newVal,
+							})
+						}}
+					/>
+					<label className="block">{t('Value')}</label>
+					<EditAttribute
+						className="form-control input text-input input-m"
+						modifiedClassName="bghl"
+						type="int"
+						overrideDisplayValue={action.value}
+						attribute={''}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								value: newVal,
+							})
+						}}
+					/>
+					<label className="block">{t('Minimum register limit')}</label>
+					<EditAttribute
+						className="form-control input text-input input-m"
+						modifiedClassName="bghl"
+						type="int"
+						overrideDisplayValue={action.limitMin}
+						attribute={''}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								limitMin: newVal,
+							})
+						}}
+					/>
+					<label className="block">{t('Maximum register limit')}</label>
+					<EditAttribute
+						className="form-control input text-input input-m"
+						modifiedClassName="bghl"
+						type="int"
+						overrideDisplayValue={action.limitMax}
+						attribute={''}
+						updateFunction={(_e, newVal) => {
+							onChange({
+								...action,
+								limitMax: newVal,
 							})
 						}}
 					/>
