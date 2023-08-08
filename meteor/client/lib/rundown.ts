@@ -501,9 +501,6 @@ export namespace RundownUtils {
 					includeDisabledPieces
 				)
 
-				// furthestDuration is used to figure out how much content (in terms of time) is there in the Part
-				let furthestDuration = 0
-
 				// insert items into the timeline for resolution
 				partE.pieces = preprocessedPieces.map((piece) => {
 					const resolvedPiece = resolvePrunedPieceInstance(nowInPart, piece)
@@ -511,14 +508,6 @@ export namespace RundownUtils {
 						instance: piece,
 						renderedDuration: resolvedPiece.resolvedDuration ?? null,
 						renderedInPoint: resolvedPiece.resolvedStart,
-					}
-
-					// if the duration is finite, set the furthestDuration as the inPoint+Duration to know how much content there is
-					if (
-						Number.isFinite(resPiece.renderedDuration || 0) &&
-						(resPiece.renderedInPoint || 0) + (resPiece.renderedDuration || 0) > furthestDuration
-					) {
-						furthestDuration = (resPiece.renderedInPoint || 0) + (resPiece.renderedDuration || 0)
 					}
 
 					// find the target output layer
@@ -612,7 +601,7 @@ export namespace RundownUtils {
 				}
 
 				// use the expectedDuration and fallback to the default display duration for the part
-				partE.renderedDuration = partE.renderedDuration || Settings.defaultDisplayDuration // furthestDuration
+				partE.renderedDuration = partE.renderedDuration || Settings.defaultDisplayDuration
 
 				// push the startsAt value, to figure out when each of the parts starts, relative to the beginning of the segment
 				partE.startsAt = startsAt
