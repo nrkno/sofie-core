@@ -19,11 +19,6 @@ export interface IBlueprintPiece<TMetadata = unknown> extends IBlueprintPieceGen
 
 	/** Whether the piece is a real piece, or exists as a marker to stop an infinite piece. If virtual, it does not add any contents to the timeline */
 	virtual?: boolean
-	/**
-	 * @deprecated This is a remnant of an old infinite piece implementation, and has no purpose now.
-	 * The id of the item this item is a continuation of. If it is a continuation, the inTranstion must not be set, and trigger must be 0
-	 */
-	continuesRefId?: string
 
 	/** Whether this piece is a special piece */
 	pieceType?: IBlueprintPieceType

@@ -585,11 +585,6 @@ export namespace RundownUtils {
 
 					// add the piece to the map to make future searches quicker
 					piecesLookup.set(piece.piece._id, resPiece)
-					const continues = piece.piece.continuesRefId && piecesLookup.get(piece.piece.continuesRefId)
-					if (piece.piece.continuesRefId && continues) {
-						continues.continuedByRef = resPiece
-						resPiece.continuesRef = continues
-					}
 
 					return resPiece
 				})
