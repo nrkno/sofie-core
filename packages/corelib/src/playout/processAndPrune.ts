@@ -1,17 +1,16 @@
 import { ISourceLayer, PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { PieceInstance } from '../dataModel/PieceInstance'
+import { PieceInstance, ResolvedPieceInstance } from '../dataModel/PieceInstance'
 import { SourceLayers } from '../dataModel/ShowStyleBase'
 import { assertNever, groupByToMapFunc } from '../lib'
 import _ = require('underscore')
 import { isCandidateBetterToBeContinued, isCandidateMoreImportant } from './infinites'
-import { getPieceControlObjectId } from './ids'
 
 /**
  * Get the `enable: { start: ?? }` for the new piece in terms that can be used as an `end` for another object
  */
-function getPieceStartTime(newPieceStart: number | 'now', newPiece: PieceInstance): number | string {
-	return typeof newPieceStart === 'number' ? newPieceStart : `#${getPieceControlObjectId(newPiece)}.start`
+function getPieceStartTime(newPieceStart: number | 'now'): number | RelativeResolvedEndCap {
+	return typeof newPieceStart === 'number' ? newPieceStart : { offsetFromNow: 0 }
 }
 
 function isClear(piece?: PieceInstance): boolean {
@@ -38,6 +37,10 @@ function isCappedByAVirtual(
 	return false
 }
 
+export interface RelativeResolvedEndCap {
+	offsetFromNow: number
+}
+
 export interface PieceInstanceWithTimings extends PieceInstance {
 	/**
 	 * This is a maximum end point of the pieceInstance.
@@ -47,7 +50,7 @@ export interface PieceInstanceWithTimings extends PieceInstance {
 	 *  - '#something.start + 100', if it was stopped by something that needs a preroll
 	 *  - '100', if not relative to now at all
 	 */
-	resolvedEndCap?: number | string
+	resolvedEndCap?: number | RelativeResolvedEndCap
 	priority: number
 }
 
@@ -55,6 +58,7 @@ export interface PieceInstanceWithTimings extends PieceInstance {
  * Process the infinite pieces to determine the start time and a maximum end time for each.
  * Any pieces which have no chance of being shown (duplicate start times) are pruned
  * The stacking order of infinites is considered, to define the stop times
+ * Note: `nowInPart` is only needed to order the PieceInstances. The result of this can be cached until that order changes
  */
 export function processAndPrunePieceInstanceTimings(
 	sourceLayers: SourceLayers,
@@ -120,7 +124,7 @@ function updateWithNewPieces(
 	if (newPiece) {
 		const activePiece = activePieces[key]
 		if (activePiece) {
-			activePiece.resolvedEndCap = getPieceStartTime(newPiecesStart, newPiece)
+			activePiece.resolvedEndCap = getPieceStartTime(newPiecesStart)
 		}
 		// track the new piece
 		activePieces[key] = newPiece
@@ -145,7 +149,7 @@ function updateWithNewPieces(
 					(newPiecesStart !== 0 || isCandidateBetterToBeContinued(activePieces.other, newPiece))
 				) {
 					// These modes should stop the 'other' when they start if not hidden behind a higher priority onEnd
-					activePieces.other.resolvedEndCap = getPieceStartTime(newPiecesStart, newPiece)
+					activePieces.other.resolvedEndCap = getPieceStartTime(newPiecesStart)
 					activePieces.other = undefined
 				}
 			}
@@ -208,4 +212,49 @@ function findPieceInstancesOnInfiniteLayers(pieces: PieceInstance[]): PieceInsta
 	}
 
 	return res
+}
+
+/**
+ * Resolve a PieceInstanceWithTimings to approximated numbers within the PartInstance
+ * @param nowInPart Approximate time of the playhead within the PartInstance
+ * @param pieceInstance The PieceInstance to resolve
+ */
+export function resolvePrunedPieceInstance(
+	nowInPart: number,
+	pieceInstance: PieceInstanceWithTimings
+): ResolvedPieceInstance {
+	const resolvedStart = pieceInstance.piece.enable.start === 'now' ? nowInPart : pieceInstance.piece.enable.start
+
+	// Interpret the `resolvedEndCap` property into a number
+	let resolvedEnd: number | undefined
+	if (typeof pieceInstance.resolvedEndCap === 'number') {
+		resolvedEnd = pieceInstance.resolvedEndCap
+	} else if (pieceInstance.resolvedEndCap) {
+		resolvedEnd = nowInPart + pieceInstance.resolvedEndCap.offsetFromNow
+	}
+
+	// Find any possible durations this piece may have
+	const caps: number[] = []
+	if (resolvedEnd !== undefined) caps.push(resolvedEnd - resolvedStart)
+
+	// Consider the blueprint defined duration
+	if (pieceInstance.piece.enable.duration !== undefined) caps.push(pieceInstance.piece.enable.duration)
+
+	// Consider the playout userDuration
+	if (pieceInstance.userDuration) {
+		if ('endRelativeToPart' in pieceInstance.userDuration) {
+			caps.push(pieceInstance.userDuration.endRelativeToPart - resolvedStart)
+		} else if ('endRelativeToNow' in pieceInstance.userDuration) {
+			caps.push(nowInPart + pieceInstance.userDuration.endRelativeToNow - resolvedStart)
+		}
+	}
+
+	return {
+		instance: pieceInstance,
+
+		resolvedStart,
+		resolvedDuration: caps.length ? Math.min(...caps) : undefined,
+
+		timelinePriority: pieceInstance.priority,
+	}
 }

@@ -22,7 +22,7 @@
 		"lint": "run lint:raw .",
 		"unit": "run -T jest",
 		"test": "run lint && run unit",
-		"watch": "run -T jest --watch",
+		"watch": "run -T jest --watch --coverage=false",
 		"cov": "run -T jest --coverage; open-cli coverage/lcov-report/index.html",
 		"cov-open": "open-cli coverage/lcov-report/index.html",
 		"validate:dependencies": "yarn npm audit --environment production && run license-validate",

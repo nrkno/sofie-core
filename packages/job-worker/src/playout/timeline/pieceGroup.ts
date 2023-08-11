@@ -5,14 +5,14 @@ import {
 	TimelineObjPieceAbstract,
 	TimelineObjRundown,
 	TimelineObjType,
-} from '../dataModel/Timeline'
+} from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { ReadonlyDeep } from 'type-fest'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { PieceInstanceId, RundownPlaylistId } from '../dataModel/Ids'
-import { clone, literal } from '../lib'
-import { getPieceControlObjectId, getPieceGroupId } from './ids'
-import { unprotectString } from '../protectedString'
-import { PieceInstanceWithTimings } from './processAndPrune'
+import { PieceInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { clone, literal } from '@sofie-automation/corelib/dist/lib'
+import { getPieceControlObjectId, getPieceGroupId } from '@sofie-automation/corelib/dist/playout/ids'
+import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
+import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 export interface PieceTimelineMetadata {
@@ -110,7 +110,7 @@ export function createPieceGroupAndCap(
 			enable: {
 				start: 'now',
 			},
-			inGroup: partGroup && partGroup.id,
+			inGroup: partGroup?.id,
 			layer: '',
 			content: {
 				deviceType: TSR.DeviceType.ABSTRACT,
@@ -130,8 +130,11 @@ export function createPieceGroupAndCap(
 		controlObj.metaData.triggerPieceInstanceId = pieceInstance._id
 	}
 
-	let resolvedEndCap = pieceInstance.resolvedEndCap
-	if (resolvedEndCap === 'now') {
+	let resolvedEndCap: number | string | undefined
+	// If the start has been adjusted, the end needs to be updated to compensate
+	if (typeof pieceInstance.resolvedEndCap === 'number') {
+		resolvedEndCap = pieceInstance.resolvedEndCap - (pieceStartOffset ?? 0)
+	} else if (pieceInstance.resolvedEndCap) {
 		// TODO - there could already be a piece with a cap of 'now' that we could use as our end time
 		// As the cap is for 'now', rather than try to get tsr to understand `end: 'now'`, we can create a 'now' object to tranlate it
 		const nowObj = literal<TimelineObjRundown & OnGenerateTimelineObjExt<PieceTimelineMetadata>>({
@@ -151,14 +154,7 @@ export function createPieceGroupAndCap(
 			priority: 0,
 		})
 		capObjs.push(nowObj)
-		resolvedEndCap = `#${nowObj.id}.start`
-	} else if (pieceStartOffset && resolvedEndCap !== undefined) {
-		// If the start has been adjusted, the end needs to be updated to compensate
-		if (typeof resolvedEndCap === 'number') {
-			resolvedEndCap -= pieceStartOffset
-		} else {
-			resolvedEndCap = `${resolvedEndCap} - ${pieceStartOffset}`
-		}
+		resolvedEndCap = `#${nowObj.id}.start + ${pieceInstance.resolvedEndCap.offsetFromNow}`
 	}
 
 	if (controlObj.enable.duration !== undefined || controlObj.enable.end !== undefined) {
@@ -192,7 +188,7 @@ export function createPieceGroupAndCap(
 						type: TimelineContentTypeOther.GROUP,
 					},
 					isGroup: true,
-					inGroup: partGroup && partGroup.id,
+					inGroup: partGroup?.id,
 					partInstanceId: controlObj.partInstanceId,
 					metaData: literal<PieceTimelineMetadata>({
 						isPieceTimeline: true,

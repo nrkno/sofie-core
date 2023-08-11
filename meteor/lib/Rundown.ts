@@ -10,7 +10,6 @@ import {
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
 } from '@sofie-automation/corelib/dist/playout/infinites'
-import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { invalidateAfter } from '../lib/invalidatingTime'
 import { getCurrentTime, groupByToMap, ProtectedString, protectString } from './lib'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
@@ -29,6 +28,7 @@ import { PieceInstances, Pieces } from './collections/libCollections'
 import { RundownPlaylistCollectionUtil } from './collections/rundownPlaylistUtil'
 import { PieceContentStatusObj } from './mediaObjects'
 import { ReadonlyDeep } from 'type-fest'
+import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */

@@ -25,7 +25,7 @@ import { setupDefaultRundown, setupMockShowStyleCompound } from '../../__mocks__
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { JobContext } from '../../jobs'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { PieceInstance, ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { getCurrentTime } from '../../lib'
 import {
@@ -48,10 +48,11 @@ const innerStartQueuedAdLibOrig = PlayoutAdlib.innerStartQueuedAdLib
 type TinnerStartQueuedAdLib = jest.MockedFunction<typeof PlayoutAdlib.innerStartQueuedAdLib>
 const innerStartQueuedAdLibMock = jest.spyOn(PlayoutAdlib, 'innerStartQueuedAdLib') as TinnerStartQueuedAdLib
 
-jest.mock('../../playout/pieces')
-import { getResolvedPieces } from '../../playout/pieces'
-type TgetResolvedPieces = jest.MockedFunction<typeof getResolvedPieces>
-const getResolvedPiecesMock = getResolvedPieces as TgetResolvedPieces
+jest.mock('../../playout/resolvedPieces')
+import { getResolvedPiecesForCurrentPartInstance } from '../../playout/resolvedPieces'
+type TgetResolvedPiecesForCurrentPartInstance = jest.MockedFunction<typeof getResolvedPiecesForCurrentPartInstance>
+const getResolvedPiecesForCurrentPartInstanceMock =
+	getResolvedPiecesForCurrentPartInstance as TgetResolvedPiecesForCurrentPartInstance
 
 jest.mock('../postProcess')
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
@@ -407,33 +408,39 @@ describe('Test blueprint api context', () => {
 
 					expect(cache.PartInstances.documents.size).toBe(0)
 
-					expect(getResolvedPiecesMock).toHaveBeenCalledTimes(0)
+					expect(getResolvedPiecesForCurrentPartInstanceMock).toHaveBeenCalledTimes(0)
 
 					await expect(context.getResolvedPieceInstances('next')).resolves.toHaveLength(0)
 					await expect(context.getResolvedPieceInstances('current')).resolves.toHaveLength(0)
-					expect(getResolvedPiecesMock).toHaveBeenCalledTimes(0)
+					expect(getResolvedPiecesForCurrentPartInstanceMock).toHaveBeenCalledTimes(0)
 				})
 
 				let mockCalledIds: PartInstanceId[] = []
-				getResolvedPiecesMock.mockImplementation(
+				getResolvedPiecesForCurrentPartInstanceMock.mockImplementation(
 					(
 						context2: JobContext,
 						cache2: ReadOnlyCache<CacheForPlayout>,
 						sourceLayers: SourceLayers,
-						partInstance: DBPartInstance
+						partInstance: Pick<DBPartInstance, '_id' | 'timings'>,
+						now?: number
 					) => {
 						expect(context2).toBe(jobContext)
 						expect(cache2).toBeInstanceOf(CacheForPlayout)
 						expect(sourceLayers).toBeTruthy()
+						expect(now).toBeFalsy()
 						mockCalledIds.push(partInstance._id)
 						return [
 							{
-								_id: 'abc',
-								piece: {
-									timelineObjectsString: EmptyPieceTimelineObjectsBlob,
-								},
+								instance: {
+									_id: 'abc',
+									piece: {
+										timelineObjectsString: EmptyPieceTimelineObjectsBlob,
+									},
+								} as any as PieceInstance,
+								resolvedStart: 0,
+								timelinePriority: 0,
 							},
-						] as any as ResolvedPieceInstance[]
+						]
 					}
 				)
 
@@ -447,12 +454,12 @@ describe('Test blueprint api context', () => {
 					await expect(
 						context.getResolvedPieceInstances('current').then((res) => res.map((p) => p._id))
 					).resolves.toEqual(['abc'])
-					expect(getResolvedPiecesMock).toHaveBeenCalledTimes(1)
+					expect(getResolvedPiecesForCurrentPartInstanceMock).toHaveBeenCalledTimes(1)
 					expect(mockCalledIds).toEqual([allPartInstances[1]._id])
 				})
 
 				mockCalledIds = []
-				getResolvedPiecesMock.mockClear()
+				getResolvedPiecesForCurrentPartInstanceMock.mockClear()
 
 				await setPartInstances(jobContext, playlistId, null, allPartInstances[2])
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
@@ -465,7 +472,7 @@ describe('Test blueprint api context', () => {
 						context.getResolvedPieceInstances('next').then((res) => res.map((p) => p._id))
 					).resolves.toEqual(['abc'])
 					await expect(context.getResolvedPieceInstances('current')).resolves.toHaveLength(0)
-					expect(getResolvedPiecesMock).toHaveBeenCalledTimes(1)
+					expect(getResolvedPiecesForCurrentPartInstanceMock).toHaveBeenCalledTimes(1)
 					expect(mockCalledIds).toEqual([allPartInstances[2]._id])
 				})
 			})
