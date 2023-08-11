@@ -90,7 +90,7 @@ The "Attach" configuration in `launch.json` supports debugging blueprints.
 
 Local blueprints repo needs to be added to the Visual Studio Code workspace under the name "Blueprints".
 
-It is required to set `devtool` to  `'inline-source-map'` and `output.devtoolModuleFilenameTemplate` to `'blueprint:///[resource-path]'` in webpack config of the blueprints.
+It is required to set `devtool` to `'inline-source-map'` and `output.devtoolModuleFilenameTemplate` to `'blueprint:///[resource-path]'` in webpack config of the blueprints.
 
 ### Dealing with strange errors
 
@@ -132,6 +132,25 @@ Instead of semver, the Major number gets incremented whenever we feel like Sofie
 The version numbers of the blueprints-integration and server-core-integration libraries are tied to this, and as such they also do not follow semver currently. In future these may be decoupled.
 The api of server-core-integration is pretty stable and rarely undergoes any breaking changes, so is ok to be mismatched.
 The api of blueprints-integration is rather volatile, and often has breaking changes. Because of this, we recommend matching the minor version of blueprints-integration with Sofie core. Sofie will warn if these do not match. We expect this to settle down in the future, and will review this decision when we feel it is worthwhile.
+
+## Deprecations
+
+### ConfigManifests
+
+The ConfigManifests for Blueprints and Gateways was replaced with JSONSchema in R50.  
+However, one usage by AdlibActions for their userDataManifest remains as this is not something we are actively using.
+
+### ExpectedMediaItems
+
+These are used for Media-manager which is no longer being developed.
+
+### Blueprints: getPieceABSessionId & getTimelineObjectAbSessionId
+
+With AB being a native concept supported by Sofie since R50, these are likely no longer useful to Blueprints.
+
+### MongoQuery `fields` specifier
+
+It is recommended to use `projection` instead, as it is functionally identical but follows recommended naming from mongodb.
 
 ## Additional information
 
