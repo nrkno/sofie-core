@@ -7,15 +7,6 @@ import type { ExpectedPlayoutItemGeneric } from './expectedPlayoutItem'
 
 export { PieceLifespan }
 
-export declare enum PieceTransitionType {
-	MIX = 'MIX',
-	WIPE = 'WIPE',
-}
-export interface PieceTransition {
-	type: PieceTransitionType
-	duration: number
-}
-
 export enum IBlueprintDirectPlayType {
 	AdLibPiece = 'adlib',
 	AdLibAction = 'action',
@@ -55,15 +46,6 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	outputLayerId: string
 	/** The object describing the item in detail */
 	content: WithTimeline<SomeContent>
-
-	/** The transition used by this piece to transition to and from the piece */
-	/** @deprecated */
-	transitions?: {
-		/** In transition for the piece */
-		inTransition?: PieceTransition
-		/** The out transition for the piece */
-		outTransition?: PieceTransition
-	}
 
 	/**
 	 * How long this piece needs to prepare its content before it will have an effect on the output.
