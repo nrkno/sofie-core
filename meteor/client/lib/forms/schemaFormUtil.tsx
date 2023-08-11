@@ -21,6 +21,9 @@ export interface SchemaFormCommonProps {
 	/** Allow special 'built-in' enum types to be used with the 'ui:sofie-enum' property in the schema */
 	sofieEnumDefinitons?: Record<string, SchemaFormSofieEnumDefinition>
 
+	/** Whether this field has been marked as "required" */
+	isRequired: boolean
+
 	/**
 	 * In some situations, it is desirable to not allow tables to be used by a schema
 	 * For example, a table inside a table will not display properly so this gets set automatically

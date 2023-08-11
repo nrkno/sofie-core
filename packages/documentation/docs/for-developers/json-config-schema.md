@@ -63,7 +63,7 @@ Valid for both show-style and studio blueprint configuration
 
 This will provide a dropdown of all mappings in the studio, or studios where the show-style can be used.
 
-Setting `ui:sofie-enum:filter` to an array of numbers will filter the dropdown by the specified DeviceType.
+Setting `ui:sofie-enum:filter` to an array of strings will filter the dropdown by the specified DeviceType.
 
 #### `source-layers`
 
@@ -202,7 +202,7 @@ An `object` table is better than an `array` in blueprint-configuration, as it al
 	"items": {
 		"type": "string",
 		"ui:sofie-enum": "mappings",
-		"ui:sofie-enum:filter": [2],
+		"ui:sofie-enum:filter": ["ATEM"],
 	},
 	"uniqueItems": true
 },
