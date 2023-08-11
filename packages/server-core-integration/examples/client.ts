@@ -39,7 +39,7 @@ core.onFailed((err) => {
 
 const setupSubscription = async () => {
 	console.log('Setup subscription')
-	return core.subscribe('peripheralDeviceForDevice', core.deviceId).then(() => {
+	return core.autoSubscribe('peripheralDeviceForDevice', core.deviceId).then(() => {
 		console.log('sub OK!')
 	})
 }
