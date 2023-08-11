@@ -10,7 +10,7 @@ import { WrappedOverridableItemNormal, OverrideOpHelperForItemContents } from '.
 import { SchemaFormCommonProps } from './schemaFormUtil'
 import { SchemaFormWithOverrides } from './SchemaFormWithOverrides'
 
-interface SchemaFormForCollectionProps extends SchemaFormCommonProps {
+interface SchemaFormForCollectionProps extends Omit<SchemaFormCommonProps, 'isRequired'> {
 	/** The collection to operate on */
 	collection: MongoCollection<any>
 	/** Id of the document in the collection */
@@ -80,7 +80,7 @@ export function SchemaFormForCollection({
 		}
 	}, [object, partialOverridesForObject])
 
-	return <SchemaFormWithOverrides {...commonProps} attr={''} item={wrappedItem} overrideHelper={helper} />
+	return <SchemaFormWithOverrides {...commonProps} attr={''} item={wrappedItem} overrideHelper={helper} isRequired />
 }
 
 /**

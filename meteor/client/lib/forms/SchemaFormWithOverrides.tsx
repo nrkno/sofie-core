@@ -45,6 +45,9 @@ interface FormComponentProps {
 		itemKey: string
 		opPrefix: string
 	}
+
+	/** Whether this field has been marked as "required" */
+	isRequired: boolean
 }
 
 function useChildPropsForFormComponent(props: SchemaFormWithOverridesProps) {
@@ -63,8 +66,9 @@ function useChildPropsForFormComponent(props: SchemaFormWithOverridesProps) {
 				opPrefix: props.item.id,
 				overrideHelper: props.overrideHelper,
 			},
+			isRequired: props.isRequired,
 		}
-	}, [props.schema, props.translationNamespaces, props.attr, props.item, props.overrideHelper])
+	}, [props.schema, props.translationNamespaces, props.attr, props.item, props.overrideHelper, props.isRequired])
 }
 
 export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps): JSX.Element {
@@ -170,6 +174,7 @@ const ObjectFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 						translationNamespaces={props.translationNamespaces}
 						sofieEnumDefinitons={props.sofieEnumDefinitons}
 						allowTables={props.allowTables}
+						isRequired={props.schema.required?.includes(index) ?? false}
 					/>
 				)
 			})}
@@ -229,10 +234,25 @@ interface EnumFormControlWrapperProps extends FormComponentProps {
 
 	options: DropdownInputOption<any>[]
 }
-const EnumFormControlWrapper = ({ commonAttrs, multiple, options }: EnumFormControlWrapperProps) => {
+const EnumFormControlWrapper = ({ commonAttrs, multiple, options, isRequired }: EnumFormControlWrapperProps) => {
+	const optionsWithNoneField = useMemo(() => {
+		if (isRequired && !multiple) {
+			return [
+				{
+					i: -1,
+					name: 'None',
+					value: undefined,
+				},
+				...options,
+			]
+		} else {
+			return options
+		}
+	}, [options, isRequired, multiple])
+
 	return (
 		<>
-			<LabelAndOverridesForDropdown {...commonAttrs} options={options}>
+			<LabelAndOverridesForDropdown {...commonAttrs} options={optionsWithNoneField}>
 				{(value, handleUpdate, options) => {
 					if (multiple) {
 						return (
