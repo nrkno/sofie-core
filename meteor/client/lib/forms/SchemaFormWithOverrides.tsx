@@ -235,12 +235,14 @@ interface EnumFormControlWrapperProps extends FormComponentProps {
 	options: DropdownInputOption<any>[]
 }
 const EnumFormControlWrapper = ({ commonAttrs, multiple, options, isRequired }: EnumFormControlWrapperProps) => {
+	const { t } = useTranslation()
+
 	const optionsWithNoneField = useMemo(() => {
 		if (isRequired && !multiple) {
 			return [
 				{
 					i: -1,
-					name: 'None',
+					name: t('None'),
 					value: undefined,
 				},
 				...options,
@@ -248,7 +250,7 @@ const EnumFormControlWrapper = ({ commonAttrs, multiple, options, isRequired }: 
 		} else {
 			return options
 		}
-	}, [options, isRequired, multiple])
+	}, [t, options, isRequired, multiple])
 
 	return (
 		<>
