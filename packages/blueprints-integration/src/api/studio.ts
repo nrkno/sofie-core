@@ -71,7 +71,6 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 
 export interface BlueprintResultStudioBaseline {
 	timelineObjects: TimelineObjectCoreExt<TSR.TSRTimelineContent>[]
-	/** @deprecated */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	expectedPackages?: ExpectedPackage.Any[]
 }

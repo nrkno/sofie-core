@@ -79,9 +79,7 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 
 	/** Whether the adlib should always be inserted queued */
 	toBeQueued?: boolean
-	/** Array of items expected to be played out. This is used by playout-devices to preload stuff.
-	 * @deprecated replaced by .expectedPackages
-	 */
+	/** Array of items expected to be played out. This is used by playout-devices to preload stuff. */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	/** User-defined tags that can be used for filtering adlibs in the shelf and identifying pieces by actions */
 	tags?: string[]

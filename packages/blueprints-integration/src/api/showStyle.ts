@@ -191,7 +191,6 @@ export interface BlueprintResultTimeline {
 }
 export interface BlueprintResultBaseline {
 	timelineObjects: TimelineObjectCoreExt<TSR.TSRTimelineContent>[]
-	/** @deprecated */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	expectedPackages?: ExpectedPackage.Any[]
 }
