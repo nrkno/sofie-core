@@ -49,6 +49,9 @@ export interface IStudioSettings {
 	 * Default: 1000
 	 */
 	minimumTakeSpan: number
+
+	/** Whether to allow scratchpad mode, before a Part is playing in a Playlist */
+	allowScratchpad?: boolean
 }
 
 export type StudioLight = Omit<DBStudio, 'mappingsWithOverrides' | 'blueprintConfigWithOverrides'>

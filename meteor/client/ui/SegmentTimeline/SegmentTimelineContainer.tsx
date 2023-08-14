@@ -29,7 +29,7 @@ import {
 	ITrackedProps,
 	IOutputLayerUi,
 } from '../SegmentContainer/withResolvedSegment'
-import { computeSegmentDuration, RundownTimingContext } from '../../lib/rundownTiming'
+import { computeSegmentDuration, getPartInstanceTimingId, RundownTimingContext } from '../../lib/rundownTiming'
 import { RundownViewShelf } from '../RundownView/RundownViewShelf'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartInstances, Parts, Segments } from '../../collections'
@@ -278,14 +278,21 @@ export const SegmentTimelineContainer = withResolvedSegment(
 				this.stopLive()
 			}
 
+			const currentNextPartInstanceTimingId = currentNextPart
+				? getPartInstanceTimingId(currentNextPart?.instance)
+				: undefined
+			const firstPartInstanceTimingId = this.props.parts[0]
+				? getPartInstanceTimingId(this.props.parts[0].instance)
+				: undefined
+
 			// Setting the correct scroll position on parts when setting is next
 			const nextPartDisplayStartsAt =
-				(currentNextPart && this.context.durations?.partDisplayStartsAt?.[unprotectString(currentNextPart.partId)]) ?? 0
+				(currentNextPartInstanceTimingId &&
+					this.context.durations?.partDisplayStartsAt?.[currentNextPartInstanceTimingId]) ||
+				0
 			const partOffset =
 				nextPartDisplayStartsAt -
-				(this.props.parts.length > 0
-					? this.context.durations?.partDisplayStartsAt?.[unprotectString(this.props.parts[0].instance.part._id)] ?? 0
-					: 0)
+				(firstPartInstanceTimingId ? this.context.durations?.partDisplayStartsAt?.[firstPartInstanceTimingId] ?? 0 : 0)
 			const nextPartIdOrOffsetHasChanged =
 				currentNextPart &&
 				this.props.playlist.nextPartInfo &&
@@ -554,12 +561,10 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			this.setState((state) => {
 				if (state.isLiveSegment && state.currentLivePart) {
 					const currentLivePartInstance = state.currentLivePart.instance
-					const currentLivePart = currentLivePartInstance.part
 
 					const partOffset =
-						(this.context.durations?.partDisplayStartsAt?.[unprotectString(currentLivePart._id)] || 0) -
-						(this.context.durations?.partDisplayStartsAt?.[unprotectString(this.props.parts[0]?.instance.part._id)] ||
-							0)
+						(this.context.durations?.partDisplayStartsAt?.[getPartInstanceTimingId(currentLivePartInstance)] || 0) -
+						(this.context.durations?.partDisplayStartsAt?.[getPartInstanceTimingId(this.props.parts[0]?.instance)] || 0)
 
 					let isExpectedToPlay = !!currentLivePartInstance.timings?.plannedStartedPlayback
 					const lastTake = currentLivePartInstance.timings?.take

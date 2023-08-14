@@ -9,7 +9,7 @@ import {
 	ITrackedProps as ITrackedResolvedSegmentProps,
 } from '../SegmentContainer/withResolvedSegment'
 import { SpeechSynthesiser } from '../../lib/speechSynthesis'
-import { SegmentStoryboard } from './SegmentStoryboard'
+import { SegmentScratchpad } from './SegmentScratchpad'
 import { unprotectString } from '../../../lib/lib'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/SegmentTimelineContainer'
 import { PartInstances, Parts, Segments } from '../../collections'
@@ -23,7 +23,7 @@ interface IProps extends IResolvedSegmentProps {
 	id: string
 }
 
-export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function SegmentStoryboardContainer({
+export const SegmentScratchpadContainer = withResolvedSegment<IProps>(function SegmentScratchpadContainer({
 	rundownId,
 	rundownIdsBefore,
 	segmentId,
@@ -229,7 +229,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 	}
 
 	return (
-		<SegmentStoryboard
+		<SegmentScratchpad
 			id={props.id}
 			ref={segmentRef}
 			key={unprotectString(props.segmentui._id)}
@@ -256,7 +256,6 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 			isLastSegment={props.isLastSegment}
 			lastValidPartIndex={props.lastValidPartIndex}
 			onHeaderNoteClick={props.onHeaderNoteClick}
-			onSwitchViewMode={props.onSwitchViewMode}
 			budgetDuration={props.budgetDuration}
 			showCountdownToSegment={props.showCountdownToSegment}
 			fixedSegmentDuration={props.fixedSegmentDuration}

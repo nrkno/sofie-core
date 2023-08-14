@@ -355,7 +355,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 					Math.abs(
 						(this.props.piece.renderedInPoint || 0) +
 							(vtContent.sourceDuration - seek) -
-							(this.props.partExpectedDuration || 0)
+							(this.props.partDisplayDuration || 0)
 					) > 500))
 		) {
 			let endOfContentAt: number = vtContent.sourceDuration + (vtContent.postrollDuration || 0)

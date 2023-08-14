@@ -25,6 +25,7 @@ import {
 	convertPieceInstanceToBlueprints,
 } from '../blueprints/context/lib'
 import { getRundown } from './lib'
+import { validateScratchpartPartInstanceProperties } from '../playout/scratchpad'
 
 type PlayStatus = 'previous' | 'current' | 'next'
 type SyncedInstance = {
@@ -210,6 +211,8 @@ export async function syncChangesToPartInstances(
 						p.part.notes = notes
 						return p
 					})
+
+					validateScratchpartPartInstanceProperties(context, cache, existingPartInstance._id)
 				}
 
 				if (existingPartInstance._id === cache.Playlist.doc.currentPartInfo?.partInstanceId) {

@@ -26,7 +26,7 @@ import { flatten } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
 import { ReadOnlyCache } from '../cache/CacheBase'
 import { CacheForIngest } from '../ingest/cache'
-import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { sortRundownIDsInPlaylist } from '@sofie-automation/corelib/dist/playout/playlist'
 import { mongoWhere } from '@sofie-automation/corelib/dist/mongo'
 
@@ -36,7 +36,7 @@ export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
 /**
  * We can only continue adlib onEnd infinites if we go forwards in the rundown. Any distance backwards will clear them.
  * */
-export function canContinueAdlibOnEndInfinites(
+export function candidatePartIsAfterPreviewPartInstance(
 	_context: JobContext,
 	playlist: ReadonlyDeep<DBRundownPlaylist>,
 	orderedSegments: DBSegment[],
@@ -65,8 +65,13 @@ export function canContinueAdlibOnEndInfinites(
 	}
 }
 
+/**
+ * Get the ids of parts, segments and rundowns before a given part in the playlist.
+ * Note: this will return no segments and rundowns if the part is in the scratchpad
+ */
 function getIdsBeforeThisPart(context: JobContext, cache: ReadOnlyCache<CacheForPlayout>, nextPart: DBPart) {
 	const span = context.startSpan('getIdsBeforeThisPart')
+
 	// Get the normal parts
 	const partsBeforeThisInSegment = cache.Parts.findAll(
 		(p) => p.segmentId === nextPart.segmentId && p._rank < nextPart._rank
@@ -77,26 +82,43 @@ function getIdsBeforeThisPart(context: JobContext, cache: ReadOnlyCache<CacheFor
 	)
 	partsBeforeThisInSegment.push(...partInstancesBeforeThisInSegment.map((p) => p.part))
 
-	const currentSegment = cache.Segments.findOne(nextPart.segmentId)
-	const segmentsBeforeThisInRundown = currentSegment
-		? cache.Segments.findAll((s) => s.rundownId === nextPart.rundownId && s._rank < currentSegment._rank).map(
-				(p) => p._id
-		  )
-		: []
+	const partsBeforeThisInSegmentSorted = _.sortBy(partsBeforeThisInSegment, (p) => p._rank).map((p) => p._id)
 
-	const sortedRundownIds = sortRundownIDsInPlaylist(
-		cache.Playlist.doc.rundownIdsInOrder,
-		cache.Rundowns.findAll(null).map((rd) => rd._id)
-	)
-	const currentRundownIndex = sortedRundownIds.indexOf(nextPart.rundownId)
-	const rundownsBeforeThisInPlaylist =
-		currentRundownIndex === -1 ? [] : sortedRundownIds.slice(0, currentRundownIndex)
+	const nextPartSegment = cache.Segments.findOne(nextPart.segmentId)
+	if (nextPartSegment?.orphaned === SegmentOrphanedReason.SCRATCHPAD) {
+		if (span) span.end()
+		return {
+			partsToReceiveOnSegmentEndFrom: partsBeforeThisInSegmentSorted,
+			segmentsToReceiveOnRundownEndFrom: [],
+			rundownsToReceiveOnShowStyleEndFrom: [],
+		}
+	} else {
+		// Note: In theory we should ignore any scratchpad segments here, but they will never produce any planned `Pieces`, only `PieceInstances`
 
-	if (span) span.end()
-	return {
-		partsBeforeThisInSegment: _.sortBy(partsBeforeThisInSegment, (p) => p._rank).map((p) => p._id),
-		segmentsBeforeThisInRundown,
-		rundownsBeforeThisInPlaylist,
+		const currentSegment = cache.Segments.findOne(nextPart.segmentId)
+		const segmentsToReceiveOnRundownEndFrom = currentSegment
+			? cache.Segments.findAll(
+					(s) =>
+						s.rundownId === nextPart.rundownId &&
+						s._rank < currentSegment._rank &&
+						s.orphaned !== SegmentOrphanedReason.SCRATCHPAD
+			  ).map((p) => p._id)
+			: []
+
+		const sortedRundownIds = sortRundownIDsInPlaylist(
+			cache.Playlist.doc.rundownIdsInOrder,
+			cache.Rundowns.findAll(null).map((rd) => rd._id)
+		)
+		const currentRundownIndex = sortedRundownIds.indexOf(nextPart.rundownId)
+		const rundownsToReceiveOnShowStyleEndFrom =
+			currentRundownIndex === -1 ? [] : sortedRundownIds.slice(0, currentRundownIndex)
+
+		if (span) span.end()
+		return {
+			partsToReceiveOnSegmentEndFrom: partsBeforeThisInSegmentSorted,
+			segmentsToReceiveOnRundownEndFrom,
+			rundownsToReceiveOnShowStyleEndFrom,
+		}
 	}
 }
 
@@ -128,15 +150,15 @@ export async function fetchPiecesThatMayBeActiveForPart(
 	)
 
 	// Figure out the ids of everything else we will have to search through
-	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown, rundownsBeforeThisInPlaylist } =
+	const { partsToReceiveOnSegmentEndFrom, segmentsToReceiveOnRundownEndFrom, rundownsToReceiveOnShowStyleEndFrom } =
 		getIdsBeforeThisPart(context, cache, part)
 
 	if (unsavedIngestCache?.RundownId === part.rundownId) {
 		// Find pieces for the current rundown
 		const thisRundownPieceQuery = buildPastInfinitePiecesForThisPartQuery(
 			part,
-			partsBeforeThisInSegment,
-			segmentsBeforeThisInRundown,
+			partsToReceiveOnSegmentEndFrom,
+			segmentsToReceiveOnRundownEndFrom,
 			[] // other rundowns don't exist in the ingestCache
 		)
 		if (thisRundownPieceQuery) {
@@ -148,7 +170,7 @@ export async function fetchPiecesThatMayBeActiveForPart(
 			part,
 			[], // Only applies to the current rundown
 			[], // Only applies to the current rundown
-			rundownsBeforeThisInPlaylist
+			rundownsToReceiveOnShowStyleEndFrom
 		)
 		if (previousRundownPieceQuery) {
 			piecePromises.push(context.directCollections.Pieces.findFetch(previousRundownPieceQuery))
@@ -157,9 +179,9 @@ export async function fetchPiecesThatMayBeActiveForPart(
 		// No cache, so we can do a single query to the db for it all
 		const infinitePiecesQuery = buildPastInfinitePiecesForThisPartQuery(
 			part,
-			partsBeforeThisInSegment,
-			segmentsBeforeThisInRundown,
-			rundownsBeforeThisInPlaylist
+			partsToReceiveOnSegmentEndFrom,
+			segmentsToReceiveOnRundownEndFrom,
+			rundownsToReceiveOnShowStyleEndFrom
 		)
 		if (infinitePiecesQuery) {
 			piecePromises.push(context.directCollections.Pieces.findFetch(infinitePiecesQuery))
@@ -186,17 +208,26 @@ export async function syncPlayheadInfinitesForNextPartInstance(
 		const playlist = cache.Playlist.doc
 		if (!playlist.activationId) throw new Error(`RundownPlaylist "${playlist._id}" is not active`)
 
-		const { partsBeforeThisInSegment, segmentsBeforeThisInRundown, rundownsBeforeThisInPlaylist } =
-			getIdsBeforeThisPart(context, cache, nextPartInstance.part)
+		const {
+			partsToReceiveOnSegmentEndFrom,
+			segmentsToReceiveOnRundownEndFrom,
+			rundownsToReceiveOnShowStyleEndFrom,
+		} = getIdsBeforeThisPart(context, cache, nextPartInstance.part)
 
 		const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
 		if (!rundown) throw new Error(`Rundown "${currentPartInstance.rundownId}" not found!`)
+
+		const currentSegment = cache.Segments.findOne(currentPartInstance.segmentId)
+		if (!currentSegment) throw new Error(`Segment "${currentPartInstance.segmentId}" not found!`)
+
+		const nextSegment = cache.Segments.findOne(nextPartInstance.segmentId)
+		if (!nextSegment) throw new Error(`Segment "${nextPartInstance.segmentId}" not found!`)
 
 		const showStyleBase = await context.getShowStyleBase(rundown.showStyleBaseId)
 
 		const orderedPartsAndSegments = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 
-		const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(
+		const nextPartIsAfterCurrentPart = candidatePartIsAfterPreviewPartInstance(
 			context,
 			playlist,
 			orderedPartsAndSegments.segments,
@@ -218,16 +249,18 @@ export async function syncPlayheadInfinitesForNextPartInstance(
 
 		const infinites = libgetPlayheadTrackingInfinitesForPart(
 			playlist.activationId,
-			new Set(partsBeforeThisInSegment),
-			new Set(segmentsBeforeThisInRundown),
-			rundownsBeforeThisInPlaylist,
+			new Set(partsToReceiveOnSegmentEndFrom),
+			new Set(segmentsToReceiveOnRundownEndFrom),
+			rundownsToReceiveOnShowStyleEndFrom,
 			rundownIdsToShowstyleIds,
 			currentPartInstance,
+			currentSegment,
 			prunedPieceInstances,
 			rundown,
 			nextPartInstance.part,
+			nextSegment,
 			nextPartInstance._id,
-			canContinueAdlibOnEnds,
+			nextPartIsAfterCurrentPart,
 			false
 		)
 
@@ -262,7 +295,7 @@ export function getPieceInstancesForPart(
 	newInstanceId: PartInstanceId
 ): PieceInstance[] {
 	const span = context.startSpan('getPieceInstancesForPart')
-	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown, rundownsBeforeThisInPlaylist } =
+	const { partsToReceiveOnSegmentEndFrom, segmentsToReceiveOnRundownEndFrom, rundownsToReceiveOnShowStyleEndFrom } =
 		getIdsBeforeThisPart(context, cache, part)
 
 	const playlist = cache.Playlist.doc
@@ -273,7 +306,7 @@ export function getPieceInstancesForPart(
 		? cache.PieceInstances.findAll((p) => p.partInstanceId === playingPartInstance._id)
 		: []
 
-	const canContinueAdlibOnEnds = canContinueAdlibOnEndInfinites(
+	const nextPartIsAfterCurrentPart = candidatePartIsAfterPreviewPartInstance(
 		context,
 		playlist,
 		orderedPartsAndSegments.segments,
@@ -283,20 +316,29 @@ export function getPieceInstancesForPart(
 
 	const rundownIdsToShowstyleIds = getShowStyleIdsRundownMappingFromCache(cache)
 
+	const playingSegment = playingPartInstance && cache.Segments.findOne(playingPartInstance.segmentId)
+	if (playingPartInstance && !playingSegment)
+		throw new Error(`Segment "${playingPartInstance?.segmentId}" not found!`)
+
+	const segment = cache.Segments.findOne(part.segmentId)
+	if (!segment) throw new Error(`Segment "${part.segmentId}" not found!`)
+
 	const res = libgetPieceInstancesForPart(
 		playlist.activationId,
 		playingPartInstance,
+		playingSegment,
 		playingPieceInstances,
 		rundown,
+		segment,
 		part,
-		new Set(partsBeforeThisInSegment),
-		new Set(segmentsBeforeThisInRundown),
-		rundownsBeforeThisInPlaylist,
+		new Set(partsToReceiveOnSegmentEndFrom),
+		new Set(segmentsToReceiveOnRundownEndFrom),
+		rundownsToReceiveOnShowStyleEndFrom,
 		rundownIdsToShowstyleIds,
 		possiblePieces,
 		orderedPartsAndSegments.parts.map((p) => p._id),
 		newInstanceId,
-		canContinueAdlibOnEnds,
+		nextPartIsAfterCurrentPart,
 		false
 	)
 	if (span) span.end()

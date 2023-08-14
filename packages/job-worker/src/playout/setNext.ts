@@ -1,4 +1,4 @@
-import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
+import { assertNever, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { JobContext } from '../jobs'
@@ -299,6 +299,15 @@ async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout)
 					rundownSegments.hidden.push(segment._id)
 					break
 				}
+				case SegmentOrphanedReason.SCRATCHPAD:
+					// Ignore, as these are owned by playout not ingest
+					break
+				case undefined:
+					// Not orphaned
+					break
+				default:
+					assertNever(segment.orphaned)
+					break
 			}
 		}
 	}
@@ -355,6 +364,9 @@ export async function setNextSegment(
 ): Promise<void> {
 	const span = context.startSpan('setNextSegment')
 	if (nextSegment) {
+		if (nextSegment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
+			throw new Error(`Segment "${nextSegment._id}" is a scratchpad, and cannot be nexted!`)
+
 		// Just run so that errors will be thrown if something wrong:
 		const partsInSegment = sortPartsInSortedSegments(
 			cache.Parts.findAll((p) => p.segmentId === nextSegment._id),

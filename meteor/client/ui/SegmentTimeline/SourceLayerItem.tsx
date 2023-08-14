@@ -35,7 +35,7 @@ export interface ISourceLayerItemProps {
 	/** Part definite duration (generally set after part is played) */
 	partDuration: number
 	/** Part expected duration (before playout) */
-	partExpectedDuration: number
+	partDisplayDuration: number
 	/** The piece being rendered in this layer */
 	piece: PieceUi
 	/** Pieces belonging to the Part */

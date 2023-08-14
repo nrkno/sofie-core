@@ -273,7 +273,7 @@ export namespace RundownUtils {
 	 * @param {ShowStyleBase} showStyleBase
 	 * @param {DBRundownPlaylist} playlist
 	 * @param {DBSegment} segment
-	 * @param {Set<SegmentId>} segmentsBeforeThisInRundownSet
+	 * @param {Set<SegmentId>} segmentsToReceiveOnRundownEndFromSet
 	 * @param {PartId[]} orderedAllPartIds
 	 * @param {PartInstance | undefined } currentPartInstance
 	 * @param {PartInstance | undefined } nextPartInstance
@@ -290,8 +290,8 @@ export namespace RundownUtils {
 		playlist: DBRundownPlaylist,
 		rundown: Pick<Rundown, '_id' | 'showStyleBaseId'>,
 		segment: DBSegment,
-		segmentsBeforeThisInRundownSet: Set<SegmentId>,
-		rundownsBeforeThisInPlaylist: RundownId[],
+		segmentsToReceiveOnRundownEndFromSet: Set<SegmentId>,
+		rundownsToReceiveOnShowStyleEndFrom: RundownId[],
 		rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 		orderedAllPartIds: PartId[],
 		pieces: Map<PartId, CalculateTimingsPiece[]>,
@@ -358,7 +358,6 @@ export namespace RundownUtils {
 				fields: {
 					isTaken: 0,
 					previousPartEndState: 0,
-					takeCount: 0,
 				},
 			}
 		)[0] as { segment: DBSegment; partInstances: PartInstanceLimited[] } | undefined
@@ -470,14 +469,23 @@ export namespace RundownUtils {
 				const rawPieceInstances = getPieceInstancesForPartInstance(
 					playlist.activationId,
 					rundown,
+					segment,
 					partInstance,
 					new Set(partIds.slice(0, itIndex)),
-					segmentsBeforeThisInRundownSet,
-					rundownsBeforeThisInPlaylist,
+					segmentsToReceiveOnRundownEndFromSet,
+					rundownsToReceiveOnShowStyleEndFrom,
 					rundownsToShowstyles,
 					orderedAllPartIds,
 					nextPartIsAfterCurrentPart,
 					currentPartInstance,
+					currentPartInstance
+						? (Segments.findOne(currentPartInstance.segmentId, {
+								projection: {
+									_id: 1,
+									orphaned: 1,
+								},
+						  }) as Pick<DBSegment, '_id' | 'orphaned'> | undefined)
+						: undefined,
 					currentPartInstance
 						? PieceInstances.find(
 								{

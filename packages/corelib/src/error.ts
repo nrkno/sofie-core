@@ -54,6 +54,8 @@ export enum UserErrorMessage {
 	ShowStyleBaseNotFound = 39,
 	NoMigrationsToApply = 40,
 	ValidationFailed = 41,
+	ScratchpadNotAllowed = 42,
+	ScratchpadAlreadyActive = 43,
 }
 
 const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
@@ -107,6 +109,8 @@ const UserErrorMessagesTranslations: { [key in UserErrorMessage]: string } = {
 	[UserErrorMessage.ShowStyleBaseNotFound]: t(`ShowStyleBase not found!`),
 	[UserErrorMessage.NoMigrationsToApply]: t(`No migrations to apply`),
 	[UserErrorMessage.ValidationFailed]: t('Validation failed!'),
+	[UserErrorMessage.ScratchpadNotAllowed]: t(`Scratchpad mode is not allowed`),
+	[UserErrorMessage.ScratchpadAlreadyActive]: t(`Scratchpad mode is already active`),
 }
 
 export class UserError {

@@ -213,6 +213,8 @@ export async function CommitIngestOperation(
 			const pSaveIngest = ingestCache.saveAllToDatabase()
 			pSaveIngest.catch(() => null) // Ensure promise isn't reported as unhandled
 
+			await validateScratchpad(context, playoutCache)
+
 			try {
 				// sync changes to the 'selected' partInstances
 				await syncChangesToPartInstances(context, playoutCache, ingestCache)
@@ -811,5 +813,28 @@ async function preserveUnsyncedPlayingSegmentContents(
 		for (const action of oldAdLibActions) {
 			ingestCache.AdLibActions.insert(action)
 		}
+	}
+}
+
+async function validateScratchpad(_context: JobContext, cache: CacheForPlayout) {
+	const scratchpadSegments = cache.Segments.findAll((s) => s.orphaned === SegmentOrphanedReason.SCRATCHPAD)
+
+	// Note: this assumes there will be up to one per rundown
+	for (const segment of scratchpadSegments) {
+		// Ensure the _rank is just before the real content
+		const otherSegmentsInRundown = cache.Segments.findAll(
+			(s) => s.rundownId === segment.rundownId && s.orphaned !== SegmentOrphanedReason.SCRATCHPAD
+		)
+		const minNormalRank = Math.min(0, ...otherSegmentsInRundown.map((s) => s._rank))
+
+		cache.Segments.updateOne(segment._id, (segment) => {
+			const newRank = minNormalRank - 1
+			if (segment._rank !== newRank) {
+				segment._rank = newRank
+				return segment
+			} else {
+				return false
+			}
+		})
 	}
 }
