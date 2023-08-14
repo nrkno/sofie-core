@@ -15,7 +15,7 @@ import LiveSpeakInputIcon from './Renderers/LiveSpeakInputIcon'
 import GraphicsInputIcon from './Renderers/GraphicsInputIcon'
 import UnknownInputIcon from './Renderers/UnknownInputIcon'
 import { PubSub } from '../../../lib/api/pubsub'
-import { PieceInstance } from '../../../lib/collections/PieceInstances'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { findPieceInstanceToShow, findPieceInstanceToShowFromInstances } from './utils'
 import LocalInputIcon from './Renderers/LocalInputIcon'
 import {

@@ -11,7 +11,7 @@ import {
 	NoraContent,
 	IBlueprintPieceType,
 } from '@sofie-automation/blueprints-integration'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { IAdLibListItem } from './AdLibListItem'
 import SplitInputIcon from '../PieceIcons/Renderers/SplitInputIcon'
 import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
@@ -35,7 +35,7 @@ export interface IDashboardButtonProps {
 	outputLayer?: IOutputLayer
 	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: React.SyntheticEvent) => void
 	onSelectAdLib: (aSLine: IAdLibListItem, context: React.SyntheticEvent) => void
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	isOnAir?: boolean
 	isNext?: boolean
 	widthScale?: number

@@ -6,7 +6,7 @@ import { GraphicsContent, NoraContent } from '@sofie-automation/blueprints-integ
 import { NoraFloatingInspector } from './NoraFloatingInspector'
 import { FloatingInspector } from '../FloatingInspector'
 import { Time } from '../../../lib/lib'
-import { PieceInstancePiece } from '../../../lib/collections/PieceInstances'
+import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { FloatingInspectorTimeInformationRow } from './FloatingInspectorHelpers/FloatingInspectorTimeInformationRow'
 import { IFloatingInspectorPosition, useInspectorPosition } from './IFloatingInspectorPosition'
 

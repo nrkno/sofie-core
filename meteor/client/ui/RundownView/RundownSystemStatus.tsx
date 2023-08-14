@@ -7,12 +7,12 @@ import {
 	PeripheralDevice,
 	PeripheralDeviceCategory,
 	PeripheralDeviceType,
-} from '../../../lib/collections/PeripheralDevices'
-import { Rundown } from '../../../lib/collections/Rundowns'
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Time, getCurrentTime, unprotectString } from '../../../lib/lib'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PubSub } from '../../../lib/api/pubsub'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { UIStudio } from '../../../lib/api/studios'
@@ -63,7 +63,7 @@ export const MOSLastUpdateStatus = withTranslation()(
 
 interface IProps {
 	studio: UIStudio
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	rundownIds: RundownId[]
 	firstRundown: Rundown | undefined
 }

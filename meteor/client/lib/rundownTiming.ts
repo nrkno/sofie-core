@@ -20,12 +20,12 @@ import {
 } from '@sofie-automation/corelib/dist/playout/timings'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { DBRundownPlaylist, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime, objectFromEntries } from '../../lib/lib'
 import { Settings } from '../../lib/Settings'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 
 // Minimum duration that a part can be assigned. Used by gap parts to allow them to "compress" to indicate time running out.
 const MINIMAL_NONZERO_DURATION = 1
@@ -83,7 +83,7 @@ export class RundownTimingCalculator {
 	 *
 	 * @param {number} now
 	 * @param {boolean} isLowResolution
-	 * @param {(RundownPlaylist | undefined)} playlist
+	 * @param {(DBRundownPlaylist | undefined)} playlist
 	 * @param {Rundown[]} rundowns
 	 * @param {(Rundown | undefined)} currentRundown
 	 * @param {CalculateTimingsPartInstance[]} partInstances
@@ -96,7 +96,7 @@ export class RundownTimingCalculator {
 	updateDurations(
 		now: number,
 		isLowResolution: boolean,
-		playlist: RundownPlaylist | undefined,
+		playlist: DBRundownPlaylist | undefined,
 		rundowns: Rundown[],
 		currentRundown: Rundown | undefined,
 		partInstances: CalculateTimingsPartInstance[],

@@ -272,6 +272,7 @@ describe('Lookahead', () => {
 		partInstancesInfo.previous = {
 			partInstance: { _id: 'abc2', part: { _id: 'abc' } } as any,
 			nowInPart: 987,
+			partStarted: getCurrentTime() + 546,
 			pieceInstances: ['1', '2'] as any,
 			calculatedTimings: { inTransitionStart: null } as any,
 		}
@@ -294,6 +295,7 @@ describe('Lookahead', () => {
 		partInstancesInfo.current = {
 			partInstance: { _id: 'curr', part: {} } as any,
 			nowInPart: 56,
+			partStarted: getCurrentTime() + 865,
 			pieceInstances: ['3', '4'] as any,
 			calculatedTimings: { inTransitionStart: null } as any,
 		}
@@ -313,6 +315,7 @@ describe('Lookahead', () => {
 		partInstancesInfo.next = {
 			partInstance: { _id: 'nxt2', part: { _id: 'nxt' } } as any,
 			nowInPart: -85,
+			partStarted: getCurrentTime() + 142,
 			pieceInstances: ['5'] as any,
 			calculatedTimings: { inTransitionStart: null } as any,
 		}

@@ -12,7 +12,7 @@ import {
 import { assertNever, literal } from '@sofie-automation/corelib/dist/lib'
 import { getPartGroupId, getPartFirstObjectId } from '@sofie-automation/corelib/dist/playout/ids'
 import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
-import { PieceTimelineMetadata } from '@sofie-automation/corelib/dist/playout/pieces'
+import { PieceTimelineMetadata } from './pieceGroup'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { JobContext } from '../../jobs'
 import { ReadonlyDeep } from 'type-fest'

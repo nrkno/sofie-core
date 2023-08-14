@@ -6,7 +6,7 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -17,7 +17,7 @@ interface IShowStylePanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutShowStyleDisplay
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	showStyleBase: DBShowStyleBase
 	showStyleVariant: DBShowStyleVariant
 }

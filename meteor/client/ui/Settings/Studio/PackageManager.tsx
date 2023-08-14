@@ -2,7 +2,7 @@ import ClassNames from 'classnames'
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { Studio, DBStudio, StudioPackageContainer } from '../../../../lib/collections/Studios'
+import { DBStudio, StudioPackageContainer } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { EditAttribute, EditAttributeBase } from '../../../lib/EditAttribute'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
@@ -15,7 +15,7 @@ import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settin
 import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
 
 interface IStudioPackageManagerSettingsProps {
-	studio: Studio
+	studio: DBStudio
 }
 interface IStudioPackageManagerSettingsState {
 	editedPackageContainer: Array<string>

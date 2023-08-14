@@ -26,7 +26,7 @@ import { UploadButton } from '../../lib/uploadButton'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { fetchFrom } from '../../lib/lib'
-import { Studio } from '../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { Link } from 'react-router-dom'
 import { MeteorCall } from '../../../lib/api/methods'
 import { defaultColorPickerPalette } from '../../lib/colorPicker'
@@ -43,7 +43,7 @@ export interface IProps {
 	showStyleBaseId: ShowStyleBaseId
 	sourceLayers: SourceLayers
 	outputLayers: OutputLayers
-	studios: Studio[]
+	studios: DBStudio[]
 	customRegion: CustomizableRegionSettingsManifest
 }
 

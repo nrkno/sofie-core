@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { TFunction, useTranslation } from 'react-i18next'
 import { EditAttribute } from '../lib/EditAttribute'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
@@ -11,7 +11,7 @@ import { ClientAPI } from '../../lib/api/client'
 import { hashSingleUseToken } from '../../lib/api/userActions'
 
 interface IProps {
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 }
 
 const DEFAULT_STATE = {

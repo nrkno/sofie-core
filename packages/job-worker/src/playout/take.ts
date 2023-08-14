@@ -12,7 +12,7 @@ import { getCurrentTime } from '../lib'
 import { PartEndState, VTContent } from '@sofie-automation/blueprints-integration'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { ReadonlyDeep } from 'type-fest'
-import { getResolvedPieces } from './pieces'
+import { getResolvedPiecesForCurrentPartInstance } from './resolvedPieces'
 import { clone, getRandomId, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { updateTimeline } from './timeline/generate'
@@ -412,7 +412,12 @@ export function updatePartInstanceOnTake(
 		try {
 			const time = getCurrentTime()
 
-			const resolvedPieces = getResolvedPieces(context, cache, showStyle.sourceLayers, currentPartInstance)
+			const resolvedPieces = getResolvedPiecesForCurrentPartInstance(
+				context,
+				cache,
+				showStyle.sourceLayers,
+				currentPartInstance
+			)
 
 			const span = context.startSpan('blueprint.getEndStateForPart')
 			const context2 = new RundownContext(

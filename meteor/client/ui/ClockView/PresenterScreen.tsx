@@ -1,9 +1,9 @@
 import * as React from 'react'
 import ClassNames from 'classnames'
-import { DBSegment, Segment } from '../../../lib/collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
 import { Translated, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -16,7 +16,7 @@ import { PieceNameContainer } from '../PieceIcons/PieceName'
 import { Timediff } from './Timediff'
 import { RundownUtils } from '../../lib/rundown'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { Part } from '../../../lib/collections/Parts'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PieceCountdownContainer } from '../PieceIcons/PieceCountdown'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { DashboardLayout, RundownLayoutBase, RundownLayoutPresenterView } from '../../../lib/collections/RundownLayouts'
@@ -60,7 +60,7 @@ interface RundownOverviewState {
 }
 export interface RundownOverviewTrackedProps {
 	studio: UIStudio | undefined
-	playlist?: RundownPlaylist
+	playlist?: DBRundownPlaylist
 	rundowns: Rundown[]
 	segments: Array<SegmentUi>
 	pieces: Map<PartId, Piece[]>
@@ -81,10 +81,10 @@ export interface RundownOverviewTrackedProps {
 
 function getShowStyleBaseIdSegmentPartUi(
 	partInstance: PartInstance,
-	playlist: RundownPlaylist,
+	playlist: DBRundownPlaylist,
 	orderedSegmentsAndParts: {
-		segments: Segment[]
-		parts: Part[]
+		segments: DBSegment[]
+		parts: DBPart[]
 	},
 	pieces: Map<PartId, Piece[]>,
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
@@ -165,7 +165,7 @@ function getShowStyleBaseIdSegmentPartUi(
 export const getPresenterScreenReactive = (props: RundownOverviewProps): RundownOverviewTrackedProps => {
 	const studio = UIStudios.findOne(props.studioId)
 
-	let playlist: RundownPlaylist | undefined
+	let playlist: DBRundownPlaylist | undefined
 
 	if (props.playlistId)
 		playlist = RundownPlaylists.findOne(props.playlistId, {
@@ -312,7 +312,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 					_id: 1,
 					activationId: 1,
 				},
-			}) as Pick<RundownPlaylist, '_id' | 'activationId'> | undefined
+			}) as Pick<DBRundownPlaylist, '_id' | 'activationId'> | undefined
 			if (playlist) {
 				this.subscribe(PubSub.rundowns, [playlist._id], null)
 
@@ -357,7 +357,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 								nextPartInfo: 1,
 								previousPartInfo: 1,
 							},
-						}) as Pick<RundownPlaylist, '_id' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo'> | undefined
+						}) as Pick<DBRundownPlaylist, '_id' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo'> | undefined
 						if (playlistR) {
 							const { nextPartInstance, currentPartInstance } =
 								RundownPlaylistCollectionUtil.getSelectedPartInstances(playlistR)

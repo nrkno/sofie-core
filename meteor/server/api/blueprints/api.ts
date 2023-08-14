@@ -4,7 +4,7 @@ import { promises as fsp } from 'fs'
 import { getCurrentTime, unprotectString, getRandomId } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
-import { Blueprint } from '../../../lib/collections/Blueprints'
+import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import {
 	BlueprintManifestType,
 	IShowStyleConfigPreset,
@@ -29,7 +29,7 @@ import { fetchBlueprintLight, BlueprintLight } from '../../serverOptimisations'
 import { getSystemStorePath } from '../../coreSystem'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { Studio } from '../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 export async function insertBlueprint(
 	methodContext: MethodContext,
@@ -331,7 +331,7 @@ async function syncConfigPresetsToStudios(blueprint: Blueprint): Promise<void> {
 				blueprintConfigPresetId: 1,
 			},
 		}
-	)) as Pick<Studio, '_id' | 'blueprintConfigPresetId'>[]
+	)) as Pick<DBStudio, '_id' | 'blueprintConfigPresetId'>[]
 
 	const configPresets = blueprint.studioConfigPresets || {}
 

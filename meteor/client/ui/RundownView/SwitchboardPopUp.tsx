@@ -1,7 +1,11 @@
 import * as React from 'react'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { StudioRouteSet, StudioRouteSetExclusivityGroup, StudioRouteBehavior } from '../../../lib/collections/Studios'
+import {
+	StudioRouteSet,
+	StudioRouteSetExclusivityGroup,
+	StudioRouteBehavior,
+} from '@sofie-automation/corelib/dist/dataModel/Studio'
 import classNames from 'classnames'
 import { RouteSetOverrideIcon } from '../../lib/ui/icons/switchboard'
 import Tooltip from 'rc-tooltip'

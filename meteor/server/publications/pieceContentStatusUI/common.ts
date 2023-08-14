@@ -6,7 +6,7 @@ import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { MediaObject } from '@sofie-automation/shared-lib/dist/core/model/MediaObjects'
 import { ReadonlyDeep } from 'type-fest'
-import { Studio } from '../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { literal } from '../../../lib/lib'
 import { Studios } from '../../collections'
 import { PieceContentStatusStudio } from './checkPieceContentStatus'
@@ -19,7 +19,7 @@ export type StudioFields =
 	| 'thumbnailContainerIds'
 	| 'mappingsWithOverrides'
 	| 'routeSets'
-export const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<Studio, StudioFields>>>({
+export const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
 	_id: 1,
 	settings: 1,
 	packageContainers: 1,
@@ -104,7 +104,7 @@ export function addItemsWithDependenciesChangesToChangedSet<T extends ProtectedS
 export async function fetchStudio(studioId: StudioId): Promise<PieceContentStatusStudio | undefined> {
 	const studio = (await Studios.findOneAsync(studioId, {
 		projection: studioFieldSpecifier,
-	})) as Pick<Studio, StudioFields> | undefined
+	})) as Pick<DBStudio, StudioFields> | undefined
 
 	if (!studio) {
 		return undefined

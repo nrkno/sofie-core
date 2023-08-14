@@ -7,13 +7,13 @@ import { literal } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { assertNever } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { UISegmentPartNote } from '../../../lib/api/rundownNotifications'
-import { Segment } from '../../../lib/collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { generateTranslation } from '../../../lib/lib'
 import { SegmentFields, PartFields, PartInstanceFields } from './reactiveContentCache'
 
 export function generateNotesForSegment(
 	playlistId: RundownPlaylistId,
-	segment: Pick<Segment, SegmentFields>,
+	segment: Pick<DBSegment, SegmentFields>,
 	nrcsName: string,
 	parts: Pick<DBPart, PartFields>[],
 	partInstances: Pick<DBPartInstance, PartInstanceFields>[]

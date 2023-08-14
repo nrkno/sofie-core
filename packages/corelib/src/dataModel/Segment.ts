@@ -1,6 +1,5 @@
-import { IBlueprintSegmentDB } from '@sofie-automation/blueprints-integration'
+import { SegmentDisplayMode, SegmentTimingInfo } from '@sofie-automation/blueprints-integration'
 import { MongoFieldSpecifierOnes } from '../mongo'
-import { ProtectedStringProperties } from '../protectedString'
 import { SegmentId, RundownId } from './Ids'
 import { SegmentNote } from './Notes'
 
@@ -17,7 +16,7 @@ export enum SegmentOrphanedReason {
 export const orphanedHiddenSegmentPropertiesToPreserve: MongoFieldSpecifierOnes<DBSegment> = {}
 
 /** A "Title" in NRK Lingo / "Stories" in ENPS Lingo. */
-export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB, '_id'> {
+export interface DBSegment {
 	_id: SegmentId
 	/** Position inside rundown */
 	_rank: number
@@ -27,6 +26,23 @@ export interface DBSegment extends ProtectedStringProperties<IBlueprintSegmentDB
 	externalModified: number
 	/** The rundown this segment belongs to */
 	rundownId: RundownId
+
+	/** User-presentable name (Slug) for the Title */
+	name: string
+	/** Arbitrary data storage for plugins */
+	metaData?: unknown
+	/** Hide the Segment in the UI */
+	isHidden?: boolean
+	/** User-facing identifier that can be used by the User to identify the contents of a segment in the Rundown source system */
+	identifier?: string
+
+	/** Show the minishelf of the segment */
+	showShelf?: boolean
+	/** Segment display mode. Default mode is *SegmentDisplayMode.Timeline* */
+	displayAs?: SegmentDisplayMode
+
+	/** Contains properties related to the timing of the segment */
+	segmentTiming?: SegmentTimingInfo
 
 	/** Is the segment in an unsynced state? */
 	orphaned?: SegmentOrphanedReason

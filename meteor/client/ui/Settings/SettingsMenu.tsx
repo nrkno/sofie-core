@@ -4,8 +4,8 @@ import { unprotectString } from '../../../lib/lib'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { NavLink, useLocation } from 'react-router-dom'
 
-import { DBStudio, Studio } from '../../../lib/collections/Studios'
-import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '../../../lib/collections/PeripheralDevices'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 
@@ -13,7 +13,7 @@ import { faPlus, faTrash, faExclamationTriangle, faCaretRight, faCaretDown } fro
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { Blueprint } from '../../../lib/collections/Blueprints'
+import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { MeteorCall } from '../../../lib/api/methods'
 import { Settings as MeteorSettings } from '../../../lib/Settings'
@@ -28,7 +28,7 @@ interface ISettingsMenuProps {
 }
 interface ISettingsMenuState {}
 interface ISettingsMenuTrackedProps {
-	studios: Array<Studio>
+	studios: Array<DBStudio>
 	showStyleBases: Array<DBShowStyleBase>
 	blueprints: Array<Blueprint>
 	peripheralDevices: Array<PeripheralDevice>
@@ -280,7 +280,7 @@ function SettingsMenuStudio({ studio }: SettingsMenuStudioProps) {
 	)
 }
 
-function studioHasError(studio: Studio): boolean {
+function studioHasError(studio: DBStudio): boolean {
 	if (!studio.name) return true
 	if (!studio.supportedShowStyleBase.length) return true
 	if (!studio.blueprintId) return true

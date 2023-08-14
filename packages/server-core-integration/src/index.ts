@@ -3,6 +3,7 @@ export * from './lib/configManifest'
 export * from './lib/ddpClient'
 export * from './lib/methods'
 export * from './lib/process'
+export { SubscriptionId } from './lib/subscriptions'
 
 // Re-export some util from shared-lib
 export * from '@sofie-automation/shared-lib/dist/lib/lib'

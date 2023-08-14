@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { withTranslation } from 'react-i18next'
-import { PeripheralDevice } from '../../../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { Translated } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { IngestDeviceSettings } from '@sofie-automation/corelib/dist/dataModel/PeripheralDeviceSettings/ingestDevice'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../../lib/notifications/notifications'

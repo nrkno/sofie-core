@@ -29,7 +29,7 @@ import {
 	Timeline,
 	UserActionsLog,
 } from '../collections'
-import { DBStudio } from '../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { isInFiber } from '../../__mocks__/Fibers'
 import { Mongo } from 'meteor/mongo'
 import { defaultStudio } from '../../__mocks__/defaultCollectionObjects'

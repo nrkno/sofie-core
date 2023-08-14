@@ -5,7 +5,7 @@ import {
 	RundownLayoutBase,
 	RundownLayoutStudioName,
 } from '../../../lib/collections/RundownLayouts'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { useTranslation } from 'react-i18next'
@@ -15,7 +15,7 @@ interface IStudioNamePanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutStudioName
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	studio: UIStudio
 }
 

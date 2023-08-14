@@ -10,9 +10,9 @@ import {
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { Segment } from '../../../lib/collections/Segments'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { dashboardElementStyle } from './DashboardPanel'
 import { Meteor } from 'meteor/meteor'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
@@ -24,13 +24,13 @@ interface IMiniRundownPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutMiniRundown
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 }
 
 interface IMiniRundownPanelTrackedProps {
 	currentPartInstance?: PartInstance
 	nextPartInstance?: PartInstance
-	allSegments?: Segment[]
+	allSegments?: DBSegment[]
 }
 
 interface IState {}
@@ -134,7 +134,7 @@ export const MiniRundownPanel = withTracker<IMiniRundownPanelProps, IState, IMin
 			nextPartInstance = PartInstances.findOne(props.playlist.nextPartInfo.partInstanceId)
 		}
 
-		const allSegments: Segment[] = RundownPlaylistCollectionUtil.getSegments(props.playlist)
+		const allSegments: DBSegment[] = RundownPlaylistCollectionUtil.getSegments(props.playlist)
 
 		return { currentPartInstance, nextPartInstance, allSegments }
 	},
@@ -144,13 +144,13 @@ export const MiniRundownPanel = withTracker<IMiniRundownPanelProps, IState, IMin
 )(MiniRundownPanelInner)
 
 function getMiniRundownList(
-	allSegments?: Segment[],
+	allSegments?: DBSegment[],
 	currentPart?: PartInstance,
 	nextPart?: PartInstance
 ): MiniRundownSegment[] {
 	const miniRundownSegments: MiniRundownSegment[] = []
 
-	allSegments?.forEach((segment: Segment) => {
+	allSegments?.forEach((segment: DBSegment) => {
 		if (segment.isHidden) return
 		miniRundownSegments.push({
 			identifier: getSegmentIdentifier(segment),
@@ -162,7 +162,7 @@ function getMiniRundownList(
 	return miniRundownSegments
 }
 
-function getSegmentCssClass(segment: Segment, currentPart?: PartInstance, nextPart?: PartInstance): string {
+function getSegmentCssClass(segment: DBSegment, currentPart?: PartInstance, nextPart?: PartInstance): string {
 	if (segment._id === currentPart?.segmentId) {
 		return MiniRundownPanelInner.currentSegmentCssClass
 	}
@@ -190,11 +190,11 @@ function getElementStyle(props, isDashboardLayout: boolean) {
 	}
 }
 
-function getSegmentName(segment: Segment | undefined): string {
+function getSegmentName(segment: DBSegment | undefined): string {
 	return segment?.name !== undefined ? segment?.name : ''
 }
 
-function getSegmentIdentifier(segment: Segment | undefined): string {
+function getSegmentIdentifier(segment: DBSegment | undefined): string {
 	return segment?.identifier !== undefined ? segment?.identifier : ''
 }
 

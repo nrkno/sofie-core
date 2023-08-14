@@ -33,7 +33,6 @@ export class CoreHandler {
 	private _deviceOptions: DeviceConfig
 	private _coreMosHandlers: Array<CoreMosDeviceHandler> = []
 	private _onConnected?: () => any
-	private _subscriptions: Array<string> = []
 	private _isInitialized = false
 	private _executedFunctions: { [id: string]: boolean } = {}
 	private _coreConfig?: CoreConfig
@@ -91,10 +90,6 @@ export class CoreHandler {
 	async dispose(): Promise<void> {
 		if (!this.core) {
 			throw Error('core is undefined!')
-		}
-
-		for (const subId of this._subscriptions) {
-			this.core.unsubscribe(subId)
 		}
 
 		await this.core.setStatus({
@@ -193,12 +188,10 @@ export class CoreHandler {
 		}
 
 		this.logger.info('Core: Setting up subscriptions for ' + this.core.deviceId + '..')
-		const subs = await Promise.all([
+		await Promise.all([
 			this.core.autoSubscribe('peripheralDeviceForDevice', this.core.deviceId),
 			this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId),
 		])
-
-		this._subscriptions = this._subscriptions.concat(subs)
 
 		this.setupObserverForPeripheralDeviceCommands(this)
 	}

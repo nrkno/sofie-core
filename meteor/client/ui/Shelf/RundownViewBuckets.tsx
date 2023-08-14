@@ -12,7 +12,7 @@ import { withTranslation } from 'react-i18next'
 import { faBars } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { unprotectString, partial, literal, ProtectedString } from '../../../lib/lib'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getElementDocumentOffset } from '../../utils/positions'
 import { UIStateStorage } from '../../lib/UIStateStorage'
 import { doModalDialog, ModalDialogQueueItem } from '../../lib/ModalDialog'
@@ -77,7 +77,7 @@ export function isAdLib(item: BucketAdLibItem): item is BucketAdLibUi {
 
 interface IBucketsProps {
 	buckets: Bucket[] | undefined
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	showStyleBase: UIShowStyleBase
 	shouldQueue: boolean
 	fullViewport: boolean

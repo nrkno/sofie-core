@@ -6,8 +6,8 @@ import { RundownLayoutBase } from '../../../lib/collections/RundownLayouts'
 import { unprotectString } from '../../../lib/lib'
 import { ActiveProgressBar } from './ActiveProgressBar'
 import { RundownListItem } from './RundownListItem'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Link } from 'react-router-dom'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faFolderOpen } from '@fortawesome/free-solid-svg-icons'
@@ -27,7 +27,7 @@ import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTi
 import { TOOLTIP_DEFAULT_DELAY } from '../../lib/lib'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-export interface RundownPlaylistUi extends RundownPlaylist {
+export interface RundownPlaylistUi extends DBRundownPlaylist {
 	rundowns: Rundown[]
 	unsyncedRundowns: Rundown[]
 }

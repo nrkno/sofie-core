@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from 'react'
 import * as VelocityReact from 'velocity-react'
 
-import { StudioRouteSet, StudioRouteBehavior, StudioRouteSetExclusivityGroup } from '../../../lib/collections/Studios'
+import {
+	StudioRouteSet,
+	StudioRouteBehavior,
+	StudioRouteSetExclusivityGroup,
+} from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { RewindAllSegmentsIcon } from '../../lib/ui/icons/rewindAllSegmentsIcon'
 
 import { Lottie } from '@crello/react-lottie'

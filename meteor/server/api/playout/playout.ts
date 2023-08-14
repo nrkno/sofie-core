@@ -1,7 +1,7 @@
 /* tslint:disable:no-use-before-declare */
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
-import { StudioRouteBehavior } from '../../../lib/collections/Studios'
+import { StudioRouteBehavior } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { PackageInfo } from '../../coreSystem'
 import { StudioContentAccess } from '../../security/studio'
 import { shouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'

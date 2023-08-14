@@ -1,7 +1,7 @@
 import React from 'react'
 import { WithTranslation, withTranslation } from 'react-i18next'
 import Moment from 'react-moment'
-import { Rundown } from '../../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { Translated } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { WithTiming, withTiming } from './withTiming'
 import ClassNames from 'classnames'

@@ -1,5 +1,5 @@
 import React from 'react'
-import { PieceInstancePiece } from '../../../../lib/collections/PieceInstances'
+import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { RundownUtils } from '../../../lib/rundown'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { TFunction, useTranslation } from 'react-i18next'

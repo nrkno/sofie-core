@@ -1,4 +1,10 @@
-import { CoreConnection, CoreOptions, DDPConnectorOptions, Observer } from '@sofie-automation/server-core-integration'
+import {
+	CoreConnection,
+	CoreOptions,
+	DDPConnectorOptions,
+	Observer,
+	SubscriptionId,
+} from '@sofie-automation/server-core-integration'
 import { DeviceConfig } from './connector'
 import { Logger } from 'winston'
 import { Process } from './process'
@@ -91,14 +97,14 @@ export class CoreHandler {
 		await this.updateCoreStatus()
 	}
 
-	async setupSubscription(collection: string, ...params: any[]): Promise<string> {
+	async setupSubscription(collection: string, ...params: any[]): Promise<SubscriptionId> {
 		this.logger.info(`Core: Set up subscription for '${collection}'`)
 		const subscriptionId = await this.core.autoSubscribe(collection, ...params)
 		this.logger.info(`Core: Subscription for '${collection}' set up with id ${subscriptionId}`)
 		return subscriptionId
 	}
 
-	unsubscribe(subscriptionId: string): void {
+	unsubscribe(subscriptionId: SubscriptionId): void {
 		this.logger.info(`Core: Unsubscribing id '${subscriptionId}'`)
 		this.core.unsubscribe(subscriptionId)
 	}

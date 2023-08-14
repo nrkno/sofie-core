@@ -5,7 +5,7 @@ import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { PubSub } from '../../../../lib/api/pubsub'
 import { UIStudio } from '../../../../lib/api/studios'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PieceExtended } from '../../../../lib/Rundown'
 import { PartInstances, Rundowns } from '../../../collections'
 import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
@@ -23,7 +23,7 @@ import { useWakeLock } from './useWakeLock'
 import { useDebounce } from '../../../lib/lib'
 
 interface IProps {
-	playlist: RundownPlaylist | undefined
+	playlist: DBRundownPlaylist | undefined
 	studioId: StudioId
 }
 

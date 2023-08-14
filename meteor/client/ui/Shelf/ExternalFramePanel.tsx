@@ -10,7 +10,7 @@ import {
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
 import { assertNever, getRandomString, literal, protectString } from '../../../lib/lib'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { parseMosPluginMessageXml, MosPluginMessage } from '../../lib/parsers/mos/mosXml2Js'
 import {
@@ -39,7 +39,7 @@ interface IProps {
 	layout: RundownLayoutBase
 	panel: RundownLayoutExternalFrame
 	visible: boolean
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 }
 
 enum SofieExternalMessageType {

@@ -1,22 +1,20 @@
-import { Piece } from './collections/Pieces'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { IOutputLayer, ISourceLayer, ITranslatableMessage } from '@sofie-automation/blueprints-integration'
-import { DBSegment, Segment, SegmentOrphanedReason } from './collections/Segments'
-import { DBPart } from './collections/Parts'
+import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PartInstance, wrapPartToTemporaryInstance } from './collections/PartInstances'
-import { PieceInstance } from './collections/PieceInstances'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	getPieceInstancesForPart,
 	buildPiecesStartingInThisPartQuery,
 	buildPastInfinitePiecesForThisPartQuery,
 } from '@sofie-automation/corelib/dist/playout/infinites'
-import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
-import { MongoQuery } from './typings/meteor'
 import { invalidateAfter } from '../lib/invalidatingTime'
-import { convertCorelibToMeteorMongoQuery, getCurrentTime, groupByToMap, ProtectedString, protectString } from './lib'
-import { RundownPlaylist } from './collections/RundownPlaylists'
-import { Rundown } from './collections/Rundowns'
+import { getCurrentTime, groupByToMap, ProtectedString, protectString } from './lib'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { isTranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { mongoWhereFilter } from '@sofie-automation/corelib/dist/mongo'
+import { mongoWhereFilter, MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { FindOptions } from './collections/lib'
 import {
 	PartId,
@@ -29,6 +27,7 @@ import { PieceInstances, Pieces } from './collections/libCollections'
 import { RundownPlaylistCollectionUtil } from './collections/rundownPlaylistUtil'
 import { PieceContentStatusObj } from './mediaObjects'
 import { ReadonlyDeep } from 'type-fest'
+import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 
 export interface SegmentExtended extends DBSegment {
 	/** Output layers available in the installation used by this segment */
@@ -104,7 +103,7 @@ function fetchPiecesThatMayBeActiveForPart(
 		// Fast-path: if we already have the pieces, we can use them directly:
 		piecesStartingInPart = mongoWhereFilter(allPieces, selector)
 	} else {
-		piecesStartingInPart = Pieces.find(convertCorelibToMeteorMongoQuery(selector)).fetch()
+		piecesStartingInPart = Pieces.find(selector).fetch()
 	}
 
 	const partsToReceiveOnSegmentEndFrom = Array.from(partsToReceiveOnSegmentEndFromSet.values())
@@ -121,9 +120,7 @@ function fetchPiecesThatMayBeActiveForPart(
 		// Fast-path: if we already have the pieces, we can use them directly:
 		infinitePieces = infinitePieceQuery ? mongoWhereFilter(allPieces, infinitePieceQuery) : []
 	} else {
-		infinitePieces = infinitePieceQuery
-			? Pieces.find(convertCorelibToMeteorMongoQuery(infinitePieceQuery)).fetch()
-			: []
+		infinitePieces = infinitePieceQuery ? Pieces.find(infinitePieceQuery).fetch() : []
 	}
 
 	return piecesStartingInPart.concat(infinitePieces) // replace spread with concat, as 3x is faster (https://stackoverflow.com/questions/48865710/spread-operator-vs-array-concat)
@@ -152,7 +149,7 @@ const SIMULATION_INVALIDATION = 3000
 export function getPieceInstancesForPartInstance(
 	playlistActivationId: RundownPlaylistActivationId | undefined,
 	rundown: Pick<Rundown, '_id' | 'showStyleBaseId'>,
-	segment: Pick<Segment, '_id' | 'orphaned'>,
+	segment: Pick<DBSegment, '_id' | 'orphaned'>,
 	partInstance: PartInstanceLimited,
 	partsToReceiveOnSegmentEndFromSet: Set<PartId>,
 	segmentsToReceiveOnRundownEndFromSet: Set<SegmentId>,
@@ -161,7 +158,7 @@ export function getPieceInstancesForPartInstance(
 	orderedAllParts: PartId[],
 	nextPartIsAfterCurrentPart: boolean,
 	currentPartInstance: PartInstance | undefined,
-	currentSegment: Pick<Segment, '_id' | 'orphaned'> | undefined,
+	currentSegment: Pick<DBSegment, '_id' | 'orphaned'> | undefined,
 	currentPartInstancePieceInstances: PieceInstance[] | undefined,
 	/** Map of Pieces on Parts, passed through for performance */
 	allPiecesCache?: Map<PartId, Piece[]>,
@@ -258,9 +255,9 @@ export function getPieceInstancesForPartInstance(
  * to limit the data, in correct order.
  *
  * @export
- * @param {RundownPlaylist} playlist
- * @param {(MongoQuery<DBSegment> | Mongo.QueryWithModifiers<DBSegment>)} [segmentsQuery]
- * @param {(MongoQuery<DBPart> | Mongo.QueryWithModifiers<DBPart>)} [partsQuery]
+ * @param {DBRundownPlaylist} playlist
+ * @param {(MongoQuery<DBSegment>)} [segmentsQuery]
+ * @param {(MongoQuery<DBPart>)} [partsQuery]
  * @param {MongoQuery<PartInstance>} [partInstancesQuery]
  * @param {FindOptions<DBSegment>} [segmentsOptions]
  * @param {FindOptions<DBPart>} [partsOptions]
@@ -268,14 +265,14 @@ export function getPieceInstancesForPartInstance(
  * @return {*}  {Array<{ segment: Segment; partInstances: PartInstance[] }>}
  */
 export function getSegmentsWithPartInstances(
-	playlist: RundownPlaylist,
+	playlist: DBRundownPlaylist,
 	segmentsQuery?: MongoQuery<DBSegment>,
 	partsQuery?: MongoQuery<DBPart>,
 	partInstancesQuery?: MongoQuery<PartInstance>,
 	segmentsOptions?: FindOptions<DBSegment>,
 	partsOptions?: FindOptions<DBPart>,
 	partInstancesOptions?: FindOptions<PartInstance>
-): Array<{ segment: Segment; partInstances: PartInstance[] }> {
+): Array<{ segment: DBSegment; partInstances: PartInstance[] }> {
 	const { segments, parts: rawParts } = RundownPlaylistCollectionUtil.getSegmentsAndPartsSync(
 		playlist,
 		segmentsQuery,

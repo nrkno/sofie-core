@@ -9,14 +9,14 @@ import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { dashboardElementStyle } from './DashboardPanel'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { withTranslation } from 'react-i18next'
 import { PlaylistStartTiming } from '../RundownView/RundownTiming/PlaylistStartTiming'
 
 interface IPlaylistStartTimerPanelProps {
 	layout: RundownLayoutBase
 	panel: RundownLayoutPlaylistStartTimer
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 }
 
 interface IState {}

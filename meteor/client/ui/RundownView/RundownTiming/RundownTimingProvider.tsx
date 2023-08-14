@@ -4,7 +4,7 @@ import * as PropTypes from 'prop-types'
 import { withTracker } from '../../../lib/ReactMeteorData/react-meteor-data'
 import { getCurrentTime, protectString } from '../../../../lib/lib'
 import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PartInstance, wrapPartToTemporaryInstance } from '../../../../lib/collections/PartInstances'
 import { RundownTiming, TimeEventArgs } from './RundownTiming'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
@@ -28,7 +28,7 @@ const CURRENT_TIME_GRANULARITY = 1000 / 60
  */
 interface IRundownTimingProviderProps {
 	/** Rundown Playlist that is to be used for generating the timing information. */
-	playlist?: RundownPlaylist
+	playlist?: DBRundownPlaylist
 
 	/** Interval for high-resolution timing events. If undefined, it will fall back
 	 * onto TIMING_DEFAULT_REFRESH_INTERVAL.

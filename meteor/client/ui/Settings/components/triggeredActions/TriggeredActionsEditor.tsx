@@ -8,9 +8,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { TriggeredActionEntry, TRIGGERED_ACTION_ENTRY_DRAG_TYPE } from './TriggeredActionEntry'
 import { literal, unprotectString } from '../../../../../lib/lib'
 import { TriggersHandler } from '../../../../lib/triggers/TriggersHandler'
-import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
-import { Rundown } from '../../../../../lib/collections/Rundowns'
-import { Part } from '../../../../../lib/collections/Parts'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { UploadButton } from '../../../../lib/uploadButton'
 import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
@@ -24,7 +24,7 @@ import { fetchFrom } from '../../../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../../../lib/notifications/notifications'
 import { Meteor } from 'meteor/meteor'
 import { doModalDialog } from '../../../../lib/ModalDialog'
-import { MongoQuery } from '../../../../../lib/typings/meteor'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import _ from 'underscore'
 import { PartId, RundownId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartInstances, Parts, RundownPlaylists, Rundowns, TriggeredActions } from '../../../../collections'
@@ -33,7 +33,7 @@ import { SourceLayers, OutputLayers } from '@sofie-automation/corelib/dist/dataM
 import { RundownPlaylistCollectionUtil } from '../../../../../lib/collections/rundownPlaylistUtil'
 
 export interface PreviewContext {
-	rundownPlaylist: RundownPlaylist | null
+	rundownPlaylist: DBRundownPlaylist | null
 	currentRundownId: RundownId | null
 	currentSegmentPartIds: PartId[]
 	nextSegmentPartIds: PartId[]
@@ -210,8 +210,8 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 
 	const previewContext = useTracker(
 		() => {
-			let thisCurrentPart: Part | null = null
-			let thisNextPart: Part | null = null
+			let thisCurrentPart: DBPart | null = null
+			let thisNextPart: DBPart | null = null
 			let thisCurrentSegmentPartIds: PartId[] = []
 			let thisNextSegmentPartIds: PartId[] = []
 			if (rundownPlaylist) {

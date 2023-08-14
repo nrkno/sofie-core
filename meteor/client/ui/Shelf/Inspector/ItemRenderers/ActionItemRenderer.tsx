@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../../../lib/rundown'
-import { Piece } from '../../../../../lib/collections/Pieces'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import {
 	ConfigManifestEntry as BlueprintConfigManifestEntry,
 	IBlueprintActionTriggerMode,
@@ -18,7 +18,7 @@ import { ProtectedString } from '../../../../../lib/lib'
 import { doUserAction, UserAction } from '../../../../../lib/clientUserAction'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { BucketAdLibItem, BucketAdLibActionUi } from '../../RundownViewBuckets'
-import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { actionToAdLibPieceUi } from '../../BucketPanel'
 import RundownViewEventBus, { RundownViewEvents } from '../../../../../lib/api/triggers/RundownViewEventBus'
 import { IAdLibListItem } from '../../AdLibListItem'
@@ -36,7 +36,7 @@ export interface IProps {
 	piece: PieceUi | IAdLibListItem | BucketAdLibActionUi
 	showStyleBase: UIShowStyleBase
 	studio: UIStudio
-	rundownPlaylist: RundownPlaylist
+	rundownPlaylist: DBRundownPlaylist
 	onSelectPiece: (piece: BucketAdLibItem | AdLibPieceUi | PieceUi | undefined) => void
 }
 

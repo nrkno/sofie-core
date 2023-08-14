@@ -1,7 +1,8 @@
 import ClassNames from 'classnames'
 import React, { useCallback, useMemo } from 'react'
 import Tooltip from 'rc-tooltip'
-import { Studio, MappingExt, getActiveRoutes, ResultingMappingRoutes } from '../../../../lib/collections/Studios'
+import { getActiveRoutes } from '../../../../lib/collections/Studios'
+import { DBStudio, MappingExt, ResultingMappingRoutes } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { doModalDialog } from '../../../lib/ModalDialog'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTrash, faPencilAlt, faCheck, faPlus, faSync } from '@fortawesome/free-solid-svg-icons'
@@ -51,7 +52,7 @@ export interface MappingsSettingsManifest {
 export type MappingsSettingsManifests = Record<string | number, MappingsSettingsManifest>
 
 interface IStudioMappingsProps {
-	studio: Studio
+	studio: DBStudio
 	manifest: MappingsSettingsManifests | undefined
 	translationNamespaces: string[]
 }
@@ -554,6 +555,7 @@ function StudioMappingsEntry({
 											item={mappingSchemaItem}
 											attr="options"
 											overrideHelper={overrideHelper}
+											isRequired
 										/>
 									) : (
 										<p>{t('No schema has been provided for this mapping')}</p>

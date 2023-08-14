@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { getCurrentTime } from '../../../lib/lib'
 import { invalidateAfter } from '../../../lib/invalidatingTime'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -23,7 +23,7 @@ interface IProps {
 
 interface ITrackedProps {
 	studio: Pick<UIStudio, 'name'> | undefined
-	rundownPlaylist: Pick<RundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'> | undefined
+	rundownPlaylist: Pick<DBRundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'> | undefined
 }
 
 interface IState {
@@ -42,7 +42,7 @@ interface IState {
 
 interface FindNextPlaylistResult {
 	studio: Pick<UIStudio, 'name'> | undefined
-	rundownPlaylist: Pick<RundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'> | undefined
+	rundownPlaylist: Pick<DBRundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'> | undefined
 }
 export const findNextPlaylist = (props: IProps): FindNextPlaylistResult => {
 	invalidateAfter(5000)
@@ -66,7 +66,7 @@ export const findNextPlaylist = (props: IProps): FindNextPlaylistResult => {
 						studioId: 1,
 					},
 				}
-			).fetch() as Pick<RundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'>[]
+			).fetch() as Pick<DBRundownPlaylist, '_id' | 'studioId' | 'name' | 'timing'>[]
 		)
 			.sort(PlaylistTiming.sortTimings)
 			.find((rundownPlaylist) => {

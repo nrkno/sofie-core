@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react'
 import _ from 'underscore'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { literal, unprotectString } from '../../../../lib/lib'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { IContextMenuContext } from '../../RundownView'
@@ -15,7 +15,7 @@ import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/ti
 export interface ISourceLayerPropsBase {
 	key: string
 	outputLayer: IOutputLayerUi
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	studio: UIStudio
 	segment: SegmentUi
 	part: PartUi

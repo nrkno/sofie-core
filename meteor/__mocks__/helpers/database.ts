@@ -5,8 +5,8 @@ import {
 	PeripheralDeviceCategory,
 	PERIPHERAL_SUBTYPE_PROCESS,
 	PeripheralDeviceSubType,
-} from '../../lib/collections/PeripheralDevices'
-import { Studio, DBStudio } from '../../lib/collections/Studios'
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	PieceLifespan,
 	IOutputLayer,
@@ -35,7 +35,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
-import { Blueprint } from '../../lib/collections/Blueprints'
+import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { ICoreSystem, SYSTEM_ID, stripVersion } from '../../lib/collections/CoreSystem'
 import { internalUploadBlueprint } from '../../server/api/blueprints/api'
 import {
@@ -48,11 +48,11 @@ import {
 	Complete,
 	normalizeArray,
 } from '../../lib/lib'
-import { DBRundown } from '../../lib/collections/Rundowns'
-import { DBSegment } from '../../lib/collections/Segments'
-import { DBPart } from '../../lib/collections/Parts'
-import { EmptyPieceTimelineObjectsBlob, Piece } from '../../lib/collections/Pieces'
-import { DBRundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { EmptyPieceTimelineObjectsBlob, Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { restartRandomId } from '../random'
@@ -118,7 +118,7 @@ export async function setupMockPeripheralDevice(
 	category: PeripheralDeviceCategory,
 	type: PeripheralDeviceType,
 	subType: PeripheralDeviceSubType,
-	studio?: Pick<Studio, '_id'>,
+	studio?: Pick<DBStudio, '_id'>,
 	doc?: Partial<PeripheralDevice>
 ): Promise<PeripheralDevice> {
 	doc = doc || {}
@@ -220,7 +220,7 @@ export async function setupMockTriggeredActions(
 	}
 	return mocks
 }
-export async function setupMockStudio(doc?: Partial<DBStudio>): Promise<Studio> {
+export async function setupMockStudio(doc?: Partial<DBStudio>): Promise<DBStudio> {
 	doc = doc || {}
 
 	const studio: DBStudio = {
@@ -519,7 +519,7 @@ export interface DefaultEnvironment {
 	showStyleBase: DBShowStyleBase
 	triggeredActions: DBTriggeredActions[]
 	showStyleVariant: DBShowStyleVariant
-	studio: Studio
+	studio: DBStudio
 	core: ICoreSystem
 	systemTriggeredActions: DBTriggeredActions[]
 

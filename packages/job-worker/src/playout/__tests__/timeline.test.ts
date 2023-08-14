@@ -1143,11 +1143,6 @@ describe('Timeline', () => {
 			const nowObjs = rawTimelineObjs.filter((obj) => !Array.isArray(obj.enable) && obj.enable.start === 'now')
 			expect(nowObjs).toHaveLength(objectCount)
 
-			// All should be inside a PartGroup
-			expect(
-				nowObjs.find((obj) => !obj.inGroup || !obj.inGroup.startsWith(getPartGroupId(protectString(''))))
-			).toBeFalsy()
-
 			const results = nowObjs.map((obj) => ({
 				id: obj.id,
 				time: time,
@@ -1183,7 +1178,7 @@ describe('Timeline', () => {
 
 					return rundownId
 				},
-				async (playlistId, _rundownId, parts, getPartInstances, checkTimings) => {
+				async (playlistId, rundownId, parts, getPartInstances, checkTimings) => {
 					const outputLayerIds = Object.keys(showStyle.outputLayers)
 					const sourceLayerIds = Object.keys(showStyle.sourceLayers)
 
@@ -1237,7 +1232,9 @@ describe('Timeline', () => {
 							piece000: {
 								controlObj: {
 									start: 500, // This one gave the preroll
-									end: `#piece_group_control_${currentPartInstance!._id}_${adlibbedPieceId}.start`,
+									end: `#piece_group_control_${
+										currentPartInstance!._id
+									}_${rundownId}_piece000_cap_now.start + 0`,
 								},
 								childGroup: {
 									preroll: 500,
@@ -1270,7 +1267,7 @@ describe('Timeline', () => {
 
 					const pieceOffset = 12560
 					// Simulate the piece timing confirmation from playout-gateway
-					await doSimulatePiecePlaybackTimings(playlistId, pieceOffset, 1)
+					await doSimulatePiecePlaybackTimings(playlistId, pieceOffset, 2)
 
 					// Now we have a concrete time
 					await checkTimings({
@@ -1402,7 +1399,9 @@ describe('Timeline', () => {
 							piece000: {
 								controlObj: {
 									start: 500, // This one gave the preroll
-									end: `#piece_group_control_${currentPartInstance!._id}_${adlibbedPieceId}.start`,
+									end: `#piece_group_control_${
+										currentPartInstance!._id
+									}_${_rundownId}_piece000_cap_now.start + 0`,
 								},
 								childGroup: {
 									preroll: 500,
@@ -1437,7 +1436,7 @@ describe('Timeline', () => {
 
 					const pieceOffset = 12560
 					// Simulate the piece timing confirmation from playout-gateway
-					await doSimulatePiecePlaybackTimings(playlistId, pieceOffset, 1)
+					await doSimulatePiecePlaybackTimings(playlistId, pieceOffset, 2)
 
 					// Now we have a concrete time
 					await checkTimings({

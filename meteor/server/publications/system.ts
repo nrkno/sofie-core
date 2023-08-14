@@ -5,8 +5,10 @@ import { SystemReadAccess } from '../security/system'
 import { OrganizationReadAccess } from '../security/organization'
 import { CoreSystem, Users } from '../collections'
 import { SYSTEM_ID } from '../../lib/collections/CoreSystem'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+import { DBUser } from '../../lib/collections/Users'
 
-meteorPublish(PubSub.coreSystem, async function (token) {
+meteorPublish(PubSub.coreSystem, async function (token: string | undefined) {
 	if (await SystemReadAccess.coreSystem({ userId: this.userId, token })) {
 		return CoreSystem.findWithCursor(SYSTEM_ID, {
 			fields: {
@@ -26,7 +28,7 @@ meteorPublish(PubSub.coreSystem, async function (token) {
 	return null
 })
 
-meteorPublish(PubSub.loggedInUser, async function (token) {
+meteorPublish(PubSub.loggedInUser, async function (token: string | undefined) {
 	const currentUserId = this.userId
 
 	if (!currentUserId) return null
@@ -49,7 +51,7 @@ meteorPublish(PubSub.loggedInUser, async function (token) {
 	}
 	return null
 })
-meteorPublish(PubSub.usersInOrganization, async function (selector, token) {
+meteorPublish(PubSub.usersInOrganization, async function (selector: MongoQuery<DBUser>, token: string | undefined) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	if (await OrganizationReadAccess.adminUsers(selector.organizationId, { userId: this.userId, token })) {
 		return Users.findWithCursor(selector, {

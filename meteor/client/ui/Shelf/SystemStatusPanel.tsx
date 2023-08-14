@@ -7,11 +7,11 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { RundownSystemStatus } from '../RundownView/RundownSystemStatus'
-import { DBRundown, Rundown } from '../../../lib/collections/Rundowns'
+import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { UIStudio } from '../../../lib/api/studios'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Rundowns } from '../../collections'
@@ -22,7 +22,7 @@ interface ISystemStatusPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutSytemStatus
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 }
 
 interface IState {}

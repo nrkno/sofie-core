@@ -13,7 +13,7 @@ import {
 	PeripheralDeviceType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import _ from 'underscore'
-import { Studio } from '../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import {
 	wrapDefaultObject,
 	ObjectOverrideSetOp,
@@ -42,7 +42,7 @@ const mappingBaseOptions: Array<keyof MappingExt> = [
 	'lookaheadMaxSearchDistance',
 ]
 
-function convertMappingsOverrideOps(studio: Studio) {
+function convertMappingsOverrideOps(studio: DBStudio) {
 	let changed = false
 
 	const newOverrides = clone(studio.mappingsWithOverrides.overrides)
@@ -74,7 +74,7 @@ function convertMappingsOverrideOps(studio: Studio) {
 	return changed && newOverrides
 }
 
-function convertRouteSetMappings(studio: Studio) {
+function convertRouteSetMappings(studio: DBStudio) {
 	let changed = false
 
 	const newRouteSets = clone(studio.routeSets || {})
@@ -754,7 +754,7 @@ function updatePlayoutDeviceTypeInOverride(op: SomeObjectOverrideOp): ObjectOver
 	if (op.op !== 'set') return undefined
 	if (!op.path.includes('.')) {
 		// Root level
-		const value = op.value as Partial<StudioPlayoutDevice>
+		const value = op.value as any
 		if (typeof value.options?.type === 'number') {
 			value.options.type = oldDeviceTypeToNewMapping[value.options.type] ?? TSR.DeviceType.ABSTRACT
 			return op

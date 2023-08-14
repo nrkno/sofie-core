@@ -1,5 +1,5 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { Observer } from '@sofie-automation/server-core-integration'
+import { Observer, SubscriptionId } from '@sofie-automation/server-core-integration'
 import { Logger } from 'winston'
 import { WebSocket } from 'ws'
 import { CoreHandler } from './coreHandler'
@@ -59,7 +59,7 @@ export abstract class CollectionBase<T> {
 	protected _subscribers: Set<WebSocket> = new Set()
 	protected _observers: Set<CollectionObserver<T>> = new Set()
 	protected _collectionData: T | undefined
-	protected _subscriptionId: string | undefined
+	protected _subscriptionId: SubscriptionId | undefined
 	protected _dbObserver: Observer | undefined
 
 	constructor(

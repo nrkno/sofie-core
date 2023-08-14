@@ -1,6 +1,6 @@
 import { meteorPublish, AutoFillSelector } from './lib'
 import { PubSub } from '../../lib/api/pubsub'
-import { Blueprint } from '../../lib/collections/Blueprints'
+import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { Evaluation } from '../../lib/collections/Evaluations'
 import { SnapshotItem } from '../../lib/collections/Snapshots'
 import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
@@ -9,9 +9,13 @@ import { FindOptions } from '../../lib/collections/lib'
 import { DBOrganization } from '../../lib/collections/Organization'
 import { isProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { Blueprints, Evaluations, Organizations, Snapshots, UserActionsLog } from '../collections'
+import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
+import { OrganizationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
-meteorPublish(PubSub.organization, async function (selector0, token) {
-	const { cred, selector } = await AutoFillSelector.organizationId(this.userId, selector0, token)
+meteorPublish(PubSub.organization, async function (organizationId: OrganizationId | null, token: string | undefined) {
+	if (!organizationId) return null
+
+	const { cred, selector } = await AutoFillSelector.organizationId(this.userId, { _id: organizationId }, token)
 	const modifier: FindOptions<DBOrganization> = {
 		fields: {
 			name: 1,
@@ -29,7 +33,7 @@ meteorPublish(PubSub.organization, async function (selector0, token) {
 	return null
 })
 
-meteorPublish(PubSub.blueprints, async function (selector0, token) {
+meteorPublish(PubSub.blueprints, async function (selector0: MongoQuery<Blueprint>, token: string | undefined) {
 	const { cred, selector } = await AutoFillSelector.organizationId<Blueprint>(this.userId, selector0, token)
 	const modifier: FindOptions<Blueprint> = {
 		fields: {
@@ -41,24 +45,31 @@ meteorPublish(PubSub.blueprints, async function (selector0, token) {
 	}
 	return null
 })
-meteorPublish(PubSub.evaluations, async function (selector0, token) {
+meteorPublish(PubSub.evaluations, async function (selector0: MongoQuery<Evaluation>, token: string | undefined) {
 	const { cred, selector } = await AutoFillSelector.organizationId<Evaluation>(this.userId, selector0, token)
 	if (!cred || (await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) {
 		return Evaluations.findWithCursor(selector)
 	}
 	return null
 })
-meteorPublish(PubSub.snapshots, async function (selector0, token) {
+meteorPublish(PubSub.snapshots, async function (selector0: MongoQuery<SnapshotItem>, token: string | undefined) {
 	const { cred, selector } = await AutoFillSelector.organizationId<SnapshotItem>(this.userId, selector0, token)
 	if (!cred || (await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) {
 		return Snapshots.findWithCursor(selector)
 	}
 	return null
 })
-meteorPublish(PubSub.userActionsLog, async function (selector0, token) {
-	const { cred, selector } = await AutoFillSelector.organizationId<UserActionsLogItem>(this.userId, selector0, token)
-	if (!cred || (await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) {
-		return UserActionsLog.findWithCursor(selector)
+meteorPublish(
+	PubSub.userActionsLog,
+	async function (selector0: MongoQuery<UserActionsLogItem>, token: string | undefined) {
+		const { cred, selector } = await AutoFillSelector.organizationId<UserActionsLogItem>(
+			this.userId,
+			selector0,
+			token
+		)
+		if (!cred || (await OrganizationReadAccess.organizationContent(selector.organizationId, cred))) {
+			return UserActionsLog.findWithCursor(selector)
+		}
+		return null
 	}
-	return null
-})
+)

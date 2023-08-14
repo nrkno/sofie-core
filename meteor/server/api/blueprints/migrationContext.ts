@@ -12,7 +12,7 @@ import {
 	Complete,
 	waitForPromise,
 } from '../../../lib/lib'
-import { Studio, DBStudio, StudioPlayoutDevice } from '../../../lib/collections/Studios'
+import { DBStudio, StudioPlayoutDevice } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { Meteor } from 'meteor/meteor'
 import {
@@ -32,10 +32,13 @@ import {
 
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { check } from '../../../lib/check'
-import { PERIPHERAL_SUBTYPE_PROCESS, PeripheralDeviceType } from '../../../lib/collections/PeripheralDevices'
+import {
+	PERIPHERAL_SUBTYPE_PROCESS,
+	PeripheralDeviceType,
+} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { TriggeredActionsObj } from '../../../lib/collections/TriggeredActions'
 import { Match } from 'meteor/check'
-import { MongoModifier } from '../../../lib/typings/meteor'
+import { MongoModifier } from '@sofie-automation/corelib/dist/mongo'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ShowStyleBaseId, ShowStyleVariantId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices, ShowStyleBases, ShowStyleVariants, Studios, TriggeredActions } from '../../collections'
@@ -160,9 +163,9 @@ export class MigrationContextSystem
 	implements IMigrationContextSystem {}
 
 export class MigrationContextStudio implements IMigrationContextStudio {
-	private studio: Studio
+	private studio: DBStudio
 
-	constructor(studio: Studio) {
+	constructor(studio: DBStudio) {
 		this.studio = studio
 	}
 

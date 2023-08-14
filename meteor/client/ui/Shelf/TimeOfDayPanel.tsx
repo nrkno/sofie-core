@@ -6,7 +6,7 @@ import {
 } from '../../../lib/collections/RundownLayouts'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { withTranslation } from 'react-i18next'
@@ -16,7 +16,7 @@ interface ITimeOfDayPanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutTimeOfDay
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 }
 
 interface IState {}

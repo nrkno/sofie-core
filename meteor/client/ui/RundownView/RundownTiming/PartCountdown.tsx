@@ -3,7 +3,7 @@ import Moment from 'react-moment'
 import { withTiming, WithTiming } from './withTiming'
 import { unprotectString } from '../../../../lib/lib'
 import { RundownUtils } from '../../../lib/rundown'
-import { RundownPlaylist } from '../../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
@@ -12,7 +12,7 @@ interface IPartCountdownProps {
 	hideOnZero?: boolean
 	label?: ReactNode
 	useWallClock?: boolean
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 }
 
 /**

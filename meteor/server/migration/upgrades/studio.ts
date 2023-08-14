@@ -1,7 +1,7 @@
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { BlueprintValidateConfigForStudioResult, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { Meteor } from 'meteor/meteor'
-import { Studio } from '../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { profiler } from '../../api/profiler'
 import { Studios } from '../../collections'
 import { logger } from '../../logging'
@@ -12,7 +12,7 @@ export async function validateConfigForStudio(studioId: StudioId): Promise<Bluep
 		fields: {
 			_id: 1,
 		},
-	})) as Pick<Studio, '_id'> | undefined
+	})) as Pick<DBStudio, '_id'> | undefined
 	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
 
 	const queuedJob = await QueueStudioJob(StudioJobs.BlueprintValidateConfigForStudio, studioId, undefined)
@@ -33,7 +33,7 @@ export async function runUpgradeForStudio(studioId: StudioId): Promise<void> {
 		fields: {
 			_id: 1,
 		},
-	})) as Pick<Studio, '_id'> | undefined
+	})) as Pick<DBStudio, '_id'> | undefined
 	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
 
 	const queuedJob = await QueueStudioJob(StudioJobs.BlueprintUpgradeForStudio, studioId, undefined)

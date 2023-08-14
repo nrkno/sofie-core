@@ -1,7 +1,7 @@
 import * as React from 'react'
 import * as _ from 'underscore'
 import { ISourceLayer, NoteSeverity, PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import {
 	IOutputLayerExtended,
@@ -13,9 +13,9 @@ import {
 import { IContextMenuContext } from '../RundownView'
 import { equalSets } from '../../../lib/lib'
 import { RundownUtils } from '../../lib/rundown'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PartInstance } from '../../../lib/collections/PartInstances'
-import { Part } from '../../../lib/collections/Parts'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { slowDownReactivity } from '../../lib/reactiveData/reactiveDataHelper'
 import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
 import { getIsFilterActive } from '../../lib/rundownLayouts'
@@ -76,7 +76,7 @@ export interface IProps {
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>
 	studio: UIStudio
 	showStyleBase: UIShowStyleBase
-	playlist: RundownPlaylist
+	playlist: DBRundownPlaylist
 	rundown: MinimalRundown
 	timeScale: number
 	onPieceDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
@@ -183,7 +183,7 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 										{
 											fields: { _id: 1 },
 										}
-									).parts as Pick<Part, '_id' | 'segmentId' | '_rank'>[]
+									).parts as Pick<DBPart, '_id' | 'segmentId' | '_rank'>[]
 								).map((part) => part._id),
 							'playlist.getSegmentsAndPartsSync',
 							props.playlist._id

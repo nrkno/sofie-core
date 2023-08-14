@@ -36,7 +36,7 @@ import { defaultStudio } from '../../../../__mocks__/defaultCollectionObjects'
 import { testInFiber } from '../../../../__mocks__/helpers/jest'
 import { MediaObjects } from '../../../collections'
 import { PieceDependencies } from '../common'
-import { Studio } from '../../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
 
 const mockMediaObjectsCollection = MongoMock.getInnerMockCollection<MediaObject>(MediaObjects)
@@ -176,7 +176,7 @@ describe('lib/mediaObjects', () => {
 		const mockDefaultStudio = defaultStudio(protectString('studio0'))
 		const mockStudio: Complete<
 			Pick<
-				Studio,
+				DBStudio,
 				'_id' | 'settings' | 'packageContainers' | 'previewContainerIds' | 'thumbnailContainerIds' | 'routeSets'
 			> &
 				Pick<UIStudio, 'mappings'>

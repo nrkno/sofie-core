@@ -22,7 +22,7 @@ import {
 } from '../../../lib/api/migration'
 import { Blueprints, ShowStyleBases, Studios } from '../../collections'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { Studio } from '../../../lib/collections/Studios'
+import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { generateTranslation } from '../../../lib/lib'
 import { JSONBlob, JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
@@ -149,7 +149,7 @@ async function checkShowStyleBaseUpgradeStatus(): Promise<GetUpgradeStatusResult
 }
 
 type StudioForUpgradeCheck = Pick<
-	Studio,
+	DBStudio,
 	'_id' | 'blueprintId' | 'blueprintConfigPresetId' | 'lastBlueprintConfig' | 'blueprintConfigWithOverrides' | 'name'
 >
 type ShowStyleBaseForUpgradeCheck = Pick<

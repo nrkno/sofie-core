@@ -5,7 +5,7 @@ import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
 import { Route } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { parse as queryStringParse } from 'query-string'
 
 import { Spinner } from '../../lib/Spinner'
@@ -18,7 +18,7 @@ import { documentTitle } from '../../lib/DocumentTitleProvider'
 import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
 import { OverUnderTimer } from './OverUnderTimer'
-import { Rundown } from '../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PartInstanceId, PieceId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
@@ -77,7 +77,7 @@ interface IProps {
 }
 
 interface ITrackedProps {
-	rundownPlaylist?: RundownPlaylist
+	rundownPlaylist?: DBRundownPlaylist
 	studio?: UIStudio
 }
 
@@ -220,7 +220,7 @@ export class PrompterViewInner extends MeteorReactComponent<Translated<IProps & 
 						_id: 1,
 					},
 				}
-			) as Pick<RundownPlaylist, '_id'> | undefined
+			) as Pick<DBRundownPlaylist, '_id'> | undefined
 			if (playlist?._id) {
 				this.subscribe(PubSub.rundowns, [playlist._id], null)
 			}
@@ -557,7 +557,7 @@ export const PrompterView = translateWithTracker<IProps, {}, ITrackedProps>(({ s
 				lastIncorrectPartPlaybackReported: 0,
 			},
 		}
-	) as Omit<RundownPlaylist, 'trackedAbSessions'> | undefined
+	) as Omit<DBRundownPlaylist, 'trackedAbSessions'> | undefined
 
 	return literal<ITrackedProps>({
 		rundownPlaylist,
@@ -604,7 +604,7 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 						_id: 1,
 						activationId: 1,
 					},
-				}) as Pick<RundownPlaylist, '_id' | 'activationId'> | undefined
+				}) as Pick<DBRundownPlaylist, '_id' | 'activationId'> | undefined
 				if (playlist) {
 					const rundownIDs = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
 					this.subscribe(PubSub.segments, {
