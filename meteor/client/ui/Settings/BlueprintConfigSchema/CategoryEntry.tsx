@@ -60,6 +60,7 @@ export function ConfigCategoryEntry({
 								item={wrappedItem}
 								overrideHelper={overrideHelper}
 								sofieEnumDefinitons={sofieEnumDefinitons}
+								isRequired
 							/>
 						</div>
 						<div className="mod alright">

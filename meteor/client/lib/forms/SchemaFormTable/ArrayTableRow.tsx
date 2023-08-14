@@ -6,9 +6,11 @@ import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { JSONSchema } from '@sofie-automation/blueprints-integration'
 import { SchemaSummaryField, SchemaFormSofieEnumDefinition } from '../schemaFormUtil'
 import { OverrideOpHelperArrayTable } from './ArrayTableOpHelper'
+import { ReadonlyDeep } from 'type-fest'
 
 interface ArrayTableRowProps {
 	columns: Record<string, JSONSchema | undefined>
+	requiredColumns: ReadonlyDeep<string[]> | undefined
 	summaryFields: SchemaSummaryField[]
 	translationNamespaces: string[]
 	sofieEnumDefinitons: Record<string, SchemaFormSofieEnumDefinition> | undefined
@@ -25,6 +27,7 @@ interface ArrayTableRowProps {
 
 export function ArrayTableRow({
 	columns,
+	requiredColumns,
 	summaryFields,
 	translationNamespaces,
 	sofieEnumDefinitons,
@@ -64,6 +67,7 @@ export function ArrayTableRow({
 					sofieEnumDefinitons={sofieEnumDefinitons}
 					rowId={rowId}
 					columns={columns}
+					requiredColumns={requiredColumns}
 					rowItem={rowItem}
 					editItem={toggleExpanded}
 					overrideHelper={overrideHelper}

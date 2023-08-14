@@ -393,6 +393,7 @@ function SubDeviceEditForm({ peripheralDevice, item, overrideHelper }: SubDevice
 					overrideHelper={overrideHelper}
 					translationNamespaces={translationNamespaces}
 					allowTables
+					isRequired
 				/>
 			)}
 
@@ -404,6 +405,7 @@ function SubDeviceEditForm({ peripheralDevice, item, overrideHelper }: SubDevice
 					overrideHelper={overrideHelper}
 					translationNamespaces={translationNamespaces}
 					allowTables
+					isRequired
 				/>
 			) : (
 				<p>{t('Device is of unknown type')}</p>

@@ -4,7 +4,7 @@ import { WrappedOverridableItemNormal, OverrideOpHelperForItemContents } from '.
 import { SchemaFormCommonProps } from './schemaFormUtil'
 import { SchemaFormWithOverrides } from './SchemaFormWithOverrides'
 
-interface SchemaFormInPlaceProps extends SchemaFormCommonProps {
+interface SchemaFormInPlaceProps extends Omit<SchemaFormCommonProps, 'isRequired'> {
 	/** The object to be modified in place */
 	object: any
 }
@@ -27,7 +27,7 @@ export function SchemaFormInPlace({ object, ...commonProps }: SchemaFormInPlaceP
 		[object, editCount]
 	)
 
-	return <SchemaFormWithOverrides {...commonProps} attr={''} item={wrappedItem} overrideHelper={helper} />
+	return <SchemaFormWithOverrides {...commonProps} attr={''} item={wrappedItem} overrideHelper={helper} isRequired />
 }
 
 /**
