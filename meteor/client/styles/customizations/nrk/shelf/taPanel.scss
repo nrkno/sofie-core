@@ -20,7 +20,11 @@
 		 */
 		&.skjermgrafikk .dashboard-panel__panel__button {
 			border: 1px var(--segment-layer-background-graphics) solid;
-			border-left-width: 10px;
+			border-left-width: 11px;
+
+			.dashboard-panel__panel__button__label-container {
+				margin-left: 12px !important;
+			}
 		}
 
 		/** 
@@ -28,6 +32,12 @@
 		*/
 		&.supring .dashboard-panel__panel__button {
 			border: 1px var(--segment-layer-background-graphics) solid;
+			border-left-width: 11px;
+
+			.dashboard-panel__panel__button__label-container {
+				margin-left: 8px !important;
+				font-size: 0.8em;
+			}
 		}
 	}
 }
