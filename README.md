@@ -19,7 +19,7 @@ Follow these instructions to start up Sofie Core in development mode. (For produ
 - Install [Meteor](https://www.meteor.com/install) (`npm install --global meteor`)
 - Install [Yarn](https://yarnpkg.com) (`npm install --global corepack && corepack enable`)
 
-### Quick-start:
+### Quick Start:
 
 ```bash
 git clone -b master https://github.com/nrkno/sofie-core.git
