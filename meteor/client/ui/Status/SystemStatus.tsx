@@ -311,8 +311,10 @@ export const DeviceItem = reacti18next.withTranslation()(
 											e.stopPropagation()
 
 											doModalDialog({
-												title: t('Delete'),
-												message: <p>{t('Are you sure you want to restart this device?')}</p>,
+												message: t('Are you sure you want to restart this device?'),
+												title: t('Restart this Device?'),
+												yes: t('Restart'),
+												no: t('Cancel'),
 												onAccept: () => {
 													const { t } = this.props
 													PeripheralDevicesAPI.restartDevice(this.props.device, e)
