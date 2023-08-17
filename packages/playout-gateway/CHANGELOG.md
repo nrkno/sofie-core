@@ -3,6 +3,24 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.50.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.5...v1.50.0-in-testing.3) (2023-08-17)
+
+
+
+# [1.50.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.1...v1.50.0-in-testing.2) (2023-07-17)
+
+
+### Features
+
+* bumps nightly tsr and types ([77f0bf2](https://github.com/nrkno/tv-automation-server-core/commit/77f0bf2efe569ea7cc348f981c3f17e55273c6e4))
+* move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
+* peripheral device tidying ([#906](https://github.com/nrkno/tv-automation-server-core/issues/906)) ([0795ae5](https://github.com/nrkno/tv-automation-server-core/commit/0795ae5c0517114a34e350d5a5afbf7a731e9794))
+* trs actions in blueprints rundown hooks ([bb5e442](https://github.com/nrkno/tv-automation-server-core/commit/bb5e4422fa32e1af1e520e0c288360b304da4289))
+
+
+
+
+
 # [1.50.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.1...v1.50.0-in-testing.2) (2023-07-17)
 
 **Note:** Version bump only for package playout-gateway
