@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.49.0-in-testing.5](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.4...v1.49.0-in-testing.5) (2023-08-17)
+
+
+### Features
+
+* DashboardPanel adds customClasses to DashboardPanel ([d35c908](https://github.com/nrkno/sofie-core/commit/d35c908ef576c9f66dec26cba1f734b89512fe67))
+* list styling. ([bec2b9e](https://github.com/nrkno/sofie-core/commit/bec2b9ed02e14f5cac2c7a05e11afa9305335347))
+* styles skjerm action buttons ([877000f](https://github.com/nrkno/sofie-core/commit/877000f2d82f6541d4feda3e08c22f18decb154c))
+
+
+### Bug Fixes
+
+* Changes the wrong title "Delete" to "Restart". ([b4ea6b3](https://github.com/nrkno/sofie-core/commit/b4ea6b3af51fc066de76bb163e4e7b4e4c5ff625))
+* Prevents that BTS become graphics ([b0d2f9a](https://github.com/nrkno/sofie-core/commit/b0d2f9ab6c06c6805f6d389dee6d03b7d84eabf3))
+
 ## [1.49.0-in-testing.4](https://github.com/nrkno/sofie-core/compare/v1.47.5...v1.49.0-in-testing.4) (2023-06-29)
 
 
