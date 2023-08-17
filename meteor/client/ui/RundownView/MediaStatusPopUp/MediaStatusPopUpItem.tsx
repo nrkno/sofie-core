@@ -1,5 +1,5 @@
-import React from 'react'
-import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import React, { useCallback } from 'react'
+import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
@@ -7,10 +7,12 @@ import { TimingDataResolution, TimingTickResolution, withTiming } from '../Rundo
 import { RundownUtils } from '../../../lib/rundown'
 import classNames from 'classnames'
 import { MediaStatusIndicator } from '../../MediaStatus/MediaStatusIndicator'
+import RundownViewEventBus, { RundownViewEvents } from '../../../../lib/api/triggers/RundownViewEventBus'
 
 export const MediaStatusItem = withTiming<
 	{
 		partId: PartId | undefined
+		segmentId: SegmentId | undefined
 		partInstanceId: PartInstanceId | undefined
 		status: PieceStatusCode
 		statusOverlay?: string | undefined
@@ -31,6 +33,7 @@ export const MediaStatusItem = withTiming<
 })(function MediaStatusItem({
 	partId,
 	partInstanceId,
+	segmentId,
 	status,
 	statusOverlay,
 	sourceLayerType,
@@ -50,6 +53,16 @@ export const MediaStatusItem = withTiming<
 	const sourceLayerClassName =
 		sourceLayerType !== undefined ? RundownUtils.getSourceLayerClassName(sourceLayerType) : undefined
 
+	const onPartIdentifierClick = useCallback(() => {
+		if (!segmentId || !partId) return
+
+		RundownViewEventBus.emit(RundownViewEvents.GO_TO_PART, {
+			segmentId,
+			partId,
+			zoomInToFit: true,
+		})
+	}, [segmentId, partId])
+
 	return (
 		<tr className="media-status-popup-item">
 			<td className="media-status-popup-item__playout-indicator">
@@ -58,6 +71,16 @@ export const MediaStatusItem = withTiming<
 			</td>
 			<td className="media-status-popup-item__countdown">
 				{!isAdLib && thisPartCountdown ? RundownUtils.formatTimeToShortTime(thisPartCountdown) : null}
+			</td>
+			<td className="media-status-popup-item__identifiers">
+				{segmentIdentifier ? (
+					<button className="media-status-popup-item__segment-identifier">{segmentIdentifier}</button>
+				) : null}
+				{partIdentifier ? (
+					<button className="media-status-popup-item__part-identifier" onClick={onPartIdentifierClick}>
+						{partIdentifier}
+					</button>
+				) : null}
 			</td>
 			<td className="media-status-popup-item__status">
 				<MediaStatusIndicator status={status} overlay={statusOverlay} />
@@ -75,12 +98,6 @@ export const MediaStatusItem = withTiming<
 					{invalid && <div className={'media-status-popup-item__source-layer-overlay invalid'}></div>}
 					<div className="media-status-popup-item__source-layer-label">{sourceLayerName}</div>
 				</div>
-			</td>
-			<td className="media-status-popup-item__identifiers">
-				{segmentIdentifier ? (
-					<div className="media-status-popup-item__segment-identifier">{segmentIdentifier}</div>
-				) : null}
-				{partIdentifier ? <div className="media-status-popup-item__part-identifier">{partIdentifier}</div> : null}
 			</td>
 			<td className="media-status-popup-item__label">{label}</td>
 		</tr>

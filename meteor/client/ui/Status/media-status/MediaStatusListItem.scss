@@ -27,7 +27,7 @@
 	}
 
 	> .media-status-item__label {
-		font-weight: 400;
+		font-weight: 500;
 	}
 
 	> .media-status-item__label {
@@ -43,6 +43,10 @@
 			text-overflow: ellipsis;
 			white-space: nowrap;
 		}
+	}
+
+	> .media-status-item__identifiers {
+		text-align: center;
 	}
 
 	.media-status-item__source-layer-indicator {
@@ -106,5 +110,6 @@
 		color: #fff;
 		font-weight: 400;
 		font-size: 0.875em;
+		min-width: 2.5em;
 	}
 }

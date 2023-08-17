@@ -57,6 +57,7 @@ export function MediaStatusPopUpHeader({
 						{t('On Air In')}
 					</button>
 				</th>
+				<th className="media-status-item__identifiers"></th>
 				<th className="media-status-popup-item__status">
 					<SortOrderButton
 						className="media-status-popup-item__sort-button"
@@ -71,7 +72,6 @@ export function MediaStatusPopUpHeader({
 						onChange={(order) => changeSortOrder('sourceLayer', order)}
 					/>
 				</th>
-				<th className="media-status-item__identifiers"></th>
 				<th className="media-status-item__label">
 					<input
 						type="search"

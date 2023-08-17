@@ -125,6 +125,7 @@ export function MediaStatusPopUp({ playlistId }: IProps): JSX.Element {
 														<MediaStatusItem
 															label={item.name}
 															partId={item.partId}
+															segmentId={item.segmentId}
 															partInstanceId={item.partInstanceId}
 															partIdentifier={item.partIdentifier}
 															segmentIdentifier={item.segmentIdentifier}

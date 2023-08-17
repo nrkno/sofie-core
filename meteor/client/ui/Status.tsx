@@ -112,7 +112,7 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 								<Route path="/status/system" component={SystemStatus} />
 								<Route path="/status/userLog" component={UserActivity} />
 								<Route path="/status/evaluations" component={EvaluationView} />
-								<Redirect to="/status/system" />
+								<Redirect to="/status/media" />
 							</Switch>
 						</div>
 					</div>

@@ -40,6 +40,10 @@ export function MediaStatusListItem({
 			<td className="media-status-item__rundown">
 				{rundownTo ? <NavLink to={rundownTo}>{rundownName}</NavLink> : rundownName}
 			</td>
+			<td className="media-status-item__identifiers">
+				{segmentIdentifier ? <div className="media-status-item__segment-identifier">{segmentIdentifier}</div> : null}
+				{partIdentifier ? <div className="media-status-item__part-identifier">{partIdentifier}</div> : null}
+			</td>
 			<td className="media-status-item__status">
 				<MediaStatusIndicator status={status} overlay={statusOverlay} />
 			</td>
@@ -56,10 +60,6 @@ export function MediaStatusListItem({
 					{invalid && <div className={'media-status-item__source-layer-overlay invalid'}></div>}
 					<div className="media-status-item__source-layer-label">{sourceLayerName}</div>
 				</div>
-			</td>
-			<td className="media-status-item__identifiers">
-				{segmentIdentifier ? <div className="media-status-item__segment-identifier">{segmentIdentifier}</div> : null}
-				{partIdentifier ? <div className="media-status-item__part-identifier">{partIdentifier}</div> : null}
 			</td>
 			<td className="media-status-item__label">
 				<div className="media-status-item__label-container">{label}</div>
