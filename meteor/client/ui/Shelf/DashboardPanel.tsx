@@ -514,9 +514,13 @@ export class DashboardPanelInner extends MeteorReactComponent<
 			} else {
 				return (
 					<div
-						className={ClassNames('dashboard-panel', {
-							'dashboard-panel--take': filter.displayTakeButtons,
-						})}
+						className={ClassNames(
+							'dashboard-panel',
+							{
+								'dashboard-panel--take': filter.displayTakeButtons,
+							},
+							filter.customClasses
+						)}
 						ref={this.setRef}
 						style={dashboardElementStyle(filter)}
 					>
