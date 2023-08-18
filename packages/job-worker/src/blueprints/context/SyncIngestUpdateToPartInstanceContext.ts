@@ -70,7 +70,7 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		this.partInstance = partInstance
 
-		// Create temporary cache databases
+		// Create temporary cache databases, so that we can update the main cache only once we know the operation has succeeded
 		this._pieceInstanceCache = DbCacheWriteCollection.createFromArray(
 			this._context,
 			this._context.directCollections.PieceInstances,

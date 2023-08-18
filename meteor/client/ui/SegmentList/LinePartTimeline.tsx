@@ -13,6 +13,7 @@ import { PartAutoNextMarker } from './PartAutoNextMarker'
 import { PieceUi } from '../SegmentContainer/withResolvedSegment'
 import StudioContext from '../RundownView/StudioContext'
 import { InvalidPartCover } from '../SegmentTimeline/Parts/InvalidPartCover'
+import { getPartInstanceTimingId } from '../../lib/rundownTiming'
 
 const TIMELINE_DEFAULT_BASE = 30 * 1000
 
@@ -141,7 +142,7 @@ export const LinePartTimeline: React.FC<IProps> = function LinePartTimeline({
 			{transitionPiece && <LinePartTransitionPiece piece={transitionPiece} />}
 			{!willAutoNextOut && !isInvalid && (
 				<OvertimeShadow
-					partId={part.instance.part._id}
+					partInstanceTimingId={getPartInstanceTimingId(part.instance)}
 					timelineBase={timelineBase}
 					maxDuration={maxDuration}
 					mainSourceEnd={mainSourceEnd ?? renderedPartDuration}

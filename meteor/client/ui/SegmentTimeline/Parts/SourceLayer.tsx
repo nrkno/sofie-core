@@ -22,7 +22,7 @@ export interface ISourceLayerPropsBase {
 	pieces: CalculateTimingsPiece[]
 	startsAt: number
 	duration: number
-	expectedDuration: number
+	displayDuration: number
 	timeScale: number
 	isLiveLine: boolean
 	isNextLine: boolean
@@ -122,7 +122,7 @@ export function SourceLayer(props: ISourceLayerProps): JSX.Element {
 									pieces={props.pieces}
 									partStartsAt={props.startsAt}
 									partDuration={props.duration}
-									partExpectedDuration={props.expectedDuration}
+									partDisplayDuration={props.displayDuration}
 									timeScale={props.timeScale}
 									autoNextPart={props.autoNextPart}
 									liveLinePadding={props.liveLinePadding}

@@ -57,6 +57,11 @@ export function canSegmentBeUpdated(
 		return false
 	}
 
+	if (segment.orphaned === SegmentOrphanedReason.SCRATCHPAD) {
+		logger.error(`Ingest cannot update Segment "${segment._id}" which is owned by the Scratchpad.`)
+		return false
+	}
+
 	return true
 }
 

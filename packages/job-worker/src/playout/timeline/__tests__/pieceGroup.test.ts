@@ -1,6 +1,6 @@
-import { getRandomId, literal } from '../../lib'
-import { Piece } from '../../dataModel/Piece'
-import { createPieceGroupAndCap, PieceTimelineMetadata } from '../pieces'
+import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { createPieceGroupAndCap, PieceTimelineMetadata } from '../pieceGroup'
 import {
 	OnGenerateTimelineObjExt,
 	TimelineContentTypeOther,
@@ -8,10 +8,10 @@ import {
 	TimelineObjPieceAbstract,
 	TimelineObjRundown,
 	TimelineObjType,
-} from '../../dataModel/Timeline'
+} from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { TSR } from '@sofie-automation/blueprints-integration'
-import { protectString } from '../../protectedString'
-import { RundownPlaylistId } from '../../dataModel/Ids'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
+import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PlayoutChangedType } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 
 type PieceInstanceParam = Parameters<typeof createPieceGroupAndCap>[1]
@@ -280,7 +280,7 @@ describe('Pieces', () => {
 
 			const pieceInstance: PieceInstanceParam = {
 				...simplePieceInstance,
-				resolvedEndCap: 'now',
+				resolvedEndCap: { offsetFromNow: 99 },
 			}
 			const res = createPieceGroupAndCap(playlistId, pieceInstance, enable, [], partGroup)
 
@@ -300,7 +300,7 @@ describe('Pieces', () => {
 				{
 					children: [],
 					content: { deviceType: 'ABSTRACT', type: 'group' },
-					enable: { end: '#piece_group_control_randomId9000_cap_now.start', start: 0 },
+					enable: { end: '#piece_group_control_randomId9000_cap_now.start + 99', start: 0 },
 					id: 'piece_group_control_randomId9000_cap',
 					inGroup: partGroup.id,
 					isGroup: true,
@@ -330,7 +330,7 @@ describe('Pieces', () => {
 
 			const pieceInstance: PieceInstanceParam = {
 				...simplePieceInstance,
-				resolvedEndCap: 'now',
+				resolvedEndCap: { offsetFromNow: 0 },
 			}
 			const res = createPieceGroupAndCap(playlistId, pieceInstance, enable, [], partGroup)
 
@@ -358,7 +358,7 @@ describe('Pieces', () => {
 				classes: [],
 				enable: {
 					...enable,
-					end: '#piece_group_control_randomId9000_cap_now.start',
+					end: '#piece_group_control_randomId9000_cap_now.start + 0',
 				},
 			})
 		})
@@ -368,7 +368,7 @@ describe('Pieces', () => {
 
 			const pieceInstance: PieceInstanceParam = {
 				...simplePieceInstance,
-				resolvedEndCap: 'now',
+				resolvedEndCap: { offsetFromNow: 0 },
 			}
 			const res = createPieceGroupAndCap(playlistId, pieceInstance, enable, [], partGroup)
 
@@ -388,7 +388,7 @@ describe('Pieces', () => {
 				{
 					children: [],
 					content: { deviceType: 'ABSTRACT', type: 'group' },
-					enable: { end: '#piece_group_control_randomId9000_cap_now.start', start: 0 },
+					enable: { end: '#piece_group_control_randomId9000_cap_now.start + 0', start: 0 },
 					id: 'piece_group_control_randomId9000_cap',
 					inGroup: partGroup.id,
 					isGroup: true,
@@ -418,15 +418,27 @@ describe('Pieces', () => {
 
 			const pieceInstance: PieceInstanceParam = {
 				...simplePieceInstance,
-				resolvedEndCap: 'aaa + 99',
+				resolvedEndCap: { offsetFromNow: 99 },
 			}
 			const res = createPieceGroupAndCap(playlistId, pieceInstance, enable, [], partGroup)
 
 			expect(res.capObjs).toStrictEqual([
 				{
+					content: { deviceType: 'ABSTRACT' },
+					enable: { start: 'now' },
+					id: 'piece_group_control_randomId9000_cap_now',
+					layer: '',
+					objectType: 'rundown',
+					partInstanceId: 'randomId9002',
+					metaData: {
+						isPieceTimeline: true,
+					},
+					priority: 0,
+				},
+				{
 					children: [],
 					content: { deviceType: 'ABSTRACT', type: 'group' },
-					enable: { end: pieceInstance.resolvedEndCap, start: 0 },
+					enable: { end: '#piece_group_control_randomId9000_cap_now.start + 99', start: 0 },
 					id: 'piece_group_control_randomId9000_cap',
 					inGroup: partGroup.id,
 					isGroup: true,
@@ -456,11 +468,24 @@ describe('Pieces', () => {
 
 			const pieceInstance: PieceInstanceParam = {
 				...simplePieceInstance,
-				resolvedEndCap: 'aaa + 99',
+				resolvedEndCap: { offsetFromNow: 99 },
 			}
 			const res = createPieceGroupAndCap(playlistId, pieceInstance, enable, [], partGroup)
 
-			expect(res.capObjs).toHaveLength(0)
+			expect(res.capObjs).toStrictEqual([
+				{
+					content: { deviceType: 'ABSTRACT' },
+					enable: { start: 'now' },
+					id: 'piece_group_control_randomId9000_cap_now',
+					layer: '',
+					objectType: 'rundown',
+					partInstanceId: 'randomId9002',
+					metaData: {
+						isPieceTimeline: true,
+					},
+					priority: 0,
+				},
+			])
 			expect(res.childGroup).toStrictEqual({
 				...simplePieceGroup,
 				inGroup: partGroup.id,
@@ -471,7 +496,7 @@ describe('Pieces', () => {
 				classes: [],
 				enable: {
 					...enable,
-					end: 'aaa + 99',
+					end: '#piece_group_control_randomId9000_cap_now.start + 99',
 				},
 			})
 		})

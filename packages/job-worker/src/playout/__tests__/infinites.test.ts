@@ -2,7 +2,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { ReadonlyDeep, SetRequired } from 'type-fest'
 import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache } from '../cache'
-import { canContinueAdlibOnEndInfinites } from '../infinites'
+import { candidatePartIsAfterPreviewPartInstance } from '../infinites'
 import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
@@ -56,7 +56,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 
 			// At beginning
 			expect(
-				canContinueAdlibOnEndInfinites(
+				candidatePartIsAfterPreviewPartInstance(
 					context,
 					playlist,
 					orderedPartsAndSegments.segments,
@@ -67,7 +67,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 
 			// Small gap
 			expect(
-				canContinueAdlibOnEndInfinites(
+				candidatePartIsAfterPreviewPartInstance(
 					context,
 					playlist,
 					orderedPartsAndSegments.segments,
@@ -78,7 +78,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 
 			// At end
 			expect(
-				canContinueAdlibOnEndInfinites(
+				candidatePartIsAfterPreviewPartInstance(
 					context,
 					playlist,
 					orderedPartsAndSegments.segments,
@@ -92,7 +92,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 
 			// Start to end
 			expect(
-				canContinueAdlibOnEndInfinites(
+				candidatePartIsAfterPreviewPartInstance(
 					context,
 					playlist,
 					orderedPartsAndSegments.segments,
@@ -109,7 +109,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 			const orderedPartsAndSegments = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
 
 			expect(
-				canContinueAdlibOnEndInfinites(
+				candidatePartIsAfterPreviewPartInstance(
 					context,
 					playlist,
 					orderedPartsAndSegments.segments,
@@ -127,7 +127,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 
 			// At beginning
 			expect(
-				canContinueAdlibOnEndInfinites(
+				candidatePartIsAfterPreviewPartInstance(
 					context,
 					playlist,
 					orderedPartsAndSegments.segments,
@@ -138,7 +138,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 
 			// At end
 			expect(
-				canContinueAdlibOnEndInfinites(
+				candidatePartIsAfterPreviewPartInstance(
 					context,
 					playlist,
 					orderedPartsAndSegments.segments,
@@ -152,7 +152,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 
 			// Start to end
 			expect(
-				canContinueAdlibOnEndInfinites(
+				candidatePartIsAfterPreviewPartInstance(
 					context,
 					playlist,
 					orderedPartsAndSegments.segments,
@@ -180,7 +180,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 
 			// After first
 			expect(
-				canContinueAdlibOnEndInfinites(
+				candidatePartIsAfterPreviewPartInstance(
 					context,
 					playlist,
 					orderedPartsAndSegments.segments,
@@ -191,7 +191,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 
 			// Before second
 			expect(
-				canContinueAdlibOnEndInfinites(
+				candidatePartIsAfterPreviewPartInstance(
 					context,
 					playlist,
 					orderedPartsAndSegments.segments,

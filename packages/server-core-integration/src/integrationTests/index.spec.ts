@@ -93,7 +93,8 @@ test('Integration: Test connection and basic Core functionality', async () => {
 	// Subscribe to data:
 	const coll0 = core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
 	expect(coll0.findOne(id)).toBeFalsy()
-	const subId = await core.subscribe('peripheralDeviceForDevice', id)
+	const subId = await core.autoSubscribe('peripheralDeviceForDevice', id)
+
 	const coll1 = core.getCollection<PeripheralDeviceForDevice>('peripheralDeviceForDevice')
 	expect(coll1.findOne(id)).toMatchObject({
 		_id: id,

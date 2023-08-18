@@ -37,7 +37,8 @@ import {
 	unprotectString,
 	unprotectStringArray,
 } from '@sofie-automation/corelib/dist/protectedString'
-import { getResolvedPieces, setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
+import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
+import { getResolvedPiecesForCurrentPartInstance } from '../../playout/resolvedPieces'
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { MongoQuery } from '../../db'
 import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -199,7 +200,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			return []
 		}
 
-		const resolvedInstances = getResolvedPieces(
+		const resolvedInstances = getResolvedPiecesForCurrentPartInstance(
 			this._context,
 			this._cache,
 			this.showStyleCompound.sourceLayers,

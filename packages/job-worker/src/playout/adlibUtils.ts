@@ -16,7 +16,8 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { convertAdLibToPieceInstance, getResolvedPieces, setupPieceInstanceInfiniteProperties } from './pieces'
+import { convertAdLibToPieceInstance, setupPieceInstanceInfiniteProperties } from './pieces'
+import { getResolvedPiecesForCurrentPartInstance } from './resolvedPieces'
 import { updateTimeline } from './timeline/generate'
 import { PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -302,18 +303,19 @@ export function innerStopPieces(
 		throw new Error('Cannot stop pieceInstances when partInstance hasnt started playback')
 	}
 
-	const resolvedPieces = getResolvedPieces(context, cache, sourceLayers, currentPartInstance)
+	const resolvedPieces = getResolvedPiecesForCurrentPartInstance(context, cache, sourceLayers, currentPartInstance)
 	const offsetRelativeToNow = (timeOffset || 0) + (calculateNowOffsetLatency(context, cache, undefined) || 0)
 	const stopAt = getCurrentTime() + offsetRelativeToNow
 	const relativeStopAt = stopAt - lastStartedPlayback
 
-	for (const pieceInstance of resolvedPieces) {
+	for (const resolvedPieceInstance of resolvedPieces) {
+		const pieceInstance = resolvedPieceInstance.instance
 		if (
 			!pieceInstance.userDuration &&
 			!pieceInstance.piece.virtual &&
 			filter(pieceInstance) &&
-			pieceInstance.resolvedStart !== undefined &&
-			pieceInstance.resolvedStart <= relativeStopAt &&
+			resolvedPieceInstance.resolvedStart !== undefined &&
+			resolvedPieceInstance.resolvedStart <= relativeStopAt &&
 			!pieceInstance.plannedStoppedPlayback
 		) {
 			switch (pieceInstance.piece.lifespan) {

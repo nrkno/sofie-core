@@ -1,0 +1,9 @@
+$segment-scratchpad-header-color: #fff;
+
+.segment-timeline.segment-scratchpad {
+    .segment-timeline__title {
+        background: $segment-scratchpad-header-color;
+        color: #000;
+        text-shadow: none;
+    }
+}

@@ -75,7 +75,7 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.El
 									part={props.part}
 									partStartsAt={props.startsAt}
 									partDuration={props.duration}
-									partExpectedDuration={props.expectedDuration}
+									partDisplayDuration={props.displayDuration}
 									timeScale={props.timeScale}
 									autoNextPart={props.autoNextPart}
 									liveLinePadding={props.liveLinePadding}

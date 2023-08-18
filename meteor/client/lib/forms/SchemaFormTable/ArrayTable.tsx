@@ -134,6 +134,7 @@ export const SchemaFormArrayTable = ({
 							<ArrayTableRow
 								key={i}
 								columns={columns}
+								requiredColumns={schema.items?.required}
 								summaryFields={summaryFields}
 								translationNamespaces={translationNamespaces}
 								sofieEnumDefinitons={sofieEnumDefinitons}

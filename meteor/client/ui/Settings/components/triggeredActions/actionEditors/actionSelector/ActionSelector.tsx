@@ -42,6 +42,8 @@ function getArguments(t: TFunction, action: SomeAction): string[] {
 			break
 		case PlayoutActions.deactivateRundownPlaylist:
 			break
+		case PlayoutActions.activateScratchpadMode:
+			break
 		case PlayoutActions.disableNextPiece:
 			if (action.undo) {
 				result.push(t('Undo'))
@@ -113,6 +115,8 @@ function hasArguments(action: SomeAction): boolean {
 			return false
 		case PlayoutActions.deactivateRundownPlaylist:
 			return false
+		case PlayoutActions.activateScratchpadMode:
+			return false
 		case PlayoutActions.disableNextPiece:
 			return !!action.undo
 		case PlayoutActions.hold:
@@ -155,6 +159,8 @@ function actionToLabel(t: TFunction, action: SomeAction['action']): string {
 			return t('Store Snapshot')
 		case PlayoutActions.deactivateRundownPlaylist:
 			return t('Deactivate Rundown')
+		case PlayoutActions.activateScratchpadMode:
+			return t('Activate Scratchpad')
 		case PlayoutActions.disableNextPiece:
 			return t('Disable next Piece')
 		case PlayoutActions.hold:
@@ -245,6 +251,8 @@ function getActionParametersEditor(
 		case PlayoutActions.createSnapshotForDebug:
 			return null
 		case PlayoutActions.deactivateRundownPlaylist:
+			return null
+		case PlayoutActions.activateScratchpadMode:
 			return null
 		case PlayoutActions.disableNextPiece:
 			return (

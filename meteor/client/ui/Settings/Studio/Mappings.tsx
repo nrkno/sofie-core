@@ -555,6 +555,7 @@ function StudioMappingsEntry({
 											item={mappingSchemaItem}
 											attr="options"
 											overrideHelper={overrideHelper}
+											isRequired
 										/>
 									) : (
 										<p>{t('No schema has been provided for this mapping')}</p>

@@ -17,7 +17,7 @@ import Tooltip from 'rc-tooltip'
 import { NavLink, Route, Prompt } from 'react-router-dom'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
+import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { StudioRouteSet } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { ContextMenu, MenuItem, ContextMenuTrigger } from '@jstarpl/react-contextmenu'
@@ -142,6 +142,7 @@ import {
 } from '../collections'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
+import { SegmentScratchpadContainer } from './SegmentScratchpad/SegmentScratchpadContainer'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -811,6 +812,22 @@ const RundownHeader = withTranslation()(
 				}
 			}
 		}
+		private activateScratchpad = (e: any) => {
+			const { t } = this.props
+			if (e.persist) e.persist()
+
+			if (
+				this.props.studioMode &&
+				this.props.studio.settings.allowScratchpad &&
+				this.props.playlist.activationId &&
+				this.props.currentRundown
+			) {
+				const rundownId = this.props.currentRundown._id
+				doUserAction(t, e, UserAction.ACTIVATE_SCRATCHPAD, (e, ts) =>
+					MeteorCall.userAction.activateScratchpadMode(e, ts, this.props.playlist._id, rundownId)
+				)
+			}
+		}
 
 		resetRundown = (e: any) => {
 			const { t } = this.props
@@ -986,6 +1003,9 @@ const RundownHeader = withTranslation()(
 									)}
 									{this.props.playlist.activationId ? (
 										<MenuItem onClick={(e) => this.deactivate(e)}>{t('Deactivate')}</MenuItem>
+									) : null}
+									{this.props.studio.settings.allowScratchpad && this.props.playlist.activationId ? (
+										<MenuItem onClick={(e) => this.activateScratchpad(e)}>{t('Activate Scratchpad')}</MenuItem>
 									) : null}
 									{this.props.playlist.activationId ? (
 										<MenuItem onClick={(e) => this.take(e)}>{t('Take')}</MenuItem>
@@ -2527,6 +2547,10 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				studioMode: this.state.studioMode,
 				adLibSegmentUi: this.state.uiSegmentMap.get(segment._id),
 				showDurationSourceLayers: showDurationSourceLayers,
+			}
+
+			if (segment.orphaned === SegmentOrphanedReason.SCRATCHPAD) {
+				return <SegmentScratchpadContainer {...resolvedSegmentProps} />
 			}
 
 			switch (displayMode) {

@@ -31,7 +31,7 @@ import { SelectedShowStyleVariant, selectShowStyleVariant } from './selectShowSt
 import { getExternalNRCSName, PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { updateBaselineExpectedPackagesOnRundown } from './expectedPackages'
 import { ReadonlyDeep } from 'type-fest'
-import { BlueprintResultRundown } from '@sofie-automation/blueprints-integration'
+import { BlueprintResultRundown, ExtendedIngestRundown } from '@sofie-automation/blueprints-integration'
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { ReadOnlyCache } from '../cache/CacheBase'
 import { convertRundownToBlueprintSegmentRundown } from '../blueprints/context/lib'
@@ -96,7 +96,7 @@ export async function updateRundownFromIngestData(
 	const rundownData = await getRundownFromIngestData(
 		context,
 		cache,
-		ingestRundown,
+		extendedIngestRundown,
 		pPeripheralDevice,
 		showStyle,
 		showStyleBlueprint,
@@ -194,7 +194,7 @@ export async function updateRundownMetadataFromIngestData(
 	const rundownData = await getRundownFromIngestData(
 		context,
 		cache,
-		ingestRundown,
+		extendedIngestRundown,
 		pPeripheralDevice,
 		showStyle,
 		showStyleBlueprint,
@@ -261,14 +261,12 @@ export async function updateRundownMetadataFromIngestData(
 export async function getRundownFromIngestData(
 	context: JobContext,
 	cache: ReadOnlyCache<CacheForIngest>,
-	ingestRundown: LocalIngestRundown,
+	extendedIngestRundown: ExtendedIngestRundown,
 	pPeripheralDevice: Promise<PeripheralDevice | undefined> | undefined,
 	showStyle: SelectedShowStyleVariant,
 	showStyleBlueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	allRundownWatchedPackages: WatchedPackagesHelper
 ): Promise<{ dbRundownData: DBRundown; rundownRes: BlueprintResultRundown } | null> {
-	const extendedIngestRundown = extendIngestRundownCore(ingestRundown, cache.Rundown.doc)
-
 	const rundownBaselinePackages = allRundownWatchedPackages.filter(
 		context,
 		(pkg) =>
@@ -345,7 +343,7 @@ export async function getRundownFromIngestData(
 		...rundownRes.rundown,
 		notes: rundownNotes,
 		_id: cache.RundownId,
-		externalId: ingestRundown.externalId,
+		externalId: extendedIngestRundown.externalId,
 		organizationId: context.studio.organizationId,
 		studioId: context.studio._id,
 		showStyleVariantId: showStyle.variant._id,

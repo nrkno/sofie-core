@@ -9,6 +9,7 @@ import { RundownUtils } from '../../lib/rundown'
 import { IContextMenuContext } from '../RundownView'
 import { PartUi, SegmentUi } from './SegmentTimelineContainer'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 interface IProps {
 	onSetNext: (part: DBPart | undefined, e: any, offset?: number, take?: boolean) => void
@@ -30,6 +31,7 @@ export const SegmentContextMenu = withTranslation()(
 			const { t } = this.props
 
 			const part = this.getPartFromContext()
+			const segment = this.getSegmentFromContext()
 			const timecode = this.getTimePosition()
 			const startsAt = this.getPartStartsAt()
 
@@ -39,7 +41,10 @@ export const SegmentContextMenu = withTranslation()(
 
 			const canSetAsNext = !!this.props.playlist?.activationId
 
-			return this.props.studioMode && this.props.playlist && this.props.playlist.activationId ? (
+			return this.props.studioMode &&
+				this.props.playlist &&
+				this.props.playlist.activationId &&
+				segment?.orphaned !== SegmentOrphanedReason.SCRATCHPAD ? (
 				<Escape to="document">
 					<ContextMenu id="segment-timeline-context-menu">
 						{part && timecode === null && (
@@ -69,7 +74,7 @@ export const SegmentContextMenu = withTranslation()(
 							<>
 								<MenuItem
 									onClick={(e) => this.props.onSetNext(part.instance.part, e)}
-									disabled={isCurrentPart || !!part.instance.orphaned || !canSetAsNext}
+									disabled={!!part.instance.orphaned || !canSetAsNext}
 								>
 									<span dangerouslySetInnerHTML={{ __html: t('Set this part as <strong>Next</strong>') }}></span>
 									{startsAt !== null &&

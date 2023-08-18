@@ -35,6 +35,7 @@ import { PartInstances, Parts } from '../../collections/libCollections'
 import { RundownPlaylistCollectionUtil } from '../../collections/rundownPlaylistUtil'
 import { hashSingleUseToken } from '../userActions'
 import { DeviceActions } from '@sofie-automation/shared-lib/dist/core/model/ShowStyle'
+import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 
 // as described in this issue: https://github.com/Microsoft/TypeScript/issues/14094
 type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
@@ -508,6 +509,15 @@ export function createAction(action: SomeAction, sourceLayers: SourceLayers): Ex
 			return createUserActionWithCtx(action, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, async (e, ts, ctx) =>
 				MeteorCall.userAction.deactivate(e, ts, ctx.rundownPlaylistId.get())
 			)
+		case PlayoutActions.activateScratchpadMode:
+			return createUserActionWithCtx(action, UserAction.ACTIVATE_SCRATCHPAD, async (e, ts, ctx) => {
+				const rundownId = ctx.currentRundownId.get()
+				if (rundownId) {
+					return MeteorCall.userAction.activateScratchpadMode(e, ts, ctx.rundownPlaylistId.get(), rundownId)
+				} else {
+					return ClientAPI.responseError(UserError.create(UserErrorMessage.InternalError))
+				}
+			})
 		case PlayoutActions.take:
 			if (isActionTriggeredFromUiContext(action)) {
 				return createRundownPlaylistSoftTakeAction(action.filterChain as IGUIContextFilterLink[])

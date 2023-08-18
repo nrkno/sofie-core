@@ -6,6 +6,7 @@ import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelecte
 import { sortPartsInSortedSegments } from '@sofie-automation/corelib/dist/playout/playlist'
 import { setNextPartFromPart } from './setNext'
 import { logger } from '../logging'
+import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 export async function moveNextPart(
 	context: JobContext,
@@ -26,7 +27,9 @@ export async function moveNextPart(
 
 	if (segmentDelta) {
 		// Ignores horizontalDelta
-		const considerSegments = rawSegments.filter((s) => s._id === refPart.segmentId || !s.isHidden)
+		const considerSegments = rawSegments.filter(
+			(s) => s._id === refPart.segmentId || !s.isHidden || s.orphaned === SegmentOrphanedReason.SCRATCHPAD
+		)
 		const refSegmentIndex = considerSegments.findIndex((s) => s._id === refPart.segmentId)
 		if (refSegmentIndex === -1) throw new Error(`Segment "${refPart.segmentId}" not found!`)
 

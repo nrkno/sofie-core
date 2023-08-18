@@ -17,6 +17,7 @@ import { assertNever, flatten, getRandomId, groupByToMapFunc, max, normalizeArra
 import { protectString } from '../protectedString'
 import _ = require('underscore')
 import { MongoQuery } from '../mongo'
+import { DBSegment, SegmentOrphanedReason } from '../dataModel/Segment'
 
 export function buildPiecesStartingInThisPartQuery(part: DBPart): MongoQuery<Piece> {
 	return { startPartId: part._id }
@@ -24,12 +25,12 @@ export function buildPiecesStartingInThisPartQuery(part: DBPart): MongoQuery<Pie
 
 export function buildPastInfinitePiecesForThisPartQuery(
 	part: DBPart,
-	partsIdsBeforeThisInSegment: PartId[],
-	segmentsIdsBeforeThisInRundown: SegmentId[],
+	partIdsToReceiveOnSegmentEndFrom: PartId[],
+	segmentsToReceiveOnRundownEndFrom: SegmentId[],
 	rundownIdsBeforeThisInPlaylist: RundownId[]
 ): MongoQuery<Piece> | null {
 	const fragments = _.compact([
-		partsIdsBeforeThisInSegment.length > 0
+		partIdsToReceiveOnSegmentEndFrom.length > 0
 			? {
 					// same segment, and previous part
 					lifespan: {
@@ -43,10 +44,10 @@ export function buildPastInfinitePiecesForThisPartQuery(
 					},
 					startRundownId: part.rundownId,
 					startSegmentId: part.segmentId,
-					startPartId: { $in: partsIdsBeforeThisInSegment },
+					startPartId: { $in: partIdsToReceiveOnSegmentEndFrom },
 			  }
 			: undefined,
-		segmentsIdsBeforeThisInRundown.length > 0
+		segmentsToReceiveOnRundownEndFrom.length > 0
 			? {
 					// same rundown, and previous segment
 					lifespan: {
@@ -57,7 +58,7 @@ export function buildPastInfinitePiecesForThisPartQuery(
 						],
 					},
 					startRundownId: part.rundownId,
-					startSegmentId: { $in: segmentsIdsBeforeThisInRundown },
+					startSegmentId: { $in: segmentsToReceiveOnRundownEndFrom },
 			  }
 			: undefined,
 		rundownIdsBeforeThisInPlaylist.length > 0
@@ -90,18 +91,29 @@ export function buildPastInfinitePiecesForThisPartQuery(
 
 export function getPlayheadTrackingInfinitesForPart(
 	playlistActivationId: RundownPlaylistActivationId,
-	partsBeforeThisInSegmentSet: Set<PartId>,
-	segmentsBeforeThisInRundownSet: Set<SegmentId>,
-	rundownsBeforeThisInPlaylist: RundownId[],
+	partsToReceiveOnSegmentEndFromSet: Set<PartId>,
+	segmentsToReceiveOnRundownEndFromSet: Set<SegmentId>,
+	rundownsToReceiveOnShowStyleEndFrom: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	currentPartInstance: DBPartInstance,
+	playingSegment: ReadonlyDeep<Pick<DBSegment, '_id' | 'orphaned'>>,
 	currentPartPieceInstances: PieceInstance[],
 	rundown: ReadonlyDeep<Pick<DBRundown, '_id' | 'showStyleBaseId'>>,
 	part: DBPart,
+	segment: ReadonlyDeep<Pick<DBSegment, '_id' | 'orphaned'>>,
 	newInstanceId: PartInstanceId,
 	nextPartIsAfterCurrentPart: boolean,
 	isTemporary: boolean
 ): PieceInstance[] {
+	if (
+		segment._id !== playingSegment._id &&
+		(segment.orphaned === SegmentOrphanedReason.SCRATCHPAD ||
+			playingSegment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
+	) {
+		// If crossing the boundary between of the scratchpad, don't continue any infinites
+		return []
+	}
+
 	const canContinueAdlibOnEnds = nextPartIsAfterCurrentPart
 	interface InfinitePieceSet {
 		[PieceLifespan.OutOnShowStyleEnd]?: PieceInstance
@@ -112,7 +124,7 @@ export function getPlayheadTrackingInfinitesForPart(
 	const piecesOnSourceLayers = new Map<string, InfinitePieceSet>()
 
 	const canContinueShowStyleEndInfinites = continueShowStyleEndInfinites(
-		rundownsBeforeThisInPlaylist,
+		rundownsToReceiveOnShowStyleEndFrom,
 		rundownsToShowstyles,
 		currentPartInstance.rundownId,
 		rundown
@@ -192,12 +204,12 @@ export function getPlayheadTrackingInfinitesForPart(
 						case PieceLifespan.OutOnSegmentEnd:
 							isValid =
 								currentPartInstance.segmentId === part.segmentId &&
-								partsBeforeThisInSegmentSet.has(candidatePiece.piece.startPartId)
+								partsToReceiveOnSegmentEndFromSet.has(candidatePiece.piece.startPartId)
 							break
 						case PieceLifespan.OutOnRundownEnd:
 							isValid =
 								candidatePiece.rundownId === part.rundownId &&
-								(segmentsBeforeThisInRundownSet.has(currentPartInstance.segmentId) ||
+								(segmentsToReceiveOnRundownEndFromSet.has(currentPartInstance.segmentId) ||
 									currentPartInstance.segmentId === part.segmentId)
 							break
 						case PieceLifespan.OutOnShowStyleEnd:
@@ -263,9 +275,9 @@ function markPieceInstanceAsContinuation(previousInstance: PieceInstance, instan
 
 export function isPiecePotentiallyActiveInPart(
 	previousPartInstance: DBPartInstance | undefined,
-	partsBeforeThisInSegment: Set<PartId>,
-	segmentsBeforeThisInRundown: Set<SegmentId>,
-	rundownsBeforeThisInPlaylist: RundownId[],
+	partsToReceiveOnSegmentEndFrom: Set<PartId>,
+	segmentsToReceiveOnRundownEndFrom: Set<SegmentId>,
+	rundownsToReceiveOnShowStyleEndFrom: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	rundown: ReadonlyDeep<Pick<DBRundown, '_id' | 'showStyleBaseId'>>,
 	part: DBPart,
@@ -282,14 +294,15 @@ export function isPiecePotentiallyActiveInPart(
 			return false
 		case PieceLifespan.OutOnSegmentEnd:
 			return (
-				pieceToCheck.startSegmentId === part.segmentId && partsBeforeThisInSegment.has(pieceToCheck.startPartId)
+				pieceToCheck.startSegmentId === part.segmentId &&
+				partsToReceiveOnSegmentEndFrom.has(pieceToCheck.startPartId)
 			)
 		case PieceLifespan.OutOnRundownEnd:
 			if (pieceToCheck.startRundownId === part.rundownId) {
 				if (pieceToCheck.startSegmentId === part.segmentId) {
-					return partsBeforeThisInSegment.has(pieceToCheck.startPartId)
+					return partsToReceiveOnSegmentEndFrom.has(pieceToCheck.startPartId)
 				} else {
-					return segmentsBeforeThisInRundown.has(pieceToCheck.startSegmentId)
+					return segmentsToReceiveOnRundownEndFrom.has(pieceToCheck.startSegmentId)
 				}
 			} else {
 				return false
@@ -303,7 +316,7 @@ export function isPiecePotentiallyActiveInPart(
 				// Predicting what will happen at arbitrary point in the future
 				return (
 					pieceToCheck.startSegmentId === part.segmentId &&
-					partsBeforeThisInSegment.has(pieceToCheck.startPartId)
+					partsToReceiveOnSegmentEndFrom.has(pieceToCheck.startPartId)
 				)
 			}
 		case PieceLifespan.OutOnRundownChange:
@@ -315,13 +328,13 @@ export function isPiecePotentiallyActiveInPart(
 				// Predicting what will happen at arbitrary point in the future
 				return (
 					pieceToCheck.startRundownId === part.rundownId &&
-					segmentsBeforeThisInRundown.has(pieceToCheck.startSegmentId)
+					segmentsToReceiveOnRundownEndFrom.has(pieceToCheck.startSegmentId)
 				)
 			}
 		case PieceLifespan.OutOnShowStyleEnd:
 			return previousPartInstance && pieceToCheck.lifespan === PieceLifespan.OutOnShowStyleEnd
 				? continueShowStyleEndInfinites(
-						rundownsBeforeThisInPlaylist,
+						rundownsToReceiveOnShowStyleEndFrom,
 						rundownsToShowstyles,
 						previousPartInstance.rundownId,
 						rundown
@@ -340,9 +353,9 @@ export function isPiecePotentiallyActiveInPart(
  * @param playingPieceInstances The PieceInstances from the current PartInstance
  * @param rundown The Rundown the Part belongs to
  * @param part The Part the PartInstance is based on
- * @param partsBeforeThisInSegmentSet Set of PartIds that exist in the Segment before the part being processed
- * @param segmentsBeforeThisInRundownSet Set of SegmentIds that exist in the Rundown before the part being processed
- * @param rundownsBeforeThisInPlaylist Set of RundownIds that exist in the Playlist before the part being processed
+ * @param partsToReceiveOnSegmentEndFromSet Set of PartIds that exist in the Segment before the part being processed
+ * @param segmentsToReceiveOnRundownEndFromSet Set of SegmentIds that exist in the Rundown before the part being processed
+ * @param rundownsToReceiveOnShowStyleEndFrom Set of RundownIds that exist in the Playlist before the part being processed
  * @param rundownsToShowstyles Lookup of RundownIds in the Playlist, to their ShowStyleBase id
  * @param possiblePieces Array of Pieces that should be considered for being a PieceInstance in the new PartInstance
  * @param orderedPartIds Ordered array of all PartId in the Rundown
@@ -354,12 +367,14 @@ export function isPiecePotentiallyActiveInPart(
 export function getPieceInstancesForPart(
 	playlistActivationId: RundownPlaylistActivationId,
 	playingPartInstance: DBPartInstance | undefined,
+	playingSegment: ReadonlyDeep<Pick<DBSegment, '_id' | 'orphaned'>> | undefined,
 	playingPieceInstances: PieceInstance[] | undefined,
 	rundown: ReadonlyDeep<Pick<DBRundown, '_id' | 'showStyleBaseId'>>,
+	segment: ReadonlyDeep<Pick<DBSegment, '_id' | 'orphaned'>>,
 	part: DBPart,
-	partsBeforeThisInSegmentSet: Set<PartId>,
-	segmentsBeforeThisInRundownSet: Set<SegmentId>,
-	rundownsBeforeThisInPlaylist: RundownId[],
+	partsToReceiveOnSegmentEndFromSet: Set<PartId>,
+	segmentsToReceiveOnRundownEndFromSet: Set<SegmentId>,
+	rundownsToReceiveOnShowStyleEndFrom: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	possiblePieces: Piece[],
 	orderedPartIds: PartId[],
@@ -403,9 +418,9 @@ export function getPieceInstancesForPart(
 		) {
 			const useIt = isPiecePotentiallyActiveInPart(
 				playingPartInstance,
-				partsBeforeThisInSegmentSet,
-				segmentsBeforeThisInRundownSet,
-				rundownsBeforeThisInPlaylist,
+				partsToReceiveOnSegmentEndFromSet,
+				segmentsToReceiveOnRundownEndFromSet,
+				rundownsToReceiveOnShowStyleEndFrom,
 				rundownsToShowstyles,
 				rundown,
 				part,
@@ -424,22 +439,25 @@ export function getPieceInstancesForPart(
 	}
 
 	// OnChange infinites take priority over onEnd, as they travel with the playhead
-	const infinitesFromPrevious = playingPartInstance
-		? getPlayheadTrackingInfinitesForPart(
-				playlistActivationId,
-				partsBeforeThisInSegmentSet,
-				segmentsBeforeThisInRundownSet,
-				rundownsBeforeThisInPlaylist,
-				rundownsToShowstyles,
-				playingPartInstance,
-				playingPieceInstances || [],
-				rundown,
-				part,
-				newInstanceId,
-				nextPartIsAfterCurrentPart,
-				isTemporary
-		  )
-		: []
+	const infinitesFromPrevious =
+		playingPartInstance && playingSegment
+			? getPlayheadTrackingInfinitesForPart(
+					playlistActivationId,
+					partsToReceiveOnSegmentEndFromSet,
+					segmentsToReceiveOnRundownEndFromSet,
+					rundownsToReceiveOnShowStyleEndFrom,
+					rundownsToShowstyles,
+					playingPartInstance,
+					playingSegment,
+					playingPieceInstances || [],
+					rundown,
+					part,
+					segment,
+					newInstanceId,
+					nextPartIsAfterCurrentPart,
+					isTemporary
+			  )
+			: []
 
 	// Compile the resulting list
 
@@ -546,7 +564,7 @@ export function isCandidateBetterToBeContinued(best: PieceInstance, candidate: P
 }
 
 function continueShowStyleEndInfinites(
-	rundownsBeforeThisInPlaylist: RundownId[],
+	rundownsToReceiveOnShowStyleEndFrom: RundownId[],
 	rundownsToShowstyles: Map<RundownId, ShowStyleBaseId>,
 	previousRundownId: RundownId,
 	rundown: ReadonlyDeep<Pick<DBRundown, '_id' | 'showStyleBaseId'>>
@@ -556,8 +574,8 @@ function continueShowStyleEndInfinites(
 		canContinueShowStyleEndInfinites = false
 	} else {
 		const targetShowStyle = rundown.showStyleBaseId
-		canContinueShowStyleEndInfinites = rundownsBeforeThisInPlaylist
-			.slice(rundownsBeforeThisInPlaylist.indexOf(previousRundownId))
+		canContinueShowStyleEndInfinites = rundownsToReceiveOnShowStyleEndFrom
+			.slice(rundownsToReceiveOnShowStyleEndFrom.indexOf(previousRundownId))
 			.every((r) => rundownsToShowstyles.get(r) === targetShowStyle)
 	}
 
