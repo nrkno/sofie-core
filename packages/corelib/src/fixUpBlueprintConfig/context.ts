@@ -3,10 +3,13 @@ import {
 	ICommonContext,
 	IFixUpConfigContext,
 	ITranslatableMessage,
+	JSONSchema,
 } from '@sofie-automation/blueprints-integration'
+import { literal, objectPathSet } from '../lib'
 import {
 	applyAndValidateOverrides,
 	filterOverrideOpsForPrefix,
+	findParentOpToUpdate,
 	ObjectOverrideDeleteOp,
 	ObjectOverrideSetOp,
 	ObjectWithOverrides,
@@ -16,9 +19,19 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 	readonly #commonContext: ICommonContext
 	readonly #configObject: ObjectWithOverrides<IBlueprintConfig>
 
-	constructor(commonContext: ICommonContext, configObject: ObjectWithOverrides<IBlueprintConfig>) {
+	constructor(
+		commonContext: ICommonContext,
+		_schema: JSONSchema,
+		configObject: ObjectWithOverrides<IBlueprintConfig>
+	) {
 		this.#commonContext = commonContext
 		this.#configObject = configObject
+	}
+
+	#findParentSchemaEntry(
+		_path: string
+	): { path: string; subpath: string; type: 'value' | 'array' | 'object' } | null {
+		throw new Error('Method not implemented.')
 	}
 
 	getConfig(): IBlueprintConfig {
@@ -40,20 +53,39 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 	}
 
 	addSetOperation(path: string, value: unknown): void {
-		const { otherOps } = filterOverrideOpsForPrefix(this.#configObject.overrides, path)
+		const parentSchemaEntry = this.#findParentSchemaEntry(path)
+		if (!parentSchemaEntry) throw new Error(`Path "${path}" does not exist in the current config schema`)
 
-		// nocommit this isnt 'safe' and could make a mess that will confuse the ui
-		const setOp: ObjectOverrideSetOp = {
-			op: 'set',
-			path,
-			value,
+		const { opsForPrefix: opsForParent } = filterOverrideOpsForPrefix(
+			this.#configObject.overrides,
+			parentSchemaEntry.path
+		)
+
+		const existingParentOp = findParentOpToUpdate(opsForParent, parentSchemaEntry.subpath)
+		if (existingParentOp) {
+			// Found an op at a higher level that can be modified instead
+			objectPathSet(existingParentOp.op.value, existingParentOp.newSubPath, value)
+
+			// Mutation was performed in place
+		} else {
+			// Insert new op
+			const setOp = literal<ObjectOverrideSetOp>({
+				op: 'set',
+				path: path,
+				value: value,
+			})
+
+			const { otherOps } = filterOverrideOpsForPrefix(this.#configObject.overrides, path)
+
+			this.#configObject.overrides = [...otherOps, setOp]
 		}
-
-		this.#configObject.overrides = [...otherOps, setOp]
 	}
 
 	addDeleteOperation(path: string): void {
 		const { otherOps } = filterOverrideOpsForPrefix(this.#configObject.overrides, path)
+
+		const parentSchemaEntry = this.#findParentSchemaEntry(path)
+		if (!parentSchemaEntry) throw new Error(`Path "${path}" does not exist in the current config schema`)
 
 		// nocommit this isnt 'safe' and could make a mess that will confuse the ui
 		const deleteOp: ObjectOverrideDeleteOp = {
@@ -83,7 +115,7 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 		this.#configObject.overrides = [...otherOps, ...opsWithUpdatedPrefix]
 	}
 
-	warnUnfixable(path: string, message: ITranslatableMessage): void {
+	warnUnfixable(_path: string, _message: ITranslatableMessage): void {
 		throw new Error('Method not implemented.')
 	}
 

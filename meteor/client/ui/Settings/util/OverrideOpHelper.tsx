@@ -6,6 +6,7 @@ import {
 	ObjectOverrideSetOp,
 	applyAndValidateOverrides,
 	filterOverrideOpsForPrefix,
+	findParentOpToUpdate,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { useRef, useMemo, useEffect, MutableRefObject } from 'react'
 import { ReadonlyDeep } from 'type-fest'
@@ -231,8 +232,6 @@ class OverrideOpHelperImpl implements OverrideOpHelper {
 
 				newOps.push(newOp)
 			} else {
-				let newOp: ObjectOverrideSetOp | undefined
-
 				// Look for a op which encompasses this new value
 				const parentOp = findParentOpToUpdate(opsForId, subPath)
 				if (parentOp) {
@@ -240,14 +239,12 @@ class OverrideOpHelperImpl implements OverrideOpHelper {
 					objectPathSet(parentOp.op.value, parentOp.newSubPath, value)
 				} else {
 					// Insert new op
-					newOp = literal<ObjectOverrideSetOp>({
+					const newOp = literal<ObjectOverrideSetOp>({
 						op: 'set',
 						path: `${itemId}.${subPath}`,
 						value: value,
 					})
-				}
 
-				if (newOp) {
 					const newOpAsPrefix = `${newOp.path}.`
 
 					// Preserve any other overrides
@@ -308,41 +305,4 @@ export function useOverrideOpHelper<T extends object>(
 	}, [objectWithOverrides])
 
 	return helper
-}
-
-function findParentOpToUpdate(
-	opsForId: SomeObjectOverrideOp[],
-	subPath: string
-):
-	| {
-			op: ObjectOverrideSetOp
-			newSubPath: string
-	  }
-	| undefined {
-	const revOps = [...opsForId].reverse()
-
-	for (const op of revOps) {
-		if (subPath === op.path) {
-			// There is an op at the same path, this should be replaced by the current one
-			return undefined
-		}
-
-		if (subPath.startsWith(`${op.path}.`)) {
-			// The new value is inside of this op
-			if (op.op === 'delete') {
-				// Can't mutate a delete op like this
-				return undefined
-			}
-
-			// It's a set op, so we would be better to modify in place rather than add another mutate op
-			return {
-				op,
-				newSubPath: subPath.slice(op.path.length + 1),
-			}
-		}
-	}
-	//
-
-	// Nothing matched
-	return undefined
 }

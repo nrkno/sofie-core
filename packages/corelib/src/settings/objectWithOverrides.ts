@@ -231,3 +231,40 @@ export function filterOverrideOpsForPrefix(
 
 	return res
 }
+
+export function findParentOpToUpdate(
+	opsForId: SomeObjectOverrideOp[],
+	subPath: string
+):
+	| {
+			op: ObjectOverrideSetOp
+			newSubPath: string
+	  }
+	| undefined {
+	const revOps = [...opsForId].reverse()
+
+	for (const op of revOps) {
+		if (subPath === op.path) {
+			// There is an op at the same path, this should be replaced by the current one
+			return undefined
+		}
+
+		if (subPath.startsWith(`${op.path}.`)) {
+			// The new value is inside of this op
+			if (op.op === 'delete') {
+				// Can't mutate a delete op like this
+				return undefined
+			}
+
+			// It's a set op, so we would be better to modify in place rather than add another mutate op
+			return {
+				op,
+				newSubPath: subPath.slice(op.path.length + 1),
+			}
+		}
+	}
+	//
+
+	// Nothing matched
+	return undefined
+}
