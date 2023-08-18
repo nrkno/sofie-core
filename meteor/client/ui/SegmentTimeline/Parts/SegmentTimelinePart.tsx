@@ -754,7 +754,7 @@ export class SegmentTimelinePartClass extends React.Component<Translated<WithTim
 								{this.props.isAfterLastValidInSegmentAndItsLive && !this.props.playlist.loop && <SegmentEnd />}
 								{this.props.isAfterLastValidInSegmentAndItsLive && this.props.playlist.loop && <LoopingIcon />}
 							</div>
-							{this.props.isPreview && this.props.part.instance.part.identifier && (
+							{!this.props.isPreview && this.props.part.instance.part.identifier && (
 								<div className="segment-timeline__identifier">{this.props.part.instance.part.identifier}</div>
 							)}
 						</div>
