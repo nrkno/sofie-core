@@ -21,6 +21,10 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 		this.#configObject = configObject
 	}
 
+	getConfig(): IBlueprintConfig {
+		return applyAndValidateOverrides(this.#configObject).obj
+	}
+
 	listPaths(): string[] {
 		return this.#configObject.overrides.map((op) => op.path)
 	}

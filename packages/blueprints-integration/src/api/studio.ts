@@ -50,7 +50,7 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 	 * Apply automatic upgrades to the structure of user specified config overrides
 	 * This lets you apply various changes to the user's values in an abstract way
 	 */
-	fixUpConfig?: (context: IFixUpConfigContext, config: TRawConfig) => void
+	fixUpConfig?: (context: IFixUpConfigContext<TRawConfig>) => void
 
 	/**
 	 * Validate the config passed to this blueprint

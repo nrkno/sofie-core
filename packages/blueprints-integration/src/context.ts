@@ -1,4 +1,4 @@
-import { DatastorePersistenceMode, Time } from './common'
+import { DatastorePersistenceMode, IBlueprintConfig, Time } from './common'
 import { IBlueprintExternalMessageQueueObj } from './message'
 import { PackageInfo } from './packageInfo'
 import {
@@ -369,7 +369,12 @@ export interface IRundownTimingEventContext extends IRundownDataChangedEventCont
 	getSegment(id: string): Promise<Readonly<IBlueprintSegmentDB> | undefined>
 }
 
-export interface IFixUpConfigContext extends ICommonContext {
+export interface IFixUpConfigContext<TConfig = IBlueprintConfig> extends ICommonContext {
+	/**
+	 * Get the current config, with any applied changes
+	 */
+	getConfig(): TConfig
+
 	/**
 	 * List all paths with values
 	 */
