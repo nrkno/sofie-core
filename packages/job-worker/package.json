@@ -51,7 +51,7 @@
 		"mongodb": "^5.5.0",
 		"p-lazy": "^3.1.0",
 		"p-timeout": "^4.1.0",
-		"superfly-timeline": "^8.3.1",
+		"superfly-timeline": "9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0",
 		"threadedclass": "^1.2.1",
 		"tslib": "^2.6.0",
 		"type-fest": "^3.10.0",

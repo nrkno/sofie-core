@@ -6136,7 +6136,7 @@ __metadata:
     mongodb: ^5.5.0
     p-lazy: ^3.1.0
     p-timeout: ^4.1.0
-    superfly-timeline: ^8.3.1
+    superfly-timeline: 9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0
     threadedclass: ^1.2.1
     tslib: ^2.6.0
     type-fest: ^3.10.0
@@ -6176,7 +6176,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
     "@mos-connection/model": ^3.0.4
-    timeline-state-resolver-types: 9.1.0-nightly-release51-20230816-095601-dcd9f0262.0
+    timeline-state-resolver-types: 9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0
     tslib: ^2.6.0
     type-fest: ^3.10.0
   languageName: unknown
@@ -19613,7 +19613,7 @@ asn1@evs-broadcast/node-asn1:
     "@sofie-automation/shared-lib": 1.51.0-in-development
     debug: ^4.3.4
     influx: ^5.9.3
-    timeline-state-resolver: 9.1.0-nightly-release51-20230816-095601-dcd9f0262.0
+    timeline-state-resolver: 9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0
     tslib: ^2.6.0
     underscore: ^1.13.6
     winston: ^3.9.0
@@ -22962,13 +22962,21 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"superfly-timeline@npm:^8.3.1":
-  version: 8.3.1
-  resolution: "superfly-timeline@npm:8.3.1"
+"superfly-timeline@npm:9.0.0-nightly-wip-big-rewrite-20230814-192948-870dbc7.0":
+  version: 9.0.0-nightly-wip-big-rewrite-20230814-192948-870dbc7.0
+  resolution: "superfly-timeline@npm:9.0.0-nightly-wip-big-rewrite-20230814-192948-870dbc7.0"
   dependencies:
-    tslib: ^2.4.0
-    underscore: ^1.13.6
-  checksum: 3bc7dc89c6bdc4c427d6e9287c6af77948706d8e7e29524c021d4304eca6ae4bca6c4ef5952d3daa561aca39a72644f04a9c461f89fd6a93fcac7d3674b7d12c
+    tslib: ^2.6.0
+  checksum: 25888ade1fcb7a8a471a184de11c36754e4a582265b436bcf463e5899b918a929689fe6df8b941d6574e09834380dbef7c1c2d9b709240cbb6ff12d1be33f161
+  languageName: node
+  linkType: hard
+
+"superfly-timeline@npm:9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0":
+  version: 9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0
+  resolution: "superfly-timeline@npm:9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0"
+  dependencies:
+    tslib: ^2.6.0
+  checksum: fdf314addf4c95579ad9d534e24b48154696e516e158b5bd06c894f8a74fd73ab03287e2bb948a4bb581fba49562c24bd8f3d7e180dc16589f3552461e0184cb
   languageName: node
   linkType: hard
 
@@ -23353,18 +23361,18 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:9.1.0-nightly-release51-20230816-095601-dcd9f0262.0":
-  version: 9.1.0-nightly-release51-20230816-095601-dcd9f0262.0
-  resolution: "timeline-state-resolver-types@npm:9.1.0-nightly-release51-20230816-095601-dcd9f0262.0"
+"timeline-state-resolver-types@npm:9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0":
+  version: 9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0
+  resolution: "timeline-state-resolver-types@npm:9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0"
   dependencies:
     tslib: ^2.5.1
-  checksum: 5d962b6c4dcbc34f507dd8023e5775fad6f801e2ec172ca7b62376fa9e2e541b9ec6242a1a5122ae96b874755917c68ee2322df4ed5f6f97483fb48fcdf55181
+  checksum: 13435383e654f3e497291db197b8448f5b94e1846f5c72546987792e287b2be107357f78adb0b4922997591fdc1aca155bc2b5970d2c95553e28f42de5fa6b2d
   languageName: node
   linkType: hard
 
-"timeline-state-resolver@npm:9.1.0-nightly-release51-20230816-095601-dcd9f0262.0":
-  version: 9.1.0-nightly-release51-20230816-095601-dcd9f0262.0
-  resolution: "timeline-state-resolver@npm:9.1.0-nightly-release51-20230816-095601-dcd9f0262.0"
+"timeline-state-resolver@npm:9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0":
+  version: 9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0
+  resolution: "timeline-state-resolver@npm:9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0"
   dependencies:
     "@tv2media/v-connection": ^7.3.0
     atem-connection: 2.4.0
@@ -23385,9 +23393,9 @@ asn1@evs-broadcast/node-asn1:
     p-queue: ^6.6.2
     p-timeout: ^3.2.0
     sprintf-js: ^1.1.2
-    superfly-timeline: ^8.3.1
+    superfly-timeline: 9.0.0-nightly-wip-big-rewrite-20230814-192948-870dbc7.0
     threadedclass: ^1.2.1
-    timeline-state-resolver-types: 9.1.0-nightly-release51-20230816-095601-dcd9f0262.0
+    timeline-state-resolver-types: 9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0
     tslib: ^2.5.1
     tv-automation-quantel-gateway-client: ^3.1.11-agent-debug-20230117-160455-c2c4ee4.0
     underscore: ^1.13.6
@@ -23395,7 +23403,7 @@ asn1@evs-broadcast/node-asn1:
     utf-8-validate: ^5.0.10
     ws: ^7.5.9
     xml-js: ^1.6.11
-  checksum: a439131d4df7a64c7b19480df7dfff439dbba876a1d5b204dc55fb70169aa22415c786c52ab4d45801135718c71df0844d107565c538feb09e7fd779e5445669
+  checksum: 3a88ab5119ec79c6d34bd92780c378564256642bf896f424585bc61cfe87b157acb37195a56905d4e5f56c777f8064462635220acec45a1f05b7240ae68b20fe
   languageName: node
   linkType: hard
 

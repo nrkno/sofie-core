@@ -1671,7 +1671,7 @@ __metadata:
     mongodb: ^5.5.0
     p-lazy: ^3.1.0
     p-timeout: ^4.1.0
-    superfly-timeline: ^8.3.1
+    superfly-timeline: 9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0
     threadedclass: ^1.2.1
     tslib: ^2.6.0
     type-fest: ^3.10.0
@@ -1685,7 +1685,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@portal:../packages/shared-lib::locator=automation-core%40workspace%3A."
   dependencies:
     "@mos-connection/model": ^3.0.4
-    timeline-state-resolver-types: 9.1.0-nightly-release51-20230816-095601-dcd9f0262.0
+    timeline-state-resolver-types: 9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0
     tslib: ^2.6.0
     type-fest: ^3.10.0
   languageName: node
@@ -3242,7 +3242,7 @@ __metadata:
     semver: ^7.5.3
     sinon: ^14.0.2
     standard-version: ^9.5.0
-    superfly-timeline: ^8.3.1
+    superfly-timeline: 9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0
     threadedclass: ^1.2.1
     timecode: 0.0.4
     ts-jest: ^29.1.1
@@ -12272,13 +12272,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"superfly-timeline@npm:^8.3.1":
-  version: 8.3.1
-  resolution: "superfly-timeline@npm:8.3.1"
+"superfly-timeline@npm:9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0":
+  version: 9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0
+  resolution: "superfly-timeline@npm:9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0"
   dependencies:
-    tslib: ^2.4.0
-    underscore: ^1.13.6
-  checksum: 3bc7dc89c6bdc4c427d6e9287c6af77948706d8e7e29524c021d4304eca6ae4bca6c4ef5952d3daa561aca39a72644f04a9c461f89fd6a93fcac7d3674b7d12c
+    tslib: ^2.6.0
+  checksum: fdf314addf4c95579ad9d534e24b48154696e516e158b5bd06c894f8a74fd73ab03287e2bb948a4bb581fba49562c24bd8f3d7e180dc16589f3552461e0184cb
   languageName: node
   linkType: hard
 
@@ -12452,12 +12451,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:9.1.0-nightly-release51-20230816-095601-dcd9f0262.0":
-  version: 9.1.0-nightly-release51-20230816-095601-dcd9f0262.0
-  resolution: "timeline-state-resolver-types@npm:9.1.0-nightly-release51-20230816-095601-dcd9f0262.0"
+"timeline-state-resolver-types@npm:9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0":
+  version: 9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0
+  resolution: "timeline-state-resolver-types@npm:9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0"
   dependencies:
     tslib: ^2.5.1
-  checksum: 5d962b6c4dcbc34f507dd8023e5775fad6f801e2ec172ca7b62376fa9e2e541b9ec6242a1a5122ae96b874755917c68ee2322df4ed5f6f97483fb48fcdf55181
+  checksum: 13435383e654f3e497291db197b8448f5b94e1846f5c72546987792e287b2be107357f78adb0b4922997591fdc1aca155bc2b5970d2c95553e28f42de5fa6b2d
   languageName: node
   linkType: hard
 
@@ -12664,7 +12663,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.1.0, tslib@npm:^2.2.0, tslib@npm:^2.4.0":
+"tslib@npm:^2.1.0, tslib@npm:^2.2.0":
   version: 2.5.0
   resolution: "tslib@npm:2.5.0"
   checksum: ae3ed5f9ce29932d049908ebfdf21b3a003a85653a9a140d614da6b767a93ef94f460e52c3d787f0e4f383546981713f165037dc2274df212ea9f8a4541004e1
