@@ -5,34 +5,10 @@ import {
 	ObjectOverrideDeleteOp,
 	ObjectOverrideSetOp,
 	applyAndValidateOverrides,
+	filterOverrideOpsForPrefix,
 } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { useRef, useMemo, useEffect, MutableRefObject } from 'react'
 import { ReadonlyDeep } from 'type-fest'
-
-/**
- * Split a list of SomeObjectOverrideOp based on whether they match a specified prefix
- * @param allOps The array of SomeObjectOverrideOp
- * @param prefix The prefix to match, without a trailing `.`
- */
-export function filterOverrideOpsForPrefix(
-	allOps: ReadonlyDeep<SomeObjectOverrideOp[]>,
-	prefix: string
-): { opsForPrefix: ReadonlyDeep<SomeObjectOverrideOp>[]; otherOps: ReadonlyDeep<SomeObjectOverrideOp>[] } {
-	const res: { opsForPrefix: ReadonlyDeep<SomeObjectOverrideOp>[]; otherOps: ReadonlyDeep<SomeObjectOverrideOp>[] } = {
-		opsForPrefix: [],
-		otherOps: [],
-	}
-
-	for (const op of allOps) {
-		if (op.path === prefix || op.path.startsWith(`${prefix}.`)) {
-			res.opsForPrefix.push(op)
-		} else {
-			res.otherOps.push(op)
-		}
-	}
-
-	return res
-}
 
 export interface WrappedOverridableItemDeleted<T extends object> {
 	type: 'deleted'

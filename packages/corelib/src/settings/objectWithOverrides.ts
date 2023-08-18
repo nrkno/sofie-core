@@ -203,3 +203,31 @@ function applyDeleteOp<T extends object>(result: ApplyOverridesResult<T>, operat
 	// Always keep the delete op
 	result.preserve.push(operation)
 }
+
+/**
+ * Split a list of SomeObjectOverrideOp based on whether they match a specified prefix
+ * @param allOps The array of SomeObjectOverrideOp
+ * @param prefix The prefix to match, without a trailing `.`
+ */
+export function filterOverrideOpsForPrefix(
+	allOps: ReadonlyDeep<SomeObjectOverrideOp[]>,
+	prefix: string
+): { opsForPrefix: ReadonlyDeep<SomeObjectOverrideOp>[]; otherOps: ReadonlyDeep<SomeObjectOverrideOp>[] } {
+	const res: { opsForPrefix: ReadonlyDeep<SomeObjectOverrideOp>[]; otherOps: ReadonlyDeep<SomeObjectOverrideOp>[] } =
+		{
+			opsForPrefix: [],
+			otherOps: [],
+		}
+
+	const pathAsPrefix = prefix.endsWith('.') ? prefix : `${prefix}.`
+
+	for (const op of allOps) {
+		if (op.path === prefix || op.path.startsWith(pathAsPrefix)) {
+			res.opsForPrefix.push(op)
+		} else {
+			res.otherOps.push(op)
+		}
+	}
+
+	return res
+}
