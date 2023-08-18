@@ -6176,7 +6176,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
     "@mos-connection/model": ^3.0.4
-    timeline-state-resolver-types: 9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0
+    timeline-state-resolver-types: 9.1.0-nightly-feat-timeline-v9-20230818-074540-a4d1c490a.0
     tslib: ^2.6.0
     type-fest: ^3.10.0
   languageName: unknown
@@ -19613,7 +19613,7 @@ asn1@evs-broadcast/node-asn1:
     "@sofie-automation/shared-lib": 1.51.0-in-development
     debug: ^4.3.4
     influx: ^5.9.3
-    timeline-state-resolver: 9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0
+    timeline-state-resolver: 9.1.0-nightly-feat-timeline-v9-20230818-074540-a4d1c490a.0
     tslib: ^2.6.0
     underscore: ^1.13.6
     winston: ^3.9.0
@@ -22962,15 +22962,6 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"superfly-timeline@npm:9.0.0-nightly-wip-big-rewrite-20230814-192948-870dbc7.0":
-  version: 9.0.0-nightly-wip-big-rewrite-20230814-192948-870dbc7.0
-  resolution: "superfly-timeline@npm:9.0.0-nightly-wip-big-rewrite-20230814-192948-870dbc7.0"
-  dependencies:
-    tslib: ^2.6.0
-  checksum: 25888ade1fcb7a8a471a184de11c36754e4a582265b436bcf463e5899b918a929689fe6df8b941d6574e09834380dbef7c1c2d9b709240cbb6ff12d1be33f161
-  languageName: node
-  linkType: hard
-
 "superfly-timeline@npm:9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0":
   version: 9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0
   resolution: "superfly-timeline@npm:9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0"
@@ -23361,18 +23352,18 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0":
-  version: 9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0
-  resolution: "timeline-state-resolver-types@npm:9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0"
+"timeline-state-resolver-types@npm:9.1.0-nightly-feat-timeline-v9-20230818-074540-a4d1c490a.0":
+  version: 9.1.0-nightly-feat-timeline-v9-20230818-074540-a4d1c490a.0
+  resolution: "timeline-state-resolver-types@npm:9.1.0-nightly-feat-timeline-v9-20230818-074540-a4d1c490a.0"
   dependencies:
     tslib: ^2.5.1
-  checksum: 13435383e654f3e497291db197b8448f5b94e1846f5c72546987792e287b2be107357f78adb0b4922997591fdc1aca155bc2b5970d2c95553e28f42de5fa6b2d
+  checksum: 8fb4a7f6cc6662f479a48d18b8c6a7ccde96f3ab418325186810bd50eab373136c675e2c167af415f6381fad1ce4c1a045cd942c50efb38764de3233d85c24b0
   languageName: node
   linkType: hard
 
-"timeline-state-resolver@npm:9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0":
-  version: 9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0
-  resolution: "timeline-state-resolver@npm:9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0"
+"timeline-state-resolver@npm:9.1.0-nightly-feat-timeline-v9-20230818-074540-a4d1c490a.0":
+  version: 9.1.0-nightly-feat-timeline-v9-20230818-074540-a4d1c490a.0
+  resolution: "timeline-state-resolver@npm:9.1.0-nightly-feat-timeline-v9-20230818-074540-a4d1c490a.0"
   dependencies:
     "@tv2media/v-connection": ^7.3.0
     atem-connection: 2.4.0
@@ -23393,9 +23384,9 @@ asn1@evs-broadcast/node-asn1:
     p-queue: ^6.6.2
     p-timeout: ^3.2.0
     sprintf-js: ^1.1.2
-    superfly-timeline: 9.0.0-nightly-wip-big-rewrite-20230814-192948-870dbc7.0
+    superfly-timeline: 9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0
     threadedclass: ^1.2.1
-    timeline-state-resolver-types: 9.1.0-nightly-feat-timeline-v9-20230818-050500-38a0a228a.0
+    timeline-state-resolver-types: 9.1.0-nightly-feat-timeline-v9-20230818-074540-a4d1c490a.0
     tslib: ^2.5.1
     tv-automation-quantel-gateway-client: ^3.1.11-agent-debug-20230117-160455-c2c4ee4.0
     underscore: ^1.13.6
@@ -23403,7 +23394,7 @@ asn1@evs-broadcast/node-asn1:
     utf-8-validate: ^5.0.10
     ws: ^7.5.9
     xml-js: ^1.6.11
-  checksum: 3a88ab5119ec79c6d34bd92780c378564256642bf896f424585bc61cfe87b157acb37195a56905d4e5f56c777f8064462635220acec45a1f05b7240ae68b20fe
+  checksum: 1cb73d2c720cc445a70281665b3eec848efe76b859426c1d1418f80d0bacfc9f652da0d2aef4d6303bd01474339fce5a0aad80440a98969c3b98a0a056fb3b65
   languageName: node
   linkType: hard
 
