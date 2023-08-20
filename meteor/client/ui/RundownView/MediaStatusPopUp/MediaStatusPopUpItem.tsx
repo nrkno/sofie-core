@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, JSX } from 'react'
 import { PartId, PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'

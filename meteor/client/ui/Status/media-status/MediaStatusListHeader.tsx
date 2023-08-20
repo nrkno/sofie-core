@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { JSX } from 'react'
 import classNames from 'classnames'
 import { useTranslation } from 'react-i18next'
 import { SortOrderButton } from '../../MediaStatus/SortOrderButton'

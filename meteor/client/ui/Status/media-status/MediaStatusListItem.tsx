@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { JSX } from 'react'
 import { SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { NavLink } from 'react-router-dom'

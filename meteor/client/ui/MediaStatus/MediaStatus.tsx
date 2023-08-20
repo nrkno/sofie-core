@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, JSX } from 'react'
 import { useSubscription, useSubscriptions, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import { PubSub } from '../../../lib/api/pubsub'
 import { getSegmentsWithPartInstances } from '../../../lib/Rundown'
@@ -625,7 +625,7 @@ function getListItemFromRundownPieceAndRundownMeta(
 	const showStyleBase = meta.showStyleBaseId && UIShowStyleBases.findOne(meta.showStyleBaseId)
 	const sourceLayer = piece.sourceLayerId !== undefined ? showStyleBase?.sourceLayers?.[piece.sourceLayerId] : undefined
 
-	if (sourceLayer && sourceLayer.isHidden) return
+	if (sourceLayer?.isHidden) return
 
 	const partIdentifier = undefined
 	const segmentIdentifier = undefined
@@ -686,7 +686,7 @@ function getListItemFromPieceAndPartMeta(
 	const showStyleBase = meta.showStyleBaseId && UIShowStyleBases.findOne(meta.showStyleBaseId)
 	const sourceLayer = piece.sourceLayerId !== undefined ? showStyleBase?.sourceLayers?.[piece.sourceLayerId] : undefined
 
-	if (sourceLayer && sourceLayer.isHidden) return
+	if (sourceLayer?.isHidden) return
 
 	const partIdentifier = meta.identifier
 	const segmentIdentifier = meta.segmentIdentifier

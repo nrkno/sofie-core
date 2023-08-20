@@ -2,12 +2,6 @@
 @import '../../../styles/itemTypeColors';
 
 .media-status-popup-item {
-	&:first-child {
-		> td {
-			padding-top: 3px;	
-		}
-	}
-
 	.media-status-popup-item__playout-indicator {
 		width: 1.5em;
 		max-width: 1.5em;
@@ -36,6 +30,10 @@
 	}
 
 	&:first-child {
+		> td {
+			padding-top: 3px;	
+		}
+
 		> .media-status-popup-item__countdown {
 			padding-top: calc(3px + 0.1em);
 		}
