@@ -136,6 +136,9 @@ export function MediaStatusPopUp({ playlistId }: IProps): JSX.Element {
 																.map((message) => translateMessage(message, t))
 																.join(', ')}
 															status={item.status}
+															isWorkingOn={
+																item.pieceContentStatus?.progress !== undefined && item.pieceContentStatus?.progress > 0
+															}
 															isAdLib={item.isAdLib}
 															isLive={isLive}
 															isNext={isNext}

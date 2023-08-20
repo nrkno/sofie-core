@@ -2,14 +2,21 @@ import React from 'react'
 import Tooltip from 'rc-tooltip'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { assertNever } from '@sofie-automation/corelib/dist/lib'
-import { WarningIconSmall, HourglassIconSmall, OKIconSmall } from '../../lib/ui/icons/notifications'
+import {
+	WarningIconSmall,
+	HourglassIconSmall,
+	OKIconSmall,
+	WarningIconSmallWorkingOnIt,
+} from '../../lib/ui/icons/notifications'
 
 export const MediaStatusIndicator = React.memo(function MediaStatusIndicator({
 	status,
 	overlay,
+	isWorking,
 }: {
 	status: PieceStatusCode | undefined
 	overlay: string | undefined
+	isWorking: boolean
 }): JSX.Element | null {
 	let icon: JSX.Element | null = null
 	switch (status) {
@@ -26,7 +33,7 @@ export const MediaStatusIndicator = React.memo(function MediaStatusIndicator({
 		case PieceStatusCode.UNKNOWN:
 		case undefined:
 		case PieceStatusCode.SOURCE_UNKNOWN_STATE:
-			icon = <WarningIconSmall />
+			icon = isWorking ? <WarningIconSmallWorkingOnIt /> : <WarningIconSmall />
 			break
 		default:
 			assertNever(status)

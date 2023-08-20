@@ -104,6 +104,9 @@ export function MediaStatus(): JSX.Element | null {
 												rundownName={item.playlistName}
 												rundownTo={`/rundown/${item.playlistId}`}
 												status={item.status}
+												isWorkingOn={
+													item.pieceContentStatus?.progress !== undefined && item.pieceContentStatus?.progress > 0
+												}
 												statusOverlay={item.pieceContentStatus?.messages
 													.map((message) => translateMessage(message, t))
 													.join(', ')}

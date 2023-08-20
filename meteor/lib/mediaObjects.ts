@@ -27,4 +27,6 @@ export interface PieceContentStatusObj {
 	packageName: string | null
 
 	contentDuration: number | undefined
+
+	progress: number | undefined
 }

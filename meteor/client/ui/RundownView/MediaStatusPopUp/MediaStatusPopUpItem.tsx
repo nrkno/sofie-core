@@ -15,6 +15,7 @@ export const MediaStatusItem = withTiming<
 		segmentId: SegmentId | undefined
 		partInstanceId: PartInstanceId | undefined
 		status: PieceStatusCode
+		isWorkingOn: boolean
 		statusOverlay?: string | undefined
 		sourceLayerType?: SourceLayerType | undefined
 		sourceLayerName?: string | undefined
@@ -35,6 +36,7 @@ export const MediaStatusItem = withTiming<
 	partInstanceId,
 	segmentId,
 	status,
+	isWorkingOn,
 	statusOverlay,
 	sourceLayerType,
 	sourceLayerName,
@@ -83,7 +85,7 @@ export const MediaStatusItem = withTiming<
 				) : null}
 			</td>
 			<td className="media-status-popup-item__status">
-				<MediaStatusIndicator status={status} overlay={statusOverlay} />
+				<MediaStatusIndicator status={status} overlay={statusOverlay} isWorking={isWorkingOn} />
 			</td>
 			<td className="media-status-popup-item__source-layer">
 				<div

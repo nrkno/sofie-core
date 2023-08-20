@@ -11,6 +11,7 @@ export function MediaStatusListItem({
 	rundownName,
 	rundownTo,
 	status,
+	isWorkingOn,
 	statusOverlay,
 	sourceLayerType,
 	sourceLayerName,
@@ -23,6 +24,7 @@ export function MediaStatusListItem({
 	rundownName: string
 	rundownTo?: string
 	status: PieceStatusCode
+	isWorkingOn: boolean
 	statusOverlay?: string | undefined
 	sourceLayerType?: SourceLayerType | undefined
 	sourceLayerName?: string | undefined
@@ -45,7 +47,7 @@ export function MediaStatusListItem({
 				{partIdentifier ? <div className="media-status-item__part-identifier">{partIdentifier}</div> : null}
 			</td>
 			<td className="media-status-item__status">
-				<MediaStatusIndicator status={status} overlay={statusOverlay} />
+				<MediaStatusIndicator status={status} overlay={statusOverlay} isWorking={isWorkingOn} />
 			</td>
 			<td className="media-status-item__source-layer">
 				<div

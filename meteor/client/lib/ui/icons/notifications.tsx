@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React from 'react'
 
 export function CriticalIcon(): JSX.Element {
 	return (
@@ -151,6 +151,23 @@ export function WarningIconSmall(): JSX.Element {
 			/>
 		</svg>
 	)
+}
+
+// const WARNING_WORKING_ON_IT_CONFIG = {
+// 	loop: true,
+// 	autoplay: true,
+// 	animationData: WarningIconSmallWorkingOnItAnimation,
+// 	rendererSettings: {
+// 		preserveAspectRatio: 'xMidYMid meet',
+// 	},
+// }
+
+// export function WarningIconSmallWorkingOnIt(): JSX.Element {
+// 	return <Lottie config={WARNING_WORKING_ON_IT_CONFIG} width="20" height="20" playingState="playing" />
+// }
+
+export function WarningIconSmallWorkingOnIt(): JSX.Element {
+	return <img src="/images/warning-transferring.webp" width="20" height="20" alt="Warning" />
 }
 
 export function InformationIconSmall(): JSX.Element {

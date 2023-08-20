@@ -243,6 +243,7 @@ export async function checkPieceContentStatusAndDependencies(
 		{
 			status: PieceStatusCode.UNKNOWN,
 			messages: [],
+			progress: undefined,
 
 			freezes: [],
 			blacks: [],
@@ -425,6 +426,7 @@ async function checkPieceContentMediaObjectStatus(
 	return {
 		status: pieceStatus,
 		messages: messages.map((msg) => msg.message),
+		progress: 0,
 
 		freezes,
 		blacks,
@@ -487,6 +489,7 @@ async function checkPieceContentExpectedPackageStatus(
 
 	let thumbnailUrl: string | undefined
 	let previewUrl: string | undefined
+	let progress: number | undefined
 
 	if (piece.expectedPackages && piece.expectedPackages.length) {
 		const routes = getActiveRoutes(studio.routeSets)
@@ -561,6 +564,8 @@ async function checkPieceContentExpectedPackageStatus(
 						)
 					}
 				}
+
+				progress = getPackageProgress(packageOnPackageContainer) ?? undefined
 
 				const warningMessage = getPackageWarningMessage(packageOnPackageContainer, sourceLayer)
 				if (warningMessage) {
@@ -670,6 +675,7 @@ async function checkPieceContentExpectedPackageStatus(
 	return {
 		status: pieceStatus,
 		messages: messages.map((msg) => msg.message),
+		progress,
 
 		freezes,
 		blacks,
@@ -713,6 +719,12 @@ function getAssetUrlFromExpectedPackages(
 			}
 		}
 	}
+}
+
+function getPackageProgress(
+	packageOnPackageContainer: Pick<PackageContainerPackageStatusDB, 'status'> | undefined
+): number | null {
+	return packageOnPackageContainer?.status.progress ?? null
 }
 
 function getPackageWarningMessage(
