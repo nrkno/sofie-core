@@ -31,7 +31,7 @@ import { PartInvalidReason } from '@sofie-automation/corelib/dist/dataModel/Part
 import { IBlueprintActionManifestDisplayContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { PieceContentStatusObj } from '../../../lib/mediaObjects'
 import { Piece, PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { literal } from '@sofie-automation/corelib/dist/lib'
+import { assertNever, literal } from '@sofie-automation/corelib/dist/lib'
 import { UIPieceContentStatuses, UIShowStyleBases } from '../Collections'
 import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { i18nTranslator } from '../i18n'
@@ -159,12 +159,14 @@ function useRundownPlaylists(playlistIds: RundownPlaylistId[]) {
 			segments.forEach(({ segment, partInstances }, segmentRank) => {
 				partInstances.forEach((partInstance, partInstanceRank) => {
 					const rundown = rundowns.find((rundown) => rundown._id === segment.rundownId)
+					const rundownIndex = playlist.rundownIdsInOrder.indexOf(segment.rundownId)
 					if (partInstance.isTemporary) {
 						partIds.push(partInstance.part._id)
 						partMeta.set(partInstance.part._id, {
 							playlistId: playlist._id,
 							playlistName: playlist.name,
 							rundownName: rundown?.name,
+							rundownRank: rundownIndex,
 							showStyleBaseId: rundown?.showStyleBaseId,
 							playlistRank,
 							segmentRank,
@@ -183,6 +185,7 @@ function useRundownPlaylists(playlistIds: RundownPlaylistId[]) {
 						playlistId: playlist._id,
 						playlistName: playlist.name,
 						rundownName: rundown?.name,
+						rundownRank: rundownIndex,
 						showStyleBaseId: rundown?.showStyleBaseId,
 						playlistRank,
 						segmentRank,
@@ -213,7 +216,7 @@ function useRundownPlaylists(playlistIds: RundownPlaylistId[]) {
 
 	const rundownMeta = useMemo(() => {
 		const rundownMeta = new Map<RundownId, RundownMeta>()
-		rundowns.forEach((rundown) => {
+		rundowns.forEach((rundown, rundownIndex) => {
 			const playlistIndex = playlistsWithContent.findIndex(
 				(playlistWithContent) => playlistWithContent.playlist._id === rundown.playlistId
 			)
@@ -225,6 +228,7 @@ function useRundownPlaylists(playlistIds: RundownPlaylistId[]) {
 				playlistId: rundown.playlistId,
 				playlistName: playlist.name,
 				playlistRank: playlistIndex,
+				rundownRank: rundownIndex,
 				rundownName: rundown.name,
 				rank,
 				showStyleBaseId: rundown.showStyleBaseId,
@@ -562,6 +566,7 @@ interface PartMeta {
 	playlistName: string
 	playlistRank: number
 	rundownName: string | undefined
+	rundownRank: number
 	showStyleBaseId: ShowStyleBaseId | undefined
 	segmentRank: number
 	segmentIdentifier: string | undefined
@@ -577,6 +582,7 @@ interface RundownMeta {
 	playlistName: string
 	playlistRank: number
 	rundownName: string | undefined
+	rundownRank: number
 	showStyleBaseId: ShowStyleBaseId | undefined
 	rank: number
 }
@@ -596,6 +602,7 @@ export interface MediaStatusListItem {
 	playlistName: string
 	playlistRank: number
 	rundownName: string | undefined
+	rundownRank: number
 	segmentRank: number | undefined
 	partRank: number | undefined
 	invalid: boolean
@@ -627,6 +634,7 @@ function getListItemFromRundownPieceAndRundownMeta(
 	const playlistName = meta.playlistName
 	const playlistRank = meta.playlistRank
 	const rundownName = meta.rundownName
+	const rundownRank = meta.rundownRank
 	const playlistId = meta.playlistId
 
 	const uiPieceContentStatus = UIPieceContentStatuses.findOne({
@@ -653,9 +661,10 @@ function getListItemFromRundownPieceAndRundownMeta(
 		partRank,
 		invalid,
 		playlistName,
-		rundownName,
-		duration,
 		playlistRank,
+		rundownName,
+		rundownRank,
+		duration,
 		rank,
 		status,
 		pieceContentStatus: uiPieceContentStatus?.status,
@@ -685,6 +694,7 @@ function getListItemFromPieceAndPartMeta(
 	const segmentRank = meta.segmentRank
 	const playlistName = meta.playlistName
 	const playlistRank = meta.playlistRank
+	const rundownRank = meta.rundownRank
 	const rundownName = meta.rundownName
 	const playlistId = meta.playlistId
 
@@ -716,6 +726,7 @@ function getListItemFromPieceAndPartMeta(
 		partRank,
 		playlistName,
 		rundownName,
+		rundownRank,
 		duration,
 		playlistRank,
 		rank,
@@ -726,3 +737,74 @@ function getListItemFromPieceAndPartMeta(
 }
 
 type SomePieceId = PieceId | AdLibActionId | RundownBaselineAdLibActionId | PieceInstanceId
+
+export function sortItems(
+	a: MediaStatusListItem,
+	b: MediaStatusListItem,
+	sortBy: SortBy,
+	sortOrder: SortOrder
+): number {
+	let result = 0
+	switch (sortBy) {
+		case 'name':
+			result = sortByName(a, b)
+			break
+		case 'status':
+			result = sortByStatus(a, b)
+			break
+		case 'sourceLayer':
+			result = sortBySourceLayer(a, b)
+			break
+		case 'rundown':
+			result = sortByPlaylist(a, b)
+			break
+		default:
+			assertNever(sortBy)
+			break
+	}
+
+	if (sortOrder === 'desc') return result * -1
+	return result
+}
+
+function sortByName(a: MediaStatusListItem, b: MediaStatusListItem) {
+	return a.name.localeCompare(b.name) || sortByRundown(a, b)
+}
+
+function sortByStatus(a: MediaStatusListItem, b: MediaStatusListItem) {
+	return a.status - b.status || sortByRundown(a, b)
+}
+
+function sortBySourceLayer(a: MediaStatusListItem, b: MediaStatusListItem) {
+	if (a.sourceLayerName === b.sourceLayerName) return sortByRundown(a, b)
+	if (a.sourceLayerName === undefined) return 1
+	if (b.sourceLayerName === undefined) return -1
+	return a.sourceLayerName.localeCompare(b.sourceLayerName)
+}
+
+function sortByPlaylist(a: MediaStatusListItem, b: MediaStatusListItem) {
+	if (a.playlistRank === b.playlistRank) return sortByRundown(a, b)
+	return a.playlistRank - b.playlistRank
+}
+
+function sortByRundown(a: MediaStatusListItem, b: MediaStatusListItem) {
+	if (a.rundownRank === b.rundownRank) return sortBySegmentRank(a, b)
+	return a.rundownRank - b.rundownRank
+}
+
+function sortBySegmentRank(a: MediaStatusListItem, b: MediaStatusListItem) {
+	if (a.segmentRank === b.segmentRank) return sortByPartRank(a, b)
+	return (a.segmentRank ?? 0) - (b.segmentRank ?? 0)
+}
+
+function sortByPartRank(a: MediaStatusListItem, b: MediaStatusListItem) {
+	if (a.partRank === b.partRank) return sortByRank(a, b)
+	return (a.partRank ?? 0) - (b.partRank ?? 0)
+}
+
+function sortByRank(a: MediaStatusListItem, b: MediaStatusListItem) {
+	return a.rank - b.rank
+}
+
+export type SortBy = 'rundown' | 'status' | 'sourceLayer' | 'name'
+export type SortOrder = 'asc' | 'desc' | 'inactive'

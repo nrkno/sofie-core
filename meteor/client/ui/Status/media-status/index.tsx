@@ -2,6 +2,9 @@ import React, { CSSProperties, useCallback, useEffect, useMemo, useRef, useState
 import {
 	MediaStatus as MediaStatusComponent,
 	MediaStatusListItem as IMediaStatusListItem,
+	sortItems,
+	SortBy,
+	SortOrder,
 } from '../../MediaStatus/MediaStatus'
 import { useSubscription, useTracker } from '../../../lib/ReactMeteorData/ReactMeteorData'
 import { RundownPlaylists } from '../../../collections'
@@ -12,7 +15,6 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { useTranslation } from 'react-i18next'
 import { MediaStatusListHeader } from './MediaStatusListHeader'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { assertNever } from '@sofie-automation/corelib/dist/lib'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
 import { mapOrFallback } from '../../../lib/lib'
@@ -137,67 +139,3 @@ export function MediaStatus(): JSX.Element | null {
 		</div>
 	)
 }
-
-function sortItems(a: IMediaStatusListItem, b: IMediaStatusListItem, sortBy: SortBy, sortOrder: SortOrder) {
-	let result = 0
-	switch (sortBy) {
-		case 'name':
-			result = sortByName(a, b)
-			break
-		case 'status':
-			result = sortByStatus(a, b)
-			break
-		case 'sourceLayer':
-			result = sortBySourceLayer(a, b)
-			break
-		case 'rundown':
-			result = sortByRundown(a, b)
-			break
-		default:
-			assertNever(sortBy)
-			break
-	}
-
-	if (sortOrder === 'desc') return result * -1
-	return result
-}
-
-function sortByName(a: IMediaStatusListItem, b: IMediaStatusListItem) {
-	return a.name.localeCompare(b.name) || sortByRundown(a, b)
-}
-
-function sortByStatus(a: IMediaStatusListItem, b: IMediaStatusListItem) {
-	return a.status - b.status || sortByRundown(a, b)
-}
-
-function sortBySourceLayer(a: IMediaStatusListItem, b: IMediaStatusListItem) {
-	if (a.sourceLayerName === b.sourceLayerName) return sortByRundown(a, b)
-	if (a.sourceLayerName === undefined) return 1
-	if (b.sourceLayerName === undefined) return -1
-	return a.sourceLayerName.localeCompare(b.sourceLayerName)
-}
-
-function sortByRundown(a: IMediaStatusListItem, b: IMediaStatusListItem) {
-	if (a.playlistRank !== b.playlistRank) return a.playlistRank - b.playlistRank
-	if (a.rundownName === b.rundownName) return sortBySegmentRank(a, b)
-	if (a.rundownName === undefined) return 1
-	if (b.rundownName === undefined) return -1
-	return a.rundownName?.localeCompare(b.rundownName)
-}
-
-function sortBySegmentRank(a: IMediaStatusListItem, b: IMediaStatusListItem) {
-	if (a.segmentRank === b.segmentRank) return sortByPartRank(a, b)
-	return (a.segmentRank ?? 0) - (b.segmentRank ?? 0)
-}
-
-function sortByPartRank(a: IMediaStatusListItem, b: IMediaStatusListItem) {
-	if (a.partRank === b.partRank) return sortByRank(a, b)
-	return (a.partRank ?? 0) - (b.partRank ?? 0)
-}
-
-function sortByRank(a: IMediaStatusListItem, b: IMediaStatusListItem) {
-	return a.rank - b.rank
-}
-
-type SortBy = 'rundown' | 'status' | 'sourceLayer' | 'name'
-type SortOrder = 'asc' | 'desc' | 'inactive'
