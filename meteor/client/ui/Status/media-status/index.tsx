@@ -17,7 +17,7 @@ import { MediaStatusListHeader } from './MediaStatusListHeader'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faTimes } from '@fortawesome/free-solid-svg-icons'
-import { mapOrFallback } from '../../../lib/lib'
+import { mapOrFallback, useDebounce } from '../../../lib/lib'
 
 export function MediaStatus(): JSX.Element | null {
 	const scrollBox = useRef<HTMLDivElement>(null)
@@ -26,6 +26,7 @@ export function MediaStatus(): JSX.Element | null {
 	const [sortBy, setSortBy] = useState<'rundown' | 'status' | 'sourceLayer' | 'name'>('rundown')
 	const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 	const [filter, setFilter] = useState('')
+	const debouncedFilter = useDebounce(filter, 100)
 
 	const playlistIds = useTracker(() => RundownPlaylists.find({}).map((playlist) => playlist._id), [], [])
 
@@ -44,17 +45,19 @@ export function MediaStatus(): JSX.Element | null {
 		setOffsetTop(scrollBox.current.offsetTop)
 	}, [])
 
-	const emptyFilter = !filter || filter.trim().length === 0
+	const emptyFilter = !debouncedFilter || debouncedFilter.trim().length === 0
 
 	const filterItems = useCallback(
 		(item: IMediaStatusListItem) => {
 			if (emptyFilter) return true
-			if (item.name.toLowerCase().indexOf(filter.toLowerCase().trim()) >= 0) return true
-			if ((item.partIdentifier?.toLocaleLowerCase() ?? '').indexOf(filter.toLowerCase().trim()) === 0) return true
-			if ((item.segmentIdentifier?.toLocaleLowerCase() ?? '').indexOf(filter.toLowerCase().trim()) === 0) return true
+			if (item.name.toLowerCase().indexOf(debouncedFilter.toLowerCase().trim()) >= 0) return true
+			if ((item.partIdentifier?.toLocaleLowerCase() ?? '').indexOf(debouncedFilter.toLowerCase().trim()) === 0)
+				return true
+			if ((item.segmentIdentifier?.toLocaleLowerCase() ?? '').indexOf(debouncedFilter.toLowerCase().trim()) === 0)
+				return true
 			return false
 		},
-		[filter, emptyFilter]
+		[debouncedFilter, emptyFilter]
 	)
 
 	const scrollBoxStyle = useMemo<CSSProperties>(

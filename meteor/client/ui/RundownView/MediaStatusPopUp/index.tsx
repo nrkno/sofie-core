@@ -18,7 +18,7 @@ import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMes
 import { MediaStatusPopUpHeader } from './MediaStatusPopUpHeader'
 import { RundownPlaylists } from '../../../collections'
 import { MediaStatusPopUpSegmentRule } from './MediaStatusPopUpSegmentRule'
-import { mapOrFallback } from '../../../lib/lib'
+import { mapOrFallback, useDebounce } from '../../../lib/lib'
 import { Spinner } from '../../../lib/Spinner'
 import { NavLink } from 'react-router-dom'
 import { MediaStatusPopOutIcon } from '../../../lib/ui/icons/mediaStatus'
@@ -36,24 +36,26 @@ export function MediaStatusPopUp({ playlistId }: IProps): JSX.Element {
 	const [sortBy, setSortBy] = useState<'rundown' | 'status' | 'sourceLayer' | 'name'>('rundown')
 	const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
 	const [filter, setFilter] = useState<string>('')
-	// const [filter, setFilter] = useState('')
+	const debouncedFilter = useDebounce(filter, 100)
 
 	function onChangeSort(sortBy: SortBy, sortOrder: SortOrder) {
 		setSortOrder(sortOrder === 'inactive' ? 'asc' : sortOrder)
 		setSortBy(sortBy)
 	}
 
-	const emptyFilter = !filter || filter.trim().length === 0
+	const emptyFilter = !debouncedFilter || debouncedFilter.trim().length === 0
 
 	const filterItems = useCallback(
 		(item: IMediaStatusListItem) => {
-			if (emptyFilter) return true
-			if (item.name.toLowerCase().indexOf(filter.toLowerCase().trim()) >= 0) return true
-			if ((item.partIdentifier?.toLocaleLowerCase() ?? '').indexOf(filter.toLowerCase().trim()) === 0) return true
-			if ((item.segmentIdentifier?.toLocaleLowerCase() ?? '').indexOf(filter.toLowerCase().trim()) === 0) return true
+			if (debouncedFilter) return true
+			if (item.name.toLowerCase().indexOf(debouncedFilter.toLowerCase().trim()) >= 0) return true
+			if ((item.partIdentifier?.toLocaleLowerCase() ?? '').indexOf(debouncedFilter.toLowerCase().trim()) === 0)
+				return true
+			if ((item.segmentIdentifier?.toLocaleLowerCase() ?? '').indexOf(debouncedFilter.toLowerCase().trim()) === 0)
+				return true
 			return false
 		},
-		[filter, emptyFilter]
+		[debouncedFilter, emptyFilter]
 	)
 
 	const playlistIds = useMemo(() => [playlistId], [playlistId])
