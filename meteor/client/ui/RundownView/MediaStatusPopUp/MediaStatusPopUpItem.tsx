@@ -9,7 +9,7 @@ import classNames from 'classnames'
 import { MediaStatusIndicator } from '../../MediaStatus/MediaStatusIndicator'
 import RundownViewEventBus, { RundownViewEvents } from '../../../../lib/api/triggers/RundownViewEventBus'
 
-export const MediaStatusItem = withTiming<
+export const MediaStatusPopUpItem = withTiming<
 	{
 		partId: PartId | undefined
 		segmentId: SegmentId | undefined
@@ -31,7 +31,7 @@ export const MediaStatusItem = withTiming<
 >({
 	dataResolution: TimingDataResolution.Synced,
 	tickResolution: TimingTickResolution.Low,
-})(function MediaStatusItem({
+})(function MediaStatusPopUpItem({
 	partId,
 	partInstanceId,
 	segmentId,

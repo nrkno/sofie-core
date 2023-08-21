@@ -13,7 +13,7 @@ import {
 	SortBy,
 	SortOrder,
 } from '../../MediaStatus/MediaStatus'
-import { MediaStatusItem } from './MediaStatusPopUpItem'
+import { MediaStatusPopUpItem } from './MediaStatusPopUpItem'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { MediaStatusPopUpHeader } from './MediaStatusPopUpHeader'
 import { RundownPlaylists } from '../../../collections'
@@ -129,7 +129,7 @@ export function MediaStatusPopUp({ playlistId }: IProps): JSX.Element {
 												return (
 													<React.Fragment key={unprotectString(item._id)}>
 														{line}
-														<MediaStatusItem
+														<MediaStatusPopUpItem
 															label={item.name}
 															partId={item.partId}
 															segmentId={item.segmentId}
