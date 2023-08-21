@@ -356,7 +356,9 @@ export function useSubscription<K extends keyof PubSubTypes>(sub: K, ...args: Pa
 
 	return ready
 }
-
+/**
+ * Sets up multiple subscriptions of the same type, but with different arguments
+ */
 export function useSubscriptions<K extends keyof PubSubTypes>(
 	sub: K,
 	argsArray: Parameters<PubSubTypes[K]>[]
