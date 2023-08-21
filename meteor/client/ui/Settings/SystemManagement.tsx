@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { ICoreSystem } from '../../../lib/collections/CoreSystem'
+import { ICoreSystem, SofieLogo } from '../../../lib/collections/CoreSystem'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
 import { EditAttribute } from '../../lib/EditAttribute'
@@ -84,6 +84,22 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 								<span className="mdfx"></span>
 							</div>
 						</label>
+
+						<h2 className="mhn">{t('Logo')}</h2>
+						<div className="field">
+							{t('Sofie logo to be displayed in the header. Requires a page refresh.')}
+							<div className="mdi">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="logo"
+									obj={this.props.coreSystem}
+									type="dropdown"
+									options={{ ...SofieLogo }}
+									collection={CoreSystem}
+									className="mdinput"
+								/>
+							</div>
+						</div>
 
 						<h2 className="mhn mtn">{t('Logging level')}</h2>
 						<label className="field">
