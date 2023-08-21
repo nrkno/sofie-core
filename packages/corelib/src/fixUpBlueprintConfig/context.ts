@@ -5,6 +5,7 @@ import {
 	ITranslatableMessage,
 	JSONSchema,
 } from '@sofie-automation/blueprints-integration'
+import objectPath = require('object-path')
 import { ReadonlyDeep } from 'type-fest'
 import { literal, objectPathGet, objectPathSet } from '../lib'
 import {
@@ -14,6 +15,7 @@ import {
 	ObjectOverrideDeleteOp,
 	ObjectOverrideSetOp,
 	ObjectWithOverrides,
+	SomeObjectOverrideOp,
 } from '../settings/objectWithOverrides'
 
 interface MatchedSchemaEntry {
@@ -180,18 +182,74 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 	}
 
 	addDeleteOperation(path: string): void {
-		const { otherOps } = filterOverrideOpsForPrefix(this.#configObject.overrides, path)
-
 		const parentSchemaEntry = this.#findParentSchemaEntry(path)
 		if (!parentSchemaEntry) throw new Error(`Path "${path}" does not exist in the current config schema`)
 
-		// nocommit this isnt 'safe' and could make a mess that will confuse the ui
-		const deleteOp: ObjectOverrideDeleteOp = {
-			op: 'delete',
-			path,
+		if (parentSchemaEntry.type === 'array') {
+			this.#addDeleteOperationForObjectArray(parentSchemaEntry)
+		} else if (parentSchemaEntry.type === 'object') {
+			this.#addDeleteOperationForObjectTable(parentSchemaEntry, path)
+		} else {
+			this.#addDeleteOperationForValue(parentSchemaEntry, path)
+		}
+	}
+
+	#addDeleteOperationForObjectTable(tableSchemaEntry: MatchedSchemaEntry, path: string) {
+		if (tableSchemaEntry.subpath === '') throw new Error('Cannot set an object to a value')
+
+		const { opsForPrefix: opsForRoot } = filterOverrideOpsForPrefix(
+			this.#configObject.overrides,
+			tableSchemaEntry.path
+		)
+
+		const existingParentOp = findParentOpToUpdate(opsForRoot, tableSchemaEntry.subpath)
+		if (existingParentOp) {
+			// Found an op at a higher level that can be modified instead
+			objectPath.del(existingParentOp.op.value, existingParentOp.newSubPath)
+
+			// Mutation was performed in place
+		} else {
+			// Insert new op
+			const setOp = literal<ObjectOverrideDeleteOp>({
+				op: 'delete',
+				path: path,
+			})
+
+			const { otherOps } = filterOverrideOpsForPrefix(this.#configObject.overrides, path)
+
+			this.#configObject.overrides = [...otherOps, setOp]
+		}
+	}
+	#addDeleteOperationForObjectArray(arraySchemaEntry: MatchedSchemaEntry) {
+		// Arrays can only be overwritten as a single object
+
+		let newOpForArray: SomeObjectOverrideOp
+		if (arraySchemaEntry.subpath === '') {
+			newOpForArray = { op: 'delete', path: arraySchemaEntry.path }
+		} else {
+			const currentObj = applyAndValidateOverrides(this.#configObject).obj // Note: this will not be very performant, but it is safer
+			const currentValue = objectPathGet(currentObj, arraySchemaEntry.path)
+
+			// Mutate in place, as we have a clone
+			objectPath.del(currentValue, arraySchemaEntry.subpath)
+
+			newOpForArray = { op: 'set', path: arraySchemaEntry.path, value: currentValue }
 		}
 
-		this.#configObject.overrides = [...otherOps, deleteOp]
+		const { otherOps } = filterOverrideOpsForPrefix(this.#configObject.overrides, arraySchemaEntry.path)
+
+		this.#configObject.overrides = [...otherOps, newOpForArray]
+	}
+	#addDeleteOperationForValue(valueSchemaEntry: MatchedSchemaEntry, path: string) {
+		// Insert new op
+		const setOp = literal<ObjectOverrideDeleteOp>({
+			op: 'delete',
+			path: path,
+		})
+
+		const { otherOps } = filterOverrideOpsForPrefix(this.#configObject.overrides, valueSchemaEntry.path)
+
+		this.#configObject.overrides = [...otherOps, setOp]
 	}
 
 	removeOperations(path: string): void {
