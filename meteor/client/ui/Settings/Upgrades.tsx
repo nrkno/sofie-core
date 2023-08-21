@@ -1,15 +1,9 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faClipboardCheck, faDatabase, faEye } from '@fortawesome/free-solid-svg-icons'
-import {
-	GetUpgradeStatusResult,
-	GetUpgradeStatusResultShowStyleBase,
-	GetUpgradeStatusResultStudio,
-} from '../../../lib/api/migration'
+import { faDatabase, faEye } from '@fortawesome/free-solid-svg-icons'
 import { MeteorCall } from '../../../lib/api/methods'
 import { useTranslation } from 'react-i18next'
 import { Spinner } from '../../lib/Spinner'
-import { getRandomString } from '@sofie-automation/corelib/dist/lib'
 import { i18nTranslator } from '../i18n'
 import { translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { doModalDialog } from '../../lib/ModalDialog'
@@ -18,46 +12,24 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
 import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
 import { catchError } from '../../lib/lib'
+import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { PubSub } from '../../../lib/api/pubsub'
+import { UIBlueprintUpgradeStatuses } from '../Collections'
+import { UIBlueprintUpgradeStatusBase } from '../../../lib/api/upgradeStatus'
 
 export function UpgradesView(): JSX.Element {
 	const { t } = useTranslation()
 
-	const [refreshToken, setRefreshToken] = useState(() => getRandomString())
-	const [upgradeStatus, setUpgradeStatus] = useState<GetUpgradeStatusResult | null>(null)
+	const isReady = useSubscription(PubSub.uiBlueprintUpgradeStatuses)
 
-	useEffect(() => {
-		// clear cached data
-		setUpgradeStatus(null)
-
-		MeteorCall.migration
-			.getUpgradeStatus()
-			.then((res) => {
-				setUpgradeStatus(res)
-			})
-			.catch((e) => {
-				catchError('migration.getUpgradeStatus')(e)
-
-				NotificationCenter.push(
-					new Notification(undefined, NoticeLevel.WARNING, t('Failed to check status.'), 'UpgradesView')
-				)
-			})
-	}, [refreshToken])
-
-	const clickRefresh = useCallback(() => setRefreshToken(getRandomString()), [])
+	const statuses = useTracker(() => UIBlueprintUpgradeStatuses.find().fetch(), [])
 
 	return (
 		<div>
 			<h2 className="mhn">{t('Apply blueprint upgrades')}</h2>
 
-			<div className="mod mhn mvm">
-				<button className="btn mrm" onClick={clickRefresh}>
-					<FontAwesomeIcon icon={faClipboardCheck} />
-					<span>{t('Re-check')}</span>
-				</button>
-			</div>
-
 			<div>
-				{!upgradeStatus && <Spinner />}
+				{(!isReady || !statuses) && <Spinner />}
 
 				<table className="table">
 					<thead>
@@ -66,43 +38,37 @@ export function UpgradesView(): JSX.Element {
 						<th>&nbsp;</th>
 					</thead>
 					<tbody>
-						{upgradeStatus && upgradeStatus.showStyleBases.length === 0 && upgradeStatus.studios.length === 0 && (
+						{isReady && statuses && statuses.length === 0 && (
 							<tr>
 								<td colSpan={3}>No Studios or ShowStyles were found</td>
 							</tr>
 						)}
 
-						{upgradeStatus &&
-							upgradeStatus.studios.map((studio) => (
-								<ShowUpgradesRow
-									key={unprotectString(studio.studioId)}
-									resourceName={t('Studio')}
-									upgradeResult={studio}
-									validateConfig={() => MeteorCall.migration.validateConfigForStudio(studio.studioId)}
-									applyConfig={() =>
-										MeteorCall.migration.runUpgradeForStudio(studio.studioId).finally(() => {
-											clickRefresh()
-										})
-									}
-								/>
-							))}
+						{statuses?.map(
+							(document) =>
+								document.documentType === 'studio' && (
+									<ShowUpgradesRow
+										key={unprotectString(document.documentId)}
+										resourceName={t('Studio')}
+										upgradeResult={document}
+										validateConfig={() => MeteorCall.migration.validateConfigForStudio(document.documentId)}
+										applyConfig={() => MeteorCall.migration.runUpgradeForStudio(document.documentId)}
+									/>
+								)
+						)}
 
-						{upgradeStatus &&
-							upgradeStatus.showStyleBases.map((showStyleBase) => (
-								<ShowUpgradesRow
-									key={unprotectString(showStyleBase.showStyleBaseId)}
-									resourceName={t('Show Style')}
-									upgradeResult={showStyleBase}
-									validateConfig={() =>
-										MeteorCall.migration.validateConfigForShowStyleBase(showStyleBase.showStyleBaseId)
-									}
-									applyConfig={() =>
-										MeteorCall.migration.runUpgradeForShowStyleBase(showStyleBase.showStyleBaseId).finally(() => {
-											clickRefresh()
-										})
-									}
-								/>
-							))}
+						{statuses?.map(
+							(document) =>
+								document.documentType === 'showStyle' && (
+									<ShowUpgradesRow
+										key={unprotectString(document.documentId)}
+										resourceName={t('Show Style')}
+										upgradeResult={document}
+										validateConfig={() => MeteorCall.migration.validateConfigForShowStyleBase(document.documentId)}
+										applyConfig={() => MeteorCall.migration.runUpgradeForShowStyleBase(document.documentId)}
+									/>
+								)
+						)}
 					</tbody>
 				</table>
 			</div>
@@ -112,7 +78,7 @@ export function UpgradesView(): JSX.Element {
 
 interface ShowUpgradesRowProps {
 	resourceName: string
-	upgradeResult: GetUpgradeStatusResultShowStyleBase | GetUpgradeStatusResultStudio
+	upgradeResult: UIBlueprintUpgradeStatusBase
 	validateConfig: () => Promise<BlueprintValidateConfigForStudioResult>
 	applyConfig: () => Promise<void>
 }
