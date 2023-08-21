@@ -1,0 +1,36 @@
+.media-status-list-header {
+	> tr > th {
+		position: sticky;
+		top: 0;
+		background: #ffffff;
+		z-index: 10;
+
+		&::after {
+			content: ' ';
+			display: block;
+			position: absolute;
+			bottom: 0;
+			left: 0;
+			right: 0;
+			height: 2px;
+			border-bottom: 1px solid #d7d7d7;
+			border-top: 1px solid #d7d7d7;
+		}
+	}
+}
+
+.media-status-list-header__sort-button {
+	background: none;
+	margin: 0;
+	padding: 5px 5px;
+	border: none;
+	text-align: center;
+	min-width: 1.5em;
+
+	> svg {
+		vertical-align: top;
+		margin-top: 0.4em;
+		height: 0.4em;
+		width: auto;
+	}
+}

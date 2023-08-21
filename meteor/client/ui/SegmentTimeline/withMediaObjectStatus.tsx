@@ -30,6 +30,7 @@ type IWrappedComponent<IProps extends AnyPiece, IState> = new (props: IProps, st
 const DEFAULT_STATUS = deepFreeze<PieceContentStatusObj>({
 	status: PieceStatusCode.UNKNOWN,
 	messages: [],
+	progress: undefined,
 
 	blacks: [],
 	freezes: [],
@@ -39,6 +40,8 @@ const DEFAULT_STATUS = deepFreeze<PieceContentStatusObj>({
 	previewUrl: undefined,
 
 	packageName: null,
+
+	contentDuration: undefined,
 })
 
 /**

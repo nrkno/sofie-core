@@ -181,4 +181,14 @@ export function getEventTimestamp(e: Event): Time {
 	return e?.timeStamp ? performance.timeOrigin + e.timeStamp + systemTime.timeOriginDiff : getCurrentTime()
 }
 
+export function mapOrFallback<T = any, K = any, L = any>(
+	array: T[],
+	callbackFn: (value: T, index: number, array: T[]) => K,
+	fallbackCallbackFn: () => L
+): K[] | L {
+	if (array.length === 0) return fallbackCallbackFn()
+
+	return array.map(callbackFn)
+}
+
 export const TOOLTIP_DEFAULT_DELAY = 0.5

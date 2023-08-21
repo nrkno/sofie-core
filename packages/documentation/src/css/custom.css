@@ -71,3 +71,8 @@ h6 {
 .navbar__search {
 	margin-left: 1em;
 }
+
+.markdown p > img:only-child {
+	max-height: 50vh;
+	object-fit: contain;
+}
