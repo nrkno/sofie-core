@@ -1,5 +1,5 @@
-import { applyAndValidateOverrides, ObjectWithOverrides, wrapDefaultObject } from '../../settings/objectWithOverrides'
-import { literal } from '../../lib'
+import { ObjectOverrideSetOp, ObjectWithOverrides, wrapDefaultObject } from '../../settings/objectWithOverrides'
+import { clone, literal } from '../../lib'
 import { FixUpBlueprintConfigContext } from '../context'
 import { ICommonContext, JSONSchema } from '@sofie-automation/blueprints-integration'
 
@@ -29,12 +29,21 @@ function createComplexConfigBlob() {
 			},
 			arr: [3, 4, 5],
 			// TODO - include object-table
+			table: {
+				abc: {
+					number: 1,
+				},
+				def: {
+					number: 5,
+				},
+			},
 		},
 		overrides: [
 			{ op: 'delete', path: 'b' },
 			{ op: 'set', path: 'c', value: 5 },
 			{ op: 'set', path: 'obj.b', value: 5 },
 			{ op: 'set', path: 'arr', value: [6, 7] },
+			{ op: 'set', path: 'table.c', value: { number: 99 } },
 		],
 	})
 }
@@ -48,19 +57,41 @@ function createComplexBlobSchema(): JSONSchema {
 				type: 'string',
 			},
 			b: {
-				type: 'number',
+				type: 'integer',
 			},
 			c: {
-				type: 'number',
+				type: 'integer',
 			},
 			obj: {
 				type: 'object',
 				properties: {
 					a: {
-						type: 'number',
+						type: 'integer',
 					},
 					b: {
-						type: 'number',
+						type: 'integer',
+					},
+					c: {
+						type: 'integer',
+					},
+				},
+			},
+			arr: {
+				type: 'array',
+				items: {
+					type: 'integer',
+				},
+			},
+			table: {
+				type: 'object',
+				patternProperties: {
+					'': {
+						type: 'object',
+						properties: {
+							number: {
+								type: 'integer',
+							},
+						},
 					},
 				},
 			},
@@ -167,80 +198,126 @@ describe('addSetOperation', () => {
 		const config = createComplexConfigBlob()
 		const context = new FixUpBlueprintConfigContext(fakeCommonContext, configSchema, config)
 
-		const initialBlob = applyAndValidateOverrides(config).obj
+		const initialBlob = clone(config.overrides)
 		context.addSetOperation('a', true)
-		expect(applyAndValidateOverrides(config).obj).toEqual({
+		expect(config.overrides).toEqual([
 			...initialBlob,
-			a: true,
-		})
+			{ op: 'set', path: 'a', value: true } satisfies ObjectOverrideSetOp,
+		])
 	})
 
 	test('override existing path', () => {
 		const config = createComplexConfigBlob()
 		const context = new FixUpBlueprintConfigContext(fakeCommonContext, configSchema, config)
 
-		const initialBlob = applyAndValidateOverrides(config).obj
+		const initialBlob = clone(config.overrides)
 		context.addSetOperation('b', true)
-		expect(applyAndValidateOverrides(config).obj).toEqual({
-			...initialBlob,
-			b: true,
-		})
+		expect(config.overrides).toEqual([
+			...initialBlob.filter((op) => op.path !== 'b'),
+			{ op: 'set', path: 'b', value: true } satisfies ObjectOverrideSetOp,
+		])
 	})
 
 	test('set child property path', () => {
 		const config = createComplexConfigBlob()
 		const context = new FixUpBlueprintConfigContext(fakeCommonContext, configSchema, config)
 
-		const initialBlob = applyAndValidateOverrides(config).obj
+		const initialBlob = clone(config.overrides)
 		context.addSetOperation('obj.c', true)
-		expect(applyAndValidateOverrides(config).obj).toEqual({
+		expect(config.overrides).toEqual([
 			...initialBlob,
-			obj: {
-				...initialBlob.obj,
-				c: true,
-			},
-		})
+			{ op: 'set', path: 'obj.c', value: true } satisfies ObjectOverrideSetOp,
+		])
 	})
 
 	test('override child property path', () => {
 		const config = createComplexConfigBlob()
 		const context = new FixUpBlueprintConfigContext(fakeCommonContext, configSchema, config)
 
-		const initialBlob = applyAndValidateOverrides(config).obj
+		const initialBlob = clone(config.overrides)
 		context.addSetOperation('obj.b', true)
-		expect(applyAndValidateOverrides(config).obj).toEqual({
-			...initialBlob,
-			obj: {
-				...initialBlob.obj,
-				b: true,
-			},
-		})
+		expect(config.overrides).toEqual([
+			...initialBlob.filter((op) => op.path !== 'obj.b'),
+			{ op: 'set', path: 'obj.b', value: true } satisfies ObjectOverrideSetOp,
+		])
 	})
 
-	test('override property with child values', () => {
+	test('set non-table object with child values', () => {
 		const config = createComplexConfigBlob()
 		const context = new FixUpBlueprintConfigContext(fakeCommonContext, configSchema, config)
 
-		const initialBlob = applyAndValidateOverrides(config).obj
-		context.addSetOperation('obj', true)
-		expect(applyAndValidateOverrides(config).obj).toEqual({
-			...initialBlob,
-			obj: true,
-		})
+		// Not allowed, as 'obj.a' is where the value should be set
+		expect(() => context.addSetOperation('obj', true)).toThrow('does not exist')
 	})
 
-	// test('one', () => {
-	// 	const config = createSimpleConfigBlob()
-	// 	const context = new FixUpBlueprintConfigContext(fakeCommonContext, {}, config)
-	// 	expect(context.hasOperations('a')).toBeFalsy()
-	// 	expect(context.hasOperations('d')).toBeFalsy()
-	// 	expect(context.hasOperations('c.1')).toBeFalsy()
-	// 	expect(context.hasOperations('')).toBeFalsy()
-	// 	expect(context.hasOperations('b')).toBeTruthy()
-	// 	expect(context.hasOperations('c')).toBeTruthy()
-	// 	config.overrides.push({ op: 'set', path: 'a.1', value: 10 })
-	// 	expect(context.hasOperations('a')).toBeTruthy()
-	// })
+	test('set table array', () => {
+		const config = createComplexConfigBlob()
+		const context = new FixUpBlueprintConfigContext(fakeCommonContext, configSchema, config)
+
+		const newValue = [9, 9, 9]
+		const initialBlob = clone(config.overrides)
+		context.addSetOperation('arr', newValue)
+		expect(config.overrides).toEqual([
+			...initialBlob.filter((op) => op.path !== 'arr'),
+			{ op: 'set', path: 'arr', value: newValue } satisfies ObjectOverrideSetOp,
+		])
+	})
+
+	test('set table array row', () => {
+		const config = createComplexConfigBlob()
+		const context = new FixUpBlueprintConfigContext(fakeCommonContext, configSchema, config)
+
+		const initialBlob = clone(config.overrides)
+		context.addSetOperation('arr.1', 5)
+		expect(config.overrides).toEqual([
+			...initialBlob.filter((op) => op.path !== 'arr'),
+			{ op: 'set', path: 'arr', value: [6, 5] } satisfies ObjectOverrideSetOp,
+		])
+	})
+
+	test('set whole table object', () => {
+		const config = createComplexConfigBlob()
+		const context = new FixUpBlueprintConfigContext(fakeCommonContext, configSchema, config)
+
+		const newValue = { a: { number: 56 } }
+		expect(() => context.addSetOperation('table', newValue)).toThrow('Cannot set')
+	})
+
+	test('set table object row', () => {
+		const config = createComplexConfigBlob()
+		const context = new FixUpBlueprintConfigContext(fakeCommonContext, configSchema, config)
+
+		const initialBlob = clone(config.overrides)
+		context.addSetOperation('table.abc', { number: 8 })
+		expect(config.overrides).toEqual([
+			...initialBlob,
+			{ op: 'set', path: 'table.abc', value: { number: 8 } } satisfies ObjectOverrideSetOp,
+		])
+	})
+
+	test('override table object row value', () => {
+		const config = createComplexConfigBlob()
+		const context = new FixUpBlueprintConfigContext(fakeCommonContext, configSchema, config)
+
+		const initialBlob = clone(config.overrides)
+		context.addSetOperation('table.abc.number', 8)
+		expect(config.overrides).toEqual([
+			...initialBlob,
+			{ op: 'set', path: 'table.abc.number', value: 8 } satisfies ObjectOverrideSetOp,
+		])
+	})
+
+	test('override table object row', () => {
+		const config = createComplexConfigBlob()
+		const context = new FixUpBlueprintConfigContext(fakeCommonContext, configSchema, config)
+
+		const initialBlob = clone(config.overrides)
+		context.addSetOperation('table.c', { number: 8 })
+		expect(config.overrides).toEqual([
+			...initialBlob.filter((op) => op.path !== 'table.c'),
+			{ op: 'set', path: 'table.c', value: { number: 8 } } satisfies ObjectOverrideSetOp,
+		])
+	})
 })
 
 describe('addDeleteOperation', () => {
