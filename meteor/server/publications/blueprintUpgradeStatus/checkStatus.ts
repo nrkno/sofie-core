@@ -12,11 +12,11 @@ import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowSt
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { joinObjectPathFragments, objectPathGet, stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import { GetUpgradeStatusResultStudio } from '../../../lib/api/migration'
 import { generateTranslation } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { ShowStyleBaseFields, StudioFields } from './reactiveContentCache'
 import _ from 'underscore'
+import { UIBlueprintUpgradeStatusBase } from '../../../lib/api/upgradeStatus'
 
 export interface BlueprintMapEntry {
 	_id: BlueprintId
@@ -28,7 +28,7 @@ export interface BlueprintMapEntry {
 export function checkDocUpgradeStatus(
 	blueprintMap: Map<BlueprintId, BlueprintMapEntry>,
 	doc: Pick<DBStudio, StudioFields> | Pick<DBShowStyleBase, ShowStyleBaseFields>
-): Pick<GetUpgradeStatusResultStudio, 'invalidReason' | 'changes'> {
+): Pick<UIBlueprintUpgradeStatusBase, 'invalidReason' | 'changes'> {
 	// Check the blueprintId is valid
 	const blueprint = doc.blueprintId ? blueprintMap.get(doc.blueprintId) : null
 	if (!blueprint || !blueprint.configPresets) {

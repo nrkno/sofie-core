@@ -4,6 +4,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
 import { literal, ProtectedString, protectString } from '../../../lib/lib'
 import {
+	CustomPublish,
 	CustomPublishCollection,
 	meteorCustomPublish,
 	setUpCollectionOptimizedObserver,
@@ -226,6 +227,24 @@ function updateShowStyleUpgradeStatus(
 	})
 }
 
+export async function createBlueprintUpgradeStatusSubscriptionHandle(
+	pub: CustomPublish<UIBlueprintUpgradeStatus>
+): Promise<void> {
+	await setUpCollectionOptimizedObserver<
+		UIBlueprintUpgradeStatus,
+		BlueprintUpgradeStatusArgs,
+		BlueprintUpgradeStatusState,
+		BlueprintUpgradeStatusUpdateProps
+	>(
+		`pub_${PubSub.uiBlueprintUpgradeStatuses}`,
+		{},
+		setupBlueprintUpgradeStatusPublicationObservers,
+		manipulateBlueprintUpgradeStatusPublicationData,
+		pub,
+		100
+	)
+}
+
 meteorCustomPublish(
 	PubSub.uiBlueprintUpgradeStatuses,
 	CustomCollectionName.UIBlueprintUpgradeStatuses,
@@ -233,19 +252,7 @@ meteorCustomPublish(
 		const cred = await resolveCredentials({ userId: this.userId, token: undefined })
 
 		if (!cred || NoSecurityReadAccess.any()) {
-			await setUpCollectionOptimizedObserver<
-				UIBlueprintUpgradeStatus,
-				BlueprintUpgradeStatusArgs,
-				BlueprintUpgradeStatusState,
-				BlueprintUpgradeStatusUpdateProps
-			>(
-				`pub_${PubSub.uiBlueprintUpgradeStatuses}`,
-				{},
-				setupBlueprintUpgradeStatusPublicationObservers,
-				manipulateBlueprintUpgradeStatusPublicationData,
-				pub,
-				100
-			)
+			await createBlueprintUpgradeStatusSubscriptionHandle(pub)
 		} else {
 			logger.warn(`Pub.${CustomCollectionName.UIBlueprintUpgradeStatuses}: Not allowed`)
 		}
