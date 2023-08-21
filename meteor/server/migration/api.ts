@@ -1,12 +1,11 @@
 import { check, Match } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
-import { MigrationChunk, NewMigrationAPI, MigrationAPIMethods, GetUpgradeStatusResult } from '../../lib/api/migration'
+import { MigrationChunk, NewMigrationAPI, MigrationAPIMethods } from '../../lib/api/migration'
 import * as Migrations from './databaseMigration'
 import { MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
 import { MethodContextAPI } from '../../lib/api/methods'
 import { SystemWriteAccess } from '../security/system'
 import {
-	getUpgradeStatus,
 	runUpgradeForShowStyleBase,
 	runUpgradeForStudio,
 	validateConfigForShowStyleBase,
@@ -48,12 +47,6 @@ class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
 		await SystemWriteAccess.migrations(this)
 
 		return Migrations.resetDatabaseVersions()
-	}
-
-	async getUpgradeStatus(): Promise<GetUpgradeStatusResult> {
-		await SystemWriteAccess.migrations(this)
-
-		return getUpgradeStatus()
 	}
 
 	async validateConfigForStudio(studioId: StudioId): Promise<BlueprintValidateConfigForStudioResult> {
