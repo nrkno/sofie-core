@@ -5,6 +5,7 @@ import {
 	ITranslatableMessage,
 	JSONSchema,
 } from '@sofie-automation/blueprints-integration'
+import { ReadonlyDeep } from 'type-fest'
 import { literal, objectPathSet } from '../lib'
 import {
 	applyAndValidateOverrides,
@@ -17,21 +18,56 @@ import {
 
 export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 	readonly #commonContext: ICommonContext
+	readonly #configSchema: ReadonlyDeep<JSONSchema>
 	readonly #configObject: ObjectWithOverrides<IBlueprintConfig>
 
 	constructor(
 		commonContext: ICommonContext,
-		_schema: JSONSchema,
+		configSchema: ReadonlyDeep<JSONSchema>,
 		configObject: ObjectWithOverrides<IBlueprintConfig>
 	) {
 		this.#commonContext = commonContext
+		this.#configSchema = configSchema
 		this.#configObject = configObject
 	}
 
-	#findParentSchemaEntry(
-		_path: string
-	): { path: string; subpath: string; type: 'value' | 'array' | 'object' } | null {
-		throw new Error('Method not implemented.')
+	#findParentSchemaEntry(path: string): { path: string; subpath: string; type: 'value' | 'array' | 'object' } | null {
+		if (!path) return null
+
+		const fragments = path.split('.')
+
+		let subSchema: ReadonlyDeep<JSONSchema> | undefined = this.#configSchema
+		const subSchemaPath: string[] = []
+		for (const fragment of fragments) {
+			const newSubSchema: ReadonlyDeep<JSONSchema> | undefined = subSchema?.properties?.[fragment]
+			if (!newSubSchema) break
+			subSchemaPath.push(fragment)
+			subSchema = newSubSchema
+		}
+
+		if (!subSchema || subSchemaPath.length === 0) return null
+
+		const flatPath = subSchemaPath.join('.')
+		const subpath = path.slice(flatPath.length + 1)
+
+		let resolvedType: 'value' | 'array' | 'object'
+		switch (subSchema.type) {
+			case 'object':
+				resolvedType = 'object'
+				break
+			case 'array':
+				resolvedType = 'array'
+				break
+			default:
+				resolvedType = 'value'
+				break
+		}
+
+		return {
+			path: flatPath,
+			subpath: subpath,
+			type: resolvedType,
+		}
 	}
 
 	getConfig(): IBlueprintConfig {
@@ -109,7 +145,7 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 
 		const opsWithUpdatedPrefix = opsForPrefix.map((op) => ({
 			...op,
-			path: `${toPath}${op.path.slice(0, fromPath.length)}`,
+			path: `${toPath}${op.path.slice(fromPath.length)}`,
 		}))
 
 		this.#configObject.overrides = [...otherOps, ...opsWithUpdatedPrefix]

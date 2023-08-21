@@ -177,6 +177,12 @@ function applySetOp<T extends object>(result: ApplyOverridesResult<T>, operation
 	} else {
 		result.preserve.push(operation)
 
+		if (!canApplyToPath(result.obj, operation.path)) {
+			// Can't set at this path
+			result.invalid.push(operation)
+			return
+		}
+
 		const existingValue = objectPath.get(result.obj, operation.path)
 		if (_.isEqual(existingValue, operation.value)) {
 			// Same value
@@ -193,6 +199,12 @@ function applySetOp<T extends object>(result: ApplyOverridesResult<T>, operation
 }
 
 function applyDeleteOp<T extends object>(result: ApplyOverridesResult<T>, operation: ObjectOverrideDeleteOp): void {
+	if (!canApplyToPath(result.obj, operation.path)) {
+		// Can't set at this path
+		result.invalid.push(operation)
+		return
+	}
+
 	if (objectPath.has(result.obj, operation.path)) {
 		// It exists in the path, so do the delete
 		objectPath.del(result.obj, operation.path)
@@ -202,6 +214,18 @@ function applyDeleteOp<T extends object>(result: ApplyOverridesResult<T>, operat
 	}
 	// Always keep the delete op
 	result.preserve.push(operation)
+}
+
+function canApplyToPath<T extends object>(resultObj: T, path: string): boolean {
+	let parentPath: string | undefined = path
+	while ((parentPath = getParentObjectPath(parentPath)) !== undefined) {
+		const parentValue = objectPath.get(resultObj, parentPath)
+		if (parentValue) {
+			return typeof parentValue === 'object' || Array.isArray(parentValue)
+		}
+	}
+
+	return true
 }
 
 /**
