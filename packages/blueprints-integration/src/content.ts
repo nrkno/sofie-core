@@ -9,6 +9,8 @@ export type WithTimeline<T extends BaseContent> = T & {
 export interface BaseContent {
 	editable?: BaseEditableParameters
 
+	loop?: boolean
+
 	sourceDuration?: number
 	ignoreMediaObjectStatus?: boolean
 	ignoreBlackFrames?: boolean
@@ -43,7 +45,6 @@ export type UnknownContent = BaseContent
 export interface VTContent extends BaseContent {
 	fileName: string
 	path: string
-	loop?: boolean
 	/** Frame that media manager should grab for thumbnail preview */
 	previewFrame?: number
 	mediaFlowIds?: string[]
@@ -153,7 +154,6 @@ export interface SplitsContent extends BaseContent {
 export interface AudioContent extends BaseContent {
 	fileName: string
 	path: string
-	loop?: boolean
 }
 
 // export type LowerThirdContent = GraphicsContent

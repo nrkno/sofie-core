@@ -6,9 +6,6 @@ import { getElementWidth } from '../../../utils/dimensions'
 import ClassNames from 'classnames'
 import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerItemRenderer'
 
-import { Lottie } from '@crello/react-lottie'
-// @ts-expect-error Not recognized by Typescript
-import * as loopAnimation from './icon-loop.json'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { PieceStatusIcon } from '../../../lib/ui/PieceStatusIcon'
@@ -43,15 +40,6 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 
 	private rightLabelContainer: HTMLSpanElement | null = null
 	private countdownContainer: HTMLSpanElement | null = null
-
-	private static readonly defaultLottieOptions = {
-		loop: true,
-		autoplay: false,
-		animationData: loopAnimation,
-		rendererSettings: {
-			preserveAspectRatio: 'xMidYMid slice',
-		},
-	}
 
 	constructor(props: IProps & WithTranslation) {
 		super(props)
@@ -255,8 +243,6 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 	private renderLeftLabel() {
 		const { noticeLevel, begin, end } = this.state
 
-		const vtContent = this.props.piece.instance.piece.content as VTContent | undefined
-
 		const duration = this.renderDuration()
 
 		return !this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
@@ -283,16 +269,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 						begin
 					)}
 				</span>
-				{begin && end === '' && vtContent && vtContent.loop && (
-					<div className="segment-timeline__piece__label label-icon label-loop-icon">
-						<Lottie
-							config={VTSourceRendererBase.defaultLottieOptions}
-							width="24px"
-							height="24px"
-							playingState={this.props.showMiniInspector ? 'playing' : 'stopped'}
-						/>
-					</div>
-				)}
+				{begin && end === '' && this.renderLoopIcon()}
 				{this.renderContentTrimmed()}
 			</span>
 		) : null
@@ -301,8 +278,6 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 	private renderRightLabel() {
 		const { end } = this.state
 		const { isLiveLine, part } = this.props
-
-		const vtContent = this.props.piece.instance.piece.content as VTContent | undefined
 
 		return (
 			<span
@@ -313,16 +288,7 @@ export class VTSourceRendererBase extends CustomLayerItemRenderer<IProps & WithT
 				ref={this.setRightLabelRef}
 				style={this.getItemLabelOffsetRight()}
 			>
-				{end && vtContent && vtContent.loop && (
-					<div className="segment-timeline__piece__label label-icon label-loop-icon">
-						<Lottie
-							config={VTSourceRendererBase.defaultLottieOptions}
-							width="24px"
-							height="24px"
-							playingState={this.props.showMiniInspector ? 'playing' : 'stopped'}
-						/>
-					</div>
-				)}
+				{end && this.renderLoopIcon()}
 				<span className="segment-timeline__piece__label last-words">{end}</span>
 				{this.renderInfiniteIcon()}
 				{
