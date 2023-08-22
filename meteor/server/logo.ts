@@ -1,5 +1,5 @@
 import { PickerGET } from './api/http'
-import { promises as fsp } from 'fs'
+import * as fs from 'fs'
 import { getAbsolutePath } from './lib'
 import { getCoreSystemAsync } from './coreSystem/collection'
 import { SofieLogo } from '../lib/collections/CoreSystem'
@@ -15,11 +15,10 @@ PickerGET.route('/images/sofie-logo.svg', async (_, _2, res) => {
 		[SofieLogo.Christmas]: '/public/images/sofie-logo-christmas.svg',
 	}
 
-	const file = await fsp.readFile(getAbsolutePath() + paths[logo])
+	const stream = fs.createReadStream(getAbsolutePath() + paths[logo])
 
 	res.setHeader('Content-Type', 'image/svg+xml')
 	res.setHeader('Cache-Control', `public, maxage=600, immutable`)
 	res.statusCode = 200
-	res.write(file)
-	res.end()
+	stream.pipe(res)
 })

@@ -1,6 +1,6 @@
 import * as _ from 'underscore'
 import path from 'path'
-import { promises as fsp } from 'fs'
+import { ReadStream, createReadStream, promises as fsp } from 'fs'
 import { getCurrentTime, unprotectString, getRandomId } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { Meteor } from 'meteor/meteor'
@@ -115,13 +115,13 @@ export async function uploadBlueprintAsset(_context: Credentials, fileId: string
 	await fsp.mkdir(path.join(storePath, parsedPath.dir), { recursive: true })
 	await fsp.writeFile(path.join(storePath, fileId), data)
 }
-export async function retrieveBlueprintAsset(_context: Credentials, fileId: string): Promise<Buffer> {
+export function retrieveBlueprintAsset(_context: Credentials, fileId: string): ReadStream {
 	check(fileId, String)
 
 	const storePath = getSystemStorePath()
 
 	// TODO: add access control here
-	return fsp.readFile(path.join(storePath, fileId))
+	return createReadStream(path.join(storePath, fileId))
 }
 /** Only to be called from internal functions */
 export async function internalUploadBlueprint(
