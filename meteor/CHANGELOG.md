@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.49.0-in-testing.7](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.6...v1.49.0-in-testing.7) (2023-08-22)
+
+
+### Bug Fixes
+
+* **logo:** use correct path to public folder ([3fcee6e](https://github.com/nrkno/sofie-core/commit/3fcee6ee276ac1de31ec4458ac745d24b5036a78))
+
 ## [1.49.0-in-testing.6](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.5...v1.49.0-in-testing.6) (2023-08-22)
 
 
