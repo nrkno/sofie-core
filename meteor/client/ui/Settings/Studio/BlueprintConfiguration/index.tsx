@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
-import { useTracker } from '../../../../lib/ReactMeteorData/react-meteor-data'
+import { useSubscription, useTracker } from '../../../../lib/ReactMeteorData/react-meteor-data'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { BlueprintConfigSchemaSettings } from '../../BlueprintConfigSchema'
 import {
@@ -12,6 +12,10 @@ import { useTranslation } from 'react-i18next'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { SelectConfigPreset } from './SelectConfigPreset'
 import { SelectBlueprint } from './SelectBlueprint'
+import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PubSub } from '../../../../../lib/api/pubsub'
+import { UIBlueprintUpgradeStatuses } from '../../../Collections'
+import { getUpgradeStatusMessage, UpgradeStatusButtons } from '../../Upgrades/Components'
 
 interface StudioBlueprintConfigurationSettingsProps {
 	studio: DBStudio
@@ -58,6 +62,8 @@ export function StudioBlueprintConfigurationSettings(props: StudioBlueprintConfi
 			<SelectBlueprint studio={props.studio} />
 			<SelectConfigPreset studio={props.studio} blueprint={blueprint} />
 
+			<BlueprintUpgradeStatus studioId={props.studio._id} />
+
 			<BlueprintConfigSchemaSettings
 				schema={configSchema}
 				translationNamespaces={translationNamespaces}
@@ -67,5 +73,33 @@ export function StudioBlueprintConfigurationSettings(props: StudioBlueprintConfi
 				alternateConfig={undefined}
 			/>
 		</>
+	)
+}
+
+interface BlueprintUpgradeStatusProps {
+	studioId: StudioId
+}
+
+function BlueprintUpgradeStatus({ studioId }: BlueprintUpgradeStatusProps): JSX.Element {
+	const { t } = useTranslation()
+
+	const isReady = useSubscription(PubSub.uiBlueprintUpgradeStatuses)
+
+	const status = useTracker(
+		() =>
+			UIBlueprintUpgradeStatuses.findOne({
+				documentId: studioId,
+				documentType: 'studio',
+			}),
+		[studioId]
+	)
+
+	const statusMessage = isReady && status ? getUpgradeStatusMessage(t, status) ?? t('OK') : t('Loading...')
+
+	return (
+		<p>
+			{t('Upgrade Status')}: {statusMessage}
+			{status && <UpgradeStatusButtons upgradeResult={status} />}
+		</p>
 	)
 }
