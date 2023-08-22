@@ -36,6 +36,13 @@ export interface ExternalServiceMessage extends Omit<ServiceMessage, 'timestamp'
 	timestamp: Date
 }
 
+export enum SofieLogo {
+	Default = 'default',
+	Pride = 'pride',
+	Norway = 'norway',
+	Christmas = 'christmas',
+}
+
 export interface ICoreSystem {
 	_id: CoreSystemId // always is 'core'
 	/** Timestamp of creation, (ie the time the database was created) */
@@ -95,6 +102,8 @@ export interface ICoreSystem {
 			rundownNames?: string[]
 		}
 	}
+
+	logo?: SofieLogo
 }
 
 /** In the beginning, there was the database, and the database was with Sofie, and the database was Sofie.

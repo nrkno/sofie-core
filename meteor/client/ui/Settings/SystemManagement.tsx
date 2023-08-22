@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { ICoreSystem } from '../../../lib/collections/CoreSystem'
+import { ICoreSystem, SofieLogo } from '../../../lib/collections/CoreSystem'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
 import { EditAttribute } from '../../lib/EditAttribute'
@@ -84,6 +84,22 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 								<span className="mdfx"></span>
 							</div>
 						</label>
+
+						<h2 className="mhn">{t('Logo')}</h2>
+						<div className="field">
+							{t('Sofie logo to be displayed in the header. Requires a page refresh.')}
+							<div className="mdi">
+								<EditAttribute
+									modifiedClassName="bghl"
+									attribute="logo"
+									obj={this.props.coreSystem}
+									type="dropdown"
+									options={{ ...SofieLogo }}
+									collection={CoreSystem}
+									className="mdinput"
+								/>
+							</div>
+						</div>
 
 						<h2 className="mhn mtn">{t('Logging level')}</h2>
 						<label className="field">
@@ -224,31 +240,6 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 								></EditAttribute>
 							</div>
 						</div>
-
-						<h2 className="mhn">{t('Cleanup')}</h2>
-						<div>
-							<button className="btn btn-default" onClick={() => this.cleanUpOldDatabaseIndexes()}>
-								{t('Cleanup old database indexes')}
-							</button>
-						</div>
-						<div>
-							<button className="btn btn-default" onClick={() => checkForOldDataAndCleanUp(t)}>
-								{t('Cleanup old data')}
-							</button>
-						</div>
-
-						<h2 className="mhn">{t('Cron jobs')}</h2>
-						<div className="field">
-							{t('Disable CasparCG restart job')}
-							<div className="mdi">
-								<EditAttribute
-									attribute="cron.casparCG.disabled"
-									obj={this.props.coreSystem}
-									type="checkbox"
-									collection={CoreSystem}
-								></EditAttribute>
-							</div>
-						</div>
 						<div className="field">
 							{t('Enable automatic storage of Rundown Playlist snapshots periodically')}
 							<div className="mdi">
@@ -276,6 +267,18 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 								/>
 							</div>
 							<div>{t('(Comma separated list. Empty - will store snapshots of all Rundown Playlists)')}</div>
+						</div>
+
+						<h2 className="mhn">{t('Cleanup')}</h2>
+						<div>
+							<button className="btn btn-default" onClick={() => this.cleanUpOldDatabaseIndexes()}>
+								{t('Cleanup old database indexes')}
+							</button>
+						</div>
+						<div>
+							<button className="btn btn-default" onClick={() => checkForOldDataAndCleanUp(t)}>
+								{t('Cleanup old data')}
+							</button>
 						</div>
 					</div>
 				</div>

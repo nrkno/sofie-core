@@ -189,7 +189,7 @@ PickerGET.route('/blueprints/assets/(.*)', async (params, req, res) => {
 	if (filePath.match(/\.(png|svg)?$/)) {
 		const userId = req.headers.authorization ? req.headers.authorization.split(' ')[1] : ''
 		try {
-			const data = await retrieveBlueprintAsset({ userId: protectString(userId) }, filePath)
+			const dataStream = retrieveBlueprintAsset({ userId: protectString(userId) }, filePath)
 			const extension = path.extname(filePath)
 			if (extension === '.svg') {
 				res.setHeader('Content-Type', 'image/svg+xml')
@@ -199,13 +199,13 @@ PickerGET.route('/blueprints/assets/(.*)', async (params, req, res) => {
 			// assets are supposed to have a unique ID/file name, if the asset changes, so must the filename
 			res.setHeader('Cache-Control', `public, max-age=${BLUEPRINT_ASSET_MAX_AGE}, immutable`)
 			res.statusCode = 200
-			res.write(data)
+			dataStream.pipe(res)
 		} catch {
 			res.statusCode = 404 // Probably
+			res.end()
 		}
 	} else {
 		res.statusCode = 403
+		res.end()
 	}
-
-	res.end()
 })
