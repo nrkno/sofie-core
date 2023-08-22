@@ -1,22 +1,19 @@
-import { PickerGET } from "./api/http"
+import { PickerGET } from './api/http'
 import { promises as fsp } from 'fs'
-import { getAbsolutePath } from "./lib"
-import { Meteor } from "meteor/meteor"
-import { getCoreSystemAsync } from "./coreSystem/collection"
-import { SofieLogo } from "../lib/collections/CoreSystem"
-
-Meteor.startup(() => {
-
-})
+import { getAbsolutePath } from './lib'
+import { getCoreSystemAsync } from './coreSystem/collection'
+import { SofieLogo } from '../lib/collections/CoreSystem'
 
 PickerGET.route('/images/sofie-logo.svg', async (_, _2, res) => {
-    const core = await getCoreSystemAsync()
-    const logo = core?.logo ?? SofieLogo.Default
+	const core = await getCoreSystemAsync()
+	const logo = core?.logo ?? SofieLogo.Default
 
-    const paths = {
-        [SofieLogo.Default]: '/public/images/sofie-logo.svg',
-        [SofieLogo.Pride]: '/public/images/sofie-logo-pride.svg',
-    }
+	const paths: Record<SofieLogo, string> = {
+		[SofieLogo.Default]: '/public/images/sofie-logo.svg',
+		[SofieLogo.Pride]: '/public/images/sofie-logo-pride.svg',
+		[SofieLogo.Norway]: '/public/images/sofie-logo-norway.svg',
+		[SofieLogo.Christmas]: '/public/images/sofie-logo-christmas.svg',
+	}
 
 	const file = await fsp.readFile(getAbsolutePath() + paths[logo])
 

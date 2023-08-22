@@ -38,7 +38,9 @@ export interface ExternalServiceMessage extends Omit<ServiceMessage, 'timestamp'
 
 export enum SofieLogo {
 	Default = 'default',
-	Pride = 'pride'
+	Pride = 'pride',
+	Norway = 'norway',
+	Christmas = 'christmas',
 }
 
 export interface ICoreSystem {
