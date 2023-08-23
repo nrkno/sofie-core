@@ -488,6 +488,25 @@ All notable changes to this project will be documented in this file. See [standa
 * verifyHashedToken compatible with securityVerify ([7052f3d](https://github.com/nrkno/sofie-core/commit/7052f3dc3844bc272719fedf5c3da799a1d38dd1))
 * working re-layouting of hover inspectors ([87811a9](https://github.com/nrkno/sofie-core/commit/87811a90e18eb6cd9427773e820a1cee7517da6c))
 
+## [1.49.0-in-testing.7](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.6...v1.49.0-in-testing.7) (2023-08-22)
+
+
+### Bug Fixes
+
+* **logo:** use correct path to public folder ([3fcee6e](https://github.com/nrkno/sofie-core/commit/3fcee6ee276ac1de31ec4458ac745d24b5036a78))
+
+## [1.49.0-in-testing.6](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.5...v1.49.0-in-testing.6) (2023-08-22)
+
+
+### Features
+
+* change logo by config ([1daaff2](https://github.com/nrkno/sofie-core/commit/1daaff255cfe81ea05b2c2398052df6bbd974591))
+
+
+### Bug Fixes
+
+* **Core System Settings:** Cron Job Settings are duplicated ([849ff11](https://github.com/nrkno/sofie-core/commit/849ff11bfbe346fd6e8d3589a4b13067bd21f297))
+
 ## [1.49.0-in-testing.5](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.4...v1.49.0-in-testing.5) (2023-08-17)
 
 

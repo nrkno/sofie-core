@@ -55,6 +55,22 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+# [1.49.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.6...v1.49.0-in-testing.7) (2023-08-22)
+
+**Note:** Version bump only for package @sofie-automation/server-core-integration
+
+
+
+
+
+# [1.49.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.5...v1.49.0-in-testing.6) (2023-08-22)
+
+**Note:** Version bump only for package @sofie-automation/server-core-integration
+
+
+
+
+
 # [1.49.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.4...v1.49.0-in-testing.5) (2023-08-17)
 
 **Note:** Version bump only for package @sofie-automation/server-core-integration

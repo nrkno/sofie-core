@@ -17,6 +17,38 @@ The _System_ settings are settings for this installation of Sofie. In here goes 
 Documentation for this section is yet to be written.
 :::
 
+### Name and logo
+
+Sofie contains the option to change the name of the installation. This is useful to identify different studios or regions.
+
+We have also provided some seasonal logos just for fun.
+
+### System-wide notification message
+
+This option will show a notification to the user containing some custom text. This can be used to inform the user about on-going problems or maintenance information.
+
+### Support panel
+
+The support panel is shown in the rundown view when the user clicks the "?" button in the right bottom corner. It can contain some custom HTML which can be used to refer your users to custom information specific to your organisation.
+
+### Action triggers
+
+The action triggers section lets you set custom keybindings for system-level actions such as doing a take or resetting a rundown.
+
+### Monitoring
+
+Sofie can be configured to send information to Elastic APM. This can provide useful information about the system's performance to developers. In general this can reduce the performance of Sofie altogether though so it is recommended to disable it in production.
+
+Sofie can also monitor for blocked threads, and will log a message if it discovers any. This is also recommended to disable in production.
+
+### CRON jobs
+
+Sofie contains cron jobs for restarting any casparcg servers through the casparcg launcher as well as a job to create rundown snapshots periodically.
+
+### Clean up
+
+The clean up process in Sofie will search the database for unused data and indexes and removes them. If you have had an installation running for many versions this may increase database informance and is in general safe to use at any time.
+
 ## Studio
 
 A _Studio_ in Sofie-terms is a physical location, with a specific set of devices and equipment. Only one show can be on air in a studio at the same time.  
