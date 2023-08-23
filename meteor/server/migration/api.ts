@@ -6,6 +6,8 @@ import { MigrationStepInputResult } from '@sofie-automation/blueprints-integrati
 import { MethodContextAPI } from '../../lib/api/methods'
 import { SystemWriteAccess } from '../security/system'
 import {
+	fixupConfigForShowStyleBase,
+	fixupConfigForStudio,
 	runUpgradeForShowStyleBase,
 	runUpgradeForStudio,
 	validateConfigForShowStyleBase,
@@ -49,6 +51,14 @@ class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
 		return Migrations.resetDatabaseVersions()
 	}
 
+	async fixupConfigForStudio(studioId: StudioId): Promise<void> {
+		check(studioId, String)
+
+		await SystemWriteAccess.migrations(this)
+
+		return fixupConfigForStudio(studioId)
+	}
+
 	async validateConfigForStudio(studioId: StudioId): Promise<BlueprintValidateConfigForStudioResult> {
 		check(studioId, String)
 
@@ -63,6 +73,14 @@ class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
 		await SystemWriteAccess.migrations(this)
 
 		return runUpgradeForStudio(studioId)
+	}
+
+	async fixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void> {
+		check(showStyleBaseId, String)
+
+		await SystemWriteAccess.migrations(this)
+
+		return fixupConfigForShowStyleBase(showStyleBaseId)
 	}
 
 	async validateConfigForShowStyleBase(

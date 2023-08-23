@@ -1,4 +1,8 @@
-import { BlueprintManifestType, ShowStyleBlueprintManifest } from '@sofie-automation/blueprints-integration'
+import {
+	BlueprintManifestType,
+	JSONBlobParse,
+	ShowStyleBlueprintManifest,
+} from '@sofie-automation/blueprints-integration'
 import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { normalizeArray, normalizeArrayToMap, getRandomId, literal, Complete } from '@sofie-automation/corelib/dist/lib'
 import {
@@ -15,38 +19,57 @@ import { evalBlueprint } from '../../api/blueprints/cache'
 import { logger } from '../../logging'
 import { CommonContext } from './context'
 import type { AnyBulkWriteOperation } from 'mongodb'
+import { FixUpBlueprintConfigContext } from '@sofie-automation/corelib/dist/fixUpBlueprintConfig/context'
+import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
+
+export async function fixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void> {
+	const { showStyleBase, blueprint, blueprintManifest } = await loadShowStyleAndBlueprint(showStyleBaseId)
+
+	if (typeof blueprintManifest.fixUpConfig !== 'function') {
+		if (showStyleBase.lastBlueprintFixupHash) {
+			// Cleanup property to avoid getting stuck
+			await ShowStyleBases.updateAsync(showStyleBaseId, {
+				$unset: {
+					lastBlueprintFixupHash: 1,
+				},
+			})
+		}
+		throw new Meteor.Error(500, 'Blueprint does not support this config flow')
+	}
+
+	const commonContext = new CommonContext(
+		'fixupConfig',
+		`showStyleBase:${showStyleBaseId},blueprint:${blueprint._id}`
+	)
+	const blueprintContext = new FixUpBlueprintConfigContext(
+		commonContext,
+		JSONBlobParse(blueprintManifest.showStyleConfigSchema),
+		showStyleBase.blueprintConfigWithOverrides
+	)
+
+	blueprintManifest.fixUpConfig(blueprintContext)
+
+	// TODO - track warnings
+
+	// Save the 'fixed' config
+	await ShowStyleBases.updateAsync(showStyleBaseId, {
+		$set: {
+			lastBlueprintFixupHash: blueprint.blueprintHash,
+			blueprintConfigWithOverrides: showStyleBase.blueprintConfigWithOverrides,
+		},
+	})
+}
 
 export async function validateConfigForShowStyleBase(
 	showStyleBaseId: ShowStyleBaseId
 ): Promise<BlueprintValidateConfigForStudioResult> {
-	const showStyleBase = (await ShowStyleBases.findOneAsync(showStyleBaseId, {
-		fields: {
-			_id: 1,
-			blueprintId: 1,
-			blueprintConfigPresetId: 1,
-			blueprintConfigWithOverrides: 1,
-		},
-	})) as
-		| Pick<DBShowStyleBase, '_id' | 'blueprintId' | 'blueprintConfigPresetId' | 'blueprintConfigWithOverrides'>
-		| undefined
-	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found!`)
-
-	if (!showStyleBase.blueprintConfigPresetId) throw new Meteor.Error(500, 'ShowStyleBase is missing config preset')
-
-	const blueprint = showStyleBase.blueprintId
-		? await Blueprints.findOneAsync({
-				_id: showStyleBase.blueprintId,
-				blueprintType: BlueprintManifestType.SHOWSTYLE,
-		  })
-		: undefined
-	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${showStyleBase.blueprintId}" not found!`)
-
-	if (!blueprint.blueprintHash) throw new Meteor.Error(500, 'Blueprint is not valid')
-
-	const blueprintManifest = evalBlueprint(blueprint) as ShowStyleBlueprintManifest
+	const { showStyleBase, blueprint, blueprintManifest } = await loadShowStyleAndBlueprint(showStyleBaseId)
 
 	if (typeof blueprintManifest.validateConfig !== 'function')
 		throw new Meteor.Error(500, 'Blueprint does not support this config flow')
+
+	// TODO - run fixUpConfig automatically?
+	throwIfNeedsFixupConfigRunning(showStyleBase, blueprint, blueprintManifest)
 
 	const blueprintContext = new CommonContext(
 		'applyConfig',
@@ -67,34 +90,13 @@ export async function validateConfigForShowStyleBase(
 export async function runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void> {
 	logger.info(`Running upgrade for ShowStyleBase "${showStyleBaseId}"`)
 
-	const showStyleBase = (await ShowStyleBases.findOneAsync(showStyleBaseId, {
-		fields: {
-			_id: 1,
-			blueprintId: 1,
-			blueprintConfigPresetId: 1,
-			blueprintConfigWithOverrides: 1,
-		},
-	})) as
-		| Pick<DBShowStyleBase, '_id' | 'blueprintId' | 'blueprintConfigPresetId' | 'blueprintConfigWithOverrides'>
-		| undefined
-	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found!`)
-
-	if (!showStyleBase.blueprintConfigPresetId) throw new Meteor.Error(500, 'ShowStyleBase is missing config preset')
-
-	const blueprint = showStyleBase.blueprintId
-		? await Blueprints.findOneAsync({
-				_id: showStyleBase.blueprintId,
-				blueprintType: BlueprintManifestType.SHOWSTYLE,
-		  })
-		: undefined
-	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${showStyleBase.blueprintId}" not found!`)
-
-	if (!blueprint.blueprintHash) throw new Meteor.Error(500, 'Blueprint is not valid')
-
-	const blueprintManifest = evalBlueprint(blueprint) as ShowStyleBlueprintManifest
+	const { showStyleBase, blueprint, blueprintManifest } = await loadShowStyleAndBlueprint(showStyleBaseId)
 
 	if (typeof blueprintManifest.applyConfig !== 'function')
 		throw new Meteor.Error(500, 'Blueprint does not support this config flow')
+
+	// TODO - run fixUpConfig automatically?
+	throwIfNeedsFixupConfigRunning(showStyleBase, blueprint, blueprintManifest)
 
 	const blueprintContext = new CommonContext(
 		'applyConfig',
@@ -179,4 +181,57 @@ export async function runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseI
 	})
 
 	await TriggeredActions.bulkWriteAsync(bulkOps)
+}
+
+async function loadShowStyleAndBlueprint(showStyleBaseId: ShowStyleBaseId) {
+	const showStyleBase = (await ShowStyleBases.findOneAsync(showStyleBaseId, {
+		fields: {
+			_id: 1,
+			blueprintId: 1,
+			blueprintConfigPresetId: 1,
+			blueprintConfigWithOverrides: 1,
+			lastBlueprintFixupHash: 1,
+		},
+	})) as
+		| Pick<
+				DBShowStyleBase,
+				| '_id'
+				| 'blueprintId'
+				| 'blueprintConfigPresetId'
+				| 'blueprintConfigWithOverrides'
+				| 'lastBlueprintFixupHash'
+		  >
+		| undefined
+	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found!`)
+
+	if (!showStyleBase.blueprintConfigPresetId) throw new Meteor.Error(500, 'ShowStyleBase is missing config preset')
+
+	const blueprint = showStyleBase.blueprintId
+		? await Blueprints.findOneAsync({
+				_id: showStyleBase.blueprintId,
+				blueprintType: BlueprintManifestType.SHOWSTYLE,
+		  })
+		: undefined
+	if (!blueprint) throw new Meteor.Error(404, `Blueprint "${showStyleBase.blueprintId}" not found!`)
+
+	if (!blueprint.blueprintHash) throw new Meteor.Error(500, 'Blueprint is not valid')
+
+	const blueprintManifest = evalBlueprint(blueprint) as ShowStyleBlueprintManifest
+
+	return {
+		showStyleBase,
+		blueprint,
+		blueprintManifest,
+	}
+}
+
+function throwIfNeedsFixupConfigRunning(
+	showStyleBase: Pick<DBShowStyleBase, 'lastBlueprintFixupHash'>,
+	blueprint: Blueprint,
+	blueprintManifest: ShowStyleBlueprintManifest
+): void {
+	if (typeof blueprintManifest.fixUpConfig !== 'function') return
+
+	if (blueprint.blueprintHash !== showStyleBase.lastBlueprintFixupHash)
+		throw new Meteor.Error(500, `fixupConfigForShowStyleBase must be called first`)
 }

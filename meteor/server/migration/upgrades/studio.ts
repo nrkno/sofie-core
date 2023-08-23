@@ -7,6 +7,10 @@ import { Studios } from '../../collections'
 import { logger } from '../../logging'
 import { QueueStudioJob } from '../../worker/worker'
 
+export async function fixupConfigForStudio(studioId: StudioId): Promise<void> {
+	// nocommit
+}
+
 export async function validateConfigForStudio(studioId: StudioId): Promise<BlueprintValidateConfigForStudioResult> {
 	const studio = (await Studios.findOneAsync(studioId, {
 		fields: {

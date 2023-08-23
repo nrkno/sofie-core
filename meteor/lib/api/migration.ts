@@ -14,6 +14,12 @@ export interface NewMigrationAPI {
 	resetDatabaseVersions(): Promise<void>
 
 	/**
+	 * Run `fixupConfig` on the blueprint for a Studio
+	 * @param studioId Id of the Studio
+	 */
+	fixupConfigForStudio(studioId: StudioId): Promise<void>
+
+	/**
 	 * Run `validateConfig` on the blueprint for a Studio
 	 * @param studioId Id of the Studio
 	 * @returns List of messages to display to the user
@@ -25,6 +31,12 @@ export interface NewMigrationAPI {
 	 * @param studioId Id of the Studio
 	 */
 	runUpgradeForStudio(studioId: StudioId): Promise<void>
+
+	/**
+	 * Run `fixupConfig` on the blueprint for a ShowStyleBase
+	 * @param showStyleBaseId Id of the ShowStyleBase
+	 */
+	fixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void>
 
 	/**
 	 * Run `validateConfig` on the blueprint for a ShowStyleBase
@@ -47,8 +59,10 @@ export enum MigrationAPIMethods {
 	'resetDatabaseVersions' = 'migration.resetDatabaseVersions',
 
 	'getUpgradeStatus' = 'migration.getUpgradeStatus',
+	'fixupConfigForStudio' = 'migration.fixupConfigForStudio',
 	'validateConfigForStudio' = 'migration.validateConfigForStudio',
 	'runUpgradeForStudio' = 'migration.runUpgradeForStudio',
+	'fixupConfigForShowStyleBase' = 'migration.fixupConfigForShowStyleBase',
 	'validateConfigForShowStyleBase' = 'migration.validateConfigForShowStyleBase',
 	'runUpgradeForShowStyleBase' = 'migration.runUpgradeForShowStyleBase',
 }
