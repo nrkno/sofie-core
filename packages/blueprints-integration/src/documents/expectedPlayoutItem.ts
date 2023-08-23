@@ -1,6 +1,5 @@
 import type { TSR } from '../timeline'
 
-/** @deprecated */
 export interface ExpectedPlayoutItemGeneric {
 	/** What type of playout device this item should be handled by */
 	deviceSubType: TSR.DeviceType // subset of PeripheralDeviceAPI.DeviceSubType

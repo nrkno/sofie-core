@@ -52,7 +52,9 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 
 	/** A list of config items this blueprint expects to be available on the ShowStyle */
 	showStyleConfigSchema: JSONBlob<JSONSchema>
-	/** A list of Migration steps related to a ShowStyle */
+	/** A list of Migration steps related to a ShowStyle
+	 * @deprecated This has been replaced with `validateConfig` and `applyConfig`
+	 */
 	showStyleMigrations: MigrationStepShowStyle[]
 
 	/** The config presets exposed by this blueprint */
@@ -193,7 +195,6 @@ export interface BlueprintResultTimeline {
 }
 export interface BlueprintResultBaseline {
 	timelineObjects: TimelineObjectCoreExt<TSR.TSRTimelineContent>[]
-	/** @deprecated */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	expectedPackages?: ExpectedPackage.Any[]
 }

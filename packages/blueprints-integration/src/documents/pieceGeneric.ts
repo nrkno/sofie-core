@@ -7,15 +7,6 @@ import type { ExpectedPlayoutItemGeneric } from './expectedPlayoutItem'
 
 export { PieceLifespan }
 
-export declare enum PieceTransitionType {
-	MIX = 'MIX',
-	WIPE = 'WIPE',
-}
-export interface PieceTransition {
-	type: PieceTransitionType
-	duration: number
-}
-
 export enum IBlueprintDirectPlayType {
 	AdLibPiece = 'adlib',
 	AdLibAction = 'action',
@@ -56,15 +47,6 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 	/** The object describing the item in detail */
 	content: WithTimeline<SomeContent>
 
-	/** The transition used by this piece to transition to and from the piece */
-	/** @deprecated */
-	transitions?: {
-		/** In transition for the piece */
-		inTransition?: PieceTransition
-		/** The out transition for the piece */
-		outTransition?: PieceTransition
-	}
-
 	/**
 	 * How long this piece needs to prepare its content before it will have an effect on the output.
 	 * This allows for flows such as starting a clip playing, then cutting to it after some ms once the player is outputting frames.
@@ -79,9 +61,7 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 
 	/** Whether the adlib should always be inserted queued */
 	toBeQueued?: boolean
-	/** Array of items expected to be played out. This is used by playout-devices to preload stuff.
-	 * @deprecated replaced by .expectedPackages
-	 */
+	/** Array of items expected to be played out. This is used by playout-devices to preload stuff. */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	/** User-defined tags that can be used for filtering adlibs in the shelf and identifying pieces by actions */
 	tags?: string[]
