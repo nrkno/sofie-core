@@ -17,6 +17,7 @@ import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHan
 import { PartInstanceName } from '../collections/partInstances'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
+import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 interface PartStatus {
 	id: string
@@ -96,13 +97,13 @@ export class ActivePlaylistTopic
 						? action.triggerModes.map((t) =>
 								literal<AdLibActionType>({
 									name: t.data,
-									label: t.display.label.key,
+									label: interpollateTranslation(t.display.label.key, t.display.label.args),
 								})
 						  )
 						: []
 					return literal<AdLibStatus>({
 						id: unprotectString(action._id),
-						name: action.display.label.key,
+						name: interpollateTranslation(action.display.label.key, action.display.label.args),
 						sourceLayer: sourceLayerName ? sourceLayerName : 'invalid',
 						outputLayer: outputLayerName ? outputLayerName : 'invalid',
 						actionType: triggerModes,
@@ -140,13 +141,13 @@ export class ActivePlaylistTopic
 						? action.triggerModes.map((t) =>
 								literal<AdLibActionType>({
 									name: t.data,
-									label: t.display.label.key,
+									label: interpollateTranslation(t.display.label.key, t.display.label.args),
 								})
 						  )
 						: []
 					return literal<AdLibStatus>({
 						id: unprotectString(action._id),
-						name: action.display.label.key,
+						name: interpollateTranslation(action.display.label.key, action.display.label.args),
 						sourceLayer: sourceLayerName ? sourceLayerName : 'invalid',
 						outputLayer: outputLayerName ? outputLayerName : 'invalid',
 						actionType: triggerModes,

@@ -67,6 +67,7 @@ import './cronjobs'
 import './email'
 import './prometheus'
 import './api/deviceTriggers/observer'
+import './logo'
 // import './performanceMonitor' // called above
 
 // Setup publications and security:

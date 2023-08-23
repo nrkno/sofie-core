@@ -86,11 +86,9 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	/**
 	 * Allows the blueprint to custom-modify the PartInstance, on ingest data update (this is run after getSegment())
 	 *
-	 * `playStatus: previous` means that the currentPartInstance is `orphaned: adlib-part`
-	 * and thus possibly depends on an already past PartInstance for some of it's properties. Therefore
-	 * the blueprint is allowed to modify the most recently played non-adlibbed PartInstance using ingested data.
+	 * `playStatus: previous` means that the currentPartInstance is `orphaned: adlib-part` and thus possibly depends on an already past PartInstance for some of it's properties. Therefore the blueprint is allowed to modify the most recently played non-adlibbed PartInstance using ingested data.
 	 *
-	 * `newData.part` will be `undefined` when the PartInstance is orphaned
+	 * `newData.part` will be `undefined` when the PartInstance is orphaned. Generally, it's useful to differentiate the behavior of the implementation of this function based on `existingPartInstance.partInstance.orphaned` state
 	 */
 	syncIngestUpdateToPartInstance?: (
 		context: ISyncIngestUpdateToPartInstanceContext,
@@ -100,7 +98,11 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 		playoutStatus: 'previous' | 'current' | 'next'
 	) => void
 
-	/** Execute an action defined by an IBlueprintActionManifest */
+	/**
+	 * Execute an action defined by an IBlueprintActionManifest.
+	 *
+	 * This callback allows an action to perform operations only on the Timeline Datastore. This allows for a _fast-path_ for rapid-fire actions, before the full `executeAction` callback resolves. For more information on how to use this callback, see "Timeline Datastore" in Sofie TV Automation Documentation for Blueprint Developers.
+	 */
 	executeDataStoreAction?: (
 		context: IDataStoreActionExecutionContext,
 		actionId: string,

@@ -194,7 +194,7 @@ blueprintsRouter.get('/assets/(.*)', async (ctx) => {
 	if (filePath.match(/\.(png|svg)?$/)) {
 		const userId = ctx.headers.authorization ? ctx.headers.authorization.split(' ')[1] : ''
 		try {
-			const data = await retrieveBlueprintAsset({ userId: protectString(userId) }, filePath)
+			const dataStream = retrieveBlueprintAsset({ userId: protectString(userId) }, filePath)
 			const extension = path.extname(filePath)
 			if (extension === '.svg') {
 				ctx.response.type = 'image/svg+xml'
@@ -202,13 +202,15 @@ blueprintsRouter.get('/assets/(.*)', async (ctx) => {
 				ctx.response.type = 'image/png'
 			}
 			// assets are supposed to have a unique ID/file name, if the asset changes, so must the filename
-			ctx.response.headers['Cache-Control'] = `public, max-age=${BLUEPRINT_ASSET_MAX_AGE}, immutable`
-			ctx.response.status = 200
-			ctx.body = data
+			ctx.set('Cache-Control', `public, max-age=${BLUEPRINT_ASSET_MAX_AGE}, immutable`)
+			ctx.statusCode = 200
+			ctx.body = dataStream
 		} catch {
-			ctx.response.status = 404 // Probably
+			ctx.statusCode = 404 // Probably
+			ctx.end()
 		}
 	} else {
-		ctx.response.status = 403
+		ctx.statusCode = 403
+		ctx.end()
 	}
 })
