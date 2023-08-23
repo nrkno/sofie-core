@@ -39,7 +39,7 @@
 		"tslib": "^2.6.0"
 	},
 	"devDependencies": {
-		"@openapitools/openapi-generator-cli": "^2.6.0",
+		"@openapitools/openapi-generator-cli": "^2.7.0",
 		"eslint-plugin-yml": "^1.8.0",
 		"js-yaml": "^4.1.0",
 		"wget-improved": "^3.4.0"
