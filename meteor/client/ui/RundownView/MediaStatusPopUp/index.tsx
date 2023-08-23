@@ -47,7 +47,7 @@ export function MediaStatusPopUp({ playlistId }: IProps): JSX.Element {
 
 	const filterItems = useCallback(
 		(item: IMediaStatusListItem) => {
-			if (debouncedFilter) return true
+			if (emptyFilter) return true
 			if (item.name.toLowerCase().indexOf(debouncedFilter.toLowerCase().trim()) >= 0) return true
 			if ((item.partIdentifier?.toLocaleLowerCase() ?? '').indexOf(debouncedFilter.toLowerCase().trim()) === 0)
 				return true
