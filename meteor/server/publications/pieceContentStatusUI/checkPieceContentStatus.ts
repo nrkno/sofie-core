@@ -8,6 +8,7 @@ import {
 	LiveSpeakContent,
 	PackageInfo,
 	SourceLayerType,
+	TSR,
 	VTContent,
 } from '@sofie-automation/blueprints-integration'
 import { getExpectedPackageId } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
@@ -172,7 +173,13 @@ export type PieceContentStatusPiece = Pick<PieceGeneric, '_id' | 'content' | 'ex
 export interface PieceContentStatusStudio
 	extends Pick<
 		DBStudio,
-		'_id' | 'settings' | 'packageContainers' | 'previewContainerIds' | 'thumbnailContainerIds' | 'routeSets'
+		| '_id'
+		| 'settings'
+		| 'packageContainers'
+		| 'previewContainerIds'
+		| 'thumbnailContainerIds'
+		| 'routeSets'
+		| 'layerMediaStatus'
 	> {
 	/** Mappings between the physical devices / outputs and logical ones */
 	mappings: MappingsExt
@@ -502,12 +509,37 @@ async function checkPieceContentExpectedPackageStatus(
 	let previewUrl: string | undefined
 	let progress: number | undefined
 
+	let hasLoaded = false
+
 	if (piece.expectedPackages && piece.expectedPackages.length) {
 		const routes = getActiveRoutes(studio.routeSets)
 
 		for (const expectedPackage of piece.expectedPackages) {
 			// Route the mappings
-			const routedDeviceIds = routeExpectedPackage(routes, studio.mappings, expectedPackage)
+			const { routedDeviceIds, routedLayerNames } = routeExpectedPackage(routes, studio.mappings, expectedPackage)
+
+			// match the routed layernames against the reported media status
+			for (const layer of routedLayerNames) {
+				// todo - no enum?
+				if (expectedPackage.type !== 'media_file') continue
+
+				const status: TSR.LayerState = studio.layerMediaStatus?.[layer] ?? {
+					status: 'EMPTY',
+					mediaId: [],
+					failedMediaId: [],
+				}
+
+				// todo - maybe the package should explicitly state the mediaId
+				const mediaId = expectedPackage.content.filePath
+				if (status.failedMediaId.includes(mediaId)) {
+					messages.push({
+						status: PieceStatusCode.SOURCE_MISSING,
+						message: generateTranslation('Source failed to load on playout server'),
+					})
+				} else if (status.status === TSR.LayerStatus.Loaded && status.mediaId.includes(mediaId)) {
+					hasLoaded = true
+				}
+			}
 
 			const checkedPackageContainers = new Set<string>()
 
@@ -675,8 +707,18 @@ async function checkPieceContentExpectedPackageStatus(
 		packageName = firstPackage.packageName
 	}
 
+	// hack - override all statuses to be missing
+	messages.push({ status: PieceStatusCode.SOURCE_MISSING, message: generateTranslation('All files are missing because of something terrible!') })
+
 	if (messages.length) {
-		pieceStatus = messages.reduce((prev, msg) => Math.max(prev, msg.status), PieceStatusCode.UNKNOWN)
+		if (hasLoaded) {
+			// only let source issues like black frames through
+			pieceStatus = messages
+				.filter((msg) => msg.status === PieceStatusCode.OK || msg.status === PieceStatusCode.SOURCE_HAS_ISSUES)
+				.reduce((prev, msg) => Math.max(prev, msg.status), PieceStatusCode.UNKNOWN)
+		} else {
+			pieceStatus = messages.reduce((prev, msg) => Math.max(prev, msg.status), PieceStatusCode.UNKNOWN)
+		}
 	} else {
 		if (readyCount > 0) {
 			pieceStatus = PieceStatusCode.OK
@@ -997,7 +1039,10 @@ function routeExpectedPackage(
 	routes: ResultingMappingRoutes,
 	studioMappings: ReadonlyDeep<MappingsExt>,
 	expectedPackage: ExpectedPackage.Base
-): Set<PeripheralDeviceId> {
+): {
+	routedDeviceIds: Set<PeripheralDeviceId>
+	routedLayerNames: string[]
+} {
 	// Collect the relevant mappings
 	const mappingsWithPackages: MappingsExt = {}
 	for (const layerName of expectedPackage.layers) {
@@ -1014,5 +1059,8 @@ function routeExpectedPackage(
 	const routedMappings = getRoutedMappings(mappingsWithPackages, routes)
 
 	// Find the referenced deviceIds
-	return new Set(Object.values<MappingExt>(routedMappings).map((mapping) => mapping.deviceId))
+	return {
+		routedDeviceIds: new Set(Object.values<MappingExt>(routedMappings).map((mapping) => mapping.deviceId)),
+		routedLayerNames: Object.keys(routedMappings),
+	}
 }

@@ -114,6 +114,7 @@ export function defaultStudio(_id: StudioId): DBStudio {
 		_rundownVersionHash: '',
 		lastBlueprintConfig: undefined,
 		lastBlueprintFixUpHash: undefined,
+		layerMediaStatus: {},
 	}
 }
 

@@ -108,6 +108,8 @@ export interface DBStudio {
 	lastBlueprintConfig: LastBlueprintConfig | undefined
 	/** Last BlueprintHash where the fixupConfig method was run */
 	lastBlueprintFixUpHash: BlueprintHash | undefined
+
+	layerMediaStatus: Record<string, TSR.LayerState>
 }
 
 export interface StudioPeripheralDeviceSettings {

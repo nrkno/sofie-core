@@ -37,6 +37,7 @@ import {
 import { MediaObject } from '../core/model/MediaObjects'
 import { MediaWorkFlow } from '../core/model/MediaWorkFlows'
 import { MediaWorkFlowStep } from '../core/model/MediaWorkFlowSteps'
+import { LayerState } from 'timeline-state-resolver-types'
 
 export type UpdateExpectedPackageWorkStatusesChanges =
 	| {
@@ -339,6 +340,13 @@ export interface NewPeripheralDeviceAPI {
 		removeDelay?: number
 	): Promise<void>
 
+	updateLayerMediaStatus(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		layer: string,
+		status: LayerState,
+	): Promise<void>
+
 	/**
 	 * This method is being called by a Peripheral Device handling external triggers when it receives an external
 	 * trigger event or an external input changes it's state (a knob changes it's rotation, a joystick is moved, etc.)
@@ -388,6 +396,7 @@ export enum PeripheralDeviceAPIMethods {
 	'timelineTriggerTime' = 'peripheralDevice.timeline.setTimelineTriggerTime',
 
 	'playoutPlaybackChanged' = 'peripheralDevice.playout.playbackChanged',
+	'updateLayerMediaStatus' = 'peripheralDevice.playout.updateLayerMediaStatus',
 
 	'getDebugStates' = 'peripheralDevice.playout.getDebugStates',
 

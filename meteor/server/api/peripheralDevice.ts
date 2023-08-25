@@ -15,6 +15,7 @@ import {
 	ExpectedPackageStatusAPI,
 	PackageInfo,
 	StatusCode,
+	TSR,
 } from '@sofie-automation/blueprints-integration'
 import { MosIntegration } from './ingest/mosDevice/mosIntegration'
 import { MediaScannerIntegration } from './integration/media-scanner'
@@ -468,6 +469,26 @@ export namespace ServerPeripheralDeviceAPI {
 			return returnValue
 		}
 	}
+	export async function updateLayerMediaStatus(
+		context: MethodContext,
+		deviceId: PeripheralDeviceId,
+		token: string,
+		layer: string,
+		state: TSR.LayerStatus
+	): Promise<void> {
+		const peripheralDevice = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
+
+		if (!peripheralDevice.studioId)
+			throw new Error(`PeripheralDevice "${peripheralDevice._id}" sent updateLayerMediaStatus, but has no studioId`)
+
+		const studio = await Studios.findOneAsync(peripheralDevice.studioId)
+		if (!studio)
+			throw new Error(`Studio "${peripheralDevice.studioId}" was not found`)
+
+		// logger.debug('Playout gw ' + deviceId + ' reported layer ' + layer + ' is ' + status + ' with ' + JSON.stringify(mediaId))
+
+		Studios.updateAsync(studio._id, { $set: {layerMediaStatus: { ...studio.layerMediaStatus, [layer]: state} } }) // todo - some cleanup process?
+	}
 
 	export async function requestUserAuthToken(
 		context: MethodContext,
@@ -864,6 +885,14 @@ class ServerPeripheralDeviceAPIClass extends MethodContextAPI implements NewPeri
 		resolveDuration: number
 	) {
 		return ServerPeripheralDeviceAPI.reportResolveDone(this, deviceId, deviceToken, timelineHash, resolveDuration)
+	}
+	async updateLayerMediaStatus(
+		deviceId: PeripheralDeviceId,
+		deviceToken: string,
+		layer: string,
+		status: TSR.LayerState
+	) {
+		return ServerPeripheralDeviceAPI.updateLayerMediaStatus(this, deviceId, deviceToken, layer, status)
 	}
 
 	// ------ Spreadsheet Gateway --------

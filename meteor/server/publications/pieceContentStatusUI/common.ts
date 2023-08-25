@@ -19,6 +19,7 @@ export type StudioFields =
 	| 'thumbnailContainerIds'
 	| 'mappingsWithOverrides'
 	| 'routeSets'
+	| 'layerMediaStatus'
 export const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
 	_id: 1,
 	settings: 1,
@@ -27,6 +28,7 @@ export const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<D
 	thumbnailContainerIds: 1,
 	mappingsWithOverrides: 1,
 	routeSets: 1,
+	layerMediaStatus: 1,
 })
 
 export type PackageContainerPackageStatusLight = Pick<PackageContainerPackageStatusDB, '_id' | 'studioId' | 'status'>
@@ -118,5 +120,6 @@ export async function fetchStudio(studioId: StudioId): Promise<PieceContentStatu
 		thumbnailContainerIds: studio.thumbnailContainerIds,
 		mappings: applyAndValidateOverrides(studio.mappingsWithOverrides).obj,
 		routeSets: studio.routeSets,
+		layerMediaStatus: studio.layerMediaStatus
 	}
 }

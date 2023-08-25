@@ -457,6 +457,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 				},
 				lastBlueprintConfig: undefined,
 				lastBlueprintFixUpHash: undefined,
+				layerMediaStatus: {},
 			})
 		},
 	},

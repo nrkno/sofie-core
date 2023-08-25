@@ -12,7 +12,7 @@ import {
 	PeripheralDevicePubSub,
 	PeripheralDevicePubSubCollectionsNames,
 } from '@sofie-automation/server-core-integration'
-import { MediaObject, DeviceOptionsAny, ActionExecutionResult } from 'timeline-state-resolver'
+import { MediaObject, DeviceOptionsAny, ActionExecutionResult, LayerState } from 'timeline-state-resolver'
 import * as _ from 'underscore'
 import { DeviceConfig } from './connector'
 import { TSRHandler } from './tsrHandler'
@@ -407,6 +407,9 @@ export class CoreHandler {
 			messages: messages,
 		})
 	}
+	onUpdateLayerStatus(layer: string, status: LayerState) {
+		this.core.coreMethodsLowPriority.updateLayerMediaStatus(layer, status)
+	}
 }
 
 export class CoreTSRDeviceHandler {
@@ -546,6 +549,9 @@ export class CoreTSRDeviceHandler {
 				stacktrace: e.stack,
 			})
 		)
+	}
+	onUpdateLayerStatus(layer: string, status: LayerState) {
+		this.core.coreMethodsLowPriority.updateLayerMediaStatus(layer, status)
 	}
 
 	async dispose(): Promise<void> {

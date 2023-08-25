@@ -61,6 +61,7 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 			},
 			lastBlueprintConfig: undefined,
 			lastBlueprintFixUpHash: undefined,
+			layerMediaStatus: {},
 		})
 	)
 }

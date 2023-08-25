@@ -17,6 +17,7 @@ import {
 	SlowFulfilledCommandInfo,
 	DeviceStatus,
 	StatusCode,
+	LayerState,
 } from 'timeline-state-resolver'
 import { CoreHandler, CoreTSRDeviceHandler } from './coreHandler'
 import * as crypto from 'crypto'
@@ -916,6 +917,9 @@ export class TSRHandler {
 			})
 			await addListenerToDevice(device, 'error', (context, error) => {
 				this.logger.error(fixError(error), fixContext(context))
+			})
+			await (device.device as any).on('layerState', (address: string, state: LayerState) => {
+				this._coreHandler.onUpdateLayerStatus(address, state)
 			})
 
 			await addListenerToDevice(device, 'debug', (...args) => {
