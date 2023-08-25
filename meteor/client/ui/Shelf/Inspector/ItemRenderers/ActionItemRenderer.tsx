@@ -254,19 +254,6 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 						studio={this.props.studio}
 					/>
 					<div className="shelf-inspector__action-editor">
-						<div className="shelf-inspector__action-editor__panel">
-							{action.userDataManifest && action.userDataManifest.editableFields && !targetAction ? (
-								<Spinner />
-							) : action.userDataManifest && action.userDataManifest.editableFields && targetAction ? (
-								<>
-									{this.renderConfigFields(
-										action.userDataManifest.editableFields,
-										targetAction,
-										'transformedUserData.'
-									)}
-								</>
-							) : null}
-						</div>
 						<div className="shelf-inspector__action-editor__actions">
 							{modes?.length ? (
 								<button className="btn" onClick={(e) => this.onTrigger(e, modes[0])}>
