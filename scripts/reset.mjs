@@ -27,4 +27,4 @@ await rimrafLog("./packages/*/node_modules");
 await rimrafLog("./packages/*/dist");
 
 console.log(`...done!`);
-console.log(`To install everything again, run "yarn start"`);
+console.log(`To install everything again, run "yarn install-and-build"`);
