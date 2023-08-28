@@ -99,7 +99,7 @@
 		"react-router-dom": "^5.3.4",
 		"react-timer-hoc": "^2.3.0",
 		"semver": "^7.5.3",
-		"superfly-timeline": "9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0",
+		"superfly-timeline": "9.0.0",
 		"threadedclass": "^1.2.1",
 		"timecode": "0.0.4",
 		"type-fest": "^3.10.0",

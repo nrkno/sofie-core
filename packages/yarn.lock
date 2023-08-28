@@ -6136,7 +6136,7 @@ __metadata:
     mongodb: ^5.5.0
     p-lazy: ^3.1.0
     p-timeout: ^4.1.0
-    superfly-timeline: 9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0
+    superfly-timeline: 9.0.0
     threadedclass: ^1.2.1
     tslib: ^2.6.0
     type-fest: ^3.10.0
@@ -22969,16 +22969,7 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"superfly-timeline@npm:9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0":
-  version: 9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0
-  resolution: "superfly-timeline@npm:9.0.0-nightly-wip-big-rewrite-20230818-064242-241b192.0"
-  dependencies:
-    tslib: ^2.6.0
-  checksum: fdf314addf4c95579ad9d534e24b48154696e516e158b5bd06c894f8a74fd73ab03287e2bb948a4bb581fba49562c24bd8f3d7e180dc16589f3552461e0184cb
-  languageName: node
-  linkType: hard
-
-"superfly-timeline@npm:^9.0.0":
+"superfly-timeline@npm:9.0.0, superfly-timeline@npm:^9.0.0":
   version: 9.0.0
   resolution: "superfly-timeline@npm:9.0.0"
   dependencies:
