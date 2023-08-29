@@ -3,15 +3,11 @@ import * as _ from 'underscore'
 import { PieceUi } from '../../../SegmentTimeline/SegmentTimelineContainer'
 import { RundownUtils } from '../../../../lib/rundown'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import {
-	ConfigManifestEntry as BlueprintConfigManifestEntry,
-	IBlueprintActionTriggerMode,
-} from '@sofie-automation/blueprints-integration'
+import { IBlueprintActionTriggerMode } from '@sofie-automation/blueprints-integration'
 import { MeteorReactComponent } from '../../../../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { AdLibActionCommon } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { createInMemorySyncMongoCollection } from '../../../../../lib/collections/lib'
-import { ConfigManifestEntryComponent } from '../../../Settings/components/ConfigManifestEntryComponent'
 import { Spinner } from '../../../../lib/Spinner'
 import InspectorTitle from './InspectorTitle'
 import { ProtectedString } from '../../../../../lib/lib'
@@ -153,27 +149,6 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((props: IProps) =
 			const action = (piece as AdLibPieceUi).adlibAction
 
 			return action
-		}
-
-		renderConfigFields(configManifest: Array<BlueprintConfigManifestEntry>, obj: any, prefix?: string) {
-			const { t } = this.props
-
-			return configManifest.length ? (
-				<div>
-					{configManifest.map((configField) => (
-						<ConfigManifestEntryComponent
-							key={configField.id}
-							collection={LocalActionItems}
-							configField={configField}
-							obj={obj}
-							prefix={prefix}
-							className=""
-						/>
-					))}
-				</div>
-			) : (
-				<span>{t('AdLib does not provide any options')}</span>
-			)
 		}
 
 		onRevealSelectedItem = () => {
