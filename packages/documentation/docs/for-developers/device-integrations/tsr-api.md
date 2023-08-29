@@ -1,6 +1,6 @@
 # TSR Integration API
 
-*Note: there is a legacy API for integrations. In this documentation we will only consider the more modern variant informally known as the StateHandler format*
+*Note: there is a legacy API for integrations. In this documentation we will only consider the more modern variant informally known as the StateHandler format.*
 
 ## Setup and status
 
@@ -10,9 +10,9 @@ Regarding status there are 2 important methods to be implemented, one is a gette
 
 ## State and commands
 
-The second part is where the bulk of the work happens. First your implementation for `convertTimelineStateToDeviceState` will be called with a Timeline State and the mappings for your integration. You are ought to return a "Device State" here which is an object representing the state of your device as inferred from the Timeline State and mappings. Then the next implementation is  of the `diffStates` mathod, which will be called with 2 Device States as you've generated them earlier. The purpose of this method is to generate commands to transition from Device State A to Device State B. Hence it is called a "diff". The last important method here is `sendCommand` which will be called with the commands you've generated earlier when the TSR wants to transitition from State A to State B.
+The second part is where the bulk of the work happens. First your implementation for `convertTimelineStateToDeviceState` will be called with a Timeline State and the mappings for your integration. You are ought to return a "Device State" here which is an object representing the state of your device as inferred from the Timeline State and mappings. Then the next implementation is  of the `diffStates` method, which will be called with 2 Device States as you've generated them earlier. The purpose of this method is to generate commands such that a state change from Device State A to Device State B can be executed. Hence it is called a "diff". The last important method here is `sendCommand` which will be called with the commands you've generated earlier when the TSR wants to transitition from State A to State B.
 
-The last thing to implement is the `actions` property. You can leave it as an empty object initially or read more about it in ....
+Another thing to implement is the `actions` property. You can leave it as an empty object initially or read more about it in [TSR Actions](./tsr-actions.md).
 
 ## Logging and emitting events
 
