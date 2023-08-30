@@ -174,9 +174,8 @@ function resolvePieceTimeline(
 	// Clamp the times to be reasonably valid
 	resolvedPieces.forEach((resolvedPiece) => {
 		resolvedPiece.resolvedStart = Math.max(0, resolvedPiece.resolvedStart - 1)
-		resolvedPiece.resolvedDuration = resolvedPiece.resolvedDuration
-			? Math.max(0, resolvedPiece.resolvedDuration)
-			: undefined
+		resolvedPiece.resolvedDuration =
+			resolvedPiece.resolvedDuration !== undefined ? Math.max(0, resolvedPiece.resolvedDuration) : undefined
 	})
 
 	return resolvedPieces
