@@ -1,6 +1,6 @@
 ---
 title: Publications
-sidebar_position: 10
+sidebar_position: 12
 ---
 
 To ensure that the UI of Sofie is reactive, we are leveraging publications over the DDP connection that Meteor provides.  
@@ -40,4 +40,4 @@ This makes it more suitable for a custom publication, where we can more easily a
 
 ## Live Status Gateway
 
-The Live Status Gateway was introduced to Sofie in Release50. This gateway serves as a way for an external system to subscribe to publications which are designed to be simpler than the ones we publish over DDP. These publications are intended to be used by external systems which need a 'stable' API and to not have too much knowledge about the inner workings of Sofie.
+The Live Status Gateway was introduced to Sofie in Release50. This gateway serves as a way for an external system to subscribe to publications which are designed to be simpler than the ones we publish over DDP. These publications are intended to be used by external systems which need a 'stable' API and to not have too much knowledge about the inner workings of Sofie. See [Api Stability](./api-stability.md) for more details.
