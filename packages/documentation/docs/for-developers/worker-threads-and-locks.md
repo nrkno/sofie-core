@@ -44,7 +44,11 @@ process.
 #### PlaylistLock
 
 This lock gives ownership of a specific `RundownPlaylist`. It is required to be able to load a `CacheForPlayout`, and
-must held during other times where the `RundownPlaylist` is modified or is expected to not change.
+must be held during other times where the `RundownPlaylist` is modified or is expected to not change.
+
+This lock must be held while writing any changes to either a `RundownPlaylist` or any `Rundown` that belong to the
+`RundownPlaylist`. This ensures that any writes to MongoDB are atomic, and that Sofie doesn't start performing a
+playout operation halfway through an ingest operation saving.
 
 #### RundownLock
 
