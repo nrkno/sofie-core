@@ -37,3 +37,7 @@ A brief overview of this publication, is that it looks at each Piece in a Rundow
 To do this on the client meant needing to subscribe to the whole contents of a couple of MongoDB collections, as it is not easy to determine which documents will be needed until the check is being run. This caused some issues as these collections could get rather large. We also did not always have every Piece loaded in the UI, so had to defer some of the computation to the backend via polling.
 
 This makes it more suitable for a custom publication, where we can more easily and cheaply do this computation without being concerned about causing UI lockups and with less concern about memory pressure. Performing very granular MongoDB queries is also cheaper. The result is that we build a graph of what other documents are used for the status of each Piece, so we can cheaply react to changes to any of those documents, while also watching for changes to the pieces.
+
+## Live Status Gateway
+
+The Live Status Gateway was introduced to Sofie in Release50. This gateway serves as a way for an external system to subscribe to publications which are designed to be simpler than the ones we publish over DDP. These publications are intended to be used by external systems which need a 'stable' API and to not have too much knowledge about the inner workings of Sofie.
