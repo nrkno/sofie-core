@@ -614,40 +614,11 @@ export namespace RundownUtils {
 				return partE
 			})
 
-			// resolve the duration of a Piece to be used for display
-			const resolveDuration = (item: PieceExtended, nowInPart: number): number => {
-				if (item.instance.userDuration && item.instance.plannedStartedPlayback) {
-					const end =
-						'endRelativeToPart' in item.instance.userDuration
-							? item.instance.userDuration.endRelativeToPart
-							: item.instance.userDuration.endRelativeToNow + nowInPart
-
-					const duration = end - item.instance.plannedStartedPlayback
-					if (duration) return duration
-				}
-
-				const expectedDurationNumber =
-					typeof item.instance.piece.enable.duration === 'number'
-						? item.instance.piece.enable.duration || 0
-						: 0
-				return item.renderedDuration || expectedDurationNumber
-			}
-
 			// let lastPartPiecesBySourceLayer: Record<string, PieceExtended> = {}
 
 			partsE.forEach((part) => {
 				// const thisLastPartPiecesBySourceLayer: Record<string, PieceExtended> = {}
 				if (part.pieces) {
-					const partStarted = part.instance.timings?.plannedStartedPlayback
-					const nowInPart = partStarted ? getCurrentTime() - partStarted : 0
-
-					// if an item is continued by another item, rendered duration may need additional resolution
-					part.pieces.forEach((item) => {
-						if (item.continuedByRef) {
-							item.renderedDuration = resolveDuration(item, nowInPart)
-						}
-					})
-
 					const itemsByLayer = Object.entries<PieceExtended[]>(
 						_.groupBy(part.pieces, (item) => {
 							return item.outputLayer && item.sourceLayer && item.outputLayer.isFlattened
