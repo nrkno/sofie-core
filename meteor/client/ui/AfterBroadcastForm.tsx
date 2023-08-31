@@ -8,6 +8,7 @@ import { SnapshotId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DropdownInputControl, DropdownInputOption, getDropdownInputOptions } from '../lib/Components/DropdownInput'
 import { MultiLineTextInputControl } from '../lib/Components/MultiLineTextInput'
 import { TextInputControl } from '../lib/Components/TextInput'
+import { Spinner } from '../lib/Spinner'
 
 type ProblemType = 'nothing' | 'minor' | 'major'
 
@@ -29,23 +30,25 @@ export function AfterBroadcastForm({ playlist }: { playlist: RundownPlaylist }):
 	const [problems, setProblems] = useState<ProblemType>(DEFAULT_STATE.problems)
 	const [description, setDescription] = useState<string[]>(DEFAULT_STATE.description.slice())
 	const [userName, setUserName] = useState<string>(DEFAULT_STATE.userName)
-	const [formLocked, setFormLocked] = useState(false)
+	const [busy, setBusy] = useState(false)
 
 	function resetForm() {
 		setProblems(DEFAULT_STATE.problems)
 		setDescription(DEFAULT_STATE.description.slice())
 		setUserName(DEFAULT_STATE.userName)
-		setFormLocked(false)
+		setBusy(false)
 	}
 
 	function saveForm(e: React.MouseEvent<HTMLElement>) {
-		setFormLocked(true)
+		setBusy(true)
 
 		const answers = {
 			q0: problems,
 			q1: description.join('\n'),
 			q2: userName,
 		}
+
+		e.persist()
 
 		const saveEvaluation = (snapshotId?: SnapshotId) => {
 			const evaluation: EvaluationBase = {
@@ -108,7 +111,7 @@ export function AfterBroadcastForm({ playlist }: { playlist: RundownPlaylist }):
 								value={problems}
 								options={problemOptions}
 								handleUpdate={setProblems}
-								disabled={formLocked}
+								disabled={busy}
 							/>
 						</div>
 					</div>
@@ -119,19 +122,22 @@ export function AfterBroadcastForm({ playlist }: { playlist: RundownPlaylist }):
 							)}
 						</p>
 						<div className="input">
-							<MultiLineTextInputControl value={description} handleUpdate={setDescription} disabled={formLocked} />
+							<MultiLineTextInputControl value={description} handleUpdate={setDescription} disabled={busy} />
 						</div>
 					</div>
 					<div className="question q2">
 						<p>{t('Your name')}</p>
 						<div className="input">
-							<TextInputControl value={userName} handleUpdate={setUserName} disabled={formLocked} />
+							<TextInputControl value={userName} handleUpdate={setUserName} disabled={busy} />
 						</div>
 					</div>
 
-					<button className="btn btn-primary" onClick={saveForm} disabled={formLocked}>
-						{!shouldDeactivateRundown ? t('Save message') : t('Save message and Deactivate Rundown')}
-					</button>
+					<div>
+						<button className="btn btn-primary" onClick={saveForm} disabled={busy}>
+							{!shouldDeactivateRundown ? t('Save message') : t('Save message and Deactivate Rundown')}
+						</button>
+						{busy ? <Spinner className="afterbroadcastform-spinner" size="small" /> : null}
+					</div>
 				</div>
 			</div>
 		</div>
