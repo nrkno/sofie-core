@@ -9820,10 +9820,10 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.5.0:
-  version "7.5.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.5.0.tgz#122b4ec78b99b45665ff74f0f7d184a2866123ab"
-  integrity sha512-K9vp91tVX+F2mTOY37ZX9zmzn28KYUdwMm4p05s9LxfCsZCJEUQLZ1oBQN5mzhFL+06UJceEdflUoG2Y4WFhpQ==
+timeline-state-resolver-types@7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-100603-c11801a1f.0:
+  version "7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-100603-c11801a1f.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-100603-c11801a1f.0.tgz#6b478528ee16bf755088bc26ccae470e7d8c575d"
+  integrity sha512-O/JWsmr3NexWUu12UL1Pwgw3+L66/D5nvXlXH2wcMNhlW4zZZu+2h9k9AhaRpMfQtKEmc9VrsKF9borqG75xyA==
   dependencies:
     tslib "^2.3.1"
 

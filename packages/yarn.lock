@@ -3307,10 +3307,10 @@
     webpack-sources "^3.2.2"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "1.47.1-1"
+  version "1.47.5"
   dependencies:
     "@sofie-automation/shared-lib" "link:shared-lib"
-    timeline-state-resolver-types "7.5.0"
+    timeline-state-resolver-types "7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-154753-028167ae7.0"
     tslib "^2.4.0"
     type-fest "^2.19.0"
 
@@ -3335,7 +3335,7 @@
     shelljs "^0.8.5"
 
 "@sofie-automation/corelib@link:corelib":
-  version "1.47.1-1"
+  version "1.47.5"
   dependencies:
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     "@sofie-automation/shared-lib" "link:shared-lib"
@@ -3351,7 +3351,7 @@
     underscore "^1.13.4"
 
 "@sofie-automation/shared-lib@link:shared-lib":
-  version "1.47.1-1"
+  version "1.47.5"
   dependencies:
     tslib "^2.4.0"
     type-fest "^2.19.0"
@@ -3599,9 +3599,10 @@
   resolved "https://registry.yarnpkg.com/@trysound/sax/-/sax-0.2.0.tgz#cccaab758af56761eb7bf37af6f03f326dd798ad"
   integrity sha512-L7z9BgrNEcYyUYtF+HaEfiS5ebkh9jXqbszz7pC0hRBPaatV0XjSD3+eHrpqFemQfgwiFF0QPIarnIihIDn7OA==
 
-"@tv2media/v-connection@git+https://github.com/nrkno/v-connection.git#5386986d87ea6d1b5164d206ea42c975654b36cd":
-  version "7.2.1"
-  resolved "git+https://github.com/nrkno/v-connection.git#5386986d87ea6d1b5164d206ea42c975654b36cd"
+"@tv2media/v-connection@7.3.0":
+  version "7.3.0"
+  resolved "https://registry.yarnpkg.com/@tv2media/v-connection/-/v-connection-7.3.0.tgz#1d6bed97a386d59b618b272ffd5867feb84cb284"
+  integrity sha512-rGg+rLS+Q69YuYgg8XfMD8ZiBr+zUlTNIQyTOFbOwnbV3ycBn+G0WDpNXuo6R73r5svh4BtCr+yapenUPO3jxg==
   dependencies:
     request "^2.88.2"
     request-promise-native "^1.0.9"
@@ -14354,19 +14355,19 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.5.0:
-  version "7.5.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.5.0.tgz#122b4ec78b99b45665ff74f0f7d184a2866123ab"
-  integrity sha512-K9vp91tVX+F2mTOY37ZX9zmzn28KYUdwMm4p05s9LxfCsZCJEUQLZ1oBQN5mzhFL+06UJceEdflUoG2Y4WFhpQ==
+timeline-state-resolver-types@7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-154753-028167ae7.0:
+  version "7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-154753-028167ae7.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-154753-028167ae7.0.tgz#85b5438468882e50f7408a7132c70cb79a6ace14"
+  integrity sha512-L5cXHkyJZBAR4bp/S9Wn5Dp2alSPTxzN2j6x9ZsoQODml37yvGZT0gEYH5qx8MtqFQeRztTocYUQWI9DUIGtbw==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@7.5.0:
-  version "7.5.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.5.0.tgz#ee885336648e7ecac9dc700bb5d42cdcbb5e2d09"
-  integrity sha512-cBwQXLxKK+r77ldDhvwhLzfA9UQwbCb7EVf2mxoYvV9xq+4tbRIZSIkCA9nNOONVFfDDAcwSJDP/ruXVZz6bHA==
+timeline-state-resolver@7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-154753-028167ae7.0:
+  version "7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-154753-028167ae7.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-154753-028167ae7.0.tgz#b981b984bd10bbfb4c4cabffe5441ccf5f599e48"
+  integrity sha512-qE210nRPJnr6EGznxyz0CqjT1lbc+U+pZ1Fa5EdJ89bS1jxL8Yx9HUqnG1GygWdLb6s33DxCbe+x6wrQR8hBmg==
   dependencies:
-    "@tv2media/v-connection" "git+https://github.com/nrkno/v-connection.git#5386986d87ea6d1b5164d206ea42c975654b36cd"
+    "@tv2media/v-connection" "7.3.0"
     atem-connection "2.4.0"
     atem-state "^0.12.2"
     casparcg-connection "^5.1.0"
@@ -14386,7 +14387,7 @@ timeline-state-resolver@7.5.0:
     sprintf-js "^1.1.2"
     superfly-timeline "^8.3.1"
     threadedclass "^1.1.1"
-    timeline-state-resolver-types "7.5.0"
+    timeline-state-resolver-types "7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-154753-028167ae7.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.5"
     underscore "^1.13.4"
