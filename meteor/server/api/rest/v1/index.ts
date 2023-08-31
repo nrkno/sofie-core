@@ -44,7 +44,7 @@ class APIContext implements ServerAPIContext {
 		}
 	}
 
-	public getCredentials(_connection: Meteor.Connection): Credentials {
+	public getCredentials(): Credentials {
 		return { userId: null }
 	}
 }

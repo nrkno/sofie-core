@@ -24,5 +24,5 @@ export interface APIFactory<T> {
 
 export interface ServerAPIContext {
 	getMethodContext(connection: Meteor.Connection): MethodContextAPI
-	getCredentials(_connection: Meteor.Connection): Credentials
+	getCredentials(): Credentials
 }

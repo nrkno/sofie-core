@@ -181,10 +181,7 @@ class StudiosServerAPI implements StudiosRestAPI {
 				check(routeSetId, String)
 				check(state, Boolean)
 
-				const access = await StudioContentWriteAccess.routeSet(
-					this.context.getCredentials(connection),
-					studioId
-				)
+				const access = await StudioContentWriteAccess.routeSet(this.context.getCredentials(), studioId)
 				return ServerPlayoutAPI.switchRouteSet(access, routeSetId, state)
 			}
 		)
