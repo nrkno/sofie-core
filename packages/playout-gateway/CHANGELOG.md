@@ -3,6 +3,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [1.47.6-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.5...v1.47.6-0) (2023-09-01)
+
+
+### Bug Fixes
+
+* **playout-gw:** error serialisation for logging ([9f27bd5](https://github.com/nrkno/tv-automation-server-core/commit/9f27bd53a0dd680b6346e8c31085703d56846728))
+* **playout-gw:** init device settings on startup ([009ec6c](https://github.com/nrkno/tv-automation-server-core/commit/009ec6c069bfde4edc2d826d24fbd535e414201b))
+* **playout-gw:** logs from console.log ([ee8001b](https://github.com/nrkno/tv-automation-server-core/commit/ee8001b5c15d36fe2714d4171d7a2dd91e27d203))
+
+
+
+
+
 ## [1.47.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.5-0...v1.47.5) (2023-06-27)
 
 **Note:** Version bump only for package playout-gateway
