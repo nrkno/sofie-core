@@ -3310,7 +3310,7 @@
   version "1.47.5"
   dependencies:
     "@sofie-automation/shared-lib" "link:shared-lib"
-    timeline-state-resolver-types "7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-154753-028167ae7.0"
+    timeline-state-resolver-types "7.5.1-nightly-release47-20230901-122602-a1541133a.0"
     tslib "^2.4.0"
     type-fest "^2.19.0"
 
@@ -14355,17 +14355,17 @@ timecode@0.0.4:
   resolved "https://registry.yarnpkg.com/timecode/-/timecode-0.0.4.tgz#cdea9d2352009700e50da657cb7fb7c1720f5704"
   integrity sha512-xFVZlWnqls5eVphtUJo0UuXeJa0grBmxESSn5QPQB7CMsaVgTnLdP9PTZqb4KyFmLdrE+PUu3eEt42zHsMxCtw==
 
-timeline-state-resolver-types@7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-154753-028167ae7.0:
-  version "7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-154753-028167ae7.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-154753-028167ae7.0.tgz#85b5438468882e50f7408a7132c70cb79a6ace14"
-  integrity sha512-L5cXHkyJZBAR4bp/S9Wn5Dp2alSPTxzN2j6x9ZsoQODml37yvGZT0gEYH5qx8MtqFQeRztTocYUQWI9DUIGtbw==
+timeline-state-resolver-types@7.5.1-nightly-release47-20230901-122602-a1541133a.0:
+  version "7.5.1-nightly-release47-20230901-122602-a1541133a.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-7.5.1-nightly-release47-20230901-122602-a1541133a.0.tgz#f830ac39505a0797df228b7848e5af672814505d"
+  integrity sha512-bqAN7I76R5/uxa+1IooN6kSbO3mM8h2Zn+vGnpAN3sinfP7ZHyuKWjJb0qcq25jhHzQ5gDfKBXSsuJFnCUXlwA==
   dependencies:
     tslib "^2.3.1"
 
-timeline-state-resolver@7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-154753-028167ae7.0:
-  version "7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-154753-028167ae7.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-154753-028167ae7.0.tgz#b981b984bd10bbfb4c4cabffe5441ccf5f599e48"
-  integrity sha512-qE210nRPJnr6EGznxyz0CqjT1lbc+U+pZ1Fa5EdJ89bS1jxL8Yx9HUqnG1GygWdLb6s33DxCbe+x6wrQR8hBmg==
+timeline-state-resolver@7.5.1-nightly-release47-20230901-122602-a1541133a.0:
+  version "7.5.1-nightly-release47-20230901-122602-a1541133a.0"
+  resolved "https://registry.yarnpkg.com/timeline-state-resolver/-/timeline-state-resolver-7.5.1-nightly-release47-20230901-122602-a1541133a.0.tgz#cafe75378d0b90320f8b50c7e99eaa5cd3f60d75"
+  integrity sha512-QX2ugIz0MT0/J5wQIyK/9btOV7H596ZhWy8WAaz4O9opM59oGg55/mZSX0uuJIqe1DUvQpXlJgkYWo6Q0oeBwQ==
   dependencies:
     "@tv2media/v-connection" "7.3.0"
     atem-connection "2.4.0"
@@ -14387,7 +14387,7 @@ timeline-state-resolver@7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-r
     sprintf-js "^1.1.2"
     superfly-timeline "^8.3.1"
     threadedclass "^1.1.1"
-    timeline-state-resolver-types "7.5.1-nightly-SOFIE-2576-r-1-47-5-sisyfos-use-multiple-restarts-to-create-stable-connection-20230831-154753-028167ae7.0"
+    timeline-state-resolver-types "7.5.1-nightly-release47-20230901-122602-a1541133a.0"
     tslib "^2.3.1"
     tv-automation-quantel-gateway-client "^2.0.5"
     underscore "^1.13.4"
