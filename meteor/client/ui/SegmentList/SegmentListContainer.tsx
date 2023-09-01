@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react'
 import { Meteor } from 'meteor/meteor'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { PubSub } from '../../../lib/api/pubsub'
+import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { PartInstances } from '../../../lib/collections/PartInstances'
 import { Parts } from '../../../lib/collections/Parts'
 import { Segments } from '../../../lib/collections/Segments'
@@ -88,7 +88,7 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 			},
 		})
 		segment &&
-			Meteor.subscribe(PubSub.pieces, {
+			meteorSubscribe(PubSub.pieces, {
 				invalid: {
 					$ne: true,
 				},

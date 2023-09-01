@@ -19,7 +19,9 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 			const id = name + '_' + stringifyObjects(args)
 
 			const callbacks = {
-				onError: console.error,
+				onError: (...errs: any[]) => {
+					console.error('MeteorReactComponent: Error when subscribing', name, ...args, ...errs)
+				},
 			}
 			if (Tracker.active) {
 				// if in a reactive context, Meteor will keep track of duplicates of subscriptions
