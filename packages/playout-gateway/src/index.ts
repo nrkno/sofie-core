@@ -31,8 +31,7 @@ if (logPath) {
 	console.log = function (...args: any[]) {
 		// orgConsoleLog('a')
 		if (args.length >= 1) {
-			// @ts-expect-error one or more arguments
-			logger.debug(...args)
+			logger.debug(args.join(' '), { rawData: args })
 			orgConsoleLog(...args)
 		}
 	}
@@ -62,8 +61,7 @@ if (logPath) {
 	console.log = function (...args: any[]) {
 		// orgConsoleLog('a')
 		if (args.length >= 1) {
-			// @ts-expect-error one or more arguments
-			logger.debug(...args)
+			logger.debug(args.join(' '), { rawData: args })
 		}
 	}
 }
