@@ -22,7 +22,7 @@ import {
 	RundownPlaylistActivationId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { PartEventContext, RundownContext } from '../blueprints/context'
+import { CommonContext, PartEventContext, RundownContext } from '../blueprints/context'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { innerStopPieces } from './adlibUtils'
 import { reportPartInstanceHasStarted, reportPartInstanceHasStopped } from './timings/partPlayback'
@@ -32,6 +32,9 @@ import { convertPartInstanceToBlueprints, convertResolvedPieceInstanceToBlueprin
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { TakeNextPartProps } from '@sofie-automation/corelib/dist/worker/studio'
 import { runJobWithPlayoutCache } from './lock'
+import { executeActionInner } from './adlibAction'
+import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
+import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 /**
  * Take the currently Next:ed Part (start playing it)
@@ -79,6 +82,59 @@ export async function handleTakeNextPart(context: JobContext, data: TakeNextPart
 				throw UserError.create(UserErrorMessage.TakeRateLimit, {
 					duration: context.studio.settings.minimumTakeSpan,
 				})
+			}
+
+			const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+
+			const currentOrNextPartInstance = nextPartInstance || currentPartInstance
+			if (!currentOrNextPartInstance) throw new Error(`No partInstance could be found!`)
+			const currentRundown = currentOrNextPartInstance
+				? cache.Rundowns.findOne(currentOrNextPartInstance.rundownId)
+				: undefined
+			if (!currentRundown) throw new Error(`Rundown "${currentOrNextPartInstance?.rundownId ?? ''}" could not be found!`)
+
+			const showStyle = await context.getShowStyleCompound(currentRundown.showStyleVariantId, currentRundown.showStyleBaseId)
+			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
+
+			if (blueprint.blueprint.getTakeActionId) {
+				const watchedPackages = await WatchedPackagesHelper.create(context, context.studio._id, {
+					pieceId: null,
+					fromPieceType: {
+						$in: [ExpectedPackageDBType.ADLIB_ACTION, ExpectedPackageDBType.BASELINE_ADLIB_ACTION],
+					},
+				})
+
+				try {
+					await executeActionInner(
+						context,
+						cache,
+						currentRundown,
+						showStyle,
+						blueprint,
+						watchedPackages,
+						{
+							actionId: blueprint.blueprint.getTakeActionId(new CommonContext(
+								{
+									name: 'getTakeActionId',
+									identifier: `playlist=${playlist._id},currentPartInstance=${
+										currentPartInstance?._id
+									},nextPartInstance=${
+										nextPartInstance?._id
+									},execution=${getRandomId()}`,
+								},
+							)),
+							userData: {},
+							triggerMode: undefined,
+						}
+					)
+	
+					await cache.saveAllToDatabase()
+	
+				} catch (err) {
+					cache.dispose()
+					throw err
+				}
+				return
 			}
 
 			return performTakeToNextedPart(context, cache, now)

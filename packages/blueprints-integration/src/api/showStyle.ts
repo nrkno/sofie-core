@@ -154,6 +154,12 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	onPreTake?: (context: IPartEventContext) => Promise<void>
 	onPostTake?: (context: IPartEventContext) => Promise<void>
 
+	/**
+	 * Called just before a take action to override the default take behaviour and allow an AdLib action to control the take.
+	 * You must call 'context.takeAfterExecuteAction(true)' to ensure the take occurs.
+	 **/
+	getTakeActionId?: (context: ICommonContext) => string
+
 	/** Called after the timeline has been generated, used to manipulate the timeline */
 	onTimelineGenerate?: (
 		context: ITimelineEventContext,
