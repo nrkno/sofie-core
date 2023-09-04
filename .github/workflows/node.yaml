@@ -17,6 +17,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -54,6 +56,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -94,6 +98,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Determine if images should be published to DockerHub
         id: dockerhub
         run: |
@@ -211,6 +217,7 @@ jobs:
           provenance: false
           labels: ${{ steps.ghcr-tag.outputs.labels }}
           tags: "${{ steps.ghcr-tag.outputs.tags }}"
+          github-token: ${{ github.token }}
       - name: Build and push to DockerHub
         if: steps.check-build-and-push.outputs.enable == 'true' && steps.dockerhub.outputs.dockerhub-publish == '1'
         uses: docker/build-push-action@v4
@@ -220,7 +227,33 @@ jobs:
           push: true
           provenance: false
           labels: ${{ steps.dockerhub-tag.outputs.labels }}
-          tags: "${{ steps.dockerhub-tag.outputs.tags }}"
+          tags: ${{ steps.dockerhub-tag.outputs.tags }}
+      - name: Get image for Trivy scanning
+        id: trivy-image
+        if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
+        run: |
+          image=$(echo ${{ steps.ghcr-tag.outputs.tags }} | head -n 1)
+          echo "image=$image" >> $GITHUB_OUTPUT
+      - name: Trivy scanning
+        if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
+        uses: aquasecurity/trivy-action@0.12.0
+        with:
+          image-ref: '${{ steps.trivy-image.outputs.image }}'
+          format: 'table'
+          output: trivy-scan-result.txt
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+      - name: Post all Trivy scan results to Github Summary as a table
+        if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
+        env:
+          CODE_BLOCK: "```"
+        run: |
+          echo "# Trivy scan results ~ core" >> $GITHUB_STEP_SUMMARY
+
+          echo $CODE_BLOCK >> $GITHUB_STEP_SUMMARY
+          cat trivy-scan-result.txt >> $GITHUB_STEP_SUMMARY
+          echo $CODE_BLOCK >> $GITHUB_STEP_SUMMARY
+
 
   build-gateways:
     # TODO - should this be dependant on tests or something passing if we are on a tag?
@@ -235,6 +268,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Determine if images should be published to DockerHub
         id: dockerhub
         run: |
@@ -343,6 +378,31 @@ jobs:
           provenance: false
           labels: ${{ steps.dockerhub-tag.outputs.labels }}
           tags: "${{ steps.dockerhub-tag.outputs.tags }}"
+      - name: Get image for Trivy scanning
+        id: trivy-image
+        if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
+        run: |
+          image=$(echo ${{ steps.ghcr-tag.outputs.tags }} | head -n 1)
+          echo "image=$image" >> $GITHUB_OUTPUT
+      - name: Trivy scanning
+        if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
+        uses: aquasecurity/trivy-action@0.12.0
+        with:
+          image-ref: '${{ steps.trivy-image.outputs.image }}'
+          format: 'table'
+          output: ${{ matrix.gateway-name }}-trivy-scan-result.txt
+          ignore-unfixed: true
+          severity: 'CRITICAL,HIGH'
+      - name: Post all Trivy scan results to Github Summary as a table
+        if: steps.check-build-and-push.outputs.enable == 'true' && steps.check-ghcr.outputs.enable == 'true' && steps.ghcr-tag.outputs.tags != 0
+        env:
+          CODE_BLOCK: "```"
+        run: |
+          echo "# Trivy scan results ~ ${{ matrix.gateway-name }}" >> $GITHUB_STEP_SUMMARY
+
+          echo $CODE_BLOCK >> $GITHUB_STEP_SUMMARY
+          cat ${{ matrix.gateway-name }}-trivy-scan-result.txt >> $GITHUB_STEP_SUMMARY
+          echo $CODE_BLOCK >> $GITHUB_STEP_SUMMARY
 
   lint-packages:
     name: Lint Package
@@ -366,6 +426,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -427,6 +489,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Use Node.js ${{ matrix.node-version }}
         uses: actions/setup-node@v3
         with:
@@ -463,6 +527,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -516,6 +582,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -582,6 +650,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:

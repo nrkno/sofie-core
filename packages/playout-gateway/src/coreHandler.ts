@@ -134,6 +134,9 @@ export class CoreHandler {
 		observer.added = (id: string) => this.onDeviceChanged(protectString(id))
 		observer.changed = (id: string) => this.onDeviceChanged(protectString(id))
 		this.setupObserverForPeripheralDeviceCommands(this)
+
+		// trigger this callback because the observer doesn't the first time..
+		this.onDeviceChanged(this.core.deviceId)
 	}
 	async destroy(): Promise<void> {
 		this._statusDestroyed = true

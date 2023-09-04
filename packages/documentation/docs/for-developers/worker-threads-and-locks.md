@@ -3,7 +3,7 @@ title: Worker Threads & Locks
 sidebar_position: 9
 ---
 
-Starting with v1.40.0 (_[Release 40](/sofie-core/docs/releases#release-40)_), the core logic of Sofie is split across
+Starting with v1.40.0 (Release 40), the core logic of Sofie is split across
 multiple threads. This has been done to minimise performance bottlenecks such as ingest changes delaying takes. In its
 current state, it should not impact deployment of Sofie.
 
@@ -44,7 +44,11 @@ process.
 #### PlaylistLock
 
 This lock gives ownership of a specific `RundownPlaylist`. It is required to be able to load a `CacheForPlayout`, and
-must held during other times where the `RundownPlaylist` is modified or is expected to not change.
+must be held during other times where the `RundownPlaylist` is modified or is expected to not change.
+
+This lock must be held while writing any changes to either a `RundownPlaylist` or any `Rundown` that belong to the
+`RundownPlaylist`. This ensures that any writes to MongoDB are atomic, and that Sofie doesn't start performing a
+playout operation halfway through an ingest operation saving.
 
 #### RundownLock
 

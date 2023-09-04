@@ -41,7 +41,7 @@ export function calculateSessionTimeRanges(
 			)
 
 			// Note: multiple generated sessionIds for a single piece will not work as there will not be enough info to assign objects to different players. TODO is this still true?
-			const val = sessionRequests[sessionId] || undefined
+			const val = sessionRequests[sessionId]
 			if (val) {
 				// This session is already known, so extend the session to cover all the pieces
 				sessionRequests[sessionId] = {
@@ -105,7 +105,7 @@ export function calculateSessionTimeRanges(
 		if (!sessionRequests[grp.id]) {
 			result.push({
 				id: grp.id,
-				start: Number.POSITIVE_INFINITY, // Distant future
+				start: Number.MAX_SAFE_INTEGER, // Distant future
 				end: undefined,
 				lookaheadRank: i + 1, // This is so that we can easily work out which to use first
 				playerId: previousAssignmentMap[grp.id]?.playerId,

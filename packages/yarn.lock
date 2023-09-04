@@ -8595,9 +8595,9 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"atem-connection@npm:2.4.0":
-  version: 2.4.0
-  resolution: "atem-connection@npm:2.4.0"
+"atem-connection@npm:2.5.0":
+  version: 2.5.0
+  resolution: "atem-connection@npm:2.5.0"
   dependencies:
     big-integer: ^1.6.51
     eventemitter3: ^4.0.4
@@ -8606,20 +8606,20 @@ asn1@evs-broadcast/node-asn1:
     threadedclass: ^0.8.0
     tslib: ^1.13.0
     wavefile: ^8.4.4
-  checksum: 1dd43c87e44162582803147f57ed7bd9b18a3ac3b465adde51f155ad97d31aa1c441a0ca2d5d550a0f28a0f319e5d25c71c09f55590d9a16386afbb4b10023a6
+  checksum: beaaffceb729f16056b85fbcd711a371973905353e9c8cdf85a0732fa0ff7d89b11039ffb70a599f184d30042110c59fd695ee772b17580073746c5beeb07e5b
   languageName: node
   linkType: hard
 
-"atem-state@npm:^0.12.2":
-  version: 0.12.2
-  resolution: "atem-state@npm:0.12.2"
+"atem-state@npm:0.13.0":
+  version: 0.13.0
+  resolution: "atem-state@npm:0.13.0"
   dependencies:
     deepmerge: ^4.2.2
     tslib: ^2.3.1
     type-fest: ^1.4.0
   peerDependencies:
-    atem-connection: ~2.4
-  checksum: 1573b0b22978b811722736b9d1fd2b7217263251be4ef48603a3f715b23b668485e7878cd27582cec3dbe27ccc65f1785f767d2bef0ad9df9df2c5a15666d275
+    atem-connection: ~2.5
+  checksum: d6b912e6a6a8f2e8c1a101234b24687ef5b4a5ae6fb407479088c881af1ee4cd8882f6f56310d087bf006f5f432bb298306890b6af445e077e0526b5651fdee1
   languageName: node
   linkType: hard
 
