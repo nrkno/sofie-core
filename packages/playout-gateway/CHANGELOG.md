@@ -63,6 +63,15 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 # [1.48.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.48.0-in-testing.1) (2023-01-11)
 
 
+
+
+## [1.47.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.6-0...v1.47.6) (2023-09-04)
+
+
+
+
+## [1.47.6-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.5...v1.47.6-0) (2023-09-01)
+
 ### Bug Fixes
 
 * handle incomplete peripheralDeviceCommands ([40f691e](https://github.com/nrkno/tv-automation-server-core/commit/40f691e0e9fca1def233b67d2cd3f1cded7152ca))
@@ -83,6 +92,17 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 # [1.49.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.2...v1.49.0-in-testing.3) (2023-04-18)
+
+
+
+
+### Bug Fixes
+
+* **playout-gw:** error serialisation for logging ([9f27bd5](https://github.com/nrkno/tv-automation-server-core/commit/9f27bd53a0dd680b6346e8c31085703d56846728))
+* **playout-gw:** init device settings on startup ([009ec6c](https://github.com/nrkno/tv-automation-server-core/commit/009ec6c069bfde4edc2d826d24fbd535e414201b))
+* **playout-gw:** logs from console.log ([ee8001b](https://github.com/nrkno/tv-automation-server-core/commit/ee8001b5c15d36fe2714d4171d7a2dd91e27d203))
+
+
 
 
 

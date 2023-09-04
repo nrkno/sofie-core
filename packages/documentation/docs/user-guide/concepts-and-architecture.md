@@ -85,7 +85,7 @@ An AdLib isn't added to the Part in the GUI until it starts playing, instead you
 
 ## Views
 
-Being a web-based system, Sofie has a number of customisable, user-facing web [views](features/sofie-views) used for control and monitoring.
+Being a web-based system, Sofie has a number of customisable, user-facing web [views](features/sofie-views.md) used for control and monitoring.
 
 
 
@@ -126,7 +126,7 @@ The Timeline is a collection of timeline-objects, that together form a "target s
 
 The timeline-objects can be programmed to contain relative references to each other, so programming things like _"play this thing right after this other thing"_ is as easy as `{start: { #otherThing.end }}`
 
-The [Playout Gateway](../for-developers/libraries) picks up the timeline from Sofie&nbsp;Core and \(using the [TSR timeline-state-resolver](https://github.com/nrkno/sofie-timeline-state-resolver)\) controls the playout devices to make sure that they actually play what is intended.
+The [Playout Gateway](../for-developers/libraries.md) picks up the timeline from Sofie&nbsp;Core and \(using the [TSR timeline-state-resolver](https://github.com/nrkno/sofie-timeline-state-resolver)\) controls the playout devices to make sure that they actually play what is intended.
 
 ![Example of 2 objects in a timeline: The #video object, destined to play at a certain time, and #gfx0, destined to start 15 seconds into the video.](/img/docs/main/features/timeline.png)
 
@@ -159,7 +159,7 @@ _Sofie&nbsp;Core_ generates the timeline using:
 - The [Next:ed Part](#next-point-and-lookahead) and Parts that come after it \(the [Lookahead](#lookahead)\)
 - Any [AdLibs](#adlib-pieces) the user has manually selected to play
 
-The [**Playout Gateway**](../for-developers/libraries#gateways) then picks up the new timeline, and pipes it into the [\(TSR\) timeline-state-resolver](https://github.com/nrkno/sofie-timeline-state-resolver) library.
+The [**Playout Gateway**](../for-developers/libraries.md#gateways) then picks up the new timeline, and pipes it into the [\(TSR\) timeline-state-resolver](https://github.com/nrkno/sofie-timeline-state-resolver) library.
 
 The TSR then...
 

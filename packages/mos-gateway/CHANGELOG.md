@@ -80,6 +80,15 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 # [1.49.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.2...v1.49.0-in-testing.3) (2023-04-18)
 
 
+
+## [1.47.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.6-0...v1.47.6) (2023-09-04)
+
+
+
+## [1.47.6-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.5...v1.47.6-0) (2023-09-01)
+
+
+
 ## [1.47.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.5-0...v1.47.5) (2023-06-27)
 
 **Note:** Version bump only for package mos-gateway
