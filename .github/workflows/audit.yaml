@@ -12,6 +12,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -38,6 +40,8 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -76,6 +80,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:
@@ -105,6 +111,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        with:
+          persist-credentials: false
       - name: Use Node.js
         uses: actions/setup-node@v3
         with:

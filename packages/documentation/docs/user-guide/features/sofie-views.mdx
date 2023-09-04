@@ -54,7 +54,7 @@ Elements in the [Next point](#next-point) \(or beyond\) might be pre-loaded or "
 
 ### Storyboard Mode
 
-In the top-right corner of the Segment, there's a button controlling the display style of a given Segment. The default display style of a Segment can be indicated by the [Blueprints](../concepts-and-architecture#blueprints), but the User can switch to a different mode at any time. You can also change the display mode of all Segments at once, using a button in the bottom-right corner of the Rundown View.
+In the top-right corner of the Segment, there's a button controlling the display style of a given Segment. The default display style of a Segment can be indicated by the [Blueprints](../concepts-and-architecture.md#blueprints), but the User can switch to a different mode at any time. You can also change the display mode of all Segments at once, using a button in the bottom-right corner of the Rundown View.
 
 ![Storyboard Mode](/img/docs/main/storyboard.png)
 
@@ -70,7 +70,7 @@ Another mode available to display a Segment is the List View. In this mode, each
 
 ![List View Mode](/img/docs/main/list_view.png)
 
-In this mode, the focus is on the "main" Piece of the Part. Additional _Lower-Third_ content that is not spanning the entire Part (is not infinite) will be displayed on top of the main Piece. All other content can be displayed to the right of the mini-timeline as a set of indicators, one per every Layer. Clicking on those indicators will show a pop-up with the Pieces so that they can be investigated using _hover-scrub_. Indicators can be also shown for Ad-Libs assigned to a Part, for easier discovery by the User. Which Layers should be shown in the columns can be decided in the [Settings ● Layers](../configuration/settings-view#show-style) area. A special, larger indicator is reserved for the Script piece, which can be useful to display so-called _out-words_.
+In this mode, the focus is on the "main" Piece of the Part. Additional _Lower-Third_ content that is not spanning the entire Part (is not infinite) will be displayed on top of the main Piece. All other content can be displayed to the right of the mini-timeline as a set of indicators, one per every Layer. Clicking on those indicators will show a pop-up with the Pieces so that they can be investigated using _hover-scrub_. Indicators can be also shown for Ad-Libs assigned to a Part, for easier discovery by the User. Which Layers should be shown in the columns can be decided in the [Settings ● Layers](../configuration/settings-view.md#show-style) area. A special, larger indicator is reserved for the Script piece, which can be useful to display so-called _out-words_.
 
 If a Part has an _in-transition_ Piece, it will be displayed to the left of the Part's Take Point.
 
@@ -155,7 +155,7 @@ For the purpose of running the system in a studio environment, there are some ad
 
 ![Switchboard](/img/docs/main/switchboard.png)
 
-The Switchboard allows the producer to turn automation _On_ and _Off_ for sets of devices, as well as re-route automation control between devices - both with an active rundown and when no rundown is active in a [Studio](../concepts-and-architecture#system-organization-studio-and-show-style).
+The Switchboard allows the producer to turn automation _On_ and _Off_ for sets of devices, as well as re-route automation control between devices - both with an active rundown and when no rundown is active in a [Studio](../concepts-and-architecture.md#system-organization-studio-and-show-style).
 
 The Switchboard panel can be accessed from the Rundown View's right-hand Toolbar, by clicking on the Switchboard button, next to the Support panel button.
 
@@ -169,7 +169,7 @@ Technically, the switchboard activates and deactivates Route Sets. The Route Set
 
 ![Prompter View](/img/docs/main/features/prompter-example.png)
 
-A fullscreen page which displays the prompter text for the currently active rundown. The prompter can be controlled and configured in various ways, see more at the [Prompter](prompter) documentation. If no Rundown is active in a given studio, the [Screensaver](sofie-views#screensaver) will be displayed.
+A fullscreen page which displays the prompter text for the currently active rundown. The prompter can be controlled and configured in various ways, see more at the [Prompter](prompter.md) documentation. If no Rundown is active in a given studio, the [Screensaver](sofie-views.md#screensaver) will be displayed.
 
 ## Presenter View
 
@@ -177,7 +177,7 @@ A fullscreen page which displays the prompter text for the currently active rund
 
 ![Presenter View](/img/docs/main/features/presenter-screen-example.png)
 
-A fullscreen page, intended to be shown to the studio presenter. It displays countdown timers for the current and next items in the rundown. If no Rundown is active in a given studio, the [Screensaver](sofie-views#screensaver) will be shown.
+A fullscreen page, intended to be shown to the studio presenter. It displays countdown timers for the current and next items in the rundown. If no Rundown is active in a given studio, the [Screensaver](sofie-views.md#screensaver) will be shown.
 
 ### Presenter View Overlay
 
@@ -185,7 +185,7 @@ A fullscreen page, intended to be shown to the studio presenter. It displays cou
 
 ![Presenter View Overlay](/img/docs/main/features/presenter-screen-overlay-example.png)
 
-A fullscreen view with transparent background, intended to be shown to the studio presenter as an overlay on top of the produced PGM signal. It displays a reduced amount of the information from the regular [Presenter screen](sofie-views#presenter-view): the countdown to the end of the current Part, a summary preview \(type and name\) of the next item in the Rundown and the current time of day. If no Rundown is active it will show the name of the Studio.
+A fullscreen view with transparent background, intended to be shown to the studio presenter as an overlay on top of the produced PGM signal. It displays a reduced amount of the information from the regular [Presenter screen](sofie-views.md#presenter-view): the countdown to the end of the current Part, a summary preview \(type and name\) of the next item in the Rundown and the current time of day. If no Rundown is active it will show the name of the Studio.
 
 ## Camera Position View
 
@@ -305,9 +305,9 @@ The result of the operation. "Success" or an error message.
 When a broadcast is done, users can input feedback about how the show went in an evaluation form.
 
 :::info
-Evaluations can be configured to be sent to Slack, by setting the "Slack Webhook URL" in the [Settings View](../configuration/settings-view) under _Studio_.
+Evaluations can be configured to be sent to Slack, by setting the "Slack Webhook URL" in the [Settings View](../configuration/settings-view.md) under _Studio_.
 :::
 
 ## Settings View
 
-The [Settings View](../configuration/settings-view) is only available to users with the [Access Level](access-levels) set correctly.
+The [Settings View](../configuration/settings-view.md) is only available to users with the [Access Level](access-levels.md) set correctly.
