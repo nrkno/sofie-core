@@ -36,15 +36,15 @@ function sendErrorToCore(errorLog: LoggedError) {
 		})
 }
 
-function uncaughtErrorHandler(errorObj: any) {
+function uncaughtErrorHandler(errorObj: any, context: string) {
 	if (!errorObj) return // Nothing to report..
 
 	// To get the textual content of Error('my Error')
-	let stringContent: string
+	let stringContent = `${context}: `
 	if (Array.isArray(errorObj)) {
-		stringContent = errorObj.map((err) => stringifyError(err)).join(',')
+		stringContent += errorObj.map((err) => stringifyError(err)).join(',')
 	} else {
-		stringContent = stringifyError(errorObj)
+		stringContent += stringifyError(errorObj)
 	}
 
 	const caughtErrorStack = new Error('')
@@ -76,7 +76,7 @@ function uncaughtErrorHandler(errorObj: any) {
 const originalConsoleError = console.error
 console.error = (...args: any[]) => {
 	try {
-		uncaughtErrorHandler(args)
+		uncaughtErrorHandler(args, 'console.error')
 	} catch (e) {
 		// well, we can't do much then...
 	}
@@ -106,7 +106,7 @@ window.onerror = (event, source, line, col, error) => {
 	}
 
 	try {
-		uncaughtErrorHandler(errorObj)
+		uncaughtErrorHandler(errorObj, 'window.onerror')
 	} catch (e) {
 		// well, we can't do much if THAT goes wrong...
 		console.log('Error when trying to report an error', e, 'Original error', errorObj)
