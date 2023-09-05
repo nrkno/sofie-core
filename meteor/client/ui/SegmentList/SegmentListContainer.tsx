@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { PubSub } from '../../../lib/api/pubsub'
+import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import {
 	withResolvedSegment,
