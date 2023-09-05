@@ -43,6 +43,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { UIPieceContentStatuses, UISegmentPartNotes } from '../Collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { logger } from '../../../lib/logging'
 
 export const onRONotificationClick = new ReactiveVar<((e: RONotificationEvent) => void) | undefined>(undefined)
 export const reloadRundownPlaylistClick = new ReactiveVar<((e: any) => void) | undefined>(undefined)
@@ -646,7 +647,7 @@ class RundownViewNotifier extends WithManagedTracker {
 				}
 			})
 			.catch((err) => {
-				console.error(err)
+				logger.error(err)
 				const newNotification = new Notification(
 					'rundown_importVersions',
 					NoticeLevel.WARNING,

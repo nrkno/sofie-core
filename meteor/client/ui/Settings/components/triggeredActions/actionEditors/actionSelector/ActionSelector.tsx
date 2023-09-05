@@ -10,6 +10,7 @@ import { EditAttribute } from '../../../../../../lib/EditAttribute'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleRight, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { AdLibActionEditor } from './actionEditors/AdLibActionEditor'
+import { catchError } from '../../../../../../lib/lib'
 
 interface IProps {
 	action: SomeAction
@@ -438,7 +439,7 @@ export const ActionSelector = function ActionSelector({
 	}, [popperElement, referenceElement, opened])
 
 	useLayoutEffect(() => {
-		update && update().catch(console.error)
+		update && update().catch(catchError('ActionSelector update'))
 	}, [action])
 
 	const { t } = useTranslation()

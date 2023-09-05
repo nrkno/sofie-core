@@ -14,6 +14,7 @@ import { DBOrganizationBase } from '../../lib/collections/Organization'
 import { resetCredentials } from '../security/lib/credentials'
 import { OrganizationId, UserId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Organizations, Users } from '../collections'
+import { logger } from '../logging'
 
 async function enrollUser(email: string, name: string): Promise<UserId> {
 	triggerWriteAccessBecauseNoCheckNecessary()
@@ -25,7 +26,8 @@ async function enrollUser(email: string, name: string): Promise<UserId> {
 	try {
 		Accounts.sendEnrollmentEmail(unprotectString(id), email)
 	} catch (error) {
-		console.error('ERROR sending email enrollment', error)
+		logger.error('Accounts.sendEnrollmentEmail')
+		logger.error(error)
 	}
 
 	return id
@@ -66,7 +68,8 @@ async function sendVerificationEmail(userId: UserId) {
 			}
 		})
 	} catch (error) {
-		console.error('ERROR sending email verification', error)
+		logger.error('ERROR sending email verification')
+		logger.error(error)
 	}
 }
 

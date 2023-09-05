@@ -33,6 +33,7 @@ import { computeSegmentDuration, RundownTimingContext } from '../../lib/rundownT
 import { RundownViewShelf } from '../RundownView/RundownViewShelf'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PartInstances, Parts, Segments } from '../../collections'
+import { catchError } from '../../lib/lib'
 
 // Kept for backwards compatibility
 export { SegmentUi, PartUi, PieceUi, ISourceLayerUi, IOutputLayerUi } from '../SegmentContainer/withResolvedSegment'
@@ -225,7 +226,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			window.addEventListener('resize', this.onWindowResize)
 			this.updateMaxTimeScale()
 				.then(() => this.showEntireSegment())
-				.catch(console.error)
+				.catch(catchError('updateMaxTimeScale'))
 		}
 
 		componentDidUpdate(prevProps: IProps & ITrackedProps) {
@@ -348,7 +349,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			const budgetDuration = this.getSegmentBudgetDuration()
 
 			if (!isLiveSegment && this.props.parts !== prevProps.parts) {
-				this.updateMaxTimeScale().catch(console.error)
+				this.updateMaxTimeScale().catch(catchError('updateMaxTimeScale'))
 			}
 
 			if (!isLiveSegment && this.props.parts !== prevProps.parts && this.state.showingAllSegment) {
@@ -444,7 +445,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			if (this.state.showingAllSegment) {
 				this.updateMaxTimeScale()
 					.then(() => this.showEntireSegment())
-					.catch(console.error)
+					.catch(catchError('updateMaxTimeScale'))
 			}
 		}, 250)
 
@@ -500,7 +501,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 							livePosition: 0,
 						})
 					})
-					.catch(console.error)
+					.catch(catchError('updateMaxTimeScale'))
 			}
 		}
 
@@ -678,7 +679,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 				.then(() => {
 					this.onTimeScaleChange(this.getShowAllTimeScale())
 				})
-				.catch(console.error)
+				.catch(catchError('updateMaxTimeScale'))
 		}
 
 		onShowEntireSegment = () => {

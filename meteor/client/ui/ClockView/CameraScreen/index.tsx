@@ -20,7 +20,7 @@ import { useTranslation } from 'react-i18next'
 import { Spinner } from '../../../lib/Spinner'
 import { useBlackBrowserTheme } from '../../../lib/useBlackBrowserTheme'
 import { useWakeLock } from './useWakeLock'
-import { useDebounce } from '../../../lib/lib'
+import { catchError, useDebounce } from '../../../lib/lib'
 
 interface IProps {
 	playlist: RundownPlaylist | undefined
@@ -231,9 +231,7 @@ export function CameraScreen({ playlist, studioId }: IProps): JSX.Element | null
 				?.requestFullscreen({
 					navigationUI: 'hide',
 				})
-				.catch((e) => {
-					console.error(`Could not get fullscreen: ${e}`)
-				})
+				.catch(catchError('targetEl.requestFullscreen'))
 		}
 
 		document.documentElement.addEventListener('click', onCanvasClick)

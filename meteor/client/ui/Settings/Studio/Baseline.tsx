@@ -8,6 +8,7 @@ import { getHelpMode } from '../../../lib/localStorage'
 import { useTranslation } from 'react-i18next'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
+import { catchError } from '../../../lib/lib'
 
 interface IStudioBaselineStatusProps {
 	studioId: StudioId
@@ -25,7 +26,7 @@ export function StudioBaselineStatus({ studioId }: IStudioBaselineStatusProps): 
 					setNeedsUpdate(!!result)
 				})
 				.catch((err) => {
-					console.error('Failed to update studio baseline status', err)
+					catchError('playout.shouldUpdateStudioBaseline')(err)
 					setNeedsUpdate(false)
 				})
 		}
@@ -46,7 +47,7 @@ export function StudioBaselineStatus({ studioId }: IStudioBaselineStatusProps): 
 				setNeedsUpdate(!!result)
 			})
 			.catch((err) => {
-				console.error('Failed to update studio baseline', err)
+				catchError('playout.updateStudioBaseline')(err)
 				setNeedsUpdate(false)
 			})
 	}, [studioId])

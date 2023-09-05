@@ -10,6 +10,7 @@ import { MeteorCall } from '../../../lib/api/methods'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices } from '../../collections'
 import { eventContextForLog } from '../../../lib/clientUserAction'
+import { catchError } from '../../lib/lib'
 
 interface IDevicePackageManagerSettingsProps {
 	deviceId: PeripheralDeviceId
@@ -32,7 +33,7 @@ export const DevicePackageManagerSettings: React.FC<IDevicePackageManagerSetting
 				.then((result: Status) => setStatus(result))
 				.catch((error) => {
 					if (silent) {
-						console.error(error)
+						catchError('callBackgroundPeripheralDeviceFunction getExpetationManagerStatus')(error)
 						return
 					}
 

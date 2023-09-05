@@ -182,3 +182,12 @@ export function getEventTimestamp(e: Event): Time {
 }
 
 export const TOOLTIP_DEFAULT_DELAY = 0.5
+
+/**
+ * Returns a function that logs a console.error along with the context.
+ * @usage Instead of .catch(console.error), do .catch(catchError('myContext'))
+ *
+ */
+export function catchError(context: string): (...errs: any[]) => void {
+	return (...errs: any[]) => console.error(context, ...errs)
+}

@@ -51,6 +51,7 @@ import {
 	WithTiming,
 } from '../RundownView/RundownTiming/withTiming'
 import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
+import { logger } from '../../../lib/logging'
 
 interface IProps {
 	id: string
@@ -561,7 +562,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 
 	private onClickPartIdent = (partId: PartId) => {
 		scrollToPart(partId, false, true, true).catch((error) => {
-			if (!error.toString().match(/another scroll/)) console.error(error)
+			if (!error.toString().match(/another scroll/)) logger.error(error)
 		})
 	}
 

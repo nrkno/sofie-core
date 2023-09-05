@@ -19,6 +19,7 @@ import './lib/uncaughtErrorHandler'
 import './lib/dev'
 
 import App from './ui/App'
+import { logger } from '../lib/logging'
 
 if ('serviceWorker' in navigator) {
 	// Use the window load event to keep the page load performant
@@ -26,7 +27,7 @@ if ('serviceWorker' in navigator) {
 		// in some versions of Chrome, registering the Service Worker over HTTP throws an arror
 		if (window.location.protocol === 'https:' || window.location.hostname === 'localhost') {
 			navigator.serviceWorker.register('/sw.js').catch((err) => {
-				console.error(err)
+				logger.error('Error registering serviceWorker', err)
 			})
 		}
 	})
@@ -36,7 +37,7 @@ Meteor.startup(() => {
 	const targetEl = document.getElementById('render-target')
 
 	if (!targetEl) {
-		console.error('Could not find target element for mounting UI')
+		logger.error('Could not find target element for mounting UI')
 		return
 	}
 

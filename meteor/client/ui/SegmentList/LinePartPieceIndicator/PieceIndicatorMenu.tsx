@@ -7,6 +7,7 @@ import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { StoryboardSecondaryPiece } from '../../SegmentStoryboard/StoryboardPartSecondaryPieces/StoryboardSecondaryPiece'
 import StudioContext from '../../RundownView/StudioContext'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
+import { catchError } from '../../../lib/lib'
 
 export function PieceIndicatorMenu({
 	pieces,
@@ -27,7 +28,7 @@ export function PieceIndicatorMenu({
 	const { styles, attributes, update } = usePopper(parentEl, indicatorMenuEl, POPPER_OPTIONS)
 
 	useLayoutEffect(() => {
-		update && update().catch(console.error)
+		update && update().catch(catchError('pieceIndicatorMenu popper update'))
 	}, [pieces.length])
 
 	useEffect(() => {

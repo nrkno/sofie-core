@@ -7,7 +7,7 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
-import { contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib'
+import { catchError, contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib'
 import { isPartPlayable } from '../../../lib/collections/Parts'
 import { useTranslation } from 'react-i18next'
 import { UIStateStorage } from '../../lib/UIStateStorage'
@@ -157,7 +157,7 @@ export const SegmentStoryboard = React.memo(
 
 		const onClickPartIdent = (partId: PartId) => {
 			scrollToPart(partId, false, true, true).catch((error) => {
-				if (!error.toString().match(/another scroll/)) console.error(error)
+				if (!error.toString().match(/another scroll/)) catchError('scrollToPart')(error)
 			})
 		}
 

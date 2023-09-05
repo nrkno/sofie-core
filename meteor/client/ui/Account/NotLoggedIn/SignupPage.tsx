@@ -7,6 +7,7 @@ import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
 import { createUser } from '../../../../lib/api/user'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { logger } from '../../../../lib/logging'
 
 type ISignupPageProps = RouteComponentProps
 
@@ -99,7 +100,7 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 					broadcastMediums: this.state.broadcastMediums,
 				},
 			}).catch((error) => {
-				console.error('Error creating new User', error)
+				logger.error(error)
 				this.handleError(`Error creating new user: ${error.reason || error.toString()}`)
 			})
 		}

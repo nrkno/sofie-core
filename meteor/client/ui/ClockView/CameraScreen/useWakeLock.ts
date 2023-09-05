@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { catchError } from '../../../lib/lib'
 
 export function useWakeLock(): void {
 	const wakeLockRef = useRef<WakeLockSentinel | null>(null)
@@ -6,7 +7,7 @@ export function useWakeLock(): void {
 		if (!wakeLockRef.current) {
 			;(async () => {
 				wakeLockRef.current = (await navigator.wakeLock?.request('screen')) ?? null
-			})().catch((e) => console.error(`Could not get wake lock: ${e}`))
+			})().catch(catchError('request wakeLock'))
 		}
 
 		async function onVisibilityChange() {
