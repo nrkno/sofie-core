@@ -37,3 +37,4 @@ if (debugData) {
 	setDebugData()
 }
 window['MeteorCall'] = MeteorCall
+window['logger'] = logger
