@@ -480,7 +480,7 @@ function flattenAndProcessTimelineObjects(context: JobContext, timelineObjs: Arr
 		if (o.isGroup && o.children && o.children.length) {
 			for (const child of o.children) {
 				const childFixed: TimelineObjGeneric = {
-					...child,
+					...(child as TimelineObjGeneric),
 					objectType: o.objectType,
 					inGroup: o.id,
 					priority: o.priority ?? 0,
