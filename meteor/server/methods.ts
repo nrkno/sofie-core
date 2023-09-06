@@ -113,11 +113,11 @@ function setMeteorMethods(orgMethods: MethodsInner, secret?: boolean): void {
 							.finally(() => {
 								delete runningMethods[methodId]
 							})
-							.catch(async (e) => {
+							.catch(async (err) => {
 								if (!_suppressExtraErrorLogging) {
-									logger.error(e.message || e.reason || (e.toString ? e.toString() : null) || e)
+									logger.error(stringifyError(err))
 								}
-								return Promise.reject(e)
+								return Promise.reject(err)
 							})
 					} else {
 						delete runningMethods[methodId]

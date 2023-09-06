@@ -325,8 +325,7 @@ export namespace ServerClientAPI {
 			// Just run and return right away:
 			triggerWriteAccessBecauseNoCheckNecessary()
 			return executePeripheralDeviceFunctionWithCustomTimeout(deviceId, timeoutTime, action).catch(async (e) => {
-				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
-				logger.error(errMsg)
+				logger.error(stringifyError(e))
 				// allow the exception to be handled by the Client code
 				return Promise.reject(e)
 			})
@@ -360,7 +359,7 @@ export namespace ServerClientAPI {
 				return result
 			})
 			.catch(async (err) => {
-				const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
+				const errMsg = stringifyError(err)
 				logger.error(errMsg)
 				await UserActionsLog.updateAsync(actionId, {
 					$set: {
@@ -396,8 +395,7 @@ export namespace ServerClientAPI {
 				functionName,
 				args,
 			}).catch(async (e) => {
-				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
-				logger.error(errMsg)
+				logger.error(stringifyError(e))
 				// allow the exception to be handled by the Client code
 				return Promise.reject(e)
 			})
@@ -409,7 +407,7 @@ export namespace ServerClientAPI {
 			functionName,
 			args,
 		}).catch(async (err) => {
-			const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
+			const errMsg = stringifyError(err)
 			logger.error(errMsg)
 			// allow the exception to be handled by the Client code
 			return Promise.reject(err)
