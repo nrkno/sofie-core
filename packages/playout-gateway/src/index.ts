@@ -2,6 +2,7 @@ import { Connector } from './connector'
 import { config, logPath, disableWatchdog, logLevel } from './config'
 
 import * as Winston from 'winston'
+import { stringifyError } from '@sofie-automation/server-core-integration'
 
 console.log('process started') // This is a message all Sofie processes log upon startup
 
@@ -75,10 +76,7 @@ function getCurrentTime() {
 
 // Because the default NodeJS-handler sucks and wont display error properly
 process.on('warning', (e: any) => {
-	logger.warn('Unhandled warning, see below')
-	logger.error('error', e)
-	logger.error('error.reason', e.reason || e.message)
-	logger.error('error.stack', e.stack)
+	logger.warn(`Unhandled warning: ${stringifyError(e)}`)
 })
 
 logger.info('------------------------------------------------------------------')

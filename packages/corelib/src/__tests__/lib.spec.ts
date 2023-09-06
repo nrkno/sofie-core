@@ -10,6 +10,7 @@ import {
 	removeNullyProperties,
 	stringifyError,
 } from '../lib'
+import { UserError, UserErrorMessage } from '../error'
 
 describe('Lib', () => {
 	test('getHash', () => {
@@ -129,6 +130,21 @@ describe('Lib', () => {
 			},
 		}
 		expect(stringifyError(obj)).toMatch(/anotherProp.*abc/)
+
+		// UserError:
+		const userError = UserError.fromUnknown(error, UserErrorMessage.ValidationFailed, {}, 42)
+		// The stringification should trigger .toString() -> .toJSON() in UserError:
+		const str = stringifyError(userError)
+		expect(str).toMatch(/^UserError: /)
+		expect(JSON.parse(str.replace('UserError: ', ''))).toMatchObject({
+			errorCode: 42,
+			key: UserErrorMessage.ValidationFailed,
+			message: {
+				key: 'Validation failed!',
+				args: {},
+			},
+			rawError: expect.stringMatching(/Error: Hello/),
+		})
 
 		// Array of stuff:
 		const arr = ['qwerty', error, event, obj]

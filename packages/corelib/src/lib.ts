@@ -6,16 +6,20 @@ import * as objectPath from 'object-path'
 import { Timecode } from 'timecode'
 import { iterateDeeply, iterateDeeplyEnum, Time } from '@sofie-automation/blueprints-integration'
 import { IStudioSettings } from './dataModel/Studio'
-import { UserError } from './error'
 import { customAlphabet as createNanoid } from 'nanoid'
 
+// re-export stringifyError from shared-lib:
+export { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
+
 /**
- * Limited characterset to use for id generation
+ * Limited character set to use for id generation
  * Generating id's using these characters has 2 reasons:
  * 1. By omitting 0, O, I, 1 it makes it easier to read for humans
  * 2. The Timeline only supports A-Za-z0-9 in id's and classnames
  */
 const UNMISTAKABLE_CHARS = '23456789ABCDEFGHJKLMNPQRSTWXYZabcdefghijkmnopqrstuvwxyz'
+// A length of 17 from a pool of 56 characters => ~98 bits of entropy
+// The probability for a collision is around 1.5e-6 in a set of 1e12 items
 const nanoid = createNanoid(UNMISTAKABLE_CHARS, 17)
 
 export * from './hash'
@@ -403,52 +407,6 @@ export function removeNullyProperties<T>(obj: T): T {
 		}
 	})
 	return obj
-}
-
-/** Make a string out of an error (or other equivalents), including any additional data such as stack trace if available */
-export function stringifyError(error: unknown, noStack = false): string {
-	let str: string | undefined = undefined
-
-	if (error && UserError.isUserError(error)) {
-		// Is a UserError
-		str = UserError.toJSON(error)
-	} else if (error && typeof error === 'object') {
-		if (Array.isArray(error)) {
-			return error.map((e) => stringifyError(e)).join(', ')
-		}
-
-		str = ''
-		// Is an instance of a class (like KeyboardEvent):
-		const instanceName = error.constructor?.name
-		if (instanceName && instanceName !== 'Object' && instanceName !== 'Array') str += `${error.constructor.name}: `
-
-		if ((error as Error).message) {
-			// Is an Error
-			str += `${(error as Error).message}`
-		} else if ((error as any).reason) {
-			// Is a Meteor.Error
-			str += `${(error as any).reason}`
-		} else if ((error as any).details) {
-			str += `${(error as any).details}`
-		} else {
-			try {
-				// Try to stringify the object:
-				str += JSON.stringify(error)
-			} catch (e) {
-				str += `${error} (stringifyError: ${e})`
-			}
-		}
-	} else {
-		str = `${error}`
-	}
-
-	if (!noStack) {
-		if (error && typeof error === 'object' && (error as any).stack) {
-			str += ', ' + (error as any).stack
-		}
-	}
-
-	return str
 }
 
 /**

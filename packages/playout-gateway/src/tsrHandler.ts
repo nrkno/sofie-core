@@ -23,7 +23,7 @@ import * as crypto from 'crypto'
 import * as cp from 'child_process'
 
 import * as _ from 'underscore'
-import { Observer } from '@sofie-automation/server-core-integration'
+import { Observer, stringifyError } from '@sofie-automation/server-core-integration'
 import { Logger } from 'winston'
 import { disableAtemUpload } from './config'
 import Debug from 'debug'
@@ -164,9 +164,9 @@ export class TSRHandler {
 				cmdReply.response &&
 				cmdReply.response.code === 404
 			) {
-				this.logger.warn(`TSR: ${e.toString()}`, args)
+				this.logger.warn(`TSR: ${stringifyError(e)}`, args)
 			} else {
-				this.logger.error(`TSR: ${e.toString()}`, args)
+				this.logger.error(`TSR: ${stringifyError(e)}`, args)
 			}
 		})
 		this.tsr.on('info', (msg, ...args) => {

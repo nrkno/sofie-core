@@ -278,7 +278,7 @@ export class ExternalMessageQueueRunner {
 			logger.warn(stringifyError(e))
 			await this.#collections.ExternalMessageQueue.update(msg._id, {
 				$set: {
-					errorMessage: e['reason'] || e['message'] || e.toString(),
+					errorMessage: stringifyError(e),
 					errorMessageTime: getCurrentTime(),
 					errorFatal: e instanceof FatalExternalMessageError,
 				},
