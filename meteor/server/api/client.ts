@@ -428,13 +428,13 @@ export namespace ServerClientAPI {
 }
 
 class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
-	async clientErrorReport(timestamp: Time, errorObject: any, errorString: string, location: string) {
+	async clientErrorReport(timestamp: Time, errorString: string, location: string) {
 		check(timestamp, Number)
 		triggerWriteAccessBecauseNoCheckNecessary() // TODO: discuss if is this ok?
 		logger.error(
 			`Uncaught error happened in GUI\n  in "${location}"\n  on "${
 				this.connection ? this.connection.clientAddress : 'N/A'
-			}"\n  at ${new Date(timestamp).toISOString()}:\n"${errorString}"\n${stringifyError(errorObject)}`
+			}"\n  at ${new Date(timestamp).toISOString()}:\n"${errorString}`
 		)
 	}
 	async clientLogNotification(timestamp: Time, from: string, severity: NoticeLevel, message: string, source?: any) {

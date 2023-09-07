@@ -8,9 +8,9 @@ import {
 	objectPathGet,
 	objectPathSet,
 	removeNullyProperties,
-	stringifyError,
 } from '../lib'
 import { UserError, UserErrorMessage } from '../error'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 describe('Lib', () => {
 	test('getHash', () => {

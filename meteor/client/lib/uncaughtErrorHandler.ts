@@ -7,7 +7,6 @@ import { MeteorCall } from '../../lib/api/methods'
 
 interface LoggedError {
 	location: string
-	content: any
 	stringContent: string
 	added: Time
 }
@@ -23,7 +22,7 @@ try {
 
 function sendErrorToCore(errorLog: LoggedError) {
 	MeteorCall.client
-		.clientErrorReport(errorLog.added, errorLog.content, errorLog.stringContent, errorLog.location)
+		.clientErrorReport(errorLog.added, errorLog.stringContent, errorLog.location)
 		.then(() => {
 			const sentIdx = errorCache.indexOf(errorLog)
 			if (sentIdx >= 0) {
@@ -55,7 +54,6 @@ function uncaughtErrorHandler(errorObj: any, context: string) {
 
 	const errorLog: LoggedError = {
 		location: window.location.href,
-		content: errorObj,
 		stringContent: stringContent,
 		added: getCurrentTime(),
 	}
