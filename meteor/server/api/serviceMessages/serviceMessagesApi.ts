@@ -1,4 +1,4 @@
-import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { ServiceMessage } from '../../../lib/collections/CoreSystem'
 import { getCoreSystemAsync } from '../../coreSystem/collection'
 import { logger } from '../../logging'

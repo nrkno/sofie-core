@@ -7,7 +7,7 @@ import { ContextMenuTrigger } from '@jstarpl/react-contextmenu'
 import { CriticalIconSmall, WarningIconSmall } from '../../lib/ui/icons/notifications'
 import { SegmentDuration } from '../RundownView/RundownTiming/SegmentDuration'
 import { PartCountdown } from '../RundownView/RundownTiming/PartCountdown'
-import { catchError, contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib'
+import { contextMenuHoldToDisplayTime, useCombinedRefs } from '../../lib/lib'
 import { isPartPlayable } from '../../../lib/collections/Parts'
 import { useTranslation } from 'react-i18next'
 import { UIStateStorage } from '../../lib/UIStateStorage'
@@ -36,6 +36,7 @@ import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
+import { logger } from '../../../lib/logging'
 
 interface IProps {
 	id: string
@@ -157,7 +158,7 @@ export const SegmentStoryboard = React.memo(
 
 		const onClickPartIdent = (partId: PartId) => {
 			scrollToPart(partId, false, true, true).catch((error) => {
-				if (!error.toString().match(/another scroll/)) catchError('scrollToPart')(error)
+				if (!error.toString().match(/another scroll/)) logger.error('scrollToPart', error)
 			})
 		}
 

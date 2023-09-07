@@ -21,7 +21,8 @@ import { parseBlueprintDocument, WrappedShowStyleBlueprint, WrappedStudioBluepri
 import { ReadonlyObjectDeep } from 'type-fest/source/readonly-deep'
 import { ApmSpan, ApmTransaction } from '../profiler'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { clone, deepFreeze, getRandomString, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { clone, deepFreeze, getRandomString } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { createShowStyleCompound } from '../showStyles'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import {

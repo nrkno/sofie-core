@@ -39,6 +39,7 @@ import { DebugStateTable } from './DebugState'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { ClientAPI } from '../../../lib/api/client'
 import { catchError } from '../../lib/lib'
+import { logger } from '../../../lib/logging'
 
 interface IDeviceItemProps {
 	parentDevice: PeripheralDevice | null
@@ -567,7 +568,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 				.catch((err) => {
 					if (this.destroyed) return
 
-					catchError('systemStatus.getSystemStatus')(err)
+					logger.error('systemStatus.getSystemStatus', err)
 					NotificationCenter.push(
 						new Notification(
 							'systemStatus_failed',

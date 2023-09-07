@@ -4,13 +4,13 @@ import { useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Spinner } from '../../lib/Spinner'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { Meteor } from 'meteor/meteor'
-import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { useTranslation } from 'react-i18next'
 import { MeteorCall } from '../../../lib/api/methods'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevices } from '../../collections'
 import { eventContextForLog } from '../../../lib/clientUserAction'
-import { catchError } from '../../lib/lib'
+import { logger } from '../../../lib/logging'
 
 interface IDevicePackageManagerSettingsProps {
 	deviceId: PeripheralDeviceId
@@ -33,7 +33,7 @@ export const DevicePackageManagerSettings: React.FC<IDevicePackageManagerSetting
 				.then((result: Status) => setStatus(result))
 				.catch((error) => {
 					if (silent) {
-						catchError('callBackgroundPeripheralDeviceFunction getExpetationManagerStatus')(error)
+						logger.error('callBackgroundPeripheralDeviceFunction getExpetationManagerStatus', error)
 						return
 					}
 

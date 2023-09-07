@@ -7,7 +7,7 @@ import { MongoQuery } from './typings/meteor'
 import { MongoQuery as CoreLibMongoQuery } from '@sofie-automation/corelib/dist/mongo'
 
 import { Time, TimeDuration } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { ReactiveVar } from 'meteor/reactive-var'
 export { Time, TimeDuration }
 

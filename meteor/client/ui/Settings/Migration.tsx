@@ -13,7 +13,7 @@ import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { MeteorCall } from '../../../lib/api/methods'
 import { checkForOldDataAndCleanUp } from './SystemManagement'
 import { UpgradesView } from './Upgrades'
-import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 interface IProps {}
 interface IState {

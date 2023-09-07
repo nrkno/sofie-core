@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor'
-import { stringifyError } from './lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export const LOGGER_METHOD_NAME = 'logger'
 

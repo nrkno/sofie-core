@@ -1,13 +1,8 @@
 import { RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import {
-	clone,
-	getHash,
-	getRandomString,
-	normalizeArrayToMap,
-	stringifyError,
-} from '@sofie-automation/corelib/dist/lib'
+import { clone, getHash, getRandomString, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import {

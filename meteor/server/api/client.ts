@@ -1,5 +1,6 @@
 import { check } from '../../lib/check'
-import { literal, getCurrentTime, Time, getRandomId, stringifyError } from '../../lib/lib'
+import { literal, getCurrentTime, Time, getRandomId } from '../../lib/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
 import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
@@ -433,7 +434,7 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 		logger.error(
 			`Uncaught error happened in GUI\n  in "${location}"\n  on "${
 				this.connection ? this.connection.clientAddress : 'N/A'
-			}"\n  at ${new Date(timestamp).toISOString()}:\n"${errorString}"\n${JSON.stringify(errorObject)}`
+			}"\n  at ${new Date(timestamp).toISOString()}:\n"${errorString}"\n${stringifyError(errorObject)}`
 		)
 	}
 	async clientLogNotification(timestamp: Time, from: string, severity: NoticeLevel, message: string, source?: any) {

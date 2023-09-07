@@ -6,7 +6,7 @@ import { getUser } from '../../../../lib/collections/Users'
 import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
 import { createUser } from '../../../../lib/api/user'
-import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { logger } from '../../../../lib/logging'
 
 type ISignupPageProps = RouteComponentProps

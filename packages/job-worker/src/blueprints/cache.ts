@@ -7,7 +7,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { VM, VMScript } from 'vm2'
 import { ReadonlyDeep } from 'type-fest'
-import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 
 export interface WrappedSystemBlueprint {

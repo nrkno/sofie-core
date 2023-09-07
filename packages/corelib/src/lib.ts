@@ -8,9 +8,6 @@ import { iterateDeeply, iterateDeeplyEnum, Time } from '@sofie-automation/bluepr
 import { IStudioSettings } from './dataModel/Studio'
 import { customAlphabet as createNanoid } from 'nanoid'
 
-// re-export stringifyError from shared-lib:
-export { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-
 /**
  * Limited character set to use for id generation
  * Generating id's using these characters has 2 reasons:

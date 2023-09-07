@@ -76,7 +76,7 @@ function getCurrentTime() {
 
 // Because the default NodeJS-handler sucks and wont display error properly
 process.on('warning', (e: any) => {
-	logger.warn(`Unhandled warning: ${stringifyError(e)}`)
+	logger.error(`Unhandled warning: ${stringifyError(e)}`)
 })
 
 logger.info('------------------------------------------------------------------')
