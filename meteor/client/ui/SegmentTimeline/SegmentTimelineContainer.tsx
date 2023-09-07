@@ -503,18 +503,41 @@ export const SegmentTimelineContainer = withResolvedSegment(
 
 		onGoToPartInner = (part: PartUi, _timingDurations: RundownTimingContext, zoomInToFit?: boolean) => {
 			this.setState((state) => {
+				const timelineWidth = this.timelineDiv instanceof HTMLElement ? getElementWidth(this.timelineDiv) : 0 // unsure if this is good default/substitute
 				let newScale: number | undefined
-
 				let scrollLeft = state.scrollLeft
 
 				if (zoomInToFit) {
-					const timelineWidth = this.timelineDiv instanceof HTMLElement ? getElementWidth(this.timelineDiv) : 0 // unsure if this is good default/substitute
-					newScale =
-						(Math.max(0, timelineWidth - TIMELINE_RIGHT_PADDING * 2) / 3 || 1) /
-						(SegmentTimelinePartClass.getPartDisplayDuration(part, this.context?.durations) || 1)
+					// display dur in ms
+					const displayDur = (SegmentTimelinePartClass.getPartDisplayDuration(part, this.context?.durations) || 1)
+					// is the padding is larger than the width of the resulting size?
+					const tooSmallTimeline = timelineWidth < TIMELINE_RIGHT_PADDING * 3
+					// width in px, pad on both sides
+					const desiredWidth = tooSmallTimeline ? timelineWidth * .8 : Math.max(1, timelineWidth - TIMELINE_RIGHT_PADDING * 2)
+					// scale = pixels / time
+					newScale = desiredWidth / displayDur
 
-					scrollLeft = Math.max(0, scrollLeft - TIMELINE_RIGHT_PADDING / newScale)
+					// the left padding
+					const padding = tooSmallTimeline ? timelineWidth * .1 / newScale : TIMELINE_RIGHT_PADDING / newScale
+					// offset in ms
+					scrollLeft = part.startsAt - padding
+					// scrollLeft should be at least 0
+					scrollLeft = Math.max(0, scrollLeft)
+				} else if (
+					this.state.scrollLeft > part.startsAt ||
+					this.state.scrollLeft * this.state.timeScale + timelineWidth < part.startsAt * this.state.timeScale
+				) {
+					// If part is not within viewport scroll to its start
+					scrollLeft = part.startsAt
 				}
+
+				/**
+				 * note from mint @ 07-09-23
+				 * 
+				 * there are some edge cases still here. the ones i'm aware of are:
+				 *  - when following the live line, this will zoom but not scroll
+				 *  - when a segment starts with a short part, followed by a long part the left padding will be inconsistent
+				 */
 
 				return {
 					scrollLeft,
