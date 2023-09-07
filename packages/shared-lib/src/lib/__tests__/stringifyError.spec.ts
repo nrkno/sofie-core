@@ -7,7 +7,7 @@ test('stringifyError', () => {
 	// Error:
 	const error = new Error('Hello')
 	expect(stringifyError(error)).toMatch(/Error: Hello/)
-	expect(stringifyError(error)).toMatch(/lib\.spec/)
+	expect(stringifyError(error)).toMatch(/stringifyError\.spec/)
 
 	// Instance of classes (similar to for example KeyboardEvents):
 	class MyTestEvent {
