@@ -509,16 +509,18 @@ export const SegmentTimelineContainer = withResolvedSegment(
 
 				if (zoomInToFit) {
 					// display dur in ms
-					const displayDur = (SegmentTimelinePartClass.getPartDisplayDuration(part, this.context?.durations) || 1)
+					const displayDur = SegmentTimelinePartClass.getPartDisplayDuration(part, this.context?.durations) || 1
 					// is the padding is larger than the width of the resulting size?
 					const tooSmallTimeline = timelineWidth < TIMELINE_RIGHT_PADDING * 3
 					// width in px, pad on both sides
-					const desiredWidth = tooSmallTimeline ? timelineWidth * .8 : Math.max(1, timelineWidth - TIMELINE_RIGHT_PADDING * 2)
+					const desiredWidth = tooSmallTimeline
+						? timelineWidth * 0.8
+						: Math.max(1, timelineWidth - TIMELINE_RIGHT_PADDING * 2)
 					// scale = pixels / time
 					newScale = desiredWidth / displayDur
 
 					// the left padding
-					const padding = tooSmallTimeline ? timelineWidth * .1 / newScale : TIMELINE_RIGHT_PADDING / newScale
+					const padding = tooSmallTimeline ? (timelineWidth * 0.1) / newScale : TIMELINE_RIGHT_PADDING / newScale
 					// offset in ms
 					scrollLeft = part.startsAt - padding
 					// scrollLeft should be at least 0
@@ -533,7 +535,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 
 				/**
 				 * note from mint @ 07-09-23
-				 * 
+				 *
 				 * there are some edge cases still here. the ones i'm aware of are:
 				 *  - when following the live line, this will zoom but not scroll
 				 *  - when a segment starts with a short part, followed by a long part the left padding will be inconsistent
