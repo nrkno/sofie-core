@@ -1,5 +1,5 @@
 import '../../__mocks__/_extendJest'
-import { testInFiber, runAllTimers, beforeAllInFiber, waitUntil, testInFiberOnly } from '../../__mocks__/helpers/jest'
+import { testInFiber, runAllTimers, beforeAllInFiber, waitUntil } from '../../__mocks__/helpers/jest'
 import { MeteorMock } from '../../__mocks__/meteor'
 import { logger } from '../logging'
 import { getRandomId, getRandomString, protectString } from '../../lib/lib'
@@ -31,8 +31,6 @@ jest.mock('../logging')
 jest.mock('../api/deviceTriggers/observer')
 
 const MAX_WAIT_TIME = 4 * 1000
-
-const DateOrg = Date
 
 import '../cronjobs'
 
