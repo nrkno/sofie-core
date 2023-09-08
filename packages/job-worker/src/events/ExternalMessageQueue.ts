@@ -8,7 +8,7 @@ import { IChangeStream, IDirectCollections } from '../db'
 import { getCurrentTime } from '../lib'
 import { sendRabbitMQMessage } from './integration/rabbitMQ'
 import { stringify } from 'querystring'
-import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { sendSlackMessageToWebhook } from './integration/slack'
 import { StudioCacheContext } from '../jobs'
 import { InvalidateWorkerDataCache, WorkerDataCacheWrapper } from '../workers/caches'
@@ -278,7 +278,7 @@ export class ExternalMessageQueueRunner {
 			logger.warn(stringifyError(e))
 			await this.#collections.ExternalMessageQueue.update(msg._id, {
 				$set: {
-					errorMessage: e['reason'] || e['message'] || e.toString(),
+					errorMessage: stringifyError(e),
 					errorMessageTime: getCurrentTime(),
 					errorFatal: e instanceof FatalExternalMessageError,
 				},

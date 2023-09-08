@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { Meteor } from 'meteor/meteor'
 import _ from 'underscore'
 import { getCurrentTime, systemTime, Time } from '../../lib/lib'
+import { logger } from '../../lib/logging'
 
 export { multilineText, isEventInInputField }
 
@@ -182,3 +183,12 @@ export function getEventTimestamp(e: Event): Time {
 }
 
 export const TOOLTIP_DEFAULT_DELAY = 0.5
+
+/**
+ * Returns a function that logs the error along with the context.
+ * @usage Instead of .catch(console.error), do .catch(catchError('myContext'))
+ *
+ */
+export function catchError(context: string): (...errs: any[]) => void {
+	return (...errs: any[]) => logger.error(context, ...errs)
+}

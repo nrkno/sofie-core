@@ -1,7 +1,7 @@
 import { Connector, Config } from './connector'
 import * as Winston from 'winston'
 import _ = require('underscore')
-import { protectString } from '@sofie-automation/server-core-integration'
+import { protectString, stringifyError } from '@sofie-automation/server-core-integration'
 
 console.log('process started') // This is a message all Sofie processes log upon startup
 
@@ -171,7 +171,7 @@ if (logPath) {
 
 // Because the default NodeJS-handler sucks and wont display error properly
 process.on('warning', (e: any) => {
-	logger.warn('Unhandled warning:', e, e.reason || e.message, e.stack)
+	logger.error(`Unhandled warning: ${stringifyError(e)}`)
 })
 
 logger.info('------------------------------------------------------------------')

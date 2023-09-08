@@ -12,7 +12,7 @@ import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowSt
 import { ICoreSystem } from '../../../lib/collections/CoreSystem'
 import { BlueprintManifestType } from '@sofie-automation/blueprints-integration'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
-import { fetchFrom } from '../../lib/lib'
+import { catchError, fetchFrom } from '../../lib/lib'
 import { UploadButton } from '../../lib/uploadButton'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faUpload, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
@@ -148,7 +148,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 															)
 														})
 														.catch((err: string) => {
-															// console.error('Blueprint restore failure: ', err)
 															NotificationCenter.push(
 																new Notification(
 																	undefined,
@@ -167,7 +166,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 											},
 										})
 									} else {
-										// console.error('Blueprint restore failure: ', err)
 										NotificationCenter.push(
 											new Notification(
 												undefined,
@@ -191,7 +189,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 		}
 
 		assignSystemBlueprint(id: BlueprintId | undefined) {
-			MeteorCall.blueprint.assignSystemBlueprint(id).catch(console.error)
+			MeteorCall.blueprint.assignSystemBlueprint(id).catch(catchError('blueprint.assignSystemBlueprint'))
 		}
 
 		renderAssignment(blueprint: Blueprint) {

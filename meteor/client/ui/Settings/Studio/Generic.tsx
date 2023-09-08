@@ -12,6 +12,7 @@ import { Studios } from '../../../collections'
 import { useHistory } from 'react-router-dom'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { LabelActual } from '../../../lib/Components/LabelAndOverrides'
+import { catchError } from '../../../lib/lib'
 
 interface IStudioGenericPropertiesProps {
 	studio: Studio
@@ -262,7 +263,7 @@ const NewShowStyleButton = React.memo(function NewShowStyleButton() {
 			.then((showStyleBaseId) => {
 				history.push('/settings/showStyleBase/' + showStyleBaseId)
 			})
-			.catch(console.error)
+			.catch(catchError('showstyles.insertShowStyleBase'))
 	}
 
 	return (

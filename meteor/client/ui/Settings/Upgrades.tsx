@@ -17,6 +17,7 @@ import { NoteSeverity } from '@sofie-automation/blueprints-integration'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
 import { NotificationCenter, NoticeLevel, Notification } from '../../../lib/notifications/notifications'
+import { catchError } from '../../lib/lib'
 
 export function UpgradesView(): JSX.Element {
 	const { t } = useTranslation()
@@ -34,7 +35,7 @@ export function UpgradesView(): JSX.Element {
 				setUpgradeStatus(res)
 			})
 			.catch((e) => {
-				console.error('Failed', e)
+				catchError('migration.getUpgradeStatus')(e)
 
 				NotificationCenter.push(
 					new Notification(undefined, NoticeLevel.WARNING, t('Failed to check status.'), 'UpgradesView')
@@ -150,6 +151,7 @@ function ShowUpgradesRow({ resourceName, upgradeResult, validateConfig, applyCon
 								)
 							})
 							.catch((e) => {
+								catchError('Upgrade applyConfig')(e)
 								NotificationCenter.push(
 									new Notification(
 										undefined,
@@ -158,7 +160,6 @@ function ShowUpgradesRow({ resourceName, upgradeResult, validateConfig, applyCon
 										'UpgradesView'
 									)
 								)
-								console.error('err', e)
 							})
 					},
 				})
@@ -182,6 +183,7 @@ function ShowUpgradesRow({ resourceName, upgradeResult, validateConfig, applyCon
 								)
 							})
 							.catch((e) => {
+								catchError('Upgrade applyConfig: ignore and apply')(e)
 								NotificationCenter.push(
 									new Notification(
 										undefined,
@@ -190,7 +192,6 @@ function ShowUpgradesRow({ resourceName, upgradeResult, validateConfig, applyCon
 										'UpgradesView'
 									)
 								)
-								console.error('err', e)
 							})
 					},
 				})

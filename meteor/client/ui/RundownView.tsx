@@ -142,6 +142,7 @@ import {
 } from '../collections'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
+import { logger } from '../../lib/logging'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -572,7 +573,7 @@ const RundownHeader = withTranslation()(
 				if (!err) {
 					if (typeof clb === 'function') clb(response)
 				} else {
-					console.error(err)
+					logger.error(err)
 					doModalDialog({
 						title: t('Failed to activate'),
 						message: t('Something went wrong, please contact the system administrator if the problem persists.'),
@@ -1642,7 +1643,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				}) as Pick<RundownPlaylist, '_id' | 'currentPartInfo' | 'nextPartInfo' | 'previousPartInfo'> | undefined
 				if (playlist) {
 					const rundownIds = RundownPlaylistCollectionUtil.getRundownUnorderedIDs(playlist)
-					// Use Meteor.subscribe so that this subscription doesn't mess with this.subscriptionsReady()
+					// Use meteorSubscribe so that this subscription doesn't mess with this.subscriptionsReady()
 					// it's run in this.autorun, so the subscription will be stopped along with the autorun,
 					// so we don't have to manually clean up after ourselves.
 					meteorSubscribe(PubSub.pieceInstances, {
@@ -2068,7 +2069,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					UserAction.SET_NEXT,
 					(e, ts) => MeteorCall.userAction.setNextSegment(e, ts, playlistId, segmentId),
 					(err) => {
-						if (err) console.error(err)
+						if (err) logger.error(err)
 						this.setState({
 							manualSetAsNext: true,
 						})

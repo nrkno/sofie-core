@@ -27,7 +27,8 @@ import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { DBUser } from '../../lib/collections/Users'
 import { WorkerStatus } from '../../lib/collections/Workers'
 import { registerIndex } from './indices'
-import { getCurrentTime, MeteorStartupAsync, stringifyError } from '../../lib/lib'
+import { getCurrentTime, MeteorStartupAsync } from '../../lib/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import {
 	createAsyncOnlyMongoCollection,
 	createAsyncOnlyReadOnlyMongoCollection,

@@ -1,4 +1,4 @@
-import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 // TODO: These types should perhaps be made a little more solid
 export type LeveledLogMethodFixed = (msg: any, ...meta: any[]) => void

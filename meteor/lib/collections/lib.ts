@@ -2,6 +2,7 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { MongoModifier, MongoQuery } from '../typings/meteor'
 import { ProtectedString, protectString } from '../lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import type { Collection as RawCollection, Db as RawDb } from 'mongodb'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { MongoFieldSpecifier, SortSpecifier } from '@sofie-automation/corelib/dist/mongo'
@@ -129,7 +130,7 @@ class WrappedMongoReadOnlyCollection<DBInterface extends { _id: ProtectedString<
 	}
 
 	protected wrapMongoError(e: any): never {
-		const str = (e && e.reason) || e.toString() || e || 'Unknown MongoDB Error'
+		const str = stringifyError(e) || 'Unknown MongoDB Error'
 		throw new Meteor.Error((e && e.error) || 500, `Collection "${this.name}": ${str}`)
 	}
 

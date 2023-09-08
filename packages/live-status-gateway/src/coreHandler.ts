@@ -1,4 +1,10 @@
-import { CoreConnection, CoreOptions, DDPConnectorOptions, Observer } from '@sofie-automation/server-core-integration'
+import {
+	CoreConnection,
+	CoreOptions,
+	DDPConnectorOptions,
+	Observer,
+	stringifyError,
+} from '@sofie-automation/server-core-integration'
 import { DeviceConfig } from './connector'
 import { Logger } from 'winston'
 import { Process } from './process'
@@ -213,11 +219,11 @@ export class CoreHandler {
 			}
 
 			this._executedFunctions[unprotectString(cmd._id)] = true
-			const cb = (err: any, res?: any) => {
-				if (err) {
-					this.logger.error('executeFunction error', err, err.stack)
+			const cb = (errStr: string | null, res?: any) => {
+				if (errStr) {
+					this.logger.error(`executeFunction error: ${errStr}`)
 				}
-				fcnObject.core.coreMethods.functionReply(cmd._id, err, res).catch((e) => {
+				fcnObject.core.coreMethods.functionReply(cmd._id, errStr, res).catch((e) => {
 					this.logger.error(e)
 				})
 			}
@@ -231,10 +237,10 @@ export class CoreHandler {
 						cb(null, result)
 					})
 					.catch((e) => {
-						cb(e.toString(), null)
+						cb(stringifyError(e), null)
 					})
 			} catch (e: any) {
-				cb(e.toString(), null)
+				cb(stringifyError(e), null)
 			}
 		}
 	}

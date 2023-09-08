@@ -3,6 +3,7 @@ import { createMosObjectXmlStringNoraBluePrintPiece } from '../../../../lib/data
 import { parseMosPluginMessageXml, MosPluginMessage } from '../../../../lib/parsers/mos/mosXml2Js'
 import { PieceGeneric } from '../../../../../lib/collections/Pieces'
 import { createMosAppInfoXmlString } from '../../../../lib/data/mos/plugin-support'
+import { logger } from '../../../../../lib/logging'
 
 //TODO: figure out what the origin should be
 const LOCAL_ORIGIN = `${window.location.protocol}//${window.location.host}`
@@ -60,9 +61,9 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 
 		if (data) {
 			return this.handleMosMessage(data)
+		} else {
+			logger.error(`NoraItemEditor: unknown message: ${JSON.stringify(data)}`)
 		}
-
-		console.error('Unknown message', data)
 	}
 
 	private handleMosMessage(mos: MosPluginMessage) {

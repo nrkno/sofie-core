@@ -13,7 +13,8 @@ import { PartEndState, VTContent } from '@sofie-automation/blueprints-integratio
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { ReadonlyDeep } from 'type-fest'
 import { getResolvedPieces } from './pieces'
-import { clone, getRandomId, literal, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { clone, getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { updateTimeline } from './timeline/generate'
 import {
