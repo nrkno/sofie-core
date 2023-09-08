@@ -48,7 +48,7 @@
 		"@jstarpl/react-contextmenu": "^2.15.0",
 		"@koa/cors": "^4.0.0",
 		"@koa/router": "^12.0.0",
-		"@mos-connection/helper": "^3.0.4",
+		"@mos-connection/helper": "3.0.5-nightly-develop-20230908-043929-6fa5cdc.0",
 		"@nrk/core-icons": "^9.6.0",
 		"@popperjs/core": "^2.11.7",
 		"@slack/webhook": "^6.1.0",
