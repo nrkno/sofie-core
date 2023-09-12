@@ -22,6 +22,7 @@ import { TFunction, useTranslation } from 'react-i18next'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Blueprints, PeripheralDevices, ShowStyleBases, Studios } from '../../collections'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { catchError } from '../../lib/lib'
 
 interface ISettingsMenuProps {
 	superAdmin?: boolean
@@ -68,10 +69,10 @@ export const SettingsMenu = translateWithTracker<ISettingsMenuProps, ISettingsMe
 		}
 
 		onAddStudio() {
-			MeteorCall.studio.insertStudio().catch(console.error)
+			MeteorCall.studio.insertStudio().catch(catchError('studio.insertStudio'))
 		}
 		onAddShowStyleBase() {
-			MeteorCall.showstyles.insertShowStyleBase().catch(console.error)
+			MeteorCall.showstyles.insertShowStyleBase().catch(catchError('showstyles.insertShowStyleBase'))
 		}
 		onAddBlueprint() {
 			MeteorCall.blueprint.insertBlueprint().catch((error) => {
@@ -243,7 +244,7 @@ function SettingsMenuStudio({ studio }: SettingsMenuStudioProps) {
 					</React.Fragment>
 				),
 				onAccept: () => {
-					MeteorCall.studio.removeStudio(studio._id).catch(console.error)
+					MeteorCall.studio.removeStudio(studio._id).catch(catchError('studio.removeStudio'))
 				},
 			})
 		},
@@ -317,7 +318,9 @@ function SettingsMenuShowStyle({ showStyleBase }: SettingsMenuShowStyleProps) {
 					</React.Fragment>
 				),
 				onAccept: () => {
-					MeteorCall.showstyles.removeShowStyleBase(showStyleBase._id).catch(console.error)
+					MeteorCall.showstyles
+						.removeShowStyleBase(showStyleBase._id)
+						.catch(catchError('showstyles.removeShowStyleBase'))
 				},
 			})
 		},
@@ -398,7 +401,7 @@ function SettingsMenuBlueprint({ blueprint }: SettingsMenuBlueprintProps) {
 					</React.Fragment>
 				),
 				onAccept: () => {
-					MeteorCall.blueprint.removeBlueprint(blueprint._id).catch(console.error)
+					MeteorCall.blueprint.removeBlueprint(blueprint._id).catch(catchError('blueprint.removeBlueprint'))
 				},
 			})
 		},
@@ -463,7 +466,9 @@ function SettingsMenuPeripheralDevice({ device }: SettingsMenuPeripheralDevicePr
 					</React.Fragment>
 				),
 				onAccept: () => {
-					MeteorCall.peripheralDevice.removePeripheralDevice(device._id).catch(console.error)
+					MeteorCall.peripheralDevice
+						.removePeripheralDevice(device._id)
+						.catch(catchError('peripheralDevice.removePeripheralDevice'))
 				},
 			})
 		},

@@ -15,6 +15,7 @@ import { LogLevel } from '../../../lib/lib'
 import { CoreSystem } from '../../collections'
 import { CollectionCleanupResult } from '../../../lib/api/system'
 import { LabelActual } from '../../lib/Components/LabelAndOverrides'
+import { catchError } from '../../lib/lib'
 
 interface IProps {}
 
@@ -59,11 +60,11 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 										},
 									})
 								})
-								.catch(console.error)
+								.catch(catchError('system.cleanupIndexes'))
 						},
 					})
 				})
-				.catch(console.error)
+				.catch(catchError('system.cleanupIndexes'))
 		}
 		render(): JSX.Element | null {
 			const { t } = this.props
@@ -395,7 +396,7 @@ export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft = 0): void {
 										})
 									}
 								})
-								.catch(console.error)
+								.catch(catchError('system.cleanupOldData'))
 						},
 					})
 				} else {
@@ -410,5 +411,5 @@ export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft = 0): void {
 				}
 			}
 		})
-		.catch(console.error)
+		.catch(catchError('system.cleanupOldData'))
 }

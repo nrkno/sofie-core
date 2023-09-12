@@ -32,6 +32,7 @@ import { BucketId, PartInstanceId, RundownPlaylistId } from '@sofie-automation/c
 import { MOS_DATA_IS_STRICT } from '../../../lib/mos'
 import { getMosTypes, stringifyMosObject } from '@mos-connection/helper'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { logger } from '../../../lib/logging'
 
 const PackageInfo = require('../../../package.json')
 
@@ -255,7 +256,7 @@ export const ExternalFramePanel = withTranslation()(
 			check(message.type, String)
 
 			if (Object.values<SofieExternalMessageType>(SofieExternalMessageType as any).indexOf(message.type) < 0) {
-				console.error(`ExternalFramePanel: Unknown message type: ${message.type}`)
+				logger.error(`ExternalFramePanel: Unknown message type: ${message.type}`)
 				return
 			}
 

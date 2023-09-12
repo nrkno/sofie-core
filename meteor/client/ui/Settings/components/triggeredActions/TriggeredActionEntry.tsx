@@ -34,6 +34,7 @@ import { ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/di
 import { isHotkeyTrigger } from '../../../../../lib/api/triggers/triggerTypeSelectors'
 import { getAllCurrentAndDeletedItemsFromOverrides, useOverrideOpHelper } from '../../util/OverrideOpHelper'
 import { TriggeredActions } from '../../../../collections'
+import { catchError } from '../../../../lib/lib'
 
 interface IProps {
 	sourceLayers: SourceLayers | undefined
@@ -191,7 +192,7 @@ export const TriggeredActionEntry: React.FC<IProps> = React.memo(function Trigge
 					}
 				}
 			} catch (e) {
-				console.error(e)
+				catchError('TriggeredActionEntry previewItems')(e)
 			}
 			return [] as IWrappedAdLib[]
 		},

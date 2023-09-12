@@ -36,6 +36,7 @@ import { PartId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { SegmentTimeAnchorTime } from '../RundownView/RundownTiming/SegmentTimeAnchorTime'
+import { logger } from '../../../lib/logging'
 
 interface IProps {
 	id: string
@@ -157,7 +158,7 @@ export const SegmentStoryboard = React.memo(
 
 		const onClickPartIdent = (partId: PartId) => {
 			scrollToPart(partId, false, true, true).catch((error) => {
-				if (!error.toString().match(/another scroll/)) console.error(error)
+				if (!error.toString().match(/another scroll/)) logger.error('scrollToPart', error)
 			})
 		}
 

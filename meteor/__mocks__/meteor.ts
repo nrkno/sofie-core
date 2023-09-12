@@ -1,4 +1,4 @@
-import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import * as _ from 'underscore'
 import { Fiber } from './Fibers'
 import { MongoMock } from './mongo'

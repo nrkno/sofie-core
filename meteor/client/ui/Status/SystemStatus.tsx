@@ -38,6 +38,8 @@ import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model
 import { DebugStateTable } from './DebugState'
 import { JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 import { ClientAPI } from '../../../lib/api/client'
+import { catchError } from '../../lib/lib'
+import { logger } from '../../../lib/logging'
 
 interface IDeviceItemProps {
 	parentDevice: PeripheralDevice | null
@@ -294,7 +296,9 @@ export const DeviceItem = reacti18next.withTranslation()(
 												</p>
 											),
 											onAccept: () => {
-												MeteorCall.peripheralDevice.removePeripheralDevice(this.props.device._id).catch(console.error)
+												MeteorCall.peripheralDevice
+													.removePeripheralDevice(this.props.device._id)
+													.catch(catchError('peripheralDevice.removePeripheralDevice'))
 											},
 										})
 									}}
@@ -561,9 +565,10 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 						systemStatus: systemStatus,
 					})
 				})
-				.catch(() => {
+				.catch((err) => {
 					if (this.destroyed) return
-					// console.error(err)
+
+					logger.error('systemStatus.getSystemStatus', err)
 					NotificationCenter.push(
 						new Notification(
 							'systemStatus_failed',
@@ -572,7 +577,6 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 							'RundownList'
 						)
 					)
-					return
 				})
 		}
 

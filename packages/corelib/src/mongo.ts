@@ -146,7 +146,6 @@ export function mongoWhere<T>(o: Record<string, any>, selector: MongoQuery<T>): 
 				}
 			}
 		} catch (e) {
-			// logger.warn(e || e.reason || e.toString()) // todo: why this logs empty message for TypeError (or any Error)?
 			ok = false
 		}
 	}

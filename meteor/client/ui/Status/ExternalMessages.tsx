@@ -19,6 +19,7 @@ import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ExternalMessageQueue } from '../../collections'
+import { catchError } from '../../lib/lib'
 
 interface IExternalMessagesProps {}
 interface IExternalMessagesState {
@@ -174,13 +175,13 @@ const ExternalMessagesInStudio = translateWithTracker<
 			this._cleanUp()
 		}
 		removeMessage(msg: ExternalMessageQueueObj) {
-			MeteorCall.externalMessages.remove(msg._id).catch(console.error)
+			MeteorCall.externalMessages.remove(msg._id).catch(catchError('externalMessages.remove'))
 		}
 		toggleHoldMessage(msg: ExternalMessageQueueObj) {
-			MeteorCall.externalMessages.toggleHold(msg._id).catch(console.error)
+			MeteorCall.externalMessages.toggleHold(msg._id).catch(catchError('externalMessages.toggleHold'))
 		}
 		retryMessage(msg: ExternalMessageQueueObj) {
-			MeteorCall.externalMessages.retry(msg._id).catch(console.error)
+			MeteorCall.externalMessages.retry(msg._id).catch(catchError('externalMessages.retry'))
 		}
 		renderMessageRow(msg: ExternalMessageQueueObj) {
 			const classes: string[] = ['message-row']

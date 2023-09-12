@@ -6,7 +6,7 @@ import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/Perip
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { IngestPart } from '@sofie-automation/blueprints-integration'
 import { parseMosString } from './lib'
-import { stringifyError } from '../../../../lib/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import * as _ from 'underscore'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
 import { runIngestOperation } from '../lib'

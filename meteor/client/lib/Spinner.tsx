@@ -1,7 +1,7 @@
 import * as React from 'react'
 
 interface SpinnerProps {
-	size?: string
+	size?: 'large' | 'medium' | 'small'
 	color?: string
 	className?: string
 }

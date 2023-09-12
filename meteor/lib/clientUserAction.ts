@@ -227,7 +227,7 @@ export function doUserAction<Result>(
 				doDefault = callback(err)
 			} else {
 				// If no callback has been defined, we should at least trace the error to console
-				console.error(err)
+				logger.error('doUserAction, no callback', err)
 			}
 			if (doDefault !== false) {
 				NotificationCenter.push(
@@ -266,7 +266,6 @@ export function eventContextForLog(e: any): [string, Time] {
 	}
 	if (!str) {
 		logger.error('Unknown event', e)
-		console.error(e)
 		str = 'N/A'
 	}
 

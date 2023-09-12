@@ -5,6 +5,7 @@ import { Tracker } from 'meteor/tracker'
 import * as _ from 'underscore'
 import { MeteorCall } from '../../lib/api/methods'
 import { ClientCollections, PublicationCollections } from '../../lib/collections/lib'
+import { logger } from '../../lib/logging'
 
 // Note: These things are convenience functions to be used during development:
 
@@ -36,17 +37,4 @@ if (debugData) {
 	setDebugData()
 }
 window['MeteorCall'] = MeteorCall
-
-const expectToRunWithinCache: any = {}
-export function expectToRunWithin(name: string, time = 1000): void {
-	if (expectToRunWithinCache[name]) {
-		if (expectToRunWithinCache[name] !== true) {
-			Meteor.clearTimeout(expectToRunWithinCache[name])
-			expectToRunWithinCache[name] = true
-		}
-	}
-	const timeout = Meteor.setTimeout(() => {
-		console.error('Expected to run within ' + time + 'ms: ' + name)
-	}, time)
-	expectToRunWithinCache[name] = timeout
-}
+window['logger'] = logger

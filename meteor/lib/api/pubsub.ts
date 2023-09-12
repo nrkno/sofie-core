@@ -62,6 +62,7 @@ import {
 } from '@sofie-automation/shared-lib/dist/package-manager/publications'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { RoutedMappings } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
+import { logger } from '../logging'
 
 /**
  * Ids of possible DDP subscriptions
@@ -321,6 +322,12 @@ export function meteorSubscribe<K extends keyof PubSubTypes>(
 	...args: Parameters<PubSubTypes[K]>
 ): Meteor.SubscriptionHandle {
 	if (Meteor.isClient) {
-		return Meteor.subscribe(name, ...args)
+		const callbacks = {
+			onError: (...errs: any[]) => {
+				logger.error('meteorSubscribe', name, ...args, ...errs)
+			},
+		}
+
+		return Meteor.subscribe(name, ...args, callbacks)
 	} else throw new Meteor.Error(500, 'meteorSubscribe is only available client-side')
 }

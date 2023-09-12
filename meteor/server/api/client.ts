@@ -1,5 +1,6 @@
 import { check } from '../../lib/check'
-import { literal, getCurrentTime, Time, getRandomId, stringifyError } from '../../lib/lib'
+import { literal, getCurrentTime, Time, getRandomId } from '../../lib/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
 import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
@@ -325,8 +326,7 @@ export namespace ServerClientAPI {
 			// Just run and return right away:
 			triggerWriteAccessBecauseNoCheckNecessary()
 			return executePeripheralDeviceFunctionWithCustomTimeout(deviceId, timeoutTime, action).catch(async (e) => {
-				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
-				logger.error(errMsg)
+				logger.error(stringifyError(e))
 				// allow the exception to be handled by the Client code
 				return Promise.reject(e)
 			})
@@ -360,7 +360,7 @@ export namespace ServerClientAPI {
 				return result
 			})
 			.catch(async (err) => {
-				const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
+				const errMsg = stringifyError(err)
 				logger.error(errMsg)
 				await UserActionsLog.updateAsync(actionId, {
 					$set: {
@@ -396,8 +396,7 @@ export namespace ServerClientAPI {
 				functionName,
 				args,
 			}).catch(async (e) => {
-				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
-				logger.error(errMsg)
+				logger.error(stringifyError(e))
 				// allow the exception to be handled by the Client code
 				return Promise.reject(e)
 			})
@@ -409,7 +408,7 @@ export namespace ServerClientAPI {
 			functionName,
 			args,
 		}).catch(async (err) => {
-			const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
+			const errMsg = stringifyError(err)
 			logger.error(errMsg)
 			// allow the exception to be handled by the Client code
 			return Promise.reject(err)
@@ -429,13 +428,13 @@ export namespace ServerClientAPI {
 }
 
 class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
-	async clientErrorReport(timestamp: Time, errorObject: any, errorString: string, location: string) {
+	async clientErrorReport(timestamp: Time, errorString: string, location: string) {
 		check(timestamp, Number)
 		triggerWriteAccessBecauseNoCheckNecessary() // TODO: discuss if is this ok?
 		logger.error(
 			`Uncaught error happened in GUI\n  in "${location}"\n  on "${
 				this.connection ? this.connection.clientAddress : 'N/A'
-			}"\n  at ${new Date(timestamp).toISOString()}:\n"${errorString}"\n${JSON.stringify(errorObject)}`
+			}"\n  at ${new Date(timestamp).toISOString()}:\n"${errorString}`
 		)
 	}
 	async clientLogNotification(timestamp: Time, from: string, severity: NoticeLevel, message: string, source?: any) {

@@ -3,7 +3,8 @@ import { check } from '../../../lib/check'
 import { registerClassToMeteorMethods } from '../../methods'
 import { NewStudiosAPI, StudiosAPIMethods } from '../../../lib/api/studios'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { literal, getRandomId, lazyIgnore, stringifyError } from '../../../lib/lib'
+import { literal, getRandomId, lazyIgnore } from '../../../lib/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import {
 	ExpectedPackages,
 	ExpectedPackageWorkStatuses,
