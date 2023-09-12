@@ -1,38 +1,63 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { TFunction, useTranslation } from 'react-i18next'
-import { EditAttribute } from '../lib/EditAttribute'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
 import { doUserAction, UserAction } from '../../lib/clientUserAction'
 import { MeteorCall } from '../../lib/api/methods'
 import { SnapshotId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DropdownInputOption } from '../lib/Components/DropdownInput'
 import { ClientAPI } from '../../lib/api/client'
 import { hashSingleUseToken } from '../../lib/api/userActions'
+import { DropdownInputControl, DropdownInputOption, getDropdownInputOptions } from '../lib/Components/DropdownInput'
+import { MultiLineTextInputControl } from '../lib/Components/MultiLineTextInput'
+import { TextInputControl } from '../lib/Components/TextInput'
+import { Spinner } from '../lib/Spinner'
 
-interface IProps {
-	playlist: RundownPlaylist
-}
+type ProblemType = 'nothing' | 'minor' | 'major'
+
+// const DEFAULT_STATE = {
+// 	q0: 'nothing',
+// 	q1: '',
+// 	q2: '',
+// }
 
 const DEFAULT_STATE = {
-	q0: 'nothing',
-	q1: '',
-	q2: '',
-}
+	problems: 'nothing' as ProblemType,
+	description: [],
+	userName: '' as const,
+} as const
 
-export function AfterBroadcastForm(props: IProps): JSX.Element {
+export function AfterBroadcastForm({ playlist }: { playlist: RundownPlaylist }): JSX.Element {
 	const { t } = useTranslation()
-	const shouldDeactivateRundown = !props.playlist.loop
-	const [obj, setObj] = useState(DEFAULT_STATE)
+	const shouldDeactivateRundown = !playlist.loop
+	const [problems, setProblems] = useState<ProblemType>(DEFAULT_STATE.problems)
+	const [description, setDescription] = useState<string[]>(DEFAULT_STATE.description.slice())
+	const [userName, setUserName] = useState<string>(DEFAULT_STATE.userName)
+	const [busy, setBusy] = useState(false)
+
+	function resetForm() {
+		setProblems(DEFAULT_STATE.problems)
+		setDescription(DEFAULT_STATE.description.slice())
+		setUserName(DEFAULT_STATE.userName)
+		setBusy(false)
+	}
 
 	function saveForm(e: React.MouseEvent<HTMLElement>) {
-		const answers = obj
+		setBusy(true)
+
+		const answers = {
+			q0: problems,
+			q1: description.join('\n'),
+			q2: userName,
+		}
+
+		e.persist()
 
 		const saveEvaluation = (snapshotId?: SnapshotId) => {
 			const evaluation: EvaluationBase = {
-				studioId: props.playlist.studioId,
-				playlistId: props.playlist._id,
+				studioId: playlist.studioId,
+				playlistId: playlist._id,
 				answers: answers,
+				snapshots: [],
 			}
 			if (snapshotId && evaluation.snapshots) evaluation.snapshots.push(snapshotId)
 
@@ -40,13 +65,11 @@ export function AfterBroadcastForm(props: IProps): JSX.Element {
 
 			if (shouldDeactivateRundown) {
 				doUserAction(t, e, UserAction.DEACTIVATE_RUNDOWN_PLAYLIST, (e, ts) =>
-					MeteorCall.userAction.deactivate(e, ts, props.playlist._id)
+					MeteorCall.userAction.deactivate(e, ts, playlist._id)
 				)
 			}
 
-			setObj({
-				...DEFAULT_STATE,
-			})
+			resetForm()
 		}
 
 		if (answers.q0 !== 'nothing' || answers.q1.trim() !== '') {
@@ -61,7 +84,7 @@ export function AfterBroadcastForm(props: IProps): JSX.Element {
 							e,
 							ts,
 							hashSingleUseToken(tokenResult.result),
-							props.playlist._id,
+							playlist._id,
 							'Evaluation form',
 							false
 						)
@@ -79,16 +102,7 @@ export function AfterBroadcastForm(props: IProps): JSX.Element {
 		}
 	}
 
-	function onUpdateValue(edit: any, newValue: any) {
-		const attr = edit.props.attribute
-
-		if (attr) {
-			setObj({
-				...obj,
-				[attr]: newValue,
-			})
-		}
-	}
+	const problemOptions = useMemo(() => getDropdownInputOptions<ProblemType>(getQuestionOptions(t)), [])
 
 	return (
 		<div className="afterbroadcastform-container" role="complementary" aria-labelledby="evaluation-header">
@@ -106,12 +120,11 @@ export function AfterBroadcastForm(props: IProps): JSX.Element {
 					<div className="question">
 						<p>{t('Did you have any problems with the broadcast?')}</p>
 						<div className="input q0">
-							<EditAttribute
-								obj={obj}
-								updateFunction={onUpdateValue}
-								attribute="q0"
-								type="dropdown"
-								options={getQuestionOptions(t)}
+							<DropdownInputControl
+								value={problems}
+								options={problemOptions}
+								handleUpdate={setProblems}
+								disabled={busy}
 							/>
 						</div>
 					</div>
@@ -122,19 +135,22 @@ export function AfterBroadcastForm(props: IProps): JSX.Element {
 							)}
 						</p>
 						<div className="input">
-							<EditAttribute obj={obj} updateFunction={onUpdateValue} attribute="q1" type="multiline" />
+							<MultiLineTextInputControl value={description} handleUpdate={setDescription} disabled={busy} />
 						</div>
 					</div>
 					<div className="question q2">
 						<p>{t('Your name')}</p>
 						<div className="input">
-							<EditAttribute obj={obj} updateFunction={onUpdateValue} attribute="q2" type="text" />
+							<TextInputControl value={userName} handleUpdate={setUserName} disabled={busy} />
 						</div>
 					</div>
 
-					<button className="btn btn-primary" onClick={saveForm}>
-						{!shouldDeactivateRundown ? t('Save message') : t('Save message and Deactivate Rundown')}
-					</button>
+					<div>
+						<button className="btn btn-primary" onClick={saveForm} disabled={busy}>
+							{!shouldDeactivateRundown ? t('Save message') : t('Save message and Deactivate Rundown')}
+						</button>
+						{busy ? <Spinner className="afterbroadcastform-spinner" size="small" /> : null}
+					</div>
 				</div>
 			</div>
 		</div>
