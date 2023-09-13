@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import ClassNames from 'classnames'
 import { logger } from '../../../lib/logging'
-import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { faHourglass, faCheck, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 
 import './PromiseButton.scss'
