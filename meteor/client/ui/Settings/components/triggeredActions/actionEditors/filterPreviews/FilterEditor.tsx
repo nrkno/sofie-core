@@ -5,6 +5,7 @@ import { EditAttribute, EditAttributeType } from '../../../../../../lib/EditAttr
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleRight, faCheck, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { sameWidth } from '../../../../../../lib/popperUtils'
+import { catchError } from '../../../../../../lib/lib'
 
 interface IProps {
 	fieldLabel: string
@@ -66,7 +67,7 @@ export const FilterEditor: React.FC<IProps> = function FilterEditor(props: IProp
 	}, [popperElement, referenceElement, opened, index])
 
 	useLayoutEffect(() => {
-		update && update().catch(console.error)
+		update && update().catch(catchError('FilterEditor update'))
 	}, [props.fieldLabel, props.valueLabel])
 
 	return (

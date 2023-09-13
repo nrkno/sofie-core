@@ -25,7 +25,7 @@ import { getRandomString, literal, unprotectString } from '../../../lib/lib'
 import { UploadButton } from '../../lib/uploadButton'
 import { doModalDialog } from '../../lib/ModalDialog'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
-import { fetchFrom } from '../../lib/lib'
+import { catchError, fetchFrom } from '../../lib/lib'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { Link } from 'react-router-dom'
 import { MeteorCall } from '../../../lib/api/methods'
@@ -90,7 +90,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			const { t, showStyleBaseId } = this.props
 			MeteorCall.rundownLayout
 				.createRundownLayout(t('New Layout'), this.props.layoutTypes[0], showStyleBaseId, this.props.customRegion._id)
-				.catch(console.error)
+				.catch(catchError('rundownLayout.createRundownLayout'))
 		}
 
 		onAddButton = (item: RundownLayoutBase) => {
@@ -197,7 +197,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				no: t('Cancel'),
 				message: t('Are you sure you want to delete the shelf layout "{{name}}"?', { name: item.name }),
 				onAccept: () => {
-					MeteorCall.rundownLayout.removeRundownLayout(item._id).catch(console.error)
+					MeteorCall.rundownLayout.removeRundownLayout(item._id).catch(catchError('rundownLayout.removeRundownLayout'))
 				},
 			})
 		}

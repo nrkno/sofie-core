@@ -3,6 +3,7 @@ import { PrompterViewInner, PrompterConfigMode } from '../PrompterView'
 import Spline from 'cubic-spline'
 
 import webmidi, { Input, InputEventControlchange } from 'webmidi'
+import { logger } from '../../../../lib/logging'
 
 /**
  * This class handles control of the prompter using
@@ -39,15 +40,21 @@ export class MidiPedalController extends ControllerAbstract {
 
 		// validate range settings, they need to be in sequence, or the logic will break
 		if (this.rangeNeutralMin <= this.rangeRevMin) {
-			console.error('rangeNeutralMin must be larger to rangeRevMin. Pedal control will not initialize.')
+			logger.error(
+				`MidiPedalController: rangeNeutralMin (${this.rangeNeutralMin}) must be larger to rangeRevMin (${this.rangeRevMin}). Pedal control will not initialize.`
+			)
 			return
 		}
 		if (this.rangeNeutralMax <= this.rangeNeutralMin) {
-			console.error('rangeNeutralMax must be larger to rangeNeutralMin. Pedal control will not initialize')
+			logger.error(
+				`MidiPedalController: rangeNeutralMax (${this.rangeNeutralMax}) must be larger to rangeNeutralMin (${this.rangeNeutralMin}). Pedal control will not initialize`
+			)
 			return
 		}
 		if (this.rangeFwdMax <= this.rangeNeutralMax) {
-			console.error('rangeFwdMax must be larger to rangeNeutralMax. Pedal control will not initialize')
+			logger.error(
+				`MidiPedalController: rangeFwdMax (${this.rangeFwdMax}) must be larger to rangeNeutralMax (${this.rangeNeutralMax}). Pedal control will not initialize`
+			)
 			return
 		}
 
@@ -72,8 +79,8 @@ export class MidiPedalController extends ControllerAbstract {
 		try {
 			webmidi.enable(this.setupMidiListeners.bind(this))
 		} catch (e: any) {
-			console.error(e)
-			console.warn(
+			logger.error('webmidi.enable', e)
+			logger.info(
 				'Are you accessing the page over HTTPS? If not, look at setting Chrome flag unsafely-treat-insecure-origin-as-secure'
 			)
 		}
@@ -100,7 +107,7 @@ export class MidiPedalController extends ControllerAbstract {
 
 	private setupMidiListeners(err: Error | undefined) {
 		if (err) {
-			console.error('Error enabling WebMIDI', err)
+			logger.error(err)
 			return
 		}
 
@@ -152,7 +159,7 @@ export class MidiPedalController extends ControllerAbstract {
 			this.lastSpeed = Math.round(this.speedSpline.at(inputValue))
 		} else {
 			// 4) we should never be able to hit this due to validation above
-			console.error(`Illegal input value ${inputValue}`)
+			logger.error(`Midi-pedal: Illegal input value ${inputValue}`)
 			return
 		}
 

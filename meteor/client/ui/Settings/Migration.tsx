@@ -13,6 +13,7 @@ import { EditAttribute, EditAttributeBase } from '../../lib/EditAttribute'
 import { MeteorCall } from '../../../lib/api/methods'
 import { checkForOldDataAndCleanUp } from './SystemManagement'
 import { UpgradesView } from './Upgrades'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 interface IProps {}
 interface IState {
@@ -80,7 +81,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 		}
 		setErrorMessage(err) {
 			this.setState({
-				errorMessage: _.isString(err) ? err : err.reason || err.toString() || err + '',
+				errorMessage: stringifyError(err),
 			})
 		}
 		updateVersions() {

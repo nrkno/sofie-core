@@ -12,7 +12,8 @@ import { RundownDataChangedEventContext, RundownTimingEventContext } from '../bl
 import { IBlueprintExternalMessageQueueObj } from '@sofie-automation/blueprints-integration'
 import { protectString, unDeepString } from '@sofie-automation/corelib/dist/protectedString'
 import _ = require('underscore')
-import { getRandomId, omit, removeNullyProperties, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { getRandomId, omit, removeNullyProperties } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { ExternalMessageQueueObj } from '@sofie-automation/corelib/dist/dataModel/ExternalMessageQueue'
 import { ICollection, MongoModifier } from '../db'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'

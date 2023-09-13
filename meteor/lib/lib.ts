@@ -5,7 +5,7 @@ import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from './logging'
 
 import { Time, TimeDuration } from '@sofie-automation/shared-lib/dist/lib/lib'
-import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { ReactiveVar } from 'meteor/reactive-var'
 export { Time, TimeDuration }
 

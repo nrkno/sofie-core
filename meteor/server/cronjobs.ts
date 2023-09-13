@@ -1,6 +1,7 @@
 import { PeripheralDevices, RundownPlaylists } from './collections'
 import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
-import { getCurrentTime, stringifyError } from '../lib/lib'
+import { getCurrentTime } from '../lib/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { TSR } from '@sofie-automation/blueprints-integration'

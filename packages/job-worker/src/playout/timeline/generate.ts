@@ -21,15 +21,8 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import {
-	applyToArray,
-	clone,
-	getRandomId,
-	literal,
-	normalizeArray,
-	omit,
-	stringifyError,
-} from '@sofie-automation/corelib/dist/lib'
+import { applyToArray, clone, getRandomId, literal, normalizeArray, omit } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../cache'
 import { logger } from '../../logging'
 import { getCurrentTime, getSystemVersion } from '../../lib'

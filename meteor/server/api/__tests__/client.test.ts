@@ -42,7 +42,7 @@ describe('ClientAPI', () => {
 		testInFiber('Returns a success response to the client', async () => {
 			SupressLogMessages.suppressLogMessage(/Uncaught error happened in GUI/i)
 			// should not throw:
-			await MeteorCall.client.clientErrorReport(1000, { error: 'Some Error' }, 'MockString', 'MockLocation')
+			await MeteorCall.client.clientErrorReport(1000, 'MockString', 'MockLocation')
 		})
 	})
 

@@ -3,6 +3,7 @@ import * as React from 'react'
 import { stringifyObjects } from '../../lib/lib'
 import { Meteor } from 'meteor/meteor'
 import { PubSubTypes } from '../../lib/api/pubsub'
+import { catchError } from './lib'
 export class MeteorReactComponent<IProps, IState = {}> extends React.Component<IProps, IState> {
 	private _subscriptions: { [id: string]: Meteor.SubscriptionHandle } = {}
 	private _computations: Array<Tracker.Computation> = []
@@ -19,7 +20,7 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 			const id = name + '_' + stringifyObjects(args)
 
 			const callbacks = {
-				onError: console.error,
+				onError: catchError(`subscribe(${name}, ${JSON.stringify(args)})`),
 			}
 			if (Tracker.active) {
 				// if in a reactive context, Meteor will keep track of duplicates of subscriptions

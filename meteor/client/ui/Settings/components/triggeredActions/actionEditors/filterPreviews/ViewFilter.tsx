@@ -6,6 +6,7 @@ import { usePopper } from 'react-popper'
 import { sameWidth } from '../../../../../../lib/popperUtils'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faAngleRight, faCheck, faTrash } from '@fortawesome/free-solid-svg-icons'
+import { catchError } from '../../../../../../lib/lib'
 
 interface IProps {
 	index: number
@@ -68,7 +69,7 @@ export const ViewFilter: React.FC<IProps> = function ViewFilter({
 	}, [popperElement, referenceElement, opened, index])
 
 	useLayoutEffect(() => {
-		update && update().catch(console.error)
+		update && update().catch(catchError('ViewFilter update'))
 	}, [link])
 
 	return (

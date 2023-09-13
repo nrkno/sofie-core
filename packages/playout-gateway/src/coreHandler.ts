@@ -12,6 +12,7 @@ import {
 	unprotectString,
 	Observer,
 	SubscriptionId,
+	stringifyError,
 } from '@sofie-automation/server-core-integration'
 import { MediaObject, DeviceOptionsAny, ActionExecutionResult } from 'timeline-state-resolver'
 import * as _ from 'underscore'
@@ -263,14 +264,11 @@ export class CoreHandler {
 		if (cmd) {
 			if (this._executedFunctions[unprotectString(cmd._id)]) return // prevent it from running multiple times
 
-			const cb = (err: any, res?: any) => {
-				if (err) {
-					this.logger.error('executeFunction error', {
-						error: err,
-						stacktrace: err.stack,
-					})
+			const cb = (errStr: string | null, res?: any) => {
+				if (errStr) {
+					this.logger.error(`executeFunction error: ${errStr}`)
 				}
-				fcnObject.core.coreMethods.functionReply(cmd._id, err, res).catch((error: any) => {
+				fcnObject.core.coreMethods.functionReply(cmd._id, errStr, res).catch((error: any) => {
 					this.logger.error(error)
 				})
 			}
@@ -292,10 +290,10 @@ export class CoreHandler {
 							cb(null, result)
 						})
 						.catch((e) => {
-							cb(e.toString(), null)
+							cb(stringifyError(e), null)
 						})
 				} catch (e: any) {
-					cb(e.toString(), null)
+					cb(stringifyError(e), null)
 				}
 			} else if (cmd.actionId && 'executeAction' in fcnObject) {
 				this.logger.debug(`Executing action "${cmd.actionId}", payload: ${JSON.stringify(cmd.payload)}`)

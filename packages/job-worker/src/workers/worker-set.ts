@@ -13,7 +13,7 @@ import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collect
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { InvalidateWorkerDataCache } from './caches'
 
 export class StudioWorkerSet {

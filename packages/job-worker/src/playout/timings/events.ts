@@ -2,7 +2,7 @@ import { JobContext } from '../../jobs'
 import { PartInstanceId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { logger } from '../../logging'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
-import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 const EVENT_WAIT_TIME = 500
 

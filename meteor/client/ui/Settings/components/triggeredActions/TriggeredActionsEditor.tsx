@@ -20,7 +20,7 @@ import { useDrop } from 'react-dnd'
 import { TriggerType } from '@sofie-automation/blueprints-integration'
 import { keyLabelsToCodes } from '../../../../lib/triggers/codesToKeyLabels'
 import classNames from 'classnames'
-import { fetchFrom } from '../../../../lib/lib'
+import { catchError, fetchFrom } from '../../../../lib/lib'
 import { NotificationCenter, Notification, NoticeLevel } from '../../../../../lib/notifications/notifications'
 import { Meteor } from 'meteor/meteor'
 import { doModalDialog } from '../../../../lib/ModalDialog'
@@ -286,11 +286,13 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 						}
 					)?._rank ?? 0) + 1000,
 			})
-			.catch(console.error)
+			.catch(catchError('triggeredActions.createTriggeredActions'))
 	}, [props.showStyleBaseId])
 
 	const onRemoveTriggeredAction = useCallback((triggeredActionId: TriggeredActionId) => {
-		MeteorCall.triggeredActions.removeTriggeredActions(triggeredActionId).catch(console.error)
+		MeteorCall.triggeredActions
+			.removeTriggeredActions(triggeredActionId)
+			.catch(catchError('triggeredActions.removeTriggeredActions'))
 	}, [])
 
 	const onDuplicateEntry = useCallback(
@@ -321,7 +323,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 						actions: applyAndValidateOverrides(triggeredAction.actionsWithOverrides).obj,
 					})
 					.then((duplicateTriggeredActionId) => setSelectedTriggeredActionId(duplicateTriggeredActionId))
-					.catch(console.error)
+					.catch(catchError('triggeredActions.createTriggeredActions'))
 			}
 		},
 		[setSelectedTriggeredActionId]
