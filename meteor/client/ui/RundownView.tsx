@@ -143,6 +143,7 @@ import {
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
 import { SegmentScratchpadContainer } from './SegmentScratchpad/SegmentScratchpadContainer'
+import { PromiseButton } from '../lib/Components/PromiseButton'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -2735,20 +2736,25 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			})
 		}
 
-		onTakeRundownSnapshot = (e: React.MouseEvent<HTMLButtonElement>) => {
+		onTakeRundownSnapshot = async (e: React.MouseEvent<HTMLButtonElement>): Promise<boolean> => {
 			const { t } = this.props
 			if (!this.props.playlist) {
-				return
+				return Promise.resolve(false)
 			}
-
 			const playlistId = this.props.playlist._id
 			const doneMessage = t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
-			doUserAction(
-				t,
-				e,
-				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
-				(e, ts) =>
-					MeteorCall.system.generateSingleUseToken().then((tokenResponse) => {
+			const errorMessage = t(
+				'Something went wrong when creating the snapshot. Please contact the system administrator if the problem persists.'
+			)
+
+			return new Promise<boolean>((resolve) => {
+				doUserAction(
+					t,
+					e,
+					UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
+					async (e, ts) => {
+						const tokenResponse = await MeteorCall.system.generateSingleUseToken()
+
 						if (ClientAPI.isClientResponseError(tokenResponse) || !tokenResponse.result) {
 							throw tokenResponse
 						}
@@ -2760,25 +2766,20 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 							'User requested log at' + getCurrentTime(),
 							false
 						)
-					}),
-				() => {
-					NotificationCenter.push(
-						new Notification(
-							undefined,
-							NoticeLevel.NOTIFICATION,
-							doneMessage,
-							'userAction',
-							undefined,
-							false,
-							undefined,
-							undefined,
-							5000
-						)
-					)
-					return false
-				},
-				doneMessage
-			)
+					},
+					(err: any) => {
+						if (err) {
+							NotificationCenter.push(new Notification(undefined, NoticeLevel.WARNING, errorMessage, 'userAction'))
+							resolve(false)
+						} else {
+							NotificationCenter.push(new Notification(undefined, NoticeLevel.NOTIFICATION, doneMessage, 'userAction'))
+							resolve(true)
+						}
+
+						return false
+					}
+				)
+			})
 		}
 
 		isAdLibQueueableAndNonFloated = (piece: AdLibPieceUi) => {
@@ -2952,9 +2953,9 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												{t('Show Hotkeys')}
 											</button>
 											<hr />
-											<button className="btn btn-secondary" onClick={this.onTakeRundownSnapshot}>
+											<PromiseButton className="btn btn-secondary" onClick={this.onTakeRundownSnapshot}>
 												{t('Take a Snapshot')}
-											</button>
+											</PromiseButton>
 											<hr />
 											{this.state.studioMode && (
 												<>
