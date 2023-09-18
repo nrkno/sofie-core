@@ -11,6 +11,7 @@ import { DropdownInputControl, DropdownInputOption, getDropdownInputOptions } fr
 import { MultiLineTextInputControl } from '../lib/Components/MultiLineTextInput'
 import { TextInputControl } from '../lib/Components/TextInput'
 import { Spinner } from '../lib/Spinner'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 
 type ProblemType = 'nothing' | 'minor' | 'major'
 
@@ -77,7 +78,7 @@ export function AfterBroadcastForm({ playlist }: { playlist: RundownPlaylist }):
 				t,
 				e,
 				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
-				(e, ts) =>
+				async (e, ts) =>
 					MeteorCall.system.generateSingleUseToken().then((tokenResult) => {
 						if (ClientAPI.isClientResponseError(tokenResult) || !tokenResult.result) throw tokenResult
 						return MeteorCall.userAction.storeRundownSnapshot(
@@ -92,8 +93,19 @@ export function AfterBroadcastForm({ playlist }: { playlist: RundownPlaylist }):
 				(err, snapshotId) => {
 					if (!err && snapshotId) {
 						saveEvaluation(snapshotId)
-					} else {
-						saveEvaluation()
+						return false
+					}
+					saveEvaluation()
+					if (err && err.code === 503) {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.CRITICAL,
+								t('Could not create a snapshot for the evaluation, because the previous one was just created'),
+								'userAction'
+							)
+						)
+						return false
 					}
 				}
 			)
