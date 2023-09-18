@@ -119,7 +119,7 @@ jobs:
       - name: Get the Docker tag for GHCR
         id: ghcr-tag
         if: steps.check-build-and-push.outputs.enable == 'true'
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: |
             ghcr.io/${{ github.repository }}-server-core
@@ -131,7 +131,7 @@ jobs:
       - name: Get the Docker tag for DockerHub
         id: dockerhub-tag
         if: steps.check-build-and-push.outputs.enable == 'true'
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: |
             ${{ secrets.DOCKERHUB_IMAGE_PREFIX }}server-core
@@ -280,7 +280,7 @@ jobs:
       - name: Get the Docker tag for GHCR
         id: ghcr-tag
         if: steps.check-build-and-push.outputs.enable == 'true'
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: |
             ghcr.io/${{ github.repository }}-${{ matrix.gateway-name }}
@@ -292,7 +292,7 @@ jobs:
       - name: Get the Docker tag for DockerHub
         id: dockerhub-tag
         if: steps.check-build-and-push.outputs.enable == 'true'
-        uses: docker/metadata-action@v4
+        uses: docker/metadata-action@v5
         with:
           images: |
             ${{ secrets.DOCKERHUB_IMAGE_PREFIX }}${{ matrix.gateway-name }}
