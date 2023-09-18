@@ -14,6 +14,7 @@ import { PieceContentStatusObj } from '../../../lib/mediaObjects'
 import { deepFreeze } from '@sofie-automation/corelib/dist/lib'
 import _ from 'underscore'
 import { useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 
 type AnyPiece = {
 	piece?: BucketAdLibUi | IAdLibListItem | AdLibPieceUi | PieceUi | BucketAdLibActionUi | undefined
@@ -170,5 +171,20 @@ export function useContentStatusForPiece(
 				  })?.status
 				: undefined,
 		[piece?._id, piece?.startRundownId, piece?.startSegmentId]
+	)
+}
+
+export function useContentStatusForPieceInstance(
+	piece: Pick<PieceInstance, '_id' | 'rundownId'> | undefined
+): PieceContentStatusObj | undefined {
+	return useTracker(
+		() =>
+			piece
+				? UIPieceContentStatuses.findOne({
+						pieceId: piece._id,
+						rundownId: piece.rundownId || { $exists: false },
+				  })?.status
+				: undefined,
+		[piece?._id, piece?.rundownId]
 	)
 }

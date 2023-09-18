@@ -9,6 +9,7 @@ import { PieceLifespan, VTContent } from '@sofie-automation/blueprints-integrati
 import { OffsetPosition } from '../../../utils/positions'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { IFloatingInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
+import { LoopingPieceIcon } from '../../../lib/ui/icons/looping'
 
 export type SourceDurationLabelAlignment = 'left' | 'right'
 
@@ -121,6 +122,11 @@ export class CustomLayerItemRenderer<
 			return time > 0 ? time : false
 		}
 		return false
+	}
+
+	protected renderLoopIcon(): JSX.Element | null {
+		if (!this.props.piece.instance.piece.content?.loop) return null
+		return <LoopingPieceIcon className="segment-timeline__piece__label-icon" playing={this.props.showMiniInspector} />
 	}
 
 	protected renderOverflowTimeLabel(): JSX.Element | null {

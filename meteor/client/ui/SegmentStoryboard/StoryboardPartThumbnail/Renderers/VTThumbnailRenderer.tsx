@@ -11,6 +11,7 @@ import { FreezeFrameIcon } from '../../../../lib/ui/icons/freezeFrame'
 import { PieceStatusIcon } from '../../../../lib/ui/PieceStatusIcon'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { FREEZE_FRAME_FLASH } from '../../../SegmentContainer/withResolvedSegment'
+import { LoopingPieceIcon } from '../../../../lib/ui/icons/looping'
 
 export function VTThumbnailRenderer({
 	partId,
@@ -65,6 +66,7 @@ export function VTThumbnailRenderer({
 			>
 				{(timingContext) => {
 					if (!timingContext.partPlayed || !timingContext.partDisplayDurations) return null
+					if (pieceInstance.instance.piece.content?.loop) return null
 
 					const partPlayed = timingContext.partPlayed[unprotectString(partId)] ?? 0
 					const contentEnd =
@@ -104,6 +106,11 @@ export function VTThumbnailRenderer({
 					) : null
 				}}
 			</RundownTimingConsumer>
+			{pieceInstance.instance.piece.content?.loop && (
+				<div className="segment-storyboard__thumbnail__countdown">
+					<LoopingPieceIcon className="segment-storyboard__thumbnail__countdown-icon" playing={hovering} />
+				</div>
+			)}
 			<div className="segment-storyboard__thumbnail__label">
 				{noticeLevel !== null && <PieceStatusIcon noticeLevel={noticeLevel} />}
 				{pieceInstance.instance.piece.name}

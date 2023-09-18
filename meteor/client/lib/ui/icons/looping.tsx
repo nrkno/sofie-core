@@ -1,4 +1,7 @@
-import React from 'react'
+import React, { JSX } from 'react'
+// @ts-expect-error Not recognized by Typescript
+import * as loopAnimation from './icon-loop.json'
+import { Lottie } from '@crello/react-lottie'
 
 export function LoopingIcon(props?: React.SVGProps<SVGSVGElement>): JSX.Element {
 	return (
@@ -10,4 +13,21 @@ export function LoopingIcon(props?: React.SVGProps<SVGSVGElement>): JSX.Element 
 			/>
 		</svg>
 	)
+}
+
+export function LoopingPieceIcon({ className, playing }: { className?: string; playing: boolean }): JSX.Element {
+	return (
+		<div className={`${className} label-icon label-loop-icon`}>
+			<Lottie config={LOOPING_PIECE_ICON} width="24px" height="24px" playingState={playing ? 'playing' : 'stopped'} />
+		</div>
+	)
+}
+
+const LOOPING_PIECE_ICON = {
+	loop: true,
+	autoplay: false,
+	animationData: loopAnimation,
+	rendererSettings: {
+		preserveAspectRatio: 'xMidYMid slice',
+	},
 }

@@ -4,6 +4,7 @@ import { VTFloatingInspector } from '../../../FloatingInspectors/VTFloatingInspe
 import { IDefaultRendererProps } from './DefaultRenderer'
 import { getNoticeLevelForPieceStatus } from '../../../../../lib/notifications/notifications'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { LoopingPieceIcon } from '../../../../lib/ui/icons/looping'
 
 export function VTRenderer({
 	piece: pieceInstance,
@@ -39,6 +40,9 @@ export function VTRenderer({
 				previewUrl={pieceInstance.contentStatus?.previewUrl}
 			/>
 			{pieceInstance.instance.piece.name}
+			{pieceInstance.instance.piece.content?.loop && (
+				<LoopingPieceIcon className="segment-storyboard__part__piece-icon" playing={!!hovering} />
+			)}
 		</>
 	)
 }
