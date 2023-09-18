@@ -9,8 +9,10 @@ export type WithTimeline<T extends BaseContent> = T & {
 export interface BaseContent {
 	editable?: BaseEditableParameters
 
+	/** Is this content looping, or will it only play once. This property is used to show a "looping" icon on the Piece. Default is `false` */
 	loop?: boolean
 
+	/** Length of the source content (in milliseconds). This property is used to show "freeze-frame" icons and countdowns. Default is `undefined`, meaning the content has no specific duration */
 	sourceDuration?: number
 	ignoreMediaObjectStatus?: boolean
 	ignoreBlackFrames?: boolean
