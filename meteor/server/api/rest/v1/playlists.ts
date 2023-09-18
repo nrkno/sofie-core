@@ -13,7 +13,7 @@ import {
 	SegmentId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Match, check } from '../../../../lib/check'
-import { PlaylistsRestAPI } from '../../../../lib/api/rest'
+import { PlaylistsRestAPI } from '../../../../lib/api/rest/v1'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../../../lib/api/client'
 import {

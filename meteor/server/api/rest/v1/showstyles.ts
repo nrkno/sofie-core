@@ -5,7 +5,7 @@ import {
 	ShowStyleBaseAction,
 	ShowStyleBaseActionType,
 	ShowStylesRestAPI,
-} from '../../../../lib/api/rest'
+} from '../../../../lib/api/rest/v1'
 import { logger } from '../../../logging'
 import { APIFactory, APIRegisterHook, ServerAPIContext } from './types'
 import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/dist/dataModel/Ids'

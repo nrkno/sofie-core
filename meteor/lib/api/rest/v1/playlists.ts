@@ -1,4 +1,4 @@
-import { ClientAPI } from '../client'
+import { ClientAPI } from '../../client'
 import {
 	AdLibActionId,
 	BucketAdLibId,

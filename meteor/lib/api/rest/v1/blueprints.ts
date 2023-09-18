@@ -1,6 +1,6 @@
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Meteor } from 'meteor/meteor'
-import { ClientAPI } from '../client'
+import { ClientAPI } from '../../client'
 
 /* *************************************************************************
 This file contains types and interfaces that are used by the REST API.

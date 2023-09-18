@@ -1,4 +1,4 @@
-import { ClientAPI } from '../client'
+import { ClientAPI } from '../../client'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Meteor } from 'meteor/meteor'
 

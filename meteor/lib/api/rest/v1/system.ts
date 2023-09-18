@@ -1,5 +1,5 @@
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ClientAPI } from '../client'
+import { ClientAPI } from '../../client'
 import { Meteor } from 'meteor/meteor'
 
 /* *************************************************************************

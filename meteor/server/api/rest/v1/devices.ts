@@ -4,7 +4,7 @@ import {
 	DevicesRestAPI,
 	PeripheralDeviceActionRestart,
 	PeripheralDeviceActionType,
-} from '../../../../lib/api/rest'
+} from '../../../../lib/api/rest/v1'
 import { logger } from '../../../logging'
 import { APIFactory, APIRegisterHook, ServerAPIContext } from './types'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
