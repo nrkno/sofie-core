@@ -7,6 +7,7 @@ export { SubscriptionId } from './lib/subscriptions'
 
 // Re-export some util from shared-lib
 export * from '@sofie-automation/shared-lib/dist/lib/lib'
+export * from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 export * from '@sofie-automation/shared-lib/dist/lib/protectedString'
 export * from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 export * from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'

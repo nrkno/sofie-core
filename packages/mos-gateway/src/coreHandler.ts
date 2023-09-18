@@ -8,6 +8,7 @@ import {
 	protectString,
 	StatusCode,
 	unprotectString,
+	stringifyError,
 } from '@sofie-automation/server-core-integration'
 import * as Winston from 'winston'
 
@@ -201,10 +202,10 @@ export class CoreHandler {
 			this.logger.debug(cmd.functionName || cmd.actionId || '', cmd.args)
 			this._executedFunctions[unprotectString(cmd._id)] = true
 			// console.log('executeFunction', cmd)
-			const cb = (err: any, res?: any) => {
+			const cb = (errStr: string | null, res?: any) => {
 				// console.log('cb', err, res)
-				if (err) {
-					this.logger.error('executeFunction error', err, err.stack)
+				if (errStr) {
+					this.logger.error(`executeFunction error: ${errStr}`)
 				}
 
 				if (!fcnObject.core) {
@@ -212,7 +213,7 @@ export class CoreHandler {
 				}
 
 				fcnObject.core.coreMethods
-					.functionReply(cmd._id, err, res)
+					.functionReply(cmd._id, errStr, res)
 					.then(() => {
 						// console.log('cb done')
 					})
@@ -231,10 +232,10 @@ export class CoreHandler {
 						cb(null, result)
 					})
 					.catch((e) => {
-						cb(e.toString(), null)
+						cb(stringifyError(e), null)
 					})
 			} catch (e: any) {
-				cb(e.toString(), null)
+				cb(stringifyError(e), null)
 			}
 		}
 	}

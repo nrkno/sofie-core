@@ -11,7 +11,7 @@ sidebar_position: 1
 ### Sofie Core
 
 **Sofie&nbsp;Core** is a web server which handle business logic and serves the web GUI.  
-It is a [NodeJS](https://nodejs.org/) process backed up by a [MongoDB](https://www.mongodb.com/) database and based on the framework [Meteor](http://meteor.com/).  
+It is a [NodeJS](https://nodejs.org/) process backed up by a [MongoDB](https://www.mongodb.com/) database and based on the framework [Meteor](http://meteor.com/).
 
 ### Gateways
 
@@ -85,9 +85,7 @@ An AdLib isn't added to the Part in the GUI until it starts playing, instead you
 
 ## Views
 
-Being a web-based system, Sofie has a number of customisable, user-facing web [views](features/sofie-views) used for control and monitoring.
-
-
+Being a web-based system, Sofie has a number of customisable, user-facing web [views](features/sofie-views.md) used for control and monitoring.
 
 ## Blueprints
 
@@ -104,19 +102,19 @@ There are 3 types of blueprints, and all 3 must be uploaded into Sofie before th
 
 Handle things on the _System level_.  
 Documentation on the interface to be exposed by the Blueprint:  
-[https://github.com/nrkno/sofie-sofie-blueprints-integration/blob/master/src/api.ts\#L52](https://github.com/nrkno/sofie-sofie-blueprints-integration/blob/master/src/api.ts#L52)
+[https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L75](https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L75)
 
 ### Studio Blueprints
 
 Handle things on the _Studio level_, like "which showstyle to use for this rundown".  
 Documentation on the interface to be exposed by the Blueprint:  
-[https://github.com/nrkno/sofie-sofie-blueprints-integration/blob/master/src/api.ts\#L57](https://github.com/nrkno/sofie-sofie-blueprints-integration/blob/master/src/api.ts#L57)
+[https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L85](https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L85)
 
 ### Showstyle Blueprints
 
 Handle things on the _Showstyle level_, like generating [_Baseline_](#baseline), _Segments_, _Parts, Pieces_ and _Timelines_ in a rundown.  
 Documentation on the interface to be exposed by the Blueprint:  
-[https://github.com/nrkno/sofie-sofie-blueprints-integration/blob/master/src/api.ts\#L72](https://github.com/nrkno/sofie-sofie-blueprints-integration/blob/master/src/api.ts#L72)
+[https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L117](https://github.com/nrkno/sofie-core/blob/master/packages/blueprints-integration/src/api.ts#L117)
 
 ## Timeline
 
@@ -126,7 +124,7 @@ The Timeline is a collection of timeline-objects, that together form a "target s
 
 The timeline-objects can be programmed to contain relative references to each other, so programming things like _"play this thing right after this other thing"_ is as easy as `{start: { #otherThing.end }}`
 
-The [Playout Gateway](../for-developers/libraries) picks up the timeline from Sofie&nbsp;Core and \(using the [TSR timeline-state-resolver](https://github.com/nrkno/sofie-timeline-state-resolver)\) controls the playout devices to make sure that they actually play what is intended.
+The [Playout Gateway](../for-developers/libraries.md) picks up the timeline from Sofie&nbsp;Core and \(using the [TSR timeline-state-resolver](https://github.com/nrkno/sofie-timeline-state-resolver)\) controls the playout devices to make sure that they actually play what is intended.
 
 ![Example of 2 objects in a timeline: The #video object, destined to play at a certain time, and #gfx0, destined to start 15 seconds into the video.](/img/docs/main/features/timeline.png)
 
@@ -134,7 +132,7 @@ The [Playout Gateway](../for-developers/libraries) picks up the timeline from So
 
 The Sofie system is made to work with a modern web- and IT-based approach in mind. Therefore, the Sofie&nbsp;Core can be run either on-site, or in an off-site cloud.
 
-![Sofie&nbsp;Core can run in the cloud](/img/docs/main/features/sofie-web-architecture.png)
+![Sofie Core can run in the cloud](/img/docs/main/features/sofie-web-architecture.png)
 
 One drawback of running in a cloud over the public internet is the - sometimes unpredictable - latency. The Timeline overcomes this by moving all the immediate control of the playout devices to the Playout Gateway, which is intended to run on a local network, close to the hardware it controls.  
 This also gives the system a simple way of load-balancing - since the number of web-clients or load on Sofie&nbsp;Core won't affect the playout.
@@ -159,7 +157,7 @@ _Sofie&nbsp;Core_ generates the timeline using:
 - The [Next:ed Part](#next-point-and-lookahead) and Parts that come after it \(the [Lookahead](#lookahead)\)
 - Any [AdLibs](#adlib-pieces) the user has manually selected to play
 
-The [**Playout Gateway**](../for-developers/libraries#gateways) then picks up the new timeline, and pipes it into the [\(TSR\) timeline-state-resolver](https://github.com/nrkno/sofie-timeline-state-resolver) library.
+The [**Playout Gateway**](../for-developers/libraries.md#gateways) then picks up the new timeline, and pipes it into the [\(TSR\) timeline-state-resolver](https://github.com/nrkno/sofie-timeline-state-resolver) library.
 
 The TSR then...
 

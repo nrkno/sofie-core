@@ -27,7 +27,8 @@ import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { DBUser } from '../../lib/collections/Users'
 import { WorkerStatus } from '../../lib/collections/Workers'
 import { registerIndex } from './indices'
-import { getCurrentTime, MeteorStartupAsync, stringifyError } from '../../lib/lib'
+import { getCurrentTime, MeteorStartupAsync } from '../../lib/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import {
 	createAsyncOnlyMongoCollection,
 	createAsyncOnlyReadOnlyMongoCollection,
@@ -63,7 +64,7 @@ export const CoreSystem = createAsyncOnlyMongoCollection<ICoreSystem>(Collection
 		const cred = await resolveCredentials({ userId: userId })
 		const access = await allowAccessToCoreSystem(cred)
 		if (!access.update) return logNotAllowed('CoreSystem', access.reason)
-		return allowOnlyFields(doc, fields, ['support', 'systemInfo', 'name', 'logLevel', 'apm', 'cron'])
+		return allowOnlyFields(doc, fields, ['support', 'systemInfo', 'name', 'logLevel', 'apm', 'cron', 'logo'])
 	},
 })
 

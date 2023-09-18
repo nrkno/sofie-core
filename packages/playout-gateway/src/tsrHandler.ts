@@ -23,7 +23,7 @@ import * as crypto from 'crypto'
 import * as cp from 'child_process'
 
 import * as _ from 'underscore'
-import { Observer } from '@sofie-automation/server-core-integration'
+import { Observer, stringifyError } from '@sofie-automation/server-core-integration'
 import { Logger } from 'winston'
 import { disableAtemUpload } from './config'
 import Debug from 'debug'
@@ -164,9 +164,9 @@ export class TSRHandler {
 				cmdReply.response &&
 				cmdReply.response.code === 404
 			) {
-				this.logger.warn(`TSR: ${e.toString()}`, args)
+				this.logger.warn(`TSR: ${stringifyError(e)}`, args)
 			} else {
-				this.logger.error(`TSR: ${e.toString()}`, args)
+				this.logger.error(`TSR: ${stringifyError(e)}`, args)
 			}
 		})
 		this.tsr.on('info', (msg, ...args) => {
@@ -846,16 +846,15 @@ export class TSRHandler {
 			const onClearMediaObjectCollection = (collectionId: string) => {
 				coreTsrHandler.onClearMediaObjectCollection(collectionId)
 			}
-			const fixError = (e: any): string => {
+			const fixLog = (e: string): string => `Device "${device.deviceName || deviceId}" (${device.instanceId})` + e
+			const fixError = (e: Error): any => {
 				const name = `Device "${device.deviceName || deviceId}" (${device.instanceId})`
-				if (e.reason) e.reason = name + ': ' + e.reason
-				if (e.message) e.message = name + ': ' + e.message
-				if (e.stack) {
-					e.stack += '\nAt device' + name
-				}
-				if (_.isString(e)) e = name + ': ' + e
 
-				return e
+				return {
+					message: e.message && name + ': ' + e.message,
+					name: e.name && name + ': ' + e.name,
+					stack: e.stack && e.stack + '\nAt device' + name,
+				}
 			}
 			const fixContext = (...context: any[]): any => {
 				return {
@@ -896,14 +895,15 @@ export class TSRHandler {
 			await device.device.on('updateMediaObject', onUpdateMediaObject as () => void)
 			await device.device.on('clearMediaObjects', onClearMediaObjectCollection as () => void)
 
-			await device.device.on('info', ((e: any, ...args: any[]) => {
-				this.logger.info(fixError(e), fixContext(args))
+			// note - these callbacks do not give type warnings. check them manually against TSR typings
+			await device.device.on('info', ((info: string) => {
+				this.logger.info(fixLog(info))
 			}) as () => void)
-			await device.device.on('warning', ((e: any, ...args: any[]) => {
-				this.logger.warn(fixError(e), fixContext(args))
+			await device.device.on('warning', ((warning: string) => {
+				this.logger.warn(fixLog(warning))
 			}) as () => void)
-			await device.device.on('error', ((e: any, ...args: any[]) => {
-				this.logger.error(fixError(e), fixContext(args))
+			await device.device.on('error', ((context: string, err: Error) => {
+				this.logger.error(fixError(err), fixContext(context))
 			}) as () => void)
 
 			await device.device.on('debug', (...args: any[]) => {

@@ -3,6 +3,36 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.50.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.4...v1.50.0-in-testing.5) (2023-08-25)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+# [1.50.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.7...v1.50.0-in-testing.4) (2023-08-23)
+
+
+
+# [1.50.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.5...v1.50.0-in-testing.3) (2023-08-17)
+
+
+
+# [1.50.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.1...v1.50.0-in-testing.2) (2023-07-17)
+
+
+### Features
+
+* bumps nightly tsr and types ([77f0bf2](https://github.com/nrkno/tv-automation-server-core/commit/77f0bf2efe569ea7cc348f981c3f17e55273c6e4))
+* move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
+* peripheral device tidying ([#906](https://github.com/nrkno/tv-automation-server-core/issues/906)) ([0795ae5](https://github.com/nrkno/tv-automation-server-core/commit/0795ae5c0517114a34e350d5a5afbf7a731e9794))
+* trs actions in blueprints rundown hooks ([bb5e442](https://github.com/nrkno/tv-automation-server-core/commit/bb5e4422fa32e1af1e520e0c288360b304da4289))
+
+
+
+
+
 # [1.50.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.5...v1.50.0-in-testing.3) (2023-08-17)
 
 
@@ -46,6 +76,22 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
 * peripheral device tidying ([#906](https://github.com/nrkno/tv-automation-server-core/issues/906)) ([0795ae5](https://github.com/nrkno/tv-automation-server-core/commit/0795ae5c0517114a34e350d5a5afbf7a731e9794))
 * trs actions in blueprints rundown hooks ([bb5e442](https://github.com/nrkno/tv-automation-server-core/commit/bb5e4422fa32e1af1e520e0c288360b304da4289))
+
+
+
+
+
+# [1.49.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.6...v1.49.0-in-testing.7) (2023-08-22)
+
+**Note:** Version bump only for package playout-gateway
+
+
+
+
+
+# [1.49.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.5...v1.49.0-in-testing.6) (2023-08-22)
+
+**Note:** Version bump only for package playout-gateway
 
 
 
@@ -95,6 +141,15 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 # [1.48.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.48.0-in-testing.1) (2023-01-11)
 
 
+
+
+## [1.47.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.6-0...v1.47.6) (2023-09-04)
+
+
+
+
+## [1.47.6-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.5...v1.47.6-0) (2023-09-01)
+
 ### Bug Fixes
 
 * handle incomplete peripheralDeviceCommands ([40f691e](https://github.com/nrkno/tv-automation-server-core/commit/40f691e0e9fca1def233b67d2cd3f1cded7152ca))
@@ -115,6 +170,17 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 # [1.49.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.2...v1.49.0-in-testing.3) (2023-04-18)
+
+
+
+
+### Bug Fixes
+
+* **playout-gw:** error serialisation for logging ([9f27bd5](https://github.com/nrkno/tv-automation-server-core/commit/9f27bd53a0dd680b6346e8c31085703d56846728))
+* **playout-gw:** init device settings on startup ([009ec6c](https://github.com/nrkno/tv-automation-server-core/commit/009ec6c069bfde4edc2d826d24fbd535e414201b))
+* **playout-gw:** logs from console.log ([ee8001b](https://github.com/nrkno/tv-automation-server-core/commit/ee8001b5c15d36fe2714d4171d7a2dd91e27d203))
+
+
 
 
 

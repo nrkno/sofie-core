@@ -18,7 +18,9 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 
 	/** A list of config items this blueprint expects to be available on the Studio */
 	studioConfigSchema: JSONBlob<JSONSchema>
-	/** A list of Migration steps related to a Studio */
+	/** A list of Migration steps related to a Studio
+	 * @deprecated This has been replaced with `validateConfig` and `applyConfig`
+	 */
 	studioMigrations: MigrationStepStudio[]
 
 	/** The config presets exposed by this blueprint */
@@ -71,7 +73,6 @@ export interface StudioBlueprintManifest<TRawConfig = IBlueprintConfig, TProcess
 
 export interface BlueprintResultStudioBaseline {
 	timelineObjects: TimelineObjectCoreExt<TSR.TSRTimelineContent>[]
-	/** @deprecated */
 	expectedPlayoutItems?: ExpectedPlayoutItemGeneric[]
 	expectedPackages?: ExpectedPackage.Any[]
 }

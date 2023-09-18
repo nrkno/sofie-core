@@ -6,12 +6,12 @@ import { applyToArray, clone, normalizeArray, protectString } from '../../../lib
 import { CustomCollectionName, PubSub } from '../../../lib/api/pubsub'
 import {
 	TimelineState,
-	Resolver,
 	ResolvedTimelineObjectInstance,
 	ResolvedTimeline,
 	ResolvedTimelineObject,
-	ResolvedStates,
 	TimelineObjectInstance,
+	resolveTimeline,
+	getResolvedState,
 } from 'superfly-timeline'
 import { TimelineContentObject, transformTimeline } from '@sofie-automation/corelib/dist/playout/timeline'
 import { useCurrentTime } from '../../lib/lib'
@@ -58,7 +58,7 @@ function ComponentTimelineSimulate({ studioId }: ITimelineSimulateProps) {
 	const now = useCurrentTime()
 	const tlComplete = useTracker(() => StudioTimeline.findOne(studioId), [studioId])
 
-	const [resolvedTl, errorMsgResolve] = useMemo(() => {
+	const [resolvedTimeline, errorMsgResolve] = useMemo(() => {
 		try {
 			const timelineObj = tlComplete && deserializeTimelineBlob(tlComplete.timelineBlob)
 			console.log('regen timeline', tlComplete?.timelineHash, tlComplete?.generated)
@@ -102,38 +102,31 @@ function ComponentTimelineSimulate({ studioId }: ITimelineSimulateProps) {
 			}
 
 			// TODO - dont repeat unless changed
-			const tl = Resolver.resolveTimeline(timeline as any, { time: tlComplete?.generated || now })
+			const tl = resolveTimeline(timeline as any, { time: now })
 			return [tl, undefined]
 		} catch (e) {
 			return [undefined, `Failed to resolveTimeline:\n${e}`]
 		}
 	}, [tlComplete, now])
 
-	const [allStates, errorMsgStates] = useMemo(() => {
-		try {
-			const states = resolvedTl ? Resolver.resolveAllStates(resolvedTl) : undefined
-			return [states, undefined]
-		} catch (e) {
-			return [undefined, `Failed to resolveAllStates:\n${e}`]
-		}
-	}, [resolvedTl, now])
-
 	return (
 		<div>
 			<div>
-				{errorMsgResolve ? <p>{errorMsgResolve} </p> : ''}
-
 				<h2 className="mhn">Timeline state</h2>
-				{errorMsgStates ? <p>{errorMsgStates}</p> : <TimelineStateTable allStates={allStates} now={now} />}
+				{errorMsgResolve ? (
+					<p>{errorMsgResolve}</p>
+				) : (
+					<TimelineStateTable resolvedTimeline={resolvedTimeline} now={now} />
+				)}
 
 				<div>
 					<h2 className="mhn">Instances</h2>
-					<TimelineInstancesTable resolvedTl={resolvedTl} />
+					<TimelineInstancesTable resolvedTl={resolvedTimeline} />
 				</div>
 
 				<div>
 					<h2 className="mhn">Events</h2>
-					<TimelineChangesLog resolvedTl={resolvedTl} timelineHash={tlComplete?.timelineHash} />
+					<TimelineChangesLog resolvedTl={resolvedTimeline} timelineHash={tlComplete?.timelineHash} />
 				</div>
 			</div>
 		</div>
@@ -183,19 +176,21 @@ function FilterInput({ filterChanged }: FilterInputProps) {
 
 interface TimelineStateTableProps {
 	now: number
-	allStates: ResolvedStates | undefined
+	resolvedTimeline: ResolvedTimeline | undefined
 }
-function TimelineStateTable({ allStates, now }: TimelineStateTableProps) {
+function TimelineStateTable({ resolvedTimeline, now }: TimelineStateTableProps) {
 	const [viewTime, setViewTime] = useState<number | null>(null)
 	const selectViewTime = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
 		const val = Number(e.target.value)
 		setViewTime(isNaN(val) ? null : val)
 	}, [])
 
-	const state = allStates ? Resolver.getState(allStates, viewTime ?? now) : undefined
-	const times = _.uniq((allStates?.nextEvents ?? []).map((e) => e.time))
-
 	const [layerFilter, setLayerFilter] = useState<FilterInputValue>(undefined)
+
+	if (!resolvedTimeline) return null
+
+	const state = getResolvedState(resolvedTimeline, viewTime ?? now, 1)
+	const times = _.uniq((state?.nextEvents ?? []).map((e) => e.time))
 
 	return (
 		<div>

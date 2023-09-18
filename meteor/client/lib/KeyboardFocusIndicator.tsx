@@ -5,6 +5,7 @@ import { getAllowStudio, getAllowConfigure, getAllowService } from '../lib/local
 
 import { MeteorCall } from '../../lib/api/methods'
 import { getCurrentTime } from '../../lib/lib'
+import { catchError } from './lib'
 
 interface IKeyboardFocusIndicatorState {
 	inFocus: boolean
@@ -58,9 +59,13 @@ export class KeyboardFocusIndicator extends React.Component<
 				getAllowService(),
 			]
 			if (focusNow) {
-				MeteorCall.userAction.guiFocused('checkFocus', getCurrentTime(), viewInfo).catch(console.error)
+				MeteorCall.userAction
+					.guiFocused('checkFocus', getCurrentTime(), viewInfo)
+					.catch(catchError('userAction.guiFocused("checkFocus")'))
 			} else {
-				MeteorCall.userAction.guiBlurred('checkFocus', getCurrentTime(), viewInfo).catch(console.error)
+				MeteorCall.userAction
+					.guiBlurred('checkFocus', getCurrentTime(), viewInfo)
+					.catch(catchError('userAction.guiBlurred("checkFocus")'))
 			}
 		}
 	}

@@ -43,7 +43,6 @@ function extractExpectedPlayoutItems(
 	return expectedPlayoutItemsGeneric
 }
 
-/** @deprecated */
 export async function updateExpectedPlayoutItemsOnRundown(context: JobContext, cache: CacheForIngest): Promise<void> {
 	const expectedPlayoutItems: ExpectedPlayoutItem[] = []
 

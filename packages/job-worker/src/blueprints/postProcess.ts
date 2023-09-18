@@ -99,11 +99,10 @@ export function postProcessPieces(
 		const piece: Piece = {
 			pieceType: IBlueprintPieceType.Normal,
 
-			...(orgPiece as Omit<IBlueprintPiece, 'continuesRefId'>),
+			...orgPiece,
 			content: omit(orgPiece.content, 'timelineObjects'),
 
 			_id: protectString(docId),
-			continuesRefId: protectString(orgPiece.continuesRefId),
 			startRundownId: rundownId,
 			startSegmentId: segmentId,
 			startPartId: partId,

@@ -11,6 +11,7 @@ import { MicFloatingInspector } from '../../FloatingInspectors/MicFloatingInspec
 import { calculatePartInstanceExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { unprotectString } from '../../../../lib/lib'
 import { IFloatingInspectorPosition } from '../../FloatingInspectors/IFloatingInspectorPosition'
+import { logger } from '../../../../lib/logging'
 
 type IProps = ICustomLayerItemProps
 interface IState {}
@@ -153,7 +154,7 @@ export const MicSourceRenderer = withTranslation()(
 					try {
 						this.lineItem.remove()
 					} catch (err) {
-						console.error('Error in MicSourceRenderer.componentDidUpdate', err)
+						logger.error(err)
 					}
 				}
 				this.itemElement = this.props.itemElement
@@ -182,7 +183,7 @@ export const MicSourceRenderer = withTranslation()(
 				// Remove the line element
 				this.lineItem?.remove()
 			} catch (err) {
-				console.error('Error in MicSourceRenderer.componentWillUnmount', err)
+				logger.error(err)
 			}
 		}
 

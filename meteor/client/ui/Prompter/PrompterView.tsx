@@ -24,6 +24,7 @@ import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 import { RundownPlaylists, Rundowns } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { logger } from '../../../lib/logging'
 
 const DEFAULT_UPDATE_THROTTLE = 250 //ms
 const PIECE_MISSING_UPDATE_THROTTLE = 2000 //ms
@@ -691,7 +692,7 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 					top: top - scrollAnchor[0],
 				})
 			} else {
-				console.error(`Read anchor could not be found after update: #${scrollAnchor[1]}`)
+				logger.error(`Read anchor could not be found after update: #${scrollAnchor[1]}`)
 			}
 		}
 

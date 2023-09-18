@@ -1,6 +1,7 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { ZoomInIcon, ZoomOutIcon, ZoomShowAll } from '../../lib/ui/icons/segmentZoomIcon'
+import { catchError } from '../../lib/lib'
 
 interface IProps {
 	timeScale: number
@@ -28,7 +29,7 @@ export function SegmentTimelineZoomButtons(props: IProps): JSX.Element {
 			props
 				.onRecalculateMaxTimeScale()
 				.then((maxTimeScale) => zoomOutInner(maxTimeScale, e))
-				.catch(console.error)
+				.catch(catchError('onRecalculateMaxTimeScale'))
 		} else {
 			zoomOutInner(props.maxTimeScale, e)
 		}

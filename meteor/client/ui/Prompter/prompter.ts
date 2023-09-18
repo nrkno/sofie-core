@@ -233,10 +233,10 @@ export namespace PrompterAPI {
 						if (piece.content && sourceLayer && sourceLayer.type === SourceLayerType.SCRIPT) {
 							const content = piece.content as ScriptContent
 							if (content.fullScript) {
-								if (piecesIncluded.indexOf(piece.continuesRefId || piece._id) >= 0) {
+								if (piecesIncluded.indexOf(piece._id) >= 0) {
 									break // piece already included in prompter script
 								}
-								piecesIncluded.push(piece.continuesRefId || piece._id)
+								piecesIncluded.push(piece._id)
 								partData.pieces.push({
 									id: piece._id,
 									text: content.fullScript,

@@ -153,6 +153,10 @@
 		&.status-bar__controls__button--segment-view-mode {
 			padding-top: 3px;
 		}
+
+		&.status-bar__controls__button--media-status {
+			padding-top: 2px;
+		}
 	}
 }
 
@@ -175,6 +179,7 @@
 			border: none !important;
 			margin-left: 0 !important;
 			background-color: #eee;
+			color: #000;
 			&.notifications__toggle-button {
 				background-color: #acacad;
 			}

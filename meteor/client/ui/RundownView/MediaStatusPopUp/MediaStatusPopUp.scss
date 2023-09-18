@@ -1,0 +1,33 @@
+.media-status-panel__scrollbox {
+	height: 700px;
+	max-height: 50vh;
+	overflow-x: hidden;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	position: relative;
+}
+
+.media-status-panel__table {
+	width: 100%;
+	table-layout: fixed;
+	letter-spacing: 0;
+	user-select: none;
+}
+
+.media-status-panel__empty-message {
+	text-align: center;
+	font-style: italic;
+	padding-top: 2em;
+}
+
+.media-status-panel__pop-out {
+	position: absolute;
+    top: 20px;
+    right: 20px;
+    left: auto;
+	opacity: 0.5;
+
+	&:hover {
+		opacity: 1;
+	}
+}

@@ -75,7 +75,7 @@ export interface IConfigManifestEntryComponentProps {
 	className?: string
 }
 
-/** @deprecated */
+/** @deprecated These Manifests have been replaced with JSONSchema. This has not yet been done for the userDataManifest for adlib-actions */
 export function ConfigManifestEntryComponent({
 	configField,
 	obj,

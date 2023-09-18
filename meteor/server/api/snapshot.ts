@@ -23,11 +23,11 @@ import {
 	fixValidPath,
 	protectString,
 	getRandomId,
-	stringifyError,
 	omit,
 	unprotectStringArray,
 	unprotectString,
 } from '../../lib/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { PeripheralDevice, PERIPHERAL_SUBTYPE_PROCESS } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { logger } from '../logging'

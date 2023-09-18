@@ -18,7 +18,7 @@ import {
 	updateExpectedMediaItemForBucketAdLibPiece,
 } from '../expectedMediaItems'
 import { postProcessBucketAction, postProcessBucketAdLib } from '../../blueprints/postProcess'
-import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { logger } from '../../logging'

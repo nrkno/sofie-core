@@ -3,6 +3,47 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.50.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.4...v1.50.0-in-testing.5) (2023-08-25)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+
+
+
+
+# [1.50.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.7...v1.50.0-in-testing.4) (2023-08-23)
+
+
+
+# [1.50.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.5...v1.50.0-in-testing.3) (2023-08-17)
+
+
+
+# [1.50.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.1...v1.50.0-in-testing.2) (2023-07-17)
+
+
+### Bug Fixes
+
+* Allow JSON objects in config presets ([#949](https://github.com/nrkno/tv-automation-server-core/issues/949)) ([4e5a797](https://github.com/nrkno/tv-automation-server-core/commit/4e5a79752d6c06f91ce070b1d67e7bed97a4f0f2))
+* expose `deviceType` in `listPlayoutDevices` to blueprints ([2b32c72](https://github.com/nrkno/tv-automation-server-core/commit/2b32c7256762716071d467193f344646af484f18))
+* require blueprint baseline objects to be of type `TimelineObjectCoreExt` instead of `TSR.TSRTimelineObj` [#961](https://github.com/nrkno/tv-automation-server-core/issues/961) ([b8d0cf3](https://github.com/nrkno/tv-automation-server-core/commit/b8d0cf313c88e29fd08f6405b86a55d3579e7692))
+
+
+### Features
+
+* add `prompterTitle` property SOFIE-2404 ([#975](https://github.com/nrkno/tv-automation-server-core/issues/975)) ([6f0567d](https://github.com/nrkno/tv-automation-server-core/commit/6f0567de958cede745e918529bae660305ceb66e))
+* add milestone timing ([5950fd5](https://github.com/nrkno/tv-automation-server-core/commit/5950fd5e202cfab5e7f5b36942ffb7525c713e0a))
+* allow getting the Source and Output layers from the ShowStyle context ([#979](https://github.com/nrkno/tv-automation-server-core/issues/979)) ([ab57fb4](https://github.com/nrkno/tv-automation-server-core/commit/ab57fb4871bf23e37b99e73f5f809738fd8fdd1b))
+* blueprint settings overhaul ([#878](https://github.com/nrkno/tv-automation-server-core/issues/878)) ([ee3307c](https://github.com/nrkno/tv-automation-server-core/commit/ee3307cae10076e2d91d624f783e40c54c297b91))
+* fallback to cumetime if no backtime ([2cafbab](https://github.com/nrkno/tv-automation-server-core/commit/2cafbab2f03d49b92c121a7206ddfed62bf770fa))
+* move blueprint ab logic into sofie SOFIE-2403 ([#946](https://github.com/nrkno/tv-automation-server-core/issues/946)) ([cc37b75](https://github.com/nrkno/tv-automation-server-core/commit/cc37b751d674be7f8631d0315e52f8fa29a8d3c4))
+* move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
+* trs actions in blueprints rundown hooks ([bb5e442](https://github.com/nrkno/tv-automation-server-core/commit/bb5e4422fa32e1af1e520e0c288360b304da4289))
+
+
+
+
+
 # [1.50.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.5...v1.50.0-in-testing.3) (2023-08-17)
 
 
@@ -68,6 +109,22 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * move blueprint ab logic into sofie SOFIE-2403 ([#946](https://github.com/nrkno/tv-automation-server-core/issues/946)) ([cc37b75](https://github.com/nrkno/tv-automation-server-core/commit/cc37b751d674be7f8631d0315e52f8fa29a8d3c4))
 * move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
 * trs actions in blueprints rundown hooks ([bb5e442](https://github.com/nrkno/tv-automation-server-core/commit/bb5e4422fa32e1af1e520e0c288360b304da4289))
+
+
+
+
+
+# [1.49.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.6...v1.49.0-in-testing.7) (2023-08-22)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
+
+
+
+
+# [1.49.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.5...v1.49.0-in-testing.6) (2023-08-22)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
 
 
 
@@ -151,6 +208,11 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 
 
+
+
+## [1.47.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.6-0...v1.47.6) (2023-09-04)
+
+## [1.47.6-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.5...v1.47.6-0) (2023-09-01)
 
 ## [1.47.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.5-0...v1.47.5) (2023-06-27)
 

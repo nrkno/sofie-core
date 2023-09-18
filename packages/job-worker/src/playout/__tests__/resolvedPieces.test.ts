@@ -527,6 +527,32 @@ describe('Resolved Pieces', () => {
 			] satisfies StrippedResult)
 		})
 
+		test('single piece with zero length', async () => {
+			const sourceLayerId = Object.keys(sourceLayers)[0]
+			expect(sourceLayerId).toBeTruthy()
+
+			const piece001 = createPieceInstance(sourceLayerId, { start: 0, duration: 0 })
+
+			const now = 990000
+			const nowInPart = 2000
+			const partStarted = now - nowInPart
+
+			const currentPartInfo = createPartInstanceInfo(partStarted, nowInPart, createPartInstance(), [piece001])
+
+			const simpleResolvedPieces = getResolvedPiecesForPartInstancesOnTimeline(
+				context,
+				{ current: currentPartInfo },
+				now
+			)
+			expect(stripResult(simpleResolvedPieces)).toEqual([
+				{
+					_id: piece001._id,
+					resolvedStart: partStarted,
+					resolvedDuration: 0,
+				},
+			] satisfies StrippedResult)
+		})
+
 		test('within part overriding infinite for period', async () => {
 			const sourceLayerId = Object.keys(sourceLayers)[0]
 			expect(sourceLayerId).toBeTruthy()

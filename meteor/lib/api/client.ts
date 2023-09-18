@@ -5,7 +5,7 @@ import { NoticeLevel } from '../notifications/notifications'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export interface NewClientAPI {
-	clientErrorReport(timestamp: Time, errorObject: any, errorString: string, location: string): Promise<void>
+	clientErrorReport(timestamp: Time, errorString: string, location: string): Promise<void>
 	clientLogNotification(timestamp: Time, from: string, severity: NoticeLevel, message: string, source?: any)
 	callPeripheralDeviceFunction(
 		context: string,

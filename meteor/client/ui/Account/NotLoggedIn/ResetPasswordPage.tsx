@@ -6,6 +6,7 @@ import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { getUser } from '../../../../lib/collections/Users'
 import { NotLoggedInContainer } from './lib'
 import { Link } from 'react-router-dom'
+import { logger } from '../../../../lib/logging'
 
 type IResetPageProps = RouteComponentProps<{ token: string }>
 
@@ -68,7 +69,7 @@ export const ResetPasswordPage = translateWithTracker((props: IResetPageProps) =
 				return this.handleError('Please set a password with atleast 5 characters')
 			Accounts.resetPassword(token, this.state.password, (err) => {
 				if (err) {
-					console.error(err)
+					logger.error(err)
 					return this.handleError('Unable to reset password')
 				}
 			})
