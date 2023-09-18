@@ -1,5 +1,4 @@
 // eslint-disable-next-line node/no-extraneous-import
-import type { Logger } from 'winston'
 import * as fs from 'fs'
 
 export interface CertificatesConfig {
@@ -9,7 +8,7 @@ export interface CertificatesConfig {
 	certificates: string[]
 }
 
-export function loadCertificatesFromDisk(logger: Logger, certConfig: CertificatesConfig): Buffer[] {
+export function loadCertificatesFromDisk(logger: SomeLogger, certConfig: CertificatesConfig): Buffer[] {
 	if (certConfig.unsafeSSL) {
 		logger.info('Disabling NODE_TLS_REJECT_UNAUTHORIZED, be sure to ONLY DO THIS ON A LOCAL NETWORK!')
 		process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = '0'
@@ -31,4 +30,12 @@ export function loadCertificatesFromDisk(logger: Logger, certConfig: Certificate
 	}
 
 	return certificates
+}
+
+interface SomeLogger {
+	info(message: string, ...meta: any[]): void
+	error(message: string, ...meta: any[]): void
+	warn(message: string, ...meta: any[]): void
+	log(message: string, ...meta: any[]): void
+	debug(message: string, ...meta: any[]): void
 }
