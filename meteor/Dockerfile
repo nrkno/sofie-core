@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:experimental
 # BUILD IMAGE
-FROM node:14
+FROM meteor/node:14.21.4
 RUN curl "https://install.meteor.com/?release=2.12" | sh
 
 # Temporary change the NODE_ENV env variable, so that all libraries are installed:
@@ -30,7 +30,7 @@ WORKDIR /opt/core/packages
 RUN yarn workspaces focus --all --production
 
 # DEPLOY IMAGE
-FROM node:14-alpine
+FROM meteor/node:14.21.4-alpine3.17
 COPY --from=0 /opt/bundle /opt/core
 COPY --from=0 /opt/core/packages /opt/packages
 COPY meteor/docker-entrypoint.sh /opt
