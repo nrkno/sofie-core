@@ -76,10 +76,6 @@ export interface PieceExtended {
 	renderedDuration: number | null
 	/** If set, the item was cropped in runtime by another item following it */
 	cropped?: boolean
-	/** This item is being continued by another, linked, item in another Part */
-	continuedByRef?: PieceExtended
-	/** This item is continuing another, linked, item in another Part */
-	continuesRef?: PieceExtended
 	/** Maximum width of a label so as not to appear underneath the following item */
 	maxLabelWidth?: number
 	/** If this piece has a "buddy" piece in the preceeding part, then it's not neccessary to display it's left label */
