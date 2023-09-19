@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { Meteor } from 'meteor/meteor'
 import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { TFunction, useTranslation } from 'react-i18next'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
@@ -96,12 +97,14 @@ export function AfterBroadcastForm({ playlist }: { playlist: RundownPlaylist }):
 						return false
 					}
 					saveEvaluation()
-					if (err && err.code === 503) {
+					if (err instanceof Meteor.Error && err.error === 503) {
 						NotificationCenter.push(
 							new Notification(
 								undefined,
 								NoticeLevel.CRITICAL,
-								t('Could not create a snapshot for the evaluation, because the previous one was just created'),
+								t(
+									'Could not create a snapshot for the evaluation, because the previous one was created just moments ago. If you want another snapshot, try again in a couple of seconds.'
+								),
 								'userAction'
 							)
 						)
