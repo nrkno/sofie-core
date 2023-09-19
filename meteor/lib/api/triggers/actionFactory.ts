@@ -515,7 +515,7 @@ export function createAction(action: SomeAction, sourceLayers: SourceLayers): Ex
 				if (rundownId) {
 					return MeteorCall.userAction.activateScratchpadMode(e, ts, ctx.rundownPlaylistId.get(), rundownId)
 				} else {
-					return ClientAPI.responseError(UserError.create(UserErrorMessage.InternalError))
+					return ClientAPI.responseError(UserError.create(UserErrorMessage.InactiveRundown))
 				}
 			})
 		case PlayoutActions.take:
