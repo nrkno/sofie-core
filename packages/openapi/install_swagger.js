@@ -37,7 +37,7 @@ async function checkInstall() {
 	})
 
 	const srcPath =
-		'https://repo1.maven.org/maven2/io/swagger/codegen/v3/swagger-codegen-cli/3.0.34/swagger-codegen-cli-3.0.34.jar'
+		'https://repo1.maven.org/maven2/io/swagger/codegen/v3/swagger-codegen-cli/3.0.43/swagger-codegen-cli-3.0.43.jar'
 	const swaggerFilename = 'swagger-codegen-cli.jar'
 	await fs
 		.access(`jars/${swaggerFilename}`, fs_constants.R_OK)
