@@ -31,6 +31,7 @@ import { convertPartInstanceToBlueprints, convertResolvedPieceInstanceToBlueprin
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/infinites'
 import { TakeNextPartProps } from '@sofie-automation/corelib/dist/worker/studio'
 import { runJobWithPlayoutCache } from './lock'
+import _ = require('underscore')
 
 let MINIMUM_TAKE_SPAN = 1000
 export function setMinimumTakeSpan(span: number): void {
@@ -105,8 +106,36 @@ export async function performTakeToNextedPart(context: JobContext, cache: CacheF
 
 	const { currentPartInstance, nextPartInstance, previousPartInstance } = getSelectedPartInstancesFromCache(cache)
 
-	const currentOrNextPartInstance = nextPartInstance || currentPartInstance
-	if (!currentOrNextPartInstance) throw new Error(`No partInstance could be found!`)
+	const currentOrNextPartInstance = nextPartInstance ?? currentPartInstance
+	if (!currentOrNextPartInstance) {
+		// Some temporary logging to diagnose some cases where this route is hit
+		logger.warn(`No partinstance was found during take`, JSON.stringify(cache.Playlist.doc))
+		logger.warn(
+			'All PartInstances in cache',
+			cache.PartInstances.findAll(null).map((p) => p._id)
+		)
+		logger.warn(
+			'Deleted PartInstances in cache',
+			Array.from(cache.PartInstances.documents.entries())
+				.filter((d) => d[1] === null)
+				.map((d) => d[0])
+		)
+		logger.warn(
+			'Parts in cache',
+			cache.Parts.findAll(null).map((d) => d._id)
+		)
+
+		const validIds = _.compact([
+			cache.Playlist.doc.currentPartInfo?.partInstanceId,
+			cache.Playlist.doc.nextPartInfo?.partInstanceId,
+		])
+		if (validIds.length) {
+			const mongoDocs = await context.directCollections.PartInstances.findFetch({ _id: { $in: validIds } })
+			logger.warn('Matching partInstances in mongo', mongoDocs)
+		}
+
+		throw new Error(`No partInstance could be found!`)
+	}
 	const currentRundown = currentOrNextPartInstance
 		? cache.Rundowns.findOne(currentOrNextPartInstance.rundownId)
 		: undefined
