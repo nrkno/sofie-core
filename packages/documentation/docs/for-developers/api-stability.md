@@ -11,9 +11,13 @@ We classify each api into one of two categories:
 
 This is a collection of APIs which we intend to avoid introducing any breaking change to unless necessary. This is so external systems can rely on this API without needing to be updated in lockstep with Sofie, and hopefully will make sense to developers who are not familiar with Sofie's inner workings.
 
-In Release50 a new REST API was introduced. This can be found at `/api/v1.0`, and is designed to allow an external system to interact with Sofie using simplified abstractions of Sofie internals.
+In version 1.50, a new REST API was introduced. This can be found at `/api/v1.0`, and is designed to allow an external system to interact with Sofie using simplified abstractions of Sofie internals.
 
-The Live status gateway is also part of this stable API, intended to allow for reactively retrieving data from Sofie. Internally it is translating the internal APIs into a stable version.
+The _Live Status Gateway_ is also part of this stable API, intended to allow for reactively retrieving data from Sofie. Internally it is translating the internal APIs into a stable version.
+
+:::note
+You can find the _Live Status Gateway_ in the `packages` folder of the [Sofie Core](https://github.com/nrkno/sofie-core) repository.
+:::
 
 ## Internal
 

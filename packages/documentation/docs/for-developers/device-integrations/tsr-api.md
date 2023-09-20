@@ -1,6 +1,8 @@
 # TSR Integration API
 
-*Note: there is a legacy API for integrations. In this documentation we will only consider the more modern variant informally known as the StateHandler format.*
+:::info
+As of version 1.50, there still exists a legacy API for device integrations. In this documentation we will only consider the more modern variant informally known as the _StateHandler_ format.
+:::
 
 ## Setup and status
 
