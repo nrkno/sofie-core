@@ -59,9 +59,9 @@
 		"debug": "^4.3.4",
 		"fast-clone": "^1.5.13",
 		"influx": "^5.9.3",
-		"tslib": "^2.6.0",
-		"winston": "^3.9.0",
-		"ws": "^8.13.0"
+		"tslib": "^2.6.2",
+		"winston": "^3.10.0",
+		"ws": "^8.14.2"
 	},
 	"devDependencies": {
 		"@asyncapi/generator": "1.10.9",
