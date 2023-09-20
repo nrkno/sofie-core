@@ -14,6 +14,7 @@ import {
 	ConfigManifestEntryType,
 	SourceLayerType,
 	IBlueprintConfig,
+	BasicConfigManifestEntry,
 } from '@sofie-automation/blueprints-integration'
 import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { objectPathGet } from '@sofie-automation/corelib/dist/lib'
@@ -46,7 +47,7 @@ export function resolveTableColumns(
 ): (ResolvedBasicConfigManifestEntry & { rank: number })[] {
 	// Shallow clone and sort
 	const columns = [...manifest.columns]
-	columns.sort()
+	columns.sort(sortTableConfigManifestEntries)
 
 	return columns.map((column): ResolvedBasicConfigManifestEntry & { rank: number } => {
 		switch (column.type) {
@@ -122,4 +123,12 @@ export function getTableColumnValues(
 		}
 	})
 	return result
+}
+
+type TableConfigManifestEntry = BasicConfigManifestEntry & {
+	rank: number
+}
+function sortTableConfigManifestEntries(a: TableConfigManifestEntry, b: TableConfigManifestEntry): number {
+	if (a.rank !== b.rank) return a.rank - b.rank
+	return a.id.localeCompare(b.id)
 }
