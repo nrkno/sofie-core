@@ -85,7 +85,7 @@ An AdLib isn't added to the Part in the GUI until it starts playing, instead you
 
 ## Views
 
-Being a web-based system, Sofie has a number of customisable, user-facing web [views](features/sofie-views.md) used for control and monitoring.
+Being a web-based system, Sofie has a number of customisable, user-facing web [views](features/sofie-views.mdx) used for control and monitoring.
 
 
 
