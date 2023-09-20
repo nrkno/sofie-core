@@ -7,7 +7,7 @@ sidebar_position: 7
 
 So that Sofie does not have to be aware of every type of gateway that may connect to it, each gateway provides a manifest describing itself and the configuration fields that it has.
 
-Since Release 50, this is done using [JSON Schemas](https://json-schema.org/). This allows schemas to be written, with typescript interfaces generated from the schema, and for the same schema to be used to render a flexible UI.
+Since version 1.50, this is done using [JSON Schemas](https://json-schema.org/). This allows schemas to be written, with typescript interfaces generated from the schema, and for the same schema to be used to render a flexible UI.
 We recommend using [json-schema-to-typescript](https://github.com/bcherny/json-schema-to-typescript) to generate typescript interfaces.
 
 Only a subset of the JSON Schema specification is supported, and some additional properties are used for the UI.

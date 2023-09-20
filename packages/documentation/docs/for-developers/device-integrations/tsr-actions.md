@@ -6,4 +6,6 @@ TSR Actions can be triggered through the UI by a user, through blueprints when t
 
 When implementing the TSR Actions API you should start by defining a JSON schema outlying the action id's and payload your integration will consume. Once you've done this you're ready to implement the actions as callbacks on the `actions` property of your integration.
 
-_Beware that if your action changes the state of the device you should handle this appropriately by resetting the resolver_
+:::warning
+Beware that if your action changes the state of the device you should handle this appropriately by resetting the resolver
+:::
