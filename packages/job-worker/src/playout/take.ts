@@ -125,10 +125,7 @@ export async function performTakeToNextedPart(context: JobContext, cache: CacheF
 			cache.Parts.findAll(null).map((d) => d._id)
 		)
 
-		const validIds = _.compact([
-			cache.Playlist.doc.currentPartInfo?.partInstanceId,
-			cache.Playlist.doc.nextPartInfo?.partInstanceId,
-		])
+		const validIds = _.compact([cache.Playlist.doc.currentPartInstanceId, cache.Playlist.doc.nextPartInstanceId])
 		if (validIds.length) {
 			const mongoDocs = await context.directCollections.PartInstances.findFetch({ _id: { $in: validIds } })
 			logger.warn('Matching partInstances in mongo', mongoDocs)
