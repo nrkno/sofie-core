@@ -255,6 +255,15 @@ All notable changes to this project will be documented in this file. See [standa
 - working re-layouting of hover inspectors ([87811a9](https://github.com/nrkno/sofie-core/commit/87811a90e18eb6cd9427773e820a1cee7517da6c))
 
 
+## [1.49.0-in-testing.9](///compare/v1.49.0-in-testing.8...v1.49.0-in-testing.9) (2023-09-20)
+
+
+### Bug Fixes
+
+* **docs:** outdated links in documentation 049f86c
+* recompile "@mos-connection/model" with meteor for legacy browsers (casparcg) 1eea0c6
+* **Settings:** provide a stable order for Blueprint configs table columns db42f5f
+
 ## [1.49.0-in-testing.8](https://github.com/nrkno/sofie-core/compare/v1.47.6...v1.49.0-in-testing.8) (2023-09-20)
 
 ### Features

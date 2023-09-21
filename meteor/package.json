@@ -190,6 +190,7 @@
 		"nodeModules": {
 			"recompile": {
 				"@mos-connection/helper": "legacy",
+				"@mos-connection/model": "legacy",
 				"@sofie-automation/corelib": "legacy",
 				"@sofie-automation/shared-lib": "legacy"
 			}
