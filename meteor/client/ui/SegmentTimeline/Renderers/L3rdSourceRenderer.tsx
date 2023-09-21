@@ -39,7 +39,8 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 			super.componentDidUpdate(prevProps, prevState)
 		}
 
-		const newOverflowTime = this.doesOverflowTime() > 0 ? true : false
+		const timeOverflow = this.doesOverflowTime()
+		const newOverflowTime = timeOverflow !== false && timeOverflow > 0 ? true : false
 		if (
 			this.props.piece.instance.piece.name !== prevProps.piece.instance.piece.name ||
 			newOverflowTime !== this.lastOverflowTime
@@ -83,6 +84,7 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 							style={this.getItemLabelOffsetRight()}
 						>
 							{this.renderInfiniteIcon()}
+							{this.renderLoopIcon()}
 							{this.renderOverflowTimeLabel()}
 						</span>
 						{isMultiStep ? (

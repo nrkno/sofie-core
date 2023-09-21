@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react'
+import { Meteor } from 'meteor/meteor'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { TFunction, useTranslation } from 'react-i18next'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
@@ -11,6 +12,7 @@ import { DropdownInputControl, DropdownInputOption, getDropdownInputOptions } fr
 import { MultiLineTextInputControl } from '../lib/Components/MultiLineTextInput'
 import { TextInputControl } from '../lib/Components/TextInput'
 import { Spinner } from '../lib/Spinner'
+import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 
 type ProblemType = 'nothing' | 'minor' | 'major'
 
@@ -77,7 +79,7 @@ export function AfterBroadcastForm({ playlist }: { playlist: DBRundownPlaylist }
 				t,
 				e,
 				UserAction.CREATE_SNAPSHOT_FOR_DEBUG,
-				(e, ts) =>
+				async (e, ts) =>
 					MeteorCall.system.generateSingleUseToken().then((tokenResult) => {
 						if (ClientAPI.isClientResponseError(tokenResult) || !tokenResult.result) throw tokenResult
 						return MeteorCall.userAction.storeRundownSnapshot(
@@ -92,8 +94,21 @@ export function AfterBroadcastForm({ playlist }: { playlist: DBRundownPlaylist }
 				(err, snapshotId) => {
 					if (!err && snapshotId) {
 						saveEvaluation(snapshotId)
-					} else {
-						saveEvaluation()
+						return false
+					}
+					saveEvaluation()
+					if (err instanceof Meteor.Error && err.error === 503) {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.CRITICAL,
+								t(
+									'Could not create a snapshot for the evaluation, because the previous one was created just moments ago. If you want another snapshot, try again in a couple of seconds.'
+								),
+								'userAction'
+							)
+						)
+						return false
 					}
 				}
 			)

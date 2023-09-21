@@ -85,6 +85,8 @@ console.error = (...args: any[]) => {
 const IGNORED_ERRORS = [
 	// This error is benign. https://stackoverflow.com/questions/49384120/resizeobserver-loop-limit-exceeded
 	'ResizeObserver loop limit exceeded',
+	// This error is benign. https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver#observation_errors
+	'ResizeObserver loop completed with undelivered notifications',
 ].map((error) => new RegExp(error, 'i'))
 
 const originalOnError = window.onerror
