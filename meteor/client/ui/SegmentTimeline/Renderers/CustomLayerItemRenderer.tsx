@@ -45,12 +45,11 @@ export interface ICustomLayerItemProps {
 	getSourceDurationLabelAlignment?: () => SourceDurationLabelAlignment
 	showDuration?: boolean
 }
-export interface ISourceLayerItemState {}
 
-export class CustomLayerItemRenderer<
-	IProps extends ICustomLayerItemProps,
-	IState extends ISourceLayerItemState
-> extends React.Component<React.PropsWithChildren<ICustomLayerItemProps & IProps>, ISourceLayerItemState & IState> {
+export class CustomLayerItemRenderer<IProps extends ICustomLayerItemProps, IState> extends React.Component<
+	React.PropsWithChildren<ICustomLayerItemProps & IProps>,
+	IState
+> {
 	protected getSourceDurationLabelAlignment(): SourceDurationLabelAlignment {
 		return (
 			(this.props.getSourceDurationLabelAlignment &&

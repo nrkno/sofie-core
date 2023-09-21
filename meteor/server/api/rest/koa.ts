@@ -15,7 +15,10 @@ declare module 'http' {
 export function bindKoaRouter(koaRouter: KoaRouter, bindPath: string): void {
 	const app = new Koa()
 	// Expose the API at the url
-	WebApp.rawConnectHandlers.use(bindPath, Meteor.bindEnvironment(app.callback()))
+	WebApp.rawConnectHandlers.use(bindPath, (req, res) => {
+		const callback = Meteor.bindEnvironment(app.callback())
+		callback(req, res).catch(() => res.end())
+	})
 
 	app.use(async (ctx, next) => {
 		// Strange - sometimes a JSON body gets parsed by Koa before here (eg for a POST call?).
