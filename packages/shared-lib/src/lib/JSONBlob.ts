@@ -16,7 +16,7 @@
  * Data type for stringified data using JSONBlobStringify().
  * To parse the data, use JSONBlobParse()
  */
-export interface JSONBlob<T> extends String {
+export interface JSONBlob<T> extends string {
 	__internal: T
 }
 
