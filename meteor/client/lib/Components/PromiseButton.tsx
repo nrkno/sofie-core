@@ -2,10 +2,11 @@ import React, { useCallback, useEffect, useState } from 'react'
 import ClassNames from 'classnames'
 import { logger } from '../../../lib/logging'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { faHourglass, faCheck, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
+import { faCheck, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
 
 import './PromiseButton.scss'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { Spinner } from '../Spinner'
 
 /** The PromiseButton renders a button which when clicked, disables the button while the onClick-promise is resolving. */
 export const PromiseButton: React.FC<{
@@ -49,7 +50,7 @@ export const PromiseButton: React.FC<{
 	}, [isPending, actionResult])
 
 	const overlayContent = isPending ? (
-		<FontAwesomeIcon icon={faHourglass} />
+		<Spinner size="small" className="spinner" />
 	) : actionResult === true ? (
 		<FontAwesomeIcon icon={faCheck} />
 	) : actionResult === false ? (
