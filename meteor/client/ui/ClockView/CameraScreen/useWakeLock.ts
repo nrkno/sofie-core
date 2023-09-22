@@ -10,10 +10,14 @@ export function useWakeLock(): void {
 			})().catch(catchError('request wakeLock'))
 		}
 
-		async function onVisibilityChange() {
+		async function acquireWakeLock() {
 			if (wakeLockRef.current !== null && document.visibilityState === 'visible') {
 				wakeLockRef.current = (await navigator.wakeLock?.request('screen')) ?? null
 			}
+		}
+
+		function onVisibilityChange() {
+			acquireWakeLock().catch(console.warn)
 		}
 
 		document.addEventListener('visibilitychange', onVisibilityChange)
