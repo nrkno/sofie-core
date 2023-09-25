@@ -2954,7 +2954,11 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 												{t('Show Hotkeys')}
 											</button>
 											<hr />
-											<PromiseButton className="btn btn-secondary" onClick={this.onTakeRundownSnapshot}>
+											<PromiseButton
+												className="btn btn-secondary"
+												onClick={this.onTakeRundownSnapshot}
+												disableDuringFeedback={true}
+											>
 												{t('Take a Snapshot')}
 											</PromiseButton>
 											<hr />

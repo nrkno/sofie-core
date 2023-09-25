@@ -2,11 +2,12 @@ import React, { useCallback, useEffect, useState } from 'react'
 import ClassNames from 'classnames'
 import { logger } from '../../../lib/logging'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { faCheck, faExclamationTriangle } from '@fortawesome/free-solid-svg-icons'
+import { faCheck } from '@fortawesome/free-solid-svg-icons'
 
 import './PromiseButton.scss'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { Spinner } from '../Spinner'
+import { WarningIcon } from '../ui/icons/notifications'
 
 /** The PromiseButton renders a button which when clicked, disables the button while the onClick-promise is resolving. */
 export const PromiseButton: React.FC<{
@@ -18,10 +19,19 @@ export const PromiseButton: React.FC<{
 	 * If the action succeeds, the promise should resolve to true, otherwise false (or undefined).
 	 */
 	onClick: (event: React.MouseEvent<HTMLButtonElement>) => Promise<boolean | undefined>
+
+	/** Duration of the feedback display. Defaults to 3000 ms. */
+	feedbackTime?: number
+
+	/** If true, the button will also be disabled during the feedback display */
+	disableDuringFeedback?: boolean
+
 	children: React.ReactNode
 }> = (props) => {
 	const [isPending, setIsPending] = useState(false)
 	const [actionResult, setActionResult] = useState<boolean | undefined>(undefined)
+
+	const isDisabled = props.disableDuringFeedback ? isPending || actionResult !== undefined : isPending
 
 	const onClickButton = useCallback(
 		async (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -42,7 +52,7 @@ export const PromiseButton: React.FC<{
 			// Reset the actionResult after 3 seconds
 			const timeout = setTimeout(() => {
 				setActionResult(undefined)
-			}, 3000)
+			}, props.feedbackTime || 3000)
 			return () => {
 				clearTimeout(timeout)
 			}
@@ -54,7 +64,7 @@ export const PromiseButton: React.FC<{
 	) : actionResult === true ? (
 		<FontAwesomeIcon icon={faCheck} />
 	) : actionResult === false ? (
-		<FontAwesomeIcon icon={faExclamationTriangle} />
+		<WarningIcon />
 	) : null
 
 	return (
@@ -64,7 +74,7 @@ export const PromiseButton: React.FC<{
 				'is-success': !isPending && actionResult === true,
 				'is-failure': !isPending && actionResult === false,
 			})}
-			disabled={props.disabled || isPending}
+			disabled={props.disabled || isDisabled}
 			onClick={onClickButton}
 		>
 			<div className={ClassNames('content', overlayContent && 'content-hidden')}>{props.children}</div>
