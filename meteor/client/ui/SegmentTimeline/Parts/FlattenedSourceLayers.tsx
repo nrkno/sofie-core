@@ -14,7 +14,7 @@ interface IFlattenedSourceLayerProps extends ISourceLayerPropsBase {
 }
 
 export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.Element {
-	const { getPartContext, onMouseUp } = useMouseContext(props)
+	const { getPartContext, onMouseDown } = useMouseContext(props)
 
 	const piecesForLayers = useMemo(() => {
 		const piecesForLayers: Map<string, PieceInstancePiece[]> = new Map()
@@ -32,7 +32,7 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.El
 			id="segment-timeline-context-menu"
 			attributes={{
 				className: 'segment-timeline__layer segment-timeline__layer--flattened',
-				onMouseUpCapture: (e) => onMouseUp(e),
+				onMouseUpCapture: (e) => onMouseDown(e),
 				role: 'log',
 				'aria-live': 'assertive',
 				'aria-label': props.outputLayer.name,

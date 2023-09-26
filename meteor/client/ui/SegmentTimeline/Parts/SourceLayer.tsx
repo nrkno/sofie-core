@@ -49,7 +49,7 @@ interface ISourceLayerProps extends ISourceLayerPropsBase {
 
 export function useMouseContext(props: ISourceLayerPropsBase): {
 	getPartContext(): IContextMenuContext
-	onMouseUp(e: React.MouseEvent<HTMLDivElement>): void
+	onMouseDown(e: React.MouseEvent<HTMLElement>): void
 } {
 	const [mousePosition, setMousePosition] = useState<OffsetPosition>({ left: 0, top: 0 })
 
@@ -73,14 +73,14 @@ export function useMouseContext(props: ISourceLayerPropsBase): {
 
 			return ctx
 		}, [props.segment, props.part, props.timeScale, props.startsAt, props.onContextMenu, mousePosition]),
-		onMouseUp: (e: React.MouseEvent<HTMLDivElement>) => {
+		onMouseDown: (e: React.MouseEvent<HTMLElement>) => {
 			setMousePosition({ left: e.pageX, top: e.pageY })
 		},
 	}
 }
 
 export function SourceLayer(props: ISourceLayerProps): JSX.Element {
-	const { getPartContext, onMouseUp } = useMouseContext(props)
+	const { getPartContext, onMouseDown } = useMouseContext(props)
 
 	return (
 		<ContextMenuTrigger
@@ -89,7 +89,7 @@ export function SourceLayer(props: ISourceLayerProps): JSX.Element {
 				className: 'segment-timeline__layer',
 				//@ts-expect-error A Data attribue is perfectly fine
 				'data-layer-id': props.layer._id,
-				onMouseUpCapture: (e) => onMouseUp(e),
+				onMouseDownCapture: (e) => onMouseDown(e),
 				role: 'log',
 				'aria-live': 'assertive',
 				'aria-label': props.layer.name,
