@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import * as _ from 'underscore'
 import {
 	IBlueprintPart,
@@ -7,16 +8,15 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { ActionExecutionContext, ActionPartChange } from '../context/adlibActions'
 import { isTooCloseToAutonext } from '../../playout/lib'
-import { CacheForPlayout } from '../../playout/cache'
+import { PlayoutModel } from '../../playout/cacheModel/PlayoutModel'
 import { WatchedPackagesHelper } from '../context/watchedPackages'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { runJobWithPlayoutCache } from '../../playout/lock'
 import { defaultRundownPlaylist } from '../../__mocks__/defaultCollectionObjects'
 import { protectString, unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { clone, getRandomId, literal, omit } from '@sofie-automation/corelib/dist/lib'
+import { clone, getRandomId, literal, normalizeArrayToMapFunc, omit } from '@sofie-automation/corelib/dist/lib'
 import {
 	PartInstanceId,
-	PieceInstanceId,
 	RundownId,
 	RundownPlaylistActivationId,
 	RundownPlaylistId,
@@ -24,7 +24,6 @@ import {
 import { setupDefaultRundown, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { JobContext } from '../../jobs'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { getCurrentTime } from '../../lib'
@@ -32,17 +31,15 @@ import {
 	EmptyPieceTimelineObjectsBlob,
 	serializePieceTimelineObjectsBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { ReadOnlyCache } from '../../cache/CacheBase'
+import { PartInstanceWithPieces } from '../../playout/cacheModel/PartInstanceWithPieces'
 import { convertPartInstanceToBlueprints, convertPieceInstanceToBlueprints } from '../context/lib'
 import { TimelineObjRundown, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { PartInstanceWithPiecesImpl } from '../../playout/cacheModel/implementation/PartInstanceWithPiecesImpl'
+import { writePartInstancesAndPieceInstances } from '../../playout/cacheModel/implementation/SavePlayoutModel'
 
 import * as PlayoutAdlib from '../../playout/adlibUtils'
 type TinnerStopPieces = jest.MockedFunction<typeof PlayoutAdlib.innerStopPieces>
 const innerStopPiecesMock = jest.spyOn(PlayoutAdlib, 'innerStopPieces') as TinnerStopPieces
-
-const innerStartAdLibPieceOrig = PlayoutAdlib.innerStartAdLibPiece
-type TinnerStartAdLibPiece = jest.MockedFunction<typeof PlayoutAdlib.innerStartAdLibPiece>
-const innerStartAdLibPieceMock = jest.spyOn(PlayoutAdlib, 'innerStartAdLibPiece') as TinnerStartAdLibPiece
 
 const innerStartQueuedAdLibOrig = PlayoutAdlib.innerStartQueuedAdLib
 type TinnerStartQueuedAdLib = jest.MockedFunction<typeof PlayoutAdlib.innerStartQueuedAdLib>
@@ -67,12 +64,13 @@ type TpostProcessTimelineObjects = jest.MockedFunction<typeof postProcessTimelin
 const postProcessTimelineObjectsMock = postProcessTimelineObjects as TpostProcessTimelineObjects
 postProcessTimelineObjectsMock.mockImplementation(postProcessTimelineObjectsOrig)
 
+// TODO: These should be rewritten to only test as far as the PartInstanceWithPieces interface
 describe('Test blueprint api context', () => {
 	async function generateSparsePieceInstances(
 		context: MockJobContext,
 		activationId: RundownPlaylistActivationId,
 		rundownId: RundownId
-	): Promise<DBPartInstance[]> {
+	): Promise<PartInstanceWithPieces[]> {
 		const parts = await context.mockCollections.Parts.findFetch({ rundownId })
 		for (let i = 0; i < parts.length; i++) {
 			const part = parts[i]
@@ -130,7 +128,16 @@ describe('Test blueprint api context', () => {
 			}
 		}
 
-		return context.mockCollections.PartInstances.findFetch({ rundownId })
+		const partInstances = await context.mockCollections.PartInstances.findFetch({ rundownId })
+		return Promise.all(
+			partInstances.map(async (partInstance) => {
+				// This isn't performant, but that shouldn't matter here
+				const pieceInstances = await context.mockCollections.PieceInstances.findFetch({
+					partInstanceId: partInstance._id,
+				})
+				return new PartInstanceWithPiecesImpl(partInstance, pieceInstances, false)
+			})
+		)
 	}
 
 	// let context: MockJobContext
@@ -138,16 +145,19 @@ describe('Test blueprint api context', () => {
 	// 	context = await setupDefaultJobEnvironment()
 	// })
 
-	async function getActionExecutionContext(jobContext: JobContext, cache: CacheForPlayout) {
-		const playlist = cache.Playlist.doc
+	async function getActionExecutionContext(jobContext: JobContext, cache: PlayoutModel) {
+		const playlist = cache.Playlist
 		expect(playlist).toBeTruthy()
-		const rundown = cache.Rundowns.findOne(() => true) as DBRundown
+		const rundown = cache.Rundowns[0]
 		expect(rundown).toBeTruthy()
 
 		const activationId = playlist.activationId as RundownPlaylistActivationId
 		expect(activationId).toBeTruthy()
 
-		const showStyle = await jobContext.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
+		const showStyle = await jobContext.getShowStyleCompound(
+			rundown.Rundown.showStyleVariantId,
+			rundown.Rundown.showStyleBaseId
+		)
 		const showStyleConfig = jobContext.getShowStyleBlueprintConfig(showStyle)
 
 		const watchedPackages = WatchedPackagesHelper.empty(jobContext) // Not needed by the tests for now
@@ -177,7 +187,7 @@ describe('Test blueprint api context', () => {
 	async function wrapWithCache<T>(
 		context: JobContext,
 		playlistId: RundownPlaylistId,
-		fcn: (cache: CacheForPlayout) => Promise<T>
+		fcn: (cache: PlayoutModel) => Promise<T>
 	): Promise<T> {
 		return runJobWithPlayoutCache(context, { playlistId }, null, fcn)
 	}
@@ -186,7 +196,7 @@ describe('Test blueprint api context', () => {
 		jobContext: MockJobContext
 		playlistId: RundownPlaylistId
 		rundownId: RundownId
-		allPartInstances: DBPartInstance[]
+		allPartInstances: PartInstanceWithPieces[]
 	}> {
 		const context = setupDefaultJobEnvironment()
 
@@ -217,20 +227,42 @@ describe('Test blueprint api context', () => {
 		}
 	}
 
+	async function saveAllToDatabase(
+		context: JobContext,
+		cache: PlayoutModel,
+		allPartInstances: PartInstanceWithPieces[]
+	) {
+		// We need to push changes back to 'mongo' for these tests
+		await Promise.all(
+			writePartInstancesAndPieceInstances(
+				context,
+				normalizeArrayToMapFunc(allPartInstances as PartInstanceWithPiecesImpl[], (p) => p.PartInstance._id)
+			)
+		)
+		await cache.saveAllToDatabase()
+	}
+
 	async function setPartInstances(
 		jobContext: MockJobContext,
 		playlistId: RundownPlaylistId,
-		currentPartInstance: DBPartInstance | PieceInstance | undefined | null,
-		nextPartInstance: DBPartInstance | PieceInstance | undefined | null,
-		previousPartInstance?: DBPartInstance | PieceInstance | null
+		currentPartInstance: PartInstanceWithPieces | DBPartInstance | PieceInstance | undefined | null,
+		nextPartInstance: PartInstanceWithPieces | DBPartInstance | PieceInstance | undefined | null,
+		previousPartInstance?: PartInstanceWithPieces | DBPartInstance | PieceInstance | null
 	) {
-		const convertInfo = (info: DBPartInstance | PieceInstance | null) => {
+		const convertInfo = (info: PartInstanceWithPieces | DBPartInstance | PieceInstance | null) => {
 			if (!info) {
 				return null
 			} else if ('partInstanceId' in info) {
 				return {
 					partInstanceId: info.partInstanceId,
 					rundownId: info.rundownId,
+					manuallySelected: false,
+					consumesNextSegmentId: false,
+				}
+			} else if ('PartInstance' in info) {
+				return {
+					partInstanceId: info.PartInstance._id,
+					rundownId: info.PartInstance.rundownId,
 					manuallySelected: false,
 					consumesNextSegmentId: false,
 				}
@@ -294,7 +326,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					expect(cache.PartInstances.documents.size).toBe(0)
+					expect(cache.LoadedPartInstances).toHaveLength(0)
 
 					await expect(context.getPartInstance('next')).resolves.toBeUndefined()
 					await expect(context.getPartInstance('current')).resolves.toBeUndefined()
@@ -304,12 +336,12 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					expect(cache.PartInstances.documents.size).toBe(2)
+					expect(cache.LoadedPartInstances).toHaveLength(2)
 
 					// Check the current part
 					await expect(context.getPartInstance('next')).resolves.toBeUndefined()
 					await expect(context.getPartInstance('current')).resolves.toMatchObject({
-						_id: allPartInstances[1]._id,
+						_id: allPartInstances[1].PartInstance._id,
 					})
 				})
 
@@ -317,11 +349,11 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					expect(cache.PartInstances.documents.size).toBe(3)
+					expect(cache.LoadedPartInstances).toHaveLength(3)
 
 					// Now the next part
 					await expect(context.getPartInstance('next')).resolves.toMatchObject({
-						_id: allPartInstances[2]._id,
+						_id: allPartInstances[2].PartInstance._id,
 					})
 					await expect(context.getPartInstance('current')).resolves.toBeUndefined()
 				})
@@ -351,7 +383,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					expect(cache.PartInstances.documents.size).toBe(0)
+					expect(cache.LoadedPartInstances).toHaveLength(0)
 
 					await expect(context.getPieceInstances('next')).resolves.toHaveLength(0)
 					await expect(context.getPieceInstances('current')).resolves.toHaveLength(0)
@@ -361,7 +393,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					expect(cache.PartInstances.documents.size).toBe(2)
+					expect(cache.LoadedPartInstances).toHaveLength(2)
 
 					// Check the current part
 					await expect(context.getPieceInstances('next')).resolves.toHaveLength(0)
@@ -372,7 +404,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					expect(cache.PartInstances.documents.size).toBe(3)
+					expect(cache.LoadedPartInstances).toHaveLength(3)
 
 					// Now the next part
 					await expect(context.getPieceInstances('next')).resolves.toHaveLength(1)
@@ -406,7 +438,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					expect(cache.PartInstances.documents.size).toBe(0)
+					expect(cache.LoadedPartInstances).toHaveLength(0)
 
 					expect(getResolvedPiecesForCurrentPartInstanceMock).toHaveBeenCalledTimes(0)
 
@@ -419,16 +451,14 @@ describe('Test blueprint api context', () => {
 				getResolvedPiecesForCurrentPartInstanceMock.mockImplementation(
 					(
 						context2: JobContext,
-						cache2: ReadOnlyCache<CacheForPlayout>,
 						sourceLayers: SourceLayers,
-						partInstance: Pick<DBPartInstance, '_id' | 'timings'>,
+						partInstance: PartInstanceWithPieces,
 						now?: number
 					) => {
 						expect(context2).toBe(jobContext)
-						expect(cache2).toBeInstanceOf(CacheForPlayout)
 						expect(sourceLayers).toBeTruthy()
 						expect(now).toBeFalsy()
-						mockCalledIds.push(partInstance._id)
+						mockCalledIds.push(partInstance.PartInstance._id)
 						return [
 							{
 								instance: {
@@ -448,14 +478,14 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					expect(cache.PartInstances.documents.size).toBe(2)
+					expect(cache.LoadedPartInstances).toHaveLength(2)
 					// Check the current part
 					await expect(context.getResolvedPieceInstances('next')).resolves.toHaveLength(0)
 					await expect(
 						context.getResolvedPieceInstances('current').then((res) => res.map((p) => p._id))
 					).resolves.toEqual(['abc'])
 					expect(getResolvedPiecesForCurrentPartInstanceMock).toHaveBeenCalledTimes(1)
-					expect(mockCalledIds).toEqual([allPartInstances[1]._id])
+					expect(mockCalledIds).toEqual([allPartInstances[1].PartInstance._id])
 				})
 
 				mockCalledIds = []
@@ -465,7 +495,7 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					expect(cache.PartInstances.documents.size).toBe(3)
+					expect(cache.LoadedPartInstances).toHaveLength(3)
 
 					// Now the next part
 					await expect(
@@ -473,7 +503,7 @@ describe('Test blueprint api context', () => {
 					).resolves.toEqual(['abc'])
 					await expect(context.getResolvedPieceInstances('current')).resolves.toHaveLength(0)
 					expect(getResolvedPiecesForCurrentPartInstanceMock).toHaveBeenCalledTimes(1)
-					expect(mockCalledIds).toEqual([allPartInstances[2]._id])
+					expect(mockCalledIds).toEqual([allPartInstances[2].PartInstance._id])
 				})
 			})
 		})
@@ -498,11 +528,14 @@ describe('Test blueprint api context', () => {
 				const { jobContext, playlistId, allPartInstances } = await setupMyDefaultRundown()
 
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
-					const { context, rundown, activationId } = await getActionExecutionContext(jobContext, cache)
+					const { context } = await getActionExecutionContext(jobContext, cache)
+
+					allPartInstances[0].setTaken(getCurrentTime(), 0)
 
 					// We need to push changes back to 'mongo' for these tests
-					await cache.saveAllToDatabase()
+					await saveAllToDatabase(jobContext, cache, allPartInstances)
 
+					// const allPartInstances = cache.SortedLoadedPartInstances
 					expect(allPartInstances).toHaveLength(5)
 
 					const sourceLayerIds = Object.keys(context.showStyleCompound.sourceLayers)
@@ -513,16 +546,9 @@ describe('Test blueprint api context', () => {
 					await expect(context.findLastPieceOnLayer(sourceLayerIds[1])).resolves.toBeUndefined()
 
 					// Insert a piece that is played
-					const pieceId0: PieceInstanceId = getRandomId()
-					cache.PieceInstances.insert({
-						_id: pieceId0,
-						rundownId: rundown._id,
-						partInstanceId: allPartInstances[0]._id,
-						playlistActivationId: activationId,
-						dynamicallyInserted: getCurrentTime(),
-						piece: {
+					const insertedPieceInstance = allPartInstances[0].insertAdlibbedPiece(
+						{
 							_id: getRandomId(),
-							startPartId: allPartInstances[0].part._id,
 							externalId: '',
 							name: 'abc',
 							sourceLayerId: sourceLayerIds[0],
@@ -534,29 +560,23 @@ describe('Test blueprint api context', () => {
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
-						plannedStartedPlayback: 1000,
-					})
+						undefined
+					)
+					allPartInstances[0].setPieceInstancedPlannedStartedPlayback(insertedPieceInstance._id, 1000)
 					// We need to push changes back to 'mongo' for these tests
-					await cache.saveAllToDatabase()
+					await saveAllToDatabase(jobContext, cache, allPartInstances)
 
 					await expect(context.findLastPieceOnLayer(sourceLayerIds[0])).resolves.toMatchObject({
-						_id: pieceId0,
+						_id: insertedPieceInstance._id,
 					})
 					await expect(
 						context.findLastPieceOnLayer(sourceLayerIds[0], { originalOnly: true })
 					).resolves.toBeUndefined()
 
 					// Insert another more recent piece that is played
-					const pieceId1: PieceInstanceId = getRandomId()
-					cache.PieceInstances.insert({
-						_id: pieceId1,
-						rundownId: rundown._id,
-						partInstanceId: allPartInstances[0]._id,
-						playlistActivationId: activationId,
-						dynamicallyInserted: getCurrentTime(),
-						piece: {
+					const insertedPieceInstance2 = allPartInstances[0].insertAdlibbedPiece(
+						{
 							_id: getRandomId(),
-							startPartId: allPartInstances[0].part._id,
 							externalId: '',
 							name: 'abc',
 							sourceLayerId: sourceLayerIds[0],
@@ -568,13 +588,15 @@ describe('Test blueprint api context', () => {
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
-						plannedStartedPlayback: 2000,
-					})
+						undefined
+					)
+					allPartInstances[0].setPieceInstancedPlannedStartedPlayback(insertedPieceInstance2._id, 2000)
+
 					// We need to push changes back to 'mongo' for these tests
-					await cache.saveAllToDatabase()
+					await saveAllToDatabase(jobContext, cache, allPartInstances)
 
 					await expect(context.findLastPieceOnLayer(sourceLayerIds[0])).resolves.toMatchObject({
-						_id: pieceId1,
+						_id: insertedPieceInstance2._id,
 					})
 					await expect(
 						context.findLastPieceOnLayer(sourceLayerIds[0], { originalOnly: true })
@@ -588,10 +610,12 @@ describe('Test blueprint api context', () => {
 				await setPartInstances(jobContext, playlistId, allPartInstances[2], undefined)
 
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
-					const { context, rundown, activationId } = await getActionExecutionContext(jobContext, cache)
+					const { context } = await getActionExecutionContext(jobContext, cache)
+
+					allPartInstances[0].setTaken(getCurrentTime(), 0)
 
 					// We need to push changes back to 'mongo' for these tests
-					await cache.saveAllToDatabase()
+					await saveAllToDatabase(jobContext, cache, allPartInstances)
 
 					expect(allPartInstances).toHaveLength(5)
 
@@ -603,16 +627,9 @@ describe('Test blueprint api context', () => {
 					await expect(context.findLastPieceOnLayer(sourceLayerIds[1])).resolves.toBeUndefined()
 
 					// Insert a couple of pieces that are played
-					const pieceId0: PieceInstanceId = getRandomId()
-					cache.PieceInstances.insert({
-						_id: pieceId0,
-						rundownId: rundown._id,
-						partInstanceId: allPartInstances[0]._id,
-						playlistActivationId: activationId,
-						dynamicallyInserted: getCurrentTime(),
-						piece: {
+					const insertedPieceInstance = allPartInstances[0].insertAdlibbedPiece(
+						{
 							_id: getRandomId(),
-							startPartId: allPartInstances[0].part._id,
 							externalId: '',
 							name: 'abc',
 							sourceLayerId: sourceLayerIds[0],
@@ -624,18 +641,12 @@ describe('Test blueprint api context', () => {
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
-						plannedStartedPlayback: 1000,
-					})
-					const pieceId1: PieceInstanceId = getRandomId()
-					cache.PieceInstances.insert({
-						_id: pieceId1,
-						rundownId: rundown._id,
-						partInstanceId: allPartInstances[2]._id,
-						playlistActivationId: activationId,
-						dynamicallyInserted: getCurrentTime(),
-						piece: {
+						undefined
+					)
+					allPartInstances[0].setPieceInstancedPlannedStartedPlayback(insertedPieceInstance._id, 1000)
+					const insertedPieceInstance2 = allPartInstances[2].insertAdlibbedPiece(
+						{
 							_id: getRandomId(),
-							startPartId: allPartInstances[2].part._id,
 							externalId: '',
 							name: 'abc',
 							sourceLayerId: sourceLayerIds[0],
@@ -647,19 +658,20 @@ describe('Test blueprint api context', () => {
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
-						plannedStartedPlayback: 2000,
-					})
+						undefined
+					)
+					allPartInstances[2].setPieceInstancedPlannedStartedPlayback(insertedPieceInstance2._id, 2000)
 					// We need to push changes back to 'mongo' for these tests
-					await cache.saveAllToDatabase()
+					await saveAllToDatabase(jobContext, cache, allPartInstances)
 
 					// Check it
 					await expect(context.findLastPieceOnLayer(sourceLayerIds[0])).resolves.toMatchObject({
-						_id: pieceId1,
+						_id: insertedPieceInstance2._id,
 					})
 					await expect(
 						context.findLastPieceOnLayer(sourceLayerIds[0], { excludeCurrentPart: true })
 					).resolves.toMatchObject({
-						_id: pieceId0,
+						_id: insertedPieceInstance._id,
 					})
 				})
 			})
@@ -670,10 +682,12 @@ describe('Test blueprint api context', () => {
 				await setPartInstances(jobContext, playlistId, allPartInstances[2], undefined)
 
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
-					const { context, rundown, activationId } = await getActionExecutionContext(jobContext, cache)
+					const { context } = await getActionExecutionContext(jobContext, cache)
+
+					allPartInstances[0].setTaken(getCurrentTime(), 0)
 
 					// We need to push changes back to 'mongo' for these tests
-					await cache.saveAllToDatabase()
+					await saveAllToDatabase(jobContext, cache, allPartInstances)
 
 					expect(allPartInstances).toHaveLength(5)
 
@@ -685,15 +699,9 @@ describe('Test blueprint api context', () => {
 					await expect(context.findLastPieceOnLayer(sourceLayerIds[1])).resolves.toBeUndefined()
 
 					// Insert a couple of pieces that are played
-					const pieceId0: PieceInstanceId = getRandomId()
-					cache.PieceInstances.insert({
-						_id: pieceId0,
-						rundownId: rundown._id,
-						partInstanceId: allPartInstances[0]._id,
-						playlistActivationId: activationId,
-						piece: {
+					const insertedPieceInstance = allPartInstances[0].insertAdlibbedPiece(
+						{
 							_id: getRandomId(),
-							startPartId: allPartInstances[0].part._id,
 							externalId: '',
 							name: 'abc',
 							sourceLayerId: sourceLayerIds[0],
@@ -705,17 +713,12 @@ describe('Test blueprint api context', () => {
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
-						plannedStartedPlayback: 1000,
-					})
-					const pieceId1: PieceInstanceId = getRandomId()
-					cache.PieceInstances.insert({
-						_id: pieceId1,
-						rundownId: rundown._id,
-						partInstanceId: allPartInstances[2]._id,
-						playlistActivationId: activationId,
-						piece: {
+						undefined
+					)
+					allPartInstances[0].setPieceInstancedPlannedStartedPlayback(insertedPieceInstance._id, 1000)
+					const insertedPieceInstance2 = allPartInstances[2].insertAdlibbedPiece(
+						{
 							_id: getRandomId(),
-							startPartId: allPartInstances[2].part._id,
 							externalId: '',
 							name: 'abc',
 							sourceLayerId: sourceLayerIds[0],
@@ -731,28 +734,29 @@ describe('Test blueprint api context', () => {
 							content: {},
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						},
-						plannedStartedPlayback: 2000,
-					})
+						undefined
+					)
+					allPartInstances[2].setPieceInstancedPlannedStartedPlayback(insertedPieceInstance2._id, 2000)
 					// We need to push changes back to 'mongo' for these tests
-					await cache.saveAllToDatabase()
+					await saveAllToDatabase(jobContext, cache, allPartInstances)
 
 					// Check it
 					await expect(context.findLastPieceOnLayer(sourceLayerIds[0])).resolves.toMatchObject({
-						_id: pieceId1,
+						_id: insertedPieceInstance2._id,
 					})
 					await expect(
 						context.findLastPieceOnLayer(sourceLayerIds[0], { pieceMetaDataFilter: {} })
 					).resolves.toMatchObject({
-						_id: pieceId1,
+						_id: insertedPieceInstance2._id,
 					})
 					await expect(
 						context.findLastPieceOnLayer(sourceLayerIds[0], { pieceMetaDataFilter: { prop1: 'hello' } })
-					).resolves.toMatchObject({ _id: pieceId1 })
+					).resolves.toMatchObject({ _id: insertedPieceInstance2._id })
 					await expect(
 						context.findLastPieceOnLayer(sourceLayerIds[0], {
 							pieceMetaDataFilter: { prop1: { $ne: 'hello' } },
 						})
-					).resolves.toMatchObject({ _id: pieceId0 })
+					).resolves.toMatchObject({ _id: insertedPieceInstance._id })
 				})
 			})
 		})
@@ -804,7 +808,7 @@ describe('Test blueprint api context', () => {
 
 					const expectedPieceInstanceSourceLayer0 = pieceInstances.find(
 						(p) =>
-							p.partInstanceId === cache.Playlist.doc.currentPartInfo?.partInstanceId &&
+							p.partInstanceId === cache.Playlist.currentPartInfo?.partInstanceId &&
 							p.piece.sourceLayerId === sourceLayerIds[0]
 					)
 					expect(expectedPieceInstanceSourceLayer0).not.toBeUndefined()
@@ -818,7 +822,7 @@ describe('Test blueprint api context', () => {
 
 					const expectedPieceInstanceSourceLayer1 = pieceInstances.find(
 						(p) =>
-							p.partInstanceId === cache.Playlist.doc.currentPartInfo?.partInstanceId &&
+							p.partInstanceId === cache.Playlist.currentPartInfo?.partInstanceId &&
 							p.piece.sourceLayerId === sourceLayerIds[1]
 					)
 					expect(expectedPieceInstanceSourceLayer1).not.toBeUndefined()
@@ -887,7 +891,7 @@ describe('Test blueprint api context', () => {
 
 					const expectedPieceInstanceSourceLayer0 = pieceInstances.find(
 						(p) =>
-							p.partInstanceId === cache.Playlist.doc.currentPartInfo?.partInstanceId &&
+							p.partInstanceId === cache.Playlist.currentPartInfo?.partInstanceId &&
 							p.piece.sourceLayerId === sourceLayerIds[0]
 					)
 					expect(expectedPieceInstanceSourceLayer0).not.toBeUndefined()
@@ -956,18 +960,22 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					expect(cache.PartInstances.documents.size).toBe(0)
+					expect(cache.LoadedPartInstances).toHaveLength(0)
 
 					await expect(
-						context.getPartInstanceForPreviousPiece({ partInstanceId: allPartInstances[1]._id } as any)
+						context.getPartInstanceForPreviousPiece({
+							partInstanceId: allPartInstances[1].PartInstance._id,
+						} as any)
 					).resolves.toMatchObject({
-						_id: allPartInstances[1]._id,
+						_id: allPartInstances[1].PartInstance._id,
 					})
 
 					await expect(
-						context.getPartInstanceForPreviousPiece({ partInstanceId: allPartInstances[4]._id } as any)
+						context.getPartInstanceForPreviousPiece({
+							partInstanceId: allPartInstances[4].PartInstance._id,
+						} as any)
 					).resolves.toMatchObject({
-						_id: allPartInstances[4]._id,
+						_id: allPartInstances[4].PartInstance._id,
 					})
 				})
 
@@ -977,18 +985,22 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					expect(cache.PartInstances.documents.size).toBe(2)
+					expect(cache.LoadedPartInstances).toHaveLength(2)
 
 					await expect(
-						context.getPartInstanceForPreviousPiece({ partInstanceId: allPartInstances[1]._id } as any)
+						context.getPartInstanceForPreviousPiece({
+							partInstanceId: allPartInstances[1].PartInstance._id,
+						} as any)
 					).resolves.toMatchObject({
-						_id: allPartInstances[1]._id,
+						_id: allPartInstances[1].PartInstance._id,
 					})
 
 					await expect(
-						context.getPartInstanceForPreviousPiece({ partInstanceId: allPartInstances[4]._id } as any)
+						context.getPartInstanceForPreviousPiece({
+							partInstanceId: allPartInstances[4].PartInstance._id,
+						} as any)
 					).resolves.toMatchObject({
-						_id: allPartInstances[4]._id,
+						_id: allPartInstances[4].PartInstance._id,
 					})
 				})
 			})
@@ -1035,29 +1047,28 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					expect(cache.PartInstances.documents.size).toBe(0)
-					expect(cache.PieceInstances.documents.size).toBe(0)
+					expect(cache.LoadedPartInstances).toHaveLength(0)
 
 					const pieceInstance0 = (await jobContext.mockCollections.PieceInstances.findOne({
-						partInstanceId: allPartInstances[0]._id,
+						partInstanceId: allPartInstances[0].PartInstance._id,
 					})) as PieceInstance
 					expect(pieceInstance0).not.toBeUndefined()
 
 					await expect(
 						context.getPartForPreviousPiece({ _id: unprotectString(pieceInstance0.piece._id) })
 					).resolves.toMatchObject({
-						_id: allPartInstances[0].part._id,
+						_id: allPartInstances[0].PartInstance.part._id,
 					})
 
 					const pieceInstance1 = (await jobContext.mockCollections.PieceInstances.findOne({
-						partInstanceId: allPartInstances[1]._id,
+						partInstanceId: allPartInstances[1].PartInstance._id,
 					})) as PieceInstance
 					expect(pieceInstance1).not.toBeUndefined()
 
 					await expect(
 						context.getPartForPreviousPiece({ _id: unprotectString(pieceInstance1.piece._id) })
 					).resolves.toMatchObject({
-						_id: allPartInstances[1].part._id,
+						_id: allPartInstances[1].PartInstance.part._id,
 					})
 				})
 			})
@@ -1066,7 +1077,6 @@ describe('Test blueprint api context', () => {
 		describe('insertPiece', () => {
 			beforeEach(() => {
 				postProcessPiecesMock.mockClear()
-				innerStartAdLibPieceMock.mockClear()
 			})
 
 			test('bad parameters', async () => {
@@ -1077,6 +1087,12 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
+					const currentPartInstance = cache.CurrentPartInstance!
+					expect(currentPartInstance).toBeTruthy()
+					currentPartInstance.setTaken(getCurrentTime(), 0)
+
+					const insertSpy = jest.spyOn(currentPartInstance, 'insertAdlibbedPiece')
+
 					// @ts-ignore
 					await expect(context.insertPiece()).rejects.toThrow('Unknown part "undefined"')
 					// @ts-ignore
@@ -1085,14 +1101,14 @@ describe('Test blueprint api context', () => {
 					await expect(context.insertPiece('next')).rejects.toThrow('Cannot insert piece when no active part')
 
 					expect(postProcessPiecesMock).toHaveBeenCalledTimes(0)
-					expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(0)
+					expect(insertSpy).toHaveBeenCalledTimes(0)
 
 					postProcessPiecesMock.mockImplementationOnce(() => {
 						throw new Error('Mock process error')
 					})
 					await expect(context.insertPiece('current', {} as any)).rejects.toThrow('Mock process error')
 					expect(postProcessPiecesMock).toHaveBeenCalledTimes(1)
-					expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(0)
+					expect(insertSpy).toHaveBeenCalledTimes(0)
 				})
 			})
 
@@ -1112,7 +1128,12 @@ describe('Test blueprint api context', () => {
 							timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 						} as any,
 					])
-					innerStartAdLibPieceMock.mockImplementationOnce(innerStartAdLibPieceOrig)
+
+					const currentPartInstance = cache.CurrentPartInstance!
+					expect(currentPartInstance).toBeTruthy()
+					currentPartInstance.setTaken(getCurrentTime(), 0)
+
+					const insertSpy = jest.spyOn(currentPartInstance, 'insertAdlibbedPiece')
 
 					const newPieceInstanceId = (await context.insertPiece('current', { externalId: 'input1' } as any))
 						._id
@@ -1122,19 +1143,19 @@ describe('Test blueprint api context', () => {
 						expect.anything(),
 						[{ externalId: 'input1' }],
 						'blueprint0',
-						partInstance.rundownId,
-						partInstance.segmentId,
-						partInstance.part._id,
+						partInstance.PartInstance.rundownId,
+						partInstance.PartInstance.segmentId,
+						partInstance.PartInstance.part._id,
 						true
 					)
-					expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(1)
+					expect(insertSpy).toHaveBeenCalledTimes(1)
 
 					// check some properties not exposed to the blueprints
-					const newPieceInstance = cache.PieceInstances.findOne(
-						protectString(newPieceInstanceId)
-					) as PieceInstance
+					const newPieceInstance = cache.findPieceInstance(protectString(newPieceInstanceId))
+						?.pieceInstance as PieceInstance
+					expect(newPieceInstance).toBeTruthy()
 					expect(newPieceInstance.dynamicallyInserted).toBeTruthy()
-					expect(newPieceInstance.partInstanceId).toEqual(partInstance._id)
+					expect(newPieceInstance.partInstanceId).toEqual(partInstance.PartInstance._id)
 				})
 			})
 		})
@@ -1144,11 +1165,11 @@ describe('Test blueprint api context', () => {
 				const { jobContext, playlistId, allPartInstances } = await setupMyDefaultRundown()
 
 				const pieceInstance = (await jobContext.mockCollections.PieceInstances.findOne({
-					partInstanceId: allPartInstances[0]._id,
+					partInstanceId: allPartInstances[0].PartInstance._id,
 				})) as PieceInstance
 				expect(pieceInstance).toBeTruthy()
 				const pieceInstanceOther = (await jobContext.mockCollections.PieceInstances.findOne({
-					partInstanceId: allPartInstances[1]._id,
+					partInstanceId: allPartInstances[1].PartInstance._id,
 				})) as PieceInstance
 				expect(pieceInstanceOther).toBeTruthy()
 
@@ -1220,7 +1241,9 @@ describe('Test blueprint api context', () => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
 					// Ensure there are no pending updates already
-					expect(cache.PieceInstances.isModified()).toBeFalsy()
+					for (const partInstance of cache.LoadedPartInstances) {
+						expect((partInstance as PartInstanceWithPiecesImpl).HasChanges).toBeFalsy()
+					}
 
 					// Update it and expect it to match
 					const pieceInstance0Before = clone(pieceInstance0)
@@ -1246,7 +1269,9 @@ describe('Test blueprint api context', () => {
 						unprotectString(pieceInstance0._id),
 						pieceInstance0Delta
 					)
-					const pieceInstance1 = cache.PieceInstances.findOne(pieceInstance0._id) as PieceInstance
+					const { pieceInstance: pieceInstance1, partInstance: partInstance1 } = cache.findPieceInstance(
+						pieceInstance0._id
+					)!
 					expect(pieceInstance1).toBeTruthy()
 
 					expect(resultPiece).toEqual(convertPieceInstanceToBlueprints(pieceInstance1))
@@ -1264,14 +1289,15 @@ describe('Test blueprint api context', () => {
 						},
 					}
 					expect(pieceInstance1).toEqual(pieceInstance0After)
-					expect(
-						Array.from(cache.PieceInstances.documents.values()).filter((doc) => !doc || !!doc.updated)
-					).toMatchObject([
-						{
-							updated: true,
-							document: { _id: pieceInstance1._id },
-						},
-					])
+					expect((partInstance1 as PartInstanceWithPiecesImpl).HasChanges).toBeTruthy()
+					// expect(
+					// 	Array.from(cache.PieceInstances.documents.values()).filter((doc) => !doc || !!doc.updated)
+					// ).toMatchObject([
+					// 	{
+					// 		updated: true,
+					// 		document: { _id: pieceInstance1._id },
+					// 	},
+					// ])
 
 					expect(context.nextPartState).toEqual(ActionPartChange.NONE)
 					expect(context.currentPartState).toEqual(ActionPartChange.SAFE_CHANGE)
@@ -1282,7 +1308,6 @@ describe('Test blueprint api context', () => {
 		describe('queuePart', () => {
 			beforeEach(() => {
 				postProcessPiecesMock.mockClear()
-				innerStartAdLibPieceMock.mockClear()
 				innerStartQueuedAdLibMock.mockClear()
 			})
 
@@ -1338,7 +1363,6 @@ describe('Test blueprint api context', () => {
 					// ).toBeFalsy()
 
 					expect(postProcessPiecesMock).toHaveBeenCalledTimes(0)
-					expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(0)
 					expect(innerStartQueuedAdLibMock).toHaveBeenCalledTimes(0)
 
 					postProcessPiecesMock.mockImplementationOnce(() => {
@@ -1346,7 +1370,6 @@ describe('Test blueprint api context', () => {
 					})
 					await expect(context.queuePart({} as any, [{}] as any)).rejects.toThrow('Mock process error')
 					expect(postProcessPiecesMock).toHaveBeenCalledTimes(1)
-					expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(0)
 					expect(innerStartQueuedAdLibMock).toHaveBeenCalledTimes(0)
 
 					partInstance.part.autoNext = true
@@ -1357,7 +1380,7 @@ describe('Test blueprint api context', () => {
 						playOffset: 0,
 						take: undefined,
 					}
-					cache.PartInstances.replace(partInstance)
+					cache.replacePartInstance(new PartInstanceWithPiecesImpl(partInstance, [], true))
 
 					expect(isTooCloseToAutonext(partInstance, true)).toBeTruthy()
 					await expect(context.queuePart({} as any, [{}] as any)).rejects.toThrow(
@@ -1398,34 +1421,30 @@ describe('Test blueprint api context', () => {
 					}
 
 					expect(postProcessPiecesMock).toHaveBeenCalledTimes(0)
-					expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(0)
 					expect(innerStartQueuedAdLibMock).toHaveBeenCalledTimes(0)
 
 					// Create it with most of the real flow
 					postProcessPiecesMock.mockImplementationOnce(postProcessPiecesOrig)
 					innerStartQueuedAdLibMock.mockImplementationOnce(innerStartQueuedAdLibOrig)
 					expect((await context.queuePart(newPart, [newPiece]))._id).toEqual(
-						cache.Playlist.doc.nextPartInfo?.partInstanceId
+						cache.Playlist.nextPartInfo?.partInstanceId
 					)
 
 					expect(postProcessPiecesMock).toHaveBeenCalledTimes(1)
-					expect(innerStartAdLibPieceMock).toHaveBeenCalledTimes(0)
 					expect(innerStartQueuedAdLibMock).toHaveBeenCalledTimes(1)
 
 					// Verify some properties not exposed to the blueprints
-					const newPartInstance = cache.PartInstances.findOne(
-						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion, @typescript-eslint/no-non-null-asserted-optional-chain
-						cache.Playlist.doc.nextPartInfo?.partInstanceId!
-					) as DBPartInstance
+					const newPartInstance = cache.getPartInstance(cache.Playlist.nextPartInfo!.partInstanceId)!
 					expect(newPartInstance).toBeTruthy()
-					expect(newPartInstance.part._rank).toBeLessThan(9000)
-					expect(newPartInstance.part._rank).toBeGreaterThan(partInstance.part._rank)
-					expect(newPartInstance.orphaned).toEqual('adlib-part')
+					expect(newPartInstance.PartInstance.part._rank).toBeLessThan(9000)
+					expect(newPartInstance.PartInstance.part._rank).toBeGreaterThan(partInstance.part._rank)
+					expect(newPartInstance.PartInstance.orphaned).toEqual('adlib-part')
 
 					const newNextPartInstances = await context.getPieceInstances('next')
 					expect(newNextPartInstances).toHaveLength(1)
-					// @ts-ignore
-					expect(newNextPartInstances[0].partInstanceId).toEqual(newPartInstance._id)
+					expect(newNextPartInstances[0].partInstanceId).toEqual(
+						unprotectString(newPartInstance.PartInstance._id)
+					)
 
 					expect(context.nextPartState).toEqual(ActionPartChange.SAFE_CHANGE)
 					expect(context.currentPartState).toEqual(ActionPartChange.NONE)
@@ -1436,26 +1455,6 @@ describe('Test blueprint api context', () => {
 		describe('stopPiecesOnLayers', () => {
 			test('invalid parameters', async () => {
 				const { jobContext, playlistId } = await setupMyDefaultRundown()
-
-				// Bad instance id
-				await jobContext.mockCollections.RundownPlaylists.update(playlistId, {
-					$set: {
-						currentPartInfo: {
-							partInstanceId: protectString('abc'),
-							rundownId: protectString('def'),
-							manuallySelected: false,
-							consumesNextSegmentId: false,
-						},
-					},
-				})
-				await wrapWithCache(jobContext, playlistId, async (cache) => {
-					const { context } = await getActionExecutionContext(jobContext, cache)
-
-					// Bad instance id
-					await expect(context.stopPiecesOnLayers(['lay1'], 34)).rejects.toThrow(
-						'Cannot stop pieceInstances when no current partInstance'
-					)
-				})
 
 				await setPartInstances(jobContext, playlistId, null, undefined)
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
@@ -1488,7 +1487,7 @@ describe('Test blueprint api context', () => {
 							expect(context2).toBe(jobContext)
 							expect(cache2).toBe(cache)
 							expect(showStyleBase).toBeTruthy()
-							expect(partInstance).toStrictEqual(currentPartInstance)
+							expect(partInstance.PartInstance).toStrictEqual(currentPartInstance)
 							expect(offset).toEqual(34)
 							filter = filter2
 
@@ -1515,26 +1514,6 @@ describe('Test blueprint api context', () => {
 		describe('stopPieceInstances', () => {
 			test('invalid parameters', async () => {
 				const { jobContext, playlistId } = await setupMyDefaultRundown()
-
-				// Bad instance id
-				await jobContext.mockCollections.RundownPlaylists.update(playlistId, {
-					$set: {
-						currentPartInfo: {
-							partInstanceId: protectString('abc'),
-							rundownId: protectString('def'),
-							manuallySelected: false,
-							consumesNextSegmentId: false,
-						},
-					},
-				})
-				await wrapWithCache(jobContext, playlistId, async (cache) => {
-					const { context } = await getActionExecutionContext(jobContext, cache)
-
-					// Bad instance id
-					await expect(context.stopPieceInstances(['lay1'], 34)).rejects.toThrow(
-						'Cannot stop pieceInstances when no current partInstance'
-					)
-				})
 
 				await setPartInstances(jobContext, playlistId, null, undefined)
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
@@ -1567,7 +1546,7 @@ describe('Test blueprint api context', () => {
 							expect(context2).toBe(jobContext)
 							expect(cache2).toBe(cache)
 							expect(showStyleBase).toBeTruthy()
-							expect(partInstance).toStrictEqual(currentPartInstance)
+							expect(partInstance.PartInstance).toStrictEqual(currentPartInstance)
 							expect(offset).toEqual(34)
 							filter = filter2
 
@@ -1591,6 +1570,33 @@ describe('Test blueprint api context', () => {
 			})
 		})
 		describe('removePieceInstances', () => {
+			interface PieceInstanceCounts {
+				other: number
+				previous: number
+				current: number
+				next: number
+			}
+			function getPieceInstanceCounts(cache: PlayoutModel): PieceInstanceCounts {
+				let other = 0
+				for (const partInstance of cache.OlderPartInstances) {
+					other += partInstance.PieceInstances.length
+				}
+
+				return {
+					other,
+					previous: cache.PreviousPartInstance?.PieceInstances?.length ?? 0,
+					current: cache.CurrentPartInstance?.PieceInstances?.length ?? 0,
+					next: cache.NextPartInstance?.PieceInstances?.length ?? 0,
+				}
+			}
+
+			function expectCountsToEqual(counts: PieceInstanceCounts, old: PieceInstanceCounts): void {
+				expect(counts.previous).toEqual(old.previous)
+				expect(counts.current).toEqual(old.current)
+				expect(counts.next).toEqual(old.next)
+				expect(counts.other).toEqual(old.other)
+			}
+
 			test('invalid parameters', async () => {
 				const { jobContext, playlistId, rundownId, allPartInstances } = await setupMyDefaultRundown()
 
@@ -1611,12 +1617,15 @@ describe('Test blueprint api context', () => {
 
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
-					const beforePieceInstancesCount = cache.PieceInstances.findAll(null).length // Because only those frm current, next, prev are included..
-					expect(beforePieceInstancesCount).not.toEqual(0)
+					const beforePieceInstancesCounts = getPieceInstanceCounts(cache)
+					expect(beforePieceInstancesCounts.previous).toEqual(0)
+					expect(beforePieceInstancesCounts.current).toEqual(0)
+					expect(beforePieceInstancesCounts.next).not.toEqual(0)
+					expect(beforePieceInstancesCounts.other).toEqual(0)
 
 					const pieceInstanceFromOther = (await jobContext.mockCollections.PieceInstances.findOne({
 						rundownId,
-						partInstanceId: { $ne: partInstance._id },
+						partInstanceId: { $ne: partInstance.PartInstance._id },
 					})) as PieceInstance
 					expect(pieceInstanceFromOther).toBeTruthy()
 
@@ -1625,7 +1634,7 @@ describe('Test blueprint api context', () => {
 						// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 						context.removePieceInstances('next', [unprotectString(pieceInstanceFromOther._id)])
 					).resolves.toEqual([]) // Try and remove something belonging to a different part
-					expect(cache.PieceInstances.findAll(null).length).toEqual(beforePieceInstancesCount)
+					expectCountsToEqual(getPieceInstanceCounts(cache), beforePieceInstancesCounts)
 				})
 			})
 
@@ -1638,10 +1647,14 @@ describe('Test blueprint api context', () => {
 				await wrapWithCache(jobContext, playlistId, async (cache) => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
-					expect(cache.PieceInstances.findAll(null).length).not.toEqual(0)
+					const beforePieceInstancesCounts = getPieceInstanceCounts(cache)
+					expect(beforePieceInstancesCounts.previous).toEqual(0)
+					expect(beforePieceInstancesCounts.current).toEqual(0)
+					expect(beforePieceInstancesCounts.next).not.toEqual(0)
+					expect(beforePieceInstancesCounts.other).toEqual(0)
 
 					// Find the instance, and create its backing piece
-					const targetPieceInstance = cache.PieceInstances.findOne(() => true) as PieceInstance
+					const targetPieceInstance = cache.NextPartInstance!.PieceInstances[0]
 					expect(targetPieceInstance).toBeTruthy()
 
 					await expect(
@@ -1649,7 +1662,7 @@ describe('Test blueprint api context', () => {
 					).resolves.toEqual([unprotectString(targetPieceInstance._id)])
 
 					// Ensure it was all removed
-					expect(cache.PieceInstances.findOne(targetPieceInstance._id)).toBeFalsy()
+					expect(cache.findPieceInstance(targetPieceInstance._id)).toBeFalsy()
 					expect(context.nextPartState).toEqual(ActionPartChange.SAFE_CHANGE)
 				})
 			})
@@ -1707,7 +1720,7 @@ describe('Test blueprint api context', () => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
 					// Ensure there are no pending updates already
-					expect(cache.PartInstances.isModified()).toBeFalsy()
+					expect((cache.NextPartInstance! as PartInstanceWithPiecesImpl).HasChanges).toBeFalsy()
 
 					// Update it and expect it to match
 					const partInstance0Before = clone(partInstance0)
@@ -1719,10 +1732,10 @@ describe('Test blueprint api context', () => {
 						badProperty: 9, // This will be dropped
 					}
 					const resultPiece = await context.updatePartInstance('next', partInstance0Delta)
-					const partInstance1 = cache.PartInstances.findOne(() => true) as DBPartInstance
+					const partInstance1 = cache.NextPartInstance!
 					expect(partInstance1).toBeTruthy()
 
-					expect(resultPiece).toEqual(convertPartInstanceToBlueprints(partInstance1))
+					expect(resultPiece).toEqual(convertPartInstanceToBlueprints(partInstance1.PartInstance))
 
 					const pieceInstance0After = {
 						...partInstance0Before,
@@ -1731,15 +1744,16 @@ describe('Test blueprint api context', () => {
 							..._.omit(partInstance0Delta, 'badProperty', '_id'),
 						},
 					}
-					expect(partInstance1).toEqual(pieceInstance0After)
-					expect(
-						Array.from(cache.PartInstances.documents.values()).filter((doc) => !doc || !!doc.updated)
-					).toMatchObject([
-						{
-							updated: true,
-							document: { _id: partInstance1._id },
-						},
-					])
+					expect(partInstance1.PartInstance).toEqual(pieceInstance0After)
+					expect((partInstance1 as PartInstanceWithPiecesImpl).HasChanges).toBeTruthy()
+					// expect(
+					// 	Array.from(cache.PartInstances.documents.values()).filter((doc) => !doc || !!doc.updated)
+					// ).toMatchObject([
+					// 	{
+					// 		updated: true,
+					// 		document: { _id: partInstance1._id },
+					// 	},
+					// ])
 
 					expect(context.nextPartState).toEqual(ActionPartChange.SAFE_CHANGE)
 					expect(context.currentPartState).toEqual(ActionPartChange.NONE)

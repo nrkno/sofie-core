@@ -1,7 +1,6 @@
 import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { SetNextPartProps, MoveNextPartProps, SetNextSegmentProps } from '@sofie-automation/corelib/dist/worker/studio'
 import { JobContext } from '../jobs'
@@ -9,6 +8,8 @@ import { runJobWithPlayoutCache } from './lock'
 import { setNextPartFromPart, setNextSegment } from './setNext'
 import { moveNextPart } from './moveNextPart'
 import { updateTimeline } from './timeline/generate'
+import { SegmentWithParts } from './cacheModel/SegmentWithParts'
+import { ReadonlyDeep } from 'type-fest'
 
 /**
  * Set the next Part to a specified id
@@ -18,7 +19,7 @@ export async function handleSetNextPart(context: JobContext, data: SetNextPartPr
 		context,
 		data,
 		async (cache) => {
-			const playlist = cache.Playlist.doc
+			const playlist = cache.Playlist
 
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
 			if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
@@ -27,7 +28,7 @@ export async function handleSetNextPart(context: JobContext, data: SetNextPartPr
 		},
 		async (cache) => {
 			// Ensure the part is playable and found
-			const nextPart = cache.Parts.findOne(data.nextPartId)
+			const nextPart = cache.findPart(data.nextPartId)
 			if (!nextPart) throw UserError.create(UserErrorMessage.PartNotFound, undefined, 404)
 			if (!isPartPlayable(nextPart)) throw UserError.create(UserErrorMessage.PartNotPlayable, undefined, 412)
 
@@ -49,7 +50,7 @@ export async function handleMoveNextPart(context: JobContext, data: MoveNextPart
 			if (!data.partDelta && !data.segmentDelta)
 				throw new Error(`rundownMoveNext: invalid delta: (${data.partDelta}, ${data.segmentDelta})`)
 
-			const playlist = cache.Playlist.doc
+			const playlist = cache.Playlist
 
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
 			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
@@ -78,7 +79,7 @@ export async function handleSetNextSegment(context: JobContext, data: SetNextSeg
 		context,
 		data,
 		async (cache) => {
-			const playlist = cache.Playlist.doc
+			const playlist = cache.Playlist
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
 
 			if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
@@ -86,9 +87,9 @@ export async function handleSetNextSegment(context: JobContext, data: SetNextSeg
 			}
 		},
 		async (cache) => {
-			let nextSegment: DBSegment | null = null
+			let nextSegment: ReadonlyDeep<SegmentWithParts> | null = null
 			if (data.nextSegmentId) {
-				nextSegment = cache.Segments.findOne(data.nextSegmentId) || null
+				nextSegment = cache.findSegment(data.nextSegmentId) ?? null
 				if (!nextSegment) throw new Error(`Segment "${data.nextSegmentId}" not found!`)
 			}
 

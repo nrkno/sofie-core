@@ -1,94 +1,64 @@
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
-import { PartInstanceId, PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { EmptyPieceTimelineObjectsBlob, Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { PieceInstance, rewrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { PartInstanceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { assertNever, getRandomId, getRank } from '@sofie-automation/corelib/dist/lib'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
-import { calculatePartExpectedDurationWithPreroll } from '@sofie-automation/corelib/dist/playout/timings'
 import { getCurrentTime } from '../lib'
 import { JobContext } from '../jobs'
-import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getRundownIDsFromCache } from './cache'
+import { PlayoutModel } from './cacheModel/PlayoutModel'
+import { PartInstanceWithPieces } from './cacheModel/PartInstanceWithPieces'
 import {
 	fetchPiecesThatMayBeActiveForPart,
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { convertAdLibToPieceInstance, setupPieceInstanceInfiniteProperties } from './pieces'
+import { convertAdLibToPieceInstance } from './pieces'
 import { getResolvedPiecesForCurrentPartInstance } from './resolvedPieces'
 import { updateTimeline } from './timeline/generate'
-import { PieceLifespan, IBlueprintPieceType } from '@sofie-automation/blueprints-integration'
+import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { updatePartInstanceRanksAfterAdlib } from '../rundown'
 import { selectNextPart } from './selectNextPart'
 import { setNextPart } from './setNext'
 import { calculateNowOffsetLatency } from './timeline/multi-gateway'
 import { logger } from '../logging'
+import { ReadonlyDeep } from 'type-fest'
+import { RundownWithSegments } from './cacheModel/RundownWithSegments'
 
 export async function innerStartOrQueueAdLibPiece(
 	context: JobContext,
-	cache: CacheForPlayout,
-	rundown: DBRundown,
+	cache: PlayoutModel,
+	rundown: RundownWithSegments,
 	queue: boolean,
-	currentPartInstance: DBPartInstance,
+	currentPartInstance: PartInstanceWithPieces,
 	adLibPiece: AdLibPiece | BucketAdLib
 ): Promise<PartInstanceId | undefined> {
-	const playlist = cache.Playlist.doc
-	if (!playlist.activationId) throw new Error('RundownPlaylist is not active')
-
 	const span = context.startSpan('innerStartOrQueueAdLibPiece')
 	let queuedPartInstanceId: PartInstanceId | undefined
 	if (queue || adLibPiece.toBeQueued) {
-		const newPartInstance: DBPartInstance = {
+		const newPartInstance = cache.insertAdlibbedPartInstance({
 			_id: getRandomId(),
-			rundownId: rundown._id,
-			segmentId: currentPartInstance.segmentId,
-			playlistActivationId: playlist.activationId,
-			segmentPlayoutId: currentPartInstance.segmentPlayoutId,
-			takeCount: currentPartInstance.takeCount + 1,
-			rehearsal: !!playlist.rehearsal,
-			orphaned: 'adlib-part',
-			part: {
-				_id: getRandomId(),
-				_rank: 99999, // Corrected in innerStartQueuedAdLib
-				externalId: '',
-				segmentId: currentPartInstance.segmentId,
-				rundownId: rundown._id,
-				title: adLibPiece.name,
-				expectedDuration: adLibPiece.expectedDuration,
-				expectedDurationWithPreroll: adLibPiece.expectedDuration, // Filled in later
-			},
-		}
-		const newPieceInstance = convertAdLibToPieceInstance(
-			context,
-			playlist.activationId,
-			adLibPiece,
-			newPartInstance,
-			queue
-		)
+			_rank: 99999, // Corrected in innerStartQueuedAdLib
+			externalId: '',
+			title: adLibPiece.name,
+			expectedDuration: adLibPiece.expectedDuration,
+			expectedDurationWithPreroll: adLibPiece.expectedDuration, // Filled in later
+		})
 
-		newPartInstance.part.expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(
-			newPartInstance.part,
-			[newPieceInstance.piece]
-		)
+		convertAdLibToPieceInstance(context, adLibPiece, newPartInstance, queue)
 
-		await innerStartQueuedAdLib(context, cache, rundown, currentPartInstance, newPartInstance, [newPieceInstance])
-		queuedPartInstanceId = newPartInstance._id
+		newPartInstance.recalculateExpectedDurationWithPreroll()
+
+		await innerStartQueuedAdLib(context, cache, rundown, currentPartInstance, newPartInstance)
+		queuedPartInstanceId = newPartInstance.PartInstance._id
 
 		// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
 	} else {
-		const newPieceInstance = convertAdLibToPieceInstance(
-			context,
-			playlist.activationId,
-			adLibPiece,
-			currentPartInstance,
-			queue
-		)
-		innerStartAdLibPiece(context, cache, rundown, currentPartInstance, newPieceInstance)
+		convertAdLibToPieceInstance(context, adLibPiece, currentPartInstance, queue)
 
-		await syncPlayheadInfinitesForNextPartInstance(context, cache)
+		await syncPlayheadInfinitesForNextPartInstance(context, cache, currentPartInstance, cache.NextPartInstance)
 	}
 
 	await updateTimeline(context, cache)
@@ -99,17 +69,17 @@ export async function innerStartOrQueueAdLibPiece(
 
 export async function innerFindLastPieceOnLayer(
 	context: JobContext,
-	cache: CacheForPlayout,
+	cache: PlayoutModel,
 	sourceLayerId: string[],
 	originalOnly: boolean,
 	customQuery?: MongoQuery<PieceInstance>
 ): Promise<PieceInstance | undefined> {
 	const span = context.startSpan('innerFindLastPieceOnLayer')
-	const rundownIds = getRundownIDsFromCache(cache)
+	const rundownIds = cache.getRundownIds()
 
 	const query: MongoQuery<PieceInstance> = {
 		...customQuery,
-		playlistActivationId: cache.Playlist.doc.activationId,
+		playlistActivationId: cache.Playlist.activationId,
 		rundownId: { $in: rundownIds },
 		'piece.sourceLayerId': { $in: sourceLayerId },
 		plannedStartedPlayback: {
@@ -137,14 +107,14 @@ export async function innerFindLastPieceOnLayer(
 
 export async function innerFindLastScriptedPieceOnLayer(
 	context: JobContext,
-	cache: CacheForPlayout,
+	cache: PlayoutModel,
 	sourceLayerId: string[],
 	customQuery?: MongoQuery<Piece>
 ): Promise<Piece | undefined> {
 	const span = context.startSpan('innerFindLastScriptedPieceOnLayer')
 
-	const playlist = cache.Playlist.doc
-	const rundownIds = getRundownIDsFromCache(cache)
+	const playlist = cache.Playlist
+	const rundownIds = cache.getRundownIds()
 
 	// TODO - this should throw instead of return more?
 
@@ -152,7 +122,7 @@ export async function innerFindLastScriptedPieceOnLayer(
 		return
 	}
 
-	const currentPartInstance = cache.PartInstances.findOne(playlist.currentPartInfo.partInstanceId)
+	const currentPartInstance = cache.CurrentPartInstance?.PartInstance
 
 	if (!currentPartInstance) {
 		return
@@ -170,9 +140,10 @@ export async function innerFindLastScriptedPieceOnLayer(
 		})
 
 	const pieceIdSet = new Set(pieces.map((p) => p.startPartId))
-	const part = cache.Parts.findOne((p) => pieceIdSet.has(p._id) && p._rank <= currentPartInstance.part._rank, {
-		sort: { _rank: -1 },
-	})
+	const part = cache
+		.getAllOrderedParts()
+		.filter((p) => pieceIdSet.has(p._id) && p._rank <= currentPartInstance.part._rank)
+		.reverse()[0] // nocommit - verify this
 
 	if (!part) {
 		return
@@ -205,105 +176,72 @@ export async function innerFindLastScriptedPieceOnLayer(
 
 export async function innerStartQueuedAdLib(
 	context: JobContext,
-	cache: CacheForPlayout,
-	rundown: DBRundown,
-	currentPartInstance: DBPartInstance,
-	newPartInstance: DBPartInstance,
-	newPieceInstances: PieceInstance[]
+	cache: PlayoutModel,
+	rundown: RundownWithSegments,
+	currentPartInstance: PartInstanceWithPieces,
+	newPartInstance: PartInstanceWithPieces
 ): Promise<void> {
 	const span = context.startSpan('innerStartQueuedAdLib')
-
-	// Ensure it is labelled as dynamic
-	newPartInstance.orphaned = 'adlib-part'
 
 	// Find the following part, so we can pick a good rank
 	const followingPart = selectNextPart(
 		context,
-		cache.Playlist.doc,
-		currentPartInstance,
+		cache.Playlist,
+		currentPartInstance.PartInstance,
 		null,
-		getOrderedSegmentsAndPartsFromPlayoutCache(cache),
+		cache.getAllOrderedSegments(),
+		cache.getAllOrderedParts(),
 		false // We want to insert it before any trailing invalid piece
 	)
-	newPartInstance.part._rank = getRank(
-		currentPartInstance.part,
-		followingPart?.part?.segmentId === newPartInstance.segmentId ? followingPart?.part : undefined
+	newPartInstance.setRank(
+		getRank(
+			currentPartInstance.PartInstance.part,
+			followingPart?.part?.segmentId === newPartInstance.PartInstance.segmentId ? followingPart?.part : undefined
+		)
 	)
 
-	cache.PartInstances.insert(newPartInstance)
-
-	newPieceInstances.forEach((pieceInstance) => {
-		// Ensure it is labelled as dynamic
-		pieceInstance.dynamicallyInserted = getCurrentTime()
-		pieceInstance.partInstanceId = newPartInstance._id
-		pieceInstance.piece.startPartId = newPartInstance.part._id
-
-		setupPieceInstanceInfiniteProperties(pieceInstance)
-
-		cache.PieceInstances.insert(pieceInstance)
-	})
-
-	updatePartInstanceRanksAfterAdlib(cache, newPartInstance.part.segmentId)
+	updatePartInstanceRanksAfterAdlib(cache, newPartInstance.PartInstance.segmentId)
 
 	// Find and insert any rundown defined infinites that we should inherit
-	newPartInstance = cache.PartInstances.findOne(newPartInstance._id) as DBPartInstance
-	const possiblePieces = await fetchPiecesThatMayBeActiveForPart(context, cache, undefined, newPartInstance.part)
+	const possiblePieces = await fetchPiecesThatMayBeActiveForPart(
+		context,
+		cache,
+		undefined,
+		newPartInstance.PartInstance.part
+	)
 	const infinitePieceInstances = getPieceInstancesForPart(
 		context,
 		cache,
 		currentPartInstance,
 		rundown,
-		newPartInstance.part,
+		newPartInstance.PartInstance.part,
 		possiblePieces,
-		newPartInstance._id
+		newPartInstance.PartInstance._id
 	)
-	for (const pieceInstance of infinitePieceInstances) {
-		cache.PieceInstances.insert(pieceInstance)
-	}
+	newPartInstance.insertInfinitePieces(infinitePieceInstances)
 
 	await setNextPart(context, cache, newPartInstance, false)
 
 	if (span) span.end()
 }
 
-export function innerStartAdLibPiece(
-	context: JobContext,
-	cache: CacheForPlayout,
-	_rundown: DBRundown,
-	existingPartInstance: DBPartInstance,
-	newPieceInstance: PieceInstance
-): void {
-	const span = context.startSpan('innerStartAdLibPiece')
-	// Ensure it is labelled as dynamic
-	newPieceInstance.partInstanceId = existingPartInstance._id
-	newPieceInstance.piece.startPartId = existingPartInstance.part._id
-	newPieceInstance.dynamicallyInserted = getCurrentTime()
-
-	setupPieceInstanceInfiniteProperties(newPieceInstance)
-
-	// exclusiveGroup is handled at runtime by processAndPrunePieceInstanceTimings
-
-	cache.PieceInstances.insert(newPieceInstance)
-	if (span) span.end()
-}
-
 export function innerStopPieces(
 	context: JobContext,
-	cache: CacheForPlayout,
+	cache: PlayoutModel,
 	sourceLayers: SourceLayers,
-	currentPartInstance: DBPartInstance,
-	filter: (pieceInstance: PieceInstance) => boolean,
+	currentPartInstance: PartInstanceWithPieces,
+	filter: (pieceInstance: ReadonlyDeep<PieceInstance>) => boolean,
 	timeOffset: number | undefined
 ): Array<PieceInstanceId> {
 	const span = context.startSpan('innerStopPieces')
 	const stoppedInstances: PieceInstanceId[] = []
 
-	const lastStartedPlayback = currentPartInstance.timings?.plannedStartedPlayback
+	const lastStartedPlayback = currentPartInstance.PartInstance.timings?.plannedStartedPlayback
 	if (lastStartedPlayback === undefined) {
 		throw new Error('Cannot stop pieceInstances when partInstance hasnt started playback')
 	}
 
-	const resolvedPieces = getResolvedPiecesForCurrentPartInstance(context, cache, sourceLayers, currentPartInstance)
+	const resolvedPieces = getResolvedPiecesForCurrentPartInstance(context, sourceLayers, currentPartInstance)
 	const offsetRelativeToNow = (timeOffset || 0) + (calculateNowOffsetLatency(context, cache, undefined) || 0)
 	const stopAt = getCurrentTime() + offsetRelativeToNow
 	const relativeStopAt = stopAt - lastStartedPlayback
@@ -324,18 +262,15 @@ export function innerStopPieces(
 				case PieceLifespan.OutOnRundownChange: {
 					logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt}`)
 
-					cache.PieceInstances.updateOne(pieceInstance._id, (p) => {
-						if (cache.isMultiGatewayMode) {
-							p.userDuration = {
+					const newDuration: Required<PieceInstance>['userDuration'] = cache.isMultiGatewayMode
+						? {
 								endRelativeToNow: offsetRelativeToNow,
-							}
-						} else {
-							p.userDuration = {
+						  }
+						: {
 								endRelativeToPart: relativeStopAt,
-							}
-						}
-						return p
-					})
+						  }
+
+					currentPartInstance.setPieceInstanceDuration(pieceInstance._id, newDuration)
 
 					stoppedInstances.push(pieceInstance._id)
 					break
@@ -347,36 +282,12 @@ export function innerStopPieces(
 						`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt} with a virtual`
 					)
 
-					const pieceId: PieceId = getRandomId()
-					cache.PieceInstances.insert({
-						...rewrapPieceToInstance(
-							{
-								_id: pieceId,
-								externalId: '-',
-								enable: { start: relativeStopAt },
-								lifespan: pieceInstance.piece.lifespan,
-								sourceLayerId: pieceInstance.piece.sourceLayerId,
-								outputLayerId: pieceInstance.piece.outputLayerId,
-								invalid: false,
-								name: '',
-								startPartId: currentPartInstance.part._id,
-								pieceType: IBlueprintPieceType.Normal,
-								virtual: true,
-								content: {},
-								timelineObjectsString: EmptyPieceTimelineObjectsBlob,
-							},
-							currentPartInstance.playlistActivationId,
-							currentPartInstance.rundownId,
-							currentPartInstance._id
-						),
-						dynamicallyInserted: getCurrentTime(),
-						infinite: {
-							infiniteInstanceId: getRandomId(),
-							infiniteInstanceIndex: 0,
-							infinitePieceId: pieceId,
-							fromPreviousPart: false,
-						},
-					})
+					currentPartInstance.insertVirtualPiece(
+						relativeStopAt,
+						pieceInstance.piece.lifespan,
+						pieceInstance.piece.sourceLayerId,
+						pieceInstance.piece.outputLayerId
+					)
 
 					stoppedInstances.push(pieceInstance._id)
 					break

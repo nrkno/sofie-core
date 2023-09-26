@@ -3,17 +3,17 @@ import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model
 import { ReadonlyDeep } from 'type-fest'
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { executePeripheralDeviceAction, listPlayoutDevices } from '../../peripheralDevice'
-import { CacheForPlayout } from '../../playout/cache'
+import { PlayoutModel } from '../../playout/cacheModel/PlayoutModel'
 import { RundownEventContext } from './RundownEventContext'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
 export class RundownActivationContext extends RundownEventContext implements IRundownActivationContext {
-	private readonly _cache: CacheForPlayout
+	private readonly _cache: PlayoutModel
 	private readonly _context: JobContext
 
 	constructor(
 		context: JobContext,
-		cache: CacheForPlayout,
+		cache: PlayoutModel,
 		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>
 	) {

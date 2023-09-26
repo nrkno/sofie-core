@@ -1,18 +1,29 @@
 import { RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PeripheralDevice, PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import {
+	serializeTimelineBlob,
+	TimelineComplete,
+	TimelineCompleteGenerationVersions,
+	TimelineObjGeneric,
+} from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { JobContext } from '../jobs'
 import { CacheBase } from '../cache/CacheBase'
-import { DbCacheReadCollection } from '../cache/CacheCollection'
-import { DbCacheWriteOptionalObject } from '../cache/CacheObject'
+import { ReadonlyDeep } from 'type-fest'
+import { Changes } from '../db/changes'
+import { getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { getCurrentTime } from '../lib'
 
-export interface CacheForStudioBase {
-	readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice>
+export interface CacheForStudioBaseReadonly {
+	readonly PeripheralDevices: ReadonlyDeep<PeripheralDevice[]>
 
-	readonly Timeline: DbCacheWriteOptionalObject<TimelineComplete>
+	get Timeline(): TimelineComplete | null
 
 	readonly isMultiGatewayMode: boolean
+}
+
+export interface CacheForStudioBase extends CacheForStudioBaseReadonly {
+	setTimeline(timelineObjs: TimelineObjGeneric[], generationVersions: TimelineCompleteGenerationVersions): void
 }
 
 /**
@@ -21,23 +32,28 @@ export interface CacheForStudioBase {
 export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheForStudioBase {
 	public readonly isStudio = true
 
-	public readonly PeripheralDevices: DbCacheReadCollection<PeripheralDevice>
+	public readonly PeripheralDevices: ReadonlyDeep<PeripheralDevice[]>
 
-	public readonly RundownPlaylists: DbCacheReadCollection<DBRundownPlaylist>
-	public readonly Timeline: DbCacheWriteOptionalObject<TimelineComplete>
+	public readonly RundownPlaylists: ReadonlyDeep<DBRundownPlaylist[]>
+
+	#TimelineHasChanged = false
+	#Timeline: TimelineComplete | null
+	public get Timeline(): TimelineComplete | null {
+		return this.#Timeline
+	}
 
 	private constructor(
 		context: JobContext,
-		peripheralDevices: DbCacheReadCollection<PeripheralDevice>,
-		rundownPlaylists: DbCacheReadCollection<DBRundownPlaylist>,
-		timeline: DbCacheWriteOptionalObject<TimelineComplete>
+		peripheralDevices: ReadonlyDeep<PeripheralDevice[]>,
+		rundownPlaylists: ReadonlyDeep<DBRundownPlaylist[]>,
+		timeline: TimelineComplete | undefined
 	) {
 		super(context)
 
 		this.PeripheralDevices = peripheralDevices
 
 		this.RundownPlaylists = rundownPlaylists
-		this.Timeline = timeline
+		this.#Timeline = timeline ?? null
 	}
 
 	public get DisplayName(): string {
@@ -50,15 +66,9 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 		const studioId = context.studioId
 
 		const collections = await Promise.all([
-			DbCacheReadCollection.createFromDatabase(context, context.directCollections.PeripheralDevices, {
-				studioId,
-			}),
-			DbCacheReadCollection.createFromDatabase(context, context.directCollections.RundownPlaylists, { studioId }),
-			DbCacheWriteOptionalObject.createOptionalFromDatabase(
-				context,
-				context.directCollections.Timelines,
-				studioId
-			),
+			context.directCollections.PeripheralDevices.findFetch({ studioId }),
+			context.directCollections.RundownPlaylists.findFetch({ studioId }),
+			context.directCollections.Timelines.findOne(studioId),
 		])
 
 		const res = new CacheForStudio(context, ...collections)
@@ -66,8 +76,26 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 		return res
 	}
 
-	public getActiveRundownPlaylists(excludeRundownPlaylistId?: RundownPlaylistId): DBRundownPlaylist[] {
-		return this.RundownPlaylists.findAll((p) => !!p.activationId && p._id !== excludeRundownPlaylistId)
+	public getActiveRundownPlaylists(excludeRundownPlaylistId?: RundownPlaylistId): ReadonlyDeep<DBRundownPlaylist[]> {
+		return this.RundownPlaylists.filter((p) => !!p.activationId && p._id !== excludeRundownPlaylistId)
+	}
+
+	protected saveAllCustomHighPrioCollections(): Array<Promise<Changes>> {
+		const changes: Array<Promise<Changes>> = []
+
+		if (this.#TimelineHasChanged && this.#Timeline) {
+			changes.push(
+				this.context.directCollections.Timelines.replace(this.#Timeline).then(() => {
+					return {
+						added: 0,
+						updated: 1,
+						removed: 0,
+					}
+				})
+			)
+		}
+
+		return changes
 	}
 
 	#isMultiGatewayMode: boolean | undefined = undefined
@@ -76,12 +104,23 @@ export class CacheForStudio extends CacheBase<CacheForStudio> implements CacheFo
 			if (this.context.studio.settings.forceMultiGatewayMode) {
 				this.#isMultiGatewayMode = true
 			} else {
-				const playoutDevices = this.PeripheralDevices.findAll(
+				const playoutDevices = this.PeripheralDevices.filter(
 					(device) => device.type === PeripheralDeviceType.PLAYOUT
 				)
 				this.#isMultiGatewayMode = playoutDevices.length > 1
 			}
 		}
 		return this.#isMultiGatewayMode
+	}
+
+	setTimeline(timelineObjs: TimelineObjGeneric[], generationVersions: TimelineCompleteGenerationVersions): void {
+		this.#Timeline = {
+			_id: this.context.studioId,
+			timelineHash: getRandomId(), // randomized on every timeline change
+			generated: getCurrentTime(),
+			timelineBlob: serializeTimelineBlob(timelineObjs),
+			generationVersions: generationVersions,
+		}
+		this.#TimelineHasChanged = true
 	}
 }

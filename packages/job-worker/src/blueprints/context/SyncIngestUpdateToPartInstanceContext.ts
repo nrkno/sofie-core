@@ -1,10 +1,12 @@
 import { PieceInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { PieceInstance, wrapPieceToInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { normalizeArrayToMap, omit } from '@sofie-automation/corelib/dist/lib'
+import {
+	PieceInstance,
+	PieceInstancePiece,
+	wrapPieceToInstance,
+} from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { clone, normalizeArrayToMap, omit } from '@sofie-automation/corelib/dist/lib'
 import { protectString, protectStringArray, unprotectStringArray } from '@sofie-automation/corelib/dist/protectedString'
-import { DbCacheWriteCollection } from '../../cache/CacheCollection'
-import { CacheForPlayout } from '../../playout/cache'
+import { PartInstanceWithPieces } from '../../playout/cacheModel/PartInstanceWithPieces'
 import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
 import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
@@ -30,7 +32,6 @@ import {
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
-import { logChanges } from '../../cache/lib'
 import {
 	PieceTimelineObjectsBlob,
 	serializePieceTimelineObjectsBlob,
@@ -41,11 +42,9 @@ export class SyncIngestUpdateToPartInstanceContext
 	extends RundownUserContext
 	implements ISyncIngestUpdateToPartInstanceContext
 {
-	private readonly _partInstanceCache: DbCacheWriteCollection<DBPartInstance>
-	private readonly _pieceInstanceCache: DbCacheWriteCollection<PieceInstance>
-	private readonly _proposedPieceInstances: Map<PieceInstanceId, PieceInstance>
+	private readonly _proposedPieceInstances: Map<PieceInstanceId, ReadonlyDeep<PieceInstance>>
 
-	private partInstance: DBPartInstance | undefined
+	private partInstance: PartInstanceWithPieces | null
 
 	constructor(
 		private readonly _context: JobContext,
@@ -54,9 +53,8 @@ export class SyncIngestUpdateToPartInstanceContext
 		studio: ReadonlyDeep<DBStudio>,
 		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>,
-		partInstance: DBPartInstance,
-		pieceInstances: PieceInstance[],
-		proposedPieceInstances: PieceInstance[],
+		partInstance: PartInstanceWithPieces,
+		proposedPieceInstances: ReadonlyDeep<PieceInstance[]>,
 		private playStatus: 'previous' | 'current' | 'next'
 	) {
 		super(
@@ -70,33 +68,7 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		this.partInstance = partInstance
 
-		// Create temporary cache databases, so that we can update the main cache only once we know the operation has succeeded
-		this._pieceInstanceCache = DbCacheWriteCollection.createFromArray(
-			this._context,
-			this._context.directCollections.PieceInstances,
-			pieceInstances
-		)
-		this._partInstanceCache = DbCacheWriteCollection.createFromArray(
-			this._context,
-			this._context.directCollections.PartInstances,
-			[partInstance]
-		)
-
 		this._proposedPieceInstances = normalizeArrayToMap(proposedPieceInstances, '_id')
-	}
-
-	applyChangesToCache(cache: CacheForPlayout): void {
-		if (this._partInstanceCache.isModified() || this._pieceInstanceCache.isModified()) {
-			this.logInfo(`Found ingest changes to apply to PartInstance`)
-		} else {
-			this.logInfo(`No ingest changes to apply to PartInstance`)
-		}
-
-		const pieceChanges = this._pieceInstanceCache.updateOtherCacheWithData(cache.PieceInstances)
-		const partChanges = this._partInstanceCache.updateOtherCacheWithData(cache.PartInstances)
-
-		logChanges('PartInstances', partChanges)
-		logChanges('PieceInstances', pieceChanges)
 	}
 
 	syncPieceInstance(
@@ -122,20 +94,21 @@ export class SyncIngestUpdateToPartInstanceContext
 						},
 					],
 					this.showStyleCompound.blueprintId,
-					this.partInstance.rundownId,
-					this.partInstance.segmentId,
-					this.partInstance.part._id,
+					this.partInstance.PartInstance.rundownId,
+					this.partInstance.PartInstance.segmentId,
+					this.partInstance.PartInstance.part._id,
 					this.playStatus === 'current'
 			  )[0]
 			: proposedPieceInstance.piece
 
-		const existingPieceInstance = this._pieceInstanceCache.findOne(proposedPieceInstance._id)
+		const existingPieceInstance = this.partInstance.getPieceInstance(proposedPieceInstance._id)
 		const newPieceInstance: PieceInstance = {
 			...existingPieceInstance,
 			...proposedPieceInstance,
-			piece: piece,
+			piece: clone<PieceInstancePiece>(piece),
 		}
-		this._pieceInstanceCache.replace(newPieceInstance)
+		this.partInstance.replacePieceInstance(newPieceInstance)
+
 		return convertPieceInstanceToBlueprints(newPieceInstance)
 	}
 
@@ -148,17 +121,22 @@ export class SyncIngestUpdateToPartInstanceContext
 			this._context,
 			[trimmedPiece],
 			this.showStyleCompound.blueprintId,
-			this.partInstance.rundownId,
-			this.partInstance.segmentId,
-			this.partInstance.part._id,
+			this.partInstance.PartInstance.rundownId,
+			this.partInstance.PartInstance.segmentId,
+			this.partInstance.PartInstance.part._id,
 			this.playStatus === 'current'
 		)[0]
-		const newPieceInstance = wrapPieceToInstance(piece, this.playlistActivationId, this.partInstance._id)
+		const newPieceInstance = wrapPieceToInstance(
+			piece,
+			this.playlistActivationId,
+			this.partInstance.PartInstance._id
+		)
 
 		// Ensure the infinite-ness is setup correctly. We assume any piece inserted starts in the current part
 		setupPieceInstanceInfiniteProperties(newPieceInstance)
 
-		this._pieceInstanceCache.insert(newPieceInstance)
+		// nocommit - this is wrong?
+		this.partInstance.replacePieceInstance(newPieceInstance)
 
 		return convertPieceInstanceToBlueprints(newPieceInstance)
 	}
@@ -171,11 +149,11 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
 
-		const pieceInstance = this._pieceInstanceCache.findOne(protectString(pieceInstanceId))
+		const pieceInstance = this.partInstance.getPieceInstance(protectString(pieceInstanceId))
 		if (!pieceInstance) {
 			throw new Error(`PieceInstance "${pieceInstanceId}" could not be found`)
 		}
-		if (pieceInstance.partInstanceId !== this.partInstance._id) {
+		if (pieceInstance.partInstanceId !== this.partInstance.PartInstance._id) {
 			throw new Error(`PieceInstance "${pieceInstanceId}" does not belong to the current PartInstance`)
 		}
 
@@ -192,19 +170,14 @@ export class SyncIngestUpdateToPartInstanceContext
 			trimmedPiece.content = omit(trimmedPiece.content, 'timelineObjects') as WithTimeline<SomeContent>
 		}
 
-		this._pieceInstanceCache.updateOne(pieceInstance._id, (p) => {
-			if (timelineObjectsString !== undefined) p.piece.timelineObjectsString = timelineObjectsString
+		this.partInstance.updatePieceProps(pieceInstance._id, trimmedPiece as any) // TODO: this needs to be more type safe
+		if (timelineObjectsString !== undefined) {
+			this.partInstance.updatePieceProps(pieceInstance._id, {
+				timelineObjectsString,
+			})
+		}
 
-			return {
-				...p,
-				piece: {
-					...p.piece,
-					...(trimmedPiece as any), // TODO: this needs to be more type safe
-				},
-			}
-		})
-
-		const updatedPieceInstance = this._pieceInstanceCache.findOne(pieceInstance._id)
+		const updatedPieceInstance = this.partInstance.getPieceInstance(pieceInstance._id)
 		if (!updatedPieceInstance) {
 			throw new Error(`PieceInstance "${pieceInstanceId}" could not be found, after applying changes`)
 		}
@@ -223,56 +196,36 @@ export class SyncIngestUpdateToPartInstanceContext
 		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
 
 		// for autoNext, the new expectedDuration cannot be shorter than the time a part has been on-air for
-		if (trimmedProps.expectedDuration && (trimmedProps.autoNext ?? this.partInstance.part.autoNext)) {
-			const onAir = this.partInstance.timings?.reportedStartedPlayback
+		if (trimmedProps.expectedDuration && (trimmedProps.autoNext ?? this.partInstance.PartInstance.part.autoNext)) {
+			const onAir = this.partInstance.PartInstance.timings?.reportedStartedPlayback
 			const minTime = Date.now() - (onAir ?? 0) + EXPECTED_INGEST_TO_PLAYOUT_TIME
 			if (onAir && minTime > trimmedProps.expectedDuration) {
 				trimmedProps.expectedDuration = minTime
 			}
 		}
 
-		this._partInstanceCache.updateOne(this.partInstance._id, (p) => {
-			return {
-				...p,
-				part: {
-					...p.part,
-					...trimmedProps,
-				},
-			}
-		})
+		this.partInstance.updatePartProps(trimmedProps)
 
-		const updatedPartInstance = this._partInstanceCache.findOne(this.partInstance._id)
-		if (!updatedPartInstance) {
-			throw new Error(`PartInstance could not be found, after applying changes`)
-		}
-
-		return convertPartInstanceToBlueprints(updatedPartInstance)
+		return convertPartInstanceToBlueprints(this.partInstance.PartInstance)
 	}
 
 	removePartInstance(): void {
 		if (this.playStatus !== 'next') throw new Error(`Only the 'next' PartInstance can be removed`)
 
-		if (this.partInstance) {
-			const partInstanceId = this.partInstance._id
-
-			this._partInstanceCache.remove(partInstanceId)
-			this._pieceInstanceCache.remove((piece) => piece.partInstanceId === partInstanceId)
-		}
+		this.partInstance = null
 	}
 
 	removePieceInstances(...pieceInstanceIds: string[]): string[] {
 		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
 
-		const partInstanceId = this.partInstance._id
 		const rawPieceInstanceIdSet = new Set(protectStringArray(pieceInstanceIds))
-		const pieceInstances = this._pieceInstanceCache.findAll(
-			(p) => p.partInstanceId === partInstanceId && rawPieceInstanceIdSet.has(p._id)
-		)
+		const pieceInstances = this.partInstance.PieceInstances.filter((p) => rawPieceInstanceIdSet.has(p._id))
 
 		const pieceInstanceIdsToRemove = pieceInstances.map((p) => p._id)
 
-		const pieceInstanceIdsSet = new Set(pieceInstanceIdsToRemove)
-		this._pieceInstanceCache.remove((p) => pieceInstanceIdsSet.has(p._id))
+		for (const id of pieceInstanceIdsToRemove) {
+			this.partInstance.removePieceInstance(id)
+		}
 
 		return unprotectStringArray(pieceInstanceIdsToRemove)
 	}

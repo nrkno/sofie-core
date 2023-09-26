@@ -10,6 +10,7 @@ import {
 } from './Ids'
 import { Piece } from './Piece'
 import { omit } from '../lib'
+import { ReadonlyDeep } from 'type-fest'
 
 export type PieceInstancePiece = Omit<Piece, 'startRundownId' | 'startSegmentId'>
 
@@ -81,7 +82,7 @@ export interface PieceInstance {
 }
 
 export interface ResolvedPieceInstance {
-	instance: PieceInstance
+	instance: ReadonlyDeep<PieceInstance>
 
 	/** Calculated start point within the PartInstance */
 	resolvedStart: number
@@ -92,8 +93,8 @@ export interface ResolvedPieceInstance {
 	timelinePriority: number
 }
 
-export function omitPiecePropertiesForInstance(piece: Piece): PieceInstancePiece {
-	return omit(piece, 'startRundownId', 'startSegmentId')
+export function omitPiecePropertiesForInstance(piece: Piece | PieceInstancePiece): PieceInstancePiece {
+	return omit(piece as Piece, 'startRundownId', 'startSegmentId')
 }
 
 export function rewrapPieceToInstance(

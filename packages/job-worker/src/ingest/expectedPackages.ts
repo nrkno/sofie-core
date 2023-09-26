@@ -33,7 +33,7 @@ import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataM
 import { RundownBaselineAdLibItem } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibPiece'
 import { saveIntoCache } from '../cache/lib'
 import { saveIntoDb } from '../db/changes'
-import { CacheForPlayout } from '../playout/cache'
+import { PlayoutModel } from '../playout/cacheModel/PlayoutModel'
 import { CacheForStudio } from '../studio/cache'
 import { ReadonlyDeep } from 'type-fest'
 import { ExpectedPackage, BlueprintResultBaseline } from '@sofie-automation/blueprints-integration'
@@ -398,7 +398,7 @@ export function updateBaselineExpectedPackagesOnRundown(
 
 export function updateBaselineExpectedPackagesOnStudio(
 	context: JobContext,
-	cache: CacheForStudio | CacheForPlayout,
+	cache: CacheForStudio | PlayoutModel,
 	baseline: BlueprintResultBaseline
 ): void {
 	// @todo: this call is for backwards compatibility and soon to be removed

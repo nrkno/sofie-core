@@ -1,16 +1,14 @@
 import { PieceInstanceInfiniteId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ResolvedPieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { CacheForPlayout } from './cache'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
-import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { JobContext } from '../jobs'
 import { getCurrentTime } from '../lib'
 import {
 	processAndPrunePieceInstanceTimings,
 	resolvePrunedPieceInstance,
 } from '@sofie-automation/corelib/dist/playout/processAndPrune'
-import { ReadOnlyCache } from '../cache/CacheBase'
 import { SelectedPartInstancesTimelineInfo } from './timeline/generate'
+import { PartInstanceWithPieces } from './cacheModel/PartInstanceWithPieces'
 
 /**
  * Resolve the PieceInstances for a PartInstance
@@ -23,19 +21,16 @@ import { SelectedPartInstancesTimelineInfo } from './timeline/generate'
  */
 export function getResolvedPiecesForCurrentPartInstance(
 	_context: JobContext,
-	cache: ReadOnlyCache<CacheForPlayout>,
 	sourceLayers: SourceLayers,
-	partInstance: Pick<DBPartInstance, '_id' | 'timings'>,
+	partInstance: PartInstanceWithPieces,
 	now?: number
 ): ResolvedPieceInstance[] {
-	const pieceInstances = cache.PieceInstances.findAll((p) => p.partInstanceId === partInstance._id)
-
 	if (now === undefined) now = getCurrentTime()
 
-	const partStarted = partInstance.timings?.plannedStartedPlayback
+	const partStarted = partInstance.PartInstance.timings?.plannedStartedPlayback
 	const nowInPart = partStarted ? now - partStarted : 0
 
-	const preprocessedPieces = processAndPrunePieceInstanceTimings(sourceLayers, pieceInstances, nowInPart)
+	const preprocessedPieces = processAndPrunePieceInstanceTimings(sourceLayers, partInstance.PieceInstances, nowInPart)
 	return preprocessedPieces.map((instance) => resolvePrunedPieceInstance(nowInPart, instance))
 }
 

@@ -5,7 +5,6 @@ import {
 import { runJobWithStudioCache } from '../studio/lock'
 import { JobContext } from '../jobs'
 import { logger } from '../logging'
-import { getSelectedPartInstancesFromCache } from './cache'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { setNextPart } from './setNext'
 import { runJobWithPlayoutCache } from './lock'
@@ -22,7 +21,12 @@ export async function handleDebugSyncPlayheadInfinitesForNextPartInstance(
 	logger.info(`syncPlayheadInfinitesForNextPartInstance ${data.playlistId}`)
 
 	await runJobWithPlayoutCache(context, data, null, async (cache) => {
-		await syncPlayheadInfinitesForNextPartInstance(context, cache)
+		await syncPlayheadInfinitesForNextPartInstance(
+			context,
+			cache,
+			cache.CurrentPartInstance,
+			cache.NextPartInstance
+		)
 	})
 }
 
@@ -37,11 +41,11 @@ export async function handleDebugRegenerateNextPartInstance(
 	logger.info('regenerateNextPartInstance')
 
 	await runJobWithPlayoutCache(context, data, null, async (cache) => {
-		const playlist = cache.Playlist.doc
+		const playlist = cache.Playlist
 		const originalNextPartInfo = playlist.nextPartInfo
 		if (originalNextPartInfo && playlist.activationId) {
-			const { nextPartInstance } = getSelectedPartInstancesFromCache(cache)
-			const part = nextPartInstance ? cache.Parts.findOne(nextPartInstance.part._id) : undefined
+			const nextPartInstance = cache.NextPartInstance
+			const part = nextPartInstance ? cache.findPart(nextPartInstance.PartInstance.part._id) : undefined
 			if (part) {
 				await setNextPart(context, cache, null, false)
 				await setNextPart(

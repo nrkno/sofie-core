@@ -1,36 +1,33 @@
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
-import _ = require('underscore')
 import { JobContext } from '../jobs'
 import { logger } from '../logging'
-import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache, getSelectedPartInstancesFromCache } from './cache'
+import { PlayoutModel } from './cacheModel/PlayoutModel'
 import { resetRundownPlaylist } from './lib'
 import { selectNextPart } from './selectNextPart'
 import { setNextPart } from './setNext'
 import { updateStudioTimeline, updateTimeline } from './timeline/generate'
 import { getCurrentTime } from '../lib'
-import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
-import { RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { cleanTimelineDatastore } from './datastore'
 import { RundownActivationContext } from '../blueprints/context/RundownActivationContext'
+import { ReadonlyDeep } from 'type-fest'
 
 export async function activateRundownPlaylist(
 	context: JobContext,
-	cache: CacheForPlayout,
+	cache: PlayoutModel,
 	rehearsal: boolean
 ): Promise<void> {
-	logger.info('Activating rundown ' + cache.Playlist.doc._id + (rehearsal ? ' (Rehearsal)' : ''))
+	logger.info('Activating rundown ' + cache.Playlist._id + (rehearsal ? ' (Rehearsal)' : ''))
 
 	rehearsal = !!rehearsal
-	const wasActive = !!cache.Playlist.doc.activationId
+	const wasActive = !!cache.Playlist.activationId
 
 	const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(
 		context,
 		context.studio._id,
-		cache.Playlist.doc._id
+		cache.Playlist._id
 	)
 	if (anyOtherActiveRundowns.length) {
 		// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
@@ -41,76 +38,43 @@ export async function activateRundownPlaylist(
 		)
 	}
 
-	if (!cache.Playlist.doc.activationId) {
+	if (!cache.Playlist.activationId) {
 		// Reset the playlist if it wasnt already active
 		await resetRundownPlaylist(context, cache)
 	}
 
-	const newActivationId: RundownPlaylistActivationId = getRandomId()
-	cache.Playlist.update((p) => {
-		p.activationId = newActivationId
-		p.rehearsal = rehearsal
-		return p
-	})
+	const newActivationId = cache.activatePlaylist(rehearsal)
 
-	let rundown: DBRundown | undefined
+	let rundown: ReadonlyDeep<DBRundown> | undefined
 
-	const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
-	if (!currentPartInstance || currentPartInstance.reset) {
-		cache.Playlist.update((p) => {
-			p.currentPartInfo = null
-			p.nextPartInfo = null
-			p.previousPartInfo = null
-
-			delete p.lastTakeTime
-			return p
-		})
+	const currentPartInstance = cache.CurrentPartInstance
+	if (!currentPartInstance || currentPartInstance.PartInstance.reset) {
+		cache.clearSelectedPartInstances()
 
 		// If we are not playing anything, then regenerate the next part
 		const firstPart = selectNextPart(
 			context,
-			cache.Playlist.doc,
+			cache.Playlist,
 			null,
 			null,
-			getOrderedSegmentsAndPartsFromPlayoutCache(cache)
+			cache.getAllOrderedSegments(),
+			cache.getAllOrderedParts()
 		)
 		await setNextPart(context, cache, firstPart, false)
 
 		if (firstPart) {
-			rundown = cache.Rundowns.findOne(firstPart.part.rundownId)
+			rundown = cache.getRundown(firstPart.part.rundownId)?.Rundown
 		}
 	} else {
 		// Otherwise preserve the active partInstances
-		const partInstancesToPreserve = new Set(
-			_.compact([
-				cache.Playlist.doc.nextPartInfo?.partInstanceId,
-				cache.Playlist.doc.currentPartInfo?.partInstanceId,
-				cache.Playlist.doc.previousPartInfo?.partInstanceId,
-			])
-		)
-		cache.PartInstances.updateAll((p) => {
-			if (partInstancesToPreserve.has(p._id)) {
-				p.playlistActivationId = newActivationId
-				return p
-			} else {
-				return false
-			}
-		})
-		cache.PieceInstances.updateAll((p) => {
-			if (partInstancesToPreserve.has(p.partInstanceId)) {
-				p.playlistActivationId = newActivationId
-				return p
-			} else {
-				return false
-			}
-		})
+		for (const partInstance of cache.SelectedPartInstances) {
+			partInstance.setPlaylistActivationId(newActivationId)
+		}
 
-		if (cache.Playlist.doc.nextPartInfo) {
-			const nextPartInstance = cache.PartInstances.findOne(cache.Playlist.doc.nextPartInfo.partInstanceId)
-			if (!nextPartInstance)
-				throw new Error(`Could not find nextPartInstance "${cache.Playlist.doc.nextPartInfo.partInstanceId}"`)
-			rundown = cache.Rundowns.findOne(nextPartInstance.rundownId)
-			if (!rundown) throw new Error(`Could not find rundown "${nextPartInstance.rundownId}"`)
+		const nextPartInstance = cache.NextPartInstance
+		if (nextPartInstance) {
+			rundown = cache.getRundown(nextPartInstance.PartInstance.rundownId)?.Rundown
+			if (!rundown) throw new Error(`Could not find rundown "${nextPartInstance.PartInstance.rundownId}"`)
 		}
 	}
 
@@ -132,7 +96,7 @@ export async function activateRundownPlaylist(
 		}
 	})
 }
-export async function deactivateRundownPlaylist(context: JobContext, cache: CacheForPlayout): Promise<void> {
+export async function deactivateRundownPlaylist(context: JobContext, cache: PlayoutModel): Promise<void> {
 	const rundown = await deactivateRundownPlaylistInner(context, cache)
 
 	await updateStudioTimeline(context, cache)
@@ -157,22 +121,23 @@ export async function deactivateRundownPlaylist(context: JobContext, cache: Cach
 }
 export async function deactivateRundownPlaylistInner(
 	context: JobContext,
-	cache: CacheForPlayout
-): Promise<DBRundown | undefined> {
+	cache: PlayoutModel
+): Promise<ReadonlyDeep<DBRundown> | undefined> {
 	const span = context.startSpan('deactivateRundownPlaylistInner')
-	logger.info(`Deactivating rundown playlist "${cache.Playlist.doc._id}"`)
+	logger.info(`Deactivating rundown playlist "${cache.Playlist._id}"`)
 
-	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+	const currentPartInstance = cache.CurrentPartInstance
+	const nextPartInstance = cache.NextPartInstance
 
-	let rundown: DBRundown | undefined
+	let rundown: ReadonlyDeep<DBRundown> | undefined
 	if (currentPartInstance) {
-		rundown = cache.Rundowns.findOne(currentPartInstance.rundownId)
+		rundown = cache.getRundown(currentPartInstance.PartInstance.rundownId)?.Rundown
 
 		cache.deferAfterSave(async () => {
 			context
 				.queueEventJob(EventsJobs.NotifyCurrentlyPlayingPart, {
-					rundownId: currentPartInstance.rundownId,
-					isRehearsal: !!cache.Playlist.doc.rehearsal,
+					rundownId: currentPartInstance.PartInstance.rundownId,
+					isRehearsal: !!cache.Playlist.rehearsal,
 					partExternalId: null,
 				})
 				.catch((e) => {
@@ -180,31 +145,17 @@ export async function deactivateRundownPlaylistInner(
 				})
 		})
 	} else if (nextPartInstance) {
-		rundown = cache.Rundowns.findOne(nextPartInstance.rundownId)
+		rundown = cache.getRundown(nextPartInstance.PartInstance.rundownId)?.Rundown
 	}
 
-	cache.Playlist.update((p) => {
-		p.previousPartInfo = null
-		p.currentPartInfo = null
-		p.holdState = RundownHoldState.NONE
+	cache.clearSelectedPartInstances()
+	cache.deactivatePlaylist()
 
-		delete p.activationId
-		delete p.nextSegmentId
-
-		return p
-	})
 	await setNextPart(context, cache, null, false)
 
 	if (currentPartInstance) {
 		// Set the current PartInstance as stopped
-		cache.PartInstances.updateOne(currentPartInstance._id, (instance) => {
-			if (instance.timings?.plannedStartedPlayback && !instance.timings.plannedStoppedPlayback) {
-				instance.timings.plannedStoppedPlayback = getCurrentTime()
-				instance.timings.duration = getCurrentTime() - instance.timings.plannedStartedPlayback
-				return instance
-			}
-			return false
-		})
+		currentPartInstance.setPlannedStoppedPlayback(getCurrentTime())
 	}
 
 	if (span) span.end()

@@ -13,6 +13,7 @@ import { CacheForStudio } from '../../studio/cache'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { PieceTimelineMetadata } from '../timeline/pieceGroup'
 import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
+import { ReadonlyDeep } from 'type-fest'
 
 /**
  * Called from Playout-gateway when the trigger-time of a timeline object has updated
@@ -70,12 +71,12 @@ function timelineTriggerTimeInner(
 	cache: CacheForStudio,
 	results: OnTimelineTriggerTimeProps['results'],
 	pieceInstanceCache: DbCacheWriteCollection<PieceInstance> | undefined,
-	activePlaylist: DBRundownPlaylist | undefined
+	activePlaylist: ReadonlyDeep<DBRundownPlaylist> | undefined
 ) {
 	let lastTakeTime: number | undefined
 
 	// ------------------------------
-	const timeline = cache.Timeline.doc
+	const timeline = cache.Timeline
 	if (timeline) {
 		const timelineObjs = deserializeTimelineBlob(timeline.timelineBlob)
 		let tlChanged = false

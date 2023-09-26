@@ -1,7 +1,7 @@
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { ReadonlyDeep, SetRequired } from 'type-fest'
-import { CacheForPlayout, getOrderedSegmentsAndPartsFromPlayoutCache } from '../cache'
+import { PlayoutModel } from '../cacheModel/PlayoutModel'
 import { candidatePartIsAfterPreviewPartInstance } from '../infinites'
 import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'
@@ -20,10 +20,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 	})
 
 	async function wrapWithCache<T>(
-		fcn: (
-			cache: CacheForPlayout,
-			playlist: SetRequired<ReadonlyDeep<DBRundownPlaylist>, 'activationId'>
-		) => Promise<T>
+		fcn: (cache: PlayoutModel, playlist: SetRequired<ReadonlyDeep<DBRundownPlaylist>, 'activationId'>) => Promise<T>
 	): Promise<T> {
 		const defaultSetup = await setupDefaultRundownPlaylist(context)
 
@@ -43,7 +40,7 @@ describe('canContinueAdlibOnEndInfinites', () => {
 		expect(rundown).toBeTruthy()
 
 		return runJobWithPlayoutCache(context, { playlistId: tmpPlaylist._id }, null, async (cache) => {
-			const playlist = cache.Playlist.doc as SetRequired<ReadonlyDeep<DBRundownPlaylist>, 'activationId'>
+			const playlist = cache.Playlist as SetRequired<ReadonlyDeep<DBRundownPlaylist>, 'activationId'>
 			if (!playlist.activationId) throw new Error('Missing activationId')
 			return fcn(cache, playlist)
 		})
@@ -51,17 +48,17 @@ describe('canContinueAdlibOnEndInfinites', () => {
 
 	test('Basic case', async () => {
 		await wrapWithCache(async (cache, playlist) => {
-			const orderedPartsAndSegments = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
-			expect(orderedPartsAndSegments.parts.length).toBeGreaterThan(2)
+			const orderedSegments = cache.getAllOrderedSegments()
+			const orderedParts = cache.getAllOrderedParts()
+			expect(orderedParts.length).toBeGreaterThan(2)
 
 			// At beginning
 			expect(
 				candidatePartIsAfterPreviewPartInstance(
 					context,
-					playlist,
-					orderedPartsAndSegments.segments,
-					wrapPartToTemporaryInstance(playlist.activationId, orderedPartsAndSegments.parts[0]),
-					orderedPartsAndSegments.parts[1]
+					orderedSegments,
+					wrapPartToTemporaryInstance(playlist.activationId, orderedParts[0]),
+					orderedParts[1]
 				)
 			).toBeTruthy()
 
@@ -69,10 +66,9 @@ describe('canContinueAdlibOnEndInfinites', () => {
 			expect(
 				candidatePartIsAfterPreviewPartInstance(
 					context,
-					playlist,
-					orderedPartsAndSegments.segments,
-					wrapPartToTemporaryInstance(playlist.activationId, orderedPartsAndSegments.parts[0]),
-					orderedPartsAndSegments.parts[2]
+					orderedSegments,
+					wrapPartToTemporaryInstance(playlist.activationId, orderedParts[0]),
+					orderedParts[2]
 				)
 			).toBeTruthy()
 
@@ -80,13 +76,9 @@ describe('canContinueAdlibOnEndInfinites', () => {
 			expect(
 				candidatePartIsAfterPreviewPartInstance(
 					context,
-					playlist,
-					orderedPartsAndSegments.segments,
-					wrapPartToTemporaryInstance(
-						playlist.activationId,
-						orderedPartsAndSegments.parts[orderedPartsAndSegments.parts.length - 2]
-					),
-					orderedPartsAndSegments.parts[orderedPartsAndSegments.parts.length - 1]
+					orderedSegments,
+					wrapPartToTemporaryInstance(playlist.activationId, orderedParts[orderedParts.length - 2]),
+					orderedParts[orderedParts.length - 1]
 				)
 			).toBeTruthy()
 
@@ -94,45 +86,38 @@ describe('canContinueAdlibOnEndInfinites', () => {
 			expect(
 				candidatePartIsAfterPreviewPartInstance(
 					context,
-					playlist,
-					orderedPartsAndSegments.segments,
-					wrapPartToTemporaryInstance(playlist.activationId, orderedPartsAndSegments.parts[0]),
-
-					orderedPartsAndSegments.parts[orderedPartsAndSegments.parts.length - 1]
+					orderedSegments,
+					wrapPartToTemporaryInstance(playlist.activationId, orderedParts[0]),
+					orderedParts[orderedParts.length - 1]
 				)
 			).toBeTruthy()
 		})
 	})
 
 	test('No previousPartInstance', async () => {
-		await wrapWithCache(async (cache, playlist) => {
-			const orderedPartsAndSegments = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
+		await wrapWithCache(async (cache, _playlist) => {
+			const orderedSegments = cache.getAllOrderedSegments()
+			const orderedParts = cache.getAllOrderedParts()
 
 			expect(
-				candidatePartIsAfterPreviewPartInstance(
-					context,
-					playlist,
-					orderedPartsAndSegments.segments,
-					undefined,
-					orderedPartsAndSegments.parts[1]
-				)
+				candidatePartIsAfterPreviewPartInstance(context, orderedSegments, undefined, orderedParts[1])
 			).toBeFalsy()
 		})
 	})
 
 	test('Is before', async () => {
 		await wrapWithCache(async (cache, playlist) => {
-			const orderedPartsAndSegments = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
-			expect(orderedPartsAndSegments.parts.length).toBeGreaterThan(2)
+			const orderedSegments = cache.getAllOrderedSegments()
+			const orderedParts = cache.getAllOrderedParts()
+			expect(orderedParts.length).toBeGreaterThan(2)
 
 			// At beginning
 			expect(
 				candidatePartIsAfterPreviewPartInstance(
 					context,
-					playlist,
-					orderedPartsAndSegments.segments,
-					wrapPartToTemporaryInstance(playlist.activationId, orderedPartsAndSegments.parts[1]),
-					orderedPartsAndSegments.parts[0]
+					orderedSegments,
+					wrapPartToTemporaryInstance(playlist.activationId, orderedParts[1]),
+					orderedParts[0]
 				)
 			).toBeFalsy()
 
@@ -140,13 +125,9 @@ describe('canContinueAdlibOnEndInfinites', () => {
 			expect(
 				candidatePartIsAfterPreviewPartInstance(
 					context,
-					playlist,
-					orderedPartsAndSegments.segments,
-					wrapPartToTemporaryInstance(
-						playlist.activationId,
-						orderedPartsAndSegments.parts[orderedPartsAndSegments.parts.length - 1]
-					),
-					orderedPartsAndSegments.parts[orderedPartsAndSegments.parts.length - 2]
+					orderedSegments,
+					wrapPartToTemporaryInstance(playlist.activationId, orderedParts[orderedParts.length - 1]),
+					orderedParts[orderedParts.length - 2]
 				)
 			).toBeFalsy()
 
@@ -154,13 +135,9 @@ describe('canContinueAdlibOnEndInfinites', () => {
 			expect(
 				candidatePartIsAfterPreviewPartInstance(
 					context,
-					playlist,
-					orderedPartsAndSegments.segments,
-					wrapPartToTemporaryInstance(
-						playlist.activationId,
-						orderedPartsAndSegments.parts[orderedPartsAndSegments.parts.length - 1]
-					),
-					orderedPartsAndSegments.parts[0]
+					orderedSegments,
+					wrapPartToTemporaryInstance(playlist.activationId, orderedParts[orderedParts.length - 1]),
+					orderedParts[0]
 				)
 			).toBeFalsy()
 		})
@@ -168,11 +145,12 @@ describe('canContinueAdlibOnEndInfinites', () => {
 
 	test('Orphaned PartInstance', async () => {
 		await wrapWithCache(async (cache, playlist) => {
-			const orderedPartsAndSegments = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
-			expect(orderedPartsAndSegments.parts.length).toBeGreaterThan(2)
+			const orderedSegments = cache.getAllOrderedSegments()
+			const orderedParts = cache.getAllOrderedParts()
+			expect(orderedParts.length).toBeGreaterThan(2)
 
 			const candidatePart = {
-				...orderedPartsAndSegments.parts[0],
+				...orderedParts[0],
 			}
 			// Orphaned because it has no presence in the ordered list
 			candidatePart._rank = candidatePart._rank + 0.1
@@ -182,9 +160,8 @@ describe('canContinueAdlibOnEndInfinites', () => {
 			expect(
 				candidatePartIsAfterPreviewPartInstance(
 					context,
-					playlist,
-					orderedPartsAndSegments.segments,
-					wrapPartToTemporaryInstance(playlist.activationId, orderedPartsAndSegments.parts[0]),
+					orderedSegments,
+					wrapPartToTemporaryInstance(playlist.activationId, orderedParts[0]),
 					candidatePart
 				)
 			).toBeTruthy()
@@ -193,9 +170,8 @@ describe('canContinueAdlibOnEndInfinites', () => {
 			expect(
 				candidatePartIsAfterPreviewPartInstance(
 					context,
-					playlist,
-					orderedPartsAndSegments.segments,
-					wrapPartToTemporaryInstance(playlist.activationId, orderedPartsAndSegments.parts[1]),
+					orderedSegments,
+					wrapPartToTemporaryInstance(playlist.activationId, orderedParts[1]),
 					candidatePart
 				)
 			).toBeFalsy()

@@ -30,6 +30,7 @@ import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { ISourceLayer } from '@sofie-automation/blueprints-integration'
 import { UIStudios } from '../Collections'
 import { Meteor } from 'meteor/meteor'
+import { ReadonlyDeep } from 'type-fest'
 
 interface IState {
 	objId?: string
@@ -247,13 +248,13 @@ export const AdLibRegionPanel = translateWithTracker<
 		)
 
 		// Pick thumbnails to display
-		const nextThumbnail: PieceInstance | undefined = nextPieceInstances.find((p) =>
+		const nextThumbnail: ReadonlyDeep<PieceInstance> | undefined = nextPieceInstances.find((p) =>
 			props.panel.thumbnailSourceLayerIds?.includes(p.piece.sourceLayerId)
 		)
-		const currentThumbnail: PieceInstance | undefined = !props.panel.hideThumbnailsForActivePieces
+		const currentThumbnail: ReadonlyDeep<PieceInstance> | undefined = !props.panel.hideThumbnailsForActivePieces
 			? unfinishedPieceInstances.find((p) => props.panel.thumbnailSourceLayerIds?.includes(p.piece.sourceLayerId))
 			: undefined
-		const thumbnailPiece: PieceInstance | undefined = props.panel.thumbnailPriorityNextPieces
+		const thumbnailPiece: ReadonlyDeep<PieceInstance> | undefined = props.panel.thumbnailPriorityNextPieces
 			? nextThumbnail ?? currentThumbnail
 			: currentThumbnail ?? nextThumbnail
 

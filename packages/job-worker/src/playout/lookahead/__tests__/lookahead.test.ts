@@ -332,7 +332,7 @@ describe('Lookahead', () => {
 		await expectLookaheadForLayerMock(playlistId, [expectedCurrent, expectedNext], expectedPrevious, fakeParts)
 
 		// current has autonext
-		partInstancesInfo.current.partInstance.part.autoNext = true
+		;(partInstancesInfo.current.partInstance.part as DBPart).autoNext = true
 		expectedNext.onTimeline = true
 		await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
 			getLookeaheadObjects(context, cache, partInstancesInfo)

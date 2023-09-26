@@ -7,16 +7,18 @@ import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export function getOrderedSegmentsAndPartsFromCacheCollections(
 	partsCache: DbCacheReadCollection<DBPart>,
-	segmentsCache: DbCacheReadCollection<DBSegment>,
+	segmentsCache: DbCacheReadCollection<DBSegment> | DBSegment[],
 	rundownIdsInOrder: ReadonlyDeep<RundownId[]>
 ): { segments: DBSegment[]; parts: DBPart[] } {
 	const segments = sortSegmentsInRundowns(
-		segmentsCache.findAll(null, {
-			sort: {
-				rundownId: 1,
-				_rank: 1,
-			},
-		}),
+		Array.isArray(segmentsCache)
+			? segmentsCache
+			: segmentsCache.findAll(null, {
+					sort: {
+						rundownId: 1,
+						_rank: 1,
+					},
+			  }),
 		rundownIdsInOrder
 	)
 

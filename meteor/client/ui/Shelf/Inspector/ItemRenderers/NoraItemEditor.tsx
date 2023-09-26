@@ -4,6 +4,7 @@ import { parseMosPluginMessageXml, MosPluginMessage } from '../../../../lib/pars
 import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { createMosAppInfoXmlString } from '../../../../lib/data/mos/plugin-support'
 import { logger } from '../../../../../lib/logging'
+import { ReadonlyDeep } from 'type-fest'
 
 //TODO: figure out what the origin should be
 const LOCAL_ORIGIN = `${window.location.protocol}//${window.location.host}`
@@ -13,7 +14,7 @@ export const MODULE_BROWSER_ORIGIN = `${MODULE_BROWSER_URL.protocol}//${MODULE_B
 export { NoraItemEditor }
 
 interface INoraEditorProps {
-	piece: Omit<PieceGeneric, 'timelineObjectsString'>
+	piece: ReadonlyDeep<Omit<PieceGeneric, 'timelineObjectsString'>>
 }
 
 class NoraItemEditor extends React.Component<INoraEditorProps> {

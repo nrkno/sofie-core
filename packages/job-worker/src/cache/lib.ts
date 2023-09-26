@@ -1,17 +1,10 @@
-import { DbCacheReadCollection, DbCacheWriteCollection, SelectorFunction } from './CacheCollection'
+import { DbCacheWriteCollection, SelectorFunction } from './CacheCollection'
 import { DbCacheWriteObject, DbCacheWriteOptionalObject } from './CacheObject'
 import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from '../logging'
 import { ChangedIds, SaveIntoDbHooks, saveIntoBase } from '../db/changes'
 import { JobContext } from '../jobs'
 
-/**
- * Check if an object is a DbCacheReadCollection
- * @param o object to check
- */
-export function isDbCacheReadCollection(o: unknown): o is DbCacheReadCollection<any> {
-	return !!(o && typeof o === 'object' && 'fillWithDataFromDatabase' in o)
-}
 /**
  * Check if an object is a writable db object. (DbCacheWriteCollection, DbCacheWriteObject or DbCacheWriteOptionalObject)
  * @param o object to check

@@ -61,8 +61,10 @@ import {
 	PlayoutChangedResult,
 	PlayoutChangedType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
-import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import * as _ from 'underscore'
+import { RundownWithSegments } from '../cacheModel/RundownWithSegments'
+import { PartInstanceWithPieces } from '../cacheModel/PartInstanceWithPieces'
+import { PartInstanceWithPiecesImpl } from '../cacheModel/implementation/PartInstanceWithPiecesImpl'
 
 /**
  * An object used to represent the simplified timeline structure.
@@ -175,19 +177,18 @@ function parsePieceGroupPrerollAndPostroll(
  * Check the timings of objects in the timeline to an expected result
  * Note: this ensures that every piece for the currentPartInstance is accounted for in the expected result
  */
-async function checkTimingsRaw(
-	context: MockJobContext,
+function checkTimingsRaw(
 	rundownId: RundownId,
 	timeline: TimelineComplete | undefined,
-	currentPartInstance: DBPartInstance,
-	previousPartInstance: DBPartInstance | undefined,
+	currentPartInstance: PartInstanceWithPieces,
+	previousPartInstance: PartInstanceWithPieces | undefined,
 	expectedTimings: PartTimelineTimings
 ) {
 	const timelineObjs = timeline ? deserializeTimelineBlob(timeline?.timelineBlob) : []
 	const objs = normalizeArrayToMap(timelineObjs, 'id')
 
 	// previous part group
-	const prevPartTlObj = previousPartInstance ? objs.get(getPartGroupId(previousPartInstance)) : undefined
+	const prevPartTlObj = previousPartInstance ? objs.get(getPartGroupId(previousPartInstance.PartInstance)) : undefined
 	if (expectedTimings.previousPart) {
 		expect(prevPartTlObj).toBeTruthy()
 		expect(prevPartTlObj?.enable).toMatchObject(expectedTimings.previousPart)
@@ -198,9 +199,7 @@ async function checkTimingsRaw(
 	// current part group is assumed to start at now
 
 	// Current pieces
-	const currentPieces = await context.directCollections.PieceInstances.findFetch({
-		partInstanceId: currentPartInstance._id,
-	})
+	const currentPieces = currentPartInstance.PieceInstances
 	const targetCurrentPieces: PartTimelineTimings['currentPieces'] = {}
 	const targetCurrentInfinitePieces: PartTimelineTimings['currentInfinitePieces'] = {}
 	for (const piece of currentPieces) {
@@ -242,9 +241,7 @@ async function checkTimingsRaw(
 
 	if (previousPartInstance) {
 		// Previous pieces
-		const previousPieces = await context.directCollections.PieceInstances.findFetch({
-			partInstanceId: previousPartInstance._id,
-		})
+		const previousPieces = previousPartInstance.PieceInstances
 		let previousOutTransition: PartTimelineTimings['previousOutTransition']
 		for (const piece of previousPieces) {
 			if (piece.piece.pieceType === IBlueprintPieceType.OutTransition) {
@@ -451,9 +448,9 @@ async function doUpdateTimeline(context: MockJobContext, playlistId: RundownPlay
 }
 
 interface SelectedPartInstances {
-	currentPartInstance: DBPartInstance | undefined
-	nextPartInstance: DBPartInstance | undefined
-	previousPartInstance: DBPartInstance | undefined
+	currentPartInstance: PartInstanceWithPieces | undefined
+	nextPartInstance: PartInstanceWithPieces | undefined
+	previousPartInstance: PartInstanceWithPieces | undefined
 }
 
 describe('Timeline', () => {
@@ -703,10 +700,22 @@ describe('Timeline', () => {
 			)) as DBRundownPlaylist
 			expect(playlist).toBeTruthy()
 			const res = await getSelectedPartInstances(context, playlist)
+
+			async function wrapPartInstance(
+				partInstance: DBPartInstance | null
+			): Promise<PartInstanceWithPieces | undefined> {
+				if (!partInstance) return undefined
+
+				const pieceInstances = await context.directCollections.PieceInstances.findFetch({
+					partInstanceId: partInstance?._id,
+				})
+				return new PartInstanceWithPiecesImpl(partInstance, pieceInstances, false)
+			}
+
 			return {
-				currentPartInstance: res.currentPartInstance ?? undefined,
-				nextPartInstance: res.nextPartInstance ?? undefined,
-				previousPartInstance: res.previousPartInstance ?? undefined,
+				currentPartInstance: await wrapPartInstance(res.currentPartInstance),
+				nextPartInstance: await wrapPartInstance(res.nextPartInstance),
+				previousPartInstance: await wrapPartInstance(res.previousPartInstance),
 			}
 		}
 
@@ -720,7 +729,7 @@ describe('Timeline', () => {
 			await doUpdateTimeline(context, playlistId0)
 
 			const { currentPartInstance, previousPartInstance } = await getPartInstances()
-			return checkTimingsRaw(context, rundownId0, timeline, currentPartInstance!, previousPartInstance, timings)
+			return checkTimingsRaw(rundownId0, timeline, currentPartInstance!, previousPartInstance, timings)
 		}
 
 		// Run the required steps
@@ -945,7 +954,7 @@ describe('Timeline', () => {
 					const { currentPartInstance } = await getPartInstances()
 					await checkTimings({
 						// old part ends immediately
-						previousPart: { end: `#${getPartGroupId(currentPartInstance!)}.start + 0` },
+						previousPart: { end: `#${getPartGroupId(currentPartInstance!.PartInstance)}.start + 0` },
 						currentPieces: {
 							// pieces are not delayed
 							piece010: {
@@ -1105,7 +1114,7 @@ describe('Timeline', () => {
 
 					const { currentPartInstance } = await getPartInstances()
 					await checkTimings({
-						previousPart: { end: `#${getPartGroupId(currentPartInstance!)}.start + 500` }, // note: this seems odd, but the pieces are delayed to compensate
+						previousPart: { end: `#${getPartGroupId(currentPartInstance!.PartInstance)}.start + 500` }, // note: this seems odd, but the pieces are delayed to compensate
 						currentPieces: {
 							piece010: {
 								controlObj: { start: 500 }, // note: Offset matches extension of previous partGroup
@@ -1122,11 +1131,11 @@ describe('Timeline', () => {
 	describe('Adlib pieces', () => {
 		async function doStartAdlibPiece(
 			playlistId: RundownPlaylistId,
-			currentPartInstance: DBPartInstance,
+			currentPartInstance: PartInstanceWithPieces,
 			adlibSource: AdLibPiece
 		) {
 			await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) => {
-				const rundown = cache.Rundowns.findOne(currentPartInstance.rundownId) as Rundown
+				const rundown = cache.getRundown(currentPartInstance.PartInstance.rundownId) as RundownWithSegments
 				expect(rundown).toBeTruthy()
 
 				return innerStartOrQueueAdLibPiece(context, cache, rundown, false, currentPartInstance, adlibSource)
@@ -1211,7 +1220,7 @@ describe('Timeline', () => {
 						currentPartInstance!,
 						literal<AdLibPiece>({
 							_id: protectString('adlib1'),
-							rundownId: currentPartInstance!.rundownId,
+							rundownId: currentPartInstance!.PartInstance.rundownId,
 							externalId: 'fake',
 							name: 'Adlibbed piece',
 							lifespan: PieceLifespan.WithinPart,
@@ -1233,7 +1242,7 @@ describe('Timeline', () => {
 								controlObj: {
 									start: 500, // This one gave the preroll
 									end: `#piece_group_control_${
-										currentPartInstance!._id
+										currentPartInstance!.PartInstance._id
 									}_${rundownId}_piece000_cap_now.start + 0`,
 								},
 								childGroup: {
@@ -1377,7 +1386,7 @@ describe('Timeline', () => {
 						currentPartInstance!,
 						literal<AdLibPiece>({
 							_id: protectString('adlib1'),
-							rundownId: currentPartInstance!.rundownId,
+							rundownId: currentPartInstance!.PartInstance.rundownId,
 							externalId: 'fake',
 							name: 'Adlibbed piece',
 							lifespan: PieceLifespan.WithinPart,
@@ -1400,7 +1409,7 @@ describe('Timeline', () => {
 								controlObj: {
 									start: 500, // This one gave the preroll
 									end: `#piece_group_control_${
-										currentPartInstance!._id
+										currentPartInstance!.PartInstance._id
 									}_${_rundownId}_piece000_cap_now.start + 0`,
 								},
 								childGroup: {
@@ -1421,7 +1430,7 @@ describe('Timeline', () => {
 								// Our adlibbed piece
 								controlObj: {
 									start: `#piece_group_control_${
-										currentPartInstance!._id
+										currentPartInstance!.PartInstance._id
 									}_${adlibbedPieceId}_start_now + 340`,
 								},
 								childGroup: {
@@ -1480,12 +1489,6 @@ describe('Timeline', () => {
 	})
 
 	describe('Infinite Pieces', () => {
-		async function getPieceInstances(partInstanceId: PartInstanceId): Promise<PieceInstance[]> {
-			return context.directCollections.PieceInstances.findFetch({
-				partInstanceId,
-			})
-		}
-
 		test('Infinite Piece has stable timing across timeline regenerations with/without plannedStartedPlayback', async () =>
 			runTimelineTimings(
 				async (
@@ -1549,14 +1552,14 @@ describe('Timeline', () => {
 									},
 								},
 								partGroup: {
-									start: `#part_group_${currentPartInstance._id}.start`,
+									start: `#part_group_${currentPartInstance.PartInstance._id}.start`,
 								},
 							},
 						},
 						previousOutTransition: undefined,
 					})
 
-					const currentPieceInstances = await getPieceInstances(currentPartInstance._id)
+					const currentPieceInstances = currentPartInstance.PieceInstances
 					const pieceInstance0 = currentPieceInstances.find(
 						(instance) => instance.piece._id === protectString(`${rundownId}_piece000`)
 					)
@@ -1569,7 +1572,7 @@ describe('Timeline', () => {
 					const currentTime = 12300
 					await doOnPlayoutPlaybackChanged(context, playlistId, {
 						baseTime: currentTime,
-						partId: currentPartInstance._id,
+						partId: currentPartInstance.PartInstance._id,
 						includePart: true,
 						pieceOffsets: {
 							[unprotectString(pieceInstance0._id)]: 500,

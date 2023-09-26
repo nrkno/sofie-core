@@ -4,27 +4,24 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
+import { ReadonlyDeep } from 'type-fest'
 import { JobContext } from '../../jobs'
-import {
-	CacheForPlayout,
-	getOrderedSegmentsAndPartsFromPlayoutCache,
-	getSelectedPartInstancesFromCache,
-} from '../cache'
+import { PlayoutModel } from '../cacheModel/PlayoutModel'
 import { selectNextPart } from '../selectNextPart'
 
 export interface PartInstanceAndPieceInstances {
-	part: DBPartInstance
+	part: ReadonlyDeep<DBPartInstance>
 	onTimeline: boolean
 	nowInPart: number
-	allPieces: PieceInstance[]
+	allPieces: ReadonlyDeep<PieceInstance[]>
 	calculatedTimings: PartCalculatedTimings
 }
-export interface PieceInstanceWithObjectMap extends PieceInstance {
+export interface PieceInstanceWithObjectMap extends ReadonlyDeep<PieceInstance> {
 	/** Cache of objects built by findObjects. */
 	objectMap?: Map<string, TimelineObjectCoreExt<any>>
 }
 export interface PartAndPieces {
-	part: DBPart
+	part: ReadonlyDeep<DBPart>
 	/** Whether the inTransition from this part should be considered */
 	usesInTransition: boolean
 	pieces: PieceInstanceWithObjectMap[]
@@ -38,15 +35,21 @@ export function isPieceInstance(piece: Piece | PieceInstance | PieceInstancePiec
 /**
  * Excludes the previous, current and next part
  */
-export function getOrderedPartsAfterPlayhead(context: JobContext, cache: CacheForPlayout, partCount: number): DBPart[] {
+export function getOrderedPartsAfterPlayhead(
+	context: JobContext,
+	cache: PlayoutModel,
+	partCount: number
+): ReadonlyDeep<DBPart>[] {
 	if (partCount <= 0) {
 		return []
 	}
 	const span = context.startSpan('getOrderedPartsAfterPlayhead')
 
-	const playlist = cache.Playlist.doc
-	const partsAndSegments = getOrderedSegmentsAndPartsFromPlayoutCache(cache)
-	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+	const playlist = cache.Playlist
+	const orderedSegments = cache.getAllOrderedSegments()
+	const orderedParts = cache.getAllOrderedParts()
+	const currentPartInstance = cache.CurrentPartInstance?.PartInstance
+	const nextPartInstance = cache.NextPartInstance?.PartInstance
 
 	// If the nextPartInstance consumes the
 	const alreadyConsumedNextSegmentId =
@@ -61,16 +64,17 @@ export function getOrderedPartsAfterPlayhead(context: JobContext, cache: CacheFo
 		strippedPlaylist,
 		nextPartInstance ?? currentPartInstance ?? null,
 		null,
-		partsAndSegments
+		orderedSegments,
+		orderedParts
 	)
 	if (!nextNextPart) {
 		// We don't know where to begin searching, so we can't do anything
 		return []
 	}
 
-	const playablePartsSlice = partsAndSegments.parts.slice(nextNextPart.index).filter((p) => isPartPlayable(p))
+	const playablePartsSlice = orderedParts.slice(nextNextPart.index).filter((p) => isPartPlayable(p))
 
-	const res: DBPart[] = []
+	const res: ReadonlyDeep<DBPart>[] = []
 
 	const nextSegmentIndex = playablePartsSlice.findIndex((p) => p.segmentId === playlist.nextSegmentId)
 	if (
@@ -93,7 +97,7 @@ export function getOrderedPartsAfterPlayhead(context: JobContext, cache: CacheFo
 
 	if (res.length < partCount && playlist.loop) {
 		// The rundown would loop here, so lets run with that
-		const playableParts = partsAndSegments.parts.filter((p) => isPartPlayable(p))
+		const playableParts = orderedParts.filter((p) => isPartPlayable(p))
 		// Note: We only add it once, as lookahead is unlikely to show anything new in a second pass
 		res.push(...playableParts)
 

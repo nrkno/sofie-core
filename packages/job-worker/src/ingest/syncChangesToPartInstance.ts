@@ -1,7 +1,8 @@
 import { BlueprintSyncIngestNewData, BlueprintSyncIngestPartInstance } from '@sofie-automation/blueprints-integration'
 import { ReadOnlyCache } from '../cache/CacheBase'
 import { JobContext } from '../jobs'
-import { CacheForPlayout, getSelectedPartInstancesFromCache } from '../playout/cache'
+import { PlayoutModel } from '../playout/cacheModel/PlayoutModel'
+import { PartInstanceWithPieces } from '../playout/cacheModel/PartInstanceWithPieces'
 import { CacheForIngest } from './cache'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
@@ -25,15 +26,16 @@ import {
 	convertPartToBlueprints,
 	convertPieceInstanceToBlueprints,
 } from '../blueprints/context/lib'
-import { getRundown } from './lib'
 import { validateScratchpartPartInstanceProperties } from '../playout/scratchpad'
+import { ReadonlyDeep } from 'type-fest'
+import { hackConvertIngestCacheToRundownWithSegments } from './commit'
 
 type PlayStatus = 'previous' | 'current' | 'next'
 type SyncedInstance = {
-	existingPartInstance: DBPartInstance
-	previousPartInstance: DBPartInstance | undefined
+	existingPartInstance: PartInstanceWithPieces
+	previousPartInstance: PartInstanceWithPieces | null
 	playStatus: PlayStatus
-	newPart: DBPart | undefined
+	newPart: ReadonlyDeep<DBPart> | undefined
 	piecesThatMayBeActive: Promise<Piece[]>
 }
 
@@ -46,29 +48,35 @@ type SyncedInstance = {
  */
 export async function syncChangesToPartInstances(
 	context: JobContext,
-	cache: CacheForPlayout,
+	cache: PlayoutModel,
 	ingestCache: ReadOnlyCache<CacheForIngest>
 ): Promise<void> {
-	if (cache.Playlist.doc.activationId) {
+	if (cache.Playlist.activationId) {
 		// Get the final copy of the rundown
-		const rundown = getRundown(ingestCache)
+		const rundownWrapped = hackConvertIngestCacheToRundownWithSegments(ingestCache)
 
-		const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
+		const showStyle = await context.getShowStyleCompound(
+			rundownWrapped.Rundown.showStyleVariantId,
+			rundownWrapped.Rundown.showStyleBaseId
+		)
 		const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 
 		if (blueprint.blueprint.syncIngestUpdateToPartInstance) {
-			const playlistPartInstances = getSelectedPartInstancesFromCache(cache)
+			const currentPartInstance = cache.CurrentPartInstance
+			const nextPartInstance = cache.NextPartInstance
+			const previousPartInstance = cache.PreviousPartInstance
+
 			const instances: SyncedInstance[] = []
-			if (playlistPartInstances.currentPartInstance) {
+			if (currentPartInstance) {
 				// If the currentPartInstance is adlibbed we probably also need to find the earliest
 				// non-adlibbed Part within this segment and check it for updates too. It may have something
 				// changed (like timing) that will affect what's going on.
 				// The previous "planned" Part Instance needs to be inserted into the `instances` first, so that
 				// it's ran first through the blueprints.
-				if (playlistPartInstances.currentPartInstance.orphaned === 'adlib-part') {
+				if (currentPartInstance.PartInstance.orphaned === 'adlib-part') {
 					const partAndPartInstance = findLastUnorphanedPartInstanceInSegment(
 						cache,
-						playlistPartInstances.currentPartInstance
+						currentPartInstance.PartInstance
 					)
 					if (partAndPartInstance) {
 						insertToSyncedInstanceCandidates(
@@ -77,7 +85,7 @@ export async function syncChangesToPartInstances(
 							cache,
 							ingestCache,
 							partAndPartInstance.partInstance,
-							undefined,
+							null,
 							partAndPartInstance.part,
 							'previous'
 						)
@@ -89,20 +97,20 @@ export async function syncChangesToPartInstances(
 					instances,
 					cache,
 					ingestCache,
-					playlistPartInstances.currentPartInstance,
-					playlistPartInstances.previousPartInstance,
+					currentPartInstance,
+					previousPartInstance,
 					'current'
 				)
 			}
-			if (playlistPartInstances.nextPartInstance) {
+			if (nextPartInstance) {
 				findPartAndInsertToSyncedInstanceCandidates(
 					context,
 					instances,
 					cache,
 					ingestCache,
-					playlistPartInstances.nextPartInstance,
-					playlistPartInstances.currentPartInstance,
-					isTooCloseToAutonext(playlistPartInstances.currentPartInstance, false) ? 'current' : 'next'
+					nextPartInstance,
+					currentPartInstance,
+					isTooCloseToAutonext(currentPartInstance?.PartInstance, false) ? 'current' : 'next'
 				)
 			}
 
@@ -113,13 +121,11 @@ export async function syncChangesToPartInstances(
 				newPart,
 				piecesThatMayBeActive,
 			} of instances) {
-				const pieceInstancesInPart = cache.PieceInstances.findAll(
-					(p) => p.partInstanceId === existingPartInstance._id
-				)
+				const pieceInstancesInPart = existingPartInstance.PieceInstances
 
-				const partId = existingPartInstance.part._id
+				const partId = existingPartInstance.PartInstance.part._id
 				const existingResultPartInstance: BlueprintSyncIngestPartInstance = {
-					partInstance: convertPartInstanceToBlueprints(existingPartInstance),
+					partInstance: convertPartInstanceToBlueprints(existingPartInstance.PartInstance),
 					pieceInstances: pieceInstancesInPart.map(convertPieceInstanceToBlueprints),
 				}
 
@@ -127,10 +133,10 @@ export async function syncChangesToPartInstances(
 					context,
 					cache,
 					previousPartInstance,
-					rundown,
-					newPart ?? existingPartInstance.part,
+					rundownWrapped,
+					newPart ?? existingPartInstance.PartInstance.part,
 					await piecesThatMayBeActive,
-					existingPartInstance._id
+					existingPartInstance.PartInstance._id
 				)
 
 				logger.info(`Syncing ingest changes for part: ${partId} (orphaned: ${!!newPart})`)
@@ -154,18 +160,19 @@ export async function syncChangesToPartInstances(
 					),
 				}
 
+				const clonedPartInstance = existingPartInstance.clone()
+
 				const syncContext = new SyncIngestUpdateToPartInstanceContext(
 					context,
 					{
-						name: `Update to ${existingPartInstance.part.externalId}`,
-						identifier: `rundownId=${existingPartInstance.part.rundownId},segmentId=${existingPartInstance.part.segmentId}`,
+						name: `Update to ${clonedPartInstance.PartInstance.part.externalId}`,
+						identifier: `rundownId=${clonedPartInstance.PartInstance.part.rundownId},segmentId=${clonedPartInstance.PartInstance.part.segmentId}`,
 					},
-					cache.Playlist.doc.activationId,
+					cache.Playlist.activationId,
 					context.studio,
 					showStyle,
-					rundown,
-					existingPartInstance,
-					pieceInstancesInPart,
+					rundownWrapped.Rundown,
+					clonedPartInstance,
 					proposedPieceInstances,
 					playStatus
 				)
@@ -180,22 +187,20 @@ export async function syncChangesToPartInstances(
 					)
 
 					// If the blueprint function throws, no changes will be synced to the cache:
-					syncContext.applyChangesToCache(cache)
+					// TODO - save clonedPartInstance
+					cache.replacePartInstance(clonedPartInstance)
 				} catch (err) {
 					logger.error(`Error in showStyleBlueprint.syncIngestUpdateToPartInstance: ${stringifyError(err)}`)
 				}
 
 				if (playStatus === 'next') {
-					updateExpectedDurationWithPrerollForPartInstance(cache, existingPartInstance._id)
+					updateExpectedDurationWithPrerollForPartInstance(cache, clonedPartInstance.PartInstance._id)
 				}
 
 				// Save notes:
-				if (!existingPartInstance.part.notes) existingPartInstance.part.notes = []
-				const notes: PartNote[] = existingPartInstance.part.notes
-				let changed = false
+				const newNotes: PartNote[] = []
 				for (const note of syncContext.notes) {
-					changed = true
-					notes.push(
+					newNotes.push(
 						literal<SegmentNote>({
 							type: note.type,
 							message: note.message,
@@ -205,20 +210,22 @@ export async function syncChangesToPartInstances(
 						})
 					)
 				}
-				if (changed) {
+				if (newNotes.length) {
 					// TODO - these dont get shown to the user currently
-					// TODO - old notes from the sync may need to be pruned, or we will end up with duplicates and 'stuck' notes?
-					cache.PartInstances.updateOne(existingPartInstance._id, (p) => {
-						p.part.notes = notes
-						return p
-					})
+					// TODO - old notes from the sync may need to be pruned, or we will end up with duplicates and 'stuck' notes?+
+					clonedPartInstance.appendNotes(newNotes)
 
-					validateScratchpartPartInstanceProperties(context, cache, existingPartInstance._id)
+					validateScratchpartPartInstanceProperties(context, cache, existingPartInstance.PartInstance._id)
 				}
 
-				if (existingPartInstance._id === cache.Playlist.doc.currentPartInfo?.partInstanceId) {
+				if (clonedPartInstance.PartInstance._id === cache.Playlist.currentPartInfo?.partInstanceId) {
 					// This should be run after 'current', before 'next':
-					await syncPlayheadInfinitesForNextPartInstance(context, cache)
+					await syncPlayheadInfinitesForNextPartInstance(
+						context,
+						cache,
+						cache.CurrentPartInstance,
+						cache.NextPartInstance
+					)
 				}
 			}
 		} else {
@@ -233,11 +240,11 @@ export async function syncChangesToPartInstances(
 function insertToSyncedInstanceCandidates(
 	context: JobContext,
 	instances: SyncedInstance[],
-	cache: CacheForPlayout,
+	cache: PlayoutModel,
 	ingestCache: ReadOnlyCache<CacheForIngest>,
-	thisPartInstance: DBPartInstance,
-	previousPartInstance: DBPartInstance | undefined,
-	part: DBPart | undefined,
+	thisPartInstance: PartInstanceWithPieces,
+	previousPartInstance: PartInstanceWithPieces | null,
+	part: ReadonlyDeep<DBPart> | undefined,
 	playStatus: PlayStatus
 ): void {
 	instances.push({
@@ -249,7 +256,7 @@ function insertToSyncedInstanceCandidates(
 			context,
 			cache,
 			ingestCache,
-			part ?? thisPartInstance.part
+			part ?? thisPartInstance.PartInstance.part
 		),
 	})
 }
@@ -261,13 +268,13 @@ function insertToSyncedInstanceCandidates(
 function findPartAndInsertToSyncedInstanceCandidates(
 	context: JobContext,
 	instances: SyncedInstance[],
-	cache: CacheForPlayout,
+	cache: PlayoutModel,
 	ingestCache: ReadOnlyCache<CacheForIngest>,
-	thisPartInstance: DBPartInstance,
-	previousPartInstance: DBPartInstance | undefined,
+	thisPartInstance: PartInstanceWithPieces,
+	previousPartInstance: PartInstanceWithPieces | null,
 	playStatus: PlayStatus
 ): void {
-	const newPart = cache.Parts.findOne(thisPartInstance.part._id)
+	const newPart = cache.findPart(thisPartInstance.PartInstance.part._id)
 
 	insertToSyncedInstanceCandidates(
 		context,
@@ -286,31 +293,26 @@ function findPartAndInsertToSyncedInstanceCandidates(
  * PartInstance that matches that Part. Returns them if found or returns `null` if it can't find anything.
  */
 function findLastUnorphanedPartInstanceInSegment(
-	cache: CacheForPlayout,
-	currentPartInstance: DBPartInstance
+	cache: PlayoutModel,
+	currentPartInstance: ReadonlyDeep<DBPartInstance>
 ): {
-	partInstance: DBPartInstance
-	part: DBPart
+	partInstance: PartInstanceWithPieces
+	part: ReadonlyDeep<DBPart>
 } | null {
 	// Find the "latest" (last played), non-orphaned PartInstance in this Segment, in this play-through
-	const previousPartInstance = cache.PartInstances.findOne(
+	const previousPartInstance = cache.SortedLoadedPartInstances.reverse().find(
 		(p) =>
-			p.playlistActivationId === currentPartInstance.playlistActivationId &&
-			p.segmentId === currentPartInstance.segmentId &&
-			p.segmentPlayoutId === currentPartInstance.segmentPlayoutId &&
-			p.takeCount < currentPartInstance.takeCount &&
-			!!p.orphaned &&
-			!p.reset,
-		{
-			sort: {
-				takeCount: -1,
-			},
-		}
+			p.PartInstance.playlistActivationId === currentPartInstance.playlistActivationId &&
+			p.PartInstance.segmentId === currentPartInstance.segmentId &&
+			p.PartInstance.segmentPlayoutId === currentPartInstance.segmentPlayoutId &&
+			p.PartInstance.takeCount < currentPartInstance.takeCount &&
+			!!p.PartInstance.orphaned &&
+			!p.PartInstance.reset
 	)
 
 	if (!previousPartInstance) return null
 
-	const previousPart = cache.Parts.findOne(previousPartInstance.part._id)
+	const previousPart = cache.findPart(previousPartInstance.PartInstance.part._id)
 	if (!previousPart) return null
 
 	return {

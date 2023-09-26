@@ -3,7 +3,6 @@ import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/Rundo
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { ActivateHoldProps, DeactivateHoldProps } from '@sofie-automation/corelib/dist/worker/studio'
 import { JobContext } from '../jobs'
-import { getSelectedPartInstancesFromCache } from './cache'
 import { runJobWithPlayoutCache } from './lock'
 import { updateTimeline } from './timeline/generate'
 
@@ -15,7 +14,7 @@ export async function handleActivateHold(context: JobContext, data: ActivateHold
 		context,
 		data,
 		async (cache) => {
-			const playlist = cache.Playlist.doc
+			const playlist = cache.Playlist
 
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 
@@ -25,23 +24,23 @@ export async function handleActivateHold(context: JobContext, data: ActivateHold
 			if (playlist.holdState) throw UserError.create(UserErrorMessage.HoldAlreadyActive)
 		},
 		async (cache) => {
-			const playlist = cache.Playlist.doc
-			const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
+			const playlist = cache.Playlist
+			const currentPartInstance = cache.CurrentPartInstance
 			if (!currentPartInstance)
 				throw new Error(`PartInstance "${playlist.currentPartInfo?.partInstanceId}" not found!`)
+			const nextPartInstance = cache.NextPartInstance
 			if (!nextPartInstance) throw new Error(`PartInstance "${playlist.nextPartInfo?.partInstanceId}" not found!`)
 
 			if (
-				currentPartInstance.part.holdMode !== PartHoldMode.FROM ||
-				nextPartInstance.part.holdMode !== PartHoldMode.TO ||
-				currentPartInstance.part.segmentId !== nextPartInstance.part.segmentId
+				currentPartInstance.PartInstance.part.holdMode !== PartHoldMode.FROM ||
+				nextPartInstance.PartInstance.part.holdMode !== PartHoldMode.TO ||
+				currentPartInstance.PartInstance.part.segmentId !== nextPartInstance.PartInstance.part.segmentId
 			) {
 				throw UserError.create(UserErrorMessage.HoldIncompatibleParts)
 			}
 
-			const hasDynamicallyInserted = cache.PieceInstances.findOne(
+			const hasDynamicallyInserted = currentPartInstance.PieceInstances.find(
 				(p) =>
-					p.partInstanceId === currentPartInstance._id &&
 					!!p.dynamicallyInserted &&
 					// If its a continuation of an infinite adlib it is probably a graphic, so is 'fine'
 					!p.infinite?.fromPreviousPart &&
@@ -49,10 +48,7 @@ export async function handleActivateHold(context: JobContext, data: ActivateHold
 			)
 			if (hasDynamicallyInserted) throw UserError.create(UserErrorMessage.HoldAfterAdlib)
 
-			cache.Playlist.update((p) => {
-				p.holdState = RundownHoldState.PENDING
-				return p
-			})
+			cache.setHoldState(RundownHoldState.PENDING)
 
 			await updateTimeline(context, cache)
 		}
@@ -67,7 +63,7 @@ export async function handleDeactivateHold(context: JobContext, data: Deactivate
 		context,
 		data,
 		async (cache) => {
-			const playlist = cache.Playlist.doc
+			const playlist = cache.Playlist
 
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 
@@ -75,10 +71,7 @@ export async function handleDeactivateHold(context: JobContext, data: Deactivate
 				throw UserError.create(UserErrorMessage.HoldNotCancelable)
 		},
 		async (cache) => {
-			cache.Playlist.update((p) => {
-				p.holdState = RundownHoldState.NONE
-				return p
-			})
+			cache.setHoldState(RundownHoldState.NONE)
 
 			await updateTimeline(context, cache)
 		}

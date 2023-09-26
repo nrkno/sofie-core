@@ -12,7 +12,7 @@ import { getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { saveIntoCache } from '../cache/lib'
 import { saveIntoDb } from '../db/changes'
-import { CacheForPlayout } from '../playout/cache'
+import { PlayoutModel } from '../playout/cacheModel/PlayoutModel'
 import { CacheForStudio } from '../studio/cache'
 import _ = require('underscore')
 import { ExpectedPlayoutItemGeneric } from '@sofie-automation/blueprints-integration'
@@ -96,7 +96,7 @@ export function updateBaselineExpectedPlayoutItemsOnRundown(
 }
 export function updateBaselineExpectedPlayoutItemsOnStudio(
 	context: JobContext,
-	cache: CacheForStudio | CacheForPlayout,
+	cache: CacheForStudio | PlayoutModel,
 	items?: ExpectedPlayoutItemGeneric[]
 ): void {
 	cache.deferAfterSave(async () => {

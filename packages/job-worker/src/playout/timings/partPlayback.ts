@@ -1,22 +1,15 @@
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { logger } from '../../logging'
 import { JobContext } from '../../jobs'
-import {
-	CacheForPlayout,
-	getOrderedSegmentsAndPartsFromPlayoutCache,
-	getSelectedPartInstancesFromCache,
-} from '../cache'
+import { PlayoutModel } from '../cacheModel/PlayoutModel'
+import { PartInstanceWithPieces } from '../cacheModel/PartInstanceWithPieces'
 import { selectNextPart } from '../selectNextPart'
 import { setNextPart } from '../setNext'
 import { updateTimeline } from '../timeline/generate'
 import { getCurrentTime } from '../../lib'
 import { afterTake, clearNextSegmentId, resetPreviousSegment, updatePartInstanceOnTake } from '../take'
-import { queuePartInstanceTimingEvent } from './events'
 import { INCORRECT_PLAYING_PART_DEBOUNCE, RESET_IGNORE_ERRORS } from '../constants'
 import { Time } from '@sofie-automation/blueprints-integration'
-import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 
 /**
  * Set the playback of a part is confirmed to have started
@@ -27,18 +20,18 @@ import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
  */
 export async function onPartPlaybackStarted(
 	context: JobContext,
-	cache: CacheForPlayout,
+	cache: PlayoutModel,
 	data: {
 		partInstanceId: PartInstanceId
 		startedPlayback: Time
 	}
 ): Promise<void> {
-	const playingPartInstance = cache.PartInstances.findOne(data.partInstanceId)
+	const playingPartInstance = cache.getPartInstance(data.partInstanceId)
 	if (!playingPartInstance)
 		throw new Error(`PartInstance "${data.partInstanceId}" in RundownPlayst "${cache.PlaylistId}" not found!`)
 
 	// make sure we don't run multiple times, even if TSR calls us multiple times
-	const hasStartedPlaying = !!playingPartInstance.timings?.reportedStartedPlayback
+	const hasStartedPlaying = !!playingPartInstance.PartInstance.timings?.reportedStartedPlayback
 	if (!hasStartedPlaying) {
 		logger.debug(
 			`Playout reports PartInstance "${data.partInstanceId}" has started playback on timestamp ${new Date(
@@ -46,12 +39,12 @@ export async function onPartPlaybackStarted(
 			).toISOString()}`
 		)
 
-		const playlist = cache.Playlist.doc
+		const playlist = cache.Playlist
 
-		const rundown = cache.Rundowns.findOne(playingPartInstance.rundownId)
-		if (!rundown) throw new Error(`Rundown "${playingPartInstance.rundownId}" not found!`)
+		const rundown = cache.getRundown(playingPartInstance.PartInstance.rundownId)
+		if (!rundown) throw new Error(`Rundown "${playingPartInstance.PartInstance.rundownId}" not found!`)
 
-		const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
+		const currentPartInstance = cache.CurrentPartInstance
 
 		if (playlist.currentPartInfo?.partInstanceId === data.partInstanceId) {
 			// this is the current part, it has just started playback
@@ -62,45 +55,41 @@ export async function onPartPlaybackStarted(
 		} else if (playlist.nextPartInfo?.partInstanceId === data.partInstanceId) {
 			// this is the next part, clearly an autoNext has taken place
 
-			cache.Playlist.update((p) => {
-				p.previousPartInfo = p.currentPartInfo
-				p.currentPartInfo = playlist.nextPartInfo
-				p.holdState = RundownHoldState.NONE
-				return p
-			})
+			cache.cycleSelectedPartInstances()
 
 			reportPartInstanceHasStarted(context, cache, playingPartInstance, data.startedPlayback)
 
 			// Update generated properties on the newly playing partInstance
 			const currentRundown = currentPartInstance
-				? cache.Rundowns.findOne(currentPartInstance.rundownId)
+				? cache.getRundown(currentPartInstance.PartInstance.rundownId)
 				: undefined
 			const showStyleRundown = currentRundown ?? rundown
 			const showStyle = await context.getShowStyleCompound(
-				showStyleRundown.showStyleVariantId,
-				showStyleRundown.showStyleBaseId
+				showStyleRundown.Rundown.showStyleVariantId,
+				showStyleRundown.Rundown.showStyleBaseId
 			)
 			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 			updatePartInstanceOnTake(
 				context,
-				cache,
+				cache.Playlist,
 				showStyle,
 				blueprint,
-				rundown,
+				rundown.Rundown,
 				playingPartInstance,
 				currentPartInstance
 			)
 
-			clearNextSegmentId(cache, playingPartInstance, playlist.nextPartInfo)
+			clearNextSegmentId(cache, playingPartInstance.PartInstance, playlist.nextPartInfo)
 			resetPreviousSegment(cache)
 
 			// Update the next partinstance
 			const nextPart = selectNextPart(
 				context,
 				playlist,
-				playingPartInstance,
+				playingPartInstance.PartInstance,
 				null,
-				getOrderedSegmentsAndPartsFromPlayoutCache(cache)
+				cache.getAllOrderedSegments(),
+				cache.getAllOrderedParts()
 			)
 			await setNextPart(context, cache, nextPart, false)
 
@@ -125,7 +114,7 @@ export async function onPartPlaybackStarted(
 			}
 
 			logger.error(
-				`PartInstance "${playingPartInstance._id}" has started playback by the playout gateway, but has not been selected for playback!`
+				`PartInstance "${playingPartInstance.PartInstance._id}" has started playback by the playout gateway, but has not been selected for playback!`
 			)
 		}
 	}
@@ -139,20 +128,21 @@ export async function onPartPlaybackStarted(
  */
 export function onPartPlaybackStopped(
 	context: JobContext,
-	cache: CacheForPlayout,
+	cache: PlayoutModel,
 	data: {
 		partInstanceId: PartInstanceId
 		stoppedPlayback: Time
 	}
 ): void {
-	const playlist = cache.Playlist.doc
+	const playlist = cache.Playlist
 
-	const partInstance = cache.PartInstances.findOne(data.partInstanceId)
+	const partInstance = cache.getPartInstance(data.partInstanceId)
 	if (partInstance) {
 		// make sure we don't run multiple times, even if TSR calls us multiple times
 
 		const isPlaying =
-			partInstance.timings?.reportedStartedPlayback && !partInstance.timings?.reportedStoppedPlayback
+			partInstance.PartInstance.timings?.reportedStartedPlayback &&
+			!partInstance.PartInstance.timings?.reportedStoppedPlayback
 		if (isPlaying) {
 			logger.debug(
 				`onPartPlaybackStopped: Playout reports PartInstance "${
@@ -179,79 +169,30 @@ export function onPartPlaybackStopped(
  * @param timestamp timestamp the PieceInstance started
  */
 export function reportPartInstanceHasStarted(
-	context: JobContext,
-	cache: CacheForPlayout,
-	partInstance: DBPartInstance,
+	_context: JobContext,
+	cache: PlayoutModel,
+	partInstance: PartInstanceWithPieces,
 	timestamp: Time
 ): void {
 	if (partInstance) {
-		let timestampUpdated = false
-		cache.PartInstances.updateOne(partInstance._id, (instance) => {
-			if (!instance.timings) instance.timings = {}
+		const timestampUpdated = partInstance.setReportedStartedPlayback(timestamp)
+		if (timestamp && !cache.isMultiGatewayMode) {
+			partInstance.setPlannedStartedPlayback(timestamp)
+		}
 
-			// If timings.startedPlayback has already been set, we shouldn't set it to another value:
-			if (!instance.timings.reportedStartedPlayback) {
-				timestampUpdated = true
-				instance.timings.reportedStartedPlayback = timestamp
-
-				if (!cache.isMultiGatewayMode) {
-					instance.timings.plannedStartedPlayback = timestamp
-				}
-			}
-
-			// Unset stoppedPlayback if it is set:
-			if (instance.timings.reportedStoppedPlayback || instance.timings.duration) {
-				timestampUpdated = true
-				delete instance.timings.reportedStoppedPlayback
-				delete instance.timings.duration
-
-				if (!cache.isMultiGatewayMode) {
-					delete instance.timings.plannedStoppedPlayback
-				}
-			}
-
-			// Save/discard change
-			return timestampUpdated ? instance : false
-		})
-
-		if (timestampUpdated && !cache.isMultiGatewayMode && cache.Playlist.doc.previousPartInfo) {
+		const previousPartInstance = cache.PreviousPartInstance
+		if (timestampUpdated && !cache.isMultiGatewayMode && previousPartInstance) {
 			// Ensure the plannedStoppedPlayback is set for the previous partinstance too
-			cache.PartInstances.updateOne(cache.Playlist.doc.previousPartInfo.partInstanceId, (instance) => {
-				if (instance.timings && !instance.timings.plannedStoppedPlayback) {
-					instance.timings.plannedStoppedPlayback = timestamp
-					return instance
-				}
-
-				return false
-			})
+			previousPartInstance.setPlannedStoppedPlayback(timestamp)
 		}
 
 		// Update the playlist:
-		cache.Playlist.update((playlist) => {
-			if (!playlist.rundownsStartedPlayback) {
-				playlist.rundownsStartedPlayback = {}
-			}
-
-			// If the partInstance is "untimed", it will not update the playlist's startedPlayback and will not count time in the GUI:
-			if (!partInstance.part.untimed) {
-				const rundownId = unprotectString(partInstance.rundownId)
-				if (!playlist.rundownsStartedPlayback[rundownId]) {
-					playlist.rundownsStartedPlayback[rundownId] = timestamp
-				}
-
-				if (!playlist.startedPlayback) {
-					playlist.startedPlayback = timestamp
-				}
-			}
-
-			return playlist
-		})
+		if (!partInstance.PartInstance.part.untimed) {
+			cache.setRundownStartedPlayback(partInstance.PartInstance.rundownId, timestamp)
+		}
 
 		if (timestampUpdated) {
-			cache.deferAfterSave(() => {
-				// Run in the background, we don't want to hold onto the lock to do this
-				queuePartInstanceTimingEvent(context, cache.PlaylistId, partInstance._id)
-			})
+			cache.queuePartInstanceTimingEvent(partInstance.PartInstance._id)
 		}
 	}
 }
@@ -264,31 +205,17 @@ export function reportPartInstanceHasStarted(
  * @param timestamp timestamp the PieceInstance stopped
  */
 export function reportPartInstanceHasStopped(
-	context: JobContext,
-	cache: CacheForPlayout,
-	partInstance: DBPartInstance,
+	_context: JobContext,
+	cache: PlayoutModel,
+	partInstance: PartInstanceWithPieces,
 	timestamp: Time
 ): void {
-	let timestampUpdated = false
-	if (!partInstance.timings?.reportedStoppedPlayback) {
-		cache.PartInstances.updateOne(partInstance._id, (instance) => {
-			if (!instance.timings) instance.timings = {}
-			instance.timings.reportedStoppedPlayback = timestamp
-			instance.timings.duration = timestamp - (instance.timings.reportedStartedPlayback || timestamp)
-
-			if (!cache.isMultiGatewayMode) {
-				instance.timings.plannedStoppedPlayback = timestamp
-			}
-
-			return instance
-		})
-		timestampUpdated = true
+	const timestampUpdated = partInstance.setReportedStoppedPlayback(timestamp)
+	if (timestampUpdated && !cache.isMultiGatewayMode) {
+		partInstance.setPlannedStoppedPlayback(timestamp)
 	}
 
 	if (timestampUpdated) {
-		cache.deferAfterSave(() => {
-			// Run in the background, we don't want to hold onto the lock to do this
-			queuePartInstanceTimingEvent(context, cache.PlaylistId, partInstance._id)
-		})
+		cache.queuePartInstanceTimingEvent(partInstance.PartInstance._id)
 	}
 }

@@ -28,7 +28,7 @@ import {
 	processAndPrunePieceInstanceTimings,
 	resolvePrunedPieceInstance,
 } from '@sofie-automation/corelib/dist/playout/processAndPrune'
-import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { IAdLibListItem } from '../ui/Shelf/AdLibListItem'
 import { BucketAdLibItem, BucketAdLibUi } from '../ui/Shelf/RundownViewBuckets'
 import { FindOptions } from '../../lib/collections/lib'
@@ -675,8 +675,9 @@ export namespace RundownUtils {
 							) {
 								// if previousItem is infinite, currentItem caps it within the current part
 								if (previousItem.instance.infinite) {
-									previousItem.instance.piece.lifespan = PieceLifespan.WithinPart
-									delete previousItem.instance.infinite
+									;(previousItem.instance.piece as PieceInstancePiece).lifespan =
+										PieceLifespan.WithinPart
+									delete (previousItem.instance as PieceInstance).infinite
 								}
 
 								if (

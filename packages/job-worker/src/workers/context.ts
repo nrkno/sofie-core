@@ -34,7 +34,7 @@ import {
 import { getStudioQueueName, StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
 import { LockBase, PlaylistLock, RundownLock } from '../jobs/lock'
 import { logger } from '../logging'
-import { ReadOnlyCacheBase } from '../cache/CacheBase'
+import { ICacheBase2 } from '../cache/CacheBase'
 import { IS_PRODUCTION } from '../environment'
 import { LocksManager } from './locks'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
@@ -279,7 +279,7 @@ export class StudioCacheContextImpl implements StudioCacheContext {
 
 export class JobContextImpl extends StudioCacheContextImpl implements JobContext {
 	private readonly locks: Array<LockBase> = []
-	private readonly caches: Array<ReadOnlyCacheBase<any>> = []
+	private readonly caches: Array<ICacheBase2> = []
 
 	constructor(
 		directCollections: Readonly<IDirectCollections>,
@@ -292,7 +292,7 @@ export class JobContextImpl extends StudioCacheContextImpl implements JobContext
 		super(directCollections, cacheData)
 	}
 
-	trackCache(cache: ReadOnlyCacheBase<any>): void {
+	trackCache(cache: ICacheBase2): void {
 		this.caches.push(cache)
 	}
 

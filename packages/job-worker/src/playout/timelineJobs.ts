@@ -1,6 +1,5 @@
 import { UpdateTimelineAfterIngestProps } from '@sofie-automation/corelib/dist/worker/studio'
 import { JobContext } from '../jobs'
-import { getSelectedPartInstancesFromCache } from './cache'
 import { runJobWithPlaylistLock, runWithPlaylistCache } from './lock'
 import { updateStudioTimeline, updateTimeline } from './timeline/generate'
 import { getSystemVersion } from '../lib'
@@ -30,7 +29,7 @@ async function shouldUpdateStudioBaselineInner(context: JobContext, cache: Cache
 
 	if (cache.getActiveRundownPlaylists().length > 0) return false
 
-	const timeline = cache.Timeline.doc
+	const timeline = cache.Timeline
 	const blueprint = studio.blueprintId ? await context.directCollections.Blueprints.findOne(studio.blueprintId) : null
 	if (!blueprint) return 'missingBlueprint'
 
@@ -49,11 +48,11 @@ export async function handleUpdateTimelineAfterIngest(
 		if (playlist?.activationId && (playlist.currentPartInfo || playlist.nextPartInfo)) {
 			// TODO - r37 added a retry mechanic to this. should that be kept?
 			await runWithPlaylistCache(context, playlist, lock, null, async (cache) => {
-				const { currentPartInstance } = getSelectedPartInstancesFromCache(cache)
+				const currentPartInstance = cache.CurrentPartInstance
 				if (
 					!cache.isMultiGatewayMode &&
 					currentPartInstance &&
-					!currentPartInstance.timings?.reportedStartedPlayback
+					!currentPartInstance.PartInstance.timings?.reportedStartedPlayback
 				) {
 					// HACK: The current PartInstance doesn't have a start time yet, so we know an updateTimeline is coming as part of onPartPlaybackStarted
 					// We mustn't run before that does, or we will get the timings in playout-gateway confused.

@@ -3,10 +3,10 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { RundownPlayoutPropsBase } from '@sofie-automation/corelib/dist/worker/studio'
 import { logger } from '../logging'
 import { ReadonlyDeep } from 'type-fest'
-import { ReadOnlyCache } from '../cache/CacheBase'
 import { JobContext } from '../jobs'
 import { PlaylistLock } from '../jobs/lock'
-import { CacheForPlayoutPreInit, CacheForPlayout } from './cache'
+import { PlayoutModel, PlayoutModelPreInit } from './cacheModel/PlayoutModel'
+import { createPlayoutCachefromInitCache, loadPlayoutModelPreInit } from './cacheModel/implementation/LoadPlayoutModel'
 
 /**
  * Run a typical playout job
@@ -15,8 +15,8 @@ import { CacheForPlayoutPreInit, CacheForPlayout } from './cache'
 export async function runJobWithPlayoutCache<TRes>(
 	context: JobContext,
 	data: RundownPlayoutPropsBase,
-	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
-	fcn: (cache: CacheForPlayout) => Promise<TRes> | TRes
+	preInitFcn: null | ((cache: PlayoutModelPreInit) => Promise<void> | void),
+	fcn: (cache: PlayoutModel) => Promise<TRes> | TRes
 ): Promise<TRes> {
 	if (!data.playlistId) {
 		throw new Error(`Job is missing playlistId`)
@@ -79,16 +79,16 @@ export async function runWithPlaylistCache<TRes>(
 	context: JobContext,
 	playlist: ReadonlyDeep<DBRundownPlaylist>,
 	lock: PlaylistLock,
-	preInitFcn: null | ((cache: ReadOnlyCache<CacheForPlayoutPreInit>) => Promise<void> | void),
-	fcn: (cache: CacheForPlayout) => Promise<TRes> | TRes
+	preInitFcn: null | ((cache: PlayoutModelPreInit) => Promise<void> | void),
+	fcn: (cache: PlayoutModel) => Promise<TRes> | TRes
 ): Promise<TRes> {
-	const initCache = await CacheForPlayoutPreInit.createPreInit(context, lock, playlist, false)
+	const initCache = await loadPlayoutModelPreInit(context, lock, playlist, false)
 
 	if (preInitFcn) {
 		await preInitFcn(initCache)
 	}
 
-	const fullCache = await CacheForPlayout.fromInit(context, initCache)
+	const fullCache = await createPlayoutCachefromInitCache(context, initCache)
 
 	try {
 		const res = await fcn(fullCache)

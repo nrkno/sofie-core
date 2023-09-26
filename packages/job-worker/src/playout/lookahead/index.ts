@@ -1,6 +1,6 @@
 import { getOrderedPartsAfterPlayhead, PartAndPieces, PartInstanceAndPieceInstances } from './util'
 import { findLookaheadForLayer, LookaheadResult } from './findForLayer'
-import { CacheForPlayout, getRundownIDsFromCache } from '../cache'
+import { PlayoutModel } from '../cacheModel/PlayoutModel'
 import { sortPieceInstancesByStart } from '../pieces'
 import { MappingExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { TSR, LookaheadMode, OnGenerateTimelineObj } from '@sofie-automation/blueprints-integration'
@@ -24,6 +24,7 @@ import { LookaheadTimelineObject } from './findObjects'
 import { hasPieceInstanceDefinitelyEnded } from '../timeline/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { ReadonlyDeep } from 'type-fest'
 
 const LOOKAHEAD_OBJ_PRIORITY = 0.1
 
@@ -44,7 +45,7 @@ type ValidLookaheadMode = LookaheadMode.PRELOAD | LookaheadMode.WHEN_CLEAR
 
 export async function getLookeaheadObjects(
 	context: JobContext,
-	cache: CacheForPlayout,
+	cache: PlayoutModel,
 	partInstancesInfo0: SelectedPartInstancesTimelineInfo
 ): Promise<Array<TimelineObjRundown & OnGenerateTimelineObjExt>> {
 	const span = context.startSpan('getLookeaheadObjects')
@@ -61,7 +62,7 @@ export async function getLookeaheadObjects(
 	const orderedPartsFollowingPlayhead = getOrderedPartsAfterPlayhead(context, cache, maxLookaheadDistance)
 
 	const piecesToSearchQuery: FilterQuery<Piece> = {
-		startRundownId: { $in: getRundownIDsFromCache(cache) },
+		startRundownId: { $in: cache.getRundownIds() },
 		startPartId: { $in: orderedPartsFollowingPlayhead.map((p) => p._id) },
 		invalid: { $ne: true },
 	}
@@ -139,7 +140,7 @@ export async function getLookeaheadObjects(
 	}
 
 	const orderedPartInfos: Array<PartAndPieces> = orderedPartsFollowingPlayhead.map((part, i) => {
-		const previousPart: DBPart | undefined =
+		const previousPart: ReadonlyDeep<DBPart> | undefined =
 			i === 0
 				? (partInstancesInfo0.next?.partInstance ?? partInstancesInfo0.current?.partInstance)?.part
 				: orderedPartsFollowingPlayhead[i - 1]
@@ -164,7 +165,7 @@ export async function getLookeaheadObjects(
 
 			const lookaheadObjs = findLookaheadForLayer(
 				context,
-				cache.Playlist.doc.currentPartInfo?.partInstanceId ?? null,
+				cache.Playlist.currentPartInfo?.partInstanceId ?? null,
 				partInstancesInfo,
 				previousPartInfo,
 				orderedPartInfos,

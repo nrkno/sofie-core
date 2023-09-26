@@ -32,6 +32,7 @@ export async function handleOnPlayoutPlaybackChanged(
 					})
 				} else if (change.type === PlayoutChangedType.PIECE_PLAYBACK_STARTED) {
 					onPiecePlaybackStarted(context, cache, {
+						partInstanceId: change.data.partInstanceId,
 						pieceInstanceId: change.data.pieceInstanceId,
 						startedPlayback: change.data.time,
 					})

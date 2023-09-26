@@ -1,10 +1,11 @@
 import { PartInstanceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { logger } from '../../logging'
 import { JobContext } from '../../jobs'
-import { CacheForPlayout } from '../cache'
-import { queuePartInstanceTimingEvent } from './events'
+import { PlayoutModel } from '../cacheModel/PlayoutModel'
 import { Time } from '@sofie-automation/blueprints-integration'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { PartInstanceWithPieces } from '../cacheModel/PartInstanceWithPieces'
+import { ReadonlyDeep } from 'type-fest'
 
 /**
  * Set the playback of a piece is confirmed to have started
@@ -14,31 +15,45 @@ import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceIns
  */
 export function onPiecePlaybackStarted(
 	context: JobContext,
-	cache: CacheForPlayout,
+	cache: PlayoutModel,
 	data: {
+		partInstanceId: PartInstanceId
 		pieceInstanceId: PieceInstanceId
 		startedPlayback: Time
 	}
 ): void {
-	const playlist = cache.Playlist.doc
-	const pieceInstance = cache.PieceInstances.findOne(data.pieceInstanceId)
+	const playlist = cache.Playlist
 
-	if (pieceInstance) {
-		const isPlaying = !!(pieceInstance.reportedStartedPlayback && !pieceInstance.reportedStoppedPlayback)
-		if (!isPlaying) {
-			logger.debug(
-				`onPiecePlaybackStarted: Playout reports pieceInstance "${
-					data.pieceInstanceId
-				}" has started playback on timestamp ${new Date(data.startedPlayback).toISOString()}`
-			)
-			reportPieceHasStarted(context, cache, pieceInstance, data.startedPlayback)
-
-			// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
+	const partInstance = cache.getPartInstance(data.partInstanceId)
+	if (!partInstance) {
+		if (!playlist.activationId) {
+			logger.warn(`onPiecePlaybackStarted: Received for inactive RundownPlaylist "${playlist._id}"`)
+		} else {
+			throw new Error(`PartInstance "${data.partInstanceId}" in RundownPlaylist "${playlist._id}" not found!`)
 		}
-	} else if (!playlist.activationId) {
-		logger.warn(`onPiecePlaybackStarted: Received for inactive RundownPlaylist "${playlist._id}"`)
-	} else {
-		throw new Error(`PieceInstance "${data.pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`)
+		return
+	}
+
+	const pieceInstance = partInstance.getPieceInstance(data.pieceInstanceId)
+	if (!pieceInstance) {
+		if (!playlist.activationId) {
+			logger.warn(`onPiecePlaybackStarted: Received for inactive RundownPlaylist "${playlist._id}"`)
+		} else {
+			throw new Error(`PieceInstance "${data.partInstanceId}" in RundownPlaylist "${playlist._id}" not found!`)
+		}
+		return
+	}
+
+	const isPlaying = !!(pieceInstance.reportedStartedPlayback && !pieceInstance.reportedStoppedPlayback)
+	if (!isPlaying) {
+		logger.debug(
+			`onPiecePlaybackStarted: Playout reports pieceInstance "${
+				data.pieceInstanceId
+			}" has started playback on timestamp ${new Date(data.startedPlayback).toISOString()}`
+		)
+		reportPieceHasStarted(context, cache, partInstance, pieceInstance, data.startedPlayback)
+
+		// We don't need to bother with an updateTimeline(), as this hasn't changed anything, but lets us accurately add started items when reevaluating
 	}
 }
 
@@ -50,36 +65,40 @@ export function onPiecePlaybackStarted(
  */
 export function onPiecePlaybackStopped(
 	context: JobContext,
-	cache: CacheForPlayout,
+	cache: PlayoutModel,
 	data: {
 		partInstanceId: PartInstanceId
 		pieceInstanceId: PieceInstanceId
 		stoppedPlayback: Time
 	}
 ): void {
-	const playlist = cache.Playlist.doc
-	const pieceInstance = cache.PieceInstances.findOne(data.pieceInstanceId)
+	const playlist = cache.Playlist
 
-	if (pieceInstance) {
-		const isPlaying = !!(pieceInstance.reportedStartedPlayback && !pieceInstance.reportedStoppedPlayback)
-		if (isPlaying) {
-			logger.debug(
-				`onPiecePlaybackStopped: Playout reports pieceInstance "${
-					data.pieceInstanceId
-				}" has stopped playback on timestamp ${new Date(data.stoppedPlayback).toISOString()}`
-			)
+	const partInstance = cache.getPartInstance(data.partInstanceId)
+	if (!partInstance) {
+		// PartInstance not found, so we can rely on the onPartPlaybackStopped callback erroring
+		return
+	}
 
-			reportPieceHasStopped(context, cache, pieceInstance, data.stoppedPlayback)
-		}
-	} else if (!playlist.activationId) {
-		logger.warn(`onPiecePlaybackStopped: Received for inactive RundownPlaylist "${playlist._id}"`)
-	} else {
-		const partInstance = cache.PartInstances.findOne(data.partInstanceId)
-		if (!partInstance) {
-			// PartInstance not found, so we can rely on the onPartPlaybackStopped callback erroring
+	const pieceInstance = partInstance.getPieceInstance(data.pieceInstanceId)
+	if (!pieceInstance) {
+		if (!playlist.activationId) {
+			logger.warn(`onPiecePlaybackStopped: Received for inactive RundownPlaylist "${playlist._id}"`)
 		} else {
-			throw new Error(`PieceInstance "${data.pieceInstanceId}" in RundownPlaylist "${playlist._id}" not found!`)
+			throw new Error(`PieceInstance "${data.partInstanceId}" in RundownPlaylist "${playlist._id}" not found!`)
 		}
+		return
+	}
+
+	const isPlaying = !!(pieceInstance.reportedStartedPlayback && !pieceInstance.reportedStoppedPlayback)
+	if (isPlaying) {
+		logger.debug(
+			`onPiecePlaybackStopped: Playout reports pieceInstance "${
+				data.pieceInstanceId
+			}" has stopped playback on timestamp ${new Date(data.stoppedPlayback).toISOString()}`
+		)
+
+		reportPieceHasStopped(context, cache, partInstance, pieceInstance, data.stoppedPlayback)
 	}
 }
 
@@ -91,52 +110,41 @@ export function onPiecePlaybackStopped(
  * @param timestamp timestamp the PieceInstance started
  */
 function reportPieceHasStarted(
-	context: JobContext,
-	cache: CacheForPlayout,
-	pieceInstance: PieceInstance,
+	_context: JobContext,
+	cache: PlayoutModel,
+	partInstance: PartInstanceWithPieces,
+	pieceInstance: ReadonlyDeep<PieceInstance>,
 	timestamp: Time
 ): void {
-	if (pieceInstance.reportedStartedPlayback !== timestamp) {
-		cache.PieceInstances.updateOne(pieceInstance._id, (piece) => {
-			piece.reportedStartedPlayback = timestamp
-			delete piece.reportedStoppedPlayback
-
-			if (!cache.isMultiGatewayMode) {
-				piece.plannedStartedPlayback = timestamp
-				delete piece.plannedStoppedPlayback
-			}
-
-			return piece
-		})
-
-		// Update the copy in the next-part if there is one, so that the infinite has the same start after a take
-		const playlist = cache.Playlist.doc
-		if (pieceInstance.infinite && playlist.nextPartInfo) {
-			const infiniteInstanceId = pieceInstance.infinite.infiniteInstanceId
-			cache.PieceInstances.updateAll((piece) => {
-				if (
-					piece.partInstanceId === playlist.nextPartInfo?.partInstanceId &&
-					!!piece.infinite &&
-					piece.infinite.infiniteInstanceId === infiniteInstanceId
-				) {
-					piece.reportedStartedPlayback = timestamp
-					delete piece.reportedStoppedPlayback
-
-					if (!cache.isMultiGatewayMode) {
-						piece.plannedStartedPlayback = timestamp
-						delete piece.plannedStoppedPlayback
-					}
-
-					return piece
-				} else {
-					return false
-				}
-			})
+	const timestampChanged = partInstance.setPieceInstancedReportedStartedPlayback(pieceInstance._id, timestamp)
+	if (timestampChanged) {
+		if (!cache.isMultiGatewayMode) {
+			partInstance.setPieceInstancedPlannedStartedPlayback(pieceInstance._id, timestamp)
 		}
 
-		cache.deferAfterSave(() => {
-			queuePartInstanceTimingEvent(context, playlist._id, pieceInstance.partInstanceId)
-		})
+		// Update the copy in the next-part if there is one, so that the infinite has the same start after a take
+		const nextPartInstance = cache.NextPartInstance
+		if (
+			pieceInstance.infinite &&
+			nextPartInstance &&
+			nextPartInstance.PartInstance._id !== partInstance.PartInstance._id
+		) {
+			const infiniteInstanceId = pieceInstance.infinite.infiniteInstanceId
+			for (const nextPieceInstance of nextPartInstance.PieceInstances) {
+				if (
+					!!nextPieceInstance.infinite &&
+					nextPieceInstance.infinite.infiniteInstanceId === infiniteInstanceId
+				) {
+					nextPartInstance.setPieceInstancedReportedStartedPlayback(nextPieceInstance._id, timestamp)
+
+					if (!cache.isMultiGatewayMode) {
+						nextPartInstance.setPieceInstancedPlannedStartedPlayback(nextPieceInstance._id, timestamp)
+					}
+				}
+			}
+		}
+
+		cache.queuePartInstanceTimingEvent(partInstance.PartInstance._id)
 	}
 }
 
@@ -148,23 +156,19 @@ function reportPieceHasStarted(
  * @param timestamp timestamp the PieceInstance stopped
  */
 function reportPieceHasStopped(
-	context: JobContext,
-	cache: CacheForPlayout,
-	pieceInstance: PieceInstance,
+	_context: JobContext,
+	cache: PlayoutModel,
+	partInstance: PartInstanceWithPieces,
+	pieceInstance: ReadonlyDeep<PieceInstance>,
 	timestamp: Time
 ): void {
-	if (pieceInstance.reportedStoppedPlayback !== timestamp) {
-		cache.PieceInstances.updateOne(pieceInstance._id, (piece) => {
-			piece.reportedStoppedPlayback = timestamp
+	const timestampChanged = partInstance.setPieceInstancedReportedStoppedPlayback(pieceInstance._id, timestamp)
 
-			if (!cache.isMultiGatewayMode) {
-				piece.plannedStoppedPlayback = timestamp
-			}
+	if (timestampChanged) {
+		if (!cache.isMultiGatewayMode) {
+			partInstance.setPieceInstancedPlannedStoppedPlayback(pieceInstance._id, timestamp)
+		}
 
-			return piece
-		})
-		cache.deferAfterSave(() => {
-			queuePartInstanceTimingEvent(context, cache.PlaylistId, pieceInstance.partInstanceId)
-		})
+		cache.queuePartInstanceTimingEvent(partInstance.PartInstance._id)
 	}
 }

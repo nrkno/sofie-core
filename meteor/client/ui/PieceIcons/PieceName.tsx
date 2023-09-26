@@ -7,6 +7,7 @@ import { IPropsHeader } from './PieceIcon'
 import { findPieceInstanceToShow } from './utils'
 import { PieceGeneric } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ReadonlyDeep } from 'type-fest'
 
 interface INamePropsHeader extends IPropsHeader {
 	partName: string
@@ -20,7 +21,7 @@ const supportedLayers = new Set([
 	SourceLayerType.LOCAL,
 ])
 
-function getLocalPieceLabel(piece: PieceGeneric): JSX.Element | null {
+function getLocalPieceLabel(piece: ReadonlyDeep<PieceGeneric>): JSX.Element | null {
 	const { color } = piece.content as EvsContent
 	return (
 		<>
@@ -34,7 +35,7 @@ function getLocalPieceLabel(piece: PieceGeneric): JSX.Element | null {
 	)
 }
 
-function getPieceLabel(piece: PieceGeneric, type: SourceLayerType): JSX.Element | null {
+function getPieceLabel(piece: ReadonlyDeep<PieceGeneric>, type: SourceLayerType): JSX.Element | null {
 	switch (type) {
 		case SourceLayerType.LOCAL:
 			return getLocalPieceLabel(piece)

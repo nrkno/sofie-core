@@ -2,7 +2,7 @@ import { ProtectedString } from '@sofie-automation/corelib/dist/protectedString'
 import { DbCacheReadCollection, DbCacheWriteCollection } from './CacheCollection'
 import { DbCacheReadObject, DbCacheWriteObject, DbCacheWriteOptionalObject } from './CacheObject'
 import { isDbCacheWritable } from './lib'
-import { anythingChanged, sumChanges } from '../db/changes'
+import { anythingChanged, Changes, sumChanges } from '../db/changes'
 import { IS_PRODUCTION } from '../environment'
 import { logger } from '../logging'
 import { sleep } from '@sofie-automation/corelib/dist/lib'
@@ -29,8 +29,17 @@ export type ReadOnlyCache<T extends CacheBase<any>> = Omit<
 	'defer' | 'deferAfterSave' | 'saveAllToDatabase'
 >
 
+export interface ICacheBase2 {
+	readonly DisplayName: string
+
+	discardChanges(): void
+	dispose(): void
+
+	hasChanges(): boolean
+}
+
 /** This cache contains data relevant in a studio */
-export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
+export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> implements ICacheBase2 {
 	protected _deferredBeforeSaveFunctions: DeferredFunction<T>[] = []
 	protected _deferredAfterSaveFunctions: DeferredAfterSaveFunction<any>[] = []
 
@@ -76,11 +85,11 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		this._deferredBeforeSaveFunctions.length = 0 // clear the array
 
 		const { highPrioDBs, lowPrioDBs } = this.getAllCollections()
+		const customHighPrios = this.saveAllCustomHighPrioCollections()
 
-		if (highPrioDBs.length) {
-			const anyThingChanged = anythingChanged(
-				sumChanges(...(await Promise.all(highPrioDBs.map(async (db) => db.updateDatabaseWithData()))))
-			)
+		if (highPrioDBs.length || customHighPrios.length) {
+			const allSaves = [...highPrioDBs.map(async (db) => db.updateDatabaseWithData()), ...customHighPrios]
+			const anyThingChanged = anythingChanged(sumChanges(...(await Promise.all(allSaves))))
 			if (anyThingChanged && !process.env.JEST_WORKER_ID) {
 				// Wait a little bit before saving the rest.
 				// The idea is that this allows for the high priority publications to update (such as the Timeline),
@@ -100,6 +109,10 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		this._deferredAfterSaveFunctions.length = 0 // clear the array
 
 		if (span) span.end()
+	}
+
+	protected saveAllCustomHighPrioCollections(): Array<Promise<Changes>> {
+		return []
 	}
 
 	/**

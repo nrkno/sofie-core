@@ -3,15 +3,15 @@ import { StudioId, TimelineDatastoreEntryId } from '@sofie-automation/corelib/di
 import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { JobContext } from '../jobs'
-import { CacheForPlayout } from './cache'
+import { PlayoutModel } from './cacheModel/PlayoutModel'
 
 export function getDatastoreId(studioId: StudioId, key: string): TimelineDatastoreEntryId {
 	return protectString<TimelineDatastoreEntryId>(`${studioId}_${key}`)
 }
 
 /** Remove documents in the TimelineDatastore collection where mode is temporary and has no references from the timeline */
-export async function cleanTimelineDatastore(context: JobContext, cache: CacheForPlayout): Promise<void> {
-	const timeline = cache.Timeline.doc
+export async function cleanTimelineDatastore(context: JobContext, cache: PlayoutModel): Promise<void> {
+	const timeline = cache.Timeline
 
 	if (!timeline) {
 		return

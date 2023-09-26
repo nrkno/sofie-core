@@ -46,8 +46,11 @@ export interface AdlibSegmentUi extends DBSegment {
 	isCompatibleShowStyle: boolean
 }
 
-export function getNextPiecesReactive(playlist: DBRundownPlaylist, showsStyleBase: UIShowStyleBase): PieceInstance[] {
-	let prospectivePieceInstances: PieceInstance[] = []
+export function getNextPiecesReactive(
+	playlist: DBRundownPlaylist,
+	showsStyleBase: UIShowStyleBase
+): ReadonlyDeep<PieceInstance>[] {
+	let prospectivePieceInstances: ReadonlyDeep<PieceInstance>[] = []
 	if (playlist.activationId && playlist.nextPartInfo) {
 		prospectivePieceInstances = PieceInstances.find({
 			playlistActivationId: playlist.activationId,
@@ -88,7 +91,11 @@ export function getNextPiecesReactive(playlist: DBRundownPlaylist, showsStyleBas
 export function getUnfinishedPieceInstancesGrouped(
 	playlist: DBRundownPlaylist,
 	showStyleBase: UIShowStyleBase
-): { unfinishedPieceInstances: PieceInstance[]; unfinishedAdLibIds: PieceId[]; unfinishedTags: string[] } {
+): {
+	unfinishedPieceInstances: ReadonlyDeep<PieceInstance>[]
+	unfinishedAdLibIds: PieceId[]
+	unfinishedTags: readonly string[]
+} {
 	const unfinishedPieceInstances = getUnfinishedPieceInstancesReactive(playlist, showStyleBase)
 
 	const unfinishedAdLibIds: PieceId[] = unfinishedPieceInstances
@@ -111,13 +118,13 @@ export function getUnfinishedPieceInstancesGrouped(
 export function getNextPieceInstancesGrouped(
 	playlist: DBRundownPlaylist,
 	showsStyleBase: UIShowStyleBase
-): { nextAdLibIds: PieceId[]; nextTags: string[]; nextPieceInstances: PieceInstance[] } {
+): { nextAdLibIds: PieceId[]; nextTags: readonly string[]; nextPieceInstances: ReadonlyDeep<PieceInstance>[] } {
 	const nextPieceInstances = getNextPiecesReactive(playlist, showsStyleBase)
 
 	const nextAdLibIds: PieceId[] = nextPieceInstances
 		.filter((piece) => !!piece.adLibSourceId)
 		.map((piece) => piece.adLibSourceId!)
-	const nextTags: string[] = nextPieceInstances
+	const nextTags = nextPieceInstances
 		.filter((piece) => !!piece.piece.tags)
 		.map((piece) => piece.piece.tags!)
 		.reduce((a, b) => a.concat(b), [])
@@ -125,7 +132,11 @@ export function getNextPieceInstancesGrouped(
 	return { nextAdLibIds, nextTags, nextPieceInstances }
 }
 
-export function isAdLibOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: string[], adLib: AdLibPieceUi): boolean {
+export function isAdLibOnAir(
+	unfinishedAdLibIds: PieceId[],
+	unfinishedTags: readonly string[],
+	adLib: AdLibPieceUi
+): boolean {
 	if (
 		unfinishedAdLibIds.includes(adLib._id) ||
 		(adLib.currentPieceTags &&
@@ -137,7 +148,7 @@ export function isAdLibOnAir(unfinishedAdLibIds: PieceId[], unfinishedTags: stri
 	return false
 }
 
-export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: string[], adLib: AdLibPieceUi): boolean {
+export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: readonly string[], adLib: AdLibPieceUi): boolean {
 	if (
 		nextAdLibIds.includes(adLib._id) ||
 		(adLib.nextPieceTags &&
@@ -151,7 +162,7 @@ export function isAdLibNext(nextAdLibIds: PieceId[], nextTags: string[], adLib: 
 
 export function isAdLibDisplayedAsOnAir(
 	unfinishedAdLibIds: PieceId[],
-	unfinishedTags: string[],
+	unfinishedTags: readonly string[],
 	adLib: AdLibPieceUi
 ): boolean {
 	const isOnAir = isAdLibOnAir(unfinishedAdLibIds, unfinishedTags, adLib)

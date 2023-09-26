@@ -27,7 +27,7 @@ export class OnTimelineGenerateContext extends RundownContext implements ITimeli
 	readonly previousPartInstance: Readonly<IBlueprintPartInstance> | undefined
 
 	readonly abSessionsHelper: AbSessionHelper
-	readonly #pieceInstanceCache = new Map<PieceInstanceId, PieceInstance>()
+	readonly #pieceInstanceCache = new Map<PieceInstanceId, ReadonlyDeep<PieceInstance>>()
 
 	constructor(
 		studio: ReadonlyDeep<DBStudio>,
@@ -36,10 +36,10 @@ export class OnTimelineGenerateContext extends RundownContext implements ITimeli
 		showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		playlist: ReadonlyDeep<DBRundownPlaylist>,
 		rundown: ReadonlyDeep<DBRundown>,
-		previousPartInstance: DBPartInstance | undefined,
-		currentPartInstance: DBPartInstance | undefined,
-		nextPartInstance: DBPartInstance | undefined,
-		pieceInstances: ResolvedPieceInstance[]
+		previousPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
+		currentPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
+		nextPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
+		pieceInstances: ReadonlyDeep<ResolvedPieceInstance[]>
 	) {
 		super(
 			{
