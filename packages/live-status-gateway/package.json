@@ -60,7 +60,6 @@
 		"debug": "^4.3.2",
 		"fast-clone": "^1.5.13",
 		"influx": "^5.9.2",
-		"jest-mock-extended": "^3.0.5",
 		"tslib": "^2.4.0",
 		"winston": "^3.8.1",
 		"ws": "^8.10.0"
@@ -68,7 +67,8 @@
 	"devDependencies": {
 		"@asyncapi/generator": "1.9.13",
 		"@asyncapi/html-template": "0.26.0",
-		"@asyncapi/nodejs-ws-template": "0.9.25"
+		"@asyncapi/nodejs-ws-template": "0.9.25",
+		"jest-mock-extended": "^3.0.5"
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [

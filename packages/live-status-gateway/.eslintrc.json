@@ -11,7 +11,10 @@
 		}
 	],
 	"rules": {
-		"prettier/prettier": ["error", { "endOfLine": "auto" }]
+		"prettier/prettier": ["error", { "endOfLine": "auto" }],
+		"node/no-unpublished-import": ["error", {
+			"allowModules": ["jest-mock-extended"]
+		}]
 	},
 	"parserOptions": {
 		"sourceType": "module",
