@@ -5,6 +5,8 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler'
+import { StudioHandler } from '../collections/studio'
+import { PlaylistsHandler } from '../collections/playlist'
 
 type PlaylistActivationStatus = 'deactivated' | 'rehearsal' | 'activated'
 
@@ -30,7 +32,7 @@ export class StudioTopic
 	private _playlists: PlaylistStatus[] = []
 
 	constructor(logger: Logger) {
-		super('StudioTopic', logger)
+		super(StudioTopic.name, logger)
 	}
 
 	addSubscriber(ws: WebSocket): void {
@@ -69,11 +71,11 @@ export class StudioTopic
 		const rundownPlaylists = data ? (data as DBRundownPlaylist[]) : []
 		const studio = data ? (data as DBStudio) : undefined
 		switch (source) {
-			case 'StudioHandler':
+			case StudioHandler.name:
 				this._logger.info(`${this._name} received studio update ${studio?._id}`)
 				this._studio = studio
 				break
-			case 'PlaylistsHandler':
+			case PlaylistsHandler.name:
 				this._logger.info(`${this._name} received playlists update from ${source}`)
 				this._playlists = rundownPlaylists.map((p) => {
 					let activationStatus: PlaylistActivationStatus =

@@ -14454,6 +14454,18 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
+"jest-mock-extended@npm:^3.0.5":
+  version: 3.0.5
+  resolution: "jest-mock-extended@npm:3.0.5"
+  dependencies:
+    ts-essentials: ^7.0.3
+  peerDependencies:
+    jest: ^24.0.0 || ^25.0.0 || ^26.0.0 || ^27.0.0 || ^28.0.0 || ^29.0.0
+    typescript: ^3.0.0 || ^4.0.0 || ^5.0.0
+  checksum: 440c52f743af588493c2cd02fa7e4e42177748ac3f7ae720f414bd58a4a72fad4271878457bf8796b62abcf9cf32cde4dc5151caad0805037bd965cc9ef07ca8
+  languageName: node
+  linkType: hard
+
 "jest-mock@npm:^29.5.0":
   version: 29.5.0
   resolution: "jest-mock@npm:29.5.0"
@@ -15367,6 +15379,7 @@ asn1@evs-broadcast/node-asn1:
     debug: ^4.3.2
     fast-clone: ^1.5.13
     influx: ^5.9.2
+    jest-mock-extended: ^3.0.5
     tslib: ^2.4.0
     winston: ^3.8.1
     ws: ^8.10.0
@@ -22421,6 +22434,15 @@ asn1@evs-broadcast/node-asn1:
   version: 1.0.5
   resolution: "trough@npm:1.0.5"
   checksum: d6c8564903ed00e5258bab92134b020724dbbe83148dc72e4bf6306c03ed8843efa1bcc773fa62410dd89161ecb067432dd5916501793508a9506cacbc408e25
+  languageName: node
+  linkType: hard
+
+"ts-essentials@npm:^7.0.3":
+  version: 7.0.3
+  resolution: "ts-essentials@npm:7.0.3"
+  peerDependencies:
+    typescript: ">=3.7.0"
+  checksum: 74d75868acf7f8b95e447d8b3b7442ca21738c6894e576df9917a352423fde5eb43c5651da5f78997da6061458160ae1f6b279150b42f47ccc58b73e55acaa2f
   languageName: node
   linkType: hard
 

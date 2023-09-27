@@ -6,9 +6,11 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { PartInstanceName } from './partInstances'
+import { PartInstanceName, PartInstancesHandler } from './partInstances'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { PlaylistHandler } from './playlist'
+import { RundownsHandler } from './rundownsHandler'
 
 export class RundownHandler
 	extends CollectionBase<DBRundown>
@@ -22,8 +24,8 @@ export class RundownHandler
 	private _curPlaylistId: RundownPlaylistId | undefined
 	private _curRundownId: RundownId | undefined
 
-	constructor(logger: Logger, coreHandler: CoreHandler) {
-		super('RundownHandler', CollectionName.Rundowns, 'rundowns', logger, coreHandler)
+	constructor(logger: Logger, coreHandler: CoreHandler, private _rundownsHandler?: RundownsHandler) {
+		super(RundownHandler.name, CollectionName.Rundowns, 'rundowns', logger, coreHandler)
 		this._core = coreHandler.coreConnection
 		this.observerName = this._name
 	}
@@ -32,10 +34,11 @@ export class RundownHandler
 		this._logger.info(`${this._name} ${changeType} ${id}`)
 		if (protectString(id) !== this._curRundownId)
 			throw new Error(`${this._name} received change with unexpected id ${id} !== ${this._curRundownId}`)
-		if (!this._collection) return
-		const col = this._core.getCollection<DBRundown>(this._collection)
-		if (!col) throw new Error(`collection '${this._collection}' not found!`)
-		if (this._collectionData) this._collectionData = col.findOne(this._collectionData._id)
+		if (!this._collectionName) return
+		const collection = this._core.getCollection<DBRundown>(this._collectionName)
+		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
+		await this._rundownsHandler?.setRundowns(collection.find(undefined))
+		if (this._collectionData) this._collectionData = collection.findOne(this._collectionData._id)
 		await this.notify(this._collectionData)
 	}
 
@@ -48,11 +51,11 @@ export class RundownHandler
 		const rundownPlaylist = data ? (data as DBRundownPlaylist) : undefined
 		const partInstances = data as Map<PartInstanceName, DBPartInstance | undefined>
 		switch (source) {
-			case 'PlaylistHandler':
+			case PlaylistHandler.name:
 				this._logger.info(`${this._name} received playlist update ${rundownPlaylist?._id}`)
 				this._curPlaylistId = rundownPlaylist?._id
 				break
-			case 'PartInstancesHandler':
+			case PartInstancesHandler.name:
 				this._logger.info(`${this._name} received partInstances update from ${source}`)
 				this._curRundownId = partInstances.get(PartInstanceName.current)?.rundownId
 				break
@@ -61,18 +64,18 @@ export class RundownHandler
 		}
 
 		await new Promise(process.nextTick.bind(this))
-		if (!this._collection) return
-		if (!this._publication) return
+		if (!this._collectionName) return
+		if (!this._publicationName) return
 		if (prevPlaylistId !== this._curPlaylistId) {
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._curPlaylistId) {
 				this._subscriptionId = await this._coreHandler.setupSubscription(
-					this._publication,
+					this._publicationName,
 					[this._curPlaylistId],
 					undefined
 				)
-				this._dbObserver = this._coreHandler.setupObserver(this._collection)
+				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id: string) => {
 					void this.changed(id, 'added').catch(this._logger.error)
 				}
@@ -84,9 +87,9 @@ export class RundownHandler
 
 		if (prevCurRundownId !== this._curRundownId) {
 			if (this._curRundownId) {
-				const col = this._core.getCollection<DBRundown>(this._collection)
-				if (!col) throw new Error(`collection '${this._collection}' not found!`)
-				const rundown = col.findOne(this._curRundownId)
+				const collection = this._core.getCollection<DBRundown>(this._collectionName)
+				if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
+				const rundown = collection.findOne(this._curRundownId)
 				if (!rundown) throw new Error(`rundown '${this._curRundownId}' not found!`)
 				this._collectionData = rundown
 			} else this._collectionData = undefined
