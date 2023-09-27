@@ -59,7 +59,7 @@ export class SegmentHandler
 			}
 			case PlaylistHandler.name: {
 				this._logger.info(`${this._name} received update from ${source}`)
-				this._rundownIds = (data as DBRundownPlaylist).rundownIdsInOrder
+				this._rundownIds = (data as DBRundownPlaylist | undefined)?.rundownIdsInOrder ?? []
 				break
 			}
 			default:

@@ -61,7 +61,7 @@ export class SegmentsTopic
 		const prevPlaylistId = this._activePlaylist?._id
 		switch (source) {
 			case PlaylistHandler.name: {
-				this._activePlaylist = data as DBRundownPlaylist
+				this._activePlaylist = data as DBRundownPlaylist | undefined
 				this._logger.info(`${this._name} received playlist update from ${source}`)
 				break
 			}
