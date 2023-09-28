@@ -261,8 +261,8 @@ class PlaylistsServerAPI implements PlaylistsRestAPI {
 		connection: Meteor.Connection,
 		event: string,
 		rundownPlaylistId: RundownPlaylistId
-	): Promise<ClientAPI.ClientResponse<object>> {
-		return ServerClientAPI.runUserActionInLogForPlaylist<object>(
+	): Promise<ClientAPI.ClientResponse<void>> {
+		return ServerClientAPI.runUserActionInLogForPlaylist<void>(
 			this.context.getMethodContext(connection),
 			event,
 			getCurrentTime(),
@@ -277,12 +277,11 @@ class PlaylistsServerAPI implements PlaylistsRestAPI {
 				const success = !reloadResponse.rundownsResponses.reduce((missing, rundownsResponse) => {
 					return missing || rundownsResponse.response === TriggerReloadDataResponse.MISSING
 				}, false)
-				return success
-					? {}
-					: UserError.from(
-							new Error(`Failed to reload playlist ${rundownPlaylistId}`),
-							UserErrorMessage.InternalError
-					  )
+				if (!success)
+					throw UserError.from(
+						new Error(`Failed to reload playlist ${rundownPlaylistId}`),
+						UserErrorMessage.InternalError
+					)
 			}
 		)
 	}
@@ -557,7 +556,7 @@ export function registerRoutes(registerRoute: APIRegisterHook<PlaylistsRestAPI>)
 		}
 	)
 
-	registerRoute<{ playlistId: string }, never, object>(
+	registerRoute<{ playlistId: string }, never, void>(
 		'put',
 		'/playlists/:playlistId/reload-playlist',
 		new Map([[404, [UserErrorMessage.RundownPlaylistNotFound]]]),

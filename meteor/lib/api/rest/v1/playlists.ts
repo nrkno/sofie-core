@@ -121,7 +121,7 @@ export interface PlaylistsRestAPI {
 		connection: Meteor.Connection,
 		event: string,
 		rundownPlaylistId: RundownPlaylistId
-	): Promise<ClientAPI.ClientResponse<object>>
+	): Promise<ClientAPI.ClientResponse<void>>
 	/**
 	 * Resets a Playlist back to its pre-played state.
 	 *
