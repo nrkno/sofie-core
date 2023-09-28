@@ -15381,6 +15381,7 @@ asn1@evs-broadcast/node-asn1:
     influx: ^5.9.2
     jest-mock-extended: ^3.0.5
     tslib: ^2.4.0
+    underscore: ^1.13.6
     winston: ^3.8.1
     ws: ^8.10.0
   languageName: unknown
