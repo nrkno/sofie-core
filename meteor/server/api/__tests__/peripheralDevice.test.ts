@@ -14,9 +14,8 @@ import {
 	getRandomId,
 	LogLevel,
 	getRandomString,
-	sleep,
 } from '../../../lib/lib'
-import { testInFiber } from '../../../__mocks__/helpers/jest'
+import { testInFiber, waitUntil } from '../../../__mocks__/helpers/jest'
 import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mocks__/helpers/database'
 import { setLogLevel } from '../../logging'
 import {
@@ -313,8 +312,11 @@ describe('test peripheralDevice general API methods', () => {
 			undefined,
 			replyMessage
 		)
-		await sleep(10)
-		expect(await PeripheralDeviceCommands.findOneAsync({})).toBeFalsy()
+
+		expect(await PeripheralDeviceCommands.findOneAsync({})).toBeTruthy()
+		await waitUntil(async () => {
+			expect(await PeripheralDeviceCommands.findOneAsync({})).toBeFalsy()
+		}, 100)
 
 		expect(resultErr).toBeNull()
 		expect(resultMessage).toEqual(replyMessage)
