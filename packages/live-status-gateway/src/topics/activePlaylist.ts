@@ -177,45 +177,44 @@ export class ActivePlaylistTopic
 			)
 		}
 
+		const message = this._activePlaylist
+			? literal<ActivePlaylistStatus>({
+					event: 'activePlaylist',
+					id: unprotectString(this._activePlaylist._id),
+					name: this._activePlaylist.name,
+					rundownIds: this._activePlaylist.rundownIdsInOrder.map((r) => unprotectString(r)),
+					currentPart: currentPartInstance
+						? literal<PartStatus>({
+								id: unprotectString(currentPartInstance._id),
+								name: currentPartInstance.title,
+								autoNext: currentPartInstance.autoNext,
+								segmentId: unprotectString(currentPartInstance.segmentId),
+						  })
+						: null,
+					nextPart: nextPartInstance
+						? literal<PartStatus>({
+								id: unprotectString(nextPartInstance._id),
+								name: nextPartInstance.title,
+								autoNext: nextPartInstance.autoNext,
+								segmentId: unprotectString(nextPartInstance.segmentId),
+						  })
+						: null,
+					adLibs,
+					globalAdLibs,
+			  })
+			: literal<ActivePlaylistStatus>({
+					event: 'activePlaylist',
+					id: null,
+					name: '',
+					rundownIds: [],
+					currentPart: null,
+					nextPart: null,
+					adLibs: [],
+					globalAdLibs: [],
+			  })
+
 		subscribers.forEach((ws) => {
-			this.sendMessage(
-				ws,
-				this._activePlaylist
-					? literal<ActivePlaylistStatus>({
-							event: 'activePlaylist',
-							id: unprotectString(this._activePlaylist._id),
-							name: this._activePlaylist.name,
-							rundownIds: this._activePlaylist.rundownIdsInOrder.map((r) => unprotectString(r)),
-							currentPart: currentPartInstance
-								? literal<PartStatus>({
-										id: unprotectString(currentPartInstance._id),
-										name: currentPartInstance.title,
-										autoNext: currentPartInstance.autoNext,
-										segmentId: unprotectString(currentPartInstance.segmentId),
-								  })
-								: null,
-							nextPart: nextPartInstance
-								? literal<PartStatus>({
-										id: unprotectString(nextPartInstance._id),
-										name: nextPartInstance.title,
-										autoNext: nextPartInstance.autoNext,
-										segmentId: unprotectString(nextPartInstance.segmentId),
-								  })
-								: null,
-							adLibs,
-							globalAdLibs,
-					  })
-					: literal<ActivePlaylistStatus>({
-							event: 'activePlaylist',
-							id: null,
-							name: '',
-							rundownIds: [],
-							currentPart: null,
-							nextPart: null,
-							adLibs: [],
-							globalAdLibs: [],
-					  })
-			)
+			this.sendMessage(ws, message)
 		})
 	}
 

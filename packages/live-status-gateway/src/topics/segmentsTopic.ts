@@ -42,7 +42,7 @@ export class SegmentsTopic
 	sendStatus(subscribers: Set<WebSocket>): void {
 		const segmentsStatus: SegmentsStatus = {
 			event: 'segments',
-			rundownPlaylistId: this._activePlaylist ? unprotectString(this._activePlaylist?._id) : null,
+			rundownPlaylistId: this._activePlaylist ? unprotectString(this._activePlaylist._id) : null,
 			segments: this._orderedSegments.map((segment) => ({
 				id: unprotectString(segment._id),
 				rundownId: unprotectString(segment.rundownId),
