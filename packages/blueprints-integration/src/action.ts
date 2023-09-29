@@ -1,8 +1,9 @@
 import { ExpectedPackage } from './package'
-import { ConfigManifestEntry } from './config'
 import { SomeContent } from './content'
 import { ITranslatableMessage } from './translations'
 import { ExpectedPlayoutItemGeneric } from './documents'
+import { JSONBlob } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
+import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 
 export interface ActionUserData {
 	[key: string]: any
@@ -92,7 +93,7 @@ export interface IBlueprintActionManifest {
 
 	userDataManifest: {
 		/** List of editable fields in userData, to allow for customising */
-		editableFields?: ConfigManifestEntry[]
+		editableFields?: JSONBlob<JSONSchema>
 		/** Execute the action after userData is changed. If not present ActionExecuteAfterChanged.none is assumed. */
 		executeOnUserDataChanged?: ActionExecuteAfterChanged
 		// Potential future properties:
