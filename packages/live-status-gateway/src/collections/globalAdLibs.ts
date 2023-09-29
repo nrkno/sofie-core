@@ -20,7 +20,7 @@ export class GlobalAdLibsHandler
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super(
-			'GlobalAdLibHandler',
+			GlobalAdLibsHandler.name,
 			CollectionName.RundownBaselineAdLibPieces,
 			'rundownBaselineAdLibPieces',
 			logger,

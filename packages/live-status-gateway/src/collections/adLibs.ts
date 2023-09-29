@@ -17,7 +17,7 @@ export class AdLibsHandler
 	private _curRundownId: string | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
-		super('AdLibHandler', CollectionName.AdLibPieces, 'adLibPieces', logger, coreHandler)
+		super(AdLibsHandler.name, CollectionName.AdLibPieces, 'adLibPieces', logger, coreHandler)
 		this._core = coreHandler.coreConnection
 		this.observerName = this._name
 	}
