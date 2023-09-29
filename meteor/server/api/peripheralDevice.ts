@@ -228,17 +228,21 @@ export namespace ServerPeripheralDeviceAPI {
 		return status
 	}
 	export async function ping(context: MethodContext, deviceId: PeripheralDeviceId, token: string): Promise<void> {
-		await checkAccessAndGetPeripheralDevice(deviceId, token, context)
-
 		check(deviceId, String)
 		check(token, String)
 
-		// Update lastSeen
-		await PeripheralDevices.updateAsync(deviceId, {
-			$set: {
-				lastSeen: getCurrentTime(),
-			},
-		})
+		const device = await checkAccessAndGetPeripheralDevice(deviceId, token, context)
+
+		// Update lastSeen:
+		const now = getCurrentTime()
+		// Debounce, to avoid spamming the database:
+		if (now - device.lastSeen > 1000) {
+			await PeripheralDevices.updateAsync(deviceId, {
+				$set: {
+					lastSeen: now,
+				},
+			})
+		}
 	}
 
 	/**
