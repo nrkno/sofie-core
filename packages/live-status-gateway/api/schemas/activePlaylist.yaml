@@ -59,16 +59,20 @@ $defs:
           name:
             description: User name of the part
             type: string
+          segmentId:
+            description: Unique id of the segment this part belongs to
+            type: string
           autoNext:
             description: Should this part progress to the next automatically
             type: boolean
             default: false
-        required: [id, name]
+        required: [id, name, segmentId]
         additionalProperties: false
       - type: 'null'
     examples:
       - id: 'H5CBGYjThrMSmaYvRaa5FVKJIzk_'
         name: 'Intro'
+        segmentId: 'n1mOVd5_K5tt4sfk6HYfTuwumGQ_'
         autoNext: false
   adLib:
     type: object

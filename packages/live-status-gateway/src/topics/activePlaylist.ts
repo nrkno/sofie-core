@@ -14,13 +14,18 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler'
-import { PartInstanceName } from '../collections/partInstances'
+import { PartInstanceName, PartInstancesHandler } from '../collections/partInstances'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { PlaylistHandler } from '../collections/playlist'
+import { ShowStyleBaseHandler } from '../collections/showStyleBase'
+import { AdLibActionsHandler } from '../collections/adLibActions'
+import { GlobalAdLibActionsHandler } from '../collections/globalAdLibActions'
 
 interface PartStatus {
 	id: string
+	segmentId: string
 	name: string
 	autoNext?: boolean
 }
@@ -58,7 +63,7 @@ export class ActivePlaylistTopic
 		CollectionObserver<AdLibAction[]>,
 		CollectionObserver<RundownBaselineAdLibAction[]>
 {
-	public observerName = 'ActivePlaylistTopic'
+	public observerName = ActivePlaylistTopic.name
 	private _sourceLayersMap: Map<string, string> = new Map()
 	private _outputLayersMap: Map<string, string> = new Map()
 	private _activePlaylist: DBRundownPlaylist | undefined
@@ -70,17 +75,17 @@ export class ActivePlaylistTopic
 	private _globalAdLibs: RundownBaselineAdLibItem[] | undefined
 
 	constructor(logger: Logger) {
-		super('ActivePlaylistTopic', logger)
+		super(ActivePlaylistTopic.name, logger)
 	}
 
 	addSubscriber(ws: WebSocket): void {
 		super.addSubscriber(ws)
-		this.sendStatus(new Set<WebSocket>().add(ws))
+		this.sendStatus([ws])
 	}
 
-	sendStatus(subscribers: Set<WebSocket>): void {
-		const currentPart = this._currentPartInstance ? this._currentPartInstance.part : null
-		const nextPart = this._nextPartInstance ? this._nextPartInstance.part : null
+	sendStatus(subscribers: Iterable<WebSocket>): void {
+		const currentPartInstance = this._currentPartInstance ? this._currentPartInstance.part : null
+		const nextPartInstance = this._nextPartInstance ? this._nextPartInstance.part : null
 		const adLibs: AdLibStatus[] = []
 		const globalAdLibs: AdLibStatus[] = []
 
@@ -104,8 +109,8 @@ export class ActivePlaylistTopic
 					return literal<AdLibStatus>({
 						id: unprotectString(action._id),
 						name: interpollateTranslation(action.display.label.key, action.display.label.args),
-						sourceLayer: sourceLayerName ? sourceLayerName : 'invalid',
-						outputLayer: outputLayerName ? outputLayerName : 'invalid',
+						sourceLayer: sourceLayerName ?? 'invalid',
+						outputLayer: outputLayerName ?? 'invalid',
 						actionType: triggerModes,
 					})
 				})
@@ -120,8 +125,8 @@ export class ActivePlaylistTopic
 					return literal<AdLibStatus>({
 						id: unprotectString(adLib._id),
 						name: adLib.name,
-						sourceLayer: sourceLayerName ? sourceLayerName : 'invalid',
-						outputLayer: outputLayerName ? outputLayerName : 'invalid',
+						sourceLayer: sourceLayerName ?? 'invalid',
+						outputLayer: outputLayerName ?? 'invalid',
 						actionType: [],
 					})
 				})
@@ -148,8 +153,8 @@ export class ActivePlaylistTopic
 					return literal<AdLibStatus>({
 						id: unprotectString(action._id),
 						name: interpollateTranslation(action.display.label.key, action.display.label.args),
-						sourceLayer: sourceLayerName ? sourceLayerName : 'invalid',
-						outputLayer: outputLayerName ? outputLayerName : 'invalid',
+						sourceLayer: sourceLayerName ?? 'invalid',
+						outputLayer: outputLayerName ?? 'invalid',
 						actionType: triggerModes,
 					})
 				})
@@ -164,52 +169,53 @@ export class ActivePlaylistTopic
 					return literal<AdLibStatus>({
 						id: unprotectString(adLibs._id),
 						name: adLibs.name,
-						sourceLayer: sourceLayerName ? sourceLayerName : 'invalid',
-						outputLayer: outputLayerName ? outputLayerName : 'invalid',
+						sourceLayer: sourceLayerName ?? 'invalid',
+						outputLayer: outputLayerName ?? 'invalid',
 						actionType: [],
 					})
 				})
 			)
 		}
 
-		subscribers.forEach((ws) => {
-			this.sendMessage(
-				ws,
-				this._activePlaylist
-					? literal<ActivePlaylistStatus>({
-							event: 'activePlaylist',
-							id: unprotectString(this._activePlaylist._id),
-							name: this._activePlaylist.name,
-							rundownIds: this._activePlaylist.rundownIdsInOrder.map((r) => unprotectString(r)),
-							currentPart: currentPart
-								? literal<PartStatus>({
-										id: unprotectString(currentPart._id),
-										name: currentPart.title,
-										autoNext: currentPart.autoNext,
-								  })
-								: null,
-							nextPart: nextPart
-								? literal<PartStatus>({
-										id: unprotectString(nextPart._id),
-										name: nextPart.title,
-										autoNext: nextPart.autoNext,
-								  })
-								: null,
-							adLibs,
-							globalAdLibs,
-					  })
-					: literal<ActivePlaylistStatus>({
-							event: 'activePlaylist',
-							id: null,
-							name: '',
-							rundownIds: [],
-							currentPart: null,
-							nextPart: null,
-							adLibs: [],
-							globalAdLibs: [],
-					  })
-			)
-		})
+		const message = this._activePlaylist
+			? literal<ActivePlaylistStatus>({
+					event: 'activePlaylist',
+					id: unprotectString(this._activePlaylist._id),
+					name: this._activePlaylist.name,
+					rundownIds: this._activePlaylist.rundownIdsInOrder.map((r) => unprotectString(r)),
+					currentPart: currentPartInstance
+						? literal<PartStatus>({
+								id: unprotectString(currentPartInstance._id),
+								name: currentPartInstance.title,
+								autoNext: currentPartInstance.autoNext,
+								segmentId: unprotectString(currentPartInstance.segmentId),
+						  })
+						: null,
+					nextPart: nextPartInstance
+						? literal<PartStatus>({
+								id: unprotectString(nextPartInstance._id),
+								name: nextPartInstance.title,
+								autoNext: nextPartInstance.autoNext,
+								segmentId: unprotectString(nextPartInstance.segmentId),
+						  })
+						: null,
+					adLibs,
+					globalAdLibs,
+			  })
+			: literal<ActivePlaylistStatus>({
+					event: 'activePlaylist',
+					id: null,
+					name: '',
+					rundownIds: [],
+					currentPart: null,
+					nextPart: null,
+					adLibs: [],
+					globalAdLibs: [],
+			  })
+
+		for (const subscriber of subscribers) {
+			this.sendMessage(subscriber, message)
+		}
 	}
 
 	async update(
@@ -225,7 +231,7 @@ export class ActivePlaylistTopic
 			| undefined
 	): Promise<void> {
 		switch (source) {
-			case 'PlaylistHandler': {
+			case PlaylistHandler.name: {
 				const rundownPlaylist = data ? (data as DBRundownPlaylist) : undefined
 				this._logger.info(
 					`${this._name} received playlist update ${rundownPlaylist?._id}, activationId ${rundownPlaylist?.activationId}`
@@ -233,7 +239,7 @@ export class ActivePlaylistTopic
 				this._activePlaylist = unprotectString(rundownPlaylist?.activationId) ? rundownPlaylist : undefined
 				break
 			}
-			case 'ShowStyleBaseHandler': {
+			case ShowStyleBaseHandler.name: {
 				const sourceLayers: SourceLayers = data
 					? applyAndValidateOverrides((data as DBShowStyleBase).sourceLayersWithOverrides).obj
 					: {}
@@ -268,20 +274,20 @@ export class ActivePlaylistTopic
 				}
 				break
 			}
-			case 'PartInstancesHandler': {
+			case PartInstancesHandler.name: {
 				const partInstances = data as Map<PartInstanceName, DBPartInstance | undefined>
 				this._logger.info(`${this._name} received partInstances update from ${source}`)
 				this._currentPartInstance = partInstances.get(PartInstanceName.current)
 				this._nextPartInstance = partInstances.get(PartInstanceName.next)
 				break
 			}
-			case 'AdLibActionHandler': {
+			case AdLibActionsHandler.name: {
 				const adLibActions = data ? (data as AdLibAction[]) : []
 				this._logger.info(`${this._name} received adLibActions update from ${source}`)
 				this._adLibActions = adLibActions
 				break
 			}
-			case 'GlobalAdLibActionHandler': {
+			case GlobalAdLibActionsHandler.name: {
 				const globalAdLibActions = data ? (data as RundownBaselineAdLibAction[]) : []
 				this._logger.info(`${this._name} received globalAdLibActions update from ${source}`)
 				this._globalAdLibActions = globalAdLibActions
