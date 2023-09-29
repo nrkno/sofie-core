@@ -84,7 +84,7 @@ const CASPARCG_LAST_SEEN_PERIOD_MS = 3 * 60 * 1000 // Note: this must be higher 
 async function restartCasparCG(system: ICoreSystem | undefined, previousLastNightlyCronjob: number) {
 	if (!system?.cron?.casparCGRestart?.enabled) return
 
-	let attemptFailed = false
+	let shouldRetryAttempt = false
 	const ps: Array<Promise<any>> = []
 
 	const casparcgAndParentDevices = (await PeripheralDevices.findFetchAsync(
@@ -109,7 +109,7 @@ async function restartCasparCG(system: ICoreSystem | undefined, previousLastNigh
 
 		if (device.lastSeen < Date.now() - CASPARCG_LAST_SEEN_PERIOD_MS) {
 			logger.info(`Cronjob: Skipping CasparCG device "${device._id}" offline`)
-			attemptFailed = true
+			shouldRetryAttempt = true
 			continue
 		}
 
@@ -127,7 +127,7 @@ async function restartCasparCG(system: ICoreSystem | undefined, previousLastNigh
 
 		if (parentDevice.lastSeen < Date.now() - CASPARCG_LAST_SEEN_PERIOD_MS) {
 			logger.info(`Cronjob: Skipping CasparCG device "${device._id}" with offline parent device`)
-			attemptFailed = true
+			shouldRetryAttempt = true
 			continue
 		}
 
@@ -150,36 +150,29 @@ async function restartCasparCG(system: ICoreSystem | undefined, previousLastNigh
 						logger.warn(`Cronjob: "${device._id}": CasparCG restart error: ${errorMessage}`)
 
 						// If it was a timeout, maybe try again later
-						attemptFailed = true
+						shouldRetryAttempt = true
 					}
 				})
 				.catch((err) => {
-					if ((err + '').match(/skipped/i)) {
-						logger.info(`Cronjob: Skipping CasparCG device "${device._id}": ${stringifyError(err)}`)
-					} else if ((err + '').match(/timeout/i)) {
+					if ((err + '').match(/timeout/i)) {
 						logger.warn(`Cronjob: "${device._id}": CasparCG restart timeout (Attempt ${failedRetries + 1})`)
 
 						// If it was a timeout, maybe we could try again later?
-						attemptFailed = true
+						shouldRetryAttempt = true
 					} else {
-						logger.error(`Cronjob: "${device._id}": CasparCG restart error: ${stringifyError(err)}`)
-
-						// Propogate the error
-						throw err
+						logger.warn(`Cronjob: "${device._id}": CasparCG restart error: ${stringifyError(err)}`)
 					}
 				})
 		)
 	}
 
-	try {
-		await Promise.all(ps)
-	} finally {
-		if (attemptFailed && failedRetries < 5) {
-			failedRetries++
-			lastNightlyCronjob = previousLastNightlyCronjob // try again later
-		} else {
-			failedRetries = 0
-		}
+	await Promise.allSettled(ps)
+
+	if (shouldRetryAttempt && failedRetries < 5) {
+		failedRetries++
+		lastNightlyCronjob = previousLastNightlyCronjob // try again later
+	} else {
+		failedRetries = 0
 	}
 }
 
