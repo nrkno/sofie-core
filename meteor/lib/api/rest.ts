@@ -171,12 +171,14 @@ export interface RestAPI {
 	 * @param event User event string
 	 * @param rundownPlaylistId Target Playlist.
 	 * @param segmentId Segment to set as next.
+	 * @param immediate Whether given Segment should be the first thing to be taken right after current part, or after the last part of the current segment (aka queued).
 	 */
 	setNextSegment(
 		connection: Meteor.Connection,
 		event: string,
 		rundownPlaylistId: RundownPlaylistId,
-		segmentId: SegmentId
+		segmentId: SegmentId,
+		immediate: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
 	/**
 	 * Performs a take in the given Playlist.

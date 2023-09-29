@@ -92,7 +92,7 @@ export async function handleSetNextSegment(context: JobContext, data: SetNextSeg
 				if (!nextSegment) throw new Error(`Segment "${data.nextSegmentId}" not found!`)
 			}
 
-			await setNextSegment(context, cache, nextSegment)
+			await setNextSegment(context, cache, nextSegment, data.immediate)
 
 			// Update any future lookaheads
 			await updateTimeline(context, cache)

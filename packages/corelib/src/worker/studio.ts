@@ -208,6 +208,7 @@ export interface SetNextPartProps extends RundownPlayoutPropsBase {
 }
 export interface SetNextSegmentProps extends RundownPlayoutPropsBase {
 	nextSegmentId: SegmentId | null
+	immediate: boolean
 }
 export interface ExecuteActionProps extends RundownPlayoutPropsBase {
 	actionDocId: AdLibActionId | RundownBaselineAdLibActionId | null

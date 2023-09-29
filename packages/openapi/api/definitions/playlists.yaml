@@ -372,6 +372,9 @@ resources:
                 segmentId:
                   type: string
                   description: Segment to set as next.
+                immediate:
+                  type: boolean
+                  description: Whether given Segment should be the first thing to be taken right after current part (effectively setting the first part of given segment as Next), as opposed to being taken after the last part of the current segment (queued until after the current segment ends).
               required:
                 - segmentId
       responses:

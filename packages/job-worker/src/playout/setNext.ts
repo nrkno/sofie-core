@@ -347,11 +347,13 @@ async function cleanupOrphanedItems(context: JobContext, cache: CacheForPlayout)
  * @param context Context for the running job
  * @param cache The playout cache of the playlist
  * @param nextSegment The segment to set as next, or null to clear it
+ * @param immediate Whether given Segment should be the first thing to be taken right after current part, or after the last part of the current segment (aka queued).
  */
 export async function setNextSegment(
 	context: JobContext,
 	cache: CacheForPlayout,
-	nextSegment: DBSegment | null
+	nextSegment: DBSegment | null,
+	immediate: boolean
 ): Promise<void> {
 	const span = context.startSpan('setNextSegment')
 	if (nextSegment) {
@@ -369,7 +371,11 @@ export async function setNextSegment(
 
 		// if there is not currentPartInstance or the nextPartInstance is not in the current segment
 		// behave as if user chose SetNextPart on the first playable part of the segment
-		if (currentPartInstance === undefined || currentPartInstance.segmentId !== nextPartInstance?.segmentId) {
+		if (
+			currentPartInstance === undefined ||
+			currentPartInstance.segmentId !== nextPartInstance?.segmentId ||
+			immediate
+		) {
 			// Clear any existing nextSegment, as this call 'replaces' it
 			cache.Playlist.update((p) => {
 				delete p.nextSegmentId

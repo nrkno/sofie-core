@@ -401,7 +401,8 @@ class ServerRestAPI implements RestAPI {
 		connection: Meteor.Connection,
 		event: string,
 		rundownPlaylistId: RundownPlaylistId,
-		segmentId: SegmentId
+		segmentId: SegmentId,
+		immediate: boolean
 	): Promise<ClientAPI.ClientResponse<void>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			ServerRestAPI.getMethodContext(connection),
@@ -416,6 +417,7 @@ class ServerRestAPI implements RestAPI {
 			{
 				playlistId: rundownPlaylistId,
 				nextSegmentId: segmentId,
+				immediate,
 			}
 		)
 	}
@@ -1430,7 +1432,7 @@ sofieAPIRequest<{ playlistId: string }, { partId: string }, void>(
 	}
 )
 
-sofieAPIRequest<{ playlistId: string }, { segmentId: string }, void>(
+sofieAPIRequest<{ playlistId: string }, { segmentId: string; immediate?: boolean }, void>(
 	'put',
 	'/playlists/:playlistId/set-next-segment',
 	new Map([
@@ -1440,11 +1442,13 @@ sofieAPIRequest<{ playlistId: string }, { segmentId: string }, void>(
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const segmentId = protectString<SegmentId>(body.segmentId)
+		const immediate = body.immediate ?? false
 		logger.info(`API PUT: set-next-segment ${rundownPlaylistId} ${segmentId}`)
 
 		check(rundownPlaylistId, String)
 		check(segmentId, String)
-		return await serverAPI.setNextSegment(connection, event, rundownPlaylistId, segmentId)
+		check(immediate, Boolean)
+		return await serverAPI.setNextSegment(connection, event, rundownPlaylistId, segmentId, immediate)
 	}
 )
 
