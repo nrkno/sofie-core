@@ -171,13 +171,15 @@ async function restartCasparCG(system: ICoreSystem | undefined, previousLastNigh
 		)
 	}
 
-	await Promise.all(ps)
-
-	if (attemptFailed && failedRetries < 5) {
-		failedRetries++
-		lastNightlyCronjob = previousLastNightlyCronjob // try again later
-	} else {
-		failedRetries = 0
+	try {
+		await Promise.all(ps)
+	} finally {
+		if (attemptFailed && failedRetries < 5) {
+			failedRetries++
+			lastNightlyCronjob = previousLastNightlyCronjob // try again later
+		} else {
+			failedRetries = 0
+		}
 	}
 }
 
@@ -216,25 +218,23 @@ Meteor.startup(() => {
 	nightlyCronjob()
 
 	function anyTimeCronjob(force?: boolean) {
-		{
-			// Clean up playlists:
-			if (isLowSeason() || force) {
-				deferAsync(
-					async () => {
-						// Ensure there are no empty playlists on an interval
-						const studioIds = await fetchStudioIds({})
-						await Promise.all(
-							studioIds.map(async (studioId) => {
-								const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
-								await job.complete
-							})
-						)
-					},
-					(e) => {
-						logger.error(`Cron: CleanupPlaylists error: ${e}`)
-					}
-				)
-			}
+		// Clean up playlists:
+		if (isLowSeason() || force) {
+			deferAsync(
+				async () => {
+					// Ensure there are no empty playlists on an interval
+					const studioIds = await fetchStudioIds({})
+					await Promise.all(
+						studioIds.map(async (studioId) => {
+							const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
+							await job.complete
+						})
+					)
+				},
+				(e) => {
+					logger.error(`Cron: CleanupPlaylists error: ${e}`)
+				}
+			)
 		}
 	}
 	Meteor.setInterval(anyTimeCronjob, 30 * 60 * 1000) // every 30 minutes
