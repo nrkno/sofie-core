@@ -1,4 +1,10 @@
-import { CoreConnection, CoreOptions, DDPConnectorOptions, Observer } from '@sofie-automation/server-core-integration'
+import {
+	CoreConnection,
+	CoreOptions,
+	DDPConnectorOptions,
+	Observer,
+	stringifyError,
+} from '@sofie-automation/server-core-integration'
 
 import {
 	DeviceType,
@@ -524,6 +530,7 @@ export class CoreTSRDeviceHandler {
 		statusCode: StatusCode.BAD,
 		messages: ['Starting up...'],
 	}
+	private disposed = false
 
 	constructor(
 		parent: CoreHandler,
@@ -538,6 +545,7 @@ export class CoreTSRDeviceHandler {
 	}
 	async init(): Promise<void> {
 		this._device = await this._devicePr
+		if (this.disposed) return
 		const deviceId = this._device.deviceId
 		const deviceName = `${deviceId} (${this._device.deviceName})`
 
@@ -652,6 +660,7 @@ export class CoreTSRDeviceHandler {
 	}
 
 	async dispose(): Promise<void> {
+		this.disposed = true
 		this._observers.forEach((obs) => {
 			obs.stop()
 		})
@@ -659,6 +668,7 @@ export class CoreTSRDeviceHandler {
 		for (const subId of this._subscriptions) {
 			this.core.unsubscribe(subId)
 		}
+		this._subscriptions = []
 
 		await this._tsrHandler.tsr.removeDevice(this._deviceId)
 		await this.core.setStatus({

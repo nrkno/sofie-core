@@ -177,6 +177,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 			this._removeParent()
 			if (this._ddp) {
 				this._ddp.close()
+				this._ddp.removeAllListeners()
 			}
 		}
 		this.removeAllListeners()
@@ -512,6 +513,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 		})
 	}
 	private _triggerPing() {
+		if (this._destroyed) return
 		if (!this._pingTimeout) {
 			this._pingTimeout = setTimeout(() => {
 				this._pingTimeout = null
@@ -527,7 +529,10 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 		}
 		this._triggerPing()
 	}
+	/** We continuously ping Core to let Core know that we're alive */
 	private _ping() {
+		if (this._destroyed) return
+
 		try {
 			if (this.connected) {
 				this.coreMethods.ping().catch((e) => this._emitError('_ping' + e))
