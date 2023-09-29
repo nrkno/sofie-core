@@ -18,7 +18,7 @@ export async function executePeripheralDeviceFunctionWithCustomTimeout(
 	timeoutTime0: number | undefined,
 	action: {
 		actionId: string
-		payload: Record<string, any>
+		payload?: Record<string, any>
 	}
 ): Promise<TSR.ActionExecutionResult>
 export async function executePeripheralDeviceFunctionWithCustomTimeout(
