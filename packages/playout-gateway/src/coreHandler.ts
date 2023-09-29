@@ -93,7 +93,7 @@ export class CoreHandler {
 			this.logger.warn('Core Disconnected!')
 		})
 		this.core.onError((err: any) => {
-			this.logger.error('Core Error: ' + (typeof err === 'string' ? err : err.message || err.toString() || err))
+			this.logger.error(`Core Error: ${stringifyError(err)}`)
 		})
 
 		const ddpConfig: DDPConnectorOptions = {
@@ -549,9 +549,7 @@ export class CoreTSRDeviceHandler {
 			)
 		)
 		this.core.onError((err: any) => {
-			this._coreParentHandler.logger.error(
-				'Core Error: ' + ((_.isObject(err) && err.message) || err.toString() || err)
-			)
+			this._coreParentHandler.logger.error(`(${this._deviceId}): Core Error: ${stringifyError(err)}`)
 		})
 		await this.core.init(this._coreParentHandler.core)
 
