@@ -80,10 +80,10 @@ export class ActivePlaylistTopic
 
 	addSubscriber(ws: WebSocket): void {
 		super.addSubscriber(ws)
-		this.sendStatus(new Set<WebSocket>().add(ws))
+		this.sendStatus([ws])
 	}
 
-	sendStatus(subscribers: Set<WebSocket>): void {
+	sendStatus(subscribers: Iterable<WebSocket>): void {
 		const currentPartInstance = this._currentPartInstance ? this._currentPartInstance.part : null
 		const nextPartInstance = this._nextPartInstance ? this._nextPartInstance.part : null
 		const adLibs: AdLibStatus[] = []
@@ -109,8 +109,8 @@ export class ActivePlaylistTopic
 					return literal<AdLibStatus>({
 						id: unprotectString(action._id),
 						name: interpollateTranslation(action.display.label.key, action.display.label.args),
-						sourceLayer: sourceLayerName ? sourceLayerName : 'invalid',
-						outputLayer: outputLayerName ? outputLayerName : 'invalid',
+						sourceLayer: sourceLayerName ?? 'invalid',
+						outputLayer: outputLayerName ?? 'invalid',
 						actionType: triggerModes,
 					})
 				})
@@ -125,8 +125,8 @@ export class ActivePlaylistTopic
 					return literal<AdLibStatus>({
 						id: unprotectString(adLib._id),
 						name: adLib.name,
-						sourceLayer: sourceLayerName ? sourceLayerName : 'invalid',
-						outputLayer: outputLayerName ? outputLayerName : 'invalid',
+						sourceLayer: sourceLayerName ?? 'invalid',
+						outputLayer: outputLayerName ?? 'invalid',
 						actionType: [],
 					})
 				})
@@ -153,8 +153,8 @@ export class ActivePlaylistTopic
 					return literal<AdLibStatus>({
 						id: unprotectString(action._id),
 						name: interpollateTranslation(action.display.label.key, action.display.label.args),
-						sourceLayer: sourceLayerName ? sourceLayerName : 'invalid',
-						outputLayer: outputLayerName ? outputLayerName : 'invalid',
+						sourceLayer: sourceLayerName ?? 'invalid',
+						outputLayer: outputLayerName ?? 'invalid',
 						actionType: triggerModes,
 					})
 				})
@@ -169,8 +169,8 @@ export class ActivePlaylistTopic
 					return literal<AdLibStatus>({
 						id: unprotectString(adLibs._id),
 						name: adLibs.name,
-						sourceLayer: sourceLayerName ? sourceLayerName : 'invalid',
-						outputLayer: outputLayerName ? outputLayerName : 'invalid',
+						sourceLayer: sourceLayerName ?? 'invalid',
+						outputLayer: outputLayerName ?? 'invalid',
 						actionType: [],
 					})
 				})
@@ -213,9 +213,9 @@ export class ActivePlaylistTopic
 					globalAdLibs: [],
 			  })
 
-		subscribers.forEach((ws) => {
-			this.sendMessage(ws, message)
-		})
+		for (const subscriber of subscribers) {
+			this.sendMessage(subscriber, message)
+		}
 	}
 
 	async update(
