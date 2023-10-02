@@ -80,9 +80,9 @@ export function StudioMappings({ manifest, studio }: IStudioMappingsProps): JSX.
 			},
 		})
 
-		setImmediate(() => {
+		setTimeout(() => {
 			toggleExpanded(newId, true)
-		})
+		}, 1)
 	}, [studio._id, studio.mappingsWithOverrides])
 
 	const activeRoutes = useMemo(() => getActiveRoutes(studio.routeSets), [studio.routeSets])
