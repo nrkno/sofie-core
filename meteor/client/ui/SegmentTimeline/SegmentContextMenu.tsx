@@ -12,7 +12,7 @@ import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
 	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void
-	onSetNextSegment: (segmentId: SegmentId | null, e: any) => void
+	onSetNextSegment: (segmentId: SegmentId | null, e: any, immediate?: boolean) => void
 	playlist?: RundownPlaylist
 	studioMode: boolean
 	contextMenuContext: IContextMenuContext | null
@@ -45,7 +45,7 @@ export const SegmentContextMenu = withTranslation()(
 						{part && timecode === null && (
 							<>
 								<MenuItem
-									onClick={(e) => this.props.onSetNext(part.instance.part, e)}
+									onClick={(e) => this.props.onSetNextSegment(part.instance.segmentId, e, true)}
 									disabled={isCurrentPart || !canSetAsNext}
 								>
 									<span dangerouslySetInnerHTML={{ __html: t('Set segment as <strong>Next</strong>') }}></span>

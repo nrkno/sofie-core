@@ -2059,7 +2059,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				)
 			}
 		}
-		onSetNextSegment = (segmentId: SegmentId | null, e: any) => {
+		onSetNextSegment = (segmentId: SegmentId | null, e: any, immediate = false) => {
 			const { t } = this.props
 			if (this.state.studioMode && (segmentId || segmentId === null) && this.props.playlist) {
 				const playlistId = this.props.playlist._id
@@ -2067,7 +2067,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					t,
 					e,
 					UserAction.SET_NEXT,
-					(e, ts) => MeteorCall.userAction.setNextSegment(e, ts, playlistId, segmentId),
+					(e, ts) => MeteorCall.userAction.setNextSegment(e, ts, playlistId, segmentId, immediate),
 					(err) => {
 						if (err) logger.error(err)
 						this.setState({
