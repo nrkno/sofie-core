@@ -44,7 +44,8 @@ export interface NewUserActionAPI extends MethodContext {
 		userEvent: string,
 		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
-		segmentId: SegmentId | null
+		segmentId: SegmentId | null,
+		immediate?: boolean
 	): Promise<ClientAPI.ClientResponse<void>>
 	moveNext(
 		userEvent: string,

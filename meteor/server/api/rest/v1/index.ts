@@ -1442,7 +1442,7 @@ sofieAPIRequest<{ playlistId: string }, { segmentId: string; immediate?: boolean
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const segmentId = protectString<SegmentId>(body.segmentId)
-		const immediate = body.immediate ?? false
+		const immediate = !!body.immediate
 		logger.info(`API PUT: set-next-segment ${rundownPlaylistId} ${segmentId}`)
 
 		check(rundownPlaylistId, String)

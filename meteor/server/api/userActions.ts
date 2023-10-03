@@ -140,7 +140,8 @@ class ServerUserActionAPI
 		userEvent: string,
 		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
-		nextSegmentId: SegmentId | null
+		nextSegmentId: SegmentId | null,
+		immediate: boolean | null
 	) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
@@ -150,11 +151,13 @@ class ServerUserActionAPI
 			() => {
 				check(rundownPlaylistId, String)
 				check(nextSegmentId, Match.OneOf(String, null))
+				check(immediate, Match.OneOf(Boolean, null))
 			},
 			StudioJobs.SetNextSegment,
 			{
 				playlistId: rundownPlaylistId,
 				nextSegmentId,
+				immediate: !!immediate,
 			}
 		)
 	}
