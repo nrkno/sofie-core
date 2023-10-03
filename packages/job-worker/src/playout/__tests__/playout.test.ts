@@ -814,14 +814,22 @@ describe('Playout API', () => {
 		await handleTakeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
 
 		{
-			// doesn't set a segment with no valid parts
+			// doesn't queue a segment with no valid parts
 			await expect(
-				handleSetNextSegment(context, { playlistId: playlistId0, nextSegmentId: segments[3]._id })
+				handleSetNextSegment(context, {
+					playlistId: playlistId0,
+					nextSegmentId: segments[3]._id,
+					immediate: false,
+				})
 			).rejects.toThrow(/no valid parts/gi)
 		}
 
 		{
-			await handleSetNextSegment(context, { playlistId: playlistId0, nextSegmentId: segments[2]._id })
+			await handleSetNextSegment(context, {
+				playlistId: playlistId0,
+				nextSegmentId: segments[2]._id,
+				immediate: false,
+			})
 			const playlist = await getPlaylist0()
 			expect(playlist.nextSegmentId).toBe(segments[2]._id)
 		}
@@ -857,7 +865,11 @@ describe('Playout API', () => {
 		{
 			// set next segment when next part is already outside of the current one
 			const segmentToQueueId = segments[2]._id
-			await handleSetNextSegment(context, { playlistId: playlistId0, nextSegmentId: segmentToQueueId })
+			await handleSetNextSegment(context, {
+				playlistId: playlistId0,
+				nextSegmentId: segmentToQueueId,
+				immediate: false,
+			})
 			const playlist = await getPlaylist0()
 			// expect to just set first part of the queued segment as next
 			expect(playlist.nextSegmentId).toBeUndefined()
@@ -866,6 +878,68 @@ describe('Playout API', () => {
 			if (!firstPartOfQueuedSegment) throw new Error('Did not find a part of Queued Segment')
 			expect(nextPartInstance?.part._id).toBe(firstPartOfQueuedSegment._id)
 			if (firstPartOfQueuedSegment.invalid) throw new Error('Selected Part is invalid')
+		}
+	})
+	test('setNextSegment (immediate)', async () => {
+		const { rundownId: rundownId0, playlistId: playlistId0 } = await setupRundownWithAutoplayPart0(
+			context,
+			protectString('rundown0'),
+			showStyle
+		)
+		expect(rundownId0).toBeTruthy()
+		expect(playlistId0).toBeTruthy()
+
+		const getRundown0 = async () => {
+			return (await context.mockCollections.Rundowns.findOne(rundownId0)) as DBRundown
+		}
+		const getPlaylist0 = async () => {
+			const playlist = (await context.mockCollections.RundownPlaylists.findOne(playlistId0)) as DBRundownPlaylist
+			playlist.activationId = playlist.activationId ?? undefined
+			return playlist
+		}
+		const { parts, segments } = await getAllRundownData(await getRundown0())
+
+		// Prepare and activate
+		await handleResetRundownPlaylist(context, { playlistId: playlistId0, activate: 'active' })
+		// Take first part
+		await handleTakeNextPart(context, { playlistId: playlistId0, fromPartInstanceId: null })
+
+		{
+			// doesn't set a segment with no valid parts
+			await expect(
+				handleSetNextSegment(context, {
+					playlistId: playlistId0,
+					nextSegmentId: segments[3]._id,
+					immediate: true,
+				})
+			).rejects.toThrow(/no valid parts/gi)
+		}
+
+		{
+			// (queue to later check that we're clearing it)
+			await handleSetNextSegment(context, {
+				playlistId: playlistId0,
+				nextSegmentId: segments[2]._id,
+				immediate: false,
+			})
+			const playlist = await getPlaylist0()
+			expect(playlist.nextSegmentId).toBe(segments[2]._id)
+		}
+
+		{
+			await handleSetNextSegment(context, {
+				playlistId: playlistId0,
+				nextSegmentId: segments[1]._id,
+				immediate: true,
+			})
+			const playlist = await getPlaylist0()
+			// clears nextSegmentId
+			expect(playlist.nextSegmentId).toBeUndefined()
+			const { nextPartInstance } = await getSelectedPartInstances(context, playlist)
+			// sets first part as next
+			const firstPartOfQueuedSegment = parts.find((part) => part.segmentId === segments[1]._id)
+			expect(nextPartInstance?.part._id).toBeDefined()
+			expect(nextPartInstance?.part._id).toBe(firstPartOfQueuedSegment?._id)
 		}
 	})
 })
