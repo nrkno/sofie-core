@@ -313,6 +313,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 										onClick={(e) => {
 											e.preventDefault()
 											e.stopPropagation()
+											e.persist()
 
 											doModalDialog({
 												message: t('Are you sure you want to restart this device?'),
