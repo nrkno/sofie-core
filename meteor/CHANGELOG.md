@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.49.0-in-testing.10](///compare/v1.49.0-in-testing.9...v1.49.0-in-testing.10) (2023-10-03)
+
+
+### Bug Fixes
+
+* Add debug logging for `No partinstance was found during take` SOFIE-2594 ([#1028](undefined/undefined/undefined/issues/1028)) 3771ec1
+* custom publications overly reactive ([#976](undefined/undefined/undefined/issues/976)) 08b5e55
+* don't use setImmediate client side e14dafa
+
 ## [1.49.0-in-testing.9](///compare/v1.49.0-in-testing.8...v1.49.0-in-testing.9) (2023-09-20)
 
 
