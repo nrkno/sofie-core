@@ -81,7 +81,7 @@ jobs:
         env:
           CI: true
       - name: Send coverage
-        if: (!startsWith(github.ref_name, 'release'))
+        if: ((github.event_name == 'pull_request') && (!startsWith(github.head_ref, 'release'))) || ((github.event_name == 'push') && (!startsWith(github.ref_name, 'release')))
         uses: codecov/codecov-action@v3
 
   build-core:
@@ -509,7 +509,7 @@ jobs:
         env:
           CI: true
       - name: Send coverage
-        if: (matrix.node-version == '16.x' || matrix.send-coverage == true) && (!startsWith(github.ref_name, 'release'))
+        if: (matrix.node-version == '16.x' || matrix.send-coverage == true) && ((github.event_name == 'pull_request') && ((!startsWith(github.head_ref, 'release'))) || ((github.event_name == 'push') && (!startsWith(github.ref_name, 'release'))))
         uses: codecov/codecov-action@v3
 
   publish-docs:
