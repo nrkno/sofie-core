@@ -11,22 +11,22 @@ export class StudioHandler extends CollectionBase<DBStudio> implements Collectio
 	private _core: CoreConnection
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
-		super('StudioHandler', CollectionName.Studios, 'studios', logger, coreHandler)
+		super(StudioHandler.name, CollectionName.Studios, 'studios', logger, coreHandler)
 		this._core = coreHandler.coreConnection
 		this.observerName = this._name
 	}
 
 	async init(): Promise<void> {
 		await super.init()
-		if (!this._collection) return
-		if (!this._publication) return
+		if (!this._collectionName) return
+		if (!this._publicationName) return
 		if (!this._studioId) return
-		this._subscriptionId = await this._coreHandler.setupSubscription(this._publication, { _id: this._studioId })
-		this._dbObserver = this._coreHandler.setupObserver(this._collection)
+		this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, { _id: this._studioId })
+		this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 
-		if (this._collection) {
-			const col = this._core.getCollection<DBStudio>(this._collection)
-			if (!col) throw new Error(`collection '${this._collection}' not found!`)
+		if (this._collectionName) {
+			const col = this._core.getCollection<DBStudio>(this._collectionName)
+			if (!col) throw new Error(`collection '${this._collectionName}' not found!`)
 			const studio = col.findOne(this._studioId)
 			if (!studio) throw new Error(`studio '${this._studioId}' not found!`)
 			this._collectionData = studio
@@ -41,10 +41,10 @@ export class StudioHandler extends CollectionBase<DBStudio> implements Collectio
 
 	async changed(id: string, changeType: string): Promise<void> {
 		this._logger.info(`${this._name} ${changeType} ${id}`)
-		if (!(id === unprotectString(this._studioId) && this._collection)) return
-		const col = this._core.getCollection<DBStudio>(this._collection)
-		if (!col) throw new Error(`collection '${this._collection}' not found!`)
-		const studio = col.findOne(protectString(id))
+		if (!(id === unprotectString(this._studioId) && this._collectionName)) return
+		const collection = this._core.getCollection<DBStudio>(this._collectionName)
+		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
+		const studio = collection.findOne(protectString(id))
 		if (!studio) throw new Error(`studio '${this._studioId}' not found on changed!`)
 		this._collectionData = studio
 		await this.notify(this._collectionData)

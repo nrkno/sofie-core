@@ -51,8 +51,8 @@ export interface WebSocketTopic {
 
 export abstract class CollectionBase<T> {
 	protected _name: string
-	protected _collection: CollectionName | undefined
-	protected _publication: string | undefined
+	protected _collectionName: CollectionName | undefined
+	protected _publicationName: string | undefined
 	protected _logger: Logger
 	protected _coreHandler: CoreHandler
 	protected _studioId!: StudioId
@@ -70,8 +70,8 @@ export abstract class CollectionBase<T> {
 		coreHandler: CoreHandler
 	) {
 		this._name = name
-		this._collection = collection
-		this._publication = publication
+		this._collectionName = collection
+		this._publicationName = publication
 		this._logger = logger
 		this._coreHandler = coreHandler
 

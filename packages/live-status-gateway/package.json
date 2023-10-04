@@ -31,6 +31,7 @@
 		"genserver": "run -T rimraf server && ag ./api/asyncapi.yaml @asyncapi/nodejs-ws-template -o server -p server=development",
 		"inspect": "node --experimental-fetch --inspect dist/index.js",
 		"start": "node --experimental-fetch dist/index.js",
+		"dev": "run start -id localDevLsg",
 		"validate:dependencies": "yarn npm audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn npm audit --groups devDependencies",
 		"license-validate": "run -T sofie-licensecheck"
@@ -60,13 +61,15 @@
 		"fast-clone": "^1.5.13",
 		"influx": "^5.9.3",
 		"tslib": "^2.6.2",
+		"underscore": "^1.13.6",
 		"winston": "^3.10.0",
 		"ws": "^8.14.2"
 	},
 	"devDependencies": {
 		"@asyncapi/generator": "1.10.9",
 		"@asyncapi/html-template": "0.26.0",
-		"@asyncapi/nodejs-ws-template": "0.9.33"
+		"@asyncapi/nodejs-ws-template": "0.9.33",
+		"jest-mock-extended": "^3.0.5"
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [
