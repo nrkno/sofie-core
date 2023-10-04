@@ -34,6 +34,7 @@ channels:
           - $ref: '#/components/messages/subscriptionStatus'
           - $ref: '#/components/messages/studio'
           - $ref: '#/components/messages/activePlaylist'
+          - $ref: '#/components/messages/segments'
 components:
   messages:
     ping:
@@ -83,3 +84,8 @@ components:
       description: Active Playlist status
       payload:
         $ref: './schemas/activePlaylist.yaml#/$defs/activePlaylist'
+    segments:
+      name: segments
+      description: Segments in active Playlist
+      payload:
+        $ref: './schemas/segments.yaml#/$defs/segments'

@@ -6,8 +6,9 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { PartInstanceName } from './partInstances'
+import { PartInstanceName, PartInstancesHandler } from './partInstances'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { PlaylistHandler } from './playlist'
 
 export class PartHandler
 	extends CollectionBase<DBPart>
@@ -19,16 +20,16 @@ export class PartHandler
 	private _curPartInstance: DBPartInstance | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
-		super('PartHandler', CollectionName.Parts, 'parts', logger, coreHandler)
+		super(PartHandler.name, CollectionName.Parts, 'parts', logger, coreHandler)
 		this._core = coreHandler.coreConnection
 		this.observerName = this._name
 	}
 
 	async changed(id: string, changeType: string): Promise<void> {
 		this._logger.info(`${this._name} ${changeType} ${id}`)
-		if (!this._collection) return
-		const col = this._core.getCollection<DBPart>(this._collection)
-		if (!col) throw new Error(`collection '${this._collection}' not found!`)
+		if (!this._collectionName) return
+		const col = this._core.getCollection<DBPart>(this._collectionName)
+		if (!col) throw new Error(`collection '${this._collectionName}' not found!`)
 		if (this._collectionData) {
 			this._collectionData = col.findOne(this._collectionData._id)
 			await this.notify(this._collectionData)
@@ -45,11 +46,11 @@ export class PartHandler
 		const rundownPlaylist = data ? (data as DBRundownPlaylist) : undefined
 		const partInstances = data as Map<PartInstanceName, DBPartInstance | undefined>
 		switch (source) {
-			case 'PlaylistHandler':
+			case PlaylistHandler.name:
 				this._logger.info(`${this._name} received playlist update ${rundownPlaylist?._id}`)
 				this._activePlaylist = rundownPlaylist
 				break
-			case 'PartInstancesHandler':
+			case PartInstancesHandler.name:
 				this._logger.info(`${this._name} received partInstances update from ${source}`)
 				this._curPartInstance = partInstances.get(PartInstanceName.current)
 				break
@@ -58,19 +59,19 @@ export class PartHandler
 		}
 
 		await new Promise(process.nextTick.bind(this))
-		if (!this._collection) return
-		if (!this._publication) return
+		if (!this._collectionName) return
+		if (!this._publicationName) return
 		if (prevPlaylist?.rundownIdsInOrder !== this._activePlaylist?.rundownIdsInOrder) {
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._activePlaylist) {
 				const rundownIds = this._activePlaylist.rundownIdsInOrder.map((r) => unprotectString(r))
 				this._subscriptionId = await this._coreHandler.setupSubscription(
-					this._publication,
+					this._publicationName,
 					rundownIds,
 					undefined
 				)
-				this._dbObserver = this._coreHandler.setupObserver(this._collection)
+				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id: string) => {
 					void this.changed(id, 'added').catch(this._logger.error)
 				}
@@ -84,10 +85,10 @@ export class PartHandler
 			this._logger.info(
 				`${this._name} found updated partInstances with current part ${this._activePlaylist?.currentPartInfo?.partInstanceId}`
 			)
-			const col = this._core.getCollection<DBPart>(this._collection)
-			if (!col) throw new Error(`collection '${this._collection}' not found!`)
+			const collection = this._core.getCollection<DBPart>(this._collectionName)
+			if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 			if (this._curPartInstance) {
-				this._collectionData = col.findOne(this._curPartInstance.part._id)
+				this._collectionData = collection.findOne(this._curPartInstance.part._id)
 				await this.notify(this._collectionData)
 			}
 		}

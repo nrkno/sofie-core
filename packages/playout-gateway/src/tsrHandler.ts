@@ -281,7 +281,7 @@ export class TSRHandler {
 		}
 		deviceObserver.changed = (_id, _oldFields, _clearedFields, newFields) => {
 			// Only react to changes in the .settings property:
-			if (newFields['settings'] !== undefined) {
+			if (newFields['playoutDevices'] !== undefined) {
 				debug('triggerUpdateDevices from deviceObserver changed')
 				this._triggerUpdateDevices()
 			}

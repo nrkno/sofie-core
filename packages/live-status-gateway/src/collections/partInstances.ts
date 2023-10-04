@@ -6,6 +6,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import isShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
 
 export enum PartInstanceName {
 	current = 'current',
@@ -23,7 +24,7 @@ export class PartInstancesHandler
 	private _activationId: string | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
-		super('PartInstancesHandler', CollectionName.PartInstances, 'partInstances', logger, coreHandler)
+		super(PartInstancesHandler.name, CollectionName.PartInstances, 'partInstances', logger, coreHandler)
 		this._core = coreHandler.coreConnection
 		this.observerName = this._name
 		this._collectionData = new Map()
@@ -33,14 +34,14 @@ export class PartInstancesHandler
 
 	async changed(id: string, changeType: string): Promise<void> {
 		this._logger.info(`${this._name} ${changeType} ${id}`)
-		if (!this._collection) return
-		const col = this._core.getCollection<DBPartInstance>(this._collection)
-		if (!col) throw new Error(`collection '${this._collection}' not found!`)
+		if (!this._collectionName) return
+		const collection = this._core.getCollection<DBPartInstance>(this._collectionName)
+		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 		const curPartInstance = this._curPlaylist?.currentPartInfo?.partInstanceId
-			? col.findOne(this._curPlaylist.currentPartInfo.partInstanceId)
+			? collection.findOne(this._curPlaylist.currentPartInfo.partInstanceId)
 			: undefined
 		const nextPartInstance = this._curPlaylist?.nextPartInfo?.partInstanceId
-			? col.findOne(this._curPlaylist.nextPartInfo.partInstanceId)
+			? collection.findOne(this._curPlaylist.nextPartInfo.partInstanceId)
 			: undefined
 		this._collectionData?.forEach((_pi, key) => {
 			if (PartInstanceName.current === key) this._collectionData?.set(key, curPartInstance)
@@ -60,30 +61,25 @@ export class PartInstancesHandler
 			} from ${source}`
 		)
 		this._curPlaylist = data
-		if (!this._collection) return
+		if (!this._collectionName) return
 
 		this._rundownIds = this._curPlaylist ? this._curPlaylist.rundownIdsInOrder.map((r) => unprotectString(r)) : []
 		this._activationId = unprotectString(this._curPlaylist?.activationId)
 		if (this._curPlaylist && this._rundownIds.length && this._activationId) {
 			const sameSubscription =
-				this._rundownIds.length === prevRundownIds.length &&
-				this._rundownIds.reduce(
-					(same, rundownId, i) => same && !!prevRundownIds[i] && rundownId === prevRundownIds[i],
-					true
-				) &&
-				prevActivationId === this._activationId
+				isShallowEqual(this._rundownIds, prevRundownIds) && prevActivationId === this._activationId
 			if (!sameSubscription) {
 				await new Promise(process.nextTick.bind(this))
-				if (!this._collection) return
-				if (!this._publication) return
+				if (!this._collectionName) return
+				if (!this._publicationName) return
 				if (!this._curPlaylist) return
 				if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 				this._subscriptionId = await this._coreHandler.setupSubscription(
-					this._publication,
+					this._publicationName,
 					this._rundownIds,
 					this._activationId
 				)
-				this._dbObserver = this._coreHandler.setupObserver(this._collection)
+				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id: string) => {
 					void this.changed(id, 'added').catch(this._logger.error)
 				}
@@ -91,13 +87,13 @@ export class PartInstancesHandler
 					void this.changed(id, 'changed').catch(this._logger.error)
 				}
 
-				const col = this._core.getCollection<DBPartInstance>(this._collection)
-				if (!col) throw new Error(`collection '${this._collection}' not found!`)
+				const collection = this._core.getCollection<DBPartInstance>(this._collectionName)
+				if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 				const curPartInstance = this._curPlaylist?.currentPartInfo?.partInstanceId
-					? col.findOne(this._curPlaylist.currentPartInfo.partInstanceId)
+					? collection.findOne(this._curPlaylist.currentPartInfo.partInstanceId)
 					: undefined
 				const nextPartInstance = this._curPlaylist?.nextPartInfo?.partInstanceId
-					? col.findOne(this._curPlaylist.nextPartInfo.partInstanceId)
+					? collection.findOne(this._curPlaylist.nextPartInfo.partInstanceId)
 					: undefined
 				this._collectionData?.forEach((_pi, key) => {
 					if (PartInstanceName.current === key) this._collectionData?.set(key, curPartInstance)
@@ -105,13 +101,13 @@ export class PartInstancesHandler
 				})
 				await this.notify(this._collectionData)
 			} else if (this._subscriptionId) {
-				const col = this._core.getCollection<DBPartInstance>(this._collection)
-				if (!col) throw new Error(`collection '${this._collection}' not found!`)
+				const collection = this._core.getCollection<DBPartInstance>(this._collectionName)
+				if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 				const curPartInstance = this._curPlaylist?.currentPartInfo?.partInstanceId
-					? col.findOne(this._curPlaylist.currentPartInfo.partInstanceId)
+					? collection.findOne(this._curPlaylist.currentPartInfo.partInstanceId)
 					: undefined
 				const nextPartInstance = this._curPlaylist.nextPartInfo?.partInstanceId
-					? col.findOne(this._curPlaylist.nextPartInfo.partInstanceId)
+					? collection.findOne(this._curPlaylist.nextPartInfo.partInstanceId)
 					: undefined
 				this._collectionData?.forEach((_pi, key) => {
 					if (PartInstanceName.current === key) this._collectionData?.set(key, curPartInstance)
