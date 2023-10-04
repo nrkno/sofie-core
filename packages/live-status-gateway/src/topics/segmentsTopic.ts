@@ -36,10 +36,10 @@ export class SegmentsTopic
 
 	addSubscriber(ws: WebSocket): void {
 		super.addSubscriber(ws)
-		this.sendStatus(new Set<WebSocket>().add(ws))
+		this.sendStatus([ws])
 	}
 
-	sendStatus(subscribers: Set<WebSocket>): void {
+	sendStatus(subscribers: Iterable<WebSocket>): void {
 		const segmentsStatus: SegmentsStatus = {
 			event: 'segments',
 			rundownPlaylistId: this._activePlaylist ? unprotectString(this._activePlaylist._id) : null,
@@ -50,9 +50,9 @@ export class SegmentsTopic
 			})),
 		}
 
-		subscribers.forEach((ws) => {
-			this.sendMessage(ws, segmentsStatus)
-		})
+		for (const subscriber of subscribers) {
+			this.sendMessage(subscriber, segmentsStatus)
+		}
 	}
 
 	async update(source: string, data: DBRundownPlaylist | DBSegment[] | undefined): Promise<void> {

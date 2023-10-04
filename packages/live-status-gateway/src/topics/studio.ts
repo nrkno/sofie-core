@@ -37,33 +37,26 @@ export class StudioTopic
 
 	addSubscriber(ws: WebSocket): void {
 		super.addSubscriber(ws)
-		this.sendStatus(new Set<WebSocket>().add(ws))
+		this.sendStatus([ws])
 	}
 
-	sendStatus(subscribers: Set<WebSocket>): void {
-		subscribers.forEach((ws) => {
-			if (this._studio) {
-				this.sendMessage(
-					ws,
-					literal<StudioStatus>({
-						event: 'studio',
-						id: unprotectString(this._studio._id),
-						name: this._studio.name,
-						playlists: this._playlists,
-					})
-				)
-			} else {
-				this.sendMessage(
-					ws,
-					literal<StudioStatus>({
-						event: 'studio',
-						id: null,
-						name: '',
-						playlists: [],
-					})
-				)
-			}
-		})
+	sendStatus(subscribers: Iterable<WebSocket>): void {
+		const studioStatus: StudioStatus = this._studio
+			? {
+					event: 'studio',
+					id: unprotectString(this._studio._id),
+					name: this._studio.name,
+					playlists: this._playlists,
+			  }
+			: {
+					event: 'studio',
+					id: null,
+					name: '',
+					playlists: [],
+			  }
+		for (const subscriber of subscribers) {
+			this.sendMessage(subscriber, studioStatus)
+		}
 	}
 
 	async update(source: string, data: DBStudio | DBRundownPlaylist[] | undefined): Promise<void> {
