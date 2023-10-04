@@ -19,4 +19,5 @@ The author is encouraged to do a functional test before submitting
 -->
 - [ ] Code documentation for the relevant parts in the code have been added/updated by the PR author
 - [ ] The functionality has been tested by the PR author
+- [ ] Automated tests to cover the new functionality and/or guard against regressions have been added
 - [ ] The functionality has been tested by NRK
