@@ -81,6 +81,7 @@ jobs:
         env:
           CI: true
       - name: Send coverage
+        if: (!startsWith(github.ref_name, 'release'))
         uses: codecov/codecov-action@v3
 
   build-core:
@@ -508,7 +509,7 @@ jobs:
         env:
           CI: true
       - name: Send coverage
-        if: matrix.node-version == '16.x' || matrix.send-coverage == true
+        if: (matrix.node-version == '16.x' || matrix.send-coverage == true) && (!startsWith(github.ref_name, 'release'))
         uses: codecov/codecov-action@v3
 
   publish-docs:

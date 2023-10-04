@@ -51,6 +51,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
 - trs actions in blueprints rundown hooks ([bb5e442](https://github.com/nrkno/tv-automation-server-core/commit/bb5e4422fa32e1af1e520e0c288360b304da4289))
 
+# [1.49.0-in-testing.10](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.9...v1.49.0-in-testing.10) (2023-10-03)
+
+**Note:** Version bump only for package @sofie-automation/blueprints-integration
+
 # [1.49.0-in-testing.9](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.8...v1.49.0-in-testing.9) (2023-09-20)
 
 **Note:** Version bump only for package @sofie-automation/blueprints-integration

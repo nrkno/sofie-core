@@ -255,6 +255,15 @@ All notable changes to this project will be documented in this file. See [standa
 - working re-layouting of hover inspectors ([87811a9](https://github.com/nrkno/sofie-core/commit/87811a90e18eb6cd9427773e820a1cee7517da6c))
 
 
+## [1.49.0-in-testing.10](///compare/v1.49.0-in-testing.9...v1.49.0-in-testing.10) (2023-10-03)
+
+
+### Bug Fixes
+
+* Add debug logging for `No partinstance was found during take` SOFIE-2594 ([#1028](undefined/undefined/undefined/issues/1028)) 3771ec1
+* custom publications overly reactive ([#976](undefined/undefined/undefined/issues/976)) 08b5e55
+* don't use setImmediate client side e14dafa
+
 ## [1.49.0-in-testing.9](///compare/v1.49.0-in-testing.8...v1.49.0-in-testing.9) (2023-09-20)
 
 
