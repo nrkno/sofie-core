@@ -545,7 +545,7 @@ export class CoreTSRDeviceHandler {
 	}
 	async init(): Promise<void> {
 		this._device = await this._devicePr
-		if (this.disposed) return
+		if (this.disposed) throw new Error('CoreTSRDeviceHandler cant init, is disposed')
 		const deviceId = this._device.deviceId
 		const deviceName = `${deviceId} (${this._device.deviceName})`
 
@@ -560,6 +560,7 @@ export class CoreTSRDeviceHandler {
 			this._coreParentHandler.logger.error(`(${this._deviceId}): Core Error: ${stringifyError(err)}`)
 		})
 		await this.core.init(this._coreParentHandler.core)
+		if (this.disposed) throw new Error('CoreTSRDeviceHandler cant init, is disposed')
 
 		if (!this._hasGottenStatusChange) {
 			this._deviceStatus = {
@@ -571,7 +572,10 @@ export class CoreTSRDeviceHandler {
 			}
 			this.sendStatus()
 		}
+		if (this.disposed) throw new Error('CoreTSRDeviceHandler cant init, is disposed')
 		await this.setupSubscriptionsAndObservers()
+		if (this.disposed) throw new Error('CoreTSRDeviceHandler cant init, is disposed')
+
 		this._coreParentHandler.logger.debug('setupSubscriptionsAndObservers done')
 	}
 	private async setupSubscriptionsAndObservers(): Promise<void> {
