@@ -1,10 +1,4 @@
-import {
-	CoreConnection,
-	CoreOptions,
-	DDPConnectorOptions,
-	Observer,
-	stringifyError,
-} from '@sofie-automation/server-core-integration'
+import { CoreConnection, CoreOptions, DDPConnectorOptions, Observer } from '@sofie-automation/server-core-integration'
 
 import {
 	DeviceType,
