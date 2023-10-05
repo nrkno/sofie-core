@@ -4168,7 +4168,7 @@
     webpack-sources "^3.2.2"
 
 "@sofie-automation/blueprints-integration@link:blueprints-integration":
-  version "1.49.0-in-testing.4"
+  version "1.49.0-in-testing.10"
   dependencies:
     "@sofie-automation/shared-lib" "link:shared-lib"
     tslib "^2.4.0"
@@ -4197,7 +4197,7 @@
     shelljs "^0.8.5"
 
 "@sofie-automation/corelib@link:corelib":
-  version "1.49.0-in-testing.4"
+  version "1.49.0-in-testing.10"
   dependencies:
     "@sofie-automation/blueprints-integration" "link:blueprints-integration"
     "@sofie-automation/shared-lib" "link:shared-lib"
@@ -4213,7 +4213,7 @@
     underscore "^1.13.4"
 
 "@sofie-automation/shared-lib@link:shared-lib":
-  version "1.49.0-in-testing.4"
+  version "1.49.0-in-testing.10"
   dependencies:
     "@mos-connection/model" "^3.0.4"
     timeline-state-resolver-types "8.0.0-nightly-release49-20230809-114622-de9dfd138.0"
@@ -6163,9 +6163,9 @@ caseless@~0.12.0:
   integrity sha512-4tYFyifaFfGacoiObjJegolkwSU4xQNGbVgUiNYVUxbQ2x2lUsFvY4hVgVzGiIe6WLOPqycWXA40l+PWsxthUw==
 
 casparcg-connection@^6.0.0:
-  version "6.0.1"
-  resolved "https://registry.yarnpkg.com/casparcg-connection/-/casparcg-connection-6.0.1.tgz#ca31db659e61c85700c8179c5dff563fd5e93e98"
-  integrity sha512-33AycMfCKnoIDjXcPdqLi0ksoW1lwBu3OA6aq9Q1IPy9h8eJBMwhXZ7HXLykBTk32NgAF0PCgTYVWtmAnGIBgQ==
+  version "6.0.6"
+  resolved "https://registry.yarnpkg.com/casparcg-connection/-/casparcg-connection-6.0.6.tgz#88975bb9b1f1ee6db89ab420ca058fde79b01d2f"
+  integrity sha512-VFGKg1KslF0mMteZoCz2gQBN+KYUbM3YiNsVWTUNyPuDV6o57iP8V++LY8geAKRYSjQ/RTB4I1QI81L7QZeJaA==
   dependencies:
     eventemitter3 "^4.0.7"
     tslib "^2.5.0"
