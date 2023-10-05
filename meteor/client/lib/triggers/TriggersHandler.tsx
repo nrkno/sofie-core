@@ -6,7 +6,7 @@ import Sorensen from '@sofie-automation/sorensen'
 import { PubSub } from '../../../lib/api/pubsub'
 import { useSubscription, useTracker } from '../ReactMeteorData/ReactMeteorData'
 import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
-import { PlayoutActions, SomeAction, TriggerType } from '@sofie-automation/blueprints-integration'
+import { PlayoutActions, SomeAction, SomeBlueprintTrigger, TriggerType } from '@sofie-automation/blueprints-integration'
 import {
 	isPreviewableAction,
 	ReactivePlaylistActionContext,
@@ -418,10 +418,10 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			const action = createAction(pair._id, Object.values(pair.actions), showStyleBase, t, getCurrentContext)
 			if (!props.simulateTriggerBinding) {
 				createdActions.current.set(pair._id, action.listener)
-				Object.values(pair.triggers).forEach((trigger) => {
-					if (trigger.type === TriggerType.hotkey) {
-						bindHotkey(pair._id, trigger.keys, !!trigger.up, action.listener)
-					}
+				Object.values<SomeBlueprintTrigger>(pair.triggers).forEach((trigger) => {
+					if (trigger.type !== TriggerType.hotkey) return
+					if (trigger.keys.trim() === '') return
+					bindHotkey(pair._id, trigger.keys, !!trigger.up, action.listener)
 				})
 			}
 
@@ -493,10 +493,10 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				triggeredActions.forEach((pair) => {
 					const actionListener = createdActions.current.get(pair._id)
 					if (actionListener) {
-						Object.values(pair.triggers).forEach((trigger) => {
-							if (trigger.type === TriggerType.hotkey) {
-								unbindHotkey(trigger.keys, actionListener)
-							}
+						Object.values<SomeBlueprintTrigger>(pair.triggers).forEach((trigger) => {
+							if (trigger.type !== TriggerType.hotkey) return
+							if (trigger.keys.trim() === '') return
+							unbindHotkey(trigger.keys, actionListener)
 						})
 					}
 
