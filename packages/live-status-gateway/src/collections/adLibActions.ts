@@ -7,6 +7,7 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { PartInstanceName } from './partInstances'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import _ = require('underscore')
 
 export class AdLibActionsHandler
 	extends CollectionBase<AdLibAction[]>
@@ -42,7 +43,7 @@ export class AdLibActionsHandler
 		await new Promise(process.nextTick.bind(this))
 		if (!this._collectionName) return
 		if (!this._publicationName) return
-		if (prevRundownId !== this._curRundownId || prevCurPartInstance !== this._curPartInstance) {
+		if (prevRundownId !== this._curRundownId || !_.isEqual(prevCurPartInstance, this._curPartInstance)) {
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._curRundownId && this._curPartInstance) {
