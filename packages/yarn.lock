@@ -4216,7 +4216,7 @@
   version "1.49.0-in-testing.10"
   dependencies:
     "@mos-connection/model" "^3.0.4"
-    timeline-state-resolver-types "8.0.0-nightly-release49-20230809-114622-de9dfd138.0"
+    timeline-state-resolver-types "8.0.0"
     tslib "^2.4.0"
     type-fest "^2.19.0"
 
@@ -14960,13 +14960,6 @@ timeline-state-resolver-types@8.0.0:
   version "8.0.0"
   resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-8.0.0.tgz#16586a8a5f5c6ff56e1f964b240bfc07923638a6"
   integrity sha512-bu4vJx7V0fape4WBGmz88mDi9G3y+UnxSisrmg+K39AtgtPWH4LXu++Qb95gzReNumJJzt3RtXtoSnEz1p+w7w==
-  dependencies:
-    tslib "^2.4.1"
-
-timeline-state-resolver-types@8.0.0-nightly-release49-20230809-114622-de9dfd138.0:
-  version "8.0.0-nightly-release49-20230809-114622-de9dfd138.0"
-  resolved "https://registry.yarnpkg.com/timeline-state-resolver-types/-/timeline-state-resolver-types-8.0.0-nightly-release49-20230809-114622-de9dfd138.0.tgz#5cb9cffffb3839a5ea586d732ce67f941f2b1c83"
-  integrity sha512-n6h87LkaB8N4k+1uZhw6XWYZRGJKThJihhYom10o99OZuYfhzPNTmJep5KlaMEavV8atKJpQHyB65U4aLpaW7A==
   dependencies:
     tslib "^2.4.1"
 
