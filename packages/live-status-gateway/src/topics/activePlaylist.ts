@@ -18,6 +18,8 @@ import { PartInstanceName, PartInstancesHandler } from '../collections/partInsta
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { AdLibsHandler } from '../collections/adLibs'
+import { GlobalAdLibsHandler } from '../collections/globalAdLibs'
 import { PlaylistHandler } from '../collections/playlist'
 import { ShowStyleBaseHandler } from '../collections/showStyleBase'
 import { AdLibActionsHandler } from '../collections/adLibActions'
@@ -291,6 +293,18 @@ export class ActivePlaylistTopic
 				const globalAdLibActions = data ? (data as RundownBaselineAdLibAction[]) : []
 				this._logger.info(`${this._name} received globalAdLibActions update from ${source}`)
 				this._globalAdLibActions = globalAdLibActions
+				break
+			}
+			case AdLibsHandler.name: {
+				const adLibs = data ? (data as AdLibPiece[]) : []
+				this._logger.info(`${this._name} received adLibs update from ${source}`)
+				this._abLibs = adLibs
+				break
+			}
+			case GlobalAdLibsHandler.name: {
+				const globalAdLibs = data ? (data as RundownBaselineAdLibItem[]) : []
+				this._logger.info(`${this._name} received globalAdLibs update from ${source}`)
+				this._globalAdLibs = globalAdLibs
 				break
 			}
 			default:
