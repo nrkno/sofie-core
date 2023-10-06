@@ -120,7 +120,7 @@ async function restartCasparCG(system: ICoreSystem | undefined, previousLastNigh
 		}
 		const parentDevice = deviceMap.get(device.parentDeviceId)
 		if (!parentDevice) {
-			logger.info(`Cronjob: Skipping CasparCG device "${device._id}" without missing parent device`)
+			logger.info(`Cronjob: Skipping CasparCG device "${device._id}" with a missing parent device`)
 			// Misconfiguration, don't retry
 			continue
 		}
