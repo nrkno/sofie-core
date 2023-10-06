@@ -143,6 +143,8 @@ import {
 import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlaylistUtil'
 import { logger } from '../../lib/logging'
+import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { i18nTranslator } from './i18n'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -2685,7 +2687,15 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				message: t('Do you want to restart CasparCG Server "{{device}}"?', { device: device.name }),
 				onAccept: () => {
 					callPeripheralDeviceAction(e, device._id, DEFAULT_TSR_ACTION_TIMEOUT_TIME, TSR.CasparCGActions.RestartServer)
-						.then(() => {
+						.then((r) => {
+							if (r?.result === TSR.ActionExecutionResultCode.Error) {
+								throw new Error(
+									r.response && isTranslatableMessage(r.response)
+										? translateMessage(r.response, i18nTranslator)
+										: t('Unknown error')
+								)
+							}
+
 							NotificationCenter.push(
 								new Notification(
 									undefined,
