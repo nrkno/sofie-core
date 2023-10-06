@@ -42,7 +42,7 @@ export class AdLibActionsHandler
 		await new Promise(process.nextTick.bind(this))
 		if (!this._collectionName) return
 		if (!this._publicationName) return
-		if (prevRundownId !== this._curRundownId || prevCurPartInstance !== this._curPartInstance)) {
+		if (prevRundownId !== this._curRundownId || prevCurPartInstance !== this._curPartInstance) {
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._curRundownId && this._curPartInstance) {
