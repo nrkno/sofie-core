@@ -234,6 +234,7 @@ describe('test peripheralDevice general API methods', () => {
 	testInFiber('ping', async () => {
 		expect(PeripheralDevices.findOne(device._id)).toBeTruthy()
 		const lastSeen = (PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen
+		await sleep(1000) // Wait a bit, to ensure that the lastSeen is updated
 		await MeteorCall.peripheralDevice.ping(device._id, device.token)
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen).toBeGreaterThan(lastSeen)
 	})
@@ -282,8 +283,9 @@ describe('test peripheralDevice general API methods', () => {
 		const lastSeen = device2.lastSeen - 100
 		PeripheralDevices.update(device._id, { $set: { lastSeen: lastSeen } })
 
-		const message = 'Waving!'
+		await sleep(1000) // Wait a bit, to ensure that the lastSeen is updated
 		// Note: the null is so that Metor doesnt try to use pingCompleted  as a callback instead of blocking
+		const message = 'Waving!'
 		await MeteorCall.peripheralDevice.pingWithCommand(device._id, device.token, message, pingCompleted)
 		expect((PeripheralDevices.findOne(device._id) as PeripheralDevice).lastSeen).toBeGreaterThan(lastSeen)
 		const command = PeripheralDeviceCommands.find({ deviceId: device._id }).fetch()[0]
