@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.49.0](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.10...v1.49.0) (2023-10-06)
+
+
+### Bug Fixes
+
+* error is reported in the Rundown View when an empty Combo is created in Action Triggers ([e6a0c5f](https://github.com/nrkno/sofie-core/commit/e6a0c5f4161132e300fa225e8aad50e1cbe72ffb))
+* update casparcg-connection ([366f75c](https://github.com/nrkno/sofie-core/commit/366f75ce1bfab3054cc93bee58c6601bd4a40ceb))
+
 ## [1.49.0-in-testing.10](///compare/v1.49.0-in-testing.9...v1.49.0-in-testing.10) (2023-10-03)
 
 
