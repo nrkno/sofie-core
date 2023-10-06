@@ -107,7 +107,7 @@ async function restartCasparCG(system: ICoreSystem | undefined, previousLastNigh
 	for (const device of casparcgAndParentDevices) {
 		if (device.subType !== TSR.DeviceType.CASPARCG) continue
 
-		if (device.lastSeen < Date.now() - CASPARCG_LAST_SEEN_PERIOD_MS) {
+		if (device.lastSeen < getCurrentTime() - CASPARCG_LAST_SEEN_PERIOD_MS) {
 			logger.info(`Cronjob: Skipping CasparCG device "${device._id}" offline`)
 			shouldRetryAttempt = true
 			continue
@@ -125,7 +125,7 @@ async function restartCasparCG(system: ICoreSystem | undefined, previousLastNigh
 			continue
 		}
 
-		if (parentDevice.lastSeen < Date.now() - CASPARCG_LAST_SEEN_PERIOD_MS) {
+		if (parentDevice.lastSeen < getCurrentTime() - CASPARCG_LAST_SEEN_PERIOD_MS) {
 			logger.info(`Cronjob: Skipping CasparCG device "${device._id}" with offline parent device`)
 			shouldRetryAttempt = true
 			continue
