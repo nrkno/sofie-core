@@ -24,7 +24,7 @@ export const ResetPasswordPage = translateWithTracker((props: IResetPageProps) =
 	return {}
 })(
 	class extends MeteorReactComponent<Translated<IResetPageProps>, IResetPageState> {
-		constructor(props) {
+		constructor(props: Translated<IResetPageProps>) {
 			super(props)
 
 			this.state = {

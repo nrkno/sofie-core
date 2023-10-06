@@ -103,8 +103,8 @@ class NoraItemEditor extends React.Component<INoraEditorProps> {
 
 	render(): JSX.Element {
 		return React.createElement('iframe', {
-			ref: (element) => {
-				this.iframe = element as HTMLIFrameElement
+			ref: (element: HTMLIFrameElement) => {
+				this.iframe = element
 			},
 			src: MODULE_BROWSER_URL.href,
 			style: {

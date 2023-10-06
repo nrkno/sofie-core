@@ -277,8 +277,10 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 									collection={CoreSystem}
 									className="mdinput"
 									label="Rundown Playlist names"
-									mutateDisplayValue={(v) => (v === undefined || v.length === 0 ? undefined : v.join(', '))}
-									mutateUpdateValue={(v) =>
+									mutateDisplayValue={(v: string[] | undefined) =>
+										v === undefined || v.length === 0 ? undefined : v.join(', ')
+									}
+									mutateUpdateValue={(v: string | undefined) =>
 										v === undefined || v.length === 0 ? undefined : v.split(',').map((i) => i.trim())
 									}
 								/>

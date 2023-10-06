@@ -1,6 +1,7 @@
 import * as React from 'react'
 import CoreIcon from '@nrk/core-icons/jsx'
 import ClassNames from 'classnames'
+// @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 import { translateWithTracker, Translated, withTracker } from '../ReactMeteorData/ReactMeteorData'
 import { MeteorReactComponent } from '../MeteorReactComponent'
@@ -290,7 +291,7 @@ export const NotificationCenterPopUps = translateWithTracker<IProps, IState, ITr
 			})
 		}
 
-		componentDidUpdate(prevProps, prevState, snapshot) {
+		componentDidUpdate(prevProps: Readonly<Translated<IProps & ITrackedProps>>, prevState: IState, snapshot: any) {
 			if (super.componentDidUpdate) super.componentDidUpdate(prevProps, prevState, snapshot)
 
 			if (

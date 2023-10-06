@@ -103,7 +103,7 @@ interface ExecutableAdLibAction extends PreviewableAction {
 }
 
 export function isPreviewableAction(action: ExecutableAction): action is PreviewableAction {
-	return action.action && typeof action['preview'] === 'function'
+	return action.action && 'preview' in action && typeof action['preview'] === 'function'
 }
 function createRundownPlaylistContext(
 	context: ActionContext,

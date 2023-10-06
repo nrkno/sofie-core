@@ -20,10 +20,6 @@ interface IColoredBoxPanelProps {
 
 interface IState {}
 class ColoredBoxPanelInner extends MeteorReactComponent<Translated<IColoredBoxPanelProps>, IState> {
-	constructor(props) {
-		super(props)
-	}
-
 	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 

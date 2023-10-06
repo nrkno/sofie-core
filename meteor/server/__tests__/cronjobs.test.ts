@@ -28,7 +28,7 @@ import {
 
 // Set up mocks for tests in this suite
 let mockCurrentTime = 0
-let origGetCurrentTime
+let origGetCurrentTime = lib.getCurrentTime
 jest.mock('../logging')
 // we don't want the deviceTriggers observer to start up at this time
 jest.mock('../api/deviceTriggers/observer')

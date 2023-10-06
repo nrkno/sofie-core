@@ -79,7 +79,7 @@ export class ReactiveCacheCollection<Document extends { _id: ProtectedString<any
 				const unset: Partial<Record<keyof Document, 1>> = {}
 				for (const [key, value] of Object.entries<unknown>(fields)) {
 					if (value !== undefined) continue
-					unset[key] = 1
+					unset[key as keyof Document] = 1
 				}
 				this.upsert(id, { $set: omit(fields, '_id') as any, $unset: unset as any })
 				cb?.()

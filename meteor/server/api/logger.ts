@@ -4,7 +4,7 @@ import { logger } from '../logging'
 
 Meteor.methods({
 	[LOGGER_METHOD_NAME]: (type: string, ...args: string[]) => {
-		const loggerFunction: LeveledLogMethodFixed = logger[type] || logger.log
+		const loggerFunction: LeveledLogMethodFixed = (logger as any)[type] || logger.log
 
 		loggerFunction(args.join(', '))
 	},

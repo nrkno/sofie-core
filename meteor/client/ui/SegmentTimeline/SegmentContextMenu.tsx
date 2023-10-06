@@ -121,12 +121,12 @@ export const SegmentContextMenu = withTranslation()(
 			}
 		}
 
-		onSetAsNextFromHere = (part: DBPart, e) => {
-			const offset = this.getTimePosition()
-			this.props.onSetNext(part, e, offset || 0)
-		}
+		// private onSetAsNextFromHere = (part: DBPart, e) => {
+		// 	const offset = this.getTimePosition()
+		// 	this.props.onSetNext(part, e, offset || 0)
+		// }
 
-		onPlayFromHere = (part: DBPart, e) => {
+		private onPlayFromHere = (part: DBPart, e: React.MouseEvent | React.TouchEvent) => {
 			const offset = this.getTimePosition()
 			this.props.onSetNext(part, e, offset || 0, true)
 		}

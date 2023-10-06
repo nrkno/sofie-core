@@ -496,10 +496,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 				})
 		}
 
-		onUploadFile(e) {
+		onUploadFile(e: React.ChangeEvent<HTMLInputElement>) {
 			const { t } = this.props
 
-			const file = e.target.files[0]
+			const file = e.target.files?.[0]
 			if (!file) {
 				return
 			}

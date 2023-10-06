@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor'
 import * as React from 'react'
 import { parse as queryStringParse } from 'query-string'
+// @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 import { Translated, translateWithTracker } from '../lib/ReactMeteorData/react-meteor-data'
 import { VTContent, TSR, NoteSeverity, ISourceLayer } from '@sofie-automation/blueprints-integration'
@@ -460,7 +461,7 @@ const RundownHeader = withTranslation()(
 					const onSuccess = () => {
 						if (typeof this.props.onActivate === 'function') this.props.onActivate(false)
 					}
-					const handleResult = (err) => {
+					const handleResult = (err: any) => {
 						if (!err) {
 							onSuccess()
 						} else if (ClientAPI.isClientResponseError(err)) {
@@ -571,7 +572,7 @@ const RundownHeader = withTranslation()(
 		) => {
 			const { t } = this.props
 
-			function handleResult(err, response: void) {
+			function handleResult(err: any, response: void) {
 				if (!err) {
 					if (typeof clb === 'function') clb(response)
 				} else {
@@ -890,7 +891,7 @@ const RundownHeader = withTranslation()(
 			}
 		}
 
-		takeRundownSnapshot = (e) => {
+		takeRundownSnapshot = (e: any) => {
 			const { t } = this.props
 			if (this.props.studioMode) {
 				const doneMessage = t('A snapshot of the current Running\xa0Order has been created for troubleshooting.')
@@ -1947,7 +1948,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 			RundownViewEventBus.emit(RundownViewEvents.REWIND_SEGMENTS)
 		}
 
-		onTimeScaleChange = (timeScaleVal) => {
+		onTimeScaleChange = (timeScaleVal: number) => {
 			if (Number.isFinite(timeScaleVal) && timeScaleVal > 0) {
 				this.setState({
 					timeScale: timeScaleVal,

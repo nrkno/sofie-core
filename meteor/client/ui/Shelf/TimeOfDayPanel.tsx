@@ -22,10 +22,6 @@ interface ITimeOfDayPanelProps {
 interface IState {}
 
 class TimeOfDayPanelInner extends MeteorReactComponent<Translated<ITimeOfDayPanelProps>, IState> {
-	constructor(props) {
-		super(props)
-	}
-
 	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const { t, panel } = this.props

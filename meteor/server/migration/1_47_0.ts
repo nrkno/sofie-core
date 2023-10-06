@@ -28,7 +28,7 @@ interface TriggeredActionsOld {
 function normalizeArrayRandomId<T>(array: Array<T>): { [indexKey: string]: T } {
 	const normalizedObject: any = {}
 	for (const obj of array) {
-		normalizedObject[obj[getRandomString()]] = obj
+		normalizedObject[getRandomString()] = obj
 	}
 	return normalizedObject as { [key: string]: T }
 }

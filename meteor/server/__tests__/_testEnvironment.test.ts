@@ -236,11 +236,13 @@ function asynchronousFibersFunction(a: number, b: number, c: number): number {
 	return innerAsynchronousFiberFunction(a, b) + c
 }
 
-const innerAsynchronousFiberFunction = Meteor.wrapAsync((val0, val1, cb) => {
-	setTimeout(() => {
-		cb(undefined, val0 + val1)
-	}, 10)
-})
+const innerAsynchronousFiberFunction = Meteor.wrapAsync(
+	(val0: number, val1: number, cb: (err: any, result: number) => void) => {
+		setTimeout(() => {
+			cb(undefined, val0 + val1)
+		}, 10)
+	}
+)
 
 function tempTestRandom() {
 	return getRandomString()

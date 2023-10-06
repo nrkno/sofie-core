@@ -1,6 +1,7 @@
 import * as React from 'react'
 import CoreIcons from '@nrk/core-icons/jsx'
 import { faChevronDown, faChevronRight, faCheck, faStopCircle, faRedo, faFlag } from '@fortawesome/free-solid-svg-icons'
+// @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import ClassNames from 'classnames'
@@ -367,7 +368,7 @@ export const MediaManagerStatus = translateWithTracker<IMediaManagerStatusProps,
 		Translated<IMediaManagerStatusProps & IMediaManagerStatusTrackedProps>,
 		IMediaManagerStatusState
 	> {
-		constructor(props) {
+		constructor(props: Translated<IMediaManagerStatusProps & IMediaManagerStatusTrackedProps>) {
 			super(props)
 
 			this.state = {

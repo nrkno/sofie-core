@@ -127,7 +127,7 @@ export function BlueprintConfigSchemaSettings({
 		if (schema?.type === 'object' && schema.properties) {
 			const groupedMap = groupByToMapFunc(
 				Object.entries<JSONSchema>(schema.properties),
-				(v) => translateStringIfHasNamespaces(v[1][SchemaFormUIField.Category], translationNamespaces) || null
+				(v) => translateStringIfHasNamespaces((v[1] as any)[SchemaFormUIField.Category], translationNamespaces) || null
 			)
 
 			return Array.from(groupedMap.entries())

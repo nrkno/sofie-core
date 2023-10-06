@@ -42,7 +42,7 @@ const ExternalMessages = translateWithTracker<
 		Translated<IExternalMessagesProps & IExternalMessagesTrackedProps>,
 		IExternalMessagesState
 	> {
-		constructor(props) {
+		constructor(props: Translated<IExternalMessagesProps & IExternalMessagesTrackedProps>) {
 			super(props)
 			this.state = {
 				studioId: undefined,
@@ -51,7 +51,7 @@ const ExternalMessages = translateWithTracker<
 		componentDidMount(): void {
 			this.subscribe(PubSub.uiStudio, null)
 		}
-		onClickStudio = (studio) => {
+		onClickStudio = (studio: UIStudio) => {
 			this.setState({
 				studioId: studio._id,
 			})
@@ -136,7 +136,7 @@ const ExternalMessagesInStudio = translateWithTracker<
 		private _currentsub = ''
 		private _sub?: Meteor.SubscriptionHandle
 
-		constructor(props) {
+		constructor(props: Translated<IExternalMessagesInStudioProps & IExternalMessagesInStudioTrackedProps>) {
 			super(props)
 
 			this.state = {

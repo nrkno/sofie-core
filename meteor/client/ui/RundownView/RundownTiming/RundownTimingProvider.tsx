@@ -252,8 +252,7 @@ export const RundownTimingProvider = withTracker<
 		componentDidMount(): void {
 			this.refreshTimer = Meteor.setInterval(this.onRefreshTimer, this.refreshTimerInterval)
 			this.onRefreshTimer()
-
-			window['rundownTimingContext'] = this.durations
+			;(window as any)['rundownTimingContext'] = this.durations
 		}
 
 		componentDidUpdate(prevProps: IRundownTimingProviderProps & IRundownTimingProviderTrackedProps) {
@@ -276,7 +275,7 @@ export const RundownTimingProvider = withTracker<
 
 		componentWillUnmount(): void {
 			this._cleanUp()
-			delete window['rundownTimingContext']
+			delete (window as any)['rundownTimingContext']
 			Meteor.clearInterval(this.refreshTimer)
 		}
 

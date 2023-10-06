@@ -132,13 +132,17 @@ export class KeyboardController extends ControllerAbstract {
 		// Nothing
 	}
 
-	private _getDistanceToStop(currentSpeed, stopAcceleration): number {
+	private _getDistanceToStop(currentSpeed: number, stopAcceleration: number): number {
 		if (!stopAcceleration) return 0
 		const timeToStop = currentSpeed / stopAcceleration // (not in seconds, but frames!)
 		if (!timeToStop) return 0
 		return (stopAcceleration * Math.pow(timeToStop, 2)) / 2 + currentSpeed * timeToStop
 	}
-	private _getAccelerationToStopInTime(currentSpeed, normalStopAcceleration, distanceLeft): number {
+	private _getAccelerationToStopInTime(
+		currentSpeed: number,
+		normalStopAcceleration: number,
+		distanceLeft: number
+	): number {
 		const timeToStop = currentSpeed / normalStopAcceleration // (not in seconds, but frames!)
 		if (!timeToStop) return 0
 		return (2 * (distanceLeft - currentSpeed * timeToStop)) / Math.pow(timeToStop, 2)

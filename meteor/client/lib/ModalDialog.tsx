@@ -3,6 +3,7 @@ import CoreIcons from '@nrk/core-icons/jsx'
 import Escape from './Escape'
 
 import ClassNames from 'classnames'
+// @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 import { logger } from '../../lib/logging'
 import * as _ from 'underscore'
@@ -357,7 +358,7 @@ class ModalDialogGlobalContainer0 extends React.Component<
 			const actions: ModalAction[] = _.map(onQueue.actions || [], (action: ModalAction) => {
 				return {
 					...action,
-					on: (e, inputResult) => this.onAction(e, inputResult, action.on),
+					on: (e: SomeEvent, inputResult: ModalInputResult) => this.onAction(e, inputResult, action.on),
 				}
 			})
 			return (

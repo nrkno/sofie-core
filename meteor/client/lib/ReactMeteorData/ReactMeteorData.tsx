@@ -24,7 +24,7 @@ class MeteorDataManager {
 	oldData: any
 	queueTrackerUpdates: boolean
 
-	constructor(component, queueTrackerUpdates: boolean) {
+	constructor(component: any, queueTrackerUpdates: boolean) {
 		this.component = component
 		this.computation = null
 		this.oldData = null
@@ -80,7 +80,7 @@ class MeteorDataManager {
 			this.computation = null
 		}
 
-		let data
+		let data: any
 		// Use Tracker.nonreactive in case we are inside a Tracker Computation.
 		// This can happen if someone calls `ReactDOM.render` inside a Computation.
 		// In that case, we want to opt out of the normal behavior of nested
@@ -148,7 +148,7 @@ class MeteorDataManager {
 		return data
 	}
 
-	updateData(newData) {
+	updateData(newData: any) {
 		const component = this.component
 		const oldData = this.oldData
 
@@ -269,8 +269,8 @@ export function withTracker<IProps, IState, TrackedProps>(
 				return <WrappedComponent {...this.props} {...this.data} />
 			}
 		}
-		HOC['displayName'] = `ReactMeteorComponentWrapper(${
-			WrappedComponent['displayName'] || WrappedComponent.name || 'Unnamed component'
+		;(HOC as any)['displayName'] = `ReactMeteorComponentWrapper(${
+			(WrappedComponent as any)['displayName'] || WrappedComponent.name || 'Unnamed component'
 		})`
 		return HOC
 	}

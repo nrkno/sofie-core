@@ -15,7 +15,11 @@ import {
 	translateStringIfHasNamespaces,
 } from '../schemaFormUtil'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
-import { getSchemaDefaultValues, SchemaFormUIField } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
+import {
+	getSchemaDefaultValues,
+	getSchemaUIField,
+	SchemaFormUIField,
+} from '@sofie-automation/shared-lib/dist/lib/JSONSchemaUtil'
 import { hasOpWithPath } from '../../Components/util'
 import { ArrayTableRow } from './ArrayTableRow'
 import { OverrideOpHelperArrayTable } from './ArrayTableOpHelper'
@@ -107,8 +111,8 @@ export const SchemaFormArrayTable = ({
 		[t, tableOverrideHelper]
 	)
 
-	const title = schema[SchemaFormUIField.Title]
-	const description = schema[SchemaFormUIField.Description]
+	const title = getSchemaUIField(schema, SchemaFormUIField.Title)
+	const description = getSchemaUIField(schema, SchemaFormUIField.Description)
 
 	const titleElement = title && (
 		<SchemaFormSectionHeader title={title} description={description} translationNamespaces={translationNamespaces} />

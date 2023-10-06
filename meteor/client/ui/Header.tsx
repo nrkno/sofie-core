@@ -6,6 +6,7 @@ import { NotificationCenterPanelToggle, NotificationCenterPanel } from '../lib/n
 import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
 import { ErrorBoundary } from '../lib/ErrorBoundary'
 import { SupportPopUpToggle, SupportPopUp } from './SupportPopUp'
+// @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 import { MeteorReactComponent } from '../lib/MeteorReactComponent'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'

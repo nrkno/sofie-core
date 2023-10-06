@@ -734,7 +734,7 @@ export namespace RundownUtils {
 	export function isPieceInstance(
 		piece: BucketAdLibItem | IAdLibListItem | PieceUi | AdLibPieceUi
 	): piece is PieceUi {
-		if (piece['instance'] && piece['name'] === undefined) {
+		if ('instance' in piece && piece['instance'] && (!('name' in piece) || piece['name'] === undefined)) {
 			return true
 		}
 		return false
@@ -743,7 +743,7 @@ export namespace RundownUtils {
 	export function isAdLibPiece(
 		piece: PieceUi | IAdLibListItem | BucketAdLibItem
 	): piece is IAdLibListItem | BucketAdLibUi {
-		if (piece['instance'] || piece['name'] === undefined) {
+		if (('instance' in piece && piece['instance']) || !('name' in piece) || piece['name'] === undefined) {
 			return false
 		}
 		return true
@@ -752,14 +752,14 @@ export namespace RundownUtils {
 	export function isAdLibPieceOrAdLibListItem(
 		piece: IAdLibListItem | PieceUi | AdLibPieceUi | BucketAdLibItem
 	): piece is IAdLibListItem | AdLibPieceUi | BucketAdLibItem {
-		if (piece['instance'] || piece['name'] === undefined) {
+		if (('instance' in piece && piece['instance']) || !('name' in piece) || piece['name'] === undefined) {
 			return false
 		}
 		return true
 	}
 
 	export function isAdLibActionItem(piece: IAdLibListItem | AdLibPieceUi | BucketAdLibItem): boolean {
-		if (piece['adlibAction']) {
+		if ('adlibAction' in piece && piece['adlibAction']) {
 			return true
 		}
 		return false
@@ -777,6 +777,6 @@ export namespace RundownUtils {
 	export function isBucketAdLibItem(
 		piece: IAdLibListItem | PieceUi | AdLibPieceUi | BucketAdLibItem
 	): piece is BucketAdLibItem {
-		return !!piece['bucketId']
+		return 'bucketId' in piece && !!piece['bucketId']
 	}
 }

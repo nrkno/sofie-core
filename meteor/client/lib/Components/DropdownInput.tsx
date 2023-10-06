@@ -26,16 +26,17 @@ export function getDropdownInputOptions<T>(rawOptions: unknown): DropdownInputOp
 			}
 		}
 	} else if (rawOptions && typeof rawOptions === 'object') {
+		const rawOptionsAny = rawOptions as any
 		// Is options an enum?
-		const keys = Object.keys(rawOptions)
-		const first = rawOptions[keys[0]]
-		if (rawOptions[first] + '' === keys[0] + '') {
+		const keys = Object.keys(rawOptionsAny)
+		const first = rawOptionsAny[keys[0]]
+		if (rawOptionsAny[first] + '' === keys[0] + '') {
 			// is an enum, only pick
 			for (const key in rawOptions) {
 				if (!isNaN(parseInt(key, 10))) {
 					// key is a number (the key)
-					const enumValue = rawOptions[key]
-					const enumKey = rawOptions[enumValue]
+					const enumValue = rawOptionsAny[key]
+					const enumKey = rawOptionsAny[enumValue]
 					options.push({
 						name: enumValue,
 						value: enumKey,
@@ -43,8 +44,8 @@ export function getDropdownInputOptions<T>(rawOptions: unknown): DropdownInputOp
 				}
 			}
 		} else {
-			for (const key in rawOptions) {
-				const val = rawOptions[key]
+			for (const key in rawOptionsAny) {
+				const val = rawOptionsAny[key]
 				if (Array.isArray(val)) {
 					options.push({
 						name: key,

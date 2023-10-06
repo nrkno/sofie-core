@@ -135,7 +135,7 @@ export const ExternalFramePanel = withTranslation()(
 
 		onReceiveMessage = (e: MessageEvent) => {
 			if ((e.origin === 'null' || e.origin === self.origin) && this.frame && e.source === this.frame.contentWindow) {
-				const data = e.data || e['message']
+				const data = e.data || (e as any)['message']
 				if (!data) return
 				if (data.type) {
 					this.actSofieMessage(data)
@@ -190,13 +190,7 @@ export const ExternalFramePanel = withTranslation()(
 			console.log('Object received, passing onto blueprints', mosItem)
 
 			const bucketId = this.findBucketId(e.target)
-			let targetBucket
-
-			if (bucketId) {
-				targetBucket = Buckets.findOne(bucketId)
-			} else {
-				targetBucket = Buckets.findOne()
-			}
+			const targetBucket = bucketId ? Buckets.findOne(bucketId) : Buckets.findOne()
 
 			let targetRundown: Rundown | undefined
 			let currentPart: PartInstance | undefined

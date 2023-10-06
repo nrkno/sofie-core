@@ -101,15 +101,15 @@ async function savePreparedChanges<DBInterface extends DBObj>(
 		updated: 0,
 		removed: 0,
 	}
-	const newObjIds: { [identifier: string]: true } = {}
-	const checkInsertId = (id) => {
-		if (newObjIds[id]) {
+	const newObjIds = new Set<DBInterface['_id']>()
+	const checkInsertId = (id: DBInterface['_id']) => {
+		if (newObjIds.has(id)) {
 			throw new Meteor.Error(
 				500,
 				`savePreparedChanges into collection "${(collection as any)._name}": Duplicate identifier "${id}"`
 			)
 		}
-		newObjIds[id] = true
+		newObjIds.add(id)
 	}
 
 	const updates: AnyBulkWriteOperation<DBInterface>[] = []

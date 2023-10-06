@@ -3,7 +3,6 @@
 	"compilerOptions": {
 		/* At the time of writing we are not ready for stricter rules */
 		"strict": true,
-		"noImplicitAny": false,
 		"strictPropertyInitialization": false,
 
 		"skipLibCheck": true,

@@ -82,7 +82,7 @@ export const SegmentScratchpad = React.memo(
 		const criticalNotes = props.segmentNoteCounts.criticial
 		const warningNotes = props.segmentNoteCounts.warning
 
-		const getSegmentContext = (_props) => {
+		const getSegmentContext = () => {
 			const ctx = literal<IContextMenuContext>({
 				segment: props.segment,
 				part: props.parts.find((p) => isPartPlayable(p.instance.part)) || null,

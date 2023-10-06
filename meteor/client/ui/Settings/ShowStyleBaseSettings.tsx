@@ -109,8 +109,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			}
 		}
 
-		onUploadFile(e) {
-			const file = e.target.files[0]
+		onUploadFile(e: React.ChangeEvent<HTMLInputElement>) {
+			const file = e.target.files?.[0]
 			if (!file) {
 				return
 			}

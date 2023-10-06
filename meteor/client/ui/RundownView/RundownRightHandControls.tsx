@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react'
+// @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 
 import {

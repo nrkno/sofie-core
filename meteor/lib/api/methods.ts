@@ -70,15 +70,15 @@ function makeMethods<Enum extends { [key: string]: string }>(
 	/** (Optional) An array of methodnames. Calls to these methods won't be retried in the case of a loss-of-connection for the client. */
 	listOfMethodsThatShouldNotRetry?: (keyof Enum)[]
 ): any {
-	const resultingMethods = {}
+	const resultingMethods: Record<string, (...args: any[]) => any> = {}
 	_.each(methods, (serverMethodName: any, methodName: string) => {
 		if (listOfMethodsThatShouldNotRetry?.includes(methodName)) {
-			resultingMethods[methodName] = async (...args) =>
+			resultingMethods[methodName] = async (...args: any[]) =>
 				MeteorPromiseApply(serverMethodName, args, {
 					noRetry: true,
 				})
 		} else {
-			resultingMethods[methodName] = async (...args) => MeteorPromiseApply(serverMethodName, args)
+			resultingMethods[methodName] = async (...args: any[]) => MeteorPromiseApply(serverMethodName, args)
 		}
 	})
 	return resultingMethods

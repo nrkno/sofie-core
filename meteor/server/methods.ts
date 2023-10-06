@@ -72,14 +72,14 @@ export function registerClassToMeteorMethods(
 		if (wrapper) {
 			methods[enumValue] = {
 				wrapped: function (...args: any[]) {
-					return wrapper(this, enumValue, args, orgClass.prototype[classMethodName])
+					return wrapper(this, enumValue, args, (orgClass.prototype as any)[classMethodName])
 				},
-				original: orgClass.prototype[classMethodName],
+				original: (orgClass.prototype as any)[classMethodName],
 			}
 		} else {
 			methods[enumValue] = {
-				wrapped: orgClass.prototype[classMethodName],
-				original: orgClass.prototype[classMethodName],
+				wrapped: (orgClass.prototype as any)[classMethodName],
+				original: (orgClass.prototype as any)[classMethodName],
 			}
 		}
 	})

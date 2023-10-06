@@ -18,7 +18,7 @@ import { ShowStyleBaseId, ShowStyleVariantId } from '@sofie-automation/corelib/d
 const DEFAULT_BUCKET_WIDTH = undefined
 
 function isBucketAdLibAction(action: AdLibActionCommon | BucketAdLibAction): action is BucketAdLibAction {
-	if (action['showStyleVariantId'] && action['studioId']) {
+	if ('showStyleVariantId' in action && action['showStyleVariantId'] && action['studioId']) {
 		return true
 	}
 	return false

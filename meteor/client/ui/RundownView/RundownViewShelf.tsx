@@ -62,7 +62,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 > {
 	usedHotkeys: Array<string> = []
 
-	constructor(props) {
+	constructor(props: Translated<IRundownViewShelfProps & IRundownViewShelfTrackedProps>) {
 		super(props)
 		this.state = {
 			singleClickMode: false,

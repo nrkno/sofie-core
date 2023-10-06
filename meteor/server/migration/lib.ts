@@ -41,7 +41,7 @@ export function ensureCollectionProperty<T = any>(
 			const objects = await collection.findFetchAsync(selector)
 			for (const obj of objects) {
 				if (obj && objectPathGet(obj, property) !== defaultValue) {
-					const m = {}
+					const m: Record<string, any> = {}
 					m[property] = defaultValue
 					logger.info(
 						`Migration: Setting ${collectionName} object "${obj._id}".${property} to ${defaultValue}`
@@ -82,7 +82,7 @@ export function removeCollectionProperty<T = any>(
 			const objects = await collection.findFetchAsync(selector)
 			for (const obj of objects) {
 				if (obj && objectPathGet(obj, property) !== undefined) {
-					const m = {}
+					const m: Record<string, any> = {}
 					m[property] = 1
 					logger.info(`Migration: Removing property ${collectionName}."${obj._id}".${property}`)
 					await collection.mutableCollection.updateAsync(obj._id, { $unset: m })
@@ -107,18 +107,18 @@ export function renamePropertiesInCollection<DBInterface extends { _id: Protecte
 		$or: [],
 	}
 	const oldNames: { [oldAttr: string]: string } = {}
-	_.each(_.keys(renames), (newAttr) => {
-		const oldAttr = renames[newAttr]
-		if (_.isString(oldAttr)) {
+	for (const newAttr of Object.keys(renames)) {
+		const oldAttr = renames[newAttr as keyof DBInterface]
+		if (typeof oldAttr === 'string') {
 			oldNames[oldAttr] = newAttr
 		}
-	})
+	}
 
-	_.each(_.keys(renames), (newAttr) => {
-		const oldAttr: string | RenameContent | undefined = renames[newAttr]
+	for (const newAttr of Object.keys(renames)) {
+		const oldAttr: string | RenameContent | undefined = renames[newAttr as keyof DBInterface]
 		if (oldAttr) {
-			if (_.isString(oldAttr)) {
-				const o = {}
+			if (typeof oldAttr === 'string') {
+				const o: Record<string, any> = {}
 				o[oldAttr] = { $exists: true }
 				m.$or.push(o)
 			} else {
@@ -127,12 +127,12 @@ export function renamePropertiesInCollection<DBInterface extends { _id: Protecte
 				const oldAttrActual = oldNames[newAttr] || newAttr // If the attribute has been renamed, rename it here as well
 
 				// Select where a value is of the old, to-be-replaced value:
-				const o = {}
+				const o: Record<string, any> = {}
 				o[oldAttrActual] = { $in: Object.values<string>(oldAttrRenameContent.content) }
 				m.$or.push(o)
 			}
 		}
-	})
+	}
 	return {
 		id: id,
 		canBeRunAutomatically: true,
@@ -145,34 +145,34 @@ export function renamePropertiesInCollection<DBInterface extends { _id: Protecte
 		migrate: async () => {
 			const docs = await collection.findFetchAsync(m)
 
-			for (const doc of docs) {
+			for (const doc0 of docs) {
+				const doc = doc0 as any
 				// Rename properties:
-				_.each(_.keys(renames), (newAttr) => {
-					const oldAttr: string | RenameContent | undefined = renames[newAttr]
+				for (const newAttr of Object.keys(renames)) {
+					const oldAttr: string | RenameContent | undefined = renames[newAttr as keyof DBInterface]
 					if (newAttr && oldAttr && newAttr !== oldAttr) {
-						if (_.isString(oldAttr)) {
+						if (typeof oldAttr === 'string') {
 							if (_.has(doc, oldAttr) && !_.has(doc, newAttr)) {
 								doc[newAttr] = doc[oldAttr]
 							}
 							delete doc[oldAttr]
 						}
 					}
-				})
+				}
 				// Translate property contents:
-				_.each(_.keys(renames), (newAttr) => {
-					const oldAttr: string | RenameContent | undefined = renames[newAttr]
+				for (const newAttr of Object.keys(renames)) {
+					const oldAttr: string | RenameContent | undefined = renames[newAttr as keyof DBInterface]
 					if (newAttr && oldAttr && newAttr !== oldAttr) {
-						if (!_.isString(oldAttr)) {
-							const oldAttrRenameContent: RenameContent = oldAttr // for some reason, tsc complains otherwise
-
-							_.each(oldAttrRenameContent.content, (oldValue, newValue) => {
+						if (typeof oldAttr !== 'string') {
+							_.each(oldAttr.content, (oldValue, newValue) => {
 								if (doc[newAttr] === oldValue) {
-									doc[newAttr] = newValue
+									doc[newAttr] = newValue as any
 								}
 							})
 						}
 					}
-				})
+				}
+
 				await collection.updateAsync(doc._id, doc)
 			}
 		},

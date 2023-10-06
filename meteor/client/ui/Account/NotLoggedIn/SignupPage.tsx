@@ -35,7 +35,7 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 		]
 		private broadcastMediums: string[] = ['News', 'Sports', 'E-Sports', 'Entertainment']
 
-		constructor(props) {
+		constructor(props: Translated<ISignupPageProps>) {
 			super(props)
 
 			this.state = {
@@ -52,8 +52,11 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 		}
 
 		private handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-			if (Array.isArray(this.state[e.currentTarget.name])) {
-				const item = this.state[e.currentTarget.name]
+			const name = e.currentTarget.name as keyof ISignupPageState
+			if (!(name in this.state)) return
+
+			const item = this.state[name]
+			if (Array.isArray(item)) {
 				if (e.currentTarget.type === 'checkbox') {
 					if (e.currentTarget.checked) {
 						item.push(e.currentTarget.value)
@@ -62,12 +65,12 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 						item.splice(found, 1)
 					}
 				} else {
-					const found = item.findIndex((i) => !this[e.currentTarget.name].includes(i))
+					const found = item.findIndex((i) => !this.state[name].includes(i))
 					found !== -1 ? item.splice(found, 1, e.currentTarget.value) : item.push(e.currentTarget.value)
 				}
-				this.setState({ ...this.state, [e.currentTarget.name]: item.filter((i) => i.length) })
+				this.setState({ ...this.state, [name]: item.filter((i) => i.length) })
 			} else {
-				this.setState({ ...this.state, [e.currentTarget.name]: e.currentTarget.value })
+				this.setState({ ...this.state, [name]: e.currentTarget.value })
 			}
 		}
 

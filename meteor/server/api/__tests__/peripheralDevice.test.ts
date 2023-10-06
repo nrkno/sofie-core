@@ -274,7 +274,7 @@ describe('test peripheralDevice general API methods', () => {
 
 		let resultErr = undefined
 		let resultMessage = undefined
-		const pingCompleted = (err, msg) => {
+		const pingCompleted = (err: any, msg: any) => {
 			resultErr = err
 			resultMessage = msg
 		}
