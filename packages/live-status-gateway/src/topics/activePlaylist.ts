@@ -43,9 +43,10 @@ interface AdLibStatus {
 	sourceLayer: string
 	outputLayer: string
 	actionType: AdLibActionType[]
+	tags?: string[]
 }
 
-interface ActivePlaylistStatus {
+export interface ActivePlaylistStatus {
 	event: string
 	id: string | null
 	name: string
@@ -114,6 +115,7 @@ export class ActivePlaylistTopic
 						sourceLayer: sourceLayerName ?? 'invalid',
 						outputLayer: outputLayerName ?? 'invalid',
 						actionType: triggerModes,
+						tags: action.display.tags,
 					})
 				})
 			)
@@ -130,6 +132,7 @@ export class ActivePlaylistTopic
 						sourceLayer: sourceLayerName ?? 'invalid',
 						outputLayer: outputLayerName ?? 'invalid',
 						actionType: [],
+						tags: adLib.tags,
 					})
 				})
 			)
@@ -158,6 +161,7 @@ export class ActivePlaylistTopic
 						sourceLayer: sourceLayerName ?? 'invalid',
 						outputLayer: outputLayerName ?? 'invalid',
 						actionType: triggerModes,
+						tags: action.display.tags,
 					})
 				})
 			)
@@ -165,15 +169,16 @@ export class ActivePlaylistTopic
 
 		if (this._globalAdLibs) {
 			globalAdLibs.push(
-				...this._globalAdLibs.map((adLibs) => {
-					const sourceLayerName = this._sourceLayersMap.get(adLibs.sourceLayerId)
-					const outputLayerName = this._outputLayersMap.get(adLibs.outputLayerId)
+				...this._globalAdLibs.map((adLib) => {
+					const sourceLayerName = this._sourceLayersMap.get(adLib.sourceLayerId)
+					const outputLayerName = this._outputLayersMap.get(adLib.outputLayerId)
 					return literal<AdLibStatus>({
-						id: unprotectString(adLibs._id),
-						name: adLibs.name,
+						id: unprotectString(adLib._id),
+						name: adLib.name,
 						sourceLayer: sourceLayerName ?? 'invalid',
 						outputLayer: outputLayerName ?? 'invalid',
 						actionType: [],
+						tags: adLib.tags,
 					})
 				})
 			)

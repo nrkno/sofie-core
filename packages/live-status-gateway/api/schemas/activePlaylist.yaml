@@ -103,6 +103,11 @@ $defs:
               type: string
           required: [name, label]
           additionalProperties: false
+      tags:
+        description: Tags attached to this AdLib
+        type: array
+        items:
+          type: string
     required: [id, name, sourceLayer, actionType]
     additionalProperties: false
     examples:
@@ -112,3 +117,4 @@ $defs:
         actionType:
           - name: pvw
             label: Preview
+        tags: ['music_video']
