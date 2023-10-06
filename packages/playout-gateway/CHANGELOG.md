@@ -33,6 +33,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 - peripheral device tidying ([#906](https://github.com/nrkno/tv-automation-server-core/issues/906)) ([0795ae5](https://github.com/nrkno/tv-automation-server-core/commit/0795ae5c0517114a34e350d5a5afbf7a731e9794))
 - trs actions in blueprints rundown hooks ([bb5e442](https://github.com/nrkno/tv-automation-server-core/commit/bb5e4422fa32e1af1e520e0c288360b304da4289))
 
+# [1.49.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.10...v1.49.0) (2023-10-06)
+
+**Note:** Version bump only for package playout-gateway
+
 # [1.49.0-in-testing.10](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.9...v1.49.0-in-testing.10) (2023-10-03)
 
 **Note:** Version bump only for package playout-gateway

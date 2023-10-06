@@ -254,6 +254,13 @@ All notable changes to this project will be documented in this file. See [standa
 - verifyHashedToken compatible with securityVerify ([7052f3d](https://github.com/nrkno/sofie-core/commit/7052f3dc3844bc272719fedf5c3da799a1d38dd1))
 - working re-layouting of hover inspectors ([87811a9](https://github.com/nrkno/sofie-core/commit/87811a90e18eb6cd9427773e820a1cee7517da6c))
 
+## [1.49.0](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.10...v1.49.0) (2023-10-06)
+
+
+### Bug Fixes
+
+* error is reported in the Rundown View when an empty Combo is created in Action Triggers ([e6a0c5f](https://github.com/nrkno/sofie-core/commit/e6a0c5f4161132e300fa225e8aad50e1cbe72ffb))
+* update casparcg-connection ([366f75c](https://github.com/nrkno/sofie-core/commit/366f75ce1bfab3054cc93bee58c6601bd4a40ceb))
 
 ## [1.49.0-in-testing.10](///compare/v1.49.0-in-testing.9...v1.49.0-in-testing.10) (2023-10-03)
 
