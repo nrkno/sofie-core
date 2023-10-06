@@ -328,7 +328,7 @@ describe('ensureNextPartIsValid', () => {
 							partInstanceId: nextPartInstanceId as any,
 							rundownId,
 							manuallySelected: nextPartManual || false,
-							consumesNextSegmentId: false,
+							consumesQueuedSegmentId: false,
 					  }
 					: null,
 				currentPartInfo: currentPartInstanceId
@@ -336,7 +336,7 @@ describe('ensureNextPartIsValid', () => {
 							partInstanceId: currentPartInstanceId as any,
 							rundownId,
 							manuallySelected: false,
-							consumesNextSegmentId: false,
+							consumesQueuedSegmentId: false,
 					  }
 					: null,
 				previousPartInfo: null,

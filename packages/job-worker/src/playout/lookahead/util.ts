@@ -49,11 +49,11 @@ export function getOrderedPartsAfterPlayhead(context: JobContext, cache: CacheFo
 	const { currentPartInstance, nextPartInstance } = getSelectedPartInstancesFromCache(cache)
 
 	// If the nextPartInstance consumes the
-	const alreadyConsumedNextSegmentId =
+	const alreadyConsumedQueuedSegmentId =
 		nextPartInstance && (!currentPartInstance || currentPartInstance.segmentId !== nextPartInstance.segmentId)
 
 	const strippedPlaylist = {
-		nextSegmentId: alreadyConsumedNextSegmentId ? undefined : playlist.nextSegmentId,
+		queuedSegmentId: alreadyConsumedQueuedSegmentId ? undefined : playlist.queuedSegmentId,
 		loop: playlist.loop,
 	}
 	const nextNextPart = selectNextPart(
@@ -72,12 +72,12 @@ export function getOrderedPartsAfterPlayhead(context: JobContext, cache: CacheFo
 
 	const res: DBPart[] = []
 
-	const nextSegmentIndex = playablePartsSlice.findIndex((p) => p.segmentId === playlist.nextSegmentId)
+	const nextSegmentIndex = playablePartsSlice.findIndex((p) => p.segmentId === playlist.queuedSegmentId)
 	if (
-		playlist.nextSegmentId &&
-		!alreadyConsumedNextSegmentId &&
+		playlist.queuedSegmentId &&
+		!alreadyConsumedQueuedSegmentId &&
 		nextSegmentIndex !== -1 &&
-		!nextNextPart.consumesNextSegmentId
+		!nextNextPart.consumesQueuedSegmentId
 	) {
 		// TODO - this if clause needs some decent testing
 

@@ -12,7 +12,8 @@ import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IProps {
 	onSetNext: (part: Part | undefined, e: any, offset?: number, take?: boolean) => void
-	onSetNextSegment: (segmentId: SegmentId | null, e: any, immediate?: boolean) => void
+	onSetNextSegment: (segmentId: SegmentId, e: any) => void
+	onQueueNextSegment: (segmentId: SegmentId | null, e: any) => void
 	playlist?: RundownPlaylist
 	studioMode: boolean
 	contextMenuContext: IContextMenuContext | null
@@ -45,20 +46,20 @@ export const SegmentContextMenu = withTranslation()(
 						{part && timecode === null && (
 							<>
 								<MenuItem
-									onClick={(e) => this.props.onSetNextSegment(part.instance.segmentId, e, true)}
+									onClick={(e) => this.props.onSetNextSegment(part.instance.segmentId, e)}
 									disabled={isCurrentPart || !canSetAsNext}
 								>
 									<span dangerouslySetInnerHTML={{ __html: t('Set segment as <strong>Next</strong>') }}></span>
 								</MenuItem>
-								{part.instance.segmentId !== this.props.playlist.nextSegmentId ? (
+								{part.instance.segmentId !== this.props.playlist.queuedSegmentId ? (
 									<MenuItem
-										onClick={(e) => this.props.onSetNextSegment(part.instance.segmentId, e)}
+										onClick={(e) => this.props.onQueueNextSegment(part.instance.segmentId, e)}
 										disabled={!canSetAsNext}
 									>
 										<span>{t('Queue segment')}</span>
 									</MenuItem>
 								) : (
-									<MenuItem onClick={(e) => this.props.onSetNextSegment(null, e)} disabled={!canSetAsNext}>
+									<MenuItem onClick={(e) => this.props.onQueueNextSegment(null, e)} disabled={!canSetAsNext}>
 										<span>{t('Clear queued segment')}</span>
 									</MenuItem>
 								)}

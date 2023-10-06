@@ -230,7 +230,7 @@ export const SegmentListContainer = withResolvedSegment<IProps>(function Segment
 			segmentNoteCounts={props.segmentNoteCounts}
 			isLiveSegment={isLiveSegment}
 			isNextSegment={isNextSegment}
-			isQueuedSegment={props.playlist.nextSegmentId === props.segmentui._id}
+			isQueuedSegment={props.playlist.queuedSegmentId === props.segmentui._id}
 			showCountdownToSegment={props.showCountdownToSegment}
 			fixedSegmentDuration={props.fixedSegmentDuration ?? false}
 			hasAlreadyPlayed={props.hasAlreadyPlayed}

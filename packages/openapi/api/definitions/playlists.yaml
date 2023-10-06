@@ -354,7 +354,7 @@ resources:
       operationId: setNextSegment
       tags:
         - playlists
-      summary: Sets the next Segment to a given SegmentId.
+      summary: Sets the next part to the first playable Part of the Segment with given segmentId.
       parameters:
         - name: playlistId
           in: path
@@ -372,9 +372,51 @@ resources:
                 segmentId:
                   type: string
                   description: Segment to set as next.
-                immediate:
-                  type: boolean
-                  description: Whether given Segment should be the first thing to be taken right after current part (effectively setting the first part of given segment as Next), as opposed to being taken after the last part of the current segment (queued until after the current segment ends).
+              required:
+                - segmentId
+      responses:
+        200:
+          $ref: '#/components/responses/putSuccess'
+        404:
+          $ref: '#/components/responses/playlistNotFound'
+        412:
+          description: Specified Playlist is not active, the specified Segment does not exist, the specified Segment does not contain any playable parts, or currently in hold.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 412
+                  message:
+                    type: string
+                    example: The selected part does not exist
+        500:
+          $ref: '#/components/responses/internalServerError'
+  queueNextSegment:
+    post:
+      operationId: queueNextSegment
+      tags:
+        - playlists
+      summary: Queue Segment with a given segmentId, so that the Next point will jump to that Segment when reaching the end of the currently playing Segment.
+      parameters:
+        - name: playlistId
+          in: path
+          description: Target playlist.
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                segmentId:
+                  type: string
+                  description: Segment to queue.
               required:
                 - segmentId
       responses:

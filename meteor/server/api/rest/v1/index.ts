@@ -25,7 +25,7 @@ import { MeteorCall, MethodContextAPI } from '../../../../lib/api/methods'
 import { ServerClientAPI } from '../../client'
 import { ServerRundownAPI } from '../../rundown'
 import { triggerWriteAccess } from '../../../security/lib/securityVerify'
-import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { QueueNextSegmentResult, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { CURRENT_SYSTEM_VERSION } from '../../../migration/currentSystemVersion'
 import {
 	AdLibActionId,
@@ -401,9 +401,8 @@ class ServerRestAPI implements RestAPI {
 		connection: Meteor.Connection,
 		event: string,
 		rundownPlaylistId: RundownPlaylistId,
-		segmentId: SegmentId,
-		immediate: boolean
-	): Promise<ClientAPI.ClientResponse<void>> {
+		segmentId: SegmentId
+	): Promise<ClientAPI.ClientResponse<PartId>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			ServerRestAPI.getMethodContext(connection),
 			event,
@@ -417,7 +416,28 @@ class ServerRestAPI implements RestAPI {
 			{
 				playlistId: rundownPlaylistId,
 				nextSegmentId: segmentId,
-				immediate,
+			}
+		)
+	}
+	async queueNextSegment(
+		connection: Meteor.Connection,
+		event: string,
+		rundownPlaylistId: RundownPlaylistId,
+		segmentId: SegmentId
+	): Promise<ClientAPI.ClientResponse<QueueNextSegmentResult>> {
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			ServerRestAPI.getMethodContext(connection),
+			event,
+			getCurrentTime(),
+			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(segmentId, String)
+			},
+			StudioJobs.QueueNextSegment,
+			{
+				playlistId: rundownPlaylistId,
+				queuedSegmentId: segmentId,
 			}
 		)
 	}
@@ -1432,8 +1452,8 @@ sofieAPIRequest<{ playlistId: string }, { partId: string }, void>(
 	}
 )
 
-sofieAPIRequest<{ playlistId: string }, { segmentId: string; immediate?: boolean }, void>(
-	'put',
+sofieAPIRequest<{ playlistId: string }, { segmentId: string }, PartId | null>(
+	'post',
 	'/playlists/:playlistId/set-next-segment',
 	new Map([
 		[404, [UserErrorMessage.RundownPlaylistNotFound]],
@@ -1442,13 +1462,29 @@ sofieAPIRequest<{ playlistId: string }, { segmentId: string; immediate?: boolean
 	async (serverAPI, connection, event, params, body) => {
 		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
 		const segmentId = protectString<SegmentId>(body.segmentId)
-		const immediate = !!body.immediate
-		logger.info(`API PUT: set-next-segment ${rundownPlaylistId} ${segmentId}`)
+		logger.info(`API POST: set-next-segment ${rundownPlaylistId} ${segmentId}`)
 
 		check(rundownPlaylistId, String)
 		check(segmentId, String)
-		check(immediate, Boolean)
-		return await serverAPI.setNextSegment(connection, event, rundownPlaylistId, segmentId, immediate)
+		return await serverAPI.setNextSegment(connection, event, rundownPlaylistId, segmentId)
+	}
+)
+
+sofieAPIRequest<{ playlistId: string }, { segmentId: string }, QueueNextSegmentResult>(
+	'post',
+	'/playlists/:playlistId/queue-next-segment',
+	new Map([
+		[404, [UserErrorMessage.RundownPlaylistNotFound]],
+		[412, [UserErrorMessage.PartNotFound]],
+	]),
+	async (serverAPI, connection, event, params, body) => {
+		const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
+		const segmentId = protectString<SegmentId>(body.segmentId)
+		logger.info(`API POST: set-next-segment ${rundownPlaylistId} ${segmentId}`)
+
+		check(rundownPlaylistId, String)
+		check(segmentId, String)
+		return await serverAPI.queueNextSegment(connection, event, rundownPlaylistId, segmentId)
 	}
 )
 

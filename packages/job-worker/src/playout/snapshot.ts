@@ -499,7 +499,7 @@ function fixupImportedSelectedPartInstanceIds(
 			partInstanceId: oldId,
 			rundownId: partInstanceOldRundownIdMap.get(oldId) || protectString(''),
 			manuallySelected: false,
-			consumesNextSegmentId: false,
+			consumesQueuedSegmentId: false,
 		}
 	}
 
@@ -511,7 +511,7 @@ function fixupImportedSelectedPartInstanceIds(
 			partInstanceId: partInstanceIdMap.get(snapshotInfo.partInstanceId) || snapshotInfo.partInstanceId,
 			rundownId: rundownIdMap.get(snapshotInfo.rundownId) || snapshotInfo.rundownId,
 			manuallySelected: snapshotInfo.manuallySelected,
-			consumesNextSegmentId: snapshotInfo.consumesNextSegmentId,
+			consumesQueuedSegmentId: snapshotInfo.consumesQueuedSegmentId,
 		}
 	}
 }

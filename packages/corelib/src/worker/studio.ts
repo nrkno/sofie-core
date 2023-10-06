@@ -75,9 +75,13 @@ export enum StudioJobs {
 	 */
 	SetNextPart = 'setNextPart',
 	/**
-	 * Set the next Segment to a specified id
+	 * Set the nexted part to first part of the Segment with a specified id
 	 */
 	SetNextSegment = 'setNextSegment',
+	/**
+	 * Set the queued Segment to a specified id
+	 */
+	QueueNextSegment = 'queueNextSegment',
 	/**
 	 * Move which Part is nexted by a Part(horizontal) or Segment (vertical) delta
 	 */
@@ -207,9 +211,12 @@ export interface SetNextPartProps extends RundownPlayoutPropsBase {
 	nextTimeOffset?: number
 }
 export interface SetNextSegmentProps extends RundownPlayoutPropsBase {
-	nextSegmentId: SegmentId | null
-	immediate: boolean
+	nextSegmentId: SegmentId
 }
+export interface QueueNextSegmentProps extends RundownPlayoutPropsBase {
+	queuedSegmentId: SegmentId | null
+}
+export type QueueNextSegmentResult = { nextPartId: PartId } | { queuedSegmentId: SegmentId | null }
 export interface ExecuteActionProps extends RundownPlayoutPropsBase {
 	actionDocId: AdLibActionId | RundownBaselineAdLibActionId | null
 	actionId: string
@@ -298,7 +305,8 @@ export type StudioJobFunc = {
 	[StudioJobs.ActivateRundownPlaylist]: (data: ActivateRundownPlaylistProps) => void
 	[StudioJobs.DeactivateRundownPlaylist]: (data: DeactivateRundownPlaylistProps) => void
 	[StudioJobs.SetNextPart]: (data: SetNextPartProps) => void
-	[StudioJobs.SetNextSegment]: (data: SetNextSegmentProps) => void
+	[StudioJobs.SetNextSegment]: (data: SetNextSegmentProps) => PartId
+	[StudioJobs.QueueNextSegment]: (data: QueueNextSegmentProps) => QueueNextSegmentResult
 	[StudioJobs.ExecuteAction]: (data: ExecuteActionProps) => ExecuteActionResult
 	[StudioJobs.TakeNextPart]: (data: TakeNextPartProps) => void
 	[StudioJobs.DisableNextPiece]: (data: DisableNextPieceProps) => void
