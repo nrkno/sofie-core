@@ -13,7 +13,7 @@ const NextLoopClock = withTiming<{ useWallClock?: boolean }, {}>()(
 			useWallClock?: boolean
 		}>
 	> {
-		render() {
+		render(): JSX.Element | null {
 			const { timingDurations, useWallClock } = this.props
 
 			if (!timingDurations?.partCountdown) return null

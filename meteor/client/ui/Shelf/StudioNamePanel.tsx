@@ -19,7 +19,7 @@ interface IStudioNamePanelProps {
 	studio: UIStudio
 }
 
-export function StudioNamePanel({ layout, panel, studio }: IStudioNamePanelProps) {
+export function StudioNamePanel({ layout, panel, studio }: IStudioNamePanelProps): JSX.Element {
 	const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(layout)
 	const { t } = useTranslation()
 

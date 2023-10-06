@@ -8,7 +8,7 @@ interface IProps {
 	align?: 'left' | 'center' | 'right'
 }
 
-export function InvalidPartCover({ className, part, align }: IProps) {
+export function InvalidPartCover({ className, part, align }: IProps): JSX.Element {
 	const element = React.createRef<HTMLDivElement>()
 	const [hover, setHover] = useState(false)
 	const [position, setPosition] = useState({ left: 0, top: 0, width: 0, right: 0 })

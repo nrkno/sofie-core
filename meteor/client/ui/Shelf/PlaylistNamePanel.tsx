@@ -6,13 +6,15 @@ import {
 	RundownLayoutPlaylistName,
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { Rundowns } from '../../collections'
 import { PartInstance } from '../../../lib/collections/PartInstances'
 import { logger } from '../../../lib/logging'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 interface IPlaylistNamePanelProps {
 	visible?: boolean
@@ -35,7 +37,7 @@ class PlaylistNamePanelInner extends MeteorReactComponent<
 		super(props)
 	}
 
-	render() {
+	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const { panel } = this.props
 

@@ -2,21 +2,15 @@ import React, { useState, useEffect, useContext, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useSubscription, useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
 import { PubSub } from '../../../../../lib/api/pubsub'
-import { ShowStyleBases } from '../../../../../lib/collections/ShowStyleBases'
-import { TriggeredActions, TriggeredActionsObj } from '../../../../../lib/collections/TriggeredActions'
+import { TriggeredActionsObj } from '../../../../../lib/collections/TriggeredActions'
 import { faCaretDown, faCaretRight, faDownload, faPlus, faUpload } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { TriggeredActionEntry, TRIGGERED_ACTION_ENTRY_DRAG_TYPE } from './TriggeredActionEntry'
-import { literal, omit, unprotectString } from '../../../../../lib/lib'
+import { literal, unprotectString } from '../../../../../lib/lib'
 import { TriggersHandler } from '../../../../lib/triggers/TriggersHandler'
-import {
-	RundownPlaylist,
-	RundownPlaylistCollectionUtil,
-	RundownPlaylists,
-} from '../../../../../lib/collections/RundownPlaylists'
-import { Rundown, Rundowns } from '../../../../../lib/collections/Rundowns'
-import { PartInstances } from '../../../../../lib/collections/PartInstances'
-import { Part, Parts } from '../../../../../lib/collections/Parts'
+import { RundownPlaylist } from '../../../../../lib/collections/RundownPlaylists'
+import { Rundown } from '../../../../../lib/collections/Rundowns'
+import { Part } from '../../../../../lib/collections/Parts'
 import { MeteorCall } from '../../../../../lib/api/methods'
 import { UploadButton } from '../../../../lib/uploadButton'
 import { ErrorBoundary } from '../../../../lib/ErrorBoundary'
@@ -27,12 +21,16 @@ import { TriggerType } from '@sofie-automation/blueprints-integration'
 import { keyLabelsToCodes } from '../../../../lib/triggers/codesToKeyLabels'
 import classNames from 'classnames'
 import { fetchFrom } from '../../../../lib/lib'
-import { NotificationCenter, Notification, NoticeLevel } from '../../../../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../../../../../lib/notifications/notifications'
 import { Meteor } from 'meteor/meteor'
 import { doModalDialog } from '../../../../lib/ModalDialog'
 import { MongoQuery } from '../../../../../lib/typings/meteor'
 import _ from 'underscore'
 import { PartId, RundownId, ShowStyleBaseId, TriggeredActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstances, Parts, RundownPlaylists, Rundowns, TriggeredActions } from '../../../../collections'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { SourceLayers, OutputLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { RundownPlaylistCollectionUtil } from '../../../../../lib/collections/rundownPlaylistUtil'
 
 export interface PreviewContext {
 	rundownPlaylist: RundownPlaylist | null
@@ -45,6 +43,8 @@ export interface PreviewContext {
 
 interface IProps {
 	showStyleBaseId: ShowStyleBaseId | null
+	sourceLayers: SourceLayers
+	outputLayers: OutputLayers
 }
 
 export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredActionsEditor(
@@ -74,12 +74,7 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 		},
 	})
 
-	const showStyleBase = useTracker(
-		() => (props.showStyleBaseId === null ? undefined : ShowStyleBases.findOne(props.showStyleBaseId)),
-		[props.showStyleBaseId]
-	)
-
-	const { showStyleBaseId } = props
+	const { showStyleBaseId, sourceLayers, outputLayers } = props
 	const showStyleBaseSelector: MongoQuery<TriggeredActionsObj> = {
 		$or: _.compact([
 			{
@@ -315,16 +310,14 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 							limit: 1,
 						}
 					).fetch()[0]?._rank ?? triggeredAction._rank + 1000
+
 				MeteorCall.triggeredActions
-					.createTriggeredActions(
-						triggeredAction.showStyleBaseId,
-						omit(
-							{ ...triggeredAction, triggers: [], _rank: (triggeredAction._rank + nextTriggeredActionRank) / 2 },
-							'_id',
-							'_rundownVersionHash',
-							'showStyleBaseId'
-						)
-					)
+					.createTriggeredActions(triggeredAction.showStyleBaseId, {
+						_rank: (triggeredAction._rank + nextTriggeredActionRank) / 2,
+						name: triggeredAction.name,
+						triggers: {},
+						actions: applyAndValidateOverrides(triggeredAction.actionsWithOverrides).obj,
+					})
 					.then((duplicateTriggeredActionId) => setSelectedTriggeredActionId(duplicateTriggeredActionId))
 					.catch(console.error)
 			}
@@ -443,7 +436,8 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 						onEdit={onEditEntry}
 						onRemove={onRemoveTriggeredAction}
 						onDuplicate={onDuplicateEntry}
-						showStyleBase={showStyleBase}
+						sourceLayers={sourceLayers}
+						outputLayers={outputLayers}
 						previewContext={rundownPlaylist && selectedTriggeredActionId === triggeredActionId ? previewContext : null}
 						onFocus={setSelectedTriggeredActionId}
 					/>
@@ -476,7 +470,8 @@ export const TriggeredActionsEditor: React.FC<IProps> = function TriggeredAction
 										onEdit={onEditEntry}
 										onRemove={onRemoveTriggeredAction}
 										onDuplicate={onDuplicateEntry}
-										showStyleBase={showStyleBase}
+										sourceLayers={sourceLayers}
+										outputLayers={outputLayers}
 										previewContext={
 											rundownPlaylist && selectedTriggeredActionId === triggeredActionId ? previewContext : null
 										}

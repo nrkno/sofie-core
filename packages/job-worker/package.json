@@ -1,6 +1,6 @@
 {
 	"name": "@sofie-automation/job-worker",
-	"version": "1.47.6",
+	"version": "1.49.0",
 	"description": "Worker for things",
 	"main": "dist/index.js",
 	"license": "MIT",
@@ -31,7 +31,7 @@
 		"license-validate": "yarn sofie-licensecheck"
 	},
 	"engines": {
-		"node": "^14.19 || ^16.14"
+		"node": "^14.19 || ^16.14 || ^18.12"
 	},
 	"files": [
 		"/dist",
@@ -46,9 +46,9 @@
 		"@sofie-automation/shared-lib": "link:../shared-lib",
 		"amqplib": "^0.10.3",
 		"deepmerge": "^4.2.2",
-		"elastic-apm-node": "^3.38.0",
+		"elastic-apm-node": "^3.42.0",
 		"eventemitter3": "^4.0.7",
-		"mongodb": "^4.9.1",
+		"mongodb": "^4.13.0",
 		"p-lazy": "^3.1.0",
 		"p-timeout": "^4.1.0",
 		"superfly-timeline": "^8.3.1",

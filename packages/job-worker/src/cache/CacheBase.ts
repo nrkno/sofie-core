@@ -24,6 +24,7 @@ export type ReadOnlyCacheInner<T> = T extends DbCacheWriteCollection<infer A>
 	: T extends DbCacheWriteOptionalObject<infer A>
 	? DbCacheReadObject<A, true>
 	: T
+
 export type ReadOnlyCache<T extends CacheBase<any>> = Omit<
 	{ [K in keyof T]: ReadOnlyCacheInner<T[K]> },
 	'defer' | 'deferAfterSave' | 'saveAllToDatabase'
@@ -70,8 +71,8 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		const span = this.context.startSpan('Cache.saveAllToDatabase')
 
 		// Execute cache.defer()'s
-		for (let i = 0; i < this._deferredFunctions.length; i++) {
-			await this._deferredFunctions[i](this as any)
+		for (const fn of this._deferredFunctions) {
+			await fn(this as any)
 		}
 		this._deferredFunctions.length = 0 // clear the array
 
@@ -94,8 +95,8 @@ export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> {
 		}
 
 		// Execute cache.deferAfterSave()'s
-		for (let i = 0; i < this._deferredAfterSaveFunctions.length; i++) {
-			await this._deferredAfterSaveFunctions[i](this as any)
+		for (const fn of this._deferredAfterSaveFunctions) {
+			await fn(this as any)
 		}
 		this._deferredAfterSaveFunctions.length = 0 // clear the array
 

@@ -29,7 +29,7 @@ class ShowStylePanelInner extends MeteorReactComponent<Translated<IShowStylePane
 		super(props)
 	}
 
-	render() {
+	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const { t } = this.props
 

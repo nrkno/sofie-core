@@ -1,9 +1,9 @@
-import { DeviceOptionsAny } from 'timeline-state-resolver-types'
 import { ConfigItemValue } from './common'
 import { OmitId } from './lib'
 import { IBlueprintShowStyleVariant, IOutputLayer, ISourceLayer } from './showStyle'
 import { IBlueprintTriggeredActions } from './triggers'
 import { BlueprintMapping } from './studio'
+import { TSR } from './timeline'
 
 export interface MigrationStepInput {
 	stepId?: string // automatically filled in later
@@ -65,9 +65,9 @@ export interface MigrationContextStudio {
 	setConfig: (configId: string, value: ConfigItemValue) => void
 	removeConfig: (configId: string) => void
 
-	getDevice: (deviceId: string) => DeviceOptionsAny | undefined
-	insertDevice: (deviceId: string, device: DeviceOptionsAny) => string | null
-	updateDevice: (deviceId: string, device: Partial<DeviceOptionsAny>) => void
+	getDevice: (deviceId: string) => TSR.DeviceOptionsAny | undefined
+	insertDevice: (deviceId: string, device: TSR.DeviceOptionsAny) => string | null
+	updateDevice: (deviceId: string, device: Partial<TSR.DeviceOptionsAny>) => void
 	removeDevice: (deviceId: string) => void
 }
 

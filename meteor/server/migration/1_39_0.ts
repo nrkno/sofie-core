@@ -1,5 +1,5 @@
+import { Parts } from '../collections'
 import { addMigrationSteps } from './databaseMigration'
-import { Parts } from '../../lib/collections/Parts'
 
 // Release 39
 export const addSteps = addMigrationSteps('1.39.0', [

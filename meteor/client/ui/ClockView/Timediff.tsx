@@ -3,7 +3,7 @@ import ClassNames from 'classnames'
 import { RundownUtils } from '../../lib/rundown'
 
 export const Timediff = class Timediff extends React.Component<{ time: number }> {
-	render() {
+	render(): JSX.Element {
 		const time = -this.props.time
 		const isNegative = Math.floor(time / 1000) > 0
 		const timeString = RundownUtils.formatDiffToTimecode(time, true, false, true, false, true, '', false, true)

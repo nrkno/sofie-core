@@ -4,14 +4,11 @@ import { setupDefaultStudioEnvironment, DefaultEnvironment } from '../../../__mo
 import { protectString, literal, unprotectString, getRandomString } from '../../../lib/lib'
 import { PickerMock, parseResponseBuffer, MockResponseDataString } from '../../../__mocks__/meteorhacks-picker'
 import { Response as MockResponse, Request as MockRequest } from 'mock-http'
-import {
-	RundownLayoutType,
-	RundownLayouts,
-	RundownLayout,
-	CustomizableRegions,
-} from '../../../lib/collections/RundownLayouts'
+import { RundownLayoutType, RundownLayout, CustomizableRegions } from '../../../lib/collections/RundownLayouts'
 import { MeteorCall } from '../../../lib/api/methods'
 import { RundownLayoutId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownLayouts } from '../../collections'
+import { SupressLogMessages } from '../../../__mocks__/suppressLogging'
 
 require('../client') // include in order to create the Meteor methods needed
 require('../rundownLayouts') // include in order to create the Meteor methods needed
@@ -142,6 +139,7 @@ describe('Rundown Layouts', () => {
 				})
 				req.body = JSON.stringify(mockLayout)
 
+				SupressLogMessages.suppressLogMessage(/"FAKE_ID" not found/i)
 				await route.handler({ showStyleBaseId: fakeId }, req, res, jest.fn())
 
 				const resStr = parseResponseBuffer(res)
@@ -163,6 +161,7 @@ describe('Rundown Layouts', () => {
 					url: `/shelfLayouts/upload/${env.showStyleBaseId}`,
 				})
 
+				SupressLogMessages.suppressLogMessage(/Missing request body/i)
 				await route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
 
 				const resStr = parseResponseBuffer(res)
@@ -185,6 +184,7 @@ describe('Rundown Layouts', () => {
 				})
 				req.body = 'sdf'
 
+				SupressLogMessages.suppressLogMessage(/Invalid request body/i)
 				await route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
 
 				const resStr = parseResponseBuffer(res)
@@ -207,6 +207,7 @@ describe('Rundown Layouts', () => {
 				})
 				req.body = '{ type: dsfgsdfgsdf gsdfgsdfg sdfgsdfg sdf gsdfgsdfg sdfg }'
 
+				SupressLogMessages.suppressLogMessage(/SyntaxError/i)
 				await route.handler({ showStyleBaseId: unprotectString(env.showStyleBaseId) }, req, res, jest.fn())
 
 				const resStr = parseResponseBuffer(res)

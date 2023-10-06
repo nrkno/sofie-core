@@ -95,7 +95,7 @@ export const MicSourceRenderer = withTranslation()(
 			this.rightLabel = e
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			// Create line element
 			this.lineItem = document.createElement('div')
 			this.lineItem.dataset['ownerObjId'] = unprotectString(this.props.piece.instance._id)
@@ -174,7 +174,7 @@ export const MicSourceRenderer = withTranslation()(
 			}
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			try {
 				// Remove the line element
 				this.lineItem?.remove()
@@ -183,7 +183,7 @@ export const MicSourceRenderer = withTranslation()(
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			const labelItems = (this.props.piece.instance.piece.name || '').split('||')
 			const begin = labelItems[0] || ''
 			const end = labelItems[1] || ''

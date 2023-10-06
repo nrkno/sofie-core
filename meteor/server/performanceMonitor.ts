@@ -1,8 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import * as _ from 'underscore'
+import { getCoreSystem } from './coreSystem/collection'
 import { logger } from './logging'
 import { getRunningMethods, resetRunningMethods } from './methods'
-import { getCoreSystem } from '../lib/collections/CoreSystem'
 
 /**
  * The performanceMonotor runs at an interval, and when run it checks that it actually ran on time.

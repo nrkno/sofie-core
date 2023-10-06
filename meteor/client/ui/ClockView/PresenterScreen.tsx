@@ -2,12 +2,8 @@ import * as React from 'react'
 import ClassNames from 'classnames'
 import { DBSegment, Segment } from '../../../lib/collections/Segments'
 import { PartUi } from '../SegmentTimeline/SegmentTimelineContainer'
-import {
-	RundownPlaylist,
-	RundownPlaylists,
-	RundownPlaylistCollectionUtil,
-} from '../../../lib/collections/RundownPlaylists'
-import { Rundown, Rundowns } from '../../../lib/collections/Rundowns'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
+import { Rundown } from '../../../lib/collections/Rundowns'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { withTiming, WithTiming } from '../RundownView/RundownTiming/withTiming'
 import { Translated, withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -19,17 +15,11 @@ import { PieceIconContainer } from '../PieceIcons/PieceIcon'
 import { PieceNameContainer } from '../PieceIcons/PieceName'
 import { Timediff } from './Timediff'
 import { RundownUtils } from '../../lib/rundown'
-import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { Part } from '../../../lib/collections/Parts'
 import { PieceCountdownContainer } from '../PieceIcons/PieceCountdown'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
-import {
-	DashboardLayout,
-	RundownLayoutBase,
-	RundownLayoutPresenterView,
-	RundownLayouts,
-} from '../../../lib/collections/RundownLayouts'
+import { DashboardLayout, RundownLayoutBase, RundownLayoutPresenterView } from '../../../lib/collections/RundownLayouts'
 import {
 	RundownId,
 	RundownLayoutId,
@@ -38,7 +28,7 @@ import {
 	ShowStyleVariantId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ShowStyleVariant, ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
+import { ShowStyleVariant } from '../../../lib/collections/ShowStyleVariants'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { ShelfDashboardLayout } from '../Shelf/ShelfDashboardLayout'
 import { parse as queryStringParse } from 'query-string'
@@ -47,6 +37,8 @@ import { getPlaylistTimingDiff } from '../../lib/rundownTiming'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
 import { UIShowStyleBases, UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
+import { PieceInstances, RundownLayouts, RundownPlaylists, Rundowns, ShowStyleVariants } from '../../collections'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 interface SegmentUi extends DBSegment {
 	items: Array<PartUi>
@@ -290,19 +282,19 @@ export class PresenterScreenBase extends MeteorReactComponent<
 > {
 	protected bodyClassList: string[] = ['dark', 'xdark']
 
-	constructor(props) {
+	constructor(props: WithTiming<RundownOverviewProps & RundownOverviewTrackedProps & WithTranslation>) {
 		super(props)
 		this.state = {
 			presenterLayout: undefined,
 		}
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		document.body.classList.add(...this.bodyClassList)
 		this.subscribeToData()
 	}
 
-	protected subscribeToData() {
+	protected subscribeToData(): void {
 		this.autorun(() => {
 			this.subscribe(PubSub.uiStudio, this.props.studioId)
 
@@ -413,19 +405,19 @@ export class PresenterScreenBase extends MeteorReactComponent<
 		}
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		super.componentWillUnmount()
 		document.body.classList.remove(...this.bodyClassList)
 	}
 
-	render() {
+	render(): JSX.Element | null {
 		if (this.state.presenterLayout && RundownLayoutsAPI.isDashboardLayout(this.state.presenterLayout)) {
 			return this.renderDashboardLayout(this.state.presenterLayout)
 		}
 		return this.renderDefaultLayout()
 	}
 
-	renderDefaultLayout() {
+	private renderDefaultLayout() {
 		const { playlist, segments, currentShowStyleBaseId, nextShowStyleBaseId, playlistId } = this.props
 
 		if (playlist && playlistId && segments) {
@@ -552,7 +544,7 @@ export class PresenterScreenBase extends MeteorReactComponent<
 		return null
 	}
 
-	renderDashboardLayout(layout: DashboardLayout) {
+	private renderDashboardLayout(layout: DashboardLayout) {
 		const { studio, playlist, currentShowStyleBase, currentShowStyleVariant } = this.props
 
 		if (studio && playlist && currentShowStyleBase && currentShowStyleVariant) {

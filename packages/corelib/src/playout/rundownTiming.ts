@@ -35,33 +35,42 @@ export namespace PlaylistTiming {
 	}
 
 	export function getExpectedStart(timing: RundownPlaylistTiming): number | undefined {
-		return PlaylistTiming.isPlaylistTimingForwardTime(timing)
-			? timing.expectedStart
-			: PlaylistTiming.isPlaylistTimingBackTime(timing)
-			? // Use expectedStart if present, otherwise try to calculate from expectedEnd - expectedDuration
-			  timing.expectedStart ||
-			  (timing.expectedDuration ? timing.expectedEnd - timing.expectedDuration : undefined)
-			: undefined
+		if (PlaylistTiming.isPlaylistTimingForwardTime(timing)) {
+			return timing.expectedStart
+		} else if (PlaylistTiming.isPlaylistTimingBackTime(timing)) {
+			return (
+				timing.expectedStart ||
+				(timing.expectedDuration ? timing.expectedEnd - timing.expectedDuration : undefined)
+			)
+		} else {
+			return undefined
+		}
 	}
 
 	export function getExpectedEnd(timing: RundownPlaylistTiming): number | undefined {
-		return PlaylistTiming.isPlaylistTimingBackTime(timing)
-			? timing.expectedEnd
-			: PlaylistTiming.isPlaylistTimingForwardTime(timing)
-			? timing.expectedEnd ||
-			  (timing.expectedDuration ? timing.expectedStart + timing.expectedDuration : undefined)
-			: undefined
+		if (PlaylistTiming.isPlaylistTimingBackTime(timing)) {
+			return timing.expectedEnd
+		} else if (PlaylistTiming.isPlaylistTimingForwardTime(timing)) {
+			return (
+				timing.expectedEnd ||
+				(timing.expectedDuration ? timing.expectedStart + timing.expectedDuration : undefined)
+			)
+		} else {
+			return undefined
+		}
 	}
 
 	export function getExpectedDuration(timing: RundownPlaylistTiming): number | undefined {
-		return PlaylistTiming.isPlaylistTimingForwardTime(timing)
-			? timing.expectedDuration
-			: PlaylistTiming.isPlaylistTimingBackTime(timing)
-			? timing.expectedDuration
-			: undefined
+		if (PlaylistTiming.isPlaylistTimingForwardTime(timing)) {
+			return timing.expectedDuration
+		} else if (PlaylistTiming.isPlaylistTimingBackTime(timing)) {
+			return timing.expectedDuration
+		} else {
+			return undefined
+		}
 	}
 
-	export function sortTiminings(
+	export function sortTimings(
 		a: ReadonlyDeep<{ timing: RundownPlaylistTiming }>,
 		b: ReadonlyDeep<{ timing: RundownPlaylistTiming }>
 	): number {

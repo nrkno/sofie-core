@@ -18,7 +18,7 @@ interface IStatusMenuProps {
 interface IStatusMenuState {}
 const StatusMenu = withTranslation()(
 	class StatusMenu extends React.Component<Translated<IStatusMenuProps>, IStatusMenuState> {
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			return (
@@ -75,7 +75,7 @@ interface IStatusProps {
 	match?: any
 }
 class Status extends MeteorReactComponent<Translated<IStatusProps>> {
-	componentDidMount() {
+	componentDidMount(): void {
 		// Subscribe to data:
 
 		this.subscribe(PubSub.peripheralDevices, {})
@@ -83,7 +83,7 @@ class Status extends MeteorReactComponent<Translated<IStatusProps>> {
 		this.subscribe(PubSub.showStyleBases, {})
 		this.subscribe(PubSub.showStyleVariants, {})
 	}
-	render() {
+	render(): JSX.Element {
 		// const { t } = this.props
 
 		return (

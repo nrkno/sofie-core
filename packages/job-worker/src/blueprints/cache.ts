@@ -6,16 +6,16 @@ import {
 	SystemBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
 import { VM } from 'vm2'
-import { IDirectCollections } from '../db'
 import { ReadonlyDeep } from 'type-fest'
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
-// import { deepFreeze } from '@sofie-automation/corelib/dist/lib'
+import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 
 export interface WrappedSystemBlueprint {
 	blueprintId: BlueprintId
 	blueprint: SystemBlueprintManifest
 }
 export interface WrappedStudioBlueprint {
+	blueprintDoc: Blueprint | undefined
 	blueprintId: BlueprintId
 	blueprint: StudioBlueprintManifest
 }
@@ -42,11 +42,12 @@ export interface WrappedShowStyleBlueprint {
 // 	}
 // }
 
-export async function loadBlueprintById(
-	collections: IDirectCollections,
-	blueprintId: BlueprintId
+/**
+ * Parse a Blueprint document into executable code
+ */
+export async function parseBlueprintDocument(
+	blueprint: Blueprint | undefined
 ): Promise<ReadonlyDeep<SomeBlueprintManifest> | undefined> {
-	const blueprint = await collections.Blueprints.findOne(blueprintId)
 	if (!blueprint) return undefined
 
 	if (blueprint.code) {

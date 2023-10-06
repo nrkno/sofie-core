@@ -1,9 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
-import { PeripheralDevice, PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { PeripheralDevice } from '../../lib/collections/PeripheralDevices'
 import { isProtectedString } from '../../lib/lib'
 import { logNotAllowed } from './lib/lib'
-import { MediaWorkFlows, MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
+import { MediaWorkFlow } from '../../lib/collections/MediaWorkFlows'
 import { MongoQueryKey } from '../../lib/typings/meteor'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { allowAccessToPeripheralDevice, allowAccessToPeripheralDeviceContent } from './lib/security'
@@ -15,9 +15,10 @@ import {
 	MediaWorkFlowId,
 	OrganizationId,
 	PeripheralDeviceId,
+	StudioId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MediaWorkFlows, PeripheralDevices } from '../collections'
 
 export namespace PeripheralDeviceReadAccess {
 	/** Check for read access for a peripheral device */

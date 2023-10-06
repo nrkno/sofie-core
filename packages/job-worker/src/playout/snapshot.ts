@@ -29,6 +29,9 @@ import { assertNever, getRandomId, literal } from '@sofie-automation/corelib/dis
 import { logger } from '../logging'
 import { JSONBlobParse, JSONBlobStringify } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
 
+/**
+ * Generate the Playlist owned portions of a Playlist snapshot
+ */
 export async function handleGeneratePlaylistSnapshot(
 	context: JobContext,
 	props: GeneratePlaylistSnapshotProps
@@ -131,6 +134,9 @@ export async function handleGeneratePlaylistSnapshot(
 	}
 }
 
+/**
+ * Restore the Playlist owned portions of a Playlist snapshot
+ */
 export async function handleRestorePlaylistSnapshot(
 	context: JobContext,
 	props: RestorePlaylistSnapshotProps

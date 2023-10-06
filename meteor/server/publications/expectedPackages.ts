@@ -1,10 +1,9 @@
 import { Meteor } from 'meteor/meteor'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
-import { MappingsExtWithPackage, routeExpectedPackages, Studio, Studios } from '../../lib/collections/Studios'
+import { MappingsExtWithPackage, routeExpectedPackages, Studio } from '../../lib/collections/Studios'
 import { setUpOptimizedObserverArray, TriggerUpdate, meteorCustomPublish } from '../lib/customPublication'
-import { ExpectedPackageDB, ExpectedPackages, getSideEffect } from '../../lib/collections/ExpectedPackages'
+import { ExpectedPackageDB, getSideEffect } from '../../lib/collections/ExpectedPackages'
 import _ from 'underscore'
 import {
 	ExpectedPackage,
@@ -13,22 +12,19 @@ import {
 	PackageContainerOnPackage,
 	AccessorOnPackage,
 } from '@sofie-automation/blueprints-integration'
-import {
-	RundownPlaylist,
-	RundownPlaylistCollectionUtil,
-	RundownPlaylists,
-} from '../../lib/collections/RundownPlaylists'
-import { DBRundown, Rundowns } from '../../lib/collections/Rundowns'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { DBRundown } from '../../lib/collections/Rundowns'
 import { clone, DBObj, literal, omit, protectString, unprotectObject, unprotectString } from '../../lib/lib'
 import deepExtend from 'deep-extend'
 import { logger } from '../logging'
 import { generateExpectedPackagesForPartInstance } from '../api/ingest/expectedPackages'
 import { PartInstance } from '../../lib/collections/PartInstances'
-import { StudioLight } from '../../lib/collections/optimizations'
+import { StudioLight } from '../optimizations'
 import { ReadonlyDeep } from 'type-fest'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { IncludeAllMongoFieldSpecifier } from '@sofie-automation/corelib/dist/mongo'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExpectedPackages, RundownPlaylists, Rundowns, PeripheralDevices, Studios, PartInstances } from '../collections'
 
 interface ExpectedPackagesPublicationArgs {
 	readonly studioId: StudioId
@@ -101,7 +97,7 @@ async function setupExpectedPackagesPublicationObservers(
 				...omit(studioFieldSpecifier, 'mappingsWithOverrides', 'routeSets'),
 				mappingsHash: 1,
 			},
-		}).observe({
+		}).observeChanges({
 			added: () => triggerUpdate({ invalidateStudio: true }),
 			changed: () => triggerUpdate({ invalidateStudio: true }),
 			removed: () => triggerUpdate({ invalidateStudio: true }),
@@ -114,14 +110,14 @@ async function setupExpectedPackagesPublicationObservers(
 					settings: 1,
 				},
 			}
-		).observe({
+		).observeChanges({
 			added: () => triggerUpdate({ invalidatePeripheralDevices: true }),
 			changed: () => triggerUpdate({ invalidatePeripheralDevices: true }),
 			removed: () => triggerUpdate({ invalidatePeripheralDevices: true }),
 		}),
 		ExpectedPackages.find({
 			studioId: args.studioId,
-		}).observe({
+		}).observeChanges({
 			added: () => triggerUpdate({ invalidateExpectedPackages: true }),
 			changed: () => triggerUpdate({ invalidateExpectedPackages: true }),
 			removed: () => triggerUpdate({ invalidateExpectedPackages: true }),
@@ -133,7 +129,7 @@ async function setupExpectedPackagesPublicationObservers(
 			{
 				fields: rundownPlaylistFieldSpecifier,
 			}
-		).observe({
+		).observeChanges({
 			added: () => triggerUpdate({ invalidateRundownPlaylist: true }),
 			changed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
 			removed: () => triggerUpdate({ invalidateRundownPlaylist: true }),
@@ -199,10 +195,32 @@ async function manipulateExpectedPackagesPublicationData(
 		state.activePlaylist = activePlaylist
 		delete state.activeRundowns
 
-		const selectPartInstances =
-			activePlaylist && RundownPlaylistCollectionUtil.getSelectedPartInstances(activePlaylist)
-		state.nextPartInstance = selectPartInstances?.nextPartInstance
-		state.currentPartInstance = selectPartInstances?.currentPartInstance
+		if (activePlaylist) {
+			const validRundownIds = (
+				await Rundowns.findFetchAsync({ playlistId: activePlaylist._id }, { fields: { _id: 1 } })
+			).map((rd) => rd._id)
+
+			const [nextPartInstance, currentPartInstance] = await Promise.all([
+				activePlaylist.nextPartInstanceId &&
+					PartInstances.findOneAsync({
+						_id: activePlaylist.nextPartInstanceId,
+						rundownId: { $in: validRundownIds },
+						reset: { $ne: true },
+					}),
+				activePlaylist.currentPartInstanceId &&
+					PartInstances.findOneAsync({
+						_id: activePlaylist.currentPartInstanceId,
+						rundownId: { $in: validRundownIds },
+						reset: { $ne: true },
+					}),
+			])
+
+			state.nextPartInstance = nextPartInstance || undefined
+			state.currentPartInstance = currentPartInstance || undefined
+		} else {
+			state.nextPartInstance = undefined
+			state.currentPartInstance = undefined
+		}
 
 		invalidateRoutedPlayoutExpectedPackages = true
 	}

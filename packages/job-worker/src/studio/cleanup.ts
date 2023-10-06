@@ -3,7 +3,10 @@ import { JobContext } from '../jobs'
 import { runJobWithStudioCache } from './lock'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
-export async function removeEmptyPlaylists(context: JobContext, _data: void): Promise<void> {
+/**
+ * Cleanup any RundownPlaylists that contain no Rundowns
+ */
+export async function handleRemoveEmptyPlaylists(context: JobContext, _data: void): Promise<void> {
 	await runJobWithStudioCache(context, async (cache) => {
 		// Skip any playlists which are active
 		const tmpPlaylists = cache.RundownPlaylists.findAll((p) => !p.activationId, { fields: { _id: 1 } })

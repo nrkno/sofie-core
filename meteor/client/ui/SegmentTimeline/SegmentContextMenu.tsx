@@ -26,7 +26,7 @@ export const SegmentContextMenu = withTranslation()(
 			super(props)
 		}
 
-		render() {
+		render(): JSX.Element | null {
 			const { t } = this.props
 
 			const part = this.getPartFromContext()
@@ -76,13 +76,13 @@ export const SegmentContextMenu = withTranslation()(
 								</MenuItem>
 								{startsAt !== null && part && this.props.enablePlayFromAnywhere ? (
 									<>
-										<MenuItem
+										{/* <MenuItem
 											onClick={(e) => this.onSetAsNextFromHere(part.instance.part, e)}
 											disabled={isCurrentPart || !!part.instance.orphaned || !canSetAsNext}
 										>
 											<span dangerouslySetInnerHTML={{ __html: t('Set <strong>Next</strong> Here') }}></span> (
 											{RundownUtils.formatTimeToShortTime(Math.floor((startsAt + timecode) / 1000) * 1000)})
-										</MenuItem>
+										</MenuItem> */}
 										<MenuItem
 											onClick={(e) => this.onPlayFromHere(part.instance.part, e)}
 											disabled={isCurrentPart || !!part.instance.orphaned || !canSetAsNext}

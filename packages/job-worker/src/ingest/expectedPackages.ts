@@ -49,7 +49,7 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 
 export async function updateExpectedPackagesOnRundown(context: JobContext, cache: CacheForIngest): Promise<void> {
 	// @todo: this call is for backwards compatibility and soon to be removed
-	updateExpectedMediaItemsOnRundown(context, cache)
+	await updateExpectedMediaItemsOnRundown(context, cache)
 	await updateExpectedPlayoutItemsOnRundown(context, cache)
 
 	const studio = context.studio

@@ -1,15 +1,50 @@
+import { TSR } from '@sofie-automation/blueprints-integration'
 import { PeripheralDeviceCommandId, PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { createManualPromise, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { JobContext } from './jobs'
 import { getCurrentTime } from './lib'
 import { logger } from './logging'
 
+export async function executePeripheralDeviceAction(
+	context: JobContext,
+	deviceId: PeripheralDeviceId,
+	timeoutTime0: number | null,
+	actionId: string,
+	payload: Record<string, any>
+): Promise<TSR.ActionExecutionResult> {
+	return executePeripheralDeviceGenericFunction(context, deviceId, timeoutTime0, {
+		actionId,
+		payload,
+	})
+}
+
 export async function executePeripheralDeviceFunction(
 	context: JobContext,
 	deviceId: PeripheralDeviceId,
 	timeoutTime0: number | null,
 	functionName: string,
-	...args: any[]
+	args: Array<any>
+): Promise<any> {
+	return executePeripheralDeviceGenericFunction(context, deviceId, timeoutTime0, {
+		functionName,
+		args,
+	})
+}
+
+async function executePeripheralDeviceGenericFunction(
+	context: JobContext,
+	deviceId: PeripheralDeviceId,
+	timeoutTime0: number | null,
+	action:
+		| {
+				actionId: string
+				payload: Record<string, any>
+		  }
+		| {
+				// Legacy (?) function calls:
+				functionName: string
+				args: Array<any>
+		  }
 ): Promise<any> {
 	const timeoutTime = timeoutTime0 ?? 3000 // also handles null
 
@@ -129,8 +164,7 @@ export async function executePeripheralDeviceFunction(
 		_id: commandId,
 		deviceId: deviceId,
 		time: getCurrentTime(),
-		functionName,
-		args: args,
+		...action,
 		hasReply: false,
 	})
 

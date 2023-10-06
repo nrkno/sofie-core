@@ -7,7 +7,7 @@ export const STKSourceRenderer = withTranslation()(
 			super(props)
 		}
 
-		render() {
+		render(): JSX.Element {
 			return super.render()
 		}
 	}

@@ -3,11 +3,14 @@ import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ExpectedPackagesRegenerateProps, PackageInfosUpdatedProps } from '@sofie-automation/corelib/dist/worker/ingest'
 import { logger } from '../logging'
 import { JobContext } from '../jobs'
-import { regenerateSegmentsFromIngestData } from './generation'
+import { regenerateSegmentsFromIngestData } from './generationSegment'
 import { runIngestJob, runWithRundownLock } from './lock'
 import { CacheForIngest } from './cache'
 import { updateExpectedPackagesOnRundown } from './expectedPackages'
 
+/**
+ * Debug: Regenerate ExpectedPackages for a Rundown
+ */
 export async function handleExpectedPackagesRegenerate(
 	context: JobContext,
 	data: ExpectedPackagesRegenerateProps
@@ -23,6 +26,9 @@ export async function handleExpectedPackagesRegenerate(
 	})
 }
 
+/**
+ * Some PackageInfos have been updated, regenerate any Parts which depend on these PackageInfos
+ */
 export async function handleUpdatedPackageInfoForRundown(
 	context: JobContext,
 	data: PackageInfosUpdatedProps

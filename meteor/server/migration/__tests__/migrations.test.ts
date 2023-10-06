@@ -1,7 +1,7 @@
 import * as _ from 'underscore'
-import { setupEmptyEnvironment, setupMockPeripheralDevice } from '../../../__mocks__/helpers/database'
+import { setupEmptyEnvironment } from '../../../__mocks__/helpers/database'
 import { testInFiber } from '../../../__mocks__/helpers/jest'
-import { getCoreSystem, ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../../lib/collections/CoreSystem'
+import { ICoreSystem, GENESIS_SYSTEM_VERSION } from '../../../lib/collections/CoreSystem'
 import { clearMigrationSteps, addMigrationSteps, prepareMigration, PreparedMigration } from '../databaseMigration'
 import { CURRENT_SYSTEM_VERSION } from '../currentSystemVersion'
 import { RunMigrationResult, GetMigrationStatusResult } from '../../../lib/api/migration'
@@ -14,19 +14,14 @@ import {
 	PlaylistTimingType,
 	PlaylistTimingNone,
 	ShowStyleBlueprintManifest,
+	StudioBlueprintManifest,
 } from '@sofie-automation/blueprints-integration'
-import { Studios, Studio } from '../../../lib/collections/Studios'
-import { Blueprints } from '../../../lib/collections/Blueprints'
+import { Studio } from '../../../lib/collections/Studios'
 import { generateFakeBlueprint } from '../../api/blueprints/__tests__/lib'
-import { ShowStyleBases } from '../../../lib/collections/ShowStyleBases'
-import { ShowStyleVariants } from '../../../lib/collections/ShowStyleVariants'
 import { MeteorCall } from '../../../lib/api/methods'
-import {
-	PeripheralDeviceCategory,
-	PeripheralDeviceType,
-	PERIPHERAL_SUBTYPE_PROCESS,
-} from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
+import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
+import { getCoreSystem } from '../../coreSystem/collection'
 
 require('../../api/peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../api') // include in order to create the Meteor methods needed
@@ -79,7 +74,7 @@ describe('Migrations', () => {
 			migrationNeeded: true,
 
 			migration: {
-				canDoAutomaticMigration: false, // Some "base" migrations require manual data entry
+				canDoAutomaticMigration: true,
 				// manualInputs: [],
 				hash: expect.stringContaining(''),
 				automaticStepCount: expect.any(Number),
@@ -97,38 +92,8 @@ describe('Migrations', () => {
 		)
 
 		expect(migrationResult0).toMatchObject({
-			migrationCompleted: false,
-			partialMigration: true,
-			warnings: expect.any(Array),
-			snapshot: expect.any(String),
-		})
-
-		// Connect a Playout-gateway to the system:
-		setupMockPeripheralDevice(
-			PeripheralDeviceCategory.PLAYOUT,
-			PeripheralDeviceType.PLAYOUT,
-			PERIPHERAL_SUBTYPE_PROCESS
-		)
-
-		// Continue with migration:
-		const migrationStatus1: GetMigrationStatusResult = await MeteorCall.migration.getMigrationStatus()
-		expect(migrationStatus1.migrationNeeded).toEqual(true)
-		expect(migrationStatus1.migration.automaticStepCount).toBeGreaterThanOrEqual(1)
-
-		const migrationResult1: RunMigrationResult = await MeteorCall.migration.runMigration(
-			migrationStatus1.migration.chunks,
-			migrationStatus1.migration.hash,
-			userInput(migrationStatus1, {
-				'CoreSystem.storePath': 'mock',
-				'studios.settings.mediaPreviewsUrl': 'mock',
-				'studios.settings.sofieUrl': 'http://localhost',
-				'studios.settings.slackEvaluationUrls': 'mock',
-				'studios.settings.supportedMediaFormats': '1920x1080i5000, 1280x720, i5000, i5000tff',
-			})
-		)
-		expect(migrationResult1).toMatchObject({
 			migrationCompleted: true,
-			// partialMigration: true,
+			partialMigration: false,
 			warnings: [],
 			snapshot: expect.any(String),
 		})
@@ -159,7 +124,6 @@ describe('Migrations', () => {
 						supportedShowStyleBase: [],
 						settings: {
 							mediaPreviewsUrl: '',
-							sofieUrl: '',
 							frameRate: 25,
 						},
 						mappingsWithOverrides: wrapDefaultObject({}),
@@ -170,6 +134,7 @@ describe('Migrations', () => {
 						packageContainers: {},
 						previewContainerIds: [],
 						thumbnailContainerIds: [],
+						lastBlueprintConfig: undefined,
 					})
 				},
 			},
@@ -190,7 +155,6 @@ describe('Migrations', () => {
 						supportedShowStyleBase: [],
 						settings: {
 							mediaPreviewsUrl: '',
-							sofieUrl: '',
 							frameRate: 25,
 						},
 						mappingsWithOverrides: wrapDefaultObject({}),
@@ -201,6 +165,7 @@ describe('Migrations', () => {
 						packageContainers: {},
 						previewContainerIds: [],
 						thumbnailContainerIds: [],
+						lastBlueprintConfig: undefined,
 					})
 				},
 			},
@@ -221,7 +186,6 @@ describe('Migrations', () => {
 						supportedShowStyleBase: [],
 						settings: {
 							mediaPreviewsUrl: '',
-							sofieUrl: '',
 							frameRate: 25,
 						},
 						mappingsWithOverrides: wrapDefaultObject({}),
@@ -232,6 +196,7 @@ describe('Migrations', () => {
 						packageContainers: {},
 						previewContainerIds: [],
 						thumbnailContainerIds: [],
+						lastBlueprintConfig: undefined,
 					})
 				},
 			},
@@ -253,11 +218,18 @@ describe('Migrations', () => {
 		const studio = Studios.findOne() as Studio
 		expect(studio).toBeTruthy()
 
-		const studioManifest = () => ({
+		const studioManifest = (): StudioBlueprintManifest => ({
 			blueprintType: 'studio' as BlueprintManifestType.STUDIO,
 			blueprintVersion: '1.0.0',
 			integrationVersion: '0.0.0',
 			TSRVersion: '0.0.0',
+
+			configPresets: {
+				main: {
+					name: 'Main',
+					config: {},
+				},
+			},
 
 			studioConfigManifest: [],
 			studioMigrations: [
@@ -317,6 +289,20 @@ describe('Migrations', () => {
 			blueprintVersion: '1.0.0',
 			integrationVersion: '0.0.0',
 			TSRVersion: '0.0.0',
+
+			configPresets: {
+				main: {
+					name: 'Main',
+					config: {},
+
+					variants: {
+						main: {
+							name: 'Default',
+							config: {},
+						},
+					},
+				},
+			},
 
 			showStyleConfigManifest: [],
 			showStyleMigrations: [
@@ -394,6 +380,7 @@ describe('Migrations', () => {
 			hotkeyLegend: [],
 			blueprintConfigWithOverrides: wrapDefaultObject({}),
 			_rundownVersionHash: '',
+			lastBlueprintConfig: undefined,
 		})
 
 		ShowStyleVariants.insert({
@@ -402,6 +389,7 @@ describe('Migrations', () => {
 			showStyleBaseId: protectString('showStyle0'),
 			blueprintConfigWithOverrides: wrapDefaultObject({}),
 			_rundownVersionHash: '',
+			_rank: 0,
 		})
 
 		Blueprints.insert(generateFakeBlueprint('studio0', BlueprintManifestType.STUDIO, studioManifest))

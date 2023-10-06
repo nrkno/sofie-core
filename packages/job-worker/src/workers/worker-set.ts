@@ -189,6 +189,10 @@ export class StudioWorkerSet {
 		)
 	}
 
+	public collectMetrics(): Promise<string>[] {
+		return this.#threads.map(async (t) => t.collectMetrics())
+	}
+
 	public async terminate(): Promise<void> {
 		await Promise.allSettled(this.#threads.map(async (t) => t.terminate()))
 

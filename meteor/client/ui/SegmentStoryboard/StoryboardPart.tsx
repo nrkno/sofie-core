@@ -13,7 +13,7 @@ import { literal } from '../../../lib/lib'
 import { SegmentTimelinePartElementId } from '../SegmentTimeline/Parts/SegmentTimelinePart'
 import { CurrentPartRemaining } from '../RundownView/RundownTiming/CurrentPartRemaining'
 import { getAllowSpeaking } from '../../lib/localStorage'
-import RundownViewEventBus, { HighlightEvent, RundownViewEvents } from '../RundownView/RundownViewEventBus'
+import RundownViewEventBus, { HighlightEvent, RundownViewEvents } from '../../../lib/api/triggers/RundownViewEventBus'
 import { Meteor } from 'meteor/meteor'
 import { StoryboardPartTransitions } from './StoryboardPartTransitions'
 import { PartDisplayDuration } from '../RundownView/RundownTiming/PartDuration'
@@ -61,7 +61,7 @@ export function StoryboardPart({
 	onContextMenu,
 	onHoverOver,
 	onHoverOut,
-}: IProps) {
+}: IProps): JSX.Element {
 	const { t } = useTranslation()
 	const [highlight, setHighlight] = useState(false)
 	const willBeAutoNextedInto = isNextPart ? currentPartWillAutonext : part.willProbablyAutoNext
@@ -234,7 +234,7 @@ export function StoryboardPart({
 						'segment-storyboard__part__show-end--loop': isPlaylistLooping,
 					})}
 				>
-					{(!isLivePart || !doesPlaylistHaveNextPart || isPlaylistLooping) && (
+					{(!isLivePart || !doesPlaylistHaveNextPart || isPlaylistLooping) && isLastPartInSegment && (
 						<div className="segment-storyboard__part__show-end__label">
 							{isPlaylistLooping ? t('Loops to top') : t('Show End')}
 						</div>

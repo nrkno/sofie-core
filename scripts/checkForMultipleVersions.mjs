@@ -6,7 +6,7 @@ import { buildDepTreeFromFiles } from "snyk-nodejs-lockfile-parser";
  */
 const libsToConsider = [
 	["superfly-timeline"],
-	["mos-connection"],
+	["@mos-connection/connector", "@mos-connection/helper", "@mos-connection/model"],
 	["timeline-state-resolver", "timeline-state-resolver-types"],
 ];
 

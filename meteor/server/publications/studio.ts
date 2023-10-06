@@ -2,11 +2,10 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { meteorPublish, AutoFillSelector } from './lib'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
-import { Studios, DBStudio, getActiveRoutes, getRoutedMappings, RoutedMappings } from '../../lib/collections/Studios'
-import { PeripheralDevices } from '../../lib/collections/PeripheralDevices'
+import { DBStudio, getActiveRoutes, getRoutedMappings, RoutedMappings } from '../../lib/collections/Studios'
 import { PeripheralDeviceReadAccess } from '../security/peripheralDevice'
-import { ExternalMessageQueue, ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
-import { MediaObjects, MediaObject } from '../../lib/collections/MediaObjects'
+import { ExternalMessageQueueObj } from '../../lib/collections/ExternalMessageQueue'
+import { MediaObject } from '../../lib/collections/MediaObjects'
 import { StudioReadAccess } from '../security/studio'
 import { OrganizationReadAccess } from '../security/organization'
 import { MongoQuery } from '../../lib/typings/meteor'
@@ -17,23 +16,26 @@ import {
 	setUpOptimizedObserverArray,
 	TriggerUpdate,
 } from '../lib/customPublication'
-import { ExpectedPackageDBBase, ExpectedPackages } from '../../lib/collections/ExpectedPackages'
-import {
-	ExpectedPackageWorkStatus,
-	ExpectedPackageWorkStatuses,
-} from '../../lib/collections/ExpectedPackageWorkStatuses'
-import {
-	PackageContainerPackageStatuses,
-	PackageContainerPackageStatusDB,
-} from '../../lib/collections/PackageContainerPackageStatus'
+import { ExpectedPackageDBBase } from '../../lib/collections/ExpectedPackages'
+import { ExpectedPackageWorkStatus } from '../../lib/collections/ExpectedPackageWorkStatuses'
+import { PackageContainerPackageStatusDB } from '../../lib/collections/PackageContainerPackageStatus'
 import { Match } from 'meteor/check'
-import { PackageInfos } from '../../lib/collections/PackageInfos'
-import { PackageContainerStatuses } from '../../lib/collections/PackageContainerStatus'
 import { literal } from '../../lib/lib'
 import { ReadonlyDeep } from 'type-fest'
-import { FindOptions } from '../../lib/collections/lib'
+import { FindOptions, MongoCursor } from '../../lib/collections/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { ExpectedPackageId, PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import {
+	ExpectedPackages,
+	ExpectedPackageWorkStatuses,
+	ExternalMessageQueue,
+	MediaObjects,
+	PackageContainerPackageStatuses,
+	PackageContainerStatuses,
+	PackageInfos,
+	PeripheralDevices,
+	Studios,
+} from '../collections'
 
 meteorPublish(PubSub.studios, async function (selector0, token) {
 	const { cred, selector } = await AutoFillSelector.organizationId<DBStudio>(this.userId, selector0, token)
@@ -47,23 +49,6 @@ meteorPublish(PubSub.studios, async function (selector0, token) {
 		(selector.organizationId && (await OrganizationReadAccess.organizationContent(selector.organizationId, cred)))
 	) {
 		return Studios.find(selector, modifier)
-	}
-	return null
-})
-meteorPublish(PubSub.studioOfDevice, async function (deviceId: PeripheralDeviceId, token) {
-	if (await PeripheralDeviceReadAccess.peripheralDevice(deviceId, { userId: this.userId, token })) {
-		const peripheralDevice = PeripheralDevices.findOne(deviceId)
-
-		if (!peripheralDevice) throw new Meteor.Error('PeripheralDevice "' + deviceId + '" not found')
-
-		const modifier: FindOptions<DBStudio> = {
-			fields: {},
-		}
-
-		const studioId = peripheralDevice.studioId
-		if (studioId && (await StudioReadAccess.studioContent(studioId, { userId: this.userId, token }))) {
-			return Studios.find(studioId, modifier)
-		}
 	}
 	return null
 })
@@ -158,6 +143,34 @@ meteorPublish(
 		return null
 	}
 )
+meteorPublish(
+	PubSub.packageContainerPackageStatusesSimple,
+	async function (studioId: StudioId, containerId?: string | null, packageId?: ExpectedPackageId | null) {
+		if (!studioId) throw new Meteor.Error(400, 'studioId argument missing')
+
+		check(studioId, String)
+		check(containerId, Match.Maybe(String))
+		check(packageId, Match.Maybe(String))
+
+		const modifier: FindOptions<PackageContainerPackageStatusDB> = {
+			projection: {
+				modified: 0,
+			},
+		}
+		const selector: MongoQuery<PackageContainerPackageStatusDB> = {
+			studioId: studioId,
+		}
+		if (containerId) selector.containerId = containerId
+		if (packageId) selector.packageId = packageId
+
+		if (await StudioReadAccess.studioContent(selector.studioId, { userId: this.userId })) {
+			return PackageContainerPackageStatuses.find(selector, modifier) as MongoCursor<
+				Omit<PackageContainerPackageStatusDB, 'modified'>
+			>
+		}
+		return null
+	}
+)
 
 meteorCustomPublish(
 	PubSub.mappingsForDevice,
@@ -208,7 +221,7 @@ async function setupMappingsPublicationObservers(
 				// change to the mappings or the routes
 				mappingsHash: 1,
 			},
-		}).observe({
+		}).observeChanges({
 			added: () => triggerUpdate({ invalidateStudio: true }),
 			changed: () => triggerUpdate({ invalidateStudio: true }),
 			removed: () => triggerUpdate({ invalidateStudio: true }),
@@ -227,7 +240,7 @@ async function manipulateMappingsPublicationData(
 	const studio = await Studios.findOneAsync(args.studioId)
 	if (!studio) return []
 
-	const routes = getActiveRoutes(studio)
+	const routes = getActiveRoutes(studio.routeSets)
 	const rawMappings = applyAndValidateOverrides(studio.mappingsWithOverrides)
 	const routedMappings = getRoutedMappings(rawMappings.obj, routes)
 

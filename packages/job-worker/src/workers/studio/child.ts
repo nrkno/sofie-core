@@ -13,6 +13,7 @@ import { stringifyError } from '@sofie-automation/corelib/dist/lib'
 import { setupInfluxDb } from '../../influx'
 import { getStudioQueueName } from '@sofie-automation/corelib/dist/worker/studio'
 import { WorkerJobResult } from '../parent-base'
+import { getPrometheusMetricsString, setupPrometheusMetrics } from '@sofie-automation/corelib/dist/prometheus'
 
 interface StaticData {
 	readonly mongoClient: MongoClient
@@ -38,6 +39,7 @@ export class StudioWorkerChild {
 	) {
 		// Intercept logging to pipe back over ipc
 		interceptLogging(getStudioQueueName(studioId), logLine)
+		setupPrometheusMetrics(getStudioQueueName(studioId))
 
 		setupApmAgent()
 		setupInfluxDb()
@@ -85,6 +87,9 @@ export class StudioWorkerChild {
 		} finally {
 			transaction?.end()
 		}
+	}
+	async collectMetrics(): Promise<string> {
+		return getPrometheusMetricsString()
 	}
 	async runJob(jobName: string, data: unknown): Promise<WorkerJobResult> {
 		if (!this.#staticData) throw new Error('Worker not initialised')

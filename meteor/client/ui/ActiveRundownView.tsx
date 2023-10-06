@@ -2,7 +2,7 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import { Route, Switch } from 'react-router-dom'
 import { translateWithTracker, Translated } from '../lib/ReactMeteorData/ReactMeteorData'
-import { RundownPlaylist, RundownPlaylists } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 
 import { Spinner } from '../lib/Spinner'
 import { RundownView } from './RundownView'
@@ -12,6 +12,7 @@ import { PubSub } from '../../lib/api/pubsub'
 import { UIStudios } from './Collections'
 import { UIStudio } from '../../lib/api/studios'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylists } from '../collections'
 
 interface IProps {
 	match: {
@@ -55,7 +56,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.subscribe(
 				PubSub.rundownPlaylists,
 				_.extend(
@@ -90,12 +91,12 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 			document.body.classList.add('dark', 'vertical-overflow-only')
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			super.componentWillUnmount()
 			document.body.classList.remove('dark', 'vertical-overflow-only')
 		}
 
-		componentDidUpdate() {
+		componentDidUpdate(): void {
 			document.body.classList.add('dark', 'vertical-overflow-only')
 		}
 
@@ -125,7 +126,7 @@ export const ActiveRundownView = translateWithTracker<IProps, {}, ITrackedProps>
 			)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			if (!this.state.subsReady) {
 				return (

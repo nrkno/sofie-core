@@ -4,12 +4,13 @@ import { RundownUtils } from '../../../lib/rundown'
 import { ILayerItemRendererProps } from './ItemRendererFactory'
 import { VTContent, LiveSpeakContent } from '@sofie-automation/blueprints-integration'
 import { VTFloatingInspector } from '../../FloatingInspectors/VTFloatingInspector'
-import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
+import { getNoticeLevelForPieceStatus } from '../../../../lib/notifications/notifications'
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
 import { StyledTimecode } from '../../../lib/StyledTimecode'
 import { ActionAdLibHotkeyPreview } from '../../../lib/triggers/ActionAdLibHotkeyPreview'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
+import { HourglassIconSmall } from '../../../lib/ui/icons/notifications'
 
 export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps> = (
 	props: ILayerItemRendererProps
@@ -100,18 +101,16 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 				className={ClassNames(
 					'adlib-panel__list-view__list__table__cell--icon',
 					props.layer && RundownUtils.getSourceLayerClassName(props.layer.type),
-					{
-						'source-missing': props.status === PieceStatusCode.SOURCE_MISSING,
-						'source-broken': props.status === PieceStatusCode.SOURCE_BROKEN,
-						'unknown-state': props.status === PieceStatusCode.UNKNOWN,
-					}
+					props.status && RundownUtils.getPieceStatusClassName(props.status)
 				)}
 				ref={itemIcon}
 				onMouseOver={handleOnMouseOver}
 				onMouseLeave={handleOnMouseLeave}
 				onMouseMove={handleOnMouseMove}
 			>
-				{(props.layer && (props.layer.abbreviation || props.layer.name)) || null}
+				<div className="adlib-panel__list-view__list__table__cell--layer">
+					{(props.layer && (props.layer.abbreviation || props.layer.name)) || null}
+				</div>
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--shortcut">
 				<ActionAdLibHotkeyPreview targetId={props.adLibListItem._id as any} type={type} />
@@ -120,6 +119,11 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 				{(props.outputLayer && props.outputLayer.name) || null}
 			</td>
 			<td className="adlib-panel__list-view__list__table__cell--name">
+				{props.status === PieceStatusCode.SOURCE_NOT_READY && (
+					<div className="piece__status-icon type-hourglass">
+						<HourglassIconSmall />
+					</div>
+				)}
 				{props.adLibListItem.name}
 				<VTFloatingInspector
 					status={props.status || PieceStatusCode.UNKNOWN}
@@ -134,7 +138,7 @@ export const VTListItemRenderer: React.FunctionComponent<ILayerItemRendererProps
 					typeClass={props.layer && RundownUtils.getSourceLayerClassName(props.layer.type)}
 					itemElement={itemIcon.current}
 					contentMetaData={props.metadata || null}
-					noticeMessage={props.message || null}
+					noticeMessages={props.messages || null}
 					noticeLevel={
 						props.status !== null && props.status !== undefined ? getNoticeLevelForPieceStatus(props.status) : null
 					}

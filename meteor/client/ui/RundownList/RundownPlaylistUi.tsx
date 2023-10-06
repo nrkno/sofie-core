@@ -35,7 +35,7 @@ import { RundownUtils } from '../../lib/rundown'
 import PlaylistRankResetButton from './PlaylistRankResetButton'
 import { DisplayFormattedTime } from './DisplayFormattedTime'
 import { getAllowStudio } from '../../lib/localStorage'
-import { doUserAction, UserAction } from '../../lib/userAction'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { RundownViewLayoutSelection } from './RundownViewLayoutSelection'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { PlaylistTiming } from '@sofie-automation/corelib/dist/playout/rundownTiming'
@@ -220,7 +220,7 @@ export const RundownPlaylistUi = DropTarget(
 				}
 			}
 
-			render() {
+			render(): JSX.Element | null {
 				const { playlist, connectDropTarget, t, isActiveDropZone, rundownLayouts } = this.props
 
 				if (playlist.rundowns.length === 0) {

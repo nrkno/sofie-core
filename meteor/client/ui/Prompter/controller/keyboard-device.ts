@@ -38,10 +38,10 @@ export class KeyboardController extends ControllerAbstract {
 		const recalledMode: string | null = localStorage.getItem(LOCALSTORAGE_MODE)
 		this._mode = (recalledMode as Mode) || Mode.NORMAL
 	}
-	public destroy() {
+	public destroy(): void {
 		this._destroyed = true
 	}
-	public onKeyDown(e: KeyboardEvent) {
+	public onKeyDown(e: KeyboardEvent): void {
 		if (!this._keyDown[e.code]) this._keyDown[e.code] = Date.now()
 
 		if (this._mode === Mode.NORMAL) {
@@ -78,7 +78,7 @@ export class KeyboardController extends ControllerAbstract {
 			lastEvent: 'keyDown: ' + e.code,
 		})
 	}
-	public onKeyUp(e: KeyboardEvent) {
+	public onKeyUp(e: KeyboardEvent): void {
 		const timeSincePress = Date.now() - this._keyDown[e.code]
 
 		if (this._mode === Mode.NORMAL) {
@@ -122,13 +122,13 @@ export class KeyboardController extends ControllerAbstract {
 			lastEvent: 'keyUp: ' + e.code,
 		})
 	}
-	public onMouseKeyDown(_e: MouseEvent) {
+	public onMouseKeyDown(_e: MouseEvent): void {
 		// Nothing
 	}
-	public onMouseKeyUp(_e: MouseEvent) {
+	public onMouseKeyUp(_e: MouseEvent): void {
 		// Nothing
 	}
-	public onWheel(_e: WheelEvent) {
+	public onWheel(_e: WheelEvent): void {
 		// Nothing
 	}
 

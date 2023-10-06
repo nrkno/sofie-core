@@ -3,14 +3,15 @@ import { Accounts } from 'meteor/accounts-base'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RouteComponentProps } from 'react-router'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { MeteorCall } from '../../../lib/api/methods'
 import { getUser, User, getUserRoles } from '../../../lib/collections/Users'
-import { Organizations, DBOrganization, UserRoles } from '../../../lib/collections/Organization'
+import { DBOrganization, UserRoles } from '../../../lib/collections/Organization'
 import { Spinner } from '../../lib/Spinner'
 import { Link } from 'react-router-dom'
 import { unprotectString } from '../../../lib/lib'
 import { EditAttribute } from '../../lib/EditAttribute'
+import { Organizations } from '../../collections'
 
 interface IAccountPageProps extends RouteComponentProps {
 	user: User | null
@@ -105,7 +106,7 @@ export const AccountPage = translateWithTracker(() => {
 			} else return null
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 
 			const user = this.props.user

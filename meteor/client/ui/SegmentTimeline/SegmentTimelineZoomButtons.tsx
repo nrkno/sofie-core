@@ -13,7 +13,7 @@ interface IProps {
 	onRecalculateMaxTimeScale: () => Promise<number>
 }
 
-export function SegmentTimelineZoomButtons(props: IProps) {
+export function SegmentTimelineZoomButtons(props: IProps): JSX.Element {
 	const { t } = useTranslation()
 	const zoomIn = (e: React.MouseEvent<HTMLElement>) => {
 		props.onZoomChange(props.timeScale * 2, e)

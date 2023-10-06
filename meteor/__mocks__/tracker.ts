@@ -61,14 +61,14 @@ export namespace TrackerMock {
 		private runAll = (clbs: Array<ComputationCallback>) => {
 			clbs.forEach((clb) => clb(this))
 		}
-		public stop = () => {
+		public stop = (): void => {
 			this.stopped = true
 			this.runAll(this.onInvalidateClbs)
 			this.onInvalidateClbs.length = 0
 			this.runAll(this.onStopClbs)
 			this.onStopClbs.length = 0
 		}
-		public invalidate = () => {
+		public invalidate = (): void => {
 			this.invalidated = true
 			if (!this.parentComputation) {
 				this.runAll(this.onInvalidateClbs)
@@ -79,10 +79,10 @@ export namespace TrackerMock {
 				this.parentComputation.invalidate()
 			}
 		}
-		public onInvalidate = (clb: ComputationCallback) => {
+		public onInvalidate = (clb: ComputationCallback): void => {
 			this.onInvalidateClbs.push(clb)
 		}
-		public onStop = (clb: ComputationCallback) => {
+		public onStop = (clb: ComputationCallback): void => {
 			this.onStopClbs.push(clb)
 		}
 	}
@@ -94,7 +94,7 @@ export namespace TrackerMock {
 
 		return new TrackerMock.Computation(runFunc, TrackerMock.currentComputation)
 	}
-	export function flush() {
+	export function flush(): void {
 		throw new Error(`Tracker.flush() is not implemented in the mock Tracker`)
 	}
 	export function nonreactive<T>(runFunc: () => T): T {
@@ -109,19 +109,19 @@ export namespace TrackerMock {
 	export function inFlush(): boolean {
 		throw new Error(`Tracker.inFlush() is not implemented in the mock Tracker`)
 	}
-	export function onInvalidate(clb: ComputationCallback) {
+	export function onInvalidate(clb: ComputationCallback): void {
 		if (!TrackerMock.currentComputation) {
 			throw new Error('Tracker.onInvalidate requires a currentComputation')
 		}
 
 		TrackerMock.currentComputation.onInvalidate(clb)
 	}
-	export function afterFlush(_clb: Function) {
+	export function afterFlush(_clb: Function): void {
 		throw new Error(`Tracker.afterFlush() is not implemented in the mock Tracker`)
 	}
 }
 
-export function setup() {
+export function setup(): any {
 	return {
 		Tracker: TrackerMock,
 	}

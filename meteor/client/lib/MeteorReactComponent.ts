@@ -6,11 +6,11 @@ import { PubSubTypes } from '../../lib/api/pubsub'
 export class MeteorReactComponent<IProps, IState = {}> extends React.Component<IProps, IState> {
 	private _subscriptions: { [id: string]: Meteor.SubscriptionHandle } = {}
 	private _computations: Array<Tracker.Computation> = []
-	constructor(props, context?: any) {
+	constructor(props: IProps, context?: never) {
 		super(props, context)
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		this._cleanUp()
 	}
 	subscribe<K extends keyof PubSubTypes>(name: K, ...args: Parameters<PubSubTypes[K]>): Meteor.SubscriptionHandle {
@@ -39,9 +39,9 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 			}
 		})
 	}
-	autorun(cb: (computation: Tracker.Computation) => void, options?: any): Tracker.Computation {
+	autorun(...args: Parameters<typeof Tracker.autorun>): Tracker.Computation {
 		const computation = Tracker.nonreactive(() => {
-			return Tracker.autorun(cb, options)
+			return Tracker.autorun(...args)
 		})
 		this._computations.push(computation)
 		return computation
@@ -58,7 +58,7 @@ export class MeteorReactComponent<IProps, IState = {}> extends React.Component<I
 	subscriptions(): Array<Meteor.SubscriptionHandle> {
 		return Object.values(this._subscriptions)
 	}
-	protected _cleanUp() {
+	protected _cleanUp(): void {
 		const subscriptions = Object.values(this._subscriptions)
 		for (let i = 0; i < subscriptions.length; i++) {
 			// Wait a little bit with unsubscribing, maybe the next view is going to subscribe to the same data as well?

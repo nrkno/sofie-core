@@ -44,7 +44,7 @@ export function matchFilter(
 	filter?: RundownLayoutFilterBase,
 	searchFilter?: string,
 	uniquenessIds?: Set<string>
-) {
+): boolean {
 	if (!searchFilter && !filter) return true
 	const uppercaseLabel = item.name.toUpperCase()
 	if (filter) {
@@ -127,7 +127,7 @@ export function matchFilter(
 	}
 }
 
-export function matchTags(item: AdLibPieceUi, tags?: string[]) {
+export function matchTags(item: AdLibPieceUi, tags?: string[]): boolean {
 	if (
 		tags !== undefined &&
 		tags.reduce((p, v) => {
@@ -139,7 +139,7 @@ export function matchTags(item: AdLibPieceUi, tags?: string[]) {
 	return true
 }
 
-export function AdLibListView(props: IListViewPropsHeader) {
+export function AdLibListView(props: IListViewPropsHeader): JSX.Element {
 	const table = useRef<HTMLTableElement>(null)
 	const instanceId = useRef(getRandomString())
 

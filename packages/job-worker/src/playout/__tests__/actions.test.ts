@@ -12,7 +12,7 @@ import {
 	setupDefaultRundownPlaylist,
 	setupMockShowStyleCompound,
 } from '../../__mocks__/presetCollections'
-import { activateRundownPlaylist, prepareStudioForBroadcast } from '../actions'
+import { activateRundownPlaylist, prepareStudioForBroadcast } from '../activePlaylistActions'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { runJobWithPlayoutCache } from '../lock'
 import { runWithRundownLock } from '../../ingest/lock'
@@ -125,9 +125,7 @@ describe('Playout Actions', () => {
 			playoutDevice._id,
 			null,
 			'devicesMakeReady', // function
-			// args:
-			okToDestroyStuff,
-			playlist._id
+			[okToDestroyStuff, playlist._id]
 		)
 	})
 })

@@ -12,7 +12,7 @@ interface IFlattenedSourceLayerProps extends ISourceLayerPropsBase {
 	shouldShowDuration: (layer: ISourceLayerExtended) => boolean
 }
 
-export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps) {
+export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps): JSX.Element {
 	const { getPartContext, onMouseUp } = useMouseContext(props)
 
 	return (
@@ -34,7 +34,7 @@ export function FlattenedSourceLayers(props: IFlattenedSourceLayerProps) {
 							// filter only pieces belonging to this part
 							return piece.instance.partInstanceId === props.part.instance._id
 								? // filter only pieces, that have not been hidden from the UI
-								  piece.instance.hidden !== true && piece.instance.piece.virtual !== true
+								  piece.instance.piece.virtual !== true
 								: false
 						})
 					)

@@ -1,8 +1,8 @@
 // tslint:disable-next-line:no-submodule-imports
-import * as tsrPkgInfo from 'timeline-state-resolver-types/package.json'
+import { TSR_VERSION } from '@sofie-automation/shared-lib/dist/tsr'
 
 /** @deprecated This is temporary and should be removed ASAP. Can we do it better? */
-export const TMP_TSR_VERSION: string = tsrPkgInfo.version
+export const TMP_TSR_VERSION: string = TSR_VERSION
 
 export enum iterateDeeplyEnum {
 	CONTINUE = '$continue',

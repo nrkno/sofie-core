@@ -1,12 +1,12 @@
 import { PeripheralDeviceAPI } from '../../lib/api/peripheralDevice'
 import {
 	PeripheralDeviceCategory,
-	PeripheralDevices,
 	PeripheralDeviceType,
 	PERIPHERAL_SUBTYPE_PROCESS,
 } from '../../lib/collections/PeripheralDevices'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { StudioContentAccess } from '../security/studio'
+import { PeripheralDevices } from '../collections'
 
 export namespace PackageManagerAPI {
 	export async function restartExpectation(

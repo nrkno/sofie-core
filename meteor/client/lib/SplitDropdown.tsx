@@ -22,7 +22,7 @@ export function SplitDropdownItem(props: SplitDropdownItemObj): SplitDropdownIte
 	}
 }
 
-export function SplitDropdown(props: IProps) {
+export function SplitDropdown(props: IProps): JSX.Element {
 	const [expanded, setExpanded] = useState(false)
 	const toggleExpco = useCallback(() => setExpanded((oldVal) => !oldVal), [])
 

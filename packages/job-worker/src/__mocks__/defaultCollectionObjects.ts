@@ -98,14 +98,14 @@ export function defaultStudio(_id: StudioId): DBStudio {
 		settings: {
 			frameRate: 25,
 			mediaPreviewsUrl: '',
-			sofieUrl: '',
 		},
-		_rundownVersionHash: '',
 		routeSets: {},
 		routeSetExclusivityGroups: {},
 		packageContainers: {},
 		previewContainerIds: [],
 		thumbnailContainerIds: [],
+		_rundownVersionHash: '',
+		lastBlueprintConfig: undefined,
 	}
 }
 

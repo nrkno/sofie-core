@@ -8,7 +8,7 @@ interface IProps {
 	piece: Omit<PieceGeneric, 'timelineObjectsString'>
 }
 
-export function DashboardPieceButtonSplitPreview({ piece }: IProps) {
+export function DashboardPieceButtonSplitPreview({ piece }: IProps): JSX.Element {
 	const subItems = getSplitPreview((piece.content as SplitsContent).boxSourceConfiguration)
 	return <RenderSplitPreview subItems={subItems} showLabels={false} />
 }

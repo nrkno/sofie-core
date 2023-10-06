@@ -103,7 +103,7 @@ export const SignupPage = translateWithTracker((props: ISignupPageProps) => {
 				this.handleError(`Error creating new user: ${error.reason || error.toString()}`)
 			})
 		}
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<NotLoggedInContainer>

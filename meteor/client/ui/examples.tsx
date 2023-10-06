@@ -28,7 +28,7 @@ class SimpleComponent extends React.Component<SimpleComponentProps, SimpleCompon
 			myState0: '',
 		}
 	}
-	render() {
+	render(): JSX.Element {
 		return (
 			<div>
 				{this.props.myProp0}
@@ -39,7 +39,7 @@ class SimpleComponent extends React.Component<SimpleComponentProps, SimpleCompon
 		)
 	}
 }
-export function testSimpleComponent() {
+export function testSimpleComponent(): SimpleComponent {
 	return new SimpleComponent({
 		myProp0: '',
 		// asdf: 123, // invalid argument
@@ -63,7 +63,7 @@ export const TranslatedSimpleComponent = withTranslation()(
 				myState0: '',
 			}
 		}
-		render() {
+		render(): JSX.Element {
 			const t = this.props.t
 			return (
 				<div>
@@ -111,7 +111,7 @@ const ReactiveComponent = withTracker<ReactiveComponentProps, ReactiveComponentS
 				myState0: '',
 			}
 		}
-		render() {
+		render(): JSX.Element {
 			return (
 				<div>
 					{this.props.myProp0}
@@ -124,7 +124,7 @@ const ReactiveComponent = withTracker<ReactiveComponentProps, ReactiveComponentS
 		}
 	}
 )
-export function testReactiveComponent() {
+export function testReactiveComponent(): React.Component {
 	return new ReactiveComponent({
 		myProp0: '',
 		// myReactiveProp0: '', // invalid argument
@@ -161,7 +161,7 @@ export const TranslatedReactiveComponent = translateWithTracker<
 				myState0: '',
 			}
 		}
-		render() {
+		render(): JSX.Element {
 			const t = this.props.t
 			return (
 				<div>
@@ -208,7 +208,7 @@ export const WithTimingComponent = withTiming<WithTimingComponentProps, WithTimi
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			return (
 				<div>
 					{this.props.myProp0}

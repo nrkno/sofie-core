@@ -1,5 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
-import { StudioRouteType, Studios } from '../../lib/collections/Studios'
+import { StudioRouteType } from '../../lib/collections/Studios'
+import { Studios } from '../collections'
 
 export const addSteps = addMigrationSteps('1.42.0', [
 	// Add some migrations!

@@ -1,13 +1,15 @@
 import { MOS } from '@sofie-automation/corelib'
 import { literal } from '@sofie-automation/corelib/dist/lib'
 
+const mosTypes = MOS.getMosTypes(true)
+
 export const mockRO = {
 	roCreate: (): MOS.IMOSRunningOrder =>
 		literal<MOS.IMOSRunningOrder>({
-			ID: new MOS.MosString128('SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa'),
-			Slug: new MOS.MosString128('All effect1 into clip combinations'),
-			EditorialStart: new MOS.MosTime('2018-11-07T07:00:00,000Z'),
-			EditorialDuration: new MOS.MosDuration('0:9:0'),
+			ID: mosTypes.mosString128.create('SLENPS01;P_NDSL\\W;68E40DE6-2D08-487D-aaaaa'),
+			Slug: mosTypes.mosString128.create('All effect1 into clip combinations'),
+			EditorialStart: mosTypes.mosTime.create('2018-11-07T07:00:00,000Z'),
+			EditorialDuration: mosTypes.mosDuration.create('0:9:0'),
 			MosExternalMetaData: [
 				{
 					MosSchema: 'http://SLENPS01:10505/schema/enpsro.dtd',
@@ -38,43 +40,43 @@ export const mockRO = {
 			],
 			Stories: [
 				{
-					ID: new MOS.MosString128('ro1;s1;p1'),
-					Slug: new MOS.MosString128('SEGMENT1;PART1'),
+					ID: mosTypes.mosString128.create('ro1;s1;p1'),
+					Slug: mosTypes.mosString128.create('SEGMENT1;PART1'),
 					Items: [],
 				},
 				{
-					ID: new MOS.MosString128('ro1;s1;p2'),
-					Slug: new MOS.MosString128('SEGMENT1;PART2'),
+					ID: mosTypes.mosString128.create('ro1;s1;p2'),
+					Slug: mosTypes.mosString128.create('SEGMENT1;PART2'),
 					Items: [],
 				},
 				{
-					ID: new MOS.MosString128('ro1;s1;p3'),
-					Slug: new MOS.MosString128('SEGMENT1;PART3'),
+					ID: mosTypes.mosString128.create('ro1;s1;p3'),
+					Slug: mosTypes.mosString128.create('SEGMENT1;PART3'),
 					Items: [],
 				},
 				{
-					ID: new MOS.MosString128('ro1;s2;p1'),
-					Slug: new MOS.MosString128('SEGMENT2;PART1'),
+					ID: mosTypes.mosString128.create('ro1;s2;p1'),
+					Slug: mosTypes.mosString128.create('SEGMENT2;PART1'),
 					Items: [],
 				},
 				{
-					ID: new MOS.MosString128('ro1;s2;p2'),
-					Slug: new MOS.MosString128('SEGMENT2;PART2'),
+					ID: mosTypes.mosString128.create('ro1;s2;p2'),
+					Slug: mosTypes.mosString128.create('SEGMENT2;PART2'),
 					Items: [],
 				},
 				{
-					ID: new MOS.MosString128('ro1;s3;p1'),
-					Slug: new MOS.MosString128('SEGMENT3;PART1'),
+					ID: mosTypes.mosString128.create('ro1;s3;p1'),
+					Slug: mosTypes.mosString128.create('SEGMENT3;PART1'),
 					Items: [],
 				},
 				{
-					ID: new MOS.MosString128('ro1;s3;p2'),
-					Slug: new MOS.MosString128('SEGMENT3;PART2'),
+					ID: mosTypes.mosString128.create('ro1;s3;p2'),
+					Slug: mosTypes.mosString128.create('SEGMENT3;PART2'),
 					Items: [],
 				},
 				{
-					ID: new MOS.MosString128('ro1;s4;p1'),
-					Slug: new MOS.MosString128('SEGMENT2;PART3'), // To check that segment parsing works right when split
+					ID: mosTypes.mosString128.create('ro1;s4;p1'),
+					Slug: mosTypes.mosString128.create('SEGMENT2;PART3'), // To check that segment parsing works right when split
 					Items: [],
 				},
 			],
@@ -100,8 +102,8 @@ export const mockRO = {
 	],
 	newItem: (id: string, slug: string): MOS.IMOSROStory =>
 		literal<MOS.IMOSROStory>({
-			ID: new MOS.MosString128(id),
-			Slug: new MOS.MosString128(slug),
+			ID: mosTypes.mosString128.create(id),
+			Slug: mosTypes.mosString128.create(slug),
 			Items: [],
 		}),
 }

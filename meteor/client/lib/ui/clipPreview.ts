@@ -1,5 +1,5 @@
 import { Accessor, ExpectedPackage, ExpectedPackageStatusAPI } from '@sofie-automation/blueprints-integration'
-import { getPackageContainerPackageStatus } from '../../../lib/globalStores'
+import { getPackageContainerPackageStatus } from '../../utils/globalStores'
 import { PieceUi } from '../../ui/SegmentContainer/withResolvedSegment'
 import { ensureHasTrailingSlash } from '../lib'
 import { AdLibPieceUi } from '../shelf'

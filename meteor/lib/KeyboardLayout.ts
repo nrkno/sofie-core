@@ -81,7 +81,7 @@ export namespace KeyboardLayouts {
 	export const STANDARD_102_TKL: PhysicalLayout = createPhysicalLayout(STANDARD_102_TKL_TEMPLATE)
 	export const STANDARD_102_EXTENDED: PhysicalLayout = createPhysicalLayout(STANDARD_102_EXTENDED_TEMPLATE)
 
-	export function nameToPhysicalLayout(name: Names) {
+	export function nameToPhysicalLayout(name: Names): PhysicalLayout {
 		switch (name) {
 			case Names.STANDARD_102_EXTENDED:
 				return STANDARD_102_EXTENDED

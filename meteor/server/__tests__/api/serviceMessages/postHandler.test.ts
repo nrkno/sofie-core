@@ -3,6 +3,7 @@ import { Criticality, ExternalServiceMessage } from '../../../../lib/collections
 import { IncomingMessage, ServerResponse } from 'http'
 import { Socket } from 'net'
 import * as serviceMessagesApi from '../../../api/serviceMessages/serviceMessagesApi'
+import { SupressLogMessages } from '../../../../__mocks__/suppressLogging'
 
 jest.mock('../../../api/serviceMessages/serviceMessagesApi', () => {
 	return {
@@ -392,6 +393,7 @@ describe('ServiceMessages API POST endpoint', () => {
 			})
 			mockRequest.body = JSON.parse(JSON.stringify(validInput))
 
+			SupressLogMessages.suppressLogMessage(/Unable to store message/i)
 			await postHandler({}, mockRequest, mockResponse)
 
 			expect(mockResponse.statusCode).toBe(500)

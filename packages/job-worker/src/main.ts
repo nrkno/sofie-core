@@ -106,6 +106,16 @@ export abstract class JobWorkerBase {
 			await this.#client.close()
 		}
 	}
+
+	public collectWorkerSetMetrics(): Promise<string>[] {
+		const metrics: Promise<string>[] = []
+
+		for (const workerSet of this.#workers.values()) {
+			metrics.push(...workerSet.collectMetrics())
+		}
+
+		return metrics
+	}
 }
 
 /** Get the ids of the studios to run for */

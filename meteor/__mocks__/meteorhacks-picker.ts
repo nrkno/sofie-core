@@ -20,11 +20,11 @@ export interface PickerMockRoute {
 
 export class PickerMock {
 	static mockRoutes: { [name: string]: PickerMockRoute } = {}
-	static route(routeName: string, fcn: HandlerFunction) {
+	static route(routeName: string, fcn: HandlerFunction): void {
 		this.mockRoutes[routeName] = { handler: fcn }
 	}
 
-	static filter(fcn: FilterFunction) {
+	static filter(fcn: FilterFunction): Router {
 		return new Router(fcn)
 	}
 }
@@ -35,17 +35,17 @@ export class Router {
 		this.filter = filter
 	}
 
-	middleware() {
+	middleware(): void {
 		// todo
 	}
-	route(routeName: string, fcn: HandlerFunction) {
+	route(routeName: string, fcn: HandlerFunction): void {
 		PickerMock.mockRoutes[routeName] = {
 			filter: this.filter,
 			handler: fcn,
 		}
 	}
 }
-export function setup() {
+export function setup(): any {
 	return {
 		Picker: PickerMock,
 	}

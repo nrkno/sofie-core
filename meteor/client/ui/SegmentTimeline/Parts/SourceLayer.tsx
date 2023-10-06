@@ -47,7 +47,10 @@ interface ISourceLayerProps extends ISourceLayerPropsBase {
 	showDuration?: boolean
 }
 
-export function useMouseContext(props: ISourceLayerPropsBase) {
+export function useMouseContext(props: ISourceLayerPropsBase): {
+	getPartContext(): IContextMenuContext
+	onMouseUp(e: React.MouseEvent<HTMLDivElement>): void
+} {
 	const [mousePosition, setMousePosition] = useState<OffsetPosition>({ left: 0, top: 0 })
 
 	return {
@@ -76,7 +79,7 @@ export function useMouseContext(props: ISourceLayerPropsBase) {
 	}
 }
 
-export function SourceLayer(props: ISourceLayerProps) {
+export function SourceLayer(props: ISourceLayerProps): JSX.Element {
 	const { getPartContext, onMouseUp } = useMouseContext(props)
 
 	return (
@@ -100,7 +103,7 @@ export function SourceLayer(props: ISourceLayerProps) {
 							// filter only pieces belonging to this part
 							return piece.instance.partInstanceId === props.part.instance._id
 								? // filter only pieces, that have not been hidden from the UI
-								  piece.instance.hidden !== true && piece.instance.piece.virtual !== true
+								  piece.instance.piece.virtual !== true
 								: false
 						})
 				  )

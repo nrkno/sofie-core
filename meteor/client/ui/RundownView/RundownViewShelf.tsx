@@ -19,9 +19,9 @@ import {
 	PieceDisplayStyle,
 	RundownLayoutFilterBase,
 } from '../../../lib/collections/RundownLayouts'
-import { NoticeLevel, Notification, NotificationCenter } from '../../lib/notifications/notifications'
-import { memoizedIsolatedAutorun } from '../../lib/reactiveData/reactiveDataHelper'
-import { doUserAction, UserAction } from '../../lib/userAction'
+import { NoticeLevel, Notification, NotificationCenter } from '../../../lib/notifications/notifications'
+import { memoizedIsolatedAutorun } from '../../../lib/memoizedIsolatedAutorun'
+import { doUserAction, UserAction } from '../../../lib/clientUserAction'
 import { MeteorCall } from '../../../lib/api/methods'
 import {
 	AdLibPieceUi,
@@ -205,7 +205,7 @@ class RundownViewShelfInner extends MeteorReactComponent<
 		}
 	}
 
-	render() {
+	render(): JSX.Element | null {
 		const { pieces } = this.props.adLibSegmentUi
 		if (!pieces.length) return null
 		return (

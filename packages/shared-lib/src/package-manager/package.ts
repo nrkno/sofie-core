@@ -68,6 +68,9 @@ export namespace ExpectedPackage {
 			/** Which container thumbnails are to be put into */
 			thumbnailContainerId?: string | null // null is used to disable the sideEffect
 			thumbnailPackageSettings?: SideEffectThumbnailSettings
+
+			/** Other custom configuration */
+			[key: string]: any
 		}
 	}
 	export interface SideEffectPreviewSettings {
@@ -244,7 +247,7 @@ export namespace Accessor {
 
 		/** Zone id, defaults to 'default' */
 		zoneId?: string
-		/** Server id. Can be omitted for sources, as clip-searches are zone-wide */
+		/** Server id. Should be omitted for sources, as clip-searches are zone-wide. */
 		serverId?: number
 
 		/** Name/Id of the network the share exists on. Used to differ between different networks. Leave empty if globally accessible. */
@@ -391,6 +394,8 @@ export namespace ExpectedPackageStatusAPI {
 		NOT_FOUND = 'not_found',
 		/** The Package source is found, but not able to be transferred */
 		NOT_READY = 'not_ready',
+		/** The Package exists but doesn't have any content */
+		PLACEHOLDER = 'placeholder',
 		/** The Package is currently transferring, but can be played out */
 		TRANSFERRING_READY = 'transferring_ready',
 		/** The Package is currently transferring, and is not ready to be played out */

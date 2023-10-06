@@ -101,7 +101,6 @@ export function defaultStudio(_id: StudioId): DBStudio {
 		settings: {
 			frameRate: 25,
 			mediaPreviewsUrl: '',
-			sofieUrl: '',
 		},
 		_rundownVersionHash: '',
 		routeSets: {},
@@ -109,6 +108,7 @@ export function defaultStudio(_id: StudioId): DBStudio {
 		packageContainers: {},
 		previewContainerIds: [],
 		thumbnailContainerIds: [],
+		lastBlueprintConfig: undefined,
 	}
 }
 

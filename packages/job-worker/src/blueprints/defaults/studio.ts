@@ -10,6 +10,10 @@ import {
 import { deepFreeze } from '@sofie-automation/corelib/dist/lib'
 import { ReadonlyDeep } from 'type-fest'
 
+/**
+ * Default minimal Studio Blueprint, to be used when there is no real Blueprint provided for the studio.
+ * This Blueprint does not do much other than to satisfy typings, and ensure that various operations which need a blueprint will be able to execute
+ */
 export const DefaultStudioBlueprint: ReadonlyDeep<StudioBlueprintManifest> = deepFreeze({
 	/** Version of the blueprint */
 	blueprintVersion: '',
@@ -22,6 +26,13 @@ export const DefaultStudioBlueprint: ReadonlyDeep<StudioBlueprintManifest> = dee
 
 	studioConfigManifest: [],
 	studioMigrations: [],
+
+	configPresets: {
+		0: {
+			name: 'Default',
+			config: {},
+		},
+	},
 
 	/** Returns the items used to build the baseline (default state) of a studio, this is the baseline used when there's no active rundown */
 	getBaseline(_context: IStudioBaselineContext): BlueprintResultStudioBaseline {

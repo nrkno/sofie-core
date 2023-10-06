@@ -21,20 +21,20 @@ export class Modal extends React.Component<IModalAttributes> {
 		super(props)
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		this.sorensen = this.context
 		this.bindKeys()
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		this.unbindKeys()
 	}
 
-	componentDidUpdate(prevProps: IModalAttributes) {
+	componentDidUpdate(prevProps: IModalAttributes): void {
 		if (prevProps.show !== this.props.show) this.bindKeys()
 	}
 
-	bindKeys = () => {
+	private bindKeys = () => {
 		if (this.props.show) {
 			this.sorensen.bind(Settings.confirmKeyCode, this.preventDefault, {
 				up: false,
@@ -57,14 +57,14 @@ export class Modal extends React.Component<IModalAttributes> {
 		}
 	}
 
-	unbindKeys = () => {
+	private unbindKeys = () => {
 		this.sorensen.unbind(Settings.confirmKeyCode, this.preventDefault)
 		this.sorensen.unbind(Settings.confirmKeyCode, this.handleKey)
 		this.sorensen.unbind('Escape', this.preventDefault)
 		this.sorensen.unbind('Escape', this.handleKey)
 	}
 
-	handleKey = (e: KeyboardEvent) => {
+	private handleKey = (e: KeyboardEvent) => {
 		if (this.props.show) {
 			if (e.code === 'Escape') {
 				this.handleDiscard(e)
@@ -74,13 +74,13 @@ export class Modal extends React.Component<IModalAttributes> {
 		}
 	}
 
-	handleDiscard = (e: SomeEvent) => {
+	private handleDiscard = (e: SomeEvent) => {
 		if (this.props.onDiscard && typeof this.props.onDiscard === 'function') {
 			this.props.onDiscard(e)
 		}
 	}
 
-	render() {
+	render(): JSX.Element | null {
 		if (!this.props.show) {
 			return null
 		}

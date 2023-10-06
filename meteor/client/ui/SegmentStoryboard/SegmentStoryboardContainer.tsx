@@ -1,9 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
 import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
-import { PartInstances } from '../../../lib/collections/PartInstances'
-import { Parts } from '../../../lib/collections/Parts'
-import { Segments } from '../../../lib/collections/Segments'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
 import {
 	// PartUi,
@@ -15,6 +12,7 @@ import { SpeechSynthesiser } from '../../lib/speechSynthesis'
 import { SegmentStoryboard } from './SegmentStoryboard'
 import { unprotectString } from '../../../lib/lib'
 import { LIVELINE_HISTORY_SIZE as TIMELINE_LIVELINE_HISTORY_SIZE } from '../SegmentTimeline/SegmentTimelineContainer'
+import { PartInstances, Parts, Segments } from '../../collections'
 
 export const LIVELINE_HISTORY_SIZE = TIMELINE_LIVELINE_HISTORY_SIZE
 
@@ -223,7 +221,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 		}
 	}, [props.onSegmentScroll, isLiveSegment])
 
-	if (props.segmentui === undefined) {
+	if (props.segmentui === undefined || props.segmentui.isHidden) {
 		return null
 	}
 
@@ -235,7 +233,7 @@ export const SegmentStoryboardContainer = withResolvedSegment<IProps>(function S
 			segment={props.segmentui}
 			studio={props.studio}
 			parts={props.parts}
-			segmentNotes={props.segmentNotes}
+			segmentNoteCounts={props.segmentNoteCounts}
 			onItemClick={props.onPieceClick}
 			onItemDoubleClick={props.onPieceDoubleClick}
 			playlist={props.playlist}

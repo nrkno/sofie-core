@@ -46,7 +46,7 @@ export const JobStatusIcon = withTranslation()(
 				</div>
 			)
 		}
-		render() {
+		render(): JSX.Element {
 			return <>{this.getProgressbar()}</>
 		}
 	}

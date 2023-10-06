@@ -13,3 +13,6 @@ scratch/
 .github/workflows/deps.yaml
 .github/workflows/forkSync.yml
 .github/workflows/forkSynk.yml
+
+# Temporary, for easier branch switching with release50
+.yarn

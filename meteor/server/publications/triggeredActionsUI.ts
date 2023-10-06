@@ -4,7 +4,7 @@ import { Meteor } from 'meteor/meteor'
 import { Mongo } from 'meteor/mongo'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
-import { DBTriggeredActions, TriggeredActions, UITriggeredActionsObj } from '../../lib/collections/TriggeredActions'
+import { DBTriggeredActions, UITriggeredActionsObj } from '../../lib/collections/TriggeredActions'
 import { Complete, literal } from '../../lib/lib'
 import {
 	CustomPublishCollection,
@@ -16,6 +16,7 @@ import { logger } from '../logging'
 import { resolveCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { ShowStyleReadAccess } from '../security/showStyle'
+import { TriggeredActions } from '../collections'
 
 interface UITriggeredActionsArgs {
 	readonly showStyleBaseId: ShowStyleBaseId | null
@@ -64,10 +65,10 @@ async function setupUITriggeredActionsPublicationObservers(
 
 	// Set up observers:
 	return [
-		TriggeredActions.find(compileMongoSelector(args.showStyleBaseId)).observe({
-			added: (obj) => triggerUpdate(trackChange(obj._id)),
-			changed: (obj) => triggerUpdate(trackChange(obj._id)),
-			removed: (obj) => triggerUpdate(trackChange(obj._id)),
+		TriggeredActions.find(compileMongoSelector(args.showStyleBaseId)).observeChanges({
+			added: (id) => triggerUpdate(trackChange(id)),
+			changed: (id) => triggerUpdate(trackChange(id)),
+			removed: (id) => triggerUpdate(trackChange(id)),
 		}),
 	]
 }

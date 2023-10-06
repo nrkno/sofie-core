@@ -5,13 +5,14 @@ import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { UIShowStyleBase } from '../../lib/api/showStyles'
-import { ShowStyleBase, ShowStyleBases } from '../../lib/collections/ShowStyleBases'
+import { ShowStyleBase } from '../../lib/collections/ShowStyleBases'
 import { Complete, literal } from '../../lib/lib'
 import { meteorCustomPublish, setUpOptimizedObserverArray, TriggerUpdate } from '../lib/customPublication'
 import { logger } from '../logging'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { OrganizationReadAccess } from '../security/organization'
 import { ShowStyleReadAccess } from '../security/showStyle'
+import { ShowStyleBases } from '../collections'
 import { AutoFillSelector } from './lib'
 
 interface UIShowStyleBaseArgs {
@@ -41,7 +42,7 @@ async function setupUIShowStyleBasePublicationObservers(
 	return [
 		ShowStyleBases.find(args.showStyleBaseId, {
 			fields: fieldSpecifier,
-		}).observe({
+		}).observeChanges({
 			added: () => triggerUpdate({ invalidateShowStyle: true }),
 			changed: () => triggerUpdate({ invalidateShowStyle: true }),
 			removed: () => triggerUpdate({ invalidateShowStyle: true }),

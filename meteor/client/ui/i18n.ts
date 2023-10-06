@@ -5,12 +5,13 @@ import LanguageDetector from 'i18next-browser-languagedetector'
 import { initReactI18next } from 'react-i18next'
 import { WithManagedTracker } from '../lib/reactiveData/reactiveDataHelper'
 import { PubSub } from '../../lib/api/pubsub'
-import { Translation, TranslationsBundle, TranslationsBundles } from '../../lib/collections/TranslationsBundles'
+import { Translation, TranslationsBundle } from '../../lib/collections/TranslationsBundles'
 import { I18NextData } from '@sofie-automation/blueprints-integration'
 import { MeteorCall } from '../../lib/api/methods'
 import { ClientAPI } from '../../lib/api/client'
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { TranslationsBundleId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { TranslationsBundles } from '../collections'
 
 const i18nOptions = {
 	fallbackLng: {

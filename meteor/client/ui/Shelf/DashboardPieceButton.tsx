@@ -1,7 +1,6 @@
 import * as React from 'react'
 import { Meteor } from 'meteor/meteor'
 import ClassNames from 'classnames'
-import { Translated } from '../../lib/ReactMeteorData/react-meteor-data'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { RundownUtils } from '../../lib/rundown'
 import {
@@ -19,11 +18,10 @@ import { PieceDisplayStyle } from '../../../lib/collections/RundownLayouts'
 import { DashboardPieceButtonSplitPreview } from './DashboardPieceButtonSplitPreview'
 import { StyledTimecode } from '../../lib/StyledTimecode'
 import { VTFloatingInspector } from '../FloatingInspectors/VTFloatingInspector'
-import { getNoticeLevelForPieceStatus } from '../../lib/notifications/notifications'
+import { getNoticeLevelForPieceStatus } from '../../../lib/notifications/notifications'
 import { L3rdFloatingInspector } from '../FloatingInspectors/L3rdFloatingInspector'
 import { withMediaObjectStatus } from '../SegmentTimeline/withMediaObjectStatus'
 import { getThumbnailUrlForAdLibPieceUi } from '../../lib/ui/clipPreview'
-import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 import { isTouchDevice } from '../../lib/lib'
 import { AdLibPieceUi } from '../../lib/shelf'
@@ -35,8 +33,8 @@ export interface IDashboardButtonProps {
 	studio: UIStudio
 	layer?: ISourceLayer
 	outputLayer?: IOutputLayer
-	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: any) => void
-	onSelectAdLib: (aSLine: IAdLibListItem, context: any) => void
+	onToggleAdLib: (aSLine: IAdLibListItem, queue: boolean, context: React.SyntheticEvent) => void
+	onSelectAdLib: (aSLine: IAdLibListItem, context: React.SyntheticEvent) => void
 	playlist: RundownPlaylist
 	mediaPreviewUrl?: string
 	isOnAir?: boolean
@@ -66,10 +64,7 @@ interface IState {
 	active: boolean
 }
 
-export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
-	Translated<IDashboardButtonProps> & T,
-	IState
-> {
+export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<IDashboardButtonProps & T, IState> {
 	private element: HTMLDivElement | null = null
 	private positionAndSize: {
 		top: number
@@ -80,8 +75,9 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 	private _labelEl: HTMLTextAreaElement
 	private pointerId: number | null = null
 	private hoverTimeout: number | null = null
+	protected inBucket = false
 
-	constructor(props: IDashboardButtonProps) {
+	constructor(props: IDashboardButtonProps & T) {
 		super(props)
 
 		this.state = {
@@ -92,7 +88,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
-	componentDidUpdate(prevProps) {
+	componentDidUpdate(prevProps: IDashboardButtonProps & T): void {
 		if (prevProps.piece.name !== this.props.piece.name) {
 			this.setState({
 				label: this.props.piece.name,
@@ -100,7 +96,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		super.componentWillUnmount()
 		if (this.hoverTimeout) {
 			clearTimeout(this.hoverTimeout)
@@ -108,7 +104,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		}
 	}
 
-	renderGraphics(_renderThumbnail?: boolean) {
+	private renderGraphics(_renderThumbnail?: boolean) {
 		const adLib = this.props.piece as any as AdLibPieceUi
 		const noraContent = adLib.content as NoraContent | undefined
 		return (
@@ -138,7 +134,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		)
 	}
 
-	renderVTLiveSpeak(renderThumbnail?: boolean) {
+	private renderVTLiveSpeak(renderThumbnail?: boolean) {
 		let thumbnailUrl: string | undefined
 		let sourceDuration: number | undefined
 		const adLib = this.props.piece as any as AdLibPieceUi
@@ -169,7 +165,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 					typeClass={this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)}
 					itemElement={null}
 					contentMetaData={this.props.piece.contentMetaData || null}
-					noticeMessage={this.props.piece.message || null}
+					noticeMessages={this.props.piece.messages || null}
 					noticeLevel={
 						this.props.piece.status !== null && this.props.piece.status !== undefined
 							? getNoticeLevelForPieceStatus(this.props.piece.status)
@@ -191,7 +187,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		)
 	}
 
-	renderSplits(renderThumbnail: boolean = false) {
+	private renderSplits(renderThumbnail: boolean = false) {
 		const splitAdLib = this.props.piece
 		if (splitAdLib && splitAdLib.content) {
 			return (
@@ -406,13 +402,13 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 		e.preventDefault()
 	}
 
-	renderHotkey = () => {
+	private renderHotkey = () => {
 		if (this.props.piece.hotkey) {
 			return <div className="dashboard-panel__panel__button__hotkey">{this.props.piece.hotkey}</div>
 		}
 	}
 
-	render() {
+	render(): JSX.Element {
 		const isList = this.props.displayStyle === PieceDisplayStyle.LIST
 		const isButtons = this.props.displayStyle === PieceDisplayStyle.BUTTONS
 		return (
@@ -423,17 +419,13 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 						invalid: this.props.piece.invalid,
 						floated: this.props.piece.floated,
 						active: this.state.active,
-
-						'source-missing': this.props.piece.status === PieceStatusCode.SOURCE_MISSING,
-						'source-broken': this.props.piece.status === PieceStatusCode.SOURCE_BROKEN,
-						'unknown-state': this.props.piece.status === PieceStatusCode.UNKNOWN,
-
 						live: this.props.isOnAir,
 						disabled: this.props.disabled,
 						list: isList,
 						selected: this.props.isNext || this.props.isSelected,
 					},
-					this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type),
+					!this.inBucket && this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type),
+					RundownUtils.getPieceStatusClassName(this.props.piece.status),
 					...(this.props.piece.tags ? this.props.piece.tags.map((tag) => `piece-tag--${tag}`) : [])
 				)}
 				style={{
@@ -477,6 +469,16 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 
 					{this.renderHotkey()}
 					<div className="dashboard-panel__panel__button__label-container">
+						{this.inBucket && (
+							<div
+								className={ClassNames(
+									'dashboard-panel__panel__button__tag-container',
+									this.props.layer && RundownUtils.getSourceLayerClassName(this.props.layer.type)
+								)}
+							>
+								&nbsp;
+							</div>
+						)}
 						{this.props.editableName ? (
 							<textarea
 								className="dashboard-panel__panel__button__label dashboard-panel__panel__button__label--editable"
@@ -486,7 +488,7 @@ export class DashboardPieceButtonBase<T = {}> extends MeteorReactComponent<
 								ref={this.onRenameTextBoxShow}
 							></textarea>
 						) : (
-							<span className="dashboard-panel__panel__button__label">{this.state.label}</span>
+							<div className="dashboard-panel__panel__button__label">{this.state.label}</div>
 						)}
 					</div>
 				</div>

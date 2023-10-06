@@ -1,6 +1,6 @@
 {
 	"name": "playout-gateway",
-	"version": "1.47.6",
+	"version": "1.49.0",
 	"private": true,
 	"description": "Connect to Core, play stuff",
 	"license": "MIT",
@@ -40,7 +40,7 @@
 		"license-validate": "yarn sofie-licensecheck"
 	},
 	"engines": {
-		"node": "^14.19 || ^16.14"
+		"node": "^14.19 || ^16.14 || ^18.12"
 	},
 	"keywords": [
 		"broadcast",
@@ -56,13 +56,11 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "1.47.6",
-		"@sofie-automation/server-core-integration": "1.47.6",
-		"@sofie-automation/shared-lib": "1.47.6",
+		"@sofie-automation/server-core-integration": "1.49.0",
+		"@sofie-automation/shared-lib": "1.49.0",
 		"debug": "^4.3.3",
-		"fast-clone": "^1.5.13",
 		"influx": "^5.9.3",
-		"timeline-state-resolver": "7.5.1-nightly-release47-20230901-122602-a1541133a.0",
+		"timeline-state-resolver": "8.0.0",
 		"tslib": "^2.4.0",
 		"underscore": "^1.13.4",
 		"winston": "^3.8.2"

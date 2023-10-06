@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react'
 import { useSubscription, useTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { Time, unprotectString } from '../../../lib/lib'
-import { UserActionsLog, UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
+import { UserActionsLogItem } from '../../../lib/collections/UserActionsLog'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import moment from 'moment'
 import { PubSub } from '../../../lib/api/pubsub'
@@ -10,6 +10,7 @@ import { parse as queryStringParse } from 'query-string'
 import { Link, useHistory, useLocation } from 'react-router-dom'
 import classNames from 'classnames'
 import Tooltip from 'rc-tooltip'
+import { UserActionsLog } from '../../collections'
 
 const PARAM_DATE_FORMAT = 'YYYY-MM-DD'
 const PARAM_NAME_FROM_DATE = 'fromDate'
@@ -140,7 +141,7 @@ function UserActionsList(props: IUserActionsListProps) {
 	)
 }
 
-function UserActivity() {
+function UserActivity(): JSX.Element {
 	const { t } = useTranslation()
 
 	const [dateFrom, setDateFrom] = useState<Time>(moment().startOf('day').valueOf())

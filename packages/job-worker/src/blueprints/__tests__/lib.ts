@@ -1,6 +1,6 @@
 import { BlueprintManifestType, SomeBlueprintManifest } from '@sofie-automation/blueprints-integration'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { literal } from '@sofie-automation/corelib/dist/lib'
+import { getRandomId, literal } from '@sofie-automation/corelib/dist/lib'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 
 export function generateFakeBlueprint(
@@ -31,16 +31,19 @@ export function generateFakeBlueprint(
 		name: 'Fake blueprint',
 		organizationId: null,
 		code: `({default: (${codeFcnString})()})`,
+		hasCode: true,
 		created: 0,
 		modified: 0,
 
 		blueprintId: protectString(''),
 		blueprintType: type,
+		blueprintHash: getRandomId(),
 
 		studioConfigManifest: [],
 		showStyleConfigManifest: [],
 
 		databaseVersion: {
+			system: undefined,
 			showStyle: {},
 			studio: {},
 		},

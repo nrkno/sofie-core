@@ -1,6 +1,6 @@
 import * as React from 'react'
 
-export function CriticalIcon() {
+export function CriticalIcon(): JSX.Element {
 	return (
 		<svg
 			width="32"
@@ -36,7 +36,7 @@ export function CriticalIcon() {
 	)
 }
 
-export function WarningIcon() {
+export function WarningIcon(): JSX.Element {
 	return (
 		<svg
 			width="43"
@@ -63,7 +63,7 @@ export function WarningIcon() {
 	)
 }
 
-export function InformationIcon() {
+export function InformationIcon(): JSX.Element {
 	return (
 		<svg
 			width="27"
@@ -90,7 +90,7 @@ export function InformationIcon() {
 	)
 }
 
-export function CriticalIconSmall() {
+export function CriticalIconSmall(): JSX.Element {
 	return (
 		<svg
 			width="21"
@@ -126,7 +126,7 @@ export function CriticalIconSmall() {
 	)
 }
 
-export function WarningIconSmall() {
+export function WarningIconSmall(): JSX.Element {
 	return (
 		<svg
 			width="28"
@@ -153,7 +153,7 @@ export function WarningIconSmall() {
 	)
 }
 
-export function InformationIconSmall() {
+export function InformationIconSmall(): JSX.Element {
 	return (
 		<svg
 			width="19"
@@ -180,11 +180,30 @@ export function InformationIconSmall() {
 	)
 }
 
-export function CollapseChevrons() {
+export function CollapseChevrons(): JSX.Element {
 	return (
 		<svg width="37" height="29" viewBox="0 0 37 29" fill="none" xmlns="http://www.w3.org/2000/svg" role="presentation">
 			<path d="M8.15298 21.1207C7.89734 21.4009 7.75562 21.7666 7.75562 22.1459C7.75562 22.5252 7.89734 22.8908 8.15298 23.171C8.27469 23.3039 8.4225 23.4102 8.58717 23.4833C8.75184 23.5564 8.92982 23.5947 9.10998 23.5959C9.45798 23.5959 9.80598 23.4538 10.0699 23.171L16.8486 15.921C17.1043 15.6408 17.246 15.2752 17.246 14.8959C17.246 14.5166 17.1043 14.1509 16.8486 13.8707L10.0699 6.62072C9.94864 6.48691 9.80072 6.37998 9.63564 6.30679C9.47057 6.23361 9.292 6.1958 9.11143 6.1958C8.93087 6.1958 8.7523 6.23361 8.58722 6.30679C8.42215 6.37998 8.27423 6.48691 8.15298 6.62072C7.89734 6.90094 7.75562 7.26656 7.75562 7.64587C7.75562 8.02518 7.89734 8.3908 8.15298 8.67102L13.8834 14.8959L8.15298 21.1207Z" />
 			<path d="M16.153 21.1207C15.8973 21.4009 15.7556 21.7666 15.7556 22.1459C15.7556 22.5252 15.8973 22.8908 16.153 23.171C16.2747 23.3039 16.4225 23.4102 16.5872 23.4833C16.7518 23.5564 16.9298 23.5947 17.11 23.5959C17.458 23.5959 17.806 23.4538 18.0699 23.171L24.8486 15.921C25.1043 15.6408 25.246 15.2752 25.246 14.8959C25.246 14.5166 25.1043 14.1509 24.8486 13.8707L18.0699 6.62072C17.9486 6.48691 17.8007 6.37998 17.6356 6.30679C17.4706 6.23361 17.292 6.1958 17.1114 6.1958C16.9309 6.1958 16.7523 6.23361 16.5872 6.30679C16.4222 6.37998 16.2742 6.48691 16.153 6.62072C15.8973 6.90094 15.7556 7.26656 15.7556 7.64587C15.7556 8.02518 15.8973 8.3908 16.153 8.67102L21.8834 14.8959L16.153 21.1207Z" />
+		</svg>
+	)
+}
+
+export function HourglassIconSmall(): JSX.Element {
+	return (
+		<svg width="16" height="14" viewBox="0 0 16 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+			<g clipPath="url(#clip0_5400_19956)">
+				<path
+					d="M7 5.44444L9.75741 2.52055C10.2941 1.94036 9.88203 1 9.09107 1L1.90893 1C1.11797 1 0.705885 1.94036 1.24259 2.52055L9.75741 11.4795C10.2941 12.0596 9.88203 13 9.09107 13C6.28627 13 4.71373 13 1.90893 13C1.11797 13 0.705883 12.0596 1.24259 11.4795L3.88888 8.55556"
+					stroke="white"
+					strokeWidth="2"
+				/>
+			</g>
+			<defs>
+				<clipPath id="clip0_5400_19956">
+					<rect width="16" height="14" fill="white" />
+				</clipPath>
+			</defs>
 		</svg>
 	)
 }

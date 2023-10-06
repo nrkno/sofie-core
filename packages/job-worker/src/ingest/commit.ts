@@ -175,9 +175,6 @@ export async function CommitIngestOperation(
 		return
 	}
 
-	const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
-	const blueprint = await context.getShowStyleBlueprint(showStyle._id)
-
 	// Adopt the rundown into its new/retained playlist.
 	// We have to do the locking 'manually' because the playlist may not exist yet, but that is ok
 	const newPlaylistId: PlaylistIdPair = trappedInPlaylistId ?? targetPlaylistId
@@ -417,18 +414,15 @@ export async function CommitIngestOperation(
 			const pSaveIngest = ingestCache.saveAllToDatabase()
 
 			try {
-				// Get the final copy of the rundown
-				const newRundown = getRundown(ingestCache)
-
 				// sync changes to the 'selected' partInstances
-				await syncChangesToPartInstances(context, playoutCache, ingestCache, showStyle, blueprint, newRundown)
+				await syncChangesToPartInstances(context, playoutCache, ingestCache)
 
 				playoutCache.deferAfterSave(() => {
 					// Run in the background, we don't want to hold onto the lock to do this
 					context
 						.queueEventJob(EventsJobs.RundownDataChanged, {
 							playlistId: playoutCache.PlaylistId,
-							rundownId: newRundown._id,
+							rundownId: ingestCache.RundownId,
 						})
 						.catch((e) => {
 							logger.error(`Queue RundownDataChanged failed: ${e}`)

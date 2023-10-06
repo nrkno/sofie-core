@@ -5,9 +5,10 @@ import { assertNever } from '../../../lib/lib'
 import { MongoQuery } from '../../../lib/typings/meteor'
 import { useTracker } from '../ReactMeteorData/ReactMeteorData'
 import { SorensenContext } from '../SorensenContext'
-import { MountedAdLibTrigger, MountedAdLibTriggers } from './TriggersHandler'
+import { MountedAdLibTriggers } from './TriggersHandler'
 import { codesToKeyLabels } from './codesToKeyLabels'
 import { AdLibActionId, PieceId, RundownBaselineAdLibActionId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MountedAdLibTrigger, MountedHotkeyMixin } from '../../../lib/api/triggers/MountedTriggers'
 
 type IProps =
 	| {
@@ -109,7 +110,10 @@ export const ActionAdLibHotkeyPreview: React.FC<IProps> = function AdLibActionHo
 				}
 				break
 		}
-		return MountedAdLibTriggers.find(selector, findOptions).fetch() as Pick<MountedAdLibTrigger, 'keys'>[]
+		return MountedAdLibTriggers.find(selector, findOptions).fetch() as Pick<
+			MountedAdLibTrigger & MountedHotkeyMixin,
+			'keys'
+		>[]
 	}, [props.targetId, props.type])
 
 	let hotkeys: React.ReactElement[] | null = null

@@ -46,7 +46,7 @@ interface IOutputGroupProps {
 	showDurationSourceLayers?: Set<ISourceLayer['_id']>
 }
 
-export function OutputGroup(props: IOutputGroupProps) {
+export function OutputGroup(props: IOutputGroupProps): JSX.Element {
 	const isCollapsed =
 		props.collapsedOutputs[props.layer._id] !== undefined
 			? props.collapsedOutputs[props.layer._id] === true

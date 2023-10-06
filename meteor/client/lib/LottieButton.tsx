@@ -38,25 +38,25 @@ export class LottieButton extends React.Component<IProps, IState> {
 		this.buildAnimationObjects(props)
 	}
 
-	onClick = (e: React.MouseEvent<HTMLDivElement>) => {
+	private onClick = (e: React.MouseEvent<HTMLDivElement>) => {
 		if (this.props.onClick && typeof this.props.onClick === 'function') {
 			this.props.onClick(e)
 		}
 	}
 
-	onMouseEnter = () => {
+	private onMouseEnter = () => {
 		this.setState({
 			hover: true,
 		})
 	}
 
-	onMouseLeave = () => {
+	private onMouseLeave = () => {
 		this.setState({
 			hover: false,
 		})
 	}
 
-	buildAnimationObjects(props: IProps) {
+	private buildAnimationObjects(props: IProps) {
 		this.overAnimation = {
 			...this.base,
 			animationData: props.inAnimation,
@@ -67,7 +67,7 @@ export class LottieButton extends React.Component<IProps, IState> {
 		}
 	}
 
-	render() {
+	render(): JSX.Element {
 		return (
 			<div
 				className={this.props.className}

@@ -19,7 +19,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 	leftLabel: HTMLSpanElement | null
 	rightLabel: HTMLSpanElement | null
 
-	constructor(props) {
+	constructor(props: IProps) {
 		super(props)
 		this.state = {
 			subItems: [],
@@ -38,26 +38,26 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		}
 	}
 
-	setLeftLabelRef = (e: HTMLSpanElement) => {
+	private setLeftLabelRef = (e: HTMLSpanElement) => {
 		this.leftLabel = e
 	}
 
-	setRightLabelRef = (e: HTMLSpanElement) => {
+	private setRightLabelRef = (e: HTMLSpanElement) => {
 		this.rightLabel = e
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		this.updateAnchoredElsWidths()
 	}
 
-	updateAnchoredElsWidths = () => {
+	private updateAnchoredElsWidths = () => {
 		const leftLabelWidth = this.leftLabel ? Math.max(0, getElementWidth(this.leftLabel) - 2) : 0
 		const rightLabelWidth = this.rightLabel ? Math.max(0, getElementWidth(this.rightLabel) - 2) : 0
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
-	componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
+	componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>): void {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -67,7 +67,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 		}
 	}
 
-	renderSubItems() {
+	private renderSubItems() {
 		return this.state.subItems
 			.filter((i) => i.role !== SplitRole.ART)
 			.reverse()
@@ -89,7 +89,7 @@ export class SplitsSourceRenderer extends CustomLayerItemRenderer<IProps, IState
 			})
 	}
 
-	render() {
+	render(): JSX.Element {
 		const labelItems = this.props.piece.instance.piece.name.split('||')
 		const begin = labelItems[0] || ''
 		const end = labelItems[1] || ''

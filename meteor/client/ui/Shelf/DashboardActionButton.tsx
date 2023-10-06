@@ -18,7 +18,7 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 		super(props)
 	}
 
-	getSpecialClasses() {
+	private getSpecialClasses() {
 		const { button } = this.props
 		switch (button.type) {
 			case ActionButtonType.READY_ON_AIR:
@@ -31,7 +31,7 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 		}
 	}
 
-	isToggled() {
+	private isToggled() {
 		const { button } = this.props
 		switch (button.type) {
 			case ActionButtonType.READY_ON_AIR:
@@ -41,14 +41,14 @@ export class DashboardActionButton extends React.Component<IDashboardButtonProps
 		}
 	}
 
-	getLabel() {
+	private getLabel() {
 		const { button } = this.props
 		return this.isToggled() && button.labelToggled && button.labelToggled.length > 0
 			? button.labelToggled
 			: button.label
 	}
 
-	render() {
+	render(): JSX.Element {
 		const { button } = this.props
 
 		return (

@@ -18,3 +18,5 @@ export * from './timeline'
 export * from './util'
 export * from './translations'
 export * from './triggers'
+
+export { MOS } from '@sofie-automation/shared-lib/dist/mos'

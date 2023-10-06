@@ -5,7 +5,7 @@
  * @param {Blob} blob the Blob object to be saved by the browser
  * @param {string} fileName the default file name to be given to the Blob
  */
-export function downloadBlob(blob: Blob, fileName: string) {
+export function downloadBlob(blob: Blob, fileName: string): void {
 	const aDownload = window.document.createElement('a')
 
 	aDownload.href = window.URL.createObjectURL(blob)

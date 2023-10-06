@@ -1,4 +1,4 @@
-import { PackageInfo } from '@sofie-automation/blueprints-integration'
+import { PackageInfo, Time } from '@sofie-automation/blueprints-integration'
 import { protectString } from '../protectedString'
 import { ExpectedPackageDB } from './ExpectedPackages'
 import { ExpectedPackageId, PackageInfoId, PeripheralDeviceId, StudioId } from './Ids'
@@ -26,6 +26,9 @@ export interface PackageInfoDB extends PackageInfo.Base {
 
 	type: PackageInfo.Type
 	payload: any
+
+	/** If set, the package is invalid and will be removed after this time (unix timestamp) */
+	removeTime?: Time | null
 }
 
 export function getPackageInfoId(packageId: ExpectedPackageId, type: string): PackageInfoId {

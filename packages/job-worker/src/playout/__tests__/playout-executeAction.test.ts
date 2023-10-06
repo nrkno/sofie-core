@@ -3,13 +3,15 @@ import { UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
-import { activateRundownPlaylist, executeAction, takeNextPart } from '../playout'
+import { handleTakeNextPart } from '../take'
+import { handleExecuteAdlibAction } from '../adlibAction'
+import { handleActivateRundownPlaylist } from '../activePlaylistJobs'
 import { ActionPartChange, ActionExecutionContext } from '../../blueprints/context/adlibActions'
 import * as Infinites from '../../playout/infinites'
 import * as TakeApi from '../../playout/take'
 
 const syncPlayheadInfinitesForNextPartInstanceMock = jest.spyOn(Infinites, 'syncPlayheadInfinitesForNextPartInstance')
-const takeNextPartMock = jest.spyOn(TakeApi, 'takeNextPartInnerSync')
+const takeNextPartMock = jest.spyOn(TakeApi, 'performTakeToNextedPart')
 
 jest.mock('../timeline/generate')
 import { updateTimeline } from '../timeline/generate'
@@ -29,11 +31,11 @@ describe('Playout API', () => {
 			const { playlistId: playlistId0 } = await setupDefaultRundownPlaylist(context)
 			playlistId = playlistId0
 
-			await activateRundownPlaylist(context, {
+			await handleActivateRundownPlaylist(context, {
 				playlistId: playlistId,
 				rehearsal: true,
 			})
-			await takeNextPart(context, {
+			await handleTakeNextPart(context, {
 				playlistId: playlistId,
 				fromPartInstanceId: null,
 			})
@@ -49,7 +51,7 @@ describe('Playout API', () => {
 			const userData = { blobby: true }
 
 			await expect(
-				executeAction(context, {
+				handleExecuteAdlibAction(context, {
 					playlistId: playlistId,
 					actionDocId: actionDocId,
 					actionId: actionId,
@@ -64,9 +66,9 @@ describe('Playout API', () => {
 			})
 
 			// await supressLogging(async () => {
-			await expect(executeAction(context, { playlistId, actionDocId, actionId, userData })).rejects.toThrowError(
-				'action execution threw'
-			)
+			await expect(
+				handleExecuteAdlibAction(context, { playlistId, actionDocId, actionId, userData })
+			).rejects.toThrow('action execution threw')
 			// })
 
 			expect(syncPlayheadInfinitesForNextPartInstanceMock).toHaveBeenCalledTimes(0)
@@ -86,7 +88,7 @@ describe('Playout API', () => {
 			const actionDocId: AdLibActionId = protectString('action-id')
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			await executeAction(context, {
+			await handleExecuteAdlibAction(context, {
 				playlistId,
 				actionDocId,
 				actionId,
@@ -112,7 +114,7 @@ describe('Playout API', () => {
 			const actionDocId: AdLibActionId = protectString('action-id')
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			await executeAction(context, {
+			await handleExecuteAdlibAction(context, {
 				playlistId,
 				actionDocId,
 				actionId,
@@ -138,7 +140,7 @@ describe('Playout API', () => {
 			const actionDocId: AdLibActionId = protectString('action-id')
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			await executeAction(context, {
+			await handleExecuteAdlibAction(context, {
 				playlistId,
 				actionDocId,
 				actionId,
@@ -161,7 +163,7 @@ describe('Playout API', () => {
 			const actionDocId: AdLibActionId = protectString('action-id')
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			await executeAction(context, {
+			await handleExecuteAdlibAction(context, {
 				playlistId,
 				actionDocId,
 				actionId,
@@ -183,7 +185,7 @@ describe('Playout API', () => {
 			const actionDocId: AdLibActionId = protectString('action-id')
 			const actionId = 'some-action'
 			const userData = { blobby: true }
-			await executeAction(context, {
+			await handleExecuteAdlibAction(context, {
 				playlistId,
 				actionDocId,
 				actionId,

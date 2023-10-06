@@ -1,16 +1,16 @@
 export class Agent {
-	start() {
+	start(): undefined {
 		return undefined
 	}
-	startSpan() {
+	startSpan(): undefined {
 		return undefined
 	}
-	startTransaction() {
+	startTransaction(): undefined {
 		return undefined
 	}
 }
 
-export function setup() {
+export function setup(): any {
 	return {
 		__esModule: true,
 		default: new Agent(),

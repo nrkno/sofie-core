@@ -2,7 +2,7 @@ import * as React from 'react'
 
 // @todo: use dynamic data for camera number
 export default class CamInputIcon extends React.Component<{ inputIndex?: string; abbreviation?: string }> {
-	render() {
+	render(): JSX.Element {
 		return (
 			<svg className="piece_icon" version="1.1" viewBox="0 0 126.5 89" xmlns="http://www.w3.org/2000/svg">
 				<rect width="126.5" height="89" className="camera" />

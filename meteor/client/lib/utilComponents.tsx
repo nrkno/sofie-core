@@ -2,7 +2,8 @@ import * as React from 'react'
 import * as _ from 'underscore'
 import * as VelocityReact from 'velocity-react'
 
-export function makeTableOfObject(o: any) {
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function makeTableOfObject(o: any): React.ReactNode {
 	if (typeof o === 'string') {
 		return o
 	}
@@ -42,7 +43,12 @@ export function makeTableOfObject(o: any) {
 	)
 }
 
-export function OptionalVelocityComponent(props: any) {
+interface OptionalVelocityComponentProps {
+	shouldAnimate: boolean
+	animation: Record<string, any>
+	duration: number
+}
+export function OptionalVelocityComponent(props: React.PropsWithChildren<OptionalVelocityComponentProps>): JSX.Element {
 	return props.shouldAnimate ? (
 		<VelocityReact.VelocityComponent animation={props.animation} duration={props.duration}>
 			{props.children}

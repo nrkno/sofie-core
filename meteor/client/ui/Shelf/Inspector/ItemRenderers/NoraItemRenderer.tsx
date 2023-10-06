@@ -37,7 +37,7 @@ export default withTranslation()(
 			this.setState({ editMode: enabled === true })
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { piece, t } = this.props
 
 			const actualPiece = RundownUtils.isAdLibPiece(piece) ? piece : piece.instance.piece

@@ -1,6 +1,8 @@
 import { stringifyError } from '@sofie-automation/corelib/dist/lib'
-import { CoreSystem, getCoreSystemAsync, ServiceMessage } from '../../../lib/collections/CoreSystem'
+import { ServiceMessage } from '../../../lib/collections/CoreSystem'
+import { getCoreSystemAsync } from '../../coreSystem/collection'
 import { logger } from '../../logging'
+import { CoreSystem } from '../../collections'
 
 export interface WriteStatus {
 	isUpdate?: boolean

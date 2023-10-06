@@ -2,12 +2,10 @@ import * as React from 'react'
 import ClassNames from 'classnames'
 import { EditAttribute } from '../../lib/EditAttribute'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
-import { ShowStyleBase } from '../../../lib/collections/ShowStyleBases'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { faUpload, faPlus, faCheck, faPencilAlt, faDownload, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
-	RundownLayouts,
 	RundownLayoutType,
 	RundownLayoutBase,
 	RundownLayoutFilter,
@@ -26,7 +24,7 @@ import { PubSub } from '../../../lib/api/pubsub'
 import { getRandomString, literal, unprotectString } from '../../../lib/lib'
 import { UploadButton } from '../../lib/uploadButton'
 import { doModalDialog } from '../../lib/ModalDialog'
-import { NotificationCenter, Notification, NoticeLevel } from '../../lib/notifications/notifications'
+import { NotificationCenter, Notification, NoticeLevel } from '../../../lib/notifications/notifications'
 import { fetchFrom } from '../../lib/lib'
 import { Studio } from '../../../lib/collections/Studios'
 import { Link } from 'react-router-dom'
@@ -36,10 +34,14 @@ import FilterEditor from './components/FilterEditor'
 import ShelfLayoutSettings from './components/rundownLayouts/ShelfLayoutSettings'
 import RundownHeaderLayoutSettings from './components/rundownLayouts/RundownHeaderLayoutSettings'
 import RundownViewLayoutSettings from './components/rundownLayouts/RundownViewLayoutSettings'
-import { RundownLayoutId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownLayoutId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { OutputLayers, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
+import { RundownLayouts } from '../../collections'
 
 export interface IProps {
-	showStyleBase: ShowStyleBase
+	showStyleBaseId: ShowStyleBaseId
+	sourceLayers: SourceLayers
+	outputLayers: OutputLayers
 	studios: Studio[]
 	customRegion: CustomizableRegionSettingsManifest
 }
@@ -58,7 +60,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 	const layoutTypes = props.customRegion.layouts.map((l) => l.type)
 
 	const rundownLayouts = RundownLayouts.find({
-		showStyleBaseId: props.showStyleBase._id,
+		showStyleBaseId: props.showStyleBaseId,
 		userId: { $exists: false },
 	}).fetch()
 
@@ -77,16 +79,16 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			super.componentDidMount && super.componentDidMount()
 
 			this.subscribe(PubSub.rundownLayouts, {})
 		}
 
 		onAddLayout = () => {
-			const { t, showStyleBase } = this.props
+			const { t, showStyleBaseId } = this.props
 			MeteorCall.rundownLayout
-				.createRundownLayout(t('New Layout'), this.props.layoutTypes[0], showStyleBase._id, this.props.customRegion._id)
+				.createRundownLayout(t('New Layout'), this.props.layoutTypes[0], showStyleBaseId, this.props.customRegion._id)
 				.catch(console.error)
 		}
 
@@ -364,7 +366,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 						<RundownViewLayoutSettings
 							item={item}
 							layouts={this.props.rundownLayouts}
-							showStyleBase={this.props.showStyleBase}
+							sourceLayers={this.props.sourceLayers}
 						/>
 					)}
 					{RundownLayoutsAPI.isLayoutWithFilters(item) && layout?.supportedFilters.length ? (
@@ -382,7 +384,8 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 								item={item}
 								filter={tab}
 								index={index}
-								showStyleBase={this.props.showStyleBase}
+								sourceLayers={this.props.sourceLayers}
+								outputLayers={this.props.outputLayers}
 								supportedFilters={layout?.supportedFilters ?? []}
 							/>
 						))}
@@ -539,7 +542,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 					),
 					onAccept: () => {
 						if (uploadFileContents) {
-							fetchFrom(`/shelfLayouts/upload/${this.props.showStyleBase._id}`, {
+							fetchFrom(`/shelfLayouts/upload/${this.props.showStyleBaseId}`, {
 								method: 'POST',
 								body: uploadFileContents,
 								headers: {
@@ -578,7 +581,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>((props: IProp
 			reader.readAsText(file)
 		}
 
-		render() {
+		render(): JSX.Element {
 			return (
 				<div className="studio-edit rundown-layout-editor">
 					<h2 className="mhn">{this.props.customRegion.title}</h2>

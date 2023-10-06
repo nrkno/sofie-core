@@ -1,6 +1,6 @@
 import React from 'react'
 
-export function LoopingIcon(props?: React.SVGProps<SVGSVGElement>) {
+export function LoopingIcon(props?: React.SVGProps<SVGSVGElement>): JSX.Element {
 	return (
 		<svg version="1.1" viewBox="0 0 14.61 12.02" width="1em" height="1em" className="icon looping" {...props}>
 			<path

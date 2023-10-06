@@ -5,11 +5,20 @@ import _ = require('underscore')
 import { deleteAllUndefinedProperties, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { JobContext } from '../jobs'
 
+/**
+ * Object describe a collection write event
+ * Contains counts of modified documents
+ */
 export interface Changes {
 	added: number
 	updated: number
 	removed: number
 }
+
+/**
+ * Object describe a collection write event
+ * Contains ids of documents updated/considered
+ */
 export interface ChangedIds<T extends ProtectedString<any>> {
 	added: T[]
 	updated: T[]
@@ -38,19 +47,20 @@ export function anythingChanged(changes: Changes): boolean {
 
 /**
  * Saves an array of data into a collection
- * No matter if the data needs to be created, updated or removed
+ * This executes the necessary insert, update or remove operations to make it so that a load with the provided filter would return the provided documents
  * @param collection The collection to be updated
  * @param filter The filter defining the data subset to be affected in db
- * @param newData The new data
+ * @param newDocs The new documents
+ * @returns Description of the changes
  */
 export async function saveIntoDb<TDoc extends { _id: ProtectedString<any> }>(
 	context: JobContext,
 	collection: ICollection<TDoc>,
 	filter: MongoQuery<TDoc>,
-	newData: Array<TDoc>,
+	newDocs: Array<TDoc>,
 	options?: SaveIntoDbHooks<TDoc>
 ): Promise<Changes> {
-	const preparedChanges = await prepareSaveIntoDb(context, collection, filter, newData, options)
+	const preparedChanges = await prepareSaveIntoDb(context, collection, filter, newDocs, options)
 
 	return savePreparedChanges(preparedChanges, collection, options ?? {})
 }

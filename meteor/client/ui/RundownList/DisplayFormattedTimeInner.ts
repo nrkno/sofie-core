@@ -10,7 +10,7 @@ export function DisplayFormattedTimeInner(
 	nowTimestamp?: number,
 	/* If set, uses the time zone (in minutes) */
 	timeZone?: number
-) {
+): JSX.Element | string {
 	const now = moment(nowTimestamp ?? getCurrentTime()) // use synced time instead of client time
 	const timeToFormat = moment(displayTimestamp)
 

@@ -73,7 +73,7 @@
 			letter-spacing: normal;
 			margin-top: 0.4em;
 
-			width: 100%;
+			width: auto;
 			display: -webkit-box;
 			-webkit-line-clamp: 2;
 			-webkit-box-orient: vertical;
@@ -145,7 +145,7 @@
 	}
 
 	&:not(.segment-storyboard__thumbnail__label--lg):not(.segment-storyboard__thumbnail__label--sm) {
-		> .segment-storyboard__thumbnail__label {
+		> .segment-storyboard__thumbnail__label:not(.segment-storyboard__thumbnail__label--sm) {
 			white-space: nowrap;
 			overflow: hidden;
 			text-overflow: ellipsis;

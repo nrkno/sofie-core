@@ -1,6 +1,4 @@
 import { Time } from '../lib'
-import { createMongoCollection } from './lib'
-import { registerIndex } from '../database'
 import {
 	SnapshotId,
 	StudioId,
@@ -8,7 +6,6 @@ import {
 	RundownPlaylistId,
 	OrganizationId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 export enum SnapshotType {
 	RUNDOWNPLAYLIST = 'rundownplaylist',
@@ -49,12 +46,3 @@ export interface SnapshotSystem extends SnapshotBase {
 export interface SnapshotDebug extends SnapshotBase {
 	type: SnapshotType.DEBUG
 }
-
-export const Snapshots = createMongoCollection<SnapshotItem>(CollectionName.Snapshots)
-
-registerIndex(Snapshots, {
-	organizationId: 1,
-})
-registerIndex(Snapshots, {
-	created: 1,
-})

@@ -10,30 +10,26 @@ export class LocalLayerItemRenderer extends CustomLayerItemRenderer<IProps, ISta
 	leftLabel: HTMLSpanElement | null
 	rightLabel: HTMLSpanElement | null
 
-	constructor(props) {
-		super(props)
-	}
-
-	setLeftLabelRef = (e: HTMLSpanElement) => {
+	private setLeftLabelRef = (e: HTMLSpanElement) => {
 		this.leftLabel = e
 	}
 
-	setRightLabelRef = (e: HTMLSpanElement) => {
+	private setRightLabelRef = (e: HTMLSpanElement) => {
 		this.rightLabel = e
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		this.updateAnchoredElsWidths()
 	}
 
-	updateAnchoredElsWidths = () => {
+	private updateAnchoredElsWidths = () => {
 		const leftLabelWidth = this.leftLabel ? getElementWidth(this.leftLabel) : 0
 		const rightLabelWidth = this.rightLabel ? getElementWidth(this.rightLabel) : 0
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
-	componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
+	componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>): void {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -43,7 +39,7 @@ export class LocalLayerItemRenderer extends CustomLayerItemRenderer<IProps, ISta
 		}
 	}
 
-	render() {
+	render(): JSX.Element | false | null {
 		const innerPiece = this.props.piece.instance.piece
 		const { color } = innerPiece.content as EvsContent
 

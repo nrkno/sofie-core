@@ -20,7 +20,7 @@ export const CurrentPartElapsed = withTiming<IPartElapsedProps, {}>({
 	tickResolution: TimingTickResolution.High,
 })(
 	class CurrentPartElapsed extends React.Component<WithTiming<IPartElapsedProps>> {
-		render() {
+		render(): JSX.Element {
 			const displayTimecode =
 				this.props.currentPartId && this.props.timingDurations.partPlayed
 					? this.props.timingDurations.partPlayed[unprotectString(this.props.currentPartId)] || 0

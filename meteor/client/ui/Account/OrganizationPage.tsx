@@ -2,13 +2,14 @@ import * as React from 'react'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 import { RouteComponentProps } from 'react-router'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { getUser, User, Users, getUserRoles, DBUser } from '../../../lib/collections/Users'
+import { getUser, User, getUserRoles, DBUser } from '../../../lib/collections/Users'
 import { Spinner } from '../../lib/Spinner'
 import { PubSub } from '../../../lib/api/pubsub'
-import { Organizations, DBOrganization, UserRoles } from '../../../lib/collections/Organization'
+import { DBOrganization, UserRoles } from '../../../lib/collections/Organization'
 import { unprotectString } from '../../../lib/lib'
 import { MeteorCall } from '../../../lib/api/methods'
 import { EditAttribute } from '../../lib/EditAttribute'
+import { Organizations, Users } from '../../collections'
 
 interface OrganizationProps extends RouteComponentProps {
 	user: User | null
@@ -50,7 +51,7 @@ export const OrganizationPage = translateWithTracker((_props: RouteComponentProp
 			this.setState({ newUserEmail: '', newUserName: '' })
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.autorun(() => {
 				if (this.props.organization) {
 					this.subscribe(PubSub.usersInOrganization, { organizationId: this.props.organization._id })
@@ -76,7 +77,7 @@ export const OrganizationPage = translateWithTracker((_props: RouteComponentProp
 			} else return null
 		}
 
-		render() {
+		render(): React.ReactNode {
 			const { t } = this.props
 			const org = this.props.organization
 			if (!getUserRoles().admin) {

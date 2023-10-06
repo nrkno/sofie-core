@@ -1,28 +1,25 @@
-import { getCurrentTime, Collections } from '../../lib/lib'
+import { getCurrentTime } from '../../lib/lib'
 import { Session } from 'meteor/session'
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import * as _ from 'underscore'
 import { MeteorCall } from '../../lib/api/methods'
-import { StudioTimeline } from '../ui/TestTools/Timeline'
+import { ClientCollections, PublicationCollections } from '../../lib/collections/lib'
 
 // Note: These things are convenience functions to be used during development:
 
 Meteor.startup(() => {
-	Collections.forEach((val, key) => {
-		;(window as any)[key] = val
-	})
-	window['StudioTimeline'] = StudioTimeline
+	window['Collections'] = Object.fromEntries(ClientCollections.entries())
+	window['PublicationCollections'] = Object.fromEntries(PublicationCollections.entries())
 })
 
-window['Collections'] = Collections
 window['getCurrentTime'] = getCurrentTime
 window['Session'] = Session
 
 function setDebugData() {
 	Tracker.autorun(() => {
 		const stats = {}
-		for (const [name, collection] of Collections.entries()) {
+		for (const [name, collection] of ClientCollections.entries()) {
 			stats[name] = collection.find().count()
 		}
 		console.log(
@@ -41,7 +38,7 @@ if (debugData) {
 window['MeteorCall'] = MeteorCall
 
 const expectToRunWithinCache: any = {}
-export function expectToRunWithin(name, time: number = 1000) {
+export function expectToRunWithin(name: string, time: number = 1000): void {
 	if (expectToRunWithinCache[name]) {
 		if (expectToRunWithinCache[name] !== true) {
 			Meteor.clearTimeout(expectToRunWithinCache[name])

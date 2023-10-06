@@ -19,7 +19,7 @@ interface IEndTimingProps {
 export const PlaylistStartTiming = withTranslation()(
 	withTiming<IEndTimingProps & WithTranslation, {}>()(
 		class PlaylistStartTiming extends React.Component<Translated<WithTiming<IEndTimingProps>>> {
-			render() {
+			render(): JSX.Element {
 				const { t, rundownPlaylist } = this.props
 				const playlistExpectedStart = PlaylistTiming.getExpectedStart(rundownPlaylist.timing)
 				const playlistExpectedEnd = PlaylistTiming.getExpectedEnd(rundownPlaylist.timing)

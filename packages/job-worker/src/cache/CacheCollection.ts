@@ -26,10 +26,15 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 	// Set when the whole cache is to be removed from the db, to indicate that writes are not valid and will be ignored
 	protected isToBeRemoved = false
 
-	protected constructor(protected readonly context: JobContext, protected readonly _collection: ICollection<TDoc>) {
-		//
-	}
+	protected constructor(protected readonly context: JobContext, protected readonly _collection: ICollection<TDoc>) {}
 
+	/**
+	 * Create a DbCacheReadCollection for existing documents
+	 * @param context Context of the job
+	 * @param collection Mongo collection the documents belongs to
+	 * @param docs The documents
+	 * @returns DbCacheReadCollection containing the provided documents
+	 */
 	public static createFromArray<TDoc extends { _id: ProtectedString<any> }>(
 		context: JobContext,
 		collection: ICollection<TDoc>,
@@ -39,6 +44,15 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 		col.fillWithDataFromArray(docs as any)
 		return col
 	}
+
+	/**
+	 * Load an array of object from Mongodb and create a DbCacheReadCollection for the documents
+	 * Note: Make sure to use an appropriate selector to limit to documents allowed for the current context
+	 * @param context Context of the job
+	 * @param collection Mongo collection to load documents from
+	 * @param selector Mongo selector to use to load documents
+	 * @returns DbCacheReadCollection containing the loaded documents
+	 */
 	public static async createFromDatabase<TDoc extends { _id: ProtectedString<any> }>(
 		context: JobContext,
 		collection: ICollection<TDoc>,
@@ -143,7 +157,11 @@ export class DbCacheReadCollection<TDoc extends { _id: ProtectedString<any> }> {
 			this.documents.set(id, { document: clone(doc) })
 		})
 	}
-	/** Called by the Cache when the Cache is marked as to be removed. The collection is emptied and marked to reject any further updates */
+
+	/**
+	 * Called to mark all the objects in this collection as pending deletion from mongo. This will cause it to reject any future updates
+	 * Note: The actual deletion must be handled elsewhere
+	 */
 	markForRemoval(): void {
 		this.isToBeRemoved = true
 		this.documents = new Map()
@@ -163,6 +181,13 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		}
 	}
 
+	/**
+	 * Create a DbCacheWriteCollection for existing documents
+	 * @param context Context of the job
+	 * @param collection Mongo collection the documents belongs to
+	 * @param docs The documents
+	 * @returns DbCacheWriteCollection containing the provided documents
+	 */
 	public static createFromArray<TDoc extends { _id: ProtectedString<any> }>(
 		context: JobContext,
 		collection: ICollection<TDoc>,
@@ -172,6 +197,15 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		col.fillWithDataFromArray(docs as any)
 		return col
 	}
+
+	/**
+	 * Load an array of object from Mongodb and create a DbCacheWriteCollection for the documents
+	 * Note: Make sure to use an appropriate selector to limit to documents allowed for the current context
+	 * @param context Context of the job
+	 * @param collection Mongo collection to load documents from
+	 * @param selector Mongo selector to use to load documents
+	 * @returns DbCacheWriteCollection containing the loaded documents
+	 */
 	public static async createFromDatabase<TDoc extends { _id: ProtectedString<any> }>(
 		context: JobContext,
 		collection: ICollection<TDoc>,
@@ -387,6 +421,10 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		return !!oldDoc
 	}
 
+	/**
+	 * Write the changed documents to mongo
+	 * @returns Changes object describing the saved changes
+	 */
 	async updateDatabaseWithData(): Promise<Changes> {
 		const span = this.context.startSpan(`DBCache.updateDatabaseWithData.${this.name}`)
 		const changes: {
@@ -459,11 +497,17 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 		if (span) span.end()
 		return changes
 	}
+
+	/**
+	 * Discard any changes that have been made locally to the collection.
+	 * Restores the documents as provided when this wrapper was created
+	 */
 	discardChanges(): void {
 		if (this.isModified()) {
 			this.fillWithDataFromArray(this.originalDocuments)
 		}
 	}
+
 	/**
 	 * Write all the documents in this cache into another. This assumes that this cache is a subset of the other and was populated with a subset of its data
 	 * @param otherCache The cache to update
@@ -500,6 +544,7 @@ export class DbCacheWriteCollection<TDoc extends { _id: ProtectedString<any> }> 
 
 		return changes
 	}
+
 	isModified(): boolean {
 		for (const doc of Array.from(this.documents.values())) {
 			if (doc === null || doc.inserted || doc.updated) {

@@ -121,6 +121,7 @@ export async function setupMockShowStyleBase(
 		blueprintId: blueprintId ?? protectString('blueprint0'),
 		// hotkeyLegend?: Array<HotkeyDefinition>
 		_rundownVersionHash: '',
+		lastBlueprintConfig: undefined,
 	}
 	const showStyleBase = _.extend(defaultShowStyleBase, doc)
 	await context.directCollections.ShowStyleBases.insertOne(showStyleBase)
@@ -141,6 +142,7 @@ export async function setupMockShowStyleVariant(
 		showStyleBaseId: showStyleBaseId,
 		blueprintConfigWithOverrides: wrapDefaultObject({}),
 		_rundownVersionHash: '',
+		_rank: 0,
 	}
 	const showStyleVariant = _.extend(defaultShowStyleVariant, doc)
 	await context.directCollections.ShowStyleVariants.insertOne(showStyleVariant)

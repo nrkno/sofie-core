@@ -14,7 +14,7 @@ export const GettingStarted = withTranslation()(
 			super(props)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t, step } = this.props
 
 			return (

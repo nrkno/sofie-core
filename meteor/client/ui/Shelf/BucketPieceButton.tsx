@@ -94,11 +94,8 @@ interface ButtonTargetCollectedProps {
 export class BucketPieceButtonBase extends DashboardPieceButtonBase<
 	ButtonSourceCollectedProps & ButtonTargetCollectedProps
 > {
-	constructor(props) {
-		super(props)
-	}
-
-	render() {
+	inBucket = true
+	render(): JSX.Element {
 		const { connectDragSource, connectDropTarget } = this.props
 
 		return connectDropTarget(connectDragSource(super.render() as ConnectableElement)) as JSX.Element

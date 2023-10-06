@@ -3,7 +3,7 @@ import Sorensen from '@sofie-automation/sorensen'
 
 export const SorensenContext = React.createContext<typeof Sorensen | null>(null)
 
-export function preventDefault(e: KeyboardEvent) {
+export function preventDefault(e: KeyboardEvent): void {
 	e.preventDefault()
 }
 

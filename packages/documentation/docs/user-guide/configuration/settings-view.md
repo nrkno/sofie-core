@@ -17,6 +17,38 @@ The _System_ settings are settings for this installation of Sofie. In here goes 
 Documentation for this section is yet to be written.
 :::
 
+### Name and logo
+
+Sofie contains the option to change the name of the installation. This is useful to identify different studios or regions.
+
+We have also provided some seasonal logos just for fun.
+
+### System-wide notification message
+
+This option will show a notification to the user containing some custom text. This can be used to inform the user about on-going problems or maintenance information.
+
+### Support panel
+
+The support panel is shown in the rundown view when the user clicks the "?" button in the right bottom corner. It can contain some custom HTML which can be used to refer your users to custom information specific to your organisation.
+
+### Action triggers
+
+The action triggers section lets you set custom keybindings for system-level actions such as doing a take or resetting a rundown.
+
+### Monitoring
+
+Sofie can be configured to send information to Elastic APM. This can provide useful information about the system's performance to developers. In general this can reduce the performance of Sofie altogether though so it is recommended to disable it in production.
+
+Sofie can also monitor for blocked threads, and will log a message if it discovers any. This is also recommended to disable in production.
+
+### CRON jobs
+
+Sofie contains cron jobs for restarting any casparcg servers through the casparcg launcher as well as a job to create rundown snapshots periodically.
+
+### Clean up
+
+The clean up process in Sofie will search the database for unused data and indexes and removes them. If you have had an installation running for many versions this may increase database informance and is in general safe to use at any time.
+
 ## Studio
 
 A _Studio_ in Sofie-terms is a physical location, with a specific set of devices and equipment. Only one show can be on air in a studio at the same time.  
@@ -109,10 +141,13 @@ This is a way to set up how - outside of the Point-and-Click Graphical User Inte
 
 The triggers are designed to be either client-specific or issued by a peripheral device module.
 
-Currently, the Action Triggers system only supports a single, client-specific trigger type: a Hotkey. Hotkeys can be either a single key, a combination of keys (*combo*) or a *chord* - a sequnece of key combinations pressed in a particular order. *Chords* are popular in some text editing applications and vastly expand the amount of actions that can be triggered from a keyboard, at the expense of the time needed to execute them. Currently, the Hotkey editor in Sofie does not support creating *Chords*, but they can be specified by Blueprints during migrations.
+Currently, the Action Triggers system supports setting up two types of triggeers: Hotkeys and Device Triggers. 
 
-To edit a given trigger, click on the trigger pill on the left of the Trigger-Action set. When hovering, a **+** sign will appear,
-allowing you to add a new trigger to the set.
+Hotkeys are valid in the scope of a browser window and can be either a single key, a combination of keys (*combo*) or a *chord* - a sequnece of key combinations pressed in a particular order. *Chords* are popular in some text editing applications and vastly expand the amount of actions that can be triggered from a keyboard, at the expense of the time needed to execute them. Currently, the Hotkey editor in Sofie does not support creating *Chords*, but they can be specified by Blueprints during migrations.
+
+To edit a given trigger, click on the trigger pill on the left of the Trigger-Action set. When hovering, a **+** sign will appear, allowing you to add a new trigger to the set.
+
+Device Triggers are valid in the scope of a Studio and will be evaluated on the currently active Rundown in a given Studio. To use Device Triggers, you need to have at least a single [Input Gateway](../installation/installing-input-gateway) attached to a Studio and a Device configured in the Input Gateway. Once that's done, when selecting a **Device** trigger type in the pop-up, you can invoke triggers on your Input Device and you will see a preview of the input events shown at the bottom of the pop-up. You can select which of these events should be the trigger by clicking on one of the previews. Note, that some devices differentiate between _Up_ and _Down_ triggers, while others don't. Some may also have other activites that can be done _to_ a trigger. What they are and how they are identified is device-specific and is best discovered through interaction with the device.
 
 #### Actions
 

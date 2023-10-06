@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`client/lib/rundown RundownUtils.getResolvedSegment Basic Segment resolution 1`] = `
-Object {
+{
   "autoNextPart": false,
   "currentLivePart": undefined,
   "currentNextPart": undefined,
@@ -10,37 +10,37 @@ Object {
   "hasRemoteItems": false,
   "isLiveSegment": false,
   "isNextSegment": false,
-  "parts": Array [
-    Object {
-      "instance": Object {
-        "_id": "randomId9008_part0_0_tmp_instance",
+  "parts": [
+    {
+      "instance": {
+        "_id": "randomId9010_part0_0_tmp_instance",
         "isTemporary": true,
-        "part": Object {
-          "_id": "randomId9008_part0_0",
+        "part": {
+          "_id": "randomId9010_part0_0",
           "_rank": 0,
           "externalId": "MOCK_PART_0_0",
-          "rundownId": "randomId9008",
-          "segmentId": "randomId9008_segment0",
+          "rundownId": "randomId9010",
+          "segmentId": "randomId9010_segment0",
           "title": "Part 0 0",
         },
         "playlistActivationId": "",
         "rehearsal": false,
-        "rundownId": "randomId9008",
-        "segmentId": "randomId9008_segment0",
+        "rundownId": "randomId9010",
+        "segmentId": "randomId9010_segment0",
         "segmentPlayoutId": "",
         "takeCount": -1,
       },
-      "partId": "randomId9008_part0_0",
-      "pieces": Array [
-        Object {
-          "instance": Object {
-            "_id": "randomId9008_part0_0_tmp_instance_randomId9008_piece001",
+      "partId": "randomId9010_part0_0",
+      "pieces": [
+        {
+          "instance": {
+            "_id": "randomId9010_part0_0_tmp_instance_randomId9010_piece001",
             "isTemporary": true,
-            "partInstanceId": "randomId9008_part0_0_tmp_instance",
-            "piece": Object {
-              "_id": "randomId9008_piece001",
-              "content": Object {},
-              "enable": Object {
+            "partInstanceId": "randomId9010_part0_0_tmp_instance",
+            "piece": {
+              "_id": "randomId9010_piece001",
+              "content": {},
+              "enable": {
                 "start": 0,
               },
               "externalId": "MOCK_PIECE_001",
@@ -50,49 +50,49 @@ Object {
               "outputLayerId": "pgm",
               "pieceType": "normal",
               "sourceLayerId": "vt0",
-              "startPartId": "randomId9008_part0_0",
-              "startRundownId": "randomId9008",
-              "startSegmentId": "randomId9008_segment0",
+              "startPartId": "randomId9010_part0_0",
+              "startRundownId": "randomId9010",
+              "startSegmentId": "randomId9010_segment0",
               "status": 0,
               "timelineObjectsString": "[]",
             },
             "playlistActivationId": "",
             "priority": 5,
-            "rundownId": "randomId9008",
+            "rundownId": "randomId9010",
           },
-          "outputLayer": Object {
+          "outputLayer": {
             "_id": "pgm",
             "_rank": 0,
             "isPGM": true,
             "name": "PGM",
-            "sourceLayers": Array [
-              Object {
+            "sourceLayers": [
+              {
                 "_id": "vt0",
                 "_rank": 1,
                 "exclusiveGroup": "main",
-                "followingItems": Array [],
+                "followingItems": [],
                 "name": "VT",
-                "pieces": Array [
+                "pieces": [
                   [Circular],
                 ],
                 "type": 2,
               },
-              Object {
+              {
                 "_id": "cam0",
                 "_rank": 0,
                 "exclusiveGroup": "main",
-                "followingItems": Array [],
+                "followingItems": [],
                 "name": "Camera",
-                "pieces": Array [
-                  Object {
-                    "instance": Object {
-                      "_id": "randomId9008_part0_1_tmp_instance_randomId9008_piece010",
+                "pieces": [
+                  {
+                    "instance": {
+                      "_id": "randomId9010_part0_1_tmp_instance_randomId9010_piece010",
                       "isTemporary": true,
-                      "partInstanceId": "randomId9008_part0_1_tmp_instance",
-                      "piece": Object {
-                        "_id": "randomId9008_piece010",
-                        "content": Object {},
-                        "enable": Object {
+                      "partInstanceId": "randomId9010_part0_1_tmp_instance",
+                      "piece": {
+                        "_id": "randomId9010_piece010",
+                        "content": {},
+                        "enable": {
                           "start": 0,
                         },
                         "externalId": "MOCK_PIECE_010",
@@ -102,15 +102,15 @@ Object {
                         "outputLayerId": "pgm",
                         "pieceType": "normal",
                         "sourceLayerId": "cam0",
-                        "startPartId": "randomId9008_part0_1",
-                        "startRundownId": "randomId9008",
-                        "startSegmentId": "randomId9008_segment0",
+                        "startPartId": "randomId9010_part0_1",
+                        "startRundownId": "randomId9010",
+                        "startSegmentId": "randomId9010_segment0",
                         "status": 0,
                         "timelineObjectsString": "[]",
                       },
                       "playlistActivationId": "",
                       "priority": 5,
-                      "rundownId": "randomId9008",
+                      "rundownId": "randomId9010",
                     },
                     "outputLayer": [Circular],
                     "renderedDuration": null,
@@ -125,13 +125,13 @@ Object {
           },
           "renderedDuration": null,
           "renderedInPoint": 0,
-          "sourceLayer": Object {
+          "sourceLayer": {
             "_id": "vt0",
             "_rank": 1,
             "exclusiveGroup": "main",
-            "followingItems": Array [],
+            "followingItems": [],
             "name": "VT",
-            "pieces": Array [
+            "pieces": [
               [Circular],
             ],
             "type": 2,
@@ -142,36 +142,36 @@ Object {
       "startsAt": 0,
       "willProbablyAutoNext": false,
     },
-    Object {
-      "instance": Object {
-        "_id": "randomId9008_part0_1_tmp_instance",
+    {
+      "instance": {
+        "_id": "randomId9010_part0_1_tmp_instance",
         "isTemporary": true,
-        "part": Object {
-          "_id": "randomId9008_part0_1",
+        "part": {
+          "_id": "randomId9010_part0_1",
           "_rank": 1,
           "externalId": "MOCK_PART_0_1",
-          "rundownId": "randomId9008",
-          "segmentId": "randomId9008_segment0",
+          "rundownId": "randomId9010",
+          "segmentId": "randomId9010_segment0",
           "title": "Part 0 1",
         },
         "playlistActivationId": "",
         "rehearsal": false,
-        "rundownId": "randomId9008",
-        "segmentId": "randomId9008_segment0",
+        "rundownId": "randomId9010",
+        "segmentId": "randomId9010_segment0",
         "segmentPlayoutId": "",
         "takeCount": -1,
       },
-      "partId": "randomId9008_part0_1",
-      "pieces": Array [
-        Object {
-          "instance": Object {
-            "_id": "randomId9008_part0_1_tmp_instance_randomId9008_piece010",
+      "partId": "randomId9010_part0_1",
+      "pieces": [
+        {
+          "instance": {
+            "_id": "randomId9010_part0_1_tmp_instance_randomId9010_piece010",
             "isTemporary": true,
-            "partInstanceId": "randomId9008_part0_1_tmp_instance",
-            "piece": Object {
-              "_id": "randomId9008_piece010",
-              "content": Object {},
-              "enable": Object {
+            "partInstanceId": "randomId9010_part0_1_tmp_instance",
+            "piece": {
+              "_id": "randomId9010_piece010",
+              "content": {},
+              "enable": {
                 "start": 0,
               },
               "externalId": "MOCK_PIECE_010",
@@ -181,38 +181,38 @@ Object {
               "outputLayerId": "pgm",
               "pieceType": "normal",
               "sourceLayerId": "cam0",
-              "startPartId": "randomId9008_part0_1",
-              "startRundownId": "randomId9008",
-              "startSegmentId": "randomId9008_segment0",
+              "startPartId": "randomId9010_part0_1",
+              "startRundownId": "randomId9010",
+              "startSegmentId": "randomId9010_segment0",
               "status": 0,
               "timelineObjectsString": "[]",
             },
             "playlistActivationId": "",
             "priority": 5,
-            "rundownId": "randomId9008",
+            "rundownId": "randomId9010",
           },
-          "outputLayer": Object {
+          "outputLayer": {
             "_id": "pgm",
             "_rank": 0,
             "isPGM": true,
             "name": "PGM",
-            "sourceLayers": Array [
-              Object {
+            "sourceLayers": [
+              {
                 "_id": "vt0",
                 "_rank": 1,
                 "exclusiveGroup": "main",
-                "followingItems": Array [],
+                "followingItems": [],
                 "name": "VT",
-                "pieces": Array [
-                  Object {
-                    "instance": Object {
-                      "_id": "randomId9008_part0_0_tmp_instance_randomId9008_piece001",
+                "pieces": [
+                  {
+                    "instance": {
+                      "_id": "randomId9010_part0_0_tmp_instance_randomId9010_piece001",
                       "isTemporary": true,
-                      "partInstanceId": "randomId9008_part0_0_tmp_instance",
-                      "piece": Object {
-                        "_id": "randomId9008_piece001",
-                        "content": Object {},
-                        "enable": Object {
+                      "partInstanceId": "randomId9010_part0_0_tmp_instance",
+                      "piece": {
+                        "_id": "randomId9010_piece001",
+                        "content": {},
+                        "enable": {
                           "start": 0,
                         },
                         "externalId": "MOCK_PIECE_001",
@@ -222,15 +222,15 @@ Object {
                         "outputLayerId": "pgm",
                         "pieceType": "normal",
                         "sourceLayerId": "vt0",
-                        "startPartId": "randomId9008_part0_0",
-                        "startRundownId": "randomId9008",
-                        "startSegmentId": "randomId9008_segment0",
+                        "startPartId": "randomId9010_part0_0",
+                        "startRundownId": "randomId9010",
+                        "startSegmentId": "randomId9010_segment0",
                         "status": 0,
                         "timelineObjectsString": "[]",
                       },
                       "playlistActivationId": "",
                       "priority": 5,
-                      "rundownId": "randomId9008",
+                      "rundownId": "randomId9010",
                     },
                     "outputLayer": [Circular],
                     "renderedDuration": null,
@@ -240,13 +240,13 @@ Object {
                 ],
                 "type": 2,
               },
-              Object {
+              {
                 "_id": "cam0",
                 "_rank": 0,
                 "exclusiveGroup": "main",
-                "followingItems": Array [],
+                "followingItems": [],
                 "name": "Camera",
-                "pieces": Array [
+                "pieces": [
                   [Circular],
                 ],
                 "type": 1,
@@ -256,13 +256,13 @@ Object {
           },
           "renderedDuration": null,
           "renderedInPoint": 0,
-          "sourceLayer": Object {
+          "sourceLayer": {
             "_id": "cam0",
             "_rank": 0,
             "exclusiveGroup": "main",
-            "followingItems": Array [],
+            "followingItems": [],
             "name": "Camera",
-            "pieces": Array [
+            "pieces": [
               [Circular],
             ],
             "type": 1,
@@ -274,35 +274,35 @@ Object {
       "willProbablyAutoNext": false,
     },
   ],
-  "segmentExtended": Object {
-    "_id": "randomId9008_segment0",
+  "segmentExtended": {
+    "_id": "randomId9010_segment0",
     "_rank": 0,
     "externalId": "MOCK_SEGMENT_0",
     "externalModified": 1,
     "name": "Segment 0",
-    "outputLayers": Object {
-      "pgm": Object {
+    "outputLayers": {
+      "pgm": {
         "_id": "pgm",
         "_rank": 0,
         "isPGM": true,
         "name": "PGM",
-        "sourceLayers": Array [
-          Object {
+        "sourceLayers": [
+          {
             "_id": "vt0",
             "_rank": 1,
             "exclusiveGroup": "main",
-            "followingItems": Array [],
+            "followingItems": [],
             "name": "VT",
-            "pieces": Array [
-              Object {
-                "instance": Object {
-                  "_id": "randomId9008_part0_0_tmp_instance_randomId9008_piece001",
+            "pieces": [
+              {
+                "instance": {
+                  "_id": "randomId9010_part0_0_tmp_instance_randomId9010_piece001",
                   "isTemporary": true,
-                  "partInstanceId": "randomId9008_part0_0_tmp_instance",
-                  "piece": Object {
-                    "_id": "randomId9008_piece001",
-                    "content": Object {},
-                    "enable": Object {
+                  "partInstanceId": "randomId9010_part0_0_tmp_instance",
+                  "piece": {
+                    "_id": "randomId9010_piece001",
+                    "content": {},
+                    "enable": {
                       "start": 0,
                     },
                     "externalId": "MOCK_PIECE_001",
@@ -312,15 +312,15 @@ Object {
                     "outputLayerId": "pgm",
                     "pieceType": "normal",
                     "sourceLayerId": "vt0",
-                    "startPartId": "randomId9008_part0_0",
-                    "startRundownId": "randomId9008",
-                    "startSegmentId": "randomId9008_segment0",
+                    "startPartId": "randomId9010_part0_0",
+                    "startRundownId": "randomId9010",
+                    "startSegmentId": "randomId9010_segment0",
                     "status": 0,
                     "timelineObjectsString": "[]",
                   },
                   "playlistActivationId": "",
                   "priority": 5,
-                  "rundownId": "randomId9008",
+                  "rundownId": "randomId9010",
                 },
                 "outputLayer": [Circular],
                 "renderedDuration": null,
@@ -330,22 +330,22 @@ Object {
             ],
             "type": 2,
           },
-          Object {
+          {
             "_id": "cam0",
             "_rank": 0,
             "exclusiveGroup": "main",
-            "followingItems": Array [],
+            "followingItems": [],
             "name": "Camera",
-            "pieces": Array [
-              Object {
-                "instance": Object {
-                  "_id": "randomId9008_part0_1_tmp_instance_randomId9008_piece010",
+            "pieces": [
+              {
+                "instance": {
+                  "_id": "randomId9010_part0_1_tmp_instance_randomId9010_piece010",
                   "isTemporary": true,
-                  "partInstanceId": "randomId9008_part0_1_tmp_instance",
-                  "piece": Object {
-                    "_id": "randomId9008_piece010",
-                    "content": Object {},
-                    "enable": Object {
+                  "partInstanceId": "randomId9010_part0_1_tmp_instance",
+                  "piece": {
+                    "_id": "randomId9010_piece010",
+                    "content": {},
+                    "enable": {
                       "start": 0,
                     },
                     "externalId": "MOCK_PIECE_010",
@@ -355,15 +355,15 @@ Object {
                     "outputLayerId": "pgm",
                     "pieceType": "normal",
                     "sourceLayerId": "cam0",
-                    "startPartId": "randomId9008_part0_1",
-                    "startRundownId": "randomId9008",
-                    "startSegmentId": "randomId9008_segment0",
+                    "startPartId": "randomId9010_part0_1",
+                    "startRundownId": "randomId9010",
+                    "startSegmentId": "randomId9010_segment0",
                     "status": 0,
                     "timelineObjectsString": "[]",
                   },
                   "playlistActivationId": "",
                   "priority": 5,
-                  "rundownId": "randomId9008",
+                  "rundownId": "randomId9010",
                 },
                 "outputLayer": [Circular],
                 "renderedDuration": null,
@@ -377,40 +377,40 @@ Object {
         "used": true,
       },
     },
-    "rundownId": "randomId9008",
-    "sourceLayers": Object {
-      "cam0": Object {
+    "rundownId": "randomId9010",
+    "sourceLayers": {
+      "cam0": {
         "_id": "cam0",
         "_rank": 0,
         "exclusiveGroup": "main",
-        "followingItems": Array [],
+        "followingItems": [],
         "name": "Camera",
-        "pieces": Array [],
+        "pieces": [],
         "type": 1,
       },
-      "graphics0": Object {
+      "graphics0": {
         "_id": "graphics0",
         "_rank": 3,
-        "followingItems": Array [],
+        "followingItems": [],
         "name": "Graphic",
-        "pieces": Array [],
+        "pieces": [],
         "type": 5,
       },
-      "transition0": Object {
+      "transition0": {
         "_id": "transition0",
         "_rank": 2,
-        "followingItems": Array [],
+        "followingItems": [],
         "name": "Transition",
-        "pieces": Array [],
+        "pieces": [],
         "type": 13,
       },
-      "vt0": Object {
+      "vt0": {
         "_id": "vt0",
         "_rank": 1,
         "exclusiveGroup": "main",
-        "followingItems": Array [],
+        "followingItems": [],
         "name": "VT",
-        "pieces": Array [],
+        "pieces": [],
         "type": 2,
       },
     },

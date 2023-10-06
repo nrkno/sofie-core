@@ -33,7 +33,7 @@ export const QueueIngestJobSpy = jest.fn<ReturnType<typeof QueueIngestJob>, Para
 	}
 )
 
-export function setup() {
+export function setup(): any {
 	return {
 		QueueForceClearAllCaches: QueueForceClearAllCachesSpy,
 		QueueStudioJob: QueueStudioJobSpy,

@@ -65,7 +65,7 @@ export function canContinueAdlibOnEndInfinites(
 	}
 }
 
-function getIdsBeforeThisPart(context: JobContext, cache: CacheForPlayout, nextPart: DBPart) {
+function getIdsBeforeThisPart(context: JobContext, cache: ReadOnlyCache<CacheForPlayout>, nextPart: DBPart) {
 	const span = context.startSpan('getIdsBeforeThisPart')
 	// Get the normal parts
 	const partsBeforeThisInSegment = cache.Parts.findAll(
@@ -100,9 +100,18 @@ function getIdsBeforeThisPart(context: JobContext, cache: CacheForPlayout, nextP
 	}
 }
 
+/**
+ * Find all infinite Pieces that _may_ be active in the given Part, which will be continued from a previous part
+ * Either search a provided ingest cache, or the database for these Pieces
+ * @param context Context of the current job
+ * @param cache Playout cache for the current playlist
+ * @param unsavedIngestCache If an ingest cache is loaded, we can search that instead of mongo
+ * @param part The Part to get the Pieces for
+ * @returns Array of Piece
+ */
 export async function fetchPiecesThatMayBeActiveForPart(
 	context: JobContext,
-	cache: CacheForPlayout,
+	cache: ReadOnlyCache<CacheForPlayout>,
 	unsavedIngestCache: Omit<ReadOnlyCache<CacheForIngest>, 'Rundown'> | undefined,
 	part: DBPart
 ): Promise<Piece[]> {
@@ -162,6 +171,11 @@ export async function fetchPiecesThatMayBeActiveForPart(
 	return pieces
 }
 
+/**
+ * Update the onChange infinites for the nextPartInstance to be up to date with the ones on the currentPartInstance
+ * @param context Context for the current job
+ * @param cache Playout cache for the current playlist
+ */
 export async function syncPlayheadInfinitesForNextPartInstance(
 	context: JobContext,
 	cache: CacheForPlayout
@@ -227,6 +241,17 @@ export async function syncPlayheadInfinitesForNextPartInstance(
 	if (span) span.end()
 }
 
+/**
+ * Calculate all of the onEnd PieceInstances for a PartInstance
+ * @param context Context for the running job
+ * @param cache Playout cache for the current playlist
+ * @param playingPartInstance The current PartInstance, if there is one
+ * @param rundown The Rundown the Part belongs to
+ * @param part The Part the PartInstance is based on
+ * @param possiblePieces Array of Pieces that should be considered for being a PieceInstance in the new PartInstance
+ * @param newInstanceId Id of the PartInstance
+ * @returns Array of PieceInstances for the specified PartInstance
+ */
 export function getPieceInstancesForPart(
 	context: JobContext,
 	cache: CacheForPlayout,
@@ -234,8 +259,7 @@ export function getPieceInstancesForPart(
 	rundown: ReadonlyDeep<DBRundown>,
 	part: DBPart,
 	possiblePieces: Piece[],
-	newInstanceId: PartInstanceId,
-	isTemporary: boolean
+	newInstanceId: PartInstanceId
 ): PieceInstance[] {
 	const span = context.startSpan('getPieceInstancesForPart')
 	const { partsBeforeThisInSegment, segmentsBeforeThisInRundown, rundownsBeforeThisInPlaylist } =
@@ -273,7 +297,7 @@ export function getPieceInstancesForPart(
 		orderedPartsAndSegments.parts.map((p) => p._id),
 		newInstanceId,
 		canContinueAdlibOnEnds,
-		isTemporary
+		false
 	)
 	if (span) span.end()
 	return res

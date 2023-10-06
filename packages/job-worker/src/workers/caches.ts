@@ -1,5 +1,5 @@
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { loadBlueprintById, WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
+import { parseBlueprintDocument, WrappedShowStyleBlueprint, WrappedStudioBlueprint } from '../blueprints/cache'
 import { ReadonlyDeep } from 'type-fest'
 import { IDirectCollections } from '../db'
 import {
@@ -294,12 +294,14 @@ async function loadStudioBlueprintOrPlaceholder(
 ): Promise<ReadonlyDeep<WrappedStudioBlueprint>> {
 	if (!studio.blueprintId) {
 		return Object.freeze({
+			blueprintDoc: undefined,
 			blueprintId: protectString('__placeholder__'),
 			blueprint: DefaultStudioBlueprint,
 		})
 	}
 
-	const blueprintManifest = await loadBlueprintById(collections, studio.blueprintId)
+	const blueprintDoc = await collections.Blueprints.findOne(studio.blueprintId)
+	const blueprintManifest = await parseBlueprintDocument(blueprintDoc)
 	if (!blueprintManifest) {
 		throw new Error(`Blueprint "${studio.blueprintId}" not found! (referenced by Studio "${studio._id}")`)
 	}
@@ -311,6 +313,7 @@ async function loadStudioBlueprintOrPlaceholder(
 	}
 
 	return Object.freeze({
+		blueprintDoc: blueprintDoc,
 		blueprintId: studio.blueprintId,
 		blueprint: blueprintManifest,
 	})

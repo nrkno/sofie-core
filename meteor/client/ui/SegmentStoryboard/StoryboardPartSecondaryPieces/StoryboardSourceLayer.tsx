@@ -99,7 +99,7 @@ function usePlayedOutPieceState(
 const ONCE_A_MINUTE = 60000
 const EMPTY_PLAYED_PIECE_IDS = { playedPieceIds: [], finishedPieceIds: [] }
 
-export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps) {
+export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps): JSX.Element {
 	const [hoverIndex, setHoverIndex] = useState<number | null>(null)
 	const hoverTimeout = useRef<number | null>(null)
 
@@ -111,7 +111,6 @@ export function StoryboardSourceLayer({ pieces, sourceLayer, part }: IProps) {
 				.filter(
 					(piece) =>
 						(piece.renderedDuration === null || piece.renderedDuration > 0) &&
-						piece.instance.hidden !== true &&
 						piece.instance.piece.virtual !== true &&
 						piece.sourceLayer?._id === sourceLayer._id
 				)

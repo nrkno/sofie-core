@@ -175,14 +175,16 @@ class MeteorDataManager {
 	}
 }
 export const ReactMeteorData = {
-	UNSAFE_componentWillMount(this: any) {
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+	UNSAFE_componentWillMount(this: any): void {
 		this.data = {}
 		this._meteorDataManager = new MeteorDataManager(this, this._queueTrackerUpdates || false)
 		const newData = this._meteorDataManager.calculateData()
 		this._meteorDataManager.updateData(newData)
 	},
 
-	UNSAFE_componentWillUpdate(this: any, nextProps: any, nextState: any) {
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+	UNSAFE_componentWillUpdate(this: any, nextProps: any, nextState: any): void {
 		const saveProps = this.props
 		const saveState = this.state
 		let newData
@@ -205,7 +207,8 @@ export const ReactMeteorData = {
 		this._meteorDataManager.updateData(newData)
 	},
 
-	componentWillUnmount(this: any) {
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+	componentWillUnmount(this: any): void {
 		this._meteorDataManager.dispose()
 	},
 	// pick the MeteorReactComponent member functions, so they will be available in withTracker(() => { >here< })
@@ -262,7 +265,7 @@ export function withTracker<IProps, IState, TrackedProps>(
 				}
 				return true
 			}
-			render() {
+			render(): JSX.Element {
 				return <WrappedComponent {...this.props} {...this.data} />
 			}
 		}
@@ -277,6 +280,7 @@ export function translateWithTracker<IProps, IState, TrackedProps>(
 	checkUpdate?: (data: any, props: IProps, nextProps: IProps, state?: IState, nextState?: IState) => boolean,
 	queueTrackerUpdates?: boolean
 ) {
+	// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
 	return (WrappedComponent: IWrappedComponent<Translated<IProps>, IState, TrackedProps>) => {
 		const inner = withTracker<Translated<IProps>, IState, TrackedProps>(
 			autorunFunction,

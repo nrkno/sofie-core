@@ -1,7 +1,4 @@
-import { createMongoCollection } from './lib'
-import { registerIndex } from '../database'
 import { BucketId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 
 /**
  * A Bucket is an container for AdLib pieces that do not come from a MOS gateway and are
@@ -26,8 +23,3 @@ export interface Bucket {
 	buttonWidthScale: number
 	buttonHeightScale: number
 }
-export const Buckets = createMongoCollection<Bucket>(CollectionName.Buckets)
-
-registerIndex(Buckets, {
-	studioId: 1,
-})

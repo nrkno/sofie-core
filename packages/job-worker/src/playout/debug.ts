@@ -2,13 +2,14 @@ import {
 	DebugRegenerateNextPartInstanceProps,
 	DebugSyncInfinitesForNextPartInstanceProps,
 } from '@sofie-automation/corelib/dist/worker/studio'
+import { runJobWithStudioCache } from '../studio/lock'
 import { JobContext } from '../jobs'
 import { logger } from '../logging'
 import { getSelectedPartInstancesFromCache } from './cache'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
-import { setNextPart } from './lib'
+import { setNextPart } from './setNext'
 import { runJobWithPlayoutCache } from './lock'
-import { updateTimeline } from './timeline/generate'
+import { updateStudioTimeline, updateTimeline } from './timeline/generate'
 
 /**
  * Ensure that the infinite pieces on the nexted-part are correct
@@ -50,6 +51,9 @@ export async function handleDebugRegenerateNextPartInstance(
 	})
 }
 
+/**
+ * Debug: Force the worker to throw an error
+ */
 export async function handleDebugCrash(context: JobContext, data: DebugRegenerateNextPartInstanceProps): Promise<void> {
 	logger.info('debugCrash')
 
@@ -58,5 +62,26 @@ export async function handleDebugCrash(context: JobContext, data: DebugRegenerat
 			//@ts-expect-error: 2339
 			cache.callUndefined()
 		}, 10)
+	})
+}
+
+/**
+ * Debug: Regenerate the timeline for the Studio
+ */
+export async function handleDebugUpdateTimeline(context: JobContext, _data: void): Promise<void> {
+	await runJobWithStudioCache(context, async (studioCache) => {
+		const activePlaylists = studioCache.getActiveRundownPlaylists()
+		if (activePlaylists.length > 1) {
+			throw new Error(`Too many active playlists`)
+		} else if (activePlaylists.length > 0) {
+			const playlist = activePlaylists[0]
+
+			await runJobWithPlayoutCache(context, { playlistId: playlist._id }, null, async (playoutCache) => {
+				await updateTimeline(context, playoutCache)
+			})
+		} else {
+			await updateStudioTimeline(context, studioCache)
+			await studioCache.saveAllToDatabase()
+		}
 	})
 }

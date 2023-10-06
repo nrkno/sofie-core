@@ -2,10 +2,7 @@ import React from 'react'
 import { Switch, Route, Redirect } from 'react-router-dom'
 import { withTracker } from '../../lib/ReactMeteorData/react-meteor-data'
 
-import { RundownPlaylist, RundownPlaylists } from '../../../lib/collections/RundownPlaylists'
-
 import { RundownTimingProvider } from '../RundownView/RundownTiming/RundownTimingProvider'
-import { WithTiming } from '../RundownView/RundownTiming/withTiming'
 
 import { objectPathGet } from '../../../lib/lib'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
@@ -14,6 +11,8 @@ import { StudioScreenSaver } from '../StudioScreenSaver/StudioScreenSaver'
 import { PresenterScreen } from './PresenterScreen'
 import { OverlayScreen } from './OverlayScreen'
 import { OverlayScreenSaver } from './OverlayScreenSaver'
+import { RundownPlaylists } from '../../collections'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 interface IPropsHeader {
@@ -36,8 +35,8 @@ export const ClockView = withTracker(function (props: IPropsHeader) {
 		studioId,
 	}
 })(
-	class ClockView extends MeteorReactComponent<WithTiming<IPropsHeader>, IStateHeader> {
-		componentDidMount() {
+	class ClockView extends MeteorReactComponent<IPropsHeader, IStateHeader> {
+		componentDidMount(): void {
 			const { studioId } = this.props
 			if (studioId) {
 				this.subscribe(PubSub.rundownPlaylists, {
@@ -47,7 +46,7 @@ export const ClockView = withTracker(function (props: IPropsHeader) {
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			return (
 				<Switch>
 					<Route path="/countdowns/:studioId/presenter">

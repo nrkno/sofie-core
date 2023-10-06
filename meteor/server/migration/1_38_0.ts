@@ -1,6 +1,6 @@
 import { addMigrationSteps } from './databaseMigration'
-import { TriggeredActions } from '../../lib/collections/TriggeredActions'
 import { getHash, protectString, unprotectString } from '../../lib/lib'
+import { TriggeredActions } from '../collections'
 
 // Release 38 (2022-01-27)
 export const addSteps = addMigrationSteps('1.38.0', [

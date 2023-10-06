@@ -5,7 +5,7 @@ import { Meteor } from 'meteor/meteor'
 import { ReadonlyDeep } from 'type-fest'
 import { CustomCollectionName, PubSub } from '../../lib/api/pubsub'
 import { UIStudio } from '../../lib/api/studios'
-import { DBStudio, Studios } from '../../lib/collections/Studios'
+import { DBStudio } from '../../lib/collections/Studios'
 import { Complete, literal } from '../../lib/lib'
 import {
 	CustomPublishCollection,
@@ -17,6 +17,7 @@ import { logger } from '../logging'
 import { resolveCredentials } from '../security/lib/credentials'
 import { NoSecurityReadAccess } from '../security/noSecurity'
 import { StudioReadAccess } from '../security/studio'
+import { Studios } from '../collections'
 
 interface UIStudioArgs {
 	readonly studioId: StudioId | null
@@ -76,10 +77,10 @@ async function setupUIStudioPublicationObservers(
 
 	// Set up observers:
 	return [
-		Studios.find(args.studioId ? args.studioId : {}, { fields: fieldSpecifier }).observe({
-			added: (e) => triggerUpdate(trackChange(e._id)),
-			changed: (e) => triggerUpdate(trackChange(e._id)),
-			removed: (e) => triggerUpdate(trackChange(e._id)),
+		Studios.find(args.studioId ? args.studioId : {}, { fields: fieldSpecifier }).observeChanges({
+			added: (id) => triggerUpdate(trackChange(id)),
+			changed: (id) => triggerUpdate(trackChange(id)),
+			removed: (id) => triggerUpdate(trackChange(id)),
 		}),
 	]
 }

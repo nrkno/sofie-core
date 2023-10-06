@@ -2,7 +2,6 @@ import * as React from 'react'
 import * as PropTypes from 'prop-types'
 import * as _ from 'underscore'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
-import { Segments } from '../../../lib/collections/Segments'
 import { SegmentTimeline, SegmentTimelineClass } from './SegmentTimeline'
 import { computeSegmentDisplayDuration, RundownTiming, TimingEvent } from '../RundownView/RundownTiming/RundownTiming'
 import { UIStateStorage } from '../../lib/UIStateStorage'
@@ -15,15 +14,13 @@ import { isMaintainingFocus, scrollToSegment, getHeaderHeight } from '../../lib/
 import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
 import { unprotectString, equalSets, equivalentArrays } from '../../../lib/lib'
 import { Settings } from '../../../lib/Settings'
-import { PartInstances } from '../../../lib/collections/PartInstances'
-import { Parts } from '../../../lib/collections/Parts'
 import { Tracker } from 'meteor/tracker'
 import { Meteor } from 'meteor/meteor'
 import RundownViewEventBus, {
 	RundownViewEvents,
 	GoToPartEvent,
 	GoToPartInstanceEvent,
-} from '../RundownView/RundownViewEventBus'
+} from '../../../lib/api/triggers/RundownViewEventBus'
 import { SegmentTimelinePartClass } from './Parts/SegmentTimelinePart'
 import {
 	PartUi,
@@ -35,6 +32,7 @@ import {
 import { computeSegmentDuration, RundownTimingContext } from '../../lib/rundownTiming'
 import { RundownViewShelf } from '../RundownView/RundownViewShelf'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstances, Parts, Segments } from '../../collections'
 
 // Kept for backwards compatibility
 export { SegmentUi, PartUi, PieceUi, ISourceLayerUi, IOutputLayerUi } from '../SegmentContainer/withResolvedSegment'
@@ -128,7 +126,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			return !_.isMatch(this.props, nextProps) || !_.isMatch(this.state, nextState)
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.autorun(() => {
 				const partIds = Parts.find(
 					{
@@ -364,7 +362,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			})
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			this._cleanUp()
 			if (this.intersectionObserver && this.state.isLiveSegment && this.props.followLiveSegments) {
 				if (typeof this.props.onSegmentScroll === 'function') this.props.onSegmentScroll()
@@ -505,18 +503,43 @@ export const SegmentTimelineContainer = withResolvedSegment(
 
 		onGoToPartInner = (part: PartUi, _timingDurations: RundownTimingContext, zoomInToFit?: boolean) => {
 			this.setState((state) => {
+				const timelineWidth = this.timelineDiv instanceof HTMLElement ? getElementWidth(this.timelineDiv) : 0 // unsure if this is good default/substitute
 				let newScale: number | undefined
-
 				let scrollLeft = state.scrollLeft
 
 				if (zoomInToFit) {
-					const timelineWidth = this.timelineDiv instanceof HTMLElement ? getElementWidth(this.timelineDiv) : 0 // unsure if this is good default/substitute
-					newScale =
-						(Math.max(0, timelineWidth - TIMELINE_RIGHT_PADDING * 2) / 3 || 1) /
-						(SegmentTimelinePartClass.getPartDisplayDuration(part, this.context?.durations) || 1)
+					// display dur in ms
+					const displayDur = SegmentTimelinePartClass.getPartDisplayDuration(part, this.context?.durations) || 1
+					// is the padding is larger than the width of the resulting size?
+					const tooSmallTimeline = timelineWidth < TIMELINE_RIGHT_PADDING * 3
+					// width in px, pad on both sides
+					const desiredWidth = tooSmallTimeline
+						? timelineWidth * 0.8
+						: Math.max(1, timelineWidth - TIMELINE_RIGHT_PADDING * 2)
+					// scale = pixels / time
+					newScale = desiredWidth / displayDur
 
-					scrollLeft = Math.max(0, scrollLeft - TIMELINE_RIGHT_PADDING / newScale)
+					// the left padding
+					const padding = tooSmallTimeline ? (timelineWidth * 0.1) / newScale : TIMELINE_RIGHT_PADDING / newScale
+					// offset in ms
+					scrollLeft = part.startsAt - padding
+					// scrollLeft should be at least 0
+					scrollLeft = Math.max(0, scrollLeft)
+				} else if (
+					this.state.scrollLeft > part.startsAt ||
+					this.state.scrollLeft * this.state.timeScale + timelineWidth < part.startsAt * this.state.timeScale
+				) {
+					// If part is not within viewport scroll to its start
+					scrollLeft = part.startsAt
 				}
+
+				/**
+				 * note from mint @ 07-09-23
+				 *
+				 * there are some edge cases still here. the ones i'm aware of are:
+				 *  - when following the live line, this will zoom but not scroll
+				 *  - when a segment starts with a short part, followed by a long part the left padding will be inconsistent
+				 */
 
 				return {
 					scrollLeft,
@@ -692,7 +715,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 			this.onTimeScaleChange(newScale)
 		}
 
-		render() {
+		render(): JSX.Element | null {
 			return this.props.segmentui ? (
 				<React.Fragment key={unprotectString(this.props.segmentui._id)}>
 					{!this.props.segmentui.isHidden && (
@@ -703,7 +726,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 							segment={this.props.segmentui}
 							studio={this.props.studio}
 							parts={this.props.parts}
-							segmentNotes={this.props.segmentNotes}
+							segmentNoteCounts={this.props.segmentNoteCounts}
 							timeScale={this.state.timeScale}
 							maxTimeScale={this.state.maxTimeScale}
 							onRecalculateMaxTimeScale={this.updateMaxTimeScale}

@@ -131,7 +131,7 @@
 				</div>
 			)
 		}
-		render() {
+		render(): JSX.Element {
 			return (
 				<React.Fragment>
 					<div className="segment-timeline__next-preview">{this.props.part && this.renderPart()}</div>

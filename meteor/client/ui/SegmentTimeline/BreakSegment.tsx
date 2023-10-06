@@ -11,7 +11,11 @@ interface IProps {
 }
 
 class BreakSegmentInner extends MeteorReactComponent<Translated<WithTiming<IProps>>> {
-	render() {
+	constructor(props: Translated<WithTiming<IProps>>) {
+		super(props)
+	}
+
+	render(): JSX.Element {
 		const { t } = this.props
 		const displayTimecode =
 			this.props.breakTime && this.props.timingDurations.currentTime

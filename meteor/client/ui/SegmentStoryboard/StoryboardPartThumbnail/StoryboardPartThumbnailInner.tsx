@@ -5,7 +5,7 @@ import { withMediaObjectStatus } from '../../SegmentTimeline/withMediaObjectStat
 import { getElementDocumentOffset, OffsetPosition } from '../../../utils/positions'
 import { getElementWidth } from '../../../utils/dimensions'
 import renderThumbnail from './Renderers/ThumbnailRendererFactory'
-import { PieceElement } from '../utils/PieceElement'
+import { PieceElement } from '../../SegmentContainer/PieceElement'
 import { UIStudio } from '../../../../lib/api/studios'
 import { PartId, PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 

@@ -7,15 +7,16 @@ import {
 	RundownLayoutPartName,
 } from '../../../lib/collections/RundownLayouts'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { RundownPlaylist, RundownPlaylistCollectionUtil } from '../../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../../lib/collections/RundownPlaylists'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { Translated, translateWithTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { PieceInstances } from '../../../lib/collections/PieceInstances'
 import { findPieceInstanceToShowFromInstances, IFoundPieceInstance } from '../PieceIcons/utils'
 import { pieceIconSupportedLayers } from '../PieceIcons/PieceIcon'
 import { RundownUtils } from '../../lib/rundown'
 import { UIShowStyleBase } from '../../../lib/api/showStyles'
+import { PieceInstances } from '../../collections'
+import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 
 interface IPartNamePanelProps {
 	visible?: boolean
@@ -40,7 +41,7 @@ class PartNamePanelInner extends MeteorReactComponent<
 		super(props)
 	}
 
-	render() {
+	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const { t } = this.props
 

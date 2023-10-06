@@ -3,7 +3,7 @@ import { MicFloatingInspector } from '../../../FloatingInspectors/MicFloatingIns
 import { ScriptContent } from '@sofie-automation/blueprints-integration'
 import { IDefaultRendererProps } from './DefaultRenderer'
 
-export function ScriptRenderer(props: IDefaultRendererProps) {
+export function ScriptRenderer(props: IDefaultRendererProps): JSX.Element | string {
 	const labelItems = (props.piece.instance.piece.name || '').split('||')
 	const begin = (labelItems[0] || '').trim()
 	const end = (labelItems[1] || '').trim()

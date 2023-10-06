@@ -15,7 +15,7 @@ import { DEBUG_MODE } from './SegmentTimelineDebugMode'
 import { withTranslation, WithTranslation } from 'react-i18next'
 import { getElementDocumentOffset, OffsetPosition } from '../../utils/positions'
 import { unprotectString } from '../../../lib/lib'
-import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../RundownView/RundownViewEventBus'
+import RundownViewEventBus, { RundownViewEvents, HighlightEvent } from '../../../lib/api/triggers/RundownViewEventBus'
 import { pieceUiClassNames } from '../../lib/ui/pieceUiClassNames'
 import { SourceDurationLabelAlignment } from './Renderers/CustomLayerItemRenderer'
 import { TransitionSourceRenderer } from './Renderers/TransitionSourceRenderer'
@@ -443,11 +443,11 @@ export const SourceLayerItem = withTranslation()(
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			RundownViewEventBus.on(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 		}
 
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			super.componentWillUnmount && super.componentWillUnmount()
 			RundownViewEventBus.off(RundownViewEvents.HIGHLIGHT, this.onHighlight)
 			clearTimeout(this.highlightTimeout)
@@ -683,7 +683,7 @@ export const SourceLayerItem = withTranslation()(
 			}
 		}
 
-		render() {
+		render(): JSX.Element {
 			if (this.isInsideViewport()) {
 				const typeClass = RundownUtils.getSourceLayerClassName(this.props.layer.type)
 

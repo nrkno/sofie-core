@@ -1,8 +1,8 @@
 import { Meteor } from 'meteor/meteor'
 import { getCurrentTime, getRandomId } from '../lib'
-import { PeripheralDeviceCommands } from '../collections/PeripheralDeviceCommands'
 import { PubSub, meteorSubscribe } from './pubsub'
 import { PeripheralDeviceCommandId, PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
+import { PeripheralDeviceCommands } from '../collections/libCollections'
 
 export * from '@sofie-automation/shared-lib/dist/peripheralDevice/mediaManager'
 
@@ -10,8 +10,12 @@ export namespace PeripheralDeviceAPI {
 	export async function executeFunctionWithCustomTimeout(
 		deviceId: PeripheralDeviceId,
 		timeoutTime0: number | undefined,
-		functionName: string,
-		...args: any[]
+		action: {
+			functionName?: string
+			args?: Array<any>
+			actionId?: string
+			payload?: Record<string, any>
+		}
 	): Promise<any> {
 		return new Promise<any>((resolve, reject) => {
 			const timeoutTime: number = timeoutTime0 || 3000 // also handles null
@@ -82,9 +86,9 @@ export namespace PeripheralDeviceAPI {
 				_id: commandId,
 				deviceId: deviceId,
 				time: getCurrentTime(),
-				functionName,
-				args: args,
 				hasReply: false,
+
+				...action,
 			})
 		})
 	}
@@ -95,6 +99,6 @@ export namespace PeripheralDeviceAPI {
 		functionName: string,
 		...args: any[]
 	): Promise<any> {
-		return executeFunctionWithCustomTimeout(deviceId, undefined, functionName, ...args)
+		return executeFunctionWithCustomTimeout(deviceId, undefined, { functionName, args })
 	}
 }

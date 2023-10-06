@@ -24,7 +24,7 @@ class ColoredBoxPanelInner extends MeteorReactComponent<Translated<IColoredBoxPa
 		super(props)
 	}
 
-	render() {
+	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 
 		return (

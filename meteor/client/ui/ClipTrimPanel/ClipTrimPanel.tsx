@@ -2,11 +2,11 @@ import * as React from 'react'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { ensureHasTrailingSlash } from '../../lib/lib'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { Pieces, Piece } from '../../../lib/collections/Pieces'
+import { Piece } from '../../../lib/collections/Pieces'
 import { PubSub } from '../../../lib/api/pubsub'
 import { VTContent } from '@sofie-automation/blueprints-integration'
 import { VideoEditMonitor } from './VideoEditMonitor'
-import { MediaObjects, MediaObject } from '../../../lib/collections/MediaObjects'
+import { MediaObject } from '../../../lib/collections/MediaObjects'
 import { TimecodeEncoder } from './TimecodeEncoder'
 import { faUndo } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -14,6 +14,7 @@ import Tooltip from 'rc-tooltip'
 import { UIStudios } from '../Collections'
 import { UIStudio } from '../../../lib/api/studios'
 import { PartId, PieceId, RundownId, RundownPlaylistId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { MediaObjects, Pieces } from '../../collections'
 
 export interface IProps {
 	pieceId: PieceId
@@ -89,7 +90,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 			}
 		}
 
-		componentDidMount() {
+		componentDidMount(): void {
 			this.subscribe(PubSub.pieces, { _id: this.props.pieceId, startRundownId: this.props.rundownId })
 			this.autorun(() => {
 				const content = this.props.piece?.content as VTContent | undefined
@@ -223,7 +224,7 @@ export const ClipTrimPanel = translateWithTracker<IProps, IState, ITrackedProps>
 			this.props.onChange((ns.inPoint / this.props.frameRate) * 1000, (ns.duration / this.props.frameRate) * 1000)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			let previewUrl: string | undefined = undefined
 			if (this.props.mediaObject && this.props.studio) {

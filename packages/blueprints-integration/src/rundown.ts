@@ -1,11 +1,12 @@
-import { DeviceType as TSR_DeviceType, ExpectedPlayoutItemContent } from 'timeline-state-resolver-types'
 import { ActionUserData } from './action'
 import { PartEndState } from './api'
 import { Time } from './common'
 import { SomeContent, WithTimeline } from './content'
 import { NoteSeverity } from './lib'
 import { ExpectedPackage } from './package'
+import { TSR } from './timeline'
 import { ITranslatableMessage } from './translations'
+import { PieceLifespan } from '@sofie-automation/shared-lib/dist/core/model/Rundown'
 
 /** Playlist, as generated from Blueprints */
 export interface IBlueprintResultRundownPlaylist {
@@ -446,18 +447,22 @@ export interface IBlueprintPieceGeneric<TMetadata = unknown> {
 /** @deprecated */
 export interface ExpectedPlayoutItemGeneric {
 	/** What type of playout device this item should be handled by */
-	deviceSubType: TSR_DeviceType // subset of PeripheralDeviceAPI.DeviceSubType
+	deviceSubType: TSR.DeviceType // subset of PeripheralDeviceAPI.DeviceSubType
 	/** Which playout device this item should be handled by */
 	// deviceId: string // Todo: implement deviceId support (later)
 	/** Content of the expectedPlayoutItem */
-	content: ExpectedPlayoutItemContent
+	content: TSR.ExpectedPlayoutItemContent
 }
+
+type ExpectedPlayoutItemContent = TSR.ExpectedPlayoutItemContent
 export { ExpectedPlayoutItemContent }
 
 /** Special types of pieces. Some are not always used in all circumstances */
 export enum IBlueprintPieceType {
 	Normal = 'normal',
+	/** ***CAUTION!*** This Piece will only be used, if the Part containing it has the inTransition property set */
 	InTransition = 'in-transition',
+	/** ***CAUTION!*** This Piece will only be used, if the Part containing it has the outTransition property set */
 	OutTransition = 'out-transition',
 }
 
@@ -548,22 +553,4 @@ export interface IBlueprintAdLibPieceDB<TMetadata = unknown> extends IBlueprintA
 	_id: string
 }
 
-export enum PieceLifespan {
-	/** The Piece will only exist in it's designated Part. As soon as the playhead leaves the Part, the Piece will stop */
-	WithinPart = 'part-only',
-	/** The Piece will only exist in it's designated Segment. It will begin playing when taken and will stop when the
-	 * playhead leaves the Segment */
-	OutOnSegmentChange = 'segment-change',
-	/** The Piece will only exist in it's designated Segment. It will begin playing when taken and will stop when the
-	 * playhead leaves the Segment or the playhead moves before the beginning of the Piece */
-	OutOnSegmentEnd = 'segment-end',
-	/** The Piece will only exist in it's designated Rundown. It will begin playing when taken and will stop when the
-	 * playhead leaves the Rundown */
-	OutOnRundownChange = 'rundown-change',
-	/** The Piece will only exist in it's designated Rundown. It will begin playing when taken and will stop when the
-	 * playhead leaves the Rundown or the playhead moves before the beginning of the Piece */
-	OutOnRundownEnd = 'rundown-end',
-	/** The Piece will only exist while the ShowStyle doesn't change. It will begin playing when taken and will stop
-	 * when the playhead leaves the Rundown into a new Rundown with a different ShowStyle */
-	OutOnShowStyleEnd = 'showstyle-end',
-}
+export { PieceLifespan }

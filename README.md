@@ -87,13 +87,6 @@ yarn i18n-extract-pot
 
 Find the created `template.pot` file in `meteor/i18n` folder. Create a new PO file based on that template using a PO editor of your choice. Save it in the `meteor/i18n` folder using your [ISO 639-1 language code](https://en.wikipedia.org/wiki/List_of_ISO_639-1_codes) of choice as the filename.
 
-Next, modify the `package.json` scripts and create a new language compilations script:
-
-```
-"i18n-compile-json": "yarn i18n-compile-json-nb & yarn i18n-compile-json-sv & yarn i18n-compile-json-xx",
-"i18n-compile-json-xx": "i18next-conv -l nb -s i18n/xx.po -t public/locales/xx/translations.json",
-```
-
 Then, run the compilation script:
 
 ```bash

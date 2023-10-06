@@ -64,21 +64,38 @@ $triggered-action-color: #146985;
 			margin: 0 3px 3px 0;
 		}
 
-		> .triggered-action-entry__hotkey {
+		.triggered-action-entry__hotkey,
+		.triggered-action-entry__device {
+			display: inline-flex;
 			background: #555;
 			color: #fff;
 			font-weight: 400;
 			justify-content: center;
 			min-width: 20px;
 			word-break: break-word;
+			border-radius: 3px;
+			padding: 0 3px;
+			margin: 0 3px 3px 0;
 
 			&.selected {
 				position: relative;
 				z-index: 1001;
 			}
+			&.deleted {
+				text-decoration: line-through;
+				opacity: 0.7;
+			}
 
 			.subtle {
 				color: #aaa;
+			}
+		}
+
+		.triggered-action-entry__device {
+			background: #363e96;
+
+			.subtle {
+				color: #bec3ff;
 			}
 		}
 
@@ -100,6 +117,41 @@ $triggered-action-color: #146985;
 		> .triggered-action-entry__trigger-editor {
 			display: block;
 			min-width: 228px;
+
+			.triggered-action-entry__trigger-editor__triggers-preview {
+				margin: 1em 0 0;
+				padding: 0;
+				list-style: none;
+
+				> li {
+					margin: 0;
+					padding: 0;
+
+					> h6 {
+						font-size: 1em;
+						margin: 0;
+						padding: 0;
+						font-weight: normal;
+					}
+
+					> p {
+						margin: 0;
+						padding: 0;
+						font-size: 0.6em;
+						line-height: 1em;
+						position: relative;
+
+						> span {
+							margin: 0 3px 3px 0;
+							display: inline-block;
+							white-space: nowrap;
+							max-width: 100%;
+							overflow: hidden;
+							text-overflow: ellipsis;
+						}
+					}
+				}
+			}
 		}
 
 		&:hover {

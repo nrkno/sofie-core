@@ -2,19 +2,15 @@ import { check, Match } from '../../lib/check'
 import { Meteor } from 'meteor/meteor'
 import { ClientAPI } from '../../lib/api/client'
 import { getCurrentTime, getHash, Time } from '../../lib/lib'
-import { Rundowns } from '../../lib/collections/Rundowns'
-import { Parts } from '../../lib/collections/Parts'
 import { ServerPlayoutAPI } from './playout/playout'
 import { NewUserActionAPI, RESTART_SALT, UserActionAPIMethods } from '../../lib/api/userActions'
 import { EvaluationBase } from '../../lib/collections/Evaluations'
-import { Pieces } from '../../lib/collections/Pieces'
 import { IngestPart, IngestAdlib, ActionUserData } from '@sofie-automation/blueprints-integration'
 import { storeRundownPlaylistSnapshot } from './snapshot'
 import { registerClassToMeteorMethods, ReplaceOptionalWithNullInMethodArguments } from '../methods'
 import { ServerRundownAPI } from './rundown'
 import { saveEvaluation } from './evaluations'
 import { MediaManagerAPI } from './mediaManager'
-import { IngestDataCache, IngestCacheType } from '../../lib/collections/IngestDataCache'
 import { MOSDeviceActions } from './ingest/mosDevice/actions'
 import { MethodContextAPI } from '../../lib/api/methods'
 import { ServerClientAPI } from './client'
@@ -49,6 +45,8 @@ import {
 	ShowStyleBaseId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { IngestDataCache, Parts, Pieces, Rundowns } from '../collections'
+import { IngestCacheType } from '@sofie-automation/corelib/dist/dataModel/IngestDataCache'
 
 async function pieceSetInOutPoints(
 	access: VerifiedRundownPlaylistContentAccess,

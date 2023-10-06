@@ -37,7 +37,7 @@ export class PieceCountdownPanelInner extends MeteorReactComponent<
 	IPieceCountdownPanelProps & IPieceCountdownPanelTrackedProps,
 	IState
 > {
-	constructor(props) {
+	constructor(props: IPieceCountdownPanelProps & IPieceCountdownPanelTrackedProps) {
 		super(props)
 		this.state = {
 			displayTimecode: 0,
@@ -45,15 +45,15 @@ export class PieceCountdownPanelInner extends MeteorReactComponent<
 		this.updateTimecode = this.updateTimecode.bind(this)
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		window.addEventListener(RundownTiming.Events.timeupdateLowResolution, this.updateTimecode)
 	}
 
-	componentWillUnmount() {
+	componentWillUnmount(): void {
 		window.removeEventListener(RundownTiming.Events.timeupdateLowResolution, this.updateTimecode)
 	}
 
-	updateTimecode(e: TimingEvent) {
+	private updateTimecode(e: TimingEvent) {
 		let timecode = 0
 		if (this.props.livePieceInstance && this.props.livePieceInstance.plannedStartedPlayback) {
 			const vtContent = this.props.livePieceInstance.piece.content as VTContent | undefined
@@ -71,7 +71,7 @@ export class PieceCountdownPanelInner extends MeteorReactComponent<
 		}
 	}
 
-	render() {
+	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		return (
 			<div

@@ -1,10 +1,10 @@
 import { addMigrationSteps } from './databaseMigration'
 import { ensureCollectionProperty } from './lib'
-import { getCoreSystem } from '../../lib/collections/CoreSystem'
 import { dropDeprecatedDatabases, getDeprecatedDatabases } from './deprecatedDatabases/1_32_0'
 import semver from 'semver'
 import * as _ from 'underscore'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import { getCoreSystem } from '../coreSystem/collection'
 
 // Release 32 (2021-05-05)
 export const addSteps = addMigrationSteps('1.32.0', [

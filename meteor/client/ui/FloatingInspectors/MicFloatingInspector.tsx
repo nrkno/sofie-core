@@ -15,7 +15,7 @@ interface IProps {
 	displayOn?: 'document' | 'viewport'
 }
 
-export function MicFloatingInspector(props: IProps) {
+export function MicFloatingInspector(props: IProps): JSX.Element {
 	const { t } = useTranslation()
 
 	const { startOfScript, endOfScript, breakScript } = getScriptPreview(props.content.fullScript || '')

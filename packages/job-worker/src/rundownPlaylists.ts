@@ -36,6 +36,9 @@ import { runWithRundownLock } from './ingest/lock'
 import { convertRundownToBlueprints } from './blueprints/context/lib'
 import { sortRundownIDsInPlaylist } from '@sofie-automation/corelib/dist/playout/playlist'
 
+/**
+ * Debug: Remove a Playlist and all its contents
+ */
 export async function handleRemoveRundownPlaylist(context: JobContext, data: RemovePlaylistProps): Promise<void> {
 	const removed = await runJobWithPlaylistLock(context, data, async (playlist) => {
 		if (playlist) {
@@ -290,8 +293,10 @@ function defaultPlaylistForRundown(
 	}
 }
 
-/** Move a rundown manually (by a user in Sofie)  */
-export async function moveRundownIntoPlaylist(
+/**
+ * Move a rundown manually into a specific Playlist (by a user in Sofie)
+ */
+export async function handleMoveRundownIntoPlaylist(
 	context: JobContext,
 	data: OrderMoveRundownToPlaylistProps
 ): Promise<void> {
@@ -468,8 +473,10 @@ export async function moveRundownIntoPlaylist(
 	})
 }
 
-/** Restore the order of rundowns in a playlist, giving control over the ordering back to the NRCS */
-export async function restoreRundownsInPlaylistToDefaultOrder(
+/**
+ * Restore the order of rundowns in a playlist, giving control over the ordering back to the NRCS
+ */
+export async function handleRestoreRundownsInPlaylistToDefaultOrder(
 	context: JobContext,
 	data: OrderRestoreToDefaultProps
 ): Promise<void> {
@@ -498,7 +505,7 @@ export async function restoreRundownsInPlaylistToDefaultOrder(
 function sortDefaultRundownInPlaylistOrder(rundowns0: ReadonlyDeep<Array<DBRundown>>): ReadonlyDeep<Array<DBRundown>> {
 	const rundowns = [...rundowns0] // shallow clone array
 	return rundowns.sort((a, b) => {
-		const timingSorting = PlaylistTiming.sortTiminings(a, b)
+		const timingSorting = PlaylistTiming.sortTimings(a, b)
 		if (timingSorting !== 0) return timingSorting
 
 		const nameSorting = a.name.localeCompare(b.name)

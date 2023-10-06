@@ -1,5 +1,6 @@
 import { testInFiber } from '../../__mocks__/helpers/jest'
 import { supressLogging } from '../../__mocks__/helpers/lib'
+import { SupressLogMessages } from '../../__mocks__/suppressLogging'
 import { logger } from '../logging'
 
 describe('server/logger', () => {
@@ -13,6 +14,7 @@ describe('server/logger', () => {
 		// These should suppress all messages from being logged:
 		await supressLogging(logMessages)
 
+		SupressLogMessages.suppressLogMessage(/This is an error message/i)
 		// These should suppress all but errors:
 		await supressLogging(logMessages, true)
 		expect(1).toBe(1)

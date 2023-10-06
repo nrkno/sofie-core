@@ -5,7 +5,7 @@ import { RundownUtils } from '../../../lib/rundown'
 import { getSplitPreview, SplitRole } from '../../../lib/ui/splitPreview'
 import { PieceUi } from '../../SegmentContainer/withResolvedSegment'
 
-export function getSplitItems(pieceInstance: PieceUi, baseClassName: string) {
+export function getSplitItems(pieceInstance: PieceUi, baseClassName: string): JSX.Element[] {
 	const splitsContent = pieceInstance.instance.piece.content as SplitsContent
 
 	return getSplitPreview(splitsContent.boxSourceConfiguration)

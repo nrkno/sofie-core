@@ -5,6 +5,8 @@ import { CustomLayerItemRenderer, ICustomLayerItemProps } from './CustomLayerIte
 import { NoraContent, SourceLayerType } from '@sofie-automation/blueprints-integration'
 import { L3rdFloatingInspector } from '../../FloatingInspectors/L3rdFloatingInspector'
 import { RundownUtils } from '../../../lib/rundown'
+import classNames from 'classnames'
+import { PieceMultistepChevron } from '../../SegmentContainer/PieceMultistepChevron'
 
 type IProps = ICustomLayerItemProps
 interface IState {}
@@ -13,26 +15,26 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 	rightLabel: HTMLElement | null
 	lastOverflowTime: boolean
 
-	updateAnchoredElsWidths = () => {
+	private updateAnchoredElsWidths = () => {
 		const leftLabelWidth = this.leftLabel ? getElementWidth(this.leftLabel) : 0
 		const rightLabelWidth = this.rightLabel ? getElementWidth(this.rightLabel) : 0
 
 		this.setAnchoredElsWidths(leftLabelWidth, rightLabelWidth)
 	}
 
-	setLeftLabelRef = (e: HTMLSpanElement) => {
+	private setLeftLabelRef = (e: HTMLSpanElement) => {
 		this.leftLabel = e
 	}
 
-	setRightLabelRef = (e: HTMLSpanElement) => {
+	private setRightLabelRef = (e: HTMLSpanElement) => {
 		this.rightLabel = e
 	}
 
-	componentDidMount() {
+	componentDidMount(): void {
 		this.updateAnchoredElsWidths()
 	}
 
-	componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>) {
+	componentDidUpdate(prevProps: Readonly<IProps>, prevState: Readonly<IState>): void {
 		if (super.componentDidUpdate && typeof super.componentDidUpdate === 'function') {
 			super.componentDidUpdate(prevProps, prevState)
 		}
@@ -47,12 +49,17 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 		}
 	}
 
-	render() {
+	render(): JSX.Element {
 		const innerPiece = this.props.piece.instance.piece
 		const noraContent = innerPiece.content as NoraContent | undefined
 
 		const stepContent = noraContent?.payload?.step
 		const isMultiStep = stepContent?.enabled === true
+
+		const multistepChevron = PieceMultistepChevron({
+			className: 'segment-timeline__piece__step-chevron',
+			piece: this.props.piece,
+		})
 
 		return (
 			<React.Fragment>
@@ -60,15 +67,13 @@ export class L3rdSourceRenderer extends CustomLayerItemRenderer<IProps, IState> 
 					<>
 						{!this.props.piece.hasOriginInPreceedingPart || this.props.isLiveLine ? (
 							<span
-								className="segment-timeline__piece__label"
+								className={classNames('segment-timeline__piece__label', {
+									mln: !!multistepChevron,
+								})}
 								ref={this.setLeftLabelRef}
 								style={this.getItemLabelOffsetLeft()}
 							>
-								{isMultiStep && stepContent ? (
-									<span className="segment-timeline__piece__step-chevron">
-										{stepContent.to === 'next' ? (stepContent.from || 0) + 1 : stepContent.to || 1}
-									</span>
-								) : null}
+								{multistepChevron}
 								<span className="segment-timeline__piece__label">{innerPiece.name}</span>
 							</span>
 						) : null}

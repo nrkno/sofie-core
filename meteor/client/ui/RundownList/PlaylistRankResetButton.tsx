@@ -13,7 +13,7 @@ export default function PlaylistRankResetButton({
 	manualSortingActive,
 	nrcsName,
 	toggleCallbackHandler,
-}: IPlaylistRankMethodToggleProps) {
+}: IPlaylistRankMethodToggleProps): JSX.Element | null {
 	const { t } = useTranslation()
 
 	if (!manualSortingActive) return null

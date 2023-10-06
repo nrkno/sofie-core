@@ -18,7 +18,7 @@ export const SegmentTimelineSmallPartFlagIcon = (props: {
 	}
 	onClick?: (e: React.MouseEvent<HTMLDivElement>) => void
 	data?: Record<`data-${string}`, string>
-}) => {
+}): JSX.Element => {
 	return (
 		<div
 			className={classNames('segment-timeline__small-parts-flag__part', {

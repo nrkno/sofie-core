@@ -11,39 +11,114 @@ import {
 	ShowStyleVariantId,
 	StudioId,
 } from '../dataModel/Ids'
-import type * as MOS from 'mos-connection'
+import type { MOS } from '@sofie-automation/shared-lib/dist/mos'
 import { IngestAdlib, IngestPart, IngestRundown, IngestSegment } from '@sofie-automation/blueprints-integration'
 import { BucketAdLibAction } from '../dataModel/BucketAdLibAction'
 
 export enum IngestJobs {
+	/**
+	 * Attempt to remove a rundown, or orphan it
+	 */
 	RemoveRundown = 'removeRundown',
+	/**
+	 * Insert or update a rundown with a new IngestRundown
+	 */
 	UpdateRundown = 'updateRundown',
+	/**
+	 * Update a rundown from a new IngestRundown (ingoring IngestSegments)
+	 */
 	UpdateRundownMetaData = 'updateRundownMetaData',
+	/**
+	 * Attempt to remove a segment, or orphan it
+	 */
 	RemoveSegment = 'removeSegment',
+	/**
+	 * Insert or update a segment from a new IngestSegment
+	 */
 	UpdateSegment = 'updateSegment',
+	/**
+	 * Update the ranks of the Segments in a Rundown
+	 */
 	UpdateSegmentRanks = 'updateSegmentRanks',
+	/**
+	 * Remove a Part from a Segment
+	 */
 	RemovePart = 'removePart',
+	/**
+	 * Insert or update a Part in a Segment
+	 */
 	UpdatePart = 'updatePart',
+	/**
+	 * Regnerate a Rundown from the cached IngestRundown
+	 */
 	RegenerateRundown = 'regenerateRundown',
+	/**
+	 * Regnerate a Segment from the cached IngestSegment
+	 */
 	RegenerateSegment = 'regenerateSegment',
 
+	/**
+	 * Check for and remove any orphaned segments if their contents are no longer on air
+	 */
 	RemoveOrphanedSegments = 'removeOrphanedSegments',
 
+	/**
+	 * Insert or update a mos rundown
+	 */
 	MosRundown = 'mosRundown',
+	/**
+	 * Update the payload of a mos rundown, without changing any parts or segments
+	 */
 	MosRundownMetadata = 'mosRundownMetadata',
+	/**
+	 * Update the status of a mos rundown
+	 */
 	MosRundownStatus = 'mosRundownStatus',
+	/**
+	 * Update the ready to air state of a mos rundown
+	 */
 	MosRundownReadyToAir = 'mosRundownReadyToAir',
+	/**
+	 * Update the status of a mos story
+	 */
 	MosStoryStatus = 'mosStoryStatus',
+	/**
+	 * Update the payload of a mos story
+	 */
 	MosFullStory = 'mosFullStory',
+	/**
+	 * Delete a mos story
+	 */
 	MosDeleteStory = 'mosDeleteStory',
+	/**
+	 * Insert a mos story before the referenced existing story
+	 */
 	MosInsertStory = 'mosInsertStory',
+	/**
+	 * Move a list of mos stories
+	 */
 	MosMoveStory = 'mosMoveStory',
+	/**
+	 * Swap positions of two mos stories
+	 */
 	MosSwapStory = 'mosSwapStory',
 
+	/**
+	 * Debug: Regenerate ExpectedPackages for a Rundown
+	 */
 	ExpectedPackagesRegenerate = 'expectedPackagesRegenerate',
+	/**
+	 * Some PackageInfos have been updated, regenerate any Parts which depend on these PackageInfos
+	 */
 	PackageInfosUpdated = 'packageInfosUpdated',
 
+	/**
+	 * User requested removing a rundown
+	 */
 	UserRemoveRundown = 'userRemoveRundown',
+	/**
+	 * User requested unsyncing a rundown
+	 */
 	UserUnsyncRundown = 'userUnsyncRundown',
 
 	// For now these are in this queue, but if this gets split up to be per rundown, then a single bucket queue will be needed
@@ -101,7 +176,11 @@ export interface RemoveOrphanedSegmentsProps extends IngestPropsBase {
 
 export interface MosRundownProps extends IngestPropsBase {
 	mosRunningOrder: MOS.IMOSRunningOrder
-	isCreateAction: boolean // TODO: Document what isCreateAction means
+	/**
+	 * True if this was an update operation from the ingest gateway.
+	 * If true, it will fail if the Rundown does not already exist
+	 */
+	isUpdateOperation: boolean
 }
 export interface MosRundownMetadataProps extends IngestPropsBase {
 	mosRunningOrderBase: MOS.IMOSRunningOrderBase
@@ -120,20 +199,20 @@ export interface MosFullStoryProps extends IngestPropsBase {
 	story: MOS.IMOSROFullStory
 }
 export interface MosDeleteStoryProps extends IngestPropsBase {
-	stories: MOS.MosString128[]
+	stories: MOS.IMOSString128[]
 }
 export interface MosInsertStoryProps extends IngestPropsBase {
-	insertBeforeStoryId: MOS.MosString128 | null
+	insertBeforeStoryId: MOS.IMOSString128 | null
 	replace: boolean
 	newStories: MOS.IMOSROStory[]
 }
 export interface MosMoveStoryProps extends IngestPropsBase {
-	insertBeforeStoryId: MOS.MosString128 | null
-	stories: MOS.MosString128[]
+	insertBeforeStoryId: MOS.IMOSString128 | null
+	stories: MOS.IMOSString128[]
 }
 export interface MosSwapStoryProps extends IngestPropsBase {
-	story0: MOS.MosString128
-	story1: MOS.MosString128
+	story0: MOS.IMOSString128
+	story1: MOS.IMOSString128
 }
 
 export interface ExpectedPackagesRegenerateProps {
@@ -222,7 +301,7 @@ export type IngestJobFunc = {
 	[IngestJobs.BucketEmpty]: (data: BucketEmptyProps) => void
 }
 
-// TODO - there should probably be a queue per rundown or something. To be improved later
+// Future: there should probably be a queue per rundown or something. To be improved later
 export function getIngestQueueName(studioId: StudioId): string {
 	return `ingest:${studioId}`
 }

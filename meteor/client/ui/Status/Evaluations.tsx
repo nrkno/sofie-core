@@ -5,11 +5,13 @@ import Moment from 'react-moment'
 import { Time, unprotectString } from '../../../lib/lib'
 import * as _ from 'underscore'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
-import { Evaluations, Evaluation } from '../../../lib/collections/Evaluations'
+import { Evaluation } from '../../../lib/collections/Evaluations'
 import { DatePickerFromTo } from '../../lib/datePicker'
 import moment from 'moment'
 import { getQuestionOptions } from '../AfterBroadcastForm'
 import { PubSub, meteorSubscribe } from '../../../lib/api/pubsub'
+import { Evaluations } from '../../collections'
+
 interface IEvaluationProps {}
 interface IEvaluationState {
 	dateFrom: Time
@@ -47,11 +49,11 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 				dateTo: moment().add(1, 'days').startOf('day').valueOf(),
 			}
 		}
-		componentDidMount() {
+		componentDidMount(): void {
 			// Subscribe to data:
 			this.updateSubscription()
 		}
-		componentDidUpdate() {
+		componentDidUpdate(): void {
 			this.updateSubscription()
 		}
 		updateSubscription() {
@@ -69,7 +71,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 				})
 			}
 		}
-		componentWillUnmount() {
+		componentWillUnmount(): void {
 			if (this._sub) {
 				this._sub.stop()
 			}
@@ -152,7 +154,7 @@ const EvaluationView = translateWithTracker<IEvaluationProps, IEvaluationState, 
 			)
 		}
 
-		render() {
+		render(): JSX.Element {
 			const { t } = this.props
 			return (
 				<div className="mhl gutter external-message-status">

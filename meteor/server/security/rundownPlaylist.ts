@@ -2,11 +2,11 @@ import { Meteor } from 'meteor/meteor'
 import { check } from '../../lib/check'
 import { logNotAllowed } from './lib/lib'
 import { allowAccessToRundownPlaylist } from './lib/security'
-import { RundownPlaylists, RundownPlaylist } from '../../lib/collections/RundownPlaylists'
+import { RundownPlaylist } from '../../lib/collections/RundownPlaylists'
 import { Credentials, ResolvedCredentials, resolveCredentials } from './lib/credentials'
 import { triggerWriteAccess } from './lib/securityVerify'
 import { isProtectedString } from '../../lib/lib'
-import { Rundown, Rundowns } from '../../lib/collections/Rundowns'
+import { Rundown } from '../../lib/collections/Rundowns'
 import { Settings } from '../../lib/Settings'
 import {
 	OrganizationId,
@@ -15,6 +15,7 @@ import {
 	StudioId,
 	UserId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { RundownPlaylists, Rundowns } from '../collections'
 
 export namespace RundownPlaylistReadAccess {
 	/** Handles read access for all playlist document */

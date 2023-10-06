@@ -23,7 +23,7 @@ export function SwitchViewModeButton({
 }: {
 	currentMode: SegmentViewMode
 	onSwitchViewMode?: (viewMode: SegmentViewMode) => void
-}) {
+}): JSX.Element {
 	const { t } = useTranslation()
 
 	const nextMode = getNextMode(currentMode)

@@ -69,25 +69,32 @@ export class MidiPedalController extends ControllerAbstract {
 			this.reverseSpeedMap
 		)
 
-		webmidi.enable(this.setupMidiListeners.bind(this))
+		try {
+			webmidi.enable(this.setupMidiListeners.bind(this))
+		} catch (e: any) {
+			console.error(e)
+			console.warn(
+				'Are you accessing the page over HTTPS? If not, look at setting Chrome flag unsafely-treat-insecure-origin-as-secure'
+			)
+		}
 	}
 
-	public destroy() {
+	public destroy(): void {
 		webmidi.disable()
 	}
-	public onKeyDown(_e: KeyboardEvent) {
+	public onKeyDown(_e: KeyboardEvent): void {
 		// Nothing
 	}
-	public onKeyUp(_e: KeyboardEvent) {
+	public onKeyUp(_e: KeyboardEvent): void {
 		// Nothing
 	}
-	public onMouseKeyDown(_e: MouseEvent) {
+	public onMouseKeyDown(_e: MouseEvent): void {
 		// Nothing
 	}
-	public onMouseKeyUp(_e: MouseEvent) {
+	public onMouseKeyUp(_e: MouseEvent): void {
 		// Nothing
 	}
-	public onWheel(_e: WheelEvent) {
+	public onWheel(_e: WheelEvent): void {
 		// Nothing
 	}
 
