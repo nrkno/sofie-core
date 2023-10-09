@@ -372,11 +372,23 @@ resources:
                 segmentId:
                   type: string
                   description: Segment to set as next.
+                  example: 'n1mOVd5_K5tt4sfk6HYfTuwumGQ_'
               required:
                 - segmentId
       responses:
         200:
-          $ref: '#/components/responses/putSuccess'
+          description: Command successfully handled - returns Part ID if the first part of a segment was set as next.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 200
+                  result:
+                    type: string
+                    example: '3Y9at66pZipxE8Kkn850LLV9Cz0_'
         404:
           $ref: '#/components/responses/playlistNotFound'
         412:
@@ -399,7 +411,7 @@ resources:
       operationId: queueNextSegment
       tags:
         - playlists
-      summary: Queue Segment with a given segmentId, so that the Next point will jump to that Segment when reaching the end of the currently playing Segment.
+      summary: Queue Segment with a given segmentId, so that the Next point will jump to that Segment when reaching the end of the currently playing Segment. If the part currently set as next is outside of the current segment, it will set the first part of the given segment as next.
       parameters:
         - name: playlistId
           in: path
@@ -417,11 +429,35 @@ resources:
                 segmentId:
                   type: string
                   description: Segment to queue.
+                  example: 'n1mOVd5_K5tt4sfk6HYfTuwumGQ_'
               required:
                 - segmentId
       responses:
         200:
-          $ref: '#/components/responses/putSuccess'
+          description: Command successfully handled - returns ID of the queued Segment, or ID of the Part set as next.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: number
+                    example: 200
+                  result:
+                    type: object
+                    oneOf:
+                      - properties:
+                          queuedSegmentId:
+                            type: string
+                            nullable: true
+                            description: Segment ID, when a segment was queued, or 'null' when previously queued segment is cleared.
+                            example: 'n1mOVd5_K5tt4sfk6HYfTuwumGQ_'
+                      - properties:
+                          nextPartId:
+                            type: string
+                            description: Part ID, when a part was set as next.
+                            example: '3Y9at66pZipxE8Kkn850LLV9Cz0_'
+
         404:
           $ref: '#/components/responses/playlistNotFound'
         412:
