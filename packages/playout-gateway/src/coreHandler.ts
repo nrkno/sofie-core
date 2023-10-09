@@ -461,6 +461,7 @@ export class CoreTSRDeviceHandler {
 		statusCode: StatusCode.BAD,
 		messages: ['Starting up...'],
 	}
+	private disposed = false
 
 	constructor(
 		parent: CoreHandler,
@@ -475,6 +476,7 @@ export class CoreTSRDeviceHandler {
 	}
 	async init(): Promise<void> {
 		this._device = await this._devicePr
+		if (this.disposed) throw new Error('CoreTSRDeviceHandler cant init, is disposed')
 		const deviceId = this._device.deviceId
 		const deviceName = `${deviceId} (${this._device.deviceName})`
 
@@ -485,6 +487,7 @@ export class CoreTSRDeviceHandler {
 
 			deviceSubType: this._device.deviceOptions.type,
 		})
+		if (this.disposed) throw new Error('CoreTSRDeviceHandler cant init, is disposed')
 		this.core.on('error', (err: any) => {
 			this._coreParentHandler.logger.error(
 				'Core Error: ' + ((_.isObject(err) && err.message) || err.toString() || err)
@@ -495,7 +498,10 @@ export class CoreTSRDeviceHandler {
 			this._deviceStatus = await this._device.device.getStatus()
 			this.sendStatus()
 		}
+		if (this.disposed) throw new Error('CoreTSRDeviceHandler cant init, is disposed')
 		await this.setupSubscriptionsAndObservers()
+		if (this.disposed) throw new Error('CoreTSRDeviceHandler cant init, is disposed')
+
 		this._coreParentHandler.logger.debug('setupSubscriptionsAndObservers done')
 	}
 	private async setupSubscriptionsAndObservers(): Promise<void> {

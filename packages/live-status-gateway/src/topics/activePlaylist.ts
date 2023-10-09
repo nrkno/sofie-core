@@ -18,6 +18,8 @@ import { PartInstanceName, PartInstancesHandler } from '../collections/partInsta
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { AdLibsHandler } from '../collections/adLibs'
+import { GlobalAdLibsHandler } from '../collections/globalAdLibs'
 import { PlaylistHandler } from '../collections/playlist'
 import { ShowStyleBaseHandler } from '../collections/showStyleBase'
 import { AdLibActionsHandler } from '../collections/adLibActions'
@@ -41,9 +43,10 @@ interface AdLibStatus {
 	sourceLayer: string
 	outputLayer: string
 	actionType: AdLibActionType[]
+	tags?: string[]
 }
 
-interface ActivePlaylistStatus {
+export interface ActivePlaylistStatus {
 	event: string
 	id: string | null
 	name: string
@@ -112,6 +115,7 @@ export class ActivePlaylistTopic
 						sourceLayer: sourceLayerName ?? 'invalid',
 						outputLayer: outputLayerName ?? 'invalid',
 						actionType: triggerModes,
+						tags: action.display.tags,
 					})
 				})
 			)
@@ -128,6 +132,7 @@ export class ActivePlaylistTopic
 						sourceLayer: sourceLayerName ?? 'invalid',
 						outputLayer: outputLayerName ?? 'invalid',
 						actionType: [],
+						tags: adLib.tags,
 					})
 				})
 			)
@@ -156,6 +161,7 @@ export class ActivePlaylistTopic
 						sourceLayer: sourceLayerName ?? 'invalid',
 						outputLayer: outputLayerName ?? 'invalid',
 						actionType: triggerModes,
+						tags: action.display.tags,
 					})
 				})
 			)
@@ -163,15 +169,16 @@ export class ActivePlaylistTopic
 
 		if (this._globalAdLibs) {
 			globalAdLibs.push(
-				...this._globalAdLibs.map((adLibs) => {
-					const sourceLayerName = this._sourceLayersMap.get(adLibs.sourceLayerId)
-					const outputLayerName = this._outputLayersMap.get(adLibs.outputLayerId)
+				...this._globalAdLibs.map((adLib) => {
+					const sourceLayerName = this._sourceLayersMap.get(adLib.sourceLayerId)
+					const outputLayerName = this._outputLayersMap.get(adLib.outputLayerId)
 					return literal<AdLibStatus>({
-						id: unprotectString(adLibs._id),
-						name: adLibs.name,
+						id: unprotectString(adLib._id),
+						name: adLib.name,
 						sourceLayer: sourceLayerName ?? 'invalid',
 						outputLayer: outputLayerName ?? 'invalid',
 						actionType: [],
+						tags: adLib.tags,
 					})
 				})
 			)
@@ -291,6 +298,18 @@ export class ActivePlaylistTopic
 				const globalAdLibActions = data ? (data as RundownBaselineAdLibAction[]) : []
 				this._logger.info(`${this._name} received globalAdLibActions update from ${source}`)
 				this._globalAdLibActions = globalAdLibActions
+				break
+			}
+			case AdLibsHandler.name: {
+				const adLibs = data ? (data as AdLibPiece[]) : []
+				this._logger.info(`${this._name} received adLibs update from ${source}`)
+				this._abLibs = adLibs
+				break
+			}
+			case GlobalAdLibsHandler.name: {
+				const globalAdLibs = data ? (data as RundownBaselineAdLibItem[]) : []
+				this._logger.info(`${this._name} received globalAdLibs update from ${source}`)
+				this._globalAdLibs = globalAdLibs
 				break
 			}
 			default:

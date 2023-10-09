@@ -118,8 +118,10 @@ export class CoreHandler {
 		this.logger.info('Core: Setting up subscriptions..')
 		this.logger.info('DeviceId: ' + this.core.deviceId)
 
-		await this.core.autoSubscribe('peripheralDeviceForDevice', this.core.deviceId)
-
+		await Promise.all([
+			this.core.autoSubscribe('peripheralDeviceForDevice', this.core.deviceId),
+			this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId),
+		])
 		this.logger.info('Core: Subscriptions are set up!')
 		if (this._observers.length) {
 			this.logger.info('CoreMos: Clearing observers..')
@@ -132,6 +134,7 @@ export class CoreHandler {
 		const observer = this.core.observe('peripheralDeviceForDevice')
 		observer.added = (id: string) => this.onDeviceChanged(protectString(id))
 		observer.changed = (id: string) => this.onDeviceChanged(protectString(id))
+		this.setupObserverForPeripheralDeviceCommands(this)
 	}
 	async destroy(): Promise<void> {
 		this._statusDestroyed = true
@@ -247,6 +250,38 @@ export class CoreHandler {
 	}
 	retireExecuteFunction(cmdId: string): void {
 		delete this._executedFunctions[cmdId]
+	}
+	setupObserverForPeripheralDeviceCommands(functionObject: CoreHandler): void {
+		const observer = functionObject.core.observe('peripheralDeviceCommands')
+		functionObject._observers.push(observer)
+		const addedChangedCommand = (id: string) => {
+			const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
+			if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
+			const cmd = cmds.findOne(protectString(id))
+			if (!cmd) throw Error('PeripheralCommand "' + id + '" not found!')
+			// console.log('addedChangedCommand', id)
+			if (cmd.deviceId === functionObject.core.deviceId) {
+				this.executeFunction(cmd, functionObject)
+			} else {
+				// console.log('not mine', cmd.deviceId, this.core.deviceId)
+			}
+		}
+		observer.added = (id: string) => {
+			addedChangedCommand(id)
+		}
+		observer.changed = (id: string) => {
+			addedChangedCommand(id)
+		}
+		observer.removed = (id: string) => {
+			this.retireExecuteFunction(id)
+		}
+		const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
+		if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
+		cmds.find({}).forEach((cmd) => {
+			if (cmd.deviceId === functionObject.core.deviceId) {
+				this.executeFunction(cmd, functionObject)
+			}
+		})
 	}
 	killProcess(actually: number): boolean {
 		if (actually === 1) {
