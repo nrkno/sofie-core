@@ -1,6 +1,6 @@
-import { IBlueprintConfig } from '../common'
-import { ITranslatableMessage } from '../translations'
-import { ICommonContext } from './commonContext'
+import type { IBlueprintConfig } from '../common'
+import type { ITranslatableMessage } from '../translations'
+import type { ICommonContext } from './commonContext'
 
 export interface IFixUpConfigContext<TConfig = IBlueprintConfig> extends ICommonContext {
 	/**
