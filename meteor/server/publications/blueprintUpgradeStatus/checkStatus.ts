@@ -1,22 +1,25 @@
 import {
+	getSchemaUIField,
 	IShowStyleConfigPreset,
 	IStudioConfigPreset,
 	ITranslatableMessage,
 	JSONBlob,
 	JSONBlobParse,
 	JSONSchema,
+	SchemaFormUIField,
 } from '@sofie-automation/blueprints-integration'
 import { BlueprintHash } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
-import { joinObjectPathFragments, objectPathGet, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { joinObjectPathFragments, objectPathGet } from '@sofie-automation/corelib/dist/lib'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { generateTranslation } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { ShowStyleBaseFields, StudioFields } from './reactiveContentCache'
 import _ from 'underscore'
 import { UIBlueprintUpgradeStatusBase } from '../../../lib/api/upgradeStatus'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 export interface BlueprintMapEntry {
 	_id: BlueprintId
@@ -141,7 +144,7 @@ function diffJsonSchemaObjects(
 					generateTranslation(
 						'Config value "{{ name }}" has changed. From "{{ oldValue }}", to "{{ newValue }}"',
 						{
-							name: propSchema['ui:title'] || propPath,
+							name: getSchemaUIField(propSchema, SchemaFormUIField.Title) || propPath,
 							// Future: this is not pretty when it is an object
 							oldValue: JSON.stringify(valueA) ?? '',
 							newValue: JSON.stringify(valueB) ?? '',
