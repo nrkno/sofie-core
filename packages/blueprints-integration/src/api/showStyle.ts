@@ -7,7 +7,6 @@ import type {
 	IStudioUserContext,
 	ISegmentUserContext,
 	IShowStyleUserContext,
-	ICommonContext,
 	ITimelineEventContext,
 	IRundownDataChangedEventContext,
 	IRundownTimingEventContext,
@@ -15,8 +14,9 @@ import type {
 	IDataStoreActionExecutionContext,
 	IRundownActivationContext,
 	IShowStyleContext,
-	IFixUpConfigContext,
 } from '../context'
+import { ICommonContext } from '../ICommonContext'
+import { IFixUpConfigContext } from '../IFixUpConfigContext'
 import type { IngestAdlib, ExtendedIngestRundown, IngestSegment } from '../ingest'
 import type { IBlueprintExternalMessageQueueObj } from '../message'
 import type { MigrationStepShowStyle } from '../migrations'

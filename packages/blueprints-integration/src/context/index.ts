@@ -1,6 +1,6 @@
-import { DatastorePersistenceMode, IBlueprintConfig, Time } from './common'
-import { IBlueprintExternalMessageQueueObj } from './message'
-import { PackageInfo } from './packageInfo'
+import { DatastorePersistenceMode, Time } from '../common'
+import { IBlueprintExternalMessageQueueObj } from '../message'
+import { PackageInfo } from '../packageInfo'
 import {
 	IBlueprintMutatablePart,
 	IBlueprintPart,
@@ -12,52 +12,16 @@ import {
 	IBlueprintRundownPlaylist,
 	IBlueprintSegmentDB,
 	IBlueprintSegmentRundown,
-} from './documents'
-import { BlueprintMappings } from './studio'
-import { TSR, OnGenerateTimelineObj } from './timeline'
+} from '../documents'
+import { BlueprintMappings } from '../studio'
+import { TSR, OnGenerateTimelineObj } from '../timeline'
 import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model/Ids'
-import { IBlueprintPlayoutDevice } from './lib'
-import { ISourceLayer, IOutputLayer } from './showStyle'
-import { ITranslatableMessage } from './translations'
+import { IBlueprintPlayoutDevice } from '../lib'
+import { ISourceLayer, IOutputLayer } from '../showStyle'
+import { ICommonContext, isCommonContext } from './commonContext'
 
-/** Common */
-
-export interface ICommonContext {
-	/**
-	 * Hash a string. Will return a unique string, to be used for all _id:s that are to be inserted in database
-	 * @param originString A representation of the origin of the hash (for logging)
-	 * @param originIsNotUnique If the originString is not guaranteed to be unique, set this to true
-	 */
-	getHashId: (originString: string, originIsNotUnique?: boolean) => string
-	/** Un-hash, is return the string that created the hash */
-	unhashId: (hash: string) => string
-
-	/** Log a message to the sofie log with level 'debug' */
-	logDebug: (message: string) => void
-	/** Log a message to the sofie log with level 'info' */
-	logInfo: (message: string) => void
-	/** Log a message to the sofie log with level 'warn' */
-	logWarning: (message: string) => void
-	/** Log a message to the sofie log with level 'error' */
-	logError: (message: string) => void
-}
-
-export function isCommonContext(obj: unknown): obj is ICommonContext {
-	if (!obj || typeof obj !== 'object') {
-		return false
-	}
-
-	const { getHashId, unhashId, logDebug, logInfo, logWarning, logError } = obj as ICommonContext
-
-	return (
-		typeof getHashId === 'function' &&
-		typeof unhashId === 'function' &&
-		typeof logDebug === 'function' &&
-		typeof logInfo === 'function' &&
-		typeof logWarning === 'function' &&
-		typeof logError === 'function'
-	)
-}
+export * from './commonContext'
+export * from './fixUpConfigContext'
 
 export interface IUserNotesContext extends ICommonContext {
 	/** Display a notification to the user of an error */
@@ -367,68 +331,4 @@ export interface IRundownTimingEventContext extends IRundownDataChangedEventCont
 	 * @param id Id of segment to fetch
 	 */
 	getSegment(id: string): Promise<Readonly<IBlueprintSegmentDB> | undefined>
-}
-
-export interface IFixUpConfigContext<TConfig = IBlueprintConfig> extends ICommonContext {
-	/**
-	 * Get the current config, with any applied changes
-	 */
-	getConfig(): TConfig
-
-	/**
-	 * List all paths with values
-	 */
-	listPaths(): string[]
-
-	/**
-	 * List all paths with values that don't align with the current config structure
-	 */
-	listInvalidPaths(): string[]
-
-	/**
-	 * Check if there are any values for the specified path
-	 * @param path Object path prefix to check
-	 */
-	hasOperations(path: string): boolean
-
-	/**
-	 * Add a new user defined set operation for the specified path
-	 * @param path Exact object path to be set
-	 * @param value Value to be stored
-	 */
-	addSetOperation(path: string, value: any): void
-	/**
-	 * Add a new user defined delete operation for the specified path
-	 * @param path Exact object path to be deleted
-	 */
-	addDeleteOperation(path: string): void
-
-	/**
-	 * Remove operations for a path
-	 * All nested operations within the path will removed
-	 * @param path Object path prefix to be removed (`a` will match `a` and `a.b`)
-	 */
-	removeOperations(path: string): void
-
-	/**
-	 * Rename operations for a path
-	 * All nested operations within the path will renamed
-	 * eg `a` will match `a` and `a.b`
-	 * @param fromPath Object path prefix to be renamed (`a` will match `a` and `a.b`)
-	 * @param toPath Object path prefix to be substituted
-	 */
-	renameOperations(fromPath: string, toPath: string): void
-
-	/*
-	 * Future: a way of transforming values would be useful, but more direction is needed on
-	 * what kind of transformations are needed and possible to do in this flow
-	 */
-
-	/**
-	 * Show a warning to the user about a change that they will need to convert/migrate manually
-	 * This will be persisted until the next call to `applyConfig`
-	 * @param path Object path prefix the message is related to
-	 * @param message Message to show to the user
-	 */
-	warnUnfixable(path: string, message: ITranslatableMessage): void
 }
