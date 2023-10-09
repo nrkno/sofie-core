@@ -456,6 +456,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					inputDevices: wrapDefaultObject({}),
 				},
 				lastBlueprintConfig: undefined,
+				lastBlueprintFixupHash: undefined,
 			})
 		},
 	},
@@ -488,6 +489,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
 					lastBlueprintConfig: undefined,
+					lastBlueprintFixupHash: undefined,
 				})
 
 				const variantId: ShowStyleVariantId = getRandomId()
@@ -522,6 +524,7 @@ export const addSteps = addMigrationSteps('0.1.0', [
 					blueprintConfigWithOverrides: wrapDefaultObject({}),
 					_rundownVersionHash: '',
 					lastBlueprintConfig: undefined,
+					lastBlueprintFixupHash: undefined,
 				})
 
 				await ShowStyleVariants.insertAsync({

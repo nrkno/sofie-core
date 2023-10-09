@@ -259,6 +259,7 @@ describe('systemStatus', () => {
 						documentType: 'studio',
 						documentId: protectString('studio0'),
 						name: 'Test Studio #0',
+						pendingRunOfFixupFunction: false,
 						changes: [generateTranslation('something changed')],
 					},
 					{
@@ -267,6 +268,7 @@ describe('systemStatus', () => {
 						documentId: protectString('studio1'),
 						name: 'Test Studio #1',
 						invalidReason: generateTranslation('some invalid reason'),
+						pendingRunOfFixupFunction: false,
 						changes: [],
 					},
 				])
@@ -293,6 +295,7 @@ describe('systemStatus', () => {
 						documentType: 'studio',
 						documentId: protectString('studio0'),
 						name: 'Test Studio #0',
+						pendingRunOfFixupFunction: false,
 						changes: [generateTranslation('something changed')],
 					},
 					{
@@ -300,6 +303,7 @@ describe('systemStatus', () => {
 						documentType: 'studio',
 						documentId: protectString('studio1'),
 						name: 'Test Studio #1',
+						pendingRunOfFixupFunction: false,
 						changes: [],
 					},
 				])
@@ -326,6 +330,7 @@ describe('systemStatus', () => {
 						documentType: 'studio',
 						documentId: protectString('studio0'),
 						name: 'Test Studio #0',
+						pendingRunOfFixupFunction: false,
 						changes: [],
 					},
 					{
@@ -333,6 +338,7 @@ describe('systemStatus', () => {
 						documentType: 'studio',
 						documentId: protectString('studio1'),
 						name: 'Test Studio #1',
+						pendingRunOfFixupFunction: false,
 						changes: [],
 					},
 				])
@@ -359,6 +365,7 @@ describe('systemStatus', () => {
 						documentType: 'showStyle',
 						documentId: protectString('showStyleBase0'),
 						name: 'Test Show Style Base #0',
+						pendingRunOfFixupFunction: false,
 						changes: [generateTranslation('something changed')],
 					},
 					{
@@ -367,6 +374,7 @@ describe('systemStatus', () => {
 						documentId: protectString('showStyleBase1'),
 						name: 'Test Show Style Base #1',
 						invalidReason: generateTranslation('some invalid reason'),
+						pendingRunOfFixupFunction: false,
 						changes: [],
 					},
 				])
@@ -393,6 +401,7 @@ describe('systemStatus', () => {
 						documentType: 'showStyle',
 						documentId: protectString('showStyleBase0'),
 						name: 'Test Show Style Base #0',
+						pendingRunOfFixupFunction: false,
 						changes: [generateTranslation('something changed')],
 					},
 					{
@@ -400,6 +409,7 @@ describe('systemStatus', () => {
 						documentType: 'showStyle',
 						documentId: protectString('showStyleBase1'),
 						name: 'Test Show Style Base #1',
+						pendingRunOfFixupFunction: false,
 						changes: [],
 					},
 				])
@@ -426,6 +436,7 @@ describe('systemStatus', () => {
 						documentType: 'showStyle',
 						documentId: protectString('showStyleBase0'),
 						name: 'Test Show Style Base #0',
+						pendingRunOfFixupFunction: false,
 						changes: [],
 					},
 					{
@@ -433,6 +444,7 @@ describe('systemStatus', () => {
 						documentType: 'showStyle',
 						documentId: protectString('showStyleBase1'),
 						name: 'Test Show Style Base #1',
+						pendingRunOfFixupFunction: false,
 						changes: [],
 					},
 				])

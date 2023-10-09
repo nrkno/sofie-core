@@ -26,12 +26,13 @@ export interface BlueprintMapEntry {
 	configPresets: Record<string, IStudioConfigPreset> | Record<string, IShowStyleConfigPreset> | undefined
 	configSchema: JSONBlob<JSONSchema> | undefined
 	blueprintHash: BlueprintHash | undefined
+	hasFixupFunction: boolean
 }
 
 export function checkDocUpgradeStatus(
 	blueprintMap: Map<BlueprintId, BlueprintMapEntry>,
 	doc: Pick<DBStudio, StudioFields> | Pick<DBShowStyleBase, ShowStyleBaseFields>
-): Pick<UIBlueprintUpgradeStatusBase, 'invalidReason' | 'changes'> {
+): Pick<UIBlueprintUpgradeStatusBase, 'invalidReason' | 'changes' | 'pendingRunOfFixupFunction'> {
 	// Check the blueprintId is valid
 	const blueprint = doc.blueprintId ? blueprintMap.get(doc.blueprintId) : null
 	if (!blueprint || !blueprint.configPresets) {
@@ -40,6 +41,7 @@ export function checkDocUpgradeStatus(
 			invalidReason: generateTranslation('Invalid blueprint: "{{blueprintId}}"', {
 				blueprintId: doc.blueprintId,
 			}),
+			pendingRunOfFixupFunction: false,
 			changes: [],
 		}
 	}
@@ -55,7 +57,20 @@ export function checkDocUpgradeStatus(
 					blueprintId: doc.blueprintId,
 				}
 			),
+			pendingRunOfFixupFunction: false, // TODO - verify
 			changes: [],
+		}
+	}
+
+	if (blueprint.hasFixupFunction) {
+		const pendingRunOfFixupFunction =
+			!doc.lastBlueprintFixupHash || doc.lastBlueprintFixupHash !== blueprint.blueprintHash
+
+		if (pendingRunOfFixupFunction) {
+			return {
+				pendingRunOfFixupFunction: true,
+				changes: [generateTranslation('Config requires fixing up before it can be validated')],
+			}
 		}
 	}
 
@@ -115,6 +130,7 @@ export function checkDocUpgradeStatus(
 
 	return {
 		changes,
+		pendingRunOfFixupFunction: false,
 	}
 }
 

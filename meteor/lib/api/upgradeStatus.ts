@@ -16,6 +16,8 @@ export interface UIBlueprintUpgradeStatusBase {
 
 	invalidReason?: ITranslatableMessage
 
+	pendingRunOfFixupFunction: boolean
+
 	changes: ITranslatableMessage[]
 }
 

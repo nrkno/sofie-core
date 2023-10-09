@@ -65,6 +65,7 @@ export async function insertBlueprint(
 		TSRVersion: '',
 
 		blueprintHash: getRandomId(),
+		hasFixupFunction: false,
 	})
 }
 export async function removeBlueprint(methodContext: MethodContext, blueprintId: BlueprintId): Promise<void> {
@@ -163,6 +164,7 @@ async function innerUploadBlueprint(
 		disableVersionChecks: false,
 		blueprintType: undefined,
 		blueprintHash: getRandomId(),
+		hasFixupFunction: false,
 	}
 
 	let blueprintManifest: SomeBlueprintManifest | undefined
@@ -217,9 +219,13 @@ async function innerUploadBlueprint(
 	if (blueprintManifest.blueprintType === BlueprintManifestType.SHOWSTYLE) {
 		newBlueprint.showStyleConfigSchema = blueprintManifest.showStyleConfigSchema
 		newBlueprint.showStyleConfigPresets = blueprintManifest.configPresets
+		newBlueprint.hasFixupFunction = !!blueprintManifest.fixUpConfig
 	} else if (blueprintManifest.blueprintType === BlueprintManifestType.STUDIO) {
 		newBlueprint.studioConfigSchema = blueprintManifest.studioConfigSchema
 		newBlueprint.studioConfigPresets = blueprintManifest.configPresets
+		newBlueprint.hasFixupFunction = !!blueprintManifest.fixUpConfig
+	} else {
+		newBlueprint.hasFixupFunction = false
 	}
 
 	// Parse the versions, just to verify that the format is correct:

@@ -86,6 +86,8 @@ function BlueprintUpgradeStatus({ showStyleBaseId }: BlueprintUpgradeStatusProps
 
 	const statusMessage = isReady && status ? getUpgradeStatusMessage(t, status) ?? t('OK') : t('Loading...')
 
+	console.log(statusMessage, status)
+
 	return (
 		<p>
 			{t('Upgrade Status')}: {statusMessage}
