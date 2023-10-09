@@ -24,12 +24,12 @@ import { resolveCredentials, Credentials } from '../security/lib/credentials'
 import { SystemReadAccess } from '../security/system'
 import { StatusCode } from '@sofie-automation/blueprints-integration'
 import { PeripheralDevices, Workers, WorkerThreadStatuses } from '../collections'
-import { getUpgradeSystemStatusMessages } from '../migration/upgrades'
 import { PeripheralDeviceId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ServerPeripheralDeviceAPI } from '../api/peripheralDevice'
 import { PeripheralDeviceContentWriteAccess } from '../security/peripheralDevice'
 import { MethodContext } from '../../lib/api/methods'
 import { getBlueprintVersions } from './blueprintVersions'
+import { getUpgradeSystemStatusMessages } from './blueprintUpgradeStatus'
 
 const PackageInfo = require('../../package.json')
 const integrationVersionRange = parseCoreIntegrationCompatabilityRange(PackageInfo.version)
