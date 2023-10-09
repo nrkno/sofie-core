@@ -15,8 +15,7 @@ import type {
 	IRundownActivationContext,
 	IShowStyleContext,
 } from '../context'
-import { ICommonContext } from '../ICommonContext'
-import { IFixUpConfigContext } from '../IFixUpConfigContext'
+import type { ICommonContext, IFixUpConfigContext } from '../context'
 import type { IngestAdlib, ExtendedIngestRundown, IngestSegment } from '../ingest'
 import type { IBlueprintExternalMessageQueueObj } from '../message'
 import type { MigrationStepShowStyle } from '../migrations'

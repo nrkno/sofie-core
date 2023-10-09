@@ -1,5 +1,5 @@
 import type { TimelineObjectAbSessionInfo } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
-import { ICommonContext } from './ICommonContext'
+import type { ICommonContext } from './context'
 import type { OnGenerateTimelineObj, TSR } from './timeline'
 
 export interface PieceAbSessionInfo extends TimelineObjectAbSessionInfo {
