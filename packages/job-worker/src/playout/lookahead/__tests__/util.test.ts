@@ -157,7 +157,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 					partInstanceId: firstInstanceId,
 					rundownId: firstPart.rundownId,
 					manuallySelected: false,
-					consumesNextSegmentId: false,
+					consumesQueuedSegmentId: false,
 				},
 			},
 		})
@@ -190,7 +190,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 					partInstanceId: firstInstanceId,
 					rundownId: firstPart.rundownId,
 					manuallySelected: false,
-					consumesNextSegmentId: false,
+					consumesQueuedSegmentId: false,
 				},
 			},
 		})
@@ -223,7 +223,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 					partInstanceId: lastInstanceId,
 					rundownId: lastPart.rundownId,
 					manuallySelected: false,
-					consumesNextSegmentId: false,
+					consumesQueuedSegmentId: false,
 				},
 			},
 		})
@@ -281,7 +281,7 @@ describe('getOrderedPartsAfterPlayhead', () => {
 					partInstanceId: nextInstanceId,
 					rundownId: nextPart.rundownId,
 					manuallySelected: false,
-					consumesNextSegmentId: false,
+					consumesQueuedSegmentId: false,
 				},
 			},
 		})
@@ -307,13 +307,13 @@ describe('getOrderedPartsAfterPlayhead', () => {
 					partInstanceId: nextInstanceId,
 					rundownId: firstPart.rundownId,
 					manuallySelected: false,
-					consumesNextSegmentId: false,
+					consumesQueuedSegmentId: false,
 				},
 			},
 		})
 
 		// Change next segment
-		await context.mockCollections.RundownPlaylists.update(playlistId, { $set: { nextSegmentId: segmentId2 } })
+		await context.mockCollections.RundownPlaylists.update(playlistId, { $set: { queuedSegmentId: segmentId2 } })
 		const parts = await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) =>
 			getOrderedPartsAfterPlayhead(context, cache, 10)
 		)

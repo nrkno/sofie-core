@@ -231,14 +231,14 @@ describe('Test blueprint api context', () => {
 					partInstanceId: info.partInstanceId,
 					rundownId: info.rundownId,
 					manuallySelected: false,
-					consumesNextSegmentId: false,
+					consumesQueuedSegmentId: false,
 				}
 			} else {
 				return {
 					partInstanceId: info._id,
 					rundownId: info.rundownId,
 					manuallySelected: false,
-					consumesNextSegmentId: false,
+					consumesQueuedSegmentId: false,
 				}
 			}
 		}
@@ -1437,7 +1437,7 @@ describe('Test blueprint api context', () => {
 							partInstanceId: protectString('abc'),
 							rundownId: protectString('def'),
 							manuallySelected: false,
-							consumesNextSegmentId: false,
+							consumesQueuedSegmentId: false,
 						},
 					},
 				})
@@ -1516,7 +1516,7 @@ describe('Test blueprint api context', () => {
 							partInstanceId: protectString('abc'),
 							rundownId: protectString('def'),
 							manuallySelected: false,
-							consumesNextSegmentId: false,
+							consumesQueuedSegmentId: false,
 						},
 					},
 				})

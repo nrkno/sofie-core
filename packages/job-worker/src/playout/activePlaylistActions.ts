@@ -189,7 +189,7 @@ export async function deactivateRundownPlaylistInner(
 		p.holdState = RundownHoldState.NONE
 
 		delete p.activationId
-		delete p.nextSegmentId
+		delete p.queuedSegmentId
 
 		return p
 	})

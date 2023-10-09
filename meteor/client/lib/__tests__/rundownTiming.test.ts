@@ -1122,13 +1122,13 @@ describe('rundown Timing Calculator', () => {
 			partInstanceId: currentPartInstanceId,
 			rundownId: protectString<RundownId>(rundownId1),
 			manuallySelected: false,
-			consumesNextSegmentId: false,
+			consumesQueuedSegmentId: false,
 		}
 		playlist.nextPartInfo = {
 			partInstanceId: nextPartInstanceId,
 			rundownId: protectString<RundownId>(rundownId1),
 			manuallySelected: false,
-			consumesNextSegmentId: false,
+			consumesQueuedSegmentId: false,
 		}
 		const rundown = makeMockRundown(rundownId1, playlist)
 		const rundowns = [rundown]
@@ -1271,13 +1271,13 @@ describe('rundown Timing Calculator', () => {
 			partInstanceId: currentPartInstanceId,
 			rundownId: protectString<RundownId>(rundownId1),
 			manuallySelected: false,
-			consumesNextSegmentId: false,
+			consumesQueuedSegmentId: false,
 		}
 		playlist.nextPartInfo = {
 			partInstanceId: nextPartInstanceId,
 			rundownId: protectString<RundownId>(rundownId1),
 			manuallySelected: false,
-			consumesNextSegmentId: false,
+			consumesQueuedSegmentId: false,
 		}
 		const rundown = makeMockRundown(rundownId1, playlist)
 		const rundowns = [rundown]
@@ -1426,13 +1426,13 @@ describe('rundown Timing Calculator', () => {
 			partInstanceId: currentPartInstanceId,
 			rundownId: protectString<RundownId>(rundownId1),
 			manuallySelected: false,
-			consumesNextSegmentId: false,
+			consumesQueuedSegmentId: false,
 		}
 		playlist.nextPartInfo = {
 			partInstanceId: nextPartInstanceId,
 			rundownId: protectString<RundownId>(rundownId1),
 			manuallySelected: false,
-			consumesNextSegmentId: false,
+			consumesQueuedSegmentId: false,
 		}
 		const rundown = makeMockRundown(rundownId1, playlist)
 		const rundowns = [rundown]
@@ -1575,13 +1575,13 @@ describe('rundown Timing Calculator', () => {
 			partInstanceId: currentPartInstanceId,
 			rundownId: protectString<RundownId>(rundownId1),
 			manuallySelected: false,
-			consumesNextSegmentId: false,
+			consumesQueuedSegmentId: false,
 		}
 		playlist.nextPartInfo = {
 			partInstanceId: nextPartInstanceId,
 			rundownId: protectString<RundownId>(rundownId1),
 			manuallySelected: false,
-			consumesNextSegmentId: false,
+			consumesQueuedSegmentId: false,
 		}
 		const rundown = makeMockRundown(rundownId1, playlist)
 		const rundowns = [rundown]
@@ -1724,13 +1724,13 @@ describe('rundown Timing Calculator', () => {
 			partInstanceId: currentPartInstanceId,
 			rundownId: protectString<RundownId>(rundownId1),
 			manuallySelected: false,
-			consumesNextSegmentId: false,
+			consumesQueuedSegmentId: false,
 		}
 		playlist.nextPartInfo = {
 			partInstanceId: nextPartInstanceId,
 			rundownId: protectString<RundownId>(rundownId1),
 			manuallySelected: false,
-			consumesNextSegmentId: false,
+			consumesQueuedSegmentId: false,
 		}
 		const rundown = makeMockRundown(rundownId1, playlist)
 		const rundowns = [rundown]
@@ -1879,13 +1879,13 @@ describe('rundown Timing Calculator', () => {
 			partInstanceId: currentPartInstanceId,
 			rundownId: protectString<RundownId>(rundownId1),
 			manuallySelected: false,
-			consumesNextSegmentId: false,
+			consumesQueuedSegmentId: false,
 		}
 		playlist.nextPartInfo = {
 			partInstanceId: nextPartInstanceId,
 			rundownId: protectString<RundownId>(rundownId1),
 			manuallySelected: false,
-			consumesNextSegmentId: false,
+			consumesQueuedSegmentId: false,
 		}
 		const rundown = makeMockRundown(rundownId1, playlist)
 		const rundowns = [rundown]

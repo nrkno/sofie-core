@@ -14,6 +14,7 @@ import {
 	ShowStyleVariantId,
 	StudioId,
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { QueueNextSegmentResult } from '@sofie-automation/corelib/dist/worker/studio'
 import { Meteor } from 'meteor/meteor'
 
 /* *************************************************************************
@@ -177,7 +178,24 @@ export interface RestAPI {
 		event: string,
 		rundownPlaylistId: RundownPlaylistId,
 		segmentId: SegmentId
-	): Promise<ClientAPI.ClientResponse<void>>
+	): Promise<ClientAPI.ClientResponse<PartId | null>>
+	/**
+	 * Sets the next Segment to a given SegmentId.
+	 *
+	 * Throws if the target Playlist is not currently active.
+	 * Throws if the specified Segment does not exist.
+	 * Throws if the specified Segment does not contain any playable parts.
+	 * @param connection Connection data including client and header details
+	 * @param event User event string
+	 * @param rundownPlaylistId Target Playlist.
+	 * @param segmentId Segment to set as next.
+	 */
+	queueNextSegment(
+		connection: Meteor.Connection,
+		event: string,
+		rundownPlaylistId: RundownPlaylistId,
+		segmentId: SegmentId
+	): Promise<ClientAPI.ClientResponse<QueueNextSegmentResult>>
 	/**
 	 * Performs a take in the given Playlist.
 	 *

@@ -39,7 +39,7 @@ export async function resetRundownPlaylist(context: JobContext, cache: CacheForP
 		delete p.rundownsStartedPlayback
 		delete p.previousPersistentState
 		delete p.trackedAbSessions
-		delete p.nextSegmentId
+		delete p.queuedSegmentId
 
 		return p
 	})
