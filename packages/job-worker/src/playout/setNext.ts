@@ -414,6 +414,11 @@ export async function setNextSegment(
 	// Just run so that errors will be thrown if something wrong:
 	const firstPlayablePart = findFirstPlayablePartOrThrow(cache, nextSegment)
 
+	cache.Playlist.update((p) => {
+		delete p.queuedSegmentId
+		return p
+	})
+
 	await setNextPart(
 		context,
 		cache,
