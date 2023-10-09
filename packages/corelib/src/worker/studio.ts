@@ -163,6 +163,12 @@ export enum StudioJobs {
 	 */
 	BlueprintValidateConfigForStudio = 'blueprintValidateConfigForStudio',
 
+	BlueprintFixUpConfigForStudio = 'blueprintFixUpConfigForStudio',
+	BlueprintIgnoreFixUpConfigForStudio = 'blueprintIgnoreFixUpConfigForStudio',
+
+	/**
+	 * Activate scratchpad mode for the Rundown containing the nexted Part.
+	 */
 	ActivateScratchpad = 'activateScratchpad',
 }
 
@@ -279,6 +285,13 @@ export interface BlueprintValidateConfigForStudioResult {
 	}>
 }
 
+export interface BlueprintFixUpConfigForStudioResult {
+	messages: Array<{
+		path: string
+		message: ITranslatableMessage
+	}>
+}
+
 export interface ActivateScratchpadProps extends RundownPlayoutPropsBase {
 	rundownId: RundownId
 }
@@ -328,6 +341,8 @@ export type StudioJobFunc = {
 
 	[StudioJobs.BlueprintUpgradeForStudio]: () => void
 	[StudioJobs.BlueprintValidateConfigForStudio]: () => BlueprintValidateConfigForStudioResult
+	[StudioJobs.BlueprintFixUpConfigForStudio]: () => BlueprintFixUpConfigForStudioResult
+	[StudioJobs.BlueprintIgnoreFixUpConfigForStudio]: () => void
 
 	[StudioJobs.ActivateScratchpad]: (data: ActivateScratchpadProps) => void
 }

@@ -7,7 +7,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import objectPath = require('object-path')
 import { ReadonlyDeep } from 'type-fest'
-import { literal, objectPathGet, objectPathSet } from '../lib'
+import { literal, objectPathGet, objectPathSet, clone } from '../lib'
 import {
 	applyAndValidateOverrides,
 	filterOverrideOpsForPrefix,
@@ -32,18 +32,18 @@ export interface FixUpBlueprintConfigMessage {
 export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 	readonly #commonContext: ICommonContext
 	readonly #configSchema: ReadonlyDeep<JSONSchema>
-	readonly #configObject: ObjectWithOverrides<IBlueprintConfig>
 
+	readonly configObject: ObjectWithOverrides<IBlueprintConfig>
 	readonly messages: FixUpBlueprintConfigMessage[] = []
 
 	constructor(
 		commonContext: ICommonContext,
 		configSchema: ReadonlyDeep<JSONSchema>,
-		configObject: ObjectWithOverrides<IBlueprintConfig>
+		configObject: ReadonlyDeep<ObjectWithOverrides<IBlueprintConfig>>
 	) {
 		this.#commonContext = commonContext
 		this.#configSchema = configSchema
-		this.#configObject = configObject
+		this.configObject = clone<ObjectWithOverrides<IBlueprintConfig>>(configObject)
 	}
 
 	#findParentSchemaEntry(path: string): MatchedSchemaEntry | null {
@@ -98,20 +98,20 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 	}
 
 	getConfig(): IBlueprintConfig {
-		return applyAndValidateOverrides(this.#configObject).obj
+		return applyAndValidateOverrides(this.configObject).obj
 	}
 
 	listPaths(): string[] {
-		return this.#configObject.overrides.map((op) => op.path)
+		return this.configObject.overrides.map((op) => op.path)
 	}
 
 	listInvalidPaths(): string[] {
-		const appliedConfig = applyAndValidateOverrides(this.#configObject)
+		const appliedConfig = applyAndValidateOverrides(this.configObject)
 		return appliedConfig.invalid.map((op) => op.path)
 	}
 
 	hasOperations(path: string): boolean {
-		const { opsForPrefix } = filterOverrideOpsForPrefix(this.#configObject.overrides, path)
+		const { opsForPrefix } = filterOverrideOpsForPrefix(this.configObject.overrides, path)
 		return opsForPrefix.length > 0
 	}
 
@@ -132,7 +132,7 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 		if (tableSchemaEntry.subpath === '') throw new Error('Cannot set an object to a value')
 
 		const { opsForPrefix: opsForRoot } = filterOverrideOpsForPrefix(
-			this.#configObject.overrides,
+			this.configObject.overrides,
 			tableSchemaEntry.path
 		)
 
@@ -150,9 +150,9 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 				value: value,
 			})
 
-			const { otherOps } = filterOverrideOpsForPrefix(this.#configObject.overrides, path)
+			const { otherOps } = filterOverrideOpsForPrefix(this.configObject.overrides, path)
 
-			this.#configObject.overrides = [...otherOps, setOp]
+			this.configObject.overrides = [...otherOps, setOp]
 		}
 	}
 	#addSetOperationForObjectArray(arraySchemaEntry: MatchedSchemaEntry, value: any) {
@@ -162,7 +162,7 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 		if (arraySchemaEntry.subpath === '') {
 			newOpForArray = { op: 'set', path: arraySchemaEntry.path, value: value }
 		} else {
-			const currentObj = applyAndValidateOverrides(this.#configObject).obj // Note: this will not be very performant, but it is safer
+			const currentObj = applyAndValidateOverrides(this.configObject).obj // Note: this will not be very performant, but it is safer
 			const currentValue = objectPathGet(currentObj, arraySchemaEntry.path)
 
 			// Mutate in place, as we have a clone
@@ -171,9 +171,9 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 			newOpForArray = { op: 'set', path: arraySchemaEntry.path, value: currentValue }
 		}
 
-		const { otherOps } = filterOverrideOpsForPrefix(this.#configObject.overrides, arraySchemaEntry.path)
+		const { otherOps } = filterOverrideOpsForPrefix(this.configObject.overrides, arraySchemaEntry.path)
 
-		this.#configObject.overrides = [...otherOps, newOpForArray]
+		this.configObject.overrides = [...otherOps, newOpForArray]
 	}
 	#addSetOperationForValue(valueSchemaEntry: MatchedSchemaEntry, path: string, value: any) {
 		// Insert new op
@@ -183,9 +183,9 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 			value: value,
 		})
 
-		const { otherOps } = filterOverrideOpsForPrefix(this.#configObject.overrides, valueSchemaEntry.path)
+		const { otherOps } = filterOverrideOpsForPrefix(this.configObject.overrides, valueSchemaEntry.path)
 
-		this.#configObject.overrides = [...otherOps, setOp]
+		this.configObject.overrides = [...otherOps, setOp]
 	}
 
 	addDeleteOperation(path: string): void {
@@ -205,7 +205,7 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 		if (tableSchemaEntry.subpath === '') throw new Error('Cannot set an object to a value')
 
 		const { opsForPrefix: opsForRoot } = filterOverrideOpsForPrefix(
-			this.#configObject.overrides,
+			this.configObject.overrides,
 			tableSchemaEntry.path
 		)
 
@@ -222,9 +222,9 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 				path: path,
 			})
 
-			const { otherOps } = filterOverrideOpsForPrefix(this.#configObject.overrides, path)
+			const { otherOps } = filterOverrideOpsForPrefix(this.configObject.overrides, path)
 
-			this.#configObject.overrides = [...otherOps, setOp]
+			this.configObject.overrides = [...otherOps, setOp]
 		}
 	}
 	#addDeleteOperationForObjectArray(arraySchemaEntry: MatchedSchemaEntry) {
@@ -234,7 +234,7 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 		if (arraySchemaEntry.subpath === '') {
 			newOpForArray = { op: 'delete', path: arraySchemaEntry.path }
 		} else {
-			const currentObj = applyAndValidateOverrides(this.#configObject).obj // Note: this will not be very performant, but it is safer
+			const currentObj = applyAndValidateOverrides(this.configObject).obj // Note: this will not be very performant, but it is safer
 			const currentValue = objectPathGet(currentObj, arraySchemaEntry.path)
 
 			// Mutate in place, as we have a clone
@@ -243,9 +243,9 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 			newOpForArray = { op: 'set', path: arraySchemaEntry.path, value: currentValue }
 		}
 
-		const { otherOps } = filterOverrideOpsForPrefix(this.#configObject.overrides, arraySchemaEntry.path)
+		const { otherOps } = filterOverrideOpsForPrefix(this.configObject.overrides, arraySchemaEntry.path)
 
-		this.#configObject.overrides = [...otherOps, newOpForArray]
+		this.configObject.overrides = [...otherOps, newOpForArray]
 	}
 	#addDeleteOperationForValue(valueSchemaEntry: MatchedSchemaEntry, path: string) {
 		// Insert new op
@@ -254,20 +254,20 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 			path: path,
 		})
 
-		const { otherOps } = filterOverrideOpsForPrefix(this.#configObject.overrides, valueSchemaEntry.path)
+		const { otherOps } = filterOverrideOpsForPrefix(this.configObject.overrides, valueSchemaEntry.path)
 
-		this.#configObject.overrides = [...otherOps, setOp]
+		this.configObject.overrides = [...otherOps, setOp]
 	}
 
 	removeOperations(path: string): void {
-		const { opsForPrefix, otherOps } = filterOverrideOpsForPrefix(this.#configObject.overrides, path)
+		const { opsForPrefix, otherOps } = filterOverrideOpsForPrefix(this.configObject.overrides, path)
 		if (opsForPrefix.length === 0) return
 
-		this.#configObject.overrides = otherOps
+		this.configObject.overrides = otherOps
 	}
 
 	renameOperations(fromPath: string, toPath: string): void {
-		const { opsForPrefix, otherOps } = filterOverrideOpsForPrefix(this.#configObject.overrides, fromPath)
+		const { opsForPrefix, otherOps } = filterOverrideOpsForPrefix(this.configObject.overrides, fromPath)
 		if (opsForPrefix.length === 0) return
 
 		const opsWithUpdatedPrefix = opsForPrefix.map((op) => ({
@@ -275,11 +275,11 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 			path: `${toPath}${op.path.slice(fromPath.length)}`,
 		}))
 
-		this.#configObject.overrides = [...otherOps, ...opsWithUpdatedPrefix]
+		this.configObject.overrides = [...otherOps, ...opsWithUpdatedPrefix]
 	}
 
 	warnUnfixable(path: string, message: ITranslatableMessage): void {
-		this.messages.push({message, path})
+		this.messages.push({ message, path })
 	}
 
 	// Forward to wrapped ICommonContext

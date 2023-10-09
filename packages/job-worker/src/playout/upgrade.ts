@@ -1,4 +1,4 @@
-import { BlueprintMapping, BlueprintMappings, TSR } from '@sofie-automation/blueprints-integration'
+import { BlueprintMapping, BlueprintMappings, JSONBlobParse, TSR } from '@sofie-automation/blueprints-integration'
 import {
 	MappingsExt,
 	StudioIngestDevice,
@@ -9,10 +9,14 @@ import { Complete, clone, literal } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { wrapTranslatableMessageFromBlueprints } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
+import {
+	BlueprintFixUpConfigForStudioResult,
+	BlueprintValidateConfigForStudioResult,
+} from '@sofie-automation/corelib/dist/worker/studio'
 import { compileCoreConfigValues } from '../blueprints/config'
 import { CommonContext } from '../blueprints/context'
 import { JobContext } from '../jobs'
+import { FixUpBlueprintConfigContext } from '@sofie-automation/corelib/dist/fixUpBlueprintConfig/context'
 
 /**
  * Run the Blueprint applyConfig for the studio
@@ -121,4 +125,81 @@ export async function handleBlueprintValidateConfigForStudio(
 			message: wrapTranslatableMessageFromBlueprints(msg.message, [blueprint.blueprintId]),
 		})),
 	}
+}
+
+export async function handleBlueprintFixUpConfigForStudio(
+	context: JobContext,
+	_data: unknown
+): Promise<BlueprintFixUpConfigForStudioResult> {
+	const blueprint = context.studioBlueprint
+	if (typeof blueprint.blueprint.validateConfig !== 'function')
+		throw new Error('Blueprint does not support this config flow')
+	if (!blueprint.blueprintDoc?.blueprintHash) throw new Error('Blueprint is not valid')
+	if (!context.studio.blueprintConfigPresetId) throw new Error('Studio is missing config preset')
+
+	if (typeof blueprint.blueprint.fixUpConfig !== 'function') {
+		if (context.studio.lastBlueprintFixupHash) {
+			// Cleanup property to avoid getting stuck
+			await context.directCollections.Studios.update(context.studioId, {
+				$unset: {
+					lastBlueprintFixupHash: 1,
+				},
+			})
+		}
+		throw new Error('Blueprint does not support this config flow')
+	}
+
+	const commonContext = new CommonContext({
+		name: 'fixupConfig',
+		identifier: `studio:${context.studioId},blueprint:${blueprint.blueprintId}`,
+	})
+	const blueprintContext = new FixUpBlueprintConfigContext(
+		commonContext,
+		JSONBlobParse(blueprint.blueprint.studioConfigSchema),
+		context.studio.blueprintConfigWithOverrides
+	)
+
+	blueprint.blueprint.fixUpConfig(blueprintContext)
+
+	// Save the 'fixed' config
+	await context.directCollections.Studios.update(context.studioId, {
+		$set: {
+			lastBlueprintFixupHash: blueprint.blueprintDoc.blueprintHash,
+			blueprintConfigWithOverrides: blueprintContext.configObject,
+		},
+	})
+
+	return {
+		messages: blueprintContext.messages.map((msg) => ({
+			message: wrapTranslatableMessageFromBlueprints(msg.message, [blueprint.blueprintId]),
+			path: msg.path,
+		})),
+	}
+}
+
+export async function handleBlueprintIgnoreFixUpConfigForStudio(context: JobContext, _data: unknown): Promise<void> {
+	const blueprint = context.studioBlueprint
+	if (typeof blueprint.blueprint.validateConfig !== 'function')
+		throw new Error('Blueprint does not support this config flow')
+	if (!blueprint.blueprintDoc?.blueprintHash) throw new Error('Blueprint is not valid')
+	if (!context.studio.blueprintConfigPresetId) throw new Error('Studio is missing config preset')
+
+	if (typeof blueprint.blueprint.fixUpConfig !== 'function') {
+		if (context.studio.lastBlueprintFixupHash) {
+			// Cleanup property to avoid getting stuck
+			await context.directCollections.Studios.update(context.studioId, {
+				$unset: {
+					lastBlueprintFixupHash: 1,
+				},
+			})
+		}
+		throw new Error('Blueprint does not support this config flow')
+	}
+
+	// Save the 'fixed' config
+	await context.directCollections.Studios.update(context.studioId, {
+		$set: {
+			lastBlueprintFixupHash: blueprint.blueprintDoc.blueprintHash,
+		},
+	})
 }

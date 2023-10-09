@@ -9,12 +9,43 @@ import { QueueStudioJob } from '../../worker/worker'
 import { BlueprintFixUpConfigMessage } from '../../../lib/api/migration'
 
 export async function fixupConfigForStudio(studioId: StudioId): Promise<BlueprintFixUpConfigMessage[]> {
-	// nocommit
-	return []
+	const studio = (await Studios.findOneAsync(studioId, {
+		fields: {
+			_id: 1,
+		},
+	})) as Pick<DBStudio, '_id'> | undefined
+	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
+
+	const queuedJob = await QueueStudioJob(StudioJobs.BlueprintFixUpConfigForStudio, studioId, undefined)
+
+	const span = profiler.startSpan('queued-job')
+	try {
+		const res = await queuedJob.complete
+		// explicitly await before returning
+		return res.messages
+	} finally {
+		span?.end()
+	}
 }
 
 export async function ignoreFixupConfigForStudio(studioId: StudioId): Promise<void> {
-	// nocommit
+	const studio = (await Studios.findOneAsync(studioId, {
+		fields: {
+			_id: 1,
+		},
+	})) as Pick<DBStudio, '_id'> | undefined
+	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
+
+	const queuedJob = await QueueStudioJob(StudioJobs.BlueprintIgnoreFixUpConfigForStudio, studioId, undefined)
+
+	const span = profiler.startSpan('queued-job')
+	try {
+		const res = await queuedJob.complete
+		// explicitly await before returning
+		return res
+	} finally {
+		span?.end()
+	}
 }
 
 export async function validateConfigForStudio(studioId: StudioId): Promise<BlueprintValidateConfigForStudioResult> {

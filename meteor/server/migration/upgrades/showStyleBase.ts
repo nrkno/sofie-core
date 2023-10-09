@@ -56,7 +56,7 @@ export async function fixupConfigForShowStyleBase(
 	await ShowStyleBases.updateAsync(showStyleBaseId, {
 		$set: {
 			lastBlueprintFixupHash: blueprint.blueprintHash,
-			blueprintConfigWithOverrides: showStyleBase.blueprintConfigWithOverrides,
+			blueprintConfigWithOverrides: blueprintContext.configObject,
 		},
 	})
 
@@ -85,7 +85,6 @@ export async function ignoreFixupConfigForShowStyleBase(showStyleBaseId: ShowSty
 	await ShowStyleBases.updateAsync(showStyleBaseId, {
 		$set: {
 			lastBlueprintFixupHash: blueprint.blueprintHash,
-			blueprintConfigWithOverrides: showStyleBase.blueprintConfigWithOverrides,
 		},
 	})
 }
