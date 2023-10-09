@@ -1,6 +1,11 @@
 import { check, Match } from '../../lib/check'
 import { registerClassToMeteorMethods } from '../methods'
-import { MigrationChunk, NewMigrationAPI, MigrationAPIMethods } from '../../lib/api/migration'
+import {
+	MigrationChunk,
+	NewMigrationAPI,
+	MigrationAPIMethods,
+	BlueprintFixUpConfigMessage,
+} from '../../lib/api/migration'
 import * as Migrations from './databaseMigration'
 import { MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
 import { MethodContextAPI } from '../../lib/api/methods'
@@ -53,7 +58,7 @@ class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
 		return Migrations.resetDatabaseVersions()
 	}
 
-	async fixupConfigForStudio(studioId: StudioId): Promise<void> {
+	async fixupConfigForStudio(studioId: StudioId): Promise<BlueprintFixUpConfigMessage[]> {
 		check(studioId, String)
 
 		await SystemWriteAccess.migrations(this)
@@ -85,7 +90,7 @@ class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
 		return runUpgradeForStudio(studioId)
 	}
 
-	async fixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void> {
+	async fixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<BlueprintFixUpConfigMessage[]> {
 		check(showStyleBaseId, String)
 
 		await SystemWriteAccess.migrations(this)

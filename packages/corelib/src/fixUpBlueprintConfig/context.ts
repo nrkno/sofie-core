@@ -24,10 +24,17 @@ interface MatchedSchemaEntry {
 	type: 'value' | 'array' | 'object'
 }
 
+export interface FixUpBlueprintConfigMessage {
+	path: string
+	message: ITranslatableMessage
+}
+
 export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 	readonly #commonContext: ICommonContext
 	readonly #configSchema: ReadonlyDeep<JSONSchema>
 	readonly #configObject: ObjectWithOverrides<IBlueprintConfig>
+
+	readonly messages: FixUpBlueprintConfigMessage[] = []
 
 	constructor(
 		commonContext: ICommonContext,
@@ -271,8 +278,8 @@ export class FixUpBlueprintConfigContext implements IFixUpConfigContext {
 		this.#configObject.overrides = [...otherOps, ...opsWithUpdatedPrefix]
 	}
 
-	warnUnfixable(_path: string, _message: ITranslatableMessage): void {
-		throw new Error('Method not implemented.')
+	warnUnfixable(path: string, message: ITranslatableMessage): void {
+		this.messages.push({message, path})
 	}
 
 	// Forward to wrapped ICommonContext

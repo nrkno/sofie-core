@@ -6,9 +6,11 @@ import { profiler } from '../../api/profiler'
 import { Studios } from '../../collections'
 import { logger } from '../../logging'
 import { QueueStudioJob } from '../../worker/worker'
+import { BlueprintFixUpConfigMessage } from '../../../lib/api/migration'
 
-export async function fixupConfigForStudio(studioId: StudioId): Promise<void> {
+export async function fixupConfigForStudio(studioId: StudioId): Promise<BlueprintFixUpConfigMessage[]> {
 	// nocommit
+	return []
 }
 
 export async function ignoreFixupConfigForStudio(studioId: StudioId): Promise<void> {

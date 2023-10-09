@@ -21,8 +21,11 @@ import { CommonContext } from './context'
 import type { AnyBulkWriteOperation } from 'mongodb'
 import { FixUpBlueprintConfigContext } from '@sofie-automation/corelib/dist/fixUpBlueprintConfig/context'
 import { Blueprint } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
+import { BlueprintFixUpConfigMessage } from '../../../lib/api/migration'
 
-export async function fixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void> {
+export async function fixupConfigForShowStyleBase(
+	showStyleBaseId: ShowStyleBaseId
+): Promise<BlueprintFixUpConfigMessage[]> {
 	const { showStyleBase, blueprint, blueprintManifest } = await loadShowStyleAndBlueprint(showStyleBaseId)
 
 	if (typeof blueprintManifest.fixUpConfig !== 'function') {
@@ -49,8 +52,6 @@ export async function fixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBase
 
 	blueprintManifest.fixUpConfig(blueprintContext)
 
-	// TODO - track warnings
-
 	// Save the 'fixed' config
 	await ShowStyleBases.updateAsync(showStyleBaseId, {
 		$set: {
@@ -58,6 +59,11 @@ export async function fixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBase
 			blueprintConfigWithOverrides: showStyleBase.blueprintConfigWithOverrides,
 		},
 	})
+
+	return blueprintContext.messages.map((msg) => ({
+		message: wrapTranslatableMessageFromBlueprints(msg.message, [blueprint._id]),
+		path: msg.path,
+	}))
 }
 
 export async function ignoreFixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void> {
@@ -92,7 +98,6 @@ export async function validateConfigForShowStyleBase(
 	if (typeof blueprintManifest.validateConfig !== 'function')
 		throw new Meteor.Error(500, 'Blueprint does not support this config flow')
 
-	// TODO - run fixUpConfig automatically?
 	throwIfNeedsFixupConfigRunning(showStyleBase, blueprint, blueprintManifest)
 
 	const blueprintContext = new CommonContext(
@@ -119,7 +124,6 @@ export async function runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseI
 	if (typeof blueprintManifest.applyConfig !== 'function')
 		throw new Meteor.Error(500, 'Blueprint does not support this config flow')
 
-	// TODO - run fixUpConfig automatically?
 	throwIfNeedsFixupConfigRunning(showStyleBase, blueprint, blueprintManifest)
 
 	const blueprintContext = new CommonContext(
@@ -137,7 +141,7 @@ export async function runUpgradeForShowStyleBase(showStyleBaseId: ShowStyleBaseI
 			lastBlueprintConfig: {
 				blueprintHash: blueprint.blueprintHash,
 				blueprintId: blueprint._id,
-				blueprintConfigPresetId: showStyleBase.blueprintConfigPresetId,
+				blueprintConfigPresetId: showStyleBase.blueprintConfigPresetId ?? '',
 				config: rawBlueprintConfig,
 			},
 		},

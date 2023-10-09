@@ -1,6 +1,12 @@
 import { MigrationStepInput, MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
 import { BlueprintId, ShowStyleBaseId, SnapshotId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
+
+export interface BlueprintFixUpConfigMessage {
+	message: ITranslatableMessage
+	path: string
+}
 
 export interface NewMigrationAPI {
 	getMigrationStatus(): Promise<GetMigrationStatusResult>
@@ -17,7 +23,7 @@ export interface NewMigrationAPI {
 	 * Run `fixupConfig` on the blueprint for a Studio
 	 * @param studioId Id of the Studio
 	 */
-	fixupConfigForStudio(studioId: StudioId): Promise<void>
+	fixupConfigForStudio(studioId: StudioId): Promise<BlueprintFixUpConfigMessage[]>
 
 	/**
 	 * Ignore that `fixupConfig` needs to be run for a Studio
@@ -42,7 +48,7 @@ export interface NewMigrationAPI {
 	 * Run `fixupConfig` on the blueprint for a ShowStyleBase
 	 * @param showStyleBaseId Id of the ShowStyleBase
 	 */
-	fixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void>
+	fixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<BlueprintFixUpConfigMessage[]>
 
 	/**
 	 * Ignore that `fixupConfig` needs to be run for a ShowStyleBase
