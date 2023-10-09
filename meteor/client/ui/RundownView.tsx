@@ -2991,6 +2991,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									playlist={playlist}
 									onSetNext={this.onSetNext}
 									onSetNextSegment={this.onSetNextSegment}
+									onQueueNextSegment={this.onQueueNextSegment}
 									studioMode={this.state.studioMode}
 									enablePlayFromAnywhere={!!studio.settings.enablePlayFromAnywhere}
 								/>
