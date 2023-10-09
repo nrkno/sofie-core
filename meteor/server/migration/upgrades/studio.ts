@@ -11,6 +11,10 @@ export async function fixupConfigForStudio(studioId: StudioId): Promise<void> {
 	// nocommit
 }
 
+export async function ignoreFixupConfigForStudio(studioId: StudioId): Promise<void> {
+	// nocommit
+}
+
 export async function validateConfigForStudio(studioId: StudioId): Promise<BlueprintValidateConfigForStudioResult> {
 	const studio = (await Studios.findOneAsync(studioId, {
 		fields: {

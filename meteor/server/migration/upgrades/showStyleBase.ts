@@ -60,6 +60,30 @@ export async function fixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBase
 	})
 }
 
+export async function ignoreFixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void> {
+	const { showStyleBase, blueprint, blueprintManifest } = await loadShowStyleAndBlueprint(showStyleBaseId)
+
+	if (typeof blueprintManifest.fixUpConfig !== 'function') {
+		if (showStyleBase.lastBlueprintFixupHash) {
+			// Cleanup property to avoid getting stuck
+			await ShowStyleBases.updateAsync(showStyleBaseId, {
+				$unset: {
+					lastBlueprintFixupHash: 1,
+				},
+			})
+		}
+		throw new Meteor.Error(500, 'Blueprint does not support this config flow')
+	}
+
+	// Save the 'fixed' config
+	await ShowStyleBases.updateAsync(showStyleBaseId, {
+		$set: {
+			lastBlueprintFixupHash: blueprint.blueprintHash,
+			blueprintConfigWithOverrides: showStyleBase.blueprintConfigWithOverrides,
+		},
+	})
+}
+
 export async function validateConfigForShowStyleBase(
 	showStyleBaseId: ShowStyleBaseId
 ): Promise<BlueprintValidateConfigForStudioResult> {

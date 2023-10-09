@@ -20,6 +20,12 @@ export interface NewMigrationAPI {
 	fixupConfigForStudio(studioId: StudioId): Promise<void>
 
 	/**
+	 * Ignore that `fixupConfig` needs to be run for a Studio
+	 * @param studioId Id of the Studio
+	 */
+	ignoreFixupConfigForStudio(studioId: StudioId): Promise<void>
+
+	/**
 	 * Run `validateConfig` on the blueprint for a Studio
 	 * @param studioId Id of the Studio
 	 * @returns List of messages to display to the user
@@ -37,6 +43,12 @@ export interface NewMigrationAPI {
 	 * @param showStyleBaseId Id of the ShowStyleBase
 	 */
 	fixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void>
+
+	/**
+	 * Ignore that `fixupConfig` needs to be run for a ShowStyleBase
+	 * @param showStyleBaseId Id of the ShowStyleBase
+	 */
+	ignoreFixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void>
 
 	/**
 	 * Run `validateConfig` on the blueprint for a ShowStyleBase
@@ -60,9 +72,11 @@ export enum MigrationAPIMethods {
 
 	'getUpgradeStatus' = 'migration.getUpgradeStatus',
 	'fixupConfigForStudio' = 'migration.fixupConfigForStudio',
+	'ignoreFixupConfigForStudio' = 'migration.ignoreFixupConfigForStudio',
 	'validateConfigForStudio' = 'migration.validateConfigForStudio',
 	'runUpgradeForStudio' = 'migration.runUpgradeForStudio',
 	'fixupConfigForShowStyleBase' = 'migration.fixupConfigForShowStyleBase',
+	'ignoreFixupConfigForShowStyleBase' = 'migration.ignoreFixupConfigForShowStyleBase',
 	'validateConfigForShowStyleBase' = 'migration.validateConfigForShowStyleBase',
 	'runUpgradeForShowStyleBase' = 'migration.runUpgradeForShowStyleBase',
 }

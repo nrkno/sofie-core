@@ -8,6 +8,8 @@ import { SystemWriteAccess } from '../security/system'
 import {
 	fixupConfigForShowStyleBase,
 	fixupConfigForStudio,
+	ignoreFixupConfigForShowStyleBase,
+	ignoreFixupConfigForStudio,
 	runUpgradeForShowStyleBase,
 	runUpgradeForStudio,
 	validateConfigForShowStyleBase,
@@ -59,6 +61,14 @@ class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
 		return fixupConfigForStudio(studioId)
 	}
 
+	async ignoreFixupConfigForStudio(studioId: StudioId): Promise<void> {
+		check(studioId, String)
+
+		await SystemWriteAccess.migrations(this)
+
+		return ignoreFixupConfigForStudio(studioId)
+	}
+
 	async validateConfigForStudio(studioId: StudioId): Promise<BlueprintValidateConfigForStudioResult> {
 		check(studioId, String)
 
@@ -81,6 +91,14 @@ class ServerMigrationAPI extends MethodContextAPI implements NewMigrationAPI {
 		await SystemWriteAccess.migrations(this)
 
 		return fixupConfigForShowStyleBase(showStyleBaseId)
+	}
+
+	async ignoreFixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void> {
+		check(showStyleBaseId, String)
+
+		await SystemWriteAccess.migrations(this)
+
+		return ignoreFixupConfigForShowStyleBase(showStyleBaseId)
 	}
 
 	async validateConfigForShowStyleBase(
