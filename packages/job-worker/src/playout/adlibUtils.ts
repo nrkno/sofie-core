@@ -7,8 +7,8 @@ import { assertNever, getRandomId, getRank } from '@sofie-automation/corelib/dis
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { getCurrentTime } from '../lib'
 import { JobContext } from '../jobs'
-import { PlayoutModel } from './cacheModel/PlayoutModel'
-import { PartInstanceWithPieces } from './cacheModel/PartInstanceWithPieces'
+import { PlayoutModel } from './model/PlayoutModel'
+import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
 import {
 	fetchPiecesThatMayBeActiveForPart,
 	getPieceInstancesForPart,
@@ -25,20 +25,20 @@ import { setNextPart } from './setNext'
 import { calculateNowOffsetLatency } from './timeline/multi-gateway'
 import { logger } from '../logging'
 import { ReadonlyDeep } from 'type-fest'
-import { RundownWithSegments } from './cacheModel/RundownWithSegments'
+import { PlayoutRundownModel } from './model/PlayoutRundownModel'
 
 export async function innerStartOrQueueAdLibPiece(
 	context: JobContext,
-	cache: PlayoutModel,
-	rundown: RundownWithSegments,
+	playoutModel: PlayoutModel,
+	rundown: PlayoutRundownModel,
 	queue: boolean,
-	currentPartInstance: PartInstanceWithPieces,
+	currentPartInstance: PlayoutPartInstanceModel,
 	adLibPiece: AdLibPiece | BucketAdLib
 ): Promise<PartInstanceId | undefined> {
 	const span = context.startSpan('innerStartOrQueueAdLibPiece')
 	let queuedPartInstanceId: PartInstanceId | undefined
 	if (queue || adLibPiece.toBeQueued) {
-		const newPartInstance = cache.insertAdlibbedPartInstance({
+		const newPartInstance = playoutModel.insertAdlibbedPartInstance({
 			_id: getRandomId(),
 			_rank: 99999, // Corrected in innerStartQueuedAdLib
 			externalId: '',
@@ -51,17 +51,22 @@ export async function innerStartOrQueueAdLibPiece(
 
 		newPartInstance.recalculateExpectedDurationWithPreroll()
 
-		await innerStartQueuedAdLib(context, cache, rundown, currentPartInstance, newPartInstance)
+		await innerStartQueuedAdLib(context, playoutModel, rundown, currentPartInstance, newPartInstance)
 		queuedPartInstanceId = newPartInstance.PartInstance._id
 
 		// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
 	} else {
 		convertAdLibToPieceInstance(context, adLibPiece, currentPartInstance, queue)
 
-		await syncPlayheadInfinitesForNextPartInstance(context, cache, currentPartInstance, cache.NextPartInstance)
+		await syncPlayheadInfinitesForNextPartInstance(
+			context,
+			playoutModel,
+			currentPartInstance,
+			playoutModel.NextPartInstance
+		)
 	}
 
-	await updateTimeline(context, cache)
+	await updateTimeline(context, playoutModel)
 
 	if (span) span.end()
 	return queuedPartInstanceId
@@ -69,17 +74,17 @@ export async function innerStartOrQueueAdLibPiece(
 
 export async function innerFindLastPieceOnLayer(
 	context: JobContext,
-	cache: PlayoutModel,
+	playoutModel: PlayoutModel,
 	sourceLayerId: string[],
 	originalOnly: boolean,
 	customQuery?: MongoQuery<PieceInstance>
 ): Promise<PieceInstance | undefined> {
 	const span = context.startSpan('innerFindLastPieceOnLayer')
-	const rundownIds = cache.getRundownIds()
+	const rundownIds = playoutModel.getRundownIds()
 
 	const query: MongoQuery<PieceInstance> = {
 		...customQuery,
-		playlistActivationId: cache.Playlist.activationId,
+		playlistActivationId: playoutModel.Playlist.activationId,
 		rundownId: { $in: rundownIds },
 		'piece.sourceLayerId': { $in: sourceLayerId },
 		plannedStartedPlayback: {
@@ -143,7 +148,7 @@ export async function innerFindLastScriptedPieceOnLayer(
 	const part = cache
 		.getAllOrderedParts()
 		.filter((p) => pieceIdSet.has(p._id) && p._rank <= currentPartInstance.part._rank)
-		.reverse()[0] // nocommit - verify this
+		.reverse()[0]
 
 	if (!part) {
 		return
@@ -177,9 +182,9 @@ export async function innerFindLastScriptedPieceOnLayer(
 export async function innerStartQueuedAdLib(
 	context: JobContext,
 	cache: PlayoutModel,
-	rundown: RundownWithSegments,
-	currentPartInstance: PartInstanceWithPieces,
-	newPartInstance: PartInstanceWithPieces
+	rundown: PlayoutRundownModel,
+	currentPartInstance: PlayoutPartInstanceModel,
+	newPartInstance: PlayoutPartInstanceModel
 ): Promise<void> {
 	const span = context.startSpan('innerStartQueuedAdLib')
 
@@ -229,7 +234,7 @@ export function innerStopPieces(
 	context: JobContext,
 	cache: PlayoutModel,
 	sourceLayers: SourceLayers,
-	currentPartInstance: PartInstanceWithPieces,
+	currentPartInstance: PlayoutPartInstanceModel,
 	filter: (pieceInstance: ReadonlyDeep<PieceInstance>) => boolean,
 	timeOffset: number | undefined
 ): Array<PieceInstanceId> {

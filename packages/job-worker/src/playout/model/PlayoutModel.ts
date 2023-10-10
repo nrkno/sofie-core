@@ -15,13 +15,13 @@ import {
 	RundownHoldState,
 } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { ReadonlyDeep } from 'type-fest'
-import { CacheForStudioBase, CacheForStudioBaseReadonly } from '../../studio/cache'
+import { StudioPlayoutModelBase, StudioPlayoutModelBaseReadonly } from '../../studio/StudioPlayoutModel'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PlaylistLock } from '../../jobs/lock'
-import { RundownWithSegments } from './RundownWithSegments'
-import { SegmentWithParts } from './SegmentWithParts'
-import { PartInstanceWithPieces } from './PartInstanceWithPieces'
+import { PlayoutRundownModel } from './PlayoutRundownModel'
+import { PlayoutSegmentModel } from './PlayoutSegmentModel'
+import { PlayoutPartInstanceModel } from './PlayoutPartInstanceModel'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 
@@ -40,24 +40,26 @@ export interface PlayoutModelPreInit {
 	getRundown(id: RundownId): DBRundown | undefined
 }
 
-export interface PlayoutModelReadonly extends CacheForStudioBaseReadonly {
+export interface PlayoutModelReadonly extends StudioPlayoutModelBaseReadonly {
 	readonly isPlayout: true
 	readonly PlaylistId: RundownPlaylistId
 
 	readonly PlaylistLock: PlaylistLock
 
 	get Playlist(): ReadonlyDeep<DBRundownPlaylist>
-	get Rundowns(): readonly RundownWithSegments[]
+	get Rundowns(): readonly PlayoutRundownModel[]
 
-	get OlderPartInstances(): PartInstanceWithPieces[]
-	get PreviousPartInstance(): PartInstanceWithPieces | null
-	get CurrentPartInstance(): PartInstanceWithPieces | null
-	get NextPartInstance(): PartInstanceWithPieces | null
+	get HackDeletedPartInstanceIds(): PartInstanceId[]
+
+	get OlderPartInstances(): PlayoutPartInstanceModel[]
+	get PreviousPartInstance(): PlayoutPartInstanceModel | null
+	get CurrentPartInstance(): PlayoutPartInstanceModel | null
+	get NextPartInstance(): PlayoutPartInstanceModel | null
 	get SelectedPartInstanceIds(): PartInstanceId[]
-	get SelectedPartInstances(): PartInstanceWithPieces[]
-	get LoadedPartInstances(): PartInstanceWithPieces[]
-	get SortedLoadedPartInstances(): PartInstanceWithPieces[]
-	getPartInstance(partInstanceId: PartInstanceId): PartInstanceWithPieces | undefined
+	get SelectedPartInstances(): PlayoutPartInstanceModel[]
+	get LoadedPartInstances(): PlayoutPartInstanceModel[]
+	get SortedLoadedPartInstances(): PlayoutPartInstanceModel[]
+	getPartInstance(partInstanceId: PartInstanceId): PlayoutPartInstanceModel | undefined
 
 	/**
 	 * Search for a Part through the whole Playlist
@@ -66,41 +68,41 @@ export interface PlayoutModelReadonly extends CacheForStudioBaseReadonly {
 	findPart(id: PartId): ReadonlyDeep<DBPart> | undefined
 	getAllOrderedParts(): ReadonlyDeep<DBPart>[]
 
-	findSegment(id: SegmentId): ReadonlyDeep<SegmentWithParts> | undefined
-	getAllOrderedSegments(): ReadonlyDeep<SegmentWithParts>[]
+	findSegment(id: SegmentId): ReadonlyDeep<PlayoutSegmentModel> | undefined
+	getAllOrderedSegments(): ReadonlyDeep<PlayoutSegmentModel>[]
 
-	getRundown(id: RundownId): RundownWithSegments | undefined
+	getRundown(id: RundownId): PlayoutRundownModel | undefined
 	getRundownIds(): RundownId[]
 
 	findPieceInstance(
 		id: PieceInstanceId
-	): { partInstance: PartInstanceWithPieces; pieceInstance: ReadonlyDeep<PieceInstance> } | undefined
+	): { partInstance: PlayoutPartInstanceModel; pieceInstance: ReadonlyDeep<PieceInstance> } | undefined
 }
 
-export interface PlayoutModel extends PlayoutModelReadonly, CacheForStudioBase, ICacheBase2 {
-	createInstanceForPart(nextPart: ReadonlyDeep<DBPart>, pieceInstances: PieceInstance[]): PartInstanceWithPieces
-	insertAdlibbedPartInstance(part: Omit<DBPart, 'segmentId' | 'rundownId'>): PartInstanceWithPieces
+export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBase, ICacheBase2 {
+	createInstanceForPart(nextPart: ReadonlyDeep<DBPart>, pieceInstances: PieceInstance[]): PlayoutPartInstanceModel
+	insertAdlibbedPartInstance(part: Omit<DBPart, 'segmentId' | 'rundownId'>): PlayoutPartInstanceModel
 	insertScratchpadPartInstance(
-		rundown: RundownWithSegments,
+		rundown: PlayoutRundownModel,
 		part: Omit<DBPart, 'segmentId' | 'rundownId'>
-	): PartInstanceWithPieces
+	): PlayoutPartInstanceModel
 
 	/**
 	 * HACK: This allows for taking a copy of a `PartInstanceWithPieces` for use in `syncChangesToPartInstances`.
 	 * This lets us discard the changes if the blueprint call throws.
 	 * We should look at avoiding this messy/dangerous method, and find a better way to do this
 	 */
-	replacePartInstance(partInstance: PartInstanceWithPieces): void
+	replacePartInstance(partInstance: PlayoutPartInstanceModel): void
 	/** @deprecated HACK */
 	removePartInstance(id: PartInstanceId): void
 
 	setHoldState(newState: RundownHoldState): void
-	setNextSegment(segment: SegmentWithParts | null): void
+	setNextSegment(segment: PlayoutSegmentModel | null): void
 
 	cycleSelectedPartInstances(): void
 	setRundownStartedPlayback(rundownId: RundownId, timestamp: number): void
 	setPartInstanceAsNext(
-		partInstance: PartInstanceWithPieces | null,
+		partInstance: PlayoutPartInstanceModel | null,
 		setManually: boolean,
 		consumesNextSegmentId: boolean,
 		nextTimeOffset?: number

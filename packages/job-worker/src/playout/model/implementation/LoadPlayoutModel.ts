@@ -6,7 +6,7 @@ import { PlaylistLock } from '../../../jobs/lock'
 import { ReadonlyDeep } from 'type-fest'
 import { JobContext } from '../../../jobs'
 import { PlayoutModelImpl } from './PlayoutModelImpl'
-import { RundownWithSegmentsImpl } from './RundownWithSegmentsImpl'
+import { PlayoutRundownModelImpl } from './PlayoutRundownModelImpl'
 import { RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -15,9 +15,9 @@ import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timel
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import _ = require('underscore')
 import { clone, groupByToMap, groupByToMapFunc } from '@sofie-automation/corelib/dist/lib'
-import { SegmentWithPartsImpl } from './SegmentWithPartsImpl'
+import { PlayoutSegmentModelImpl } from './PlayoutSegmentModelImpl'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
-import { PartInstanceWithPiecesImpl } from './PartInstanceWithPiecesImpl'
+import { PlayoutPartInstanceModelImpl } from './PlayoutPartInstanceModelImpl'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { PlayoutModel, PlayoutModelPreInit } from '../PlayoutModel'
 
@@ -149,7 +149,7 @@ async function loadRundowns(
 	context: JobContext,
 	ingestCache: ReadOnlyCache<CacheForIngest> | null,
 	rundowns: ReadonlyDeep<DBRundown[]>
-): Promise<RundownWithSegmentsImpl[]> {
+): Promise<PlayoutRundownModelImpl[]> {
 	const rundownIds = rundowns.map((rd) => rd._id)
 
 	// If there is an ingestCache, then avoid loading some bits from the db for that rundown
@@ -186,7 +186,7 @@ async function loadRundowns(
 
 	const groupedParts = groupByToMap(parts, 'segmentId')
 	const segmentsWithParts = segments.map(
-		(segment) => new SegmentWithPartsImpl(segment, groupedParts.get(segment._id) ?? [])
+		(segment) => new PlayoutSegmentModelImpl(segment, groupedParts.get(segment._id) ?? [])
 	)
 	const groupedSegmentsWithParts = groupByToMapFunc(segmentsWithParts, (s) => s.Segment.rundownId)
 
@@ -194,7 +194,7 @@ async function loadRundowns(
 
 	return rundowns.map(
 		(rundown) =>
-			new RundownWithSegmentsImpl(
+			new PlayoutRundownModelImpl(
 				rundown,
 				groupedSegmentsWithParts.get(rundown._id) ?? [],
 				groupedBaselineObjects.get(rundown._id) ?? []
@@ -210,7 +210,7 @@ async function loadPartInstances(
 	context: JobContext,
 	playlist: ReadonlyDeep<DBRundownPlaylist>,
 	rundownIds: RundownId[]
-): Promise<PartInstanceWithPiecesImpl[]> {
+): Promise<PlayoutPartInstanceModelImpl[]> {
 	const selectedPartInstanceIds = _.compact([
 		playlist.currentPartInfo?.partInstanceId,
 		playlist.nextPartInfo?.partInstanceId,
@@ -266,9 +266,9 @@ async function loadPartInstances(
 
 	const groupedPieceInstances = groupByToMap(pieceInstances, 'partInstanceId')
 
-	const allPartInstances: PartInstanceWithPiecesImpl[] = []
+	const allPartInstances: PlayoutPartInstanceModelImpl[] = []
 	for (const partInstance of partInstances) {
-		const wrappedPartInstance = new PartInstanceWithPiecesImpl(
+		const wrappedPartInstance = new PlayoutPartInstanceModelImpl(
 			partInstance,
 			groupedPieceInstances.get(partInstance._id) ?? [],
 			false

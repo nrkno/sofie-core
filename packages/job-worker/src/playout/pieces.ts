@@ -9,7 +9,7 @@ import _ = require('underscore')
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { ReadonlyDeep } from 'type-fest'
-import { PartInstanceWithPieces } from './cacheModel/PartInstanceWithPieces'
+import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
 
 /**
  * Approximate compare Piece start times (for use in .sort())
@@ -109,7 +109,7 @@ export function convertPieceToAdLibPiece(context: JobContext, piece: PieceInstan
 export function convertAdLibToPieceInstance(
 	context: JobContext,
 	adLibPiece: AdLibPiece | Piece | BucketAdLib | PieceInstancePiece,
-	partInstance: PartInstanceWithPieces,
+	partInstance: PlayoutPartInstanceModel,
 	queue: boolean
 ): ReadonlyDeep<PieceInstance> {
 	const span = context.startSpan('convertAdLibToPieceInstance')

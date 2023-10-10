@@ -7,7 +7,7 @@ import { JobContext } from '../jobs'
 import { runJobWithPlayoutCache } from './lock'
 import { performTakeToNextedPart } from './take'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PlayoutModel } from './cacheModel/PlayoutModel'
+import { PlayoutModel } from './model/PlayoutModel'
 
 export async function handleActivateScratchpad(context: JobContext, data: ActivateScratchpadProps): Promise<void> {
 	if (!context.studio.settings.allowScratchpad) throw UserError.create(UserErrorMessage.ScratchpadNotAllowed)

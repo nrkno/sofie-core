@@ -1,8 +1,8 @@
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { logger } from '../../logging'
 import { JobContext } from '../../jobs'
-import { PlayoutModel } from '../cacheModel/PlayoutModel'
-import { PartInstanceWithPieces } from '../cacheModel/PartInstanceWithPieces'
+import { PlayoutModel } from '../model/PlayoutModel'
+import { PlayoutPartInstanceModel } from '../model/PlayoutPartInstanceModel'
 import { selectNextPart } from '../selectNextPart'
 import { setNextPart } from '../setNext'
 import { updateTimeline } from '../timeline/generate'
@@ -171,7 +171,7 @@ export function onPartPlaybackStopped(
 export function reportPartInstanceHasStarted(
 	_context: JobContext,
 	cache: PlayoutModel,
-	partInstance: PartInstanceWithPieces,
+	partInstance: PlayoutPartInstanceModel,
 	timestamp: Time
 ): void {
 	if (partInstance) {
@@ -207,7 +207,7 @@ export function reportPartInstanceHasStarted(
 export function reportPartInstanceHasStopped(
 	_context: JobContext,
 	cache: PlayoutModel,
-	partInstance: PartInstanceWithPieces,
+	partInstance: PlayoutPartInstanceModel,
 	timestamp: Time
 ): void {
 	const timestampUpdated = partInstance.setReportedStoppedPlayback(timestamp)

@@ -2,9 +2,9 @@ import { PartId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { SegmentWithParts } from '../SegmentWithParts'
+import { PlayoutSegmentModel } from '../PlayoutSegmentModel'
 
-export class SegmentWithPartsImpl implements SegmentWithParts {
+export class PlayoutSegmentModelImpl implements PlayoutSegmentModel {
 	readonly #Segment: DBSegment
 	readonly Parts: ReadonlyDeep<DBPart[]>
 
@@ -13,7 +13,7 @@ export class SegmentWithPartsImpl implements SegmentWithParts {
 	}
 
 	constructor(segment: DBSegment, parts: DBPart[]) {
-		parts.sort((a, b) => a._rank - b._rank) // nocommit - check order
+		parts.sort((a, b) => a._rank - b._rank)
 
 		this.#Segment = segment
 		this.Parts = parts

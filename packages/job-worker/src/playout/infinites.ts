@@ -12,9 +12,9 @@ import {
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { JobContext } from '../jobs'
 import { ReadonlyDeep } from 'type-fest'
-import { PlayoutModel } from './cacheModel/PlayoutModel'
-import { PartInstanceWithPieces } from './cacheModel/PartInstanceWithPieces'
-import { SegmentWithParts } from './cacheModel/SegmentWithParts'
+import { PlayoutModel } from './model/PlayoutModel'
+import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
+import { PlayoutSegmentModel } from './model/PlayoutSegmentModel'
 import { getCurrentTime } from '../lib'
 import { flatten } from '@sofie-automation/corelib/dist/lib'
 import _ = require('underscore')
@@ -23,12 +23,12 @@ import { CacheForIngest } from '../ingest/cache'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { sortRundownIDsInPlaylist } from '@sofie-automation/corelib/dist/playout/playlist'
 import { mongoWhere } from '@sofie-automation/corelib/dist/mongo'
-import { RundownWithSegments } from './cacheModel/RundownWithSegments'
+import { PlayoutRundownModel } from './model/PlayoutRundownModel'
 
 /** When we crop a piece, set the piece as "it has definitely ended" this far into the future. */
 export const DEFINITELY_ENDED_FUTURE_DURATION = 1 * 1000
 
-function getShowStyleIdsRundownMapping(rundowns: readonly RundownWithSegments[]): Map<RundownId, ShowStyleBaseId> {
+function getShowStyleIdsRundownMapping(rundowns: readonly PlayoutRundownModel[]): Map<RundownId, ShowStyleBaseId> {
 	const ret = new Map()
 
 	for (const rundown of rundowns) {
@@ -43,7 +43,7 @@ function getShowStyleIdsRundownMapping(rundowns: readonly RundownWithSegments[])
  * */
 export function candidatePartIsAfterPreviewPartInstance(
 	_context: JobContext,
-	orderedSegments: readonly SegmentWithParts[],
+	orderedSegments: readonly PlayoutSegmentModel[],
 	previousPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
 	candidateInstance: ReadonlyDeep<DBPart>
 ): boolean {
@@ -215,8 +215,8 @@ export async function fetchPiecesThatMayBeActiveForPart(
 export async function syncPlayheadInfinitesForNextPartInstance(
 	context: JobContext,
 	cache: PlayoutModel,
-	fromPartInstance: PartInstanceWithPieces | null,
-	toPartInstance: PartInstanceWithPieces | null
+	fromPartInstance: PlayoutPartInstanceModel | null,
+	toPartInstance: PlayoutPartInstanceModel | null
 ): Promise<void> {
 	const span = context.startSpan('syncPlayheadInfinitesForNextPartInstance')
 
@@ -298,8 +298,8 @@ export async function syncPlayheadInfinitesForNextPartInstance(
 export function getPieceInstancesForPart(
 	context: JobContext,
 	cache: PlayoutModel,
-	playingPartInstance: PartInstanceWithPieces | null,
-	rundown: RundownWithSegments,
+	playingPartInstance: PlayoutPartInstanceModel | null,
+	rundown: PlayoutRundownModel,
 	part: ReadonlyDeep<DBPart>,
 	possiblePieces: Piece[],
 	newInstanceId: PartInstanceId
@@ -322,8 +322,8 @@ export function getPieceInstancesForPart(
 
 	const rundownIdsToShowstyleIds = getShowStyleIdsRundownMapping(cache.Rundowns)
 
-	let playingRundown: RundownWithSegments | undefined
-	let playingSegment: SegmentWithParts | undefined
+	let playingRundown: PlayoutRundownModel | undefined
+	let playingSegment: PlayoutSegmentModel | undefined
 	if (playingPartInstance) {
 		playingRundown = cache.getRundown(playingPartInstance.PartInstance.rundownId)
 		if (!playingRundown) throw new Error(`Rundown "${playingPartInstance.PartInstance.rundownId}" not found!`)

@@ -3,7 +3,7 @@ import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyE
 import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
 import { JobContext } from '../jobs'
 import { logger } from '../logging'
-import { PlayoutModel } from './cacheModel/PlayoutModel'
+import { PlayoutModel } from './model/PlayoutModel'
 import { resetRundownPlaylist } from './lib'
 import { selectNextPart } from './selectNextPart'
 import { setNextPart } from './setNext'

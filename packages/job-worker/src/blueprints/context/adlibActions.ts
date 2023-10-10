@@ -20,8 +20,8 @@ import { PartInstanceId, PeripheralDeviceId, PieceInstanceId } from '@sofie-auto
 import { assertNever, getRandomId, omit } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../../logging'
 import { ReadonlyDeep } from 'type-fest'
-import { PlayoutModel } from '../../playout/cacheModel/PlayoutModel'
-import { PartInstanceWithPieces } from '../../playout/cacheModel/PartInstanceWithPieces'
+import { PlayoutModel } from '../../playout/model/PlayoutModel'
+import { PlayoutPartInstanceModel } from '../../playout/model/PlayoutPartInstanceModel'
 import { UserContextInfo } from './CommonContext'
 import { ShowStyleUserContext } from './ShowStyleUserContext'
 import { WatchedPackagesHelper } from './watchedPackages'
@@ -66,7 +66,7 @@ import { ProcessedShowStyleConfig } from '../config'
 import { DatastorePersistenceMode } from '@sofie-automation/shared-lib/dist/core/model/TimelineDatastore'
 import { getDatastoreId } from '../../playout/datastore'
 import { executePeripheralDeviceAction, listPlayoutDevices } from '../../peripheralDevice'
-import { RundownWithSegments } from '../../playout/cacheModel/RundownWithSegments'
+import { PlayoutRundownModel } from '../../playout/model/PlayoutRundownModel'
 
 export enum ActionPartChange {
 	NONE = 0,
@@ -123,7 +123,7 @@ export class DatastoreActionExecutionContext
 export class ActionExecutionContext extends ShowStyleUserContext implements IActionExecutionContext, IEventContext {
 	private readonly _context: JobContext
 	private readonly _cache: PlayoutModel
-	private readonly rundown: RundownWithSegments
+	private readonly rundown: PlayoutRundownModel
 
 	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the current partInstance */
 	public currentPartState: ActionPartChange = ActionPartChange.NONE
@@ -138,7 +138,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		cache: PlayoutModel,
 		showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 		_showStyleBlueprintConfig: ProcessedShowStyleConfig,
-		rundown: RundownWithSegments,
+		rundown: PlayoutRundownModel,
 		watchedPackages: WatchedPackagesHelper
 	) {
 		super(contextInfo, context, showStyle, watchedPackages)
@@ -148,7 +148,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		this.takeAfterExecute = false
 	}
 
-	private _getPartInstance(part: 'current' | 'next'): PartInstanceWithPieces | null {
+	private _getPartInstance(part: 'current' | 'next'): PlayoutPartInstanceModel | null {
 		switch (part) {
 			case 'current':
 				return this._cache.CurrentPartInstance

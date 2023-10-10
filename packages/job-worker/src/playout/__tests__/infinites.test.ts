@@ -1,7 +1,7 @@
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { ReadonlyDeep, SetRequired } from 'type-fest'
-import { PlayoutModel } from '../cacheModel/PlayoutModel'
+import { PlayoutModel } from '../model/PlayoutModel'
 import { candidatePartIsAfterPreviewPartInstance } from '../infinites'
 import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'

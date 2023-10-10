@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'

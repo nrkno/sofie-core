@@ -8,7 +8,7 @@ import { runJobWithPlayoutCache } from './lock'
 import { setNextPartFromPart, setNextSegment } from './setNext'
 import { moveNextPart } from './moveNextPart'
 import { updateTimeline } from './timeline/generate'
-import { SegmentWithParts } from './cacheModel/SegmentWithParts'
+import { PlayoutSegmentModel } from './model/PlayoutSegmentModel'
 import { ReadonlyDeep } from 'type-fest'
 
 /**
@@ -87,7 +87,7 @@ export async function handleSetNextSegment(context: JobContext, data: SetNextSeg
 			}
 		},
 		async (cache) => {
-			let nextSegment: ReadonlyDeep<SegmentWithParts> | null = null
+			let nextSegment: ReadonlyDeep<PlayoutSegmentModel> | null = null
 			if (data.nextSegmentId) {
 				nextSegment = cache.findSegment(data.nextSegmentId) ?? null
 				if (!nextSegment) throw new Error(`Segment "${data.nextSegmentId}" not found!`)

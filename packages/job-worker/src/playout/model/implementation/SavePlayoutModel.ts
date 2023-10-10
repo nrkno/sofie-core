@@ -5,12 +5,12 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { AnyBulkWriteOperation } from 'mongodb'
 import { JobContext } from '../../../jobs'
-import { PartInstanceWithPiecesImpl } from './PartInstanceWithPiecesImpl'
-import { RundownWithSegmentsImpl } from './RundownWithSegmentsImpl'
+import { PlayoutPartInstanceModelImpl } from './PlayoutPartInstanceModelImpl'
+import { PlayoutRundownModelImpl } from './PlayoutRundownModelImpl'
 
 export async function writeScratchpadSegments(
 	context: JobContext,
-	rundowns: readonly RundownWithSegmentsImpl[]
+	rundowns: readonly PlayoutRundownModelImpl[]
 ): Promise<void> {
 	const writeOps: AnyBulkWriteOperation<DBSegment>[] = []
 
@@ -49,7 +49,7 @@ export async function writeScratchpadSegments(
 
 export function writePartInstancesAndPieceInstances(
 	context: JobContext,
-	partInstances: Map<PartInstanceId, PartInstanceWithPiecesImpl | null>
+	partInstances: Map<PartInstanceId, PlayoutPartInstanceModelImpl | null>
 ): [Promise<unknown>, Promise<unknown>] {
 	const partInstanceOps: AnyBulkWriteOperation<DBPartInstance>[] = []
 	const pieceInstanceOps: AnyBulkWriteOperation<PieceInstance>[] = []
@@ -60,9 +60,7 @@ export function writePartInstancesAndPieceInstances(
 	for (const [partInstanceId, partInstance] of partInstances.entries()) {
 		if (!partInstance) {
 			deletedPartInstanceIds.push(partInstanceId)
-		} else if (partInstance.HasChanges) {
-			partInstance.clearChangedFlag()
-
+		} else {
 			partInstanceOps.push({
 				replaceOne: {
 					filter: { _id: partInstanceId },
@@ -72,19 +70,21 @@ export function writePartInstancesAndPieceInstances(
 			})
 
 			for (const [pieceInstanceId, pieceInstance] of partInstance.PieceInstancesImpl.entries()) {
-				if (!pieceInstance) {
+				if (!pieceInstance.doc) {
 					deletedPieceInstanceIds.push(pieceInstanceId)
-				} else {
+				} else if (pieceInstance.changed) {
 					// TODO - this does not perform any diffing
 					pieceInstanceOps.push({
 						replaceOne: {
 							filter: { _id: pieceInstanceId },
-							replacement: pieceInstance,
+							replacement: pieceInstance.doc,
 							upsert: true,
 						},
 					})
 				}
 			}
+
+			partInstance.clearChangedFlags()
 		}
 	}
 

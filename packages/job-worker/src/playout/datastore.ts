@@ -3,7 +3,7 @@ import { StudioId, TimelineDatastoreEntryId } from '@sofie-automation/corelib/di
 import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { JobContext } from '../jobs'
-import { PlayoutModel } from './cacheModel/PlayoutModel'
+import { PlayoutModel } from './model/PlayoutModel'
 
 export function getDatastoreId(studioId: StudioId, key: string): TimelineDatastoreEntryId {
 	return protectString<TimelineDatastoreEntryId>(`${studioId}_${key}`)

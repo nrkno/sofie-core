@@ -62,9 +62,9 @@ import {
 	PlayoutChangedType,
 } from '@sofie-automation/shared-lib/dist/peripheralDevice/peripheralDeviceAPI'
 import * as _ from 'underscore'
-import { RundownWithSegments } from '../cacheModel/RundownWithSegments'
-import { PartInstanceWithPieces } from '../cacheModel/PartInstanceWithPieces'
-import { PartInstanceWithPiecesImpl } from '../cacheModel/implementation/PartInstanceWithPiecesImpl'
+import { PlayoutRundownModel } from '../model/PlayoutRundownModel'
+import { PlayoutPartInstanceModel } from '../model/PlayoutPartInstanceModel'
+import { PlayoutPartInstanceModelImpl } from '../model/implementation/PlayoutPartInstanceModelImpl'
 
 /**
  * An object used to represent the simplified timeline structure.
@@ -180,8 +180,8 @@ function parsePieceGroupPrerollAndPostroll(
 function checkTimingsRaw(
 	rundownId: RundownId,
 	timeline: TimelineComplete | undefined,
-	currentPartInstance: PartInstanceWithPieces,
-	previousPartInstance: PartInstanceWithPieces | undefined,
+	currentPartInstance: PlayoutPartInstanceModel,
+	previousPartInstance: PlayoutPartInstanceModel | undefined,
 	expectedTimings: PartTimelineTimings
 ) {
 	const timelineObjs = timeline ? deserializeTimelineBlob(timeline?.timelineBlob) : []
@@ -448,9 +448,9 @@ async function doUpdateTimeline(context: MockJobContext, playlistId: RundownPlay
 }
 
 interface SelectedPartInstances {
-	currentPartInstance: PartInstanceWithPieces | undefined
-	nextPartInstance: PartInstanceWithPieces | undefined
-	previousPartInstance: PartInstanceWithPieces | undefined
+	currentPartInstance: PlayoutPartInstanceModel | undefined
+	nextPartInstance: PlayoutPartInstanceModel | undefined
+	previousPartInstance: PlayoutPartInstanceModel | undefined
 }
 
 describe('Timeline', () => {
@@ -703,13 +703,13 @@ describe('Timeline', () => {
 
 			async function wrapPartInstance(
 				partInstance: DBPartInstance | null
-			): Promise<PartInstanceWithPieces | undefined> {
+			): Promise<PlayoutPartInstanceModel | undefined> {
 				if (!partInstance) return undefined
 
 				const pieceInstances = await context.directCollections.PieceInstances.findFetch({
 					partInstanceId: partInstance?._id,
 				})
-				return new PartInstanceWithPiecesImpl(partInstance, pieceInstances, false)
+				return new PlayoutPartInstanceModelImpl(partInstance, pieceInstances, false)
 			}
 
 			return {
@@ -1131,11 +1131,11 @@ describe('Timeline', () => {
 	describe('Adlib pieces', () => {
 		async function doStartAdlibPiece(
 			playlistId: RundownPlaylistId,
-			currentPartInstance: PartInstanceWithPieces,
+			currentPartInstance: PlayoutPartInstanceModel,
 			adlibSource: AdLibPiece
 		) {
 			await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) => {
-				const rundown = cache.getRundown(currentPartInstance.PartInstance.rundownId) as RundownWithSegments
+				const rundown = cache.getRundown(currentPartInstance.PartInstance.rundownId) as PlayoutRundownModel
 				expect(rundown).toBeTruthy()
 
 				return innerStartOrQueueAdLibPiece(context, cache, rundown, false, currentPartInstance, adlibSource)

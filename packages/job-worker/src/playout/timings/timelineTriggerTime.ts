@@ -9,7 +9,7 @@ import { saveTimeline } from '../timeline/generate'
 import { applyToArray } from '@sofie-automation/corelib/dist/lib'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { runJobWithStudioCache } from '../../studio/lock'
-import { CacheForStudio } from '../../studio/cache'
+import { StudioPlayoutModel } from '../../studio/StudioPlayoutModel'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { PieceTimelineMetadata } from '../timeline/pieceGroup'
 import { deserializeTimelineBlob } from '@sofie-automation/corelib/dist/dataModel/Timeline'
@@ -68,7 +68,7 @@ export async function handleTimelineTriggerTime(context: JobContext, data: OnTim
 
 function timelineTriggerTimeInner(
 	context: JobContext,
-	cache: CacheForStudio,
+	cache: StudioPlayoutModel,
 	results: OnTimelineTriggerTimeProps['results'],
 	pieceInstanceCache: DbCacheWriteCollection<PieceInstance> | undefined,
 	activePlaylist: ReadonlyDeep<DBRundownPlaylist> | undefined

@@ -12,8 +12,8 @@ import {
 	StopPiecesOnSourceLayersProps,
 	TakePieceAsAdlibNowProps,
 } from '@sofie-automation/corelib/dist/worker/studio'
-import { PlayoutModel } from './cacheModel/PlayoutModel'
-import { PartInstanceWithPieces } from './cacheModel/PartInstanceWithPieces'
+import { PlayoutModel } from './model/PlayoutModel'
+import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
 import { runJobWithPlayoutCache } from './lock'
 import { updateTimeline } from './timeline/generate'
 import { getCurrentTime } from '../lib'
@@ -131,10 +131,10 @@ async function pieceTakeNowAsAdlib(
 	context: JobContext,
 	cache: PlayoutModel,
 	showStyleBase: ReadonlyDeep<ProcessedShowStyleCompound>,
-	currentPartInstance: PartInstanceWithPieces,
+	currentPartInstance: PlayoutPartInstanceModel,
 	pieceToCopy: PieceInstancePiece,
 	pieceInstanceToCopy:
-		| { partInstance: PartInstanceWithPieces; pieceInstance: ReadonlyDeep<PieceInstance> }
+		| { partInstance: PlayoutPartInstanceModel; pieceInstance: ReadonlyDeep<PieceInstance> }
 		| undefined
 ): Promise<void> {
 	/*const newPieceInstance = */ convertAdLibToPieceInstance(context, pieceToCopy, currentPartInstance, false)
@@ -174,7 +174,8 @@ async function pieceTakeNowAsAdlib(
 			}
 		}
 
-		currentPartInstance.removePieceInstance(pieceInstanceToCopy.pieceInstance._id)
+		// TODO: is this ok?
+		currentPartInstance.setPieceInstanceDisabled(pieceInstanceToCopy.pieceInstance._id, true)
 	}
 
 	await syncPlayheadInfinitesForNextPartInstance(context, cache, cache.CurrentPartInstance, cache.NextPartInstance)
@@ -394,7 +395,7 @@ export async function handleDisableNextPiece(context: JobContext, data: DisableN
 
 			const allowedSourceLayers = showStyleBase.sourceLayers
 
-			const getNextPiece = (partInstance: PartInstanceWithPieces, ignoreStartedPlayback: boolean) => {
+			const getNextPiece = (partInstance: PlayoutPartInstanceModel, ignoreStartedPlayback: boolean) => {
 				// Find next piece to disable
 
 				let nowInPart = 0
@@ -433,7 +434,7 @@ export async function handleDisableNextPiece(context: JobContext, data: DisableN
 				})
 			}
 
-			const partInstances: Array<[PartInstanceWithPieces | null, boolean]> = [
+			const partInstances: Array<[PlayoutPartInstanceModel | null, boolean]> = [
 				[currentPartInstance, false],
 				[nextPartInstance, true], // If not found in currently playing part, let's look in the next one:
 			]

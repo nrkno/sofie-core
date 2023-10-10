@@ -1,8 +1,8 @@
 import { BlueprintSyncIngestNewData, BlueprintSyncIngestPartInstance } from '@sofie-automation/blueprints-integration'
 import { ReadOnlyCache } from '../cache/CacheBase'
 import { JobContext } from '../jobs'
-import { PlayoutModel } from '../playout/cacheModel/PlayoutModel'
-import { PartInstanceWithPieces } from '../playout/cacheModel/PartInstanceWithPieces'
+import { PlayoutModel } from '../playout/model/PlayoutModel'
+import { PlayoutPartInstanceModel } from '../playout/model/PlayoutPartInstanceModel'
 import { CacheForIngest } from './cache'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
@@ -32,8 +32,8 @@ import { hackConvertIngestCacheToRundownWithSegments } from './commit'
 
 type PlayStatus = 'previous' | 'current' | 'next'
 type SyncedInstance = {
-	existingPartInstance: PartInstanceWithPieces
-	previousPartInstance: PartInstanceWithPieces | null
+	existingPartInstance: PlayoutPartInstanceModel
+	previousPartInstance: PlayoutPartInstanceModel | null
 	playStatus: PlayStatus
 	newPart: ReadonlyDeep<DBPart> | undefined
 	piecesThatMayBeActive: Promise<Piece[]>
@@ -168,7 +168,6 @@ export async function syncChangesToPartInstances(
 						name: `Update to ${clonedPartInstance.PartInstance.part.externalId}`,
 						identifier: `rundownId=${clonedPartInstance.PartInstance.part.rundownId},segmentId=${clonedPartInstance.PartInstance.part.segmentId}`,
 					},
-					cache.Playlist.activationId,
 					context.studio,
 					showStyle,
 					rundownWrapped.Rundown,
@@ -242,8 +241,8 @@ function insertToSyncedInstanceCandidates(
 	instances: SyncedInstance[],
 	cache: PlayoutModel,
 	ingestCache: ReadOnlyCache<CacheForIngest>,
-	thisPartInstance: PartInstanceWithPieces,
-	previousPartInstance: PartInstanceWithPieces | null,
+	thisPartInstance: PlayoutPartInstanceModel,
+	previousPartInstance: PlayoutPartInstanceModel | null,
 	part: ReadonlyDeep<DBPart> | undefined,
 	playStatus: PlayStatus
 ): void {
@@ -270,8 +269,8 @@ function findPartAndInsertToSyncedInstanceCandidates(
 	instances: SyncedInstance[],
 	cache: PlayoutModel,
 	ingestCache: ReadOnlyCache<CacheForIngest>,
-	thisPartInstance: PartInstanceWithPieces,
-	previousPartInstance: PartInstanceWithPieces | null,
+	thisPartInstance: PlayoutPartInstanceModel,
+	previousPartInstance: PlayoutPartInstanceModel | null,
 	playStatus: PlayStatus
 ): void {
 	const newPart = cache.findPart(thisPartInstance.PartInstance.part._id)
@@ -296,7 +295,7 @@ function findLastUnorphanedPartInstanceInSegment(
 	cache: PlayoutModel,
 	currentPartInstance: ReadonlyDeep<DBPartInstance>
 ): {
-	partInstance: PartInstanceWithPieces
+	partInstance: PlayoutPartInstanceModel
 	part: ReadonlyDeep<DBPart>
 } | null {
 	// Find the "latest" (last played), non-orphaned PartInstance in this Segment, in this play-through

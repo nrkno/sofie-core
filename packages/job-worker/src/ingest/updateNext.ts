@@ -1,6 +1,6 @@
 import { isTooCloseToAutonext } from '../playout/lib'
 import { selectNextPart } from '../playout/selectNextPart'
-import { PlayoutModel } from '../playout/cacheModel/PlayoutModel'
+import { PlayoutModel } from '../playout/model/PlayoutModel'
 import { JobContext } from '../jobs'
 import { setNextPart } from '../playout/setNext'
 import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'

@@ -5,8 +5,8 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { ReadonlyDeep } from 'type-fest'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
-import { SegmentWithPartsImpl } from '../cacheModel/implementation/SegmentWithPartsImpl'
-import { SegmentWithParts } from '../cacheModel/SegmentWithParts'
+import { PlayoutSegmentModelImpl } from '../model/implementation/PlayoutSegmentModelImpl'
+import { PlayoutSegmentModel } from '../model/PlayoutSegmentModel'
 import { selectNextPart } from '../selectNextPart'
 
 class MockPart {
@@ -71,9 +71,9 @@ describe('selectNextPart', () => {
 		ignoreUnplayabale = true
 	) {
 		const parts = [...(defaultParts as unknown as DBPart[])]
-		const segments: readonly SegmentWithParts[] = defaultSegments.map(
+		const segments: readonly PlayoutSegmentModel[] = defaultSegments.map(
 			(segment) =>
-				new SegmentWithPartsImpl(
+				new PlayoutSegmentModelImpl(
 					segment as unknown as DBSegment,
 					parts.filter((p) => p.segmentId === segment._id)
 				)

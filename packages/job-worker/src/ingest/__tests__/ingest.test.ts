@@ -17,7 +17,7 @@ import {
 import { DBRundown, Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBSegment, SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
-import { getRandomId, getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
+import { getRandomString, literal } from '@sofie-automation/corelib/dist/lib'
 import { sortPartsInSortedSegments, sortSegmentsInRundowns } from '@sofie-automation/corelib/dist/playout/playlist'
 import { MongoQuery } from '../../db'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
@@ -46,7 +46,7 @@ import { innerStartQueuedAdLib } from '../../playout/adlibUtils'
 import { IngestJobs, RemoveOrphanedSegmentsProps } from '@sofie-automation/corelib/dist/worker/ingest'
 import { removeRundownPlaylistFromDb } from './lib'
 import { UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import { PartInstanceWithPieces } from '../../playout/cacheModel/PartInstanceWithPieces'
+import { PlayoutPartInstanceModel } from '../../playout/model/PlayoutPartInstanceModel'
 
 require('../../peripheralDevice.ts') // include in order to create the Meteor methods needed
 
@@ -2009,7 +2009,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 						const rundown0 = cache.Rundowns[0]
 						expect(rundown0).toBeTruthy()
 
-						const currentPartInstance = cache.CurrentPartInstance as PartInstanceWithPieces
+						const currentPartInstance = cache.CurrentPartInstance as PlayoutPartInstanceModel
 						expect(currentPartInstance).toBeTruthy()
 
 						const newPartInstance = cache.insertAdlibbedPartInstance({

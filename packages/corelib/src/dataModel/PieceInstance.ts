@@ -106,7 +106,7 @@ export function rewrapPieceToInstance(
 ): PieceInstance {
 	return {
 		isTemporary,
-		_id: protectString(`${partInstanceId}_${piece._id}`),
+		_id: getPieceInstanceIdForPiece(partInstanceId, piece._id),
 		rundownId: rundownId,
 		playlistActivationId: playlistActivationId,
 		partInstanceId: partInstanceId,
@@ -127,4 +127,8 @@ export function wrapPieceToInstance(
 		partInstanceId,
 		partInstanceId === protectString('') || isTemporary
 	)
+}
+
+export function getPieceInstanceIdForPiece(partInstanceId: PartInstanceId, pieceId: PieceId): PieceInstanceId {
+	return protectString(`${partInstanceId}_${pieceId}`)
 }

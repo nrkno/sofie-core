@@ -8,8 +8,8 @@ import {
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { unprotectString, protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { logger } from '../logging'
-import { PlayoutModel } from '../playout/cacheModel/PlayoutModel'
-import { RundownWithSegments } from '../playout/cacheModel/RundownWithSegments'
+import { PlayoutModel } from '../playout/model/PlayoutModel'
+import { PlayoutRundownModel } from '../playout/model/PlayoutRundownModel'
 import { isTooCloseToAutonext } from '../playout/lib'
 import { allowedToMoveRundownOutOfPlaylist, updatePartInstanceRanks } from '../rundown'
 import {
@@ -42,10 +42,10 @@ import {
 	SegmentOrphanedReason,
 } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import { RundownWithSegmentsImpl } from '../playout/cacheModel/implementation/RundownWithSegmentsImpl'
-import { SegmentWithPartsImpl } from '../playout/cacheModel/implementation/SegmentWithPartsImpl'
+import { PlayoutRundownModelImpl } from '../playout/model/implementation/PlayoutRundownModelImpl'
+import { PlayoutSegmentModelImpl } from '../playout/model/implementation/PlayoutSegmentModelImpl'
 import { ReadOnlyCache } from '../cache/CacheBase'
-import { createPlayoutCachefromIngestCache } from '../playout/cacheModel/implementation/LoadPlayoutModel'
+import { createPlayoutCachefromIngestCache } from '../playout/model/implementation/LoadPlayoutModel'
 
 export type BeforePartMapItem = { id: PartId; rank: number }
 export type BeforePartMap = ReadonlyMap<SegmentId, Array<BeforePartMapItem>>
@@ -344,7 +344,7 @@ async function updatePartInstancesSegmentIds(
 	}
 }
 
-export function hackConvertIngestCacheToRundownWithSegments(cache: ReadOnlyCache<CacheForIngest>): RundownWithSegments {
+export function hackConvertIngestCacheToRundownWithSegments(cache: ReadOnlyCache<CacheForIngest>): PlayoutRundownModel {
 	const rundown = cache.Rundown.doc
 	if (!rundown) {
 		throw new Error(`Rundown "${cache.RundownId}" ("${cache.RundownExternalId}") not found`)
@@ -352,11 +352,11 @@ export function hackConvertIngestCacheToRundownWithSegments(cache: ReadOnlyCache
 
 	const groupedParts = groupByToMap(cache.Parts.findAll(null), 'segmentId')
 	const segmentsWithParts = cache.Segments.findAll(null).map(
-		(segment) => new SegmentWithPartsImpl(segment, groupedParts.get(segment._id) ?? [])
+		(segment) => new PlayoutSegmentModelImpl(segment, groupedParts.get(segment._id) ?? [])
 	)
 	const groupedSegmentsWithParts = groupByToMapFunc(segmentsWithParts, (s) => s.Segment.rundownId)
 
-	return new RundownWithSegmentsImpl(rundown, groupedSegmentsWithParts.get(rundown._id) ?? [], [])
+	return new PlayoutRundownModelImpl(rundown, groupedSegmentsWithParts.get(rundown._id) ?? [], [])
 }
 
 /**
@@ -364,7 +364,7 @@ export function hackConvertIngestCacheToRundownWithSegments(cache: ReadOnlyCache
  */
 async function updatePartInstancesBasicProperties(
 	context: JobContext,
-	rundownModel: RundownWithSegments,
+	rundownModel: PlayoutRundownModel,
 	playlist: ReadonlyDeep<DBRundownPlaylist>
 ) {
 	// Get a list of all the Parts that are known to exist
@@ -510,8 +510,6 @@ export async function updatePlayoutAfterChangingRundownInPlaylist(
 		if (insertedRundown) {
 			const rundownModel = playoutCache.getRundown(insertedRundown._id)
 			if (rundownModel) {
-				// nocommit should this fail if not found?
-
 				// If a rundown has changes, ensure instances are updated
 				await updatePartInstancesBasicProperties(context, rundownModel, playoutCache.Playlist)
 			}

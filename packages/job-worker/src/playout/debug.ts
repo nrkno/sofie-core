@@ -91,7 +91,6 @@ export async function handleDebugUpdateTimeline(context: JobContext, _data: void
 			})
 		} else {
 			await updateStudioTimeline(context, studioCache)
-			await studioCache.saveAllToDatabase()
 		}
 	})
 }

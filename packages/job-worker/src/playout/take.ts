@@ -8,8 +8,8 @@ import {
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { logger } from '../logging'
 import { JobContext, ProcessedShowStyleCompound } from '../jobs'
-import { PlayoutModel } from './cacheModel/PlayoutModel'
-import { PartInstanceWithPieces } from './cacheModel/PartInstanceWithPieces'
+import { PlayoutModel } from './model/PlayoutModel'
+import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
 import { isTooCloseToAutonext } from './lib'
 import { selectNextPart } from './selectNextPart'
 import { setNextPart } from './setNext'
@@ -106,25 +106,20 @@ export async function performTakeToNextedPart(context: JobContext, cache: Playou
 	const currentOrNextPartInstance = nextPartInstance ?? currentPartInstance
 	if (!currentOrNextPartInstance) {
 		// Some temporary logging to diagnose some cases where this route is hit
-		logger.warn(`No partinstance was found during take`, JSON.stringify(cache.Playlist.doc))
+		logger.warn(`No partinstance was found during take`, JSON.stringify(cache.Playlist))
 		logger.warn(
 			'All PartInstances in cache',
-			cache.PartInstances.findAll(null).map((p) => p._id)
+			cache.SortedLoadedPartInstances.map((p) => p.PartInstance._id)
 		)
-		logger.warn(
-			'Deleted PartInstances in cache',
-			Array.from(cache.PartInstances.documents.entries())
-				.filter((d) => d[1] === null)
-				.map((d) => d[0])
-		)
+		logger.warn('Deleted PartInstances in cache', cache.HackDeletedPartInstanceIds)
 		logger.warn(
 			'Parts in cache',
-			cache.Parts.findAll(null).map((d) => d._id)
+			cache.getAllOrderedParts().map((d) => d._id)
 		)
 
 		const validIds = _.compact([
-			cache.Playlist.doc.currentPartInfo?.partInstanceId,
-			cache.Playlist.doc.nextPartInfo?.partInstanceId,
+			cache.Playlist.currentPartInfo?.partInstanceId,
+			cache.Playlist.nextPartInfo?.partInstanceId,
 		])
 		if (validIds.length) {
 			const mongoDocs = await context.directCollections.PartInstances.findFetch({ _id: { $in: validIds } })
@@ -394,8 +389,8 @@ export function updatePartInstanceOnTake(
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	takeRundown: ReadonlyDeep<DBRundown>,
-	takePartInstance: PartInstanceWithPieces,
-	currentPartInstance: PartInstanceWithPieces | null
+	takePartInstance: PlayoutPartInstanceModel,
+	currentPartInstance: PlayoutPartInstanceModel | null
 ): void {
 	// TODO - the state could change after this sampling point. This should be handled properly
 	let previousPartEndState: PartEndState | undefined = undefined
@@ -452,13 +447,13 @@ export function updatePartInstanceOnTake(
 		tmpTakePieces.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0).map((p) => p.piece)
 	)
 
-	takePartInstance.setTakeCache(partPlayoutTimings, previousPartEndState)
+	takePartInstance.storePlayoutTimingsAndPreviousEndState(partPlayoutTimings, previousPartEndState)
 }
 
 export async function afterTake(
 	context: JobContext,
 	cache: PlayoutModel,
-	takePartInstance: PartInstanceWithPieces,
+	takePartInstance: PlayoutPartInstanceModel,
 	timeOffsetIntoPart: number | null = null
 ): Promise<void> {
 	const span = context.startSpan('afterTake')
@@ -491,8 +486,8 @@ export async function afterTake(
  */
 function startHold(
 	context: JobContext,
-	holdFromPartInstance: PartInstanceWithPieces | null,
-	holdToPartInstance: PartInstanceWithPieces | undefined
+	holdFromPartInstance: PlayoutPartInstanceModel | null,
+	holdToPartInstance: PlayoutPartInstanceModel | undefined
 ) {
 	if (!holdFromPartInstance) throw new Error('previousPart not found!')
 	if (!holdToPartInstance) throw new Error('currentPart not found!')
@@ -522,7 +517,7 @@ async function completeHold(
 	context: JobContext,
 	cache: PlayoutModel,
 	showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
-	currentPartInstance: PartInstanceWithPieces | null
+	currentPartInstance: PlayoutPartInstanceModel | null
 ): Promise<void> {
 	cache.setHoldState(RundownHoldState.COMPLETE)
 

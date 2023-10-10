@@ -8,7 +8,7 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { ActionExecutionContext, ActionPartChange } from '../context/adlibActions'
 import { isTooCloseToAutonext } from '../../playout/lib'
-import { PlayoutModel } from '../../playout/cacheModel/PlayoutModel'
+import { PlayoutModel } from '../../playout/model/PlayoutModel'
 import { WatchedPackagesHelper } from '../context/watchedPackages'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 import { runJobWithPlayoutCache } from '../../playout/lock'
@@ -31,11 +31,11 @@ import {
 	EmptyPieceTimelineObjectsBlob,
 	serializePieceTimelineObjectsBlob,
 } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { PartInstanceWithPieces } from '../../playout/cacheModel/PartInstanceWithPieces'
+import { PlayoutPartInstanceModel } from '../../playout/model/PlayoutPartInstanceModel'
 import { convertPartInstanceToBlueprints, convertPieceInstanceToBlueprints } from '../context/lib'
 import { TimelineObjRundown, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { PartInstanceWithPiecesImpl } from '../../playout/cacheModel/implementation/PartInstanceWithPiecesImpl'
-import { writePartInstancesAndPieceInstances } from '../../playout/cacheModel/implementation/SavePlayoutModel'
+import { PlayoutPartInstanceModelImpl } from '../../playout/model/implementation/PlayoutPartInstanceModelImpl'
+import { writePartInstancesAndPieceInstances } from '../../playout/model/implementation/SavePlayoutModel'
 
 import * as PlayoutAdlib from '../../playout/adlibUtils'
 type TinnerStopPieces = jest.MockedFunction<typeof PlayoutAdlib.innerStopPieces>
@@ -70,7 +70,7 @@ describe('Test blueprint api context', () => {
 		context: MockJobContext,
 		activationId: RundownPlaylistActivationId,
 		rundownId: RundownId
-	): Promise<PartInstanceWithPieces[]> {
+	): Promise<PlayoutPartInstanceModel[]> {
 		const parts = await context.mockCollections.Parts.findFetch({ rundownId })
 		for (let i = 0; i < parts.length; i++) {
 			const part = parts[i]
@@ -135,7 +135,7 @@ describe('Test blueprint api context', () => {
 				const pieceInstances = await context.mockCollections.PieceInstances.findFetch({
 					partInstanceId: partInstance._id,
 				})
-				return new PartInstanceWithPiecesImpl(partInstance, pieceInstances, false)
+				return new PlayoutPartInstanceModelImpl(partInstance, pieceInstances, false)
 			})
 		)
 	}
@@ -196,7 +196,7 @@ describe('Test blueprint api context', () => {
 		jobContext: MockJobContext
 		playlistId: RundownPlaylistId
 		rundownId: RundownId
-		allPartInstances: PartInstanceWithPieces[]
+		allPartInstances: PlayoutPartInstanceModel[]
 	}> {
 		const context = setupDefaultJobEnvironment()
 
@@ -230,13 +230,13 @@ describe('Test blueprint api context', () => {
 	async function saveAllToDatabase(
 		context: JobContext,
 		cache: PlayoutModel,
-		allPartInstances: PartInstanceWithPieces[]
+		allPartInstances: PlayoutPartInstanceModel[]
 	) {
 		// We need to push changes back to 'mongo' for these tests
 		await Promise.all(
 			writePartInstancesAndPieceInstances(
 				context,
-				normalizeArrayToMapFunc(allPartInstances as PartInstanceWithPiecesImpl[], (p) => p.PartInstance._id)
+				normalizeArrayToMapFunc(allPartInstances as PlayoutPartInstanceModelImpl[], (p) => p.PartInstance._id)
 			)
 		)
 		await cache.saveAllToDatabase()
@@ -245,11 +245,11 @@ describe('Test blueprint api context', () => {
 	async function setPartInstances(
 		jobContext: MockJobContext,
 		playlistId: RundownPlaylistId,
-		currentPartInstance: PartInstanceWithPieces | DBPartInstance | PieceInstance | undefined | null,
-		nextPartInstance: PartInstanceWithPieces | DBPartInstance | PieceInstance | undefined | null,
-		previousPartInstance?: PartInstanceWithPieces | DBPartInstance | PieceInstance | null
+		currentPartInstance: PlayoutPartInstanceModel | DBPartInstance | PieceInstance | undefined | null,
+		nextPartInstance: PlayoutPartInstanceModel | DBPartInstance | PieceInstance | undefined | null,
+		previousPartInstance?: PlayoutPartInstanceModel | DBPartInstance | PieceInstance | null
 	) {
-		const convertInfo = (info: PartInstanceWithPieces | DBPartInstance | PieceInstance | null) => {
+		const convertInfo = (info: PlayoutPartInstanceModel | DBPartInstance | PieceInstance | null) => {
 			if (!info) {
 				return null
 			} else if ('partInstanceId' in info) {
@@ -452,7 +452,7 @@ describe('Test blueprint api context', () => {
 					(
 						context2: JobContext,
 						sourceLayers: SourceLayers,
-						partInstance: PartInstanceWithPieces,
+						partInstance: PlayoutPartInstanceModel,
 						now?: number
 					) => {
 						expect(context2).toBe(jobContext)
@@ -1242,7 +1242,7 @@ describe('Test blueprint api context', () => {
 
 					// Ensure there are no pending updates already
 					for (const partInstance of cache.LoadedPartInstances) {
-						expect((partInstance as PartInstanceWithPiecesImpl).HasChanges).toBeFalsy()
+						expect((partInstance as PlayoutPartInstanceModelImpl).HasChanges).toBeFalsy()
 					}
 
 					// Update it and expect it to match
@@ -1289,7 +1289,7 @@ describe('Test blueprint api context', () => {
 						},
 					}
 					expect(pieceInstance1).toEqual(pieceInstance0After)
-					expect((partInstance1 as PartInstanceWithPiecesImpl).HasChanges).toBeTruthy()
+					expect((partInstance1 as PlayoutPartInstanceModelImpl).HasChanges).toBeTruthy()
 					// expect(
 					// 	Array.from(cache.PieceInstances.documents.values()).filter((doc) => !doc || !!doc.updated)
 					// ).toMatchObject([
@@ -1380,7 +1380,7 @@ describe('Test blueprint api context', () => {
 						playOffset: 0,
 						take: undefined,
 					}
-					cache.replacePartInstance(new PartInstanceWithPiecesImpl(partInstance, [], true))
+					cache.replacePartInstance(new PlayoutPartInstanceModelImpl(partInstance, [], true))
 
 					expect(isTooCloseToAutonext(partInstance, true)).toBeTruthy()
 					await expect(context.queuePart({} as any, [{}] as any)).rejects.toThrow(
@@ -1720,7 +1720,7 @@ describe('Test blueprint api context', () => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
 					// Ensure there are no pending updates already
-					expect((cache.NextPartInstance! as PartInstanceWithPiecesImpl).HasChanges).toBeFalsy()
+					expect((cache.NextPartInstance! as PlayoutPartInstanceModelImpl).HasChanges).toBeFalsy()
 
 					// Update it and expect it to match
 					const partInstance0Before = clone(partInstance0)
@@ -1745,7 +1745,7 @@ describe('Test blueprint api context', () => {
 						},
 					}
 					expect(partInstance1.PartInstance).toEqual(pieceInstance0After)
-					expect((partInstance1 as PartInstanceWithPiecesImpl).HasChanges).toBeTruthy()
+					expect((partInstance1 as PlayoutPartInstanceModelImpl).HasChanges).toBeTruthy()
 					// expect(
 					// 	Array.from(cache.PartInstances.documents.values()).filter((doc) => !doc || !!doc.updated)
 					// ).toMatchObject([

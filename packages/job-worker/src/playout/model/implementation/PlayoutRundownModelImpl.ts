@@ -3,17 +3,17 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
-import { RundownWithSegments } from '../RundownWithSegments'
-import { SegmentWithParts } from '../SegmentWithParts'
+import { PlayoutRundownModel } from '../PlayoutRundownModel'
+import { PlayoutSegmentModel } from '../PlayoutSegmentModel'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { getCurrentTime } from '../../../lib'
-import { SegmentWithPartsImpl } from './SegmentWithPartsImpl'
+import { PlayoutSegmentModelImpl } from './PlayoutSegmentModelImpl'
 
-export class RundownWithSegmentsImpl implements RundownWithSegments {
+export class PlayoutRundownModelImpl implements PlayoutRundownModel {
 	readonly Rundown: ReadonlyDeep<DBRundown>
-	readonly #segments: SegmentWithPartsImpl[]
+	readonly #segments: PlayoutSegmentModelImpl[]
 
 	readonly BaselineObjects: ReadonlyDeep<RundownBaselineObj[]>
 
@@ -27,17 +27,17 @@ export class RundownWithSegmentsImpl implements RundownWithSegments {
 
 	constructor(
 		rundown: ReadonlyDeep<DBRundown>,
-		segments: SegmentWithPartsImpl[],
+		segments: PlayoutSegmentModelImpl[],
 		baselineObjects: ReadonlyDeep<RundownBaselineObj[]>
 	) {
-		segments.sort((a, b) => a.Segment._rank - b.Segment._rank) // nocommit - check order
+		segments.sort((a, b) => a.Segment._rank - b.Segment._rank)
 
 		this.Rundown = rundown
 		this.#segments = segments
 		this.BaselineObjects = baselineObjects
 	}
 
-	get Segments(): readonly SegmentWithParts[] {
+	get Segments(): readonly PlayoutSegmentModel[] {
 		return this.#segments
 	}
 
@@ -45,7 +45,7 @@ export class RundownWithSegmentsImpl implements RundownWithSegments {
 		return this.Segments.map((segment) => segment.Segment._id)
 	}
 
-	getSegment(id: SegmentId): SegmentWithParts | undefined {
+	getSegment(id: SegmentId): PlayoutSegmentModel | undefined {
 		return this.Segments.find((segment) => segment.Segment._id === id)
 	}
 
@@ -65,7 +65,7 @@ export class RundownWithSegmentsImpl implements RundownWithSegments {
 
 		const segmentId: SegmentId = getRandomId()
 		this.#segments.unshift(
-			new SegmentWithPartsImpl(
+			new PlayoutSegmentModelImpl(
 				{
 					_id: segmentId,
 					_rank: minSegmentRank - 1,
@@ -94,7 +94,7 @@ export class RundownWithSegmentsImpl implements RundownWithSegments {
 		return true
 	}
 
-	getScratchpadSegment(): SegmentWithParts | undefined {
+	getScratchpadSegment(): PlayoutSegmentModel | undefined {
 		// Note: this assumes there will be up to one per rundown
 		return this.#segments.find((s) => s.Segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
 	}

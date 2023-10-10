@@ -3,9 +3,9 @@ import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { JobContext } from '../jobs'
 import { PartInstanceId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PlayoutModel } from './cacheModel/PlayoutModel'
-import { PartInstanceWithPieces } from './cacheModel/PartInstanceWithPieces'
-import { SegmentWithParts } from './cacheModel/SegmentWithParts'
+import { PlayoutModel } from './model/PlayoutModel'
+import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
+import { PlayoutSegmentModel } from './model/PlayoutSegmentModel'
 import {
 	fetchPiecesThatMayBeActiveForPart,
 	getPieceInstancesForPart,
@@ -31,7 +31,7 @@ import { ReadonlyDeep } from 'type-fest'
 export async function setNextPart(
 	context: JobContext,
 	cache: PlayoutModel,
-	rawNextPart: ReadonlyDeep<Omit<SelectNextPartResult, 'index'>> | PartInstanceWithPieces | null,
+	rawNextPart: ReadonlyDeep<Omit<SelectNextPartResult, 'index'>> | PlayoutPartInstanceModel | null,
 	setManually: boolean,
 	nextTimeOffset?: number | undefined
 ): Promise<void> {
@@ -45,10 +45,10 @@ export async function setNextPart(
 		if (!cache.Playlist.activationId) throw new Error(`RundownPlaylist "${cache.Playlist._id}" is not active`)
 
 		// create new instance
-		let newPartInstance: PartInstanceWithPieces
+		let newPartInstance: PlayoutPartInstanceModel
 		let consumesNextSegmentId: boolean
 		if ('PartInstance' in rawNextPart) {
-			const inputPartInstance: PartInstanceWithPieces = rawNextPart
+			const inputPartInstance: PlayoutPartInstanceModel = rawNextPart
 			if (inputPartInstance.PartInstance.part.invalid) {
 				throw new Error('Part is marked as invalid, cannot set as next.')
 			}
@@ -122,8 +122,8 @@ export async function setNextPart(
 async function prepareExistingPartInstanceForBeingNexted(
 	context: JobContext,
 	cache: PlayoutModel,
-	instance: PartInstanceWithPieces
-): Promise<PartInstanceWithPieces> {
+	instance: PlayoutPartInstanceModel
+): Promise<PlayoutPartInstanceModel> {
 	await syncPlayheadInfinitesForNextPartInstance(context, cache, cache.CurrentPartInstance, instance)
 
 	return instance
@@ -132,9 +132,9 @@ async function prepareExistingPartInstanceForBeingNexted(
 async function preparePartInstanceForPartBeingNexted(
 	context: JobContext,
 	cache: PlayoutModel,
-	currentPartInstance: PartInstanceWithPieces | null,
+	currentPartInstance: PlayoutPartInstanceModel | null,
 	nextPart: ReadonlyDeep<DBPart>
-): Promise<PartInstanceWithPieces> {
+): Promise<PlayoutPartInstanceModel> {
 	const rundown = cache.getRundown(nextPart.rundownId)
 	if (!rundown) throw new Error(`Could not find rundown ${nextPart.rundownId}`)
 
@@ -307,7 +307,7 @@ async function cleanupOrphanedItems(context: JobContext, cache: PlayoutModel) {
 export async function setNextSegment(
 	context: JobContext,
 	cache: PlayoutModel,
-	nextSegment: SegmentWithParts | null
+	nextSegment: PlayoutSegmentModel | null
 ): Promise<void> {
 	const span = context.startSpan('setNextSegment')
 	if (nextSegment) {

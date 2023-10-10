@@ -5,7 +5,7 @@ import { updateStudioTimeline, updateTimeline } from './timeline/generate'
 import { getSystemVersion } from '../lib'
 import { runJobWithStudioCache } from '../studio/lock'
 import { shouldUpdateStudioBaselineInner as libShouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
-import { CacheForStudio } from '../studio/cache'
+import { StudioPlayoutModel } from '../studio/StudioPlayoutModel'
 
 /**
  * Update the timeline with a regenerated Studio Baseline
@@ -24,7 +24,10 @@ export async function handleUpdateStudioBaseline(context: JobContext, _data: voi
 	})
 }
 
-async function shouldUpdateStudioBaselineInner(context: JobContext, cache: CacheForStudio): Promise<string | false> {
+async function shouldUpdateStudioBaselineInner(
+	context: JobContext,
+	cache: StudioPlayoutModel
+): Promise<string | false> {
 	const studio = context.studio
 
 	if (cache.getActiveRundownPlaylists().length > 0) return false

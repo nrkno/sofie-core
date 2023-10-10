@@ -4,7 +4,7 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
-import { SegmentWithParts } from './cacheModel/SegmentWithParts'
+import { PlayoutSegmentModel } from './model/PlayoutSegmentModel'
 
 /**
  * This wraps a Part which has been selected to be next, to include some additional data about that choice
@@ -36,7 +36,7 @@ export function selectNextPart(
 	rundownPlaylist: Pick<DBRundownPlaylist, 'nextSegmentId' | 'loop'>,
 	previousPartInstance: ReadonlyDeep<DBPartInstance> | null,
 	currentlySelectedPartInstance: ReadonlyDeep<DBPartInstance> | null,
-	segments: readonly SegmentWithParts[],
+	segments: readonly PlayoutSegmentModel[],
 	parts0: ReadonlyDeep<DBPart>[],
 	ignoreUnplayabale = true
 ): SelectNextPartResult | null {

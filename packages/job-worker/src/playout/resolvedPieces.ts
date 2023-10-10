@@ -8,7 +8,7 @@ import {
 	resolvePrunedPieceInstance,
 } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 import { SelectedPartInstancesTimelineInfo } from './timeline/generate'
-import { PartInstanceWithPieces } from './cacheModel/PartInstanceWithPieces'
+import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
 
 /**
  * Resolve the PieceInstances for a PartInstance
@@ -22,7 +22,7 @@ import { PartInstanceWithPieces } from './cacheModel/PartInstanceWithPieces'
 export function getResolvedPiecesForCurrentPartInstance(
 	_context: JobContext,
 	sourceLayers: SourceLayers,
-	partInstance: PartInstanceWithPieces,
+	partInstance: PlayoutPartInstanceModel,
 	now?: number
 ): ResolvedPieceInstance[] {
 	if (now === undefined) now = getCurrentTime()

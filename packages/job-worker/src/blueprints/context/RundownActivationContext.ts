@@ -3,7 +3,7 @@ import { PeripheralDeviceId } from '@sofie-automation/shared-lib/dist/core/model
 import { ReadonlyDeep } from 'type-fest'
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { executePeripheralDeviceAction, listPlayoutDevices } from '../../peripheralDevice'
-import { PlayoutModel } from '../../playout/cacheModel/PlayoutModel'
+import { PlayoutModel } from '../../playout/model/PlayoutModel'
 import { RundownEventContext } from './RundownEventContext'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 

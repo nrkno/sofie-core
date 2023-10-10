@@ -3,7 +3,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 
-export interface SegmentWithParts {
+export interface PlayoutSegmentModel {
 	readonly Segment: ReadonlyDeep<DBSegment>
 	readonly Parts: ReadonlyDeep<DBPart[]>
 

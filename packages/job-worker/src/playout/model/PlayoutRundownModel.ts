@@ -3,17 +3,17 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { ReadonlyDeep } from 'type-fest'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
-import { SegmentWithParts } from './SegmentWithParts'
+import { PlayoutSegmentModel } from './PlayoutSegmentModel'
 
-export interface RundownWithSegments {
+export interface PlayoutRundownModel {
 	readonly Rundown: ReadonlyDeep<DBRundown>
-	readonly Segments: readonly SegmentWithParts[]
+	readonly Segments: readonly PlayoutSegmentModel[]
 
 	readonly BaselineObjects: ReadonlyDeep<RundownBaselineObj[]>
 
 	getSegmentIds(): SegmentId[]
 
-	getSegment(id: SegmentId): SegmentWithParts | undefined
+	getSegment(id: SegmentId): PlayoutSegmentModel | undefined
 
 	getAllPartIds(): PartId[]
 
@@ -21,6 +21,6 @@ export interface RundownWithSegments {
 
 	insertScratchpadSegment(): SegmentId
 	removeScratchpadSegment(): boolean
-	getScratchpadSegment(): SegmentWithParts | undefined
+	getScratchpadSegment(): PlayoutSegmentModel | undefined
 	setScratchpadSegmentRank(rank: number): void
 }

@@ -1,5 +1,6 @@
 import { JobContext } from '../jobs'
-import { CacheForStudio } from './cache'
+import { StudioPlayoutModel } from './StudioPlayoutModel'
+import { loadStudioPlayoutModel } from './StudioPlayoutModelImpl'
 
 /**
  * Run a typical studio job
@@ -7,9 +8,9 @@ import { CacheForStudio } from './cache'
  */
 export async function runJobWithStudioCache<TRes>(
 	context: JobContext,
-	fcn: (cache: CacheForStudio) => Promise<TRes>
+	fcn: (cache: StudioPlayoutModel) => Promise<TRes>
 ): Promise<TRes> {
-	const cache = await CacheForStudio.create(context)
+	const cache = await loadStudioPlayoutModel(context)
 
 	try {
 		const res = await fcn(cache)

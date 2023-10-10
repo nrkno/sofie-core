@@ -11,7 +11,7 @@ import { CacheForIngest } from './ingest/cache'
 import { BeforePartMap } from './ingest/commit'
 import { JobContext } from './jobs'
 import { logger } from './logging'
-import { PlayoutModel } from './playout/cacheModel/PlayoutModel'
+import { PlayoutModel } from './playout/model/PlayoutModel'
 
 /** Return true if the rundown is allowed to be moved out of that playlist */
 export function allowedToMoveRundownOutOfPlaylist(

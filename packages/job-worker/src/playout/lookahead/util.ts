@@ -6,7 +6,7 @@ import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dis
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { ReadonlyDeep } from 'type-fest'
 import { JobContext } from '../../jobs'
-import { PlayoutModel } from '../cacheModel/PlayoutModel'
+import { PlayoutModel } from '../model/PlayoutModel'
 import { selectNextPart } from '../selectNextPart'
 
 export interface PartInstanceAndPieceInstances {

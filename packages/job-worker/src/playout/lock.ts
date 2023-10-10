@@ -5,8 +5,8 @@ import { logger } from '../logging'
 import { ReadonlyDeep } from 'type-fest'
 import { JobContext } from '../jobs'
 import { PlaylistLock } from '../jobs/lock'
-import { PlayoutModel, PlayoutModelPreInit } from './cacheModel/PlayoutModel'
-import { createPlayoutCachefromInitCache, loadPlayoutModelPreInit } from './cacheModel/implementation/LoadPlayoutModel'
+import { PlayoutModel, PlayoutModelPreInit } from './model/PlayoutModel'
+import { createPlayoutCachefromInitCache, loadPlayoutModelPreInit } from './model/implementation/LoadPlayoutModel'
 
 /**
  * Run a typical playout job

@@ -4,7 +4,7 @@ import { sleep } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { getRundownId } from '../../ingest/lib'
 import { CacheForIngest } from '../../ingest/cache'
-import { CacheForStudio } from '../../studio/cache'
+import { loadStudioPlayoutModel } from '../../studio/StudioPlayoutModelImpl'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 
 describe('DatabaseCaches', () => {
@@ -293,7 +293,7 @@ describe('DatabaseCaches', () => {
 				}
 
 				{
-					const cache = await CacheForStudio.create(context)
+					const cache = await loadStudioPlayoutModel(context)
 
 					// Insert a document:
 					cache.deferBeforeSave(() => {
@@ -306,7 +306,7 @@ describe('DatabaseCaches', () => {
 				}
 
 				{
-					const cache = await CacheForStudio.create(context)
+					const cache = await loadStudioPlayoutModel(context)
 
 					// Insert a document:
 					cache.deferAfterSave(() => {

@@ -1,13 +1,8 @@
-import { PieceInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import {
-	PieceInstance,
-	PieceInstancePiece,
-	wrapPieceToInstance,
-} from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { clone, normalizeArrayToMap, omit } from '@sofie-automation/corelib/dist/lib'
 import { protectString, protectStringArray, unprotectStringArray } from '@sofie-automation/corelib/dist/protectedString'
-import { PartInstanceWithPieces } from '../../playout/cacheModel/PartInstanceWithPieces'
-import { setupPieceInstanceInfiniteProperties } from '../../playout/pieces'
+import { PlayoutPartInstanceModel } from '../../playout/model/PlayoutPartInstanceModel'
 import { ReadonlyDeep } from 'type-fest'
 import _ = require('underscore')
 import { ContextInfo } from './CommonContext'
@@ -44,16 +39,15 @@ export class SyncIngestUpdateToPartInstanceContext
 {
 	private readonly _proposedPieceInstances: Map<PieceInstanceId, ReadonlyDeep<PieceInstance>>
 
-	private partInstance: PartInstanceWithPieces | null
+	private partInstance: PlayoutPartInstanceModel | null
 
 	constructor(
 		private readonly _context: JobContext,
 		contextInfo: ContextInfo,
-		private readonly playlistActivationId: RundownPlaylistActivationId,
 		studio: ReadonlyDeep<DBStudio>,
 		showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 		rundown: ReadonlyDeep<DBRundown>,
-		partInstance: PartInstanceWithPieces,
+		partInstance: PlayoutPartInstanceModel,
 		proposedPieceInstances: ReadonlyDeep<PieceInstance[]>,
 		private playStatus: 'previous' | 'current' | 'next'
 	) {
@@ -126,17 +120,8 @@ export class SyncIngestUpdateToPartInstanceContext
 			this.partInstance.PartInstance.part._id,
 			this.playStatus === 'current'
 		)[0]
-		const newPieceInstance = wrapPieceToInstance(
-			piece,
-			this.playlistActivationId,
-			this.partInstance.PartInstance._id
-		)
 
-		// Ensure the infinite-ness is setup correctly. We assume any piece inserted starts in the current part
-		setupPieceInstanceInfiniteProperties(newPieceInstance)
-
-		// nocommit - this is wrong?
-		this.partInstance.replacePieceInstance(newPieceInstance)
+		const newPieceInstance = this.partInstance.insertPlannedPiece(piece)
 
 		return convertPieceInstanceToBlueprints(newPieceInstance)
 	}

@@ -26,7 +26,7 @@ import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { literal, normalizeArrayToMapFunc } from '@sofie-automation/corelib/dist/lib'
 import { getCurrentTime } from '../../lib'
 import _ = require('underscore')
-import { PlayoutModel } from '../cacheModel/PlayoutModel'
+import { PlayoutModel } from '../model/PlayoutModel'
 import { getPieceEnableInsidePart, transformPieceGroupAndObjects } from './piece'
 import { logger } from '../../logging'
 

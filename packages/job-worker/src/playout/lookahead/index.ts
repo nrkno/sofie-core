@@ -1,6 +1,6 @@
 import { getOrderedPartsAfterPlayhead, PartAndPieces, PartInstanceAndPieceInstances } from './util'
 import { findLookaheadForLayer, LookaheadResult } from './findForLayer'
-import { PlayoutModel } from '../cacheModel/PlayoutModel'
+import { PlayoutModel } from '../model/PlayoutModel'
 import { sortPieceInstancesByStart } from '../pieces'
 import { MappingExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { TSR, LookaheadMode, OnGenerateTimelineObj } from '@sofie-automation/blueprints-integration'

@@ -1,10 +1,10 @@
 import { PartInstanceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { logger } from '../../logging'
 import { JobContext } from '../../jobs'
-import { PlayoutModel } from '../cacheModel/PlayoutModel'
+import { PlayoutModel } from '../model/PlayoutModel'
 import { Time } from '@sofie-automation/blueprints-integration'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { PartInstanceWithPieces } from '../cacheModel/PartInstanceWithPieces'
+import { PlayoutPartInstanceModel } from '../model/PlayoutPartInstanceModel'
 import { ReadonlyDeep } from 'type-fest'
 
 /**
@@ -112,7 +112,7 @@ export function onPiecePlaybackStopped(
 function reportPieceHasStarted(
 	_context: JobContext,
 	cache: PlayoutModel,
-	partInstance: PartInstanceWithPieces,
+	partInstance: PlayoutPartInstanceModel,
 	pieceInstance: ReadonlyDeep<PieceInstance>,
 	timestamp: Time
 ): void {
@@ -158,7 +158,7 @@ function reportPieceHasStarted(
 function reportPieceHasStopped(
 	_context: JobContext,
 	cache: PlayoutModel,
-	partInstance: PartInstanceWithPieces,
+	partInstance: PlayoutPartInstanceModel,
 	pieceInstance: ReadonlyDeep<PieceInstance>,
 	timestamp: Time
 ): void {

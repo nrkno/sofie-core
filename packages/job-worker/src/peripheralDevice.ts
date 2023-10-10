@@ -11,7 +11,7 @@ import {
 import { JobContext } from './jobs'
 import { getCurrentTime } from './lib'
 import { logger } from './logging'
-import { PlayoutModel } from './playout/cacheModel/PlayoutModel'
+import { PlayoutModel } from './playout/model/PlayoutModel'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { SubdeviceAction } from '@sofie-automation/corelib/dist/deviceConfig'
 

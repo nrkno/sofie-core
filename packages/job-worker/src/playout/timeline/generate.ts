@@ -22,7 +22,7 @@ import {
 import { RundownBaselineObj } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineObj'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { applyToArray, clone, getRandomId, literal, normalizeArray, omit } from '@sofie-automation/corelib/dist/lib'
-import { PlayoutModel } from '../cacheModel/PlayoutModel'
+import { PlayoutModel } from '../model/PlayoutModel'
 import { logger } from '../../logging'
 import { getCurrentTime, getSystemVersion } from '../../lib'
 import { getResolvedPiecesForPartInstancesOnTimeline } from '../resolvedPieces'
@@ -30,7 +30,7 @@ import {
 	processAndPrunePieceInstanceTimings,
 	PieceInstanceWithTimings,
 } from '@sofie-automation/corelib/dist/playout/processAndPrune'
-import { CacheForStudio, CacheForStudioBase } from '../../studio/cache'
+import { StudioPlayoutModel, StudioPlayoutModelBase } from '../../studio/StudioPlayoutModel'
 import { getLookeaheadObjects } from '../lookahead'
 import { StudioBaselineContext, OnTimelineGenerateContext } from '../../blueprints/context'
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
@@ -52,10 +52,10 @@ import {
 } from '@sofie-automation/corelib/dist/playout/timings'
 import { applyAbPlaybackForTimeline } from '../abPlayback'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { PartInstanceWithPieces } from '../cacheModel/PartInstanceWithPieces'
+import { PlayoutPartInstanceModel } from '../model/PlayoutPartInstanceModel'
 
-function isCacheForStudio(cache: CacheForStudioBase): cache is CacheForStudio {
-	const tmp = cache as CacheForStudio
+function isCacheForStudio(cache: StudioPlayoutModelBase): cache is StudioPlayoutModel {
+	const tmp = cache as StudioPlayoutModel
 	return !!tmp.isStudio
 }
 
@@ -72,7 +72,10 @@ function generateTimelineVersions(
 	}
 }
 
-export async function updateStudioTimeline(context: JobContext, cache: CacheForStudio | PlayoutModel): Promise<void> {
+export async function updateStudioTimeline(
+	context: JobContext,
+	cache: StudioPlayoutModel | PlayoutModel
+): Promise<void> {
 	const span = context.startSpan('updateStudioTimeline')
 	logger.debug('updateStudioTimeline running...')
 	const studio = context.studio
@@ -171,7 +174,7 @@ export async function updateTimeline(
 	if (span) span.end()
 }
 
-function preserveOrReplaceNowTimesInObjects(cache: CacheForStudioBase, timelineObjs: Array<TimelineObjGeneric>) {
+function preserveOrReplaceNowTimesInObjects(cache: StudioPlayoutModelBase, timelineObjs: Array<TimelineObjGeneric>) {
 	const timeline = cache.Timeline
 	const oldTimelineObjsMap = normalizeArray(
 		(timeline?.timelineBlob !== undefined && deserializeTimelineBlob(timeline.timelineBlob)) || [],
@@ -232,7 +235,7 @@ function logAnyRemainingNowTimes(_context: JobContext, timelineObjs: Array<Timel
 /** Store the timelineobjects into the cache, and perform any post-save actions */
 export function saveTimeline(
 	context: JobContext,
-	cache: CacheForStudioBase,
+	cache: StudioPlayoutModelBase,
 	timelineObjs: TimelineObjGeneric[],
 	generationVersions: TimelineCompleteGenerationVersions
 ): void {
@@ -266,7 +269,7 @@ export interface SelectedPartInstanceTimelineInfo {
 function getPartInstanceTimelineInfo(
 	currentTime: Time,
 	sourceLayers: SourceLayers,
-	partInstance: PartInstanceWithPieces | null
+	partInstance: PlayoutPartInstanceModel | null
 ): SelectedPartInstanceTimelineInfo | undefined {
 	if (partInstance) {
 		const partStarted = partInstance.PartInstance.timings?.plannedStartedPlayback

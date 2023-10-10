@@ -10,7 +10,7 @@ import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { JobContext, ProcessedShowStyleCompound } from '../jobs'
 import { getCurrentTime } from '../lib'
 import { ReadonlyDeep } from 'type-fest'
-import { PlayoutModel } from './cacheModel/PlayoutModel'
+import { PlayoutModel } from './model/PlayoutModel'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { updateExpectedDurationWithPrerollForPartInstance } from './lib'
 import { runJobWithPlaylistLock } from './lock'
@@ -20,8 +20,8 @@ import { ActionUserData } from '@sofie-automation/blueprints-integration'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { logger } from '../logging'
 import { validateScratchpartPartInstanceProperties } from './scratchpad'
-import { RundownWithSegments } from './cacheModel/RundownWithSegments'
-import { createPlayoutCachefromInitCache, loadPlayoutModelPreInit } from './cacheModel/implementation/LoadPlayoutModel'
+import { PlayoutRundownModel } from './model/PlayoutRundownModel'
+import { createPlayoutCachefromInitCache, loadPlayoutModelPreInit } from './model/implementation/LoadPlayoutModel'
 
 /**
  * Execute an AdLib Action
@@ -124,7 +124,7 @@ export interface ExecuteActionParameters {
 export async function executeActionInner(
 	context: JobContext,
 	cache: PlayoutModel,
-	rundown: RundownWithSegments,
+	rundown: PlayoutRundownModel,
 	showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	watchedPackages: WatchedPackagesHelper,

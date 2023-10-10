@@ -5,14 +5,14 @@ import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceIns
 import { TimelineObjRundown } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { normalizeArray } from '@sofie-automation/corelib/dist/lib'
 import { PieceTimelineMetadata } from './pieceGroup'
-import { CacheForStudioBase } from '../../studio/cache'
+import { StudioPlayoutModelBase } from '../../studio/StudioPlayoutModel'
 import { JobContext } from '../../jobs'
 import { getCurrentTime } from '../../lib'
-import { PlayoutModel } from '../cacheModel/PlayoutModel'
+import { PlayoutModel } from '../model/PlayoutModel'
 import { RundownTimelineTimingContext, getInfinitePartGroupId } from './rundown'
 import { getExpectedLatency } from '@sofie-automation/corelib/dist/studio/playout'
 import { getPieceControlObjectId } from '@sofie-automation/corelib/dist/playout/ids'
-import { PartInstanceWithPieces } from '../cacheModel/PartInstanceWithPieces'
+import { PlayoutPartInstanceModel } from '../model/PlayoutPartInstanceModel'
 import { ReadonlyDeep } from 'type-fest'
 
 /**
@@ -61,7 +61,7 @@ export function deNowifyMultiGatewayTimeline(
 
 export function calculateNowOffsetLatency(
 	context: JobContext,
-	cache: CacheForStudioBase,
+	cache: StudioPlayoutModelBase,
 	timeOffsetIntoPart: Time | undefined
 ): Time | undefined {
 	/** The timestamp that "now" was set to */
@@ -93,8 +93,8 @@ function updatePartInstancePlannedTimes(
 	cache: PlayoutModel,
 	targetNowTime: number,
 	timingContext: RundownTimelineTimingContext,
-	currentPartInstance: PartInstanceWithPieces,
-	nextPartInstance: PartInstanceWithPieces | null
+	currentPartInstance: PlayoutPartInstanceModel,
+	nextPartInstance: PlayoutPartInstanceModel | null
 ): PartGroupTimings {
 	let currentPartGroupStartTime: number
 	if (!currentPartInstance.PartInstance.timings?.plannedStartedPlayback) {
@@ -144,7 +144,7 @@ function updatePartInstancePlannedTimes(
 function deNowifyCurrentPieces(
 	targetNowTime: number,
 	timingContext: RundownTimelineTimingContext,
-	currentPartInstance: PartInstanceWithPieces,
+	currentPartInstance: PlayoutPartInstanceModel,
 	currentPartGroupStartTime: number,
 	timelineObjsMap: Record<string, TimelineObjRundown>
 ) {
@@ -200,7 +200,7 @@ function deNowifyCurrentPieces(
 
 function updatePlannedTimingsForPieceInstances(
 	cache: PlayoutModel,
-	currentPartInstance: PartInstanceWithPieces,
+	currentPartInstance: PlayoutPartInstanceModel,
 	partGroupTimings: PartGroupTimings,
 	timelineObjsMap: Record<string, TimelineObjRundown>
 ) {
@@ -239,7 +239,7 @@ function updatePlannedTimingsForPieceInstances(
 }
 
 function setPlannedTimingsOnPieceInstance(
-	partInstance: PartInstanceWithPieces,
+	partInstance: PlayoutPartInstanceModel,
 	pieceInstance: ReadonlyDeep<PieceInstance>,
 	partPlannedStart: Time,
 	partPlannedEnd: Time | undefined
@@ -272,7 +272,7 @@ function setPlannedTimingsOnPieceInstance(
 function preserveOrTrackInfiniteTimings(
 	existingInfiniteTimings: Map<PieceInstanceInfiniteId, Time>,
 	timelineObjsMap: Record<string, TimelineObjRundown>,
-	partInstance: PartInstanceWithPieces,
+	partInstance: PlayoutPartInstanceModel,
 	pieceInstance: ReadonlyDeep<PieceInstance>
 ): void {
 	if (!pieceInstance.infinite) return

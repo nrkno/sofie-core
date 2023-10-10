@@ -11,16 +11,14 @@ import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { IBlueprintMutatablePart, PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
 
-export interface PartInstanceWithPieces {
+export interface PlayoutPartInstanceModel {
 	readonly PartInstance: ReadonlyDeep<DBPartInstance>
 	readonly PieceInstances: ReadonlyDeep<PieceInstance>[]
 
-	clone(): PartInstanceWithPieces
+	clone(): PlayoutPartInstanceModel
 
 	setPlaylistActivationId(id: RundownPlaylistActivationId): void
 
-	// /** @deprecated HACK */
-	// insertPieceInstance(instance: PieceInstance): void
 	insertAdlibbedPiece(
 		piece: Omit<PieceInstancePiece, 'startPartId'>,
 		fromAdlibId: PieceId | undefined
@@ -43,7 +41,10 @@ export interface PartInstanceWithPieces {
 	setTaken(takeTime: number, playOffset: number): void
 
 	// TODO - better name
-	setTakeCache(partPlayoutTimings: PartCalculatedTimings, previousPartEndState: unknown): void
+	storePlayoutTimingsAndPreviousEndState(
+		partPlayoutTimings: PartCalculatedTimings,
+		previousPartEndState: unknown
+	): void
 
 	appendNotes(notes: PartNote[]): void
 
@@ -57,9 +58,12 @@ export interface PartInstanceWithPieces {
 	replacePieceInstance(doc: ReadonlyDeep<PieceInstance>): void
 
 	/** @deprecated HACK */
-	removePieceInstance(id: PieceInstanceId): boolean
+	insertPlannedPiece(doc: Omit<PieceInstancePiece, 'startPartId'>): PieceInstance
 
 	/** @deprecated HACK */
+	removePieceInstance(id: PieceInstanceId): boolean
+
+	/** @deprecated HACK  */
 	insertInfinitePieces(pieceInstances: PieceInstance[]): void
 
 	setPlannedStartedPlayback(time: Time | undefined): void
