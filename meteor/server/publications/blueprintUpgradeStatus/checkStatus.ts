@@ -63,6 +63,7 @@ export function checkDocUpgradeStatus(
 	}
 
 	if (blueprint.hasFixUpFunction) {
+		// If the blueprint has a 'fixUpConfig' function, that must be run before we can do any real diffing of the config
 		const pendingRunOfFixupFunction =
 			!doc.lastBlueprintFixUpHash || doc.lastBlueprintFixUpHash !== blueprint.blueprintHash
 

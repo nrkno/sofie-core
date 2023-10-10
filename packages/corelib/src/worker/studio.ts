@@ -163,7 +163,13 @@ export enum StudioJobs {
 	 */
 	BlueprintValidateConfigForStudio = 'blueprintValidateConfigForStudio',
 
+	/**
+	 * Run the 'fixUpConfig' method for the Studio blueprint config
+	 */
 	BlueprintFixUpConfigForStudio = 'blueprintFixUpConfigForStudio',
+	/**
+	 * Ignore the 'fixUpConfig' method for the Studio blueprint config
+	 */
 	BlueprintIgnoreFixUpConfigForStudio = 'blueprintIgnoreFixUpConfigForStudio',
 
 	/**

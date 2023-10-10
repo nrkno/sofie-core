@@ -1,10 +1,10 @@
 import type { IBlueprintConfig } from '../common'
 import type { ITranslatableMessage } from '../translations'
-import type { ICommonContext } from './commonContext'
+import type { ICommonContext } from './baseContext'
 
 export interface IFixUpConfigContext<TConfig = IBlueprintConfig> extends ICommonContext {
 	/**
-	 * Get the current config, with any applied changes
+	 * Get the current config, with any unsaved changes applied
 	 */
 	getConfig(): TConfig
 
