@@ -203,13 +203,13 @@ function checkTimingsRaw(
 	const targetCurrentPieces: PartTimelineTimings['currentPieces'] = {}
 	const targetCurrentInfinitePieces: PartTimelineTimings['currentInfinitePieces'] = {}
 	for (const piece of currentPieces) {
-		let entryId = unprotectString(piece.piece._id)
+		let entryId = unprotectString(piece.PieceInstance.piece._id)
 		if (entryId.startsWith(unprotectString(rundownId)))
 			entryId = entryId.substring(unprotectString(rundownId).length + 1)
 
-		if (piece.piece.lifespan === PieceLifespan.WithinPart) {
-			const pieceObj = objs.get(getPieceGroupId(piece))
-			const controlObj = objs.get(getPieceControlObjectId(piece))
+		if (piece.PieceInstance.piece.lifespan === PieceLifespan.WithinPart) {
+			const pieceObj = objs.get(getPieceGroupId(piece.PieceInstance))
+			const controlObj = objs.get(getPieceControlObjectId(piece.PieceInstance))
 
 			targetCurrentPieces[entryId] = controlObj
 				? {
@@ -218,13 +218,14 @@ function checkTimingsRaw(
 				  }
 				: null
 		} else {
-			const partGroupId = getPartGroupId(protectString<PartInstanceId>(unprotectString(piece._id))) + '_infinite'
+			const partGroupId =
+				getPartGroupId(protectString<PartInstanceId>(unprotectString(piece.PieceInstance._id))) + '_infinite'
 			const partObj = objs.get(partGroupId)
 			if (!partObj) {
 				targetCurrentInfinitePieces[entryId] = null
 			} else {
-				const pieceObj = objs.get(getPieceGroupId(piece))
-				const controlObj = objs.get(getPieceControlObjectId(piece))
+				const pieceObj = objs.get(getPieceGroupId(piece.PieceInstance))
+				const controlObj = objs.get(getPieceControlObjectId(piece.PieceInstance))
 
 				targetCurrentInfinitePieces[entryId] = {
 					partGroup: partObj.enable,
@@ -244,11 +245,11 @@ function checkTimingsRaw(
 		const previousPieces = previousPartInstance.PieceInstances
 		let previousOutTransition: PartTimelineTimings['previousOutTransition']
 		for (const piece of previousPieces) {
-			if (piece.piece.pieceType === IBlueprintPieceType.OutTransition) {
+			if (piece.PieceInstance.piece.pieceType === IBlueprintPieceType.OutTransition) {
 				if (previousOutTransition !== undefined) throw new Error('Too many out transition pieces were found')
 
-				const pieceObj = objs.get(getPieceGroupId(piece))
-				const controlObj = objs.get(getPieceControlObjectId(piece))
+				const pieceObj = objs.get(getPieceGroupId(piece.PieceInstance))
+				const controlObj = objs.get(getPieceControlObjectId(piece.PieceInstance))
 				previousOutTransition = controlObj
 					? {
 							childGroup: parsePieceGroupPrerollAndPostroll(pieceObj?.enable ?? []),
@@ -1213,8 +1214,6 @@ describe('Timeline', () => {
 					const { currentPartInstance } = await getPartInstances()
 					expect(currentPartInstance).toBeTruthy()
 
-					console.log('inst', currentPartInstance?.PartInstance._id)
-
 					// Insert an adlib piece
 					await doStartAdlibPiece(
 						playlistId,
@@ -1560,11 +1559,11 @@ describe('Timeline', () => {
 
 					const currentPieceInstances = currentPartInstance.PieceInstances
 					const pieceInstance0 = currentPieceInstances.find(
-						(instance) => instance.piece._id === protectString(`${rundownId}_piece000`)
+						(instance) => instance.PieceInstance.piece._id === protectString(`${rundownId}_piece000`)
 					)
 					if (!pieceInstance0) throw new Error('pieceInstance0 must be defined')
 					const pieceInstance1 = currentPieceInstances.find(
-						(instance) => instance.piece._id === protectString(`${rundownId}_piece001`)
+						(instance) => instance.PieceInstance.piece._id === protectString(`${rundownId}_piece001`)
 					)
 					if (!pieceInstance1) throw new Error('pieceInstance1 must be defined')
 
@@ -1574,8 +1573,8 @@ describe('Timeline', () => {
 						partId: currentPartInstance.PartInstance._id,
 						includePart: true,
 						pieceOffsets: {
-							[unprotectString(pieceInstance0._id)]: 500,
-							[unprotectString(pieceInstance1._id)]: 500,
+							[unprotectString(pieceInstance0.PieceInstance._id)]: 500,
+							[unprotectString(pieceInstance1.PieceInstance._id)]: 500,
 						},
 					})
 

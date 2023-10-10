@@ -126,7 +126,7 @@ export async function syncChangesToPartInstances(
 				const partId = existingPartInstance.PartInstance.part._id
 				const existingResultPartInstance: BlueprintSyncIngestPartInstance = {
 					partInstance: convertPartInstanceToBlueprints(existingPartInstance.PartInstance),
-					pieceInstances: pieceInstancesInPart.map(convertPieceInstanceToBlueprints),
+					pieceInstances: pieceInstancesInPart.map((p) => convertPieceInstanceToBlueprints(p.PieceInstance)),
 				}
 
 				const proposedPieceInstances = getPieceInstancesForPart(
@@ -141,7 +141,9 @@ export async function syncChangesToPartInstances(
 
 				logger.info(`Syncing ingest changes for part: ${partId} (orphaned: ${!!newPart})`)
 
-				const referencedAdlibIds = new Set(_.compact(pieceInstancesInPart.map((p) => p.adLibSourceId)))
+				const referencedAdlibIds = new Set(
+					_.compact(pieceInstancesInPart.map((p) => p.PieceInstance.adLibSourceId))
+				)
 				const newResultData: BlueprintSyncIngestNewData = {
 					part: newPart ? convertPartToBlueprints(newPart) : undefined,
 					pieceInstances: proposedPieceInstances.map(convertPieceInstanceToBlueprints),

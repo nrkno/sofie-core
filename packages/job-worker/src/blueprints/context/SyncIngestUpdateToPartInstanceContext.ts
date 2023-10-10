@@ -1,6 +1,6 @@
 import { PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { clone, normalizeArrayToMap, omit } from '@sofie-automation/corelib/dist/lib'
+import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { normalizeArrayToMap, omit } from '@sofie-automation/corelib/dist/lib'
 import { protectString, protectStringArray, unprotectStringArray } from '@sofie-automation/corelib/dist/protectedString'
 import { PlayoutPartInstanceModel } from '../../playout/model/PlayoutPartInstanceModel'
 import { ReadonlyDeep } from 'type-fest'
@@ -95,11 +95,9 @@ export class SyncIngestUpdateToPartInstanceContext
 			  )[0]
 			: proposedPieceInstance.piece
 
-		const existingPieceInstance = this.partInstance.getPieceInstance(proposedPieceInstance._id)
-		const newPieceInstance: PieceInstance = {
-			...existingPieceInstance,
+		const newPieceInstance: ReadonlyDeep<PieceInstance> = {
 			...proposedPieceInstance,
-			piece: clone<PieceInstancePiece>(piece),
+			piece: piece,
 		}
 		this.partInstance.replacePieceInstance(newPieceInstance)
 
@@ -123,7 +121,7 @@ export class SyncIngestUpdateToPartInstanceContext
 
 		const newPieceInstance = this.partInstance.insertPlannedPiece(piece)
 
-		return convertPieceInstanceToBlueprints(newPieceInstance)
+		return convertPieceInstanceToBlueprints(newPieceInstance.PieceInstance)
 	}
 	updatePieceInstance(pieceInstanceId: string, updatedPiece: Partial<IBlueprintPiece>): IBlueprintPieceInstance {
 		// filter the submission to the allowed ones
@@ -138,7 +136,7 @@ export class SyncIngestUpdateToPartInstanceContext
 		if (!pieceInstance) {
 			throw new Error(`PieceInstance "${pieceInstanceId}" could not be found`)
 		}
-		if (pieceInstance.partInstanceId !== this.partInstance.PartInstance._id) {
+		if (pieceInstance.PieceInstance.partInstanceId !== this.partInstance.PartInstance._id) {
 			throw new Error(`PieceInstance "${pieceInstanceId}" does not belong to the current PartInstance`)
 		}
 
@@ -146,7 +144,7 @@ export class SyncIngestUpdateToPartInstanceContext
 		if (trimmedPiece.content?.timelineObjects) {
 			timelineObjectsString = serializePieceTimelineObjectsBlob(
 				postProcessTimelineObjects(
-					pieceInstance.piece._id,
+					pieceInstance.PieceInstance.piece._id,
 					this.showStyleCompound.blueprintId,
 					trimmedPiece.content.timelineObjects
 				)
@@ -155,19 +153,14 @@ export class SyncIngestUpdateToPartInstanceContext
 			trimmedPiece.content = omit(trimmedPiece.content, 'timelineObjects') as WithTimeline<SomeContent>
 		}
 
-		this.partInstance.updatePieceProps(pieceInstance._id, trimmedPiece as any) // TODO: this needs to be more type safe
+		pieceInstance.updatePieceProps(trimmedPiece as any) // TODO: this needs to be more type safe
 		if (timelineObjectsString !== undefined) {
-			this.partInstance.updatePieceProps(pieceInstance._id, {
+			pieceInstance.updatePieceProps({
 				timelineObjectsString,
 			})
 		}
 
-		const updatedPieceInstance = this.partInstance.getPieceInstance(pieceInstance._id)
-		if (!updatedPieceInstance) {
-			throw new Error(`PieceInstance "${pieceInstanceId}" could not be found, after applying changes`)
-		}
-
-		return convertPieceInstanceToBlueprints(updatedPieceInstance)
+		return convertPieceInstanceToBlueprints(pieceInstance.PieceInstance)
 	}
 	updatePartInstance(updatePart: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance {
 		// filter the submission to the allowed ones
@@ -204,9 +197,11 @@ export class SyncIngestUpdateToPartInstanceContext
 		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
 
 		const rawPieceInstanceIdSet = new Set(protectStringArray(pieceInstanceIds))
-		const pieceInstances = this.partInstance.PieceInstances.filter((p) => rawPieceInstanceIdSet.has(p._id))
+		const pieceInstances = this.partInstance.PieceInstances.filter((p) =>
+			rawPieceInstanceIdSet.has(p.PieceInstance._id)
+		)
 
-		const pieceInstanceIdsToRemove = pieceInstances.map((p) => p._id)
+		const pieceInstanceIdsToRemove = pieceInstances.map((p) => p.PieceInstance._id)
 
 		for (const id of pieceInstanceIdsToRemove) {
 			this.partInstance.removePieceInstance(id)

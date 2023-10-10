@@ -3,9 +3,8 @@ import { logger } from '../../logging'
 import { JobContext } from '../../jobs'
 import { PlayoutModel } from '../model/PlayoutModel'
 import { Time } from '@sofie-automation/blueprints-integration'
-import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PlayoutPartInstanceModel } from '../model/PlayoutPartInstanceModel'
-import { ReadonlyDeep } from 'type-fest'
+import { PlayoutPieceInstanceModel } from '../model/PlayoutPieceInstanceModel'
 
 /**
  * Set the playback of a piece is confirmed to have started
@@ -44,7 +43,9 @@ export function onPiecePlaybackStarted(
 		return
 	}
 
-	const isPlaying = !!(pieceInstance.reportedStartedPlayback && !pieceInstance.reportedStoppedPlayback)
+	const isPlaying = !!(
+		pieceInstance.PieceInstance.reportedStartedPlayback && !pieceInstance.PieceInstance.reportedStoppedPlayback
+	)
 	if (!isPlaying) {
 		logger.debug(
 			`onPiecePlaybackStarted: Playout reports pieceInstance "${
@@ -90,7 +91,9 @@ export function onPiecePlaybackStopped(
 		return
 	}
 
-	const isPlaying = !!(pieceInstance.reportedStartedPlayback && !pieceInstance.reportedStoppedPlayback)
+	const isPlaying = !!(
+		pieceInstance.PieceInstance.reportedStartedPlayback && !pieceInstance.PieceInstance.reportedStoppedPlayback
+	)
 	if (isPlaying) {
 		logger.debug(
 			`onPiecePlaybackStopped: Playout reports pieceInstance "${
@@ -98,7 +101,7 @@ export function onPiecePlaybackStopped(
 			}" has stopped playback on timestamp ${new Date(data.stoppedPlayback).toISOString()}`
 		)
 
-		reportPieceHasStopped(context, cache, partInstance, pieceInstance, data.stoppedPlayback)
+		reportPieceHasStopped(context, cache, pieceInstance, data.stoppedPlayback)
 	}
 }
 
@@ -113,32 +116,32 @@ function reportPieceHasStarted(
 	_context: JobContext,
 	cache: PlayoutModel,
 	partInstance: PlayoutPartInstanceModel,
-	pieceInstance: ReadonlyDeep<PieceInstance>,
+	pieceInstance: PlayoutPieceInstanceModel,
 	timestamp: Time
 ): void {
-	const timestampChanged = partInstance.setPieceInstancedReportedStartedPlayback(pieceInstance._id, timestamp)
+	const timestampChanged = pieceInstance.setReportedStartedPlayback(timestamp)
 	if (timestampChanged) {
 		if (!cache.isMultiGatewayMode) {
-			partInstance.setPieceInstancedPlannedStartedPlayback(pieceInstance._id, timestamp)
+			pieceInstance.setPlannedStartedPlayback(timestamp)
 		}
 
 		// Update the copy in the next-part if there is one, so that the infinite has the same start after a take
 		const nextPartInstance = cache.NextPartInstance
 		if (
-			pieceInstance.infinite &&
+			pieceInstance.PieceInstance.infinite &&
 			nextPartInstance &&
 			nextPartInstance.PartInstance._id !== partInstance.PartInstance._id
 		) {
-			const infiniteInstanceId = pieceInstance.infinite.infiniteInstanceId
+			const infiniteInstanceId = pieceInstance.PieceInstance.infinite.infiniteInstanceId
 			for (const nextPieceInstance of nextPartInstance.PieceInstances) {
 				if (
-					!!nextPieceInstance.infinite &&
-					nextPieceInstance.infinite.infiniteInstanceId === infiniteInstanceId
+					!!nextPieceInstance.PieceInstance.infinite &&
+					nextPieceInstance.PieceInstance.infinite.infiniteInstanceId === infiniteInstanceId
 				) {
-					nextPartInstance.setPieceInstancedReportedStartedPlayback(nextPieceInstance._id, timestamp)
+					nextPieceInstance.setReportedStartedPlayback(timestamp)
 
 					if (!cache.isMultiGatewayMode) {
-						nextPartInstance.setPieceInstancedPlannedStartedPlayback(nextPieceInstance._id, timestamp)
+						nextPieceInstance.setPlannedStartedPlayback(timestamp)
 					}
 				}
 			}
@@ -158,17 +161,16 @@ function reportPieceHasStarted(
 function reportPieceHasStopped(
 	_context: JobContext,
 	cache: PlayoutModel,
-	partInstance: PlayoutPartInstanceModel,
-	pieceInstance: ReadonlyDeep<PieceInstance>,
+	pieceInstance: PlayoutPieceInstanceModel,
 	timestamp: Time
 ): void {
-	const timestampChanged = partInstance.setPieceInstancedReportedStoppedPlayback(pieceInstance._id, timestamp)
+	const timestampChanged = pieceInstance.setReportedStoppedPlayback(timestamp)
 
 	if (timestampChanged) {
 		if (!cache.isMultiGatewayMode) {
-			partInstance.setPieceInstancedPlannedStoppedPlayback(pieceInstance._id, timestamp)
+			pieceInstance.setPlannedStoppedPlayback(timestamp)
 		}
 
-		cache.queuePartInstanceTimingEvent(partInstance.PartInstance._id)
+		cache.queuePartInstanceTimingEvent(pieceInstance.PieceInstance.partInstanceId)
 	}
 }

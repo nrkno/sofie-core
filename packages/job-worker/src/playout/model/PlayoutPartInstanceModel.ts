@@ -10,10 +10,11 @@ import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dis
 import { PartNote } from '@sofie-automation/corelib/dist/dataModel/Notes'
 import { IBlueprintMutatablePart, PieceLifespan, Time } from '@sofie-automation/blueprints-integration'
 import { PartCalculatedTimings } from '@sofie-automation/corelib/dist/playout/timings'
+import { PlayoutPieceInstanceModel } from './PlayoutPieceInstanceModel'
 
 export interface PlayoutPartInstanceModel {
 	readonly PartInstance: ReadonlyDeep<DBPartInstance>
-	readonly PieceInstances: ReadonlyDeep<PieceInstance>[]
+	readonly PieceInstances: PlayoutPieceInstanceModel[]
 
 	clone(): PlayoutPartInstanceModel
 
@@ -22,7 +23,7 @@ export interface PlayoutPartInstanceModel {
 	insertAdlibbedPiece(
 		piece: Omit<PieceInstancePiece, 'startPartId'>,
 		fromAdlibId: PieceId | undefined
-	): ReadonlyDeep<PieceInstance>
+	): PlayoutPieceInstanceModel
 
 	recalculateExpectedDurationWithPreroll(): void
 
@@ -40,7 +41,6 @@ export interface PlayoutPartInstanceModel {
 
 	setTaken(takeTime: number, playOffset: number): void
 
-	// TODO - better name
 	storePlayoutTimingsAndPreviousEndState(
 		partPlayoutTimings: PartCalculatedTimings,
 		previousPartEndState: unknown
@@ -50,15 +50,18 @@ export interface PlayoutPartInstanceModel {
 
 	updatePartProps(props: Partial<IBlueprintMutatablePart>): void
 
-	getPieceInstance(id: PieceInstanceId): ReadonlyDeep<PieceInstance> | undefined
+	getPieceInstance(id: PieceInstanceId): PlayoutPieceInstanceModel | undefined
 
-	updatePieceProps(id: PieceInstanceId, props: Partial<PieceInstancePiece>): void
+	/**
+	 * Replace a PieceInstance with a new version.
+	 * If there is an existing PieceInstance with the same id, it will be merged onto that
+	 * Note: this will replace any playout owned properties too
+	 * @param doc
+	 */
+	replacePieceInstance(doc: ReadonlyDeep<PieceInstance>): PlayoutPieceInstanceModel
 
 	/** @deprecated HACK */
-	replacePieceInstance(doc: ReadonlyDeep<PieceInstance>): void
-
-	/** @deprecated HACK */
-	insertPlannedPiece(doc: Omit<PieceInstancePiece, 'startPartId'>): PieceInstance
+	insertPlannedPiece(doc: Omit<PieceInstancePiece, 'startPartId'>): PlayoutPieceInstanceModel
 
 	/** @deprecated HACK */
 	removePieceInstance(id: PieceInstanceId): boolean
@@ -71,28 +74,17 @@ export interface PlayoutPartInstanceModel {
 	setReportedStartedPlayback(time: Time): boolean
 	setReportedStoppedPlayback(time: Time): boolean
 
-	setPieceInstancedPlannedStartedPlayback(pieceInstanceId: PieceInstanceId, time: Time): boolean
-	setPieceInstancedPlannedStoppedPlayback(pieceInstanceId: PieceInstanceId, time: Time | undefined): boolean
-	setPieceInstancedReportedStartedPlayback(pieceInstanceId: PieceInstanceId, time: Time): boolean
-	setPieceInstancedReportedStoppedPlayback(pieceInstanceId: PieceInstanceId, time: Time): boolean
-
 	validateScratchpadSegmentProperties(): void
 
-	preparePieceInstanceForHold(pieceInstanceId: PieceInstanceId): PieceInstanceInfiniteId
-
 	addHoldPieceInstance(
-		extendPieceInstance: ReadonlyDeep<PieceInstance>,
+		extendPieceInstance: PlayoutPieceInstanceModel,
 		infiniteInstanceId: PieceInstanceInfiniteId
-	): PieceInstance
-
-	setPieceInstanceDuration(pieceInstanceId: PieceInstanceId, duration: Required<PieceInstance>['userDuration']): void
+	): PlayoutPieceInstanceModel
 
 	insertVirtualPiece(
 		start: number,
 		lifespan: PieceLifespan,
 		sourceLayerId: string,
 		outputLayerId: string
-	): PieceInstance
-
-	setPieceInstanceDisabled(pieceInstanceId: PieceInstanceId, disabled: boolean): void
+	): PlayoutPieceInstanceModel
 }

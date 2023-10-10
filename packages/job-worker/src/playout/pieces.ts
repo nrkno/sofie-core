@@ -10,6 +10,7 @@ import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { ReadonlyDeep } from 'type-fest'
 import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
+import { PlayoutPieceInstanceModel } from './model/PlayoutPieceInstanceModel'
 
 /**
  * Approximate compare Piece start times (for use in .sort())
@@ -17,7 +18,11 @@ import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
  * @param b Second Piece
  * @param nowInPart Approximate time to substitute for 'now'
  */
-function comparePieceStart<T extends ReadonlyDeep<PieceInstancePiece>>(a: T, b: T, nowInPart: number): 0 | 1 | -1 {
+export function comparePieceStart<T extends ReadonlyDeep<PieceInstancePiece>>(
+	a: T,
+	b: T,
+	nowInPart: number
+): 0 | 1 | -1 {
 	if (a.pieceType === IBlueprintPieceType.OutTransition && b.pieceType !== IBlueprintPieceType.OutTransition) {
 		return 1
 	} else if (a.pieceType !== IBlueprintPieceType.OutTransition && b.pieceType === IBlueprintPieceType.OutTransition) {
@@ -111,7 +116,7 @@ export function convertAdLibToPieceInstance(
 	adLibPiece: AdLibPiece | Piece | BucketAdLib | PieceInstancePiece,
 	partInstance: PlayoutPartInstanceModel,
 	queue: boolean
-): ReadonlyDeep<PieceInstance> {
+): PlayoutPieceInstanceModel {
 	const span = context.startSpan('convertAdLibToPieceInstance')
 	let duration: number | undefined = undefined
 	if ('expectedDuration' in adLibPiece && adLibPiece['expectedDuration']) {

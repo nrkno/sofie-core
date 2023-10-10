@@ -44,6 +44,7 @@ import { queuePartInstanceTimingEvent } from '../../timings/events'
 import { IS_PRODUCTION } from '../../../environment'
 import { DeferredAfterSaveFunction, DeferredFunction, PlayoutModel } from '../PlayoutModel'
 import { writePartInstancesAndPieceInstances, writeScratchpadSegments } from './SavePlayoutModel'
+import { PlayoutPieceInstanceModel } from '../PlayoutPieceInstanceModel'
 
 /**
  * This is a cache used for playout operations.
@@ -226,7 +227,7 @@ export class PlayoutModelImpl implements PlayoutModel {
 
 	findPieceInstance(
 		id: PieceInstanceId
-	): { partInstance: PlayoutPartInstanceModel; pieceInstance: ReadonlyDeep<PieceInstance> } | undefined {
+	): { partInstance: PlayoutPartInstanceModel; pieceInstance: PlayoutPieceInstanceModel } | undefined {
 		for (const partInstance of this.LoadedPartInstances) {
 			const pieceInstance = partInstance.getPieceInstance(id)
 			if (pieceInstance) return { partInstance, pieceInstance }

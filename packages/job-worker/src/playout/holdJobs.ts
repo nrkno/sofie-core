@@ -41,10 +41,10 @@ export async function handleActivateHold(context: JobContext, data: ActivateHold
 
 			const hasDynamicallyInserted = currentPartInstance.PieceInstances.find(
 				(p) =>
-					!!p.dynamicallyInserted &&
+					!!p.PieceInstance.dynamicallyInserted &&
 					// If its a continuation of an infinite adlib it is probably a graphic, so is 'fine'
-					!p.infinite?.fromPreviousPart &&
-					!p.infinite?.fromPreviousPlayhead
+					!p.PieceInstance.infinite?.fromPreviousPart &&
+					!p.PieceInstance.infinite?.fromPreviousPlayhead
 			)
 			if (hasDynamicallyInserted) throw UserError.create(UserErrorMessage.HoldAfterAdlib)
 

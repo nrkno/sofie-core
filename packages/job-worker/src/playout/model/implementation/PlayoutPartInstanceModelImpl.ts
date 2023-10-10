@@ -15,7 +15,6 @@ import {
 import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { getCurrentTime } from '../../../lib'
 import { setupPieceInstanceInfiniteProperties } from '../../pieces'
-import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import {
 	calculatePartExpectedDurationWithPreroll,
 	PartCalculatedTimings,
@@ -29,15 +28,13 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { PlayoutPartInstanceModel } from '../PlayoutPartInstanceModel'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-
-interface PieceInstanceWrapper {
-	changed: boolean
-	doc: PieceInstance | null
-}
+import { PlayoutPieceInstanceModel } from '../PlayoutPieceInstanceModel'
+import { PlayoutPieceInstanceModelImpl } from './PlayoutPieceInstanceModelImpl'
+import { EmptyPieceTimelineObjectsBlob } from '@sofie-automation/corelib/dist/dataModel/Piece'
 
 export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 	PartInstanceImpl: DBPartInstance
-	PieceInstancesImpl: Map<PieceInstanceId, PieceInstanceWrapper>
+	PieceInstancesImpl: Map<PieceInstanceId, PlayoutPieceInstanceModelImpl | null>
 
 	#PartInstanceHasChanges = false
 	get PartInstanceHasChanges(): boolean {
@@ -46,7 +43,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 	ChangedPieceInstanceIds(): PieceInstanceId[] {
 		const result: PieceInstanceId[] = []
 		for (const [id, pieceInstance] of this.PieceInstancesImpl.entries()) {
-			if (pieceInstance.changed || !pieceInstance.doc) result.push(id)
+			if (!pieceInstance || pieceInstance.HasChanges) result.push(id)
 		}
 		return result
 	}
@@ -57,10 +54,10 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		this.#PartInstanceHasChanges = false
 
 		for (const [id, value] of this.PieceInstancesImpl) {
-			if (!value.doc) {
+			if (!value) {
 				this.PieceInstancesImpl.delete(id)
-			} else if (value.changed) {
-				value.changed = false
+			} else if (value.HasChanges) {
+				value.setDirty(false)
 			}
 		}
 	}
@@ -68,11 +65,11 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 	get PartInstance(): ReadonlyDeep<DBPartInstance> {
 		return this.PartInstanceImpl
 	}
-	get PieceInstances(): ReadonlyDeep<PieceInstance>[] {
-		const result: PieceInstance[] = []
+	get PieceInstances(): PlayoutPieceInstanceModel[] {
+		const result: PlayoutPieceInstanceModel[] = []
 
 		for (const pieceWrapped of this.PieceInstancesImpl.values()) {
-			if (pieceWrapped.doc) result.push(pieceWrapped.doc)
+			if (pieceWrapped) result.push(pieceWrapped)
 		}
 
 		return result
@@ -84,10 +81,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 		this.PieceInstancesImpl = new Map()
 		for (const pieceInstance of pieceInstances) {
-			this.PieceInstancesImpl.set(pieceInstance._id, {
-				doc: pieceInstance,
-				changed: hasChanges,
-			})
+			this.PieceInstancesImpl.set(pieceInstance._id, new PlayoutPieceInstanceModelImpl(pieceInstance, hasChanges))
 		}
 	}
 
@@ -97,11 +91,20 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 	 * TODO - this has issues with deleting instances!
 	 */
 	clone(): PlayoutPartInstanceModel {
-		return new PlayoutPartInstanceModelImpl(
-			clone(this.PartInstanceImpl),
-			clone<PieceInstance[]>(this.PieceInstances),
-			this.#PartInstanceHasChanges
-		)
+		const cloned = new PlayoutPartInstanceModelImpl(clone(this.PartInstanceImpl), [], this.#PartInstanceHasChanges)
+
+		for (const [id, pieceInstance] of this.PieceInstancesImpl) {
+			if (!pieceInstance) {
+				cloned.PieceInstancesImpl.set(id, null)
+			} else {
+				cloned.PieceInstancesImpl.set(
+					id,
+					new PlayoutPieceInstanceModelImpl(clone(pieceInstance.PieceInstanceImpl), pieceInstance.HasChanges)
+				)
+			}
+		}
+
+		return cloned
 	}
 
 	setPlaylistActivationId(id: RundownPlaylistActivationId): void {
@@ -110,9 +113,9 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		this.#PartInstanceHasChanges = true
 
 		for (const pieceInstance of this.PieceInstancesImpl.values()) {
-			if (!pieceInstance.doc) continue
-			pieceInstance.changed = true
-			pieceInstance.doc.playlistActivationId = id
+			if (!pieceInstance) continue
+			pieceInstance.PieceInstanceImpl.playlistActivationId = id
+			pieceInstance.setDirty()
 		}
 	}
 
@@ -121,14 +124,14 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 		this.PartInstanceImpl.part.expectedDurationWithPreroll = calculatePartExpectedDurationWithPreroll(
 			this.PartInstanceImpl.part,
-			this.PieceInstances.map((p) => p.piece)
+			this.PieceInstances.map((p) => p.PieceInstance.piece)
 		)
 	}
 
 	insertAdlibbedPiece(
 		piece: Omit<PieceInstancePiece, 'startPartId'>,
 		fromAdlibId: PieceId | undefined
-	): ReadonlyDeep<PieceInstance> {
+	): PlayoutPieceInstanceModel {
 		const pieceInstance: PieceInstance = {
 			_id: protectString(`${this.PartInstance._id}_${piece._id}`),
 			rundownId: this.PartInstance.rundownId,
@@ -151,31 +154,25 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 		setupPieceInstanceInfiniteProperties(pieceInstance)
 
-		this.PieceInstancesImpl.set(pieceInstance._id, {
-			doc: pieceInstance,
-			changed: true,
-		})
+		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(pieceInstance, true)
+		this.PieceInstancesImpl.set(pieceInstance._id, pieceInstanceModel)
 
-		return pieceInstance
+		return pieceInstanceModel
 	}
 
 	replaceInfinitesFromPreviousPlayhead(pieces: PieceInstance[]): void {
 		// TODO - this should do some validation/some of the wrapping from a Piece into a PieceInstance
 		// Remove old ones
-		for (const piece of this.PieceInstancesImpl.values()) {
-			if (!piece.doc) continue
+		for (const [id, piece] of this.PieceInstancesImpl.entries()) {
+			if (!piece) continue
 
-			if (piece.doc.infinite?.fromPreviousPlayhead) {
-				piece.doc = null
-				piece.changed = true
+			if (piece.PieceInstance.infinite?.fromPreviousPlayhead) {
+				this.PieceInstancesImpl.set(id, null)
 			}
 		}
 
 		for (const piece of pieces) {
-			this.PieceInstancesImpl.set(piece._id, {
-				doc: piece,
-				changed: true,
-			})
+			this.PieceInstancesImpl.set(piece._id, new PlayoutPieceInstanceModelImpl(piece, true))
 		}
 	}
 
@@ -183,10 +180,10 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		this.PartInstanceImpl.reset = true
 
 		for (const pieceInstance of this.PieceInstancesImpl.values()) {
-			if (!pieceInstance.doc) continue
+			if (!pieceInstance) continue
 
-			pieceInstance.changed = true
-			pieceInstance.doc.reset = true
+			pieceInstance.setDirty()
+			pieceInstance.PieceInstanceImpl.reset = true
 		}
 
 		this.#PartInstanceHasChanges = true
@@ -262,35 +259,32 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		this.#PartInstanceHasChanges = true
 	}
 
-	getPieceInstance(id: PieceInstanceId): ReadonlyDeep<PieceInstance> | undefined {
-		return this.PieceInstancesImpl.get(id)?.doc ?? undefined
+	getPieceInstance(id: PieceInstanceId): PlayoutPieceInstanceModel | undefined {
+		return this.PieceInstancesImpl.get(id) ?? undefined
 	}
 
-	updatePieceProps(id: PieceInstanceId, props: Partial<PieceInstancePiece>): void {
+	replacePieceInstance(doc: ReadonlyDeep<PieceInstance>): PlayoutPieceInstanceModel {
 		// TODO - this is missing a lot of validation
-		const pieceInstance = this.PieceInstancesImpl.get(id)
-		if (!pieceInstance?.doc) throw new Error('Bad pieceinstance')
 
-		pieceInstance.changed = true
-		pieceInstance.doc.piece = {
-			...pieceInstance.doc.piece,
-			...props,
+		const existingPieceInstance = this.PieceInstancesImpl.get(doc._id)
+		if (existingPieceInstance) {
+			existingPieceInstance.setDirty()
+			existingPieceInstance.PieceInstanceImpl = {
+				...existingPieceInstance.PieceInstanceImpl,
+				...clone<PieceInstance>(doc),
+			}
+			return existingPieceInstance
+		} else {
+			const newPieceInstance = new PlayoutPieceInstanceModelImpl(clone<PieceInstance>(doc), true)
+			this.PieceInstancesImpl.set(newPieceInstance.PieceInstance._id, newPieceInstance)
+			return newPieceInstance
 		}
-	}
-
-	/** @deprecated HACK */
-	replacePieceInstance(doc: ReadonlyDeep<PieceInstance>): void {
-		// TODO - this is missing a lot of validation
-		this.PieceInstancesImpl.set(doc._id, {
-			doc: clone<PieceInstance>(doc),
-			changed: true,
-		})
 	}
 
 	/** @deprecated HACK
 	 *
 	 */
-	insertPlannedPiece(piece: Omit<PieceInstancePiece, 'startPartId'>): PieceInstance {
+	insertPlannedPiece(piece: Omit<PieceInstancePiece, 'startPartId'>): PlayoutPieceInstanceModel {
 		const pieceInstanceId = getPieceInstanceIdForPiece(this.PartInstance._id, piece._id)
 		if (this.PieceInstancesImpl.has(pieceInstanceId))
 			throw new Error(`PieceInstance "${pieceInstanceId}" already exists`)
@@ -309,11 +303,10 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		// Ensure the infinite-ness is setup correctly
 		setupPieceInstanceInfiniteProperties(newPieceInstance)
 
-		this.PieceInstancesImpl.set(pieceInstanceId, {
-			doc: newPieceInstance,
-			changed: true,
-		})
-		return newPieceInstance
+		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(newPieceInstance, true)
+		this.PieceInstancesImpl.set(pieceInstanceId, pieceInstanceModel)
+
+		return pieceInstanceModel
 	}
 
 	/** @deprecated HACK */
@@ -321,8 +314,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		// TODO - this is missing a lot of validation
 		const pieceInstanceWrapped = this.PieceInstancesImpl.get(id)
 		if (pieceInstanceWrapped) {
-			pieceInstanceWrapped.changed = true
-			pieceInstanceWrapped.doc = null
+			this.PieceInstancesImpl.set(id, null)
 			return true
 		}
 		return false
@@ -331,10 +323,8 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 	/** @deprecated HACK */
 	insertInfinitePieces(pieceInstances: PieceInstance[]): void {
 		for (const pieceInstance of pieceInstances) {
-			this.PieceInstancesImpl.set(pieceInstance._id, {
-				doc: pieceInstance,
-				changed: true,
-			})
+			const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(pieceInstance, true)
+			this.PieceInstancesImpl.set(pieceInstance._id, pieceInstanceModel)
 		}
 	}
 
@@ -389,61 +379,6 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		return false
 	}
 
-	setPieceInstancedPlannedStartedPlayback(pieceInstanceId: PieceInstanceId, time: Time): boolean {
-		const pieceInstance = this.PieceInstancesImpl.get(pieceInstanceId)
-		if (!pieceInstance?.doc) throw new Error(`PieceInstance ${pieceInstanceId} not found`) // TODO - is this ok?
-
-		if (pieceInstance.doc.plannedStartedPlayback !== time) {
-			pieceInstance.doc.plannedStartedPlayback = time
-			delete pieceInstance.doc.plannedStoppedPlayback
-
-			pieceInstance.changed = true
-
-			return true
-		}
-		return false
-	}
-	setPieceInstancedPlannedStoppedPlayback(pieceInstanceId: PieceInstanceId, time: Time | undefined): boolean {
-		const pieceInstance = this.PieceInstancesImpl.get(pieceInstanceId)
-		if (!pieceInstance?.doc) throw new Error(`PieceInstance ${pieceInstanceId} not found`) // TODO - is this ok?
-
-		if (pieceInstance.doc.plannedStoppedPlayback !== time) {
-			pieceInstance.doc.plannedStoppedPlayback = time
-
-			pieceInstance.changed = true
-
-			return true
-		}
-		return false
-	}
-	setPieceInstancedReportedStartedPlayback(pieceInstanceId: PieceInstanceId, time: Time): boolean {
-		const pieceInstance = this.PieceInstancesImpl.get(pieceInstanceId)
-		if (!pieceInstance?.doc) throw new Error(`PieceInstance ${pieceInstanceId} not found`) // TODO - is this ok?
-
-		if (pieceInstance.doc.reportedStartedPlayback !== time) {
-			pieceInstance.doc.reportedStartedPlayback = time
-			delete pieceInstance.doc.reportedStoppedPlayback
-
-			pieceInstance.changed = true
-
-			return true
-		}
-		return false
-	}
-	setPieceInstancedReportedStoppedPlayback(pieceInstanceId: PieceInstanceId, time: Time): boolean {
-		const pieceInstance = this.PieceInstancesImpl.get(pieceInstanceId)
-		if (!pieceInstance?.doc) throw new Error(`PieceInstance ${pieceInstanceId} not found`) // TODO - is this ok?
-
-		if (pieceInstance.doc.reportedStoppedPlayback !== time) {
-			pieceInstance.doc.reportedStoppedPlayback = time
-
-			pieceInstance.changed = true
-
-			return true
-		}
-		return false
-	}
-
 	validateScratchpadSegmentProperties(): void {
 		this.PartInstanceImpl.orphaned = 'adlib-part'
 
@@ -457,69 +392,40 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		this.#PartInstanceHasChanges = true
 	}
 
-	preparePieceInstanceForHold(pieceInstanceId: PieceInstanceId): PieceInstanceInfiniteId {
-		const pieceInstance = this.PieceInstancesImpl.get(pieceInstanceId)
-		if (!pieceInstance?.doc) throw new Error(`PieceInstance ${pieceInstanceId} not found`) // TODO - is this ok?
-
-		const infiniteInstanceId: PieceInstanceInfiniteId = getRandomId()
-		pieceInstance.doc.infinite = {
-			infiniteInstanceId: infiniteInstanceId,
-			infiniteInstanceIndex: 0,
-			infinitePieceId: pieceInstance.doc.piece._id,
-			fromPreviousPart: false,
-		}
-		pieceInstance.changed = true
-
-		return infiniteInstanceId
-	}
-
 	addHoldPieceInstance(
-		extendPieceInstance: ReadonlyDeep<PieceInstance>,
+		extendPieceInstance: PlayoutPieceInstanceModel,
 		infiniteInstanceId: PieceInstanceInfiniteId
-	): PieceInstance {
+	): PlayoutPieceInstanceModel {
 		// make the extension
 		const newInstance: PieceInstance = {
-			_id: protectString<PieceInstanceId>(extendPieceInstance._id + '_hold'),
-			playlistActivationId: extendPieceInstance.playlistActivationId,
-			rundownId: extendPieceInstance.rundownId,
+			_id: protectString<PieceInstanceId>(extendPieceInstance.PieceInstance._id + '_hold'),
+			playlistActivationId: extendPieceInstance.PieceInstance.playlistActivationId,
+			rundownId: extendPieceInstance.PieceInstance.rundownId,
 			partInstanceId: this.PartInstance._id,
 			dynamicallyInserted: getCurrentTime(),
 			piece: {
-				...clone<PieceInstancePiece>(extendPieceInstance.piece),
+				...clone<PieceInstancePiece>(extendPieceInstance.PieceInstance.piece),
 				enable: { start: 0 },
 				extendOnHold: false,
 			},
 			infinite: {
 				infiniteInstanceId: infiniteInstanceId,
 				infiniteInstanceIndex: 1,
-				infinitePieceId: extendPieceInstance.piece._id,
+				infinitePieceId: extendPieceInstance.PieceInstance.piece._id,
 				fromPreviousPart: true,
 				fromHold: true,
 			},
 			// Preserve the timings from the playing instance
-			reportedStartedPlayback: extendPieceInstance.reportedStartedPlayback,
-			reportedStoppedPlayback: extendPieceInstance.reportedStoppedPlayback,
-			plannedStartedPlayback: extendPieceInstance.plannedStartedPlayback,
-			plannedStoppedPlayback: extendPieceInstance.plannedStoppedPlayback,
+			reportedStartedPlayback: extendPieceInstance.PieceInstance.reportedStartedPlayback,
+			reportedStoppedPlayback: extendPieceInstance.PieceInstance.reportedStoppedPlayback,
+			plannedStartedPlayback: extendPieceInstance.PieceInstance.plannedStartedPlayback,
+			plannedStoppedPlayback: extendPieceInstance.PieceInstance.plannedStoppedPlayback,
 		}
 
-		this.PieceInstancesImpl.set(newInstance._id, {
-			doc: newInstance,
-			changed: true,
-		})
+		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(newInstance, true)
+		this.PieceInstancesImpl.set(newInstance._id, pieceInstanceModel)
 
-		return newInstance
-	}
-
-	setPieceInstanceDuration(
-		pieceInstanceId: PieceInstanceId,
-		duration: Required<PieceInstance>['userDuration']
-	): void {
-		const pieceInstance = this.PieceInstancesImpl.get(pieceInstanceId)
-		if (!pieceInstance?.doc) throw new Error(`PieceInstance ${pieceInstanceId} not found`) // TODO - is this ok?
-
-		pieceInstance.changed = true
-		pieceInstance.doc.userDuration = duration
+		return pieceInstanceModel
 	}
 
 	insertVirtualPiece(
@@ -527,7 +433,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		lifespan: PieceLifespan,
 		sourceLayerId: string,
 		outputLayerId: string
-	): PieceInstance {
+	): PlayoutPieceInstanceModel {
 		const pieceId: PieceId = getRandomId()
 		const newPieceInstance: PieceInstance = {
 			_id: protectString(`${this.PartInstance._id}_${pieceId}`),
@@ -554,19 +460,9 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		}
 		setupPieceInstanceInfiniteProperties(newPieceInstance)
 
-		this.PieceInstancesImpl.set(newPieceInstance._id, {
-			doc: newPieceInstance,
-			changed: true,
-		})
+		const pieceInstanceModel = new PlayoutPieceInstanceModelImpl(newPieceInstance, true)
+		this.PieceInstancesImpl.set(newPieceInstance._id, pieceInstanceModel)
 
-		return newPieceInstance
-	}
-
-	setPieceInstanceDisabled(pieceInstanceId: PieceInstanceId, disabled: boolean): void {
-		const pieceInstance = this.PieceInstancesImpl.get(pieceInstanceId)
-		if (!pieceInstance?.doc) throw new Error(`PieceInstance ${pieceInstanceId} not found`) // TODO - is this ok?
-
-		pieceInstance.changed = true
-		pieceInstance.doc.disabled = disabled
+		return pieceInstanceModel
 	}
 }

@@ -24,6 +24,7 @@ import { PlayoutSegmentModel } from './PlayoutSegmentModel'
 import { PlayoutPartInstanceModel } from './PlayoutPartInstanceModel'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { PlayoutPieceInstanceModel } from './PlayoutPieceInstanceModel'
 
 export type DeferredFunction = (cache: PlayoutModel) => void | Promise<void>
 export type DeferredAfterSaveFunction = (cache: PlayoutModelReadonly) => void | Promise<void>
@@ -76,7 +77,7 @@ export interface PlayoutModelReadonly extends StudioPlayoutModelBaseReadonly {
 
 	findPieceInstance(
 		id: PieceInstanceId
-	): { partInstance: PlayoutPartInstanceModel; pieceInstance: ReadonlyDeep<PieceInstance> } | undefined
+	): { partInstance: PlayoutPartInstanceModel; pieceInstance: PlayoutPieceInstanceModel } | undefined
 }
 
 export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBase, ICacheBase2 {

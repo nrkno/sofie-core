@@ -72,14 +72,14 @@ export function writePartInstancesAndPieceInstances(
 			}
 
 			for (const [pieceInstanceId, pieceInstance] of partInstance.PieceInstancesImpl.entries()) {
-				if (!pieceInstance.doc) {
+				if (!pieceInstance) {
 					deletedPieceInstanceIds.push(pieceInstanceId)
-				} else if (pieceInstance.changed) {
+				} else if (pieceInstance.HasChanges) {
 					// TODO - this does not perform any diffing
 					pieceInstanceOps.push({
 						replaceOne: {
 							filter: { _id: pieceInstanceId },
-							replacement: pieceInstance.doc,
+							replacement: pieceInstance.PieceInstanceImpl,
 							upsert: true,
 						},
 					})

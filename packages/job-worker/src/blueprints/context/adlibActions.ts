@@ -168,7 +168,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	}
 	async getPieceInstances(part: 'current' | 'next'): Promise<IBlueprintPieceInstance[]> {
 		const partInstance = this._getPartInstance(part)
-		return partInstance?.PieceInstances?.map(convertPieceInstanceToBlueprints) ?? []
+		return partInstance?.PieceInstances?.map((p) => convertPieceInstanceToBlueprints(p.PieceInstance)) ?? []
 	}
 	async getResolvedPieceInstances(part: 'current' | 'next'): Promise<IBlueprintResolvedPieceInstance[]> {
 		const partInstance = this._getPartInstance(part)
@@ -320,7 +320,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			this.nextPartState = Math.max(this.nextPartState, ActionPartChange.SAFE_CHANGE)
 		}
 
-		return convertPieceInstanceToBlueprints(newPieceInstance)
+		return convertPieceInstanceToBlueprints(newPieceInstance.PieceInstance)
 	}
 	async updatePieceInstance(
 		pieceInstanceId: string,
@@ -337,18 +337,18 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('PieceInstance could not be found')
 		}
 
-		const { partInstance, pieceInstance } = foundPieceInstance
+		const { pieceInstance } = foundPieceInstance
 
-		if (pieceInstance.infinite?.fromPreviousPart) {
+		if (pieceInstance.PieceInstance.infinite?.fromPreviousPart) {
 			throw new Error('Cannot update an infinite piece that is continued from a previous part')
 		}
 
 		const updatesCurrentPart: ActionPartChange =
-			pieceInstance.partInstanceId === this._cache.Playlist.currentPartInfo?.partInstanceId
+			pieceInstance.PieceInstance.partInstanceId === this._cache.Playlist.currentPartInfo?.partInstanceId
 				? ActionPartChange.SAFE_CHANGE
 				: ActionPartChange.NONE
 		const updatesNextPart: ActionPartChange =
-			pieceInstance.partInstanceId === this._cache.Playlist.nextPartInfo?.partInstanceId
+			pieceInstance.PieceInstance.partInstanceId === this._cache.Playlist.nextPartInfo?.partInstanceId
 				? ActionPartChange.SAFE_CHANGE
 				: ActionPartChange.NONE
 		if (!updatesCurrentPart && !updatesNextPart) {
@@ -359,7 +359,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		if (trimmedPiece.content?.timelineObjects) {
 			timelineObjectsString = serializePieceTimelineObjectsBlob(
 				postProcessTimelineObjects(
-					pieceInstance.piece._id,
+					pieceInstance.PieceInstance.piece._id,
 					this.showStyleCompound.blueprintId,
 					trimmedPiece.content.timelineObjects
 				)
@@ -368,19 +368,15 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			trimmedPiece.content = omit(trimmedPiece.content, 'timelineObjects') as WithTimeline<SomeContent>
 		}
 
-		partInstance.updatePieceProps(pieceInstance._id, trimmedPiece as any) // TODO: this needs to be more type safe
-		if (timelineObjectsString !== undefined)
-			partInstance.updatePieceProps(pieceInstance._id, { timelineObjectsString })
+		pieceInstance.updatePieceProps(trimmedPiece as any) // TODO: this needs to be more type safe
+		if (timelineObjectsString !== undefined) pieceInstance.updatePieceProps({ timelineObjectsString })
 
 		// setupPieceInstanceInfiniteProperties(pieceInstance)
 
 		this.nextPartState = Math.max(this.nextPartState, updatesNextPart)
 		this.currentPartState = Math.max(this.currentPartState, updatesCurrentPart)
 
-		const updatedPieceInstance = partInstance.getPieceInstance(pieceInstance._id)
-		if (!updatedPieceInstance) throw new Error('PieceInstance disappeared!')
-
-		return convertPieceInstanceToBlueprints(updatedPieceInstance)
+		return convertPieceInstanceToBlueprints(pieceInstance.PieceInstance)
 	}
 	async queuePart(rawPart: IBlueprintPart, rawPieces: IBlueprintPiece[]): Promise<IBlueprintPartInstance> {
 		const currentPartInstance = this._cache.CurrentPartInstance

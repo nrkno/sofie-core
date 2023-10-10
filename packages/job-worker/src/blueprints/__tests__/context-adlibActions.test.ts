@@ -36,6 +36,7 @@ import { convertPartInstanceToBlueprints, convertPieceInstanceToBlueprints } fro
 import { TimelineObjRundown, TimelineObjType } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { PlayoutPartInstanceModelImpl } from '../../playout/model/implementation/PlayoutPartInstanceModelImpl'
 import { writePartInstancesAndPieceInstances } from '../../playout/model/implementation/SavePlayoutModel'
+import { PlayoutPieceInstanceModel } from '../../playout/model/PlayoutPieceInstanceModel'
 
 import * as PlayoutAdlib from '../../playout/adlibUtils'
 type TinnerStopPieces = jest.MockedFunction<typeof PlayoutAdlib.innerStopPieces>
@@ -562,12 +563,12 @@ describe('Test blueprint api context', () => {
 						},
 						undefined
 					)
-					allPartInstances[0].setPieceInstancedPlannedStartedPlayback(insertedPieceInstance._id, 1000)
+					insertedPieceInstance.setPlannedStartedPlayback(1000)
 					// We need to push changes back to 'mongo' for these tests
 					await saveAllToDatabase(jobContext, cache, allPartInstances)
 
 					await expect(context.findLastPieceOnLayer(sourceLayerIds[0])).resolves.toMatchObject({
-						_id: insertedPieceInstance._id,
+						_id: insertedPieceInstance.PieceInstance._id,
 					})
 					await expect(
 						context.findLastPieceOnLayer(sourceLayerIds[0], { originalOnly: true })
@@ -590,13 +591,13 @@ describe('Test blueprint api context', () => {
 						},
 						undefined
 					)
-					allPartInstances[0].setPieceInstancedPlannedStartedPlayback(insertedPieceInstance2._id, 2000)
+					insertedPieceInstance2.setPlannedStartedPlayback(2000)
 
 					// We need to push changes back to 'mongo' for these tests
 					await saveAllToDatabase(jobContext, cache, allPartInstances)
 
 					await expect(context.findLastPieceOnLayer(sourceLayerIds[0])).resolves.toMatchObject({
-						_id: insertedPieceInstance2._id,
+						_id: insertedPieceInstance2.PieceInstance._id,
 					})
 					await expect(
 						context.findLastPieceOnLayer(sourceLayerIds[0], { originalOnly: true })
@@ -643,7 +644,7 @@ describe('Test blueprint api context', () => {
 						},
 						undefined
 					)
-					allPartInstances[0].setPieceInstancedPlannedStartedPlayback(insertedPieceInstance._id, 1000)
+					insertedPieceInstance.setPlannedStartedPlayback(1000)
 					const insertedPieceInstance2 = allPartInstances[2].insertAdlibbedPiece(
 						{
 							_id: getRandomId(),
@@ -660,18 +661,18 @@ describe('Test blueprint api context', () => {
 						},
 						undefined
 					)
-					allPartInstances[2].setPieceInstancedPlannedStartedPlayback(insertedPieceInstance2._id, 2000)
+					insertedPieceInstance2.setPlannedStartedPlayback(2000)
 					// We need to push changes back to 'mongo' for these tests
 					await saveAllToDatabase(jobContext, cache, allPartInstances)
 
 					// Check it
 					await expect(context.findLastPieceOnLayer(sourceLayerIds[0])).resolves.toMatchObject({
-						_id: insertedPieceInstance2._id,
+						_id: insertedPieceInstance2.PieceInstance._id,
 					})
 					await expect(
 						context.findLastPieceOnLayer(sourceLayerIds[0], { excludeCurrentPart: true })
 					).resolves.toMatchObject({
-						_id: insertedPieceInstance._id,
+						_id: insertedPieceInstance.PieceInstance._id,
 					})
 				})
 			})
@@ -715,7 +716,7 @@ describe('Test blueprint api context', () => {
 						},
 						undefined
 					)
-					allPartInstances[0].setPieceInstancedPlannedStartedPlayback(insertedPieceInstance._id, 1000)
+					insertedPieceInstance.setPlannedStartedPlayback(1000)
 					const insertedPieceInstance2 = allPartInstances[2].insertAdlibbedPiece(
 						{
 							_id: getRandomId(),
@@ -736,27 +737,27 @@ describe('Test blueprint api context', () => {
 						},
 						undefined
 					)
-					allPartInstances[2].setPieceInstancedPlannedStartedPlayback(insertedPieceInstance2._id, 2000)
+					insertedPieceInstance2.setPlannedStartedPlayback(2000)
 					// We need to push changes back to 'mongo' for these tests
 					await saveAllToDatabase(jobContext, cache, allPartInstances)
 
 					// Check it
 					await expect(context.findLastPieceOnLayer(sourceLayerIds[0])).resolves.toMatchObject({
-						_id: insertedPieceInstance2._id,
+						_id: insertedPieceInstance2.PieceInstance._id,
 					})
 					await expect(
 						context.findLastPieceOnLayer(sourceLayerIds[0], { pieceMetaDataFilter: {} })
 					).resolves.toMatchObject({
-						_id: insertedPieceInstance2._id,
+						_id: insertedPieceInstance2.PieceInstance._id,
 					})
 					await expect(
 						context.findLastPieceOnLayer(sourceLayerIds[0], { pieceMetaDataFilter: { prop1: 'hello' } })
-					).resolves.toMatchObject({ _id: insertedPieceInstance2._id })
+					).resolves.toMatchObject({ _id: insertedPieceInstance2.PieceInstance._id })
 					await expect(
 						context.findLastPieceOnLayer(sourceLayerIds[0], {
 							pieceMetaDataFilter: { prop1: { $ne: 'hello' } },
 						})
-					).resolves.toMatchObject({ _id: insertedPieceInstance._id })
+					).resolves.toMatchObject({ _id: insertedPieceInstance.PieceInstance._id })
 				})
 			})
 		})
@@ -1152,10 +1153,10 @@ describe('Test blueprint api context', () => {
 
 					// check some properties not exposed to the blueprints
 					const newPieceInstance = cache.findPieceInstance(protectString(newPieceInstanceId))
-						?.pieceInstance as PieceInstance
+						?.pieceInstance as PlayoutPieceInstanceModel
 					expect(newPieceInstance).toBeTruthy()
-					expect(newPieceInstance.dynamicallyInserted).toBeTruthy()
-					expect(newPieceInstance.partInstanceId).toEqual(partInstance.PartInstance._id)
+					expect(newPieceInstance.PieceInstance.dynamicallyInserted).toBeTruthy()
+					expect(newPieceInstance.PieceInstance.partInstanceId).toEqual(partInstance.PartInstance._id)
 				})
 			})
 		})
@@ -1274,7 +1275,7 @@ describe('Test blueprint api context', () => {
 					)!
 					expect(pieceInstance1).toBeTruthy()
 
-					expect(resultPiece).toEqual(convertPieceInstanceToBlueprints(pieceInstance1))
+					expect(resultPiece).toEqual(convertPieceInstanceToBlueprints(pieceInstance1.PieceInstance))
 					const pieceInstance0After = {
 						...pieceInstance0Before,
 						piece: {
@@ -1288,10 +1289,10 @@ describe('Test blueprint api context', () => {
 							),
 						},
 					}
-					expect(pieceInstance1).toEqual(pieceInstance0After)
+					expect(pieceInstance1.PieceInstance).toEqual(pieceInstance0After)
 					expect((partInstance1 as PlayoutPartInstanceModelImpl).PartInstanceHasChanges).toBeFalsy()
 					expect((partInstance1 as PlayoutPartInstanceModelImpl).ChangedPieceInstanceIds()).toEqual([
-						pieceInstance1._id,
+						pieceInstance1.PieceInstance._id,
 					])
 
 					expect(context.nextPartState).toEqual(ActionPartChange.NONE)
@@ -1653,11 +1654,11 @@ describe('Test blueprint api context', () => {
 					expect(targetPieceInstance).toBeTruthy()
 
 					await expect(
-						context.removePieceInstances('next', [unprotectString(targetPieceInstance._id)])
-					).resolves.toEqual([unprotectString(targetPieceInstance._id)])
+						context.removePieceInstances('next', [unprotectString(targetPieceInstance.PieceInstance._id)])
+					).resolves.toEqual([unprotectString(targetPieceInstance.PieceInstance._id)])
 
 					// Ensure it was all removed
-					expect(cache.findPieceInstance(targetPieceInstance._id)).toBeFalsy()
+					expect(cache.findPieceInstance(targetPieceInstance.PieceInstance._id)).toBeFalsy()
 					expect(context.nextPartState).toEqual(ActionPartChange.SAFE_CHANGE)
 				})
 			})

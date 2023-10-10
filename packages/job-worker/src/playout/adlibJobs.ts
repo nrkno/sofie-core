@@ -1,6 +1,6 @@
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
-import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { assertNever, clone } from '@sofie-automation/corelib/dist/lib'
 import { logger } from '../logging'
@@ -17,7 +17,7 @@ import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
 import { runJobWithPlayoutCache } from './lock'
 import { updateTimeline } from './timeline/generate'
 import { getCurrentTime } from '../lib'
-import { convertAdLibToPieceInstance, convertPieceToAdLibPiece, sortPieceInstancesByStart } from './pieces'
+import { comparePieceStart, convertAdLibToPieceInstance, convertPieceToAdLibPiece } from './pieces'
 import { getResolvedPiecesForCurrentPartInstance } from './resolvedPieces'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
@@ -29,6 +29,7 @@ import { WatchedPackagesHelper } from '../blueprints/context/watchedPackages'
 import { innerFindLastPieceOnLayer, innerStartOrQueueAdLibPiece, innerStopPieces } from './adlibUtils'
 import _ = require('underscore')
 import { executeActionInner } from './adlibAction'
+import { PlayoutPieceInstanceModel } from './model/PlayoutPieceInstanceModel'
 
 /**
  * Play an existing Piece in the Rundown as an AdLib
@@ -59,7 +60,7 @@ export async function handleTakePieceAsAdlibNow(context: JobContext, data: TakeP
 			const pieceInstanceToCopy = cache.findPieceInstance(data.pieceInstanceIdOrPieceIdToCopy as PieceInstanceId)
 
 			const pieceToCopy = pieceInstanceToCopy
-				? clone<PieceInstancePiece>(pieceInstanceToCopy.pieceInstance.piece)
+				? clone<PieceInstancePiece>(pieceInstanceToCopy.pieceInstance.PieceInstance.piece)
 				: ((await context.directCollections.Pieces.findOne({
 						_id: data.pieceInstanceIdOrPieceIdToCopy as PieceId,
 						startRundownId: { $in: rundownIds },
@@ -134,7 +135,7 @@ async function pieceTakeNowAsAdlib(
 	currentPartInstance: PlayoutPartInstanceModel,
 	pieceToCopy: PieceInstancePiece,
 	pieceInstanceToCopy:
-		| { partInstance: PlayoutPartInstanceModel; pieceInstance: ReadonlyDeep<PieceInstance> }
+		| { partInstance: PlayoutPartInstanceModel; pieceInstance: PlayoutPieceInstanceModel }
 		| undefined
 ): Promise<void> {
 	/*const newPieceInstance = */ convertAdLibToPieceInstance(context, pieceToCopy, currentPartInstance, false)
@@ -142,12 +143,12 @@ async function pieceTakeNowAsAdlib(
 	// Disable the original piece if from the same Part
 	if (
 		pieceInstanceToCopy &&
-		pieceInstanceToCopy.pieceInstance.partInstanceId === currentPartInstance.PartInstance._id
+		pieceInstanceToCopy.pieceInstance.PieceInstance.partInstanceId === currentPartInstance.PartInstance._id
 	) {
 		// Ensure the piece being copied isnt currently live
 		if (
-			pieceInstanceToCopy.pieceInstance.plannedStartedPlayback &&
-			pieceInstanceToCopy.pieceInstance.plannedStartedPlayback <= getCurrentTime()
+			pieceInstanceToCopy.pieceInstance.PieceInstance.plannedStartedPlayback &&
+			pieceInstanceToCopy.pieceInstance.PieceInstance.plannedStartedPlayback <= getCurrentTime()
 		) {
 			const resolvedPieces = getResolvedPiecesForCurrentPartInstance(
 				context,
@@ -155,7 +156,7 @@ async function pieceTakeNowAsAdlib(
 				currentPartInstance
 			)
 			const resolvedPieceBeingCopied = resolvedPieces.find(
-				(p) => p.instance._id === pieceInstanceToCopy.pieceInstance._id
+				(p) => p.instance._id === pieceInstanceToCopy.pieceInstance.PieceInstance._id
 			)
 
 			if (
@@ -167,7 +168,7 @@ async function pieceTakeNowAsAdlib(
 				// logger.debug(`Piece "${piece._id}" is currently live and cannot be used as an ad-lib`)
 				throw UserError.from(
 					new Error(
-						`PieceInstance "${pieceInstanceToCopy.pieceInstance._id}" is currently live and cannot be used as an ad-lib`
+						`PieceInstance "${pieceInstanceToCopy.pieceInstance.PieceInstance._id}" is currently live and cannot be used as an ad-lib`
 					),
 					UserErrorMessage.PieceAsAdlibCurrentlyLive
 				)
@@ -175,7 +176,7 @@ async function pieceTakeNowAsAdlib(
 		}
 
 		// TODO: is this ok?
-		currentPartInstance.setPieceInstanceDisabled(pieceInstanceToCopy.pieceInstance._id, true)
+		pieceInstanceToCopy.pieceInstance.setDisabled(true)
 	}
 
 	await syncPlayheadInfinitesForNextPartInstance(context, cache, cache.CurrentPartInstance, cache.NextPartInstance)
@@ -404,23 +405,23 @@ export async function handleDisableNextPiece(context: JobContext, data: DisableN
 				}
 
 				const filteredPieces = partInstance.PieceInstances.filter((piece) => {
-					const sourceLayer = allowedSourceLayers[piece.piece.sourceLayerId]
+					const sourceLayer = allowedSourceLayers[piece.PieceInstance.piece.sourceLayerId]
 					if (
 						sourceLayer?.allowDisable &&
-						!piece.piece.virtual &&
-						piece.piece.pieceType === IBlueprintPieceType.Normal
+						!piece.PieceInstance.piece.virtual &&
+						piece.PieceInstance.piece.pieceType === IBlueprintPieceType.Normal
 					)
 						return true
 					return false
 				})
 
-				const sortedPieces: ReadonlyDeep<PieceInstance>[] = sortPieceInstancesByStart(
-					_.sortBy(filteredPieces, (piece) => {
-						const sourceLayer = allowedSourceLayers[piece.piece.sourceLayerId]
-						return sourceLayer?._rank || -9999
-					}),
-					nowInPart
-				)
+				const sortedByLayer = _.sortBy(filteredPieces, (piece) => {
+					const sourceLayer = allowedSourceLayers[piece.PieceInstance.piece.sourceLayerId]
+					return sourceLayer?._rank || -9999
+				})
+
+				const sortedPieces = [...sortedByLayer]
+				sortedPieces.sort((a, b) => comparePieceStart(a.PieceInstance.piece, b.PieceInstance.piece, nowInPart))
 
 				const findLast = !!data.undo
 
@@ -428,8 +429,8 @@ export async function handleDisableNextPiece(context: JobContext, data: DisableN
 
 				return sortedPieces.find((piece) => {
 					return (
-						piece.piece.enable.start >= nowInPart &&
-						((!data.undo && !piece.disabled) || (data.undo && piece.disabled))
+						piece.PieceInstance.piece.enable.start >= nowInPart &&
+						((!data.undo && !piece.PieceInstance.disabled) || (data.undo && piece.PieceInstance.disabled))
 					)
 				})
 			}
@@ -447,9 +448,11 @@ export async function handleDisableNextPiece(context: JobContext, data: DisableN
 					const candidatePieceInstance = getNextPiece(partInstance, ignoreStartedPlayback)
 					if (candidatePieceInstance) {
 						logger.debug(
-							(data.undo ? 'Disabling' : 'Enabling') + ' next PieceInstance ' + candidatePieceInstance._id
+							(data.undo ? 'Disabling' : 'Enabling') +
+								' next PieceInstance ' +
+								candidatePieceInstance.PieceInstance._id
 						)
-						partInstance.setPieceInstanceDisabled(candidatePieceInstance._id, !data.undo)
+						candidatePieceInstance.setDisabled(!data.undo)
 						disabledPiece = true
 
 						break

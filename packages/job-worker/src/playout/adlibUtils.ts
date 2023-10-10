@@ -267,17 +267,25 @@ export function innerStopPieces(
 				case PieceLifespan.OutOnRundownChange: {
 					logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt}`)
 
-					const newDuration: Required<PieceInstance>['userDuration'] = cache.isMultiGatewayMode
-						? {
-								endRelativeToNow: offsetRelativeToNow,
-						  }
-						: {
-								endRelativeToPart: relativeStopAt,
-						  }
+					const pieceInstanceModel = cache.findPieceInstance(pieceInstance._id)
+					if (pieceInstanceModel) {
+						const newDuration: Required<PieceInstance>['userDuration'] = cache.isMultiGatewayMode
+							? {
+									endRelativeToNow: offsetRelativeToNow,
+							  }
+							: {
+									endRelativeToPart: relativeStopAt,
+							  }
 
-					currentPartInstance.setPieceInstanceDuration(pieceInstance._id, newDuration)
+						pieceInstanceModel.pieceInstance.setDuration(newDuration)
 
-					stoppedInstances.push(pieceInstance._id)
+						stoppedInstances.push(pieceInstance._id)
+					} else {
+						logger.warn(
+							`Blueprint action: Failed to crop PieceInstance "${pieceInstance._id}", it was not found`
+						)
+					}
+
 					break
 				}
 				case PieceLifespan.OutOnSegmentEnd:

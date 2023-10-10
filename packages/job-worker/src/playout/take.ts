@@ -436,13 +436,13 @@ export function updatePartInstanceOnTake(
 	// calculate and cache playout timing properties, so that we don't depend on the previousPartInstance:
 	const tmpTakePieces = processAndPrunePieceInstanceTimings(
 		showStyle.sourceLayers,
-		takePartInstance.PieceInstances,
+		takePartInstance.PieceInstances.map((p) => p.PieceInstance),
 		0
 	)
 	const partPlayoutTimings = calculatePartTimings(
 		playlist.holdState,
 		currentPartInstance?.PartInstance?.part,
-		currentPartInstance?.PieceInstances?.map((p) => p.piece) ?? [],
+		currentPartInstance?.PieceInstances?.map((p) => p.PieceInstance.piece) ?? [],
 		takePartInstance.PartInstance.part,
 		tmpTakePieces.filter((p) => !p.infinite || p.infinite.infiniteInstanceIndex === 0).map((p) => p.piece)
 	)
@@ -494,20 +494,23 @@ function startHold(
 	const span = context.startSpan('startHold')
 
 	// Make a copy of any item which is flagged as an 'infinite' extension
-	const pieceInstancesToCopy = holdFromPartInstance.PieceInstances.filter((p) => !!p.piece.extendOnHold)
+	const pieceInstancesToCopy = holdFromPartInstance.PieceInstances.filter((p) => !!p.PieceInstance.piece.extendOnHold)
 	pieceInstancesToCopy.forEach((instance) => {
-		if (!instance.infinite) {
+		if (!instance.PieceInstance.infinite) {
 			// mark current one as infinite
-			const infiniteInstanceId = holdFromPartInstance.preparePieceInstanceForHold(instance._id)
+			const infiniteInstanceId = instance.prepareForHold()
 
 			// This gets deleted once the nextpart is activated, so it doesnt linger for long
 			const extendedPieceInstance = holdToPartInstance.addHoldPieceInstance(instance, infiniteInstanceId)
 
-			const content = clone(instance.piece.content) as VTContent | undefined
-			if (content?.fileName && content.sourceDuration && instance.plannedStartedPlayback) {
-				content.seek = Math.min(content.sourceDuration, getCurrentTime() - instance.plannedStartedPlayback)
+			const content = clone(instance.PieceInstance.piece.content) as VTContent | undefined
+			if (content?.fileName && content.sourceDuration && instance.PieceInstance.plannedStartedPlayback) {
+				content.seek = Math.min(
+					content.sourceDuration,
+					getCurrentTime() - instance.PieceInstance.plannedStartedPlayback
+				)
 			}
-			holdToPartInstance.updatePieceProps(extendedPieceInstance._id, { content })
+			extendedPieceInstance.updatePieceProps({ content })
 		}
 	})
 	if (span) span.end()

@@ -274,7 +274,11 @@ function getPartInstanceTimelineInfo(
 	if (partInstance) {
 		const partStarted = partInstance.PartInstance.timings?.plannedStartedPlayback
 		const nowInPart = partStarted === undefined ? 0 : currentTime - partStarted
-		const pieceInstances = processAndPrunePieceInstanceTimings(sourceLayers, partInstance.PieceInstances, nowInPart)
+		const pieceInstances = processAndPrunePieceInstanceTimings(
+			sourceLayers,
+			partInstance.PieceInstances.map((p) => p.PieceInstance),
+			nowInPart
+		)
 
 		return {
 			partInstance: partInstance.PartInstance,
