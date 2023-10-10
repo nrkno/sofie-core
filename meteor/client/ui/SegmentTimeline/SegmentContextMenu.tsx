@@ -13,7 +13,7 @@ import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/
 
 interface IProps {
 	onSetNext: (part: DBPart | undefined, e: any, offset?: number, take?: boolean) => void
-	onSetNextSegment: (segmentId: SegmentId | null, e: any) => void
+	onSetNextSegment: (segmentId: SegmentId, e: any) => void
 	onQueueNextSegment: (segmentId: SegmentId | null, e: any) => void
 	playlist?: DBRundownPlaylist
 	studioMode: boolean

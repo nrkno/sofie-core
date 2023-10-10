@@ -2086,7 +2086,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 
 		onSetNextSegment = (segmentId: SegmentId, e: any) => {
 			const { t } = this.props
-			if (this.state.studioMode && (segmentId || segmentId === null) && this.props.playlist) {
+			if (this.state.studioMode && segmentId && this.props.playlist) {
 				const playlistId = this.props.playlist._id
 				doUserAction(
 					t,

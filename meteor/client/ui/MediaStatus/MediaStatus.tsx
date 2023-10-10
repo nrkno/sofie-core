@@ -96,7 +96,7 @@ function useRundownPlaylists(playlistIds: RundownPlaylistId[]) {
 						metaData: 0,
 						modified: 0,
 						nextPartInfo: 0,
-						nextSegmentId: 0,
+						queuedSegmentId: 0,
 						nextTimeOffset: 0,
 						previousPartInfo: 0,
 						previousPersistentState: 0,
