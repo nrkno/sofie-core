@@ -1,6 +1,6 @@
 {
 	"name": "live-status-gateway",
-	"version": "1.50.0-in-testing.2",
+	"version": "1.50.0-in-testing.5",
 	"private": true,
 	"description": "Provides state from Sofie over sockets",
 	"license": "MIT",
@@ -31,6 +31,7 @@
 		"genserver": "run -T rimraf server && ag ./api/asyncapi.yaml @asyncapi/nodejs-ws-template -o server -p server=development",
 		"inspect": "node --experimental-fetch --inspect dist/index.js",
 		"start": "node --experimental-fetch dist/index.js",
+		"dev": "run start -id localDevLsg",
 		"validate:dependencies": "yarn npm audit --groups dependencies && yarn license-validate",
 		"validate:dev-dependencies": "yarn npm audit --groups devDependencies",
 		"license-validate": "run -T sofie-licensecheck"
@@ -52,21 +53,23 @@
 		"production"
 	],
 	"dependencies": {
-		"@sofie-automation/blueprints-integration": "1.50.0-in-testing.2",
-		"@sofie-automation/corelib": "1.50.0-in-testing.2",
-		"@sofie-automation/server-core-integration": "1.50.0-in-testing.2",
-		"@sofie-automation/shared-lib": "1.50.0-in-testing.2",
+		"@sofie-automation/blueprints-integration": "1.50.0-in-testing.5",
+		"@sofie-automation/corelib": "1.50.0-in-testing.5",
+		"@sofie-automation/server-core-integration": "1.50.0-in-testing.5",
+		"@sofie-automation/shared-lib": "1.50.0-in-testing.5",
 		"debug": "^4.3.2",
 		"fast-clone": "^1.5.13",
 		"influx": "^5.9.2",
 		"tslib": "^2.4.0",
+		"underscore": "^1.13.6",
 		"winston": "^3.8.1",
 		"ws": "^8.10.0"
 	},
 	"devDependencies": {
 		"@asyncapi/generator": "1.9.13",
 		"@asyncapi/html-template": "0.26.0",
-		"@asyncapi/nodejs-ws-template": "0.9.25"
+		"@asyncapi/nodejs-ws-template": "0.9.25",
+		"jest-mock-extended": "^3.0.5"
 	},
 	"lint-staged": {
 		"*.{css,json,md,scss}": [

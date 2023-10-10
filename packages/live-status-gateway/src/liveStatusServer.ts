@@ -4,8 +4,9 @@ import { WebSocket, WebSocketServer } from 'ws'
 import { StudioHandler } from './collections/studio'
 import { ShowStyleBaseHandler } from './collections/showStyleBase'
 import { PlaylistHandler } from './collections/playlist'
-import { RundownHandler } from './collections/rundown'
-// import { SegmentHandler } from './collections/segment'
+import { RundownHandler } from './collections/rundownHandler'
+// import { RundownsHandler } from './collections/rundownsHandler'
+import { SegmentHandler } from './collections/segmentHandler'
 // import { PartHandler } from './collections/part'
 import { PartInstancesHandler } from './collections/partInstances'
 import { AdLibActionsHandler } from './collections/adLibActions'
@@ -15,6 +16,8 @@ import { StudioTopic } from './topics/studio'
 import { ActivePlaylistTopic } from './topics/activePlaylist'
 import { AdLibsHandler } from './collections/adLibs'
 import { GlobalAdLibsHandler } from './collections/globalAdLibs'
+import { SegmentsTopic } from './topics/segmentsTopic'
+import { SegmentsHandler } from './collections/segmentsHandler'
 
 export class LiveStatusServer {
 	_logger: Logger
@@ -33,9 +36,11 @@ export class LiveStatusServer {
 
 		const studioTopic = new StudioTopic(this._logger)
 		const activePlaylistTopic = new ActivePlaylistTopic(this._logger)
+		const segmentsTopic = new SegmentsTopic(this._logger)
 
 		rootChannel.addTopic('studio', studioTopic)
 		rootChannel.addTopic('activePlaylist', activePlaylistTopic)
+		rootChannel.addTopic('segments', segmentsTopic)
 
 		const studioHandler = new StudioHandler(this._logger, this._coreHandler)
 		await studioHandler.init()
@@ -43,10 +48,14 @@ export class LiveStatusServer {
 		await showStyleBaseHandler.init()
 		const playlistHandler = new PlaylistHandler(this._logger, this._coreHandler)
 		await playlistHandler.init()
+		// const rundownsHandler = new RundownsHandler(this._logger, this._coreHandler)
+		// await rundownsHandler.init()
 		const rundownHandler = new RundownHandler(this._logger, this._coreHandler)
 		await rundownHandler.init()
-		// const segmentHandler = new SegmentHandler(this._logger, this._coreHandler)
-		// await segmentHandler.init()
+		const segmentsHandler = new SegmentsHandler(this._logger, this._coreHandler)
+		await segmentsHandler.init()
+		const segmentHandler = new SegmentHandler(this._logger, this._coreHandler, segmentsHandler)
+		await segmentHandler.init()
 		// const partHandler = new PartHandler(this._logger, this._coreHandler)
 		// await partHandler.init()
 		const partInstancesHandler = new PartInstancesHandler(this._logger, this._coreHandler)
@@ -62,14 +71,17 @@ export class LiveStatusServer {
 
 		// add observers for collection subscription updates
 		await playlistHandler.subscribe(rundownHandler)
+		await playlistHandler.subscribe(segmentHandler)
 		// playlistHandler.subscribe(partHandler)
 		await playlistHandler.subscribe(partInstancesHandler)
 		await rundownHandler.subscribe(showStyleBaseHandler)
 		await partInstancesHandler.subscribe(rundownHandler)
-		// partInstancesHandler.subscribe(segmentHandler)
+		await partInstancesHandler.subscribe(segmentHandler)
 		// partInstancesHandler.subscribe(partHandler)
 		await partInstancesHandler.subscribe(adLibActionsHandler)
 		await partInstancesHandler.subscribe(globalAdLibActionsHandler)
+		await partInstancesHandler.subscribe(adLibsHandler)
+		await partInstancesHandler.subscribe(globalAdLibsHandler)
 
 		// add observers for websocket topic updates
 		await studioHandler.subscribe(studioTopic)
@@ -81,6 +93,8 @@ export class LiveStatusServer {
 		await adLibsHandler.subscribe(activePlaylistTopic)
 		await globalAdLibActionsHandler.subscribe(activePlaylistTopic)
 		await globalAdLibsHandler.subscribe(activePlaylistTopic)
+		await playlistHandler.subscribe(segmentsTopic)
+		await segmentsHandler.subscribe(segmentsTopic)
 
 		const wss = new WebSocketServer({ port: 8080 })
 		wss.on('connection', (ws, request) => {

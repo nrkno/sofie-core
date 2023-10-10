@@ -5,6 +5,8 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler'
+import { StudioHandler } from '../collections/studio'
+import { PlaylistsHandler } from '../collections/playlist'
 
 type PlaylistActivationStatus = 'deactivated' | 'rehearsal' | 'activated'
 
@@ -30,38 +32,31 @@ export class StudioTopic
 	private _playlists: PlaylistStatus[] = []
 
 	constructor(logger: Logger) {
-		super('StudioTopic', logger)
+		super(StudioTopic.name, logger)
 	}
 
 	addSubscriber(ws: WebSocket): void {
 		super.addSubscriber(ws)
-		this.sendStatus(new Set<WebSocket>().add(ws))
+		this.sendStatus([ws])
 	}
 
-	sendStatus(subscribers: Set<WebSocket>): void {
-		subscribers.forEach((ws) => {
-			if (this._studio) {
-				this.sendMessage(
-					ws,
-					literal<StudioStatus>({
-						event: 'studio',
-						id: unprotectString(this._studio._id),
-						name: this._studio.name,
-						playlists: this._playlists,
-					})
-				)
-			} else {
-				this.sendMessage(
-					ws,
-					literal<StudioStatus>({
-						event: 'studio',
-						id: null,
-						name: '',
-						playlists: [],
-					})
-				)
-			}
-		})
+	sendStatus(subscribers: Iterable<WebSocket>): void {
+		const studioStatus: StudioStatus = this._studio
+			? {
+					event: 'studio',
+					id: unprotectString(this._studio._id),
+					name: this._studio.name,
+					playlists: this._playlists,
+			  }
+			: {
+					event: 'studio',
+					id: null,
+					name: '',
+					playlists: [],
+			  }
+		for (const subscriber of subscribers) {
+			this.sendMessage(subscriber, studioStatus)
+		}
 	}
 
 	async update(source: string, data: DBStudio | DBRundownPlaylist[] | undefined): Promise<void> {
@@ -69,11 +64,11 @@ export class StudioTopic
 		const rundownPlaylists = data ? (data as DBRundownPlaylist[]) : []
 		const studio = data ? (data as DBStudio) : undefined
 		switch (source) {
-			case 'StudioHandler':
+			case StudioHandler.name:
 				this._logger.info(`${this._name} received studio update ${studio?._id}`)
 				this._studio = studio
 				break
-			case 'PlaylistsHandler':
+			case PlaylistsHandler.name:
 				this._logger.info(`${this._name} received playlists update from ${source}`)
 				this._playlists = rundownPlaylists.map((p) => {
 					let activationStatus: PlaylistActivationStatus =

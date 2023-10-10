@@ -20,6 +20,7 @@ meteorPublish(PubSub.coreSystem, async function (token) {
 				serviceMessages: 1,
 				blueprintId: 1,
 				cron: 1,
+				logo: 1,
 			},
 		})
 	}

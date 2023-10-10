@@ -14,9 +14,9 @@ import {
 	getRandomString,
 	ManualPromise,
 	MeteorStartupAsync,
-	stringifyError,
 	Time,
 } from '../../lib/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
 import { triggerFastTrackObserver, FastTrackObservers } from '../publications/fastTrack'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'

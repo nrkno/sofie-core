@@ -98,6 +98,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 
 		this._coreOptions = coreOptions
 
+		/** We continuously ping Core to let Core know that we're alive */
 		this._pinger = new CorePinger(
 			(err) => this._emitError(err),
 			async () => this.coreMethods.ping()
@@ -176,6 +177,7 @@ export class CoreConnection extends EventEmitter<CoreConnectionEvents> {
 
 		if (this._ddp) {
 			this._ddp.close()
+			this._ddp.removeAllListeners()
 		}
 		this.removeAllListeners()
 

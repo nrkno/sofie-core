@@ -1,5 +1,6 @@
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { getRandomId, stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { getActiveRundownPlaylistsInStudioFromDb } from '../studio/lib'
 import _ = require('underscore')
 import { JobContext } from '../jobs'

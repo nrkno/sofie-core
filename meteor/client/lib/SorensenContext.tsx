@@ -1,5 +1,6 @@
 import React, { PropsWithChildren, useEffect, useState } from 'react'
 import Sorensen from '@sofie-automation/sorensen'
+import { catchError } from './lib'
 
 export const SorensenContext = React.createContext<typeof Sorensen | null>(null)
 
@@ -14,10 +15,10 @@ export const SorensenContextProvider: React.FC<PropsWithChildren<{}>> = function
 			.then(() => {
 				setInitializedSorensen(Sorensen)
 			})
-			.catch(console.error)
+			.catch(catchError('Sorensen.init'))
 
 		return () => {
-			Sorensen.destroy().catch(console.error)
+			Sorensen.destroy().catch(catchError('Sorensen.destroy'))
 		}
 	}, [])
 

@@ -1,12 +1,12 @@
 import { Meteor } from 'meteor/meteor'
 import { Tracker } from 'meteor/tracker'
 import { Time } from '@sofie-automation/blueprints-integration'
-import { getCurrentTime, stringifyError } from '../../lib/lib'
+import { getCurrentTime } from '../../lib/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { MeteorCall } from '../../lib/api/methods'
 
 interface LoggedError {
 	location: string
-	content: any
 	stringContent: string
 	added: Time
 }
@@ -22,7 +22,7 @@ try {
 
 function sendErrorToCore(errorLog: LoggedError) {
 	MeteorCall.client
-		.clientErrorReport(errorLog.added, errorLog.content, errorLog.stringContent, errorLog.location)
+		.clientErrorReport(errorLog.added, errorLog.stringContent, errorLog.location)
 		.then(() => {
 			const sentIdx = errorCache.indexOf(errorLog)
 			if (sentIdx >= 0) {
@@ -36,15 +36,15 @@ function sendErrorToCore(errorLog: LoggedError) {
 		})
 }
 
-function uncaughtErrorHandler(errorObj: any) {
+function uncaughtErrorHandler(errorObj: any, context: string) {
 	if (!errorObj) return // Nothing to report..
 
 	// To get the textual content of Error('my Error')
-	let stringContent: string
+	let stringContent = `${context}: `
 	if (Array.isArray(errorObj)) {
-		stringContent = errorObj.map((err) => stringifyError(err)).join(',')
+		stringContent += errorObj.map((err) => stringifyError(err)).join(',')
 	} else {
-		stringContent = stringifyError(errorObj)
+		stringContent += stringifyError(errorObj)
 	}
 
 	const caughtErrorStack = new Error('')
@@ -54,7 +54,6 @@ function uncaughtErrorHandler(errorObj: any) {
 
 	const errorLog: LoggedError = {
 		location: window.location.href,
-		content: errorObj,
 		stringContent: stringContent,
 		added: getCurrentTime(),
 	}
@@ -76,7 +75,7 @@ function uncaughtErrorHandler(errorObj: any) {
 const originalConsoleError = console.error
 console.error = (...args: any[]) => {
 	try {
-		uncaughtErrorHandler(args)
+		uncaughtErrorHandler(args, 'console.error')
 	} catch (e) {
 		// well, we can't do much then...
 	}
@@ -86,6 +85,8 @@ console.error = (...args: any[]) => {
 const IGNORED_ERRORS = [
 	// This error is benign. https://stackoverflow.com/questions/49384120/resizeobserver-loop-limit-exceeded
 	'ResizeObserver loop limit exceeded',
+	// This error is benign. https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver#observation_errors
+	'ResizeObserver loop completed with undelivered notifications',
 ].map((error) => new RegExp(error, 'i'))
 
 const originalOnError = window.onerror
@@ -106,7 +107,7 @@ window.onerror = (event, source, line, col, error) => {
 	}
 
 	try {
-		uncaughtErrorHandler(errorObj)
+		uncaughtErrorHandler(errorObj, 'window.onerror')
 	} catch (e) {
 		// well, we can't do much if THAT goes wrong...
 		console.log('Error when trying to report an error', e, 'Original error', errorObj)

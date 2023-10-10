@@ -1,4 +1,10 @@
-import { CoreConnection, CoreOptions, DDPConnectorOptions, Observer } from '@sofie-automation/server-core-integration'
+import {
+	CoreConnection,
+	CoreOptions,
+	DDPConnectorOptions,
+	Observer,
+	stringifyError,
+} from '@sofie-automation/server-core-integration'
 import { DeviceConfig } from './connector'
 import { Logger } from 'winston'
 import { Process } from './process'
@@ -111,8 +117,10 @@ export class CoreHandler {
 		this.logger.info('Core: Setting up subscriptions..')
 		this.logger.info('DeviceId: ' + this.core.deviceId)
 
-		await this.core.autoSubscribe('peripheralDeviceForDevice', this.core.deviceId)
-
+		await Promise.all([
+			this.core.autoSubscribe('peripheralDeviceForDevice', this.core.deviceId),
+			this.core.autoSubscribe('peripheralDeviceCommands', this.core.deviceId),
+		])
 		this.logger.info('Core: Subscriptions are set up!')
 		if (this._observers.length) {
 			this.logger.info('CoreMos: Clearing observers..')
@@ -125,6 +133,7 @@ export class CoreHandler {
 		const observer = this.core.observe('peripheralDeviceForDevice')
 		observer.added = (id: string) => this.onDeviceChanged(protectString(id))
 		observer.changed = (id: string) => this.onDeviceChanged(protectString(id))
+		this.setupObserverForPeripheralDeviceCommands(this)
 	}
 	async destroy(): Promise<void> {
 		this._statusDestroyed = true
@@ -213,11 +222,11 @@ export class CoreHandler {
 			}
 
 			this._executedFunctions[unprotectString(cmd._id)] = true
-			const cb = (err: any, res?: any) => {
-				if (err) {
-					this.logger.error('executeFunction error', err, err.stack)
+			const cb = (errStr: string | null, res?: any) => {
+				if (errStr) {
+					this.logger.error(`executeFunction error: ${errStr}`)
 				}
-				fcnObject.core.coreMethods.functionReply(cmd._id, err, res).catch((e) => {
+				fcnObject.core.coreMethods.functionReply(cmd._id, errStr, res).catch((e) => {
 					this.logger.error(e)
 				})
 			}
@@ -231,15 +240,47 @@ export class CoreHandler {
 						cb(null, result)
 					})
 					.catch((e) => {
-						cb(e.toString(), null)
+						cb(stringifyError(e), null)
 					})
 			} catch (e: any) {
-				cb(e.toString(), null)
+				cb(stringifyError(e), null)
 			}
 		}
 	}
 	retireExecuteFunction(cmdId: string): void {
 		delete this._executedFunctions[cmdId]
+	}
+	setupObserverForPeripheralDeviceCommands(functionObject: CoreHandler): void {
+		const observer = functionObject.core.observe('peripheralDeviceCommands')
+		functionObject._observers.push(observer)
+		const addedChangedCommand = (id: string) => {
+			const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
+			if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
+			const cmd = cmds.findOne(protectString(id))
+			if (!cmd) throw Error('PeripheralCommand "' + id + '" not found!')
+			// console.log('addedChangedCommand', id)
+			if (cmd.deviceId === functionObject.core.deviceId) {
+				this.executeFunction(cmd, functionObject)
+			} else {
+				// console.log('not mine', cmd.deviceId, this.core.deviceId)
+			}
+		}
+		observer.added = (id: string) => {
+			addedChangedCommand(id)
+		}
+		observer.changed = (id: string) => {
+			addedChangedCommand(id)
+		}
+		observer.removed = (id: string) => {
+			this.retireExecuteFunction(id)
+		}
+		const cmds = functionObject.core.getCollection<PeripheralDeviceCommand>('peripheralDeviceCommands')
+		if (!cmds) throw Error('"peripheralDeviceCommands" collection not found!')
+		cmds.find({}).forEach((cmd) => {
+			if (cmd.deviceId === functionObject.core.deviceId) {
+				this.executeFunction(cmd, functionObject)
+			}
+		})
 	}
 	killProcess(actually: number): boolean {
 		if (actually === 1) {

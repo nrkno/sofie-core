@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { translateWithTracker, Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
-import { ICoreSystem } from '../../../lib/collections/CoreSystem'
+import { ICoreSystem, SofieLogo } from '../../../lib/collections/CoreSystem'
 import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { meteorSubscribe, PubSub } from '../../../lib/api/pubsub'
 import { EditAttribute } from '../../lib/EditAttribute'
@@ -15,6 +15,7 @@ import { LogLevel } from '../../../lib/lib'
 import { CoreSystem } from '../../collections'
 import { CollectionCleanupResult } from '../../../lib/api/system'
 import { LabelActual } from '../../lib/Components/LabelAndOverrides'
+import { catchError } from '../../lib/lib'
 
 interface IProps {}
 
@@ -59,11 +60,11 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 										},
 									})
 								})
-								.catch(console.error)
+								.catch(catchError('system.cleanupIndexes'))
 						},
 					})
 				})
-				.catch(console.error)
+				.catch(catchError('system.cleanupIndexes'))
 		}
 		render(): JSX.Element | null {
 			const { t } = this.props
@@ -87,6 +88,23 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 								</div>
 								<span className="text-s dimmed field-hint">
 									{t('This name will be shown in the title bar of the window')}
+								</span>
+							</label>
+							<label className="field">
+								<LabelActual label={t('Logo')} />
+								<div className="mdi">
+									<EditAttribute
+										modifiedClassName="bghl"
+										attribute="logo"
+										obj={this.props.coreSystem}
+										type="dropdown"
+										options={{ ...SofieLogo }}
+										collection={CoreSystem}
+										className="mdinput"
+									/>
+								</div>
+								<span className="text-s dimmed field-hint">
+									{t('Sofie logo to be displayed in the header. Requires a page refresh.')}
 								</span>
 							</label>
 							<label className="field">
@@ -239,18 +257,6 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 						</label>
 					</div>
 
-					<h2 className="mhn">{t('Cleanup')}</h2>
-					<div>
-						<button className="btn btn-default" onClick={() => this.cleanUpOldDatabaseIndexes()}>
-							{t('Cleanup old database indexes')}
-						</button>
-					</div>
-					<div>
-						<button className="btn btn-default" onClick={() => checkForOldDataAndCleanUp(t)}>
-							{t('Cleanup old data')}
-						</button>
-					</div>
-
 					<h2 className="mhn">{t('Cron jobs')}</h2>
 					<div className="properties-grid">
 						<label className="field">
@@ -296,6 +302,18 @@ export default translateWithTracker<IProps, {}, ITrackedProps>((_props: IProps) 
 								{t('(Comma separated list. Empty - will store snapshots of all Rundown Playlists)')}
 							</span>
 						</label>
+					</div>
+
+					<h2 className="mhn">{t('Cleanup')}</h2>
+					<div>
+						<button className="btn btn-default" onClick={() => this.cleanUpOldDatabaseIndexes()}>
+							{t('Cleanup old database indexes')}
+						</button>
+					</div>
+					<div>
+						<button className="btn btn-default" onClick={() => checkForOldDataAndCleanUp(t)}>
+							{t('Cleanup old data')}
+						</button>
 					</div>
 				</div>
 			) : null
@@ -393,7 +411,7 @@ export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft = 0): void {
 										})
 									}
 								})
-								.catch(console.error)
+								.catch(catchError('system.cleanupOldData'))
 						},
 					})
 				} else {
@@ -408,5 +426,5 @@ export function checkForOldDataAndCleanUp(t: TFunction, retriesLeft = 0): void {
 				}
 			}
 		})
-		.catch(console.error)
+		.catch(catchError('system.cleanupOldData'))
 }

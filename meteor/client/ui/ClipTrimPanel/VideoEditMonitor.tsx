@@ -2,6 +2,7 @@ import * as React from 'react'
 import { withTranslation } from 'react-i18next'
 import { Translated } from '../../lib/ReactMeteorData/ReactMeteorData'
 import ClassNames from 'classnames'
+import { catchError } from '../../lib/lib'
 
 export interface IProps {
 	currentTime?: number
@@ -103,7 +104,7 @@ export const VideoEditMonitor = withTranslation()(
 		}
 
 		handlePlay = (_e: React.MouseEvent<HTMLButtonElement>) => {
-			this.videoEl.play().catch(() => console.error('Could not start playback'))
+			this.videoEl.play().catch(catchError('videoEl.play'))
 		}
 
 		handleStepForward = (_e: React.MouseEvent<HTMLButtonElement>) => {

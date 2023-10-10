@@ -11,6 +11,7 @@ import {
 	StudioId,
 	unprotectString,
 	Observer,
+	stringifyError,
 } from '@sofie-automation/server-core-integration'
 import { MediaObject, DeviceOptionsAny, ActionExecutionResult } from 'timeline-state-resolver'
 import * as _ from 'underscore'
@@ -133,6 +134,9 @@ export class CoreHandler {
 		observer.added = (id: string) => this.onDeviceChanged(protectString(id))
 		observer.changed = (id: string) => this.onDeviceChanged(protectString(id))
 		this.setupObserverForPeripheralDeviceCommands(this)
+
+		// trigger this callback because the observer doesn't the first time..
+		this.onDeviceChanged(this.core.deviceId)
 	}
 	async destroy(): Promise<void> {
 		this._statusDestroyed = true
@@ -259,14 +263,11 @@ export class CoreHandler {
 		if (cmd) {
 			if (this._executedFunctions[unprotectString(cmd._id)]) return // prevent it from running multiple times
 
-			const cb = (err: any, res?: any) => {
-				if (err) {
-					this.logger.error('executeFunction error', {
-						error: err,
-						stacktrace: err.stack,
-					})
+			const cb = (errStr: string | null, res?: any) => {
+				if (errStr) {
+					this.logger.error(`executeFunction error: ${errStr}`)
 				}
-				fcnObject.core.coreMethods.functionReply(cmd._id, err, res).catch((error: any) => {
+				fcnObject.core.coreMethods.functionReply(cmd._id, errStr, res).catch((error: any) => {
 					this.logger.error(error)
 				})
 			}
@@ -288,10 +289,10 @@ export class CoreHandler {
 							cb(null, result)
 						})
 						.catch((e) => {
-							cb(e.toString(), null)
+							cb(stringifyError(e), null)
 						})
 				} catch (e: any) {
-					cb(e.toString(), null)
+					cb(stringifyError(e), null)
 				}
 			} else if (cmd.actionId && 'executeAction' in fcnObject) {
 				this.logger.debug(`Executing action "${cmd.actionId}", payload: ${JSON.stringify(cmd.payload)}`)
@@ -460,6 +461,7 @@ export class CoreTSRDeviceHandler {
 		statusCode: StatusCode.BAD,
 		messages: ['Starting up...'],
 	}
+	private disposed = false
 
 	constructor(
 		parent: CoreHandler,
@@ -474,6 +476,7 @@ export class CoreTSRDeviceHandler {
 	}
 	async init(): Promise<void> {
 		this._device = await this._devicePr
+		if (this.disposed) throw new Error('CoreTSRDeviceHandler cant init, is disposed')
 		const deviceId = this._device.deviceId
 		const deviceName = `${deviceId} (${this._device.deviceName})`
 
@@ -484,6 +487,7 @@ export class CoreTSRDeviceHandler {
 
 			deviceSubType: this._device.deviceOptions.type,
 		})
+		if (this.disposed) throw new Error('CoreTSRDeviceHandler cant init, is disposed')
 		this.core.on('error', (err: any) => {
 			this._coreParentHandler.logger.error(
 				'Core Error: ' + ((_.isObject(err) && err.message) || err.toString() || err)
@@ -494,7 +498,10 @@ export class CoreTSRDeviceHandler {
 			this._deviceStatus = await this._device.device.getStatus()
 			this.sendStatus()
 		}
+		if (this.disposed) throw new Error('CoreTSRDeviceHandler cant init, is disposed')
 		await this.setupSubscriptionsAndObservers()
+		if (this.disposed) throw new Error('CoreTSRDeviceHandler cant init, is disposed')
+
 		this._coreParentHandler.logger.debug('setupSubscriptionsAndObservers done')
 	}
 	private async setupSubscriptionsAndObservers(): Promise<void> {
@@ -583,6 +590,7 @@ export class CoreTSRDeviceHandler {
 	}
 
 	async dispose(): Promise<void> {
+		this.disposed = true
 		this._observers.forEach((obs) => {
 			obs.stop()
 		})
@@ -590,6 +598,7 @@ export class CoreTSRDeviceHandler {
 		for (const subId of this._subscriptions) {
 			this.core.unsubscribe(subId)
 		}
+		this._subscriptions = []
 
 		await this._tsrHandler.tsr.removeDevice(this._deviceId)
 		await this.core.setStatus({

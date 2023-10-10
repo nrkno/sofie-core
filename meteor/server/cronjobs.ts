@@ -1,6 +1,11 @@
 import { PeripheralDevices, RundownPlaylists } from './collections'
-import { PeripheralDeviceType } from '../lib/collections/PeripheralDevices'
-import { getCurrentTime, stringifyError } from '../lib/lib'
+import {
+	PeripheralDevice,
+	PeripheralDeviceType,
+	PERIPHERAL_SUBTYPE_PROCESS,
+} from '../lib/collections/PeripheralDevices'
+import { getCurrentTime } from '../lib/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { logger } from './logging'
 import { Meteor } from 'meteor/meteor'
 import { TSR } from '@sofie-automation/blueprints-integration'
@@ -9,12 +14,17 @@ import { QueueStudioJob } from './worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { fetchStudioIds } from './optimizations'
 import { internalStoreRundownPlaylistSnapshot } from './api/snapshot'
-import { deferAsync } from '@sofie-automation/corelib/dist/lib'
+import { deferAsync, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
 import { getCoreSystemAsync } from './coreSystem/collection'
 import { cleanupOldDataInner } from './api/cleanup'
 import { CollectionCleanupResult } from '../lib/api/system'
 import { ICoreSystem } from '../lib/collections/CoreSystem'
 import { executePeripheralDeviceFunctionWithCustomTimeout } from './api/peripheralDevice/executeFunction'
+import {
+	interpollateTranslation,
+	isTranslatableMessage,
+	translateMessage,
+} from '@sofie-automation/corelib/dist/TranslatableMessage'
 
 const lowPrioFcn = (fcn: () => any) => {
 	// Do it at a random time in the future:
@@ -69,59 +79,101 @@ async function cleanupOldDataCronjob() {
 	}
 }
 
+const CASPARCG_LAST_SEEN_PERIOD_MS = 3 * 60 * 1000 // Note: this must be higher than the ping interval used by playout-gateway
+
 async function restartCasparCG(system: ICoreSystem | undefined, previousLastNightlyCronjob: number) {
+	if (!system?.cron?.casparCGRestart?.enabled) return
+
+	let shouldRetryAttempt = false
 	const ps: Array<Promise<any>> = []
-	// Restart casparcg
-	if (system?.cron?.casparCGRestart?.enabled) {
-		const peripheralDevices = await PeripheralDevices.findFetchAsync({
+
+	const casparcgAndParentDevices = (await PeripheralDevices.findFetchAsync(
+		{
 			type: PeripheralDeviceType.PLAYOUT,
-		})
-
-		for (const device of peripheralDevices) {
-			const subDevices = await PeripheralDevices.findFetchAsync({
-				parentDeviceId: device._id,
-			})
-
-			for (const subDevice of subDevices) {
-				if (subDevice.type === PeripheralDeviceType.PLAYOUT && subDevice.subType === TSR.DeviceType.CASPARCG) {
-					logger.info('Cronjob: Trying to restart CasparCG on device "' + subDevice._id + '"')
-
-					ps.push(
-						executePeripheralDeviceFunctionWithCustomTimeout(
-							subDevice._id,
-							DEFAULT_TSR_ACTION_TIMEOUT_TIME,
-							{
-								actionId: TSR.CasparCGActions.RestartServer,
-								payload: {},
-							}
-						)
-							.then(() => {
-								logger.info('Cronjob: "' + subDevice._id + '": CasparCG restart done')
-							})
-							.catch((err) => {
-								logger.error(
-									`Cronjob: "${subDevice._id}": CasparCG restart error: ${stringifyError(err)}`
-								)
-
-								if ((err + '').match(/timeout/i)) {
-									// If it was a timeout, maybe we could try again later?
-									if (failedRetries < 5) {
-										failedRetries++
-										lastNightlyCronjob = previousLastNightlyCronjob // try again later
-									}
-								} else {
-									// Propogate the error
-									throw err
-								}
-							})
-					)
-				}
-			}
+			subType: { $in: [PERIPHERAL_SUBTYPE_PROCESS, TSR.DeviceType.CASPARCG] },
+		},
+		{
+			projection: {
+				_id: 1,
+				subType: 1,
+				parentDeviceId: 1,
+				lastSeen: 1,
+			},
 		}
+	)) as Array<Pick<PeripheralDevice, '_id' | 'subType' | 'parentDeviceId' | 'lastSeen'>>
+
+	const deviceMap = normalizeArrayToMap(casparcgAndParentDevices, '_id')
+
+	for (const device of casparcgAndParentDevices) {
+		if (device.subType !== TSR.DeviceType.CASPARCG) continue
+
+		if (device.lastSeen < getCurrentTime() - CASPARCG_LAST_SEEN_PERIOD_MS) {
+			logger.info(`Cronjob: Skipping CasparCG device "${device._id}" offline`)
+			shouldRetryAttempt = true
+			continue
+		}
+
+		if (!device.parentDeviceId) {
+			logger.info(`Cronjob: Skipping CasparCG device "${device._id}" without parentDeviceId`)
+			// Misconfiguration, don't retry
+			continue
+		}
+		const parentDevice = deviceMap.get(device.parentDeviceId)
+		if (!parentDevice) {
+			logger.info(`Cronjob: Skipping CasparCG device "${device._id}" with a missing parent device`)
+			// Misconfiguration, don't retry
+			continue
+		}
+
+		if (parentDevice.lastSeen < getCurrentTime() - CASPARCG_LAST_SEEN_PERIOD_MS) {
+			logger.info(`Cronjob: Skipping CasparCG device "${device._id}" with offline parent device`)
+			shouldRetryAttempt = true
+			continue
+		}
+
+		logger.info(`Cronjob: Trying to restart CasparCG on device "${device._id}"`)
+
+		ps.push(
+			executePeripheralDeviceFunctionWithCustomTimeout(device._id, DEFAULT_TSR_ACTION_TIMEOUT_TIME, {
+				actionId: TSR.CasparCGActions.RestartServer,
+				payload: {},
+			})
+				.then((res) => {
+					if (res.result === TSR.ActionExecutionResultCode.Ok) {
+						logger.info(`Cronjob: "${device._id}": CasparCG restart done`)
+					} else {
+						const errorMessage =
+							res.response && isTranslatableMessage(res.response)
+								? translateMessage(res.response, interpollateTranslation)
+								: stringifyError(res.response)
+
+						logger.warn(`Cronjob: "${device._id}": CasparCG restart error: ${errorMessage}`)
+
+						// If it was a timeout, maybe try again later
+						shouldRetryAttempt = true
+					}
+				})
+				.catch((err) => {
+					if ((err + '').match(/timeout/i)) {
+						logger.warn(`Cronjob: "${device._id}": CasparCG restart timeout (Attempt ${failedRetries + 1})`)
+
+						// If it was a timeout, maybe we could try again later?
+						shouldRetryAttempt = true
+					} else {
+						logger.warn(`Cronjob: "${device._id}": CasparCG restart error: ${stringifyError(err)}`)
+					}
+				})
+		)
 	}
 
-	await Promise.all(ps)
-	failedRetries = 0
+	await Promise.allSettled(ps)
+
+	if (shouldRetryAttempt && failedRetries < 5) {
+		failedRetries++
+		lastNightlyCronjob = previousLastNightlyCronjob // try again later
+	} else {
+		failedRetries = 0
+	}
 }
 
 async function storeSnapshots(system: ICoreSystem | undefined) {
@@ -159,25 +211,23 @@ Meteor.startup(() => {
 	nightlyCronjob()
 
 	function anyTimeCronjob(force?: boolean) {
-		{
-			// Clean up playlists:
-			if (isLowSeason() || force) {
-				deferAsync(
-					async () => {
-						// Ensure there are no empty playlists on an interval
-						const studioIds = await fetchStudioIds({})
-						await Promise.all(
-							studioIds.map(async (studioId) => {
-								const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
-								await job.complete
-							})
-						)
-					},
-					(e) => {
-						logger.error(`Cron: CleanupPlaylists error: ${e}`)
-					}
-				)
-			}
+		// Clean up playlists:
+		if (isLowSeason() || force) {
+			deferAsync(
+				async () => {
+					// Ensure there are no empty playlists on an interval
+					const studioIds = await fetchStudioIds({})
+					await Promise.all(
+						studioIds.map(async (studioId) => {
+							const job = await QueueStudioJob(StudioJobs.CleanupEmptyPlaylists, studioId, undefined)
+							await job.complete
+						})
+					)
+				},
+				(e) => {
+					logger.error(`Cron: CleanupPlaylists error: ${e}`)
+				}
+			)
 		}
 	}
 	Meteor.setInterval(anyTimeCronjob, 30 * 60 * 1000) // every 30 minutes

@@ -106,7 +106,6 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 								)
 							})
 							.catch((err) => {
-								// console.error('Snapshot restore failure: ', err)
 								NotificationCenter.push(
 									new Notification(
 										undefined,

@@ -23,7 +23,7 @@ import * as crypto from 'crypto'
 import * as cp from 'child_process'
 
 import * as _ from 'underscore'
-import { Observer } from '@sofie-automation/server-core-integration'
+import { Observer, stringifyError } from '@sofie-automation/server-core-integration'
 import { Logger } from 'winston'
 import { disableAtemUpload } from './config'
 import Debug from 'debug'
@@ -166,9 +166,9 @@ export class TSRHandler {
 				cmdReply.response &&
 				cmdReply.response.code === 404
 			) {
-				this.logger.warn(`TSR: ${e.toString()}`, args)
+				this.logger.warn(`TSR: ${stringifyError(e)}`, args)
 			} else {
-				this.logger.error(`TSR: ${e.toString()}`, args)
+				this.logger.error(`TSR: ${stringifyError(e)}`, args)
 			}
 		})
 		this.tsr.on('info', (msg, ...args) => {
@@ -283,7 +283,7 @@ export class TSRHandler {
 		}
 		deviceObserver.changed = (_id, _oldFields, _clearedFields, newFields) => {
 			// Only react to changes in the .settings property:
-			if (newFields['settings'] !== undefined) {
+			if (newFields['playoutDevices'] !== undefined) {
 				debug('triggerUpdateDevices from deviceObserver changed')
 				this._triggerUpdateDevices()
 			}
@@ -848,16 +848,15 @@ export class TSRHandler {
 			const onClearMediaObjectCollection = (collectionId: string) => {
 				coreTsrHandler.onClearMediaObjectCollection(collectionId)
 			}
-			const fixError = (e: any): string => {
+			const fixLog = (e: string): string => `Device "${device.deviceName || deviceId}" (${device.instanceId})` + e
+			const fixError = (e: Error): any => {
 				const name = `Device "${device.deviceName || deviceId}" (${device.instanceId})`
-				if (e.reason) e.reason = name + ': ' + e.reason
-				if (e.message) e.message = name + ': ' + e.message
-				if (e.stack) {
-					e.stack += '\nAt device' + name
-				}
-				if (_.isString(e)) e = name + ': ' + e
 
-				return e
+				return {
+					message: e.message && name + ': ' + e.message,
+					name: e.name && name + ': ' + e.name,
+					stack: e.stack && e.stack + '\nAt device' + name,
+				}
 			}
 			const fixContext = (...context: any[]): any => {
 				return {
@@ -905,13 +904,13 @@ export class TSRHandler {
 			await emitterHack.on('clearMediaObjects', onClearMediaObjectCollection)
 
 			await emitterHack.on('info', (info) => {
-				this.logger.info(info)
+				this.logger.info(fixLog(info))
 			})
 			await emitterHack.on('warning', (warning: string) => {
-				this.logger.warn(warning)
+				this.logger.warn(fixLog(warning))
 			})
 			await emitterHack.on('error', (context, error) => {
-				this.logger.error(`${fixError(error)}`, fixContext(context))
+				this.logger.error(fixError(error), fixContext(context))
 			})
 
 			await emitterHack.on('debug', (...args) => {

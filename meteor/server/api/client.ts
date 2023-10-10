@@ -1,5 +1,6 @@
 import { check } from '../../lib/check'
-import { literal, getCurrentTime, Time, getRandomId, stringifyError } from '../../lib/lib'
+import { literal, getCurrentTime, Time, getRandomId } from '../../lib/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { logger } from '../logging'
 import { ClientAPI, NewClientAPI, ClientAPIMethods } from '../../lib/api/client'
 import { UserActionsLogItem } from '../../lib/collections/UserActionsLog'
@@ -298,24 +299,16 @@ export namespace ServerClientAPI {
 		}
 	}
 
-	export async function callPeripheralDeviceFunctionOrAction(
+	export async function callPeripheralDeviceFunctionOrAction<T>(
 		methodContext: MethodContext,
 		context: string,
 		deviceId: PeripheralDeviceId,
-		timeoutTime: number | undefined,
-		action: {
-			functionName?: string
-			args?: Array<any>
-			actionId?: string
-			payload?: Record<string, any>
-		}
-	): Promise<any> {
+		makeCall: () => Promise<T>,
+		method: string,
+		args: unknown
+	): Promise<T> {
 		check(deviceId, String)
 		check(context, String)
-
-		if (!action.functionName && !action.actionId) {
-			throw new Error('Either functionName or actionId should be specified')
-		}
 
 		const actionId: UserActionsLogItemId = getRandomId()
 		const startTime = Date.now()
@@ -324,9 +317,8 @@ export namespace ServerClientAPI {
 			// In this case, it was called internally from server-side.
 			// Just run and return right away:
 			triggerWriteAccessBecauseNoCheckNecessary()
-			return executePeripheralDeviceFunctionWithCustomTimeout(deviceId, timeoutTime, action).catch(async (e) => {
-				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
-				logger.error(errMsg)
+			return makeCall().catch(async (e) => {
+				logger.error(stringifyError(e))
 				// allow the exception to be handled by the Client code
 				return Promise.reject(e)
 			})
@@ -341,13 +333,13 @@ export namespace ServerClientAPI {
 				organizationId: access.organizationId,
 				userId: access.userId,
 				context: context,
-				method: `${deviceId}: ${action.functionName || action.actionId}`,
-				args: JSON.stringify(action.args || action.payload),
+				method: `${deviceId}: ${method}`,
+				args: JSON.stringify(args),
 				timestamp: getCurrentTime(),
 			})
 		)
 
-		return executePeripheralDeviceFunctionWithCustomTimeout(deviceId, timeoutTime, action)
+		return makeCall()
 			.then(async (result) => {
 				await UserActionsLog.updateAsync(actionId, {
 					$set: {
@@ -360,7 +352,7 @@ export namespace ServerClientAPI {
 				return result
 			})
 			.catch(async (err) => {
-				const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
+				const errMsg = stringifyError(err)
 				logger.error(errMsg)
 				await UserActionsLog.updateAsync(actionId, {
 					$set: {
@@ -396,8 +388,7 @@ export namespace ServerClientAPI {
 				functionName,
 				args,
 			}).catch(async (e) => {
-				const errMsg = e.message || e.reason || (e.toString ? e.toString() : null)
-				logger.error(errMsg)
+				logger.error(stringifyError(e))
 				// allow the exception to be handled by the Client code
 				return Promise.reject(e)
 			})
@@ -409,7 +400,7 @@ export namespace ServerClientAPI {
 			functionName,
 			args,
 		}).catch(async (err) => {
-			const errMsg = err.message || err.reason || (err.toString ? err.toString() : null)
+			const errMsg = stringifyError(err)
 			logger.error(errMsg)
 			// allow the exception to be handled by the Client code
 			return Promise.reject(err)
@@ -429,13 +420,13 @@ export namespace ServerClientAPI {
 }
 
 class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
-	async clientErrorReport(timestamp: Time, errorObject: any, errorString: string, location: string) {
+	async clientErrorReport(timestamp: Time, errorString: string, location: string) {
 		check(timestamp, Number)
 		triggerWriteAccessBecauseNoCheckNecessary() // TODO: discuss if is this ok?
 		logger.error(
 			`Uncaught error happened in GUI\n  in "${location}"\n  on "${
 				this.connection ? this.connection.clientAddress : 'N/A'
-			}"\n  at ${new Date(timestamp).toISOString()}:\n"${errorString}"\n${JSON.stringify(errorObject)}`
+			}"\n  at ${new Date(timestamp).toISOString()}:\n"${errorString}`
 		)
 	}
 	async clientLogNotification(timestamp: Time, from: string, severity: NoticeLevel, message: string, source?: any) {
@@ -458,10 +449,18 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 		functionName: string,
 		...args: any[]
 	) {
-		return ServerClientAPI.callPeripheralDeviceFunctionOrAction(this, context, deviceId, timeoutTime, {
+		return ServerClientAPI.callPeripheralDeviceFunctionOrAction(
+			this,
+			context,
+			deviceId,
+			async () =>
+				executePeripheralDeviceFunctionWithCustomTimeout(deviceId, timeoutTime, {
+					functionName,
+					args,
+				}),
 			functionName,
-			args,
-		})
+			args
+		)
 	}
 	async callPeripheralDeviceAction(
 		context: string,
@@ -470,10 +469,18 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 		actionId: string,
 		payload?: Record<string, any>
 	) {
-		return ServerClientAPI.callPeripheralDeviceFunctionOrAction(this, context, deviceId, timeoutTime, {
+		return ServerClientAPI.callPeripheralDeviceFunctionOrAction(
+			this,
+			context,
+			deviceId,
+			async () =>
+				executePeripheralDeviceFunctionWithCustomTimeout(deviceId, timeoutTime, {
+					actionId,
+					payload,
+				}),
 			actionId,
-			payload,
-		})
+			payload
+		)
 	}
 	async callBackgroundPeripheralDeviceFunction(
 		deviceId: PeripheralDeviceId,

@@ -20,7 +20,7 @@ export class GlobalAdLibActionsHandler
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super(
-			'GlobalAdLibActionHandler',
+			GlobalAdLibActionsHandler.name,
 			CollectionName.RundownBaselineAdLibActions,
 			'rundownBaselineAdLibActions',
 			logger,
@@ -32,9 +32,9 @@ export class GlobalAdLibActionsHandler
 
 	async changed(id: string, changeType: string): Promise<void> {
 		this._logger.info(`${this._name} ${changeType} ${id}`)
-		if (!this._collection) return
-		const col = this._core.getCollection<RundownBaselineAdLibAction>(this._collection)
-		if (!col) throw new Error(`collection '${this._collection}' not found!`)
+		if (!this._collectionName) return
+		const col = this._core.getCollection<RundownBaselineAdLibAction>(this._collectionName)
+		if (!col) throw new Error(`collection '${this._collectionName}' not found!`)
 		this._collectionData = col.find({ rundownId: this._curRundownId })
 		await this.notify(this._collectionData)
 	}
@@ -42,19 +42,20 @@ export class GlobalAdLibActionsHandler
 	async update(source: string, data: Map<PartInstanceName, DBPartInstance | undefined> | undefined): Promise<void> {
 		this._logger.info(`${this._name} received partInstances update from ${source}`)
 		const prevRundownId = this._curRundownId
-		this._curRundownId = data ? unprotectString(data.get(PartInstanceName.current)?.rundownId) : undefined
+		const partInstance = data ? data.get(PartInstanceName.current) ?? data.get(PartInstanceName.next) : undefined
+		this._curRundownId = partInstance ? unprotectString(partInstance.rundownId) : undefined
 
 		await new Promise(process.nextTick.bind(this))
-		if (!this._collection) return
-		if (!this._publication) return
+		if (!this._collectionName) return
+		if (!this._publicationName) return
 		if (prevRundownId !== this._curRundownId) {
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
 			if (this._curRundownId) {
-				this._subscriptionId = await this._coreHandler.setupSubscription(this._publication, {
+				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, {
 					rundownId: this._curRundownId,
 				})
-				this._dbObserver = this._coreHandler.setupObserver(this._collection)
+				this._dbObserver = this._coreHandler.setupObserver(this._collectionName)
 				this._dbObserver.added = (id: string) => {
 					void this.changed(id, 'added').catch(this._logger.error)
 				}
@@ -62,9 +63,9 @@ export class GlobalAdLibActionsHandler
 					void this.changed(id, 'changed').catch(this._logger.error)
 				}
 
-				const col = this._core.getCollection<RundownBaselineAdLibAction>(this._collection)
-				if (!col) throw new Error(`collection '${this._collection}' not found!`)
-				this._collectionData = col.find({ rundownId: this._curRundownId })
+				const collection = this._core.getCollection<RundownBaselineAdLibAction>(this._collectionName)
+				if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
+				this._collectionData = collection.find({ rundownId: this._curRundownId })
 				await this.notify(this._collectionData)
 			}
 		}

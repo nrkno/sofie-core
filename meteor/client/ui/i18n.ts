@@ -13,6 +13,7 @@ import { ClientAPI } from '../../lib/api/client'
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { TranslationsBundleId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { TranslationsBundles } from '../collections'
+import { catchError } from '../lib/lib'
 
 const i18nOptions = {
 	fallbackLng: {
@@ -100,9 +101,7 @@ class I18nContainer extends WithManagedTracker {
 					webManifestLink.setAttribute('href', sourceHref + `?lng=${i18n.language}`)
 				}
 			})
-			.catch((err: Error) => {
-				console.error('Error initializing i18Next:', err)
-			})
+			.catch(catchError('i18nInstance.init'))
 
 		this.subscribe(PubSub.translationsBundles, {})
 		this.autorun(() => {
@@ -139,13 +138,9 @@ class I18nContainer extends WithManagedTracker {
 								true
 							)
 						})
-						.catch((reason) => {
-							console.error(`Failed to fetch translations bundle "${bundleMetadata._id}": `, reason)
-						})
+						.catch(catchError(`Failed to fetch translations bundle "${bundleMetadata._id}"`))
 				)
-			).catch((reason) => {
-				console.error(`One of the translation bundles failed to load: `, reason)
-			})
+			).catch(catchError(`One of the translation bundles failed to load`))
 		})
 	}
 

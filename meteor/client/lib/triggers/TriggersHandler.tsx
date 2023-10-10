@@ -41,6 +41,8 @@ import {
 } from '../../../lib/api/triggers/MountedTriggers'
 import { isHotkeyTrigger } from '../../../lib/api/triggers/triggerTypeSelectors'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
+import { catchError } from '../lib'
+import { logger } from '../../../lib/logging'
 
 type HotkeyTriggerListener = (e: KeyboardEvent) => void
 
@@ -193,7 +195,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				tag: id,
 			})
 		} catch (e) {
-			console.error(e)
+			logger.error(e)
 		}
 	}
 
@@ -216,13 +218,13 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 				.then(() => {
 					setInitialized(true)
 				})
-				.catch(console.error)
+				.catch(catchError('localSorensen.init'))
 		}
 
 		return () => {
 			// do not destroy, if we're using a provided instance of Sorensen
 			if (!props.sorensen) {
-				localSorensen.destroy().catch(console.error)
+				localSorensen.destroy().catch(catchError('localSorensen.destroy'))
 			}
 		}
 	}, []) // run once
@@ -423,9 +425,9 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			if (!props.simulateTriggerBinding) {
 				createdActions.current.set(pair._id, action.listener)
 				Object.values<SomeBlueprintTrigger>(pair.triggers).forEach((trigger) => {
-					if (trigger.type === TriggerType.hotkey) {
-						bindHotkey(pair._id, trigger.keys, !!trigger.up, action.listener)
-					}
+					if (trigger.type !== TriggerType.hotkey) return
+					if (trigger.keys.trim() === '') return
+					bindHotkey(pair._id, trigger.keys, !!trigger.up, action.listener)
 				})
 			}
 
@@ -464,7 +466,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					try {
 						previewAdLibs = action.preview()
 					} catch (e) {
-						console.error('Exception thrown while previewing action', e)
+						logger.error(e)
 					}
 
 					previewAdLibs.forEach((adLib) => {
@@ -500,9 +502,9 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					const actionListener = createdActions.current.get(pair._id)
 					if (actionListener) {
 						Object.values<SomeBlueprintTrigger>(pair.triggers).forEach((trigger) => {
-							if (trigger.type === TriggerType.hotkey) {
-								unbindHotkey(trigger.keys, actionListener)
-							}
+							if (trigger.type !== TriggerType.hotkey) return
+							if (trigger.keys.trim() === '') return
+							unbindHotkey(trigger.keys, actionListener)
 						})
 					}
 

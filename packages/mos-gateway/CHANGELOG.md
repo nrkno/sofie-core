@@ -3,222 +3,219 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [1.50.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.4...v1.50.0-in-testing.5) (2023-08-25)
+
+# [1.50.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.7...v1.50.0-in-testing.4) (2023-08-23)
+
+# [1.50.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.5...v1.50.0-in-testing.3) (2023-08-17)
+
+# [1.50.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.1...v1.50.0-in-testing.2) (2023-07-17)
+
+### Features
+
+- expose MOS ports in mos-gateway settings ([#917](https://github.com/nrkno/tv-automation-server-core/issues/917)) ([4cb1649](https://github.com/nrkno/tv-automation-server-core/commit/4cb16493107c07be9c8a2a804f6bcb7e54072de2))
+- move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
+- peripheral device tidying ([#906](https://github.com/nrkno/tv-automation-server-core/issues/906)) ([0795ae5](https://github.com/nrkno/tv-automation-server-core/commit/0795ae5c0517114a34e350d5a5afbf7a731e9794))
+
+# [1.50.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.5...v1.50.0-in-testing.3) (2023-08-17)
+
+# [1.50.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.1...v1.50.0-in-testing.2) (2023-07-17)
+
+### Features
+
+- expose MOS ports in mos-gateway settings ([#917](https://github.com/nrkno/tv-automation-server-core/issues/917)) ([4cb1649](https://github.com/nrkno/tv-automation-server-core/commit/4cb16493107c07be9c8a2a804f6bcb7e54072de2))
+- move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
+- peripheral device tidying ([#906](https://github.com/nrkno/tv-automation-server-core/issues/906)) ([0795ae5](https://github.com/nrkno/tv-automation-server-core/commit/0795ae5c0517114a34e350d5a5afbf7a731e9794))
+
 # [1.50.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.1...v1.50.0-in-testing.2) (2023-07-17)
 
 **Note:** Version bump only for package mos-gateway
-
-
-
-
 
 # [1.50.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.50.0-in-testing.0...v1.50.0-in-testing.1) (2023-07-05)
 
 **Note:** Version bump only for package mos-gateway
 
-
-
-
-
 # [1.50.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.4...v1.50.0-in-testing.0) (2023-07-03)
-
 
 ### Features
 
-* expose MOS ports in mos-gateway settings ([#917](https://github.com/nrkno/tv-automation-server-core/issues/917)) ([4cb1649](https://github.com/nrkno/tv-automation-server-core/commit/4cb16493107c07be9c8a2a804f6bcb7e54072de2))
-* move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
-* peripheral device tidying ([#906](https://github.com/nrkno/tv-automation-server-core/issues/906)) ([0795ae5](https://github.com/nrkno/tv-automation-server-core/commit/0795ae5c0517114a34e350d5a5afbf7a731e9794))
+- expose MOS ports in mos-gateway settings ([#917](https://github.com/nrkno/tv-automation-server-core/issues/917)) ([4cb1649](https://github.com/nrkno/tv-automation-server-core/commit/4cb16493107c07be9c8a2a804f6bcb7e54072de2))
+- move gateway settings onto Studio SOFIE-1330 ([#907](https://github.com/nrkno/tv-automation-server-core/issues/907)) ([523c061](https://github.com/nrkno/tv-automation-server-core/commit/523c061c51296e21814deeeabbe9aafca21cd5a6))
+- peripheral device tidying ([#906](https://github.com/nrkno/tv-automation-server-core/issues/906)) ([0795ae5](https://github.com/nrkno/tv-automation-server-core/commit/0795ae5c0517114a34e350d5a5afbf7a731e9794))
 
+# [1.49.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.10...v1.49.0) (2023-10-06)
 
+**Note:** Version bump only for package mos-gateway
 
+# [1.49.0-in-testing.10](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.9...v1.49.0-in-testing.10) (2023-10-03)
 
+**Note:** Version bump only for package mos-gateway
+
+# [1.49.0-in-testing.9](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.8...v1.49.0-in-testing.9) (2023-09-20)
+
+**Note:** Version bump only for package mos-gateway
+
+# [1.49.0-in-testing.8](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.6...v1.49.0-in-testing.8) (2023-09-20)
+
+**Note:** Version bump only for package mos-gateway
+
+# [1.49.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.6...v1.49.0-in-testing.7) (2023-08-22)
+
+# [1.49.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.5...v1.49.0-in-testing.6) (2023-08-22)
+
+# [1.49.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.4...v1.49.0-in-testing.5) (2023-08-17)
 
 # [1.49.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.5...v1.49.0-in-testing.4) (2023-06-29)
 
-
-
 # [1.49.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.2...v1.49.0-in-testing.3) (2023-04-18)
-
-
 
 # [1.49.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.1-0...v1.49.0-in-testing.2) (2023-03-30)
 
-
-
 # [1.49.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.0...v1.49.0-in-testing.1) (2023-03-23)
-
-
 
 # [1.49.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0...v1.49.0-in-testing.0) (2023-03-21)
 
-
 ### Bug Fixes
 
-* downgrade type-fest (again) ([82346cc](https://github.com/nrkno/tv-automation-server-core/commit/82346cc9fc01a251c6dcb4d2f86ea954601ada32))
-
-
+- downgrade type-fest (again) ([82346cc](https://github.com/nrkno/tv-automation-server-core/commit/82346cc9fc01a251c6dcb4d2f86ea954601ada32))
 
 # [1.48.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.48.0-in-testing.2...v1.48.0-in-testing.3) (2023-02-14)
 
-
-
 # [1.48.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.8...v1.48.0-in-testing.2) (2023-02-14)
-
 
 ### Bug Fixes
 
-* update mos-connection dependency ([#820](https://github.com/nrkno/tv-automation-server-core/issues/820)) ([b5df74f](https://github.com/nrkno/tv-automation-server-core/commit/b5df74f26b29c1e0b85a6d85ae3b83277ed1f554))
-
-
+- update mos-connection dependency ([#820](https://github.com/nrkno/tv-automation-server-core/issues/820)) ([b5df74f](https://github.com/nrkno/tv-automation-server-core/commit/b5df74f26b29c1e0b85a6d85ae3b83277ed1f554))
 
 # [1.48.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.48.0-in-testing.1) (2023-01-11)
 
-
 ### Features
 
-* stronger ddp call typings in gateways ([#788](https://github.com/nrkno/tv-automation-server-core/issues/788)) ([2a1f8af](https://github.com/nrkno/tv-automation-server-core/commit/2a1f8affad1b0278a2350c6e4f6ed7d3070121a1))
-* tsr action manifests ([4987eaf](https://github.com/nrkno/tv-automation-server-core/commit/4987eaf3277a58311c1c2d2613af3bc72a5c4487))
+- stronger ddp call typings in gateways ([#788](https://github.com/nrkno/tv-automation-server-core/issues/788)) ([2a1f8af](https://github.com/nrkno/tv-automation-server-core/commit/2a1f8affad1b0278a2350c6e4f6ed7d3070121a1))
+- tsr action manifests ([4987eaf](https://github.com/nrkno/tv-automation-server-core/commit/4987eaf3277a58311c1c2d2613af3bc72a5c4487))
 
+# [1.49.0-in-testing.7](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.6...v1.49.0-in-testing.7) (2023-08-22)
 
+**Note:** Version bump only for package mos-gateway
 
+# [1.49.0-in-testing.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.5...v1.49.0-in-testing.6) (2023-08-22)
 
+**Note:** Version bump only for package mos-gateway
+
+# [1.49.0-in-testing.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.4...v1.49.0-in-testing.5) (2023-08-17)
+
+**Note:** Version bump only for package mos-gateway
+
+# [1.49.0-in-testing.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.5...v1.49.0-in-testing.4) (2023-06-29)
 
 # [1.49.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.2...v1.49.0-in-testing.3) (2023-04-18)
 
+# [1.49.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.1-0...v1.49.0-in-testing.2) (2023-03-30)
+
+# [1.49.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.0...v1.49.0-in-testing.1) (2023-03-23)
+
+# [1.49.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0...v1.49.0-in-testing.0) (2023-03-21)
+
+### Bug Fixes
+
+- downgrade type-fest (again) ([82346cc](https://github.com/nrkno/tv-automation-server-core/commit/82346cc9fc01a251c6dcb4d2f86ea954601ada32))
+
+# [1.48.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.48.0-in-testing.2...v1.48.0-in-testing.3) (2023-02-14)
+
+# [1.48.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.8...v1.48.0-in-testing.2) (2023-02-14)
+
+### Bug Fixes
+
+- update mos-connection dependency ([#820](https://github.com/nrkno/tv-automation-server-core/issues/820)) ([b5df74f](https://github.com/nrkno/tv-automation-server-core/commit/b5df74f26b29c1e0b85a6d85ae3b83277ed1f554))
+
+# [1.48.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.48.0-in-testing.1) (2023-01-11)
+
+### Features
+
+- stronger ddp call typings in gateways ([#788](https://github.com/nrkno/tv-automation-server-core/issues/788)) ([2a1f8af](https://github.com/nrkno/tv-automation-server-core/commit/2a1f8affad1b0278a2350c6e4f6ed7d3070121a1))
+- tsr action manifests ([4987eaf](https://github.com/nrkno/tv-automation-server-core/commit/4987eaf3277a58311c1c2d2613af3bc72a5c4487))
+
+# [1.49.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.2...v1.49.0-in-testing.3) (2023-04-18)
+
+## [1.47.6](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.6-0...v1.47.6) (2023-09-04)
+
+## [1.47.6-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.5...v1.47.6-0) (2023-09-01)
 
 ## [1.47.5](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.5-0...v1.47.5) (2023-06-27)
 
 **Note:** Version bump only for package mos-gateway
 
-
-
-
-
 ## [1.47.5-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.4...v1.47.5-0) (2023-06-26)
-
 
 ### Bug Fixes
 
-* mos-gateway subscriptions to meteor collections leaking upon reconnecting to core ([7867895](https://github.com/nrkno/tv-automation-server-core/commit/786789506499c2bb168b67cb14c0dcfdf391329a))
-
-
-
-
+- mos-gateway subscriptions to meteor collections leaking upon reconnecting to core ([7867895](https://github.com/nrkno/tv-automation-server-core/commit/786789506499c2bb168b67cb14c0dcfdf391329a))
 
 ## [1.47.4](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.3...v1.47.4) (2023-06-13)
 
 **Note:** Version bump only for package mos-gateway
 
-
-
-
-
 # [1.47.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.1...v1.47.3) (2023-06-01)
 
 **Note:** Version bump only for package mos-gateway
-
-
-
-
 
 # [1.47.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.1...v1.47.2) (2023-06-01)
 
 **Note:** Version bump only for package mos-gateway
 
-
-
-
-
 # [1.47.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.1-1...v1.47.1) (2023-05-11)
 
 **Note:** Version bump only for package mos-gateway
 
-
-
-
-
 # [1.49.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.1-0...v1.49.0-in-testing.2) (2023-03-30)
-
-
 
 # [1.49.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.0...v1.49.0-in-testing.1) (2023-03-23)
 
-
-
 # [1.49.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0...v1.49.0-in-testing.0) (2023-03-21)
-
 
 ### Bug Fixes
 
-* downgrade type-fest (again) ([82346cc](https://github.com/nrkno/tv-automation-server-core/commit/82346cc9fc01a251c6dcb4d2f86ea954601ada32))
-
-
+- downgrade type-fest (again) ([82346cc](https://github.com/nrkno/tv-automation-server-core/commit/82346cc9fc01a251c6dcb4d2f86ea954601ada32))
 
 # [1.48.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.48.0-in-testing.2...v1.48.0-in-testing.3) (2023-02-14)
 
-
-
 # [1.48.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.8...v1.48.0-in-testing.2) (2023-02-14)
-
 
 ### Bug Fixes
 
-* update mos-connection dependency ([#820](https://github.com/nrkno/tv-automation-server-core/issues/820)) ([b5df74f](https://github.com/nrkno/tv-automation-server-core/commit/b5df74f26b29c1e0b85a6d85ae3b83277ed1f554))
-
-
+- update mos-connection dependency ([#820](https://github.com/nrkno/tv-automation-server-core/issues/820)) ([b5df74f](https://github.com/nrkno/tv-automation-server-core/commit/b5df74f26b29c1e0b85a6d85ae3b83277ed1f554))
 
 # [1.48.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.48.0-in-testing.1) (2023-01-11)
 
-
 ### Features
 
-* stronger ddp call typings in gateways ([#788](https://github.com/nrkno/tv-automation-server-core/issues/788)) ([2a1f8af](https://github.com/nrkno/tv-automation-server-core/commit/2a1f8affad1b0278a2350c6e4f6ed7d3070121a1))
-* tsr action manifests ([4987eaf](https://github.com/nrkno/tv-automation-server-core/commit/4987eaf3277a58311c1c2d2613af3bc72a5c4487))
-
-
-
-
+- stronger ddp call typings in gateways ([#788](https://github.com/nrkno/tv-automation-server-core/issues/788)) ([2a1f8af](https://github.com/nrkno/tv-automation-server-core/commit/2a1f8affad1b0278a2350c6e4f6ed7d3070121a1))
+- tsr action manifests ([4987eaf](https://github.com/nrkno/tv-automation-server-core/commit/4987eaf3277a58311c1c2d2613af3bc72a5c4487))
 
 # [1.49.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.49.0-in-testing.0...v1.49.0-in-testing.1) (2023-03-23)
 
 **Note:** Version bump only for package mos-gateway
 
-
-
-
-
 # [1.49.0-in-testing.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0...v1.49.0-in-testing.0) (2023-03-21)
-
 
 ### Bug Fixes
 
-* downgrade type-fest (again) ([82346cc](https://github.com/nrkno/tv-automation-server-core/commit/82346cc9fc01a251c6dcb4d2f86ea954601ada32))
-
-
+- downgrade type-fest (again) ([82346cc](https://github.com/nrkno/tv-automation-server-core/commit/82346cc9fc01a251c6dcb4d2f86ea954601ada32))
 
 # [1.48.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.48.0-in-testing.2...v1.48.0-in-testing.3) (2023-02-14)
 
-
-
 # [1.48.0-in-testing.2](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.8...v1.48.0-in-testing.2) (2023-02-14)
-
 
 ### Bug Fixes
 
-* update mos-connection dependency ([#820](https://github.com/nrkno/tv-automation-server-core/issues/820)) ([b5df74f](https://github.com/nrkno/tv-automation-server-core/commit/b5df74f26b29c1e0b85a6d85ae3b83277ed1f554))
-
-
+- update mos-connection dependency ([#820](https://github.com/nrkno/tv-automation-server-core/issues/820)) ([b5df74f](https://github.com/nrkno/tv-automation-server-core/commit/b5df74f26b29c1e0b85a6d85ae3b83277ed1f554))
 
 # [1.48.0-in-testing.1](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.5...v1.48.0-in-testing.1) (2023-01-11)
 
-
 ### Features
 
-* stronger ddp call typings in gateways ([#788](https://github.com/nrkno/tv-automation-server-core/issues/788)) ([2a1f8af](https://github.com/nrkno/tv-automation-server-core/commit/2a1f8affad1b0278a2350c6e4f6ed7d3070121a1))
-* tsr action manifests ([4987eaf](https://github.com/nrkno/tv-automation-server-core/commit/4987eaf3277a58311c1c2d2613af3bc72a5c4487))
-
-
-
-
+- stronger ddp call typings in gateways ([#788](https://github.com/nrkno/tv-automation-server-core/issues/788)) ([2a1f8af](https://github.com/nrkno/tv-automation-server-core/commit/2a1f8affad1b0278a2350c6e4f6ed7d3070121a1))
+- tsr action manifests ([4987eaf](https://github.com/nrkno/tv-automation-server-core/commit/4987eaf3277a58311c1c2d2613af3bc72a5c4487))
 
 # [1.48.0-in-testing.3](https://github.com/nrkno/tv-automation-server-core/compare/v1.48.0-in-testing.2...v1.48.0-in-testing.3) (2023-02-14)
 
@@ -226,25 +223,13 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 **Note:** Version bump only for package mos-gateway
 
-
-
-
-
 ## [1.47.1-0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0...v1.47.1-0) (2023-03-30)
 
 **Note:** Version bump only for package mos-gateway
 
-
-
-
-
 # [1.47.0](https://github.com/nrkno/tv-automation-server-core/compare/v1.47.0-in-testing.8...v1.47.0) (2023-03-01)
 
 **Note:** Version bump only for package mos-gateway
-
-
-
-
 
 # [1.47.0-in-testing.8](https://github.com/nrkno/tv-automation-server-core/compare/v1.44.2...v1.47.0-in-testing.8) (2023-02-14)
 

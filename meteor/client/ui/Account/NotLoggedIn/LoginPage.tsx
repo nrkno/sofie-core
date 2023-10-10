@@ -8,7 +8,7 @@ import { MeteorReactComponent } from '../../../lib/MeteorReactComponent'
 import { StatusResponse } from '../../../../lib/api/systemStatus'
 import { getUser, User } from '../../../../lib/collections/Users'
 import { NotLoggedInContainer } from './lib'
-import { stringifyError } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
 interface ILoginProps extends RouteComponentProps<{ token?: string }> {
 	requestedRoute?: string

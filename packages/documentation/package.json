@@ -1,6 +1,6 @@
 {
 	"name": "sofie-documentation",
-	"version": "1.50.0-in-testing.2",
+	"version": "1.50.0-in-testing.5",
 	"private": true,
 	"scripts": {
 		"docusaurus": "docusaurus",
@@ -26,6 +26,7 @@
 		"react-dom": "^17.0.1",
 		"url-loader": "^4.1.1"
 	},
+	"prettier": "@sofie-automation/code-standard-preset/.prettierrc.json",
 	"browserslist": {
 		"production": [
 			">0.5%",

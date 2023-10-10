@@ -13,6 +13,7 @@ import { DeviceTrigger } from './DeviceTrigger'
 import { DeviceEditor } from './DeviceEditor'
 import { faCheck, faSync, faTrash } from '@fortawesome/free-solid-svg-icons'
 import { DropdownInputControl, DropdownInputOption } from '../../../../../lib/Components/DropdownInput'
+import { catchError } from '../../../../../lib/lib'
 
 interface IProps {
 	id: string
@@ -141,7 +142,7 @@ export const TriggerEditor = function TriggerEditor({
 	) : null
 
 	useLayoutEffect(() => {
-		update && update().catch(console.error)
+		update && update().catch(catchError('TriggerEditor update'))
 	}, [trigger])
 
 	useEffect(() => {

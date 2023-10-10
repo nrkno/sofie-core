@@ -6,12 +6,14 @@ import { OverrideOpHelperForItemContents } from '../../../ui/Settings/util/Overr
 import { SchemaFormSofieEnumDefinition } from '../schemaFormUtil'
 import { SchemaFormWithOverrides } from '../SchemaFormWithOverrides'
 import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
+import { ReadonlyDeep } from 'type-fest'
 
 interface SchemaFormTableEditRowProps {
 	sofieEnumDefinitons: Record<string, SchemaFormSofieEnumDefinition> | undefined
 	translationNamespaces: string[]
 	rowId: number | string
 	columns: Record<string, JSONSchema | undefined>
+	requiredColumns: ReadonlyDeep<string[]> | undefined
 	editItem: (rowId: number | string, forceState?: boolean) => void
 
 	rowItem: any
@@ -23,6 +25,7 @@ export function SchemaFormTableEditRow({
 	translationNamespaces,
 	rowId,
 	columns,
+	requiredColumns,
 	editItem,
 	rowItem,
 	overrideHelper,
@@ -44,6 +47,7 @@ export function SchemaFormTableEditRow({
 								overrideHelper={overrideHelper}
 								translationNamespaces={translationNamespaces}
 								allowTables
+								isRequired={requiredColumns?.includes(id) ?? false}
 							/>
 						) : (
 							''

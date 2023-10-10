@@ -1,6 +1,7 @@
 export class CorePinger {
 	private _pingTimeout: NodeJS.Timer | null = null
 	private _connected = false
+	private _destroyed = false
 
 	constructor(private readonly emitError: (err: string) => void, private readonly doPing: () => Promise<void>) {}
 
@@ -9,6 +10,7 @@ export class CorePinger {
 	}
 
 	public destroy(): void {
+		this._destroyed = true
 		if (this._pingTimeout) {
 			clearTimeout(this._pingTimeout)
 			this._pingTimeout = null
@@ -16,6 +18,8 @@ export class CorePinger {
 	}
 
 	public triggerPing(): void {
+		if (this._destroyed) return
+
 		if (!this._pingTimeout) {
 			this._pingTimeout = setTimeout(() => {
 				this._pingTimeout = null
@@ -32,6 +36,8 @@ export class CorePinger {
 		this.triggerPing()
 	}
 	private _ping() {
+		if (this._destroyed) return
+
 		try {
 			if (this._connected) {
 				this.doPing().catch((e) => this.emitError('_ping' + e))

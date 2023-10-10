@@ -39,7 +39,8 @@ import {
 import { logger } from '../../lib/logging'
 import { internalStoreSystemSnapshot } from '../api/snapshot'
 import { GENESIS_SYSTEM_VERSION, parseVersion, Version } from '../../lib/collections/CoreSystem'
-import { clone, getHash, omit, protectString, stringifyError, unprotectString } from '../../lib/lib'
+import { clone, getHash, omit, protectString, unprotectString } from '../../lib/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { evalBlueprint } from '../api/blueprints/cache'
 import {
 	MigrationContextShowStyle,

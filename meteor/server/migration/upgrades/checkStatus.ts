@@ -10,9 +10,9 @@ import {
 	normalizeArrayToMap,
 	literal,
 	objectPathGet,
-	stringifyError,
 	joinObjectPathFragments,
 } from '@sofie-automation/corelib/dist/lib'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import _ from 'underscore'
 import {

@@ -192,6 +192,7 @@ export const SchemaFormObjectTable = ({
 											sofieEnumDefinitons={sofieEnumDefinitons}
 											rowId={rowItem.id}
 											columns={columns}
+											requiredColumns={rowSchema?.required}
 											rowItem={rowItem}
 											editItem={toggleExpanded}
 											overrideHelper={tableOverrideHelper}

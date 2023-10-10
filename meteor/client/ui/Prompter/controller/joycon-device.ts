@@ -1,6 +1,7 @@
 import { ControllerAbstract } from './lib'
 import { PrompterConfigMode, PrompterViewInner } from '../PrompterView'
 import Spline from 'cubic-spline'
+import { logger } from '../../../../lib/logging'
 
 type JoyconWithData = { index: number; timestamp: number; mode: JoyconMode; axes: readonly number[]; buttons: number[] }
 type JoyconMode = 'L' | 'R' | 'LR' | null
@@ -45,15 +46,21 @@ export class JoyConController extends ControllerAbstract {
 
 		// validate range settings, they need to be in sequence, or the logic will break
 		if (this.rangeNeutralMin <= this.rangeRevMin) {
-			console.error('rangeNeutralMin must be larger to rangeRevMin. Pedal control will not initialize.')
+			logger.error(
+				`Joycon: rangeNeutralMin (${this.rangeNeutralMin}) must be larger to rangeRevMin (${this.rangeRevMin}). Pedal control will not initialize.`
+			)
 			return
 		}
 		if (this.rangeNeutralMax <= this.rangeNeutralMin) {
-			console.error('rangeNeutralMax must be larger to rangeNeutralMin. Pedal control will not initialize')
+			logger.error(
+				`Joycon: rangeNeutralMax (${this.rangeNeutralMax}) must be larger to rangeNeutralMin (${this.rangeNeutralMin}). Pedal control will not initialize`
+			)
 			return
 		}
 		if (this.rangeFwdMax <= this.rangeNeutralMax) {
-			console.error('rangeFwdMax must be larger to rangeNeutralMax. Pedal control will not initialize')
+			logger.error(
+				`Joycon: rangeFwdMax (${this.rangeFwdMax}) must be larger to rangeNeutralMax (${this.rangeNeutralMax}). Pedal control will not initialize`
+			)
 			return
 		}
 
@@ -328,7 +335,7 @@ export class JoyConController extends ControllerAbstract {
 			}
 		} else {
 			// 4) we should never be able to hit this due to validation above
-			console.error(`Illegal input value ${inputValue}`)
+			logger.error(`Joycon: Illegal input value ${inputValue}`)
 			return 0
 		}
 	}
