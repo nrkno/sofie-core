@@ -15,7 +15,7 @@ async function getStudio(studioId: StudioId): Promise<Pick<DBStudio, '_id'>> {
 		},
 	})) as Pick<DBStudio, '_id'> | undefined
 	if (!studio) throw new Meteor.Error(404, `Studio "${studioId}" not found!`)
-	
+
 	return studio
 }
 
