@@ -2083,7 +2083,8 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				)
 			}
 		}
-		onSetNextSegment = (segmentId: SegmentId | null, e: any) => {
+
+		onSetNextSegment = (segmentId: SegmentId, e: any) => {
 			const { t } = this.props
 			if (this.state.studioMode && (segmentId || segmentId === null) && this.props.playlist) {
 				const playlistId = this.props.playlist._id
@@ -2092,6 +2093,25 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 					e,
 					UserAction.SET_NEXT,
 					(e, ts) => MeteorCall.userAction.setNextSegment(e, ts, playlistId, segmentId),
+					(err) => {
+						if (err) logger.error(err)
+						this.setState({
+							manualSetAsNext: true,
+						})
+					}
+				)
+			}
+		}
+
+		onQueueNextSegment = (segmentId: SegmentId | null, e: any) => {
+			const { t } = this.props
+			if (this.state.studioMode && (segmentId || segmentId === null) && this.props.playlist) {
+				const playlistId = this.props.playlist._id
+				doUserAction(
+					t,
+					e,
+					UserAction.QUEUE_NEXT_SEGMENT,
+					(e, ts) => MeteorCall.userAction.queueNextSegment(e, ts, playlistId, segmentId),
 					(err) => {
 						if (err) logger.error(err)
 						this.setState({
@@ -3012,6 +3032,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									playlist={playlist}
 									onSetNext={this.onSetNext}
 									onSetNextSegment={this.onSetNextSegment}
+									onQueueNextSegment={this.onQueueNextSegment}
 									studioMode={this.state.studioMode}
 									enablePlayFromAnywhere={!!studio.settings.enablePlayFromAnywhere}
 								/>

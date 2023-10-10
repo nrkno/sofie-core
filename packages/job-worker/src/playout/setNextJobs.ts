@@ -3,10 +3,16 @@ import { isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
-import { SetNextPartProps, MoveNextPartProps, SetNextSegmentProps } from '@sofie-automation/corelib/dist/worker/studio'
+import {
+	SetNextPartProps,
+	MoveNextPartProps,
+	SetNextSegmentProps,
+	QueueNextSegmentProps,
+	QueueNextSegmentResult,
+} from '@sofie-automation/corelib/dist/worker/studio'
 import { JobContext } from '../jobs'
 import { runJobWithPlayoutCache } from './lock'
-import { setNextPartFromPart, setNextSegment } from './setNext'
+import { setNextPartFromPart, setNextSegment, queueNextSegment } from './setNext'
 import { moveNextPart } from './moveNextPart'
 import { updateTimeline } from './timeline/generate'
 
@@ -71,9 +77,9 @@ export async function handleMoveNextPart(context: JobContext, data: MoveNextPart
 }
 
 /**
- * Set the next Segment to a specified id
+ * Set the next part to the first part of a Segment with given id
  */
-export async function handleSetNextSegment(context: JobContext, data: SetNextSegmentProps): Promise<void> {
+export async function handleSetNextSegment(context: JobContext, data: SetNextSegmentProps): Promise<PartId> {
 	return runJobWithPlayoutCache(
 		context,
 		data,
@@ -86,16 +92,50 @@ export async function handleSetNextSegment(context: JobContext, data: SetNextSeg
 			}
 		},
 		async (cache) => {
-			let nextSegment: DBSegment | null = null
-			if (data.nextSegmentId) {
-				nextSegment = cache.Segments.findOne(data.nextSegmentId) || null
-				if (!nextSegment) throw new Error(`Segment "${data.nextSegmentId}" not found!`)
-			}
+			const nextSegment = cache.Segments.findOne(data.nextSegmentId) || null
+			if (!nextSegment) throw new Error(`Segment "${data.nextSegmentId}" not found!`)
 
-			await setNextSegment(context, cache, nextSegment)
+			const nextedPartId = await setNextSegment(context, cache, nextSegment)
 
 			// Update any future lookaheads
 			await updateTimeline(context, cache)
+
+			return nextedPartId
+		}
+	)
+}
+
+/**
+ * Set the next part to the first part of a given Segment to a specified id
+ */
+export async function handleQueueNextSegment(
+	context: JobContext,
+	data: QueueNextSegmentProps
+): Promise<QueueNextSegmentResult> {
+	return runJobWithPlayoutCache(
+		context,
+		data,
+		async (cache) => {
+			const playlist = cache.Playlist.doc
+			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown, undefined, 412)
+
+			if (playlist.holdState && playlist.holdState !== RundownHoldState.COMPLETE) {
+				throw UserError.create(UserErrorMessage.DuringHold, undefined, 412)
+			}
+		},
+		async (cache) => {
+			let queuedSegment: DBSegment | null = null
+			if (data.queuedSegmentId) {
+				queuedSegment = cache.Segments.findOne(data.queuedSegmentId) || null
+				if (!queuedSegment) throw new Error(`Segment "${data.queuedSegmentId}" not found!`)
+			}
+
+			const result = await queueNextSegment(context, cache, queuedSegment)
+
+			// Update any future lookaheads
+			await updateTimeline(context, cache)
+
+			return result
 		}
 	)
 }

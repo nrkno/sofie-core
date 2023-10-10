@@ -78,7 +78,7 @@ export async function handleActivateScratchpad(context: JobContext, data: Activa
 					partInstanceId: newPartInstance._id,
 					rundownId: newPartInstance.rundownId,
 					manuallySelected: true,
-					consumesNextSegmentId: false,
+					consumesQueuedSegmentId: false,
 				}
 
 				return playlist

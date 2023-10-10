@@ -750,7 +750,7 @@ export const SegmentTimelineContainer = withResolvedSegment(
 							followLiveSegments={this.props.followLiveSegments}
 							isLiveSegment={this.state.isLiveSegment}
 							isNextSegment={this.state.isNextSegment}
-							isQueuedSegment={this.props.playlist.nextSegmentId === this.props.segmentId}
+							isQueuedSegment={this.props.playlist.queuedSegmentId === this.props.segmentId}
 							hasRemoteItems={this.props.hasRemoteItems}
 							hasGuestItems={this.props.hasGuestItems}
 							autoNextPart={this.state.autoNextPart}

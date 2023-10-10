@@ -7,7 +7,7 @@ import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLi
 import { AdLibActionCommon } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { getHash, Time } from '../lib'
-import { ExecuteActionResult } from '@sofie-automation/corelib/dist/worker/studio'
+import { ExecuteActionResult, QueueNextSegmentResult } from '@sofie-automation/corelib/dist/worker/studio'
 import {
 	AdLibActionId,
 	BucketId,
@@ -44,8 +44,14 @@ export interface NewUserActionAPI extends MethodContext {
 		userEvent: string,
 		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
+		segmentId: SegmentId
+	): Promise<ClientAPI.ClientResponse<PartId>>
+	queueNextSegment(
+		userEvent: string,
+		eventTime: Time,
+		rundownPlaylistId: RundownPlaylistId,
 		segmentId: SegmentId | null
-	): Promise<ClientAPI.ClientResponse<void>>
+	): Promise<ClientAPI.ClientResponse<QueueNextSegmentResult>>
 	moveNext(
 		userEvent: string,
 		eventTime: Time,
@@ -327,6 +333,7 @@ export enum UserActionAPIMethods {
 	'take' = 'userAction.take',
 	'setNext' = 'userAction.setNext',
 	'setNextSegment' = 'userAction.setNextSegment',
+	'queueNextSegment' = 'userAction.queueNextSegment',
 	'moveNext' = 'userAction.moveNext',
 
 	'prepareForBroadcast' = 'userAction.prepareForBroadcast',

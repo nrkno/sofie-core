@@ -20,10 +20,10 @@ export interface SelectNextPartResult {
 	index: number
 
 	/**
-	 * Whether this Part consumes the `nextSegmentId` property on the rundown.
-	 * If true, when this PartInstance is taken, the `nextSegmentId` property on the Playlist will be cleared
+	 * Whether this Part consumes the `queuedSegmentId` property on the rundown.
+	 * If true, when this PartInstance is taken, the `queuedSegmentId` property on the Playlist will be cleared
 	 */
-	consumesNextSegmentId: boolean
+	consumesQueuedSegmentId: boolean
 }
 export interface PartsAndSegments {
 	segments: DBSegment[]
@@ -36,7 +36,7 @@ export interface PartsAndSegments {
 
 export function selectNextPart(
 	context: JobContext,
-	rundownPlaylist: Pick<DBRundownPlaylist, 'nextSegmentId' | 'loop'>,
+	rundownPlaylist: Pick<DBRundownPlaylist, 'queuedSegmentId' | 'loop'>,
 	previousPartInstance: DBPartInstance | null,
 	currentlySelectedPartInstance: DBPartInstance | null,
 	{ parts: parts0, segments }: PartsAndSegments,
@@ -64,7 +64,7 @@ export function selectNextPart(
 		for (let index = offset; index < (length || parts.length); index++) {
 			const part = parts[index]
 			if ((!ignoreUnplayabale || isPartPlayable(part)) && (!condition || condition(part))) {
-				return { part, index, consumesNextSegmentId: false }
+				return { part, index, consumesQueuedSegmentId: false }
 			}
 		}
 		return undefined
@@ -123,16 +123,19 @@ export function selectNextPart(
 	// Filter to after and find the first playabale
 	let nextPart = findFirstPlayablePart(searchFromIndex)
 
-	if (rundownPlaylist.nextSegmentId) {
+	if (rundownPlaylist.queuedSegmentId) {
 		// No previous part, or segment has changed
 		if (!previousPartInstance || (nextPart && previousPartInstance.segmentId !== nextPart.part.segmentId)) {
 			// Find first in segment
-			const newSegmentPart = findFirstPlayablePart(0, (part) => part.segmentId === rundownPlaylist.nextSegmentId)
+			const newSegmentPart = findFirstPlayablePart(
+				0,
+				(part) => part.segmentId === rundownPlaylist.queuedSegmentId
+			)
 			if (newSegmentPart) {
 				// If matched matched, otherwise leave on auto
 				nextPart = {
 					...newSegmentPart,
-					consumesNextSegmentId: true,
+					consumesQueuedSegmentId: true,
 				}
 			}
 		}
