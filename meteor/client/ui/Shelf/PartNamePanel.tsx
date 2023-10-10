@@ -37,10 +37,6 @@ class PartNamePanelInner extends MeteorReactComponent<
 	Translated<IPartNamePanelProps & IPartNamePanelTrackedProps>,
 	IState
 > {
-	constructor(props) {
-		super(props)
-	}
-
 	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const { t } = this.props

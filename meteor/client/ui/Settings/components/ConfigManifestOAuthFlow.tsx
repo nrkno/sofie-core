@@ -19,10 +19,10 @@ export const ConfigManifestOAuthFlowComponent = withTranslation()(
 			super(props)
 			this.state = {}
 		}
-		onUploadCredentialsFile(e) {
+		onUploadCredentialsFile(e: React.ChangeEvent<HTMLInputElement>) {
 			const { t } = this.props
 
-			const file = e.target.files[0]
+			const file = e.target.files?.[0]
 			if (!file) {
 				return
 			}

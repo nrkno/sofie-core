@@ -86,7 +86,7 @@ interface IProps {
 	onScroll: (scrollLeft: number, event: any) => void
 	onZoomChange: (newScale: number, event: any) => void
 	onFollowLiveLine?: (state: boolean, event: any) => void
-	onShowEntireSegment?: (event: any) => void
+	onShowEntireSegment?: (event: React.MouseEvent | undefined) => void
 	onContextMenu?: (contextMenuContext: IContextMenuContext) => void
 	onItemClick?: (piece: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
 	onItemDoubleClick?: (item: PieceUi, e: React.MouseEvent<HTMLDivElement>) => void
@@ -116,7 +116,7 @@ interface IStateHeader {
 }
 
 interface IZoomPropsHeader {
-	onZoomDblClick: (e) => void
+	onZoomDblClick: (e: React.MouseEvent) => void
 	timelineWidth: number
 }
 interface IZoomStateHeader {
@@ -135,7 +135,7 @@ const SegmentTimelineZoom = class SegmentTimelineZoom extends React.Component<
 		durations: RundownTimingContext
 	}
 
-	constructor(props, context) {
+	constructor(props: IProps & IZoomPropsHeader, context: any) {
 		super(props, context)
 		this.state = {
 			totalSegmentDuration: 10,
@@ -283,7 +283,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		setTimeout(() => {
 			// TODO: This doesn't actually handle having new parts added/removed, which should cause the segment to re-scale!
 			if (this.props.onShowEntireSegment) {
-				this.props.onShowEntireSegment({})
+				this.props.onShowEntireSegment(undefined)
 			}
 		}, 10)
 	}
@@ -336,7 +336,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		})
 	}
 
-	private onZoomNormalize = (e) => {
+	private onZoomNormalize = (e: React.MouseEvent) => {
 		if (this.props.onShowEntireSegment) {
 			this.props.onShowEntireSegment(e)
 		}
@@ -591,7 +591,7 @@ export class SegmentTimelineClass extends React.Component<Translated<WithTiming<
 		})
 	}
 
-	private getSegmentContext = (_props) => {
+	private getSegmentContext = () => {
 		const ctx = literal<IContextMenuContext>({
 			segment: this.props.segment,
 			part: this.props.parts.find((p) => isPartPlayable(p.instance.part)) || null,

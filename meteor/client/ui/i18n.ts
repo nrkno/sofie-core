@@ -54,7 +54,7 @@ const i18nOptions = {
 }
 
 function toI18NextData(translations: Translation[]): I18NextData {
-	const data = {}
+	const data: I18NextData = {}
 	for (const { original, translation } of translations) {
 		data[original] = translation
 	}

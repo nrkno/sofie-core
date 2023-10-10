@@ -120,7 +120,7 @@ export async function scrollToSegment(
 				let i = Settings.followOnAirSegmentsHistory
 				while (i > 0) {
 					// Segment timeline is wrapped by <div><div>...</div></div> when rendered
-					const next = targetElement?.parentElement?.parentElement?.previousElementSibling?.children
+					const next: any = targetElement?.parentElement?.parentElement?.previousElementSibling?.children
 						.item(0)
 						?.children.item(0)
 					if (next) {

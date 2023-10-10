@@ -26,7 +26,7 @@ import {
 } from '../../../collections'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { ServerClientAPI } from '../../client'
-import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
+import { QueueNextSegmentResult, StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 import { getCurrentTime } from '../../../../lib/lib'
 import { TriggerReloadDataResponse } from '../../../../lib/api/userActions'
 import { ServerRundownAPI } from '../../rundown'
@@ -310,7 +310,7 @@ class PlaylistsServerAPI implements PlaylistsRestAPI {
 		event: string,
 		rundownPlaylistId: RundownPlaylistId,
 		segmentId: SegmentId
-	): Promise<ClientAPI.ClientResponse<void>> {
+	): Promise<ClientAPI.ClientResponse<PartId>> {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this.context.getMethodContext(connection),
 			event,
@@ -346,6 +346,29 @@ class PlaylistsServerAPI implements PlaylistsRestAPI {
 			{
 				playlistId: rundownPlaylistId,
 				nextPartId: partId,
+			}
+		)
+	}
+
+	async queueNextSegment(
+		connection: Meteor.Connection,
+		event: string,
+		rundownPlaylistId: RundownPlaylistId,
+		segmentId: SegmentId
+	): Promise<ClientAPI.ClientResponse<QueueNextSegmentResult>> {
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this.context.getMethodContext(connection),
+			event,
+			getCurrentTime(),
+			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(segmentId, String)
+			},
+			StudioJobs.QueueNextSegment,
+			{
+				playlistId: rundownPlaylistId,
+				queuedSegmentId: segmentId,
 			}
 		)
 	}
@@ -606,8 +629,8 @@ export function registerRoutes(registerRoute: APIRegisterHook<PlaylistsRestAPI>)
 		}
 	)
 
-	registerRoute<{ playlistId: string }, { segmentId: string }, void>(
-		'put',
+	registerRoute<{ playlistId: string }, { segmentId: string }, PartId | null>(
+		'post',
 		'/playlists/:playlistId/set-next-segment',
 		new Map([
 			[404, [UserErrorMessage.RundownPlaylistNotFound]],
@@ -622,6 +645,25 @@ export function registerRoutes(registerRoute: APIRegisterHook<PlaylistsRestAPI>)
 			check(rundownPlaylistId, String)
 			check(segmentId, String)
 			return await serverAPI.setNextSegment(connection, event, rundownPlaylistId, segmentId)
+		}
+	)
+
+	registerRoute<{ playlistId: string }, { segmentId: string }, QueueNextSegmentResult>(
+		'post',
+		'/playlists/:playlistId/queue-next-segment',
+		new Map([
+			[404, [UserErrorMessage.RundownPlaylistNotFound]],
+			[412, [UserErrorMessage.PartNotFound]],
+		]),
+		playlistsAPIFactory,
+		async (serverAPI, connection, event, params, body) => {
+			const rundownPlaylistId = protectString<RundownPlaylistId>(params.playlistId)
+			const segmentId = protectString<SegmentId>(body.segmentId)
+			logger.info(`API POST: set-next-segment ${rundownPlaylistId} ${segmentId}`)
+
+			check(rundownPlaylistId, String)
+			check(segmentId, String)
+			return await serverAPI.queueNextSegment(connection, event, rundownPlaylistId, segmentId)
 		}
 	)
 

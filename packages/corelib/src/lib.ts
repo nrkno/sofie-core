@@ -299,6 +299,11 @@ export function objectPathSet(obj: any, path: string, value: any): any {
 	objectPath.set(obj, path, value)
 	return obj
 }
+// eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types
+export function objectPathDelete(obj: any, path: string): any {
+	objectPath.del(obj, path)
+	return obj
+}
 
 /**
  * Returns a rank number, to be used to insert new objects in a ranked list

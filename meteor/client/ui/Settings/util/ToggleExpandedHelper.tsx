@@ -4,7 +4,7 @@ export function useToggleExpandHelper(): {
 	toggleExpanded(id: string | number, forceState?: boolean): void
 	isExpanded(id: string | number): boolean
 } {
-	const [expandedItemIds, setExpandedItemIds] = useState({})
+	const [expandedItemIds, setExpandedItemIds] = useState<Record<string, boolean>>({})
 
 	const toggleExpanded = useCallback((id: string | number, forceState?: boolean) => {
 		setExpandedItemIds((oldExpanded) => {

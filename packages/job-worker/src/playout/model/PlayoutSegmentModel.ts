@@ -5,6 +5,11 @@ import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 
 export interface PlayoutSegmentModel {
 	readonly Segment: ReadonlyDeep<DBSegment>
+
+	/**
+	 * All the Parts in the segment
+	 * Sorted by their rank
+	 */
 	readonly Parts: ReadonlyDeep<DBPart[]>
 
 	getPartIds(): PartId[]

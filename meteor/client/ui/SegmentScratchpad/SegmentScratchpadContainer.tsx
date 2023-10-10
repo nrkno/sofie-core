@@ -243,7 +243,7 @@ export const SegmentScratchpadContainer = withResolvedSegment<IProps>(function S
 			playlist={props.playlist}
 			isLiveSegment={isLiveSegment}
 			isNextSegment={isNextSegment}
-			isQueuedSegment={props.playlist.nextSegmentId === props.segmentui._id}
+			isQueuedSegment={props.playlist.queuedSegmentId === props.segmentui._id}
 			hasRemoteItems={props.hasRemoteItems}
 			hasGuestItems={props.hasGuestItems}
 			currentPartWillAutoNext={currentPartWillAutoNext}

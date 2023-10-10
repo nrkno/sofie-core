@@ -110,7 +110,7 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 		}
 		private speedVector: [number, number] = [0, 0]
 
-		constructor(props) {
+		constructor(props: Translated<IProps & ITrackedProps>) {
 			super(props)
 			this.state = {
 				infoElement: undefined,
@@ -215,7 +215,7 @@ export const StudioScreenSaver = translateWithTracker(findNextPlaylist)(
 		 * @private
 		 * @param {*} timestamp
 		 */
-		private animatePongFrame = (timestamp) => {
+		private animatePongFrame = (timestamp: number) => {
 			const frameTime = timestamp - this.lastFrameTime
 			const { infoElement, infoElementSize } = this.state
 			let { targetSpeedVector } = this.state

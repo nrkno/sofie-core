@@ -7,6 +7,7 @@ import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartIns
 import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { PartInstanceName } from './partInstances'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
+import _ = require('underscore')
 
 export class AdLibsHandler
 	extends CollectionBase<AdLibPiece[]>
@@ -15,6 +16,7 @@ export class AdLibsHandler
 	public observerName: string
 	private _core: CoreConnection
 	private _curRundownId: string | undefined
+	private _curPartInstance: DBPartInstance | undefined
 
 	constructor(logger: Logger, coreHandler: CoreHandler) {
 		super(AdLibsHandler.name, CollectionName.AdLibPieces, 'adLibPieces', logger, coreHandler)
@@ -34,15 +36,17 @@ export class AdLibsHandler
 	async update(source: string, data: Map<PartInstanceName, DBPartInstance | undefined> | undefined): Promise<void> {
 		this._logger.info(`${this._name} received adLibs update from ${source}`)
 		const prevRundownId = this._curRundownId
-		this._curRundownId = data ? unprotectString(data.get(PartInstanceName.current)?.rundownId) : undefined
+		const prevCurPartInstance = this._curPartInstance
+		this._curPartInstance = data ? data.get(PartInstanceName.current) ?? data.get(PartInstanceName.next) : undefined
+		this._curRundownId = this._curPartInstance ? unprotectString(this._curPartInstance.rundownId) : undefined
 
 		await new Promise(process.nextTick.bind(this))
 		if (!this._collectionName) return
 		if (!this._publicationName) return
-		if (prevRundownId !== this._curRundownId) {
+		if (prevRundownId !== this._curRundownId || !_.isEqual(prevCurPartInstance, this._curPartInstance)) {
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()
-			if (this._curRundownId) {
+			if (this._curRundownId && this._curPartInstance) {
 				this._subscriptionId = await this._coreHandler.setupSubscription(this._publicationName, {
 					rundownId: this._curRundownId,
 				})
@@ -56,7 +60,10 @@ export class AdLibsHandler
 
 				const collection = this._core.getCollection<AdLibPiece>(this._collectionName)
 				if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
-				this._collectionData = collection.find({ rundownId: this._curRundownId })
+				this._collectionData = collection.find({
+					rundownId: this._curRundownId,
+					partId: this._curPartInstance.part._id,
+				})
 				await this.notify(this._collectionData)
 			}
 		}

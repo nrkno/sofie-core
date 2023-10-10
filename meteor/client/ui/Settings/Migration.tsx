@@ -79,7 +79,7 @@ export const MigrationView = translateWithTracker<IProps, IState, ITrackedProps>
 
 			this.updateVersions()
 		}
-		setErrorMessage(err) {
+		setErrorMessage(err: any) {
 			this.setState({
 				errorMessage: stringifyError(err),
 			})

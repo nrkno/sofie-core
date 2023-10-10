@@ -29,15 +29,14 @@ function updateExternalMessageQueueStatus(): void {
 					statusCode: StatusCode.GOOD,
 				}
 				if (messagesOnQueueCount > 0) {
-					// TODO - this is fetching ALL of the docs that match the query, then only using the first
-					const messagesOnQueueExample = await ExternalMessageQueue.findOneAsync(query)[0]
+					const messagesOnQueueExample = await ExternalMessageQueue.findOneAsync(query)
 					status = {
 						statusCode: StatusCode.WARNING_MAJOR,
 						messages: [
 							`There are ${messagesOnQueueCount} unsent messages on queue (one of the unsent messages has the error message: "${
-								messagesOnQueueExample.errorMessage
-							}", to receiver "${messagesOnQueueExample.type}", "${JSON.stringify(
-								messagesOnQueueExample.receiver
+								messagesOnQueueExample?.errorMessage
+							}", to receiver "${messagesOnQueueExample?.type}", "${JSON.stringify(
+								messagesOnQueueExample?.receiver
 							)}")`,
 						],
 					}

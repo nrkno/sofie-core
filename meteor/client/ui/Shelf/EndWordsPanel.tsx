@@ -37,10 +37,6 @@ class EndWordsPanelInner extends MeteorReactComponent<
 	Translated<IEndsWordsPanelProps & IEndsWordsPanelTrackedProps>,
 	IState
 > {
-	constructor(props) {
-		super(props)
-	}
-
 	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 

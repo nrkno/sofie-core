@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import classNames from 'classnames'
+// @ts-expect-error No types available
 import * as VelocityReact from 'velocity-react'
 import { ISourceLayerExtended, PartExtended, PieceExtended } from '../../../../lib/Rundown'
 import StudioContext from '../../RundownView/StudioContext'

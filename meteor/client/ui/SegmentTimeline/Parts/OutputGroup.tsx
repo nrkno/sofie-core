@@ -56,7 +56,7 @@ export function OutputGroup(props: IOutputGroupProps): JSX.Element {
 		return !!props.showDurationSourceLayers && props.showDurationSourceLayers.has(sourceLayer._id)
 	}
 
-	function renderInside(isOutputGroupCollapsed) {
+	function renderInside(isOutputGroupCollapsed: boolean) {
 		if (props.sourceLayers !== undefined) {
 			if (!props.layer.isFlattened) {
 				return props.sourceLayers.map((sourceLayer, index) => {
@@ -152,7 +152,7 @@ export function OutputGroup(props: IOutputGroupProps): JSX.Element {
 					{RundownUtils.formatTimeToTimecode(props.studio.settings, props.startsAt)}
 				</div>
 			)}
-			{renderInside(isCollapsed)}
+			{renderInside(!!isCollapsed)}
 		</div>
 	)
 }

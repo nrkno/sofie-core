@@ -313,6 +313,7 @@ export const DeviceItem = reacti18next.withTranslation()(
 										onClick={(e) => {
 											e.preventDefault()
 											e.stopPropagation()
+											e.persist()
 
 											doModalDialog({
 												message: t('Are you sure you want to restart this device?'),
@@ -530,7 +531,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 		private refreshDebugStatesInterval: NodeJS.Timer | undefined = undefined
 		private destroyed = false
 
-		constructor(props) {
+		constructor(props: Translated<ISystemStatusProps & ISystemStatusTrackedProps>) {
 			super(props)
 
 			this.state = {
@@ -582,7 +583,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 
 		refreshDebugStates = () => {
 			for (const device of this.props.devices) {
-				if (device.type === PeripheralDeviceType.PLAYOUT && device.settings && device.settings['debugState']) {
+				if (device.type === PeripheralDeviceType.PLAYOUT && device.settings && (device.settings as any)['debugState']) {
 					MeteorCall.systemStatus
 						.getDebugStates(device._id)
 						.then((res) => {
@@ -601,7 +602,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 
 		renderPeripheralDevices() {
 			const devices: Array<DeviceInHierarchy> = []
-			const refs = {}
+			const refs: Record<string, DeviceInHierarchy | undefined> = {}
 			const devicesToAdd: Record<string, DeviceInHierarchy> = {}
 			// First, add all as references:
 			_.each(this.props.devices, (device) => {
@@ -615,7 +616,7 @@ export default translateWithTracker<ISystemStatusProps, ISystemStatusState, ISys
 			// Then, map and add devices:
 			_.each(devicesToAdd, (d: DeviceInHierarchy) => {
 				if (d.device.parentDeviceId) {
-					const parent: DeviceInHierarchy = refs[unprotectString(d.device.parentDeviceId)]
+					const parent = refs[unprotectString(d.device.parentDeviceId)]
 					if (parent) {
 						parent.children.push(d)
 					} else {

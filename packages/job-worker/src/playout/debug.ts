@@ -51,7 +51,7 @@ export async function handleDebugRegenerateNextPartInstance(
 				await setNextPart(
 					context,
 					cache,
-					{ part: part, consumesNextSegmentId: false },
+					{ part: part, consumesQueuedSegmentId: false },
 					originalNextPartInfo.manuallySelected
 				)
 

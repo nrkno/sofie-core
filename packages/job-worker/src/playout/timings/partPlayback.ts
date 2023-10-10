@@ -7,7 +7,7 @@ import { selectNextPart } from '../selectNextPart'
 import { setNextPart } from '../setNext'
 import { updateTimeline } from '../timeline/generate'
 import { getCurrentTime } from '../../lib'
-import { afterTake, clearNextSegmentId, resetPreviousSegment, updatePartInstanceOnTake } from '../take'
+import { afterTake, clearQueuedSegmentId, resetPreviousSegment, updatePartInstanceOnTake } from '../take'
 import { INCORRECT_PLAYING_PART_DEBOUNCE, RESET_IGNORE_ERRORS } from '../constants'
 import { Time } from '@sofie-automation/blueprints-integration'
 
@@ -79,7 +79,7 @@ export async function onPartPlaybackStarted(
 				currentPartInstance
 			)
 
-			clearNextSegmentId(cache, playingPartInstance.PartInstance, playlist.nextPartInfo)
+			clearQueuedSegmentId(cache, playingPartInstance.PartInstance, playlist.nextPartInfo)
 			resetPreviousSegment(cache)
 
 			// Update the next partinstance

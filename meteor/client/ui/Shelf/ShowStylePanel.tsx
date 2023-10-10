@@ -9,26 +9,22 @@ import { MeteorReactComponent } from '../../lib/MeteorReactComponent'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { dashboardElementStyle } from './DashboardPanel'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
-import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBShowStyleVariant } from '@sofie-automation/corelib/dist/dataModel/ShowStyleVariant'
 import { withTranslation } from 'react-i18next'
+import { UIShowStyleBase } from '../../../lib/api/showStyles'
 
 interface IShowStylePanelProps {
 	visible?: boolean
 	layout: RundownLayoutBase
 	panel: RundownLayoutShowStyleDisplay
 	playlist: DBRundownPlaylist
-	showStyleBase: DBShowStyleBase
+	showStyleBase: UIShowStyleBase
 	showStyleVariant: DBShowStyleVariant
 }
 
 interface IState {}
 
 class ShowStylePanelInner extends MeteorReactComponent<Translated<IShowStylePanelProps>, IState> {
-	constructor(props) {
-		super(props)
-	}
-
 	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const { t } = this.props

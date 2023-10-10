@@ -67,10 +67,10 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 			this.subscribe(PubSub.studios, {})
 		}
 
-		onUploadFile(e) {
+		onUploadFile(e: React.ChangeEvent<HTMLInputElement>) {
 			const { t } = this.props
 
-			const file = e.target.files[0]
+			const file = e.target.files?.[0]
 			if (!file) {
 				return
 			}
@@ -126,7 +126,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 
 			reader.readAsText(file)
 		}
-		restoreStoredSnapshot = (snapshotId) => {
+		restoreStoredSnapshot = (snapshotId: SnapshotId) => {
 			const snapshot = Snapshots.findOne(snapshotId)
 			if (snapshot) {
 				doModalDialog({
@@ -211,7 +211,7 @@ export default translateWithTracker<IProps, IState, ITrackedProps>(() => {
 					})
 				})
 		}
-		editSnapshot = (snapshotId) => {
+		editSnapshot = (snapshotId: SnapshotId) => {
 			if (this.state.editSnapshotId === snapshotId) {
 				this.setState({
 					editSnapshotId: null,

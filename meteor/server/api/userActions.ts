@@ -140,7 +140,7 @@ class ServerUserActionAPI
 		userEvent: string,
 		eventTime: Time,
 		rundownPlaylistId: RundownPlaylistId,
-		nextSegmentId: SegmentId | null
+		nextSegmentId: SegmentId
 	) {
 		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
 			this,
@@ -149,12 +149,34 @@ class ServerUserActionAPI
 			rundownPlaylistId,
 			() => {
 				check(rundownPlaylistId, String)
-				check(nextSegmentId, Match.OneOf(String, null))
+				check(nextSegmentId, String)
 			},
 			StudioJobs.SetNextSegment,
 			{
 				playlistId: rundownPlaylistId,
 				nextSegmentId,
+			}
+		)
+	}
+	async queueNextSegment(
+		userEvent: string,
+		eventTime: Time,
+		rundownPlaylistId: RundownPlaylistId,
+		queuedSegmentId: SegmentId | null
+	) {
+		return ServerClientAPI.runUserActionInLogForPlaylistOnWorker(
+			this,
+			userEvent,
+			eventTime,
+			rundownPlaylistId,
+			() => {
+				check(rundownPlaylistId, String)
+				check(queuedSegmentId, Match.OneOf(String, null))
+			},
+			StudioJobs.QueueNextSegment,
+			{
+				playlistId: rundownPlaylistId,
+				queuedSegmentId,
 			}
 		)
 	}

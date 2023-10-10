@@ -191,7 +191,7 @@ export async function performTakeToNextedPart(context: JobContext, cache: Playou
 	// it is only a first take if the Playlist has no startedPlayback and the taken PartInstance is not untimed
 	const isFirstTake = !cache.Playlist.startedPlayback && !takePartInstance.PartInstance.part.untimed
 
-	clearNextSegmentId(cache, takePartInstance.PartInstance, cache.Playlist.nextPartInfo)
+	clearQueuedSegmentId(cache, takePartInstance.PartInstance, cache.Playlist.nextPartInfo)
 
 	const nextPart = selectNextPart(
 		context,
@@ -263,18 +263,18 @@ export async function performTakeToNextedPart(context: JobContext, cache: Playou
  * @param cache Cache for the active Playlist
  * @param takenPartInstance PartInstance to check
  */
-export function clearNextSegmentId(
+export function clearQueuedSegmentId(
 	cache: PlayoutModel,
 	takenPartInstance: ReadonlyDeep<DBPartInstance> | undefined,
 	takenPartInfo: ReadonlyDeep<SelectedPartInstance> | null
 ): void {
 	if (
-		takenPartInfo?.consumesNextSegmentId &&
+		takenPartInfo?.consumesQueuedSegmentId &&
 		takenPartInstance &&
-		cache.Playlist.nextSegmentId === takenPartInstance.segmentId
+		cache.Playlist.queuedSegmentId === takenPartInstance.segmentId
 	) {
-		// clear the nextSegmentId if the newly taken partInstance says it was selected because of it
-		cache.setNextSegment(null)
+		// clear the queuedSegmentId if the newly taken partInstance says it was selected because of it
+		cache.setQueuedSegment(null)
 	}
 }
 

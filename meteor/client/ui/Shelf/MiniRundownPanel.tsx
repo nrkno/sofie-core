@@ -5,7 +5,6 @@ import {
 	RundownLayoutBase,
 	DashboardLayoutMiniRundown,
 	RundownLayoutMiniRundown,
-	DashboardLayoutNextInfo,
 } from '../../../lib/collections/RundownLayouts'
 import { RundownLayoutsAPI } from '../../../lib/api/rundownLayouts'
 import { withTracker } from '../../lib/ReactMeteorData/ReactMeteorData'
@@ -174,17 +173,17 @@ function getSegmentCssClass(segment: DBSegment, currentPart?: PartInstance, next
 	return ''
 }
 
-function getContainerClass(props, isDashboardLayout: boolean): string[] | undefined {
+function getContainerClass(props: IMiniRundownPanelProps, isDashboardLayout: boolean): string[] | undefined {
 	return isDashboardLayout ? (props.panel as DashboardLayoutMiniRundown).customClasses : undefined
 }
 
-function getContainerStyle(props, isDashboardLayout: boolean): any {
-	return _.extend(isDashboardLayout ? dashboardElementStyle({ ...(props.panel as DashboardLayoutNextInfo) }) : {}, {
+function getContainerStyle(props: IMiniRundownPanelProps, isDashboardLayout: boolean): React.CSSProperties {
+	return _.extend(isDashboardLayout ? dashboardElementStyle({ ...(props.panel as DashboardLayoutMiniRundown) }) : {}, {
 		visibility: props.visible ? 'visible' : 'hidden',
 	})
 }
 
-function getElementStyle(props, isDashboardLayout: boolean) {
+function getElementStyle(props: IMiniRundownPanelProps, isDashboardLayout: boolean) {
 	return {
 		fontSize: isDashboardLayout ? ((props.panel as DashboardLayoutMiniRundown).scale || 1) + 'em' : undefined,
 	}

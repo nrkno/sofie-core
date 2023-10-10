@@ -155,7 +155,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 		}
 	}
 
-	private ring(value, ringMax) {
+	private ring(value: number, ringMax: number) {
 		return value < 0 ? ringMax + (value % ringMax) : value % ringMax
 	}
 
@@ -375,7 +375,7 @@ export class TimelineGrid extends React.Component<ITimelineGridProps> {
 								this.repaint()
 							})
 						})
-						.catch((err) => console.log(err))
+						.catch((err: any) => console.log(err))
 					document['fonts'].add(gridFont)
 				} else if (gridFont && !gridFontAvailable) {
 					gridFont.loaded.then(() => {

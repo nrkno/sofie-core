@@ -50,7 +50,7 @@ export namespace ServerPlayoutAPI {
 		if (routeSet.behavior === StudioRouteBehavior.ACTIVATE_ONLY && state === false)
 			throw new Meteor.Error(400, `RouteSet "${routeSetId}" is ACTIVATE_ONLY`)
 
-		const modification = {}
+		const modification: Record<string, any> = {}
 		modification[`routeSets.${routeSetId}.active`] = state
 
 		if (studio.routeSets[routeSetId].exclusivityGroup && state === true) {

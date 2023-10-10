@@ -26,7 +26,7 @@ export class ShuttleKeyboardController extends ControllerAbstract {
 		this.speedMap = view.configOptions.shuttle_speedMap || this.speedMap
 		this.speedStepMap = ShuttleKeyboardController.makeSpeedStepMap(this.speedMap)
 	}
-	private static makeSpeedStepMap(speedMap): number[] {
+	private static makeSpeedStepMap(speedMap: number[]): number[] {
 		return [
 			...speedMap
 				.slice(1)

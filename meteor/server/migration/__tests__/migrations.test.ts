@@ -23,6 +23,7 @@ import { wrapDefaultObject } from '@sofie-automation/corelib/dist/settings/objec
 import { Blueprints, ShowStyleBases, ShowStyleVariants, Studios } from '../../collections'
 import { getCoreSystemAsync } from '../../coreSystem/collection'
 import { DEFAULT_MINIMUM_TAKE_SPAN } from '@sofie-automation/shared-lib/dist/core/constants'
+import fs from 'fs'
 
 require('../../api/peripheralDevice.ts') // include in order to create the Meteor methods needed
 require('../api') // include in order to create the Meteor methods needed
@@ -32,14 +33,12 @@ require('../migrations') // include in order to create the migration steps
 
 // Include all migration scripts:
 const normalizedPath = require('path').join(__dirname, '../')
-require('fs')
-	.readdirSync(normalizedPath)
-	.forEach((fileName) => {
-		if (fileName.match(/\d+_\d+_\d+\.ts/)) {
-			// x_y_z.ts
-			require('../' + fileName)
-		}
-	})
+fs.readdirSync(normalizedPath).forEach((fileName) => {
+	if (fileName.match(/\d+_\d+_\d+\.ts/)) {
+		// x_y_z.ts
+		require('../' + fileName)
+	}
+})
 
 describe('Migrations', () => {
 	beforeAll(async () => {

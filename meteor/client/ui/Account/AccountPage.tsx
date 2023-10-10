@@ -33,7 +33,7 @@ export const AccountPage = translateWithTracker(() => {
 	}
 })(
 	class extends MeteorReactComponent<Translated<IAccountPageProps>, IAccountPageState> {
-		constructor(props) {
+		constructor(props: any) {
 			super(props)
 		}
 

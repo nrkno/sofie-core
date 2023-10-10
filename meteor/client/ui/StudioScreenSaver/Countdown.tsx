@@ -2,7 +2,7 @@ import * as React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCurrentTime } from '../../lib/lib'
 
-function floorCeil(val) {
+function floorCeil(val: number) {
 	return val < 0 ? Math.ceil(val) : Math.floor(val)
 }
 

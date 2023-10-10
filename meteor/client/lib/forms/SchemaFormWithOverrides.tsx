@@ -20,7 +20,7 @@ import { SchemaFormArrayTable } from './SchemaFormTable/ArrayTable'
 import { SchemaFormCommonProps, SchemaFormSofieEnumDefinition, translateStringIfHasNamespaces } from './schemaFormUtil'
 import { MultiSelectInputControl } from '../Components/MultiSelectInput'
 import { SchemaFormObjectTable } from './SchemaFormTable/ObjectTable'
-import { SchemaFormUIField } from '@sofie-automation/blueprints-integration'
+import { getSchemaUIField, SchemaFormUIField } from '@sofie-automation/blueprints-integration'
 import { SchemaFormSectionHeader } from './SchemaFormSectionHeader'
 
 interface SchemaFormWithOverridesProps extends SchemaFormCommonProps {
@@ -52,8 +52,8 @@ interface FormComponentProps {
 
 function useChildPropsForFormComponent(props: SchemaFormWithOverridesProps) {
 	return useMemo(() => {
-		const title = props.schema[SchemaFormUIField.Title] || props.attr
-		const description = props.schema[SchemaFormUIField.Description]
+		const title = getSchemaUIField(props.schema, SchemaFormUIField.Title) || props.attr
+		const description = getSchemaUIField(props.schema, SchemaFormUIField.Description)
 
 		return {
 			schema: props.schema,
@@ -80,7 +80,7 @@ export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps): JS
 		case TypeName.Array:
 			return <ArrayFormWithOverrides {...props} />
 		case TypeName.Object:
-			if (props.schema[SchemaFormUIField.DisplayType] === 'json') {
+			if (getSchemaUIField(props.schema, SchemaFormUIField.DisplayType) === 'json') {
 				return <JsonFormWithOverrides {...childProps} />
 			} else if (props.schema.patternProperties) {
 				if (props.allowTables) {
@@ -102,7 +102,7 @@ export function SchemaFormWithOverrides(props: SchemaFormWithOverridesProps): JS
 		case TypeName.Boolean:
 			return <BooleanFormWithOverrides {...childProps} />
 		case TypeName.String:
-			if (props.schema[SchemaFormUIField.SofieEnum]) {
+			if (getSchemaUIField(props.schema, SchemaFormUIField.SofieEnum)) {
 				return (
 					<SofieEnumFormWithOverrides
 						{...childProps}
@@ -127,7 +127,7 @@ const ArrayFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 
 	switch (props.schema.items?.type) {
 		case TypeName.String:
-			if (props.schema[SchemaFormUIField.SofieEnum]) {
+			if (getSchemaUIField(props.schema, SchemaFormUIField.SofieEnum)) {
 				return (
 					<SofieEnumFormWithOverrides
 						{...childProps}
@@ -152,8 +152,8 @@ const ArrayFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
 }
 
 const ObjectFormWithOverrides = (props: SchemaFormWithOverridesProps) => {
-	const title = props.schema[SchemaFormUIField.Title]
-	const description = props.schema[SchemaFormUIField.Description]
+	const title = getSchemaUIField(props.schema, SchemaFormUIField.Title)
+	const description = getSchemaUIField(props.schema, SchemaFormUIField.Description)
 
 	return (
 		<>
@@ -189,8 +189,8 @@ interface SofieEnumFormComponentProps extends FormComponentProps {
 }
 
 const SofieEnumFormWithOverrides = ({ sofieEnumDefinitions, ...props }: SofieEnumFormComponentProps) => {
-	const sofieEnum = props.schema[SchemaFormUIField.SofieEnum]
-	const sofieEnumFilter = props.schema[SchemaFormUIField.SofieEnumFilter]
+	const sofieEnum = getSchemaUIField(props.schema, SchemaFormUIField.SofieEnum)
+	const sofieEnumFilter = getSchemaUIField(props.schema, SchemaFormUIField.SofieEnumFilter)
 	const sofieEnumDefinition = sofieEnum && sofieEnumDefinitions ? sofieEnumDefinitions[sofieEnum] : undefined
 
 	const options: DropdownInputOption<any>[] = useMemo(() => {
@@ -215,7 +215,7 @@ interface EnumFormComponentProps extends FormComponentProps {
 }
 
 const EnumFormWithOverrides = (props: EnumFormComponentProps) => {
-	const tsEnumNames = (props.schema[SchemaFormUIField.TsEnumNames] || []) as string[]
+	const tsEnumNames = (getSchemaUIField(props.schema, SchemaFormUIField.TsEnumNames) || []) as string[]
 	const options = useMemo(() => {
 		return (props.schema.enum || []).map((value: any, i: number) =>
 			literal<DropdownInputOption<any>>({
@@ -282,7 +282,7 @@ const EnumFormControlWrapper = ({ commonAttrs, multiple, options, isRequired }: 
 }
 
 const IntegerFormWithOverrides = ({ schema, commonAttrs }: FormComponentProps) => {
-	const zeroBased = !!schema[SchemaFormUIField.ZeroBased]
+	const zeroBased = !!getSchemaUIField(schema, SchemaFormUIField.ZeroBased)
 
 	return (
 		<>

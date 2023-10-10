@@ -454,8 +454,8 @@ async function isAllowedToRunCleanup(): Promise<string | void> {
 
 	const studios = await Studios.findFetchAsync({}, { fields: { _id: 1 } })
 	for (const studio of studios) {
-		const activePlaylist: DBRundownPlaylist | undefined = await getActiveRundownPlaylistsInStudioFromDb(
-			studio._id
+		const activePlaylist: DBRundownPlaylist | undefined = (
+			await getActiveRundownPlaylistsInStudioFromDb(studio._id)
 		)[0]
 		if (activePlaylist) {
 			return `There is an active RundownPlaylist: "${activePlaylist.name}" in studio "${studio.name}" (${activePlaylist._id}, ${studio._id})`

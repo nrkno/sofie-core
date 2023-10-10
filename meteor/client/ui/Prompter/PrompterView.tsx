@@ -1,5 +1,6 @@
 import React, { PropsWithChildren } from 'react'
 import _ from 'underscore'
+// @ts-expect-error No types available
 import Velocity from 'velocity-animate'
 import ClassNames from 'classnames'
 import { Meteor } from 'meteor/meteor'
@@ -589,7 +590,7 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 	> {
 		private _debounceUpdate: NodeJS.Timer
 
-		constructor(props) {
+		constructor(props: Translated<PropsWithChildren<IPrompterProps> & IPrompterTrackedProps>) {
 			super(props)
 			this.state = {
 				subsReady: false,
@@ -742,7 +743,11 @@ export const Prompter = translateWithTracker<PropsWithChildren<IPrompterProps>, 
 			return this.getScrollAnchor()
 		}
 
-		componentDidUpdate(_prevProps, _prevState, snapshot: ScrollAnchor) {
+		componentDidUpdate(
+			_prevProps: Readonly<Translated<PropsWithChildren<IPrompterProps> & IPrompterTrackedProps>>,
+			_prevState: Readonly<{}>,
+			snapshot: ScrollAnchor
+		) {
 			this.restoreScrollAnchor(snapshot)
 		}
 

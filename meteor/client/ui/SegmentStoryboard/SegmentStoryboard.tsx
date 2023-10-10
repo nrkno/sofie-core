@@ -133,7 +133,7 @@ export const SegmentStoryboard = React.memo(
 			)
 		)
 
-		const getSegmentContext = (_props) => {
+		const getSegmentContext = () => {
 			const ctx = literal<IContextMenuContext>({
 				segment: props.segment,
 				part: props.parts.find((p) => isPartPlayable(p.instance.part)) || null,

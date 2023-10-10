@@ -103,7 +103,7 @@ export const SourceLayerItem = withTranslation()(
 	class SourceLayerItem extends React.Component<ISourceLayerItemProps & WithTranslation, ISourceLayerItemState> {
 		animFrameHandle: number
 
-		constructor(props) {
+		constructor(props: ISourceLayerItemProps & WithTranslation) {
 			super(props)
 			this.state = {
 				showMiniInspector: false,

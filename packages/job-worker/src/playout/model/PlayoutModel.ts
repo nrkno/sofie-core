@@ -97,14 +97,14 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	removePartInstance(id: PartInstanceId): void
 
 	setHoldState(newState: RundownHoldState): void
-	setNextSegment(segment: PlayoutSegmentModel | null): void
+	setQueuedSegment(segment: PlayoutSegmentModel | null): void
 
 	cycleSelectedPartInstances(): void
 	setRundownStartedPlayback(rundownId: RundownId, timestamp: number): void
 	setPartInstanceAsNext(
 		partInstance: PlayoutPartInstanceModel | null,
 		setManually: boolean,
-		consumesNextSegmentId: boolean,
+		consumesQueuedSegmentId: boolean,
 		nextTimeOffset?: number
 	): void
 

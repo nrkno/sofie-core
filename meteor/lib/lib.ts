@@ -116,7 +116,7 @@ export function stringifyObjects(objs: unknown): string {
 	} else if (_.isFunction(objs)) {
 		return ''
 	} else if (_.isObject(objs)) {
-		const objs0 = objs as object
+		const objs0 = objs as any
 		const keys = _.sortBy(_.keys(objs), (k) => k)
 
 		return _.compact(
@@ -212,7 +212,7 @@ export function lazyIgnore(name: string, f1: () => Promise<void> | void, t: numb
 	}, t)
 }
 
-const ticCache = {}
+const ticCache: Record<NamedCurve, number> = {}
 /**
  * Performance debugging. tic() starts a timer, toc() traces the time since tic()
  * @param name

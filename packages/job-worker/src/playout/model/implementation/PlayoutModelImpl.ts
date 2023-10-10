@@ -372,9 +372,9 @@ export class PlayoutModelImpl implements PlayoutModel {
 		this.#PlaylistHasChanged = true
 	}
 
-	setNextSegment(segment: PlayoutSegmentModel | null): void {
+	setQueuedSegment(segment: PlayoutSegmentModel | null): void {
 		// TODO some validation?
-		this.#Playlist.nextSegmentId = segment?.Segment?._id ?? undefined
+		this.#Playlist.queuedSegmentId = segment?.Segment?._id ?? undefined
 
 		this.#PlaylistHasChanged = true
 	}
@@ -415,7 +415,7 @@ export class PlayoutModelImpl implements PlayoutModel {
 	setPartInstanceAsNext(
 		partInstance: PlayoutPartInstanceModel | null,
 		setManually: boolean,
-		consumesNextSegmentId: boolean,
+		consumesQueuedSegmentId: boolean,
 		nextTimeOffset?: number
 	): void {
 		if (partInstance) {
@@ -430,7 +430,7 @@ export class PlayoutModelImpl implements PlayoutModel {
 				partInstanceId: partInstance.PartInstance._id,
 				rundownId: partInstance.PartInstance.rundownId,
 				manuallySelected: !!(setManually || partInstance.PartInstance.orphaned),
-				consumesNextSegmentId,
+				consumesQueuedSegmentId,
 			})
 			this.#Playlist.nextTimeOffset = nextTimeOffset || null
 		} else {

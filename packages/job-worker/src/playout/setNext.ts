@@ -2,7 +2,7 @@ import { assertNever, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { JobContext } from '../jobs'
-import { PartInstanceId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartId, PartInstanceId, RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PlayoutModel } from './model/PlayoutModel'
 import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
 import { PlayoutSegmentModel } from './model/PlayoutSegmentModel'
@@ -19,6 +19,7 @@ import { RundownHoldState } from '@sofie-automation/corelib/dist/dataModel/Rundo
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
 import { SelectNextPartResult } from './selectNextPart'
 import { ReadonlyDeep } from 'type-fest'
+import { QueueNextSegmentResult } from '@sofie-automation/corelib/dist/worker/studio'
 
 /**
  * Set or clear the nexted part, from a given PartInstance, or SelectNextPartResult
@@ -46,7 +47,7 @@ export async function setNextPart(
 
 		// create new instance
 		let newPartInstance: PlayoutPartInstanceModel
-		let consumesNextSegmentId: boolean
+		let consumesQueuedSegmentId: boolean
 		if ('PartInstance' in rawNextPart) {
 			const inputPartInstance: PlayoutPartInstanceModel = rawNextPart
 			if (inputPartInstance.PartInstance.part.invalid) {
@@ -59,7 +60,7 @@ export async function setNextPart(
 				)
 			}
 
-			consumesNextSegmentId = false
+			consumesQueuedSegmentId = false
 			newPartInstance = await prepareExistingPartInstanceForBeingNexted(context, cache, inputPartInstance)
 		} else {
 			const selectedPart: ReadonlyDeep<Omit<SelectNextPartResult, 'index'>> = rawNextPart
@@ -73,7 +74,7 @@ export async function setNextPart(
 				)
 			}
 
-			consumesNextSegmentId = selectedPart.consumesNextSegmentId ?? false
+			consumesQueuedSegmentId = selectedPart.consumesQueuedSegmentId ?? false
 
 			if (nextPartInstance && nextPartInstance.PartInstance.part._id === selectedPart.part._id) {
 				// Re-use existing
@@ -103,7 +104,7 @@ export async function setNextPart(
 			'part._id': newPartInstance.PartInstance.part._id,
 		})
 
-		cache.setPartInstanceAsNext(newPartInstance, setManually, consumesNextSegmentId, nextTimeOffset)
+		cache.setPartInstanceAsNext(newPartInstance, setManually, consumesQueuedSegmentId, nextTimeOffset)
 	} else {
 		// Set to null
 
@@ -299,26 +300,23 @@ async function cleanupOrphanedItems(context: JobContext, cache: PlayoutModel) {
 }
 
 /**
- * Set or clear the nexted-segment.
+ * Set or clear the queued segment.
  * @param context Context for the running job
  * @param cache The playout cache of the playlist
- * @param nextSegment The segment to set as next, or null to clear it
+ * @param queuedSegment The segment to queue, or null to clear it
  */
-export async function setNextSegment(
+export async function queueNextSegment(
 	context: JobContext,
 	cache: PlayoutModel,
-	nextSegment: PlayoutSegmentModel | null
-): Promise<void> {
-	const span = context.startSpan('setNextSegment')
-	if (nextSegment) {
-		if (nextSegment.Segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
-			throw new Error(`Segment "${nextSegment.Segment._id}" is a scratchpad, and cannot be nexted!`)
+	queuedSegment: PlayoutSegmentModel | null
+): Promise<QueueNextSegmentResult> {
+	const span = context.startSpan('queueNextSegment')
+	if (queuedSegment) {
+		if (queuedSegment.Segment.orphaned === SegmentOrphanedReason.SCRATCHPAD)
+			throw new Error(`Segment "${queuedSegment.Segment._id}" is a scratchpad, and cannot be queued!`)
 
 		// Just run so that errors will be thrown if something wrong:
-		const firstPlayablePart = nextSegment.Parts.find((p) => isPartPlayable(p))
-		if (!firstPlayablePart) {
-			throw new Error('Segment contains no valid parts')
-		}
+		const firstPlayablePart = findFirstPlayablePartOrThrow(queuedSegment)
 
 		const currentPartInstance = cache.CurrentPartInstance?.PartInstance
 		const nextPartInstance = cache.NextPartInstance?.PartInstance
@@ -327,24 +325,67 @@ export async function setNextSegment(
 		// behave as if user chose SetNextPart on the first playable part of the segment
 		if (currentPartInstance === undefined || currentPartInstance.segmentId !== nextPartInstance?.segmentId) {
 			// Clear any existing nextSegment, as this call 'replaces' it
-			cache.setNextSegment(null)
+			cache.setQueuedSegment(null)
 
-			return setNextPart(
+			await setNextPart(
 				context,
 				cache,
 				{
 					part: firstPlayablePart,
-					consumesNextSegmentId: false,
+					consumesQueuedSegmentId: false,
 				},
 				true
 			)
+
+			span?.end()
+			return { nextPartId: firstPlayablePart._id }
 		}
 
-		cache.setNextSegment(nextSegment)
+		cache.setQueuedSegment(queuedSegment)
 	} else {
-		cache.setNextSegment(null)
+		cache.setQueuedSegment(null)
 	}
+	span?.end()
+	return { queuedSegmentId: queuedSegment?.Segment?._id ?? null }
+}
+
+/**
+ * Set the first playable part of a given segment as next.
+ * @param context Context for the running job
+ * @param cache The playout cache of the playlist
+ * @param nextSegment The segment, whose first part is to be set as next
+ */
+export async function setNextSegment(
+	context: JobContext,
+	cache: PlayoutModel,
+	nextSegment: PlayoutSegmentModel
+): Promise<PartId> {
+	const span = context.startSpan('setNextSegment')
+	// Just run so that errors will be thrown if something wrong:
+	const firstPlayablePart = findFirstPlayablePartOrThrow(nextSegment)
+
+	cache.setQueuedSegment(null)
+
+	await setNextPart(
+		context,
+		cache,
+		{
+			part: firstPlayablePart,
+			consumesQueuedSegmentId: false,
+		},
+		true
+	)
+
 	if (span) span.end()
+	return firstPlayablePart._id
+}
+
+function findFirstPlayablePartOrThrow(segment: PlayoutSegmentModel): ReadonlyDeep<DBPart> {
+	const firstPlayablePart = segment.Parts.find((p) => isPartPlayable(p))
+	if (!firstPlayablePart) {
+		throw new Error('Segment contains no valid parts')
+	}
+	return firstPlayablePart
 }
 
 /**
@@ -368,12 +409,12 @@ export async function setNextPartFromPart(
 		throw UserError.create(UserErrorMessage.DuringHold)
 	}
 
-	const consumesNextSegmentId = doesPartConsumeNextSegmentId(cache, nextPart)
+	const consumesQueuedSegmentId = doesPartConsumeQueuedSegmentId(cache, nextPart)
 
-	await setNextPart(context, cache, { part: nextPart, consumesNextSegmentId }, setManually, nextTimeOffset)
+	await setNextPart(context, cache, { part: nextPart, consumesQueuedSegmentId }, setManually, nextTimeOffset)
 }
 
-function doesPartConsumeNextSegmentId(cache: PlayoutModel, nextPart: ReadonlyDeep<DBPart>) {
+function doesPartConsumeQueuedSegmentId(cache: PlayoutModel, nextPart: ReadonlyDeep<DBPart>) {
 	// If we're setting the next point to somewhere other than the current segment, and in the queued segment, clear the queued segment
 	const playlist = cache.Playlist
 	const currentPartInstance = cache.CurrentPartInstance?.PartInstance
@@ -381,6 +422,6 @@ function doesPartConsumeNextSegmentId(cache: PlayoutModel, nextPart: ReadonlyDee
 	return !!(
 		currentPartInstance &&
 		currentPartInstance.segmentId !== nextPart.segmentId &&
-		playlist.nextSegmentId === nextPart.segmentId
+		playlist.queuedSegmentId === nextPart.segmentId
 	)
 }

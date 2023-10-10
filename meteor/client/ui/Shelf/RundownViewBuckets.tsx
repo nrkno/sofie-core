@@ -62,14 +62,14 @@ export interface BucketAdLibActionUi extends Omit<AdLibPiece, 'timelineObjectsSt
 export type BucketAdLibItem = BucketAdLibUi | BucketAdLibActionUi
 
 export function isAdLibAction(item: BucketAdLibItem): item is BucketAdLibActionUi {
-	if (item['adlibAction']) {
+	if ('adlibAction' in item && item['adlibAction']) {
 		return true
 	}
 	return false
 }
 
 export function isAdLib(item: BucketAdLibItem): item is BucketAdLibUi {
-	if (!item['adlibAction']) {
+	if (!('adlibAction' in item) || !item['adlibAction']) {
 		return true
 	}
 	return false
@@ -84,7 +84,7 @@ interface IBucketsProps {
 	displayBuckets?: number[]
 	selectedPiece: BucketAdLibActionUi | BucketAdLibUi | IAdLibListItem | PieceUi | undefined
 
-	onSelectPiece?: (piece: BucketAdLibItem | undefined) => void
+	onSelectPiece: (piece: BucketAdLibItem | undefined) => void
 }
 
 interface IState {
@@ -359,7 +359,7 @@ export const RundownViewBuckets = withTranslation()(
 					message: t('Are you sure you want to delete this AdLib?'),
 					title: bucketAdLib.name,
 					onAccept: () => {
-						const clb = (err) => {
+						const clb = (err: any) => {
 							if (err) return
 
 							if (

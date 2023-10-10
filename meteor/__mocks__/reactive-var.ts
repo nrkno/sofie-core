@@ -1,6 +1,6 @@
 class ReactiveVar<T> {
 	val: T
-	constructor(initVal) {
+	constructor(initVal: T) {
 		this.val = initVal
 	}
 	get = () => {

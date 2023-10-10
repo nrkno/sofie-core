@@ -1,10 +1,11 @@
 import { getElementWidth, getElementHeight } from '../dimensions'
-import { createSandbox } from 'sinon'
+import { createSandbox, SinonStub } from 'sinon'
 
 const sandbox = createSandbox()
 
 describe('client/utils/dimensions', () => {
-	let getComputedStyle
+	type getComputedStyleType = (typeof window)['getComputedStyle']
+	let getComputedStyle: SinonStub<Parameters<getComputedStyleType>, any> //ReturnType<getComputedStyleType>>
 
 	beforeEach(() => {
 		getComputedStyle = sandbox.stub(window, 'getComputedStyle')

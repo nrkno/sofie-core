@@ -23,7 +23,7 @@ export const LostPasswordPage = translateWithTracker((props: ILostPasswordPagePr
 	return {}
 })(
 	class extends MeteorReactComponent<Translated<ILostPasswordPageProps>, ILostPasswordPageState> {
-		constructor(props) {
+		constructor(props: Translated<ILostPasswordPageProps>) {
 			super(props)
 
 			this.state = {

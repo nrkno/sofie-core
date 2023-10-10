@@ -55,7 +55,11 @@ export const TimelineDashboardPanel = translateWithTracker<
 		liveLine: HTMLDivElement
 		scrollIntoViewTimeout: NodeJS.Timer | undefined = undefined
 
-		constructor(props) {
+		constructor(
+			props: Translated<
+				IAdLibPanelProps & IDashboardPanelProps & AdLibFetchAndFilterProps & IDashboardPanelTrackedProps
+			>
+		) {
 			super(props)
 		}
 
@@ -77,7 +81,10 @@ export const TimelineDashboardPanel = translateWithTracker<
 				}
 			}
 		}
-		componentDidUpdate(prevProps, prevState) {
+		componentDidUpdate(
+			prevProps: IAdLibPanelProps & AdLibFetchAndFilterProps,
+			prevState: DashboardPanelInner['state']
+		) {
 			super.componentDidUpdate(prevProps, prevState)
 			this.ensureLiveLineVisible()
 		}

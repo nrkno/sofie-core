@@ -33,10 +33,6 @@ class PlaylistNamePanelInner extends MeteorReactComponent<
 	IPlaylistNamePanelProps & IPlaylistNamePanelTrackedProps,
 	IState
 > {
-	constructor(props) {
-		super(props)
-	}
-
 	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const { panel } = this.props

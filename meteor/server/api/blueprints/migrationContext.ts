@@ -1,5 +1,4 @@
 import * as _ from 'underscore'
-import * as objectPath from 'object-path'
 import {
 	trimIfString,
 	getHash,
@@ -11,6 +10,7 @@ import {
 	clone,
 	Complete,
 	waitForPromise,
+	objectPathDelete,
 } from '../../../lib/lib'
 import { DBStudio, StudioPlayoutDevice } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
@@ -241,7 +241,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 					[`blueprintConfigWithOverrides.defaults.${configId}`]: 1,
 				},
 			}
-			objectPath.del(this.studio.blueprintConfigWithOverrides.defaults, configId) // Update local
+			objectPathDelete(this.studio.blueprintConfigWithOverrides.defaults, configId) // Update local
 		} else {
 			modifier = {
 				$set: {
@@ -276,7 +276,7 @@ export class MigrationContextStudio implements IMigrationContextStudio {
 				)
 			)
 			// Update local:
-			objectPath.del(this.studio.blueprintConfigWithOverrides.defaults, configId)
+			objectPathDelete(this.studio.blueprintConfigWithOverrides.defaults, configId)
 		}
 	}
 
@@ -698,7 +698,7 @@ export class MigrationContextShowStyle
 				)
 			)
 			// Update local:
-			objectPath.del(this.showStyleBase.blueprintConfigWithOverrides.defaults, configId)
+			objectPathDelete(this.showStyleBase.blueprintConfigWithOverrides.defaults, configId)
 		}
 	}
 	getVariantConfig(variantId: string, configId: string): ConfigItemValue | undefined {
@@ -763,7 +763,7 @@ export class MigrationContextShowStyle
 				)
 			)
 			// Update local:
-			objectPath.del(variant.blueprintConfigWithOverrides.defaults, configId)
+			objectPathDelete(variant.blueprintConfigWithOverrides.defaults, configId)
 		}
 	}
 }

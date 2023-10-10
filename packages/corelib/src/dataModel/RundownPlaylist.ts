@@ -88,10 +88,10 @@ export interface DBRundownPlaylist {
 	previousPartInfo: SelectedPartInstance | null
 
 	/**
-	 * The id of the Next Segment. If set, the Next point will jump to that segment when moving out of currently playing segment.
+	 * The id of the Queued Segment. If set, the Next point will jump to that segment when reaching the end of the currently playing segment.
 	 * In general this should only be set/cleared by a useraction, or during the take logic. This ensures that it isnt lost when doing manual set-next actions
 	 */
-	nextSegmentId?: SegmentId
+	queuedSegmentId?: SegmentId
 
 	/** Actual time of playback starting */
 	startedPlayback?: Time
@@ -123,6 +123,6 @@ export type SelectedPartInstance = Readonly<{
 	/** if nextPartId was set manually (ie from a user action) */
 	manuallySelected: boolean
 
-	/** Whether this instance was selected because of RundownPlaylist.nextSegmentId. This will cause it to clear that property as part of the take operation */
-	consumesNextSegmentId: boolean
+	/** Whether this instance was selected because of RundownPlaylist.queuedSegmentId. This will cause it to clear that property as part of the take operation */
+	consumesQueuedSegmentId: boolean
 }>

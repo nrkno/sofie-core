@@ -72,7 +72,7 @@ export function withTiming<IProps, IState>(
 			previousValue: any = undefined
 			isDirty = false
 
-			constructor(props, context) {
+			constructor(props: any, context: any) {
 				super(props, context)
 
 				this.configureOptions()

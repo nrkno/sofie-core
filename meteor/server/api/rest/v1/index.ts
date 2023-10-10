@@ -90,6 +90,12 @@ function extractErrorDetails(e: unknown): string[] | undefined {
 	}
 }
 
+interface APIRequestError {
+	status: number
+	message: string
+	details?: string[]
+}
+
 function sofieAPIRequest<API, Params, Body, Response>(
 	method: 'get' | 'post' | 'put' | 'delete',
 	route: string,
@@ -136,7 +142,7 @@ function sofieAPIRequest<API, Params, Body, Response>(
 
 			logger.error(`${method.toUpperCase()} failed for route ${route}: ${errCode} - ${errMsg}`)
 			ctx.type = 'application/json'
-			const bodyObj = { status: errCode, message: errMsg }
+			const bodyObj: APIRequestError = { status: errCode, message: errMsg }
 			const details = extractErrorDetails(e)
 			if (details) bodyObj['details'] = details
 			ctx.body = JSON.stringify(bodyObj)

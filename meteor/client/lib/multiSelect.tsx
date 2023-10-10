@@ -31,8 +31,8 @@ interface IState {
 }
 
 export class MultiSelect extends React.Component<IProps, IState> {
-	private _titleRef: HTMLElement
-	private _popperRef: HTMLElement
+	private _titleRef: HTMLElement | null
+	private _popperRef: HTMLElement | null
 	private _popperUpdate: () => Promise<any>
 
 	constructor(props: IProps) {
@@ -135,6 +135,7 @@ export class MultiSelect extends React.Component<IProps, IState> {
 			!(
 				event.relatedTarget &&
 				event.relatedTarget instanceof HTMLElement &&
+				this._popperRef &&
 				(this._popperRef === event.relatedTarget ||
 					this._popperRef.contains(event.relatedTarget) ||
 					this._titleRef === event.relatedTarget)
@@ -158,21 +159,21 @@ export class MultiSelect extends React.Component<IProps, IState> {
 		})
 	}
 
-	private setTitleRef = (ref, popperRef) => {
+	private setTitleRef = (ref: HTMLDivElement | null, popperRef: React.Ref<any>) => {
 		this._titleRef = ref
 		if (typeof popperRef === 'function') {
 			popperRef(ref)
 		}
 	}
 
-	private setPopperRef = (ref, popperRef) => {
+	private setPopperRef = (ref: HTMLDivElement | null, popperRef: React.Ref<any>) => {
 		this._popperRef = ref
 		if (typeof popperRef === 'function') {
 			popperRef(ref)
 		}
 	}
 
-	private setUpdate = (update) => {
+	private setUpdate = (update: () => Promise<any>) => {
 		this._popperUpdate = update
 	}
 

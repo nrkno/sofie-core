@@ -153,7 +153,7 @@ export const MountedGenericTriggers = createInMemorySyncMongoCollection<MountedG
 export function isMountedAdLibTrigger(
 	mountedTrigger: MountedAdLibTrigger | MountedGenericTrigger
 ): mountedTrigger is MountedAdLibTrigger {
-	return !!mountedTrigger['targetId']
+	return 'targetId' in mountedTrigger && !!mountedTrigger['targetId']
 }
 
 function isolatedAutorunWithCleanup(autorun: () => void | (() => void)): Tracker.Computation {
@@ -181,7 +181,7 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 	const [initialized, setInitialized] = useState(props.sorensen ? true : false)
 	const { t } = useTranslation()
 	const localSorensen = props.sorensen || Sorensen
-	const createdActions = useRef<Map<TriggeredActionId, (e) => void>>(new Map())
+	const createdActions = useRef<Map<TriggeredActionId, (e: any) => void>>(new Map())
 
 	function bindHotkey(id: TriggeredActionId, keys: string, up: boolean, action: HotkeyTriggerListener) {
 		try {
@@ -425,9 +425,9 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 			if (!props.simulateTriggerBinding) {
 				createdActions.current.set(pair._id, action.listener)
 				Object.values<SomeBlueprintTrigger>(pair.triggers).forEach((trigger) => {
-					if (trigger.type === TriggerType.hotkey) {
-						bindHotkey(pair._id, trigger.keys, !!trigger.up, action.listener)
-					}
+					if (trigger.type !== TriggerType.hotkey) return
+					if (trigger.keys.trim() === '') return
+					bindHotkey(pair._id, trigger.keys, !!trigger.up, action.listener)
 				})
 			}
 
@@ -502,9 +502,9 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 					const actionListener = createdActions.current.get(pair._id)
 					if (actionListener) {
 						Object.values<SomeBlueprintTrigger>(pair.triggers).forEach((trigger) => {
-							if (trigger.type === TriggerType.hotkey) {
-								unbindHotkey(trigger.keys, actionListener)
-							}
+							if (trigger.type !== TriggerType.hotkey) return
+							if (trigger.keys.trim() === '') return
+							unbindHotkey(trigger.keys, actionListener)
 						})
 					}
 
@@ -523,5 +523,6 @@ export const TriggersHandler: React.FC<IProps> = function TriggersHandler(
 	return null
 }
 
-window['MountedAdLibTriggers'] = MountedAdLibTriggers
-window['MountedGenericTriggers'] = MountedGenericTriggers
+const windowAny: any = window
+windowAny['MountedAdLibTriggers'] = MountedAdLibTriggers
+windowAny['MountedGenericTriggers'] = MountedGenericTriggers

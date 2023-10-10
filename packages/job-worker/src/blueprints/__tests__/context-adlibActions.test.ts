@@ -257,7 +257,7 @@ describe('Test blueprint api context', () => {
 					partInstanceId: info.partInstanceId,
 					rundownId: info.rundownId,
 					manuallySelected: false,
-					consumesNextSegmentId: false,
+					consumesQueuedSegmentId: false,
 				}
 			} else if ('PartInstance' in info) {
 				return {
@@ -271,7 +271,7 @@ describe('Test blueprint api context', () => {
 					partInstanceId: info._id,
 					rundownId: info.rundownId,
 					manuallySelected: false,
-					consumesNextSegmentId: false,
+					consumesQueuedSegmentId: false,
 				}
 			}
 		}

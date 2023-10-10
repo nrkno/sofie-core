@@ -37,10 +37,6 @@ class PartTimingPanelInner extends MeteorReactComponent<
 	Translated<IPartTimingPanelProps & IPartTimingPanelTrackedProps>,
 	IState
 > {
-	constructor(props) {
-		super(props)
-	}
-
 	render(): JSX.Element {
 		const isDashboardLayout = RundownLayoutsAPI.isDashboardLayout(this.props.layout)
 		const { t, panel } = this.props

@@ -79,8 +79,8 @@ export const StudioPackageManagerSettings = withTranslation()(
 			})
 		}
 		removePackageContainer = (containerId: string) => {
-			const unsetObject = {}
-			unsetObject['packageContainers.' + containerId] = ''
+			const unsetObject: Record<string, 1> = {}
+			unsetObject['packageContainers.' + containerId] = 1
 			Studios.update(this.props.studio._id, {
 				$unset: unsetObject,
 			})
@@ -100,7 +100,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 					accessors: {},
 				},
 			}
-			const setObject: Partial<DBStudio> = {}
+			const setObject: Record<string, any> = {}
 			setObject['packageContainers.' + newKeyName + iter] = newPackageContainer
 
 			Studios.update(this.props.studio._id, {
@@ -116,8 +116,8 @@ export const StudioPackageManagerSettings = withTranslation()(
 				throw new Meteor.Error(400, 'PackageContainer "' + newContainerId + '" already exists')
 			}
 
-			const mSet = {}
-			const mUnset = {}
+			const mSet: Record<string, any> = {}
+			const mUnset: Record<string, 1> = {}
 			mSet['packageContainers.' + newContainerId] = packageContainer
 			mUnset['packageContainers.' + oldContainerId] = 1
 
@@ -296,8 +296,8 @@ export const StudioPackageManagerSettings = withTranslation()(
 			})
 		}
 		removeAccessor = (containerId: string, accessorId: string) => {
-			const unsetObject = {}
-			unsetObject[`packageContainers.${containerId}.container.accessors.${accessorId}`] = ''
+			const unsetObject: Record<string, 1> = {}
+			unsetObject[`packageContainers.${containerId}.container.accessors.${accessorId}`] = 1
 			Studios.update(this.props.studio._id, {
 				$unset: unsetObject,
 			})
@@ -321,7 +321,7 @@ export const StudioPackageManagerSettings = withTranslation()(
 				allowWrite: false,
 				folderPath: '',
 			}
-			const setObject: Partial<DBStudio> = {}
+			const setObject: Record<string, any> = {}
 			setObject[`packageContainers.${containerId}.container.accessors.${accessorId}`] = newAccessor
 
 			Studios.update(this.props.studio._id, {
@@ -342,8 +342,8 @@ export const StudioPackageManagerSettings = withTranslation()(
 				throw new Meteor.Error(400, 'Accessor "' + newAccessorId + '" already exists')
 			}
 
-			const mSet = {}
-			const mUnset = {}
+			const mSet: Record<string, any> = {}
+			const mUnset: Record<string, 1> = {}
 			mSet[`packageContainers.${containerId}.container.accessors.${newAccessorId}`] = accessor
 			mUnset[`packageContainers.${containerId}.container.accessors.${oldAccessorId}`] = 1
 

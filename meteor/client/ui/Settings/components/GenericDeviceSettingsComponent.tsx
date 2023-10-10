@@ -25,7 +25,7 @@ export function GenericDeviceSettingsComponent({
 	const deviceHasDebugStates = !!(
 		device.type === PeripheralDeviceType.PLAYOUT &&
 		device.settings &&
-		device.settings['debugState']
+		(device.settings as any)['debugState']
 	)
 	useEffect(() => {
 		if (deviceHasDebugStates) {
