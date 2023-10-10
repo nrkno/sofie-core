@@ -43,11 +43,15 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 	get PartInstanceHasChanges(): boolean {
 		return this.#PartInstanceHasChanges
 	}
-	AnyPieceInstanceHasChanges(): boolean {
-		for (const pieceInstance of this.PieceInstancesImpl.values()) {
-			if (pieceInstance.changed || !pieceInstance.doc) return true
+	ChangedPieceInstanceIds(): PieceInstanceId[] {
+		const result: PieceInstanceId[] = []
+		for (const [id, pieceInstance] of this.PieceInstancesImpl.entries()) {
+			if (pieceInstance.changed || !pieceInstance.doc) result.push(id)
 		}
-		return false
+		return result
+	}
+	HasAnyChanges(): boolean {
+		return this.#PartInstanceHasChanges || this.ChangedPieceInstanceIds().length > 0
 	}
 	clearChangedFlags(): void {
 		this.#PartInstanceHasChanges = false
@@ -82,7 +86,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		for (const pieceInstance of pieceInstances) {
 			this.PieceInstancesImpl.set(pieceInstance._id, {
 				doc: pieceInstance,
-				changed: false,
+				changed: hasChanges,
 			})
 		}
 	}
@@ -107,6 +111,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 		for (const pieceInstance of this.PieceInstancesImpl.values()) {
 			if (!pieceInstance.doc) continue
+			pieceInstance.changed = true
 			pieceInstance.doc.playlistActivationId = id
 		}
 	}
@@ -180,6 +185,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		for (const pieceInstance of this.PieceInstancesImpl.values()) {
 			if (!pieceInstance.doc) continue
 
+			pieceInstance.changed = true
 			pieceInstance.doc.reset = true
 		}
 
@@ -265,6 +271,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		const pieceInstance = this.PieceInstancesImpl.get(id)
 		if (!pieceInstance?.doc) throw new Error('Bad pieceinstance')
 
+		pieceInstance.changed = true
 		pieceInstance.doc.piece = {
 			...pieceInstance.doc.piece,
 			...props,
@@ -390,6 +397,8 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 			pieceInstance.doc.plannedStartedPlayback = time
 			delete pieceInstance.doc.plannedStoppedPlayback
 
+			pieceInstance.changed = true
+
 			return true
 		}
 		return false
@@ -400,6 +409,8 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 		if (pieceInstance.doc.plannedStoppedPlayback !== time) {
 			pieceInstance.doc.plannedStoppedPlayback = time
+
+			pieceInstance.changed = true
 
 			return true
 		}
@@ -413,6 +424,8 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 			pieceInstance.doc.reportedStartedPlayback = time
 			delete pieceInstance.doc.reportedStoppedPlayback
 
+			pieceInstance.changed = true
+
 			return true
 		}
 		return false
@@ -423,6 +436,8 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 		if (pieceInstance.doc.reportedStoppedPlayback !== time) {
 			pieceInstance.doc.reportedStoppedPlayback = time
+
+			pieceInstance.changed = true
 
 			return true
 		}
@@ -453,6 +468,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 			infinitePieceId: pieceInstance.doc.piece._id,
 			fromPreviousPart: false,
 		}
+		pieceInstance.changed = true
 
 		return infiniteInstanceId
 	}
@@ -502,6 +518,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		const pieceInstance = this.PieceInstancesImpl.get(pieceInstanceId)
 		if (!pieceInstance?.doc) throw new Error(`PieceInstance ${pieceInstanceId} not found`) // TODO - is this ok?
 
+		pieceInstance.changed = true
 		pieceInstance.doc.userDuration = duration
 	}
 
@@ -549,6 +566,7 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		const pieceInstance = this.PieceInstancesImpl.get(pieceInstanceId)
 		if (!pieceInstance?.doc) throw new Error(`PieceInstance ${pieceInstanceId} not found`) // TODO - is this ok?
 
+		pieceInstance.changed = true
 		pieceInstance.doc.disabled = disabled
 	}
 }

@@ -264,7 +264,7 @@ describe('Test blueprint api context', () => {
 					partInstanceId: info.PartInstance._id,
 					rundownId: info.PartInstance.rundownId,
 					manuallySelected: false,
-					consumesNextSegmentId: false,
+					consumesQueuedSegmentId: false,
 				}
 			} else {
 				return {
@@ -1242,7 +1242,7 @@ describe('Test blueprint api context', () => {
 
 					// Ensure there are no pending updates already
 					for (const partInstance of cache.LoadedPartInstances) {
-						expect((partInstance as PlayoutPartInstanceModelImpl).HasChanges).toBeFalsy()
+						expect((partInstance as PlayoutPartInstanceModelImpl).HasAnyChanges()).toBeFalsy()
 					}
 
 					// Update it and expect it to match
@@ -1289,15 +1289,10 @@ describe('Test blueprint api context', () => {
 						},
 					}
 					expect(pieceInstance1).toEqual(pieceInstance0After)
-					expect((partInstance1 as PlayoutPartInstanceModelImpl).HasChanges).toBeTruthy()
-					// expect(
-					// 	Array.from(cache.PieceInstances.documents.values()).filter((doc) => !doc || !!doc.updated)
-					// ).toMatchObject([
-					// 	{
-					// 		updated: true,
-					// 		document: { _id: pieceInstance1._id },
-					// 	},
-					// ])
+					expect((partInstance1 as PlayoutPartInstanceModelImpl).PartInstanceHasChanges).toBeFalsy()
+					expect((partInstance1 as PlayoutPartInstanceModelImpl).ChangedPieceInstanceIds()).toEqual([
+						pieceInstance1._id,
+					])
 
 					expect(context.nextPartState).toEqual(ActionPartChange.NONE)
 					expect(context.currentPartState).toEqual(ActionPartChange.SAFE_CHANGE)
@@ -1720,7 +1715,7 @@ describe('Test blueprint api context', () => {
 					const { context } = await getActionExecutionContext(jobContext, cache)
 
 					// Ensure there are no pending updates already
-					expect((cache.NextPartInstance! as PlayoutPartInstanceModelImpl).HasChanges).toBeFalsy()
+					expect((cache.NextPartInstance! as PlayoutPartInstanceModelImpl).HasAnyChanges()).toBeFalsy()
 
 					// Update it and expect it to match
 					const partInstance0Before = clone(partInstance0)
@@ -1731,11 +1726,11 @@ describe('Test blueprint api context', () => {
 						classes: ['123'],
 						badProperty: 9, // This will be dropped
 					}
-					const resultPiece = await context.updatePartInstance('next', partInstance0Delta)
-					const partInstance1 = cache.NextPartInstance!
+					const resultPart = await context.updatePartInstance('next', partInstance0Delta)
+					const partInstance1 = cache.NextPartInstance! as PlayoutPartInstanceModelImpl
 					expect(partInstance1).toBeTruthy()
 
-					expect(resultPiece).toEqual(convertPartInstanceToBlueprints(partInstance1.PartInstance))
+					expect(resultPart).toEqual(convertPartInstanceToBlueprints(partInstance1.PartInstance))
 
 					const pieceInstance0After = {
 						...partInstance0Before,
@@ -1745,15 +1740,8 @@ describe('Test blueprint api context', () => {
 						},
 					}
 					expect(partInstance1.PartInstance).toEqual(pieceInstance0After)
-					expect((partInstance1 as PlayoutPartInstanceModelImpl).HasChanges).toBeTruthy()
-					// expect(
-					// 	Array.from(cache.PartInstances.documents.values()).filter((doc) => !doc || !!doc.updated)
-					// ).toMatchObject([
-					// 	{
-					// 		updated: true,
-					// 		document: { _id: partInstance1._id },
-					// 	},
-					// ])
+					expect(partInstance1.PartInstanceHasChanges).toBeTruthy()
+					expect(partInstance1.ChangedPieceInstanceIds()).toHaveLength(0)
 
 					expect(context.nextPartState).toEqual(ActionPartChange.SAFE_CHANGE)
 					expect(context.currentPartState).toEqual(ActionPartChange.NONE)

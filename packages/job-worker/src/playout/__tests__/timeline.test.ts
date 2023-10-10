@@ -1129,12 +1129,11 @@ describe('Timeline', () => {
 	})
 
 	describe('Adlib pieces', () => {
-		async function doStartAdlibPiece(
-			playlistId: RundownPlaylistId,
-			currentPartInstance: PlayoutPartInstanceModel,
-			adlibSource: AdLibPiece
-		) {
+		async function doStartAdlibPiece(playlistId: RundownPlaylistId, adlibSource: AdLibPiece) {
 			await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) => {
+				const currentPartInstance = cache.CurrentPartInstance as PlayoutPartInstanceModel
+				expect(currentPartInstance).toBeTruthy()
+
 				const rundown = cache.getRundown(currentPartInstance.PartInstance.rundownId) as PlayoutRundownModel
 				expect(rundown).toBeTruthy()
 
@@ -1214,10 +1213,11 @@ describe('Timeline', () => {
 					const { currentPartInstance } = await getPartInstances()
 					expect(currentPartInstance).toBeTruthy()
 
+					console.log('inst', currentPartInstance?.PartInstance._id)
+
 					// Insert an adlib piece
 					await doStartAdlibPiece(
 						playlistId,
-						currentPartInstance!,
 						literal<AdLibPiece>({
 							_id: protectString('adlib1'),
 							rundownId: currentPartInstance!.PartInstance.rundownId,
@@ -1232,7 +1232,7 @@ describe('Timeline', () => {
 						})
 					)
 
-					const adlibbedPieceId = 'randomId9007'
+					const adlibbedPieceId = 'randomId9010'
 
 					// The adlib should be starting at 'now'
 					await checkTimings({
@@ -1383,7 +1383,6 @@ describe('Timeline', () => {
 					// Insert an adlib piece
 					await doStartAdlibPiece(
 						playlistId,
-						currentPartInstance!,
 						literal<AdLibPiece>({
 							_id: protectString('adlib1'),
 							rundownId: currentPartInstance!.PartInstance.rundownId,
@@ -1399,7 +1398,7 @@ describe('Timeline', () => {
 						})
 					)
 
-					const adlibbedPieceId = 'randomId9007'
+					const adlibbedPieceId = 'randomId9010'
 
 					// The adlib should be starting at 'now'
 					await checkTimings({

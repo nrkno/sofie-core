@@ -20,7 +20,7 @@ import { ReadonlyDeep } from 'type-fest'
 import { JobContext } from '../../../jobs'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { getPieceInstanceIdForPiece, PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import {
 	serializeTimelineBlob,
 	TimelineComplete,
@@ -263,6 +263,7 @@ export class PlayoutModelImpl implements PlayoutModel {
 
 		for (const pieceInstance of pieceInstances) {
 			// TODO - should these be PieceInstance already, or should that be handled here?
+			pieceInstance._id = getPieceInstanceIdForPiece(newPartInstance._id, pieceInstance.piece._id)
 			pieceInstance.partInstanceId = newPartInstance._id
 		}
 
@@ -448,7 +449,7 @@ export class PlayoutModelImpl implements PlayoutModel {
 		this.#Playlist.holdState = RundownHoldState.NONE
 
 		delete this.#Playlist.lastTakeTime
-		delete this.#Playlist.nextSegmentId
+		delete this.#Playlist.queuedSegmentId
 
 		this.#PlaylistHasChanged = true
 	}
@@ -492,7 +493,7 @@ export class PlayoutModelImpl implements PlayoutModel {
 		delete this.#Playlist.rundownsStartedPlayback
 		delete this.#Playlist.previousPersistentState
 		delete this.#Playlist.trackedAbSessions
-		delete this.#Playlist.nextSegmentId
+		delete this.#Playlist.queuedSegmentId
 
 		if (regenerateActivationId) this.#Playlist.activationId = getRandomId()
 
@@ -571,7 +572,7 @@ export class PlayoutModelImpl implements PlayoutModel {
 
 		if (
 			Array.from(this.#AllPartInstances.values()).find(
-				(part) => !part || part.PartInstanceHasChanges || part.AnyPieceInstanceHasChanges()
+				(part) => !part || part.PartInstanceHasChanges || part.ChangedPieceInstanceIds().length > 0
 			)
 		)
 			logOrThrowError(new Error(`Failed no changes in cache assertion, a PartInstance has been changed`))

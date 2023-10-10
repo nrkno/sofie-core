@@ -1,4 +1,4 @@
-import { assertNever, getRandomId } from '@sofie-automation/corelib/dist/lib'
+import { assertNever } from '@sofie-automation/corelib/dist/lib'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPart, isPartPlayable } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { JobContext } from '../jobs'
@@ -20,6 +20,7 @@ import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/erro
 import { SelectNextPartResult } from './selectNextPart'
 import { ReadonlyDeep } from 'type-fest'
 import { QueueNextSegmentResult } from '@sofie-automation/corelib/dist/worker/studio'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 
 /**
  * Set or clear the nexted part, from a given PartInstance, or SelectNextPartResult
@@ -147,7 +148,7 @@ async function preparePartInstanceForPartBeingNexted(
 		rundown,
 		nextPart,
 		possiblePieces,
-		getRandomId() // Replaced inside cache.createInstanceForPart
+		protectString('') // Replaced inside cache.createInstanceForPart
 	)
 
 	return cache.createInstanceForPart(nextPart, newPieceInstances)

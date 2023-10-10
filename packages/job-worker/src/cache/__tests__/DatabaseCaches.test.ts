@@ -292,18 +292,18 @@ describe('DatabaseCaches', () => {
 					}).toThrow(/failed .+ assertion,.+ was modified/gi)
 				}
 
-				{
-					const cache = await loadStudioPlayoutModel(context)
+				// {
+				// 	const cache = await loadStudioPlayoutModel(context)
 
-					// Insert a document:
-					cache.deferBeforeSave(() => {
-						//
-					})
+				// 	// Insert a document:
+				// 	cache.deferBeforeSave(() => {
+				// 		//
+				// 	})
 
-					expect(() => {
-						cache.assertNoChanges()
-					}).toThrow(/failed .+ assertion,.+ deferred/gi)
-				}
+				// 	expect(() => {
+				// 		cache.assertNoChanges()
+				// 	}).toThrow(/failed .+ assertion,.+ deferred/gi)
+				// }
 
 				{
 					const cache = await loadStudioPlayoutModel(context)

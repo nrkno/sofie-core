@@ -61,13 +61,15 @@ export function writePartInstancesAndPieceInstances(
 		if (!partInstance) {
 			deletedPartInstanceIds.push(partInstanceId)
 		} else {
-			partInstanceOps.push({
-				replaceOne: {
-					filter: { _id: partInstanceId },
-					replacement: partInstance.PartInstanceImpl,
-					upsert: true,
-				},
-			})
+			if (partInstance.PartInstanceHasChanges) {
+				partInstanceOps.push({
+					replaceOne: {
+						filter: { _id: partInstanceId },
+						replacement: partInstance.PartInstanceImpl,
+						upsert: true,
+					},
+				})
+			}
 
 			for (const [pieceInstanceId, pieceInstance] of partInstance.PieceInstancesImpl.entries()) {
 				if (!pieceInstance.doc) {
