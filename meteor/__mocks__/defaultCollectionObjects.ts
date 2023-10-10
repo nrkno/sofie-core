@@ -116,7 +116,7 @@ export function defaultStudio(_id: StudioId): DBStudio {
 			inputDevices: wrapDefaultObject({}),
 		},
 		lastBlueprintConfig: undefined,
-		lastBlueprintFixupHash: undefined,
+		lastBlueprintFixUpHash: undefined,
 	}
 }
 

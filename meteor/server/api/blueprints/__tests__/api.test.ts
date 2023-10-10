@@ -69,7 +69,7 @@ describe('Test blueprint management api', () => {
 				blueprintVersion: '',
 				integrationVersion: '',
 				TSRVersion: '',
-				hasFixupFunction: false,
+				hasFixUpFunction: false,
 			}
 			await Blueprints.insertAsync(blueprint)
 			return blueprint
@@ -320,7 +320,7 @@ describe('Test blueprint management api', () => {
 					showStyleConfigSchema: JSON.stringify({ show1: true }) as any,
 					hasCode: !!blueprintStr,
 					code: blueprintStr,
-					hasFixupFunction: false,
+					hasFixUpFunction: false,
 				})
 			)
 			expect(blueprint.studioConfigSchema).toBeUndefined()
@@ -363,7 +363,7 @@ describe('Test blueprint management api', () => {
 					studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
 					hasCode: !!blueprintStr,
 					code: blueprintStr,
-					hasFixupFunction: false,
+					hasFixUpFunction: false,
 				})
 			)
 			expect(blueprint.showStyleConfigSchema).toBeUndefined()
@@ -406,7 +406,7 @@ describe('Test blueprint management api', () => {
 					TSRVersion: '0.3.0',
 					hasCode: !!blueprintStr,
 					code: blueprintStr,
-					hasFixupFunction: false,
+					hasFixUpFunction: false,
 				})
 			)
 			expect(blueprint.showStyleConfigSchema).toBeUndefined()
@@ -451,7 +451,7 @@ describe('Test blueprint management api', () => {
 					studioConfigSchema: JSONBlobStringify({ studio1: true } as any),
 					hasCode: !!blueprintStr,
 					code: blueprintStr,
-					hasFixupFunction: false,
+					hasFixUpFunction: false,
 				})
 			)
 			expect(blueprint.showStyleConfigSchema).toBeUndefined()
@@ -497,7 +497,7 @@ describe('Test blueprint management api', () => {
 					showStyleConfigSchema: JSONBlobStringify({ show1: true } as any),
 					hasCode: !!blueprintStr,
 					code: blueprintStr,
-					hasFixupFunction: false,
+					hasFixUpFunction: false,
 				})
 			)
 			expect(blueprint.studioConfigSchema).toBeUndefined()

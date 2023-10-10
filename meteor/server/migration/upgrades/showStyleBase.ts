@@ -29,11 +29,11 @@ export async function fixupConfigForShowStyleBase(
 	const { showStyleBase, blueprint, blueprintManifest } = await loadShowStyleAndBlueprint(showStyleBaseId)
 
 	if (typeof blueprintManifest.fixUpConfig !== 'function') {
-		if (showStyleBase.lastBlueprintFixupHash) {
+		if (showStyleBase.lastBlueprintFixUpHash) {
 			// Cleanup property to avoid getting stuck
 			await ShowStyleBases.updateAsync(showStyleBaseId, {
 				$unset: {
-					lastBlueprintFixupHash: 1,
+					lastBlueprintFixUpHash: 1,
 				},
 			})
 		}
@@ -55,7 +55,7 @@ export async function fixupConfigForShowStyleBase(
 	// Save the 'fixed' config
 	await ShowStyleBases.updateAsync(showStyleBaseId, {
 		$set: {
-			lastBlueprintFixupHash: blueprint.blueprintHash,
+			lastBlueprintFixUpHash: blueprint.blueprintHash,
 			blueprintConfigWithOverrides: blueprintContext.configObject,
 		},
 	})
@@ -70,11 +70,11 @@ export async function ignoreFixupConfigForShowStyleBase(showStyleBaseId: ShowSty
 	const { showStyleBase, blueprint, blueprintManifest } = await loadShowStyleAndBlueprint(showStyleBaseId)
 
 	if (typeof blueprintManifest.fixUpConfig !== 'function') {
-		if (showStyleBase.lastBlueprintFixupHash) {
+		if (showStyleBase.lastBlueprintFixUpHash) {
 			// Cleanup property to avoid getting stuck
 			await ShowStyleBases.updateAsync(showStyleBaseId, {
 				$unset: {
-					lastBlueprintFixupHash: 1,
+					lastBlueprintFixUpHash: 1,
 				},
 			})
 		}
@@ -84,7 +84,7 @@ export async function ignoreFixupConfigForShowStyleBase(showStyleBaseId: ShowSty
 	// Save the 'fixed' config
 	await ShowStyleBases.updateAsync(showStyleBaseId, {
 		$set: {
-			lastBlueprintFixupHash: blueprint.blueprintHash,
+			lastBlueprintFixUpHash: blueprint.blueprintHash,
 		},
 	})
 }
@@ -217,7 +217,7 @@ async function loadShowStyleAndBlueprint(showStyleBaseId: ShowStyleBaseId) {
 			blueprintId: 1,
 			blueprintConfigPresetId: 1,
 			blueprintConfigWithOverrides: 1,
-			lastBlueprintFixupHash: 1,
+			lastBlueprintFixUpHash: 1,
 		},
 	})) as
 		| Pick<
@@ -226,7 +226,7 @@ async function loadShowStyleAndBlueprint(showStyleBaseId: ShowStyleBaseId) {
 				| 'blueprintId'
 				| 'blueprintConfigPresetId'
 				| 'blueprintConfigWithOverrides'
-				| 'lastBlueprintFixupHash'
+				| 'lastBlueprintFixUpHash'
 		  >
 		| undefined
 	if (!showStyleBase) throw new Meteor.Error(404, `ShowStyleBase "${showStyleBaseId}" not found!`)
@@ -253,12 +253,12 @@ async function loadShowStyleAndBlueprint(showStyleBaseId: ShowStyleBaseId) {
 }
 
 function throwIfNeedsFixupConfigRunning(
-	showStyleBase: Pick<DBShowStyleBase, 'lastBlueprintFixupHash'>,
+	showStyleBase: Pick<DBShowStyleBase, 'lastBlueprintFixUpHash'>,
 	blueprint: Blueprint,
 	blueprintManifest: ShowStyleBlueprintManifest
 ): void {
 	if (typeof blueprintManifest.fixUpConfig !== 'function') return
 
-	if (blueprint.blueprintHash !== showStyleBase.lastBlueprintFixupHash)
+	if (blueprint.blueprintHash !== showStyleBase.lastBlueprintFixUpHash)
 		throw new Meteor.Error(500, `fixupConfigForShowStyleBase must be called first`)
 }

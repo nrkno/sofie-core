@@ -26,7 +26,7 @@ export interface BlueprintMapEntry {
 	configPresets: Record<string, IStudioConfigPreset> | Record<string, IShowStyleConfigPreset> | undefined
 	configSchema: JSONBlob<JSONSchema> | undefined
 	blueprintHash: BlueprintHash | undefined
-	hasFixupFunction: boolean
+	hasFixUpFunction: boolean
 }
 
 export function checkDocUpgradeStatus(
@@ -62,9 +62,9 @@ export function checkDocUpgradeStatus(
 		}
 	}
 
-	if (blueprint.hasFixupFunction) {
+	if (blueprint.hasFixUpFunction) {
 		const pendingRunOfFixupFunction =
-			!doc.lastBlueprintFixupHash || doc.lastBlueprintFixupHash !== blueprint.blueprintHash
+			!doc.lastBlueprintFixUpHash || doc.lastBlueprintFixUpHash !== blueprint.blueprintHash
 
 		if (pendingRunOfFixupFunction) {
 			return {

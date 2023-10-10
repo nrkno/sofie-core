@@ -60,7 +60,7 @@ export async function insertStudioInner(organizationId: OrganizationId | null, n
 				inputDevices: wrapDefaultObject({}),
 			},
 			lastBlueprintConfig: undefined,
-			lastBlueprintFixupHash: undefined,
+			lastBlueprintFixUpHash: undefined,
 		})
 	)
 }

@@ -121,7 +121,7 @@ export async function manipulateBlueprintUpgradeStatusPublicationData(
 					configPresets: blueprint.showStyleConfigPresets,
 					configSchema: blueprint.showStyleConfigSchema,
 					blueprintHash: blueprint.blueprintHash,
-					hasFixupFunction: blueprint.hasFixupFunction,
+					hasFixUpFunction: blueprint.hasFixUpFunction,
 				})
 				break
 			case BlueprintManifestType.STUDIO:
@@ -130,7 +130,7 @@ export async function manipulateBlueprintUpgradeStatusPublicationData(
 					configPresets: blueprint.studioConfigPresets,
 					configSchema: blueprint.studioConfigSchema,
 					blueprintHash: blueprint.blueprintHash,
-					hasFixupFunction: blueprint.hasFixupFunction,
+					hasFixUpFunction: blueprint.hasFixUpFunction,
 				})
 				break
 			// TODO - default?

@@ -14,10 +14,19 @@ export interface UIBlueprintUpgradeStatusBase {
 
 	name: string
 
+	/**
+	 * If set, there is something wrong that must be resolved before the config can be validated or applied
+	 */
 	invalidReason?: ITranslatableMessage
 
+	/**
+	 * Whether the 'fixup' must be run before the config can be validated or applied
+	 */
 	pendingRunOfFixupFunction: boolean
 
+	/**
+	 * User facing list of changes to be reviewed
+	 */
 	changes: ITranslatableMessage[]
 }
 

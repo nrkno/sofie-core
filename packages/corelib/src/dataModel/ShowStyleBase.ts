@@ -56,5 +56,5 @@ export interface DBShowStyleBase {
 	/** Details on the last blueprint used to generate the defaults values for this */
 	lastBlueprintConfig: LastBlueprintConfig | undefined
 	/** Last BlueprintHash where the fixupConfig method was run */
-	lastBlueprintFixupHash: BlueprintHash | undefined
+	lastBlueprintFixUpHash: BlueprintHash | undefined
 }

@@ -137,11 +137,11 @@ export async function handleBlueprintFixUpConfigForStudio(
 	if (!context.studio.blueprintConfigPresetId) throw new Error('Studio is missing config preset')
 
 	if (typeof blueprint.blueprint.fixUpConfig !== 'function') {
-		if (context.studio.lastBlueprintFixupHash) {
+		if (context.studio.lastBlueprintFixUpHash) {
 			// Cleanup property to avoid getting stuck
 			await context.directCollections.Studios.update(context.studioId, {
 				$unset: {
-					lastBlueprintFixupHash: 1,
+					lastBlueprintFixUpHash: 1,
 				},
 			})
 		}
@@ -163,7 +163,7 @@ export async function handleBlueprintFixUpConfigForStudio(
 	// Save the 'fixed' config
 	await context.directCollections.Studios.update(context.studioId, {
 		$set: {
-			lastBlueprintFixupHash: blueprint.blueprintDoc.blueprintHash,
+			lastBlueprintFixUpHash: blueprint.blueprintDoc.blueprintHash,
 			blueprintConfigWithOverrides: blueprintContext.configObject,
 		},
 	})
@@ -184,11 +184,11 @@ export async function handleBlueprintIgnoreFixUpConfigForStudio(context: JobCont
 	if (!context.studio.blueprintConfigPresetId) throw new Error('Studio is missing config preset')
 
 	if (typeof blueprint.blueprint.fixUpConfig !== 'function') {
-		if (context.studio.lastBlueprintFixupHash) {
+		if (context.studio.lastBlueprintFixUpHash) {
 			// Cleanup property to avoid getting stuck
 			await context.directCollections.Studios.update(context.studioId, {
 				$unset: {
-					lastBlueprintFixupHash: 1,
+					lastBlueprintFixUpHash: 1,
 				},
 			})
 		}
@@ -198,7 +198,7 @@ export async function handleBlueprintIgnoreFixUpConfigForStudio(context: JobCont
 	// Save the 'fixed' config
 	await context.directCollections.Studios.update(context.studioId, {
 		$set: {
-			lastBlueprintFixupHash: blueprint.blueprintDoc.blueprintHash,
+			lastBlueprintFixUpHash: blueprint.blueprintDoc.blueprintHash,
 		},
 	})
 }
