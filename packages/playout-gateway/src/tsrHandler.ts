@@ -884,36 +884,27 @@ export class TSRHandler {
 					}
 				)
 			}
-			// Note for the future:
-			// It is important that the callbacks returns void,
-			// otherwise there might be problems with threadedclass!
-			// Also, it is critical that all of these `.on` calls be `await`ed.
-			// They aren't typed as promises due to limitations of TypeScript,
-			// but due to threadedclass they _are_ promises.
-			/* eslint-disable @typescript-eslint/await-thenable */
 
-			const emitterHack = device.device as unknown as EventEmitter<DeviceEvents>
+			await addListenerToDevice(device, 'connectionChanged', onDeviceStatusChanged)
+			// await addListenerToDevice(device, 'slowCommand', onSlowCommand)
+			await addListenerToDevice(device, 'slowSentCommand', onSlowSentCommand)
+			await addListenerToDevice(device, 'slowFulfilledCommand', onSlowFulfilledCommand)
+			await addListenerToDevice(device, 'commandError', onCommandError)
+			await addListenerToDevice(device, 'commandReport', onCommandReport)
+			await addListenerToDevice(device, 'updateMediaObject', onUpdateMediaObject)
+			await addListenerToDevice(device, 'clearMediaObjects', onClearMediaObjectCollection)
 
-			await emitterHack.on('connectionChanged', onDeviceStatusChanged)
-			// await emitterHack.on('slowCommand', onSlowCommand)
-			await emitterHack.on('slowSentCommand', onSlowSentCommand)
-			await emitterHack.on('slowFulfilledCommand', onSlowFulfilledCommand)
-			await emitterHack.on('commandError', onCommandError)
-			await emitterHack.on('commandReport', onCommandReport)
-			await emitterHack.on('updateMediaObject', onUpdateMediaObject)
-			await emitterHack.on('clearMediaObjects', onClearMediaObjectCollection)
-
-			await emitterHack.on('info', (info) => {
+			await addListenerToDevice(device, 'info', (info) => {
 				this.logger.info(fixLog(info))
 			})
-			await emitterHack.on('warning', (warning: string) => {
+			await addListenerToDevice(device, 'warning', (warning: string) => {
 				this.logger.warn(fixLog(warning))
 			})
-			await emitterHack.on('error', (context, error) => {
+			await addListenerToDevice(device, 'error', (context, error) => {
 				this.logger.error(fixError(error), fixContext(context))
 			})
 
-			await emitterHack.on('debug', (...args) => {
+			await addListenerToDevice(device, 'debug', (...args) => {
 				if (!device.debugLogging && !this._coreHandler.logDebug) {
 					return
 				}
@@ -925,7 +916,7 @@ export class TSRHandler {
 				this.logger.debug(`Device "${device.deviceName || deviceId}" (${device.instanceId})`, { data })
 			})
 
-			await emitterHack.on('debugState', (...args) => {
+			await addListenerToDevice(device, 'debugState', (...args) => {
 				if (device.debugState && this._coreHandler.logDebug) {
 					// Fetch the Id that core knows this device by
 					const coreId = this._coreTsrHandlers[device.deviceId].core.deviceId
@@ -933,7 +924,7 @@ export class TSRHandler {
 				}
 			})
 
-			await emitterHack.on('timeTrace', (trace) => sendTrace(trace))
+			await addListenerToDevice(device, 'timeTrace', (trace) => sendTrace(trace))
 			/* eslint-enable @typescript-eslint/await-thenable */
 
 			// now initialize it
@@ -1228,4 +1219,20 @@ export function getHash(str: string): string {
 
 export function stringifyIds(ids: string[]): string {
 	return ids.map((id) => `"${id}"`).join(', ')
+}
+
+async function addListenerToDevice<T extends keyof DeviceEvents>(
+	device: BaseRemoteDeviceIntegration<DeviceOptionsAny>,
+	eventName: T,
+	fcn: EventEmitter.EventListener<DeviceEvents, T>
+): Promise<void> {
+	// Note for the future:
+	// It is important that the callbacks returns void,
+	// otherwise there might be problems with threadedclass!
+	// Also, it is critical that all of these `.on` calls be `await`ed.
+	// They aren't typed as promises due to limitations of TypeScript,
+	// but due to threadedclass they _are_ promises.
+
+	const emitterHack = device.device as unknown as EventEmitter<DeviceEvents>
+	await Promise.resolve(emitterHack.on(eventName, fcn))
 }
