@@ -1,8 +1,8 @@
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
-import { PartInstanceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PartInstanceId, PieceId, PieceInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
-import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { assertNever, getRandomId, getRank } from '@sofie-automation/corelib/dist/lib'
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { getCurrentTime } from '../lib'
@@ -14,7 +14,7 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from './infinites'
-import { convertAdLibToPieceInstance } from './pieces'
+import { convertAdLibToGenericPiece } from './pieces'
 import { getResolvedPiecesForCurrentPartInstance } from './resolvedPieces'
 import { updateTimeline } from './timeline/generate'
 import { PieceLifespan } from '@sofie-automation/blueprints-integration'
@@ -26,6 +26,8 @@ import { calculateNowOffsetLatency } from './timeline/multi-gateway'
 import { logger } from '../logging'
 import { ReadonlyDeep } from 'type-fest'
 import { PlayoutRundownModel } from './model/PlayoutRundownModel'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
+import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 
 export async function innerStartOrQueueAdLibPiece(
 	context: JobContext,
@@ -38,25 +40,31 @@ export async function innerStartOrQueueAdLibPiece(
 	const span = context.startSpan('innerStartOrQueueAdLibPiece')
 	let queuedPartInstanceId: PartInstanceId | undefined
 	if (queue || adLibPiece.toBeQueued) {
-		const newPartInstance = playoutModel.insertAdlibbedPartInstance({
+		const adlibbedPart: Omit<DBPart, 'segmentId' | 'rundownId'> = {
 			_id: getRandomId(),
 			_rank: 99999, // Corrected in innerStartQueuedAdLib
 			externalId: '',
 			title: adLibPiece.name,
 			expectedDuration: adLibPiece.expectedDuration,
 			expectedDurationWithPreroll: adLibPiece.expectedDuration, // Filled in later
-		})
+		}
 
-		convertAdLibToPieceInstance(context, adLibPiece, newPartInstance, queue)
-
-		newPartInstance.recalculateExpectedDurationWithPreroll()
-
-		await innerStartQueuedAdLib(context, playoutModel, rundown, currentPartInstance, newPartInstance)
+		const genericAdlibPiece = convertAdLibToGenericPiece(adLibPiece, true)
+		const newPartInstance = await insertQueuedPartWithPieces(
+			context,
+			playoutModel,
+			rundown,
+			currentPartInstance,
+			adlibbedPart,
+			[genericAdlibPiece],
+			adLibPiece._id
+		)
 		queuedPartInstanceId = newPartInstance.PartInstance._id
 
 		// syncPlayheadInfinitesForNextPartInstance is handled by setNextPart
 	} else {
-		convertAdLibToPieceInstance(context, adLibPiece, currentPartInstance, queue)
+		const genericAdlibPiece = convertAdLibToGenericPiece(adLibPiece, false)
+		currentPartInstance.insertAdlibbedPiece(genericAdlibPiece, adLibPiece._id)
 
 		await syncPlayheadInfinitesForNextPartInstance(
 			context,
@@ -112,14 +120,14 @@ export async function innerFindLastPieceOnLayer(
 
 export async function innerFindLastScriptedPieceOnLayer(
 	context: JobContext,
-	cache: PlayoutModel,
+	playoutModel: PlayoutModel,
 	sourceLayerId: string[],
 	customQuery?: MongoQuery<Piece>
 ): Promise<Piece | undefined> {
 	const span = context.startSpan('innerFindLastScriptedPieceOnLayer')
 
-	const playlist = cache.Playlist
-	const rundownIds = cache.getRundownIds()
+	const playlist = playoutModel.Playlist
+	const rundownIds = playoutModel.getRundownIds()
 
 	// TODO - this should throw instead of return more?
 
@@ -127,7 +135,7 @@ export async function innerFindLastScriptedPieceOnLayer(
 		return
 	}
 
-	const currentPartInstance = cache.CurrentPartInstance?.PartInstance
+	const currentPartInstance = playoutModel.CurrentPartInstance?.PartInstance
 
 	if (!currentPartInstance) {
 		return
@@ -145,7 +153,7 @@ export async function innerFindLastScriptedPieceOnLayer(
 		})
 
 	const pieceIdSet = new Set(pieces.map((p) => p.startPartId))
-	const part = cache
+	const part = playoutModel
 		.getAllOrderedParts()
 		.filter((p) => pieceIdSet.has(p._id) && p._rank <= currentPartInstance.part._rank)
 		.reverse()[0]
@@ -179,23 +187,22 @@ export async function innerFindLastScriptedPieceOnLayer(
 	return fullPiece
 }
 
-export async function innerStartQueuedAdLib(
+function updateRankForAdlibbedPartInstance(
 	context: JobContext,
-	cache: PlayoutModel,
-	rundown: PlayoutRundownModel,
-	currentPartInstance: PlayoutPartInstanceModel,
+	playoutModel: PlayoutModel,
 	newPartInstance: PlayoutPartInstanceModel
-): Promise<void> {
-	const span = context.startSpan('innerStartQueuedAdLib')
+) {
+	const currentPartInstance = playoutModel.CurrentPartInstance
+	if (!currentPartInstance) throw new Error('CurrentPartInstance not found')
 
 	// Find the following part, so we can pick a good rank
 	const followingPart = selectNextPart(
 		context,
-		cache.Playlist,
+		playoutModel.Playlist,
 		currentPartInstance.PartInstance,
 		null,
-		cache.getAllOrderedSegments(),
-		cache.getAllOrderedParts(),
+		playoutModel.getAllOrderedSegments(),
+		playoutModel.getAllOrderedParts(),
 		false // We want to insert it before any trailing invalid piece
 	)
 	newPartInstance.setRank(
@@ -205,34 +212,57 @@ export async function innerStartQueuedAdLib(
 		)
 	)
 
-	updatePartInstanceRanksAfterAdlib(cache, newPartInstance.PartInstance.segmentId)
+	updatePartInstanceRanksAfterAdlib(playoutModel, newPartInstance.PartInstance.segmentId)
+}
 
-	// Find and insert any rundown defined infinites that we should inherit
-	const possiblePieces = await fetchPiecesThatMayBeActiveForPart(
-		context,
-		cache,
-		undefined,
-		newPartInstance.PartInstance.part
-	)
+export async function insertQueuedPartWithPieces(
+	context: JobContext,
+	playoutModel: PlayoutModel,
+	rundown: PlayoutRundownModel,
+	currentPartInstance: PlayoutPartInstanceModel,
+	newPart: Omit<DBPart, 'segmentId' | 'rundownId'>,
+	initialPieces: Omit<PieceInstancePiece, 'startPartId'>[],
+	fromAdlibId: PieceId | undefined
+): Promise<PlayoutPartInstanceModel> {
+	const span = context.startSpan('insertQueuedPartWithPieces')
+
+	const newPartFull: DBPart = {
+		...newPart,
+		segmentId: currentPartInstance.PartInstance.segmentId,
+		rundownId: currentPartInstance.PartInstance.rundownId,
+	}
+
+	// Find any rundown defined infinites that we should inherit
+	const possiblePieces = await fetchPiecesThatMayBeActiveForPart(context, playoutModel, undefined, newPartFull)
 	const infinitePieceInstances = getPieceInstancesForPart(
 		context,
-		cache,
+		playoutModel,
 		currentPartInstance,
 		rundown,
-		newPartInstance.PartInstance.part,
+		newPartFull,
 		possiblePieces,
-		newPartInstance.PartInstance._id
+		protectString('') // Replaced inside playoutModel.insertAdlibbedPartInstance
 	)
-	newPartInstance.insertInfinitePieces(infinitePieceInstances)
 
-	await setNextPart(context, cache, newPartInstance, false)
+	const newPartInstance = playoutModel.createAdlibbedPartInstance(
+		newPart,
+		initialPieces,
+		fromAdlibId,
+		infinitePieceInstances
+	)
+
+	updateRankForAdlibbedPartInstance(context, playoutModel, newPartInstance)
+
+	await setNextPart(context, playoutModel, newPartInstance, false)
 
 	if (span) span.end()
+
+	return newPartInstance
 }
 
 export function innerStopPieces(
 	context: JobContext,
-	cache: PlayoutModel,
+	playoutModel: PlayoutModel,
 	sourceLayers: SourceLayers,
 	currentPartInstance: PlayoutPartInstanceModel,
 	filter: (pieceInstance: ReadonlyDeep<PieceInstance>) => boolean,
@@ -247,7 +277,7 @@ export function innerStopPieces(
 	}
 
 	const resolvedPieces = getResolvedPiecesForCurrentPartInstance(context, sourceLayers, currentPartInstance)
-	const offsetRelativeToNow = (timeOffset || 0) + (calculateNowOffsetLatency(context, cache, undefined) || 0)
+	const offsetRelativeToNow = (timeOffset || 0) + (calculateNowOffsetLatency(context, playoutModel, undefined) || 0)
 	const stopAt = getCurrentTime() + offsetRelativeToNow
 	const relativeStopAt = stopAt - lastStartedPlayback
 
@@ -267,9 +297,9 @@ export function innerStopPieces(
 				case PieceLifespan.OutOnRundownChange: {
 					logger.info(`Blueprint action: Cropping PieceInstance "${pieceInstance._id}" to ${stopAt}`)
 
-					const pieceInstanceModel = cache.findPieceInstance(pieceInstance._id)
+					const pieceInstanceModel = playoutModel.findPieceInstance(pieceInstance._id)
 					if (pieceInstanceModel) {
-						const newDuration: Required<PieceInstance>['userDuration'] = cache.isMultiGatewayMode
+						const newDuration: Required<PieceInstance>['userDuration'] = playoutModel.isMultiGatewayMode
 							? {
 									endRelativeToNow: offsetRelativeToNow,
 							  }

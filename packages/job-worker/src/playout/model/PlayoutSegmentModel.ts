@@ -12,7 +12,7 @@ export interface PlayoutSegmentModel {
 	 */
 	readonly Parts: ReadonlyDeep<DBPart[]>
 
-	getPartIds(): PartId[]
-
 	getPart(id: PartId): ReadonlyDeep<DBPart> | undefined
+
+	getPartIds(): PartId[]
 }

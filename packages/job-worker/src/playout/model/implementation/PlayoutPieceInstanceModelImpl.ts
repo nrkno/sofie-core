@@ -4,17 +4,46 @@ import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dis
 import { clone, getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { Time } from '@sofie-automation/blueprints-integration'
 import { PlayoutPieceInstanceModel } from '../PlayoutPieceInstanceModel'
+import _ = require('underscore')
 
 export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel {
 	PieceInstanceImpl: PieceInstance
+
+	setPieceInstanceValue<T extends keyof PieceInstance>(key: T, newValue: PieceInstance[T]): void {
+		if (newValue === undefined) {
+			delete this.PieceInstanceImpl[key]
+		} else {
+			this.PieceInstanceImpl[key] = newValue
+		}
+
+		this.#HasChanges = true
+	}
+
+	compareAndSetPieceInstanceValue<T extends keyof PieceInstance>(
+		key: T,
+		newValue: PieceInstance[T],
+		deepEqual = false
+	): boolean {
+		const oldValue = this.PieceInstanceImpl[key]
+
+		const areEqual = deepEqual ? _.isEqual(oldValue, newValue) : oldValue === newValue
+
+		if (!areEqual) {
+			this.setPieceInstanceValue(key, newValue)
+
+			return true
+		} else {
+			return false
+		}
+	}
 
 	#HasChanges = false
 	get HasChanges(): boolean {
 		return this.#HasChanges
 	}
 
-	setDirty(dirty = true): void {
-		this.#HasChanges = dirty
+	clearChangedFlag(): void {
+		this.#HasChanges = false
 	}
 
 	get PieceInstance(): ReadonlyDeep<PieceInstance> {
@@ -26,88 +55,60 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 		this.#HasChanges = hasChanges
 	}
 
-	/**
-	 * @deprecated
-	 * What is the purpose of this? Without changing the ids it is going to clash with the old copy..
-	 * TODO - this has issues with deleting instances!
-	 */
-	clone(): PlayoutPieceInstanceModelImpl {
-		return new PlayoutPieceInstanceModelImpl(clone(this.PieceInstanceImpl), this.#HasChanges)
+	mergeProperties(pieceInstance: ReadonlyDeep<PieceInstance>): void {
+		this.PieceInstanceImpl = {
+			...this.PieceInstanceImpl,
+			...clone<PieceInstance>(pieceInstance),
+		}
+
+		this.#HasChanges = true
+	}
+
+	prepareForHold(): PieceInstanceInfiniteId {
+		const infiniteInstanceId: PieceInstanceInfiniteId = getRandomId()
+		this.setPieceInstanceValue('infinite', {
+			infiniteInstanceId: infiniteInstanceId,
+			infiniteInstanceIndex: 0,
+			infinitePieceId: this.PieceInstanceImpl.piece._id,
+			fromPreviousPart: false,
+		})
+
+		return infiniteInstanceId
+	}
+
+	setDisabled(disabled: boolean): void {
+		this.compareAndSetPieceInstanceValue('disabled', disabled)
+	}
+
+	setDuration(duration: Required<PieceInstance>['userDuration']): void {
+		this.compareAndSetPieceInstanceValue('userDuration', duration, true)
+	}
+
+	setPlannedStartedPlayback(time: Time): boolean {
+		this.compareAndSetPieceInstanceValue('plannedStoppedPlayback', undefined)
+		return this.compareAndSetPieceInstanceValue('plannedStartedPlayback', time)
+	}
+	setPlannedStoppedPlayback(time: Time | undefined): boolean {
+		return this.compareAndSetPieceInstanceValue('plannedStoppedPlayback', time)
+	}
+	setReportedStartedPlayback(time: Time): boolean {
+		this.compareAndSetPieceInstanceValue('reportedStoppedPlayback', undefined)
+		return this.compareAndSetPieceInstanceValue('reportedStartedPlayback', time)
+	}
+	setReportedStoppedPlayback(time: Time): boolean {
+		return this.compareAndSetPieceInstanceValue('reportedStoppedPlayback', time)
 	}
 
 	updatePieceProps(props: Partial<PieceInstancePiece>): void {
 		// TODO - this is missing a lot of validation
 
-		this.#HasChanges = true
-		this.PieceInstanceImpl.piece = {
-			...this.PieceInstanceImpl.piece,
-			...props,
-		}
-	}
-
-	setPlannedStartedPlayback(time: Time): boolean {
-		if (this.PieceInstanceImpl.plannedStartedPlayback !== time) {
-			this.PieceInstanceImpl.plannedStartedPlayback = time
-			delete this.PieceInstanceImpl.plannedStoppedPlayback
-
-			this.#HasChanges = true
-
-			return true
-		}
-		return false
-	}
-	setPlannedStoppedPlayback(time: Time | undefined): boolean {
-		if (this.PieceInstanceImpl.plannedStoppedPlayback !== time) {
-			this.PieceInstanceImpl.plannedStoppedPlayback = time
-
-			this.#HasChanges = true
-
-			return true
-		}
-		return false
-	}
-	setReportedStartedPlayback(time: Time): boolean {
-		if (this.PieceInstanceImpl.reportedStartedPlayback !== time) {
-			this.PieceInstanceImpl.reportedStartedPlayback = time
-			delete this.PieceInstanceImpl.reportedStoppedPlayback
-
-			this.#HasChanges = true
-
-			return true
-		}
-		return false
-	}
-	setReportedStoppedPlayback(time: Time): boolean {
-		if (this.PieceInstanceImpl.reportedStoppedPlayback !== time) {
-			this.PieceInstanceImpl.reportedStoppedPlayback = time
-
-			this.#HasChanges = true
-
-			return true
-		}
-		return false
-	}
-
-	prepareForHold(): PieceInstanceInfiniteId {
-		const infiniteInstanceId: PieceInstanceInfiniteId = getRandomId()
-		this.PieceInstanceImpl.infinite = {
-			infiniteInstanceId: infiniteInstanceId,
-			infiniteInstanceIndex: 0,
-			infinitePieceId: this.PieceInstanceImpl.piece._id,
-			fromPreviousPart: false,
-		}
-		this.#HasChanges = true
-
-		return infiniteInstanceId
-	}
-
-	setDuration(duration: Required<PieceInstance>['userDuration']): void {
-		this.#HasChanges = true
-		this.PieceInstanceImpl.userDuration = duration
-	}
-
-	setDisabled(disabled: boolean): void {
-		this.#HasChanges = true
-		this.PieceInstanceImpl.disabled = disabled
+		this.compareAndSetPieceInstanceValue(
+			'piece',
+			{
+				...this.PieceInstanceImpl.piece,
+				...props,
+			},
+			true
+		)
 	}
 }

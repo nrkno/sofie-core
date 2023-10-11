@@ -20,7 +20,6 @@ import {
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
 import {
 	IBlueprintPieceObjectsSampleKeys,
-	IBlueprintMutatablePartSampleKeys,
 	convertPieceInstanceToBlueprints,
 	convertPartInstanceToBlueprints,
 } from './lib'
@@ -99,7 +98,7 @@ export class SyncIngestUpdateToPartInstanceContext
 			...proposedPieceInstance,
 			piece: piece,
 		}
-		this.partInstance.replacePieceInstance(newPieceInstance)
+		this.partInstance.mergeOrInsertPieceInstance(newPieceInstance)
 
 		return convertPieceInstanceToBlueprints(newPieceInstance)
 	}
@@ -163,26 +162,20 @@ export class SyncIngestUpdateToPartInstanceContext
 		return convertPieceInstanceToBlueprints(pieceInstance.PieceInstance)
 	}
 	updatePartInstance(updatePart: Partial<IBlueprintMutatablePart>): IBlueprintPartInstance {
-		// filter the submission to the allowed ones
-		const trimmedProps: Partial<IBlueprintMutatablePart> = _.pick(updatePart, [
-			...IBlueprintMutatablePartSampleKeys,
-		])
-		if (Object.keys(trimmedProps).length === 0) {
-			throw new Error(`Cannot update PartInstance. Some valid properties must be defined`)
-		}
-
 		if (!this.partInstance) throw new Error(`PartInstance has been removed`)
 
 		// for autoNext, the new expectedDuration cannot be shorter than the time a part has been on-air for
-		if (trimmedProps.expectedDuration && (trimmedProps.autoNext ?? this.partInstance.PartInstance.part.autoNext)) {
+		if (updatePart.expectedDuration && (updatePart.autoNext ?? this.partInstance.PartInstance.part.autoNext)) {
 			const onAir = this.partInstance.PartInstance.timings?.reportedStartedPlayback
 			const minTime = Date.now() - (onAir ?? 0) + EXPECTED_INGEST_TO_PLAYOUT_TIME
-			if (onAir && minTime > trimmedProps.expectedDuration) {
-				trimmedProps.expectedDuration = minTime
+			if (onAir && minTime > updatePart.expectedDuration) {
+				updatePart.expectedDuration = minTime
 			}
 		}
 
-		this.partInstance.updatePartProps(trimmedProps)
+		if (!this.partInstance.updatePartProps(updatePart)) {
+			throw new Error(`Cannot update PartInstance. Some valid properties must be defined`)
+		}
 
 		return convertPartInstanceToBlueprints(this.partInstance.PartInstance)
 	}

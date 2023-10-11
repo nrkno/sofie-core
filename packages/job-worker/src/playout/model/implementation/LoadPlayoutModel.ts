@@ -111,31 +111,31 @@ async function loadInitData(
 	return [peripheralDevices, reloadedPlaylist, rundowns]
 }
 
-export async function createPlayoutCachefromInitCache(
+export async function createPlayoutModelfromInitModel(
 	context: JobContext,
-	initCache: PlayoutModelPreInit
+	initModel: PlayoutModelPreInit
 ): Promise<PlayoutModel> {
 	const span = context.startSpan('CacheForPlayout.fromInit')
-	if (span) span.setLabel('playlistId', unprotectString(initCache.PlaylistId))
+	if (span) span.setLabel('playlistId', unprotectString(initModel.PlaylistId))
 
-	if (!initCache.PlaylistLock.isLocked) {
+	if (!initModel.PlaylistLock.isLocked) {
 		throw new Error('Cannot create cache with released playlist lock')
 	}
 
-	const rundownIds = initCache.Rundowns.map((r) => r._id)
+	const rundownIds = initModel.Rundowns.map((r) => r._id)
 
 	const [partInstances, rundownsWithContent, timeline] = await Promise.all([
-		loadPartInstances(context, initCache.Playlist, rundownIds),
-		loadRundowns(context, null, initCache.Rundowns),
+		loadPartInstances(context, initModel.Playlist, rundownIds),
+		loadRundowns(context, null, initModel.Rundowns),
 		loadTimeline(context),
 	])
 
 	const res = new PlayoutModelImpl(
 		context,
-		initCache.PlaylistLock,
-		initCache.PlaylistId,
-		initCache.PeripheralDevices,
-		clone<DBRundownPlaylist>(initCache.Playlist),
+		initModel.PlaylistLock,
+		initModel.PlaylistId,
+		initModel.PeripheralDevices,
+		clone<DBRundownPlaylist>(initModel.Playlist),
 		partInstances,
 		rundownsWithContent,
 		timeline

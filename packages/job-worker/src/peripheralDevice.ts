@@ -188,9 +188,12 @@ async function executePeripheralDeviceGenericFunction(
 	return result
 }
 
-export async function listPlayoutDevices(context: JobContext, cache: PlayoutModel): Promise<IBlueprintPlayoutDevice[]> {
+export async function listPlayoutDevices(
+	context: JobContext,
+	playoutModel: PlayoutModel
+): Promise<IBlueprintPlayoutDevice[]> {
 	const parentDevicesMap = normalizeArrayToMap(
-		cache.PeripheralDevices.filter(
+		playoutModel.PeripheralDevices.filter(
 			(doc) => doc.studioId === context.studioId && doc.type === PeripheralDeviceType.PLAYOUT
 		),
 		'_id'

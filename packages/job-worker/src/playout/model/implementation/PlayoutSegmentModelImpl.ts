@@ -19,12 +19,12 @@ export class PlayoutSegmentModelImpl implements PlayoutSegmentModel {
 		this.Parts = parts
 	}
 
-	getPartIds(): PartId[] {
-		return this.Parts.map((part) => part._id)
-	}
-
 	getPart(id: PartId): ReadonlyDeep<DBPart> | undefined {
 		return this.Parts.find((part) => part._id === id)
+	}
+
+	getPartIds(): PartId[] {
+		return this.Parts.map((part) => part._id)
 	}
 
 	// Internal mutation hack

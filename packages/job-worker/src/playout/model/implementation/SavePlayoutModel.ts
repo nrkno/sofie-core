@@ -75,7 +75,6 @@ export function writePartInstancesAndPieceInstances(
 				if (!pieceInstance) {
 					deletedPieceInstanceIds.push(pieceInstanceId)
 				} else if (pieceInstance.HasChanges) {
-					// TODO - this does not perform any diffing
 					pieceInstanceOps.push({
 						replaceOne: {
 							filter: { _id: pieceInstanceId },

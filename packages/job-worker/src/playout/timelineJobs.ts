@@ -1,9 +1,9 @@
 import { UpdateTimelineAfterIngestProps } from '@sofie-automation/corelib/dist/worker/studio'
 import { JobContext } from '../jobs'
-import { runJobWithPlaylistLock, runWithPlaylistCache } from './lock'
+import { runJobWithPlaylistLock, runWithPlayoutModel } from './lock'
 import { updateStudioTimeline, updateTimeline } from './timeline/generate'
 import { getSystemVersion } from '../lib'
-import { runJobWithStudioCache } from '../studio/lock'
+import { runJobWithStudioPlayoutModel } from '../studio/lock'
 import { shouldUpdateStudioBaselineInner as libShouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
 import { StudioPlayoutModel } from '../studio/StudioPlayoutModel'
 
@@ -12,27 +12,27 @@ import { StudioPlayoutModel } from '../studio/StudioPlayoutModel'
  * Has no effect if a Playlist is active
  */
 export async function handleUpdateStudioBaseline(context: JobContext, _data: void): Promise<string | false> {
-	return runJobWithStudioCache(context, async (cache) => {
-		const activePlaylists = cache.getActiveRundownPlaylists()
+	return runJobWithStudioPlayoutModel(context, async (studioPlayoutModel) => {
+		const activePlaylists = studioPlayoutModel.getActiveRundownPlaylists()
 
 		if (activePlaylists.length === 0) {
-			await updateStudioTimeline(context, cache)
-			return shouldUpdateStudioBaselineInner(context, cache)
+			await updateStudioTimeline(context, studioPlayoutModel)
+			return shouldUpdateStudioBaselineInner(context, studioPlayoutModel)
 		} else {
-			return shouldUpdateStudioBaselineInner(context, cache)
+			return shouldUpdateStudioBaselineInner(context, studioPlayoutModel)
 		}
 	})
 }
 
 async function shouldUpdateStudioBaselineInner(
 	context: JobContext,
-	cache: StudioPlayoutModel
+	playoutModel: StudioPlayoutModel
 ): Promise<string | false> {
 	const studio = context.studio
 
-	if (cache.getActiveRundownPlaylists().length > 0) return false
+	if (playoutModel.getActiveRundownPlaylists().length > 0) return false
 
-	const timeline = cache.Timeline
+	const timeline = playoutModel.Timeline
 	const blueprint = studio.blueprintId ? await context.directCollections.Blueprints.findOne(studio.blueprintId) : null
 	if (!blueprint) return 'missingBlueprint'
 
@@ -50,10 +50,10 @@ export async function handleUpdateTimelineAfterIngest(
 	await runJobWithPlaylistLock(context, data, async (playlist, lock) => {
 		if (playlist?.activationId && (playlist.currentPartInfo || playlist.nextPartInfo)) {
 			// TODO - r37 added a retry mechanic to this. should that be kept?
-			await runWithPlaylistCache(context, playlist, lock, null, async (cache) => {
-				const currentPartInstance = cache.CurrentPartInstance
+			await runWithPlayoutModel(context, playlist, lock, null, async (playoutModel) => {
+				const currentPartInstance = playoutModel.CurrentPartInstance
 				if (
-					!cache.isMultiGatewayMode &&
+					!playoutModel.isMultiGatewayMode &&
 					currentPartInstance &&
 					!currentPartInstance.PartInstance.timings?.reportedStartedPlayback
 				) {
@@ -62,7 +62,7 @@ export async function handleUpdateTimelineAfterIngest(
 				} else {
 					// It is safe enough (except adlibs) to update the timeline directly
 					// If the playlist is active, then updateTimeline as lookahead could have been affected
-					await updateTimeline(context, cache)
+					await updateTimeline(context, playoutModel)
 				}
 			})
 		}

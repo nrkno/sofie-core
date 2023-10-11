@@ -45,7 +45,7 @@ type ValidLookaheadMode = LookaheadMode.PRELOAD | LookaheadMode.WHEN_CLEAR
 
 export async function getLookeaheadObjects(
 	context: JobContext,
-	cache: PlayoutModel,
+	playoutModel: PlayoutModel,
 	partInstancesInfo0: SelectedPartInstancesTimelineInfo
 ): Promise<Array<TimelineObjRundown & OnGenerateTimelineObjExt>> {
 	const span = context.startSpan('getLookeaheadObjects')
@@ -59,10 +59,10 @@ export async function getLookeaheadObjects(
 	}
 
 	const maxLookaheadDistance = findLargestLookaheadDistance(mappingsToConsider)
-	const orderedPartsFollowingPlayhead = getOrderedPartsAfterPlayhead(context, cache, maxLookaheadDistance)
+	const orderedPartsFollowingPlayhead = getOrderedPartsAfterPlayhead(context, playoutModel, maxLookaheadDistance)
 
 	const piecesToSearchQuery: FilterQuery<Piece> = {
-		startRundownId: { $in: cache.getRundownIds() },
+		startRundownId: { $in: playoutModel.getRundownIds() },
 		startPartId: { $in: orderedPartsFollowingPlayhead.map((p) => p._id) },
 		invalid: { $ne: true },
 	}
@@ -165,7 +165,7 @@ export async function getLookeaheadObjects(
 
 			const lookaheadObjs = findLookaheadForLayer(
 				context,
-				cache.Playlist.currentPartInfo?.partInstanceId ?? null,
+				playoutModel.Playlist.currentPartInfo?.partInstanceId ?? null,
 				partInstancesInfo,
 				previousPartInfo,
 				orderedPartInfos,

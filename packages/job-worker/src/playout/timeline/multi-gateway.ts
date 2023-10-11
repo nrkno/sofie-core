@@ -23,7 +23,7 @@ import { PlayoutPieceInstanceModel } from '../model/PlayoutPieceInstanceModel'
  */
 export function deNowifyMultiGatewayTimeline(
 	context: JobContext,
-	cache: PlayoutModel,
+	playoutModel: PlayoutModel,
 	timelineObjs: TimelineObjRundown[],
 	timeOffsetIntoPart: Time | undefined,
 	timingContext: RundownTimelineTimingContext | undefined
@@ -32,19 +32,19 @@ export function deNowifyMultiGatewayTimeline(
 
 	const timelineObjsMap = normalizeArray(timelineObjs, 'id')
 
-	const nowOffsetLatency = calculateNowOffsetLatency(context, cache, timeOffsetIntoPart)
+	const nowOffsetLatency = calculateNowOffsetLatency(context, playoutModel, timeOffsetIntoPart)
 	const targetNowTime = getCurrentTime() + (nowOffsetLatency ?? 0)
 
 	// Replace `start: 'now'` in currentPartInstance on timeline
-	const currentPartInstance = cache.CurrentPartInstance
+	const currentPartInstance = playoutModel.CurrentPartInstance
 	if (!currentPartInstance) return
 
 	const partGroupTimings = updatePartInstancePlannedTimes(
-		cache,
+		playoutModel,
 		targetNowTime,
 		timingContext,
 		currentPartInstance,
-		cache.NextPartInstance
+		playoutModel.NextPartInstance
 	)
 
 	deNowifyCurrentPieces(
@@ -55,19 +55,21 @@ export function deNowifyMultiGatewayTimeline(
 		timelineObjsMap
 	)
 
-	updatePlannedTimingsForPieceInstances(cache, currentPartInstance, partGroupTimings, timelineObjsMap)
+	updatePlannedTimingsForPieceInstances(playoutModel, currentPartInstance, partGroupTimings, timelineObjsMap)
 }
 
 export function calculateNowOffsetLatency(
 	context: JobContext,
-	cache: StudioPlayoutModelBase,
+	studioPlayoutModel: StudioPlayoutModelBase,
 	timeOffsetIntoPart: Time | undefined
 ): Time | undefined {
 	/** The timestamp that "now" was set to */
 	let nowOffsetLatency: Time | undefined
 
-	if (cache.isMultiGatewayMode) {
-		const playoutDevices = cache.PeripheralDevices.filter((device) => device.type === PeripheralDeviceType.PLAYOUT)
+	if (studioPlayoutModel.isMultiGatewayMode) {
+		const playoutDevices = studioPlayoutModel.PeripheralDevices.filter(
+			(device) => device.type === PeripheralDeviceType.PLAYOUT
+		)
 		const worstLatency = Math.max(0, ...playoutDevices.map((device) => getExpectedLatency(device).safe))
 		/** Add a little more latency, to account for network latency variability */
 		const ADD_SAFE_LATENCY = context.studio.settings.multiGatewayNowSafeLatency || 30
@@ -89,7 +91,7 @@ interface PartGroupTimings {
 }
 
 function updatePartInstancePlannedTimes(
-	cache: PlayoutModel,
+	playoutModel: PlayoutModel,
 	targetNowTime: number,
 	timingContext: RundownTimelineTimingContext,
 	currentPartInstance: PlayoutPartInstanceModel,
@@ -108,7 +110,7 @@ function updatePartInstancePlannedTimes(
 	}
 
 	// Also mark the previous as ended
-	const previousPartInstance = cache.PreviousPartInstance
+	const previousPartInstance = playoutModel.PreviousPartInstance
 	if (previousPartInstance) {
 		const previousPartEndTime = currentPartGroupStartTime + (timingContext.previousPartOverlap ?? 0)
 		previousPartInstance.setPlannedStoppedPlayback(previousPartEndTime)
@@ -201,13 +203,13 @@ function deNowifyCurrentPieces(
 }
 
 function updatePlannedTimingsForPieceInstances(
-	cache: PlayoutModel,
+	playoutModel: PlayoutModel,
 	currentPartInstance: PlayoutPartInstanceModel,
 	partGroupTimings: PartGroupTimings,
 	timelineObjsMap: Record<string, TimelineObjRundown>
 ) {
 	const existingInfiniteTimings = new Map<PieceInstanceInfiniteId, Time>()
-	const previousPartInstance = cache.PreviousPartInstance
+	const previousPartInstance = playoutModel.PreviousPartInstance
 	if (previousPartInstance) {
 		const pieceInstances = previousPartInstance.PieceInstances
 		for (const pieceInstance of pieceInstances) {
@@ -232,7 +234,7 @@ function updatePlannedTimingsForPieceInstances(
 		preserveOrTrackInfiniteTimings(existingInfiniteTimings, timelineObjsMap, pieceInstance)
 	}
 
-	const nextPartInstance = cache.NextPartInstance
+	const nextPartInstance = playoutModel.NextPartInstance
 	if (nextPartInstance && partGroupTimings.nextStartTime) {
 		const nextPartGroupStartTime0 = partGroupTimings.nextStartTime
 		for (const pieceInstance of nextPartInstance.PieceInstances) {

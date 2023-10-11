@@ -115,11 +115,11 @@ export async function updatePartInstanceRanks(
  * Update the ranks of all PartInstances in the given segments.
  * Syncs the ranks from matching Parts to PartInstances.
  */
-export function updatePartInstanceRanksAfterAdlib(cache: PlayoutModel, segmentId: SegmentId): void {
-	const newParts = cache.findSegment(segmentId)?.Parts ?? []
+export function updatePartInstanceRanksAfterAdlib(playoutModel: PlayoutModel, segmentId: SegmentId): void {
+	const newParts = playoutModel.findSegment(segmentId)?.Parts ?? []
 
 	const segmentPartInstances = _.sortBy(
-		cache.LoadedPartInstances.filter((p) => p.PartInstance.segmentId === segmentId).map((p) =>
+		playoutModel.LoadedPartInstances.filter((p) => p.PartInstance.segmentId === segmentId).map((p) =>
 			clone<DBPartInstance>(p.PartInstance)
 		),
 		(p) => p.part._rank
@@ -127,7 +127,7 @@ export function updatePartInstanceRanksAfterAdlib(cache: PlayoutModel, segmentId
 
 	const newRanks = calculateNewRanksForParts(segmentId, null, newParts, segmentPartInstances)
 	for (const [instanceId, info] of newRanks.entries()) {
-		const partInstance = cache.getPartInstance(instanceId)
+		const partInstance = playoutModel.getPartInstance(instanceId)
 		if (!partInstance) continue // TODO - should this throw?
 
 		if (info.deleted) {

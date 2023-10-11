@@ -16,18 +16,18 @@ import { ReadonlyDeep } from 'type-fest'
 
 export async function activateRundownPlaylist(
 	context: JobContext,
-	cache: PlayoutModel,
+	playoutModel: PlayoutModel,
 	rehearsal: boolean
 ): Promise<void> {
-	logger.info('Activating rundown ' + cache.Playlist._id + (rehearsal ? ' (Rehearsal)' : ''))
+	logger.info('Activating rundown ' + playoutModel.Playlist._id + (rehearsal ? ' (Rehearsal)' : ''))
 
 	rehearsal = !!rehearsal
-	const wasActive = !!cache.Playlist.activationId
+	const wasActive = !!playoutModel.Playlist.activationId
 
 	const anyOtherActiveRundowns = await getActiveRundownPlaylistsInStudioFromDb(
 		context,
 		context.studio._id,
-		cache.Playlist._id
+		playoutModel.Playlist._id
 	)
 	if (anyOtherActiveRundowns.length) {
 		// logger.warn('Only one rundown can be active at the same time. Active rundowns: ' + _.map(anyOtherActiveRundowns, rundown => rundown._id))
@@ -38,56 +38,56 @@ export async function activateRundownPlaylist(
 		)
 	}
 
-	if (!cache.Playlist.activationId) {
+	if (!playoutModel.Playlist.activationId) {
 		// Reset the playlist if it wasnt already active
-		await resetRundownPlaylist(context, cache)
+		await resetRundownPlaylist(context, playoutModel)
 	}
 
-	const newActivationId = cache.activatePlaylist(rehearsal)
+	const newActivationId = playoutModel.activatePlaylist(rehearsal)
 
 	let rundown: ReadonlyDeep<DBRundown> | undefined
 
-	const currentPartInstance = cache.CurrentPartInstance
+	const currentPartInstance = playoutModel.CurrentPartInstance
 	if (!currentPartInstance || currentPartInstance.PartInstance.reset) {
-		cache.clearSelectedPartInstances()
+		playoutModel.clearSelectedPartInstances()
 
 		// If we are not playing anything, then regenerate the next part
 		const firstPart = selectNextPart(
 			context,
-			cache.Playlist,
+			playoutModel.Playlist,
 			null,
 			null,
-			cache.getAllOrderedSegments(),
-			cache.getAllOrderedParts()
+			playoutModel.getAllOrderedSegments(),
+			playoutModel.getAllOrderedParts()
 		)
-		await setNextPart(context, cache, firstPart, false)
+		await setNextPart(context, playoutModel, firstPart, false)
 
 		if (firstPart) {
-			rundown = cache.getRundown(firstPart.part.rundownId)?.Rundown
+			rundown = playoutModel.getRundown(firstPart.part.rundownId)?.Rundown
 		}
 	} else {
 		// Otherwise preserve the active partInstances
-		for (const partInstance of cache.SelectedPartInstances) {
+		for (const partInstance of playoutModel.SelectedPartInstances) {
 			partInstance.setPlaylistActivationId(newActivationId)
 		}
 
-		const nextPartInstance = cache.NextPartInstance
+		const nextPartInstance = playoutModel.NextPartInstance
 		if (nextPartInstance) {
-			rundown = cache.getRundown(nextPartInstance.PartInstance.rundownId)?.Rundown
+			rundown = playoutModel.getRundown(nextPartInstance.PartInstance.rundownId)?.Rundown
 			if (!rundown) throw new Error(`Could not find rundown "${nextPartInstance.PartInstance.rundownId}"`)
 		}
 	}
 
-	await updateTimeline(context, cache)
+	await updateTimeline(context, playoutModel)
 
-	cache.deferBeforeSave(async () => {
+	playoutModel.deferBeforeSave(async () => {
 		if (!rundown) return // if the proper rundown hasn't been found, there's little point doing anything else
 		const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 		const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 
 		try {
 			if (blueprint.blueprint.onRundownActivate) {
-				const blueprintContext = new RundownActivationContext(context, cache, showStyle, rundown)
+				const blueprintContext = new RundownActivationContext(context, playoutModel, showStyle, rundown)
 
 				await blueprint.blueprint.onRundownActivate(blueprintContext, wasActive)
 			}
@@ -96,21 +96,21 @@ export async function activateRundownPlaylist(
 		}
 	})
 }
-export async function deactivateRundownPlaylist(context: JobContext, cache: PlayoutModel): Promise<void> {
-	const rundown = await deactivateRundownPlaylistInner(context, cache)
+export async function deactivateRundownPlaylist(context: JobContext, playoutModel: PlayoutModel): Promise<void> {
+	const rundown = await deactivateRundownPlaylistInner(context, playoutModel)
 
-	await updateStudioTimeline(context, cache)
+	await updateStudioTimeline(context, playoutModel)
 
-	await cleanTimelineDatastore(context, cache)
+	await cleanTimelineDatastore(context, playoutModel)
 
-	cache.deferBeforeSave(async () => {
+	playoutModel.deferBeforeSave(async () => {
 		if (rundown) {
 			const showStyle = await context.getShowStyleCompound(rundown.showStyleVariantId, rundown.showStyleBaseId)
 			const blueprint = await context.getShowStyleBlueprint(showStyle._id)
 
 			try {
 				if (blueprint.blueprint.onRundownDeActivate) {
-					const blueprintContext = new RundownActivationContext(context, cache, showStyle, rundown)
+					const blueprintContext = new RundownActivationContext(context, playoutModel, showStyle, rundown)
 					await blueprint.blueprint.onRundownDeActivate(blueprintContext)
 				}
 			} catch (err) {
@@ -121,23 +121,23 @@ export async function deactivateRundownPlaylist(context: JobContext, cache: Play
 }
 export async function deactivateRundownPlaylistInner(
 	context: JobContext,
-	cache: PlayoutModel
+	playoutModel: PlayoutModel
 ): Promise<ReadonlyDeep<DBRundown> | undefined> {
 	const span = context.startSpan('deactivateRundownPlaylistInner')
-	logger.info(`Deactivating rundown playlist "${cache.Playlist._id}"`)
+	logger.info(`Deactivating rundown playlist "${playoutModel.Playlist._id}"`)
 
-	const currentPartInstance = cache.CurrentPartInstance
-	const nextPartInstance = cache.NextPartInstance
+	const currentPartInstance = playoutModel.CurrentPartInstance
+	const nextPartInstance = playoutModel.NextPartInstance
 
 	let rundown: ReadonlyDeep<DBRundown> | undefined
 	if (currentPartInstance) {
-		rundown = cache.getRundown(currentPartInstance.PartInstance.rundownId)?.Rundown
+		rundown = playoutModel.getRundown(currentPartInstance.PartInstance.rundownId)?.Rundown
 
-		cache.deferAfterSave(async () => {
+		playoutModel.deferAfterSave(async () => {
 			context
 				.queueEventJob(EventsJobs.NotifyCurrentlyPlayingPart, {
 					rundownId: currentPartInstance.PartInstance.rundownId,
-					isRehearsal: !!cache.Playlist.rehearsal,
+					isRehearsal: !!playoutModel.Playlist.rehearsal,
 					partExternalId: null,
 				})
 				.catch((e) => {
@@ -145,13 +145,12 @@ export async function deactivateRundownPlaylistInner(
 				})
 		})
 	} else if (nextPartInstance) {
-		rundown = cache.getRundown(nextPartInstance.PartInstance.rundownId)?.Rundown
+		rundown = playoutModel.getRundown(nextPartInstance.PartInstance.rundownId)?.Rundown
 	}
 
-	cache.clearSelectedPartInstances()
-	cache.deactivatePlaylist()
+	playoutModel.deactivatePlaylist()
 
-	await setNextPart(context, cache, null, false)
+	await setNextPart(context, playoutModel, null, false)
 
 	if (currentPartInstance) {
 		// Set the current PartInstance as stopped

@@ -6,16 +6,16 @@ import { Time } from '@sofie-automation/blueprints-integration'
 export interface PlayoutPieceInstanceModel {
 	readonly PieceInstance: ReadonlyDeep<PieceInstance>
 
-	updatePieceProps(props: Partial<PieceInstancePiece>): void
+	prepareForHold(): PieceInstanceInfiniteId
+
+	setDisabled(disabled: boolean): void
+
+	setDuration(duration: Required<PieceInstance>['userDuration']): void
 
 	setPlannedStartedPlayback(time: Time): boolean
 	setPlannedStoppedPlayback(time: Time | undefined): boolean
 	setReportedStartedPlayback(time: Time): boolean
 	setReportedStoppedPlayback(time: Time): boolean
 
-	prepareForHold(): PieceInstanceInfiniteId
-
-	setDuration(duration: Required<PieceInstance>['userDuration']): void
-
-	setDisabled(disabled: boolean): void
+	updatePieceProps(props: Partial<PieceInstancePiece>): void
 }

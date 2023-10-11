@@ -10,16 +10,16 @@ import { updateTimeline } from '../playout/timeline/generate'
  * Make sure that the nextPartInstance for the current Playlist is still correct
  * This will often change the nextPartInstance
  * @param context Context of the job being run
- * @param cache Playout Cache to operate on
+ * @param playoutModel Playout Cache to operate on
  */
-export async function ensureNextPartIsValid(context: JobContext, cache: PlayoutModel): Promise<void> {
+export async function ensureNextPartIsValid(context: JobContext, playoutModel: PlayoutModel): Promise<void> {
 	const span = context.startSpan('api.ingest.ensureNextPartIsValid')
 
 	// Ensure the next-id is still valid
-	const playlist = cache.Playlist
+	const playlist = playoutModel.Playlist
 	if (playlist?.activationId) {
-		const currentPartInstance = cache.CurrentPartInstance
-		const nextPartInstance = cache.NextPartInstance
+		const currentPartInstance = playoutModel.CurrentPartInstance
+		const nextPartInstance = playoutModel.NextPartInstance
 
 		if (
 			playlist.nextPartInfo?.manuallySelected &&
@@ -38,8 +38,8 @@ export async function ensureNextPartIsValid(context: JobContext, cache: PlayoutM
 			return
 		}
 
-		const orderedSegments = cache.getAllOrderedSegments()
-		const orderedParts = cache.getAllOrderedParts()
+		const orderedSegments = playoutModel.getAllOrderedSegments()
+		const orderedParts = playoutModel.getAllOrderedParts()
 
 		if (currentPartInstance && nextPartInstance) {
 			// Check if the part is the same
@@ -61,9 +61,9 @@ export async function ensureNextPartIsValid(context: JobContext, cache: PlayoutM
 				!isPartPlayable(nextPartInstance.PartInstance.part)
 			) {
 				// The 'new' next part is before the current next, so move the next point
-				await setNextPart(context, cache, newNextPart ?? null, false)
+				await setNextPart(context, playoutModel, newNextPart ?? null, false)
 
-				await updateTimeline(context, cache)
+				await updateTimeline(context, playoutModel)
 			}
 		} else if (!nextPartInstance || nextPartInstance.PartInstance.orphaned === 'deleted') {
 			// Don't have a nextPart or it has been deleted, so autoselect something
@@ -75,9 +75,9 @@ export async function ensureNextPartIsValid(context: JobContext, cache: PlayoutM
 				orderedSegments,
 				orderedParts
 			)
-			await setNextPart(context, cache, newNextPart ?? null, false)
+			await setNextPart(context, playoutModel, newNextPart ?? null, false)
 
-			await updateTimeline(context, cache)
+			await updateTimeline(context, playoutModel)
 		}
 	}
 

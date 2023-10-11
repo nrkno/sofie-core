@@ -14,10 +14,10 @@ import {
 } from '@sofie-automation/corelib/dist/worker/studio'
 import { PlayoutModel } from './model/PlayoutModel'
 import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
-import { runJobWithPlayoutCache } from './lock'
+import { runJobWithPlayoutModel } from './lock'
 import { updateTimeline } from './timeline/generate'
 import { getCurrentTime } from '../lib'
-import { comparePieceStart, convertAdLibToPieceInstance, convertPieceToAdLibPiece } from './pieces'
+import { comparePieceStart, convertAdLibToGenericPiece, convertPieceToAdLibPiece } from './pieces'
 import { getResolvedPiecesForCurrentPartInstance } from './resolvedPieces'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
 import { UserError, UserErrorMessage } from '@sofie-automation/corelib/dist/error'
@@ -35,11 +35,11 @@ import { PlayoutPieceInstanceModel } from './model/PlayoutPieceInstanceModel'
  * Play an existing Piece in the Rundown as an AdLib
  */
 export async function handleTakePieceAsAdlibNow(context: JobContext, data: TakePieceAsAdlibNowProps): Promise<void> {
-	return runJobWithPlayoutCache(
+	return runJobWithPlayoutModel(
 		context,
 		data,
-		async (cache) => {
-			const playlist = cache.Playlist
+		async (playoutModel) => {
+			const playlist = playoutModel.Playlist
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 				throw UserError.create(UserErrorMessage.DuringHold)
@@ -48,16 +48,18 @@ export async function handleTakePieceAsAdlibNow(context: JobContext, data: TakeP
 			if (playlist.currentPartInfo?.partInstanceId !== data.partInstanceId)
 				throw UserError.create(UserErrorMessage.AdlibCurrentPart)
 		},
-		async (cache) => {
-			const currentPartInstance = cache.CurrentPartInstance
+		async (playoutModel) => {
+			const currentPartInstance = playoutModel.CurrentPartInstance
 			if (!currentPartInstance) throw UserError.create(UserErrorMessage.InactiveRundown)
-			const currentRundown = cache.getRundown(currentPartInstance.PartInstance.rundownId)
+			const currentRundown = playoutModel.getRundown(currentPartInstance.PartInstance.rundownId)
 			if (!currentRundown)
 				throw new Error(`Missing Rundown for PartInstance: ${currentPartInstance.PartInstance._id}`)
 
-			const rundownIds = cache.getRundownIds()
+			const rundownIds = playoutModel.getRundownIds()
 
-			const pieceInstanceToCopy = cache.findPieceInstance(data.pieceInstanceIdOrPieceIdToCopy as PieceInstanceId)
+			const pieceInstanceToCopy = playoutModel.findPieceInstance(
+				data.pieceInstanceIdOrPieceIdToCopy as PieceInstanceId
+			)
 
 			const pieceToCopy = pieceInstanceToCopy
 				? clone<PieceInstancePiece>(pieceInstanceToCopy.pieceInstance.PieceInstance.piece)
@@ -89,7 +91,7 @@ export async function handleTakePieceAsAdlibNow(context: JobContext, data: TakeP
 				case IBlueprintDirectPlayType.AdLibPiece:
 					await pieceTakeNowAsAdlib(
 						context,
-						cache,
+						playoutModel,
 						showStyleCompound,
 						currentPartInstance,
 						pieceToCopy,
@@ -104,7 +106,7 @@ export async function handleTakePieceAsAdlibNow(context: JobContext, data: TakeP
 
 					await executeActionInner(
 						context,
-						cache,
+						playoutModel,
 						currentRundown,
 						showStyleCompound,
 						blueprint,
@@ -130,7 +132,7 @@ export async function handleTakePieceAsAdlibNow(context: JobContext, data: TakeP
 }
 async function pieceTakeNowAsAdlib(
 	context: JobContext,
-	cache: PlayoutModel,
+	playoutModel: PlayoutModel,
 	showStyleBase: ReadonlyDeep<ProcessedShowStyleCompound>,
 	currentPartInstance: PlayoutPartInstanceModel,
 	pieceToCopy: PieceInstancePiece,
@@ -138,7 +140,8 @@ async function pieceTakeNowAsAdlib(
 		| { partInstance: PlayoutPartInstanceModel; pieceInstance: PlayoutPieceInstanceModel }
 		| undefined
 ): Promise<void> {
-	/*const newPieceInstance = */ convertAdLibToPieceInstance(context, pieceToCopy, currentPartInstance, false)
+	const genericAdlibPiece = convertAdLibToGenericPiece(pieceToCopy, false)
+	/*const newPieceInstance = */ currentPartInstance.insertAdlibbedPiece(genericAdlibPiece, pieceToCopy._id)
 
 	// Disable the original piece if from the same Part
 	if (
@@ -179,20 +182,25 @@ async function pieceTakeNowAsAdlib(
 		pieceInstanceToCopy.pieceInstance.setDisabled(true)
 	}
 
-	await syncPlayheadInfinitesForNextPartInstance(context, cache, cache.CurrentPartInstance, cache.NextPartInstance)
+	await syncPlayheadInfinitesForNextPartInstance(
+		context,
+		playoutModel,
+		playoutModel.CurrentPartInstance,
+		playoutModel.NextPartInstance
+	)
 
-	await updateTimeline(context, cache)
+	await updateTimeline(context, playoutModel)
 }
 
 /**
  * Play an AdLib piece by its id
  */
 export async function handleAdLibPieceStart(context: JobContext, data: AdlibPieceStartProps): Promise<void> {
-	return runJobWithPlayoutCache(
+	return runJobWithPlayoutModel(
 		context,
 		data,
-		async (cache) => {
-			const playlist = cache.Playlist
+		async (playoutModel) => {
+			const playlist = playoutModel.Playlist
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 				throw UserError.create(UserErrorMessage.DuringHold)
@@ -201,14 +209,14 @@ export async function handleAdLibPieceStart(context: JobContext, data: AdlibPiec
 			if (!data.queue && playlist.currentPartInfo?.partInstanceId !== data.partInstanceId)
 				throw UserError.create(UserErrorMessage.AdlibCurrentPart)
 		},
-		async (cache) => {
-			const partInstance = cache.getPartInstance(data.partInstanceId)
+		async (playoutModel) => {
+			const partInstance = playoutModel.getPartInstance(data.partInstanceId)
 			if (!partInstance) throw new Error(`PartInstance "${data.partInstanceId}" not found!`)
-			const rundown = cache.getRundown(partInstance.PartInstance.rundownId)
+			const rundown = playoutModel.getRundown(partInstance.PartInstance.rundownId)
 			if (!rundown) throw new Error(`Rundown "${partInstance.PartInstance.rundownId}" not found!`)
 
 			// Rundows that share the same showstyle variant as the current rundown, so adlibs from these rundowns are safe to play
-			const safeRundownIds = cache.Rundowns.filter(
+			const safeRundownIds = playoutModel.Rundowns.filter(
 				(rd) => rd.Rundown.showStyleVariantId === rundown.Rundown.showStyleVariantId
 			).map((r) => r.Rundown._id)
 
@@ -257,7 +265,7 @@ export async function handleAdLibPieceStart(context: JobContext, data: AdlibPiec
 					UserErrorMessage.AdlibUnplayable
 				)
 
-			await innerStartOrQueueAdLibPiece(context, cache, rundown, !!data.queue, partInstance, adLibPiece)
+			await innerStartOrQueueAdLibPiece(context, playoutModel, rundown, !!data.queue, partInstance, adLibPiece)
 		}
 	)
 }
@@ -269,22 +277,22 @@ export async function handleStartStickyPieceOnSourceLayer(
 	context: JobContext,
 	data: StartStickyPieceOnSourceLayerProps
 ): Promise<void> {
-	return runJobWithPlayoutCache(
+	return runJobWithPlayoutModel(
 		context,
 		data,
-		async (cache) => {
-			const playlist = cache.Playlist
+		async (playoutModel) => {
+			const playlist = playoutModel.Playlist
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 				throw UserError.create(UserErrorMessage.DuringHold)
 			}
 			if (!playlist.currentPartInfo) throw UserError.create(UserErrorMessage.NoCurrentPart)
 		},
-		async (cache) => {
-			const currentPartInstance = cache.CurrentPartInstance
+		async (playoutModel) => {
+			const currentPartInstance = playoutModel.CurrentPartInstance
 			if (!currentPartInstance) throw UserError.create(UserErrorMessage.NoCurrentPart)
 
-			const rundown = cache.getRundown(currentPartInstance.PartInstance.rundownId)
+			const rundown = playoutModel.getRundown(currentPartInstance.PartInstance.rundownId)
 			if (!rundown) throw new Error(`Rundown "${currentPartInstance.PartInstance.rundownId}" not found!`)
 
 			const showStyleBase = await context.getShowStyleBase(rundown.Rundown.showStyleBaseId)
@@ -299,7 +307,7 @@ export async function handleStartStickyPieceOnSourceLayer(
 
 			const lastPieceInstance = await innerFindLastPieceOnLayer(
 				context,
-				cache,
+				playoutModel,
 				[sourceLayer._id],
 				sourceLayer.stickyOriginalOnly || false
 			)
@@ -308,7 +316,7 @@ export async function handleStartStickyPieceOnSourceLayer(
 			}
 
 			const lastPiece = convertPieceToAdLibPiece(context, lastPieceInstance.piece)
-			await innerStartOrQueueAdLibPiece(context, cache, rundown, false, currentPartInstance, lastPiece)
+			await innerStartOrQueueAdLibPiece(context, playoutModel, rundown, false, currentPartInstance, lastPiece)
 		}
 	)
 }
@@ -321,31 +329,31 @@ export async function handleStopPiecesOnSourceLayers(
 	data: StopPiecesOnSourceLayersProps
 ): Promise<void> {
 	if (data.sourceLayerIds.length === 0) return
-	return runJobWithPlayoutCache(
+	return runJobWithPlayoutModel(
 		context,
 		data,
-		async (cache) => {
-			const playlist = cache.Playlist
+		async (playoutModel) => {
+			const playlist = playoutModel.Playlist
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 			if (playlist.holdState === RundownHoldState.ACTIVE || playlist.holdState === RundownHoldState.PENDING) {
 				throw UserError.create(UserErrorMessage.DuringHold)
 			}
 			if (!playlist.currentPartInfo) throw UserError.create(UserErrorMessage.NoCurrentPart)
 		},
-		async (cache) => {
-			const partInstance = cache.getPartInstance(data.partInstanceId)
+		async (playoutModel) => {
+			const partInstance = playoutModel.getPartInstance(data.partInstanceId)
 			if (!partInstance) throw new Error(`PartInstance "${data.partInstanceId}" not found!`)
 			const lastStartedPlayback = partInstance.PartInstance.timings?.plannedStartedPlayback
 			if (!lastStartedPlayback) throw new Error(`Part "${data.partInstanceId}" has yet to start playback!`)
 
-			const rundown = cache.getRundown(partInstance.PartInstance.rundownId)
+			const rundown = playoutModel.getRundown(partInstance.PartInstance.rundownId)
 			if (!rundown) throw new Error(`Rundown "${partInstance.PartInstance.rundownId}" not found!`)
 
 			const showStyleBase = await context.getShowStyleBase(rundown.Rundown.showStyleBaseId)
 			const sourceLayerIds = new Set(data.sourceLayerIds)
 			const changedIds = innerStopPieces(
 				context,
-				cache,
+				playoutModel,
 				showStyleBase.sourceLayers,
 				partInstance,
 				(pieceInstance) => sourceLayerIds.has(pieceInstance.piece.sourceLayerId),
@@ -355,12 +363,12 @@ export async function handleStopPiecesOnSourceLayers(
 			if (changedIds.length) {
 				await syncPlayheadInfinitesForNextPartInstance(
 					context,
-					cache,
-					cache.CurrentPartInstance,
-					cache.NextPartInstance
+					playoutModel,
+					playoutModel.CurrentPartInstance,
+					playoutModel.NextPartInstance
 				)
 
-				await updateTimeline(context, cache)
+				await updateTimeline(context, playoutModel)
 			}
 		}
 	)
@@ -370,24 +378,24 @@ export async function handleStopPiecesOnSourceLayers(
  * Disable the next Piece which allows being disabled
  */
 export async function handleDisableNextPiece(context: JobContext, data: DisableNextPieceProps): Promise<void> {
-	return runJobWithPlayoutCache(
+	return runJobWithPlayoutModel(
 		context,
 		data,
-		async (cache) => {
-			const playlist = cache.Playlist
+		async (playoutModel) => {
+			const playlist = playoutModel.Playlist
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 
 			if (!playlist.currentPartInfo) throw UserError.create(UserErrorMessage.NoCurrentPart)
 		},
-		async (cache) => {
-			const playlist = cache.Playlist
+		async (playoutModel) => {
+			const playlist = playoutModel.Playlist
 
-			const currentPartInstance = cache.CurrentPartInstance
-			const nextPartInstance = cache.NextPartInstance
+			const currentPartInstance = playoutModel.CurrentPartInstance
+			const nextPartInstance = playoutModel.NextPartInstance
 			if (!currentPartInstance)
 				throw new Error(`PartInstance "${playlist.currentPartInfo?.partInstanceId}" not found!`)
 
-			const rundown = cache.getRundown(currentPartInstance.PartInstance.rundownId)
+			const rundown = playoutModel.getRundown(currentPartInstance.PartInstance.rundownId)
 			if (!rundown) throw new Error(`Rundown "${currentPartInstance.PartInstance.rundownId}" not found!`)
 			const showStyleBase = await context.getShowStyleBase(rundown.Rundown.showStyleBaseId)
 
@@ -461,9 +469,9 @@ export async function handleDisableNextPiece(context: JobContext, data: DisableN
 			}
 
 			if (disabledPiece) {
-				await updateTimeline(context, cache)
+				await updateTimeline(context, playoutModel)
 			} else {
-				cache.assertNoChanges()
+				playoutModel.assertNoChanges()
 
 				throw UserError.create(UserErrorMessage.DisableNoPieceFound)
 			}

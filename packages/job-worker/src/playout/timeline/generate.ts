@@ -54,8 +54,8 @@ import { applyAbPlaybackForTimeline } from '../abPlayback'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 import { PlayoutPartInstanceModel } from '../model/PlayoutPartInstanceModel'
 
-function isCacheForStudio(cache: StudioPlayoutModelBase): cache is StudioPlayoutModel {
-	const tmp = cache as StudioPlayoutModel
+function isModelForStudio(model: StudioPlayoutModelBase): model is StudioPlayoutModel {
+	const tmp = model as StudioPlayoutModel
 	return !!tmp.isStudio
 }
 
@@ -74,19 +74,19 @@ function generateTimelineVersions(
 
 export async function updateStudioTimeline(
 	context: JobContext,
-	cache: StudioPlayoutModel | PlayoutModel
+	playoutModel: StudioPlayoutModel | PlayoutModel
 ): Promise<void> {
 	const span = context.startSpan('updateStudioTimeline')
 	logger.debug('updateStudioTimeline running...')
 	const studio = context.studio
 	// Ensure there isn't a playlist active, as that should be using a different function call
-	if (isCacheForStudio(cache)) {
-		const activePlaylists = cache.getActiveRundownPlaylists()
+	if (isModelForStudio(playoutModel)) {
+		const activePlaylists = playoutModel.getActiveRundownPlaylists()
 		if (activePlaylists.length > 0) {
 			throw new Error(`Studio has an active playlist`)
 		}
 	} else {
-		if (cache.Playlist.activationId) {
+		if (playoutModel.Playlist.activationId) {
 			throw new Error(`Studio has an active playlist`)
 		}
 	}
@@ -127,16 +127,16 @@ export async function updateStudioTimeline(
 	flattenAndProcessTimelineObjects(context, baselineObjects)
 
 	// Future: We should handle any 'now' objects that are at the root of this timeline
-	preserveOrReplaceNowTimesInObjects(cache, baselineObjects)
+	preserveOrReplaceNowTimesInObjects(playoutModel, baselineObjects)
 
-	if (cache.isMultiGatewayMode) {
+	if (playoutModel.isMultiGatewayMode) {
 		logAnyRemainingNowTimes(context, baselineObjects)
 	}
 
-	saveTimeline(context, cache, baselineObjects, versions)
+	saveTimeline(context, playoutModel, baselineObjects, versions)
 
 	if (studioBaseline) {
-		updateBaselineExpectedPackagesOnStudio(context, cache, studioBaseline)
+		updateBaselineExpectedPackagesOnStudio(context, playoutModel, studioBaseline)
 	}
 
 	logger.debug('updateStudioTimeline done!')
@@ -145,37 +145,40 @@ export async function updateStudioTimeline(
 
 export async function updateTimeline(
 	context: JobContext,
-	cache: PlayoutModel,
+	playoutModel: PlayoutModel,
 	timeOffsetIntoPart?: Time
 ): Promise<void> {
 	const span = context.startSpan('updateTimeline')
 	logger.debug('updateTimeline running...')
 
-	if (!cache.Playlist.activationId) {
-		throw new Error(`RundownPlaylist ("${cache.Playlist._id}") is not active")`)
+	if (!playoutModel.Playlist.activationId) {
+		throw new Error(`RundownPlaylist ("${playoutModel.Playlist._id}") is not active")`)
 	}
 
-	const { versions, objs: timelineObjs, timingContext: timingInfo } = await getTimelineRundown(context, cache)
+	const { versions, objs: timelineObjs, timingContext: timingInfo } = await getTimelineRundown(context, playoutModel)
 
 	flattenAndProcessTimelineObjects(context, timelineObjs)
 
-	preserveOrReplaceNowTimesInObjects(cache, timelineObjs)
+	preserveOrReplaceNowTimesInObjects(playoutModel, timelineObjs)
 
-	if (cache.isMultiGatewayMode) {
-		deNowifyMultiGatewayTimeline(context, cache, timelineObjs, timeOffsetIntoPart, timingInfo)
+	if (playoutModel.isMultiGatewayMode) {
+		deNowifyMultiGatewayTimeline(context, playoutModel, timelineObjs, timeOffsetIntoPart, timingInfo)
 
 		logAnyRemainingNowTimes(context, timelineObjs)
 	}
 
-	saveTimeline(context, cache, timelineObjs, versions)
+	saveTimeline(context, playoutModel, timelineObjs, versions)
 
 	logger.debug('updateTimeline done!')
 
 	if (span) span.end()
 }
 
-function preserveOrReplaceNowTimesInObjects(cache: StudioPlayoutModelBase, timelineObjs: Array<TimelineObjGeneric>) {
-	const timeline = cache.Timeline
+function preserveOrReplaceNowTimesInObjects(
+	studioPlayoutModel: StudioPlayoutModelBase,
+	timelineObjs: Array<TimelineObjGeneric>
+) {
+	const timeline = studioPlayoutModel.Timeline
 	const oldTimelineObjsMap = normalizeArray(
 		(timeline?.timelineBlob !== undefined && deserializeTimelineBlob(timeline.timelineBlob)) || [],
 		'id'
@@ -235,7 +238,7 @@ function logAnyRemainingNowTimes(_context: JobContext, timelineObjs: Array<Timel
 /** Store the timelineobjects into the cache, and perform any post-save actions */
 export function saveTimeline(
 	context: JobContext,
-	cache: StudioPlayoutModelBase,
+	studioPlayoutModel: StudioPlayoutModelBase,
 	timelineObjs: TimelineObjGeneric[],
 	generationVersions: TimelineCompleteGenerationVersions
 ): void {
@@ -247,7 +250,7 @@ export function saveTimeline(
 		generationVersions: generationVersions,
 	}
 
-	cache.setTimeline(timelineObjs, generationVersions)
+	studioPlayoutModel.setTimeline(timelineObjs, generationVersions)
 
 	// Also do a fast-track for the timeline to be published faster:
 	context.hackPublishTimelineToFastTrack(newTimeline)
@@ -298,7 +301,7 @@ function getPartInstanceTimelineInfo(
  */
 async function getTimelineRundown(
 	context: JobContext,
-	cache: PlayoutModel
+	playoutModel: PlayoutModel
 ): Promise<{
 	objs: Array<TimelineObjRundown>
 	versions: TimelineCompleteGenerationVersions
@@ -308,12 +311,12 @@ async function getTimelineRundown(
 	try {
 		let timelineObjs: Array<TimelineObjGeneric & OnGenerateTimelineObjExt> = []
 
-		const currentPartInstance = cache.CurrentPartInstance
-		const nextPartInstance = cache.NextPartInstance
-		const previousPartInstance = cache.PreviousPartInstance
+		const currentPartInstance = playoutModel.CurrentPartInstance
+		const nextPartInstance = playoutModel.NextPartInstance
+		const previousPartInstance = playoutModel.PreviousPartInstance
 
 		const partForRundown = currentPartInstance || nextPartInstance
-		const activeRundown = partForRundown && cache.getRundown(partForRundown.PartInstance.rundownId)
+		const activeRundown = partForRundown && playoutModel.getRundown(partForRundown.PartInstance.rundownId)
 
 		let timelineVersions: TimelineCompleteGenerationVersions | undefined
 		if (activeRundown) {
@@ -337,7 +340,7 @@ async function getTimelineRundown(
 			if (partInstancesInfo.next) {
 				// the nextPartInstance doesn't have accurate cached `calculatedTimings` yet, so calculate a prediction
 				partInstancesInfo.next.calculatedTimings = calculatePartTimings(
-					cache.Playlist.holdState,
+					playoutModel.Playlist.holdState,
 					partInstancesInfo.current?.partInstance?.part,
 					partInstancesInfo.current?.pieceInstances?.map?.((p) => p.piece),
 					partInstancesInfo.next.partInstance.part,
@@ -348,7 +351,7 @@ async function getTimelineRundown(
 			}
 
 			// next (on pvw (or on pgm if first))
-			const pLookaheadObjs = getLookeaheadObjects(context, cache, partInstancesInfo)
+			const pLookaheadObjs = getLookeaheadObjects(context, playoutModel, partInstancesInfo)
 			const rawBaselineItems = activeRundown.BaselineObjects
 			if (rawBaselineItems.length > 0) {
 				timelineObjs = timelineObjs.concat(transformBaselineItemsIntoTimeline(rawBaselineItems))
@@ -358,7 +361,7 @@ async function getTimelineRundown(
 
 			const rundownTimelineResult = buildTimelineObjsForRundown(
 				context,
-				cache,
+				playoutModel,
 				activeRundown.Rundown,
 				partInstancesInfo
 			)
@@ -384,7 +387,7 @@ async function getTimelineRundown(
 					context.getStudioBlueprintConfig(),
 					showStyle,
 					context.getShowStyleBlueprintConfig(showStyle),
-					cache.Playlist,
+					playoutModel.Playlist,
 					activeRundown.Rundown,
 					previousPartInstance?.PartInstance,
 					currentPartInstance?.PartInstance,
@@ -398,7 +401,7 @@ async function getTimelineRundown(
 						abHelper,
 						blueprint,
 						showStyle,
-						cache.Playlist,
+						playoutModel.Playlist,
 						resolvedPieces,
 						timelineObjs
 					)
@@ -410,7 +413,7 @@ async function getTimelineRundown(
 						tlGenRes = await blueprint.blueprint.onTimelineGenerate(
 							blueprintContext,
 							timelineObjs,
-							clone(cache.Playlist.previousPersistentState),
+							clone(playoutModel.Playlist.previousPersistentState),
 							clone(currentPartInstance?.PartInstance?.previousPartEndState),
 							resolvedPieces.map(convertResolvedPieceInstanceToBlueprints)
 						)
@@ -425,7 +428,7 @@ async function getTimelineRundown(
 						})
 					}
 
-					cache.setOnTimelineGenerateResult(
+					playoutModel.setOnTimelineGenerateResult(
 						tlGenRes?.persistentState,
 						newAbSessionsResult,
 						blueprintContext.abSessionsHelper.knownSessions

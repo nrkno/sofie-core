@@ -16,7 +16,7 @@ import { BlueprintResultRundownPlaylist, IBlueprintRundown } from '@sofie-automa
 import { JobContext } from './jobs'
 import { logger } from './logging'
 import { resetRundownPlaylist } from './playout/lib'
-import { runJobWithPlaylistLock, runWithPlaylistCache } from './playout/lock'
+import { runJobWithPlaylistLock, runWithPlayoutModel } from './playout/lock'
 import { updateTimeline } from './playout/timeline/generate'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { WrappedStudioBlueprint } from './blueprints/cache'
@@ -77,7 +77,7 @@ export async function handleRegenerateRundownPlaylist(
 			)
 		if (rundowns.length === 0) return []
 
-		await runWithPlaylistCache(context, playlist, playlistLock, null, async (cache) => {
+		await runWithPlayoutModel(context, playlist, playlistLock, null, async (cache) => {
 			await resetRundownPlaylist(context, cache)
 
 			if (cache.Playlist.activationId) {

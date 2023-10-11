@@ -1,6 +1,7 @@
 import {
 	PartId,
 	PartInstanceId,
+	PieceId,
 	PieceInstanceId,
 	RundownId,
 	RundownPlaylistActivationId,
@@ -17,7 +18,7 @@ import {
 import { ReadonlyDeep } from 'type-fest'
 import { StudioPlayoutModelBase, StudioPlayoutModelBaseReadonly } from '../../studio/StudioPlayoutModel'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
-import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
+import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
 import { PlaylistLock } from '../../jobs/lock'
 import { PlayoutRundownModel } from './PlayoutRundownModel'
 import { PlayoutSegmentModel } from './PlayoutSegmentModel'
@@ -26,8 +27,8 @@ import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/Perip
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { PlayoutPieceInstanceModel } from './PlayoutPieceInstanceModel'
 
-export type DeferredFunction = (cache: PlayoutModel) => void | Promise<void>
-export type DeferredAfterSaveFunction = (cache: PlayoutModelReadonly) => void | Promise<void>
+export type DeferredFunction = (playoutModel: PlayoutModel) => void | Promise<void>
+export type DeferredAfterSaveFunction = (playoutModel: PlayoutModelReadonly) => void | Promise<void>
 
 export interface PlayoutModelPreInit {
 	readonly PlaylistId: RundownPlaylistId
@@ -42,15 +43,12 @@ export interface PlayoutModelPreInit {
 }
 
 export interface PlayoutModelReadonly extends StudioPlayoutModelBaseReadonly {
-	readonly isPlayout: true
 	readonly PlaylistId: RundownPlaylistId
 
 	readonly PlaylistLock: PlaylistLock
 
 	get Playlist(): ReadonlyDeep<DBRundownPlaylist>
 	get Rundowns(): readonly PlayoutRundownModel[]
-
-	get HackDeletedPartInstanceIds(): PartInstanceId[]
 
 	get OlderPartInstances(): PlayoutPartInstanceModel[]
 	get PreviousPartInstance(): PlayoutPartInstanceModel | null
@@ -81,37 +79,37 @@ export interface PlayoutModelReadonly extends StudioPlayoutModelBaseReadonly {
 }
 
 export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBase, ICacheBase2 {
+	/**
+	 * Temporary hack for debug logging
+	 */
+	get HackDeletedPartInstanceIds(): PartInstanceId[]
+
+	activatePlaylist(rehearsal: boolean): RundownPlaylistActivationId
+
+	clearSelectedPartInstances(): void
+
+	createAdlibbedPartInstance(
+		part: Omit<DBPart, 'segmentId' | 'rundownId'>,
+		pieces: Omit<PieceInstancePiece, 'startPartId'>[],
+		fromAdlibId: PieceId | undefined,
+		infinitePieceInstances: PieceInstance[]
+	): PlayoutPartInstanceModel
+
 	createInstanceForPart(nextPart: ReadonlyDeep<DBPart>, pieceInstances: PieceInstance[]): PlayoutPartInstanceModel
-	insertAdlibbedPartInstance(part: Omit<DBPart, 'segmentId' | 'rundownId'>): PlayoutPartInstanceModel
-	insertScratchpadPartInstance(
+
+	createScratchpadPartInstance(
 		rundown: PlayoutRundownModel,
 		part: Omit<DBPart, 'segmentId' | 'rundownId'>
 	): PlayoutPartInstanceModel
 
-	/**
-	 * HACK: This allows for taking a copy of a `PartInstanceWithPieces` for use in `syncChangesToPartInstances`.
-	 * This lets us discard the changes if the blueprint call throws.
-	 * We should look at avoiding this messy/dangerous method, and find a better way to do this
-	 */
-	replacePartInstance(partInstance: PlayoutPartInstanceModel): void
-	/** @deprecated HACK */
-	removePartInstance(id: PartInstanceId): void
-
-	setHoldState(newState: RundownHoldState): void
-	setQueuedSegment(segment: PlayoutSegmentModel | null): void
-
 	cycleSelectedPartInstances(): void
-	setRundownStartedPlayback(rundownId: RundownId, timestamp: number): void
-	setPartInstanceAsNext(
-		partInstance: PlayoutPartInstanceModel | null,
-		setManually: boolean,
-		consumesQueuedSegmentId: boolean,
-		nextTimeOffset?: number
-	): void
 
-	clearSelectedPartInstances(): void
-	activatePlaylist(rehearsal: boolean): RundownPlaylistActivationId
 	deactivatePlaylist(): void
+
+	queuePartInstanceTimingEvent(partInstanceId: PartInstanceId): void
+
+	removeAllRehearsalPartInstances(): void
+
 	removeUntakenPartInstances(): void
 
 	/**
@@ -119,25 +117,31 @@ export interface PlayoutModel extends PlayoutModelReadonly, StudioPlayoutModelBa
 	 */
 	resetPlaylist(regenerateActivationId: boolean): void
 
+	setHoldState(newState: RundownHoldState): void
+
 	setOnTimelineGenerateResult(
 		persistentState: unknown | undefined,
 		assignedAbSessions: Record<string, ABSessionAssignments>,
 		trackedAbSessions: ABSessionInfo[]
 	): void
 
-	queuePartInstanceTimingEvent(partInstanceId: PartInstanceId): void
+	setPartInstanceAsNext(
+		partInstance: PlayoutPartInstanceModel | null,
+		setManually: boolean,
+		consumesQueuedSegmentId: boolean,
+		nextTimeOffset?: number
+	): void
+
+	setQueuedSegment(segment: PlayoutSegmentModel | null): void
+
+	setRundownStartedPlayback(rundownId: RundownId, timestamp: number): void
+
+	/** Lifecycle */
 
 	/** @deprecated */
 	deferBeforeSave(fcn: DeferredFunction): void
 	/** @deprecated */
 	deferAfterSave(fcn: DeferredAfterSaveFunction): void
-
-	/**
-	 * Assert that no changes should have been made to the cache, will throw an Error otherwise. This can be used in
-	 * place of `saveAllToDatabase()`, when the code controlling the cache expects no changes to have been made and any
-	 * changes made are an error and will cause issues.
-	 */
-	assertNoChanges(): void
 
 	saveAllToDatabase(): Promise<void>
 }

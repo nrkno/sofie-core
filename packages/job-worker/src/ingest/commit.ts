@@ -23,7 +23,7 @@ import { getRundown } from './lib'
 import { JobContext } from '../jobs'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { runJobWithPlaylistLock, runWithPlaylistCache } from '../playout/lock'
+import { runJobWithPlaylistLock, runWithPlayoutModel } from '../playout/lock'
 import { removeSegmentContents } from './cleanup'
 import { CommitIngestData } from './lock'
 import { groupByToMap, groupByToMapFunc, normalizeArrayToMap } from '@sofie-automation/corelib/dist/lib'
@@ -493,7 +493,7 @@ export async function updatePlayoutAfterChangingRundownInPlaylist(
 	insertedRundown: ReadonlyDeep<DBRundown> | null
 ): Promise<void> {
 	// ensure the 'old' playout is updated to remove any references to the rundown
-	await runWithPlaylistCache(context, playlist, playlistLock, null, async (playoutCache) => {
+	await runWithPlayoutModel(context, playlist, playlistLock, null, async (playoutCache) => {
 		if (playoutCache.Rundowns.length === 0) {
 			if (playoutCache.Playlist.activationId)
 				throw new Error(`RundownPlaylist "${playoutCache.PlaylistId}" has no contents but is active...`)
@@ -835,8 +835,8 @@ async function preserveUnsyncedPlayingSegmentContents(
 	}
 }
 
-async function validateScratchpad(_context: JobContext, cache: PlayoutModel) {
-	for (const rundown of cache.Rundowns) {
+async function validateScratchpad(_context: JobContext, playoutModel: PlayoutModel) {
+	for (const rundown of playoutModel.Rundowns) {
 		const scratchpadSegment = rundown.getScratchpadSegment()
 
 		if (scratchpadSegment) {

@@ -16,7 +16,7 @@ import { handleTakeNextPart } from '../take'
 import { handleActivateHold } from '../holdJobs'
 import { handleActivateRundownPlaylist, handleDeactivateRundownPlaylist } from '../activePlaylistJobs'
 import { fixSnapshot } from '../../__mocks__/helpers/snapshot'
-import { runJobWithPlayoutCache } from '../lock'
+import { runJobWithPlayoutModel } from '../lock'
 import { updateTimeline } from '../timeline/generate'
 import { getSelectedPartInstances, getSortedPartsForRundown } from './lib'
 import { PieceLifespan, IBlueprintPieceType, Time } from '@sofie-automation/blueprints-integration'
@@ -436,14 +436,14 @@ async function doDeactivatePlaylist(context: MockJobContext, playlistId: Rundown
 
 /** perform an update of the timeline */
 async function doUpdateTimeline(context: MockJobContext, playlistId: RundownPlaylistId, forceNowToTime?: Time) {
-	await runJobWithPlayoutCache(
+	await runJobWithPlayoutModel(
 		context,
 		{
 			playlistId: playlistId,
 		},
 		null,
-		async (cache) => {
-			await updateTimeline(context, cache, forceNowToTime)
+		async (playoutModel) => {
+			await updateTimeline(context, playoutModel, forceNowToTime)
 		}
 	)
 }
@@ -540,8 +540,8 @@ describe('Timeline', () => {
 			// })
 		}
 
-		await runJobWithPlayoutCache(context, { playlistId: playlistId0 }, null, async (cache) => {
-			await updateTimeline(context, cache)
+		await runJobWithPlayoutModel(context, { playlistId: playlistId0 }, null, async (playoutModel) => {
+			await updateTimeline(context, playoutModel)
 		})
 
 		expect(fixSnapshot(await context.directCollections.Timelines.findFetch())).toMatchSnapshot()
@@ -1131,14 +1131,23 @@ describe('Timeline', () => {
 
 	describe('Adlib pieces', () => {
 		async function doStartAdlibPiece(playlistId: RundownPlaylistId, adlibSource: AdLibPiece) {
-			await runJobWithPlayoutCache(context, { playlistId }, null, async (cache) => {
-				const currentPartInstance = cache.CurrentPartInstance as PlayoutPartInstanceModel
+			await runJobWithPlayoutModel(context, { playlistId }, null, async (playoutModel) => {
+				const currentPartInstance = playoutModel.CurrentPartInstance as PlayoutPartInstanceModel
 				expect(currentPartInstance).toBeTruthy()
 
-				const rundown = cache.getRundown(currentPartInstance.PartInstance.rundownId) as PlayoutRundownModel
+				const rundown = playoutModel.getRundown(
+					currentPartInstance.PartInstance.rundownId
+				) as PlayoutRundownModel
 				expect(rundown).toBeTruthy()
 
-				return innerStartOrQueueAdLibPiece(context, cache, rundown, false, currentPartInstance, adlibSource)
+				return innerStartOrQueueAdLibPiece(
+					context,
+					playoutModel,
+					rundown,
+					false,
+					currentPartInstance,
+					adlibSource
+				)
 			})
 		}
 

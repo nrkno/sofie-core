@@ -50,14 +50,14 @@ export interface RundownTimelineResult {
 
 export function buildTimelineObjsForRundown(
 	context: JobContext,
-	cache: PlayoutModel,
+	playoutModel: PlayoutModel,
 	_activeRundown: ReadonlyDeep<DBRundown>,
 	partInstancesInfo: SelectedPartInstancesTimelineInfo
 ): RundownTimelineResult {
 	const span = context.startSpan('buildTimelineObjsForRundown')
 	const timelineObjs: Array<TimelineObjRundown & OnGenerateTimelineObjExt> = []
 
-	const activePlaylist = cache.Playlist
+	const activePlaylist = playoutModel.Playlist
 	const currentTime = getCurrentTime()
 
 	timelineObjs.push(

@@ -8,7 +8,7 @@ import { runJobWithPlaylistLock } from '../lock'
 import { saveTimeline } from '../timeline/generate'
 import { applyToArray } from '@sofie-automation/corelib/dist/lib'
 import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
-import { runJobWithStudioCache } from '../../studio/lock'
+import { runJobWithStudioPlayoutModel } from '../../studio/lock'
 import { StudioPlayoutModel } from '../../studio/StudioPlayoutModel'
 import { DbCacheWriteCollection } from '../../cache/CacheCollection'
 import { PieceTimelineMetadata } from '../timeline/pieceGroup'
@@ -21,7 +21,7 @@ import { ReadonlyDeep } from 'type-fest'
  */
 export async function handleTimelineTriggerTime(context: JobContext, data: OnTimelineTriggerTimeProps): Promise<void> {
 	if (data.results.length > 0) {
-		await runJobWithStudioCache(context, async (studioCache) => {
+		await runJobWithStudioPlayoutModel(context, async (studioCache) => {
 			const activePlaylists = studioCache.getActiveRundownPlaylists()
 
 			if (studioCache.isMultiGatewayMode) {
@@ -68,7 +68,7 @@ export async function handleTimelineTriggerTime(context: JobContext, data: OnTim
 
 function timelineTriggerTimeInner(
 	context: JobContext,
-	cache: StudioPlayoutModel,
+	studioPlayoutModel: StudioPlayoutModel,
 	results: OnTimelineTriggerTimeProps['results'],
 	pieceInstanceCache: DbCacheWriteCollection<PieceInstance> | undefined,
 	activePlaylist: ReadonlyDeep<DBRundownPlaylist> | undefined
@@ -76,7 +76,7 @@ function timelineTriggerTimeInner(
 	let lastTakeTime: number | undefined
 
 	// ------------------------------
-	const timeline = cache.Timeline
+	const timeline = studioPlayoutModel.Timeline
 	if (timeline) {
 		const timelineObjs = deserializeTimelineBlob(timeline.timelineBlob)
 		let tlChanged = false
@@ -141,7 +141,7 @@ function timelineTriggerTimeInner(
 			}
 		}
 		if (tlChanged) {
-			saveTimeline(context, cache, timelineObjs, timeline.generationVersions)
+			saveTimeline(context, studioPlayoutModel, timelineObjs, timeline.generationVersions)
 		}
 	}
 }

@@ -7,7 +7,7 @@ import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { saveIntoDb } from '../../db/changes'
 import { ensureNextPartIsValid as ensureNextPartIsValidRaw } from '../updateNext'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
-import { runJobWithPlayoutCache } from '../../playout/lock'
+import { runJobWithPlayoutModel } from '../../playout/lock'
 
 jest.mock('../../playout/setNext')
 import { setNextPart } from '../../playout/setNext'
@@ -344,7 +344,7 @@ describe('ensureNextPartIsValid', () => {
 		})
 	}
 	async function ensureNextPartIsValid() {
-		await runJobWithPlayoutCache(context, { playlistId: rundownPlaylistId }, null, async (cache) =>
+		await runJobWithPlayoutModel(context, { playlistId: rundownPlaylistId }, null, async (cache) =>
 			ensureNextPartIsValidRaw(context, cache)
 		)
 	}

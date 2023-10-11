@@ -6,7 +6,7 @@ import { candidatePartIsAfterPreviewPartInstance } from '../infinites'
 import { setupDefaultRundownPlaylist, setupMockShowStyleCompound } from '../../__mocks__/presetCollections'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { runJobWithPlayoutCache } from '../lock'
+import { runJobWithPlayoutModel } from '../lock'
 import { wrapPartToTemporaryInstance } from '../../__mocks__/partinstance'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 
@@ -19,8 +19,11 @@ describe('canContinueAdlibOnEndInfinites', () => {
 		await setupMockShowStyleCompound(context)
 	})
 
-	async function wrapWithCache<T>(
-		fcn: (cache: PlayoutModel, playlist: SetRequired<ReadonlyDeep<DBRundownPlaylist>, 'activationId'>) => Promise<T>
+	async function wrapWithPlayoutModel<T>(
+		fcn: (
+			playoutModel: PlayoutModel,
+			playlist: SetRequired<ReadonlyDeep<DBRundownPlaylist>, 'activationId'>
+		) => Promise<T>
 	): Promise<T> {
 		const defaultSetup = await setupDefaultRundownPlaylist(context)
 
@@ -39,17 +42,17 @@ describe('canContinueAdlibOnEndInfinites', () => {
 		const rundown = (await context.mockCollections.Rundowns.findOne(defaultSetup.rundownId)) as DBRundown
 		expect(rundown).toBeTruthy()
 
-		return runJobWithPlayoutCache(context, { playlistId: tmpPlaylist._id }, null, async (cache) => {
-			const playlist = cache.Playlist as SetRequired<ReadonlyDeep<DBRundownPlaylist>, 'activationId'>
+		return runJobWithPlayoutModel(context, { playlistId: tmpPlaylist._id }, null, async (playoutModel) => {
+			const playlist = playoutModel.Playlist as SetRequired<ReadonlyDeep<DBRundownPlaylist>, 'activationId'>
 			if (!playlist.activationId) throw new Error('Missing activationId')
-			return fcn(cache, playlist)
+			return fcn(playoutModel, playlist)
 		})
 	}
 
 	test('Basic case', async () => {
-		await wrapWithCache(async (cache, playlist) => {
-			const orderedSegments = cache.getAllOrderedSegments()
-			const orderedParts = cache.getAllOrderedParts()
+		await wrapWithPlayoutModel(async (playoutModel, playlist) => {
+			const orderedSegments = playoutModel.getAllOrderedSegments()
+			const orderedParts = playoutModel.getAllOrderedParts()
 			expect(orderedParts.length).toBeGreaterThan(2)
 
 			// At beginning
@@ -95,9 +98,9 @@ describe('canContinueAdlibOnEndInfinites', () => {
 	})
 
 	test('No previousPartInstance', async () => {
-		await wrapWithCache(async (cache, _playlist) => {
-			const orderedSegments = cache.getAllOrderedSegments()
-			const orderedParts = cache.getAllOrderedParts()
+		await wrapWithPlayoutModel(async (playoutModel, _playlist) => {
+			const orderedSegments = playoutModel.getAllOrderedSegments()
+			const orderedParts = playoutModel.getAllOrderedParts()
 
 			expect(
 				candidatePartIsAfterPreviewPartInstance(context, orderedSegments, undefined, orderedParts[1])
@@ -106,9 +109,9 @@ describe('canContinueAdlibOnEndInfinites', () => {
 	})
 
 	test('Is before', async () => {
-		await wrapWithCache(async (cache, playlist) => {
-			const orderedSegments = cache.getAllOrderedSegments()
-			const orderedParts = cache.getAllOrderedParts()
+		await wrapWithPlayoutModel(async (playoutModel, playlist) => {
+			const orderedSegments = playoutModel.getAllOrderedSegments()
+			const orderedParts = playoutModel.getAllOrderedParts()
 			expect(orderedParts.length).toBeGreaterThan(2)
 
 			// At beginning
@@ -144,9 +147,9 @@ describe('canContinueAdlibOnEndInfinites', () => {
 	})
 
 	test('Orphaned PartInstance', async () => {
-		await wrapWithCache(async (cache, playlist) => {
-			const orderedSegments = cache.getAllOrderedSegments()
-			const orderedParts = cache.getAllOrderedParts()
+		await wrapWithPlayoutModel(async (playoutModel, playlist) => {
+			const orderedSegments = playoutModel.getAllOrderedSegments()
+			const orderedParts = playoutModel.getAllOrderedParts()
 			expect(orderedParts.length).toBeGreaterThan(2)
 
 			const candidatePart = {

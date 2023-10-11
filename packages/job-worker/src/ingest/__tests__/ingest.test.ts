@@ -40,9 +40,9 @@ import { handleActivateRundownPlaylist } from '../../playout/activePlaylistJobs'
 import { PartInstanceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { getSelectedPartInstances } from '../../playout/__tests__/lib'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { runJobWithPlayoutCache } from '../../playout/lock'
+import { runJobWithPlayoutModel } from '../../playout/lock'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
-import { innerStartQueuedAdLib } from '../../playout/adlibUtils'
+import { insertQueuedPartWithPieces } from '../../playout/adlibUtils'
 import { IngestJobs, RemoveOrphanedSegmentsProps } from '@sofie-automation/corelib/dist/worker/ingest'
 import { removeRundownPlaylistFromDb } from './lib'
 import { UserErrorMessage } from '@sofie-automation/corelib/dist/error'
@@ -1999,7 +1999,7 @@ describe('Test ingest actions for rundowns and segments', () => {
 			})
 
 			const doQueuePart = async (): Promise<PartInstanceId> =>
-				runJobWithPlayoutCache(
+				runJobWithPlayoutModel(
 					context,
 					{
 						playlistId: rundown.playlistId,
@@ -2012,16 +2012,22 @@ describe('Test ingest actions for rundowns and segments', () => {
 						const currentPartInstance = cache.CurrentPartInstance as PlayoutPartInstanceModel
 						expect(currentPartInstance).toBeTruthy()
 
-						const newPartInstance = cache.insertAdlibbedPartInstance({
-							_id: protectString(`after_${currentPartInstance.PartInstance._id}_part`),
-							_rank: 0,
-							externalId: `after_${currentPartInstance.PartInstance._id}_externalId`,
-							title: 'New part',
-							expectedDurationWithPreroll: undefined,
-						})
-
 						// Simulate a queued part
-						await innerStartQueuedAdLib(context, cache, rundown0, currentPartInstance, newPartInstance)
+						const newPartInstance = await insertQueuedPartWithPieces(
+							context,
+							cache,
+							rundown0,
+							currentPartInstance,
+							{
+								_id: protectString(`after_${currentPartInstance.PartInstance._id}_part`),
+								_rank: 0,
+								externalId: `after_${currentPartInstance.PartInstance._id}_externalId`,
+								title: 'New part',
+								expectedDurationWithPreroll: undefined,
+							},
+							[],
+							undefined
+						)
 
 						return newPartInstance.PartInstance._id
 					}

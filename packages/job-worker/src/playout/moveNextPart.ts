@@ -11,22 +11,22 @@ import { ReadonlyDeep } from 'type-fest'
 
 export async function moveNextPart(
 	context: JobContext,
-	cache: PlayoutModel,
+	playoutModel: PlayoutModel,
 	partDelta: number,
 	segmentDelta: number
 ): Promise<PartId | null> {
-	const playlist = cache.Playlist
+	const playlist = playoutModel.Playlist
 
-	const currentPartInstance = cache.CurrentPartInstance?.PartInstance
-	const nextPartInstance = cache.NextPartInstance?.PartInstance
+	const currentPartInstance = playoutModel.CurrentPartInstance?.PartInstance
+	const nextPartInstance = playoutModel.NextPartInstance?.PartInstance
 
 	const refPartInstance = nextPartInstance ?? currentPartInstance
 	const refPart = refPartInstance?.part
 	if (!refPart || !refPartInstance)
 		throw new Error(`RundownPlaylist "${playlist._id}" has no next and no current part!`)
 
-	const rawSegments = cache.getAllOrderedSegments()
-	const rawParts = cache.getAllOrderedParts()
+	const rawSegments = playoutModel.getAllOrderedSegments()
+	const rawParts = playoutModel.getAllOrderedParts()
 
 	if (segmentDelta) {
 		// Ignores horizontalDelta
@@ -69,7 +69,7 @@ export async function moveNextPart(
 		// TODO - looping playlists
 		if (selectedPart) {
 			// Switch to that part
-			await setNextPartFromPart(context, cache, selectedPart, true)
+			await setNextPartFromPart(context, playoutModel, selectedPart, true)
 			return selectedPart._id
 		} else {
 			// Nothing looked valid so do nothing
@@ -101,7 +101,7 @@ export async function moveNextPart(
 
 		if (targetPart) {
 			// Switch to that part
-			await setNextPartFromPart(context, cache, targetPart, true)
+			await setNextPartFromPart(context, playoutModel, targetPart, true)
 			return targetPart._id
 		} else {
 			// Nothing looked valid so do nothing

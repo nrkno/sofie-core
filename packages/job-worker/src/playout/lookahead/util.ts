@@ -37,7 +37,7 @@ export function isPieceInstance(piece: Piece | PieceInstance | PieceInstancePiec
  */
 export function getOrderedPartsAfterPlayhead(
 	context: JobContext,
-	cache: PlayoutModel,
+	playoutModel: PlayoutModel,
 	partCount: number
 ): ReadonlyDeep<DBPart>[] {
 	if (partCount <= 0) {
@@ -45,11 +45,11 @@ export function getOrderedPartsAfterPlayhead(
 	}
 	const span = context.startSpan('getOrderedPartsAfterPlayhead')
 
-	const playlist = cache.Playlist
-	const orderedSegments = cache.getAllOrderedSegments()
-	const orderedParts = cache.getAllOrderedParts()
-	const currentPartInstance = cache.CurrentPartInstance?.PartInstance
-	const nextPartInstance = cache.NextPartInstance?.PartInstance
+	const playlist = playoutModel.Playlist
+	const orderedSegments = playoutModel.getAllOrderedSegments()
+	const orderedParts = playoutModel.getAllOrderedParts()
+	const currentPartInstance = playoutModel.CurrentPartInstance?.PartInstance
+	const nextPartInstance = playoutModel.NextPartInstance?.PartInstance
 
 	// If the nextPartInstance consumes the
 	const alreadyConsumedQueuedSegmentId =

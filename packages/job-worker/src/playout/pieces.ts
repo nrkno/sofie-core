@@ -9,8 +9,6 @@ import _ = require('underscore')
 import { Piece } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { ReadonlyDeep } from 'type-fest'
-import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
-import { PlayoutPieceInstanceModel } from './model/PlayoutPieceInstanceModel'
 
 /**
  * Approximate compare Piece start times (for use in .sort())
@@ -108,16 +106,13 @@ export function convertPieceToAdLibPiece(context: JobContext, piece: PieceInstan
  * @param playlistActivationId ActivationId for the active current playlist
  * @param adLibPiece The piece or AdLibPiece to convert
  * @param partInstance The PartInstance the Adlibbed PieceInstance will belong to
- * @param queue Whether this is being queued as a new PartInstance, or adding to the already playing PartInstance
+ * @param isBeingQueued Whether this is being queued as a new PartInstance, or adding to the already playing PartInstance
  * @returns The PieceInstance that was constructed
  */
-export function convertAdLibToPieceInstance(
-	context: JobContext,
+export function convertAdLibToGenericPiece(
 	adLibPiece: AdLibPiece | Piece | BucketAdLib | PieceInstancePiece,
-	partInstance: PlayoutPartInstanceModel,
-	queue: boolean
-): PlayoutPieceInstanceModel {
-	const span = context.startSpan('convertAdLibToPieceInstance')
+	isBeingQueued: boolean
+): Omit<PieceInstancePiece, 'startPartId'> {
 	let duration: number | undefined = undefined
 	if ('expectedDuration' in adLibPiece && adLibPiece['expectedDuration']) {
 		duration = adLibPiece['expectedDuration']
@@ -126,22 +121,16 @@ export function convertAdLibToPieceInstance(
 	}
 
 	const newPieceId: PieceId = getRandomId()
-	const newPieceInstance = partInstance.insertAdlibbedPiece(
-		{
-			...(_.omit(adLibPiece, '_rank', 'expectedDuration', 'partId', 'rundownId') as PieceInstancePiece), // TODO - this could be typed stronger
-			_id: newPieceId,
-			// startPartId: partInstance.part._id,
-			pieceType: IBlueprintPieceType.Normal,
-			enable: {
-				start: queue ? 0 : 'now',
-				duration: !queue && adLibPiece.lifespan === PieceLifespan.WithinPart ? duration : undefined,
-			},
+	return {
+		...(_.omit(adLibPiece, '_rank', 'expectedDuration', 'partId', 'rundownId') as PieceInstancePiece), // TODO - this could be typed stronger
+		_id: newPieceId,
+		// startPartId: partInstance.part._id,
+		pieceType: IBlueprintPieceType.Normal,
+		enable: {
+			start: isBeingQueued ? 0 : 'now',
+			duration: !isBeingQueued && adLibPiece.lifespan === PieceLifespan.WithinPart ? duration : undefined,
 		},
-		adLibPiece._id
-	)
-
-	if (span) span.end()
-	return newPieceInstance
+	}
 }
 
 /**

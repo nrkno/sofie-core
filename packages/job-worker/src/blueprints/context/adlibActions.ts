@@ -39,7 +39,7 @@ import { PieceInstance } from '@sofie-automation/corelib/dist/dataModel/PieceIns
 import {
 	innerFindLastPieceOnLayer,
 	innerFindLastScriptedPieceOnLayer,
-	innerStartQueuedAdLib,
+	insertQueuedPartWithPieces,
 	innerStopPieces,
 } from '../../playout/adlibUtils'
 import {
@@ -54,7 +54,6 @@ import {
 	convertPieceToBlueprints,
 	convertResolvedPieceInstanceToBlueprints,
 	getMediaObjectDuration,
-	IBlueprintMutatablePartSampleKeys,
 	IBlueprintPieceObjectsSampleKeys,
 } from './lib'
 import { postProcessPieces, postProcessTimelineObjects } from '../postProcess'
@@ -122,7 +121,7 @@ export class DatastoreActionExecutionContext
 /** Actions */
 export class ActionExecutionContext extends ShowStyleUserContext implements IActionExecutionContext, IEventContext {
 	private readonly _context: JobContext
-	private readonly _cache: PlayoutModel
+	private readonly _playoutModel: PlayoutModel
 	private readonly rundown: PlayoutRundownModel
 
 	/** To be set by any mutation methods on this context. Indicates to core how extensive the changes are to the current partInstance */
@@ -135,7 +134,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	constructor(
 		contextInfo: UserContextInfo,
 		context: JobContext,
-		cache: PlayoutModel,
+		playoutModel: PlayoutModel,
 		showStyle: ReadonlyDeep<ProcessedShowStyleCompound>,
 		_showStyleBlueprintConfig: ProcessedShowStyleConfig,
 		rundown: PlayoutRundownModel,
@@ -143,7 +142,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	) {
 		super(contextInfo, context, showStyle, watchedPackages)
 		this._context = context
-		this._cache = cache
+		this._playoutModel = playoutModel
 		this.rundown = rundown
 		this.takeAfterExecute = false
 	}
@@ -151,9 +150,9 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	private _getPartInstance(part: 'current' | 'next'): PlayoutPartInstanceModel | null {
 		switch (part) {
 			case 'current':
-				return this._cache.CurrentPartInstance
+				return this._playoutModel.CurrentPartInstance
 			case 'next':
-				return this._cache.NextPartInstance
+				return this._playoutModel.NextPartInstance
 			default:
 				assertNever(part)
 				logger.warn(`Blueprint action requested unknown PartInstance "${part}"`)
@@ -201,15 +200,15 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			}
 		}
 
-		if (options?.excludeCurrentPart && this._cache.Playlist.currentPartInfo) {
-			query['partInstanceId'] = { $ne: this._cache.Playlist.currentPartInfo.partInstanceId }
+		if (options?.excludeCurrentPart && this._playoutModel.Playlist.currentPartInfo) {
+			query['partInstanceId'] = { $ne: this._playoutModel.Playlist.currentPartInfo.partInstanceId }
 		}
 
 		const sourceLayerId = Array.isArray(sourceLayerId0) ? sourceLayerId0 : [sourceLayerId0]
 
 		const lastPieceInstance = await innerFindLastPieceOnLayer(
 			this._context,
-			this._cache,
+			this._playoutModel,
 			sourceLayerId,
 			options?.originalOnly || false,
 			query
@@ -234,13 +233,18 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			}
 		}
 
-		if (options?.excludeCurrentPart && this._cache.CurrentPartInstance) {
-			query['startPartId'] = { $ne: this._cache.CurrentPartInstance.PartInstance.part._id }
+		if (options?.excludeCurrentPart && this._playoutModel.CurrentPartInstance) {
+			query['startPartId'] = { $ne: this._playoutModel.CurrentPartInstance.PartInstance.part._id }
 		}
 
 		const sourceLayerId = Array.isArray(sourceLayerId0) ? sourceLayerId0 : [sourceLayerId0]
 
-		const lastPiece = await innerFindLastScriptedPieceOnLayer(this._context, this._cache, sourceLayerId, query)
+		const lastPiece = await innerFindLastScriptedPieceOnLayer(
+			this._context,
+			this._playoutModel,
+			sourceLayerId,
+			query
+		)
 
 		return lastPiece && convertPieceToBlueprints(lastPiece)
 	}
@@ -252,13 +256,13 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('Cannot find PartInstance from invalid PieceInstance')
 		}
 
-		const cached = this._cache.getPartInstance(partInstanceId)
-		if (cached) {
-			return convertPartInstanceToBlueprints(cached.PartInstance)
+		const loadedPartInstanceModel = this._playoutModel.getPartInstance(partInstanceId)
+		if (loadedPartInstanceModel) {
+			return convertPartInstanceToBlueprints(loadedPartInstanceModel.PartInstance)
 		}
 
-		// It might be reset and so not in the cache
-		const rundownIds = this._cache.getRundownIds()
+		// It might be reset and so not in the loaded model
+		const rundownIds = this._playoutModel.getRundownIds()
 		const oldInstance = await this._context.directCollections.PartInstances.findOne({
 			_id: partInstanceId,
 			rundownId: { $in: rundownIds },
@@ -277,11 +281,11 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 
 		const pieceDB = await this._context.directCollections.Pieces.findOne({
 			_id: protectString(piece._id),
-			startRundownId: { $in: this._cache.getRundownIds() },
+			startRundownId: { $in: this._playoutModel.getRundownIds() },
 		})
 		if (!pieceDB) throw new Error(`Cannot find Piece ${piece._id}`)
 
-		const rundown = this._cache.getRundown(pieceDB.startRundownId)
+		const rundown = this._playoutModel.getRundown(pieceDB.startRundownId)
 		const segment = rundown?.getSegment(pieceDB.startSegmentId)
 		const part = segment?.getPart(pieceDB.startPartId)
 		return part ? convertPartToBlueprints(part) : undefined
@@ -293,7 +297,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('Cannot insert piece when no active part')
 		}
 
-		const rundown = this._cache.getRundown(partInstance.PartInstance.rundownId)
+		const rundown = this._playoutModel.getRundown(partInstance.PartInstance.rundownId)
 		if (!rundown) {
 			throw new Error('Failed to find rundown of partInstance')
 		}
@@ -332,7 +336,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('Some valid properties must be defined')
 		}
 
-		const foundPieceInstance = this._cache.findPieceInstance(protectString(pieceInstanceId))
+		const foundPieceInstance = this._playoutModel.findPieceInstance(protectString(pieceInstanceId))
 		if (!foundPieceInstance) {
 			throw new Error('PieceInstance could not be found')
 		}
@@ -344,11 +348,11 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		}
 
 		const updatesCurrentPart: ActionPartChange =
-			pieceInstance.PieceInstance.partInstanceId === this._cache.Playlist.currentPartInfo?.partInstanceId
+			pieceInstance.PieceInstance.partInstanceId === this._playoutModel.Playlist.currentPartInfo?.partInstanceId
 				? ActionPartChange.SAFE_CHANGE
 				: ActionPartChange.NONE
 		const updatesNextPart: ActionPartChange =
-			pieceInstance.PieceInstance.partInstanceId === this._cache.Playlist.nextPartInfo?.partInstanceId
+			pieceInstance.PieceInstance.partInstanceId === this._playoutModel.Playlist.nextPartInfo?.partInstanceId
 				? ActionPartChange.SAFE_CHANGE
 				: ActionPartChange.NONE
 		if (!updatesCurrentPart && !updatesNextPart) {
@@ -379,7 +383,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		return convertPieceInstanceToBlueprints(pieceInstance.PieceInstance)
 	}
 	async queuePart(rawPart: IBlueprintPart, rawPieces: IBlueprintPiece[]): Promise<IBlueprintPartInstance> {
-		const currentPartInstance = this._cache.CurrentPartInstance
+		const currentPartInstance = this._playoutModel.CurrentPartInstance
 		if (!currentPartInstance) {
 			throw new Error('Cannot queue part when no current partInstance')
 		}
@@ -424,13 +428,16 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 			throw new Error('Cannot queue a part which is not playable')
 		}
 
-		const newPartInstance = this._cache.insertAdlibbedPartInstance(newPart)
-		for (const piece of pieces) {
-			newPartInstance.insertAdlibbedPiece(piece, undefined)
-		}
-
 		// Do the work
-		await innerStartQueuedAdLib(this._context, this._cache, this.rundown, currentPartInstance, newPartInstance)
+		const newPartInstance = await insertQueuedPartWithPieces(
+			this._context,
+			this._playoutModel,
+			this.rundown,
+			currentPartInstance,
+			newPart,
+			pieces,
+			undefined
+		)
 
 		this.nextPartState = ActionPartChange.SAFE_CHANGE
 		this.queuedPartInstanceId = newPartInstance.PartInstance._id
@@ -438,24 +445,20 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		return convertPartInstanceToBlueprints(newPartInstance.PartInstance)
 	}
 	async moveNextPart(partDelta: number, segmentDelta: number): Promise<void> {
-		await moveNextPart(this._context, this._cache, partDelta, segmentDelta)
+		await moveNextPart(this._context, this._playoutModel, partDelta, segmentDelta)
 	}
 	async updatePartInstance(
 		part: 'current' | 'next',
 		props: Partial<IBlueprintMutatablePart>
 	): Promise<IBlueprintPartInstance> {
-		// filter the submission to the allowed ones
-		const trimmedProps: Partial<IBlueprintMutatablePart> = _.pick(props, IBlueprintMutatablePartSampleKeys)
-		if (Object.keys(trimmedProps).length === 0) {
-			throw new Error('Some valid properties must be defined')
-		}
-
 		const partInstance = this._getPartInstance(part)
 		if (!partInstance) {
 			throw new Error('PartInstance could not be found')
 		}
 
-		partInstance.updatePartProps(trimmedProps)
+		if (!partInstance.updatePartProps(props)) {
+			throw new Error('Some valid properties must be defined')
+		}
 
 		this.nextPartState = Math.max(
 			this.nextPartState,
@@ -520,7 +523,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		if (time !== null && (time < getCurrentTime() || typeof time !== 'number'))
 			throw new Error('Cannot block taking out of the current part, to a time in the past')
 
-		const partInstance = this._cache.CurrentPartInstance
+		const partInstance = this._playoutModel.CurrentPartInstance
 		if (!partInstance) {
 			throw new Error('Cannot block take when there is no part playing')
 		}
@@ -532,17 +535,17 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		filter: (pieceInstance: ReadonlyDeep<PieceInstance>) => boolean,
 		timeOffset: number | undefined
 	) {
-		if (!this._cache.Playlist.currentPartInfo) {
+		if (!this._playoutModel.Playlist.currentPartInfo) {
 			return []
 		}
-		const partInstance = this._cache.CurrentPartInstance
+		const partInstance = this._playoutModel.CurrentPartInstance
 		if (!partInstance) {
 			throw new Error('Cannot stop pieceInstances when no current partInstance')
 		}
 
 		const stoppedIds = innerStopPieces(
 			this._context,
-			this._cache,
+			this._playoutModel,
 			this.showStyleCompound.sourceLayers,
 			partInstance,
 			filter,
@@ -561,7 +564,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 	}
 
 	async listPlayoutDevices(): Promise<IBlueprintPlayoutDevice[]> {
-		return listPlayoutDevices(this._context, this._cache)
+		return listPlayoutDevices(this._context, this._playoutModel)
 	}
 
 	async executeTSRAction(
@@ -577,7 +580,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		const id = protectString(`${studioId}_${key}`)
 		const collection = this._context.directCollections.TimelineDatastores
 
-		this._cache.deferAfterSave(async () => {
+		this._playoutModel.deferAfterSave(async () => {
 			await collection.replace({
 				_id: id,
 				studioId: studioId,
@@ -596,7 +599,7 @@ export class ActionExecutionContext extends ShowStyleUserContext implements IAct
 		const id = getDatastoreId(studioId, key)
 		const collection = this._context.directCollections.TimelineDatastores
 
-		this._cache.deferAfterSave(async () => {
+		this._playoutModel.deferAfterSave(async () => {
 			await collection.remove({ _id: id })
 		})
 	}

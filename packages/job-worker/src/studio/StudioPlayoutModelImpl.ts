@@ -16,7 +16,7 @@ import { logger } from '../logging'
 import { StudioPlayoutModel, DeferredAfterSaveFunction } from './StudioPlayoutModel'
 
 /**
- * This is a cache used for studio operations.
+ * This is a model used for studio operations.
  */
 
 export class StudioPlayoutModelImpl implements StudioPlayoutModel {

@@ -10,8 +10,8 @@ export function getDatastoreId(studioId: StudioId, key: string): TimelineDatasto
 }
 
 /** Remove documents in the TimelineDatastore collection where mode is temporary and has no references from the timeline */
-export async function cleanTimelineDatastore(context: JobContext, cache: PlayoutModel): Promise<void> {
-	const timeline = cache.Timeline
+export async function cleanTimelineDatastore(context: JobContext, playoutModel: PlayoutModel): Promise<void> {
+	const timeline = playoutModel.Timeline
 
 	if (!timeline) {
 		return

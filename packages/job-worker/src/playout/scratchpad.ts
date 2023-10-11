@@ -4,7 +4,7 @@ import { getRandomId } from '@sofie-automation/corelib/dist/lib'
 import { ActivateScratchpadProps } from '@sofie-automation/corelib/dist/worker/studio'
 import { getCurrentTime } from '../lib'
 import { JobContext } from '../jobs'
-import { runJobWithPlayoutCache } from './lock'
+import { runJobWithPlayoutModel } from './lock'
 import { performTakeToNextedPart } from './take'
 import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PlayoutModel } from './model/PlayoutModel'
@@ -12,27 +12,27 @@ import { PlayoutModel } from './model/PlayoutModel'
 export async function handleActivateScratchpad(context: JobContext, data: ActivateScratchpadProps): Promise<void> {
 	if (!context.studio.settings.allowScratchpad) throw UserError.create(UserErrorMessage.ScratchpadNotAllowed)
 
-	return runJobWithPlayoutCache(
+	return runJobWithPlayoutModel(
 		context,
 		data,
-		async (cache) => {
-			const playlist = cache.Playlist
+		async (playoutModel) => {
+			const playlist = playoutModel.Playlist
 			if (!playlist.activationId) throw UserError.create(UserErrorMessage.InactiveRundown)
 
 			if (playlist.currentPartInfo) throw UserError.create(UserErrorMessage.RundownAlreadyActive)
 		},
-		async (cache) => {
-			const playlist = cache.Playlist
+		async (playoutModel) => {
+			const playlist = playoutModel.Playlist
 			if (!playlist.activationId) throw new Error(`Playlist has no activationId!`)
 
-			const rundown = cache.getRundown(data.rundownId)
+			const rundown = playoutModel.getRundown(data.rundownId)
 			if (!rundown) throw new Error(`Rundown "${data.rundownId}" not found!`)
 
 			// Create the segment
 			rundown.insertScratchpadSegment()
 
 			// Create the first PartInstance for the segment
-			const newPartInstance = cache.insertScratchpadPartInstance(rundown, {
+			const newPartInstance = playoutModel.createScratchpadPartInstance(rundown, {
 				_id: getRandomId(),
 				_rank: 0,
 				externalId: '',
@@ -43,10 +43,10 @@ export async function handleActivateScratchpad(context: JobContext, data: Activa
 			})
 
 			// Set the part as next
-			cache.setPartInstanceAsNext(newPartInstance, true, false)
+			playoutModel.setPartInstanceAsNext(newPartInstance, true, false)
 
 			// Take into the newly created Part
-			await performTakeToNextedPart(context, cache, getCurrentTime())
+			await performTakeToNextedPart(context, playoutModel, getCurrentTime())
 		}
 	)
 }
@@ -57,13 +57,13 @@ export async function handleActivateScratchpad(context: JobContext, data: Activa
  */
 export function validateScratchpartPartInstanceProperties(
 	_context: JobContext,
-	cache: PlayoutModel,
+	playoutModel: PlayoutModel,
 	partInstanceId: PartInstanceId
 ): void {
-	const partInstance = cache.getPartInstance(partInstanceId)
+	const partInstance = playoutModel.getPartInstance(partInstanceId)
 	if (!partInstance) return
 
-	const rundown = cache.getRundown(partInstance.PartInstance.rundownId)
+	const rundown = playoutModel.getRundown(partInstance.PartInstance.rundownId)
 	if (!rundown)
 		throw new Error(
 			`Failed to find Rundown "${partInstance.PartInstance.rundownId}" for PartInstance "${partInstance.PartInstance._id}"`

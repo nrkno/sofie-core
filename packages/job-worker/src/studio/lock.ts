@@ -4,22 +4,22 @@ import { loadStudioPlayoutModel } from './StudioPlayoutModelImpl'
 
 /**
  * Run a typical studio job
- * This means loading the studio cache, doing some calculations and saving the result
+ * This means loading the studioPlayoutModel, doing some calculations and saving the result
  */
-export async function runJobWithStudioCache<TRes>(
+export async function runJobWithStudioPlayoutModel<TRes>(
 	context: JobContext,
-	fcn: (cache: StudioPlayoutModel) => Promise<TRes>
+	fcn: (studioPlayoutModel: StudioPlayoutModel) => Promise<TRes>
 ): Promise<TRes> {
-	const cache = await loadStudioPlayoutModel(context)
+	const studioPlayoutModel = await loadStudioPlayoutModel(context)
 
 	try {
-		const res = await fcn(cache)
+		const res = await fcn(studioPlayoutModel)
 
-		await cache.saveAllToDatabase()
+		await studioPlayoutModel.saveAllToDatabase()
 
 		return res
 	} catch (err) {
-		cache.dispose()
+		studioPlayoutModel.dispose()
 		throw err
 	}
 }
