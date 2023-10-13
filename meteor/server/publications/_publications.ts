@@ -1,6 +1,7 @@
 import './lib'
 
 import './buckets'
+import './blueprintUpgradeStatus/publication'
 import './packageManager/expectedPackages/publication'
 import './packageManager/packageContainers'
 import './packageManager/playoutContext'

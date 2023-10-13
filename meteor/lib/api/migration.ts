@@ -1,6 +1,5 @@
 import { MigrationStepInput, MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
 import { BlueprintId, ShowStyleBaseId, SnapshotId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
 
 export interface NewMigrationAPI {
@@ -13,11 +12,6 @@ export interface NewMigrationAPI {
 	): Promise<RunMigrationResult>
 	forceMigration(chunks: Array<MigrationChunk>): Promise<void>
 	resetDatabaseVersions(): Promise<void>
-
-	/**
-	 * Get the status information for each Studio and ShowStyle on their blueprintConfig upgrade status
-	 */
-	getUpgradeStatus(): Promise<GetUpgradeStatusResult>
 
 	/**
 	 * Run `validateConfig` on the blueprint for a Studio
@@ -57,28 +51,6 @@ export enum MigrationAPIMethods {
 	'runUpgradeForStudio' = 'migration.runUpgradeForStudio',
 	'validateConfigForShowStyleBase' = 'migration.validateConfigForShowStyleBase',
 	'runUpgradeForShowStyleBase' = 'migration.runUpgradeForShowStyleBase',
-}
-
-export interface GetUpgradeStatusResultStudio {
-	studioId: StudioId
-	name: string
-
-	invalidReason?: ITranslatableMessage
-
-	changes: ITranslatableMessage[]
-}
-export interface GetUpgradeStatusResultShowStyleBase {
-	showStyleBaseId: ShowStyleBaseId
-	name: string
-
-	invalidReason?: ITranslatableMessage
-
-	changes: ITranslatableMessage[]
-}
-
-export interface GetUpgradeStatusResult {
-	studios: GetUpgradeStatusResultStudio[]
-	showStyleBases: GetUpgradeStatusResultShowStyleBase[]
 }
 
 export interface GetMigrationStatusResult {

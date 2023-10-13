@@ -63,6 +63,7 @@ import {
 import { MongoQuery } from '@sofie-automation/corelib/dist/mongo'
 import { RoutedMappings } from '@sofie-automation/shared-lib/dist/core/model/Timeline'
 import { logger } from '../logging'
+import { UIBlueprintUpgradeStatus } from './upgradeStatus'
 
 /**
  * Ids of possible DDP subscriptions
@@ -139,6 +140,7 @@ export enum PubSub {
 	uiSegmentPartNotes = 'uiSegmentPartNotes',
 	uiPieceContentStatuses = 'uiPieceContentStatuses',
 	uiBucketContentStatuses = 'uiBucketContentStatuses',
+	uiBlueprintUpgradeStatuses = 'uiBlueprintUpgradeStatuses',
 
 	packageManagerPlayoutContext = 'packageManagerPlayoutContext',
 	packageManagerPackageContainers = 'packageManagerPackageContainers',
@@ -250,6 +252,7 @@ export interface PubSubTypes {
 	[PubSub.uiSegmentPartNotes]: (playlistId: RundownPlaylistId | null) => UISegmentPartNote
 	[PubSub.uiPieceContentStatuses]: (rundownPlaylistId: RundownPlaylistId | null) => UIPieceContentStatus
 	[PubSub.uiBucketContentStatuses]: (studioId: StudioId, bucketId: BucketId) => UIBucketContentStatus
+	[PubSub.uiBlueprintUpgradeStatuses]: () => UIBlueprintUpgradeStatus
 
 	/** Custom publications for package-manager */
 	[PubSub.packageManagerPlayoutContext]: (
@@ -283,6 +286,7 @@ export enum CustomCollectionName {
 	UISegmentPartNotes = 'uiSegmentPartNotes',
 	UIPieceContentStatuses = 'uiPieceContentStatuses',
 	UIBucketContentStatuses = 'uiBucketContentStatuses',
+	UIBlueprintUpgradeStatuses = 'uiBlueprintUpgradeStatuses',
 
 	PackageManagerPlayoutContext = 'packageManagerPlayoutContext',
 	PackageManagerPackageContainers = 'packageManagerPackageContainers',
@@ -306,6 +310,7 @@ export type CustomCollectionType = {
 	[CustomCollectionName.UISegmentPartNotes]: UISegmentPartNote
 	[CustomCollectionName.UIPieceContentStatuses]: UIPieceContentStatus
 	[CustomCollectionName.UIBucketContentStatuses]: UIBucketContentStatus
+	[CustomCollectionName.UIBlueprintUpgradeStatuses]: UIBlueprintUpgradeStatus
 	[CustomCollectionName.PackageManagerPlayoutContext]: PackageManagerPlayoutContext
 	[CustomCollectionName.PackageManagerPackageContainers]: PackageManagerPackageContainers
 	[CustomCollectionName.PackageManagerExpectedPackages]: PackageManagerExpectedPackage
