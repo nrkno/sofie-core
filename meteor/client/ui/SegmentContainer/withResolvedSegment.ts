@@ -367,9 +367,9 @@ export function withResolvedSegment<T extends IProps, IState = {}>(
 			// Check rundown changes that are important to the segment
 			if (
 				typeof props.playlist !== typeof nextProps.playlist ||
-				(props.playlist.nextSegmentId !== nextProps.playlist.nextSegmentId &&
-					(props.playlist.nextSegmentId === props.segmentId ||
-						nextProps.playlist.nextSegmentId === props.segmentId)) ||
+				(props.playlist.queuedSegmentId !== nextProps.playlist.queuedSegmentId &&
+					(props.playlist.queuedSegmentId === props.segmentId ||
+						nextProps.playlist.queuedSegmentId === props.segmentId)) ||
 				((props.playlist.currentPartInfo?.partInstanceId !==
 					nextProps.playlist.currentPartInfo?.partInstanceId ||
 					props.playlist.nextPartInfo?.partInstanceId !== nextProps.playlist.nextPartInfo?.partInstanceId) &&

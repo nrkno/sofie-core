@@ -10,7 +10,7 @@ System documentation can be found here: [Sofie system documentation](https://nrk
 
 ## Gettings started, local development
 
-Follow these instructions to start up Sofie Core in development mode. (For production deploys, see [System documentation](https://sofie.gitbook.io/sofie-tv-automation/documentation/installation).)
+Follow these instructions to start up Sofie Core in development mode. (For production deploys, see [System documentation](https://nrkno.github.io/sofie-core/docs/user-guide/installation/intro).)
 
 ### Prerequisites
 

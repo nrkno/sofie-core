@@ -3,6 +3,7 @@ import { Time } from '../lib'
 import { UserError } from '@sofie-automation/corelib/dist/error'
 import { NoticeLevel } from '../notifications/notifications'
 import { PeripheralDeviceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { TSR } from '@sofie-automation/blueprints-integration'
 
 export interface NewClientAPI {
 	clientErrorReport(timestamp: Time, errorString: string, location: string): Promise<void>
@@ -26,7 +27,7 @@ export interface NewClientAPI {
 		timeoutTime: number | undefined,
 		actionId: string,
 		payload?: Record<string, any>
-	): Promise<any>
+	): Promise<TSR.ActionExecutionResult>
 	callBackgroundPeripheralDeviceFunction(
 		deviceId: PeripheralDeviceId,
 		timeoutTime: number | undefined,

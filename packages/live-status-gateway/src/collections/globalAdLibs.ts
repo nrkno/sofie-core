@@ -42,7 +42,8 @@ export class GlobalAdLibsHandler
 	async update(source: string, data: Map<PartInstanceName, DBPartInstance | undefined> | undefined): Promise<void> {
 		this._logger.info(`${this._name} received globalAdLibs update from ${source}`)
 		const prevRundownId = this._curRundownId
-		this._curRundownId = data ? unprotectString(data.get(PartInstanceName.current)?.rundownId) : undefined
+		const partInstance = data ? data.get(PartInstanceName.current) ?? data.get(PartInstanceName.next) : undefined
+		this._curRundownId = partInstance ? unprotectString(partInstance.rundownId) : undefined
 
 		await new Promise(process.nextTick.bind(this))
 		if (!this._collectionName) return

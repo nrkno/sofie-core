@@ -48,6 +48,8 @@ function userActionToLabel(userAction: UserAction, t: i18next.TFunction) {
 			return t('Setting Next')
 		case UserAction.SET_NEXT_SEGMENT:
 			return t('Setting Next Segment')
+		case UserAction.QUEUE_NEXT_SEGMENT:
+			return t('Queueing next Segment')
 		case UserAction.TAKE_PIECE:
 			return t('Taking Piece')
 		case UserAction.UNSYNC_RUNDOWN:
@@ -265,7 +267,10 @@ export function eventContextForLog(e: any): [string, Time] {
 		str = e.type
 	}
 	if (!str) {
-		logger.error('Unknown event', e)
+		logger.error(
+			'Could not create context in eventContextForLog, because provided event had no identifiable type',
+			e
+		)
 		str = 'N/A'
 	}
 

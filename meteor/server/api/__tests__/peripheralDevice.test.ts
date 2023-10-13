@@ -234,12 +234,30 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('ping', async () => {
+		jest.useFakeTimers()
+		const EPOCH = 10000
+		jest.setSystemTime(EPOCH)
+
+		// reset the lastSeen property so that this test is predictable, and not time-dependant
+		await PeripheralDevices.updateAsync(device._id, {
+			$set: {
+				lastSeen: EPOCH,
+			},
+		})
+
 		expect(await PeripheralDevices.findOneAsync(device._id)).toBeTruthy()
 		const lastSeen = ((await PeripheralDevices.findOneAsync(device._id)) as PeripheralDevice).lastSeen
+
+		await jest.advanceTimersByTimeAsync(1200)
+
 		await MeteorCall.peripheralDevice.ping(device._id, device.token)
-		expect(((await PeripheralDevices.findOneAsync(device._id)) as PeripheralDevice).lastSeen).toBeGreaterThan(
-			lastSeen
-		)
+		await waitUntil(async () => {
+			expect(((await PeripheralDevices.findOneAsync(device._id)) as PeripheralDevice).lastSeen).toBeGreaterThan(
+				lastSeen
+			)
+		}, 1000)
+
+		jest.useRealTimers()
 	})
 
 	testInFiber('determineDiffTime', async () => {
@@ -270,32 +288,46 @@ describe('test peripheralDevice general API methods', () => {
 	})
 
 	testInFiber('pingWithCommand and functionReply', async () => {
+		jest.useFakeTimers()
+		const EPOCH = 10000
+		jest.setSystemTime(EPOCH)
 		if (DEBUG) setLogLevel(LogLevel.DEBUG)
+
+		// reset the lastSeen property so that this test is predictable, and not time-dependant
+		await PeripheralDevices.updateAsync(device._id, {
+			$set: {
+				lastSeen: EPOCH,
+			},
+		})
 
 		let resultErr = undefined
 		let resultMessage = undefined
-		const pingCompleted = (err: any, msg: any) => {
+		const pingCompleted = jest.fn((err: any, msg: any) => {
 			resultErr = err
 			resultMessage = msg
-		}
+		})
 
 		// This is very odd. Ping command is sent and lastSeen updated before response
 		const device2 = (await PeripheralDevices.findOneAsync(device._id)) as PeripheralDevice
 		expect(device2).toBeTruthy()
-		// Decrease lastSeen to ensure that the call below updates it
-		const lastSeen = device2.lastSeen - 100
-		await PeripheralDevices.updateAsync(device._id, { $set: { lastSeen: lastSeen } })
+		const lastSeen = device2.lastSeen
 
-		const message = 'Waving!'
+		jest.advanceTimersByTime(1200)
+
 		// Note: the null is so that Metor doesnt try to use pingCompleted  as a callback instead of blocking
+		const message = 'Waving!'
 		await MeteorCall.peripheralDevice.pingWithCommand(device._id, device.token, message, pingCompleted)
-		expect(((await PeripheralDevices.findOneAsync(device._id)) as PeripheralDevice).lastSeen).toBeGreaterThan(
-			lastSeen
-		)
-		const command = (await PeripheralDeviceCommands.findOneAsync({
-			deviceId: device._id,
-		})) as PeripheralDeviceCommand
-		expect(command).toBeTruthy()
+
+		let command: PeripheralDeviceCommand | undefined
+		await waitUntil(async () => {
+			jest.runAllTicks()
+			command = await PeripheralDeviceCommands.findOneAsync({
+				deviceId: device._id,
+			})
+			expect(command).toBeTruthy()
+		}, 1000)
+
+		if (command === undefined) throw new Error('Command must be defined')
 		expect(command.hasReply).toBeFalsy()
 		expect(command.functionName).toBe('pingResponse')
 		expect(command.args).toEqual([message])
@@ -313,13 +345,23 @@ describe('test peripheralDevice general API methods', () => {
 			replyMessage
 		)
 
+		jest.advanceTimersByTime(1200)
+
 		expect(await PeripheralDeviceCommands.findOneAsync({})).toBeTruthy()
 		await waitUntil(async () => {
 			expect(await PeripheralDeviceCommands.findOneAsync({})).toBeFalsy()
 		}, 100)
 
+		await waitUntil(async () => {
+			jest.runAllTicks()
+			expect(((await PeripheralDevices.findOneAsync(device._id)) as PeripheralDevice).lastSeen).toBeGreaterThan(
+				lastSeen
+			)
+		}, 1000)
+
 		expect(resultErr).toBeNull()
 		expect(resultMessage).toEqual(replyMessage)
+		jest.useRealTimers()
 	})
 
 	testInFiber('playoutPlaybackChanged', async () => {

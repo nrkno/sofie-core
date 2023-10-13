@@ -345,7 +345,7 @@ describe('client/lib/rundown', () => {
 							partInstanceId: mockCurrentPartInstance._id,
 							rundownId: mockCurrentPartInstance.rundownId,
 							manuallySelected: false,
-							consumesNextSegmentId: false,
+							consumesQueuedSegmentId: false,
 						},
 					},
 				})

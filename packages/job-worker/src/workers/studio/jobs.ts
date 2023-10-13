@@ -8,7 +8,12 @@ import {
 } from '../../playout/adlibJobs'
 import { StudioJobs, StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
 import { handleUpdateTimelineAfterIngest, handleUpdateStudioBaseline } from '../../playout/timelineJobs'
-import { handleMoveNextPart, handleSetNextPart, handleSetNextSegment } from '../../playout/setNextJobs'
+import {
+	handleMoveNextPart,
+	handleSetNextPart,
+	handleSetNextSegment,
+	handleQueueNextSegment,
+} from '../../playout/setNextJobs'
 import {
 	handleActivateRundownPlaylist,
 	handleDeactivateRundownPlaylist,
@@ -67,6 +72,7 @@ export const studioJobHandlers: StudioJobHandlers = {
 	[StudioJobs.DeactivateRundownPlaylist]: handleDeactivateRundownPlaylist,
 	[StudioJobs.SetNextPart]: handleSetNextPart,
 	[StudioJobs.SetNextSegment]: handleSetNextSegment,
+	[StudioJobs.QueueNextSegment]: handleQueueNextSegment,
 	[StudioJobs.ExecuteAction]: handleExecuteAdlibAction,
 	[StudioJobs.TakeNextPart]: handleTakeNextPart,
 	[StudioJobs.DisableNextPiece]: handleDisableNextPiece,

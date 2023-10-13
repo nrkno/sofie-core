@@ -299,24 +299,16 @@ export namespace ServerClientAPI {
 		}
 	}
 
-	export async function callPeripheralDeviceFunctionOrAction(
+	export async function callPeripheralDeviceFunctionOrAction<T>(
 		methodContext: MethodContext,
 		context: string,
 		deviceId: PeripheralDeviceId,
-		timeoutTime: number | undefined,
-		action: {
-			functionName?: string
-			args?: Array<any>
-			actionId?: string
-			payload?: Record<string, any>
-		}
-	): Promise<any> {
+		makeCall: () => Promise<T>,
+		method: string,
+		args: unknown
+	): Promise<T> {
 		check(deviceId, String)
 		check(context, String)
-
-		if (!action.functionName && !action.actionId) {
-			throw new Error('Either functionName or actionId should be specified')
-		}
 
 		const actionId: UserActionsLogItemId = getRandomId()
 		const startTime = Date.now()
@@ -325,7 +317,7 @@ export namespace ServerClientAPI {
 			// In this case, it was called internally from server-side.
 			// Just run and return right away:
 			triggerWriteAccessBecauseNoCheckNecessary()
-			return executePeripheralDeviceFunctionWithCustomTimeout(deviceId, timeoutTime, action).catch(async (e) => {
+			return makeCall().catch(async (e) => {
 				logger.error(stringifyError(e))
 				// allow the exception to be handled by the Client code
 				return Promise.reject(e)
@@ -341,13 +333,13 @@ export namespace ServerClientAPI {
 				organizationId: access.organizationId,
 				userId: access.userId,
 				context: context,
-				method: `${deviceId}: ${action.functionName || action.actionId}`,
-				args: JSON.stringify(action.args || action.payload),
+				method: `${deviceId}: ${method}`,
+				args: JSON.stringify(args),
 				timestamp: getCurrentTime(),
 			})
 		)
 
-		return executePeripheralDeviceFunctionWithCustomTimeout(deviceId, timeoutTime, action)
+		return makeCall()
 			.then(async (result) => {
 				await UserActionsLog.updateAsync(actionId, {
 					$set: {
@@ -457,10 +449,18 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 		functionName: string,
 		...args: any[]
 	) {
-		return ServerClientAPI.callPeripheralDeviceFunctionOrAction(this, context, deviceId, timeoutTime, {
+		return ServerClientAPI.callPeripheralDeviceFunctionOrAction(
+			this,
+			context,
+			deviceId,
+			async () =>
+				executePeripheralDeviceFunctionWithCustomTimeout(deviceId, timeoutTime, {
+					functionName,
+					args,
+				}),
 			functionName,
-			args,
-		})
+			args
+		)
 	}
 	async callPeripheralDeviceAction(
 		context: string,
@@ -469,10 +469,18 @@ class ServerClientAPIClass extends MethodContextAPI implements NewClientAPI {
 		actionId: string,
 		payload?: Record<string, any>
 	) {
-		return ServerClientAPI.callPeripheralDeviceFunctionOrAction(this, context, deviceId, timeoutTime, {
+		return ServerClientAPI.callPeripheralDeviceFunctionOrAction(
+			this,
+			context,
+			deviceId,
+			async () =>
+				executePeripheralDeviceFunctionWithCustomTimeout(deviceId, timeoutTime, {
+					actionId,
+					payload,
+				}),
 			actionId,
-			payload,
-		})
+			payload
+		)
 	}
 	async callBackgroundPeripheralDeviceFunction(
 		deviceId: PeripheralDeviceId,

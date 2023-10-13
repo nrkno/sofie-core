@@ -146,6 +146,8 @@ import { RundownPlaylistCollectionUtil } from '../../lib/collections/rundownPlay
 import { SegmentScratchpadContainer } from './SegmentScratchpad/SegmentScratchpadContainer'
 import { PromiseButton } from '../lib/Components/PromiseButton'
 import { logger } from '../../lib/logging'
+import { isTranslatableMessage, translateMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
+import { i18nTranslator } from './i18n'
 
 export const MAGIC_TIME_SCALE_FACTOR = 0.03
 
@@ -2081,15 +2083,35 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				)
 			}
 		}
-		onSetNextSegment = (segmentId: SegmentId | null, e: any) => {
+
+		onSetNextSegment = (segmentId: SegmentId, e: any) => {
 			const { t } = this.props
-			if (this.state.studioMode && (segmentId || segmentId === null) && this.props.playlist) {
+			if (this.state.studioMode && segmentId && this.props.playlist) {
 				const playlistId = this.props.playlist._id
 				doUserAction(
 					t,
 					e,
 					UserAction.SET_NEXT,
 					(e, ts) => MeteorCall.userAction.setNextSegment(e, ts, playlistId, segmentId),
+					(err) => {
+						if (err) logger.error(err)
+						this.setState({
+							manualSetAsNext: true,
+						})
+					}
+				)
+			}
+		}
+
+		onQueueNextSegment = (segmentId: SegmentId | null, e: any) => {
+			const { t } = this.props
+			if (this.state.studioMode && (segmentId || segmentId === null) && this.props.playlist) {
+				const playlistId = this.props.playlist._id
+				doUserAction(
+					t,
+					e,
+					UserAction.QUEUE_NEXT_SEGMENT,
+					(e, ts) => MeteorCall.userAction.queueNextSegment(e, ts, playlistId, segmentId),
 					(err) => {
 						if (err) logger.error(err)
 						this.setState({
@@ -2711,7 +2733,15 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 				message: t('Do you want to restart CasparCG Server "{{device}}"?', { device: device.name }),
 				onAccept: () => {
 					callPeripheralDeviceAction(e, device._id, DEFAULT_TSR_ACTION_TIMEOUT_TIME, TSR.CasparCGActions.RestartServer)
-						.then(() => {
+						.then((r) => {
+							if (r?.result === TSR.ActionExecutionResultCode.Error) {
+								throw new Error(
+									r.response && isTranslatableMessage(r.response)
+										? translateMessage(r.response, i18nTranslator)
+										: t('Unknown error')
+								)
+							}
+
 							NotificationCenter.push(
 								new Notification(
 									undefined,
@@ -3002,6 +3032,7 @@ export const RundownView = translateWithTracker<IProps, IState, ITrackedProps>((
 									playlist={playlist}
 									onSetNext={this.onSetNext}
 									onSetNextSegment={this.onSetNextSegment}
+									onQueueNextSegment={this.onQueueNextSegment}
 									studioMode={this.state.studioMode}
 									enablePlayFromAnywhere={!!studio.settings.enablePlayFromAnywhere}
 								/>
