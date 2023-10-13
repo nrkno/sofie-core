@@ -25,7 +25,7 @@ import {
 } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstances, Pieces } from './collections/libCollections'
 import { RundownPlaylistCollectionUtil } from './collections/rundownPlaylistUtil'
-import { PieceContentStatusObj } from './mediaObjects'
+import { PieceContentStatusObj } from './api/pieceContentStatus'
 import { ReadonlyDeep } from 'type-fest'
 import { PieceInstanceWithTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
 

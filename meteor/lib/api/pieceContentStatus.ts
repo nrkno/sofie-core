@@ -2,17 +2,6 @@ import { PackageInfo } from '@sofie-automation/blueprints-integration'
 import { PieceStatusCode } from '@sofie-automation/corelib/dist/dataModel/Piece'
 import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 
-export interface ScanInfoForPackages {
-	[packageId: string]: ScanInfoForPackage
-}
-export interface ScanInfoForPackage {
-	/** Display name of the package  */
-	packageName: string
-	scan?: PackageInfo.FFProbeScan['payload']
-	deepScan?: PackageInfo.FFProbeDeepScan['payload']
-	timebase?: number // derived from scan
-}
-
 export interface PieceContentStatusObj {
 	status: PieceStatusCode
 	messages: ITranslatableMessage[]
