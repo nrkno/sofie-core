@@ -5,15 +5,13 @@ import {
 	ExpectedPackageDBType,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
-import { BucketAdLibActions, BucketAdLibs, ExpectedPackages, Rundowns } from '../../collections'
+import { ExpectedPackages, Rundowns } from '../../collections'
 import { assertNever, lazyIgnore } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { runIngestOperation } from './lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { ExpectedPackageId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
-import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { QueueStudioJob } from '../../worker/worker'
 import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 
@@ -58,36 +56,9 @@ export async function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: P
 				)
 				break
 			}
-			case ExpectedPackageDBType.BUCKET_ADLIB: {
-				const bucketAction = (await BucketAdLibs.findOneAsync(
-					{ _id: pkg.pieceId, bucketId: pkg.bucketId },
-					{
-						projection: { externalId: 1 },
-					}
-				)) as Pick<BucketAdLib, 'externalId'>
-
-				if (bucketAction) {
-					onUpdatedPackageInfoForBucketItemDebounce(pkg, bucketAction.externalId)
-				} else {
-					logger.info(`onUpdatedPackageInfo: Received update for missing BucketAdLib: ${pkg.pieceId}`)
-				}
-
-				break
-			}
+			case ExpectedPackageDBType.BUCKET_ADLIB:
 			case ExpectedPackageDBType.BUCKET_ADLIB_ACTION: {
-				const bucketAction = (await BucketAdLibActions.findOneAsync(
-					{ _id: pkg.pieceId, bucketId: pkg.bucketId },
-					{
-						projection: { externalId: 1 },
-					}
-				)) as Pick<BucketAdLibAction, 'externalId'>
-
-				if (bucketAction) {
-					onUpdatedPackageInfoForBucketItemDebounce(pkg, bucketAction.externalId)
-				} else {
-					logger.info(`onUpdatedPackageInfo: Received update for missing BucketAdLibAction: ${pkg.pieceId}`)
-				}
-
+				onUpdatedPackageInfoForBucketItemDebounce(pkg)
 				break
 			}
 			case ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS:
@@ -131,18 +102,17 @@ async function onUpdatedPackageInfoForRundown(
 }
 
 function onUpdatedPackageInfoForBucketItemDebounce(
-	pkg: ExpectedPackageDBFromBucketAdLib | ExpectedPackageDBFromBucketAdLibAction,
-	externalId: string
+	pkg: ExpectedPackageDBFromBucketAdLib | ExpectedPackageDBFromBucketAdLibAction
 ) {
 	lazyIgnore(
-		`onUpdatedPackageInfoForBucket_${pkg.studioId}_${pkg.bucketId}_${externalId}`,
+		`onUpdatedPackageInfoForBucket_${pkg.studioId}_${pkg.bucketId}_${pkg.pieceExternalId}`,
 		() => {
 			runIngestOperation(pkg.studioId, IngestJobs.BucketItemRegenerate, {
 				bucketId: pkg.bucketId,
-				externalId: externalId,
+				externalId: pkg.pieceExternalId,
 			}).catch((err) => {
 				logger.error(
-					`Updating ExpectedPackages for Bucket "${pkg.bucketId}" Item "${externalId}" failed: ${err}`
+					`Updating ExpectedPackages for Bucket "${pkg.bucketId}" Item "${pkg.pieceExternalId}" failed: ${err}`
 				)
 			})
 		},

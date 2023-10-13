@@ -27,6 +27,7 @@ import { isAdlibAction } from './util'
 import { WrappedShowStyleBlueprint } from '../../blueprints/cache'
 import { ReadonlyDeep } from 'type-fest'
 import { BucketId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 
 export async function handleBucketItemImport(context: JobContext, data: BucketItemImportProps): Promise<void> {
 	await regenerateBucketItemFromIngestInfo(context, data.bucketId, data.showStyleBaseId, {
@@ -240,9 +241,16 @@ async function generateBucketAdlibForVariant(
 	context: JobContext,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
+	// pieceId: BucketAdLibId | BucketAdLibActionId,
 	payload: IngestAdlib
 ): Promise<IBlueprintAdLibPiece | IBlueprintActionManifest | null> {
-	const watchedPackages = WatchedPackagesHelper.empty(context)
+	const watchedPackages = await WatchedPackagesHelper.create(context, context.studio._id, {
+		// pieceId: pieceId,
+		pieceExternalId: payload.externalId,
+		fromPieceType: {
+			$in: [ExpectedPackageDBType.BUCKET_ADLIB, ExpectedPackageDBType.BUCKET_ADLIB_ACTION],
+		},
+	})
 
 	const contextForVariant = new ShowStyleUserContext(
 		{

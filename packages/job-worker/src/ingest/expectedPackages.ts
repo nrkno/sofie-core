@@ -267,6 +267,7 @@ function generateExpectedPackagesForBucketAdlib(studio: ReadonlyDeep<DBStudio>, 
 					...base,
 					bucketId: adlib.bucketId,
 					pieceId: adlib._id,
+					pieceExternalId: adlib.externalId,
 					fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB,
 				})
 			}
@@ -287,6 +288,7 @@ function generateExpectedPackagesForBucketAdlibAction(
 					...base,
 					bucketId: action.bucketId,
 					pieceId: action._id,
+					pieceExternalId: action.externalId,
 					fromPieceType: ExpectedPackageDBType.BUCKET_ADLIB_ACTION,
 				})
 			}
