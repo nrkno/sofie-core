@@ -138,7 +138,7 @@ async function regenerateBucketItemFromIngestInfo(
 		if (!showStyleCompound)
 			throw new Error(`Unable to create a ShowStyleCompound for ${showStyleBase._id}, ${showStyleVariant._id} `)
 
-		const rawAdlib = generateBucketAdlibForVariant(context, blueprint, showStyleCompound, ingestInfo.payload)
+		const rawAdlib = await generateBucketAdlibForVariant(context, blueprint, showStyleCompound, ingestInfo.payload)
 
 		if (rawAdlib) {
 			const importVersions: RundownImportVersions = {
@@ -236,12 +236,12 @@ async function regenerateBucketItemFromIngestInfo(
 	await Promise.all(ps)
 }
 
-function generateBucketAdlibForVariant(
+async function generateBucketAdlibForVariant(
 	context: JobContext,
 	blueprint: ReadonlyDeep<WrappedShowStyleBlueprint>,
 	showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 	payload: IngestAdlib
-): IBlueprintAdLibPiece | IBlueprintActionManifest | null {
+): Promise<IBlueprintAdLibPiece | IBlueprintActionManifest | null> {
 	const watchedPackages = WatchedPackagesHelper.empty(context)
 
 	const contextForVariant = new ShowStyleUserContext(

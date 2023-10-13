@@ -124,7 +124,11 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	getAdlibItem?: (
 		context: IShowStyleUserContext,
 		ingestItem: IngestAdlib
-	) => IBlueprintAdLibPiece | IBlueprintActionManifest | null
+	) =>
+		| Promise<IBlueprintAdLibPiece | IBlueprintActionManifest | null>
+		| IBlueprintAdLibPiece
+		| IBlueprintActionManifest
+		| null
 
 	/**
 	 * Validate the config passed to this blueprint
