@@ -35,7 +35,7 @@ import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataM
 import { ArrayElement, getHash, literal, omit } from '@sofie-automation/corelib/dist/lib'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { RundownImportVersions } from '@sofie-automation/corelib/dist/dataModel/Rundown'
-import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
+import { BucketAdLib, BucketAdLibIngestInfo } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import {
 	interpollateTranslation,
 	wrapTranslatableMessageFromBlueprints,
@@ -393,25 +393,28 @@ export function postProcessBucketAdLib(
 	context: JobContext,
 	showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 	itemOrig: IBlueprintAdLibPiece,
-	externalId: string,
+	ingestInfo: BucketAdLibIngestInfo,
 	blueprintId: BlueprintId,
 	bucketId: BucketId,
 	rank: number | undefined,
 	importVersions: RundownImportVersions
 ): BucketAdLib {
 	const id: PieceId = protectString(
-		getHash(`${showStyleCompound.showStyleVariantId}_${context.studioId}_${bucketId}_bucket_adlib_${externalId}`)
+		getHash(
+			`${showStyleCompound.showStyleVariantId}_${context.studioId}_${bucketId}_bucket_adlib_${ingestInfo.payload.externalId}`
+		)
 	)
 	const piece: BucketAdLib = {
 		...itemOrig,
 		content: omit(itemOrig.content, 'timelineObjects'),
 		_id: id,
-		externalId,
+		externalId: ingestInfo.payload.externalId,
 		studioId: context.studioId,
 		showStyleBaseId: showStyleCompound._id,
 		showStyleVariantId: showStyleCompound.showStyleVariantId,
 		bucketId,
 		importVersions,
+		ingestInfo,
 		_rank: rank || itemOrig._rank,
 		timelineObjectsString: EmptyPieceTimelineObjectsBlob,
 	}
@@ -439,24 +442,27 @@ export function postProcessBucketAction(
 	context: JobContext,
 	showStyleCompound: ReadonlyDeep<ProcessedShowStyleCompound>,
 	itemOrig: IBlueprintActionManifest,
-	externalId: string,
+	ingestInfo: BucketAdLibIngestInfo,
 	blueprintId: BlueprintId,
 	bucketId: BucketId,
 	rank: number | undefined,
 	importVersions: RundownImportVersions
 ): BucketAdLibAction {
 	const id: AdLibActionId = protectString(
-		getHash(`${showStyleCompound.showStyleVariantId}_${context.studioId}_${bucketId}_bucket_adlib_${externalId}`)
+		getHash(
+			`${showStyleCompound.showStyleVariantId}_${context.studioId}_${bucketId}_bucket_adlib_${ingestInfo.payload.externalId}`
+		)
 	)
 	const action: BucketAdLibAction = {
 		...omit(itemOrig, 'partId'),
 		_id: id,
-		externalId,
+		externalId: ingestInfo.payload.externalId,
 		studioId: context.studioId,
 		showStyleBaseId: showStyleCompound._id,
 		showStyleVariantId: itemOrig.allVariants ? null : showStyleCompound.showStyleVariantId,
 		bucketId,
 		importVersions,
+		ingestInfo,
 		...processAdLibActionITranslatableMessages(itemOrig, blueprintId, rank),
 	}
 

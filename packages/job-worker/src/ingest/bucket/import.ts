@@ -4,7 +4,7 @@ import { IBlueprintActionManifest, IBlueprintAdLibPiece, IngestAdlib } from '@so
 import { WatchedPackagesHelper } from '../../blueprints/context/watchedPackages'
 import { JobContext, ProcessedShowStyleCompound } from '../../jobs'
 import { getSystemVersion } from '../../lib'
-import { BucketItemImportProps } from '@sofie-automation/corelib/dist/worker/ingest'
+import { BucketItemImportProps, BucketItemRegenerateProps } from '@sofie-automation/corelib/dist/worker/ingest'
 import {
 	cleanUpExpectedPackagesForBucketAdLibs,
 	cleanUpExpectedPackagesForBucketAdLibsActions,
@@ -19,47 +19,111 @@ import {
 } from '../expectedMediaItems'
 import { postProcessBucketAction, postProcessBucketAdLib } from '../../blueprints/postProcess'
 import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
+import { BucketAdLib, BucketAdLibIngestInfo } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
 import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
 import { logger } from '../../logging'
 import { createShowStyleCompound } from '../../showStyles'
 import { isAdlibAction } from './util'
 import { WrappedShowStyleBlueprint } from '../../blueprints/cache'
 import { ReadonlyDeep } from 'type-fest'
-import { BucketId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { BucketId, ShowStyleBaseId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 
 export async function handleBucketItemImport(context: JobContext, data: BucketItemImportProps): Promise<void> {
-	const [showStyleBase, allShowStyleVariants, allOldAdLibPieces, allOldAdLibActions, blueprint] = await Promise.all([
-		context.getShowStyleBase(data.showStyleBaseId),
-		context.getShowStyleVariants(data.showStyleBaseId),
-		context.directCollections.BucketAdLibPieces.findFetch(
+	await regenerateBucketItemFromIngestInfo(context, data.bucketId, data.showStyleBaseId, {
+		limitToShowStyleVariantIds: data.showStyleVariantIds,
+		payload: data.payload,
+	})
+}
+
+export async function handleBucketItemRegenerate(context: JobContext, data: BucketItemRegenerateProps): Promise<void> {
+	// These queries could match more than one document, but as they have the same `externalId` they all get regenerated together
+	const [adlibPiece, adlibAction] = await Promise.all([
+		context.directCollections.BucketAdLibPieces.findOne(
 			{
-				externalId: data.payload.externalId,
-				showStyleBaseId: data.showStyleBaseId,
+				externalId: data.externalId,
 				studioId: context.studio._id,
 				bucketId: data.bucketId,
+			},
+			{
+				projection: {
+					showStyleBaseId: 1,
+					ingestInfo: 1,
+				},
+			}
+		) as Promise<Pick<BucketAdLib, 'showStyleBaseId' | 'ingestInfo'>> | undefined,
+		context.directCollections.BucketAdLibActions.findOne(
+			{
+				externalId: data.externalId,
+				studioId: context.studio._id,
+				bucketId: data.bucketId,
+			},
+			{
+				projection: {
+					showStyleBaseId: 1,
+					ingestInfo: 1,
+				},
+			}
+		) as Promise<Pick<BucketAdLibAction, 'showStyleBaseId' | 'ingestInfo'>> | undefined,
+	])
+
+	// TODO - UserErrors?
+	if (adlibAction) {
+		if (!adlibAction.ingestInfo) throw new Error(`Bucket AdLibAction cannot be resynced, it has no ingest data`)
+		await regenerateBucketItemFromIngestInfo(
+			context,
+			data.bucketId,
+			adlibAction.showStyleBaseId,
+			adlibAction.ingestInfo
+		)
+	} else if (adlibPiece) {
+		if (!adlibPiece.ingestInfo) throw new Error(`Bucket AdLibPiece cannot be resynced, it has no ingest data`)
+		await regenerateBucketItemFromIngestInfo(
+			context,
+			data.bucketId,
+			adlibPiece.showStyleBaseId,
+			adlibPiece.ingestInfo
+		)
+	} else {
+		throw new Error(`No Bucket Items with externalId "${data.externalId}" were found`)
+	}
+}
+
+async function regenerateBucketItemFromIngestInfo(
+	context: JobContext,
+	bucketId: BucketId,
+	showStyleBaseId: ShowStyleBaseId,
+	ingestInfo: BucketAdLibIngestInfo
+): Promise<void> {
+	const [showStyleBase, allShowStyleVariants, allOldAdLibPieces, allOldAdLibActions, blueprint] = await Promise.all([
+		context.getShowStyleBase(showStyleBaseId),
+		context.getShowStyleVariants(showStyleBaseId),
+		context.directCollections.BucketAdLibPieces.findFetch(
+			{
+				externalId: ingestInfo.payload.externalId,
+				showStyleBaseId: showStyleBaseId,
+				studioId: context.studio._id,
+				bucketId: bucketId,
 			},
 			{ projection: { _id: 1 } }
 		) as Promise<Pick<BucketAdLib, '_id'>[]>,
 		context.directCollections.BucketAdLibActions.findFetch(
 			{
-				externalId: data.payload.externalId,
-				showStyleBaseId: data.showStyleBaseId,
+				externalId: ingestInfo.payload.externalId,
+				showStyleBaseId: showStyleBaseId,
 				studioId: context.studio._id,
-				bucketId: data.bucketId,
+				bucketId: bucketId,
 			},
 			{ projection: { _id: 1 } }
 		) as Promise<Pick<BucketAdLibAction, '_id'>[]>,
-		context.getShowStyleBlueprint(data.showStyleBaseId),
+		context.getShowStyleBlueprint(showStyleBaseId),
 	])
 
-	if (!showStyleBase) throw new Error(`ShowStyleBase "${data.showStyleBaseId}" not found`)
+	if (!showStyleBase) throw new Error(`ShowStyleBase "${showStyleBaseId}" not found`)
 
-	const showStyleVariants = allShowStyleVariants.filter((v) => {
-		if (data.showStyleVariantIds) return data.showStyleVariantIds.includes(v._id)
-		else return true
-	})
-	if (showStyleVariants.length === 0) throw new Error(`No ShowStyleVariants found for ${data.showStyleBaseId}`)
+	const showStyleVariants = allShowStyleVariants.filter(
+		(v) => !ingestInfo.limitToShowStyleVariantIds || ingestInfo.limitToShowStyleVariantIds.includes(v._id)
+	)
+	if (showStyleVariants.length === 0) throw new Error(`No ShowStyleVariants found for ${showStyleBaseId}`)
 
 	const adlibIdsToRemove = new Set(allOldAdLibPieces.map((p) => p._id))
 	const actionIdsToRemove = new Set(allOldAdLibActions.map((p) => p._id))
@@ -74,7 +138,7 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 		if (!showStyleCompound)
 			throw new Error(`Unable to create a ShowStyleCompound for ${showStyleBase._id}, ${showStyleVariant._id} `)
 
-		const rawAdlib = generateBucketAdlibForVariant(context, blueprint, showStyleCompound, data.payload)
+		const rawAdlib = generateBucketAdlibForVariant(context, blueprint, showStyleCompound, ingestInfo.payload)
 
 		if (rawAdlib) {
 			const importVersions: RundownImportVersions = {
@@ -87,7 +151,7 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 
 			// Cache the newRank, so we only have to calculate it once:
 			if (newRank === undefined) {
-				newRank = (await calculateHighestRankInBucket(context, data.bucketId)) + 1
+				newRank = (await calculateHighestRankInBucket(context, bucketId)) + 1
 			} else {
 				newRank++
 			}
@@ -105,9 +169,9 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 					context,
 					showStyleCompound,
 					rawAdlib,
-					data.payload.externalId,
+					ingestInfo,
 					blueprint.blueprintId,
-					data.bucketId,
+					bucketId,
 					newRank,
 					importVersions
 				)
@@ -125,9 +189,9 @@ export async function handleBucketItemImport(context: JobContext, data: BucketIt
 					context,
 					showStyleCompound,
 					rawAdlib,
-					data.payload.externalId,
+					ingestInfo,
 					blueprint.blueprintId,
-					data.bucketId,
+					bucketId,
 					newRank,
 					importVersions
 				)

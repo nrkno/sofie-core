@@ -1,11 +1,21 @@
-import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import {
+	ExpectedPackageDBFromBucketAdLib,
+	ExpectedPackageDBFromBucketAdLibAction,
+	ExpectedPackageDBFromStudioBaselineObjects,
+	ExpectedPackageDBType,
+} from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
-import { ExpectedPackages, Rundowns } from '../../collections'
+import { BucketAdLibActions, BucketAdLibs, ExpectedPackages, Rundowns } from '../../collections'
 import { assertNever, lazyIgnore } from '../../../lib/lib'
 import { logger } from '../../logging'
 import { runIngestOperation } from './lib'
 import { IngestJobs } from '@sofie-automation/corelib/dist/worker/ingest'
 import { ExpectedPackageId, RundownId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { Rundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
+import { BucketAdLibAction } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibAction'
+import { BucketAdLib } from '@sofie-automation/corelib/dist/dataModel/BucketAdLibPiece'
+import { QueueStudioJob } from '../../worker/worker'
+import { StudioJobs } from '@sofie-automation/corelib/dist/worker/studio'
 
 export async function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: PackageInfoDB | null): Promise<void> {
 	logger.info(`PackageInfo updated "${packageId}"`)
@@ -24,21 +34,21 @@ export async function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: P
 			case ExpectedPackageDBType.BASELINE_ADLIB_PIECE:
 			case ExpectedPackageDBType.BASELINE_ADLIB_ACTION:
 			case ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS: {
-				const existingEntry = pendingPackageUpdates.get(pkg.rundownId)
+				const existingEntry = pendingRundownPackageUpdates.get(pkg.rundownId)
 				if (existingEntry) {
 					// already queued, add to the batch
 					existingEntry.push(pkg._id)
 				} else {
-					pendingPackageUpdates.set(pkg.rundownId, [pkg._id])
+					pendingRundownPackageUpdates.set(pkg.rundownId, [pkg._id])
 				}
 
 				// TODO: Scaling - this won't batch correctly if package manager directs calls to multiple instances
 				lazyIgnore(
 					`onUpdatedPackageInfoForRundown_${pkg.rundownId}`,
 					() => {
-						const packageIds = pendingPackageUpdates.get(pkg.rundownId)
+						const packageIds = pendingRundownPackageUpdates.get(pkg.rundownId)
 						if (packageIds) {
-							pendingPackageUpdates.delete(pkg.rundownId)
+							pendingRundownPackageUpdates.delete(pkg.rundownId)
 							onUpdatedPackageInfoForRundown(pkg.rundownId, packageIds).catch((e) => {
 								logger.error(`Updating ExpectedPackages for Rundown "${pkg.rundownId}" failed: ${e}`)
 							})
@@ -48,10 +58,40 @@ export async function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: P
 				)
 				break
 			}
-			case ExpectedPackageDBType.BUCKET_ADLIB:
-			case ExpectedPackageDBType.BUCKET_ADLIB_ACTION:
+			case ExpectedPackageDBType.BUCKET_ADLIB: {
+				const bucketAction = (await BucketAdLibs.findOneAsync(
+					{ _id: pkg.pieceId, bucketId: pkg.bucketId },
+					{
+						projection: { externalId: 1 },
+					}
+				)) as Pick<BucketAdLib, 'externalId'>
+
+				if (bucketAction) {
+					onUpdatedPackageInfoForBucketItemDebounce(pkg, bucketAction.externalId)
+				} else {
+					logger.info(`onUpdatedPackageInfo: Received update for missing BucketAdLib: ${pkg.pieceId}`)
+				}
+
+				break
+			}
+			case ExpectedPackageDBType.BUCKET_ADLIB_ACTION: {
+				const bucketAction = (await BucketAdLibActions.findOneAsync(
+					{ _id: pkg.pieceId, bucketId: pkg.bucketId },
+					{
+						projection: { externalId: 1 },
+					}
+				)) as Pick<BucketAdLibAction, 'externalId'>
+
+				if (bucketAction) {
+					onUpdatedPackageInfoForBucketItemDebounce(pkg, bucketAction.externalId)
+				} else {
+					logger.info(`onUpdatedPackageInfo: Received update for missing BucketAdLibAction: ${pkg.pieceId}`)
+				}
+
+				break
+			}
 			case ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS:
-				// Ignore, as we can't handle that for now
+				onUpdatedPackageInfoForStudioBaselineDebounce(pkg)
 				break
 			default:
 				assertNever(pkg)
@@ -60,7 +100,7 @@ export async function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: P
 	}
 }
 
-const pendingPackageUpdates = new Map<RundownId, Array<ExpectedPackageId>>()
+const pendingRundownPackageUpdates = new Map<RundownId, Array<ExpectedPackageId>>()
 
 async function onUpdatedPackageInfoForRundown(
 	rundownId: RundownId,
@@ -70,7 +110,12 @@ async function onUpdatedPackageInfoForRundown(
 		return
 	}
 
-	const tmpRundown = await Rundowns.findOneAsync(rundownId)
+	const tmpRundown = (await Rundowns.findOneAsync(rundownId, {
+		projection: {
+			studioId: 1,
+			externalId: 1,
+		},
+	})) as Pick<Rundown, 'studioId' | 'externalId'> | undefined
 	if (!tmpRundown) {
 		logger.error(
 			`onUpdatedPackageInfoForRundown: Missing rundown "${rundownId}" for packages "${packageIds.join(', ')}"`
@@ -78,9 +123,45 @@ async function onUpdatedPackageInfoForRundown(
 		return
 	}
 
-	await runIngestOperation(tmpRundown.studioId, IngestJobs.PackageInfosUpdated, {
+	await runIngestOperation(tmpRundown.studioId, IngestJobs.PackageInfosUpdatedRundown, {
 		rundownExternalId: tmpRundown.externalId,
 		peripheralDeviceId: null,
 		packageIds,
 	})
+}
+
+function onUpdatedPackageInfoForBucketItemDebounce(
+	pkg: ExpectedPackageDBFromBucketAdLib | ExpectedPackageDBFromBucketAdLibAction,
+	externalId: string
+) {
+	lazyIgnore(
+		`onUpdatedPackageInfoForBucket_${pkg.studioId}_${pkg.bucketId}_${externalId}`,
+		() => {
+			runIngestOperation(pkg.studioId, IngestJobs.BucketItemRegenerate, {
+				bucketId: pkg.bucketId,
+				externalId: externalId,
+			}).catch((err) => {
+				logger.error(
+					`Updating ExpectedPackages for Bucket "${pkg.bucketId}" Item "${externalId}" failed: ${err}`
+				)
+			})
+		},
+		1000
+	)
+}
+
+function onUpdatedPackageInfoForStudioBaselineDebounce(pkg: ExpectedPackageDBFromStudioBaselineObjects) {
+	lazyIgnore(
+		`onUpdatedPackageInfoForStudioBaseline_${pkg.studioId}`,
+		() => {
+			QueueStudioJob(StudioJobs.UpdateStudioBaseline, pkg.studioId, undefined)
+				.then(async (job) => {
+					await job.complete
+				})
+				.catch((err) => {
+					logger.error(`Updating ExpectedPackages for StudioBaseline "${pkg.studioId}" failed: ${err}`)
+				})
+		},
+		1000
+	)
 }

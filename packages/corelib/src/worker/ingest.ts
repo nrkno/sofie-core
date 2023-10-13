@@ -106,7 +106,11 @@ export enum IngestJobs {
 	/**
 	 * Some PackageInfos have been updated, regenerate any Parts which depend on these PackageInfos
 	 */
-	PackageInfosUpdated = 'packageInfosUpdated',
+	PackageInfosUpdatedRundown = 'packageInfosUpdatedRundown',
+	/**
+	 * Some PackageInfos have been updated, regenerate any Bucket items PackageInfos
+	 */
+	PackageInfosUpdatedBucketItem = 'packageInfosUpdatedBucketItem',
 
 	/**
 	 * User requested removing a rundown
@@ -119,6 +123,7 @@ export enum IngestJobs {
 
 	// For now these are in this queue, but if this gets split up to be per rundown, then a single bucket queue will be needed
 	BucketItemImport = 'bucketItemImport',
+	BucketItemRegenerate = 'bucketItemRegenerate',
 	BucketActionRegenerateExpectedPackages = 'bucketActionRegenerateExpectedPackages',
 	BucketActionModify = 'bucketActionModify',
 	BucketPieceModify = 'bucketPieceModify',
@@ -210,7 +215,7 @@ export interface MosSwapStoryProps extends IngestPropsBase {
 export interface ExpectedPackagesRegenerateProps {
 	rundownId: RundownId
 }
-export interface PackageInfosUpdatedProps extends IngestPropsBase {
+export interface PackageInfosUpdatedRundownProps extends IngestPropsBase {
 	packageIds: ExpectedPackageId[]
 }
 
@@ -227,6 +232,10 @@ export interface BucketItemImportProps {
 	showStyleBaseId: ShowStyleBaseId
 	showStyleVariantIds?: ShowStyleVariantId[]
 	payload: IngestAdlib
+}
+export interface BucketItemRegenerateProps {
+	bucketId: BucketId
+	externalId: string
 }
 export interface BucketActionRegenerateExpectedPackagesProps {
 	actionId: BucketAdLibActionId
@@ -278,12 +287,13 @@ export type IngestJobFunc = {
 	[IngestJobs.MosSwapStory]: (data: MosSwapStoryProps) => void
 
 	[IngestJobs.ExpectedPackagesRegenerate]: (data: ExpectedPackagesRegenerateProps) => void
-	[IngestJobs.PackageInfosUpdated]: (data: PackageInfosUpdatedProps) => void
+	[IngestJobs.PackageInfosUpdatedRundown]: (data: PackageInfosUpdatedRundownProps) => void
 
 	[IngestJobs.UserRemoveRundown]: (data: UserRemoveRundownProps) => void
 	[IngestJobs.UserUnsyncRundown]: (data: UserUnsyncRundownProps) => void
 
 	[IngestJobs.BucketItemImport]: (data: BucketItemImportProps) => void
+	[IngestJobs.BucketItemRegenerate]: (data: BucketItemRegenerateProps) => void
 	[IngestJobs.BucketActionModify]: (data: BucketActionModifyProps) => void
 	[IngestJobs.BucketPieceModify]: (data: BucketPieceModifyProps) => void
 	[IngestJobs.BucketActionRegenerateExpectedPackages]: (data: BucketActionRegenerateExpectedPackagesProps) => void
