@@ -114,6 +114,7 @@ export interface ExpectedPackageDBFromBucketAdLib extends ExpectedPackageDBBase 
 	bucketId: BucketId
 	/** The Bucket adlib this package belongs to */
 	pieceId: BucketAdLibId
+	/** The `externalId` of the Bucket adlib this package belongs to */
 	pieceExternalId: string
 }
 export interface ExpectedPackageDBFromBucketAdLibAction extends ExpectedPackageDBBase {
@@ -121,6 +122,7 @@ export interface ExpectedPackageDBFromBucketAdLibAction extends ExpectedPackageD
 	bucketId: BucketId
 	/** The Bucket adlib-action this package belongs to */
 	pieceId: BucketAdLibActionId
+	/** The `externalId` of the Bucket adlib-action this package belongs to */
 	pieceExternalId: string
 }
 

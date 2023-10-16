@@ -433,7 +433,6 @@ export function setDefaultIdOnExpectedPackages(expectedPackages: ExpectedPackage
 	// Fill in ids of unnamed expectedPackage
 	if (expectedPackages) {
 		for (let i = 0; i < expectedPackages.length; i++) {
-			// TODO - make existing _id 'safe' to be an '_id' field?
 			const expectedPackage = expectedPackages[i]
 			if (!expectedPackage._id) {
 				expectedPackage._id = `__index${i}`

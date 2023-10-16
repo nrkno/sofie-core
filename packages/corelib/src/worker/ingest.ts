@@ -107,10 +107,6 @@ export enum IngestJobs {
 	 * Some PackageInfos have been updated, regenerate any Parts which depend on these PackageInfos
 	 */
 	PackageInfosUpdatedRundown = 'packageInfosUpdatedRundown',
-	/**
-	 * Some PackageInfos have been updated, regenerate any Bucket items PackageInfos
-	 */
-	PackageInfosUpdatedBucketItem = 'packageInfosUpdatedBucketItem',
 
 	/**
 	 * User requested removing a rundown

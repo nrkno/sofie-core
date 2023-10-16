@@ -245,7 +245,7 @@ async function generateBucketAdlibForVariant(
 	payload: IngestAdlib
 ): Promise<IBlueprintAdLibPiece | IBlueprintActionManifest | null> {
 	const watchedPackages = await WatchedPackagesHelper.create(context, context.studio._id, {
-		// pieceId: pieceId,
+		// We don't know what the `pieceId` will be, but we do know the `externalId`
 		pieceExternalId: payload.externalId,
 		fromPieceType: {
 			$in: [ExpectedPackageDBType.BUCKET_ADLIB, ExpectedPackageDBType.BUCKET_ADLIB_ACTION],

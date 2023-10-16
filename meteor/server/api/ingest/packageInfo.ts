@@ -1,8 +1,10 @@
 import {
 	ExpectedPackageDBFromBucketAdLib,
 	ExpectedPackageDBFromBucketAdLibAction,
+	ExpectedPackageDBFromRundownBaselineObjects,
 	ExpectedPackageDBFromStudioBaselineObjects,
 	ExpectedPackageDBType,
+	ExpectedPackageFromRundown,
 } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
 import { PackageInfoDB } from '@sofie-automation/corelib/dist/dataModel/PackageInfos'
 import { ExpectedPackages, Rundowns } from '../../collections'
@@ -31,36 +33,13 @@ export async function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: P
 			case ExpectedPackageDBType.ADLIB_ACTION:
 			case ExpectedPackageDBType.BASELINE_ADLIB_PIECE:
 			case ExpectedPackageDBType.BASELINE_ADLIB_ACTION:
-			case ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS: {
-				const existingEntry = pendingRundownPackageUpdates.get(pkg.rundownId)
-				if (existingEntry) {
-					// already queued, add to the batch
-					existingEntry.push(pkg._id)
-				} else {
-					pendingRundownPackageUpdates.set(pkg.rundownId, [pkg._id])
-				}
-
-				// TODO: Scaling - this won't batch correctly if package manager directs calls to multiple instances
-				lazyIgnore(
-					`onUpdatedPackageInfoForRundown_${pkg.rundownId}`,
-					() => {
-						const packageIds = pendingRundownPackageUpdates.get(pkg.rundownId)
-						if (packageIds) {
-							pendingRundownPackageUpdates.delete(pkg.rundownId)
-							onUpdatedPackageInfoForRundown(pkg.rundownId, packageIds).catch((e) => {
-								logger.error(`Updating ExpectedPackages for Rundown "${pkg.rundownId}" failed: ${e}`)
-							})
-						}
-					},
-					1000
-				)
+			case ExpectedPackageDBType.RUNDOWN_BASELINE_OBJECTS:
+				onUpdatedPackageInfoForRundownDebounce(pkg)
 				break
-			}
 			case ExpectedPackageDBType.BUCKET_ADLIB:
-			case ExpectedPackageDBType.BUCKET_ADLIB_ACTION: {
+			case ExpectedPackageDBType.BUCKET_ADLIB_ACTION:
 				onUpdatedPackageInfoForBucketItemDebounce(pkg)
 				break
-			}
 			case ExpectedPackageDBType.STUDIO_BASELINE_OBJECTS:
 				onUpdatedPackageInfoForStudioBaselineDebounce(pkg)
 				break
@@ -72,6 +51,32 @@ export async function onUpdatedPackageInfo(packageId: ExpectedPackageId, _doc: P
 }
 
 const pendingRundownPackageUpdates = new Map<RundownId, Array<ExpectedPackageId>>()
+function onUpdatedPackageInfoForRundownDebounce(
+	pkg: ExpectedPackageFromRundown | ExpectedPackageDBFromRundownBaselineObjects
+) {
+	const existingEntry = pendingRundownPackageUpdates.get(pkg.rundownId)
+	if (existingEntry) {
+		// already queued, add to the batch
+		existingEntry.push(pkg._id)
+	} else {
+		pendingRundownPackageUpdates.set(pkg.rundownId, [pkg._id])
+	}
+
+	// TODO: Scaling - this won't batch correctly if package manager directs calls to multiple instances
+	lazyIgnore(
+		`onUpdatedPackageInfoForRundown_${pkg.rundownId}`,
+		() => {
+			const packageIds = pendingRundownPackageUpdates.get(pkg.rundownId)
+			if (packageIds) {
+				pendingRundownPackageUpdates.delete(pkg.rundownId)
+				onUpdatedPackageInfoForRundown(pkg.rundownId, packageIds).catch((e) => {
+					logger.error(`Updating ExpectedPackages for Rundown "${pkg.rundownId}" failed: ${e}`)
+				})
+			}
+		},
+		1000
+	)
+}
 
 async function onUpdatedPackageInfoForRundown(
 	rundownId: RundownId,

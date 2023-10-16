@@ -19,6 +19,7 @@ export interface BucketAdLibAction extends Omit<AdLibActionCommon, 'rundownId'> 
 	/** if showStyleVariantId is null, the adlibAction can be used with any variant */
 	showStyleVariantId: ShowStyleVariantId | null
 	importVersions: RundownImportVersions // TODO - is this good?
+	/** Information used to generate the adlib. If set, this adlib can be regenerated */
 	ingestInfo: BucketAdLibIngestInfo | undefined
 
 	/** The following extended interface allows assigning namespace information to the actions as they are stored in the
