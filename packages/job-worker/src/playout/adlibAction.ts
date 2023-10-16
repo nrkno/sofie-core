@@ -54,7 +54,11 @@ export async function handleExecuteAdlibAction(
 		const watchedPackages = await WatchedPackagesHelper.create(context, context.studio._id, {
 			pieceId: data.actionDocId,
 			fromPieceType: {
-				$in: [ExpectedPackageDBType.ADLIB_ACTION, ExpectedPackageDBType.BASELINE_ADLIB_ACTION],
+				$in: [
+					ExpectedPackageDBType.ADLIB_ACTION,
+					ExpectedPackageDBType.BASELINE_ADLIB_ACTION,
+					ExpectedPackageDBType.BUCKET_ADLIB_ACTION,
+				],
 			},
 		})
 
