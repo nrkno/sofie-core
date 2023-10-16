@@ -60,7 +60,7 @@
 		"@sofie-automation/shared-lib": "1.50.0-in-testing.5",
 		"debug": "^4.3.3",
 		"influx": "^5.9.3",
-		"timeline-state-resolver": "9.0.0-nightly-release50-20231003-113724-99f3a33d1.0",
+		"timeline-state-resolver": "9.0.0-nightly-release50-20231016-091746-0259fbfaa.0",
 		"tslib": "^2.4.0",
 		"underscore": "^1.13.4",
 		"winston": "^3.8.2"

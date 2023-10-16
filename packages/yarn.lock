@@ -5468,7 +5468,7 @@ __metadata:
   resolution: "@sofie-automation/shared-lib@workspace:shared-lib"
   dependencies:
     "@mos-connection/model": ^3.0.4
-    timeline-state-resolver-types: 9.0.0-nightly-release50-20231003-113724-99f3a33d1.0
+    timeline-state-resolver-types: 9.0.0-nightly-release50-20231016-091746-0259fbfaa.0
     tslib: ^2.4.0
     type-fest: ^2.19.0
   languageName: unknown
@@ -8494,14 +8494,14 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"casparcg-connection@npm:^6.0.5":
-  version: 6.0.5
-  resolution: "casparcg-connection@npm:6.0.5"
+"casparcg-connection@npm:^6.0.6":
+  version: 6.0.6
+  resolution: "casparcg-connection@npm:6.0.6"
   dependencies:
     eventemitter3: ^4.0.7
     tslib: ^2.5.0
     xml2js: ^0.4.23
-  checksum: 5b5fdc64f8ca298ceb42544c37f3a3fc1065e09078dfd6eb54a50d34380daaf6b62f3e97995f9c4611e1a2bafba4a7a98045aa29026e50df40062570ee78a534
+  checksum: f2c02bdfaf29e1c43449a577f1b91fd5ce14ff91bdc6a48dbe5908c1420f5eaf9a3989454f750f93fbe8de399310e76a112e88866bcc3c18398e0e81b43f4dd1
   languageName: node
   linkType: hard
 
@@ -10533,17 +10533,17 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"emberplus-connection@npm:^0.1.2":
-  version: 0.1.2
-  resolution: "emberplus-connection@npm:0.1.2"
+"emberplus-connection@npm:^0.2.1":
+  version: 0.2.1
+  resolution: "emberplus-connection@npm:0.2.1"
   dependencies:
     asn1: evs-broadcast/node-asn1
-    debug: ^4.3.3
-    enum: ^2.4.0
+    debug: ^4.3.4
+    eventemitter3: ^4.0.7
     long: ^3.2.0
     smart-buffer: ^3.0.3
-    tslib: ^2.3.1
-  checksum: 722da0cdcfde9cfdfb3fb378c870ccbf1e41312f200490843d294e80b92f8856ef683e65c4e33c505dbf3beb7469942824faa57da1c4cad626338d0e258ca76c
+    tslib: ^2.6.2
+  checksum: 80cad87885ae7e57694e309734c3fea0efe1687d774ff772287213e3e0d5caa170fb6df4f7bd7ad393c7d1c12a62732e8f34f5ca60878d3a50b72ac75d6822af
   languageName: node
   linkType: hard
 
@@ -10665,15 +10665,6 @@ asn1@evs-broadcast/node-asn1:
   version: 2.1.0
   resolution: "entities@npm:2.1.0"
   checksum: a10a877e489586a3f6a691fe49bf3fc4e58f06c8e80522f08214a5150ba457e7017b447d4913a3fa041bda06ee4c92517baa4d8d75373eaa79369e9639225ffd
-  languageName: node
-  linkType: hard
-
-"enum@npm:^2.4.0":
-  version: 2.5.0
-  resolution: "enum@npm:2.5.0"
-  dependencies:
-    is-buffer: ^1.1.0
-  checksum: a36bcc422ffda674cc8e08a0c9a936395a60fd44f2bab7d2b7016a9c1f9690ba1969b31f82570d908bb4025f323f2ad9879970678307bcff6fcc5026a445ed1b
   languageName: node
   linkType: hard
 
@@ -13628,13 +13619,6 @@ asn1@evs-broadcast/node-asn1:
     call-bind: ^1.0.2
     has-tostringtag: ^1.0.0
   checksum: c03b23dbaacadc18940defb12c1c0e3aaece7553ef58b162a0f6bba0c2a7e1551b59f365b91e00d2dbac0522392d576ef322628cb1d036a0fe51eb466db67222
-  languageName: node
-  linkType: hard
-
-"is-buffer@npm:^1.1.0":
-  version: 1.1.6
-  resolution: "is-buffer@npm:1.1.6"
-  checksum: 4a186d995d8bbf9153b4bd9ff9fd04ae75068fe695d29025d25e592d9488911eeece84eefbd8fa41b8ddcc0711058a71d4c466dcf6f1f6e1d83830052d8ca707
   languageName: node
   linkType: hard
 
@@ -18435,7 +18419,7 @@ asn1@evs-broadcast/node-asn1:
     "@sofie-automation/shared-lib": 1.50.0-in-testing.5
     debug: ^4.3.3
     influx: ^5.9.3
-    timeline-state-resolver: 9.0.0-nightly-release50-20231003-113724-99f3a33d1.0
+    timeline-state-resolver: 9.0.0-nightly-release50-20231016-091746-0259fbfaa.0
     tslib: ^2.4.0
     underscore: ^1.13.4
     winston: ^3.8.2
@@ -22119,27 +22103,27 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"timeline-state-resolver-types@npm:9.0.0-nightly-release50-20231003-113724-99f3a33d1.0":
-  version: 9.0.0-nightly-release50-20231003-113724-99f3a33d1.0
-  resolution: "timeline-state-resolver-types@npm:9.0.0-nightly-release50-20231003-113724-99f3a33d1.0"
+"timeline-state-resolver-types@npm:9.0.0-nightly-release50-20231016-091746-0259fbfaa.0":
+  version: 9.0.0-nightly-release50-20231016-091746-0259fbfaa.0
+  resolution: "timeline-state-resolver-types@npm:9.0.0-nightly-release50-20231016-091746-0259fbfaa.0"
   dependencies:
     tslib: ^2.5.1
-  checksum: c28a7e83dce670f918240aa124ad4848e51794d725b8b2026e452b6837c23f197f83346eb564fe172e78952c4b248975df9ac5d4102a344c1c512d7ce318b35c
+  checksum: 0433605d789a444a9089dcf2995be0f7c1f0b738ab220c8670c74411ca9ba3955ecb6d9263d0ff96e97d42ca9342d64ee9045f03e5c9b39ab589c17dbe3dfbb8
   languageName: node
   linkType: hard
 
-"timeline-state-resolver@npm:9.0.0-nightly-release50-20231003-113724-99f3a33d1.0":
-  version: 9.0.0-nightly-release50-20231003-113724-99f3a33d1.0
-  resolution: "timeline-state-resolver@npm:9.0.0-nightly-release50-20231003-113724-99f3a33d1.0"
+"timeline-state-resolver@npm:9.0.0-nightly-release50-20231016-091746-0259fbfaa.0":
+  version: 9.0.0-nightly-release50-20231016-091746-0259fbfaa.0
+  resolution: "timeline-state-resolver@npm:9.0.0-nightly-release50-20231016-091746-0259fbfaa.0"
   dependencies:
     "@tv2media/v-connection": ^7.3.0
     atem-connection: 2.5.0
     atem-state: 0.13.0
-    casparcg-connection: ^6.0.5
+    casparcg-connection: ^6.0.6
     casparcg-state: ^3.0.2
     debug: ^4.3.4
     deepmerge: ^4.3.1
-    emberplus-connection: ^0.1.2
+    emberplus-connection: ^0.2.1
     eventemitter3: ^4.0.7
     got: ^11.8.6
     hyperdeck-connection: ^0.5.0
@@ -22152,15 +22136,15 @@ asn1@evs-broadcast/node-asn1:
     sprintf-js: ^1.1.2
     superfly-timeline: ^8.3.1
     threadedclass: ^1.2.1
-    timeline-state-resolver-types: 9.0.0-nightly-release50-20231003-113724-99f3a33d1.0
+    timeline-state-resolver-types: 9.0.0-nightly-release50-20231016-091746-0259fbfaa.0
     tslib: ^2.5.1
-    tv-automation-quantel-gateway-client: ^3.1.11-agent-debug-20230117-160455-c2c4ee4.0
+    tv-automation-quantel-gateway-client: ^3.1.7
     underscore: ^1.13.6
     underscore-deep-extend: ^1.1.5
     utf-8-validate: ^5.0.10
     ws: ^7.5.9
     xml-js: ^1.6.11
-  checksum: df97905dd511dbec84952f3d9f96c34d08580c6b1bdf5c3eb7c8bd88f092425fa40de8e4ee0c353139f43a71cb17fff4a4721089b045e91f52483ee1742d3841
+  checksum: dfe3b46ee54f1a08d617c0e4893117773c85e4d6cd71da330de8272ae5cf2805346d112fc9f1272646f5e28ee8211e58059c97c63c9c4bdb2629b2dda13353e7
   languageName: node
   linkType: hard
 
@@ -22578,6 +22562,13 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
+"tslib@npm:^2.6.2":
+  version: 2.6.2
+  resolution: "tslib@npm:2.6.2"
+  checksum: 329ea56123005922f39642318e3d1f0f8265d1e7fcb92c633e0809521da75eeaca28d2cf96d7248229deb40e5c19adf408259f4b9640afd20d13aecc1430f3ad
+  languageName: node
+  linkType: hard
+
 "tsutils@npm:^3.21.0":
   version: 3.21.0
   resolution: "tsutils@npm:3.21.0"
@@ -22615,12 +22606,12 @@ asn1@evs-broadcast/node-asn1:
   languageName: node
   linkType: hard
 
-"tv-automation-quantel-gateway-client@npm:^3.1.11-agent-debug-20230117-160455-c2c4ee4.0":
-  version: 3.1.11-agent-debug-20230117-160455-c2c4ee4.0
-  resolution: "tv-automation-quantel-gateway-client@npm:3.1.11-agent-debug-20230117-160455-c2c4ee4.0"
+"tv-automation-quantel-gateway-client@npm:^3.1.7":
+  version: 3.1.7
+  resolution: "tv-automation-quantel-gateway-client@npm:3.1.7"
   dependencies:
     got: ^11.8.6
-  checksum: 352bd6e5c8388322687dc9c46b1e655b2e53a65dfdd4c53efe311b156c00944e5c72bdfbdee04fdc53ad01c6df81511d42273f62b5e4f0e278b3d6f68f5ccf28
+  checksum: 84009ec17cd6286492a1993a040d10f0b08a5a73daf4869e82a80ab19f181e9f0f64fe2256294ddc4b391c5d5404009a648d86e80385910711f6ee13bb0d6022
   languageName: node
   linkType: hard
 
