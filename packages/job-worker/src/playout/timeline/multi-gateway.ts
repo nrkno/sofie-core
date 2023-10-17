@@ -4,7 +4,7 @@ import { PeripheralDeviceType } from '@sofie-automation/corelib/dist/dataModel/P
 import { TimelineObjRundown } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { normalizeArray } from '@sofie-automation/corelib/dist/lib'
 import { PieceTimelineMetadata } from './pieceGroup'
-import { StudioPlayoutModelBase } from '../../studio/StudioPlayoutModel'
+import { StudioPlayoutModelBase } from '../../studio/model/StudioPlayoutModel'
 import { JobContext } from '../../jobs'
 import { getCurrentTime } from '../../lib'
 import { PlayoutModel } from '../model/PlayoutModel'

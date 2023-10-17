@@ -50,6 +50,11 @@ import { IS_PRODUCTION } from '../../../environment'
 import { DeferredAfterSaveFunction, DeferredFunction, PlayoutModel, PlayoutModelReadonly } from '../PlayoutModel'
 import { writePartInstancesAndPieceInstances, writeScratchpadSegments } from './SavePlayoutModel'
 import { PlayoutPieceInstanceModel } from '../PlayoutPieceInstanceModel'
+import { DatabasePersistedModel } from '../../../modelBase'
+import { ExpectedPackageDBFromStudioBaselineObjects } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { ExpectedPlayoutItemStudio } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
+import { StudioBaselineHelper } from '../../../studio/model/StudioBaselineHelper'
+import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 
 export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
 	public readonly PlaylistId: RundownPlaylistId
@@ -223,7 +228,9 @@ export class PlayoutModelReadonlyImpl implements PlayoutModelReadonly {
  * It contains everything that is needed to generate the timeline, and everything except for pieces needed to update the partinstances.
  * Anything not in this cache should not be needed often, and only for specific operations (eg, AdlibActions needed to run one).
  */
-export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements PlayoutModel {
+export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements PlayoutModel, DatabasePersistedModel {
+	readonly #baselineHelper: StudioBaselineHelper
+
 	#deferredBeforeSaveFunctions: DeferredFunction[] = []
 	#deferredAfterSaveFunctions: DeferredAfterSaveFunction[] = []
 	#disposed = false
@@ -232,6 +239,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 	#TimelineHasChanged = false
 
 	#PendingPartInstanceTimingEvents = new Set<PartInstanceId>()
+	#PendingNotifyCurrentlyPlayingPartEvent = new Map<RundownId, string | null>()
 
 	get HackDeletedPartInstanceIds(): PartInstanceId[] {
 		const result: PartInstanceId[] = []
@@ -253,6 +261,8 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 	) {
 		super(context, playlistLock, playlistId, peripheralDevices, playlist, partInstances, rundowns, timeline)
 		context.trackCache(this)
+
+		this.#baselineHelper = new StudioBaselineHelper(context)
 	}
 
 	public get DisplayName(): string {
@@ -430,6 +440,14 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 		this.#PendingPartInstanceTimingEvents.add(partInstanceId)
 	}
 
+	queueNotifyCurrentlyPlayingPartEvent(rundownId: RundownId, partInstance: PlayoutPartInstanceModel | null): void {
+		if (partInstance && partInstance.PartInstance.part.shouldNotifyCurrentPlayingPart) {
+			this.#PendingNotifyCurrentlyPlayingPartEvent.set(rundownId, partInstance.PartInstance.part.externalId)
+		} else if (!partInstance) {
+			this.#PendingNotifyCurrentlyPlayingPartEvent.set(rundownId, null)
+		}
+	}
+
 	removeAllRehearsalPartInstances(): void {
 		const partInstancesToRemove: PartInstanceId[] = []
 
@@ -542,6 +560,7 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 				: undefined,
 			...writePartInstancesAndPieceInstances(this.context, this.AllPartInstances),
 			writeScratchpadSegments(this.context, this.RundownsImpl),
+			this.#baselineHelper.saveAllToDatabase(),
 		])
 
 		this.#PlaylistHasChanged = false
@@ -557,6 +576,21 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			queuePartInstanceTimingEvent(this.context, this.PlaylistId, partInstanceId)
 		}
 		this.#PendingPartInstanceTimingEvents.clear()
+
+		for (const [rundownId, partExternalId] of this.#PendingNotifyCurrentlyPlayingPartEvent) {
+			// This is low-prio, defer so that it's executed well after publications has been updated,
+			// so that the playout gateway has had the chance to learn about the timeline changes
+			this.context
+				.queueEventJob(EventsJobs.NotifyCurrentlyPlayingPart, {
+					rundownId: rundownId,
+					isRehearsal: !!this.Playlist.rehearsal,
+					partExternalId: partExternalId,
+				})
+				.catch((e) => {
+					logger.warn(`Failed to queue NotifyCurrentlyPlayingPart job: ${e}`)
+				})
+		}
+		this.#PendingNotifyCurrentlyPlayingPartEvent.clear()
 
 		if (span) span.end()
 	}
@@ -641,6 +675,13 @@ export class PlayoutModelImpl extends PlayoutModelReadonlyImpl implements Playou
 			generationVersions: generationVersions,
 		}
 		this.#TimelineHasChanged = true
+	}
+
+	setExpectedPackagesForStudioBaseline(packages: ExpectedPackageDBFromStudioBaselineObjects[]): void {
+		this.#baselineHelper.setExpectedPackages(packages)
+	}
+	setExpectedPlayoutItemsForStudioBaseline(playoutItems: ExpectedPlayoutItemStudio[]): void {
+		this.#baselineHelper.setExpectedPlayoutItems(playoutItems)
 	}
 
 	/** Lifecycle */

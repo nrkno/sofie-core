@@ -25,7 +25,6 @@ import { PartEventContext, RundownContext } from '../blueprints/context'
 import { WrappedShowStyleBlueprint } from '../blueprints/cache'
 import { innerStopPieces } from './adlibUtils'
 import { reportPartInstanceHasStarted, reportPartInstanceHasStopped } from './timings/partPlayback'
-import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { calculatePartTimings } from '@sofie-automation/corelib/dist/playout/timings'
 import { convertPartInstanceToBlueprints, convertResolvedPieceInstanceToBlueprints } from '../blueprints/context/lib'
 import { processAndPrunePieceInstanceTimings } from '@sofie-automation/corelib/dist/playout/processAndPrune'
@@ -191,7 +190,8 @@ export async function performTakeToNextedPart(
 		throw new Error(`takeRundown: takeRundown not found! ("${takePartInstance.PartInstance.rundownId}")`)
 
 	// Autonext may have setup the plannedStartedPlayback. Clear it so that a new value is generated
-	takePartInstance.clearPlannedTimings()
+	takePartInstance.setPlannedStartedPlayback(undefined)
+	takePartInstance.setPlannedStoppedPlayback(undefined)
 
 	// it is only a first take if the Playlist has no startedPlayback and the taken PartInstance is not untimed
 	const isFirstTake = !playoutModel.Playlist.startedPlayback && !takePartInstance.PartInstance.part.untimed
@@ -472,21 +472,7 @@ export async function afterTake(
 
 	await updateTimeline(context, playoutModel, timeOffsetIntoPart || undefined)
 
-	playoutModel.deferAfterSave(async () => {
-		// This is low-prio, defer so that it's executed well after publications has been updated,
-		// so that the playout gateway has haf the chance to learn about the timeline changes
-		if (takePartInstance.PartInstance.part.shouldNotifyCurrentPlayingPart) {
-			context
-				.queueEventJob(EventsJobs.NotifyCurrentlyPlayingPart, {
-					rundownId: takePartInstance.PartInstance.rundownId,
-					isRehearsal: !!playoutModel.Playlist.rehearsal,
-					partExternalId: takePartInstance.PartInstance.part.externalId,
-				})
-				.catch((e) => {
-					logger.warn(`Failed to queue NotifyCurrentlyPlayingPart job: ${e}`)
-				})
-		}
-	})
+	playoutModel.queueNotifyCurrentlyPlayingPartEvent(takePartInstance.PartInstance.rundownId, takePartInstance)
 
 	if (span) span.end()
 }
@@ -508,10 +494,10 @@ function startHold(
 	pieceInstancesToCopy.forEach((instance) => {
 		if (!instance.PieceInstance.infinite) {
 			// mark current one as infinite
-			const infiniteInstanceId = instance.prepareForHold()
+			instance.prepareForHold()
 
 			// This gets deleted once the nextpart is activated, so it doesnt linger for long
-			const extendedPieceInstance = holdToPartInstance.insertHoldPieceInstance(instance, infiniteInstanceId)
+			const extendedPieceInstance = holdToPartInstance.insertHoldPieceInstance(instance)
 
 			const content = clone(instance.PieceInstance.piece.content) as VTContent | undefined
 			if (content?.fileName && content.sourceDuration && instance.PieceInstance.plannedStartedPlayback) {

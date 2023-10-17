@@ -1,6 +1,7 @@
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { ReadOnlyCache } from '../../../cache/CacheBase'
+import { DatabasePersistedModel } from '../../../modelBase'
 import { CacheForIngest } from '../../../ingest/cache'
 import { PlaylistLock } from '../../../jobs/lock'
 import { ReadonlyDeep } from 'type-fest'
@@ -21,6 +22,14 @@ import { PlayoutPartInstanceModelImpl } from './PlayoutPartInstanceModelImpl'
 import { PeripheralDevice } from '@sofie-automation/corelib/dist/dataModel/PeripheralDevice'
 import { PlayoutModel, PlayoutModelPreInit } from '../PlayoutModel'
 
+/**
+ * Load a PlayoutModelPreInit for the given RundownPlaylist
+ * @param context Context from the job queue
+ * @param playlistLock Lock for the RundownPlaylist to load
+ * @param tmpPlaylist Temporary copy of the RundownPlaylist to load
+ * @param reloadPlaylist Whether to reload the RundownPlaylist, or use the temporary copy
+ * @returns Loaded PlayoutModelPreInit
+ */
 export async function loadPlayoutModelPreInit(
 	context: JobContext,
 	playlistLock: PlaylistLock,
@@ -57,18 +66,28 @@ export async function loadPlayoutModelPreInit(
 	return res
 }
 
+/**
+ * Load a PlayoutModel partially from the database, partially from an IngestModel.
+ * Anything belonging to the Rundown of the IngestModel will be taken from there, as it is assumed to be the most up to date copy of the data
+ * @param context Context from the job queue
+ * @param playlistLock Lock for the RundownPlaylist to load
+ * @param loadedPlaylist Preloaded copy of the RundownPlaylist
+ * @param newRundowns Preloaded copy of the Rundowns belonging to the RundownPlaylist
+ * @param ingestCache IngestModel to take data from
+ * @returns Loaded PlayoutModel
+ */
 export async function createPlayoutCachefromIngestCache(
 	context: JobContext,
 	playlistLock: PlaylistLock,
-	newPlaylist: ReadonlyDeep<DBRundownPlaylist>,
+	loadedPlaylist: ReadonlyDeep<DBRundownPlaylist>,
 	newRundowns: ReadonlyDeep<Array<DBRundown>>,
 	ingestCache: ReadOnlyCache<CacheForIngest>
-): Promise<PlayoutModel> {
-	const [peripheralDevices, playlist, rundowns] = await loadInitData(context, newPlaylist, false, newRundowns)
+): Promise<PlayoutModel & DatabasePersistedModel> {
+	const [peripheralDevices, playlist, rundowns] = await loadInitData(context, loadedPlaylist, false, newRundowns)
 	const rundownIds = rundowns.map((r) => r._id)
 
 	const [partInstances, rundownsWithContent, timeline] = await Promise.all([
-		loadPartInstances(context, newPlaylist, rundownIds),
+		loadPartInstances(context, loadedPlaylist, rundownIds),
 		loadRundowns(context, ingestCache, rundowns),
 		loadTimeline(context),
 	])
@@ -76,7 +95,7 @@ export async function createPlayoutCachefromIngestCache(
 	const res = new PlayoutModelImpl(
 		context,
 		playlistLock,
-		newPlaylist._id,
+		loadedPlaylist._id,
 		peripheralDevices,
 		playlist,
 		partInstances,
@@ -111,10 +130,16 @@ async function loadInitData(
 	return [peripheralDevices, reloadedPlaylist, rundowns]
 }
 
+/**
+ * Load a PlayoutModel from a PlayoutModelPreInit
+ * @param context Context from the job queue
+ * @param initModel Preloaded PlayoutModelPreInit describing the RundownPlaylist to load
+ * @returns Loaded PlayoutModel
+ */
 export async function createPlayoutModelfromInitModel(
 	context: JobContext,
 	initModel: PlayoutModelPreInit
-): Promise<PlayoutModel> {
+): Promise<PlayoutModel & DatabasePersistedModel> {
 	const span = context.startSpan('CacheForPlayout.fromInit')
 	if (span) span.setLabel('playlistId', unprotectString(initModel.PlaylistId))
 

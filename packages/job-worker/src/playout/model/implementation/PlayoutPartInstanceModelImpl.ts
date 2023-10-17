@@ -1,9 +1,4 @@
-import {
-	PieceId,
-	PieceInstanceId,
-	PieceInstanceInfiniteId,
-	RundownPlaylistActivationId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PieceId, PieceInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import {
@@ -206,16 +201,6 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		this.#compareAndSetPartInstanceValue('blockTakeUntil', timestamp ?? undefined)
 	}
 
-	clearPlannedTimings(): void {
-		const timings = { ...this.PartInstanceImpl.timings }
-		if (timings.plannedStartedPlayback) {
-			delete timings.plannedStartedPlayback
-			delete timings.plannedStoppedPlayback
-
-			this.#compareAndSetPartInstanceValue('timings', timings, true)
-		}
-	}
-
 	getPieceInstance(id: PieceInstanceId): PlayoutPieceInstanceModel | undefined {
 		return this.PieceInstancesImpl.get(id) ?? undefined
 	}
@@ -252,10 +237,14 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 		return pieceInstanceModel
 	}
 
-	insertHoldPieceInstance(
-		extendPieceInstance: PlayoutPieceInstanceModel,
-		infiniteInstanceId: PieceInstanceInfiniteId
-	): PlayoutPieceInstanceModel {
+	insertHoldPieceInstance(extendPieceInstance: PlayoutPieceInstanceModel): PlayoutPieceInstanceModel {
+		const extendPieceInfinite = extendPieceInstance.PieceInstance.infinite
+		if (!extendPieceInfinite) throw new Error('Piece being extended is not infinite!')
+		if (extendPieceInfinite.infiniteInstanceIndex !== 0 || extendPieceInfinite.fromPreviousPart)
+			throw new Error('Piece being extended is not infinite due to HOLD!')
+
+		const infiniteInstanceId = extendPieceInfinite.infiniteInstanceId
+
 		// make the extension
 		const newInstance: PieceInstance = {
 			_id: protectString<PieceInstanceId>(extendPieceInstance.PieceInstance._id + '_hold'),
@@ -444,11 +433,16 @@ export class PlayoutPartInstanceModelImpl implements PlayoutPartInstanceModel {
 
 		this.#compareAndSetPartInstanceValue('timings', timings, true)
 	}
-	setPlannedStoppedPlayback(time: Time): void {
+	setPlannedStoppedPlayback(time: Time | undefined): void {
 		const timings = { ...this.PartInstanceImpl.timings }
 		if (timings?.plannedStartedPlayback && !timings.plannedStoppedPlayback) {
-			timings.plannedStoppedPlayback = time
-			timings.duration = time - timings.plannedStartedPlayback
+			if (time) {
+				timings.plannedStoppedPlayback = time
+				timings.duration = time - timings.plannedStartedPlayback
+			} else {
+				delete timings.plannedStoppedPlayback
+				delete timings.duration
+			}
 
 			this.#compareAndSetPartInstanceValue('timings', timings, true)
 		}

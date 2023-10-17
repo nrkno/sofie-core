@@ -7,6 +7,7 @@ import { IS_PRODUCTION } from '../environment'
 import { logger } from '../logging'
 import { sleep } from '@sofie-automation/corelib/dist/lib'
 import { JobContext } from '../jobs'
+import { BaseModel } from '../modelBase'
 
 type DeferredFunction<Cache> = (cache: Cache) => void | Promise<void>
 type DeferredAfterSaveFunction<Cache extends CacheBase<any>> = (cache: ReadOnlyCache<Cache>) => void | Promise<void>
@@ -29,21 +30,8 @@ export type ReadOnlyCache<T extends CacheBase<any>> = Omit<
 	'defer' | 'deferAfterSave' | 'saveAllToDatabase'
 >
 
-export interface ICacheBase2 {
-	readonly DisplayName: string
-
-	dispose(): void
-
-	/**
-	 * Assert that no changes should have been made to the cache, will throw an Error otherwise. This can be used in
-	 * place of `saveAllToDatabase()`, when the code controlling the cache expects no changes to have been made and any
-	 * changes made are an error and will cause issues.
-	 */
-	assertNoChanges(): void
-}
-
 /** This cache contains data relevant in a studio */
-export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> implements ICacheBase2 {
+export abstract class ReadOnlyCacheBase<T extends ReadOnlyCacheBase<never>> implements BaseModel {
 	protected _deferredBeforeSaveFunctions: DeferredFunction<T>[] = []
 	protected _deferredAfterSaveFunctions: DeferredAfterSaveFunction<any>[] = []
 

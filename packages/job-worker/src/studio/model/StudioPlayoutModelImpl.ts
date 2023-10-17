@@ -7,20 +7,23 @@ import {
 	TimelineCompleteGenerationVersions,
 	TimelineObjGeneric,
 } from '@sofie-automation/corelib/dist/dataModel/Timeline'
-import { JobContext } from '../jobs'
+import { JobContext } from '../../jobs'
 import { ReadonlyDeep } from 'type-fest'
 import { getRandomId } from '@sofie-automation/corelib/dist/lib'
-import { getCurrentTime } from '../lib'
-import { IS_PRODUCTION } from '../environment'
-import { logger } from '../logging'
-import { StudioPlayoutModel, DeferredAfterSaveFunction } from './StudioPlayoutModel'
+import { getCurrentTime } from '../../lib'
+import { IS_PRODUCTION } from '../../environment'
+import { logger } from '../../logging'
+import { StudioPlayoutModel } from './StudioPlayoutModel'
+import { DatabasePersistedModel } from '../../modelBase'
+import { ExpectedPackageDBFromStudioBaselineObjects } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'
+import { ExpectedPlayoutItemStudio } from '@sofie-automation/corelib/dist/dataModel/ExpectedPlayoutItem'
+import { StudioBaselineHelper } from './StudioBaselineHelper'
 
 /**
  * This is a model used for studio operations.
  */
-
 export class StudioPlayoutModelImpl implements StudioPlayoutModel {
-	#deferredAfterSaveFunctions: DeferredAfterSaveFunction[] = []
+	readonly #baselineHelper: StudioBaselineHelper
 	#disposed = false
 
 	public readonly isStudio = true
@@ -42,6 +45,8 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 		timeline: TimelineComplete | undefined
 	) {
 		context.trackCache(this)
+
+		this.#baselineHelper = new StudioBaselineHelper(context)
 
 		this.PeripheralDevices = peripheralDevices
 
@@ -72,6 +77,13 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 		return this.#isMultiGatewayMode
 	}
 
+	setExpectedPackagesForStudioBaseline(packages: ExpectedPackageDBFromStudioBaselineObjects[]): void {
+		this.#baselineHelper.setExpectedPackages(packages)
+	}
+	setExpectedPlayoutItemsForStudioBaseline(playoutItems: ExpectedPlayoutItemStudio[]): void {
+		this.#baselineHelper.setExpectedPlayoutItems(playoutItems)
+	}
+
 	setTimeline(timelineObjs: TimelineObjGeneric[], generationVersions: TimelineCompleteGenerationVersions): void {
 		this.#Timeline = {
 			_id: this.context.studioId,
@@ -88,9 +100,6 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 	 */
 	dispose(): void {
 		this.#disposed = true
-
-		// Discard any hooks too
-		this.#deferredAfterSaveFunctions.length = 0
 	}
 
 	async saveAllToDatabase(): Promise<void> {
@@ -106,11 +115,7 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 		}
 		this.#TimelineHasChanged = false
 
-		// Execute cache.deferAfterSave()'s
-		for (const fn of this.#deferredAfterSaveFunctions) {
-			await fn(this as any)
-		}
-		this.#deferredAfterSaveFunctions.length = 0 // clear the array
+		await this.#baselineHelper.saveAllToDatabase()
 
 		if (span) span.end()
 	}
@@ -131,12 +136,10 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 			}
 		}
 
-		if (this.#deferredAfterSaveFunctions.length > 0)
+		if (this.#baselineHelper.hasChanges())
 			logOrThrowError(
 				new Error(
-					`Failed no changes in cache assertion, there were ${
-						this.#deferredAfterSaveFunctions.length
-					} after-save deferred functions`
+					`Failed no changes in cache assertion, baseline ExpectedPackages or ExpectedPlayoutItems has changes`
 				)
 			)
 
@@ -145,14 +148,16 @@ export class StudioPlayoutModelImpl implements StudioPlayoutModel {
 
 		if (span) span.end()
 	}
-
-	/** @deprecated */
-	deferAfterSave(fcn: DeferredAfterSaveFunction): void {
-		this.#deferredAfterSaveFunctions.push(fcn)
-	}
 }
 
-export async function loadStudioPlayoutModel(context: JobContext): Promise<StudioPlayoutModelImpl> {
+/**
+ * Load a StudioPlayoutModel for the current Studio
+ * @param context Context from the job queue
+ * @returns Loaded StudioPlayoutModel
+ */
+export async function loadStudioPlayoutModel(
+	context: JobContext
+): Promise<StudioPlayoutModel & DatabasePersistedModel> {
 	const span = context.startSpan('loadStudioPlayoutModel')
 
 	const studioId = context.studioId

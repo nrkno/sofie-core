@@ -16,7 +16,7 @@ import {
 	getPieceInstancesForPart,
 	syncPlayheadInfinitesForNextPartInstance,
 } from '../playout/infinites'
-import { isTooCloseToAutonext, updateExpectedDurationWithPrerollForPartInstance } from '../playout/lib'
+import { isTooCloseToAutonext } from '../playout/lib'
 import _ = require('underscore')
 import { SyncIngestUpdateToPartInstanceContext } from '../blueprints/context'
 import {
@@ -194,10 +194,7 @@ export async function syncChangesToPartInstances(
 				}
 
 				if (playStatus === 'next') {
-					updateExpectedDurationWithPrerollForPartInstance(
-						playoutModel,
-						existingPartInstance.PartInstance._id
-					)
+					existingPartInstance.recalculateExpectedDurationWithPreroll()
 				}
 
 				// Save notes:
@@ -218,11 +215,7 @@ export async function syncChangesToPartInstances(
 					// TODO - old notes from the sync may need to be pruned, or we will end up with duplicates and 'stuck' notes?+
 					existingPartInstance.appendNotes(newNotes)
 
-					validateScratchpartPartInstanceProperties(
-						context,
-						playoutModel,
-						existingPartInstance.PartInstance._id
-					)
+					validateScratchpartPartInstanceProperties(context, playoutModel, existingPartInstance)
 				}
 
 				if (existingPartInstance.PartInstance._id === playoutModel.Playlist.currentPartInfo?.partInstanceId) {

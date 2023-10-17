@@ -1,6 +1,6 @@
 import { JobContext } from '../jobs'
-import { StudioPlayoutModel } from './StudioPlayoutModel'
-import { loadStudioPlayoutModel } from './StudioPlayoutModelImpl'
+import { StudioPlayoutModel } from './model/StudioPlayoutModel'
+import { loadStudioPlayoutModel } from './model/StudioPlayoutModelImpl'
 
 /**
  * Run a typical studio job

@@ -27,7 +27,11 @@ export class PlayoutSegmentModelImpl implements PlayoutSegmentModel {
 		return this.Parts.map((part) => part._id)
 	}
 
-	// Internal mutation hack
+	/**
+	 * Internal mutation 'hack' to modify the rank of the ScratchPad segment
+	 * This segment belongs to Playout, so is allowed to be modified in this way
+	 * @param rank New rank for the segment
+	 */
 	setScratchpadRank(rank: number): void {
 		if (this.#Segment.orphaned !== SegmentOrphanedReason.SCRATCHPAD)
 			throw new Error('setScratchpadRank can only be used on a SCRATCHPAD segment')

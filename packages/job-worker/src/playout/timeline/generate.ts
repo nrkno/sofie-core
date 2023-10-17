@@ -30,7 +30,7 @@ import {
 	processAndPrunePieceInstanceTimings,
 	PieceInstanceWithTimings,
 } from '@sofie-automation/corelib/dist/playout/processAndPrune'
-import { StudioPlayoutModel, StudioPlayoutModelBase } from '../../studio/StudioPlayoutModel'
+import { StudioPlayoutModel, StudioPlayoutModelBase } from '../../studio/model/StudioPlayoutModel'
 import { getLookeaheadObjects } from '../lookahead'
 import { StudioBaselineContext, OnTimelineGenerateContext } from '../../blueprints/context'
 import { ExpectedPackageDBType } from '@sofie-automation/corelib/dist/dataModel/ExpectedPackages'

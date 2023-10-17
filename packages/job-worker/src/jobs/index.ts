@@ -15,7 +15,7 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { ProcessedShowStyleConfig, ProcessedStudioConfig } from '../blueprints/config'
 import { StudioJobFunc } from '@sofie-automation/corelib/dist/worker/studio'
 import { PlaylistLock, RundownLock } from './lock'
-import { ICacheBase2 } from '../cache/CacheBase'
+import { BaseModel } from '../modelBase'
 import { TimelineComplete } from '@sofie-automation/corelib/dist/dataModel/Timeline'
 import { ProcessedShowStyleBase, ProcessedShowStyleVariant, ProcessedShowStyleCompound } from './showStyle'
 
@@ -27,7 +27,7 @@ export { ProcessedShowStyleVariant, ProcessedShowStyleBase, ProcessedShowStyleCo
  */
 export interface JobContext extends StudioCacheContext {
 	/** Internal: Track a cache, to check it was saved at the end of the job */
-	trackCache(cache: ICacheBase2): void
+	trackCache(cache: BaseModel): void
 
 	/** Aquire the CacheForPlayout/write lock for a Playlist */
 	lockPlaylist(playlistId: RundownPlaylistId): Promise<PlaylistLock>

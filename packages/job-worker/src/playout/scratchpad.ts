@@ -6,8 +6,8 @@ import { getCurrentTime } from '../lib'
 import { JobContext } from '../jobs'
 import { runJobWithPlayoutModel } from './lock'
 import { performTakeToNextedPart } from './take'
-import { PartInstanceId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PlayoutModel } from './model/PlayoutModel'
+import { PlayoutPartInstanceModel } from './model/PlayoutPartInstanceModel'
 
 export async function handleActivateScratchpad(context: JobContext, data: ActivateScratchpadProps): Promise<void> {
 	if (!context.studio.settings.allowScratchpad) throw UserError.create(UserErrorMessage.ScratchpadNotAllowed)
@@ -58,11 +58,8 @@ export async function handleActivateScratchpad(context: JobContext, data: Activa
 export function validateScratchpartPartInstanceProperties(
 	_context: JobContext,
 	playoutModel: PlayoutModel,
-	partInstanceId: PartInstanceId
+	partInstance: PlayoutPartInstanceModel
 ): void {
-	const partInstance = playoutModel.getPartInstance(partInstanceId)
-	if (!partInstance) return
-
 	const rundown = playoutModel.getRundown(partInstance.PartInstance.rundownId)
 	if (!rundown)
 		throw new Error(

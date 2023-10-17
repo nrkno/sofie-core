@@ -5,7 +5,7 @@ import { updateStudioTimeline, updateTimeline } from './timeline/generate'
 import { getSystemVersion } from '../lib'
 import { runJobWithStudioPlayoutModel } from '../studio/lock'
 import { shouldUpdateStudioBaselineInner as libShouldUpdateStudioBaselineInner } from '@sofie-automation/corelib/dist/studio/baseline'
-import { StudioPlayoutModel } from '../studio/StudioPlayoutModel'
+import { StudioPlayoutModel } from '../studio/model/StudioPlayoutModel'
 
 /**
  * Update the timeline with a regenerated Studio Baseline

@@ -8,6 +8,11 @@ import { JobContext } from '../../../jobs'
 import { PlayoutPartInstanceModelImpl } from './PlayoutPartInstanceModelImpl'
 import { PlayoutRundownModelImpl } from './PlayoutRundownModelImpl'
 
+/**
+ * Save any changed Scratchpad Segments
+ * @param context Context from the job queue
+ * @param rundowns Rundowns whose Scratchpad Segment may need saving
+ */
 export async function writeScratchpadSegments(
 	context: JobContext,
 	rundowns: readonly PlayoutRundownModelImpl[]
@@ -47,6 +52,11 @@ export async function writeScratchpadSegments(
 	}
 }
 
+/**
+ * Save any changed or deleted PartInstances and their PieceInstances
+ * @param context Context from the job queue
+ * @param partInstances Map of PartInstances to check for changes or deletion
+ */
 export function writePartInstancesAndPieceInstances(
 	context: JobContext,
 	partInstances: Map<PartInstanceId, PlayoutPartInstanceModelImpl | null>

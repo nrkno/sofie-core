@@ -18,9 +18,15 @@ export class PlayoutRundownModelImpl implements PlayoutRundownModel {
 	readonly BaselineObjects: ReadonlyDeep<RundownBaselineObj[]>
 
 	#scratchPadSegmentHasChanged = false
+	/**
+	 * Check if the Scratchpad Segment has unsaved changes
+	 */
 	get ScratchPadSegmentHasChanged(): boolean {
 		return this.#scratchPadSegmentHasChanged
 	}
+	/**
+	 * Clear the `ScratchPadSegmentHasChanged` flag
+	 */
 	clearScratchPadSegmentChangedFlag(): void {
 		this.#scratchPadSegmentHasChanged = false
 	}
@@ -41,12 +47,12 @@ export class PlayoutRundownModelImpl implements PlayoutRundownModel {
 		return this.#segments
 	}
 
-	getSegmentIds(): SegmentId[] {
-		return this.Segments.map((segment) => segment.Segment._id)
-	}
-
 	getSegment(id: SegmentId): PlayoutSegmentModel | undefined {
 		return this.Segments.find((segment) => segment.Segment._id === id)
+	}
+
+	getSegmentIds(): SegmentId[] {
+		return this.Segments.map((segment) => segment.Segment._id)
 	}
 
 	getAllPartIds(): PartId[] {
@@ -104,6 +110,8 @@ export class PlayoutRundownModelImpl implements PlayoutRundownModel {
 		if (!segment) throw new Error('Scratchpad segment does not exist!')
 
 		segment.setScratchpadRank(rank)
+		this.#segments.sort((a, b) => a.Segment._rank - b.Segment._rank)
+
 		this.#scratchPadSegmentHasChanged = true
 	}
 }

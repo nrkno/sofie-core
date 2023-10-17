@@ -4,7 +4,6 @@ import { sleep } from '@sofie-automation/corelib/dist/lib'
 import { protectString } from '@sofie-automation/corelib/dist/protectedString'
 import { getRundownId } from '../../ingest/lib'
 import { CacheForIngest } from '../../ingest/cache'
-import { loadStudioPlayoutModel } from '../../studio/StudioPlayoutModelImpl'
 import { MockJobContext, setupDefaultJobEnvironment } from '../../__mocks__/context'
 
 describe('DatabaseCaches', () => {
@@ -305,18 +304,18 @@ describe('DatabaseCaches', () => {
 				// 	}).toThrow(/failed .+ assertion,.+ deferred/gi)
 				// }
 
-				{
-					const cache = await loadStudioPlayoutModel(context)
+				// {
+				// 	const cache = await loadStudioPlayoutModel(context)
 
-					// Insert a document:
-					cache.deferAfterSave(() => {
-						//
-					})
+				// 	// Insert a document:
+				// 	cache.deferAfterSave(() => {
+				// 		//
+				// 	})
 
-					expect(() => {
-						cache.assertNoChanges()
-					}).toThrow(/failed .+ assertion,.+ after-save deferred/gi)
-				}
+				// 	expect(() => {
+				// 		cache.assertNoChanges()
+				// 	}).toThrow(/failed .+ assertion,.+ after-save deferred/gi)
+				// }
 			} finally {
 				await lock.release()
 			}

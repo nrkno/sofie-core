@@ -219,18 +219,3 @@ export function isTooCloseToAutonext(
 
 	return false
 }
-
-/**
- * Update the expectedDurationWithPreroll on the specified PartInstance.
- * The value is used by the UI to approximate the duration of a PartInstance as it will be played out
- */
-export function updateExpectedDurationWithPrerollForPartInstance(
-	playoutModel: PlayoutModel,
-	partInstanceId: PartInstanceId
-): void {
-	const nextPartInstance = playoutModel.getPartInstance(partInstanceId)
-	if (nextPartInstance) {
-		// Update expectedDurationWithPreroll of the next part instance, as it may have changed and is used by the ui until it is taken
-		nextPartInstance.recalculateExpectedDurationWithPreroll()
-	}
-}

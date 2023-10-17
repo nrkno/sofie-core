@@ -7,8 +7,17 @@ import { PlayoutPieceInstanceModel } from '../PlayoutPieceInstanceModel'
 import _ = require('underscore')
 
 export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel {
+	/**
+	 * The raw mutable PieceInstance
+	 * Danger: This should not be modified externally, this is exposed for cloning and saving purposes
+	 */
 	PieceInstanceImpl: PieceInstance
 
+	/**
+	 * Set/delete a value for this PieceInstance, and track that there are changes
+	 * @param key Property key
+	 * @param newValue Property value
+	 */
 	setPieceInstanceValue<T extends keyof PieceInstance>(key: T, newValue: PieceInstance[T]): void {
 		if (newValue === undefined) {
 			delete this.PieceInstanceImpl[key]
@@ -19,6 +28,12 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 		this.#HasChanges = true
 	}
 
+	/**
+	 * Set/delete a value for this PieceInstance if the value has cahnged, and track that there are changes
+	 * @param key Property key
+	 * @param newValue Property value
+	 * @param deepEqual Perform a deep equality check
+	 */
 	compareAndSetPieceInstanceValue<T extends keyof PieceInstance>(
 		key: T,
 		newValue: PieceInstance[T],
@@ -38,10 +53,16 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 	}
 
 	#HasChanges = false
+	/**
+	 * Whether this PieceInstance has unsaved changes
+	 */
 	get HasChanges(): boolean {
 		return this.#HasChanges
 	}
 
+	/**
+	 * Clear the `HasChanges` flag
+	 */
 	clearChangedFlag(): void {
 		this.#HasChanges = false
 	}
@@ -55,6 +76,10 @@ export class PlayoutPieceInstanceModelImpl implements PlayoutPieceInstanceModel 
 		this.#HasChanges = hasChanges
 	}
 
+	/**
+	 * Merge properties from another PieceInstance onto this one
+	 * @param pieceInstance PieceInstance to merge properties from
+	 */
 	mergeProperties(pieceInstance: ReadonlyDeep<PieceInstance>): void {
 		this.PieceInstanceImpl = {
 			...this.PieceInstanceImpl,

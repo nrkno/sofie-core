@@ -12,7 +12,6 @@ import { getCurrentTime } from '../lib'
 import { ReadonlyDeep } from 'type-fest'
 import { PlayoutModel } from './model/PlayoutModel'
 import { syncPlayheadInfinitesForNextPartInstance } from './infinites'
-import { updateExpectedDurationWithPrerollForPartInstance } from './lib'
 import { runJobWithPlaylistLock } from './lock'
 import { updateTimeline } from './timeline/generate'
 import { performTakeToNextedPart } from './take'
@@ -79,7 +78,7 @@ export async function handleExecuteAdlibAction(
 
 		if (blueprint.blueprint.executeAction) {
 			// load a full cache for the regular actions & executet the handler
-			const playoutModel: PlayoutModel = await createPlayoutModelfromInitModel(context, initCache)
+			const playoutModel = await createPlayoutModelfromInitModel(context, initCache)
 
 			const fullRundown = playoutModel.getRundown(rundown._id)
 			if (!fullRundown) throw new Error(`Rundown "${rundown._id}" missing between caches`)
@@ -198,18 +197,18 @@ async function applyAnyExecutionSideEffects(
 	}
 
 	if (actionContext.nextPartState !== ActionPartChange.NONE) {
-		const nextPartInstanceId = playoutModel.Playlist.nextPartInfo?.partInstanceId
-		if (nextPartInstanceId) {
-			updateExpectedDurationWithPrerollForPartInstance(playoutModel, nextPartInstanceId)
+		const nextPartInstance = playoutModel.NextPartInstance
+		if (nextPartInstance) {
+			nextPartInstance.recalculateExpectedDurationWithPreroll()
 
-			validateScratchpartPartInstanceProperties(context, playoutModel, nextPartInstanceId)
+			validateScratchpartPartInstanceProperties(context, playoutModel, nextPartInstance)
 		}
 	}
 
 	if (actionContext.currentPartState !== ActionPartChange.NONE) {
-		const currentPartInstanceId = playoutModel.Playlist.currentPartInfo?.partInstanceId
-		if (currentPartInstanceId) {
-			validateScratchpartPartInstanceProperties(context, playoutModel, currentPartInstanceId)
+		const currentPartInstance = playoutModel.CurrentPartInstance
+		if (currentPartInstance) {
+			validateScratchpartPartInstanceProperties(context, playoutModel, currentPartInstance)
 		}
 	}
 

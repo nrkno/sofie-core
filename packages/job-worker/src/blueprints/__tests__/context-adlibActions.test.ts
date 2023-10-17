@@ -37,6 +37,7 @@ import { TimelineObjRundown, TimelineObjType } from '@sofie-automation/corelib/d
 import { PlayoutPartInstanceModelImpl } from '../../playout/model/implementation/PlayoutPartInstanceModelImpl'
 import { writePartInstancesAndPieceInstances } from '../../playout/model/implementation/SavePlayoutModel'
 import { PlayoutPieceInstanceModel } from '../../playout/model/PlayoutPieceInstanceModel'
+import { DatabasePersistedModel } from '../../modelBase'
 
 import * as PlayoutAdlib from '../../playout/adlibUtils'
 type TinnerStopPieces = jest.MockedFunction<typeof PlayoutAdlib.innerStopPieces>
@@ -186,9 +187,9 @@ describe('Test blueprint api context', () => {
 	async function wrapWithPlayoutModel<T>(
 		context: JobContext,
 		playlistId: RundownPlaylistId,
-		fcn: (playoutModel: PlayoutModel) => Promise<T>
+		fcn: (playoutModel: PlayoutModel & DatabasePersistedModel) => Promise<T>
 	): Promise<T> {
-		return runJobWithPlayoutModel(context, { playlistId }, null, fcn)
+		return runJobWithPlayoutModel(context, { playlistId }, null, fcn as any)
 	}
 
 	async function setupMyDefaultRundown(): Promise<{
@@ -228,7 +229,7 @@ describe('Test blueprint api context', () => {
 
 	async function saveAllToDatabase(
 		context: JobContext,
-		playoutModel: PlayoutModel,
+		playoutModel: PlayoutModel & DatabasePersistedModel,
 		allPartInstances: PlayoutPartInstanceModel[]
 	) {
 		// We need to push changes back to 'mongo' for these tests

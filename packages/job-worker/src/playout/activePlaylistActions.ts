@@ -9,7 +9,6 @@ import { selectNextPart } from './selectNextPart'
 import { setNextPart } from './setNext'
 import { updateStudioTimeline, updateTimeline } from './timeline/generate'
 import { getCurrentTime } from '../lib'
-import { EventsJobs } from '@sofie-automation/corelib/dist/worker/events'
 import { cleanTimelineDatastore } from './datastore'
 import { RundownActivationContext } from '../blueprints/context/RundownActivationContext'
 import { ReadonlyDeep } from 'type-fest'
@@ -133,17 +132,7 @@ export async function deactivateRundownPlaylistInner(
 	if (currentPartInstance) {
 		rundown = playoutModel.getRundown(currentPartInstance.PartInstance.rundownId)?.Rundown
 
-		playoutModel.deferAfterSave(async () => {
-			context
-				.queueEventJob(EventsJobs.NotifyCurrentlyPlayingPart, {
-					rundownId: currentPartInstance.PartInstance.rundownId,
-					isRehearsal: !!playoutModel.Playlist.rehearsal,
-					partExternalId: null,
-				})
-				.catch((e) => {
-					logger.warn(`Failed to queue NotifyCurrentlyPlayingPart job: ${e}`)
-				})
-		})
+		playoutModel.queueNotifyCurrentlyPlayingPartEvent(currentPartInstance.PartInstance.rundownId, null)
 	} else if (nextPartInstance) {
 		rundown = playoutModel.getRundown(nextPartInstance.PartInstance.rundownId)?.Rundown
 	}

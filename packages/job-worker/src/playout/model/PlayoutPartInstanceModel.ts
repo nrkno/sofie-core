@@ -1,9 +1,4 @@
-import {
-	PieceId,
-	PieceInstanceId,
-	PieceInstanceInfiniteId,
-	RundownPlaylistActivationId,
-} from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { PieceId, PieceInstanceId, RundownPlaylistActivationId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { ReadonlyDeep } from 'type-fest'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { PieceInstance, PieceInstancePiece } from '@sofie-automation/corelib/dist/dataModel/PieceInstance'
@@ -21,7 +16,14 @@ export interface PlayoutPartInstanceModelSnapshot {
 }
 
 export interface PlayoutPartInstanceModel {
+	/**
+	 * The PartInstance properties
+	 */
 	readonly PartInstance: ReadonlyDeep<DBPartInstance>
+
+	/**
+	 * All the PieceInstances in the PartInstance
+	 */
 	readonly PieceInstances: PlayoutPieceInstanceModel[]
 
 	/**
@@ -38,23 +40,44 @@ export interface PlayoutPartInstanceModel {
 	 */
 	snapshotRestore(snapshot: PlayoutPartInstanceModelSnapshot): void
 
+	/**
+	 * Add some user notes for this PartInstance
+	 * Future: it is only possible to add these, there is no way to 'replace' or remove them
+	 * @param notes New notes to add
+	 */
 	appendNotes(notes: PartNote[]): void
 
+	/**
+	 * Block a take out of this PartInstance from happening until the specified timestamp
+	 * This can be necessary when an uninteruptable Piece is being played out
+	 * @param timestamp Timestampt to block until
+	 */
 	blockTakeUntil(timestamp: Time | null): void
 
-	clearPlannedTimings(): void
-
+	/**
+	 * Get a PieceInstance which belongs to this PartInstance
+	 * @param id Id of the PieceInstance
+	 */
 	getPieceInstance(id: PieceInstanceId): PlayoutPieceInstanceModel | undefined
 
+	/**
+	 * Insert a Piece into this PartInstance as an adlibbed PieceInstance
+	 * @param piece Piece to insert
+	 * @param fromAdlibId Id of the source Adlib, if any
+	 * @returns The inserted PlayoutPieceInstanceModel
+	 */
 	insertAdlibbedPiece(
 		piece: Omit<PieceInstancePiece, 'startPartId'>,
 		fromAdlibId: PieceId | undefined
 	): PlayoutPieceInstanceModel
 
-	insertHoldPieceInstance(
-		extendPieceInstance: PlayoutPieceInstanceModel,
-		infiniteInstanceId: PieceInstanceInfiniteId
-	): PlayoutPieceInstanceModel
+	/**
+	 * Extend a PieceInstance into this PartInstance as a Piece extended by HOLD
+	 * The PieceInstance being extended must have been prepared with `prepareForHold` before calling this
+	 * @param extendPieceInstance Piece to extend
+	 * @returns The inserted PlayoutPieceInstanceModel
+	 */
+	insertHoldPieceInstance(extendPieceInstance: PlayoutPieceInstanceModel): PlayoutPieceInstanceModel
 
 	/**
 	 * Insert a Piece as if it were originally planned at the time of ingest
@@ -64,6 +87,15 @@ export interface PlayoutPartInstanceModel {
 	 */
 	insertPlannedPiece(piece: Omit<PieceInstancePiece, 'startPartId'>): PlayoutPieceInstanceModel
 
+	/**
+	 * Insert a virtual adlib Piece into this PartInstance
+	 * This will stop another piece following the infinite rules, but has no content and will not be visible in the UI
+	 * @param start Start time of the Piece, relative to the start of the PartInstance
+	 * @param lifespan Infinite lifespan to use
+	 * @param sourceLayerId Id of the SourceLayer the Piece should play on
+	 * @param outputLayerId Id of the OutputLayer the Piece should play on
+	 * @returns The inserted PlayoutPieceInstanceModel
+	 */
 	insertVirtualPiece(
 		start: number,
 		lifespan: PieceLifespan,
@@ -71,8 +103,17 @@ export interface PlayoutPartInstanceModel {
 		outputLayerId: string
 	): PlayoutPieceInstanceModel
 
+	/**
+	 * Mark this PartInstance as 'reset'
+	 * This will unload it from memory at the end of the operation from both the backend and UI.
+	 * Any UI's will ignore this PartInstance and will use the original Part instead
+	 */
 	markAsReset(): void
 
+	/**
+	 * Recalculate the `expectedDurationWithPreroll` property for this PartInstance
+	 * Future: is this needed? should this be handled internally?
+	 */
 	recalculateExpectedDurationWithPreroll(): void
 
 	/**
@@ -83,6 +124,12 @@ export interface PlayoutPartInstanceModel {
 	 */
 	removePieceInstance(id: PieceInstanceId): boolean
 
+	/**
+	 * Replace the infinite PieceInstances inherited from the previous playhead
+	 * These PieceInstances are not supposed to be modified directly, as they are 'extensions'.
+	 * This allows them to be replaced without embedding the infinite logic inside the model
+	 * @param pieceInstances New infinite pieces from previous playhead
+	 */
 	replaceInfinitesFromPreviousPlayhead(pieceInstances: PieceInstance[]): void
 
 	/**
@@ -94,30 +141,75 @@ export interface PlayoutPartInstanceModel {
 	 */
 	mergeOrInsertPieceInstance(pieceInstance: ReadonlyDeep<PieceInstance>): PlayoutPieceInstanceModel
 
+	/**
+	 * Mark this PartInstance as being orphaned
+	 * @param orphaned New orphaned state
+	 */
 	setOrphaned(orphaned: 'adlib-part' | 'deleted' | undefined): void
 
+	/**
+	 * Update the activation id of this PartInstance
+	 * This can be done to move this PartInstance when resetting the Playlist, if some previous PartInstances want to be kept
+	 * @param id New activation id
+	 */
 	setPlaylistActivationId(id: RundownPlaylistActivationId): void
 
+	/**
+	 * Set the Planned started playback time
+	 * This will clear the Planned stopped playback time
+	 * @param time Planned started time
+	 */
 	setPlannedStartedPlayback(time: Time | undefined): void
-	setPlannedStoppedPlayback(time: Time): void
+	/**
+	 * Set the Planned stopped playback time
+	 * @param time Planned stopped time
+	 */
+	setPlannedStoppedPlayback(time: Time | undefined): void
+	/**
+	 * Set the Reported (from playout-gateway) started playback time
+	 * This will clear the Reported stopped playback time
+	 * @param time Reported started time
+	 */
 	setReportedStartedPlayback(time: Time): boolean
+	/**
+	 * Set the Reported (from playout-gateway) stopped playback time
+	 * @param time Reported stopped time
+	 */
 	setReportedStoppedPlayback(time: Time): boolean
 
+	/**
+	 * Set the rank of this PartInstance, to update it's position in the Segment
+	 * @param rank New rank
+	 */
 	setRank(rank: number): void
 
+	/**
+	 * Set the PartInstance as having been taken
+	 * @param takeTime The timestamp to record as when it was taken
+	 * @param playOffset The offset into the PartInstance to start playback from
+	 */
 	setTaken(takeTime: number, playOffset: number): void
 
+	/**
+	 * Define some cached values, to be done when taking the PartInstance
+	 * @param partPlayoutTimings Timings used for Playout, these depend on the previous PartInstance and should not change once playback is started
+	 * @param previousPartEndState A state compiled by the Blueprints
+	 */
 	storePlayoutTimingsAndPreviousEndState(
 		partPlayoutTimings: PartCalculatedTimings,
 		previousPartEndState: unknown
 	): void
 
 	/**
-	 *
-	 * @param props
+	 * Update some properties for the wrapped Part
+	 * Note: This is missing a lot of validation, and will become stricter later
+	 * @param props New properties for the Part being wrapped
 	 * @returns True if any valid properties were provided
 	 */
 	updatePartProps(props: Partial<IBlueprintMutatablePart>): boolean
 
+	/**
+	 * Ensure that this PartInstance is setup correctly for being in the Scratchpad Segment
+	 */
 	validateScratchpadSegmentProperties(): void
 }
