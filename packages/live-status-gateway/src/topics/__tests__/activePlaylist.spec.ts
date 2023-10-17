@@ -1,16 +1,16 @@
 import { ActivePlaylistStatus, ActivePlaylistTopic } from '../activePlaylist'
 import { makeMockLogger, makeMockSubscriber, makeTestPlaylist } from './utils'
-import { PlaylistHandler } from '../../collections/playlist'
-import { ShowStyleBaseHandler } from '../../collections/showStyleBase'
+import { PlaylistHandler } from '../../collections/playlistHandler'
+import { ShowStyleBaseHandler } from '../../collections/showStyleBaseHandler'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { SourceLayerType } from '@sofie-automation/blueprints-integration/dist'
-import { PartInstanceName, PartInstancesHandler } from '../../collections/partInstances'
+import { PartInstanceName, PartInstancesHandler } from '../../collections/partInstancesHandler'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { protectString, unprotectString, unprotectStringArray } from '@sofie-automation/server-core-integration/dist'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
-import { AdLibActionsHandler } from '../../collections/adLibActions'
-import { GlobalAdLibActionsHandler } from '../../collections/globalAdLibActions'
+import { AdLibActionsHandler } from '../../collections/adLibActionsHandler'
+import { GlobalAdLibActionsHandler } from '../../collections/globalAdLibActionsHandler'
 
 function makeTestShowStyleBase(): Pick<DBShowStyleBase, 'sourceLayersWithOverrides' | 'outputLayersWithOverrides'> {
 	return {

@@ -4,13 +4,13 @@ import { CollectionBase, Collection, CollectionObserver } from '../wsHandler'
 import { CoreConnection } from '@sofie-automation/server-core-integration'
 import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
-import { PartInstanceName, PartInstancesHandler } from './partInstances'
+import { PartInstanceName, PartInstancesHandler } from './partInstancesHandler'
 import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import isShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
 import { SegmentsHandler } from './segmentsHandler'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
-import { PlaylistHandler } from './playlist'
+import { PlaylistHandler } from './playlistHandler'
 
 export class SegmentHandler
 	extends CollectionBase<DBSegment>

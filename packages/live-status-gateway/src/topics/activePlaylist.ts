@@ -14,16 +14,16 @@ import {
 } from '@sofie-automation/blueprints-integration'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler'
-import { PartInstanceName, PartInstancesHandler } from '../collections/partInstances'
+import { PartInstanceName, PartInstancesHandler } from '../collections/partInstancesHandler'
 import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { AdLibPiece } from '@sofie-automation/corelib/dist/dataModel/AdLibPiece'
 import { interpollateTranslation } from '@sofie-automation/corelib/dist/TranslatableMessage'
-import { AdLibsHandler } from '../collections/adLibs'
-import { GlobalAdLibsHandler } from '../collections/globalAdLibs'
-import { PlaylistHandler } from '../collections/playlist'
-import { ShowStyleBaseHandler } from '../collections/showStyleBase'
-import { AdLibActionsHandler } from '../collections/adLibActions'
-import { GlobalAdLibActionsHandler } from '../collections/globalAdLibActions'
+import { AdLibsHandler } from '../collections/adLibsHandler'
+import { GlobalAdLibsHandler } from '../collections/globalAdLibsHandler'
+import { PlaylistHandler } from '../collections/playlistHandler'
+import { ShowStyleBaseHandler } from '../collections/showStyleBaseHandler'
+import { AdLibActionsHandler } from '../collections/adLibActionsHandler'
+import { GlobalAdLibActionsHandler } from '../collections/globalAdLibActionsHandler'
 
 interface PartStatus {
 	id: string

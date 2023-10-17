@@ -5,8 +5,8 @@ import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { literal } from '@sofie-automation/shared-lib/dist/lib/lib'
 import { WebSocketTopicBase, WebSocketTopic, CollectionObserver } from '../wsHandler'
-import { StudioHandler } from '../collections/studio'
-import { PlaylistsHandler } from '../collections/playlist'
+import { StudioHandler } from '../collections/studioHandler'
+import { PlaylistsHandler } from '../collections/playlistHandler'
 
 type PlaylistActivationStatus = 'deactivated' | 'rehearsal' | 'activated'
 

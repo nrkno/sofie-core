@@ -36,6 +36,12 @@ $defs:
       name:
         description: Name of the segment
         type: string
+      expectedDurationMs:
+        description: Expected duration of the segment
+        type: number
+      budgetDurationMs:
+        description: Budget duration of the segment
+        type: number
     required: [id, rundownId, name]
     additionalProperties: false
     examples:

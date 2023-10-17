@@ -6,10 +6,10 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { DBRundown } from '@sofie-automation/corelib/dist/dataModel/Rundown'
 import { protectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { PartInstanceName, PartInstancesHandler } from './partInstances'
+import { PartInstanceName, PartInstancesHandler } from './partInstancesHandler'
 import { RundownId, RundownPlaylistId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import { PlaylistHandler } from './playlist'
+import { PlaylistHandler } from './playlistHandler'
 import { RundownsHandler } from './rundownsHandler'
 
 export class RundownHandler
