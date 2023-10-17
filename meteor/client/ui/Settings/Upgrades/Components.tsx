@@ -191,7 +191,7 @@ export function UpgradeStatusButtons({ upgradeResult }: UpgradeStatusButtonsProp
 							new Notification(
 								undefined,
 								NoticeLevel.NOTIFICATION,
-								t('Config for {{name}} fixed successfully', { name: upgradeResult.name }),
+								t('for {{name}} fix skipped successfully', { name: upgradeResult.name }),
 								'UpgradesView'
 							)
 						)
