@@ -87,7 +87,7 @@ describe('SegmentsTopic', () => {
 		const testPlaylist2 = makeTestPlaylist()
 		testPlaylist2.currentPartInfo = {
 			partInstanceId: protectString('PI_1'),
-			consumesNextSegmentId: true,
+			consumesQueuedSegmentId: true,
 			manuallySelected: false,
 			rundownId: protectString(RUNDOWN_1_ID),
 		}
