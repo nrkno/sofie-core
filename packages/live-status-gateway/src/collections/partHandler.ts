@@ -86,6 +86,9 @@ export class PartHandler
 				this._dbObserver.changed = (id: string) => {
 					void this.changed(id, 'changed').catch(this._logger.error)
 				}
+				this._dbObserver.removed = (id: string) => {
+					void this.changed(id, 'removed').catch(this._logger.error)
+				}
 			}
 		}
 		const collection = this._core.getCollection<DBPart>(this._collectionName)

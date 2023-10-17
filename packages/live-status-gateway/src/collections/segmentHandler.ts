@@ -85,6 +85,9 @@ export class SegmentHandler
 				this._dbObserver.changed = (id: string) => {
 					void this.changed(id, 'changed').catch(this._logger.error)
 				}
+				this._dbObserver.removed = (id: string) => {
+					void this.changed(id, 'removed').catch(this._logger.error)
+				}
 			}
 		}
 
