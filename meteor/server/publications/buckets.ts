@@ -45,7 +45,9 @@ meteorPublish(
 meteorPublish(PubSub.bucketAdLibPieces, async function (selector: MongoQuery<BucketAdLib>, _token: string | undefined) {
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<BucketAdLib> = {
-		fields: {},
+		fields: {
+			ingestInfo: 0, // This is a large blob, and is not of interest to the UI
+		},
 	}
 	if (isProtectedString(selector.bucketId) && (await BucketSecurity.allowReadAccess(this, selector.bucketId))) {
 		return BucketAdLibs.findWithCursor(selector, modifier)
@@ -58,7 +60,9 @@ meteorPublish(
 	async function (selector: MongoQuery<BucketAdLibAction>, _token: string | undefined) {
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 		const modifier: FindOptions<BucketAdLibAction> = {
-			fields: {},
+			fields: {
+				ingestInfo: 0, // This is a large blob, and is not of interest to the UI
+			},
 		}
 		if (isProtectedString(selector.bucketId) && (await BucketSecurity.allowReadAccess(this, selector.bucketId))) {
 			return BucketAdLibActions.findWithCursor(selector, modifier)

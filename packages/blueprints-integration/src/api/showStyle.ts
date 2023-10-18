@@ -125,7 +125,11 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	getAdlibItem?: (
 		context: IShowStyleUserContext,
 		ingestItem: IngestAdlib
-	) => IBlueprintAdLibPiece | IBlueprintActionManifest | null
+	) =>
+		| Promise<IBlueprintAdLibPiece | IBlueprintActionManifest | null>
+		| IBlueprintAdLibPiece
+		| IBlueprintActionManifest
+		| null
 
 	/**
 	 * Apply automatic upgrades to the structure of user specified config overrides
