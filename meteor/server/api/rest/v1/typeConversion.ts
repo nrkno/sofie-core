@@ -80,6 +80,7 @@ export async function showStyleBaseFrom(
 		blueprintConfigWithOverrides: blueprintConfig,
 		_rundownVersionHash: '',
 		lastBlueprintConfig: undefined,
+		lastBlueprintFixUpHash: undefined,
 	}
 }
 
@@ -274,6 +275,7 @@ export async function studioFrom(apiStudio: APIStudio, existingId?: StudioId): P
 			inputDevices: wrapDefaultObject({}),
 		},
 		lastBlueprintConfig: undefined,
+		lastBlueprintFixUpHash: undefined,
 	}
 }
 

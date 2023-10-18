@@ -141,6 +141,7 @@ describe('Migrations', () => {
 							inputDevices: wrapDefaultObject({}),
 						},
 						lastBlueprintConfig: undefined,
+						lastBlueprintFixUpHash: undefined,
 					})
 				},
 			},
@@ -178,6 +179,7 @@ describe('Migrations', () => {
 							inputDevices: wrapDefaultObject({}),
 						},
 						lastBlueprintConfig: undefined,
+						lastBlueprintFixUpHash: undefined,
 					})
 				},
 			},
@@ -215,6 +217,7 @@ describe('Migrations', () => {
 							inputDevices: wrapDefaultObject({}),
 						},
 						lastBlueprintConfig: undefined,
+						lastBlueprintFixUpHash: undefined,
 					})
 				},
 			},
@@ -401,6 +404,7 @@ describe('Migrations', () => {
 			blueprintConfigWithOverrides: wrapDefaultObject({}),
 			_rundownVersionHash: '',
 			lastBlueprintConfig: undefined,
+			lastBlueprintFixUpHash: undefined,
 		})
 
 		await ShowStyleVariants.insertAsync({

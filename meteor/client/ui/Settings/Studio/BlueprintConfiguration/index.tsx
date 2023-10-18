@@ -12,7 +12,6 @@ import { useTranslation } from 'react-i18next'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { SelectConfigPreset } from './SelectConfigPreset'
 import { SelectBlueprint } from './SelectBlueprint'
-import { StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PubSub } from '../../../../../lib/api/pubsub'
 import { UIBlueprintUpgradeStatuses } from '../../../Collections'
 import { getUpgradeStatusMessage, UpgradeStatusButtons } from '../../Upgrades/Components'
@@ -23,6 +22,17 @@ interface StudioBlueprintConfigurationSettingsProps {
 
 export function StudioBlueprintConfigurationSettings(props: StudioBlueprintConfigurationSettingsProps): JSX.Element {
 	const { t } = useTranslation()
+
+	const isStatusReady = useSubscription(PubSub.uiBlueprintUpgradeStatuses)
+	const status = useTracker(
+		() =>
+			UIBlueprintUpgradeStatuses.findOne({
+				documentId: props.studio._id,
+				documentType: 'studio',
+			}),
+		[props.studio._id]
+	)
+	const statusMessage = isStatusReady && status ? getUpgradeStatusMessage(t, status) ?? t('OK') : t('Loading...')
 
 	const blueprint = useTracker(() => {
 		return props.studio.blueprintId
@@ -62,44 +72,27 @@ export function StudioBlueprintConfigurationSettings(props: StudioBlueprintConfi
 			<SelectBlueprint studio={props.studio} />
 			<SelectConfigPreset studio={props.studio} blueprint={blueprint} />
 
-			<BlueprintUpgradeStatus studioId={props.studio._id} />
+			<p>
+				{t('Upgrade Status')}: {statusMessage}
+				{status && <UpgradeStatusButtons upgradeResult={status} />}
+			</p>
 
-			<BlueprintConfigSchemaSettings
-				schema={configSchema}
-				translationNamespaces={translationNamespaces}
-				layerMappings={layerMappings}
-				configObject={props.studio.blueprintConfigWithOverrides}
-				saveOverrides={saveBlueprintConfigOverrides}
-				alternateConfig={undefined}
-			/>
+			{!status || status.pendingRunOfFixupFunction ? (
+				!status ? (
+					<p>{t('Loading')}</p>
+				) : (
+					<p>{t('Config Fix Up must be run or ignored before the configuration can be edited')}</p>
+				)
+			) : (
+				<BlueprintConfigSchemaSettings
+					schema={configSchema}
+					translationNamespaces={translationNamespaces}
+					layerMappings={layerMappings}
+					configObject={props.studio.blueprintConfigWithOverrides}
+					saveOverrides={saveBlueprintConfigOverrides}
+					alternateConfig={undefined}
+				/>
+			)}
 		</>
-	)
-}
-
-interface BlueprintUpgradeStatusProps {
-	studioId: StudioId
-}
-
-function BlueprintUpgradeStatus({ studioId }: BlueprintUpgradeStatusProps): JSX.Element {
-	const { t } = useTranslation()
-
-	const isReady = useSubscription(PubSub.uiBlueprintUpgradeStatuses)
-
-	const status = useTracker(
-		() =>
-			UIBlueprintUpgradeStatuses.findOne({
-				documentId: studioId,
-				documentType: 'studio',
-			}),
-		[studioId]
-	)
-
-	const statusMessage = isReady && status ? getUpgradeStatusMessage(t, status) ?? t('OK') : t('Loading...')
-
-	return (
-		<p>
-			{t('Upgrade Status')}: {statusMessage}
-			{status && <UpgradeStatusButtons upgradeResult={status} />}
-		</p>
 	)
 }

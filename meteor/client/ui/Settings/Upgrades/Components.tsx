@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faDatabase, faEye } from '@fortawesome/free-solid-svg-icons'
+import { faDatabase, faEye, faWarning } from '@fortawesome/free-solid-svg-icons'
 import { MeteorCall } from '../../../../lib/api/methods'
 import { TFunction, useTranslation } from 'react-i18next'
 import { i18nTranslator } from '../../i18n'
@@ -48,6 +48,28 @@ export function UpgradeStatusButtons({ upgradeResult }: UpgradeStatusButtonsProp
 				return MeteorCall.migration.runUpgradeForStudio(upgradeResult.documentId)
 			case 'showStyle':
 				return MeteorCall.migration.runUpgradeForShowStyleBase(upgradeResult.documentId)
+			default:
+				assertNever(upgradeResult)
+				throw new Error(`Unknown UIBlueprintUpgradeStatusBase documentType`)
+		}
+	}, [upgradeResult.documentId, upgradeResult.documentType])
+	const fixupConfig = useCallback(async () => {
+		switch (upgradeResult.documentType) {
+			case 'studio':
+				return MeteorCall.migration.fixupConfigForStudio(upgradeResult.documentId)
+			case 'showStyle':
+				return MeteorCall.migration.fixupConfigForShowStyleBase(upgradeResult.documentId)
+			default:
+				assertNever(upgradeResult)
+				throw new Error(`Unknown UIBlueprintUpgradeStatusBase documentType`)
+		}
+	}, [upgradeResult.documentId, upgradeResult.documentType])
+	const ignoreFixupConfig = useCallback(async () => {
+		switch (upgradeResult.documentType) {
+			case 'studio':
+				return MeteorCall.migration.ignoreFixupConfigForStudio(upgradeResult.documentId)
+			case 'showStyle':
+				return MeteorCall.migration.ignoreFixupConfigForShowStyleBase(upgradeResult.documentId)
 			default:
 				assertNever(upgradeResult)
 				throw new Error(`Unknown UIBlueprintUpgradeStatusBase documentType`)
@@ -152,21 +174,117 @@ export function UpgradeStatusButtons({ upgradeResult }: UpgradeStatusButtonsProp
 		})
 	}, [upgradeResult])
 
+	const clickIgnoreFixup = useCallback(() => {
+		doModalDialog({
+			title: t('Are you sure you want to skip the fix up config step for {{name}}', { name: upgradeResult.name }),
+			message: (
+				<div>
+					<p>{t('This could leave the configuration in a broken state')}</p>
+				</div>
+			),
+			acceptOnly: true,
+			yes: t('Confirm'),
+			onAccept: () => {
+				ignoreFixupConfig()
+					.then(() => {
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.NOTIFICATION,
+								t('for {{name}} fix skipped successfully', { name: upgradeResult.name }),
+								'UpgradesView'
+							)
+						)
+					})
+					.catch((e) => {
+						catchError('Upgrade applyConfig')(e)
+						NotificationCenter.push(
+							new Notification(
+								undefined,
+								NoticeLevel.WARNING,
+								t('Config for {{name}} fix failed', { name: upgradeResult.name }),
+								'UpgradesView'
+							)
+						)
+					})
+			},
+		})
+	}, [upgradeResult, ignoreFixupConfig])
+
+	const clickFixup = useCallback(() => {
+		fixupConfig()
+			.then((messages) => {
+				if (messages.length) {
+					doModalDialog({
+						title: t('Completed with warnings', {}),
+						message: (
+							<div>
+								{' '}
+								{messages.map((msg, i) => (
+									// TODO - use path?
+									<p key={i}>{translateMessage(msg.message, t)}</p>
+								))}
+							</div>
+						),
+						acceptOnly: true,
+						yes: t('Dismiss'),
+						onAccept: () => {
+							// Dismiss
+						},
+					})
+				} else {
+					NotificationCenter.push(
+						new Notification(
+							undefined,
+							NoticeLevel.NOTIFICATION,
+							t('Config for {{name}} fixed successfully', { name: upgradeResult.name }),
+							'UpgradesView'
+						)
+					)
+				}
+			})
+			.catch((e) => {
+				catchError('Upgrade fixupConfig')(e)
+				NotificationCenter.push(
+					new Notification(
+						undefined,
+						NoticeLevel.WARNING,
+						t('Config for {{name}} fix failed', { name: upgradeResult.name }),
+						'UpgradesView'
+					)
+				)
+			})
+	}, [upgradeResult, fixupConfig])
+
 	return (
 		<div className="mod mhn mvm">
-			<button
-				className="btn mrm"
-				onClick={clickShowChanges}
-				disabled={!!upgradeResult.invalidReason || upgradeResult.changes.length === 0}
-			>
-				<FontAwesomeIcon icon={faEye} />
-				<span>{t('Show config changes')}</span>
-			</button>
-
-			<button className="btn mrm" onClick={clickValidate} disabled={!!upgradeResult.invalidReason}>
-				<FontAwesomeIcon icon={faDatabase} />
-				<span>{t('Validate Config')}</span>
-			</button>
+			{upgradeResult.pendingRunOfFixupFunction ? (
+				<>
+					<button className="btn mrm" onClick={clickFixup} disabled={!!upgradeResult.invalidReason}>
+						<FontAwesomeIcon icon={faDatabase} />
+						<span>{t('Fix Up Config')}</span>
+					</button>
+					<button className="btn mrm" onClick={clickIgnoreFixup} disabled={!!upgradeResult.invalidReason}>
+						<FontAwesomeIcon icon={faWarning} />
+						<span>{t('Skip Fix Up Step')}</span>
+					</button>
+				</>
+			) : (
+				<>
+					<button
+						className="btn mrm"
+						onClick={clickShowChanges}
+						disabled={!!upgradeResult.invalidReason || upgradeResult.changes.length === 0}
+					>
+						<FontAwesomeIcon icon={faEye} />
+						<span>{t('Show config changes')}</span>
+					</button>
+					<button className="btn mrm" onClick={clickValidate} disabled={!!upgradeResult.invalidReason}>
+						<FontAwesomeIcon icon={faDatabase} />
+						<span>{t('Validate and Apply Config')}</span>
+					</button>
+				</>
+			)}
 		</div>
 	)
 }

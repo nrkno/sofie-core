@@ -1,6 +1,12 @@
 import { MigrationStepInput, MigrationStepInputResult } from '@sofie-automation/blueprints-integration'
 import { BlueprintId, ShowStyleBaseId, SnapshotId, StudioId } from '@sofie-automation/corelib/dist/dataModel/Ids'
+import { ITranslatableMessage } from '@sofie-automation/corelib/dist/TranslatableMessage'
 import { BlueprintValidateConfigForStudioResult } from '@sofie-automation/corelib/dist/worker/studio'
+
+export interface BlueprintFixUpConfigMessage {
+	message: ITranslatableMessage
+	path: string
+}
 
 export interface NewMigrationAPI {
 	getMigrationStatus(): Promise<GetMigrationStatusResult>
@@ -14,6 +20,18 @@ export interface NewMigrationAPI {
 	resetDatabaseVersions(): Promise<void>
 
 	/**
+	 * Run `fixupConfig` on the blueprint for a Studio
+	 * @param studioId Id of the Studio
+	 */
+	fixupConfigForStudio(studioId: StudioId): Promise<BlueprintFixUpConfigMessage[]>
+
+	/**
+	 * Ignore that `fixupConfig` needs to be run for a Studio
+	 * @param studioId Id of the Studio
+	 */
+	ignoreFixupConfigForStudio(studioId: StudioId): Promise<void>
+
+	/**
 	 * Run `validateConfig` on the blueprint for a Studio
 	 * @param studioId Id of the Studio
 	 * @returns List of messages to display to the user
@@ -25,6 +43,18 @@ export interface NewMigrationAPI {
 	 * @param studioId Id of the Studio
 	 */
 	runUpgradeForStudio(studioId: StudioId): Promise<void>
+
+	/**
+	 * Run `fixupConfig` on the blueprint for a ShowStyleBase
+	 * @param showStyleBaseId Id of the ShowStyleBase
+	 */
+	fixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<BlueprintFixUpConfigMessage[]>
+
+	/**
+	 * Ignore that `fixupConfig` needs to be run for a ShowStyleBase
+	 * @param showStyleBaseId Id of the ShowStyleBase
+	 */
+	ignoreFixupConfigForShowStyleBase(showStyleBaseId: ShowStyleBaseId): Promise<void>
 
 	/**
 	 * Run `validateConfig` on the blueprint for a ShowStyleBase
@@ -47,8 +77,12 @@ export enum MigrationAPIMethods {
 	'resetDatabaseVersions' = 'migration.resetDatabaseVersions',
 
 	'getUpgradeStatus' = 'migration.getUpgradeStatus',
+	'fixupConfigForStudio' = 'migration.fixupConfigForStudio',
+	'ignoreFixupConfigForStudio' = 'migration.ignoreFixupConfigForStudio',
 	'validateConfigForStudio' = 'migration.validateConfigForStudio',
 	'runUpgradeForStudio' = 'migration.runUpgradeForStudio',
+	'fixupConfigForShowStyleBase' = 'migration.fixupConfigForShowStyleBase',
+	'ignoreFixupConfigForShowStyleBase' = 'migration.ignoreFixupConfigForShowStyleBase',
 	'validateConfigForShowStyleBase' = 'migration.validateConfigForShowStyleBase',
 	'runUpgradeForShowStyleBase' = 'migration.runUpgradeForShowStyleBase',
 }

@@ -35,7 +35,12 @@ import {
 	handleRestoreRundownsInPlaylistToDefaultOrder,
 } from '../../rundownPlaylists'
 import { handleGeneratePlaylistSnapshot, handleRestorePlaylistSnapshot } from '../../playout/snapshot'
-import { handleBlueprintUpgradeForStudio, handleBlueprintValidateConfigForStudio } from '../../playout/upgrade'
+import {
+	handleBlueprintFixUpConfigForStudio,
+	handleBlueprintIgnoreFixUpConfigForStudio,
+	handleBlueprintUpgradeForStudio,
+	handleBlueprintValidateConfigForStudio,
+} from '../../playout/upgrade'
 import { handleTimelineTriggerTime, handleOnPlayoutPlaybackChanged } from '../../playout/timings'
 import { handleExecuteAdlibAction } from '../../playout/adlibAction'
 import { handleTakeNextPart } from '../../playout/take'
@@ -92,6 +97,8 @@ export const studioJobHandlers: StudioJobHandlers = {
 
 	[StudioJobs.BlueprintUpgradeForStudio]: handleBlueprintUpgradeForStudio,
 	[StudioJobs.BlueprintValidateConfigForStudio]: handleBlueprintValidateConfigForStudio,
+	[StudioJobs.BlueprintFixUpConfigForStudio]: handleBlueprintFixUpConfigForStudio,
+	[StudioJobs.BlueprintIgnoreFixUpConfigForStudio]: handleBlueprintIgnoreFixUpConfigForStudio,
 
 	[StudioJobs.ActivateScratchpad]: handleActivateScratchpad,
 }

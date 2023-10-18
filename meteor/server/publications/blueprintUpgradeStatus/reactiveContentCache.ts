@@ -10,6 +10,7 @@ export type StudioFields =
 	| 'blueprintId'
 	| 'blueprintConfigPresetId'
 	| 'lastBlueprintConfig'
+	| 'lastBlueprintFixUpHash'
 	| 'blueprintConfigWithOverrides'
 	| 'name'
 export const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<DBStudio, StudioFields>>>({
@@ -17,6 +18,7 @@ export const studioFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<D
 	blueprintId: 1,
 	blueprintConfigPresetId: 1,
 	lastBlueprintConfig: 1,
+	lastBlueprintFixUpHash: 1,
 	blueprintConfigWithOverrides: 1,
 	name: 1,
 })
@@ -26,6 +28,7 @@ export type ShowStyleBaseFields =
 	| 'blueprintId'
 	| 'blueprintConfigPresetId'
 	| 'lastBlueprintConfig'
+	| 'lastBlueprintFixUpHash'
 	| 'blueprintConfigWithOverrides'
 	| 'name'
 export const showStyleFieldSpecifier = literal<
@@ -35,6 +38,7 @@ export const showStyleFieldSpecifier = literal<
 	blueprintId: 1,
 	blueprintConfigPresetId: 1,
 	lastBlueprintConfig: 1,
+	lastBlueprintFixUpHash: 1,
 	blueprintConfigWithOverrides: 1,
 	name: 1,
 })
@@ -47,6 +51,7 @@ export type BlueprintFields =
 	| 'showStyleConfigSchema'
 	| 'blueprintHash'
 	| 'blueprintType'
+	| 'hasFixUpFunction'
 export const blueprintFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pick<Blueprint, BlueprintFields>>>({
 	_id: 1,
 	studioConfigPresets: 1,
@@ -55,6 +60,7 @@ export const blueprintFieldSpecifier = literal<MongoFieldSpecifierOnesStrict<Pic
 	showStyleConfigSchema: 1,
 	blueprintHash: 1,
 	blueprintType: 1,
+	hasFixUpFunction: 1,
 })
 
 export interface ContentCache {
