@@ -179,9 +179,9 @@ describe('resolveMediaPlayers', () => {
 
 		expect(mockGetPieceSessionId).toHaveBeenCalledTimes(3)
 		expect(mockGetObjectSessionId).toHaveBeenCalledTimes(0)
-		expect(mockGetPieceSessionId).toHaveBeenNthCalledWith(1, pieces[0], 'clip_abc')
-		expect(mockGetPieceSessionId).toHaveBeenNthCalledWith(2, pieces[1], 'clip_def')
-		expect(mockGetPieceSessionId).toHaveBeenNthCalledWith(3, pieces[2], 'clip_ghi')
+		expect(mockGetPieceSessionId).toHaveBeenNthCalledWith(1, pieces[0].instance, 'clip_abc')
+		expect(mockGetPieceSessionId).toHaveBeenNthCalledWith(2, pieces[1].instance, 'clip_def')
+		expect(mockGetPieceSessionId).toHaveBeenNthCalledWith(3, pieces[2].instance, 'clip_ghi')
 	})
 
 	test('basic pieces - players with number and string Ids', () => {
@@ -215,9 +215,9 @@ describe('resolveMediaPlayers', () => {
 
 		expect(mockGetPieceSessionId).toHaveBeenCalledTimes(3)
 		expect(mockGetObjectSessionId).toHaveBeenCalledTimes(0)
-		expect(mockGetPieceSessionId).toHaveBeenNthCalledWith(1, pieces[0], 'clip_abc')
-		expect(mockGetPieceSessionId).toHaveBeenNthCalledWith(2, pieces[1], 'clip_def')
-		expect(mockGetPieceSessionId).toHaveBeenNthCalledWith(3, pieces[2], 'clip_ghi')
+		expect(mockGetPieceSessionId).toHaveBeenNthCalledWith(1, pieces[0].instance, 'clip_abc')
+		expect(mockGetPieceSessionId).toHaveBeenNthCalledWith(2, pieces[1].instance, 'clip_def')
+		expect(mockGetPieceSessionId).toHaveBeenNthCalledWith(3, pieces[2].instance, 'clip_ghi')
 	})
 
 	test('Multiple pieces same id', () => {
