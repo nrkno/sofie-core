@@ -46,7 +46,7 @@ meteorPublish(PubSub.bucketAdLibPieces, async function (selector: MongoQuery<Buc
 	if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 	const modifier: FindOptions<BucketAdLib> = {
 		fields: {
-			ingestInfo: 0,
+			ingestInfo: 0, // This is a large blob, and is not of interest to the UI
 		},
 	}
 	if (isProtectedString(selector.bucketId) && (await BucketSecurity.allowReadAccess(this, selector.bucketId))) {
@@ -61,7 +61,7 @@ meteorPublish(
 		if (!selector) throw new Meteor.Error(400, 'selector argument missing')
 		const modifier: FindOptions<BucketAdLibAction> = {
 			fields: {
-				ingestInfo: 0,
+				ingestInfo: 0, // This is a large blob, and is not of interest to the UI
 			},
 		}
 		if (isProtectedString(selector.bucketId) && (await BucketSecurity.allowReadAccess(this, selector.bucketId))) {
