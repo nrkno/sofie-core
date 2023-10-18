@@ -72,7 +72,7 @@ function resolveAbSessions(
 	timelineObjs: OnGenerateTimelineObjExt[],
 	previousAssignmentMap: ABSessionAssignments,
 	sessionPool: string,
-	playerIds: number[],
+	playerIds: Array<number | string>,
 	now: number
 ): AssignmentResult {
 	const sessionRequests = calculateSessionTimeRanges(
@@ -138,6 +138,78 @@ describe('resolveMediaPlayers', () => {
 		expect(assignments.requests).toEqual([
 			{ end: 5400, id: 'inst_0_clip_abc', playerId: 1, start: 400, optional: false },
 			{ end: 5400, id: 'inst_1_clip_def', playerId: 2, start: 400, optional: false },
+			{ end: 4800, id: 'inst_2_clip_ghi', playerId: undefined, start: 800, optional: false }, // Massive overlap
+		])
+
+		expect(mockGetPieceSessionId).toHaveBeenCalledTimes(3)
+		expect(mockGetObjectSessionId).toHaveBeenCalledTimes(0)
+		expect(mockGetPieceSessionId).toHaveBeenNthCalledWith(1, pieces[0].instance, 'clip_abc')
+		expect(mockGetPieceSessionId).toHaveBeenNthCalledWith(2, pieces[1].instance, 'clip_def')
+		expect(mockGetPieceSessionId).toHaveBeenNthCalledWith(3, pieces[2].instance, 'clip_ghi')
+	})
+
+	test('basic pieces - players with string Ids', () => {
+		const previousAssignments = {}
+		const pieces = [
+			createBasicResolvedPieceInstance('0', 400, 5000, 'abc'),
+			createBasicResolvedPieceInstance('1', 400, 5000, 'def'),
+			createBasicResolvedPieceInstance('2', 800, 4000, 'ghi'),
+		]
+
+		mockGetPieceSessionId.mockImplementation((piece, name) => `${piece._id}_${name}`)
+
+		const assignments = resolveAbSessions(
+			abSessionHelper,
+			resolverOptions,
+			pieces,
+			[],
+			previousAssignments,
+			POOL_NAME,
+			['player1', 'player2'],
+			4500
+		)
+		expect(assignments.failedRequired).toEqual(['inst_2_clip_ghi'])
+		expect(assignments.failedOptional).toHaveLength(0)
+		expect(assignments.requests).toHaveLength(3)
+		expect(assignments.requests).toEqual([
+			{ end: 5400, id: 'inst_0_clip_abc', playerId: 'player1', start: 400, optional: false },
+			{ end: 5400, id: 'inst_1_clip_def', playerId: 'player2', start: 400, optional: false },
+			{ end: 4800, id: 'inst_2_clip_ghi', playerId: undefined, start: 800, optional: false }, // Massive overlap
+		])
+
+		expect(mockGetPieceSessionId).toHaveBeenCalledTimes(3)
+		expect(mockGetObjectSessionId).toHaveBeenCalledTimes(0)
+		expect(mockGetPieceSessionId).toHaveBeenNthCalledWith(1, pieces[0].instance, 'clip_abc')
+		expect(mockGetPieceSessionId).toHaveBeenNthCalledWith(2, pieces[1].instance, 'clip_def')
+		expect(mockGetPieceSessionId).toHaveBeenNthCalledWith(3, pieces[2].instance, 'clip_ghi')
+	})
+
+	test('basic pieces - players with number and string Ids', () => {
+		const previousAssignments = {}
+		const pieces = [
+			createBasicResolvedPieceInstance('0', 400, 5000, 'abc'),
+			createBasicResolvedPieceInstance('1', 400, 5000, 'def'),
+			createBasicResolvedPieceInstance('2', 800, 4000, 'ghi'),
+		]
+
+		mockGetPieceSessionId.mockImplementation((piece, name) => `${piece._id}_${name}`)
+
+		const assignments = resolveAbSessions(
+			abSessionHelper,
+			resolverOptions,
+			pieces,
+			[],
+			previousAssignments,
+			POOL_NAME,
+			[1, 'player2'],
+			4500
+		)
+		expect(assignments.failedRequired).toEqual(['inst_2_clip_ghi'])
+		expect(assignments.failedOptional).toHaveLength(0)
+		expect(assignments.requests).toHaveLength(3)
+		expect(assignments.requests).toEqual([
+			{ end: 5400, id: 'inst_0_clip_abc', playerId: 1, start: 400, optional: false },
+			{ end: 5400, id: 'inst_1_clip_def', playerId: 'player2', start: 400, optional: false },
 			{ end: 4800, id: 'inst_2_clip_ghi', playerId: undefined, start: 800, optional: false }, // Massive overlap
 		])
 
