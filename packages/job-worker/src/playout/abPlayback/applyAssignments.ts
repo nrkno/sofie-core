@@ -117,18 +117,18 @@ function updateObjectsToAbPlayer(
 	context: ICommonContext,
 	abConfiguration: Pick<ABResolverConfiguration, 'timelineObjectLayerChangeRules' | 'customApplyToObject'>,
 	poolName: string,
-	poolId: number | string,
+	playerId: number | string,
 	objs: OnGenerateTimelineObj<TSR.TSRTimelineContent>[]
 ): OnGenerateTimelineObj<TSR.TSRTimelineContent>[] {
 	const failedObjects: OnGenerateTimelineObj<TSR.TSRTimelineContent>[] = []
 
 	for (const obj of objs) {
-		const updatedKeyframes = applyUpdateToKeyframes(poolName, poolId, obj)
+		const updatedKeyframes = applyUpdateToKeyframes(poolName, playerId, obj)
 
-		const updatedLayer = applylayerMoveRule(abConfiguration.timelineObjectLayerChangeRules, poolName, poolId, obj)
+		const updatedLayer = applylayerMoveRule(abConfiguration.timelineObjectLayerChangeRules, poolName, playerId, obj)
 
 		const updatedCustom =
-			abConfiguration.customApplyToObject && abConfiguration.customApplyToObject(context, poolName, poolId, obj)
+			abConfiguration.customApplyToObject && abConfiguration.customApplyToObject(context, poolName, playerId, obj)
 
 		if (!updatedKeyframes && !updatedLayer && !updatedCustom) {
 			failedObjects.push(obj)
@@ -140,7 +140,7 @@ function updateObjectsToAbPlayer(
 
 function applyUpdateToKeyframes(
 	poolName: string,
-	poolId: number | string,
+	playerId: number | string,
 	obj: OnGenerateTimelineObj<TSR.TSRTimelineContent>
 ): boolean {
 	if (!obj.keyframes) return false
@@ -154,7 +154,7 @@ function applyUpdateToKeyframes(
 			// Preserve from other ab pools
 			if (kf.abSession.poolName !== poolName) return kf
 
-			if (kf.abSession.playerId === poolId) {
+			if (kf.abSession.playerId === playerId) {
 				// Make sure any ab keyframe is active
 				kf.disabled = false
 				updated = true
@@ -172,7 +172,7 @@ function applyUpdateToKeyframes(
 function applylayerMoveRule(
 	timelineObjectLayerChangeRules: ABTimelineLayerChangeRules | undefined,
 	poolName: string,
-	poolId: number | string,
+	playerId: number | string,
 	obj: OnGenerateTimelineObj<TSR.TSRTimelineContent>
 ): boolean {
 	const ruleId = obj.isLookahead ? obj.lookaheadForLayer || obj.layer : obj.layer
@@ -184,13 +184,13 @@ function applylayerMoveRule(
 	if (obj.isLookahead && moveRule.allowsLookahead && obj.lookaheadForLayer) {
 		// This works on the assumption that layer will contain lookaheadForLayer, but not the exact syntax.
 		// Hopefully this will be durable to any potential future core changes
-		const newLayer = moveRule.newLayerName(poolId)
+		const newLayer = moveRule.newLayerName(playerId)
 		obj.layer = (obj.layer + '').replace(obj.lookaheadForLayer + '', newLayer)
 		obj.lookaheadForLayer = newLayer
 
 		return true
 	} else if (!obj.isLookahead || (obj.isLookahead && !obj.lookaheadForLayer)) {
-		obj.layer = moveRule.newLayerName(poolId)
+		obj.layer = moveRule.newLayerName(playerId)
 		return true
 	}
 
