@@ -97,6 +97,8 @@ export class LiveStatusServer {
 		await adLibsHandler.subscribe(activePlaylistTopic)
 		await globalAdLibActionsHandler.subscribe(activePlaylistTopic)
 		await globalAdLibsHandler.subscribe(activePlaylistTopic)
+		await partsHandler.subscribe(activePlaylistTopic)
+
 		await playlistHandler.subscribe(segmentsTopic)
 		await segmentsHandler.subscribe(segmentsTopic)
 		await partsHandler.subscribe(segmentsTopic)

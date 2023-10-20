@@ -16,9 +16,9 @@ export class PartsHandler extends CollectionBase<DBPart[]> implements Collection
 		this.throttledNotify = _.throttle(this.notify.bind(this), THROTTLE_PERIOD_MS, { leading: true, trailing: true })
 	}
 
-	async setParts(rundowns: DBPart[]): Promise<void> {
-		this._logger.info(`'${this._name}' handler received rundowns update with ${rundowns.length} parts`)
-		this._collectionData = rundowns
+	async setParts(parts: DBPart[]): Promise<void> {
+		this._logger.info(`'${this._name}' handler received parts update with ${parts.length} parts`)
+		this._collectionData = parts
 		await this.throttledNotify(this._collectionData)
 	}
 

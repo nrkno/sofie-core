@@ -5,13 +5,13 @@ import { CoreConnection } from '@sofie-automation/server-core-integration'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
-import { PartInstanceName } from './partInstancesHandler'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import _ = require('underscore')
+import { SelectedPartInstances } from './partInstancesHandler'
 
 export class AdLibActionsHandler
 	extends CollectionBase<AdLibAction[]>
-	implements Collection<AdLibAction[]>, CollectionObserver<Map<PartInstanceName, DBPartInstance | undefined>>
+	implements Collection<AdLibAction[]>, CollectionObserver<SelectedPartInstances>
 {
 	public observerName: string
 	private _core: CoreConnection
@@ -33,11 +33,11 @@ export class AdLibActionsHandler
 		await this.notify(this._collectionData)
 	}
 
-	async update(source: string, data: Map<PartInstanceName, DBPartInstance | undefined> | undefined): Promise<void> {
+	async update(source: string, data: SelectedPartInstances | undefined): Promise<void> {
 		this._logger.info(`${this._name} received partInstances update from ${source}`)
 		const prevRundownId = this._curRundownId
 		const prevCurPartInstance = this._curPartInstance
-		this._curPartInstance = data ? data.get(PartInstanceName.current) ?? data.get(PartInstanceName.next) : undefined
+		this._curPartInstance = data ? data.current ?? data.next : undefined
 		this._curRundownId = this._curPartInstance ? unprotectString(this._curPartInstance.rundownId) : undefined
 
 		await new Promise(process.nextTick.bind(this))

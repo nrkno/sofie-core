@@ -11,6 +11,7 @@ import isShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual
 import { PartsHandler } from '../collections/partsHandler'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import _ = require('underscore')
+import { SegmentTiming, calculateSegmentTiming } from './helpers/segmentTiming'
 
 const THROTTLE_PERIOD_MS = 200
 
@@ -18,8 +19,7 @@ interface SegmentStatus {
 	id: string
 	rundownId: string
 	name: string
-	budgetDurationMs?: number
-	expectedDurationMs?: number
+	timing: SegmentTiming
 }
 
 export interface SegmentsStatus {
@@ -34,7 +34,7 @@ export class SegmentsTopic
 		WebSocketTopic,
 		CollectionObserver<DBSegment[]>,
 		CollectionObserver<DBRundownPlaylist>,
-		CollectionObserver<DBSegment[]>
+		CollectionObserver<DBPart[]>
 {
 	public observerName = SegmentsTopic.name
 	private _activePlaylist: DBRundownPlaylist | undefined
@@ -66,20 +66,7 @@ export class SegmentsTopic
 					id: segmentId,
 					rundownId: unprotectString(segment.rundownId),
 					name: segment.name,
-					budgetDurationMs: this._partsBySegment[segmentId]?.reduce<number | undefined>(
-						(sum, part): number | undefined => {
-							return part.budgetDuration != null && !part.untimed ? (sum ?? 0) + part.budgetDuration : sum
-						},
-						undefined
-					),
-					expectedDurationMs: this._partsBySegment[segmentId]?.reduce<number | undefined>(
-						(sum, part): number | undefined => {
-							return part.expectedDurationWithPreroll != null && !part.untimed
-								? (sum ?? 0) + part.expectedDurationWithPreroll
-								: sum
-						},
-						undefined
-					),
+					timing: calculateSegmentTiming(this._partsBySegment[segmentId] ?? []),
 				}
 			}),
 		}
@@ -107,7 +94,7 @@ export class SegmentsTopic
 			}
 			case PartsHandler.name: {
 				this._partsBySegment = _.groupBy(data as DBPart[], 'segmentId')
-				this._logger.info(`${this._name} received segments update from ${source}`)
+				this._logger.info(`${this._name} received parts update from ${source}`)
 				break
 			}
 			default:
