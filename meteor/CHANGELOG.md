@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.49.1](https://github.com/nrkno/sofie-core/compare/v1.49.0...v1.49.1) (2023-10-20)
+
+
+### Features
+
+* bumps TSR to 8.0.1 for a Release49.1 minor release ([6b9e763](https://github.com/nrkno/sofie-core/commit/6b9e76349149e2650fd9ed89e86b32ff031a26f4))
+
+
+### Bug Fixes
+
+* allow BucketAdlibAction to access PackageInfos SOFIE-2655 ([#1052](https://github.com/nrkno/sofie-core/issues/1052)) ([e2ff354](https://github.com/nrkno/sofie-core/commit/e2ff3545d097c74429bc81070f503795d5f1008f))
+* Multiline config fields fail to save SOFIE-2715 ([d3931fb](https://github.com/nrkno/sofie-core/commit/d3931fbdbd2b96903b02a53e18f2c77d661bca73))
+
 ## [1.49.0](https://github.com/nrkno/sofie-core/compare/v1.49.0-in-testing.10...v1.49.0) (2023-10-06)
 
 
