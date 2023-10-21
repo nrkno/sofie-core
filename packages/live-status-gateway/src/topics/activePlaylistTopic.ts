@@ -28,18 +28,15 @@ import { CurrentSegmentTiming, calculateCurrentSegmentTiming } from './helpers/s
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import { PartsHandler } from '../collections/partsHandler'
 import _ = require('underscore')
+import { PartTiming, calculateCurrentPartTiming } from './helpers/partTiming'
+
+const THROTTLE_PERIOD_MS = 20
 
 interface PartStatus {
 	id: string
 	segmentId: string
 	name: string
 	autoNext?: boolean
-}
-
-interface PartTiming {
-	startTime: number
-	expectedDurationMs: number
-	expectedEndTime: number
 }
 
 interface CurrentPartStatus extends PartStatus {
@@ -100,9 +97,14 @@ export class ActivePlaylistTopic
 	private _globalAdLibActions: RundownBaselineAdLibAction[] | undefined
 	private _globalAdLibs: RundownBaselineAdLibItem[] | undefined
 	private _partsBySegmentId: Record<string, DBPart[]> = {}
+	private throttledSendStatusToAll: () => void
 
 	constructor(logger: Logger) {
 		super(ActivePlaylistTopic.name, logger)
+		this.throttledSendStatusToAll = _.throttle(this.sendStatusToAll.bind(this), THROTTLE_PERIOD_MS, {
+			leading: false,
+			trailing: true,
+		})
 	}
 
 	addSubscriber(ws: WebSocket): void {
@@ -111,6 +113,14 @@ export class ActivePlaylistTopic
 	}
 
 	sendStatus(subscribers: Iterable<WebSocket>): void {
+		if (
+			this._currentPartInstance?._id !== this._activePlaylist?.currentPartInfo?.partInstanceId ||
+			this._nextPartInstance?._id !== this._activePlaylist?.nextPartInfo?.partInstanceId
+		) {
+			// data is inconsistent, let's wait
+			return
+		}
+
 		const currentPart = this._currentPartInstance ? this._currentPartInstance.part : null
 		const nextPart = this._nextPartInstance ? this._nextPartInstance.part : null
 		const adLibs: AdLibStatus[] = []
@@ -221,13 +231,10 @@ export class ActivePlaylistTopic
 									name: currentPart.title,
 									autoNext: currentPart.autoNext,
 									segmentId: unprotectString(currentPart.segmentId),
-									timing: {
-										startTime: this._currentPartInstance.timings?.plannedStartedPlayback ?? 0,
-										expectedDurationMs: this._currentPartInstance.part.expectedDuration ?? 0,
-										expectedEndTime:
-											(this._currentPartInstance.timings?.plannedStartedPlayback ?? 0) +
-											(this._currentPartInstance.part.expectedDuration ?? 0),
-									},
+									timing: calculateCurrentPartTiming(
+										this._currentPartInstance,
+										this._partInstancesInCurrentSegment
+									),
 							  })
 							: null,
 					currentSegment:
@@ -329,7 +336,9 @@ export class ActivePlaylistTopic
 			}
 			case PartInstancesHandler.name: {
 				const partInstances = data as SelectedPartInstances
-				this._logger.info(`${this._name} received partInstances update from ${source}`)
+				this._logger.info(
+					`${this._name} received partInstances update from ${source} with ${partInstances.inCurrentSegment.length} instances in segment`
+				)
 				this._currentPartInstance = partInstances.current
 				this._nextPartInstance = partInstances.next
 				this._firstInstanceInSegmentPlayout = partInstances.firstInSegmentPlayout
@@ -369,6 +378,10 @@ export class ActivePlaylistTopic
 				throw new Error(`${this._name} received unsupported update from ${source}}`)
 		}
 
+		this.throttledSendStatusToAll()
+	}
+
+	private sendStatusToAll() {
 		this.sendStatus(this._subscribers)
 	}
 }

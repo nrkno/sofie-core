@@ -6,7 +6,7 @@ import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/Rund
 import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
 import { unprotectString } from '@sofie-automation/corelib/dist/protectedString'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import isShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
+import areElementsShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
 import _ = require('underscore')
 
 export interface SelectedPartInstances {
@@ -46,8 +46,8 @@ export class PartInstancesHandler
 		await this.notify(this._collectionData)
 	}
 
-	private updateCollectionData() {
-		if (!this._collectionName) return
+	private updateCollectionData(): boolean {
+		if (!this._collectionName || !this._collectionData) return false
 		const collection = this._core.getCollection<DBPartInstance>(this._collectionName)
 		if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 		const currentPartInstance = this._currentPlaylist?.currentPartInfo?.partInstanceId
@@ -65,21 +65,32 @@ export class PartInstancesHandler
 			(partInstance) => partInstance.takeCount
 		) as DBPartInstance
 
-		this._collectionData = {
-			current: currentPartInstance,
-			next: nextPartInstance,
-			firstInSegmentPlayout: firstPartInstanceInSegmentPlayout,
-			inCurrentSegment: partInstancesInSegmentPlayout,
+		let hasAnythingChanged = false
+		if (currentPartInstance !== this._collectionData.current) {
+			this._collectionData.current = currentPartInstance
+			hasAnythingChanged = true
 		}
+		if (this._collectionData.next !== nextPartInstance) {
+			this._collectionData.next = nextPartInstance
+			hasAnythingChanged = true
+		}
+		if (this._collectionData.firstInSegmentPlayout !== firstPartInstanceInSegmentPlayout) {
+			this._collectionData.firstInSegmentPlayout = firstPartInstanceInSegmentPlayout
+			hasAnythingChanged = true
+		}
+		if (!areElementsShallowEqual(this._collectionData.inCurrentSegment, partInstancesInSegmentPlayout)) {
+			this._collectionData.inCurrentSegment = partInstancesInSegmentPlayout
+			hasAnythingChanged = true
+		}
+		return hasAnythingChanged
 	}
 
 	private clearCollectionData() {
-		this._collectionData = {
-			current: undefined,
-			next: undefined,
-			firstInSegmentPlayout: undefined,
-			inCurrentSegment: [],
-		}
+		if (!this._collectionName || !this._collectionData) return
+		this._collectionData.current = undefined
+		this._collectionData.next = undefined
+		this._collectionData.firstInSegmentPlayout = undefined
+		this._collectionData.inCurrentSegment = []
 	}
 
 	async update(source: string, data: DBRundownPlaylist | undefined): Promise<void> {
@@ -100,7 +111,7 @@ export class PartInstancesHandler
 		this._activationId = unprotectString(this._currentPlaylist?.activationId)
 		if (this._currentPlaylist && this._rundownIds.length && this._activationId) {
 			const sameSubscription =
-				isShallowEqual(this._rundownIds, prevRundownIds) && prevActivationId === this._activationId
+				areElementsShallowEqual(this._rundownIds, prevRundownIds) && prevActivationId === this._activationId
 			if (!sameSubscription) {
 				await new Promise(process.nextTick.bind(this))
 				if (!this._collectionName) return
@@ -119,12 +130,19 @@ export class PartInstancesHandler
 				this._dbObserver.changed = (id: string) => {
 					void this.changed(id, 'changed').catch(this._logger.error)
 				}
+				this._dbObserver.removed = (id: string) => {
+					void this.changed(id, 'removed').catch(this._logger.error)
+				}
 
-				this.updateCollectionData()
-				await this.notify(this._collectionData)
+				const hasAnythingChanged = this.updateCollectionData()
+				if (hasAnythingChanged) {
+					await this.notify(this._collectionData)
+				}
 			} else if (this._subscriptionId) {
-				this.updateCollectionData()
-				await this.notify(this._collectionData)
+				const hasAnythingChanged = this.updateCollectionData()
+				if (hasAnythingChanged) {
+					await this.notify(this._collectionData)
+				}
 			} else {
 				this.clearCollectionData()
 				await this.notify(this._collectionData)

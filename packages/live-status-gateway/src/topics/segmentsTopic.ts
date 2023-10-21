@@ -7,7 +7,7 @@ import { PlaylistHandler } from '../collections/playlistHandler'
 import { groupByToMap } from '@sofie-automation/corelib/dist/lib'
 import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protectedString'
 import { SegmentsHandler } from '../collections/segmentsHandler'
-import isShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
+import areElementsShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
 import { PartsHandler } from '../collections/partsHandler'
 import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 import _ = require('underscore')
@@ -106,7 +106,7 @@ export class SegmentsTopic
 				this._activePlaylist._id !== prevPlaylistId ||
 				prevSegments !== this._segments ||
 				prevParts !== this._partsBySegment ||
-				!isShallowEqual(prevRundownOrder, this._activePlaylist.rundownIdsInOrder)
+				!areElementsShallowEqual(prevRundownOrder, this._activePlaylist.rundownIdsInOrder)
 			) {
 				const segmentsByRundownId = groupByToMap(this._segments, 'rundownId')
 				this._orderedSegments = this._activePlaylist.rundownIdsInOrder.flatMap((rundownId) => {

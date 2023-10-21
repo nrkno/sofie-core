@@ -583,6 +583,7 @@ export class DDPClient extends EventEmitter<DDPClientEvents> {
 					delete this.collections[name][id][value]
 				})
 			}
+			this.collections[name][id] = { ...this.collections[name][id] } // allows shallow comparison to detect changed objects
 
 			if (this.observers[name]) {
 				Object.values<Observer>(this.observers[name]).forEach((ob) =>

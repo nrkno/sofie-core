@@ -6,7 +6,7 @@ import { DBSegment } from '@sofie-automation/corelib/dist/dataModel/Segment'
 import { PartInstancesHandler, SelectedPartInstances } from './partInstancesHandler'
 import { RundownId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
-import isShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
+import areElementsShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
 import { SegmentsHandler } from './segmentsHandler'
 import { DBRundownPlaylist } from '@sofie-automation/corelib/dist/dataModel/RundownPlaylist'
 import { PlaylistHandler } from './playlistHandler'
@@ -62,7 +62,7 @@ export class SegmentHandler
 		if (!this._collectionName) return
 		if (!this._publicationName) return
 
-		const rundownsChanged = !isShallowEqual(this._rundownIds, previousRundownIds)
+		const rundownsChanged = !areElementsShallowEqual(this._rundownIds, previousRundownIds)
 		if (rundownsChanged) {
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()

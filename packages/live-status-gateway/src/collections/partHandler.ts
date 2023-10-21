@@ -9,7 +9,7 @@ import { unprotectString } from '@sofie-automation/shared-lib/dist/lib/protected
 import { PartInstancesHandler, SelectedPartInstances } from './partInstancesHandler'
 import { CollectionName } from '@sofie-automation/corelib/dist/dataModel/Collections'
 import { PlaylistHandler } from './playlistHandler'
-import isShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
+import areElementsShallowEqual from '@sofie-automation/shared-lib/dist/lib/isShallowEqual'
 import { PartsHandler } from './partsHandler'
 
 export class PartHandler
@@ -62,7 +62,7 @@ export class PartHandler
 		await new Promise(process.nextTick.bind(this))
 		if (!this._collectionName) return
 		if (!this._publicationName) return
-		const rundownsChanged = !isShallowEqual(this._activePlaylist?.rundownIdsInOrder ?? [], prevRundownIds)
+		const rundownsChanged = !areElementsShallowEqual(this._activePlaylist?.rundownIdsInOrder ?? [], prevRundownIds)
 		if (rundownsChanged) {
 			if (this._subscriptionId) this._coreHandler.unsubscribe(this._subscriptionId)
 			if (this._dbObserver) this._dbObserver.stop()

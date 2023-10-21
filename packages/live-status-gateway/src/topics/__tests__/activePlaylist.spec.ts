@@ -1,16 +1,20 @@
-import { ActivePlaylistStatus, ActivePlaylistTopic } from '../activePlaylist'
+import { ActivePlaylistStatus, ActivePlaylistTopic } from '../activePlaylistTopic'
 import { makeMockLogger, makeMockSubscriber, makeTestPlaylist } from './utils'
 import { PlaylistHandler } from '../../collections/playlistHandler'
 import { ShowStyleBaseHandler } from '../../collections/showStyleBaseHandler'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { SourceLayerType } from '@sofie-automation/blueprints-integration/dist'
-import { PartInstanceName, PartInstancesHandler } from '../../collections/partInstancesHandler'
-import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+import { PartInstancesHandler, SelectedPartInstances } from '../../collections/partInstancesHandler'
 import { AdLibAction } from '@sofie-automation/corelib/dist/dataModel/AdlibAction'
 import { protectString, unprotectString, unprotectStringArray } from '@sofie-automation/server-core-integration/dist'
 import { RundownBaselineAdLibAction } from '@sofie-automation/corelib/dist/dataModel/RundownBaselineAdLibAction'
 import { AdLibActionsHandler } from '../../collections/adLibActionsHandler'
 import { GlobalAdLibActionsHandler } from '../../collections/globalAdLibActionsHandler'
+import { PartialDeep } from 'type-fest'
+import { literal } from '@sofie-automation/corelib/dist/lib'
+import { DBPartInstance } from '@sofie-automation/corelib/dist/dataModel/PartInstance'
+import { PartsHandler } from '../../collections/partsHandler'
+import { DBPart } from '@sofie-automation/corelib/dist/dataModel/Part'
 
 function makeTestShowStyleBase(): Pick<DBShowStyleBase, 'sourceLayersWithOverrides' | 'outputLayersWithOverrides'> {
 	return {
@@ -25,8 +29,13 @@ function makeTestShowStyleBase(): Pick<DBShowStyleBase, 'sourceLayersWithOverrid
 	}
 }
 
-function makeTestPartInstanceMap(): Map<PartInstanceName, DBPartInstance | undefined> {
-	return new Map([]) // TODO
+function makeTestPartInstanceMap(): SelectedPartInstances {
+	return {
+		current: undefined,
+		firstInSegmentPlayout: undefined,
+		inCurrentSegment: [],
+		next: undefined,
+	}
 }
 
 function makeTestAdLibActions(): AdLibAction[] {
@@ -111,6 +120,7 @@ describe('ActivePlaylistTopic', () => {
 			],
 			currentPart: null,
 			nextPart: null,
+			currentSegment: null,
 			globalAdLibs: [
 				{
 					actionType: [],
@@ -121,6 +131,80 @@ describe('ActivePlaylistTopic', () => {
 					tags: ['global_adlib_tag'],
 				},
 			],
+			rundownIds: unprotectStringArray(playlist.rundownIdsInOrder),
+		}
+
+		// eslint-disable-next-line @typescript-eslint/unbound-method
+		expect(mockSubscriber.send).toHaveBeenCalledTimes(1)
+		expect(JSON.parse(mockSubscriber.send.mock.calls[0][0] as string)).toMatchObject(expectedStatus)
+	})
+
+	it('provides segment and part', async () => {
+		const topic = new ActivePlaylistTopic(makeMockLogger())
+		const mockSubscriber = makeMockSubscriber()
+
+		const currentPartInstanceId = 'CURRENT_PART_INSTANCE_ID'
+
+		const playlist = makeTestPlaylist()
+		playlist.activationId = protectString('somethingRandom')
+		playlist.currentPartInfo = {
+			consumesQueuedSegmentId: false,
+			manuallySelected: false,
+			partInstanceId: protectString(currentPartInstanceId),
+			rundownId: playlist.rundownIdsInOrder[0],
+		}
+		await topic.update(PlaylistHandler.name, playlist)
+
+		const testShowStyleBase = makeTestShowStyleBase()
+		await topic.update(ShowStyleBaseHandler.name, testShowStyleBase as DBShowStyleBase)
+		const part1: Partial<DBPart> = {
+			_id: protectString('PART_1'),
+			title: 'Test Part',
+			segmentId: protectString('SEGMENT_1'),
+			expectedDurationWithPreroll: 10000,
+			expectedDuration: 10000,
+		}
+		const testPartInstances: PartialDeep<SelectedPartInstances> = {
+			current: {
+				_id: currentPartInstanceId,
+				part: part1,
+				timings: { plannedStartedPlayback: 1600000060000 },
+			},
+			firstInSegmentPlayout: {},
+			inCurrentSegment: [
+				literal<PartialDeep<DBPartInstance>>({
+					_id: protectString(currentPartInstanceId),
+					part: part1,
+					timings: { plannedStartedPlayback: 1600000060000 },
+				}),
+			] as DBPartInstance[],
+		}
+		await topic.update(PartInstancesHandler.name, testPartInstances as SelectedPartInstances)
+
+		await topic.update(PartsHandler.name, [part1] as DBPart[])
+
+		topic.addSubscriber(mockSubscriber)
+
+		const expectedStatus: ActivePlaylistStatus = {
+			event: 'activePlaylist',
+			name: playlist.name,
+			id: unprotectString(playlist._id),
+			adLibs: [],
+			currentPart: {
+				id: 'PART_1',
+				name: 'Test Part',
+				segmentId: 'SEGMENT_1',
+				timing: { startTime: 1600000060000, expectedDurationMs: 10000, expectedEndTime: 1600000070000 },
+			},
+			nextPart: null,
+			currentSegment: {
+				id: 'SEGMENT_1',
+				timing: {
+					expectedDurationMs: 10000,
+					expectedEndTime: 1600000070000,
+				},
+			},
+			globalAdLibs: [],
 			rundownIds: unprotectStringArray(playlist.rundownIdsInOrder),
 		}
 

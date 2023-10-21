@@ -59,12 +59,15 @@ export class AdLibsHandler
 				this._dbObserver.changed = (id: string) => {
 					void this.changed(id, 'changed').catch(this._logger.error)
 				}
+				this._dbObserver.removed = (id: string) => {
+					void this.changed(id, 'removed').catch(this._logger.error)
+				}
 
 				const collection = this._core.getCollection<AdLibPiece>(this._collectionName)
 				if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 				this._collectionData = collection.find({
 					rundownId: this._currentRundownId,
-					partId: this._currentPartInstance.part._id,
+					// partId: this._currentPartInstance.part._id,
 				})
 				await this.notify(this._collectionData)
 			}

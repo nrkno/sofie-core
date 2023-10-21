@@ -17,7 +17,7 @@ export function calculateCurrentSegmentTiming(
 	segmentParts: DBPart[]
 ): CurrentSegmentTiming {
 	const segmentTiming = calculateSegmentTiming(segmentParts)
-	const playedDurations = segmentPartInstances.reduce<number>((sum, partInstance): number => {
+	const playedDurations = segmentPartInstances.reduce((sum, partInstance) => {
 		return (partInstance.timings?.duration ?? 0) + sum
 	}, 0)
 	const currentPartInstanceStart =
