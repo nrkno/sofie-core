@@ -17,7 +17,7 @@ $defs:
         type: array
         items:
           $ref: '#/$defs/segment'
-    required: [event, id, segments]
+    required: [event, rundownPlaylistId, segments]
     additionalProperties: false
     examples:
       - event: segments
@@ -36,15 +36,22 @@ $defs:
       name:
         description: Name of the segment
         type: string
-      expectedDurationMs:
-        description: Expected duration of the segment
-        type: number
-      budgetDurationMs:
-        description: Budget duration of the segment
-        type: number
-    required: [id, rundownId, name]
+      timing:
+        type: object
+        properties:
+          expectedDurationMs:
+            description: Expected duration of the segment (milliseconds)
+            type: number
+          budgetDurationMs:
+            description: Budget duration of the segment (milliseconds)
+            type: number
+        required: [expectedDurationMs]
+    required: [id, rundownId, name, timing]
     additionalProperties: false
     examples:
       - id: 'OKAgZmZ0Buc99lE_2uPPSKVbMrQ_'
         rundownId: 'y9HauyWkcxQS3XaAOsW40BRLLsI_'
         name: 'Segment 0'
+        timing:
+          expectedDurationMs: 15000
+          budgetDurationMs: 20000

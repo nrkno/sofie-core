@@ -20,7 +20,10 @@ $defs:
           type: string
       currentPart:
         description: The current Part - if empty, no part in the active playlist is live
-        $ref: '#/$defs/part'
+        $ref: '#/$defs/currentPart'
+      currentSegment:
+        description: The Segment of the current Part - if empty, no part in the active playlist is live
+        $ref: '#/$defs/currentSegment'
       nextPart:
         description: The next Part - if empty, no part will follow live part
         $ref: '#/$defs/part'
@@ -34,7 +37,7 @@ $defs:
         type: array
         items:
           $ref: '#/$defs/adLib'
-    required: [event, id, name, rundownIds, currentPart, nextPart, adLibs, globalAdLibs]
+    required: [event, id, name, rundownIds, currentPart, currentSegment, nextPart, adLibs, globalAdLibs]
     additionalProperties: false
     examples:
       - event: activePlaylist
@@ -42,38 +45,78 @@ $defs:
         name: 'Playlist 0'
         rundownIds: ['y9HauyWkcxQS3XaAOsW40BRLLsI_']
         currentPart:
-          $ref: '#/$defs/part/examples'
+          $ref: '#/$defs/currentPart/examples/0'
+        currentSegment:
+          $ref: '#/$defs/currentSegment/examples/0'
         nextPart:
-          $ref: '#/$defs/part/examples'
+          $ref: '#/$defs/part/examples/0'
         adLibs:
           $ref: '#/$defs/adLib/examples'
         globals:
           $ref: '#/$defs/adLib/examples'
+  partBase:
+    type: object
+    properties:
+      id:
+        description: Unique id of the part
+        type: string
+      name:
+        description: User name of the part
+        type: string
+      segmentId:
+        description: Unique id of the segment this part belongs to
+        type: string
+      autoNext:
+        description: Should this part progress to the next automatically
+        type: boolean
+        default: false
+    required: [id, name, segmentId]
+    additionalProperties: false
+    examples:
+      - id: 'H5CBGYjThrMSmaYvRaa5FVKJIzk_'
+        name: 'Intro'
+        segmentId: 'n1mOVd5_K5tt4sfk6HYfTuwumGQ_'
+        autoNext: false
   part:
     oneOf:
-      - type: object
-        properties:
-          id:
-            description: Unique id of the part
-            type: string
-          name:
-            description: User name of the part
-            type: string
-          segmentId:
-            description: Unique id of the segment this part belongs to
-            type: string
-          autoNext:
-            description: Should this part progress to the next automatically
-            type: boolean
-            default: false
-        required: [id, name, segmentId]
-        additionalProperties: false
+      - $ref: '#/$defs/partBase'
       - type: 'null'
     examples:
       - id: 'H5CBGYjThrMSmaYvRaa5FVKJIzk_'
         name: 'Intro'
         segmentId: 'n1mOVd5_K5tt4sfk6HYfTuwumGQ_'
         autoNext: false
+  currentPart:
+    oneOf:
+      - allOf:
+          - $ref: '#/$defs/partBase'
+          - type: object
+            properties:
+              timing:
+                description: Timing information about the current part
+                type: object
+                properties:
+                  startTime:
+                    description: Unix timestamp of when the part started (milliseconds)
+                    type: number
+                  expectedDurationMs:
+                    description: Expected duration of the part (milliseconds)
+                    type: number
+                  expectedEndTime:
+                    description: Unix timestamp of when the part is expected to end (milliseconds)
+                    type: number
+                required: [startTime, expectedDurationMs, expectedEndTime]
+            required: [timing]
+      - type: 'null'
+    examples:
+      - id: 'H5CBGYjThrMSmaYvRaa5FVKJIzk_'
+        name: 'Intro'
+        segmentId: 'n1mOVd5_K5tt4sfk6HYfTuwumGQ_'
+        autoNext: false
+        timing:
+          startTime: 1600000060000
+          expectedDurationMs: 15000
+          expectedEndTime: 1600000075000
   adLib:
     type: object
     properties:
@@ -118,3 +161,31 @@ $defs:
           - name: pvw
             label: Preview
         tags: ['music_video']
+  currentSegment:
+    type: object
+    properties:
+      id:
+        description: Unique id of the segment
+        type: string
+      timing:
+        description: Timing information about the current segment
+        type: object
+        properties:
+          expectedDurationMs:
+            description: Expected duration of the segment
+            type: number
+          budgetDurationMs:
+            description: Budget duration of the segment
+            type: number
+          expectedEndTime:
+            description: Unix timestamp of when the segment is expected to end (milliseconds)
+            type: number
+        required: [expectedDurationMs, expectedEndTime]
+    required: [id, timing]
+    additionalProperties: false
+    examples:
+      - id: 'H5CBGYjThrMSmaYvRaa5FVKJIzk_'
+        timing:
+          expectedDurationMs: 15000
+          budgetDurationMs: 20000
+          expectedEndTime: 1600000075000
