@@ -67,7 +67,7 @@ export class AdLibsHandler
 				if (!collection) throw new Error(`collection '${this._collectionName}' not found!`)
 				this._collectionData = collection.find({
 					rundownId: this._currentRundownId,
-					// partId: this._currentPartInstance.part._id,
+					partId: this._currentPartInstance.part._id,
 				})
 				await this.notify(this._collectionData)
 			}
