@@ -1,181 +1,38 @@
 import {
-	BlueprintManifestType,
-	IStudioConfigPreset,
+	getSchemaUIField,
 	IShowStyleConfigPreset,
+	IStudioConfigPreset,
 	ITranslatableMessage,
+	JSONBlob,
+	JSONBlobParse,
+	JSONSchema,
+	SchemaFormUIField,
 } from '@sofie-automation/blueprints-integration'
-import { Blueprint, BlueprintHash } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
+import { BlueprintHash } from '@sofie-automation/corelib/dist/dataModel/Blueprint'
 import { BlueprintId } from '@sofie-automation/corelib/dist/dataModel/Ids'
-import {
-	normalizeArrayToMap,
-	literal,
-	objectPathGet,
-	joinObjectPathFragments,
-} from '@sofie-automation/corelib/dist/lib'
-import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
-import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
-import _ from 'underscore'
-import {
-	GetUpgradeStatusResult,
-	GetUpgradeStatusResultStudio,
-	GetUpgradeStatusResultShowStyleBase,
-} from '../../../lib/api/migration'
-import { Blueprints, ShowStyleBases, Studios } from '../../collections'
 import { DBShowStyleBase } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { DBStudio } from '@sofie-automation/corelib/dist/dataModel/Studio'
+import { joinObjectPathFragments, objectPathGet } from '@sofie-automation/corelib/dist/lib'
+import { applyAndValidateOverrides } from '@sofie-automation/corelib/dist/settings/objectWithOverrides'
 import { generateTranslation } from '../../../lib/lib'
-import { JSONBlob, JSONBlobParse } from '@sofie-automation/shared-lib/dist/lib/JSONBlob'
-import { JSONSchema } from '@sofie-automation/shared-lib/dist/lib/JSONSchemaTypes'
 import { logger } from '../../logging'
+import { ShowStyleBaseFields, StudioFields } from './reactiveContentCache'
+import _ from 'underscore'
+import { UIBlueprintUpgradeStatusBase } from '../../../lib/api/upgradeStatus'
+import { stringifyError } from '@sofie-automation/shared-lib/dist/lib/stringifyError'
 
-export async function getUpgradeStatus(): Promise<GetUpgradeStatusResult> {
-	const studioUpgrades = await checkStudiosUpgradeStatus()
-	const showStyleUpgrades = await checkShowStyleBaseUpgradeStatus()
-
-	return {
-		studios: studioUpgrades,
-		showStyleBases: showStyleUpgrades,
-	}
-}
-
-async function checkStudiosUpgradeStatus(): Promise<GetUpgradeStatusResultStudio[]> {
-	const result: GetUpgradeStatusResultStudio[] = []
-
-	const studios = (await Studios.findFetchAsync(
-		{},
-		{
-			fields: {
-				_id: 1,
-				blueprintId: 1,
-				blueprintConfigPresetId: 1,
-				lastBlueprintConfig: 1,
-				blueprintConfigWithOverrides: 1,
-				name: 1,
-			},
-		}
-	)) as Array<StudioForUpgradeCheck>
-
-	const studioBlueprints = (await Blueprints.findFetchAsync(
-		{
-			blueprintType: BlueprintManifestType.STUDIO,
-			_id: { $in: _.compact(studios.map((st) => st.blueprintId)) },
-		},
-		{
-			fields: {
-				_id: 1,
-				studioConfigPresets: 1,
-				studioConfigSchema: 1,
-				blueprintHash: 1,
-			},
-		}
-	)) as Array<StudioBlueprintForUpgradeCheck>
-
-	// Check each studio
-	const blueprintsMap = normalizeArrayToMap(
-		studioBlueprints.map((doc) =>
-			literal<BlueprintMapEntry>({
-				_id: doc._id,
-				configPresets: doc.studioConfigPresets,
-				configSchema: doc.studioConfigSchema,
-				blueprintHash: doc.blueprintHash,
-			})
-		),
-		'_id'
-	)
-	for (const studio of studios) {
-		result.push({
-			...checkDocUpgradeStatus(blueprintsMap, studio),
-			studioId: studio._id,
-			name: studio.name,
-		})
-	}
-
-	return result
-}
-
-async function checkShowStyleBaseUpgradeStatus(): Promise<GetUpgradeStatusResultShowStyleBase[]> {
-	const result: GetUpgradeStatusResultShowStyleBase[] = []
-
-	const showStyles = (await ShowStyleBases.findFetchAsync(
-		{},
-		{
-			fields: {
-				_id: 1,
-				blueprintId: 1,
-				blueprintConfigPresetId: 1,
-				lastBlueprintConfig: 1,
-				blueprintConfigWithOverrides: 1,
-				name: 1,
-			},
-		}
-	)) as Array<ShowStyleBaseForUpgradeCheck>
-
-	const showStyleBlueprints = (await Blueprints.findFetchAsync(
-		{
-			blueprintType: BlueprintManifestType.SHOWSTYLE,
-			_id: { $in: _.compact(showStyles.map((st) => st.blueprintId)) },
-		},
-		{
-			fields: {
-				_id: 1,
-				showStyleConfigPresets: 1,
-				showStyleConfigSchema: 1,
-				blueprintHash: 1,
-			},
-		}
-	)) as Array<ShowStyleBlueprintForUpgradeCheck>
-
-	// Check each studio
-	const blueprintsMap = normalizeArrayToMap(
-		showStyleBlueprints.map((doc) =>
-			literal<BlueprintMapEntry>({
-				_id: doc._id,
-				configPresets: doc.showStyleConfigPresets,
-				configSchema: doc.showStyleConfigSchema,
-				blueprintHash: doc.blueprintHash,
-			})
-		),
-		'_id'
-	)
-	for (const showStyle of showStyles) {
-		result.push({
-			...checkDocUpgradeStatus(blueprintsMap, showStyle),
-			showStyleBaseId: showStyle._id,
-			name: showStyle.name,
-		})
-	}
-
-	return result
-}
-
-type StudioForUpgradeCheck = Pick<
-	DBStudio,
-	'_id' | 'blueprintId' | 'blueprintConfigPresetId' | 'lastBlueprintConfig' | 'blueprintConfigWithOverrides' | 'name'
->
-type ShowStyleBaseForUpgradeCheck = Pick<
-	DBShowStyleBase,
-	'_id' | 'blueprintId' | 'blueprintConfigPresetId' | 'lastBlueprintConfig' | 'blueprintConfigWithOverrides' | 'name'
->
-type StudioBlueprintForUpgradeCheck = Pick<
-	Blueprint,
-	'_id' | 'studioConfigPresets' | 'studioConfigSchema' | 'blueprintHash'
->
-type ShowStyleBlueprintForUpgradeCheck = Pick<
-	Blueprint,
-	'_id' | 'showStyleConfigPresets' | 'showStyleConfigSchema' | 'blueprintHash'
->
-
-interface BlueprintMapEntry {
+export interface BlueprintMapEntry {
 	_id: BlueprintId
 	configPresets: Record<string, IStudioConfigPreset> | Record<string, IShowStyleConfigPreset> | undefined
 	configSchema: JSONBlob<JSONSchema> | undefined
 	blueprintHash: BlueprintHash | undefined
+	hasFixUpFunction: boolean
 }
 
-function checkDocUpgradeStatus(
+export function checkDocUpgradeStatus(
 	blueprintMap: Map<BlueprintId, BlueprintMapEntry>,
-	doc: StudioForUpgradeCheck | ShowStyleBaseForUpgradeCheck
-): Pick<GetUpgradeStatusResultStudio, 'invalidReason' | 'changes'> {
+	doc: Pick<DBStudio, StudioFields> | Pick<DBShowStyleBase, ShowStyleBaseFields>
+): Pick<UIBlueprintUpgradeStatusBase, 'invalidReason' | 'changes' | 'pendingRunOfFixupFunction'> {
 	// Check the blueprintId is valid
 	const blueprint = doc.blueprintId ? blueprintMap.get(doc.blueprintId) : null
 	if (!blueprint || !blueprint.configPresets) {
@@ -184,6 +41,7 @@ function checkDocUpgradeStatus(
 			invalidReason: generateTranslation('Invalid blueprint: "{{blueprintId}}"', {
 				blueprintId: doc.blueprintId,
 			}),
+			pendingRunOfFixupFunction: false,
 			changes: [],
 		}
 	}
@@ -199,7 +57,21 @@ function checkDocUpgradeStatus(
 					blueprintId: doc.blueprintId,
 				}
 			),
+			pendingRunOfFixupFunction: false, // TODO - verify
 			changes: [],
+		}
+	}
+
+	if (blueprint.hasFixUpFunction) {
+		// If the blueprint has a 'fixUpConfig' function, that must be run before we can do any real diffing of the config
+		const pendingRunOfFixupFunction =
+			!doc.lastBlueprintFixUpHash || doc.lastBlueprintFixUpHash !== blueprint.blueprintHash
+
+		if (pendingRunOfFixupFunction) {
+			return {
+				pendingRunOfFixupFunction: true,
+				changes: [generateTranslation('Config requires fixing up before it can be validated')],
+			}
 		}
 	}
 
@@ -259,6 +131,7 @@ function checkDocUpgradeStatus(
 
 	return {
 		changes,
+		pendingRunOfFixupFunction: false,
 	}
 }
 
@@ -288,7 +161,7 @@ function diffJsonSchemaObjects(
 					generateTranslation(
 						'Config value "{{ name }}" has changed. From "{{ oldValue }}", to "{{ newValue }}"',
 						{
-							name: (propSchema as any)['ui:title'] || propPath,
+							name: getSchemaUIField(propSchema, SchemaFormUIField.Title) || propPath,
 							// Future: this is not pretty when it is an object
 							oldValue: JSON.stringify(valueA) ?? '',
 							newValue: JSON.stringify(valueB) ?? '',

@@ -8,6 +8,10 @@ import { MappingsExt } from '@sofie-automation/corelib/dist/dataModel/Studio'
 import { DBShowStyleBase, SourceLayers } from '@sofie-automation/corelib/dist/dataModel/ShowStyleBase'
 import { SelectConfigPreset } from './SelectConfigPreset'
 import { SelectBlueprint } from './SelectBlueprint'
+import { PubSub } from '../../../../../lib/api/pubsub'
+import { useSubscription, useTracker } from '../../../../lib/ReactMeteorData/ReactMeteorData'
+import { UIBlueprintUpgradeStatuses } from '../../../Collections'
+import { getUpgradeStatusMessage, UpgradeStatusButtons } from '../../Upgrades/Components'
 
 interface ShowStyleBaseBlueprintConfigurationSettingsProps {
 	showStyleBase: DBShowStyleBase
@@ -22,6 +26,17 @@ export function ShowStyleBaseBlueprintConfigurationSettings(
 	props: ShowStyleBaseBlueprintConfigurationSettingsProps
 ): JSX.Element {
 	const { t } = useTranslation()
+
+	const isStatusReady = useSubscription(PubSub.uiBlueprintUpgradeStatuses)
+	const status = useTracker(
+		() =>
+			UIBlueprintUpgradeStatuses.findOne({
+				documentId: props.showStyleBase._id,
+				documentType: 'showStyle',
+			}),
+		[props.showStyleBase._id]
+	)
+	const statusMessage = isStatusReady && status ? getUpgradeStatusMessage(t, status) ?? t('OK') : t('Loading...')
 
 	const translationNamespaces = useMemo(
 		() => ['blueprint_' + props.showStyleBase.blueprintId],
@@ -46,15 +61,28 @@ export function ShowStyleBaseBlueprintConfigurationSettings(
 			<SelectBlueprint showStyleBase={props.showStyleBase} />
 			<SelectConfigPreset showStyleBase={props.showStyleBase} />
 
-			<BlueprintConfigSchemaSettings
-				schema={props.schema}
-				translationNamespaces={translationNamespaces}
-				layerMappings={props.layerMappings}
-				sourceLayers={props.sourceLayers}
-				configObject={props.showStyleBase.blueprintConfigWithOverrides}
-				saveOverrides={saveBlueprintConfigOverrides}
-				alternateConfig={undefined}
-			/>
+			<p>
+				{t('Upgrade Status')}: {statusMessage}
+				{status && <UpgradeStatusButtons upgradeResult={status} />}
+			</p>
+
+			{!status || status.pendingRunOfFixupFunction ? (
+				!status ? (
+					<p>{t('Loading')}</p>
+				) : (
+					<p>{t('Config Fix Up must be run or ignored before the configuration can be edited')}</p>
+				)
+			) : (
+				<BlueprintConfigSchemaSettings
+					schema={props.schema}
+					translationNamespaces={translationNamespaces}
+					layerMappings={props.layerMappings}
+					sourceLayers={props.sourceLayers}
+					configObject={props.showStyleBase.blueprintConfigWithOverrides}
+					saveOverrides={saveBlueprintConfigOverrides}
+					alternateConfig={undefined}
+				/>
+			)}
 		</>
 	)
 }

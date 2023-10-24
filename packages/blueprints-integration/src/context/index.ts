@@ -1,6 +1,7 @@
 export * from './adlibActionContext'
 export * from './baseContext'
 export * from './eventContext'
+export * from './fixUpConfigContext'
 export * from './packageInfoContext'
 export * from './rundownContext'
 export * from './showStyleContext'

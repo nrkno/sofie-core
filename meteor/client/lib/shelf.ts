@@ -13,7 +13,7 @@ import { UIShowStyleBase } from '../../lib/api/showStyles'
 import { PieceId, SegmentId } from '@sofie-automation/corelib/dist/dataModel/Ids'
 import { PieceInstances } from '../collections'
 import { ReadonlyDeep } from 'type-fest'
-import { PieceContentStatusObj } from '../../lib/mediaObjects'
+import { PieceContentStatusObj } from '../../lib/api/pieceContentStatus'
 
 export interface ShelfDisplayOptions {
 	enableBuckets: boolean

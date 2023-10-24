@@ -9,14 +9,14 @@ export interface ActionUserData {
 	[key: string]: any
 }
 
-export enum ActionExecuteAfterChanged {
-	/** Do not execute the action after userData has changed, unless specifically triggered by the user */
-	none = 'none',
-	/** Execute the action immediately after userData has changed */
-	immediately = 'immediately',
-	/** Execute the action after userData has changed and there was an identifiable period of calm in the changes */
-	debounce = 'debounce',
-}
+// export enum ActionExecuteAfterChanged {
+// 	/** Do not execute the action after userData has changed, unless specifically triggered by the user */
+// 	none = 'none',
+// 	/** Execute the action immediately after userData has changed */
+// 	immediately = 'immediately',
+// 	/** Execute the action after userData has changed and there was an identifiable period of calm in the changes */
+// 	debounce = 'debounce',
+// }
 
 export interface IBlueprintActionManifestDisplay {
 	/** A label to be displayed to the user */
@@ -94,9 +94,9 @@ export interface IBlueprintActionManifest {
 	userDataManifest: {
 		/** List of editable fields in userData, to allow for customising */
 		editableFields?: JSONBlob<JSONSchema>
-		/** Execute the action after userData is changed. If not present ActionExecuteAfterChanged.none is assumed. */
-		executeOnUserDataChanged?: ActionExecuteAfterChanged
 		// Potential future properties:
+		// /** Execute the action after userData is changed. If not present ActionExecuteAfterChanged.none is assumed. */
+		// executeOnUserDataChanged?: ActionExecuteAfterChanged
 		// asloDisplayACtionButton: boolean
 	}
 

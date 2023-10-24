@@ -51,5 +51,6 @@ export function generateFakeBlueprint(
 		blueprintVersion: '',
 		integrationVersion: '',
 		TSRVersion: '',
+		hasFixUpFunction: false,
 	})
 }

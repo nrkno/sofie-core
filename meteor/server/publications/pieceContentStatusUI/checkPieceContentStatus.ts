@@ -31,7 +31,7 @@ import _ from 'underscore'
 import { getSideEffect } from '../../../lib/collections/ExpectedPackages'
 import { getActiveRoutes, getRoutedMappings } from '../../../lib/collections/Studios'
 import { ensureHasTrailingSlash, generateTranslation, unprotectString } from '../../../lib/lib'
-import { PieceContentStatusObj, ScanInfoForPackage, ScanInfoForPackages } from '../../../lib/mediaObjects'
+import { PieceContentStatusObj } from '../../../lib/api/pieceContentStatus'
 import { MediaObjects, PackageContainerPackageStatuses, PackageInfos } from '../../collections'
 import {
 	mediaObjectFieldSpecifier,
@@ -42,6 +42,17 @@ import {
 	PackageInfoLight,
 	PieceDependencies,
 } from './common'
+
+interface ScanInfoForPackages {
+	[packageId: string]: ScanInfoForPackage
+}
+interface ScanInfoForPackage {
+	/** Display name of the package  */
+	packageName: string
+	scan?: PackageInfo.FFProbeScan['payload']
+	deepScan?: PackageInfo.FFProbeDeepScan['payload']
+	timebase?: number // derived from scan
+}
 
 /**
  * Take properties from the mediainfo / medistream and transform into a

@@ -15,6 +15,7 @@ import type {
 	IDataStoreActionExecutionContext,
 	IRundownActivationContext,
 	IShowStyleContext,
+	IFixUpConfigContext,
 } from '../context'
 import type { IngestAdlib, ExtendedIngestRundown, IngestSegment } from '../ingest'
 import type { IBlueprintExternalMessageQueueObj } from '../message'
@@ -124,7 +125,17 @@ export interface ShowStyleBlueprintManifest<TRawConfig = IBlueprintConfig, TProc
 	getAdlibItem?: (
 		context: IShowStyleUserContext,
 		ingestItem: IngestAdlib
-	) => IBlueprintAdLibPiece | IBlueprintActionManifest | null
+	) =>
+		| Promise<IBlueprintAdLibPiece | IBlueprintActionManifest | null>
+		| IBlueprintAdLibPiece
+		| IBlueprintActionManifest
+		| null
+
+	/**
+	 * Apply automatic upgrades to the structure of user specified config overrides
+	 * This lets you apply various changes to the user's values in an abstract way
+	 */
+	fixUpConfig?: (context: IFixUpConfigContext<TRawConfig>) => void
 
 	/**
 	 * Validate the config passed to this blueprint

@@ -37,7 +37,7 @@ import { PieceInstances, Segments } from '../../collections'
 import { RundownPlaylistCollectionUtil } from '../../../lib/collections/rundownPlaylistUtil'
 import { CalculateTimingsPiece } from '@sofie-automation/corelib/dist/playout/timings'
 import { ReadonlyDeep } from 'type-fest'
-import { PieceContentStatusObj } from '../../../lib/mediaObjects'
+import { PieceContentStatusObj } from '../../../lib/api/pieceContentStatus'
 import { SegmentOrphanedReason } from '@sofie-automation/corelib/dist/dataModel/Segment'
 
 export interface SegmentUi extends SegmentExtended {

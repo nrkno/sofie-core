@@ -10,7 +10,26 @@ export interface CustomPublishChanges<T extends { _id: ProtectedString<any> }> {
 	removed: T['_id'][]
 }
 
-export class CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
+export interface CustomPublish<DBObj extends { _id: ProtectedString<any> }> {
+	get isReady(): boolean
+
+	/**
+	 * Register a function to be called when the subscriber unsubscribes
+	 */
+	onStop(callback: () => void): void
+
+	/**
+	 * Send the intial documents to the subscriber
+	 */
+	init(docs: DBObj[]): void
+
+	/**
+	 * Send a batch of changes to the subscriber
+	 */
+	changed(changes: CustomPublishChanges<DBObj>): void
+}
+
+export class CustomPublishMeteor<DBObj extends { _id: ProtectedString<any> }> {
 	#onStop: (() => void) | undefined
 	#isReady = false
 
@@ -80,6 +99,6 @@ export function meteorCustomPublish<K extends keyof PubSubTypes>(
 	) => Promise<void>
 ): void {
 	meteorPublishUnsafe(publicationName, async function (this: SubscriptionContext, ...args: any[]) {
-		return cb.call(this, new CustomPublish(this, customCollectionName), ...(args as any))
+		return cb.call(this, new CustomPublishMeteor(this, customCollectionName), ...(args as any))
 	})
 }
